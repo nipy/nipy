@@ -19,7 +19,8 @@ the header.  The containing object manages the filenames, and
 therefore must know how to predict image filenames from header
 filenames, whether these are different, and so on.
 
-You can access and set fields of a particular header type using standard __getitem__ / __setitem__ syntax:
+You can access and set fields of a particular header type using standard
+__getitem__ / __setitem__ syntax:
 
     hdr['field'] = 10
 
@@ -94,13 +95,16 @@ The same for logging::
 
 '''
 
+import warnings
+
 import numpy as np
 
 from nipy.io.imageformats.volumeutils import pretty_mapping, endian_codes, \
      native_code, swapped_code, hdr_getterfunc, \
      make_dt_codes, HeaderDataError, HeaderTypeError, allopen
 
-from nipy.io.imageformats.header_ufuncs import read_data, write_data, adapt_header
+from nipy.io.imageformats.header_ufuncs import read_data, write_data, \
+    adapt_header, read_unscaled_data
 
 from nipy.io.imageformats import imageglobals as imageglobals
 from nipy.io.imageformats.spatialimages import SpatialImage
@@ -1071,6 +1075,41 @@ class AnalyzeImage(SpatialImage):
         self._data = read_data(self._header, allopen(fname))
         return self._data
 
+    def get_unscaled_data(self):
+        """ Return image data without image scaling applied
+
+        Summary: please use the ``get_data`` method instead of this
+        method unless you are sure what you are doing, and that you will
+        only be using image formats for which this method exists and
+        returns sensible results.
+        
+        Use this method with care; the modified Analyze-type formats
+        such as SPM formats, and nifti1, specify that the image data
+        array, as they are expecting to return it, is given by the raw
+        data on disk, multiplied by a scalefactor and maybe with the
+        addition of a constant.  This method returns the data on the
+        disk, without these format-specific scalings applied.  Please
+        use this method only if you absolutely need the unscaled data,
+        and the magnitude of the data, as given by the scalefactor, is
+        not relevant to your application.  The Analyze-type formats have
+        a single scalefactor +/- offset per image on disk. If you do not
+        care about the absolute values, and will be removing the mean
+        from the data, then the unscaled values will have preserved
+        intensity ratios compared to the mean-centered scaled data.
+        However, this is not necessarily true of other formats with more
+        complicated scaling - such as MINC.
+
+        Note that - unlike the scaled ``get_data`` method, we do not
+        cache the array, to minimize the memory taken by the object.
+        """
+        if not self._files:
+            return None
+        try:
+            fname = self._files['image']
+        except KeyError:
+            return None
+        return read_unscaled_data(self._header, allopen(fname))
+        
     def get_header(self):
         ''' Return header
 
@@ -1099,11 +1138,6 @@ class AnalyzeImage(SpatialImage):
         self._header.set_data_dtype(dtype)
     
     @classmethod
-    def from_filespec(klass, filespec):
-        files = klass.filespec_to_files(filespec)
-        return klass.from_files(files)
-    
-    @classmethod
     def from_files(klass, files):
         fname = files['header']
         header = klass._header_maker.from_fileobj(allopen(fname))
@@ -1111,14 +1145,6 @@ class AnalyzeImage(SpatialImage):
         ret =  klass(None, affine, header)
         ret._files = files
         return ret
-    
-    @classmethod
-    def from_image(klass, img):
-        orig_hdr = img.get_header()
-        return klass(img.get_data(),
-                     img.get_affine(),
-                     img.get_header(),
-                     img.extra)
     
     @staticmethod
     def filespec_to_files(filespec):
@@ -1132,12 +1158,6 @@ class AnalyzeImage(SpatialImage):
                              'Analyze ' % filespec)
         files = dict(zip(('header', 'image'), ftups.get_filenames()))
         return files
-
-    def to_filespec(self, filespec):
-        ''' Write image to files given by filespec
-        '''
-        files = self.filespec_to_files(filespec)
-        self.to_files(files)
 
     def to_files(self, files=None):
         ''' Write image to files passed, or self._files
@@ -1196,16 +1216,7 @@ class AnalyzeImage(SpatialImage):
             RZS = self._affine[:3,:3]
             vox = np.sqrt(np.sum(RZS * RZS, axis=0))
             hdr['pixdim'][1:4] = vox
-        
-    @classmethod
-    def load(klass, filespec):
-        return klass.from_filespec(filespec)
-
-    @classmethod
-    def save(klass, img, filespec):
-        img = klass.from_image(img)
-        img.to_filespec(filespec)
 
 
 load = AnalyzeImage.load
-save = AnalyzeImage.save
+save = AnalyzeImage.instance_to_filename

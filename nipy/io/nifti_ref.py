@@ -49,7 +49,7 @@ True
 
 FIXME: (finish this thought.... Are we going to open NIFTI files with
 NIFTI input coordinates?)  For this reason, we have to consider whether
-we should transpose the memmap from pynifti.
+we should transpose the memmap from nifti input.
 """
 import warnings
 

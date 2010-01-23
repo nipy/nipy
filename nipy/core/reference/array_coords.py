@@ -57,11 +57,9 @@ class ArrayCoordMap(object):
         values : array
            Values of self.coordmap evaluated at np.indices(self.shape).
         """
-
         indices = np.indices(self.shape).astype(
             self.coordmap.input_coords.coord_dtype)
         tmp_shape = indices.shape
-
         # reshape indices to be a sequence of coordinates
         indices.shape = (self.coordmap.ndim[0], np.product(self.shape))
         _range = self.coordmap(indices.T)
@@ -87,13 +85,27 @@ class ArrayCoordMap(object):
 
         Parameters
         ----------
-        index : ``int`` or ``slice``
-            sequence of integers or slices
-        
+        index : int or tuple
+           int, or sequence of any combination of integers, slices.  The
+           sequence can also cantian one Ellipsis. 
         """
-
+        # index can be single int or tuple
         if type(index) != type(()):
             index = (index,)
+        # allow slicing of form [...,1]
+        if Ellipsis in index:  
+            if sum([i == Ellipsis for i in index]) > 1:
+                raise ValueError("only one Ellipsis (...) allowed in slice")
+            # convert ellipsis to series of slice(None) objects.  For
+            # example, if the coordmap is length 3, we convert (...,1)
+            # to (slice(None), slice(None), 1) - equivalent to [:,:,1]
+            ellipsis_start = list(index).index(Ellipsis)
+            inds_after_ellipsis = index[(ellipsis_start+1):]
+            # the ellipsis continues until any remaining slice specification
+            n_ellipses = len(self.shape) - ellipsis_start - len(inds_after_ellipsis)
+            index = (index[:ellipsis_start]
+                     + n_ellipses * (slice(None),)
+                     + inds_after_ellipsis)
         return _slice(self.coordmap, self.shape, *index)
 
     @staticmethod
@@ -106,16 +118,15 @@ class ArrayCoordMap(object):
         slices = tuple([slice(0,s,1) for s in shape])
         return Grid(coordmap)[slices]
 
+
 def _slice(coordmap, shape, *slices):
     """
     Slice a 'voxel' CoordinateMap's input_coords with slices. A
     'voxel' CoordinateMap is interpreted as a coordmap having a shape.
     """
-    
     if len(slices) < coordmap.ndim[0]:
         slices = (list(slices) +
                   [slice(None,None,None)] * (coordmap.ndim[0] - len(slices)))
-
     ranges = [np.arange(s) for s in shape]
     cmaps = []
     keep_in_output = []
@@ -177,6 +188,7 @@ def _slice(coordmap, shape, *slices):
     slice_cmap = Affine(A, input_coords, coordmap.input_coords)
     return ArrayCoordMap(compose(coordmap, slice_cmap), tuple(newshape))
                    
+
 class Grid(object):
     """
     Simple class to construct Affine instances with slice notation

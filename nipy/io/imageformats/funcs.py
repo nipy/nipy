@@ -1,6 +1,10 @@
 ''' Processor functions for images '''
 import numpy as np
 
+from .orientations import (io_orientation, orientation_affine, flip_axis,
+                            apply_orientation, OrientationError)
+
+
 def squeeze_image(img):
     ''' Return image, remove axes length 1 at end of image shape
 
@@ -119,3 +123,53 @@ def four_to_three(img):
         img3d = image_maker(arr3d, affine, header)
         imgs.append(img3d)
     return imgs
+
+
+def as_closest_canonical(img, enforce_diag=False):
+    ''' Return `img` with data reordered to be closest to canonical
+
+    Canonical order is the ordering of the output axes.
+
+    Parameters
+    ----------
+    img : ``spatialimage``
+    enforce_diag : {False, True}, optional
+       If True, before transforming image, check if the resulting image
+       affine will be close to diagonal, and if not, raise an error
+    
+    Returns
+    -------
+    canonical_img : ``spatialimage``
+       Version of `img` where the underlying array may have been
+       reordered and / or flipped so that axes 0,1,2 are those axes in
+       the input data that are, respectively, closest to the output axis
+       orientation.  We modify the affine accordingly.  If `img` is
+       already has the correct data ordering, we just return `img`
+       unmodified.
+    '''
+    aff = img.get_affine()
+    ornt = io_orientation(aff)
+    if np.all(ornt == [[0,1],
+                       [1,1],
+                       [2,1]]): # canonical already
+        # however, the affine may not be diagonal
+        if enforce_diag and not _aff_is_diag(aff):
+            raise OrientationError('Transformed affine is not diagonal')
+        return img
+    shape = img.get_shape()
+    t_aff = orientation_affine(ornt, shape)
+    out_aff = np.dot(aff, t_aff)
+    # check if we are going to end up with something diagonal
+    if enforce_diag and not _aff_is_diag(aff):
+        raise OrientationError('Transformed affine is not diagonal')
+    # we need to transform the data
+    arr = img.get_data()
+    t_arr = apply_orientation(arr, ornt)
+    return img.__class__(t_arr, out_aff, img.get_header())
+
+
+def _aff_is_diag(aff):
+    ''' Utility function returning True if affine is nearly diagonal '''
+    rzs_aff = aff[:3,:3]
+    return np.allclose(rzs_aff, np.diag(np.diag(rzs_aff)))
+

@@ -22,7 +22,7 @@ When you load an image it will have an associated Coordinate Map
 
 
 For more on Coordinate Systems and thier properties
-:mod:`neuroimaging.core.reference.coordinate_system`
+:mod:`nipy.core.reference.coordinate_system`
 
 You can introspect a coordinate map
 
