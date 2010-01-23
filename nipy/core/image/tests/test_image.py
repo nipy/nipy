@@ -3,14 +3,15 @@ import warnings
 import numpy as np
 import numpy.testing as nptest
 
-from nipy.testing import assert_true, assert_equal, assert_raises, \
-    assert_array_almost_equal, TestCase
+from nipy.testing import assert_true, assert_false, assert_equal, \
+    assert_raises, assert_array_almost_equal, TestCase, \
+    anatfile, parametric
 
 from nipy.core.image import image
-from nipy.core.api import Image, fromarray, merge_images
+from nipy.core.api import Image, fromarray, merge_images, is_image
 from nipy.core.api import parcels, data_generator, write_data
-
 from nipy.core.reference.coordinate_map import Affine
+from nipy.io.api import load_image
 
 def setup():
     # Suppress warnings during tests to reduce noise
@@ -230,3 +231,21 @@ def test_defaults_4D():
     yield assert_raises, AttributeError, getattr, img, 'header'
     yield assert_true, img.affine.shape == (5,5)
     yield assert_true, img.affine.diagonal().all() == 1
+
+
+@parametric
+def test_is_image():
+    # tests for tests for image
+    img = load_image(anatfile)
+    yield assert_true(is_image(img))
+    class C(object): pass
+    yield assert_false(is_image(C()))
+    class C(object):
+        def __array__(self): pass
+    yield assert_false(is_image(C()))
+    class C(object):
+        coordmap = None
+        def __array__(self): pass
+    yield assert_true(is_image(img))
+    
+    

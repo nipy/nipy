@@ -62,6 +62,7 @@ class vectorize(lambdify):
             expr = expr(t)
         lambdify.__init__(self, deft, expr.subs(t, deft))
 
+
 class AliasedFunctionClass(sympy.FunctionClass):
 
     """

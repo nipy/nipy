@@ -18,7 +18,7 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 from numpy.linalg import det
-from nipy.fixes.scipy.stats.models.utils import recipr
+from nipy.fixes.scipy.stats.models.utils import pos_recipr
 
 from nipy.core.api import Image
 
@@ -92,7 +92,7 @@ class Resels(object):
         
         :Returns: FWHM
         """
-        return np.sqrt(4*np.log(2.)) * self.wedge * recipr(np.power(resels, 1./self.D))
+        return np.sqrt(4*np.log(2.)) * self.wedge * pos_recipr(np.power(resels, 1./self.D))
 
     def fwhm2resel(self, fwhm):
         """
@@ -104,7 +104,7 @@ class Resels(object):
 
         :Returns: resels
         """
-        return recipr(np.power(fwhm / np.sqrt(4*np.log(2)) * self.wedge, self.D))
+        return pos_recipr(np.power(fwhm / np.sqrt(4*np.log(2)) * self.wedge, self.D))
 
     def __iter__(self):
         """
