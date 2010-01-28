@@ -9,7 +9,8 @@ from nipy.modalities.fmri import formula, utils, hrf
     
 def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
                drift_model='Cosine', hfcut=128, drift_order=1, fir_delays=[0],
-               fir_duration=1., cond_ids=None, add_regs=None, add_reg_names=None):
+               fir_duration=1., cond_ids=None, add_regs=None, add_reg_names=None,
+               path=None):
     """
     Light-weight function to make easily a design matrix while avoiding framework
     
@@ -39,6 +40,7 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
     add_reg_names=None, list of (naddreg) regressor names
                         if None, while naddreg>0, these will be termed
                         'reg_%i',i=0..naddreg-1
+    path=None, if not None, the matrix is written as a .csv file at the given path
                  
     Returns
     -------
@@ -89,6 +91,13 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
     for k in range(len(drift.terms)-1):
         names.append('drift_%d'%(k+1))                            
     names.append('constant')
+
+    # possibly write the result
+    if path is not None:
+        import csv
+        writer = csv.writer(open(path, "wb"))
+        writer.writerow(names)
+        writer.writerows(dmtx)
     return dmtx, names
 
 
