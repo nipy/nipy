@@ -10,7 +10,7 @@ import numpy as np
 
 import nipy.io.imageformats as nii
 import nipy.neurospin.utils.mask as nnm
-from nipy.neurospin.utils.mask import _largest_cc
+from nipy.neurospin.utils.mask import largest_cc
 
 from nipy.utils import InTemporaryDirectory
 
@@ -23,10 +23,10 @@ def test_largest_cc():
     """
     a = np.zeros((6, 6, 6))
     a[1:3, 1:3, 1:3] = 1
-    yield assert_equal, a, _largest_cc(a)
+    yield assert_equal, a, largest_cc(a)
     b = a.copy()
     b[5, 5, 5] = 1
-    yield assert_equal, a, _largest_cc(b)
+    yield assert_equal, a, largest_cc(b)
 
 
 def test_unscaled_data():
