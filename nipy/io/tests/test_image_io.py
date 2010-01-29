@@ -5,13 +5,13 @@ from tempfile import mkstemp
 import numpy as np
 
 from nipy.testing import assert_true, assert_equal, assert_raises, \
-    assert_array_almost_equal
+    assert_array_equal, assert_array_almost_equal, funcfile, parametric
 
 from nipy.testing.decorators import if_templates
 
 from nipy.utils import templates, DataError
 
-from nipy.io.api import load_image, save_image
+from nipy.io.api import load_image, save_image, as_image
 from nipy.core.api import fromarray
 
 
@@ -197,3 +197,13 @@ def test_roundtrip_fromarray():
     # verify affine
     yield assert_true, np.allclose(img2.affine, img.affine)
 
+
+@parametric
+def test_as_image():
+    # test image creation / pass through function
+    img = as_image(funcfile) # string filename
+    img1 = as_image(unicode(funcfile))
+    img2 = as_image(img)
+    yield assert_equal(img.affine, img1.affine)
+    yield assert_array_equal(np.asarray(img), np.asarray(img1))
+    yield assert_true(img is img2)

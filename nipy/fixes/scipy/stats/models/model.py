@@ -4,7 +4,7 @@ from numpy.linalg import inv
 
 from scipy.stats import t
 
-from nipy.fixes.scipy.stats.models.utils import recipr
+from nipy.fixes.scipy.stats.models.utils import pos_recipr
 import numpy.lib.recfunctions as nprf
 from descriptors import setattr_on_read
 
@@ -138,7 +138,7 @@ class LikelihoodModelResults(object):
         _cov = self.vcov(column=column)
         if _cov.ndim == 2:
             _cov = np.diag(_cov)
-        _t = _theta * recipr(np.sqrt(_cov))
+        _t = _theta * pos_recipr(np.sqrt(_cov))
         return _t
 
     def vcov(self, matrix=None, column=None, dispersion=None, other=None):
@@ -198,7 +198,7 @@ class LikelihoodModelResults(object):
         if sd:
             _sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
         if t:
-            _t = _effect * recipr(_sd)
+            _t = _effect * pos_recipr(_sd)
         return TContrastResults(effect=_effect, t=_t, sd=_sd, df_den=self.df_resid)
 
 # Jonathan: for an F-statistic, the options 't', 'sd' do not make sense. The 'effect' option
@@ -235,7 +235,7 @@ class LikelihoodModelResults(object):
         q = matrix.shape[0]
         if invcov is None:
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
-        F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) * recipr((q * dispersion))
+        F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) * pos_recipr((q * dispersion))
         return FContrastResults(F=F, df_den=self.df_resid, df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):

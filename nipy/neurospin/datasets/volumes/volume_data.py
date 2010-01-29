@@ -159,8 +159,8 @@ class VolumeData(VolumeField):
                 '%s(\n  data=%s,\n  world_space=%s,\n  interpolation=%s)' % (
                 self.__class__.__name__,
                 '\n       '.join(repr(self._data).split('\n')),
-                self.world_space,
-                self.interpolation,
+                repr(self.world_space),
+                repr(self.interpolation),
                 )
         np.set_printoptions(**options)
         return representation

@@ -9,7 +9,7 @@ from nipy.core.reference.coordinate_system import CoordinateSystem
 from nipy.core.reference.coordinate_map import CoordinateMap, Affine, compose
 from nipy.core.reference.array_coords import Grid, ArrayCoordMap
 
-from nipy.core.image.image import Image, merge_images, fromarray
+from nipy.core.image.image import Image, merge_images, fromarray, is_image
 
 from nipy.core.image.image_list import ImageList
 

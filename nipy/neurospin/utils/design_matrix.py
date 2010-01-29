@@ -12,7 +12,7 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
                fir_duration=1., cond_ids=None, add_regs=None, add_reg_names=None,
                path=None):
     """
-    Light-weight function to make easily a design matrix while avoiding framework
+    Make a design matrix while avoiding framework
     
     Parameters
     ----------
@@ -204,7 +204,7 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
     ----------
     paradigm array of shape (nevents,2) if the type is event-related design 
              or (nenvets,3) for a block design
-             that constains (condition id, onset) or 
+             that contains (condition id, onset) or 
              (condition id, onset, duration)
     hrf_model, string that can be 'Canonical', 
                'Canonical With Derivative' or 'FIR'
@@ -231,9 +231,12 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
     fixme: 
     normalization of the columns of the design matrix ?
     """
+    paradigm = np.asarray(paradigm)
+    if paradigm.ndim !=2:
+        raise ValueError('Paradigm should have 2 dimensions')
     ncond = int(paradigm[:,0].max()+1)
     if names==None:
-        names=["c%d"%k for  k in ncond]
+        names=["c%d" % k for k in range(ncond)]
     else:
         if len(names)<ncond:
             raise ValueError, 'the number of names is less than the \
@@ -246,7 +249,6 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
         typep = 'block'  
     else:
         typep='event'
-
  
     for nc in range(ncond):
         onsets =  paradigm[paradigm[:,0]==nc,1]

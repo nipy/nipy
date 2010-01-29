@@ -143,6 +143,7 @@ class Image(object):
         """Return data as a numpy array."""
         return np.asarray(self._data)
 
+
 def fromarray(data, innames, outnames, coordmap=None):
     """Create an image from a numpy array.
 
@@ -207,4 +208,39 @@ def merge_images(images, cls=Image, clobber=False,
     for i, image in enumerate(images):
         data[i] = np.asarray(image)[:]
     return Image(data, coordmap)
+
+
+def is_image(obj):
+    ''' Returns true if this object obeys the Image API
+
+    This allows us to test for something that is duck-typing an image.
+
+    For now an array must have a 'coordmap' attribute, and a callable
+    '__array__' attribute. 
+
+    Parameters
+    ----------
+    obj : object
+       object for which to test API
+
+    Returns
+    -------
+    is_img : bool
+       True if object obeys image API
+
+    Examples
+    --------
+    >>> from nipy.testing import anatfile
+    >>> from nipy.io.api import load_image
+    >>> img = load_image(anatfile)
+    >>> is_image(img)
+    True
+    >>> class C(object): pass
+    >>> c = C()
+    >>> is_image(c)
+    False
+    '''
+    if not hasattr(obj, 'coordmap'):
+        return False
+    return callable(getattr(obj, '__array__'))
 

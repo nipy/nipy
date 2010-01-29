@@ -271,6 +271,7 @@ class Affine(CoordinateMap):
         The dtype of the resulting matrix is determined by finding a
         safe typecast for the input_coords, output_coords and affine.
         """
+        affine = np.asarray(affine)
         dtype = safe_dtype(affine.dtype,
                            input_coords.coord_dtype,
                            output_coords.coord_dtype)
@@ -759,3 +760,128 @@ def linearize(mapping, ndimin, step=1, origin=None, dtype=None):
     C[:ndimout,:ndimin] = (y1 - y0).T / step
     return C
 
+
+def drop_io_dim(cm, name):
+    ''' Drop dimension from coordinate map, if orthogonal to others
+
+    Drops both input and corresponding output dimension.  Thus there
+    should be a corresponding input dimension for a selected output
+    dimension, or a corresponding output dimension for an input
+    dimension. 
+
+    Parameters
+    ----------
+    cm : Affine
+       Affine coordinate map instance
+    name : str
+       Name of input or output dimension to drop.  If this is an input
+       dimension, there must be a corresponding output dimension with
+       the same index, and vica versa.  The check for orthogonality
+       ensures that the input and output dimensions are only related to
+       each other, and not to the other dimensions.
+
+    Returns
+    -------
+    cm_redux : Affine
+       Affine coordinate map with orthogonal input + output dimension
+       dropped
+
+    Examples
+    --------
+    Typical use is in getting a 3D coordinate map from 4D
+
+    >>> cm4d = Affine.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
+    >>> cm3d = drop_io_dim(cm4d, 't')
+    >>> cm3d.affine
+    array([[ 1.,  0.,  0.,  0.],
+           [ 0.,  2.,  0.,  0.],
+           [ 0.,  0.,  3.,  0.],
+           [ 0.,  0.,  0.,  1.]])
+    '''
+    aff = cm.affine
+    in_dims = list(cm.input_coords.coord_names)
+    nin = len(in_dims)
+    out_dims = list(cm.output_coords.coord_names)
+    nout = len(out_dims)
+    try:
+        i = in_dims.index(name)
+    except ValueError:
+        try:
+            i = out_dims.index(name)
+        except ValueError:
+            raise ValueError('No input or output dimension '
+                             'with name (%s)' % name)
+    col_inds = range(nin)
+    row_inds = range(nout)
+    try:
+        col_inds.remove(i)
+    except IndexError:
+        raise ValueError('Should be corresponding input and '
+                         'output dims')
+    try:
+        row_inds.remove(i)
+    except IndexError:
+        raise ValueError('Should be corresponding input and '
+                         'output dims')
+    removed_col = aff[row_inds, i]
+    if np.any(removed_col):
+        raise ValueError('Elements in dimension %d to remove (%s) '
+                         'appear not to be orthogonal '
+                         'to remaining dimensions' % (i, removed_col))
+    aff = aff[:, col_inds + [nin]]
+    aff = aff[row_inds + [nout],:]
+    in_dims = [n for i, n in enumerate(in_dims) if i in col_inds]
+    out_dims = [n for i, n in enumerate(out_dims) if i in row_inds]
+    return Affine.from_params(in_dims, out_dims, aff)
+
+
+def append_io_dim(cm, in_name, out_name, start=0, step=1):
+    ''' Append input and output dimension to coordmap
+
+    Parameters
+    ----------
+    cm : Affine
+       Affine coordinate map instance to which to append dimension
+    in_name : str
+       Name for new input dimension
+    out_name : str
+       Name for new output dimension
+    start : float, optional
+       Offset for transformed values in new dimension
+    step : float, optional
+       Step, or scale factor for transformed values in new dimension
+
+    Returns
+    -------
+    cm_plus : Affine
+       New coordinate map with appended dimension
+
+    Examples
+    --------
+    Typical use is creating a 4D coordinate map from a 3D
+
+    >>> cm3d = Affine.from_params('ijk', 'xyz', np.diag([1,2,3,1]))
+    >>> cm4d = append_io_dim(cm3d, 'l', 't', 9, 5)
+    >>> cm4d.affine
+    array([[ 1.,  0.,  0.,  0.,  0.],
+           [ 0.,  2.,  0.,  0.,  0.],
+           [ 0.,  0.,  3.,  0.,  0.],
+           [ 0.,  0.,  0.,  5.,  9.],
+           [ 0.,  0.,  0.,  0.,  1.]])
+    '''
+    aff = cm.affine
+    in_dims = list(cm.input_coords.coord_names)
+    nin = len(in_dims)
+    out_dims = list(cm.output_coords.coord_names)
+    nout = len(out_dims)
+    in_dims.append(in_name)
+    out_dims.append(out_name)
+    aff_plus = np.zeros((nout+2, nin+2))
+    aff_plus[:nout,:nin] = aff[:nout, :nin]
+    aff_plus[:nout,-1] = aff[:nout,-1]
+    aff_plus[nout,nin] = step
+    aff_plus[-1,-1] = 1
+    aff_plus[nout,-1] = start
+    return Affine.from_params(in_dims, out_dims, aff_plus)
+
+    
