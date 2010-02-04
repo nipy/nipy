@@ -74,7 +74,6 @@ def vector12(mat, subtype='affine'):
     translation, rotation, log-scale, additional rotation (to allow
     for shearing when combined with non-unitary scales). 
     """
-
     vec12 = np.zeros(12)
     vec12[0:3] = mat[0:3,3]
     A = mat[0:3,0:3]
