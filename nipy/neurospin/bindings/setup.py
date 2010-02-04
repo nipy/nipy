@@ -1,23 +1,5 @@
 import os, sys
 
-# Redefine commands.getstatusoutput for Windows systems
-if sys.platform.find('win')==0:
-    def getstatusoutput(cmd):
-        """Return (status, output) of executing cmd in a shell."""
-        if os.name in ['nt', 'dos', 'os2'] :
-            # use Dos style command shell for NT, DOS and OS/2
-            pipe = os.popen(cmd + ' 2>&1', 'r')
-        else:
-            # use Unix style for all others
-            pipe = os.popen('{ ' + cmd + '; } 2>&1', 'r')
-        text = pipe.read()
-        sts = pipe.close()
-        if sts is None: sts = 0
-        if text[-1:] == '\n': text = text[:-1]
-        return sts, text
-else:
-    from commands import getstatusoutput
-
 def configuration(parent_package='',top_path=None):
     
     from numpy.distutils.misc_util import Configuration
@@ -36,14 +18,20 @@ def configuration(parent_package='',top_path=None):
         lapack_info = get_info('lapack',0)
 
     config.add_extension('linalg', sources=['linalg.c'],
-                            libraries=['cstat'],
-                            extra_info=lapack_info)
-    config.add_extension('array', sources=['array.c'],
-                            libraries=['cstat'],
-                            extra_info=lapack_info)
+                            libraries=['cstat', 'python'+sys.version[:3]],
+                            extra_info=lapack_info,
+                            extra_link_args=['-shared'],
+                            )
+    config.add_extension('array', sources=['array.c', 'python'+sys.version[:3]],
+                            libraries=['cstat', 'python'+sys.version[:3]],
+                            extra_info=lapack_info,
+                            extra_link_args=['-shared'],
+                            )
     config.add_extension('wrapper', sources=['wrapper.c'],
-                            libraries=['cstat'],
-                            extra_info=lapack_info)
+                            libraries=['cstat', 'python'+sys.version[:3]],
+                            extra_info=lapack_info,
+                            extra_link_args=['-shared'],
+                            )
 
     return config
 
