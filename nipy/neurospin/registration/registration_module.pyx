@@ -371,7 +371,7 @@ def param_to_vector12(ndarray param, ndarray t0, ndarray precond, int stamp=AFFI
         t[_similarity2d] = param[[0,1,2,3,3]]*precond[_similarity2d]
     elif stamp == AFFINE2D:
         t[_affine2d] = param*precond[_affine2d]
-    
+
     return t
     
 
@@ -397,7 +397,7 @@ def matrix44(ndarray t, dtype):
     elif size == 7:
         T[0:3,0:3] = t[6]*R
     else:
-        S = np.diag(t[6:9]) 
+        S = np.diag(np.exp(t[6:9])) 
         Q = rotation_vec2mat(t[9:12]) 
         # Beware: R*s*Q
         T[0:3,0:3] = np.dot(R,np.dot(S,Q))

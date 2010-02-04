@@ -69,6 +69,12 @@ def rotation_mat2vec(R):
 
 
 def vector12(mat, subtype='affine'):
+    """
+    Return a 12-sized vector of natural affine parameters:
+    translation, rotation, log-scale, additional rotation (to allow
+    for shearing when combined with non-unitary scales). 
+    """
+
     vec12 = np.zeros(12)
     vec12[0:3] = mat[0:3,3]
     A = mat[0:3,0:3]
@@ -127,7 +133,7 @@ class Affine(object):
         self._precond = preconditioner(radius)
         self._subtype = affines.index(subtype)+len(affines)*(not flag2d)
         if vec12 == None: 
-            vec12 = np.array([0, 0, 0, 0, 0, 0, 1., 1., 1., 0, 0, 0])
+            vec12 = np.zeros(12)
         self._set_vec12(vec12)
 
     def __call__(self, xyz): 
@@ -175,7 +181,7 @@ class Affine(object):
     def __str__(self): 
         str  = 'translation : %s\n' % self._vec12[0:3].__str__()
         str += 'rotation    : %s\n' % self._vec12[3:6].__str__()
-        str += 'scaling     : %s\n' % self._vec12[6:9].__str__()
+        str += 'scaling     : %s\n' % (np.exp(self._vec12[6:9])).__str__()
         str += 'shearing    : %s' % self._vec12[9:12].__str__()
         return str
 
