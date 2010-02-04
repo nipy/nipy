@@ -150,7 +150,7 @@ class IconicRegistration(object):
 
     ## FIXME: check that the dimension of start is consistent with the search space. 
     def optimize(self, search='affine', method='powell', start=None, 
-                 radius=10, tol=1e-1, ftol=1e-2):
+                 radius=100, tol=1e-1, ftol=1e-2):
 
         """
         radius: a parameter for the 'typical size' in mm of the object
@@ -197,12 +197,12 @@ class IconicRegistration(object):
         return T 
 
     # Return a set of similarity
-    def explore(self, 
+    def explore(self, T0, 
                 ux=[0], uy=[0], uz=[0],
                 rx=[0], ry=[0], rz=[0], 
-                sx=[1], sy=[1], sz=[1],
+                sx=[0], sy=[0], sz=[0],
                 qx=[0], qy=[0], qz=[0]):
-
+        
         grids = np.mgrid[0:len(ux), 0:len(uy), 0:len(uz), 
                          0:len(rx), 0:len(ry), 0:len(rz), 
                          0:len(sx), 0:len(sy), 0:len(sz), 
@@ -213,7 +213,7 @@ class IconicRegistration(object):
         UY = np.asarray(uy)[grids[1,:]].ravel()
         UZ = np.asarray(uz)[grids[2,:]].ravel()
         RX = np.asarray(rx)[grids[3,:]].ravel()
-        RY = np.asarray(ry)[gprids[4,:]].ravel()
+        RY = np.asarray(ry)[grids[4,:]].ravel()
         RZ = np.asarray(rz)[grids[5,:]].ravel()
         SX = np.asarray(sx)[grids[6,:]].ravel()
         SY = np.asarray(sy)[grids[7,:]].ravel()
@@ -226,11 +226,11 @@ class IconicRegistration(object):
 
         T = Affine()
         for i in range(ntrials):
-            t = np.array([UX[i], UY[i], UZ[i],
-                          RX[i], RY[i], RZ[i],
-                          SX[i], SY[i], SZ[i],
-                          QX[i], QY[i], QZ[i]])
-            T.vec12 = t
+            t = T0.vec12 + np.array([UX[i], UY[i], UZ[i],
+                                     RX[i], RY[i], RZ[i],
+                                     SX[i], SY[i], SZ[i],
+                                     QX[i], QY[i], QZ[i]])
+            T.vec12 = t 
             simis[i] = self.eval(T)
             vec12s[:, i] = t 
 

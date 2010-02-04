@@ -103,7 +103,7 @@ def preconditioner(radius):
     distance unit implied by the translation component.
     """
     rad = 1./radius
-    sca = radius
+    sca = 1./radius
     return np.array([1,1,1,rad,rad,rad,sca,sca,sca,rad,rad,rad])
 
 
@@ -123,7 +123,7 @@ def apply_affine(T, xyz):
 
 class Affine(object): 
 
-    def __init__(self, subtype='affine', vec12=None, radius=10, flag2d=False):
+    def __init__(self, subtype='affine', vec12=None, radius=100, flag2d=False):
         self._precond = preconditioner(radius)
         self._subtype = affines.index(subtype)+len(affines)*(not flag2d)
         if vec12 == None: 
