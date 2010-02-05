@@ -34,9 +34,9 @@ def affine_register(source,
        Interpolation method.  One of 'pv': Partial volume, 'tri':
        Trilinear, 'rand': Random interpolation.  See
        ``register.iconic_matcher.py`
-    subsampling : None or sequence length 3
-       subsampling of image, where None (default) results in [1,1,1]
-       (XXX is this voxels or mm?), See ``register.iconic_matcher.py``
+    subsampling : None or sequence of integers length 3
+       subsampling of image in voxels, where None (default) results 
+       in [1,1,1], See ``register.iconic_matcher.py``
     normalize : None or ?
        Passed to ``matcher.set_similarity`` in
        ``register.iconic_matcher.py`` - used where?
