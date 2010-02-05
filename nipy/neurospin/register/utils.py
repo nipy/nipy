@@ -98,6 +98,7 @@ def subsample(source, npoints):
     dims = source.shape
     actual_npoints = (source >= 0).sum()
     subsampling = np.ones(3, dtype='uint')
+    sub_source = source 
 
     while actual_npoints > npoints:
         # Subsample the direction with the highest number of samples
