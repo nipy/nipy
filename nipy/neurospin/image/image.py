@@ -256,7 +256,7 @@ def move_image(im, transform, target=None,
     output = np.zeros(target._shape, dtype=dtype)
     ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
                              order=interp_order, cval=im._background, 
-                             output=output)
+                             output_shape=output.shape, output=output)
     return Image(output, affine=target._affine, world=im._world, 
                  background=im._background)
 
