@@ -18,11 +18,8 @@ def configuration(parent_package='',top_path=None):
     #    'nipy.core.image')
     # Robert Kern recommends setting quiet=True on the numpy list, stating
     # these messages are probably only used in debugging numpy distutils.
-
     config.get_version('nipy/version.py') # sets config.version
-
     config.add_subpackage('nipy', 'nipy')
-
     return config
 
 ################################################################################
@@ -41,28 +38,76 @@ if not 'extra_setuptools_args' in globals():
 
 
 # Dependency checks
-def package_check(pkg_name, version=None, checker=LooseVersion):
-    msg = 'Missing package: %s, you might get run-time errors' % pkg_name 
+def package_check(pkg_name, version=None,
+                  optional=False,
+                  checker=LooseVersion,
+                  version_getter=None,
+                  ):
+    ''' Check if package `pkg_name` is present, and correct version
+
+    Parameters
+    ----------
+    pkg_name : str
+       name of package as imported into python
+    version : {None, str}, optional
+       minimum version of the package that we require. If None, we don't
+       check the version.  Default is None
+    optional : {False, True}, optional
+       If False, raise error for absent package or wrong version;
+       otherwise warn
+    checker : callable, optional
+       callable with which to return comparable thing from version
+       string.  Default is ``distutils.version.LooseVersion``
+    version_getter : {None, callable}:
+       Callable that takes `pkg_name` as argument, and returns the
+       package version string - as in::
+       
+          ``version = version_getter(pkg_name)``
+
+       If None, equivalent to::
+
+          mod = __import__(pkg_name); version = mod.__version__``
+    '''
+    if version_getter is None:
+        def version_getter(pkg_name):
+            mod = __import__(pkg_name)
+            return mod.__version__
     try:
         mod = __import__(pkg_name)
     except ImportError:
-        log.warn(msg)
-        return 
+        if not optional:
+            raise RuntimeError('Cannot import package "%s" '
+                               '- is it installed?' % pkg_name)
+        log.warn('Missing optional package "%s"; '
+                 'you may get run-time errors' % pkg_name)
+        return
     if not version:
         return
-    msg += ' >= %s' % version
     try:
-        have_version = mod.__version__
+        have_version = version_getter(pkg_name)
     except AttributeError:
         raise RuntimeError('Cannot find version for %s' % pkg_name)
     if checker(have_version) < checker(version):
-        raise RuntimeError(msg)
+        v_msg = 'You have version %s of package "%s"' \
+            ' but we need version >= %s' % (
+            have_version,
+            pkg_name,
+            version,
+            )
+        if optional:
+            log.warn(v_msg + '; you may get run-time errors')
+        else:
+            raise RuntimeError(v_msg)
 
 
-# Soft dependency checking
-package_check('sympy', '0.6.4')
+# Hard and soft dependency checking
 package_check('scipy', '0.5')
-
+##package_check('sympy', '0.6.6')
+def _mayavi_version(pkg_name):
+    from enthought.mayavi import version
+    return version.version
+package_check('mayavi', '3.0', optional=True,
+              version_getter=_mayavi_version)
     
 ################################################################################
 # Import the documentation building classes. 

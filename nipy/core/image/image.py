@@ -76,7 +76,7 @@ class Image(object):
         # ii) the shapes are consistent
 
         # self._data is an array-like object.  It must implement a subset of
-        # array methods  (Need to specify these, for now implied in pyniftio)
+        # array methods  (Need to specify these)
         self._data = data
         self._coordmap = coordmap
 
@@ -151,7 +151,10 @@ def fromarray(data, innames, outnames, coordmap=None):
     ----------
     data : numpy array
         A numpy array of three dimensions.
-    names : a list of axis names
+    innames : sequence
+       a list of input axis names
+    innames : sequence
+       a list of output axis names
     coordmap : A `CoordinateMap`
         If not specified, an identity coordinate map is created.
 

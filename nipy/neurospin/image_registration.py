@@ -23,17 +23,37 @@ def affine_register(source,
     Parameters
     ----------
     source : image object 
-             Source image array 
+       Source image array 
     target : image object
-             Target image array 
-    
+       Target image array
+    similarity : str
+       Cost-function for assessing image similarity.  One of 'cc', 'cr',
+       'crl1', 'mi', je', 'ce', 'nmi', 'smi', 'custom'.  'cr'
+       (correlation ratio) is the default.  See ``routines.pyx``
+    interp : str
+       Interpolation method.  One of 'pv': Partial volume, 'tri':
+       Trilinear, 'rand': Random interpolation.  See
+       ``register.iconic_matcher.py`
+    subsampling : None or sequence length 3
+       subsampling of image, where None (default) results in [1,1,1]
+       (XXX is this voxels or mm?), See ``register.iconic_matcher.py``
+    normalize : None or ?
+       Passed to ``matcher.set_similarity`` in
+       ``register.iconic_matcher.py`` - used where?
+    search : str
+       One of 'affine', 'rigid', 'similarity'; default 'affine'
+    graduate_search : {False, True}
+       Run registration by doing first 'rigid', then 'similarity', then
+       'affine' - if True
+    optimizer : str
+       One of 'powell', 'simplex', 'conjugate_gradient'
+       
     Returns
     -------
     T : source-to-target affine transformation 
         Object that can be casted to a numpy array. 
 
     """
-    
     matcher = IconicMatcher(source.get_data(), 
                             target.get_data(), 
                             source.get_affine(),
@@ -58,7 +78,6 @@ def affine_register(source,
         T = matcher.optimize(method=optimizer, search='similarity', start=T)
     if graduate_search or search=='affine':
         T = matcher.optimize(method=optimizer, search='affine', start=T)
-    
     return T
 
 

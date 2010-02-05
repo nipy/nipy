@@ -17,7 +17,7 @@ def grid_coords(xyz, affine, from_world, to_world):
 
 
 
-class Image4d:
+class Image4d(object):
     """
     Class to represent a sequence of 3d scans acquired on a slice-by-slice basis. 
     """
@@ -97,7 +97,7 @@ class Image4d:
         return self.to_world
 
 
-class Realign4d:
+class Realign4d(object):
 
     def __init__(self, 
                  im4d, 

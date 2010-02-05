@@ -75,33 +75,30 @@ def clamp(source, th=0, mask=None, bins=256):
 
 
 def subsample(source, npoints):
-    """  
-    Tune subsampling factors so that the number of voxels in the
+    """ Tune subsampling factors so that the number of voxels >0 in the
     output block matches a given number.
     
     Parameters
     ----------
     source : ndarray or sequence  
       Source image to subsample
-    
-    npoints : number
+    npoints : int
       Target number of voxels (negative values will be ignored)
 
     Returns
     -------
     sub_source: ndarray 
       Subsampled source 
-
     subsampling: ndarray 
       Subsampling factors
-                 
-    actual_npoints: number 
+    actual_npoints: int
       Actual size of the subsampled array 
 
     """
     dims = source.shape
     actual_npoints = (source >= 0).sum()
     subsampling = np.ones(3, dtype='uint')
+    sub_source = source
 
     while actual_npoints > npoints:
         # Subsample the direction with the highest number of samples
