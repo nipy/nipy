@@ -253,9 +253,8 @@ def move_image(im, transform, target=None,
     
     # Perform image resampling 
     data = im._get_data()
-    output = np.zeros(data.shape, dtype=dtype)
+    output = np.zeros(target._shape, dtype=dtype)
     ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
-                             output_shape=target._shape,
                              order=interp_order, cval=im._background, 
                              output=output)
     return Image(output, affine=target._affine, world=im._world, 
