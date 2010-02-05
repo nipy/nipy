@@ -85,4 +85,7 @@ def test_array_coord_map():
                 [yt],
                 [2*zz+zt],
                 [1]]))
+    # that anything other than an int, slice or Ellipsis is an error
+    yield assert_raises(ValueError, acm.__getitem__, ([0,2],))
+    yield assert_raises(ValueError, acm.__getitem__, (np.array([0,2]),))
     

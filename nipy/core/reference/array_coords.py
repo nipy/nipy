@@ -17,6 +17,7 @@ from coordinate_map import CoordinateMap, Affine, compose
 from coordinate_map import product as cmap_product
 from coordinate_system import CoordinateSystem
 
+
 class ArrayCoordMap(object):
     """
     When the input_coords of a CoordinateMap can be thought of as
@@ -87,15 +88,29 @@ class ArrayCoordMap(object):
         ----------
         index : int or tuple
            int, or sequence of any combination of integers, slices.  The
-           sequence can also cantian one Ellipsis. 
+           sequence can also contain one Ellipsis. 
         """
-        # index can be single int or tuple
+        # index can be single thing or tuple of things
         if type(index) != type(()):
             index = (index,)
+        # raise error for anything other than slice, int, Ellipsis
+        have_ellipsis = False # check for >1 Ellipsis
+        for i in index:
+            if i == Ellipsis:
+                if have_ellipsis:
+                    raise ValueError(
+                        "only one Ellipsis (...) allowed in slice")
+                have_ellipsis = True
+                continue
+            try:
+                int(i)
+            except TypeError:
+                if hasattr(i, 'start'): # probably slice
+                    continue
+                raise ValueError('Expecting int, slice or Ellipsis '
+                                 '(we do not support fancy indexing')
         # allow slicing of form [...,1]
-        if Ellipsis in index:  
-            if sum([i == Ellipsis for i in index]) > 1:
-                raise ValueError("only one Ellipsis (...) allowed in slice")
+        if have_ellipsis:  
             # convert ellipsis to series of slice(None) objects.  For
             # example, if the coordmap is length 3, we convert (...,1)
             # to (slice(None), slice(None), 1) - equivalent to [:,:,1]
