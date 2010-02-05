@@ -20,7 +20,7 @@ def configuration(parent_package='',top_path=None):
     config.add_extension(
                 '_clustering',
                 sources=['clustering.c'],
-                libraries=['cstat', , 'python'+sys.version[:3]],
+                libraries=['cstat', 'python'+sys.version[:3]],
                 extra_info=lapack_info,
                 extra_link_args=['-shared'],
                 )
