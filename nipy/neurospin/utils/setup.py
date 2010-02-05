@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import sys
 def configuration(parent_package='',top_path=None):
     
     from numpy.distutils.misc_util import Configuration
@@ -17,8 +17,9 @@ def configuration(parent_package='',top_path=None):
     config.add_extension(
                 'routines',
                 sources=['routines.c'],
-                libraries=['cstat'],
+                libraries=['cstat', 'python'+sys.version[:3]],
                 extra_info=lapack_info,
+                extra_link_args=['-shared'],
                 )
 
     return config
