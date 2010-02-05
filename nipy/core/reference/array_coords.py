@@ -80,22 +80,26 @@ class ArrayCoordMap(object):
         return self._evaluate(transpose=True)
     transposed_values = property(_getindices_values, doc='Get values of ArrayCoordMap in an array of shape (self.coordmap.ndim[1],) + self.shape)')
 
-    def __getitem__(self, index):
+    def __getitem__(self, slicers):
         """
         Return a slice through the coordmap.
 
         Parameters
         ----------
-        index : int or tuple
+        slicers : int or tuple
            int, or sequence of any combination of integers, slices.  The
            sequence can also contain one Ellipsis. 
         """
-        # index can be single thing or tuple of things
-        if type(index) != type(()):
-            index = (index,)
+        print 'here', slicers
+        # slicers might just be just one thing, so convert to tuple
+        if type(slicers) != type(()):
+            slicers = (slicers,)
         # raise error for anything other than slice, int, Ellipsis
         have_ellipsis = False # check for >1 Ellipsis
-        for i in index:
+        for i in slicers:
+            if isinstance(i, np.ndarray):
+                raise ValueError('Sorry, we do not support '
+                                 'ndarrays (fancy indexing)')
             if i == Ellipsis:
                 if have_ellipsis:
                     raise ValueError(
@@ -107,21 +111,20 @@ class ArrayCoordMap(object):
             except TypeError:
                 if hasattr(i, 'start'): # probably slice
                     continue
-                raise ValueError('Expecting int, slice or Ellipsis '
-                                 '(we do not support fancy indexing')
+                raise ValueError('Expecting int, slice or Ellipsis')
         # allow slicing of form [...,1]
-        if have_ellipsis:  
+        if have_ellipsis:
             # convert ellipsis to series of slice(None) objects.  For
             # example, if the coordmap is length 3, we convert (...,1)
             # to (slice(None), slice(None), 1) - equivalent to [:,:,1]
-            ellipsis_start = list(index).index(Ellipsis)
-            inds_after_ellipsis = index[(ellipsis_start+1):]
+            ellipsis_start = list(slicers).index(Ellipsis)
+            inds_after_ellipsis = slicers[(ellipsis_start+1):]
             # the ellipsis continues until any remaining slice specification
             n_ellipses = len(self.shape) - ellipsis_start - len(inds_after_ellipsis)
-            index = (index[:ellipsis_start]
+            slicers = (slicers[:ellipsis_start]
                      + n_ellipses * (slice(None),)
                      + inds_after_ellipsis)
-        return _slice(self.coordmap, self.shape, *index)
+        return _slice(self.coordmap, self.shape, *slicers)
 
     @staticmethod
     def from_shape(coordmap, shape):

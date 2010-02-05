@@ -151,7 +151,10 @@ def fromarray(data, innames, outnames, coordmap=None):
     ----------
     data : numpy array
         A numpy array of three dimensions.
-    names : a list of axis names
+    innames : sequence
+       a list of input axis names
+    innames : sequence
+       a list of output axis names
     coordmap : A `CoordinateMap`
         If not specified, an identity coordinate map is created.
 
