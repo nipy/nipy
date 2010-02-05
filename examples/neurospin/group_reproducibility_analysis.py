@@ -21,7 +21,7 @@ dimy = 60
 pos = 2*np.array([[ 6,  7],
                   [10, 10],
                   [15, 10]])
-ampli = np.array([5, 7, 6])
+ampli = 0.5*np.array([5, 7, 6])
 dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                      pos=pos, ampli=ampli, width=5.0)
 betas = np.reshape(dataset, (nsubj, dimx, dimy))
@@ -42,15 +42,17 @@ csize = 10
 niter = 10
 method = 'crfx'
 verbose = 0
-swap = False
+swap = True
 
  
 kap = []
 clt = []
+sens = []
 for threshold in thresholds:
     kwargs={'threshold':threshold,'csize':csize}
     kappa = []
     cls = []
+    sent = []
     for i in range(niter):
         k = voxel_reproducibility(func, var, xyz, ngroups,
                                   method, swap, verbose, **kwargs)
@@ -58,29 +60,38 @@ for threshold in thresholds:
         cld = cluster_reproducibility(func, var, xyz, ngroups, coord, sigma,
                                       method, swap, verbose, **kwargs)
         cls.append(cld)
-        
+        seni = map_reproducibility(func, var, xyz, ngroups,
+                           method, True, verbose, threshold=threshold,
+                           csize=csize).mean()/ngroups
+        sent.append(seni)
+    sens.append(np.array(sent))
     kap.append(np.array(kappa))
     clt.append(np.array(cls))
     
 ################################################################################
 # Visualize the results
+import scipy.stats as st
+aux = st.norm.sf(np.array(thresholds))#,nsubj/ngroups)
 
 import matplotlib.pylab as mp
-mp.figure()
+a = mp.figure()
 mp.subplot(1,2,1)
 mp.boxplot(kap)
-mp.title('voxel-level reproducibility')
+mp.boxplot(sens)
+# mp.plot(aux)
+mp.title('voxel-level reproducibility', fontsize=12)
 mp.xticks(range(1,1+len(thresholds)),thresholds)
 mp.xlabel('threshold')
 mp.subplot(1,2,2)
 mp.boxplot(clt)
-mp.title('cluster-level reproducibility')
+mp.title('cluster-level reproducibility', fontsize=12)
 mp.xticks(range(1,1+len(thresholds)),thresholds)
 mp.xlabel('threshold')
+a.set_figwidth(10.)
 
 
 mp.figure()
-q = 1 
+q = 1
 for threshold in thresholds:
     mp.subplot(3, len(thresholds)/3, q)
     rmap = map_reproducibility(func, var, xyz, ngroups,
@@ -88,9 +99,11 @@ for threshold in thresholds:
                            csize=csize)
     rmap = np.reshape(rmap, (dimx, dimy))
     mp.imshow(rmap, interpolation=None, vmin=0, vmax=ngroups)
-    mp.title('threshold: %f' % threshold)
+    mp.title('threshold: %f' % threshold, fontsize=10)
+    mp.axis('off')
     q +=1
+
 mp.suptitle('Map reproducibility for different thresholds') 
-mp.colorbar()
-mp.show()
+#mp.colorbar()
+#mp.show()
 
