@@ -62,8 +62,8 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
         header = dict(obj.get_header())
         if obj._files:
             header['filename'] = obj._files['image']
-    elif hasattr(obj, 'data') and hasattr('sform') and \
-                                                hasattr('getVolumeExtent'):
+    elif hasattr(obj, 'data') and hasattr(obj, 'sform') and \
+                                            hasattr(obj, 'getVolumeExtent'):
         # Duck-types to a pynifti object
         data     = obj.data.T
         affine   = obj.sform
