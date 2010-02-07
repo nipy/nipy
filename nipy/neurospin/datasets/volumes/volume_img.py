@@ -148,6 +148,9 @@ class VolumeImg(VolumeGrid):
         if affine is None:
             affine = self.affine
         data = self.get_data()
+        if shape is None:
+            shape = data.shape[:3]
+        shape = list(shape)
         if affine.shape[0] == 3:
             # We have a 3D affine, we need to find out the offset and
             # shape to keep the same bounding box in the new space
@@ -156,7 +159,6 @@ class VolumeImg(VolumeGrid):
             transform_affine = np.dot(np.linalg.inv(affine4d),
                                         self.affine, 
                                      )
-            #transform_affine = self.affine
             # The bounding box in the new world, if no offset is given
             (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
                                                         data.shape[:3], 
@@ -169,9 +171,6 @@ class VolumeImg(VolumeGrid):
             shape = (np.ceil(xmax - xmin)+1,
                      np.ceil(ymax - ymin)+1,
                      np.ceil(zmax - zmin)+1, )
-        if shape is None:
-            shape = data.shape[:3]
-        shape = list(shape)
         if not len(shape) == 3:
             raise ValueError('The shape specified should be the shape '
                 'the 3D grid, and thus of length 3. %s was specified'

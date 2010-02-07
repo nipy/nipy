@@ -74,7 +74,8 @@ def test_downsample():
 def test_resampling_with_affine():
     """ Test resampling with a given rotation part of the affine.
     """
-    data = np.random.randint(4, size=(1, 4, 4))
+    prng = np.random.RandomState(10)
+    data = prng.randint(4, size=(1, 4, 4))
     img = VolumeImg(data, np.eye(4), 'mine', interpolation='nearest')
     for angle in (0, np.pi, np.pi/2, np.pi/4, np.pi/3):
         rot = rotation(0, angle)
