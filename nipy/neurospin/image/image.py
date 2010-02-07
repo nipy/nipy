@@ -200,13 +200,20 @@ class Image(object):
 """
 Util functions
 """
-def load_image(fname): 
-    im = brifti.load(fname)
+def from_brifti(im): 
     return Image(im.get_data(), im.get_affine())
+
+def to_brifti(Im): 
+    return brifti.Nifti1Image(Im.data, Im.affine)
+
+"""
+def load_image(fname): 
+    return from_brifti(brifti.load(fname))
 
 def save_image(Im, fname):
     im = brifti.Nifti1Image(Im.data, Im.affine)
     brifti.save(im, fname)
+"""
 
 def mask_image(im, mask, background=None): 
     """
@@ -217,7 +224,6 @@ def mask_image(im, mask, background=None):
         background = im._background
     return Image(im._get_data()[mask], im._affine, world=im._world,
                  mask=mask, shape=im._shape, background=background)
-
 
 def set_image(im, values): 
     """
@@ -244,8 +250,8 @@ def set_image(im, values):
         
 
 
-def move_image(im, transform, target=None, 
-               dtype=None, interp_order=_interp_order):
+def transform_image(im, transform, target=None, 
+                    dtype=None, interp_order=_interp_order):
     """
     Apply a spatial transformation to bring the image into the
     same grid as the specified target image. 

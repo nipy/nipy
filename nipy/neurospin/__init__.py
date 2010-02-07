@@ -17,6 +17,8 @@ from numpy.testing import Tester
 import image_registration
 import statistical_mapping
 
+from registration import register, transform 
+
 """
 import bindings
 import glm
