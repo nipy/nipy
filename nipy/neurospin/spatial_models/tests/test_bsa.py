@@ -6,11 +6,16 @@ Author : Bertrand Thirion, 2009
 #autoindent
 
 import numpy as np
+
 import scipy.stats as st
+
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.spatial_models.structural_bfls as sbf
+
+from nipy.testing import assert_true, dec
+
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
                         nbeta=[0],method='simple'):
@@ -60,186 +65,53 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     return AF, BF
 
 
-    
-def test_bsa_null_simple():
+@dec.slow    
+def test_bsa_methods():
     # generate the data
     nbsubj=10
-    
     dimx=60
     dimy=60
     pos = 2*np.array([[ 6,  7],
                       [10, 10],
                       [15, 10]])
-    ampli = np.array([0, 0, 0])
-    sjitter = 1.0
-    dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
-                                         pos=pos, ampli=ampli, width=5.0, seed=1)
-    betas = np.reshape(dataset, (nbsubj, dimx, dimy))
-    
+    # make a dataset with a nothing feature
+    null_ampli = np.array([0, 0, 0])
+    null_dataset = simul.make_surrogate_array(nbsubj=nbsubj,
+                                              dimx=dimx,
+                                              dimy=dimy, 
+                                              pos=pos,
+                                              ampli=null_ampli,
+                                              width=5.0,
+                                              seed=1)
+    null_betas = np.reshape(null_dataset, (nbsubj, dimx, dimy))
+    # make a dataset with a something feature
+    pos_ampli = np.array([5, 7, 6])
+    pos_dataset = simul.make_surrogate_array(nbsubj=nbsubj,
+                                              dimx=dimx,
+                                              dimy=dimy, 
+                                              pos=pos,
+                                              ampli=pos_ampli,
+                                              width=5.0,
+                                              seed=2)
+    pos_betas = np.reshape(pos_dataset, (nbsubj, dimx, dimy))
     # set various parameters
     theta = float(st.t.isf(0.01, 100))
     dmax = 5./1.5
-    ths = nbsubj/2
+    half_subjs = nbsubj/2
     thq = 0.9
-    verbose = 1
     smin = 5
+    # tuple of tuples with each tuple being
+    # (name_of_method, ths_value, data_set, test_function)
+    algs_tests = (('simple', half_subjs, null_betas, lambda AF, BF: AF == None),
+                  ('dev', half_subjs, null_betas, lambda AF, BF: AF == None),
+                  ('ipmi', half_subjs, null_betas, lambda AF, BF: AF == None),
+                  ('simple', 1, pos_betas, lambda AF, BF: AF.k>1),
+                  ('dev', 1, pos_betas, lambda AF, BF: AF.k>1),
+                  ('ipmi', 1, pos_betas, lambda AF, BF: AF.k>1),
+                  )
+    for name, ths, betas, test_func in algs_tests:
+        # run the algo
+        AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method = name)
+        yield assert_true, test_func(AF, BF)
+        
 
-    # run the algo
-    AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method='simple')
-
-    #make sure that nothing is detected
-    assert(AF==None)
-
-def test_bsa_null_dev():
-    # generate the data
-    nbsubj=10
-    
-    dimx=60
-    dimy=60
-    pos = 2*np.array([[ 6,  7],
-                      [10, 10],
-                      [15, 10]])
-    ampli = np.array([0, 0, 0])
-    sjitter = 1.0
-    dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
-                                         pos=pos, ampli=ampli, width=5.0, seed=1)
-    betas = np.reshape(dataset, (nbsubj, dimx, dimy))
-    
-    # set various parameters
-    theta = float(st.t.isf(0.01, 100))
-    dmax = 5./1.5
-    ths = nbsubj/2
-    thq = 0.9
-    verbose = 1
-    smin = 5
-
-    # run the algo
-    AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method='dev')
-
-    #make sure that nothing is detected
-    assert(AF==None)
-
-def test_bsa_null_ipmi():
-    # generate a null dataset
-    nbsubj=10
-    
-    dimx=60
-    dimy=60
-    pos = 2*np.array([[ 6,  7],
-                      [10, 10],
-                      [15, 10]])
-    ampli = np.array([0, 0, 0])
-    sjitter = 1.0
-    dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
-                                         pos=pos, ampli=ampli, width=5.0, seed=1)
-    betas = np.reshape(dataset, (nbsubj, dimx, dimy))
-    
-    # set various parameters
-    theta = float(st.t.isf(0.01, 100))
-    dmax = 5./1.5
-    ths = nbsubj/2
-    thq = 0.9
-    verbose = 1
-    smin = 5
-
-    # run the algo
-    AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method='ipmi')
-
-    #make sure that nothing is detected
-    assert(AF==None)
-
-def test_bsa_simple():
-    # generate the data
-    nbsubj=10
-    
-    dimx=60
-    dimy=60
-    pos = 2*np.array([[ 6,  7],
-                      [10, 10],
-                      [15, 10]])
-    ampli = np.array([5, 7, 6])
-    sjitter = 1.0
-    dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
-                                         pos=pos, ampli=ampli, width=5.0,
-                                         seed=1)
-    betas = np.reshape(dataset, (nbsubj, dimx, dimy))
-    
-    # set various parameters
-    theta = float(st.t.isf(0.01, 100))
-    dmax = 5./1.5
-    ths = 1
-    thq = 0.9
-    verbose = 1
-    smin = 5
-
-    # run the algo
-    AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin)
-
-    #make sure that at least 1 spot is detected
-    assert(AF.k>1)
-
-def test_bsa_dev():
-    # generate the data
-    nbsubj=10
-    
-    dimx=60
-    dimy=60
-    pos = 2*np.array([[ 6,  7],
-                      [10, 10],
-                      [15, 10]])
-    ampli = np.array([5, 7, 6])
-    sjitter = 1.0
-    dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
-                                         pos=pos, ampli=ampli, width=5.0,
-                                         seed=1)
-    betas = np.reshape(dataset, (nbsubj, dimx, dimy))
-    
-    # set various parameters
-    theta = float(st.t.isf(0.01, 100))
-    dmax = 5./1.5
-    ths = 1
-    thq = 0.9
-    verbose = 1
-    smin = 5
-
-    # run the algo
-    AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method='dev')
-
-    #make sure that at least 1 spot is detected
-    assert(AF.k>1)
-
-def test_bsa_ipmi():
-    # generate the data
-    nbsubj=10
-    
-    dimx=60
-    dimy=60
-    pos = 2*np.array([[ 6,  7],
-                      [10, 10],
-                      [15, 10]])
-    ampli = np.array([5, 7, 6])
-    sjitter = 1.0
-    dataset = simul.make_surrogate_array(nbsubj=nbsubj, dimx=dimx, dimy=dimy, 
-                                         pos=pos, ampli=ampli, width=5.0,
-                                         seed=1)
-    betas = np.reshape(dataset, (nbsubj, dimx, dimy))
-    
-    # set various parameters
-    theta = float(st.t.isf(0.01, 100))
-    dmax = 5./1.5
-    ths = 1
-    thq = 0.9
-    verbose = 1
-    smin = 5
-
-    # run the algo
-    AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin,method='ipmi')
-
-    #make sure that  at least 1 spot is detected
-    assert(AF.k>1)
-
-
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

@@ -14,7 +14,7 @@ import os, fpformat
 
 import numpy as np
 import numpy.linalg as L
-from nipy.fixes.scipy.stats.models.utils import recipr, recipr0
+from nipy.fixes.scipy.stats.models.utils import pos_recipr, recipr0
 # FIXME: This is broken. Don't know how to fix it
 #from nipy.fixes.scipy.stats.models.contrast import Contrast, ContrastResults
 
@@ -186,7 +186,7 @@ class DelayContrast(Contrast):
         
         for i in range(nrow):
             self.T0sq[i] = (self.gamma0[i]**2 *
-                            recipr(results.cov_beta(matrix=self.effectmatrix[i])))
+                            pos_recipr(results.cov_beta(matrix=self.effectmatrix[i])))
 
         self.r = self.gamma1 * recipr0(self.gamma0)
         self.rC = self.r * self.T0sq / (1. + self.T0sq)
@@ -202,9 +202,9 @@ class DelayContrast(Contrast):
 
         nrow = self.gamma0.shape[0]
         for i in range(nrow):
-            self.T1[i] = self.gamma1[i] * recipr(np.sqrt(results.cov_beta(matrix=self.deltamatrix[i])))
+            self.T1[i] = self.gamma1[i] * pos_recipr(np.sqrt(results.cov_beta(matrix=self.deltamatrix[i])))
 
-        a1 = 1 + 1. * recipr(self.T0sq)
+        a1 = 1 + 1. * pos_recipr(self.T0sq)
 
         gdot = np.array(([(self.r * (a1 - 2.) *
                           recipr0(self.gamma0 * a1**2)),
@@ -244,7 +244,7 @@ class DelayContrast(Contrast):
             self._sd[r] = np.sqrt(var)                
 
     def _extract_t(self):
-        t = self._effect * recipr(self._sd)        
+        t = self._effect * pos_recipr(self._sd)        
         t = np.clip(t, self.Tmin, self.Tmax)
         return t
 
