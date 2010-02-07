@@ -88,7 +88,7 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('scripts')
     config.add_subpackage('spatial_models')
     config.add_subpackage('utils')
-    config.add_subpackage('viz')
+    config.add_subpackage('viz_tools')
     config.add_subpackage('datasets')
 
     config.make_config_py() # installs __config__.py

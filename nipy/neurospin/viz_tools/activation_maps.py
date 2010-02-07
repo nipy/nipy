@@ -34,7 +34,6 @@ from .coord_tools import coord_transform, find_activation, \
 
 from .ortho_slicer import OrthoSlicer
 
-from . import cm
 
 ################################################################################
 # Helper functions for 2D plotting of activation maps 
@@ -47,9 +46,10 @@ def _xyz_order(map, affine):
     return map, affine
 
 
-def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
+def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
                     figure=None, axes=None, title=None,
-                    annotate=True, draw_cross=True, **kwargs):
+                    annotate=True, draw_cross=True, 
+                    do3d=False, **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
 
         Parameters
@@ -84,6 +84,9 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
         draw_cross: boolean, optional
             If draw_cross is True, a cross is drawn on the plot to
             indicate the cut plosition.
+        do3d: boolean, optional
+            If True, Mayavi is used to plot a 3D view of the
+            map in addition to the slicing.
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
 
@@ -99,12 +102,7 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
             plot_map(map, affine)
     """
     map, affine = _xyz_order(map, affine)
-    if anat is None:
-        try:
-            anat, anat_affine, vmax_anat = _AnatCache.get_anat()
-        except OSError, e:
-            anat = False
-            warnings.warn(repr(e))
+    
     if not isinstance(figure, Figure):
         fig = pl.figure(figure, figsize=(6.6, 2.6), facecolor='w')
     else:
@@ -112,6 +110,31 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
         if isinstance(axes, Axes):
             assert axes.figure is figure, ("The axes passed are not "
             "in the figure")
+
+    if do3d:
+        try:
+            from enthought.mayavi import version
+            if not int(version.version[0]) > 2:
+                raise ImportError
+            from .maps_3d import plot_map_3d, m2screenshot
+
+            plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
+                        anat=anat, anat_affine=anat_affine, 
+                        offscreen=True, **kwargs)
+
+            ax = fig.add_axes((0.001, 0, 0.29, 1))
+            ax.axis('off')
+            m2screenshot(mpl_axes=ax)
+            axes = (0.3, 0, .7, 1.)
+        except ImportError:
+            warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
+
+    if anat is None:
+        try:
+            anat, anat_affine, vmax_anat = _AnatCache.get_anat()
+        except OSError, e:
+            anat = False
+            warnings.warn(repr(e))
     if axes is None:
         axes = [0., 0., 1., 1.]
     if operator.isSequenceType(axes):
@@ -137,7 +160,9 @@ def plot_map_2d(map, affine, cut_coords, anat=None, anat_affine=None,
     return ortho_slicer
 
 
-def demo_plot_map_2d():
+def demo_plot_map(do3d=False):
+    """ Demo activation map plotting.
+    """
     map = np.zeros((182, 218, 182))
     # Color a asymetric rectangle around Broca area:
     x, y, z = -52, 10, 22
@@ -149,89 +174,9 @@ def demo_plot_map_2d():
     assert z_map +1 == 95
     map[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     map = np.ma.masked_less(map, 0.5)
-    return plot_map_2d(map, mni_sform, cut_coords=(x, y, z),
-                        title="Broca's area", figure=512)
-
-
-def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
-    figure=None, title=None, **kwargs):
-    """ Plot a together a 3D volume rendering view of the activation, with an
-        outline of the brain, and 2D cuts. If Mayavi is not installed,
-        falls back to 2D views only.
-
-        Parameters
-        ----------
-        map : 3D ndarray
-            The activation map, as a 3D image.
-        affine : 4x4 ndarray
-            The affine matrix going from image voxel space to MNI space.
-        cut_coords: 3-tuple of floats, optional
-            The MNI coordinates of the cut to perform, in MNI coordinates 
-            and order. If None is given, the cut_coords are automaticaly
-            estimated.
-        anat : 3D ndarray, optional
-            The anatomical image to be used as a background. If None, the 
-            MNI152 T1 1mm template is used.
-        anat_affine : 4x4 ndarray, optional
-            The affine matrix going from the anatomical image voxel space to 
-            MNI space. This parameter is not used when the default 
-            anatomical is used, but it is compulsory when using an
-            explicite anatomical image.
-        figure : integer or matplotlib figure, optional
-            Matplotlib figure used or its number. If None is given, a
-            new figure is created.
-        title : string, optional
-            The title dispayed on the figure.
-
-        Notes
-        -----
-        Arrays should be passed in numpy convention: (x, y, z)
-        ordered.
-
-        Use masked arrays to create transparency::
-
-            import numpy as np
-            map = np.ma.masked_less(map, 0.5)
-            plot_map(map, affine)
-    """
-    try:
-        from enthought.mayavi import version
-        if not int(version.version[0]) > 2:
-            raise ImportError
-    except ImportError:
-        warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
-        return plot_map_2d(map, affine, cut_coords=cut_coords, anat=anat,
-                           anat_affine=anat_affine, 
-                           figure=figure, 
-                           title=title, **kwargs)
-
-
-    from .maps_3d import plot_map_3d, m2screenshot
-    if not isinstance(figure, Figure):
-        figure = pl.figure(figure, figsize=(10.6, 2.6), facecolor='w')
-
-    plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, anat=anat,
-                anat_affine=anat_affine, offscreen=True, **kwargs)
-
-    ax = figure.add_axes((0.001, 0, 0.29, 1))
-    ax.axis('off')
-    m2screenshot(mpl_axes=ax)
-
-    return plot_map_2d(map, affine, cut_coords=cut_coords, anat=anat,
-                        anat_affine=anat_affine, 
-                        figure=figure, axes=(0.3, 0, .7, 1.),
-                        title=title, **kwargs)
-
-
-def demo_plot_map():
-    map = np.zeros((182, 218, 182))
-    # Color a asymetric rectangle around Broca area:
-    x, y, z = -52, 10, 22
-    x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
-    map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
-    map = np.ma.masked_less(map, 0.5)
     return plot_map(map, mni_sform, cut_coords=(x, y, z),
-                            title="Broca's area")
+                        title="Broca's area", figure=512, do3d=do3d)
+
 
 
 def auto_plot_map(map, affine, threshold=None, cut_coords=None, do3d=False, 
@@ -298,16 +243,6 @@ def auto_plot_map(map, affine, threshold=None, cut_coords=None, do3d=False,
             plot_map(map, affine)
 
     """
-    if do3d:
-        if do3d == 'offscreen':
-            try:
-                from enthought.mayavi import mlab
-                mlab.options.offscreen = True
-            except:
-                pass
-        plotter = plot_map
-    else:
-        plotter = plot_map_2d
     if mask is None:
         mask = compute_mask(map)
     else:
@@ -330,7 +265,7 @@ def auto_plot_map(map, affine, threshold=None, cut_coords=None, do3d=False,
                                 activation_threshold=threshold)
         cut_coords = coord_transform(x_map, y_map, z_map, affine)
     map = np.ma.masked_less(map, threshold)
-    plotter(map, affine, cut_coords=cut_coords,
+    plot_map(map, affine, cut_coords=cut_coords, do3d=do3d,
                 anat=anat, anat_affine=anat_affine, title=title,
                 figure_num=figure_num)
     return threshold, cut_coords
