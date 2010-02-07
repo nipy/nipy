@@ -76,7 +76,7 @@ and position the cut at the center of the bar.
 
 .. currentmodule:: nipy.neurospin.viz_tools.maps_3d
 
-The module :mod:`nipy.neurospin.viz_tools.maps_3d` can be used as helpers to
+The module :mod:`nipy.neurospin.viz3d` can be used as helpers to
 represent neuroimaging volumes with Mayavi2_. 
 
 .. autosummary::
