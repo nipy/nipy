@@ -8,7 +8,7 @@ from registration_module import _joint_histogram, _similarity, builtin_similarit
 from affine import Affine
 
 import numpy as np  
-from scipy import optimize 
+from scipy.optimize import fmin, fmin_powell, fmin_cg
 from sys import maxint
 
 # Globals
@@ -182,13 +182,13 @@ class IconicRegistration(object):
 
         if method=='simplex':
             print ('Optimizing using the simplex method...')
-            tc = optimize.fmin(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
+            tc = fmin(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
         elif method=='powell':
             print ('Optimizing using Powell method...') 
-            tc = optimize.fmin_powell(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
+            tc = fmin_powell(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
         elif method=='conjugate_gradient':
             print ('Optimizing using conjugate gradient descent...')
-            tc = optimize.fmin_cg(loss, tc0, callback=callback, gtol=ftol)
+            tc = fmin_cg(loss, tc0, callback=callback, gtol=ftol)
         else:
             raise ValueError('Unrecognized optimizer')
         

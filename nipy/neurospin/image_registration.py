@@ -1,7 +1,5 @@
 import numpy as np
 
-from nipy.neurospin.register.iconic_matcher import IconicMatcher
-from nipy.neurospin.register.routines import cspline_resample
 from nipy.neurospin.register.realign4d import Image4d, realign4d, _resample4d
 
 # Use the brifti image object
