@@ -71,20 +71,15 @@ def test_downsample():
                                    rot_im.get_data()[:x, :y, :z, ...])
 
 
-def skip_est_resampling_with_affine():
+def test_resampling_with_affine():
     """ Test resampling with a given rotation part of the affine.
     """
-    data = np.random.random((1, 4, 4))
-    img = VolumeImg(data, np.eye(4), 'mine')
+    data = np.random.randint(4, size=(1, 4, 4))
+    img = VolumeImg(data, np.eye(4), 'mine', interpolation='nearest')
     for angle in (0, np.pi, np.pi/2, np.pi/4, np.pi/3):
         rot = rotation(0, angle)
         rot_im = img.as_volume_img(affine=rot)
-        import sys
-        print >>sys.stderr, angle
-        print >>sys.stderr, rot_im
-        print >>sys.stderr, 80*'_'
         yield np.testing.assert_almost_equal, np.max(data), np.max(rot_im.get_data())
-
 
 
 def test_reordering():

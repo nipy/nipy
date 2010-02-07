@@ -105,10 +105,13 @@ def from_matrix_vector(matrix, vector):
     return t
 
 
-def get_bounds(shape, affine):
+def get_bounds(shape, affine, return_pos=False):
     """ Return the world-space bounds occupied by an array given an affine.
     """
     adim, bdim, cdim = shape
+    adim -= 1
+    bdim -= 1
+    cdim -= 1
     # form a collection of vectors for each 8 corners of the box
     box = np.array([ [0.,   0,    0,    1],
                      [adim, 0,    0,    1],
@@ -119,6 +122,9 @@ def get_bounds(shape, affine):
                      [0,    bdim, cdim, 1],
                      [adim, bdim, cdim, 1] ]).T
     box = np.dot(affine, box)[:3]
+    if return_pos:
+        return zip(box.min(axis=-1), box.max(axis=-1)), \
+                    zip(box.argmin(axis=-1), box.argmax(axis=-1))
     return zip(box.min(axis=-1), box.max(axis=-1))
 
 

@@ -149,21 +149,26 @@ class VolumeImg(VolumeGrid):
             affine = self.affine
         data = self.get_data()
         if affine.shape[0] == 3:
+            # We have a 3D affine, we need to find out the offset and
+            # shape to keep the same bounding box in the new space
             affine4d = np.eye(4)
             affine4d[:3, :3] = affine
-            transform_affine = np.dot(np.linalg.inv(affine4d), 
-                                      self.affine,
+            transform_affine = np.dot(np.linalg.inv(affine4d),
+                                        self.affine, 
                                      )
+            #transform_affine = self.affine
+            # The bounding box in the new world, if no offset is given
             (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
-                                                            data.shape[:3], 
-                                                            transform_affine
+                                                        data.shape[:3], 
+                                                        transform_affine,
                                                         )
-            offset = np.array((xmin, ymin, zmin, 1))
-            #offset = np.dot(affine4d, offset)
+
+            offset = np.array((xmin, ymin, zmin))
+            offset = np.dot(affine, offset)
             affine = from_matrix_vector(affine, offset[:3])
-            shape = (np.ceil(xmax - xmin),
-                     np.ceil(ymax - ymin),
-                     np.ceil(zmax - zmin), )
+            shape = (np.ceil(xmax - xmin)+1,
+                     np.ceil(ymax - ymin)+1,
+                     np.ceil(zmax - zmin)+1, )
         if shape is None:
             shape = data.shape[:3]
         shape = list(shape)
@@ -183,6 +188,9 @@ class VolumeImg(VolumeGrid):
         # to use a better algorithm
         if np.all(np.diag(np.diag(A)) == A):
             A = np.diag(A)
+            b = np.dot(A_inv, b)
+        else:
+            b = np.dot(A, b)
         # For images with dimensions larger than 3D:
         data_shape = list(data.shape)
         if len(data_shape) > 3:
@@ -192,12 +200,10 @@ class VolumeImg(VolumeGrid):
             data = np.reshape(data, data_shape[:3] + [-1])
             data = np.rollaxis(data, 3)
             resampled_data = [ ndimage.affine_transform(slice, A,
-                                                offset=np.dot(A_inv, b),
+                                                offset=b,
                                                 output_shape=shape,
                                                 order=interpolation_order)
                                 for slice in data]
-            #resampled_data = np.array(resampled_data)
-            #resampled_data = np.swapaxes(resampled_data, 0, -1)
             resampled_data = np.concatenate([d[..., np.newaxis]
                                              for d in resampled_data], 
                                             axis=3)

@@ -168,7 +168,8 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
         outline = mlab.pipeline.iso_surface(
                             anat_blurred,
                             contours=[0.4],
-                            color=outline_color)
+                            color=outline_color, 
+                            opacity=.9)
         outline.actor.property.backface_culling = True
 
 
