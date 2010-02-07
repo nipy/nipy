@@ -3,7 +3,7 @@ Intensity-based matching.
 
 Questions: alexis.roche@gmail.com
 """
-from nipy.neurospin.image import Image, set_image, transform_image, from_brifti, to_brifti
+from nipy.neurospin.image import Image, set_image
 from registration_module import _joint_histogram, _similarity, builtin_similarities
 from affine import Affine
 
@@ -14,20 +14,6 @@ from sys import maxint
 # Globals
 _clamp_dtype = 'short'
 
-
-"""
-Input is an object that has at least an 'array'
-field and either a 'transform' or a 'voxsize' field. 
-
-array: numpy array (ndim should be at most 3)
-mask: numpy array (binary)
-nbins: int, nb of histogram bins
-transform: (4,4) numpy array, voxel to real spatial transformation
-
-TODO: type checking. implement proper masking.
-
-For the time being, any transformation is assumed to be a 4x4 matrix. 
-"""
 
 # Dictionary of interpolation methods
 # pv: Partial volume 
@@ -81,7 +67,7 @@ class IconicRegistration(object):
     interp = property(_get_interp, _set_interp)
         
     def set_source_fov(self, spacing=[1,1,1], corner=[0,0,0], shape=None, 
-                          fixed_npoints=None):
+                       fixed_npoints=None):
         
         if shape == None:
             shape = self._source_image.shape
@@ -328,79 +314,5 @@ def subsample(data, npoints):
         actual_npoints = (subdata >= 0).sum()
             
     return spacing
-
-
-"""
-Public function 
-"""
-def register(source, 
-             target, 
-             similarity='cr',
-             interp='pv',
-             subsampling=None,
-             normalize=None, 
-             search='affine',
-             graduate_search=False,
-             optimizer='powell'):
-    
-    """
-    Three-dimensional affine image registration. 
-    
-    Parameters
-    ----------
-    source : brifti-like image object 
-       Source image 
-    target : brifti-like image 
-       Target image array
-    similarity : str or callable
-       Cost-function for assessing image similarity.  If a string, one
-       of 'cc', 'cr', 'crl1', 'mi', je', 'ce', 'nmi', 'smi'.  'cr'
-       (correlation ratio) is the default. If a callable, it should
-       take a two-dimensional array representing the image joint
-       histogram as an input and return a float. See
-       ``registration_module.pyx``
-    interp : str
-       Interpolation method.  One of 'pv': Partial volume, 'tri':
-       Trilinear, 'rand': Random interpolation.  See
-       ``iconic.c``
-    subsampling : None or sequence length 3
-       subsampling of image in voxels, where None (default) results 
-       in the subsampling to be automatically adjusted to roughly match
-       a cubic grid of 64**3 voxels
-    search : str or sequence 
-       If a string, one of 'affine', 'rigid', 'similarity'; default 'affine'
-       A sequence of strings can be provided to run a graduate search, e.g.
-       by doing first 'rigid', then 'similarity', then 'affine'
-    optimizer : str
-       One of 'powell', 'simplex', 'conjugate_gradient'
-       
-    Returns
-    -------
-    T : source-to-target affine transformation 
-        Object that can be casted to a numpy array. 
-
-    """
-    matcher = IconicRegistration(from_brifti(source), from_brifti(target))
-    if subsampling == None: 
-        matcher.set_source_fov(fixed_npoints=64**3)
-    else:
-        matcher.set_source_fov(subsampling=subsampling)
-    matcher.similarity = similarity
-    matcher.interp = interp
-
-    if isinstance(search, basestring): 
-        search = [search]
-
-    T = None
-    for s in search: 
-        T = matcher.optimize(method=optimizer, search=s, start=T)
-    return T 
-
-
-def transform(source, T, target=None, interp_order=3):
-    return to_brifti(transform_image(from_brifti(source), 
-                                     T, 
-                                     target=from_brifti(target), 
-                                     interp_order=interp_order))
 
 

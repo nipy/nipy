@@ -74,17 +74,18 @@ def vector12(mat, subtype='affine'):
     translation, rotation, log-scale, additional rotation (to allow
     for shearing when combined with non-unitary scales). 
     """
+    TINY = 1e-100
     vec12 = np.zeros(12)
     vec12[0:3] = mat[0:3,3]
     A = mat[0:3,0:3]
     if subtype == 'rigid': 
         vec12[3:6] = rotation_mat2vec(A)
-        vec12[6:9] = 1
+        vec12[6:9] = 0.0
     elif subtype == 'similarity':
         ## A = s R ==> det A = (s)**3 ==> s = (det A)**(1/3)
         s = np.linalg.det(A)**(1/3.)
         vec12[3:6] = rotation_mat2vec(A/s)
-        vec12[6:9] = s
+        vec12[6:9] = np.log(np.maximum(s, TINY))
     else: 
         R, s, Q = np.linalg.svd(mat[0:3,0:3]) # mat == R*diag(s)*Q
         if np.linalg.det(R) < 0: 
@@ -93,7 +94,7 @@ def vector12(mat, subtype='affine'):
         r = rotation_mat2vec(R)
         q = rotation_mat2vec(Q)
         vec12[3:6] = r
-        vec12[6:9] = s
+        vec12[6:9] = np.log(np.maximum(s, TINY))
         vec12[9:12] = q
     return vec12
 

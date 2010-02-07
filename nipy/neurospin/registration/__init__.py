@@ -1,3 +1,4 @@
+from registration import * 
 from iconic_registration import * 
 from affine import * 
 
