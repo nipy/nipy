@@ -6,12 +6,24 @@ _interp_order = 1
 _background = 0 
 
 
+"""
+Local image class used in various subpackages: registration,
+segmentation, statistical mapping...
+
+TODO: 
+- handle vector-valued images 
+- write tests and use-cases
+- transformation class
+- integrate home-made sampling routines to the image class
+"""
+
 class Image(object): 
     """
     Image class. 
     
-    An image is a real-valued mapping from a regular 3D lattice that
-    can be masked, in which case only in-mask image values are kept in
+    An image is a real-valued mapping from a regular 3D lattice which
+    is related to the world via an affine transformation. It can be
+    masked, in which case only in-mask image values are kept in
     memory.
     """
 
@@ -290,9 +302,6 @@ def apply_affine(affine, XYZ):
     tXYZ[2,:] += affine[2,3]
     return tuple(tXYZ)
 
-
-# TODO: integrate the following sampling routines to the image class
-# in some way
 
 
 def sample(data, coords, order=_interp_order, dtype=None, 
