@@ -13,9 +13,6 @@ import tempfile
 # delayed, so that the part module can be used without them).
 import numpy as np
 
-from enthought.mayavi import mlab
-from enthought.mayavi.sources.api import ArraySource
-
 # Local imports
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import coord_transform, find_activation
@@ -47,6 +44,8 @@ def affine_img_src(data, affine, scale=1, name='AffineImage',
         ------
         The affine should be diagonal.
     """
+    # Late import to avoid triggering wx imports before needed.
+    from enthought.mayavi.sources.api import ArraySource
     center = np.r_[0, 0, 0, 1]
     spacing = np.diag(affine)[:3]
     origin = np.dot(affine, center)[:3]
@@ -95,6 +94,9 @@ def m2screenshot(mayavi_fig=None, mpl_axes=None, autocrop=True):
         matplotlib axes.
     """
     import pylab as pl
+    # Late import to avoid triggering wx imports before needed.
+    from enthought.mayavi import mlab
+
     if mayavi_fig is None:
         mayavi_fig = mlab.gcf()
     else:
@@ -123,6 +125,8 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
                  sulci_opacity=0.5, gyri_opacity=0.3,
                  opacity=1,
                  outline_color=None):
+    # Late import to avoid triggering wx imports before needed.
+    from enthought.mayavi import mlab
     fig = mlab.gcf()
     disable_render = fig.scene.disable_render
     fig.scene.disable_render = True
@@ -223,6 +227,8 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
         maintain this window on top of others and on the screen.
 
     """
+    # Late import to avoid triggering wx imports before needed.
+    from enthought.mayavi import mlab
     if offscreen:
         from enthought.mayavi.core.off_screen_engine import OffScreenEngine
         engine = OffScreenEngine()
