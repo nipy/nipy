@@ -117,8 +117,13 @@ class IconicRegistration(object):
     """
     For non-affine transformations, we'll do:
 
-    XYZ = voxel locations in self._source 
-    apply_affine(self._target_fromworld, T(apply_affine(self._source_toworld, XYZ)))
+    XYZ = tuple(np.mgrid[[slice(0,d) for d in R._source.shape]])     
+    return apply_affine(self._target_fromworld, T(apply_affine(self._source_toworld, XYZ)))
+
+    For a grid_transform instance T: 
+
+    1. check that T is tied to self._source: T = GridTransform(modes, self._source) 
+    2. return _apply_affine(self._target_fromworld, np.asarray(T))
     
     """
 
@@ -132,7 +137,7 @@ class IconicRegistration(object):
                          self._source.flat, ## array iterator
                          self._target, 
                          Tv,
-                         1, ## affine 
+                         isinstance(T, Affine), 
                          seed)
         #self.source_hist = np.sum(self._joint_hist, 1)
         #self.target_hist = np.sum(self._joint_hist, 0)
@@ -192,14 +197,7 @@ class IconicRegistration(object):
         T.param = tc
         return T 
 
-    # Return a set of similarity
-    """
-    def explore(self, T0, 
-                ux=[0], uy=[0], uz=[0],
-                rx=[0], ry=[0], rz=[0], 
-                sx=[0], sy=[0], sz=[0],
-                qx=[0], qy=[0], qz=[0]):
-    """
+
     def explore(self, T0, *args): 
     
         """
@@ -223,13 +221,15 @@ class IconicRegistration(object):
 
         T = Affine()
         for i in range(ntrials):
-            t = T0.vec12 + np.array([D[i] for D in Deltas])
+            t = T0.param + np.array([D[i] for D in Deltas])
             T.param = t 
             simis[i] = self.eval(T)
             params[:, i] = t 
 
         return simis, params
         
+
+
 
 def clamp(x, bins=256):
     """ 
