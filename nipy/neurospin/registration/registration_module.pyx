@@ -32,7 +32,7 @@ cdef extern from "iconic.h":
     double entropy(double* h, unsigned int size, double* n)
     void joint_histogram(double* H, unsigned int clampI, unsigned int clampJ,  
                          flatiter iterI, ndarray imJ_padded, 
-                         double* Tvox, int interp)
+                         double* Tvox, int affine, int interp)
     double correlation_coefficient(double* H, unsigned int clampI, unsigned int clampJ, double* n)
     double correlation_ratio(double* H, unsigned int clampI, unsigned int clampJ, double* n) 
     double correlation_ratio_L1(double* H, double* hI, unsigned int clampI, unsigned int clampJ, double* n) 
@@ -197,7 +197,7 @@ def _histogram(ndarray H, flatiter iter):
     return 
 
 
-def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
+def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int affine, int interp):
     """
     _joint_histogram(H, iterI, imJ, Tvox, interp)
     Comments to follow.
@@ -212,7 +212,7 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int i
     tvox = <double*>Tvox.data
 
     # Compute joint histogram 
-    joint_histogram(h, clampI, clampJ, iterI, imJ, tvox, interp)
+    joint_histogram(h, clampI, clampJ, iterI, imJ, tvox, affine, interp)
 
     return 
 

@@ -114,6 +114,14 @@ class IconicRegistration(object):
         ## C-contiguity required
         return np.dot(self._target_fromworld, np.dot(T, self._source_toworld)) 
 
+    """
+    For non-affine transformations, we'll do:
+
+    XYZ = voxel locations in self._source 
+    apply_affine(self._target_fromworld, T(apply_affine(self._source_toworld, XYZ)))
+    
+    """
+
 
     def eval(self, T):
         Tv = self.voxel_transform(T)
@@ -123,7 +131,8 @@ class IconicRegistration(object):
         _joint_histogram(self._joint_hist, 
                          self._source.flat, ## array iterator
                          self._target, 
-                         Tv, 
+                         Tv,
+                         1, ## affine 
                          seed)
         #self.source_hist = np.sum(self._joint_hist, 1)
         #self.target_hist = np.sum(self._joint_hist, 0)
@@ -194,29 +203,16 @@ class IconicRegistration(object):
                          0:len(rx), 0:len(ry), 0:len(rz), 
                          0:len(sx), 0:len(sy), 0:len(sz), 
                          0:len(qx), 0:len(qy), 0:len(qz)]
-
         ntrials = np.prod(grids.shape[1:])
-        UX = np.asarray(ux)[grids[0,:]].ravel()
-        UY = np.asarray(uy)[grids[1,:]].ravel()
-        UZ = np.asarray(uz)[grids[2,:]].ravel()
-        RX = np.asarray(rx)[grids[3,:]].ravel()
-        RY = np.asarray(ry)[grids[4,:]].ravel()
-        RZ = np.asarray(rz)[grids[5,:]].ravel()
-        SX = np.asarray(sx)[grids[6,:]].ravel()
-        SY = np.asarray(sy)[grids[7,:]].ravel()
-        SZ = np.asarray(sz)[grids[8,:]].ravel()
-        QX = np.asarray(qx)[grids[9,:]].ravel()
-        QY = np.asarray(qy)[grids[10,:]].ravel()
-        QZ = np.asarray(qz)[grids[11,:]].ravel()
+        params = [ux, uy, uz, rx, ry, rz, sx, sy, sz, qx, qy, qz]
+        Params = [np.asarray(params[i])[grids[i,:]].ravel() for i in range(len(params))]
+        
         simis = np.zeros(ntrials)
         vec12s = np.zeros([12, ntrials])
 
         T = Affine()
         for i in range(ntrials):
-            t = T0.vec12 + np.array([UX[i], UY[i], UZ[i],
-                                     RX[i], RY[i], RZ[i],
-                                     SX[i], SY[i], SZ[i],
-                                     QX[i], QY[i], QZ[i]])
+            t = T0.vec12 + np.array([p[i] for p in Params])
             T.vec12 = t 
             simis[i] = self.eval(T)
             vec12s[:, i] = t 
