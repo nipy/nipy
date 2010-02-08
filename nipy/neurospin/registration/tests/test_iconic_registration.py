@@ -75,7 +75,7 @@ def test_explore():
     J = Image(make_data_int16(), dummy_affine)
     regie = IconicRegistration(I, J)
     T = Affine()
-    simi, params = regie.explore(T, ux=[-1,0,1],uy=[-1,0,1])
+    simi, params = regie.explore(T, (0,[-1,0,1]),(1,[-1,0,1]))
 
 def test_iconic():
     """ Test the iconic registration class.

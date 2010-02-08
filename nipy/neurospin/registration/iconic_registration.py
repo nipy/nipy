@@ -193,31 +193,42 @@ class IconicRegistration(object):
         return T 
 
     # Return a set of similarity
+    """
     def explore(self, T0, 
                 ux=[0], uy=[0], uz=[0],
                 rx=[0], ry=[0], rz=[0], 
                 sx=[0], sy=[0], sz=[0],
                 qx=[0], qy=[0], qz=[0]):
-        
-        grids = np.mgrid[0:len(ux), 0:len(uy), 0:len(uz), 
-                         0:len(rx), 0:len(ry), 0:len(rz), 
-                         0:len(sx), 0:len(sy), 0:len(sz), 
-                         0:len(qx), 0:len(qy), 0:len(qz)]
+    """
+    def explore(self, T0, *args): 
+    
+        """
+        Evaluate the similarity at the transformations specified by
+        sequences of parameter values.
+
+        For instance: 
+
+        explore(T0, (0, [-1,0,1]), (4, [-2.,2]))
+        """
+        nparams = T0.param.size
+        sizes = np.ones(nparams)
+        deltas = [[0] for i in range(nparams)]
+        for a in args:
+            deltas[a[0]] = a[1]
+        grids = np.mgrid[[slice(0, len(d)) for d in deltas]]
         ntrials = np.prod(grids.shape[1:])
-        params = [ux, uy, uz, rx, ry, rz, sx, sy, sz, qx, qy, qz]
-        Params = [np.asarray(params[i])[grids[i,:]].ravel() for i in range(len(params))]
-        
+        Deltas = [np.asarray(deltas[i])[grids[i,:]].ravel() for i in range(nparams)]
         simis = np.zeros(ntrials)
-        vec12s = np.zeros([12, ntrials])
+        params = np.zeros([nparams, ntrials])
 
         T = Affine()
         for i in range(ntrials):
-            t = T0.vec12 + np.array([p[i] for p in Params])
-            T.vec12 = t 
+            t = T0.vec12 + np.array([D[i] for D in Deltas])
+            T.param = t 
             simis[i] = self.eval(T)
-            vec12s[:, i] = t 
+            params[:, i] = t 
 
-        return simis, vec12s
+        return simis, params
         
 
 def clamp(x, bins=256):
