@@ -68,7 +68,7 @@ class Image(object):
     def __getitem__(self, slices):
         """
         Extract an image patch corresponding to the specified bounding
-        box. Compute the affine transfotrmation accordingly. 
+        box. Compute the affine transformation accordingly. 
         """
         steps = map(lambda x: max(x,1), [s.step for s in slices])
         starts = map(lambda x: max(x,0), [s.start for s in slices])
@@ -160,7 +160,7 @@ class Image(object):
         # Convert coords into grid coordinates
         X,Y,Z = validate_coords(coords)
         if not grid_coords:
-            X,Y,Z = apply_affine(self._inv_affine, (X,Y,Z))
+            X,Y,Z = apply_affine_to_tuple(self._inv_affine, (X,Y,Z))
         XYZ = np.c_[(X,Y,Z)]
 
         # Avoid interpolation if coords are integers
@@ -289,7 +289,7 @@ def validate_coords(coords):
 def inverse_affine(affine):
     return np.linalg.inv(affine)
 
-def apply_affine(affine, XYZ):
+def apply_affine_to_tuple(affine, XYZ):
     """
     Parameters
     ----------

@@ -1,4 +1,4 @@
-from nipy.neurospin.image import apply_affine
+from nipy.neurospin.registration.affine import apply_affine
 
 import numpy as np 
 
@@ -12,32 +12,27 @@ def gauss(XYZ, c, s):
 
 class GridTransform(object): 
 
-
-    def __init__(self, modes, toworld, subgrid=None):
+    def __init__(self, data, toworld, affine=None): 
         """
-        modes : a sequence of 4d-arrays with same shape and last
-        dimension 1 or 3
+        data : a sequence of 4d arrays representing the deformation
+        modes.
 
-        toworld : 4x4 matrix
-
-        subgrid : tuple of 3d indices 
+        toworld : 4x4 array describing the grid-to-world affine
+        transformation.
         """
-        shape = modes[0].shape
-        ## TODO: check all same shape...
-        if subgrid == None:
-            subgrid = tuple(np.mgrid[[slice(0,d) for d in shape]])
-        dim = len(subgrid)
-        subgrid = [subgrid[i].ravel() for i in range(dim)]
-        self.modes = tuple([m[subgrid].T for m in modes])
-        self.base = np.asarray(apply_affine(toworld, subgrid))
-        self._set_param(np.zeros(len(modes)))
-
-    def __array__(self, dtype='double'): 
-        tmp = self.base.copy()
-        for i in np.arange(0, self.param.size):
-            tmp += self.param[i]*self.modes[i]
-        return tmp.astype(dtype)
+        self._data = data 
+        if affine == None: 
+            self._affine = toworld 
+        else: 
+            self._affine = np.dot(affine, toworld)
+        self._set_param(np.zeros(len(data)))
         
+    def _get_data(self): 
+        return self._data
+
+    def _get_affine(self): 
+        return self._affine
+
     def _get_param(self):
         return self._param
 
@@ -45,17 +40,27 @@ class GridTransform(object):
         # Specify dtype to allow in-place operations
         self._param = np.asarray(p, dtype='double') 
 
-    param = property(_get_param, _set_param) 
+    def __getitem__(self, slices):
+        """
+        Return the sampled displacements on the subgrid specified by
+        slices. 
+        """
+        XYZ = np.c_[[c.ravel() for c in np.mgrid[slices]]] # 3xN array
+        N = XYZ.shape[1]
+        tmp = apply_affine(self._affine, XYZ)
+        for i in np.arange(0, self._param.size):
+            tmp += self._param[i]*self.data[i][slices].reshape(N, 3).T
+        return tmp
 
-    def __call__(self, XYZ):
-        return 
+    data = property(_get_data)
+    toworld = property(_get_affine)
+    param = property(_get_param, _set_param) 
+    
+
+
 
 
 """
-shape = (5,5,5)
-mask = tuple(np.mgrid[[slice(0,d) for d in shape]]) 
-
-modes = [np.random.rand(20,20,10,3) for i in range(5)]
-
-g = GridTransform(modes, np.eye(4), mask)
+data = [np.random.rand(20,20,10,3) for i in range(5)]
+g = GridTransform(data, np.eye(4))
 """
