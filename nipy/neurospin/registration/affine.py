@@ -129,13 +129,22 @@ def apply_affine(T, xyz):
 
 class Affine(object): 
 
-    def __init__(self, subtype='affine', vec12=None, radius=100, flag2d=False):
+    def __init__(self, array=None):
+        if array == None: 
+            vec12 = np.zeros(12)
+        elif array.shape == (4,4):
+            vec12 = vector12(array)
+        elif array.size == 12: 
+            vec12 = array.ravel()
+        else: 
+            raise ValueError('Invalid array')
+        self._set_vec12(vec12)
+        self.parametrize('affine')
+
+    def parametrize(self, subtype, flag2d=False, radius=100): 
         self._precond = preconditioner(radius)
         self._subtype = affines.index(subtype)+len(affines)*(not flag2d)
-        if vec12 == None: 
-            vec12 = np.zeros(12)
-        self._set_vec12(vec12)
-
+        
     def __call__(self, xyz): 
         return apply_affine(self.__array__(), xyz)
 

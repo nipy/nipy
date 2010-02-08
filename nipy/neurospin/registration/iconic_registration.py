@@ -145,9 +145,10 @@ class IconicRegistration(object):
         element roughly represents a variation in mm.
         """
         if start == None: 
-            T = Affine(subtype=search, radius=radius)
+            T = Affine()
         else:
-            T = Affine(subtype=search, vec12=start.vec12, radius=radius)
+            T = Affine(start.vec12)
+        T.parametrize(subtype=search, radius=radius)
         tc0 = T.param
 
         # Loss function to minimize
