@@ -1,5 +1,5 @@
-#from _clustering import *
-#from _clustering import __doc__
+from _clustering import *
+from _clustering import __doc__
 
 import numpy as np
 
