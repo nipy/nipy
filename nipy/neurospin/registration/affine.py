@@ -1,5 +1,7 @@
 from registration_module import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
 
+from nipy.neurospin.image import apply_affine
+
 import numpy as np
 
 
@@ -113,20 +115,6 @@ def preconditioner(radius):
     return np.array([1,1,1,rad,rad,rad,sca,sca,sca,rad,rad,rad])
 
 
-def apply_affine(T, xyz):
-    """
-    XYZ = apply_affine(T, xyz)
-
-    T is a 4x4 matrix.
-    xyz is a 3xN array of 3d coordinates stored row-wise.  
-    """
-    XYZ = np.dot(T[0:3,0:3], xyz)
-    XYZ[0,:] += T[0,3]
-    XYZ[1,:] += T[1,3]
-    XYZ[2,:] += T[2,3]
-    return XYZ 
-
-
 class Affine(object): 
 
     def __init__(self, array=None):
@@ -205,3 +193,13 @@ class Affine(object):
         return a
 
 
+    def inv(self):
+        """
+        Return the inverse affine transform. 
+        """
+        a = Affine()
+        a._subtype = self._subtype
+        a._precond = self._precond
+        a._set_vec12(vector12(np.linalg.inv(self.__array__())))
+        return a
+        

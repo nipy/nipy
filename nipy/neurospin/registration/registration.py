@@ -67,11 +67,12 @@ def register(source,
     return T 
 
 
-def transform(source, T, target=None, interp_order=3):
-    if not target == None: 
-        target = from_brifti(target)
-    return to_brifti(transform_image(from_brifti(source), T, 
-                                     target=target, interp_order=interp_order))
+def transform(floating, T, reference=None, interp_order=3):
+    floating = from_brifti(floating)
+    if not reference == None: 
+        reference = from_brifti(reference)
+    return to_brifti(transform_image(floating, T, grid_coords=False,
+                                     reference=reference, interp_order=interp_order))
 
 
 

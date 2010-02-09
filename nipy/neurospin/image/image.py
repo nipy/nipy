@@ -162,7 +162,7 @@ class Image(object):
         if not grid_coords:
             X,Y,Z = apply_affine_to_tuple(self._inv_affine, (X,Y,Z))
         XYZ = np.c_[(X,Y,Z)]
-
+        
         # Avoid interpolation if coords are integers
         if issubclass(XYZ.dtype.type, np.integer):
             I = np.where(((XYZ>0)*(XYZ<self._shape)).min(1))
@@ -250,32 +250,44 @@ def set_image(im, values):
         
 
 
-def transform_image(im, transform, target=None, 
+def transform_image(im, transform, grid_coords=True, reference=None,
                     dtype=None, interp_order=_interp_order):
     """
-    Apply a spatial transformation to bring the image into the
-    same grid as the specified target image. 
+    Apply a transformation to a 'floating' image to bring it into the
+    same grid as a given 'reference' image. The transformation is
+    assumed to go from the 'reference' to the 'floating'.
+
+    transform: nd array
     
-    transform: world transformation
+      either a 4x4 matrix describing an affine transformation
+
+      or a 3xN array describing voxelwise displacements of the
+
+    grid_coords : boolean
+
+      True if the transform maps grid coordinates, False if it maps
+      world coordinates
     
-    target: target image, defaults to input. 
+    reference: reference image, defaults to input. 
     """
-    if target == None: 
-        target = im
+    if reference == None: 
+        reference = im
         
     if dtype == None: 
         dtype = im._get_dtype()
 
-    # Grid-to-grid transformation from target to source
-    t = np.dot(im._inv_affine, np.dot(inverse_affine(transform), target._affine))
-    
+    # Grid-to-grid transformation from reference to floating
+    t = np.asarray(transform)
+    if not grid_coords:
+        t = np.dot(im._inv_affine, np.dot(t, reference._affine))
+        
     # Perform image resampling 
     data = im._get_data()
-    output = np.zeros(target._shape, dtype=dtype)
+    output = np.zeros(reference._shape, dtype=dtype)
     ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
                              order=interp_order, cval=im._background, 
                              output_shape=output.shape, output=output)
-    return Image(output, affine=target._affine, world=im._world, 
+    return Image(output, affine=reference._affine, world=im._world, 
                  background=im._background)
 
 
@@ -288,6 +300,21 @@ def validate_coords(coords):
 
 def inverse_affine(affine):
     return np.linalg.inv(affine)
+
+
+def apply_affine(T, xyz):
+    """
+    XYZ = apply_affine(T, xyz)
+
+    T is a 4x4 matrix.
+    xyz is a Nx3 array of 3d coordinates stored row-wise.  
+    """
+    XYZ = np.dot(xyz, T[0:3,0:3])
+    XYZ[:,0] += T[0,3]
+    XYZ[:,1] += T[1,3]
+    XYZ[:,2] += T[2,3]
+    return XYZ 
+
 
 def apply_affine_to_tuple(affine, XYZ):
     """

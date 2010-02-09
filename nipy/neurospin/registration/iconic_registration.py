@@ -137,7 +137,7 @@ class IconicRegistration(object):
                          self._source.flat, ## array iterator
                          self._target, 
                          Tv,
-                         isinstance(T, Affine), 
+                         1, ## affine
                          seed)
         #self.source_hist = np.sum(self._joint_hist, 1)
         #self.target_hist = np.sum(self._joint_hist, 0)

@@ -1,4 +1,4 @@
-from nipy.neurospin.registration.affine import apply_affine
+from nipy.neurospin.image import apply_affine
 
 import numpy as np 
 
@@ -15,7 +15,7 @@ class GridTransform(object):
     def __init__(self, data, toworld, affine=None): 
         """
         data : a sequence of 4d arrays representing the deformation
-        modes.
+        modes, last dimensions should be 3. 
 
         toworld : 4x4 array describing the grid-to-world affine
         transformation.
@@ -45,11 +45,12 @@ class GridTransform(object):
         Return the sampled displacements on the subgrid specified by
         slices. 
         """
-        XYZ = np.c_[[c.ravel() for c in np.mgrid[slices]]] # 3xN array
-        N = XYZ.shape[1]
-        tmp = apply_affine(self._affine, XYZ)
-        for i in np.arange(0, self._param.size):
-            tmp += self._param[i]*self.data[i][slices].reshape(N, 3).T
+        tmp = self._param[0]*self.data[0][slices]
+        for i in np.arange(1, self._param.size):
+            tmp += self._param[i]*self.data[i][slices]
+        XYZ = np.c_[[c.ravel() for c in np.mgrid[slices]]].T # Nx3 array
+        tmp += apply_affine(self._affine, XYZ).reshape(tmp.shape)
+
         return tmp
 
     data = property(_get_data)

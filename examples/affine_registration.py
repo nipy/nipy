@@ -93,7 +93,7 @@ print('  Registration time: %f sec' % (toc-tic))
 # Resample source image
 print('Resampling source image...')
 tic = time.time()
-It = transform(I, T, target=J)
+It = transform(I, T.inv(), reference=J)
 toc = time.time()
 print('  Resampling time: %f sec' % (toc-tic))
 
