@@ -13,6 +13,7 @@ from scipy import stats, ndimage
 # Local imports
 from nipy.neurospin.utils.mask import compute_mask, largest_cc
 from nipy.neurospin.utils.emp_null import ENN
+from nipy.neurospin.datasets.transforms.affine_utils import get_bounds
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -43,6 +44,7 @@ def threshold_connect_components(map, threshold, copy=True):
         if weight < threshold:
             map[labels == index] = 0
     return map
+
 
 def coord_transform(x, y, z, affine):
     """ Convert the x, y, z coordinates from one image space to another
@@ -77,24 +79,6 @@ def coord_transform(x, y, z, affine):
                    np.ones_like(np.atleast_1d(z).flat)].T
     x, y, z, _ = np.dot(affine, coords)
     return x.squeeze(), y.squeeze(), z.squeeze()
-
-
-def test_coord_transform_trivial():
-    sform = np.eye(4)
-    x = np.random.random((10,))
-    y = np.random.random((10,))
-    z = np.random.random((10,))
-
-    x_, y_, z_ = coord_transform(x, y, z, sform)
-    np.testing.assert_array_equal(x, x_)
-    np.testing.assert_array_equal(y, y_)
-    np.testing.assert_array_equal(z, z_)
-
-    sform[:, -1] = 1
-    x_, y_, z_ = coord_transform(x, y, z, sform)
-    np.testing.assert_array_equal(x+1, x_)
-    np.testing.assert_array_equal(y+1, y_)
-    np.testing.assert_array_equal(z+1, z_)
 
 
 def find_activation(map, mask=None, pvalue=0.05, upper_only=False):
@@ -170,13 +154,28 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
     return cut_coords
 
 
-def test_find_cut_coords():
-    map = np.zeros((100, 100, 100))
-    x_map, y_map, z_map = 50, 10, 40
-    map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
-    x, y, z = find_cut_coords(map, mask=np.ones(map.shape, np.bool))
-    np.testing.assert_array_equal(
-                        (int(round(x)), int(round(y)), int(round(z))),
-                                (x_map, y_map, z_map))
+################################################################################
 
+def get_mask_bounds(mask, affine):
+    """ Return the world-space bounds occupied by a mask given an affine.
+
+        Notes
+        -----
+
+        The mask should have only one connect component.
+
+        The affine should be diagonal or diagonal-permuted.
+    """
+    (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
+    x_slice, y_slice, z_slice = ndimage.find_objects(mask)[0]
+    x_width, y_width, z_width = mask.shape
+    xmin, xmax = (xmin + x_slice.start*(xmax - xmin)/x_width,
+                  xmin + x_slice.stop *(xmax - xmin)/x_width)
+    ymin, ymax = (ymin + y_slice.start*(ymax - ymin)/y_width,
+                  ymin + y_slice.stop *(ymax - ymin)/y_width)
+    zmin, zmax = (zmin + z_slice.start*(zmax - zmin)/z_width,
+                  zmin + z_slice.stop *(zmax - zmin)/z_width)
+
+    return xmin, xmax, ymin, ymax, zmin, zmax
+ 
 

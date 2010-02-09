@@ -50,6 +50,9 @@ def test_identity_resample():
     ref_im = VolumeImg(data, affine, 'mine')
     rot_im = ref_im.as_volume_img(affine, interpolation='nearest')
     yield np.testing.assert_almost_equal, data, rot_im.get_data()
+    # Now test when specifying only a 3x3 affine
+    #rot_im = ref_im.as_volume_img(affine[:3, :3], interpolation='nearest')
+    yield np.testing.assert_almost_equal, data, rot_im.get_data()
     reordered_im = rot_im.xyz_ordered()
     yield np.testing.assert_almost_equal, data, reordered_im.get_data()
 
@@ -58,7 +61,7 @@ def test_downsample():
     """ Test resampling of the VolumeImg with a 1/2 down-sampling affine.
     """
     shape = (6., 3., 6, 2.)
-    data = np.random.randint(0, 10, shape)
+    data = np.random.random(shape)
     affine = np.eye(4)
     ref_im = VolumeImg(data, affine, 'mine')
     rot_im = ref_im.as_volume_img(2*affine, interpolation='nearest')
@@ -66,6 +69,18 @@ def test_downsample():
     x, y, z = downsampled.shape[:3]
     np.testing.assert_almost_equal(downsampled, 
                                    rot_im.get_data()[:x, :y, :z, ...])
+
+
+def test_resampling_with_affine():
+    """ Test resampling with a given rotation part of the affine.
+    """
+    prng = np.random.RandomState(10)
+    data = prng.randint(4, size=(1, 4, 4))
+    img = VolumeImg(data, np.eye(4), 'mine', interpolation='nearest')
+    for angle in (0, np.pi, np.pi/2, np.pi/4, np.pi/3):
+        rot = rotation(0, angle)
+        rot_im = img.as_volume_img(affine=rot)
+        yield np.testing.assert_almost_equal, np.max(data), np.max(rot_im.get_data())
 
 
 def test_reordering():

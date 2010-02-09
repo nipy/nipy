@@ -24,6 +24,25 @@ mni_sform = np.array([[-1, 0, 0,   90],
 
 mni_sform_inv = np.linalg.inv(mni_sform)
 
+def find_mni_template():
+    """ Try to find an MNI template on the disk.
+    """
+    from nipy.utils.data import templates, DataError
+    try:
+        filename = templates.get_filename(
+                            'ICBM152', '1mm', 'T1_brain.nii.gz')
+        if os.path.exists(filename):
+            return filename
+    except DataError:
+        pass
+    for path in [
+        ('usr', 'share', 'fsl', 'data', 'standard', 'avg152T1_brain.nii.gz'),
+        ('usr', 'local', 'share', 'fsl', 'data', 'standard', 'avg152T1_brain.nii.gz'),
+            ]:
+        filname = os.path.join(path)
+        if os.path.exists(filename):
+            return filename
+
 
 ################################################################################
 # Caching of the MNI template. 
@@ -39,16 +58,11 @@ class _AnatCache(object):
 
     @classmethod
     def get_anat(cls):
-        from nipy.utils.data import templates
-
-        if cls.anat is not None:
-            return cls.anat, cls.anat_sform, cls.anat_max
-        filename = templates.get_filename(
-                            'ICBM152', '1mm', 'T1_brain.nii.gz')
-        if not os.path.exists(filename):
-            raise OSError('Cannot find template file T1_brain.nii.gz'
-                    'required to plot anatomy. Possible path: %s'
-                    % filename)
+        filename = find_mni_template()
+        if filename is None:
+            raise OSError('Cannot find template file T1_brain.nii.gz '
+                    'required to plot anatomy, see the nipy documentation '
+                    'installaton section for how to install template files.')
         anat_im = load(filename)
         anat = anat_im.get_data()
         anat = anat.astype(np.float)
@@ -58,6 +72,7 @@ class _AnatCache(object):
         cls.anat = anat
         cls.anat_max = anat.max()
         return cls.anat, cls.anat_sform, cls.anat_max
+
 
     @classmethod
     def get_blurred(cls):

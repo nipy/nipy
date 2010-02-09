@@ -179,6 +179,7 @@ class Transform(object):
                               mapping=self.mapping, 
                               inverse_mapping=self.inverse_mapping)
 
+
     def __eq__(self, other):
         return (isinstance(other, self.__class__)
                 and self.input_space == other.input_space

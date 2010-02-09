@@ -154,7 +154,7 @@ class VolumeData(VolumeField):
 
     def __repr__(self):
         options = np.get_printoptions()
-        np.set_printoptions(precision=6, threshold=64, edgeitems=2)
+        np.set_printoptions(precision=5, threshold=64, edgeitems=2)
         representation = \
                 '%s(\n  data=%s,\n  world_space=%s,\n  interpolation=%s)' % (
                 self.__class__.__name__,
