@@ -3,6 +3,9 @@ This module contains the function
 that thresholds an image and retains only the clusters of size>smin
 
 Author : Bertrand Thirion, 2009
+
+fixme : redundant with statistical_mapping
+should be removed, but the tests should be kept an applied to statistical_mapping
 """
 
 #autoindent

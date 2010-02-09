@@ -139,6 +139,77 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
 
     return clusters, info 
 
+################################################################################
+# Peak_extraction
+################################################################################
+
+
+def get_3d_peaks(image, mask=None, threshold=0., nn=18, order_th=0):
+    """
+    returns all the peaks of image that are with the mask
+    and above the provided threshold
+
+    Parameters
+    ----------
+    image, (3d) test image
+    mask=None, (3d) mask image
+        By default no masking is performed
+    threshold=0., float, threshold value above which peaks are considered
+    nn=18, int, number of neighbours of the topological spatial model
+    order_th=0, int, threshold on topological order to validate the peaks
+
+    Returns
+    -------
+    peaks, a list of dictionray, where each dic has the fields:
+    vals, map value at the peak
+    order, topological order of the peak
+    ijk, array of shape (1,3) grid coordinate of the peak
+    pos, array of shape (n_maxima,3) mm coordinates (mapped by affine)
+        of the peaks
+    """
+    # Masking
+    if mask!=None:
+        bmask = mask.get_data().ravel()
+        data = image.get_data().ravel()[bmask>0]
+        xyz = np.array(np.where(bmask>0)).T
+    else:
+        shape = image.get_shape()
+        data = image.get_data().ravel()
+        xyz = np.reshape(np.indices(shape),(3,np.prod(shape))).T
+    affine = image.get_affine()
+    nvox = np.size(data)
+
+    if not (data>threshold).any():
+        return None
+
+    # Extract local maxima and connex components above some threshold
+    ff = Field(np.size(data), field=data)
+    ff.from_3d_grid(xyz, k=18)
+    maxima, order = ff.get_local_maxima(th=threshold)
+
+    # retain only the maxima greater than the specified order
+    maxima = maxima[order>order_th]
+    order = order[order>order_th]
+
+    n_maxima = len(maxima)
+    if n_maxima==0:
+        # should not occur ?
+        return None
+
+    # reorder the maxima to have decreasing peak value
+    idx = np.argsort(-maxima)
+    maxima = maxima[idx]
+    order = order[idx]
+    
+    vals = data[maxima]
+    ijk = xyz[maxima]
+    pos = np.dot(np.hstack((ijk,np.ones((n_maxima,1)))),affine.T)[:,:3]
+    
+    peaks = [{'val':vals[k], 'order':order[k], 'ijk':ijk[k], 'pos':pos[k]}
+             for k in range(n_maxima)]
+    return peaks
+
+
 
 ################################################################################
 # Statistical tests
@@ -146,7 +217,9 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
 
 
 def mask_intersection(masks):
-    """ Compute mask intersection
+    """
+    Compute mask intersection
+    fixme : dirty and already implemented in mask module: should be removed
     """
     mask = masks[0]
     for m in masks[1:]:

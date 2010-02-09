@@ -10,7 +10,8 @@ import numpy as np
 
 import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 from nipy.neurospin.utils.reproducibility_measures import \
-     voxel_reproducibility, cluster_reproducibility, map_reproducibility
+     voxel_reproducibility, cluster_reproducibility, map_reproducibility,\
+     peak_reproducibility
 
 
 ################################################################################
@@ -21,7 +22,7 @@ dimy = 60
 pos = 2*np.array([[ 6,  7],
                   [10, 10],
                   [15, 10]])
-ampli = 0.5*np.array([5, 7, 6])
+ampli = 0.5* np.array([5, 7, 6])
 dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                      pos=pos, ampli=ampli, width=5.0)
 betas = np.reshape(dataset, (nsubj, dimx, dimy))
@@ -42,17 +43,19 @@ csize = 10
 niter = 10
 method = 'crfx'
 verbose = 0
-swap = True
+swap = False#True
 
  
 kap = []
 clt = []
+pk = []
 sens = []
 for threshold in thresholds:
     kwargs={'threshold':threshold,'csize':csize}
     kappa = []
     cls = []
     sent = []
+    peaks = []
     for i in range(niter):
         k = voxel_reproducibility(func, var, xyz, ngroups,
                                   method, swap, verbose, **kwargs)
@@ -60,6 +63,9 @@ for threshold in thresholds:
         cld = cluster_reproducibility(func, var, xyz, ngroups, coord, sigma,
                                       method, swap, verbose, **kwargs)
         cls.append(cld)
+        peak = peak_reproducibility(func, var, xyz, ngroups, coord, sigma,
+                                      method, swap, verbose, **kwargs)
+        peaks.append(peak)
         seni = map_reproducibility(func, var, xyz, ngroups,
                            method, True, verbose, threshold=threshold,
                            csize=csize).mean()/ngroups
@@ -67,6 +73,7 @@ for threshold in thresholds:
     sens.append(np.array(sent))
     kap.append(np.array(kappa))
     clt.append(np.array(cls))
+    pk.append(np.array(peaks))
     
 ################################################################################
 # Visualize the results
@@ -84,6 +91,7 @@ mp.xticks(range(1,1+len(thresholds)),thresholds)
 mp.xlabel('threshold')
 mp.subplot(1,2,2)
 mp.boxplot(clt)
+mp.boxplot(pk,notch=1)
 mp.title('cluster-level reproducibility', fontsize=12)
 mp.xticks(range(1,1+len(thresholds)),thresholds)
 mp.xlabel('threshold')
@@ -105,5 +113,5 @@ for threshold in thresholds:
 
 mp.suptitle('Map reproducibility for different thresholds') 
 #mp.colorbar()
-#mp.show()
+mp.show()
 
