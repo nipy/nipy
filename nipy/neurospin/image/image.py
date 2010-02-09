@@ -262,6 +262,7 @@ def transform_image(im, transform, grid_coords=True, reference=None,
       either a 4x4 matrix describing an affine transformation
 
       or a 3xN array describing voxelwise displacements of the
+      reference grid points
 
     grid_coords : boolean
 
@@ -276,17 +277,42 @@ def transform_image(im, transform, grid_coords=True, reference=None,
     if dtype == None: 
         dtype = im._get_dtype()
 
+    ### AFFINE CASE
+
     # Grid-to-grid transformation from reference to floating
     t = np.asarray(transform)
-    if not grid_coords:
-        t = np.dot(im._inv_affine, np.dot(t, reference._affine))
-        
+    if t.ndim == 2:
+        affine = True
+        if not grid_coords:
+            t = np.dot(im._inv_affine, np.dot(t, reference._affine))
+    else:
+        affine = False
+        if not grid_coords:
+            t = apply_affine(im._inv_affine, t)
+
+            
     # Perform image resampling 
     data = im._get_data()
     output = np.zeros(reference._shape, dtype=dtype)
-    ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
-                             order=interp_order, cval=im._background, 
-                             output_shape=output.shape, output=output)
+
+    if affine: 
+        ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
+                                 order=interp_order, cval=im._background, 
+                                 output_shape=output.shape, output=output)
+    else:
+        toto = 2
+
+    ### NON RIGID CASE
+    """
+    output = ndimage.map_coordinates(im._get_data(), 
+                                     t, 
+                                     order=interp_order, 
+                                     cval=self._background,
+                                     output=dtype)
+    """
+    
+
+    
     return Image(output, affine=reference._affine, world=im._world, 
                  background=im._background)
 
