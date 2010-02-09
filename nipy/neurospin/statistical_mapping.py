@@ -41,13 +41,22 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
     height_th: cluster forming threshold
     height_control: string 
             false positive control meaning of cluster forming 
-            threshold: 'fpr'|'fdr'|'bonferroni'
+            threshold: 'fpr'|'fdr'|'bonferroni'|'none'
     cluster_th: cluster size threshold
     null_s : cluster-level calibration method: None|'rft'|array
+
+    Note
+    ----
+    This works only with three dimsnionsla data
     """
-    # Masking 
-    xyz = np.where(mask.get_data().squeeze()>0)
-    zmap = zimg.get_data().squeeze()[xyz]
+    # Masking
+    if len(mask.get_shape())>3:
+        xyz = np.where((mask.get_data()>0).squeeze())
+        zmap = zimg.get_data().squeeze()[xyz]
+    else:
+        xyz = np.where(mask.get_data()>0)
+        zmap = zimg.get_data()[xyz]
+
     xyz = np.array(xyz).T
     nvoxels = np.size(xyz, 0)
 
