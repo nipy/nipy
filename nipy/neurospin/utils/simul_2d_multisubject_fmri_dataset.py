@@ -20,7 +20,7 @@ pos = np.array([[6 ,  7],
                 [15, 10]])
 ampli = np.array([3, 4, 4])
 
-def _cone(shape, ij, pos, ampli, width):
+def _cone2d(shape, ij, pos, ampli, width):
     """
     Define a cone of the proposed grid
     """
@@ -90,7 +90,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
         import numpy.random as nr
     
     shape = (dimx, dimy)
-    ij = np.transpose(np.where(np.ones(shape)))
+    ij = (np.where(np.ones(shape))).T
     dataset = []
 
     for s in range(nbsubj):
@@ -100,7 +100,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
         lampli = ampli + signal_jitter*nr.randn(np.size(ampli))
         for k in range(np.size(lampli)):
             data = np.maximum(data,
-                              _cone(shape, ij, lpos[k], lampli[k], width))
+                              _cone2d(shape, ij, lpos[k], lampli[k], width))
     
         # make some noise
         noise = nr.randn(dimx,dimy)
@@ -133,3 +133,113 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
 
     return dataset
 
+
+def make_surrogate_array_3d(nbsubj=1, dimx=20, dimy=20, dimz=20, mask=None,
+                            sk=1.0, noise_level=1.0, pos=None, ampli=None,
+                            spatial_jitter=1.0, signal_jitter=1.0,
+                            width=5.0, out_text_file=None, out_image_file=None, 
+                            verbose=False, seed=False):
+    """
+    Create surrogate (simulated) 3D activation data with spatial noise.
+
+    Parameters
+    -----------
+    nbsubj: integer, optionnal
+        The number of subjects, ie the number of different maps
+        generated.
+    dimx: integer, optionnal
+        The x size of the array returned.
+    dimy: integer
+        The y size of the array returned.
+    dimz: integer, optional,
+        The z size of the array returned
+    mask=None, mask Nifti1Image instance, optional,
+        a referential- and mask-defining image for realistic 3D brain models
+    sk: float, optionnal
+        Amount of spatial noise smoothness.
+    noise_level: float, optionnal
+        Amplitude of the spatial noise.
+        amplitude=noise_level)
+    pos: 2D ndarray of integers, optionnal
+        x, y positions of the various simulated activations.
+    ampli: 1D ndarray of floats, optionnal
+        Respective amplitude of each activation
+    spatial_jitter: float, optionnal
+        Random spatial jitter added to the position of each activation,
+        in pixel.
+    signal_jitter: float, optionnal
+        Random amplitude fluctuation for each activation, added to the 
+        amplitude specified by ampli
+    width: float or ndarray, optionnal
+        Width of the activations
+    out_text_file: string or None, optionnal
+        If not None, the resulting array is saved as a text file with the
+        given file name
+    out_image_file: string or None, optionnal
+        If not None, the resulting is saved as a nifti file with the
+        given file name.
+    verbose: boolean, optionnal
+        If verbose is true, the data for the last subject is plotted as
+        a 2D image.
+    seed=False:  int, optionnal
+        If seed is not False, the random number generator is initialized
+        at a certain value
+
+    Returns
+    -------
+    dataset: 3D ndarray
+        The surrogate activation map, with dimensions (dimx, dimy, dimz)
+    """
+    if seed:
+        nr = np.random.RandomState([seed])
+    else:
+        import numpy.random as nr
+
+    if mask is not None:
+        shape = mask.get_shape()
+    else:
+        shape = (dimx,dimy,dimz)
+    
+    ijk = (np.where(np.ones(shape))).T
+    dataset = []
+
+    # make the signal
+    for s in range(nbsubj):
+        data = np.zeros(shape)
+        if pos !=None:
+            if len(pos)!=len(ampli):
+                raise
+            lpos = pos + spatial_jitter*nr.randn(1, 3)
+            lampli = ampli + signal_jitter*nr.randn(np.size(ampli))
+        for k in range(np.size(lampli)):
+            data = np.maximum(data,_cone3d(shape, ijk, lpos[k], lampli[k], width))
+    
+        # make some noise
+        noise = nr.randn(dimx,dimy)
+    
+        # smooth the noise
+        noise = nd.gaussian_filter(noise, sk)
+        noise = np.reshape(noise, (-1, 1))
+        noise *= noise_level/np.std(noise)
+        
+        #make the mixture
+        data += np.reshape(noise, shape)
+    
+        dataset.append(data)
+
+    if verbose:
+        import matplotlib.pylab as mp
+        mp.figure()
+        mp.imshow(data, interpolation='nearest')
+        mp.colorbar()
+
+    dataset = np.array(dataset)
+
+    if out_text_file is not None: 
+        dataset.tofile(out_text_file)
+
+    if out_image_file is not None:
+        from nipy.io.imageformats import save, Nifti1Image 
+        save(Nifti1Image( dataset, np.eye(4)), out_image_file)
+
+    return dataset
