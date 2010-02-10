@@ -1,7 +1,7 @@
-from nipy.neurospin.image import Image, apply_affine, subgrid_affine
+from nipy.neurospin.image import Image, apply_affine, subgrid_affine, inverse_affine
 
 import numpy as np 
-    
+from scipy.ndimage import gaussian_filter
 
 class GridTransform(object): 
 
@@ -30,7 +30,7 @@ class GridTransform(object):
             self._affine = affine
             self._grid_affine = np.dot(affine, self._toworld)
         self._IJK = None
-        self._sample_affine = None
+        self._sampled = None
 
     def _get_shape(self): 
         return self._shape
@@ -56,20 +56,20 @@ class GridTransform(object):
         tmp = np.mgrid[[slice(0, s) for s in self._shape]]
         self._IJK = np.rollaxis(tmp, 0, 1+len(self._shape))
         return self._IJK 
-
-    def sample_affine(self):
-        if not self._sample_affine == None:
-            return self._sample_affine
-        self._sample_affine = apply_affine(self._grid_affine, self.IJK())
-        return self._sample_affine
         
+    def sample_affine(self): 
+        if self._sampled == None: 
+            self._sampled = apply_affine(self._grid_affine, self.IJK())
+        else: 
+            self._sampled[:] = apply_affine(self._grid_affine, self.IJK())
+
     def __call__(self):
         """
         Return the displacements sampled on the grid. 
         """
-        tmp = self.sample_affine().copy()
-        tmp += np.sum((self._data.T*self._param).T, 0)
-        return tmp 
+        self.sample_affine()
+        self._sampled += np.sum((self._data.T*self._param).T, 0)
+        return self._sampled
 
     shape = property(_get_shape)
     affine = property(_get_affine)
@@ -83,54 +83,49 @@ A derivation of the GridTransform class for which data is not pre-computed
 
 class SplineTransform(GridTransform):
 
-    def __init__(self, image, control_points, affine=None, basis='gaussian', **kwargs):
+    def __init__(self, image, control_points, sigma, affine=None):
         """
         control_points: a Nx3 array of world coordinates 
         """
         self._generic_init(image, affine)
         self._control_points = np.asarray(control_points)
+        from_world = inverse_affine(self._toworld)
+        tmp = apply_affine(from_world, control_points) 
+        self._idx_control_points = tuple(np.round(tmp).astype('int').T)
+        self._sigma = sigma 
+        self._grid_sigma = np.abs(np.diagonal(from_world)[0:-1]*sigma)
+        self._norma = np.sqrt(2*np.pi)*self._grid_sigma
+        self._set_param(np.zeros(3*self._control_points.shape[0]))
+
+
+        """
         if basis in builtin_bases:
             self._basis = builtin_bases[basis]
         else:
             self._basis = basis
         self._kwargs = kwargs
-
         """
-        - Precompute grid coordinates of control points
-        - Precompute sigma in grid coordinates
-        - Afterwards:
-
-        I = np.zeros(self._shape)
-        res = np.zeros(list(self._shape)+[3])
-
-        for i in range(3)...
-        
-          p = self._param[i::3]
-          I[grid_control_points] = p
-
-          res[:,:,:,i] = nd.gaussian_filter(I)
-
-        """
-
-    def mode(self, i):
-        return self._basis(self.XYZ(), self._control_points[i], **self._kwargs)
-            
 
     def __getitem__(self, slices):
         toworld = subgrid_affine(self._toworld, slices)
-        return SplineTransform((data.shape[1:-1], toworld), data, self._affine)
+        fake_data = np.ones(self._shape, dtype='bool')[slices]
+        return SplineTransform((fake_data.shape, toworld), 
+                               self._control_points, self._sigma, self._affine)
+
+    def __call__(self): 
+        
+        self.sample_affine()
+        I = np.zeros(self._shape)
+        
+        for i in range(3): 
+            I[self._idx_control_points] = self._param[i::3]
+            self._sampled[:,:,:,i] += self._norma[i]*gaussian_filter(I, sigma=self._grid_sigma[i])
+        return self._sampled
 
 
 
-def gaussian(XYZ, c, scale=1.):
-    tmp = (XYZ-c)/scale
-    return np.exp(-.5*tmp**2)
-
-
-builtin_bases = {'gaussian': gaussian}
 
 
 """
-data = [np.random.rand(20,20,10,3) for i in range(5)]
-g = GridTransform(data, np.eye(4))
+builtin_bases = {'gaussian': gaussian}
 """
