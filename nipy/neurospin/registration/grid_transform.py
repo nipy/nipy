@@ -21,7 +21,7 @@ class GridTransform(object):
         transformation.
         """
         self._data = data 
-        self._shape = data[0].shape
+        self._shape = data[0].shape[0:-1]
         self._toworld = toworld
         if affine == None: 
             affine = np.eye(4)
@@ -45,8 +45,8 @@ class GridTransform(object):
         # Specify dtype to allow in-place operations
         self._param = np.asarray(p, dtype='double') 
 
-    def getitem__(self, slices):
-        data = [self._data[i] for i in range(len(data))]
+    def __getitem__(self, slices):
+        data = [self._data[i][slices] for i in range(self._param.size)]
         toworld = subgrid_affine(self._toworld, slices)
         return GridTransform(data, toworld, self._affine)
 
