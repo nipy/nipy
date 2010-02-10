@@ -81,6 +81,7 @@ class IconicRegistration(object):
             spacing = subsample(fov.data, npoints=fixed_npoints)
             fov = self._source_image[slicer()]
 
+        self._slices = slicer()
         self._source = fov.data
         self._source_npoints = (fov.data >= 0).sum()
         self._source_toworld = fov.affine
@@ -130,7 +131,7 @@ class IconicRegistration(object):
     def eval(self, T):
         if isinstance(T, GridTransform): 
             affine = 0 
-            Tv = apply_affine(self._target_fromworld, T())
+            Tv = apply_affine(self._target_fromworld, T[self._slices]())
         else:
             affine = 1
             Tv = np.dot(self._target_fromworld, np.dot(T, self._source_toworld)) 
