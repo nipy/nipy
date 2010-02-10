@@ -153,21 +153,13 @@ class IconicRegistration(object):
                            self._pdf, 
                            self._similarity_func)
 
-    ## FIXME: check that the dimension of start is consistent with the search space. 
-    def optimize(self, search='affine', method='powell', start=None, 
-                 radius=100, **kwargs):
 
-        """
-        radius: a parameter for the 'typical size' in mm of the object
-        being registered. This is used to reformat the parameter
-        vector (translation+rotation+scaling+shearing) so that each
-        element roughly represents a variation in mm.
-        """
+    def optimize(self, start=None, method='powell', **kwargs):
+
         if start == None: 
             T = Affine()
-        else:
-            T = Affine(start.vec12)
-        T.parametrize(subtype=search, radius=radius)
+        else: 
+            T = start
         tc0 = T.param
 
         # Loss function to minimize

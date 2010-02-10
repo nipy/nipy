@@ -3,15 +3,16 @@ import numpy as np
 from nipy.neurospin.image import transform_image, from_brifti, to_brifti
 
 from iconic_registration import IconicRegistration
-from affine import Affine 
+from affine import Affine, Rigid, Similarity
 from grid_transform import GridTransform
 
+transform_classes = {'affine': Affine, 'rigid': Rigid, 'similarity': Similarity}
+                     
 def register(source, 
              target, 
              similarity='cr',
              interp='pv',
              subsampling=None,
-             normalize=None, 
              search='affine',
              graduate_search=False,
              optimizer='powell'):
@@ -69,12 +70,16 @@ def register(source,
         search = [search]
     if isinstance(optimizer, basestring):
         optimizer = [optimizer]
-
+   
     T = None
     for i in range(max(len(search), len(optimizer))):
-        s = search[min(i, len(search)-1)]
-        m = optimizer[min(i, len(optimizer)-1)]
-        T = regie.optimize(method=m, search=s, start=T)
+        search_ = search[min(i, len(search)-1)]
+        optimizer_ = optimizer[min(i, len(optimizer)-1)]
+        if T == None: 
+            T = transform_classes[search_]()
+        else: 
+            T = transform_classes[search_](T.vec12)
+        T = regie.optimize(start=T, method=optimizer_)
     return T
 
 

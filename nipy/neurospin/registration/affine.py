@@ -106,9 +106,15 @@ def preconditioner(radius):
     """
     Computes a scaling vector pc such that, if p=(u,r,s,q) represents
     affine transformation parameters, where u is a translation, r and
-    q are rotation vectors, and s is a scaling vector, then all
-    components of (p/pc) are somehow comparable and homogeneous to the
-    distance unit implied by the translation component.
+    q are rotation vectors, and s is the vector of log-scales, then
+    all components of (p/pc) are roughly comparable to the translation
+    component.
+
+    To that end, we use a `radius` parameter which represents the
+    'typical size' of the object being registered. This is used to
+    reformat the parameter vector
+    (translation+rotation+scaling+shearing) so that each element
+    roughly represents a variation in mm.
     """
     rad = 1./radius
     sca = 1./radius
@@ -117,7 +123,11 @@ def preconditioner(radius):
 
 class Affine(object): 
 
-    def __init__(self, array=None):
+    def __init__(self, array=None, radius=100):
+        self._generic_init(array, radius)
+        self._subtype = affines.index('affine')+len(affines)
+    
+    def _generic_init(self, array, radius): 
         if array == None: 
             vec12 = np.zeros(12)
         elif array.shape == (4,4):
@@ -127,11 +137,7 @@ class Affine(object):
         else: 
             raise ValueError('Invalid array')
         self._set_vec12(vec12)
-        self.parametrize('affine')
-
-    def parametrize(self, subtype, flag2d=False, radius=100): 
         self._precond = preconditioner(radius)
-        self._subtype = affines.index(subtype)+len(affines)*(not flag2d)
         
     def __call__(self, xyz): 
         return apply_affine(self.__array__(), xyz)
@@ -154,7 +160,8 @@ class Affine(object):
         return param[_affines[self._subtype]]
 
     def _set_param(self, p): 
-        self._vec12 = param_to_vector12(np.asarray(p), self._vec12, self._precond, self._subtype)
+        self._vec12 = param_to_vector12(np.asarray(p), self._vec12, 
+                                        self._precond, self._subtype)
         
     param = property(_get_param, _set_param)
 
@@ -192,7 +199,6 @@ class Affine(object):
         a._set_vec12(vector12(np.dot(self.__array__(), other.__array__()), a.subtype))
         return a
 
-
     def inv(self):
         """
         Return the inverse affine transform. 
@@ -203,3 +209,40 @@ class Affine(object):
         a._set_vec12(vector12(np.linalg.inv(self.__array__())))
         return a
         
+
+class Rigid(Affine):
+
+    def __init__(self, array=None, radius=100):
+        self._generic_init(array, radius)
+        self._subtype = affines.index('rigid')+len(affines)
+
+
+class Similarity(Affine):
+
+    def __init__(self, array=None, radius=100):
+        self._generic_init(array, radius)
+        self._subtype = affines.index('similarity')+len(affines)
+
+
+"""
+class Affine2D(Affine):
+
+    def __init__(self, array=None, radius=100):
+        self._generic_init(array, radius)
+        self._subtype = affines.index('affine')
+
+
+class Rigid2D(Affine):
+
+    def __init__(self, array=None, radius=100):
+        self._generic_init(array, radius)
+        self._subtype = affines.index('rigid')
+
+
+class Similarity2D(Affine):
+
+    def __init__(self, array=None, radius=100):
+        self._generic_init(array, radius)
+        self._subtype = affines.index('similarity')
+
+"""
