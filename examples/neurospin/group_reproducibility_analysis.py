@@ -30,8 +30,9 @@ betas = np.reshape(dataset, (nsubj, dimx, dimy))
 # set the variance at 1 everywhere
 func = np.reshape(betas,(nsubj, dimx*dimy)).T
 var = np.ones((dimx*dimy, nsubj))
-xyz = np.array(np.where(betas[:1])).T
-coord = xyz.astype(np.float)
+
+from nipy.io.imageformats import Nifti1Image 
+mask = Nifti1Image(np.ones((dimx, dimy, 1)),np.eye(4))
 
 ################################################################################
 # Run reproducibility analysis 
@@ -57,16 +58,16 @@ for threshold in thresholds:
     sent = []
     peaks = []
     for i in range(niter):
-        k = voxel_reproducibility(func, var, xyz, ngroups,
+        k = voxel_reproducibility(func, var, mask, ngroups,
                                   method, swap, verbose, **kwargs)
         kappa.append(k)
-        cld = cluster_reproducibility(func, var, xyz, ngroups, coord, sigma,
+        cld = cluster_reproducibility(func, var, mask, ngroups, sigma,
                                       method, swap, verbose, **kwargs)
         cls.append(cld)
-        peak = peak_reproducibility(func, var, xyz, ngroups, coord, sigma,
+        peak = peak_reproducibility(func, var, mask, ngroups, sigma,
                                       method, swap, verbose, **kwargs)
         peaks.append(peak)
-        seni = map_reproducibility(func, var, xyz, ngroups,
+        seni = map_reproducibility(func, var, mask, ngroups,
                            method, True, verbose, threshold=threshold,
                            csize=csize).mean()/ngroups
         sent.append(seni)
@@ -102,7 +103,7 @@ mp.figure()
 q = 1
 for threshold in thresholds:
     mp.subplot(3, len(thresholds)/3, q)
-    rmap = map_reproducibility(func, var, xyz, ngroups,
+    rmap = map_reproducibility(func, var, mask, ngroups,
                            method, verbose, threshold=threshold,
                            csize=csize)
     rmap = np.reshape(rmap, (dimx, dimy))
