@@ -70,11 +70,7 @@ class Image(object):
         Extract an image patch corresponding to the specified bounding
         box. Compute the affine transformation accordingly. 
         """
-        steps = map(lambda x: max(x,1), [s.step for s in slices])
-        starts = map(lambda x: max(x,0), [s.start for s in slices])
-        t = np.diag(np.concatenate((steps,[1]),1))
-        t[0:3,3] = starts
-        affine = np.dot(self._affine, t)
+        affine = subgrid_affine(self._affine, slices)
         return Image(self._get_data()[slices], affine, world=self._world)
 
     def _get_shape(self):
@@ -250,8 +246,8 @@ def set_image(im, values):
         
 
 
-def transform_image(im, transform, grid_coords=True, reference=None,
-                    dtype=None, interp_order=_interp_order):
+def transform_image(im, transform, transform_type, grid_coords=False, 
+                    reference=None, dtype=None, interp_order=_interp_order):
     """
     Apply a transformation to a 'floating' image to bring it into the
     same grid as a given 'reference' image. The transformation is
@@ -264,10 +260,13 @@ def transform_image(im, transform, grid_coords=True, reference=None,
       or a 3xN array describing voxelwise displacements of the
       reference grid points
 
+    transform_type : str
+      either 'affine' or 'grid'
+
     grid_coords : boolean
 
-      True if the transform maps grid coordinates, False if it maps
-      world coordinates
+      True if the transform maps to grid coordinates, False if it maps
+      to world coordinates
     
     reference: reference image, defaults to input. 
     """
@@ -276,42 +275,28 @@ def transform_image(im, transform, grid_coords=True, reference=None,
         
     if dtype == None: 
         dtype = im._get_dtype()
-
-    ### AFFINE CASE
-
-    # Grid-to-grid transformation from reference to floating
-    t = np.asarray(transform)
-    if t.ndim == 2:
-        affine = True
-        if not grid_coords:
-            t = np.dot(im._inv_affine, np.dot(t, reference._affine))
-    else:
-        affine = False
-        if not grid_coords:
-            t = apply_affine(im._inv_affine, t)
-
             
-    # Perform image resampling 
+    # Prepare data arrays
     data = im._get_data()
     output = np.zeros(reference._shape, dtype=dtype)
+    t = np.asarray(transform)
 
-    if affine: 
+    # Case: affine transform
+    if transform_type == 'affine': 
+        if not grid_coords:
+            t = np.dot(im._inv_affine, np.dot(t, reference._affine))
         ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
                                  order=interp_order, cval=im._background, 
                                  output_shape=output.shape, output=output)
-    else:
-        toto = 2
-
-    ### NON RIGID CASE
-    """
-    output = ndimage.map_coordinates(im._get_data(), 
-                                     t, 
-                                     order=interp_order, 
-                                     cval=self._background,
-                                     output=dtype)
-    """
     
-
+    # Case: precomputed displacements
+    else:
+        if not grid_coords:
+            t = apply_affine(im._inv_affine, t)
+        output = ndimage.map_coordinates(data, t, 
+                                         order=interp_order, 
+                                         cval=im._background,
+                                         output=dtype)
     
     return Image(output, affine=reference._affine, world=im._world, 
                  background=im._background)
@@ -361,6 +346,12 @@ def apply_affine_to_tuple(affine, XYZ):
     tXYZ[2,:] += affine[2,3]
     return tuple(tXYZ)
 
+def subgrid_affine(affine, slices):
+    steps = map(lambda x: max(x,1), [s.step for s in slices])
+    starts = map(lambda x: max(x,0), [s.start for s in slices])
+    t = np.diag(np.concatenate((steps,[1]),1))
+    t[0:3,3] = starts
+    return np.dot(affine, t)
 
 
 def sample(data, coords, order=_interp_order, dtype=None, 

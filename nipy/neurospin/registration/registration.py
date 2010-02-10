@@ -1,7 +1,10 @@
+import numpy as np 
+
 from nipy.neurospin.image import transform_image, from_brifti, to_brifti
 
-from iconic_registration import IconicRegistration 
-
+from iconic_registration import IconicRegistration
+from affine import Affine 
+from grid_transform import GridTransform
 
 def register(source, 
              target, 
@@ -41,9 +44,13 @@ def register(source,
        If a string, one of 'affine', 'rigid', 'similarity'; default 'affine'
        A sequence of strings can be provided to run a graduate search, e.g.
        by doing first 'rigid', then 'similarity', then 'affine'
-    optimizer : str
-       One of 'powell', 'simplex', 'conjugate_gradient'
-       
+    optimizer : str or sequence 
+       If a string, one of 'powell', 'simplex', 'conjugate_gradient'
+       Alternatively, a sequence of such strings can be provided to
+       run several optimizers sequentially. If bot `search` and
+       `optimizer` are sequences, then the shorter is filled with its
+       last value to match the longer. 
+
     Returns
     -------
     T : source-to-target affine transformation 
@@ -60,18 +67,35 @@ def register(source,
 
     if isinstance(search, basestring): 
         search = [search]
+    if isinstance(optimizer, basestring):
+        optimizer = [optimizer]
 
     T = None
-    for s in search: 
-        T = regie.optimize(method=optimizer, search=s, start=T)
-    return T 
+    for i in range(max(len(search), len(optimizer))):
+        s = search[min(i, len(search)-1)]
+        m = optimizer[min(i, len(optimizer)-1)]
+        T = regie.optimize(method=m, search=s, start=T)
+    return T
 
 
 def transform(floating, T, reference=None, interp_order=3):
+
+    # Convert assumed brifti-like input images to local image class
     floating = from_brifti(floating)
     if not reference == None: 
         reference = from_brifti(reference)
-    return to_brifti(transform_image(floating, T, grid_coords=False,
+
+    # Switch on transformation type
+    if isinstance(T, GridTransform): 
+        if not T.shape == reference.shape: 
+            raise ValueError('Wrong grid transformation shape')
+        t = T()
+        ttype = 'grid'
+    else:
+        t = np.asarray(T)
+        ttype = 'affine'
+
+    return to_brifti(transform_image(floating, t, ttype, grid_coords=False,
                                      reference=reference, interp_order=interp_order))
 
 

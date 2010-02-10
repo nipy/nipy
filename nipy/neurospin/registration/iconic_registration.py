@@ -6,6 +6,7 @@ Questions: alexis.roche@gmail.com
 from nipy.neurospin.image import Image, set_image
 from registration_module import _joint_histogram, _similarity, builtin_similarities
 from affine import Affine
+from grid_transform import GridTransform
 
 import numpy as np  
 from scipy.optimize import fmin, fmin_powell, fmin_cg
@@ -123,13 +124,16 @@ class IconicRegistration(object):
     For a grid_transform instance T: 
 
     1. check that T is tied to self._source: T = GridTransform(modes, self._source) 
-    2. return _apply_affine(self._target_fromworld, np.asarray(T))
+    2. return apply_affine(self._target_fromworld, T())
     
     """
-
-
     def eval(self, T):
-        Tv = self.voxel_transform(T)
+        if isinstance(T, GridTransform): 
+            affine = 0 
+            Tv = apply_affine(self._target_fromworld, T())
+        else:
+            affine = 1
+            Tv = np.dot(self._target_fromworld, np.dot(T, self._source_toworld)) 
         seed = self._interp
         if self._interp < 0:
             seed = - np.random.randint(maxint)
@@ -137,7 +141,7 @@ class IconicRegistration(object):
                          self._source.flat, ## array iterator
                          self._target, 
                          Tv,
-                         1, ## affine
+                         affine,
                          seed)
         #self.source_hist = np.sum(self._joint_hist, 1)
         #self.target_hist = np.sum(self._joint_hist, 0)
@@ -150,7 +154,7 @@ class IconicRegistration(object):
 
     ## FIXME: check that the dimension of start is consistent with the search space. 
     def optimize(self, search='affine', method='powell', start=None, 
-                 radius=100, tol=1e-1, ftol=1e-2):
+                 radius=100, **kwargs):
 
         """
         radius: a parameter for the 'typical size' in mm of the object
@@ -183,13 +187,18 @@ class IconicRegistration(object):
 
         if method=='simplex':
             print ('Optimizing using the simplex method...')
-            tc = fmin(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
+            kwargs.setdefault('xtol', .1)
+            kwargs.setdefault('ftol', .01)
+            tc = fmin(loss, tc0, callback=callback, **kwargs)
         elif method=='powell':
             print ('Optimizing using Powell method...') 
-            tc = fmin_powell(loss, tc0, callback=callback, xtol=tol, ftol=ftol)
+            kwargs.setdefault('xtol', .1)
+            kwargs.setdefault('ftol', .01)
+            tc = fmin_powell(loss, tc0, callback=callback, **kwargs)
         elif method=='conjugate_gradient':
             print ('Optimizing using conjugate gradient descent...')
-            tc = fmin_cg(loss, tc0, callback=callback, gtol=ftol)
+            kwargs.setdefault('gtol', .1)
+            tc = fmin_cg(loss, tc0, callback=callback, **kwargs)
         else:
             raise ValueError('Unrecognized optimizer')
         
