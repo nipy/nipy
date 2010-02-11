@@ -10,6 +10,8 @@ naffines = 3
 id_rigid = affines.index('rigid')
 id_similarity = affines.index('similarity')
 id_affine = affines.index('affine')
+
+# Defaults 
 _radius = 100
 _flag2d = False
 
