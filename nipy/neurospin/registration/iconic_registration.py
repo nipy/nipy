@@ -154,12 +154,9 @@ class IconicRegistration(object):
                            self._similarity_func)
 
 
-    def optimize(self, start=None, method='powell', **kwargs):
+    def optimize(self, start, method='powell', **kwargs):
 
-        if start == None: 
-            T = Affine()
-        else: 
-            T = start
+        T = start
         tc0 = T.param
 
         # Loss function to minimize

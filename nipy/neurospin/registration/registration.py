@@ -79,7 +79,7 @@ def register(source,
             T = transform_classes[search_]()
         else: 
             T = transform_classes[search_](T.vec12)
-        T = regie.optimize(start=T, method=optimizer_)
+        T = regie.optimize(T, method=optimizer_)
     return T
 
 
