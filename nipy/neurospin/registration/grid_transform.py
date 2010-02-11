@@ -90,8 +90,8 @@ class SplineTransform(GridTransform):
         self._generic_init(image, affine)
         self._control_points = np.asarray(control_points)
         from_world = inverse_affine(self._toworld)
-        tmp = apply_affine(from_world, control_points) 
-        self._idx_control_points = tuple(np.round(tmp).astype('int').T)
+        tmp = np.round(apply_affine(from_world, control_points)).astype('int')
+        self._idx_control_points = tuple([tmp[:,:,:,i] for i in range(tmp.shape[3])])
         self._sigma = sigma 
         self._grid_sigma = np.abs(np.diagonal(from_world)[0:-1]*sigma)
         self._norma = np.sqrt(2*np.pi)*self._grid_sigma
