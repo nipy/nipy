@@ -31,6 +31,17 @@ def _cone2d(shape, ij, pos, ampli, width):
     temp[ij[:,0],ij[:,1]] = codi*ampli
     return temp
 
+def _cone3d(shape, ij, pos, ampli, width):
+    """
+    Define a cone of the proposed grid
+    """
+    temp = np.zeros(shape)
+    pos = np.reshape(pos,(1,2))
+    dist = np.sqrt(np.sum((ij-pos)**2, axis=1))
+    codi = (width-dist)*(dist < width)/width
+    temp[ij[:,0],ij[:,1]] = codi*ampli
+    return temp
+
 
 def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0, 
                          noise_level=1.0, pos=pos, ampli=ampli,

@@ -164,7 +164,7 @@ def get_peak_position_from_thresholded_map(smap, mask, threshold):
     peaks = get_3d_peaks(sim, threshold=threshold, order_th=2)
     if peaks==None:
         return None
-    
+
     pos = np.array([p['pos'] for p in peaks])
     return pos
 

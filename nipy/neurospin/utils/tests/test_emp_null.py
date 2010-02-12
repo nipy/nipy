@@ -23,7 +23,7 @@ def test_efdr():
     #
     # make the tests
     efdr = ENN(x)
-    np.testing.assert_array_less(efdr.fdr(3.0), 0.15)
+    np.testing.assert_array_less(efdr.fdr(3.0), 0.2)
     np.testing.assert_array_less(-efdr.threshold(alpha=0.05), -2.8)
     np.testing.assert_array_less(-efdr.uncorrected_threshold(alpha=0.001), -2.5)
 
