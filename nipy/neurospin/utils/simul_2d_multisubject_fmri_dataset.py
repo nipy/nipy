@@ -101,7 +101,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
         import numpy.random as nr
     
     shape = (dimx, dimy)
-    ij = (np.where(np.ones(shape))).T
+    ij = np.array(np.where(np.ones(shape))).T
     dataset = []
 
     for s in range(nbsubj):
