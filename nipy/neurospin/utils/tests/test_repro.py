@@ -31,13 +31,16 @@ def apply_repro_analysis_analysis(dataset, thresholds=[3.0], method = 'crfx'):
     """
     perform the reproducibility  analysis according to the 
     """
+    from nipy.io.imageformats import Nifti1Image 
+
     nsubj, dimx, dimy = dataset.shape
     
     func = np.reshape(dataset,(nsubj, dimx*dimy)).T
     var = np.ones((dimx*dimy, nsubj))
-    xyz = np.reshape(np.indices((dimx, dimy,1)).T,(dimx*dimy,3))
-    coord = xyz.astype(np.float)
-
+    #xyz = np.reshape(np.indices((dimx, dimy,1)).T,(dimx*dimy,3))
+    #coord = xyz.astype(np.float)
+    mask = Nifti1Image(np.ones((dimx, dimy, 1)),np.eye(4))
+    
     ngroups = 10
     sigma = 2.0
     csize = 10
@@ -52,10 +55,10 @@ def apply_repro_analysis_analysis(dataset, thresholds=[3.0], method = 'crfx'):
         cls = []
         kwargs={'threshold':threshold,'csize':csize}        
         for i in range(niter):
-            k = voxel_reproducibility(func, var, xyz, ngroups,
+            k = voxel_reproducibility(func, var, mask, ngroups,
                                   method, swap, verbose, **kwargs)
             kappa.append(k)
-            cld = cluster_reproducibility(func, var, xyz, ngroups, coord, sigma,
+            cld = cluster_reproducibility(func, var, mask, ngroups, sigma,
                                       method, swap, verbose, **kwargs)
             cls.append(cld)
         

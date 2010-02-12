@@ -204,9 +204,10 @@ def get_3d_peaks(image, mask=None, threshold=0., nn=18, order_th=0):
     if n_maxima==0:
         # should not occur ?
         return None
-
+    
     # reorder the maxima to have decreasing peak value
-    idx = np.argsort(-maxima)
+    vals = data[maxima]
+    idx = np.argsort(-vals)
     maxima = maxima[idx]
     order = order[idx]
     
@@ -216,6 +217,9 @@ def get_3d_peaks(image, mask=None, threshold=0., nn=18, order_th=0):
     
     peaks = [{'val':vals[k], 'order':order[k], 'ijk':ijk[k], 'pos':pos[k]}
              for k in range(n_maxima)]
+
+    
+    
     return peaks
 
 
