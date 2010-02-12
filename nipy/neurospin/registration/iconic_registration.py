@@ -3,7 +3,7 @@ Intensity-based matching.
 
 Questions: alexis.roche@gmail.com
 """
-from nipy.neurospin.image import Image, set_image
+from nipy.neurospin.image import Image, set_image, apply_affine
 from registration_module import _joint_histogram, _similarity, builtin_similarities
 from affine import Affine
 from grid_transform import GridTransform

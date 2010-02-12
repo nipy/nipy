@@ -84,17 +84,32 @@ A derivation of the GridTransform class for which data is not pre-computed
 
 class SplineTransform(GridTransform):
 
-    def __init__(self, image, control_points, sigma, affine=None):
+    def __init__(self, image, control_points, sigma, grid_coords=False, affine=None):
         """
-        control_points: a Nx3 array of world coordinates 
+        control_points: a Nx3 array of world coordinates
+
+        if grid_coords is True, both `control_points` and `sigma` are
+        interpreted in voxel coordinates.
         """
         self._generic_init(image, affine)
-        self._control_points = np.asarray(control_points)
-        from_world = inverse_affine(self._toworld)
-        tmp = np.round(apply_affine(from_world, control_points)).astype('int')
+        fromworld = inverse_affine(self._toworld)
+        if grid_coords:
+            self._control_points = apply_affine(self._toworld, control_points)
+            tmp = control_points
+            self._sigma = np.abs(np.diagonal(self._toworld)[0:-1]*sigma)
+            self._grid_sigma = sigma*np.ones(3)
+        else:
+            self._control_points = np.asarray(control_points)
+            tmp = apply_affine(fromworld, control_points)
+            self._sigma = sigma*np.ones(3) 
+            self._grid_sigma = np.abs(np.diagonal(fromworld)[0:-1]*sigma)
+
+        # TODO : make sure the control point indices fall within the
+        # subgrid and maybe raise a warning if rounding is too severe
+
+        tmp = np.round(tmp).astype('int')
         self._idx_control_points = tuple([tmp[:,:,:,i] for i in range(tmp.shape[3])])
-        self._sigma = sigma 
-        self._grid_sigma = np.abs(np.diagonal(from_world)[0:-1]*sigma)
+        
         self._norma = np.sqrt(2*np.pi)*self._grid_sigma
         self._set_param(np.zeros(3*self._control_points.shape[0]))
 
@@ -111,7 +126,8 @@ class SplineTransform(GridTransform):
         toworld = subgrid_affine(self._toworld, slices)
         fake_data = np.ones(self._shape, dtype='bool')[slices]
         return SplineTransform((fake_data.shape, toworld), 
-                               self._control_points, self._sigma, self._affine)
+                               self._control_points, self._sigma,
+                               grid_coords=False, affine=self._affine)
 
     def __call__(self): 
         
