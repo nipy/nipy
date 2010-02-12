@@ -3,6 +3,7 @@ from nipy.neurospin.image import Image, apply_affine, subgrid_affine, inverse_af
 import numpy as np 
 from scipy.ndimage import gaussian_filter
 
+
 class GridTransform(object): 
 
     def __init__(self, image, data, affine=None): 

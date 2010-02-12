@@ -28,12 +28,20 @@ def test_get_values():
 def test_interpolate_values(): 
     XYZ = (2*np.array(I.shape)*np.random.rand(3, 10).T).T
     vals = I(XYZ)
-    assert_equal(vals.size, 10) 
+    assert_equal(vals.size, 10)
+
+def test_apply_affine():
+    XYZ = (100*(np.random.rand(10,11,12,3)-.5)).astype('int')
+    T = np.eye(4)
+    T[0:3,0:3] = np.random.rand(3,3)
+    T[0:3,3] = 100*(np.random.rand(3)-.5)
+    _XYZ = apply_affine(inverse_affine(T), apply_affine(T, XYZ))
+    assert_almost_equal(_XYZ, XYZ)
 
 def test_transform(): 
     T = np.eye(4)
     T[0:3,3] = 10*np.random.rand(3)
-    J = transform_image(I, T)
+    J = transform_image(I, T, 'affine')
     assert_equal(J.shape, I.shape)
 
 def set_values(): 

@@ -116,18 +116,6 @@ class IconicRegistration(object):
         ## C-contiguity required
         return np.dot(self._target_fromworld, np.dot(T, self._source_toworld)) 
 
-    """
-    For non-affine transformations, we'll do:
-
-    XYZ = tuple(np.mgrid[[slice(0,d) for d in R._source.shape]])     
-    return apply_affine(self._target_fromworld, T(apply_affine(self._source_toworld, XYZ)))
-
-    For a grid_transform instance T: 
-
-    1. check that T is tied to self._source: T = GridTransform(modes, self._source) 
-    2. return apply_affine(self._target_fromworld, T())
-    
-    """
     def eval(self, T):
         if isinstance(T, GridTransform): 
             affine = 0 
@@ -154,12 +142,9 @@ class IconicRegistration(object):
                            self._similarity_func)
 
 
-    def optimize(self, start=None, method='powell', **kwargs):
+    def optimize(self, start, method='powell', **kwargs):
 
-        if start == None: 
-            T = Affine()
-        else: 
-            T = start
+        T = start
         tc0 = T.param
 
         # Loss function to minimize

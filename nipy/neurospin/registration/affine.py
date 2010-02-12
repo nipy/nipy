@@ -5,6 +5,18 @@ from nipy.neurospin.image import apply_affine
 import numpy as np
 
 
+# Globals 
+naffines = 3
+id_rigid = affines.index('rigid')
+id_similarity = affines.index('similarity')
+id_affine = affines.index('affine')
+
+# Defaults 
+_radius = 100
+_flag2d = False
+
+
+
 def rotation_mat2vec(R):
     """
     r = rotation_mat2vec(R)
@@ -70,7 +82,7 @@ def rotation_mat2vec(R):
         return np.pi*n/np.sqrt((n**2).sum())
 
 
-def vector12(mat, subtype='affine'):
+def vector12(mat, subtype=id_affine):
     """
     Return a 12-sized vector of natural affine parameters:
     translation, rotation, log-scale, additional rotation (to allow
@@ -80,10 +92,10 @@ def vector12(mat, subtype='affine'):
     vec12 = np.zeros(12)
     vec12[0:3] = mat[0:3,3]
     A = mat[0:3,0:3]
-    if subtype == 'rigid': 
+    if subtype == id_rigid: 
         vec12[3:6] = rotation_mat2vec(A)
         vec12[6:9] = 0.0
-    elif subtype == 'similarity':
+    elif subtype == id_similarity:
         ## A = s R ==> det A = (s)**3 ==> s = (det A)**(1/3)
         s = np.linalg.det(A)**(1/3.)
         vec12[3:6] = rotation_mat2vec(A/s)
@@ -123,11 +135,11 @@ def preconditioner(radius):
 
 class Affine(object): 
 
-    def __init__(self, array=None, radius=100):
-        self._generic_init(array, radius)
-        self._subtype = affines.index('affine')+len(affines)
+    def __init__(self, array=None, radius=_radius, flag2d=_flag2d):
+        subtype = id_affine
+        self._generic_init(array, radius, subtype, flag2d)
     
-    def _generic_init(self, array, radius): 
+    def _generic_init(self, array, radius, subtype, flag2d): 
         if array == None: 
             vec12 = np.zeros(12)
         elif array.shape == (4,4):
@@ -138,30 +150,21 @@ class Affine(object):
             raise ValueError('Invalid array')
         self._set_vec12(vec12)
         self._precond = preconditioner(radius)
-        
+        self._subtype = subtype
+        self._flag2d = flag2d
+        self._stamp = subtype + naffines*(not flag2d)
+
+
     def __call__(self, xyz): 
         return apply_affine(self.__array__(), xyz)
 
-    def _get_subtype(self): 
-        return affines[self._subtype%len(affines)]
-
-    subtype = property(_get_subtype)
-
-    def _get_flag2d(self): 
-        flag2d = False
-        if self._subtype/len(affines) == 0: 
-            flag2d = True
-        return flag2d
-
-    flag2d = property(_get_flag2d)
-            
     def _get_param(self): 
         param = self._vec12/self._precond
-        return param[_affines[self._subtype]]
+        return param[_affines[self._stamp]]
 
     def _set_param(self, p): 
         self._vec12 = param_to_vector12(np.asarray(p), self._vec12, 
-                                        self._precond, self._subtype)
+                                        self._precond, self._stamp)
         
     param = property(_get_param, _set_param)
 
@@ -183,66 +186,56 @@ class Affine(object):
         return matrix44(self._vec12, dtype=dtype)
 
     def __str__(self): 
-        str  = 'translation : %s\n' % self._vec12[0:3].__str__()
-        str += 'rotation    : %s\n' % self._vec12[3:6].__str__()
-        str += 'scaling     : %s\n' % (np.exp(self._vec12[6:9])).__str__()
-        str += 'shearing    : %s' % self._vec12[9:12].__str__()
-        return str
+        string  = 'translation : %s\n' % self._vec12[0:3].__str__()
+        string += 'rotation    : %s\n' % self._vec12[3:6].__str__()
+        string += 'scaling     : %s\n' % (np.exp(self._vec12[6:9])).__str__()
+        string += 'shearing    : %s' % self._vec12[9:12].__str__()
+        return string
 
     def __mul__(self, other): 
         """
         Affine composition: T1oT2(x)
         """
-        a = Affine()
-        a._subtype = max(self._subtype, other._subtype)
+        subtype = max(self._subtype, other._subtype)
+        a = affine_classes[subtype]()
         a._precond = self._precond
-        a._set_vec12(vector12(np.dot(self.__array__(), other.__array__()), a.subtype))
+        a._set_vec12(vector12(np.dot(self.__array__(), other.__array__()), a._subtype))
         return a
 
     def inv(self):
         """
         Return the inverse affine transform. 
         """
-        a = Affine()
-        a._subtype = self._subtype
+        a = affine_classes[self._subtype]()
         a._precond = self._precond
-        a._set_vec12(vector12(np.linalg.inv(self.__array__())))
+        a._set_vec12(vector12(np.linalg.inv(self.__array__()), self._subtype))
         return a
         
 
 class Rigid(Affine):
 
-    def __init__(self, array=None, radius=100):
-        self._generic_init(array, radius)
-        self._subtype = affines.index('rigid')+len(affines)
-
+    def __init__(self, array=None, radius=_radius, flag2d=_flag2d):
+        subtype = id_rigid
+        self._generic_init(array, radius, subtype, flag2d)
+        
+    def __str__(self): 
+        string  = 'translation : %s\n' % self._vec12[0:3].__str__()
+        string += 'rotation    : %s\n' % self._vec12[3:6].__str__()
+        return string
 
 class Similarity(Affine):
 
-    def __init__(self, array=None, radius=100):
-        self._generic_init(array, radius)
-        self._subtype = affines.index('similarity')+len(affines)
+    def __init__(self, array=None, radius=_radius, flag2d=_flag2d):
+        subtype = id_similarity
+        self._generic_init(array, radius, subtype, flag2d)
 
+    def __str__(self): 
+        string  = 'translation : %s\n' % self._vec12[0:3].__str__()
+        string += 'rotation    : %s\n' % self._vec12[3:6].__str__()
+        string += 'scaling     : %s\n' % (np.exp(self._vec12[6])).__str__()
+        return string
+    
 
-"""
-class Affine2D(Affine):
+# List of 
+affine_classes = [Rigid, Similarity, Affine]
 
-    def __init__(self, array=None, radius=100):
-        self._generic_init(array, radius)
-        self._subtype = affines.index('affine')
-
-
-class Rigid2D(Affine):
-
-    def __init__(self, array=None, radius=100):
-        self._generic_init(array, radius)
-        self._subtype = affines.index('rigid')
-
-
-class Similarity2D(Affine):
-
-    def __init__(self, array=None, radius=100):
-        self._generic_init(array, radius)
-        self._subtype = affines.index('similarity')
-
-"""
