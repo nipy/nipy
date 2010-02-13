@@ -135,6 +135,44 @@ def get_cluster_position_from_thresholded_map(smap, ijk, coord, thr=3.0,
     baryc = np.vstack(baryc)
     return baryc
 
+def get_peak_position_from_thresholded_map(smap, xyz, coord, threshold):
+    """
+    the peaks above thr in 18-connectivity are computed
+
+    Parameters
+    ----------
+    smap : array of shape (nbvox): map to threshold
+    ijk array of shape(nbvox,anat_dim) grid coordinates
+    coord: array of shape (nbvox,anatdim) physical ccordinates
+    thr=3.0 (float) cluster-forming threshold
+
+    Returns
+    -------
+    positions array of shape(k,anat_dim):
+              the cluster positions in physical coordinates
+              where k= number of clusters
+              if no such cluster exists, None is returned
+
+    fixme: ugly workaround to deal with the absence of proper image structure
+    """
+    from nipy.io.imageformats import Nifti1Image
+    from nipy.neurospin.statistical_mapping import get_3d_peaks
+
+    # create an image to represent smap
+    # note that this is perfectly ugly ans should be refactored
+    
+    shape = xyz.max(0)+1
+    simage = np.zeros(shape)
+    simage[xyz[:,0], xyz[:,1], xyz[:,2]] = smap
+    sim = Nifti1Image(simage, np.eye(4))
+    peaks = get_3d_peaks(sim, threshold=threshold, order_th=2)
+    if peaks==None:
+        return None
+    
+    ijk = np.array([p['ijk'] for p in peaks])
+    pos = np.array([coord[np.argmin(np.sum((xyz-ijk[i])**2,1))] for i in range(ijk.shape[0])])
+    return pos
+
 
 
 # ---------------------------------------------------------
@@ -426,6 +464,94 @@ def map_reproducibility(data, vardata, xyz, ngroups, method='crfx',
 
     return rmap
 
+
+def peak_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
+                            method='crfx', swap=False, verbose=0, 
+                         **kwargs):
+    """
+    return a measure of cluster-level reproducibility
+    of activation patterns
+    (i.e. how far clusters are from each other)
+
+    Parameters
+    ----------
+    data: array of shape (nvox,nsubj)
+          the input data from which everything is computed
+    vardata: array of shape (nvox,nsubj)
+             the variance of the data that is also available
+    xyz array of shape (nvox,3) 
+        the grid ccordinates of the imput voxels
+    ngroups (int),
+             Number of subbgroups to be drawn
+    coord: array of shape (nvox,3) 
+           the corresponding physical coordinates
+    sigma (float): parameter that encodes how far far is
+    threshold (float): 
+              binarization threshold
+    method='crfx', string to be chosen among 'crfx', 'cmfx' or 'cffx' 
+           inference method under study
+    swap = False: if True, a random sign swap of the data is performed
+         This is used to simulate a null hypothesis on the data.
+    verbose=0 : verbosity mode
+    
+    Returns
+    -------
+    score (float): the desired  cluster-level reproducibility index
+    """
+    tiny = 1.e-15
+    nsubj = data.shape[1]
+    samples = draw_samples(nsubj, ngroups)
+    all_pos = []
+
+    # compute the positions in the different subgroups
+    for i in range(ngroups):           
+        x = data[:,samples[i]]
+
+        if swap:
+           # apply a random sign swap to x
+           x *= (2*(np.random.rand(len(samples[i]))>0.5)-1)
+
+        vx = vardata[:,samples[i]]
+        if method!='bsa':
+            threshold = kwargs['threshold']
+           
+            if method =='crfx':
+                smap = ttest(x)
+            elif method == 'cmfx':
+                smap = mfx_ttest(x,vx)
+            elif method == 'cffx':
+                smap = fttest(x,vx)
+
+            pos = get_peak_position_from_thresholded_map(smap, xyz, coord,
+                                                         threshold)
+            all_pos.append(pos)
+        else: 
+            # method='bsa' is a special case
+            tx = x/(tiny+np.sqrt(vx))
+            afname = kwargs['afname']
+            shape = kwargs['shape']
+            affine = kwargs['affine']
+            theta = kwargs['theta']
+            dmax = kwargs['dmax']
+            ths = kwargs['ths']
+            thq = kwargs['thq']
+            smin = kwargs['smin']
+            niter = kwargs['niter']
+            afname = afname+'_%02d_%04d.pic'%(niter,i)
+            pos = coord_bsa(xyz, coord, tx, affine, shape, theta, dmax,
+                            ths, thq, smin, afname)
+        all_pos.append(pos)
+
+    # derive a kernel-based goodness measure from the pairwise comparison
+    # of sets of positions
+    score = 0
+    for i in range(ngroups):
+        for j in range(i):
+            score += statistics_from_position(all_pos[i], all_pos[j], sigma)
+            score += statistics_from_position(all_pos[j], all_pos[i], sigma)
+            
+    score /= (ngroups*(ngroups-1))
+    return score
 
 def cluster_reproducibility(data, vardata, xyz, ngroups, coord, sigma,
                             method='crfx', swap=False, verbose=0, 

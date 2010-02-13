@@ -5,6 +5,8 @@ series.
 
 # Major scientific libraries imports
 import numpy as np
+from scipy import linalg
+
 # Neuroimaging libraries imports
 from nipy.io.imageformats import load, nifti1, save, AnalyzeImage
 
@@ -362,11 +364,16 @@ def series_from_mask(session_files, mask, dtype=np.float32,
     if len(session_files[0]) == 1:
         # We have a 4D nifti file
         nb_time_points = load(session_files[0][0]).get_data().shape[-1]
+    elif isinstance(session_files[0], basestring):
+        # We have a 4D nifti file
+        nb_time_points = load(session_files[0]).get_data().shape[-1]
     session_series = np.zeros((len(session_files), mask.sum(),
                                             nb_time_points),
                                     dtype=dtype)
 
     for session_index, filenames in enumerate(session_files):
+        if isinstance(filenames, basestring):
+            filenames = [filenames, ]
         if len(filenames) == 1:
             # We have a 4D nifti file
             data_file = load(filenames[0])
@@ -375,9 +382,10 @@ def series_from_mask(session_files, mask, dtype=np.float32,
                 header = data_file.get_header()
             if smooth:
                 affine = data_file.get_affine()[:3, :3]
-                smooth_sigma = np.dot(affine, np.ones(3))*smooth
+                smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
                 from scipy import ndimage
-                data = np.asarray(data) # Get rid of memmapping
+                if not data.flags['WRITEABLE']:
+                    data = np.asarray(data).copy() # Get rid of memmapping
                 for this_data in np.rollaxis(data, -1):
                     this_data[:] = ndimage.gaussian_filter(this_data,
                                                            smooth_sigma)
@@ -390,7 +398,7 @@ def series_from_mask(session_files, mask, dtype=np.float32,
                 data = data_file.get_data()
                 if smooth:
                     affine = data_file.get_affine()[:3, :3]
-                    smooth_sigma = np.dot(affine, np.ones(3))*smooth
+                    smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
                     from scipy import ndimage
                     data = ndimage.gaussian_filter(data, smooth_sigma)
                     
