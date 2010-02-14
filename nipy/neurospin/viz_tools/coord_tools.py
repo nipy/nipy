@@ -11,39 +11,14 @@ import numpy as np
 from scipy import stats, ndimage
 
 # Local imports
-from nipy.neurospin.utils.mask import compute_mask, largest_cc
+from nipy.neurospin.utils.mask import compute_mask, largest_cc, \
+    threshold_connect_components
 from nipy.neurospin.utils.emp_null import ENN
 from nipy.neurospin.datasets.transforms.affine_utils import get_bounds
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
 ################################################################################
-
-def threshold_connect_components(map, threshold, copy=True):
-    """ Given a map with some coefficients set to zero, segment the
-        connect components with number of voxels smaller than the
-        threshold and set them to 0.
-
-        Parameters
-        ----------
-        map: ndarray
-            The map to segment
-        threshold:
-            The minimum number of voxels to keep a cluster.
-        copy: bool, optional
-            If copy is false, the input array is modified inplace
-    """
-    labels, _ = ndimage.label(map)
-    weights = np.bincount(labels.ravel())
-    if copy:
-        map = map.copy()
-    for label, weight in enumerate(weights):
-        if label == 0:
-            continue
-        if weight < threshold:
-            map[labels == label] = 0
-    return map
-
 
 def coord_transform(x, y, z, affine):
     """ Convert the x, y, z coordinates from one image space to another
