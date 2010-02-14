@@ -271,8 +271,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     return mask.astype(np.bool)
 
 
-def intersect_masks(input_masks, output_filename=None, 
-                                        threshold=0.5, cc=True):
+def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
     """
     Given a list of input mask images, generate the output image which
     is the the threshold-level intersection of the inputs 
