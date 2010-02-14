@@ -33,16 +33,15 @@ def threshold_connect_components(map, threshold, copy=True):
         copy: bool, optional
             If copy is false, the input array is modified inplace
     """
-    labels, n_labels = ndimage.label(map)
-    weights = ndimage.sum(np.ones_like(labels), 
-                          labels, index=range(n_labels)) 
+    labels, _ = ndimage.label(map)
+    weights = np.bincount(labels.ravel())
     if copy:
         map = map.copy()
-    for index, weight in enumerate(weights):
-        if index == 0:
+    for label, weight in enumerate(weights):
+        if label == 0:
             continue
         if weight < threshold:
-            map[labels == index] = 0
+            map[labels == label] = 0
     return map
 
 

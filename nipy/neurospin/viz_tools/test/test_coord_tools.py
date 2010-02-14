@@ -1,6 +1,8 @@
 import numpy as np
+import nose
 
-from ..coord_tools import coord_transform, find_cut_coords
+from ..coord_tools import coord_transform, find_cut_coords, \
+    threshold_connect_components
 
 def test_coord_transform_trivial():
     sform = np.eye(4)
@@ -30,4 +32,13 @@ def test_find_cut_coords():
                                 (x_map, y_map, z_map))
 
 
+def test_threshold_connect_components():
+    a = np.zeros((10, 10))
+    a[0, 0] = 1
+    a[3, 4] = 1
+    a = threshold_connect_components(a, 2)
+    yield nose.tools.assert_true, np.all(a == 0)
+    a[0, 0:3] = 1
+    b = threshold_connect_components(a, 2)
+    yield nose.tools.assert_true, np.all(a == b)
 
