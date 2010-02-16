@@ -4,13 +4,11 @@ Test the mask-extracting utilities.
 
 from __future__ import with_statement
 
-from tempfile import mkstemp
-
 import numpy as np
 
 import nipy.io.imageformats as nii
 import nipy.neurospin.utils.mask as nnm
-from nipy.neurospin.utils.mask import largest_cc
+from nipy.neurospin.utils.mask import largest_cc, threshold_connect_components
 
 from nipy.utils import InTemporaryDirectory
 
@@ -27,6 +25,17 @@ def test_largest_cc():
     b = a.copy()
     b[5, 5, 5] = 1
     yield assert_equal, a, largest_cc(b)
+
+
+def test_threshold_connect_components():
+    a = np.zeros((10, 10))
+    a[0, 0] = 1
+    a[3, 4] = 1
+    a = threshold_connect_components(a, 2)
+    yield assert_true, np.all(a == 0)
+    a[0, 0:3] = 1
+    b = threshold_connect_components(a, 2)
+    yield assert_true, np.all(a == b)
 
 
 def test_unscaled_data():
