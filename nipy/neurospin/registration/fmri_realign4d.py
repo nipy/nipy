@@ -1,4 +1,3 @@
-from registration_module import slice_time
 from affine import Rigid
 from nipy.neurospin.image import apply_affine
 from nipy.neurospin.image.image_module import cspline_transform, cspline_sample4d
@@ -26,16 +25,19 @@ def grid_coords(xyz, affine, from_world, to_world):
 
 class Image4d(object):
     """
-    Class to represent a sequence of 3d scans acquired on a slice-by-slice basis. 
+    Class to represent a sequence of 3d scans acquired on a
+    slice-by-slice basis.
     """
     def __init__(self, array, to_world, tr, tr_slices=None, start=0.0, 
                  slice_order='ascending', interleaved=False, slice_axis=2):
         """
         Configure fMRI acquisition time parameters.
         
-        tr  : inter-scan repetition time, i.e. the time elapsed between two consecutive scans
+        tr  : inter-scan repetition time, i.e. the time elapsed 
+              between two consecutive scans
         tr_slices : inter-slice repetition time, same as tr for slices
-        start   : starting acquisition time respective to the implicit time origin
+        start   : starting acquisition time respective to the implicit 
+                  time origin
         slice_order : string or array 
         """
         self.array = array 
@@ -83,25 +85,16 @@ class Image4d(object):
         else:
             return z
 
-    def to_time(self, z, t):
-        """
-        t = to_time(zv, tv)
-        zv, tv are grid coordinates; t is an actual time value. 
-        """
-        return(self.start + self.tr*t + slice_time(self.z_to_slice(z), self.tr_slices, self.slice_order))
 
-    def from_time(self, z, t):
+    def from_time(self, zv, t):
         """
         tv = from_time(zv, t)
         zv, tv are grid coordinates; t is an actual time value. 
         """
-        return((t - self.start - slice_time(self.z_to_slice(z), self.tr_slices, self.slice_order))/self.tr)
+        ##corr = self.tr_slices*self.slice_order[self.z_to_slice(zv)]
+        corr = slice_time(self.z_to_slice(zv), self.tr_slices, self.slice_order)
+        return (t-self.start-corr)/self.tr
 
-    def get_data(self):
-        return self.array
-
-    def get_affine(self):
-        return self.to_world
 
 
 class Realign4d(object):
@@ -134,7 +127,8 @@ class Realign4d(object):
         self.cbspline = cspline_transform(im4d.array)
               
     def resample_inmask(self, t):
-        X, Y, Z = grid_coords(self.xyz, self.transforms[t], self.from_world, self.to_world)
+        X, Y, Z = grid_coords(self.xyz, self.transforms[t], 
+                              self.from_world, self.to_world)
         T = self.from_time(Z, self.timestamps[t])
         cspline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T)
 
@@ -228,7 +222,7 @@ class Realign4d(object):
         print('Gridding...')
         dims = self.dims
         XYZ = np.mgrid[0:dims[0], 0:dims[1], 0:dims[2]]
-        XYZ = XYZ.reshape(3, np.prod(XYZ.shape[1::]))
+        XYZ = XYZ.reshape(np.prod(XYZ.shape[1::]), 3)
         res = np.zeros(dims)
         for t in range(self.nscans):
             print('Fully resampling scan %d/%d' % (t+1, self.nscans))

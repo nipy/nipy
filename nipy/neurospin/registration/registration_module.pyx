@@ -409,7 +409,9 @@ def matrix44(ndarray t, dtype):
 
 def slice_time(Z, double tr_slices, slice_order):
     """
-    Fast routine to compute the time when a slice is acquired given its index
+    Fast routine to compute the time when a slice is acquired given
+    its index. If a non-integer index is provided, interpolation is
+    performed.
     """
     cdef double *z, *t, *s
     cdef double weight, slice_interp
