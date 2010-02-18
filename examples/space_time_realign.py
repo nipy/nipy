@@ -22,8 +22,9 @@ rarun2.nii
 Author: Alexis Roche, 2009. 
 """
 
+from nipy.neurospin.registration import image4d, realign4d, resample4d
+
 from nipy.io.imageformats import load as load_image, save as save_image
-from nipy.neurospin.image_registration import image4d, realign4d, resample4d
 from nipy.utils import example_data
 
 from os.path import join, split

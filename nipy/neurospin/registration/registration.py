@@ -6,6 +6,9 @@ from iconic_registration import IconicRegistration
 from affine import Affine, Rigid, Similarity
 from grid_transform import GridTransform
 
+from fmri_realign4d import Image4d, realign4d, _resample4d
+
+
 transform_classes = {'affine': Affine, 'rigid': Rigid, 'similarity': Similarity}
                      
 def register(source, 
@@ -105,3 +108,27 @@ def transform(floating, T, reference=None, interp_order=3):
 
 
 
+
+
+
+def image4d(im, tr, tr_slices=None, start=0.0, 
+            slice_order='ascending', interleaved=False):
+
+    """
+    Wrapper function. 
+    Returns an Image4d instance. 
+
+    Assumes that the input image referential is 'scanner' and that the
+    third array index stands for 'z', i.e. the slice index. 
+    """
+    return Image4d(im.get_data(), im.get_affine(),
+                   tr=tr, tr_slices=tr_slices, start=start,
+                   slice_order=slice_order, interleaved=interleaved)
+
+
+def resample4d(im4d, transforms=None): 
+    """
+    corr_img = resample4d(im4d, transforms=None)
+    """
+    return Image(_resample4d(im4d, transforms),
+                 im4d.get_affine())
