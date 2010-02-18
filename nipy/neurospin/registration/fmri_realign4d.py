@@ -6,10 +6,15 @@ from nipy.neurospin.image.image_module import cspline_transform, cspline_sample4
 import numpy as np
 from scipy import optimize
         
-DEFAULT_SPEEDUP = 4
-DEFAULT_OPTIMIZER = 'powell'
-DEFAULT_WITHIN_LOOPS = 2
-DEFAULT_BETWEEN_LOOPS = 5 
+_speedup = 4
+_optimizer = 'powell'
+_within_loops = 2
+_between_loops = 5 
+
+_xtol = .1
+_ftol = .01
+_gtol = .1 
+
 
 
 def grid_coords(xyz, affine, from_world, to_world):
@@ -103,8 +108,8 @@ class Realign4d(object):
 
     def __init__(self, 
                  im4d, 
-                 speedup=DEFAULT_SPEEDUP,
-                 optimizer=DEFAULT_OPTIMIZER, 
+                 speedup=_speedup,
+                 optimizer=_optimizer, 
                  transforms=None):
         self.optimizer = optimizer
         dims = im4d.array.shape
@@ -192,10 +197,13 @@ class Realign4d(object):
             print(self.transforms[t])
 
         if optimizer=='simplex':
+            tols = {'xtol': _xtol, 'ftol': _ftol}
             fmin = optimize.fmin
         elif optimizer=='powell':
+            tols = {'xtol': _xtol, 'ftol': _ftol}
             fmin = optimize.fmin_powell
         elif optimizer=='conjugate_gradient':
+            tols = {'gtol': _gtol}
             fmin = optimize.fmin_cg
         else:
             raise ValueError('Unrecognized optimizer')
@@ -213,7 +221,7 @@ class Realign4d(object):
         
             self.init_motion_detection(t)
             self.transforms[t].param = fmin(loss, self.transforms[t].param,
-                                            callback=callback)
+                                            callback=callback, **tols)
 
 
     def resample(self):
@@ -244,9 +252,9 @@ def _resample4d(im4d, transforms=None):
 
 
 def _realign4d(im4d, 
-               loops=DEFAULT_WITHIN_LOOPS, 
-               speedup=DEFAULT_SPEEDUP, 
-               optimizer=DEFAULT_OPTIMIZER): 
+               loops=_within_loops, 
+               speedup=_speedup, 
+               optimizer=_optimizer): 
     """
     transforms = _realign4d(im4d, loops=2, speedup=4, optimizer='powell')
 
@@ -261,13 +269,12 @@ def _realign4d(im4d,
     return r.transforms
 
 def realign4d(runs, 
-              within_loops=DEFAULT_WITHIN_LOOPS, 
-              between_loops=DEFAULT_BETWEEN_LOOPS, 
-              speedup=DEFAULT_SPEEDUP, 
-              optimizer=DEFAULT_OPTIMIZER, 
+              within_loops=_within_loops, 
+              between_loops=_between_loops, 
+              speedup=_speedup, 
+              optimizer=_optimizer, 
               align_runs=True): 
     """
-    transforms = realign4d(runs, within_loops=2, bewteen_loops=5, speedup=4, optimizer='powell')
 
     Parameters
     ----------

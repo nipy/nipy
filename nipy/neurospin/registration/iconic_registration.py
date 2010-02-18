@@ -13,8 +13,10 @@ from scipy.optimize import fmin, fmin_powell, fmin_cg
 from sys import maxint
 
 # Globals
-_clamp_dtype = 'short'
-
+_clamp_dtype = 'short' # do not edit
+_xtol = .1
+_ftol = .01
+_gtol = .1
 
 # Dictionary of interpolation methods
 # pv: Partial volume 
@@ -165,17 +167,17 @@ class IconicRegistration(object):
 
         if method=='simplex':
             print ('Optimizing using the simplex method...')
-            kwargs.setdefault('xtol', .1)
-            kwargs.setdefault('ftol', .01)
+            kwargs.setdefault('xtol', _xtol)
+            kwargs.setdefault('ftol', _ftol)
             tc = fmin(loss, tc0, callback=callback, **kwargs)
         elif method=='powell':
             print ('Optimizing using Powell method...') 
-            kwargs.setdefault('xtol', .1)
-            kwargs.setdefault('ftol', .01)
+            kwargs.setdefault('xtol', _xtol)
+            kwargs.setdefault('ftol', _ftol)
             tc = fmin_powell(loss, tc0, callback=callback, **kwargs)
         elif method=='conjugate_gradient':
             print ('Optimizing using conjugate gradient descent...')
-            kwargs.setdefault('gtol', .1)
+            kwargs.setdefault('gtol', _gtol)
             tc = fmin_cg(loss, tc0, callback=callback, **kwargs)
         else:
             raise ValueError('Unrecognized optimizer')
