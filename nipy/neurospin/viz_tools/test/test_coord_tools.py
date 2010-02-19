@@ -1,4 +1,5 @@
 import numpy as np
+import nose
 
 from ..coord_tools import coord_transform, find_cut_coords
 
@@ -28,6 +29,5 @@ def test_find_cut_coords():
     np.testing.assert_array_equal(
                         (int(round(x)), int(round(y)), int(round(z))),
                                 (x_map, y_map, z_map))
-
 
 

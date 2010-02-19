@@ -5,14 +5,14 @@ series.
 
 # Major scientific libraries imports
 import numpy as np
-from scipy import linalg
+from scipy import linalg, ndimage
 
 # Neuroimaging libraries imports
 from nipy.io.imageformats import load, nifti1, save, AnalyzeImage
 
 
 ################################################################################
-# Utilities to calculate masks
+# Operating on connect component
 ################################################################################
 
 def largest_cc(mask):
@@ -28,9 +28,6 @@ def largest_cc(mask):
         mask: 3D boolean array 
             3D array indicating a mask, with only one connected component.    
     """
-    # Late import of scipy
-    from scipy import ndimage
-
     # We use asarray to be able to work with masked arrays.
     mask = np.asarray(mask)
     labels, label_nb = ndimage.label(mask)
@@ -38,6 +35,36 @@ def largest_cc(mask):
         raise ValueError('No non-zero values: no connect components')
     return labels ==  np.bincount(labels.flat)[1:].argmax() + 1
 
+
+def threshold_connect_components(map, threshold, copy=True):
+    """ Given a map with some coefficients set to zero, segment the
+        connect components with number of voxels smaller than the
+        threshold and set them to 0.
+
+        Parameters
+        ----------
+        map: ndarray
+            The map to segment
+        threshold:
+            The minimum number of voxels to keep a cluster.
+        copy: bool, optional
+            If copy is false, the input array is modified inplace
+    """
+    labels, _ = ndimage.label(map)
+    weights = np.bincount(labels.ravel())
+    if copy:
+        map = map.copy()
+    for label, weight in enumerate(weights):
+        if label == 0:
+            continue
+        if weight < threshold:
+            map[labels == label] = 0
+    return map
+
+
+################################################################################
+# Utilities to calculate masks
+################################################################################
 
 # FIXME: Should this function be replaced by the native functionality
 # added to brifti
@@ -382,7 +409,6 @@ def series_from_mask(session_files, mask, dtype=np.float32,
             if smooth:
                 affine = data_file.get_affine()[:3, :3]
                 smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
-                from scipy import ndimage
                 if not data.flags['WRITEABLE']:
                     data = np.asarray(data).copy() # Get rid of memmapping
                 for this_data in np.rollaxis(data, -1):
@@ -398,7 +424,6 @@ def series_from_mask(session_files, mask, dtype=np.float32,
                 if smooth:
                     affine = data_file.get_affine()[:3, :3]
                     smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
-                    from scipy import ndimage
                     data = ndimage.gaussian_filter(data, smooth_sigma)
                     
                 session_series[session_index, :, file_index] = \
