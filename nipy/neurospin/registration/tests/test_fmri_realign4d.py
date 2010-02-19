@@ -9,16 +9,6 @@ from nipy.io.imageformats import load, save
 from nipy.testing import funcfile
 from nipy.neurospin.registration.fmri_realign4d import Image4d, _resample4d
 
-"""
-def test_registration():
-    aff = register(anat_img, anat_img)
-    print aff
-"""
-"""
-Image4d(array, to_world, tr, tr_slices=None, start=0.0, 
-slice_order='ascending', interleaved=False, slice_axis=2):
-
-"""        
 
 im = load(funcfile) 
 
@@ -42,6 +32,6 @@ def test_from_time():
                    
 
 def test_slice_timing(): 
-    im4d = Image4d(im.get_data(), im.get_affine(), tr=2., 
-                   slice_order='ascending', interleaved=False)
-    clone_im4d = _resample4d(im4d)
+    im4d = Image4d(im.get_data(), im.get_affine(), tr=2., tr_slices=0.0)
+    x = _resample4d(im4d)
+    assert_array_almost_equal(im4d.array, x)

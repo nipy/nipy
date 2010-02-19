@@ -16,11 +16,22 @@ _gtol = .1
 
 
 
+def interp_slice_order(Z, slice_order): 
+    Z = np.asarray(Z)
+    nslices = len(slice_order)
+    aux = np.asarray(list(slice_order)+[slice_order[0]+nslices])
+    Za = Z % nslices
+    Zal = Za.astype('int')
+    w = Za - Zal 
+    ret = (1-w)*aux[Zal] + w*aux[Zal+1]
+    ret += (Z-Za)
+    return ret
+
+
 def grid_coords(xyz, affine, from_world, to_world):
     Tv = np.dot(from_world, np.dot(affine, to_world))
     XYZ = apply_affine(Tv, xyz)
     return XYZ[:,0], XYZ[:,1], XYZ[:,2]
-
 
 
 class Image4d(object):
@@ -91,8 +102,7 @@ class Image4d(object):
         tv = from_time(zv, t)
         zv, tv are grid coordinates; t is an actual time value. 
         """
-        ##corr = self.tr_slices*self.slice_order[self.z_to_slice(zv)]
-        corr = slice_time(self.z_to_slice(zv), self.tr_slices, self.slice_order)
+        corr = self.tr_slices*interp_slice_order(self.z_to_slice(zv), self.slice_order)
         return (t-self.start-corr)/self.tr
 
 

@@ -3,7 +3,6 @@
 """
 Image processing routines: 
   * cubic spline sampling 
-  * slice timing 
 """
 
 __version__ = '0.2'
