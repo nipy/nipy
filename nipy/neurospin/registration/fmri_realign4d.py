@@ -121,7 +121,8 @@ class Realign4d(object):
         # Define mask
         speedup = max(1, int(speedup))
         xyz = np.mgrid[0:dims[0]:speedup, 0:dims[1]:speedup, 0:dims[2]:speedup]
-        self.xyz = xyz.reshape(np.prod(xyz.shape[1::]), 3)   
+        xyz = np.rollaxis(xyz, 0, 4)
+        self.xyz = np.reshape(xyz, [np.prod(xyz.shape[0:-1]), 3])   
         masksize = self.xyz.shape[0]
         self.data = np.zeros([masksize, self.nscans], dtype='double')
         # Initialize space/time transformation parameters 
@@ -232,7 +233,8 @@ class Realign4d(object):
         print('Gridding...')
         dims = self.dims
         XYZ = np.mgrid[0:dims[0], 0:dims[1], 0:dims[2]]
-        XYZ = XYZ.reshape(np.prod(XYZ.shape[1::]), 3)
+        XYZ = np.rollaxis(XYZ, 0, 4)
+        XYZ = np.reshape(XYZ, [np.prod(XYZ.shape[0:-1]), 3])
         res = np.zeros(dims)
         for t in range(self.nscans):
             print('Fully resampling scan %d/%d' % (t+1, self.nscans))
