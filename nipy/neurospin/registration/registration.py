@@ -129,5 +129,5 @@ class FmriRealign4d(object):
 
     def resample(self): 
         corr_runs = [resample4d(self._runs[i], transforms=self._transforms[i]) for i in range(len(self._runs))]
-        return [to_brifti(Image(_resample4d(c, transforms), c.to_world)) for c in corr_runs]
+        return [to_brifti(Image(resample4d(c, transforms), c.to_world)) for c in corr_runs]
 
