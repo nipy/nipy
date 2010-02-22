@@ -248,9 +248,9 @@ class Realign4d(object):
 
 
 
-def _resample4d(im4d, transforms=None): 
+def resample4d(im4d, transforms=None): 
     """
-    corr_im4d_array = _resample4d(im4d, transforms=None)
+    corr_im4d_array = resample4d(im4d, transforms=None)
     """
     r = Realign4d(im4d, transforms=transforms)
     return r.resample()
@@ -307,13 +307,13 @@ def realign4d(runs,
         return transfo_runs
 
     # Correct between-session motion using the mean image of each corrected run 
-    corr_runs = [_resample4d(runs[i], transforms=transfo_runs[i]) for i in range(nruns)]
+    corr_runs = [resample4d(runs[i], transforms=transfo_runs[i]) for i in range(nruns)]
     aux = np.rollaxis(np.asarray([corr_run.mean(3) for corr_run in corr_runs]), 0, 4)
     ## Fake time series with zero inter-slice time 
     ## FIXME: check that all runs have the same to-world transform
     mean_img = Image4d(aux, to_world=runs[0].to_world, tr=1.0, tr_slices=0.0) 
     transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, optimizer=optimizer)
-    corr_mean = _resample4d(mean_img, transforms=transfo_mean)
+    corr_mean = resample4d(mean_img, transforms=transfo_mean)
 
     # Compose transformations for each run
     for i in range(nruns):

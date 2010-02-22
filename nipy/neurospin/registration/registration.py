@@ -1,12 +1,12 @@
 import numpy as np 
 
-from nipy.neurospin.image import transform_image, from_brifti, to_brifti
+from nipy.neurospin.image import Image, transform_image, from_brifti, to_brifti
 
 from iconic_registration import IconicRegistration
 from affine import Affine, Rigid, Similarity
 from grid_transform import GridTransform
 
-from fmri_realign4d import Image4d, realign4d, _resample4d
+from realign4d import Image4d, realign4d, resample4d
 
 
 transform_classes = {'affine': Affine, 'rigid': Rigid, 'similarity': Similarity}
@@ -111,24 +111,23 @@ def transform(floating, T, reference=None, interp_order=3):
 
 
 
-def image4d(im, tr, tr_slices=None, start=0.0, 
-            slice_order='ascending', interleaved=False):
+class FmriRealign4d(object): 
 
-    """
-    Wrapper function. 
-    Returns an Image4d instance. 
+    def __init__(self, images, tr, tr_slices=None, start=0.0, 
+                 slice_order='ascending', interleaved=False):
+        self._runs = [Image4d(im.get_data(), im.get_affine(),
+                              tr=tr, tr_slices=tr_slices, start=start,
+                              slice_order=slice_order, 
+                              interleaved=interleaved) for im in images]
+        self._transforms = [None for run in self._runs]
+                      
+    def correct_motion(self, iterations=2, between_loops=None): 
+        within_loops = iterations 
+        if between_loops == None: 
+            between_loops = 3*within_loops 
+        self._transforms = realign4d(self._runs, within_loops=within_loops, between_loops=between_loops)
 
-    Assumes that the input image referential is 'scanner' and that the
-    third array index stands for 'z', i.e. the slice index. 
-    """
-    return Image4d(im.get_data(), im.get_affine(),
-                   tr=tr, tr_slices=tr_slices, start=start,
-                   slice_order=slice_order, interleaved=interleaved)
+    def resample(self): 
+        corr_runs = [resample4d(self._runs[i], transforms=self._transforms[i]) for i in range(len(self._runs))]
+        return [to_brifti(Image(_resample4d(c, transforms), c.to_world)) for c in corr_runs]
 
-
-def resample4d(im4d, transforms=None): 
-    """
-    corr_img = resample4d(im4d, transforms=None)
-    """
-    return Image(_resample4d(im4d, transforms),
-                 im4d.get_affine())
