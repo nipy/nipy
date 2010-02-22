@@ -65,7 +65,7 @@ def plot_tsdiffs(results, axes=None):
                 'Slice number',
                 'Max/mean/min slice variation')
     return axes
-    
+
 
 def plot_tsdiffs_image(img, axes=None, show=True):
     ''' Plot time series diagnostics for image
