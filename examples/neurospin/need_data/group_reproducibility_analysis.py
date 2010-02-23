@@ -43,7 +43,9 @@ swd = tempfile.mkdtemp('image')
 ################################################################################
 # Make a group mask
 
+affine = load(mask_images[0]).get_affine()
 mask = intersect_masks(mask_images)>0
+grp_mask = Nifti1Image(mask, affine)
 xyz = np.where(mask)
 xyz = np.array(xyz).T
 nvox = xyz.shape[0]
@@ -75,15 +77,9 @@ Functional = np.array(Functional)
 Functional = np.squeeze(Functional).T
 VarFunctional = np.array(VarFunctional)
 VarFunctional = np.squeeze(VarFunctional).T
-Functional[np.isnan(Functional)]=0
-VarFunctional[np.isnan(VarFunctional)]=0
+Functional[np.isnan(Functional)] = 0
+VarFunctional[np.isnan(VarFunctional)] = 0
 
-################################################################################
-# MNI coordinates
-
-affine = rbeta.get_affine()
-coord = np.hstack((xyz, np.ones((nvox, 1))))
-coord = np.dot(coord, affine.T)[:,:3]
 
 ################################################################################
 # script
@@ -108,11 +104,11 @@ for threshold in thresholds:
     kwargs={'threshold':threshold,'csize':csize}
         
     for i in range(niter):
-        k = voxel_reproducibility(Functional, VarFunctional, xyz, ngroups,
+        k = voxel_reproducibility(Functional, VarFunctional, grp_mask, ngroups,
                                   method, swap, verbose, **kwargs)
         kappa.append(k)
-        cld = cluster_reproducibility(Functional, VarFunctional, xyz, ngroups,
-                                       coord, sigma, method, swap, 
+        cld = cluster_reproducibility(Functional, VarFunctional, grp_mask, ngroups,
+                                       sigma, method, swap, 
                                       verbose, **kwargs)
         cls.append(cld)
         
@@ -137,13 +133,13 @@ mp.xlabel('threshold')
 # create an image
 
 th = 4.0
-swap = True
+swap = False
 kwargs = {'threshold':th,'csize':csize}
-rmap = map_reproducibility(Functional, VarFunctional, xyz, ngroups,
+rmap = map_reproducibility(Functional, VarFunctional, grp_mask, ngroups,
                            method, swap, verbose, **kwargs)
 wmap  = mask.astype(np.int)
 wmap[mask] = rmap
-wim = Nifti1Image(wmap,affine)
+wim = Nifti1Image(wmap, affine)
 wim.get_header()['descrip']= 'reproducibility map at threshold %f, \
                              cluster size %d'%(th,csize)
 wname = op.join(swd,'repro.nii')
