@@ -119,7 +119,7 @@ class FmriRealign4d(object):
                               tr=tr, tr_slices=tr_slices, start=start,
                               slice_order=slice_order, 
                               interleaved=interleaved) for im in images]
-        self._transforms = [None for run in self._runs]
+        self._transforms = [Rigid() for run in self._runs]
                       
     def correct_motion(self, iterations=2, between_loops=None): 
         within_loops = iterations 
@@ -129,5 +129,5 @@ class FmriRealign4d(object):
 
     def resample(self): 
         corr_runs = [resample4d(self._runs[i], transforms=self._transforms[i]) for i in range(len(self._runs))]
-        return [to_brifti(Image(resample4d(c, transforms), c.to_world)) for c in corr_runs]
+        return [to_brifti(Image(resample4d(c, self._transforms), c.to_world)) for c in corr_runs]
 
