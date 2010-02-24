@@ -55,4 +55,3 @@ for i in range(len(runs)):
     aux = split(runnames[i])
     save_image(corr_runs[i], join(aux[0], 'ra'+aux[1]))
 
-
