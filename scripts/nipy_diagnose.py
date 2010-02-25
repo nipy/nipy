@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+''' Script to calculate and write results for diagnostic screen
+'''
 import os
 
 import numpy as np
@@ -41,5 +43,5 @@ if __name__ == '__main__':
         out_root = fname
     img = nipy.load_image(filename)
     res = nads.screen(img, ncomps)
-    nads.write_screen_res(res, out_path, out_root, ext)
+    nads.write_screen_res(res, out_path, out_root, ext + gz)
     

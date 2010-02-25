@@ -31,6 +31,7 @@ def screen(img4d, ncomp=10):
        * std : standard deviation image
        * max : image of max
        * min : min
+       * pca : 4D image of PCA component images
        * pca_res : dict of results from PCA
        * ts_res : dict of results from tsdiffana
 
@@ -69,9 +70,11 @@ def screen(img4d, ncomp=10):
     return screen_res
 
 
-def write_screen_res(res, out_path, out_root, out_img_ext='.nii'):
+def write_screen_res(res, out_path, out_root,
+                     out_img_ext='.nii',
+                     pcnt_var_thresh=0.1):
     ''' Write results from ``screen`` to disk as images
-
+    
     Parameters
     ----------
     res : dict
@@ -81,17 +84,20 @@ def write_screen_res(res, out_path, out_root, out_img_ext='.nii'):
     out_root : str
        part of filename between image-specific prefix and image-specific
        extension to use for writing images
-    out_img_ext : str
+    out_img_ext : str, optional
        extension (identifying image type) to which to write volume
-       images.
+       images.  Default is '.nii'
+    pcnt_var_thresh : float, optional
+       threshold below which we do not plot percent variance explained
+       by components; default is 0.1.  This removes the long tail from
+       percent variance plots.
 
     Returns
     -------
     None
     '''
-    # import matplotlib
     import matplotlib.pyplot as plt
-    # save images
+    # save volume images
     for key in ('mean', 'min', 'max', 'std', 'pca'):
         fname = pjoin(out_path, '%s_%s%s' % (key,
                                              out_root,
@@ -105,13 +111,18 @@ def write_screen_res(res, out_path, out_root, out_img_ext='.nii'):
         plt.subplot(ncomp, 1, c+1)
         plt.plot(vectors[:,c])
         plt.axis('tight')
+    plt.suptitle(out_root + ': PCA basis vectors')
     plt.savefig(pjoin(out_path, 'components_%s.png' % out_root))
+    # plot percent variance
     plt.figure()
-    plt.plot(res['pca_res']['pcnt_var'])
+    pcnt_var = res['pca_res']['pcnt_var']
+    plt.plot(pcnt_var[pcnt_var >= pcnt_var_thresh])
     plt.axis('tight')
+    plt.suptitle(out_root + ': PCA percent variance')
     plt.savefig(pjoin(out_path, 'pcnt_var_%s.png' % out_root))    
     # plot tsdiffana
     plt.figure()
     axes = [plt.subplot(4, 1, i+1) for i in range(4)]
     plot_tsdiffs(res['ts_res'], axes)
+    plt.suptitle(out_root + ': tsdiffana')
     plt.savefig(pjoin(out_path, 'tsdiff_%s.png' % out_root))
