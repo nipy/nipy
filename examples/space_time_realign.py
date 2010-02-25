@@ -53,5 +53,5 @@ corr_runs = R.resample()
 # Save images 
 for i in range(len(runs)):
     aux = split(runnames[i])
-    save_image(corr_runs[i], join(aux[0], 'ra'+aux[1]))
+    save_image(corr_runs[i], join('ra'+aux[1]))
 

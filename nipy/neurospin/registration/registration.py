@@ -115,6 +115,11 @@ class FmriRealign4d(object):
 
     def __init__(self, images, tr, tr_slices=None, start=0.0, 
                  slice_order='ascending', interleaved=False):
+        if not hasattr(images, '__iter__'):
+            self._single_run = True
+            images = [images]
+        else:
+            self._single_run = False
         self._runs = [Image4d(im.get_data(), im.get_affine(),
                               tr=tr, tr_slices=tr_slices, start=start,
                               slice_order=slice_order, 
@@ -125,7 +130,14 @@ class FmriRealign4d(object):
         within_loops = iterations 
         if between_loops == None: 
             between_loops = 3*within_loops 
-        self._transforms = realign4d(self._runs, within_loops=within_loops, between_loops=between_loops)
+        t = realign4d(self._runs, within_loops=within_loops, 
+                      between_loops=between_loops)
+        if self._single_run: 
+            self._transforms = [t]
+        else: 
+            self._transforms = t
+
+
 
     def resample(self): 
         """
@@ -133,5 +145,5 @@ class FmriRealign4d(object):
         """
         indices = range(len(self._runs))
         data = [resample4d(self._runs[i], transforms=self._transforms[i]) for i in indices]
-        return [to_brifti(Image(data[i], runs[i].to_world)) for i in indices]
+        return [to_brifti(Image(data[i], self._runs[i].to_world)) for i in indices]
 
