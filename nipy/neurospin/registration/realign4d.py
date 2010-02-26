@@ -1,9 +1,11 @@
 from affine import Rigid
+
 from nipy.neurospin.image import apply_affine
 from nipy.neurospin.image.image_module import cspline_transform, cspline_sample4d
+from nipy.neurospin.utils.optimize import fmin_steepest
 
 import numpy as np
-from scipy import optimize
+from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
         
 _speedup = 4
 _optimizer = 'powell'
@@ -201,17 +203,21 @@ class Realign4d(object):
             self.transforms[t].param = pc
             print(self.transforms[t])
 
-        if optimizer=='simplex':
+        if optimizer=='powell':
             tols = {'xtol': _xtol, 'ftol': _ftol}
-            fmin = optimize.fmin
-        elif optimizer=='powell':
-            tols = {'xtol': _xtol, 'ftol': _ftol}
-            fmin = optimize.fmin_powell
-        elif optimizer=='conjugate_gradient':
+            fmin = fmin_powell
+        elif optimizer=='steepest':
+            tols = {'xtol': _xtol, 'ftol': _ftol, 'epsilon':_epsilon}
+            fmin = fmin_steepest
+        elif optimizer=='cg':
             tols = {'gtol': _gtol}
-            fmin = optimize.fmin_cg
-        else:
-            raise ValueError('Unrecognized optimizer')
+            fmin = fmin_cg
+        elif optimizer=='bfgs':
+            tols = {'gtol': _gtol}
+            fmin = fmin_bfgs
+        else: # simplex method 
+            tols = {'xtol': _xtol, 'ftol': _ftol}
+            fmin = fmin_simplex
 
         # Resample data according to the current space/time transformation 
         self.resample_all_inmask()

@@ -49,7 +49,7 @@ def register(source,
        A sequence of strings can be provided to run a graduate search, e.g.
        by doing first 'rigid', then 'similarity', then 'affine'
     optimizer : str or sequence 
-       If a string, one of 'powell', 'simplex', 'conjugate_gradient'
+       If a string, one of 'simplex', 'powell', 'steepest', 'cg', 'bfgs'
        Alternatively, a sequence of such strings can be provided to
        run several optimizers sequentially. If bot `search` and
        `optimizer` are sequences, then the shorter is filled with its
@@ -61,13 +61,13 @@ def register(source,
         Object that can be casted to a numpy array. 
 
     """
-    regie = IconicRegistration(from_brifti(source), from_brifti(target))
+    R = IconicRegistration(from_brifti(source), from_brifti(target))
     if subsampling == None: 
-        regie.set_source_fov(fixed_npoints=64**3)
+        R.set_source_fov(fixed_npoints=64**3)
     else:
-        regie.set_source_fov(spacing=subsampling)
-    regie.similarity = similarity
-    regie.interp = interp
+        R.set_source_fov(spacing=subsampling)
+    R.similarity = similarity
+    R.interp = interp
 
     if isinstance(search, basestring): 
         search = [search]
@@ -82,7 +82,7 @@ def register(source,
             T = transform_classes[search_]()
         else: 
             T = transform_classes[search_](T.vec12)
-        T = regie.optimize(T, method=optimizer_)
+        T = R.optimize(T, method=optimizer_)
     return T
 
 
@@ -95,15 +95,13 @@ def transform(floating, T, reference=None, interp_order=3):
 
     # Switch on transformation type
     if isinstance(T, GridTransform): 
-        precomputed = True
         if not T.shape == reference.shape: 
             raise ValueError('Wrong grid transformation shape')
         t = T()
     else:
-        precomputed = False
         t = np.asarray(T)
 
-    return to_brifti(transform_image(floating, t, precomputed, grid_coords=False,
+    return to_brifti(transform_image(floating, t, grid_coords=False,
                                      reference=reference, interp_order=interp_order))
 
 

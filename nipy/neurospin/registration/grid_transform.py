@@ -98,21 +98,19 @@ class SplineTransform(GridTransform):
         if grid_coords:
             self._control_points = apply_affine(self._toworld, control_points)
             tmp = control_points
-            self._sigma = np.abs(np.diagonal(self._toworld)[0:-1]*sigma)
-            self._grid_sigma = sigma*np.ones(3)
         else:
             self._control_points = np.asarray(control_points)
             tmp = apply_affine(fromworld, control_points)
-            self._sigma = sigma*np.ones(3) 
-            self._grid_sigma = np.abs(np.diagonal(fromworld)[0:-1]*sigma)
-
+            
         # TODO : make sure the control point indices fall within the
         # subgrid and maybe raise a warning if rounding is too severe
 
         tmp = np.round(tmp).astype('int')
         self._idx_control_points = tuple([tmp[:,:,:,i] for i in range(tmp.shape[3])])
         
-        self._norma = np.sqrt(2*np.pi)*self._grid_sigma
+        self._sigma = sigma*np.ones(3) 
+        self._grid_sigma = np.abs(np.diagonal(fromworld)[0:-1]*sigma)
+        self._norma = np.prod(np.sqrt(2*np.pi)*self._grid_sigma)
         self._set_param(np.zeros(3*self._control_points.shape[0]))
 
 
@@ -131,16 +129,19 @@ class SplineTransform(GridTransform):
                               self._control_points, self._sigma,
                               grid_coords=False, affine=self._affine)
         res._set_param(self._param)
-        return res
+        return res 
 
     def __call__(self): 
         
+        # The trick is to note that sum_i ci G(x-xi) is equivalent to
+        # the convolution of the sparse image `c` with a normalized 3d
+        # Gaussian kernel. 
         self._sample_affine()
-        I = np.zeros(self._shape)
-        
+        tmp = np.zeros(self._shape)
         for i in range(3): 
-            I[self._idx_control_points] = self._param[i::3]
-            self._sampled[:,:,:,i] += self._norma[i]*gaussian_filter(I, sigma=self._grid_sigma[i])
+            tmp[self._idx_control_points] = self._param[i::3]
+            self._sampled[:,:,:,i] += self._norma*gaussian_filter(tmp, sigma=self._grid_sigma,
+                                                                  mode='constant', cval=0.0)
         return self._sampled
 
 

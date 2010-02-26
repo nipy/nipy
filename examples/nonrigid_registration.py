@@ -39,12 +39,19 @@ cp = np.rollaxis(cp, 0, 4)
 
 # Start with an affine registration
 A0 = Affine()
-###A = R.optimize(A0)
-A = Affine()
+A = R.optimize(A0)
+###A = Affine()
+
+# Save affinely transformed target  
+"""
+Jt = transform_image(J, A, reference=I)
+save_image(to_brifti(Jt), 'affine_anubis_to_ammon.nii')
+"""
 
 # Then add control points...
-T0 = SplineTransform(I, cp, sigma=5., grid_coords=True, affine=A)
+T0 = SplineTransform(I, cp, sigma=20., grid_coords=True, affine=A)
 
+"""
 # Test 1
 s = R.eval(T0)
 sa = R.eval(T0.affine)
@@ -52,22 +59,29 @@ assert_almost_equal(s, sa)
 
 # Test 2
 T = SplineTransform(I, cp, sigma=5., grid_coords=True, affine=A)
-T0v = T0[R._slices]()
-Tv = T[R._slices]()
-assert_almost_equal(Tv, T0v)
-
-# Test 3
 T.param += 1.
 s0 = R.eval(T0)
 s = R.eval(T)
+print(s-s0)
+"""
 
-T = R.optimize(T0, method='conjugate_gradient', gtol=.01)
+# Optimize spline transform
+T = R.optimize(T0, method='steepest', ftol=.0001, xtol=.0001)
+##T = R.optimize(T0)
 
-###
+###T = T0
+###T.param = np.load('spline_param.npy')
+
+
+# Resample target image 
+"""
 t = T()
-Jt = transform_image(J, t, 'grid', reference=I)
+Jt = transform_image(J, t, reference=I)
+save_image(to_brifti(Jt), 'deform_anubis_to_ammon.nii')
+"""
 
-###Jt = transform(to_brifti(J), T, reference=to_brifti(I))
-
-
-###save_image(to_brifti(Jt), 'deform_anubis_to_ammon.nii')
+# Test 3
+"""
+ts = t[R._slices+[slice(0,3)]]
+tts = T[R._slices]()
+"""

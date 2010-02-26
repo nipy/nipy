@@ -3,20 +3,24 @@ Intensity-based matching.
 
 Questions: alexis.roche@gmail.com
 """
-from nipy.neurospin.image import Image, set_image, apply_affine
+
 from registration_module import _joint_histogram, _similarity, builtin_similarities
 from affine import Affine
 from grid_transform import GridTransform
 
+from nipy.neurospin.image import Image, set_image, apply_affine
+from nipy.neurospin.utils.optimize import fmin_steepest
+
 import numpy as np  
-from scipy.optimize import fmin, fmin_powell, fmin_cg
+from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
 from sys import maxint
 
 # Globals
 _clamp_dtype = 'short' # do not edit
 _xtol = .1
 _ftol = .01
-_gtol = .1
+_gtol = .001
+_epsilon = .1
 
 # Dictionary of interpolation methods
 # pv: Partial volume 
@@ -165,26 +169,29 @@ class IconicRegistration(object):
         # Switching to the appropriate optimizer
         print('Initial guess...')
         print(T)
-
-        if method=='simplex':
-            print ('Optimizing using the simplex method...')
+        if method=='powell':
+            fmin = fmin_powell
             kwargs.setdefault('xtol', _xtol)
             kwargs.setdefault('ftol', _ftol)
-            tc = fmin(loss, tc0, callback=callback, **kwargs)
-        elif method=='powell':
-            print ('Optimizing using Powell method...') 
+        elif method=='steepest':
+            fmin = fmin_steepest
             kwargs.setdefault('xtol', _xtol)
             kwargs.setdefault('ftol', _ftol)
-            tc = fmin_powell(loss, tc0, callback=callback, **kwargs)
-        elif method=='conjugate_gradient':
-            print ('Optimizing using conjugate gradient descent...')
+            kwargs.setdefault('epsilon', _epsilon)
+        elif method=='cg':
+            fmin = fmin_cg
             kwargs.setdefault('gtol', _gtol)
-            tc = fmin_cg(loss, tc0, callback=callback, **kwargs)
-        else:
-            raise ValueError('Unrecognized optimizer')
+        elif method=='bfgs':
+            fmin = fmin_bfgs
+            kwargs.setdefault('gtol', _gtol)
+        else: # simplex method 
+            fmin = fmin_simplex 
+            kwargs.setdefault('xtol', _xtol)
+            kwargs.setdefault('ftol', _ftol)
         
         # Output
-        T.param = tc
+        print ('Optimizing using %s' % fmin.__name__)
+        T.param = fmin(loss, tc0, callback=callback, **kwargs)
         return T 
 
 

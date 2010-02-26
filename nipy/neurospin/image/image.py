@@ -246,7 +246,7 @@ def set_image(im, values):
         
 
 
-def transform_image(im, transform, precomputed=False, grid_coords=False, 
+def transform_image(im, transform, grid_coords=False, 
                     reference=None, dtype=None, interp_order=_interp_order):
     """
     Apply a transformation to a 'floating' image to bring it into the
@@ -275,14 +275,14 @@ def transform_image(im, transform, precomputed=False, grid_coords=False,
         
     if dtype == None: 
         dtype = im._get_dtype()
-            
+
     # Prepare data arrays
     data = im._get_data()
     output = np.zeros(reference._shape, dtype=dtype)
     t = np.asarray(transform)
 
     # Case: affine transform
-    if not precomputed:
+    if t.shape[-1] == 4: 
         if not grid_coords:
             t = np.dot(im._inv_affine, np.dot(t, reference._affine))
         ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],

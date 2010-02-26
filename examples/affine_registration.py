@@ -25,7 +25,9 @@ Usage:
   Choices for optimizer: 
     simplex
     powell [DEFAULT]
-    conjugate_gradient
+    steepest
+    cg 
+    bfgs
 
 Running this script will result in two files being created in the
 working directory:
