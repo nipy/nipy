@@ -7,6 +7,9 @@ from nipy.neurospin.image import *
 from nipy.utils import example_data
 from nipy.io.imageformats import load as load_image, save as save_image
 
+### DEBUG
+from numpy.testing import * 
+
 from os.path import join
 import time
 
@@ -34,11 +37,37 @@ slices = [slice(0,s.stop,s.step*4) for s in R._slices]
 cp = np.mgrid[slices]
 cp = np.rollaxis(cp, 0, 4)
 
-T = SplineTransform(I, cp, sigma=5., grid_coords=True)
-###T = Ts[R._slices]
+# Start with an affine registration
+A0 = Affine()
+###A = R.optimize(A0)
+A = Affine()
 
-# Test 
+# Then add control points...
+T0 = SplineTransform(I, cp, sigma=5., grid_coords=True, affine=A)
+
+# Test 1
+s = R.eval(T0)
+sa = R.eval(T0.affine)
+assert_almost_equal(s, sa)
+
+# Test 2
+T = SplineTransform(I, cp, sigma=5., grid_coords=True, affine=A)
+T0v = T0[R._slices]()
+Tv = T[R._slices]()
+assert_almost_equal(Tv, T0v)
+
+# Test 3
+T.param += 1.
+s0 = R.eval(T0)
 s = R.eval(T)
-sa = R.eval(T.affine)
 
-R.optimize(T, method='conjugate_gradient')
+T = R.optimize(T0, method='conjugate_gradient', gtol=.01)
+
+###
+t = T()
+Jt = transform_image(J, t, 'grid', reference=I)
+
+###Jt = transform(to_brifti(J), T, reference=to_brifti(I))
+
+
+###save_image(to_brifti(Jt), 'deform_anubis_to_ammon.nii')

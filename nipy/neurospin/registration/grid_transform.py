@@ -28,8 +28,8 @@ class GridTransform(object):
             self._affine = np.eye(4)
             self._grid_affine = self._toworld
         else:
-            self._affine = affine
-            self._grid_affine = np.dot(affine, self._toworld)
+            self._affine = np.asarray(affine)
+            self._grid_affine = np.dot(self._affine, self._toworld)
         self._IJK = None
         self._sampled = None
 
@@ -49,7 +49,9 @@ class GridTransform(object):
     def __getitem__(self, slices):
         data = self._data[[slice(0,None)]+list(slices)]
         toworld = subgrid_affine(self._toworld, slices)
-        return GridTransform((data.shape[1:-1], toworld), data, self._affine)
+        res = GridTransform((data.shape[1:-1], toworld), data, self._affine)
+        res._set_param(self.param)
+        return res
 
     def IJK(self):
         if not self._IJK == None:
@@ -125,9 +127,11 @@ class SplineTransform(GridTransform):
     def __getitem__(self, slices):
         toworld = subgrid_affine(self._toworld, slices)
         fake_data = np.ones(self._shape, dtype='bool')[slices]
-        return SplineTransform((fake_data.shape, toworld), 
-                               self._control_points, self._sigma,
-                               grid_coords=False, affine=self._affine)
+        res = SplineTransform((fake_data.shape, toworld), 
+                              self._control_points, self._sigma,
+                              grid_coords=False, affine=self._affine)
+        res._set_param(self._param)
+        return res
 
     def __call__(self): 
         

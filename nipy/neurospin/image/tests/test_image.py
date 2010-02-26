@@ -41,7 +41,7 @@ def test_apply_affine():
 def test_transform(): 
     T = np.eye(4)
     T[0:3,3] = 10*np.random.rand(3)
-    J = transform_image(I, T, 'affine')
+    J = transform_image(I, T)
     assert_equal(J.shape, I.shape)
 
 def set_values(): 

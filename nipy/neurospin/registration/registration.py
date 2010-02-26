@@ -95,15 +95,15 @@ def transform(floating, T, reference=None, interp_order=3):
 
     # Switch on transformation type
     if isinstance(T, GridTransform): 
+        precomputed = True
         if not T.shape == reference.shape: 
             raise ValueError('Wrong grid transformation shape')
         t = T()
-        ttype = 'grid'
     else:
+        precomputed = False
         t = np.asarray(T)
-        ttype = 'affine'
 
-    return to_brifti(transform_image(floating, t, ttype, grid_coords=False,
+    return to_brifti(transform_image(floating, t, precomputed, grid_coords=False,
                                      reference=reference, interp_order=interp_order))
 
 

@@ -246,7 +246,7 @@ def set_image(im, values):
         
 
 
-def transform_image(im, transform, transform_type, grid_coords=False, 
+def transform_image(im, transform, precomputed=False, grid_coords=False, 
                     reference=None, dtype=None, interp_order=_interp_order):
     """
     Apply a transformation to a 'floating' image to bring it into the
@@ -260,8 +260,8 @@ def transform_image(im, transform, transform_type, grid_coords=False,
       or a 3xN array describing voxelwise displacements of the
       reference grid points
 
-    transform_type : str
-      either 'affine' or 'grid'
+    precomputed : boolean
+      True for a precomputed transformation, False for affine
 
     grid_coords : boolean
 
@@ -282,7 +282,7 @@ def transform_image(im, transform, transform_type, grid_coords=False,
     t = np.asarray(transform)
 
     # Case: affine transform
-    if transform_type == 'affine': 
+    if not precomputed:
         if not grid_coords:
             t = np.dot(im._inv_affine, np.dot(t, reference._affine))
         ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
@@ -293,7 +293,7 @@ def transform_image(im, transform, transform_type, grid_coords=False,
     else:
         if not grid_coords:
             t = apply_affine(im._inv_affine, t)
-        output = ndimage.map_coordinates(data, t, 
+        output = ndimage.map_coordinates(data, np.rollaxis(t, 3, 0), 
                                          order=interp_order, 
                                          cval=im._background,
                                          output=dtype)
