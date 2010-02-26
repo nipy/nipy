@@ -58,7 +58,7 @@ class GridTransform(object):
         self._IJK = np.rollaxis(tmp, 0, 1+len(self._shape))
         return self._IJK 
         
-    def sample_affine(self): 
+    def _sample_affine(self): 
         if self._sampled == None: 
             self._sampled = apply_affine(self._grid_affine, self.IJK())
         else: 
@@ -68,7 +68,7 @@ class GridTransform(object):
         """
         Return the displacements sampled on the grid. 
         """
-        self.sample_affine()
+        self._sample_affine()
         self._sampled += np.sum((self._data.T*self._param).T, 0)
         return self._sampled
 
@@ -131,7 +131,7 @@ class SplineTransform(GridTransform):
 
     def __call__(self): 
         
-        self.sample_affine()
+        self._sample_affine()
         I = np.zeros(self._shape)
         
         for i in range(3): 

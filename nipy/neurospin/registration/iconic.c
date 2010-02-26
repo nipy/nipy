@@ -35,10 +35,11 @@ static inline void _affine_transform(double* Tx,
 				     size_t x, 
 				     size_t y, 
 				     size_t z); 
-static inline void _precomputed_transform(double* Tx, 
-					  double* Ty, 
-					  double* Tz, 
-					  double* bufTvox); 
+static inline double* _precomputed_transform(double* Tx, 
+					     double* Ty, 
+					     double* Tz, 
+					     const double* Tvox); 
+
 static inline void _pv_interpolation(unsigned int i, 
 				     double* H, unsigned int clampJ, 
 				     const signed short* J, 
@@ -283,9 +284,8 @@ void joint_histogram(double* H,
     }
     else 
       /* Use precomputed transformed coordinates */ 
-      _precomputed_transform(&Tx, &Ty, &Tz, bufTvox);
-    
-    
+      bufTvox = _precomputed_transform(&Tx, &Ty, &Tz, (const double*)bufTvox);
+       
     /* Test whether the current voxel is below the intensity
        threshold, or the transformed point is completly outside
        the reference grid */
@@ -476,13 +476,16 @@ static inline void _affine_transform(double* Tx, double* Ty, double* Tz,
   return; 
 }
 
-static inline void _precomputed_transform(double* Tx, double* Ty, double* Tz, double* bufTvox)  
+static inline double* _precomputed_transform(double* Tx, double* Ty, double* Tz, 
+					     const double* Tvox)  
 {
+  double* bufTvox = (double*)Tvox; 
+
   *Tx = *bufTvox; bufTvox++;
   *Ty = *bufTvox; bufTvox++;
   *Tz = *bufTvox; bufTvox++; 
 
-  return; 
+  return bufTvox; 
 }
 
 

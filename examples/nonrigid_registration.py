@@ -35,6 +35,10 @@ cp = np.mgrid[slices]
 cp = np.rollaxis(cp, 0, 4)
 
 T = SplineTransform(I, cp, sigma=5., grid_coords=True)
-Ts = T[R._slices]
+###T = Ts[R._slices]
 
-R.optimize(Ts, method='conjugate_gradient')
+# Test 
+s = R.eval(T)
+sa = R.eval(T.affine)
+
+R.optimize(T, method='conjugate_gradient')

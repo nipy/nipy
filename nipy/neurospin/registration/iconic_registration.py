@@ -120,6 +120,7 @@ class IconicRegistration(object):
 
     def eval(self, T):
         if isinstance(T, GridTransform): 
+            # TODO: make sure T.shape matches self._source_image.shape
             affine = 0 
             Tv = apply_affine(self._target_fromworld, T[self._slices]())
         else:
