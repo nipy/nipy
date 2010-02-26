@@ -41,6 +41,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+
 def main():
     parser = ArgumentParser(description=DESCRIP,
                             epilog=EPILOG,
@@ -49,7 +50,7 @@ def main():
                         help='4D image filename')
     parser.add_argument('--out-path', type=str,
                         help='path for output image files')
-    parser.add_argument('--out-label', type=str,
+    parser.add_argument('--out-fname-label', type=str,
                         help='mid part of output image filenames')
     parser.add_argument('--ncomponents', type=int, default=10,
                         help='number of PCA components to write')
@@ -71,5 +72,6 @@ def main():
     res = nads.screen(img, ncomps)
     nads.write_screen_res(res, out_path, out_root, ext + gz)
     
+
 if __name__ == '__main__':
     main()
