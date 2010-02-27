@@ -33,20 +33,19 @@ R = IconicRegistration(I, J)
 R.set_source_fov(fixed_npoints=64**3)
 
 # Make Gaussian spline transform instance
-slices = [slice(0,s.stop,s.step*4) for s in R._slices]
+spacing = 4
+slices = [slice(0,s.stop,s.step*spacing) for s in R._slices]
 cp = np.mgrid[slices]
 cp = np.rollaxis(cp, 0, 4)
 
 # Start with an affine registration
 A0 = Affine()
-A = R.optimize(A0)
-###A = Affine()
+###A = R.optimize(A0)
+A = Affine()
 
 # Save affinely transformed target  
-"""
 Jt = transform_image(J, A, reference=I)
 save_image(to_brifti(Jt), 'affine_anubis_to_ammon.nii')
-"""
 
 # Then add control points...
 T0 = SplineTransform(I, cp, sigma=20., grid_coords=True, affine=A)
@@ -66,8 +65,8 @@ print(s-s0)
 """
 
 # Optimize spline transform
-T = R.optimize(T0, method='steepest', ftol=.0001, xtol=.0001)
-##T = R.optimize(T0)
+T = R.optimize(T0, method='steepest')
+###T = R.optimize(T0)
 
 ###T = T0
 ###T.param = np.load('spline_param.npy')

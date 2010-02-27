@@ -111,7 +111,7 @@ class SplineTransform(GridTransform):
         self._sigma = sigma*np.ones(3) 
         self._grid_sigma = np.abs(np.diagonal(fromworld)[0:-1]*sigma)
         self._norma = np.prod(np.sqrt(2*np.pi)*self._grid_sigma)
-        self._set_param(np.zeros(3*self._control_points.shape[0]))
+        self._set_param(np.zeros(self._control_points.shape).ravel())
 
 
         """
@@ -138,8 +138,9 @@ class SplineTransform(GridTransform):
         # Gaussian kernel. 
         self._sample_affine()
         tmp = np.zeros(self._shape)
+        param = np.reshape(self._param, self._control_points.shape)
         for i in range(3): 
-            tmp[self._idx_control_points] = self._param[i::3]
+            tmp[self._idx_control_points] = param[:,:,:,i]
             self._sampled[:,:,:,i] += self._norma*gaussian_filter(tmp, sigma=self._grid_sigma,
                                                                   mode='constant', cval=0.0)
         return self._sampled
