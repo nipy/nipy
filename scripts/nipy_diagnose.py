@@ -12,7 +12,7 @@ the input filename extension (e.g. '.nii'):
     * pca_<label><ext> : 4D image of PCA component images
     * pcnt_var_<label>.png : percent variance scree plot for PCA
       components
-    * std_<label><ext> : standard deviation image XXX
+    * std_<label><ext> : standard deviation image
     * tsdiff_<label>.png : time series diagnostic plot
 
 The filenames for the outputs are of the form
