@@ -4,7 +4,7 @@ clean:
 	find . -regex ".*\(\.pyc\|\.so\|~\|#\)" -exec rm -rf "{}" \;
 	rm -rf build
 
-dev:
+dev: clean
 	python setup.py build_ext --inplace
 	./tools/mynipy
 
