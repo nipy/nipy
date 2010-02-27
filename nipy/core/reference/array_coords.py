@@ -90,7 +90,6 @@ class ArrayCoordMap(object):
            int, or sequence of any combination of integers, slices.  The
            sequence can also contain one Ellipsis. 
         """
-        print 'here', slicers
         # slicers might just be just one thing, so convert to tuple
         if type(slicers) != type(()):
             slicers = (slicers,)
