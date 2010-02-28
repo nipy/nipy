@@ -88,11 +88,7 @@ def protocol(fh, design_type, *hrfs):
 
         termdict = {}        
         termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
-
-	# BUG? using hrf.t causes an exception because it doesn't evaluate to being equal with the 't' in the natural_spline
-	# Also, this only fails in this function, not altprotocol where it also appears
-	# drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
-        drift = formula.natural_spline(formula.Term('t'), knots=[191/2.+1.25], intercept=True)
+	drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
         for i, t in enumerate(drift.terms):
             termdict['drift%d' % i] = t
         # After removing the first frame, keep the remaining
@@ -173,7 +169,6 @@ def altprotocol(fh, design_type, *hrfs):
 
 	termdict = {}        
 	termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
-	# XXX Why doesn't this have problems like in the function protocol above?
 	drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
 	for i, t in enumerate(drift.terms):
 	    termdict['drift%d' % i] = t
