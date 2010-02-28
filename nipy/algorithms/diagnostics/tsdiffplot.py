@@ -24,10 +24,10 @@ def plot_tsdiffs(results, axes=None):
     scaled_slice_diff = results['slice_mean_diff2'] / mean_means
 
     if axes is None:
-        import pylab
+        import matplotlib.pyplot as plt
         n_plots = 4
-        fig = pylab.figure()
-        axes = [pylab.subplot(n_plots, 1, i+1) for i in range(n_plots)]
+        fig = plt.figure()
+        axes = [plt.subplot(n_plots, 1, i+1) for i in range(n_plots)]
         
     def xmax_labels(ax, val, xlabel, ylabel):
         xlims = ax.axis()
@@ -65,7 +65,7 @@ def plot_tsdiffs(results, axes=None):
                 'Slice number',
                 'Max/mean/min slice variation')
     return axes
-    
+
 
 def plot_tsdiffs_image(img, axes=None, show=True):
     ''' Plot time series diagnostics for image
@@ -97,6 +97,6 @@ def plot_tsdiffs_image(img, axes=None, show=True):
     axes[0].set_title(title)
     if show:
         # show the plot
-        import pylab
-        pylab.show()
+        import matplotlib.pyplot as plt
+        plt.show()
     return axes

@@ -19,14 +19,17 @@ from scipy.interpolate import interp1d
 from matplotlib.mlab import csv2rec
 
 # Nipy imports
-
-import nipy.testing as niptest
 from nipy.modalities.fmri import formula, utils, hrf, design
 from nipy.modalities.fmri.fmristat import hrf as delay
 from nipy.fixes.scipy.stats.models.regression import OLSModel
 
+# testing imports
+from nipy.testing import (parametric, dec, assert_true,
+                          assert_almost_equal)
+
 # Local imports
 from FIACdesigns import descriptions, designs, altdescr
+
 
 def protocol(fh, design_type, *hrfs):
         """
@@ -85,11 +88,7 @@ def protocol(fh, design_type, *hrfs):
 
         termdict = {}        
         termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
-
-	# BUG? using hrf.t causes an exception because it doesn't evaluate to being equal with the 't' in the natural_spline
-	# Also, this only fails in this function, not altprotocol where it also appears
-	# drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
-        drift = formula.natural_spline(formula.Term('t'), knots=[191/2.+1.25], intercept=True)
+	drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
         for i, t in enumerate(drift.terms):
             termdict['drift%d' % i] = t
         # After removing the first frame, keep the remaining
@@ -170,7 +169,6 @@ def altprotocol(fh, design_type, *hrfs):
 
 	termdict = {}        
 	termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
-	# XXX Why doesn't this have problems like in the function protocol above?
 	drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
 	for i, t in enumerate(drift.terms):
 	    termdict['drift%d' % i] = t
@@ -269,7 +267,7 @@ def test_altprotocol():
 	m = OLSModel(X)
 	r = m.fit(Y)
 	remaining = (r.resid**2).sum() / (Y**2).sum()
-	yield niptest.assert_almost_equal, remaining, 0
+	yield assert_almost_equal, remaining, 0
 
     for c in bF.keys():
         baf = baF[c]
@@ -287,7 +285,7 @@ def test_altprotocol():
 	m = OLSModel(X)
 	r = m.fit(Y)
 	remaining = (r.resid**2).sum() / (Y**2).sum()
-	yield niptest.assert_almost_equal, remaining, 0
+	yield assert_almost_equal, remaining, 0
 
 
 def matchcol(col, X):
@@ -315,9 +313,10 @@ def test_agreement():
         for i in range(X[design_type].shape[1]):
             _, cmax = matchcol(X[design_type][:,i], fmristat[design_type])
             if not dd.dtype.names[i].startswith('ns'):
-                yield niptest.assert_true, np.greater(cmax, 0.999)
+                yield assert_true, np.greater(cmax, 0.999)
 
 
+@dec.slow
 def test_event_design():
     block = csv2rec(StringIO(altdescr['block']))
     event = csv2rec(StringIO(altdescr['event']))

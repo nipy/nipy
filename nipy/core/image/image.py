@@ -168,15 +168,14 @@ def fromarray(data, innames, outnames, coordmap=None):
     save : function for saving images
 
     """
-
     ndim = len(data.shape)
     if not coordmap:
         coordmap = Affine.from_start_step(innames,
                                           outnames,
                                           (0.,)*ndim,
                                           (1.,)*ndim)
-                                          
     return Image(data, coordmap)
+
 
 def merge_images(images, cls=Image, clobber=False,
                  axis='merge'):
