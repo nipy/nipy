@@ -6,10 +6,13 @@ not whether it is exact
 """
 
 import numpy as np
-from numpy.testing import assert_almost_equal
 import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
 from nipy.neurospin.utils.reproducibility_measures import \
-     voxel_reproducibility, cluster_reproducibility, map_reproducibility
+     voxel_reproducibility, cluster_reproducibility
+
+from nipy.testing import (parametric, dec, assert_almost_equal,
+                           assert_true)
+
 
 def make_dataset(ampli_factor=1.0, nsubj=10):
     """
@@ -21,7 +24,6 @@ def make_dataset(ampli_factor=1.0, nsubj=10):
     dimy = 60
     pos = 2*np.array([[ 6,  7], [10, 10], [15, 10]])
     ampli = ampli_factor*np.array([5, 6, 7])
-    sjitter = 1.0
     dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                          pos=pos, ampli=ampli, width=5.0, seed=1)
     return dataset
@@ -65,83 +67,66 @@ def apply_repro_analysis_analysis(dataset, thresholds=[3.0], method = 'crfx'):
     clt = np.array(clt)
     return kap,clt
 
+
 def test_repro1():
-    """
-    Test on the kappa values for a standard dataset
-    using bootstrap
-    """
+    # Test on the kappa values for a standard dataset using bootstrap
     dataset = make_dataset()
     kap,clt = apply_repro_analysis_analysis(dataset)
-    assert ((kap.mean()>0.3) & (kap.mean()<0.9))
+    assert_true((kap.mean()>0.3) & (kap.mean()<0.9))
+
 
 def test_repro2():
-    """
-    Test on the cluster reproducibility values for a standard dataset
-    using cluster-level rfx, bootstrap
-    """
+    # Test on the cluster reproducibility values for a standard dataset
+    # using cluster-level rfx, bootstrap
     dataset = make_dataset()
     kap,clt = apply_repro_analysis_analysis(dataset, thresholds=[5.0])
-    assert (clt.mean()>0.5)
+    assert_true(clt.mean()>0.5)
 
     
 def test_repro3():
-    """
-    Test on the kappa values for a null dataset
-    using cluster-level rfx, bootstrap
-    """
+    # Test on the kappa values for a null dataset using cluster-level
+    # rfx, bootstrap
     dataset = make_dataset(ampli_factor=0)
     kap,clt = apply_repro_analysis_analysis(dataset, thresholds=[5.0])
-    assert (kap.mean(1)<0.3)
+    assert_true(kap.mean(1)<0.3)
+
 
 def test_repro4():
-    """
-    Test on the cluster repro. values for a null dataset
-    using cluster-level rfx, bootstrap
-    """
+    # Test on the cluster repro. values for a null dataset using
+    # cluster-level rfx, bootstrap
     dataset = make_dataset(ampli_factor=0)
     kap,clt = apply_repro_analysis_analysis(dataset, thresholds=[3.0])
-    assert (clt.mean(1)<0.3)
+    assert_true(clt.mean(1)<0.3)
+
 
 def test_repro5():
-    """
-    Test on the kappa values for a non-null dataset
-    using cluster-level mfx, bootstrap
-    """
+    # Test on the kappa values for a non-null dataset using
+    # cluster-level mfx, bootstrap
     dataset = make_dataset()
     kap,clt = apply_repro_analysis_analysis(dataset, method='cmfx')
-    assert (kap.mean(1)>0.5)
+    assert_true(kap.mean(1)>0.5)
+
 
 def test_repro6():
-    """
-    Test on the kappa values for a non-null dataset
-    using cluster-level mfx, bootstrap
-    """
+    # Test on the kappa values for a non-null dataset using
+    # cluster-level mfx, bootstrap
     dataset = make_dataset()
     kap,clt = apply_repro_analysis_analysis(dataset, method='cmfx')
-    assert (clt.mean(1)>0.5)
+    assert_true(clt.mean(1)>0.5)
+
 
 def test_repro7():
-    """
-    Test on the kappa values for a standard dataset
-    using jacknife subsampling
-    """
+    # Test on the kappa values for a standard dataset using jacknife
+    # subsampling
     dataset = make_dataset(nsubj = 101)
     kap,clt = apply_repro_analysis_analysis(dataset, thresholds=[5.0])
-    assert ((kap.mean()>0.4))
+    assert_true((kap.mean()>0.4))
+
 
 def test_repro8():
-    """
-    Test on the kappa values for a standard dataset
-    using jacknife subsampling
-    """
+    # Test on the kappa values for a standard dataset using jacknife
+    # subsampling
     dataset = make_dataset(nsubj = 101)
     kap,clt = apply_repro_analysis_analysis(dataset, thresholds=[5.0])
-    assert ((clt.mean()>0.5))
-
-
-    
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])
-
+    assert_true((clt.mean()>0.5))
 
