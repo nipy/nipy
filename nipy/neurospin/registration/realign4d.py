@@ -131,11 +131,11 @@ class Realign4d(object):
         self.to_world = im4d.to_world
         self.from_world = np.linalg.inv(self.to_world)
         if transforms == None: 
-            self.transforms = [Rigid() for scan in range(self.nscans)]
+            self.transforms = [Rigid() for scan in np.arange(self.nscans)]
         else: 
             self.transforms = transforms
         self.from_time = im4d.from_time
-        self.timestamps = im4d.tr*np.array(range(self.nscans))
+        self.timestamps = im4d.tr*np.arange(self.nscans)
         # Compute the 4d cubic spline transform
         self.cbspline = cspline_transform(im4d.array)
               
@@ -146,7 +146,7 @@ class Realign4d(object):
         cspline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T)
 
     def resample_all_inmask(self):
-        for t in range(self.nscans):
+        for t in np.arange(self.nscans):
             print('Resampling scan %d/%d' % (t+1, self.nscans))
             self.resample_inmask(t)
 
@@ -223,16 +223,22 @@ class Realign4d(object):
         self.resample_all_inmask()
 
         # Optimize motion parameters 
-        for t in range(self.nscans):
+        for t in np.arange(self.nscans):
             print('Correcting motion of scan %d/%d...' % (t+1, self.nscans))
-
             def loss(pc):
                 self.transforms[t].param = pc
                 return self.msid(t)
-        
             self.init_motion_detection(t)
             self.transforms[t].param = fmin(loss, self.transforms[t].param,
                                             callback=callback, **tols)
+
+        # At this stage, transforms map an implicit 'ideal' grid to
+        # the 'acquisition' grid. We redefine the ideal grid as being
+        # conventionally aligned with the first scan.
+        T0inv = self.transforms[0].inv()
+        for t in np.arange(self.nscans): 
+            self.transforms[t] = self.transforms[t]*T0inv 
+        
 
 
     def resample(self):
@@ -242,7 +248,7 @@ class Realign4d(object):
         XYZ = np.rollaxis(XYZ, 0, 4)
         XYZ = np.reshape(XYZ, [np.prod(XYZ.shape[0:-1]), 3])
         res = np.zeros(dims)
-        for t in range(self.nscans):
+        for t in np.arange(self.nscans):
             print('Fully resampling scan %d/%d' % (t+1, self.nscans))
             X, Y, Z = grid_coords(XYZ, self.transforms[t], 
                                   self.from_world, self.to_world)
@@ -276,7 +282,7 @@ def _realign4d(im4d,
 
     """ 
     r = Realign4d(im4d, speedup=speedup, optimizer=optimizer)
-    for loop in range(loops): 
+    for loop in np.arange(loops): 
         r.correct_motion()
     return r.transforms
 
@@ -297,6 +303,11 @@ def realign4d(runs,
     -------
     transforms : list
                  nested list of rigid transformations
+
+
+    transforms map an 'ideal' 4d grid (conventionally aligned with the
+    first scan of the first run) to the 'acquisition' 4d grid for each
+    run
     """
 
     # Single-session case
@@ -305,7 +316,8 @@ def realign4d(runs,
     nruns = len(runs)
 
     # Correct motion and slice timing in each sequence separately
-    transfo_runs = [_realign4d(run, loops=within_loops, speedup=speedup, optimizer=optimizer) for run in runs]
+    transfo_runs = [_realign4d(run, loops=within_loops, 
+                               speedup=speedup, optimizer=optimizer) for run in runs]
     if nruns==1: 
         return transfo_runs[0]
 
@@ -313,7 +325,7 @@ def realign4d(runs,
         return transfo_runs
 
     # Correct between-session motion using the mean image of each corrected run 
-    corr_runs = [resample4d(runs[i], transforms=transfo_runs[i]) for i in range(nruns)]
+    corr_runs = [resample4d(runs[i], transforms=transfo_runs[i]) for i in np.arange(nruns)]
     aux = np.rollaxis(np.asarray([corr_run.mean(3) for corr_run in corr_runs]), 0, 4)
     ## Fake time series with zero inter-slice time 
     ## FIXME: check that all runs have the same to-world transform
@@ -322,9 +334,10 @@ def realign4d(runs,
     corr_mean = resample4d(mean_img, transforms=transfo_mean)
 
     # Compose transformations for each run
-    for i in range(nruns):
-        run_to_world = transfo_mean[i]
-        transforms = [run_to_world*to_run for to_run in transfo_runs[i]]
+    for i in np.arange(nruns):
+        transforms = [t*transfo_mean[i] for t in transfo_runs[i]]
         transfo_runs[i] = transforms
 
     return transfo_runs
+
+

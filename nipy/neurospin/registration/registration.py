@@ -116,6 +116,8 @@ class FmriRealign4d(object):
         if not hasattr(images, '__iter__'):
             self._single_run = True
             images = [images]
+        elif len(images) == 1: 
+            self._single_run = True
         else:
             self._single_run = False
         self._runs = [Image4d(im.get_data(), im.get_affine(),
@@ -134,8 +136,6 @@ class FmriRealign4d(object):
             self._transforms = [t]
         else: 
             self._transforms = t
-
-
 
     def resample(self): 
         """
