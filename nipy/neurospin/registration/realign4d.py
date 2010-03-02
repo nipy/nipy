@@ -316,28 +316,27 @@ def realign4d(runs,
     nruns = len(runs)
 
     # Correct motion and slice timing in each sequence separately
-    transfo_runs = [_realign4d(run, loops=within_loops, 
+    transforms = [_realign4d(run, loops=within_loops, 
                                speedup=speedup, optimizer=optimizer) for run in runs]
     if nruns==1: 
-        return transfo_runs[0]
+        return transforms[0]
 
     if align_runs==False:
-        return transfo_runs
+        return transforms
 
     # Correct between-session motion using the mean image of each corrected run 
-    corr_runs = [resample4d(runs[i], transforms=transfo_runs[i]) for i in np.arange(nruns)]
+    corr_runs = [resample4d(runs[i], transforms=transforms[i]) for i in np.arange(nruns)]
     aux = np.rollaxis(np.asarray([corr_run.mean(3) for corr_run in corr_runs]), 0, 4)
     ## Fake time series with zero inter-slice time 
     ## FIXME: check that all runs have the same to-world transform
     mean_img = Image4d(aux, to_world=runs[0].to_world, tr=1.0, tr_slices=0.0) 
     transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, optimizer=optimizer)
-    corr_mean = resample4d(mean_img, transforms=transfo_mean)
+    ##corr_mean = resample4d(mean_img, transforms=transfo_mean)
 
     # Compose transformations for each run
     for i in np.arange(nruns):
-        transforms = [t*transfo_mean[i] for t in transfo_runs[i]]
-        transfo_runs[i] = transforms
+        transforms[i] = [t*transfo_mean[i] for t in transforms[i]]
 
-    return transfo_runs
+    return transforms
 
 
