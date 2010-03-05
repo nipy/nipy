@@ -132,15 +132,32 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
     fig.scene.disable_render = True
     if anat is None:
         anat, anat_affine, anat_max = _AnatCache.get_anat()
+        anat_blurred = _AnatCache.get_blurred()
+    else:
+        from scipy import ndimage
+        # XXX: This should be in a separate function
+        anat_blurred = ndimage.gaussian_filter(
+                                        (ndimage.morphology.binary_fill_holes(
+                                            ndimage.gaussian_filter(
+                                                    (anat > 4800).astype(np.float), 6)
+                                                > 0.5
+                                            )).astype(np.float),
+                                        2).T.ravel()
+
+
     ###########################################################################
     # Display the cortical surface (flattenned)
     anat_src = affine_img_src(anat, anat_affine, scale=scale, name='Anat')
     
-    anat_src.image_data.point_data.add_array(_AnatCache.get_blurred())
+    anat_src.image_data.point_data.add_array(anat_blurred)
     anat_src.image_data.point_data.get_array(1).name = 'blurred'
+    anat_src.image_data.point_data.update()
     anat_blurred = mlab.pipeline.set_active_attribute(
                                 anat_src, point_scalars='blurred')
-            
+
+    anat_blurred.update_pipeline()
+    # anat_blurred = anat_src
+    
     cortex_surf = mlab.pipeline.set_active_attribute(
                             mlab.pipeline.contour(anat_blurred), 
                     point_scalars='scalar')
