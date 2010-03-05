@@ -174,7 +174,7 @@ pos = 2*np.array([[ 6,  7],
                   [15, 10]])
 ampli = np.array([5, 7, 6])
 sjitter = 1.0
-dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
+dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                      pos=pos, ampli=ampli, width=5.0)
 betas = np.reshape(dataset, (nsubj, dimx, dimy))
 

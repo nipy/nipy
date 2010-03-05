@@ -5,7 +5,7 @@ Test surrogate data generation.
 import numpy as np
 
 from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
-    make_surrogate_array, make_surrogate_array_3d
+    surrogate_2d_dataset, surrogate_3d_dataset 
 
 def test_surrogate_array():
     """ Check that with no noise, the surrogate activation correspond to
@@ -19,7 +19,7 @@ def test_surrogate_array():
                       [40, 60],
                       [90, 70]])
     ampli = np.random.random(5)
-    data = make_surrogate_array(nbsubj=1, noise_level=0, spatial_jitter=0,
+    data = surrogate_2d_dataset(nbsubj=1, noise_level=0, spatial_jitter=0,
                                 signal_jitter=0, pos=pos, dimx=100,
                                 dimy=100, ampli=ampli).squeeze()
     x, y = pos.T
@@ -37,7 +37,7 @@ def test_surrogate_array_3d():
                       [13, 18, 25],
                       [25, 18, 18]])
     ampli = np.random.random(5)
-    data = make_surrogate_array_3d(nbsubj=1, noise_level=0, spatial_jitter=0,
+    data = surrogate_3d_dataset(nbsubj=1, noise_level=0, spatial_jitter=0,
                                 signal_jitter=0, pos=pos, shape=(32,32,32),
                                 ampli=ampli).squeeze()
     x, y, z = pos.T

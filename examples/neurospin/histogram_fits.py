@@ -24,7 +24,7 @@ dimy = 60
 pos = 2*np.array([[6,7],[10,10],[15,10]])
 ampli = np.array([3,4,4])
 
-dataset = simul.make_surrogate_array(nbsubj=1, dimx=dimx, dimy=dimy, pos=pos,
+dataset = simul.surrogate_2d_dataset(nbsubj=1, dimx=dimx, dimy=dimy, pos=pos,
                                      ampli=ampli, width=10.0).squeeze()
 
 import pylab as pl

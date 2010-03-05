@@ -22,7 +22,7 @@ pos = 2*np.array([[6,7],[10,10],[15,10]])
 ampli = np.array([3,4,4])
 
 nbvox = dimx*dimy
-dataset = simul.make_surrogate_array(nbsubj=1, dimx=dimx, dimy=dimy,
+dataset = simul.surrogate_2d_dataset(nbsubj=1, dimx=dimx, dimy=dimy,
                                      pos=pos, ampli=ampli, width=10.0)
 x = np.reshape(dataset, (dimx, dimy, 1))
 beta = np.reshape(x, (nbvox, 1))

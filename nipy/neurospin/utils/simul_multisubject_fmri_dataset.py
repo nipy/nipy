@@ -3,7 +3,7 @@ This module conatins a function to produce a dataset which simulates
 a collection of 2D images This dataset is saved as a 3D image
 (each slice being a subject) and a 3D array
 
-example of use: make_surrogate_array(nbsubj=1,fid="/tmp/toto.dat",verbose=1)
+example of use: surrogate_2d_dataset(nbsubj=1,fid="/tmp/toto.dat",verbose=1)
 
 todo: rewrite it as a class
 
@@ -43,7 +43,7 @@ def _cone3d(shape, ij, pos, ampli, width):
     return temp
 
 
-def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0, 
+def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0, 
                          noise_level=1.0, pos=pos, ampli=ampli,
                          spatial_jitter=1.0, signal_jitter=1.0,
                          width=5.0, out_text_file=None, out_image_file=None, 
@@ -145,7 +145,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     return dataset
 
 
-def make_surrogate_array_3d(nbsubj=1, shape=(20,20,20),
+def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20),
                             sk=1.0, noise_level=1.0, pos=None, ampli=None,
                             spatial_jitter=1.0, signal_jitter=1.0,
                             width=5.0, out_text_file=None, out_image_file=None, 

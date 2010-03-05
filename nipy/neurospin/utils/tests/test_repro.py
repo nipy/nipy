@@ -22,7 +22,7 @@ def make_dataset(ampli_factor=1.0, nsubj=10):
     pos = 2*np.array([[ 6,  7], [10, 10], [15, 10]])
     ampli = ampli_factor*np.array([5, 6, 7])
     sjitter = 1.0
-    dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
+    dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                          pos=pos, ampli=ampli, width=5.0, seed=1)
     return dataset
 

@@ -2,7 +2,7 @@ import numpy as np
 
 from nipy.io.imageformats import Nifti1Image
 from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
-    make_surrogate_array
+    surrogate_2d_dataset
 #from nipy.neurospin.utils.threshold import threshold_array, threshold_z_array
 from nipy.neurospin.statistical_mapping import cluster_stats
 
@@ -16,7 +16,7 @@ def make_surrogate_data():
                       [20, 30],
                       [30, 20]])
     ampli = np.array([5,5,5,5])
-    data = make_surrogate_array(nbsubj=1, pos=pos, dimx=40, noise_level=0,
+    data = surrogate_2d_dataset(nbsubj=1, pos=pos, dimx=40, noise_level=0,
                                 dimy=40, ampli=ampli, spatial_jitter=0,
                                 signal_jitter=0).squeeze()
     data = np.reshape(data,(dimx,dimy,1))
