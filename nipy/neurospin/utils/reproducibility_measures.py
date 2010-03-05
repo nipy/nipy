@@ -156,11 +156,12 @@ def get_peak_position_from_thresholded_map(smap, mask, threshold):
     """
     from nipy.io.imageformats import Nifti1Image
     from nipy.neurospin.statistical_mapping import get_3d_peaks
-
     # create an image to represent smap
     simage = np.zeros(mask.get_shape())
     simage[mask.get_data()>0] = smap
     sim = Nifti1Image(simage, mask.get_affine())
+    #from nipy.io.imageformats import save
+    #save(sim, '/tmp/sim.nii')
     peaks = get_3d_peaks(sim, threshold=threshold, order_th=2)
     if peaks==None:
         return None
@@ -217,6 +218,28 @@ def split_group(nsubj, ngroups):
 # ----- statistic computation -----------------------------
 # ---------------------------------------------------------
 
+def conjunction(x, vx, k):
+    """
+    returns a conjunction statistic as the sum of the k lowest t-values
+    
+    Parameters
+    ----------
+    x: array of shape(nrows, ncols),
+       effect matrix
+    vx: array of shape(nrows, ncols),
+        variance matrix
+    k: int,
+       number of subjects in the conjunction    
+
+    Returns
+    -------
+    t array of shape(nrows): conjunction statistic
+    """     
+    n = x.shape[1]
+    t = np.sort(x/np.sqrt(np.maximum(vx,1.e-15)))
+    cjt = np.sum(t[:,:k],1)
+    return cjt
+
 def ttest(x):
     """
     returns the t-test for each row of the data x
@@ -244,7 +267,7 @@ def fttest(x,vx):
     if np.shape(x)!=np.shape(vx):
        raise ValueError, "incompatible dimensions for x and vx"
     n = x.shape[1]
-    t = x/np.sqrt(vx)
+    t = x/np.sqrt(np.maximum(vx,1.e-15))
     t = t.mean(1)*np.sqrt(n)
     return t
     
@@ -449,8 +472,14 @@ def map_reproducibility(data, vardata, mask, ngroups, method='crfx',
             smap = fttest(x,vx)
         elif method=='cmfx':
             smap = mfx_ttest(x,vx)
+        elif methd=='cjt':
+             if kwargs.has_key('k'):
+                k = kwargs['k']
+             else:
+                k = nsubj/2
+             smap = conjunction(x, vx, k) 
         else: raise ValueError, 'unknown method'
-
+        
         # add the binarized map to a reproducibility map
         rmap += cluster_threshold(smap, mask, threshold, csize)>0
 
@@ -509,6 +538,12 @@ def peak_reproducibility(data, vardata, mask, ngroups, sigma, method='crfx',
                 smap = mfx_ttest(x,vx)
             elif method == 'cffx':
                 smap = fttest(x,vx)
+            elif methd=='cjt':
+                if kwargs.has_key('k'):
+                    k = kwargs['k']
+                else:
+                    k = nsubj/2
+                smap = conjunction(x, vx, k) 
 
             pos = get_peak_position_from_thresholded_map(smap, mask, threshold)
             all_pos.append(pos)
@@ -533,7 +568,6 @@ def peak_reproducibility(data, vardata, mask, ngroups, sigma, method='crfx',
         for j in range(i):
             score += statistics_from_position(all_pos[i], all_pos[j], sigma)
             score += statistics_from_position(all_pos[j], all_pos[i], sigma)
-            
     score /= (ngroups*(ngroups-1))
     return score
 
@@ -591,6 +625,12 @@ def cluster_reproducibility(data, vardata, mask, ngroups, sigma,
                 smap = mfx_ttest(x,vx)
             elif method == 'cffx':
                 smap = fttest(x,vx)
+            elif methd=='cjt':
+                if  kwargs.has_key('k'):
+                    k =  kwargs['k']
+                else:   
+                    k = nsubj/2
+                smap = conjunction(x, vx, k) 
             pos = get_cluster_position_from_thresholded_map(smap, mask, threshold,
                                                             csize)
             all_pos.append(pos)
@@ -625,24 +665,30 @@ def cluster_reproducibility(data, vardata, mask, ngroups, sigma,
 # ---------- BSA stuff ----------------------------------
 # -------------------------------------------------------
 
-def coord_bsa(mask, betas, theta=3.,
-              dmax=5., ths=0, thq=0.5, smin=0, afname='/tmp/af.pic'):
+def coord_bsa(mask, betas, theta=3.,dmax=5., ths=0, thq=0.5, smin=0,
+              afname='/tmp/af.pic'):
     """
     main function for  performing bsa on a dataset
     where bsa =  nipy.neurospin.spatial_models.bayesian_structural_analysis
 
     Parameters
     ----------
-    mask: referential- and mask-defining image
-    betas: an array of shape (nbnodes, subjects):
+    mask: brifti image instance,
+          referential- and mask-defining image
+    betas: array of shape (nbnodes, subjects),
            the multi-subject statistical maps       
-    theta = 3.0 (float): first level threshold
-    dmax = 5. float>0:
+    theta: 3.0 (float), 
+           first level threshold
+    dmax :5. float>0,
          expected cluster std in the common space in units of coord
-    ths = 0 (int, >=0) : representatitivity threshold
-    thq = 0.5 (float): posterior significance threshold should be in [0,1]
-    smin = 0 (int): minimal size of the regions to validate them
-    afname = '/tmp/af.pic': place where intermediate resullts wam be written
+    ths = 0 (int, >=0): 
+        representatitivity threshold
+    thq = 0.5 (float): 
+        posterior significance threshold should be in [0,1]
+    smin = 0 (int): 
+         minimal size of the regions to validate them
+    afname = '/tmp/af.pic': 
+           path where intermediate resullts cam be pickelized
     
     Returns
     -------
@@ -654,20 +700,21 @@ def coord_bsa(mask, betas, theta=3.,
     import nipy.neurospin.graph.field as ff
     import  pickle
     
-    nbvox = np.shape(xyz)[0]
+    nvox = mask.get_data().sum()
+    affine = mask.get_affine()
     xyz = np.array(np.where(mask.get_data())).T
     
     # create the field strcture that encodes image topology
-    Fbeta = ff.Field(nbvox)
+    Fbeta = ff.Field(nvox)
     Fbeta.from_3d_grid(xyz.astype(np.int),18)
 
     # volume density
     voxvol = np.absolute(np.linalg.det(affine))
-    g0 = 1.0/(voxvol*nbvox)
+    g0 = 1.0/(voxvol*nvox)
 
     affine = mask.get_affine()
     shape = mask.get_shape()
-    coord = np.dot(np.hstack((ijk,np.ones((nstv,1)))),affine.T)[:,:3]
+    coord = np.dot(np.hstack((xyz,np.ones((nvox,1)))),affine.T)[:,:3]
 
     crmap,AF,BF,p = bsa.compute_BSA_simple_quick(Fbeta, betas, coord, dmax, xyz,
                                             affine, shape, thq, smin,ths, theta,

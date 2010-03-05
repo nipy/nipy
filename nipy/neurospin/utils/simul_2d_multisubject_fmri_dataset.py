@@ -36,10 +36,10 @@ def _cone3d(shape, ij, pos, ampli, width):
     Define a cone of the proposed grid
     """
     temp = np.zeros(shape)
-    pos = np.reshape(pos,(1,2))
+    pos = np.reshape(pos,(1,3))
     dist = np.sqrt(np.sum((ij-pos)**2, axis=1))
     codi = (width-dist)*(dist < width)/width
-    temp[ij[:,0],ij[:,1]] = codi*ampli
+    temp[ij[:,0],ij[:,1],ij[:,2]] = codi*ampli
     return temp
 
 
@@ -199,7 +199,7 @@ def make_surrogate_array_3d(nbsubj=1, dimx=20, dimy=20, dimz=20, mask=None,
     Returns
     -------
     dataset: 3D ndarray
-        The surrogate activation map, with dimensions (dimx, dimy, dimz)
+        The surrogate activation map, with dimensions (nbsubj, dimx, dimy, dimz)
     """
     if seed:
         nr = np.random.RandomState([seed])
@@ -211,7 +211,7 @@ def make_surrogate_array_3d(nbsubj=1, dimx=20, dimy=20, dimz=20, mask=None,
     else:
         shape = (dimx,dimy,dimz)
     
-    ijk = (np.where(np.ones(shape))).T
+    ijk = np.array(np.where(np.ones(shape))).T
     dataset = []
 
     # make the signal
@@ -219,14 +219,15 @@ def make_surrogate_array_3d(nbsubj=1, dimx=20, dimy=20, dimz=20, mask=None,
         data = np.zeros(shape)
         if pos !=None:
             if len(pos)!=len(ampli):
-                raise
+                raise ValueError, 'ampli and pos do not have the same len'
             lpos = pos + spatial_jitter*nr.randn(1, 3)
             lampli = ampli + signal_jitter*nr.randn(np.size(ampli))
         for k in range(np.size(lampli)):
-            data = np.maximum(data,_cone3d(shape, ijk, lpos[k], lampli[k], width))
+            data = np.maximum(data,_cone3d(shape, ijk, lpos[k], lampli[k],
+                                           width))
     
         # make some noise
-        noise = nr.randn(dimx,dimy)
+        noise = nr.randn(shape[0], shape[1], shape[2])
     
         # smooth the noise
         noise = nd.gaussian_filter(noise, sk)
