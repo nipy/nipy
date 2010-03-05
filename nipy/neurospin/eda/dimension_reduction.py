@@ -166,7 +166,7 @@ def CCA(X, Y, eps=1.e-15):
     ----
     It is expected that nbitem>>max(p,q)
     """
-    from numpy.linalg import cholesky,inv,svd
+    from numpy.linalg import cholesky, inv, svd
     if Y.shape[0]!=X.shape[0]:
         raise ValueError,"Incompatible dimensions for X and Y"
     nb = X.shape[0]
@@ -181,7 +181,7 @@ def CCA(X, Y, eps=1.e-15):
     iX = inv(rsqX).T
     iY = inv(rsqY).T
     Cxy = np.dot(np.dot(X,iX).T,np.dot(Y,iY))
-    uv,ccs,vv = svd(Cxy)
+    uv, ccs, vv = svd(Cxy)
     return ccs
 
 
@@ -325,7 +325,6 @@ def isomap(G, dim=1, p=300, verbose=0):
     offset,  array of shape (nbitem)
              additive factor necessary to center the embedding
              (analogous to mean subtraction)
-    chart, array of shape(G.V,dim)
     seed, array of shape (p): 
           the seed nodes that were used to compute fast embedding
     """
@@ -1138,21 +1137,22 @@ def partial_floyd_graph(G,k):
 # ---------- test part ---------------------------------------------
 # --------------------------------------------------------------------
 
-def _swiss_roll(nbitem=1000):
+def swiss_roll(nbitem=1000):
     """
     Sample nbitem=1000 point from a swiss roll
 
     Returns
     -------
-    X array of shape (nbitem,3) the 3D embedding
-    x array of shape (nbitem,2) the intrinsic coordinates
+    x array of shape (nbitem,3) the 3D embedding
+    u array of shape (nbitem,2) the intrinsic coordinates
     """
-    x = nr.rand(nbitem,2)
-    X1 = np.reshape((1+x[:,0])*(np.cos(2*np.pi*x[:,0])),(nbitem,1))
-    X2 = np.reshape((1+x[:,0])*(np.sin(2*np.pi*x[:,0])),(nbitem,1))
-    X3 = np.reshape(10*x[:,1],(nbitem,1))
-    X = np.hstack((X1,X2,X3))
-    return X,x
+    u = nr.rand(nbitem,2)
+    r = 1+u[:,0]
+    x1 = np.reshape(r*(np.cos(2*np.pi*u[:,0])),(nbitem,1))
+    x2 = np.reshape(r*(np.sin(2*np.pi*u[:,0])),(nbitem,1))
+    x3 = np.reshape(10*u[:,1],(nbitem,1))
+    x = np.hstack((x1,x2,x3))
+    return x,u
 
 def _orange(nbsamp=1000, k=10):
     """
@@ -1201,32 +1201,6 @@ def _test_isomap_orange(verbose=0):
     u = isomap(G,rdim,nbseed,1)
     check_isometry(G,u[:,:2],nseeds  =100)
     
-
-
-def _test_isomap_dev():
-    """
-    A test of the isomap new look using a swiss roll
-    """
-    nbsamp = 1000
-    X,x = _swiss_roll(nbsamp)
-    G = fg.WeightedGraph(nbsamp)
-    G.knn(X,8)
-    nbseed = 300
-    rdim = 3
-    u = isomap(G,rdim,nbseed,1)
-    sv = CCA(x,u[:,:3])
-    check_isometry(G,u[:,:2],nseeds  =100)
-    return (sv.sum()>1.9)
-
-
-def _test_knn_LE_():
-    """
-    Test of  eth Laplacian embedding 
-    """
-    X = nr.randn(100,3)
-    M = knn_LE(X,rdim=1)
-    u = M.train(k=5)
-
     
 def _test_knn_LE(verbose=0):
     """

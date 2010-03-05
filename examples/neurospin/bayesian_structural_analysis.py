@@ -11,7 +11,7 @@ import numpy as np
 import scipy.stats as st
 import matplotlib.pylab as mp
 import nipy.neurospin.graph.field as ff
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.spatial_models.structural_bfls as sbf
 
@@ -174,7 +174,7 @@ pos = 2*np.array([[ 6,  7],
                   [15, 10]])
 ampli = np.array([5, 7, 6])
 sjitter = 1.0
-dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
+dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                      pos=pos, ampli=ampli, width=5.0)
 betas = np.reshape(dataset, (nsubj, dimx, dimy))
 
