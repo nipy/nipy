@@ -1,19 +1,18 @@
+__doc__ = \
 """
 Example of a script that crates a 'hierarchical roi' structure
 from the blob model of an image
 
 fixme : redo it
-Used mainly for debugging at the moment (before unittests are created)
-
-This example is based on a (simplistic) simulated image.
-# Author : Bertrand Thirion, 2008-2009
 """
+print __doc__
+
 
 import numpy as np
 
 
 import nipy.neurospin.spatial_models.hroi as hroi
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.graph.field as ff
 
 ##############################################################################
@@ -57,6 +56,14 @@ label = -np.ones((dimx,dimy))
 for k in range(nroi.k):
     label[nroi.xyz[k][:,0],nroi.xyz[k][:,1]]=k
 import matplotlib.pylab as mp
+
 mp.figure()
+mp.subplot(1,2,1)
+mp.imshow(np.squeeze(dataset))
+mp.title('Input map')
+mp.axis('off')
+mp.subplot(1,2,2)
+mp.title('Nested Rois')
 mp.imshow(label,interpolation='Nearest')
+mp.axis('off')
 mp.show()

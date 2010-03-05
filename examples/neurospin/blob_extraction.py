@@ -12,7 +12,7 @@ import pylab as pl
 import matplotlib
 
 import nipy.neurospin.graph.field as ff
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.hroi as hroi
 
 # simulatean activation image

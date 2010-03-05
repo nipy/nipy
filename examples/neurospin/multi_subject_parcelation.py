@@ -4,7 +4,7 @@ on a small 2D example
 """
 import numpy as np
 import nipy.neurospin.spatial_models.hierarchical_parcellation as hp
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.parcellation as fp
 
 # step 1:  generate some synthetic data

@@ -1,7 +1,7 @@
 import numpy as np
 import pylab as pl
 
-from nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset import \
+from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
      make_surrogate_array
 
 pos = np.array([[10, 10],

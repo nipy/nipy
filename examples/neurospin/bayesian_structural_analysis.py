@@ -11,7 +11,7 @@ import numpy as np
 import scipy.stats as st
 import matplotlib.pylab as mp
 import nipy.neurospin.graph.field as ff
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.spatial_models.structural_bfls as sbf
 

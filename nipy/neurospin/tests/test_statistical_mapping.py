@@ -1,7 +1,7 @@
 import numpy as np
 
 from nipy.io.imageformats import Nifti1Image
-from nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset import \
+from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
     make_surrogate_array
 #from nipy.neurospin.utils.threshold import threshold_array, threshold_z_array
 from nipy.neurospin.statistical_mapping import cluster_stats

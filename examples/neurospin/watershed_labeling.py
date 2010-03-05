@@ -12,7 +12,7 @@ import matplotlib
 import matplotlib.pylab as mp
 
 import nipy.neurospin.graph.field as ff
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 ################################################################################
 # data simulation
 dimx=60

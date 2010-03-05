@@ -7,7 +7,7 @@ not whether it is exact
 
 import numpy as np
 from numpy.testing import assert_almost_equal
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 from nipy.neurospin.utils.reproducibility_measures import \
      voxel_reproducibility, cluster_reproducibility, map_reproducibility
 

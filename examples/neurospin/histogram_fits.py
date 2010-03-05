@@ -8,19 +8,13 @@ image, to estimate activation Z-score with various heuristics:
    * Empirical normal null
 
 This example is based on a (simplistic) simulated image.
-
-Note : We do not want a 'zscore', which does mean anything
-(except with the fdr) but probability
-that each voxel is in the active class
-
-
 """
 # Author : Bertrand Thirion, Gael Varoquaux 2008-2009
 print __doc__
 
 import numpy as np
 
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.utils.emp_null as en
 
 ################################################################################
