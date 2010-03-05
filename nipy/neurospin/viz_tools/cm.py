@@ -5,6 +5,10 @@ Matplotlib colormaps useful for neuroimaging.
 import matplotlib as _mp
 
 ################################################################################
+# Custom colormaps for two-tailed symmetric statistics
+################################################################################
+
+################################################################################
 # Helper functions 
 
 def _rotate_cmap(cmap, swap_order=('green', 'red', 'blue')):
@@ -42,12 +46,6 @@ def _pigtailed_cmap(cmap, swap_order=('green', 'red', 'blue')):
                                     for (p, c1, c2) in orig_cdict[color]])
 
     return cdict
-
-
-def _add_cmap(color_dict, cmap_dict):
-    """ Construct a colormap and add it, with its inverse, to the given
-        data dict.
-    """
 
 
 ################################################################################
@@ -102,5 +100,76 @@ for _cmapname in _cmaps_data.keys():
                                 _cmapname_r, _revspec, _mp.cm.LUTSIZE)
 
 locals().update(_cmap_d)
+
+
+################################################################################
+# Utility to replace a colormap by another in an interval
+################################################################################
+
+def dim_cmap(cmap, factor=.3):
+    """ Dim a colormap to white.
+    """
+    assert factor >= 0 and factor <=1, ValueError(
+            'Dimming factor must be larger than 0 and smaller than 1, %s was passed.' 
+                                                        % factor)
+    
+    cdict = cmap._segmentdata.copy()
+    out_cdict = dict()
+    for c_index, color in enumerate(('red', 'green', 'blue')):
+        color_lst = list()
+        for value, c1, c2 in cdict[color]:
+            color_lst.append((value, 1 - factor*(1-c1), 
+                                     1 - factor*(1-c2)))
+        cdict[color] = color_lst
+
+    return _mp.colors.LinearSegmentedColormap(
+                                '%s_dimmed' % cmap.name,
+                                cdict,
+                                _mp.cm.LUTSIZE)
+
+
+def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
+    """ Replace a colormap by another inside a pair of values.
+    """
+    assert vmin < vmax, ValueError('vmin must be smaller than vmax')
+    assert vmin >= 0,    ValueError('vmin must be larger than 0, %s was passed.' 
+                                        % vmin)
+    assert vmax <= 1,    ValueError('vmax must be smaller than 1, %s was passed.' 
+                                        % vmax)
+    outer_cdict = outer_cmap._segmentdata.copy()
+    inner_cdict = inner_cmap._segmentdata.copy()
+
+    cdict = dict()
+    for c_index, color in enumerate(('red', 'green', 'blue')):
+        color_lst = list()
+        for value, c1, c2 in outer_cdict[color]:
+            if value >= vmin:
+                break
+            color_lst.append((value, c1, c2))
+
+        color_lst.append((vmin, outer_cmap(vmin)[c_index], 
+                                inner_cmap(vmin)[c_index]))
+
+        for value, c1, c2 in inner_cdict[color]:
+            if value <= vmin:
+                continue
+            if value >= vmax:
+                break
+            color_lst.append((value, c1, c2))
+
+        color_lst.append((vmax, inner_cmap(vmax)[c_index],
+                                outer_cmap(vmax)[c_index]))
+
+        for value, c1, c2 in outer_cdict[color]:
+            if value <= vmax:
+                continue
+            color_lst.append((value, c1, c2))
+
+        cdict[color] = color_lst
+
+    return _mp.colors.LinearSegmentedColormap(
+                                '%s_inside_%s' % (inner_cmap.name, outer_cmap.name),
+                                cdict,
+                                _mp.cm.LUTSIZE)
 
 
