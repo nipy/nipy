@@ -11,14 +11,14 @@ class GridTransform(object):
         image : a neurospin image or a sequence (shape, affine)
         
         data : a 5d array representing the deformation modes, first
-        dimension should represent the mode index, next three
-        dimensions should represent space, last dimension should be 3.
+        three dimensions should represent space, next dimension should
+        be the mode index, last dimension should be 3.
         """
-        self._generic_init(image, affine)
+        nparams = data.shape[3]
+        self._generic_init(image, affine, nparams)
         self._data = data 
-        self._set_param(np.zeros(len(data)))
 
-    def _generic_init(self, image, affine): 
+    def _generic_init(self, image, affine, nparams): 
         if isinstance(image, Image): 
             self._shape = image.shape
             self._toworld = image.affine
@@ -32,6 +32,9 @@ class GridTransform(object):
             self._grid_affine = np.dot(self._affine, self._toworld)
         self._IJK = None
         self._sampled = None
+        
+        self._param = np.zeros(nparams)
+        self._free_param_idx = slice(0, nparams) 
 
     def _get_shape(self): 
         return self._shape
@@ -40,17 +43,18 @@ class GridTransform(object):
         return self._affine
 
     def _get_param(self):
-        return self._param
+        return self._param[self._free_param_idx]
 
     def _set_param(self, p):
         # Specify dtype to allow in-place operations
-        self._param = np.asarray(p, dtype='double') 
+        self._param[self._free_param_idx] = np.asarray(p) 
 
     def __getitem__(self, slices):
-        data = self._data[[slice(0,None)]+list(slices)]
+        data = self._data[slices]
         toworld = subgrid_affine(self._toworld, slices)
-        res = GridTransform((data.shape[1:-1], toworld), data, self._affine)
-        res._set_param(self.param)
+        res = GridTransform((data.shape[:-2], toworld), data, self._affine)
+        res._param[:] = self._param[:]
+        res._free_param_idx = self._free_param_idx
         return res
 
     def IJK(self):
@@ -66,12 +70,13 @@ class GridTransform(object):
         else: 
             self._sampled[:] = apply_affine(self._grid_affine, self.IJK())
 
-    def __call__(self):
+    def __array__(self):
         """
         Return the displacements sampled on the grid. 
         """
         self._sample_affine()
-        self._sampled += np.sum((self._data.T*self._param).T, 0)
+        tmp = np.reshape(self._param, (self._param.size,1))
+        self._sampled += np.sum(self._data*tmp, 3)
         return self._sampled
 
     shape = property(_get_shape)
@@ -93,7 +98,8 @@ class SplineTransform(GridTransform):
         if grid_coords is True, both `control_points` and `sigma` are
         interpreted in voxel coordinates.
         """
-        self._generic_init(image, affine)
+        nparams = np.prod(control_points.shape)
+        self._generic_init(image, affine, nparams)
         fromworld = inverse_affine(self._toworld)
         if grid_coords:
             self._control_points = apply_affine(self._toworld, control_points)
@@ -107,20 +113,9 @@ class SplineTransform(GridTransform):
 
         tmp = np.round(tmp).astype('int')
         self._idx_control_points = tuple([tmp[:,:,:,i] for i in range(tmp.shape[3])])
-        
         self._sigma = sigma*np.ones(3) 
         self._grid_sigma = np.abs(np.diagonal(fromworld)[0:-1]*sigma)
         self._norma = np.prod(np.sqrt(2*np.pi)*self._grid_sigma)
-        self._set_param(np.zeros(self._control_points.shape).ravel())
-
-
-        """
-        if basis in builtin_bases:
-            self._basis = builtin_bases[basis]
-        else:
-            self._basis = basis
-        self._kwargs = kwargs
-        """
 
     def __getitem__(self, slices):
         toworld = subgrid_affine(self._toworld, slices)
@@ -128,10 +123,11 @@ class SplineTransform(GridTransform):
         res = SplineTransform((fake_data.shape, toworld), 
                               self._control_points, self._sigma,
                               grid_coords=False, affine=self._affine)
-        res._set_param(self._param)
+        res._param[:] = self._param[:]
+        res._free_param_idx = self._free_param_idx
         return res 
 
-    def __call__(self): 
+    def __array__(self): 
         
         # The trick is to note that sum_i ci G(x-xi) is equivalent to
         # the convolution of the sparse image `c` with a normalized 3d

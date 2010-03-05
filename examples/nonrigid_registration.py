@@ -74,7 +74,7 @@ T = R.optimize(T0, method='steepest')
 
 # Resample target image 
 """
-t = T()
+t = np.asarray(T)
 Jt = transform_image(J, t, reference=I)
 save_image(to_brifti(Jt), 'deform_anubis_to_ammon.nii')
 """

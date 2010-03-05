@@ -7,7 +7,7 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 from nipy.io.imageformats import load, save
 from nipy.testing import funcfile
-from nipy.neurospin.registration.fmri_realign4d import Image4d, _resample4d
+from nipy.neurospin.registration.fmri_realign4d import Image4d, resample4d
 
 
 im = load(funcfile) 
@@ -33,5 +33,5 @@ def test_from_time():
 
 def test_slice_timing(): 
     im4d = Image4d(im.get_data(), im.get_affine(), tr=2., tr_slices=0.0)
-    x = _resample4d(im4d)
+    x = resample4d(im4d)
     assert_array_almost_equal(im4d.array, x)

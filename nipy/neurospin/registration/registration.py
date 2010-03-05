@@ -93,19 +93,8 @@ def transform(floating, T, reference=None, interp_order=3):
     if not reference == None: 
         reference = from_brifti(reference)
 
-    # Switch on transformation type
-    if isinstance(T, GridTransform): 
-        if not T.shape == reference.shape: 
-            raise ValueError('Wrong grid transformation shape')
-        t = T()
-    else:
-        t = np.asarray(T)
-
-    return to_brifti(transform_image(floating, t, grid_coords=False,
+    return to_brifti(transform_image(floating, np.asarray(T), grid_coords=False,
                                      reference=reference, interp_order=interp_order))
-
-
-
 
 
 
