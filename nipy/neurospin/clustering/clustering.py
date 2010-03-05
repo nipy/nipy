@@ -115,7 +115,10 @@ def _MStep(x, z ,k):
     dim = x.shape[1]
     centers = np.repeat(np.reshape(x.mean(0),(1,dim)),k,0)
     for q in range(k):
-        centers[q] = np.mean(x[z==q],0)
+        if np.sum(z==q)==0:
+            pass
+        else:
+            centers[q] = np.mean(x[z==q],0)
     return centers
 
 def _EStep(x, centers):
