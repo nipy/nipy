@@ -3,7 +3,7 @@ This module conatins a function to produce a dataset which simulates
 a collection of 2D images This dataset is saved as a 3D image
 (each slice being a subject) and a 3D array
 
-example of use: make_surrogate_array(nbsubj=1,fid="/tmp/toto.dat",verbose=1)
+example of use: surrogate_2d_dataset(nbsubj=1,fid="/tmp/toto.dat",verbose=1)
 
 todo: rewrite it as a class
 
@@ -36,14 +36,14 @@ def _cone3d(shape, ij, pos, ampli, width):
     Define a cone of the proposed grid
     """
     temp = np.zeros(shape)
-    pos = np.reshape(pos,(1,2))
+    pos = np.reshape(pos,(1,3))
     dist = np.sqrt(np.sum((ij-pos)**2, axis=1))
     codi = (width-dist)*(dist < width)/width
-    temp[ij[:,0],ij[:,1]] = codi*ampli
+    temp[ij[:,0],ij[:,1],ij[:,2]] = codi*ampli
     return temp
 
 
-def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0, 
+def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0, 
                          noise_level=1.0, pos=pos, ampli=ampli,
                          spatial_jitter=1.0, signal_jitter=1.0,
                          width=5.0, out_text_file=None, out_image_file=None, 
@@ -145,7 +145,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     return dataset
 
 
-def make_surrogate_array_3d(nbsubj=1, dimx=20, dimy=20, dimz=20, mask=None,
+def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20),
                             sk=1.0, noise_level=1.0, pos=None, ampli=None,
                             spatial_jitter=1.0, signal_jitter=1.0,
                             width=5.0, out_text_file=None, out_image_file=None, 
@@ -158,14 +158,7 @@ def make_surrogate_array_3d(nbsubj=1, dimx=20, dimy=20, dimz=20, mask=None,
     nbsubj: integer, optionnal
         The number of subjects, ie the number of different maps
         generated.
-    dimx: integer, optionnal
-        The x size of the array returned.
-    dimy: integer
-        The y size of the array returned.
-    dimz: integer, optional,
-        The z size of the array returned
-    mask=None, mask Nifti1Image instance, optional,
-        a referential- and mask-defining image for realistic 3D brain models
+    shape=(20,20,20) tuple of interegers defining the shape of each image 
     sk: float, optionnal
         Amount of spatial noise smoothness.
     noise_level: float, optionnal
@@ -199,19 +192,15 @@ def make_surrogate_array_3d(nbsubj=1, dimx=20, dimy=20, dimz=20, mask=None,
     Returns
     -------
     dataset: 3D ndarray
-        The surrogate activation map, with dimensions (dimx, dimy, dimz)
+        The surrogate activation map, with dimensions (nbsubj, dimx, dimy, dimz)
     """
     if seed:
         nr = np.random.RandomState([seed])
     else:
         import numpy.random as nr
 
-    if mask is not None:
-        shape = mask.get_shape()
-    else:
-        shape = (dimx,dimy,dimz)
     
-    ijk = (np.where(np.ones(shape))).T
+    ijk = np.array(np.where(np.ones(shape))).T
     dataset = []
 
     # make the signal
@@ -219,22 +208,23 @@ def make_surrogate_array_3d(nbsubj=1, dimx=20, dimy=20, dimz=20, mask=None,
         data = np.zeros(shape)
         if pos !=None:
             if len(pos)!=len(ampli):
-                raise
+                raise ValueError, 'ampli and pos do not have the same len'
             lpos = pos + spatial_jitter*nr.randn(1, 3)
             lampli = ampli + signal_jitter*nr.randn(np.size(ampli))
         for k in range(np.size(lampli)):
-            data = np.maximum(data,_cone3d(shape, ijk, lpos[k], lampli[k], width))
+            data = np.maximum(data,_cone3d(shape, ijk, lpos[k], lampli[k],
+                                           width))
     
         # make some noise
-        noise = nr.randn(dimx,dimy)
+        noise = nr.randn(shape[0], shape[1], shape[2])
     
         # smooth the noise
         noise = nd.gaussian_filter(noise, sk)
-        noise = np.reshape(noise, (-1, 1))
+        #noise = np.reshape(noise, (-1, 1))
         noise *= noise_level/np.std(noise)
         
         #make the mixture
-        data += np.reshape(noise, shape)
+        data += noise
     
         dataset.append(data)
 

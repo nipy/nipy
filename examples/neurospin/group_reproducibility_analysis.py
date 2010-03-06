@@ -8,7 +8,7 @@ print __doc__
 
 import numpy as np
 
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 from nipy.neurospin.utils.reproducibility_measures import \
      voxel_reproducibility, cluster_reproducibility, map_reproducibility,\
      peak_reproducibility
@@ -23,7 +23,7 @@ pos = 2*np.array([[ 6,  7],
                   [10, 10],
                   [15, 10]])
 ampli = 0.5* np.array([5, 7, 6])
-dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
+dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                      pos=pos, ampli=ampli, width=5.0)
 betas = np.reshape(dataset, (nsubj, dimx, dimy))
 
