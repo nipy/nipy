@@ -145,7 +145,7 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     return dataset
 
 
-def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20),
+def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20), mask=None,
                             sk=1.0, noise_level=1.0, pos=None, ampli=None,
                             spatial_jitter=1.0, signal_jitter=1.0,
                             width=5.0, out_text_file=None, out_image_file=None, 
@@ -158,7 +158,10 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20),
     nbsubj: integer, optionnal
         The number of subjects, ie the number of different maps
         generated.
-    shape=(20,20,20) tuple of interegers defining the shape of each image 
+    shape=(20,20,20): tuple of integers,
+         the shape of each image
+    mask=None: brifti image instance,
+        referential- and mask- defining image (overrides shape)
     sk: float, optionnal
         Amount of spatial noise smoothness.
     noise_level: float, optionnal
@@ -199,8 +202,14 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20),
     else:
         import numpy.random as nr
 
+
+    if mask is not None:
+        shape = mask.get_shape()
+        mask_data = mask.get_data()
+    else:
+        mask_data = np.ones(shape)
     
-    ijk = np.array(np.where(np.ones(shape))).T
+    ijk = np.array(np.where(mask_data)).T
     dataset = []
 
     # make the signal
