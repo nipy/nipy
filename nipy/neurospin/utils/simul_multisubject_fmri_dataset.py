@@ -3,7 +3,7 @@ This module conatins a function to produce a dataset which simulates
 a collection of 2D images This dataset is saved as a 3D image
 (each slice being a subject) and a 3D array
 
-example of use: make_surrogate_array(nbsubj=1,fid="/tmp/toto.dat",verbose=1)
+example of use: surrogate_2d_dataset(nbsubj=1,fid="/tmp/toto.dat",verbose=1)
 
 todo: rewrite it as a class
 
@@ -43,7 +43,7 @@ def _cone3d(shape, ij, pos, ampli, width):
     return temp
 
 
-def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0, 
+def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0, 
                          noise_level=1.0, pos=pos, ampli=ampli,
                          spatial_jitter=1.0, signal_jitter=1.0,
                          width=5.0, out_text_file=None, out_image_file=None, 
@@ -145,7 +145,7 @@ def make_surrogate_array(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     return dataset
 
 
-def make_surrogate_array_3d(nbsubj=1, dimx=20, dimy=20, dimz=20, mask=None,
+def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20), mask=None,
                             sk=1.0, noise_level=1.0, pos=None, ampli=None,
                             spatial_jitter=1.0, signal_jitter=1.0,
                             width=5.0, out_text_file=None, out_image_file=None, 
@@ -158,14 +158,10 @@ def make_surrogate_array_3d(nbsubj=1, dimx=20, dimy=20, dimz=20, mask=None,
     nbsubj: integer, optionnal
         The number of subjects, ie the number of different maps
         generated.
-    dimx: integer, optionnal
-        The x size of the array returned.
-    dimy: integer
-        The y size of the array returned.
-    dimz: integer, optional,
-        The z size of the array returned
-    mask=None, mask Nifti1Image instance, optional,
-        a referential- and mask-defining image for realistic 3D brain models
+    shape=(20,20,20): tuple of integers,
+         the shape of each image
+    mask=None: brifti image instance,
+        referential- and mask- defining image (overrides shape)
     sk: float, optionnal
         Amount of spatial noise smoothness.
     noise_level: float, optionnal
@@ -206,12 +202,14 @@ def make_surrogate_array_3d(nbsubj=1, dimx=20, dimy=20, dimz=20, mask=None,
     else:
         import numpy.random as nr
 
+
     if mask is not None:
         shape = mask.get_shape()
+        mask_data = mask.get_data()
     else:
-        shape = (dimx,dimy,dimz)
+        mask_data = np.ones(shape)
     
-    ijk = np.array(np.where(np.ones(shape))).T
+    ijk = np.array(np.where(mask_data)).T
     dataset = []
 
     # make the signal
@@ -231,11 +229,11 @@ def make_surrogate_array_3d(nbsubj=1, dimx=20, dimy=20, dimz=20, mask=None,
     
         # smooth the noise
         noise = nd.gaussian_filter(noise, sk)
-        noise = np.reshape(noise, (-1, 1))
+        #noise = np.reshape(noise, (-1, 1))
         noise *= noise_level/np.std(noise)
         
         #make the mixture
-        data += np.reshape(noise, shape)
+        data += noise
     
         dataset.append(data)
 
