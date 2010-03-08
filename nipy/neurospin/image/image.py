@@ -320,6 +320,7 @@ def apply_affine(T, xyz):
     T is a 4x4 matrix.
     xyz is a Nx3 array of 3d coordinates stored row-wise.  
     """
+    xyz = np.asarray(xyz)
     shape = xyz.shape[0:-1]
     XYZ = np.dot(np.reshape(xyz, (np.prod(shape), 3)), T[0:3,0:3].T)
     XYZ[:,0] += T[0,3]

@@ -126,7 +126,7 @@ class IconicRegistration(object):
         if isinstance(T, GridTransform): 
             # TODO: make sure T.shape matches self._source_image.shape
             affine = 0 
-            Tv = apply_affine(self._target_fromworld, T[self._slices]())
+            Tv = apply_affine(self._target_fromworld, T[self._slices])
         else:
             affine = 1
             Tv = np.dot(self._target_fromworld, np.dot(T, self._source_toworld)) 

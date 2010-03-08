@@ -103,34 +103,30 @@ class FmriRealign4d(object):
     def __init__(self, images, tr, tr_slices=None, start=0.0, 
                  slice_order='ascending', interleaved=False):
         if not hasattr(images, '__iter__'):
-            self._single_run = True
             images = [images]
-        elif len(images) == 1: 
-            self._single_run = True
-        else:
-            self._single_run = False
         self._runs = [Image4d(im.get_data(), im.get_affine(),
                               tr=tr, tr_slices=tr_slices, start=start,
                               slice_order=slice_order, 
                               interleaved=interleaved) for im in images]
         self._transforms = [None for run in self._runs]
                       
-    def correct_motion(self, iterations=2, between_loops=None): 
+    def correct_motion(self, iterations=2, between_loops=None, align_runs=True): 
         within_loops = iterations 
         if between_loops == None: 
             between_loops = 3*within_loops 
         t = realign4d(self._runs, within_loops=within_loops, 
-                      between_loops=between_loops)
-        if self._single_run: 
-            self._transforms = [t]
-        else: 
-            self._transforms = t
+                      between_loops=between_loops, align_runs=align_runs)
+        self._transforms, self._within_run_transforms, self._mean_transforms = t
 
-    def resample(self): 
+    def resample(self, align_runs=True): 
         """
         Return a list of 4d brifti-like images corresponding to the resampled runs. 
         """
+        if align_runs: 
+            transforms = self._transforms
+        else: 
+            transforms = self._within_run_transforms
         indices = range(len(self._runs))
-        data = [resample4d(self._runs[i], transforms=self._transforms[i]) for i in indices]
+        data = [resample4d(self._runs[i], transforms=transforms[i]) for i in indices]
         return [to_brifti(Image(data[i], self._runs[i].to_world)) for i in indices]
 

@@ -22,9 +22,10 @@ def interp_slice_order(Z, slice_order):
     Z = np.asarray(Z)
     nslices = len(slice_order)
     aux = np.asarray(list(slice_order)+[slice_order[0]+nslices])
-    Za = Z % nslices
-    Zal = Za.astype('int')
-    w = Za - Zal 
+    Zf = np.floor(Z).astype('int')
+    w = Z - Zf
+    Zal = Zf % nslices
+    Za = Zal + w
     ret = (1-w)*aux[Zal] + w*aux[Zal+1]
     ret += (Z-Za)
     return ret
@@ -311,32 +312,32 @@ def realign4d(runs,
     """
 
     # Single-session case
-    if not isinstance(runs, list) and not isinstance(runs, tuple): 
+    if not hasattr(runs, '__iter__'):
         runs = [runs]
     nruns = len(runs)
+    if nruns == 1: 
+        align_runs = False
 
     # Correct motion and slice timing in each sequence separately
     transforms = [_realign4d(run, loops=within_loops, 
-                               speedup=speedup, optimizer=optimizer) for run in runs]
-    if nruns==1: 
-        return transforms[0]
-
-    if align_runs==False:
-        return transforms
+                             speedup=speedup, optimizer=optimizer) for run in runs]
+    if not align_runs: 
+        return transforms, transforms, None
 
     # Correct between-session motion using the mean image of each corrected run 
     corr_runs = [resample4d(runs[i], transforms=transforms[i]) for i in np.arange(nruns)]
-    aux = np.rollaxis(np.asarray([corr_run.mean(3) for corr_run in corr_runs]), 0, 4)
+    aux = np.rollaxis(np.asarray([c.mean(3) for c in corr_runs]), 0, 4)
     ## Fake time series with zero inter-slice time 
     ## FIXME: check that all runs have the same to-world transform
     mean_img = Image4d(aux, to_world=runs[0].to_world, tr=1.0, tr_slices=0.0) 
-    transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, optimizer=optimizer)
-    ##corr_mean = resample4d(mean_img, transforms=transfo_mean)
+    transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, 
+                              optimizer=optimizer)
 
     # Compose transformations for each run
+    ctransforms = []
     for i in np.arange(nruns):
-        transforms[i] = [t*transfo_mean[i] for t in transforms[i]]
+        ctransforms[i] = [t*transfo_mean[i] for t in transforms[i]]
+    return ctransforms, transforms, transfo_mean
 
-    return transforms
 
 

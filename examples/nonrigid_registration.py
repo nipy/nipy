@@ -33,15 +33,15 @@ R = IconicRegistration(I, J)
 R.set_source_fov(fixed_npoints=64**3)
 
 # Make Gaussian spline transform instance
-spacing = 4
+spacing = 16
 slices = [slice(0,s.stop,s.step*spacing) for s in R._slices]
 cp = np.mgrid[slices]
 cp = np.rollaxis(cp, 0, 4)
 
 # Start with an affine registration
 A0 = Affine()
-###A = R.optimize(A0)
-A = Affine()
+A = R.optimize(A0)
+###A = Affine()
 
 # Save affinely transformed target  
 Jt = transform_image(J, A, reference=I)
@@ -73,11 +73,10 @@ T = R.optimize(T0, method='steepest')
 
 
 # Resample target image 
-"""
 t = np.asarray(T)
 Jt = transform_image(J, t, reference=I)
 save_image(to_brifti(Jt), 'deform_anubis_to_ammon.nii')
-"""
+
 
 # Test 3
 """
