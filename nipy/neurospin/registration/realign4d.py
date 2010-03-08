@@ -26,6 +26,11 @@ def interp_slice_order(Z, slice_order):
     w = Z - Zf
     Zal = Zf % nslices
     Za = Zal + w
+    """
+    Za = Z % nslices
+    Zal = Za.astype('int')
+    w = Za - Zal 
+    """
     ret = (1-w)*aux[Zal] + w*aux[Zal+1]
     ret += (Z-Za)
     return ret
@@ -334,7 +339,7 @@ def realign4d(runs,
                               optimizer=optimizer)
 
     # Compose transformations for each run
-    ctransforms = []
+    ctransforms = [None for i in np.arange(nruns)]
     for i in np.arange(nruns):
         ctransforms[i] = [t*transfo_mean[i] for t in transforms[i]]
     return ctransforms, transforms, transfo_mean
