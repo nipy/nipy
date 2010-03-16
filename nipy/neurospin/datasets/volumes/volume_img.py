@@ -187,7 +187,6 @@ class VolumeImg(VolumeGrid):
         # to use a better algorithm
         if np.all(np.diag(np.diag(A)) == A):
             A = np.diag(A)
-            b = np.dot(A_inv, b)
         else:
             b = np.dot(A, b)
         # For images with dimensions larger than 3D:

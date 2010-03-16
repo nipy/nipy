@@ -53,7 +53,7 @@ def affine_img_src(data, affine, scale=1, name='AffineImage',
         # Radiologic convention
         spacing[0] *= -1
         origin[0] *= -1
-    src = ArraySource(scalar_data=np.asarray(data), 
+    src = ArraySource(scalar_data=np.asarray(data, dtype=np.float), 
                            name=name,
                            spacing=scale*spacing,
                            origin=origin)
