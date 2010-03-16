@@ -39,7 +39,7 @@ def find_mni_template():
         ('usr', 'share', 'fsl', 'data', 'standard', 'avg152T1_brain.nii.gz'),
         ('usr', 'local', 'share', 'fsl', 'data', 'standard', 'avg152T1_brain.nii.gz'),
             ]:
-        filname = os.path.join(path)
+        filename = os.sep.join((path))
         if os.path.exists(filename):
             return filename
 
@@ -59,18 +59,19 @@ class _AnatCache(object):
     @classmethod
     def get_anat(cls):
         filename = find_mni_template()
-        if filename is None:
-            raise OSError('Cannot find template file T1_brain.nii.gz '
-                    'required to plot anatomy, see the nipy documentation '
-                    'installaton section for how to install template files.')
-        anat_im = load(filename)
-        anat = anat_im.get_data()
-        anat = anat.astype(np.float)
-        anat_mask = ndimage.morphology.binary_fill_holes(anat > 0)
-        anat = np.ma.masked_array(anat, np.logical_not(anat_mask))
-        cls.anat_sform = anat_im.get_affine()
-        cls.anat = anat
-        cls.anat_max = anat.max()
+        if cls.anat is None:
+            if filename is None:
+                raise OSError('Cannot find template file T1_brain.nii.gz '
+                        'required to plot anatomy, see the nipy documentation '
+                        'installaton section for how to install template files.')
+            anat_im = load(filename)
+            anat = anat_im.get_data()
+            anat = anat.astype(np.float)
+            anat_mask = ndimage.morphology.binary_fill_holes(anat > 0)
+            anat = np.ma.masked_array(anat, np.logical_not(anat_mask))
+            cls.anat_sform = anat_im.get_affine()
+            cls.anat = anat
+            cls.anat_max = anat.max()
         return cls.anat, cls.anat_sform, cls.anat_max
 
 
