@@ -147,6 +147,7 @@ def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
         anat_kwargs['cmap'] = pl.cm.gray
         anat_kwargs.pop('vmin', None)
         anat_kwargs.pop('vmax', None)
+        anat_kwargs.pop('alpha', 1.)
         anat, anat_affine = _xyz_order(anat, anat_affine)
         ortho_slicer.plot_map(anat, anat_affine, **anat_kwargs)
     ortho_slicer.plot_map(map, affine, **kwargs)
