@@ -17,7 +17,7 @@ Author : Bertrand Thirion, 2008-2009
 
 import numpy as np
 import numpy.random as nr
-from numpy.linalg import det, pinv, cholesky
+from numpy.linalg import det, inv, pinv, cholesky, eigvalsh 
 from scipy.special import gammaln
 
 
@@ -64,7 +64,7 @@ def generate_normals(m,P):
     -------
     ng : array of shape(n): a draw from the gaussian density
     """
-    L = pinv(cholesky(P))
+    L = inv(cholesky(P))
     ng = nr.randn(m.shape[0])
     ng = np.dot(ng,L)
     ng += m 
@@ -121,11 +121,11 @@ def Wishart_eval(n, V, W, dV=None, dW=None, piV=None):
     # check that shape(V)==shape(W)
     p = V.shape[0]
     if dV == None:
-        dV = det(V)
+        dV = np.prd(eigvalsh(V))
     if dW == None:
-        dW = det(W)
+        dW = np.prod(eigvalsh(W))
     if piV==None:
-        piV = pinv(V)
+        piV = inv(V)
     ldW = np.log(dW)*(n-p-1)/2
     ltr = - np.trace(np.dot(piV, W))/2
     la = ( n*p*np.log(2) + np.log(dV)*n )/2
@@ -151,7 +151,7 @@ def normal_eval(mu, P, x, dP=None):
     """
     p = np.size(mu)
     if dP==None:
-        dP = det(P)
+        dP = np.prod(eigvalsh(P))
     mu = np.reshape(mu,(1,p))
     w0 = np.log(dP)-p*np.log(2*np.pi)
     w0/=2               
@@ -233,13 +233,13 @@ def dkl_gaussian(m1,P1,m2,P2):
     (m1,P1) and (m2,P2)
     where m = mean and P = precision
     """
-    from numpy.linalg import det,pinv
+    from numpy.linalg import det,inv
     tiny = 1.e-15
     # fixme:check size
     dim = np.size(m1)
     d1 = max(det(P1),tiny)
     d2 = max(det(P2),tiny)
-    dkl = np.log(d1/d2)+ np.trace(np.dot(P2,pinv(P1)))-dim
+    dkl = np.log(d1/d2)+ np.trace(np.dot(P2,inv(P1)))-dim
     dkl += np.dot(np.dot((m1-m2).T,P2),(m1-m2))
     dkl /= 2
     return dkl
@@ -252,7 +252,7 @@ def dkl_wishart(a1,B1,a2,B2):
     B1 and B2 are scale matrices
     """
     from scipy.special import psi,gammaln
-    from numpy.linalg import det,pinv
+    from numpy.linalg import det,inv
     tiny = 1.e-15
     # fixme: check size
     dim = B1.shape[0]
@@ -271,7 +271,7 @@ def dkl_wishart(a1,B1,a2,B2):
     lz1 = 0.5*a1*dim*np.log(2)-0.5*a1*np.log(d1)+lg1
     lz2 = 0.5*a2*dim*np.log(2)-0.5*a2*np.log(d2)+lg2
     dkl = (a1-dim-1)*lw1-(a2-dim-1)*lw2-a1*dim
-    dkl += a1*np.trace(np.dot(B2,pinv(B1)))
+    dkl += a1*np.trace(np.dot(B2,inv(B1)))
     dkl /=2
     dkl += (lz2-lz1)
     return dkl
@@ -391,7 +391,7 @@ class BGMM(GMM):
 
         # cache some pre-computations
         self._dets = [det(self.prior_scale[k])for k in range(self.k)]
-        self._inv_prior_scale = np.array([pinv(self.prior_scale[k])
+        self._inv_prior_scale = np.array([inv(self.prior_scale[k])
                                           for k in range(self.k)])
 
         self.check()
@@ -426,7 +426,7 @@ class BGMM(GMM):
 
         # cache some pre-computations
         self._dets = np.ones(self.k)*det(px[0])
-        self._inv_prior_scale = np.repeat(np.reshape(pinv(px[0]),elshape),self.k,0)
+        self._inv_prior_scale = np.repeat(np.reshape(inv(px[0]),elshape),self.k,0)
         
         # check that everything is OK
         if nocheck==True:
@@ -543,12 +543,13 @@ class BGMM(GMM):
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
         covariance += addcov*prior_shrinkage
                 
-        scale = np.array([pinv(covariance[k]) for k in range(self.k)])
+        scale = np.array([inv(covariance[k]) for k in range(self.k)])
         for k in range(self.k):
             self.precisions[k] = generate_Wishart(self.dof[k], scale[k])
 
-        self._detp = [det(self.precisions[k]) for k in range(self.k)]
-        self._invp = [pinv(self.precisions[k]) for k in range(self.k)]
+        self._detp = [np.prod(eigvalsh(self.precisions[k]))
+                      for k in range(self.k)]
+        self._invp = [inv(self.precisions[k]) for k in range(self.k)]
         
     def update(self,x,z):
         """
@@ -723,7 +724,7 @@ class BGMM(GMM):
             dx = np.reshape(x[z==k]-empmeans[k],(pop[k],self.dim))
             empcov[k] += np.dot(dx.T,dx)
 
-        from numpy.linalg import pinv
+        from numpy.linalg import inv
                 
         covariance = np.array(self._inv_prior_scale)
         covariance += empcov
@@ -733,8 +734,8 @@ class BGMM(GMM):
         addcov = np.array([np.dot(dx[k],dx[k].T) for k in range(self.k)])
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
         covariance += addcov*prior_shrinkage
-        scale = np.array([pinv(covariance[k]) for k in range(self.k)])
-        _dets = np.array([det(scale[k]) for k in range(self.k)])
+        scale = np.array([inv(covariance[k]) for k in range(self.k)])
+        _dets = np.array([np.prod(eigvalsh(scale[k])) for k in range(self.k)])
         
         #2. the means
         empmeans= (empmeans.T*rpop).T
@@ -896,7 +897,7 @@ class VBGMM(BGMM):
         ev (float) the computed evidence
         """
         from scipy.special import psi
-        from numpy.linalg import det,pinv
+        from numpy.linalg import det,inv
         tiny = 1.e-15
         if L==None:
             L = self._Estep(x)
@@ -929,7 +930,7 @@ class VBGMM(BGMM):
             
         #then the KL divergences
         prior_covariance = np.array(self._inv_prior_scale)
-        covariance = np.array([pinv(self.scale[k]) for k in range(self.k)])
+        covariance = np.array([inv(self.scale[k]) for k in range(self.k)])
         Dklw = 0
         Dklg = 0
         Dkld = dkl_dirichlet(self.weights,self.prior_weights)
@@ -954,7 +955,7 @@ class VBGMM(BGMM):
         L: array of shape(nbitem,self.k)
            the likelihood of the data under each class
         """
-        from numpy.linalg import pinv
+        from numpy.linalg import inv
         tiny  =1.e-15
         pop = L.sum(0)
        
@@ -989,7 +990,7 @@ class VBGMM(BGMM):
         apms =  np.reshape(prior_shrinkage*pop/shrinkage,(self.k,1,1))
         covariance += addcov*apms
 
-        self.scale = np.array([pinv(covariance[k]) for k in range(self.k)])
+        self.scale = np.array([inv(covariance[k]) for k in range(self.k)])
         
         # fixme : compute the MAP of the precisions
         #(not used, but for completness and interpretation)

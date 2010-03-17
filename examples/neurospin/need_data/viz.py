@@ -23,7 +23,7 @@ affine = fim.get_affine()
 #vizualization parameters
 x, y, z = -52, 10, 22
 threshold = 2.0
-kwargs={'cmap':pl.cm.hot,'alpha':.7,'vmin':threshold,'anat':None}
+kwargs={'cmap':pl.cm.hot,'alpha':0.7,'vmin':threshold,'anat':None}
 
 
 plot_map(fmap, affine, cut_coords=(x, y, z), **kwargs)
