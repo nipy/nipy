@@ -39,7 +39,7 @@ def find_mni_template():
         ('usr', 'share', 'fsl', 'data', 'standard', 'avg152T1_brain.nii.gz'),
         ('usr', 'local', 'share', 'fsl', 'data', 'standard', 'avg152T1_brain.nii.gz'),
             ]:
-        filname = os.path.join(path)
+        filename = os.sep.join((path))
         if os.path.exists(filename):
             return filename
 
