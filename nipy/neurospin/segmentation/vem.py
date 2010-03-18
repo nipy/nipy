@@ -85,7 +85,7 @@ def ve_step(ppm, data, mask, mu, sigma, prior, ndist, alpha=1., beta=0.0):
     else: 
         print('  .. MRF correction')
         XYZ = np.array((X, Y, Z), dtype='int') 
-        ppm = finalize_ve_step(ppm, lik, XYZ, beta)
+        ppm = finalize_ve_step(ppm, lik, XYZ, beta, 0)
 
     return ppm
         

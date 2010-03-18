@@ -16,17 +16,17 @@ cdef extern from "mrf.h":
     void smooth_ppm(ndarray ppm, 
                     ndarray lik,
                     ndarray XYZ, 
-                    double beta)
+                    double beta, 
+                    int copy, 
+                    int hard)
 
 # Initialize numpy
 mrf_import_array()
 import_array()
 import numpy as np
-#cimport numpy as np
-#import cython 
 
 
-def finalize_ve_step(ppm, lik, XYZ, double beta):
+def finalize_ve_step(ppm, lik, XYZ, double beta, int copy, int hard):
     
     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
         raise ValueError('ppm array should be double C-contiguous')
@@ -36,7 +36,7 @@ def finalize_ve_step(ppm, lik, XYZ, double beta):
     
     XYZ = np.asarray(XYZ, dtype='int')
     
-    smooth_ppm(<ndarray>ppm, <ndarray>lik, <ndarray>XYZ, beta)
+    smooth_ppm(<ndarray>ppm, <ndarray>lik, <ndarray>XYZ, beta, copy, hard)
     return ppm 
 
 
