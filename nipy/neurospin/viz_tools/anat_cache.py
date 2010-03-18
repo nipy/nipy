@@ -35,13 +35,19 @@ def find_mni_template():
             return filename
     except DataError:
         pass
-    for path in [
-        ('usr', 'share', 'fsl', 'data', 'standard', 'avg152T1_brain.nii.gz'),
-        ('usr', 'local', 'share', 'fsl', 'data', 'standard', 'avg152T1_brain.nii.gz'),
-            ]:
-        filname = os.path.join(path)
+    possible_paths = [
+     ('', 'usr', 'share', 'fsl', 'data', 'standard', 'avg152T1_brain.nii.gz'),
+     ('', 'usr', 'local', 'share', 'fsl', 'data', 'standard', 'avg152T1_brain.nii.gz'),
+            ]
+    if 'FSLDIR' in os.environ:
+        fsl_path = os.environ['FSLDIR'].split(os.sep)
+        fsl_path.extend('data', 'standard', 'avg152T1_brain.nii.gz')
+        possible_paths.append()
+    for path in possible_paths:
+        filename = os.sep.join((path))
         if os.path.exists(filename):
             return filename
+        
 
 
 ################################################################################

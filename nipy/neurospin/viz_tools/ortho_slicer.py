@@ -8,10 +8,38 @@ the data.
 import numpy as np
 
 import pylab as pl
+import matplotlib as mp
 from matplotlib.transforms import Bbox
 
 # Local imports
 from .coord_tools import coord_transform, get_bounds, get_mask_bounds
+
+
+################################################################################
+# Bugware to have transparency work OK with MPL < .99.1
+if mp.__version__ < '0.99.1':
+    # We wrap the lut as a callable and replace its evalution to put
+    # alpha to zero where the mask is true. This is what is done in 
+    # MPL >= .99.1
+    from matplotlib import colors
+    class CMapProxy(colors.Colormap):
+        def __init__(self, lut):
+            self.__lut = lut
+
+        def __call__(self, arr, *args, **kwargs):
+            results = self.__lut(arr, *args, **kwargs)
+            if not isinstance(arr, np.ma.MaskedArray):
+                return results
+            else:
+                results[arr.mask, -1] = 0
+            return results
+
+        def __getattr__(self, attr):
+            # Dark magic: we are delegating any call to the lut instance
+            # we wrap
+            return self.__dict__.get(attr, getattr(self.__lut, attr))
+
+
 
 ################################################################################
 # class OrthoSlicer
@@ -251,7 +279,6 @@ class OrthoSlicer(object):
                     **kwargs)
 
 
-
     def plot_map(self, map, affine, **kwargs):
         """ Plot a 3D map in all the views.
 
@@ -266,6 +293,10 @@ class OrthoSlicer(object):
             kwargs:
                 Extra keyword arguments are passed to imshow.
         """
+        if mp.__version__ < '0.99.1':
+            cmap = kwargs.get('cmap', 
+                        pl.cm.cmap_d[pl.rcParams['image.cmap']])
+            kwargs['cmap'] = CMapProxy(cmap)
         x, y, z = self._cut_coords
         x_map, y_map, z_map = [int(round(c)) for c in 
                                coord_transform(x, y, z, np.linalg.inv(affine))]

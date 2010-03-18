@@ -2,7 +2,8 @@
 Matplotlib colormaps useful for neuroimaging.
 """
 
-import matplotlib as _mp
+from matplotlib import cm as _cm
+from matplotlib import colors as _colors
 
 ################################################################################
 # Custom colormaps for two-tailed symmetric statistics
@@ -52,26 +53,26 @@ def _pigtailed_cmap(cmap, swap_order=('green', 'red', 'blue')):
 # Our colormaps definition
 
 _cmaps_data = dict(
-    cold_hot     = _pigtailed_cmap(_mp.cm.hot),
-    brown_blue   = _pigtailed_cmap(_mp.cm.bone),
-    cyan_copper  = _pigtailed_cmap(_mp.cm.copper),
-    cyan_orange  = _pigtailed_cmap(_mp.cm.YlOrBr_r),
-    blue_red     = _pigtailed_cmap(_mp.cm.Reds_r),
-    brown_cyan   = _pigtailed_cmap(_mp.cm.Blues_r),
-    purple_green = _pigtailed_cmap(_mp.cm.Greens_r,
+    cold_hot     = _pigtailed_cmap(_cm.hot),
+    brown_blue   = _pigtailed_cmap(_cm.bone),
+    cyan_copper  = _pigtailed_cmap(_cm.copper),
+    cyan_orange  = _pigtailed_cmap(_cm.YlOrBr_r),
+    blue_red     = _pigtailed_cmap(_cm.Reds_r),
+    brown_cyan   = _pigtailed_cmap(_cm.Blues_r),
+    purple_green = _pigtailed_cmap(_cm.Greens_r,
                     swap_order=('red', 'blue', 'green')),
-    purple_blue  = _pigtailed_cmap(_mp.cm.Blues_r,
+    purple_blue  = _pigtailed_cmap(_cm.Blues_r,
                     swap_order=('red', 'blue', 'green')),
-    blue_orange  = _pigtailed_cmap(_mp.cm.Oranges_r,
+    blue_orange  = _pigtailed_cmap(_cm.Oranges_r,
                     swap_order=('green', 'red', 'blue')),
-    black_blue   = _rotate_cmap(_mp.cm.hot),
-    black_purple = _rotate_cmap(_mp.cm.hot,
+    black_blue   = _rotate_cmap(_cm.hot),
+    black_purple = _rotate_cmap(_cm.hot,
                                     swap_order=('blue', 'red', 'green')),
-    black_pink   = _rotate_cmap(_mp.cm.hot,
+    black_pink   = _rotate_cmap(_cm.hot,
                             swap_order=('blue', 'green', 'red')),
-    black_green  = _rotate_cmap(_mp.cm.hot,
+    black_green  = _rotate_cmap(_cm.hot,
                             swap_order=('red', 'blue', 'green')),
-    black_red    = _mp.cm.hot._segmentdata.copy(),
+    black_red    = _cm.hot._segmentdata.copy(),
 )
 
 ################################################################################
@@ -82,22 +83,22 @@ for _cmapname in _cmaps_data.keys():
     _cmapname_r = _cmapname + '_r'
     _cmapspec = _cmaps_data[_cmapname]
     if 'red' in _cmapspec:
-        _cmaps_data[_cmapname_r] = _mp.cm.revcmap(_cmapspec)
-        _cmap_d[_cmapname] = _mp.colors.LinearSegmentedColormap(
-                                _cmapname, _cmapspec, _mp.cm.LUTSIZE)
-        _cmap_d[_cmapname_r] = _mp.colors.LinearSegmentedColormap(
+        _cmaps_data[_cmapname_r] = _cm.revcmap(_cmapspec)
+        _cmap_d[_cmapname] = _colors.LinearSegmentedColormap(
+                                _cmapname, _cmapspec, _cm.LUTSIZE)
+        _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap(
                                 _cmapname_r, _cmaps_data[_cmapname_r],
-                                _mp.cm.LUTSIZE)
+                                _cm.LUTSIZE)
     else:
         _revspec = list(reversed(_cmapspec))
         if len(_revspec[0]) == 2:    # e.g., (1, (1.0, 0.0, 1.0))
             _revspec = [(1.0 - a, b) for a, b in _revspec]
         _cmaps_data[_cmapname_r] = _revspec
 
-        _cmap_d[_cmapname] = _mp.colors.LinearSegmentedColormap.from_list(
-                                _cmapname, _cmapspec, _mp.cm.LUTSIZE)
-        _cmap_d[_cmapname_r] = _mp.colors.LinearSegmentedColormap.from_list(
-                                _cmapname_r, _revspec, _mp.cm.LUTSIZE)
+        _cmap_d[_cmapname] = _colors.LinearSegmentedColormap.from_list(
+                                _cmapname, _cmapspec, _cm.LUTSIZE)
+        _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap.from_list(
+                                _cmapname_r, _revspec, _cm.LUTSIZE)
 
 locals().update(_cmap_d)
 
@@ -122,10 +123,10 @@ def dim_cmap(cmap, factor=.3):
                                      1 - factor*(1-c2)))
         cdict[color] = color_lst
 
-    return _mp.colors.LinearSegmentedColormap(
+    return _colors.LinearSegmentedColormap(
                                 '%s_dimmed' % cmap.name,
                                 cdict,
-                                _mp.cm.LUTSIZE)
+                                _cm.LUTSIZE)
 
 
 def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
@@ -167,9 +168,9 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
 
         cdict[color] = color_lst
 
-    return _mp.colors.LinearSegmentedColormap(
+    return _colors.LinearSegmentedColormap(
                                 '%s_inside_%s' % (inner_cmap.name, outer_cmap.name),
                                 cdict,
-                                _mp.cm.LUTSIZE)
+                                _cm.LUTSIZE)
 
 
