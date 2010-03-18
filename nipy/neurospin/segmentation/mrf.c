@@ -44,40 +44,41 @@ int ngb26 [] = {1,0,0,
 
 
 
-static inline void _soft_vote(double* res, int K, size_t pos, const double* ppm_data)
+static inline void _soft_vote(double* res, int K, size_t pos, 
+			      const double* ppm_data)
 {
-        size_t p = pos;
-        int k;
-        double* buf_res = res;
-        
-        for (k=0, buf_res=res; k<K; k++, buf_res++, p++)
-                *buf_res += ppm_data[p];
-
-        return;
-            
+  size_t p = pos;
+  int k;
+  double* buf_res = res;
+  
+  for (k=0, buf_res=res; k<K; k++, buf_res++, p++)
+    *buf_res += ppm_data[p];
+  
+  return;
 }
 
 
-static inline void _hard_vote(double* res, int K, size_t pos, const double* ppm_data)
+static inline void _hard_vote(double* res, int K, size_t pos, 
+			      const double* ppm_data)
 {
-        size_t p = pos;
-        int k, kmax = -1;
-        double max = 0, aux;
-
-        for (k=0; k<K; k++, p++) {
-                aux = ppm_data[p];
-                if (aux>max)
-                        kmax = k;
-                max = aux;
-        }
-        if (kmax >= 0)
-                res[kmax] += 1;
-        
-        return;
+  size_t p = pos;
+  int k, kmax = -1;
+  double max = 0, aux;
+  
+  for (k=0; k<K; k++, p++) {
+    aux = ppm_data[p];
+    if (aux>max)
+      kmax = k;
+    max = aux;
+  }
+  if (kmax >= 0)
+    res[kmax] += 1;
+  
+  return;
 }
 
 /*
-
+  
   ppm assumed contiguous double (X, Y, Z, K) 
 
   res assumed preallocated with size >= K 
@@ -102,7 +103,7 @@ static void _ngb26_vote(double* res,
   
   /*  Re-initialize output array */
   memset ((void*)res, 0, K*sizeof(double));
-
+  
   /* Loop over neighbors */ 
   buf_ngb = ngb26; 
   while (j < nn) {
@@ -113,7 +114,7 @@ static void _ngb26_vote(double* res,
     vote(res, K, pos, ppm_data);
     j ++; 
   }
-
+  
   return; 
 }
 
@@ -154,7 +155,6 @@ void smooth_ppm(PyArrayObject* ppm,
   const int* XYZ_data = (int*)XYZ->data;
   size_t w1 = XYZ->dimensions[1], two_w1=2*w1;
   void (*vote)(double*,int,size_t,const double*);
-
   
   /* Dimensions */
   npts = PyArray_DIM((PyArrayObject*)XYZ, 1);
@@ -165,31 +165,31 @@ void smooth_ppm(PyArrayObject* ppm,
 
   /* Loop over points */ 
   iter = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)XYZ, &axis);
-
+  
   /* Copy or not copy */
   if (copy) {
-          size_t S = PyArray_SIZE(ppm);
-          ppm_data = (double*)calloc(S, sizeof(double));
-          (double*)memcpy((void*)ppm_data, (void*)ppm->data, S*sizeof(double));
+    size_t S = PyArray_SIZE(ppm);
+    ppm_data = (double*)calloc(S, sizeof(double));
+    (double*)memcpy((void*)ppm_data, (void*)ppm->data, S*sizeof(double));
   }
   else
-          ppm_data = (double*)ppm->data;
-
+    ppm_data = (double*)ppm->data;
+  
   /* Hard or soft vote */
   if (hard)
-          vote = &_hard_vote;
+    vote = &_hard_vote;
   else
-          vote = &_soft_vote;
-      
+    vote = &_soft_vote;
+  
   /* Loop over voxels */ 
   while(iter->index < iter->size) {
-  
+    
     /* Compute the average ppm in the neighborhood */ 
     x = XYZ_data[iter->index];
     y = XYZ_data[w1+iter->index];
     z = XYZ_data[two_w1+iter->index]; 
     _ngb26_vote(p, ppm, x, y, z, (void*)vote); 
-
+    
     /* Apply exponential transformation and multiply with likelihood
        term */
     psum = 0.0; 
@@ -198,7 +198,7 @@ void smooth_ppm(PyArrayObject* ppm,
       psum += tmp; 
       *buf = tmp; 
     }
-
+    
     /* Normalize to unitary sum */
     kk = x*u1 + y*u2 + z*u3; 
     if (psum > TINY) 
@@ -207,10 +207,10 @@ void smooth_ppm(PyArrayObject* ppm,
     else
       for (k=0, buf=p; k<K; k++, kk++, buf++)
 	ppm_data[kk] = *buf; 
-
+    
     /* Update iterator */ 
     PyArray_ITER_NEXT(iter); 
-
+  
   }
   
   /* Free memory */ 
@@ -218,6 +218,5 @@ void smooth_ppm(PyArrayObject* ppm,
   if (copy)
           free(ppm_data);
    
-  
   return; 
 }

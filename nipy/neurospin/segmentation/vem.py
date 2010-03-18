@@ -62,7 +62,8 @@ def vm_step_laplace(ppm, data, mask):
 
 
 # VE-step 
-def ve_step(ppm, data, mask, mu, sigma, prior, ndist, alpha=1., beta=0.0): 
+def ve_step(ppm, data, mask, mu, sigma, prior, ndist, alpha=1., beta=0.0, 
+            copy=False, hard=False): 
     """
     posterior = e_step(gaussians, prior, data, posterior=None)    
 
@@ -85,14 +86,14 @@ def ve_step(ppm, data, mask, mu, sigma, prior, ndist, alpha=1., beta=0.0):
     else: 
         print('  .. MRF correction')
         XYZ = np.array((X, Y, Z), dtype='int') 
-        ppm = finalize_ve_step(ppm, lik, XYZ, beta, 0)
+        ppm = finalize_ve_step(ppm, lik, XYZ, beta, copy, hard)
 
     return ppm
         
 
 # VEM algorithm 
 def vem(ppm, data, mask, prior, alphas=None, betas=None, niters=5, 
-        noise='gauss'): 
+        noise='gauss', copy=False, hard=False): 
     """
     ppm: ndarray (4d)
     data: ndarray (1d, masked data)
@@ -127,7 +128,8 @@ def vem(ppm, data, mask, prior, alphas=None, betas=None, niters=5,
         mu, sigma = vm_step(ppm, data, mask) 
         print('  VE-step...')
         ppm = ve_step(ppm, data, mask, mu, sigma, prior, 
-                      ndist, alpha=alphas[i], beta=betas[i]) 
+                      ndist, alpha=alphas[i], beta=betas[i],
+                      copy=copy, hard=hard) 
         
     return ppm, mu, sigma
 
