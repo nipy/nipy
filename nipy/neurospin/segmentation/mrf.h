@@ -13,7 +13,9 @@ extern "C" {
   extern void smooth_ppm(PyArrayObject* ppm, 
 			 const PyArrayObject* lik,
 			 const PyArrayObject* XYZ, 
-			 double beta);
+			 double beta,
+                         int copy,
+                         int hard);
 
     
 
