@@ -7,10 +7,10 @@ from mrf_module import finalize_ve_step
 
 
 # VM-step 
-def vm_step_gauss(ppm, data, mask): 
+def vm_step_gauss(ppm, data_, mask): 
     """
     ppm: ndarray (4d)
-    data: ndarray (1d, masked data)
+    data_: ndarray (1d, masked data)
     mask: 3-element tuple of 1d ndarrays (X,Y,Z)
     """
     ntissues = ppm.shape[3]
@@ -20,9 +20,9 @@ def vm_step_gauss(ppm, data, mask):
     for i in range(ntissues):
         P = ppm[:,:,:,i][mask]
         Z = P.sum()
-        tmp = data*P
+        tmp = data_*P
         mu_ = tmp.sum()/Z
-        sigma_ = np.sqrt(np.sum(tmp*data)/Z - mu_**2)
+        sigma_ = np.sqrt(np.sum(tmp*data_)/Z - mu_**2)
         mu[i] = mu_ 
         sigma[i] = sigma_
     return mu, sigma 
@@ -39,21 +39,21 @@ def wmedian(x, w, ind):
     jl = ind[i-1]
     return wr*x[jr]+(1-wr)*x[jl]
 
-def vm_step_laplace(ppm, data, mask): 
+def vm_step_laplace(ppm, data_, mask): 
     """
     ppm: ndarray (4d)
-    data: ndarray (1d, masked data)
+    data_: ndarray (1d, masked data)
     mask: 3-element tuple of 1d ndarrays (X,Y,Z)
     """
     ntissues = ppm.shape[3]
     mu = np.zeros(ntissues)
     sigma = np.zeros(ntissues)
-    ind = np.argsort(data) # data[ind] increasing
+    ind = np.argsort(data_) # data_[ind] increasing
 
     for i in range(ntissues):
         P = ppm[:,:,:,i][mask]
-        mu_ = wmedian(data, P, ind) 
-        sigma_ = np.sum(np.abs(P*(data-mu_)))/P.sum()
+        mu_ = wmedian(data_, P, ind) 
+        sigma_ = np.sum(np.abs(P*(data_-mu_)))/P.sum()
         mu[i] = mu_ 
         sigma[i] = sigma_
     return mu, sigma 
@@ -62,17 +62,17 @@ def vm_step_laplace(ppm, data, mask):
 
 
 # VE-step 
-def ve_step(ppm, data, mask, mu, sigma, prior, ndist, alpha=1., beta=0.0, 
+def ve_step(ppm, data_, mask, mu, sigma, prior_, ndist, alpha=1., beta=0.0, 
             copy=False, hard=False): 
     """
-    posterior = e_step(gaussians, prior, data, posterior=None)    
+    posterior = e_step(gaussians, prior_, data_, posterior=None)    
 
-    data are assumed masked. 
+    data_ are assumed masked. 
     """
     ntissues = ppm.shape[3]
-    lik = np.zeros(np.shape(prior))
+    lik = np.zeros([data_.size, ntissues])
     for i in range(ntissues): 
-        lik[:,i] = prior[:,i] * ndist(data, mu[i], sigma[i])
+        lik[:,i] = prior_[:,i]*ndist(data_, mu[i], sigma[i])
 
     # Normalize
     X, Y, Z = mask
@@ -92,13 +92,16 @@ def ve_step(ppm, data, mask, mu, sigma, prior, ndist, alpha=1., beta=0.0,
         
 
 # VEM algorithm 
-def vem(ppm, data, mask, prior, alphas=None, betas=None, niters=5, 
+def vem(ppm, data, mask, alphas=None, betas=None, niters=5, 
+        mu=None, sigma=None,
         noise='gauss', copy=False, hard=False): 
     """
-    ppm: ndarray (4d)
-    data: ndarray (1d, masked data)
+    data: ndarray (3d)
     mask: 3-element tuple of 1d ndarrays (X,Y,Z)
-    prior: ndarray (2d, masked data)
+    prior: ndarray (4d)
+
+    output: 
+    ppm: ndarray (4d)
     """
 
     if betas == None: 
@@ -122,15 +125,24 @@ def vem(ppm, data, mask, prior, alphas=None, betas=None, niters=5,
     else:
         raise ValueError('Unknown noise model')
 
+    # Mask data 
+    data_ = data[mask]
+    prior_ = ppm[mask]
+    do_vm_step = (mu==None)
+
     for i in range(niters):
         print('VEM iter %d/%d' % (i+1, niters))
         print('  VM-step...')
-        mu, sigma = vm_step(ppm, data, mask) 
+        if do_vm_step: 
+            mu, sigma = vm_step(ppm, data_, mask) 
         print('  VE-step...')
-        ppm = ve_step(ppm, data, mask, mu, sigma, prior, 
+        ppm = ve_step(ppm, data_, mask, 
+                      np.asarray(mu), np.asarray(sigma), 
+                      prior_, 
                       ndist, alpha=alphas[i], beta=betas[i],
                       copy=copy, hard=hard) 
-        
+        do_vm_step = True
+
     return ppm, mu, sigma
 
 
