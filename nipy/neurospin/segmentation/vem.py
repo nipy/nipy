@@ -129,6 +129,9 @@ def vem(ppm, data, mask, alphas=None, betas=None, niters=5,
     data_ = data[mask]
     prior_ = ppm[mask]
     do_vm_step = (mu==None)
+    if not do_vm_step: 
+        mu = np.asarray(mu, dtype='double')
+        sigma = np.asarray(sigma, dtype='double')
 
     for i in range(niters):
         print('VEM iter %d/%d' % (i+1, niters))
@@ -137,7 +140,7 @@ def vem(ppm, data, mask, alphas=None, betas=None, niters=5,
             mu, sigma = vm_step(ppm, data_, mask) 
         print('  VE-step...')
         ppm = ve_step(ppm, data_, mask, 
-                      np.asarray(mu), np.asarray(sigma), 
+                      mu, sigma, 
                       prior_, 
                       ndist, alpha=alphas[i], beta=betas[i],
                       copy=copy, hard=hard) 
