@@ -130,8 +130,9 @@ def Wishart_eval(n, V, W, dV=None, dW=None, piV=None):
     ltr = - np.trace(np.dot(piV, W))/2
     la = ( n*p*np.log(2) + np.log(dV)*n )/2
     lg = np.log(np.pi)*p*(p-1)/4
-    for j in range(p):
-        lg += gammaln((n-j)/2)
+    #for j in range(p):
+    #    lg += gammaln((n-j)/2)
+    lg += gammaln(np.arange(n-p+1, n+1).astype(np.float)/2).sum()
     lt = ldW + ltr -la -lg
     return np.exp(lt)
 
@@ -154,7 +155,7 @@ def normal_eval(mu, P, x, dP=None):
         dP = np.prod(eigvalsh(P))
     mu = np.reshape(mu,(1,p))
     w0 = np.log(dP)-p*np.log(2*np.pi)
-    w0/=2               
+    w0 /= 2               
     x = np.reshape(x,(1,p))
     q = np.dot(np.dot(mu-x,P),(mu-x).T)
     w = w0 - q/2
@@ -730,7 +731,7 @@ class BGMM(GMM):
         covariance += empcov
                         
         dx = np.reshape(self.means-self.prior_means,
-                        (self.k,self.dim,1))
+                        (self.k, self.dim, 1))
         addcov = np.array([np.dot(dx[k],dx[k].T) for k in range(self.k)])
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
         covariance += addcov*prior_shrinkage
@@ -768,7 +769,7 @@ class BGMM(GMM):
         """
         return self.bayes_factor(self,x,z,nperm,verbose)
     
-    def bayes_factor(self,x,z,nperm=0,verbose=0):
+    def bayes_factor(self, x, z, nperm=0, verbose=0):
         """
         Evaluate the Bayes Factor of the current model using Chib's method
 
