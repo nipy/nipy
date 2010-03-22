@@ -159,17 +159,15 @@ void smooth_ppm(PyArrayObject* ppm,
   /* Dimensions */
   npts = PyArray_DIM((PyArrayObject*)XYZ, 1);
   K = PyArray_DIM((PyArrayObject*)ppm, 3);
-  
-  /* Allocate auxiliary vector */
-  p = (double*)calloc(K, sizeof(double)); 
-
-  /* Loop over points */ 
-  iter = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)XYZ, &axis);
-  
+    
   /* Copy or not copy */
   if (copy) {
     size_t S = PyArray_SIZE(ppm);
     ppm_data = (double*)calloc(S, sizeof(double));
+    if (ppm_data==NULL) {
+      fprintf(stderr, "Cannot allocate ppm copy\n"); 
+      return; 
+    }
     (double*)memcpy((void*)ppm_data, (void*)ppm->data, S*sizeof(double));
   }
   else
@@ -181,6 +179,12 @@ void smooth_ppm(PyArrayObject* ppm,
   else
     vote = &_soft_vote;
   
+  /* Allocate auxiliary vector */
+  p = (double*)calloc(K, sizeof(double)); 
+  
+  /* Loop over points */ 
+  iter = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)XYZ, &axis);
+
   /* Loop over voxels */ 
   while(iter->index < iter->size) {
     
@@ -215,8 +219,9 @@ void smooth_ppm(PyArrayObject* ppm,
   
   /* Free memory */ 
   free(p);
+  Py_XDECREF(iter);
   if (copy)
-          free(ppm_data);
-   
+    free(ppm_data);
+    
   return; 
 }
