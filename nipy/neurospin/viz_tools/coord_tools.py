@@ -52,6 +52,7 @@ def coord_transform(x, y, z, affine):
     x, y, z, _ = np.dot(affine, coords)
     return x.squeeze(), y.squeeze(), z.squeeze()
 
+
 def find_cut_coords(map, mask=None, activation_threshold=None):
     """ Find the center of the largest activation connect component.
 
@@ -74,6 +75,14 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
         z: float
             the z coordinate in voxels.
     """
+    # Deal with masked arrays:
+    if hasattr(map, 'mask'):
+        not_mask = np.logical_not(map.mask)
+        if mask is None:
+            mask = not_mask
+        else:
+            mask *= not_mask
+        map = np.asarray(map)
     my_map = map.copy()
     if mask is not None:
         my_map *= mask

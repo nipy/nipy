@@ -279,7 +279,6 @@ class OrthoSlicer(object):
                     **kwargs)
 
 
-    @profile
     def plot_map(self, map, affine, **kwargs):
         """ Plot a 3D map in all the views.
 
