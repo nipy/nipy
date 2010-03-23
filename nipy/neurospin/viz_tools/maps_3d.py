@@ -279,26 +279,18 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
     kwargs = kwargs.copy()
     cmap = kwargs.pop('cmap', None)
-    vmin = float(kwargs.get('vmin', map.min()))
-    vmax = float(kwargs.get('vmax', map.max()))
-    if callable(cmap):
-        kwargs.pop('cmap')
-    # XXX: I need to get colors to work for Mayavi to!
-
 
     ###########################################################################
     # Display the map using volume rendering
     if len(contours) > 0:
         map_src = affine_img_src(map, affine)
-        # XXX: We need to capture any arguments that are invalid for
-        # iso_surface
-        # XXX: the code below should be fixed.
-        #if vmin in kwargs:
-        #    kwargs = kwargs.copy()
-        #    kwargs['contours'] = [kwargs.pop('vmin')]
         module = mlab.pipeline.iso_surface(map_src,
                                         contours=contours,
                                         **kwargs)
+        if callable(cmap):
+            # Stick the colormap in mayavi
+            module.module_manager.scalar_lut_manager.lut.table \
+                    = (255*cmap(np.linspace(0, 1, 256))).astype(np.int)
    
     if not anat is False:
         plot_anat_3d(anat=anat, anat_affine=anat_affine, scale=1.05,

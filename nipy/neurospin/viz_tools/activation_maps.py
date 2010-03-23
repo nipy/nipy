@@ -141,7 +141,12 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             if (version.vtk_major_version, version.vtk_minor_version) < (5, 2):
                 offscreen = False
 
-            cmap = kwargs.get('cmap', pl.rcParams['image.cmap'])
+            cmap = kwargs.get('cmap', pl.cm.cmap_d[pl.rcParams['image.cmap']])
+            kwargs3d = dict()
+            if 'vmin' in kwargs:
+                kwargs3d['vmin'] = kwargs['vmin']
+            if 'vmax' in kwargs:
+                kwargs3d['vmax'] = kwargs['vmax']
             plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
                         anat=anat, anat_affine=anat_affine, 
                         offscreen=offscreen, cmap=cmap,
@@ -198,7 +203,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     return ortho_slicer
 
 
-def demo_plot_map(do3d=False):
+def demo_plot_map(do3d=False, **kwargs):
     """ Demo activation map plotting.
     """
     map = np.zeros((182, 218, 182))
@@ -212,6 +217,7 @@ def demo_plot_map(do3d=False):
     assert z_map +1 == 95
     map[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     return plot_map(map, mni_sform, threshold='auto',
-                        title="Broca's area", figure=512, do3d=do3d)
+                        title="Broca's area", figure=512, do3d=do3d,
+                        **kwargs)
 
 
