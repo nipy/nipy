@@ -121,7 +121,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                                 activation_threshold=threshold)
         cut_coords = coord_transform(x_map, y_map, z_map, affine)
     if threshold is not None:
-        map = np.ma.masked_less(map, threshold)
+        map = np.ma.masked_inside(map, -threshold, threshold)
     
     # Make sure that we have a figure
     if not isinstance(figure, Figure):
