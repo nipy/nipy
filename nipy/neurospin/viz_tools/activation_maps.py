@@ -182,12 +182,15 @@ def demo_plot_map(do3d=False):
 
 def auto_plot_map(map, affine, threshold=None, cut_coords=None, do3d=False, 
                     anat=None, anat_affine=None, title=None, mask=None,
-                    figure_num=None, auto_sign=True):
+                    figure=None, auto_sign=True):
     """ Automatic plotting of an activation map.
 
         Plot a together a 3D volume rendering view of the activation, with an
         outline of the brain, and 2D cuts. If Mayavi is not installed,
         falls back to 2D views only.
+
+        WARNING: This function will be removed in the near future, and
+        replaced with a switch to plot_map.
 
         Parameters
         ----------
@@ -216,7 +219,7 @@ def auto_plot_map(map, affine, threshold=None, cut_coords=None, do3d=False,
             The title dispayed on the figure.
         mask : 3D ndarray, optional
             Boolean array of the voxels used.
-        figure_num : integer, optional
+        figure : integer, optional
             The number of the matplotlib and Mayavi figures used. If None is 
             given, a new figure is created.
         auto_sign : boolean, optional
@@ -268,7 +271,7 @@ def auto_plot_map(map, affine, threshold=None, cut_coords=None, do3d=False,
     map = np.ma.masked_less(map, threshold)
     plot_map(map, affine, cut_coords=cut_coords, do3d=do3d,
                 anat=anat, anat_affine=anat_affine, title=title,
-                figure_num=figure_num)
+                figure=figure)
     return threshold, cut_coords
 
 
