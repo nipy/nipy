@@ -119,9 +119,22 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     if threshold is not None:
         map = np.ma.masked_inside(map, -threshold, threshold)
     
+    if do3d:
+        try:
+            from enthought.mayavi import version
+            if not int(version.version[0]) > 2:
+                raise ImportError
+        except ImportError:
+            warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
+            do3d = False
+
     # Make sure that we have a figure
     if not isinstance(figure, Figure):
-        fig = pl.figure(figure, figsize=(6.6, 2.6), facecolor='w')
+        if do3d:
+            size = (10, 2.6)
+        else:
+            size = (6.6, 2.6)
+        fig = pl.figure(figure, figsize=size, facecolor='w')
     else:
         fig = figure
         if isinstance(axes, Axes):
@@ -131,9 +144,6 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     # Use Mayavi for the 3D plotting
     if do3d:
         try:
-            from enthought.mayavi import version
-            if not int(version.version[0]) > 2:
-                raise ImportError
             from .maps_3d import plot_map_3d, m2screenshot
             from enthought.tvtk.api import tvtk
             version = tvtk.Version()
