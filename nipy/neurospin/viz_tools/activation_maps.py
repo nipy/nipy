@@ -21,6 +21,7 @@ import operator
 # delayed, so that the part module can be used without them).
 import numpy as np
 import pylab as pl
+from scipy import stats
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 
@@ -28,8 +29,7 @@ from matplotlib.axes import Axes
 from nipy.neurospin.datasets import VolumeImg
 
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
-from .coord_tools import coord_transform, find_activation, \
-        find_cut_coords
+from .coord_tools import coord_transform, find_cut_coords
 
 from .ortho_slicer import OrthoSlicer
 
@@ -111,11 +111,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
-        threshold = np.inf
-        pvalue = 0.04
-        while threshold > map.max():
-            pvalue *= 1.25
-            _, threshold = find_activation(map, pvalue=pvalue)
+            threshold = stats.scoreatpercentile(np.abs(map).ravel(), 80)
     if cut_coords is None:
         x_map, y_map, z_map = find_cut_coords(map,
                                 activation_threshold=threshold)
@@ -145,9 +141,12 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             if (version.vtk_major_version, version.vtk_minor_version) < (5, 2):
                 offscreen = False
 
+            cmap = kwargs.get('cmap', pl.rcParams['image.cmap'])
             plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
                         anat=anat, anat_affine=anat_affine, 
-                        offscreen=offscreen, **kwargs)
+                        offscreen=offscreen, cmap=cmap,
+                        vmin=kwargs.get('vmin', map.min()),
+                        vmax=kwargs.get('vmax', map.max()))
 
             ax = fig.add_axes((0.001, 0, 0.29, 1))
             ax.axis('off')

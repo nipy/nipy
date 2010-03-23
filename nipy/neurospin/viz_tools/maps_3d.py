@@ -12,10 +12,11 @@ import tempfile
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
+from scipy import stats
 
 # Local imports
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
-from .coord_tools import coord_transform, find_activation
+from .coord_tools import coord_transform
 
 
 ################################################################################
@@ -203,7 +204,7 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
 ################################################################################
 
 def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
-    vmin=None, offscreen=False, **kwargs):
+    threshold=None, offscreen=False, **kwargs):
     """ Plot a 3D volume rendering view of the activation, with an
         outline of the brain.
 
@@ -261,20 +262,39 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
                                                      size=(400, 350))
     disable_render = fig.scene.disable_render
     fig.scene.disable_render = True
-    if vmin is None:
-        vmin = find_activation(map, upper_only=True)
-    
+    if threshold is None:
+        threshold = stats.scoreatpercentile(
+                                np.abs(map).ravel(), 80)
+    contours = []
+    lower_map = map[map < -threshold]
+    if np.any(lower_map):
+        contours.append(lower_map.max())
+    upper_map = map[map > threshold]
+    if np.any(upper_map):
+        contours.append(map[map > threshold].min())
+
+    kwargs = kwargs.copy()
+    cmap = kwargs.pop('cmap', None)
+    vmin = float(kwargs.get('vmin', map.min()))
+    vmax = float(kwargs.get('vmax', map.max()))
+    if callable(cmap):
+        kwargs.pop('cmap')
+    # XXX: I need to get colors to work for Mayavi to!
+
+
     ###########################################################################
     # Display the map using volume rendering
-    map_src = affine_img_src(map, affine)
-    # XXX: Need to change the Docs to give option between volume and
-    # iso_surface
-    # XXX: We need to capture any arguments that are invalid for
-    # iso_surface
-    if vmin in kwargs:
-        kwargs = kwargs.copy()
-        kwargs['contours'] = [kwargs.pop('vmin')]
-    module = mlab.pipeline.iso_surface(map_src, **kwargs)
+    if len(contours) > 0:
+        map_src = affine_img_src(map, affine)
+        # XXX: We need to capture any arguments that are invalid for
+        # iso_surface
+        # XXX: the code below should be fixed.
+        #if vmin in kwargs:
+        #    kwargs = kwargs.copy()
+        #    kwargs['contours'] = [kwargs.pop('vmin')]
+        module = mlab.pipeline.iso_surface(map_src,
+                                        contours=contours,
+                                        **kwargs)
    
     if not anat is False:
         plot_anat_3d(anat=anat, anat_affine=anat_affine, scale=1.05)
