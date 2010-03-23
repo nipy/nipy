@@ -76,17 +76,19 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
     """
     my_map = map.copy()
     if mask is not None:
-        my_map = np.ma.masked_array(my_map, np.logical_not(mask))
+        my_map *= mask
+    if np.all(my_map == 0):
+        return .5*np.array(map.shape)
     if activation_threshold is None:
         activation_threshold = stats.scoreatpercentile(
-                                np.abs(my_map).ravel(), 80)
+                                    np.abs(my_map[my_map !=0]).ravel(), 80)
     mask = np.abs(my_map) > activation_threshold
-    if np.any(mask):
-        mask = largest_cc(mask)
-        my_map[np.logical_not(mask)] = 0
-        second_threshold = stats.scoreatpercentile(my_map[mask], 60)
-        if (my_map>second_threshold).sum() > 50:
-            my_map[np.logical_not(largest_cc(my_map>second_threshold))] = 0
+    mask = largest_cc(mask)
+    my_map *= mask
+    second_threshold = stats.scoreatpercentile(my_map[mask], 60)
+    second_mask = (np.abs(my_map)>second_threshold)
+    if second_mask.sum() > 50:
+        my_map *= largest_cc(second_mask)
     cut_coords = ndimage.center_of_mass(my_map)
     return cut_coords
 
