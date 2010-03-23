@@ -48,10 +48,10 @@ static inline void _soft_vote(double* res, int K, size_t pos,
 			      const double* ppm_data)
 {
   size_t p = pos;
-  int k;
   double* buf_res = res;
+  int k;
   
-  for (k=0, buf_res=res; k<K; k++, buf_res++, p++)
+  for (k=0; k<K; k++, buf_res++, p++)
     *buf_res += ppm_data[p];
   
   return;
@@ -67,13 +67,14 @@ static inline void _hard_vote(double* res, int K, size_t pos,
   
   for (k=0; k<K; k++, p++) {
     aux = ppm_data[p];
-    if (aux>max)
+    if (aux>max) {
       kmax = k;
-    max = aux;
+      max = aux;
+    }
   }
   if (kmax >= 0)
     res[kmax] += 1;
-  
+
   return;
 }
 
@@ -126,7 +127,7 @@ static void _ngb26_vote(double* res,
 /*
   ppm assumed contiguous double (X, Y, Z, K) 
 
-  lik assumed contiguous double (NPTS, K)
+  ref assumed contiguous double (NPTS, K)
 
   XYZ assumed contiguous usigned int (3, NPTS)
 
@@ -134,7 +135,7 @@ static void _ngb26_vote(double* res,
 
 #define TINY 1e-20
 void smooth_ppm(PyArrayObject* ppm, 
-		const PyArrayObject* lik,
+		const PyArrayObject* ref,
 		const PyArrayObject* XYZ, 
 		double beta,
                 int copy,
@@ -150,19 +151,20 @@ void smooth_ppm(PyArrayObject* ppm,
   size_t u3 = ppm->dimensions[3]; 
   size_t u2 = ppm->dimensions[2]*u3; 
   size_t u1 = ppm->dimensions[1]*u2;
-  const double* lik_data = (double*)lik->data;
-  size_t v1 = lik->dimensions[1];
+  const double* ref_data = (double*)ref->data;
+  size_t v1 = ref->dimensions[1];
   const int* XYZ_data = (int*)XYZ->data;
   size_t w1 = XYZ->dimensions[1], two_w1=2*w1;
   void (*vote)(double*,int,size_t,const double*);
-  
+  size_t S; 
+
   /* Dimensions */
   npts = PyArray_DIM((PyArrayObject*)XYZ, 1);
   K = PyArray_DIM((PyArrayObject*)ppm, 3);
+  S = PyArray_SIZE(ppm);
     
   /* Copy or not copy */
   if (copy) {
-    size_t S = PyArray_SIZE(ppm);
     ppm_data = (double*)calloc(S, sizeof(double));
     if (ppm_data==NULL) {
       fprintf(stderr, "Cannot allocate ppm copy\n"); 
@@ -194,11 +196,10 @@ void smooth_ppm(PyArrayObject* ppm,
     z = XYZ_data[two_w1+iter->index]; 
     _ngb26_vote(p, ppm, x, y, z, (void*)vote); 
     
-    /* Apply exponential transformation and multiply with likelihood
-       term */
+    /* Apply exponential transformation and multiply with reference */
     psum = 0.0; 
     for (k=0, kk=(iter->index)*v1, buf=p; k<K; k++, kk++, buf++) {
-      tmp = exp(beta*(*buf)) * lik_data[kk];
+      tmp = exp(beta*(*buf)) * ref_data[kk];
       psum += tmp; 
       *buf = tmp; 
     }
@@ -210,18 +211,23 @@ void smooth_ppm(PyArrayObject* ppm,
 	ppm_data[kk] = *buf/psum; 
     else
       for (k=0, buf=p; k<K; k++, kk++, buf++)
-	ppm_data[kk] = *buf; 
+	ppm_data[kk] = (*buf+TINY/(double)K)/(psum+TINY); 
     
     /* Update iterator */ 
     PyArray_ITER_NEXT(iter); 
   
   }
-  
+
+
+  /* If applicable, copy back the auxiliary ppm array into the input */ 
+  if (copy) {    
+    (double*)memcpy((void*)ppm->data, (void*)ppm_data, S*sizeof(double));
+    free(ppm_data);
+  }
+
   /* Free memory */ 
   free(p);
   Py_XDECREF(iter);
-  if (copy)
-    free(ppm_data);
-    
+
   return; 
 }

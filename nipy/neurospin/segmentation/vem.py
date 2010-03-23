@@ -70,36 +70,34 @@ def ve_step(ppm, data_, mask, mu, sigma, prior_, ndist, alpha=1., beta=0.0,
     data_ are assumed masked. 
     """
     ntissues = ppm.shape[3]
-    lik = np.zeros([data_.size, ntissues])
+    ref = np.zeros([data_.size, ntissues])
+    if prior_ == None: 
+        prior_ = np.ones([1,ntissues])/float(ntissues)
     for i in range(ntissues): 
-        lik[:,i] = prior_[:,i]*ndist(data_, mu[i], sigma[i])
-
-    # Normalize
-    X, Y, Z = mask
-    ppm[X, Y, Z] = lik 
-
+        ref[:,i] = prior_[:,i]*ndist(data_, mu[i], sigma[i])
+        
+    # Normalize reference probability map 
     if beta == 0.0: 
-        ppm_sum = ppm[mask].sum(1)
-        for i in range(ntissues): 
-            ppm[X, Y, Z, i] /= ppm_sum
- 
+        ppm[mask] = (ref.T/ref.sum(1)).T
+
+    # Update and normalize reference probabibility map using
+    # neighborhood information (mean-field theory)
     else: 
         print('  .. MRF correction')
-        XYZ = np.array((X, Y, Z), dtype='int') 
-        ppm = finalize_ve_step(ppm, lik, XYZ, beta, copy, hard)
+        XYZ = np.array(mask, dtype='int') 
+        ppm = finalize_ve_step(ppm, ref, XYZ, beta, copy, hard)
 
     return ppm
         
 
 # VEM algorithm 
 def vem(ppm, data, mask, alphas=None, betas=None, niters=5, 
-        mu=None, sigma=None,
-        noise='gauss', copy=False, hard=False): 
+        mu=None, sigma=None, noise='gauss', 
+        prior=True, copy=False, hard=False): 
     """
     data: ndarray (3d)
     mask: 3-element tuple of 1d ndarrays (X,Y,Z)
-    prior: ndarray (4d)
-
+    
     output: 
     ppm: ndarray (4d)
     """
@@ -127,7 +125,10 @@ def vem(ppm, data, mask, alphas=None, betas=None, niters=5,
 
     # Mask data 
     data_ = data[mask]
-    prior_ = ppm[mask]
+    if prior: 
+        prior_ = ppm[mask]
+    else: 
+        prior_ = None
     do_vm_step = (mu==None)
     if not do_vm_step: 
         mu = np.asarray(mu, dtype='double')
