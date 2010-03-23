@@ -152,6 +152,17 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             ax.axis('off')
             m2screenshot(mpl_axes=ax)
             axes = (0.3, 0, .7, 1.)
+            if offscreen:
+                # Clean up, so that the offscreen engine doesn't become the
+                # default
+                from enthought.mayavi import mlab
+                engine = mlab.get_engine()
+                engine.close_scene(engine.current_scene)
+                from enthought.mayavi.core.registry import registry
+                for key, value in registry.engines.iteritems():
+                    if value is engine:
+                        registry.engines.pop(key)
+                        break
         except ImportError:
             warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
 

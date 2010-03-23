@@ -18,6 +18,8 @@ from scipy import stats
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import coord_transform
 
+# A module global to avoid creating multiple time an offscreen engine.
+off_screen_engine = None
 
 ################################################################################
 # Helper functions
@@ -248,13 +250,15 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
     # Late import to avoid triggering wx imports before needed.
     from enthought.mayavi import mlab
     if offscreen:
-        from enthought.mayavi.core.off_screen_engine import OffScreenEngine
-        engine = OffScreenEngine()
-        engine.start()
+        global off_screen_engine
+        if off_screen_engine is None:
+            from enthought.mayavi.core.off_screen_engine import OffScreenEngine
+            off_screen_engine = OffScreenEngine()
+        off_screen_engine.start()
         fig = mlab.figure('__private_plot_map_3d__', 
                                 bgcolor=(1, 1, 1), fgcolor=(0, 0, 0),
                                 size=(400, 330),
-                                engine=engine)
+                                engine=off_screen_engine)
         mlab.clf(figure=fig)
     else:
         fig = mlab.gcf()
@@ -297,7 +301,9 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
                                         **kwargs)
    
     if not anat is False:
-        plot_anat_3d(anat=anat, anat_affine=anat_affine, scale=1.05)
+        plot_anat_3d(anat=anat, anat_affine=anat_affine, scale=1.05,
+                     outline_color=(.9, .9, .9),
+                     gyri_opacity=.2)
    
     ###########################################################################
     # Draw the cursor
@@ -312,6 +318,7 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
     
     mlab.view(38.5, 70.5, 300, (-2.7, -12, 9.1))
     fig.scene.disable_render = disable_render
+    
     return module
 
 
