@@ -33,7 +33,9 @@ def largest_cc(mask):
     labels, label_nb = ndimage.label(mask)
     if not label_nb:
         raise ValueError('No non-zero values: no connect components')
-    return labels ==  np.bincount(labels.ravel())[1:].argmax() + 1
+    if label_nb == 1:
+        return mask.astype(np.bool)
+    return labels ==  np.bincount(labels.ravel()).argmax() + 1
 
 
 def threshold_connect_components(map, threshold, copy=True):
