@@ -139,10 +139,15 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             if not int(version.version[0]) > 2:
                 raise ImportError
             from .maps_3d import plot_map_3d, m2screenshot
+            from enthought.tvtk.api import tvtk
+            version = tvtk.Version()
+            offscreen = True
+            if (version.vtk_major_version, version.vtk_minor_version) < (5, 2):
+                offscreen = False
 
             plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
                         anat=anat, anat_affine=anat_affine, 
-                        offscreen=True, **kwargs)
+                        offscreen=offscreen, **kwargs)
 
             ax = fig.add_axes((0.001, 0, 0.29, 1))
             ax.axis('off')

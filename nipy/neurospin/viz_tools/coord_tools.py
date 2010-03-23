@@ -117,7 +117,7 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
         vmin, vmax = find_activation(map, mask=mask)
         mask = (map<vmin) | (map>vmax)
     else:
-        mask = map>activation_threshold
+        mask = np.abs(map) > activation_threshold
     if np.any(mask):
         mask = largest_cc(mask)
         my_map[np.logical_not(mask)] = 0
