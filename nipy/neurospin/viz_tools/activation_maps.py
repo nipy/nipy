@@ -45,6 +45,17 @@ def _xyz_order(map, affine):
     return map, affine
 
 
+def _fast_abs_percentile(map):
+    """ An algorithm to implement a fast version of the 80-percentile of
+        the absolute value.
+    """
+    map = np.abs(map).ravel()
+    map.sort()
+    nb = map.size
+    return map[.8*nb]
+
+
+@profile
 def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     figure=None, axes=None, title=None, threshold=None,
                     annotate=True, draw_cross=True, 
@@ -111,13 +122,13 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
-            threshold = stats.scoreatpercentile(np.abs(map).ravel(), 80)
+        threshold = _fast_abs_percentile(map)  
     if cut_coords is None:
         x_map, y_map, z_map = find_cut_coords(map,
                                 activation_threshold=threshold)
         cut_coords = coord_transform(x_map, y_map, z_map, affine)
     if threshold is not None:
-        map = np.ma.masked_inside(map, -threshold, threshold)
+        map = np.ma.masked_inside(map, -threshold, threshold, copy=False)
     
     if do3d:
         try:
