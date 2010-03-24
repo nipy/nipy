@@ -5,7 +5,7 @@ This is an example where
 3. A design matrix describing all the effects related to the data is computed
 4. A GLM is applied to all voxels in the ROI
 5. A summary of the results is provided for certain contrasts
-6. A plot of the hrf is provided for the mean reposne in the hrf
+6. A plot of the hrf is provided for the mean reponse in the hrf
 7. Fitted/adjusted response plots are provided
 """
 
@@ -97,26 +97,61 @@ mroi.as_multiple_balls(positions, radii)
 mroi.make_image((op.join(swd, "roi.nii")))
 
 # roi time courses
-mroi.set_discrete_feature_from_image('activ', data_file)
-mroi.discrete_to_roi_features('activ')
+mroi.set_discrete_feature_from_image('signal', data_file)
+mroi.discrete_to_roi_features('signal')
 
 # roi-level contrast average
 mroi.set_discrete_feature_from_image('contrast', contrast_path)
 mroi.discrete_to_roi_features('contrast')
-mroi.plot_roi_feature('contrast')
+ax = mroi.plot_roi_feature('contrast')
+ax.show()
+
+
+########################################
+# GLM analysis on the ROI average time courses
+########################################
+
+nreg = len(names)
+ROI_tc = mroi.get_roi_feature('signal')
+glm.fit(ROI_tc.T, X, method=method, model=model)
+mp.figure()
+b1 = mp.bar(np.arange(nreg-1), glm.beta[:-1,0], width=.4, color='blue',
+            label='r1')
+b2 = mp.bar(np.arange(nreg-1)+0.3, glm.beta[:-1,1], width=.4, color='red',
+            label='r2')
+mp.xticks(np.arange(nreg-1), names[:-1])
+mp.legend()
+mp.title('parameters estimates for the roi time courses')
+
+########################################
+# fitted and adjusted response
+########################################
+
+res = ROI_tc -np.dot(glm.beta.T, X.T)
+proj = np.eye(nreg)
+proj[2:] = 0
+fit = np.dot(np.dot(glm.beta.T,proj),X.T)
+mp.figure()
+for k in range(mroi.k):
+    mp.subplot(mroi.k, 1, k+1)
+    mp.plot(fit[k])
+    mp.plot(fit[k] + res[k],'r')
+    mp.xlabel('time (scans)')
+    mp.legend(('effects','adjusted'))
+
+
+###########################################
+# hrf for condition 1
+############################################
+
+fir_order = 6
+X_fir,name_dir = dmtx_light(frametimes, paradigm, hrf_model='FIR',
+                      drift_model='Cosine', drift_order=3,
+                      fir_delays = tr*np.arange(fir_order), fir_duration=tr,
+                      add_regs=motion, add_reg_names=add_reg_names)
+glm.fit(ROI_tc.T, X_fir, method=method, model=model)
+var = np.diag(glm.nvbeta[:,:,0])*glm.s2[0]
+mp.figure()
+mp.errorbar(np.arange(fir_order),glm.beta[:fir_order,0], yerr=np.sqrt(var[:fir_order]))
+mp.errorbar(np.arange(fir_order), glm.beta[fir_order:2*fir_order,0], yerr=np.sqrt(var[fir_order:2*fir_order]))
 mp.show()
-
-
-
-
-
-
-
-
-
-########################################
-# GLM analysis
-########################################
-
-
-
