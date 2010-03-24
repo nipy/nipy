@@ -44,6 +44,7 @@ def block_paradigm():
     return paradigm
 
 
+
 def test_dmtx0():
     """
     test design matrix creation when no paradigm is provided
@@ -103,7 +104,7 @@ def test_dmtx1():
     assert_true(len(names)==7)
 
 
-#@parametric
+@parametric
 def test_convolve_regressors():
     """
     tests for convolve_regressors helper function
@@ -394,3 +395,8 @@ def test_dmtx19():
                          fir_delays=range(1,5))
     idx = paradigm[paradigm[:,0]==0,1].astype(np.int)
     assert_true((X[idx+1,0]==X[idx+2,1]).all())
+
+
+if __name__ == "__main__":
+    import nose
+    nose.run(argv=['', __file__])

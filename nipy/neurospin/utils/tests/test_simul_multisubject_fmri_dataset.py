@@ -43,3 +43,6 @@ def test_surrogate_array_3d():
     x, y, z = pos.T
     np.testing.assert_array_equal(data[x, y, z], ampli)
 
+if __name__ == "__main__":
+    import nose
+    nose.run(argv=['', __file__])
