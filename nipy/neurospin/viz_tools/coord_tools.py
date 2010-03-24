@@ -11,9 +11,7 @@ import numpy as np
 from scipy import stats, ndimage
 
 # Local imports
-from nipy.neurospin.utils.mask import compute_mask, largest_cc, \
-    threshold_connect_components
-from nipy.neurospin.utils.emp_null import ENN
+from nipy.neurospin.utils.mask import largest_cc
 from nipy.neurospin.datasets.transforms.affine_utils import get_bounds
 
 ################################################################################
@@ -55,40 +53,6 @@ def coord_transform(x, y, z, affine):
     return x.squeeze(), y.squeeze(), z.squeeze()
 
 
-def find_activation(map, mask=None, pvalue=0.05, upper_only=False):
-    """ Use the empirical normal null estimator to find threshold for 
-        negative and positive activation.
-
-        Parameters
-        ----------
-        map : 3D ndarray
-            The activation map, as a 3D image.
-        mask : 3D ndarray, boolean, optional
-            The brain mask. If None, the mask is computed from the map.
-        pvalue : float, optional
-            The pvalue of the false discovery rate used.
-        upper_only : boolean, optional
-            If true, only a threshold for positive activation is estimated.
-
-        Returns
-        -------
-        vmin : float, optional
-            The upper threshold for negative activation, not returned 
-            if upper_only is True.
-        vmax : float
-            The lower threshod for positive activation.
-    """
-    
-    if mask is None:
-        mask = compute_mask(map)
-    map = map[mask]
-    vmax = ENN(map).threshold(alpha=pvalue)
-    if upper_only:
-        return vmax
-    vmin = -ENN(-map).threshold(alpha=pvalue)
-    return vmin, vmax
-
-
 def find_cut_coords(map, mask=None, activation_threshold=None):
     """ Find the center of the largest activation connect component.
 
@@ -97,7 +61,7 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
         map : 3D ndarray
             The activation map, as a 3D image.
         mask : 3D ndarray, boolean, optional
-            The brain mask. If None, the mask is computed from the map.
+            An optional brain mask.
         activation_threshold : float, optional
             The lower threshold to the positive activation. If None, the 
             activation threshold is computed using find_activation.
@@ -111,19 +75,32 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
         z: float
             the z coordinate in voxels.
     """
-    #
+    # Deal with masked arrays:
+    if hasattr(map, 'mask'):
+        not_mask = np.logical_not(map.mask)
+        if mask is None:
+            mask = not_mask
+        else:
+            mask *= not_mask
+        map = np.asarray(map)
     my_map = map.copy()
+    if mask is not None:
+        my_map *= mask
+    # Testing min and max is faster than np.all(my_map == 0)
+    if (my_map.max() == 0) and (my_map.min() == 0):
+        return .5*np.array(map.shape)
     if activation_threshold is None:
-        vmin, vmax = find_activation(map, mask=mask)
-        mask = (map<vmin) | (map>vmax)
-    else:
-        mask = map>activation_threshold
-    if np.any(mask):
-        mask = largest_cc(mask)
-        my_map[np.logical_not(mask)] = 0
-        second_threshold = stats.scoreatpercentile(my_map[mask], 60)
-        if (my_map>second_threshold).sum() > 50:
-            my_map[np.logical_not(largest_cc(my_map>second_threshold))] = 0
+        activation_threshold = stats.scoreatpercentile(
+                                    np.abs(my_map[my_map !=0]).ravel(), 80)
+    mask = np.abs(my_map) > activation_threshold
+    mask = largest_cc(mask)
+    my_map *= mask
+    # For the second threshold, we use a mean, as it is much faster,
+    # althought it is less robust
+    second_threshold = np.abs(np.mean(my_map[mask]))
+    second_mask = (np.abs(my_map)>second_threshold)
+    if second_mask.sum() > 50:
+        my_map *= largest_cc(second_mask)
     cut_coords = ndimage.center_of_mass(my_map)
     return cut_coords
 

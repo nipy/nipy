@@ -12,11 +12,14 @@ import tempfile
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
+from scipy import stats
 
 # Local imports
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
-from .coord_tools import coord_transform, find_activation
+from .coord_tools import coord_transform
 
+# A module global to avoid creating multiple time an offscreen engine.
+off_screen_engine = None
 
 ################################################################################
 # Helper functions
@@ -203,7 +206,7 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
 ################################################################################
 
 def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
-    vmin=None, offscreen=False, **kwargs):
+    threshold=None, offscreen=False, vmin=None, vmax=None, cmap=None):
     """ Plot a 3D volume rendering view of the activation, with an
         outline of the brain.
 
@@ -225,15 +228,20 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
             MNI space. This parameter is not used when the default 
             anatomical is used, but it is compulsory when using an
             explicite anatomical image.
-        vmin : float, optional
+        threshold : float, optional
             The lower threshold of the positive activation. This
             parameter is used to threshold the activation map.
         offscreen: boolean, optional
             If True, Mayavi attempts to plot offscreen. Will work only
             with VTK >= 5.2.
-        kwargs: extra keyword arguments, optional
-            The extra keyword arguments are passed to Mayavi's
-            mlab.pipeline.volume
+        vmin : float, optional
+            The minimal value, for the colormap
+        vmax : float, optional
+            The maximum value, for the colormap
+        cmap : a callable, or a pylab colormap
+            A callable returning a (n, 4) array for n values between 
+            0 and 1 for the colors. This can be for instance a pylab
+            colormap.
 
         Notes
         -----
@@ -247,13 +255,15 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
     # Late import to avoid triggering wx imports before needed.
     from enthought.mayavi import mlab
     if offscreen:
-        from enthought.mayavi.core.off_screen_engine import OffScreenEngine
-        engine = OffScreenEngine()
-        engine.start()
+        global off_screen_engine
+        if off_screen_engine is None:
+            from enthought.mayavi.core.off_screen_engine import OffScreenEngine
+            off_screen_engine = OffScreenEngine()
+        off_screen_engine.start()
         fig = mlab.figure('__private_plot_map_3d__', 
                                 bgcolor=(1, 1, 1), fgcolor=(0, 0, 0),
                                 size=(400, 330),
-                                engine=engine)
+                                engine=off_screen_engine)
         mlab.clf(figure=fig)
     else:
         fig = mlab.gcf()
@@ -261,23 +271,34 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
                                                      size=(400, 350))
     disable_render = fig.scene.disable_render
     fig.scene.disable_render = True
-    if vmin is None:
-        vmin = find_activation(map, upper_only=True)
-    
+    if threshold is None:
+        threshold = stats.scoreatpercentile(
+                                np.abs(map).ravel(), 80)
+    contours = []
+    lower_map = map[map < -threshold]
+    if np.any(lower_map):
+        contours.append(lower_map.max())
+    upper_map = map[map > threshold]
+    if np.any(upper_map):
+        contours.append(map[map > threshold].min())
+
+
     ###########################################################################
     # Display the map using volume rendering
-    map_src = affine_img_src(map, affine)
-    # XXX: Need to change the Docs to give option between volume and
-    # iso_surface
-    # XXX: We need to capture any arguments that are invalid for
-    # iso_surface
-    if vmin in kwargs:
-        kwargs = kwargs.copy()
-        kwargs['contours'] = [kwargs.pop('vmin')]
-    module = mlab.pipeline.iso_surface(map_src, **kwargs)
+    if len(contours) > 0:
+        map_src = affine_img_src(map, affine)
+        module = mlab.pipeline.iso_surface(map_src,
+                                        contours=contours,
+                                        vmin=vmin, vmax=vmax)
+        if callable(cmap):
+            # Stick the colormap in mayavi
+            module.module_manager.scalar_lut_manager.lut.table \
+                    = (255*cmap(np.linspace(0, 1, 256))).astype(np.int)
    
     if not anat is False:
-        plot_anat_3d(anat=anat, anat_affine=anat_affine, scale=1.05)
+        plot_anat_3d(anat=anat, anat_affine=anat_affine, scale=1.05,
+                     outline_color=(.9, .9, .9),
+                     gyri_opacity=.2)
    
     ###########################################################################
     # Draw the cursor
@@ -292,16 +313,16 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
     
     mlab.view(38.5, 70.5, 300, (-2.7, -12, 9.1))
     fig.scene.disable_render = disable_render
+    
     return module
 
 
 def demo_plot_map_3d():
     map = np.zeros((182, 218, 182))
-    # Color a asymetric rectangle around Broadman area 26:
-    x, y, z = -6, -53, 9
+    # Color a asymetric rectangle around Broca area:
+    x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
-    map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
-    map = map.T
-    plot_map_3d(map, mni_sform, cut_coords=(x, y, z), vmin=0.5)
+    map[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
+    plot_map_3d(map, mni_sform, cut_coords=(x, y, z))
 
 

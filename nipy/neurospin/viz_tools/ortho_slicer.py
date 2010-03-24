@@ -305,12 +305,21 @@ class OrthoSlicer(object):
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
                                         xmin, xmax, ymin, ymax, zmin, zmax
         if hasattr(map, 'mask'):
+            not_mask = np.logical_not(map.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                            get_mask_bounds(np.logical_not(map.mask), affine)
-        if not 'vmin' in kwargs:
-            kwargs['vmin'] = map.min()
-        if not 'vmax' in kwargs:
-            kwargs['vmax'] = map.max()
+                            get_mask_bounds(not_mask, affine)
+            if not 'vmin' in kwargs and not 'vmax' in kwargs:
+                # Avoid dealing with masked arrays: they are slow
+                masked_map = np.asarray(map)[not_mask]
+                if not 'vmin' in kwargs:
+                    kwargs['vmin'] = masked_map.min()
+                if not 'vmax' in kwargs:
+                    kwargs['vmax'] = masked_map.max()
+        else:
+            if not 'vmin' in kwargs:
+                kwargs['vmin'] = map.min()
+            if not 'vmax' in kwargs:
+                kwargs['vmax'] = map.max()
 
         ax = self.axes['x']
         ax.imshow(np.rot90(map[:, y_map, :]),

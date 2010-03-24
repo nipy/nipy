@@ -33,7 +33,9 @@ def largest_cc(mask):
     labels, label_nb = ndimage.label(mask)
     if not label_nb:
         raise ValueError('No non-zero values: no connect components')
-    return labels ==  np.bincount(labels.flat)[1:].argmax() + 1
+    if label_nb == 1:
+        return mask.astype(np.bool)
+    return labels ==  np.bincount(labels.ravel()).argmax() + 1
 
 
 def threshold_connect_components(map, threshold, copy=True):
@@ -366,18 +368,15 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
 
 # FIXME: This function should probably get a 'single_session' flag to work 
 # without any surprises on single session situations.
-def series_from_mask(session_files, mask, dtype=np.float32,
-                squeeze=False, smooth=False):
+def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
     """ Read the time series from the given sessions filenames, using the mask.
 
         Parameters
         -----------
-        session_files: list of list of nifti file names. 
+        filenames: list of 3D nifti file names, or 4D nifti filename.
             Files are grouped by session.
         mask: 3d ndarray
             3D mask array: true where a voxel should be used.
-        squeeze: boolean, optional
-            If squeeze is True, the data array is squeezed before return.
         smooth: False or float, optional
             If smooth is not False, it gives the size, in voxel of the
             spatial smoothing to apply to the signal.
@@ -389,57 +388,38 @@ def series_from_mask(session_files, mask, dtype=np.float32,
         header: header object
             The header of the first file.
     """
-    # XXX: What if the file lengths do not match!
     mask = mask.astype(np.bool)
-    nb_time_points = len(session_files[0])
-    if len(session_files[0]) == 1:
+    if isinstance(filenames, basestring):
         # We have a 4D nifti file
-        nb_time_points = load(session_files[0][0]).get_data().shape[-1]
-    elif isinstance(session_files[0], basestring):
-        # We have a 4D nifti file
-        nb_time_points = load(session_files[0]).get_data().shape[-1]
-    session_series = np.zeros((len(session_files), mask.sum(),
-                                            nb_time_points),
-                                    dtype=dtype)
-
-    for session_index, filenames in enumerate(session_files):
-        if isinstance(filenames, basestring):
-            filenames = [filenames, ]
-        if len(filenames) == 1:
-            # We have a 4D nifti file
-            data_file = load(filenames[0])
+        data_file = load(filenames)
+        header = data_file.get_header()
+        data = data_file.get_data()
+        if smooth:
+            affine = data_file.get_affine()[:3, :3]
+            smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
+            if not data.flags['WRITEABLE']:
+                data = np.asarray(data).copy() # Get rid of memmapping
+            for this_data in np.rollaxis(data, -1):
+                this_data[:] = ndimage.gaussian_filter(this_data,
+                                                        smooth_sigma)
+        series = data[mask].astype(dtype)
+    else:
+        nb_time_points = len(filenames)
+        series = np.zeros((mask.sum(), nb_time_points), dtype=dtype)
+        for index, filename in enumerate(filenames):
+            data_file = load(filename)
             data = data_file.get_data()
-            if not 'header' in locals():
-                header = data_file.get_header()
             if smooth:
                 affine = data_file.get_affine()[:3, :3]
                 smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
-                if not data.flags['WRITEABLE']:
-                    data = np.asarray(data).copy() # Get rid of memmapping
-                for this_data in np.rollaxis(data, -1):
-                    this_data[:] = ndimage.gaussian_filter(this_data,
-                                                           smooth_sigma)
-            session_series[session_index, :, :] = data[mask].astype(dtype)
+                data = ndimage.gaussian_filter(data, smooth_sigma)
+                
+            series[:, index] = data[mask].astype(dtype)
             # Free memory early
-            del data, data_file
-        else:
-            for file_index, filename in enumerate(filenames):
-                data_file = load(filename)
-                data = data_file.get_data()
-                if smooth:
-                    affine = data_file.get_affine()[:3, :3]
-                    smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
-                    data = ndimage.gaussian_filter(data, smooth_sigma)
-                    
-                session_series[session_index, :, file_index] = \
-                                data[mask].astype(np.float32)
-                # Free memory early
-                if not 'header' in locals():
-                    header = data_file.get_header()
-                del data
+            if index == 0:
+                header = data_file.get_header()
+            del data
 
-    if squeeze:
-        session_series = session_series.squeeze()
-    return session_series, header
+    return series, header
 
 

@@ -42,21 +42,19 @@ An example
     
     # We use a masked array to add transparency to the parts that we are
     # not interested in:
-    map = np.ma.masked_less(map, 0.5)
+    thresholded_map = np.ma.masked_less(map, 0.5)
 
     # And now, visualize it:
-    plot_map(map, mni_sform, cut_coords=(x, y, z), vmin=0.5)
+    plot_map(thresholded_map, mni_sform, cut_coords=(x, y, z), vmin=0.5)
 
 This creates the following image:
 
 .. image:: viz.png
 
-The same plot can be obtained fully automaticaly, by using
-:func:`auto_plot_map` to find the activation threshold `vmin` and the cut
-coordinnates::
+The same plot can be obtained fully automaticaly, by letting
+:func:`plot_map` find the activation threshold and the cut coordinnates::
 
-    from nipy.neurospin.viz import auto_plot_map
-    auto_plot_map(map, mni_sform)
+    auto_plot_map(map, mni_sform, threshold='auto')
 
 In this simple example, the code will easily detect the bar as activation
 and position the cut at the center of the bar.
@@ -68,7 +66,6 @@ and position the cut at the center of the bar.
     :toctree: generated
 
     plot_map
-    auto_plot_map
 
 
 3D plotting utilities
