@@ -202,7 +202,6 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20), mask=None,
     else:
         import numpy.random as nr
 
-
     if mask is not None:
         shape = mask.get_shape()
         mask_data = mask.get_data()
@@ -253,3 +252,83 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20), mask=None,
         save(Nifti1Image( dataset, np.eye(4)), out_image_file)
 
     return dataset
+
+def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, dmtx=None,
+                         sk=1.0, noise_level=1.0,  out_image_file=None, 
+                         verbose=False, seed=False):
+    """
+    Create surrogate (simulated) 3D activation data with spatial noise.
+
+    Parameters
+    -----------
+    shape=(20,20,20): tuple of integers,
+         the shape of each image
+    mask=None: brifti image instance,
+        referential- and mask- defining image (overrides shape)
+    n_scans: int, optional,
+        number of scans to be simlulated
+        overrided by the design matrix
+    dmtx: arrau of shape(n_scans, n_rows),
+        the design matrix
+    sk: float, optionnal
+        Amount of spatial noise smoothness.
+    noise_level: float, optionnal
+        Amplitude of the spatial noise.
+        amplitude=noise_level)
+    out_image_file: string or None, optionnal
+        If not None, the resulting is saved as a nifti file with the
+        given file name.
+    verbose: boolean, optionnal
+        If verbose is true, the data for the last subject is plotted as
+        a 2D image.
+    seed=False:  int, optionnal
+        If seed is not False, the random number generator is initialized
+        at a certain value
+
+    Returns
+    -------
+    dataset: ndarray of shape (shape[0], shape[1], shape[2], n_scans)
+        The surrogate activation map, with dimensions (nbsubj, dimx, dimy, dimz)
+    """
+    if seed:
+        nr = np.random.RandomState([seed])
+    else:
+        import numpy.random as nr
+
+    if mask is not None:
+        shape = mask.get_shape()
+        affine = mask.get_affine()
+        mask_data = mask.get_data().astype('bool')
+    else:
+        affine = np.eye(4)
+        mask_data = np.ones(shape).astype('bool')
+
+    if dmtx is not None:
+        n_scans = dmtx.shape[0]
+    
+    shape_4d = tuple((shape[0], shape[1], shape[2], n_scans))
+    data = np.zeros(shape_4d)
+
+    # make the signal
+    for r in range(dmtx.shape[1]):
+        beta = nd.gaussian_filter(nr.randn(shape[0], shape[1], shape[2]),sk)
+        beta /= np.std(beta)
+        data[mask_data,:] += np.outer(beta[mask_data],dmtx[:,r]) 
+    
+    for s in range(n_scans):
+        # make some noise
+        noise = nr.randn(shape[0], shape[1], shape[2])
+    
+        # smooth the noise
+        noise = nd.gaussian_filter(noise, sk)
+        noise *= noise_level/np.std(noise)
+        
+        #make the mixture
+        data[:,:,:,s] += noise
+        data[:,:,:,s] += 100*mask_data
+        
+    if out_image_file is not None:
+        from nipy.io.imageformats import save, Nifti1Image 
+        save(Nifti1Image( data, affine), out_image_file)
+
+    return data
