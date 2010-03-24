@@ -14,10 +14,10 @@ import nipy.neurospin.clustering.gmm as gmm
 
 dim = 2
 # 1. generate a 3-components mixture
-x1 = np.random.randn(100,dim)
-x2 = 3+  2*np.random.randn(50,dim)
-x3 = np.repeat(np.array([-2, 2], ndmin=2), 30, 0) \
-     + 0.5*np.random.randn(30, dim)
+x1 = np.random.randn(30,dim)
+x2 = 3+  2*np.random.randn(15,dim)
+x3 = np.repeat(np.array([-2, 2], ndmin=2), 15, 0) \
+     + 0.5*np.random.randn(15, dim)
 x = np.concatenate((x1, x2, x3))
 
 # 2. fit the mixture with a bunch of possible models

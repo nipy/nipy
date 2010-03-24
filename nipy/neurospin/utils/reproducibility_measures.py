@@ -64,7 +64,7 @@ def cluster_threshold(map, mask, th, csize):
 
     Note
     ----
-    Should be replaced by a more standard function in teh future in the future
+    Should be replaced by a more standard function in the future
     """
     ijk = np.array(np.where(mask.get_data())).T
     if map.shape[0]!=ijk.shape[0]:
@@ -538,7 +538,7 @@ def peak_reproducibility(data, vardata, mask, ngroups, sigma, method='crfx',
                 smap = mfx_ttest(x,vx)
             elif method == 'cffx':
                 smap = fttest(x,vx)
-            elif methd=='cjt':
+            elif method=='cjt':
                 if kwargs.has_key('k'):
                     k = kwargs['k']
                 else:
@@ -559,7 +559,7 @@ def peak_reproducibility(data, vardata, mask, ngroups, sigma, method='crfx',
             niter = kwargs['niter']
             afname = afname+'_%02d_%04d.pic'%(niter,i)
             pos = coord_bsa(mask, tx, theta, dmax, ths, thq, smin, afname)
-        all_pos.append(pos)
+            all_pos.append(pos)
 
     # derive a kernel-based goodness measure from the pairwise comparison
     # of sets of positions
@@ -569,6 +569,7 @@ def peak_reproducibility(data, vardata, mask, ngroups, sigma, method='crfx',
             score += statistics_from_position(all_pos[i], all_pos[j], sigma)
             score += statistics_from_position(all_pos[j], all_pos[i], sigma)
     score /= (ngroups*(ngroups-1))
+    
     return score
 
 def cluster_reproducibility(data, vardata, mask, ngroups, sigma,
@@ -622,17 +623,17 @@ def cluster_reproducibility(data, vardata, mask, ngroups, sigma,
             if method =='crfx':
                 smap = ttest(x)
             elif method == 'cmfx':
-                smap = mfx_ttest(x,vx)
+                smap = mfx_ttest(x, vx)
             elif method == 'cffx':
-                smap = fttest(x,vx)
+                smap = fttest(x, vx)
             elif methd=='cjt':
                 if  kwargs.has_key('k'):
                     k =  kwargs['k']
                 else:   
                     k = nsubj/2
                 smap = conjunction(x, vx, k) 
-            pos = get_cluster_position_from_thresholded_map(smap, mask, threshold,
-                                                            csize)
+            pos = get_cluster_position_from_thresholded_map(smap, mask,  
+                                                            threshold, csize)
             all_pos.append(pos)
         else: 
             # method='bsa' is a special case

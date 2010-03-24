@@ -27,3 +27,7 @@ def test_efdr():
     np.testing.assert_array_less(-efdr.threshold(alpha=0.05), -2.8)
     np.testing.assert_array_less(-efdr.uncorrected_threshold(alpha=0.001), -2.5)
 
+
+if __name__ == "__main__":
+    import nose
+    nose.run(argv=['', __file__])

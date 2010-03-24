@@ -21,16 +21,15 @@ import operator
 # delayed, so that the part module can be used without them).
 import numpy as np
 import pylab as pl
+from scipy import stats
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 
 # Local imports
-from nipy.neurospin.utils.mask import compute_mask
 from nipy.neurospin.datasets import VolumeImg
 
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
-from .coord_tools import coord_transform, find_activation, \
-        find_cut_coords
+from .coord_tools import coord_transform, find_cut_coords
 
 from .ortho_slicer import OrthoSlicer
 
@@ -46,8 +45,8 @@ def _xyz_order(map, affine):
     return map, affine
 
 
-def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
-                    figure=None, axes=None, title=None,
+def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
+                    figure=None, axes=None, title=None, threshold=None,
                     annotate=True, draw_cross=True, 
                     do3d=False, **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
@@ -58,9 +57,10 @@ def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
             The activation map, as a 3D image.
         affine : 4x4 ndarray
             The affine matrix going from image voxel space to MNI space.
-        cut_coords: 3-tuple of floats
+        cut_coords: 3-tuple of floats or None
             The MNI coordinates of the point where the cut is performed, in 
             MNI coordinates and order.
+            If None is given, the cut point is calculated automaticaly.
         anat : 3D ndarray or False, optional
             The anatomical image to be used as a background. If None, the 
             MNI152 T1 1mm template is used. If False, no anat is displayed.
@@ -78,6 +78,12 @@ def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
             figure is used.
         title : string, optional
             The title dispayed on the figure.
+        threshold : a number, None, or 'auto'
+            If None is given, the maps are not thresholded.
+            If a number is given, it is used to threshold the maps:
+            values below the threshold are plotted as transparent. If
+            auto is given, the threshold is determined magically by
+            analysis of the map.
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
@@ -102,30 +108,78 @@ def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
             plot_map(map, affine)
     """
     map, affine = _xyz_order(map, affine)
+
+    # Deal with automatic settings of plot parameters
+    if threshold == 'auto':
+            threshold = stats.scoreatpercentile(np.abs(map).ravel(), 80)
+    if cut_coords is None:
+        x_map, y_map, z_map = find_cut_coords(map,
+                                activation_threshold=threshold)
+        cut_coords = coord_transform(x_map, y_map, z_map, affine)
+    if threshold is not None:
+        map = np.ma.masked_inside(map, -threshold, threshold)
     
+    if do3d:
+        try:
+            from enthought.mayavi import version
+            if not int(version.version[0]) > 2:
+                raise ImportError
+        except ImportError:
+            warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
+            do3d = False
+
+    # Make sure that we have a figure
     if not isinstance(figure, Figure):
-        fig = pl.figure(figure, figsize=(6.6, 2.6), facecolor='w')
+        if do3d:
+            size = (10, 2.6)
+        else:
+            size = (6.6, 2.6)
+        fig = pl.figure(figure, figsize=size, facecolor='w')
     else:
         fig = figure
         if isinstance(axes, Axes):
             assert axes.figure is figure, ("The axes passed are not "
             "in the figure")
 
+    # Use Mayavi for the 3D plotting
     if do3d:
         try:
-            from enthought.mayavi import version
-            if not int(version.version[0]) > 2:
-                raise ImportError
             from .maps_3d import plot_map_3d, m2screenshot
+            from enthought.tvtk.api import tvtk
+            version = tvtk.Version()
+            offscreen = True
+            if (version.vtk_major_version, version.vtk_minor_version) < (5, 2):
+                offscreen = False
 
+            cmap = kwargs.get('cmap', pl.cm.cmap_d[pl.rcParams['image.cmap']])
+            # Computing vmin and vmax is costly in time, and is needed
+            # later, so we compute them now, and store them for future
+            # use
+            vmin = kwargs.get('vmin', map.min())
+            kwargs['vmin'] = vmin
+            vmax = kwargs.get('vmax', map.max())
+            kwargs['vmax'] = vmax
             plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
                         anat=anat, anat_affine=anat_affine, 
-                        offscreen=True, **kwargs)
+                        offscreen=offscreen, cmap=cmap,
+                        threshold=threshold,
+                        vmin=vmin, vmax=vmax)
 
             ax = fig.add_axes((0.001, 0, 0.29, 1))
             ax.axis('off')
             m2screenshot(mpl_axes=ax)
             axes = (0.3, 0, .7, 1.)
+            if offscreen:
+                # Clean up, so that the offscreen engine doesn't become the
+                # default
+                from enthought.mayavi import mlab
+                engine = mlab.get_engine()
+                engine.close_scene(engine.current_scene)
+                from enthought.mayavi.core.registry import registry
+                for key, value in registry.engines.iteritems():
+                    if value is engine:
+                        registry.engines.pop(key)
+                        break
         except ImportError:
             warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
 
@@ -161,7 +215,7 @@ def plot_map(map, affine, cut_coords, anat=None, anat_affine=None,
     return ortho_slicer
 
 
-def demo_plot_map(do3d=False):
+def demo_plot_map(do3d=False, **kwargs):
     """ Demo activation map plotting.
     """
     map = np.zeros((182, 218, 182))
@@ -174,101 +228,8 @@ def demo_plot_map(do3d=False):
     assert y_map +1 == 137
     assert z_map +1 == 95
     map[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
-    map = np.ma.masked_less(map, 0.5)
-    return plot_map(map, mni_sform, cut_coords=(x, y, z),
-                        title="Broca's area", figure=512, do3d=do3d)
-
-
-
-def auto_plot_map(map, affine, threshold=None, cut_coords=None, do3d=False, 
-                    anat=None, anat_affine=None, title=None, mask=None,
-                    figure_num=None, auto_sign=True):
-    """ Automatic plotting of an activation map.
-
-        Plot a together a 3D volume rendering view of the activation, with an
-        outline of the brain, and 2D cuts. If Mayavi is not installed,
-        falls back to 2D views only.
-
-        Parameters
-        ----------
-        map : 3D ndarray
-            The activation map, as a 3D image.
-        affine : 4x4 ndarray
-            The affine matrix going from image voxel space to MNI space.
-        threshold : float, optional
-            The lower threshold of the positive activation. This
-            parameter is used to threshold the activation map.
-        cut_coords: 3-tuple of floats, optional
-            The MNI coordinates of the point where the cut is performed, in 
-            MNI coordinates and order. If None is given, the cut_coords are 
-            automaticaly estimated.
-        do3d : boolean, optional
-            If do3d is True, a 3D plot is created if Mayavi is installed.
-        anat : 3D ndarray, optional
-            The anatomical image to be used as a background. If None, the 
-            MNI152 T1 1mm template is used.
-        anat_affine : 4x4 ndarray, optional
-            The affine matrix going from the anatomical image voxel space to 
-            MNI space. This parameter is not used when the default 
-            anatomical is used, but it is compulsory when using an
-            explicite anatomical image.
-        title : string, optional
-            The title dispayed on the figure.
-        mask : 3D ndarray, optional
-            Boolean array of the voxels used.
-        figure_num : integer, optional
-            The number of the matplotlib and Mayavi figures used. If None is 
-            given, a new figure is created.
-        auto_sign : boolean, optional
-            If auto_sign is True, the sign of the activation is
-            automaticaly computed: negative activation can thus be
-            plotted.
-
-        Returns
-        -------
-        threshold : float
-            The lower threshold of the activation used.
-        cut_coords : 3-tuple of floats
-            The Talairach coordinates of the cut performed for the 2D
-            view.
-
-        Notes
-        -----
-        Arrays should be passed in numpy convention: (x, y, z)
-        ordered.
-
-        Use masked arrays to create transparency:
-
-            import numpy as np
-            map = np.ma.masked_less(map, 0.5)
-            plot_map(map, affine)
-
-    """
-    if mask is None:
-        mask = compute_mask(map)
-    else:
-        mask = mask.astype(np.bool)
-    if threshold is None:
-        threshold = np.inf
-        pvalue = 0.04
-        while not np.isfinite(threshold):
-            pvalue *= 1.25
-            vmax, threshold = find_activation(map, mask=mask, pvalue=pvalue)
-            if not np.isfinite(threshold) and auto_sign:
-                if np.isfinite(vmax):
-                    threshold = -vmax
-                    if mask is not None:
-                        map[mask] *= -1
-                    else:
-                        map *= -1
-    if cut_coords is None:
-        x_map, y_map, z_map = find_cut_coords(map,
-                                activation_threshold=threshold)
-        cut_coords = coord_transform(x_map, y_map, z_map, affine)
-    map = np.ma.masked_less(map, threshold)
-    plot_map(map, affine, cut_coords=cut_coords, do3d=do3d,
-                anat=anat, anat_affine=anat_affine, title=title,
-                figure_num=figure_num)
-    return threshold, cut_coords
+    return plot_map(map, mni_sform, threshold='auto',
+                        title="Broca's area", figure=512, do3d=do3d,
+                        **kwargs)
 
 

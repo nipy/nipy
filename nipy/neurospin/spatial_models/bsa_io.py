@@ -70,7 +70,7 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         should be the same"
     nsubj = len(mask_images)
     if subj_id==None:
-        subj_id = [str[i] for i in range(nsubj)]
+        subj_id = [str(i) for i in range(nsubj)]
     
     # Read the referential information
     nim = load(mask_images[0])

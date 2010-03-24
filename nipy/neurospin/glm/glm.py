@@ -216,11 +216,6 @@ class contrast:
 			self._pvalue = self.pvalue(baseline)
 
 		# Avoid inf values kindly supplied by scipy. 
-		"""
-		z = sps.norm.isf(self._pvalue)
-		th = z[np.where(z<np.inf)].max()
-		z = np.minimum(z, int(th+1))
-		"""
 		from nipy.neurospin.utils.zscore import zscore
 		z = zscore(self._pvalue)		
 		return z

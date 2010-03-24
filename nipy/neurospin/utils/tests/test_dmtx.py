@@ -19,18 +19,36 @@ def basic_paradigm():
     paradigm = np.vstack(([conditions, onsets])).T
     return paradigm
 
+def modulated_block_paradigm():
+    conditions = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
+    duration = 5 + 5 * np.random.rand(len(onsets))
+    values = np.random.rand(len(onsets))
+    paradigm = np.vstack(([conditions, onsets, duration, values])).T
+    return paradigm
+
+def modulated_event_paradigm():
+    conditions = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
+    duration = np.zeros(len(onsets))
+    values = np.random.rand(len(onsets))
+    paradigm = np.vstack(([conditions, onsets, duration, values])).T
+    return paradigm
+
 
 def block_paradigm():
     conditions = [0, 0, 0, 1, 1, 1, 2, 2, 2]
-    onsets=[30, 70, 100, 10, 30, 90, 30, 40, 60]
-    duration=5*np.ones(9)
+    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
+    duration = 5*np.ones(9)
     paradigm = np.vstack(([conditions, onsets, duration])).T
     return paradigm
 
 
+
 def test_dmtx0():
-    # test design matrix creation when no paradigm is provided
-    #
+    """
+    test design matrix creation when no paradigm is provided
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     X, names= dmtx_light(frametimes, drift_model='Polynomial', drift_order=3)
@@ -39,8 +57,9 @@ def test_dmtx0():
 
 
 def test_dmtx0b():
-    # test design matrix creation when no paradigm is provided
-    #
+    """
+    test design matrix creation when no paradigm is provided
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     X, names= dmtx_light(frametimes, drift_model='Polynomial', drift_order=3)
@@ -48,8 +67,9 @@ def test_dmtx0b():
 
 
 def test_dmtx0c():
-    # test design matrix creation when regressors are provided manually
-    #
+    """
+    test design matrix creation when regressors are provided manually
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     ax = np.random.randn(128,4)
@@ -59,8 +79,9 @@ def test_dmtx0c():
 
 
 def test_dmtx0d():
-    # test design matrix creation when regressors are provided manually
-    #
+    """
+    test design matrix creation when regressors are provided manually
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     ax = np.random.randn(128,4)
@@ -70,7 +91,9 @@ def test_dmtx0d():
 
     
 def test_dmtx1():
-    # basic test based on basic_paradigm and canonical hrf
+    """
+    basic test based on basic_paradigm and canonical hrf
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     paradigm = basic_paradigm()
@@ -83,7 +106,9 @@ def test_dmtx1():
 
 @parametric
 def test_convolve_regressors():
-    # tests for convolve_regressors helper function
+    """
+    tests for convolve_regressors helper function
+    """
     paradigm = [[0, 20],[1, 40]]
     # names not passed -> default names
     f, names = convolve_regressors(paradigm, 'Canonical')
@@ -91,8 +116,9 @@ def test_convolve_regressors():
 
 
 def test_dmtx1b():
-    # idem test_dmtx1, but different test
-    #
+    """
+    idem test_dmtx1, but different test
+    """
     tr = 1.0
     frametimes = np.linspace(0,127*tr,128)
     paradigm = basic_paradigm()
@@ -104,8 +130,9 @@ def test_dmtx1b():
 
 
 def test_dmtx1c():
-    # idem test_dmtx1, but different test
-    #
+    """
+    idem test_dmtx1, but different test
+    """
     tr = 1.0
     frametimes = np.linspace(0,127*tr,128)
     paradigm = basic_paradigm()
@@ -116,8 +143,9 @@ def test_dmtx1c():
 
 
 def test_dmtx1d():
-    # idem test_dmtx1, but different test
-    #
+    """
+    idem test_dmtx1, but different test
+    """
     tr = 1.0
     frametimes = np.linspace(0,127*tr,128)
     paradigm = basic_paradigm()
@@ -127,8 +155,9 @@ def test_dmtx1d():
     assert_true((np.isnan(X)==0).all())
        
 def test_dmtx2():
-    # idem test_dmtx1 with a different drift term
-    #
+    """
+    idem test_dmtx1 with a different drift term
+    """
     tr = 1.0
     frametimes = np.linspace(0,127*tr,128)
     paradigm = basic_paradigm()
@@ -139,8 +168,9 @@ def test_dmtx2():
     assert_true(len(names)==8)
 
 def test_dmtx3():
-    # idem test_dmtx1 with a different drift term
-    #
+    """
+    idem test_dmtx1 with a different drift term
+    """
     tr = 1.0
     frametimes = np.linspace(0,127*tr,128)
     paradigm = basic_paradigm()
@@ -151,8 +181,9 @@ def test_dmtx3():
     assert_true(len(names)==4)  
 
 def test_dmtx4():
-    # idem test_dmtx1 with a different hrf model
-    #
+    """
+    idem test_dmtx1 with a different hrf model
+    """
     tr = 1.0
     frametimes = np.linspace(0,127*tr,128)
     paradigm = basic_paradigm()
@@ -163,8 +194,9 @@ def test_dmtx4():
     assert_true(len(names)==10)
 
 def test_dmtx5():
-    # idem test_dmtx1 with a block paradigm
-    #
+    """
+    idem test_dmtx1 with a block paradigm
+    """
     tr = 1.0
     frametimes = np.linspace(0,127*tr,128)
     paradigm = block_paradigm()
@@ -175,8 +207,9 @@ def test_dmtx5():
     assert_true(len(names)==7)
 
 def test_dmtx6():
-    # idem test_dmtx1 with a block paradigm and the hrf derivative
-    #
+    """
+    idem test_dmtx1 with a block paradigm and the hrf derivative
+    """
     tr = 1.0
     frametimes = np.linspace(0,127*tr,128)
     paradigm = block_paradigm()
@@ -186,8 +219,9 @@ def test_dmtx6():
     assert_true(len(names)==10)
 
 def test_dmtx7():
-    # idem test_dmtx1, but odd paradigm
-    #
+    """
+    idem test_dmtx1, but odd paradigm
+    """
     tr = 1.0
     frametimes = np.linspace(0,127*tr,128)
     conditions = [0,0,0,1,1,1,3,3,3]
@@ -201,8 +235,9 @@ def test_dmtx7():
     assert_true(len(names)==7)
 
 def test_dmtx8():
-    # basic test based on basic_paradigm and FIR
-    #
+    """
+    basic test based on basic_paradigm and FIR
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     paradigm = basic_paradigm()
@@ -213,8 +248,9 @@ def test_dmtx8():
     assert_true(len(names)==7)
 
 def test_dmtx9():
-    # basic test based on basic_paradigm and FIR
-    #
+    """
+    basic test based on basic_paradigm and FIR
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     paradigm = basic_paradigm()
@@ -226,8 +262,9 @@ def test_dmtx9():
 
 
 def test_dmtx10():
-    # Check that the first column o FIR design matrix is OK
-    #
+    """
+    Check that the first column o FIR design matrix is OK
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     paradigm = basic_paradigm()
@@ -239,8 +276,9 @@ def test_dmtx10():
 
 
 def test_dmtx11():
-    # check that the second column of the FIR design matrix is OK indeed
-    #
+    """
+    check that the second column of the FIR design matrix is OK indeed
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     paradigm = basic_paradigm()
@@ -252,7 +290,9 @@ def test_dmtx11():
 
 
 def test_dmtx12():
-    # check that the 11th column of a FIR design matrix is indeed OK
+    """
+    check that the 11th column of a FIR design matrix is indeed OK
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     paradigm = basic_paradigm()
@@ -264,7 +304,9 @@ def test_dmtx12():
 
 
 def test_dmtx13():
-    # Check that the fir_duration is well taken into account
+    """
+    Check that the fir_duration is well taken into account
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     paradigm = basic_paradigm()
@@ -276,8 +318,10 @@ def test_dmtx13():
 
 
 def test_dmtx14():
-    # Check that the first column o FIR design matrix is OK after a 1/2
-    # time shift
+    """
+    Check that the first column o FIR design matrix is OK after a 1/2
+    time shift
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)+tr/2
     paradigm = basic_paradigm()
@@ -289,8 +333,9 @@ def test_dmtx14():
 
 
 def test_dmtx15():
-    # basic test based on basic_paradigm, plus user supplied regressors 
-    #
+    """
+    basic test based on basic_paradigm, plus user supplied regressors 
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     paradigm = basic_paradigm()
@@ -301,16 +346,57 @@ def test_dmtx15():
     assert_true((len(names)==11)&(X.shape[1]==11))
 
 def test_dmtx16():
-    # check that additional regressors are put at the reight place
-    #
+    """
+    check that additional regressors are put at the reight place
+    """
     tr = 1.0
     frametimes = np.linspace(0, 127*tr,128)
     paradigm = basic_paradigm()
-    hrf_model='Canonical'
+    hrf_model ='Canonical'
     ax = np.random.randn(128,4)
     X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3, add_regs=ax)
     assert_almost_equal(X[:,3:7],ax)
 
+def test_dmtx17():
+    """
+    Test the effect of scaling on the events
+    """
+    tr = 1.0
+    frametimes = np.linspace(0, 127*tr,128)
+    paradigm = modulated_event_paradigm()
+    hrf_model = 'Canonical'
+    X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
+                         drift_model='Polynomial', drift_order=3)
+    assert_true((X[paradigm[paradigm[:,0]==0,1].astype(np.int)+1,0]>0).all())
+    
+def test_dmtx18():
+    """
+    Test the effect of scaling on the blocks
+    """
+    tr = 1.0
+    frametimes = np.linspace(0, 127*tr,128)
+    paradigm = modulated_block_paradigm()
+    hrf_model='Canonical'
+    X, names= dmtx_light(frametimes, paradigm, hrf_model=hrf_model,
+                         drift_model='Polynomial', drift_order=3)
+    assert_true((X[paradigm[paradigm[:,0]==0,1].astype(np.int)+3,0]>0).all())
+
+def test_dmtx19():
+    """
+    Test the effect of scaling on a FIR model
+    """
+    tr = 1.0
+    frametimes = np.linspace(0, 127*tr,128)
+    paradigm = modulated_event_paradigm()
+    hrf_model='FIR'
+    X, names= dmtx_light(frametimes, paradigm, hrf_model=hrf_model, 
+                         drift_model='Polynomial', drift_order=3,
+                         fir_delays=range(1,5))
+    idx = paradigm[paradigm[:,0]==0,1].astype(np.int)
+    assert_true((X[idx+1,0]==X[idx+2,1]).all())
 
 
+if __name__ == "__main__":
+    import nose
+    nose.run(argv=['', __file__])
