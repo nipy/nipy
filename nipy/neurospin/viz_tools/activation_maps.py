@@ -39,7 +39,7 @@ from .ortho_slicer import OrthoSlicer
 ################################################################################
 def _xyz_order(map, affine):
     img = VolumeImg(map, affine=affine, world_space='mine')
-    img = img.xyz_ordered(resample=True)
+    img = img.xyz_ordered(resample=True, copy=False)
     map = img.get_data()
     affine = img.affine
     return map, affine
@@ -141,6 +141,16 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             assert axes.figure is figure, ("The axes passed are not "
             "in the figure")
 
+    canonical_anat = False
+    if anat is None:
+        try:
+            anat, anat_affine, vmax_anat = _AnatCache.get_anat()
+            canonical_anat = True
+        except OSError, e:
+            anat = False
+            warnings.warn(repr(e))
+
+
     # Use Mayavi for the 3D plotting
     if do3d:
         try:
@@ -183,12 +193,6 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         except ImportError:
             warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
 
-    if anat is None:
-        try:
-            anat, anat_affine, vmax_anat = _AnatCache.get_anat()
-        except OSError, e:
-            anat = False
-            warnings.warn(repr(e))
     if axes is None:
         axes = [0., 0., 1., 1.]
     if operator.isSequenceType(axes):
@@ -199,10 +203,16 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     if anat is not False:
         anat_kwargs = kwargs.copy()
         anat_kwargs['cmap'] = pl.cm.gray
-        anat_kwargs.pop('vmin', None)
-        anat_kwargs.pop('vmax', None)
         anat_kwargs.pop('alpha', 1.)
-        anat, anat_affine = _xyz_order(anat, anat_affine)
+        if canonical_anat:
+            # We special-case the 'canonical anat', as we don't need
+            # to do a few transforms to it.
+            anat_kwargs['vmin'] = 0
+            anat_kwargs['vmax'] = vmax_anat
+        else:
+            anat_kwargs.pop('vmin', None)
+            anat_kwargs.pop('vmax', None)
+            anat, anat_affine = _xyz_order(anat, anat_affine)
         ortho_slicer.plot_map(anat, anat_affine, **anat_kwargs)
     ortho_slicer.plot_map(map, affine, **kwargs)
     if annotate:
