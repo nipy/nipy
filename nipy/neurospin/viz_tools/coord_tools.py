@@ -86,7 +86,8 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
     my_map = map.copy()
     if mask is not None:
         my_map *= mask
-    if np.all(my_map == 0):
+    # Testing min and max is faster than np.all(my_map == 0)
+    if (my_map.max() == 0) and (my_map.min() == 0):
         return .5*np.array(map.shape)
     if activation_threshold is None:
         activation_threshold = stats.scoreatpercentile(
@@ -94,7 +95,9 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
     mask = np.abs(my_map) > activation_threshold
     mask = largest_cc(mask)
     my_map *= mask
-    second_threshold = stats.scoreatpercentile(my_map[mask], 60)
+    # For the second threshold, we use a mean, as it is much faster,
+    # althought it is less robust
+    second_threshold = np.abs(np.mean(my_map[mask]))
     second_mask = (np.abs(my_map)>second_threshold)
     if second_mask.sum() > 50:
         my_map *= largest_cc(second_mask)

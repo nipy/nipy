@@ -152,16 +152,18 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                 offscreen = False
 
             cmap = kwargs.get('cmap', pl.cm.cmap_d[pl.rcParams['image.cmap']])
-            kwargs3d = dict()
-            if 'vmin' in kwargs:
-                kwargs3d['vmin'] = kwargs['vmin']
-            if 'vmax' in kwargs:
-                kwargs3d['vmax'] = kwargs['vmax']
+            # Computing vmin and vmax is costly in time, and is needed
+            # later, so we compute them now, and store them for future
+            # use
+            vmin = kwargs.get('vmin', map.min())
+            kwargs['vmin'] = vmin
+            vmax = kwargs.get('vmax', map.max())
+            kwargs['vmax'] = vmax
             plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
                         anat=anat, anat_affine=anat_affine, 
                         offscreen=offscreen, cmap=cmap,
-                        vmin=kwargs.get('vmin', map.min()),
-                        vmax=kwargs.get('vmax', map.max()))
+                        threshold=threshold,
+                        vmin=vmin, vmax=vmax)
 
             ax = fig.add_axes((0.001, 0, 0.29, 1))
             ax.axis('off')
