@@ -733,6 +733,10 @@ class BGMM(GMM):
         dx = np.reshape(self.means-self.prior_means,
                         (self.k, self.dim, 1))
         addcov = np.array([np.dot(dx[k],dx[k].T) for k in range(self.k)])
+        #addcov =  np.zeros(np.shape(self.precisions))
+        #for  k in range(self.k):
+        #    addcov[k] = np.dot(dx[k],dx[k].T)
+        #
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
         covariance += addcov*prior_shrinkage
         scale = np.array([inv(covariance[k]) for k in range(self.k)])
@@ -752,7 +756,7 @@ class BGMM(GMM):
         
         #4. evaluate the posteriors
         pp = 1
-        pp = dirichlet_eval(self.weights,weights)
+        pp = dirichlet_eval(self.weights, weights)
         for k in range(self.k):
             pp*= Wishart_eval(dof[k], scale[k], self.precisions[k],
                               dW=self._detp[k], dV=_dets[k], piV=covariance[k] )

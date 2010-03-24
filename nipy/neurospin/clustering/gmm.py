@@ -10,7 +10,7 @@ Author : Bertrand Thirion, 2006-2009
 import numpy as np
 import nipy.neurospin.clustering.clustering as fc
 
-class grid_descriptor():
+class grid_descriptor(object):
     """
     A tiny class to handle cartesian grids
     """
