@@ -16,13 +16,18 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
     
     Parameters
     ----------
-    frametimes, array of shape(nbframes) the timing of the scans
-    paradigm=None, array of shape (nevents,2) if the type is event-related design 
-             or (nenvets,3) for a block design
-             that constains (condition id, onset) or (condition id, onset, duration)
-             if paradigm==None, then no conditions are included
-    hrf_model, string that can be 'Canonical', 'Canonical With Derivative' or 'FIR'
-               that specifies the hemodynamic reponse function
+    frametimes: array of shape(nbframes),
+        the timing of the scans
+    paradigm: array of shape (nevents, nc)
+             paradigm-encoding array
+             if nc==2, the type is event-related design (condition id, onset)
+             if nc==3, it represents(condition id, onset, duration)
+             if nc==4, (condition id, onset, duration, intensity)
+             if nc>2 this is a block design, unless all durations are equal to 0
+             if paradigm==None, then no condition is included
+    hrf_model, string, optional,
+             that specifies the hemodynamic reponse function
+             it can be 'Canonical', 'Canonical With Derivative' or 'FIR'
     drift_model, string that specifies the desired drift model,
                 to be chosen among 'Polynomial', 'Cosine', 'Blank'
     hfcut=128  float , cut frequency of the low-pass filter
@@ -44,8 +49,10 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
                  
     Returns
     -------
-    dmtx array of shape(nreg, nbframes): the sampled design matrix
-    names list of trings; the names of the columns of the design matrix
+    dmtx array of shape(nreg, nbframes):
+        the sampled design matrix
+    names list of strings of len (nreg)
+        the names of the columns of the design matrix
     """
     drift = set_drift(drift_model, frametimes, drift_order, hfcut)
     if paradigm==None:
@@ -54,9 +61,9 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
     else:
         if cond_ids==None:
            cond_ids = ['c%d'%k for k in range(int(paradigm[:,0].max()+1))]
-           conditions, names = convolve_regressors(paradigm, hrf_model, 
-                                        cond_ids, fir_delays, fir_duration)
-           formula = conditions + drift
+        conditions, names = convolve_regressors(paradigm, hrf_model, 
+                                                cond_ids, fir_delays, fir_duration)
+        formula = conditions + drift
     dmtx = build_dmtx(formula, frametimes).T
     
     # FIXME: ugly  workaround the fact that NaN can occur when trials
@@ -172,12 +179,15 @@ def set_drift(DriftModel, frametimes, order=1, hfcut=128.):
     
     Parameters
     ----------
-    DriftModel, string that specifies the desired drift model,
-                to be chosen among "Polynomial", "Cosine", "Blank"
-    frametimes array of shape(ntimes),
+    DriftModel: string, 
+                to be chosen among 'Polynomial', 'Cosine', 'Blank'
+                that specifies the desired drift model
+    frametimes: array of shape(ntimes),
                 list of values representing the desired TRs
-    order=1, int, order of the dirft model (in case it is polynomial)
-    hfcut=128., float, frequency cut in case of a cosine model
+    order: int, optional,
+        order of the dirft model (in case it is polynomial)
+    hfcut: float, optional,
+        frequency cut in case of a cosine model
 
     Returns
     -------
@@ -202,10 +212,13 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
     
     Parameters
     ----------
-    paradigm array of shape (nevents,2) if the type is event-related design 
-             or (nenvets,3) for a block design
-             that contains (condition id, onset) or 
-             (condition id, onset, duration)
+    paradigm: array of shape (nevents, nc), optional
+             paradigm-encoding array
+             if nc==2, the type is event-related design (condition id, onset)
+             if nc==3, it represents(condition id, onset, duration)
+             if nc==4, (condition id, onset, duration, intensity)
+             if nc>2 this is a block design, unless all durations are equal to 0
+             if paradigm==None, then no condition is included
     hrf_model, string that can be 'Canonical', 
                'Canonical With Derivative' or 'FIR'
                that specifies the hemodynamic reponse function
@@ -245,49 +258,58 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
             ncond = len(names)        
     listc = []
     hnames = []
-    if paradigm.shape[1]>2:
-        typep = 'block'  
-    else:
+    typep='block'
+    if paradigm.shape[1]==2:
+        typep = 'event'  
+    elif paradigm[:,2].max()==0:
         typep='event'
  
     for nc in range(ncond):
-        onsets =  paradigm[paradigm[:,0]==nc,1]
-        nos = np.size(onsets) 
+        onsets =  paradigm[paradigm[:,0]==nc, 1]
+        nos = np.size(onsets)
+        if paradigm.shape[1]==4:
+            values = paradigm[paradigm[:,0]==nc, 3]
+        else:
+            values = np.ones(nos)
         if nos>0:
             if typep=='event':
                 if hrf_model=="Canonical":
-                    c = formula.define(names[nc], utils.events(onsets, f=hrf.glover))
+                    c = formula.define(names[nc],
+                                       utils.events(onsets, values, f=hrf.glover))
                     listc.append(c)
                     hnames.append(names[nc])
                 elif hrf_model=="Canonical With Derivative":
                     c1 = formula.define(names[nc],
-                                        utils.events(onsets, f=hrf.glover))
+                                        utils.events(onsets, values, f=hrf.glover))
                     c2 = formula.define(names[nc]+"_derivative",
-                                        utils.events(onsets, f=hrf.dglover))
+                                        utils.events(onsets, values, f=hrf.dglover))
                     listc.append(c1)
                     listc.append(c2)
                     hnames.append(names[nc])
                     hnames.append(names[nc]+"_derivative")
                 elif hrf_model=="FIR":
                     for i,ft in enumerate(fir_delays):
-                        lnames = names[nc]+"_delay_%d"%i
-                        changes = np.hstack((onsets+ft,onsets+ft+fir_duration))
+                        lnames = names[nc] + "_delay_%d"%i
+                        changes = np.hstack((onsets+ft, onsets+ft+fir_duration))
                         ochanges = np.argsort(changes)
-                        values = np.hstack((np.ones(nos), np.zeros(nos)))
+                        lvalues = np.hstack((values, np.zeros(nos)))
                         changes = changes[ochanges]
-                        values = values[ochanges]
-                        c = formula.define(lnames, utils.step_function(changes,values))
+                        lvalues = lvalues[ochanges]
+                        
+                        c = formula.define(lnames, utils.step_function(changes, lvalues))
+
+                        print changes, lvalues
                         listc.append(c)
                         hnames.append(lnames)
                 else:
                     raise NotImplementedError,'unknown hrf model'
             elif typep=='block':
-                offsets =  onsets+paradigm[paradigm[:,0]==nc,2]
-                changes = np.hstack((onsets,offsets))
-                values = np.hstack((np.ones(nos), -np.ones(nos)))
+                offsets =  onsets + paradigm[paradigm[:,0]==nc,2]
+                changes = np.hstack((onsets, offsets))
+                values = np.hstack((values, -values))
 
                 if hrf_model=="Canonical":
-                    c = utils.events(changes,values, f=hrf.iglover)
+                    c = utils.events(changes, values, f=hrf.iglover)
                     listc.append(c)
                     hnames.append(names[nc])
                 elif hrf_model=="Canonical With Derivative":
