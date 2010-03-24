@@ -179,8 +179,13 @@ def compute_mask_files(input_filename, output_filename=None,
             else:
                 mean_volume += nim.get_data().squeeze()
         mean_volume /= float(len(input_filename))
+        
     del nim
-
+    if np.isnan(mean_volume).any():
+        tmp = mean_volume.copy()
+        tmp[np.isnan(tmp)] = 0
+        mean_volume = tmp
+        
     mask = compute_mask(mean_volume, first_volume, m, M, cc)
       
     if output_filename is not None:
