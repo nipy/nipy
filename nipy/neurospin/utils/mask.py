@@ -357,7 +357,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
                                             affine=affine,
                                             header=header,
                                          )
-        output_image.save(output_filename)
+        save(output_image, output_filename)
 
     return grp_mask>0
 

@@ -12,7 +12,7 @@ Author : Bertrand Thirion, 2008-2009
 
 import numpy as np
 import scipy.ndimage as nd
-
+from nipy.io.imageformats import save, Nifti1Image 
 
 # definition of the maxima at the group level
 pos = np.array([[6 ,  7],
@@ -248,7 +248,6 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20), mask=None,
         dataset.tofile(out_text_file)
 
     if out_image_file is not None:
-        from nipy.io.imageformats import save, Nifti1Image 
         save(Nifti1Image( dataset, np.eye(4)), out_image_file)
 
     return dataset
@@ -326,9 +325,9 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, dmtx=None,
         #make the mixture
         data[:,:,:,s] += noise
         data[:,:,:,s] += 100*mask_data
-        
-    if out_image_file is not None:
-        from nipy.io.imageformats import save, Nifti1Image 
-        save(Nifti1Image( data, affine), out_image_file)
 
-    return data
+    wim = Nifti1Image( data, affine)
+    if out_image_file is not None:
+        save(wim, out_image_file)
+
+    return wim
