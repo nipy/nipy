@@ -61,14 +61,14 @@ X, names = dmtx_light(frametimes, paradigm, drift_model='Cosine', hfcut=128,
 #######################################
 
 data_file = op.join(swd,'toto.nii')
-data = surrogate_4d_dataset(mask=mask, dmtx=X, seed=1,
+fmri_data = surrogate_4d_dataset(mask=mask, dmtX, seed=1,
                             out_image_file=data_file)
 
 ########################################
 # Perform a GLM
 ########################################
 
-Y = data[mask.get_data()>0, :]
+Y = fmri_data.get_data()[mask.get_data()>0, :]
 model = "ar1"
 method = "kalman"
 glm = GLM.glm()
@@ -81,8 +81,9 @@ my_contrast = glm.contrast(contrast)
 zvals = my_contrast.zscore()
 zmap = mask.get_data().astype(np.float)
 zmap[zmap>0] = zmap[zmap>0]*zvals
-contrast_path = op.join(swd,'zmap.nii')
-save(Nifti1Image(zmap, mask.get_affine()), contrast_path)
+contrast_image = Nifti1Image(zmap, mask.get_affine())
+contrast_path = op.join(swd, 'zmap.nii')
+save(contrast_image, contrast_path)
 
 
 ########################################
@@ -97,11 +98,11 @@ mroi.as_multiple_balls(positions, radii)
 mroi.make_image((op.join(swd, "roi.nii")))
 
 # roi time courses
-mroi.set_discrete_feature_from_image('signal', data_file)
+mroi.set_discrete_feature_from_image('signal', image=fmri_data)
 mroi.discrete_to_roi_features('signal')
 
 # roi-level contrast average
-mroi.set_discrete_feature_from_image('contrast', contrast_path)
+mroi.set_discrete_feature_from_image('contrast', image=contrast_image)
 bx = mroi.plot_discrete_feature('contrast')
 mroi.discrete_to_roi_features('contrast')
 
@@ -158,6 +159,7 @@ for k in range(mroi.k):
                 yerr=np.sqrt(var[:fir_order]))
     mp.errorbar(np.arange(fir_order), glm.beta[fir_order:2*fir_order,k],
                 yerr=np.sqrt(var[fir_order:2*fir_order]))
-    mp.xtitle('')
+    mp.legend(('condition c0','condition c1'))
+    mp.title('estimated hrf shape')
     mp.xlabel('time(scans)')
 mp.show()
