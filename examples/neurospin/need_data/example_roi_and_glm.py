@@ -25,7 +25,7 @@ from nipy.neurospin.utils.roi import MultipleROI
 #######################################
 
 # volume mask
-get_data_light.getIt()
+#get_data_light.getIt()
 mask_path = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
                                  'mask.nii.gz'))
 mask = load(mask_path)
@@ -102,9 +102,8 @@ mroi.discrete_to_roi_features('signal')
 
 # roi-level contrast average
 mroi.set_discrete_feature_from_image('contrast', contrast_path)
+bx = mroi.plot_discrete_feature('contrast')
 mroi.discrete_to_roi_features('contrast')
-ax = mroi.plot_roi_feature('contrast')
-ax.show()
 
 
 ########################################
@@ -150,8 +149,15 @@ X_fir,name_dir = dmtx_light(frametimes, paradigm, hrf_model='FIR',
                       fir_delays = tr*np.arange(fir_order), fir_duration=tr,
                       add_regs=motion, add_reg_names=add_reg_names)
 glm.fit(ROI_tc.T, X_fir, method=method, model=model)
-var = np.diag(glm.nvbeta[:,:,0])*glm.s2[0]
+
 mp.figure()
-mp.errorbar(np.arange(fir_order),glm.beta[:fir_order,0], yerr=np.sqrt(var[:fir_order]))
-mp.errorbar(np.arange(fir_order), glm.beta[fir_order:2*fir_order,0], yerr=np.sqrt(var[fir_order:2*fir_order]))
+for k in range(mroi.k):
+    mp.subplot(mroi.k, 1, k+1)
+    var = np.diag(glm.nvbeta[:,:,k])*glm.s2[k]
+    mp.errorbar(np.arange(fir_order), glm.beta[:fir_order,k],
+                yerr=np.sqrt(var[:fir_order]))
+    mp.errorbar(np.arange(fir_order), glm.beta[fir_order:2*fir_order,k],
+                yerr=np.sqrt(var[fir_order:2*fir_order]))
+    mp.xtitle('')
+    mp.xlabel('time(scans)')
 mp.show()
