@@ -134,12 +134,12 @@ static void _ngb26_vote(double* res,
  */
 
 #define TINY 1e-20
-void smooth_ppm(PyArrayObject* ppm, 
-		const PyArrayObject* ref,
-		const PyArrayObject* XYZ, 
-		double beta,
-                int copy,
-                int hard)
+void ve_step(PyArrayObject* ppm, 
+	     const PyArrayObject* ref,
+	     const PyArrayObject* XYZ, 
+	     double beta,
+	     int copy,
+	     int hard)
 
 {
   int npts, k, K, kk, x, y, z;
@@ -186,8 +186,6 @@ void smooth_ppm(PyArrayObject* ppm,
   
   /* Loop over points */ 
   iter = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)XYZ, &axis);
-
-  /* Loop over voxels */ 
   while(iter->index < iter->size) {
     
     /* Compute the average ppm in the neighborhood */ 
@@ -230,4 +228,62 @@ void smooth_ppm(PyArrayObject* ppm,
   Py_XDECREF(iter);
 
   return; 
+}
+
+
+
+double concensus(PyArrayObject* ppm, 
+		 const PyArrayObject* XYZ)
+
+{
+  int npts, k, K, kk, x, y, z;
+  double *p, *buf;
+  double res, tmp;  
+  PyArrayIterObject* iter;
+  int axis = 0; 
+  double* ppm_data;
+  size_t u3 = ppm->dimensions[3]; 
+  size_t u2 = ppm->dimensions[2]*u3; 
+  size_t u1 = ppm->dimensions[1]*u2;
+  const int* XYZ_data = (int*)XYZ->data;
+  size_t w1 = XYZ->dimensions[1], two_w1=2*w1;
+
+  /* Dimensions */
+  npts = PyArray_DIM((PyArrayObject*)XYZ, 1);
+  K = PyArray_DIM((PyArrayObject*)ppm, 3);
+
+  ppm_data = (double*)ppm->data;
+  
+  /* Allocate auxiliary vector */
+  p = (double*)calloc(K, sizeof(double)); 
+  
+  /* Loop over points */ 
+  iter = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)XYZ, &axis);
+  while(iter->index < iter->size) {
+    
+    /* Compute the average ppm in the neighborhood */ 
+    x = XYZ_data[iter->index];
+    y = XYZ_data[w1+iter->index];
+    z = XYZ_data[two_w1+iter->index]; 
+    _ngb26_vote(p, ppm, x, y, z, &_soft_vote); 
+    
+    /* Calculate the dot product <q,p> where q is the local
+       posterior */
+    tmp = 0.0; 
+    kk = x*u1 + y*u2 + z*u3; 
+    for (k=0, buf=p; k<K; k++, kk++, buf++)
+      tmp += ppm_data[kk]*(*buf);
+
+    /* Update overall energy */ 
+    res += tmp; 
+
+    /* Update iterator */ 
+    PyArray_ITER_NEXT(iter); 
+  }
+
+  /* Free memory */ 
+  free(p);
+  Py_XDECREF(iter);
+
+  return res; 
 }

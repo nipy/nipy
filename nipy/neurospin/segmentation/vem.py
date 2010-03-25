@@ -2,11 +2,18 @@ import numpy as np
 import pylab 
 import os
 
-from mrf_module import finalize_ve_step
+from mrf_module import _ve_step, _concensus
 
+TINY = 1e-30 
 
 
 # VM-step 
+def gauss_dist(x, mu, sigma): 
+    return np.exp(-.5*((x-mu)/sigma)**2)/sigma
+
+def laplace_dist(x, mu, sigma): 
+    return np.exp(-np.abs((x-mu)/sigma))/sigma
+
 def vm_step_gauss(ppm, data_, mask): 
     """
     ppm: ndarray (4d)
@@ -60,94 +67,108 @@ def vm_step_laplace(ppm, data_, mask):
 
 
 
-
-# VE-step 
-def ve_step(ppm, data_, mask, mu, sigma, prior_, ndist, alpha=1., beta=0.0, 
-            copy=False, hard=False): 
-    """
-    posterior = e_step(gaussians, prior_, data_, posterior=None)    
-
-    data_ are assumed masked. 
-    """
-    ntissues = ppm.shape[3]
-    ref = np.zeros([data_.size, ntissues])
-    if prior_ == None: 
-        prior_ = np.ones([1,ntissues])/float(ntissues)
-    for i in range(ntissues): 
-        ref[:,i] = prior_[:,i]*ndist(data_, mu[i], sigma[i])
-        
-    # Normalize reference probability map 
-    if beta == 0.0: 
-        ppm[mask] = (ref.T/ref.sum(1)).T
-
-    # Update and normalize reference probabibility map using
-    # neighborhood information (mean-field theory)
-    else: 
-        print('  .. MRF correction')
-        XYZ = np.array(mask, dtype='int') 
-        ppm = finalize_ve_step(ppm, ref, XYZ, beta, copy, hard)
-
-    return ppm
-        
-
 # VEM algorithm 
-def vem(ppm, data, mask, alphas=None, betas=None, niters=5, 
-        mu=None, sigma=None, noise='gauss', 
-        prior=True, copy=False, hard=False): 
-    """
-    data: ndarray (3d)
-    mask: 3-element tuple of 1d ndarrays (X,Y,Z)
-    
-    output: 
-    ppm: ndarray (4d)
-    """
+class VemTissueClassification(object): 
 
-    if betas == None: 
-        betas = np.zeros(niters)
-    else:
-        niters = len(betas)
-    if alphas == None: 
-        alphas = np.ones(niters)
-    else:
-        if not len(alphas) == niters:
+    def __init__(self, ppm, data, mask, noise='gauss', 
+                 prior=True, copy=False, hard=False): 
+        """
+        data: ndarray (3d)
+        mask: 3-element tuple of 1d ndarrays (X,Y,Z)
+        
+        output: 
+        ppm: ndarray (4d)
+        """
+        self.copy = copy
+        self.hard = hard
+        if noise == 'gauss': 
+            self.dist = gauss_dist
+            self._vm_step = vm_step_gauss
+        elif noise == 'laplace':
+            self.dist = laplace_dist
+            self._vm_step = vm_step_laplace
+        else:
+            raise ValueError('Unknown noise model')
+
+        # Mask data 
+        self.ppm = ppm 
+        self.ntissues = ppm.shape[3]
+        self.mask = mask 
+        self.data_ = data[mask]
+        if prior: 
+            self.prior_ = ppm[mask]
+        else: 
+            self.prior_ = np.ones([1,self.ntissues])/float(self.ntissues)
+        self.ref_ = np.zeros([self.data_.size, self.ntissues])
+
+    # VM-step: estimate parameters
+    def vm_step(self): 
+        """
+        Return (mu, sigma)
+        """
+        return self._vm_step(self.ppm, self.data_, self.mask)
+
+
+    # VE-step: update tissue probability map
+    def ve_step(self, mu, sigma, alpha=1., beta=0.0): 
+        """
+        VE-step
+        """
+        for i in range(self.ntissues): 
+            self.ref_[:,i] = self.prior_[:,i]**alpha
+            self.ref_[:,i] *= self.dist(self.data_, mu[i], sigma[i])
+
+        # Replace very small values for numerical stability 
+        self.ref_[:] = np.maximum(self.ref_, TINY) 
+        
+        # Normalize reference probability map 
+        if beta == 0.0: 
+            self.ppm[self.mask] = (self.ref_.T/self.ref_.sum(1)).T
+
+        # Update and normalize reference probabibility map using
+        # neighborhood information (mean-field theory)
+        else: 
+            print('  ... MRF correction')
+            self.ppm = _ve_step(self.ppm, self.ref_, 
+                                np.array(self.mask, dtype='int'), 
+                                beta, self.copy, self.hard)
+            
+
+    def __call__(self, mu=None, sigma=None, alphas=None, betas=None, niters=5): 
+
+        if betas == None: 
+            betas = np.zeros(niters)
+        else: 
+            niters = len(betas)
+        if alphas == None: 
+            alphas = np.ones(niters)
+
+        if not len(alphas) == niters: 
             raise ValueError('Inconsistent length for alphas and betas.')
 
-    if noise == 'gauss': 
-        vm_step = vm_step_gauss
-        def ndist(x, mu, sigma): 
-            return np.exp(-.5*((x-mu)/sigma)**2)/sigma
-    elif noise == 'laplace':
-        vm_step = vm_step_laplace
-        def ndist(x, mu, sigma): 
-            return np.exp(-np.abs((x-mu)/sigma))/sigma
-    else:
-        raise ValueError('Unknown noise model')
+        do_vm_step = (mu==None)
+        if not do_vm_step: 
+            mu = np.asarray(mu, dtype='double')
+            sigma = np.asarray(sigma, dtype='double')
+        
+        for i in range(niters):
+            print('VEM iter %d/%d' % (i+1, niters))
+            print('  VM-step...')
+            if do_vm_step: 
+                mu, sigma = self.vm_step()
+            print('  VE-step...')
+            self.ve_step(mu, sigma, alpha=alphas[i], beta=betas[i])
+            do_vm_step = True
 
-    # Mask data 
-    data_ = data[mask]
-    if prior: 
-        prior_ = ppm[mask]
-    else: 
-        prior_ = None
-    do_vm_step = (mu==None)
-    if not do_vm_step: 
-        mu = np.asarray(mu, dtype='double')
-        sigma = np.asarray(sigma, dtype='double')
-
-    for i in range(niters):
-        print('VEM iter %d/%d' % (i+1, niters))
-        print('  VM-step...')
-        if do_vm_step: 
-            mu, sigma = vm_step(ppm, data_, mask) 
-        print('  VE-step...')
-        ppm = ve_step(ppm, data_, mask, 
-                      mu, sigma, 
-                      prior_, 
-                      ndist, alpha=alphas[i], beta=betas[i],
-                      copy=copy, hard=hard) 
-        do_vm_step = True
-
-    return ppm, mu, sigma
+        return mu, sigma 
 
 
-
+    def free_energy(self, beta=0.0):
+        q_ = self.ppm[self.mask]
+        f = np.sum(q_*np.log(np.maximum(q_/self.ref_, TINY)))
+        if beta > 0.0: 
+            print('  ... Concensus correction')
+            fc = _concensus(self.ppm, np.array(self.mask, dtype='int'))
+            print fc
+            f = f - .5*beta*fc 
+        return f
