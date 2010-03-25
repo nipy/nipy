@@ -298,7 +298,6 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
                         
                         c = formula.define(lnames, utils.step_function(changes, lvalues))
 
-                        print changes, lvalues
                         listc.append(c)
                         hnames.append(lnames)
                 else:
