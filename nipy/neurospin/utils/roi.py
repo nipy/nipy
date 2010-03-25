@@ -766,22 +766,36 @@ class MultipleROI(object):
             ldata[k] = np.mean(data[dk[0],dk[1],dk[2]])
         self.set_roi_feature(fid,ldata)
 
-    def set_discrete_feature_from_image(self, fid, image_path):
+    def set_discrete_feature_from_image(self, fid, image_path=None,
+                                        image=None):
         """
         extract some discrete information from an image
 
         Parameters
         ----------
-        fid (string): feature id
-        image_path, string the image path
+        fid: string, feature id
+        image_path, string, optional
+            input image path
+        image, brfiti image path,
+            input image
+
+        Note that either image_path or image has to be provided
         """
-        self.check_header(image_path)
-        nim = load(image_path)  
+        if image_path==None and image==None:
+            raise ValueError, "one image needs to be provided"
+        if image_path is not None:
+            self.check_header(image_path)
+            nim = load(image_path)
+        if image is not None:
+            nim = image
         data = nim.get_data()
         ldata = []
         for k in range(self.k):
             dk = self.xyz[k].T
-            ldata.append(data[dk[0],dk[1],dk[2]])
+            ldk = data[dk[0],dk[1],dk[2]]
+            if np.size(ldk)==ldk.shape[0]:
+                ldk = np.reshape(ldk,(np.size(ldk),1))
+            ldata.append(ldk)
         self.set_discrete_feature(fid,ldata)
 
     def set_discrete_feature_from_index(self, fid, data):
@@ -891,6 +905,27 @@ class MultipleROI(object):
         ax = mp.figure()
         mp.bar(np.arange(self.k)+0.5,f)
         mp.title('ROI-level value for feature %s' %fid)
+        mp.xlabel('ROI index')
+        mp.xticks(np.arange(1, self.k+1),np.arange(1, self.k+1))
+        return ax
+
+    def plot_discrete_feature(self, fid):
+        """
+        boxplot the distribution of features within ROIs
+        Note that this assumes 1-d features
+
+        Parameters
+        ----------
+        fid the feature identifier
+        """
+        f = self.discrete_features[fid]
+        if f[0].shape[1]>1:
+            raise ValueError, "cannot plot multi-dimensional\
+            features for the moment"
+        import matplotlib.pylab as mp
+        ax = mp.figure()
+        mp.boxplot(f)
+        mp.title('ROI-level distribution for feature %s' %fid)
         mp.xlabel('ROI index')
         mp.xticks(np.arange(1, self.k+1),np.arange(1, self.k+1))
         return ax
