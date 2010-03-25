@@ -225,7 +225,7 @@ class VolumeImg(VolumeGrid):
     # VolumeImg interface
     #---------------------------------------------------------------------------
 
-    def xyz_ordered(self, resample=False):
+    def xyz_ordered(self, resample=False, copy=True):
         """ Returns an image with the affine diagonal and positive
             in the world space it is embedded in. 
 
@@ -236,6 +236,9 @@ class VolumeImg(VolumeGrid):
                 axis are only permuted. If it is impossible
                 to get xyz ordering by permuting the axis, a
                 'CompositionError' is raised.
+            copy: boolean, optional
+                If copy is True, a deep copy of the image (including the
+                data) is made.
         """
         A, b = to_matrix_vector(self.affine.copy())
         if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
@@ -251,7 +254,10 @@ class VolumeImg(VolumeGrid):
                                                     np.abs(R).argmax(axis=1)])
                 return self.as_volume_img(affine=target_affine)
         # Copy the image, we don't want to modify in place.
-        img = self.__copy__()
+        if copy:
+            img = self.__copy__()
+        else:
+            img = self
         axis_numbers = np.argmax(np.abs(A), axis=0)
         while not np.all(np.sort(axis_numbers) == axis_numbers):
             first_inversion = np.argmax(np.diff(axis_numbers)<0)
@@ -265,16 +271,22 @@ class VolumeImg(VolumeGrid):
         if pixdim[0] < 0:
             b[0] = b[0] + pixdim[0]*(data.shape[0] - 1)
             pixdim[0] = -pixdim[0]
-            data = data[::-1, ...]
+            slice1 = slice(None, None, -1)
+        else:
+            slice1 = slice(None, None, None)
         if pixdim[1] < 0:
             b[1] = b[1] + 1 + pixdim[1]*(data.shape[1] - 1)
             pixdim[1] = -pixdim[1]
-            data = data[:, ::-1, ...]
+            slice2 = slice(None, None, -1)
+        else:
+            slice2 = slice(None, None, None)
         if pixdim[2] < 0:
             b[2] = b[2] + 1 + pixdim[2]*(data.shape[2] - 1)
             pixdim[2] = -pixdim[2]
-            data = data[:, :, ::-1, ...]
-
+            slice3 = slice(None, None, -1)
+        else:
+            slice3 = slice(None, None, None)
+        data = data[slice1, slice2, slice3]
         img._data = data
         img.affine = from_matrix_vector(np.diag(pixdim), b)
         return img

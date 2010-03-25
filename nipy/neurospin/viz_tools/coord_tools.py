@@ -75,6 +75,9 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
         z: float
             the z coordinate in voxels.
     """
+    # To speed up computations, we work with partial views of the array,
+    # and keep track of the offset
+    offset = np.zeros(3) 
     # Deal with masked arrays:
     if hasattr(map, 'mask'):
         not_mask = np.logical_not(map.mask)
@@ -85,7 +88,11 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
         map = np.asarray(map)
     my_map = map.copy()
     if mask is not None:
+        slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
+        my_map = my_map[slice_x, slice_y, slice_z]
+        mask = mask[slice_x, slice_y, slice_z]
         my_map *= mask
+        offset += [slice_x.start, slice_y.start, slice_z.start]
     # Testing min and max is faster than np.all(my_map == 0)
     if (my_map.max() == 0) and (my_map.min() == 0):
         return .5*np.array(map.shape)
@@ -94,7 +101,11 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
                                     np.abs(my_map[my_map !=0]).ravel(), 80)
     mask = np.abs(my_map) > activation_threshold
     mask = largest_cc(mask)
+    slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
+    my_map = my_map[slice_x, slice_y, slice_z]
+    mask = mask[slice_x, slice_y, slice_z]
     my_map *= mask
+    offset += [slice_x.start, slice_y.start, slice_z.start]
     # For the second threshold, we use a mean, as it is much faster,
     # althought it is less robust
     second_threshold = np.abs(np.mean(my_map[mask]))
@@ -102,7 +113,7 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
     if second_mask.sum() > 50:
         my_map *= largest_cc(second_mask)
     cut_coords = ndimage.center_of_mass(my_map)
-    return cut_coords
+    return cut_coords + offset
 
 
 ################################################################################
