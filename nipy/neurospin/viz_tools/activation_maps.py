@@ -55,7 +55,6 @@ def _fast_abs_percentile(map):
     return map[.8*nb]
 
 
-@profile
 def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     figure=None, axes=None, title=None, threshold=None,
                     annotate=True, draw_cross=True, 
