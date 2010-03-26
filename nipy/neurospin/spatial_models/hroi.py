@@ -12,7 +12,7 @@ import numpy as np
 import nipy.neurospin.graph.graph as fg
 
 from nipy.neurospin.graph.forest import Forest
-from nipy.neurospin.utils.roi import MultipleROI
+from nipy.neurospin.spatial_models.roi import MultipleROI
 
 
 
@@ -31,7 +31,7 @@ def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty, smin = 0)
          coordinate-defining affine transformation
     shape=None, tuple of length 3 defining the size of the grid
         implicit to the discrete ROI definition      
-    xyz: array of shape (Field.V,3) that represents grid coordinates
+    xyz: array of shape (Field.V, 3) that represents grid coordinates
          of the object
     th is a threshold so that only values above th are considered
        by default, th = -infty (numpy)

@@ -99,7 +99,7 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
     if activation_threshold is None:
         activation_threshold = stats.scoreatpercentile(
                                     np.abs(my_map[my_map !=0]).ravel(), 80)
-    mask = np.abs(my_map) > activation_threshold
+    mask = np.abs(my_map) > activation_threshold-1.e-15
     mask = largest_cc(mask)
     slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
     my_map = my_map[slice_x, slice_y, slice_z]

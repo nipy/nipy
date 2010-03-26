@@ -1,7 +1,7 @@
 import numpy as np
 import nose
 
-from ..coord_tools import coord_transform, find_cut_coords
+from nipy.neurospin.viz_tools.coord_tools import coord_transform, find_cut_coords
 
 def test_coord_transform_trivial():
     sform = np.eye(4)
