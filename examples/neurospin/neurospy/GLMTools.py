@@ -8,14 +8,13 @@ Author : Lise Favre, Bertrand Thirion, 2008-2009
 import numpy as np
 import commands
 import os
-
 from configobj import ConfigObj
 
 from nipy.io.imageformats import load, save, Nifti1Image 
-
+from nipy.neurospin.utils.mask import compute_mask_files
 
 import Results
-from nipy.neurospin.utils.mask import compute_mask_files
+
 
 # ----------------------------------------------
 # -------- IO functions ------------------------
@@ -27,7 +26,8 @@ def load_image(image_path, mask_path=None ):
 
     Parameters
     ----------
-    image_path string or list of strings that represent the data of interest
+    image_path string or list of strings 
+               that yields the data of interest
     mask_path=None: string that yields the mask path
 
     Returns
@@ -39,7 +39,8 @@ def load_image(image_path, mask_path=None ):
     # fixme : do some check
     if mask_path !=None:
        rmask = load(mask_path)
-       mask = rmask.get_data()
+       shape = rmask.get_shape()[:3]
+       mask = np.reshape(rmask.get_data(),shape)
     else:
         mask = None
 
@@ -51,17 +52,18 @@ def load_image(image_path, mask_path=None ):
 
     if hasattr(image_path, '__iter__'):
        for im in image_path:
-           temp = load(im).get_data()     
            if mask != None:
-               temp = load(im).get_data()[mask,:] 
+               temp = np.reshape(load(im).get_data(),shape)[mask>0,:]
+               
            else:
-                temp = load(im).get_data()  
+                temp = np.reshape(load(im).get_data(),shape) 
            image_data.append(temp)
+       image_data = np.array(image_data).T
     else:
          image_data = load(image_path).get_data()
          if mask != None:
               image_data = image_data[mask>0,:]
-                
+    
     return image_data
 
 def save_masked_volume(data, mask_url, path, descrip=None):
@@ -157,16 +159,15 @@ def save_all_images(contrast, dim, mask_url, kargs):
 
     # writing the associated contrast structure
     # fixme : breaks with F contrasts !
-    if contrast.type == "t":    
-        save_volume(shape, con_file, affine, mask_arr,
-                    contrast.effect)
- 
+    if contrast.type == "t":
+        save_volume(shape, con_file, affine, mask_arr, contrast.effect)
+         
     # writing the results as an html page
     if kargs.has_key("method"):
         method = kargs["method"]
     else:
         method = 'fpr'
-
+   
     if kargs.has_key("threshold"):
         threshold = kargs["threshold"]
     else:
@@ -176,24 +177,29 @@ def save_all_images(contrast, dim, mask_url, kargs):
         cluster = kargs["cluster"]
     else:
         cluster = 0
+
     Results.ComputeResultsContents(z_file, mask_url, html_file,
                                    threshold=threshold, method=method,
                                    cluster=cluster)
 
+
 def save_all(contrast, ContrastId, dim, mask_url, kargs):
     """
-    Save all the outputs of a GLM analysis + contrast definition
+    Save all the images related to one contrast
     
     Parameters
     ----------
-    contrast a structure describing the values related to the computed contrast 
+    contrast a structure describing 
+             the values related to the computed contrast 
     ContrastId, string, the contrast identifier
     dim the dimension of the contrast
     mask_url path of the mask image related to the data
     kargs, should have the key 'paths', 
            that yield the paths where everything should be written 
-           optionally it can also have the keys 'method', 'threshold' and 'cluster'
-           that are used to define the parameters for vizualization of the html page. 
+           optionally it can also have the keys 
+           'method', 'threshold' and 'cluster'
+           that are used to define the parameters for vizualization 
+           of the html page. 
         
     fixme : handle the case mask=None
     """
@@ -220,7 +226,8 @@ def save_all(contrast, ContrastId, dim, mask_url, kargs):
     results = "contrast definition"
     con_file = os.sep.join((contrasts_path, "%s_%s.nii" %
         (str(ContrastId), paths[results])))
-    html_file = os.sep.join((contrasts_path, "%s_%s.nii" % (str(ContrastId), 
+    results="HTML results"
+    html_file = os.sep.join((contrasts_path, "%s_%s.html" % (str(ContrastId), 
               paths[results])))
     kargs["z_file"] = z_file
     kargs["t_file"] = t_file
@@ -229,59 +236,7 @@ def save_all(contrast, ContrastId, dim, mask_url, kargs):
     kargs["html_file"] = html_file
 
     save_all_images(contrast, dim, mask_url, kargs)
-    """
-    mask = load(mask_url)
-    mask_arr = mask.get_data()
-    affine = mask.get_affine()
-    shape = mask.get_shape()    
-   
-    # load the values
-    t = contrast.stat()
-    z = contrast.zscore()
-
-    # saving the Z statistics map
-    save_volume(shape, z_file, affine, mask_arr, z, results)
-    
-    # Saving the t/F statistics map
-    save_volume(shape, t_file, affine, mask_arr, t, results)
-    
-    if int(dim) != 1:
-        shape = (shape[0], shape[1], shape[2],int(dim**2))
-        contrast.variance = contrast.variance.reshape(int(dim)**2, -1)
-
-    ## saving the associated variance map
-    # fixme : breaks with F contrasts !
-    if contrast.type == "t":
-        save_volume(shape, res_file, affine, mask_arr,
-                    contrast.variance)
-    if int(dim) != 1:
-        shape = (shape[0], shape[1], shape[2], int(dim))
-
-    # writing the associated contrast structure
-    # fixme : breaks with F contrasts !
-    if contrast.type == "t":    
-        save_volume(shape, con_file, affine, mask_arr,
-                    contrast.effect)
  
-    # writing the results as an html page
-    if kargs.has_key("method"):
-        method = kargs["method"]
-    else:
-        method = 'fpr'
-
-    if kargs.has_key("threshold"):
-        threshold = kargs["threshold"]
-    else:
-        threshold = 0.001
-
-    if kargs.has_key("cluster"):
-        cluster = kargs["cluster"]
-    else:
-        cluster = 0
-    Results.ComputeResultsContents(z_file, mask_url, html_file,
-                                   threshold=threshold, method=method,
-                                   cluster=cluster)
-    """
 
 def ComputeMask(fmriFiles, outputFile, infT=0.4, supT=0.9):
     """
@@ -319,26 +274,41 @@ def DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
     DmtxParam
     
     """
+    
     hrfType = DmtxParam["hrfType"]
     drift = DmtxParam["drift"]
     poly_order = DmtxParam["poly_order"]
     cos_FreqCut = DmtxParam["cos_FreqCut"] 
-    FIR_order = DmtxParam["FIR_order"]
-    FIR_length  = DmtxParam["FIR_length"]
-    driftMatrix = DmtxParam["drift_matrix"]
-    model = 'default'# this is a brainvisa thing for misc info 
+    FIR_delays = DmtxParam["FIR_delays"]
+    FIR_duration  = DmtxParam["FIR_duration"]
+    
+    model = 'default'
+
+    # set RegMatrix
+    #regMatrix = DmtxParam["drift_matrix"]
+    regMatrix = None 
+    if DmtxParam.has_key('reg_matrix'):
+        regMatrix = DmtxParam["reg_matrix"]
+
+    # set RegNames
+    regNames = None
+    if DmtxParam.has_key('reg_names'):
+        regNames = DmtxParam["reg_names"]
+
     _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
-                  session, hrfType, drift, driftMatrix, poly_order,
-                  cos_FreqCut, FIR_order, FIR_length, model)
+                  session, hrfType, drift, regMatrix, poly_order,
+                  cos_FreqCut, FIR_delays, FIR_duration, model, regNames)
 
 
 
 def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
                   session, hrfType="Canonical", drift="Blank",
-                  driftMatrix=None, poly_order=2, cos_FreqCut=128,
-                  FIR_order=1, FIR_length=1, model="default", verbose=0):
+                  regMatrix=None, poly_order=2, cos_FreqCut=128,
+                  FIR_delays=[0], FIR_duration=1., model="default",
+                  regNames=None, verbose=0):
     """
     Base function to define design matrices
+    fixme : control that the FIR model works
     """
     import DesignMatrix as dm
    
@@ -346,33 +316,14 @@ def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
     design.load()
     design.timing(tr)
  
-    """
-    fixme : set the FIR model
-    # set the hrf
-    if hrf == "Canonical":
-        hrf = dm.hrf.glover
-    elif hrf == "Canonical With Derivative":
-        hrf = dm.hrf.glover_deriv
-    elif hrf == "FIR Model":
-        design.compute_fir_design(drift = pdrift, name = session,
-                                  o = FIR_order, l = FIR_length)
-        output = DF(colnames=design.names, data=design._design)
-        output.write(outputFile)
-        return 0
-    else:
-        print "Not HRF model passed. Aborting process."
-        return
-    """
-        
     # fixme : append had-defined regressors (e.g. motion)
     # set the drift terms
     design.set_drift(drift,  poly_order, cos_FreqCut)
 
     # set the condition-related regressors
-    # fixme : set the FIR model
-    design.set_conditions(hrfType)
-    
-    _design = design.compute_design(session,verbose=1)
+    design.set_conditions(hrfType, FIR_delays, FIR_duration)
+
+    _design = design.compute_design(regMatrix, regNames, session, verbose)
     
     if _design != None:
         design.save_csv(outputFile)
@@ -476,7 +427,7 @@ def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
             if verbose: print key,value
             if key != "Type" and key != "Dimension":
                 session = "_".join(key.split("_")[:-1])
-                if not designs.has_key(session):
+                if verbose and (not designs.has_key(session)):
                     print "Loading session : %s" % session
                 designs[session] = GLM.load(glms[session]["GlmDumpFile"])
 
@@ -510,134 +461,19 @@ def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
             mask_url = None
 
         if kargs.has_key('CompletePaths'):
-            cpp = kargs['CompletePaths']
-            print cpp, contrast
-            save_all_images(res_contrast, contrast_dimension, mask_url, cpp[contrast])
+           # just write the results at the provided paths, 
+           # assuming they are coorect
+            cpp = kargs['CompletePaths'][contrast]
+            for k in cpp.keys():
+                kargs[k] = cpp[k]
+            save_all_images(res_contrast, contrast_dimension, mask_url, kargs)
+                                          
         else:
-            save_all(res_contrast, ContrastId, contrast_dimension, mask_url, kargs)
+            # partially recompute the paths
+            save_all(res_contrast, ContrastId, contrast_dimension, mask_url, 
+                     kargs)
         misc[model]["con_dofs"][contrast] = res_contrast.dof
     misc["Contrast Save Mode"] = save_mode
     misc.write()
 
 
-# -----------------------------------------------------------
-# --- functions that depend on VBA --------------------------
-# -----------------------------------------------------------
-
-def GLMFit_(file, designMatrix, mask, outputVBA, outputCon,
-           fit="Kalman_AR1"):
-    """
-    Call the GLM Fit function with apropriate arguments
-
-    Parameters
-    ----------
-    file
-    designmatrix
-    mask
-    outputVBA
-    outputCon
-    fit='Kalman_AR1'
-    
-    Returns
-    -------
-    glm, a vba.VBA instance representing the GLM
-    
-    """
-    from vba import VBA
-    from dataFrame import DF
-    if fit == "Kalman_AR1":
-        model = "ar1"
-        method = "kalman"
-    elif fit == "Ordinary Least Squares":
-        method = "ols"
-        model="spherical"
-    elif fit == "Kalman":
-        method = "kalman"
-        model = "spherical"
-    
-    s = dict()
-    s["GlmDumpFile"] = outputVBA
-    s["ConfigFilePath"] = outputCon
-    s["DesignFilePath"] = designMatrix
-       
-    
-    tab = DF.read(designMatrix)
-        
-    glm = VBA(tab, mask_url=mask, create_design_mat = False, mri_names = file, 
-                   model = model, method = method)
-    glm.fit()
-    glm.save(s)
-    return glm
-
-def ComputeContrasts_(contrastFile, miscFile, glms, save_mode="Contrast Name", 
-                                   model = "default", **kargs):
-    """
-    Contrast computation utility    
-    
-    Parameters
-    ----------
-    contrastFile
-    miscFile
-    glms
-    save_mode="Contrast Name"
-    model="default"
-    """
-    from vba import VBA
-    verbose = 0 # fixme: put ine the kwargs
-    misc = ConfigObj(miscFile)
-    if not misc.has_key(model):
-        misc[model] = {}
-
-    if not misc[model].has_key("con_dofs"):
-        misc[model]["con_dofs"] = {}
-
-    contrasts = ConfigObj(contrastFile)
-    contrasts_names = contrasts["contrast"]
-    designs = {}
-    for i, contrast in enumerate(contrasts_names):
-        contrast_type = contrasts[contrast]["Type"]
-        contrast_dimension = contrasts[contrast]["Dimension"]
-        final_contrast = []
-        k = i + 1
-        multicon = dict()
-        if save_mode == "Contrast Name":
-            ContrastId = contrast
-        elif save_mode == "Contrast Number":
-            ContrastId = "%04i" % k
-       
-
-        for key, value in contrasts[contrast].items():
-            if verbose: print key,value
-            if key != "Type" and key != "Dimension":
-                session = "_".join(key.split("_")[:-1])
-                if not designs.has_key(session):
-                    print "Loading session : %s" % session
-                designs[session] = VBA(glms[session])
-
-                bv=[int(j) != 0 for j in value]
-                if contrast_type == "t" and sum(bv)>0:
-                    designs[session].contrast([int(i) for i in value])
-                    final_contrast.append(designs[session]._con)
-
-                if contrast_type == "F":
-                    if not multicon.has_key(session):
-                        multicon[session] = np.array(bv)
-                    else:
-                        multicon[session] = np.vstack((multicon[session], bv))
-        if contrast_type == "F":
-            for key, value in multicon.items():
-                if sum([j != 0 for j in value.reshape(-1)]) != 0:
-                    designs[key].contrast(value)
-                    final_contrast.append(designs[key]._con)
-
-        design = designs[session]
-        res_contrast = final_contrast[0]
-        for c in final_contrast[1:]:
-            res_contrast = res_contrast + c
-            res_contrast.type = contrast_type
-
-        save_all(res_contrast, ContrastId, contrast_dimension,
-                     design.mask_url, kargs)
-        misc[model]["con_dofs"][contrast] = res_contrast.dof
-    misc["Contrast Save Mode"] = save_mode
-    misc.write()

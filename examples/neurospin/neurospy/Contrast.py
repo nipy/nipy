@@ -65,7 +65,7 @@ class ContrastList():
         nderiv = 1
         if verbose: print misc[model]["regressors_%s" % sessions[0]]
         for cond in misc[model]["regressors_%s" % sessions[0]]:
-            if cond[:6] == "(drift":
+            if (cond[:5] == "drift") or (cond == "constant"):
                 ndrift += 1
             elif cond[-6:] == "_deriv":
                 nderiv = 2
@@ -90,9 +90,11 @@ class ContrastList():
         contrast = ConfigObj(contrast_file)
         contrast["contrast"] = []
         for key in self.dic.keys():
-            if key[:7] == "(drift:" and key[7:-1].isdigit() and key[-1] == ")":
+            if key[:5] == "drift":
                 continue
             if key[-6:] == "_deriv":
+                continue
+            if key[-6:] == "constant":
                 continue
             dim = 0
             for v in self.dic[key].values():
