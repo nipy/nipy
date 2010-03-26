@@ -74,11 +74,11 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     
     # Read the referential information
     nim = load(mask_images[0])
-    ref_dim = nim.get_shape()
+    ref_dim = nim.get_shape()[:3]
     affine = nim.get_affine()
     
     # Read the masks and compute the "intersection"
-    mask = intersect_masks(mask_images)
+    mask = np.reshape(intersect_masks(mask_images), ref_dim)
     xyz = np.array(np.where(mask)).T
     nvox = xyz.shape[0]
 
@@ -95,7 +95,7 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     lbeta = []
     for s in range(nsubj):
         rbeta = load(betas[s])
-        beta = rbeta.get_data()
+        beta = np.reshape(rbeta.get_data(), ref_dim)
         beta = beta[mask]
         lbeta.append(beta)
     lbeta = np.array(lbeta).T
