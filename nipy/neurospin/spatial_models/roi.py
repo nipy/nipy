@@ -700,7 +700,7 @@ class MultipleROI(object):
         data = -np.ones(self.shape,np.int)
         for k in range(self.k):
             dk = self.xyz[k].T
-            data[dk[0],dk[1],dk[2]] = k
+            data[dk[0], dk[1], dk[2]] = k
 
         wim =  Nifti1Image(data, self.affine)
         header = wim.get_header()

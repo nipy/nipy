@@ -11,7 +11,7 @@ import os
 import matplotlib.pylab as mp
 from nipy.io.imageformats import load, save, Nifti1Image 
 
-from nipy.neurospin.utils.roi import DiscreteROI, MultipleROI
+from nipy.neurospin.spatial_models.roi import DiscreteROI, MultipleROI
 import get_data_light
 import tempfile
 get_data_light.getIt()

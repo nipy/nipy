@@ -18,7 +18,7 @@ from nipy.neurospin.utils.design_matrix import dmtx_light
 from nipy.neurospin.utils.simul_multisubject_fmri_dataset import surrogate_4d_dataset
 import get_data_light
 import nipy.neurospin.glm as GLM
-from nipy.neurospin.utils.roi import MultipleROI
+from nipy.neurospin.spatial_models.roi import MultipleROI
 
 #######################################
 # Simulation parameters

@@ -8,7 +8,7 @@ in ~/.nipy/tests/data
 import numpy as np
 import os
 import tempfile
-from nipy.neurospin.utils.roi import DiscreteROI, MultipleROI
+from nipy.neurospin.spatial_models.roi import DiscreteROI, MultipleROI
 from nipy.testing import anatfile
 from nipy.io.imageformats import load
 RefImage = anatfile
