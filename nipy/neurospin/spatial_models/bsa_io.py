@@ -12,9 +12,8 @@ import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.graph.field as ff
 
 
-
 def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
-                   smin=0, swd="/tmp/", method='simple', subj_id=None,
+                   smin=0, swd=None, method='simple', subj_id=None,
                    nbeta='default', densPath=None, crPath=None, verbose=0):
     """
     main function for  performing bsa on a set of images.
@@ -36,7 +35,8 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
              test = p(representativity>ths)>thq
     smin=0: minimal size (in voxels) of the extracted blobs
             smaller blobs are merged into larger ones
-    swd='/tmp': writedir
+    swd: string, optional
+        if not None, output directory
     method='simple': applied region detection method; to be chose among
                      'simple', 'dev','ipmi'
     subj_id=None: list of strings, identifiers of the subjects.
@@ -74,11 +74,11 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     
     # Read the referential information
     nim = load(mask_images[0])
-    ref_dim = nim.get_shape()
+    ref_dim = nim.get_shape()[:3]
     affine = nim.get_affine()
     
     # Read the masks and compute the "intersection"
-    mask = intersect_masks(mask_images)
+    mask = np.reshape(intersect_masks(mask_images), ref_dim)
     xyz = np.array(np.where(mask)).T
     nvox = xyz.shape[0]
 
@@ -95,7 +95,7 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     lbeta = []
     for s in range(nsubj):
         rbeta = load(betas[s])
-        beta = rbeta.get_data()
+        beta = np.reshape(rbeta.get_data(), ref_dim)
         beta = beta[mask]
         lbeta.append(beta)
     lbeta = np.array(lbeta).T
@@ -153,11 +153,14 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         default_idx = 0
     else:
         default_idx = AF.k+2
-    
+
+    if crPath==None and swd==None:
+        return AF, BF
+
     if crPath==None:
         # write a 3D image for group-level labels
-        crPath = op.join(swd,"CR_%s.nii"%nbeta)
-        Label = -2*np.ones(ref_dim,'int16')
+        crPath = op.join(swd, "CR_%s.nii"%nbeta)
+        Label = -2*np.ones(ref_dim, 'int16')
         Label[mask] = crmap
         wim = Nifti1Image (Label, affine)
         wim.get_header()['descrip'] = 'group Level labels from bsa procedure'
@@ -166,14 +169,14 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         #write 3d images for the subjects
         for s in range(nsubj):
             LabelImage = op.join(swd,"AR_s%s_%s.nii"%(subj_id[s],nbeta))
-            Label = -2*np.ones(ref_dim,'int16')
+            Label = -2*np.ones(ref_dim, 'int16')
             Label[mask]=-1
             if BF[s]!=None:
                 nls = BF[s].get_roi_feature('label')
                 nls[nls==-1] = default_idx
                 for k in range(BF[s].k):
                     xyzk = BF[s].xyz[k].T 
-                    Label[xyzk[0],xyzk[1],xyzk[2]] =  nls[k]
+                    Label[xyzk[0], xyzk[1], xyzk[2]] =  nls[k]
         
             wim = Nifti1Image (Label, affine)
             wim.get_header()['descrip'] = 'Individual label image from bsa procedure'
@@ -190,7 +193,7 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
                 nls[nls==-1] = default_idx
                 for k in range(BF[s].k):
                     xyzk = BF[s].xyz[k].T 
-                    Label[xyzk[0],xyzk[1],xyzk[2],s+1] =  nls[k]
+                    Label[xyzk[0], xyzk[1], xyzk[2], s+1] =  nls[k]
         wim = Nifti1Image (Label, affine)
         wim.get_header()['descrip'] = 'group Level and individual labels\
             from bsa procedure'
@@ -198,119 +201,3 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         
     return AF,BF
 
-def make_bsa_image_with_output_paths(mask_images, betas, denspath, crpath,
-                                     theta=3., dmax= 5., ths=0, thq=0.5, smin=0,
-                                     method='simple'):
-    """
-    Deprecated : will be removed soon
-
-    idem make_bsa_image but paths of the output are set explictly.
-    Moreover the segmented regions are written in one single image 
-    """
-    # Sanity check
-    if len(mask_images)!=len(betas):
-        print len(mask_images),len(betas)        
-        raise ValueError,"the number of masks and activation images\
-        should be the same"
-    nsubj = len(mask_images)
-        
-    # Read the referential information
-    nim = load(mask_images[0])
-    ref_dim = nim.get_shape()
-    affine = nim.get_affine()
-    
-    # Read the masks and compute the "intersection"
-    mask = intersect_masks(mask_images)
-    xyz = np.array(np.where(mask)).T
-    nvox = xyz.shape[0]
-
-    # create the field strcture that encodes image topology
-    Fbeta = ff.Field(nvox)
-    Fbeta.from_3d_grid(xyz.astype(np.int),18)
-
-    # Get  coordinates in mm
-    xyz = np.hstack((xyz,np.ones((nvox,1))))
-    coord = np.dot(xyz,affine.T)[:,:3]
-    xyz = xyz.astype(np.int)
-    
-    # read the functional images
-    lbeta = []
-    for s in range(nsubj):
-        rbeta = load(betas[s])
-        beta = rbeta.get_data()
-        beta = beta[mask]
-        lbeta.append(beta)
-    lbeta = np.array(lbeta).T
-    lbeta = np.reshape(lbeta,(nvox,nsubj))
-
-    # launch the method
-    g0 = 1.0/(np.absolute(np.linalg.det(affine))*nvox)
-    bdensity = 1
-    crmap = np.zeros(nvox)
-    p = np.zeros(nvox)
-    AF = None
-    BF = [None for s in range(nsubj)]
-
-    if method=='ipmi':
-        crmap,AF,BF,p = bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, 
-                        xyz[:,:3], affine, ref_dim, thq, smin, ths,
-                        theta, g0, bdensity)
-    if method=='dev':
-        crmap,AF,BF,p = bsa.compute_BSA_dev  (Fbeta, lbeta, coord, 
-                        dmax, xyz[:,:3], affine, ref_dim, 
-                        thq, smin,ths, theta, g0, bdensity,verbose=1)
-    if method=='simple':
-        crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta, lbeta, coord, dmax, 
-                        xyz[:,:3], affine, ref_dim, 
-                        thq, smin, ths, theta, g0, verbose=0)
-        
-    if method=='simple_quick':
-        crmap,AF,BF,co_clust = bsa.compute_BSA_simple_quick (Fbeta, lbeta, coord, dmax, 
-                        xyz[:,:3], affine, ref_dim, 
-                        thq, smin, ths, theta, g0, verbose=0)
-        density = np.zeros(nvox)
-        crmap = AF.map_label(coord,0.95,dmax)
-
-    if method=='loo':
-        crmap,AF,BF,p = bsa.compute_BSA_loo (Fbeta, lbeta, coord, dmax, 
-                        xyz[:,:3], affine, ref_dim, 
-                        thq, smin,ths, theta, g0, verbose=0)
-    
-                    
-    # Write the results
-    Label = -2*np.ones(ref_dim,'int16')
-    Label[mask] = crmap.astype('i')
-    wim = Nifti1Image (Label, affine)
-    wim.get_header()['descrip'] = 'group Level labels from bsa procedure'
-    save(wim, crpath)
-
-    density = np.zeros(ref_dim)
-    density[mask] = p
-    wim = Nifti1Image (density, affine)
-    wim.get_header()['descrip'] = 'group-level spatial density of active regions'
-    save(wim, denspath)
-
-    if AF==None:
-        default_idx = 0
-    else:
-        default_idx = AF.k+2
-    
-    # write everything in one image
-    wdim = (ref_dim[0], ref_dim[1], ref_dim[2], nsubj+1)
-    Label = -2*np.ones(wdim,'int16')
-    Label[mask,0] = crmap.astype(np.int)
-    for s in range(nsubj):
-        Label[mask,s+1]=-1
-        if BF[s]!=None:
-            nls = BF[s].get_roi_feature('label')
-            nls[nls==-1] = default_idx
-            for k in range(BF[s].k):
-                xyzk = BF[s].xyz[k].T 
-                Label[xyzk[0],xyzk[1],xyzk[2],s+1] =  nls[k]
-    wim = Nifti1Image (Label, affine)
-    wim.get_header()['descrip'] = 'group Level and individual labels\
-        from bsa procedure'
-    save(wim, crpath)
-
-    return AF,BF, maxc
-    

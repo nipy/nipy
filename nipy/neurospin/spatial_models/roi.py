@@ -700,7 +700,7 @@ class MultipleROI(object):
         data = -np.ones(self.shape,np.int)
         for k in range(self.k):
             dk = self.xyz[k].T
-            data[dk[0],dk[1],dk[2]] = k
+            data[dk[0], dk[1], dk[2]] = k
 
         wim =  Nifti1Image(data, self.affine)
         header = wim.get_header()
@@ -766,17 +766,28 @@ class MultipleROI(object):
             ldata[k] = np.mean(data[dk[0],dk[1],dk[2]])
         self.set_roi_feature(fid,ldata)
 
-    def set_discrete_feature_from_image(self, fid, image_path):
+    def set_discrete_feature_from_image(self, fid, image_path=None,
+                                        image=None):
         """
         extract some discrete information from an image
 
         Parameters
         ----------
-        fid (string): feature id
-        image_path, string the image path
+        fid: string, feature id
+        image_path, string, optional
+            input image path
+        image, brfiti image path,
+            input image
+
+        Note that either image_path or image has to be provided
         """
-        self.check_header(image_path)
-        nim = load(image_path)  
+        if image_path==None and image==None:
+            raise ValueError, "one image needs to be provided"
+        if image_path is not None:
+            self.check_header(image_path)
+            nim = load(image_path)
+        if image is not None:
+            nim = image
         data = nim.get_data()
         ldata = []
         for k in range(self.k):

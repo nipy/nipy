@@ -18,14 +18,14 @@ from nipy.neurospin.utils.design_matrix import dmtx_light
 from nipy.neurospin.utils.simul_multisubject_fmri_dataset import surrogate_4d_dataset
 import get_data_light
 import nipy.neurospin.glm as GLM
-from nipy.neurospin.utils.roi import MultipleROI
+from nipy.neurospin.spatial_models.roi import MultipleROI
 
 #######################################
 # Simulation parameters
 #######################################
 
 # volume mask
-#get_data_light.getIt()
+get_data_light.getIt()
 mask_path = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
                                  'mask.nii.gz'))
 mask = load(mask_path)
@@ -60,29 +60,37 @@ X, names = dmtx_light(frametimes, paradigm, drift_model='Cosine', hfcut=128,
 # Get the FMRI data
 #######################################
 
-data_file = op.join(swd,'toto.nii')
-data = surrogate_4d_dataset(mask=mask, dmtx=X, seed=1,
-                            out_image_file=data_file)
+fmri_data = surrogate_4d_dataset(mask=mask, dmtx=X, seed=1)
+
+# if you want to save it as an image
+# data_file = op.join(swd,'fmri_data.nii')
+# save(fmri_data, data_file)
 
 ########################################
-# Perform a GLM
+# Perform a GLM analysis
 ########################################
 
-Y = data[mask.get_data()>0, :]
+# GLM fit
+Y = fmri_data.get_data()[mask.get_data()>0, :]
 model = "ar1"
 method = "kalman"
 glm = GLM.glm()
 glm.fit(Y.T, X, method=method, model=model)
 
-# compute the constrast image related to [1 -1 0 ..]
+# specifiy the contrast [1 -1 0 ..]
 contrast = np.zeros(X.shape[1])
-contrast[0] = 1; contrast[1] = -1
+contrast[0] = 1
+contrast[1] = -1
 my_contrast = glm.contrast(contrast)
+
+# compute the constrast image related to it
 zvals = my_contrast.zscore()
 zmap = mask.get_data().astype(np.float)
 zmap[zmap>0] = zmap[zmap>0]*zvals
-contrast_path = op.join(swd,'zmap.nii')
-save(Nifti1Image(zmap, mask.get_affine()), contrast_path)
+contrast_image = Nifti1Image(zmap, mask.get_affine())
+# if you want to save the contrast as an image
+# contrast_path = op.join(swd, 'zmap.nii')
+# save(contrast_image, contrast_path)
 
 
 ########################################
@@ -94,14 +102,18 @@ positions = np.array([[60, -30, 5],[50, 27, 5]])
 radii = np.array([8,6])
 mroi = MultipleROI( affine=mask.get_affine(), shape=mask.get_shape())
 mroi.as_multiple_balls(positions, radii)
-mroi.make_image((op.join(swd, "roi.nii")))
 
-# roi time courses
-mroi.set_discrete_feature_from_image('signal', data_file)
+# to save an image of the ROIs
+# mroi.make_image((op.join(swd, "roi.nii")))
+
+# exact the time courses with ROIs
+mroi.set_discrete_feature_from_image('signal', image=fmri_data)
+
+# ROI average time courses
 mroi.discrete_to_roi_features('signal')
 
 # roi-level contrast average
-mroi.set_discrete_feature_from_image('contrast', contrast_path)
+mroi.set_discrete_feature_from_image('contrast', image=contrast_image)
 bx = mroi.plot_discrete_feature('contrast')
 mroi.discrete_to_roi_features('contrast')
 
@@ -130,6 +142,8 @@ res = ROI_tc -np.dot(glm.beta.T, X.T)
 proj = np.eye(nreg)
 proj[2:] = 0
 fit = np.dot(np.dot(glm.beta.T,proj),X.T)
+
+# plot it
 mp.figure()
 for k in range(mroi.k):
     mp.subplot(mroi.k, 1, k+1)
@@ -158,6 +172,7 @@ for k in range(mroi.k):
                 yerr=np.sqrt(var[:fir_order]))
     mp.errorbar(np.arange(fir_order), glm.beta[fir_order:2*fir_order,k],
                 yerr=np.sqrt(var[fir_order:2*fir_order]))
-    mp.xtitle('')
+    mp.legend(('condition c0','condition c1'))
+    mp.title('estimated hrf shape')
     mp.xlabel('time(scans)')
 mp.show()
