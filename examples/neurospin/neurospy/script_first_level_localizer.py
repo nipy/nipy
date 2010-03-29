@@ -9,20 +9,20 @@ from configobj import ConfigObj
 from os.path import join
 import glob
 
-import GLMTools
-import Contrast
+import GLMTools, Contrast
 
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------
 #-----------------------------------------------------------
 
 DBPath = "/volatile/thirion/Localizer"
-Subjects = ["s12069"]#["s12277", "s12069","s12300","s12401","s12431","s12508","s12532","s12635","s12636","s12826","s12898","s12913","s12919","s12920"]#
+Subjects = ["s12277"]#, "s12069","s12300","s12401","s12431","s12508","s12532","s12635","s12636","s12826","s12898","s12913","s12919","s12920"]#["s12069"]#
 Acquisitions = ["acquisition"]
 Sessions = ["loc1"]
 fmri = "fMRI/"
 t1mri = "anatomy"
 glmDir = "glm"
+modelDir = "default"
 contrastDir = "Contrast"
 minfDir = "Minf"
 
@@ -56,7 +56,7 @@ supTh = 0.9
 #---------- Design Matrix
 
 # Possible choices for hrfType : "Canonical", \
-# "Canonical With Derivative" or "FIR Model"
+# "Canonical With Derivative" or "FIR"
 hrfType = "Canonical With Derivative"
 
 # Possible choices for drift : "Blank", "Cosine", "Polynomial"
@@ -69,19 +69,20 @@ poly_order = 3
 cos_FreqCut = 128
 
 # If hrfType is "FIR Model"
-FIR_order = 1
-FIR_length = 1
+FIR_delays = [0]
+FIR_duration = 1.
 
 # If the following in not none it will be considered to be the drift
-drift_matrix = None
+#import numpy as np
+drift_matrix = None#np.cumsum(np.random.randn(nbFrames,6),1)
 
 DmtxParam= {}
 DmtxParam["hrfType"] = hrfType
 DmtxParam["drift"] = drift
 DmtxParam["poly_order"] = poly_order
 DmtxParam["cos_FreqCut"] = cos_FreqCut
-DmtxParam["FIR_order"] = FIR_order
-DmtxParam["FIR_length"] = FIR_length
+DmtxParam["FIR_delays"] = FIR_delays
+DmtxParam["FIR_duration"] = FIR_duration
 DmtxParam["drift_matrix"] = drift_matrix
 
 #-------------- GLM options
@@ -113,8 +114,10 @@ for s in Subjects:
         paradigmFile = os.sep.join((miscPath, "paradigm.csv"))
         miscFile = os.sep.join((miscPath, "misc_info.con"))
         maskFile = os.sep.join((SubjectPath, fmri, a, minfDir, "mask.nii"))
+        contrastFile = os.sep.join((SubjectPath, fmri, a, glmDir, modelDir,
+                                        "contrast.con"))
         paths["Contrasts_path"] = os.sep.join((SubjectPath, fmri, a,
-                                               glmDir, contrastDir))
+                                               glmDir, modelDir, contrastDir))
 
         #step 1. Get the fMRI data
         fmriFiles = {}
@@ -127,15 +130,14 @@ for s in Subjects:
             raise ValueError,"paradigm file %s not found" %paradigmFile
         
         misc = ConfigObj(miscFile)
-        misc['sessions'] = Sessions
-        misc['tasks'] = Conditions
-        misc['mask_url'] = maskFile
+        misc["sessions"] = Sessions
+        misc["tasks"] = Conditions
         misc.write()
 
         # step 3. Create one design matrix for each session
         for sess in Sessions:
             # Creating Design Matrix
-            designPath = os.sep.join((SubjectPath, fmri, a, glmDir, sess))
+            designPath = os.sep.join((SubjectPath, fmri, a, glmDir, modelDir, sess))
             if not os.path.exists(designPath):
                 os.makedirs(designPath)
             designFile = os.sep.join((designPath, "design_mat.csv"))
@@ -175,13 +177,12 @@ for s in Subjects:
         glms = {}
         for sess in Sessions:
             print "Fitting GLM for session : %s" % sess
-            glmPath = os.sep.join((SubjectPath, fmri, a, glmDir, sess))
+            glmPath = os.sep.join((SubjectPath, fmri, a, glmDir, modelDir, sess))
             GlmDumpFile = os.sep.join((glmPath, "vba.npz"))
             configFile = os.sep.join((glmPath, "vba_config.con"))
-            designPath = os.sep.join((SubjectPath, fmri, a, glmDir, sess))
-            designFile = os.sep.join((designPath, "design_mat.csv"))
+            designFile = os.sep.join((glmPath, "design_mat.csv"))
             if os.path.exists(designFile):
-                GLMTools.GLMFit(fmriFiles[sess], designFile, GlmDumpFile,
+                toto = GLMTools.GLMFit(fmriFiles[sess], designFile, GlmDumpFile,
                                 configFile, fit_algo, maskFile)
                 glms[sess] = {}
                 glms[sess]["GlmDumpFile"] = GlmDumpFile
@@ -193,5 +194,9 @@ for s in Subjects:
             os.makedirs(paths["Contrasts_path"])
     
         GLMTools.ComputeContrasts(contrastFile, miscFile, glms,\
-                                  save_mode, paths = paths)
-            
+                                  save_mode, paths=paths,
+                                  threshold=3.0,
+                                  cluster=10,
+                                  method='None')
+
+        

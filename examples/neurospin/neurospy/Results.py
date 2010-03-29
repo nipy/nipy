@@ -1,5 +1,4 @@
 import nipy.neurospin.statistical_mapping as sm
-#import nipy.neurospin.image as image
 from nipy.io.imageformats import load
 
 def ComputeResultsContents(zmap_file_path, mask_file_path,
@@ -7,12 +6,14 @@ def ComputeResultsContents(zmap_file_path, mask_file_path,
                            method='fpr', cluster=0, null_zmax='bonferroni',
                            null_smax=None, null_s=None, nmaxima=4):
 
-    # Read data: z-map and mask 
-    
-    
+    #print zmap_file_path, mask_file_path, output_html_path
+
+    # Read data: z-map and mask     
     zmap = load(zmap_file_path)
     mask = load(mask_file_path)
 
+    cluster_th = cluster
+   
     # Compute cluster statistics
     #if null_smax != None:
     nulls={'zmax' : null_zmax, 'smax' : null_smax, 's' : null_s}
@@ -22,10 +23,6 @@ def ComputeResultsContents(zmap_file_path, mask_file_path,
     if clusters == None or info == None:
         print "No results were writen for %s" % zmap_file_path
         return
-    #else:
-    #   clusters, info = sm.cluster_stats(zmap, mask, height_th=threshold,
-    # height_control=method, cluster_th=cluster,
-    #                     nulls={})
     
     # Make HTML page 
     output = open(output_html_path, mode = "w")
@@ -43,6 +40,7 @@ def ComputeResultsContents(zmap_file_path, mask_file_path,
 
     for cluster in clusters:
         maxima = cluster['maxima']
+        size=cluster['size']
         for j in range(min(len(maxima), nmaxima)):
             temp = ["%f" % cluster['fwer_pvalue'][j]]
             temp.append("%f" % cluster['fdr_pvalue'][j])
@@ -50,16 +48,24 @@ def ComputeResultsContents(zmap_file_path, mask_file_path,
             temp.append("%f" % cluster['pvalue'][j])
             for it in range(3):
                 temp.append("%f" % maxima[j][it])
-            if j == 0: ## Main local maximum 
+            if j == 0: ## Main local maximum
+                temp.append('%i'%size)
                 output.write('<tr><th align="center">' + '</th>\
-                <th align="center">'.join(temp) + '</th></tr>\n')
+                <th align="center">'.join(temp) + '</th></tr>')
+                #output.write('<th>%i</th>\n'%size)
             else: ## Secondary local maxima 
                 output.write('<tr><td align="center">' + '</td>\
                 <td align="center">'.join(temp) + '</td><td></td></tr>\n')
 
+                 
+    nclust = len(clusters)
+    nvox = sum([clusters[k]['size'] for k in range(nclust)])
+    
     output.write("</table>\n")
-    output.write("Number of voxels : %i<br>\n" % len(mask.get_data() > 0))
-    output.write("Threshold Z=%f (%s control at %f)<br>\n" \
+    output.write("Number of voxels : %i<br>\n" % nvox)
+    output.write("Number of clusters : %i<br>\n" % nclust)
+    output.write("Threshold Z = %f (%s control at %f)<br>\n" \
                  % (info['threshold_z'], method, threshold))
+    output.write("Cluster size threshold = %i voxels"%cluster_th)
     output.write("</center></body></html>\n")
     output.close()
