@@ -10,8 +10,8 @@ from configobj import ConfigObj
 import glob
 from os.path import join
 
-import GLMTools
-import Contrast
+import GLMTools, Contrast
+
 
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------
@@ -28,6 +28,7 @@ Sessions = ["fonc1", "fonc2", "fonc3", "fonc4"]
 fmri = "fMRI"
 t1mri = "t1mri/default_acquisition"
 glmDir = "glm"
+modelDir = "default"
 contrastDir = "Contrast"
 minfDir = "Minf"
 
@@ -72,8 +73,8 @@ poly_order = 2
 cos_FreqCut = 128
 
 # If hrfType is "FIR Model"
-FIR_order = 1
-FIR_length = 1
+FIR_delays = [0]
+FIR_duration = 1.
 
 # If the following in not none it will be considered to be the drift
 drift_matrix = None
@@ -83,8 +84,8 @@ DmtxParam["hrfType"] = hrfType
 DmtxParam["drift"] = drift
 DmtxParam["poly_order"] = poly_order
 DmtxParam["cos_FreqCut"] = cos_FreqCut
-DmtxParam["FIR_order"] = FIR_order
-DmtxParam["FIR_length"] = FIR_length
+DmtxParam["FIR_delays"] = FIR_delays
+DmtxParam["FIR_duration"] = FIR_duration
 DmtxParam["drift_matrix"] = drift_matrix
 
 #--------- GLM options
@@ -112,7 +113,7 @@ for s in Subjects:
         miscFile = os.sep.join((miscPath, "misc_info.con"))
         maskFile = os.sep.join((sPath, fmri, a, minfDir, "mask.img"))
         paths["Contrasts_path"] = os.sep.join((sPath, fmri, a,
-                                               glmDir, contrastDir))
+                                               glmDir, modelDir, contrastDir))
         #step 0. Get the fMRI data
         fmriFiles = {}
         for sess in Sessions:
@@ -127,13 +128,13 @@ for s in Subjects:
         misc = ConfigObj(miscFile)
         misc["sessions"] = Sessions
         misc["tasks"] = Conditions
-        misc["mask"] = maskFile
+        misc["mask_url"] = maskFile
         misc.write()
 
         # step 2. Create one design matrix for each session
         for sess in Sessions:
             # Creating Design Matrix
-            designPath = os.sep.join((sPath, fmri, a, glmDir, sess))
+            designPath = os.sep.join((sPath, fmri, a, glmDir, modelDir, sess))
             if not os.path.exists(designPath):
                 os.makedirs(designPath)
             designFile = os.sep.join((designPath, "design_mat.csv"))
@@ -171,11 +172,10 @@ for s in Subjects:
         glms = {}
         for sess in Sessions:
             print "Fitting GLM for session : %s" % sess
-            glmPath = os.sep.join((sPath, fmri, a, glmDir, sess))
+            glmPath = os.sep.join((sPath, fmri, a, glmDir, modelDir, sess))
             GlmDumpFile = os.sep.join((glmPath, "vba.npz"))
             configFile = os.sep.join((glmPath, "vba_config.con"))
-            designPath = os.sep.join((sPath, fmri, a, glmDir, sess))
-            designFile = os.sep.join((designPath, "design_mat.csv"))
+            designFile = os.sep.join((glmPath, "design_mat.csv"))
             if os.path.exists(designFile):
                 GLMTools.GLMFit(fmriFiles[sess], designFile, GlmDumpFile,
                                 configFile, fit_algo, maskFile)

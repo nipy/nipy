@@ -1,11 +1,18 @@
 __doc__ = """
+
 fMRI Design Matrix creation functions.
+
 """
 
 import numpy as np
 from configobj import ConfigObj
 from pylab import loadtxt
-from nipy.neurospin.utils.design_matrix import set_drift, convolve_regressors, build_dmtx, full_rank
+from nipy.neurospin.utils.design_matrix import set_drift, convolve_regressors, build_dmtx
+try:
+        from nipy.neurospin.utils.design_matrix import fullRank
+except ImportError:
+        # Different versions of nipy have different names
+        from nipy.neurospin.utils.design_matrix import full_rank as fullRank
 
 def _loadProtocol(path, session):
     """
@@ -26,7 +33,19 @@ def _loadProtocol(path, session):
              that constains (condition id, onset) 
              or (condition id, onset, duration)
     """
-    paradigm = loadtxt(path)
+    import csv
+    csvfile = open(path)
+    dialect = csv.Sniffer().sniff(csvfile.read())
+    csvfile.seek(0)
+    reader = csv.reader(open(path, "rb"),dialect)
+    
+    paradigm = []
+    for row in reader:
+        paradigm.append([float(row[j]) for j in range(len(row))])
+
+    paradigm = np.array(paradigm)
+    
+    #paradigm = loadtxt(path)
     if paradigm[paradigm[:,0] == session].tolist() == []:
         return None
     paradigm = paradigm[paradigm[:,0] == session]
@@ -45,18 +64,61 @@ def load_dmtx_from_csv(path):
     fixme: untested, fragile ; dialect ?
     """
     import csv
-    reader = csv.reader(open(path, "rb"))
+    csvfile = open(path)
+    dialect = csv.Sniffer().sniff(csvfile.read())
+    csvfile.seek(0)
+    reader = csv.reader(open(path, "rb"),dialect)
+    
     boolfirst = True
     design = []
     for row in reader:
         if boolfirst:
             names = [row[j] for j in range(len(row))]
-            boolfirst=False
+            boolfirst = False
         else:
             design.append([row[j] for j in range(len(row))])
                 
-    design = np.array(design)
-    return names, design     
+    x = np.array([[float(t) for t in xr] for xr in design])
+    return names, x
+
+def _show(design, names, rescale=True):
+    """
+    Vizualization of a design matrix
+
+    Parameters
+    ----------
+    x array of shape(ncond, ntimepoints)
+    names: list of (ncond) strings
+    rescale= True: rescale for visualization or not
+    """
+    x  = design
+    if np.size(design)==design.shape[0]:
+        x = np.reshape(x,(np.size(x),1))
+    if len(names)!= x.shape[1]:
+        raise ValueError, 'the number of names does not coincide with dmtx size' 
+    
+    if rescale:
+        x = x/np.sqrt(np.sum(x**2,0))
+
+    import matplotlib.pylab as mp
+    mp.figure()
+    mp.imshow(x, interpolation='Nearest', aspect='auto')
+    mp.xlabel('conditions')
+    mp.ylabel('scan number')
+    if names!=None:
+        mp.xticks(np.arange(len(names)),names,rotation=60,ha='right')
+        
+    mp.subplots_adjust(top=0.99,bottom=0.25)
+
+def show_from_csv(csvfile, rescale=True):
+    """
+    Plot a design matrix loaded from a csv file
+
+    csvfile: path of the input design matrix
+    rescale= True: rescale for visualization or not
+    """
+    names,design = load_dmtx_from_csv(csvfile)
+    _show(design, names, rescale)
 
 class DesignMatrix():
     """
@@ -95,8 +157,8 @@ class DesignMatrix():
         self.frametimes = np.arange(self.nbframes)
         self.misc = ConfigObj(self.misc_file)
         if not self.misc.has_key(self.model):
-            misc[self.model] = {}
-        misc.write()
+            self.misc[self.model] = {}
+        self.misc.write()
 
         # fixme id self.misc["tasks"]==None
         self._names = self.misc["tasks"]
@@ -146,24 +208,33 @@ class DesignMatrix():
         """
         self.drift = set_drift(DriftModel, self.frametimes, order, hfcut)
 
-    def set_conditions(self, hrfmodel="Canonical"):
+    def set_conditions(self, hrfmodel="Canonical", fir_delays=[0], 
+                             fir_duration=1.):
         """ 
         Set the conditions of the model as a formula
-        
+        hrf_model, string that can be 'Canonical', 
+                   'Canonical With Derivative' or 'FIR'
+                   that specifies the hemodynamic reponse function
+        fir_delays=[0], optional, array of shape(nb_onsets) or list
+                    in case of FIR design, yields the array of delays 
+                    used in the FIR model
+        fir_duration=1., float, duration of the FIR block; 
+                         in general it should eb equal to the tr  
         """
         if self.protocol == None:
            self.conditions = None
         else:
             self.conditions, self._names = convolve_regressors(self.protocol,
-                                           hrfmodel, self._names)
+                                           hrfmodel, self._names, fir_delays, 
+                                           fir_duration)
          
-    def compute_design(self, name="", verbose=1):
+    def compute_design_(self, name="", verbose=0):
         """Sample the formula on the grid
         
         Parameters
         ----------
         name="", string, that characterized the model name
-        verbose=1, int, verbosity mode 
+        verbose=0, int, verbosity mode 
        
         Note: self.conditions and self.drift must be defined beforhand
         """
@@ -192,25 +263,50 @@ class DesignMatrix():
 
         return self._design
 
+    def compute_design(self, add_regs=None, regnames=None, name="", verbose=0):
+        """Sample the formula on the grid
+        
+        Parameters
+        ----------
+        name="", string, that characterized the model name
+        verbose=0, int, verbosity mode 
+       
+        Note: self.conditions and self.drift must be defined beforhand
+        """
+        if self.protocol == None:
+            print "The selected session does not exists"
+            return None   
+        self.formula = self.conditions + self.drift
+        self._design = build_dmtx(self.formula, self.frametimes).T
+
+        # add regressors
+        if add_regs!=None:
+            self.add_regressors(add_regs, regnames)
+
+        ## Force the design matrix to be full rank at working precision
+        self._design, self._design_cond = fullRank(self._design)
+
+        # complete the names with the drift terms                               
+        for k in range(len(self.drift.terms)-1):
+           self._names.append('drift_%d'%(k+1))                            
+        self._names.append('constant')
+
+        if verbose:
+           self.show()
+        
+        self.names = self._names
+        misc = ConfigObj(self.misc_file)
+        misc[self.model]["regressors_%s" % name] = self._names
+        misc[self.model]["design matrix cond"] = self._design_cond
+        misc.write()
+
+        return self._design
+
     def show(self):
         """Vizualization of self
         """
-        x = self._design
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.imshow(x/np.sqrt(np.sum(x**2,0)),interpolation='Nearest', aspect='auto')
-        mp.xlabel('conditions')
-        mp.ylabel('scan number')
-        #mp.axis([-1,30,0,130])
-        if self._names!=None:
-            names = self._names
-            print names
-            mp.xticks(np.arange(len(names)),names,rotation=60,ha='right')
-        
-        mp.subplots_adjust(top=0.99,bottom=0.25)
-
-
-
+        _show(self._design,self._names)
+ 
     def save_csv(self, path):
         """ Save the sampled design matrix as a csv file
         """
@@ -218,43 +314,30 @@ class DesignMatrix():
         writer = csv.writer(open(path, "wb"))
         writer.writerow(self._names)
         writer.writerows(self._design)
-       
-    def compute_fir_design(self, drift=None, o=1, l=1, name=""):
+
+    def add_regressors(self, add_regs, reg_names=None):
         """
-        deprecated
         """
-        if self.protocol == None:
-            print "The selected session does not exists"
-            return None
-        misc = ConfigObj(self.misc_file)
-        temp = np.zeros((len(self.frametimes), (o * len(self.protocol.events))))
-        diff = l / o
-        self.names = []
-        i = 0
-        for event in misc["tasks"]:
-            if  self.protocol.events.has_key(event):
-                for j in range(o):
-                    if j == 0:
-                        self.names.append("%s" % (event))
-                    else:
-                        self.names.append("%s_d%i" % (event, j))
-                    for t in self.protocol.events[event].times:
-                        base = np.argmax(self.frametimes > t)
-                        for k in range(diff):
-                            temp[base + (k + j * diff), j + i * o] = 1
-                i += 1
-        self._design, self._design_cond = full_rank(temp)
-        if drift == 0:
-            drm = np.ones((self._design.shape[0],1))
-        elif drift == cosine_drift:
-            drm = cosine_matrix(self.frametimes).T
-        elif drift == canonical_drift:
-            drm = _drift(self.frametimes).T
-        else:
-            drm = drift
-        drml = drm.shape[1]
-        for i in range(drml):
-            self.names.append('(drift:%i)' % i)
-        self._design = np.column_stack((self._design, drm))
-        misc[self.model]["regressors_%s" % name] = self.names
-        misc.write()
+        # check that regressor specification is correct
+        if add_regs.shape[0] == np.size(add_regs):
+            add_regs = np.reshape(addreg,(np.size(1,add_regs)))
+        if add_regs.shape[0] != self.nbframes:
+            raise ValueError, 'incorrect specification of additional regressors'
+        
+        # put them at the right place in the dmtx
+        ncr = len(self._names)
+        self._design = np.hstack((self._design[:,:ncr],add_regs,self._design[:,ncr:]))
+        
+        # add the corresponding names
+        if  reg_names == None:
+            reg_names = ['reg%d'%k for k in range(add_regs.shape[1])]
+        elif len(reg_names)!= add_regs.shape[1]:
+             raise ValueError, 'Incorrect number of additional regressors names \
+                               was provided'
+        for r in range(add_regs.shape[1]):
+            self._names.append(reg_names[r])
+    
+
+
+
+
