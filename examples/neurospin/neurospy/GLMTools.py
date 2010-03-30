@@ -2,7 +2,7 @@
 General tools to analyse fMRI datasets (GLM fit)
 using nipy.neurospin tools
 
-Author : Lise Favre, Bertrand Thirion, 2008-2009
+Author : Lise Favre, Bertrand Thirion, 2008-2010
 """
 
 import numpy as np
@@ -246,9 +246,59 @@ def ComputeMask(fmriFiles, outputFile, infT=0.4, supT=0.9):
 
 
 
+######################################################
+# First Level analysis
+######################################################
+
 #-----------------------------------------------------
-#------- First Level analysis ------------------------
+#------- Design Matrix handling ----------------------
 #-----------------------------------------------------
+
+def _loadProtocol(path, session):
+    """
+    Read a paradigm file consisting of a list of pairs
+    (occurence time, (duration), event ID)
+    and create a paradigm array
+    
+    Parameters
+    ----------
+    path, string a path to a .csv file that describes the paradigm
+    session, int, the session number used to extract 
+             the relevant session information in th csv file
+    
+    Returns
+    -------
+    paradigm array of shape (nevents,2) if the type is event-related design 
+             or (nenvets,3) for a block design
+             that constains (condition id, onset) 
+             or (condition id, onset, duration)
+    """
+    import csv
+    csvfile = open(path)
+    dialect = csv.Sniffer().sniff(csvfile.read())
+    csvfile.seek(0)
+    reader = csv.reader(open(path, "rb"),dialect)
+    
+    paradigm = []
+    for row in reader:
+        paradigm.append([float(row[j]) for j in range(len(row))])
+
+    paradigm = np.array(paradigm)
+    
+    #paradigm = loadtxt(path)
+    if paradigm[paradigm[:,0] == session].tolist() == []:
+        return None
+    paradigm = paradigm[paradigm[:,0] == session]
+    
+    if paradigm.shape[1] == 4:
+        paradigm = paradigm[:,1:]
+        typep = 'block'
+    else:
+        typep ='event'
+        paradigm = paradigm[:,[1,2]]
+    
+    return paradigm
+
 
 def CheckDmtxParam(DmtxParam):
     """
@@ -299,34 +349,52 @@ def DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
                   session, hrfType, drift, regMatrix, poly_order,
                   cos_FreqCut, FIR_delays, FIR_duration, model, regNames)
 
-
-
-def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
+def _DesignMatrix(nbFrames, paradigm_file, miscFile, tr, outputFile,
                   session, hrfType="Canonical", drift="Blank",
                   regMatrix=None, poly_order=2, cos_FreqCut=128,
                   FIR_delays=[0], FIR_duration=1., model="default",
                   regNames=None, verbose=0):
     """
-    Base function to define design matrices
-    fixme : control that the FIR model works
     """
-    import DesignMatrix as dm
-   
-    design = dm.DesignMatrix(nbFrames, paradigm, session, miscFile, model)
-    design.load()
-    design.timing(tr)
- 
-    # fixme : append had-defined regressors (e.g. motion)
-    # set the drift terms
-    design.set_drift(drift,  poly_order, cos_FreqCut)
+    import nipy.neurospin.utils.design_matrix as dm
 
-    # set the condition-related regressors
-    design.set_conditions(hrfType, FIR_delays, FIR_duration)
+    # set the frametimes
+    _frametimes = tr*np.arange(nbFrames)
 
-    _design = design.compute_design(regMatrix, regNames, session, verbose)
-    
-    if _design != None:
-        design.save_csv(outputFile)
+    # get the condition names
+    misc = ConfigObj(miscFile)
+    if session.isdigit():
+        _session = int(session)
+    else:
+        _session = misc["sessions"].index(session)
+    if not misc.has_key(model):
+        misc[model] = {}
+    _names  = misc["tasks"]
+
+    # get the paradigm
+    _paradigm = _loadProtocol(paradigm_file, _session)
+
+    # compute the design matrix
+    DM = dm.DesignMatrix\
+        (_frametimes, _paradigm, hrf_model=hrfType,
+         drift_model=drift, hfcut=cos_FreqCut, drift_order=poly_order,
+         fir_delays=FIR_delays, fir_duration=FIR_duration, cond_ids=_names,
+         add_regs=regMatrix, add_reg_names=regNames)
+    DM.estimate()
+
+    # write the design matrix
+    DM.write_csv(outputFile)
+
+    # write some info in the misc file
+    misc[model]["regressors_%s" % session] = DM.names
+    misc[model]["design matrix cond"] = DM.design_cond
+    misc.write()
+    return DM
+
+
+#-----------------------------------------------------
+#------- GLM fit -------------------------------------
+#-----------------------------------------------------
 
 def GLMFit(file, designMatrix,  output_glm, outputCon,
            fit="Kalman_AR1", mask_url=None):
@@ -381,6 +449,12 @@ def GLMFit(file, designMatrix,  output_glm, outputCon,
 
     return glm
 
+
+#-----------------------------------------------------
+#------- Contrast computation ------------------------
+#-----------------------------------------------------
+
+
 def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name", 
                                    model="default", verbose=0, **kargs):
     """
@@ -430,7 +504,7 @@ def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
                 if verbose and (not designs.has_key(session)):
                     print "Loading session : %s" % session
                 designs[session] = GLM.load(glms[session]["GlmDumpFile"])
-
+                
                 bv=[int(j) != 0 for j in value]
                 if contrast_type == "t" and sum(bv)>0:
                     _con = designs[session].contrast([int(i) for i in value])
