@@ -132,7 +132,7 @@ for s in Subjects:
         misc = ConfigObj(miscFile)
         misc["sessions"] = Sessions
         misc["tasks"] = Conditions
-        misc.write()
+        #misc.write()
 
         # step 3. Create one design matrix for each session
         for sess in Sessions:
@@ -151,7 +151,7 @@ for s in Subjects:
 
         # step 5. Creating Contrast File
         print "Creating Contrasts"
-        contrast = Contrast.ContrastList(miscFile)
+        contrast = Contrast.ContrastList(misc=misc)
         d = contrast.dic
         d["audio"] = d["clicDaudio"] + d["clicGaudio"] +\
                      d["calculaudio"] + d["phraseaudio"]
