@@ -7,7 +7,7 @@ not whether it is exact
 
 import numpy as np
 from numpy.testing import assert_almost_equal
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 from nipy.neurospin.utils.reproducibility_measures import \
      voxel_reproducibility, cluster_reproducibility, map_reproducibility
 
@@ -22,7 +22,7 @@ def make_dataset(ampli_factor=1.0, nsubj=10):
     pos = 2*np.array([[ 6,  7], [10, 10], [15, 10]])
     ampli = ampli_factor*np.array([5, 6, 7])
     sjitter = 1.0
-    dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
+    dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                          pos=pos, ampli=ampli, width=5.0, seed=1)
     return dataset
 
@@ -31,13 +31,16 @@ def apply_repro_analysis_analysis(dataset, thresholds=[3.0], method = 'crfx'):
     """
     perform the reproducibility  analysis according to the 
     """
+    from nipy.io.imageformats import Nifti1Image 
+
     nsubj, dimx, dimy = dataset.shape
     
     func = np.reshape(dataset,(nsubj, dimx*dimy)).T
     var = np.ones((dimx*dimy, nsubj))
-    xyz = np.reshape(np.indices((dimx, dimy,1)).T,(dimx*dimy,3))
-    coord = xyz.astype(np.float)
-
+    #xyz = np.reshape(np.indices((dimx, dimy,1)).T,(dimx*dimy,3))
+    #coord = xyz.astype(np.float)
+    mask = Nifti1Image(np.ones((dimx, dimy, 1)),np.eye(4))
+    
     ngroups = 10
     sigma = 2.0
     csize = 10
@@ -52,10 +55,10 @@ def apply_repro_analysis_analysis(dataset, thresholds=[3.0], method = 'crfx'):
         cls = []
         kwargs={'threshold':threshold,'csize':csize}        
         for i in range(niter):
-            k = voxel_reproducibility(func, var, xyz, ngroups,
+            k = voxel_reproducibility(func, var, mask, ngroups,
                                   method, swap, verbose, **kwargs)
             kappa.append(k)
-            cld = cluster_reproducibility(func, var, xyz, ngroups, coord, sigma,
+            cld = cluster_reproducibility(func, var, mask, ngroups, sigma,
                                       method, swap, verbose, **kwargs)
             cls.append(cld)
         

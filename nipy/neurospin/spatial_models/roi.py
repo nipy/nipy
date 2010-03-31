@@ -90,17 +90,17 @@ class DiscreteROI(object):
             return np.all(np.equal(nim.get_shape(), self.shape))
         return True
 
-    def from_binary_image(self, image):
+    def from_binary_image(self, image_path):
         """
         Take all the <>0 sites of the image as the ROI
 
         Parameters
         -----------
-        image: string
+        image_path: string
             the path of an image
         """
-        self.check_header(image)
-        nim = load(image)
+        self.check_header(image_path)
+        nim = load(image_path)
         self.discrete = np.where(nim.get_data())
         
     def from_position(self, position, radius):
@@ -123,31 +123,31 @@ class DiscreteROI(object):
         sqra = radius**2
         self.discrete = tuple(grid[np.sum(dx**2,1)<sqra,:3].T.astype(np.int))
         
-    def from_labelled_image(self, image, label):
+    def from_labelled_image(self, image_path, label):
         """
         Define the ROI as the set of  voxels of the image
         that have the pre-defined label
 
         Parameters
         -----------
-        image: ndarray
+        image_path: ndarray
             a label (discrete valued) image
         label: int
             the desired label
         """
-        self.check_header(image)
-        nim = load(image)
+        self.check_header(image_path)
+        nim = load(image_path)
         data = nim.get_data()
         self.discrete = np.where(data==label)
         
-    def from_position_and_image(self, image, position):
+    def from_position_and_image(self, image_path, position):
         """
          Define the ROI as the set of  voxels of the image
          that is closest to the provided position
 
         Parameters
         -----------
-        image: string, 
+        image_path: string, 
             the path of a label (discrete valued) image
         position: array of shape (3,)
             x, y, z position in the world space
@@ -157,10 +157,10 @@ class DiscreteROI(object):
         everything could be performed in the image space
         """
         # check that the header is OK indeed
-        self.check_header(image)
+        self.check_header(image_path)
 
         # get the image data and find the best matching ROI
-        nim = load(image)
+        nim = load(image_path)
         data = nim.get_data().astype(np.int)
         k = data.max()+1
         cent = np.array([np.mean(np.where(data==i),1) for i in range(k)])
@@ -172,13 +172,13 @@ class DiscreteROI(object):
         k = np.argmin(np.sum(dx**2,1))
         self.discrete = np.where(data==k)
         
-    def make_image(self, image_path):
+    def make_image(self, image_path=None):
         """
         write a binary nifty image where the nonzero values are the ROI mask
 
         Parameters
         -----------
-        image_path: string 
+        image_path: string, optional 
             the desired image name
         """
         if self.shape==None:
@@ -188,7 +188,9 @@ class DiscreteROI(object):
         
         wim = Nifti1Image(data, self.affine)
         wim.get_header()['descrip'] = "ROI image"
-        save(wim, image_path)
+        if image_path !=None:
+            save(wim, image_path)
+        return wim
 
     def set_feature(self, fid, data):
         """
@@ -218,7 +220,7 @@ class DiscreteROI(object):
         self.features.update({fid:ldata})
         return ldata
         
-    def set_feature_from_image(self, fid, image):
+    def set_feature_from_image(self, fid, image_path):
         """
         extract some roi-related information from an image
 
@@ -229,8 +231,8 @@ class DiscreteROI(object):
         image: string
             image path
         """
-        self.check_header(image)
-        nim = load(image)  
+        self.check_header(image_path)
+        nim = load(image_path)  
         data = nim.get_data()
         self.set_feature(fid,data)
 
@@ -541,14 +543,15 @@ class MultipleROI(object):
                     b = False
         return b
 
-    def from_labelled_image(self, image, labels=None, add=True):
+    def from_labelled_image(self, image_path, labels=None, add=True):
         """
         All the voxels of the image that have non-zero-value
         self.k becomes the number of values of the (discrete) image
 
         Parameters
         ----------
-        image (string): a label (discrete valued) image
+        image_path: string
+            path of a label (discrete valued) image
         labels=None : array of shape (nlabels) 
                     the set of image labels that
                     shall be used as ROI definitions
@@ -559,8 +562,8 @@ class MultipleROI(object):
         this can be used to append roi_features,
         when rois are already defined
         """
-        self.check_header(image)
-        nim = load(image)
+        self.check_header(image_path)
+        nim = load(image_path)
         data = nim.get_data()
         udata = np.unique(data[data>0])
         if labels==None:    
@@ -571,7 +574,7 @@ class MultipleROI(object):
         else:
             if add: self.k += np.size(labels)
             for k in range(np.size(labels)):
-                if np.sum(data==labels[k])>0:
+                if (data==labels[k]).any():
                     dk = np.array(np.where(data==udata[k])).T
                     self.xyz.append(dk)
                 else:
@@ -619,7 +622,7 @@ class MultipleROI(object):
         self.check_features()
 
 
-    def append_balls(self,position, radius):
+    def append_balls(self, position, radius):
         """
         idem self.as_multiple_balls, but the ROIs are added
         fixme : should be removed from the class
@@ -673,13 +676,18 @@ class MultipleROI(object):
         self.set_roi_feature(fid,f)
         
         
-    def make_image(self, path):
+    def make_image(self, path=None):
         """
         write a int image where the nonzero values are the ROIs
 
         Parameters
         ----------
-        path: string, the desired image path
+        path: string, optional
+            the desired image path
+
+        Returns
+        -------
+        brifti image instance
         
         Note
         ----
@@ -692,12 +700,14 @@ class MultipleROI(object):
         data = -np.ones(self.shape,np.int)
         for k in range(self.k):
             dk = self.xyz[k].T
-            data[dk[0],dk[1],dk[2]] = k
+            data[dk[0], dk[1], dk[2]] = k
 
         wim =  Nifti1Image(data, self.affine)
         header = wim.get_header()
         header['descrip'] = "Multiple ROI image"
-        save(wim, path)
+        if path!=None:
+            save(wim, path)
+        return wim
   
     def set_roi_feature(self,fid,data):
         """
@@ -756,22 +766,36 @@ class MultipleROI(object):
             ldata[k] = np.mean(data[dk[0],dk[1],dk[2]])
         self.set_roi_feature(fid,ldata)
 
-    def set_discrete_feature_from_image(self, fid, image_path):
+    def set_discrete_feature_from_image(self, fid, image_path=None,
+                                        image=None):
         """
         extract some discrete information from an image
 
         Parameters
         ----------
-        fid (string): feature id
-        image_path, string the image path
+        fid: string, feature id
+        image_path, string, optional
+            input image path
+        image, brfiti image path,
+            input image
+
+        Note that either image_path or image has to be provided
         """
-        self.check_header(image_path)
-        nim = load(image_path)  
+        if image_path==None and image==None:
+            raise ValueError, "one image needs to be provided"
+        if image_path is not None:
+            self.check_header(image_path)
+            nim = load(image_path)
+        if image is not None:
+            nim = image
         data = nim.get_data()
         ldata = []
         for k in range(self.k):
             dk = self.xyz[k].T
-            ldata.append(data[dk[0],dk[1],dk[2]])
+            ldk = data[dk[0],dk[1],dk[2]]
+            if np.size(ldk)==ldk.shape[0]:
+                ldk = np.reshape(ldk,(np.size(ldk),1))
+            ldata.append(ldk)
         self.set_discrete_feature(fid,ldata)
 
     def set_discrete_feature_from_index(self, fid, data):
@@ -864,7 +888,7 @@ class MultipleROI(object):
             idx[k] = np.argmax(df[k])
         return idx
             
-    def plot_roi_feature(self,fid):
+    def plot_roi_feature(self, fid):
         """
         boxplot the feature within the ROI
         Note that this assumes a 1-d feature
@@ -878,8 +902,34 @@ class MultipleROI(object):
             raise ValueError, "cannot plot multi-dimensional\
             features for the moment"
         import matplotlib.pylab as mp
-        mp.figure()
-        mp.bar(np.arange(self.k),f)
+        ax = mp.figure()
+        mp.bar(np.arange(self.k)+0.5,f)
+        mp.title('ROI-level value for feature %s' %fid)
+        mp.xlabel('ROI index')
+        mp.xticks(np.arange(1, self.k+1),np.arange(1, self.k+1))
+        return ax
+
+    def plot_discrete_feature(self, fid):
+        """
+        boxplot the distribution of features within ROIs
+        Note that this assumes 1-d features
+
+        Parameters
+        ----------
+        fid the feature identifier
+        """
+        f = self.discrete_features[fid]
+        if f[0].shape[1]>1:
+            raise ValueError, "cannot plot multi-dimensional\
+            features for the moment"
+        import matplotlib.pylab as mp
+        ax = mp.figure()
+        mp.boxplot(f)
+        mp.title('ROI-level distribution for feature %s' %fid)
+        mp.xlabel('ROI index')
+        mp.xticks(np.arange(1, self.k+1),np.arange(1, self.k+1))
+        return ax
+
 
     def clean(self,valid):
         """
@@ -918,7 +968,7 @@ class MultipleROI(object):
             size[k] = np.shape(self.xyz[k])[0]
         return size
 
-    def set_xyz(self,xyz):
+    def set_xyz(self, xyz):
         """
         set manually the values of xyz
         xyz is a list of arrays that contains

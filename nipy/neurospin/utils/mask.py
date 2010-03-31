@@ -5,12 +5,14 @@ series.
 
 # Major scientific libraries imports
 import numpy as np
+from scipy import linalg, ndimage
+
 # Neuroimaging libraries imports
 from nipy.io.imageformats import load, nifti1, save, AnalyzeImage
 
 
 ################################################################################
-# Utilities to calculate masks
+# Operating on connect component
 ################################################################################
 
 def largest_cc(mask):
@@ -26,16 +28,48 @@ def largest_cc(mask):
         mask: 3D boolean array 
             3D array indicating a mask, with only one connected component.    
     """
-    # Late import of scipy
-    from scipy import ndimage
-
     # We use asarray to be able to work with masked arrays.
     mask = np.asarray(mask)
     labels, label_nb = ndimage.label(mask)
     if not label_nb:
-        raise ValueError('No non-zero values: no connect components')
-    return labels ==  np.bincount(labels.flat)[1:].argmax() + 1
+        raise ValueError('No non-zero values: no connected components')
+    if label_nb == 1:
+        return mask.astype(np.bool)
+    label_count = np.bincount(labels.ravel())
+    # discard 0 the 0 label
+    label_count[0] = 0
+    return labels ==  label_count.argmax() 
 
+
+def threshold_connect_components(map, threshold, copy=True):
+    """ Given a map with some coefficients set to zero, segment the
+        connect components with number of voxels smaller than the
+        threshold and set them to 0.
+
+        Parameters
+        ----------
+        map: ndarray
+            The map to segment
+        threshold:
+            The minimum number of voxels to keep a cluster.
+        copy: bool, optional
+            If copy is false, the input array is modified inplace
+    """
+    labels, _ = ndimage.label(map)
+    weights = np.bincount(labels.ravel())
+    if copy:
+        map = map.copy()
+    for label, weight in enumerate(weights):
+        if label == 0:
+            continue
+        if weight < threshold:
+            map[labels == label] = 0
+    return map
+
+
+################################################################################
+# Utilities to calculate masks
+################################################################################
 
 # FIXME: Should this function be replaced by the native functionality
 # added to brifti
@@ -148,8 +182,13 @@ def compute_mask_files(input_filename, output_filename=None,
             else:
                 mean_volume += nim.get_data().squeeze()
         mean_volume /= float(len(input_filename))
+        
     del nim
-
+    if np.isnan(mean_volume).any():
+        tmp = mean_volume.copy()
+        tmp[np.isnan(tmp)] = 0
+        mean_volume = tmp
+        
     mask = compute_mask(mean_volume, first_volume, m, M, cc)
       
     if output_filename is not None:
@@ -269,8 +308,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     return mask.astype(np.bool)
 
 
-def intersect_masks(input_masks, output_filename=None, 
-                                        threshold=0.5, cc=True):
+def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
     """
     Given a list of input mask images, generate the output image which
     is the the threshold-level intersection of the inputs 
@@ -322,7 +360,7 @@ def intersect_masks(input_masks, output_filename=None,
                                             affine=affine,
                                             header=header,
                                          )
-        output_image.save(output_filename)
+        save(output_image, output_filename)
 
     return grp_mask>0
 
@@ -333,18 +371,15 @@ def intersect_masks(input_masks, output_filename=None,
 
 # FIXME: This function should probably get a 'single_session' flag to work 
 # without any surprises on single session situations.
-def series_from_mask(session_files, mask, dtype=np.float32,
-                squeeze=False, smooth=False):
+def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
     """ Read the time series from the given sessions filenames, using the mask.
 
         Parameters
         -----------
-        session_files: list of list of nifti file names. 
+        filenames: list of 3D nifti file names, or 4D nifti filename.
             Files are grouped by session.
         mask: 3d ndarray
             3D mask array: true where a voxel should be used.
-        squeeze: boolean, optional
-            If squeeze is True, the data array is squeezed before return.
         smooth: False or float, optional
             If smooth is not False, it gives the size, in voxel of the
             spatial smoothing to apply to the signal.
@@ -356,53 +391,38 @@ def series_from_mask(session_files, mask, dtype=np.float32,
         header: header object
             The header of the first file.
     """
-    # XXX: What if the file lengths do not match!
     mask = mask.astype(np.bool)
-    nb_time_points = len(session_files[0])
-    if len(session_files[0]) == 1:
+    if isinstance(filenames, basestring):
         # We have a 4D nifti file
-        nb_time_points = load(session_files[0][0]).get_data().shape[-1]
-    session_series = np.zeros((len(session_files), mask.sum(),
-                                            nb_time_points),
-                                    dtype=dtype)
-
-    for session_index, filenames in enumerate(session_files):
-        if len(filenames) == 1:
-            # We have a 4D nifti file
-            data_file = load(filenames[0])
+        data_file = load(filenames)
+        header = data_file.get_header()
+        data = data_file.get_data()
+        if smooth:
+            affine = data_file.get_affine()[:3, :3]
+            smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
+            if not data.flags['WRITEABLE']:
+                data = np.asarray(data).copy() # Get rid of memmapping
+            for this_data in np.rollaxis(data, -1):
+                this_data[:] = ndimage.gaussian_filter(this_data,
+                                                        smooth_sigma)
+        series = data[mask].astype(dtype)
+    else:
+        nb_time_points = len(filenames)
+        series = np.zeros((mask.sum(), nb_time_points), dtype=dtype)
+        for index, filename in enumerate(filenames):
+            data_file = load(filename)
             data = data_file.get_data()
-            if not 'header' in locals():
-                header = data_file.get_header()
             if smooth:
                 affine = data_file.get_affine()[:3, :3]
-                smooth_sigma = np.dot(affine, np.ones(3))*smooth
-                from scipy import ndimage
-                data = np.asarray(data) # Get rid of memmapping
-                for this_data in np.rollaxis(data, -1):
-                    this_data[:] = ndimage.gaussian_filter(this_data,
-                                                           smooth_sigma)
-            session_series[session_index, :, :] = data[mask].astype(dtype)
+                smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
+                data = ndimage.gaussian_filter(data, smooth_sigma)
+                
+            series[:, index] = data[mask].astype(dtype)
             # Free memory early
-            del data, data_file
-        else:
-            for file_index, filename in enumerate(filenames):
-                data_file = load(filename)
-                data = data_file.get_data()
-                if smooth:
-                    affine = data_file.get_affine()[:3, :3]
-                    smooth_sigma = np.dot(affine, np.ones(3))*smooth
-                    from scipy import ndimage
-                    data = ndimage.gaussian_filter(data, smooth_sigma)
-                    
-                session_series[session_index, :, file_index] = \
-                                data[mask].astype(np.float32)
-                # Free memory early
-                if not 'header' in locals():
-                    header = data_file.get_header()
-                del data
+            if index == 0:
+                header = data_file.get_header()
+            del data
 
-    if squeeze:
-        session_series = session_series.squeeze()
-    return session_series, header
+    return series, header
 
 

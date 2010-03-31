@@ -1140,7 +1140,7 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     LR = None
     p = np.zeros(nvox)
     if len(sub)<1:
-        return crmap, LR, bf, p
+        return np.log(g0), np.log(g0)
 
     sub = np.concatenate(sub).astype(np.int) 
     gfc = np.concatenate(gfc)

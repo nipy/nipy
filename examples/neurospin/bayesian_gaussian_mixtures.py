@@ -52,7 +52,7 @@ pl.title('Variational Bayes')
 ################################################################################
 # 4. the same, with the Gibbs GMM algo
 niter = 1000
-krange = range(2, 5)
+krange = range(2, 6)
 bbf = -np.infty
 for k in krange:
     b = bgmm.BGMM(k, dim)
@@ -62,14 +62,15 @@ for k in krange:
     w, cent, prec, pz = b.sample(x, niter=niter, mem=1)
     bplugin =  bgmm.BGMM(k, dim, cent, prec, w)
     bplugin.guess_priors(x)
-    bfk = bplugin.Bfactor(x, pz.astype(np.int), 1)
+    bfk = bplugin.bayes_factor(x, pz.astype(np.int), nperm=40)
     print k, 'classes, evidence:', bfk
     if bfk>bbf:
         bestk = k
         bbf = bfk
+        bbgmm = bplugin
 
-z = bplugin.map_label(x)
-plot2D(x, bplugin, z, verbose=0)
+z = bbgmm.map_label(x)
+plot2D(x, bbgmm, z, verbose=0)
 pl.title('Gibbs sampling')
 
 pl.show()

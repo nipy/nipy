@@ -125,7 +125,7 @@ class Graph:
             idx = 0     
         return idx
 
-    def show(self,figid=-1):
+    def show(self, figid=-1):
         """
         show the graph as a planar graph
         

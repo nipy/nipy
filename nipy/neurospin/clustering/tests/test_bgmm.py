@@ -130,7 +130,7 @@ def test_gmm_bf(kmax=4, seed=1, verbose=1):
         w,cent,prec,pz = b.sample(x,niter=niter,mem=1)
         bplugin =  BGMM(k,dim,cent,prec,w)
         bplugin.guess_priors(x)
-        bfk = bplugin.Bfactor(x,pz.astype(np.int),1)
+        bfk = bplugin.bayes_factor(x,pz.astype(np.int),1)
         if verbose:
             print k, bfk
         if bfk>bbf:
@@ -208,7 +208,7 @@ def test_evidence(verbose=0,k=1):
     w,cent,prec,pz = b.sample(x,niter=niter,mem=1)
     bplugin =  BGMM(k,dim,cent,prec,w)
     bplugin.guess_priors(x)
-    bfchib = bplugin.Bfactor(x,pz.astype(np.int),1)
+    bfchib = bplugin.bayes_factor(x,pz.astype(np.int),1)
     if verbose:
         print ' chib:', bfchib
     assert(bfchib>vbe)

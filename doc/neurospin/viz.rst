@@ -1,10 +1,10 @@
 
-Automatic plotting of activation maps
+Plotting of activation maps
 =====================================
 
-.. currentmodule:: nipy.neurospin.viz.activation_maps
+.. currentmodule:: nipy.neurospin.viz_tools.activation_maps
 
-The module :mod:`nipy.neurospin.viz.activation_maps` provides functions to plot
+The module :mod:`nipy.neurospin.viz` provides functions to plot
 visualization of activation maps in a non-interactive way.
 
 2D cuts of an activation map can be plotted and superimposed on an
@@ -28,55 +28,52 @@ An example
 
 ::
 
-    from nipy.neurospin.viz.activation_maps import plot_map, mni_sform, \
-            coord_transform
+    from nipy.neurospin.viz import plot_map, mni_sform, coord_transform
 
     # First, create a fake activation map: a 3D image in MNI space with
-    # a large rectangle of activation around Brodmann Area 26
+    # a large rectangle of activation around Broca Area
     import numpy as np
     mni_sform_inv = np.linalg.inv(mni_sform)
-    map = np.zeros((182, 218, 182))
-    x, y, z = -6, -53, 9
+    # Color a asymetric rectangle around Broca area:
+    x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
+    map = np.zeros((182, 218, 182))
     map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     
+    # We use a masked array to add transparency to the parts that we are
+    # not interested in:
+    thresholded_map = np.ma.masked_less(map, 0.5)
+
     # And now, visualize it:
-    plot_map(map, mni_sform, cut_coords=(x, y, z), vmin=0.5)
+    plot_map(thresholded_map, mni_sform, cut_coords=(x, y, z), vmin=0.5)
 
 This creates the following image:
 
-.. image:: activation_map.png
+.. image:: viz.png
 
-The same plot can be obtained fully automaticaly, by using
-:func:`auto_plot_map` to find the activation threshold `vmin` and the cut
-coordinnates::
+The same plot can be obtained fully automaticaly, by letting
+:func:`plot_map` find the activation threshold and the cut coordinnates::
 
-    from nipy.neurospin.viz.activation_maps import auto_plot_map
-    auto_plot_map(map, mni_sform)
+    auto_plot_map(map, mni_sform, threshold='auto')
 
 In this simple example, the code will easily detect the bar as activation
 and position the cut at the center of the bar.
 
-
-`nipy.neurospin.viz.activation_maps` functions
+`nipy.neurospin.viz` functions
 -------------------------------------------------
 
 .. autosummary::
     :toctree: generated
 
-    coord_transform
-    find_activation
-    find_cut_coords
-    plot_map_2d
-    auto_plot_map
+    plot_map
 
 
 3D plotting utilities
 ---------------------------
 
-.. currentmodule:: nipy.neurospin.viz.maps_3d
+.. currentmodule:: nipy.neurospin.viz_tools.maps_3d
 
-The module :mod:`nipy.neurospin.viz.maps_3d` can be used as helpers to
+The module :mod:`nipy.neurospin.viz3d` can be used as helpers to
 represent neuroimaging volumes with Mayavi2_. 
 
 .. autosummary::

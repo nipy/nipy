@@ -17,6 +17,10 @@ Author : Bertrand Thirion, 2008-2009
 
 import numpy as np
 import numpy.random as nr
+from numpy.linalg import det, inv, pinv, cholesky, eigvalsh 
+from scipy.special import gammaln
+
+
 import nipy.neurospin.clustering.clustering as fc
 from gmm import GMM
 
@@ -39,7 +43,6 @@ def dirichlet_eval(w,alpha):
 
     FIXME : check that the dimensions of x and alpha are compatible
     """
-    from scipy.special import gammaln
     if np.shape(w)!=np.shape(alpha):
         raise ValueError , "incompatible dimensions"
     loge = np.sum((alpha-1)*np.log(w))
@@ -61,7 +64,6 @@ def generate_normals(m,P):
     -------
     ng : array of shape(n): a draw from the gaussian density
     """
-    from numpy.linalg import cholesky,inv
     L = inv(cholesky(P))
     ng = nr.randn(m.shape[0])
     ng = np.dot(ng,L)
@@ -84,43 +86,57 @@ def generate_Wishart(n,V):
     from numpy.linalg import cholesky
     L = cholesky(V)
     p = V.shape[0]
-    A = nr.randn(p,p)
+    A = nr.randn(p, p)
     a = np.array([np.sqrt(nr.chisquare(n-i)) for i in range(p)])
     for i in range(p):
         A[i,i:] = 0
         A[i,i] = a[i]
-    R = np.dot(L,A)
-    W = np.dot(R,R.T)
+    R = np.dot(L, A)
+    W = np.dot(R, R.T)
     return W
 
-def Wishart_eval(n,V,W):
+def Wishart_eval(n, V, W, dV=None, dW=None, piV=None):
     """
     Evaluation of the  probability of W under Wishart(n,V)
 
     Parameters
     ----------
-    n (scalar) = the number of degrees of freedom (dofs)
-    V = array of shape (n,n) the scale matrix
-    W: array of shape (n,n): the Wishart draw
+    n: float,
+        the number of degrees of freedom (dofs)
+    V: array of shape (n,n)
+        the scale matrix of the Wishart density
+    W: array of shape (n,n)
+        the sample to be evaluated
+    dV: float, optional,
+        determinant of V
+    dW: float, optional,
+        determinant of W
+    piV: array of shape (n,n), optional
+        psuedo-inverse of V
 
     Returns
     -------
     (float) the density
     """
     # check that shape(V)==shape(W)
-    from numpy.linalg import det,pinv
-    from scipy.special import gammaln
     p = V.shape[0]
-    ldW = np.log(det(W))*(n-p-1)/2
-    ltr = - np.trace(np.dot(pinv(V),W))/2
-    la = ( n*p*np.log(2) + np.log(det(V))*n )/2
+    if dV == None:
+        dV = np.prd(eigvalsh(V))
+    if dW == None:
+        dW = np.prod(eigvalsh(W))
+    if piV==None:
+        piV = inv(V)
+    ldW = np.log(dW)*(n-p-1)/2
+    ltr = - np.trace(np.dot(piV, W))/2
+    la = ( n*p*np.log(2) + np.log(dV)*n )/2
     lg = np.log(np.pi)*p*(p-1)/4
-    for j in range(p):
-        lg += gammaln((n-j)/2)
+    #for j in range(p):
+    #    lg += gammaln((n-j)/2)
+    lg += gammaln(np.arange(n-p+1, n+1).astype(np.float)/2).sum()
     lt = ldW + ltr -la -lg
     return np.exp(lt)
 
-def normal_eval(mu,P,x):
+def normal_eval(mu, P, x, dP=None):
     """
     Probability of x under normal(mu,inv(P))
 
@@ -134,13 +150,14 @@ def normal_eval(mu,P,x):
     -------
     (float) the density
     """
-    from numpy.linalg import det
     p = np.size(mu)
+    if dP==None:
+        dP = np.prod(eigvalsh(P))
     mu = np.reshape(mu,(1,p))
-    w0 = np.log(det(P/2/np.pi))
-    w0/=2               
+    w0 = np.log(dP)-p*np.log(2*np.pi)
+    w0 /= 2               
     x = np.reshape(x,(1,p))
-    q = np.dot(np.dot(mu-x,P),np.transpose(mu-x))
+    q = np.dot(np.dot(mu-x,P),(mu-x).T)
     w = w0 - q/2
     L = np.exp(w)
     return np.squeeze(L)
@@ -217,13 +234,13 @@ def dkl_gaussian(m1,P1,m2,P2):
     (m1,P1) and (m2,P2)
     where m = mean and P = precision
     """
-    from numpy.linalg import det,pinv
+    from numpy.linalg import det,inv
     tiny = 1.e-15
     # fixme:check size
     dim = np.size(m1)
     d1 = max(det(P1),tiny)
     d2 = max(det(P2),tiny)
-    dkl = np.log(d1/d2)+ np.trace(np.dot(P2,pinv(P1)))-dim
+    dkl = np.log(d1/d2)+ np.trace(np.dot(P2,inv(P1)))-dim
     dkl += np.dot(np.dot((m1-m2).T,P2),(m1-m2))
     dkl /= 2
     return dkl
@@ -236,7 +253,7 @@ def dkl_wishart(a1,B1,a2,B2):
     B1 and B2 are scale matrices
     """
     from scipy.special import psi,gammaln
-    from numpy.linalg import det,pinv
+    from numpy.linalg import det,inv
     tiny = 1.e-15
     # fixme: check size
     dim = B1.shape[0]
@@ -255,7 +272,7 @@ def dkl_wishart(a1,B1,a2,B2):
     lz1 = 0.5*a1*dim*np.log(2)-0.5*a1*np.log(d1)+lg1
     lz2 = 0.5*a2*dim*np.log(2)-0.5*a2*np.log(d2)+lg2
     dkl = (a1-dim-1)*lw1-(a2-dim-1)*lw2-a1*dim
-    dkl += a1*np.trace(np.dot(B2,pinv(B1)))
+    dkl += a1*np.trace(np.dot(B2,inv(B1)))
     dkl /=2
     dkl += (lz2-lz1)
     return dkl
@@ -331,6 +348,9 @@ class BGMM(GMM):
 
         if self.dof==None:
             self.dof = np.ones(self.k)
+
+        if self.precisions!=None:
+            self._detp = [det(self.precisions[k]) for k in range(self.k)]
         
     def check(self):
         """
@@ -369,6 +389,12 @@ class BGMM(GMM):
         self.prior_scale = prior_scale
         self.prior_dof = prior_dof
         self.prior_shrinkage = prior_shrinkage       
+
+        # cache some pre-computations
+        self._dets = [det(self.prior_scale[k])for k in range(self.k)]
+        self._inv_prior_scale = np.array([inv(self.prior_scale[k])
+                                          for k in range(self.k)])
+
         self.check()
 
     def guess_priors(self,x, nocheck=0):
@@ -385,10 +411,11 @@ class BGMM(GMM):
         """
         # a few parameters
         small = 0.01
+        elshape = (1, self.dim, self.dim)
         mx = np.reshape(x.mean(0),(1,self.dim))
         dx = x-mx
         vx = np.dot(dx.T,dx)/x.shape[0]
-        px = np.reshape(np.diag(1.0/np.diag(vx)),(1,self.dim,self.dim))
+        px = np.reshape(np.diag(1.0/np.diag(vx)),elshape)
         px *= np.exp(2.0/self.dim*np.log(self.k))
 
         # set the priors
@@ -398,6 +425,10 @@ class BGMM(GMM):
         self.prior_dof = np.ones(self.k)*(self.dim+2)
         self.prior_shrinkage = np.ones(self.k)*small
 
+        # cache some pre-computations
+        self._dets = np.ones(self.k)*det(px[0])
+        self._inv_prior_scale = np.repeat(np.reshape(inv(px[0]),elshape),self.k,0)
+        
         # check that everything is OK
         if nocheck==True:
             self.check()
@@ -474,7 +505,7 @@ class BGMM(GMM):
             self.means[k] = generate_normals(\
                 means[k],self.precisions[k]*self.shrinkage[k])
         
-    def update_precisions(self,x,z):
+    def update_precisions(self, x, z):
         """
         Given the allocation vector z,
         and the corresponding data x,
@@ -487,8 +518,6 @@ class BGMM(GMM):
         z array of shape (nbitems), type = np.int
           the corresponding classification
         """
-        from numpy.linalg import pinv
-
         pop = self.pop(z)
         self.dof = self.prior_dof + pop +1
 
@@ -506,8 +535,7 @@ class BGMM(GMM):
             dx = np.reshape(x[z==k]-empmeans[k],(pop[k],self.dim))
             empcov[k] += np.dot(dx.T,dx)
                     
-        covariance = np.array([pinv(self.prior_scale[k])
-                               for k in range(self.k)])
+        covariance = np.array(self._inv_prior_scale)
         covariance += empcov
                         
         dx = np.reshape(empmeans-self.prior_means,(self.k,self.dim,1))
@@ -516,10 +544,13 @@ class BGMM(GMM):
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
         covariance += addcov*prior_shrinkage
                 
-        scale = np.array([pinv(covariance[k]) for k in range(self.k)])
+        scale = np.array([inv(covariance[k]) for k in range(self.k)])
         for k in range(self.k):
-            self.precisions[k] = generate_Wishart(self.dof[k],scale[k])
+            self.precisions[k] = generate_Wishart(self.dof[k], scale[k])
 
+        self._detp = [np.prod(eigvalsh(self.precisions[k]))
+                      for k in range(self.k)]
+        self._invp = [inv(self.precisions[k]) for k in range(self.k)]
         
     def update(self,x,z):
         """
@@ -536,13 +567,13 @@ class BGMM(GMM):
         self.update_precisions(x,z)
         self.update_means(x,z)
           
-    def sample_indicator(self,L):
+    def sample_indicator(self, like):
         """
         sample the indicator from the likelihood
 
         Parameters
         ----------
-        L: array of shape (nbitem,self.k)
+        like: array of shape (nbitem,self.k)
            component-wise likelihood
 
         Returns
@@ -550,12 +581,12 @@ class BGMM(GMM):
         z: array of shape(nbitem): a draw of the membership variable
         """
         tiny = 1+1.e-15
-        L = np.transpose(np.transpose(L)/L.sum(1))
-        L/=tiny
-        z = multinomial(L)
+        like = (like.T/like.sum(1)).T
+        like/= tiny
+        z = multinomial(like)
         return z
 
-    def sample(self,x,niter=1,mem=0,verbose=0):
+    def sample(self, x, niter=1, mem=0, verbose=0):
         """
         sample the indicator and parameters
 
@@ -584,8 +615,8 @@ class BGMM(GMM):
         bpz = -np.infty
         Mll = 0
         for i in range(niter):
-            L = self.likelihood(x)
-            sll = np.mean(np.log(np.sum(L,1)))
+            like = self.likelihood(x)
+            sll = np.mean(np.log(np.sum(like,1)))
             sll += np.log(self.probability_under_prior())
             if sll>score:
                 score = sll
@@ -593,11 +624,10 @@ class BGMM(GMM):
                 best_means = self.means.copy()
                 best_precisions = self.precisions.copy()
 
-            z = self.sample_indicator(L)
+            z = self.sample_indicator(like)
             if mem:
                 possibleZ[:,i] = z
             puz = sll # to save time
-            #puz = self._posterior_under_z(x,z)
             self.update(x,z)
             if puz>bpz:
                 ibz = i
@@ -607,7 +637,7 @@ class BGMM(GMM):
             aux = possibleZ[:,0].copy()
             possibleZ[:,0] = possibleZ[:,ibz].copy()
             possibleZ[:,ibz] = aux
-            return best_weights, best_means,best_precisions,possibleZ
+            return best_weights, best_means, best_precisions, possibleZ
 
     def sample_and_average(self,x,niter=1,verbose=0):
         """
@@ -638,8 +668,8 @@ class BGMM(GMM):
         aweights  = np.zeros(np.shape(self.weights))
         ameans  = np.zeros(np.shape(self.means))
         for i in range(niter):
-            L = self.likelihood(x)
-            z = self.sample_indicator(L)
+            like = self.likelihood(x)
+            z = self.sample_indicator(like)
             self.update(x,z)
             aprec += self.precisions
             aweights += self.weights
@@ -656,15 +686,16 @@ class BGMM(GMM):
         given the priors
         """
         p0 = 1
-        p0 = dirichlet_eval(self.weights,self.prior_weights)
+        p0 = dirichlet_eval(self.weights, self.prior_weights)
         for k in range(self.k):
-            mp = self.precisions[k]*self.prior_shrinkage[k]
-            p0 *= normal_eval(self.prior_means[k],mp,self.means[k])
-            p0 *= Wishart_eval(self.prior_dof[k],self.prior_scale[k],
-                               self.precisions[k])
+            mp = self.precisions[k] * self.prior_shrinkage[k]
+            p0 *= normal_eval(self.prior_means[k], mp, self.means[k])
+            p0 *= Wishart_eval(self.prior_dof[k], self.prior_scale[k],
+                               self.precisions[k], dV=self._dets[k],
+                               dW=self._detp[k], piV=self._inv_prior_scale[k])
         return p0
 
-    def conditional_posterior_proba(self,x,z):
+    def conditional_posterior_proba(self, x, z):
         """
         Compute the probability of the current parameters of self
         given x and z
@@ -694,19 +725,23 @@ class BGMM(GMM):
             dx = np.reshape(x[z==k]-empmeans[k],(pop[k],self.dim))
             empcov[k] += np.dot(dx.T,dx)
 
-        from numpy.linalg import pinv
+        from numpy.linalg import inv
                 
-        covariance = np.array([pinv(self.prior_scale[k])
-                               for k in range(self.k)])
+        covariance = np.array(self._inv_prior_scale)
         covariance += empcov
                         
         dx = np.reshape(self.means-self.prior_means,
-                        (self.k,self.dim,1))
+                        (self.k, self.dim, 1))
         addcov = np.array([np.dot(dx[k],dx[k].T) for k in range(self.k)])
+        #addcov =  np.zeros(np.shape(self.precisions))
+        #for  k in range(self.k):
+        #    addcov[k] = np.dot(dx[k],dx[k].T)
+        #
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
         covariance += addcov*prior_shrinkage
-        scale = np.array([pinv(covariance[k]) for k in range(self.k)])
-
+        scale = np.array([inv(covariance[k]) for k in range(self.k)])
+        _dets = np.array([np.prod(eigvalsh(scale[k])) for k in range(self.k)])
+        
         #2. the means
         empmeans= (empmeans.T*rpop).T
         shrinkage = self.prior_shrinkage + pop   
@@ -721,37 +756,38 @@ class BGMM(GMM):
         
         #4. evaluate the posteriors
         pp = 1
-        pp = dirichlet_eval(self.weights,weights)
+        pp = dirichlet_eval(self.weights, weights)
         for k in range(self.k):
-            pp*= Wishart_eval(dof[k],scale[k],self.precisions[k])
+            pp*= Wishart_eval(dof[k], scale[k], self.precisions[k],
+                              dW=self._detp[k], dV=_dets[k], piV=covariance[k] )
 
         for k in range(self.k):
             mp = scale[k]*shrinkage[k]
-            pp *= normal_eval(means[k],mp,self.means[k])
+            _dP = _dets[k]*shrinkage[k]**self.dim
+            pp *= normal_eval(means[k], mp, self.means[k], dP=_dP)
         return pp
     
     def evidence(self,x,z,nperm=0,verbose=0):
         """
-        See Bfactor(self,x,z,nperm=0,verbose=0)
+        See bayes_factor(self,x,z,nperm=0,verbose=0)
         """
-        return self.Bfactor(self,x,z,nperm,verbose)
+        return self.bayes_factor(self,x,z,nperm,verbose)
     
-    def Bfactor(self,x,z,nperm=0,verbose=0):
+    def bayes_factor(self, x, z, nperm=0, verbose=0):
         """
         Evaluate the Bayes Factor of the current model using Chib's method
 
         Parameters
         ----------
-        x= array of shape (nbitems,dim)
+        x: array of shape (nbitems,dim)
            the data from which bic is computed
-        z= array of shape (nbitems), type = np.int
+        z: array of shape (nbitems), type = np.int
            the corresponding classification
-        nperm=0 : the number of permutations to sample
-                to model the label switching issue 
-                in the computation of the Bayes Factor
-                By default, exhaustive permutations are used
-                if nperm>0, this number is used.
-                Note that this is simply to save time
+        nperm=0: int
+            the number of permutations to sample
+            to model the label switching issue 
+            in the computation of the Bayes Factor
+            By default, exhaustive permutations are used
         verbose=0: verbosity mode
         
         Returns
@@ -772,65 +808,25 @@ class BGMM(GMM):
         for i in range(niter):
             if nperm==0:
                 for j in range(perm.shape[0]):
-                    pz = apply_perm(perm[j],z[:,i])
-                    temp = self.conditional_posterior_proba(x,pz)
+                    pz = apply_perm(perm[j], z[:,i])
+                    temp = self.conditional_posterior_proba(x, pz)
                     p.append(temp)
             else:
                 drand = np.argsort(np.random.rand(perm.shape[0]))[:nperm]
                 for j in drand:
-                    pz = apply_perm(perm[j],z[:,i])
+                    pz = apply_perm(perm[j], z[:,i])
                     temp = self.conditional_posterior_proba(x,pz)
                     p.append(temp)
 
         p = np.array(p)
         mp = np.mean(p)
         p0 = self.probability_under_prior()
-        L = self.likelihood(x)
-        bf = np.log(p0) + np.sum(np.log(np.sum(L,1)))- np.log(mp)
+        like = self.likelihood(x)
+        bf = np.log(p0) + np.sum(np.log(np.sum(like, 1)))- np.log(mp)
         if verbose:
-            print np.log(p0), np.sum(np.log(np.sum(L,1))), np.log(mp)
+            print np.log(p0), np.sum(np.log(np.sum(like, 1))), np.log(mp)
         return bf
 
-    def _posterior_under_z(self,x,z=None):
-        """
-        return the integrated likelihood of the data
-        Using Wishart-Normal model
-        the values are not weighted by the component weights
-
-        deprecated
-        """
-        from numpy.linalg import det,inv
-        from scipy.special import gammaln
-        if z==None:
-            z = np.zeros(x.shape[0],np.int)
-        w=0
-        for k in range(self.k):
-            x = x[z==k,:]
-            if (np.size(x)>0):
-                n = x.shape[0]
-                a = self.prior_dof[k]
-                tau = self.prior_shrinkage[k]
-                tau /= (n+tau)  
-                w0 = - n*np.log(np.pi)*self.dim
-                w0 += np.log(tau)*self.dim
-                w0/=2               
-                for j in range(self.dim):
-                    w0 += gammaln((a+n-j)/2)
-                    w0 -= gammaln((a-j)/2)
-
-                m = np.reshape(self.prior_means[k],(1,self.dim))
-                b = self.prior_scale[k]
-                ib = inv(b)
-                Q = np.dot(np.transpose(x),x)
-                M = np.reshape(np.sum(x,0),(1,self.dim))
-                f = ib + Q + n*tau*np.dot(np.transpose(m),m)
-                f -=  np.dot(np.transpose(M),M)/(self.prior_shrinkage[k]+n)
-                f -= tau* (np.dot(np.transpose(m),M)+np.dot(np.transpose(M),m))
-                
-                w0 += a*np.log(det(ib))/2
-                w0 -= (a+n)*np.log(det(f))/2
-                w += w0
-        return w
 
 # ---------------------------------------------------------
 # --- Variational Bayes inference -------------------------
@@ -906,7 +902,7 @@ class VBGMM(BGMM):
         ev (float) the computed evidence
         """
         from scipy.special import psi
-        from numpy.linalg import det,pinv
+        from numpy.linalg import det,inv
         tiny = 1.e-15
         if L==None:
             L = self._Estep(x)
@@ -938,9 +934,8 @@ class VBGMM(BGMM):
             F+= Lav
             
         #then the KL divergences
-        prior_covariance = np.array([pinv(self.prior_scale[k])
-                               for k in range(self.k)])
-        covariance = np.array([pinv(self.scale[k]) for k in range(self.k)])
+        prior_covariance = np.array(self._inv_prior_scale)
+        covariance = np.array([inv(self.scale[k]) for k in range(self.k)])
         Dklw = 0
         Dklg = 0
         Dkld = dkl_dirichlet(self.weights,self.prior_weights)
@@ -965,7 +960,7 @@ class VBGMM(BGMM):
         L: array of shape(nbitem,self.k)
            the likelihood of the data under each class
         """
-        from numpy.linalg import pinv
+        from numpy.linalg import inv
         tiny  =1.e-15
         pop = L.sum(0)
        
@@ -992,8 +987,7 @@ class VBGMM(BGMM):
              dx = x-empmeans[k]
              empcov[k] = np.dot(dx.T,L[:,k:k+1]*dx) 
                     
-        covariance = np.array([pinv(self.prior_scale[k])
-                               for k in range(self.k)])
+        covariance = np.array(self._inv_prior_scale)
         covariance += empcov
 
         dx = np.reshape(empmeans-self.prior_means,(self.k,self.dim,1))
@@ -1001,7 +995,7 @@ class VBGMM(BGMM):
         apms =  np.reshape(prior_shrinkage*pop/shrinkage,(self.k,1,1))
         covariance += addcov*apms
 
-        self.scale = np.array([pinv(covariance[k]) for k in range(self.k)])
+        self.scale = np.array([inv(covariance[k]) for k in range(self.k)])
         
         # fixme : compute the MAP of the precisions
         #(not used, but for completness and interpretation)
@@ -1114,285 +1108,4 @@ def pop(self, L, tiny = 1.e-15):
         sL = np.maximum(tiny,np.sum(L,1))
         nL = (L.T/sL).T
         return np.sum(nL,0)
-
-
-# ------------------------------------------
-# ----- C bindings -------------------------
-# ------------------------------------------
-
-class BGMM_old(GMM):
-
-    """
-    This class implements Bayesian diagonal GMMs (prec_type = 1)
-    Besides the standard fiels of GMMs,
-
-    BGMM_old contains the follwing fields (besides those of GMM)
-
-    - prior_means : array of shape (k,dim):
-        the prior on the components means
-    - prior_precisions : array of shape (k,dim):
-        the prior on the components precisions
-    - prior_dof : array of shape (k):
-        the prior on the dof (should be at least equal to dim)
-    - prior_shrinkage : array of shape (k):
-        scaling factor of the prior precisions on the mean
-    - prior_weights  : array of shape (k)
-        the prior on the components weights
-    - shrinkage : array of shape (k):
-        scaling factor of the posterior precisions on the mean
-    - dof : array of shape (k): the posterior dofs
-    
-    fixme : needs renaming
-    """
-
-    def set_priors(self,prior_means = None, prior_weights = None, prior_precisions = None, prior_dof = None,prior_shrinkage = None ):
-        """
-        Set the prior of the BGMM
-        """
-        self.prior_means = prior_means
-        self.prior_weights = prior_weights
-        self.prior_precisions = prior_precisions
-        self.prior_dof = prior_dof
-        self.prior_shrinkage = prior_shrinkage
-        self.prec_type = 1
-        self.check_priors()
-
-    def check_priors(self):
-        """
-        Check that the meain fields have correct dimensions
-        """
-        if self.prior_means.shape[0]!=self.k:
-            raise ValueError,"Incorrect dimension for self.prior_means"
-        if self.prior_means.shape[1]!=self.dim:
-            raise ValueError,"Incorrect dimension for self.prior_means"
-        if self.prior_precisions.shape[0]!=self.k:
-            raise ValueError,"Incorrect dimension for self.prior_precisions"
-        if self.prior_precisions.shape[1]!=self.dim:
-            raise ValueError,"Incorrect dimension for self.prior_precisions"
-        if self.prior_dof.shape[0]!=self.k:
-            raise ValueError,"Incorrect dimension for self.prior_dof"
-        if self.prior_weights.shape[0]!=self.k:
-            raise ValueError,"Incorrect dimension for self.prior_weights"
-        
-        
-    def set_empirical_priors(self,x):
-        """
-        Set the prior in a natural (almost uninformative) 
-        fashion given a dataset x
-
-        Parameters
-        ----------
-        x array of shape(nbitems,dim) : the reference data
-        """
-        x = self.check_data(x)
-        self.prior_dof = self.dim*np.ones(self.k)
-        self.prior_weights = 1./self.k*np.ones(self.k)
-        self.prior_shrinkage = np.ones(self.k)
-        self.prior_means = np.repeat(np.reshape(x.mean(0),(1,self.dim)),self.k,0)
-        self.prior_precisions = np.repeat(np.reshape(1./x.var(0),(1,self.dim)),self.k,0)
-
-    def VB_estimate(self,x,niter = 100,delta = 0.0001):
-        """
-        Estimation of the BGMM using a Variational Bayes approach
-        
-        Parameters
-        ----------
-        x array of shape (nbitems,dim) the input data
-        niter = 100, the maximal number of iterations of the VB algo
-        delta = 0.0001, the increment in log-likelihood 
-              to declare convergence 
-        
-        Returns
-        -------
-        label: array of shape nbitems: resulting MAP labelling
-        """
-        x = self.check_data(x)
-
-        # pre_cluster the data (this improves convergence...)
-        label = np.zeros(x.shape[0])
-        nit = 10
-        mean,label,J = fc.kmeans(x,self.k,label,nit)
-
-        label, mean, meansc, prec, we, dof, Li = fc.bayesian_gmm (x,self.prior_means,self.prior_precisions,self.prior_shrinkage,self.prior_weights, self.prior_dof,label,niter,delta)
-        self.estimated = 1
-        self.means = mean
-        self.shrinkage = meansc
-        self.precisions = prec
-        self.weights = we
-        self.dof = dof
-        return label
-
-    def VB_sample(self,gd,x=None):
-        """
-        Sampling of the BGMM model on test points (the 'grid')in order to have
-        an estimate of the posterior on these points
-        
-        Parameters
-        ----------
-        gd = a grid descriptor, i.e. 
-           the grid on chich the BGMM is sampled
-        x = None: used for plotting (empirical data)
-
-        Returns
-        -------
-        Li : array of shape (nbnodes,self.k),
-            the posterior for each node and component
-        """
-        if self.estimated:
-            grid = gd.make_grid()
-            Li = fc.bayesian_gmm_sampling(self.prior_means, \
-                 self.prior_precisions, self.prior_shrinkage, 
-                 self.prior_weights, self.prior_dof, self.means, 
-                 self.precisions, self.shrinkage, self.weights, self.dof, grid)
-        else:
-            raise ValueError, "the model has not been estimated"
-
-        if x!=None:
-            self.show(x,gd,np.exp(Li))
-        return Li.sum(1)
-
-    def VB_estimate_and_sample(self,x,niter = 1000,delta = 0.0001,gd = None,verbose = 0):
-        """
-        Estimation of the BGMM using a Variational Bayes approach,
-        and sampling of the model on test points in order to have
-        an estimate of the posterior on these points
-
-        Parameters
-        ----------
-        x array of shape (nbitems,dim) the input data
-        niter = 100, the maximal number of iterations of the VB algo
-        delta = 0.0001, the increment in log-likelihood 
-              to declare convergence 
-        gd = None  a grid descriptor, i.e. 
-           the grid on chich the model is sampled
-           if gd==None, x is used as Grid
-        verbose = 0: the verbosity mode
-        
-        Returns
-        -------
-        Li : array of shape (nbnodes): the average log-posterior
-        label: array of shape nbitems: resulting MAP labelling
-        """
-        x = self.check_data(x)
-        
-        # pre_cluster the data (this improves convergence...)
-        label = np.zeros(x.shape[0])
-        nit = 10
-        mean,label,J = fc.kmeans(x,self.k,label,nit)
-
-        if gd==None:
-            grid = x
-        else:
-            grid = gd.make_grid()
-        
-        label, mean, meansc, prec, we,dof,Li = fc.bayesian_gmm (x, 
-               self.prior_means, self.prior_precisions, self.prior_shrinkage,
-               self.prior_weights, self.prior_dof, label, niter, delta, grid)
-        self.estimated = 1
-        self.means = mean
-        self.shrinkage = meansc
-        self.precisions = prec
-        self.weights = we
-        self.dof = dof
-        if verbose:
-            self.show(x,gd,np.exp(Li))
-        return Li,label
-
-    def sample_on_data(self,grid):
-        """
-        Sampling of the BGMM model on test points (the 'grid')in order to have
-        an estimate of the posterior on these points
-        
-        Parameters
-        ----------
-        grid: a set of points from which the posterior should be sampled 
-        
-        Returns
-        -------
-        Li : array of shape (nbnodes,self.k),
-            the posterior for each node and component
-        """
-        if self.estimated:
-            Li = fc.bayesian_gmm_sampling( self.prior_means,\
-                 self.prior_precisions, self.prior_shrinkage, 
-                 self.prior_weights, self.prior_dof, self.means,
-                 self.precisions, self.shrinkage, self.weights, self.dof, grid)
-        else:
-            raise ValueError, "the model has not been estimated"
-
-        return Li
-
-    def Gibbs_estimate(self,x,niter = 1000,method = 1):
-        """
-        Estimation of the BGMM using Gibbs sampling
-        
-        Parameters
-        ----------
-        x array of shape (nbitems,dim) the input data
-        niter = 1000, the maximal number of iterations of the Gibbs sampling
-        method = 1: boolean to state whether covariance
-               are fixed (0 ; normal model) or variable 
-               (1 ; normal-wishart model)
-
-        Returns
-        -------
-        label: array of shape nbitems, resulting MAP labelling
-        """
-        x = self.check_data(x)
-        label, mean, meansc, prec, we,dof,Li = fc.gibbs_gmm (x,\
-               self.prior_means, self.prior_precisions, self.prior_shrinkage,
-               self.prior_weights, self.prior_dof, niter, method)
-        self.estimated = 1
-        self.means = mean
-        self.shrinkage = meansc
-        self.precisions = prec
-        self.weights = we
-        self.dof = dof
-        label = np.argmax(label,1)
-        return label
-        
-    def Gibbs_estimate_and_sample(self, x, niter = 1000, method = 1, 
-                                        gd = None, nsamp = 1000, verbose=0):
-        """
-        Estimation of the BGMM using Gibbs sampling
-        and sampling of the posterior on test points
-        
-        Parameters
-        ----------
-        x array of shape (nbitems,dim) the input data
-        niter = 1000, the maximal number of iterations of the Gibbs sampling
-        method = 1: boolean to state whether covariance
-               are fixed (0 ; normal model) 
-               or variable (1 ; normal-wishart model)
-        gd = None,  a grid descriptor, i.e. 
-           the grid on chich the model is sampled
-           if gd==None, x is used as Grid
-        nsamp = 1000 number of draws of the posterior
-        verbose = 0: the verboseity level
-        
-        Returns
-        -------
-        Li : array of shape (nbnodes): the average log-posterior
-        label: array of shape (nbitems): resulting MAP labelling
-        """
-        x = self.check_data(x)
-        if gd==None:
-            grid = x
-        else:
-            grid = gd.make_grid()
-            
-        label, mean, meansc, prec, we,dof,Li = fc.gibbs_gmm (x, \
-               self.prior_means, self.prior_precisions, self.prior_shrinkage,
-               self.prior_weights, self.prior_dof, niter, method, grid, nsamp)
-        self.estimated = 1
-        self.means = mean
-        self.shrinkage = meansc
-        self.precisions = prec
-        self.weights = we
-        self.dof = dof
-        if verbose:
-            self.show(x,gd,Li)
-
-        label = np.argmax(label,1)
-        return np.log(Li),label
 

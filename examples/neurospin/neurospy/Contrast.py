@@ -40,10 +40,30 @@ class Contrast(dict):
             return res
 
 class ContrastList():
-    def __init__ (self, misc_info_path=None, contrast_path=None, model="default", verbose=0):
-        if misc_info_path == None:
-            raise ValueError, "Need a misc_info path"
-        misc= ConfigObj(misc_info_path)
+    def __init__ (self, misc_info_path=None, contrast_path=None, model="default", misc=None, verbose=0):
+        """
+        Automatically generate some contrasts from a 'misc' file
+        
+        Parameters
+        ----------
+        misc_info_path, string, optional
+            path of a ConfigObbj file
+        contrast_path: string, optional,
+            path of a contrast file where contrast are written
+        model, string, optional,
+            identifier of the model that corresponds to the contrasts
+        misc: dictionary, optional
+            dictionary that contains the misc info.
+            Note that misc_info_path or misc have to be defined
+        verbose: boolean, optional,
+            verbosity mode
+        """
+        if (misc_info_path == None) and (misc==None):
+            raise ValueError, "Need a misc_info path or a misc instance"
+
+        if misc==None:
+            misc= ConfigObj(misc_info_path)
+            
         self.dic = {}
         base_cond = Contrast()
         sessions = []
@@ -65,7 +85,7 @@ class ContrastList():
         nderiv = 1
         if verbose: print misc[model]["regressors_%s" % sessions[0]]
         for cond in misc[model]["regressors_%s" % sessions[0]]:
-            if cond[:6] == "(drift":
+            if (cond[:5] == "drift") or (cond == "constant"):
                 ndrift += 1
             elif cond[-6:] == "_deriv":
                 nderiv = 2
@@ -86,13 +106,29 @@ class ContrastList():
     def get_dictionnary(self):
         return self.dic
 
-    def save_dic(self, contrast_file,verbose=0):
+    def save_dic(self, contrast_file, verbose=0):
+        """
+        Instantiate a contrast object and write it in a file
+        
+        Parameters
+        ----------
+        contrast_file: string,
+                       path of the resulting file
+        verbose, bool:
+                 verbosity mode
+
+        Returns
+        -------
+        the contrast object
+        """
         contrast = ConfigObj(contrast_file)
         contrast["contrast"] = []
         for key in self.dic.keys():
-            if key[:7] == "(drift:" and key[7:-1].isdigit() and key[-1] == ")":
+            if key[:5] == "drift":
                 continue
             if key[-6:] == "_deriv":
+                continue
+            if key[-8:] == "constant":
                 continue
             dim = 0
             for v in self.dic[key].values():
@@ -122,3 +158,4 @@ class ContrastList():
             if verbose: print contrast[key]
             contrast["contrast"].append(key)
         contrast.write()
+        return contrast
