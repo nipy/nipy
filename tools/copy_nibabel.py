@@ -35,36 +35,17 @@ import re
 
 import nose
 
-# search replaces for imports
-subs = (
-    (re.compile(r'^([ >]*)(import|from) +nifti'),
-     r'\1\2 nipy.io.imageformats'),
-    )
-
 caller = functools.partial(call, shell=True)
-git_path = 'git://git.debian.org/git/pkg-exppsy/pynifti.git'
+git_path = 'git://github.com/hanke/nibabel.git'
 
 
-def create_archive(out_path, git_path, git_id):
-    out_path = os.path.abspath(out_path)
-    pwd = os.path.abspath(os.curdir)
-    # pull out git archive
-    tmp_path = tempfile.mkdtemp()
-    os.chdir(tmp_path)
-    caller('git clone ' + git_path)
-    # extract nifti library tree from git archive
-    os.chdir('pynifti')
-    caller('git archive %s nifti > nifti.tar' % git_id)
-    os.chdir(tmp_path)
-    caller('tar xvf pynifti/nifti.tar')
-    shutil.rmtree('pynifti')
-    # create path structure for moved imports
-    os.makedirs(pjoin('nipy', 'io'))
-    file(pjoin('nipy', '__init__.py'), 'wt').write('\n')
-    file(pjoin('nipy', 'io', '__init__.py'), 'wt').write('\n')
-    os.rename('nifti', pjoin('nipy','io','imageformats'))
-    # do search and replace for imports to change to NIPY ones
-    for root, dirs, files in os.walk('nipy'):
+# search replaces for imports
+def import_replace(pth, old_import, new_import):
+    subs = (
+        (re.compile(r'^([ >]*)(import|from) +%s' % old_import),
+         r'\1\2 %s' % new_import),
+        )
+    for root, dirs, files in os.walk(pth):
         for fname in files:
             if not fname.endswith('.py'):
                 continue
@@ -78,6 +59,31 @@ def create_archive(out_path, git_path, git_id):
                         continue
                 outfile.write(line)
             outfile.close()
+
+
+def create_archive(out_path, git_path, git_id,
+                   dist_sdir, pkg_name):
+    out_path = os.path.abspath(out_path)
+    pwd = os.path.abspath(os.curdir)
+    # pull out git archive
+    tmp_path = tempfile.mkdtemp()
+    os.chdir(tmp_path)
+    tar_name = pjoin(tmp_path, '%s.tar' % pkg_name)
+    caller('git clone ' + git_path)
+    # extract nifti library tree from git archive
+    os.chdir(dist_sdir)
+    caller('git archive %s %s > %s' %
+           (git_id, pkg_name, tar_name))
+    os.chdir(tmp_path)
+    shutil.rmtree(dist_sdir)
+    caller('tar xvf %s' % tar_name)
+    # create path structure for moved imports
+    os.makedirs(pjoin('nipy', 'io'))
+    file(pjoin('nipy', '__init__.py'), 'wt').write('\n')
+    file(pjoin('nipy', 'io', '__init__.py'), 'wt').write('\n')
+    os.rename(pkg_name, pjoin('nipy','io','imageformats'))
+    # do search and replace for imports to change to NIPY ones
+    import_replace('nipy', 'nibabel', 'nipy.io.imageformats')
     # make archive for later use
     os.chdir(pjoin('nipy','io'))
     caller('tar zcvf %s imageformats' % out_path)
@@ -99,9 +105,9 @@ if __name__ == '__main__':
     try:
         git_id = sys.argv[2]
     except IndexError:
-        git_id = 'brifti-0.2'
+        git_id = 'nipy-io-0.5'
     try:
         git_path = sys.argv[3]
     except IndexError:
         pass
-    create_archive(out_path, git_path, git_id)
+    create_archive(out_path, git_path, git_id, 'nibabel', 'nibabel')

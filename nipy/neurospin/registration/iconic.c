@@ -28,13 +28,18 @@ static double _marginalize(double* h,
 			   unsigned int clampI, 
 			   unsigned int clampJ, 
 			   int axis); 
-static inline void _apply_affine_transform(double* Tx, 
-					   double* Ty, 
-					   double* Tz, 
-					   const double* Tvox, 
-					   size_t x, 
-					   size_t y, 
-					   size_t z); 
+static inline void _affine_transform(double* Tx, 
+				     double* Ty, 
+				     double* Tz, 
+				     const double* Tvox, 
+				     size_t x, 
+				     size_t y, 
+				     size_t z); 
+static inline double* _precomputed_transform(double* Tx, 
+					     double* Ty, 
+					     double* Tz, 
+					     const double* Tvox); 
+
 static inline void _pv_interpolation(unsigned int i, 
 				     double* H, unsigned int clampJ, 
 				     const signed short* J, 
@@ -188,9 +193,14 @@ short encoded.
 
 H : assumed C-contiguous. 
 
-Tvox : assumed C-contiguous.
+Tvox : assumed C-contiguous: 
 
-Negative intensities are ignored. 
+  either a 3x4=12-sized array (or bigger) for an affine transformation
+
+  or a 3xN array for a pre-computed transformation, with N equal to
+  the size of the array corresponding to iterI (no checking done)
+
+Negative intensities are ignored.  
 
 */
 
@@ -208,6 +218,7 @@ void joint_histogram(double* H,
 		     PyArrayIterObject* iterI,
 		     const PyArrayObject* imJ_padded, 
 		     const double* Tvox, 
+		     int affine, 
 		     int interp)
 {
   const signed short* J=(signed short*)imJ_padded->data; 
@@ -231,6 +242,7 @@ void joint_histogram(double* H,
   size_t x, y, z; 
   int nn, nx, ny, nz;
   double Tx, Ty, Tz; 
+  double *bufTvox = (double*)Tvox; 
   void (*interpolate)(unsigned int, double*, unsigned int, const signed short*, const double*, int, void*); 
   void* interp_params = NULL; 
   rk_state rng; 
@@ -262,14 +274,18 @@ void joint_histogram(double* H,
     bufI = (signed short*)PyArray_ITER_DATA(iterI); 
     i = bufI[0];
 
-    /* Source voxel coordinates */
-    x = iterI->coordinates[0];
-    y = iterI->coordinates[1];
-    z = iterI->coordinates[2];
-    
     /* Compute the transformed grid coordinates of current voxel */ 
-    _apply_affine_transform(&Tx, &Ty, &Tz, Tvox, x, y, z); 
-    
+    if (affine) {
+      /* Get voxel coordinates and apply transformation on-the-fly*/
+      x = iterI->coordinates[0];
+      y = iterI->coordinates[1];
+      z = iterI->coordinates[2];
+      _affine_transform(&Tx, &Ty, &Tz, Tvox, x, y, z); 
+    }
+    else 
+      /* Use precomputed transformed coordinates */ 
+      bufTvox = _precomputed_transform(&Tx, &Ty, &Tz, (const double*)bufTvox);
+       
     /* Test whether the current voxel is below the intensity
        threshold, or the transformed point is completly outside
        the reference grid */
@@ -438,8 +454,9 @@ static inline void _rand_interpolation(unsigned int i,
 
 
 
-static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz, 
-					   const double* Tvox, size_t x, size_t y, size_t z)
+static inline void _affine_transform(double* Tx, double* Ty, double* Tz, 
+				     const double* Tvox, 
+				     size_t x, size_t y, size_t z)
 {
   double* bufTvox = (double*)Tvox; 
 
@@ -457,6 +474,18 @@ static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz,
   *Tz += *bufTvox;
 
   return; 
+}
+
+static inline double* _precomputed_transform(double* Tx, double* Ty, double* Tz, 
+					     const double* Tvox)  
+{
+  double* bufTvox = (double*)Tvox; 
+
+  *Tx = *bufTvox; bufTvox++;
+  *Ty = *bufTvox; bufTvox++;
+  *Tz = *bufTvox; bufTvox++; 
+
+  return bufTvox; 
 }
 
 

@@ -2,7 +2,7 @@ import numpy as np
 import scipy.stats as sp_stats
 
 from nipy.neurospin.graph.field import Field
-from nipy.neurospin.register.transform import apply_affine
+from nipy.neurospin.image import apply_affine
 from nipy.neurospin.utils import emp_null
 from nipy.neurospin.glm import glm
 from nipy.neurospin.group.permutation_test import \
@@ -115,7 +115,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
         zscore = zmap_th[maxima]
         pval = sp_stats.norm.sf(zscore)
         # Replace array indices with real coordinates
-        c['maxima'] = apply_affine(zimg.get_affine(), xyz_th[maxima].T).T 
+        c['maxima'] = apply_affine(zimg.get_affine(), xyz_th[maxima]) 
         c['zscore'] = zscore
         c['pvalue'] = pval
         c['fdr_pvalue'] = fdr_pvalue[maxima]

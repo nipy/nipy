@@ -19,5 +19,3 @@
    software_design/index
    software_design/usecases/index
    tools/index
-
-   pynifti
