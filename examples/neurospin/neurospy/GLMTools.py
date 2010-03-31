@@ -2,7 +2,7 @@
 General tools to analyse fMRI datasets (GLM fit)
 using nipy.neurospin tools
 
-Author : Lise Favre, Bertrand Thirion, 2008-2009
+Author : Lise Favre, Bertrand Thirion, 2008-2010
 """
 
 import numpy as np
@@ -11,14 +11,131 @@ import os
 from configobj import ConfigObj
 
 from nipy.io.imageformats import load, save, Nifti1Image 
-from nipy.neurospin.utils.mask import compute_mask_files
+
 
 import Results
 
+############################################
+# Path definition
+############################################
 
-# ----------------------------------------------
-# -------- IO functions ------------------------
-# ----------------------------------------------
+def generate_all_brainvisa_paths( base_path, sessions, fmri_wc,  model_id,
+                                  misc_id="misc_info.con", mask_id="mask.nii", 
+                                  paradigm_id="paradigm.csv", 
+                                  contrast_id="contrast.con",
+                                  design_id="design_mat.csv",
+                                  glm_dump="vba.npz",
+                                  glm_config="vba_config.con"):
+    """
+    This function returns a dictionary with all the paths of all the paths
+    where something id read or written in a standard GLM.
+    The hard-coded paths reflect brainvisa database conventions.
+    Additionally, this creates the missing output directories.
+
+    Parameters
+    ----------
+    base_path: string,
+              path of the acquition 
+              (contains database, subject and acquitision ids)
+    sessions: list of strings
+              list of all the session related to the acquisition
+    fmri_wc: string,
+             wildcard for fMRI data files,
+             assumed to be the same for all sessions
+    model_id: string,
+              identifier of the model
+    misc_id: string, optional
+             identifier of the 'misc file' that contains meta-information
+    mask_id: string, optional
+             file id of the mask image       
+    paradigm_id: string, optional
+                 identifier of the paradigm file (should be a .csv file)
+    contrast_id: string, optional
+                 id of the contrast file
+    design_id: string, optional
+               id of the design matrices file   
+    glm_dump: string, optional,
+              id of the glm dump file (should be .npz file)
+    glm_config: string, optional,
+                id of the glm config file (should disappear in the near future)
+    
+    Returns
+    -------
+    paths, dictionary
+        containing all the paths that are required to eprform a glm with brainvisa
+    """
+    import glob
+    from os.path import join
+    paths = {}
+    paths['minf'] = os.sep.join(( base_path, "Minf"))
+    paths['model'] = os.sep.join(( base_path, "glm", model_id))
+    paths['paradigm'] = os.sep.join(( paths['minf'], paradigm_id))
+    if not os.path.isfile( paths['paradigm']):
+            raise ValueError,"paradigm file %s not found" %paradigmFile
+    paths['mask'] = os.sep.join(( paths['minf'], mask_id))
+    paths['misc'] = os.sep.join(( paths['minf'], misc_id))
+    paths['contrast_file'] =  os.sep.join(( paths['model'], contrast_id))
+    paths['contrasts'] = os.sep.join(( paths['model'], "Contrast"))
+    if not os.path.exists(paths["contrasts"]):
+        os.makedirs( paths["contrasts"])
+        
+    paths['fmri'] = {}
+    paths['dmtx'] = {}
+    paths['glm_dump'] = {}
+    paths['glm_config'] = {}
+    for sess in sessions:
+        designPath = os.sep.join(( paths['model'], sess))
+        if not os.path.exists(designPath):
+            os.makedirs(designPath)
+        paths['dmtx'][sess] = os.sep.join(( designPath, design_id))  
+        fmriPath = os.sep.join(( base_path, sess))
+        paths['fmri'][sess] = glob.glob( os.sep.join((fmriPath, fmri_wc)))
+        #
+        paths['glm_dump'][sess] = os.sep.join((designPath, glm_dump))
+        paths['glm_config'][sess] = os.sep.join((designPath, glm_config))
+    return paths
+
+def generate_brainvisa_ouput_paths( output_dir_path, contrasts ):
+    """
+    This function generate standard output paths for all the contrasts
+    and arranges them in a dictionary
+
+    Parameters
+    ----------
+    output_dir_path: string,
+                     path of the output dir
+    contrasts: ConfigObj instance,
+              contrast_structure
+    """
+    paths={}
+    contrast_ids = contrasts["contrast"]
+    for c in contrast_ids:
+        paths[c]={}
+        paths[c]["z_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+                                           (str(c), "z_map")))
+        # there is a switch fere between t/F files
+        contrast_type = contrasts[c]["Type"]
+        if contrast_type == "t":
+            paths[c]["t_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+                                               (str(c), "T_map")))
+        elif contrast_type == "F":
+            paths[c]["t_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+                                               (str(c), "F_map")))
+
+        paths[c]["t_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+                                           (str(c), "z_map")))
+        
+        paths[c]["res_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+                                           (str(c), "ResMS")))
+        paths[c]["con_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+                                           (str(c), "con")))
+        paths[c]["html_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+                                           (str(c), "html")))
+    return paths
+
+################################################
+# IO functions
+################################################
 
 
 def load_image(image_path, mask_path=None ):
@@ -238,98 +355,108 @@ def save_all(contrast, ContrastId, dim, mask_url, kargs):
     save_all_images(contrast, dim, mask_url, kargs)
  
 
-def ComputeMask(fmriFiles, outputFile, infT=0.4, supT=0.9):
-    """
-    Perform the mask computation, see the api of  compute_mask_files
-    """ 
-    compute_mask_files( fmriFiles, outputFile, False, infT, supT, cc=1)
-
-
+######################################################
+# First Level analysis
+######################################################
 
 #-----------------------------------------------------
-#------- First Level analysis ------------------------
+#------- Design Matrix handling ----------------------
 #-----------------------------------------------------
 
-def CheckDmtxParam(DmtxParam):
+def _loadProtocol(path, session):
     """
-    check that Dmtx parameters are OK
-    """
-    pass
-
-def DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
-                 session, DmtxParam):
-    """
-    Higher level function to define design matrices
-    This function simply unfolds  the Dmtxparam dictionary
-    and calls the _DesignMatrix function
+    Read a paradigm file consisting of a list of pairs
+    (occurence time, (duration), event ID)
+    and create a paradigm array
     
     Parameters
     ----------
-    nbFrames
-    paradigm
-    miscFile
-    tr
-    outputFile:
-    session
-    DmtxParam
+    path, string a path to a .csv file that describes the paradigm
+    session, int, the session number used to extract 
+             the relevant session information in th csv file
     
+    Returns
+    -------
+    paradigm array of shape (nevents,2) if the type is event-related design 
+             or (nenvets,3) for a block design
+             that constains (condition id, onset) 
+             or (condition id, onset, duration)
     """
+    import csv
+    csvfile = open(path)
+    dialect = csv.Sniffer().sniff(csvfile.read())
+    csvfile.seek(0)
+    reader = csv.reader(open(path, "rb"),dialect)
     
-    hrfType = DmtxParam["hrfType"]
-    drift = DmtxParam["drift"]
-    poly_order = DmtxParam["poly_order"]
-    cos_FreqCut = DmtxParam["cos_FreqCut"] 
-    FIR_delays = DmtxParam["FIR_delays"]
-    FIR_duration  = DmtxParam["FIR_duration"]
+    paradigm = []
+    for row in reader:
+        paradigm.append([float(row[j]) for j in range(len(row))])
+
+    paradigm = np.array(paradigm)
     
-    model = 'default'
+    #paradigm = loadtxt(path)
+    if paradigm[paradigm[:,0] == session].tolist() == []:
+        return None
+    paradigm = paradigm[paradigm[:,0] == session]
+    
+    if paradigm.shape[1] == 4:
+        paradigm = paradigm[:,1:]
+        typep = 'block'
+    else:
+        typep ='event'
+        paradigm = paradigm[:,[1,2]]
+    
+    return paradigm
 
-    # set RegMatrix
-    #regMatrix = DmtxParam["drift_matrix"]
-    regMatrix = None 
-    if DmtxParam.has_key('reg_matrix'):
-        regMatrix = DmtxParam["reg_matrix"]
-
-    # set RegNames
-    regNames = None
-    if DmtxParam.has_key('reg_names'):
-        regNames = DmtxParam["reg_names"]
-
-    _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
-                  session, hrfType, drift, regMatrix, poly_order,
-                  cos_FreqCut, FIR_delays, FIR_duration, model, regNames)
-
-
-
-def _DesignMatrix(nbFrames, paradigm, miscFile, tr, outputFile,
+def DesignMatrix(nbFrames, paradigm_file, miscFile, tr, outputFile,
                   session, hrfType="Canonical", drift="Blank",
                   regMatrix=None, poly_order=2, cos_FreqCut=128,
                   FIR_delays=[0], FIR_duration=1., model="default",
                   regNames=None, verbose=0):
     """
-    Base function to define design matrices
-    fixme : control that the FIR model works
     """
-    import DesignMatrix as dm
-   
-    design = dm.DesignMatrix(nbFrames, paradigm, session, miscFile, model)
-    design.load()
-    design.timing(tr)
- 
-    # fixme : append had-defined regressors (e.g. motion)
-    # set the drift terms
-    design.set_drift(drift,  poly_order, cos_FreqCut)
+    import nipy.neurospin.utils.design_matrix as dm
 
-    # set the condition-related regressors
-    design.set_conditions(hrfType, FIR_delays, FIR_duration)
+    # set the frametimes
+    _frametimes = tr*np.arange(nbFrames)
 
-    _design = design.compute_design(regMatrix, regNames, session, verbose)
-    
-    if _design != None:
-        design.save_csv(outputFile)
+    # get the condition names
+    misc = ConfigObj(miscFile)
+    if session.isdigit():
+        _session = int(session)
+    else:
+        _session = misc["sessions"].index(session)
+    _names  = misc["tasks"]
 
-def GLMFit(file, designMatrix,  output_glm, outputCon,
-           fit="Kalman_AR1", mask_url=None):
+    # get the paradigm
+    _paradigm = _loadProtocol(paradigm_file, _session)
+
+    # compute the design matrix
+    DM = dm.DesignMatrix\
+        (_frametimes, _paradigm, hrf_model=hrfType,
+         drift_model=drift, hfcut=cos_FreqCut, drift_order=poly_order,
+         fir_delays=FIR_delays, fir_duration=FIR_duration, cond_ids=_names,
+         add_regs=regMatrix, add_reg_names=regNames)
+    DM.estimate()
+
+    # write the design matrix
+    DM.write_csv(outputFile)
+
+    # write some info in the misc file
+    if not misc.has_key(model):
+        misc[model] = {}
+    misc[model]["regressors_%s" % session] = DM.names
+    misc[model]["design matrix cond"] = DM.design_cond
+    misc.write()
+    return DM
+
+
+#-----------------------------------------------------
+#------- GLM fit -------------------------------------
+#-----------------------------------------------------
+
+def GLMFit(file, DesignMatrix=None,  output_glm=None, outputCon=None,
+           fit="Kalman_AR1", mask_url=None, design_matrix_path=None):
     """
     Call the GLM Fit function with apropriate arguments
 
@@ -337,23 +464,31 @@ def GLMFit(file, designMatrix,  output_glm, outputCon,
     ----------
     file, string or list of strings,
           path of the fMRI data file(s)
-    designmatrix, string, path of the design matrix .csv file 
-    mask_url=None string, path of the mask file
-          if None, no mask is applied
-    output_glm, string, 
+    design_matrix, DesignMatrix instance, optional
+          design matrix of the model
+    output_glm, string, optional
                 path of the output glm .npz dump
-    outputCon, string,
+    outputCon, string,optional
                path of the output configobj contrast object
     fit= 'Kalman_AR1', string to be chosen among
          "Kalman_AR1", "Ordinary Least Squares", "Kalman"
          that represents both the model and the fit method
-                
+    mask_url=None string, path of the mask file
+             if None, no mask is applied
+    design_marix_path: string,
+                       path of the design matrix .csv file
+
     Returns
     -------
     glm, a nipy.neurospin.glm.glm instance representing the GLM
 
+    Note
+    ----
+    either DesignMatrix or design_matrix_path have to be defined
+    
     fixme: mask should be optional
     """
+    
     if fit == "Kalman_AR1":
         model = "ar1"
         method = "kalman"
@@ -363,53 +498,92 @@ def GLMFit(file, designMatrix,  output_glm, outputCon,
     elif fit == "Kalman":
         method = "kalman"
         model = "spherical"
-    
-    
-    import DesignMatrix as dm
-    names, X = dm.load_dmtx_from_csv(designMatrix)
-      
+
+    if DesignMatrix is None and design_matrix_path is None:
+        raise ValueError, 'No design matrix is provided'
+    if design_matrix_path is not None:
+        import nipy.neurospin.utils.design_matrix as dm
+        DesignMatrixM = dm.DesignMatrix().read_from_csv(design_matrix_path)
+    X = DesignMatrix.matrix
+        
     Y = load_image(file, mask_url)
 
     import nipy.neurospin.glm as GLM
     glm = GLM.glm()
     glm.fit(Y.T, X, method=method, model=model)
-    glm.save(output_glm)      
-    cobj = ConfigObj(outputCon)
-    cobj["DesignFilePath"] = designMatrix
-    cobj["mask_url"] = mask_url
-    cobj.write()   
+
+    if output_glm is not None:
+        glm.save(output_glm)
+        
+    if outputCon is not None:
+        cobj = ConfigObj(outputCon)
+        cobj["DesignFilePath"] = design_matrix_path
+        # fixme: problematic if design_matrix_path==None
+        cobj["mask_url"] = mask_url
+        cobj["GlmDumpFile"] = output_glm
+        cobj.write()   
 
     return glm
 
-def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name", 
-                                   model="default", verbose=0, **kargs):
+
+#-----------------------------------------------------
+#------- Contrast computation ------------------------
+#-----------------------------------------------------
+
+
+def ComputeContrasts(contrasts=None, misc=None, glms=None,
+                     save_mode="Contrast Name", model="default",
+                     verbose=0, **kargs):
     """
     Contrast computation utility    
     
     Parameters
     ----------
-    contrastFile, string, path of the configobj contrast file
-    miscFile, string, path of the configobj miscinfo file
-    glms, dictionary indexed by sessions that yields paths to
-          nipy.neurospin.glm.glm instances 
-          representing the glms of the individual sessions 
-          in particular , it should have the key "GlmDumpFile".
-    save_mode="Contrast Name", string to be chosen
-                        among "Contrast Name" or "Contrast Number"
-    model="default", string,
+    contrasts, ConfigObj instance, optional
+               it yields the set of contrasts of the multi-session model
+               if None, a 'contrast_file' (path) should be provided
+    miscFile, misc object instance, optional,
+              misc information on the datasets used here
+              if None, a 'misc_file' (path) should be provided
+    glms, dictionary of nipy.neurospin.glm.glm.glm instances
+         indexed by sessions, optional
+         if it is not provided, a 'glm_config' should be provided in kargs
+    save_mode='Contrast Name', string to be chosen
+                        among 'Contrast Name' or 'Contrast Number'
+    model='default', string,
                      name of the contrast model used in miscfile
     """
     import nipy.neurospin.glm as GLM
-    misc = ConfigObj(miscFile)
+
+    #read the msic info
+    if misc==None:
+        if not kargs.has_key('misc_file'):
+            misc = ConfigObj(kargs['miscFile'])
+        misc = ConfigObj(miscFile)
     if not misc.has_key(model):
         misc[model] = {}
-
     if not misc[model].has_key("con_dofs"):
         misc[model]["con_dofs"] = {}
 
-    contrasts = ConfigObj(contrastFile)
+    # get the contrasts
+    if contrasts==None:
+        if not kargs.has_key('contrast_file'):
+            raise ValueError, "No contrast file provided"
+        contrasts = ConfigObj(kargs['contrast_file'])
     contrasts_names = contrasts["contrast"]
+
+    # get the glms
     designs = {}
+    sessions = misc['sessions']
+    if glms is not None:
+       designs = glms
+    else:             
+        if not kargs.has_key('glms_config'):
+            raise ValueError, "No glms provided"
+        else:
+            for s in sessions:
+                designs[s] = GLM.load(kargs['glm_config'][s]["GlmDumpFile"])
+    
     for i, contrast in enumerate(contrasts_names):
         contrast_type = contrasts[contrast]["Type"]
         contrast_dimension = contrasts[contrast]["Dimension"]
@@ -427,11 +601,7 @@ def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
             if verbose: print key,value
             if key != "Type" and key != "Dimension":
                 session = "_".join(key.split("_")[:-1])
-                if verbose and (not designs.has_key(session)):
-                    print "Loading session : %s" % session
-                designs[session] = GLM.load(glms[session]["GlmDumpFile"])
-
-                bv=[int(j) != 0 for j in value]
+                bv = [int(j) != 0 for j in value]
                 if contrast_type == "t" and sum(bv)>0:
                     _con = designs[session].contrast([int(i) for i in value])
                     final_contrast.append(_con)
@@ -452,26 +622,20 @@ def ComputeContrasts(contrastFile, miscFile, glms, save_mode="Contrast Name",
         for c in final_contrast[1:]:
             res_contrast = res_contrast + c
             res_contrast.type = contrast_type
-
-        if contrasts.has_key('mask_url'):
-            mask_url = contrasts['mask_url']
-        elif misc.has_key('mask_url'):
+            
+        if misc.has_key('mask_url'):
             mask_url = misc['mask_url']
         else:
             mask_url = None
 
-        if kargs.has_key('CompletePaths'):
-           # just write the results at the provided paths, 
-           # assuming they are coorect
-            cpp = kargs['CompletePaths'][contrast]
-            for k in cpp.keys():
-                kargs[k] = cpp[k]
-            save_all_images(res_contrast, contrast_dimension, mask_url, kargs)
+        if not kargs.has_key('CompletePaths'):
+           raise ValueError, 'write paths are not available'
+           
+        cpp = kargs['CompletePaths'][contrast]
+        for k in cpp.keys():
+            kargs[k] = cpp[k]
+            save_all_images(res_contrast, contrast_dimension, mask_url, cpp)
                                           
-        else:
-            # partially recompute the paths
-            save_all(res_contrast, ContrastId, contrast_dimension, mask_url, 
-                     kargs)
         misc[model]["con_dofs"][contrast] = res_contrast.dof
     misc["Contrast Save Mode"] = save_mode
     misc.write()
