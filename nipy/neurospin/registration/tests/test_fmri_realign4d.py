@@ -7,7 +7,7 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 from nipy.io.imageformats import load, save
 from nipy.testing import funcfile
-from nipy.neurospin.registration.fmri_realign4d import Image4d, resample4d
+from nipy.neurospin.registration.realign4d import Image4d, resample4d
 
 
 im = load(funcfile) 
