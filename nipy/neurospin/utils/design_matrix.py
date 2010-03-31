@@ -10,13 +10,13 @@ class DesignMatrix(object):
     Class to handle design matrices
     """
 
-    def __init__(self, frametimes, paradigm=None, hrf_model='Canonical',
+    def __init__(self, frametimes=None, paradigm=None, hrf_model='Canonical',
                drift_model='Cosine', hfcut=128, drift_order=1, fir_delays=[0],
                fir_duration=1., cond_ids=None, add_regs=None, add_reg_names=None):
         """
         Parameters
         ----------
-        frametimes: array of shape(nbframes),
+        frametimes: array of shape(nbframes), optional
                     the timing of the scans
         paradigm: array of shape (nevents, nc)
                   paradigm-encoding array

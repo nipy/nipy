@@ -106,7 +106,21 @@ class ContrastList():
     def get_dictionnary(self):
         return self.dic
 
-    def save_dic(self, contrast_file,verbose=0):
+    def save_dic(self, contrast_file, verbose=0):
+        """
+        Instantiate a contrast object and write it in a file
+        
+        Parameters
+        ----------
+        contrast_file: string,
+                       path of the resulting file
+        verbose, bool:
+                 verbosity mode
+
+        Returns
+        -------
+        the contrast object
+        """
         contrast = ConfigObj(contrast_file)
         contrast["contrast"] = []
         for key in self.dic.keys():
@@ -144,3 +158,4 @@ class ContrastList():
             if verbose: print contrast[key]
             contrast["contrast"].append(key)
         contrast.write()
+        return contrast
