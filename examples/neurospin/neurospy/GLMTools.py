@@ -120,16 +120,12 @@ def generate_brainvisa_ouput_paths( output_dir_path, contrasts ):
                                                (str(c), "T_map")))
         elif contrast_type == "F":
             paths[c]["t_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
-                                               (str(c), "F_map")))
-
-        paths[c]["t_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
-                                           (str(c), "z_map")))
-        
+                                               (str(c), "F_map")))        
         paths[c]["res_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
                                            (str(c), "ResMS")))
         paths[c]["con_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
                                            (str(c), "con")))
-        paths[c]["html_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+        paths[c]["html_file"] = os.sep.join(( output_dir_path, "%s_%s.html"%\
                                            (str(c), "html")))
     return paths
 
@@ -583,7 +579,15 @@ def ComputeContrasts(contrasts=None, misc=None, glms=None,
         else:
             for s in sessions:
                 designs[s] = GLM.load(kargs['glm_config'][s]["GlmDumpFile"])
-    
+                
+    if misc.has_key('mask_url'):
+        mask_url = misc['mask_url']
+    else:
+        mask_url = None
+
+    if not kargs.has_key('CompletePaths'):
+        raise ValueError, 'write paths are not available'
+
     for i, contrast in enumerate(contrasts_names):
         contrast_type = contrasts[contrast]["Type"]
         contrast_dimension = contrasts[contrast]["Dimension"]
@@ -623,13 +627,7 @@ def ComputeContrasts(contrasts=None, misc=None, glms=None,
             res_contrast = res_contrast + c
             res_contrast.type = contrast_type
             
-        if misc.has_key('mask_url'):
-            mask_url = misc['mask_url']
-        else:
-            mask_url = None
-
-        if not kargs.has_key('CompletePaths'):
-           raise ValueError, 'write paths are not available'
+       
            
         cpp = kargs['CompletePaths'][contrast]
         for k in cpp.keys():
