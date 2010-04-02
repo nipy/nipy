@@ -6,12 +6,24 @@ _interp_order = 1
 _background = 0 
 
 
+"""
+Local image class used in various subpackages: registration,
+segmentation, statistical mapping...
+
+TODO: 
+- handle vector-valued images 
+- write tests and use-cases
+- transformation class
+- integrate home-made sampling routines to the image class
+"""
+
 class Image(object): 
     """
     Image class. 
     
-    An image is a real-valued mapping from a regular 3D lattice that
-    can be masked, in which case only in-mask image values are kept in
+    An image is a real-valued mapping from a regular 3D lattice which
+    is related to the world via an affine transformation. It can be
+    masked, in which case only in-mask image values are kept in
     memory.
     """
 
@@ -56,13 +68,9 @@ class Image(object):
     def __getitem__(self, slices):
         """
         Extract an image patch corresponding to the specified bounding
-        box. Compute the affine transfotrmation accordingly. 
+        box. Compute the affine transformation accordingly. 
         """
-        steps = map(lambda x: max(x,1), [s.step for s in slices])
-        starts = map(lambda x: max(x,0), [s.start for s in slices])
-        t = np.diag(np.concatenate((steps,[1]),1))
-        t[0:3,3] = starts
-        affine = np.dot(self._affine, t)
+        affine = subgrid_affine(self._affine, slices)
         return Image(self._get_data()[slices], affine, world=self._world)
 
     def _get_shape(self):
@@ -148,9 +156,9 @@ class Image(object):
         # Convert coords into grid coordinates
         X,Y,Z = validate_coords(coords)
         if not grid_coords:
-            X,Y,Z = apply_affine(self._inv_affine, (X,Y,Z))
+            X,Y,Z = apply_affine_to_tuple(self._inv_affine, (X,Y,Z))
         XYZ = np.c_[(X,Y,Z)]
-
+        
         # Avoid interpolation if coords are integers
         if issubclass(XYZ.dtype.type, np.integer):
             I = np.where(((XYZ>0)*(XYZ<self._shape)).min(1))
@@ -188,13 +196,20 @@ class Image(object):
 """
 Util functions
 """
-def load_image(fname): 
-    im = brifti.load(fname)
+def from_brifti(im): 
     return Image(im.get_data(), im.get_affine())
+
+def to_brifti(Im): 
+    return brifti.Nifti1Image(Im.data, Im.affine)
+
+"""
+def load_image(fname): 
+    return from_brifti(brifti.load(fname))
 
 def save_image(Im, fname):
     im = brifti.Nifti1Image(Im.data, Im.affine)
     brifti.save(im, fname)
+"""
 
 def mask_image(im, mask, background=None): 
     """
@@ -205,7 +220,6 @@ def mask_image(im, mask, background=None):
         background = im._background
     return Image(im._get_data()[mask], im._affine, world=im._world,
                  mask=mask, shape=im._shape, background=background)
-
 
 def set_image(im, values): 
     """
@@ -232,33 +246,59 @@ def set_image(im, values):
         
 
 
-def move_image(im, transform, target=None, 
-               dtype=None, interp_order=_interp_order):
+def transform_image(im, transform, grid_coords=False, 
+                    reference=None, dtype=None, interp_order=_interp_order):
     """
-    Apply a spatial transformation to bring the image into the
-    same grid as the specified target image. 
+    Apply a transformation to a 'floating' image to bring it into the
+    same grid as a given 'reference' image. The transformation is
+    assumed to go from the 'reference' to the 'floating'.
+
+    transform: nd array
     
-    transform: world transformation
+      either a 4x4 matrix describing an affine transformation
+
+      or a 3xN array describing voxelwise displacements of the
+      reference grid points
+
+    precomputed : boolean
+      True for a precomputed transformation, False for affine
+
+    grid_coords : boolean
+
+      True if the transform maps to grid coordinates, False if it maps
+      to world coordinates
     
-    target: target image, defaults to input. 
+    reference: reference image, defaults to input. 
     """
-    if target == None: 
-        target = im
+    if reference == None: 
+        reference = im
         
     if dtype == None: 
         dtype = im._get_dtype()
 
-    # Grid-to-grid transformation from target to source
-    t = np.dot(im._inv_affine, np.dot(inverse_affine(transform), target._affine))
-    
-    # Perform image resampling 
+    # Prepare data arrays
     data = im._get_data()
-    output = np.zeros(data.shape, dtype=dtype)
-    ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
-                             output_shape=target._shape,
-                             order=interp_order, cval=im._background, 
-                             output=output)
-    return Image(output, affine=target._affine, world=im._world, 
+    output = np.zeros(reference._shape, dtype=dtype)
+    t = np.asarray(transform)
+
+    # Case: affine transform
+    if t.shape[-1] == 4: 
+        if not grid_coords:
+            t = np.dot(im._inv_affine, np.dot(t, reference._affine))
+        ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
+                                 order=interp_order, cval=im._background, 
+                                 output_shape=output.shape, output=output)
+    
+    # Case: precomputed displacements
+    else:
+        if not grid_coords:
+            t = apply_affine(im._inv_affine, t)
+        output = ndimage.map_coordinates(data, np.rollaxis(t, 3, 0), 
+                                         order=interp_order, 
+                                         cval=im._background,
+                                         output=dtype)
+    
+    return Image(output, affine=reference._affine, world=im._world, 
                  background=im._background)
 
 
@@ -272,7 +312,25 @@ def validate_coords(coords):
 def inverse_affine(affine):
     return np.linalg.inv(affine)
 
-def apply_affine(affine, XYZ):
+
+def apply_affine(T, xyz):
+    """
+    XYZ = apply_affine(T, xyz)
+
+    T is a 4x4 matrix.
+    xyz is a Nx3 array of 3d coordinates stored row-wise.  
+    """
+    xyz = np.asarray(xyz)
+    shape = xyz.shape[0:-1]
+    XYZ = np.dot(np.reshape(xyz, (np.prod(shape), 3)), T[0:3,0:3].T)
+    XYZ[:,0] += T[0,3]
+    XYZ[:,1] += T[1,3]
+    XYZ[:,2] += T[2,3]
+    XYZ = np.reshape(XYZ, list(shape)+[3])
+    return XYZ 
+
+
+def apply_affine_to_tuple(affine, XYZ):
     """
     Parameters
     ----------
@@ -291,9 +349,12 @@ def apply_affine(affine, XYZ):
     tXYZ[2,:] += affine[2,3]
     return tuple(tXYZ)
 
-
-# TODO: integrate the following sampling routines to the image class
-# in some way
+def subgrid_affine(affine, slices):
+    steps = map(lambda x: max(x,1), [s.step for s in slices])
+    starts = map(lambda x: max(x,0), [s.start for s in slices])
+    t = np.diag(np.concatenate((steps,[1]),1))
+    t[0:3,3] = starts
+    return np.dot(affine, t)
 
 
 def sample(data, coords, order=_interp_order, dtype=None, 

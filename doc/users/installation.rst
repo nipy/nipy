@@ -18,15 +18,12 @@ Dependencies
 Must Have
 ^^^^^^^^^
 
-  Python_ 2.4 or later
+  Python_ 2.5 or later
   
   NumPy_ 1.2 or later
 
   SciPy_ 0.7 or later
     Numpy and Scipy are high-level, optimized scientific computing libraries.
-
-  PyNifti_
-    We are using pynifti for the underlying file IO for nifti files.
 
   gcc_
     NIPY does contain a few C extensions for optimized

@@ -61,6 +61,7 @@ extern "C" {
 			      PyArrayIterObject* iterI,
 			      const PyArrayObject* imJ_padded, 
 			      const double* Tvox, 
+			      int affine, 
 			      int interp); 
 
 

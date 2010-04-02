@@ -9,7 +9,7 @@ DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
 
 models = {'spherical':['ols', 'kalman'], 
-      'ar1':['kalman']}
+	  'ar1':['kalman']}
 
 class glm:
     def __init__(self, Y=None, X=None, formula=None, axis=0, 
@@ -52,11 +52,11 @@ class glm:
                 out = ols(Y, X, axis=axis)
             elif self.method == 'kalman':
                 out = kalman.ols(Y, X, axis=axis)
-            elif self.model == 'ar1':
-                constants = ['a']
-                out = kalman.ar1(Y, X, axis=axis, niter=niter)
-                a = out[4]
-                out = out[0:4]
+        elif self.model == 'ar1':
+            constants = ['a']
+            out = kalman.ar1(Y, X, axis=axis, niter=niter)
+            a = out[4]
+            out = out[0:4]
             
 
         # Finalize
@@ -122,12 +122,13 @@ class glm:
                 vcon = np.resize(vcon, s2.shape+aux) # X, q, q
                 vcon = vcon.transpose().reshape(aux+(s2.size,))*s2.reshape((s2.size,)) # q, q, Xflat
                 vcon = vcon.reshape(aux+s2.shape) # q, q, X
-        stop
+      
         # Create contrast instance
         c = contrast(dim, type, tiny, dofmax)
         c.effect = con
         c.variance = vcon
         c.dof = self.dof
+
         return c
                 
 

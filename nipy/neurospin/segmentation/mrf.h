@@ -10,12 +10,16 @@ extern "C" {
 
   extern void mrf_mport_array(void);
 
-  extern void smooth_ppm(PyArrayObject* ppm, 
-			 const PyArrayObject* lik,
-			 const PyArrayObject* XYZ, 
-			 double beta);
+  extern void ve_step(PyArrayObject* ppm, 
+		      const PyArrayObject* ref,
+		      const PyArrayObject* XYZ, 
+		      double beta,
+		      int copy,
+		      int hard);
 
-    
+  extern double concensus(PyArrayObject* ppm, 
+			  const PyArrayObject* XYZ); 
+
 
 #ifdef __cplusplus
 }

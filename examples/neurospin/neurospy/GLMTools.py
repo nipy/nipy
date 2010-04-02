@@ -95,7 +95,9 @@ def generate_all_brainvisa_paths( base_path, sessions, fmri_wc,  model_id,
         paths['glm_config'][sess] = os.sep.join((designPath, glm_config))
     return paths
 
-def generate_brainvisa_ouput_paths( output_dir_path, contrasts ):
+def generate_brainvisa_ouput_paths( output_dir_path, contrasts, z_file=True,
+                                    stat_file=True, con_file=True, res_file=True,
+                                    html_file=True):
     """
     This function generate standard output paths for all the contrasts
     and arranges them in a dictionary
@@ -106,27 +108,42 @@ def generate_brainvisa_ouput_paths( output_dir_path, contrasts ):
                      path of the output dir
     contrasts: ConfigObj instance,
               contrast_structure
+    z_file: bool, optional
+            whether the z_file should be written or not
+    stat_file: bool, optional
+               whether the stat file (t or F) should be written or not
+    con_file: bool, optional,
+              whether the contrast file should be written or not
+    res_file: bool, optional
+              whether the residual variance file should be written or not
+    html_file: bool, optional,
+              whether the html result page should be written or not  
     """
     paths={}
     contrast_ids = contrasts["contrast"]
     for c in contrast_ids:
         paths[c]={}
-        paths[c]["z_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
-                                           (str(c), "z_map")))
-        # there is a switch fere between t/F files
-        contrast_type = contrasts[c]["Type"]
-        if contrast_type == "t":
-            paths[c]["t_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
-                                               (str(c), "T_map")))
-        elif contrast_type == "F":
-            paths[c]["t_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
-                                               (str(c), "F_map")))        
-        paths[c]["res_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
-                                           (str(c), "ResMS")))
-        paths[c]["con_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
-                                           (str(c), "con")))
-        paths[c]["html_file"] = os.sep.join(( output_dir_path, "%s_%s.html"%\
-                                           (str(c), "html")))
+        if z_file:
+            paths[c]["z_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+                                               (str(c), "z_map")))
+        if stat_file:
+            # there is a switch fere between t/F files
+            contrast_type = contrasts[c]["Type"]
+            if contrast_type == "t":
+                paths[c]["stat_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+                                                   (str(c), "T_map")))
+            elif contrast_type == "F":
+                paths[c]["stat_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+                                                   (str(c), "F_map")))        
+        if res_file:
+            paths[c]["res_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+                                                 (str(c), "ResMS")))
+        if con_file:
+            paths[c]["con_file"] = os.sep.join(( output_dir_path, "%s_%s.nii"%\
+                                                 (str(c), "con")))
+        if html_file:
+            paths[c]["html_file"] = os.sep.join(( output_dir_path, "%s.html"%\
+                                                  (str(c))))
     return paths
 
 ################################################
@@ -236,13 +253,30 @@ def save_volume(shape, path, affine, mask=None, data=None, descrip=None):
 
 def save_all_images(contrast, dim, mask_url, kargs):
     """
-    idem savel_all, but the names are now all included in kargs
+    Parameters
+    ----------
+    contrast a structure describing 
+             the values related to the computed contrast 
+    ContrastId, string, the contrast identifier
+    dim the dimension of the contrast
+    mask_url path of the mask image related to the data
+    kargs, might have 'z_file', 'stat_file', 'con_file', 'res_file', 'html_file'
+           keys yielding paths to write corresponding outputs.
+           optionally it can also have the keys 
+           'method', 'threshold' and 'cluster'
+           that are used to define the parameters for vizualization 
+           of the html page. 
     """
-    z_file = kargs["z_file"]
-    t_file = kargs["t_file"]
-    res_file = kargs["res_file"]
-    con_file = kargs["con_file"]
-    html_file = kargs["html_file"]
+    if kargs.has_key("z_file"):
+        z_file = kargs["z_file"]
+    if kargs.has_key("stat_file"):
+        stat_file = kargs["stat_file"]
+    if kargs.has_key("res_file"):
+        res_file = kargs["res_file"]
+    if kargs.has_key("con_file"):
+        con_file = kargs["con_file"]
+    if kargs.has_key("html_file"):
+        html_file = kargs["html_file"]
     mask = load(mask_url)
     mask_arr = mask.get_data()
     affine = mask.get_affine()
@@ -256,7 +290,7 @@ def save_all_images(contrast, dim, mask_url, kargs):
     save_volume(shape, z_file, affine, mask_arr, z, "z_file")
     
     # Saving the t/F statistics map
-    save_volume(shape, t_file, affine, mask_arr, t, "t_file")
+    save_volume(shape, stat_file, affine, mask_arr, t, "stat_file")
     
     if int(dim) != 1:
         shape = (shape[0], shape[1], shape[2],int(dim)**2)
@@ -294,62 +328,6 @@ def save_all_images(contrast, dim, mask_url, kargs):
     Results.ComputeResultsContents(z_file, mask_url, html_file,
                                    threshold=threshold, method=method,
                                    cluster=cluster)
-
-
-def save_all(contrast, ContrastId, dim, mask_url, kargs):
-    """
-    Save all the images related to one contrast
-    
-    Parameters
-    ----------
-    contrast a structure describing 
-             the values related to the computed contrast 
-    ContrastId, string, the contrast identifier
-    dim the dimension of the contrast
-    mask_url path of the mask image related to the data
-    kargs, should have the key 'paths', 
-           that yield the paths where everything should be written 
-           optionally it can also have the keys 
-           'method', 'threshold' and 'cluster'
-           that are used to define the parameters for vizualization 
-           of the html page. 
-        
-    fixme : handle the case mask=None
-    """
-    
-    # prepare the paths
-    if kargs.has_key("paths"):
-        paths = kargs["paths"]
-    else:
-        print "Cannot save contrast files. Missing argument : paths"
-        return
-    contrasts_path = paths["Contrasts_path"]
-    results = "Z map"
-    z_file = os.sep.join((contrasts_path, "%s_%s.nii"% (str(ContrastId),
-                                                        paths[results])))
-    if contrast.type == "t":
-        results = "Student-t tests"
-    elif contrast.type == "F":
-        results = "Fisher tests"
-    t_file = os.sep.join((contrasts_path, "%s_%s.nii" %
-                          (str(ContrastId), paths[results])))
-    results = "Residual variance"
-    res_file = os.sep.join((contrasts_path, "%s_%s.nii" %
-        (str(ContrastId), paths[results])))
-    results = "contrast definition"
-    con_file = os.sep.join((contrasts_path, "%s_%s.nii" %
-        (str(ContrastId), paths[results])))
-    results="HTML results"
-    html_file = os.sep.join((contrasts_path, "%s_%s.html" % (str(ContrastId), 
-              paths[results])))
-    kargs["z_file"] = z_file
-    kargs["t_file"] = t_file
-    kargs["res_file"] = res_file
-    kargs["con_file"] = con_file
-    kargs["html_file"] = html_file
-
-    save_all_images(contrast, dim, mask_url, kargs)
- 
 
 ######################################################
 # First Level analysis
@@ -627,12 +605,8 @@ def ComputeContrasts(contrasts=None, misc=None, glms=None,
             res_contrast = res_contrast + c
             res_contrast.type = contrast_type
             
-       
-           
         cpp = kargs['CompletePaths'][contrast]
-        for k in cpp.keys():
-            kargs[k] = cpp[k]
-            save_all_images(res_contrast, contrast_dimension, mask_url, cpp)
+        save_all_images(res_contrast, contrast_dimension, mask_url, cpp)
                                           
         misc[model]["con_dofs"][contrast] = res_contrast.dof
     misc["Contrast Save Mode"] = save_mode
