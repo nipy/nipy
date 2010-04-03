@@ -3,10 +3,215 @@ fMRI Design Matrix creation functions.
 """
 
 import numpy as np
-
 from nipy.modalities.fmri import formula, utils, hrf
 
+class DesignMatrix(object):
+    """
+    Class to handle design matrices
+    """
+
+    def __init__(self, frametimes=None, paradigm=None, hrf_model='Canonical',
+               drift_model='Cosine', hfcut=128, drift_order=1, fir_delays=[0],
+               fir_duration=1., cond_ids=None, add_regs=None, add_reg_names=None):
+        """
+        Parameters
+        ----------
+        frametimes: array of shape(nbframes), optional
+                    the timing of the scans
+        paradigm: array of shape (nevents, nc)
+                  paradigm-encoding array
+                  if nc==2, the type is event-related design (condition id, onset)
+                  if nc==3, it represents(condition id, onset, duration)
+                  if nc==4, (condition id, onset, duration, intensity)
+                  if nc>2 this is a block design, 
+                     unless all durations are equal to 0
+                  if paradigm==None, then no condition is included
+        hrf_model, string, optional,
+                   that specifies the hemodynamic reponse function
+                   it can be 'Canonical', 'Canonical With Derivative' or 'FIR'
+        drift_model, string 
+                     specifies the desired drift model,
+                     to be chosen among 'Polynomial', 'Cosine', 'Blank'
+        hfcut=128:  float , 
+                    cut frequency of the low-pass filter
+        drift_order=1, int, 
+                       order of the dirft model (in case it is polynomial) 
+        fir_delays=[0], optional, 
+                        array of shape(nb_onsets) or list
+                        in case of FIR design, yields the array of delays 
+                        used in the FIR model
+        fir_duration=1., float, duration of the FIR block; 
+                         in general it should be equal to the tr    
+        cond_ids=None, list of strin of length (ncond), 
+                       ids of the experimental conditions. 
+                       If None this will be called 'c0',..,'cn'
+        add_regs=None, array of shape(naddreg, nbframes)
+                       additional user-supplied regressors
+        add_reg_names=None: list of (naddreg) regressor names
+                            if None, while naddreg>0, these will be termed
+                            'reg_%i',i=0..naddreg-1
+        path=None, if not None, 
+                   the matrix is written as a .csv file at the given path
+        """
+        self.frametimes = frametimes
+        self.paradigm = paradigm
+        self.hrf_model = hrf_model
+        self.drift_model = drift_model
+        self.hfcut = hfcut
+        self.drift_order = drift_order
+        self.fir_delays = fir_delays
+        self.fir_duration = fir_duration
+        self.cond_ids = cond_ids
+        self.estimated = False  
+
+        # todo : check arguments       
+        if add_regs==None:
+            self.n_add_regs = 0
+        else:
+            # check that regressor specification is correct
+            if add_regs.shape[0] == np.size(add_regs):
+                add_regs = np.reshape(add_regs, (np.size(1, add_regs)))
+            if add_regs.shape[0] != np.size(frametimes):
+                raise ValueError, 'incorrect specification of additional regressors'
+            self.n_add_regs = add_regs.shape[1]
+        self.add_regs = add_regs
+        
+        
+        if  add_reg_names == None:
+            self.add_reg_names = ['reg%d'%k for k in range(self.n_add_regs)]
+        elif len(add_reg_names)!= self.n_add_regs:
+             raise ValueError, 'Incorrect number of additional regressors names \
+                               was provided'
+        else: 
+            self.add_reg_names = add_reg_names
+
+
+    def estimate(self):
+        """
+        """
+        self.drift = set_drift(self.drift_model, self.frametimes,
+                               self.drift_order, self.hfcut)
+        if self.paradigm==None:
+            self.n_conditions = 0
+            self.n_main_regressors = 0
+            self.formula = self.drift
+            self.names = []
+        else:
+            self.n_conditions = int(self.paradigm[:,0].max()+1)
+            if self.cond_ids==None:
+                self.cond_ids = ['c%d'%k for k in range(self.n_conditions)]
+            self.conditions, self.names =\
+                convolve_regressors(self.paradigm, self.hrf_model, self.cond_ids,
+                                    self.fir_delays, self.fir_duration)
+            self.n_main_regressors = len(self.names)
+            self.formula = self.conditions + self.drift
+
+        # sample the matrix    
+        self.matrix = build_dmtx(self.formula, self.frametimes).T
+        # FIXME: ugly  workaround the fact that NaN can occur when trials
+        # are earlier than scans (!)
+        self.matrix[np.isnan(self.matrix)] = 0
     
+        # add user-supplied regressors
+        if self.n_add_regs>0:
+            self.matrix = np.hstack((self.matrix[:,:self.n_main_regressors],
+                                     self.add_regs,
+                                     self.matrix[:,self.n_main_regressors:]))
+        
+            # add the corresponding names
+            self.names = self.names + self.add_reg_names
+
+        # Force the design matrix to be full rank at working precision
+        self.matrix, self.design_cond = full_rank(self.matrix)
+        
+        # complete the names with the drift terms                               
+        for k in range(len(self.drift.terms)-1):
+            self.names.append('drift_%d'%(k+1))                            
+        self.names.append('constant')
+        self.estimated = True
+
+
+    def write_csv(self, path):
+        """
+        write oneselfs as a csv
+        
+        Parameters
+        ----------
+        path: string, path of the resulting csv file           
+        """
+        import csv 
+        if self.estimated==False:
+           self.estimate()
+        
+        fid = open(path, "wb")
+        writer = csv.writer(fid)
+        writer.writerow(self.names)
+        writer.writerows(self.matrix)
+        fid.close()
+
+    def read_from_csv(self, path):
+        """
+        load self.matrix and self.names  from a csv file
+        Parameter
+        ---------
+        path: string,
+            path of the .csv file that includes the matriox and related information
+
+        fixme
+        -----
+        needs to check that this is coherent with the information of self ?
+        """
+        import csv
+        csvfile = open(path)
+        dialect = csv.Sniffer().sniff(csvfile.read())
+        csvfile.seek(0)
+        reader = csv.reader(open(path, "rb"),dialect)
+    
+        boolfirst = True
+        design = []
+        for row in reader:
+            if boolfirst:
+                names = [row[j] for j in range(len(row))]
+                boolfirst = False
+            else:
+                design.append([row[j] for j in range(len(row))])
+                
+            x = np.array([[float(t) for t in xr] for xr in design])
+        self.matrix = x
+        self.names = names
+
+    def show(self, rescale=True):
+        """
+        Vizualization of a design matrix
+
+        Parameters
+        ----------
+        rescale= True: rescale for visualization or not
+
+        Returns
+        -------
+        ax, figure handle
+        
+        """
+        if self.estimated==False:
+            self.estimate()
+            
+        x = self.matrix.copy()
+        
+        if rescale:
+            x = x/np.sqrt(np.sum(x**2,0))
+
+        import matplotlib.pylab as mp
+        ax = mp.figure()
+        mp.imshow(x, interpolation='Nearest', aspect='auto')
+        mp.xlabel('conditions')
+        mp.ylabel('scan number')
+        if names!=None:
+            mp.xticks(np.arange(len(names)),names,rotation=60,ha='right')
+        
+        mp.subplots_adjust(top=0.99,bottom=0.25)
+        return ax
+        
 def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
                drift_model='Cosine', hfcut=128, drift_order=1, fir_delays=[0],
                fir_duration=1., cond_ids=None, add_regs=None, add_reg_names=None,
@@ -54,59 +259,13 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
     names list of strings of len (nreg)
         the names of the columns of the design matrix
     """
-    drift = set_drift(drift_model, frametimes, drift_order, hfcut)
-    if paradigm==None:
-       formula = drift
-       names = []
-    else:
-        if cond_ids==None:
-           cond_ids = ['c%d'%k for k in range(int(paradigm[:,0].max()+1))]
-        conditions, names = convolve_regressors(paradigm, hrf_model, 
-                                                cond_ids, fir_delays, fir_duration)
-        formula = conditions + drift
-    dmtx = build_dmtx(formula, frametimes).T
-    
-    # FIXME: ugly  workaround the fact that NaN can occur when trials
-    # are earlier than scans (!)
-    dmtx[np.isnan(dmtx)] = 0
-    
-    # add user-supplied regressors
-    if add_regs!=None:
-        # check that regressor specification is correct
-        if add_regs.shape[0] == np.size(add_regs):
-            add_regs = np.reshape(add_regs, (np.size(1, add_regs)))
-        if add_regs.shape[0] != np.size(frametimes):
-           raise ValueError, 'incorrect specification of additional regressors'
-        
-        # put them at the right place in the dmtx
-        ncr = len(names)
-        dmtx = np.hstack((dmtx[:,:ncr], add_regs, dmtx[:,ncr:]))
-        
-        # add the corresponding names
-        if  add_reg_names == None:
-            add_reg_names = ['reg%d'%k for k in range(add_regs.shape[1])]
-        elif len(add_reg_names)!= add_regs.shape[1]:
-             raise ValueError, 'Incorrect number of additional regressors names \
-                               was provided'
-        for r in range(add_regs.shape[1]):
-            names.append(add_reg_names[r])
-
-    # Force the design matrix to be full rank at working precision
-    dmtx, design_cond = full_rank(dmtx)
-        
-    # complete the names with the drift terms                               
-    for k in range(len(drift.terms)-1):
-        names.append('drift_%d'%(k+1))                            
-    names.append('constant')
-
-    # possibly write the result
+    DM = DesignMatrix(frametimes, paradigm, hrf_model, drift_model, hfcut,
+                      drift_order, fir_delays, fir_duration, cond_ids,
+                      add_regs, add_reg_names)
+    DM.estimate()
     if path is not None:
-        import csv
-        writer = csv.writer(open(path, "wb"))
-        writer.writerow(names)
-        writer.writerows(dmtx)
-    return dmtx, names
-
+        DM.write_csv(path)
+    return DM.matrix, DM.names
 
 def _polydrift(order, tmax):
     """

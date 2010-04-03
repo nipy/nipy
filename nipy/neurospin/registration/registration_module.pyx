@@ -2,8 +2,7 @@
 
 """
 Fast registration routines module: joint histogram computation,
-similarity measures, cubic spline resampling, affine transformation
-parameterization.
+similarity measures, affine transformation parameterization.
 
 Author: Alexis Roche, 2008.
 """
@@ -32,7 +31,7 @@ cdef extern from "iconic.h":
     double entropy(double* h, unsigned int size, double* n)
     void joint_histogram(double* H, unsigned int clampI, unsigned int clampJ,  
                          flatiter iterI, ndarray imJ_padded, 
-                         double* Tvox, int interp)
+                         double* Tvox, int affine, int interp)
     double correlation_coefficient(double* H, unsigned int clampI, unsigned int clampJ, double* n)
     double correlation_ratio(double* H, unsigned int clampI, unsigned int clampJ, double* n) 
     double correlation_ratio_L1(double* H, double* hI, unsigned int clampI, unsigned int clampJ, double* n) 
@@ -50,7 +49,6 @@ cdef extern from "iconic.h":
                                          double* fI, unsigned int clampI, 
                                          double* fJ, unsigned int clampJ,
                                          double* n) 
-    void cubic_spline_resample(ndarray im_resampled, ndarray im, double* Tvox, int cast_integer)
 
 
 
@@ -197,7 +195,7 @@ def _histogram(ndarray H, flatiter iter):
     return 
 
 
-def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
+def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int affine, int interp):
     """
     _joint_histogram(H, iterI, imJ, Tvox, interp)
     Comments to follow.
@@ -212,7 +210,7 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int i
     tvox = <double*>Tvox.data
 
     # Compute joint histogram 
-    joint_histogram(h, clampI, clampJ, iterI, imJ, tvox, interp)
+    joint_histogram(h, clampI, clampJ, iterI, imJ, tvox, affine, interp)
 
     return 
 
@@ -371,7 +369,7 @@ def param_to_vector12(ndarray param, ndarray t0, ndarray precond, int stamp=AFFI
         t[_similarity2d] = param[[0,1,2,3,3]]*precond[_similarity2d]
     elif stamp == AFFINE2D:
         t[_affine2d] = param*precond[_affine2d]
-    
+
     return t
     
 
@@ -397,13 +395,11 @@ def matrix44(ndarray t, dtype):
     elif size == 7:
         T[0:3,0:3] = t[6]*R
     else:
-        S = np.diag(t[6:9]) 
+        S = np.diag(np.exp(t[6:9])) 
         Q = rotation_vec2mat(t[9:12]) 
         # Beware: R*s*Q
         T[0:3,0:3] = np.dot(R,np.dot(S,Q))
     T[0:3,3] = t[0:3] 
     return T 
-
-
 
 

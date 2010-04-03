@@ -28,15 +28,15 @@ execfile('../conf.py')
 # The objects.inv file has this info for each mapped object:
 #   label-name classifier path-to-html
 # Examples:
-#   neuroimaging.core.image.image.Image class api/generated/neuroimaging.core.image.image.html
-#   neuroimaging.core.image.generators mod api/generated/neuroimaging.core.image.generators.html
+#   nipy.core.image.image.Image class api/generated/nipy.core.image.image.html
+#   nipy.core.image.generators mod api/generated/nipy.core.image.generators.html
 #
 #intersphinx_mapping = {'../html/doc/manual/html': '../build/html/objects.inv'}
 #
 # In reST documents, I can then link to Python objects in the API like this:
 #
-#This is the image class: :class:`neuroimaging.core.image.image`
-#This is the Image.affine method: :meth:`neuroimaging.core.image.image.Image.affine`
+#This is the image class: :class:`nipy.core.image.image`
+#This is the Image.affine method: :meth:`nipy.core.image.image.Image.affine`
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

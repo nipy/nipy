@@ -2,20 +2,20 @@
 #ex: set sts=4 ts=4 sw=4 et:
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 #
-#   See COPYING file distributed along with the PyNIfTI package for the
+#   See COPYING file distributed along with the NiBabel package for the
 #   copyright and license terms.
 #
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 """This module provides Python bindings to the NIfTI data format.
 
-The PyNIfTI module is a Python interface to the NIfTI I/O libraries. Using
-PyNIfTI, one can easily read and write NIfTI and ANALYZE images from within
+The NiBabel module is a Python interface to the NIfTI I/O libraries. Using
+NiBabel, one can easily read and write NIfTI and ANALYZE images from within
 Python. The :class:`~nifti.image.NiftiImage` class provides pythonic
 access to the full header information and for a maximum of interoperability the
 image data is made available via NumPy arrays.
 
 ===============================
- pynifti python implementation
+ nibabel python implementation
 ===============================
 
 Quickstart::
@@ -59,4 +59,8 @@ from nipy.io.imageformats.spm99analyze import Spm99AnalyzeHeader, Spm99AnalyzeIm
 from nipy.io.imageformats.spm2analyze import Spm2AnalyzeHeader, Spm2AnalyzeImage
 from nipy.io.imageformats.nifti1 import Nifti1Header, Nifti1Image
 from nipy.io.imageformats.minc import MincHeader, MincImage
-from nipy.io.imageformats.funcs import squeeze_image, concat_images, four_to_three
+from nipy.io.imageformats.funcs import (squeeze_image, concat_images, four_to_three,
+                                        as_closest_canonical)
+from nipy.io.imageformats.orientations import (io_orientation, orientation_affine,
+                                   flip_axis, OrientationError,
+                                   apply_orientation)
