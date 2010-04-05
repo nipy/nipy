@@ -1,34 +1,62 @@
-from routines import cspline_transform, cspline_sample4d, slice_time
-from transform import Affine, apply_affine, BRAIN_RADIUS_MM
+from affine import Rigid
+
+from nipy.neurospin.image import apply_affine
+from nipy.neurospin.image.image_module import cspline_transform, cspline_sample4d
+from nipy.neurospin.utils.optimize import fmin_steepest
 
 import numpy as np
-from scipy import optimize
+from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
         
-DEFAULT_SPEEDUP = 4
-DEFAULT_OPTIMIZER = 'powell'
-DEFAULT_WITHIN_LOOPS = 2
-DEFAULT_BETWEEN_LOOPS = 5 
+_speedup = 4
+_optimizer = 'powell'
+_within_loops = 2
+_between_loops = 5 
+
+_xtol = .1
+_ftol = .01
+_gtol = .1 
+
+
+
+def interp_slice_order(Z, slice_order): 
+    Z = np.asarray(Z)
+    nslices = len(slice_order)
+    aux = np.asarray(list(slice_order)+[slice_order[0]+nslices])
+    Zf = np.floor(Z).astype('int')
+    w = Z - Zf
+    Zal = Zf % nslices
+    Za = Zal + w
+    """
+    Za = Z % nslices
+    Zal = Za.astype('int')
+    w = Za - Zal 
+    """
+    ret = (1-w)*aux[Zal] + w*aux[Zal+1]
+    ret += (Z-Za)
+    return ret
 
 
 def grid_coords(xyz, affine, from_world, to_world):
     Tv = np.dot(from_world, np.dot(affine, to_world))
     XYZ = apply_affine(Tv, xyz)
-    return XYZ[0,:], XYZ[1,:], XYZ[2,:]
+    return XYZ[:,0], XYZ[:,1], XYZ[:,2]
 
 
-
-class Image4d:
+class Image4d(object):
     """
-    Class to represent a sequence of 3d scans acquired on a slice-by-slice basis. 
+    Class to represent a sequence of 3d scans acquired on a
+    slice-by-slice basis.
     """
     def __init__(self, array, to_world, tr, tr_slices=None, start=0.0, 
                  slice_order='ascending', interleaved=False, slice_axis=2):
         """
         Configure fMRI acquisition time parameters.
         
-        tr  : inter-scan repetition time, i.e. the time elapsed between two consecutive scans
+        tr  : inter-scan repetition time, i.e. the time elapsed 
+              between two consecutive scans
         tr_slices : inter-slice repetition time, same as tr for slices
-        start   : starting acquisition time respective to the implicit time origin
+        start   : starting acquisition time respective to the implicit 
+                  time origin
         slice_order : string or array 
         """
         self.array = array 
@@ -76,33 +104,23 @@ class Image4d:
         else:
             return z
 
-    def to_time(self, z, t):
-        """
-        t = to_time(zv, tv)
-        zv, tv are grid coordinates; t is an actual time value. 
-        """
-        return(self.start + self.tr*t + slice_time(self.z_to_slice(z), self.tr_slices, self.slice_order))
 
-    def from_time(self, z, t):
+    def from_time(self, zv, t):
         """
         tv = from_time(zv, t)
         zv, tv are grid coordinates; t is an actual time value. 
         """
-        return((t - self.start - slice_time(self.z_to_slice(z), self.tr_slices, self.slice_order))/self.tr)
-
-    def get_data(self):
-        return self.array
-
-    def get_affine(self):
-        return self.to_world
+        corr = self.tr_slices*interp_slice_order(self.z_to_slice(zv), self.slice_order)
+        return (t-self.start-corr)/self.tr
 
 
-class Realign4d:
+
+class Realign4d(object):
 
     def __init__(self, 
                  im4d, 
-                 speedup=DEFAULT_SPEEDUP,
-                 optimizer=DEFAULT_OPTIMIZER, 
+                 speedup=_speedup,
+                 optimizer=_optimizer, 
                  transforms=None):
         self.optimizer = optimizer
         dims = im4d.array.shape
@@ -111,28 +129,30 @@ class Realign4d:
         # Define mask
         speedup = max(1, int(speedup))
         xyz = np.mgrid[0:dims[0]:speedup, 0:dims[1]:speedup, 0:dims[2]:speedup]
-        self.xyz = xyz.reshape(3, np.prod(xyz.shape[1::]))   
-        masksize = self.xyz.shape[1]
+        xyz = np.rollaxis(xyz, 0, 4)
+        self.xyz = np.reshape(xyz, [np.prod(xyz.shape[0:-1]), 3])   
+        masksize = self.xyz.shape[0]
         self.data = np.zeros([masksize, self.nscans], dtype='double')
         # Initialize space/time transformation parameters 
         self.to_world = im4d.to_world
         self.from_world = np.linalg.inv(self.to_world)
         if transforms == None: 
-            self.transforms = [Affine('rigid', radius=BRAIN_RADIUS_MM) for scan in range(self.nscans)]
+            self.transforms = [Rigid() for scan in np.arange(self.nscans)]
         else: 
             self.transforms = transforms
         self.from_time = im4d.from_time
-        self.timestamps = im4d.tr*np.array(range(self.nscans))
+        self.timestamps = im4d.tr*np.arange(self.nscans)
         # Compute the 4d cubic spline transform
         self.cbspline = cspline_transform(im4d.array)
               
     def resample_inmask(self, t):
-        X, Y, Z = grid_coords(self.xyz, self.transforms[t], self.from_world, self.to_world)
+        X, Y, Z = grid_coords(self.xyz, self.transforms[t], 
+                              self.from_world, self.to_world)
         T = self.from_time(Z, self.timestamps[t])
         cspline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T)
 
     def resample_all_inmask(self):
-        for t in range(self.nscans):
+        for t in np.arange(self.nscans):
             print('Resampling scan %d/%d' % (t+1, self.nscans))
             self.resample_inmask(t)
 
@@ -186,44 +206,58 @@ class Realign4d:
         optimizer = self.optimizer
 
         def callback(pc):
-            self.transforms[t].from_param(pc)
+            self.transforms[t].param = pc
             print(self.transforms[t])
 
-        if optimizer=='simplex':
-            fmin = optimize.fmin
-        elif optimizer=='powell':
-            fmin = optimize.fmin_powell
-        elif optimizer=='conjugate_gradient':
-            fmin = optimize.fmin_cg
-        else:
-            raise ValueError('Unrecognized optimizer')
+        if optimizer=='powell':
+            tols = {'xtol': _xtol, 'ftol': _ftol}
+            fmin = fmin_powell
+        elif optimizer=='steepest':
+            tols = {'xtol': _xtol, 'ftol': _ftol, 'epsilon':_epsilon}
+            fmin = fmin_steepest
+        elif optimizer=='cg':
+            tols = {'gtol': _gtol}
+            fmin = fmin_cg
+        elif optimizer=='bfgs':
+            tols = {'gtol': _gtol}
+            fmin = fmin_bfgs
+        else: # simplex method 
+            tols = {'xtol': _xtol, 'ftol': _ftol}
+            fmin = fmin_simplex
 
         # Resample data according to the current space/time transformation 
         self.resample_all_inmask()
 
         # Optimize motion parameters 
-        for t in range(self.nscans):
+        for t in np.arange(self.nscans):
             print('Correcting motion of scan %d/%d...' % (t+1, self.nscans))
-
             def loss(pc):
-                self.transforms[t].from_param(pc)
+                self.transforms[t].param = pc
                 return self.msid(t)
-        
             self.init_motion_detection(t)
-            pc0 = self.transforms[t].to_param()
-            pc = fmin(loss, pc0, callback=callback)
-            self.transforms[t].from_param(pc)
+            self.transforms[t].param = fmin(loss, self.transforms[t].param,
+                                            callback=callback, **tols)
+
+        # At this stage, transforms map an implicit 'ideal' grid to
+        # the 'acquisition' grid. We redefine the ideal grid as being
+        # conventionally aligned with the first scan.
+        T0inv = self.transforms[0].inv()
+        for t in np.arange(self.nscans): 
+            self.transforms[t] = self.transforms[t]*T0inv 
+        
 
 
     def resample(self):
         print('Gridding...')
         dims = self.dims
         XYZ = np.mgrid[0:dims[0], 0:dims[1], 0:dims[2]]
-        XYZ = XYZ.reshape(3, np.prod(XYZ.shape[1::]))
+        XYZ = np.rollaxis(XYZ, 0, 4)
+        XYZ = np.reshape(XYZ, [np.prod(XYZ.shape[0:-1]), 3])
         res = np.zeros(dims)
-        for t in range(self.nscans):
+        for t in np.arange(self.nscans):
             print('Fully resampling scan %d/%d' % (t+1, self.nscans))
-            X, Y, Z = grid_coords(XYZ, self.transforms[t], self.from_world, self.to_world)
+            X, Y, Z = grid_coords(XYZ, self.transforms[t], 
+                                  self.from_world, self.to_world)
             T = self.from_time(Z, self.timestamps[t])
             cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T)
         return res
@@ -232,9 +266,9 @@ class Realign4d:
 
 
 
-def _resample4d(im4d, transforms=None): 
+def resample4d(im4d, transforms=None): 
     """
-    corr_im4d_array = _resample4d(im4d, transforms=None)
+    corr_im4d_array = resample4d(im4d, transforms=None)
     """
     r = Realign4d(im4d, transforms=transforms)
     return r.resample()
@@ -242,9 +276,9 @@ def _resample4d(im4d, transforms=None):
 
 
 def _realign4d(im4d, 
-               loops=DEFAULT_WITHIN_LOOPS, 
-               speedup=DEFAULT_SPEEDUP, 
-               optimizer=DEFAULT_OPTIMIZER): 
+               loops=_within_loops, 
+               speedup=_speedup, 
+               optimizer=_optimizer): 
     """
     transforms = _realign4d(im4d, loops=2, speedup=4, optimizer='powell')
 
@@ -254,18 +288,17 @@ def _realign4d(im4d,
 
     """ 
     r = Realign4d(im4d, speedup=speedup, optimizer=optimizer)
-    for loop in range(loops): 
+    for loop in np.arange(loops): 
         r.correct_motion()
     return r.transforms
 
 def realign4d(runs, 
-              within_loops=DEFAULT_WITHIN_LOOPS, 
-              between_loops=DEFAULT_BETWEEN_LOOPS, 
-              speedup=DEFAULT_SPEEDUP, 
-              optimizer=DEFAULT_OPTIMIZER, 
+              within_loops=_within_loops, 
+              between_loops=_between_loops, 
+              speedup=_speedup, 
+              optimizer=_optimizer, 
               align_runs=True): 
     """
-    transforms = realign4d(runs, within_loops=2, bewteen_loops=5, speedup=4, optimizer='powell')
 
     Parameters
     ----------
@@ -276,34 +309,40 @@ def realign4d(runs,
     -------
     transforms : list
                  nested list of rigid transformations
+
+
+    transforms map an 'ideal' 4d grid (conventionally aligned with the
+    first scan of the first run) to the 'acquisition' 4d grid for each
+    run
     """
 
     # Single-session case
-    if not isinstance(runs, list) and not isinstance(runs, tuple): 
+    if not hasattr(runs, '__iter__'):
         runs = [runs]
     nruns = len(runs)
+    if nruns == 1: 
+        align_runs = False
 
     # Correct motion and slice timing in each sequence separately
-    transfo_runs = [_realign4d(run, loops=within_loops, speedup=speedup, optimizer=optimizer) for run in runs]
-    if nruns==1: 
-        return transfo_runs[0]
-
-    if align_runs==False:
-        return transfo_runs
+    transforms = [_realign4d(run, loops=within_loops, 
+                             speedup=speedup, optimizer=optimizer) for run in runs]
+    if not align_runs: 
+        return transforms, transforms, None
 
     # Correct between-session motion using the mean image of each corrected run 
-    corr_runs = [_resample4d(runs[i], transforms=transfo_runs[i]) for i in range(nruns)]
-    aux = np.rollaxis(np.asarray([corr_run.mean(3) for corr_run in corr_runs]), 0, 4)
+    corr_runs = [resample4d(runs[i], transforms=transforms[i]) for i in np.arange(nruns)]
+    aux = np.rollaxis(np.asarray([c.mean(3) for c in corr_runs]), 0, 4)
     ## Fake time series with zero inter-slice time 
     ## FIXME: check that all runs have the same to-world transform
     mean_img = Image4d(aux, to_world=runs[0].to_world, tr=1.0, tr_slices=0.0) 
-    transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, optimizer=optimizer)
-    corr_mean = _resample4d(mean_img, transforms=transfo_mean)
+    transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, 
+                              optimizer=optimizer)
 
     # Compose transformations for each run
-    for i in range(nruns):
-        run_to_world = transfo_mean[i]
-        transforms = [run_to_world*to_run for to_run in transfo_runs[i]]
-        transfo_runs[i] = transforms
+    ctransforms = [None for i in np.arange(nruns)]
+    for i in np.arange(nruns):
+        ctransforms[i] = [t*transfo_mean[i] for t in transforms[i]]
+    return ctransforms, transforms, transfo_mean
 
-    return transfo_runs
+
+

@@ -207,7 +207,7 @@ def save(img, filename, dtype=None):
     # Set zooms
     hdr.set_zooms(zooms)
     # save to disk
-    out_img.to_filespec(filename)
+    out_img.to_filename(filename)
     return Fimg
 
 

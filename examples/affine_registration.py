@@ -25,7 +25,9 @@ Usage:
   Choices for optimizer: 
     simplex
     powell [DEFAULT]
-    conjugate_gradient
+    steepest
+    cg 
+    bfgs
 
 Running this script will result in two files being created in the
 working directory:
@@ -39,10 +41,9 @@ ammon_TO_anubis.npz
 
 Author: Alexis Roche, 2009. 
 """
-
-from nipy.neurospin.registration import IconicRegistration
-from nipy.neurospin.image import load_image, move_image, save_image
+from nipy.neurospin import register, transform
 from nipy.utils import example_data
+from nipy.io.imageformats import load as load_image, save as save_image
 
 from os.path import join
 import sys
@@ -60,15 +61,12 @@ target_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+targe
 similarity = 'cr' 
 interp = 'pv'
 optimizer = 'powell'
-normalize = None
 if len(sys.argv)>1: 
     similarity = sys.argv[1]
     if len(sys.argv)>2: 
         interp = sys.argv[2]
         if len(sys.argv)>3: 
             optimizer = sys.argv[3]
-            if len(sys.argv)>4: 
-                normalize = sys.argv[4]
 
 # Print messages
 print ('Source brain: %s' % source)
@@ -81,16 +79,15 @@ print('Fetching image data...')
 I = load_image(source_file)
 J = load_image(target_file)
 
-# Intensity-based registration instance
-matcher = IconicRegistration(I, J)
-matcher.set_source_fov(fixed_npoints=64**3)
-matcher.similarity = similarity
-matcher.interp = interp
-
-# Perform affine normalization 
+# Perform affine registration
+# The output is an array-like object such that 
+# np.asarray(T) is a customary 4x4 matrix 
 print('Setting up registration...')
 tic = time.time()
-T = matcher.optimize(method=optimizer, search='affine')
+T = register(I, J, 
+             similarity=similarity, 
+             interp=interp, 
+             optimizer=optimizer)
 toc = time.time()
 print('  Registration time: %f sec' % (toc-tic))
 
@@ -98,7 +95,7 @@ print('  Registration time: %f sec' % (toc-tic))
 # Resample source image
 print('Resampling source image...')
 tic = time.time()
-It = move_image(I, T, target=J)
+It = transform(I, T.inv(), reference=J)
 toc = time.time()
 print('  Resampling time: %f sec' % (toc-tic))
 

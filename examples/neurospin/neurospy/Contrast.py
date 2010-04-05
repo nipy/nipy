@@ -1,4 +1,4 @@
-from numpy import *
+from numpy import array, zeros, size
 from configobj import ConfigObj
 
 class Contrast(dict):

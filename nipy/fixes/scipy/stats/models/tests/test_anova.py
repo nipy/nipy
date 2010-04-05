@@ -1,15 +1,16 @@
-
-import csv
 from StringIO import StringIO
 
-import scipy.stats
 import numpy as np
+
+import scipy.stats
 
 from nipy.modalities.fmri import formula as F
 from nipy.fixes.scipy.stats.models.utils import rank
 from nipy.fixes.scipy.stats.models.regression import OLSModel
-reload(F)
-from nipy.testing import *
+
+from nipy.testing import (assert_true, assert_equal, assert_array_equal,
+                          assert_almost_equal)
+
 
 data = """0.0      1      1      1
     2.0      1      1      2
