@@ -21,7 +21,6 @@ import operator
 # delayed, so that the part module can be used without them).
 import numpy as np
 import pylab as pl
-from scipy import stats
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 
@@ -210,7 +209,13 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         axes.axis('off')
 
     ortho_slicer = OrthoSlicer(cut_coords, axes=axes)
-    if anat is not False:
+    # Check that we should indeed plot an anat: we have one, and the
+    # cut_coords are in its range
+    x, y, z = cut_coords
+    if (anat is not False 
+                and np.all(
+                 np.array(coord_transform(x, y, z, np.linalg.inv(anat_affine))) 
+                            < anat.shape)):
         anat_kwargs = kwargs.copy()
         anat_kwargs['cmap'] = pl.cm.gray
         anat_kwargs.pop('alpha', 1.)

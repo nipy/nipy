@@ -112,7 +112,7 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
     second_mask = (np.abs(my_map)>second_threshold)
     if second_mask.sum() > 50:
         my_map *= largest_cc(second_mask)
-    cut_coords = ndimage.center_of_mass(my_map)
+    cut_coords = ndimage.center_of_mass(np.abs(my_map))
     return cut_coords + offset
 
 
