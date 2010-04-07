@@ -99,9 +99,11 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         draw_cross: boolean, optional
             If draw_cross is True, a cross is drawn on the plot to
             indicate the cut plosition.
-        do3d: boolean, optional
+        do3d: {True, False or 'interactive'}, optional
             If True, Mayavi is used to plot a 3D view of the
-            map in addition to the slicing.
+            map in addition to the slicing. If 'interactive', the
+            3D visualization is displayed in an additional interactive
+            window.
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
 
@@ -162,45 +164,44 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
     # Use Mayavi for the 3D plotting
     if do3d:
-        try:
-            from .maps_3d import plot_map_3d, m2screenshot
-            from enthought.tvtk.api import tvtk
-            version = tvtk.Version()
-            offscreen = True
-            if (version.vtk_major_version, version.vtk_minor_version) < (5, 2):
-                offscreen = False
+        from .maps_3d import plot_map_3d, m2screenshot
+        from enthought.tvtk.api import tvtk
+        version = tvtk.Version()
+        offscreen = True
+        if (version.vtk_major_version, version.vtk_minor_version) < (5, 2):
+            offscreen = False
+        if do3d == 'interactive':
+            offscreen = False
 
-            cmap = kwargs.get('cmap', pl.cm.cmap_d[pl.rcParams['image.cmap']])
-            # Computing vmin and vmax is costly in time, and is needed
-            # later, so we compute them now, and store them for future
-            # use
-            vmin = kwargs.get('vmin', map.min())
-            kwargs['vmin'] = vmin
-            vmax = kwargs.get('vmax', map.max())
-            kwargs['vmax'] = vmax
-            plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
-                        anat=anat, anat_affine=anat_affine, 
-                        offscreen=offscreen, cmap=cmap,
-                        threshold=threshold,
-                        vmin=vmin, vmax=vmax)
+        cmap = kwargs.get('cmap', pl.cm.cmap_d[pl.rcParams['image.cmap']])
+        # Computing vmin and vmax is costly in time, and is needed
+        # later, so we compute them now, and store them for future
+        # use
+        vmin = kwargs.get('vmin', map.min())
+        kwargs['vmin'] = vmin
+        vmax = kwargs.get('vmax', map.max())
+        kwargs['vmax'] = vmax
+        plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
+                    anat=anat, anat_affine=anat_affine, 
+                    offscreen=offscreen, cmap=cmap,
+                    threshold=threshold,
+                    vmin=vmin, vmax=vmax)
 
-            ax = fig.add_axes((0.001, 0, 0.29, 1))
-            ax.axis('off')
-            m2screenshot(mpl_axes=ax)
-            axes = (0.3, 0, .7, 1.)
-            if offscreen:
-                # Clean up, so that the offscreen engine doesn't become the
-                # default
-                from enthought.mayavi import mlab
-                engine = mlab.get_engine()
-                engine.close_scene(engine.current_scene)
-                from enthought.mayavi.core.registry import registry
-                for key, value in registry.engines.iteritems():
-                    if value is engine:
-                        registry.engines.pop(key)
-                        break
-        except ImportError:
-            warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
+        ax = fig.add_axes((0.001, 0, 0.29, 1))
+        ax.axis('off')
+        m2screenshot(mpl_axes=ax)
+        axes = (0.3, 0, .7, 1.)
+        if offscreen:
+            # Clean up, so that the offscreen engine doesn't become the
+            # default
+            from enthought.mayavi import mlab
+            engine = mlab.get_engine()
+            engine.close_scene(engine.current_scene)
+            from enthought.mayavi.core.registry import registry
+            for key, value in registry.engines.iteritems():
+                if value is engine:
+                    registry.engines.pop(key)
+                    break
 
     if axes is None:
         axes = [0., 0., 1., 1.]
