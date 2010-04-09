@@ -473,13 +473,13 @@ def GLMFit(file, DesignMatrix=None,  output_glm=None, outputCon=None,
         method = "kalman"
         model = "spherical"
 
-    if DesignMatrix is None and design_matrix_path is None:
-        raise ValueError, 'No design matrix is provided'
-    if design_matrix_path is not None:
+    # get the design matrix
+    if isinstance(DesignMatrix, basestring):
         import nipy.neurospin.utils.design_matrix as dm
-        DesignMatrixM = dm.DesignMatrix().read_from_csv(design_matrix_path)
-    X = DesignMatrix.matrix
-        
+        X = dm.DesignMatrix().read_from_csv(DesignMatrix).matrix
+    else:
+        X = DesignMatrix.matrix
+  
     Y = load_image(file, mask_url)
 
     import nipy.neurospin.glm as GLM
@@ -491,8 +491,7 @@ def GLMFit(file, DesignMatrix=None,  output_glm=None, outputCon=None,
         
     if outputCon is not None:
         cobj = ConfigObj(outputCon)
-        cobj["DesignFilePath"] = design_matrix_path
-        # fixme: problematic if design_matrix_path==None
+        cobj["DesignMatrix"] = X
         cobj["mask_url"] = mask_url
         cobj["GlmDumpFile"] = output_glm
         cobj.write()   
