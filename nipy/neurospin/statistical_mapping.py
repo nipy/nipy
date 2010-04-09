@@ -234,7 +234,7 @@ def mask_intersection(masks):
     Compute mask intersection
     fixme : dirty and already implemented in mask module: should be removed
     """
-    mask = masks[0]
+    mask = masks[0].copy()
     for m in masks[1:]:
         mask = mask * m
     mask[mask != 0] = 1
