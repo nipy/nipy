@@ -284,16 +284,15 @@ def test_altprotocol():
 
 
 def matchcol(col, X):
-    """
-    Find the row in X with the highest correlation with 1D col.
+    """ Find the row in X with the highest correlation with 1D col.
 
-    Used to find matching columns in fMRIstat's design with
-    the design created by Protocol. Not meant as a generic
-    helper function.
+    Used to find matching columns in fMRIstat's design with the design
+    created by Protocol. Not meant as a generic helper function.
     """
     c = np.array([np.corrcoef(col, X[i])[0,1] for i in range(X.shape[0])])
     c = np.nan_to_num(c)
-    return np.argmax(c), c.max()
+    ind = np.argmax(np.abs(c))
+    return ind, c[ind]
 
 
 def interpolate(name, col, t):
@@ -309,9 +308,7 @@ def test_agreement():
         for i in range(X[design_type].shape[1]):
             _, cmax = matchcol(X[design_type][:,i], fmristat[design_type])
             if not dd.dtype.names[i].startswith('ns'):
-                if i == 3:
-                    stop
-                yield assert_true(np.greater(cmax, 0.999))
+                yield assert_true(np.greater(np.abs(cmax), 0.999))
 
 
 @dec.slow
