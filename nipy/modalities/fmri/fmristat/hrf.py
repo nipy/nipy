@@ -58,26 +58,36 @@ def spectral_decomposition(hrf2decompose,
     dt = time[1] - time[0]
     if delta is None:
         delta = np.arange(-4.5, 4.6, 0.1)
+    # make vectorizer from hrf function and symbol t.  hrft returns
+    # function values when called with values for time as input.
     hrft = hrf.vectorize(hrf2decompose(hrf.t))
-    H = []
-    for i in range(delta.shape[0]):
-        H.append(hrft(time - delta[i]))
-    H = np.nan_to_num(np.asarray(H))
-    U, S, V = npl.svd(H.T, full_matrices=0)
+    # Create stack of time-shifted HRFs.  Time varies over row, delta
+    # over column.
+    ts_hrf_vals = np.array([hrft(time - d) for d in delta]).T
+    ts_hrf_vals = np.nan_to_num(ts_hrf_vals)
+    # PCA 
+    U, S, V = npl.svd(ts_hrf_vals, full_matrices=0)
+    # make interpolators from the generated bases
     basis = []
     for i in range(ncomp):
         b = interp1d(time, U[:, i], bounds_error=False, fill_value=0.)
-        if i == 0:
+        # normalize components witn integral of abs of first component
+        if i == 0: 
             d = np.fabs((b(time) * dt).sum())
         b.y /= d
         basis.append(b)
-    W = np.array([b(time) for b in basis[:ncomp]])
-    WH = np.dot(npl.pinv(W.T), H.T)
+    # reconstruct time courses for all bases
+    W = np.array([b(time) for b in basis]).T
+    # regress basis time courses against original time shifted time
+    # courses, ncomps by len(delta) parameter matrix
+    WH = np.dot(npl.pinv(W), ts_hrf_vals)
+    # put these into interpolators to get estimated coefficients for any
+    # value of delta
     coef = [interp1d(delta, w, bounds_error=False, fill_value=0.) for w in WH]
     # swap sign of first component to match that of input HRF.  Swap
-    # other components if we swap the first to standardize signs of
+    # other components if we swap the first, to standardize signs of
     # components across SVD implementations.
-    if coef[0](0) < 0:
+    if coef[0](0) < 0: # coefficient at time shift of 0
         for i in range(ncomp):
             coef[i].y *= -1.
             basis[i].y *= -1.
@@ -95,6 +105,7 @@ def spectral_decomposition(hrf2decompose,
      approx.dinverse,
      approx.forward,
      approx.dforward) = invertR(delta, approx.coef)
+    # construct aliased functions from bases
     symbasis = []
     for i, b in enumerate(basis):
         symbasis.append(
@@ -107,7 +118,7 @@ def taylor_approx(hrf2decompose,
                   delta=None):
     """ A Taylor series approximation of an HRF shifted by times `delta`
 
-    Returns the HRF and the first derivative.
+    Returns original HRF and gradient of HRF
 
     Parameters
     ----------
@@ -140,14 +151,22 @@ def taylor_approx(hrf2decompose,
     dt = time[1] - time[0]
     if delta is None:
         delta = np.arange(-4.5, 4.6, 0.1)
+    # make vectorizer from hrf function and symbol t.  hrft returns
+    # function values when called with values for time as input.
     hrft = hrf.vectorize(hrf2decompose(hrf.t))
+    # interpolator for negative gradient of hrf
     dhrft = interp1d(time, -np.gradient(hrft(time), dt), bounds_error=False,
                     fill_value=0.)
     dhrft.y *= 2
-    H = np.array([hrft(time - d) for d in delta])
-    W = np.array([hrft(time), dhrft(time)])
-    W = W.T
-    WH = np.dot(npl.pinv(W), H.T)
+    # Create stack of time-shifted HRFs.  Time varies over row, delta
+    # over column.
+    ts_hrf_vals = np.array([hrft(time - d) for d in delta]).T
+    # hrf, dhrf
+    W = np.array([hrft(time), dhrft(time)]).T
+    # regress hrf, dhrf at times against stack of time-shifted hrfs
+    WH = np.dot(npl.pinv(W), ts_hrf_vals)
+    # put these into interpolators to get estimated coefficients for any
+    # value of delta
     coef = [interp1d(delta, w, bounds_error=False,
                      fill_value=0.) for w in WH]
             
