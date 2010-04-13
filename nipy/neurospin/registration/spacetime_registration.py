@@ -254,7 +254,7 @@ class Realign4d(object):
         XYZ = np.rollaxis(XYZ, 0, 4)
         XYZ = np.reshape(XYZ, [np.prod(XYZ.shape[0:-1]), 3])
         res = np.zeros(dims)
-        for t in arange(self.nscans):
+        for t in range(self.nscans):
             print('Fully resampling scan %d/%d' % (t+1, self.nscans))
             X, Y, Z = grid_coords(XYZ, self.transforms[t], 
                                   self.from_world, self.to_world)
@@ -288,7 +288,7 @@ def _realign4d(im4d,
 
     """ 
     r = Realign4d(im4d, speedup=speedup, optimizer=optimizer)
-    for loop in arange(loops): 
+    for loop in range(loops): 
         r.correct_motion()
     return r.transforms
 
