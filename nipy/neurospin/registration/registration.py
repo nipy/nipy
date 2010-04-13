@@ -1,12 +1,12 @@
-import numpy as np 
+from affine import Affine, Rigid, Similarity
+from grid_transform import GridTransform
+from iconic_registration import IconicRegistration
+from spacetime_registration import Image4d, realign4d, resample4d
 
 from nipy.neurospin.image import Image, transform_image, from_brifti, to_brifti
 
-from iconic_registration import IconicRegistration
-from affine import Affine, Rigid, Similarity
-from grid_transform import GridTransform
+import numpy as np 
 
-from realign4d import Image4d, realign4d, resample4d
 
 
 transform_classes = {'affine': Affine, 'rigid': Rigid, 'similarity': Similarity}
