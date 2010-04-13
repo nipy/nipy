@@ -6,6 +6,6 @@ _OPTIMIZER = 'powell'
 _XTOL = .1
 _FTOL = .01
 _GTOL = .1 
-_EPSILON = .1 
+_STEP = .1 
 
 

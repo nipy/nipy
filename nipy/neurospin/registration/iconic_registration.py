@@ -4,7 +4,8 @@ Intensity-based matching.
 Questions: alexis.roche@gmail.com
 """
 
-from constants import * 
+from constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
+
 from registration_module import _joint_histogram, _similarity, builtin_similarities
 from affine import Affine
 from grid_transform import GridTransform
@@ -176,7 +177,7 @@ class IconicRegistration(object):
             fmin = fmin_steepest
             kwargs.setdefault('xtol', _XTOL)
             kwargs.setdefault('ftol', _FTOL)
-            kwargs.setdefault('epsilon', _EPSILON)
+            kwargs.setdefault('step', _STEP)
         elif method=='cg':
             fmin = fmin_cg
             kwargs.setdefault('gtol', _GTOL)

@@ -1,4 +1,4 @@
-from constants import * 
+from constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
 from affine import Rigid
 
 from nipy.neurospin.image import apply_affine
@@ -15,7 +15,6 @@ _SLICE_AXIS = 2
 _SPEEDUP = 4
 _WITHIN_LOOPS = 2
 _BETWEEN_LOOPS = 5 
-_OPTIMIZER = 'powell'
 
 
 def interp_slice_order(Z, slice_order): 
@@ -214,7 +213,7 @@ class Realign4d(object):
             tols = {'xtol': _XTOL, 'ftol': _FTOL}
             fmin = fmin_powell
         elif optimizer=='steepest':
-            tols = {'xtol': _XTOL, 'ftol': _FTOL, 'epsilon':_EPSILON}
+            tols = {'xtol': _XTOL, 'ftol': _FTOL, 'step':_STEP}
             fmin = fmin_steepest
         elif optimizer=='cg':
             tols = {'gtol': _GTOL}
