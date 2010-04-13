@@ -19,6 +19,7 @@ from sys import maxint
 
 _CLAMP_DTYPE = 'short' # do not edit
 _INTERP = 'pv'
+_OPTIMIZER = 'powell'
 
 # Dictionary of interpolation methods
 # pv: Partial volume 
