@@ -15,6 +15,7 @@ _SLICE_AXIS = 2
 _SPEEDUP = 4
 _WITHIN_LOOPS = 2
 _BETWEEN_LOOPS = 5 
+_OPTIMIZER = 'powell'
 
 
 def interp_slice_order(Z, slice_order): 
