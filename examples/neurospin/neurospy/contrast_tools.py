@@ -153,7 +153,8 @@ class ContrastList():
                 contrast[key]["Type"] = "F"
                 for k, v in self.dic[key].items():
                     for i, row in enumerate(v):
-                        contrast[key]["%s_row%i" % (k, i)] = [int(j) for j in row]
+                        contrast[key]["%s_row%i" % (k, i)] = \
+                                                 [int(j) for j in row]
             contrast[key]["Dimension"] = dim
             if verbose: print contrast[key]
             contrast["contrast"].append(key)
