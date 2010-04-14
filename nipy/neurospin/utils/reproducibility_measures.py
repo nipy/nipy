@@ -12,7 +12,7 @@ Analysis of a large fMRI cohort: Statistical and methodological issues for group
 Thirion B, Pinel P, Meriaux S, Roche A, Dehaene S, Poline JB.
 Neuroimage. 2007 Mar;35(1):105-20. 
 
-Bertrand Thirion, 2009.
+Bertrand Thirion, 2009-2010
 """
 
 import numpy as np
@@ -54,7 +54,9 @@ def cluster_threshold(map, mask, th, csize):
     Parameters
     ----------
     map: array of shape(nbvox)
-    mask: referential- and mask-defining image
+         the input data
+    mask: Nifti1Image instance,
+          referential- and mask-defining image
     th (float): cluster-forming threshold
     cisze (int>0): cluster size threshold
         
@@ -82,9 +84,9 @@ def cluster_threshold(map, mask, th, csize):
         
         #remove the small clusters
         for i in range(label.max()+1):
-            ji = np.nonzero(label==i)[0]
-            if np.size(ji)<csize: binary[ji]=0
-
+            if np.sum(label==i)<csize: 
+                binary[binary==i]=0
+            
         binary = (binary>0)
     return binary
 
@@ -96,10 +98,14 @@ def get_cluster_position_from_thresholded_map(smap, mask, thr=3.0, csize=10):
 
     Parameters
     ----------
-    smap : array of shape (nbvox): map to threshold
-    mask: referential- and mask-defining image
-    thr=3.0 (float) cluster-forming threshold
-    cisze=10 (int>0): cluster size threshold
+    smap : array of shape (nbvox),
+           map to threshold
+    mask: Nifti1Image instance,         
+          referential- and mask-defining image
+    thr=3.0 float 
+            cluster-forming threshold
+    cisze=10: int
+              cluster size threshold
 
     Returns
     -------

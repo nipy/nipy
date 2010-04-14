@@ -7,7 +7,7 @@ Author : Lise Favre, Bertrand Thirion, 2008-2010
 import os
 from configobj import ConfigObj
 from nipy.neurospin.utils.mask import compute_mask_files
-import GLMTools, Contrast
+import glm_tools, contrast_tools
 
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------
@@ -17,7 +17,7 @@ DBPath = "/volatile/thirion/Localizer"
 Subjects = ["s12069"]#["s12277"]#, "s12300","s12401","s12431","s12508","s12532","s12635","s12636","s12826","s12898","s12913","s12919","s12920"]#["s12069"]#
 Acquisitions = ["acquisition"]
 Sessions = ["loc1"]
-modelDir = "default"
+model_id = "default"
 fmri_wc = "S*.nii"
 
 # ---------------------------------------------------------
@@ -108,8 +108,8 @@ for s in Subjects:
     for a in Acquisitions:
         # step 1. set all the paths
         basePath = os.sep.join((DBPath, s, "fMRI", a))
-        paths = GLMTools.generate_all_brainvisa_paths( basePath, Sessions, 
-                                                        fmri_wc, modelDir)  
+        paths = glm_tools.generate_all_brainvisa_paths( basePath, Sessions, 
+                                                        fmri_wc, model_id)  
           
         misc = ConfigObj(paths['misc'])
         misc["sessions"] = Sessions
@@ -121,10 +121,10 @@ for s in Subjects:
         design_matrices = {}
         for sess in Sessions:
             design_matrices[sess] =\
-               GLMTools.DesignMatrix( nbFrames, paths['paradigm'], paths['misc'], 
+               glm_tools.DesignMatrix( nbFrames, paths['paradigm'], paths['misc'], 
                                        TR, paths['dmtx'][sess], sess, 
                                        hrfType=hrfType, drift=drift,  
-                                       cos_FreqCut=cos_FreqCut, model=modelDir)        
+                                       cos_FreqCut=cos_FreqCut, model=model_id)        
         # step 3. Compute the Mask
         # fixme : it should be possible to provide a pre-computed mask
         print "Computing the Mask"
@@ -133,27 +133,26 @@ for s in Subjects:
         
         # step 4. Creating functional contrasts
         print "Creating Contrasts"
-        clist = Contrast.ContrastList(misc=misc)
+        clist = contrast_tools.ContrastList(misc=ConfigObj(paths['misc']),
+                                      model=model_id)
         generate_localizer_contrasts(clist)
         contrast = clist.save_dic(paths['contrast_file'])
-        CompletePaths = GLMTools.generate_brainvisa_ouput_paths( 
+        CompletePaths = glm_tools.generate_brainvisa_ouput_paths( 
                         paths["contrasts"],  contrast)
 
         # step 5. Fit the  glm for each session
         glms = {}
         for sess in Sessions:
             print "Fitting GLM for session : %s" % sess
-            glms[sess] = GLMTools.GLMFit(
+            glms[sess] = glm_tools.GLMFit(
                 paths['fmri'][sess], design_matrices[sess],
                 paths['glm_dump'][sess], paths['glm_config'][sess],
                 fit_algo, paths['mask'])
             
         #step 6. Compute Contrasts
         print "Computing contrasts"
-        GLMTools.ComputeContrasts(contrast, misc, glms, save_mode,
-                                  CompletePaths=CompletePaths,
-                                  threshold=3.0,
-                                  cluster=10,
-                                  method='None')
+        glm_tools.ComputeContrasts(contrast, misc, CompletePaths,
+                                   glms, save_mode, model=model_id,
+                                   threshold=3.0, cluster=10, method='None')
 
         

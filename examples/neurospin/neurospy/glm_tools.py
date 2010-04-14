@@ -508,7 +508,7 @@ def GLMFit(file, DesignMatrix=None,  output_glm=None, outputCon=None,
 #-----------------------------------------------------
 
 
-def ComputeContrasts(contrasts=None, misc=None, glms=None,
+def ComputeContrasts(contrast_struct, misc, CompletePaths, glms=None,
                      save_mode="Contrast Name", model="default",
                      verbose=0, **kargs):
     """
@@ -516,15 +516,21 @@ def ComputeContrasts(contrasts=None, misc=None, glms=None,
     
     Parameters
     ----------
-    contrasts, ConfigObj instance, optional
+    contrast_struct, ConfigObj instance or string
                it yields the set of contrasts of the multi-session model
-               if None, a 'contrast_file' (path) should be provided
-    miscFile, misc object instance, optional,
+               or the path to a configobj that specifies the contarsts
+    misc: misc object instance,
               misc information on the datasets used here
-              if None, a 'misc_file' (path) should be provided
+              or path to a configobj file that yields the misc info
+    Complete_Paths: dictionary or string,
+                    yields all paths, indexed by contrasts,
+                    where outputs will be written
+                    if it is a string, all the paths are re-generated 
+                    based on it as a output directory
     glms, dictionary of nipy.neurospin.glm.glm.glm instances
          indexed by sessions, optional
-         if it is not provided, a 'glm_config' should be provided in kargs
+         if it is not provided, a 'glm_config' instance should be provided
+         in kargs
     save_mode='Contrast Name', string to be chosen
                         among 'Contrast Name' or 'Contrast Number'
     model='default', string,
@@ -533,25 +539,21 @@ def ComputeContrasts(contrasts=None, misc=None, glms=None,
     import nipy.neurospin.glm as GLM
 
     #read the msic info
-    if misc==None:
-        if not kargs.has_key('misc_file'):
-            misc = ConfigObj(kargs['miscFile'])
-        misc = ConfigObj(miscFile)
+    if isinstance(misc, basestring):
+        misc = ConfigObj(misc)
     if not misc.has_key(model):
         misc[model] = {}
     if not misc[model].has_key("con_dofs"):
         misc[model]["con_dofs"] = {}
-
+    sessions = misc['sessions']
+    
     # get the contrasts
-    if contrasts==None:
-        if not kargs.has_key('contrast_file'):
-            raise ValueError, "No contrast file provided"
-        contrasts = ConfigObj(kargs['contrast_file'])
-    contrasts_names = contrasts["contrast"]
+    if isinstance(misc, basestring):
+        contrast_struct = ConfigObj(contrast_struct) 
+    contrasts_names = contrast_struct["contrast"]
 
     # get the glms
     designs = {}
-    sessions = misc['sessions']
     if glms is not None:
        designs = glms
     else:             
@@ -560,18 +562,20 @@ def ComputeContrasts(contrasts=None, misc=None, glms=None,
         else:
             for s in sessions:
                 designs[s] = GLM.load(kargs['glm_config'][s]["GlmDumpFile"])
-                
+
+    # set the mask
+    mask_url = None
     if misc.has_key('mask_url'):
         mask_url = misc['mask_url']
-    else:
-        mask_url = None
 
-    if not kargs.has_key('CompletePaths'):
-        raise ValueError, 'write paths are not available'
-
+    # set the output paths
+    if isinstance(CompletePaths, basestring) :
+        CompletePaths = generate_brainvisa_ouput_paths(CompletePaths, 
+                        contrast_struct)
+    # compte the contrasts
     for i, contrast in enumerate(contrasts_names):
-        contrast_type = contrasts[contrast]["Type"]
-        contrast_dimension = contrasts[contrast]["Dimension"]
+        contrast_type = contrast_struct[contrast]["Type"]
+        contrast_dimension = contrast_struct[contrast]["Dimension"]
         final_contrast = []
         k = i+1
         multicon = dict()
@@ -582,7 +586,7 @@ def ComputeContrasts(contrasts=None, misc=None, glms=None,
         else:
             raise ValueError, "unknown save mode"
 
-        for key, value in contrasts[contrast].items():
+        for key, value in contrast_struct[contrast].items():
             if verbose: print key,value
             if key != "Type" and key != "Dimension":
                 session = "_".join(key.split("_")[:-1])
@@ -608,9 +612,9 @@ def ComputeContrasts(contrasts=None, misc=None, glms=None,
             res_contrast = res_contrast + c
             res_contrast.type = contrast_type
             
-        cpp = kargs['CompletePaths'][contrast]
+        # write misc information
+        cpp = CompletePaths[contrast]
         save_all_images(res_contrast, contrast_dimension, mask_url, cpp)
-                                          
         misc[model]["con_dofs"][contrast] = res_contrast.dof
     misc["Contrast Save Mode"] = save_mode
     misc.write()

@@ -8,7 +8,7 @@ Author : Lise Favre, Bertrand Thirion, 2008-2009
 import os
 from configobj import ConfigObj
 from nipy.neurospin.utils.mask import compute_mask_files
-import GLMTools, Contrast
+import glm_tools, contrast_tools
 
 
 # -----------------------------------------------------------
@@ -73,7 +73,7 @@ for s in Subjects:
     for a in Acquisitions:
         # step 1. set all the paths
         basePath = os.sep.join((DBPath, s, "fMRI", a))
-        paths = GLMTools. generate_all_brainvisa_paths( basePath, Sessions, 
+        paths = glm_tools. generate_all_brainvisa_paths( basePath, Sessions, 
                                                         fmri_wc, modelDir) 
     
         misc = ConfigObj(paths['misc'])
@@ -86,7 +86,7 @@ for s in Subjects:
         design_matrices={}
         for sess in Sessions:
             design_matrices[sess] =\
-               GLMTools.DesignMatrix( nbFrames, paths['paradigm'],
+               glm_tools.DesignMatrix( nbFrames, paths['paradigm'],
                                        paths['misc'], TR, paths['dmtx'][sess],
                                        sess, hrfType=hrfType, drift=drift,  
                                        cos_FreqCut=cos_FreqCut, model=modelDir)
@@ -99,7 +99,7 @@ for s in Subjects:
         
         # step 4. Create Contrast Files
         print "Creating Contrasts"
-        clist = Contrast.ContrastList(misc=misc)
+        clist = contrast_tools.ContrastList(misc=misc)
         d = clist.dic
         d["SStSSp_minus_DStDSp"] = d["SSt-SSp"] - d["DSt-DSp"]
         d["DStDSp_minus_SStSSp"] = d["DSt-DSp"] - d["SSt-SSp"]
@@ -116,24 +116,22 @@ for s in Subjects:
             d["Deactivation"] = (d["SSt-SSp"] * -1)\
                                 - d["DSt-DSp"] - d["DSt-DSp"] - d["SSt-SSp"]
         contrast = clist.save_dic(paths['contrast_file'])
-        CompletePaths = GLMTools.generate_brainvisa_ouput_paths( 
+        CompletePaths = glm_tools.generate_brainvisa_ouput_paths( 
             paths["contrasts"],  contrast)
         
         # step 5. Fit the  glm for each session 
         glms = {}
         for sess in Sessions:
             print "Fitting GLM for session : %s" % sess
-            glms[sess] = GLMTools.GLMFit(
+            glms[sess] = glm_tools.GLMFit(
                 paths['fmri'][sess], design_matrices[sess] ,
                 paths['glm_dump'][sess], paths['glm_config'][sess],
                 fit_algo, paths['mask'])
          
         #6. Compute the Contrasts
         print "Computing contrasts"
-        GLMTools.ComputeContrasts(contrast, misc, glms, save_mode,
-                                  CompletePaths=CompletePaths,
-                                  threshold=3.0,
-                                  cluster=10,
-                                  method='None')  
+        glm_tools.ComputeContrasts(contrast, misc, CompletePaths,
+                                   glms, save_mode,
+                                  threshold=3.0, cluster=10, method='None')  
         
             
