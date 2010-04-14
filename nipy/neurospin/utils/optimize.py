@@ -4,7 +4,7 @@
 import numpy as np 
 from scipy.optimize import brent, approx_fprime
 
-_epsilon = np.sqrt(np.finfo(float).eps)
+_STEP = np.sqrt(np.finfo(float).eps)
 
 
 def _linesearch_brent(func, p, xi, tol=1e-3):
@@ -28,7 +28,7 @@ def _wrap(function, args):
 
 
 def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4, 
-                  epsilon=_epsilon, 
+                  step=_STEP,
                   maxiter=None, callback=None): 
 
     x = np.asarray(x0).flatten()
@@ -37,7 +37,7 @@ def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4,
     if maxiter == None: 
         maxiter = x.size*1000
     if fprime == None:
-        grad_calls, myfprime = _wrap(approx_fprime, (f, epsilon))
+        grad_calls, myfprime = _wrap(approx_fprime, (f, step))
     else:
         grad_calls, myfprime = _wrap(fprime, args)
 
