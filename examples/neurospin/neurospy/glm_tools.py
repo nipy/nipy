@@ -11,9 +11,10 @@ import os
 from configobj import ConfigObj
 
 from nipy.io.imageformats import load, save, Nifti1Image 
+import glob
+from os.path import join
 
 
-import Results
 
 ############################################
 # Path definition
@@ -64,8 +65,7 @@ def generate_all_brainvisa_paths( base_path, sessions, fmri_wc,  model_id,
     paths, dictionary
         containing all the paths that are required to eprform a glm with brainvisa
     """
-    import glob
-    from os.path import join
+ 
     paths = {}
     paths['minf'] = os.sep.join(( base_path, "Minf"))
     paths['model'] = os.sep.join(( base_path, "glm", model_id))
@@ -90,7 +90,10 @@ def generate_all_brainvisa_paths( base_path, sessions, fmri_wc,  model_id,
         paths['dmtx'][sess] = os.sep.join(( designPath, design_id))  
         fmriPath = os.sep.join(( base_path, sess))
         paths['fmri'][sess] = glob.glob( os.sep.join((fmriPath, fmri_wc)))
-        #
+        if  paths['fmri'][sess]==[]:
+            print "found no fMRI file as %s" %os.sep.join((fmriPath, fmri_wc))
+        else:
+            paths['fmri'][sess].sort()
         paths['glm_dump'][sess] = os.sep.join((designPath, glm_dump))
         paths['glm_config'][sess] = os.sep.join((designPath, glm_config))
     return paths
@@ -325,7 +328,8 @@ def save_all_images(contrast, dim, mask_url, kargs):
     else:
         cluster = 0
 
-    Results.ComputeResultsContents(z_file, mask_url, html_file,
+    import html_result
+    html_result.ComputeResultsContents(z_file, mask_url, html_file,
                                    threshold=threshold, method=method,
                                    cluster=cluster)
 
