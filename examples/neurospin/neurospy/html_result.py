@@ -1,12 +1,40 @@
-import nipy.neurospin.statistical_mapping as sm
+"""
+This is a small ustility that generates an html page to describe
+the activations found in an activation SPM, similar to SPM arrays 
+
+Author: Lise Favre, Alexis Roche, Bertrand Thirion, 2008--2010
+"""
+
 from nipy.io.imageformats import load
 
-def ComputeResultsContents(zmap_file_path, mask_file_path,
-                           output_html_path, threshold=0.001,
-                           method='fpr', cluster=0, null_zmax='bonferroni',
-                           null_smax=None, null_s=None, nmaxima=4):
-
-    #print zmap_file_path, mask_file_path, output_html_path
+def display_results_html(zmap_file_path, mask_file_path,
+                         output_html_path, threshold=0.001,
+                         method='fpr', cluster=0, null_zmax='bonferroni',
+                         null_smax=None, null_s=None, nmaxima=4):
+    """
+    Parameters
+    ----------
+    zmap_file_path, string,
+                    path of the input activation (z-transformed) image
+    mask_file_path, string,
+                    path of the a corresponding mask image
+    output_html_path, string,
+                      path where the output html should be written
+    threshold, float, optional
+               (p-variate) frequentist threshold of the activation image
+    method, string, optional
+            to be chosen as height_control in 
+            nipy.neurospin.statistical_mapping
+    cluster, scalar, optional,
+             cluster size threshold
+    null_zmax: optional,
+               parameter for cluster leve statistics (?)
+    null_s: optional,
+             parameter for cluster leve statistics (?)
+    nmaxima: optional,
+             number of local maxima reported per supra-threshold cluster    
+    """
+    import nipy.neurospin.statistical_mapping as sm
 
     # Read data: z-map and mask     
     zmap = load(zmap_file_path)
@@ -21,7 +49,7 @@ def ComputeResultsContents(zmap_file_path, mask_file_path,
                                       height_control=method.lower(),
                                       cluster_th=cluster, nulls=nulls)
     if clusters == None or info == None:
-        print "No results were writen for %s" % zmap_file_path
+        print "No results were written for %s" % zmap_file_path
         return
     
     # Make HTML page 
@@ -48,12 +76,13 @@ def ComputeResultsContents(zmap_file_path, mask_file_path,
             temp.append("%f" % cluster['pvalue'][j])
             for it in range(3):
                 temp.append("%f" % maxima[j][it])
-            if j == 0: ## Main local maximum
+            if j == 0:
+                # Main local maximum
                 temp.append('%i'%size)
                 output.write('<tr><th align="center">' + '</th>\
                 <th align="center">'.join(temp) + '</th></tr>')
-                #output.write('<th>%i</th>\n'%size)
-            else: ## Secondary local maxima 
+            else:
+                # Secondary local maxima 
                 output.write('<tr><td align="center">' + '</td>\
                 <td align="center">'.join(temp) + '</td><td></td></tr>\n')
 
@@ -69,3 +98,5 @@ def ComputeResultsContents(zmap_file_path, mask_file_path,
     output.write("Cluster size threshold = %i voxels"%cluster_th)
     output.write("</center></body></html>\n")
     output.close()
+
+
