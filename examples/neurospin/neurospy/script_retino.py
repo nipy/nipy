@@ -23,7 +23,7 @@ Sessions = ["ima1","ima2","ima3","ima4"]
 model_id = "default"
 
 # choose volume-based or surface-based analysis
-side = 'right'#'False'#'left'#
+side = 'left'#'right'#'False'#
 fmri_wc = "rima*.img"
 if side=='left':
     fmri_wc = "left_tex*.tex"

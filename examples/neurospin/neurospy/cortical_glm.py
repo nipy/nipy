@@ -178,7 +178,7 @@ def load_texture(path):
         Fun = []
         for f in path:
             Fun.append(tio.Texture(f).read(f).data)
-        Fun = np.array(Fun).T
+        Fun = np.array(Fun)
     else:
         Fun = tio.Texture(path).read(path).data
 

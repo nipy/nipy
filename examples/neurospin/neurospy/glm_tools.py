@@ -212,9 +212,9 @@ def load_image(image_path, mask_path=None ):
            image_data.append(temp)
        image_data = np.array(image_data).T
     else:
-         image_data = load(image_path).get_data()
-         if mask != None:
-              image_data = image_data[mask>0,:]
+        image_data = load(image_path).get_data()
+        if mask != None:
+            image_data = image_data[mask>0,:]
     
     return image_data
 

@@ -1,3 +1,8 @@
+"""
+Custom module for io for textures defined in brainvisa (.tex)
+
+Author: Alan Tucholka, 2008-2010
+"""
 import os
 import numpy as _np
 import gzip as _gz 
