@@ -7,10 +7,10 @@ Author: Lise Favre, Alexis Roche, Bertrand Thirion, 2008--2010
 
 from nipy.io.imageformats import load
 
-def ComputeResultsContents(zmap_file_path, mask_file_path,
-                           output_html_path, threshold=0.001,
-                           method='fpr', cluster=0, null_zmax='bonferroni',
-                           null_smax=None, null_s=None, nmaxima=4):
+def display_results_html(zmap_file_path, mask_file_path,
+                         output_html_path, threshold=0.001,
+                         method='fpr', cluster=0, null_zmax='bonferroni',
+                         null_smax=None, null_s=None, nmaxima=4):
     """
     Parameters
     ----------
@@ -98,3 +98,5 @@ def ComputeResultsContents(zmap_file_path, mask_file_path,
     output.write("Cluster size threshold = %i voxels"%cluster_th)
     output.write("</center></body></html>\n")
     output.close()
+
+

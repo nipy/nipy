@@ -88,8 +88,9 @@ def generate_all_brainvisa_paths( base_path, sessions, fmri_wc,  model_id,
     paths = {}
     paths['minf'] = os.sep.join(( base_path, "Minf"))
     paths['model'] = os.sep.join(( base_path, "glm", model_id))
-    paths['paradigm'] = os.sep.join(( paths['minf'], paradigm_id))
-    if not os.path.isfile( paths['paradigm']):
+    if paradigm_id is not None:
+        paths['paradigm'] = os.sep.join(( paths['minf'], paradigm_id))
+        if not os.path.isfile( paths['paradigm']):
             raise ValueError,"paradigm file %s not found" %paradigmFile
     paths['mask'] = os.sep.join(( paths['minf'], mask_id))
     paths['misc'] = os.sep.join(( paths['minf'], misc_id))
@@ -204,9 +205,8 @@ def load_image(image_path, mask_path=None ):
 
     if hasattr(image_path, '__iter__'):
        for im in image_path:
-           if mask != None:
-               temp = np.reshape(load(im).get_data(),shape)[mask>0,:]
-               
+           if mask is not None:
+               temp = np.reshape(load(im).get_data(),shape)[mask>0,:]    
            else:
                 temp = np.reshape(load(im).get_data(),shape) 
            image_data.append(temp)
@@ -217,24 +217,6 @@ def load_image(image_path, mask_path=None ):
               image_data = image_data[mask>0,:]
     
     return image_data
-
-def save_masked_volume(data, mask_url, path, descrip=None):
-    """
-    volume saving utility for masked volumes
-    
-    Parameters
-    ----------
-    data, array of shape(nvox) data to be put in the volume
-    mask_url, string, the mask path
-    path string, output image path
-    descrip = None, a string descibing what the image is
-    """
-    rmask = load(mask_url)
-    mask = rmask.get_data()
-    shape = rmask.get_shape()
-    affine = rmask.get_affine()
-    save_volume(shape, path, affine, mask, data, descrip)
-    
 
 def save_volume(shape, path, affine, mask=None, data=None, descrip=None):
     """
@@ -255,11 +237,11 @@ def save_volume(shape, path, affine, mask=None, data=None, descrip=None):
     """
     volume = np.zeros(shape)
     if mask== None: 
-       print "Could not write the image: no data"
+       print "Could not write the image: no mask"
        return
 
     if data == None:
-       print "Could not write the image:no mask"
+       print "Could not write the image: no data"
        return
 
     if np.size(data.shape) == 1:
@@ -289,6 +271,11 @@ def save_all_images(contrast, dim, mask_url, kargs):
            that are used to define the parameters for vizualization 
            of the html page. 
     """
+    z_file = None
+    stat_file = None
+    res_file = None
+    con_file = None
+    html_file = None
     if kargs.has_key("z_file"):
         z_file = kargs["z_file"]
     if kargs.has_key("stat_file"):
@@ -309,43 +296,50 @@ def save_all_images(contrast, dim, mask_url, kargs):
     z = contrast.zscore()
 
     # saving the Z statistics map
-    save_volume(shape, z_file, affine, mask_arr, z, "z_file")
+    if z_file is not None:
+        save_volume(shape, z_file, affine, mask_arr, z, "z_file")
     
     # Saving the t/F statistics map
-    save_volume(shape, stat_file, affine, mask_arr, t, "stat_file")
+    if stat_file is not None:
+        save_volume(shape, stat_file, affine, mask_arr, t, "stat_file")
     
     if int(dim) != 1:
-        shape = (shape[0], shape[1], shape[2],int(dim)**2)
+        shape = (shape[0], shape[1], shape[2], int(dim)**2)
         contrast.variance = contrast.variance.reshape(int(dim)**2, -1)
 
     ## saving the associated variance map
     # fixme : breaks with F contrasts !
-    if contrast.type == "t":
-        save_volume(shape, res_file, affine, mask_arr,
-                    contrast.variance)
-    if int(dim) != 1:
-        shape = (shape[0], shape[1], shape[2], int(dim))
+    if z_file is not None:
+        if contrast.type == "t":
+            save_volume(shape, res_file, affine, mask_arr,
+                        contrast.variance)
+        if int(dim) != 1:
+            shape = (shape[0], shape[1], shape[2], int(dim))
 
-    # writing the associated contrast structure
+    # writing the associated contrast estimate
     # fixme : breaks with F contrasts !
-    if contrast.type == "t":
-        save_volume(shape, con_file, affine, mask_arr, contrast.effect)
-         
+    if con_file is not None:
+        if contrast.type == "t":
+            save_volume(shape, con_file, affine, mask_arr, contrast.effect)
+            
     # writing the results as an html page
-    method = 'fpr'
-    threshold = 0.001
-    cluster = 0
-    if kargs.has_key("method"):
-        method = kargs["method"]
+    if html_file is not None:
+        import html_result
+        method = 'fpr'
+        threshold = 0.001
+        cluster = 0
+        if kargs.has_key("method"):
+            method = kargs["method"]
    
-    if kargs.has_key("threshold"):
-        threshold = kargs["threshold"]
+        if kargs.has_key("threshold"):
+            threshold = kargs["threshold"]
 
-    if kargs.has_key("cluster"):
-        cluster = kargs["cluster"]
+        if kargs.has_key("cluster"):
+            cluster = kargs["cluster"]
     
-    display_results_html(z_file, mask_url, html_file, threshold=threshold,
-                         method=method, cluster=cluster)
+        html_result.display_results_html(z_file, mask_url, html_file,
+                                         threshold=threshold,
+                                         method=method, cluster=cluster)
 
 ######################################################
 # First Level analysis
@@ -354,51 +348,6 @@ def save_all_images(contrast, dim, mask_url, kargs):
 #-----------------------------------------------------
 #------- Design Matrix handling ----------------------
 #-----------------------------------------------------
-
-def _load_protocol(path, session):
-    """
-    Read a paradigm file consisting of a list of pairs
-    (occurence time, (duration), event ID)
-    and create a paradigm array
-    
-    Parameters
-    ----------
-    path, string a path to a .csv file that describes the paradigm
-    session, int, the session number used to extract 
-             the relevant session information in th csv file
-    
-    Returns
-    -------
-    paradigm array of shape (nevents,2) if the type is event-related design 
-             or (nenvets,3) for a block design
-             that constains (condition id, onset) 
-             or (condition id, onset, duration)
-    """
-    import csv
-    csvfile = open(path)
-    dialect = csv.Sniffer().sniff(csvfile.read())
-    csvfile.seek(0)
-    reader = csv.reader(open(path, "rb"),dialect)
-    
-    paradigm = []
-    for row in reader:
-        paradigm.append([float(row[j]) for j in range(len(row))])
-
-    paradigm = np.array(paradigm)
-    
-    #paradigm = loadtxt(path)
-    if paradigm[paradigm[:,0] == session].tolist() == []:
-        return None
-    paradigm = paradigm[paradigm[:,0] == session]
-    
-    if paradigm.shape[1] == 4:
-        paradigm = paradigm[:,1:]
-        typep = 'block'
-    else:
-        typep ='event'
-        paradigm = paradigm[:,[1,2]]
-    
-    return paradigm
 
 def design_matrix(
     misc_file, output_file, session,  paradigm_file, frametimes,
@@ -413,7 +362,8 @@ def design_matrix(
     misc_file: string,
               path of misc info file that is updated with info on design matrix
     output_file: string,
-                 path of the (.csv) file where the design matrix shall be written
+                 path of the (.csv) file
+                 where the design matrix shall be written
     session: string,
              id of the session        
     paradigm_file: string, 
@@ -439,7 +389,9 @@ def design_matrix(
 
     # get the paradigm
     if isinstance(paradigm_file, basestring):
-        _paradigm = _load_protocol(paradigm_file, _session)
+        _paradigm = dm.load_protocol_from_csv_file(paradigm_file, _session)
+    else:
+        _paradigm = None
 
     # compute the design matrix
     dmtx = dm.DesignMatrix(frametimes, _paradigm, hrf_model=hrf_model,
@@ -640,94 +592,3 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
     misc.write()
 
 
-def display_results_html(zmap_file_path, mask_file_path,
-                         output_html_path, threshold=0.001,
-                         method='fpr', cluster=0, null_zmax='bonferroni',
-                         null_smax=None, null_s=None, nmaxima=4):
-    """
-    Parameters
-    ----------
-    zmap_file_path, string,
-                    path of the input activation (z-transformed) image
-    mask_file_path, string,
-                    path of the a corresponding mask image
-    output_html_path, string,
-                      path where the output html should be written
-    threshold, float, optional
-               (p-variate) frequentist threshold of the activation image
-    method, string, optional
-            to be chosen as height_control in 
-            nipy.neurospin.statistical_mapping
-    cluster, scalar, optional,
-             cluster size threshold
-    null_zmax: optional,
-               parameter for cluster leve statistics (?)
-    null_s: optional,
-             parameter for cluster leve statistics (?)
-    nmaxima: optional,
-             number of local maxima reported per supra-threshold cluster    
-    """
-    import nipy.neurospin.statistical_mapping as sm
-
-    # Read data: z-map and mask     
-    zmap = load(zmap_file_path)
-    mask = load(mask_file_path)
-
-    cluster_th = cluster
-   
-    # Compute cluster statistics
-    #if null_smax != None:
-    nulls={'zmax' : null_zmax, 'smax' : null_smax, 's' : null_s}
-    clusters, info = sm.cluster_stats(zmap, mask, height_th=threshold,
-                                      height_control=method.lower(),
-                                      cluster_th=cluster, nulls=nulls)
-    if clusters == None or info == None:
-        print "No results were written for %s" % zmap_file_path
-        return
-    
-    # Make HTML page 
-    output = open(output_html_path, mode = "w")
-    output.write("<html><head><title> Result Sheet for %s \
-    </title></head><body><center>\n" % zmap_file_path)
-    output.write("<h2> Results for %s</h2>\n" % zmap_file_path)
-    output.write("<table border = 1>\n")
-    output.write("<tr><th colspan=4> Voxel significance </th>\
-    <th colspan=3> Coordinates in MNI referential</th>\
-    <th>Cluster Size</th></tr>\n")
-    output.write("<tr><th>p FWE corr<br>(Bonferroni)</th>\
-    <th>p FDR corr</th><th>Z</th><th>p uncorr</th>")
-    output.write("<th> x (mm) </th><th> y (mm) </th><th> z (mm) </th>\
-    <th>(voxels)</th></tr>\n")
-
-    for cluster in clusters:
-        maxima = cluster['maxima']
-        size=cluster['size']
-        for j in range(min(len(maxima), nmaxima)):
-            temp = ["%f" % cluster['fwer_pvalue'][j]]
-            temp.append("%f" % cluster['fdr_pvalue'][j])
-            temp.append("%f" % cluster['zscore'][j])
-            temp.append("%f" % cluster['pvalue'][j])
-            for it in range(3):
-                temp.append("%f" % maxima[j][it])
-            if j == 0:
-                # Main local maximum
-                temp.append('%i'%size)
-                output.write('<tr><th align="center">' + '</th>\
-                <th align="center">'.join(temp) + '</th></tr>')
-            else:
-                # Secondary local maxima 
-                output.write('<tr><td align="center">' + '</td>\
-                <td align="center">'.join(temp) + '</td><td></td></tr>\n')
-
-                 
-    nclust = len(clusters)
-    nvox = sum([clusters[k]['size'] for k in range(nclust)])
-    
-    output.write("</table>\n")
-    output.write("Number of voxels : %i<br>\n" % nvox)
-    output.write("Number of clusters : %i<br>\n" % nclust)
-    output.write("Threshold Z = %f (%s control at %f)<br>\n" \
-                 % (info['threshold_z'], method, threshold))
-    output.write("Cluster size threshold = %i voxels"%cluster_th)
-    output.write("</center></body></html>\n")
-    output.close()
