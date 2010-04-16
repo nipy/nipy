@@ -6,6 +6,7 @@ Author : Lise Favre, Bertrand Thirion, 2008-2010
 """
 import os
 from configobj import ConfigObj
+from numpy import arange
 from nipy.neurospin.utils.mask import compute_mask_files
 import glm_tools, contrast_tools
 
@@ -14,7 +15,7 @@ import glm_tools, contrast_tools
 #-----------------------------------------------------------
 
 DBPath = "/volatile/thirion/Localizer"
-Subjects = ["s12069"]#["s12277"]#, "s12300","s12401","s12431","s12508","s12532","s12635","s12636","s12826","s12898","s12913","s12919","s12920"]#["s12069"]#
+Subjects = ["s12069"]#["s12277", "s12300","s12401","s12431","s12508","s12532","s12635","s12636","s12826","s12898","s12913","s12919","s12920"]
 Acquisitions = ["acquisition"]
 Sessions = ["loc1"]
 model_id = "default"
@@ -24,8 +25,9 @@ fmri_wc = "S*.nii"
 # -------- General Information ----------------------------
 # ---------------------------------------------------------
 
-TR = 2.4
-nbFrames = 128
+tr = 2.4
+nb_frames = 128
+frametimes = tr * arange(nb_frames)
 
 Conditions = [ 'damier_H', 'damier_V', 'clicDaudio', 'clicGaudio', 
 'clicDvideo', 'clicGvideo', 'calculaudio', 'calculvideo', 'phrasevideo', 
@@ -42,22 +44,17 @@ supTh = 0.9
 
 #---------- Design Matrix
 
-# Possible choices for hrfType : "Canonical", \
+# Possible choices for hrf_model : "Canonical", \
 # "Canonical With Derivative" or "FIR"
-hrfType = "Canonical With Derivative"
+hrf_model = "Canonical With Derivative"
 
-# Possible choices for drift : "Blank", "Cosine", "Polynomial"
-drift = "Cosine"
-cos_FreqCut = 128
+# Possible choices for drift_model : "Blank", "Cosine", "Polynomial"
+drift_model = "Cosine"
+hfcut = 128
 
 #-------------- GLM options
 # Possible choices : "Kalman_AR1", "Kalman", "Ordinary Least Squares"
 fit_algo = "Kalman_AR1"
-
-#-------------- Contrast Options
-# Possible choices : "Contrast Name" or "Contrast Number"
-save_mode = "Contrast Name"
-
 
 
 
@@ -93,13 +90,9 @@ def generate_localizer_contrasts(contrast):
     d["computation-sentences"] = d["computation"] - d["sentences"]
     d["reading-visual"] = d["sentences"]*2 - d["damier_H"] - d["damier_V"]
     
-# ------------------------------------------------------------------
-# Launching Pipeline on all subjects, all acquisitions, all sessions 
-# -------------------------------------------------------------------
-
-# fixme : all the structures (misc, design_patrices, contrasts or mask)
-# should be passed as structures not through files
-
+#####################################################################
+# Launching Pipeline on all subjects, all acquisitions, all sessions
+#####################################################################
 
 # Treat sequentially all subjects & acquisitions
 for s in Subjects:
@@ -120,11 +113,11 @@ for s in Subjects:
         # step 2. Create one design matrix for each session
         design_matrices = {}
         for sess in Sessions:
-            design_matrices[sess] =\
-               glm_tools.DesignMatrix( nbFrames, paths['paradigm'], paths['misc'], 
-                                       TR, paths['dmtx'][sess], sess, 
-                                       hrfType=hrfType, drift=drift,  
-                                       cos_FreqCut=cos_FreqCut, model=model_id)        
+            design_matrices[sess] = glm_tools.design_matrix(
+                paths['misc'], paths['dmtx'][sess], sess, paths['paradigm'],
+                frametimes, hrf_model=hrf_model, drift_model=drift_model,
+                hfcut=hfcut, model=model_id)
+            
         # step 3. Compute the Mask
         # fixme : it should be possible to provide a pre-computed mask
         print "Computing the Mask"
@@ -144,15 +137,14 @@ for s in Subjects:
         glms = {}
         for sess in Sessions:
             print "Fitting GLM for session : %s" % sess
-            glms[sess] = glm_tools.GLMFit(
+            glms[sess] = glm_tools.glm_fit(
                 paths['fmri'][sess], design_matrices[sess],
                 paths['glm_dump'][sess], paths['glm_config'][sess],
                 fit_algo, paths['mask'])
             
         #step 6. Compute Contrasts
         print "Computing contrasts"
-        glm_tools.ComputeContrasts(contrast, misc, CompletePaths,
-                                   glms, save_mode, model=model_id,
-                                   threshold=3.0, cluster=10, method='None')
+        glm_tools.compute_contrasts(contrast, misc, CompletePaths,
+                                    glms,  model=model_id)
 
         
