@@ -5,7 +5,7 @@ from nipy.neurospin.registration.grid_transform import *
 from nipy.neurospin.image import *
 
 from nipy.utils import example_data
-from nipy.io.imageformats import load as load_image, save as save_image
+from nipy.io.imageformats import load, save
 
 ### DEBUG
 from numpy.testing import * 
@@ -27,8 +27,8 @@ interp = 'pv'
 optimizer = 'powell'
 
 # Make registration instance
-I = from_brifti(load_image(source_file))
-J = from_brifti(load_image(target_file))
+I = Image(load(source_file))
+J = Image(load(target_file))
 R = IconicRegistration(I, J)
 R.set_source_fov(fixed_npoints=64**3)
 
@@ -45,7 +45,7 @@ A = R.optimize(A0)
 
 # Save affinely transformed target  
 Jt = transform_image(J, A, reference=I)
-save_image(to_brifti(Jt), 'affine_anubis_to_ammon.nii')
+save(asNifti1Image(Jt), 'affine_anubis_to_ammon.nii')
 
 # Then add control points...
 T0 = SplineTransform(I, cp, sigma=20., grid_coords=True, affine=A)
@@ -75,7 +75,7 @@ T = R.optimize(T0, method='steepest')
 # Resample target image 
 t = np.asarray(T)
 Jt = transform_image(J, t, reference=I)
-save_image(to_brifti(Jt), 'deform_anubis_to_ammon.nii')
+save(asNifti1Image(Jt), 'deform_anubis_to_ammon.nii')
 
 
 # Test 3
