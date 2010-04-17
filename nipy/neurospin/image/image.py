@@ -1,4 +1,6 @@
-import nipy.io.imageformats as brifti
+import nipy.io.imageformats as nibabel
+# soon to be replaced by 
+# import nibabel
 import numpy as np 
 from scipy import ndimage 
 
@@ -27,7 +29,7 @@ class Image(object):
     memory.
     """
 
-    def __init__(self, data, affine, world=None, 
+    def __init__(self, obj, affine=None, world=None, 
                  mask=None, shape=None, background=_background): 
         """ 
         The base image class.
@@ -49,6 +51,14 @@ class Image(object):
         background: number, optional 
             Background value (outside image boundaries).  
         """
+
+        if hasattr(obj, 'get_data'):
+            data = obj.get_data()
+        else:
+            data = obj
+        if hasattr(obj, 'get_affine'): 
+            if affine == None: 
+                affine = obj.get_affine()
 
         if mask == None: 
             self._mask = None
@@ -98,6 +108,8 @@ class Image(object):
         return self._affine
 
     def _set_affine(self, affine):
+        if affine == None: 
+            raise ValueError('Unspecified affine')
         affine = np.asarray(affine).squeeze()
         if not affine.shape==(4,4):
             raise ValueError('Not a 4x4 transformation matrix')
@@ -194,22 +206,10 @@ class Image(object):
 
 
 """
-Util functions
+Conversion to nibabel classes
 """
-def from_brifti(im): 
-    return Image(im.get_data(), im.get_affine())
-
-def to_brifti(Im): 
-    return brifti.Nifti1Image(Im.data, Im.affine)
-
-"""
-def load_image(fname): 
-    return from_brifti(brifti.load(fname))
-
-def save_image(Im, fname):
-    im = brifti.Nifti1Image(Im.data, Im.affine)
-    brifti.save(im, fname)
-"""
+def asNifti1Image(Im): 
+    return nibabel.Nifti1Image(Im.data, Im.affine)
 
 def mask_image(im, mask, background=None): 
     """

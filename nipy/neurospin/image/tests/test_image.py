@@ -2,10 +2,10 @@
 
 import numpy as np
 from nipy.testing import anatfile, assert_equal, assert_almost_equal, assert_raises
-from nipy.io.imageformats import load as load_image
+from nipy.io.imageformats import load 
 from nipy.neurospin.image import *
 
-I = from_brifti(load_image(anatfile))
+I = Image(load(anatfile))
 
 def test_mask_image(): 
     Imin = I.data.min()
