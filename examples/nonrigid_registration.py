@@ -44,7 +44,7 @@ A = R.optimize(A0)
 ###A = Affine()
 
 # Save affinely transformed target  
-Jt = transform_image(J, A, reference=I)
+Jt = J.transform(A, reference=I)
 save(asNifti1Image(Jt), 'affine_anubis_to_ammon.nii')
 
 # Then add control points...
@@ -74,7 +74,7 @@ T = R.optimize(T0, method='steepest')
 
 # Resample target image 
 t = np.asarray(T)
-Jt = transform_image(J, t, reference=I)
+Jt = J.transform(t, reference=I)
 save(asNifti1Image(Jt), 'deform_anubis_to_ammon.nii')
 
 

@@ -10,7 +10,7 @@ from registration_module import _joint_histogram, _similarity, builtin_similarit
 from affine import Affine
 from grid_transform import GridTransform
 
-from nipy.neurospin.image import Image, set_image, apply_affine
+from nipy.neurospin.image import Image, apply_affine
 from nipy.neurospin.utils.optimize import fmin_steepest
 
 import numpy as np  
@@ -43,13 +43,13 @@ class IconicRegistration(object):
             bins = [int(bins), int(bins)]
 
         # Source image binning
-        values, s_bins = clamp(source(), bins=bins[0])
-        self._source_image = set_image(source, values)
+        values, s_bins = clamp(source.values(), bins=bins[0])
+        self._source_image = source.set(values)
         self.set_source_fov()
  
         # Target image padding + binning
-        values, t_bins = clamp(target(), bins=bins[1])
-        _target_image = set_image(target, values)
+        values, t_bins = clamp(target.values(), bins=bins[1])
+        _target_image = target.set(values)
         self._target = -np.ones(np.array(target.shape)+2, dtype=_CLAMP_DTYPE)
         _view = self._target[1:-1, 1:-1, 1:-1]
         _view[:] = _target_image.data[:]

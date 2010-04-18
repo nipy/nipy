@@ -3,7 +3,7 @@ from grid_transform import GridTransform
 from iconic_registration import IconicRegistration
 from spacetime_registration import Image4d, realign4d, resample4d
 
-from nipy.neurospin.image import Image, transform_image, asNifti1Image
+from nipy.neurospin.image import Image, asNifti1Image
 
 import numpy as np 
 
@@ -93,8 +93,8 @@ def transform(floating, T, reference=None, interp_order=3):
     if not reference == None: 
         reference = Image(reference)
 
-    return asNifti1Image(transform_image(floating, np.asarray(T), grid_coords=False,
-                                     reference=reference, interp_order=interp_order))
+    return asNifti1Image(floating.transform(np.asarray(T), grid_coords=False,
+                                            reference=reference, interp_order=interp_order))
 
 
 

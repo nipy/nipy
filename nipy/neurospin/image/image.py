@@ -135,8 +135,8 @@ class Image(object):
         else: 
             return False
 
-    def __call__(self, coords=None, grid_coords=False, 
-                 dtype=None, interp_order=_interp_order):
+    def values(self, coords=None, grid_coords=False, 
+               dtype=None, interp_order=_interp_order):
         """ 
         Return interpolated values at the points specified by coords. 
 
@@ -191,6 +191,95 @@ class Image(object):
         return output 
 
     
+    def setmask(self, mask, background=None): 
+        """
+        Return a masked image. 
+        """
+        mask = validate_coords(mask)
+        if not background: 
+            background = self._background
+        return Image(self._get_data()[mask], self._affine, world=self._world,
+                     mask=mask, shape=self._shape, background=background)
+
+    def set(self, values): 
+        """
+        values can be either a 1d array with size equal to self.size or a 3d
+        array with shape equal to self.shape. In the 1d case, the output
+        image will be masked or not depending on whether the input is
+        masked. In the former case, a non-masked image is returned. 
+        """
+        if values.ndim == 1: 
+            if not values.size == self._size:
+                raise ValueError('Input array inconsistent with image size')
+            if self._mask:
+                return Image(values, affine=self._affine, world=self._world, 
+                             mask=self._mask, shape=self._shape, background=self._background)
+            else: 
+                values = values.reshape(self._shape)
+
+        else: 
+            if not values.shape == self._shape: 
+                raise ValueError('Input array inconsistent with image shape')
+    
+        return Image(values, affine=self._affine, world=self._world)
+        
+
+
+    def transform(self, transform, grid_coords=False, 
+                  reference=None, dtype=None, interp_order=_interp_order):
+        """
+        Apply a transformation to a the image considered as 'floating'
+        to bring it into the same grid as a given 'reference'
+        image. The transformation is assumed to go from the
+        'reference' to the 'floating'.
+        
+        transform: nd array
+    
+        either a 4x4 matrix describing an affine transformation
+        
+        or a 3xN array describing voxelwise displacements of the
+        reference grid points
+        
+        precomputed : boolean
+        True for a precomputed transformation, False for affine
+
+        grid_coords : boolean
+
+        True if the transform maps to grid coordinates, False if it maps
+        to world coordinates
+    
+        reference: reference image, defaults to input. 
+        """
+        if reference == None: 
+            reference = self
+        
+        if dtype == None: 
+            dtype = self._get_dtype()
+
+        # Prepare data arrays
+        data = self._get_data()
+        output = np.zeros(reference._shape, dtype=dtype)
+        t = np.asarray(transform)
+
+        # Case: affine transform
+        if t.shape[-1] == 4: 
+            if not grid_coords:
+                t = np.dot(self._inv_affine, np.dot(t, reference._affine))
+            ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
+                                     order=interp_order, cval=self._background, 
+                                     output_shape=output.shape, output=output)
+    
+        # Case: precomputed displacements
+        else:
+            if not grid_coords:
+                t = apply_affine(self._inv_affine, t)
+            output = ndimage.map_coordinates(data, np.rollaxis(t, 3, 0), 
+                                             order=interp_order, 
+                                             cval=self._background,
+                                             output=dtype)
+    
+        return Image(output, affine=reference._affine, world=self._world, 
+                     background=self._background)
 
 
     shape = property(_get_shape)
@@ -208,98 +297,8 @@ class Image(object):
 """
 Conversion to nibabel classes
 """
-def asNifti1Image(Im): 
-    return nibabel.Nifti1Image(Im.data, Im.affine)
-
-def mask_image(im, mask, background=None): 
-    """
-    Return a masked image. 
-    """
-    mask = validate_coords(mask)
-    if not background: 
-        background = im._background
-    return Image(im._get_data()[mask], im._affine, world=im._world,
-                 mask=mask, shape=im._shape, background=background)
-
-def set_image(im, values): 
-    """
-    values can be either a 1d array with size equal to im.size or a 3d
-    array with shape equal to im.shape. In the 1d case, the output
-    image will be masked or not depending on whether the input is
-    masked. In the former case, a non-masked image is returned. 
-    """
-
-    if values.ndim == 1: 
-        if not values.size == im._size:
-            raise ValueError('Input array inconsistent with image size')
-        if im._mask:
-            return Image(values, affine=im._affine, world=im._world, 
-                         mask=im._mask, shape=im._shape, background=im._background)
-        else: 
-            values = values.reshape(im._shape)
-
-    else: 
-        if not values.shape == im._shape: 
-            raise ValueError('Input array inconsistent with image shape')
-    
-    return Image(values, affine=im._affine, world=im._world)
-        
-
-
-def transform_image(im, transform, grid_coords=False, 
-                    reference=None, dtype=None, interp_order=_interp_order):
-    """
-    Apply a transformation to a 'floating' image to bring it into the
-    same grid as a given 'reference' image. The transformation is
-    assumed to go from the 'reference' to the 'floating'.
-
-    transform: nd array
-    
-      either a 4x4 matrix describing an affine transformation
-
-      or a 3xN array describing voxelwise displacements of the
-      reference grid points
-
-    precomputed : boolean
-      True for a precomputed transformation, False for affine
-
-    grid_coords : boolean
-
-      True if the transform maps to grid coordinates, False if it maps
-      to world coordinates
-    
-    reference: reference image, defaults to input. 
-    """
-    if reference == None: 
-        reference = im
-        
-    if dtype == None: 
-        dtype = im._get_dtype()
-
-    # Prepare data arrays
-    data = im._get_data()
-    output = np.zeros(reference._shape, dtype=dtype)
-    t = np.asarray(transform)
-
-    # Case: affine transform
-    if t.shape[-1] == 4: 
-        if not grid_coords:
-            t = np.dot(im._inv_affine, np.dot(t, reference._affine))
-        ndimage.affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
-                                 order=interp_order, cval=im._background, 
-                                 output_shape=output.shape, output=output)
-    
-    # Case: precomputed displacements
-    else:
-        if not grid_coords:
-            t = apply_affine(im._inv_affine, t)
-        output = ndimage.map_coordinates(data, np.rollaxis(t, 3, 0), 
-                                         order=interp_order, 
-                                         cval=im._background,
-                                         output=dtype)
-    
-    return Image(output, affine=reference._affine, world=im._world, 
-                 background=im._background)
+def asNifti1Image(im): 
+    return nibabel.Nifti1Image(im.data, im.affine)
 
 
 def validate_coords(coords): 
