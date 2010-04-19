@@ -7,11 +7,10 @@ from nipy.neurospin.image import *
 
 I = Image(load(anatfile))
 
-def test_mask_image(): 
+def test_mask(): 
     Imin = I.data.min()
     Imax = I.data.max()
-    J = mask_image(I, np.where(I.data>(Imin+Imax)/2.))
-    assert_equal(J.masked, True)
+    J = I[np.where(I.data>(Imin+Imax)/2.)]
     assert_equal(J._data.ndim, 1)
 
 def test_extract_block():
@@ -19,15 +18,14 @@ def test_extract_block():
     start = shape/4
     stop = 3*shape/4
     J = I[[slice(x[0], x[1], 2) for x in zip(start, stop)]]
-    assert_equal(J.masked, False)
     assert_equal(J._data.ndim, 3)
 
 def test_get_values(): 
-    assert_equal(I().mean(), I.data.mean()) 
+    assert_equal(I.values().mean(), I.data.mean()) 
 
 def test_interpolate_values(): 
     XYZ = (2*np.array(I.shape)*np.random.rand(3, 10).T).T
-    vals = I(XYZ)
+    vals = I.values(XYZ)
     assert_equal(vals.size, 10)
 
 def test_apply_affine():
@@ -41,11 +39,11 @@ def test_apply_affine():
 def test_transform(): 
     T = np.eye(4)
     T[0:3,3] = 10*np.random.rand(3)
-    J = transform_image(I, T)
+    J = I.transform(T)
     assert_equal(J.shape, I.shape)
 
-def set_values(): 
-    J = set_image(I()**2)
+def test_set(): 
+    J = I.set(I.values()**2)
     assert_equal(J.shape, I.shape)
 
 
