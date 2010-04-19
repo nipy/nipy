@@ -3,7 +3,9 @@ Example of (step-by-step) GLM application and result creation.
 More specifically,
 1. A sequence of fMRI volumes are loaded
 2. A design matrix describing all the effects related to the data is computed
-3. A GLM is applied to the dataset
+3. a mask of the useful brain volume is computed
+4. A GLM is applied to the dataset (effect/covariance,
+   then contrast estimation)
 
 Note that this corresponds to a single session
 
@@ -70,7 +72,7 @@ design_matrix.show()
 ########################################
 
 mask_path = op.join(swd, 'mask.nii') 
-mask_array = compute_mask_files( data_path, mask_path, True, 0.4, 0.9)>0
+mask_array = compute_mask_files( data_path, mask_path, False, 0.4, 0.9)
 
 ########################################
 # Perform a GLM analysis
@@ -87,9 +89,12 @@ glm = my_glm.fit(Y.T, design_matrix.matrix,
 #########################################
 # Specify the contrasts
 #########################################
-nc = np.zeros(26)#design_matrix.n_main_regressors)
-contrasts = {'damier_H': nc}
 
+
+contrasts = {}
+contrast_id = conditions
+for i in range(len(conditions)):
+    contrasts['%s' % conditions[i]]= np.eye(25)[2*i+1]
 
 
 #########################################
@@ -98,10 +103,12 @@ contrasts = {'damier_H': nc}
 
 for contrast_id in contrasts:
     lcontrast = my_glm.contrast(contrasts[contrast_id])
+    # 
     contrast_path = op.join(swd, '%s_zmap.nii'% contrast_id)
+    write_array = mask_array.astype(np.float)
+    write_array[mask_array] = lcontrast.zscore()
+    contrast_image = Nifti1Image(write_array, fmri_image.get_affine() )
     save(contrast_image, contrast_path)
-
-
 
 
 #########################################
