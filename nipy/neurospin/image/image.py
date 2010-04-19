@@ -4,8 +4,8 @@ import nipy.io.imageformats as nibabel
 import numpy as np 
 from scipy import ndimage 
 
-_interp_order = 1 
-_background = 0 
+_INTERP_ORDER = 1 
+_BACKGROUND = 0 
 
 
 """
@@ -29,8 +29,7 @@ class Image(object):
     memory.
     """
 
-    def __init__(self, obj, affine=None, world=None, 
-                 mask=None, shape=None, background=_background): 
+    def __init__(self, obj, affine=None, world=None, background=_BACKGROUND):
         """ 
         The base image class.
 
@@ -51,58 +50,50 @@ class Image(object):
         background: number, optional 
             Background value (outside image boundaries).  
         """
-
+        self._init(obj, affine, world, background)
+        self._shape = self._data.shape
+            
+    def _init(self, obj, affine, world, background):
         if hasattr(obj, 'get_data'):
             data = obj.get_data()
         else:
             data = obj
         if hasattr(obj, 'get_affine'): 
             if affine == None: 
-                affine = obj.get_affine()
-
-        if mask == None: 
-            self._mask = None
-            self._shape = data.shape
-        else: 
-            self._mask = validate_coords(mask)
-            self._shape = shape
-            
+                affine = obj.get_affine()            
         self._data = data
-        self._size = data.size
         self._set_affine(affine)
-        self._inv_affine = inverse_affine(affine)
-        self._background = background
         self._set_world(world)
+        self._background = background
 
+    def __getitem__(self, mask):
+        """
+        Extract an image patch corresponding to the specified mask
+        (compute the affine transformation accordingly).
 
-    def __getitem__(self, slices):
+        If mask is a sequence of slices, returns an Image instance
+        corresponding to the specified bounding box.
+
+        Otherwise, returns a MaskedImage instance. 
         """
-        Extract an image patch corresponding to the specified bounding
-        box. Compute the affine transformation accordingly. 
-        """
-        affine = subgrid_affine(self._affine, slices)
-        return Image(self._get_data()[slices], affine, world=self._world)
+        if min([isinstance(s, slice) for s in mask]): 
+            affine = subgrid_affine(self._affine, mask)
+            return Image(self._get_data()[mask], affine, world=self._world)
+        else: 
+            return MaskedImage(self._get_data()[mask], self._affine, world=self._world,
+                               mask=mask, shape=self._shape, background=self._background)
 
     def _get_shape(self):
         return self._shape
 
     def _get_size(self):
-        return self._size
+        return self._data.size
 
     def _get_dtype(self):
         return self._data.dtype
 
     def _get_data(self): 
-        
-        if not self._mask: 
-            return self._data
-        
-        output = np.zeros(self._shape, dtype=self._get_dtype())
-        if not self._background == 0:  
-            output += self._background
-
-        output[self._mask] = self._data
-        return output
+        return self._data
 
     def _get_affine(self):
         return self._affine
@@ -114,6 +105,7 @@ class Image(object):
         if not affine.shape==(4,4):
             raise ValueError('Not a 4x4 transformation matrix')
         self._affine = affine
+        self._inv_affine = inverse_affine(affine)
 
     def _get_inv_affine(self):
         return self._inv_affine
@@ -126,17 +118,14 @@ class Image(object):
             world = str(world)
         self._world = world
 
-    def _get_mask(self): 
-        return self._mask
+    def _get_background(self):
+        return self._background
 
-    def _get_masked(self):
-        if self._mask: 
-            return True
-        else: 
-            return False
+    def _set_background(self, background):
+        self._background = float(background)
 
     def values(self, coords=None, grid_coords=False, 
-               dtype=None, interp_order=_interp_order):
+               dtype=None, interp_order=_INTERP_ORDER):
         """ 
         Return interpolated values at the points specified by coords. 
 
@@ -157,7 +146,7 @@ class Image(object):
 
         """
         if coords == None: 
-            if self._mask:
+            if self._data.ndim == 1:
                 return self._data
             else:
                 return np.ravel(self._data) 
@@ -175,7 +164,7 @@ class Image(object):
         if issubclass(XYZ.dtype.type, np.integer):
             I = np.where(((XYZ>0)*(XYZ<self._shape)).min(1))
             output = np.zeros(XYZ.shape[0], dtype=dtype)
-            if not self._background == 0:  
+            if not self._background == 0: 
                 output += self._background
             if I[0].size: 
                 output[I] = self._get_data()[X[I], Y[I], Z[I]]
@@ -190,45 +179,30 @@ class Image(object):
             
         return output 
 
+    def _set(self, data):
+        """
+        Set from 3d array only. 
+        """
+        if not data.shape == self._shape: 
+            raise ValueError('Input array inconsistent with image shape')
+        return Image(data, affine=self._affine, world=self._world)
     
-    def setmask(self, mask, background=None): 
-        """
-        Return a masked image. 
-        """
-        mask = validate_coords(mask)
-        if not background: 
-            background = self._background
-        return Image(self._get_data()[mask], self._affine, world=self._world,
-                     mask=mask, shape=self._shape, background=background)
-
     def set(self, values): 
         """
-        values can be either a 1d array with size equal to self.size or a 3d
-        array with shape equal to self.shape. In the 1d case, the output
-        image will be masked or not depending on whether the input is
-        masked. In the former case, a non-masked image is returned. 
+        `values` can be either a 1d array with size equal to self.size or a 3d
+        array with shape equal to self.shape.  
         """
         if values.ndim == 1: 
-            if not values.size == self._size:
+            if not values.size == self._get_size():
                 raise ValueError('Input array inconsistent with image size')
-            if self._mask:
-                return Image(values, affine=self._affine, world=self._world, 
-                             mask=self._mask, shape=self._shape, background=self._background)
-            else: 
-                values = values.reshape(self._shape)
-
+            return self._set(values.reshape(self._shape))
         else: 
-            if not values.shape == self._shape: 
-                raise ValueError('Input array inconsistent with image shape')
-    
-        return Image(values, affine=self._affine, world=self._world)
-        
-
-
-    def transform(self, transform, grid_coords=False, 
-                  reference=None, dtype=None, interp_order=_interp_order):
+            return self._set(values)
+            
+    def transform(self, transform, grid_coords=False, reference=None, 
+                  dtype=None, interp_order=_INTERP_ORDER):
         """
-        Apply a transformation to a the image considered as 'floating'
+        Apply a transformation to the image considered as 'floating'
         to bring it into the same grid as a given 'reference'
         image. The transformation is assumed to go from the
         'reference' to the 'floating'.
@@ -278,9 +252,7 @@ class Image(object):
                                              cval=self._background,
                                              output=dtype)
     
-        return Image(output, affine=reference._affine, world=self._world, 
-                     background=self._background)
-
+        return Image(output, affine=reference._affine, world=self._world)
 
     shape = property(_get_shape)
     size = property(_get_size)
@@ -289,10 +261,47 @@ class Image(object):
     inv_affine = property(_get_inv_affine)
     world = property(_get_world, _set_world)
     data = property(_get_data)
+    background = property(_get_background, _set_background)
+
+
+
+class MaskedImage(Image): 
+
+    def __init__(self, obj, affine=None, world=None, 
+                 mask=None, shape=None, background=_BACKGROUND): 
+        mask = validate_coords(mask)
+        self._init(obj, affine, world, background)
+        self._mask = mask
+        self._shape = shape
+
+    def _get_data(self): 
+        output = np.zeros(self._shape, dtype=self._get_dtype())
+        if not self._background == 0:  
+            output += self._background
+        output[self._mask] = self._data
+        return output
+
+    def _get_mask(self): 
+        return self._mask
+
+    def set(self, values): 
+        """
+        If `values` is a 1d array with size equal to self.size, a
+        MaskedImage instance is returned.
+
+        If `values` is a 3d array with shape equal to self.shape,
+        a (non-masked) Image instance is returned.
+        """
+        if values.ndim == 1: 
+            if not values.size == self._get_size():
+                raise ValueError('Input array inconsistent with image size')
+            return MaskedImage(values, affine=self._affine, world=self._world, 
+                               mask=self._mask, shape=self._shape, background=self._background)
+        else: 
+            return self._set(values)
+
     mask = property(_get_mask)
-    masked = property(_get_masked)
-
-
+    data = property(_get_data)
 
 """
 Conversion to nibabel classes
@@ -356,8 +365,7 @@ def subgrid_affine(affine, slices):
     return np.dot(affine, t)
 
 
-def sample(data, coords, order=_interp_order, dtype=None, 
-           background=_background): 
+def sample(data, coords, order=_INTERP_ORDER, dtype=None, background=_BACKGROUND): 
 
     from image_module import cspline_transform, cspline_sample3d
     
@@ -376,8 +384,8 @@ def sample(data, coords, order=_interp_order, dtype=None,
 
 
 
-def resample(data, affine, shape=None, order=_interp_order, dtype=None, 
-             background=_background): 
+def resample(data, affine, shape=None, 
+             order=_INTERP_ORDER, dtype=None, background=_BACKGROUND): 
 
     from image_module import cspline_resample3d
     

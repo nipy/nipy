@@ -10,8 +10,7 @@ I = Image(load(anatfile))
 def test_mask(): 
     Imin = I.data.min()
     Imax = I.data.max()
-    J = I.setmask(np.where(I.data>(Imin+Imax)/2.))
-    assert_equal(J.masked, True)
+    J = I[np.where(I.data>(Imin+Imax)/2.)]
     assert_equal(J._data.ndim, 1)
 
 def test_extract_block():
@@ -19,7 +18,6 @@ def test_extract_block():
     start = shape/4
     stop = 3*shape/4
     J = I[[slice(x[0], x[1], 2) for x in zip(start, stop)]]
-    assert_equal(J.masked, False)
     assert_equal(J._data.ndim, 3)
 
 def test_get_values(): 
