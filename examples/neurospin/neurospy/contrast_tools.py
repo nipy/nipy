@@ -1,7 +1,20 @@
+"""
+Set of utilities to handle contrasts
+Some naming conventions are related to brainvisa environment.
+
+Author : Lise Favre, Bertrand Thirion, 2008-2010
+"""
+
 from numpy import array, zeros, size
 from configobj import ConfigObj
 
 class Contrast(dict):
+    """
+    Class used to define contrasts
+    besides being a dictiornay, it allows basic algebra on contrasts
+    (multiplication, addition, subtraction)
+    """
+    
     def __init__(self, indict=None,verbose=0):
         dict.__init__(self)
         if indict != None:
@@ -40,7 +53,14 @@ class Contrast(dict):
             return res
 
 class ContrastList():
-    def __init__ (self, misc_info_path=None, contrast_path=None, model="default", misc=None, verbose=0):
+    """
+    Class to handle contrasts when in a brainvisa-like envrionment.
+    See ./glm_tools for more details on this framework
+    
+    """
+    
+    def __init__ (self, misc_info_path=None, contrast_path=None,
+                  model="default", misc=None, verbose=0):
         """
         Automatically generate some contrasts from a 'misc' file
         
@@ -153,7 +173,8 @@ class ContrastList():
                 contrast[key]["Type"] = "F"
                 for k, v in self.dic[key].items():
                     for i, row in enumerate(v):
-                        contrast[key]["%s_row%i" % (k, i)] = [int(j) for j in row]
+                        contrast[key]["%s_row%i" % (k, i)] = \
+                                                 [int(j) for j in row]
             contrast[key]["Dimension"] = dim
             if verbose: print contrast[key]
             contrast["contrast"].append(key)

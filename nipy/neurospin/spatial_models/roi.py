@@ -375,7 +375,7 @@ class MultiROI(object):
         print 'Not implemented yet'
         pass
         
-    def plot_roi_feature(self,fid):
+    def plot_roi_feature(self, fid):
         """
         boxplot the feature within the ROI
         Note that this assumes a 1-d feature
@@ -895,7 +895,8 @@ class MultipleROI(object):
 
         Parameters
         ----------
-        fid the feature identifier
+        fid string,
+            the feature identifier
         """
         f = self.roi_features[fid]
         if f.shape[1]>1:
@@ -909,25 +910,28 @@ class MultipleROI(object):
         mp.xticks(np.arange(1, self.k+1),np.arange(1, self.k+1))
         return ax
 
-    def plot_discrete_feature(self, fid):
+    def plot_discrete_feature(self, fid, ax=None):
         """
         boxplot the distribution of features within ROIs
         Note that this assumes 1-d features
 
         Parameters
         ----------
-        fid the feature identifier
+        fid: string,
+             the feature identifier
+        ax: axis handle, optional
         """
         f = self.discrete_features[fid]
         if f[0].shape[1]>1:
             raise ValueError, "cannot plot multi-dimensional\
             features for the moment"
-        import matplotlib.pylab as mp
-        ax = mp.figure()
-        mp.boxplot(f)
-        mp.title('ROI-level distribution for feature %s' %fid)
-        mp.xlabel('ROI index')
-        mp.xticks(np.arange(1, self.k+1),np.arange(1, self.k+1))
+        if ax is None:      
+            import matplotlib.pylab as mp
+            ax = mp.figure()
+        ax.boxplot(f)
+        ax.set_title('ROI-level distribution for feature %s' %fid)
+        ax.set_xlabel('ROI index')
+        ax.set_xticks(np.arange(1, self.k+1))#np.arange(1, self.k+1))
         return ax
 
 

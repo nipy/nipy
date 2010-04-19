@@ -5,6 +5,168 @@ fMRI Design Matrix creation functions.
 import numpy as np
 from nipy.modalities.fmri import formula, utils, hrf
 
+##########################################################
+# Paradigm handling
+##########################################################
+
+class Paradigm(object):
+    """
+    Simple class to hanle the experimental paradigm in one session
+    """
+
+    def __init__(self, index=None, onset=None, amplitude=None):
+        """
+        Parameters
+        ----------
+        index: array of shape (n_events), type = int, optional
+               index of the events (the index of their exprimental condition)
+        onset: array of shape (n_events), type = float, optional,
+               onset time (in s.) of the events
+        amplitude: array of shape (n_events), type = float, optional,
+                   amplitude of the events (if applicable)   
+        """
+        self.index = index
+        self.onset = onset
+        self.amplitude = amplitude
+        if index is not None:
+            self.n_events = len(onset)
+            self.index = np.ravel(np.array(index)).astype(np.int)       
+        if onset is not None: 
+            if len(onset) != self.n_events:
+                raise ValueError, 'inconsistant definition of index and onsets'
+            self.onset = np.ravel(np.array(onset))
+        if amplitude is not None:
+            if len(amplitude) != self.n_events:
+                raise ValueError, 'inconsistant definition of amplitude'
+            self.amplitude = np.ravel(np.array(amplitude))
+        self.type= 'event'
+
+
+class EventRelatedParadigm(Paradigm):
+    """ Class to handle event-related paradigms
+    """
+
+    def __init__(self, index=None, onset=None, amplitude=None):
+        """
+        Parameters
+        ----------
+        index: array of shape (n_events), type = int, optional
+               index of the events (the index of their exprimental condition)
+        onset: array of shape (n_events), type = float, optional
+               onset time (in s.) of the events
+        amplitude: array of shape (n_events), type = float, optional,
+                   amplitude of the events (if applicable)   
+        """
+        Paradigm.__init__(self, index, onset, amplitude)
+
+class BlockParadigm(Paradigm):
+    """ Class to handle block paradigms
+    """
+
+    def __init__(self, index=None, onset=None, duration=None, amplitude=None):
+        """
+        Parameters
+        ----------
+        index: array of shape (n_events), type = int, optional
+               index of the events (the index of their exprimental condition)
+        onset: array of shape (n_events), type = float, optional
+               onset time (in s.) of the events
+        amplitude: array of shape (n_events), type = float, optional,
+                   amplitude of the events (if applicable)
+                   
+        """
+        Paradigm.__init__(self, index, onset, amplitude)
+        self.duration = duration
+        self.type = 'block'
+        if duration is not None:
+            if len(duration) != self.n_events:
+                raise ValueError, 'inconsistant definition of duration'
+            self.duration = np.ravel(np.array(duration))
+
+
+def load_protocol_from_csv_file(path, session=None):
+    """
+    Read a (.csv) paradigm file consisting of values yielding
+    (occurence time, (duration), event ID, modulation)
+    and returns a paradigm instance or a dictionary of paradigm instances
+    
+    Parameters
+    ----------
+    path: string,
+          path to a .csv file that describes the paradigm
+    session: int, optional
+             session number.
+             by default the output is a dictionary
+             of session-level dictionaries indexed by session 
+    
+    Returns
+    -------
+    paradigm, paradigm instance (if session is provided), or
+              dictionary of paradigm instances otherwise,
+              the resulting session-by-session paradigm
+
+    Note
+    ----
+    It is assumed that the csv file contains the following columns:
+    (session id, condition id, onset),
+    plus possibly (duration) and (amplitude)
+    If all the durations are 0, the paradigm will be treated as event-related
+    If only some of the durations are zero, there will probably we trouble
+
+    fixme
+    -----
+    would be much clearer if amplitude was put before duration in the .csv
+    """
+    import csv
+    csvfile = open(path)
+    dialect = csv.Sniffer().sniff(csvfile.read())
+    csvfile.seek(0)
+    reader = csv.reader(open(path, "rb"),dialect)
+
+    # load the csv as a protocol array
+    protocol = []
+    for row in reader:
+        protocol.append([float(row[j]) for j in range(len(row))])
+    protocol = np.array(protocol)
+    
+    def read_session(protocol, session):
+        """ return a paradigm instance corresponding to session
+        """
+        ps = (protocol[:,0] == session)
+        if np.sum(ps)==0:
+            return None
+        if protocol.shape[1] > 4:
+            paradigm = BlockParadigm(protocol[ps, 1], protocol[ps, 2],
+                                     protocol[ps, 3],  protocol[ps, 4])
+        elif protocol.shape[1] == 4:
+            amplitude = np.ones(np.sum(ps))
+            paradigm = BlockParadigm(protocol[ps, 1], protocol[ps, 2],
+                                     protocol[ps, 3], amplitude)
+        else:
+            amplitude = np.ones(np.sum(ps))
+            paradigm = EventRelatedParadigm(protocol[ps, 1], protocol[ps, 2],
+                                            amplitude)
+        if (protocol.shape[1] > 3) and (protocol[ps,3]==0).all():
+            paradigm = EventRelatedParadigm(protocol[ps, 1], protocol[ps, 2],
+                                            protocol[ps, 4])
+            
+        return paradigm
+
+    sessions = np.unique(protocol[:,0])
+    if session is None:
+        paradigm = {}
+        for s in sessions:
+            paradigm[s] = read_session(protocol, s)
+    else:
+        paradigm = read_session(protocol, session)
+        
+    return paradigm
+
+
+##########################################################
+# Design Matrices
+##########################################################
+
 class DesignMatrix(object):
     """
     Class to handle design matrices
@@ -18,14 +180,8 @@ class DesignMatrix(object):
         ----------
         frametimes: array of shape(nbframes), optional
                     the timing of the scans
-        paradigm: array of shape (nevents, nc)
-                  paradigm-encoding array
-                  if nc==2, the type is event-related design (condition id, onset)
-                  if nc==3, it represents(condition id, onset, duration)
-                  if nc==4, (condition id, onset, duration, intensity)
-                  if nc>2 this is a block design, 
-                     unless all durations are equal to 0
-                  if paradigm==None, then no condition is included
+        paradigm: Paradigm instance, optional
+                  descritpion of the experimental paradigm
         hrf_model, string, optional,
                    that specifies the hemodynamic reponse function
                    it can be 'Canonical', 'Canonical With Derivative' or 'FIR'
@@ -50,8 +206,6 @@ class DesignMatrix(object):
         add_reg_names=None: list of (naddreg) regressor names
                             if None, while naddreg>0, these will be termed
                             'reg_%i',i=0..naddreg-1
-        path=None, if not None, 
-                   the matrix is written as a .csv file at the given path
         """
         self.frametimes = frametimes
         self.paradigm = paradigm
@@ -88,6 +242,7 @@ class DesignMatrix(object):
 
     def estimate(self):
         """
+        Numerical estimation of self
         """
         self.drift = set_drift(self.drift_model, self.frametimes,
                                self.drift_order, self.hfcut)
@@ -97,12 +252,12 @@ class DesignMatrix(object):
             self.formula = self.drift
             self.names = []
         else:
-            self.n_conditions = int(self.paradigm[:,0].max()+1)
+            self.n_conditions = int(self.paradigm.index.max()+1)
             if self.cond_ids==None:
                 self.cond_ids = ['c%d'%k for k in range(self.n_conditions)]
-            self.conditions, self.names =\
-                convolve_regressors(self.paradigm, self.hrf_model, self.cond_ids,
-                                    self.fir_delays, self.fir_duration)
+            self.conditions, self.names = convolve_regressors(
+                self.paradigm, self.hrf_model, self.cond_ids, self.fir_delays,
+                self.fir_duration)
             self.n_main_regressors = len(self.names)
             self.formula = self.conditions + self.drift
 
@@ -180,13 +335,15 @@ class DesignMatrix(object):
         self.matrix = x
         self.names = names
 
-    def show(self, rescale=True):
+    def show(self, rescale=True, ax=None):
         """
         Vizualization of a design matrix
 
         Parameters
         ----------
-        rescale= True: rescale for visualization or not
+        rescale: bool, optional
+                 rescale columns for visualization or not
+        ax: figure handle, optional
 
         Returns
         -------
@@ -202,20 +359,25 @@ class DesignMatrix(object):
             x = x/np.sqrt(np.sum(x**2,0))
 
         import matplotlib.pylab as mp
-        ax = mp.figure()
-        mp.imshow(x, interpolation='Nearest', aspect='auto')
-        mp.xlabel('conditions')
-        mp.ylabel('scan number')
-        if names!=None:
-            mp.xticks(np.arange(len(names)),names,rotation=60,ha='right')
+        if ax is None:         
+            mp.figure()
+            ax = mp.subplot(1, 1, 1)
+
+        ax.imshow(x, interpolation='Nearest', aspect='auto')
+        ax.set_label('conditions')
+        ax.set_ylabel('scan number')
+
+        if self.names is not None:
+            ax.set_xticks(range(len(self.names)))
+            ax.set_xticklabels( self.names, rotation=60, ha='right')
         
-        mp.subplots_adjust(top=0.99,bottom=0.25)
+        #mp.subplots_adjust(top=0.99, bottom=0.25)
         return ax
         
 def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
                drift_model='Cosine', hfcut=128, drift_order=1, fir_delays=[0],
-               fir_duration=1., cond_ids=None, add_regs=None, add_reg_names=None,
-               path=None):
+               fir_duration=1., cond_ids=None, add_regs=None,
+               add_reg_names=None, path=None):
     """
     Make a design matrix while avoiding framework
     
@@ -223,13 +385,9 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
     ----------
     frametimes: array of shape(nbframes),
         the timing of the scans
-    paradigm: array of shape (nevents, nc)
-             paradigm-encoding array
-             if nc==2, the type is event-related design (condition id, onset)
-             if nc==3, it represents(condition id, onset, duration)
-             if nc==4, (condition id, onset, duration, intensity)
-             if nc>2 this is a block design, unless all durations are equal to 0
-             if paradigm==None, then no condition is included
+    paradigm: Paradigm instance, optional
+              descritpion of the experimental paradigm
+              if paradigm==None, then no condition is included
     hrf_model, string, optional,
              that specifies the hemodynamic reponse function
              it can be 'Canonical', 'Canonical With Derivative' or 'FIR'
@@ -250,7 +408,8 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
     add_reg_names=None, list of (naddreg) regressor names
                         if None, while naddreg>0, these will be termed
                         'reg_%i',i=0..naddreg-1
-    path=None, if not None, the matrix is written as a .csv file at the given path
+    path: string, optional
+         if not None, the matrix is written as a .csv file at the given path
                  
     Returns
     -------
@@ -371,13 +530,7 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
     
     Parameters
     ----------
-    paradigm: array of shape (nevents, nc), optional
-             paradigm-encoding array
-             if nc==2, the type is event-related design (condition id, onset)
-             if nc==3, it represents(condition id, onset, duration)
-             if nc==4, (condition id, onset, duration, intensity)
-             if nc>2 this is a block design, unless all durations are equal to 0
-             if paradigm==None, then no condition is included
+    paradigm: paradigm instance
     hrf_model, string that can be 'Canonical', 
                'Canonical With Derivative' or 'FIR'
                that specifies the hemodynamic reponse function
@@ -403,10 +556,7 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
     fixme: 
     normalization of the columns of the design matrix ?
     """
-    paradigm = np.asarray(paradigm)
-    if paradigm.ndim !=2:
-        raise ValueError('Paradigm should have 2 dimensions')
-    ncond = int(paradigm[:,0].max()+1)
+    ncond = int(paradigm.index.max()+1)
     if names==None:
         names=["c%d" % k for k in range(ncond)]
     else:
@@ -417,17 +567,13 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
             ncond = len(names)        
     listc = []
     hnames = []
-    typep='block'
-    if paradigm.shape[1]==2:
-        typep = 'event'  
-    elif paradigm[:,2].max()==0:
-        typep='event'
+    typep = paradigm.type
  
     for nc in range(ncond):
-        onsets =  paradigm[paradigm[:,0]==nc, 1]
+        onsets =  paradigm.onset[paradigm.index==nc]
         nos = np.size(onsets)
-        if paradigm.shape[1]==4:
-            values = paradigm[paradigm[:,0]==nc, 3]
+        if paradigm.amplitude is not None:
+            values = paradigm.amplitude[paradigm.index==nc]
         else:
             values = np.ones(nos)
         if nos>0:
@@ -462,7 +608,7 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
                 else:
                     raise NotImplementedError,'unknown hrf model'
             elif typep=='block':
-                offsets =  onsets + paradigm[paradigm[:,0]==nc,2]
+                offsets =  onsets + paradigm.duration[paradigm.type==nc]
                 changes = np.hstack((onsets, offsets))
                 values = np.hstack((values, -values))
 
@@ -482,8 +628,6 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
                           'block design are not compatible with FIR at the moment'
                 else:
                     raise NotImplementedError,'unknown hrf model'  
-            else:
-                raise NotImplementedError,'unknown type of paradigm'
     
     # create the formula
     p = formula.Formula(listc)

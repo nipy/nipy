@@ -128,6 +128,7 @@ def protocol(fh, design_type, *hrfs):
 	
         return f, Tcontrasts, Fcontrasts
 
+
 def altprotocol(fh, design_type, *hrfs):
 	"""
 	Create an object that can evaluate the FIAC.
@@ -225,25 +226,27 @@ def altprotocol(fh, design_type, *hrfs):
 
 	return f, Tcontrasts, Fcontrasts
 
+
+# block and event protocols
 block, bTcons, bFcons = protocol(StringIO(descriptions['block']), 'block', *delay.spectral)
 event, eTcons, eFcons = protocol(StringIO(descriptions['event']), 'event', *delay.spectral)
 
 # Now create the design matrices and contrasts
 # The 0 indicates that it will be these columns
 # convolved with the first HRF
-
 t = formula.make_recarray(np.arange(191)*2.5+1.25, 't')
 X = {}
 c = {}
 fmristat = {}
 D = {}
-
 for f, cons, design_type in [(block, bTcons, 'block'), (event, eTcons, 'event')]:
     X[design_type], c[design_type] = f.design(t, contrasts=cons)
     D[design_type] = f.design(t, return_float=False)
     fstat = np.array([float(x) for x in designs[design_type].strip().split('\t')])
     fmristat[design_type] = fstat.reshape((191, fstat.shape[0]/191)).T
 
+
+    
 def test_altprotocol():
     block, bT, bF = protocol(StringIO(descriptions['block']), 'block', *delay.spectral)
     event, eT, eF = protocol(StringIO(descriptions['event']), 'event', *delay.spectral)
@@ -300,20 +303,21 @@ def matchcol(col, X):
     c = np.nan_to_num(c)
     return np.argmax(c), c.max()
 
+
 def interpolate(name, col, t):
     i = interp1d(t, formula.vectorize(col)(t))
     return formula.aliased_function(name, i)(formula.t)
 
 
+@parametric
 def test_agreement():
     # The test: does Protocol manage to recreate the design of fMRIstat?
     for design_type in ['event', 'block']:
         dd = D[design_type]
-
         for i in range(X[design_type].shape[1]):
             _, cmax = matchcol(X[design_type][:,i], fmristat[design_type])
             if not dd.dtype.names[i].startswith('ns'):
-                yield assert_true, np.greater(cmax, 0.999)
+                yield assert_true(np.greater(cmax, 0.999))
 
 
 @dec.slow

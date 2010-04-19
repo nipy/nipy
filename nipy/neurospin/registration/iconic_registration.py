@@ -4,6 +4,8 @@ Intensity-based matching.
 Questions: alexis.roche@gmail.com
 """
 
+from constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
+
 from registration_module import _joint_histogram, _similarity, builtin_similarities
 from affine import Affine
 from grid_transform import GridTransform
@@ -15,12 +17,10 @@ import numpy as np
 from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
 from sys import maxint
 
-# Globals
-_clamp_dtype = 'short' # do not edit
-_xtol = .1
-_ftol = .01
-_gtol = .001
-_epsilon = .1
+
+_CLAMP_DTYPE = 'short' # do not edit
+_INTERP = 'pv'
+_OPTIMIZER = 'powell'
 
 # Dictionary of interpolation methods
 # pv: Partial volume 
@@ -50,7 +50,7 @@ class IconicRegistration(object):
         # Target image padding + binning
         values, t_bins = clamp(target(), bins=bins[1])
         _target_image = set_image(target, values)
-        self._target = -np.ones(np.array(target.shape)+2, dtype=_clamp_dtype)
+        self._target = -np.ones(np.array(target.shape)+2, dtype=_CLAMP_DTYPE)
         _view = self._target[1:-1, 1:-1, 1:-1]
         _view[:] = _target_image.data[:]
         self._target_fromworld = target.inv_affine
@@ -68,7 +68,7 @@ class IconicRegistration(object):
     def _get_interp(self): 
         return interp_methods.keys()[interp_methods.values().index(self._interp)]
     
-    def _set_interp(self, method='pv'): 
+    def _set_interp(self, method=_INTERP): 
         self._interp = interp_methods[method]
 
     interp = property(_get_interp, _set_interp)
@@ -149,7 +149,7 @@ class IconicRegistration(object):
                            self._similarity_func)
 
 
-    def optimize(self, start, method='powell', **kwargs):
+    def optimize(self, start, method=_OPTIMIZER, **kwargs):
 
         T = start
         tc0 = T.param
@@ -171,23 +171,23 @@ class IconicRegistration(object):
         print(T)
         if method=='powell':
             fmin = fmin_powell
-            kwargs.setdefault('xtol', _xtol)
-            kwargs.setdefault('ftol', _ftol)
+            kwargs.setdefault('xtol', _XTOL)
+            kwargs.setdefault('ftol', _FTOL)
         elif method=='steepest':
             fmin = fmin_steepest
-            kwargs.setdefault('xtol', _xtol)
-            kwargs.setdefault('ftol', _ftol)
-            kwargs.setdefault('epsilon', _epsilon)
+            kwargs.setdefault('xtol', _XTOL)
+            kwargs.setdefault('ftol', _FTOL)
+            kwargs.setdefault('step', _STEP)
         elif method=='cg':
             fmin = fmin_cg
-            kwargs.setdefault('gtol', _gtol)
+            kwargs.setdefault('gtol', _GTOL)
         elif method=='bfgs':
             fmin = fmin_bfgs
-            kwargs.setdefault('gtol', _gtol)
+            kwargs.setdefault('gtol', _GTOL)
         else: # simplex method 
             fmin = fmin_simplex 
-            kwargs.setdefault('xtol', _xtol)
-            kwargs.setdefault('ftol', _ftol)
+            kwargs.setdefault('xtol', _XTOL)
+            kwargs.setdefault('ftol', _FTOL)
         
         # Output
         print ('Optimizing using %s' % fmin.__name__)
@@ -252,7 +252,7 @@ def clamp(x, bins=256):
     """
     
     # Create output array to allow in-place operations
-    y = np.zeros(x.shape, dtype=_clamp_dtype)
+    y = np.zeros(x.shape, dtype=_CLAMP_DTYPE)
 
     # Threshold
     dmaxmax = 2**(8*y.dtype.itemsize-1)-1

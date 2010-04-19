@@ -7,14 +7,17 @@ This is an example where
 5. A summary of the results is provided for certain contrasts
 6. A plot of the hrf is provided for the mean reponse in the hrf
 7. Fitted/adjusted response plots are provided
+
+Author : Bertrand Thirion, 2010
 """
+print __doc__
 
 import numpy as np
 import os.path as op
 import matplotlib.pylab as mp
 
 from nipy.io.imageformats import load, save, Nifti1Image
-from nipy.neurospin.utils.design_matrix import dmtx_light
+import nipy.neurospin.utils.design_matrix as dm
 from nipy.neurospin.utils.simul_multisubject_fmri_dataset import surrogate_4d_dataset
 import get_data_light
 import nipy.neurospin.glm as GLM
@@ -50,11 +53,11 @@ swd = '/tmp'
 ########################################
 
 paradigm = np.vstack(([conditions, onsets])).T
-X, names = dmtx_light(frametimes, paradigm, drift_model='Cosine', hfcut=128,
-                      hrf_model=hrf_model, add_regs=motion,
-                      add_reg_names=add_reg_names)
-#mp.matshow(X/np.sqrt((X**2).sum(0)))
-#mp.show()
+paradigm = dm.EventRelatedParadigm(conditions, onsets)
+X, names = dm.dmtx_light(frametimes, paradigm, drift_model='Cosine', hfcut=128,
+               hrf_model=hrf_model, add_regs=motion,
+               add_reg_names=add_reg_names)
+
 
 #######################################
 # Get the FMRI data
@@ -104,7 +107,7 @@ mroi = MultipleROI( affine=mask.get_affine(), shape=mask.get_shape())
 mroi.as_multiple_balls(positions, radii)
 
 # to save an image of the ROIs
-# mroi.make_image((op.join(swd, "roi.nii")))
+mroi.make_image((op.join(swd, "roi.nii")))
 
 # exact the time courses with ROIs
 mroi.set_discrete_feature_from_image('signal', image=fmri_data)
@@ -114,7 +117,6 @@ mroi.discrete_to_roi_features('signal')
 
 # roi-level contrast average
 mroi.set_discrete_feature_from_image('contrast', image=contrast_image)
-bx = mroi.plot_discrete_feature('contrast')
 mroi.discrete_to_roi_features('contrast')
 
 
@@ -125,7 +127,9 @@ mroi.discrete_to_roi_features('contrast')
 nreg = len(names)
 ROI_tc = mroi.get_roi_feature('signal')
 glm.fit(ROI_tc.T, X, method=method, model=model)
+
 mp.figure()
+mp.subplot(1, 2, 1)
 b1 = mp.bar(np.arange(nreg-1), glm.beta[:-1,0], width=.4, color='blue',
             label='r1')
 b2 = mp.bar(np.arange(nreg-1)+0.3, glm.beta[:-1,1], width=.4, color='red',
@@ -133,6 +137,10 @@ b2 = mp.bar(np.arange(nreg-1)+0.3, glm.beta[:-1,1], width=.4, color='red',
 mp.xticks(np.arange(nreg-1), names[:-1])
 mp.legend()
 mp.title('parameters estimates for the roi time courses')
+bx =  mp.subplot(1, 2 ,2)
+mroi.plot_discrete_feature('contrast', bx)
+mp.show()
+
 
 ########################################
 # fitted and adjusted response
@@ -158,10 +166,10 @@ for k in range(mroi.k):
 ############################################
 
 fir_order = 6
-X_fir,name_dir = dmtx_light(frametimes, paradigm, hrf_model='FIR',
-                      drift_model='Cosine', drift_order=3,
-                      fir_delays = tr*np.arange(fir_order), fir_duration=tr,
-                      add_regs=motion, add_reg_names=add_reg_names)
+X_fir,name_dir = dm.dmtx_light(
+    frametimes, paradigm, hrf_model='FIR', drift_model='Cosine', drift_order=3,
+    fir_delays = tr*np.arange(fir_order), fir_duration=tr, add_regs=motion,
+    add_reg_names=add_reg_names)
 glm.fit(ROI_tc.T, X_fir, method=method, model=model)
 
 mp.figure()
@@ -176,3 +184,4 @@ for k in range(mroi.k):
     mp.title('estimated hrf shape')
     mp.xlabel('time(scans)')
 mp.show()
+
