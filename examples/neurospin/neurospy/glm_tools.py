@@ -31,7 +31,7 @@ import commands
 import os
 from configobj import ConfigObj
 
-from nipy.io.imageformats import load, save, Nifti1Image 
+from nipy.io.imageformats import load, save, Nifti1Image
 import glob
 from os.path import join
 

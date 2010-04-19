@@ -152,7 +152,7 @@ def load_protocol_from_csv_file(path, session=None):
             
         return paradigm
 
-    sessions = np.unique(protocol[0])
+    sessions = np.unique(protocol[:,0])
     if session is None:
         paradigm = {}
         for s in sessions:
@@ -335,13 +335,15 @@ class DesignMatrix(object):
         self.matrix = x
         self.names = names
 
-    def show(self, rescale=True):
+    def show(self, rescale=True, ax=None):
         """
         Vizualization of a design matrix
 
         Parameters
         ----------
-        rescale= True: rescale for visualization or not
+        rescale: bool, optional
+                 rescale columns for visualization or not
+        ax: figure handle, optional
 
         Returns
         -------
@@ -357,20 +359,25 @@ class DesignMatrix(object):
             x = x/np.sqrt(np.sum(x**2,0))
 
         import matplotlib.pylab as mp
-        ax = mp.figure()
-        mp.imshow(x, interpolation='Nearest', aspect='auto')
-        mp.xlabel('conditions')
-        mp.ylabel('scan number')
-        if names!=None:
-            mp.xticks(np.arange(len(names)),names,rotation=60,ha='right')
+        if ax is None:         
+            mp.figure()
+            ax = mp.subplot(1, 1, 1)
+
+        ax.imshow(x, interpolation='Nearest', aspect='auto')
+        ax.set_label('conditions')
+        ax.set_ylabel('scan number')
+
+        if self.names is not None:
+            ax.set_xticks(range(len(self.names)))
+            ax.set_xticklabels( self.names, rotation=60, ha='right')
         
-        mp.subplots_adjust(top=0.99,bottom=0.25)
+        #mp.subplots_adjust(top=0.99, bottom=0.25)
         return ax
         
 def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
                drift_model='Cosine', hfcut=128, drift_order=1, fir_delays=[0],
-               fir_duration=1., cond_ids=None, add_regs=None, add_reg_names=None,
-               path=None):
+               fir_duration=1., cond_ids=None, add_regs=None,
+               add_reg_names=None, path=None):
     """
     Make a design matrix while avoiding framework
     

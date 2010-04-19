@@ -384,23 +384,25 @@ class Field(fg.WeightedGraph):
             inertia_old = inertia
         return seeds, label, inertia
 
-    def ward(self,nbcluster):
+    def ward(self, nbcluster):
         """
-        Ward's clsutering of self
+        Ward's clustering of self
         
         Parameters
         ----------
-        nbcluster (int):
-                  the number of desired clusters
-        
+        nbcluster: int,
+                   the number of desired clusters
+                  
         Returns
         -------
-        label : array of shape (self.V) the resulting field label
+        label: array of shape (self.V)
+               the resulting field label
         J (float): the resulting inertia
         """
         from nipy.neurospin.clustering.hierarchical_clustering\
-             import ward_field_segment
+             import ward_field_segment, ward_segment
         label,J = ward_field_segment(self,qmax=nbcluster)
+        #label, J = ward_segment(self, self.field, qmax=nbcluster, verbose=1)
 
         # compute the resulting inertia
         inertia = 0
@@ -419,13 +421,16 @@ class Field(fg.WeightedGraph):
         """
         Returns a subfield of self, 
         with only the vertices such that valid >0
+
         Parameters   
         ----------
-        valid: array of shape (self.V): nonzero for vertices to be retained
+        valid: array of shape (self.V),
+               nonzero for vertices to be retained
         
         Returns
         -------
-        F: Field instance, the desired subfield of self
+        F: Field instance,
+           the desired subfield of self
                 
         Note
         ----
