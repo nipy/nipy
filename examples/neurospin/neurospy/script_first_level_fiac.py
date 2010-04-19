@@ -22,7 +22,7 @@ Subjects = [ "fiac1"]
 #            "fiac9", "fiac10", "fiac11", "fiac12", "fiac13",\
 #            "fiac14", "fiac15"]
 Acquisitions = ["acquisition"]
-Sessions = ["fonc1", "fonc2", "fonc3", "fonc4"]
+Sessions = ["fonc1", "fonc2"]#["fonc3", "fonc4"]
 model_id = "default"
 fmri_wc = "swra*.nii.gz"
 
@@ -126,7 +126,7 @@ for s in Subjects:
          
         #6. Compute the Contrasts
         print "Computing contrasts"
-        glm_tools.ComputeContrasts(contrast, misc, CompletePaths,
+        glm_tools.compute_contrasts(contrast, misc, CompletePaths,
                                    glms, model=model_id)  
         
             
