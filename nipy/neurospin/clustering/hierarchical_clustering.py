@@ -1118,7 +1118,7 @@ def ward_segment(G, feature, stop=-1, qmax=1, verbose = 0):
     qmax = int(np.minimum(qmax,n-1))
 
     t = ward(G, feature, verbose)
-    if verbose: t.plot()
+    # if verbose: t.plot()
 
     u1 = np.zeros(n, np.int)
     u2 = np.zeros(n, np.int)

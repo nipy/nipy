@@ -402,7 +402,7 @@ class Field(fg.WeightedGraph):
         from nipy.neurospin.clustering.hierarchical_clustering\
              import ward_field_segment, ward_segment
         label,J = ward_field_segment(self,qmax=nbcluster)
-        #label,J = ward_segment(self, self.field, qmax=nbcluster, verbose=1)
+        #label, J = ward_segment(self, self.field, qmax=nbcluster, verbose=1)
 
         # compute the resulting inertia
         inertia = 0
