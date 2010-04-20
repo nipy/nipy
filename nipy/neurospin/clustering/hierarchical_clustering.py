@@ -790,7 +790,7 @@ def _remap(K,i,j,k,Features,linc,rinc):
     if np.size(idxi)>1:
         for l in idxi:
             K.weights[l] = _inertia(k,K.edges[l,1],Features)
-    elif np.size(idxi==1):
+    elif np.size(idxi)==1:
         K.weights[idxi] = _inertia(k,K.edges[idxi,1],Features)
     if np.size(idxi)>0:
         K.edges[idxi,0] = k
@@ -1010,14 +1010,15 @@ def ward_field_segment(F,stop=-1, qmax=-1,verbose=0):
     u,cost = ward_quick_segment(F,F.field,stop,qmax,verbose)
     return u,cost
 
-def ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
+def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=0):
     """
     Agglomerative function based on a topology-defining graph
     and a feature matrix. 
 
     Parameters
     ----------
-    G the input graph (a topological graph essentially)
+    G: neurospin.graph.WeightedGraph instance
+       the input graph (a topological graph essentially)
     feature array of shape (G.V,dim_feature)
             vectorial information related to the graph vertices
     stop = -1: the stopping crterion
@@ -1074,7 +1075,7 @@ def ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     return u,cost
 
 
-def ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
+def ward_segment(G, feature, stop=-1, qmax=1, verbose = 0):
     """
     Agglomerative function based on a topology-defining graph
     and a feature matrix. 
@@ -1116,8 +1117,8 @@ def ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     if stop==-1: stop = np.infty
     qmax = int(np.minimum(qmax,n-1))
 
-    t = ward(G,feature,verbose)
-    if verbose: t.plot()
+    t = ward(G, feature, verbose)
+    # if verbose: t.plot()
 
     u1 = np.zeros(n, np.int)
     u2 = np.zeros(n, np.int)
@@ -1133,7 +1134,7 @@ def ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
 
     cost = t.get_height()
     cost = cost[t.isleaf()==False]
-    return u,cost
+    return u, cost
 
 
 def ward_simple(feature, verbose=0):
@@ -1238,7 +1239,7 @@ def ward(G, feature, verbose=0):
     # along the merges.
     n = G.V
     nbcc = G.cc().max()+1
-    K = _auxiliary_graph(G,Features)
+    K = _auxiliary_graph(G, Features)
 
     # prepare some variables that are useful tp speed up the algorithm 
     parent = np.arange(2*n-nbcc).astype(np.int)
@@ -1257,7 +1258,7 @@ def ward(G, feature, verbose=0):
         j = K.edges[m,1]
         height[k] = cost
         if verbose:
-            print q,i,j, m,cost
+            print q, i, j, m, cost
         
         # 2. remove the current edge
         K.edges[m,:] = -1
@@ -1280,10 +1281,10 @@ def ward(G, feature, verbose=0):
         Features.append(totalFeatures)
         Features[i] = []
         Features[j] = []
-        linc,rinc = _remap(K,i,j,k,Features,linc,rinc)
-
+        linc,rinc = _remap(K, i, j, k, Features, linc, rinc)
+    
     # build a tree to encode the results
-    t = WeightedForest(2*n-nbcc,parent,height)
+    t = WeightedForest(2*n-nbcc, parent, height)
     return t
 
 

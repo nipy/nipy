@@ -80,7 +80,7 @@ def get_localizer_dataset():
     # download MaskImage if necessary
     if os.path.exists(paradigm)==False:
         datafile = os.path.join(url, 'localizer_paradigm.csv')
-        fp = urllib2.urlopen(datfile)
+        fp = urllib2.urlopen(datafile)
         local_file = open(paradigm, 'w')
         local_file.write(fp.read())
         local_file.flush()

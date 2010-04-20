@@ -3,7 +3,7 @@ from grid_transform import GridTransform
 from iconic_registration import IconicRegistration
 from spacetime_registration import Image4d, realign4d, resample4d
 
-from nipy.neurospin.image import Image, transform_image, from_brifti, to_brifti
+from nipy.neurospin.image import Image, asNifti1Image
 
 import numpy as np 
 
@@ -25,9 +25,9 @@ def register(source,
     
     Parameters
     ----------
-    source : brifti-like image object 
+    source : nibabel-like image object 
        Source image 
-    target : brifti-like image 
+    target : nibabel-like image 
        Target image array
     similarity : str or callable
        Cost-function for assessing image similarity.  If a string, one
@@ -61,7 +61,7 @@ def register(source,
         Object that can be casted to a numpy array. 
 
     """
-    R = IconicRegistration(from_brifti(source), from_brifti(target))
+    R = IconicRegistration(Image(source), Image(target))
     if subsampling == None: 
         R.set_source_fov(fixed_npoints=64**3)
     else:
@@ -88,13 +88,13 @@ def register(source,
 
 def transform(floating, T, reference=None, interp_order=3):
 
-    # Convert assumed brifti-like input images to local image class
-    floating = from_brifti(floating)
+    # Convert assumed nibabel-like input images to local image class
+    floating = Image(floating)
     if not reference == None: 
-        reference = from_brifti(reference)
+        reference = Image(reference)
 
-    return to_brifti(transform_image(floating, np.asarray(T), grid_coords=False,
-                                     reference=reference, interp_order=interp_order))
+    return asNifti1Image(floating.transform(np.asarray(T), grid_coords=False,
+                                            reference=reference, interp_order=interp_order))
 
 
 
@@ -120,7 +120,7 @@ class FmriRealign4d(object):
 
     def resample(self, align_runs=True): 
         """
-        Return a list of 4d brifti-like images corresponding to the resampled runs. 
+        Return a list of 4d nibabel-like images corresponding to the resampled runs. 
         """
         if align_runs: 
             transforms = self._transforms
@@ -128,5 +128,5 @@ class FmriRealign4d(object):
             transforms = self._within_run_transforms
         indices = range(len(self._runs))
         data = [resample4d(self._runs[i], transforms=transforms[i]) for i in indices]
-        return [to_brifti(Image(data[i], self._runs[i].to_world)) for i in indices]
+        return [asNifti1Image(Image(data[i], self._runs[i].to_world)) for i in indices]
 
