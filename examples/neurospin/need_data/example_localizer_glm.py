@@ -90,12 +90,31 @@ glm = my_glm.fit(Y.T, design_matrix.matrix,
 # Specify the contrasts
 #########################################
 
-
+# simplest ones
 contrasts = {}
 contrast_id = conditions
 for i in range(len(conditions)):
-    contrasts['%s' % conditions[i]]= np.eye(25)[2*i+1]
+    contrasts['%s' % conditions[i]]= np.eye(len(design_matrix.names))[2*i]
 
+# and more complex/ interesting ones
+contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\
+                     contrasts["calculaudio"] + contrasts["phraseaudio"]
+contrasts["video"] = contrasts["clicDvideo"] + contrasts["clicGvideo"] + \
+                     contrasts["calculvideo"] + contrasts["phrasevideo"]
+contrasts["left"] = contrasts["clicGaudio"] + contrasts["clicGvideo"]
+contrasts["right"] = contrasts["clicDaudio"] + contrasts["clicDvideo"] 
+contrasts["computation"] = contrasts["calculaudio"] +contrasts["calculvideo"]
+contrasts["sentences"] = contrasts["phraseaudio"] + contrasts["phrasevideo"]
+contrasts["H-V"] = contrasts["damier_H"] - contrasts["damier_V"]
+contrasts["V-H"] =contrasts["damier_V"] - contrasts["damier_H"]
+contrasts["left-right"] = contrasts["left"] - contrasts["right"]
+contrasts["right-left"] = contrasts["right"] - contrasts["left"]
+contrasts["audio-video"] = contrasts["audio"] - contrasts["video"]
+contrasts["video-audio"] = contrasts["video"] - contrasts["audio"]
+contrasts["computation-sentences"] = contrasts["computation"] -  \
+                                     contrasts["sentences"]
+contrasts["reading-visual"] = contrasts["sentences"]*2 - \
+                              contrasts["damier_H"] - contrasts["damier_V"]
 
 #########################################
 # Estimate the contrasts
@@ -104,7 +123,7 @@ for i in range(len(conditions)):
 for contrast_id in contrasts:
     lcontrast = my_glm.contrast(contrasts[contrast_id])
     # 
-    contrast_path = op.join(swd, '%s_zmap.nii'% contrast_id)
+    contrast_path = op.join(swd, '%s_z_map.nii'% contrast_id)
     write_array = mask_array.astype(np.float)
     write_array[mask_array] = lcontrast.zscore()
     contrast_image = Nifti1Image(write_array, fmri_image.get_affine() )

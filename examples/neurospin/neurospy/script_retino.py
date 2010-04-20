@@ -10,7 +10,9 @@ from configobj import ConfigObj
 import numpy as np
 
 from nipy.neurospin.utils.mask import compute_mask_files
-import cortical_glm, contrast_tools, glm_tools
+from nipy.neurospin.glm_files_layout import glm_tools, contrast_tools, \
+     cortical_glm
+
 
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------

@@ -9,7 +9,7 @@ from configobj import ConfigObj
 from numpy import arange
 
 from nipy.neurospin.utils.mask import compute_mask_files
-import glm_tools, contrast_tools
+from nipy.neurospin.glm_files_layout import glm_tools, contrast_tools
 
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------
