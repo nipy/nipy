@@ -9,7 +9,7 @@ import os
 from configobj import ConfigObj
 from numpy import arange
 
-import cortical_glm, contrast_tools, glm_tools
+from nipy.neurospin.glm_files_layout import glm_tools, contrast_tools, cortical_glm
 
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------

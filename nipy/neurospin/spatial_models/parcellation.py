@@ -79,7 +79,7 @@ class Parcellation(object):
 			raise ValueError,"All labels must be >=-1"
 
 		if (self.label.max()>self.k-1):
-			raise ValueError, "all labels must be <",self.k
+			raise ValueError, "all labels must be < %d" %self.k
 
 		if self.label.shape[0]!=self.nbvox:
 			print self.ijk.shape[0], self.nbvox
@@ -340,7 +340,7 @@ class Parcellation(object):
 			
 
 
-	def PRFX(self,fid,zstat=1,DMtx = None):
+	def PRFX(self, fid, zstat=1, DMtx = None):
 		"""
 		Compute the Random effects of the feature on the 
         parcels across subjects
@@ -509,7 +509,7 @@ class Parcellation(object):
 			for i in range(self.nbvox):
 				if self.label[i,s]>-1:
 					dfeat = pf[self.label[i,s],:] - Feature[s][j,:]
-					vf[self.label[i,s],:] += dfeat*dfeat#np.dot(dfeat,dfeat)
+					vf[self.label[i,s],:] += dfeat*dfeat
 					j = j+1
 			for i in range(self.k):
 				if pop[i]>1:

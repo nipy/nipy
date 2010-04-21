@@ -9,7 +9,7 @@ import os
 from configobj import ConfigObj
 from numpy import arange
 from nipy.neurospin.utils.mask import compute_mask_files
-import glm_tools, contrast_tools
+from nipy.neurospin.glm_files_layout import glm_tools, contrast_tools
 
 
 # -----------------------------------------------------------
@@ -91,7 +91,7 @@ for s in Subjects:
         # fixme : it should be possible to provide a pre-computed mask
         print "Computing the Mask"
         mask_array = compute_mask_files(paths['fmri'].values()[0][0],
-                                        paths['mask'], True, infTh, supTh)
+                                        paths['mask'], False, infTh, supTh)
         
         # step 4. Create Contrast Files
         print "Creating Contrasts"
