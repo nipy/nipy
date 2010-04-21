@@ -91,7 +91,7 @@ def generate_all_brainvisa_paths( base_path, sessions, fmri_wc,  model_id,
     if paradigm_id is not None:
         paths['paradigm'] = os.sep.join(( paths['minf'], paradigm_id))
         if not os.path.isfile( paths['paradigm']):
-            raise ValueError,"paradigm file %s not found" %paradigmFile
+            raise ValueError,"paradigm file %s not found" % paths['paradigm']
     paths['mask'] = os.sep.join(( paths['minf'], mask_id))
     paths['misc'] = os.sep.join(( paths['minf'], misc_id))
     paths['contrast_file'] =  os.sep.join(( paths['model'], contrast_id))

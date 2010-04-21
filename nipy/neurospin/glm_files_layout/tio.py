@@ -1,13 +1,12 @@
 """
-Custom module for io for textures defined in brainvisa (.tex)
+Custom and temporary module to perform io on
+textures defined in brainvisa (.tex)
 
 Author: Alan Tucholka, 2008-2010
 """
 import os
 import numpy as _np
 import gzip as _gz 
-
-#from zip import *
 
 __all__ = ['Texture']
 
@@ -132,7 +131,7 @@ class Texture:
     
     
     def write(self,filename=None):
-        #car aims n'ouvre pas les float64 :
+        #as aims does not open float64 
         if self.data.dtype == _np.float64:
             self.data = self.data.astype(_np.float32)
         
@@ -153,14 +152,14 @@ class Texture:
             
         f_out = open(filename, 'w')
 
-        # si ascii :
+        # if ascii :
         if self.textype == textypes[0]:
             f_out.write(self.textype+'\n')
             f_out.write([k for k, v in datatypes.items() 
                          if v == self.data.dtype][0]+'\n')
             f_out.write(str(nb_t)+'\n')
 
-            # ecrit les donnees en gerant la dimension t
+            # writes the data while taking account t dimension
             if nb_t>1 :
                 for t in range(nb_t):
                     e = self.data[t]
@@ -168,11 +167,11 @@ class Texture:
                     e.tofile(f_out, sep=' ')
                     f_out.write(' ')
             else:
-                f_out.write('0 '+str(len(self.data))+' ')
+                f_out.write('0 '+ str(len(self.data)) + ' ')
                 self.data.tofile(f_out, sep=' ')
                 f_out.write(' ')
         
-        # si binaire
+        # if binar
         else:
             self.convertToBinary()
             f_out.write(self.textype)
@@ -185,10 +184,11 @@ class Texture:
             f_out.write(datatype)
             f_out.write(nb_t.tostring())
             
-            # ecrit les donnees en gerant la dimension t
+            # writes the data while taking account t dimension
             if nb_t==1 :
                 f_out.write('\x00\x00\x00\x00')
-                f_out.write(_np.uint32(len(self.data)).tostring())
+                #f_out.write(_np.uint32(len(self.data)).tostring())
+                f_out.write(_np.uint32(self.data.size).tostring())
                 f_out.write(self.data.tostring())
             else:
                 for t in range(nb_t):
