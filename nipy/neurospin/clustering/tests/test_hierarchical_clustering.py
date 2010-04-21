@@ -219,8 +219,9 @@ def cost_test(n=100,k=5):
     x = np.random.randn(n,2)
     G = fg.WeightedGraph(n)
     G.knn(x,k)
-    u,cost =  ward_segment(G,x)
-    assert(cost.max()==np.var(x,0).sum())
+    u, cost =  ward_segment(G,x)
+    print cost.max()/n, np.var(x,0).sum()
+    assert np.abs(cost.max()/(n*np.var(x,0).sum()) - 1)<1.e-6
 
 def ward_test_more(n=100,k=5,verbose=0):
     """
