@@ -1,9 +1,12 @@
 """
-Example of script to parcellate the data from one subject
-And of various processing that can be applied then
+Example of script to parcellate the data from one subject,
+using various algorithms.
+
+Note that it can take some time
+
 author: Bertrand Thirion, 2005-2009
 """
-
+print __doc__
 
 import numpy as np
 import os.path as op

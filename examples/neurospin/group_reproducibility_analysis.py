@@ -44,7 +44,7 @@ csize = 10
 niter = 10
 method = 'crfx'
 verbose = 0
-swap = True#False#
+swap = False#True#
 
  
 kap = []
@@ -83,17 +83,21 @@ aux = st.norm.sf(np.array(thresholds))#,nsubj/ngroups)
 
 import matplotlib.pylab as mp
 a = mp.figure()
-mp.subplot(1,2,1)
+mp.subplot(1,3,1)
 mp.boxplot(kap)
-mp.boxplot(sens)
+# mp.boxplot(sens)
 # mp.plot(aux)
 mp.title('voxel-level reproducibility', fontsize=12)
 mp.xticks(range(1,1+len(thresholds)),thresholds)
 mp.xlabel('threshold')
-mp.subplot(1,2,2)
+mp.subplot(1,3,2)
 mp.boxplot(clt)
-mp.boxplot(pk,notch=1)
 mp.title('cluster-level reproducibility', fontsize=12)
+mp.xticks(range(1,1+len(thresholds)),thresholds)
+mp.xlabel('threshold')
+mp.subplot(1,3,3)
+mp.boxplot(pk,notch=1)
+mp.title('peak-level reproducibility', fontsize=12)
 mp.xticks(range(1,1+len(thresholds)),thresholds)
 mp.xlabel('threshold')
 a.set_figwidth(10.)
