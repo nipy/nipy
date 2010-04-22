@@ -1,5 +1,6 @@
 """
-Demo ward clustering on a graph.
+Demo ward clustering on a graph:
+various ways of forming clusters and dendrogram
 """
 print __doc__
 
@@ -22,8 +23,8 @@ G = graph.WeightedGraph(n)
 G.knn(X, 5)
 tree = ward(G, X, verbose)
 
-
-u = tree.partition(1.0)
+threshold = .5*n
+u = tree.partition(threshold)
 
 mp.figure()
 mp.subplot(1,2,1)
@@ -32,7 +33,7 @@ for i in range(u.max()+1):
 
 mp.axis('tight')
 mp.axis('off')
-mp.title('clustering into clusters of inertia<1')
+mp.title('clustering into clusters of inertia<%f'%threshold)
 
 u = tree.split(k)
 mp.subplot(1,2,2)
@@ -61,9 +62,11 @@ while nv>nv0:
             valid[tree.parents[v]]=1
     nv = np.sum(valid)
     
-ax = tree.fancy_plot_(valid)
-ax.axis('off')
+#ax = tree.fancy_plot_(valid)
+#ax.axis('off')
 
+ax = tree.plot()
+ax.set_visible(True)
 mp.show()
 
 if verbose:

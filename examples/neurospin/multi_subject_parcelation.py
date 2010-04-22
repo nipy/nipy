@@ -1,7 +1,10 @@
 """
 This script contains a quick demo on  a multi'subject parcellation
-on a small 2D example
+on a toy 2D example.
+Note how the middle parcels adapt to the individual configuration.
 """
+print __doc__
+
 import numpy as np
 import nipy.neurospin.spatial_models.hierarchical_parcellation as hp
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
@@ -43,13 +46,14 @@ Label =  np.array([np.reshape(Pa.label[:,s],(dimx,dimy))
 
 import matplotlib.pylab as mp
 mp.figure()
-
+mp.title('Input data')
 for s in range(nsubj):
     mp.subplot(2, 5, s+1)
     mp.imshow(dataset[s], interpolation='nearest')
     mp.axis('off')
-mp.figure()
 
+mp.figure()
+mp.title('Resulting parcels')
 for s in range(nsubj):
     mp.subplot(2, 5, s+1)
     mp.imshow(Label[s], interpolation='nearest', vmin=-1, vmax=nbparcel)

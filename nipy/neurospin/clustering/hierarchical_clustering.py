@@ -120,10 +120,18 @@ class WeightedForest(fo.Forest):
                 OK = False
         return OK
 
-    def plot(self):
+    def plot(self, ax=None):
         """
         Plot the dendrogram associated with self
         the rank of the data in the dendogram is returned
+
+        Parameters
+        ----------
+        ax: axis handle, optional
+
+        Returns
+        -------
+        ax, the axis handle
         """
         if self.check_compatible_height()==False:
             raise ValueError, 'cannot plot myself in my current state'
@@ -148,8 +156,10 @@ class WeightedForest(fo.Forest):
             idx[i] = np.mean(idx[j])
 
         # 3. plot
-        import matplotlib.pylab as mp
-        mp.figure()
+        if ax==None:
+            import matplotlib.pylab as mp
+            mp.figure()
+            ax = mp.subplot(1, 1, 1)
 
         for i in range(self.V):
             h1 = self.height[i]
@@ -168,9 +178,9 @@ class WeightedForest(fo.Forest):
         cM = 1.05*self.height.max()-0.05*self.height.min()
         cm = 1.05*self.height.min()-0.05*self.height.max()
         mp.axis([-1,idx.max()+1,cm,cM])
-        mp.axis('off')
-        #mp.show()
-        return rank
+        #mp.axis('off')
+        
+        return ax# rank
 
     def partition(self,threshold):
         """

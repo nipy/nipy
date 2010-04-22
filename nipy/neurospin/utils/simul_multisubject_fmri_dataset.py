@@ -309,10 +309,11 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, dmtx=None,
     data = np.zeros(shape_4d)
 
     # make the signal
-    for r in range(dmtx.shape[1]):
-        beta = nd.gaussian_filter(nr.randn(shape[0], shape[1], shape[2]),sk)
-        beta /= np.std(beta)
-        data[mask_data,:] += np.outer(beta[mask_data],dmtx[:,r]) 
+    if dmtx is not None:
+        for r in range(dmtx.shape[1]):
+            beta = nd.gaussian_filter(nr.randn(*shape),sk)
+            beta /= np.std(beta)
+            data[mask_data,:] += np.outer(beta[mask_data],dmtx[:,r]) 
     
     for s in range(n_scans):
         # make some noise
