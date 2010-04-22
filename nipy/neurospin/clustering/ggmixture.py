@@ -666,12 +666,12 @@ class GGGM(object):
         ax.plot(c, pg, 'g', linewidth=2, label='positive gamma component')
         ax.plot(c, z, 'k', linewidth=2, label='mixture distribution')
         ax.set_title('Fit of the density with a Gamma-Gaussian mixture',
-                 fontsize=16)
+                 fontsize=12)
         l = ax.legend()
         for t in l.get_texts():
             t.set_fontsize(12)
-        ax.set_xticklabels(ax.get_xticks(), fontsize=16)
-        ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+        ax.set_xticklabels(ax.get_xticks(), fontsize=12)
+        ax.set_yticklabels(ax.get_yticks(), fontsize=12)
  
     def SAEM(self, x, burnin=100, niter=200, verbose=False):
         """

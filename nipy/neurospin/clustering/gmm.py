@@ -783,15 +783,15 @@ class GMM():
         for k in range (self.k):
             ax.plot(grid,density[:,k],linewidth=2)
         ax.set_title('Fit of the density with a mixture of Gaussians',
-                     fontsize=16)
+                     fontsize=12)
 
         legend = ['data']
         for k in range(self.k):
             legend.append('component %d' %(k+1))
         l = ax.legend (tuple(legend))
-        for t in l.get_texts(): t.set_fontsize(16)
-        ax.set_xticklabels(ax.get_xticks(), fontsize=16)
-        ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+        for t in l.get_texts(): t.set_fontsize(12)
+        ax.set_xticklabels(ax.get_xticks(), fontsize=12)
+        ax.set_yticklabels(ax.get_yticks(), fontsize=12)
             
 
     def show(self,x,gd,density=None,nbf = -1):

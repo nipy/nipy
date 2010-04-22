@@ -2,7 +2,7 @@
 Example of script to parcellate the data from one subject,
 using various algorithms.
 
-Note that it can take some time
+Note that it can take some time.
 
 author: Bertrand Thirion, 2005-2009
 """

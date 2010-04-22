@@ -101,7 +101,7 @@ mp.title('peak-level reproducibility', fontsize=12)
 mp.xticks(range(1,1+len(thresholds)),thresholds)
 mp.xlabel('threshold')
 a.set_figwidth(10.)
-
+a.set_size_inches(12, 5, forward=True)
 
 mp.figure()
 q = 1

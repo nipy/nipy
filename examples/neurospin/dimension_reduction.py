@@ -1,7 +1,9 @@
-__doc__="""
-Example of dimension reduction procedures
+"""
+Example of dimension reduction on a swiss roll using Isomap.
 Bertrand Thirion, 2008-2010
 """
+print __doc__
+
 import numpy as np
 from nipy.neurospin.eda.dimension_reduction import swiss_roll, isomap, CCA,\
      mds, MDS, knn_Isomap , PCA
@@ -22,8 +24,8 @@ u = M.train(k=7)
 sv = CCA(x-x.mean(0),u[:,:2])
 print 'the canonical correlations between true parameters and estimated are %f, %f' %(sv[0],sv[1])
 
-M.G.show(u[:,:2])
-mp.title('embedding of the data graph')
+ax = M.G.show(u[:,:2])
+ax.set_title('embedding of the data graph')
 mp.show()
 
 
