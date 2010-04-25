@@ -373,8 +373,6 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
 # Time series extraction
 ################################################################################
 
-# FIXME: This function should probably get a 'single_session' flag to work 
-# without any surprises on single session situations.
 def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
     """ Read the time series from the given sessions filenames, using the mask.
 
@@ -401,6 +399,8 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         data_file = load(filenames)
         header = data_file.get_header()
         data = data_file.get_data()
+        #if isinstance(data, np.memmap):
+        #    data = np.array(data, copy=True)
         if smooth:
             affine = data_file.get_affine()[:3, :3]
             smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
