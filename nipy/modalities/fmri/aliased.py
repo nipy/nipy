@@ -15,6 +15,24 @@ class lambdify(object):
     them appropriately at evaluation time.
     """
     def __init__(self, args, expr):
+        ''' Initialize lambdifier
+
+        This lambdifier only allows there to be one input argument, in
+        fact, because of the __call__ signature.
+
+        Parameters
+        ----------
+        args : object or sequence of objects
+           May well be sympy Symbols
+        expr : expression
+
+        Examples
+        --------
+        >>> x = sympy.Symbol('x')
+        >>> f = lambdify(x, x**2)
+        >>> f(3)
+        9
+        '''
         if isinstance(expr, sympy.FunctionClass):
             # NNB t is undefined at this point
             expr = expr(t)
@@ -60,13 +78,13 @@ class vectorize(lambdify):
 class AliasedFunctionClass(sympy.FunctionClass):
     """ 'anonymous' sympy functions
 
-    Functions that can be replaed with an appropriate callable function
+    Functions that can be replaced with an appropriate callable function
     when lambdifying.
 
     No checking is done on the signature of the alias.
 
-    This is not meant to be called by users, rather
-    use 'aliased_function'.
+    This is not meant to be called by users, rather use
+    'aliased_function'.
     """
     def __new__(cls, arg1, arg2, arg3=None, alias=None):
         r = sympy.FunctionClass.__new__(cls, arg1, arg2, arg3)
