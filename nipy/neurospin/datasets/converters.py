@@ -55,6 +55,7 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
         if not os.path.exists(obj):
             raise ValueError("The file '%s' cannot be found" % obj)
         obj = load(obj)
+        copy = False
     
     if isinstance(obj, SpatialImage):
         data   = obj.get_data()
