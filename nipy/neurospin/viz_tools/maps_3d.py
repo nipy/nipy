@@ -294,6 +294,8 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
             # Stick the colormap in mayavi
             module.module_manager.scalar_lut_manager.lut.table \
                     = (255*cmap(np.linspace(0, 1, 256))).astype(np.int)
+    else:
+        module = None
    
     if not anat is False:
         plot_anat_3d(anat=anat, anat_affine=anat_affine, scale=1.05,

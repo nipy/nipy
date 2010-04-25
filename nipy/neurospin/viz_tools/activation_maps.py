@@ -32,7 +32,6 @@ from .coord_tools import coord_transform, find_cut_coords
 
 from .ortho_slicer import OrthoSlicer
 
-
 ################################################################################
 # Helper functions for 2D plotting of activation maps 
 ################################################################################
@@ -48,6 +47,8 @@ def _fast_abs_percentile(map):
     """ An algorithm to implement a fast version of the 80-percentile of
         the absolute value.
     """
+    if hasattr(map, 'mask'):
+        map = np.asarray(map[np.logical_not(map.mask)])
     map = np.abs(map).ravel()
     map.sort()
     nb = map.size
@@ -120,6 +121,11 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     """
     map, affine = _xyz_order(map, affine)
 
+    nan_mask = np.isnan(np.asarray(map))
+    if np.any(nan_mask):
+        map = map.copy()
+        map[nan_mask] = 0
+
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
         threshold = _fast_abs_percentile(map)  
@@ -128,7 +134,10 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                                 activation_threshold=threshold)
         cut_coords = coord_transform(x_map, y_map, z_map, affine)
     if threshold is not None:
-        map = np.ma.masked_inside(map, -threshold, threshold, copy=False)
+        if threshold == 0:
+            map = np.ma.masked_equal(map, 0, copy=False)
+        else:
+            map = np.ma.masked_inside(map, -threshold, threshold, copy=False)
     
     if do3d:
         try:
@@ -181,6 +190,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         kwargs['vmin'] = vmin
         vmax = kwargs.get('vmax', map.max())
         kwargs['vmax'] = vmax
+        from enthought.mayavi import mlab
         plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
                     anat=anat, anat_affine=anat_affine, 
                     offscreen=offscreen, cmap=cmap,
@@ -194,9 +204,8 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         if offscreen:
             # Clean up, so that the offscreen engine doesn't become the
             # default
-            from enthought.mayavi import mlab
+            mlab.clf()
             engine = mlab.get_engine()
-            engine.close_scene(engine.current_scene)
             from enthought.mayavi.core.registry import registry
             for key, value in registry.engines.iteritems():
                 if value is engine:
