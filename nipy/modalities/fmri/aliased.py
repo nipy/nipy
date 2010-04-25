@@ -126,7 +126,7 @@ def aliased_function(symbol, alias):
     ----------
     symbol : ``sympy.Symbol`` instance
 
-    alias : God alone knows
+    alias : callable
     """
     y = AliasedFunctionClass(sympy.Function, symbol, alias=alias)
     return y
