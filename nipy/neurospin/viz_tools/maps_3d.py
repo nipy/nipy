@@ -126,7 +126,7 @@ def m2screenshot(mayavi_fig=None, mpl_axes=None, autocrop=True):
 
 def plot_anat_3d(anat=None, anat_affine=None, scale=1,
                  sulci_opacity=0.5, gyri_opacity=0.3,
-                 opacity=1,
+                 opacity=.99,
                  outline_color=None):
     # Late import to avoid triggering wx imports before needed.
     from enthought.mayavi import mlab
