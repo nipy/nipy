@@ -198,7 +198,7 @@ class VolumeImg(VolumeGrid):
             data = np.reshape(data, data_shape[:3] + [-1])
             data = np.rollaxis(data, 3)
             resampled_data = [ ndimage.affine_transform(slice, A,
-                                                offset=b,
+                                                offset=np.dot(A_inv, b),
                                                 output_shape=shape,
                                                 order=interpolation_order)
                                 for slice in data]
