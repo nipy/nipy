@@ -3,7 +3,12 @@ import sys
 from glob import glob
 from distutils import log
 from distutils.cmd import Command
-from distutils.version import LooseVersion
+
+# monkey-patch numpy distutils to use Cython instead of Pyrex
+from build_helpers import generate_a_pyrex_source, package_check
+from numpy.distutils.command.build_src import build_src
+build_src.generate_a_pyrex_source = generate_a_pyrex_source
+
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
@@ -37,69 +42,6 @@ if not 'extra_setuptools_args' in globals():
     extra_setuptools_args = dict()
 
 
-# Dependency checks
-def package_check(pkg_name, version=None,
-                  optional=False,
-                  checker=LooseVersion,
-                  version_getter=None,
-                  ):
-    ''' Check if package `pkg_name` is present, and correct version
-
-    Parameters
-    ----------
-    pkg_name : str
-       name of package as imported into python
-    version : {None, str}, optional
-       minimum version of the package that we require. If None, we don't
-       check the version.  Default is None
-    optional : {False, True}, optional
-       If False, raise error for absent package or wrong version;
-       otherwise warn
-    checker : callable, optional
-       callable with which to return comparable thing from version
-       string.  Default is ``distutils.version.LooseVersion``
-    version_getter : {None, callable}:
-       Callable that takes `pkg_name` as argument, and returns the
-       package version string - as in::
-       
-          ``version = version_getter(pkg_name)``
-
-       If None, equivalent to::
-
-          mod = __import__(pkg_name); version = mod.__version__``
-    '''
-    if version_getter is None:
-        def version_getter(pkg_name):
-            mod = __import__(pkg_name)
-            return mod.__version__
-    try:
-        mod = __import__(pkg_name)
-    except ImportError:
-        if not optional:
-            raise RuntimeError('Cannot import package "%s" '
-                               '- is it installed?' % pkg_name)
-        log.warn('Missing optional package "%s"; '
-                 'you may get run-time errors' % pkg_name)
-        return
-    if not version:
-        return
-    try:
-        have_version = version_getter(pkg_name)
-    except AttributeError:
-        raise RuntimeError('Cannot find version for %s' % pkg_name)
-    if checker(have_version) < checker(version):
-        v_msg = 'You have version %s of package "%s"' \
-            ' but we need version >= %s' % (
-            have_version,
-            pkg_name,
-            version,
-            )
-        if optional:
-            log.warn(v_msg + '; you may get run-time errors')
-        else:
-            raise RuntimeError(v_msg)
-
-
 # Hard and soft dependency checking
 package_check('scipy', '0.5')
 package_check('sympy', '0.6.6')
@@ -108,12 +50,18 @@ def _mayavi_version(pkg_name):
     return version.version
 package_check('mayavi', '3.0', optional=True,
               version_getter=_mayavi_version)
+def _cython_version(pkg_name):
+    from Cython.Compiler.Version import version
+    return version
+# Cython is a build dependency
+package_check('cython', '0.12', optional=False,
+              version_getter=_cython_version)
     
 ################################################################################
 # Import the documentation building classes. 
 
 try:
-    from build_docs import cmdclass
+    from build_helpers import cmdclass
 except ImportError:
     """ Pass by the doc build gracefully if sphinx is not installed """
     print "Sphinx is not installed, docs cannot be built"
