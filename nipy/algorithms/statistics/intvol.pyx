@@ -7,14 +7,16 @@ Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
    Journal of the American Statistical Association, 102(479):913-928.
 
 """
+cimport cython
 
 import numpy as np
 cimport numpy as np
+
 from scipy.sparse import dok_matrix
 
 # local imports
-
 from utils import cube_with_strides_center, join_complexes
+
 
 DTYPE_float = np.float
 ctypedef np.float_t DTYPE_float_t
@@ -22,71 +24,69 @@ ctypedef np.float_t DTYPE_float_t
 DTYPE_int = np.int
 ctypedef np.int_t DTYPE_int_t
 
-def mu3_tet(double D00, double D01, double D02, double D03,
-            double D11, double D12, double D13, 
-            double D22, double D23, 
-            double D33):
+cdef double PI = np.pi
 
+
+cdef extern from "math.h" nogil:
+    double floor(double x)
+    double sqrt(double x)
+    double fabs(double x)
+    double log2(double x)
+    double acos(double x)    
+    bint isnan(double x)
+
+    
+cpdef double mu3_tet(double D00, double D01, double D02, double D03,
+                     double D11, double D12, double D13, 
+                     double D22, double D23, 
+                     double D33) nogil:
   """
   Compute the 3rd intrinsic volume (just volume in this case) of 
   a tetrahedron with coordinates [coords[v0], coords[v1], coords[v2], coords[v3]].
 
-  Inputs:
-  -------
-
+  Parameters
+  ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
-
   v0, v1, v2, v3 : int
        Indices for vertices of the tetrahedron.
 
-  Outputs:
-  --------
-
+  Returns
+  -------
   mu3 : float
-
   """
+  cdef double C00, C01, C02, C11, C12, C22
+  C00 = D00 - 2*D03 + D33
+  C01 = D01 - D13 - D03 + D33
+  C02 = D02 - D23 - D03 + D33
+  C11 = D11 - 2*D13 + D33
+  C12 = D12 - D13 - D23 + D33
+  C22 = D22 - 2*D23 + D33
+  return sqrt((C00 * (C11 * C22 - C12 * C12) -
+               C01 * (C01 * C22 - C02 * C12) +
+               C02 * (C01 * C12 - C11 * C02))) / 6.
 
-  C00, C01, C02, C11, C12, C22 = (D00 - 2*D03 + D33,
-                                  D01 - D13 - 
-                                  D03 + D33,
-                                  D02 - D23 - 
-                                  D03 + D33,            
-                                  D11 - 2*D13 + D33,
-                                  D12 - D13 - 
-                                  D23 + D33,
-                                  D22 - 2*D23 + D33)
 
-  return np.sqrt((C00 * (C11 * C22 - C12 * C12) -
-                  C01 * (C01 * C22 - C02 * C12) +
-                  C02 * (C01 * C12 - C11 * C02))) / 6.;
-
-def mu2_tet(double D00, double D01, double D02, double D03,
-            double D11, double D12, double D13, 
-            double D22, double D23,
-            double D33):
+cpdef double mu2_tet(double D00, double D01, double D02, double D03,
+                     double D11, double D12, double D13, 
+                     double D22, double D23,
+                     double D33) nogil:
   """
   Compute the 2nd intrinsic volume (half the surface area) of 
   a tetrahedron with coordinates [coords[v0], coords[v1], coords[v2], coords[v3]].
 
-  Inputs:
-  -------
-
+  Parameters
+  ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
-
   v0, v1, v2, v3 : int
        Indices for vertices of the tetrahedron.
 
-  Outputs:
-  --------
-
+  Returns
+  -------
   mu2 : float
-
   """
-  
   cdef double mu = 0
-
   mu += mu2_tri(D00, D01, D02, D11, D12, D22)
   mu += mu2_tri(D00, D02, D03, D22, D23, D33)
   mu += mu2_tri(D11, D12, D13, D22, D23, D33)
@@ -94,33 +94,28 @@ def mu2_tet(double D00, double D01, double D02, double D03,
   return mu * 0.5
 
   
-def mu1_tet(double D00, double D01, double D02, double D03,
-            double D11, double D12, double D13, 
-            double D22, double D23,
-            double D33):
+cpdef double mu1_tet(double D00, double D01, double D02, double D03,
+                     double D11, double D12, double D13, 
+                     double D22, double D23,
+                     double D33) nogil:
+  """ Return 3rd intinsic volume of tetrahedron
+  
+  Compute the 3rd intrinsic volume (sum of external angles * edge
+  lengths) of a tetrahedron with coordinates [coords[v0], coords[v1],
+  coords[v2], coords[v3]].
 
-  """
-  Compute the 3rd intrinsic volume (sum of external angles * edge lengths) of 
-  a tetrahedron with coordinates [coords[v0], coords[v1], coords[v2], coords[v3]].
-
-  Inputs:
-  -------
-
+  Parameters
+  ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
-
   v0, v1, v2, v3 : int
        Indices for vertices of the tetrahedron.
 
   Outputs:
   --------
-
   mu1 : float
-
   """
-
-  cdef mu
-  
+  cdef double mu
   mu = 0
   mu += _mu1_tetface(D00, D01, D11, D02, D03, D12, D13, D22, D23, D33)
   mu += _mu1_tetface(D00, D02, D22, D01, D03, D12, D23, D11, D13, D33)
@@ -128,9 +123,10 @@ def mu1_tet(double D00, double D01, double D02, double D03,
   mu += _mu1_tetface(D11, D12, D22, D01, D13, D02, D23, D00, D03, D33)
   mu += _mu1_tetface(D11, D13, D33, D01, D12, D03, D23, D00, D02, D22)
   mu += _mu1_tetface(D22, D23, D33, D02, D12, D03, D13, D00, D01, D11)
-  
   return mu
 
+
+@cython.cdivision(True)
 cdef double _mu1_tetface(double Ds0s0,
                          double Ds0s1,
                          double Ds1s1,
@@ -140,114 +136,99 @@ cdef double _mu1_tetface(double Ds0s0,
                          double Ds1t1,
                          double Dt0t0,
                          double Dt0t1,
-                         double Dt1t1):
-
-    cdef double A00, A01, A02, A11, A12, A22
+                         double Dt1t1) nogil:
+    cdef double A00, A01, A02, A11, A12, A22, np_len, a
     cdef double length, norm_proj0, norm_proj1, inner_prod_proj
 
     A00 = Ds1s1 - 2 * Ds0s1 + Ds0s0
+    # all norms divided by this value, leading to NaN value for output
+    if A00 == 0:
+      return 0
     A11 = Dt0t0 - 2 * Ds0t0 + Ds0s0
     A22 = Dt1t1 - 2 * Ds0t1 + Ds0s0
-
-    A01 = Ds1t0 - Ds0t0 - Ds0s1 + Ds0s0 
-    A02 = Ds1t1 - Ds0t1 - Ds0s1 + Ds0s0 
-    A12 = Dt0t1 - Ds0t0 - Ds0t1 + Ds0s0 
-
-    length = np.sqrt(A00)
-
+    A01 = Ds1t0 - Ds0t0 - Ds0s1 + Ds0s0
+    A02 = Ds1t1 - Ds0t1 - Ds0s1 + Ds0s0
+    A12 = Dt0t1 - Ds0t0 - Ds0t1 + Ds0s0
+    length = sqrt(A00)
     norm_proj0 = A11 - A01 * A01 / A00
     norm_proj1 = A22 - A02 * A02 / A00
     inner_prod_proj = A12 - A01 * A02 / A00
-
-    a = (np.pi - np.arccos(inner_prod_proj / np.sqrt(norm_proj0 * norm_proj1))) * length / (2 * np.pi)
-    if np.isnan(a):
-        return 0
+    np_len = norm_proj0 * norm_proj1
+    if np_len <= 0: # would otherwise lead to NaN return value
+      return 0
+    a = (PI - acos(inner_prod_proj / sqrt(np_len))) * length / (2 * PI)
     return a
 
-def mu2_tri(double D00, double D01, double D02,
-            double D11, double D12,
-            double D22):
 
+cpdef double mu2_tri(double D00, double D01, double D02,
+                     double D11, double D12,
+                     double D22) nogil:
   """
   Compute the 2nd intrinsic volume (just area in this case) of
   a triangle with coordinates [coords[v0], coords[v1], coords[v2]].
 
-  Inputs:
-  -------
-
+  Parameters
+  ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
-
   v0, v1, v2 : int
        Indices for vertices of the tetrahedron.
 
-  Outputs:
-  --------
-
+  Returns
+  -------
   mu2 : float
   """
-
   cdef double C00, C01, C11
-
   C00 = D11 - 2*D01 + D00
   C01 = D12 - D01 - D02 + D00
   C11 = D22 - 2*D02 + D00
+  return sqrt((C00 * C11 - C01 * C01)) * 0.5
 
-  return np.sqrt((C00 * C11 - C01 * C01)) * 0.5
 
-def mu1_tri(double D00, double D01, double D02,
-            double D11, double D12,
-            double D22):
+cpdef double mu1_tri(double D00, double D01, double D02,
+                     double D11, double D12,
+                     double D22) nogil:
   """
   Compute the 1st intrinsic volume (1/2 the perimeter of
   a triangle with coordinates [coords[v0], coords[v1], coords[v2]].
 
-  Inputs:
-  -------
-
+  Paremeters
+  ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
-
   v0, v1, v2 : int
        Indices for vertices of the tetrahedron.
 
-  Outputs:
-  --------
-
+  Returns
+  -------
   mu1 : float
   """
-
   cdef double mu = 0
   mu += mu1_edge(D00, D01, D11)
   mu += mu1_edge(D00, D02, D22)
   mu += mu1_edge(D11, D12, D22)
   return mu * 0.5
+
   
-def mu1_edge(double D00, double D01, 
-             double D11):
+cpdef double mu1_edge(double D00, double D01, 
+                      double D11) nogil:
   """
   Compute the 1st intrinsic volume (length)
   of a line segment with coordinates [coords[v0], coords[v1]]
 
-  Inputs:
-  -------
-
+  Parameters
+  ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
-
   v0, v1 : int
        Indices for vertices of the tetrahedron.
 
-  Outputs:
-  --------
-
+  Returns
+  -------
   mu0 : float
   """
+  return sqrt(D00 - 2*D01 + D11)
 
-  cdef double mu
-  mu = 0
-
-  return np.sqrt(D00 - 2*D01 + D11)
 
 def EC3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
     """
@@ -258,46 +239,37 @@ def EC3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
     all voxels in the tetrahedron / triangle / edge / vertex are
     in the mask or not.
 
-    Parameters:
-    -----------
-
+    Parameters
+    ----------
     coords : ndarray((*,i,j,k))
          Coordinates for the voxels in the mask
-
     mask : ndarray((i,j,k), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
 
-    Outputs:
-    --------
-
+    Returns
+    -------
     mu0 : int
 
-    Notes:
-    ------
+    Notes
+    -----
+    
+    The array mask is assumed to be binary. At the time of writing, it
+    is not clear how to get cython to use np.bool arrays.
 
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
+    The 3d cubes are triangulated into 6 tetrahedra of equal volume, as
+    described in the reference below.
 
-    The 3d cubes are triangulated into 6 tetrahedra of equal volume,
-    as described in the reference below.
-
-    References:
-    -----------
-
+    References
+    ----------
     Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
-
-
     """
-
     if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
+      raise ValueError('mask should be filled with 0/1 '
+                       'values, but be of type np.int')
     # 'flattened' mask (1d array)
-
     cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
 
     # d3 and d4 are lists of triangles and tetrahedra 
@@ -382,8 +354,9 @@ def EC3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
     l0 += mask.sum()
     return l0
 
+
 def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
-          np.ndarray[DTYPE_int_t, ndim=3] mask):
+           np.ndarray[DTYPE_int_t, ndim=3] mask):
     """
     Given a 3d mask and coordinates, estimate the intrinsic volumes
     of the masked region. The region is broken up into tetrahedra / 
@@ -391,46 +364,37 @@ def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
     all voxels in the tetrahedron / triangle / edge / vertex are
     in the mask or not.
 
-    Parameters:
-    -----------
-
+    Parameters
+    ----------
     coords : ndarray((*,i,j,k))
          Coordinates for the voxels in the mask
-
     mask : ndarray((i,j,k), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
 
-    Outputs:
-    --------
-
+    Returns
+    -------
     mu : ndarray
          Array of intrinsic volumes [mu0, mu1, mu2, mu3]
 
-    Notes:
-    ------
+    Notes
+    -----
+    The array mask is assumed to be binary. At the time of writing, it
+    is not clear how to get cython to use np.bool arrays.
 
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
+    The 3d cubes are triangulated into 6 tetrahedra of equal volume, as
+    described in the reference below.
 
-    The 3d cubes are triangulated into 6 tetrahedra of equal volume,
-    as described in the reference below.
-
-    References:
-    -----------
-
+    References
+    ----------
     Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
-
     """
-
     if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
+      raise ValueError('mask should be filled with 0/1 '
+                       'values, but be of type np.int')
     # 'flattened' coords (2d array)
-
     cdef np.ndarray[DTYPE_float_t, ndim=2] fcoords 
     cdef np.ndarray[DTYPE_float_t, ndim=2] D
 
@@ -609,6 +573,7 @@ def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
     l0 += mask.sum()
     return np.array([l0, l1, l2, l3])
 
+
 def _convert_stride3(v, stride1, stride2):
     """
     Take a voxel, expressed as in index in stride1 and
@@ -620,6 +585,7 @@ def _convert_stride3(v, stride1, stride2):
     v2 = v - v1 * stride1[1]
     return v0*stride2[0] + v1*stride2[1] + v2*stride2[2]
 
+
 def _convert_stride2(v, stride1, stride2):
     """
     Take a voxel, expressed as in index in stride1 and
@@ -629,6 +595,7 @@ def _convert_stride2(v, stride1, stride2):
     v1 = v - v0 * stride1[0]
     return v0*stride2[0] + v1*stride2[1]
 
+
 def _convert_stride1(v, stride1, stride2):
     """
     Take a voxel, expressed as in index in stride1 and
@@ -636,6 +603,7 @@ def _convert_stride1(v, stride1, stride2):
     """
     v0 = v / stride1[0]
     return v0 * stride2[0]
+
 
 def Lips2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
            np.ndarray[DTYPE_int_t, ndim=2] mask):
@@ -646,48 +614,37 @@ def Lips2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
     all voxels in the triangle / edge / vertex are
     in the mask or not.
 
-    Parameters:
-    -----------
-
+    Parameters
+    ----------
     coords : ndarray((*,i,j))
          Coordinates for the voxels in the mask
-
     mask : ndarray((i,j), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
 
-    Outputs:
-    --------
-
+    Returns
+    -------
     mu : ndarray
          Array of intrinsic volumes [mu0, mu1, mu2]
 
-    Notes:
-    ------
+    Notes
+    -----
+    The array mask is assumed to be binary. At the time of writing, it
+    is not clear how to get cython to use np.bool arrays.
 
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
-
-    References:
-    -----------
-
+    References
+    ----------
     Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
-
-
     """
-
     if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
+      raise ValueError('mask should be filled with 0/1 '
+                       'values, but be of type np.int')
     # 'flattened' coords (2d array)
-
     cdef np.ndarray[DTYPE_float_t, ndim=2] fcoords 
 
     # 'flattened' mask (1d array)
-
     cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
     cdef np.ndarray[DTYPE_int_t, ndim=1] fpmask
     cdef np.ndarray[DTYPE_int_t, ndim=2] pmask
@@ -802,6 +759,7 @@ def Lips2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
     l0 += mask.sum()
     return np.array([l0,l1,l2])
 
+
 def EC2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
     """
     Given a 2d mask, compute the 0th intrinsic volume
@@ -811,43 +769,34 @@ def EC2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
     all voxels in the triangle / edge / vertex are
     in the mask or not.
 
-    Parameters:
-    -----------
-
+    Parameters
+    ----------
     mask : ndarray((i,j), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
 
-    Outputs:
-    --------
-
+    Returns
+    -------
     mu0 : int
 
-    Notes:
-    ------
+    Notes
+    -----
+    The array mask is assumed to be binary. At the time of writing, it
+    is not clear how to get cython to use np.bool arrays.
 
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
+    The 3d cubes are triangulated into 6 tetrahedra of equal volume, as
+    described in the reference below.
 
-    The 3d cubes are triangulated into 6 tetrahedra of equal volume,
-    as described in the reference below.
-
-    References:
-    -----------
-
+    References
+    ----------
     Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
-
-
     """
-
     if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
+      raise ValueError('mask should be filled with 0/1 '
+                       'values, but be of type np.int')
     # 'flattened' mask (1d array)
-
     cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
 
     # d3 and d4 are lists of triangles and tetrahedra 
@@ -912,6 +861,7 @@ def EC2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
     l0 += mask.sum()
     return l0
 
+
 def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
            np.ndarray[DTYPE_int_t, ndim=1] mask):
     """
@@ -921,42 +871,34 @@ def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
     all voxels in the edge / vertex are
     in the mask or not.
 
-    Parameters:
-    -----------
-
+    Parameters
+    ----------
     coords : ndarray((*,i))
          Coordinates for the voxels in the mask
-
     mask : ndarray((i,), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
 
-    Outputs:
-    --------
-
+    Returns
+    -------
     mu : ndarray
          Array of intrinsic volumes [mu0, mu1]
 
-    Notes:
-    ------
+    Notes
+    -----
+    The array mask is assumed to be binary. At the time of writing, it
+    is not clear how to get cython to use np.bool arrays.
 
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
-
-    References:
-    -----------
-
+    References
+    ----------
     Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
-
-
     """
 
     if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
+      raise ValueError('mask should be filled with 0/1 '
+                       'values, but be of type np.int')
     # 'flattened' coords (2d array)
 
     # d3 and d4 are lists of triangles
@@ -1009,6 +951,7 @@ def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
     l0 += mask.sum()
     return np.array([l0,l1])
 
+
 def EC1d(np.ndarray[DTYPE_int_t, ndim=1] mask):
     """
     Given a 1d mask, compute the 0th intrinsic volume
@@ -1018,41 +961,33 @@ def EC1d(np.ndarray[DTYPE_int_t, ndim=1] mask):
     all voxels in the edge / vertex are
     in the mask or not.
 
-    Parameters:
-    -----------
-
+    Parameters
+    ----------
     mask : ndarray((i,), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
 
-    Outputs:
-    --------
-
+    Returns
+    -------
     mu0 : int
 
-    Notes:
-    ------
+    Notes
+    -----
+    The array mask is assumed to be binary. At the time of writing, it
+    is not clear how to get cython to use np.bool arrays.
 
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
+    The 3d cubes are triangulated into 6 tetrahedra of equal volume, as
+    described in the reference below.
 
-    The 3d cubes are triangulated into 6 tetrahedra of equal volume,
-    as described in the reference below.
-
-    References:
-    -----------
-
+    References
+    ----------
     Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
-
-
     """
-
     if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
+      raise ValueError('mask should be filled with 0/1 '
+                       'values, but be of type np.int')
     # 'flattened' coords (2d array)
 
     # d3 and d4 are lists of triangles

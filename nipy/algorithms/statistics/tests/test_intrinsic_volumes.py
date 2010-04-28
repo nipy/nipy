@@ -2,7 +2,7 @@ import numpy as np
 import numpy.linalg as L
 import numpy.random as R
 
-from nipy.testing import assert_equal, assert_almost_equal, dec
+from nipy.testing import (assert_equal, assert_almost_equal, dec, parametric)
 
 from nipy.algorithms.statistics import intvol, utils
 
@@ -150,7 +150,6 @@ def test_lips1_disjoint():
          np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(2)]))
 
 
-@dec.slow
 def test_lips2_disjoint():
     phi = intvol.Lips2d
 
@@ -173,7 +172,8 @@ def test_lips2_disjoint():
         (np.array([elsym([e[1]-e[0]-1 for e in edge1], i) for i in range(3)]) +
          np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(3)]))
 
-@dec.slow
+
+@parametric
 def test_lips3_disjoint():
     phi = intvol.Lips3d
     box1, box2, edge1, edge2 = nonintersecting_boxes((40,)*3)
@@ -184,13 +184,14 @@ def test_lips3_disjoint():
     e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
 
-    yield assert_almost_equal, phi(c, box1 + box2), phi(c, box1) + phi(c, box2)
-    yield assert_almost_equal, phi(d, box1 + box2), phi(d, box1) + phi(d, box2)
-    yield assert_almost_equal, phi(e, box1 + box2), phi(e, box1) + phi(e, box2)
-    yield assert_almost_equal, phi(e, box1 + box2), phi(c, box1 + box2) 
-    yield assert_almost_equal, phi(e, box1 + box2), \
+    yield assert_almost_equal(phi(c, box1 + box2), phi(c, box1) + phi(c, box2))
+    yield assert_almost_equal(phi(d, box1 + box2), phi(d, box1) + phi(d, box2))
+    yield assert_almost_equal(phi(e, box1 + box2), phi(e, box1) + phi(e, box2))
+    yield assert_almost_equal(phi(e, box1 + box2), phi(c, box1 + box2))
+    yield assert_almost_equal(
+        phi(e, box1 + box2),
         (np.array([elsym([e[1]-e[0]-1 for e in edge1], i) for i in range(4)]) +
-         np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(4)]))
+         np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(4)])))
 
 
 def test_slices():
