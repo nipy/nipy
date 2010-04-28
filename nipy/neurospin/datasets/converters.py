@@ -6,7 +6,7 @@ import os
 
 import numpy as np
 
-from nipy.io.imageformats import load, save, Nifti1Image
+from nipy.io import imageformats
 from nipy.io.imageformats.spatialimages import SpatialImage
 
 from .volumes.volume_img import VolumeImg
@@ -54,7 +54,7 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
     elif isinstance(obj, basestring):
         if not os.path.exists(obj):
             raise ValueError("The file '%s' cannot be found" % obj)
-        obj = load(obj)
+        obj = imageformats.load(obj)
         copy = False
     
     if isinstance(obj, SpatialImage):
@@ -96,4 +96,12 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
         data = np.reshape(data, shape)
     
     return VolumeImg(data, affine, world_space, metadata=header)
+
+
+def save(filename, obj):
+    """ Save an nipy image object to a file.
+    """
+    obj = as_volume_img(obj)
+    imageformats.save(imageformats.Nifti1Image(obj.get_data(), 
+                      obj.affine), filename)
 
