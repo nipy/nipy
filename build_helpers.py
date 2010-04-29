@@ -252,13 +252,19 @@ def generate_a_pyrex_source(self, base, ext_name, source, extension):
         target_dir = appendpath(self.build_src, dirname(base))
     target_file = pjoin(target_dir, ext_name + '.c')
     depends = [source] + extension.depends
+    # add distribution (package-wide) include directories, in order to
+    # pick up needed .pxd files for cython compilation
+    incl_dirs = extension.include_dirs[:]
+    dist_incl_dirs = self.distribution.include_dirs
+    if not dist_incl_dirs is None:
+        incl_dirs += dist_incl_dirs
     if self.force or newer_group(depends, target_file, 'newer'):
         import Cython.Compiler.Main
         log.info("cythonc:> %s" % (target_file))
         self.mkpath(target_dir)
         options = Cython.Compiler.Main.CompilationOptions(
             defaults=Cython.Compiler.Main.default_options,
-            include_path=extension.include_dirs,
+            include_path=incl_dirs,
             output_file=target_file)
         cython_result = Cython.Compiler.Main.compile(source,
                                                    options=options)

@@ -9,9 +9,8 @@ Author: Alexis Roche, 2008.
 
 __version__ = '0.1'
 
-
 # Includes
-include "fff.pxi"
+from fff cimport *
 
 # Exports from fff_glm_kalman.h
 cdef extern from "fff_glm_kalman.h":
@@ -99,7 +98,11 @@ def ols(ndarray Y, ndarray X, int axis=0):
     p = x.size2
     
     # Allocate output arrays B and S2
-    dims = list(Y.shape)
+    #
+    # Using Cython cimport of numpy, Y.shape is a C array of npy_intp
+    # type; see:
+    # http://codespeak.net/pipermail/cython-dev/2009-April/005229.html
+    dims = [Y.shape[i] for i in range(Y.ndim)]
     dims[axis] = p
     B = np.zeros(dims)
     dims[axis] = 1
@@ -173,8 +176,12 @@ def ar1(ndarray Y, ndarray X, int niter=2, int axis=0):
     p = x.size2
     p2 = p*p
     
-    # Allocate output arrays B and S2
-    dims = list(Y.shape)
+    # Allocate output arrays B and S2.
+    #
+    # Using Cython cimport of numpy, Y.shape is a C array of npy_intp
+    # type; see:
+    # http://codespeak.net/pipermail/cython-dev/2009-April/005229.html
+    dims = [Y.shape[i] for i in range(Y.ndim)]
     dims[axis] = p
     B = np.zeros(dims)
     dims[axis] = p2

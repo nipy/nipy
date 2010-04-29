@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 def configuration(parent_package='',top_path=None):
-    
     from numpy.distutils.misc_util import Configuration
-
     # We need this because libcstat.a is linked to lapack, which can
     # be a fortran library, and the linker needs this information.
     from numpy.distutils.system_info import get_info
@@ -12,18 +10,15 @@ def configuration(parent_package='',top_path=None):
         # But on OSX that may not give us what we need, so try with 'lapack'
         # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
         lapack_info = get_info('lapack',0)
-
     config = Configuration('glm', parent_package, top_path)
     config.add_data_dir('tests')
     config.add_data_dir('benchmarks')
-
     config.add_extension(
                 'kalman',
-                sources=['kalman.c'],
+                sources=['kalman.pyx'],
                 libraries=['cstat'],
                 extra_info=lapack_info,
                 )
-
     return config
 
 
