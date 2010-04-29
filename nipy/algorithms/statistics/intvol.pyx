@@ -192,7 +192,7 @@ cpdef double mu1_tri(double D00, double D01, double D02,
   Compute the 1st intrinsic volume (1/2 the perimeter of
   a triangle with coordinates [coords[v0], coords[v1], coords[v2]].
 
-  Paremeters
+  Parameters
   ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
@@ -253,7 +253,6 @@ def EC3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
 
     Notes
     -----
-    
     The array mask is assumed to be binary. At the time of writing, it
     is not clear how to get cython to use np.bool arrays.
 
