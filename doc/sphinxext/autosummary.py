@@ -61,6 +61,13 @@ from sphinx.util import patfilter
 
 from docscrape_sphinx import get_doc_object
 
+import warnings
+warnings.warn(
+    "The numpydoc.autosummary extension can also be found as "
+    "sphinx.ext.autosummary in Sphinx >= 0.6, and the version in "
+    "Sphinx >= 0.7 is superior to the one in numpydoc. This numpydoc "
+    "version of autosummary is no longer maintained.",
+    DeprecationWarning, stacklevel=2)
 
 def setup(app):
     app.add_directive('autosummary', autosummary_directive, True, (0, 0, False),
@@ -129,7 +136,8 @@ def autosummary_directive(dirname, arguments, options, content, lineno,
     """
 
     names = []
-    names += [x.strip() for x in content if x.strip()]
+    names += [x.strip().split()[0] for x in content
+              if x.strip() and re.search(r'^[a-zA-Z_]', x.strip()[0])]
 
     table, warnings, real_names = get_autosummary(names, state,
                                                   'nosignatures' in options)
@@ -160,7 +168,7 @@ def autosummary_directive(dirname, arguments, options, content, lineno,
         tocnode['includefiles'] = docnames
         tocnode['maxdepth'] = -1
         tocnode['glob'] = None
-        tocnode['entries'] = [] 
+        tocnode['entries'] = [(None, docname) for docname in docnames]
 
         tocnode = autosummary_toc('', '', tocnode)
         return warnings + [node] + [tocnode]
@@ -190,8 +198,8 @@ def get_autosummary(names, state, no_signatures=False):
     table = nodes.table('')
     group = nodes.tgroup('', cols=2)
     table.append(group)
-    group.append(nodes.colspec('', colwidth=30))
-    group.append(nodes.colspec('', colwidth=70))
+    group.append(nodes.colspec('', colwidth=10))
+    group.append(nodes.colspec('', colwidth=90))
     body = nodes.tbody('')
     group.append(body)
 
@@ -202,6 +210,11 @@ def get_autosummary(names, state, no_signatures=False):
             vl = ViewList()
             vl.append(text, '<autosummary>')
             state.nested_parse(vl, 0, node)
+            try:
+                if isinstance(node[0], nodes.paragraph):
+                    node = node[0]
+            except IndexError:
+                pass
             row.append(nodes.entry('', node))
         body.append(row)
 
@@ -223,9 +236,9 @@ def get_autosummary(names, state, no_signatures=False):
         else:
             title = ""
         
-        col1 = ":obj:`%s <%s>`" % (name, real_name)
+        col1 = u":obj:`%s <%s>`" % (name, real_name)
         if doc['Signature']:
-            sig = re.sub('^[a-zA-Z_0-9.-]*', '', doc['Signature'])
+            sig = re.sub('^[^(\[]*', '', doc['Signature'].strip())
             if '=' in sig:
                 # abbreviate optional arguments
                 sig = re.sub(r', ([a-zA-Z0-9_]+)=', r'[, \1=', sig, count=1)
@@ -233,10 +246,11 @@ def get_autosummary(names, state, no_signatures=False):
                 sig = re.sub(r'=[^,)]+,', ',', sig)
                 sig = re.sub(r'=[^,)]+\)$', '])', sig)
                 # shorten long strings
-                sig = re.sub(r'(\[.{16,16}[^,)]*?),.*?\]\)', r'\1, ...])', sig)
+                sig = re.sub(r'(\[.{16,16}[^,]*?),.*?\]\)', r'\1, ...])', sig)
             else:
-                sig = re.sub(r'(\(.{16,16}[^,)]*?),.*?\)', r'\1, ...)', sig)
-            col1 += " " + sig
+                sig = re.sub(r'(\(.{16,16}[^,]*?),.*?\)', r'\1, ...)', sig)
+            # make signature contain non-breaking spaces
+            col1 += u"\\ \u00a0" + unicode(sig).replace(u" ", u"\u00a0")
         col2 = title
         append_row(col1, col2)
 
