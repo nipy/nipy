@@ -101,7 +101,7 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
 def save(filename, obj):
     """ Save an nipy image object to a file.
     """
-    obj = as_volume_img(obj)
+    obj = as_volume_img(obj, copy=False)
     imageformats.save(imageformats.Nifti1Image(obj.get_data(), 
                       obj.affine), filename)
 
