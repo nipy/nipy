@@ -17,7 +17,7 @@ def configuration(parent_package='',top_path=None):
     config.add_data_dir('benchmarks')
     config.add_extension(
                 'routines',
-                sources=['routines.c', 'iconic.c', 'cubic_spline.c'],
+                sources=['routines.pyx', 'iconic.c', 'cubic_spline.c'],
                 libraries = ['cstat'],
                 extra_info=lapack_info,
                 )
