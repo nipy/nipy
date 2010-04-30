@@ -1,7 +1,5 @@
 import os 
 
-THISDIR = os.path.join('nipy','neurospin','register')
-
 def configuration(parent_package='',top_path=None):
     
     from numpy.distutils.misc_util import Configuration
@@ -19,7 +17,7 @@ def configuration(parent_package='',top_path=None):
     config.add_data_dir('benchmarks')
 
     # add include dirs for prototypes imported in routines.pyx
-    config.add_include_dirs(THISDIR)
+    config.add_include_dirs(config.name.replace('.', os.sep))
 
     config.add_extension(
                 'routines',
