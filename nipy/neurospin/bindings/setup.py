@@ -18,14 +18,12 @@ if sys.platform.find('win')==0:
 else:
     from commands import getstatusoutput
 
+
 def configuration(parent_package='',top_path=None):
-    
     from numpy.distutils.misc_util import Configuration
-    
     config = Configuration('bindings', parent_package, top_path)
     config.add_data_dir('tests')
     config.add_data_dir('benchmarks')
-
     # We need this because libcstat.a is linked to lapack, which can
     # be a fortran library, and the linker needs this information.
     from numpy.distutils.system_info import get_info
@@ -34,7 +32,6 @@ def configuration(parent_package='',top_path=None):
         # But on OSX that may not give us what we need, so try with 'lapack'
         # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
         lapack_info = get_info('lapack',0)
-
     config.add_extension('linalg', sources=['linalg.c'],
                             libraries=['cstat'],
                             extra_info=lapack_info)
@@ -44,7 +41,6 @@ def configuration(parent_package='',top_path=None):
     config.add_extension('wrapper', sources=['wrapper.c'],
                             libraries=['cstat'],
                             extra_info=lapack_info)
-
     return config
 
 

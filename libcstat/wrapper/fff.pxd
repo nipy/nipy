@@ -169,8 +169,6 @@ cdef extern from "randomkit.h":
                         rk_state *state)
     double rk_gauss(rk_state *state)
     
-
-
     
 # Exports from the Python fff wrapper
 cdef extern from "fffpy.h":

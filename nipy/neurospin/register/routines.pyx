@@ -12,7 +12,6 @@ __version__ = '0.2'
 
 
 # Includes
-#include "numpy.pxi"
 from numpy cimport (ndarray, flatiter, broadcast, import_array,
                     PyArray_MultiIterNew, PyArray_MultiIter_DATA,
                     PyArray_MultiIter_NEXT, PyArray_DATA,
