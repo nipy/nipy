@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+import os 
+
+THISDIR = os.path.join('nipy','neurospin','register')
 
 def configuration(parent_package='',top_path=None):
     
@@ -15,6 +17,10 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('register', parent_package, top_path)
     config.add_data_dir('tests')
     config.add_data_dir('benchmarks')
+
+    # add include dirs for prototypes imported in routines.pyx
+    config.add_include_dirs(THISDIR)
+
     config.add_extension(
                 'routines',
                 sources=['routines.pyx', 'iconic.c', 'cubic_spline.c'],
