@@ -127,7 +127,7 @@ def _texture(ndarray im, ndarray H, Size, int texture, method=None):
     cdef flatiter im_iter
 
     # Views
-    clamp = <unsigned int>H.dimensions[0]
+    clamp = <unsigned int>H.shape[0]
     h = <double*>H.data
     
     # Copy size parameters
@@ -186,7 +186,7 @@ def _histogram(ndarray H, flatiter iter):
     cdef unsigned int clamp
 
     # Views
-    clamp = <unsigned int>H.dimensions[0]
+    clamp = <unsigned int>H.shape[0]
     h = <double*>H.data
 
     # Compute image histogram 
@@ -204,8 +204,8 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int a
     cdef unsigned int clampI, clampJ
 
     # Views
-    clampI = <unsigned int>H.dimensions[0]
-    clampJ = <unsigned int>H.dimensions[1]    
+    clampI = <unsigned int>H.shape[0]
+    clampJ = <unsigned int>H.shape[1]    
     h = <double*>H.data
     tvox = <double*>Tvox.data
 
@@ -234,8 +234,8 @@ def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype,
     cdef unsigned int clampI, clampJ
 
     # Array views
-    clampI = <unsigned int>H.dimensions[0]
-    clampJ = <unsigned int>H.dimensions[1]
+    clampI = <unsigned int>H.shape[0]
+    clampJ = <unsigned int>H.shape[1]
     h = <double*>H.data
     hI = <double*>HI.data
     hJ = <double*>HJ.data
