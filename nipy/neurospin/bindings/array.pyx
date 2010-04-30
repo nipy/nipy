@@ -9,8 +9,8 @@ Author: Alexis Roche, 2008.
 
 __version__ = '0.1'
 
-# Includes from the python headers
-include "fff.pxi"
+# Includes
+from fff cimport *
 
 # Initialize numpy
 fffpy_import_array()
@@ -29,6 +29,7 @@ def array_get(A, size_t x, size_t y=0, size_t z=0, size_t t=0):
     va = fff_array_get(a, x, y, z, t)
     fff_array_delete(a)
     return va
+
 
 def array_get_block( A, size_t x0, size_t x1, size_t fX=1,
                      size_t y0=0, size_t y1=0, size_t fY=1,

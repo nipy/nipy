@@ -32,13 +32,13 @@ def configuration(parent_package='',top_path=None):
         # But on OSX that may not give us what we need, so try with 'lapack'
         # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
         lapack_info = get_info('lapack',0)
-    config.add_extension('linalg', sources=['linalg.c'],
+    config.add_extension('linalg', sources=['linalg.pyx'],
                             libraries=['cstat'],
                             extra_info=lapack_info)
-    config.add_extension('array', sources=['array.c'],
+    config.add_extension('array', sources=['array.pyx'],
                             libraries=['cstat'],
                             extra_info=lapack_info)
-    config.add_extension('wrapper', sources=['wrapper.c'],
+    config.add_extension('wrapper', sources=['wrapper.pyx'],
                             libraries=['cstat'],
                             extra_info=lapack_info)
     return config
