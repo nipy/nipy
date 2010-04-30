@@ -10,7 +10,7 @@ Author: Alexis Roche, 2008.
 __version__ = '0.1'
 
 # Include fff
-include "fff.pxi"
+from fff cimport *
 
 # Exports from fff_blas.h
 cdef extern from "fff_blas.h":

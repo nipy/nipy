@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+import os 
 
 def configuration(parent_package='',top_path=None):
     
@@ -15,9 +15,10 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('registration', parent_package, top_path)
     config.add_data_dir('tests')
     config.add_data_dir('benchmarks')
+    config.add_include_dirs(config.name.replace('.', os.sep))
     config.add_extension(
         'registration_module',
-        sources=['registration_module.c', 'iconic.c'],
+        sources=['registration_module.pyx', 'iconic.c'],
         libraries = ['cstat'],
         extra_info=lapack_info,
         )

@@ -9,7 +9,7 @@ __version__ = '0.2'
 
 
 # Includes
-include "numpy.pxi"
+from numpy cimport import_array, ndarray, broadcast, PyArray_MultiIterNew, PyArray_MultiIter_DATA, PyArray_MultiIter_NEXT
 
 # Externals
 cdef extern from "cubic_spline.h":
@@ -28,18 +28,21 @@ cdef extern from "cubic_spline.h":
 cubic_spline_import_array()
 import_array()
 import numpy as np
-cimport numpy as np
 
 
 def cspline_transform(ndarray x):
-    c = np.zeros(x.shape)
+    c = np.zeros([x.shape[i] for i in range(x.ndim)], dtype=np.double)
     cubic_spline_transform(c, x)
     return c
+
+cdef ndarray _reshaped_double(object in_arr, ndarray sh_arr):
+    shape = [sh_arr.shape[i] for i in range(sh_arr.ndim)]
+    return np.reshape(in_arr, shape).astype(np.double)
 
 def cspline_sample1d(ndarray R, ndarray C, X=0):
     cdef double *r, *x
     cdef broadcast multi
-    Xa = np.reshape(X, R.shape).astype('double')
+    Xa = _reshaped_double(X, R) 
     multi = PyArray_MultiIterNew(2, <void*>R, <void*>Xa)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -51,8 +54,8 @@ def cspline_sample1d(ndarray R, ndarray C, X=0):
 def cspline_sample2d(ndarray R, ndarray C, X=0, Y=0):
     cdef double *r, *x, *y
     cdef broadcast multi
-    Xa = np.reshape(X, R.shape).astype('double')
-    Ya = np.reshape(Y, R.shape).astype('double')
+    Xa = _reshaped_double(X, R)
+    Ya = _reshaped_double(Y, R)
     multi = PyArray_MultiIterNew(3, <void*>R, <void*>Xa, <void*>Ya)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -65,9 +68,9 @@ def cspline_sample2d(ndarray R, ndarray C, X=0, Y=0):
 def cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0):
     cdef double *r, *x, *y, *z
     cdef broadcast multi
-    Xa = np.reshape(X, R.shape).astype('double')
-    Ya = np.reshape(Y, R.shape).astype('double')
-    Za = np.reshape(Z, R.shape).astype('double')
+    Xa = _reshaped_double(X, R)
+    Ya = _reshaped_double(Y, R)
+    Za = _reshaped_double(Z, R)
     multi = PyArray_MultiIterNew(4, <void*>R, <void*>Xa, <void*>Ya, <void*>Za)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -87,10 +90,10 @@ def cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0):
     """
     cdef double *r, *x, *y, *z, *t
     cdef broadcast multi
-    Xa = np.reshape(X, R.shape).astype('double')
-    Ya = np.reshape(Y, R.shape).astype('double')
-    Za = np.reshape(Z, R.shape).astype('double')
-    Ta = np.reshape(T, R.shape).astype('double')
+    Xa = _reshaped_double(X, R)
+    Ya = _reshaped_double(Y, R)
+    Za = _reshaped_double(Z, R)
+    Ta = _reshaped_double(T, R)
     multi = PyArray_MultiIterNew(5, <void*>R, <void*>Xa, <void*>Ya, <void*>Za, <void*>Ta)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)

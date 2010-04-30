@@ -7,19 +7,16 @@ from scipy.linalg import svdvals
 
 from aliased import aliased_function, _add_aliases_to_namespace, vectorize
 
+
 class Term(sympy.Symbol):
-    """
-    A Term is a sympy.Symbol that is
-    meant to represent a term in a regression model.
+    """A sympy.Symbol type to represent a term an a regression model
+    
+    Terms can be added to other sympy expressions with the single
+    convention that a term plus itself returns itself.
 
-    Terms can be added
-    to other sympy expressions with the single convention that a 
-    term plus itself returns itself.
-
-    It is meant to emulate something on the right hand side of
-    a formula in R. In particular, its name can be the
-    name of a field in a recarray used to create a design
-    matrix.
+    It is meant to emulate something on the right hand side of a formula
+    in R. In particular, its name can be the name of a field in a
+    recarray used to create a design matrix.
 
     >>> t = Term('x')
     >>> xval = np.array([(3,),(4,),(5,)], np.dtype([('x', np.float)]))
@@ -29,9 +26,7 @@ class Term(sympy.Symbol):
     [('x', '<f8')]
     >>> f.design(xval, return_float=True)
     array([ 3.,  4.,  5.])
-    
     """
-
     # This flag is defined to avoid using isinstance in getterms
     # and getparams.
     _term_flag = True
@@ -46,14 +41,13 @@ class Term(sympy.Symbol):
         else:
             return sympy.Symbol.__add__(self, other)
 
+
 class FactorTerm(Term):
-    """
-    Boolean Term derived from a Factor.
+    """ Boolean Term derived from a Factor.
 
-    Its properties are the same as a Term except that
-    its product with itself is itself.
+    Its properties are the same as a Term except that its product with
+    itself is itself.
     """
-
     # This flag is defined to avoid using isinstance in getterms
     _factor_term_flag = True
 
@@ -71,17 +65,18 @@ class FactorTerm(Term):
             return sympy.Symbol.__mul__(self, other)
 
 class Beta(sympy.symbol.Dummy):
-
     def __new__(cls, name, term):
         new = sympy.symbol.Dummy.__new__(cls, name)
         new._term = term
         return new
-        
+
+
 def getparams(expression):
-    """
-    Return the parameters of an expression that are not Term 
+    """ Return the parameters of an expression that are not Term 
     instances but are instances of sympy.Symbol.
 
+    Examples
+    --------
     >>> x, y, z = [Term(l) for l in 'xyz']
     >>> f = Formula([x,y,z])
     >>> getparams(f)
@@ -96,9 +91,7 @@ def getparams(expression):
     (_b0*x + _b1*y + _b2*z)*exp(theta)
     >>> getparams(f.mean*sympy.exp(th))
     [theta, _b0, _b1, _b2]
-
     """
-
     atoms = set([])
     expression = np.array(expression)
     if expression.shape == ():
@@ -107,7 +100,6 @@ def getparams(expression):
         expression = expression.reshape((np.product(expression.shape),))
     for term in expression:
         atoms = atoms.union(sympy.sympify(term).atoms())
-
     params = []
     for atom in atoms:
         if isinstance(atom, sympy.Symbol) and not is_term(atom):
@@ -115,18 +107,18 @@ def getparams(expression):
     params.sort()
     return params
 
-def getterms(expression):
-    """
-    Return the all instances of Term in an expression.
 
+def getterms(expression):
+    """ Return the all instances of Term in an expression.
+
+    Examples
+    --------
     >>> x, y, z = [Term(l) for l in 'xyz']
     >>> f = Formula([x,y,z])
     >>> getterms(f)
     [x, y, z]
     >>> getterms(f.mean)
     [x, y, z]
-    >>>
-
     """
     atoms = set([])
     expression = np.array(expression)
@@ -136,7 +128,6 @@ def getterms(expression):
         expression = expression.reshape((np.product(expression.shape),))
     for e in expression:
         atoms = atoms.union(e.atoms())
-
     terms = []
     for atom in atoms:
         if is_term(atom):
@@ -144,25 +135,22 @@ def getterms(expression):
     terms.sort()
     return terms
 
+
 def make_recarray(rows, names, dtypes=None):
-    """
-    Create a recarray with named column
-    from a list of rows and names for the
-    columns. If dtype is None,
-    the dtype is based on rows if it
-    is an np.ndarray, else
-    the data is cast as np.float. If dtypes
-    are supplied,
-    it uses the dtypes to create a np.dtype
-    unless rows is an np.ndarray, in which
-    case dtypes are ignored
+    """ Create recarray from `rows` with field names `names`
+    
+    Create a recarray with named columns from a list of rows and names
+    for the columns. If dtype is None, the dtype is based on rows if it
+    is an np.ndarray, else the data is cast as np.float. If dtypes are
+    supplied, it uses the dtypes to create a np.dtype unless rows is an
+    np.ndarray, in which case dtypes are ignored
 
     Parameters
     ----------
-    rows: []
-        Rows that will be turned into an array.
-    names: [str]
-        Names for the columns.
+    rows: array-like
+        Rows that will be turned into an recarray.
+    names: sequence
+        Sequence of strings - names for the columns.
     dtypes: [str or np.dtype]
         Used to create a np.dtype, can be np.dtypes or string.
 
@@ -189,14 +177,10 @@ def make_recarray(rows, names, dtypes=None):
     >>> make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int])
     array([(3.0, 4), (4.0, 6), (7.0, 9)], 
           dtype=[('w', '<f8'), ('v', '<i8')])
-    >>> 
-
     """
-
     # XXX This function is sort of one of convenience
     # Would be nice to use DataArray or something like that
     # to add axis names.
-
     if isinstance(rows, np.ndarray):
         if rows.dtype.isbuiltin:
             dtype = np.dtype([(n, rows.dtype) for n in names])
@@ -205,12 +189,10 @@ def make_recarray(rows, names, dtypes=None):
         if dtypes is not None:
             raise ValueError('dtypes not used if rows is an ndarray')
         return rows.view(dtype)
-
     if dtypes is None:
         dtype = np.dtype([(n, np.float) for n in names])
     else:
         dtype = np.dtype([(n, d) for n, d in zip(names, dtypes)])
-
     nrows = []
     vector = -1
     for r in rows:
@@ -220,12 +202,10 @@ def make_recarray(rows, names, dtypes=None):
                 vector = True
             else:
                 vector = False
-
         if not vector:
             nrows.append(tuple(r))
         else:
             nrows.append(r)
-
     if vector:
         if len(names) != 1: # a 'row vector'
             nrows = tuple(nrows)
@@ -234,20 +214,17 @@ def make_recarray(rows, names, dtypes=None):
             nrows = np.array([(r,) for r in nrows], dtype)
     return np.array(nrows, dtype)
 
-class Formula(object):
-    
-    """
-    A Formula is a model for a mean in a regression model.
 
-    It is often given by a sequence of sympy expressions,
-    with the mean model being the sum of each term multiplied
-    by a linear regression coefficient. 
+class Formula(object):
+    """ A Formula is a model for a mean in a regression model.
+
+    It is often given by a sequence of sympy expressions, with the mean
+    model being the sum of each term multiplied by a linear regression
+    coefficient.
 
     The expressions may depend on additional Symbol instances,
     giving a non-linear regression model.
-
     """
-
     # This flag is defined to avoid using isinstance 
     _formula_flag = True
 
@@ -264,7 +241,6 @@ class Formula(object):
         self.char = char
 
     # Properties
-
     def _getcoefs(self):
         if not hasattr(self, '_coefs'):
             self._coefs = {}
@@ -285,24 +261,43 @@ class Formula(object):
         return t
     terms = property(_getterms, doc='Terms in the linear regression formula.')
 
+    def _getmean(self):
+        """ Expression for mean
+        
+        Expression for the mean, expressed as a linear combination of
+        terms, each with dummy variables in front.
+        """
+        b = [self.coefs[term] for term in self.terms]
+        return np.sum(np.array(b)*self.terms)
+    mean = property(_getmean, doc="Expression for the mean, expressed "
+                    "as a linear combination of terms, each with dummy "
+                    "variables in front.")
+
+    def _getdiff(self):
+        p = list(set(getparams(self.mean)))
+        p.sort()
+        return [s.doit() for s in sympy.diff(self.mean, p)]
+    design_expr = property(_getdiff)
+
+    def _getdtype(self):
+        vnames = [str(s) for s in self.design_expr]
+        return np.dtype([(n, np.float) for n in vnames])
+    dtype = property(_getdtype, doc='The dtype of the design matrix of the Formula.')
+
     def __repr__(self):
         return """Formula(%s)""" % `list(self.terms)`
 
     def __getitem__(self, key):
-        """
-        Return the term such that str(term) == key.
+        """ Return the term such that str(term) == key.
 
         Parameters
         ----------
-
         key : str
             name of term to retrieve
 
         Returns
         -------
-
         term : sympy.Expression
-            
         """
         names = [str(t) for t in self.terms]
         try:
@@ -313,10 +308,10 @@ class Formula(object):
 
     @staticmethod
     def fromrec(rec, keep=[], drop=[]):
-        """
-        Construct a Formula from
-        a recarray. For fields with a string-dtype,
-        it is assumed that these are qualtiatitve regressors, i.e. Factors.
+        """ Construct Formula from recarray
+
+        For fields with a string-dtype, it is assumed that these are
+        qualtiatitve regressors, i.e. Factors.
 
         Parameters
         ----------
@@ -333,7 +328,6 @@ class Formula(object):
                 f[n] = Factor.fromcol(rec[n], n)
             else:
                 f[n] = Term(n).formula
-
         for d in drop:
             del(f[d])
         if keep:
@@ -342,8 +336,9 @@ class Formula(object):
             return np.sum(f.values())
 
     def subs(self, old, new):
-        """ Perform a sympy substitution on all terms in the Formula,
-        returning a new Formula.
+        """ Perform a sympy substitution on all terms in the Formula
+
+        Returns a new instance of the same class
 
         Parameters
         ----------
@@ -358,7 +353,6 @@ class Formula(object):
 
         Examples
         --------
-
         >>> s, t = [Term(l) for l in 'st']
         >>> f, g = [sympy.Function(l) for l in 'fg']
         >>> form = Formula([f(t),g(s)])
@@ -367,10 +361,8 @@ class Formula(object):
         array([f(t), h(s)], dtype=object)
         >>> form.terms
         array([f(t), g(s)], dtype=object)
-        >>>                    
-
         """
-        return Formula([term.subs(old, new) for term in self.terms])
+        return self.__class__([term.subs(old, new) for term in self.terms])
 
     def __add__(self, other):
         """
@@ -392,7 +384,7 @@ class Formula(object):
 
         if not is_formula(other):
             raise ValueError('only Formula objects can be added to a Formula')
-        f = Formula(np.hstack([self.terms, other.terms]))
+        f = self.__class__(np.hstack([self.terms, other.terms]))
         return f
 
     def __sub__(self, other):
@@ -417,11 +409,10 @@ class Formula(object):
         >>>             
 
         """
-
         if not is_formula(other):
             raise ValueError('only Formula objects can be subtracted from a Formula')
         d = list(set(self.terms).difference(other.terms))
-        return Formula(d)
+        return self.__class__(d)
 
     def __array__(self):
         return self.terms
@@ -429,27 +420,6 @@ class Formula(object):
     def _getparams(self):
         return getparams(self.mean)
     params = property(_getparams, doc='The parameters in the Formula.')
-
-    def _getmean(self):
-        """
-        Expression for the mean, expressed as a linear
-        combination of terms, each with dummy variables in front.
-        """
-        b = [self.coefs[term] for term in self.terms]
-        return np.sum(np.array(b)*self.terms)
-
-    mean = property(_getmean, doc="Expression for the mean, expressed as a linear combination of terms, each with dummy variables in front.")
-
-    def _getdiff(self):
-        p = list(set(getparams(self.mean)))
-        p.sort()
-        return [s.doit() for s in sympy.diff(self.mean, p)]
-    design_expr = property(_getdiff)
-
-    def _getdtype(self):
-        vnames = [str(s) for s in self.design_expr]
-        return np.dtype([(n, np.float) for n in vnames])
-    dtype = property(_getdtype, doc='The dtype of the design matrix of the Formula.')
 
     def __mul__(self, other):
         if not is_formula(other):
@@ -605,68 +575,58 @@ class Formula(object):
         param_recarray = param
 
         # The input to design should have field names for all fields in self._dtypes['preterm']
-
         if not set(preterm_recarray.dtype.names).issuperset(self._dtypes['preterm'].names):
-            raise ValueError("for term, expecting a recarray with dtype having the following names: %s" % `self._dtypes['preterm'].names`)
-
+            raise ValueError("for term, expecting a recarray with "
+                             "dtype having the following names: %s"
+                             % `self._dtypes['preterm'].names`)
         # The parameters should have field names for all fields in self._dtypes['param']
-
         if param_recarray is not None:
             if not set(param_recarray.dtype.names).issuperset(self._dtypes['param'].names):
-                raise ValueError("for param, expecting a recarray with dtype having the following names: %s" % `self._dtypes['param'].names`)
-
+                raise ValueError("for param, expecting a recarray with "
+                                 "dtype having the following names: %s"
+                                 % `self._dtypes['param'].names`)
         # If the only term is an intercept,
         # the return value is a matrix of 1's.
-
         if list(self.terms) == [sympy.Number(1)]:
             a = np.ones(preterm_recarray.shape[0], np.float)
             if not return_float:
                 a = a.view(np.dtype([('intercept', np.float)]))
             return a
         elif not self._dtypes['term']:
-            raise ValueError("none of the expresssions are self.terms are Term instances; shape of resulting undefined")
-
+            raise ValueError("none of the expresssions are self.terms "
+                             "are Term instances; shape of resulting "
+                             "undefined")
         # The term_recarray is essentially the same as preterm_recarray,
         # except that all factors in self are expanded
         # into their respective binary columns.
-
         term_recarray = np.zeros(preterm_recarray.shape[0], 
                                  dtype=self._dtypes['term'])
-
         for t in self.__terms:
             if not is_factor_term(t):
                 term_recarray[t.name] = preterm_recarray[t.name]
             else:
                 term_recarray['%s_%s' % (t.factor_name, t.level)] = \
                     np.array(map(lambda x: x == t.level, preterm_recarray[t.factor_name]))
-
         # The lambda created in self._setup_design needs to take a tuple of
         # columns as argument, not an ndarray, so each column
         # is extracted and put into float_tuple.
-
         float_array = term_recarray.view(np.float)
         float_array.shape = (term_recarray.shape[0], -1)
         float_array = float_array.T
         float_tuple = tuple(float_array)
-
         # If there are any parameters, they also must be extracted
         # and put into a tuple with the order specified
         # by self._dtypes['param']
-
         if param_recarray is not None:
             param = tuple(float(param_recarray[n]) for n in self._dtypes['param'].names)
         else:
             param = ()
-
         # Evaluate the design at the parameters and tuple of arrays
-
         D = self._f(*(param+float_tuple))
-
         # TODO: check if this next stepis necessary
         # I think it is because the lambda evaluates sympy.Number(1) to 1
         # and not an array.
-
-        D_tuple = [np.asarray(w) for w in D] 
+        D_tuple = [np.asarray(w) for w in D]
         
         need_to_modify_shape = []
         OK_row_shapes = []
@@ -675,37 +635,26 @@ class Formula(object):
                 need_to_modify_shape.append(i)
             else:
                 OK_row_shapes.append(row.shape[0])
-
         # Make sure that each array has the correct shape.
         # The columns in need_to_modify should just be
         # the intercept column, which evaluates to have shape == ().
         # This makes sure that it has the correct number of rows.
-        
         for i in need_to_modify_shape:
             D_tuple[i].shape = ()
             D_tuple[i] = np.multiply.outer(D_tuple[i], np.ones(preterm_recarray.shape[0]))
-
         # At this point, all the columns have the correct shape and the
         # design matrix is almost ready to output.
-
         D = np.array(D_tuple).T
-
         # If we will return a float matrix or any contrasts,
         # we may have some reshaping to do.
-        
         if contrasts is None:
             contrasts = {}
-
         if return_float or contrasts:
-
             # If the design matrix is just a column of 1s
             # return a 1-dimensional array.
-
             D = np.squeeze(D.astype(np.float))
-
             # If there are contrasts, the pseudo-inverse of D
             # must be computed.
-
             if contrasts:
                 if D.ndim == 1:
                     _D = D.reshape((D.shape[0], 1))
@@ -718,9 +667,7 @@ class Formula(object):
             # This would be a convenient place to just add
             # labels like a DataArray.
             D = np.array([tuple(r) for r in D], self.dtype)
-
         # Compute the contrast matrices, if any.
-
         if contrasts:
             cmatrices = {}
             for key, cf in contrasts.items():
@@ -732,6 +679,7 @@ class Formula(object):
             return D, cmatrices
         else:
             return D
+
 
 def natural_spline(t, knots=None, order=3, intercept=False):
     """ Return a Formula containing a natural spline
@@ -800,12 +748,12 @@ def natural_spline(t, knots=None, order=3, intercept=False):
 
 I = Formula([sympy.Number(1)])
 
-class Factor(Formula):
 
-    """
-    A Factor is a qualitative variable in a regression model,
-    and is similar to R's factor. The levels
-    of the Factor can be either strings or ints.
+class Factor(Formula):
+    """ A qualitative variable in a regression model
+    
+    A Factor is similar to R's factor. The levels of the Factor can be
+    either strings or ints.
     """
 
     # This flag is defined to avoid using isinstance in getterms
@@ -816,21 +764,16 @@ class Factor(Formula):
         """
         Parameters
         ----------
-
         name : str
-
         levels : [str or int]
             A sequence of strings or ints.
-            
         char : str
 
         Returns
         -------
         """
-
         # Check whether they can all be cast to strings or ints without
         # loss.
-
         levelsarr = np.asarray(levels)
         if levelsarr.ndim == 0 and levelsarr.dtype.kind == 'S':
             levelsarr = np.asarray(list(levels))
@@ -865,51 +808,43 @@ class Factor(Formula):
     main_effect = property(_getmaineffect)
 
     def stratify(self, variable):
-        """
-        Create a new variable, stratified by the levels of a Factor.
+        """ Create a new variable, stratified by the levels of a Factor.
 
         Parameters
         ----------
-
         variable : str or a simple sympy expression whose string representation
             are all lower or upper case letters, i.e. it can be interpreted
             as a name
 
         Returns
         -------
-
         formula : Formula
             Formula whose mean has one parameter named variable%d, for each
             level in self.levels
         
         Examples
         --------
-
         >>> f = Factor('a', ['x','y'])
         >>> sf = f.stratify('theta')
         >>> sf.mean
         _theta0*a_x + _theta1*a_y
-        >>>
-
         """
-
-        if not set(str(variable)).issubset(lowercase + uppercase + '0123456789'):
-            raise ValueError('variable should be interpretable as a name and not have anything but digits and numbers')
-
+        if not set(str(variable)).issubset(lowercase +
+                                           uppercase + '0123456789'):
+            raise ValueError('variable should be interpretable as a '
+                             'name and not have anything but digits '
+                             'and numbers')
         variable = sympy.sympify(variable)
-
         f = Formula(self._terms, char=variable)
         f.name = self.name
         return f
 
     @staticmethod
     def fromcol(col, name):
-        """
-        Create a Factor from a column array.
+        """ Create a Factor from a column array.
 
         Parameters
         ----------
-
         col : ndarray
             an array with ndim==1
 
@@ -923,7 +858,6 @@ class Factor(Formula):
 
         Examples
         --------
-
         >>> data = np.array([(3,'a'),(4,'a'),(5,'b'),(3,'b')], np.dtype([('x', np.float), ('y', 'S1')]))
         >>> f1 = Factor.fromcol(data['y'], 'y')
         >>> f2 = Factor.fromcol(data['x'], 'x')
@@ -933,21 +867,19 @@ class Factor(Formula):
         >>> d = f2.design(data)
         >>> print d.dtype.descr
         [('x_3', '<f8'), ('x_4', '<f8'), ('x_5', '<f8')]
-        >>>                    
-
         """
         col = np.asarray(col)
-
         if col.ndim != 1 or (col.dtype.names and len(col.dtype.names) > 1):
-            raise ValueError('expecting an array that can be thought of as a column or field of a recarray')
+            raise ValueError('expecting an array that can be thought '
+                             'of as a column or field of a recarray')
         levels = np.unique(col)
-
         if not col.dtype.names and not name:
             name = 'factor'
         elif col.dtype.names:
             name = col.dtype.names[0]
         return Factor(name, levels)
-            
+
+
 def contrast_from_cols_or_rows(L, D, pseudo=None):
     """ Construct a contrast matrix from a design matrix D
     
@@ -961,7 +893,10 @@ def contrast_from_cols_or_rows(L, D, pseudo=None):
        Matrix used to try and construct a contrast.
     D : ndarray
        Design matrix used to create the contrast.
-
+    pseudo : None or array-like, optional
+       If not None, gives pseudo-inverse of `D`.  Allows you to pass
+       this if it is already calculated. 
+       
     Returns
     -------
     C : ndarray
@@ -970,10 +905,9 @@ def contrast_from_cols_or_rows(L, D, pseudo=None):
 
     Notes
     -----
-    From an n x p design matrix D and a matrix L, tries
-    to determine a p x q contrast matrix C which
-    determines a contrast of full rank, i.e. the
-    n x q matrix
+    From an n x p design matrix D and a matrix L, tries to determine a p
+    x q contrast matrix C which determines a contrast of full rank,
+    i.e. the n x q matrix
 
     dot(transpose(C), pinv(D))
 
@@ -992,9 +926,7 @@ def contrast_from_cols_or_rows(L, D, pseudo=None):
     with the intended properties because q is always non-zero unless
     L is identically 0. That is, it produces a contrast that spans
     the column space of L (after projection onto the column space of D).
-
     """
-
     L = np.asarray(L)
     D = np.asarray(D)
     
@@ -1036,6 +968,7 @@ def rank(X, cond=1.0e-12):
     else:
         return int(not np.alltrue(np.equal(X, 0.)))
 
+
 def fullrank(X, r=None):
     """ Return a matrix whose column span is the same as X
     using an SVD decomposition.
@@ -1054,6 +987,7 @@ def fullrank(X, r=None):
     for i in range(r):
         value.append(V[:,order[i]])
     return np.asarray(np.transpose(value)).astype(np.float64)
+
 
 class RandomEffects(Formula):
     """ Covariance matrices for common random effects analyses.
@@ -1162,34 +1096,30 @@ def define(name, expr):
     28
     >>> 3*4+4**2
     28
-    >>> 
-
     """
     v = vectorize(expr)
     return aliased_function(name, v)(Term('t'))
 
 
 def is_term(obj):
-    """
-    Is obj a Term?
+    """ Is obj a Term?
     """
     return hasattr(obj, "_term_flag")
 
 
 def is_factor_term(obj):
-    """
-    Is obj a FactorTerm?
+    """ Is obj a FactorTerm?
     """
     return hasattr(obj, "_factor_term_flag")
 
+
 def is_formula(obj):
-    """
-    Is obj a Formula?
+    """ Is obj a Formula?
     """
     return hasattr(obj, "_formula_flag")
 
+
 def is_factor(obj):
-    """
-    Is obj a Formula?
+    """ Is obj a Formula?
     """
     return hasattr(obj, "_factor_flag")

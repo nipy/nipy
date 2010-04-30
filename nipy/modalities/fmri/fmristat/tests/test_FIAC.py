@@ -32,199 +32,191 @@ from FIACdesigns import descriptions, designs, altdescr
 
 
 def protocol(fh, design_type, *hrfs):
-        """
-        Create an object that can evaluate the FIAC.
-        Subclass of formula.Formula, but not necessary.
+    """
+    Create an object that can evaluate the FIAC.
+    Subclass of formula.Formula, but not necessary.
+    
+    Parameters:
+    -----------
+    
+    fh : file handler
+    File-like object that reads in the FIAC design,
+    i.e. like file('subj1_evt_fonc3.txt')
+    
+    design_type : str in ['event', 'block']
+    Handles how the 'begin' term is handled.
+    For 'block', the first event of each block
+    is put in this group. For the 'event', 
+    only the first event is put in this group.
+    
+    The 'begin' events are convolved with hrf.glover.
+    
+    hrfs: symoblic HRFs
+    Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp')
+    is convolved with each of these HRFs in order.
+    
+    Outputs:
+    --------
+    f: Formula
+    Formula for constructing design matrices.
+    
+    contrasts : dict
+    Dictionary of the contrasts of the experiment.
+    """
+    eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
 
-        Parameters:
-        -----------
+    fh = fh.read().strip().splitlines()
 
-        fh : file handler
-            File-like object that reads in the FIAC design,
-            i.e. like file('subj1_evt_fonc3.txt')
+    times = []
+    events = []
 
-        design_type : str in ['event', 'block']
-            Handles how the 'begin' term is handled.
-            For 'block', the first event of each block
-            is put in this group. For the 'event', 
-            only the first event is put in this group.
+    for row in fh:
+        time, eventtype = map(float, row.split())
+        times.append(time)
+        events.append(eventdict[eventtype])
+    if design_type == 'block':
+        keep = np.not_equal((np.arange(len(times))) % 6, 0)
+    else:
+        keep = np.greater(np.arange(len(times)), 0)
+    # This first frame was used to model out a potentially
+    # 'bad' first frame....
 
-            The 'begin' events are convolved with hrf.glover.
+    _begin = np.array(times)[~keep]
 
-        hrfs: symoblic HRFs
-            Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp')
-            is convolved with each of these HRFs in order.
+    termdict = {}        
+    termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
+    drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
+    for i, t in enumerate(drift.terms):
+        termdict['drift%d' % i] = t
+    # After removing the first frame, keep the remaining
+    # events and times
 
-	Outputs:
-	--------
+    times = np.array(times)[keep]
+    events = np.array(events)[keep]
 
-	f: Formula
-	     Formula for constructing design matrices.
+    # Now, specify the experimental conditions
+    # This creates expressions
+    # named SSt_SSp0, SSt_SSp1, etc.
+    # with one expression for each (eventtype, hrf) pair
 
-	contrasts : dict
-	     Dictionary of the contrasts of the experiment.
+    for v in eventdict.values():
+        for l, h in enumerate(hrfs):
+            k = np.array([events[i] == v for i in 
+                          range(times.shape[0])])
+            termdict['%s%d' % (v,l)] = formula.define("%s%d" % (v, l), 
+                                                      utils.events(times[k], f=h))
+    f = formula.Formula(termdict.values())
+    Tcontrasts = {}
+    Tcontrasts['average'] = (termdict['SSt_SSp0'] + termdict['SSt_DSp0'] +
+                             termdict['DSt_SSp0'] + termdict['DSt_DSp0']) / 4.
+    Tcontrasts['speaker'] = (termdict['SSt_DSp0'] - termdict['SSt_SSp0'] +
+                             termdict['DSt_DSp0'] - termdict['DSt_SSp0']) * 0.5
+    Tcontrasts['sentence'] = (termdict['DSt_DSp0'] + termdict['DSt_SSp0'] -
+                              termdict['SSt_DSp0'] - termdict['SSt_SSp0']) * 0.5
+    Tcontrasts['interaction'] = (termdict['SSt_SSp0'] - termdict['SSt_DSp0'] -
+                                 termdict['DSt_SSp0'] + termdict['DSt_DSp0'])
+    # Ftest
+    Fcontrasts = {}
+    Fcontrasts['overall1'] = formula.Formula(Tcontrasts.values())
 
-        """
-        eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
-
-        fh = fh.read().strip().splitlines()
-
-        times = []
-        events = []
-
-        for row in fh:
-            time, eventtype = map(float, row.split())
-            times.append(time)
-            events.append(eventdict[eventtype])
-        if design_type == 'block':
-            keep = np.not_equal((np.arange(len(times))) % 6, 0)
-        else:
-            keep = np.greater(np.arange(len(times)), 0)
-
-        # This first frame was used to model out a potentially
-        # 'bad' first frame....
-
-        _begin = np.array(times)[~keep]
-
-        termdict = {}        
-        termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
-	drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
-        for i, t in enumerate(drift.terms):
-            termdict['drift%d' % i] = t
-        # After removing the first frame, keep the remaining
-        # events and times
-
-        times = np.array(times)[keep]
-        events = np.array(events)[keep]
-
-        # Now, specify the experimental conditions
-	# This creates expressions
-	# named SSt_SSp0, SSt_SSp1, etc.
-	# with one expression for each (eventtype, hrf) pair
-
-        for v in eventdict.values():
-            for l, h in enumerate(hrfs):
-                k = np.array([events[i] == v for i in 
-                              range(times.shape[0])])
-                termdict['%s%d' % (v,l)] = formula.define("%s%d" % (v, l), 
-							  utils.events(times[k], f=h))
-
-        f = formula.Formula(termdict.values())
-
-	Tcontrasts = {}
-	Tcontrasts['average'] = (termdict['SSt_SSp0'] + termdict['SSt_DSp0'] +
-				 termdict['DSt_SSp0'] + termdict['DSt_DSp0']) / 4.
-	Tcontrasts['speaker'] = (termdict['SSt_DSp0'] - termdict['SSt_SSp0'] +
-				 termdict['DSt_DSp0'] - termdict['DSt_SSp0']) * 0.5
-	Tcontrasts['sentence'] = (termdict['DSt_DSp0'] + termdict['DSt_SSp0'] -
-				  termdict['SSt_DSp0'] - termdict['SSt_SSp0']) * 0.5
-	Tcontrasts['interaction'] = (termdict['SSt_SSp0'] - termdict['SSt_DSp0'] -
-				     termdict['DSt_SSp0'] + termdict['DSt_DSp0'])
-
-	# Ftest
-
-	Fcontrasts = {}
-	Fcontrasts['overall1'] = formula.Formula(Tcontrasts.values())
-	
-        return f, Tcontrasts, Fcontrasts
+    return f, Tcontrasts, Fcontrasts
 
 
 def altprotocol(fh, design_type, *hrfs):
-	"""
-	Create an object that can evaluate the FIAC.
-	Subclass of formula.Formula, but not necessary.
+    """
+    Create an object that can evaluate the FIAC.
+    Subclass of formula.Formula, but not necessary.
 
-	Parameters:
-	-----------
+    Parameters:
+    -----------
 
-	fh : file handler
-	    File-like object that reads in the FIAC design,
-	    but has a different format (test_FIACdata.altdescr)
+    fh : file handler
+        File-like object that reads in the FIAC design,
+        but has a different format (test_FIACdata.altdescr)
 
-	design_type : str in ['event', 'block']
-	    Handles how the 'begin' term is handled.
-	    For 'block', the first event of each block
-	    is put in this group. For the 'event', 
-	    only the first event is put in this group.
+    design_type : str in ['event', 'block']
+        Handles how the 'begin' term is handled.
+        For 'block', the first event of each block
+        is put in this group. For the 'event', 
+        only the first event is put in this group.
 
-	    The 'begin' events are convolved with hrf.glover.
+        The 'begin' events are convolved with hrf.glover.
 
-	hrfs: symoblic HRFs
-	    Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp')
-	    is convolved with each of these HRFs in order.
+    hrfs: symoblic HRFs
+        Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp')
+        is convolved with each of these HRFs in order.
 
-	"""
+    """
+    d = csv2rec(fh)
 
-	d = csv2rec(fh)
+    if design_type == 'block':
+        keep = np.not_equal((np.arange(d.time.shape[0])) % 6, 0)
+    else:
+        keep = np.greater(np.arange(d.time.shape[0]), 0)
 
-	if design_type == 'block':
-	    keep = np.not_equal((np.arange(d.time.shape[0])) % 6, 0)
-	else:
-	    keep = np.greater(np.arange(d.time.shape[0]), 0)
+    # This first frame was used to model out a potentially
+    # 'bad' first frame....
 
-	# This first frame was used to model out a potentially
-	# 'bad' first frame....
+    _begin = d.time[~keep]
+    d = d[keep]
 
-	_begin = d.time[~keep]
-	d = d[keep]
+    termdict = {}        
+    termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
+    drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
+    for i, t in enumerate(drift.terms):
+        termdict['drift%d' % i] = t
 
-	termdict = {}        
-	termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
-	drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
-	for i, t in enumerate(drift.terms):
-	    termdict['drift%d' % i] = t
+    # Now, specify the experimental conditions
+    # The elements of termdict are DiracDeltas, rather than HRFs
 
-	# Now, specify the experimental conditions
-	# The elements of termdict are DiracDeltas, rather than HRFs
+    st = formula.Factor('sentence', ['DSt', 'SSt'])
+    sp = formula.Factor('speaker', ['DSp', 'SSp'])
 
-	st = formula.Factor('sentence', ['DSt', 'SSt'])
-	sp = formula.Factor('speaker', ['DSp', 'SSp'])
+    indic = {}
+    indic['sentence'] =  st.main_effect
+    indic['speaker'] =  sp.main_effect
+    indic['interaction'] = st.main_effect * sp.main_effect
+    indic['average'] = formula.I
 
-	indic = {}
-	indic['sentence'] =  st.main_effect
-	indic['speaker'] =  sp.main_effect
-	indic['interaction'] = st.main_effect * sp.main_effect
-	indic['average'] = formula.I
+    for key in indic.keys():
+        # The matrix signs will be populated with +- 1's
+        # d is the recarray having fields ('time', 'sentence', 'speaker')
+        signs = indic[key].design(d, return_float=True)
 
-	for key in indic.keys():
-	    # The matrix signs will be populated with +- 1's
-	    # d is the recarray having fields ('time', 'sentence', 'speaker')
-	    signs = indic[key].design(d, return_float=True)
+        for l, h in enumerate(hrfs):
 
-	    for l, h in enumerate(hrfs):
+            # symb is a sympy expression representing a sum
+            # of [h(t-_t) for _t in d.time]
+            symb = utils.events(d.time, amplitudes=signs, f=h)
 
-		# symb is a sympy expression representing a sum
-		# of [h(t-_t) for _t in d.time]
-		symb = utils.events(d.time, amplitudes=signs, f=h)
+            # the values of termdict will have keys like
+            # 'average0', 'speaker1'
+            # and values  that are sympy expressions like average0(t), 
+            # speaker1(t)
+            termdict['%s%d' % (key, l)] = formula.define("%s%d" % (key, l), symb)
 
-		# the values of termdict will have keys like
-		# 'average0', 'speaker1'
-		# and values  that are sympy expressions like average0(t), 
-		# speaker1(t)
-		termdict['%s%d' % (key, l)] = formula.define("%s%d" % (key, l), symb)
+    f = formula.Formula(termdict.values())
 
-	f = formula.Formula(termdict.values())
+    Tcontrasts = {}
+    Tcontrasts['average'] = termdict['average0']
+    Tcontrasts['speaker'] = termdict['speaker0']
+    Tcontrasts['sentence'] = termdict['sentence0']
+    Tcontrasts['interaction'] = termdict['interaction0']
 
-	Tcontrasts = {}
-	Tcontrasts['average'] = termdict['average0']
-	Tcontrasts['speaker'] = termdict['speaker0']
-	Tcontrasts['sentence'] = termdict['sentence0']
-	Tcontrasts['interaction'] = termdict['interaction0']
+    # F tests
 
-	# F tests
+    Fcontrasts = {}
+    Fcontrasts['overall1'] = formula.Formula(Tcontrasts.values())
 
-	Fcontrasts = {}
-	Fcontrasts['overall1'] = formula.Formula(Tcontrasts.values())
+    nhrf = len(hrfs)
+    Fcontrasts['averageF'] = formula.Formula([termdict['average%d' % j] for j in range(nhrf)])
+    Fcontrasts['speakerF'] = formula.Formula([termdict['speaker%d' % j] for j in range(nhrf)])
+    Fcontrasts['sentenceF'] = formula.Formula([termdict['sentence%d' % j] for j in range(nhrf)])
+    Fcontrasts['interactionF'] = formula.Formula([termdict['interaction%d' % j] for j in range(nhrf)])
 
-	nhrf = len(hrfs)
-	Fcontrasts['averageF'] = formula.Formula([termdict['average%d' % j] for j in range(nhrf)])
-	Fcontrasts['speakerF'] = formula.Formula([termdict['speaker%d' % j] for j in range(nhrf)])
-	Fcontrasts['sentenceF'] = formula.Formula([termdict['sentence%d' % j] for j in range(nhrf)])
-	Fcontrasts['interactionF'] = formula.Formula([termdict['interaction%d' % j] for j in range(nhrf)])
+    Fcontrasts['overall2'] = Fcontrasts['averageF'] + Fcontrasts['speakerF'] + Fcontrasts['sentenceF'] + Fcontrasts['interactionF']
 
-	Fcontrasts['overall2'] = Fcontrasts['averageF'] + Fcontrasts['speakerF'] + Fcontrasts['sentenceF'] + Fcontrasts['interactionF']
-
-	return f, Tcontrasts, Fcontrasts
+    return f, Tcontrasts, Fcontrasts
 
 
 # block and event protocols
@@ -292,16 +284,15 @@ def test_altprotocol():
 
 
 def matchcol(col, X):
-    """
-    Find the column in X with the highest correlation with col.
+    """ Find the row in X with the highest correlation with 1D col.
 
-    Used to find matching columns in fMRIstat's design with
-    the design created by Protocol. Not meant as a generic
-    helper function.
+    Used to find matching columns in fMRIstat's design with the design
+    created by Protocol. Not meant as a generic helper function.
     """
     c = np.array([np.corrcoef(col, X[i])[0,1] for i in range(X.shape[0])])
     c = np.nan_to_num(c)
-    return np.argmax(c), c.max()
+    ind = np.argmax(np.abs(c))
+    return ind, c[ind]
 
 
 def interpolate(name, col, t):
@@ -317,7 +308,7 @@ def test_agreement():
         for i in range(X[design_type].shape[1]):
             _, cmax = matchcol(X[design_type][:,i], fmristat[design_type])
             if not dd.dtype.names[i].startswith('ns'):
-                yield assert_true(np.greater(cmax, 0.999))
+                yield assert_true(np.greater(np.abs(cmax), 0.999))
 
 
 @dec.slow

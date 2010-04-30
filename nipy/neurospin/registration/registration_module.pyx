@@ -11,7 +11,8 @@ __version__ = '0.2'
 
 
 # Includes
-include "numpy.pxi"
+from numpy cimport import_array, ndarray, flatiter, broadcast, PyArray_SIZE, PyArray_MultiIterNew, PyArray_MultiIter_DATA, PyArray_MultiIter_NEXT
+
 
 # Externals
 cdef extern from "math.h":
@@ -56,7 +57,6 @@ cdef extern from "iconic.h":
 iconic_import_array()
 import_array()
 import numpy as np
-#cimport numpy as np
 
 # Enumerate texture measures
 cdef enum texture_measure: 
@@ -136,7 +136,7 @@ def _texture(ndarray im, ndarray H, Size, int texture, method=None):
     size[2] = <unsigned int>Size[2]
 
     # Allocate output 
-    imtext = np.zeros(im.shape, dtype='double')
+    imtext = np.zeros([im.shape[i] for i in range(im.ndim)], dtype=np.double)
 
     # Loop over input and output images
     multi = PyArray_MultiIterNew(2, <void*>imtext, <void*>im)

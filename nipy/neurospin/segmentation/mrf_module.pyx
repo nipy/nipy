@@ -7,7 +7,7 @@ Markov random field utils.
 __version__ = '0.0'
 
 # Includes
-include "numpy.pxi"
+from numpy cimport import_array, ndarray
 
 # Externals
 cdef extern from "mrf.h":

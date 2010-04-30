@@ -11,7 +11,7 @@ __version__ = '0.1'
 
 
 # Includes
-include "fff.pxi"
+from fff cimport *
 
 # Exports from fff_onesample_stat.h
 cdef extern from "fff_onesample_stat.h":
@@ -84,8 +84,6 @@ stats = {'mean': FFF_ONESAMPLE_EMPIRICAL_MEAN,
          'elr_mfx': FFF_ONESAMPLE_ELR_MFX}
 
 
-
-
 # Test stat without mixed-effect correction
 def stat(ndarray Y, id='student', double base=0.0,
          int axis=0, ndarray Magics=None):
@@ -104,7 +102,7 @@ def stat(ndarray Y, id='student', double base=0.0,
   cdef fffpy_multi_iterator* multi
 
   # Get number of observations
-  n = <unsigned int>Y.dimensions[axis]
+  n = <unsigned int>Y.shape[axis]
 
   # Read out magic numbers
   if Magics == None:
@@ -115,7 +113,7 @@ def stat(ndarray Y, id='student', double base=0.0,
     
   # Create output array
   nsimu = magics.size
-  dims = list(Y.shape)
+  dims = [Y.shape[i] for i in range(Y.ndim)]
   dims[axis] = nsimu 
   T = np.zeros(dims)
 
@@ -173,7 +171,7 @@ def stat_mfx(ndarray Y, ndarray V, id='student_mfx', double base=0.0,
   cdef fffpy_multi_iterator* multi
 
   # Get number of observations
-  n = <int>Y.dimensions[axis]
+  n = <int>Y.shape[axis]
 
   # Read out magic numbers
   if Magics == None:
@@ -184,7 +182,7 @@ def stat_mfx(ndarray Y, ndarray V, id='student_mfx', double base=0.0,
     
   # Create output array
   nsimu = magics.size
-  dims = list(Y.shape)
+  dims = [Y.shape[i] for i in range(Y.ndim)]
   dims[axis] = nsimu 
   T = np.zeros(dims)
 
@@ -238,10 +236,10 @@ def pdf_fit_mfx(ndarray Y, ndarray V, int axis=0, int niter=5, int constraint=0,
   cdef fff_vector *y, *v, *w, *z
   cdef fff_onesample_stat_mfx* stat
   cdef fffpy_multi_iterator* multi
-  cdef int n = Y.dimensions[axis]
+  cdef int n = Y.shape[axis]
 
   # Create output array
-  dims = list(Y.shape)
+  dims = [Y.shape[i] for i in range(Y.ndim)]
   W = np.zeros(dims)
   Z = np.zeros(dims)
 
@@ -282,10 +280,10 @@ def pdf_fit_gmfx(ndarray Y, ndarray V, int axis=0, int niter=5, int constraint=0
   cdef fff_vector *y, *v, *mu, *s2
   cdef fff_onesample_stat_mfx* stat
   cdef fffpy_multi_iterator* multi
-  cdef int n = Y.dimensions[axis]
+  cdef int n = Y.shape[axis]
   
   # Create output array
-  dims = list(Y.shape)
+  dims = [Y.shape[i] for i in range(Y.ndim)]
   dims[axis] = 1
   MU = np.zeros(dims)
   S2 = np.zeros(dims)
