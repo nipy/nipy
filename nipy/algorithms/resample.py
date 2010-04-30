@@ -12,6 +12,46 @@ from nipy.core.api import Image, CoordinateMap, AffineTransform, ArrayCoordMap, 
 import nipy.core.transforms.affines as affines
 
 
+def resample_img2img(source, target, order=3):
+    """ 
+    This wraps the resample function to resample one image onto another
+    the output of the function will give an image with shape of the target and data from the source
+    
+    Parameters
+    ----------
+    source : ``Image``
+       Image instance that is to be resampled
+    target : ``Image``
+       Image instance to which source is resampled
+       The output image will have the same shape as the target, and the same coordmap
+    order : ``int``, optional
+       What order of interpolation to use in `scipy.ndimage`
+
+    Returns
+    -------
+    output : ``Image`` 
+       Image with interpolated data and output.coordmap == target.coordmap 
+
+    Examples
+    --------      
+    >>> from nipy.testing import funcfile, anatfile
+    >>> from nipy.io.api import load_image
+    >>> aimg_source = load_image(anatfile)
+    >>> aimg_target = aimg_source
+    >>> # in this case, we resample aimg to itself
+    >>> resimg = resample_img2img(aimg_source, aimg_target)
+    >>> 
+    """
+    sip, sop = source.coordmap.ndim
+    tip, top = target.coordmap.ndim
+    #print sip, sop, tip, top
+    if sop != top:
+        raise ValueError("source coordmap output dimension not equal to target coordmap output dimension")
+    mapping = np.eye(sop+1) # this would usually be 3+1
+    resimg = resample(source, target.coordmap, mapping, target.shape, order=order)
+    return resimg
+
+
 def resample(image, target, mapping, shape, order=3):
     """
     Resample an image to a target CoordinateMap with a "world-to-world" mapping

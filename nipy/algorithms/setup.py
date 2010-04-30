@@ -5,6 +5,7 @@ def configuration(parent_package='',top_path=None):
     config.add_data_dir('tests')
 
     config.add_subpackage('statistics')
+    config.add_subpackage('diagnostics')
 
     return config
 

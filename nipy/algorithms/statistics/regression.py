@@ -12,7 +12,7 @@ __docformat__ = 'restructuredtext'
 import numpy as np
 import numpy.linalg as L
 from scipy.linalg import toeplitz
-from nipy.fixes.scipy.stats.models.utils import recipr
+from nipy.fixes.scipy.stats.models.utils import pos_recipr
 
 def output_T(contrast, results, effect=None, sd=None, t=None):
     """
@@ -183,6 +183,6 @@ class AREstimator:
         for i in range(1, self.p+1):
             cov[i] = np.add.reduce(resid[i:] * resid[0:-i], 0)
         cov = np.dot(self.invM, cov)
-        output = cov[1:] * recipr(cov[0])
+        output = cov[1:] * pos_recipr(cov[0])
         return np.squeeze(output)
 

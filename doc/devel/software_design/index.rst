@@ -21,3 +21,4 @@
    pipelining_api
    usecases/index
    refactoring/index
+   comparisons/index

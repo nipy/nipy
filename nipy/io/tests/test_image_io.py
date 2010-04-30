@@ -5,19 +5,34 @@ from tempfile import mkstemp
 import numpy as np
 
 from nipy.testing import assert_true, assert_equal, assert_raises, \
-    assert_array_almost_equal, datapjoin
+    assert_array_equal, assert_array_almost_equal, funcfile, parametric
 
-from nipy.io.api import load_image, save_image
+from nipy.testing.decorators import if_templates
+
+from nipy.utils import templates, DataError
+
+from nipy.io.api import load_image, save_image, as_image
 from nipy.core.api import fromarray
 
-gimg = None
+
 gfilename = ''
 gtmpfile = None
+gimg = None
+
+
+def load_template_img():
+    return load_image(
+        templates.get_filename(
+            'ICBM152', '2mm', 'T1.nii.gz'))
+
 
 def setup_module():
     warnings.simplefilter("ignore")
-    global gimg, gfilename, gtmpfile
-    gimg = load_image(datapjoin('avg152T1.nii.gz'))
+    global gfilename, gtmpfile, gimg
+    try:
+        gimg = load_template_img()
+    except DataError:
+        pass
     fd, gfilename = mkstemp(suffix='.nii.gz')
     gtmpfile = open(gfilename)
 
@@ -34,15 +49,17 @@ def test_badfile():
     yield assert_raises, RuntimeError, load_image, filename
 
 
+@if_templates
 def test_maxminmean_values():
     # loaded array values from SPM
     y = np.asarray(gimg)
     yield assert_equal, y.shape, tuple(gimg.shape)
-    yield assert_array_almost_equal, y.max(), 437336.36169434
-    yield assert_array_almost_equal, y.mean(), 119816.18206409
+    yield assert_array_almost_equal, y.max(), 1.000000059
+    yield assert_array_almost_equal, y.mean(), 0.273968048
     yield assert_equal, y.min(), 0.0
 
 
+@if_templates
 def test_nondiag():
     gimg.affine[0,1] = 3.0
     save_image(gimg, gtmpfile.name)
@@ -111,8 +128,9 @@ def test_scaling_float32():
         yield assert_array_almost_equal, newdata, data
 
 
+@if_templates
 def test_header_roundtrip():
-    img = load_image(datapjoin('avg152T1.nii.gz'))
+    img = load_template_img()
     fd, name = mkstemp(suffix='.nii.gz')
     tmpfile = open(name)
     hdr = img.header
@@ -135,8 +153,9 @@ def test_header_roundtrip():
     yield assert_equal, newhdr['slice_end'], hdr['slice_end']
 
 
+@if_templates
 def test_file_roundtrip():
-    img = load_image(datapjoin('avg152T1.nii.gz'))
+    img = load_template_img()
     fd, name = mkstemp(suffix='.nii.gz')
     tmpfile = open(name)
     save_image(img, tmpfile.name)
@@ -178,3 +197,13 @@ def test_roundtrip_fromarray():
     # verify affine
     yield assert_true, np.allclose(img2.affine, img.affine)
 
+
+@parametric
+def test_as_image():
+    # test image creation / pass through function
+    img = as_image(funcfile) # string filename
+    img1 = as_image(unicode(funcfile))
+    img2 = as_image(img)
+    yield assert_equal(img.affine, img1.affine)
+    yield assert_array_equal(np.asarray(img), np.asarray(img1))
+    yield assert_true(img is img2)

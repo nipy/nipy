@@ -5,7 +5,7 @@ simulation, etc.
 __docformat__ = 'restructuredtext'
 
 import statistics
-import fwhm, interpolation, kernel_smooth, regression
+import fwhm, interpolation, kernel_smooth, diagnostics
 
 from nipy.testing import Tester
 test = Tester().test

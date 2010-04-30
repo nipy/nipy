@@ -11,145 +11,170 @@ except ImportError:
         t.slow = True
         return t
 
-from nose.tools import assert_raises
+from nose.tools import assert_raises, assert_true, assert_false, \
+    assert_equal
 
-import nipy.io.imageformats.quaternions as vq
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-def euler2mat(z=0, y=0, x=0):
-    ''' Return matrices for give rotations around z, y and x axes
-    '''
-    if z:
-        cosz = np.cos(z)
-        sinz = np.sin(z)
-        M = np.array([
-            [cosz, sinz, 0],
-            [-sinz, cosz, 0],
-            [0, 0, 1]])
-    else:
-        M = np.eye(3)
-    if y:
-        cosy = np.cos(y)
-        siny = np.sin(y)
-        My = np.array([
-            [cosy, 0, -siny],
-            [0, 1, 0],
-            [siny, 0, cosy]])
-        M = np.dot(My, M)
-    if x:
-        cosx = np.cos(x)
-        sinx = np.sin(x)
-        Mx = np.array([
-            [1, 0, 0],
-            [0, cosx, sinx],
-            [0, -sinx, cosx]])
-        M = np.dot(Mx, M)
-    return M
+import nipy.io.imageformats.quaternions as nq
+import nipy.io.imageformats.eulerangles as nea
 
 # Example rotations '''
 eg_rots = []
-params = (-pi,pi,pi/4)
+params = (-pi,pi,pi/2)
 zs = np.arange(*params)
 ys = np.arange(*params)
 xs = np.arange(*params)
 for z in zs:
     for y in ys:
         for x in xs:
-            eg_rots.append(euler2mat(z,y,x))
+            eg_rots.append(nea.euler2mat(z,y,x))
 # Example quaternions (from rotations)
 eg_quats = []
 for M in eg_rots:
-    eg_quats.append(vq.mat2quat(M))
+    eg_quats.append(nq.mat2quat(M))
 # M, quaternion pairs
 eg_pairs = zip(eg_rots, eg_quats)
 
 # Set of arbitrary unit quaternions
 unit_quats = set()
-params = (-3,4)
-for w in range(*params):
-    for x in range(*params):
-        for y in range(*params):
-            for z in range(*params):
+params = range(-2,3)
+for w in params:
+    for x in params:
+        for y in params:
+            for z in params:
                 q = (w, x, y, z)
                 Nq = np.sqrt(np.dot(q, q))
                 if not Nq == 0:
                     q = tuple([e / Nq for e in q])
                     unit_quats.add(q)
 
+
 def test_fillpos():
     # Takes np array
     xyz = np.zeros((3,))
-    w,x,y,z = vq.fillpositive(xyz)
-    assert w == 1
+    w,x,y,z = nq.fillpositive(xyz)
+    yield assert_true, w == 1
     # Or lists
     xyz = [0] * 3
-    w,x,y,z = vq.fillpositive(xyz)
-    assert w == 1
+    w,x,y,z = nq.fillpositive(xyz)
+    yield assert_true, w == 1
     # Errors with wrong number of values
-    assert_raises(ValueError, vq.fillpositive, [0, 0])
-    assert_raises(ValueError, vq.fillpositive, [0]*4)
+    yield assert_raises, ValueError, nq.fillpositive, [0, 0]
+    yield assert_raises, ValueError, nq.fillpositive, [0]*4
     # Errors with negative w2
-    assert_raises(ValueError, vq.fillpositive, [1.0]*3)
+    yield assert_raises, ValueError, nq.fillpositive, [1.0]*3
     # Test corner case where w is near zero
-    wxyz = vq.fillpositive([1,0,0])
-    assert wxyz[0] == 0.0
+    wxyz = nq.fillpositive([1,0,0])
+    yield assert_true, wxyz[0] == 0.0
+
 
 def test_conjugate():
     # Takes sequence
-    cq = vq.conjugate((1, 0, 0, 0))
+    cq = nq.conjugate((1, 0, 0, 0))
     # Returns float type
-    assert cq.dtype.kind == 'f'
+    yield assert_true, cq.dtype.kind == 'f'
+
+
+def test_quat2mat():
+    # also tested in roundtrip case below
+    M = nq.quat2mat([1, 0, 0, 0])
+    yield assert_array_almost_equal, M, np.eye(3)
+    M = nq.quat2mat([3, 0, 0, 0])
+    yield assert_array_almost_equal, M, np.eye(3)
+    M = nq.quat2mat([0, 1, 0, 0])
+    yield assert_array_almost_equal, M, np.diag([1, -1, -1])
+    M = nq.quat2mat([0, 2, 0, 0])
+    yield assert_array_almost_equal, M, np.diag([1, -1, -1])
+    M = nq.quat2mat([0, 0, 0, 0])
+    yield assert_array_almost_equal, M, np.eye(3)
+    
 
 def test_inverse():
     # Takes sequence
-    iq = vq.inverse((1, 0, 0, 0))
+    iq = nq.inverse((1, 0, 0, 0))
     # Returns float type
-    assert iq.dtype.kind == 'f'
+    yield assert_true, iq.dtype.kind == 'f'
     for M, q in eg_pairs:
-        iq = vq.inverse(q)
-        iqM = vq.quat2mat(iq)
+        iq = nq.inverse(q)
+        iqM = nq.quat2mat(iq)
         iM = np.linalg.inv(M)
-        assert np.allclose(iM, iqM)
+        yield assert_true, np.allclose(iM, iqM)
+
 
 def test_eye():
-    qi = vq.eye()
-    assert qi.dtype.kind == 'f'
-    assert np.all([1,0,0,0]==qi)
-    assert np.allclose(vq.quat2mat(qi), np.eye(3))
+    qi = nq.eye()
+    yield assert_true, qi.dtype.kind == 'f'
+    yield assert_true, np.all([1,0,0,0]==qi)
+    yield assert_true, np.allclose(nq.quat2mat(qi), np.eye(3))
+
 
 def test_norm():
-    qi = vq.eye()
-    assert vq.norm(qi) == 1
-    assert vq.isunit(qi)
+    qi = nq.eye()
+    yield assert_true, nq.norm(qi) == 1
+    yield assert_true, nq.isunit(qi)
     qi[1] = 0.2
-    assert not vq.isunit(qi)
+    yield assert_true, not nq.isunit(qi)
+
 
 @slow
 def test_mult():
-    ''' Test that quaternion * same as matrix * '''
+    # Test that quaternion * same as matrix * 
     for M1, q1 in eg_pairs[0::4]:
         for M2, q2 in eg_pairs[1::4]:
-            q12 = vq.mult(q1, q2)
-    assert np.allclose(np.dot(M2,M1), vq.quat2mat(q12))
+            q21 = nq.mult(q2, q1)
+            yield assert_array_almost_equal, np.dot(M2,M1), nq.quat2mat(q21)
+
 
 def test_inverse():
     for M, q in eg_pairs:
-        iq = vq.inverse(q)
-        iqM = vq.quat2mat(iq)
+        iq = nq.inverse(q)
+        iqM = nq.quat2mat(iq)
         iM = np.linalg.inv(M)
-        assert np.allclose(iM, iqM)
+        yield assert_true, np.allclose(iM, iqM)
+
 
 def test_eye():
-    qi = vq.eye()
-    assert np.all([1,0,0,0]==qi)
-    assert np.allclose(vq.quat2mat(qi), np.eye(3))
+    qi = nq.eye()
+    yield assert_true, np.all([1,0,0,0]==qi)
+    yield assert_true, np.allclose(nq.quat2mat(qi), np.eye(3))
 
-@slow
+
+def test_qrotate():
+    vecs = np.eye(3)
+    for vec in np.eye(3):
+        for M, q in eg_pairs:
+            vdash = nq.rotate_vector(vec, q)
+            vM = np.dot(M, vec)
+            yield assert_array_almost_equal, vdash, vM
+
+
 def test_quaternion_reconstruction():
-    ''' Test reconstruction of arbitrary unit quaternions '''
+    # Test reconstruction of arbitrary unit quaternions
     for q in unit_quats:
-        M = vq.quat2mat(q)
-        qt = vq.mat2quat(M)
+        M = nq.quat2mat(q)
+        qt = nq.mat2quat(M)
         # Accept positive or negative match
         posm = np.allclose(q, qt)
         negm = np.allclose(q, -qt)
-        assert posm or negm
+        yield assert_true, posm or negm
+
+
+def test_angle_axis2quat():
+    q = nq.angle_axis2quat(0, [1, 0, 0])
+    yield assert_array_equal, q, [1, 0, 0, 0]
+    q = nq.angle_axis2quat(np.pi, [1, 0, 0])
+    yield assert_array_almost_equal, q, [0, 1, 0, 0]
+    q = nq.angle_axis2quat(np.pi, [1, 0, 0], True)
+    yield assert_array_almost_equal, q, [0, 1, 0, 0]
+    q = nq.angle_axis2quat(np.pi, [2, 0, 0], False)
+    yield assert_array_almost_equal, q, [0, 1, 0, 0]
+
+
+def test_angle_axis():
+    for M, q in eg_pairs:
+        theta, vec = nq.quat2angle_axis(q)
+        q2 = nq.angle_axis2quat(theta, vec)
+        yield nq.nearly_equivalent, q, q2
+        aa_mat = nq.angle_axis2mat(theta, vec)
+        yield assert_array_almost_equal, aa_mat, M

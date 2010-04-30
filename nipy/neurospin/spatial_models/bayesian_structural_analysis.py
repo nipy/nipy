@@ -12,34 +12,46 @@ import numpy as np
 import scipy.stats as st
 
 import structural_bfls as sbf
-import fff2.graph.graph as fg
-from fff2.graph import hroi 
-from fff2.clustering import GGMixture
-import fff2.clustering.clustering as fc
-from fff2.graph import BPmatch
-from fff2.clustering.hierarchical_clustering import Average_Link_Graph_segment
+import nipy.neurospin.graph.graph as fg
+from nipy.neurospin.spatial_models import hroi 
+
+import nipy.neurospin.clustering.clustering as fc
+from nipy.neurospin.graph import BPmatch
+from nipy.neurospin.clustering.hierarchical_clustering import\
+     average_link_graph_segment
+import nipy.neurospin.utils.emp_null as en
 
 #------------------------------------------------------------------
 #---------------- Auxiliary functions -----------------------------
 #------------------------------------------------------------------
 
 
-
-def hierarchical_asso(bfl,dmax):
+def _hierarchical_asso(bfl,dmax):
     """
-    Compting an association graph of the ROIs defined across different subjects
-    INPUT:
-    - bfl a list of ROI hierarchies, one for each subject
-    - dmax : spatial scale used xhen building associtations
-    OUPUT:
-    - G a graph that represent probabilistic associations between all
-    cross-subject pairs of regions. Note that the probabilities are normalized
+    Compting an association graph of the ROIs defined
+    across different subjects
+
+    Parameters
+    ----------
+    bfl a list of ROI hierarchies, one for each subject
+    dmax : spatial scale used when building associtations
+
+    Results
+    -------
+    G a graph that represent probabilistic associations between all
+      cross-subject pairs of regions.
+    
+    Note that the probabilities are normalized
     on a within-subject basis.
     """
     nbsubj = np.size(bfl)
-    nlm = np.array([bfl[i].k for i in range(nbsubj)])
+    nlm = np.zeros(nbsubj)
+    for i in range(nbsubj):
+        if bfl[i]!=None:
+            nlm[i] = bfl[i].k
+
     cnlm = np.hstack(([0],np.cumsum(nlm)))
-    if cnlm[nbsubj]==0:
+    if cnlm.max()==0:
         gcorr = []
         return gcorr
 
@@ -47,26 +59,26 @@ def hierarchical_asso(bfl,dmax):
     geb = []
     ged = []
     for s in range(nbsubj):
-        if (bfl[s].k>0):
+        if (bfl[s]!=None):
             for t in range(s):
-                if (bfl[t].k>0):
-                    cs =  bfl[s].get_ROI_feature('coord')
-                    ct = bfl[t].get_ROI_feature('coord')
+                if (bfl[t]!=None):
+                    cs =  bfl[s].get_roi_feature('position')
+                    ct = bfl[t].get_roi_feature('position')
                     Gs = bfl[s].make_forest()
                     Gs.anti_symmeterize()
             
                     Gt = bfl[t].make_forest()
                     Gt.anti_symmeterize()
 
-                    #ea,eb,ed = BPmatch.BPmatch_slow_asym(cs,ct, Gs,Gt,dmax)
-                    ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(cs,ct, Gs,Gt,dmax)
+                    ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(
+                        cs, ct, Gs, Gt,dmax)
                     if np.size(ea)>0:
                         gea = np.hstack((gea,ea+cnlm[s]))
                         geb = np.hstack((geb,eb+cnlm[t]))
                         ged = np.hstack((ged,ed))
 
-                    #ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(ct,cs, Gt,Gs,dmax)
-                    ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(ct,cs, Gt,Gs,dmax)
+                    ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(
+                        ct, cs, Gt, Gs, dmax)
                     if np.size(ea)>0:
                         gea = np.hstack((gea,ea+cnlm[t]))
                         geb = np.hstack((geb,eb+cnlm[s]))
@@ -81,14 +93,18 @@ def hierarchical_asso(bfl,dmax):
 
 def _clean_size_(bf,smin=0):
     """
-    This function cleans the ROI_Hierarchy structure
+    This function cleans the nested ROI structure
     by merging small regions into their parent
     bf = _clean_size_(bf,smin)
-    INPUT:
-    - bf the hroi.ROI_Hierarchy to be cleaned
-    - smin=0 the minimal size for ROIs
-    OUTPUT:
-    - bf the cleaned  hroi.ROI_Hierarchy
+
+    Parameters
+    ----------
+    bf the hroi.NROI to be cleaned
+    smin=0 the minimal size for ROIs
+
+    Results
+    -------
+    bf the cleaned  hroi.NROI
     """
     k = 2* bf.get_k()
     if k>0:
@@ -104,22 +120,25 @@ def _clean_size_(bf,smin=0):
 
 def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
     """
-    This function cleans the ROI_Hierarchy structure
+    This function cleans the nested ROI structure
     by merging small regions into their parent
     bf = _clean_size_and_connectivity_(bf,Fbeta,smin)
     and by checking the simple connectivity of the areas in the hierarchy
-    INPUT:
-    - bf the hroi.ROI_Hierarchy to be cleaned
-    - Fbeta: fff.field class, the underlying field of data
-    - smin=0 the minimal size for ROIs
-    OUTPUT:
-    - bf the cleaned  hroi.ROI_Hierarchy
-    NOTE : it may be slow
+
+    Parameters
+    ----------
+    bf list of  nipy.neurospin.spatial_models.hroi.Nroi 
+       instances to be cleaned
+    Fbeta: fff.field instance, the underlying topological model of the data
+    smin=0 the minimal size for ROIs
+
+    Results
+    -------
+    bf the cleaned  hroi.NROI
+    Note : it may be slow
     """
     bf = _clean_size_(bf,smin)
     if bf.k<1: return bf
-    #import time
-    #t1 = time.time()
 
     for i in range(bf.k):
         l = bf.subtree(i)
@@ -137,153 +156,87 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
                 for j in range(u.max()+1):
                     if np.sum(u==j)<mccs:
                         bf.label[iv[u==j]]=i
-    #t2 = time.time()
+
     bf = _clean_size_(bf,smin)
     return bf
 
-                    
-def _GMM_priors_(beta,bfm,theta = 0,alpha=0.01,prior_strength = 100,verbose=0):
+def make_crmap(AF,coord,verbose=0):
     """
-    bfp = _GMM_priors_(beta,bfm,alpha=0.01,prior_strength = 100,verbose=0)
-    Computing somr prior probabilities that the voxels of a certain map
-    are in class disactivated, null or active
-    INPUT:
-    - beta array os shape (nvox): the map to be analysed
-    - bfm array of shape(nbitems):
-    the test values for which the p-value needs to be computed
-    - theta = 0 the threshold above which the decision has to be made
-    (normally, bfm>theta);
-    if theta = -np.infty, then the method has a standard behaviour
-    - alpha = 0.01 the prior weights of the positive and negative classes
-    - prior_strength = 100 the confidence on the prior
-    (should be compared to size(beta))
-    - verbose=0 : verbosity mode
-    OUPUT:
-    bfp : array of shape (nbitems,3):
-    the probability of each component in the MM for each test value
-    """
-    if np.size(bfm)==0:
-        return None
-
-    lnvox = np.size(beta)    
-    from fff2.clustering.gmm import BGMM,grid_descriptor
-    bgmm = BGMM(3,1,1)
-    sbeta = np.sort(beta)
-    mb0 = np.mean(sbeta[:alpha*lnvox])
-    mb2 = np.mean(sbeta[(1-alpha)*lnvox:])
-    prior_centers = np.reshape(np.array([mb0,0,mb2]),(3,1))
-    prior_precision = np.ones((3,1))*1./prior_strength
-    prior_dof = np.ones(3)*prior_strength
-    prior_weights = np.array([alpha,1-2*alpha,alpha])*prior_strength
-    prior_mean_scale = np.ones(3)*prior_strength
-    bgmm.set_priors(prior_centers, prior_weights, prior_precision, prior_dof, prior_mean_scale)
-
-    beta = np.reshape(beta,(lnvox,1))
-
-    # only a few iterations are sufficient
-    l = bgmm.Gibbs_estimate(beta,10)
-
-    # estimate the prior weights
-    gd = grid_descriptor(1) 
-    gd.getinfo([beta.min(),beta.max()],100)
-    gdm = gd.make_grid().squeeze()
-
-    lj = bgmm.sample_on_data(gd.make_grid())
-    lw = np.sum(lj[gdm>theta],0)
-    bfp = lw/bgmm.weights*bgmm.sample_on_data(bfm)
-    #bfp = bgmm.sample_on_data(bfm)
-
-    if verbose>1:
-        #bgmm.show(beta,gd,lj.sum(1))
-        bgmm.show_components(beta,gd,lj)
-    
-    return bfp
-
-def _GGM_priors_(beta,bfm,verbose=0):
-    """
-    bfp = _GGM_priors_(beta,bfm,verbose=0)
-    Computing some prior probabilities that the voxels of a certain map
-    are in class disactivated, null or active
-    INPUT:
-    - beta array os shape (nvox): the map to be analysed
-    - bfm array of shape(nbitems):
-    the test values for which the p-value needs to be computed
-    - verbose=0 : verbosity mode
-    OUPUT:
-    bfp : array of shape (nbitems,3):
-    the probability of each component in the MM for each test value
-    """
-    Ggg = GGMixture.GGGM()
-    Ggg.init_fdr(beta)
-    Ggg.estimate(beta,100,1.e-8,1.0,0)
-    if verbose>1:
-        # hyper-verbose mode
-        Ggg.show(beta)
-        Ggg.parameters()
-
-    bfm = np.reshape(bfm,np.size(bfm))
-    #?
-    #bfp =  np.transpose(np.array(Ggg.posterior(bfm)))
-    bfp = np.transpose(np.array(Ggg.component_likelihood(bfm)))
-    return bfp
-
-def make_crmap(AF,tal,verbose=0):
-    """
-    crmap = make_crmap(AF,tal)
+    crmap = make_crmap(AF,coord)
     Compute the spatial map associated with the AF
     i.e. the confidence interfval for the position of
     the different landmarks
-    INPUT:
+    
+    Parameters
+    ----------
     - AF the list of group-level landmarks regions
-    - tal: array of shape(nvox,3): the position of the reference points
-    OUPUT
+    - coord: array of shape(nvox,3): the position of the reference points
+
+    Results
+    -------
     - crmap: array of shape(nvox)
     """
-    nvox = tal.shape[0]
+    nvox = coord.shape[0]
     crmap = -np.ones(nvox)
     gscore =  np.inf*np.ones(nvox)    
     print np.size(AF)
     for i in range(np.size(AF)):
         if verbose:
             print i, AF[i].k, AF[i].homogeneity(), AF[i].center()
-        j,score = AF[i].confidence_region(tal)
+        j,score = AF[i].confidence_region(coord)
         lscore = np.inf*np.ones(nvox)
         lscore[j] = score 
         crmap[gscore>lscore]=i
         gscore = np.minimum(gscore,lscore)
     return crmap
 
-def infer_amers(BF,u,conf,thq=0.95,ths=0):
+def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
-    INPUT:
-    - BF is the list of hierarchical ROIs.
-    it is assumd that each list corresponds to one subject
-    - u is a labelling array of size the total number of ROIs
-    - ths=0 defines the condition (c):
-    (c) A label should be present in ths subjects in order to be valid
-    OUTPUT:
-    - AF : a list of Amers, each of which describing a cross-subject set of ROIs
-    - newlabel :  a relabelling of the individual ROIs, similar to u, which discards
-    labels that do not fulfill the condition (c)
-    """
-    Sess = np.size(BF)
-    Nlm = np.size(u)
-
-    subj = np.concatenate([s*np.ones(BF[s].k, np.int) for s in range(Sess)])
-    nrois = np.size(subj)
-    if nrois != Nlm:
-        raise ValueError, "incompatiable estimates of the number of regions"
-    intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(Sess)])
-    newlabel = -np.ones(np.size(u), np.int)
-    AF = []
-    nl = 0
-    if np.size(u)==0:  return AF,newlabel
     
-    Mu = u.max()+1
+    Parameters
+    ----------
+    bf : list of nipy.neurospin.spatial_models.hroi.Nroi instances
+       it is assumd that each list corresponds to one subject
+       each NROI is assumed to have the roi_features
+       'position', 'label' and 'posterior_proba' defined
+    thq=0.95,ths=0 defines the condition (c):
+                   (c) A label should be present in ths subjects
+                   with a probability>thq
+                   in order to be valid
+    
+    Results
+    -------
+    LR : a LR instance, describing a cross-subject set of ROIs
+       if inference yields a null results, LR is set to None
+    newlabel :  a relabelling of the individual ROIs, similar to u,
+             which discards
+             labels that do not fulfill the condition (c)
+    """
+    # prepare various variables to ease information manipulation
+    nbsubj = np.size(bf)
+    subj = np.concatenate([s*np.ones(bf[s].k, np.int)
+                           for s in range(nbsubj) if bf[s]!=None])
+    nrois = np.size(subj)
+    u = np.concatenate([bf[s].get_roi_feature('label')
+                        for s in range(nbsubj)if bf[s]!=None])
+    u = np.squeeze(u)
+    conf =  np.concatenate([bf[s].get_roi_feature('prior_proba')
+                            for s in range(nbsubj) if bf[s]!=None])
+    intrasubj = np.concatenate([np.arange(bf[s].k)
+                                for s in range(nbsubj) if bf[s]!=None])
+    
+    if np.size(u)==0:  return None,None
+
+    coords = []
+    subjs=[]
+    pps = []
+    Mu = int(u.max()+1)
+    valid = np.zeros(Mu).astype(np.int)
+
+    # do some computation to find which regions are worth reporting
     for i in range(Mu):
-        
         j = np.nonzero(u==i)
         j = np.reshape(j,np.size(j))
         mp = 0.
@@ -298,23 +251,46 @@ def infer_amers(BF,u,conf,thq=0.95,ths=0):
         # If noise is too low the variance is 0: ill-defined:
         vp = max(vp, 1e-14)
 
-        if st.norm.sf(ths,mp,np.sqrt(vp)) >thq:
-            print nl,ths,mp,thq, st.norm.sf(ths,mp,np.sqrt(vp))
-            newlabel[j] = nl
+        # if above threshold, get some information to create the LR
+        if st.norm.sf(ths,mp,np.sqrt(vp)) >thq:         
+            if verbose:
+                print valid.sum(),ths,mp,thq,\
+                      st.norm.sf(ths,mp,np.sqrt(vp))
+            valid[i]=1
             sj = np.size(j)
             idx = np.zeros(sj)
             coord = np.zeros((sj,3), np.float)
             for a in range(sj):
                 sja = subj[j[a]]
                 isja = intrasubj[j[a]]
-                idx[a] = BF[sja].seed[isja]
-                coord[a,:] = BF[sja].get_ROI_feature('coord')[isja]
+                coord[a,:] = bf[sja].get_roi_feature('position')[isja]
 
-            amers = sbf.Amers(sj, subj[j], idx,coord)
-            AF.append(amers)
-            nl = nl+1
-                    
-    return AF,newlabel
+            coords.append(coord)
+            subjs.append(subj[j])   
+            pps.append(conf[j])
+
+    maplabel = -np.ones(Mu).astype(np.int)
+    maplabel[valid>0] = np.cumsum(valid[valid>0])-1
+       
+    # relabel the ROIs
+    for s in range(nbsubj):
+        if bf[s]!=None:
+            us = bf[s].get_roi_feature('label')
+            us[us>-1] = maplabel[us[us>-1]]
+            bf[s].set_roi_feature('label',us)
+            affine = bf[s].affine
+            shape = bf[s].shape
+
+    # create the landmark regions structure
+    k = np.sum(valid)
+    if k>0:
+        LR = sbf.landmark_regions(k, affine=affine, shape=shape, subj=subjs,
+                                  coord=coords)
+        LR.set_discrete_feature('confidence', pps)
+    else:
+        LR = None
+    return LR,maplabel
+
 
 #------------------------------------------------------------------
 #------------------- main functions ----------------------------------
@@ -322,30 +298,57 @@ def infer_amers(BF,u,conf,thq=0.95,ths=0):
 
 
 
-def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, thq=0.5, smin=5, ths=0, 
-                     theta=3.0, g0=1.0, bdensity=0, verbose=0):
+def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, affine=np.eye(4), 
+                                  shape=None, thq=0.5,
+                     smin=5, ths=0, theta=3.0, g0=1.0, bdensity=0, verbose=0):
     """
-    Compute the  Bayesian Structural Activation paterns with approach described in IPMI'07 paper
-    INPUT:
-    - Fbeta : an fff field class describing the spatial relationships in the dataset (nbnodes nodes)
-    - lbeta: an array of size (nbnodes, subjects) with functional data
-    - tal: spatial coordinates of the nodes
-    - thq = 0.5: posterior significance threshold
-    - smin = 5: minimal size of the regions to validate them
-    - theta = 3.0: first level threshold
-    - g0 = 1.0 : constant values of the uniform density over the volume of interest
-    - bdensity=0 if bdensity=1, the variable p in ouput contains the likelihood of the data under H1 on the set of input nodes
-    OUTPUT:
-    - crmap: resulting group map
-    - AF: list of inter-subject related ROIs
-    - BF: List of individual ROIs
-    - u: labelling of the individual ROIs
-    - p: likelihood of the data under H1 over some sampling grid
-    NOTE:
-    This is historically the first verion, but probably not the  most opimal
+    Compute the  Bayesian Structural Activation patterns
+    with approach described in IPMI'07 paper
+
+    Parameters
+    ----------
+    Fbeta :   nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    lbeta: an array of shape (nbnodes, subjects):
+           the multi-subject statistical maps
+    coord array of shape (nnodes,3):
+          spatial coordinates of the nodes
+    xyz array of shape (nnodes,3):
+        the grid coordinates of the field
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition 
+    thq = 0.5 (float): posterior significance threshold should be in [0,1]
+    smin = 5 (int): minimal size of the regions to validate them
+    theta = 3.0 (float): first level threshold
+    g0 = 1.0 (float): constant values of the uniform density
+       over the (compact) volume of interest
+    bdensity=0 if bdensity=1, the variable p in ouput
+               contains the likelihood of the data under H1 
+               on the set of input nodes
+    verbose=0 : verbosity mode
+    
+    Results
+    -------
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    LR: a instance of sbf.Landmrak_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    p: array of shape (nnodes):
+       likelihood of the data under H1 over some sampling grid
+    
+    Note
+    ----
+    This is historically the first version,
+    but probably not the  most optimal
     It should not be changed for historical reason
     """
-    BF = []
+    bf = []
     gfc = []
     gf0 = []
     sub = []
@@ -358,50 +361,37 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, thq=0.5, smin=5, ths=0,
     for s in range(nbsubj):
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-    
-        if theta<beta.max():
-            idx,height, parents,label = Fbeta.threshold_bifurcations(0,theta)
-        else:
-            idx = []
-            parents = []
-            label = -np.ones(np.shape(beta))
+        nroi = hroi.NROI_from_field(Fbeta, affine, shape, xyz, refdim=0,
+                                    th=theta, smin=smin)
+        bf.append(nroi)
         
-        k = np.size(idx)
-        nroi = hroi.ROI_Hierarchy(k,idx, parents,label)      
-        nroi = _clean_size_(nroi,smin)
-        BF.append(nroi)
-
-        # discard small regions
-        # merge them into higher levels of the hierarchy
-        if nroi.k>0:
-            idx = nroi.get_seed()
-            parents = nroi.get_parents()
-            label = nroi.get_label()
-            nroi.make_feature(beta, 'height','mean')
-            bfm = nroi.get_ROI_feature('height')
-            nroi.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            bfc = nroi.get_ROI_feature('coord')
-
+        if nroi!=None:
+            sub.append(s*np.ones(nroi.k))
+            # find some way to avoid coordinate averaging
+            nroi.set_discrete_feature_from_index('activation',beta)
+            bfm = nroi.discrete_to_roi_features('activation','average')
+            
+            nroi.set_discrete_feature_from_index('position',coord)
+            bfc = nroi.discrete_to_roi_features('position',
+                                                'cumulated_average')         
             gfc.append(bfc)
 
             # get some prior on the significance of the regions
             beta = np.reshape(beta,(nvox))
             beta = beta[beta!=0]
 
-            # use a GGM
-            bfp = _GGM_priors_(beta,bfm,verbose=0)
-            bf0 = bfp[:,1]/np.sum(bfp,1)
-            
+            # use a Gamma-Gaussian Mixture Model
+            bfp  = en.Gamma_Gaussian_fit(beta,bfm,verbose)
+            bf0 = bfp[:,1]
+
             gf0.append(bf0)
-            
-            sub.append(s*np.ones(nroi.k))
-            
+                      
     crmap = -np.ones(nvox, np.int)
     u = []
     AF = []
     p = np.zeros(nvox)
     if len(sub)<1:
-        return crmap,AF,BF,u,p
+        return crmap,AF,bf,u,p
 
     # inter-subject analysis
     # use the DPMM (core part)
@@ -414,122 +404,139 @@ def compute_BSA_ipmi(Fbeta,lbeta, tal,dmax, thq=0.5, smin=5, ths=0,
     prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
 
     if bdensity:
-        spatial_coords = tal
+        spatial_coords = coord
     else:
         spatial_coords = gfc
 
-    p,q =  fc.fdp(gfc, 0.5, g0, g1,dof, prior_precision, 1-gf0, sub, 100, spatial_coords,10,1000)
+    p,q =  fc.fdp(gfc, 0.5, g0, g1,dof, prior_precision,
+                  1-gf0, sub, 100, spatial_coords,10,1000)
+    # inference
+    valid = q>thq
 
     if verbose>1:
         import matplotlib.pylab as mp
         mp.figure()
         mp.plot(1-gf0,q,'.')
-        #mp.show()
-
-    # inference
-    valid = q>thq
-    if verbose:
         print np.sum(valid),np.size(valid)
 
     # remove non-significant regions
     for s in range(nbsubj):
-        bf = BF[s]
-        if bf.k>0:
+        bfs = bf[s]
+        if bfs!=None:
             valids = valid[sub==s]
-            valids = bf.propagate_AND_to_root(valids)
-            bf.clean(valids)
-            bf.merge_descending()
-            bf.remove_feature('coord')
-            bf.make_feature(tal.astype(np.float),'coord','cumulative_mean')
+            valids = bfs.propagate_upward_and(valids)
+            bfs.clean(valids)
+            
+        if bfs!=None:
+            bfs.merge_descending()
+            bfs.set_discrete_feature_from_index('position',coord)
+            bfs.discrete_to_roi_features('position','cumulated_average')
 
     # compute probabilitsic correspondences across subjects
-    gc = hierarchical_asso(BF,np.sqrt(2)*dmax)
+    gc = _hierarchical_asso(bf,np.sqrt(2)*dmax)
+
+    if gc == []:
+        return crmap,AF,bf,p
 
     # make hard clusters
-    if gc != []:
-        # choose one solution...
-        #u = sbf.segment_graph_rd(gc,1)
-        u,cost = Average_Link_Graph_segment(gc,0.2,gc.V*1.0/nbsubj)
-            
-        AF,u = sbf.Build_Amers(BF,u,ths) 
-            
-    # Finally make the ouput map
-    crmap = make_crmap(AF,tal,verbose)
+    # choose one solution...
+    #u = sbf.segment_graph_rd(gc,1)
+    u,cost = average_link_graph_segment(gc,0.2,gc.V*1.0/nbsubj)
+
+    q = 0
+    for s in range(nbsubj):
+        if bf[s]!=None:
+            bf[s].set_roi_feature('label',u[q:q+bf[s].k])
+            q += bf[s].k
     
-    return crmap,AF,BF,u,p
+    LR,mlabel = sbf.build_LR(bf,ths)
+    if LR!=None:
+        crmap = LR.map_label(coord,pval=0.95,dmax=dmax)
+    
+    return crmap,LR,bf,p
 
-#-------------------------------------------------------------------------
-# --------------- dev part _________________________----------------------
-# ------------------------------------------------------------------------
+#------------------------------------------------------------------
+# --------------- dev part ----------------------------------------
+# -----------------------------------------------------------------
 
 
 
-def compute_BSA_dev (Fbeta, lbeta, tal, dmax, thq=0.9, smin=5, ths=0,
-                     theta=3.0, g0=1.0, bdensity=0, verbose=0):
+def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, affine=np.eye(4), 
+                    shape=None, thq=0.9,smin=5, ths=0, theta=3.0, g0=1.0,
+                     bdensity=0, verbose=0):
     """
     Compute the  Bayesian Structural Activation paterns
-    INPUT:
-    - Fbeta : an fff field class describing the spatial relationships in the dataset (nbnodes nodes)
-    - lbeta: an array of size (nbnodes, subjects) with functional data
-    - tal: spatial coordinates of the nodes
-    - thq = 0.9: posterior significance threshold
-    - smin = 5: minimal size of the regions to validate them
-    - theta = 3.0: first level threshold
-    - g0 = 1.0 : constant values of the uniform density over the volume of interest
-    - bdensity=0 if bdensity=1, the variable p in ouput contains the likelihood of the data under H1 on the set of input nodes
-    OUTPUT:
-    - crmap: resulting group map
-    - AF: list of inter-subject related ROIs
-    - BF: List of individual ROIs
-    - u: labelling of the individual ROIs
-    - p: likelihood of the data under H1 over some sampling grid
-    NOTE:
+
+    Parameters
+    ----------
+    Fbeta :   nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    lbeta: an array of shape (nbnodes, subjects):
+           the multi-subject statistical maps
+    coord array of shape (nnodes,3):
+          spatial coordinates of the nodes
+    xyz array of shape (nnodes,3):
+        the grid coordinates of the field
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition  
+    thq = 0.5 (float): posterior significance threshold should be in [0,1]
+    smin = 5 (int): minimal size of the regions to validate them
+    theta = 3.0 (float): first level threshold
+    g0 = 1.0 (float): constant values of the uniform density
+       over the (compact) volume of interest
+    bdensity=0 if bdensity=1, the variable p in ouput
+               contains the likelihood of the data under H1 
+               on the set of input nodes
+    verbose=0 : verbosity mode
+
+    Results
+    -------
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    LR: a instance of sbf.Landmrak_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    p: array of shape (nnodes):
+       likelihood of the data under H1 over some sampling grid
+
+    Note
+    ----
     This version is probably the best one to date
     the intra subject Gamma-Gaussian MM has been replaces by a Gaussian MM
     which is probably mroe robust
     """
-    BF = []
+    bf = []
     gfc = []
     gf0 = []
     sub = []
     gc = []
-    nbsubj = lbeta.shape[1]
+    nsubj = lbeta.shape[1]
     nvox = lbeta.shape[0]
 
     # intra-subject analysis: get the blobs,
     # with their position and their significance
-    for s in range(nbsubj):       
+    for s in range(nsubj):       
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-    
-        if theta<beta.max():
-            idx,height, parents,label = Fbeta.threshold_bifurcations(0,theta)
-        else:
-            idx = []
-            parents = []
-            label = -np.ones(np.shape(beta))
-
-        # remove the small regions
-        k = np.size(idx)
-        nroi = hroi.ROI_Hierarchy(k,idx, parents,label)      
-        nroi = _clean_size_(nroi,smin)
-        #nroi = _clean_size_and_connectivity_(nroi,Fbeta,smin)
-        BF.append(nroi)
+        nroi = hroi.NROI_from_field(Fbeta, affine, shape, xyz, refdim=0,
+                                    th=theta,smin=smin)
+        bf.append(nroi)
         
-        if nroi.k>0:
-            # find some way to avoid coordinate averaging
-            idx = nroi.get_seed()
-            parents = nroi.get_parents()
-            label = nroi.get_label()
-            nroi.make_feature(beta, 'height','mean')
-            bfm = nroi.get_ROI_feature('height')
-            nroi.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            bfc = nroi.get_ROI_feature('coord')
-            # Alan's choice
-            #bfc = tal[nroi.argmax(beta)]
-            #nroi.set_ROI_feature(bfc, 'coord')
+        if nroi!=None:
+            sub.append(s*np.ones(nroi.k))
+            nroi.set_discrete_feature_from_index('activation',beta)
+            bfm = nroi.discrete_to_roi_features('activation','average')
 
+            # compute the region position
+            nroi.set_discrete_feature_from_index('position',coord)
+            bfc = nroi.discrete_to_roi_features('position',
+                                                'cumulated_average')           
             gfc.append(bfc)
 
             # compute the prior proba of being null
@@ -537,18 +544,18 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax, thq=0.9, smin=5, ths=0,
             beta = beta[beta!=0]
             alpha = 0.01
             prior_strength = 100
-            bfp = _GMM_priors_(beta,bfm,theta,alpha,prior_strength,verbose)
-            bf0 = bfp[:,1]/np.sum(bfp,1)
+            fixed_scale = True
+            bfp = en.three_classes_GMM_fit(beta, bfm, alpha,
+                                        prior_strength,verbose,fixed_scale)
+            bf0 = bfp[:,1]
             gf0.append(bf0)
             
-            sub.append(s*np.ones(nroi.k))
-
     crmap = -np.ones(nvox, np.int)
     u = []
     AF = []
     p = np.zeros(nvox)
     if len(sub)<1:
-        return crmap,AF,BF,u,p
+        return crmap,AF,bf,u,p
 
     # inter-subject analysis
     # use the DPMM (core part)
@@ -561,269 +568,503 @@ def compute_BSA_dev (Fbeta, lbeta, tal, dmax, thq=0.9, smin=5, ths=0,
     prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.int)
 
     if bdensity:
-        spatial_coords = tal
+        spatial_coords = coord
     else:
         spatial_coords = gfc
             
-    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0, sub, 100, spatial_coords,10,1000)
+    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
+                  sub, 100, spatial_coords,10,1000)
+    valid = q>thq
     if verbose:
         import matplotlib.pylab as mp
         mp.figure()
-        mp.plot(1-gf0,q,'.')
-        #mp.show()
+        mp.plot(1-gf0,q,'.')    
+        print np.sum(valid),np.size(valid)
 
-    valid = q>thq
-    print np.sum(valid),np.size(valid)
-
-    # remove non-significant region
-    for s in range(nbsubj):
-        bfs = BF[s]
-        if bfs.k>0:
+    # remove non-significant regions
+    for s in range(nsubj):
+        bfs = bf[s]
+        if bfs!=None:
             valids = valid[sub==s]
-            valids = bfs.propagate_AND_to_root(valids)
+            valids = bfs.propagate_upward_and(valids)
             bfs.clean(valids)
             bfs.merge_descending()
-            bfs.remove_feature('coord')
-            bfs.make_feature(tal.astype(np.float),'coord','cumulative_mean')
+            
+            # re-compute the region position
+            bfs.set_discrete_feature_from_index('position',coord)
+            bfc = bfs.discrete_to_roi_features('position',
+                                               'cumulated_average')
             # Alan's choice
             #beta = np.reshape(lbeta[:,s],(nvox,1))
-            #bfsc = tal[bfs.argmax(beta)]
-            #bfs.set_ROI_feature(bfsc,'coord')
-                    
-    gc = hierarchical_asso(BF,np.sqrt(2)*dmax)
+            #bfsc = coord[bfs.feature_argmax(beta)]
+            #bfs.set_roi_feature(bfsc,'position')
+
+    # compute a model of between-regions associations
+    gc = _hierarchical_asso(bf,np.sqrt(2)*dmax)
 
     # Infer the group-level clusters
-    if gc != []:
-        # either replictor dynamics or agglomerative clustering
-        #u = sbf.segment_graph_rd(gc,1)
-        u,cost = Average_Link_Graph_segment(gc,0.1,gc.V*1.0/nbsubj)
-                        
-        AF,u = sbf.Build_Amers(BF,u,ths) 
+    if gc == []:
+        return crmap,AF,bf,p
 
-    # make the group-level label map
-    crmap = make_crmap(AF,tal,verbose)
+    # either replicator dynamics or agglomerative clustering
+    #u = sbf.segment_graph_rd(gc,1)
+    u,cost = average_link_graph_segment(gc,0.1,gc.V*1.0/nsubj)
 
-    return crmap,AF,BF,u,p
+    q = 0
+    for s in range(nsubj):
+        if bf[s]!=None:
+            bf[s].set_roi_feature('label',u[q:q+bf[s].k])
+            q += bf[s].k
+    
+    LR,mlabel = sbf.build_LR(bf,ths)
+    if LR!=None:
+        crmap = LR.map_label(coord,pval = 0.95,dmax=dmax)
 
+    return crmap,LR,bf,p
 
-
-
-
-
-
-def compute_BSA_simple(Fbeta, lbeta, tal, dmax, thq=0.5, smin=5, ths=0,
-                        theta=3.0, g0=1.0, bdensity=0, verbose=0):
+def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
     """
-    Compute the  Bayesian Structural Activation paterns - simplified version  
-    INPUT:
-    - Fbeta : an fff field class describing the spatial relationships in the dataset (nbnodes nodes)
-    - lbeta: an array of size (nbnodes, subjects) with functional data
-    - tal: spatial coordinates of the nodes
-    - thq = 0.5: posterior significance threshold
-    - smin = 5: minimal size of the regions to validate them
-    - theta = 3.0: first level threshold
-    - g0 = 1.0 : constant values of the uniform density over the volume of interest
-    - bdensity=0 if bdensity=1, the variable p in ouput contains the likelihood of the data under H1 on the set of input nodes
-    - verbose=1: verbosity mode
-    OUTPUT:
-    - crmap: resulting group map
-    - AF: list of inter-subject related ROIs
-    - BF: List of individual ROIs
-    - u: labelling of the individual ROIs
-    - p: likelihood of the data under H1 over some sampling grid
-    NOTE:
-    In that case, the DPMM is used to derive a spatial density of
-    significant local maxima in the volume. Each terminal (leaf)
-    region which is a posteriori significant enough is assigned to the
-    nearest mode of theis distribution
+    Estimation of the population level model of activation density using 
+    dpmm and inference
+    
+    Parameters
+    ----------
+    Fbeta nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    bf list of nipy.neurospin.spatial_models.hroi.Nroi instances
+       representing individual ROIs
+       let nr be the number of terminal regions across subjects
+    gf0, array of shape (nr)
+         the mixture-based prior probability 
+         that the terminal regions are true positives
+    sub, array of shape (nr)
+         the subject index associated with the terminal regions
+    gfc, array of shape (nr, coord.shape[1])
+         the coordinates of the of the terminal regions
+    dmax float>0:
+         expected cluster std in the common space in units of coord
+    thq = 0.5 (float in the [0,1] interval)
+        p-value of the prevalence test
+    ths=0, float in the rannge [0,nsubj]
+        null hypothesis on region prevalence that is rejected during inference
+    g0 = 1.0 (float): constant value of the uniform density
+       over the (compact) volume of interest
+    verbose=0, verbosity mode
+
+    Returns
+    -------
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    LR: a instance of sbf.Landmark_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    p: array of shape (nnodes):
+       likelihood of the data under H1 over some sampling grid
     """
-    BF = []
-    gfc = []
-    gf0 = []
-    sub = []
-    gc = []
-    nbsubj = lbeta.shape[1]
-    nvox = lbeta.shape[0]
-
-    for s in range(nbsubj):
-        
-        # description in terms of blobs
-        beta = np.reshape(lbeta[:,s],(nvox,1))
-        Fbeta.set_field(beta)
-        nroi = Fbeta.generate_blobs(refdim=0,th=theta,smin = smin)
-        BF.append(nroi) 
-        
-        if nroi.k>0:
-            # find some way to avoid coordinate averaging
-            nroi.make_feature(beta, 'height','mean')
-            bfm = nroi.get_ROI_feature('height')[nroi.isleaf()]#---
-            nroi.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            bfc = nroi.get_ROI_feature('coord')[nroi.isleaf()]#---
-            #
-            gfc.append(bfc)
-
-            # compute the prior proba of being null
-            beta = np.squeeze(beta)
-            beta = beta[beta!=0]
-
-            # use a GMM model...
-            alpha = 0.01
-            prior_strength = 100
-            bfp = _GMM_priors_(beta,bfm,theta,alpha,prior_strength,verbose)
-            bf0 = bfp[:,1]/np.sum(bfp,1)
-            #import scipy.stats as st
-            #print s, st.norm.isf(bf0).mean(),
-            # ... or the emp_null heuristic
-            import fff2.utils.emp_null as en
-            enn = en.ENN(beta)
-            enn.learn()
-            #bf0 = np.reshape(enn.fdr(bfm),np.size(bf0))
-            
-            gf0.append(bf0)
-            sub.append(s*np.ones(np.size(bfm)))
-
+    nvox = coord.shape[0]
+    nsubj = len(bf)
+    
     crmap = -np.ones(nvox, np.int)
     u = []
-    AF = []
+    LR = None
     p = np.zeros(nvox)
     if len(sub)<1:
-        return crmap,AF,BF,u,p
+        return crmap,LR,bf,p
 
-    # prepare the DPMM
     sub = np.concatenate(sub).astype(np.int) 
     gfc = np.concatenate(gfc)
     gf0 = np.concatenate(gf0)
+    
+    # prepare the DPMM
     g1 = g0
     prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
     dof = 100
-    spatial_coords = tal
-    burnin=100
-    nis=100
-    nii=1000
+    spatial_coords = coord
+    burnin = 100
+    nis = 300
+    # nis = number of iterations to estimate p
+    nii = 100
+    # nii = number of iterations to estimate q
 
-    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0, sub,burnin,spatial_coords,nis, nii)
-
+    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+                  sub, burnin, spatial_coords, nis, nii)
+    
     if verbose:
         import matplotlib.pylab as mp
         mp.figure()
         mp.plot(1-gf0,q,'.')
-        h1,c1,p1 = mp.hist((1-gf0),bins=100)
-        h2,c2,p2 = mp.hist(q,bins=100)
+        h1,c1 = mp.histogram((1-gf0),bins=100)
+        h2,c2 = mp.histogram(q,bins=100)
         mp.figure()
         # We use c1[:len(h1)] to be independant of the change in np.hist
         mp.bar(c1[:len(h1)],h1,width=0.005)
         mp.bar(c2[:len(h2)]+0.003,h2,width=0.005,color='r')
-        mp.show()
         print 'Number of candidate regions %i, regions found %i' % (
                     np.size(q), q.sum())
-
+    
     Fbeta.set_field(p)
     idx,depth, major,label = Fbeta.custom_watershed(0,g0)
 
-    # label the blobs
-    u = []
-    qf = []
-    for s in range(nbsubj):
-        bfs = BF[s]
-        bfs.remove_feature('coord')
-        if bfs.k>0:
+    # append some information to the hroi in each subject
+    for s in range(nsubj):
+        bfs = bf[s]
+        if bfs!=None:
             leaves = bfs.isleaf()
             us = -np.ones(bfs.k).astype(np.int)
             lq = np.zeros(bfs.k)
             lq[leaves] = q[sub==s]
-            beta = np.reshape(lbeta[:,s],(nvox,1))
-            bfsc = tal[bfs.argmax(beta)]
-            bfs.set_ROI_feature(bfsc,'coord')
-            j = label[bfs.argmax(beta)]
+            bfs.set_roi_feature('posterior_proba',lq)
+            lq = np.zeros(bfs.k)
+            lq[leaves] = 1-gf0[sub==s]
+            bfs.set_roi_feature('prior_proba',lq)
+                   
+            #idx = bfs.feature_argmax('activation')
+            #midx = [bfs.discrete_features['index'][k][idx[k]]
+            #        for k in range(bfs.k)]
+            pos = bfs.roi_features['position']
+            midx = [np.argmin(np.sum((coord-pos[k])**2,1))  for k in range(bfs.k)]
+            j = label[np.array(midx)]
             us[leaves] = j[leaves]
+
+            # when parent regions has similarly labelled children,
+            # include it also
             us = bfs.propagate_upward(us)
-            u.append(us)
-            qf.append(lq)
-            
-    u = np.concatenate(u)
-    qf = np.concatenate(qf)
-    
-    #valid = q>thq
-    #if verbose: print np.sum(valid),np.size(valid),thq
-   
+            bfs.set_roi_feature('label',us)
+                        
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one 
-    AF,nl = infer_amers(BF,u,qf,thq,ths) 
+    LR,nl = infer_LR(bf, thq, ths,verbose=verbose)
 
     # make a group-level map of the landmark position
-    #crmap = make_crmap(AF,tal,verbose)
     crmap = -np.ones(np.shape(label))
-    q = 0
-    for i in range(u.max()+1):
-        if np.unique(nl[u==i])>-1:
-            crmap[label==i]= np.unique(nl[u==i])            
-            
-    return crmap,AF,BF,nl,p
+    if nl!=None:
+        aux = np.arange(label.max()+1)
+        aux[0:np.size(nl)] = nl
+        crmap[label>-1] = aux[label[label>-1]]
+ 
+    return crmap, LR, bf, p
+    
+def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
+    """
+    Estimation of the population level model of activation density using 
+    dpmm and inference
+    
+    Parameters
+    ----------
+    Fbeta nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    bf list of nipy.neurospin.spatial_models.hroi.Nroi instances
+       representing individual ROIs
+       let nr be the number of terminal regions across subjects
+    gf0, array of shape (nr)
+         the mixture-based prior probability 
+         that the terminal regions are true positives
+    sub, array of shape (nr)
+         the subject index associated with the terminal regions
+    gfc, array of shape (nr, coord.shape[1])
+         the coordinates of the of the terminal regions
+    dmax float>0:
+         expected cluster std in the common space in units of coord
+    thq = 0.5 (float in the [0,1] interval)
+        p-value of the prevalence test
+    ths=0, float in the rannge [0,nsubj]
+        null hypothesis on region prevalence that is rejected during inference
+    g0 = 1.0 (float): constant value of the uniform density
+       over the (compact) volume of interest
+    verbose=0, verbosity mode
 
-# ----------------------------------------------------------------
-# ---------- Deprectaed stuff ------------------------------------
-# ----------------------------------------------------------------
+    Returns
+    -------
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    LR: a instance of sbf.Landmark_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    Coclust: array of shape (nr,nr):
+             co-labelling matrix that gives for each pair of cross_subject regions 
+             how likely they are in the same class according to the model
+             
+    """
+    nvox = coord.shape[0]
+    nsubj = len(bf)
+    
+    crmap = -np.ones(nvox, np.int)
+    LR = None
+    p = np.zeros(nvox)
+    if len(sub)<1:
+        return crmap,LR,bf,p
+
+    sub = np.concatenate(sub).astype(np.int) 
+    gfc = np.concatenate(gfc)
+    gf0 = np.concatenate(gf0)
+    
+    # prepare the DPMM
+    g1 = g0
+    prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
+    dof = 100
+    spatial_coords = coord
+    burnin = 100
+    nis = 300
+    # nis = number of iterations to estimate q and co_clust
+    nii = 100
+    # number of iterations to estimate p
+ 
+    CoClust, q, p =  fc.fdp2(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+                   sub, burnin, gfc, nis, nii)
+
+    if verbose:
+        import matplotlib.pylab as mp
+        mp.figure()
+        mp.imshow(CoClust,interpolation='nearest')
+        mp.colorbar()
+
+    
+    qq = CoClust>0.5
+    cg = fg.WeightedGraph(np.size(q))
+    cg.from_adjacency(qq)
+    u = cg.cc()
+    u[p<g0] = u.max()+1+np.arange(np.sum(p<g0))
+    
+    # append some information to the hroi in each subject
+    for s in range(nsubj):
+        bfs = bf[s]
+        if bfs!=None:
+            leaves = bfs.isleaf()
+            us = -np.ones(bfs.k).astype(np.int)
+            lq = np.zeros(bfs.k)
+            lq[leaves] = q[sub==s]
+            bfs.set_roi_feature('posterior_proba',lq)
+            lq = np.zeros(bfs.k)
+            lq[leaves] = 1-gf0[sub==s]
+            bfs.set_roi_feature('prior_proba',lq)
+                   
+            us[leaves] = u[sub==s]
+
+            # when parent regions has similarly labelled children,
+            # include it also
+            us = bfs.propagate_upward(us)
+            bfs.set_roi_feature('label',us)
+                        
+    # derive the group-level landmarks
+    # with a threshold on the number of subjects
+    # that are represented in each one 
+    LR,nl = infer_LR(bf,thq,ths,verbose=verbose)
+
+    # make a group-level map of the landmark position
+    crmap = -np.ones(nvox)
+    # not implemented at the moment
+ 
+    return crmap, LR, bf, CoClust
+    
+        
 
 
-def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, theta=3.0, g0 = 1.0, bdensity=0,verbose=1):
+def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4), 
+                              shape=None,
+                       thq=0.5, smin=5, ths=0, theta=3.0, g0=1.0,
+                       verbose=0):
     """
     Compute the  Bayesian Structural Activation paterns - simplified version  
-    INPUT:
-    - Fbeta : an fff field class describing the spatial relationships in the dataset (nbnodes nodes)
-    - lbeta: an array of size (nbnodes, subjects) with functional data
-    - tal: spatial coordinates of the nodes
-    - thq = 0.5: posterior significance threshold
-    - smin = 5: minimal size of the regions to validate them
-    - theta = 3.0: first level threshold
-    - g0 = 1.0 : constant values of the uniform density over the volume of interest
-    - bdensity=0 if bdensity=1, the variable p in ouput contains the likelihood of the data under H1 on the set of input nodes
-    - verbose=1: verbosity mode
-    OUTPUT:
-    - crmap: resulting group map
-    - AF: list of inter-subject related ROIs
-    - BF: List of individual ROIs
-    - u: labelling of the individual ROIs
-    - p: likelihood of the data under H1 over some sampling grid
-    NOTE:
+
+    Parameters
+    ----------
+    Fbeta :  nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    lbeta: an array of shape (nbnodes, subjects):
+           the multi-subject statistical maps
+    coord array of shape (nnodes,3):
+          spatial coordinates of the nodes
+    dmax float>0:
+         expected cluster std in the common space in units of coord
+    xyz array of shape (nnodes,3):
+        the grid coordinates of the field
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition      
+    thq = 0.5 (float):
+        posterior significance threshold 
+        should be in the [0,1] interval
+    smin = 5 (int): minimal size of the regions to validate them
+    theta = 3.0 (float): first level threshold
+    g0 = 1.0 (float): constant values of the uniform density
+       over the (compact) volume of interest
+    verbose=0: verbosity mode
+
+    Results
+    -------
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    LR: a instance of sbf.Landmark_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    p: array of shape (nnodes):
+       likelihood of the data under H1 over some sampling grid
+
+    Note
+    ----
     In that case, the DPMM is used to derive a spatial density of
     significant local maxima in the volume. Each terminal (leaf)
     region which is a posteriori significant enough is assigned to the
-    nearest mode of theis distribution
+    nearest mode of this distribution
+
+    fixme
+    -----
+    The number of itertions should become a parameter
     """
-    BF = []
+   
+    bf, gf0, sub, gfc = compute_individual_regions(Fbeta, lbeta, coord, dmax,
+                                                   xyz, affine,  shape,  smin,
+                                                   theta, verbose)
+    crmap, LR, bf, p = bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths,
+                                g0,verbose)
+    
+    return crmap, LR, bf, p
+
+def compute_BSA_simple_quick(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4), 
+                        shape=None, thq=0.5, smin=5, ths=0, theta=3.0, g0=1.0,
+                       verbose=0):
+    """
+    Idem compute_BSA_simple, but this one does not estimate the full density
+    (on small datasets, it can be much faster)  
+
+    Parameters
+    ----------
+    Fbeta :  nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    lbeta: an array of shape (nbnodes, subjects):
+           the multi-subject statistical maps
+    coord array of shape (nnodes,3):
+          spatial coordinates of the nodes
+    dmax float>0:
+         expected cluster std in the common space in units of coord
+    xyz array of shape (nnodes,3):
+        the grid coordinates of the field
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition      
+    thq = 0.5 (float):
+        posterior significance threshold 
+        should be in the [0,1] interval
+    smin = 5 (int): minimal size of the regions to validate them
+    theta = 3.0 (float): first level threshold
+    g0 = 1.0 (float): constant values of the uniform density
+       over the (compact) volume of interest
+    verbose=0: verbosity mode
+
+    Results
+    -------
+    crmap: array of shape (nnodes):
+           the resulting group-level labelling of the space
+    LR: a instance of sbf.Landmark_regions that describes the ROIs found
+        in inter-subject inference
+        If no such thing can be defined LR is set to None
+    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+        representing individual ROIs
+    coclust: array of shape (nr,nr):
+        co-labelling matrix that gives for each pair of cross_subject regions 
+        how likely they are in the same class according to the model
+    """
+    
+    bf, gf0, sub, gfc = compute_individual_regions(Fbeta, lbeta, coord, dmax,
+                                                   xyz, affine,  shape,  smin,
+                                                   theta, verbose)
+    crmap, LR, bf, coclust = bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq,
+                                       ths, g0, verbose)
+
+    return crmap, LR, bf, coclust
+
+def compute_individual_regions(Fbeta, lbeta, coord, dmax, xyz,
+                               affine=np.eye(4),  shape=None,  smin=5,
+                               theta=3.0, verbose=0, reshuffle=0):
+    """
+    Compute the  Bayesian Structural Activation paterns -
+    with statistical validation
+
+    Parameters
+    ----------
+    Fbeta :  nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    lbeta: an array of shape (nbnodes, subjects):
+           the multi-subject statistical maps
+    coord array of shape (nnodes,3):
+          spatial coordinates of the nodes
+    dmax float>0:
+         expected cluster std in the common space in units of coord
+    xyz array of shape (nnodes,3):
+        the grid coordinates of the field
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition      
+    smin = 5 (int): minimal size of the regions to validate them
+    theta = 3.0 (float): first level threshold
+    verbose=0: verbosity mode
+    reshuffle=0: if nonzero, reshuffle the positions; this affects bf and gfc
+    
+    Returns
+    -------
+    bf list of nipy.neurospin.spatial_models.hroi.Nroi instances
+       representing individual ROIs
+       let nr be the number of terminal regions across subjects
+    gf0, array of shape (nr)
+         the mixture-based prior probability 
+         that the terminal regions are true positives
+    sub, array of shape (nr)
+         the subject index associated with the terminal regions
+    gfc, array of shape (nr, coord.shape[1])
+         the coordinates of the of the terminal regions
+    """
+    bf = []
     gfc = []
     gf0 = []
     sub = []
-    gc = []
-    nbsubj = lbeta.shape[1]
+    nsubj = lbeta.shape[1]
     nvox = lbeta.shape[0]
 
-    for s in range(nbsubj):
+    for s in range(nsubj):
         
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        nroi = Fbeta.generate_blobs(refdim=0,th=theta,smin = smin)
+        nroi = hroi.NROI_from_field(Fbeta, affine, shape, xyz, refdim=0,
+                                    th=theta, smin=smin)
+              
+        if nroi!=None:
+            nroi.set_discrete_feature_from_index('activation',beta)
+            bfm = nroi.discrete_to_roi_features('activation','average')
+            bfm = bfm[nroi.isleaf()]
 
-        # consider only the rois associated with maxima
-        # hence with no hierrachy
-        #nroi = nroi.reduce_to_leaves()
+            # get the regions position
+            if reshuffle:
+                nroi = nroi.reduce_to_leaves()
+                ## randomize the positions by taking any local maximum of the image
+                #idx, topidx = Fbeta.get_local_maxima()
+                #temp = idx[np.argsort(np.random.rand(len(idx)))[:nroi.k]]
+                temp = np.argsort(np.random.rand(nvox))[:nroi.k]
 
-        BF.append(nroi) 
-        
-        if nroi.k>0:
-            # find some way to avoid coordinate averaging
-            idx = nroi.get_seed()
-            parents = nroi.get_parents()
-            label = nroi.get_label()
-            nroi.make_feature(beta, 'height','mean')
-            bfm = nroi.get_ROI_feature('height')[nroi.isleaf()]#---
-            nroi.make_feature(tal.astype(np.float),'coord','cumulative_mean')
-            bfc = nroi.get_ROI_feature('coord')[nroi.isleaf()]#---
-            #
+                bfc = coord[temp]
+                nroi.parents = np.arange(nroi.k)
+                nroi.set_roi_feature('position',bfc)
+            else:
+                nroi.set_discrete_feature_from_index('position',coord)
+                bfc = nroi.discrete_to_roi_features('position','average')
+                bfc = bfc[nroi.isleaf()]
             gfc.append(bfc)
-
+            
             # compute the prior proba of being null
             beta = np.squeeze(beta)
             beta = beta[beta!=0]
@@ -831,91 +1072,108 @@ def _compute_BSA_simple_dep (Fbeta,lbeta, tal,dmax, thq=0.5, smin=5,ths = 0, the
             # use a GMM model...
             alpha = 0.01
             prior_strength = 100
-            bfp = _GMM_priors_(beta,bfm,theta,alpha,prior_strength,verbose)
-            bf0 = bfp[:,1]/np.sum(bfp,1)
-            #import scipy.stats as st
-            #print s, st.norm.isf(bf0).mean(),
-            # ... or the emp_null heuristic
-            import fff2.utils.emp_null as en
-            enn = en.ENN(beta)
-            enn.learn()
+            fixed_scale = True
+            bfp = en.three_classes_GMM_fit(beta, bfm, alpha,
+                                        prior_strength,verbose, fixed_scale)
+            bf0 = bfp[:,1]
+            
+            ## ... or the emp_null heuristic
+            #enn = en.ENN(beta)
+            #enn.learn()
             #bf0 = np.reshape(enn.fdr(bfm),np.size(bf0))
-            #print st.norm.isf(bf0).mean()
             
             gf0.append(bf0)
             sub.append(s*np.ones(np.size(bfm)))
 
+            nroi.set_roi_feature('label',np.arange(nroi.k))
+        bf.append(nroi)    
+    return bf, gf0, sub, gfc
+
+
+def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4), 
+                              shape=None,
+                       thq=0.5, smin=5, ths=0, theta=3.0, g0=1.0,
+                       verbose=0):
+    """
+    Compute the  Bayesian Structural Activation paterns -
+    with statistical validation
+
+    Parameters
+    ----------
+    Fbeta :  nipy.neurospin.graph.field.Field instance
+          an  describing the spatial relationships
+          in the dataset. nbnodes = Fbeta.V
+    lbeta: an array of shape (nbnodes, subjects):
+           the multi-subject statistical maps
+    coord array of shape (nnodes,3):
+          spatial coordinates of the nodes
+    dmax float>0:
+         expected cluster std in the common space in units of coord
+    xyz array of shape (nnodes,3):
+        the grid coordinates of the field
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition      
+    thq = 0.5 (float):
+        posterior significance threshold 
+        should be in the [0,1] interval
+    smin = 5 (int): minimal size of the regions to validate them
+    theta = 3.0 (float): first level threshold
+    g0 = 1.0 (float): constant values of the uniform density
+       over the (compact) volume of interest
+    verbose=0: verbosity mode
+
+    Results
+    -------
+    mll, float, the average cross-validated log-likelihood across subjects
+    ml0, float the log-likelihood of the model under a global null hypothesis
+
+    """
+    nsubj = lbeta.shape[1]
+    nvox = lbeta.shape[0]
+    bf, gf0, sub, gfc = compute_individual_regions(Fbeta, lbeta, coord, dmax,
+                                                   xyz, affine,  shape,  smin,
+                                                   theta, verbose)
+    
     crmap = -np.ones(nvox, np.int)
-    u = []
-    AF = []
+    LR = None
     p = np.zeros(nvox)
     if len(sub)<1:
-        return crmap,AF,BF,u,p
+        return crmap, LR, bf, p
 
-    # prepare the DPMM
     sub = np.concatenate(sub).astype(np.int) 
     gfc = np.concatenate(gfc)
     gf0 = np.concatenate(gf0)
+    
+    # prepare the DPMM
     g1 = g0
     prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
     dof = 100
-    spatial_coords = tal
-    burnin=100
-    nis=100
-    nii=1000
-
-    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0, sub,burnin,spatial_coords,nis, nii)
+    burnin = 100
+    nis = 300
+    nii = 100
+    ll1 = []
+    ll0 = []
+    ll2 = []
     
-    if verbose:
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.plot(1-gf0,q,'.')
+    for s in range(nsubj):
+        # 
+        if np.sum(sub==s)>0:
+            spatial_coords = gfc[sub==s]
+            p, q =  fc.fdp(gfc[sub!=s], 0.5, g0, g1, dof, prior_precision,
+                          1-gf0[sub!=s], sub[sub!=s], burnin, spatial_coords,
+                          nis, nii)
+            pp = gf0[sub==s]*g0 + p*(1-gf0[sub==s])
+            ll2.append(np.mean(np.log(pp)))
+            ll1.append(np.mean(np.log(p)))
+            ll0.append(np.mean(np.log(g0)))
 
-    # threshold the blobs according to their posterior probability
-    # NB: this cooresponds to a BF of thq/(1-thq)
-    valid = q>thq
-    if verbose:
-        print np.sum(valid),np.size(valid),thq
+    ml0 = np.mean(np.array(ll0))
+    ml1 = np.mean(np.array(ll1))
+    mll = np.mean(np.array(ll2))
+    if verbose: 
+       print 'average cross-validated log likelihood'
+       print 'null model: ', ml0,' alternative model: ', mll
 
-    # make a watershed of the posterior density map
-    # in order to have the modes and assign each selected blob
-    # to the nearest mode
-    Fbeta.set_field(p)
-    idx,depth, major,label = Fbeta.custom_watershed(0,g0)
-
-    # label the blobs
-    for s in range(nbsubj):
-        bfs = BF[s]
-        if bfs.k>0:
-            valids = np.zeros(bfs.k,'bool')
-            #valids = valid[sub==s] # ---
-            valids[bfs.isleaf()] = valid[sub==s] # ---
-            valids = bfs.propagate_AND_to_root(valids)
-            bfs.clean(valids)
-            bfs.merge_descending()
-            bfs.remove_feature('coord')
-            if bfs.k>0:
-                leaves = bfs.isleaf()
-                us = -np.ones(bfs.k).astype(np.int)
-                beta = np.reshape(lbeta[:,s],(nvox,1))
-                bfsc = tal[bfs.argmax(beta)]
-                bfs.set_ROI_feature(bfsc,'coord')
-                j = label[bfs.argmax(beta)]
-                us[leaves] = j[leaves]
-                us = bfs.propagate_upward(us)
-                u.append(us)
-
-    if len(u)==0:
-        return crmap,AF,BF,u,p
-    
-    u = np.concatenate(u)
-
-    # derive the group-level landmarks
-    # with a threshold on the number of subjects
-    # that are represented in each one 
-    AF,u = sbf.Build_Amers(BF,u,ths) 
-
-    # make a group-level map of the landmark position
-    crmap = make_crmap(AF,tal,verbose)
-    
-    return crmap,AF,BF,u,p
+    return mll, ml0

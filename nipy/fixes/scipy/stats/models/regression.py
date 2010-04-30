@@ -629,7 +629,7 @@ class RegressionResults(LikelihoodModelResults):
 
         """
 
-        return self.resid * utils.recipr(np.sqrt(self.dispersion))
+        return self.resid * utils.pos_recipr(np.sqrt(self.dispersion))
 
 # predict is a verb
 # do the predicted values need to be done automatically, then?

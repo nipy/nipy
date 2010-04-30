@@ -2,9 +2,9 @@
 Automatic plotting of activation maps
 =====================================
 
-.. currentmodule:: fff2.viz.activation_maps
+.. currentmodule:: nipy.neurospin.viz.activation_maps
 
-The module :mod:`fff2.viz.activation_maps` provides functions to plot
+The module :mod:`nipy.neurospin.viz.activation_maps` provides functions to plot
 visualization of activation maps in a non-interactive way.
 
 2D cuts of an activation map can be plotted and superimposed on an
@@ -18,12 +18,17 @@ a summary of the output of a calculation.
 
 .. _Mayavi2: http://code.enthought.com/projects/mayavi
 
+.. warning:: 
+
+    The content of the module will change over time, as neuroimaging
+    volumetric data structures are used instead of plain numpy arrays.
+
 An example
 -----------
 
 ::
 
-    from fff2.viz.activation_maps import plot_map, mni_sform, \
+    from nipy.neurospin.viz.activation_maps import plot_map, mni_sform, \
             coord_transform
 
     # First, create a fake activation map: a 3D image in MNI space with
@@ -46,15 +51,15 @@ The same plot can be obtained fully automaticaly, by using
 :func:`auto_plot_map` to find the activation threshold `vmin` and the cut
 coordinnates::
 
-    from fff2.viz.activation_maps import auto_plot_map
+    from nipy.neurospin.viz.activation_maps import auto_plot_map
     auto_plot_map(map, mni_sform)
 
 In this simple example, the code will easily detect the bar as activation
 and position the cut at the center of the bar.
 
 
-fff2.viz.activation_maps functions
------------------------------------
+`nipy.neurospin.viz.activation_maps` functions
+-------------------------------------------------
 
 .. autosummary::
     :toctree: generated
@@ -63,49 +68,32 @@ fff2.viz.activation_maps functions
     find_activation
     find_cut_coords
     plot_map_2d
-    plot_map_3d
     auto_plot_map
-    plot_niftifile
 
-The plot_activation script
+
+3D plotting utilities
 ---------------------------
 
-In addition to the above functions, callable from Python, there is also
-script :program:`plot_activation` that can be used to easily render
-previews from Nifti files. It can also optionally output an html file, to
-summarize many maps on one screen.
+.. currentmodule:: nipy.neurospin.viz.maps_3d
 
-In its simplest use, it is called like this::
+The module :mod:`nipy.neurospin.viz.maps_3d` can be used as helpers to
+represent neuroimaging volumes with Mayavi2_. 
 
-    plot_activation file1.nii file2.nii [...]
+.. autosummary::
+    :toctree: generated
 
-The :program:`plot_activation` script has several many options:
+    plot_map_3d
+    plot_anat_3d
 
-**-h**, **--help**            
-    show the help message and exit
+More versalite visualizations, the core idea is that given a 3D map
+and an affine, the data is exposed in Mayavi as a volumic source, with
+world space coordinates corresponding to figure coordinates.
+Visualization modules can be applied on this data source as explained in
+the `Mayavi manual
+<http://code.enthought.com/projects/mayavi/docs/development/html/mayavi/mlab.html#assembling-pipelines-with-mlab>`_
 
-**-o** *DIR*, **--outdir=DIR**
-    write all output to DIR
+.. autosummary::
+    :toctree: generated
 
-**-f** *FILE*, **--htmlfile=FILE**
-    write report to a html file FILE, useful when visualizing multiple files
-
-**-a** *FILE*, **--anat=FILE**
-    use the given Nifti file as an anatomy
-
-**-M** *FILE*, **--mask=FILE**  
-    use the given Nifti file as a mask
-
-**-d**, **--no3d**
-    don't try to do a 3D view
-
-**-s**, **--sign**  
-    force activation sign to be positive
-
-**-c** *CUT_COORDS*, **--cut-coords=CUT_COORDS**
-    Talairach coordinates of the 2D cuts
-
-**-m** *VMIN*, **--vmin=VMIN**
-    Minimum value for the activation, used for thresholding
-
+    affine_img_src
 

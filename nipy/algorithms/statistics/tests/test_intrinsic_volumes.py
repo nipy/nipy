@@ -2,13 +2,15 @@ import numpy as np
 import numpy.linalg as L
 import numpy.random as R
 
-from nipy.testing import *
+from nipy.testing import assert_equal, assert_almost_equal, dec
 
 from nipy.algorithms.statistics import intvol, utils
+
 
 def symnormal(p=10):
     M = R.standard_normal((p,p))
     return (M + M.T) / np.sqrt(2)
+
 
 def randorth(p=10):
     """
@@ -17,6 +19,7 @@ def randorth(p=10):
     A = symnormal(p)
     return L.eig(A)[1]
                 
+
 def box(shape, edges):
     data = np.zeros(shape)
     sl = []
@@ -24,6 +27,7 @@ def box(shape, edges):
         sl.append(slice(edges[i][0], edges[i][1],1))
     data[sl] = 1
     return data.astype(np.int)
+
 
 def randombox(shape):
     """
@@ -38,11 +42,11 @@ def randombox(shape):
             edges[j][0] = 0; edges[j][1] = shape[j]/2+1
     return edges, box(shape, edges)
         
+
 def elsym(edgelen, order=1):
     """
-    Elementary symmetric polynoimal of a given order
+    Elementary symmetric polynomial of a given order
     """
-
     l = len(edgelen)
     if order == 0:
         return 1
@@ -50,6 +54,7 @@ def elsym(edgelen, order=1):
     for v in utils.combinations(range(l), order):
         r += np.product([edgelen[vv] for vv in v])
     return r
+
 
 def nonintersecting_boxes(shape):
     """
@@ -75,7 +80,6 @@ def nonintersecting_boxes(shape):
     the 'dilated' box1 does not intersect with box2.
     Additivity works in this case.
     """
-
     while True:
         edge1, box1 = randombox(shape)
         edge2, box2 = randombox(shape)
@@ -89,18 +93,21 @@ def nonintersecting_boxes(shape):
             break
     return box1, box2, edge1, edge2
 
+
 def test_mu3tet():
     assert_equal(intvol.mu3_tet(0,0,0,0,1,0,0,1,0,1), 1./6)
+
 
 def test_mu2tri():
     assert_equal(intvol.mu2_tri(0,0,0,1,0,1), 1./2)
 
+
 def test_mu1tri():
     assert_equal(intvol.mu1_tri(0,0,0,1,0,1), 1+np.sqrt(2)/2)
 
+
 def test_mu2tet():
     assert_equal(intvol.mu2_tet(0,0,0,0,1,0,0,1,0,1), (3./2 + np.sqrt(3./4))/2)
-
 
 
 def test_ec():
@@ -110,6 +117,7 @@ def test_ec():
              2:intvol.EC2d,
              1:intvol.EC1d}[i]
         yield assert_almost_equal, f(box1), 1
+
 
 def test_ec_disjoint():
     for i in range(1, 4):
@@ -142,6 +150,7 @@ def test_lips1_disjoint():
          np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(2)]))
 
 
+@dec.slow
 def test_lips2_disjoint():
     phi = intvol.Lips2d
 
@@ -164,7 +173,7 @@ def test_lips2_disjoint():
         (np.array([elsym([e[1]-e[0]-1 for e in edge1], i) for i in range(3)]) +
          np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(3)]))
 
-
+@dec.slow
 def test_lips3_disjoint():
     phi = intvol.Lips3d
     box1, box2, edge1, edge2 = nonintersecting_boxes((40,)*3)
@@ -183,9 +192,9 @@ def test_lips3_disjoint():
         (np.array([elsym([e[1]-e[0]-1 for e in edge1], i) for i in range(4)]) +
          np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(4)]))
 
+
 def test_slices():
     # Slices have EC 1...
-
     e = intvol.EC3d
     p = intvol.Lips3d
     m = np.zeros((40,)*3, np.int)

@@ -6,7 +6,7 @@ __docformat__ = 'restructuredtext'
 import gc
 
 import numpy as np
-from nipy.fixes.scipy.stats.models.utils import recipr
+from nipy.fixes.scipy.stats.models.utils import pos_recipr
 
 def estimate_mean(Y, sd):
     """ Estimate the mean of a sample given information about
@@ -35,7 +35,7 @@ def estimate_mean(Y, sd):
 
     _stretch = lambda x: np.multiply.outer(np.ones(nsubject), x)
 
-    W = recipr(sd**2)
+    W = pos_recipr(sd**2)
     if W.shape in [(), (1,)]:
         W = np.ones(Y.shape) * W
     W.shape = Y.shape
@@ -45,13 +45,13 @@ def estimate_mean(Y, sd):
     resid = (Y - _stretch(effect)) * np.sqrt(W)
 
     scale = np.add.reduce(np.power(resid, 2), 0) / (nsubject - 1)
-    var_total = scale * recipr(W.sum(0))
+    var_total = scale * pos_recipr(W.sum(0))
 
     value = {}
     value['resid'] = resid        
     value['effect'] = effect
     value['sd'] = np.sqrt(var_total)
-    value['t'] = value['effect'] * recipr(value['sd'])
+    value['t'] = value['effect'] * pos_recipr(value['sd'])
     value['scale'] = np.sqrt(scale)
 
     if squeeze:
@@ -98,7 +98,7 @@ def estimate_varatio(Y, sd, df=None, niter=10):
         squeeze = True
     _stretch = lambda x: np.multiply.outer(np.ones(nsubject), x)
 
-    W = recipr(sd**2)
+    W = pos_recipr(sd**2)
     if W.shape in [(), (1,)]:
         W = np.ones(Y.shape) * W
     W.shape = Y.shape
@@ -113,8 +113,8 @@ def estimate_varatio(Y, sd, df=None, niter=10):
 
     for _ in range(niter):
         Sms = Sm + _stretch(sigma2)
-        W = recipr(Sms)
-        Winv = recipr(W.sum(0))
+        W = pos_recipr(Sms)
+        Winv = pos_recipr(W.sum(0))
         mu = Winv * (W*Y).sum(0)
         R = W * (Y - _stretch(mu))
         ptrS = 1 + (Sm * W).sum(0) - (Sm * W**2).sum(0) * Winv

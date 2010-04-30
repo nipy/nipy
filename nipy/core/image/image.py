@@ -29,8 +29,8 @@ class Image(object):
 
     Notes
     -----
-    Images are most often created through the module functions 
-    load and fromarray.
+    Images can be created through the module functions.  See nipy.io for
+    image IO such as ``load`` and ``save``
 
     Examples
     --------
@@ -430,7 +430,10 @@ def fromarray(data, innames, outnames, coordmap=None):
     ----------
     data : numpy array
         A numpy array of three dimensions.
-    names : a list of axis names
+    innames : sequence
+       a list of input axis names
+    innames : sequence
+       a list of output axis names
     coordmap : A `CoordinateMap`
         If not specified, an identity coordinate map is created.
 
@@ -444,7 +447,6 @@ def fromarray(data, innames, outnames, coordmap=None):
     save : function for saving images
 
     """
-
     ndim = len(data.shape)
     if not coordmap:
         coordmap = AffineTransform.from_start_step(innames,
@@ -617,4 +619,39 @@ def synchronized_order(img, target_img,
     if reference:
         img = img.reordered_reference(target_reference.coord_names)
     return img
+
+
+def is_image(obj):
+    ''' Returns true if this object obeys the Image API
+
+    This allows us to test for something that is duck-typing an image.
+
+    For now an array must have a 'coordmap' attribute, and a callable
+    '__array__' attribute. 
+
+    Parameters
+    ----------
+    obj : object
+       object for which to test API
+
+    Returns
+    -------
+    is_img : bool
+       True if object obeys image API
+
+    Examples
+    --------
+    >>> from nipy.testing import anatfile
+    >>> from nipy.io.api import load_image
+    >>> img = load_image(anatfile)
+    >>> is_image(img)
+    True
+    >>> class C(object): pass
+    >>> c = C()
+    >>> is_image(c)
+    False
+    '''
+    if not hasattr(obj, 'coordmap'):
+        return False
+    return callable(getattr(obj, '__array__'))
 

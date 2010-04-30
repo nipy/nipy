@@ -18,6 +18,7 @@ from coordinate_map import product as cmap_product
 from coordinate_map import shifted_range_origin
 from coordinate_system import CoordinateSystem
 
+
 class ArrayCoordMap(object):
     """
     When the function_domain of a CoordinateMap can be thought of as
@@ -58,11 +59,9 @@ class ArrayCoordMap(object):
         values : array
            Values of self.coordmap evaluated at np.indices(self.shape).
         """
-
         indices = np.indices(self.shape).astype(
             self.coordmap.function_domain.coord_dtype)
         tmp_shape = indices.shape
-
         # reshape indices to be a sequence of coordinates
         indices.shape = (self.coordmap.ndims[0], np.product(self.shape))
         _range = self.coordmap(indices.T)
@@ -82,20 +81,50 @@ class ArrayCoordMap(object):
         return self._evaluate(transpose=True)
     transposed_values = property(_getindices_values, doc='Get values of ArrayCoordMap in an array of shape (self.coordmap.ndims[1],) + self.shape)')
 
-    def __getitem__(self, index):
+    def __getitem__(self, slicers):
         """
         Return a slice through the coordmap.
 
         Parameters
         ----------
-        index : ``int`` or ``slice``
-            sequence of integers or slices
-        
+        slicers : int or tuple
+           int, or sequence of any combination of integers, slices.  The
+           sequence can also contain one Ellipsis. 
         """
-
-        if type(index) != type(()):
-            index = (index,)
-        return _slice(self.coordmap, self.shape, *index)
+        # slicers might just be just one thing, so convert to tuple
+        if type(slicers) != type(()):
+            slicers = (slicers,)
+        # raise error for anything other than slice, int, Ellipsis
+        have_ellipsis = False # check for >1 Ellipsis
+        for i in slicers:
+            if isinstance(i, np.ndarray):
+                raise ValueError('Sorry, we do not support '
+                                 'ndarrays (fancy indexing)')
+            if i == Ellipsis:
+                if have_ellipsis:
+                    raise ValueError(
+                        "only one Ellipsis (...) allowed in slice")
+                have_ellipsis = True
+                continue
+            try:
+                int(i)
+            except TypeError:
+                if hasattr(i, 'start'): # probably slice
+                    continue
+                raise ValueError('Expecting int, slice or Ellipsis')
+        # allow slicing of form [...,1]
+        if have_ellipsis:
+            # convert ellipsis to series of slice(None) objects.  For
+            # example, if the coordmap is length 3, we convert (...,1)
+            # to (slice(None), slice(None), 1) - equivalent to [:,:,1]
+            ellipsis_start = list(slicers).index(Ellipsis)
+            inds_after_ellipsis = slicers[(ellipsis_start+1):]
+            # the ellipsis continues until any remaining slice specification
+            n_ellipses = len(self.shape) - ellipsis_start - len(inds_after_ellipsis)
+            slicers = (slicers[:ellipsis_start]
+                     + n_ellipses * (slice(None),)
+                     + inds_after_ellipsis)
+        return _slice(self.coordmap, self.shape, *slicers)
 
     @staticmethod
     def from_shape(coordmap, shape):

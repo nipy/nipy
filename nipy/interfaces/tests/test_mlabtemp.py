@@ -5,14 +5,14 @@ import os
 import tempfile
 
 # Our own imports
-from nipy.interfaces.matlab import mlabtemp
+from nipy.interfaces.matlab import mlab_tempfile
 
 # Functions, classes and other top-level code
 def check_mlab_tempfile(dir):
     """Helper function for testing the mlab temp file creation."""
 
     try:
-        f = mlabtemp.mlab_tempfile(dir)
+        f = mlab_tempfile(dir)
     except OSError,msg:
         if not os.path.isdir(dir) and 'No such file or directory' in msg:
             # This is OK, it's the expected error

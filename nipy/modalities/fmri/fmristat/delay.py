@@ -14,12 +14,16 @@ import os, fpformat
 
 import numpy as np
 import numpy.linalg as L
-from nipy.fixes.scipy.stats.models.utils import recipr, recipr0
+from nipy.fixes.scipy.stats.models.utils import pos_recipr, recipr0
+# FIXME: This is broken. Don't know how to fix it
 #from nipy.fixes.scipy.stats.models.contrast import Contrast, ContrastResults
 
-from nipy.modalities.fmri import hrf
 from nipy.algorithms.statistics.regression import TOutput 
-from nipy.modalities.fmri.fmristat.invert import invertR
+
+class Contrast(object):
+    """ Empty boggus class to get the docs building.
+    """
+    # FIXME: This empty class needs to go.
 
 # XXX FIXME This is broken
 

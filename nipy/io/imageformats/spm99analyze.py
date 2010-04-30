@@ -1,4 +1,5 @@
 ''' Header reading functions for SPM version of analyze format '''
+import warnings
 import numpy as np
 
 from nipy.io.imageformats.volumeutils import HeaderDataError, HeaderTypeError, \
@@ -71,7 +72,7 @@ class SpmAnalyzeHeader(analyze.AnalyzeHeader):
             hdr['scl_slope'] = 1
             ret.fix_msg = 'setting scalefactor "scale" to 1'
         else:
-            ret.level = 30
+            ret.problem_level = 30
         return ret
 
 
@@ -206,15 +207,15 @@ class Spm99AnalyzeHeader(SpmAnalyzeHeader):
         if fix:
             ret.fix_msg = 'leaving as set, ignoring for affine'
         else:
-            ret.level = 20
+            ret.problem_level = 20
         return ret
 
 
 class Spm99AnalyzeImage(analyze.AnalyzeImage):
     _header_maker = Spm99AnalyzeHeader
     @classmethod
-    def from_filespec(klass, filespec):
-        ret = super(Spm99AnalyzeImage, klass).from_filespec(filespec)
+    def from_filename(klass, filename):
+        ret = super(Spm99AnalyzeImage, klass).from_filename(filename)
         import scipy.io as sio
         matf = ret._files['mat']
         try:
@@ -223,7 +224,13 @@ class Spm99AnalyzeImage(analyze.AnalyzeImage):
             return ret
         mats = sio.loadmat(matf)
         if 'mat' in mats: # this overrides a 'M', and includes any flip
-            ret._affine = mats['mat']
+            mat = mats['mat']
+            if mat.ndim > 2:
+                warnings.warn('More than one affine in "mat" matrix, '
+                              'using first')
+                mat = mat[:,:,0]
+            ret._affine = mat
+            return ret
         elif 'M' in mats: # the 'M' matrix does not include flips
             hdr = ret._header
             if hdr.default_x_flip:
@@ -267,4 +274,4 @@ class Spm99AnalyzeImage(analyze.AnalyzeImage):
 
 
 load = Spm99AnalyzeImage.load
-save = Spm99AnalyzeImage.save
+save = Spm99AnalyzeImage.instance_to_filename

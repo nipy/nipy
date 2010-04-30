@@ -3,8 +3,7 @@ import numpy as np
 from nipy.algorithms.statistics import onesample
 from scipy.stats import norm
 
-from nipy.testing import assert_true, assert_equal, \
-    assert_almost_equal, assert_array_almost_equal
+from nipy.testing import assert_almost_equal
 
 
 def test_estimate_varatio(p=1.0e-04, sigma2=1):

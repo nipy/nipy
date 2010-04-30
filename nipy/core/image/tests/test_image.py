@@ -1,8 +1,12 @@
 import warnings
 
 import numpy as np
+import numpy.testing as nptest
 
-from nipy.testing import *
+from nipy.testing import assert_true, assert_false, assert_equal, \
+    assert_raises, assert_array_almost_equal, TestCase, \
+    anatfile, parametric
+
 from nipy.core.image import image
 from nipy.core.api import Image, fromarray, subsample, slice_maker
 from nipy.core.api import parcels, data_generator, write_data

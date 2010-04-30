@@ -3,20 +3,31 @@ from _field import __doc__
 import numpy as np
 import graph as fg
 
+"""
+This module implements the field structure of nipy.neurospin
+
+Author:Bertrand Thirion, 2006--2009
+
+Fixme : add a subfield method, similar to subgraph
+"""
+
 class Field(fg.WeightedGraph):
     """
     This is the basic field structure,
-    which contains the weighted graph structure plus a matrix of data (the 'field')
-    -field is an array of size(n,p) where n is the number of vertices of the graph and p is the field dimension
+         which contains the weighted graph structure
+         plus an array of data (the 'field')
+    field is an array of size(n,p)
+          where n is the number of vertices of the graph
+          and p is the field dimension
     """
     def __init__(self, V, edges=None, weights=None, field=None):
         """
-        INPUT:
-        V: the number of vertices of the graph
+        Parameters
+        ----------
+        V (int >0) the number of vertices of the graph
         edges=None: the edge array of the graph
         weights=None: the asociated weights array
-        field=None: the data itself
-        This is the build function
+        field=None: the field data itself
         """
         V = int(V)
         if V<1:
@@ -36,7 +47,8 @@ class Field(fg.WeightedGraph):
                 self.edges = edges
                 self.weights = weights
             else:
-                raise ValueError, 'Incompatible size of the edges and weights matrices'
+                raise ValueError, 'Incompatible size of the edges \
+                                  and weights matrices'           
         self.field = []
         if field==None:
             pass
@@ -53,7 +65,6 @@ class Field(fg.WeightedGraph):
 
     def get_field(self):
         return self.field
-        
 
     def set_field(self,field):
         if np.size(field)==self.V:
@@ -65,9 +76,10 @@ class Field(fg.WeightedGraph):
 
     def closing(self,nbiter=1):
         """
-        self.closing(nbiter=1)
-        Morphological closing of the field
-        IMPUT
+        Morphological closing of the field data. self.field is changed
+                      
+        Parameters
+        ----------
         nbiter=1 : the number of iterations required
         """
         nbiter = int(nbiter)
@@ -78,9 +90,10 @@ class Field(fg.WeightedGraph):
 
     def opening(self,nbiter=1):
         """
-        self.opening(nbiter=1)
-        Morphological openeing of the field
-        IMPUT
+        Morphological opening of the field data. self.field is changed
+        
+        Parameters
+        ----------
         nbiter=1 : the number of iterations required
         """
         nbiter = int(nbiter)
@@ -92,16 +105,17 @@ class Field(fg.WeightedGraph):
                     
     def dilation(self,nbiter=1):
         """
-        self.dilation(nbiter=1)
-        Morphological openeing of the field
-        IMPUT
+        Morphological dimlation of the field data. self.field is changed
+
+        Parameters
+        ----------
         nbiter=1 : the number of iterations required
         """
         nbiter = int(nbiter)
         if self.E>0:
             if nbiter>0:
                 for i in range (self.field.shape[1]):
-                    self.field[:,i] = dilation(self.edges[:,0],self.edges[:,1],self.field[:,i],nbiter)
+                    self.field[:,i] = dilation(self.edges[:,0], self.edges[:,1],self.field[:,i],nbiter)
 
     def erosion(self,nbiter=1):
         """
@@ -114,20 +128,26 @@ class Field(fg.WeightedGraph):
         if self.E>0:
             if nbiter>0:
                 for i in range (self.field.shape[1]):
-                    self.field[:,i] = erosion(self.edges[:,0],self.edges[:,1],self.field[:,i],nbiter)
+                    self.field[:,i] = erosion(self.edges[:,0],self.edges[:,1],
+                                              self.field[:,i],nbiter)
 
     def get_local_maxima(self,refdim=0,th=-np.infty):
         """
-        idx,depth = get_local_maxima(th=-infty)
-        Look for the local maxima of  field[:,refdim]
-        INPUT :
-        - refdim is the field dimension over which the maxima are looked after
-        - th is a threshold so that only values above th are considered
-        by default, th = -infty (numpy)
-        OUTPUT:
-        - idx: the indices of the vertices that are local maxima
-        - depth: the depth of the local maxima :
-        depth[idx[i]] = q means that idx[i] is a q-order maximum
+        Look for the local maxima of one dimension (refdim) of self.field
+        
+        Parameters
+        ----------
+        refdim (int) the field dimension over which the maxima are looked after
+        th = -np.infty (float,optional) 
+            threshold so that only values above th are considered
+        
+        Returns
+        -------
+        idx: array of shape (nmax) 
+             indices of the vertices that are local maxima
+        depth: array of shape (nmax)  
+               topological depth of the local maxima :
+               depth[idx[i]] = q means that idx[i] is a q-order maximum
         """
         refdim = int(refdim)
         if (np.size(self.field)==0):
@@ -138,7 +158,8 @@ class Field(fg.WeightedGraph):
         depth = self.V*np.ones(np.sum(self.field>th),'i')
         if self.E>0:
             try:
-                idx,depth = get_local_maxima(self.edges[:,0],self.edges[:,1],self.field[:,refdim],th)
+                idx,depth = get_local_maxima(self.edges[:,0],self.edges[:,1],
+                                             self.field[:,refdim],th)
             except:
                 idx = []
                 depth = []
@@ -148,15 +169,19 @@ class Field(fg.WeightedGraph):
     def local_maxima(self,refdim=0):
         """
         Look for all the local maxima of a field
-        INPUT :
-        - refdim is the field dimension over which the maxima are looked after
-        OUTPUT:
-        - depth: a labelling of the vertices such that
-         depth[v] = 0 if v is not a local maximum
-         depth[v] = 1 if v is a first order maximum
-         ...
-         depth[v] = q if v is a q-order maximum
-
+        
+        Parameters
+        ----------
+        refdim (int) field dimension over which the maxima are looked after
+        
+        Returns
+        -------
+        depth: array of shape (nmax)
+               a labelling of the vertices such that
+               depth[v] = 0 if v is not a local maximum
+               depth[v] = 1 if v is a first order maximum
+               ...
+               depth[v] = q if v is a q-order maximum
         """
         refdim = int(refdim)
         if (np.size(self.field)==0):
@@ -165,43 +190,53 @@ class Field(fg.WeightedGraph):
             raise ValueError, 'refdim>field.shape[1]'
         depth = self.V*np.ones(self.V,'i')
         if self.E>0:
-            depth = local_maxima(self.edges[:,0],self.edges[:,1],self.field[:,refdim])
+            depth = local_maxima(self.edges[:,0],self.edges[:,1],
+                                 self.field[:,refdim])
         return depth
 
     def diffusion(self,nbiter=1):
        """
        diffusion of a field of data in the weighted graph structure
-       INPUT :
-       - nbiter=1: the number of iterations required
-       (the larger the smoother)
-       NB:
-       - This is done for all the dimensions of the field
+       Note that this changes self.field       
+
+       Parameters
+       ----------
+       nbiter=1: the number of iterations required
+                 (the larger the smoother)
+       
+       Note : The process is run for all the dimensions of the field
        """
        nbiter = int(nbiter)
        if (self.E>0)&(nbiter>0)&(np.size(self.field)>0):
-            self.field = diffusion(self.edges[:,0],self.edges[:,1],self.weights,self.field,nbiter)
+            self.field = diffusion(self.edges[:,0],self.edges[:,1],
+                                   self.weights,self.field,nbiter)
 
 
     def custom_watershed(self,refdim=0,th=-np.infty):
         """
-        idx,depth, major,label = self.custom_watershed(refim = 0,th=-infty)
-        perfoms a watershed analysis of the field.
+        watershed analysis of the field.
         Note that bassins are found aound each maximum
         (and not minimum as conventionally)
-        INPUT :
-        - th is a threshold so that only values above th are considered
+        
+        Parameters
+        ----------
+        th is a threshold so that only values above th are considered
         by default, th = -infty (numpy)
-        OUTPUT:
-        - idx: the indices of the vertices that are local maxima
-        - depth: the depth of the local maxima
-        depth[idx[i]] = q means that idx[i] is a q-order maximum
-        Note that this is also the diameter of the basins
-        associated with local maxima
-        - major: the label of the maximum which dominates each local maximum
-        i.e. it describes the hierarchy of the local maxima
-        - label : a labelling of thevertices according to their bassin
-        idx, depth and major have length q, where q is the number of bassins
-        label as length n: the number of vertices
+
+        Returns
+        -------
+        idx: array of shape (nbassins) 
+             indices of the vertices that are local maxima
+        depth: array of shape (nbassins) 
+               topological the depth of the bassins
+               depth[idx[i]] = q means that idx[i] is a q-order maximum
+               Note that this is also the diameter of the basins
+               associated with local maxima
+        major: array of shape (nbassins)
+               label of the maximum which dominates each local maximum
+               i.e. it describes the hierarchy of the local maxima
+        label : array of shape (self.V)
+              labelling of the vertices according to their bassin
         """
         if (np.size(self.field)==0):
             raise ValueError, 'No field has been defined so far'
@@ -221,25 +256,30 @@ class Field(fg.WeightedGraph):
 
     def threshold_bifurcations(self,refdim=0,th=-np.infty):
         """
-        idx,height, parents,label = threshold_bifurcations(refdim = 0,th=-infty)
-        perfoms theanalysis of the level sets of the field:
+        analysis of the level sets of the field:
         Bifurcations are defined as changes in the topology in the level sets
         when the level (threshold) is varied
-        This can been thought of as a kind of Morse description
-        INPUT :
-        - th is a threshold so that only values above th are considered
-        by default, th = -infty (numpy)
-        OUTPUT:
-        - idx: the indices of the vertices that are local maxima
-        - height: the depth of the local maxima
-        depth[idx[i]] = q means that idx[i] is a q-order maximum
-        Note that this is also the diameter of the basins
-        associated with local maxima
-        - parents: the label of the maximum which dominates each local maximum
-        i.e. it describes the hierarchy of the local maxima
-        - label : a labelling of thevertices according to their bassin
-        idx, depth and major have length q, where q is the number of bassins
-        label as length n: the number of vertices
+        This can been thought of as a kind of Morse analysis
+                
+        Parameters
+        ----------
+        th=-np.infty (float) 
+                     threshold so that only values above th are considered
+        
+        Returns
+        -------
+        idx: array of shape (nlsets) 
+             indices of the vertices that are local maxima
+        height: array of shape (nlsets)
+                the depth of the local maxima
+                depth[idx[i]] = q means that idx[i] is a q-order maximum
+                Note that this is also the diameter of the basins
+                associated with local maxima
+        parents: array of shape (nlsets)
+                 the label of the maximum which dominates each local maximum
+                 i.e. it describes the hierarchy of the local maxima
+        label: array of shape (self.V) 
+               a labelling of thevertices according to their bassin
         """
         if (np.size(self.field)==0):
             raise ValueError, 'No field has been defined so far'
@@ -251,60 +291,150 @@ class Field(fg.WeightedGraph):
         label = np.zeros(self.V, np.int)
         label[idx] = parents
         if self.E>0:
-            idx,height, parents,label = threshold_bifurcations(self.edges[:,0],self.edges[:,1],self.field[:,refdim],th)
+            idx,height, parents,label = threshold_bifurcations(\
+                self.edges[:,0],self.edges[:,1],self.field[:,refdim],th)
         return idx,height,parents,label
-
-    def generate_blobs(self,refdim=0,th=-np.infty,smin = 0):
-        """
-        NROI = threshold_bifurcations(refdim = 0,th=-infty,smin=0)
-
-        INPUT
-        - th is a threshold so that only values above th are considered
-        by default, th = -infty (numpy)
-        - smin is the minimum size (in number of nodes) of the blobs to 
-        keep.  
-        """
-        import hroi
-        if self.field.max()>th:
-            idx,height,parents,label = self.threshold_bifurcations(refdim,th)
-        else:
-            idx = []
-            parents = []
-            label = -np.ones(self.V)
-        
-        k = np.size(idx)
-        nroi = hroi.ROI_Hierarchy(k,idx, parents,label)      
-        k = 2* nroi.get_k()
-        if k>0:
-            while k>nroi.get_k():
-                k = nroi.get_k()
-                size = nroi.compute_size()
-                nroi.merge_ascending(size>smin,None)
-                nroi.merge_descending(None)
-                size = nroi.compute_size()
-                nroi.clean(size>smin)
-                nroi.check()
-        return nroi
 
     def constrained_voronoi(self,seed):
         """
-        label = self.constrained_voronoi(seed)
-        performs a voronoi parcellation of the field starting from the input seed
-        INPUT:
+        performs a voronoi parcellation of the field starting 
+        from the input seed
+        
+        Parameters
+        ----------
         seed: int array of shape(p), the input seeds
-        OUTPUT:
+        
+        Returns
+        -------
         label: The resulting labelling of the data
+
+        Fixme : what happens if there are several ccs in the graph ?
         """
         if (np.size(self.field)==0):
             raise ValueError, 'No field has been defined so far'
-        seed = seed.astype('i')
+        seed = seed.astype(np.int)
         label = field_voronoi(self.edges[:,0],self.edges[:,1],self.field,seed)
         return label
 
-    def copy(self):
+    def geodesic_kmeans(self, seeds=None, label=None, maxiter=100,eps=1.e-4,verbose = 0):
         """
-        copy function
-        """
-        return Field(self.V,self.edges,self.weights,self.field)
+        Geodesic k-means algorithms: 
+        i.e. obtention of clusters that are topologically
+        connected and minimally variable concerning the information 
+        of self.field
+        
+        Parameters
+        ----------
+        seeds= None  : array of shape (p) 
+               initial indices of the seeds within the field
+               if seeds==None the labels are used as initialization
+        labels= None array of shape(self.V) initial labels
+                it is expected that labels take their values 
+                in a certain range (0..lmax)
+                if Labels==None, this is not used
+                if seeds==None and labels==None,  an ewxception is raised
+        maxiter=100, int: maximal number of iterations
+        eps=1.e-4, float : 
+                   increase of inertia at which convergence is declared
 
-    
+        Returns
+        -------
+        seeds: array of shape (p) the final seeds
+        label : array of shape (self.V) the resulting field label
+        J: inertia value
+        """
+        if (np.size(self.field)==0):
+            raise ValueError, 'No field has been defined so far'
+
+        if (seeds==None) and (label==None):
+            raise ValueError, 'No initialization has been provided'
+        k = np.size(seeds)
+        inertia_old = np.infty
+        if seeds==None:
+            k = label.max()+1
+            if np.size(np.unique(label))!=k:
+                raise ValueError, 'missing values, I cannot proceed'
+            seeds = np.zeros(k).astype(np.int)
+            for  j in range(k):
+                lj = np.nonzero(label==j)[0]
+                cent = np.mean(self.field[lj],0)
+                tj = np.argmin(np.sum((cent-self.field[lj])**2,1))
+                seeds[j] = lj[tj]
+        else:
+            k = np.size(seeds)
+            
+        for i in range(maxiter):
+            label = field_voronoi(self.edges[:,0], self.edges[:,1],
+                                  self.field,seeds)
+            #update the seeds
+            inertia = 0
+            pinteria = 0
+            for  j in range(k):
+                lj = np.nonzero(label==j)[0]
+                pinteria += np.sum((self.field[seeds[j]]-self.field[lj])**2)
+                cent = np.mean(self.field[lj],0)
+                tj = np.argmin(np.sum((cent-self.field[lj])**2,1))
+                seeds[j] = lj[tj]
+                #inertia += np.sum((self.field[seeds[j]]-self.field[lj])**2)
+                inertia += np.sum((cent-self.field[lj])**2)
+            if verbose:
+                print i, inertia
+            if np.absolute(inertia_old-inertia)<eps:
+                break
+            inertia_old = inertia
+        return seeds, label, inertia
+
+    def ward(self,nbcluster):
+        """
+        Ward's clsutering of self
+        
+        Parameters
+        ----------
+        nbcluster (int):
+                  the number of desired clusters
+        
+        Returns
+        -------
+        label : array of shape (self.V) the resulting field label
+        J (float): the resulting inertia
+        """
+        from nipy.neurospin.clustering.hierarchical_clustering\
+             import ward_field_segment
+        label,J = ward_field_segment(self,qmax=nbcluster)
+
+        # compute the resulting inertia
+        inertia = 0
+        for  j in range(nbcluster):
+            lj = np.nonzero(label==j)[0]
+            cent = np.mean(self.field[lj],0)
+            inertia += np.sum((cent-self.field[lj])**2)
+        return label, inertia
+        
+    def copy(self):
+        """ copy function
+        """
+        return Field(self.V, self.edges, self.weights, self.field)
+
+    def subfield(self,valid):
+        """
+        Returns a subfield of self, 
+        with only the vertices such that valid >0
+        Parameters   
+        ----------
+        valid: array of shape (self.V): nonzero for vertices to be retained
+        
+        Returns
+        -------
+        F: Field instance, the desired subfield of self
+                
+        Note
+        ----
+        The vertices are renumbered as [1..p] where p = sum(valid>0)
+        when sum(valid==0) then None is returned 
+        """    
+        G = self.subgraph(valid)
+        if G==None: 
+           return None
+           
+        field = self.field[valid]
+        return Field(G.V, G.edges, G.weights, field)

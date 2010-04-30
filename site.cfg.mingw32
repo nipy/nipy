@@ -1,0 +1,4 @@
+[DEFAULT]
+library_dirs = c:\mingw\lib
+include_dirs = c:\mingw\include
+libraries = g2c

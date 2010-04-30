@@ -116,7 +116,7 @@ class Spm2AnalyzeHeader(spm99.Spm99AnalyzeHeader):
             hdr['scl_slope'] = 1
             ret.fix_msg = 'setting scalefactor "scl_slope" to 1'
         else:
-            ret.level = 30
+            ret.problem_level = 30
         return ret
 
 
@@ -125,4 +125,4 @@ class Spm2AnalyzeImage(spm99.Spm99AnalyzeImage):
 
 
 load = Spm2AnalyzeImage.load
-save = Spm2AnalyzeImage.save
+save = Spm2AnalyzeImage.instance_to_filename

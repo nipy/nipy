@@ -1,3 +1,5 @@
+import warnings
+
 from numpy import asarray, arange, empty
 
 from nipy.core.image.image import rollaxis as image_rollaxis
@@ -44,7 +46,6 @@ class FmriImageList(ImageList):
         (2, 20, 20)
 
         """
-
         ImageList.__init__(self, images=images)
         if volume_start_times is None:
             volume_start_times = 1.
@@ -111,14 +112,14 @@ def fmri_generator(data, iterable=None):
 
     [numpy.asarray(data)[:,item] for item in iterator]
 
-    This can be used to get time series out of a 4d fMRI image.
+    This can be used to get time series out of a 4d fMRI image, if an
+    only if time varies across axis 0.
 
     Parameters
     ----------
     data : array-like
        object such that ``arr = np.asarray(data)`` returns an array of
        at least 2 dimensions.
-
     iterable : None or sequence
        seqence of objects that can be used to index array ``arr``
        returned from data.  If None, default is
@@ -131,6 +132,8 @@ def fmri_generator(data, iterable=None):
     involved in calling ``numpy.asarray(data)`` than if data is an Image
     instance or an array.
     """
+    warnings.warn('generator _assumes_ time as first axis in array; '
+                  'this may well not be true for Images')
     data = asarray(data)
     if iterable is None:
         iterable = range(data.shape[1])

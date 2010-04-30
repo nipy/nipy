@@ -7,7 +7,7 @@ import numpy as np
 import nose.tools
 
 from nipy.modalities.fmri.api import fmri_generator, FmriImageList
-from nipy.core.api import parcels, fromarray
+from nipy.core.api import parcels, fromarray, Image
 from nipy.io.api import  load_image, save_image
 from nipy.testing import funcfile
 
@@ -44,13 +44,18 @@ def test_write():
 
 def test_iter():
     img = load_image(funcfile)
-
+    # flip to time first version so this makes sense
+    from nipy.core.reference.coordinate_map import reorder_input
+    arr = np.asarray(img).T
+    coordmap = reorder_input(img.coordmap)
+    img_t1 = Image(arr, coordmap)
+    slice_shape = (arr.shape[0],) + arr.shape[2:]
     j = 0
-    for i, d in fmri_generator(img):
+    for i, d in fmri_generator(img_t1):
         j += 1
-        nose.tools.assert_equal(d.shape, (20,20,20))
+        yield nose.tools.assert_equal, d.shape, slice_shape
         del(i); gc.collect()
-    nose.tools.assert_equal(j, 2)
+    yield nose.tools.assert_equal, j, 3
 
 
 def test_subcoordmap():

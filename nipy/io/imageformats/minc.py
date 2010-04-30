@@ -1,6 +1,6 @@
 import numpy as np
 
-from scipy.io.netcdf import netcdf_file as netcdf
+from scipy.io.netcdf import netcdf_file
 
 from nipy.io.imageformats.spatialimages import SpatialImage
 from nipy.io.imageformats.volumeutils import allopen
@@ -22,10 +22,18 @@ _default_dir_cos = {
     'zspace': [0,0,1]}
 
 
-class netcdf_fileobj(netcdf):
+class netcdf_fileobj(netcdf_file):
     def __init__(self, fileobj):
-        self._buffer = fileobj
-        self._parse()
+        # Older versions of netcdf_file expected filename and mode.
+        # Newer versions allow passing of file objects.  We check
+        # whether calling netcdf_file raises a TypeError (meaning we
+        # have the old version) and deal with it if we do.
+        try:
+            super(netcdf_fileobj, self).__init__(fileobj)
+        except TypeError:
+            self._buffer = fileobj
+            self._parse()
+
 
 class MincError(Exception):
     pass
@@ -37,6 +45,9 @@ class MincHeader(object):
         self._mincfile = mincfile
         self._image = mincfile.variables['image']
         self._dim_names = self._image.dimensions
+        # The code below will error with vector_dimensions.  See:
+        # http://www.bic.mni.mcgill.ca/software/minc/minc1_format/node3.html
+        # http://www.bic.mni.mcgill.ca/software/minc/prog_guide/node11.html
         self._dims = [self._mincfile.variables[s]
                       for s in self._dim_names]
         self._spatial_dims = [name for name in self._dim_names
@@ -81,6 +92,8 @@ class MincHeader(object):
         return klass(ncdf_obj, endianness, check)
 
     def check_fix(self):
+        # We don't currently support irregular spacing
+        # http://www.bic.mni.mcgill.ca/software/minc/minc1_format/node15.html
         for dim in self._dims:
             if dim.spacing != 'regular__':
                 raise ValueError('Irregular spacing not supported')
@@ -169,6 +182,10 @@ class MincHeader(object):
         ddt = self.get_data_dtype()
         if ddt.type in np.sctypes['float']:
             return data
+        # the MINC standard appears to allow the following variables to
+        # be undefined.
+        # http://www.bic.mni.mcgill.ca/software/minc/minc1_format/node16.html
+        # It wasn't immediately obvious what the defaults were.
         image_max = self._mincfile.variables['image-max']
         image_min = self._mincfile.variables['image-min']
         if image_max.dimensions != image_min.dimensions:
@@ -239,11 +256,6 @@ class MincImage(SpatialImage):
         return self._header.get_data_dtype()
     
     @classmethod
-    def from_filespec(klass, filespec):
-        files = klass.filespec_to_files(filespec)
-        return klass.from_files(files)
-    
-    @classmethod
     def from_files(klass, files):
         fname = files['image']
         header = klass._header_maker.from_fileobj(allopen(fname))
@@ -252,20 +264,9 @@ class MincImage(SpatialImage):
         ret._files = files
         return ret
     
-    @classmethod
-    def from_image(klass, img):
-        return klass(img.get_data(),
-                     img.get_affine(),
-                     img.get_header(),
-                     img.extra)
-    
     @staticmethod
     def filespec_to_files(filespec):
         return {'image':filespec}
         
-    @classmethod
-    def load(klass, filespec):
-        return klass.from_filespec(filespec)
-
 
 load = MincImage.load

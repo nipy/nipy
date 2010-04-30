@@ -178,6 +178,7 @@ def ni_affine_pixdim_from_affine(affine_transform, strict=False):
 
     return nifti_3dorless_transform, pixdim
 
+
 def affine_transform_from_array(affine, ijk, pixdim):
     """Generate a AffineTransform from an affine transform.
 

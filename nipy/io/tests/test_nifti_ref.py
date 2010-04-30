@@ -1,7 +1,8 @@
 import warnings
 import numpy as np
 
-from nipy.testing import *
+from nipy.testing import assert_equal, assert_true, \
+    assert_raises, assert_array_equal
 
 from nipy.core.api import CoordinateMap, AffineTransform, CoordinateSystem, \
     lps_output_coordnames, ras_output_coordnames

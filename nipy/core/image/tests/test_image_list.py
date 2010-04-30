@@ -1,15 +1,15 @@
 import numpy as np
 
-from nipy.testing import datapjoin, assert_true, assert_equal, assert_raises, \
+from nipy.testing import funcfile, assert_true, assert_equal, assert_raises, \
     assert_almost_equal
 
 from nipy.core.image.image_list import ImageList
 from nipy.core.image.image import Image
 from nipy.io.api import load_image
 
+
 def test_image_list():
-    img_path = datapjoin("test_fmri.nii.gz")
-    img = load_image(img_path)
+    img = load_image(funcfile)
     imglst = ImageList.from_image(img, axis=-1)
     
     # Test empty ImageList
@@ -19,11 +19,9 @@ def test_image_list():
     # Test non-image construction
     a = np.arange(10)
     yield assert_raises, ValueError, ImageList, a
-
     yield assert_raises, ValueError, ImageList.from_image, img, None
 
     # check all the axes
-
     for i in range(4):
         order = range(4)
         order.remove(i)
@@ -67,4 +65,4 @@ def test_image_list():
     # Test iterator
     for x in sublist:
         yield assert_true, isinstance(x, Image)
-        yield assert_equal, x.shape, (128, 128, 13)
+        yield assert_equal, x.shape, func_shape[:3]

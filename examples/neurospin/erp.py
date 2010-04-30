@@ -1,7 +1,6 @@
 import numpy as np
-from fff2.glm import glm
+from nipy.neurospin.glm import glm
 from time import time
-import sys
 
 def display(t, title=''):
     import pylab
