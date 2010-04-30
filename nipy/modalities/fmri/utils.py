@@ -26,10 +26,12 @@ from sympy import sin as sympy_sin
 from sympy import cos as sympy_cos
 from sympy import pi as sympy_pi
 
-import formula
-from aliased import aliased_function, vectorize
+from . import formula
+from .aliased import aliased_function, vectorize
+
 
 t = formula.Term('t')
+
 
 def fourier_basis(freq):
     """
@@ -67,55 +69,50 @@ def fourier_basis(freq):
 
 
 def linear_interp(times, values, fill=0, name=None, **kw):
-    """
-    Linear interpolation function such that
+    """ Linear interpolation function of t given `times` and `values`
 
+    Imterpolator such that:
+    
     f(times[i]) = values[i]
 
     if t < times[0]:
         f(t) = fill
 
-    Inputs:
-    =======
-
+    Parameters
+    ----------
     times : ndarray
         Increasing sequence of times
-
     values : ndarray
         Values at the specified times
-
-    fill : float
-        Value on the interval (-np.inf, times[0])
+    fill : float, optional
+        Value on the interval (-np.inf, times[0]). Default 0.
+    name : None or str, optional
+        Name of symbolic expression to use. If None, a default is used.
+    **kw : keyword args, optional
+        passed to ``interp1d``
         
-    name : str
-        Name of symbolic expression to use. If None,
-        a default is used.
-
-    Outputs:
-    ========
-
+    Returns
+    -------
     f : sympy expression 
         A Function of t.
 
-    Examples:
-    =========
-
+    Examples
+    --------
     >>> s=linear_interp([0,4,5.],[2.,4,6], bounds_error=False)
     >>> tval = np.array([-0.1,0.1,3.9,4.1,5.1]).view(np.dtype([('t', np.float)]))
     >>> s.design(tval)
     array([(nan,), (2.0499999999999998,), (3.9500000000000002,),
            (4.1999999999999993,), (nan,)],
           dtype=[('interp0(t)', '<f8')])
-
     """
+    # XXX - does interpolation have to be linear?
     kw['kind'] = 'linear'
-    i = interp1d(times, values, **kw)
-
+    interp = interp1d(times, values, **kw)
+    # make a new name if none provided
     if name is None:
         name = 'interp%d' % linear_interp.counter
         linear_interp.counter += 1
-
-    s = aliased_function(name, i)
+    s = aliased_function(name, interp)
     return s(t)
 linear_interp.counter = 0
 
@@ -303,24 +300,27 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     
     Parameters
     ----------
-        fn1 : sympy expr
-            An expression that is a function of t only.
-        fn2 : sympy expr
-            An expression that is a function of t only.
-        interval : [float, float]
-            The interval over which to convolve the two functions.
-        dt : float
-            Time step for discretization 
-        padding_f : float
-            Padding added to the left and right in the convolution.
-        name : str
-            Name of the convolved function in the resulting expression. 
-            Defaults to one created by linear_interp.
+    fn1 : sympy expr
+        An expression that is a function of t only.
+    fn2 : sympy expr
+        An expression that is a function of t only.
+    interval : [float, float]
+        The interval over which to convolve the two functions.
+    dt : float
+        Time step for discretization 
+    padding_f : float, optional
+        Padding added to the left and right in the convolution.
+    name : None or str, optional
+        Name of the convolved function in the resulting expression. 
+        Defaults to one created by linear_interp.
+            
     Returns
     -------
     f : sympy expr
             An expression that is a function of t only.
 
+    Examples
+    --------
     >>> import sympy
     >>> t = sympy.Symbol('t')
     >>> # This is a square wave on [0,1]
