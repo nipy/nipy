@@ -1,17 +1,21 @@
-
-# Standard libraries imports
-import warnings
+"""
+Utilities for extracting masks from EPI images and applying them to time
+series.
+"""
 
 # Major scientific libraries imports
 import numpy as np
+from scipy import linalg, ndimage
 
 # Neuroimaging libraries imports
 from nipy.io.imageformats import load, nifti1, save, AnalyzeImage
 
-import nipy.neurospin.graph as fg
 
+################################################################################
+# Operating on connect component
+################################################################################
 
-def _largest_cc(mask):
+def largest_cc(mask):
     """ Return the largest connected component of a 3D mask array.
 
         Parameters
@@ -26,17 +30,49 @@ def _largest_cc(mask):
     """
     # We use asarray to be able to work with masked arrays.
     mask = np.asarray(mask)
-    xyz = np.array(np.where(mask))
-    nbvox = mask.sum()
-    g = fg.WeightedGraph(nbvox)
-    g.from_3d_grid(xyz.T)
-    u = g.main_cc()
-    xyz = xyz[:,u]
-    
-    mask_cc = np.zeros(mask.shape, np.int8)
-    mask_cc[tuple(xyz)] = 1
-    return mask_cc
+    labels, label_nb = ndimage.label(mask)
+    if not label_nb:
+        raise ValueError('No non-zero values: no connected components')
+    if label_nb == 1:
+        return mask.astype(np.bool)
+    label_count = np.bincount(labels.ravel())
+    # discard 0 the 0 label
+    label_count[0] = 0
+    return labels ==  label_count.argmax() 
 
+
+def threshold_connect_components(map, threshold, copy=True):
+    """ Given a map with some coefficients set to zero, segment the
+        connect components with number of voxels smaller than the
+        threshold and set them to 0.
+
+        Parameters
+        ----------
+        map: ndarray
+            The map to segment
+        threshold:
+            The minimum number of voxels to keep a cluster.
+        copy: bool, optional
+            If copy is false, the input array is modified inplace
+    """
+    labels, _ = ndimage.label(map)
+    weights = np.bincount(labels.ravel())
+    if copy:
+        map = map.copy()
+    for label, weight in enumerate(weights):
+        if label == 0:
+            continue
+        if weight < threshold:
+            map[labels == label] = 0
+    return map
+
+
+################################################################################
+# Utilities to calculate masks
+################################################################################
+
+# FIXME: Should this function be replaced by the native functionality
+# added to brifti
 def get_unscaled_img(fname):
     ''' Function to get image, data without scalefactor applied
 
@@ -116,10 +152,14 @@ def compute_mask_files(input_filename, output_filename=None,
         nim, vol_arr = get_unscaled_img(input_filename)
         header = nim.get_header()
         affine = nim.get_affine()
-        # Make a copy, to avoid holding a reference on the full array,
-        # and thus polluting the memory.
         if vol_arr.ndim == 4:
-            mean_volume = vol_arr.mean(axis=-1)
+            if isinstance(vol_arr, np.memmap):
+                # Get rid of memmapping: it is faster.
+                mean_volume = np.array(vol_arr, copy=True).mean(axis=-1)
+            else:
+                mean_volume = vol_arr.mean(axis=-1)
+            # Make a copy, to avoid holding a reference on the full array,
+            # and thus polluting the memory.
             first_volume = vol_arr[:,:,:,0].copy()
         elif vol_arr.ndim == 3:
             mean_volume = first_volume = vol_arr
@@ -146,8 +186,13 @@ def compute_mask_files(input_filename, output_filename=None,
             else:
                 mean_volume += nim.get_data().squeeze()
         mean_volume /= float(len(input_filename))
+        
     del nim
-
+    if np.isnan(mean_volume).any():
+        tmp = mean_volume.copy()
+        tmp[np.isnan(tmp)] = 0
+        mean_volume = tmp
+        
     mask = compute_mask(mean_volume, first_volume, m, M, cc)
       
     if output_filename is not None:
@@ -195,24 +240,20 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     """
     if reference_volume is None:
         reference_volume = mean_volume
-    inputVector = np.sort(mean_volume.reshape(-1))
-    limiteinf = np.floor(m * len(inputVector))
-    limitesup = np.floor(M * len(inputVector))#inputVector.argmax())
+    sorted_input = np.sort(mean_volume.reshape(-1))
+    limiteinf = np.floor(m * len(sorted_input))
+    limitesup = np.floor(M * len(sorted_input))
 
-    delta = inputVector[limiteinf + 1:limitesup + 1] \
-            - inputVector[limiteinf:limitesup]
+    delta = sorted_input[limiteinf + 1:limitesup + 1] \
+            - sorted_input[limiteinf:limitesup]
     ia = delta.argmax()
-    threshold = 0.5 * (inputVector[ia + limiteinf] 
-                        + inputVector[ia + limiteinf  +1])
+    threshold = 0.5 * (sorted_input[ia + limiteinf] 
+                        + sorted_input[ia + limiteinf  +1])
     
     mask = (reference_volume >= threshold)
 
     if cc:
-        try:
-            mask = _largest_cc(mask)
-        except TypeError:
-            """ The grid is probably too large, will just pass. """
-            warnings.warn('Mask too large, cannot extract largest cc.')
+        mask = largest_cc(mask)
     return mask.astype(bool)
 
 
@@ -248,7 +289,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
         The brain mask
     """
     mask = None
-    for session in session_files:
+    for index, session in enumerate(session_files):
         this_mask = compute_mask_files(session,
                                        m=m, M=M,
                                        cc=cc).astype(np.int8)
@@ -266,18 +307,12 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     if cc:
         # Select the largest connected component (each mask is
         # connect, but the half-interesection may not be):
-        try:
-            mask = _largest_cc(mask)
-        except TypeError:
-            """ The grid is probably too large, will just pass. """
-            warnings.warn('Mask too large, cannot extract largest cc.')
+        mask = largest_cc(mask)
 
-    # We need to convert to boolean, as the graph structure casts
-    # in int8
     return mask.astype(np.bool)
 
-def intersect_masks(input_mask_files, output_filename=None, 
-                                        threshold=0.5, cc=True):
+
+def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
     """
     Given a list of input mask images, generate the output image which
     is the the threshold-level intersection of the inputs 
@@ -285,87 +320,113 @@ def intersect_masks(input_mask_files, output_filename=None,
     
     Parameters
     ----------
-    input_mask_files: list of strings or ndarrays
+    input_masks: list of strings or ndarrays
         paths of the input images nsubj set as len(input_mask_files), or
         individual masks.
     output_filename, string:
         Path of the output image, if None no file is saved.
     threshold: float within [0, 1], optional
         gives the level of the intersection.
+        threshold=1 corresponds to keeping the intersection of all
+        masks, whereas threshold=0 is the union of all masks.
     cc: bool, optional
         If true, extract the main connected component
         
     Returns
     -------
-    gmask, boolean array of shape the image shape
+    grp_mask, boolean array of shape the image shape
     """  
-    gmask = None 
+    grp_mask = None 
 
-    for filename in input_mask_files:
-        nim = load(filename)
-        if gmask is None:
-            gmask = nim.get_data().copy() # !!!
+    for this_mask in input_masks:
+        if isinstance(this_mask, basestring):
+            # We have a filename
+            this_mask = load(this_mask).get_data()
+        if grp_mask is None:
+            grp_mask = this_mask.copy().astype(np.int)
         else:
-            gmask += nim.get_data()  
+            grp_mask += this_mask
     
-    gmask = gmask>(threshold*len(input_mask_files))
-    if np.any(gmask>0) and cc:
-        gmask = _largest_cc(gmask)
+    grp_mask = grp_mask>(threshold*len(input_masks))
+    if np.any(grp_mask>0) and cc:
+        grp_mask = largest_cc(grp_mask)
     
     if output_filename is not None:
-        header = nim.get_header()
+        if isinstance(input_masks[0], basestring):
+            nim = load(input_masks[0]) 
+            header = nim.get_header()
+            affine = nim.get_affine()
+        else:
+            header = dict()
+            affine = np.eye(4)
         header['descrip'] = 'mask image'
-        output_image = nifti1.Nifti1Image(gmask.astype(np.uint8),
-                                            affine=nim.get_affine(),
+        output_image = nifti1.Nifti1Image(grp_mask.astype(np.uint8),
+                                            affine=affine,
                                             header=header,
                                          )
-        output_image.save(output_filename)
-    return gmask>0
+        save(output_image, output_filename)
+
+    return grp_mask>0
+
 
 ################################################################################
-# Legacy function calls.
+# Time series extraction
 ################################################################################
 
-def computeMaskIntra(inputFilename, outputFilename, m=0.2, M=0.9, cc=1):
-    """ Depreciated, see compute_mask_intra.
-    """
-    print "here we are"
-    return compute_mask_intra(inputFilename, outputFilename, 
-                                    m=m, M=M, cc=cc)
+def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
+    """ Read the time series from the given sessions filenames, using the mask.
 
-
-def computeMaskIntraArray(volumeMean, firstVolume, m=0.2, M=0.9,cc=1):
-    """ Depreciated, see compute_mask_intra.
+        Parameters
+        -----------
+        filenames: list of 3D nifti file names, or 4D nifti filename.
+            Files are grouped by session.
+        mask: 3d ndarray
+            3D mask array: true where a voxel should be used.
+        smooth: False or float, optional
+            If smooth is not False, it gives the size, in voxel of the
+            spatial smoothing to apply to the signal.
+        
+        Returns
+        --------
+        session_series: ndarray
+            3D array of time course: (session, voxel, time)
+        header: header object
+            The header of the first file.
     """
-    warnings.warn(
-            'Depreciated function name, please use compute_mask_intra_array',
-            stacklevel=2)
-    return compute_mask_intra_array(volumeMean, firstVolume, 
-                                    m=m, M=M, cc=cc)
+    mask = mask.astype(np.bool)
+    if isinstance(filenames, basestring):
+        # We have a 4D nifti file
+        data_file = load(filenames)
+        header = data_file.get_header()
+        data = data_file.get_data()
+        #if isinstance(data, np.memmap):
+        #    data = np.array(data, copy=True)
+        if smooth:
+            affine = data_file.get_affine()[:3, :3]
+            smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
+            if not data.flags['WRITEABLE']:
+                data = np.asarray(data).copy() # Get rid of memmapping
+            for this_data in np.rollaxis(data, -1):
+                this_data[:] = ndimage.gaussian_filter(this_data,
+                                                        smooth_sigma)
+        series = data[mask].astype(dtype)
+    else:
+        nb_time_points = len(filenames)
+        series = np.zeros((mask.sum(), nb_time_points), dtype=dtype)
+        for index, filename in enumerate(filenames):
+            data_file = load(filename)
+            data = data_file.get_data()
+            if smooth:
+                affine = data_file.get_affine()[:3, :3]
+                smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
+                data = ndimage.gaussian_filter(data, smooth_sigma)
+                
+            series[:, index] = data[mask].astype(dtype)
+            # Free memory early
+            if index == 0:
+                header = data_file.get_header()
+            del data
 
-
-def compute_mask_intra(input_filename, output_filename=None, return_mean=False, 
-                            m=0.2, M=0.9, cc=1):
-    """
-    See compute_mask_files.
-    """
-    warnings.warn('compute_mask_intra is depreciated, please use' 
-                  ' compute_mask_files',
-                  stacklevel=2)
-    return compute_mask_files(input_filename=input_filename, 
-                              output_filename=output_filename, 
-                              return_mean=return_mean,
-                              m=m, M=M, cc=cc)
-
-
-def compute_mask_intra_array(volume_mean, reference_volume=None, m=0.2, M=0.9, 
-                                                cc=True):
-    """
-    Depreciated, see compute_mask.
-    """
-    warnings.warn('Depreciated function name, please use compute_mask',
-                        stacklevel=2)
-    return compute_mask(volume_mean, 
-                        reference_volume=reference_volume, m=m, M=M, cc=cc)
+    return series, header
 
 

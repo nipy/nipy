@@ -370,12 +370,12 @@ class ENN(object):
         else:
             ax.plot(medge[:len(hist)], hist, linewidth=2)
         ax.plot(medge, g, 'r', linewidth=2)
-        ax.set_title('Robust fit of the histogram', fontsize=16)
+        ax.set_title('Robust fit of the histogram', fontsize=12)
         l = ax.legend(('empiricall null', 'data'), loc=0)
         for t in l.get_texts():
-            t.set_fontsize(16)
-        ax.set_xticklabels(ax.get_xticks(), fontsize=16)
-        ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+            t.set_fontsize(12)
+        ax.set_xticklabels(ax.get_xticks(), fontsize=12)
+        ax.set_yticklabels(ax.get_yticks(), fontsize=12)
 
         if efp != None:
             ax.plot(self.x, np.minimum(alpha, efp), 'k')
@@ -459,13 +459,13 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
     prior_shrinkage = np.ones(nclasses) * prior_strength
 
     # instantiate the class and set the priors
-    BayesianGMM = VBGMM(nclasses,1,prior_means,prior_scale,
-                        prior_weights, prior_shrinkage,prior_dof)
+    BayesianGMM = VBGMM(nclasses, 1, prior_means, prior_scale,
+                        prior_weights, prior_shrinkage, prior_dof)
     BayesianGMM.set_priors(prior_means, prior_weights, prior_scale,
                            prior_dof, prior_shrinkage)
 
     # estimate the model
-    BayesianGMM.estimate(x,delta = 1.e-8,verbose=verbose)
+    BayesianGMM.estimate(x,delta = 1.e-8,verbose=verbose-1)
 
     # create a sampling grid
     if (verbose or bias):
@@ -482,7 +482,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
         bfp = (lw/weights)*BayesianGMM.slikelihood(test)
     
     if verbose>1:
-        BayesianGMM.show_components(x,gd,lj,mpaxes)
+        BayesianGMM.show_components(x, gd, lj, mpaxes)
 
     bfp = (bfp.T/bfp.sum(1)).T
     if not return_estimator:

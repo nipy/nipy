@@ -8,10 +8,9 @@ import numpy.random as nr
 from nipy.neurospin.clustering.gmm import GMM
 import nipy.neurospin.clustering.gmm as gmm
 
-from nipy.testing import assert_true
-
-
 def test_em_loglike0():
+    """
+    """
     dim = 1
     k = 1
     n = 1000
@@ -22,10 +21,11 @@ def test_em_loglike0():
     ll = lgmm.average_log_like(x)
     ent = 0.5*(1+np.log(2*np.pi))
     print ll, ent
-    assert_true(np.absolute(ll+ent)<3./np.sqrt(n))
-
+    assert np.absolute(ll+ent)<3./np.sqrt(n)
 
 def test_em_loglike1():
+    """
+    """
     dim = 1
     k = 3
     n = 1000
@@ -36,10 +36,11 @@ def test_em_loglike1():
     ll = lgmm.average_log_like(x)
     ent = 0.5*(1+np.log(2*np.pi))
     print ll, ent
-    assert_true(np.absolute(ll+ent)<3./np.sqrt(n))
-
+    assert np.absolute(ll+ent)<3./np.sqrt(n)
 
 def test_em_loglike2():
+    """
+    """
     dim = 1
     k = 1
     n = 1000
@@ -52,10 +53,11 @@ def test_em_loglike2():
     ll = lgmm.average_log_like(x)
     ent = 0.5*(1+np.log(2*np.pi*scale**2))
     print ll, ent
-    assert_true(np.absolute(ll+ent)<3./np.sqrt(n))
+    assert np.absolute(ll+ent)<3./np.sqrt(n)
 
-    
 def test_em_loglike3():
+    """
+    """
     dim = 2
     k = 1
     n = 1000
@@ -68,10 +70,11 @@ def test_em_loglike3():
     ll = lgmm.average_log_like(x)
     ent = dim*0.5*(1+np.log(2*np.pi*scale**2))
     print ll, ent
-    assert_true(np.absolute(ll+ent)<dim*3./np.sqrt(n))
-
+    assert np.absolute(ll+ent)<dim*3./np.sqrt(n)
 
 def test_em_loglike4():
+    """
+    """
     dim = 5
     k = 1
     n = 1000
@@ -84,10 +87,11 @@ def test_em_loglike4():
     ll = lgmm.average_log_like(x)
     ent = dim*0.5*(1+np.log(2*np.pi*scale**2))
     print ll, ent
-    assert_true(np.absolute(ll+ent)<dim*3./np.sqrt(n))
-
+    assert np.absolute(ll+ent)<dim*3./np.sqrt(n)    
 
 def test_em_loglike5():
+    """
+    """
     dim = 2
     k = 1
     n = 1000
@@ -101,9 +105,8 @@ def test_em_loglike5():
     ll = lgmm.average_log_like(y)
     ent = dim*0.5*(1+np.log(2*np.pi*scale**2))
     print ll, ent
-    assert_true(np.absolute(ll+ent)<dim*3./np.sqrt(n))
+    assert np.absolute(ll+ent)<dim*3./np.sqrt(n)
 
-    
 def test_em_loglike6():
     """
     """
@@ -121,14 +124,14 @@ def test_em_loglike6():
     ent = 0.5*(1+np.log(2*np.pi))
     dkl = 0.5*offset**2
     print ll2, ll1,dkl
-    assert_true(ll2<ll1)
-    
+    assert ll2<ll1
 
 def test_em_selection():
-    # test that the basic GMM-based model selection tool returns
-    # something sensible (i.e. the gmm used to represent the data has
-    # indeed one or two classes)
-    
+    """
+    test that the basic GMM-based model selection tool
+    returns something sensible
+    (i.e. the gmm used to represent the data has indeed one or two classes)
+    """
     # generate some data
     dim = 2
     x = np.concatenate((nr.randn(100,dim),3+2*nr.randn(100,dim)))
@@ -136,14 +139,15 @@ def test_em_selection():
     krange = range(1,10)
     lgmm = gmm.best_fitting_GMM(x,krange,prec_type='full',
                                 niter=100,delta = 1.e-4,ninit=1,verbose=0)
-    assert_true(lgmm.k<4)
+    assert (lgmm.k<4)
     
 
 def test_em_gmm_full(verbose=0):
-    # Computing the BIC value for different configurations of a GMM with
-    # ful diagonal matrices The BIC should be maximal for a number of
-    # classes of 1 or 2
-
+    """
+    Computing the BIC value for different configurations
+    of a GMM with ful diagonal matrices
+    The BIC should be maximal for a number of classes of 1  or 2
+    """
     # generate some data
     dim = 2
     x = np.concatenate((nr.randn(100,dim),3+2*nr.randn(100,dim)))
@@ -160,14 +164,15 @@ def test_em_gmm_full(verbose=0):
         if verbose: print "bic of the %d-classes model"%k, bic
 
     z = lgmm.map_label(x)
-    assert_true(bic[4]<bic[1])
+    assert(bic[4]<bic[1])
 
 
 def test_em_gmm_diag(verbose=0):
-    # Computing the BIC value for GMMs with different number of classes,
-    # with diagonal covariance models The BIC should maximal for a
-    # number of classes of 1 or 2
-    
+    """
+    Computing the BIC value for GMMs with different number of classes,
+    with diagonal covariance models
+    The BIC should maximal for a number of classes of 1  or 2
+    """
     # generate some data
     dim = 2
     x = np.concatenate((nr.randn(1000,dim),3+2*nr.randn(1000,dim)))
@@ -186,12 +191,12 @@ def test_em_gmm_diag(verbose=0):
 
     z = lgmm.map_label(x)
 
-    assert_true((z.max()+1==lgmm.k)&(bic[4]<bic[1]))
-
+    assert((z.max()+1==lgmm.k)&(bic[4]<bic[1]))
 
 def test_em_gmm_multi(verbose=0):
-    # Playing with various initilizations on the same data
-    
+    """
+    Playing with various initilizations on the same data
+    """
     # generate some data
     dim = 2
     x = np.concatenate((nr.randn(1000,dim),3+2*nr.randn(100,dim)))
@@ -214,27 +219,26 @@ def test_em_gmm_multi(verbose=0):
         z = lgmm.map_label(x)
         plot2D(x,lgmm,z,show = 1,verbose=0)
 
-    assert_true(np.isfinite(bic))
+    assert (np.isfinite(bic))
     
 def test_em_gmm_largedim(verbose=0):
-    # testing the GMM model in larger dimensions
-
+    """
+    testing the GMM model in larger dimensions
+    """
     # generate some data
     dim = 10
     x = nr.randn(100,dim)
-    x[:30,:] +=1
+    x[:30,:] += 2
     
     # estimate different GMMs of that data
     maxiter = 100
     delta = 1.e-4
     
-    for k in range(1,3):
+    for k in range(2,3):
         lgmm = GMM(k,dim)
-        lgmm.initialize(x)
-        bic = lgmm.estimate(x,maxiter,delta,verbose)
-        if verbose: print "bic of the %d-classes model"%k, bic
+        bgmm = lgmm.initialize_and_estimate(x, None, maxiter, delta, ninit=5)
         
-    z = lgmm.map_label(x)
+    z = bgmm.map_label(x)
     
     # define the correct labelling
     u = np.zeros(100)
@@ -243,13 +247,14 @@ def test_em_gmm_largedim(verbose=0):
     #check the correlation between the true labelling
     # and the computed one
     eta = np.absolute(np.dot(z-z.mean(),u-u.mean())/(np.std(z)*np.std(u)*100))
-    assert_true(eta>0.3)
+    assert (eta>0.3)
 
-    
 def test_em_gmm_heterosc(verbose=0):
-    # testing the model in very ellipsoidal data: compute the big values
-    # for several values of k and check that the macimal is 1 or 2
-
+    """
+    testing the model in very ellipsoidal data:
+    compute the big values for several values of k
+    and check that the macimal is 1 or 2
+    """
     # generate some data
     dim = 2
     x = nr.randn(100,dim)
@@ -276,8 +281,9 @@ def test_em_gmm_heterosc(verbose=0):
 
         
 def test_em_gmm_cv(verbose=0):
-    # Comparison of different GMMs using cross-validation
-    
+    """
+    Comparison of different GMMs using cross-validation
+    """
     # generate some data
     dim = 2
     xtrain = np.concatenate((nr.randn(100,dim),3+2*nr.randn(100,dim)))
@@ -309,12 +315,12 @@ def test_em_gmm_cv(verbose=0):
         bic = lgmm.estimate(xtrain,maxiter,delta)
         ll.append(lgmm.test(xtest).mean())
             
-    assert_true(ll[4]<ll[1])
+    assert(ll[4]<ll[1])
 
-
-def test_select_gmm_old_full(verbose=0):
-    # Computing the BIC value for different configurations
-
+def _test_select_gmm_old_full(verbose=0):
+    """
+    Computing the BIC value for different configurations
+    """
     # generate some data
     dim = 2
     x = np.concatenate((nr.randn(100, 2), 3+2*nr.randn(100, 2)))
@@ -341,12 +347,12 @@ def test_select_gmm_old_full(verbose=0):
         gd.getinfo([xmin, xmax, ymin, ymax], [50, 50])
         gmm.sample(gd, x, verbose=0)
         
-    assert_true(lgmm.k<5)
-
-
-def test_select_gmm_old_diag(verbose=0):
-    # Computing the BIC value for different configurations
+    assert(lgmm.k<5)
     
+def _test_select_gmm_old_diag(verbose=0):
+    """
+    Computing the BIC value for different configurations
+    """
     # generate some data
     dim = 2
     x = np.concatenate((nr.randn(100,2),3+2*nr.randn(100,2)))
@@ -373,5 +379,11 @@ def test_select_gmm_old_diag(verbose=0):
         gd.getinfo([xmin, xmax, ymin, ymax], [50, 50])
         gmm.sample(gd, x, verbose=0)
         
-    assert_true(lgmm.k<5)
+    assert(lgmm.k<5)
+
+
+if __name__ == '__main__':
+    import nose
+    nose.run(argv=['', __file__])
+
 

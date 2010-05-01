@@ -10,7 +10,7 @@ Author : Bertrand Thirion, 2006-2009
 import numpy as np
 import nipy.neurospin.clustering.clustering as fc
 
-class grid_descriptor():
+class grid_descriptor(object):
     """
     A tiny class to handle cartesian grids
     """
@@ -61,7 +61,7 @@ class grid_descriptor():
             print "Not implemented yet"
         return grid
 
-def best_fitting_GMM(x,krange,prec_type='full',niter=100,delta = 1.e-4,ninit=1,verbose=0):
+def best_fitting_GMM(x, krange, prec_type='full',niter=100,delta = 1.e-4,ninit=1,verbose=0):
     """
     Given a certain dataset x, find the best-fitting GMM
     within a certain range indexed by krange
@@ -71,13 +71,12 @@ def best_fitting_GMM(x,krange,prec_type='full',niter=100,delta = 1.e-4,ninit=1,v
     x array of shape (nbitem,dim)
       the data from which the model is estimated
     krange (list of floats) the range of values to test for k
-    prec_type ='full' the vocariance parameterization
-              (to be chosen within 'full','diag') for full
-              and diagonal covariance respectively
-    niter=100: maximal number of iterations in the estimation process
-    delta = 1.e-4: increment of data likelihood at which
+    prec_type ='full', string (to be chosen within 'full','diag')
+              the covariance parameterization
+    niter=100, int, maximal number of iterations in the estimation process
+    delta = 1.e-4n float increment of data likelihood at which
           convergence is declared
-    ninit = 1: number of initialization performed
+    ninit = 1, int number of initialization performed
           to reach a good solution
     verbose=0: verbosity mode
     
@@ -319,7 +318,7 @@ class GMM():
         
         Parameters
         ----------
-        x: array of shape (nbitems,self.dim)
+        x, array of shape (nbitems,self.dim)
            the data used in the estimation process
         """
         import nipy.neurospin.clustering.clustering as fc
@@ -372,14 +371,14 @@ class GMM():
 
         Returns
         -------
-        l array of shape(nbitem,self.k)
+        like, array of shape(nbitem,self.k)
           component-wise likelihood
         """
-        l = self.unweighted_likelihood(x)
-        l *= self.weights
-        return l
+        like = self.unweighted_likelihood(x)
+        like *= self.weights
+        return like
 
-    def unweighted_likelihood(self,x):
+    def unweighted_likelihood(self, x):
         """
         return the likelihood of each data for each component
         the values are not weighted by the component weights
@@ -391,11 +390,11 @@ class GMM():
 
         Returns
         -------
-        l array of shape(nbitem,self.k)
+        like, array of shape(nbitem,self.k)
           unweighted component-wise likelihood
         """
         n = x.shape[0]
-        l = np.zeros((n,self.k))
+        like = np.zeros((n,self.k))
         from numpy.linalg import det
 
         for k in range(self.k):
@@ -411,10 +410,10 @@ class GMM():
                 q = np.dot((m-x)**2,b)
             w -= q
             w /= 2
-            l[:,k] = np.exp(w)   
-        return l
+            like[:,k] = np.exp(w)   
+        return like
     
-    def mixture_likelihood(self,x):
+    def mixture_likelihood(self, x):
         """
         returns the likelihood of the mixture for x
         
@@ -445,7 +444,7 @@ class GMM():
         sl = np.maximum(sl,tiny)
         return np.mean(np.log(sl))
 
-    def evidence(self,x):
+    def evidence(self, x):
         """
         computation of bic approximation of evidence
         
@@ -460,20 +459,18 @@ class GMM():
         """
         x = self.check_x(x)
         tiny = 1.e-15
-        l = self.likelihood(x)
-        return self.bic(l,tiny)
+        like = self.likelihood(x)
+        return self.bic(like,tiny)
     
-    def bic(self,like = None,tiny = 1.e-15):
+    def bic(self, like, tiny = 1.e-15):
         """
         computation of bic approximation of evidence
                 
         Parameters
-        ----------
-        
-        like: array of shape (nbitem,self.k)
+        ----------        
+        like, array of shape (nbitem,self.k)
            component-wise likelihood
-           if like==None,  it is re-computed in E-step
-        tiny=1.e-15: a small constant to avoid numerical singularities
+        tiny=1.e-15, a small constant to avoid numerical singularities
         
         Returns
         -------
@@ -509,7 +506,7 @@ class GMM():
         """
         return self.likelihood(x)
 
-    def guess_regularizing(self,x,bcheck=1):
+    def guess_regularizing(self, x, bcheck=1):
         """
         Set the regularizing priors as weakly informative
         according to Fraley and raftery;
@@ -616,7 +613,7 @@ class GMM():
             self.precisions = np.array([1.0/covariance[k] \
                                        for k in range(self.k)])
 
-    def map_label(self,x,like=None):
+    def map_label(self, x, like=None):
         """
         return the MAP labelling of x 
         
@@ -638,7 +635,7 @@ class GMM():
         z = np.argmax(like,1)
         return z
 
-    def estimate(self,x,niter=100,delta = 1.e-4,verbose=0):
+    def estimate(self, x, niter=100, delta=1.e-4, verbose=0):
         """
         estimation of self given a dataset x
 
@@ -710,7 +707,7 @@ class GMM():
             self.initialize(x)
 
             # alternation of E/M step until convergence
-            bic = self.estimate(x,niter=niter,delta=delta,verbose=0)
+            bic = self.estimate(x, niter=niter, delta=delta, verbose=0)
             if bic>bestbic:
                 bestbic= bic
                 bestgmm.plugin(self.means,self.precisions,self.weights)
@@ -723,7 +720,7 @@ class GMM():
         """
         return self.initialize_and_estimate(x, z, niter, delta, ninit, verbose)
 
-    def test(self,x, tiny = 1.e-15):
+    def test(self, x, tiny = 1.e-15):
         """
         returns the log-likelihood of the mixture for x
 
@@ -786,15 +783,15 @@ class GMM():
         for k in range (self.k):
             ax.plot(grid,density[:,k],linewidth=2)
         ax.set_title('Fit of the density with a mixture of Gaussians',
-                     fontsize=16)
+                     fontsize=12)
 
         legend = ['data']
         for k in range(self.k):
             legend.append('component %d' %(k+1))
         l = ax.legend (tuple(legend))
-        for t in l.get_texts(): t.set_fontsize(16)
-        ax.set_xticklabels(ax.get_xticks(), fontsize=16)
-        ax.set_yticklabels(ax.get_yticks(), fontsize=16)
+        for t in l.get_texts(): t.set_fontsize(12)
+        ax.set_xticklabels(ax.get_xticks(), fontsize=12)
+        ax.set_yticklabels(ax.get_yticks(), fontsize=12)
             
 
     def show(self,x,gd,density=None,nbf = -1):
@@ -842,256 +839,3 @@ class GMM():
             mp.axis([xm,xM,ym,yM])
             mp.show()
  
-    
-class GMM_old(GMM):
-    """
-    This is the old basic GMM class --
-    it uses C code and potrentially more efficient storage
-    than the standard GMM class,
-    so that it can be better suited for very large datasets.
-    However, the standard class is more robust
-    and should be preferred in general
-    
-    caveat:
-    - GMM_old.precisions has shape (self.k, self.dim**2)
-    -> a reshape is needed
-    """
-    
-    def optimize_with_bic(self,data, kvals=None, maxiter = 300,
-                          delta = 0.001, ninit=1,verbose = 0):
-        """
-        Find the optimal GMM using bic criterion.
-        The method is run with all the values in kmax for k
-
-        Parameters
-        ----------
-        data : (n,p) feature array, n = nb items, p=feature dimension
-        kvals=None : range of values for k.
-            if kvals==None, self.k is used
-        maxiter=300 : max number of iterations of the EM algorithm
-        delta = 0.001 : criterion on the log-likelihood
-            increments to declare converegence
-        ninit=1 : number of possible iterations of the GMM estimation
-        verbsose=0: verbosity mode
-
-        Returns
-        -------
-        Labels : array of shape(n), type np.int,
-            discrete labelling of the data items into clusters
-        LL : array of shape(n): log-likelihood of the data
-        bic : (float) associated bic criterion
-        """
-        data = self.check_x(data)
-        if kvals==None:
-            LogLike, Labels, bic = self.estimate(data,None, maxiter,\
-                                                 delta, ninit)
-            return Labels, LogLike, self.bic(LogLike)
-     
-        bic_ref = -np.infty
-        for k in kvals:
-            self.k = k
-            nit = 10
-            mean, label,J = fc.kmeans(data, k, Labels=None)            
-            Lab,LL, bic = self.estimate(data, label, maxiter, delta, ninit)
-            
-            if bic>bic_ref:
-                kopt = k
-                C = self.means.copy()
-                P = self.precisions.copy()
-                W = self.weights.copy()
-                bic_ref = bic
-            if verbose:
-                print k,LL,bic,kopt
-            
-        self.means = C
-        self.precisions = P
-        self.weights = W
-        self.k = kopt
-        
-        if self.prec_type=='full':
-            precisions = np.reshape(self.precisions,(self.k,self.dim*self.dim))
-        else:
-            precisions = self.precisions
-        Labels, LogLike  = fc.gmm_partition(data,self.means,precisions,\
-                                            self.weights)
-
-        return Labels, LogLike, self.bic_from_ll(LogLike)
-
-    def estimate(self, data, Labels=None, maxiter = 300, delta = 0.001,
-                 ninit=1):
-        """
-        Estimation of the GMM based on data and an EM algorithm
-
-        Parameters
-        ----------
-        data : (n*p) feature array, n = nb items, p=feature dimension
-        Labels=None : prior labelling of the data
-            (this may improve convergence)
-        maxiter=300 : max number of iterations of the EM algorithm
-        delta = 0.001 : criterion on the log-likelihood
-            increments to declare converegence
-        ninit=1 : number of possible iterations of the GMM estimation
-
-
-        Returns
-        -------
-        Labels : array of shape(n), type np.int:
-            discrete labelling of the data items into clusters
-        LL : (float) average log-likelihood of the data
-        bic : (float) associated bic criterion
-        """
-        data = self.check_x(data)
-        if Labels==None:
-            Labels = np.zeros(data.shape[0],np.int)
-            nit = 10
-            C,Labels,J = fc.kmeans(data,self.k,Labels,nit)
-        if (self.k>data.shape[0]-1):
-            print "too many clusters"
-            self.k = data.shape[0]-1
-
-        if self.prec_type=='full':prec_type=0
-        if self.prec_type=='diag': prec_type=1
-        
-        C, P, W, Labels, bll = fc.gmm(data,self.k,Labels,prec_type,
-                                     maxiter,delta)
-        self.means = C
-        if self.prec_type=='diag':
-            self.precisions = P
-        if self.prec_type=='full':
-            self.precisions = np.reshape(P,(self.k,self.dim,self.dim))
-        self.weights = W
-        self.check()
-        
-        for i in range(ninit-1):
-            Labels = np.zeros(data.shape[0])
-            C, P, W, labels, ll = fc.gmm(data,self.k,Labels,
-                                         prec_type,maxiter,delta)
-            if ll>bll:
-                self.means = C
-                if self.prec_type=='diag':
-                    self.precisions = P
-                if self.prec_type=='full':
-                    self.precisions = np.reshape(P,(self.k,self.dim,self.dim))
-                self.weights = W
-                self.check()
-                bll = ll
-                Labels = labels
-        return Labels,bll, self.bic_from_all (bll,data.shape[0])
-
-
-    def partition(self,data):
-        """
-        Partitioning the data according to the gmm model
-
-        Parameters
-        ----------
-        data : (n*p) feature array, n = nb items, p=feature dimension
-
-        Returns
-        -------
-        - Labels :  array of shape (n): discrete labelling of the data 
-        - LL : array of shape (n): log-likelihood of the data
-        - bic : the bic criterion for this model
-        """
-        data = self.check_x(data)
-
-        if self.prec_type=='full':
-            precisions = np.reshape(self.precisions,(self.k,self.dim*self.dim))
-        else:
-            precisions = self.precisions
-        Labels, LogLike  = fc.gmm_partition\
-                           (data,self.means,precisions, self.weights)
-
-        return Labels, LogLike, self.bic_from_ll(LogLike)
-        
-    def test(self,data):
-        """
-        Evaluating the GMM on some new data
-
-        Parameters
-        ----------
-        data : (n*p) feature array, n = nb items, p=feature dimension
-
-        Returns
-        -------
-        LL : array of shape (n): the log-likelihood of the data
-        """
-        data = self.check_x(data)
-        if self.prec_type=='full':
-            precisions = np.reshape(self.precisions,(self.k,self.dim*self.dim))
-        else:
-            precisions = self.precisions
-            
-        Labels, LogLike  = fc.gmm_partition\
-                           (data, self.means,precisions, self.weights)
-        return LogLike
-        
-
-    def sample(self,gd,x,verbose=0):
-        """
-        Evaluating the GMM on some new data
-
-        Parameters
-        ----------
-        data : (n*p) feature array, n = nb items, p=feature dimension
-
-        Returns
-        -------
-        LL : array of shape (n) log-likelihood of the data
-        """
-        data = gd.make_grid()
-        if self.prec_type=='full':
-            precisions = np.reshape(self.precisions,(self.k,self.dim*self.dim))
-        else:
-            precisions = self.precisions
-            
-        Labels, LogLike  = fc.gmm_partition(\
-            data,self.means,precisions, self.weights)
-        if verbose:
-            self.show(x,gd,np.exp(LogLike))
-        return LogLike
-        
-            
-    def bic_from_ll(self,sll):
-        """
-        computation of bic approximation of evidence
-
-        Parameters
-        -----------
-        - log-likelihood of the data under the model
-
-        Returns
-        -------
-        - the bic value
-        """
-        
-        # number of parameters
-        n = sll.size
-
-        if self.prec_type=='full':
-            eta = self.k*(1 + self.dim + (self.dim*self.dim+1)/2)-1
-        else:
-            eta = self.k*(1 + 2*self.dim )-1
-        bicc = np.sum(sll)-np.log(n)*eta
-        return bicc
-
-    def bic_from_all(self,all,n,tiny = 1.e-15):
-        """
-        computation of bic approximation of evidence
-
-        Parameters
-        ----------
-        all : average log-likelihood of the data under the model
-        n number of data points
-
-        Returns
-        -------
-        the bic value
-        """
-        if self.prec_type=='full':
-            eta = self.k*(1 + self.dim + (self.dim*self.dim+1)/2)-1
-        else:
-            eta = self.k*(1 + 2*self.dim )-1
-        bicc = n*all-np.log(n)*eta
-        return bicc
-

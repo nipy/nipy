@@ -104,9 +104,9 @@ def ols(ndarray Y, ndarray X, int axis=0):
     # http://codespeak.net/pipermail/cython-dev/2009-April/005229.html
     dims = [Y.shape[i] for i in range(Y.ndim)]
     dims[axis] = p
-    B = np.zeros(dims)
+    B = np.zeros(dims, dtype=np.double)
     dims[axis] = 1
-    S2 = np.zeros(dims)
+    S2 = np.zeros(dims, dtype=np.double)
 
     # Allocate local structure
     kfilt = fff_glm_KF_new(p)
@@ -183,12 +183,12 @@ def ar1(ndarray Y, ndarray X, int niter=2, int axis=0):
     # http://codespeak.net/pipermail/cython-dev/2009-April/005229.html
     dims = [Y.shape[i] for i in range(Y.ndim)]
     dims[axis] = p
-    B = np.zeros(dims)
+    B = np.zeros(dims, dtype=np.double)
     dims[axis] = p2
-    VB = np.zeros(dims)
+    VB = np.zeros(dims, dtype=np.double)
     dims[axis] = 1
-    S2 = np.zeros(dims)
-    A = np.zeros(dims)
+    S2 = np.zeros(dims, dtype=np.double)
+    A = np.zeros(dims, dtype=np.double)
  
     # Allocate local structure
     rkfilt = fff_glm_RKF_new(p)

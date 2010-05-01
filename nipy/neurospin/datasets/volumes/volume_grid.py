@@ -12,7 +12,9 @@ from scipy import ndimage
 
 # Local imports
 from .volume_data import VolumeData
-from ..transforms.affine_utils import apply_affine
+from ..transforms.affine_utils import apply_affine, from_matrix_vector, \
+            get_bounds
+
 
 ################################################################################
 # class `VolumeGrid`
@@ -98,17 +100,35 @@ class VolumeGrid(VolumeData):
 
     def as_volume_img(self, affine=None, shape=None, 
                                         interpolation=None):
+        if affine is None:
+            affine = np.eye(3)
+        if affine.shape[0] == 3 or shape is None:
+            affine3d = affine[:3, :3]
+            affine4d = np.eye(4)
+            affine4d[:3, :3] = affine3d
+            x, y, z = self.get_world_coords()
+            x, y, z = apply_affine(x, y, z, np.linalg.inv(affine4d))
+            xmin = x.min()
+            ymin = y.min()
+            zmin = z.min()
+            if affine.shape[0] == 3:
+                offset = np.array((xmin, ymin, zmin))
+                offset = np.dot(affine3d, offset)
+                affine = from_matrix_vector(affine3d, offset[:3])
+            if shape is None:
+                xmax = x.max()
+                ymax = y.max()
+                zmax = z.max()
+                shape = (np.ceil(xmax - xmin)+1,
+                         np.ceil(ymax - ymin)+1,
+                         np.ceil(zmax - zmin)+1, )
         data = self.get_data()
-        if shape is None:
-            shape = data.shape[:3]
         shape = list(shape)
         if not len(shape) == 3:
             raise ValueError('The shape specified should be the shape '
                 'the 3D grid, and thus of length 3. %s was specified'
                 % shape )
         interpolation_order = self._get_interpolation_order(interpolation)
-        # XXX: Need to use code to linearise the transform.
-        affine = np.eye(4)
         x, y, z = np.indices(shape)
         x, y, z = apply_affine(x, y, z, affine)
         values = self.values_in_world(x, y, z)

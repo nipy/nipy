@@ -17,6 +17,9 @@ def apply_affine(x, y, z, affine):
         affine: 4x4 ndarray
             The affine matrix of the transformation
     """
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+    z = np.atleast_1d(z)
     shape = x.shape
     assert y.shape == shape, 'Coordinate shapes are not equal'
     assert z.shape == shape, 'Coordinate shapes are not equal'
@@ -100,3 +103,25 @@ def from_matrix_vector(matrix, vector):
     t[nin,   nout] = 1.
     t[0:nin, nout] = vector
     return t
+
+
+def get_bounds(shape, affine):
+    """ Return the world-space bounds occupied by an array given an affine.
+    """
+    adim, bdim, cdim = shape
+    adim -= 1
+    bdim -= 1
+    cdim -= 1
+    # form a collection of vectors for each 8 corners of the box
+    box = np.array([ [0.,   0,    0,    1],
+                     [adim, 0,    0,    1],
+                     [0,    bdim, 0,    1],
+                     [0,    0,    cdim, 1],
+                     [adim, bdim, 0,    1],
+                     [adim, 0,    cdim, 1],
+                     [0,    bdim, cdim, 1],
+                     [adim, bdim, cdim, 1] ]).T
+    box = np.dot(affine, box)[:3]
+    return zip(box.min(axis=-1), box.max(axis=-1))
+
+

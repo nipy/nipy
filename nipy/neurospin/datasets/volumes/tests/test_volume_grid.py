@@ -44,7 +44,7 @@ def test_volume_grid():
     yield np.testing.assert_raises, ValueError, \
                         img.values_in_world, 0, 0, 0
     yield np.testing.assert_raises, ValueError, \
-                        img.as_volume_img
+        img.as_volume_img
 
     yield nose.tools.assert_equal, img, copy.copy(img)
 

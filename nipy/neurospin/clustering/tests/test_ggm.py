@@ -34,10 +34,16 @@ def test_GGM2(verbose=0):
     b = np.absolute(G.mixt)<0.1
     assert(b)
 
-def test_GGGM0(verbose=0):
+def test_GGGM0(verbose=0, seed=1):
     G = GGGM()
     sx = 1000
-    x = np.array([float(st.t.rvs(5)) for i in range(sx)])
+    dof = 100.
+    #x = np.array([float(st.t.rvs(dof)) for i in range(sx)])
+    if seed:
+        nr = np.random.RandomState([seed])
+    else:
+        import numpy.random as nr
+    x = nr.randn(sx)
     G.init(x)
     G.estimate(x)
     if verbose:

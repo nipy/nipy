@@ -1,10 +1,13 @@
 """
 This script contains a quick demo on  a multi'subject parcellation
-on a small 2D example
+on a toy 2D example.
+Note how the middle parcels adapt to the individual configuration.
 """
+print __doc__
+
 import numpy as np
 import nipy.neurospin.spatial_models.hierarchical_parcellation as hp
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.parcellation as fp
 
 # step 1:  generate some synthetic data
@@ -16,7 +19,7 @@ pos = 3*np.array([[ 6,  7],
                   [15, 10]])
 ampli = np.array([5, 7, 6])
 sjitter = 6.0
-dataset = simul.make_surrogate_array(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
+dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
                                      pos=pos, ampli=ampli, width=10.0)
 # dataset represents 2D activation images from nsubj subjects,
 # with shape (dimx,dimy)
@@ -43,13 +46,14 @@ Label =  np.array([np.reshape(Pa.label[:,s],(dimx,dimy))
 
 import matplotlib.pylab as mp
 mp.figure()
-
+mp.title('Input data')
 for s in range(nsubj):
     mp.subplot(2, 5, s+1)
     mp.imshow(dataset[s], interpolation='nearest')
     mp.axis('off')
-mp.figure()
 
+mp.figure()
+mp.title('Resulting parcels')
 for s in range(nsubj):
     mp.subplot(2, 5, s+1)
     mp.imshow(Label[s], interpolation='nearest', vmin=-1, vmax=nbparcel)

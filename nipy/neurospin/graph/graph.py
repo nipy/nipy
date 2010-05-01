@@ -125,32 +125,31 @@ class Graph:
             idx = 0     
         return idx
 
-    def show(self,figid=-1):
+    def show(self, ax=None):
         """
         show the graph as a planar graph
         
         Parameters
         ----------
-        figid = -1 the figure id in pylab
-        by default a new figure is created
+        ax, axis handle
         
         Returns
         -------
-        figid
+        ax, axis handle
         """
         import matplotlib.pylab as mp
-        if figid>-1:
-            figid = mp.figure(int(figid))
-        else:
+        if ax==None:
             mp.figure()
+            ax = np.subplot(1,1,1)
+
         t = (2*np.pi*np.arange(self.V))/self.V
         mp.plot(np.cos(t),np.sin(t),'.')
         for e in range(self.E):
             A = (self.edges[e,0]*2*np.pi)/self.V
             B = (self.edges[e,1]*2*np.pi)/self.V
-            mp.plot([np.cos(A),np.cos(B)],[np.sin(A),np.sin(B)],'k')
-        mp.axis('off')
-        return figid
+            ax.plot([np.cos(A),np.cos(B)],[np.sin(A),np.sin(B)],'k')
+        ax.axis('off')
+        return ax
 
         
 
@@ -774,7 +773,7 @@ class WeightedGraph(Graph):
         """
         if np.size(valid)!= self.V:
             raise ValueError, "incompatible size for self anf valid"
-
+        
         if np.sum(valid>0)==0:
             return None
         
@@ -935,7 +934,7 @@ class WeightedGraph(Graph):
         self.symmeterize()
         self.set_gaussian(seeds)
         
-    def show(self,X=None,figid=-1):
+    def show(self, X=None, ax=None):
         """
         a = self.show(X=None)
         plots the current graph in 2D
@@ -947,40 +946,38 @@ class WeightedGraph(Graph):
                 to embed the vertices in 2D.
                 if X.shape[1]>2, a svd reduces X for display
                 By default, the graph is presented on a circle
-        figid=-1: a figure id for pylab plotting
-                  by default, a new figure is created
+        ax: ax handle, optional
         
         Returns
         -------
-        a = figure handle
+        ax: axis handle
         
         Note
         ----
-        This should be used only for small graphs...
+        This should be used only for small graphs.
         """
         if np.size(self.weights)==0:
-            fig = Graph.show()
-            return fig
+            return Graph.show()
         
-        WM = self.weights.max()
+        wm = self.weights.max()
         import matplotlib.pylab as mp
-        if figid >-1:
-            fig = mp.figure(figid)
-        else:
-            fig = mp.figure()
+        if ax==None:
+            mp.figure()
+            ax = mp.subplot(1,1,1)
+            
         ml = 5.
         if (X==None):
             for e in range(self.E):
                 A = (self.edges[e,0]*2*np.pi)/self.V
                 B = (self.edges[e,1]*2*np.pi)/self.V
-                C = max(1,int(self.weights[e]*ml/WM))
+                C = max(1,int(self.weights[e]*ml/wm))
                 mp.plot([np.cos(A),np.cos(B)],[np.sin(A),np.sin(B)],'k',
                         linewidth=C)
             t = (2*np.pi*np.arange(self.V))/self.V
             mp.plot(np.cos(t),np.sin(t),'o',linewidth=ml)
                     
             mp.axis([-1.1,1.1,-1.1,1.1])
-            return fig
+            return ax
             
         if (X.shape[0]!=self.V):
             raise ValueError,'X.shape(0)!=self.V'
@@ -993,7 +990,7 @@ class WeightedGraph(Graph):
             for e in range(self.E):
                 A = x[self.edges[e,0]]
                 B = x[self.edges[e,1]]
-                C = max(1,int(self.weights[e]*ml/WM))
+                C = max(1,int(self.weights[e]*ml/wm))
                 mp.plot([np.cos(A),np.cos(B)],[np.sin(A),np.sin(B)], 
                          'k',linewidth=C)
                         
@@ -1013,7 +1010,7 @@ class WeightedGraph(Graph):
             for e in range(self.E):
                 A = self.edges[e,0]
                 B = self.edges[e,1]
-                C = max(1,int(self.weights[e]*ml/WM))
+                C = max(1,int(self.weights[e]*ml/wm))
                 mp.plot([Y[A,0],Y[B,0]],[Y[A,1],Y[B,1]],'k',linewidth=C)
 
             mp.plot(Y[:,0],Y[:,1],'o',linewidth=ml)
@@ -1027,8 +1024,7 @@ class WeightedGraph(Graph):
             ymax = 1.1*ymax-0.1*ymin
             mp.axis([xmin,xmax,ymin,ymax])
 
-        mp.show()
-        return fig
+        return ax
     
     def converse_edge(self):
         """
@@ -1401,6 +1397,80 @@ class BipartiteGraph(WeightedGraph):
         self.weights = np.array(d)
         return self.E
 
+    def subgraph_left(self, valid, renumb=True):
+        """
+        Extraction of a subgraph 
+        
+        Parameters
+        ----------
+        valid, boolean array of shape self.V
+        renumb, boolean: renumbering of the (left) edges
+
+        Return
+        ------
+        A new BipartiteGraph instance with only the left vertices that are True
+        if sum(valid)==0, None is returned
+        """
+        if np.size(valid)!=self.V:
+            raise ValueError, 'valid does not have the correct size'
+
+        if np.sum(valid>0)==0:
+            return None
+        
+        if self.E>0:
+            win_edges = valid[self.edges[:,0]]
+            edges = self.edges[win_edges,:]
+            weights = self.weights[win_edges]
+            if renumb:
+                rindex = np.hstack((0,np.cumsum(valid>0)))
+                edges[:,0] = rindex[edges[:,0]]
+                G = BipartiteGraph(np.sum(valid),self.W, edges, weights)
+            else:
+                G = BipartiteGraph(self.V,self.W, edges, weights)
+            
+        else:
+            G = self.copy()
+    
+        return G
+
+    def subgraph_right(self, valid, renumb=True):
+        """
+        Extraction of a subgraph 
+        
+        Parameters
+        ----------
+        valid, boolean array of shape self.V
+        renumb, boolean: renumbering of the (right) edges
+
+        Return
+        ------
+        A new BipartiteGraph instance with only the right vertices
+        that are True
+        if sum(valid)==0, None is returned
+        """
+        if np.size(valid)!=self.V:
+            raise ValueError, 'valid does not have the correct size'
+
+        if np.sum(valid>0)==0:
+            return None
+        
+        if self.E>0:
+            win_edges = valid[self.edges[:,1]]
+            edges = self.edges[win_edges,:]
+            weights = self.weights[win_edges]
+            if renumb:
+                rindex = np.hstack((0,np.cumsum(valid>0)))
+                edges[:,1] = rindex[edges[:,1]]
+                G = BipartiteGraph(np.sum(valid),self.W, edges, weights)
+            else:
+                G = BipartiteGraph(self.V,self.W, edges, weights)
+            
+        else:
+            G = self.copy()
+    
+        return G
+
+    
 
 def concatenate_graphs(G1,G2):
     """

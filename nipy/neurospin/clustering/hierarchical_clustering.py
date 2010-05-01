@@ -120,10 +120,18 @@ class WeightedForest(fo.Forest):
                 OK = False
         return OK
 
-    def plot(self):
+    def plot(self, ax=None):
         """
         Plot the dendrogram associated with self
         the rank of the data in the dendogram is returned
+
+        Parameters
+        ----------
+        ax: axis handle, optional
+
+        Returns
+        -------
+        ax, the axis handle
         """
         if self.check_compatible_height()==False:
             raise ValueError, 'cannot plot myself in my current state'
@@ -148,8 +156,10 @@ class WeightedForest(fo.Forest):
             idx[i] = np.mean(idx[j])
 
         # 3. plot
-        import matplotlib.pylab as mp
-        mp.figure()
+        if ax==None:
+            import matplotlib.pylab as mp
+            mp.figure()
+            ax = mp.subplot(1, 1, 1)
 
         for i in range(self.V):
             h1 = self.height[i]
@@ -168,9 +178,9 @@ class WeightedForest(fo.Forest):
         cM = 1.05*self.height.max()-0.05*self.height.min()
         cm = 1.05*self.height.min()-0.05*self.height.max()
         mp.axis([-1,idx.max()+1,cm,cM])
-        mp.axis('off')
-        #mp.show()
-        return rank
+        #mp.axis('off')
+        
+        return ax# rank
 
     def partition(self,threshold):
         """
@@ -717,9 +727,7 @@ def average_link_graph_segment(G,stop=0,qmax=1,verbose=0):
 #------------- Ward's algorithm with graph constraints --------------------
 # -------------------------------------------------------------------------
 
-
-
-def _inertia(i,j,Features):
+def _inertia_(i, j, Features):
     """
     Compute the variance of the set which is
     the concatenation of Feature[i] and Features[j]
@@ -730,10 +738,20 @@ def _inertia(i,j,Features):
         print j, np.shape(Features[j]),Features[j]
     if np.shape(Features[i])[1]!=np.shape(Features[j])[1]:
         print i,j,np.shape(Features[i]), np.shape(Features[j])
-    localset = np.vstack((Features[i],Features[j]))
+    localset = np.vstack((Features[i], Features[j]))
     return np.var(localset,0).sum()
 
-def _initial_inertia(K,Features,seeds=None):
+def _inertia(i, j, Features):
+    """
+    Compute the variance of the set which is
+    the concatenation of Feature[i] and Features[j]
+    """
+    n = Features[0][i] + Features[0][j]
+    s = Features[1][i] + Features[1][j]
+    q = Features[2][i] + Features[2][j]
+    return np.sum(q - (s**2/n))
+
+def _initial_inertia(K, Features, seeds=None):
     """
     Compute the variance associated with each
     edge-related pair of vertices
@@ -745,7 +763,7 @@ def _initial_inertia(K,Features,seeds=None):
         for e in range(K.E):
             i = K.edges[e,0]
             j = K.edges[e,1]
-            ESS = _inertia(i,j,Features)
+            ESS = _inertia(i, j, Features)
             K.weights[e] = ESS
     else:
         aux = np.zeros(K.V).astype('bool')
@@ -754,11 +772,11 @@ def _initial_inertia(K,Features,seeds=None):
             i = K.edges[e,0]
             j = K.edges[e,1]
             if (aux[i] or aux[j]):
-                K.weights[e] = _inertia(i,j,Features)
+                K.weights[e] = _inertia(i, j, Features)
             else:       
                 K.weights[e] = np.infty
 
-def _auxiliary_graph(G,Features):
+def _auxiliary_graph(G, Features):
     """
     prepare a graph with twice the number of vertices
     this graph will contain the connectivity information
@@ -774,14 +792,26 @@ def _auxiliary_graph(G,Features):
     K.remove_edges(valid)
     #
     K.remove_trivial_edges()
-    _initial_inertia(K,Features)
+    _initial_inertia(K, Features)
     return K
 
-def _remap(K,i,j,k,Features,linc,rinc):
+def _remap(K, i, j, k, Features, linc, rinc):
     """
     K,inc,rinc = _remap_dev(K,i,j,k)
     modifies the graph K to merge nodes i and  j into nodes k
     the graph weights are modified accordingly
+
+    Parameters
+    ----------
+    K graph instance:
+      the existing graphical model
+    i,j,k: int
+           indexes of the nodes to be merged and of the parent respectively
+    Features: list of node-per-node features
+    linc: array of shape(K.V)
+          left incidence matrix
+    rinc: array of shape(K.V)
+          right incidencematrix
     """
     # -------
     # replace i by k
@@ -789,18 +819,18 @@ def _remap(K,i,j,k,Features,linc,rinc):
     idxi = np.array(linc[i]).astype(np.int)
     if np.size(idxi)>1:
         for l in idxi:
-            K.weights[l] = _inertia(k,K.edges[l,1],Features)
-    elif np.size(idxi==1):
-        K.weights[idxi] = _inertia(k,K.edges[idxi,1],Features)
+            K.weights[l] = _inertia(k, K.edges[l,1], Features)
+    elif np.size(idxi)==1:
+        K.weights[idxi] = _inertia(k, K.edges[idxi,1], Features)
     if np.size(idxi)>0:
         K.edges[idxi,0] = k
     
     idxi = np.array(rinc[i]).astype(np.int)
     if np.size(idxi)>1:
         for l in idxi :
-            K.weights[l] = _inertia(K.edges[l,0],k,Features)
+            K.weights[l] = _inertia(K.edges[l,0], k, Features)
     elif np.size(idxi)==1:
-        K.weights[idxi] = _inertia(K.edges[idxi,0],k,Features)
+        K.weights[idxi] = _inertia(K.edges[idxi,0], k, Features)
     if np.size(idxi)>0:
         K.edges[idxi,1] = k
 
@@ -810,18 +840,18 @@ def _remap(K,i,j,k,Features,linc,rinc):
     idxj = np.array(linc[j]).astype(np.int)
     if np.size(idxj)>1:
         for l in idxj :
-            K.weights[l] = _inertia(k,K.edges[l,1],Features)
+            K.weights[l] = _inertia(k,K.edges[l,1], Features)
     elif np.size(idxj)==1:
-        K.weights[idxj] = _inertia(k,K.edges[idxj,1],Features)
+        K.weights[idxj] = _inertia(k, K.edges[idxj,1], Features)
     if np.size(idxj)>0:
         K.edges[idxj,0] = k
     
     idxj = np.array(rinc[j]).astype(np.int)
     if np.size(idxj)>1:
         for l in idxj : 
-            K.weights[l] = _inertia(k,K.edges[l,0],Features)
+            K.weights[l] = _inertia(k,K.edges[l,0], Features)
     elif np.size(idxj)==1:
-        K.weights[idxj] = _inertia(k,K.edges[idxj,0],Features)
+        K.weights[idxj] = _inertia(k,K.edges[idxj,0], Features)
     if np.size(idxj)>0:
         K.edges[idxj,1] = k
 
@@ -877,20 +907,22 @@ def _remap(K,i,j,k,Features,linc,rinc):
                 rinc[k].remove(i2)
     return linc,rinc
 
-def ward_quick(G,feature,verbose = 0):
+def ward_quick(G, feature, verbose = 0):
     """
     Agglomerative function based on a topology-defining graph
     and a feature matrix. 
 
     Parameters
     ----------
-    G the input graph (a topological graph essentially)
-    feature array of shape (G.V,dim_feature):
+    G graph instance,
+      topology-defining graph
+    feature: array of shape (G.V,dim_feature):
             some vectorial information related to the graph vertices
 
     Returns
     -------
-    t a weightForest structure that represents the dendrogram of the data
+    t: weightForest instance,
+       that represents the dendrogram of the data
 
     NOTE
     ----
@@ -906,9 +938,16 @@ def ward_quick(G,feature,verbose = 0):
         raise ValueError, "Incompatible dimension for the\
         feature matrix and the graph"
     
+    Features = [np.ones(2*G.V), np.zeros((2*G.V, feature.shape[1])),
+                np.zeros((2*G.V, feature.shape[1]))]
+    Features[1][:G.V] = feature
+    Features[2][:G.V] = feature**2
+
+    """
     Features = []
     for i in range(G.V):
         Features.append(np.reshape(feature[i],(1,feature.shape[1])))
+    """
     
     n = G.V
     nbcc = G.cc().max()+1
@@ -932,7 +971,7 @@ def ward_quick(G,feature,verbose = 0):
         idx = np.argsort(K.weights[ape])
     
         for e in range(n-nbcc-q):
-            i,j = K.edges[ape[idx[e]],0],K.edges[ape[idx[e]],1]
+            i,j = K.edges[ape[idx[e]],0], K.edges[ape[idx[e]],1]
             if aux[i]==1: break
             if aux[j]==1: break
             aux[i]=1
@@ -967,16 +1006,19 @@ def ward_quick(G,feature,verbose = 0):
             # 3. merge the edges with third part edges
             parent[i] = k
             parent[j] = k
-            totalFeatures = np.vstack((Features[i],Features[j]))
+            for p in range(3):
+                Features[p][k] = Features[p][i] + Features[p][j]
+            """
+            totalFeatures = np.vstack((Features[i], Features[j]))
             Features.append(totalFeatures)
             Features[i] = []
             Features[j] = []
-
-            linc,rinc = _remap(K,i,j,k,Features,linc,rinc)
+            """
+            linc,rinc = _remap(K, i, j, k, Features, linc, rinc)
             q+=1
 
     # build a tree to encode the results
-    t = WeightedForest(2*n-nbcc,parent,height)
+    t = WeightedForest(2*n-nbcc, parent, height)
     
     return t
 
@@ -1010,14 +1052,15 @@ def ward_field_segment(F,stop=-1, qmax=-1,verbose=0):
     u,cost = ward_quick_segment(F,F.field,stop,qmax,verbose)
     return u,cost
 
-def ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
+def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=0):
     """
     Agglomerative function based on a topology-defining graph
     and a feature matrix. 
 
     Parameters
     ----------
-    G the input graph (a topological graph essentially)
+    G: neurospin.graph.WeightedGraph instance
+       the input graph (a topological graph essentially)
     feature array of shape (G.V,dim_feature)
             vectorial information related to the graph vertices
     stop = -1: the stopping crterion
@@ -1074,7 +1117,7 @@ def ward_quick_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     return u,cost
 
 
-def ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
+def ward_segment(G, feature, stop=-1, qmax=1, verbose = 0):
     """
     Agglomerative function based on a topology-defining graph
     and a feature matrix. 
@@ -1116,8 +1159,8 @@ def ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
     if stop==-1: stop = np.infty
     qmax = int(np.minimum(qmax,n-1))
 
-    t = ward(G,feature,verbose)
-    if verbose: t.plot()
+    t = ward(G, feature, verbose)
+    # if verbose: t.plot()
 
     u1 = np.zeros(n, np.int)
     u2 = np.zeros(n, np.int)
@@ -1133,7 +1176,7 @@ def ward_segment(G,feature,stop=-1,qmax=1,verbose = 0):
 
     cost = t.get_height()
     cost = cost[t.isleaf()==False]
-    return u,cost
+    return u, cost
 
 
 def ward_simple(feature, verbose=0):
@@ -1156,7 +1199,13 @@ def ward_simple(feature, verbose=0):
         feature = np.reshape(feature, (-1, 1))
 
     # build Features as a list
-    Features = [np.reshape(f, (1, -1)) for f in feature]
+    #Features = [np.reshape(f, (1, -1)) for f in feature]
+    Features = [np.zeros(q), np.zeros((q, feature.shape[1])),
+                np.zeros((q, feature.shape[1]))]
+    Features[0][:n] = 1
+    Features[1][:n] = feature
+    Features[2][:n] = feature**2
+    
 
     # create a distance matrix
     D = np.infty*np.ones((q,q))
@@ -1181,10 +1230,14 @@ def ward_simple(feature, verbose=0):
         parent[j] = k
 
         # update the Features
+        for p in range(3):
+            Features[p][k] = Features[p][i] + Features[p][j]
+        """
         totalFeatures = np.vstack((Features[i],Features[j]))
         Features.append(totalFeatures)
         Features[i] = []
         Features[j] = []
+        """
 
         # update the distance
         for l in range(k):
@@ -1228,17 +1281,19 @@ def ward(G, feature, verbose=0):
     if feature.shape[0]!=G.V:
         raise ValueError, "Incompatible dimension for\
         the feature matrix and the graph"
-    
-    Features = []
-    for i in range(G.V):
-        Features.append(np.reshape(feature[i],(1,feature.shape[1])))
+
+    Features = [np.ones(2*G.V), np.zeros((2*G.V, feature.shape[1])),
+                np.zeros((2*G.V, feature.shape[1]))]
+    Features[1][:G.V] = feature
+    Features[2][:G.V] = feature**2
+  
     
     # prepare a graph with twice the number of vertices
     # this graph will contain the connectivity information
     # along the merges.
     n = G.V
     nbcc = G.cc().max()+1
-    K = _auxiliary_graph(G,Features)
+    K = _auxiliary_graph(G, Features)
 
     # prepare some variables that are useful tp speed up the algorithm 
     parent = np.arange(2*n-nbcc).astype(np.int)
@@ -1257,7 +1312,7 @@ def ward(G, feature, verbose=0):
         j = K.edges[m,1]
         height[k] = cost
         if verbose:
-            print q,i,j, m,cost
+            print q, i, j, m, cost
         
         # 2. remove the current edge
         K.edges[m,:] = -1
@@ -1276,14 +1331,19 @@ def ward(G, feature, verbose=0):
         # 3. merge the edges with third part edges
         parent[i] = k
         parent[j] = k
+        for p in range(3):
+            Features[p][k] = Features[p][i] + Features[p][j]
+        """
         totalFeatures = np.vstack((Features[i],Features[j]))
         Features.append(totalFeatures)
         Features[i] = []
         Features[j] = []
-        linc,rinc = _remap(K,i,j,k,Features,linc,rinc)
-
+        """
+        
+        linc, rinc = _remap(K, i, j, k, Features, linc, rinc)
+    
     # build a tree to encode the results
-    t = WeightedForest(2*n-nbcc,parent,height)
+    t = WeightedForest(2*n-nbcc, parent, height)
     return t
 
 

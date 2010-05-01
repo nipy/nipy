@@ -78,17 +78,17 @@ for results in cluster_results:
     if results["diam"] != None:
         print "minimum cluster diameter", results["diam"]
     print "Cluster level FWER controled at", level
-    print "Peak".ljust(m+2), "Diameter".ljust(m), "Size".ljust(m), "Voxel".ljust(m), "Size".ljust(m), "Fisher".ljust(m)
-    print "XYZ".ljust(m+2), "".ljust(m), "".ljust(m), "P-Corr".ljust(m), "P-Corr".ljust(m), "P-Corr".ljust(m),"\n"
+    #print "Peak".ljust(m+2), "Diameter".ljust(m), "Size".ljust(m), "Voxel".ljust(m), "Size".ljust(m), "Fisher".ljust(m)
+    #print "XYZ".ljust(m+2), "".ljust(m), "".ljust(m), "P-Corr".ljust(m), "P-Corr".ljust(m), "P-Corr".ljust(m),"\n"
     for j in J:
             X, Y, Z = results["peak_XYZ"][:, j]
             strXYZ = str(X).zfill(2) + " " + str(Y).zfill(2) + " " + str(Z).zfill(2)
-            print strXYZ.ljust(m+2),
-            print str(round(Diam[j],2)).ljust(m),
-            print str(int(results["size_values"][j])).ljust(m),
-            print str(Tmax_P[j]).ljust(m),
-            print str(results["size_Corr_p_values"][j]).ljust(m),
-            print str(results["Fisher_Corr_p_values"][j]).ljust(m)
+            #print strXYZ.ljust(m+2),
+            #print str(round(Diam[j],2)).ljust(m),
+            #print str(int(results["size_values"][j])).ljust(m),
+            #print str(Tmax_P[j]).ljust(m),
+            #print str(results["size_Corr_p_values"][j]).ljust(m),
+            #print str(results["Fisher_Corr_p_values"][j]).ljust(m)
 
 
 

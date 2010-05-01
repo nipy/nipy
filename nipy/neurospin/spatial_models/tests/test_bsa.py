@@ -10,7 +10,7 @@ import numpy as np
 import scipy.stats as st
 
 import nipy.neurospin.graph.field as ff
-import nipy.neurospin.utils.simul_2d_multisubject_fmri_dataset as simul
+import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.spatial_models.structural_bfls as sbf
 
@@ -76,7 +76,7 @@ def test_bsa_methods():
                       [15, 10]])
     # make a dataset with a nothing feature
     null_ampli = np.array([0, 0, 0])
-    null_dataset = simul.make_surrogate_array(nbsubj=nbsubj,
+    null_dataset = simul.surrogate_2d_dataset(nbsubj=nbsubj,
                                               dimx=dimx,
                                               dimy=dimy, 
                                               pos=pos,
@@ -86,7 +86,7 @@ def test_bsa_methods():
     null_betas = np.reshape(null_dataset, (nbsubj, dimx, dimy))
     # make a dataset with a something feature
     pos_ampli = np.array([5, 7, 6])
-    pos_dataset = simul.make_surrogate_array(nbsubj=nbsubj,
+    pos_dataset = simul.surrogate_2d_dataset(nbsubj=nbsubj,
                                               dimx=dimx,
                                               dimy=dimy, 
                                               pos=pos,

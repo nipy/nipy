@@ -15,9 +15,9 @@
    :maxdepth: 2
 
    users/index.rst
+   neurospin/index.rst
    devel/index.rst
    faq/index.rst
-   neurospin/index.rst
    api/index.rst
    publications
    license

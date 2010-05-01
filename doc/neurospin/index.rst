@@ -11,7 +11,7 @@ at NeuroSpin, France.
     
     mask.rst
     enn.rst
-    activation_map.rst
+    viz.rst
     simul_activation.rst
     image_registration.rst
     datasets.rst

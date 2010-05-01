@@ -35,7 +35,7 @@ rbeta = load(InputImage)
 beta = rbeta.get_data()
 beta = beta[mask>0]
 
-mp.figure()
+mf = mp.figure()
 a1 = mp.subplot(1,3,1)
 a2 = mp.subplot(1,3,2)
 a3 = mp.subplot(1,3,3)
@@ -55,4 +55,5 @@ efdr = en.ENN(beta)
 efdr.learn()
 efdr.plot(bar=0,mpaxes=a3)
 
+mf.set_size_inches(15, 5, forward=True)
 mp.show()
