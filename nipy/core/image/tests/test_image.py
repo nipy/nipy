@@ -8,10 +8,10 @@ from nipy.testing import assert_true, assert_false, assert_equal, \
     anatfile, parametric
 
 from nipy.core.image import image
-from nipy.core.api import Image, fromarray, merge_images, is_image
+from nipy.core.api import Image, fromarray, subsample, slice_maker
 from nipy.core.api import parcels, data_generator, write_data
-from nipy.core.reference.coordinate_map import Affine
-from nipy.io.api import load_image
+
+from nipy.core.reference.coordinate_map import AffineTransform
 
 def setup():
     # Suppress warnings during tests to reduce noise
@@ -39,24 +39,24 @@ def test_maxmin_values():
 
 
 def test_slice_plane():
-    x = gimg[1]
+    x = subsample(gimg, slice_maker[1])
     yield assert_equal, x.shape, gimg.shape[1:]
 
 
 def test_slice_block():
-    x = gimg[1:3]
+    x = subsample(gimg, slice_maker[1:3])
     yield assert_equal, x.shape, (2,) + tuple(gimg.shape[1:])
 
 
 def test_slice_step():
     s = slice(0,4,2)
-    x = gimg[s]
+    x = subsample(gimg, slice_maker[s])
     yield assert_equal, x.shape, (2,) + tuple(gimg.shape[1:])
 
 
 def test_slice_type():
     s = slice(0,gimg.shape[0])
-    x = gimg[s]
+    x = subsample(gimg, slice_maker[s])
     yield assert_equal, x.shape, gimg.shape
 
 
@@ -65,7 +65,7 @@ def test_slice_steps():
     slice_z = slice(0, dim0, 2)
     slice_y = slice(0, dim1, 2)
     slice_x = slice(0, dim2, 2)
-    x = gimg[slice_z, slice_y, slice_x]
+    x = subsample(gimg, slice_maker[slice_z, slice_y, slice_x])
     newshape = tuple(np.floor((np.array(gimg.shape) - 1)/2) + 1)
     yield assert_equal, x.shape, newshape
 
@@ -107,7 +107,7 @@ def test_parcels1():
 
 
 def test_parcels3():
-    rho = gimg[0]
+    rho = subsample(gimg, slice_maker[0])
     parcelmap = np.asarray(rho).astype(np.int32)
     labels = np.unique(parcelmap)
     test = np.zeros(rho.shape)
@@ -117,28 +117,6 @@ def test_parcels3():
     yield assert_equal, v, np.product(test.shape)
 
 
-def test_merge_images():
-    #  Check that merge_images works, and that the CoordinateMap
-    #  instance is first one in the list.
-    data = np.ones((2,3,4))
-    img = image.fromarray(data, 'ijk', 'xyz')
-    mimg = merge_images([img for i in range(4)])
-    yield assert_equal, mimg.shape, (4,) + img.shape
-    yield nptest.assert_almost_equal, mimg.affine[1:,1:], img.affine
-    yield nptest.assert_almost_equal, mimg.affine[0], np.array([1,0,0,0,0])
-    yield nptest.assert_almost_equal, mimg.affine[:,0], np.array([1,0,0,0,0])
-    # A list with different CoordinateMaps -- the merged images
-    # takes the first one
-    naffine = Affine(np.diag([-2,-4,-6,1.]),
-                     img.coordmap.input_coords,
-                     img.coordmap.output_coords)
-    nimg = Image(np.asarray(img), naffine)
-    mimg = merge_images([nimg, img, img, img])
-    yield assert_equal, mimg.shape, (4,) + img.shape
-    yield nptest.assert_almost_equal, mimg.affine[1:,1:], nimg.affine
-    yield nptest.assert_almost_equal, mimg.affine[0], np.array([1,0,0,0,0])
-    yield nptest.assert_almost_equal, mimg.affine[:,0], np.array([1,0,0,0,0])
-
 
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
@@ -146,11 +124,11 @@ def test_slicing_returns_image():
     assert isinstance(img, Image)
     assert img.ndim == 3
     # 2D slice
-    img2D = img[:,:,0]
+    img2D = subsample(img, slice_maker[:,:,0])
     assert isinstance(img2D, Image)
     assert img2D.ndim == 2
     # 1D slice
-    img1D = img[:,0,0]
+    img1D = subsample(img, slice_maker[:,0,0])
     assert isinstance(img1D, Image)
     assert img1D.ndim == 1
 
@@ -182,16 +160,16 @@ def test_ArrayLikeObj():
     obj = ArrayLikeObj()
     # create simple coordmap
     xform = np.eye(4)
-    coordmap = Affine.from_params('xyz', 'ijk', xform)
+    coordmap = AffineTransform.from_params('xyz', 'ijk', xform)
     
     # create image form array-like object and coordmap
     img = image.Image(obj, coordmap)
     yield assert_true, img.ndim == 3
     yield assert_true, img.shape == (2,3,4)
     yield assert_true, np.allclose(np.asarray(img), 1)
-    yield assert_true, np.allclose(img[:], 1)
+    yield assert_true, np.allclose(np.asarray(img), 1)
     img[:] = 4
-    yield assert_true, np.allclose(img[:], 4)
+    yield assert_true, np.allclose(np.asarray(img), 4)
 
 
 array2D_shape = (2,3)
@@ -232,20 +210,90 @@ def test_defaults_4D():
     yield assert_true, img.affine.shape == (5,5)
     yield assert_true, img.affine.diagonal().all() == 1
 
+def test_synchronized_order():
 
-@parametric
-def test_is_image():
-    # tests for tests for image
-    img = load_image(anatfile)
-    yield assert_true(is_image(img))
-    class C(object): pass
-    yield assert_false(is_image(C()))
-    class C(object):
-        def __array__(self): pass
-    yield assert_false(is_image(C()))
-    class C(object):
-        coordmap = None
-        def __array__(self): pass
-    yield assert_true(is_image(img))
+    data = np.random.standard_normal((3,4,7,5))
+    im = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
+
+    im_scrambled = im.reordered_axes('iljk').reordered_reference('xtyz')
+    im_unscrambled = image.synchronized_order(im_scrambled, im)
     
-    
+    yield assert_equal, im_unscrambled.coordmap, im.coordmap
+    yield assert_almost_equal, im_unscrambled.get_data(), im.get_data()
+    yield assert_equal, im_unscrambled, im
+    yield assert_true, im_unscrambled == im
+    yield assert_false, im_unscrambled != im
+
+    # the images don't have to be the same shape
+
+    data2 = np.random.standard_normal((3,11,9,4))
+    im2 = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
+
+    im_scrambled2 = im2.reordered_axes('iljk').reordered_reference('xtyz')
+    im_unscrambled2 = image.synchronized_order(im_scrambled2, im)
+
+    yield assert_equal, im_unscrambled2.coordmap, im.coordmap
+
+    # or the same coordmap
+
+    data3 = np.random.standard_normal((3,11,9,4))
+    im3 = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,9,3,-2,1])))
+
+    im_scrambled3 = im3.reordered_axes('iljk').reordered_reference('xtyz')
+    im_unscrambled3 = image.synchronized_order(im_scrambled3, im)
+
+    yield assert_equal, im_unscrambled3.axes, im.axes
+    yield assert_equal, im_unscrambled3.reference, im.reference
+
+def test_rollaxis():
+    data = np.random.standard_normal((3,4,7,5))
+    im = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
+
+    # for the inverse we must specify an integer
+    yield assert_raises, ValueError, image.rollaxis, im, 'i', True
+
+    # Check that rollaxis preserves diagonal affines, as claimed
+
+    yield assert_almost_equal, image.rollaxis(im, 1).affine, np.diag([2,1,3,4,1])
+    yield assert_almost_equal, image.rollaxis(im, 2).affine, np.diag([3,1,2,4,1])
+    yield assert_almost_equal, image.rollaxis(im, 3).affine, np.diag([4,1,2,3,1])
+
+    # Check that ambiguous axes raise an exception
+    # 'l' appears both as an axis and a reference coord name
+    # and in different places
+
+    im_amb = Image(data, AffineTransform.from_params('ijkl', 'xylt', np.diag([1,2,3,4,1])))
+    yield assert_raises, ValueError, image.rollaxis, im_amb, 'l'
+
+    # But if it's unambiguous, then
+    # 'l' can appear both as an axis and a reference coord name
+
+    im_unamb = Image(data, AffineTransform.from_params('ijkl', 'xyzl', np.diag([1,2,3,4,1])))
+    im_rolled = image.rollaxis(im_unamb, 'l')
+    yield assert_almost_equal, im_rolled.get_data(), \
+        im_unamb.get_data().transpose([3,0,1,2])
+
+    for i, o, n in zip('ijkl', 'xyzt', range(4)):
+        im_i = image.rollaxis(im, i)
+        im_o = image.rollaxis(im, o)
+        im_n = image.rollaxis(im, n)
+
+        yield assert_almost_equal, im_i.get_data(), \
+                                  im_o.get_data()
+
+        yield assert_almost_equal, im_i.affine, \
+            im_o.affine
+
+        yield assert_almost_equal, im_n.get_data(), \
+            im_o.get_data()
+
+        for _im in [im_n, im_o, im_i]:
+            im_n_inv = image.rollaxis(_im, n, inverse=True)
+
+            yield assert_almost_equal, im_n_inv.affine, \
+                im.affine
+
+            yield assert_almost_equal, im_n_inv.get_data(), \
+                im.get_data()
+
+

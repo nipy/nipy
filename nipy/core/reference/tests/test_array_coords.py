@@ -11,7 +11,8 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 from nipy.testing import parametric
 
-from nipy.core.api import Affine
+from nipy.core.api import (AffineTransform, CoordinateSystem,
+                           CoordinateMap, Grid, ArrayCoordMap)
 
 import nipy.core.reference.array_coords as acs
 
@@ -29,7 +30,7 @@ def test_array_coord_map():
     aff = np.diag([xz, yz, zz, 1])
     aff[:3,3] = [xt, yt, zt]
     shape = (2,3,4)
-    cmap = Affine.from_params('ijk', 'xyz', aff)
+    cmap = AffineTransform.from_params('ijk', 'xyz', aff)
     acm = acs.ArrayCoordMap(cmap, shape)
     # slice the coordinate map for the first axis
     sacm = acm[1]
@@ -89,3 +90,40 @@ def test_array_coord_map():
     yield assert_raises(ValueError, acm.__getitem__, ([0,2],))
     yield assert_raises(ValueError, acm.__getitem__, (np.array([0,2]),))
     
+
+def test_grid():
+    input = CoordinateSystem('ij', 'input')
+    output = CoordinateSystem('xy', 'output')
+    def f(ij):
+        i = ij[:,0]
+        j = ij[:,1]
+        return np.array([i**2+j,j**3+i]).T
+    cmap = CoordinateMap(input, output, f)
+    grid = Grid(cmap)
+    eval = ArrayCoordMap.from_shape(cmap, (50,40))
+    assert_true(np.allclose(grid[0:50,0:40].values, eval.values))
+
+
+def test_eval_slice():
+    input = CoordinateSystem('ij', 'input')
+    output = CoordinateSystem('xy', 'output')
+    def f(ij):
+        i = ij[:,0]
+        j = ij[:,1]
+        return np.array([i**2+j,j**3+i]).T
+
+    cmap = CoordinateMap(input, output, f)
+
+    cmap = CoordinateMap(input, output, f)
+    grid = Grid(cmap)
+    e = grid[0:50,0:40]
+    ee = e[0:20:3]
+
+    yield assert_equal, ee.shape, (7,40)
+    yield assert_equal, ee.values.shape, (280,2)
+    yield assert_equal, ee.transposed_values.shape, (2,7,40)
+
+    ee = e[0:20:2,3]
+    yield assert_equal, ee.values.shape, (10,2)
+    yield assert_equal, ee.transposed_values.shape, (2,10)
+    yield assert_equal, ee.shape, (10,)

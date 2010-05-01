@@ -18,7 +18,6 @@ import numpy as np
 from scipy.interpolate import interp1d
 from matplotlib.mlab import csv2rec
 
-# Nipy imports
 from nipy.modalities.fmri import formula, utils, hrf, design
 from nipy.modalities.fmri.fmristat import hrf as delay
 from nipy.fixes.scipy.stats.models.regression import OLSModel

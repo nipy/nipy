@@ -1,9 +1,10 @@
+
 import numpy as np
 from scipy.linalg import expm
 
 from nose.tools import assert_true, assert_equal, assert_raises
 
-import nipy.core.reference.matrix_groups as MG
+import nipy.core.reference.tests.matrix_groups as MG
 from nipy.core.api import ArrayCoordMap
 
 A = np.array([[0,1],
@@ -64,7 +65,7 @@ def test_basis_change():
     basis1 = random_orth(names='xyz')
     basis2 = random_orth(names='uvw')
     
-    bchange = MG.Linear(random_orth(dim=3).matrix, basis2.coords, basis1.coords)
+    bchange = MG.Linear(basis2.coords, basis1.coords, random_orth(dim=3).matrix)
     #print basis1.coords
     new = MG.change_basis(basis1, bchange)
 
@@ -129,7 +130,7 @@ def test_32():
             """
             if M is None:
                 M = self.matrix
-            return np.allclose(np.identity(self.ndim[0], dtype=self.dtype), np.dot(M.T, M), atol=1.0e-06)
+            return np.allclose(np.identity(self.ndims[0], dtype=self.dtype), np.dot(M.T, M), atol=1.0e-06)
 
     a = random_orth(3).matrix.astype(np.float32)
 

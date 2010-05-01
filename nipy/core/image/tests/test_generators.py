@@ -2,7 +2,7 @@ import numpy as np
 from nipy.testing import *
 
 from nipy.core.api import write_data, slice_generator
-from nipy.core.api import Image, Affine
+from nipy.core.api import Image, AffineTransform
 import nipy.core.image.generators as gen
 
 class TestGenerator(TestCase):
@@ -11,15 +11,15 @@ class TestGenerator(TestCase):
         names = ['zspace', 'yspace', 'xspace']
         shape = (10,20,30)
         self.img = Image(np.zeros(shape), 
-                         Affine.from_start_step(names, names, (0,)*3, (1,)*3))
+                         AffineTransform.from_start_step(names, names, (0,)*3, (1,)*3))
         self.img2 = Image(np.ones(shape), 
-                          Affine.from_start_step(names, names, (0,)*3, (1,)*3))
+                          AffineTransform.from_start_step(names, names, (0,)*3, (1,)*3))
                        
         shape = (3,5,4)
         self.img3 = Image(np.zeros(shape), 
-                          Affine.from_start_step(names, names, (0,)*3, (1,)*3))
+                          AffineTransform.from_start_step(names, names, (0,)*3, (1,)*3))
         self.img4 = Image(np.zeros(shape), 
-                          Affine.from_start_step(names, names, (0,)*3, (1,)*3))
+                          AffineTransform.from_start_step(names, names, (0,)*3, (1,)*3))
 
 
     def test_read_slices(self):

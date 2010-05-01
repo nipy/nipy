@@ -1,7 +1,7 @@
 import numpy as np
 
 
-from nipy.core.api import (Affine, Image,  
+from nipy.core.api import (AffineTransform, Image,  
                            ArrayCoordMap, compose)
 from nipy.core.reference import slices
 from nipy.algorithms.resample import resample, resample_img2img
@@ -29,8 +29,8 @@ def test_rotate2d():
     # Rotate an image in 2d on a square grid,
     # should result in transposed image
     
-    g = Affine.from_params('ij', 'xy', np.diag([0.7,0.5,1]))
-    g2 = Affine.from_params('ij', 'xy', np.diag([0.5,0.7,1]))
+    g = AffineTransform.from_params('ij', 'xy', np.diag([0.7,0.5,1]))
+    g2 = AffineTransform.from_params('ij', 'xy', np.diag([0.5,0.7,1]))
 
     i = Image(np.ones((100,100)), g)
     i[50:55,40:55] = 3.
@@ -47,8 +47,8 @@ def test_rotate2d2():
     # Rotate an image in 2d on a non-square grid,
     # should result in transposed image
     
-    g = Affine.from_params('ij', 'xy', np.diag([0.7,0.5,1]))
-    g2 = Affine.from_params('ij', 'xy', np.diag([0.5,0.7,1]))
+    g = AffineTransform.from_params('ij', 'xy', np.diag([0.7,0.5,1]))
+    g2 = AffineTransform.from_params('ij', 'xy', np.diag([0.5,0.7,1]))
 
     i = Image(np.ones((100,80)), g)
     i[50:55,40:55] = 3.
@@ -63,8 +63,8 @@ def test_rotate2d2():
 
 def test_rotate2d3():
     # Another way to rotate/transpose the image, similar to
-    # test_rotate2d2 and test_rotate2d except the output_coords of the
-    # output coordmap are the same as the output_coords of the
+    # test_rotate2d2 and test_rotate2d except the world of the
+    # output coordmap are the same as the world of the
     # original image. That is, the data is transposed on disk, but the
     # output coordinates are still 'x,'y' order, not 'y', 'x' order as
     # above
@@ -73,24 +73,24 @@ def test_rotate2d3():
     # be transposed but one wanted to keep the NIFTI order of output
     # coords this would do the trick
 
-    g = Affine.from_params('xy', 'ij', np.diag([0.5,0.7,1]))
+    g = AffineTransform.from_params('xy', 'ij', np.diag([0.5,0.7,1]))
     i = Image(np.ones((100,80)), g)
     i[50:55,40:55] = 3.
 
     a = np.identity(3)
-    g2 = Affine.from_params('xy', 'ij', np.array([[0,0.5,0],
+    g2 = AffineTransform.from_params('xy', 'ij', np.array([[0,0.5,0],
                                                   [0.7,0,0],
                                                   [0,0,1]]))
     ir = resample(i, g2, a, (80,100))
-    v2v = compose(g.inverse, g2)
+    v2v = compose(g.inverse(), g2)
     yield assert_array_almost_equal, np.asarray(ir).T, i
     
 
 def test_rotate3d():
     # Rotate / transpose a 3d image on a non-square grid
 
-    g = Affine.from_params('ijk', 'xyz', np.diag([0.5,0.6,0.7,1]))
-    g2 = Affine.from_params('ijk', 'xyz', np.diag([0.5,0.7,0.6,1]))
+    g = AffineTransform.from_params('ijk', 'xyz', np.diag([0.5,0.6,0.7,1]))
+    g2 = AffineTransform.from_params('ijk', 'xyz', np.diag([0.5,0.7,0.6,1]))
 
     shape = (100,90,80)
     i = Image(np.ones(shape), g)
@@ -106,7 +106,7 @@ def test_rotate3d():
 
 
 def test_resample2d():
-    g = Affine.from_params('ij', 'xy', np.diag([0.5,0.5,1]))
+    g = AffineTransform.from_params('ij', 'xy', np.diag([0.5,0.5,1]))
     i = Image(np.ones((100,90)), g)
     i[50:55,40:55] = 3.
     
@@ -126,8 +126,8 @@ def test_resample2d():
 
 def test_resample2d1():
     # Tests the same as test_resample2d, only using a callable instead of
-    # an Affine instance
-    g = Affine.from_params('ij', 'xy', np.diag([0.5,0.5,1]))
+    # an AffineTransform instance
+    g = AffineTransform.from_params('ij', 'xy', np.diag([0.5,0.5,1]))
     i = Image(np.ones((100,90)), g)
     i[50:55,40:55] = 3.
     a = np.identity(3)
@@ -141,7 +141,7 @@ def test_resample2d1():
 
 
 def test_resample2d2():
-    g = Affine.from_params('ij', 'xy', np.diag([0.5,0.5,1]))
+    g = AffineTransform.from_params('ij', 'xy', np.diag([0.5,0.5,1]))
     i = Image(np.ones((100,90)), g)
     i[50:55,40:55] = 3.
     a = np.identity(3)
@@ -155,7 +155,7 @@ def test_resample2d2():
 def test_resample2d3():
     # Same as test_resample2d, only a different way of specifying
     # the transform: here it is an (A,b) pair
-    g = Affine.from_params('ij', 'xy', np.diag([0.5,0.5,1]))
+    g = AffineTransform.from_params('ij', 'xy', np.diag([0.5,0.5,1]))
     i = Image(np.ones((100,90)), g)
     i[50:55,40:55] = 3.
     a = np.identity(3)
@@ -165,7 +165,7 @@ def test_resample2d3():
     
 
 def test_resample3d():
-    g = Affine.from_params('ijk', 'xyz', np.diag([0.5,0.5,0.5,1]))
+    g = AffineTransform.from_params('ijk', 'xyz', np.diag([0.5,0.5,0.5,1]))
     shape = (100,90,80)
     i = Image(np.ones(shape), g)
     i[50:55,40:55,30:33] = 3.
@@ -192,10 +192,10 @@ def test_nonaffine():
         return (np.vstack([5*np.sin(x.T),5*np.cos(x.T)]).T + [52,47])
     for names in (('xy', 'ij', 't', 'u'),('ij', 'xy', 't', 's')):
         in_names, out_names, tin_names, tout_names = names
-        g = Affine.from_params(in_names, out_names, np.identity(3))
+        g = AffineTransform.from_params(in_names, out_names, np.identity(3))
         img = Image(np.ones((100,90)), g)
         img[50:55,40:55] = 3.
-        tcoordmap = Affine.from_start_step(
+        tcoordmap = AffineTransform.from_start_step(
             tin_names,
             tout_names,
             [0],
@@ -219,7 +219,7 @@ def test_2d_from_3d():
     # the 10th slice of an image, and checks that
     # resampling agrees with the data in the 10th slice.
     shape = (100,90,80)
-    g = Affine.from_params('ijk', 'xyz', np.diag([0.5,0.5,0.5,1]))
+    g = AffineTransform.from_params('ijk', 'xyz', np.diag([0.5,0.5,0.5,1]))
     i = Image(np.ones(shape), g)
     i[50:55,40:55,30:33] = 3.
     a = np.identity(4)
@@ -235,19 +235,19 @@ def test_slice_from_3d():
     # the 10th slice of an image, and checks that
     # resampling agrees with the data in the 10th slice.
     shape = (100,90,80)
-    g = Affine.from_params('ijk', 'xyz', np.diag([0.5,0.5,0.5,1]))
+    g = AffineTransform.from_params('ijk', 'xyz', np.diag([0.5,0.5,0.5,1]))
     i = Image(np.ones(shape), g)
     i[50:55,40:55,30:33] = 3
     a = np.identity(4)
     zsl = slices.zslice(26,
                         (0,44.5), (0,39.5),
-                        i.coordmap.output_coords,
+                        i.world,
                         (90,80))
     ir = resample(i, zsl.coordmap, a, zsl.shape)
     yield assert_true, np.allclose(np.asarray(ir), np.asarray(i[53]))
-    ysl = slices.yslice(22, (0,49.5), (0,39.5), i.coordmap.output_coords, (100,80))
+    ysl = slices.yslice(22, (0,49.5), (0,39.5), i.world, (100,80))
     ir = resample(i, ysl.coordmap, a, ysl.shape)
     yield assert_true, np.allclose(np.asarray(ir), np.asarray(i[:,45]))
-    xsl = slices.xslice(15.5, (0,49.5), (0,44.5), i.coordmap.output_coords, (100,90))
+    xsl = slices.xslice(15.5, (0,49.5), (0,44.5), i.world, (100,90))
     ir = resample(i, xsl.coordmap, a, xsl.shape)
     yield assert_true, np.allclose(np.asarray(ir), np.asarray(i[:,:,32]))

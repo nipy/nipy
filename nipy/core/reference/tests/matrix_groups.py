@@ -1,15 +1,19 @@
+"""
+This module is essentially a test of the AffineTransform object to 
+see if it can succinctly describe an object like a matrix group.
+"""
+
 import numpy as np
 
-from nipy.core.api import CoordinateSystem, Affine
-from nipy.core.reference.coordinate_map import compose
-from nipy.core.reference.coordinate_map import product as cmap_product
+from nipy.core.api import CoordinateSystem, AffineTransform
+from nipy.core.reference.coordinate_map import compose, product as cmap_product
 
 ###################################################################################
 
-class Linear(Affine):
+class Linear(AffineTransform):
 
     """
-    Subclass of Affine that is Linear as opposed to Affine, i.e. the translation is 0.
+    Subclass of AffineTransform that is Linear as opposed to AffineTransform, i.e. the translation is 0.
 
     It is instantiated with an matrix of shape (ndim,ndim) instead of (ndim+1,ndim+1)
     """
@@ -17,11 +21,11 @@ class Linear(Affine):
         return self.affine[:-1,:-1]
     matrix = property(_getmatrix)
 
-    def __init__(self, matrix, input_coords, output_coords):
+    def __init__(self, function_domain, function_range, matrix):
         ndim = matrix.shape[0]
         T = np.identity(ndim+1, dtype=matrix.dtype)
         T[:-1,:-1] = matrix
-        Affine.__init__(self, T, input_coords, output_coords)
+        AffineTransform.__init__(self, function_domain, function_range, T)
 
 ###################################################################################
 
@@ -38,7 +42,7 @@ class MatrixGroup(Linear):
             coords = CoordinateSystem(coords, 'space', coord_dtype=dtype)
         else:
             coords = CoordinateSystem(coords.coord_names, 'space', dtype)
-        Linear.__init__(self, matrix.astype(dtype), coords, coords)
+        Linear.__init__(self, coords, coords, matrix.astype(dtype))
         if not self.validate():
             raise ValueError('this matrix is not an element of %s'
                              % `self.__class__`)
@@ -55,13 +59,13 @@ class MatrixGroup(Linear):
         raise NotImplementedError
 
     def _getcoords(self):
-        return self.input_coords
+        return self.function_domain
     coords = property(_getcoords)
 
-    def _getinverse(self):
-        cmapi = super(MatrixGroup, self).inverse
-        return self.__class__(cmapi.affine[:-1,:-1], self.coords)
-    inverse = property(_getinverse)
+    def inverse(self):
+        inv_matrix = np.linalg.inv(self.affine[:-1,:-1])
+        return self.__class__(inv_matrix, self.coords)
+#    inverse = property(_getinverse)
 
 ###################################################################################
 
@@ -118,7 +122,7 @@ class O(GLR):
         
         if M is None:
             M = self.matrix
-        return np.allclose(np.identity(self.ndim[0], dtype=self.dtype), np.dot(M.T, M))
+        return np.allclose(np.identity(self.ndims[0], dtype=self.dtype), np.dot(M.T, M))
 
 ###################################################################################
 
@@ -193,18 +197,18 @@ def change_basis(element, bchange_linear):
     A change of basis is represented as a mapping between two
     coordinate systems and is also represented by a change of basis
     matrix.  This is expressed in this function as
-    bchange_linear.output_coords == element.coords
+    bchange_linear.function_range == element.coords
     
     This function expresses the same transformation L in a different
     basis.
 
     """
 
-    newcm = compose(bchange_linear.inverse, element, bchange_linear)
+    newcm = compose(bchange_linear.inverse(), element, bchange_linear)
     matrix = newcm.affine[:-1,:-1]
-    if bchange_linear.output_coords != element.coords:
+    if bchange_linear.function_range != element.coords:
         raise ValueError('expecting the basis change mapping to have the same output coords as element')
-    return element.__class__(matrix, newcm.input_coords)
+    return element.__class__(matrix, newcm.function_domain)
 
 ###################################################################################
 
@@ -252,5 +256,5 @@ def product_homomorphism(*elements):
 
     newcmap = cmap_product(*elements)
     matrix = newcmap.affine[:-1,:-1]
-    return elements[0].__class__(matrix, newcmap.input_coords)
+    return elements[0].__class__(matrix, newcmap.function_domain)
 
