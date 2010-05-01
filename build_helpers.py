@@ -1,20 +1,29 @@
 """
-Code to build the documentation in the setup.py
+Build helpers for setup.py
 
-To use this code, run::
+Includes package dependency checks, and code to build the documentation
+
+To build the docs, run::
 
     python setup.py build_sphinx
+    
 """
 
 # Standard library imports
 import sys
 import os
-from os.path import join as pjoin
+from os.path import join as pjoin, dirname
 import zipfile
 import warnings
 import shutil
 from distutils.cmd import Command
 from distutils.command.clean import clean
+from distutils.version import LooseVersion
+from distutils.dep_util import newer_group
+from distutils.errors import DistutilsError
+
+from numpy.distutils.misc_util import appendpath
+from numpy.distutils import log
 
 # Sphinx import.
 from sphinx.setup_command import BuildDoc
@@ -166,4 +175,101 @@ cmdclass = {'build_sphinx': MyBuildDoc,
             'clean': Clean,
             }
 
+
+# Dependency checks
+def package_check(pkg_name, version=None,
+                  optional=False,
+                  checker=LooseVersion,
+                  version_getter=None,
+                  ):
+    ''' Check if package `pkg_name` is present, and correct version
+
+    Parameters
+    ----------
+    pkg_name : str
+       name of package as imported into python
+    version : {None, str}, optional
+       minimum version of the package that we require. If None, we don't
+       check the version.  Default is None
+    optional : {False, True}, optional
+       If False, raise error for absent package or wrong version;
+       otherwise warn
+    checker : callable, optional
+       callable with which to return comparable thing from version
+       string.  Default is ``distutils.version.LooseVersion``
+    version_getter : {None, callable}:
+       Callable that takes `pkg_name` as argument, and returns the
+       package version string - as in::
+       
+          ``version = version_getter(pkg_name)``
+
+       If None, equivalent to::
+
+          mod = __import__(pkg_name); version = mod.__version__``
+    '''
+    if version_getter is None:
+        def version_getter(pkg_name):
+            mod = __import__(pkg_name)
+            return mod.__version__
+    try:
+        mod = __import__(pkg_name)
+    except ImportError:
+        if not optional:
+            raise RuntimeError('Cannot import package "%s" '
+                               '- is it installed?' % pkg_name)
+        log.warn('Missing optional package "%s"; '
+                 'you may get run-time errors' % pkg_name)
+        return
+    if not version:
+        return
+    try:
+        have_version = version_getter(pkg_name)
+    except AttributeError:
+        raise RuntimeError('Cannot find version for %s' % pkg_name)
+    if checker(have_version) < checker(version):
+        v_msg = 'You have version %s of package "%s"' \
+            ' but we need version >= %s' % (
+            have_version,
+            pkg_name,
+            version,
+            )
+        if optional:
+            log.warn(v_msg + '; you may get run-time errors')
+        else:
+            raise RuntimeError(v_msg)
+
+
+def generate_a_pyrex_source(self, base, ext_name, source, extension):
+    ''' Monkey patch for numpy build_src.build_src method
+
+    Uses Cython instead of Pyrex.
+
+    Assumes Cython is present
+    '''
+    if self.inplace:
+        target_dir = dirname(base)
+    else:
+        target_dir = appendpath(self.build_src, dirname(base))
+    target_file = pjoin(target_dir, ext_name + '.c')
+    depends = [source] + extension.depends
+    # add distribution (package-wide) include directories, in order to
+    # pick up needed .pxd files for cython compilation
+    incl_dirs = extension.include_dirs[:]
+    dist_incl_dirs = self.distribution.include_dirs
+    if not dist_incl_dirs is None:
+        incl_dirs += dist_incl_dirs
+    if self.force or newer_group(depends, target_file, 'newer'):
+        import Cython.Compiler.Main
+        log.info("cythonc:> %s" % (target_file))
+        self.mkpath(target_dir)
+        options = Cython.Compiler.Main.CompilationOptions(
+            defaults=Cython.Compiler.Main.default_options,
+            include_path=incl_dirs,
+            output_file=target_file)
+        cython_result = Cython.Compiler.Main.compile(source,
+                                                   options=options)
+        if cython_result.num_errors != 0:
+            raise DistutilsError("%d errors while compiling %r with Cython" \
+                  % (cython_result.num_errors, source))
+    return target_file
 

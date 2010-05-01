@@ -1,6 +1,4 @@
 # -*- Mode: Python -*-  Not really, but the syntax is close enough
-
-
 """
 Routines for massively univariate random-effect and mixed-effect
 analysis. Two-sample case.
@@ -12,7 +10,7 @@ __version__ = '0.1'
 
 
 # Includes
-include "fff.pxi"
+from fff cimport *
 
 # Exports from fff_twosample_stat.h
 cdef extern from "fff_twosample_stat.h":
@@ -82,8 +80,8 @@ def stat(ndarray Y1, ndarray Y2, id='student', int axis=0, ndarray Magics=None):
   cdef fffpy_multi_iterator* multi
 
   # Get number of observations
-  n1 = <unsigned int>Y1.dimensions[axis]
-  n2 = <unsigned int>Y2.dimensions[axis]
+  n1 = <unsigned int>Y1.shape[axis]
+  n2 = <unsigned int>Y2.shape[axis]
   n = n1 + n2
 
   # Read out magic numbers
@@ -95,8 +93,8 @@ def stat(ndarray Y1, ndarray Y2, id='student', int axis=0, ndarray Magics=None):
 
   # Create output array
   nsimu = magics.size
-  dims = list(Y1.shape)
-  dims[axis] = nsimu 
+  dims = [Y1.shape[i] for i in range(Y1.ndim)]
+  dims[axis] = nsimu
   T = np.zeros(dims)
 
   # Create local structure
@@ -167,8 +165,8 @@ def stat_mfx(ndarray Y1, ndarray V1, ndarray Y2, ndarray V2,
   cdef fffpy_multi_iterator* multi
 
   # Get number of observations
-  n1 = <unsigned int>Y1.dimensions[axis]
-  n2 = <unsigned int>Y2.dimensions[axis]
+  n1 = <unsigned int>Y1.shape[axis]
+  n2 = <unsigned int>Y2.shape[axis]
   n = n1 + n2
 
   # Read out magic numbers
@@ -180,7 +178,7 @@ def stat_mfx(ndarray Y1, ndarray V1, ndarray Y2, ndarray V2,
 
   # Create output array
   nsimu = magics.size
-  dims = list(Y1.shape)
+  dims = [Y1.shape[i] for i in range(Y1.ndim)]
   dims[axis] = nsimu 
   T = np.zeros(dims)
 

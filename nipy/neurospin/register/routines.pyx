@@ -12,11 +12,13 @@ __version__ = '0.2'
 
 
 # Includes
-include "numpy.pxi"
+from numpy cimport (ndarray, flatiter, broadcast, import_array,
+                    PyArray_MultiIterNew, PyArray_MultiIter_DATA,
+                    PyArray_MultiIter_NEXT, PyArray_DATA,
+                    PyArray_SIZE)
 
 # Externals
 cdef extern from "iconic.h":
-
     void iconic_import_array()
     void histogram(double* H, unsigned int clamp, flatiter iter)
     void local_histogram(double* H, unsigned int clamp, 
@@ -49,13 +51,13 @@ cdef extern from "iconic.h":
 
 
 cdef extern from "cubic_spline.h":
-    
     void cubic_spline_import_array()
     void cubic_spline_transform(ndarray res, ndarray src)
     double cubic_spline_sample1d(double x, ndarray coef) 
     double cubic_spline_sample2d(double x, double y, ndarray coef) 
     double cubic_spline_sample3d(double x, double y, double z, ndarray coef) 
-    double cubic_spline_sample4d(double x, double y, double z, double t, ndarray coef) 
+    double cubic_spline_sample4d(double x, double y, double z, double t,
+                                 ndarray coef) 
 
 
 # Initialize numpy
@@ -114,7 +116,6 @@ similarity_measures = {'cc': CORRELATION_COEFFICIENT,
 
 
 def _texture(ndarray im, ndarray H, Size, int texture, method=None): 
-
     cdef double *res, *h
     cdef double moments[5]
     cdef unsigned int clamp
@@ -123,7 +124,7 @@ def _texture(ndarray im, ndarray H, Size, int texture, method=None):
     cdef flatiter im_iter
 
     # Views
-    clamp = <unsigned int>H.dimensions[0]
+    clamp = <unsigned int>H.shape[0]
     h = <double*>H.data
     
     # Copy size parameters
@@ -132,7 +133,7 @@ def _texture(ndarray im, ndarray H, Size, int texture, method=None):
     size[2] = <unsigned int>Size[2]
 
     # Allocate output 
-    imtext = np.zeros(im.shape, dtype='double')
+    imtext = np.zeros_like(im, dtype='double')
 
     # Loop over input and output images
     multi = PyArray_MultiIterNew(2, <void*>imtext, <void*>im)
@@ -182,7 +183,7 @@ def _histogram(ndarray H, flatiter iter):
     cdef unsigned int clamp
 
     # Views
-    clamp = <unsigned int>H.dimensions[0]
+    clamp = <unsigned int>H.shape[0]
     h = <double*>H.data
 
     # Compute image histogram 
@@ -200,8 +201,8 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int i
     cdef unsigned int clampI, clampJ
 
     # Views
-    clampI = <unsigned int>H.dimensions[0]
-    clampJ = <unsigned int>H.dimensions[1]    
+    clampI = <unsigned int>H.shape[0]
+    clampJ = <unsigned int>H.shape[1]    
     h = <double*>H.data
     tvox = <double*>Tvox.data
 
@@ -223,8 +224,8 @@ def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype,
     cdef unsigned int clampI, clampJ
 
     # Array views
-    clampI = <unsigned int>H.dimensions[0]
-    clampJ = <unsigned int>H.dimensions[1]
+    clampI = <unsigned int>H.shape[0]
+    clampJ = <unsigned int>H.shape[1]
     h = <double*>H.data
     hI = <double*>HI.data
     hJ = <double*>HJ.data
@@ -255,16 +256,21 @@ def _similarity(ndarray H, ndarray HI, ndarray HJ, int simitype,
     return simi
 
 
-
 def cspline_transform(ndarray x):
-    c = np.zeros(x.shape)
+    c = np.zeros_like(x, dtype=np.float)
     cubic_spline_transform(c, x)
     return c
+
+
+cdef ndarray _reshaped_double(object in_arr, ndarray sh_arr):
+    shape = [sh_arr.shape[i] for i in range(sh_arr.ndim)]
+    return np.reshape(in_arr, shape).astype(np.float)
+
 
 def cspline_sample1d(ndarray R, ndarray C, X=0):
     cdef double *r, *x
     cdef broadcast multi
-    Xa = np.reshape(X, R.shape).astype('double')
+    Xa = _reshaped_double(X, R)
     multi = PyArray_MultiIterNew(2, <void*>R, <void*>Xa)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -273,11 +279,12 @@ def cspline_sample1d(ndarray R, ndarray C, X=0):
         PyArray_MultiIter_NEXT(multi)
     return R
 
+
 def cspline_sample2d(ndarray R, ndarray C, X=0, Y=0):
     cdef double *r, *x, *y
     cdef broadcast multi
-    Xa = np.reshape(X, R.shape).astype('double')
-    Ya = np.reshape(Y, R.shape).astype('double')
+    Xa = _reshaped_double(X, R)
+    Ya = _reshaped_double(Y, R)
     multi = PyArray_MultiIterNew(3, <void*>R, <void*>Xa, <void*>Ya)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -287,12 +294,13 @@ def cspline_sample2d(ndarray R, ndarray C, X=0, Y=0):
         PyArray_MultiIter_NEXT(multi)
     return R
 
+
 def cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0):
     cdef double *r, *x, *y, *z
     cdef broadcast multi
-    Xa = np.reshape(X, R.shape).astype('double')
-    Ya = np.reshape(Y, R.shape).astype('double')
-    Za = np.reshape(Z, R.shape).astype('double')
+    Xa = _reshaped_double(X, R)
+    Ya = _reshaped_double(Y, R)
+    Za = _reshaped_double(Z, R)
     multi = PyArray_MultiIterNew(4, <void*>R, <void*>Xa, <void*>Ya, <void*>Za)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -312,10 +320,10 @@ def cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0):
     """
     cdef double *r, *x, *y, *z, *t
     cdef broadcast multi
-    Xa = np.reshape(X, R.shape).astype('double')
-    Ya = np.reshape(Y, R.shape).astype('double')
-    Za = np.reshape(Z, R.shape).astype('double')
-    Ta = np.reshape(T, R.shape).astype('double')
+    Xa = _reshaped_double(X, R)
+    Ya = _reshaped_double(Y, R)
+    Za = _reshaped_double(Z, R)
+    Ta = _reshaped_double(T, R)
     multi = PyArray_MultiIterNew(5, <void*>R, <void*>Xa, <void*>Ya, <void*>Za, <void*>Ta)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
