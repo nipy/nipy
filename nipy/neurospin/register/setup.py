@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+import os 
 
 def configuration(parent_package='',top_path=None):
     
@@ -15,9 +15,13 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('register', parent_package, top_path)
     config.add_data_dir('tests')
     config.add_data_dir('benchmarks')
+
+    # add include dirs for prototypes imported in routines.pyx
+    config.add_include_dirs(config.name.replace('.', os.sep))
+
     config.add_extension(
                 'routines',
-                sources=['routines.c', 'iconic.c', 'cubic_spline.c'],
+                sources=['routines.pyx', 'iconic.c', 'cubic_spline.c'],
                 libraries = ['cstat'],
                 extra_info=lapack_info,
                 )
