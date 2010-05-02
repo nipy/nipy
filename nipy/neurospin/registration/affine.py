@@ -1,4 +1,4 @@
-from registration_module import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
+from _registration import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
 
 from nipy.neurospin.image import apply_affine
 

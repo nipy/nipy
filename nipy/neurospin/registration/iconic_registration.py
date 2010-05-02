@@ -6,7 +6,7 @@ Questions: alexis.roche@gmail.com
 
 from constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
 
-from registration_module import _joint_histogram, _similarity, builtin_similarities
+from _registration import _joint_histogram, _similarity, builtin_similarities
 from affine import Affine
 from grid_transform import GridTransform
 

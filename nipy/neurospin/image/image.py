@@ -367,7 +367,7 @@ def subgrid_affine(affine, slices):
 
 def sample(data, coords, order=_INTERP_ORDER, dtype=None, background=_BACKGROUND): 
 
-    from image_module import cspline_transform, cspline_sample3d
+    from _image import cspline_transform, cspline_sample3d
     
     if dtype == None: 
         dtype = data.dtype
@@ -387,7 +387,7 @@ def sample(data, coords, order=_INTERP_ORDER, dtype=None, background=_BACKGROUND
 def resample(data, affine, shape=None, 
              order=_INTERP_ORDER, dtype=None, background=_BACKGROUND): 
 
-    from image_module import cspline_resample3d
+    from _image import cspline_resample3d
     
     if shape == None:
         shape = data.shape
