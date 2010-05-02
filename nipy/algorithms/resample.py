@@ -13,17 +13,19 @@ import nipy.core.transforms.affines as affines
 
 
 def resample_img2img(source, target, order=3):
-    """ 
+    """  Resample `source` image to space of `target` image
+    
     This wraps the resample function to resample one image onto another
-    the output of the function will give an image with shape of the target and data from the source
+    the output of the function will give an image with shape of the
+    target and data from the source
     
     Parameters
     ----------
     source : ``Image``
        Image instance that is to be resampled
     target : ``Image``
-       Image instance to which source is resampled
-       The output image will have the same shape as the target, and the same coordmap
+       Image instance to which source is resampled The output image will
+       have the same shape as the target, and the same coordmap
     order : ``int``, optional
        What order of interpolation to use in `scipy.ndimage`
 
@@ -42,8 +44,8 @@ def resample_img2img(source, target, order=3):
     >>> resimg = resample_img2img(aimg_source, aimg_target)
     >>> 
     """
-    sip, sop = source.coordmap.ndim
-    tip, top = target.coordmap.ndim
+    sip, sop = source.coordmap.ndims
+    tip, top = target.coordmap.ndims
     #print sip, sop, tip, top
     if sop != top:
         raise ValueError("source coordmap output dimension not equal to target coordmap output dimension")

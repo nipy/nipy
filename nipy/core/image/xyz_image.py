@@ -11,7 +11,6 @@ from nipy.core.transforms.affines import from_matrix_vector, \
                      to_matrix_vector
 from nipy.core.api import AffineTransform, Image, CoordinateSystem
 from nipy.core.reference.coordinate_map import compose, product as cmap_product
-from nipy.algorithms.resample import resample
 
 
 #  Name of dimensions are based on 
@@ -443,6 +442,11 @@ class XYZImage(Image):
                                                  self.reference, world_to_world)
 
       if self.ndim == 3:
+         # we import ``resample`` here because an earlier import causes
+         # an import error, during build, because of the statistics
+         # import of compile modules.  This is not a good fix, but it
+         # will do for now.
+         from nipy.algorithms.resample import resample
          im = resample(self, affine_transform, world_to_world_transform,
                        shape, order=interpolation_order)
          return XYZImage(np.array(im), affine_transform.affine,

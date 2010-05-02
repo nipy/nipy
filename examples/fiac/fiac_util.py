@@ -21,7 +21,7 @@ from matplotlib.mlab import csv2rec, rec2csv
 
 # From NIPY
 from nipy.io.api import load_image, save_image
-from nipy.core.image.lpi_image import LPIImage
+from nipy.core.image.xyz_image import XYZImage
 
 #-----------------------------------------------------------------------------
 # Globals

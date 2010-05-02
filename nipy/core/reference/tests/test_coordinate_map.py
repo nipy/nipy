@@ -505,17 +505,17 @@ def test_append_io_dim():
     cm = AffineTransform.from_params(in_dims, out_dims, aff)
     cm2 = append_io_dim(cm, 'l', 't')
     yield assert_array_equal(cm2.affine, np.diag([1,2,3,1,1]))
-    yield assert_equal(cm2.output_coords.coord_names,
+    yield assert_equal(cm2.function_range.coord_names,
                        out_dims + ['t'])
-    yield assert_equal(cm2.input_coords.coord_names,
+    yield assert_equal(cm2.function_domain.coord_names,
                        in_dims + ['l'])
     cm2 = append_io_dim(cm, 'l', 't', 9, 5)
     a2 = np.diag([1,2,3,5,1])
     a2[3,4] = 9
     yield assert_array_equal(cm2.affine, a2)
-    yield assert_equal(cm2.output_coords.coord_names,
+    yield assert_equal(cm2.function_range.coord_names,
                        out_dims + ['t'])
-    yield assert_equal(cm2.input_coords.coord_names,
+    yield assert_equal(cm2.function_domain.coord_names,
                        in_dims + ['l'])
     # non square case
     aff = np.array([[2,0,0],
@@ -530,8 +530,8 @@ def test_append_io_dim():
                    [0,0,5,9],
                    [0,0,0,1]])
     yield assert_array_equal(cm2.affine, a2)
-    yield assert_equal(cm2.output_coords.coord_names,
+    yield assert_equal(cm2.function_range.coord_names,
                        list('xyzt'))
-    yield assert_equal(cm2.input_coords.coord_names,
+    yield assert_equal(cm2.function_domain.coord_names,
                        list('ijq'))
     

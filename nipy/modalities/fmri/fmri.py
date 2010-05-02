@@ -112,7 +112,7 @@ def fmri_generator(data, iterable=None):
 
     [numpy.asarray(data)[:,item] for item in iterator]
 
-    This can be used to get time series out of a 4d fMRI image, if an
+    This can be used to get time series out of a 4d fMRI image, if and
     only if time varies across axis 0.
 
     Parameters

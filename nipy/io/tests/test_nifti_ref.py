@@ -1,13 +1,15 @@
 import warnings
 import numpy as np
 
-from nipy.testing import assert_equal, assert_true, \
-    assert_raises, assert_array_equal
-
 from nipy.core.api import CoordinateMap, AffineTransform, CoordinateSystem, \
     lps_output_coordnames, ras_output_coordnames
 
 import nipy.io.nifti_ref as niref
+from numpy.testing import assert_almost_equal
+
+from nipy.testing import assert_equal, assert_true, \
+    assert_raises, assert_array_equal
+
 
 shape = range(1,8)
 step = np.arange(1,8)

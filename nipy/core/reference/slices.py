@@ -21,25 +21,23 @@ def xslice(x, y_spec, z_spec, output_space=''):
     ----------
     x : float
        The value at which x is fixed.
-
     yspec : ([float,float], int)
        Tuple representing the y-limits of the bounding 
        box and the number of points.
-
     zspec : ([float,float], int)
        Tuple representing the z-limits of the bounding 
        box and the number of points.
-
     output_space : str, optional
        Origin of the range CoordinateSystem.
 
     Returns
     -------
-
     affine_transform : AffineTransform
        An affine transform that describes an plane in 
        LPS coordinates with x fixed.
 
+    Examples
+    --------
     >>> y_spec = ([-114,114], 115) # voxels of size 2 in y, starting at -114, ending at 114
     >>> z_spec = ([-70,100], 86) # voxels of size 2 in z, starting at -70, ending at 100
     >>> x30 = xslice(30, y_spec, z_spec)
@@ -56,8 +54,6 @@ def xslice(x, y_spec, z_spec, output_space=''):
                      [   0.,    2.,  -70.],
                      [   0.,    0.,    1.]])
     )
-    >>> 
-
     >>> bounding_box(x30, (y_spec[1], z_spec[1]))
     ([30.0, 30.0], [-114.0, 114.0], [-70.0, 100.0])
 
@@ -76,36 +72,31 @@ def xslice(x, y_spec, z_spec, output_space=''):
                            affine_range,
                            T)
 
+
 def yslice(y, x_spec, z_spec, output_space=''):
-    """
-    Return a slice through a 3d box with y fixed.
+    """ Return a slice through a 3d box with y fixed.
 
     Parameters
     ----------
     y : float
        The value at which y is fixed.
-
     xspec : ([float,float], int)
        Tuple representing the x-limits of the bounding 
        box and the number of points.
-
     zspec : ([float,float], int)
        Tuple representing the z-limits of the bounding 
        box and the number of points.
-
     output_space : str, optional
        Origin of the range CoordinateSystem.
 
     Returns
     -------
-
     affine_transform : AffineTransform
        An affine transform that describes an plane in 
        LPS coordinates with y fixed.
 
     Examples
     --------
-
     >>> x_spec = ([-92,92], 93) # voxels of size 2 in x, starting at -92, ending at 92
     >>> z_spec = ([-70,100], 86) # voxels of size 2 in z, starting at -70, ending at 100
     >>> 
@@ -120,7 +111,6 @@ def yslice(y, x_spec, z_spec, output_space=''):
                      [  0.,   2., -70.],
                      [  0.,   0.,   1.]])
     )
-
     >>> y70([0,0])
     array([-92.,  70., -70.])
     >>> y70([92,85])
@@ -145,36 +135,31 @@ def yslice(y, x_spec, z_spec, output_space=''):
                            affine_range,
                            T)
 
+
 def zslice(z, x_spec, y_spec, output_space=''):
-    """
-    Return a slice through a 3d box with z fixed.
+    """ Return a slice through a 3d box with z fixed.
 
     Parameters
     ----------
     z : float
        The value at which z is fixed.
-
     x_spec : ([float,float], int)
        Tuple representing the x-limits of the bounding 
        box and the number of points.
-
     y_spec : ([float,float], int)
        Tuple representing the y-limits of the bounding 
        box and the number of points.
-
     output_space : str, optional
        Origin of the range CoordinateSystem.
 
     Returns
     -------
-
     affine_transform : AffineTransform
        An affine transform that describes an plane in 
        LPS coordinates with z fixed.
 
     Examples
     --------
-
     >>> x_spec = ([-92,92], 93) # voxels of size 2 in x, starting at -92, ending at 92
     >>> y_spec = ([-114,114], 115) # voxels of size 2 in y, starting at -114, ending at 114
     >>> z40 = zslice(40, x_spec, y_spec)

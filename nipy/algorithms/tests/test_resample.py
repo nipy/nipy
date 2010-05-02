@@ -10,7 +10,7 @@ from nipy.io.api import load_image
 from nose.tools import assert_true, assert_raises
 
 from numpy.testing import assert_array_almost_equal
-from nipy.testing import funcfile, anatfile
+from nipy.testing import funcfile, anatfile, parametric
 
 
 def test_resample_img2img():
@@ -228,6 +228,7 @@ def test_2d_from_3d():
     yield assert_array_almost_equal, np.asarray(ir), np.asarray(i[10])
 
 
+@parametric
 def test_slice_from_3d():
     # Resample a 3d image, returning a zslice, yslice and xslice
     # 
@@ -240,14 +241,14 @@ def test_slice_from_3d():
     i[50:55,40:55,30:33] = 3
     a = np.identity(4)
     zsl = slices.zslice(26,
-                        (0,44.5), (0,39.5),
-                        i.world,
-                        (90,80))
-    ir = resample(i, zsl.coordmap, a, zsl.shape)
-    yield assert_true, np.allclose(np.asarray(ir), np.asarray(i[53]))
-    ysl = slices.yslice(22, (0,49.5), (0,39.5), i.world, (100,80))
+                        ((0,44.5), 90),
+                        ((0,39.5), 80),
+                        i.reference)
+    ir = resample(i, zsl, a, (90, 80))
+    yield assert_true(np.allclose(np.asarray(ir), np.asarray(i[53])))
+    ysl = slices.yslice(22, (0,49.5), (0,39.5), i.reference, (100,80))
     ir = resample(i, ysl.coordmap, a, ysl.shape)
-    yield assert_true, np.allclose(np.asarray(ir), np.asarray(i[:,45]))
-    xsl = slices.xslice(15.5, (0,49.5), (0,44.5), i.world, (100,90))
+    yield assert_true(np.allclose(np.asarray(ir), np.asarray(i[:,45])))
+    xsl = slices.xslice(15.5, (0,49.5), (0,44.5), i.reference, (100,90))
     ir = resample(i, xsl.coordmap, a, xsl.shape)
-    yield assert_true, np.allclose(np.asarray(ir), np.asarray(i[:,:,32]))
+    yield assert_true(np.allclose(np.asarray(ir), np.asarray(i[:,:,32])))

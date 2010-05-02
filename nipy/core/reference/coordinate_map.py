@@ -1751,7 +1751,7 @@ def drop_io_dim(cm, name):
     --------
     Typical use is in getting a 3D coordinate map from 4D
 
-    >>> cm4d = Affine.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
+    >>> cm4d = AffineTranform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
     >>> cm3d = drop_io_dim(cm4d, 't')
     >>> cm3d.affine
     array([[ 1.,  0.,  0.,  0.],
@@ -1760,9 +1760,9 @@ def drop_io_dim(cm, name):
            [ 0.,  0.,  0.,  1.]])
     '''
     aff = cm.affine
-    in_dims = list(cm.input_coords.coord_names)
+    in_dims = list(cm.function_domain.coord_names)
     nin = len(in_dims)
-    out_dims = list(cm.output_coords.coord_names)
+    out_dims = list(cm.function_range.coord_names)
     nout = len(out_dims)
     try:
         i = in_dims.index(name)
@@ -1793,7 +1793,7 @@ def drop_io_dim(cm, name):
     aff = aff[row_inds + [nout],:]
     in_dims = [n for i, n in enumerate(in_dims) if i in col_inds]
     out_dims = [n for i, n in enumerate(out_dims) if i in row_inds]
-    return Affine.from_params(in_dims, out_dims, aff)
+    return AffineTransform.from_params(in_dims, out_dims, aff)
 
 
 def append_io_dim(cm, in_name, out_name, start=0, step=1):
@@ -1821,7 +1821,7 @@ def append_io_dim(cm, in_name, out_name, start=0, step=1):
     --------
     Typical use is creating a 4D coordinate map from a 3D
 
-    >>> cm3d = Affine.from_params('ijk', 'xyz', np.diag([1,2,3,1]))
+    >>> cm3d = AffineTransform.from_params('ijk', 'xyz', np.diag([1,2,3,1]))
     >>> cm4d = append_io_dim(cm3d, 'l', 't', 9, 5)
     >>> cm4d.affine
     array([[ 1.,  0.,  0.,  0.,  0.],
@@ -1831,9 +1831,9 @@ def append_io_dim(cm, in_name, out_name, start=0, step=1):
            [ 0.,  0.,  0.,  0.,  1.]])
     '''
     aff = cm.affine
-    in_dims = list(cm.input_coords.coord_names)
+    in_dims = list(cm.function_domain.coord_names)
     nin = len(in_dims)
-    out_dims = list(cm.output_coords.coord_names)
+    out_dims = list(cm.function_range.coord_names)
     nout = len(out_dims)
     in_dims.append(in_name)
     out_dims.append(out_name)
@@ -1843,6 +1843,6 @@ def append_io_dim(cm, in_name, out_name, start=0, step=1):
     aff_plus[nout,nin] = step
     aff_plus[-1,-1] = 1
     aff_plus[nout,-1] = start
-    return Affine.from_params(in_dims, out_dims, aff_plus)
+    return AffineTransform.from_params(in_dims, out_dims, aff_plus)
 
     

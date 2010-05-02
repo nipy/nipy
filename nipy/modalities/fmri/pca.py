@@ -201,7 +201,6 @@ def pca_image(xyz_image, axis='t', mask=None, ncomp=None, standardize=True,
 
     Parameters
     ----------
-
     data : XYZImage
         The image on which to perform PCA over its first axis.
     axis : str or int
@@ -255,7 +254,7 @@ def pca_image(xyz_image, axis='t', mask=None, ncomp=None, standardize=True,
           s[axis] = ncomp``
        * ``axis``: axis over which PCA has been performed.
     """
-    if axis in xyz_image.world.coord_names + \
+    if axis in xyz_image.reference.coord_names + \
             xyz_image.axes.coord_names[:3] + tuple(range(3)):
         raise ValueError('cannot perform PCA over a spatial axis' +
                          'or we will not be able to output XYZImages')
@@ -296,6 +295,8 @@ def pca_image(xyz_image, axis='t', mask=None, ncomp=None, standardize=True,
     output_xyz = XYZImage(output_img.get_data(), 
                           xyz_image.affine,
                           output_img.axes.coord_names)
+    key = 'basis_vectors over %s' % img_first_axis
+    res[key] = res['basis_vectors']
     res['basis_projections'] = output_xyz
     return res
   

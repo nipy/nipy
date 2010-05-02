@@ -238,6 +238,7 @@ def test_specific_reduce():
     yield assert_equal, newim.shape, (3,5,7)
     yield assert_almost_equal, newim.get_data(), x.sum(3)
 
+
 def test_reduce():
     x = np.random.standard_normal((3,5,7,9))
     im = XYZImage(x, np.diag([3,4,5,1]), 'ijkq')
@@ -254,7 +255,6 @@ def test_reduce():
 
 
 def test_call():
-
     x = np.random.standard_normal((3,5,7,12))
     affine = np.random.standard_normal((4,4))
     affine[-1] = [0,0,0,1]
@@ -270,9 +270,9 @@ def test_call():
         yield assert_raises, ValueError, image_reduce, im, lambda x: x.sum(0), o
         yield assert_raises, ValueError, image_reduce, im, lambda x: x.sum(0), n
 
+
 def test_modify():
     x = np.random.standard_normal((3,5,7,12))
-
     affine = np.random.standard_normal((4,4))
     affine[-1] = [0,0,0,1]
     im = XYZImage(x, affine, 'ijkq')

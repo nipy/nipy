@@ -1,11 +1,14 @@
 import copy
 
-from nipy.testing import *
 from nipy.core.image import xyz_image
 from nipy.core.api import Image
 import numpy as np
 from nipy.core.reference.coordinate_map import compose, AffineTransform, CoordinateSystem
 from nipy.algorithms.resample import resample
+
+from nose.tools import assert_raises, assert_true, assert_false, assert_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
+from nipy.testing import parametric
 
 
 lps = xyz_image.lps_output_coordnames
@@ -30,12 +33,13 @@ def generate_im():
 
     return im, xyz_im, ras_im 
 
+
+@parametric
 def test_xyz_names():
-
     im, _, _ = generate_im()
+    im = im.renamed_reference(**{'x+LR':'x'})
+    yield assert_raises(ValueError, xyz_image.XYZImage.from_image, im)
 
-    im = im.renamed_reference({'x+LR':'x'})
-    yield assert_raises, ValueError, xyz_image.XYZImage.from_image, im
 
 def test__eq__():
     _, xyz_im, ras_im = generate_im()
@@ -81,21 +85,22 @@ def test_reordered_renamed_etc():
     xyz_im = xyz_image.XYZImage(data, affine, 'ijklm')
     yield assert_raises, ValueError, xyz_im.resampled_to_img, xyz_im
 
-def test_reordered_axes():
 
+@parametric
+def test_reordered_axes():
     _, xyz_im, ras = generate_im()
 
     xyz_reordered = xyz_im.reordered_axes([2,0,1])
-    yield (assert_equal, np.array(xyz_reordered), 
-           np.transpose(np.array(xyz_im), [2,0,1]))
+    yield assert_array_equal(np.array(xyz_reordered), 
+                             np.transpose(np.array(xyz_im), [2,0,1]))
 
     xyz_reordered = xyz_im.reordered_axes('kij')
-    yield (assert_equal, np.array(xyz_reordered), 
-           np.transpose(np.array(xyz_im), [2,0,1]))
+    yield assert_array_equal(np.array(xyz_reordered), 
+                             np.transpose(np.array(xyz_im), [2,0,1]))
 
     xyz_reordered = xyz_im.reordered_axes()
-    yield (assert_equal, np.array(xyz_reordered), 
-           np.transpose(np.array(xyz_im), [2,1,0]))
+    yield assert_array_equal(np.array(xyz_reordered), 
+                             np.transpose(np.array(xyz_im), [2,1,0]))
 
     yield assert_equal, xyz_im.metadata, xyz_reordered.metadata
 
