@@ -7,18 +7,20 @@ import sys
 import shutil
 import tempfile
 
-from nose import with_setup
-from nose.tools import assert_true, assert_false, assert_equal, \
-    assert_not_equal, assert_raises, raises
-
 from nipy.utils.data import get_data_path, find_data_dir, \
     DataError, _cfg_value, make_datasource, \
     Datasource, VersionedDatasource, Bomber, \
-    _datasource_or_bomber
+    _datasource_or_bomber, default_inst_obj
 
 from nipy.utils.tmpdirs import TemporaryDirectory
 
 import nipy.utils.data as nud
+
+from nose import with_setup
+from nose.tools import assert_true, assert_false, assert_equal, \
+    assert_not_equal, assert_raises, raises
+
+from nipy.testing import parametric
 
 
 GIVEN_ENV = {}
@@ -145,10 +147,14 @@ def test_data_path():
     nud.get_nipy_system_dir = lambda : ''
     # now we should only have the default
     old_pth = get_data_path()
-    # We should have only sys.prefix in there
-    def_dir = pjoin(sys.prefix, 'share', 'nipy')
+    # We should have only sys.prefix, and, if different, the
+    # installation data directory
+    def_dirs = [pjoin(sys.prefix, 'share', 'nipy')]
+    def_data_pref = default_inst_obj().install_data
+    if def_data_pref != sys.prefix:
+        def_dirs.append(pjoin(def_data_pref, 'share', 'nipy'))
     home_nipy = pjoin(os.path.expanduser('~'), '.nipy')
-    yield assert_equal, old_pth, [def_dir, home_nipy]
+    yield assert_equal, old_pth, def_dirs + [home_nipy]
     # then we'll try adding some of our own
     tst_pth = '/a/path' + os.path.pathsep + '/b/ path'
     tst_list = ['/a/path', '/b/ path']
@@ -165,7 +171,7 @@ def test_data_path():
             fobj.write('[DATA]\n')
             fobj.write('path = %s' % tst_pth)
         os.environ[USER_KEY] = tmpdir
-        yield assert_equal, get_data_path(), tst_list + [def_dir, tmpdir]
+        yield assert_equal, get_data_path(), tst_list + def_dirs + [tmpdir]
     del os.environ[USER_KEY]
     yield assert_equal, get_data_path(), old_pth
     # with some trepidation, the system config files
@@ -257,4 +263,10 @@ def test__datasource_or_bomber():
             fobj.write('version = 0.1\n')
         ds = _datasource_or_bomber('pkg')
         fn = ds.get_filename('some_file.txt')
+    
+
+@parametric
+def test_default_inst_obj():
+    obj = default_inst_obj()
+    yield assert_true(obj.install_data is not None)
     
