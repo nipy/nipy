@@ -171,6 +171,15 @@ def get_data_path():
     Examples
     --------
     >>> pth = get_data_path()
+
+    Notes
+    -----
+    We have to use distutils to find where the data will be installed,
+    because Debian modifies distutils, and so we cannot depend on the
+    default data prefix being from ``sys.prefix``; see:
+
+    * http://www.debian.org/doc/packaging-manuals/python-policy/ap-packaging_tools.html#s-distutils
+    * http://www.mail-archive.com/debian-python@lists.debian.org/msg05084.html
     '''
     paths = []
     try:
