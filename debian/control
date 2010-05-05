@@ -1,10 +1,10 @@
 Source: nipy
 Section: python
 Priority: extra
-Maintainer: Experimental Psychology Maintainers <pkg-exppsy-maintainers@lists.alioth.debian.org>
+Maintainer: NeuroDebian Team <team@neuro.debian.net>
 Uploaders: Yaroslav Halchenko <debian@onerussian.com>, Michael Hanke <michael.hanke@gmail.com>
-Build-Depends: cdbs, debhelper (>= 7), python-all-dev (>= 2.4), python-support (>= 0.6), python-scipy, python-numpy (>= 1.2), python-matplotlib (>= 0.98.3), python-sphinx (>= 0.6), python-nifti (>> 0.20090302), liblapack-dev, python-nose, liblapack-dev, python-dbg, python-numpy-dbg, texlive, texlive-latex-extra, graphviz
-Standards-Version: 3.8.1
+Build-Depends: cdbs, debhelper (>= 7), python-all-dev (>= 2.4), python-support (>= 0.6), python-scipy, python-numpy (>= 1.2), python-matplotlib (>= 0.98.3), python-sphinx (>= 0.6), python-nifti (>> 0.20090302), liblapack-dev, python-nose, liblapack-dev, python-dbg, python-numpy-dbg, graphviz
+Standards-Version: 3.8.4
 Homepage: http://neuroimaging.scipy.org
 Vcs-Browser: http://git.debian.org/?p=pkg-exppsy/nipy.git
 Vcs-Git: git://git.debian.org/git/pkg-exppsy/nipy.git
@@ -62,7 +62,7 @@ Depends: ${misc:Depends}, libjs-jquery
 Recommends: python-nipy
 Description: documention and examples for NiPy
  This package contains NiPy documentation in various formats (HTML,
- TXT, PDF) including
+ TXT) including
   * User manual
   * Developer guidelines
   * API documentation
