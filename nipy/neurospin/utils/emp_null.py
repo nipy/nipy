@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 this module contains a class that fits a gaussian model to the central
 part of an histogram, following schwartzman et al, 2009. This is

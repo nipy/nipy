@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """Support utilities for FIAC example, mostly path management.
 
 The purpose of separating these is to keep the main example code as readable as
