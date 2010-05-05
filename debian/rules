@@ -1,0 +1,94 @@
+#!/usr/bin/make -f
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+DEB_PYTHON_SYSTEM = pysupport
+# for earlier cdbs versions
+DEB_PYTHON_MODULE_PACKAGE = python-nipy
+# for cdbs >= 0.4.54
+DEB_PYTHON_MODULE_PACKAGES = python-nipy
+include /usr/share/cdbs/1/class/python-distutils.mk
+
+#
+# Documentation
+#
+doc: doc-stamp
+doc-stamp: build/python-nipy
+	export PYTHONPATH=$$PWD/`/bin/ls -d build/lib.*`; cd doc; $(MAKE) html pdf
+	touch $@
+
+build/python-nipy-doc:: doc
+
+# use jquery from Debian package
+# symlinked by debhelper
+install/python-nipy-doc::
+	-rm doc/build/html/_static/jquery.js
+
+#
+# Testing: TODO after unittests are ready to be ran without
+#          downloading data from online
+#
+#build/python-nipy::
+#ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+#        python setup.py test
+#endif
+
+#
+# Main and -lib
+#
+
+# We need to call the install for arch indep to install things
+# appropriately
+install/python-nipy-lib:: install/python-nipy
+
+# we need to move libraries away first, hence dependence on -lib
+binary-install/python-nipy:: install/python-nipy-lib
+binary-predeb/python-nipy::
+# clean up .pyc files
+	find debian/python-nipy/ -iname *.py[co] | xargs rm -f
+
+install/python-nipy-lib::
+# move libraries into the python-nipy-lib package
+#	mkdir -p debian/python-nipy-lib/usr/
+	find debian/python-nipy/ -iname *so | \
+	  while read so; do \
+	    d=$$(dirname $$so); \
+	    d=$$(echo $$d | sed -e 's,python-nipy/,python-nipy-lib/,g'); \
+	    mkdir -p $$d; mv $$so $$d; \
+	  done
+
+#
+# Debugging version -lib-dbg
+#
+# Re-build using python-dbg
+install/python-nipy-lib-dbg ::
+	for i in $(cdbs_python_build_versions); do \
+	  python$$i-dbg ./setup.py install $(DEB_PYTHON_INSTALL_ARGS_ALL) \
+		 --root $(CURDIR)/debian/python-nipy-lib-dbg; \
+	done
+	find debian/python-nipy-lib-dbg \
+	  ! -type d ! -name '*_d.so' | xargs rm -f
+# Prune empty directories
+	find debian/python-nipy-lib-dbg -depth -empty -exec rmdir \{\} \;
+
+binary-predeb/python-nipy-lib-dbg::
+	mkdir -p debian/python-nipy-lib-dbg/usr/share/doc
+	ln -s python-nipy-lib debian/python-nipy-lib-dbg/usr/share/doc/python-nipy-lib-dbg
+
+
+
+
+# Add here any variable or target overrides you need.
+# install directly into package directory (despite multiple packages)
+DEB_DESTDIR = $(CURDIR)/debian/python-nipy
+# immediately useable documentation
+# and exemplar data (they are small excerpts anyways)
+DEB_COMPRESS_EXCLUDE := .py .pdf .html .css .jpg .txt .js .json .rtc .par .bin
+# -doc package contents
+DEB_INSTALL_DOCS_python-nipy-doc := doc/build/html doc/build/latex/nipy.pdf
+DEB_INSTALL_EXAMPLES_python-nipy-doc := examples/*.py
+
+clean::
+	rm -rf build nipy/neurospin/__config__.py
+	$(MAKE) -C doc clean
+
+.PHONY: doc clean
