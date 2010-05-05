@@ -17,7 +17,7 @@ class FmriImageList(ImageList):
 
         """
         A lightweight implementation of an fMRI image as in ImageList
-        
+
         Parameters
         ----------
         images: a sliceable object whose items are meant to be images,
@@ -33,6 +33,8 @@ class FmriImageList(ImageList):
         --------
         nipy.core.image_list.ImageList
 
+        Examples
+        --------
         >>> from numpy import asarray
         >>> from nipy.testing import funcfile
         >>> from nipy.io.api import load_image
@@ -63,18 +65,18 @@ class FmriImageList(ImageList):
         """
         If index is an index, return self.list[index], an Image
         else return an FmriImageList with images=self.list[index].
-        
+
         """
         if type(index) is type(1):
             return self.list[index]
         else:
-            return FmriImageList(images=self.list[index], 
+            return FmriImageList(images=self.list[index],
                                  volume_start_times=self.volume_start_times[index],
-                             slice_times=self.slice_times)
+								 slice_times=self.slice_times)
 
     def __setitem__(self, index, value):
         self.list[index] = value
-        
+
     def __array__(self):
         v = empty((len(self.list),) + self.list[0].shape)
         for i, im in enumerate(self.list):
@@ -88,7 +90,7 @@ class FmriImageList(ImageList):
 
         Parameters
         ----------
-        fourdimage: a 4D Image 
+        fourdimage: a 4D Image
         volume_start_times: start time of each frame. It can be specified
                             either as an ndarray with len(images) elements
                             or as a single float, the TR. Defaults to
@@ -100,7 +102,7 @@ class FmriImageList(ImageList):
         if fourdimage.ndim != 4:
             raise ValueError('expecting a 4-dimensional Image')
         image_list = ImageList.from_image(fourdimage, axis='t')
-        return klass(images=image_list.list, 
+        return klass(images=image_list.list,
                      volume_start_times=volume_start_times,
                      slice_times=slice_times)
 
@@ -121,7 +123,7 @@ def fmri_generator(data, iterable=None):
        object such that ``arr = np.asarray(data)`` returns an array of
        at least 2 dimensions.
     iterable : None or sequence
-       seqence of objects that can be used to index array ``arr``
+       sequence of objects that can be used to index array ``arr``
        returned from data.  If None, default is
        ``range(data.shape[1])``, in which case the generator will
        return elements  ``[arr[:,0], arr[:,1] ... ]``
