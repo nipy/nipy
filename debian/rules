@@ -8,6 +8,12 @@ DEB_PYTHON_MODULE_PACKAGE = python-nipy
 DEB_PYTHON_MODULE_PACKAGES = python-nipy
 include /usr/share/cdbs/1/class/python-distutils.mk
 
+# To fix distutils fragile nature: when seing LDFLAGS=, which is set
+# by dpkg-buildpackage it stops providing -shared flag, so for the
+# minimalistic fix (alternative to NMU-ed #535699 with explicit
+# -shared) we just unexport LDFLAGS
+unexport LDFLAGS
+
 #
 # Documentation
 #

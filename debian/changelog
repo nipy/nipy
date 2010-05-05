@@ -1,4 +1,4 @@
-nipy (0.1.2+20100504-1) unstable; urgency=low
+nipy (0.1.2+20100504-0.1) unstable; urgency=low
 
   * Fresh upstream snapshot (Closes: #577898). Switching from bzr rev to
     git dated versioning for nipy for now
@@ -9,9 +9,12 @@ nipy (0.1.2+20100504-1) unstable; urgency=low
   * Switching over to NeuroDebian team
   * -doc: no pdf's for Documentation (removed texlive,
     texlive-latex-extra from Build-Depends) (Closes: #567757)
-  * Confirming NMUs from Kumar (THANKS!) (XXX TODO):
+  * Confirming (and refactoring) NMUs from Kumar (THANKS!):
     + As promised, closing the issue with absent i386 builds (Closes: #562246)
     + Adding both PATH= and MPLCONFIGDIR= for building docs
+    + Addressed fortran binding issue with patchless solution:
+      unexport of LDFLAGS in debian/rules which brings -shared back
+      to game (see #535699 for more information)
 
  -- Yaroslav Halchenko <debian@onerussian.com>  Tue, 04 May 2010 23:01:12 -0400
 
