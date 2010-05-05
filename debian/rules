@@ -91,7 +91,8 @@ DEB_DESTDIR = $(CURDIR)/debian/python-nipy
 # and exemplar data (they are small excerpts anyways)
 DEB_COMPRESS_EXCLUDE := .py .pdf .html .css .jpg .txt .js .json .rtc .par .bin
 # -doc package contents
-DEB_INSTALL_DOCS_python-nipy-doc := doc/build/html doc/build/latex/nipy.pdf
+# No .pdf's are built now
+#DEB_INSTALL_DOCS_python-nipy-doc := doc/build/html doc/build/latex/nipy.pdf
 DEB_INSTALL_EXAMPLES_python-nipy-doc := examples/*.py
 
 clean::
