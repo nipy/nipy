@@ -13,7 +13,8 @@ include /usr/share/cdbs/1/class/python-distutils.mk
 #
 doc: doc-stamp
 doc-stamp: build/python-nipy
-	export PYTHONPATH=$$PWD/`/bin/ls -d build/lib.*`; cd doc; $(MAKE) html
+	export PYTHONPATH=$$PWD/`/bin/ls -d build/lib.*` MPLCONFIGDIR=$(CURDIR)/build HOME=$(CURDIR)/build; \
+     cd doc; $(MAKE) html
 	touch $@
 
 build/python-nipy-doc:: doc
