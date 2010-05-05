@@ -44,7 +44,7 @@ if not 'extra_setuptools_args' in globals():
 
 # Hard and soft dependency checking
 package_check('scipy', '0.5')
-##package_check('sympy', '0.6.6')
+package_check('sympy', '0.6.6')
 def _mayavi_version(pkg_name):
     from enthought.mayavi import version
     return version.version
