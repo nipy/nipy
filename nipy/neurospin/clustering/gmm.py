@@ -91,7 +91,8 @@ def best_fitting_GMM(x, krange, prec_type='full',niter=100,delta = 1.e-4,ninit=1
     bestbic = -np.infty
     for k in krange:
         lgmm = GMM(k,dim,prec_type)
-        gmmk = lgmm.initialize_and_estimate(x,None,niter,delta,ninit,verbose)
+        gmmk = lgmm.initialize_and_estimate(x, None, niter, delta, ninit,
+                                            verbose)
         bic = gmmk.evidence(x)
         if bic>bestbic:
             bestbic = bic
@@ -101,8 +102,8 @@ def best_fitting_GMM(x, krange, prec_type='full',niter=100,delta = 1.e-4,ninit=1
     return bgmm
 
 
-def plot2D(x, my_gmm, z=None, show=0, verbose=0, withDots=True, logScale=False, 
-              mpaxes=None):
+def plot2D(x, my_gmm, z=None, withDots=True, logScale=False, mpaxes=None,
+           verbose=0):
     """
     Given a set of points in a plane and a GMM, plot them
 
@@ -113,14 +114,13 @@ def plot2D(x, my_gmm, z=None, show=0, verbose=0, withDots=True, logScale=False,
     z = None: array of shape (npoints)
       that gives a labelling of the points in x
       by default, it is not taken into account
-    show = 0: do we show the image
-    verbose=0 : verbosity mode
     withDots=True, bool
                    Plot the dots or not
     logScale=False, bool
                     plot the likelihood in log scale or not
     mpaxes=None, int
-                 if not None, axes haandle for plotting    
+                 if not None, axes handle for plotting    
+    verbose=0 : verbosity mode
 
     Returns
     -------
@@ -141,29 +141,32 @@ def plot2D(x, my_gmm, z=None, show=0, verbose=0, withDots=True, logScale=False,
         raise ValueError, 'this works only for 2D cases'
     
     gd1 = grid_descriptor(2)
-    xmin = x.min(0); xmax = x.max(0)
-    xm = 1.1*xmin[0]-0.1*xmax[0]
-    xs = 1.1*xmax[0]-0.1*xmin[0]
-    ym = 1.1*xmin[1]-0.1*xmax[1]
-    ys = 1.1*xmax[1]-0.1*xmin[1]
+    xmin = x.min(0)
+    xmax = x.max(0)
+    xm = 1.1 * xmin[0] - 0.1 * xmax[0]
+    xs = 1.1 * xmax[0] - 0.1 * xmin[0]
+    ym = 1.1 * xmin[1] - 0.1 * xmax[1]
+    ys = 1.1 * xmax[1] - 0.1 * xmin[1]
     
-    gd1.getinfo([xm,xs,ym,ys],[51,51])
+    gd1.getinfo([xm, xs, ym, ys],[51,51])
     grid = gd1.make_grid()
     L = my_gmm.mixture_likelihood(grid)   
     if verbose:
-        print L.sum()*(xs-xm)*(ys-ym)/2500
+        intl = L.sum()*(xs-xm)*(ys-ym)/2500
+        print 'integral of the density on the domain ', intl 
 
     import matplotlib.pylab as mp
     if mpaxes==None:
         mp.figure()
-        ax = mp.subplot(1,1,1)
+        ax = mp.subplot(1, 1, 1)
     else:
         ax = mpaxes 
 
     gdx = gd1.nbs[0]
     Pdens= np.reshape(L,(gdx,np.size(L)/gdx))
     if logScale:
-        mp.imshow(np.log(Pdens.T), alpha=2.0, origin ='lower', extent=[xm,xs,ym,ys])
+        mp.imshow(np.log(Pdens.T), alpha=2.0, origin ='lower',
+                  extent=[xm,xs,ym,ys])
     else:
         mp.imshow(Pdens.T, alpha=2.0, origin ='lower', extent=[xm,xs,ym,ys])
 
@@ -179,8 +182,6 @@ def plot2D(x, my_gmm, z=None, show=0, verbose=0, withDots=True, logScale=False,
            
     mp.axis([xm,xs,ym,ys])
     mp.colorbar()
-    if show:
-        mp.show()
     
     return gd1, ax
 
@@ -794,7 +795,7 @@ class GMM():
         ax.set_yticklabels(ax.get_yticks(), fontsize=12)
             
 
-    def show(self,x,gd,density=None,nbf = -1):
+    def show(self, x, gd, density=None, nbf = -1):
         """
         Function to plot a GMM -WIP
         Currently, works only in 1D and 2D
@@ -815,8 +816,10 @@ class GMM():
                 mp.figure(nbf)
             else:
                 mp.figure()
-            mp.plot(c+offset,h)
-            mp.plot(grid,density)
+            h /= h.sum()
+            h /= (2*offset)
+            mp.plot(c[:-1]+offset,h)
+            mp.plot(grid, density)
             mp.show()
 
         if gd.dim==2:

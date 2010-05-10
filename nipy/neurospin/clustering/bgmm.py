@@ -474,7 +474,7 @@ class BGMM(GMM):
           the allocation variable
         """
         pop = self.pop(z)
-        weights = pop+self.prior_weights
+        weights = pop + self.prior_weights
         self.weights = np.random.dirichlet(weights)
 
     def update_means(self,x,z):
@@ -522,7 +522,8 @@ class BGMM(GMM):
         self.dof = self.prior_dof + pop +1
 
         #computing the empirical covariance
-        empmeans = np.zeros(np.shape(self.means))
+        #empmeans = np.zeros(np.shape(self.means))
+        empmeans = np.zeros((self.k, self.dim))
         for k in range(self.k):
             empmeans[k] = np.sum(x[z==k],0)
  
@@ -530,22 +531,30 @@ class BGMM(GMM):
 
         empmeans= (empmeans.T/rpop).T
 
-        empcov = np.zeros(np.shape(self.precisions))
+        #empcov = np.zeros(np.shape(self.precisions))
+        empcov = np.zeros((self.k, self.dim, self.dim))
         for k in range(self.k):
             dx = np.reshape(x[z==k]-empmeans[k],(pop[k],self.dim))
             empcov[k] += np.dot(dx.T,dx)
                     
-        covariance = np.array(self._inv_prior_scale)
+        covariance = np.repeat(self._inv_prior_scale[:1], self.k, 0)
         covariance += empcov
                         
         dx = np.reshape(empmeans-self.prior_means,(self.k,self.dim,1))
-        addcov = np.array([np.dot(dx[k],dx[k].T)
-                           for k in range(self.k)])
+        addcov = np.zeros((self.k, self.dim, self.dim))
+        scale = np.zeros((self.k, self.dim, self.dim))
+        for k in range(self.k):
+            addcov[k] = np.dot(dx[k],dx[k].T)
+            
+        #addcov = np.array([np.dot(dx[k],dx[k].T)
+        #                   for k in range(self.k)])
+
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
         covariance += addcov*prior_shrinkage
                 
-        scale = np.array([inv(covariance[k]) for k in range(self.k)])
+        #scale = np.array([inv(covariance[k]) for k in range(self.k)])
         for k in range(self.k):
+            scale[k] = inv(covariance[k])
             self.precisions[k] = generate_Wishart(self.dof[k], scale[k])
 
         self._detp = [np.prod(eigvalsh(self.precisions[k]))

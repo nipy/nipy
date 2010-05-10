@@ -465,7 +465,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
                            prior_dof, prior_shrinkage)
 
     # estimate the model
-    BayesianGMM.estimate(x,delta = 1.e-8,verbose=verbose-1)
+    BayesianGMM.estimate(x,delta = 1.e-8, verbose=max(0,verbose-1))
 
     # create a sampling grid
     if (verbose or bias):
