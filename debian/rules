@@ -19,7 +19,7 @@ unexport LDFLAGS
 #
 doc: doc-stamp
 doc-stamp: build/python-nipy
-	export PYTHONPATH=$$PWD/`/bin/ls -d build/lib.*` MPLCONFIGDIR=$(CURDIR)/build HOME=$(CURDIR)/build; \
+	export PYTHONPATH=$$PWD/`/bin/ls -d build/lib.*$(cdbs_python_current_version)` MPLCONFIGDIR=$(CURDIR)/build HOME=$(CURDIR)/build; \
      cd doc; $(MAKE) html
 	touch $@
 
