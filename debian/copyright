@@ -1,15 +1,15 @@
 Format-Specification: http://wiki.debian.org/Proposals/CopyrightFormat
 Upstream-Name: NiPy
-Upstream-Source-Location: https://code.launchpad.net/~nipy-developers/nipy/trunk
+Upstream-Source-Location: http://github.com/nipy/nipy
 
 Files: *
-Copyright: Copyright, 2006-2009, NIPY Developers
+Copyright: Copyright, 2006-2010, NIPY Developers
 License: BSD-3
   On Debian GNU/Linux systems, the complete text of the 3-clause BSD License
   can be found in `/usr/share/common-licenses/BSD'.
 
 Files: nipy/neurospin/*
-Copyright: Copyright, 2003-2009, CEA-INRIA-INSERM
+Copyright: Copyright, 2003-2010, CEA-INRIA-INSERM
 License: BSD-3
 
 Files: examples/neurospin/neurospy/configobj.py
@@ -52,7 +52,7 @@ Copyright: Copyright, 2006, Jonathan E. Taylor
 License: BSD-3
 
 Files: debian/*
-Copyright: Copyright 2009,
-    Michael Hanke <michael.hanke@gmail.com>
+Copyright: Copyright 2009, 2010,
     Yaroslav Halchenko <debian@onerussian.com>
+    Michael Hanke <michael.hanke@gmail.com>
 License: BSD-3
