@@ -38,18 +38,42 @@ class CoordinateSystem(object):
     >>> cs.dtype == dtype_should_be
     True
 
-    Two CoordinateSystems are equal if they have the same dtype.  The
+    Two CoordinateSystems are equal if they have the same dtype
+    and the same name.  The
     CoordinateSystem names may be different.
 
-    >>> another_cs = CoordinateSystem(names, 'irrelevant', np.float)
+    XXX This is changed now: the "name" indicates the origin
+
+    >>> another_cs = CoordinateSystem(names, 'not irrelevant', np.float)
     >>> cs == another_cs
-    True
+    False
     >>> cs.dtype == another_cs.dtype
     True
     >>> cs.name == another_cs.name
     False
 
     """
+
+    _doc = {}
+
+    name = 'world-LPI'
+    _doc['name'] = 'Name describing the CoordinateSystem'
+
+    coord_names = ('x', 'y', 'z')
+    _doc['coord_names'] = 'Tuple of names describing each coordinate.'
+
+    coord_dtype = np.float64
+    _doc['coord_dtype'] = 'The builtin, scalar,  dtype of each coordinate.'
+
+    ndim = 3
+    _doc['ndim'] = 'The number of dimensions'
+
+    dtype = np.dtype([('x', np.float),
+                      ('y', np.float),
+                      ('z', np.float)])
+    _doc['dtype'] = 'The composite dtype of the CoordinateSystem, ' + \
+                    'expresses the fact that there are three numbers, the' + \
+                    'first one corresponds to "x" and the second to "y".'
 
     def __init__(self, coord_names, name='', coord_dtype=np.float):
         """Create a coordinate system with a given name and coordinate names.
@@ -78,14 +102,13 @@ class CoordinateSystem(object):
         --------
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
-        name: 'input', coord_names: ('i', 'j'), coord_dtype: float64
+        CoordinateSystem(coord_names=('i', 'j'), name='input', coord_dtype=float64)
         
         >>> c.coord_dtype
         dtype('float64')
 
         """
 
-        self.name = name
         # this allows coord_names to be an iterator and have a length
         coord_names = tuple(coord_names)
         # Make sure each coordinate is unique
@@ -96,31 +119,26 @@ class CoordinateSystem(object):
         sctypes = (np.sctypes['int'] + np.sctypes['float'] + 
                    np.sctypes['complex'] + np.sctypes['uint'])
         coord_dtype = np.dtype(coord_dtype)
+
+
         if coord_dtype not in sctypes:
             raise ValueError('Coordinate dtype should be one of %s' % `sctypes`)
-        self._coord_dtype = coord_dtype
-        self._coord_names = coord_names
 
-    def _get_dtype(self):
-        return np.dtype([(name, self._coord_dtype) 
-                         for name in self.coord_names])
-    dtype = property(_get_dtype, 
-                     doc='The dtype of the CoordinateSystem.')
+        # Set all the attributes
 
-    def _get_coord_dtype(self):
-        return self._coord_dtype
-    coord_dtype = property(_get_coord_dtype,
-                           doc='The dtype of the coordinates in the CoordinateSytem')
+        self.name = name
+        self.coord_names = coord_names
+        self.coord_dtype = coord_dtype
+        self.ndim = len(coord_names)
+        self.dtype = np.dtype([(name, self.coord_dtype) 
+                               for name in self.coord_names])
+        
+    # All attributes are read only
 
-    def _get_coord_names(self):
-        return self._coord_names
-    coord_names = property(_get_coord_names,
-                           doc='The coordinate names in the CoordinateSystem')
-
-    def _get_ndim(self):
-        return len(self.coord_names)
-    ndim = property(_get_ndim,
-                    doc='The number of coordinates in the CoordinateSystem')
+    def __setattr__(self, key, value):
+        if key in self.__dict__:
+            raise AttributeError('the value of %s has already been set and all attributes are read-only' % key)
+        object.__setattr__(self, key, value)
     
     def index(self, coord_name):
         """Return the index of a given named coordinate.
@@ -142,6 +160,8 @@ class CoordinateSystem(object):
     def __eq__(self, other):
         """Equality is defined by self.dtype.
 
+        XXX If we want to make things
+        XXX trully Affine, we would check "name" as well
         Parameters
         ----------
         other : :class:`CoordinateSystem`
@@ -153,9 +173,9 @@ class CoordinateSystem(object):
 
         """
 
-        return (self.dtype == other.dtype)
+        return (self.dtype == other.dtype) and (self.name == other.name)
 
-    def __str__(self):
+    def __repr__(self):
         """Create a string representation of the coordinate system
 
         Returns
@@ -166,8 +186,8 @@ class CoordinateSystem(object):
         
         attrs = ('name', 'coord_names', 'coord_dtype')
         vals = []
-        return ("name: '%s', coord_names: %s, coord_dtype: %s" %
-                (self.name, self.coord_names, self.coord_dtype))
+        return ("CoordinateSystem(coord_names=%s, name='%s', coord_dtype=%s)" %
+                (self.coord_names, self.name, self.coord_dtype))
 
 
     def _checked_values(self, arr):
@@ -196,34 +216,34 @@ class CoordinateSystem(object):
 	--------
 	>>> cs = CoordinateSystem('ijk', coord_dtype=np.float32)
         >>> arr = np.array([1, 2, 3], dtype=np.int16)
-        >>> cs.checked_values(arr.reshape(1,3)) 
+        >>> cs._checked_values(arr.reshape(1,3)) 
         array([[1, 2, 3]], dtype=int16)
-        >>> cs.checked_values(arr) # 1D is OK with matching dimensions 
+        >>> cs._checked_values(arr) # 1D is OK with matching dimensions 
         array([[1, 2, 3]], dtype=int16)
-        >>> cs.checked_values(arr.reshape(3,1)) # wrong shape
+        >>> cs._checked_values(arr.reshape(3,1)) # wrong shape
         Traceback (most recent call last):
            ...
         ValueError: Array shape[-1] must match CoordinateSystem shape 3.
-          name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32
+          CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
 
-        >>> cs.checked_values(arr[0:2]) # wrong length
+        >>> cs._checked_values(arr[0:2]) # wrong length
         Traceback (most recent call last):
            ...
-        ValueError: 1D input should have length 3 for CoordinateSystem:
-          name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32
+        ValueError: 1D array as input should have shape (3,) for CoordinateSystem:
+          CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
 
         The dtype has to be castable:
 
-        >>> cs.checked_values(np.array([1, 2, 3], dtype=np.float64))
+        >>> cs._checked_values(np.array([1, 2, 3], dtype=np.float64))
         Traceback (most recent call last):
            ...
         ValueError: Cannot cast array dtype float64 to CoordinateSystem coord_dtype float32.
-          name: '', coord_names: ('i', 'j', 'k'), coord_dtype: float32
+          CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
 
         The input array is unchanged, even if a reshape has
         occurred. The returned array points to the same data.
 
-        >>> checked = cs.checked_values(arr)
+        >>> checked = cs._checked_values(arr)
         >>> checked.shape == arr.shape
         False
         >>> checked is arr
@@ -240,36 +260,35 @@ class CoordinateSystem(object):
         ambiguous, this is an error.
 
         >>> cs = CoordinateSystem('x')
-        >>> cs.checked_values(1)
+        >>> cs._checked_values(1)
         array([[1]])
-        >>> cs.checked_values([1, 2])
+        >>> cs._checked_values([1, 2])
         Traceback (most recent call last):
            ...
-        ValueError: 1D input should have length 1 for CoordinateSystem:
-          name: '', coord_names: ('x',), coord_dtype: float64
+        ValueError: 1D array as input should have shape (1,) for CoordinateSystem:
+          CoordinateSystem(coord_names=('x',), name='', coord_dtype=float64)
 
         But of course 2D, N by 1 is OK
 
-        >>> cs.checked_values(np.array([1,2,3]).reshape(3, 1))
+        >>> cs._checked_values(np.array([1,2,3]).reshape(3, 1))
         array([[1],
                [2],
                [3]])
         '''
         arr = np.asanyarray(arr)
-        our_ndim = len(self._coord_names)
         if len(arr.shape) < 2:
-            if arr.size != our_ndim:
-                raise ValueError('1D input should have length %d for '
+            if arr.size != self.ndim:
+                raise ValueError('1D array as input should have shape (%d,) for '
                                  'CoordinateSystem:\n  %s' % 
-                                 (our_ndim, str(self)))
+                                 (self.ndim, str(self)))
             arr = arr.reshape((1, arr.size))
-        elif arr.shape[-1] != our_ndim:
+        elif arr.shape[-1] != self.ndim:
             raise ValueError('Array shape[-1] must match CoordinateSystem '
-                             'shape %d.\n  %s' % (our_ndim, str(self)))
-        if not np.can_cast(arr.dtype, self._coord_dtype):
+                             'shape %d.\n  %s' % (self.ndim, str(self)))
+        if not np.can_cast(arr.dtype, self.coord_dtype):
             raise ValueError('Cannot cast array dtype %s to '
                              'CoordinateSystem coord_dtype %s.\n  %s' %
-                             (arr.dtype, self._coord_dtype, str(self)))
+                             (arr.dtype, self.coord_dtype, str(self)))
         return arr
 
 
@@ -324,8 +343,8 @@ def safe_dtype(*dtypes):
     """
 
     arrays = [np.zeros(2, dtype) for dtype in dtypes]
-    notbuiltin = filter(lambda x: not x.dtype.isbuiltin, arrays)
-    if notbuiltin:
+    notbuiltin = [not a.dtype.isbuiltin for a in arrays]
+    if np.any(notbuiltin):
         raise TypeError('dtype must be valid numpy dtype int, uint, float or complex')
     return np.array(arrays).dtype
 
@@ -351,7 +370,7 @@ def product(*coord_systems):
     >>> c3 = CoordinateSystem('ik', 'in3')
 
     >>> print product(c1,c2)
-    name: 'product', coord_names: ('i', 'j', 'k', 'l'), coord_dtype: complex128
+    CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='product', coord_dtype=complex128)
 
     >>> product(c2,c3)
     Traceback (most recent call last):

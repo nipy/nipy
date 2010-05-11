@@ -10,173 +10,116 @@ __docformat__ = 'restructuredtext'
 
 
 import numpy as np
-import numpy.linalg as L
+from sympy import Symbol, DeferredVector, exp, Derivative, abs, FunctionClass
+from formula import Term, aliased_function
+from aliased import vectorize
 
-from nipy.modalities.fmri import filters
-from nipy.modalities.fmri.utils import LinearInterpolant as interpolant
-from nipy.modalities.fmri.fmristat.invert import invertR
+# Sympy symbols used below
 
-def glover2GammaDENS(peak_hrf, fwhm_hrf):
+t = Term('t')
+deft = DeferredVector('t')
+
+def gamma_params(peak_location, peak_fwhm):
     """
-    :Parameters:
-        `peak_hfr` : TODO
-            TODO
-        `fwhm_hrf` : TODO
-            TODO
+    TODO: where does the coef come from again.... check fmristat code
+
+    From a peak location and peak fwhm,
+    determine the parameters of a Gamma density
+
+    f(x) = coef * x**(alpha-1) * exp(-x*beta)
+
+    The coefficient returned ensures that
+    the f has integral 1 over [0,np.inf]
+
+    Parameters
+    ----------
+        peak_location : float
+            Location of the peak of the Gamma density
+        peak_fwhm : float
+            FWHM at the peak
+
+    Returns
+    -------
+        alpha : float
+            Shape parameter in the Gamma density
+        beta : float
+            Scale parameter in the Gamma density
+        coef : float
+            Coefficient needed to ensure the density has integral 1.
+    """
+    alpha = np.power(peak_location / peak_fwhm, 2) * 8 * np.log(2.0)
+    beta = np.power(peak_fwhm, 2) / peak_location / 8 / np.log(2.0)
+    coef = peak_location**(-alpha) * np.exp(peak_location / beta)
+    return coef * ((t >= 0) * (t+1.0e-14))**(alpha) * exp(-(t+1.0e-14)/beta)
+
+
+# Glover canonical HRF models
+# they are both Sympy objects
+
+def _getint(f, dt=0.02, t=50):
+    lf = vectorize(f)
+    tt = np.arange(dt,t+dt,dt)
+    return lf(tt).sum() * dt 
+
+deft = DeferredVector('t')
+_gexpr = gamma_params(5.4, 5.2) - 0.35 * gamma_params(10.8,7.35)
+_gexpr = _gexpr / _getint(_gexpr)
+_glover = vectorize(_gexpr)
+glover = aliased_function('glover', _glover)
+n = {}
+glovert = vectorize(glover(deft))
+
+# Derivative of Glover HRF
+
+_dgexpr = _gexpr.diff(t)
+dpos = Derivative((t >= 0), t)
+_dgexpr = _dgexpr.subs(dpos, 0)
+_dgexpr = _dgexpr / _getint(abs(_dgexpr))
+_dglover = vectorize(_dgexpr)
+dglover = aliased_function('dglover', _dglover)
+dglovert = vectorize(dglover(deft))
+
+del(_glover); del(_gexpr); del(dpos); del(_dgexpr); del(_dglover)
+
+# AFNI's HRF
+
+_aexpr = ((t >= 0) * t)**8.6 * exp(-t/0.547)
+_aexpr = _aexpr / _getint(_aexpr)
+_afni = vectorize(_aexpr)
+afni = aliased_function('afni', _afni)
+afnit = vectorize(afni(deft))
+
+# Primitive of the HRF -- temoprary fix to handle blocks
+def igamma_params(peak_location, peak_fwhm):
+    """
+    From a peak location and peak fwhm,
+    determine the paramteres of a Gamma density
+    and return an approximate (accurate) approximation of its integral
+    f(x) = int_0^x  coef * t**(alpha-1) * exp(-t*beta) dt
+    so that lim_{x->infty} f(x)=1
     
-    :Returns: TODO
+    :Parameters:
+        peak_location : float
+            Location of the peak of the Gamma density
+        peak_fwhm : float
+            FWHM at the peak
+
+    :Returns:
+         the function of t
+
+    NOTE: this is only a temporary fix,
+    and will have to be removed in the long term
     """
-    alpha = np.power(peak_hrf / fwhm_hrf, 2) * 8 * np.log(2.0)
-    beta = np.power(fwhm_hrf, 2) / peak_hrf / 8 / np.log(2.0)
-    coef = peak_hrf**(-alpha) * np.exp(peak_hrf / beta)
-    return coef, filters.GammaDENS(alpha + 1., 1. / beta)
+    import scipy.special as sp
+    alpha = np.power(peak_location / peak_fwhm, 2) * 8 * np.log(2.0)
+    beta = np.power(peak_fwhm, 2) / peak_location / 8 / np.log(2.0)
+    ak = int(np.round(alpha+1))
+    P = np.sum([1./sp.gamma(k+1)*((t/beta)**k) for k in range(ak)],0)
+    return (t > 0) * (1-exp(-t/beta)*P)
 
-def _glover(peak_hrf=(5.4, 10.8), fwhm_hrf=(5.2, 7.35), dip=0.35):
-    coef1, gamma1 = glover2GammaDENS(peak_hrf[0], fwhm_hrf[0])
-    coef2, gamma2 = glover2GammaDENS(peak_hrf[1], fwhm_hrf[1])
-    f = filters.GammaCOMB([[coef1, gamma1], [-dip*coef2, gamma2]])
-    dt = 0.02
-    t = np.arange(0, 50 + dt, dt)
-    c = (f(t) * dt).sum()
-    return filters.GammaCOMB([[coef1/c, gamma1], [-dip*coef2/c, gamma2]])
-
-# Glover, 'canonical HRF'
-
-glover = filters.Filter(_glover(), names=['glover'])
-glover_deriv = filters.Filter([_glover(), _glover().deriv(const=-1.)],
-                              names=['glover', 'dglover'])
-canonical = glover
-
-
-# AFNI's default HRF (at least at some point in the past)
-
-afni = filters.Filter(filters.GammaDENS(9.6, 1.0/0.547), ['gamma'])
-
-class SpectralHRF(filters.Filter):
-    '''
-    Delay filter with spectral or Taylor series decomposition
-    for estimating delays.
-
-    Liao et al. (2002).
-    '''
-
-    def __init__(self, input_hrf=canonical, spectral=True, ncomp=2,
-                 names=['glover'], deriv=False, **keywords):
-        """
-        :Parameters:
-            `input_hrf` : TODO
-                TODO
-            `spectral` : bool
-                TODO
-            `ncomp` : int
-                TODO
-            `names` : TODO
-                TODO
-            `deriv` : bool
-                TODO
-            `keywords` : dict
-                passed as keyword arguments to `filters.Filter.__init__`
-        """
-        filters.Filter.__init__(self, input_hrf, names=names, **keywords)
-        self.deriv = deriv
-        self.ncomp = ncomp
-        self.spectral = spectral
-        if self.n != 1:
-            raise ValueError, 'expecting one HRF for spectral decomposition'
-        self.deltaPCA()
-
-    def deltaPCA(self, tmax=50., lower=-15.0, delta=None):
-        """
-        Perform an expansion of fn, shifted over the values in delta.
-        Effectively, a Taylor series approximation to fn(t+delta), in delta,
-        with basis given by the filter elements. If fn is None, it assumes
-        fn=IRF[0], that is the first filter.
-
-        >>> GUI = True
-        >>> import numpy as np
-        >>> from pylab import plot, title, show
-        >>> from nipy.modalities.fmri.hrf import glover, glover_deriv, SpectralHRF
-        >>>
-        >>> ddelta = 0.25
-        >>> delta = np.arange(-4.5,4.5+ddelta, ddelta)
-        >>> time = np.arange(0,20,0.2)
-        >>>
-        >>> hrf = SpectralHRF(glover)
-        >>>
-        >>> taylor = hrf.deltaPCA(delta=delta)
-        >>> curplot = plot(time, taylor.components[1](time))
-        >>> curplot = plot(time, taylor.components[0](time))
-        >>> curtitle=title('Shift using Taylor series -- components')
-        >>> show()
-        >>>
-        >>> curplot = plot(delta, taylor.coef[1](delta))
-        >>> curplot = plot(delta, taylor.coef[0](delta))
-        >>> curtitle = title('Shift using Taylor series -- coefficients')
-        >>> show()
-        >>>
-        >>> curplot = plot(delta, taylor.inverse(delta))
-        >>> curplot = plot(taylor.coef[1](delta) / taylor.coef[0](delta), delta)
-        >>> curtitle = title('Shift using Taylor series -- inverting w1/w0')
-        >>> show()
-        """
-
-        if delta is None: delta = np.arange(-4.5, 4.6, 0.1)
-        time = np.arange(lower, tmax, self.dt)
-        if callable(self.IRF):
-            irf = self.IRF
-        else:
-            irf = self.IRF[0]
-
-        H = []
-        for i in range(delta.shape[0]):
-            H.append(irf(time - delta[i]))
-        H = np.array(H)
-
-
-        U, S, V = L.svd(H.T, full_matrices=0)
-
-        basis = []
-        for i in range(self.ncomp):
-            b = interpolant(time, U[:, i])
-
-            if i == 0:
-                d = np.fabs((b(time) * self.dt).sum())
-            b.f.y /= d
-            basis.append(b)
-
-
-        W = np.array([b(time) for b in basis[:self.ncomp]])
-
-        WH = np.dot(L.pinv(W.T), H.T)
-        
-        coef = [interpolant(delta, w) for w in WH]
-            
-        if coef[0](0) < 0:
-            coef[0].f.y *= -1.
-            basis[0].f.y *= -1.
-
-        def approx(time, delta):
-            value = 0
-            for i in range(self.ncomp):
-                value += coef[i](delta) * basis[i](time)
-            return value
-
-        approx.coef = coef
-        approx.components = basis
-
-        self.approx = approx
-        self.IRF = approx.components
-        self.n = len(approx.components)
-        self.names = ['%s_%d' % (self.names[0], i) for i in range(self.n)]
-
-        if self.n == 1:
-            self.IRF = self.IRF[0]
-
-        (self.approx.theta,
-         self.approx.inverse,
-         self.approx.dinverse,
-         self.approx.forward,
-         self.approx.dforward) = invertR(delta, self.approx.coef)
-        return approx
-
+_igexpr = igamma_params(5.4, 5.2) - 0.35 * igamma_params(10.8,7.35)
+_igexpr = _igexpr / _getint(_igexpr)
+_iglover = vectorize(_igexpr)
+iglover = aliased_function('iglover', _iglover)
+iglovert = vectorize(iglover(deft))
 

@@ -1,11 +1,11 @@
 import numpy as np
 from numpy.random import random_integers as randint
 
-from nipy.testing import *
+from nipy.testing import assert_true, assert_equal, dec
 
 from nipy.algorithms.kernel_smooth import LinearFilter
 from nipy.core.api import Image
-from nipy.core.reference.coordinate_map import CoordinateMap, Affine
+from nipy.core.reference.coordinate_map import AffineTransform
 
 from nipy.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 
@@ -13,28 +13,28 @@ from nipy.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
 # FIXME: Need to make an automated test for this!
 class test_Kernel(TestCase):
     @dec.gui
-    import pylab
+    import pylab as plt
+    from nipy.testing import anatfile
+    from nipy.io import load_image
     from nipy.ui.visualization.viewer import BoxViewer
     def test_smooth(self):
-        rho = Image("rho.hdr", repository)
-        smoother = LinearFilter(rho.grid)
+        anat = load_image(anatfile)
+        smoother = LinearFilter(anat.grid)
 
-        srho = smoother.smooth(rho)
-        view = BoxViewer(rho)
+        sanat = smoother.smooth(anat)
+        view = BoxViewer(anat)
         view.draw()
 
-        sview = BoxViewer(srho)
+        sview = BoxViewer(sanat)
         sview.m = view.m
         sview.M = view.M
         sview.draw()
-        pylab.show()
+        plt.show()
 """
 
 
 def test_sigma_fwhm():
-    """
-    ensure that fwhm2sigma and sigma2fwhm are inverses of each other        
-    """
+    # ensure that fwhm2sigma and sigma2fwhm are inverses of each other        
     fwhm = np.arange(1.0, 5.0, 0.1)
     sigma = np.arange(1.0, 5.0, 0.1)
     yield assert_true, np.allclose(sigma2fwhm(fwhm2sigma(fwhm)), fwhm)
@@ -43,19 +43,15 @@ def test_sigma_fwhm():
 @dec.knownfailure
 @dec.slow
 def test_kernel():
-    """
-    Verify the the convolution with a delta function
-    gives the correct answer.
-
-    """
-
+    # Verify the the convolution with a delta function
+    # gives the correct answer.
     tol = 0.9999
     sdtol = 1.0e-8
     for x in range(6):
         shape = randint(30,60,(3,))
         ii, jj, kk = randint(11,17, (3,))
 
-        coordmap = Affine.from_start_step('ijk', 'xyz', 
+        coordmap = AffineTransform.from_start_step('ijk', 'xyz', 
                                           randint(5,20,(3,))*0.25,
                                           randint(5,10,(3,))*0.5)
 

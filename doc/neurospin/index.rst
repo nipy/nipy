@@ -1,26 +1,18 @@
 
 
-FFF2: Fast FMRI Functions
+NeuroSpin tools
 ==========================
 
-.. htmlonly::
-
-    :Release: |version|
-    :Date: |today|
+The package `nipy.neurospin` hosts tools that where originally developped
+at NeuroSpin, France.
 
 
 .. toctree::
     
     mask.rst
     enn.rst
-    activation_map.rst
+    viz.rst
     simul_activation.rst
-
-_____
-
-.. htmlonly::
-
-  * :ref:`genindex`
-  * :ref:`modindex`
-  * :ref:`search`
+    image_registration.rst
+    datasets.rst
 

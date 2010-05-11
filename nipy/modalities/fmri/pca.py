@@ -12,356 +12,291 @@ More specifically, the data is projected onto the eigenvectors of the
 covariance matrix.
 """
 
-__docformat__ = 'restructuredtext'
-
 import numpy as np
-import numpy.linalg as L
-from nipy.fixes.scipy.stats.models.utils import recipr
+import scipy.linalg as spl
 
-from nipy.core.api import Image
+from nipy.core.image.image import Image, rollaxis as image_rollaxis
+from nipy.core.image.xyz_image import XYZImage
 
-class PCA(object):
+
+def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
+        design_keep=None, design_resid='mean', tol_ratio=0.01):
+    """Compute the SVD PCA of an array-like thing over `axis`.
+
+    Parameters
+    ----------
+    data : ndarray-like (np.float)
+       The array on which to perform PCA over axis `axis` (below)
+    axis : int, optional
+       The axis over which to perform PCA (axis identifying
+       observations).  Default is 0 (first)
+    mask : ndarray-like (np.bool), optional
+       An optional mask, should have shape given by data axes, with
+       `axis` removed, i.e.: ``s = data.shape; s.pop(axis);
+       msk_shape=s``
+    ncomp : {None, int}, optional
+       How many component basis projections to return. If ncomp is None
+       (the default) then the number of components is given by the
+       calculated rank of the data, after applying `design_keep`,
+       `design_resid` and `tol_ratio` below.  We always return all the
+       basis vectors and percent variance for each component; `ncomp`
+       refers only to the number of basis_projections returned.
+    standardize : bool, optional
+       If True, standardize so each time series (after application of
+       `design_keep` and `design_resid`) has the same standard
+       deviation, as calculated by the ``np.std`` function.
+    design_keep : None or ndarray, optional
+       Data is projected onto the column span of design_keep.
+       None (default) equivalent to ``np.identity(data.shape[axis])``
+    design_resid : str or None or ndarray, optional
+       After projecting onto the column span of design_keep, data is
+       projected perpendicular to the column span of this matrix.  If
+       None, we do no such second projection.  If a string 'mean', then
+       the mean of the data is removed, equivalent to passing a column
+       vector matrix of 1s.
+    tol_ratio : float, optional
+       If ``XZ`` is the vector of singular values of the projection
+       matrix from `design_keep` and `design_resid`, and S are the
+       singular values of ``XZ``, then `tol_ratio` is the value used to
+       calculate the effective rank of the projection of the design, as
+       in ``rank = ((S / S.max) > tol_ratio).sum()``
+
+    Returns
+    -------
+    results : dict
+        $L$ is the number of non-trivial components found after applying
+       `tol_ratio` to the projections of `design_keep` and
+       `design_resid`.
+    
+       `results` has keys:
+
+       * ``basis_vectors``: series over `axis`, shape (data.shape[axis], L) -
+          the eigenvectors of the PCA
+       * ``pcnt_var``: percent variance explained by component, shape
+          (L,)
+       * ``basis_projections``: PCA components, with components varying
+          over axis `axis`; thus shape given by: ``s = list(data.shape);
+          s[axis] = ncomp``
+       * ``axis``: axis over which PCA has been performed.
+
+    Notes
+    -----
+    See ``pca_image.m`` from ``fmristat`` for Keith Worsley's code on
+    which some of this is based.
+
+    See: http://en.wikipedia.org/wiki/Principal_component_analysis for
+    some inspiration for naming - particularly 'basis_vectors' and
+    'basis_projections'
     """
-    Compute the PCA of an image (over ``axis=0``). Image coordmap should
-    have a subcoordmap method.
+    data = np.asarray(data)
+    # We roll the PCA axis to be first, for convenience
+    if axis is None:
+        raise ValueError('axis cannot be None')
+    data = np.rollaxis(data, axis)
+    if mask is not None:
+        mask = np.asarray(mask)
+    if design_resid == 'mean':
+        # equivalent to: design_resid = np.ones((data.shape[0], 1))
+        def project_resid(Y):
+            return Y - Y.mean(0)[None,...]
+    elif design_resid is None:
+        def project_resid(Y): return Y
+    else: # matrix passed, we hope
+        projector = np.dot(design_resid, spl.pinv(design_resid))
+        def project_resid(Y):
+            return Y - np.dot(projector, Y)
+    if standardize:
+        def standardize_from(arr, std_source):
+            # modifies array in place
+            resid = project_resid(std_source)
+            rstd = np.sqrt(np.square(resid).sum(axis=0) / resid.shape[0])
+            # positive 1/rstd
+            rstd_half = np.where(rstd<=0, 0, 1. / rstd)
+            arr *= rstd_half
+            return arr
+    else:
+        standardize_from = None
     """
+    Perform the computations needed for the PCA.  This stores the
+    covariance/correlation matrix of the data in the attribute 'C'.  The
+    components are stored as the attributes 'components', for an fMRI
+    image these are the time series explaining the most variance.
 
-    def __init__(self, image, tol=1e-5, ext='.img', mask=None, pcatype='cor',
-                 design_keep=None, design_resid=None, **keywords):
-        """
-        :Parameters:
-            `image` : `Image`
-                The image to be analysed
-            `tol` : float
-                TODO
-            `ext` : string
-                The file extension for the output image
-            `mask` : TODO
-                TODO
-            `pcatype` : string
-                TODO                
-            `design_resid` : TODO
-                After projecting onto the column span of design_keep, data is
-                projected off of the column span of this matrix.
-            `design_keep` : TODO
-                Data is projected onto the column span of design_keep.
-        """
-        self.image = np.asarray(image)
-        self.outcoordmap = image[0].coordmap
-        self.tol = tol
-        self.ext = ext
-        self.mask = mask
-        self.pcatype = pcatype
-        if design_keep is None:
-            self.design_keep = [[]]
-        else:
-            self.design_keep = design_keep
+    Now, we compute projection matrices. First, data is projected onto
+    the columnspace of design_keep, then it is projected perpendicular
+    to column space of design_resid.
+    """
+    if design_keep is None:
+        X = np.eye(data.shape[0])
+    else:
+        X = np.dot(design_keep, spl.pinv(design_keep))
+    XZ = project_resid(X)
+    UX, SX, VX = spl.svd(XZ, full_matrices=0)
+    # The matrix UX has orthonormal columns and represents the
+    # final "column space" that the data will be projected onto.
+    rank = (SX/SX.max() > tol_ratio).sum()
+    UX = UX[:,range(rank)].T
+    # calculate covariance matrix
+    C  = _get_covariance(data, UX, standardize_from, mask)
+    # find the eigenvalues D and eigenvectors Vs of the covariance
+    # matrix
+    D, Vs = spl.eigh(C)
+    # sort both in descending order of eigenvalues
+    order = np.argsort(-D)
+    D = D[order]
+    pcntvar = D * 100 / D.sum()
+    basis_vectors = np.dot(UX.T, Vs).T[order]
+    """
+    Output the component basis_projections
+    """
+    if ncomp is None:
+        ncomp = rank
+    subVX = basis_vectors[:ncomp]
+    out = _get_basis_projections(data, subVX, standardize_from)
+    # Roll PCA image axis back to original position in data array
+    if axis < 0:
+        axis += data.ndim
+    out = np.rollaxis(out, 0, axis+1)
+    return {'basis_vectors': basis_vectors.T,
+            'pcnt_var': pcntvar,
+            'basis_projections': out, 
+            'axis': axis}
 
-        if design_resid is None:
-            self.design_resid = [[]]
-        else:
-            self.design_keep = design_keep
 
-        if self.mask is not None:
-            self._mask = np.array(self.mask.readall())
-            self.nvoxel = self._mask.sum()
-        else:
-            self.nvoxel = np.product(self.image.shape[1:])
+def _get_covariance(data, UX, standardize_from, mask):
+    # number of points in PCA dimension
+    rank = UX.shape[0]
+    n_pts = data.shape[0]
+    C = np.zeros((rank, rank))
+    # loop over next dimension to save memory
+    for i in range(data.shape[1]):
+        Y = data[:,i].reshape((n_pts, -1))
+        # project data into required space
+        YX = np.dot(UX, Y)
+        if standardize_from is not None:
+            YX = standardize_from(YX, Y)
+        if mask is not None:
+            # weight data with mask.  Usually the weights will be 0,1
+            YX = YX * np.nan_to_num(mask[i].reshape(Y.shape[1]))
+        C += np.dot(YX, YX.T)
+    return C
 
-        self.nimages = self.image.shape[0]
 
-    def project(self, Y, which='keep'):
-        """
-        :Parameters:
-            `Y` : TODO
-                TODO
-            `which` : string
-                TODO
+def _get_basis_projections(data, subVX, standardize_from):
+    ncomp = subVX.shape[0]
+    out = np.empty((ncomp,) + data.shape[1:], np.float)
+    for i in range(data.shape[1]):
+        Y = data[:,i].reshape((data.shape[0], -1))
+        U = np.dot(subVX, Y)
+        if standardize_from is not None:
+           U = standardize_from(U, Y)
+        U.shape = (U.shape[0],) + data.shape[2:]
+        out[:,i] = U
+    return out
 
-        :Returns: TODO        
-        """
-        if which == 'keep':
-            if self.design_keep is None:
-                return Y
-            else:
-                return np.dot(np.dot(self.design_keep, L.pinv(self.design_keep)), Y)
-        else:
-            if self.design_resid is None:
-                return Y            
-            else:
-                return Y - np.dot(np.dot(self.design_resid, L.pinv(self.design_resid)), Y)
 
-    def fit(self):
-        """
-        Perform the computations needed for the PCA.
-        This stores the covariance/correlation matrix of the data in
-        the attribute 'C'.
-        The components are stored as the attributes 'components', 
-        for an fMRI image these are the time series explaining the most
-        variance.
+def pca_image(xyz_image, axis='t', mask=None, ncomp=None, standardize=True,
+              design_keep=None, design_resid='mean', tol_ratio=0.01):
+    """ Compute the PCA of an image over a specified axis. 
 
-        :Returns: ``None``
-        """
+    Parameters
+    ----------
+    data : XYZImage
+        The image on which to perform PCA over its first axis.
+    axis : str or int
+        Axis over which to perform PCA. Cannot be a spatial axis because
+        the results have to be XYZImages.  Default is 't'
+    mask : XYZImage
+        An optional mask, should have shape == image.shape[:3]
+        and the same XYZTransform.
+    ncomp : {None, int}, optional
+       How many component basis projections to return. If ncomp is None
+       (the default) then the number of components is given by the
+       calculated rank of the data, after applying `design_keep`,
+       `design_resid` and `tol_ratio` below.  We always return all the
+       basis vectors and percent variance for each component; `ncomp`
+       refers only to the number of basis_projections returned.
+    standardize : bool, optional
+       If True, standardize so each time series (after application of
+       `design_keep` and `design_resid`) has the same standard
+       deviation, as calculated by the ``np.std`` function.
+    design_keep : None or ndarray, optional
+       Data is projected onto the column span of design_keep.
+       None (default) equivalent to ``np.identity(data.shape[axis])``
+    design_resid : str or None or ndarray, optional
+       After projecting onto the column span of design_keep, data is
+       projected perpendicular to the column span of this matrix.  If
+       None, we do no such second projection.  If a string 'mean', then
+       the mean of the data is removed, equivalent to passing a column
+       vector matrix of 1s.
+    tol_ratio : float, optional
+       If ``XZ`` is the vector of singular values of the projection
+       matrix from `design_keep` and `design_resid`, and S are the
+       singular values of ``XZ``, then `tol_ratio` is the value used to
+       calculate the effective rank of the projection of the design, as
+       in ``rank = ((S / S.max) > tol_ratio).sum()``
 
-        # Compute projection matrices
+    Returns
+    -------
+    results : dict
+        $L$ is the number of non-trivial components found after applying
+       `tol_ratio` to the projections of `design_keep` and
+       `design_resid`.
     
-        if np.allclose(self.design_keep, [[0]]):
-            self.design_resid = np.ones((self.nimages, 1))
-            
-        if np.allclose(self.design_keep, [[0]]):
-            self.design_keep = np.identity(self.nimages)
+       `results` has keys:
 
-        X = np.dot(self.design_keep, L.pinv(self.design_keep))
-        XZ = X - np.dot(self.design_resid, np.dot(L.pinv(self.design_resid), X))
-        UX, SX, VX = L.svd(XZ, full_matrices=0)
-    
-        rank = np.greater(SX/SX.max(), 0.5).astype(np.int32).sum()
-        UX = UX[:,range(rank)].T
-
-        first_slice = slice(0,self.image.shape[0])
-        _shape = self.image.shape
-        self.C = np.zeros((rank,)*2)
-
-        for i in range(self.image.shape[1]):
-            _slice = [first_slice, slice(i,i+1)]
-            
-            Y = np.nan_to_num(self.image[_slice].reshape((_shape[0], np.product(_shape[2:]))))
-            YX = np.dot(UX, Y)
-            
-            if self.pcatype == 'cor':
-                S2 = np.add.reduce(self.project(Y, which='resid')**2, axis=0)
-                Smhalf = recipr(np.sqrt(S2)); del(S2)
-                YX *= Smhalf
-                
-            
-            if self.mask is not None:
-                mask = self._mask[i]
-                
-                mask.shape = mask.size
-                YX *= np.nan_to_num(mask)
-                del(mask)
-            
-            self.C += np.dot(YX, YX.T)
-            
-        
-        self.D, self.Vs = L.eigh(self.C)
-        order = np.argsort(-self.D)
-        self.D = self.D[order]
-        self.pcntvar = self.D * 100 / self.D.sum()
-    
-        self.components = np.transpose(np.dot(UX.T, self.Vs))[order]
-
-    def images(self, which=[0], output_base=None):
-        """
-        Output the component images -- by default, only output the first
-        principal component.
-
-        :Parameters:
-            `which` : TODO
-                TODO
-            `output_base` : TODO
-                TODO
-
-        :Returns: TODO            
-        """
-
-        ncomp = len(which)
-        subVX = self.components[which]
-
-        outcoordmap = self.outcoordmap
-
-        # FIXME: There is no Image.slice_iterator.  Replace when
-        # generators are done.
-        if output_base is not None:
-            outiters = [Image('%s_comp%d%s' % (output_base, i, self.ext),
-                              coordmap=outcoordmap.copy(),
-                              mode='w').slice_iterator(mode='w') for i in which]
-        else:
-            outiters = [Image(np.zeros(outcoordmap.shape),
-                              coordmap=outcoordmap.copy()).slice_iterator(mode='w')
-                        for i in which]
-
-        first_slice = slice(0,self.image.shape[0])
-        _shape = self.image.shape
-
-        for i in range(self.image.shape[1]):
-            _slice = [first_slice, slice(i,i+1)]
-            Y = np.nan_to_num(self.image[_slice].reshape((_shape[0], np.product(_shape[2:]))))
-            U = np.dot(subVX, Y)
-
-            if self.mask is not None:
-                mask = self._mask[i]
-                mask.shape = mask.size
-                U *= mask
-
-            if self.pcatype == 'cor':
-                S2 = np.add.reduce(self.project(Y, which='resid')**2, axis=0)
-                Smhalf = recipr(np.sqrt(S2))
-                U *= Smhalf
-            
- 
-            U.shape = (U.shape[0],) + outcoordmap.shape[1:]
-            for k in range(len(which)):
-                outiters[k].next().set(U[k])
-
-        for i in range(len(which)):
-            if output_base:
-                outimage = Image('%s_comp%d%s' % (output_base, which[i], self.ext),
-                                      coordmap=outcoordmap, mode='r+')
-            else:
-                outimage = outiters[i].img
-            d = outimage.readall()
-            dabs = np.fabs(d); di = dabs.argmax()
-            d = d / d.flat[di]
-            outslice = [slice(0,j) for j in outcoordmap.shape]
-            outimage[outslice] = d
-
-        return [it.img for it in outiters]
-
-##     import pylab
-##     from nipy.ui.visualization.montage import Montage
-##     from nipy.algorithms.interpolation import ImageInterpolator
-##     from nipy.ui.visualization import slices
-##     from nipy.ui.visualization.multiplot import MultiPlot
-
-##     class PCAmontage(PCA):
-
-##         """
-##         Same as PCA but with a montage method to view the resulting images
-##         and a time_series image to view the time components.
-
-##         Note that the results of calling images are stored for this class,
-##         therefore to free the memory of the output of images, the
-##         image_results attribute of this instance will also have to be deleted.
-##         """
-
-##         def __init__(self, image, **keywords):
-##             """
-##             :Parameters:
-##                 `image` : `core.api.Image`
-##                     The image to be analysed and displayed
-##                 `keywords` : dict
-##                     The keywords to be passed to the `PCA` constructor
-##             """
-##             PCA.__init__(self, image, **keywords)
-##             self.image_results = None
-        
-##         def images(self, which=[0], output_base=None):
-##             """
-##             :Parameters:
-##                 `which` : TODO
-##                     TODO
-##                 `output_base` : TODO
-##                     TODO
-
-##             :Returns: TODO
-##             """
-##             PCA.images.__doc__
-##             self.image_results = PCA.images(self, which=which, output_base=output_base)
-##             self.image_which = which
-##             return self.image_results
-
-##         def time_series(self, title='Principal components in time'):
-##             """
-##             Plot the time components from the last call to 'images' method.
-
-##             :Parameters:
-##                 `title` : string
-##                     The title to be displayed
-
-##             :Returns: ``None``
-##             """
-
-##             pylab.clf()
-
-##             if self.image_results is None:
-##                 raise ValueError, 'run "images" before time_series'
-##             try:
-##                 t = self.image.volume_start_times
-##             except:
-##                 t = np.arange(self.image.coordmap.shape[0])
-##             self.time_plot = MultiPlot(self.components[self.image_which],
-##                                        time=t,
-##                                        title=title)
-##             self.time_plot.draw()
-
-##         def montage(self, z=None, nslice=None, xlim=(-120,120), ylim=(-120,120),
-##                     colormap='spectral', width=10):
-##             """
-##             Plot a montage of transversal slices from last call to
-##             'images' method.
-
-##             If z is not specified, a range of nslice equally spaced slices
-##             along the range of the first axis of image_results[0].coordmap is used,
-##             where nslice defaults to image_results[0].coordmap.shape[0].
-
-##             :Parameters:
-##                 `z` : TODO
-##                     TODO
-##                 `nslice` : TODO
-##                     TODO
-##                 `xlim` : (int, int)
-##                     TODO
-##                 `ylim` : (int, int)
-##                     TODO
-##                 `colormap` : string
-##                     The name of the colormap to use for display
-##                 `width` : TODO
-##                     TODO
-
-##             :Returns: ``None``
-##             """
-
-##             if nslice is None:
-##                 nslice = self.image_results[0].coordmap.shape[0]
-##             if self.image_results is None:
-##                 raise ValueError, 'run "images" before montage'
-##             images = self.image_results
-##             nrow = len(images)
-
-##             if z is None:
-##                 r = images[0].coordmap.range()
-##                 zmin = r[0].min(); zmax = r[0].max()
-##                 z = np.linspace(zmin, zmax, nslice)
-                
-##             z = list(np.asarray(z).flat)
-##             z.sort()
-##             ncol = len(z)
-
-##             basecoordmap = images[0].coordmap
-##             if self.mask is not None:
-##                 mask_interp = ImageInterpolator(self.mask)
-##             else:
-##                 mask_interp = None
-
-##             montage_slices = {}
-
-##             image_interps = [ImageInterpolator(images[i]) for i in range(nrow)]
-##             interp_slices = [slices.transversal(basecoordmap,
-##                                                 z=zval,
-##                                                 xlim=xlim,
-##                                                 ylim=ylim) for zval in z]
-
-##             vmax = np.array([images[i].readall().max() for i in range(nrow)]).max()
-##             vmin = np.array([images[i].readall().min() for i in range(nrow)]).min()
-
-##             for i in range(nrow):
-
-##                 for j in range(ncol):
-
-##                     montage_slices[(nrow-1-i,ncol-1-j)] = \
-##                        slices.DataSlicePlot(image_interps[i],
-##                                             interp_slices[j],
-##                                             vmax=vmax,
-##                                             vmin=vmin,
-##                                             colormap=colormap,
-##                                             interpolation='nearest',
-##                                             mask=mask_interp,
-##                                             transpose=True)
-
-##             m = Montage(slices=montage_slices, vmax=vmax, vmin=vmin)
-##             m.draw()
-
-
-
-
+       * ``basis_vectors``: series over `axis`, shape (data.shape[axis], L) -
+          the eigenvectors of the PCA
+       * ``pcnt_var``: percent variance explained by component, shape
+          (L,)
+       * ``basis_projections``: PCA components, with components varying
+          over axis `axis`; thus shape given by: ``s = list(data.shape);
+          s[axis] = ncomp``
+       * ``axis``: axis over which PCA has been performed.
+    """
+    if axis in xyz_image.reference.coord_names + \
+            xyz_image.axes.coord_names[:3] + tuple(range(3)):
+        raise ValueError('cannot perform PCA over a spatial axis' +
+                         'or we will not be able to output XYZImages')
+    xyz_data = xyz_image.get_data()
+    image = Image(xyz_data, xyz_image.coordmap)
+    image = image_rollaxis(image, axis)
+    if mask is not None:
+        if mask.xyz_transform != xyz_image.xyz_transform:
+            raise ValueError('mask and xyz_image have different coordinate systems')
+        if mask.ndim != image.ndim - 1:
+            raise ValueError('mask should have one less dimension than xyz_image')
+        if mask.axes.coord_names != image.axes.coord_names[1:]:
+            raise ValueError('mask should have axes %s'
+                             % str(image.axes.coord_names[1:]))
+    data = image.get_data()
+    if mask is not None:
+        mask_data = mask.get_data()
+    else:
+        mask_data = None
+    # do the PCA
+    res = pca(data, 0, mask_data, ncomp, standardize,
+              design_keep, design_resid, tol_ratio)
+    # Clean up images after PCA 
+    img_first_axis = image.axes.coord_names[0]
+    # Rename the axis.
+    #
+    # Because we started with XYZImage, all non-spatial
+    # coordinates agree in the range and the domain
+    # so this will work and the renamed_range
+    # call is not even necessary because when we call
+    # XYZImage, we only use the axisnames
+    output_coordmap = image.coordmap.renamed_domain(
+        {img_first_axis:'PCA components'}).renamed_range({img_first_axis:'PCA components'})
+    output_img = Image(res['basis_projections'], output_coordmap)
+    # We have to roll the axis back
+    roll_index = xyz_image.axes.index(img_first_axis)
+    output_img = image_rollaxis(output_img, roll_index, inverse=True)
+    output_xyz = XYZImage(output_img.get_data(), 
+                          xyz_image.affine,
+                          output_img.axes.coord_names)
+    key = 'basis_vectors over %s' % img_first_axis
+    res[key] = res['basis_vectors']
+    res['basis_projections'] = output_xyz
+    return res
+  

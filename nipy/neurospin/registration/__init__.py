@@ -1,5 +1,6 @@
-from registration import *
-import transform_affine 
+from registration import * 
+from iconic_registration import * 
+from affine import * 
 
 from numpy.testing import Tester
 

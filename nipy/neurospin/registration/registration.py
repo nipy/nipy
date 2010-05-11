@@ -1,228 +1,132 @@
-import _iconic
-import transform_affine as affine
+from affine import Affine, Rigid, Similarity
+from grid_transform import GridTransform
+from iconic_registration import IconicRegistration
+from spacetime_registration import Image4d, realign4d, resample4d
 
-import numpy as np  
-import scipy as sp 
-import scipy.optimize 
-from sys import maxint
+from nipy.neurospin.image import Image, asNifti1Image
 
-"""
-
-Input is an object that has at least an 'array'
-field and either a 'transform' or a 'voxsize' field. 
-
-array: numpy array (ndim should be at most 3)
-mask: numpy array (binary)
-nbins: int, nb of histogram bins
-transform: (4,4) numpy array, voxel to real spatial transformation
-
-TODO: type checking. implement proper masking.
-
-For the time being, any transformation is assumed to be a 4x4 matrix. 
-
-"""
-
-
-# Dictionary of interpolation methods
-interp_methods = {'partial volume': 0,
-                  'trilinear': 1,
-                  'random': -1}
-
-
-def _format(im, mask=0, nbins=256):
-
-    array = im.array
-    transform = im.transform
-
-    # Convert mask to intensity threshold
-    if isinstance(mask, int) or isinstance(mask, long) or isinstance(mask, float):
-        thres = float(mask)
-    else:
-        thres = 0.0 ## FIXME!!
-
-    return array, thres, nbins, transform
-
-
-def _similarity(similarity, normalize): 
-
-    if normalize == None:
-        k = 0
-    elif normalize == 'sophia':
-        k = 1
-    elif normalize == 'saclay':
-        k = 2
-    flag = _iconic.similarity_measures[similarity][k] ## FIXME: may not exist, should check! 
-    return flag
+import numpy as np 
 
 
 
-def _interp(interp):
-
-    flag = interp_methods[interp]
-    return flag
-
-
-class iconic():
-
-    def __init__(self, source, target):
-        self.source, s_thres, s_nbins, s_transform = _format(source)
-        self.target, t_thres, t_nbins, t_transform = _format(target)
-        self.source_clamped, self.target_clamped, \
-            self.joint_hist, self.source_hist, self.target_hist = \
-            _iconic.imatch(self.source, self.target, s_thres, t_thres, 
-                            s_nbins, t_nbins)
-        self.source_transform = s_transform
-        self.target_transform_inv = np.linalg.inv(t_transform)
-        self.set()
-
-    # Use array rather than asarray to ensure contiguity 
-    def set(self, interp='partial volume', 
-            similarity='correlation coefficient', normalize=None, 
-            subsampling=[1,1,1], corner=[0,0,0], size=None, pdf=None):
-        self.block_subsampling = np.array(subsampling, dtype='uint')
-        self.block_corner = np.array(corner, dtype='uint')
-        if size == None:
-            size = self.source.shape
-        self.block_size = np.array(size, dtype='uint')
-        ## Taux: block to full array transformation
-        Taux = np.diag(np.concatenate((self.block_subsampling,[1]),1))
-        Taux[0:3,3] = self.block_corner
-        self.block_transform = np.dot(self.source_transform, Taux)
-        self.interp = interp
-        self._interp = _interp(interp)
-        self.similarity = similarity
-        self.normalize = normalize
-        self._similarity = _similarity(similarity, normalize)
-        self.block_npoints = _iconic.block_npoints(self.source_clamped, 
-                    self.block_subsampling, self.block_corner, self.block_size)
-        self.pdf = np.array(pdf)        
-
-    # T is the 4x4 transformation between the real coordinate systems
-    # The corresponding voxel transformation is: Tv = Tt^-1 o T o Ts
-    def voxel_transform(self, T):
-        return np.dot(self.target_transform_inv, 
-                    np.dot(T, self.source_transform)) ## C-contiguity ensured
-
-    def block_voxel_transform(self, T): 
-        return np.dot(self.target_transform_inv, 
-                    np.dot(T, self.block_transform)) ## C-contiguity ensured 
-
-    def eval(self, T):
-        Tb = self.block_voxel_transform(T)
-        seed = self._interp
-        if self._interp < 0:
-            seed = - np.random.randint(maxint)
-        _iconic.joint_hist(self.joint_hist, self.source_clamped, 
-                           self.target_clamped, Tb, self.block_subsampling, 
-                           self.block_corner, self.block_size, seed)
-        #self.source_hist = np.sum(self.joint_histo, 1)
-        #self.target_hist = np.sum(self.joint_histo, 0)
-        return _iconic.similarity(self.joint_hist, self.source_hist, 
-                                  self.target_hist, self._similarity, 
-                                  self.block_npoints, self.pdf)
-
-    ## TODO : check that the dimension of start is consistent with the search space. 
-    def optimize(self, search='rigid 3D', method='powell', start=None, radius=10):
-        """
-        radius: a parameter for the 'typical size' in mm of the object
-        being registered. This is used to reformat the parameter vector
-        (translation+rotation+scaling+shearing) so that each element
-        represents a variation in mm.
-        """
-        
-        # Constants
-        precond = affine.preconditioner(radius)
-        if start == None: 
-            t0 = np.array([0, 0, 0, 0, 0, 0, 1., 1., 1., 0, 0, 0])
-        else:
-            t0 = np.asarray(start)
-
-        # Search space
-        stamp = affine.transformation_types[search]
-        tc0 = affine.vector12_to_param(t0, precond, stamp)
-
-        # Loss function to minimize
-        def loss(tc):
-            t = affine.param_to_vector12(tc, t0, precond, stamp)
-            return(-self.eval(affine.matrix44(t)))
+transform_classes = {'affine': Affine, 'rigid': Rigid, 'similarity': Similarity}
+                     
+def register(source, 
+             target, 
+             similarity='cr',
+             interp='pv',
+             subsampling=None,
+             search='affine',
+             graduate_search=False,
+             optimizer='powell'):
     
-        def print_vector12(tc):
-            t = affine.param_to_vector12(tc, t0, precond, stamp)
-            print('')
-            print ('  translation : %s' % t[0:3].__str__())
-            print ('  rotation    : %s' % t[3:6].__str__())
-            print ('  scaling     : %s' % t[6:9].__str__())
-            print ('  shearing    : %s' % t[9:12].__str__())
-            print('')
+    """
+    Three-dimensional affine image registration. 
+    
+    Parameters
+    ----------
+    source : nibabel-like image object 
+       Source image 
+    target : nibabel-like image 
+       Target image array
+    similarity : str or callable
+       Cost-function for assessing image similarity.  If a string, one
+       of 'cc', 'cr', 'crl1', 'mi', je', 'ce', 'nmi', 'smi'.  'cr'
+       (correlation ratio) is the default. If a callable, it should
+       take a two-dimensional array representing the image joint
+       histogram as an input and return a float. See
+       ``registration_module.pyx``
+    interp : str
+       Interpolation method.  One of 'pv': Partial volume, 'tri':
+       Trilinear, 'rand': Random interpolation.  See
+       ``iconic.c``
+    subsampling : None or sequence length 3
+       subsampling of image in voxels, where None (default) results 
+       in the subsampling to be automatically adjusted to roughly match
+       a cubic grid of 64**3 voxels
+    search : str or sequence 
+       If a string, one of 'affine', 'rigid', 'similarity'; default 'affine'
+       A sequence of strings can be provided to run a graduate search, e.g.
+       by doing first 'rigid', then 'similarity', then 'affine'
+    optimizer : str or sequence 
+       If a string, one of 'simplex', 'powell', 'steepest', 'cg', 'bfgs'
+       Alternatively, a sequence of such strings can be provided to
+       run several optimizers sequentially. If bot `search` and
+       `optimizer` are sequences, then the shorter is filled with its
+       last value to match the longer. 
 
-        # Switching to the appropriate optimizer
-        print('Initial guess...')
-        print_vector12(tc0)
+    Returns
+    -------
+    T : source-to-target affine transformation 
+        Object that can be casted to a numpy array. 
 
-        if method=='simplex':
-            print ('Optimizing using the simplex method...')
-            tc = sp.optimize.fmin(loss, tc0, callback=print_vector12)
-        elif method=='powell':
-            print ('Optimizing using Powell method...') 
-            tc = sp.optimize.fmin_powell(loss, tc0, callback=print_vector12)
-        elif method=='conjugate gradient':
-            print ('Optimizing using conjugate gradient descent...')
-            tc = sp.optimize.fmin_cg(loss, tc0, callback=print_vector12)
-        else:
-            raise ValueError, 'Unrecognized optimizer'
-        
-        # Output
-        t = affine.param_to_vector12(tc, t0, precond, stamp)
-        T = affine.matrix44(t)
-        return (T, t)
+    """
+    R = IconicRegistration(Image(source), Image(target))
+    if subsampling == None: 
+        R.set_source_fov(fixed_npoints=64**3)
+    else:
+        R.set_source_fov(spacing=subsampling)
+    R.similarity = similarity
+    R.interp = interp
 
-    # Return a set of similarity
-    def explore(self, ux=[0], uy=[0], uz=[0], rx=[0], ry=[0], rz=[0], 
-                sx=[1], sy=[1], sz=[1], qx=[0], qy=[0], qz=[0]):
+    if isinstance(search, basestring): 
+        search = [search]
+    if isinstance(optimizer, basestring):
+        optimizer = [optimizer]
+   
+    T = None
+    for i in range(max(len(search), len(optimizer))):
+        search_ = search[min(i, len(search)-1)]
+        optimizer_ = optimizer[min(i, len(optimizer)-1)]
+        if T == None: 
+            T = transform_classes[search_]()
+        else: 
+            T = transform_classes[search_](T.vec12)
+        T = R.optimize(T, method=optimizer_)
+    return T
 
-        grids = np.mgrid[0:len(ux), 0:len(uy), 0:len(uz), 
-                         0:len(rx), 0:len(ry), 0:len(rz), 
-                         0:len(sx), 0:len(sy), 0:len(sz), 
-                         0:len(qx), 0:len(qy), 0:len(qz)]
 
-        ntrials = np.prod(grids.shape[1:])
-        UX = np.asarray(ux)[grids[0,:]].ravel()
-        UY = np.asarray(uy)[grids[1,:]].ravel()
-        UZ = np.asarray(uz)[grids[2,:]].ravel()
-        RX = np.asarray(rx)[grids[3,:]].ravel()
-        RY = np.asarray(ry)[grids[4,:]].ravel()
-        RZ = np.asarray(rz)[grids[5,:]].ravel()
-        SX = np.asarray(sx)[grids[6,:]].ravel()
-        SY = np.asarray(sy)[grids[7,:]].ravel()
-        SZ = np.asarray(sz)[grids[8,:]].ravel()
-        QX = np.asarray(qx)[grids[9,:]].ravel()
-        QY = np.asarray(qy)[grids[10,:]].ravel()
-        QZ = np.asarray(qz)[grids[11,:]].ravel()
-        similarities = np.zeros(ntrials)
-        params = np.zeros([12, ntrials])
+def transform(floating, T, reference=None, interp_order=3):
 
-        for i in range(ntrials):
-            t = np.array([UX[i], UY[i], UZ[i],
-                          RX[i], RY[i], RZ[i],
-                          SX[i], SY[i], SZ[i],
-                          QX[i], QY[i], QZ[i]])
+    # Convert assumed nibabel-like input images to local image class
+    floating = Image(floating)
+    if not reference == None: 
+        reference = Image(reference)
 
-            similarities[i] = self.eval(affine.matrix44(t))
-            params[:, i] = t 
+    return asNifti1Image(floating.transform(np.asarray(T), grid_coords=False,
+                                            reference=reference, interp_order=interp_order))
 
-        return similarities, params
-        
 
-    def resample(self, T, toresample='source', dtype=None):
-        if toresample is 'target': 
-            Tv = self.voxel_transform(T)
-            out = affine.resample(self.target, self.source.shape, Tv, 
-                                  datatype=dtype)
-        else:
-            Tv_inv = np.linalg.inv(self.voxel_transform(T))
-            out = affine.resample(self.source, self.target.shape, Tv_inv, 
-                                  datatype=dtype)
 
-        return out
+class FmriRealign4d(object): 
 
+    def __init__(self, images, tr, tr_slices=None, start=0.0, 
+                 slice_order='ascending', interleaved=False):
+        if not hasattr(images, '__iter__'):
+            images = [images]
+        self._runs = [Image4d(im.get_data(), im.get_affine(),
+                              tr=tr, tr_slices=tr_slices, start=start,
+                              slice_order=slice_order, 
+                              interleaved=interleaved) for im in images]
+        self._transforms = [None for run in self._runs]
+                      
+    def correct_motion(self, iterations=2, between_loops=None, align_runs=True): 
+        within_loops = iterations 
+        if between_loops == None: 
+            between_loops = 3*within_loops 
+        t = realign4d(self._runs, within_loops=within_loops, 
+                      between_loops=between_loops, align_runs=align_runs)
+        self._transforms, self._within_run_transforms, self._mean_transforms = t
+
+    def resample(self, align_runs=True): 
+        """
+        Return a list of 4d nibabel-like images corresponding to the resampled runs. 
+        """
+        if align_runs: 
+            transforms = self._transforms
+        else: 
+            transforms = self._within_run_transforms
+        indices = range(len(self._runs))
+        data = [resample4d(self._runs[i], transforms=transforms[i]) for i in indices]
+        return [asNifti1Image(Image(data[i], self._runs[i].to_world)) for i in indices]
 

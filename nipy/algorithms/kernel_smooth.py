@@ -9,8 +9,8 @@ import numpy as np
 import numpy.fft as fft
 import numpy.linalg as L
 
-from nipy.core.api import Image, Affine
-from nipy.core.reference.coordinate_map import replicate
+from nipy.core.api import Image, AffineTransform
+from nipy.core.reference.coordinate_map import product
 
 class LinearFilter(object):
     '''
@@ -44,7 +44,7 @@ class LinearFilter(object):
         self._setup_kernel()
 
     def _setup_kernel(self):
-        if not isinstance(self.coordmap, Affine):
+        if not isinstance(self.coordmap, AffineTransform):
             raise ValueError, 'for FFT smoothing, need a regular (affine) coordmap'
 
         voxels = np.indices(self.bshape).astype(np.float64)
@@ -159,7 +159,8 @@ class LinearFilter(object):
         if inimage.ndim == 3:
             return Image(_out, coordmap=self.coordmap)
         else:
-            return Image(_out, coordmap=replicate(self.coordmap, inimage.shape[0]))
+            concat_affine = AffineTransform.identity('concat')
+            return Image(_out, coordmap=product(self.coordmap, concat_affine))
 
 
     def _presmooth(self, indata):

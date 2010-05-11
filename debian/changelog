@@ -1,3 +1,41 @@
+nipy (0.1.2+20100505-1) unstable; urgency=low
+
+  * Fresh upstream snapshot (Closes: #577898). Switching from bzr rev to
+    git dated versioning for nipy for now
+  * Debian packaging moved to be on top of a newly created
+    git repository for nipy upstream
+  * Adhering to a new deb source format 3.0 (quilt)
+  * Policy compliance to 3.8.4 (no changes due)
+  * Switching over to NeuroDebian team
+  * -doc: no pdf's for Documentation (removed texlive,
+    texlive-latex-extra from Build-Depends) (Closes: #567757)
+  * Confirming (and refactoring) NMUs from Kumar (THANKS!):
+    + As promised, closing the issue with absent i386 builds (Closes: #562246)
+    + Adding both PATH= and MPLCONFIGDIR= for building docs
+    + Addressed fortran binding issue with patchless solution:
+      unexport of LDFLAGS in debian/rules which brings -shared back
+      to game (see #535699 for more information)
+
+ -- Yaroslav Halchenko <debian@onerussian.com>  Tue, 04 May 2010 23:01:12 -0400
+
+nipy (0.1.2+1741-2.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Use $(CURDIR) instead of $(PWD) in debian/rules. (Closes: #535699)
+
+ -- Kumar Appaiah <akumar@debian.org>  Sun, 31 Jan 2010 08:40:11 -0600
+
+nipy (0.1.2+1741-2.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Fix "FTBFS: Tries to write to $HOME during build" using Peter Green's
+    patch.
+  * In addition, make package buildable by hacking the build system to use
+    -shared and -lpython<ver> for all gfortran using modules. (Closes:
+    #535699)
+
+ -- Kumar Appaiah <akumar@debian.org>  Sun, 31 Jan 2010 00:40:11 -0600
+
 nipy (0.1.2+1741-2) unstable; urgency=low
 
   * Adjusted long descriptions to follow the guidelines and to become

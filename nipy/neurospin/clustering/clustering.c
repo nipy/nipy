@@ -25,7 +25,7 @@ associated with the hierrachical clustering \n\
 - cost: arrao of shape (2*n-1)\n\
 that represents the cost value associated with each cluster\n\
 (the first n values are zero)";
-
+/*
 static char cmeans_doc[] =
 " Centers, Labels, J = cmeans(X,nbclusters,Labels,maxiter,delta)\n\
   cmeans clustering algorithm \n\
@@ -72,7 +72,6 @@ static char fcm_doc[] =
  - Labels : arroy of size n, the discrete labels of the input items\n\
 Note that the fuzzy index is forced to be 2";
 
-/*
 static char constrained_cmeans_doc[] = 
 " Centers, SideC, Labels, J = constrained_cmeans(X,SideX, nbclusters,dmax,Labels,maxiter,delta)\n\
   cmeans clustering algorithm constrained by side information \n\
@@ -114,7 +113,7 @@ static char constrained_match_doc[] =
  - matches : arroy of size (nbclusters), the discrete labels of the \n\
 best matching data, given the template\n\
  - J the corresponding stress criterion" ;
-*/
+
 static char gmm_doc[] = 
   
 " Centers, Precision, Weights, Labels, LogLike = gmm(X,nbclusters,Labels,prec_type,maxiter,delta)\n\
@@ -295,7 +294,7 @@ the relative probabilities of the membership \n\
 the posterior  degrees of freedom  of the precisions \n\
  - density: array of shape shape(X,0) or shape(grid,0) if supplied  \n\
 the predictive density obtained by averaging across iterations";
-
+*/
 
 static char fdp_doc[] = 
 " density,posterior = fdp(X, alpha, g0,g1,prior_dof,precisions, pvals, labels, niter=1000,grid=None,nis=1,nii=1)\n\
@@ -343,10 +342,7 @@ static char dpmm_doc[] =
   OUPUT: \n\
   - density: the posterior proba of the model on the grid (shape=(nbnodes))\n\
 "; 
-/* 
-static char hgmm_doc[] = 
-" hgmm(x,nbclusters,labels,subjects, prior_prec,prior_dofs,maxiter,nbsubj,alpha); ";
-*/
+
 static char module_doc[] =
 " Clustering routines.\n\
 Author: Bertrand Thirion (INRIA Saclay, Orsay, France), 2004-2008.";
@@ -384,7 +380,7 @@ static PyObject* ward(PyObject* self, PyObject* args)
 	PyObject *ret = Py_BuildValue("NN",parent,cost);
 	return ret;
 }
-
+/*
 static PyObject* cmeans(PyObject* self, PyObject* args)
 {
   PyArrayObject *x, *centers, *labels ;
@@ -395,9 +391,6 @@ static PyObject* cmeans(PyObject* self, PyObject* args)
   fff_array* Label; 
   labels = NULL;
   
-  /* Parse input */ 
-	/* see http://www.python.org/doc/1.5.2p2/ext/parseTuple.html*/
-	
   int OK = PyArg_ParseTuple( args, "O!i|O!id:cmeans", 
 			  &PyArray_Type, &x, 
 			  &nbclusters,
@@ -408,10 +401,8 @@ static PyObject* cmeans(PyObject* self, PyObject* args)
     if (!OK) Py_RETURN_NONE;
     if (nbclusters<1)  Py_RETURN_NONE; 
 	
-    /* prepare C arguments */ 
-	
-	fff_matrix* X = fff_matrix_fromPyArray( x ); 
-  	fff_matrix* Centers = fff_matrix_new( nbclusters, X->size2 ); 
+   fff_matrix* X = fff_matrix_fromPyArray( x ); 
+   fff_matrix* Centers = fff_matrix_new( nbclusters, X->size2 ); 
  	 
 	if (labels==NULL)
 	  Label = fff_array_new1d(FFF_LONG, X->size1 );
@@ -423,48 +414,38 @@ static PyObject* cmeans(PyObject* self, PyObject* args)
 	  }
 	}
 	
-	/* do the job */
 	double J =0;	
 	J = fff_clustering_cmeans( Centers, Label, X, maxiter, delta );
 	
-	/* get the results as python arrrays */
 	centers = fff_matrix_toPyArray( Centers ); 
 	labels = fff_array_toPyArray( Label );
 	fff_matrix_delete(X);
 	
 
-	/* Output tuple */ 
 	PyObject *ret = Py_BuildValue("NNf",centers, labels,J);
 	return ret;
 	
 	Py_RETURN_NONE;
 }
 
-
 static PyArrayObject* voronoi(PyObject* self, PyObject* args)
 {
   PyArrayObject *x, *centers, *labels ;
   
-  /* Parse input */ 
-	/* see http://www.python.org/doc/1.5.2p2/ext/parseTuple.html*/
   int OK = PyArg_ParseTuple( args, "O!O!:voronoi", 
 			  &PyArray_Type, &x, 
 			  &PyArray_Type, &centers); 
   if (!OK) return NULL; 
 
-  /* prepare C arguments */
   fff_matrix* X = fff_matrix_fromPyArray( x ); 
   fff_matrix* Centers =  fff_matrix_fromPyArray( centers ); 
   fff_array *Label = fff_array_new1d(FFF_LONG, X->size1 );
 
-  /* do the job */
   fff_clustering_Voronoi( Label, Centers, X );
 
-  /* get the results as python arrrays*/
   labels = fff_array_toPyArray( Label ); 
   fff_matrix_delete(X);
   fff_matrix_delete(Centers);
-  /* Output tuple */
   return labels;
 }
 
@@ -476,8 +457,6 @@ static PyObject* fcm(PyObject* self, PyObject* args)
   double delta = 0.0001;
   int nbclusters ;  
 
-  /* Parse input */ 
-	/* see http://www.python.org/doc/1.5.2p2/ext/parseTuple.html*/
   int OK = PyArg_ParseTuple( args, "O!i|id:fcm", 
 			  &PyArray_Type, &x, 
 			  &nbclusters, 
@@ -485,25 +464,21 @@ static PyObject* fcm(PyObject* self, PyObject* args)
               &delta );  
     if (!OK) Py_RETURN_NONE; 
 
-  /* prepare C arguments */
   fff_matrix* X = fff_matrix_fromPyArray( x ); 
   fff_matrix* Centers = fff_matrix_new( nbclusters, X->size2 );  
   fff_array* Label = fff_array_new1d(FFF_LONG, X->size1 ); 
 	
-  /* do the job */
   fff_clustering_fcm( Centers, Label, X, maxiter, delta );
   
   fff_matrix_delete(X);
-  /* get the results as python arrrays*/
   centers = fff_matrix_toPyArray( Centers ); 
   labels = fff_array_toPyArray( Label ); 
   
-  /* Output tuple */
 
   PyObject *ret = Py_BuildValue("NN",centers,labels);
   return ret;
 }
-/*
+
 static PyObject* constrained_cmeans(PyObject* self, PyObject* args)
 {
   PyArrayObject *x, *sx, *centers,*sc, *labels ;
@@ -585,7 +560,6 @@ static PyObject* constrained_match(PyObject* self, PyObject* args)
   PyObject *ret = Py_BuildValue("Nd",matches,PyFloat_FromDouble(J));
   return ret;
 }
-*/
 
 static PyObject* gmm(PyObject* self, PyObject* args)
 {
@@ -1056,7 +1030,7 @@ static PyObject* gibbs_gmm(PyObject* self, PyObject* args)
   PyObject *ret = Py_BuildValue("NNNNNNN",membership, mean, mean_scale, precision_scale, weights,dof,density );
   return ret; 
 }
-
+*/
 
 static PyArrayObject* dpmm(PyObject* self, PyObject* args)
 {
@@ -1186,63 +1160,118 @@ static PyObject* fdp(PyObject* self, PyObject* args)
   fff_array_delete(Labels);
   fff_array_delete(Z);
  
-  // get the results as python arrrays
+  /* get the results as python arrrays */
   density = fff_vector_toPyArray( Density );
   posterior = fff_vector_toPyArray( Post );
   
   fff_FDP_delete( FDP );
   fff_matrix_delete(X);
 	
-  // Output tuple 
+  /* Output tuple */
   PyObject *ret = Py_BuildValue("NN",density,posterior);
   return ret;
-  //Py_RETURN_NONE;
 }
 
+static PyObject* fdp2(PyObject* self, PyObject* args)
+{
+  PyArrayObject *x, *precisions, *pvals, *labels, *co_clust, *posterior, *density;
+  double alpha, g0,g1,dof;
+
+  int k,dim,niter = 1000;
+  int nii = 1000;
+  int nis = 1000;
+  PyArrayObject *grid = NULL;
+  
+  int OK = PyArg_ParseTuple( args, "O!ddddO!O!O!|iO!ii:fdp2", 
+							 &PyArray_Type, &x,
+							 &alpha,
+							 &g0,
+							 &g1,
+							 &dof,
+							 &PyArray_Type, &precisions,
+							 &PyArray_Type, &pvals,
+							 &PyArray_Type, &labels,
+							 &niter,
+                             &PyArray_Type, &grid,
+							 &nis,							 
+							 &nii
+							 ); 
+  if (!OK) {
+    printf("argument error in fdp2\n");
+    Py_RETURN_NONE; 
+  }
+ 
+  fff_matrix *X = fff_matrix_fromPyArray( x );
+  fff_matrix *Precisions = fff_matrix_fromPyArray( precisions ); 
+  fff_vector *Pvals = fff_vector_fromPyArray( pvals );
+  fff_array *Labels = fff_array_fromPyArray( labels );
+  dim = X->size2;
+  
+  fff_FDP *FDP =  fff_FDP_new( alpha, g0, g1,dim,dof );
+  fff_FDP_instantiate(FDP, Precisions);
+  fff_matrix_delete(Precisions);
+
+  fff_array *Z = fff_array_new1d(FFF_LONG,Labels->dimX);
+  k = fff_FDP_estimation(FDP, Z, X, Pvals, Labels, niter);
+  fff_matrix* Grid;
+  if (grid == NULL){
+	Grid = fff_matrix_new(X->size1,X->size2);
+	fff_matrix_memcpy(Grid,X);
+  }
+  else
+	Grid = fff_matrix_fromPyArray( grid );
+
+  fff_matrix *CoCluster = fff_matrix_new(X->size1,X->size1);
+  fff_vector* Post = fff_vector_new(X->size1);
+  fff_FDP_inference2(FDP, Z, Post, CoCluster, X, Pvals, Labels, nii);
+  
+  fff_vector* Density = fff_vector_new(Grid->size1);
+  fff_FDP_sampling(Density, FDP, Z, X, Pvals, Labels, Grid, nis);
+  fff_matrix_delete(Grid);
+  
+  fff_vector_delete(Pvals);
+  fff_array_delete(Labels);
+  fff_array_delete(Z);
+ 
+  /* get the results as python arrrays */
+  co_clust = fff_matrix_toPyArray( CoCluster );
+  posterior = fff_vector_toPyArray( Post );
+  density = fff_vector_toPyArray( Density );
+
+  fff_FDP_delete( FDP );
+  fff_matrix_delete(X);
+	
+  /* Output tuple */
+  PyObject *ret = Py_BuildValue("NNN", co_clust, posterior, density);
+  return ret;
+}
 
 static PyMethodDef module_methods[] = {
-  {"ward",    /* name of func when called from Python */
-   (PyCFunction)ward,      /* corresponding C function */
-   METH_KEYWORDS,   /* ordinary (not keyword) arguments */
-   ward_doc}, /* doc string */
-    {"cmeans",    /* name of func when called from Python */
-   (PyCFunction)cmeans,      /* corresponding C function */
-   METH_KEYWORDS,   /* ordinary (not keyword) arguments */
-   cmeans_doc}, /* doc string */
-  {"voronoi",    /* name of func when called from Python */
-   (PyCFunction)voronoi,      /* corresponding C function */
-   METH_KEYWORDS,   /* ordinary (not keyword) arguments */
-   voronoi_doc}, /* doc string */
-  {"fcm",    /* name of func when called from Python */
-   (PyCFunction)fcm,      /* corresponding C function */
-   METH_KEYWORDS,   /* ordinary (not keyword) arguments */
-   fcm_doc}, /* doc string */
-  /*
-  {"constrained_cmeans", 
-   (PyCFunction)constrained_cmeans,
+  {"ward",    
+   (PyCFunction)ward,
    METH_KEYWORDS,   
-   constrained_cmeans_doc},
-   {"constrained_match",   
-   (PyCFunction)constrained_match,
-   METH_KEYWORDS,  
-   constrained_match_doc},
-  */
+   ward_doc},
+  /*
+    {"cmeans",
+   (PyCFunction)cmeans, 
+   METH_KEYWORDS,
+   cmeans_doc},
+  {"voronoi",  
+   (PyCFunction)voronoi,
+   METH_KEYWORDS,
+   voronoi_doc},
+  {"fcm",
+   (PyCFunction)fcm,
+   METH_KEYWORDS,
+   fcm_doc},
   {"gmm", 
    (PyCFunction)gmm,
    METH_KEYWORDS,
    gmm_doc},
-  {"gmm_relax",
-   (PyCFunction)gmm_relax,
-   METH_KEYWORDS,
-   gmm_relax_doc},
   {"gmm_partition",
    (PyCFunction)gmm_partition,
    METH_KEYWORDS,
    gmm_partition_doc},
-  {"gmm_membership",
-   (PyCFunction)gmm_membership,
-   METH_KEYWORDS,
-   gmm_membership_doc},
   {"bayesian_gmm",
    (PyCFunction)bayesian_gmm,
    METH_KEYWORDS,
@@ -1255,12 +1284,13 @@ static PyMethodDef module_methods[] = {
    (PyCFunction)gibbs_gmm,
    METH_KEYWORDS,
    gibbs_gmm_doc},
-  {"gmm_shift",
-   (PyCFunction)gmm_shift,
-   METH_KEYWORDS,
-   gmm_shift_doc},
+  */
   {"fdp",
    (PyCFunction)fdp,
+   METH_KEYWORDS,
+   fdp_doc},
+  {"fdp2",
+   (PyCFunction)fdp2,
    METH_KEYWORDS,
    fdp_doc},
   {"dpmm",
@@ -1268,11 +1298,18 @@ static PyMethodDef module_methods[] = {
    METH_KEYWORDS,
    dpmm_doc}, 
   /*
-	{"hgmm",  
-	(PyCFunction)hgmm,
-	METH_KEYWORDS,  
-	hgmm_doc},
-  */
+    {"gmm_membership",
+    (PyCFunction)gmm_membership,
+    METH_KEYWORDS,
+    gmm_membership_doc},
+    {"gmm_relax",
+    (PyCFunction)gmm_relax,
+    METH_KEYWORDS,
+    gmm_relax_doc},
+    {"gmm_shift",
+    (PyCFunction)gmm_shift,
+    METH_KEYWORDS,
+    gmm_shift_doc},*/
   {NULL, NULL,0,NULL}
 };
 

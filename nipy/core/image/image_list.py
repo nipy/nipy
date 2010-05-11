@@ -1,18 +1,26 @@
-from numpy import asarray
+from copy import copy
 
-class ImageList:
+import numpy as np
 
+from nipy.core.image.image import Image, rollaxis
+from nipy.core.reference.coordinate_map import CoordinateSystem, \
+    AffineTransform, compose
+
+class ImageList(object):
+    ''' Class to contain ND image as list of (N-1)D images '''
+    
     def __init__(self, images=None):
         """
-        
         A lightweight implementation of a list of images.
 
         Parameters
         ----------
-        images: a sliceable object whose items are meant to be images,
-                this is checked by asserting that each has a `coordmap` attribute
+        images : iterable
+           a iterable and sliceale object whose items are meant to be
+           images, this is checked by asserting that each has a
+           `coordmap` attribute
 
-        >>> from numpy import asarray
+        >>> import numpy as np
         >>> from nipy.testing import funcfile
         >>> from nipy.core.api import Image, ImageList
         >>> from nipy.io.api import load_image
@@ -32,21 +40,59 @@ class ImageList:
         True
         >>> isinstance(newimg, ImageList)
         False
-        
-        >>> asarray(sublist).shape
-        (3, 20, 2, 20)
-
-        >>> asarray(newimg).shape
-        (20, 2, 20)
+        >>> np.asarray(sublist).shape
+        (3, 2, 20, 20)
+        >>> np.asarray(newimg).shape
+        (2, 20, 20)
 
         """
-        if images is not None:
-            for im in images:
-                if not hasattr(im, "coordmap"):
-                    raise ValueError, "expecting each element of images to have a 'coordmap' attribute"
-            self.list = images
-        else:
+
+        if images is None:
             self.list = []
+            return
+        for im in images:
+            if not hasattr(im, "coordmap"):
+                raise ValueError("expecting each element of images "
+                                 " to have a 'coordmap' attribute")
+        self.list = images
+
+    @classmethod
+    def from_image(klass, image, axis=0):
+
+        # Now, reorder the axes and reference
+
+        image = rollaxis(image, axis)
+
+        imlist = []
+        coordmap = image.coordmap
+
+        # We drop the first output coordinate of image's coordmap
+
+        drop1st = np.identity(coordmap.ndims[1]+1)[1:]
+        drop1st_domain = image.reference
+        drop1st_range = CoordinateSystem(image.reference.coord_names[1:],
+                                 name=image.reference.name,
+                                 coord_dtype=image.reference.coord_dtype)
+        drop1st_coordmap = AffineTransform(drop1st_domain, drop1st_range,
+                                           drop1st)
+
+        # And arbitrarily add a 0 for the first axis
+
+        add0 = np.vstack([np.zeros(image.axes.ndim),
+                          np.identity(image.axes.ndim)])
+        add0_domain = CoordinateSystem(image.axes.coord_names[1:],
+                                 name=image.axes.name,
+                                 coord_dtype=image.axes.coord_dtype)
+        add0_range = image.axes
+        add0_coordmap = AffineTransform(add0_domain, add0_range,
+                                        add0)
+
+        coordmap = compose(drop1st_coordmap, image.coordmap, add0_coordmap)
+                                         
+        data = np.asarray(image)
+        imlist = [Image(dataslice, copy(coordmap))
+                  for dataslice in data]
+        return klass(imlist)
 
     def __setitem__(self, index, value):
         """
@@ -59,6 +105,7 @@ class ImageList:
         """
         self.list[index]
         """
+
         if type(index) is type(1):
             return self.list[index]
         else:
@@ -77,18 +124,18 @@ class ImageList:
         
         Examples
         --------
-        >>> from numpy import asarray
+        >>> import numpy as np
         >>> from nipy.testing import funcfile
         >>> from nipy.core.api import ImageList
         >>> from nipy.io.api import load_image
         >>> funcim = load_image(funcfile)
         >>> ilist = ImageList(funcim)
-        >>> asarray(ilist).shape
-        (20, 20, 2, 20)
+        >>> np.asarray(ilist).shape
+        (20, 2, 20, 20)
 
         """
 
-        return asarray([asarray(im) for im in self.list])
+        return np.asarray([np.asarray(im) for im in self.list])
 
     def __iter__(self):
         self._iter = iter(self.list)

@@ -10,7 +10,9 @@ __version__ = '0.1'
 
 
 # Includes
-include "fff.pxi"
+from fff cimport *
+from numpy cimport dtype
+cimport numpy as cnp
 
 # Initialize numpy
 fffpy_import_array()
@@ -24,8 +26,9 @@ c_types = ['unknown type', 'unsigned char', 'signed char', 'unsigned short', 'si
 fff_types = [FFF_UNKNOWN_TYPE, FFF_UCHAR, FFF_SCHAR, FFF_USHORT, FFF_SSHORT, 
              FFF_UINT, FFF_INT, FFF_ULONG, FFF_LONG, FFF_FLOAT, FFF_DOUBLE]  
 
-npy_types = [NPY_NOTYPE, NPY_UBYTE, NPY_BYTE, NPY_USHORT, NPY_SHORT,  
-             NPY_UINT, NPY_INT, NPY_ULONG, NPY_LONG, NPY_FLOAT, NPY_DOUBLE]  
+npy_types = [cnp.NPY_NOTYPE, cnp.NPY_UBYTE, cnp.NPY_BYTE, cnp.NPY_USHORT,
+             cnp.NPY_SHORT, cnp.NPY_UINT, cnp.NPY_INT, cnp.NPY_ULONG,
+             cnp.NPY_LONG, cnp.NPY_FLOAT, cnp.NPY_DOUBLE]
 
 
 def fff_type(dtype T):
@@ -80,7 +83,7 @@ def copy_vector(ndarray X, int flag):
     cdef fff_datatype fff_type
 
     data = <void*>X.data 
-    size = X.dimensions[0]
+    size = X.shape[0]
     stride = X.strides[0]
     itemsize = X.descr.elsize
     type = X.descr.type_num 
@@ -153,7 +156,7 @@ def copy_via_iterators(ndarray Y, int axis=0):
     cdef fffpy_multi_iterator* multi
    
     # Allocate output array
-    Z = np.zeros(Y.shape)
+    Z = np.zeros_like(Y, dtype=np.float)
 
     # Create a new array iterator 
     multi = fffpy_multi_iterator_new(2, axis, <void*>Y, <void*>Z)
@@ -185,7 +188,7 @@ def sum_via_iterators(ndarray Y, int axis=0):
     cdef fffpy_multi_iterator* multi
    
     # Allocate output array
-    dims = list(Y.shape)
+    dims = [Y.shape[i] for i in range(Y.ndim)]
     dims[axis] = 1
     Z = np.zeros(dims)
 

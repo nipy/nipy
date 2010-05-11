@@ -5,11 +5,11 @@ for Image instances.
 They are defined on ndarray, so they do not depend on Image.
 
 data_generator: return (item, data[item]) tuples from an iterable object
-slice_generator: return slices through an ndarray, possibly over many indices
-f_generator: return a generator that applies a function to the output of another             generator
+slice_generator: return slices through an ndarray, possibly over many
+indices f_generator: return a generator that applies a function to the
+output of another generator
 
 The above three generators return 2-tuples.
-
 
 write_data: write the output of a generator to an ndarray
 parcels: return binary array of the unique components of data
@@ -238,7 +238,7 @@ def shape_generator(img, shape):
     (i, r.reshape(shape))
     
     """
-    for i, r in ing:
+    for i, r in img:
         r.shape = shape
         yield i, r
 

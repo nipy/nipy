@@ -1,16 +1,16 @@
 import os
+from distutils import log 
 
 # Global variables
-LIBS = os.path.realpath('libfffpy')
+LIBS = os.path.realpath('libcstat')
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
-    from numpy.distutils.system_info import get_info, NotFoundError
-    from glob import glob
+    from numpy.distutils.system_info import get_info
 
     config = Configuration('neurospin', parent_package, top_path)
 
-    # fffpy library
+    # cstat library
     config.add_include_dirs(os.path.join(LIBS,'fff'))
     config.add_include_dirs(os.path.join(LIBS,'randomkit'))
     config.add_include_dirs(os.path.join(LIBS,'wrapper'))
@@ -19,14 +19,12 @@ def configuration(parent_package='',top_path=None):
     sources = [os.path.join(LIBS,'fff','*.c')]
     sources.append(os.path.join(LIBS,'wrapper','*.c'))
 
-    """
-    FIXME: the following external library 'mtrand' (C) is copied from 
-     numpy, and included in the fff library for installation simplicity. 
-     If numpy happens to expose its API one day, it would be neat to link 
-     with them rather than copying the source code.
-
-     numpy-trunk/numpy/random/mtrand/
-    """
+    # FIXME: the following external library 'mtrand' (C) is copied from 
+    # numpy, and included in the fff library for installation simplicity. 
+    # If numpy happens to expose its API one day, it would be neat to link 
+    # with them rather than copying the source code.
+    #
+    # numpy-trunk/numpy/random/mtrand/
     sources.append(os.path.join(LIBS,'randomkit','*.c'))
 
     # Link with lapack if found on the system
@@ -48,18 +46,32 @@ def configuration(parent_package='',top_path=None):
     if 'libraries' not in lapack_info:
         # But on OSX that may not give us what we need, so try with 'lapack'
         # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
-        lapack_info = get_info('lapack',0)
+        lapack_info = get_info('lapack', 0)
 
+    # If no lapack install is found, we use the rescue lapack lite
+    # distribution included in the package (sources have been
+    # translated to C using f2c)
     if not lapack_info:
-        raise  NotFoundError('no lapack installation found on this system')
+        log.warn('No lapack installation found, using lapack lite distribution')
+        sources.append(os.path.join(LIBS,'lapack_lite','*.c'))
+        library_dirs = []
+        libraries = []
 
-    # OK, we found lapack, continue
-    library_dirs = lapack_info['library_dirs']
-    libraries = lapack_info['libraries']
-    if 'include_dirs' in lapack_info:
-        config.add_include_dirs(lapack_info['include_dirs'])    
+    # Best-case scenario: lapack found 
+    else: 
+        library_dirs = lapack_info['library_dirs']
+        libraries = lapack_info['libraries']
+        if 'include_dirs' in lapack_info:
+            config.add_include_dirs(lapack_info['include_dirs'])    
 
-    config.add_library('fffpy',
+    # Information message
+    print('LAPACK build options:')
+    print('library_dirs: %s ' % library_dirs)
+    print('libraries: %s ' % libraries)
+    print('lapack_info: %s ' % lapack_info)
+
+
+    config.add_library('cstat',
                        sources=sources,
                        library_dirs=library_dirs,
                        libraries=libraries,
@@ -72,38 +84,14 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('glm')
     config.add_subpackage('graph')
     config.add_subpackage('group')
-    config.add_subpackage('neuro')
-    config.add_subpackage('registration')
     config.add_subpackage('scripts')
     config.add_subpackage('spatial_models')
     config.add_subpackage('utils')
-    config.add_subpackage('viz')
-
-    # ----------------------------------------------------------------------
-    # Packages likely not to be moved over into nipy
-    ## Data will be handled separately (nipy already has tools for this)
-    ## config.add_subpackage('data')
-    # ----------------------------------------------------------------------
-
-    ## # Unitary tests 
-    ## config.add_data_dir('tests')
-    ## config.add_data_dir(os.path.join('tests', 'data'))
-    
-    ## config.add_data_dir('data')
-
-    ## """
-    ## Add an extension for each C file found in the source directory. 
-    ## """
-    ## root = os.path.split(__file__)[0]
-    ## Cfiles = glob(os.path.join(root, '*.c'))
-    ## for Cfile in Cfiles:
-    ##     name, ext = os.path.splitext(os.path.basename(Cfile))
-    ##     print('Adding extension: %s' % name)
-    ##     config.add_extension(
-    ##         '_'+name,
-    ##         sources=[Cfile],
-    ##         libraries=['fffpy']
-    ##         )
+    config.add_subpackage('viz_tools')
+    config.add_subpackage('datasets')
+    config.add_subpackage('image')
+    config.add_subpackage('segmentation')
+    config.add_subpackage('registration')
     
     config.make_config_py() # installs __config__.py
 

@@ -3,9 +3,9 @@ Parametrized surfaces using a CoordinateMap
 """
 import numpy as np
 
-from nose.tools import assert_true, assert_false, assert_equal
+from nose.tools import assert_equal
 
-from nipy.core.api import CoordinateMap, CoordinateSystem, Affine
+from nipy.core.api import CoordinateMap, CoordinateSystem
 from nipy.core.api import Grid
 
 uv = CoordinateSystem('uv', 'input')
@@ -30,7 +30,7 @@ def implicit(vals):
     x = vals[:,0]; y = vals[:,1]; z = vals[:,2]
     return x**2-y**2*z**2+z**3
 
-surface_param = CoordinateMap(parametric_mapping, uv, xyz)
+surface_param = CoordinateMap(uv, xyz, parametric_mapping)
 
 def test_surface():
     assert np.allclose(
@@ -53,7 +53,7 @@ def test_grid32():
     # Check that we can use a float32 input and output
     uv32 = CoordinateSystem('uv', 'input', np.float32)
     xyz32 = CoordinateSystem('xyz', 'output', np.float32)
-    surface32 = CoordinateMap(parametric_mapping, uv32, xyz32)
+    surface32 = CoordinateMap(uv32, xyz32, parametric_mapping)
     g = Grid(surface32)
     xyz_grid = g[-1:1:201j,-1:1:101j]
     x, y, z = xyz_grid.transposed_values
@@ -68,7 +68,7 @@ def test_grid32_c128():
     xyz128 = CoordinateSystem('xyz', 'output', np.complex128)
     def par_c128(x):
         return parametric_mapping(x).astype(np.complex128)
-    surface = CoordinateMap(par_c128, uv32, xyz128)
+    surface = CoordinateMap(uv32, xyz128, par_c128)
     g = Grid(surface)
     xyz_grid = g[-1:1:201j,-1:1:101j]
     x, y, z = xyz_grid.transposed_values

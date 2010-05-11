@@ -1,5 +1,4 @@
 # -*- Mode: Python -*-  Not really, but the syntax is close enough
-
 """
 Basic ndarray routines for faster computations.
 

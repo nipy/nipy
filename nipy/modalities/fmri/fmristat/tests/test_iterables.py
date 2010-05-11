@@ -2,11 +2,16 @@ import warnings
 import numpy as np
 from numpy.random import standard_normal as noise
 
-from nipy.testing import *
 from nipy.io.api import load_image
-from nipy.modalities.fmri.api import fromimage, fmri_generator
-from nipy.core.image.generators import *
+from nipy.modalities.fmri.api import FmriImageList, fmri_generator
+from nipy.core.image.generators import (write_data, parcels,
+                                        f_generator)
+                                        
 from nipy.fixes.scipy.stats.models.regression import OLSModel as ols_model
+
+from numpy.testing import assert_array_almost_equal
+from nipy.testing import TestCase, funcfile
+
 
 def setup():
     # Suppress warnings during tests to reduce noise
@@ -48,10 +53,10 @@ def contrast_generator(resultg):
 class TestIters(TestCase):
     def setUp(self):
         self.fd = np.asarray(load_image(funcfile))
-        self.fi = fromimage(load_image(funcfile))
+        self.fi = FmriImageList.from_image(load_image(funcfile))
         # I think it makes more sense to use fd instead of fi for GLM
         # purposes -- reduces some noticeable overhead in creating the
-        # array from FmriImage.list
+        # array from FmriImageList
 
         # create a design matrix, model and contrast matrix
 
@@ -63,6 +68,7 @@ class TestIters(TestCase):
         # Fit a model, iterating over the slices of an array
         # associated to an FmriImage.
         c = np.zeros(self.fd.shape[1:]) + 0.5
+        fd = self.fd
         res_gen = result_generator(flatten_generator(fmri_generator(fd)))
         write_data(c, unflatten_generator(contrast_generator(res_gen)))
 

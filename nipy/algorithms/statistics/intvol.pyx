@@ -7,13 +7,16 @@ Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
    Journal of the American Statistical Association, 102(479):913-928.
 
 """
+cimport cython
 
 import numpy as np
 cimport numpy as np
 
-# local imports
+from scipy.sparse import dok_matrix
 
+# local imports
 from utils import cube_with_strides_center, join_complexes
+
 
 DTYPE_float = np.float
 ctypedef np.float_t DTYPE_float_t
@@ -21,324 +24,251 @@ ctypedef np.float_t DTYPE_float_t
 DTYPE_int = np.int
 ctypedef np.int_t DTYPE_int_t
 
-def mu3_tet(np.ndarray[DTYPE_float_t, ndim=2] coords,
-            long v0, long v1, long v2, long v3):
+cdef double PI = np.pi
 
+
+cdef extern from "math.h" nogil:
+    double floor(double x)
+    double sqrt(double x)
+    double fabs(double x)
+    double log2(double x)
+    double acos(double x)    
+    bint isnan(double x)
+
+    
+cpdef double mu3_tet(double D00, double D01, double D02, double D03,
+                     double D11, double D12, double D13, 
+                     double D22, double D23, 
+                     double D33) nogil:
   """
   Compute the 3rd intrinsic volume (just volume in this case) of 
   a tetrahedron with coordinates [coords[v0], coords[v1], coords[v2], coords[v3]].
 
-  Inputs:
-  -------
-
+  Parameters
+  ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
-
   v0, v1, v2, v3 : int
        Indices for vertices of the tetrahedron.
 
-  Outputs:
-  --------
-
+  Returns
+  -------
   mu3 : float
-
   """
-
-  cdef double XTX00 = 0
-  cdef double XTX01 = 0
-  cdef double XTX02 = 0
-  cdef double XTX11 = 0
-  cdef double XTX12 = 0
-  cdef double XTX22 = 0
-  cdef int q, j
-
-  q = coords.shape[0]
-
-  for j in range(q):
-      XTX00 += (coords[j,v0] - coords[j,v3]) * (coords[j,v0] - coords[j,v3])
-      XTX01 += (coords[j,v0] - coords[j,v3]) * (coords[j,v1] - coords[j,v3])
-      XTX02 += (coords[j,v0] - coords[j,v3]) * (coords[j,v2] - coords[j,v3])
-      XTX11 += (coords[j,v1] - coords[j,v3]) * (coords[j,v1] - coords[j,v3])
-      XTX12 += (coords[j,v1] - coords[j,v3]) * (coords[j,v2] - coords[j,v3])
-      XTX22 += (coords[j,v2] - coords[j,v3]) * (coords[j,v2] - coords[j,v3])
-
-  return np.sqrt((XTX00 * (XTX11 * XTX22 - XTX12 * XTX12) -
-                XTX01 * (XTX01 * XTX22 - XTX02 * XTX12) +
-                XTX02 * (XTX01 * XTX12 - XTX11 * XTX02))) / 6.;
+  cdef double C00, C01, C02, C11, C12, C22
+  C00 = D00 - 2*D03 + D33
+  C01 = D01 - D13 - D03 + D33
+  C02 = D02 - D23 - D03 + D33
+  C11 = D11 - 2*D13 + D33
+  C12 = D12 - D13 - D23 + D33
+  C22 = D22 - 2*D23 + D33
+  return sqrt((C00 * (C11 * C22 - C12 * C12) -
+               C01 * (C01 * C22 - C02 * C12) +
+               C02 * (C01 * C12 - C11 * C02))) / 6.
 
 
-def mu2_tet(np.ndarray[DTYPE_float_t, ndim=2] coords,
-            long v0, long v1, long v2, long v3):
-
+cpdef double mu2_tet(double D00, double D01, double D02, double D03,
+                     double D11, double D12, double D13, 
+                     double D22, double D23,
+                     double D33) nogil:
   """
   Compute the 2nd intrinsic volume (half the surface area) of 
   a tetrahedron with coordinates [coords[v0], coords[v1], coords[v2], coords[v3]].
 
-  Inputs:
-  -------
-
+  Parameters
+  ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
-
   v0, v1, v2, v3 : int
        Indices for vertices of the tetrahedron.
 
-  Outputs:
-  --------
-
+  Returns
+  -------
   mu2 : float
-
   """
-
   cdef double mu = 0
-  
-  mu += mu2_tri(coords, v0, v1, v2)
-  mu += mu2_tri(coords, v0, v1, v3)
-  mu += mu2_tri(coords, v0, v2, v3)
-  mu += mu2_tri(coords, v1, v2, v3)
+  mu += mu2_tri(D00, D01, D02, D11, D12, D22)
+  mu += mu2_tri(D00, D02, D03, D22, D23, D33)
+  mu += mu2_tri(D11, D12, D13, D22, D23, D33)
+  mu += mu2_tri(D00, D01, D03, D11, D13, D33)
   return mu * 0.5
+
   
-def mu1_tet(np.ndarray[DTYPE_float_t, ndim=2] coords,
-            long v0, long v1, long v2, long v3):
+cpdef double mu1_tet(double D00, double D01, double D02, double D03,
+                     double D11, double D12, double D13, 
+                     double D22, double D23,
+                     double D33) nogil:
+  """ Return 3rd intinsic volume of tetrahedron
+  
+  Compute the 3rd intrinsic volume (sum of external angles * edge
+  lengths) of a tetrahedron with coordinates [coords[v0], coords[v1],
+  coords[v2], coords[v3]].
 
-  """
-  Compute the 3rd intrinsic volume (sum of external angles * edge lengths) of 
-  a tetrahedron with coordinates [coords[v0], coords[v1], coords[v2], coords[v3]].
-
-  Inputs:
-  -------
-
+  Parameters
+  ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
-
   v0, v1, v2, v3 : int
        Indices for vertices of the tetrahedron.
 
   Outputs:
   --------
-
   mu1 : float
-
   """
-
-  cdef double XTX00 = 0
-  cdef double XTX01 = 0
-  cdef double XTX02 = 0
-  cdef double XTX03 = 0
-  cdef double XTX11 = 0
-  cdef double XTX12 = 0
-  cdef double XTX13 = 0
-  cdef double XTX22 = 0
-  cdef double XTX23 = 0
-  cdef double XTX33 = 0
-  cdef double XTX10, XTX20, XTX30, XTX21, XTX31, XTX32
-  cdef int q, j
-
-  q = coords.shape[0]
-
-  for j in range(q):
-      XTX00 += coords[j,v0] * coords[j,v0] 
-      XTX01 += coords[j,v0] * coords[j,v1] 
-      XTX02 += coords[j,v0] * coords[j,v2] 
-      XTX03 += coords[j,v0] * coords[j,v3] 
-      XTX11 += coords[j,v1] * coords[j,v1] 
-      XTX12 += coords[j,v1] * coords[j,v2] 
-      XTX13 += coords[j,v1] * coords[j,v3] 
-      XTX22 += coords[j,v2] * coords[j,v2] 
-      XTX23 += coords[j,v2] * coords[j,v3] 
-      XTX33 += coords[j,v3] * coords[j,v3] 
-  
-  XTX10 = XTX01
-  XTX20 = XTX02
-  XTX30 = XTX03
-  XTX21 = XTX12
-  XTX31 = XTX13
-  XTX32 = XTX23
-
+  cdef double mu
   mu = 0
-  mu += _mu1_tetface(XTX00, XTX01, XTX11, XTX02, XTX03, XTX12, XTX13, XTX22, XTX23, XTX33)
-  mu += _mu1_tetface(XTX00, XTX02, XTX22, XTX01, XTX03, XTX21, XTX23, XTX11, XTX13, XTX33)
-  mu += _mu1_tetface(XTX00, XTX03, XTX33, XTX01, XTX02, XTX31, XTX32, XTX11, XTX12, XTX22)
-  mu += _mu1_tetface(XTX11, XTX12, XTX22, XTX10, XTX13, XTX20, XTX23, XTX00, XTX03, XTX33)
-  mu += _mu1_tetface(XTX11, XTX13, XTX33, XTX10, XTX12, XTX30, XTX32, XTX00, XTX02, XTX22)
-  mu += _mu1_tetface(XTX22, XTX23, XTX33, XTX20, XTX21, XTX30, XTX31, XTX00, XTX01, XTX11)
-  
+  mu += _mu1_tetface(D00, D01, D11, D02, D03, D12, D13, D22, D23, D33)
+  mu += _mu1_tetface(D00, D02, D22, D01, D03, D12, D23, D11, D13, D33)
+  mu += _mu1_tetface(D00, D03, D33, D01, D02, D13, D23, D11, D12, D22)
+  mu += _mu1_tetface(D11, D12, D22, D01, D13, D02, D23, D00, D03, D33)
+  mu += _mu1_tetface(D11, D13, D33, D01, D12, D03, D23, D00, D02, D22)
+  mu += _mu1_tetface(D22, D23, D33, D02, D12, D03, D13, D00, D01, D11)
   return mu
 
-cdef double _mu1_tetface(double XTXs0s0,
-                         double XTXs0s1,
-                         double XTXs1s1,
-                         double XTXs0t0,
-                         double XTXs0t1,
-                         double XTXs1t0,
-                         double XTXs1t1,
-                         double XTXt0t0,
-                         double XTXt0t1,
-                         double XTXt1t1):
 
-    cdef double A00, A01, A02, A11, A12, A22
+@cython.cdivision(True)
+cdef double _mu1_tetface(double Ds0s0,
+                         double Ds0s1,
+                         double Ds1s1,
+                         double Ds0t0,
+                         double Ds0t1,
+                         double Ds1t0,
+                         double Ds1t1,
+                         double Dt0t0,
+                         double Dt0t1,
+                         double Dt1t1) nogil:
+    cdef double A00, A01, A02, A11, A12, A22, np_len, a
     cdef double length, norm_proj0, norm_proj1, inner_prod_proj
 
-    A00 = XTXs1s1 - 2 * XTXs0s1 + XTXs0s0
-    A11 = XTXt0t0 - 2 * XTXs0t0 + XTXs0s0
-    A22 = XTXt1t1 - 2 * XTXs0t1 + XTXs0s0
-
-    A01 = XTXs1t0 - XTXs0t0 - XTXs0s1 + XTXs0s0 
-    A02 = XTXs1t1 - XTXs0t1 - XTXs0s1 + XTXs0s0 
-    A12 = XTXt0t1 - XTXs0t0 - XTXs0t1 + XTXs0s0 
-
-    length = np.sqrt(A00)
-
+    A00 = Ds1s1 - 2 * Ds0s1 + Ds0s0
+    # all norms divided by this value, leading to NaN value for output
+    if A00 == 0:
+      return 0
+    A11 = Dt0t0 - 2 * Ds0t0 + Ds0s0
+    A22 = Dt1t1 - 2 * Ds0t1 + Ds0s0
+    A01 = Ds1t0 - Ds0t0 - Ds0s1 + Ds0s0
+    A02 = Ds1t1 - Ds0t1 - Ds0s1 + Ds0s0
+    A12 = Dt0t1 - Ds0t0 - Ds0t1 + Ds0s0
+    length = sqrt(A00)
     norm_proj0 = A11 - A01 * A01 / A00
     norm_proj1 = A22 - A02 * A02 / A00
     inner_prod_proj = A12 - A01 * A02 / A00
+    np_len = norm_proj0 * norm_proj1
+    if np_len <= 0: # would otherwise lead to NaN return value
+      return 0
+    a = (PI - acos(inner_prod_proj / sqrt(np_len))) * length / (2 * PI)
+    return a
 
-    return (np.pi - np.arccos(inner_prod_proj / np.sqrt(norm_proj0 * norm_proj1))) * length / (2 * np.pi)
 
-
-def mu2_tri(np.ndarray[DTYPE_float_t, ndim=2] coords,
-            long v0, long v1, long v2):
-
+cpdef double mu2_tri(double D00, double D01, double D02,
+                     double D11, double D12,
+                     double D22) nogil:
   """
   Compute the 2nd intrinsic volume (just area in this case) of
   a triangle with coordinates [coords[v0], coords[v1], coords[v2]].
 
-  Inputs:
-  -------
-
+  Parameters
+  ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
-
   v0, v1, v2 : int
        Indices for vertices of the tetrahedron.
 
-  Outputs:
-  --------
-
+  Returns
+  -------
   mu2 : float
   """
+  cdef double C00, C01, C11
+  C00 = D11 - 2*D01 + D00
+  C01 = D12 - D01 - D02 + D00
+  C11 = D22 - 2*D02 + D00
+  return sqrt((C00 * C11 - C01 * C01)) * 0.5
 
 
-  cdef double XTX00 = 0
-  cdef double XTX01 = 0
-  cdef double XTX11 = 0
-  cdef int q, j
-
-  q = coords.shape[0]
-
-  for j in range(q):
-      XTX00 += (coords[j,v0] - coords[j,v2]) * (coords[j,v0] - coords[j,v2])
-      XTX01 += (coords[j,v0] - coords[j,v2]) * (coords[j,v1] - coords[j,v2])
-      XTX11 += (coords[j,v1] - coords[j,v2]) * (coords[j,v1] - coords[j,v2])
-
-  return np.sqrt((XTX00 * XTX11 - XTX01 * XTX01)) * 0.5
-
-def mu1_tri(np.ndarray[DTYPE_float_t, ndim=2] coords,
-            long v0, long v1, long v2):
+cpdef double mu1_tri(double D00, double D01, double D02,
+                     double D11, double D12,
+                     double D22) nogil:
   """
   Compute the 1st intrinsic volume (1/2 the perimeter of
   a triangle with coordinates [coords[v0], coords[v1], coords[v2]].
 
-  Inputs:
-  -------
-
+  Parameters
+  ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
-
   v0, v1, v2 : int
        Indices for vertices of the tetrahedron.
 
-  Outputs:
-  --------
-
+  Returns
+  -------
   mu1 : float
   """
-
   cdef double mu = 0
-  mu += mu1_edge(coords, v0, v1)
-  mu += mu1_edge(coords, v1, v2)
-  mu += mu1_edge(coords, v0, v2)
+  mu += mu1_edge(D00, D01, D11)
+  mu += mu1_edge(D00, D02, D22)
+  mu += mu1_edge(D11, D12, D22)
   return mu * 0.5
+
   
-def mu1_edge(np.ndarray[DTYPE_float_t, ndim=2] coords,
-             long v0, long v1):
+cpdef double mu1_edge(double D00, double D01, 
+                      double D11) nogil:
   """
   Compute the 1st intrinsic volume (length)
   of a line segment with coordinates [coords[v0], coords[v1]]
 
-  Inputs:
-  -------
-
+  Parameters
+  ----------
   coords : ndarray((*,2))
        An array of coordinates of vertices of tetrahedron.
-
   v0, v1 : int
        Indices for vertices of the tetrahedron.
 
-  Outputs:
-  --------
-
+  Returns
+  -------
   mu0 : float
   """
+  return sqrt(D00 - 2*D01 + D11)
 
-  cdef int q
 
-  q = coords.shape[0]
-
-  mu = 0
-  for j in range(q):
-    mu += (coords[j,v0] - coords[j,v1])**2
-  return np.sqrt(mu)
-
-def Lips0_3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
+def EC3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
     """
-    Given a mask and coordinates, estimate the 0th intrinsic volume
+    Given a 3d mask, compute the 0th intrinsic volume
     (Euler characteristic)
     of the masked region. The region is broken up into tetrahedra /
     triangles / edges / vertices, which are included based on whether
     all voxels in the tetrahedron / triangle / edge / vertex are
     in the mask or not.
 
-    Inputs:
-    -------
-
+    Parameters
+    ----------
     coords : ndarray((*,i,j,k))
          Coordinates for the voxels in the mask
-
     mask : ndarray((i,j,k), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
 
-    Outputs:
-    --------
-
+    Returns
+    -------
     mu0 : int
 
-    Notes:
-    ------
+    Notes
+    -----
+    The array mask is assumed to be binary. At the time of writing, it
+    is not clear how to get cython to use np.bool arrays.
 
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
+    The 3d cubes are triangulated into 6 tetrahedra of equal volume, as
+    described in the reference below.
 
-    The 3d cubes are triangulated into 6 tetrahedra of equal volume,
-    as described in the reference below.
-
-    References:
-    -----------
-
+    References
+    ----------
     Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
-
-
     """
-
     if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
+      raise ValueError('mask should be filled with 0/1 '
+                       'values, but be of type np.int')
     # 'flattened' mask (1d array)
-
     cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
 
     # d3 and d4 are lists of triangles and tetrahedra 
@@ -348,14 +278,18 @@ def Lips0_3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
     cdef np.ndarray[DTYPE_int_t, ndim=2] d3
     cdef np.ndarray[DTYPE_int_t, ndim=2] d4
 
-    cdef long i, j, k, l, s0, s1, s2, ds2, ds3, ds4, index, m
+    cdef long i, j, k, l, s0, s1, s2, ds2, ds3, ds4, index, m, nvox
     cdef long ss0, ss1, ss2 # strides
     cdef long v0, v1, v2, v3 # vertices
     cdef long l0 = 0
 
-    s0, s1, s2 = (mask.shape[0], mask.shape[1], mask.shape[2])
+    cdef np.ndarray[DTYPE_int_t, ndim=3] pmask
+    pmask = np.zeros((mask.shape[0]+1, mask.shape[1]+1, mask.shape[2]+1), np.int)
+    pmask[:-1,:-1,:-1] = mask
 
-    fmask = mask.reshape((s0*s1*s2))
+    s0, s1, s2 = (pmask.shape[0], pmask.shape[1], pmask.shape[2])
+
+    fmask = pmask.reshape((s0*s1*s2))
 
     strides = np.empty((s0, s1, s2), np.bool).strides
 
@@ -363,13 +297,13 @@ def Lips0_3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
     # We first figure out which vertices, edges, triangles, tetrahedra
     # are uniquely associated with an interior voxel
 
-    union = join_complexes(*[cube_with_strides_center((0,0,-1), strides),
-                             cube_with_strides_center((0,-1,0), strides),
-                             cube_with_strides_center((0,-1,-1), strides),
-                             cube_with_strides_center((-1,0,0), strides),
-                             cube_with_strides_center((-1,0,-1), strides),
-                             cube_with_strides_center((-1,-1,0), strides),
-                             cube_with_strides_center((-1,-1,-1), strides)])
+    union = join_complexes(*[cube_with_strides_center((0,0,1), strides),
+                             cube_with_strides_center((0,1,0), strides),
+                             cube_with_strides_center((0,1,1), strides),
+                             cube_with_strides_center((1,0,0), strides),
+                             cube_with_strides_center((1,0,1), strides),
+                             cube_with_strides_center((1,1,0), strides),
+                             cube_with_strides_center((1,1,1), strides)])
     c = cube_with_strides_center((0,0,0), strides)
 
     d4 = np.array(list(c[4].difference(union[4])))
@@ -383,6 +317,8 @@ def Lips0_3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
     ss0 = strides[0]
     ss1 = strides[1]
     ss2 = strides[2]
+
+    nvox = s0*s1*s2
 
     for i in range(s0-1):
         for j in range(s1-1):
@@ -414,701 +350,303 @@ def Lips0_3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
                         v1 = index + d2[l,1]
                         m = m * fmask[v1]
                         l0 = l0 - m
-
-    # There are now contributions from three two-dimensional faces
-    # on the boundary
-
-    for _strides, _shape in zip([(strides[0], strides[1]), 
-                                 (strides[0], strides[2]),
-                                 (strides[1], strides[2])],
-                                [(mask.shape[0], mask.shape[1]),
-                                 (mask.shape[0], mask.shape[2]),
-                                 (mask.shape[1], mask.shape[2])]):
-        
-        unique = {}
-        union = join_complexes(*[cube_with_strides_center((0,-1), _strides),
-                                 cube_with_strides_center((-1,0), _strides),
-                                 cube_with_strides_center((-1,-1), _strides)])
-
-        c = cube_with_strides_center((0,0), _strides)
-        d3 = np.array(list(c[3].difference(union[3])))
-        d2 = np.array(list(c[2].difference(union[2])))
-        
-        s0, s1 = _shape
-        ss0, ss1 = _strides
-        ds3 = d3.shape[0]
-        ds2 = d2.shape[0]
-
-        for i in range(s0-1):
-            for j in range(s1-1):
-                index = i*ss0+j*ss1
-                for l in range(ds3):
-                    v0 = index + d3[l,0]
-                    m = fmask[v0]
-                    if m:
-                        v1 = index + d3[l,1]
-                        v2 = index + d3[l,2]
-                        m = m * fmask[v1] * fmask[v2]
-                        l0 = l0 + m
-
-                for l in range(ds2):
-                    v0 = index + d2[l,0]
-                    m = fmask[v0]
-                    if m:
-                        v1 = index + d2[l,1]
-                        m = m * fmask[v1]
-                        l0 = l0 - m
-
-    # Contribution of edges along the boundary
-
-    s0, s1, s2 = (mask.shape[0], mask.shape[1], mask.shape[2])
-    ss0 = strides[0]
-    ss1 = strides[1]
-    ss2 = strides[2]
-
-    for _stride, _shape in zip((ss0, ss1, ss2), (s0, s1, s2)):
-        
-        unique = {}
-        union = cube_with_strides_center((-1,), [_stride])
-        c = cube_with_strides_center((0,), [_stride])
-        d2 = np.array(list(c[2].difference(union[2])))
-
-        s0 = _shape
-        ss0 = _stride
-        for i in range(s0-1):
-                index = i*ss0
-                v0 = index + d2[0,0]
-                m = fmask[v0]
-                if m:
-                    v1 = index + d2[0,1]
-                    m = m * fmask[v1]
-                    l0 = l0 - m
-
     l0 += mask.sum()
     return l0
 
-def Lips1_3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
-             np.ndarray[DTYPE_int_t, ndim=3] mask):
+
+def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
+           np.ndarray[DTYPE_int_t, ndim=3] mask):
     """
-    Given a mask and coordinates, estimate the 1st intrinsic volume
-    of the masked region. The region is broken up into tetrahedra /
-    triangles / edges / vertices, which are included based on whether
-    all voxels in the tetrahedron / triangle / edge / vertex are
-    in the mask or not.
-
-    Inputs:
-    -------
-
-    coords : ndarray((*,i,j,k))
-         Coordinates for the voxels in the mask
-
-    mask : ndarray((i,j,k), np.int)
-         Binary mask determining whether or not
-         a voxel is in the mask.
-
-    Outputs:
-    --------
-
-    mu1 : float
-
-    Notes:
-    ------
-
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
-
-    The 3d cubes are triangulated into 6 tetrahedra of equal volume,
-    as described in the reference below.
-
-    References:
-    -----------
-
-    Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
-      with an application to brain mapping."
-      Journal of the American Statistical Association, 102(479):913-928.
-
-
-
-    """
-
-    if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
-    # 'flattened' coords (2d array)
-
-    cdef np.ndarray[DTYPE_float_t, ndim=2] fcoords 
-
-    # 'flattened' mask (1d array)
-
-    cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
-
-    # d3 and d4 are lists of triangles and tetrahedra 
-    # associated to particular voxels in the cuve
-
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d2
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d3
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d4
-
-    cdef long i, j, k, l, s0, s1, s2, ds2, ds3, ds4, index, m
-    cdef long ss0, ss1, ss2 # strides
-    cdef long v0, v1, v2, v3 # vertices
-    cdef double l1 = 0
-
-    s0, s1, s2 = (coords.shape[1], coords.shape[2], coords.shape[3])
-
-    if (mask.shape[0], mask.shape[1], mask.shape[2]) != (s0, s1, s2):
-        raise ValueError('shape of mask does not match coordinates')
-
-    fcoords = coords.reshape((coords.shape[0], (s0*s1*s2)))
-    fmask = mask.reshape((s0*s1*s2))
-
-    strides = np.empty((s0, s1, s2), np.bool).strides
-
-    # First do the interior contributions.
-    # We first figure out which vertices, edges, triangles, tetrahedra
-    # are uniquely associated with an interior voxel
-
-    union = join_complexes(*[cube_with_strides_center((0,0,-1), strides),
-                             cube_with_strides_center((0,-1,0), strides),
-                             cube_with_strides_center((0,-1,-1), strides),
-                             cube_with_strides_center((-1,0,0), strides),
-                             cube_with_strides_center((-1,0,-1), strides),
-                             cube_with_strides_center((-1,-1,0), strides),
-                             cube_with_strides_center((-1,-1,-1), strides)])
-    c = cube_with_strides_center((0,0,0), strides)
-
-    d4 = np.array(list(c[4].difference(union[4])))
-    d3 = np.array(list(c[3].difference(union[3])))
-    d2 = np.array(list(c[2].difference(union[2])))
-
-    ds2 = d2.shape[0]
-    ds3 = d3.shape[0]
-    ds4 = d4.shape[0]
-
-    ss0 = strides[0]
-    ss1 = strides[1]
-    ss2 = strides[2]
-
-    for i in range(s0-1):
-        for j in range(s1-1):
-            for k in range(s2-1):
-                index = i*ss0+j*ss1+k*ss2
-                for l in range(ds4):
-                    v0 = index + d4[l,0]
-                    m = fmask[v0]
-                    if m:
-                        v1 = index + d4[l,1]
-                        v2 = index + d4[l,2]
-                        v3 = index + d4[l,3]
-                        m = m * fmask[v1] * fmask[v2] * fmask[v3]
-                        l1 = l1 + mu1_tet(fcoords, v0, v1, v2, v3) * m
-
-                for l in range(ds3):
-                    v0 = index + d3[l,0]
-                    m = fmask[v0]
-                    if m:
-                        v1 = index + d3[l,1]
-                        v2 = index + d3[l,2]
-                        m = m * fmask[v1] * fmask[v2]
-                        l1 = l1 - mu1_tri(fcoords, v0, v1, v2) * m
-
-                for l in range(ds2):
-                    v0 = index + d2[l,0]
-                    m = fmask[v0]
-                    if m:
-                        v1 = index + d2[l,1]
-                        m = m * fmask[v1]
-                        l1 = l1 + mu1_edge(fcoords, v0, v1) * m
-
-    # There are now contributions from three two-dimensional faces
-    # on the boundary
-
-    for _strides, _shape in zip([(strides[0], strides[1]), 
-                                 (strides[0], strides[2]),
-                                 (strides[1], strides[2])],
-                                [(coords.shape[1], coords.shape[2]),
-                                 (coords.shape[1], coords.shape[3]),
-                                 (coords.shape[2], coords.shape[3])]):
-        
-        unique = {}
-        union = join_complexes(*[cube_with_strides_center((0,-1), _strides),
-                                 cube_with_strides_center((-1,0), _strides),
-                                 cube_with_strides_center((-1,-1), _strides)])
-
-        c = cube_with_strides_center((0,0), _strides)
-        d3 = np.array(list(c[3].difference(union[3])))
-        d2 = np.array(list(c[2].difference(union[2])))
-        
-        s0, s1 = _shape
-        ss0, ss1 = _strides
-        ds3 = d3.shape[0]
-        ds2 = d2.shape[0]
-
-        for i in range(s0-1):
-            for j in range(s1-1):
-                index = i*ss0+j*ss1
-                for l in range(ds3):
-                    v0 = index + d3[l,0]
-                    m = fmask[v0]
-                    if m:
-                        v1 = index + d3[l,1]
-                        v2 = index + d3[l,2]
-                        m = m * fmask[v1] * fmask[v2]
-                        l1 = l1 - mu1_tri(fcoords, v0, v1, v2) * m
-
-                for l in range(ds2):
-                    v0 = index + d2[l,0]
-                    m = fmask[v0]
-                    if m:
-                        v1 = index + d2[l,1]
-                        m = m * fmask[v1]
-                        l1 = l1 + mu1_edge(fcoords, v0, v1) * m
-
-    # Contribution of edges along the boundary
-
-    s0, s1, s2 = (coords.shape[1], coords.shape[2], coords.shape[3])
-    ss0 = strides[0]
-    ss1 = strides[1]
-    ss2 = strides[2]
-
-    for _stride, _shape in zip((ss0, ss1, ss2), (s0, s1, s2)):
-        
-        unique = {}
-        union = cube_with_strides_center((-1,), [_stride])
-        c = cube_with_strides_center((0,), [_stride])
-        d2 = np.array(list(c[2].difference(union[2])))
-
-        s0 = _shape
-        ss0 = _stride
-        for i in range(s0-1):
-                index = i*ss0
-                v0 = index + d2[0,0]
-                m = fmask[v0]
-                if m:
-                    v1 = index + d2[0,1]
-                    m = m * fmask[v1]
-                    l1 = l1 + mu1_edge(fcoords, v0, v1) * m
-
-    return l1
-
-def Lips2_3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
-             np.ndarray[DTYPE_int_t, ndim=3] mask):
-    """
-    Given a mask and coordinates, estimate the 2nd intrinsic volume
-    of the masked region. The region is broken up into tetrahedra /
-    triangles / edges / vertices, which are included based on whether
-    all voxels in the tetrahedron / triangle / edge / vertex are
-    in the mask or not.
-
-    Inputs:
-    -------
-
-    coords : ndarray((*,i,j,k))
-         Coordinates for the voxels in the mask
-
-    mask : ndarray((i,j,k), np.int)
-         Binary mask determining whether or not
-         a voxel is in the mask.
-
-    Outputs:
-    --------
-
-    mu2 : float
-
-    Notes:
-    ------
-
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
-
-    The 3d cubes are triangulated into 6 tetrahedra of equal volume,
-    as described in the reference below.
-
-    References:
-    -----------
-
-    Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
-      with an application to brain mapping."
-      Journal of the American Statistical Association, 102(479):913-928.
-
-    """
-
-    if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
-    # 'flattened' coords (2d array)
-
-    cdef np.ndarray[DTYPE_float_t, ndim=2] fcoords 
-
-    # 'flattened' mask (1d array)
-
-    cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
-
-    # d3 and d4 are lists of triangles and tetrahedra 
-    # associated to particular voxels in the cuve
-
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d3
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d4
-
-    cdef long i, j, k, l, s0, s1, s2, ds3, ds4, index, m
-    cdef long ss0, ss1, ss2 # strides
-    cdef long v0, v1, v2, v3 # vertices
-    cdef double l2 = 0
-
-    s0, s1, s2 = (coords.shape[1], coords.shape[2], coords.shape[3])
-
-    if (mask.shape[0], mask.shape[1], mask.shape[2]) != (s0, s1, s2):
-        raise ValueError('shape of mask does not match coordinates')
-
-    fcoords = coords.reshape((coords.shape[0], (s0*s1*s2)))
-    fmask = mask.reshape((s0*s1*s2))
-
-    strides = np.empty((s0, s1, s2), np.bool).strides
-
-    # First do the interior contributions.
-    # We first figure out which vertices, edges, triangles, tetrahedra
-    # are uniquely associated with an interior voxel
-
-    union = join_complexes(*[cube_with_strides_center((0,0,-1), strides),
-                             cube_with_strides_center((0,-1,0), strides),
-                             cube_with_strides_center((0,-1,-1), strides),
-                             cube_with_strides_center((-1,0,0), strides),
-                             cube_with_strides_center((-1,0,-1), strides),
-                             cube_with_strides_center((-1,-1,0), strides),
-                             cube_with_strides_center((-1,-1,-1), strides)])
-    c = cube_with_strides_center((0,0,0), strides)
-
-    d4 = np.array(list(c[4].difference(union[4])))
-    d3 = np.array(list(c[3].difference(union[3])))
-
-    ds3 = d3.shape[0]
-    ds4 = d4.shape[0]
-
-    ss0 = strides[0]
-    ss1 = strides[1]
-    ss2 = strides[2]
-
-    for i in range(s0-1):
-        for j in range(s1-1):
-            for k in range(s2-1):
-                index = i*ss0+j*ss1+k*ss2
-                for l in range(ds4):
-                    v0 = index + d4[l,0]
-                    m = fmask[v0]
-                    if m:
-                        v1 = index + d4[l,1]
-                        v2 = index + d4[l,2]
-                        v3 = index + d4[l,3]
-                        m = m * fmask[v1] * fmask[v2] * fmask[v3]
-                        l2 = l2 - mu2_tet(fcoords, v0, v1, v2, v3) * m
-
-                for l in range(ds3):
-                    v0 = index + d3[l,0]
-                    m = fmask[v0]
-                    if m:
-                        v1 = index + d3[l,1]
-                        v2 = index + d3[l,2]
-                        m = m * fmask[v1] * fmask[v2]
-                        l2 = l2 + mu2_tri(fcoords, v0, v1, v2) * m
-
-    # There are now contributions from three two-dimensional faces
-
-    for _strides, _shape in zip([(strides[0], strides[1]), 
-                                 (strides[0], strides[2]),
-                                 (strides[1], strides[2])],
-                                [(coords.shape[1], coords.shape[2]),
-                                 (coords.shape[1], coords.shape[3]),
-                                 (coords.shape[2], coords.shape[3])]):
-        
-        unique = {}
-        union = join_complexes(*[cube_with_strides_center((0,-1), _strides),
-                                 cube_with_strides_center((-1,0), _strides),
-                                 cube_with_strides_center((-1,-1), _strides)])
-
-        c = cube_with_strides_center((0,0), _strides)
-        d3 = np.array(list(c[3].difference(union[3])))
-        
-        s0, s1 = _shape
-        ss0, ss1 = _strides
-        ds3 = d3.shape[0]
-        for i in range(s0-1):
-            for j in range(s1-1):
-                index = i*ss0+j*ss1
-                for l in range(ds3):
-                    v0 = index + d3[l,0]
-                    m = fmask[v0]
-                    if m:
-                        v1 = index + d3[l,1]
-                        v2 = index + d3[l,2]
-                        m = m * fmask[v1] * fmask[v2]
-                        l2 = l2 + mu2_tri(fcoords, v0, v1, v2) * m
-    return l2
-
-def Lips3_3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
-             np.ndarray[DTYPE_int_t, ndim=3] mask):
-    """
-    Given a mask and coordinates, estimate the 3rd intrinsic volume
+    Given a 3d mask and coordinates, estimate the intrinsic volumes
     of the masked region. The region is broken up into tetrahedra / 
     triangles / edges / vertices, which are included based on whether
     all voxels in the tetrahedron / triangle / edge / vertex are
     in the mask or not.
 
-    Inputs:
-    -------
-
+    Parameters
+    ----------
     coords : ndarray((*,i,j,k))
          Coordinates for the voxels in the mask
-
     mask : ndarray((i,j,k), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
 
-    Outputs:
-    --------
+    Returns
+    -------
+    mu : ndarray
+         Array of intrinsic volumes [mu0, mu1, mu2, mu3]
 
-    mu3 : float
+    Notes
+    -----
+    The array mask is assumed to be binary. At the time of writing, it
+    is not clear how to get cython to use np.bool arrays.
 
-    Notes:
-    ------
+    The 3d cubes are triangulated into 6 tetrahedra of equal volume, as
+    described in the reference below.
 
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
-
-    The 3d cubes are triangulated into 6 tetrahedra of equal volume,
-    as described in the reference below.
-
-    References:
-    -----------
-
+    References
+    ----------
     Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
-
     """
-
     if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
+      raise ValueError('mask should be filled with 0/1 '
+                       'values, but be of type np.int')
     # 'flattened' coords (2d array)
-
     cdef np.ndarray[DTYPE_float_t, ndim=2] fcoords 
+    cdef np.ndarray[DTYPE_float_t, ndim=2] D
 
     # 'flattened' mask (1d array)
 
     cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
+    cdef np.ndarray[DTYPE_int_t, ndim=1] fpmask
+    cdef np.ndarray[DTYPE_int_t, ndim=3] pmask
 
     # d3 and d4 are lists of triangles and tetrahedra 
     # associated to particular voxels in the cuve
 
     cdef np.ndarray[DTYPE_int_t, ndim=2] d4
+    cdef np.ndarray[DTYPE_int_t, ndim=2] m4
+    cdef np.ndarray[DTYPE_int_t, ndim=2] d3
+    cdef np.ndarray[DTYPE_int_t, ndim=2] m3
+    cdef np.ndarray[DTYPE_int_t, ndim=2] d2
+    cdef np.ndarray[DTYPE_int_t, ndim=2] m2
+    cdef np.ndarray[DTYPE_int_t, ndim=1] cvertices
 
-    cdef long i, j, k, l, s0, s1, s2, ds4, index, m
+    cdef long i, j, k, l, s0, s1, s2, ds4, ds3, ds2
+    cdef long index, pindex, m, nvox, r, s, rr, ss, mr, ms
     cdef long ss0, ss1, ss2 # strides
-    cdef long v0, v1, v2, v3 # vertices
-    cdef double l3 = 0
+    cdef long v0, v1, v2, v3 # vertices for mask
+    cdef long w0, w1, w2, w3 # vertices for data
+    cdef double l0, l1, l2, l3
+    cdef double res
 
-    s0, s1, s2 = (coords.shape[1], coords.shape[2], coords.shape[3])
+    l0 = 0; l1 = 0; l2 = 0; l3 = 0
 
-    if (mask.shape[0], mask.shape[1], mask.shape[2]) != (s0, s1, s2):
+    pmask = np.zeros((mask.shape[0]+1, mask.shape[1]+1, mask.shape[2]+1), np.int)
+    pmask[:-1,:-1,:-1] = mask
+
+    s0, s1, s2 = (pmask.shape[0], pmask.shape[1], pmask.shape[2])
+
+    fpmask = pmask.reshape((s0*s1*s2))
+    fmask = mask.reshape((s0-1)*(s1-1)*(s2-1))
+
+    if (mask.shape[0], mask.shape[1], mask.shape[2]) != (coords.shape[1], coords.shape[2], coords.shape[3]):
         raise ValueError('shape of mask does not match coordinates')
 
-    fcoords = coords.reshape((coords.shape[0], (s0*s1*s2)))
-    fmask = mask.reshape((s0*s1*s2))
-
-    strides = np.empty((s0, s1, s2), np.bool).strides
+    fcoords = coords.reshape((coords.shape[0], (s0-1)*(s1-1)*(s2-1)))
+    n = fcoords.shape[0]
 
     # First do the interior contributions.
     # We first figure out which vertices, edges, triangles, tetrahedra
     # are uniquely associated with an interior voxel
 
-    union = join_complexes(*[cube_with_strides_center((0,0,-1), strides),
-                             cube_with_strides_center((0,-1,0), strides),
-                             cube_with_strides_center((0,-1,-1), strides),
-                             cube_with_strides_center((-1,0,0), strides),
-                             cube_with_strides_center((-1,0,-1), strides),
-                             cube_with_strides_center((-1,-1,0), strides),
-                             cube_with_strides_center((-1,-1,-1), strides)])
-    c = cube_with_strides_center((0,0,0), strides)
+    # The mask is copied into a larger array,
+    # hence it will have different strides than the data
 
-    d4 = np.array(list(c[4].difference(union[4])))
+    strides = np.empty((s0, s1, s2), np.bool).strides
+    dstrides = np.empty((s0-1, s1-1, s2-1), np.bool).strides
+    cvertices = np.array([[[dstrides[0]*i+dstrides[1]*j+dstrides[2]*k for i in range(2)] for j in range(2)] for k in range(2)]).ravel()
+    cvertices.sort()
+
+    union = join_complexes(*[cube_with_strides_center((0,0,1), strides),
+                             cube_with_strides_center((0,1,0), strides),
+                             cube_with_strides_center((0,1,1), strides),
+                             cube_with_strides_center((1,0,0), strides),
+                             cube_with_strides_center((1,0,1), strides),
+                             cube_with_strides_center((1,1,0), strides),
+                             cube_with_strides_center((1,1,1), strides)])
+    c = cube_with_strides_center((0,0,0), strides)
+    m4 = np.array(list(c[4].difference(union[4])))
+    m3 = np.array(list(c[3].difference(union[3])))
+    m2 = np.array(list(c[2].difference(union[2])))
+
+    d4 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m4[i]] for i in range(m4.shape[0])])
+    d4 = np.hstack([m4, d4])
     ds4 = d4.shape[0]
 
-    ss0 = strides[0]
-    ss1 = strides[1]
-    ss2 = strides[2]
+    d3 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m3[i]] for i in range(m3.shape[0])])
+    d3 = np.hstack([m3, d3])
+    ds3 = d3.shape[0]
+
+    d2 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m2[i]] for i in range(m2.shape[0])])
+    d2 = np.hstack([m2, d2])
+    ds2 = d2.shape[0]
+
+    ss0, ss1, ss2 = strides[0], strides[1], strides[2]
+    ss0d, ss1d, ss2d = dstrides[0], dstrides[1], dstrides[2]
+
+    nvox = (s0-1)*(s1-1)*(s2-1)
+
+    D = np.zeros((8,8))
 
     for i in range(s0-1):
         for j in range(s1-1):
             for k in range(s2-1):
-                index = i*ss0+j*ss1+k*ss2
+
+                pindex = i*ss0+j*ss1+k*ss2
+                index = i*ss0d+j*ss1d+k*ss2d
+                for r in range(8):
+                    rr = (index+cvertices[r]) % nvox
+                    mr = fmask[rr]
+                    for s in range(r+1):
+                        res = 0
+                        ss = (index+cvertices[s]) % nvox
+                        ms = fmask[ss]
+                        if mr * ms:
+                            for l in range(fcoords.shape[0]):
+                                res += fcoords[l,ss] * fcoords[l,rr]
+                            D[r,s] = res
+                            D[s,r] = res
+                        else:
+                            D[r,s] = 0
+                            D[s,r] = 0
+
                 for l in range(ds4):
-                    v0 = index + d4[l,0]
-                    m = fmask[v0]
+                    v0 = pindex + d4[l,0]
+                    w0 = d4[l,4]
+                    m = fpmask[v0]
                     if m:
-                        v1 = index + d4[l,1]
-                        v2 = index + d4[l,2]
-                        v3 = index + d4[l,3]
-                        m = m * fmask[v1] * fmask[v2] * fmask[v3]
-                        l3 = l3 + mu3_tet(fcoords, v0, v1, v2, v3) * m
+                        v1 = pindex + d4[l,1]
+                        v2 = pindex + d4[l,2]
+                        v3 = pindex + d4[l,3]
+                        w1 = d4[l,5]
+                        w2 = d4[l,6]
+                        w3 = d4[l,7]
 
-    return l3
+                        m = m * fpmask[v1] * fpmask[v2] * fpmask[v3]
+                        d = m * mu3_tet(D[w0,w0], D[w0,w1], D[w0,w2], 
+                                        D[w0,w3], D[w1,w1], D[w1,w2], 
+                                        D[w1,w3], D[w2,w2], D[w2,w3],
+                                        D[w3,w3])
+
+                        l3 = l3 + m * mu3_tet(D[w0,w0], D[w0,w1], D[w0,w2], 
+                                              D[w0,w3], D[w1,w1], D[w1,w2], 
+                                              D[w1,w3], D[w2,w2], D[w2,w3],
+                                              D[w3,w3])
+
+                        l2 = l2 - m * mu2_tet(D[w0,w0], D[w0,w1], D[w0,w2], 
+                                              D[w0,w3], D[w1,w1], D[w1,w2], 
+                                              D[w1,w3], D[w2,w2], D[w2,w3],
+                                              D[w3,w3])
+
+                        l1 = l1 + m * mu1_tet(D[w0,w0], D[w0,w1], D[w0,w2], 
+                                              D[w0,w3], D[w1,w1], D[w1,w2], 
+                                              D[w1,w3], D[w2,w2], D[w2,w3],
+                                              D[w3,w3])
+
+                        l0 = l0 - m
+
+                for l in range(ds3):
+                    v0 = pindex + d3[l,0]
+                    w0 = d3[l,3]
+                    m = fpmask[v0]
+                    if m:
+                        v1 = pindex + d3[l,1]
+                        v2 = pindex + d3[l,2]
+                        w1 = d3[l,4]
+                        w2 = d3[l,5]
+
+                        m = m * fpmask[v1] * fpmask[v2] 
+                        l2 = l2 + m * mu2_tri(D[w0,w0], D[w0,w1], D[w0,w2], 
+                                              D[w1,w1], D[w1,w2], D[w2,w2]) 
+
+                        l1 = l1 - m * mu1_tri(D[w0,w0], D[w0,w1], D[w0,w2], 
+                                              D[w1,w1], D[w1,w2], D[w2,w2]) 
+
+                        l0 = l0 + m
+
+                for l in range(ds2):
+                    v0 = pindex + d2[l,0]
+                    w0 = d2[l,2]
+                    m = fpmask[v0]
+                    if m:
+                        v1 = pindex + d2[l,1]
+                        w1 = d2[l,3]
+                        m = m * fpmask[v1]
+                        l1 = l1 + m * mu1_edge(D[w0,w0], D[w0,w1], D[w1,w1])
+
+                        l0 = l0 - m
+
+    l0 += mask.sum()
+    return np.array([l0, l1, l2, l3])
 
 
-
-def Lips2_2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
-             np.ndarray[DTYPE_int_t, ndim=2] mask):
+def _convert_stride3(v, stride1, stride2):
     """
-    Given a mask and coordinates, estimate the 2nd intrinsic volume
+    Take a voxel, expressed as in index in stride1 and
+    re-express it as an index in stride2
+    """
+    v0 = v / stride1[0]
+    v -= v0 * stride1[0]
+    v1 = v / stride1[1]
+    v2 = v - v1 * stride1[1]
+    return v0*stride2[0] + v1*stride2[1] + v2*stride2[2]
+
+
+def _convert_stride2(v, stride1, stride2):
+    """
+    Take a voxel, expressed as in index in stride1 and
+    re-express it as an index in stride2
+    """
+    v0 = v / stride1[0]
+    v1 = v - v0 * stride1[0]
+    return v0*stride2[0] + v1*stride2[1]
+
+
+def _convert_stride1(v, stride1, stride2):
+    """
+    Take a voxel, expressed as in index in stride1 and
+    re-express it as an index in stride2
+    """
+    v0 = v / stride1[0]
+    return v0 * stride2[0]
+
+
+def Lips2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
+           np.ndarray[DTYPE_int_t, ndim=2] mask):
+    """
+    Given a 2d mask and coordinates, estimate the intrinsic volumes
     of the masked region. The region is broken up into
     triangles / edges / vertices, which are included based on whether
     all voxels in the triangle / edge / vertex are
     in the mask or not.
 
-    Inputs:
-    -------
-
+    Parameters
+    ----------
     coords : ndarray((*,i,j))
          Coordinates for the voxels in the mask
-
     mask : ndarray((i,j), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
 
-    Outputs:
-    --------
-
-    mu2 : float
-
-    Notes:
-    ------
-
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
-
-    References:
-    -----------
-
-    Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
-      with an application to brain mapping."
-      Journal of the American Statistical Association, 102(479):913-928.
-
-
-    """
-
-    if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
-    # 'flattened' coords (2d array)
-
-    cdef np.ndarray[DTYPE_float_t, ndim=2] fcoords 
-
-    # 'flattened' mask (1d array)
-
-    cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
-
-    # d3 and d4 are lists of triangles
-    # associated to particular voxels in the square
-
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d3
-
-    cdef long i, j, k, l, s0, s1, ds3, index, m
-    cdef long ss0, ss1 # strides
-    cdef long v0, v1, v2 # vertices
-    cdef double l2 = 0
-
-    s0, s1 = (coords.shape[1], coords.shape[2])
-
-    if (mask.shape[0], mask.shape[1]) != (s0, s1):
-        raise ValueError('shape of mask does not match coordinates')
-
-    fcoords = coords.reshape((coords.shape[0], (s0*s1)))
-    fmask = mask.reshape((s0*s1))
-
-    strides = np.empty((s0, s1), np.bool).strides
-
-    # First do the interior contributions.
-    # We first figure out which vertices, edges, triangles, tetrahedra
-    # are uniquely associated with an interior voxel
-
-    union = join_complexes(*[cube_with_strides_center((0,-1), strides),
-                             cube_with_strides_center((-1,0), strides),
-                             cube_with_strides_center((-1,-1), strides)])
-
-    c = cube_with_strides_center((0,0), strides)
-    d3 = np.array(list(c[3].difference(union[3])))
-    ds3 = d3.shape[0]
-
-    ss0 = strides[0]
-    ss1 = strides[1]
-
-    for i in range(s0-1):
-        for j in range(s1-1):
-          index = i*ss0+j*ss1
-          for l in range(ds3):
-            v0 = index + d3[l,0]
-            m = fmask[v0]
-            if m:
-              v1 = index + d3[l,1]
-              v2 = index + d3[l,2]
-              m = m * fmask[v1] * fmask[v2]
-              l2 = l2 + mu2_tri(fcoords, v0, v1, v2) * m
-
-    return l2
-
-def Lips1_2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
-             np.ndarray[DTYPE_int_t, ndim=2] mask):
-    """
-    Given a mask and coordinates, estimate the 1st intrinsic volume
-    of the masked region. The region is broken up into
-    triangles / edges / vertices, which are included based on whether
-    all voxels in the triangle / edge / vertex are
-    in the mask or not.
-
-    Inputs:
+    Returns
     -------
+    mu : ndarray
+         Array of intrinsic volumes [mu0, mu1, mu2]
 
-    coords : ndarray((*,i,j))
-         Coordinates for the voxels in the mask
+    Notes
+    -----
+    The array mask is assumed to be binary. At the time of writing, it
+    is not clear how to get cython to use np.bool arrays.
 
-    mask : ndarray((i,j), np.int)
-         Binary mask determining whether or not
-         a voxel is in the mask.
-
-    Outputs:
-    --------
-
-    mu1 : float
-
-    Notes:
-    ------
-
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
-
-    References:
-    -----------
-
+    References
+    ----------
     Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
-
     """
-
     if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
+      raise ValueError('mask should be filled with 0/1 '
+                       'values, but be of type np.int')
     # 'flattened' coords (2d array)
-
     cdef np.ndarray[DTYPE_float_t, ndim=2] fcoords 
 
     # 'flattened' mask (1d array)
-
     cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
+    cdef np.ndarray[DTYPE_int_t, ndim=1] fpmask
+    cdef np.ndarray[DTYPE_int_t, ndim=2] pmask
 
     # d3 and d4 are lists of triangles
     # associated to particular voxels in the square
@@ -1116,162 +654,188 @@ def Lips1_2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
     cdef np.ndarray[DTYPE_int_t, ndim=2] d3
     cdef np.ndarray[DTYPE_int_t, ndim=2] d2
 
-    cdef long i, j, k, l, s0, s1, ds3, ds2, index, m
-    cdef long ss0, ss1 # strides
+    cdef long i, j, k, l, r, s, rr, ss, mr, ms, s0, s1, ds2, ds3, index, m, npix
+    cdef long ss0, ss1, ss0d, ss1d # strides
     cdef long v0, v1, v2 # vertices
-    cdef double l1 = 0
+    cdef double l0, l1, l2
+    cdef double res
 
-    s0, s1 = (coords.shape[1], coords.shape[2])
+    l0 = 0; l1 = 0; l2 = 0; l3 = 0
 
-    if (mask.shape[0], mask.shape[1]) != (s0, s1):
+    pmask = np.zeros((mask.shape[0]+1, mask.shape[1]+1), np.int)
+    pmask[:-1,:-1] = mask
+
+    s0, s1 = pmask.shape[0], pmask.shape[1]
+
+    if (mask.shape[0], mask.shape[1]) != (coords.shape[1], coords.shape[2]):
         raise ValueError('shape of mask does not match coordinates')
 
-    fcoords = coords.reshape((coords.shape[0], (s0*s1)))
-    fmask = mask.reshape((s0*s1))
-
-    strides = np.empty((s0, s1), np.bool).strides
-
-    union = join_complexes(*[cube_with_strides_center((0,-1), strides),
-                             cube_with_strides_center((-1,0), strides),
-                             cube_with_strides_center((-1,-1), strides)])
-
-    c = cube_with_strides_center((0,0), strides)
-    d3 = np.array(list(c[3].difference(union[3])))
-    d2 = np.array(list(c[2].difference(union[2])))
-
-    ds3 = d3.shape[0]
-    ds2 = d2.shape[0]
-
-    ss0 = strides[0]
-    ss1 = strides[1]
+    fcoords = coords.reshape((coords.shape[0], (s0-1)*(s1-1)))
+    n = fcoords.shape[0]
+    fpmask = pmask.reshape((s0*s1))
+    fmask = mask.reshape((s0-1)*(s1-1))
 
     # First do the interior contributions.
     # We first figure out which vertices, edges, triangles, tetrahedra
     # are uniquely associated with an interior voxel
 
+    strides = np.empty((s0, s1), np.bool).strides
+    dstrides = np.empty((s0-1, s1-1), np.bool).strides
+    cvertices = np.array([[dstrides[0]*i+dstrides[1]*j for i in range(2)] for j in range(2)]).ravel()
+    cvertices.sort()
+
+    union = join_complexes(*[cube_with_strides_center((0,1), strides),
+                             cube_with_strides_center((1,0), strides),
+                             cube_with_strides_center((1,1), strides)])
+
+    c = cube_with_strides_center((0,0), strides)
+    m3 = np.array(list(c[3].difference(union[3])))
+    m2 = np.array(list(c[2].difference(union[2])))
+
+    d3 = np.array([[_convert_stride2(v, strides, (2,1)) for v in m3[i]] for i in range(m3.shape[0])])
+    d3 = np.hstack([m3, d3])
+    ds3 = d3.shape[0]
+
+    d2 = np.array([[_convert_stride2(v, strides, (2,1)) for v in m2[i]] for i in range(m2.shape[0])])
+    d2 = np.hstack([m2, d2])
+    ds2 = d2.shape[0]
+
+    ss0, ss1 = strides[0], strides[1]
+    ss0d, ss1d = dstrides[0], dstrides[1]
+
+    D = np.zeros((4,4))
+
+    npix = (s0-1)*(s1-1)
+
     for i in range(s0-1):
         for j in range(s1-1):
-          index = i*ss0+j*ss1
+          pindex = i*ss0+j*ss1
+          index = i*ss0d+j*ss1d
+
+          for r in range(4):
+            rr = (index+cvertices[r]) % npix
+            mr = fmask[rr]
+            for s in range(r+1):
+              res = 0
+              ss = (index+cvertices[s]) % npix
+              ms = fmask[ss]
+              if mr * ms:
+                for l in range(fcoords.shape[0]):
+                  res += fcoords[l,ss] * fcoords[l,rr]
+                D[r,s] = res
+                D[s,r] = res
+              else:
+                D[r,s] = 0
+                D[s,r] = 0
 
           for l in range(ds3):
-            v0 = index + d3[l,0]
-            m = fmask[v0]
+            v0 = pindex + d3[l,0]
+            w0 = d3[l,3]
+            m = fpmask[v0]
             if m:
-              v1 = index + d3[l,1]
-              v2 = index + d3[l,2]
-              m = m * fmask[v1] * fmask[v2]
-              l1 = l1 - mu1_tri(fcoords, v0, v1, v2) * m
+              v1 = pindex + d3[l,1]
+              v2 = pindex + d3[l,2]
+              w1 = d3[l,4]
+              w2 = d3[l,5]
+              m = m * fpmask[v1] * fpmask[v2]
+              l2 = l2 + mu2_tri(D[w0,w0], D[w0,w1], D[w0,w2],
+                                D[w1,w1], D[w1,w2], D[w2,w2]) * m
+              l1 = l1 - mu1_tri(D[w0,w0], D[w0,w1], D[w0,w2],
+                                D[w1,w1], D[w1,w2], D[w2,w2]) * m
+              l0 = l0 + m
 
           for l in range(ds2):
-            v0 = index + d2[l,0]
-            m = fmask[v0]
+            v0 = pindex + d2[l,0]
+            w0 = d2[l,2]
+            m = fpmask[v0]
             if m:
-              v1 = index + d2[l,1]
-              m = m * fmask[v1]
-              l1 = l1 + mu1_edge(fcoords, v0, v1) * m
+              v1 = pindex + d2[l,1]
+              w1 = d2[l,3]
+              m = m * fpmask[v1]
+              l1 = l1 + m * mu1_edge(D[w0,w0], D[w0,w1], D[w1,w1])
+              l0 = l0 - m
 
-    s0, s1 = (coords.shape[1], coords.shape[2])
-    ss0 = strides[0]
-    ss1 = strides[1]
+    l0 += mask.sum()
+    return np.array([l0,l1,l2])
 
-    for _stride, _shape in zip((ss0, ss1), (s0, s1)):
-        
-        unique = {}
-        union = cube_with_strides_center((-1,), [_stride])
-        c = cube_with_strides_center((0,), [_stride])
-        d2 = np.array(list(c[2].difference(union[2])))
 
-        s0 = _shape
-        ss0 = _stride
-        for i in range(s0-1):
-                index = i*ss0
-                v0 = index + d2[0,0]
-                m = fmask[v0]
-                if m:
-                    v1 = index + d2[0,1]
-                    m = m * fmask[v1]
-                    l1 = l1 + mu1_edge(fcoords, v0, v1) * m
-
-    return l1
-
-def Lips0_2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
-
+def EC2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
     """
-    Given a mask and coordinates, estimate the 0th intrinsic volume
-    (Euler characteristic) of the masked region. The region is broken 
-    up into triangles, edges, vertices, which are included based on whether
+    Given a 2d mask, compute the 0th intrinsic volume
+    (Euler characteristic)
+    of the masked region. The region is broken up into 
+    triangles / edges / vertices, which are included based on whether
     all voxels in the triangle / edge / vertex are
     in the mask or not.
 
-    Inputs:
-    -------
-
+    Parameters
+    ----------
     mask : ndarray((i,j), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
 
-    Outputs:
-    --------
-
+    Returns
+    -------
     mu0 : int
 
-    Notes:
-    ------
+    Notes
+    -----
+    The array mask is assumed to be binary. At the time of writing, it
+    is not clear how to get cython to use np.bool arrays.
 
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
+    The 3d cubes are triangulated into 6 tetrahedra of equal volume, as
+    described in the reference below.
 
-    References:
-    -----------
-
+    References
+    ----------
     Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
-
     """
-
     if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
+      raise ValueError('mask should be filled with 0/1 '
+                       'values, but be of type np.int')
     # 'flattened' mask (1d array)
-
     cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
 
-    # d3 and d4 are lists of triangles
-    # associated to particular voxels in the square
+    # d3 and d4 are lists of triangles and tetrahedra 
+    # associated to particular voxels in the cuve
 
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d3
     cdef np.ndarray[DTYPE_int_t, ndim=2] d2
+    cdef np.ndarray[DTYPE_int_t, ndim=2] d3
 
-    cdef long i, j, k, l, s0, s1, ds3, ds2, index, m
-    cdef long ss0, ss1 # strides
-    cdef long v0, v1, v2 # vertices
+    cdef long i, j, k, l, s0, s1, s2, ds2, ds3, index, m
+    cdef long ss0, ss1, ss2 # strides
+    cdef long v0, v1, v2, v3 # vertices
     cdef long l0 = 0
 
-    s0, s1 = (mask.shape[0], mask.shape[1])
+    cdef np.ndarray[DTYPE_int_t, ndim=2] pmask
+    pmask = np.zeros((mask.shape[0]+1, mask.shape[1]+1), np.int)
+    pmask[:-1,:-1] = mask
 
-    fmask = mask.reshape((s0*s1))
+    s0, s1 = (pmask.shape[0], pmask.shape[1])
+
+    fmask = pmask.reshape((s0*s1))
 
     strides = np.empty((s0, s1), np.bool).strides
 
-    union = join_complexes(*[cube_with_strides_center((0,-1), strides),
-                             cube_with_strides_center((-1,0), strides),
-                             cube_with_strides_center((-1,-1), strides)])
+    # First do the interior contributions.
+    # We first figure out which vertices, edges, triangles, tetrahedra
+    # are uniquely associated with an interior voxel
 
+    union = join_complexes(*[cube_with_strides_center((0,1), strides),
+                             cube_with_strides_center((1,0), strides),
+                             cube_with_strides_center((1,1), strides)])
     c = cube_with_strides_center((0,0), strides)
+
     d3 = np.array(list(c[3].difference(union[3])))
     d2 = np.array(list(c[2].difference(union[2])))
 
-    ds3 = d3.shape[0]
     ds2 = d2.shape[0]
+    ds3 = d3.shape[0]
 
     ss0 = strides[0]
     ss1 = strides[1]
-
-    # First do the interior contributions.
-    # We first figure out which edges, triangles
-    # are uniquely associated with an interior voxel
 
     for i in range(s0-1):
         for j in range(s1-1):
@@ -1280,7 +844,7 @@ def Lips0_2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
           for l in range(ds3):
             v0 = index + d3[l,0]
             m = fmask[v0]
-            if m:
+            if m and v0:
               v1 = index + d3[l,1]
               v2 = index + d3[l,2]
               m = m * fmask[v1] * fmask[v2]
@@ -1293,164 +857,154 @@ def Lips0_2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
               v1 = index + d2[l,1]
               m = m * fmask[v1]
               l0 = l0 - m
-
-    s0, s1 = (mask.shape[0], mask.shape[1])
-    ss0 = strides[0]
-    ss1 = strides[1]
-
-    for _stride, _shape in zip((ss0, ss1), (s0, s1)):
-        
-        unique = {}
-        union = cube_with_strides_center((-1,), [_stride])
-        c = cube_with_strides_center((0,), [_stride])
-        d2 = np.array(list(c[2].difference(union[2])))
-
-        s0 = _shape
-        ss0 = _stride
-        for i in range(s0-1):
-                index = i*ss0
-                v0 = index + d2[0,0]
-                m = fmask[v0]
-                if m:
-                    v1 = index + d2[0,1]
-                    m = m * fmask[v1]
-                    l0 = l0 - m
-
     l0 += mask.sum()
     return l0
 
 
-def Lips1_1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
-             np.ndarray[DTYPE_int_t, ndim=1] mask):
-
+def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
+           np.ndarray[DTYPE_int_t, ndim=1] mask):
     """
-    Given a mask and coordinates, estimate the 1st intrinsic volume
-    (Euler characteristic) of the masked region. The region is broken 
-    up into edges / vertices, which are included based on whether
+    Given a 1d mask and coordinates, estimate the intrinsic volumes
+    of the masked region. The region is broken up into
+    edges / vertices, which are included based on whether
     all voxels in the edge / vertex are
     in the mask or not.
 
-    Inputs:
-    -------
-
+    Parameters
+    ----------
     coords : ndarray((*,i))
          Coordinates for the voxels in the mask
-
-
     mask : ndarray((i,), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
 
-    Outputs:
-    --------
+    Returns
+    -------
+    mu : ndarray
+         Array of intrinsic volumes [mu0, mu1]
 
-    mu1 : float
+    Notes
+    -----
+    The array mask is assumed to be binary. At the time of writing, it
+    is not clear how to get cython to use np.bool arrays.
 
-    Notes:
-    ------
-
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
-
-    References:
-    -----------
-
+    References
+    ----------
     Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
-
     """
 
     if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
-
+      raise ValueError('mask should be filled with 0/1 '
+                       'values, but be of type np.int')
     # 'flattened' coords (2d array)
 
-    cdef np.ndarray[DTYPE_float_t, ndim=2] fcoords 
+    # d3 and d4 are lists of triangles
+    # associated to particular voxels in the square
 
-    # 'flattened' mask (1d array)
+    cdef long i, j, k, l, r, s, rr, ss, mr, ms, s0, ds2, index, m
+    cdef long ss0, ss0d # strides
+    cdef long v0, v1 # vertices
+    cdef double l0, l1
+    cdef double res
 
-    cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
+    l0 = 0; l1 = 0
 
-    cdef long i, s0, m
-    cdef double l1 = 0
+    s0 = mask.shape[0]
 
-    s0 = coords.shape[1]
-
-    if mask.shape[0] != s0:
+    if mask.shape[0] != coords.shape[1]:
         raise ValueError('shape of mask does not match coordinates')
 
-    fcoords = coords.reshape((coords.shape[0], s0))
-    fmask = mask.reshape((s0,))
+    n = coords.shape[0]
 
     # First do the interior contributions.
     # We first figure out which vertices, edges, triangles, tetrahedra
     # are uniquely associated with an interior voxel
 
-    for i in range(s0-1):
-      m = fmask[i] * fmask[i+1]
-      l1 = l1 + mu1_edge(coords, i, i+1) * m
-    return l1
+    D = np.zeros((2,2))
 
-def Lips0_1d(np.ndarray[DTYPE_int_t, ndim=1] mask):
+    for i in range(s0):
+      for r in range(2):
+        rr = (i+r) % s0
+        mr = mask[rr]
+        for s in range(r+1):
+          res = 0
+          ss = (i+s) % s0
+          ms = mask[ss]
+          if mr * ms * ((i+r) < s0) * ((i+s) < s0):
+            for l in range(coords.shape[0]):
+              res += coords[l,ss] * coords[l,rr]
+            D[r,s] = res
+            D[s,r] = res
+          else:
+            D[r,s] = 0
+            D[s,r] = 0
+
+      m = mask[i]
+      if m:
+        m = m * (mask[(i+1) % s0] * (i < s0))
+        l1 = l1 + m * mu1_edge(D[0,0], D[0,1], D[1,1])
+        l0 = l0 - m
+
+    l0 += mask.sum()
+    return np.array([l0,l1])
+
+
+def EC1d(np.ndarray[DTYPE_int_t, ndim=1] mask):
     """
-    Given a mask and coordinates, estimate the 0th intrinsic volume (Euler characteristic)
-    (Euler characteristic) of the masked region. The region is broken 
-    up into edges / vertices, which are included based on whether
+    Given a 1d mask, compute the 0th intrinsic volume
+    (Euler characteristic)
+    of the masked region. The region is broken up into 
+    edges / vertices, which are included based on whether
     all voxels in the edge / vertex are
     in the mask or not.
 
-    Inputs:
-    -------
-
-    coords : ndarray((*,i))
-         Coordinates for the voxels in the mask
-
-
+    Parameters
+    ----------
     mask : ndarray((i,), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
 
-    Outputs:
-    --------
-
+    Returns
+    -------
     mu0 : int
 
-    Notes:
-    ------
+    Notes
+    -----
+    The array mask is assumed to be binary. At the time of writing, it
+    is not clear how to get cython to use np.bool arrays.
 
-    The array mask is assumed to be binary. At the time of 
-    writing, it is not clear how to get cython to use np.bool
-    arrays.
+    The 3d cubes are triangulated into 6 tetrahedra of equal volume, as
+    described in the reference below.
 
-    References:
-    -----------
-
+    References
+    ----------
     Taylor, J.E. & Worsley, K.J. (2007). "Detecting sparse signal in random fields,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
-
     """
-
     if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 values, but be of type np.int')
+      raise ValueError('mask should be filled with 0/1 '
+                       'values, but be of type np.int')
+    # 'flattened' coords (2d array)
 
-    # 'flattened' mask (1d array)
+    # d3 and d4 are lists of triangles
+    # associated to particular voxels in the square
 
-    cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
-
-    cdef long i, s0, m
-    cdef long l0 = 0
-
-    s0 = mask.shape[0]
-    fmask = mask.reshape((s0,))
+    cdef long i, m, s0
+    cdef double l0 = 0
 
     # First do the interior contributions.
     # We first figure out which vertices, edges, triangles, tetrahedra
     # are uniquely associated with an interior voxel
 
-    for i in range(s0-1):
-      m = fmask[i] * fmask[i+1]
-      l0 = l0 - m
-    return l0 + mask.sum()
+    s0 = mask.shape[0]
+    for i in range(s0):
+      m = mask[i]
+      if m:
+        m = m * (mask[(i+1) % s0] * (i < s0))
+        l0 = l0 - m
+
+    l0 += mask.sum()
+    return l0
