@@ -14,7 +14,6 @@ fixme: the docs should be rewritten
 
 Author : Bertrand Thirion, 2008-2009
 """
-
 import numpy as np
 import numpy.random as nr
 from numpy.linalg import det, inv, pinv, cholesky, eigvalsh 
@@ -64,34 +63,35 @@ def generate_normals(m,P):
     -------
     ng : array of shape(n): a draw from the gaussian density
     """
-    L = inv(cholesky(P))
+    icp = inv(cholesky(P))
     ng = nr.randn(m.shape[0])
-    ng = np.dot(ng,L)
+    ng = np.dot(ng, icp)
     ng += m 
     return ng
 
-def generate_Wishart(n,V):
+def generate_Wishart(n, V):
     """
-    Generate a sample from Wishart
+    Generate a sample from Wishart density
 
     Parameters
     ----------
-    n (scalar) = the number of degrees of freedom (dofs)
-    V = array of shape (n,n) the scale matrix
+    n: float,
+        the number of degrees of freedom of the Wishart density
+    V: array of shape (n,n)
+       the scale matrix of the Wishart density
 
     Returns
     -------
-    W: array of shape (n,n): the Wishart draw
+    W: array of shape (n,n)
+       the draw from Wishart density
     """
-    from numpy.linalg import cholesky
-    L = cholesky(V)
+    icv = cholesky(V)
     p = V.shape[0]
     A = nr.randn(p, p)
-    a = np.array([np.sqrt(nr.chisquare(n-i)) for i in range(p)])
     for i in range(p):
         A[i,i:] = 0
-        A[i,i] = a[i]
-    R = np.dot(L, A)
+        A[i,i] = np.sqrt(nr.chisquare(n-i))
+    R = np.dot(icv, A)
     W = np.dot(R, R.T)
     return W
 
@@ -142,9 +142,12 @@ def normal_eval(mu, P, x, dP=None):
 
     Parameters
     ----------
-    mu: array of shape (n): the mean parameter
-    P: array of shape (n,n): the precision matrix 
-    x: array of shape (n): the data to be evaluated
+    mu: array of shape (n),
+        the mean parameter
+    P: array of shape (n,n),
+       the precision matrix 
+    x: array of shape (n),
+       the data to be evaluated
 
     Returns
     -------
@@ -159,8 +162,8 @@ def normal_eval(mu, P, x, dP=None):
     x = np.reshape(x,(1,p))
     q = np.dot(np.dot(mu-x,P),(mu-x).T)
     w = w0 - q/2
-    L = np.exp(w)
-    return np.squeeze(L)
+    like = np.exp(w)
+    return np.squeeze(like)
         
 def generate_perm(k,nperm=100):
     """
@@ -405,7 +408,7 @@ class BGMM(GMM):
         
         Parameters
         ----------
-        x, array of shape (nbitems,self.dim)
+        x, array of shape (nb_samples,self.dim)
            the data used in the estimation process
         nocheck=0, Boolean, if nocheck==True, check is skipped
         """
@@ -439,7 +442,7 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        x: array of shape (nbitems,self.dim)
+        x: array of shape (nb_samples,self.dim)
            the data used in the estimation process
         """
         if self.k>1:
@@ -454,7 +457,7 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        z array of shape (nbitems), type = np.int
+        z array of shape (nb_samples), type = np.int
           the allocation variable
 
         Returns
@@ -470,7 +473,7 @@ class BGMM(GMM):
         
         Parameters
         ----------
-        z array of shape (nbitems), type = np.int
+        z array of shape (nb_samples), type = np.int
           the allocation variable
         """
         pop = self.pop(z)
@@ -485,9 +488,9 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        x array of shape (nbitems,self.dim)
+        x: array of shape (nb_samples,self.dim)
           the data used in the estimation process
-        z array of shape (nbitems), type = np.int
+        z: array of shape (nb_samples), type = np.int
           the corresponding classification
         """
         pop = self.pop(z)
@@ -498,12 +501,12 @@ class BGMM(GMM):
 
         for k in range(self.k):
             empmeans[k] = np.sum(x[z==k],0)
-                
+
         means = empmeans + self.prior_means*prior_shrinkage
         means/= shrinkage
         for k in range(self.k):
             self.means[k] = generate_normals(\
-                means[k],self.precisions[k]*self.shrinkage[k])
+                means[k], self.precisions[k]*self.shrinkage[k])
         
     def update_precisions(self, x, z):
         """
@@ -513,53 +516,35 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        x array of shape (nbitems,self.dim)
+        x array of shape (nb_samples,self.dim)
           the data used in the estimation process
-        z array of shape (nbitems), type = np.int
+        z array of shape (nb_samples), type = np.int
           the corresponding classification
         """
         pop = self.pop(z)
         self.dof = self.prior_dof + pop +1
+        rpop = pop + (pop==0)
+        self._detp = np.zeros(self.k)
 
-        #computing the empirical covariance
-        #empmeans = np.zeros(np.shape(self.means))
-        empmeans = np.zeros((self.k, self.dim))
         for k in range(self.k):
-            empmeans[k] = np.sum(x[z==k],0)
- 
-        rpop = (pop+(pop==0)).astype('f')
+            # empirical means
+            empmeans = np.sum(x[z==k],0)/rpop[k]
+            dm = np.reshape(empmeans - self.prior_means[k],(1, self.dim))
 
-        empmeans= (empmeans.T/rpop).T
-
-        #empcov = np.zeros(np.shape(self.precisions))
-        empcov = np.zeros((self.k, self.dim, self.dim))
-        for k in range(self.k):
-            dx = np.reshape(x[z==k]-empmeans[k],(pop[k],self.dim))
-            empcov[k] += np.dot(dx.T,dx)
-                    
-        covariance = np.repeat(self._inv_prior_scale[:1], self.k, 0)
-        covariance += empcov
-                        
-        dx = np.reshape(empmeans-self.prior_means,(self.k,self.dim,1))
-        addcov = np.zeros((self.k, self.dim, self.dim))
-        scale = np.zeros((self.k, self.dim, self.dim))
-        for k in range(self.k):
-            addcov[k] = np.dot(dx[k],dx[k].T)
+            # scatter
+            dx = np.reshape(x[z==k]-empmeans,(pop[k],self.dim))
             
-        #addcov = np.array([np.dot(dx[k],dx[k].T)
-        #                   for k in range(self.k)])
+            # bias
+            addcov = np.dot(dm.T, dm)*self.prior_shrinkage[k]
 
-        prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
-        covariance += addcov*prior_shrinkage
-                
-        #scale = np.array([inv(covariance[k]) for k in range(self.k)])
-        for k in range(self.k):
-            scale[k] = inv(covariance[k])
-            self.precisions[k] = generate_Wishart(self.dof[k], scale[k])
+            # covariance = prior term + scatter + bias
+            covariance = self._inv_prior_scale[k] + np.dot(dx.T,dx) + addcov
 
-        self._detp = [np.prod(eigvalsh(self.precisions[k]))
-                      for k in range(self.k)]
-        self._invp = [inv(self.precisions[k]) for k in range(self.k)]
+            #precision
+            scale = inv(covariance) 
+            self.precisions[k] = generate_Wishart(self.dof[k], scale)
+            self._detp[k] = np.prod(eigvalsh(self.precisions[k]))
+        
         
     def update(self,x,z):
         """
@@ -567,9 +552,9 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        x array of shape (nbitems,self.dim)
+        x array of shape (nb_samples,self.dim)
           the data used in the estimation process
-        z array of shape (nbitems), type = np.int
+        z array of shape (nb_samples), type = np.int
           the corresponding classification
         """
         self.update_weights(z)
@@ -582,12 +567,12 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        like: array of shape (nbitem,self.k)
+        like: array of shape (nb_samples,self.k)
            component-wise likelihood
 
         Returns
         -------
-        z: array of shape(nbitem): a draw of the membership variable
+        z: array of shape(nb_samples): a draw of the membership variable
         """
         tiny = 1+1.e-15
         like = (like.T/like.sum(1)).T
@@ -601,7 +586,7 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        x array of shape (nbitems,self.dim)
+        x array of shape (nb_samples,self.dim)
           the data used in the estimation process
         niter=1 : the number of iterations to perform
         mem=0: if mem, the best values of the parameters are computed
@@ -612,7 +597,7 @@ class BGMM(GMM):
         best_weights: array of shape (self.k)
         best_means: array of shape (self.k,self.dim)
         best_precisions: array of shape (self.k,self.dim,self.dim) 
-        possibleZ: array of shape (nbitems,niter)
+        possibleZ: array of shape (nb_samples,niter)
                    the z that give the highest posterior 
                    to the data is returned first
         """
@@ -655,7 +640,7 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        x = array of shape (nbitems,dim)
+        x = array of shape (nb_samples,dim)
           the data from which bic is computed
         niter=1: number of iterations
 
@@ -711,9 +696,9 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        x= array of shape (nbitems,dim)
+        x= array of shape (nb_samples,dim)
            the data from which bic is computed
-        z= array of shape (nbitems), type = np.int
+        z= array of shape (nb_samples), type = np.int
            the corresponding classification
         """
         pop = self.pop(z)
@@ -741,13 +726,14 @@ class BGMM(GMM):
                         
         dx = np.reshape(self.means-self.prior_means,
                         (self.k, self.dim, 1))
-        addcov = np.array([np.dot(dx[k],dx[k].T) for k in range(self.k)])
-        #addcov =  np.zeros(np.shape(self.precisions))
-        #for  k in range(self.k):
-        #    addcov[k] = np.dot(dx[k],dx[k].T)
-        #
+        #addcov = np.array([np.dot(dx[k],dx[k].T) for k in range(self.k)])
+        addcov =  np.zeros(np.shape(self.precisions))
+        for  k in range(self.k):
+            addcov[k] = np.dot(dx[k],dx[k].T)
+        
         prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
         covariance += addcov*prior_shrinkage
+
         scale = np.array([inv(covariance[k]) for k in range(self.k)])
         _dets = np.array([np.prod(eigvalsh(scale[k])) for k in range(self.k)])
         
@@ -788,9 +774,9 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        x: array of shape (nbitems,dim)
+        x: array of shape (nb_samples,dim)
            the data from which bic is computed
-        z: array of shape (nbitems), type = np.int
+        z: array of shape (nb_samples), type = np.int
            the corresponding classification
         nperm=0: int
             the number of permutations to sample
@@ -860,17 +846,17 @@ class VBGMM(BGMM):
 
         Parameters
         ----------
-        x array of shape (nbitems,dim)
+        x array of shape (nb_samples,dim)
           the data used in the estimation process
         
         Returns
         -------
-        L array of shape(nbitem,self.k)
-          component-wise likelihood
+        like: array of shape(nb_samples,self.k),
+              component-wise likelihood
         
         """
         n = x.shape[0]
-        L = np.zeros((n,self.k))
+        like = np.zeros((n,self.k))
         from scipy.special import psi
         from numpy.linalg import det
 
@@ -888,20 +874,20 @@ class VBGMM(BGMM):
             q = np.sum(np.dot(m-x,b)*(m-x),1)
             w = w0 - q/2
             w -= 0.5*np.log(2*np.pi)*self.dim 
-            L[:,k] = np.exp(w)   
+            like[:,k] = np.exp(w)   
 
-        if L.min()<0: stop
-        return L
+        if like.min()<0: stop
+        return like
 
-    def evidence(self,x,L = None,verbose=0):
+    def evidence(self, x, like=None, verbose=0):
         """
         computation of evidence or integrated likelihood
 
         Parameters
         ----------
-        x array of shape (nbitems,dim)
+        x array of shape (nb_samples,dim)
           the data from which bic is computed
-        l=None: array of shape (nbitem,self.k)
+        l=None: array of shape (nb_samples,self.k)
                 component-wise likelihood
                 If None, it is recomputed
         verbose=0: verbosity model
@@ -913,21 +899,21 @@ class VBGMM(BGMM):
         from scipy.special import psi
         from numpy.linalg import det,inv
         tiny = 1.e-15
-        if L==None:
-            L = self._Estep(x)
-            L = (L.T/np.maximum(L.sum(1),tiny)).T
+        if like==None:
+            like = self._Estep(x)
+            like = (like.T/np.maximum(like.sum(1),tiny)).T
 
-        pop = L.sum(0)[:self.k]  
+        pop = like.sum(0)[:self.k]  
         pop = np.reshape(pop,(self.k,1))
         spsi = psi(np.sum(self.weights))
-        empmeans = np.dot(L.T[:self.k],x)/np.maximum(pop,tiny)
+        empmeans = np.dot(like.T[:self.k],x)/np.maximum(pop,tiny)
                 
         F = 0
         # start with the average likelihood term
         for k in range(self.k):
             # compute the data-independent factor first
             Lav = psi(self.weights[k])-spsi
-            Lav -= np.sum(L[:,k]*np.log(np.maximum(L[:,k],tiny)))/pop[k]
+            Lav -= np.sum(like[:,k]*np.log(np.maximum(like[:,k],tiny)))/pop[k]
             Lav -= 0.5*self.dim*np.log(2*np.pi)
             Lav += 0.5*np.log(det(self.scale[k]))
             Lav += 0.5*np.log(2)*self.dim
@@ -938,7 +924,7 @@ class VBGMM(BGMM):
             
             empcov = np.zeros((self.dim,self.dim))
             dx = x-empmeans[k]
-            empcov = np.dot(dx.T,L[:,k:k+1]*dx)
+            empcov = np.dot(dx.T,like[:,k:k+1]*dx)
             Lav -= 0.5*np.trace(np.dot(empcov,self.scale[k]*self.dof[k]))
             F+= Lav
             
@@ -958,25 +944,25 @@ class VBGMM(BGMM):
         if verbose: print 'Lav', F, 'Dkl',Dkld,Dklg,Dklw
         return F-Dkl
 
-    def _Mstep(self,x,L):
+    def _Mstep(self,x,like):
         """
         VB-M step
 
         Parameters
         ----------
-        x: array of shape(nbitem,self.dim)
+        x: array of shape(nb_samples,self.dim)
            the data from which the model is estimated
-        L: array of shape(nbitem,self.k)
+        like: array of shape(nb_samples,self.k)
            the likelihood of the data under each class
         """
         from numpy.linalg import inv
         tiny  =1.e-15
-        pop = L.sum(0)
+        pop = like.sum(0)
        
         # shrinkage,weights,dof
         self.weights = self.prior_weights + pop
         pop = pop[0:self.k]
-        L = L[:,:self.k]
+        like = like[:,:self.k]
         self.shrinkage = self.prior_shrinkage + pop
         self.dof = self.prior_dof + pop
         
@@ -986,15 +972,15 @@ class VBGMM(BGMM):
         shrinkage = np.reshape(self.shrinkage,(self.k,1))
 
         # means
-        means = np.dot(L.T,x)+ self.prior_means*prior_shrinkage
+        means = np.dot(like.T,x)+ self.prior_means*prior_shrinkage
         self.means= means/shrinkage
         
         #precisions
-        empmeans = np.dot(L.T,x)/np.maximum(pop,tiny)
+        empmeans = np.dot(like.T,x)/np.maximum(pop,tiny)
         empcov = np.zeros(np.shape(self.prior_scale))
         for k in range(self.k):
              dx = x-empmeans[k]
-             empcov[k] = np.dot(dx.T,L[:,k:k+1]*dx) 
+             empcov[k] = np.dot(dx.T,like[:,k:k+1]*dx) 
                     
         covariance = np.array(self._inv_prior_scale)
         covariance += empcov
@@ -1016,7 +1002,7 @@ class VBGMM(BGMM):
 
         Parameters
         ----------
-        x: array of shape (nbitems,self.dim)
+        x: array of shape (nb_samples,self.dim)
            the data used in the estimation process
         """
         n = x.shape[0]
@@ -1028,26 +1014,26 @@ class VBGMM(BGMM):
         l[np.arange(n),z]=1
         self._Mstep(x,l)
 
-    def map_label(self, x, L=None):
+    def map_label(self, x, like=None):
         """
         return the MAP labelling of x 
         
         Parameters
         ----------
-        x array of shape (nbitem,dim)
+        x array of shape (nb_samples,dim)
           the data under study
-        L=None array of shape(nbitem,self.k)
+        like=None array of shape(nb_samples,self.k)
                component-wise likelihood
-               if L==None, it is recomputed
+               if like==None, it is recomputed
         
         Returns
         -------
-        z: array of shape(nbitem): the resulting MAP labelling
+        z: array of shape(nb_samples): the resulting MAP labelling
            of the rows of x
         """
-        if L== None:
-            L = self.likelihood(x)
-        z = np.argmax(L,1)
+        if like== None:
+            like = self.likelihood(x)
+        z = np.argmax(like,1)
         return z   
 
     def estimate(self,x, niter=100, delta = 1.e-4, verbose=0):
@@ -1056,9 +1042,9 @@ class VBGMM(BGMM):
 
         Parameters
         ----------
-        x array of shape (nbitem,dim)
+        x array of shape (nb_samples,dim)
           the data from which the model is estimated
-        z = None: array of shape (nbitem)
+        z = None: array of shape (nb_samples)
           a prior labelling of the data to initialize the computation
         niter=100: maximal number of iterations in the estimation process
         delta = 1.e-4: increment of data likelihood at which
@@ -1072,8 +1058,8 @@ class VBGMM(BGMM):
         allOld = -np.infty
         for i in range(niter):
             cc = self.means.copy()
-            L = self._Estep(x)
-            all = np.mean(np.log(np.maximum( np.sum(L,1),tiny)))
+            like = self._Estep(x)
+            all = np.mean(np.log(np.maximum( np.sum(like,1),tiny)))
             if all<allOld+delta:
                 if verbose:
                     print 'iteration:',i, 'log-likelihood:',all,\
@@ -1082,9 +1068,9 @@ class VBGMM(BGMM):
             else:
                 allOld = all
             if verbose:
-                print i, all, self.bic(L)
-            L = (L.T/np.maximum(L.sum(1),tiny)).T
-            self._Mstep(x,L)
+                print i, all, self.bic(like)
+            like = (like.T/np.maximum(like.sum(1),tiny)).T
+            self._Mstep(x,like)
             
     def likelihood(self,x):
         """
@@ -1093,28 +1079,28 @@ class VBGMM(BGMM):
 
         Parameters
         ----------
-        x: array of shape (nbitems,self.dim)
+        x: array of shape (nb_samples, self.dim)
            the data used in the estimation process
 
         Returns
         -------
-        L array of shape(nbitem,self.k)
-          component-wise likelihood
+        like: array of shape(nb_samples, self.k)
+              component-wise likelihood
         """
         x = self.check_x(x)
         return self._Estep(x) 
             
 
-def pop(self, L, tiny = 1.e-15):
+    def pop(self, like, tiny = 1.e-15):
         """
         compute the population, i.e. the statistics of allocation
 
         Parameters
         ----------
-        L array of shape (nbitem,self.k):
+        like array of shape (nb_samples, self.k):
           the likelihood of each item being in each class
         """
-        sL = np.maximum(tiny,np.sum(L,1))
-        nL = (L.T/sL).T
-        return np.sum(nL,0)
+        slike = np.maximum(tiny,np.sum(like,1))
+        nlike = (like.T/slike).T
+        return np.sum(nlike,0)
 

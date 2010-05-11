@@ -9,34 +9,67 @@ Author : Bertrand Thirion, 2006-2009
 
 import numpy as np
 import nipy.neurospin.clustering.clustering as fc
+from numpy.linalg import det, inv, eigvalsh 
 
-class grid_descriptor(object):
+class GridDescriptor(object):
     """
     A tiny class to handle cartesian grids
     """
-    def __init__(self,dim=1):
+    def __init__(self, dim=1, lim=None, n_bins=None):
+        """
+        Parameters
+        ----------
+        dim: int, optional,
+             the dimension of the grid
+        lim: list of len(2*self.dim),
+             the limits of the grid as (xmin, xmax, ymin, ymax, ...)
+        n_bins: list of len(self.dim),
+             the number of bins in each direction
+        """
         self.dim = dim
+        if lim is not None:
+            self.set(lim, n_bins)
+        if np.size(n_bins)==self.dim:
+            self.n_bins = np.ravel(np.array(n_bins))
 
-    def getinfo(self,lim,nbs):
+    def set(self, lim, n_bins=10):
+        """
+        set the limits of the grid and the number of bins
+
+        Parameters
+        ----------
+        lim: list of len(2*self.dim),
+             the limits of the grid as (xmin, xmax, ymin, ymax, ...)
+        n_bins: list of len(self.dim), optional
+             the number of bins in each direction
+        """
         if len(lim)==2*self.dim:
             self.lim = lim
         else: raise ValueError, "Wrong dimension for grid definition"
-        if np.size(nbs)==self.dim:
-            self.nbs = nbs
+        if np.size(n_bins)==self.dim:
+            self.n_bins = np.ravel(np.array(n_bins))
         else: raise ValueError, "Wrong dimension for grid definition"
 
     def make_grid(self):
-        size = np.prod(self.nbs)
+        """
+        Compute the grid points
+
+        Returns
+        -------
+        grid: array of shape (nb_nodes, self.dim)
+              where nb_nodes is the prod of self.n_bins
+        """
+        size = np.prod(self.n_bins)
         grid = np.zeros((size,self.dim))
         grange = []
 
         for j in range(self.dim):
             xm = self.lim[2*j]
             xM = self.lim[2*j+1]
-            if np.isscalar(self.nbs):
-                xb = self.nbs
+            if np.isscalar(self.n_bins):
+                xb = self.n_bins
             else:
-                xb = self.nbs[j]
+                xb = self.n_bins[j]
             zb = size/xb
             gr = xm +float(xM-xm)/(xb-1)*np.arange(xb).astype('f')
             grange.append(gr)
@@ -45,52 +78,56 @@ class grid_descriptor(object):
             grid = np.array([[grange[0][i]] for i in range(xb)])
 
         if self.dim==2:
-            for i in range(self.nbs[0]):
-                for j in range(self.nbs[1]):
-                    grid[i*self.nbs[1]+j,:]= np.array([grange[0][i],
+            for i in range(self.n_bins[0]):
+                for j in range(self.n_bins[1]):
+                    grid[i*self.n_bins[1]+j,:]= np.array([grange[0][i],
                                                        grange[1][j]])
 
         if self.dim==3:
-            for i in range(self.nbs[0]):
-                for j in range(self.nbs[1]):
-                    for k in range(self.nbs[2]):
-                        q = (i*self.nbs[1]+j)*self.nbs[2]+k
+            for i in range(self.n_bins[0]):
+                for j in range(self.n_bins[1]):
+                    for k in range(self.n_bins[2]):
+                        q = (i*self.n_bins[1]+j)*self.n_bins[2]+k
                         grid[q,:]= np.array([grange[0][i],
                                              grange[1][j],grange[2][k]])
         if self.dim>3:
-            print "Not implemented yet"
+            raise NotImplementedError, \
+                   'only dimensions <4 are currently handled'
         return grid
 
-def best_fitting_GMM(x, krange, prec_type='full',niter=100,delta = 1.e-4,ninit=1,verbose=0):
+def best_fitting_GMM(x, krange, prec_type='full', niter=100, delta = 1.e-4,
+                     ninit=1,verbose=0):
     """
     Given a certain dataset x, find the best-fitting GMM
     within a certain range indexed by krange
 
     Parameters
     ----------
-    x array of shape (nbitem,dim)
-      the data from which the model is estimated
-    krange (list of floats) the range of values to test for k
-    prec_type ='full', string (to be chosen within 'full','diag')
+    x: array of shape (n_samples,dim)
+       the data from which the model is estimated
+    krange: list of floats,
+            the range of values to test for k
+    prec_type: string (to be chosen within 'full','diag'), optional,
               the covariance parameterization
-    niter=100, int, maximal number of iterations in the estimation process
-    delta = 1.e-4n float increment of data likelihood at which
-          convergence is declared
-    ninit = 1, int number of initialization performed
-          to reach a good solution
+    niter: int, optional,
+           maximal number of iterations in the estimation process
+    delta: float, optional,
+           increment of data likelihood at which convergence is declared
+    ninit: int
+           number of initialization performed
     verbose=0: verbosity mode
     
     Returns
     -------
-    mg : the best-fitting GMM
+    mg : the best-fitting GMM instance
     """
     if np.size(x) == x.shape[0]:
-        x = np.reshape(x,(np.size(x),1))
+        x = np.reshape(x,(np.size(x), 1))
 
     dim = x.shape[1]
     bestbic = -np.infty
     for k in krange:
-        lgmm = GMM(k,dim,prec_type)
+        lgmm = GMM(k, dim, prec_type)
         gmmk = lgmm.initialize_and_estimate(x, None, niter, delta, ninit,
                                             verbose)
         bic = gmmk.evidence(x)
@@ -102,36 +139,38 @@ def best_fitting_GMM(x, krange, prec_type='full',niter=100,delta = 1.e-4,ninit=1
     return bgmm
 
 
-def plot2D(x, my_gmm, z=None, withDots=True, logScale=False, mpaxes=None,
+def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
            verbose=0):
     """
     Given a set of points in a plane and a GMM, plot them
 
     Parameters
     ----------
-    x : array of shape (npoints,dim=2)
-    my_gmm: a gmm whose density has to be ploted
-    z = None: array of shape (npoints)
-      that gives a labelling of the points in x
-      by default, it is not taken into account
-    withDots=True, bool
-                   Plot the dots or not
-    logScale=False, bool
-                    plot the likelihood in log scale or not
-    mpaxes=None, int
+    x: array of shape (npoints,dim=2),
+        sample points
+    my_gmm: GMM instance,
+            whose density has to be ploted
+    z: array of shape (npoints), optional
+       that gives a labelling of the points in x
+       by default, it is not taken into account
+    with_dots, bool, optional
+               whether to plot the dots or not
+    log_scale: bool, optional
+               whether to plot the likelihood in log scale or not
+    mpaxes=None, int, optional
                  if not None, axes handle for plotting    
-    verbose=0 : verbosity mode
+    verbose: verbosity mode, optional
 
     Returns
     -------
-    gd, grid_descriptor instance, 
+    gd, GridDescriptor instance, 
         that represents the grid used in the function
     ax, handle to the figure axes
 
     Note
     ----
-    my_gmm should have a method 'nixture_likelihood' that
-    takes an array of points of shape (np,dim)
+    my_gmm is assumed to have have a  'nixture_likelihood' method 
+    that takes an array of points of shape (np, dim)
     and returns an array of shape (np,my_gmm.k)
     that represents  the likelihood component-wise 
     """
@@ -140,7 +179,7 @@ def plot2D(x, my_gmm, z=None, withDots=True, logScale=False, mpaxes=None,
     if x.shape[1]!=2:
         raise ValueError, 'this works only for 2D cases'
     
-    gd1 = grid_descriptor(2)
+    gd1 = GridDescriptor(2)
     xmin = x.min(0)
     xmax = x.max(0)
     xm = 1.1 * xmin[0] - 0.1 * xmax[0]
@@ -148,7 +187,7 @@ def plot2D(x, my_gmm, z=None, withDots=True, logScale=False, mpaxes=None,
     ym = 1.1 * xmin[1] - 0.1 * xmax[1]
     ys = 1.1 * xmax[1] - 0.1 * xmin[1]
     
-    gd1.getinfo([xm, xs, ym, ys],[51,51])
+    gd1.set([xm, xs, ym, ys],[51,51])
     grid = gd1.make_grid()
     L = my_gmm.mixture_likelihood(grid)   
     if verbose:
@@ -162,15 +201,16 @@ def plot2D(x, my_gmm, z=None, withDots=True, logScale=False, mpaxes=None,
     else:
         ax = mpaxes 
 
-    gdx = gd1.nbs[0]
+    gdx = gd1.n_bins[0]
     Pdens= np.reshape(L,(gdx,np.size(L)/gdx))
-    if logScale:
+    extent = [xm, xs, ym, ys]
+    if log_scale:
         mp.imshow(np.log(Pdens.T), alpha=2.0, origin ='lower',
-                  extent=[xm,xs,ym,ys])
+                  extent=extent)
     else:
-        mp.imshow(Pdens.T, alpha=2.0, origin ='lower', extent=[xm,xs,ym,ys])
+        mp.imshow(Pdens.T, alpha=2.0, origin ='lower', extent=extent)
 
-    if withDots:
+    if with_dots:
         if z==None:
             mp.plot(x[:,0],x[:,1],'o')
         else:
@@ -180,7 +220,7 @@ def plot2D(x, my_gmm, z=None, withDots=True, logScale=False, mpaxes=None,
             for k in range(z.max()+1):
                 mp.plot(x[z==k,0],x[z==k,1],'o',color=col[k])   
            
-    mp.axis([xm,xs,ym,ys])
+    mp.axis(extent)
     mp.colorbar()
     
     return gd1, ax
@@ -319,7 +359,7 @@ class GMM():
         
         Parameters
         ----------
-        x, array of shape (nbitems,self.dim)
+        x, array of shape (n_samples,self.dim)
            the data used in the estimation process
         """
         import nipy.neurospin.clustering.clustering as fc
@@ -346,7 +386,7 @@ class GMM():
 
         Parameters
         ----------
-        l array of shape (nbitem,self.k):
+        l array of shape (n_samples,self.k):
           the likelihood of each item being in each class
         """
         sl = np.maximum(tiny,np.sum(l,1))
@@ -367,12 +407,12 @@ class GMM():
 
         Parameters
         ----------
-        x array of shape (nbitems,self.dim)
+        x array of shape (n_samples,self.dim)
            the data used in the estimation process
 
         Returns
         -------
-        like, array of shape(nbitem,self.k)
+        like, array of shape(n_samples,self.k)
           component-wise likelihood
         """
         like = self.unweighted_likelihood(x)
@@ -386,17 +426,17 @@ class GMM():
 
         Parameters
         ----------
-        x: array of shape (nbitems,self.dim)
+        x: array of shape (n_samples,self.dim)
            the data used in the estimation process
 
         Returns
         -------
-        like, array of shape(nbitem,self.k)
+        like, array of shape(n_samples,self.k)
           unweighted component-wise likelihood
         """
         n = x.shape[0]
         like = np.zeros((n,self.k))
-        from numpy.linalg import det
+        #from numpy.linalg import det
 
         for k in range(self.k):
             # compute the data-independent factor first
@@ -404,7 +444,8 @@ class GMM():
             m = np.reshape(self.means[k],(1,self.dim))
             b = self.precisions[k]
             if self.prec_type=='full':
-                w += np.log(det(b))
+                #w += np.log(det(b))
+                w += np.log(eigvalsh(b)).sum()
                 q = np.sum(np.dot(m-x,b)*(m-x),1)
             else:
                 w += np.sum(np.log(b))
@@ -413,6 +454,7 @@ class GMM():
             w /= 2
             like[:,k] = np.exp(w)   
         return like
+
     
     def mixture_likelihood(self, x):
         """
@@ -420,7 +462,7 @@ class GMM():
         
         Parameters
         ----------
-        x: array of shape (nbitems,self.dim)
+        x: array of shape (n_samples,self.dim)
            the data used in the estimation process
         """
         x = self.check_x(x)
@@ -435,7 +477,7 @@ class GMM():
 
         Parameters
         ----------
-        x:  array of shape (nbitems,self.dim)
+        x:  array of shape (n_samples,self.dim)
             the data used in the estimation process
         tiny = 1.e-15: a small constant to avoid numerical singularities
         """
@@ -451,7 +493,7 @@ class GMM():
         
         Parameters
         ----------
-        x array of shape (nbitems,dim)
+        x array of shape (n_samples,dim)
           the data from which bic is computed
 
         Returns
@@ -469,7 +511,7 @@ class GMM():
                 
         Parameters
         ----------        
-        like, array of shape (nbitem,self.k)
+        like, array of shape (n_samples,self.k)
            component-wise likelihood
         tiny=1.e-15, a small constant to avoid numerical singularities
         
@@ -497,12 +539,12 @@ class GMM():
 
         Parameters
         ----------
-        x array of shape (nbitems,dim)
+        x array of shape (n_samples,dim)
           the data used in the estimation process
 
         Returns
         -------
-        l array of shape(nbitem,self.k)
+        l array of shape(n_samples,self.k)
           component-wise likelihood
         """
         return self.likelihood(x)
@@ -515,7 +557,7 @@ class GMM():
         
         Parameters
         ----------
-        x array of shape (nbitems,dim)
+        x array of shape (n_samples,dim)
           the data used in the estimation process
         """
         small = 0.01
@@ -545,9 +587,9 @@ class GMM():
 
         Parameters
         ----------
-        x: array of shape(nbitem,self.dim)
+        x: array of shape(n_samples,self.dim)
            the data from which the model is estimated
-        like: array of shape(nbitem,self.k)
+        like: array of shape(n_samples,self.k)
            the likelihood of the data under each class
         """
         from numpy.linalg import pinv
@@ -620,15 +662,15 @@ class GMM():
         
         Parameters
         ----------
-        x array of shape (nbitem,dim)
+        x array of shape (n_samples,dim)
           the data under study
-        like=None array of shape(nbitem,self.k)
+        like=None array of shape(n_samples,self.k)
                component-wise likelihood
                if like==None, it is recomputed
         
         Returns
         -------
-        z: array of shape(nbitem): the resulting MAP labelling
+        z: array of shape(n_samples): the resulting MAP labelling
            of the rows of x
         """
         if like== None:
@@ -642,7 +684,7 @@ class GMM():
 
         Parameters
         ----------
-        x array of shape (nbitem,dim)
+        x array of shape (n_samples,dim)
           the data from which the model is estimated
         niter=100: maximal number of iterations in the estimation process
         delta = 1.e-4: increment of data likelihood at which
@@ -684,9 +726,9 @@ class GMM():
 
         Parameters
         ----------
-        x array of shape (nbitem,dim)
+        x array of shape (n_samples,dim)
           the data from which the model is estimated
-        z = None: array of shape (nbitem)
+        z = None: array of shape (n_samples)
             a prior labelling of the data to initialize the computation
         niter=100: maximal number of iterations in the estimation process
         delta = 1.e-4: increment of data likelihood at which
@@ -727,12 +769,12 @@ class GMM():
 
         Parameters
         ----------
-        x array of shape (nbitems,self.dim)
+        x array of shape (n_samples,self.dim)
           the data used in the estimation process
 
         Returns
         -------
-        ll: array of shape(nbitems)
+        ll: array of shape(n_samples)
             the log-likelihood of the rows of x
         """
         return np.log(np.maximum(self.mixture_likelihood(x),tiny)) 
@@ -744,24 +786,20 @@ class GMM():
 
         Parameters
         ----------
-        x: array of shape(nbitems,dim)
-           the data under study used to draw an histogram
-        gd: grid descriptor structure
-        density = None:
-                density of the model one the discrete grid implied by gd
-        mpaxes = None: axes handle to make the figure
-               if None, a new figure is created
-
-        fixme
-        -----
-        density should disappear from the API
+        x: array of shape(n_samples, dim)
+           the data under study 
+        gd: GridDescriptor instance
+        density: array os shape(prod(gd.n_bins))
+                 density of the model one the discrete grid implied by gd
+                 by default, this is recomputed
+        mpaxes: axes handle to make the figure, optional,
+                if None, a new figure is created
         """
         if density==None:
             density = self.mixture_likelihood(gd.make_grid())
 
         if gd.dim>1:
             raise NotImplementedError, "only implemented in 1D"
-        
         
         step = 3.5*np.std(x)/np.exp(np.log(np.size(x))/3)
         bins = max(10,int((x.max()-x.min())/step))
@@ -782,7 +820,7 @@ class GMM():
         ax.plot(c+offset,h,linewidth=2)
           
         for k in range (self.k):
-            ax.plot(grid,density[:,k],linewidth=2)
+            ax.plot(grid,density[:,k], linewidth=2)
         ax.set_title('Fit of the density with a mixture of Gaussians',
                      fontsize=12)
 
@@ -795,14 +833,27 @@ class GMM():
         ax.set_yticklabels(ax.get_yticks(), fontsize=12)
             
 
-    def show(self, x, gd, density=None, nbf = -1):
+    def show(self, x, gd, density=None, axes=None):
         """
-        Function to plot a GMM -WIP
+        Function to plot a GMM, still in progress
         Currently, works only in 1D and 2D
+
+        Parameters
+        ----------
+        x: array of shape(n_samples, dim)
+           the data under study 
+        gd: GridDescriptor instance
+        density: array os shape(prod(gd.n_bins))
+                 density of the model one the discrete grid implied by gd
+                 by default, this is recomputed
         """
+        # recompute the density if necessary
         if density==None:
             density = self.mixture_likelihood(gd,x)
-                
+
+        if axes is None:
+            axes = mp.figure()
+
         if gd.dim==1:
             import matplotlib.pylab as mp
             step = 3.5*np.std(x)/np.exp(np.log(np.size(x))/3)
@@ -812,15 +863,12 @@ class GMM():
             h,c = np.histogram(x, bins, [xmin,xmax], normed=True)
             offset = (xmax-xmin)/(2*bins)
             grid = gd.make_grid()
-            if nbf>-1:
-                mp.figure(nbf)
-            else:
-                mp.figure()
+        
             h /= h.sum()
             h /= (2*offset)
-            mp.plot(c[:-1]+offset,h)
-            mp.plot(grid, density)
-            mp.show()
+            axes.plot(c[:-1]+offset,h)
+            axes.plot(grid, density)
+            axes.show()
 
         if gd.dim==2:
             import matplotlib.pylab as mp
@@ -833,12 +881,12 @@ class GMM():
             ym = gd.lim[2]
             yM = gd.lim[3]
 
-            gd0 = gd.nbs[0]
-            gd1 = gd.nbs[1]
+            gd0 = gd.n_bins[0]
+            gd1 = gd.n_bins[1]
             Pdens= np.reshape(density,(gd0,np.size(density)/gd0))
-            mp.imshow(Pdens.T,None,None,None,'nearest',
-                      1.0,None,None,'lower',[xm,xM,ym,yM])
-            mp.plot(x[:,0],x[:,1],'.k')
-            mp.axis([xm,xM,ym,yM])
-            mp.show()
+            axes.imshow(Pdens.T, None, None, None, 'nearest',
+                      1.0, None, None,'lower',[xm, xM, ym, yM])
+            axes.plot(x[:,0],x[:,1],'.k')
+            axes.axis([xm, xM, ym, yM])
+        return axes
  
