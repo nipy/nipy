@@ -1,4 +1,4 @@
-nipy (0.1.2+20100504-0.1) unstable; urgency=low
+nipy (0.1.2+20100505-1) unstable; urgency=low
 
   * Fresh upstream snapshot (Closes: #577898). Switching from bzr rev to
     git dated versioning for nipy for now
