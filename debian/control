@@ -3,7 +3,7 @@ Section: python
 Priority: extra
 Maintainer: NeuroDebian Team <team@neuro.debian.net>
 Uploaders: Yaroslav Halchenko <debian@onerussian.com>, Michael Hanke <michael.hanke@gmail.com>
-Build-Depends: cdbs, debhelper (>= 7), python-all-dev (>= 2.4), python-support (>= 0.6), python-scipy, python-numpy (>= 1.2), python-matplotlib (>= 0.98.3), python-sphinx (>= 0.6), python-nifti (>> 0.20090302), liblapack-dev, python-nose, liblapack-dev, python-dbg, python-numpy-dbg, graphviz
+Build-Depends: cdbs, debhelper (>= 7), python-all-dev (>= 2.4), python-support (>= 0.6), python-scipy (>= 0.5), python-numpy (>= 1.2), python-matplotlib (>= 0.98.3), python-sphinx (>= 0.6), python-nifti (>> 0.20090302), liblapack-dev, python-nose, python-sympy, cython, liblapack-dev, python-dbg, python-numpy-dbg, graphviz
 Standards-Version: 3.8.4
 Homepage: http://neuroimaging.scipy.org
 Vcs-Browser: http://git.debian.org/?p=pkg-exppsy/nipy.git
@@ -14,7 +14,7 @@ DM-Upload-Allowed: yes
 Package: python-nipy
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-scipy, python-numpy (>=1.2), python-nifti (>> 0.20090302), python-nipy-lib (>= ${source:Version})
-Recommends: python-matplotlib
+Recommends: python-matplotlib, mayavi2
 Suggests: python-mvpa
 Provides: ${python:Provides}
 XB-Python-Version: ${python:Versions}
