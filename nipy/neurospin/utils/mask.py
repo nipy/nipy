@@ -168,7 +168,7 @@ def compute_mask_files(input_filename, output_filename=None,
         del vol_arr
     else:
         # List of filenames
-        if len(input_filename) == 0:
+        if len(list(input_filename)) == 0:
             raise ValueError('input_filename should be a non-empty '
                 'list of file names')
         # We have several images, we do mean on the fly, 
@@ -185,7 +185,7 @@ def compute_mask_files(input_filename, output_filename=None,
                 affine = nim.get_affine()
             else:
                 mean_volume += nim.get_data().squeeze()
-        mean_volume /= float(len(input_filename))
+        mean_volume /= float(len(list(input_filename)))
         
     del nim
     if np.isnan(mean_volume).any():
@@ -302,7 +302,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
         
     # Take the "half-intersection", i.e. all the voxels that fall within
     # 50% of the individual masks.
-    mask = (mask > threshold*len(session_files))
+    mask = (mask > threshold*len(list(session_files)))
    
     if cc:
         # Select the largest connected component (each mask is
@@ -347,7 +347,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
         else:
             grp_mask += this_mask
     
-    grp_mask = grp_mask>(threshold*len(input_masks))
+    grp_mask = grp_mask>(threshold*len(list(input_masks)))
     if np.any(grp_mask>0) and cc:
         grp_mask = largest_cc(grp_mask)
     
@@ -411,7 +411,7 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
                                                         smooth_sigma)
         series = data[mask].astype(dtype)
     else:
-        nb_time_points = len(filenames)
+        nb_time_points = len(list(filenames))
         series = np.zeros((mask.sum(), nb_time_points), dtype=dtype)
         for index, filename in enumerate(filenames):
             data_file = load(filename)
