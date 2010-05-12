@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Simple demo that partitions a smooth field into 10 clusters
 In that case, Ward's clustering behaves best, by far.
