@@ -24,24 +24,14 @@ import pylab as pl
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 
-# Local imports
-from nipy.neurospin.datasets import VolumeImg
-
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import coord_transform, find_cut_coords
 
-from .ortho_slicer import OrthoSlicer
+from .ortho_slicer import OrthoSlicer, _xyz_order
 
 ################################################################################
 # Helper functions for 2D plotting of activation maps 
 ################################################################################
-def _xyz_order(map, affine):
-    img = VolumeImg(map, affine=affine, world_space='mine')
-    img = img.xyz_ordered(resample=True, copy=False)
-    map = img.get_data()
-    affine = img.affine
-    return map, affine
-
 
 def _fast_abs_percentile(map):
     """ An algorithm to implement a fast version of the 80-percentile of
@@ -133,11 +123,6 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         x_map, y_map, z_map = find_cut_coords(map,
                                 activation_threshold=threshold)
         cut_coords = coord_transform(x_map, y_map, z_map, affine)
-    if threshold is not None:
-        if threshold == 0:
-            map = np.ma.masked_equal(map, 0, copy=False)
-        else:
-            map = np.ma.masked_inside(map, -threshold, threshold, copy=False)
     
     if do3d:
         try:
