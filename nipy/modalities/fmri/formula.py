@@ -1,5 +1,111 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+
+'''
+Formula objects
+===============
+
+A formula is basically a sympy expression for the mean of something of
+the form::
+
+   mean = sum([Beta(e)*e for e in expr])
+
+Or, a linear combination of sympy expressions, with each one multiplied
+by its own "Beta". The elements of expr can be instances of Term (for a
+linear regression formula, they would all be instances of Term). But, in
+general, there might be some other parameters (i.e. sympy.Symbol
+instances) that are not Terms.
+
+The design matrix is made up of columns that are the derivatives of mean
+with respect to everything that is not a Term, evaluted at a recarray
+that has field names given by [str(t) for t in self.terms].
+
+For those familiar with R's formula syntax, if we wanted a design matrix
+like the following::
+
+    > s.table = read.table("http://www-stat.stanford.edu/~jtaylo/courses/stats191/data/supervisor.table", header=T)
+    > d = model.matrix(lm(Y ~ X1*X3, s.table)
+    )
+    > d
+       (Intercept) X1 X3 X1:X3
+    1            1 51 39  1989
+    2            1 64 54  3456
+    3            1 70 69  4830
+    4            1 63 47  2961
+    5            1 78 66  5148
+    6            1 55 44  2420
+    7            1 67 56  3752
+    8            1 75 55  4125
+    9            1 82 67  5494
+    10           1 61 47  2867
+    11           1 53 58  3074
+    12           1 60 39  2340
+    13           1 62 42  2604
+    14           1 83 45  3735
+    15           1 77 72  5544
+    16           1 90 72  6480
+    17           1 85 69  5865
+    18           1 60 75  4500
+    19           1 70 57  3990
+    20           1 58 54  3132
+    21           1 40 34  1360
+    22           1 61 62  3782
+    23           1 66 50  3300
+    24           1 37 58  2146
+    25           1 54 48  2592
+    26           1 77 63  4851
+    27           1 75 74  5550
+    28           1 57 45  2565
+    29           1 85 71  6035
+    30           1 82 59  4838
+    attr(,"assign")
+    [1] 0 1 2 3
+    >                                     
+
+With the Formula, it looks like this:
+
+>>> r
+rec.array([(43, 51, 30, 39, 61, 92, 45), (63, 64, 51, 54, 63, 73, 47),
+       (71, 70, 68, 69, 76, 86, 48), (61, 63, 45, 47, 54, 84, 35),
+       (81, 78, 56, 66, 71, 83, 47), (43, 55, 49, 44, 54, 49, 34),
+       (58, 67, 42, 56, 66, 68, 35), (71, 75, 50, 55, 70, 66, 41),
+       (72, 82, 72, 67, 71, 83, 31), (67, 61, 45, 47, 62, 80, 41),
+       (64, 53, 53, 58, 58, 67, 34), (67, 60, 47, 39, 59, 74, 41),
+       (69, 62, 57, 42, 55, 63, 25), (68, 83, 83, 45, 59, 77, 35),
+       (77, 77, 54, 72, 79, 77, 46), (81, 90, 50, 72, 60, 54, 36),
+       (74, 85, 64, 69, 79, 79, 63), (65, 60, 65, 75, 55, 80, 60),
+       (65, 70, 46, 57, 75, 85, 46), (50, 58, 68, 54, 64, 78, 52),
+       (50, 40, 33, 34, 43, 64, 33), (64, 61, 52, 62, 66, 80, 41),
+       (53, 66, 52, 50, 63, 80, 37), (40, 37, 42, 58, 50, 57, 49),
+       (63, 54, 42, 48, 66, 75, 33), (66, 77, 66, 63, 88, 76, 72),
+       (78, 75, 58, 74, 80, 78, 49), (48, 57, 44, 45, 51, 83, 38),
+       (85, 85, 71, 71, 77, 74, 55), (82, 82, 39, 59, 64, 78, 39)],
+      dtype=[('y', '<i8'), ('x1', '<i8'), ('x2', '<i8'), ('x3', '<i8'), ('x4', '<i8'), ('x5', '<i8'), ('x6', '<i8')])
+>>> x1 = Term('x1'); x3 = Term('x3')
+>>> f = Formula([x1, x3, x1*x3]) I
+>>> f.mean
+_b0*x1 + _b1*x3 + _b2*x1*x3 + _b3
+>>> # The I is the "intercept" term, I have explicity not
+>>> # used R's default of adding it to everything.
+>>> f.design(r)
+array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
+       (70.0, 69.0, 4830.0, 1.0), (63.0, 47.0, 2961.0, 1.0),
+       (78.0, 66.0, 5148.0, 1.0), (55.0, 44.0, 2420.0, 1.0),
+       (67.0, 56.0, 3752.0, 1.0), (75.0, 55.0, 4125.0, 1.0),
+       (82.0, 67.0, 5494.0, 1.0), (61.0, 47.0, 2867.0, 1.0),
+       (53.0, 58.0, 3074.0, 1.0), (60.0, 39.0, 2340.0, 1.0),
+       (62.0, 42.0, 2604.0, 1.0), (83.0, 45.0, 3735.0, 1.0),
+       (77.0, 72.0, 5544.0, 1.0), (90.0, 72.0, 6480.0, 1.0),
+       (85.0, 69.0, 5865.0, 1.0), (60.0, 75.0, 4500.0, 1.0),
+       (70.0, 57.0, 3990.0, 1.0), (58.0, 54.0, 3132.0, 1.0),
+       (40.0, 34.0, 1360.0, 1.0), (61.0, 62.0, 3782.0, 1.0),
+       (66.0, 50.0, 3300.0, 1.0), (37.0, 58.0, 2146.0, 1.0),
+       (54.0, 48.0, 2592.0, 1.0), (77.0, 63.0, 4851.0, 1.0),
+       (75.0, 74.0, 5550.0, 1.0), (57.0, 45.0, 2565.0, 1.0),
+       (85.0, 71.0, 6035.0, 1.0), (82.0, 59.0, 4838.0, 1.0)],
+      dtype=[('x1', '<f8'), ('x3', '<f8'), ('x1*x3', '<f8'), ('1', '<f8')])
+'''
+
 import warnings
 from string import lowercase, uppercase
 
@@ -66,7 +172,9 @@ class FactorTerm(Term):
         else:
             return sympy.Symbol.__mul__(self, other)
 
+    
 class Beta(sympy.symbol.Dummy):
+    ''' A symbol tied to a Term `term` '''
     def __new__(cls, name, term):
         new = sympy.symbol.Dummy.__new__(cls, name)
         new._term = term
