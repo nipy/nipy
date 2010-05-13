@@ -28,14 +28,16 @@ Note that contrast specification relied on the  contrast_tools module
 Author : Lise Favre, Bertrand Thirion, 2008-2010
 """
 
-import numpy as np
-import commands
 import os
-from configobj import ConfigObj
-
-from nipy.io.imageformats import load, save, Nifti1Image
-import glob
 from os.path import join
+import commands
+import glob
+
+import numpy as np
+
+from ...externals.configobj import ConfigObj
+
+from ...io.imageformats import load, save, Nifti1Image
 
 ############################################
 # Path definition

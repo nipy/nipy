@@ -8,10 +8,14 @@ Here the analysis is perfomed on the cortical of one hemisphere.
 Author : Lise Favre, Bertrand Thirion, 2008-2010
 """
 import os
-from configobj import ConfigObj
+
 from numpy import arange
 
-from nipy.neurospin.glm_files_layout import glm_tools, contrast_tools, cortical_glm
+from nipy.externals.configobj import ConfigObj
+
+from nipy.neurospin.glm_files_layout import (glm_tools,
+                                             contrast_tools,
+                                             cortical_glm)
 
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------

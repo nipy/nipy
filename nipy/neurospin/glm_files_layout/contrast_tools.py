@@ -8,7 +8,8 @@ Author : Lise Favre, Bertrand Thirion, 2008-2010
 """
 
 from numpy import array, zeros, size
-from configobj import ConfigObj
+
+from ...externals.configobj import ConfigObj
 
 class Contrast(dict):
     """

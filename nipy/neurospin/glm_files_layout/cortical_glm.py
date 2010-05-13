@@ -13,9 +13,11 @@ Author : Bertrand Thirion, 2010
 import os
 import glob
 import numpy as np
-from configobj import ConfigObj
-import glm_tools
-import tio
+
+from ...externals.configobj import ConfigObj
+
+from . import glm_tools
+from . import tio
 
 
 ############################################

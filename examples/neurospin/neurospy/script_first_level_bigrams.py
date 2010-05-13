@@ -7,12 +7,12 @@ Last updated by B.Thirion
 Author : Lise Favre, Bertrand Thirion, 2008-2009
 """
 import os
-from configobj import ConfigObj
+
 from numpy import arange
+
+from nipy.externals.configobj import ConfigObj
 from nipy.neurospin.utils.mask import compute_mask_files
 from nipy.neurospin.glm_files_layout import glm_tools, contrast_tools
-
-
 
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------
