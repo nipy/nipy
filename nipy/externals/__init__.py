@@ -2,3 +2,4 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 # init for externals package
 from . import argparse
+from . import configobj
