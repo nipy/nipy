@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from os.path import join as pjoin
 import sys
 from glob import glob
 from distutils import log
@@ -107,8 +108,9 @@ cmdclass['build_ext'] = MyBuildExt
 
 ################################################################################
 
-# We need to import nipy as late as possible, 
-from nipy import  __doc__
+# Get project related strings.  Please do not change this line to use
+# execfile because execfile is not available in Python 3
+release_vars = __import__(pjoin('nipy', 'utils', 'release'))
 
 def main(**extra_args):
     from numpy.distutils.core import setup
@@ -118,7 +120,7 @@ def main(**extra_args):
            author = 'Various',
            author_email = 'nipy-devel@neuroimaging.scipy.org',
            url = 'http://neuroimaging.scipy.org',
-           long_description = __doc__,
+           long_description = release_vars.long_description,
            configuration = configuration,
            cmdclass = cmdclass,
            scripts = glob('scripts/*.py'),
