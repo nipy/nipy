@@ -14,7 +14,7 @@
 
    howto_document
    sphinx_helpers
-   git
+   using_git
    testing
    debugging
    optimization
