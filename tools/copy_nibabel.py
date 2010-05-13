@@ -17,7 +17,7 @@ copy_brifti.py /tmp/brifti-0.4.tar.gz brifti-0.4
 cd ~/nipy-repo/trunk-lp/nipy/io
 tar zcvf /tmp/brifti-0.4.tar.gz
 
-then bzr stat, commit as necessary.
+then git stat, commit as necessary.
 
 Or, when working locally, something like:
 

@@ -31,11 +31,13 @@
 .. _nifti: http://nifti.nimh.nih.gov
 .. _`nipy sourceforge`: http://nipy.sourceforge.net/
 .. _sourceforge: http://nipy.sourceforge.net/
+.. _nipy github: http://github.com/nipy/nipy
 .. _`nipy launchpad`: https://launchpad.net/nipy
+.. _github: http://github.com
 .. _launchpad: https://launchpad.net/
-.. _`nipy trunk`: https://code.launchpad.net/~nipy-developers/nipy/trunk
+.. _`nipy trunk`: http://github.com/nipy/nipy
 .. _`nipy mailing list`: http://projects.scipy.org/mailman/listinfo/nipy-devel
-.. _`nipy bugs`: https://bugs.launchpad.net/nipy
+.. _`nipy bugs`: http://github.com/nipy/nipy/issues
 
 .. Code support stuff
 .. _pychecker: http://pychecker.sourceforge.net/

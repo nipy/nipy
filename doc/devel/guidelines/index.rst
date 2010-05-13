@@ -14,9 +14,7 @@
 
    howto_document
    sphinx_helpers
-   bzr_workflow
-   bzr_administration
-   bzr_tips
+   git
    testing
    debugging
    optimization
