@@ -105,13 +105,10 @@ are:
    ``glob.glob(os.path.join(etc_dir, '*.ini')`` and ``etc_dir`` is
    ``/etc/nipy`` on Unix, and some suitable equivalent on Windows.
 #. The result of ``os.path.join(sys.prefix, 'share', 'nipy')``
-#. The result of an algorithm to find where distutils will install data,
-   leading to ``data_prefix``, thence ``os.path.join(data_prefix,
-   'share', 'nipy')``.  We need this because Debian (for example) does
-   not install data by default to ``sys.prefix``.
-
-The last two are to make sure that we always find a default install of
-the data.
+#. If ``sys.prefix`` is ``/usr``, we add ``/usr/local/share/nipy``. We
+   need this because Python 2.6 in Debian / Ubuntu does default installs
+   to ``/usr/local``.
+#. The result of ``get_nipy_user_dir()``
 
 Requirements for a data package
 ```````````````````````````````

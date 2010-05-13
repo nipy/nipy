@@ -149,12 +149,9 @@ def get_data_path():
     #. Any section = ``DATA``, key = ``path`` value in any files found
        with a ``sorted(glob.glob(os.path.join(sys_dir, '*.ini')))``
        search, where ``sys_dir`` is found with ``get_nipy_system_dir()``
-    #. The result of ``os.path.join(sys.prefix, 'share', 'nipy')``
-    #. The result of an algorithm to find where distutils will install
-       data, leading to ``data_prefix``, thence
-       ``os.path.join(data_prefix, 'share', 'nipy')``.  We need this
-       because Debian (for example) does not install data by default to
-       ``sys.prefix``. 
+    #. If ``sys.prefix`` is ``/usr``, we add
+       ``/usr/local/share/nipy``. We need this because Python 2.6 in
+       Debian / Ubuntu does default installs to ``/usr/local``.
     #. The result of ``get_nipy_user_dir()``
 
     Therefore, any paths found in ``NIPY_DATA_PATH`` will be searched
@@ -174,9 +171,9 @@ def get_data_path():
 
     Notes
     -----
-    We have to use distutils to find where the data will be installed,
-    because Debian modifies distutils, and so we cannot depend on the
-    default data prefix being from ``sys.prefix``; see:
+    We have to add ``/usr/local/share/nipy`` if sys.prefix is ``/usr``,
+    because Debian has patched distutils in Python 2.6 to do default
+    distutils installs there:
 
     * http://www.debian.org/doc/packaging-manuals/python-policy/ap-packaging_tools.html#s-distutils
     * http://www.mail-archive.com/debian-python@lists.debian.org/msg05084.html
@@ -197,22 +194,10 @@ def get_data_path():
         if var:
             paths += var.split(os.path.pathsep)
     paths.append(pjoin(sys.prefix, 'share', 'nipy'))
-    def_data_pref = default_inst_obj().install_data
-    if def_data_pref != sys.prefix:
-        paths.append(pjoin(def_data_pref, 'share', 'nipy'))
+    if sys.prefix == '/usr':
+        paths.append(pjoin('/usr/local', 'share', 'nipy'))
     paths.append(pjoin(get_nipy_user_dir()))
     return paths
-
-
-def default_inst_obj():
-    ''' Return guessed default install object from distutils '''
-    import distutils.core as dic
-    import distutils.command.install as dci
-    # Default install command
-    inst_obj = dci.install(dic.Distribution())
-    inst_obj.initialize_options()
-    inst_obj.finalize_options()
-    return inst_obj
 
 
 def find_data_dir(root_dirs, *names):

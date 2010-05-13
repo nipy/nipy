@@ -10,7 +10,7 @@ import tempfile
 from nipy.utils.data import get_data_path, find_data_dir, \
     DataError, _cfg_value, make_datasource, \
     Datasource, VersionedDatasource, Bomber, \
-    _datasource_or_bomber, default_inst_obj
+    _datasource_or_bomber
 
 from nipy.utils.tmpdirs import TemporaryDirectory
 
@@ -147,12 +147,12 @@ def test_data_path():
     nud.get_nipy_system_dir = lambda : ''
     # now we should only have the default
     old_pth = get_data_path()
-    # We should have only sys.prefix, and, if different, the
-    # installation data directory
+    # We should have only sys.prefix and, iff sys.prefix == /usr,
+    # '/usr/local'.  This last to is deal with Debian patching to
+    # distutils.
     def_dirs = [pjoin(sys.prefix, 'share', 'nipy')]
-    def_data_pref = default_inst_obj().install_data
-    if def_data_pref != sys.prefix:
-        def_dirs.append(pjoin(def_data_pref, 'share', 'nipy'))
+    if sys.prefix == '/usr':
+        def_dirs.append(pjoin('/usr/local', 'share', 'nipy'))
     home_nipy = pjoin(os.path.expanduser('~'), '.nipy')
     yield assert_equal, old_pth, def_dirs + [home_nipy]
     # then we'll try adding some of our own
@@ -265,8 +265,3 @@ def test__datasource_or_bomber():
         fn = ds.get_filename('some_file.txt')
     
 
-@parametric
-def test_default_inst_obj():
-    obj = default_inst_obj()
-    yield assert_true(obj.install_data is not None)
-    
