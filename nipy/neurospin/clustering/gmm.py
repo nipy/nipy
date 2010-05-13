@@ -449,7 +449,7 @@ class GMM():
                 q = np.sum(np.dot(m-x,b)*(m-x),1)
             else:
                 w += np.sum(np.log(b))
-                q = np.dot((m-x)**2,b)
+                q = np.dot((m-x)**2, b)
             w -= q
             w /= 2
             like[:,k] = np.exp(w)   

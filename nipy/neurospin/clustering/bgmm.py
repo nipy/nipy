@@ -18,6 +18,7 @@ import numpy as np
 import numpy.random as nr
 from numpy.linalg import det, inv, pinv, cholesky, eigvalsh 
 from scipy.special import gammaln
+import math
 
 
 import nipy.neurospin.clustering.clustering as fc
@@ -95,7 +96,7 @@ def generate_Wishart(n, V):
     W = np.dot(R, R.T)
     return W
 
-def Wishart_eval(n, V, W, dV=None, dW=None, piV=None):
+def wishart_eval(n, V, W, dV=None, dW=None, piV=None):
     """
     Evaluation of the  probability of W under Wishart(n,V)
 
@@ -121,20 +122,18 @@ def Wishart_eval(n, V, W, dV=None, dW=None, piV=None):
     # check that shape(V)==shape(W)
     p = V.shape[0]
     if dV == None:
-        dV = np.prd(eigvalsh(V))
+        dV = np.prod(eigvalsh(V))
     if dW == None:
         dW = np.prod(eigvalsh(W))
     if piV==None:
         piV = inv(V)
-    ldW = np.log(dW)*(n-p-1)/2
+    ldW = math.log(dW)*(n-p-1)/2
     ltr = - np.trace(np.dot(piV, W))/2
-    la = ( n*p*np.log(2) + np.log(dV)*n )/2
-    lg = np.log(np.pi)*p*(p-1)/4
-    #for j in range(p):
-    #    lg += gammaln((n-j)/2)
+    la = ( n*p*math.log(2) + math.log(dV)*n )/2
+    lg = math.log(math.pi)*p*(p-1)/4
     lg += gammaln(np.arange(n-p+1, n+1).astype(np.float)/2).sum()
     lt = ldW + ltr -la -lg
-    return np.exp(lt)
+    return math.exp(lt)
 
 def normal_eval(mu, P, x, dP=None):
     """
@@ -144,7 +143,7 @@ def normal_eval(mu, P, x, dP=None):
     ----------
     mu: array of shape (n),
         the mean parameter
-    P: array of shape (n,n),
+    P: array of shape (n, n),
        the precision matrix 
     x: array of shape (n),
        the data to be evaluated
@@ -156,16 +155,17 @@ def normal_eval(mu, P, x, dP=None):
     p = np.size(mu)
     if dP==None:
         dP = np.prod(eigvalsh(P))
-    mu = np.reshape(mu,(1,p))
-    w0 = np.log(dP)-p*np.log(2*np.pi)
+    #mu = np.reshape(mu,(1,p))
+    w0 = math.log(dP)-p*math.log(2*math.pi)
     w0 /= 2               
-    x = np.reshape(x,(1,p))
-    q = np.dot(np.dot(mu-x,P),(mu-x).T)
+    #x = np.reshape(x,(1,p))
+    #q = np.dot(np.dot(mu-x,P),(mu-x).T)
+    q = np.dot(np.dot(P, mu),x)
     w = w0 - q/2
-    like = np.exp(w)
-    return np.squeeze(like)
+    like = math.exp(w)
+    return like
         
-def generate_perm(k,nperm=100):
+def generate_perm(k, nperm=100):
     """
     returns an array of shape(nbperm, k) representing
     the permutations of k elements
@@ -200,12 +200,11 @@ def generate_perm(k,nperm=100):
             perm[i,:] = p
     return perm
 
-def apply_perm(perm,z):
+def apply_perm(perm, z):
     """
     Permutation of the values of z
     """
-    z0 = perm[z]
-    return z0
+    return z[perm]
     
 def multinomial(Likelihood):
     """
@@ -747,12 +746,13 @@ class BGMM(GMM):
         for k in range(self.k):
             mp = self.precisions[k] * self.prior_shrinkage[k]
             p0 *= normal_eval(self.prior_means[k], mp, self.means[k])
-            p0 *= Wishart_eval(self.prior_dof[k], self.prior_scale[k],
+            p0 *= wishart_eval(self.prior_dof[k], self.prior_scale[k],
                                self.precisions[k], dV=self._dets[k],
                                dW=self._detp[k], piV=self._inv_prior_scale[k])
         return p0
 
-    def conditional_posterior_proba_(self, x, z):
+
+    def conditional_posterior_proba(self, x, z, perm=None):
         """
         Compute the probability of the current parameters of self
         given x and z
@@ -765,142 +765,62 @@ class BGMM(GMM):
            the corresponding classification
         """
         pop = self.pop(z)
-
-        #0. Compute the empirical means
-        empmeans = np.zeros(np.shape(self.means))
-        for k in range(self.k):
-            empmeans[k] = np.sum(x[z==k],0)
- 
         rpop = (pop+(pop==0)).astype(np.float)
-        empmeans = (empmeans.T/rpop).T
-            
-        #1. the precisions
         dof = self.prior_dof + pop + 1
-        empcov = np.zeros(np.shape(self.precisions))
-
-        for k in range(self.k):
-            dx = np.reshape(x[z==k]-empmeans[k],(pop[k],self.dim))
-            empcov[k] += np.dot(dx.T,dx)
-
-        from numpy.linalg import inv
-                
-        covariance = np.array(self._inv_prior_scale)
-        covariance += empcov
-                        
-        dx = np.reshape(self.means-self.prior_means,
-                        (self.k, self.dim, 1))
-        addcov =  np.zeros(np.shape(self.precisions))
-        for  k in range(self.k):
-            addcov[k] = np.dot(dx[k],dx[k].T)
-        
-        prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
-        covariance += addcov*prior_shrinkage
-
-        scale = np.array([inv(covariance[k]) for k in range(self.k)])
-        _dets = np.array([np.prod(eigvalsh(scale[k])) for k in range(self.k)])
-        
-        #2. the means
-        empmeans= (empmeans.T*rpop).T
         shrinkage = self.prior_shrinkage + pop   
-        prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1))
-        shrinkage = np.reshape(shrinkage,(self.k,1))        
-        means = empmeans + self.prior_means*prior_shrinkage
-        means/= shrinkage
-
-        #3. the weights
-        weights = np.array([np.sum(z==k) for k in range(len(self.weights))])
-        weights += self.prior_weights
+        weights = pop + self.prior_weights
         
-        #4. evaluate the posteriors
-        pp = 1
-        pp = dirichlet_eval(self.weights, weights)
+        # initialize the porsterior proba
+        if perm==None:
+            pp = dirichlet_eval(self.weights, weights)
+        else:
+            pp = np.array([dirichlet_eval(self.weights[pj], weights)
+                           for pj in perm])
+        
         for k in range(self.k):
-            pp*= Wishart_eval(dof[k], scale[k], self.precisions[k],
-                              dW=self._detp[k], dV=_dets[k], piV=covariance[k] )
-
-        for k in range(self.k):
-            mp = scale[k]*shrinkage[k]
-            _dP = _dets[k]*shrinkage[k]**self.dim
-            pp *= normal_eval(means[k], mp, self.means[k], dP=_dP)
-        return pp
-
-    def conditional_posterior_proba(self, x, z):
-        """
-        Compute the probability of the current parameters of self
-        given x and z
-
-        Parameters
-        ----------
-        x= array of shape (nb_samples,dim)
-           the data from which bic is computed
-        z= array of shape (nb_samples), type = np.int
-           the corresponding classification
-        """
-        pop = self.pop(z)
-
-        #0. Compute the empirical means
-        empmeans = np.zeros(np.shape(self.means))
-        for k in range(self.k):
-            empmeans[k] = np.sum(x[z==k],0)
+            m1 = np.sum(x[z==k],0)
+            
+            #0. Compute the empirical means
+            empmeans = m1/rpop[k]
  
-        rpop = (pop+(pop==0)).astype(np.float)
-        empmeans = (empmeans.T/rpop).T
-            
-        #1. the precisions
-        dof = self.prior_dof + pop + 1
-        empcov = np.zeros(np.shape(self.precisions))
+            #1. the precisions
+            dx = np.reshape(x[z==k]-empmeans,(pop[k],self.dim))
+            dm = self.means[k]-self.prior_means[k]
+            #dm = empmeans-self.prior_means[k]
+            addcov = np.dot(dm,dm.T) * self.prior_shrinkage[k]
+            covariance = np.dot(dx.T,dx) + self._inv_prior_scale[k] + addcov
+            scale = inv(covariance)
+            _dets = np.prod(eigvalsh(scale))
+        
+            #2. the means
+            means = m1 + self.prior_means[k]*self.prior_shrinkage[k]
+            means /= shrinkage[k]
 
-        for k in range(self.k):
-            dx = np.reshape(x[z==k]-empmeans[k],(pop[k],self.dim))
-            empcov[k] += np.dot(dx.T,dx)
+            #4. update the posteriors
+            if perm==None:
+                pp*= wishart_eval(dof[k], scale, self.precisions[k],
+                                  dW=self._detp[k], dV=_dets, piV=covariance)
+            else:
+                for j, pj in enumerate(perm):
+                    pp[j]*= wishart_eval(
+                        dof[k], scale, self.precisions[pj[k]],
+                        dW=self._detp[pj[k]], dV=_dets, piV=covariance)
 
-        from numpy.linalg import inv
+            mp = scale*shrinkage[k]
+            _dP = _dets*shrinkage[k]**self.dim
+            if perm==None:
+                pp *= normal_eval(means, mp, self.means[k], dP=_dP)
+            else:
+                for j,pj in enumerate(perm):
+                    pp[j] *= normal_eval(means, mp, self.means[pj[k]], dP=_dP)
                 
-        covariance = np.array(self._inv_prior_scale)
-        covariance += empcov
-                        
-        dx = np.reshape(self.means-self.prior_means,
-                        (self.k, self.dim, 1))
-        addcov =  np.zeros(np.shape(self.precisions))
-        for  k in range(self.k):
-            addcov[k] = np.dot(dx[k],dx[k].T)
-        
-        prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
-        covariance += addcov*prior_shrinkage
-
-        scale = np.array([inv(covariance[k]) for k in range(self.k)])
-        _dets = np.array([np.prod(eigvalsh(scale[k])) for k in range(self.k)])
-        
-        #2. the means
-        empmeans= (empmeans.T*rpop).T
-        shrinkage = self.prior_shrinkage + pop   
-        prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1))
-        shrinkage = np.reshape(shrinkage,(self.k,1))        
-        means = empmeans + self.prior_means*prior_shrinkage
-        means/= shrinkage
-
-        #3. the weights
-        weights = np.array([np.sum(z==k) for k in range(len(self.weights))])
-        weights += self.prior_weights
-        
-        #4. evaluate the posteriors
-        pp = 1
-        pp = dirichlet_eval(self.weights, weights)
-        for k in range(self.k):
-            pp*= Wishart_eval(dof[k], scale[k], self.precisions[k],
-                              dW=self._detp[k], dV=_dets[k], piV=covariance[k] )
-
-        for k in range(self.k):
-            mp = scale[k]*shrinkage[k]
-            _dP = _dets[k]*shrinkage[k]**self.dim
-            pp *= normal_eval(means[k], mp, self.means[k], dP=_dP)
         return pp
     
-    def evidence(self,x,z,nperm=0,verbose=0):
+    def evidence(self, x, z, nperm=0, verbose=0):
         """
         See bayes_factor(self,x,z,nperm=0,verbose=0)
         """
-        return self.bayes_factor(self,x,z,nperm,verbose)
+        return self.bayes_factor(self, x, z, nperm, verbose)
     
     def bayes_factor(self, x, z, nperm=0, verbose=0):
         """
@@ -936,15 +856,20 @@ class BGMM(GMM):
             nperm = perm.shape[0]
         for i in range(niter):
             if nperm==0:
+                """
                 for j in range(perm.shape[0]):
                     pz = apply_perm(perm[j], z[:,i])
                     temp = self.conditional_posterior_proba(x, pz)
                     p.append(temp)
+                """
+                temp = self.conditional_posterior_proba(x, z[:,i], perm)
+                p.append(temp.mean())
+                
             else:
                 drand = np.argsort(np.random.rand(perm.shape[0]))[:nperm]
                 for j in drand:
                     pz = apply_perm(perm[j], z[:,i])
-                    temp = self.conditional_posterior_proba(x,pz)
+                    temp = self.conditional_posterior_proba(x, pz)
                     p.append(temp)
 
         p = np.array(p)
