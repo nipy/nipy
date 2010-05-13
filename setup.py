@@ -57,7 +57,7 @@ def _cython_version(pkg_name):
     from Cython.Compiler.Version import version
     return version
 # Cython is a build dependency
-package_check('cython', '0.12', optional=False,
+package_check('cython', '0.11.1', optional=False,
               version_getter=_cython_version)
     
 ################################################################################
