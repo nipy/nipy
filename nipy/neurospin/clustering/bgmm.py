@@ -305,34 +305,38 @@ class BGMM(GMM):
     This class implements Bayesian GMMs 
 
     this class contains the follwing fields
-    - k (int): the number of components in the mixture
-    - dim (int): is the dimension of the data
-    - means array of shape (k,dim):
-    all the means of the components
-    - precisions array of shape (k,dim,dim):
-    the precisions of the componenets    
-    - weights: array of shsape (k) weights of the mixture
-     - shrinkage : array of shape (k):
-    scaling factor of the posterior precisions on the mean
-    - dof : array of shape (k): the posterior dofs
+    k: int,
+       the number of components in the mixture
+    dim: int,
+         the dimension of the data
+    means: array of shape (k,dim)
+           all the means of the components
+    precisions: array of shape (k,dim,dim)
+                the precisions of the componenets    
+    weights: array of shape (k):
+             weights of the mixture
+    shrinkage: array of shape (k):
+               scaling factor of the posterior precisions on the mean
+    dof: array of shape (k)
+         the degrees of freedom of the components
     
-    - prior_means : array of shape (k,dim):
-    the prior on the components means
-    - prior_scale : array of shape (k,dim):
-    the prior on the components precisions
-    - prior_dof : array of shape (k):
-    the prior on the dof (should be at least equal to dim)
-    - prior_shrinkage : array of shape (k):
-    scaling factor of the prior precisions on the mean
-    - prior_weights  : array of shape (k)
-    the prior on the components weights
-    - shrinkage : array of shape (k):
-    scaling factor of the posterior precisions on the mean
-    - dof : array of shape (k): the posterior dofs
+    prior_means: array of shape (k,dim):
+                 the prior on the components means
+    prior_scale: array of shape (k,dim):
+                 the prior on the components precisions
+    prior_dof: array of shape (k):
+                the prior on the dof (should be at least equal to dim)
+    prior_shrinkage: array of shape (k):
+                     scaling factor of the prior precisions on the mean
+    prior_weights: array of shape (k)
+                   the prior on the components weights
+    shrinkage: array of shape (k):
+               scaling factor of the posterior precisions on the mean
+    dof : array of shape (k): the posterior dofs
 
-    fixme :
-    - E-step and mstep, inhereitde from GMM, should be overriden/removed ?
-    - only 'full' preicsion is supported
+    fixme
+    -----
+    only 'full' preicsion is supported
     """
     
     def __init__(self, k=1, dim=1, means=None, precisions=None,
@@ -480,7 +484,7 @@ class BGMM(GMM):
         weights = pop + self.prior_weights
         self.weights = np.random.dirichlet(weights)
 
-    def update_means(self,x,z):
+    def update_means(self, x, z):
         """
         Given the allocation vector z,
         and the corresponding data x,
@@ -533,20 +537,66 @@ class BGMM(GMM):
 
             # scatter
             dx = np.reshape(x[z==k]-empmeans,(pop[k],self.dim))
+            scatter = np.dot(dx.T,dx)
             
             # bias
             addcov = np.dot(dm.T, dm)*self.prior_shrinkage[k]
 
             # covariance = prior term + scatter + bias
-            covariance = self._inv_prior_scale[k] + np.dot(dx.T,dx) + addcov
-
+            covariance = self._inv_prior_scale[k] + scatter + addcov
+                        
             #precision
             scale = inv(covariance) 
             self.precisions[k] = generate_Wishart(self.dof[k], scale)
             self._detp[k] = np.prod(eigvalsh(self.precisions[k]))
+
+    def update_precisions_(self, x, z, sqx=None):
+        """
+        Given the allocation vector z,
+        and the corresponding data x,
+        resample the precisions
+
+        Parameters
+        ----------
+        x array of shape (nb_samples,self.dim)
+          the data used in the estimation process
+        z array of shape (nb_samples), type = np.int
+          the corresponding classification
+        """
+        pop = self.pop(z)
+        self.dof = self.prior_dof + pop +1
+        rpop = pop + (pop==0)
+        self._detp = np.zeros(self.k)
+        if sqx==None:
+            cx = np.reshape(x, (x.shape[0], 1, self.dim))
+            dx = np.reshape(x, (x.shape[0], self.dim, 1))
+            sqx =  np.repeat(dx, self.dim, 2)*np.repeat(cx, self.dim, 1)
         
+        for k in range(self.k):
+            # moments
+            m0 = rpop[k]
+            m1 = np.reshape(np.sum(x[z==k],0),(1, self.dim))
+            m2 = np.sum(sqx[z==k],0)
+            
+            # empirical means
+            empmeans = m1/m0
+            dm = np.reshape(empmeans - self.prior_means[k],(1, self.dim))
+
+            # scatter
+            scatter = m2 - m0*np.dot(empmeans.T, empmeans)
+            
+            # bias
+            addcov = np.dot(dm.T, dm)*self.prior_shrinkage[k]
+
+            # covariance = prior term + scatter + bias
+            covariance = self._inv_prior_scale[k] + scatter + addcov
+            
+            #precision
+            scale = inv(covariance) 
+            self.precisions[k] = generate_Wishart(self.dof[k], scale)
+            self._detp[k] = np.prod(eigvalsh(self.precisions[k])) 
         
-    def update(self,x,z):
+    def update(self, x, z, sqx=None):
         """
         update function (draw a sample of the GMM parameters)
 
@@ -558,8 +608,9 @@ class BGMM(GMM):
           the corresponding classification
         """
         self.update_weights(z)
-        self.update_precisions(x,z)
-        self.update_means(x,z)
+        self.update_precisions(x, z)
+        #self.update_precisions_(x, z, sqx)
+        self.update_means(x, z)
           
     def sample_indicator(self, like):
         """
@@ -608,6 +659,12 @@ class BGMM(GMM):
         score = -np.infty
         bpz = -np.infty
         Mll = 0
+
+        ## precompute secon-order moments
+        #cx = np.reshape(x, (x.shape[0], 1, self.dim))
+        #dx = np.reshape(x, (x.shape[0], self.dim, 1))
+        #sqx =  np.repeat(dx, self.dim, 2)*np.repeat(cx, self.dim, 1)
+        
         for i in range(niter):
             like = self.likelihood(x)
             sll = np.mean(np.log(np.sum(like,1)))
@@ -622,18 +679,18 @@ class BGMM(GMM):
             if mem:
                 possibleZ[:,i] = z
             puz = sll # to save time
-            self.update(x,z)
+            self.update(x, z)
             if puz>bpz:
                 ibz = i
                 bpz = puz
                 
         if mem:
             aux = possibleZ[:,0].copy()
-            possibleZ[:,0] = possibleZ[:,ibz].copy()
-            possibleZ[:,ibz] = aux
+            possibleZ[:, 0] = possibleZ[:, ibz].copy()
+            possibleZ[:, ibz] = aux
             return best_weights, best_means, best_precisions, possibleZ
 
-    def sample_and_average(self,x,niter=1,verbose=0):
+    def sample_and_average(self, x, niter=1, verbose=0):
         """
         sample the indicator and parameters
         the average values for weights,means, precisions are returned
@@ -661,10 +718,16 @@ class BGMM(GMM):
         aprec  = np.zeros(np.shape(self.precisions))
         aweights  = np.zeros(np.shape(self.weights))
         ameans  = np.zeros(np.shape(self.means))
+
+        ## cache the computatio of second-order moments
+        #cx = np.reshape(x, (x.shape[0], 1, self.dim))
+        #dx = np.reshape(x, (x.shape[0], self.dim, 1))
+        #sqx =  np.repeat(dx, self.dim, 2)*np.repeat(cx, self.dim, 1)
+        
         for i in range(niter):
             like = self.likelihood(x)
             z = self.sample_indicator(like)
-            self.update(x,z)
+            self.update(x, z)
             aprec += self.precisions
             aweights += self.weights
             ameans += self.means
@@ -688,6 +751,78 @@ class BGMM(GMM):
                                self.precisions[k], dV=self._dets[k],
                                dW=self._detp[k], piV=self._inv_prior_scale[k])
         return p0
+
+    def conditional_posterior_proba_(self, x, z):
+        """
+        Compute the probability of the current parameters of self
+        given x and z
+
+        Parameters
+        ----------
+        x= array of shape (nb_samples,dim)
+           the data from which bic is computed
+        z= array of shape (nb_samples), type = np.int
+           the corresponding classification
+        """
+        pop = self.pop(z)
+
+        #0. Compute the empirical means
+        empmeans = np.zeros(np.shape(self.means))
+        for k in range(self.k):
+            empmeans[k] = np.sum(x[z==k],0)
+ 
+        rpop = (pop+(pop==0)).astype(np.float)
+        empmeans = (empmeans.T/rpop).T
+            
+        #1. the precisions
+        dof = self.prior_dof + pop + 1
+        empcov = np.zeros(np.shape(self.precisions))
+
+        for k in range(self.k):
+            dx = np.reshape(x[z==k]-empmeans[k],(pop[k],self.dim))
+            empcov[k] += np.dot(dx.T,dx)
+
+        from numpy.linalg import inv
+                
+        covariance = np.array(self._inv_prior_scale)
+        covariance += empcov
+                        
+        dx = np.reshape(self.means-self.prior_means,
+                        (self.k, self.dim, 1))
+        addcov =  np.zeros(np.shape(self.precisions))
+        for  k in range(self.k):
+            addcov[k] = np.dot(dx[k],dx[k].T)
+        
+        prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1,1))
+        covariance += addcov*prior_shrinkage
+
+        scale = np.array([inv(covariance[k]) for k in range(self.k)])
+        _dets = np.array([np.prod(eigvalsh(scale[k])) for k in range(self.k)])
+        
+        #2. the means
+        empmeans= (empmeans.T*rpop).T
+        shrinkage = self.prior_shrinkage + pop   
+        prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1))
+        shrinkage = np.reshape(shrinkage,(self.k,1))        
+        means = empmeans + self.prior_means*prior_shrinkage
+        means/= shrinkage
+
+        #3. the weights
+        weights = np.array([np.sum(z==k) for k in range(len(self.weights))])
+        weights += self.prior_weights
+        
+        #4. evaluate the posteriors
+        pp = 1
+        pp = dirichlet_eval(self.weights, weights)
+        for k in range(self.k):
+            pp*= Wishart_eval(dof[k], scale[k], self.precisions[k],
+                              dW=self._detp[k], dV=_dets[k], piV=covariance[k] )
+
+        for k in range(self.k):
+            mp = scale[k]*shrinkage[k]
+            _dP = _dets[k]*shrinkage[k]**self.dim
+            pp *= normal_eval(means[k], mp, self.means[k], dP=_dP)
+        return pp
 
     def conditional_posterior_proba(self, x, z):
         """
@@ -726,7 +861,6 @@ class BGMM(GMM):
                         
         dx = np.reshape(self.means-self.prior_means,
                         (self.k, self.dim, 1))
-        #addcov = np.array([np.dot(dx[k],dx[k].T) for k in range(self.k)])
         addcov =  np.zeros(np.shape(self.precisions))
         for  k in range(self.k):
             addcov[k] = np.dot(dx[k],dx[k].T)
