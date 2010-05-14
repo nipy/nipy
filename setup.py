@@ -110,7 +110,9 @@ cmdclass['build_ext'] = MyBuildExt
 
 # Get project related strings.  Please do not change this line to use
 # execfile because execfile is not available in Python 3
-release_vars = __import__(pjoin('nipy', 'utils', 'release'))
+info_fname = pjoin('nipy', 'info.py')
+release_vars = {}
+exec(open(info_fname, 'rt').read(), {}, release_vars)
 
 def main(**extra_args):
     from numpy.distutils.core import setup
@@ -120,7 +122,7 @@ def main(**extra_args):
            author = 'Various',
            author_email = 'nipy-devel@neuroimaging.scipy.org',
            url = 'http://neuroimaging.scipy.org',
-           long_description = release_vars.long_description,
+           long_description = release_vars['long_description'],
            configuration = configuration,
            cmdclass = cmdclass,
            scripts = glob('scripts/*.py'),

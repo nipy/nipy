@@ -1,6 +1,6 @@
 # emacs: -*- coding: utf-8; mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set fileencoding=utf-8 ft=python sts=4 ts=4 sw=4 et:
-from utils.release import long_description as __doc__
+from .info import long_description as __doc__
 
 from .version import version as __version__
 __status__   = 'alpha'
