@@ -29,9 +29,23 @@ from gmm import GMM
 # --------------------------------------------
 #fixme : this might be put elsewehere
 
+def detsh(H):
+    """
+    Routine for the computation of determinants of symmetric positive
+    matrices
 
+    Parameters
+    ----------
+    H array of shape(n,n)
+      the input matrix, assumed symmmetric and positive
 
-def dirichlet_eval(w,alpha):
+    Returns
+    -------
+    dh, float, the detrminant
+    """
+    return np.prod(eigvalsh(H))
+
+def dirichlet_eval(w, alpha):
     """
     Evaluate the probability of a certain discrete draw w
     from the Dirichlet density with parameters alpha
@@ -40,8 +54,6 @@ def dirichlet_eval(w,alpha):
     ----------
     w: array of shape (n)
     alpha: array of shape (n)
-
-    FIXME : check that the dimensions of x and alpha are compatible
     """
     if np.shape(w)!=np.shape(alpha):
         raise ValueError , "incompatible dimensions"
@@ -50,7 +62,7 @@ def dirichlet_eval(w,alpha):
     loge-= logb
     return np.exp(loge)
 
-def generate_normals(m,P):
+def generate_normals(m, P):
     """
     Generate a Gaussian sample
     with mean m and precision P
@@ -113,7 +125,7 @@ def wishart_eval(n, V, W, dV=None, dW=None, piV=None):
     dW: float, optional,
         determinant of W
     piV: array of shape (n,n), optional
-        psuedo-inverse of V
+         inverse of V
 
     Returns
     -------
@@ -122,9 +134,9 @@ def wishart_eval(n, V, W, dV=None, dW=None, piV=None):
     # check that shape(V)==shape(W)
     p = V.shape[0]
     if dV == None:
-        dV = np.prod(eigvalsh(V))
+        dV = detsh(V)
     if dW == None:
-        dW = np.prod(eigvalsh(W))
+        dW = detsh(W)
     if piV==None:
         piV = inv(V)
     ldW = math.log(dW)*(n-p-1)/2
@@ -152,15 +164,14 @@ def normal_eval(mu, P, x, dP=None):
     -------
     (float) the density
     """
-    p = np.size(mu)
+    dim = P.shape[0]
     if dP==None:
-        dP = np.prod(eigvalsh(P))
-    #mu = np.reshape(mu,(1,p))
-    w0 = math.log(dP)-p*math.log(2*math.pi)
-    w0 /= 2               
-    #x = np.reshape(x,(1,p))
-    #q = np.dot(np.dot(mu-x,P),(mu-x).T)
-    q = np.dot(np.dot(P, mu),x)
+        dP = detsh(P)
+
+    w0 = math.log(dP)-dim*math.log(2*math.pi)
+    w0 /= 2
+    dx = mu-x
+    q = np.dot(np.dot(P, dx), dx)
     w = w0 - q/2
     like = math.exp(w)
     return like
@@ -200,19 +211,14 @@ def generate_perm(k, nperm=100):
             perm[i,:] = p
     return perm
 
-def apply_perm(perm, z):
-    """
-    Permutation of the values of z
-    """
-    return z[perm]
     
-def multinomial(Likelihood):
+def multinomial(probabilities):
     """
     Generate samples form a miltivariate distribution
 
     Parameters
     ----------
-    Likelihood: array of shape (nelements, nclasses):
+    probabilities: array of shape (nelements, nclasses):
                 likelihood of each element belongin to each class
                 each row is assumedt to sum to 1
                 One sample is draw from each row, resulting in
@@ -222,69 +228,105 @@ def multinomial(Likelihood):
     z array of shape (nelements): the draws,
       that take values in [0..nclasses-1]
     """
-    nvox = Likelihood.shape[0]
-    nclasses =  Likelihood.shape[1]
+    nvox = probabilities.shape[0]
+    nclasses =  probabilities.shape[1]
     cuml = np.zeros((nvox,nclasses+1))
-    cuml[:,1:] = np.cumsum(Likelihood,1)
+    cuml[:,1:] = np.cumsum(probabilities,1)
     aux = np.random.rand(nvox,1)
     z = np.argmax(aux<cuml,1)-1
     return z
 
-def dkl_gaussian(m1,P1,m2,P2):
+def dkl_gaussian(m1, P1, m2, P2):
     """
-    Returns the KL divergence between gausians with densities
-    (m1,P1) and (m2,P2)
-    where m = mean and P = precision
+    Returns the KL divergence between gausians densities
+
+    Parameters
+    ----------
+    m1: array of shape (n),
+        the mean parameter of the first density
+    P1: array of shape(n,n),
+        the precision parameters of the first density
+    m2: array of shape (n),
+        the mean parameter of the second density
+    P2: array of shape(n,n),
+        the precision parameters of the second density
     """
-    from numpy.linalg import det,inv
     tiny = 1.e-15
-    # fixme:check size
     dim = np.size(m1)
-    d1 = max(det(P1),tiny)
-    d2 = max(det(P2),tiny)
-    dkl = np.log(d1/d2)+ np.trace(np.dot(P2,inv(P1)))-dim
-    dkl += np.dot(np.dot((m1-m2).T,P2),(m1-m2))
+    if m1.shape!=  m2.shape:
+        raise ValueError, "incompatible dimensions for m1 and m2"
+    if P1.shape!=  P2.shape:
+        raise ValueError, "incompatible dimensions for P1 and P2"
+    if P1.shape[0]!=dim:
+        raise ValueError, "incompatible dimensions for m1 and P1" 
+    
+    d1 = max(detsh(P1),tiny)
+    d2 = max(detsh(P2),tiny)
+    dkl = np.log(d1/d2)+ np.trace(np.dot(P2, inv(P1)))-dim
+    dkl += np.dot(np.dot((m1-m2).T, P2),(m1-m2))
     dkl /= 2
     return dkl
 
-def dkl_wishart(a1,B1,a2,B2):
+def dkl_wishart(a1, B1, a2, B2):
     """
     returns the KL divergence bteween two Wishart distribution of
     parameters (a1,B1) and (a2,B2),
-    where a1 and a2 are degrees of freedom
-    B1 and B2 are scale matrices
+
+    Parameters
+    ----------
+    a1: Float,
+        degrees of freedom of the first density
+    B1: array of shape(n,n),
+        scale matrix of the  first density
+    a2: Float,
+        degrees of freedom of the second density
+    B2: array of shape(n,n),
+        scale matrix of the second density
+
+    Returns
+    -------
+    dkl, Float, the Kullback-Leibler divergence
     """
     from scipy.special import psi,gammaln
-    from numpy.linalg import det,inv
     tiny = 1.e-15
-    # fixme: check size
+    if B1.shape!=  B2.shape:
+        raise ValueError, "incompatible dimensions for B1 and B2"
+    
     dim = B1.shape[0]
-    d1 = max(det(B1),tiny)
-    d2 = max(det(B2),tiny)
-    lgc = dim*(dim-1)*np.log(np.pi)/4
+    d1 = max(detsh(B1),tiny)
+    d2 = max(detsh(B2),tiny)
+    lgc = dim*(dim-1)*math.log(np.pi)/4
     lg1 = lgc
     lg2 = lgc
-    lw1 = -np.log(d1) + dim*np.log(2)
-    lw2 = -np.log(d2) + dim*np.log(2)
+    lw1 = -math.log(d1) + dim*math.log(2)
+    lw2 = -math.log(d2) + dim*math.log(2)
     for i in range(dim):
         lg1 += gammaln((a1-i)/2)
         lg2 += gammaln((a2-i)/2)
         lw1 += psi((a1-i)/2)
         lw2 += psi((a2-i)/2)
-    lz1 = 0.5*a1*dim*np.log(2)-0.5*a1*np.log(d1)+lg1
-    lz2 = 0.5*a2*dim*np.log(2)-0.5*a2*np.log(d2)+lg2
-    dkl = (a1-dim-1)*lw1-(a2-dim-1)*lw2-a1*dim
-    dkl += a1*np.trace(np.dot(B2,inv(B1)))
+    lz1 = 0.5*a1*dim*math.log(2) - 0.5*a1*math.log(d1) + lg1
+    lz2 = 0.5*a2*dim*math.log(2) - 0.5*a2*math.log(d2) + lg2
+    dkl = (a1-dim-1)*lw1 - (a2-dim-1)*lw2 - a1*dim
+    dkl += a1 * np.trace(np.dot(B2,inv(B1)))
     dkl /=2
     dkl += (lz2-lz1)
     return dkl
 
 def dkl_dirichlet(w1,w2):
     """
-    returns the KL divergence between two dirichelt distribution of parameters
-    w1 and w2
+    Returns the KL divergence between two dirichlet distribution
+
+    Parameters
+    ----------
+    w1: array of shape(n),
+        the parameters of the first dirichlet density
+    w2: array of shape(n),
+        the parameters of the second dirichlet density
     """
-    # fixme: check size
+    if w1.shape!=  w2.shape:
+        raise ValueError, "incompatible dimensions for w1 and w2"
+
     dkl = 0
     from scipy.special import gammaln, psi
     dkl = np.sum(gammaln(w2))-np.sum(gammaln(w1))
@@ -341,9 +383,8 @@ class BGMM(GMM):
     def __init__(self, k=1, dim=1, means=None, precisions=None,
                  weights=None, shrinkage=None, dof=None):
         """
-        Initialize the structure, at least with the dimensions of the problem
-        At most, with what is necessary to compute the likelihood of a point
-        under the model
+        Initialize the structure with the dimensions of the problem
+        Eventually provide different terms
         """
         GMM.__init__(self, k, dim, 'full', means, precisions, weights)
         self.shrinkage = shrinkage
@@ -422,24 +463,25 @@ class BGMM(GMM):
         dx = x-mx
         vx = np.dot(dx.T,dx)/x.shape[0]
         px = np.reshape(np.diag(1.0/np.diag(vx)),elshape)
-        px *= np.exp(2.0/self.dim*np.log(self.k))
+        px *= np.exp(2.0/self.dim*math.log(self.k))
 
         # set the priors
         self.prior_means = np.repeat(mx,self.k,0)
         self.prior_weights = np.ones(self.k)
-        self.prior_scale = np.repeat(px,self.k,0)
+        self.prior_scale = np.repeat(px, self.k,0)
         self.prior_dof = np.ones(self.k)*(self.dim+2)
         self.prior_shrinkage = np.ones(self.k)*small
 
         # cache some pre-computations
         self._dets = np.ones(self.k)*det(px[0])
-        self._inv_prior_scale = np.repeat(np.reshape(inv(px[0]),elshape),self.k,0)
+        self._inv_prior_scale = np.repeat(
+            np.reshape(inv(px[0]),elshape),self.k,0)
         
         # check that everything is OK
         if nocheck==True:
             self.check()
 
-    def initialize(self,x):
+    def initialize(self, x):
         """
         initialize z using a k-means algorithm, then upate the parameters
 
@@ -454,7 +496,7 @@ class BGMM(GMM):
             z = np.zeros(x.shape[0]).astype(np.int)
         self.update(x,z)
     
-    def pop(self,z):
+    def pop(self, z):
         """
         compute the population, i.e. the statistics of allocation
 
@@ -465,7 +507,7 @@ class BGMM(GMM):
 
         Returns
         -------
-        hist : array shape (self.k)n count variable
+        hist : array shape (self.k) count variable
         """
         hist = np.array([np.sum(z==k) for k in range(self.k)])
         return hist
@@ -547,53 +589,7 @@ class BGMM(GMM):
             #precision
             scale = inv(covariance) 
             self.precisions[k] = generate_Wishart(self.dof[k], scale)
-            self._detp[k] = np.prod(eigvalsh(self.precisions[k]))
-
-    def update_precisions_(self, x, z, sqx=None):
-        """
-        Given the allocation vector z,
-        and the corresponding data x,
-        resample the precisions
-
-        Parameters
-        ----------
-        x array of shape (nb_samples,self.dim)
-          the data used in the estimation process
-        z array of shape (nb_samples), type = np.int
-          the corresponding classification
-        """
-        pop = self.pop(z)
-        self.dof = self.prior_dof + pop +1
-        rpop = pop + (pop==0)
-        self._detp = np.zeros(self.k)
-        if sqx==None:
-            cx = np.reshape(x, (x.shape[0], 1, self.dim))
-            dx = np.reshape(x, (x.shape[0], self.dim, 1))
-            sqx =  np.repeat(dx, self.dim, 2)*np.repeat(cx, self.dim, 1)
-        
-        for k in range(self.k):
-            # moments
-            m0 = rpop[k]
-            m1 = np.reshape(np.sum(x[z==k],0),(1, self.dim))
-            m2 = np.sum(sqx[z==k],0)
-            
-            # empirical means
-            empmeans = m1/m0
-            dm = np.reshape(empmeans - self.prior_means[k],(1, self.dim))
-
-            # scatter
-            scatter = m2 - m0*np.dot(empmeans.T, empmeans)
-            
-            # bias
-            addcov = np.dot(dm.T, dm)*self.prior_shrinkage[k]
-
-            # covariance = prior term + scatter + bias
-            covariance = self._inv_prior_scale[k] + scatter + addcov
-            
-            #precision
-            scale = inv(covariance) 
-            self.precisions[k] = generate_Wishart(self.dof[k], scale)
-            self._detp[k] = np.prod(eigvalsh(self.precisions[k])) 
+            self._detp[k] = detsh(self.precisions[k])
         
     def update(self, x, z, sqx=None):
         """
@@ -608,7 +604,6 @@ class BGMM(GMM):
         """
         self.update_weights(z)
         self.update_precisions(x, z)
-        #self.update_precisions_(x, z, sqx)
         self.update_means(x, z)
           
     def sample_indicator(self, like):
@@ -658,11 +653,6 @@ class BGMM(GMM):
         score = -np.infty
         bpz = -np.infty
         Mll = 0
-
-        ## precompute secon-order moments
-        #cx = np.reshape(x, (x.shape[0], 1, self.dim))
-        #dx = np.reshape(x, (x.shape[0], self.dim, 1))
-        #sqx =  np.repeat(dx, self.dim, 2)*np.repeat(cx, self.dim, 1)
         
         for i in range(niter):
             like = self.likelihood(x)
@@ -717,11 +707,6 @@ class BGMM(GMM):
         aprec  = np.zeros(np.shape(self.precisions))
         aweights  = np.zeros(np.shape(self.weights))
         ameans  = np.zeros(np.shape(self.means))
-
-        ## cache the computatio of second-order moments
-        #cx = np.reshape(x, (x.shape[0], 1, self.dim))
-        #dx = np.reshape(x, (x.shape[0], self.dim, 1))
-        #sqx =  np.repeat(dx, self.dim, 2)*np.repeat(cx, self.dim, 1)
         
         for i in range(niter):
             like = self.likelihood(x)
@@ -744,7 +729,8 @@ class BGMM(GMM):
         p0 = 1
         p0 = dirichlet_eval(self.weights, self.prior_weights)
         for k in range(self.k):
-            mp = self.precisions[k] * self.prior_shrinkage[k]
+            mp = np.reshape(self.precisions[k] * self.prior_shrinkage[k],(
+                self.dim,self.dim))
             p0 *= normal_eval(self.prior_means[k], mp, self.means[k])
             p0 *= wishart_eval(self.prior_dof[k], self.prior_scale[k],
                                self.precisions[k], dV=self._dets[k],
@@ -759,10 +745,13 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        x= array of shape (nb_samples,dim)
+        x: array of shape (nb_samples, dim),
            the data from which bic is computed
-        z= array of shape (nb_samples), type = np.int
+        z: array of shape (nb_samples), type = np.int,
            the corresponding classification
+        perm: array ok shape(nperm, self.k),typ=np.int, optional
+              all permutation of z under which things will be recomputed
+              By default, no permutation is performed 
         """
         pop = self.pop(z)
         rpop = (pop+(pop==0)).astype(np.float)
@@ -784,13 +773,13 @@ class BGMM(GMM):
             empmeans = m1/rpop[k]
  
             #1. the precisions
-            dx = np.reshape(x[z==k]-empmeans,(pop[k],self.dim))
-            dm = self.means[k]-self.prior_means[k]
-            #dm = empmeans-self.prior_means[k]
-            addcov = np.dot(dm,dm.T) * self.prior_shrinkage[k]
-            covariance = np.dot(dx.T,dx) + self._inv_prior_scale[k] + addcov
+            dx = np.reshape(x[z==k]-empmeans,(pop[k], self.dim))
+            dm = np.reshape(empmeans-self.prior_means[k], (1, self.dim))
+            addcov = np.dot(dm.T, dm) * self.prior_shrinkage[k]
+            
+            covariance = self._inv_prior_scale[k] + np.dot(dx.T,dx) + addcov
             scale = inv(covariance)
-            _dets = np.prod(eigvalsh(scale))
+            _dets = detsh(scale)
         
             #2. the means
             means = m1 + self.prior_means[k]*self.prior_shrinkage[k]
@@ -798,13 +787,14 @@ class BGMM(GMM):
 
             #4. update the posteriors
             if perm==None:
-                pp*= wishart_eval(dof[k], scale, self.precisions[k],
-                                  dW=self._detp[k], dV=_dets, piV=covariance)
+                pp*= wishart_eval(
+                    dof[k], scale, self.precisions[k],
+                    dV=_dets, dW=self._detp[k], piV=covariance)
             else:
                 for j, pj in enumerate(perm):
                     pp[j]*= wishart_eval(
-                        dof[k], scale, self.precisions[pj[k]],
-                        dW=self._detp[pj[k]], dV=_dets, piV=covariance)
+                        dof[k], scale, self.precisions[pj[k]], dV=_dets,
+                        dW=self._detp[pj[k]],  piV=covariance)
 
             mp = scale*shrinkage[k]
             _dP = _dets*shrinkage[k]**self.dim
@@ -812,7 +802,8 @@ class BGMM(GMM):
                 pp *= normal_eval(means, mp, self.means[k], dP=_dP)
             else:
                 for j,pj in enumerate(perm):
-                    pp[j] *= normal_eval(means, mp, self.means[pj[k]], dP=_dP)
+                    pp[j] *= normal_eval(
+                        means, mp, self.means[pj[k]], dP=_dP)
                 
         return pp
     
@@ -858,7 +849,7 @@ class BGMM(GMM):
             if nperm==0:
                 """
                 for j in range(perm.shape[0]):
-                    pz = apply_perm(perm[j], z[:,i])
+                    pz = perm[j][z[:,i]]
                     temp = self.conditional_posterior_proba(x, pz)
                     p.append(temp)
                 """
@@ -867,16 +858,21 @@ class BGMM(GMM):
                 
             else:
                 drand = np.argsort(np.random.rand(perm.shape[0]))[:nperm]
+                """
                 for j in drand:
-                    pz = apply_perm(perm[j], z[:,i])
+                    pz = perm[j][z[:,i]]
                     temp = self.conditional_posterior_proba(x, pz)
                     p.append(temp)
-
+                """
+                temp = self.conditional_posterior_proba(x, z[:,i], perm[drand])
+                p.append(temp.mean())
+                
         p = np.array(p)
         mp = np.mean(p)
         p0 = self.probability_under_prior()
         like = self.likelihood(x)
         bf = np.log(p0) + np.sum(np.log(np.sum(like, 1)))- np.log(mp)
+        
         if verbose:
             print np.log(p0), np.sum(np.log(np.sum(like, 1))), np.log(mp)
         return bf
@@ -945,10 +941,10 @@ class VBGMM(BGMM):
         Parameters
         ----------
         x array of shape (nb_samples,dim)
-          the data from which bic is computed
-        l=None: array of shape (nb_samples,self.k)
-                component-wise likelihood
-                If None, it is recomputed
+          the data from which evidence is computed
+        like=None: array of shape (nb_samples, self.k), optional
+                   component-wise likelihood
+                   If None, it is recomputed
         verbose=0: verbosity model
         
         Returns
@@ -984,7 +980,7 @@ class VBGMM(BGMM):
             empcov = np.zeros((self.dim,self.dim))
             dx = x-empmeans[k]
             empcov = np.dot(dx.T,like[:,k:k+1]*dx)
-            Lav -= 0.5*np.trace(np.dot(empcov,self.scale[k]*self.dof[k]))
+            Lav -= 0.5*np.trace(np.dot(empcov, self.scale[k]*self.dof[k]))
             F+= Lav
             
         #then the KL divergences
@@ -1041,9 +1037,8 @@ class VBGMM(BGMM):
              dx = x-empmeans[k]
              empcov[k] = np.dot(dx.T,like[:,k:k+1]*dx) 
                     
-        covariance = np.array(self._inv_prior_scale)
-        covariance += empcov
-
+        covariance = np.array(self._inv_prior_scale) + empcov
+ 
         dx = np.reshape(empmeans-self.prior_means,(self.k,self.dim,1))
         addcov = np.array([np.dot(dx[k],dx[k].T) for k in range(self.k)])
         apms =  np.reshape(prior_shrinkage*pop/shrinkage,(self.k,1,1))
