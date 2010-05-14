@@ -63,7 +63,7 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The master toctree document.
-master_doc = 'contents'
+master_doc = 'index'
 
 # General substitutions.
 project = 'nipy'
@@ -180,7 +180,7 @@ htmlhelp_basename = project
 # [howto/manual]).
 
 latex_documents = [
-  ('contents', 'nipy.tex', 'Neuroimaging in Python Documentation',
+  ('index', 'nipy.tex', 'Neuroimaging in Python Documentation',
    ur'The Neuroimaging in Python documentation team.','manual'),
   ## ('devel/index', 'nipy_devel.tex',
   ##  'Neuroimaging in Python Developer Documentation',
