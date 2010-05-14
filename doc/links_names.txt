@@ -60,6 +60,7 @@
 .. Other python projects
 .. _numpy: http://www.scipy.org/NumPy
 .. _scipy: http://www.scipy.org
+.. _cython: http://www.cython.org/
 .. _ipython: http://ipython.scipy.org
 .. _`ipython manual`: http://ipython.scipy.org/doc/manual/html
 .. _matplotlib: http://matplotlib.sourceforge.net
