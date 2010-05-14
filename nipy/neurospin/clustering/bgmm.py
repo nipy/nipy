@@ -16,7 +16,7 @@ Author : Bertrand Thirion, 2008-2009
 """
 import numpy as np
 import numpy.random as nr
-from numpy.linalg import det, inv, pinv, cholesky, eigvalsh 
+from numpy.linalg import inv, pinv, cholesky, eigvalsh 
 from scipy.special import gammaln
 import math
 
@@ -397,7 +397,7 @@ class BGMM(GMM):
             self.dof = np.ones(self.k)
 
         if self.precisions!=None:
-            self._detp = [det(self.precisions[k]) for k in range(self.k)]
+            self._detp = [detsh(self.precisions[k]) for k in range(self.k)]
         
     def check(self):
         """
@@ -438,7 +438,7 @@ class BGMM(GMM):
         self.prior_shrinkage = prior_shrinkage       
 
         # cache some pre-computations
-        self._dets = [det(self.prior_scale[k])for k in range(self.k)]
+        self._dets = [detsh(self.prior_scale[k])for k in range(self.k)]
         self._inv_prior_scale = np.array([inv(self.prior_scale[k])
                                           for k in range(self.k)])
 
@@ -473,7 +473,7 @@ class BGMM(GMM):
         self.prior_shrinkage = np.ones(self.k)*small
 
         # cache some pre-computations
-        self._dets = np.ones(self.k)*det(px[0])
+        self._dets = np.ones(self.k)*detsh(px[0])
         self._inv_prior_scale = np.repeat(
             np.reshape(inv(px[0]),elshape),self.k,0)
         
@@ -913,13 +913,12 @@ class VBGMM(BGMM):
         n = x.shape[0]
         like = np.zeros((n,self.k))
         from scipy.special import psi
-        from numpy.linalg import det
 
         spsi = psi(np.sum(self.weights))
         for k in range(self.k):
             # compute the data-independent factor first
             w0 = psi(self.weights[k])-spsi
-            w0 += 0.5*np.log(det(self.scale[k]))
+            w0 += 0.5*np.log(detsh(self.scale[k]))
             w0 -= self.dim*0.5/self.shrinkage[k]
             w0 += 0.5*np.log(2)*self.dim
             for i in range (self.dim):
@@ -952,7 +951,7 @@ class VBGMM(BGMM):
         ev (float) the computed evidence
         """
         from scipy.special import psi
-        from numpy.linalg import det,inv
+        from numpy.linalg import inv
         tiny = 1.e-15
         if like==None:
             like = self._Estep(x)
@@ -970,7 +969,7 @@ class VBGMM(BGMM):
             Lav = psi(self.weights[k])-spsi
             Lav -= np.sum(like[:,k]*np.log(np.maximum(like[:,k],tiny)))/pop[k]
             Lav -= 0.5*self.dim*np.log(2*np.pi)
-            Lav += 0.5*np.log(det(self.scale[k]))
+            Lav += 0.5*np.log(detsh(self.scale[k]))
             Lav += 0.5*np.log(2)*self.dim
             for i in range (self.dim):
                 Lav += 0.5*psi((self.dof[k]-i)/2)
@@ -999,49 +998,49 @@ class VBGMM(BGMM):
         if verbose: print 'Lav', F, 'Dkl',Dkld,Dklg,Dklw
         return F-Dkl
 
-    def _Mstep(self,x,like):
+    def _Mstep(self, x, like):
         """
         VB-M step
 
         Parameters
         ----------
-        x: array of shape(nb_samples,self.dim)
+        x: array of shape(nb_samples, self.dim)
            the data from which the model is estimated
-        like: array of shape(nb_samples,self.k)
+        like: array of shape(nb_samples, self.k)
            the likelihood of the data under each class
         """
         from numpy.linalg import inv
         tiny  =1.e-15
         pop = like.sum(0)
        
-        # shrinkage,weights,dof
+        # shrinkage, weights,dof
         self.weights = self.prior_weights + pop
         pop = pop[0:self.k]
-        like = like[:,:self.k]
+        like = like[:, :self.k]
         self.shrinkage = self.prior_shrinkage + pop
         self.dof = self.prior_dof + pop
         
         #reshape
-        pop = np.reshape(pop,(self.k,1))
-        prior_shrinkage = np.reshape(self.prior_shrinkage,(self.k,1))
-        shrinkage = np.reshape(self.shrinkage,(self.k,1))
+        pop = np.reshape(pop, (self.k, 1))
+        prior_shrinkage = np.reshape(self.prior_shrinkage, (self.k, 1))
+        shrinkage = np.reshape(self.shrinkage, (self.k, 1))
 
         # means
         means = np.dot(like.T,x)+ self.prior_means*prior_shrinkage
-        self.means= means/shrinkage
+        self.means = means/shrinkage
         
         #precisions
-        empmeans = np.dot(like.T,x)/np.maximum(pop,tiny)
+        empmeans = np.dot(like.T,x)/np.maximum(pop, tiny)
         empcov = np.zeros(np.shape(self.prior_scale))
         for k in range(self.k):
              dx = x-empmeans[k]
-             empcov[k] = np.dot(dx.T,like[:,k:k+1]*dx) 
+             empcov[k] = np.dot(dx.T, like[:,k:k+1]*dx) 
                     
         covariance = np.array(self._inv_prior_scale) + empcov
  
-        dx = np.reshape(empmeans-self.prior_means,(self.k,self.dim,1))
-        addcov = np.array([np.dot(dx[k],dx[k].T) for k in range(self.k)])
-        apms =  np.reshape(prior_shrinkage*pop/shrinkage,(self.k,1,1))
+        dx = np.reshape(empmeans-self.prior_means, (self.k, self.dim,1))
+        addcov = np.array([np.dot(dx[k], dx[k].T) for k in range(self.k)])
+        apms =  np.reshape(prior_shrinkage*pop/shrinkage, (self.k, 1, 1))
         covariance += addcov*apms
 
         self.scale = np.array([inv(covariance[k]) for k in range(self.k)])
