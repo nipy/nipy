@@ -67,8 +67,8 @@ master_doc = 'index'
 
 # General substitutions.
 project = 'nipy'
-#copyright = ':ref:`2005-2009, Neuroimaging in Python team. <nipy-software-license>`' 
-copyright = '2005-2009, Neuroimaging in Python team' 
+#copyright = ':ref:`2005-2010, Neuroimaging in Python team. <nipy-software-license>`' 
+copyright = '2005-2010, Neuroimaging in Python team' 
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
