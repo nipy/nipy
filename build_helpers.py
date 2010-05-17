@@ -280,7 +280,8 @@ def generate_a_pyrex_source(self, base, ext_name, source, extension):
         target_dir = appendpath(self.build_src, dirname(base))
     target_file = pjoin(target_dir, ext_name + '.c')
     depends = [source] + extension.depends
-    if self.force or newer_group(depends, target_file, 'newer'):
+    sources_changed = newer_group(depends, target_file, 'newer') 
+    if self.force or sources_changed:
         if good_cython:
             # add distribution (package-wide) include directories, in order
             # to pick up needed .pxd files for cython compilation
@@ -301,10 +302,13 @@ def generate_a_pyrex_source(self, base, ext_name, source, extension):
                 raise DistutilsError("%d errors while compiling "
                                      "%r with Cython"
                                      % (cython_result.num_errors, source))
+        elif sources_changed and os.path.isfile(target_file):
+            raise DistutilsError("Cython >=%s required for compiling %r"
+                                 " because sources (%s) have changed" %
+                                 (CYTHON_MIN_VERSION, source, ','.join(depends)))
         else:
             raise DistutilsError("Cython >=%s required for compiling %r"
                                  " but not available" %
                                  (CYTHON_MIN_VERSION, source))
-
     return target_file
 
