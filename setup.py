@@ -8,7 +8,7 @@ from distutils import log
 from distutils.cmd import Command
 
 # monkey-patch numpy distutils to use Cython instead of Pyrex
-from build_helpers import generate_a_pyrex_source, package_check
+from build_helpers import generate_a_pyrex_source, package_check, cmdclass
 from numpy.distutils.command.build_src import build_src
 build_src.generate_a_pyrex_source = generate_a_pyrex_source
 
@@ -60,16 +60,6 @@ def _cython_version(pkg_name):
 package_check('cython', '0.11.1', optional=False,
               version_getter=_cython_version)
     
-################################################################################
-# Import the documentation building classes. 
-
-try:
-    from build_helpers import cmdclass
-except ImportError:
-    """ Pass by the doc build gracefully if sphinx is not installed """
-    print "Sphinx is not installed, docs cannot be built"
-    cmdclass = {}
-
 
 ################################################################################
 # commands for installing the data
