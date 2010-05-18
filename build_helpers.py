@@ -27,8 +27,13 @@ from distutils.errors import DistutilsError
 from numpy.distutils.misc_util import appendpath
 from numpy.distutils import log
 
-# Sphinx import.
-from sphinx.setup_command import BuildDoc
+# Sphinx import
+try:
+    from sphinx.setup_command import BuildDoc
+except ImportError:
+    have_sphinx = False
+else:
+    have_sphinx = True
 
 DOC_BUILD_DIR = os.path.join('build', 'html')
 
@@ -105,57 +110,6 @@ def relative_path(filename):
     return os.path.abspath(filename)[length:]
 
 
-################################################################################
-# Distutils Command class build the docs 
-class MyBuildDoc(BuildDoc):
-    """ Sub-class the standard sphinx documentation building system, to
-        add logics for API generation and matplotlib's plot directive.
-    """
-
-    def run(self):
-        self.run_command('api_docs')
-        # We need to be in the doc directory for to plot_directive
-        # and API generation to work
-        os.chdir('doc')
-        try:
-            BuildDoc.run(self)
-        finally:
-            os.chdir('..')
-        self.zip_docs()
-    
-    def zip_docs(self):
-        if not os.path.exists(DOC_BUILD_DIR):
-            raise OSError, 'Doc directory does not exist.'
-        target_file = os.path.join('doc', 'documentation.zip')
-        # ZIP_DEFLATED actually compresses the archive. However, there
-        # will be a RuntimeError if zlib is not installed, so we check
-        # for it. ZIP_STORED produces an uncompressed zip, but does not
-        # require zlib.
-        try:
-            zf = zipfile.ZipFile(target_file, 'w', 
-                                        compression=zipfile.ZIP_DEFLATED)
-        except RuntimeError:
-            warnings.warn('zlib not installed, storing the docs '
-                            'without compression')
-            zf = zipfile.ZipFile(target_file, 'w', 
-                                        compression=zipfile.ZIP_STORED)    
-
-        for root, dirs, files in os.walk(DOC_BUILD_DIR):
-            relative = relative_path(root)
-            if not relative.startswith('.doctrees'):
-                for f in files:
-                    zf.write(os.path.join(root, f), 
-                            os.path.join(relative, 'html_docs', f))
-        zf.close()
-
-
-    def finalize_options(self):
-        """ Override the default for the documentation build
-            directory.
-        """
-        self.build_dir = os.path.join(*DOC_BUILD_DIR.split(os.sep)[:-1])
-        BuildDoc.finalize_options(self)
-
 
 ################################################################################
 # Distutils Command class to clean
@@ -171,11 +125,75 @@ class Clean(clean):
             print "Removing %s" % DOC_BUILD_DIR 
             shutil.rmtree(DOC_BUILD_DIR)
 
-# The command classes for distutils, used by the setup.py
-cmdclass = {'build_sphinx': MyBuildDoc,
-            'api_docs': APIDocs,
+
+################################################################################
+# Distutils Command class build the docs
+if have_sphinx:
+    class MyBuildDoc(BuildDoc):
+        """ Sub-class the standard sphinx documentation building system, to
+            add logics for API generation and matplotlib's plot directive.
+        """
+
+        def run(self):
+            self.run_command('api_docs')
+            # We need to be in the doc directory for to plot_directive
+            # and API generation to work
+            os.chdir('doc')
+            try:
+                BuildDoc.run(self)
+            finally:
+                os.chdir('..')
+            self.zip_docs()
+
+        def zip_docs(self):
+            if not os.path.exists(DOC_BUILD_DIR):
+                raise OSError, 'Doc directory does not exist.'
+            target_file = os.path.join('doc', 'documentation.zip')
+            # ZIP_DEFLATED actually compresses the archive. However, there
+            # will be a RuntimeError if zlib is not installed, so we check
+            # for it. ZIP_STORED produces an uncompressed zip, but does not
+            # require zlib.
+            try:
+                zf = zipfile.ZipFile(target_file, 'w', 
+                                            compression=zipfile.ZIP_DEFLATED)
+            except RuntimeError:
+                warnings.warn('zlib not installed, storing the docs '
+                                'without compression')
+                zf = zipfile.ZipFile(target_file, 'w', 
+                                            compression=zipfile.ZIP_STORED)    
+
+            for root, dirs, files in os.walk(DOC_BUILD_DIR):
+                relative = relative_path(root)
+                if not relative.startswith('.doctrees'):
+                    for f in files:
+                        zf.write(os.path.join(root, f), 
+                                os.path.join(relative, 'html_docs', f))
+            zf.close()
+
+        def finalize_options(self):
+            """ Override the default for the documentation build
+                directory.
+            """
+            self.build_dir = os.path.join(*DOC_BUILD_DIR.split(os.sep)[:-1])
+            BuildDoc.finalize_options(self)
+
+else: # failed Sphinx import
+    # Raise an error when trying to build docs
+    class MyBuildDoc(Command):
+        user_options = []
+        def run(self):
+            raise ImportError(
+                "Sphinx is not installed, docs cannot be built")
+        def initialize_options(self):
+            pass
+        def finalize_options(self):
+            pass
+
+
+# The command classes for distutils, used by setup.py
+cmdclass = {'api_docs': APIDocs,
             'clean': Clean,
-            }
+            'build_sphinx': MyBuildDoc}
 
 
 # Dependency checks
@@ -274,4 +292,3 @@ def generate_a_pyrex_source(self, base, ext_name, source, extension):
             raise DistutilsError("%d errors while compiling %r with Cython" \
                   % (cython_result.num_errors, source))
     return target_file
-
