@@ -35,7 +35,15 @@ except ImportError:
 else:
     have_sphinx = True
 
+# Get project related strings.  Please do not change this line to use
+# execfile because execfile is not available in Python 3
+_info_fname = pjoin('nipy', 'info.py')
+INFO_VARS = {}
+exec(open(_info_fname, 'rt').read(), {}, INFO_VARS)
+
 DOC_BUILD_DIR = os.path.join('build', 'html')
+
+CYTHON_MIN_VERSION = INFO_VARS['cython_min_version']
 
 ################################################################################
 # Distutils Command class for installing nipy to a temporary location. 
@@ -201,6 +209,7 @@ def package_check(pkg_name, version=None,
                   optional=False,
                   checker=LooseVersion,
                   version_getter=None,
+                  messages=None
                   ):
     ''' Check if package `pkg_name` is present, and correct version
 
@@ -226,19 +235,29 @@ def package_check(pkg_name, version=None,
        If None, equivalent to::
 
           mod = __import__(pkg_name); version = mod.__version__``
+    messages : None or dict, optional
+       dictionary giving output messages
     '''
     if version_getter is None:
         def version_getter(pkg_name):
             mod = __import__(pkg_name)
             return mod.__version__
+    if messages is None:
+        messages = {}
+    msgs = {
+         'missing': 'Cannot import package "%s" - is it installed?',
+         'missing opt': 'Missing optional package "%s"',
+         'opt suffix' : '; you may get run-time errors',
+         'version too old': 'You have version %s of package "%s"' 
+         ' but we need version >= %s', }
+    msgs.update(messages)
     try:
-        mod = __import__(pkg_name)
+        __import__(pkg_name)
     except ImportError:
         if not optional:
-            raise RuntimeError('Cannot import package "%s" '
-                               '- is it installed?' % pkg_name)
-        log.warn('Missing optional package "%s"; '
-                 'you may get run-time errors' % pkg_name)
+            raise RuntimeError(msgs['missing'] % pkg_name)
+        log.warn(msgs['missing opt'] % pkg_name +
+                 msgs['opt suffix'])
         return
     if not version:
         return
@@ -247,48 +266,66 @@ def package_check(pkg_name, version=None,
     except AttributeError:
         raise RuntimeError('Cannot find version for %s' % pkg_name)
     if checker(have_version) < checker(version):
-        v_msg = 'You have version %s of package "%s"' \
-            ' but we need version >= %s' % (
-            have_version,
-            pkg_name,
-            version,
-            )
         if optional:
-            log.warn(v_msg + '; you may get run-time errors')
+            log.warn(msgs['version too old'] + msgs['opt suffix'],
+                     have_version,
+                     pkg_name,
+                     version)
         else:
-            raise RuntimeError(v_msg)
+            raise RuntimeError(msgs['version too old'],
+                               have_version,
+                               pkg_name,
+                               version)
+
+
+def have_good_cython():
+    try:
+        from Cython.Compiler.Version import version
+    except ImportError:
+        return False
+    return LooseVersion(version) >= LooseVersion(CYTHON_MIN_VERSION)
 
 
 def generate_a_pyrex_source(self, base, ext_name, source, extension):
     ''' Monkey patch for numpy build_src.build_src method
 
     Uses Cython instead of Pyrex.
-
-    Assumes Cython is present
     '''
-    if self.inplace:
+    good_cython = have_good_cython()
+    if self.inplace or not good_cython:
         target_dir = dirname(base)
     else:
         target_dir = appendpath(self.build_src, dirname(base))
     target_file = pjoin(target_dir, ext_name + '.c')
     depends = [source] + extension.depends
-    # add distribution (package-wide) include directories, in order to
-    # pick up needed .pxd files for cython compilation
-    incl_dirs = extension.include_dirs[:]
-    dist_incl_dirs = self.distribution.include_dirs
-    if not dist_incl_dirs is None:
-        incl_dirs += dist_incl_dirs
-    if self.force or newer_group(depends, target_file, 'newer'):
-        import Cython.Compiler.Main
-        log.info("cythonc:> %s" % (target_file))
-        self.mkpath(target_dir)
-        options = Cython.Compiler.Main.CompilationOptions(
-            defaults=Cython.Compiler.Main.default_options,
-            include_path=incl_dirs,
-            output_file=target_file)
-        cython_result = Cython.Compiler.Main.compile(source,
-                                                   options=options)
-        if cython_result.num_errors != 0:
-            raise DistutilsError("%d errors while compiling %r with Cython" \
-                  % (cython_result.num_errors, source))
+    sources_changed = newer_group(depends, target_file, 'newer') 
+    if self.force or sources_changed:
+        if good_cython:
+            # add distribution (package-wide) include directories, in order
+            # to pick up needed .pxd files for cython compilation
+            incl_dirs = extension.include_dirs[:]
+            dist_incl_dirs = self.distribution.include_dirs
+            if not dist_incl_dirs is None:
+                incl_dirs += dist_incl_dirs
+            import Cython.Compiler.Main
+            log.info("cythonc:> %s" % (target_file))
+            self.mkpath(target_dir)
+            options = Cython.Compiler.Main.CompilationOptions(
+                defaults=Cython.Compiler.Main.default_options,
+                include_path=incl_dirs,
+                output_file=target_file)
+            cython_result = Cython.Compiler.Main.compile(source,
+                                                       options=options)
+            if cython_result.num_errors != 0:
+                raise DistutilsError("%d errors while compiling "
+                                     "%r with Cython"
+                                     % (cython_result.num_errors, source))
+        elif sources_changed and os.path.isfile(target_file):
+            raise DistutilsError("Cython >=%s required for compiling %r"
+                                 " because sources (%s) have changed" %
+                                 (CYTHON_MIN_VERSION, source, ','.join(depends)))
+        else:
+            raise DistutilsError("Cython >=%s required for compiling %r"
+                                 " but not available" %
+                                 (CYTHON_MIN_VERSION, source))
     return target_file

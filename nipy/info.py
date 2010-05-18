@@ -37,3 +37,8 @@ The nipy package contains the following subpackages and modules:
 .. packagetree:: 
    :style: UML  
 """
+
+scipy_min_version = '0.5'
+sympy_min_version = '0.6.6'
+mayavi_min_version = '3.0'
+cython_min_version = '0.12.1'
