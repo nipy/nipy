@@ -22,7 +22,7 @@ Options::
 
 For getting the code via version control::
 
-   sudo apt-get install bzr
+   sudo apt-get install git-core
 
 Then follow the instructions at :ref:`trunk_download`
 

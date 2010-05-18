@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module provides classes and definitions for using full width at half
 maximum (FWHM) to be used in conjunction with Gaussian Random Field Theory

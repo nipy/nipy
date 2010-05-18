@@ -1,11 +1,13 @@
 #!/usr/bin/env python
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 import sys
 from glob import glob
 from distutils import log
-from distutils.cmd import Command
 
 # monkey-patch numpy distutils to use Cython instead of Pyrex
-from build_helpers import generate_a_pyrex_source, package_check
+from build_helpers import (generate_a_pyrex_source, package_check,
+                           cmdclass, INFO_VARS)
 from numpy.distutils.command.build_src import build_src
 build_src.generate_a_pyrex_source = generate_a_pyrex_source
 
@@ -43,30 +45,28 @@ if not 'extra_setuptools_args' in globals():
 
 
 # Hard and soft dependency checking
-package_check('scipy', '0.5')
-##package_check('sympy', '0.6.6')
+package_check('scipy', INFO_VARS['scipy_min_version'])
+package_check('sympy', INFO_VARS['sympy_min_version'])
 def _mayavi_version(pkg_name):
     from enthought.mayavi import version
     return version.version
-package_check('mayavi', '3.0', optional=True,
+package_check('mayavi',
+              INFO_VARS['mayavi_min_version'],
+              optional=True,
               version_getter=_mayavi_version)
+# Cython can be a build dependency
 def _cython_version(pkg_name):
     from Cython.Compiler.Version import version
     return version
-# Cython is a build dependency
-package_check('cython', '0.12', optional=False,
-              version_getter=_cython_version)
-    
-################################################################################
-# Import the documentation building classes. 
-
-try:
-    from build_helpers import cmdclass
-except ImportError:
-    """ Pass by the doc build gracefully if sphinx is not installed """
-    print "Sphinx is not installed, docs cannot be built"
-    cmdclass = {}
-
+package_check('cython',
+              INFO_VARS['cython_min_version'],
+              optional=True,
+              version_getter=_cython_version,
+              messages={'opt suffix': ' - you will not be able '
+                        'to rebuild Cython source files into C files',
+                        'missing opt': 'Missing optional build-time '
+                        'package "%s"'}
+              )
 
 ################################################################################
 # commands for installing the data
@@ -105,8 +105,6 @@ cmdclass['build_ext'] = MyBuildExt
 
 ################################################################################
 
-# We need to import nipy as late as possible, 
-from nipy import  __doc__
 
 def main(**extra_args):
     from numpy.distutils.core import setup
@@ -116,7 +114,7 @@ def main(**extra_args):
            author = 'Various',
            author_email = 'nipy-devel@neuroimaging.scipy.org',
            url = 'http://neuroimaging.scipy.org',
-           long_description = __doc__,
+           long_description = INFO_VARS['long_description'],
            configuration = configuration,
            cmdclass = cmdclass,
            scripts = glob('scripts/*.py'),

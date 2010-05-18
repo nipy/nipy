@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module implements the DAG class of fff2
 Forest(WeightedGraph): This is a special case of a Weighted Graph (i.e.  a set of trees)

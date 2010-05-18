@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# emacs: -*- coding: utf-8; mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 #
 # sampledoc documentation build configuration file, created by
 # sphinx-quickstart on Tue Jun  3 12:40:24 2008.
@@ -30,10 +31,10 @@ import ipython_console_highlighting
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.doctest',
+              'sphinx.ext.autosummary',
               'ipython_console_highlighting', 
               'inheritance_diagram', 
-              'numpydoc',
-              'autosummary']
+              'numpydoc']
 
 # Matplotlib sphinx extensions
 # ----------------------------
@@ -62,12 +63,12 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The master toctree document.
-master_doc = 'contents'
+master_doc = 'index'
 
 # General substitutions.
 project = 'nipy'
-#copyright = ':ref:`2005-2009, Neuroimaging in Python team. <nipy-software-license>`' 
-copyright = '2005-2009, Neuroimaging in Python team' 
+#copyright = ':ref:`2005-2010, Neuroimaging in Python team. <nipy-software-license>`' 
+copyright = '2005-2010, Neuroimaging in Python team' 
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -179,7 +180,7 @@ htmlhelp_basename = project
 # [howto/manual]).
 
 latex_documents = [
-  ('contents', 'nipy.tex', 'Neuroimaging in Python Documentation',
+  ('index', 'nipy.tex', 'Neuroimaging in Python Documentation',
    ur'The Neuroimaging in Python documentation team.','manual'),
   ## ('devel/index', 'nipy_devel.tex',
   ##  'Neuroimaging in Python Developer Documentation',

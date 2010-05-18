@@ -44,7 +44,7 @@ clean:
 	-rm -rf build/* dist/* *~ api/generated
 	-rm -f manual
 
-pdf: api latex
+pdf: latex
 	cd build/latex && make all-pdf
 
 all: html pdf
@@ -94,7 +94,7 @@ htmlhelp:
 	@echo "Build finished; now you can run HTML Help Workshop with the" \
 	      ".hhp project file in build/htmlhelp."
 
-latex:
+latex: api
 	mkdir -p build/latex build/doctrees
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) build/latex
 	@echo
