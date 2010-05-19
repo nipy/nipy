@@ -8,7 +8,7 @@ Variational bayes and Gibbs estimation are sucessively run on the same
 dataset
 
 
-Author : Bertrand Thirion, 2008-2009
+Author : Bertrand Thirion, 2008-2010
 """
 print __doc__
 
@@ -64,7 +64,7 @@ for k in krange:
     w, cent, prec, pz = b.sample(x, niter=niter, mem=1)
     bplugin =  bgmm.BGMM(k, dim, cent, prec, w)
     bplugin.guess_priors(x)
-    bfk = bplugin.bayes_factor(x, pz.astype(np.int), nperm=40)
+    bfk = bplugin.bayes_factor(x, pz.astype(np.int), nperm=120)
     print k, 'classes, evidence:', bfk
     if bfk>bbf:
         bestk = k

@@ -120,19 +120,18 @@ def test_gmm_bf(kmax=4, seed=1, verbose=1):
         import numpy.random as nr
 
     x = nr.randn(n,dim)
-    #x[:30] += 2
-    niter = 3000
+    niter = 1000
 
     bbf = -np.infty
-    for k in range(1,kmax):
-        b = BGMM(k,dim)
+    for k in range(1, kmax):
+        b = BGMM(k, dim)
         b.guess_priors(x)
         b.initialize(x)
-        b.sample(x,100)
-        w,cent,prec,pz = b.sample(x,niter=niter,mem=1)
-        bplugin =  BGMM(k,dim,cent,prec,w)
+        b.sample(x, 100)
+        w, cent, prec, pz = b.sample(x, niter=niter, mem=1)
+        bplugin =  BGMM(k, dim, cent, prec, w)
         bplugin.guess_priors(x)
-        bfk = bplugin.bayes_factor(x,pz.astype(np.int),1)
+        bfk = bplugin.bayes_factor(x, pz.astype(np.int))
         if verbose:
             print k, bfk
         if bfk>bbf:
@@ -207,10 +206,10 @@ def test_evidence(verbose=0,k=1):
     b.guess_priors(x)
     b.initialize(x)
     b.sample(x,100)
-    w,cent,prec,pz = b.sample(x,niter=niter,mem=1)
-    bplugin =  BGMM(k,dim,cent,prec,w)
+    w,cent,prec,pz = b.sample(x, niter=niter, mem=1)
+    bplugin =  BGMM(k, dim, cent, prec, w)
     bplugin.guess_priors(x)
-    bfchib = bplugin.bayes_factor(x,pz.astype(np.int),1)
+    bfchib = bplugin.bayes_factor(x, pz.astype(np.int), 1)
     if verbose:
         print ' chib:', bfchib
     assert(bfchib>vbe)
