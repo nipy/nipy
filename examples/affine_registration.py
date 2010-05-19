@@ -1,4 +1,7 @@
+
 #!/usr/bin/env python 
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This script requires the nipy-data package to run. It is an example of
 inter-subject affine registration using two MR-T1 images from the
@@ -41,8 +44,8 @@ ammon_TO_anubis.npz
 
 Author: Alexis Roche, 2009. 
 """
+from nipy.neurospin.registration import register, transform
 from nipy.utils import example_data
-from nipy.neurospin import register, transform
 from nipy.io.imageformats import load as load_image, save as save_image
 
 from os.path import join

@@ -20,9 +20,6 @@ Requirements::
    yum install sympy
    yum install atlas-devel
 
-You will also need PyNIFTI_ - see the the PyNIFTI_ page for Fedora
-installation details.
-
 Options::
 
    yum install ipython
@@ -30,6 +27,6 @@ Options::
 
 For getting the code via version control::
 
-   yum install bzr
+   yum install git-core
 
 Then follow the instructions at :ref:`trunk_download`

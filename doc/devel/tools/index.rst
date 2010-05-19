@@ -14,4 +14,3 @@
 
    tricked_out_emacs
    virtualenv-tutor
-   ssh_windows
