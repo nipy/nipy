@@ -7,7 +7,7 @@ import warnings
 
 import numpy as np
 
-from nipy.neurospin.utils.emp_null import ENN
+from nipy.neurospin.utils.emp_null import ENN, smoothed_histogram_from_samples
 
 def setup():
     # Suppress warnings during tests to reduce noise
@@ -29,6 +29,17 @@ def test_efdr():
     np.testing.assert_array_less(-efdr.threshold(alpha=0.05), -2.8)
     np.testing.assert_array_less(-efdr.uncorrected_threshold(alpha=0.001), -2.5)
 
+def test_smooth_histo():
+   """
+   test smoothed histogram geenration
+   """
+   n=100
+   x = np.random.randn(n)
+   h, c = smoothed_histogram_from_samples(x, normalized=True)
+   thh = 1./np.sqrt(2*np.pi)
+   hm = h.max()
+   #print hm, thh
+   assert np.absolute(hm-thh)<0.15
 
 if __name__ == "__main__":
     import nose

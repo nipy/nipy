@@ -436,8 +436,10 @@ def MixedIMM(IMM):
 
         Parameters
         ----------
-        x: array of shape (n_samples, self.dim)
+        x: array of shape (n_samples, self.dim),
            the data used in the estimation process
+        null_class_proba: array of shape(n_samples),
+                          the probability to be under the null
         niter: int,
                the number of iterations to perform
         sampling_points: array of shape(nbpoints, self.dim), optional
@@ -453,9 +455,11 @@ def MixedIMM(IMM):
         -------
         likelihood: array of shape(nbpoints)
                     total likelihood of the model 
-        
+        pproba: array of shape(n_samples),
+                the posterior proba that the samples are not in the null
         """        
         self.check_x(x)
+        pproba = np.zeros(x.shape[0x])
         
         if sampling_points==None:
             average_like = np.zeros(x.shape[0])
@@ -464,7 +468,7 @@ def MixedIMM(IMM):
             splike = self.likelihood_under_the_prior(sampling_points)
 
         plike = self.likelihood_under_the_prior(x)
-
+        
         if init:
             self.k = 1
             z = np.zeros(x.shape[0])
@@ -475,18 +479,79 @@ def MixedIMM(IMM):
         
         for i in range(niter):
             if  k==0:
-                like = self.simple_update(x, z, plike)
+                like = self.simple_update(x, z, plike, null_class_proba)
             else:
-                like = self.cross_validated_update(x, z, plike, k)
-            
+                like = self.cross_validated_update(x, z, plike, k,
+                                                   null_class_proba)
+
+            z = self.sample_indicator(like)
+            pproba += z>-1
             if sampling_points==None:
                 average_like += like
             else:
                 average_like += np.sum(
                     self.likelihood(sampling_points, splike), 1)
-
+                
         average_like/=niter
-        return average_like
+        pproba /= niter
+        return average_like, pproba
+
+    def simple_update(self, x, z, plike, null_class_proba):
+        """
+         This is a step in the sampling procedure
+        that uses internal corss_validation
+
+        Parameters
+        ----------
+        x: array of shape(n_samples, dim),
+           the input data
+        z: array of shape(n_samples),
+           the associated membership variables
+        plike: array of shape(n_samples),
+               the likelihood under the prior
+        null_class_proba: array of shape(n_samples),
+                          prior probability to be under the null
+
+        Returns
+        -------
+        like: array od shape(n_samples),
+              the likelihood of the data
+        """
+        like = self.likelihood(x, plike)
+        # standard + likelihood under the prior
+        # like has shape (x.shape[0], self.k+1)
+        
+        z = self.sample_indicator(like, null_class_proba)
+        # almost standard, but many new components can be created
+        
+        self.reduce(z)
+        self.update(x,z)
+        return like.sum(1)
+
+    def sample_indicator(self, like, null_class_proba):
+        """
+        sample the indicator from the likelihood
+        
+        Parameters
+        ----------
+        like: array of shape (nbitem,self.k)
+           component-wise likelihood
+        null_class_proba: array of shape(n_samples),
+                          prior probability to be under the null
+
+        Returns
+        -------
+        z: array of shape(nbitem): a draw of the membership variable
+
+        Note
+        ----
+        The behaviour is different from standard bgmm
+        in that z can take arbitrary values 
+        """
+        z = BGMM.sample_indicator(self, like)
+        z[z==self.k] = self.k + np.arange(np.sum(z==self.k))
+        return z
+
 
 
 def example_1d():
