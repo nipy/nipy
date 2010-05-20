@@ -851,8 +851,9 @@ class GMM():
         if density==None:
             density = self.mixture_likelihood(gd,x)
 
+        import pylab
         if axes is None:
-            axes = mp.figure()
+            axes = pylab.figure()
 
         if gd.dim==1:
             import matplotlib.pylab as mp
@@ -860,13 +861,13 @@ class GMM():
             bins = max(10,(x.max()-x.min())/step)
             xmin = 1.1*x.min() - 0.1*x.max()
             xmax = 1.1*x.max() - 0.1*x.min()
-            h,c = np.histogram(x, bins, [xmin,xmax], normed=True)
+            h,c = np.histogram(x, bins, [xmin, xmax], normed=True)
             offset = (xmax-xmin)/(2*bins)
             grid = gd.make_grid()
         
             h /= h.sum()
             h /= (2*offset)
-            axes.plot(c[:-1]+offset,h)
+            axes.plot(c[:-1]+offset, h)
             axes.plot(grid, density)
             axes.show()
 

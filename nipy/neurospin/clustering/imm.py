@@ -3,7 +3,7 @@ Infinite mixture model : A generalization of Bayesian mixture models
 with an unspecified number of classes
 """
 import numpy as np
-from bgmm import generate_normals, BGMM
+from bgmm import generate_normals, BGMM, detsh
 from scipy.special import gammaln
 
 class IMM(BGMM):
@@ -17,6 +17,24 @@ class IMM(BGMM):
     def __init__(self, alpha=.5, dim=1, prior_means=None, prior_weights=None,
                  prior_scale=None, prior_dof=None, prior_shrinkage=None):
         """
+        Parameters
+        ----------
+        alpha: float, optional,
+               the parameter for cluster creation
+        dim: int, optional,
+             the dimension of the the data
+        prior_means: array of shape(dim), optional
+                     the prior mean parameter (for all classes)
+        prior_weights: float, optional
+                       the prior weights parameter (for all classes)
+        prior_scale: array of shape(dim, dim), optional
+                     the prior scale parameter (for all classes)
+        prior_dof: float, optional
+                   prior degrees of freedom
+        prior_shrinkage: float, optional,
+                         prior shrinkage parameter 
+
+        Note: use the function set_priors() to set adapted priors
         """
         self.dim = dim
         self.alpha = alpha
@@ -29,7 +47,12 @@ class IMM(BGMM):
         self.prior_scale = prior_scale
         self.prior_dof = prior_dof
         self.prior_shrinkage = prior_shrinkage
-
+        self.prior_dens = None
+        if self.prior_scale is not None:
+            ps0 = self.prior_scale[0]
+            self._dets = [detsh(ps0)]
+            self._inv_prior_scale = np.reshape(np.linalg.inv(ps0))
+        
         # initialize weights
         self.weights = [1]
         
@@ -54,15 +77,27 @@ class IMM(BGMM):
 
         # set the priors
         self.prior_means = mx
-        self.prior_weights = [self.alpha]
+        self.prior_weights = self.alpha
         self.prior_scale = px 
         self.prior_dof = [self.dim+2]
         self.prior_shrinkage = [small]
-
+        
         # cache some pre-computations
-        self._dets = [np.linalg.det(px[0])]
+        self._dets = [detsh(px[0])]
         self._inv_prior_scale = np.reshape(np.linalg.inv(px[0]),elshape)
   
+    def set_constant_densities(prior_dens=None ):
+        """
+        Set the null and prior densities as constant
+        (over a  supposedly compact domain)
+
+        Parameters
+        ----------
+        prior_dens: float, optional
+                    constant for the prior density
+        """
+        self.prior_dens = prior_dens
+
     
     def sample(self, x, niter=1, sampling_points=None, init=False,
                k=0, verbose=0):
@@ -89,8 +124,7 @@ class IMM(BGMM):
         likelihood: array of shape(nbpoints)
                     total likelihood of the model 
         
-        """
-        
+        """        
         self.check_x(x)
         
         if sampling_points==None:
@@ -292,7 +326,8 @@ class IMM(BGMM):
         -------
         w, the likelihood of x under the prior model (unweighted)
         """
-        from numpy.linalg import det
+        if self.prior_dens is not None:
+            return self.prior_dens*np.ones(x.shape[0])
         
         a = self.prior_dof[0]
         tau = self.prior_shrinkage[0]
@@ -300,7 +335,7 @@ class IMM(BGMM):
         m = self.prior_means[0]
         b = self.prior_scale
         ib = np.linalg.inv(b[0])
-        ldb = np.log(det(b[0]))
+        ldb = np.log(detsh(b[0]))
 
         scalar_w = np.log(tau/np.pi) *self.dim
         scalar_w += 2*gammaln((a+1)/2)
@@ -310,7 +345,7 @@ class IMM(BGMM):
         w = scalar_w * np.ones(x.shape[0])
         
         for i in range(x.shape[0]):
-            w[i] -= (a+1) * np.log(det(ib + tau*(m-x[i:i+1])*(m-x[i:i+1]).T))
+            w[i] -= (a+1) * np.log(detsh(ib + tau*(m-x[i:i+1])*(m-x[i:i+1]).T))
             
         w = w/2
         
@@ -344,6 +379,114 @@ class IMM(BGMM):
             like = plike
         like *= self.weights
         return like
+
+
+def MixedIMM(IMM):
+    """
+    Particular IMM with an additional null class.
+    The data is supplied together
+    with a sample-related probability of being under the null.
+    """
+
+    def __init__(self, alpha=.5, dim=1, prior_means=None, prior_weights=None,
+                 prior_scale=None, prior_dof=None, prior_shrinkage=None):
+        """
+        Parameters
+        ----------
+        alpha: float, optional,
+               the parameter for cluster creation
+        dim: int, optional,
+             the dimension of the the data
+        prior_means: array of shape(dim), optional
+                     the prior mean parameter (for all classes)
+        prior_weights: float, optional
+                       the prior weights parameter (for all classes)
+        prior_scale: array of shape(dim, dim), optional
+                     the prior scale parameter (for all classes)
+        prior_dof: float, optional
+                   prior degrees of freedom
+        prior_shrinkage: float, optional,
+                         prior shrinkage parameter 
+
+        Note: use the function set_priors() to set adapted priors
+        """
+        IMM.__init__(self, alpha=.5, dim=1, prior_means=None,
+                     prior_weights=None, prior_scale=None, prior_dof=None,
+                     prior_shrinkage=None )
+
+    def set_constant_densities( null_dens=None, prior_dens=None ):
+        """
+        Set the null and prior densities as constant
+        (over a  supposedly compact domain)
+
+        Parameters
+        ----------
+        null_dens: float, optional
+                   constant for the null density
+        prior_dens: float, optional
+                    constant for the prior density
+        """
+        self.null_dens = null_dens
+        self.prior_dens = prior_dens
+
+    def sample(self, x, null_class_proba, niter=1, sampling_points=None,
+               init=False, k=0, verbose=0):
+        """
+        sample the indicator and parameters
+
+        Parameters
+        ----------
+        x: array of shape (n_samples, self.dim)
+           the data used in the estimation process
+        niter: int,
+               the number of iterations to perform
+        sampling_points: array of shape(nbpoints, self.dim), optional
+                         points where the likelihood will be sampled
+                         this defaults to x
+        k: int, optional,
+           parameter of cross-validation control
+           by default, no cross-validation is used
+           the procedure is faster but less accurate
+        verbose=0: verbosity mode
+        
+        Returns
+        -------
+        likelihood: array of shape(nbpoints)
+                    total likelihood of the model 
+        
+        """        
+        self.check_x(x)
+        
+        if sampling_points==None:
+            average_like = np.zeros(x.shape[0])
+        else:
+            average_like = np.zeros(sampling_points.shape[0])
+            splike = self.likelihood_under_the_prior(sampling_points)
+
+        plike = self.likelihood_under_the_prior(x)
+
+        if init:
+            self.k = 1
+            z = np.zeros(x.shape[0])
+            self.update(x,z)
+
+        like = self.likelihood(x, plike)
+        z = self.sample_indicator(like)
+        
+        for i in range(niter):
+            if  k==0:
+                like = self.simple_update(x, z, plike)
+            else:
+                like = self.cross_validated_update(x, z, plike, k)
+            
+            if sampling_points==None:
+                average_like += like
+            else:
+                average_like += np.sum(
+                    self.likelihood(sampling_points, splike), 1)
+
+        average_like/=niter
+        return average_like
 
 
 def example_1d():
