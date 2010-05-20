@@ -48,7 +48,9 @@ def _fast_abs_percentile(map):
 def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     figure=None, axes=None, title=None, threshold=None,
                     annotate=True, draw_cross=True, 
-                    do3d=False, **kwargs):
+                    do3d=False, 
+                    view_3d=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
+                    **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
 
         Parameters
@@ -95,6 +97,9 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             map in addition to the slicing. If 'interactive', the
             3D visualization is displayed in an additional interactive
             window.
+        view_3d: tuple,
+            The view used to take the screenshot: azimuth, elevation,
+            distance and focalpoint, see the docstring of mlab.view.
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
 
@@ -180,6 +185,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     anat=anat, anat_affine=anat_affine, 
                     offscreen=offscreen, cmap=cmap,
                     threshold=threshold,
+                    view=view_3d,
                     vmin=vmin, vmax=vmax)
 
         ax = fig.add_axes((0.001, 0, 0.29, 1))
