@@ -7,8 +7,8 @@
 Source Code
 ===========
 
-NIPY uses launchpad_ for our code hosting.  For immediate access to
-the source code, see the `nipy launchpad`_ site.
+NIPY uses github_ for our code hosting.  For immediate access to
+the source code, see the `nipy github`_ site.
 
 Guidelines
 ==========
@@ -29,7 +29,7 @@ to follow these guidelines ourselves:
   <http://projects.scipy.org/scipy/numpy/wiki/CodingStyleGuidelines>`_
   This is the coding style we strive to maintain.
 
-* :ref:`bzr_workflow` : This describes our process for version control.
+* :ref:`development-workflow` : This describes our process for version control.
 
 * :ref:`testing` : We've adopted a rigorous testing framework.
 
@@ -41,10 +41,9 @@ to follow these guidelines ourselves:
 Checking out the latest version
 ===============================
 
-To check out the latest version of nipy you need bzr version greater than
-0.92::
+To check out the latest version of nipy you need git_:: 
 
-    bzr branch lp:nipy
+    git clone git://github.com/nipy/nipy.git
 
 There are two methods to install a development version of nipy.  For
 both methods, build the extensions in place::
@@ -65,25 +64,23 @@ Then you can either:
 With either method, all of the modifications made to your source tree
 will be picked up when nipy is imported.
 
-
 Submitting a patch
 ==================
 
 The preferred method to submit a patch is to create a branch of nipy on
-your machine, modify the code and push that branch to your launchpad
-directory.  Then email the list and we will review your code and
-hopefully apply (merge) your patch.  See the instructions for
-:ref:`init_trunk_dev`.
+your machine, modify the code and make a patch or patches.  Then email
+the `nipy mailing list`_ and we will review your code and hopefully
+apply (merge) your patch.  See the instructions for
+:ref:`making-patches`.
 
-If you do not wish to use bazaar and launchpad, please feel free to
-file a bug report and submit a patch or email the `nipy mailing
-list`_.
+If you do not wish to use bazaar and github, please feel free to
+file a bug report and submit a patch or email the 
 
 Bug reports
 ===========
 
 If you find a bug in nipy, please submit a bug report at the `nipy
-bugs`_ launchpad site so that we can fix it.
+bugs`_ github site so that we can fix it.
 
 
 .. include:: doc/links_names.txt

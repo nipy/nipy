@@ -25,11 +25,22 @@ Must Have
   SciPy_ 0.7 or later
     Numpy and Scipy are high-level, optimized scientific computing libraries.
 
+  Sympy_ 0.6.6 or later
+    Sympy is a symbolic mathematics library for Python.  We use it for
+    statistical formalae.
+
   gcc_
     NIPY does contain a few C extensions for optimized
     routines. Therefore, you must have a compiler to build from
     source.  XCode_ (OSX) and MinGW_ (Windows) both include gcc.  (*Once
     we have binary packages, this requirement will not be necessary.*)
+
+  cython_ 0.11.1 or later
+    Cython is a language that is a fusion of Python and C.  It allows us
+    to write fast code using Python and C syntax, so that it easier to
+    read and maintain.  You need Cython if you are building the
+    development source code (and that is what you have to do at the
+    moment, because we don't yet have a release).
 
 Strong Recommendations
 ^^^^^^^^^^^^^^^^^^^^^^

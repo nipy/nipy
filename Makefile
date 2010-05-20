@@ -1,7 +1,10 @@
 # Automating common tasks for NIPY development
 
 clean:
-	find . -regex ".*\(\.pyc\|\.so\|~\|#\)" -exec rm -rf "{}" \;
+	find . -regex ".*\.pyc" -exec rm -rf "{}" \;
+	find . -regex ".*\.so" -exec rm -rf "{}" \;
+	find . -regex ".*~" -exec rm -rf "{}" \;
+	find . -regex ".*#" -exec rm -rf "{}" \;
 	rm -rf build
 
 dev: clean
