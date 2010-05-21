@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module is the interface to the bayesian_structural_analysis (bsa) module
 It handles the images provided as input and produces result images.

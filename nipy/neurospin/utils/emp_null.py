@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 this module contains a class that fits a gaussian model to the central
 part of an histogram, following schwartzman et al, 2009. This is
@@ -439,7 +441,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
         return None
     
     from nipy.neurospin.clustering.bgmm import VBGMM
-    from nipy.neurospin.clustering.gmm import grid_descriptor
+    from nipy.neurospin.clustering.gmm import GridDescriptor
     
     sx = np.sort(x,0)   
     nclasses=3
@@ -465,12 +467,12 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
                            prior_dof, prior_shrinkage)
 
     # estimate the model
-    BayesianGMM.estimate(x,delta = 1.e-8,verbose=verbose-1)
+    BayesianGMM.estimate(x, delta = 1.e-8, verbose=max(0, verbose-1))
 
     # create a sampling grid
     if (verbose or bias):
-        gd = grid_descriptor(1) 
-        gd.getinfo([x.min(),x.max()],100)
+        gd = GridDescriptor(1) 
+        gd.set([x.min(),x.max()],100)
         gdm = gd.make_grid().squeeze()
         lj = BayesianGMM.likelihood(gd.make_grid())
     

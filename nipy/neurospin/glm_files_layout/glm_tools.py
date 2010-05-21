@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module contains several utiility functions to perform GLM 
 on datasets that are organized according to the layout chosen in brainvisa.
@@ -26,14 +28,16 @@ Note that contrast specification relied on the  contrast_tools module
 Author : Lise Favre, Bertrand Thirion, 2008-2010
 """
 
-import numpy as np
-import commands
 import os
-from configobj import ConfigObj
-
-from nipy.io.imageformats import load, save, Nifti1Image
-import glob
 from os.path import join
+import commands
+import glob
+
+import numpy as np
+
+from ...externals.configobj import ConfigObj
+
+from ...io.imageformats import load, save, Nifti1Image
 
 ############################################
 # Path definition

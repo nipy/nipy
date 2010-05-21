@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 ''' Tiny script to write 4D file in any format that we write (nifti,
 analyze, at the moment, from input 3d files '''
 

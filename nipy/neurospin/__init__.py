@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """\
 Neurospin functions and classes for nipy. 
 
@@ -9,13 +11,12 @@ http://www.lnao.fr
 functions for fMRI
 
 This module contains several objects and functions for fMRI processing.
-
 """
 
 from numpy.testing import Tester
 
-import statistical_mapping
-from registration import register, transform 
+# No subpackage should be imported here to avoid run-time errors
+# related to missing dependencies or binary incompatibilities
 
 test = Tester().test
 bench = Tester().bench 

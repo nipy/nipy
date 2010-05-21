@@ -8,8 +8,9 @@ Author: Alexis Roche, 2008.
 
 __version__ = '0.1'
 
-# Includes from the python headers
-include "fff.pxi"
+# Includes
+from fff cimport *
+cimport numpy as cnp
 
 # Exports from fff_gen_stats.h
 cdef extern from "fff_gen_stats.h":
@@ -36,7 +37,7 @@ cdef extern from "fff_lapack.h":
 
 # Initialize numpy
 fffpy_import_array()
-import_array()
+cnp.import_array()
 import numpy as np
 
 # FIXME: Check that this is faster than scipy.stats.scoreatpercentile
