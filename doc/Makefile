@@ -80,7 +80,7 @@ html: api htmlonly
 	@echo "Build HTML and API finished."
 
 gitwash-update:
-	python ../tools/gitwash_dumper.py nipy nipy devel/guidelines
+	python ../tools/gitwash_dumper.py devel/guidelines nipy
 
 pickle:
 	mkdir -p build/pickle build/doctrees

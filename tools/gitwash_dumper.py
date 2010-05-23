@@ -66,22 +66,34 @@ def copy_replace(replace_pairs,
 
 
 usage = ('Usage: '
-         '%s <project_name> <repo_name> <out_path> [gitwash-url [,gitwash-branch]]')
+         '%s <out_path> <project_name> [<repo_name> '
+         '[main_github_user '
+         '[gitwash-url [gitwash-branch]]]]')
 
 
 if __name__ == '__main__':
     prog = sys.argv.pop(0)
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         raise OSError(usage % prog)
-    project_name, repo_name, out_path = sys.argv[:3]
+    out_path, project_name = sys.argv[:2]
     try:
-        gitwash_url = sys.argv[3]
+        repo_name = sys.argv[2]
+    except IndexError:
+        repo_name = project_name
+    try:
+        main_gh_user = sys.argv[3]
+    except IndexError:
+        main_gh_user = repo_name
+    try:
+        gitwash_url = sys.argv[4]
     except IndexError:
         gitwash_url = 'git://github.com/matthew-brett/gitwash.git'
     try:
-        gitwash_branch = sys.argv[4]
+        gitwash_branch = sys.argv[5]
     except IndexError:
         gitwash_branch = 'master'
-    copy_replace((('PROJECTNAME', project_name), ('REPONAME', repo_name)),
+    copy_replace((('PROJECTNAME', project_name),
+                  ('REPONAME', repo_name),
+                  ('MAIN_GH_USER', main_gh_user)),
                  out_path, gitwash_url, gitwash_branch)
     
