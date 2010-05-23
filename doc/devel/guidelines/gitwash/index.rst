@@ -1,4 +1,4 @@
-.. _git-development:
+.. _using-git:
 
 Working with *nipy* source code
 ===============================

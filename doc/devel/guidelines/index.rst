@@ -14,7 +14,7 @@
 
    howto_document
    sphinx_helpers
-   using_git
+   gitwash/index
    testing
    debugging
    optimization

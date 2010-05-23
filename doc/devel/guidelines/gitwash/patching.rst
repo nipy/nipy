@@ -13,6 +13,8 @@ how.  Making a patch is the simplest and quickest, but if you're going
 to be doing anything more than simple quick things, please consider
 following the :ref:`git-development` model instead.
 
+.. _making-patches:
+
 Making patches
 ==============
 

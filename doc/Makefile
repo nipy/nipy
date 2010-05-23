@@ -79,6 +79,9 @@ html: api htmlonly
 	-ln -s build manual
 	@echo "Build HTML and API finished."
 
+gitwash-update:
+	python ../tools/gitwash_dumper.py nipy devel/guidelines
+
 pickle:
 	mkdir -p build/pickle build/doctrees
 	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) build/pickle
