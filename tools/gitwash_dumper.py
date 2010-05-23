@@ -50,7 +50,7 @@ def perl_dash_pie(in_exp, out_str, filename):
 
     
 def copy_replace(project_name, out_path, repo_url, replace_str,
-                 cp_globs=('gitwash/*.txt', 'gitwash/*.rst'),
+                 cp_globs=('gitwash/*',),
                  rep_globs=('*.rst',)):
     repo_path = clone_repo(gitwash_url)
     out_fnames = cp_files(repo_path, cp_globs, out_path)
