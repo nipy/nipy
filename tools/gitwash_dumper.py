@@ -8,15 +8,14 @@ import re
 import glob
 import fnmatch
 import tempfile
-import functools
 from subprocess import call
 
-caller = functools.partial(call, shell=True)
 
-
-def clone_repo(url):
+def clone_repo(url, branch):
     tmpdir = tempfile.mkdtemp()
-    caller('git clone %s %s' % (url, tmpdir))
+    cmd = 'git clone --branch %s %s %s' % (branch, url, tmpdir)
+    print cmd
+    call(cmd, shell=True)
     return tmpdir
 
 
@@ -49,32 +48,40 @@ def perl_dash_pie(in_exp, out_str, filename):
     return False
 
     
-def copy_replace(project_name, out_path, repo_url, replace_str,
+def copy_replace(replace_pairs,
+                 out_path,
+                 repo_url,
+                 repo_branch = 'master',
                  cp_globs=('gitwash/*',),
                  rep_globs=('*.rst',)):
-    repo_path = clone_repo(gitwash_url)
+    repo_path = clone_repo(gitwash_url, repo_branch)
     out_fnames = cp_files(repo_path, cp_globs, out_path)
     shutil.rmtree(repo_path)
     fnames = []
     for rep_glob in rep_globs:
         fnames += fnmatch.filter(out_fnames, rep_glob)
     for fname in fnames:
-        perl_dash_pie(replace_str, project_name, fname)
+        for old, new in replace_pairs:
+            perl_dash_pie(old, new, fname)
 
 
 usage = ('Usage: '
-         '%s <project_name> <out_path> [gitwash-url]')
+         '%s <project_name> <repo_name> <out_path> [gitwash-url [,gitwash-branch]]')
 
 
 if __name__ == '__main__':
     prog = sys.argv.pop(0)
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         raise OSError(usage % prog)
-    project_name = sys.argv.pop(0)
-    out_path = sys.argv.pop(0)
-    if len(sys.argv):
-        gitwash_url = sys.argv.pop(0)
-    else:
+    project_name, repo_name, out_path = sys.argv[:3]
+    try:
+        gitwash_url = sys.argv[3]
+    except IndexError:
         gitwash_url = 'git://github.com/matthew-brett/gitwash.git'
-    copy_replace(project_name, out_path, gitwash_url, 'ipython')
+    try:
+        gitwash_branch = sys.argv[4]
+    except IndexError:
+        gitwash_branch = 'master'
+    copy_replace((('PROJECTNAME', project_name), ('REPONAME', repo_name)),
+                 out_path, gitwash_url, gitwash_branch)
     

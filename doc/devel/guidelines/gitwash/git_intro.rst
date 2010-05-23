@@ -2,8 +2,8 @@
  Introduction
 ==============
 
-This is a small project to describe a git_ and github_ workflow for the
-nipy_ project.
+These pages describe a git_ and github_ workflow for the nipy_
+project.
 
 There are several different workflows here, for different ways of
 working with *nipy*.
