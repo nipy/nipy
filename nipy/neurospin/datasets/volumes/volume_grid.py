@@ -101,7 +101,7 @@ class VolumeGrid(VolumeData):
 
 
     def as_volume_img(self, affine=None, shape=None, 
-                                        interpolation=None):
+                                        interpolation=None, copy=True):
         if affine is None:
             affine = np.eye(3)
         if affine.shape[0] == 3 or shape is None:

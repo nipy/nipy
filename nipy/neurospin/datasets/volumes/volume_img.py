@@ -149,9 +149,12 @@ class VolumeImg(VolumeGrid):
 
 
     def as_volume_img(self, affine=None, shape=None, 
-                                        interpolation=None):
+                                        interpolation=None, copy=True):
         if affine is None and shape is None:
-            return copy.copy(self)
+            if copy:
+                return copy.copy(self)
+            else:
+                return self
         if affine is None:
             affine = self.affine
         data = self.get_data()

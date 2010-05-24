@@ -48,7 +48,7 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
         For pynifti objects, the data is transposed.
     """
     if hasattr(obj, 'as_volume_img'):
-        obj = obj.as_volume_img()
+        obj = obj.as_volume_img(copy=copy)
         if copy:
             obj = obj.__copy__()
         return obj
