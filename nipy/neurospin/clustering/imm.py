@@ -14,8 +14,7 @@ class IMM(BGMM):
     with an unknown number of classes.
     """
 
-    def __init__(self, alpha=.5, dim=1, prior_means=None, prior_weights=None,
-                 prior_scale=None, prior_dof=None, prior_shrinkage=None):
+    def __init__(self, alpha=.5, dim=1):
         """
         Parameters
         ----------
@@ -23,16 +22,6 @@ class IMM(BGMM):
                the parameter for cluster creation
         dim: int, optional,
              the dimension of the the data
-        prior_means: array of shape(dim), optional
-                     the prior mean parameter (for all classes)
-        prior_weights: float, optional
-                       the prior weights parameter (for all classes)
-        prior_scale: array of shape(dim, dim), optional
-                     the prior scale parameter (for all classes)
-        prior_dof: float, optional
-                   prior degrees of freedom
-        prior_shrinkage: float, optional,
-                         prior shrinkage parameter 
 
         Note: use the function set_priors() to set adapted priors
         """
@@ -40,19 +29,7 @@ class IMM(BGMM):
         self.alpha = alpha
         self.k = 0
         self.prec_type='full'
-        
-        # set the priors whenever these are available
-        self.prior_means = prior_means
-        self.prior_weights = prior_weights
-        self.prior_scale = prior_scale
-        self.prior_dof = prior_dof
-        self.prior_shrinkage = prior_shrinkage
-        self.prior_dens = None
-        if self.prior_scale is not None:
-            ps0 = self.prior_scale[0]
-            self._dets = [detsh(ps0)]
-            self._inv_prior_scale = np.reshape(np.linalg.inv(ps0))
-        
+                
         # initialize weights
         self.weights = [1]
         
@@ -73,18 +50,25 @@ class IMM(BGMM):
         mx = np.reshape(x.mean(0),(1,self.dim))
         dx = x-mx
         vx = np.dot(dx.T,dx)/x.shape[0]
-        px = np.reshape(np.diag(1.0/np.diag(vx)),elshape)
+        px = np.reshape(np.diag(1.0/np.diag(vx)), elshape)
 
         # set the priors
+        self._prior_means = mx
         self.prior_means = mx
         self.prior_weights = self.alpha
+        self._prior_scale = px 
         self.prior_scale = px 
-        self.prior_dof = [self.dim+2]
-        self.prior_shrinkage = [small]
+        self._prior_dof = self.dim+2
+        self.prior_dof = [self._prior_dof]
+        self._prior_shrinkage = small
+        self.prior_shrinkage = [self._prior_shrinkage]
         
         # cache some pre-computations
-        self._dets = [detsh(px[0])]
+        self._dets_ =  detsh(px[0])
+        self._dets = [self._dets_]
         self._inv_prior_scale = np.reshape(np.linalg.inv(px[0]),elshape)
+
+        self.prior_dens = None
   
     def set_constant_densities(prior_dens=None ):
         """
@@ -100,7 +84,7 @@ class IMM(BGMM):
 
     
     def sample(self, x, niter=1, sampling_points=None, init=False,
-               k=0, verbose=0):
+               kfold=None, verbose=0):
         """
         sample the indicator and parameters
 
@@ -113,10 +97,10 @@ class IMM(BGMM):
         sampling_points: array of shape(nbpoints, self.dim), optional
                          points where the likelihood will be sampled
                          this defaults to x
-        k: int, optional,
-           parameter of cross-validation control
-           by default, no cross-validation is used
-           the procedure is faster but less accurate
+        kfold: int or array, optional,
+               parameter of cross-validation control
+               by default, no cross-validation is used
+               the procedure is faster but less accurate
         verbose=0: verbosity mode
         
         Returns
@@ -144,10 +128,10 @@ class IMM(BGMM):
         z = self.sample_indicator(like)
         
         for i in range(niter):
-            if  k==0:
+            if  kfold==None:
                 like = self.simple_update(x, z, plike)
             else:
-                like = self.cross_validated_update(x, z, plike, k)
+                like = self.cross_validated_update(x, z, plike, kfold)
             
             if sampling_points==None:
                 average_like += like
@@ -187,9 +171,8 @@ class IMM(BGMM):
         self.reduce(z)
         self.update(x,z)
         return like.sum(1)
-        
-            
-    def cross_validated_update(self, x, z, plike, k=10):
+
+    def cross_validated_update(self, x, z, plike, kfold=10):
         """
         This is a step in the sampling procedure
         that uses internal corss_validation
@@ -202,8 +185,8 @@ class IMM(BGMM):
            the associated membership variables
         plike: array of shape(n_samples),
                the likelihood under the prior
-        k: int, optional,
-           number of folds in cross-validation loop
+        kfold: int, or array of shape(n_samples), optional,
+               folds in the cross-validation loop
 
         Returns
         -------
@@ -211,21 +194,36 @@ class IMM(BGMM):
               the (cross-validated) likelihood of the data
         """
         n_samples = x.shape[0]
-        idx = np.argsort(np.random.rand(n_samples))
-        j = np.ceil(n_samples/k)
         slike = np.zeros(n_samples)
+
+        if np.isscalar(kfold):
+            aux = np.argsort(np.random.rand(n_samples))
+            idx = -np.ones(n_samples).astype(np.int)
+            j = np.ceil(n_samples/kfold)    
+            kmax = kfold
+            for k in range(kmax):
+                idx[aux[k*j:min(n_samples,j*(k+1))]] = k
+        else:
+            if np.array(kfold).size != n_samples:
+                raise ValueError, 'kfold and x do not have the same size'
+            uk = np.unique(kfold)
+            idx = np.zeros(n_samples).astype(np.int)
+            for i,k in enumerate(uk):
+                idx += (i*(kfold==k))
+            idx = idx.astype(np.int)
+            kmax = uk.max()+1
         
-        for i in range(k):
+        for k in range(kmax):
             test = np.zeros(n_samples).astype('bool')
-            test[idx[i*j:min(n_samples,j*(i+1))]] = 1
+            test[idx==k] = 1
             train = np.logical_not(test)
             
             # remove a fraction of the data
             # and re-estimate the clusters
-            self.reduce(z[train])
+            z[train] = self.reduce(z[train])
             self.update(x[train], z[train])
             
-            # draw the membership for the left-out data
+            # draw the membership for the left-out datas
             alike = self.likelihood(x[test], plike[test])
             slike[test] = alike.sum(1) 
             # standard + likelihood under the prior
@@ -245,13 +243,17 @@ class IMM(BGMM):
         Parameters
         ----------
         z: array of shape(n),
-           a vector of membership variables
-           changed in place
+           a vector of membership variables changed in place
+
+        Returns
+        -------
+        z: the remapped values
         """
-        for i,k in enumerate(np.unique(z)):
+        uz = np.unique(z[z>-1])
+        for i,k in enumerate(uz):
             z[z==k] = i
         self.k = z.max()+1
-        
+        return z
     
     def update(self, x, z):
         """
@@ -266,9 +268,9 @@ class IMM(BGMM):
         """
         # re-dimension the priors in order to match self.k
         self.prior_means = np.repeat(self.prior_means[:1], self.k, 0)
-        self.prior_dof = self.prior_dof[0]*np.ones(self.k)
-        self.prior_shrinkage = self.prior_shrinkage[0]*np.ones(self.k)
-        self._dets = self._dets[0]*np.ones(self.k)
+        self.prior_dof = self._prior_dof*np.ones(self.k)
+        self.prior_shrinkage = self._prior_shrinkage*np.ones(self.k)
+        self._dets = self._dets_*np.ones(self.k)
         self._inv_prior_scale = np.repeat(self._inv_prior_scale[:1], self.k, 0)
 
         # initialize some variables
@@ -329,11 +331,11 @@ class IMM(BGMM):
         if self.prior_dens is not None:
             return self.prior_dens*np.ones(x.shape[0])
         
-        a = self.prior_dof[0]
-        tau = self.prior_shrinkage[0]
+        a = self._prior_dof
+        tau = self._prior_shrinkage
         tau /= (1+tau)
-        m = self.prior_means[0]
-        b = self.prior_scale
+        m = self._prior_means
+        b = self._prior_scale
         ib = np.linalg.inv(b[0])
         ldb = np.log(detsh(b[0]))
 
@@ -381,15 +383,14 @@ class IMM(BGMM):
         return like
 
 
-def MixedIMM(IMM):
+class MixedIMM(IMM):
     """
     Particular IMM with an additional null class.
     The data is supplied together
     with a sample-related probability of being under the null.
     """
 
-    def __init__(self, alpha=.5, dim=1, prior_means=None, prior_weights=None,
-                 prior_scale=None, prior_dof=None, prior_shrinkage=None):
+    def __init__(self, alpha=.5, dim=1):
         """
         Parameters
         ----------
@@ -397,24 +398,12 @@ def MixedIMM(IMM):
                the parameter for cluster creation
         dim: int, optional,
              the dimension of the the data
-        prior_means: array of shape(dim), optional
-                     the prior mean parameter (for all classes)
-        prior_weights: float, optional
-                       the prior weights parameter (for all classes)
-        prior_scale: array of shape(dim, dim), optional
-                     the prior scale parameter (for all classes)
-        prior_dof: float, optional
-                   prior degrees of freedom
-        prior_shrinkage: float, optional,
-                         prior shrinkage parameter 
-
+        
         Note: use the function set_priors() to set adapted priors
         """
-        IMM.__init__(self, alpha=.5, dim=1, prior_means=None,
-                     prior_weights=None, prior_scale=None, prior_dof=None,
-                     prior_shrinkage=None )
+        IMM.__init__(self, alpha=.5, dim=1)
 
-    def set_constant_densities( null_dens=None, prior_dens=None ):
+    def set_constant_densities(self, null_dens=None, prior_dens=None ):
         """
         Set the null and prior densities as constant
         (over a  supposedly compact domain)
@@ -430,7 +419,7 @@ def MixedIMM(IMM):
         self.prior_dens = prior_dens
 
     def sample(self, x, null_class_proba, niter=1, sampling_points=None,
-               init=False, k=0, verbose=0):
+               init=False, kfold=None, verbose=0):
         """
         sample the indicator and parameters
 
@@ -445,10 +434,10 @@ def MixedIMM(IMM):
         sampling_points: array of shape(nbpoints, self.dim), optional
                          points where the likelihood will be sampled
                          this defaults to x
-        k: int, optional,
-           parameter of cross-validation control
-           by default, no cross-validation is used
-           the procedure is faster but less accurate
+        kfold: int, optional,
+               parameter of cross-validation control
+               by default, no cross-validation is used
+               the procedure is faster but less accurate
         verbose=0: verbosity mode
         
         Returns
@@ -456,10 +445,11 @@ def MixedIMM(IMM):
         likelihood: array of shape(nbpoints)
                     total likelihood of the model 
         pproba: array of shape(n_samples),
-                the posterior proba that the samples are not in the null
+                the posterior of being in the null
+                (the posterior of null_class_proba)
         """        
         self.check_x(x)
-        pproba = np.zeros(x.shape[0x])
+        pproba = np.zeros(x.shape[0])
         
         if sampling_points==None:
             average_like = np.zeros(x.shape[0])
@@ -475,17 +465,19 @@ def MixedIMM(IMM):
             self.update(x,z)
 
         like = self.likelihood(x, plike)
-        z = self.sample_indicator(like)
+        z = self.sample_indicator(like, null_class_proba)
         
         for i in range(niter):
-            if  k==0:
+            if  kfold==None:
                 like = self.simple_update(x, z, plike, null_class_proba)
             else:
-                like = self.cross_validated_update(x, z, plike, k,
-                                                   null_class_proba)
+                like = self.cross_validated_update(x, z, plike,
+                                                   null_class_proba, kfold)
 
-            z = self.sample_indicator(like)
-            pproba += z>-1
+            llike = self.likelihood(x, plike)
+            z = self.sample_indicator(llike, null_class_proba)
+            pproba += z==-1
+            
             if sampling_points==None:
                 average_like += like
             else:
@@ -515,7 +507,7 @@ def MixedIMM(IMM):
         Returns
         -------
         like: array od shape(n_samples),
-              the likelihood of the data
+              the likelihood of the data under the H1 hypothesis
         """
         like = self.likelihood(x, plike)
         # standard + likelihood under the prior
@@ -527,6 +519,72 @@ def MixedIMM(IMM):
         self.reduce(z)
         self.update(x,z)
         return like.sum(1)
+
+    def cross_validated_update(self, x, z, plike, null_class_proba, kfold=10):
+        """
+        This is a step in the sampling procedure
+        that uses internal corss_validation
+
+        Parameters
+        ----------
+        x: array of shape(n_samples, dim),
+           the input data
+        z: array of shape(n_samples),
+           the associated membership variables
+        plike: array of shape(n_samples),
+               the likelihood under the prior
+        kfold: int, optional, or array
+               number of folds in cross-validation loop
+               or set of indexes for the cross-validation procedure
+        null_class_proba: array of shape(n_samples),
+                          prior probability to be under the null
+
+        Returns
+        -------
+        like: array od shape(n_samples),
+              the (cross-validated) likelihood of the data
+        """
+        n_samples = x.shape[0]
+        slike = np.zeros(n_samples)
+        
+        if np.isscalar(kfold):
+            aux = np.argsort(np.random.rand(n_samples))
+            idx = -np.ones(n_samples).astype(np.int)
+            j = np.ceil(n_samples/kfold)    
+            kmax = kfold
+            for k in range(kmax):
+                idx[aux[k*j:min(n_samples,j*(k+1))]] = k
+        else:
+            if np.array(kfold).size != n_samples:
+                raise ValueError, 'kfold and x do not have the same size'
+            uk = np.unique(kfold)
+            idx = np.array([i*(kfold==k) for i,k in enumerate(uk)])
+            idx = idx.astype(np.int)
+            kmax = uk.max()+1
+
+        for k in range(kmax):
+            # split at iteration k
+            test = np.zeros(n_samples).astype('bool')
+            test[idx==k] = 1
+            train = np.logical_not(test)
+            
+            # remove a fraction of the data
+            # and re-estimate the clusters
+            z[train] = self.reduce(z[train])
+            self.update(x[train], z[train])
+            
+            # draw the membership for the left-out data
+            alike = self.likelihood(x[test], plike[test])
+            slike[test] = alike.sum(1) 
+            # standard + likelihood under the prior
+            # like has shape (x.shape[0], self.k+1)
+            
+            z[test] = self.sample_indicator(alike, null_class_proba[test])
+            # almost standard, but many new components can be created
+
+        return slike
+
+
 
     def sample_indicator(self, like, null_class_proba):
         """
@@ -545,17 +603,65 @@ def MixedIMM(IMM):
 
         Note
         ----
-        The behaviour is different from standard bgmm
-        in that z can take arbitrary values 
+        Here z=-1 encodes for the null class
         """
-        z = BGMM.sample_indicator(self, like)
+        n = like.shape[0]
+        conditional_like_1 = ((1-null_class_proba)*like.T).T
+        conditional_like_0 = np.reshape(null_class_proba*self.null_dens, (n,1))
+        conditional_like = np.hstack((conditional_like_0, conditional_like_1))
+        z = BGMM.sample_indicator(self, conditional_like)-1
         z[z==self.k] = self.k + np.arange(np.sum(z==self.k))
         return z
 
+def example_igmm_wnc():
+    """
+    Example of IMM with a null class
+    points are generated in [0,1] interval witha  higher density close to 0
+    the null points are assumed to occur uniformly over [0,1]
+    
+    the algorithm correctly identifies the points  close to 0
+    as the 'active' set
+    """
+    n = 50
+    dim = 1
+    alpha = .5
+    g0 = 1.
+    x = np.random.rand(n, dim)
+    x[:.3*n] *= .2
+    x[:.1*n] *= .3
+    migmm = MixedIMM(alpha, dim)
+    migmm.set_priors(x)
+    migmm.set_constant_densities(null_dens=g0)
 
+    # warming
+    ncp = 0.5*np.ones(n)
+    migmm.sample(x, null_class_proba=ncp, niter=100, init=True)
+    print 'number of components: ', migmm.k
+    
+    from gmm import GridDescriptor
+    gd = GridDescriptor(1, [0,1], 101)
 
-def example_1d():
-    n = 1000
+    #sampling
+    like, pproba =  migmm.sample(x, null_class_proba=ncp, niter=1000,
+                         sampling_points=gd.make_grid(), kfold=10)
+    print 'number of components: ', migmm.k
+
+    # the density should sum to 1
+    print 'density sum', 0.01*like.sum()
+    migmm.show(x, gd, density=like)
+
+    import pylab
+    pylab.figure()
+    pylab.plot(x, pproba, '.')
+    pylab.title('posterior probability of being in the null class')
+    pylab.xlabel('data')
+    pylab.ylabel('proba of being in the null class')
+    pylab.show()
+    
+    return migmm 
+
+def example_imm_1d():
+    n = 100
     dim = 1
     alpha = .5
     x = np.random.randn(n, dim)
@@ -582,7 +688,7 @@ def example_1d():
 
 
 def main():
-    n = 600
+    n = 100
     dim = 3
     alpha = .5
     aff = np.random.randn(dim, dim)
@@ -591,11 +697,11 @@ def main():
     igmm.set_priors(x)
 
     # warming
-    igmm.sample(x, niter=100, k=10)
+    igmm.sample(x, niter=100, kfold=10)
     print 'number of components: ', igmm.k
     
     #
-    like =  igmm.sample(x, niter=100, k=10)
+    like =  igmm.sample(x, niter=100, kfold=10)
     print 'number of components: ', igmm.k
 
     if dim<3:
