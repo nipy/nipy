@@ -693,6 +693,8 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
 
     p,q =  fc.fdp(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
                   sub, burnin, spatial_coords, nis, nii)
+    #p,q =  dpmm(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+    #           sub, burnin, spatial_coords, nis, nii)
     
     if verbose:
         import matplotlib.pylab as mp
@@ -749,7 +751,30 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
         crmap[label>-1] = aux[label[label>-1]]
  
     return crmap, LR, bf, p
+
+def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1,
+         sub, burnin, spatial_coords, nis, nii):
+    """
+    Apply the fpmm analysis to the data in python
+    """
+    from nipy.neurospin.clustering.imm import MixedIMM
+    dim = 3
+    migmm = MixedIMM(alpha, dim)
+    migmm.set_priors(gfc)
+    migmm.set_constant_densities(null_dens=g0, prior_dens=g1)
+    #migmm._prior_dof_=dof
+    #migmm._prior_scale = prior_precision*dof#??
+    migmm.sample(gfc, null_class_proba=1-gf1, niter=burnin, init=True,
+                 kfold=sub)
+    print 'number of components: ', migmm.k
     
+    #sampling
+    like, pproba =  migmm.sample(gfc, null_class_proba=1-gf1, niter=1000,
+                         sampling_points=spatial_coords, kfold=sub)
+    print 'number of components: ', migmm.k
+    return like, 1-pproba
+
+
 def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
     """
     Estimation of the population level model of activation density using 

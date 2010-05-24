@@ -49,7 +49,7 @@ class IMM(BGMM):
         elshape = (1, self.dim, self.dim)
         mx = np.reshape(x.mean(0),(1,self.dim))
         dx = x-mx
-        vx = np.dot(dx.T,dx)/x.shape[0]
+        vx = np.maximum(1.e-15, np.dot(dx.T,dx)/x.shape[0])
         px = np.reshape(np.diag(1.0/np.diag(vx)), elshape)
 
         # set the priors
@@ -401,7 +401,7 @@ class MixedIMM(IMM):
         
         Note: use the function set_priors() to set adapted priors
         """
-        IMM.__init__(self, alpha=.5, dim=1)
+        IMM.__init__(self, alpha, dim)
 
     def set_constant_densities(self, null_dens=None, prior_dens=None ):
         """
@@ -558,7 +558,9 @@ class MixedIMM(IMM):
             if np.array(kfold).size != n_samples:
                 raise ValueError, 'kfold and x do not have the same size'
             uk = np.unique(kfold)
-            idx = np.array([i*(kfold==k) for i,k in enumerate(uk)])
+            idx = np.zeros(n_samples).astype(np.int)
+            for i,k in enumerate(uk):
+                idx += (i*(kfold==k))
             idx = idx.astype(np.int)
             kmax = uk.max()+1
 
