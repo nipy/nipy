@@ -124,6 +124,9 @@ class VolumeImg(VolumeGrid):
 
 
     def resampled_to_img(self, target_image, interpolation=None):
+        if not hasattr(target_image, 'world_space'):
+            from ..converters import as_volume_img
+            target_image = as_volume_img(target_image)
         if not target_image.world_space == self.world_space:
             raise CompositionError(
                 'The two images are not embedded in the same world space')

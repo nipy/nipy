@@ -75,15 +75,8 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
         if filename != '':
             header['filename'] = filename
 
-    if world_space is not None:
-        " Ugly if statement to use elif after "
-    elif header.get('sform_code', 0) == 4:
+    if world_space is None and header.get('sform_code', 0) == 4:
         world_space = 'mni152'
-    elif 'filename' in header:
-        world_space = header['filename']
-    else:
-        # Cheap way to construct an object-specific hash
-        world_space = str(id(obj))
 
     data    = np.asanyarray(data)
     affine  = np.asanyarray(affine)

@@ -61,7 +61,7 @@ def affine_img_src(data, affine, scale=1, name='AffineImage',
     src = ArraySource(scalar_data=np.asarray(data, dtype=np.float), 
                            name=name,
                            spacing=scale*spacing,
-                           origin=origin)
+                           origin=scale*origin)
     return src 
 
 
@@ -208,7 +208,9 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
 ################################################################################
 
 def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
-    threshold=None, offscreen=False, vmin=None, vmax=None, cmap=None):
+    threshold=None, offscreen=False, vmin=None, vmax=None, cmap=None,
+    view=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
+    ):
     """ Plot a 3D volume rendering view of the activation, with an
         outline of the brain.
 
@@ -315,7 +317,7 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
         line3 = mlab.plot3d((x0, x0), (y0, y0), (-72, 109), 
                             color=(.5, .5, .5), tube_radius=0.25)
     
-    mlab.view(38.5, 70.5, 300, (-2.7, -12, 9.1))
+    mlab.view(*view)
     fig.scene.disable_render = disable_render
     
     return module
