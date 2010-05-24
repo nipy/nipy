@@ -395,6 +395,9 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         header: header object
             The header of the first file.
     """
+    assert len(filenames) != 0, ( 
+        'filenames should be a file name or a list of file names, '
+        '%s (type %s) was passed' % (filenames, type(filenames)))
     mask = mask.astype(np.bool)
     if isinstance(filenames, basestring):
         # We have a 4D nifti file
@@ -425,9 +428,9 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
                 
             series[:, index] = data[mask].astype(dtype)
             # Free memory early
+            del data
             if index == 0:
                 header = data_file.get_header()
-            del data
 
     return series, header
 
