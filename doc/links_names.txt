@@ -8,8 +8,10 @@
    __not_case_sensitive__, so only one target definition is needed for
    nipy, NIPY, Nipy, etc...
 
-.. _nipy: http://neuroimaging.scipy.org
+.. _nipy: http://nipy.org
 .. _`NIPY developer resources`: http://nipy.sourceforge.net/devel
+.. _`NIPY data packages`: http://nipy.sourceforge.net/data-packages
+
 .. _`Brain Imaging Center`: http://bic.berkeley.edu/
 
 .. Documentation tools

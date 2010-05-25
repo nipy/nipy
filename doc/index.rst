@@ -1,30 +1,11 @@
-==================================
- Welcome to nipy's documentation!
-==================================
+.. _about_nipy:
 
-.. htmlonly::
+====
+NIPY
+====
 
-   :Release: |version|
-   :Date: |today|
+NIPY is a python project for analysis of structural and functional
+neuroimaging data.
 
-   Download `PDF <http://neuroimaging.scipy.org/site/doc/manual/nipy.pdf>`_
-
-   Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-   users/index.rst
-   neurospin/index.rst
-   devel/index.rst
-   faq/index.rst
-   api/index.rst
-   publications
-   license
-
-.. htmlonly::
-
-  * :ref:`genindex`
-  * :ref:`modindex`
-  * :ref:`search`
+.. include:: mission.txt
 

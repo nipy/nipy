@@ -1,0 +1,30 @@
+==================================
+ Welcome to nipy's documentation!
+==================================
+
+.. htmlonly::
+
+   :Release: |version|
+   :Date: |today|
+
+   Download `PDF <nipy.pdf>`_
+
+   Contents:
+
+.. toctree::
+   :maxdepth: 2
+
+   users/index.rst
+   neurospin/index.rst
+   devel/index.rst
+   faq/index.rst
+   api/index.rst
+   publications
+   license
+
+.. htmlonly::
+
+  * :ref:`genindex`
+  * :ref:`modindex`
+  * :ref:`search`
+
