@@ -1,6 +1,8 @@
-==================================
- Welcome to nipy's documentation!
-==================================
+.. _documentation-main:
+
+====================
+ NIPY documentation
+====================
 
 .. htmlonly::
 
