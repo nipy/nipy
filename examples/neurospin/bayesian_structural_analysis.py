@@ -58,15 +58,17 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     Fbeta.from_3d_grid(xyz, 18)
 
     # Get  coordinates in mm
+    xyz = xyz[:,1:] # switch to dimension 2
     coord = xyz.astype(np.float)
 
     # get the functional information
     lbeta = np.array([np.ravel(betas[k]) for k in range(nsubj)]).T
 
     # the voxel volume is 1.0
-    g0 = 1.0/(1.0*nvox)*1./np.sqrt(2*np.pi*dmax**2)
-    affine = np.eye(4)
-    shape = (1, ref_dim[0], ref_dim[1])
+    g0 = 1.0/(1.0*nvox)#*1./np.sqrt(2*np.pi*dmax**2)
+    affine = np.eye(3)
+    shape = (ref_dim[0], ref_dim[1])
+    
     lmax=0
     bdensity = 1
     if method=='ipmi':
@@ -147,7 +149,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                 nls[nls==-1] = np.size(AF)+2
                 for k in range(BF[s].k):
                     xyzk = BF[s].xyz[k].T 
-                    lw[xyzk[1],xyzk[2]] =  nls[k]
+                    lw[xyzk[0],xyzk[1]] =  nls[k]
 
             mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
             mp.axis('off')

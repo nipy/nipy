@@ -483,9 +483,12 @@ class MultipleROI(object):
         where self.shape = (d1,d2,d3), if shape is defined
      
         """
-        # affine should be a (4,4) array
-        if np.shape(self.affine)!=(4,4):
-           raise ValueError, "affine does not have a correct shape"
+        # affine should be a (dim+1, dim+1) array
+        dim = 3
+        if self.shape is not None:
+            dim = len(self.shape)
+        if np.shape(self.affine)!=(dim+1, dim+1):
+            raise ValueError, "affine does not have a correct shape"
        
         if (self.shape!=None)&(len(self.xyz)>0):
             xyzmin = np.min(np.array([np.min(self.xyz[k],0) 

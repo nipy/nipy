@@ -23,9 +23,9 @@ from nipy.neurospin.clustering.hierarchical_clustering import\
      average_link_graph_segment
 import nipy.neurospin.utils.emp_null as en
 
-#------------------------------------------------------------------
-#---------------- Auxiliary functions -----------------------------
-#------------------------------------------------------------------
+####################################################################
+# Ancillary functions
+####################################################################
 
 
 def _hierarchical_asso(bfl,dmax):
@@ -171,12 +171,13 @@ def make_crmap(AF,coord,verbose=0):
     
     Parameters
     ----------
-    - AF the list of group-level landmarks regions
-    - coord: array of shape(nvox,3): the position of the reference points
+    AF list of group-level landmarks regions
+    coord: array of shape(nvox,3),
+           the position of the reference points
 
     Results
     -------
-    - crmap: array of shape(nvox)
+    crmap: array of shape(nvox)
     """
     nvox = coord.shape[0]
     crmap = -np.ones(nvox)
@@ -231,6 +232,10 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     
     if np.size(u)==0:  return None,None
 
+    for s in range(nbsubj):
+        if bf[s]is not None:
+            dim = len(bf[s].shape)
+    
     coords = []
     subjs=[]
     pps = []
@@ -261,7 +266,7 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
             valid[i]=1
             sj = np.size(j)
             idx = np.zeros(sj)
-            coord = np.zeros((sj,3), np.float)
+            coord = np.zeros((sj, dim), np.float)
             for a in range(sj):
                 sja = subj[j[a]]
                 isja = intrasubj[j[a]]
@@ -681,9 +686,10 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
     gf0 = np.concatenate(gf0)
     
     # prepare the DPMM
+    dim = coord.shape[1]
     g1 = g0
-    prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
-    dof = 100
+    prior_precision =  1./(dmax*dmax)*np.ones((1,dim), np.float)
+    dof = 10
     spatial_coords = coord
     burnin = 100
     nis = 300
@@ -691,10 +697,10 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
     nii = 100
     # nii = number of iterations to estimate q
 
-    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
-                  sub, burnin, spatial_coords, nis, nii)
-    #p,q =  dpmm(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
-    #           sub, burnin, spatial_coords, nis, nii)
+    #p,q =  fc.fdp(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+    #              sub, burnin, spatial_coords, nis, nii)
+    p,q =  dpmm(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+               sub, burnin, spatial_coords, nis, nii)
     
     if verbose:
         import matplotlib.pylab as mp
@@ -755,15 +761,16 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
 def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1,
          sub, burnin, spatial_coords, nis, nii):
     """
-    Apply the fpmm analysis to the data in python
+    Apply the dpmm analysis to the data in python
     """
     from nipy.neurospin.clustering.imm import MixedIMM
-    dim = 3
+    dim = gfc.shape[1]
     migmm = MixedIMM(alpha, dim)
     migmm.set_priors(gfc)
     migmm.set_constant_densities(null_dens=g0, prior_dens=g1)
-    #migmm._prior_dof_=dof
-    #migmm._prior_scale = prior_precision*dof#??
+    migmm._prior_dof_= dof
+    migmm._prior_scale = np.diag(prior_precision[0]*dof)#
+    migmm._inv_prior_scale = [np.diag(1./(prior_precision[0]*dof)]#
     migmm.sample(gfc, null_class_proba=1-gf1, niter=burnin, init=True,
                  kfold=sub)
     print 'number of components: ', migmm.k
@@ -772,6 +779,7 @@ def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1,
     like, pproba =  migmm.sample(gfc, null_class_proba=1-gf1, niter=1000,
                          sampling_points=spatial_coords, kfold=sub)
     print 'number of components: ', migmm.k
+
     return like, 1-pproba
 
 

@@ -438,7 +438,6 @@ class GMM():
         """
         n = x.shape[0]
         like = np.zeros((n,self.k))
-        #from numpy.linalg import det
 
         for k in range(self.k):
             # compute the data-independent factor first
@@ -446,7 +445,6 @@ class GMM():
             m = np.reshape(self.means[k],(1,self.dim))
             b = self.precisions[k]
             if self.prec_type=='full':
-                #w += np.log(det(b))
                 w += np.log(eigvalsh(b)).sum()
                 q = np.sum(np.dot(m-x,b)*(m-x),1)
             else:
