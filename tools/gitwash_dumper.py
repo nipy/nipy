@@ -16,9 +16,19 @@ verbose = False
 
 
 def clone_repo(url, branch):
+    cwd = os.getcwd()
     tmpdir = tempfile.mkdtemp()
-    cmd = 'git clone --branch %s %s %s' % (branch, url, tmpdir)
-    call(cmd, shell=True)
+    try:
+        cmd = 'git clone %s %s' % (url, tmpdir)
+        call(cmd, shell=True)
+        os.chdir(tmpdir)
+        cmd = 'git checkout %s' % branch
+        call(cmd, shell=True)
+    except:
+        shutil.rmtree(tmpdir)
+        raise
+    finally:
+        os.chdir(cwd)
     return tmpdir
 
 
@@ -64,8 +74,10 @@ def copy_replace(replace_pairs,
                  cp_globs=('*',),
                  rep_globs=('*',)):
     repo_path = clone_repo(gitwash_url, repo_branch)
-    out_fnames = cp_files(repo_path, cp_globs, out_path)
-    shutil.rmtree(repo_path)
+    try:
+        out_fnames = cp_files(repo_path, cp_globs, out_path)
+    finally:
+        shutil.rmtree(repo_path)
     fnames = []
     for rep_glob in rep_globs:
         fnames += fnmatch.filter(out_fnames, rep_glob)
