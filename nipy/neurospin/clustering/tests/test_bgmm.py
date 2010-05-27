@@ -187,10 +187,10 @@ def test_evidence(verbose=0,k=1):
     with the variational evidence (free energy)
     fixme : this one really takes time
     """
-    n=100
+    n=50
     dim=2
     x = nr.randn(n,dim)
-    x[:30] += 3
+    x[:15] += 3
     show = 0
     
     b = VBGMM(k,dim)

@@ -547,3 +547,48 @@ def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
     if return_estimator:
         return bfp, Ggg
     return bfp
+
+def smoothed_histogram_from_samples(x, bins=None, nbins=256, normalized=False):
+    """
+    Returns the smooth histogram corresponding to the  density
+    underlying the smples in x
+
+    Parameters
+    ----------
+    x: array of shape(n_samples),
+       input data
+    bins: array of shape(nbins+1), optional,
+       the bins location
+    nbins: int, optional,
+           the number of bins of the resulting histogram
+    Normalized: bool, optional
+                if True, the result is returned as a density value
+                
+    Returns
+    -------
+    h: array of shape (nbins)
+       the histogram
+    bins: array of shape(nbins+1),
+       the bins location
+    """
+    from scipy.ndimage import gaussian_filter1d
+    
+    # first define the bins
+    if bins is None:
+        h, bins = np.histogram(x, nbins)
+        bins = bins.mean()+1.2*(bins-bins.mean())
+        h, bins = np.histogram(x, bins)
+        
+    # possibly normalize to density
+    h = 1.0*h
+    dc = bins[1]-bins[0]
+    if normalized:
+        h /= (dc*h.sum())
+        
+    # define the optimal width
+    sigma = x.std()/(dc*np.exp(.2*np.log(x.size)))
+    
+    # smooth the histogram
+    h = gaussian_filter1d(h, sigma, mode='constant')
+
+    return h, bins
