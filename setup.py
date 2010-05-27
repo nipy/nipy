@@ -119,7 +119,7 @@ def main(**extra_args):
            long_description = __doc__,
            configuration = configuration,
            cmdclass = cmdclass,
-           scripts = glob('scripts/*.py'),
+           scripts = glob('scripts/*'),
            **extra_args)
 
 
