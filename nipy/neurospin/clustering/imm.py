@@ -6,6 +6,34 @@ import numpy as np
 from bgmm import generate_normals, BGMM, detsh
 from scipy.special import gammaln
 
+def co_labelling(z):
+    """
+    return a sparse co-labelling matrix given the label vector z
+
+    Parameters
+    ----------
+    z: array of shape(n_samples),
+       the input labels
+
+    Returns
+    -------
+    colabel: a sparse coo_matrix,
+             yields the co labelling of the data
+             i.e. c[i,j]= 1 if z[i]==z[j], 0 otherwise
+    """
+    from scipy.sparse import coo_matrix
+    n = z.size
+    colabel =  coo_matrix((n,n))
+    for  k in np.unique(z):
+        i = np.array(np.nonzero(z==k))
+        row = np.repeat(i, i.size)
+        col = np.ravel(np.tile(i, i.size))
+        data = np.ones((i.size)**2)
+        colabel = colabel + coo_matrix((data, (row,col)), shape=(n,n))
+    return colabel
+    
+    
+
 class IMM(BGMM):
     """
     The class implements Infinite Gaussian Mixture model
@@ -419,7 +447,7 @@ class MixedIMM(IMM):
         self.prior_dens = prior_dens
 
     def sample(self, x, null_class_proba, niter=1, sampling_points=None,
-               init=False, kfold=None, verbose=0):
+               init=False, kfold=None, co_clustering=False, verbose=0):
         """
         sample the indicator and parameters
 
@@ -438,6 +466,9 @@ class MixedIMM(IMM):
                parameter of cross-validation control
                by default, no cross-validation is used
                the procedure is faster but less accurate
+        co_clustering: bool, optional
+                       if True,
+                       return a model of data co-labelling across iterations
         verbose=0: verbosity mode
         
         Returns
@@ -447,6 +478,10 @@ class MixedIMM(IMM):
         pproba: array of shape(n_samples),
                 the posterior of being in the null
                 (the posterior of null_class_proba)
+        coclust: only if co_clustering==True,
+                 sparse_matrix of shape (n_samples, n_samples),
+                 frequency of co-labelling of each sample pairs
+                 across iterations 
         """        
         self.check_x(x)
         pproba = np.zeros(x.shape[0])
@@ -466,6 +501,10 @@ class MixedIMM(IMM):
 
         like = self.likelihood(x, plike)
         z = self.sample_indicator(like, null_class_proba)
+
+        if co_clustering:
+            from scipy.sparse import coo_matrix
+            coclust = coo_matrix((x.shape[0], x.shape[0]))
         
         for i in range(niter):
             if  kfold==None:
@@ -477,7 +516,10 @@ class MixedIMM(IMM):
             llike = self.likelihood(x, plike)
             z = self.sample_indicator(llike, null_class_proba)
             pproba += z==-1
-            
+
+            if co_clustering:
+                coclust = coclust + co_labelling(z)
+                                
             if sampling_points==None:
                 average_like += like
             else:
@@ -486,6 +528,9 @@ class MixedIMM(IMM):
                 
         average_like/=niter
         pproba /= niter
+        if co_clustering:
+            coclust /= niter
+            return average_like, pproba, coclust
         return average_like, pproba
 
     def simple_update(self, x, z, plike, null_class_proba):
@@ -635,7 +680,7 @@ def example_igmm_wnc():
     migmm.set_priors(x)
     migmm.set_constant_densities(null_dens=g0)
 
-    # warming
+    # burn-in
     ncp = 0.5*np.ones(n)
     migmm.sample(x, null_class_proba=ncp, niter=100, init=True)
     print 'number of components: ', migmm.k

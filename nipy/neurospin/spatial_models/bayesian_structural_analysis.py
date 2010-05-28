@@ -759,7 +759,7 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
     return crmap, LR, bf, p
 
 def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1,
-         sub, burnin, spatial_coords, nis, nii):
+         sub, burnin, spatial_coords, nis, nii, co_clust=False):
     """
     Apply the dpmm analysis to the data in python
     """
@@ -769,15 +769,21 @@ def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1,
     migmm.set_priors(gfc)
     migmm.set_constant_densities(null_dens=g0, prior_dens=g1)
     migmm._prior_dof_= dof
-    migmm._prior_scale = np.diag(prior_precision[0]*dof)#
-    migmm._inv_prior_scale = [np.diag(1./(prior_precision[0]*dof)]#
-    migmm.sample(gfc, null_class_proba=1-gf1, niter=burnin, init=True,
+    migmm._prior_scale = np.diag(prior_precision[0])#
+    migmm._inv_prior_scale = [np.diag(1./(prior_precision[0]))]#
+    migmm.sample(gfc, null_class_proba=1-gf1, niter=burnin, init=False,
                  kfold=sub)
     print 'number of components: ', migmm.k
     
     #sampling
-    like, pproba =  migmm.sample(gfc, null_class_proba=1-gf1, niter=1000,
-                         sampling_points=spatial_coords, kfold=sub)
+    if co_clust:
+        like, pproba, co_clust =  migmm.sample(
+            gfc, null_class_proba=1-gf1, niter=1000,
+            sampling_points=spatial_coords, kfold=sub, co_clustering=co_clust)
+    else:
+        like, pproba =  migmm.sample(
+            gfc, null_class_proba=1-gf1, niter=1000,
+            sampling_points=spatial_coords, kfold=sub, co_clustering=co_clust)
     print 'number of components: ', migmm.k
 
     return like, 1-pproba
