@@ -24,7 +24,7 @@ def test_colabel():
                    [ 0.,  1.,  1.,  0.,  0.],
                    [ 1.,  0.,  0.,  1.,  0.],
                    [ 0.,  0.,  0.,  0.,  1.]])
-    assert c==tc
+    assert (c==tc).all()
 
 def test_imm_loglike_1D():
     """
