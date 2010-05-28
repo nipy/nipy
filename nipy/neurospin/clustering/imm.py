@@ -94,7 +94,7 @@ class IMM(BGMM):
         # cache some pre-computations
         self._dets_ =  detsh(px[0])
         self._dets = [self._dets_]
-        self._inv_prior_scale = np.reshape(np.linalg.inv(px[0]),elshape)
+        self._inv_prior_scale_ = np.reshape(np.linalg.inv(px[0]),elshape)
 
         self.prior_dens = None
   
@@ -295,11 +295,11 @@ class IMM(BGMM):
           the corresponding classification
         """
         # re-dimension the priors in order to match self.k
-        self.prior_means = np.repeat(self.prior_means[:1], self.k, 0)
+        self.prior_means = np.repeat(self._prior_means, self.k, 0)
         self.prior_dof = self._prior_dof*np.ones(self.k)
         self.prior_shrinkage = self._prior_shrinkage*np.ones(self.k)
         self._dets = self._dets_*np.ones(self.k)
-        self._inv_prior_scale = np.repeat(self._inv_prior_scale[:1], self.k, 0)
+        self._inv_prior_scale = np.repeat(self._inv_prior_scale_, self.k, 0)
 
         # initialize some variables
         self.means = np.zeros((self.k, self.dim))

@@ -446,7 +446,8 @@ class GMM():
             b = self.precisions[k]
             if self.prec_type=='full':
                 w += np.log(eigvalsh(b)).sum()
-                q = np.sum(np.dot(m-x,b)*(m-x),1)
+                dx = m-x
+                q = np.sum(np.dot(dx,b)*dx,1)
             else:
                 w += np.sum(np.log(b))
                 q = np.dot((m-x)**2, b)

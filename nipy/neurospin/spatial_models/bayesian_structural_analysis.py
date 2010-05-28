@@ -768,9 +768,9 @@ def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1,
     migmm = MixedIMM(alpha, dim)
     migmm.set_priors(gfc)
     migmm.set_constant_densities(null_dens=g0, prior_dens=g1)
-    migmm._prior_dof_= dof
-    migmm._prior_scale = np.diag(prior_precision[0])#
-    migmm._inv_prior_scale = [np.diag(1./(prior_precision[0]))]#
+    migmm._prior_dof = dof
+    migmm._prior_scale = np.diag(prior_precision[0]/dof)
+    migmm._inv_prior_scale = [np.diag(1./(prior_precision[0]/dof))]
     migmm.sample(gfc, null_class_proba=1-gf1, niter=burnin, init=False,
                  kfold=sub)
     print 'number of components: ', migmm.k
@@ -778,11 +778,11 @@ def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1,
     #sampling
     if co_clust:
         like, pproba, co_clust =  migmm.sample(
-            gfc, null_class_proba=1-gf1, niter=1000,
+            gfc, null_class_proba=1-gf1, niter=nis,
             sampling_points=spatial_coords, kfold=sub, co_clustering=co_clust)
     else:
         like, pproba =  migmm.sample(
-            gfc, null_class_proba=1-gf1, niter=1000,
+            gfc, null_class_proba=1-gf1, niter=nis,
             sampling_points=spatial_coords, kfold=sub, co_clustering=co_clust)
     print 'number of components: ', migmm.k
 

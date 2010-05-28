@@ -35,7 +35,7 @@ betas =[ op.join(data_dir,'spmT_%04d_subj_%02d.nii'%(nbeta,n))
 # set various parameters
 subj_id = ['%04d' %i for i in range(12)]
 theta = float(st.t.isf(0.01,100))
-dmax = 5.
+dmax = 4.
 ths = 0 #2# or nbsubj/4
 thq = 0.95
 verbose = 1
