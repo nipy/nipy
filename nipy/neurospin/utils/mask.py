@@ -395,23 +395,25 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         header: header object
             The header of the first file.
     """
+    assert len(filenames) != 0, ( 
+        'filenames should be a file name or a list of file names, '
+        '%s (type %s) was passed' % (filenames, type(filenames)))
     mask = mask.astype(np.bool)
     if isinstance(filenames, basestring):
         # We have a 4D nifti file
         data_file = load(filenames)
         header = data_file.get_header()
-        data = data_file.get_data()
-        #if isinstance(data, np.memmap):
-        #    data = np.array(data, copy=True)
+        series = data_file.get_data()
+        affine = data_file.get_affine()[:3, :3]
+        del data_file
+        if isinstance(series, np.memmap):
+            series = np.asarray(series).copy()
         if smooth:
-            affine = data_file.get_affine()[:3, :3]
             smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
-            if not data.flags['WRITEABLE']:
-                data = np.asarray(data).copy() # Get rid of memmapping
-            for this_data in np.rollaxis(data, -1):
-                this_data[:] = ndimage.gaussian_filter(this_data,
+            for this_volume in np.rollaxis(series, -1):
+                this_volume[...] = ndimage.gaussian_filter(this_volume,
                                                         smooth_sigma)
-        series = data[mask].astype(dtype)
+        series = series[mask].astype(dtype)
     else:
         nb_time_points = len(list(filenames))
         series = np.zeros((mask.sum(), nb_time_points), dtype=dtype)
@@ -425,9 +427,9 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
                 
             series[:, index] = data[mask].astype(dtype)
             # Free memory early
+            del data
             if index == 0:
                 header = data_file.get_header()
-            del data
 
     return series, header
 

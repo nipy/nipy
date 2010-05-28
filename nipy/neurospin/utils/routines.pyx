@@ -40,7 +40,8 @@ fffpy_import_array()
 cnp.import_array()
 import numpy as np
 
-# FIXME: Check that this is faster than scipy.stats.scoreatpercentile
+# This is faster than scipy.stats.scoreatpercentile due to partial
+# sorting
 def quantile(X, double ratio, int interp=False, int axis=0):
     """
     q = quantile(data, ratio, interp=False, axis=0).
@@ -71,8 +72,8 @@ def quantile(X, double ratio, int interp=False, int axis=0):
     fffpy_multi_iterator_delete(multi)
     return Y
 
-# FIXME: Why this and not the numpy median? Check that this is faster.
-# AR: it is faster due to the underlying algorithm that relies on
+# This is faster than numpy.stats
+# due to the underlying algorithm that relies on
 # partial sorting as opposed to full sorting.
 def median(x, axis=0):
     """
