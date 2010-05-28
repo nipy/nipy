@@ -117,7 +117,7 @@ def main(**extra_args):
            long_description = INFO_VARS['long_description'],
            configuration = configuration,
            cmdclass = cmdclass,
-           scripts = glob('scripts/*.py'),
+           scripts = glob('scripts/*'),
            **extra_args)
 
 
