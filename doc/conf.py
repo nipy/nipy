@@ -89,7 +89,7 @@ unused_docs = []
 
 # List of directories, relative to source directories, that shouldn't
 # be searched for source files.
-exclude_trees = ['www']
+# exclude_trees = []
 
 # what to put into API doc (just class doc, just init, or both)
 autoclass_content = 'class'
