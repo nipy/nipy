@@ -116,6 +116,6 @@ def test_bsa_methods():
     for name, ths, betas, test_func in algs_tests:
         # run the algo
         AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method = name)
-        #yield assert_true, test_func(AF, BF)
+        yield assert_true, test_func(AF, BF)
     
 
