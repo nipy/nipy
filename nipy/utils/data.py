@@ -272,7 +272,7 @@ def make_datasource(*names, **kwargs):
         pkg_hint = _pkg_install_hint(pkg_name)
         msg = '''%(exc)s;
 Is it possible you have not installed a data package?
-From the names, maybe you need data package %(name)s"?
+From the names, maybe you need data package "%(name)s"?
 
 %(pkg_hint)s''' % dict(exc=exception,
                       name=pkg_name,
@@ -318,9 +318,10 @@ def _datasource_or_bomber(*names, **options):
     ''' Return a viable datasource or a Bomber
 
     This is to allow module level creation of datasource objects.  We
-    create the objects, so that, if the data exists, and are the correct
-    version, the objects are valid datasources, and if they don't, they
-    raise an error on access, warning about the lack of data.
+    create the objects, so that, if the data exist, and are the correct
+    version, the objects are valid datasources, otherwise, they
+    raise an error on access, warning about the lack of data or the
+    version numbers.
 
     The parameters are as for ``make_datasource`` in this module.
 
