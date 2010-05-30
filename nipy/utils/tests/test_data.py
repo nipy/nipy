@@ -262,8 +262,16 @@ def test__datasource_or_bomber():
         tmpfile = pjoin(pkg_dir, 'config.ini')
         with open(tmpfile, 'wt') as fobj:
             fobj.write('[DEFAULT]\n')
-            fobj.write('version = 0.1\n')
+            fobj.write('version = 0.2\n')
         ds = _datasource_or_bomber('pkg')
         fn = ds.get_filename('some_file.txt')
-    
-
+        # check that versioning works
+        ds = _datasource_or_bomber('pkg', version='0.2') # OK
+        fn = ds.get_filename('some_file.txt')
+        ds = _datasource_or_bomber('pkg', version='0.3') # not OK
+        yield (assert_raises,
+               DataError,
+               getattr,
+               ds,
+               'get_filename')
+        

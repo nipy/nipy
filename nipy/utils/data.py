@@ -9,10 +9,10 @@ from os.path import join as pjoin
 import glob
 import sys
 import ConfigParser
+from distutils.version import LooseVersion
 
 from .environment import get_nipy_user_dir, get_nipy_system_dir
-
-NIPY_URL= 'http://nipy.sourceforge.net/data-packages/'
+from ..info import DATA_PKGS
 
 
 class DataError(OSError):
@@ -268,21 +268,36 @@ def make_datasource(*names, **kwargs):
     except DataError, exception:
         pth = [pjoin(this_data_path, *names) 
                 for this_data_path in data_path]
-        msg = '''%s;
+        pkg_name = '-'.join(names)
+        pkg_hint = _pkg_install_hint(pkg_name)
+        msg = '''%(exc)s;
 Is it possible you have not installed a data package?
-From the names, maybe you need data package "%s"?
-If you have the package, have you set the path to the package correctly?
-If you don't have the data, you can download it from 
-    %s 
-and extract it in one of the following path:
-    %s''' % (
-            exception,
-            '-'.join(names),
-            NIPY_URL,
-            '\n    '.join(pth),
-            )
+From the names, maybe you need data package %(name)s"?
+
+%(pkg_hint)s''' % dict(exc=exception,
+                      name=pkg_name,
+                      pkg_hint=pkg_hint)
         raise DataError(msg)
     return VersionedDatasource(pth)
+
+
+def _pkg_install_hint(pkg_name):
+    ''' Use nipy configuration to give package install message '''
+    pkg_info = DATA_PKGS.get(pkg_name)
+    if pkg_info is not None:
+        location = ('You may want to download and '
+                    'install the package at:\n\n ' + pkg_info['url'])
+    else:
+        location = ("We are sorry, but we don't know "
+                    "where to get " + pkg_name)
+    return \
+'''%s
+
+Check the instructions in the INSTALL file in the nipy source tree, or
+online at http://nipy.org/nipy/stable/devel/development_quickstart.html#optional-data-packages
+
+If you have the package, have you set the path to the package correctly?
+''' % location
 
 
 class Bomber(object):
@@ -303,9 +318,9 @@ def _datasource_or_bomber(*names, **options):
     ''' Return a viable datasource or a Bomber
 
     This is to allow module level creation of datasource objects.  We
-    create the objects, so that, if the data exists, the objects are
-    valid datasources, and if they don't, they raise an error on access,
-    warning about the lack of data.
+    create the objects, so that, if the data exists, and are the correct
+    version, the objects are valid datasources, and if they don't, they
+    raise an error on access, warning about the lack of data.
 
     The parameters are as for ``make_datasource`` in this module.
 
@@ -313,20 +328,42 @@ def _datasource_or_bomber(*names, **options):
     ----------
     *names : sequence of strings
     data_path : sequence of strings or None, optional
-
+    version : str, optional
+       required version of package
+       
     Returns
     -------
     ds : datasource or ``Bomber`` instance
     '''
-    try:
-        return make_datasource(*names, **options)
-    except DataError, exception:
-        pass
+    if 'version' in options:
+        version = options['version']
+        options = options.copy()
+        del options['version']
+    else:
+        version = None
     name = os.path.sep.join(names)
-    return Bomber(name, exception)
-
+    try:
+        ds = make_datasource(*names, **options)
+    except DataError, exception:
+        return Bomber(name, exception)
+    # check version
+    if (version is None or
+        LooseVersion(ds.version) >= LooseVersion(version)):
+        return ds
+    pkg_name = '-'.join(names)
+    pkg_hint = _pkg_install_hint(pkg_name)
+    msg = ('%(name)s is version %(pkg_version)s but we need '
+           'version >= %(req_version)s\n\n%(pkg_hint)s' %
+           dict(name=pkg_name,
+                pkg_version=ds.version,
+                req_version=version,
+                pkg_hint=pkg_hint))
+    return Bomber(name, DataError(msg))
+        
 
 # Module level datasource instances for convenience
-templates = _datasource_or_bomber('nipy', 'templates')
-example_data = _datasource_or_bomber('nipy', 'data')
+templates = _datasource_or_bomber('nipy', 'templates',
+                                  version=DATA_PKGS['nipy-templates']['version'])
+example_data = _datasource_or_bomber('nipy', 'data',
+                                     version=DATA_PKGS['nipy-data']['version'])
 

@@ -43,7 +43,7 @@ exec(open(_info_fname, 'rt').read(), {}, INFO_VARS)
 
 DOC_BUILD_DIR = os.path.join('build', 'html')
 
-CYTHON_MIN_VERSION = INFO_VARS['cython_min_version']
+CYTHON_MIN_VERSION = INFO_VARS['CYTHON_MIN_VERSION']
 
 ################################################################################
 # Distutils Command class for installing nipy to a temporary location. 
