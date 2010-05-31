@@ -6,7 +6,7 @@ import numpy as np
 from bgmm import generate_normals, BGMM, detsh
 from scipy.special import gammaln
 
-def co_labelling(z):
+def co_labelling(z, kmax=None, kmin=None):
     """
     return a sparse co-labelling matrix given the label vector z
 
@@ -14,6 +14,8 @@ def co_labelling(z):
     ----------
     z: array of shape(n_samples),
        the input labels
+    kmax: int, optional,
+          considers only the labels in the range [0, kmax[
 
     Returns
     -------
@@ -24,12 +26,20 @@ def co_labelling(z):
     from scipy.sparse import coo_matrix
     n = z.size
     colabel =  coo_matrix((n,n))
+
+    if kmax==None:
+        kmax = z.max()+1
+
+    if kmin==None:
+        kmin = z.min()-1
+
     for  k in np.unique(z):
-        i = np.array(np.nonzero(z==k))
-        row = np.repeat(i, i.size)
-        col = np.ravel(np.tile(i, i.size))
-        data = np.ones((i.size)**2)
-        colabel = colabel + coo_matrix((data, (row,col)), shape=(n,n))
+        if (k<kmax)&(k>kmin):
+            i = np.array(np.nonzero(z==k))
+            row = np.repeat(i, i.size)
+            col = np.ravel(np.tile(i, i.size))
+            data = np.ones((i.size)**2)
+            colabel = colabel + coo_matrix((data, (row,col)), shape=(n,n))
     return colabel
     
     
@@ -518,7 +528,7 @@ class MixedIMM(IMM):
             pproba += z==-1
 
             if co_clustering:
-                coclust = coclust + co_labelling(z)
+                coclust = coclust + co_labelling(z, self.k, -1)
                                 
             if sampling_points==None:
                 average_like += like

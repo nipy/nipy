@@ -231,8 +231,9 @@ class WeightedGraph(Graph):
         
         i,j = np.where(A)
         self.edges = np.transpose(np.vstack((i,j)))
-        self.weights = (A[i,j])
+        self.weights = np.ravel(A[i, j])
         self.E = np.size(i)
+        
 
     def set_weights(self,weights):
         """

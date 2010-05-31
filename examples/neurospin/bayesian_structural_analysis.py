@@ -19,7 +19,7 @@ import nipy.neurospin.spatial_models.structural_bfls as sbf
 
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
-                       method='simple',verbose = 0):
+                       method='simple', verbose=0):
     """
     Function for performing bayesian structural analysis
     on a set of images.
@@ -189,8 +189,8 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple'#'dev'#'ipmi'#'sbf'
+method = 'simple_quick'#'dev'#'ipmi'#'sbf'
 
 # run the algo
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method, verbose=verbose)
-mp.show()
+#mp.show()

@@ -700,7 +700,7 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
     #p,q =  fc.fdp(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
     #              sub, burnin, spatial_coords, nis, nii)
     p,q =  dpmm(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
-               sub, burnin, spatial_coords, nis, nii)
+               sub, burnin, spatial_coords, nis)
     
     if verbose:
         import matplotlib.pylab as mp
@@ -759,7 +759,7 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
     return crmap, LR, bf, p
 
 def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1,
-         sub, burnin, spatial_coords, nis, nii, co_clust=False):
+         sub, burnin, spatial_coords=None, nis=1000, co_clust=False):
     """
     Apply the dpmm analysis to the data in python
     """
@@ -774,12 +774,13 @@ def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1,
     migmm.sample(gfc, null_class_proba=1-gf1, niter=burnin, init=False,
                  kfold=sub)
     print 'number of components: ', migmm.k
-    
+
     #sampling
     if co_clust:
         like, pproba, co_clust =  migmm.sample(
             gfc, null_class_proba=1-gf1, niter=nis,
             sampling_points=spatial_coords, kfold=sub, co_clustering=co_clust)
+        return like, 1-pproba, co_clust.todense()
     else:
         like, pproba =  migmm.sample(
             gfc, null_class_proba=1-gf1, niter=nis,
@@ -857,22 +858,20 @@ def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
     nii = 100
     # number of iterations to estimate p
  
-    CoClust, q, p =  fc.fdp2(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
-                   sub, burnin, gfc, nis, nii)
-
-    if verbose:
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.imshow(CoClust,interpolation='nearest')
-        mp.colorbar()
-
+    #CoClust, q, p =  fc.fdp2(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+    #               sub, burnin, gfc, nis, nii)
+    q, p, CoClust = dpmm(gfc, .5, g0, g1, dof, prior_precision, 1-gf0,
+                         sub, burnin, nis=nis, co_clust=True)
     
-    qq = CoClust>0.5
+    qq = (CoClust>0.5).astype(np.float)
     cg = fg.WeightedGraph(np.size(q))
     cg.from_adjacency(qq)
     u = cg.cc()
     u[p<g0] = u.max()+1+np.arange(np.sum(p<g0))
-    
+
+    if verbose:
+        cg.show(gfc)
+        
     # append some information to the hroi in each subject
     for s in range(nsubj):
         bfs = bf[s]
@@ -885,7 +884,7 @@ def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
             lq = np.zeros(bfs.k)
             lq[leaves] = 1-gf0[sub==s]
             bfs.set_roi_feature('prior_proba',lq)
-                   
+       
             us[leaves] = u[sub==s]
 
             # when parent regions has similarly labelled children,

@@ -47,8 +47,8 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     if method=='ipmi':
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_ipmi(Fbeta, lbeta, tal, dmax,xyz, affine, 
-                                               shape, thq,
-                                        smin, ths, theta, g0, bdensity)
+                                        shape, thq, smin, ths, theta, g0,
+                                        bdensity)
     if method=='simple':
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_simple(Fbeta, lbeta, tal, dmax,xyz,
@@ -103,7 +103,6 @@ def test_bsa_methods():
     thq = 0.9
     smin = 5
 
-    #AF, BF = make_bsa_2d(pos_betas, theta, dmax, 1, thq, smin, method='simple')
     # tuple of tuples with each tuple being
     # (name_of_method, ths_value, data_set, test_function)
     algs_tests = (('simple', half_subjs, null_betas, lambda AF, BF: AF == None),
@@ -116,6 +115,7 @@ def test_bsa_methods():
     for name, ths, betas, test_func in algs_tests:
         # run the algo
         AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method = name)
+        print name, AF==None
         yield assert_true, test_func(AF, BF)
     
 
