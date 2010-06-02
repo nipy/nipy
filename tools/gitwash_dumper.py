@@ -72,12 +72,14 @@ def copy_replace(replace_pairs,
                  repo_url,
                  repo_branch = 'master',
                  cp_globs=('*',),
-                 rep_globs=('*',)):
-    repo_path = clone_repo(gitwash_url, repo_branch)
+                 rep_globs=('*',),
+                 renames = ()):
+    repo_path = clone_repo(repo_url, repo_branch)
     try:
         out_fnames = cp_files(repo_path, cp_globs, out_path)
     finally:
         shutil.rmtree(repo_path)
+    renames = [(re.compile(in_exp), out_exp) for in_exp, out_exp in renames]
     fnames = []
     for rep_glob in rep_globs:
         fnames += fnmatch.filter(out_fnames, rep_glob)
@@ -85,40 +87,65 @@ def copy_replace(replace_pairs,
         print '\n'.join(fnames)
     for fname in fnames:
         filename_search_replace(replace_pairs, fname, False)
+        for in_exp, out_exp in renames:
+            new_fname, n = in_exp.subn(out_exp, fname)
+            if n:
+                os.rename(fname, new_fname)
+                break
+
+            
+USAGE = ''' <output_directory> <project_name>
+
+If not set with options, the repository name is the same as the <project
+name>
+
+If not set with options, the main github user is the same as the
+repository name.'''
 
 
-usage = ('Usage: '
-         '%s <out_path> <project_name> [<repo_name> '
-         '[main_github_user '
-         '[gitwash-url [gitwash-branch]]]]')
+GITWASH_CENTRAL = 'git://github.com/matthew-brett/gitwash.git'
+GITWASH_BRANCH = 'master'
 
 
 if __name__ == '__main__':
-    prog = sys.argv.pop(0)
-    if len(sys.argv) < 2:
-        raise OSError(usage % prog)
-    out_path, project_name = sys.argv[:2]
-    try:
-        repo_name = sys.argv[2]
-    except IndexError:
-        repo_name = project_name
-    try:
-        main_gh_user = sys.argv[3]
-    except IndexError:
-        main_gh_user = repo_name
-    try:
-        gitwash_url = sys.argv[4]
-    except IndexError:
-        gitwash_url = 'git://github.com/matthew-brett/gitwash.git'
-    try:
-        gitwash_branch = sys.argv[5]
-    except IndexError:
-        gitwash_branch = 'master'
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.set_usage(parser.get_usage().strip() + USAGE)
+    parser.add_option("--repo-name", dest="repo_name",
+                      help="repository name - e.g. nitime",
+                      metavar="REPO_NAME")
+    parser.add_option("--github-user", dest="main_gh_user",
+                      help="github username for main repo - e.g fperez",
+                      metavar="MAIN_GH_USER")
+    parser.add_option("--gitwash-url", dest="gitwash_url",
+                      help="URL to gitwash repository - default %s"
+                      % GITWASH_CENTRAL, 
+                      default=GITWASH_CENTRAL,
+                      metavar="GITWASH_URL")
+    parser.add_option("--gitwash-branch", dest="gitwash_branch",
+                      help="branch in gitwash repository - default %s"
+                      % GITWASH_BRANCH,
+                      default=GITWASH_BRANCH,
+                      metavar="GITWASH_BRANCH")
+    parser.add_option("--source-suffix", dest="source_suffix",
+                      help="suffix of ReST source files - default '.rst'",
+                      default='.rst',
+                      metavar="SOURCE_SUFFIX")
+    (options, args) = parser.parse_args()
+    if len(args) < 2:
+        parser.print_help()
+        sys.exit()
+    out_path, project_name = args
+    if options.repo_name is None:
+        options.repo_name = project_name
+    if options.main_gh_user is None:
+        options.main_gh_user = options.repo_name
     copy_replace((('PROJECTNAME', project_name),
-                  ('REPONAME', repo_name),
-                  ('MAIN_GH_USER', main_gh_user)),
+                  ('REPONAME', options.repo_name),
+                  ('MAIN_GH_USER', options.main_gh_user)),
                  out_path,
-                 gitwash_url,
-                 gitwash_branch,
+                 options.gitwash_url,
+                 options.gitwash_branch,
                  cp_globs=(pjoin('gitwash', '*'),),
-                 rep_globs=('*.rst',))
+                 rep_globs=('*.rst',),
+                 renames=(('\.rst$', options.source_suffix),))

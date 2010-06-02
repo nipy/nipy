@@ -31,6 +31,7 @@ help:
 	@echo "  pdf		make <latex> and run the PDF generation"
 	@echo "  dist		make <all> and put results in dist/"
 	@echo "  public_html	make <dist> and rsync with public website"
+	@echo "  gitwash-update update git workflow from source repo"
 
 # Commented these out, wasn't clear if we'd use these targets or not.
 # @echo "  pickle    to make pickle files (usable by e.g. sphinx-web)"
