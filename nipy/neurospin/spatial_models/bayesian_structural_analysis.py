@@ -709,7 +709,6 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
         h1,c1 = mp.histogram((1-gf0),bins=100)
         h2,c2 = mp.histogram(q,bins=100)
         mp.figure()
-        # We use c1[:len(h1)] to be independant of the change in np.hist
         mp.bar(c1[:len(h1)],h1,width=0.005)
         mp.bar(c2[:len(h2)]+0.003,h2,width=0.005,color='r')
         print 'Number of candidate regions %i, regions found %i' % (
@@ -758,8 +757,8 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
  
     return crmap, LR, bf, p
 
-def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1,
-         sub, burnin, spatial_coords=None, nis=1000, co_clust=False):
+def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1, sub, burnin,
+         spatial_coords=None, nis=1000, co_clust=False, verbose=False):
     """
     Apply the dpmm analysis to the data in python
     """
@@ -773,19 +772,25 @@ def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1,
     migmm._inv_prior_scale = [np.diag(1./(prior_precision[0]/dof))]
     migmm.sample(gfc, null_class_proba=1-gf1, niter=burnin, init=False,
                  kfold=sub)
-    print 'number of components: ', migmm.k
+    if verbose:
+        print 'number of components: ', migmm.k
 
     #sampling
     if co_clust:
         like, pproba, co_clust =  migmm.sample(
             gfc, null_class_proba=1-gf1, niter=nis,
             sampling_points=spatial_coords, kfold=sub, co_clustering=co_clust)
-        return like, 1-pproba, co_clust.todense()
+
+        if verbose:
+            print 'number of components: ', migmm.k
+        
+        return like, 1-pproba, co_clust
     else:
         like, pproba =  migmm.sample(
             gfc, null_class_proba=1-gf1, niter=nis,
             sampling_points=spatial_coords, kfold=sub, co_clustering=co_clust)
-    print 'number of components: ', migmm.k
+    if verbose:
+        print 'number of components: ', migmm.k
 
     return like, 1-pproba
 
@@ -863,9 +868,10 @@ def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
     q, p, CoClust = dpmm(gfc, .5, g0, g1, dof, prior_precision, 1-gf0,
                          sub, burnin, nis=nis, co_clust=True)
     
-    qq = (CoClust>0.5).astype(np.float)
-    cg = fg.WeightedGraph(np.size(q))
-    cg.from_adjacency(qq)
+    #qq = (CoClust>0.5).astype(np.float)
+    #cg = fg.WeightedGraph(np.size(q))
+    #cg.from_adjacency(qq)
+    cg = fg.wgraph_from_coo_matrix(CoClust)
     u = cg.cc()
     u[p<g0] = u.max()+1+np.arange(np.sum(p<g0))
 
@@ -1018,11 +1024,10 @@ def compute_BSA_simple_quick(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
         how likely they are in the same class according to the model
     """
     
-    bf, gf0, sub, gfc = compute_individual_regions(Fbeta, lbeta, coord, dmax,
-                                                   xyz, affine,  shape,  smin,
-                                                   theta, verbose)
-    crmap, LR, bf, coclust = bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq,
-                                       ths, g0, verbose)
+    bf, gf0, sub, gfc = compute_individual_regions(
+        Fbeta, lbeta, coord, dmax, xyz, affine,  shape,  smin, theta, verbose)
+    crmap, LR, bf, coclust = bsa_dpmm2(
+        Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0, verbose)
 
     return crmap, LR, bf, coclust
 
@@ -1201,9 +1206,12 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
         # 
         if np.sum(sub==s)>0:
             spatial_coords = gfc[sub==s]
-            p, q =  fc.fdp(gfc[sub!=s], 0.5, g0, g1, dof, prior_precision,
-                          1-gf0[sub!=s], sub[sub!=s], burnin, spatial_coords,
-                          nis, nii)
+            #p, q =  fc.fdp(
+            #    gfc[sub!=s], 0.5, g0, g1, dof, prior_precision,
+            #    1-gf0[sub!=s], sub[sub!=s], burnin, spatial_coords, nis, nii)
+            p, q =  dpmm(
+                gfc[sub!=s], 0.5, g0, g1, dof, prior_precision,
+                1-gf0[sub!=s], sub[sub!=s], burnin, spatial_coords, nis)
             pp = gf0[sub==s]*g0 + p*(1-gf0[sub==s])
             ll2.append(np.mean(np.log(pp)))
             ll1.append(np.mean(np.log(p)))

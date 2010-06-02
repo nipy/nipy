@@ -154,8 +154,49 @@ class Graph:
         return ax
 
         
+def wgraph_from_coo_matrix(x):
+    """
+    Instantiates a weighted graph from a (sparse) coo_matrix
 
+    Parameters
+    ----------
+    x: scipy.sparse.coo_matrix instance,
+       the input matrix
 
+    Returns
+    -------
+    wg: WeightedGraph instance
+    """
+    if x.shape[0]!=x.shape[1]:
+        raise ValueError, "the input coo_matrix is not square"
+    i, j = x.nonzero()
+    edges = np.vstack((i,j)).T
+    weights = x.data
+    wg = WeightedGraph(x.shape[0], edges, weights)
+    return wg
+
+def wgraph_from_adjacency(x):
+    """
+    Instantiates a weighted graph from a square 2D array
+
+    Parameters
+    ----------
+    x: 2D array instance,
+       the input matrix
+
+    Returns
+    -------
+    wg: WeightedGraph instance
+    """
+    if x.shape[0]!=x.shape[1]:
+        raise ValueError, "the input coo_matrix is not square"
+    i, j = x.nonzero()
+    edges = np.vstack((i, j)).T
+    weights = x[i, j]
+    wg = WeightedGraph(x.shape[0], edges, weights)
+    return wg
+
+    
 class WeightedGraph(Graph):
     """
     This is the basic weighted, directed graph class implemented in fff 
@@ -1179,6 +1220,18 @@ class WeightedGraph(Graph):
         wd = np.array(wd)
         return wd
 
+    def to_coo_matrix(self):
+        """
+        Returns
+        -------
+        sp: scipy.sparse matrix instance,
+            that encodes the adjacency matrix of self
+        """
+        import scipy.sparse as spp
+        i = self.edges[:,0]
+        j = self.edges[:,1]
+        sm = spp.coo_matrix( (self.weights, (i, j)), shape=(self.V, self.V))
+        return sm
     
 class BipartiteGraph(WeightedGraph):
     """
