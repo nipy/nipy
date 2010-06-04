@@ -128,7 +128,7 @@ def m2screenshot(mayavi_fig=None, mpl_axes=None, autocrop=True):
 
 def plot_anat_3d(anat=None, anat_affine=None, scale=1,
                  sulci_opacity=0.5, gyri_opacity=0.3,
-                 opacity=.99,
+                 opacity=None,
                  outline_color=None):
     # Late import to avoid triggering wx imports before needed.
     from enthought.mayavi import mlab
@@ -149,7 +149,14 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
                                             )).astype(np.float),
                                         2).T.ravel()
 
-
+    if opacity is None:
+        from enthought.tvtk.api import tvtk
+        version = tvtk.Version()
+        offscreen = True
+        if (version.vtk_major_version, version.vtk_minor_version) < (5, 2):
+            opacity = 1
+        else:
+            opacity = .99
     ###########################################################################
     # Display the cortical surface (flattenned)
     anat_src = affine_img_src(anat, anat_affine, scale=scale, name='Anat')
