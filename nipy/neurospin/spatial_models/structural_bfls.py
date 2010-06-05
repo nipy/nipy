@@ -97,7 +97,7 @@ class landmark_regions(hroi.NROI):
         dmax=1.0: an upper bound for the spatial variance
                   to avoid degenerate variance
         
-        Results
+        Returns
         -------
         hpd array of shape(n) that yields the value
         """
@@ -178,7 +178,7 @@ class landmark_regions(hroi.NROI):
         dmax=1. : an upper bound for the spatial variance
                 to avoid degenerate variance
     
-        Results
+        Returns
         -------
         label: array of shape (n): the posterior labelling
         """
@@ -218,7 +218,7 @@ class landmark_regions(hroi.NROI):
         ----------
         ths: integer that yields the representativity threshold 
         
-        Results
+        Returns
         -------
         pvals: array of shape self.k
                the p-values corresponding to the ROIs
@@ -254,7 +254,7 @@ class landmark_regions(hroi.NROI):
         this creates the expectancy of the confidence measure
         i.e. expected numberof  detection of the roi in the observed group
              
-        Results
+        Returns
         -------
         confid: array of shape self.k
                the population_prevalence
@@ -349,7 +349,7 @@ def build_LR(BF, ths=0):
     ths=0 defines the condition (c):
           A label should be present in ths subjects in order to be valid
     
-    Results
+    Returns
     -------
     LR : a Landmark_regions instance that describes the ROIs found
        in inter-subject inference
@@ -424,7 +424,7 @@ def build_LR(BF, ths=0):
 
 
 def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0, 
-                               dev=0, nrec=5, nsamples=10):
+                          nrec=5, nsamples=10):
     """
     Computation of the positions where there is a significant
     spatial accumulation of pointwise ROIs. The significance is taken with
@@ -442,15 +442,12 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
               NB: the p-value is corrected only for the number of ROIs
               per subject
     verbose=0: verbosity mode
-    dev=0: If dev=1, a different technique is used for density estimation
-           (WIP)
     nrec=5: number of recursions in the test: When some regions fail to be
             significant at one step, the density is recomputed, 
             and the test is performed again and so on
                 
     Note
     ----
-    19/02/07: new version without the monotonic exclusion heuristic 
     Caveat 1: The NROI instances in BFLs must have a 'position' feature 
            defined beforehand
     Caveat 2: BFLs is edited and modified by this function
@@ -475,21 +472,13 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
     while np.sum((nlm0-nlm)**2)>0:
         nlm0 = nlm.copy()
         
-        if dev==0:
-            weight = _compute_density(BFLc,xyz,dmax)
-        else:
-            weight = _compute_density_dev(BFLc,xyz,dmax)
-
+        weight = _compute_density(BFLc, xyz, dmax)
         sweight = np.sum(weight,1)
         ssw = np.sort(sweight)
         thg = ssw[round((1-pval)*nvox)]
 
         # make surrogate data
-        if dev==0:
-            surweight = _compute_surrogate_density(BFLc,xyz,dmax,nsamples)
-        else:
-            surweight = _compute_surrogate_density_dev(BFLc,xyz,dmax,nsamples)
-        
+        surweight = _compute_surrogate_density(BFLc, xyz, dmax, nsamples)
         srweight = np.sum(surweight,1)
         srw = np.sort(srweight)
         
@@ -535,8 +524,7 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
             BFLs[s]=BFLc[s].copy()
     return a,b
 
-def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0, 
-                        dev=0, nrec=5, nsamples=10):
+def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0, nrec=5, nsamples=10):
     """
     Computation of the positions where there is a significant
     spatial accumulation of pointwise ROIs. The significance is taken with
@@ -554,15 +542,12 @@ def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0,
               NB: the p-value is corrected only for the number of ROIs
               per subject
     verbose=0: verbosity mode
-    dev=0: If dev=1, a different technique is used for density estimation
-           (WIP)
     nrec=5: number of recursions in the test: When some regions fail to be
             significant at one step, the density is recomputed, 
             and the test is performed again and so on
                 
     Note
     ----
-    19/02/07: new version without the monotonic exclusion heuristic 
     Caveat 1: The NROI instances in BFLs must have a 'position' feature 
            defined beforehand
     Caveat 2: BFLs is edited and modified by this function
@@ -578,30 +563,22 @@ def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0,
     q = 0
     while Nlm0>Nlm:
         Nlm0 = Nlm
-        if dev==0:
-            weight = _compute_density(BFLs,xyz,dmax)
-        else:
-            weight = _compute_density_dev(BFLs,xyz,dmax)
+        weight = _compute_density(BFLs,xyz,dmax)
 
         sweight = np.sum(weight,1)
         ssw = np.sort(sweight)
         thg = ssw[round((1-pval)*nvox)]
 
         # make surrogate data
-        if dev==0:
-            surweight = _compute_surrogate_density(BFLs,xyz,dmax,nsamples)
-        else:
-            surweight = _compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples)
-        
+        surweight = _compute_surrogate_density(BFLs,xyz,dmax,nsamples)
         srweight = np.sum(surweight,1)
         srw = np.sort(srweight)
         if verbose>0:
             thf = srw[int((1-min(pval,1))*nvox*nsamples)]
             mnlm = max(1,float(Nlm)/nbsubj)
             imin = min(nvox*nsamples-1,int((1.-pval/mnlm)*nvox*nsamples))
-            # print pval,mnlm, pval/mnlm, 1.-pval/mnlm,np.size(srw),imin
             thcf = srw[imin]
-            print thg,thf,thcf
+            print thg, thf, thcf
         
         if q<1:
             if verbose>1:
@@ -689,23 +666,6 @@ def _compute_density(BFLs,xyz,dmax):
                 weight[:,s] = weight[:,s] + dw
     return weight
 
-                    
-def _compute_density_dev(BFLs,xyz,dmax):
-    """
-    Computation of the density of the BFLs points in the xyz volume
-    dmax is a scale parameter
-    """
-    import nipy.neurospin.utils.smoothing.smoothing as smoothing
-    nvox = xyz.shape[0]
-    nbsubj = np.size(BFLs)
-    weight = np.zeros((nvox,nbsubj),'d')
-    nlm = np.array([BFLs[s].k for s in range(nbsubj)])
-    for s in range(nbsubj):
-        if nlm[s]>0:
-            weight[BFLs[s].seed,s] = 1
-    weight = smoothing.cartesian_smoothing(np.transpose(xyz),weight,dmax)
-    weight = weight*(2*np.pi*dmax*dmax)**1.5
-    return weight
 
 def _compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
     """
@@ -720,7 +680,7 @@ def _compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
     dmax kernel width of the density estimator
     nsamples=1: number of surrogate smaples returned
     
-    Results
+    Returns
     -------
     surweight: a (gs*nsamples,nsubj) array of samples
     """
@@ -739,32 +699,6 @@ def _compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
                     surweight[nvox*it:nvox*(it+1),s] = surweight[nvox*it:nvox*(it+1),s] + dw
     return surweight
 
-def _compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples=1):
-    """
-    caveat: does not work for nsamples>1
-    This function computes a surrogate density 
-    using graph diffusion techniques
-    """
-    import nipy.neurospin.utils.smoothing.smoothing as smoothing
-    nvox = xyz.shape[0]
-    nbsubj = np.size(BFLs)
-    nlm = np.array([BFLs[s].k for s in range(nbsubj)])
-    aux = np.zeros((nvox, nsamples*nbsubj))
-    for s in range(nbsubj):
-        if nlm[s]>0:
-            for it in range(nsamples):
-                js = (nvox*nr.rand(nlm[s])).astype(np.int)
-                aux[js,s*nsamples+it] = 1.
-
-    aux = smoothing.cartesian_smoothing(xyz.T,aux,dmax)
-    
-    surweight = np.zeros((nvox*nsamples,nbsubj),'d')
-    for s in range(nbsubj):
-        surweight[:,s] = np.reshape(aux[:,s*nsamples:(s+1)*nsamples],
-                                        (nvox*nsamples))
-
-    surweight = surweight*(2*np.pi*dmax*dmax)**1.5
-    return surweight    
 
 def _hierarchical_asso(BF,dmax):
     """
@@ -776,7 +710,7 @@ def _hierarchical_asso(BF,dmax):
           describing ROIs from different subjects
     dmax (float): spatial scale used xhen building associtations
     
-    Results
+    Returns
     -------
     G a graph that represent probabilistic associations between all
       cross-subject pairs of regions.
@@ -836,7 +770,7 @@ def RD_cliques(Gc,bstochastic=1):
     Gc: graph to be segmented
     bstochastic=1 stochastic initialization of the graph
     
-    Results
+    Returns
     -------
     labels : array of shape V, the number of vertices of Gc
     the labelling of the vertices that represent the segmentation
@@ -912,7 +846,7 @@ def merge(Gc,labels):
     labels array of shape V, the number of vertices of Gc
            the labelling of the vertices that represent the segmentation
 
-    Results
+    Returns
     -------
     labels array of shape V, the new labelling after further merging
     Gr the reduced graph after merging
@@ -957,7 +891,7 @@ def segment_graph_rd(Gc, nit=1,verbose=0):
     Gc : nipy.neurospin.graph.graph.WeightedGraph instance
        the graph to be segmented
     
-    Results
+    Returns
     -------
     u : array of shape Gc.V labelling of the vertices 
       that represents the segmentation
@@ -1002,7 +936,7 @@ def Compute_Amers (Fbeta, Beta, xyz, affine, shape, coord,  dmax=10.,
     pval = 0.2 : significance p-value for the spatial inference
 
     
-    Results
+    Returns
     -------
     crmap: array of shape (nnodes):
            the resulting group-level labelling of the space
@@ -1027,12 +961,10 @@ def Compute_Amers (Fbeta, Beta, xyz, affine, shape, coord,  dmax=10.,
             bfls.set_discrete_feature_from_index('position',coord)
             bfls.discrete_to_roi_features('position','average')
             
-        #bfls.make_feature(coord,'position','mean')
         BFLs.append(bfls)
 
-    # _clean_density(BFLs,dmax,coord,pval,verbose=1,dev=0,nrec=5)
-    _clean_density_redraw(BFLs,dmax,coord,pval,verbose=0,dev=0,
-                         nrec=1,nsamples=10)
+    _clean_density_redraw(BFLs, dmax, coord, pval, verbose=0,
+                         nrec=1, nsamples=10)
     
     Gc = _hierarchical_asso(BFLs,dmax)
     Gc.weights = np.log(Gc.weights)-np.log(Gc.weights.min())

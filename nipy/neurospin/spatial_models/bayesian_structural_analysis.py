@@ -216,6 +216,10 @@ def infer_LR(bf, thq=0.95, ths=0, verbose=0):
     newlabel: a relabelling of the individual ROIs, similar to u,
               which discards
               labels that do not fulfill the condition (c)
+
+    Fixme
+    -----
+    Should be merged with sbf.build_LR
     """
     # prepare various variables to ease information manipulation
     nbsubj = np.size(bf)
