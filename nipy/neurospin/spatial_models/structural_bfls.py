@@ -517,7 +517,7 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
         if Nlm==0:
             break
 
-    print q,nlm0,nlm
+    print q, nlm0, nlm
 
     for s in range(nbsubj):
         if BFLs[s]!=None:
@@ -643,7 +643,7 @@ def _fig_density(sweight, surweight, pval, nlm):
     mp.show()
 
 
-def _compute_density(BFLs,xyz,dmax):
+def _compute_density(BFLs, xyz, dmax):
     """
     Computation of the density of the BFLs points in the xyz volume
     dmax is a scale parameter
@@ -652,22 +652,19 @@ def _compute_density(BFLs,xyz,dmax):
     nbsubj = np.size(BFLs)
     sqdmax = 2*dmax*dmax
     weight = np.zeros((nvox,nbsubj),'d')
-    nlm =np.zeros(nbsubj).astype('int')
-    for s in range(nbsubj):
-        if BFLs[s]!=None:
-            nlm[s] = BFLs[s].k
+    nlm = np.zeros(nbsubj).astype('int')
  
     for s in range(nbsubj):
-        if nlm[s]>0:
+        if BFLs[s] is not None:
             coord = BFLs[s].get_roi_feature('position')
-            for i in range(nlm[s]):
+            for i in range(BFLs[s].k):
                 dxyz = xyz - coord[i,:]
                 dw = np.exp(-np.sum(dxyz**2,1)/sqdmax)
-                weight[:,s] = weight[:,s] + dw
+                weight[:,s] += dw
     return weight
 
 
-def _compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
+def _compute_surrogate_density(BFLs, xyz, dmax, nsamples=1):
     """
     Cross-validated estimation of random samples of the uniform distributions
     
@@ -695,8 +692,8 @@ def _compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
                 js = (nvox*nr.rand(nlm[s])).astype(np.int)
                 for i in range(nlm[s]):         
                     dxyz = xyz-xyz[js[i],:]
-                    dw = np.exp(-np.sum(dxyz*dxyz,1)/sqdmax)
-                    surweight[nvox*it:nvox*(it+1),s] = surweight[nvox*it:nvox*(it+1),s] + dw
+                    dw = np.exp(-np.sum(dxyz*dxyz, 1)/sqdmax)
+                    surweight[nvox*it:nvox*(it+1), s] += dw
     return surweight
 
 
@@ -753,21 +750,22 @@ def _hierarchical_asso(BF,dmax):
                         eD = np.hstack((eD,ed))
         
     if np.size(eA)>0:
-        edges = np.transpose([eA,eB]).astype(np.int)
-        Gcorr = fg.WeightedGraph(cnlm[nbsubj],edges,eD)
+        edges = np.transpose([eA, eB]).astype(np.int)
+        Gcorr = fg.WeightedGraph(cnlm[nbsubj], edges, eD)
     else:
         Gcorr = []
     return Gcorr
 
 
 
-def RD_cliques(Gc,bstochastic=1):
+def RD_cliques(Gc, bstochastic=1):
     """
     Replicator dynamics graph segmentation: python implementation
     
     Parameters
     ----------
-    Gc: graph to be segmented
+    Gc: nipy.neurospin.graph.WeightedGraph instance,
+        the graph to be segmented
     bstochastic=1 stochastic initialization of the graph
     
     Returns
