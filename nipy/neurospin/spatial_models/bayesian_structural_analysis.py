@@ -145,7 +145,7 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
     for i in range(bf.k):
         l = bf.subtree(i)
         valid = np.zeros(bf.k)
-        valid[l]=1
+        valid[l] = 1
         vvalid = np.zeros(Fbeta.V)
         vvalid[bf.label>-1] = valid[bf.label[bf.label>-1]]
         vvalid = 1-vvalid
@@ -159,12 +159,11 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
                     if np.sum(u==j)<mccs:
                         bf.label[iv[u==j]]=i
 
-    bf = _clean_size_(bf,smin)
+    bf = _clean_size_(bf, smin)
     return bf
 
-def make_crmap(AF,coord,verbose=0):
+def make_crmap(AF, coord, verbose=0):
     """
-    crmap = make_crmap(AF,coord)
     Compute the spatial map associated with the AF
     i.e. the confidence interfval for the position of
     the different landmarks
@@ -178,6 +177,7 @@ def make_crmap(AF,coord,verbose=0):
     Results
     -------
     crmap: array of shape(nvox)
+           the resulting map
     """
     nvox = coord.shape[0]
     crmap = -np.ones(nvox)
@@ -190,10 +190,10 @@ def make_crmap(AF,coord,verbose=0):
         lscore = np.inf*np.ones(nvox)
         lscore[j] = score 
         crmap[gscore>lscore]=i
-        gscore = np.minimum(gscore,lscore)
+        gscore = np.minimum(gscore, lscore)
     return crmap
 
-def infer_LR(bf,thq=0.95,ths=0,verbose=0):
+def infer_LR(bf, thq=0.95, ths=0, verbose=0):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
@@ -204,7 +204,7 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
        it is assumd that each list corresponds to one subject
        each NROI is assumed to have the roi_features
        'position', 'label' and 'posterior_proba' defined
-    thq=0.95,ths=0 defines the condition (c):
+    thq=0.95, ths=0 defines the condition (c):
                    (c) A label should be present in ths subjects
                    with a probability>thq
                    in order to be valid
@@ -213,9 +213,9 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     -------
     LR : a LR instance, describing a cross-subject set of ROIs
        if inference yields a null results, LR is set to None
-    newlabel :  a relabelling of the individual ROIs, similar to u,
-             which discards
-             labels that do not fulfill the condition (c)
+    newlabel: a relabelling of the individual ROIs, similar to u,
+              which discards
+              labels that do not fulfill the condition (c)
     """
     # prepare various variables to ease information manipulation
     nbsubj = np.size(bf)
@@ -305,8 +305,8 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
 
 
 
-def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, affine=np.eye(4), 
-                                  shape=None, thq=0.5,
+def compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4), 
+                     shape=None, thq=0.5,
                      smin=5, ths=0, theta=3.0, g0=1.0, bdensity=0, verbose=0):
     """
     Compute the  Bayesian Structural Activation patterns
@@ -407,7 +407,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, affine=np.eye(4),
     gf0 = np.concatenate(gf0)
     p = np.zeros(np.size(nvox))
     g1 = g0
-    dof = 0
+    dof = 1000
     prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
 
     if bdensity:
@@ -415,8 +415,11 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, affine=np.eye(4),
     else:
         spatial_coords = gfc
 
-    p,q =  fc.fdp(gfc, 0.5, g0, g1,dof, prior_precision,
-                  1-gf0, sub, 100, spatial_coords,10,1000)
+    #p,q =  fc.fdp(gfc, 0.5, g0, g1,dof, prior_precision,
+    #              1-gf0, sub, 100, spatial_coords,10,1000)
+    p,q =  dpmm(gfc, 0.5, g0, g1, dof, prior_precision,
+                  1-gf0, sub, 100, spatial_coords, nis=300)
+
     # inference
     valid = q>thq
 
@@ -571,7 +574,7 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, affine=np.eye(4),
     gf0 = np.concatenate(gf0)
     p = np.zeros(np.size(nvox))
     g1 = g0
-    dof = 0
+    dof = 1000
     prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.int)
 
     if bdensity:
@@ -579,8 +582,12 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, affine=np.eye(4),
     else:
         spatial_coords = gfc
             
-    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
-                  sub, 100, spatial_coords,10,1000)
+    #p,q =  fc.fdp(gfc, 0.5, g0, g1,dof, prior_precision,
+    #              1-gf0, sub, 100, spatial_coords,10,1000)
+    p,q =  dpmm(gfc, 0.5, g0, g1, dof, prior_precision,
+                  1-gf0, sub, 100, spatial_coords, nis=300)
+    
+    
     valid = q>thq
     if verbose:
         import matplotlib.pylab as mp

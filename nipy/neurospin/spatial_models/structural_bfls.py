@@ -336,7 +336,7 @@ class landmark_regions(hroi.NROI):
         """
         return self.feature_map(self.roi_prevalence(), imPath, pw)
 
-def build_LR(BF,ths=0):
+def build_LR(BF, ths=0):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
@@ -371,6 +371,10 @@ def build_LR(BF,ths=0):
     intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj)\
                                                    if BF[s]!=None])
    
+    for s in range(nbsubj):
+        if BF[s]is not None:
+            dim = len(BF[s].shape)
+    
     coords = []
     subjs = []
     
@@ -388,7 +392,7 @@ def build_LR(BF,ths=0):
         if  (q>ths):
             valid[i]=1
             sj = np.size(j)
-            coord = np.zeros((sj,3),np.float)
+            coord = np.zeros((sj, dim),np.float)
             for a in range(sj):
                 sja = subj[j[a]]
                 isja = intrasubj[j[a]]

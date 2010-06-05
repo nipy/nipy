@@ -312,7 +312,8 @@ class DesignMatrix(object):
         Parameter
         ---------
         path: string,
-            path of the .csv file that includes the matriox and related information
+            path of the .csv file that includes the matrix
+            and related information
 
         fixme
         -----
@@ -336,6 +337,8 @@ class DesignMatrix(object):
             x = np.array([[float(t) for t in xr] for xr in design])
         self.matrix = x
         self.names = names
+        # self is considered as True
+        self.estimated = True
 
     def show(self, rescale=True, ax=None):
         """
