@@ -1,7 +1,9 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-# subj3_evt_fonc1.txt
 
+import numpy as np
+
+# subj3_evt_fonc1.txt
 altdescr = {'block':'''time,sentence,speaker
 2.0,SSt,SSp
 5.33,SSt,SSp
@@ -241,6 +243,19 @@ altdescr = {'block':'''time,sentence,speaker
 462.0,SSt,SSp
 465.33,DSt,DSp
 468.67,SSt,SSp'''}
+
+# convert altdescr to recarray for convenience
+converters = float, str, str
+for key, value in altdescr.items():
+    lines = value.split('\n')
+    names = lines.pop(0).strip().split(',')
+    dtype = np.dtype(zip(names, ('f8', 'S3', 'S3')))
+    rec = np.recarray(shape=(len(lines),), dtype=dtype)
+    for i, line in enumerate(lines):
+        vals = line.strip().split(',')
+        for name, val, conv in zip(names, vals, converters):
+            rec[i][name] = conv(val)
+    altdescr[key] = rec
 
 
 descriptions = {'event':"""

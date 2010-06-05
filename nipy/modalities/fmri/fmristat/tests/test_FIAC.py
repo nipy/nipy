@@ -18,7 +18,6 @@ from StringIO import StringIO
 # Scientific libraries import
 import numpy as np
 from scipy.interpolate import interp1d
-from matplotlib.mlab import csv2rec
 
 from nipy.modalities.fmri import formula, utils, hrf, design
 from nipy.modalities.fmri.fmristat import hrf as delay
@@ -34,12 +33,12 @@ from FIACdesigns import descriptions, designs, altdescr
 
 def protocol(fh, design_type, *hrfs):
     """
-    Create an object that can evaluate the FIAC.
+    Create an object that can evaluate the FIAC
+    
     Subclass of formula.Formula, but not necessary.
     
-    Parameters:
-    -----------
-    
+    Parameters
+    ----------
     fh : file handler
     File-like object that reads in the FIAC design,
     i.e. like file('subj1_evt_fonc3.txt')
@@ -56,8 +55,8 @@ def protocol(fh, design_type, *hrfs):
     Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp')
     is convolved with each of these HRFs in order.
     
-    Outputs:
-    --------
+    Returns
+    -------
     f: Formula
     Formula for constructing design matrices.
     
@@ -123,17 +122,15 @@ def protocol(fh, design_type, *hrfs):
     return f, Tcontrasts, Fcontrasts
 
 
-def altprotocol(fh, design_type, *hrfs):
-    """
-    Create an object that can evaluate the FIAC.
+def altprotocol(d, design_type, *hrfs):
+    """ Create an object that can evaluate the FIAC.
+    
     Subclass of formula.Formula, but not necessary.
 
-    Parameters:
-    -----------
-
-    fh : file handler
-        File-like object that reads in the FIAC design,
-        but has a different format (test_FIACdata.altdescr)
+    Parameters
+    ----------
+    d : np.recarray
+       recarray defining design in terms of time, sentence speaker
 
     design_type : str in ['event', 'block']
         Handles how the 'begin' term is handled.
@@ -148,8 +145,6 @@ def altprotocol(fh, design_type, *hrfs):
         is convolved with each of these HRFs in order.
 
     """
-    d = csv2rec(fh)
-
     if design_type == 'block':
         keep = np.not_equal((np.arange(d.time.shape[0])) % 6, 0)
     else:
@@ -244,8 +239,8 @@ def test_altprotocol():
     block, bT, bF = protocol(StringIO(descriptions['block']), 'block', *delay.spectral)
     event, eT, eF = protocol(StringIO(descriptions['event']), 'event', *delay.spectral)
 
-    blocka, baT, baF = altprotocol(StringIO(altdescr['block']), 'block', *delay.spectral)
-    eventa, eaT, eaF = altprotocol(StringIO(altdescr['event']), 'event', *delay.spectral)
+    blocka, baT, baF = altprotocol(altdescr['block'], 'block', *delay.spectral)
+    eventa, eaT, eaF = altprotocol(altdescr['event'], 'event', *delay.spectral)
 
     for c in bT.keys():
         baf = baT[c]
@@ -314,8 +309,8 @@ def test_agreement():
 
 @dec.slow
 def test_event_design():
-    block = csv2rec(StringIO(altdescr['block']))
-    event = csv2rec(StringIO(altdescr['event']))
+    block = altdescr['block']
+    event = altdescr['event']
     t = np.arange(191)*2.5+1.25
     
     bkeep = np.not_equal((np.arange(block.time.shape[0])) % 6, 0)
