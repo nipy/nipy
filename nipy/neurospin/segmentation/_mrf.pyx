@@ -31,7 +31,7 @@ import_array()
 import numpy as np
 
 
-def _ve_step(ppm, ref, XYZ, double beta, int copy, int hard):
+def _ve_step(ppm, ref, XYZ, double beta, int copy, int hard, mix=None):
     
     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
         raise ValueError('ppm array should be double C-contiguous')
@@ -41,10 +41,11 @@ def _ve_step(ppm, ref, XYZ, double beta, int copy, int hard):
     
     XYZ = np.asarray(XYZ, dtype='int')
     
-    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, None, beta, copy, hard)
+    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, <ndarray>mix, 
+             beta, copy, hard)
     return ppm 
 
 
-def _concensus(ppm, XYZ): 
-    return concensus(<ndarray>ppm, <ndarray>XYZ, None) 
+def _concensus(ppm, XYZ, mix=None): 
+    return concensus(<ndarray>ppm, <ndarray>XYZ, <ndarray>mix) 
 
