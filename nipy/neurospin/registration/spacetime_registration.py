@@ -148,6 +148,10 @@ class Realign4d(object):
         self.cbspline = cspline_transform(im4d.array)
               
     def resample_inmask(self, t):
+        """
+        x,y,z,t are "ideal grid" coordinates 
+        X,Y,Z,T are "acquisition grid" coordinates 
+        """
         X, Y, Z = grid_coords(self.xyz, self.transforms[t], 
                               self.from_world, self.to_world)
         T = self.from_time(Z, self.timestamps[t])

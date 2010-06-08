@@ -13,12 +13,14 @@ extern "C" {
   extern void ve_step(PyArrayObject* ppm, 
 		      const PyArrayObject* ref,
 		      const PyArrayObject* XYZ, 
+		      const PyArrayObject* mix, 
 		      double beta,
 		      int copy,
 		      int hard);
 
   extern double concensus(PyArrayObject* ppm, 
-			  const PyArrayObject* XYZ); 
+			  const PyArrayObject* XYZ, 
+			  const PyArrayObject* mix); 
 
 
 #ifdef __cplusplus

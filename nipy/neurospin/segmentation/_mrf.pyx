@@ -16,11 +16,13 @@ cdef extern from "mrf.h":
     void ve_step(ndarray ppm, 
                  ndarray ref,
                  ndarray XYZ, 
+                 ndarray mix, 
                  double beta, 
                  int copy, 
                  int hard)
     double concensus(ndarray ppm, 
-		     ndarray XYZ)
+		     ndarray XYZ, 
+                     ndarray mix)
 
 
 # Initialize numpy
@@ -39,10 +41,10 @@ def _ve_step(ppm, ref, XYZ, double beta, int copy, int hard):
     
     XYZ = np.asarray(XYZ, dtype='int')
     
-    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, beta, copy, hard)
+    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, None, beta, copy, hard)
     return ppm 
 
 
 def _concensus(ppm, XYZ): 
-    return concensus(<ndarray>ppm, <ndarray>XYZ) 
+    return concensus(<ndarray>ppm, <ndarray>XYZ, None) 
 
