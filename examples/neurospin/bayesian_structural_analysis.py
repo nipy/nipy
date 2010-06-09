@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This scipt generates a noisy activation image image
+This scipt generates a noisy multi-subject activation image dataset
 and applies the bayesian structural analysis on it
 
 Author : Bertrand Thirion, 2009
@@ -189,7 +189,7 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple_quick'#'dev'#'ipmi'#'sbf'#'loo'#
+method = 'simple'#'dev'#'ipmi'#'sbf'#'loo'#
 
 # run the algo
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method, verbose=verbose)

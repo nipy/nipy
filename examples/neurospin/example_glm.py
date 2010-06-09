@@ -84,8 +84,6 @@ my_contrast = glm.contrast(contrast)
 
 # compute the constrast image related to it
 zvals = my_contrast.zscore()
-#zmap = mask.get_data().astype(np.float)
-#zmap[zmap>0] = zmap[zmap>0]*zvals
 contrast_image = Nifti1Image(np.reshape(zvals, shape), affine)
 
 # if you want to save the contrast as an image
@@ -94,3 +92,10 @@ save(contrast_image, contrast_path)
 
 
 print 'wrote the some of the results as images in directory %s' %swd
+
+h,c = np.histogram(zvals, 100)
+import pylab
+pylab.figure()
+pylab.plot(c[:-1],h)
+pylab.title(' Histogram of the z-values')
+pylab.show()
