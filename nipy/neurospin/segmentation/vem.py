@@ -73,7 +73,8 @@ def vm_step_laplace(ppm, data_, mask):
 class VemTissueClassification(object): 
 
     def __init__(self, ppm, data, mask, noise='gauss', 
-                 prior=True, copy=False, hard=False): 
+                 prior=True, copy=False, hard=False, 
+                 labels=None, mixmat=None): 
         """
         data: ndarray (3d)
         mask: 3-element tuple of 1d ndarrays (X,Y,Z)
@@ -103,12 +104,39 @@ class VemTissueClassification(object):
             self.prior_ = np.ones([1,self.ntissues])/float(self.ntissues)
         self.ref_ = np.zeros([self.data_.size, self.ntissues])
 
+        # Label information 
+        if labels == None: 
+            labels = [str(l) for l in range(self.ntissues)]
+        if not len(labels) == self.ntissues: 
+            raise ValueError('Wrong length for labels sequence') 
+        self.labels = labels
+
+        # Mixing matrix 
+        self.mixmat = mixmat
+
+
     # VM-step: estimate parameters
     def vm_step(self): 
         """
         Return (mu, sigma)
         """
         return self._vm_step(self.ppm, self.data_, self.mask)
+
+    def sort_labels(self, mu):
+        K = len(mu)
+        tmp = np.asarray(self.labels)
+        labels = np.zeros(K, dtype=tmp.dtype)
+        labels[np.argsort(mu)] = tmp
+        return list(labels)
+
+    def sort_mixmat(self, mu): 
+        K = len(mu)
+        mixmat = np.zeros([K,K]) 
+        I, J = np.mgrid[0:K, 0:K]
+        idx = np.argsort(mu) 
+        mixmat[idx[I], idx[J]] = np.asarray(self.mixmat)
+        return mixmat
+    
 
 
     # VE-step: update tissue probability map
@@ -131,9 +159,12 @@ class VemTissueClassification(object):
         # neighborhood information (mean-field theory)
         else: 
             print('  ... MRF correction')
+            # Deal with mixing matrix and label switching
+            if not self.mixmat == None:
+                mixmat = self.sort_mixmat(mu)
             self.ppm = _ve_step(self.ppm, self.ref_, 
                                 np.array(self.mask, dtype='int'), 
-                                beta, self.copy, self.hard)
+                                beta, self.copy, self.hard, mixmat)
             
 
     def __call__(self, mu=None, sigma=None, alphas=None, betas=None, niters=5): 
