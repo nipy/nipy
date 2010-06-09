@@ -21,7 +21,7 @@ import nipy.neurospin.graph.field as ff
 # simulate the data
 dimx = 60
 dimy = 60
-pos = 2*np.array([[6,7],[10,10],[15,10]])
+pos = np.array([[12, 14], [20, 20], [30, 20]])
 ampli = np.array([3,4,4])
 
 dataset = simul.surrogate_2d_dataset(nbsubj=1, dimx=dimx, dimy=dimy, pos=pos,
