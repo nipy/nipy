@@ -209,6 +209,9 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         axes = fig.add_axes(axes)
         axes.axis('off')
 
+    if threshold:
+        map = np.ma.masked_inside(map, -threshold, threshold, copy=False)
+
     ortho_slicer = OrthoSlicer(cut_coords, axes=axes)
     # Check that we should indeed plot an anat: we have one, and the
     # cut_coords are in its range
