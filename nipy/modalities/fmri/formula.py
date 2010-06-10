@@ -162,19 +162,30 @@ def terms(*names):
 
     Parameters
     ----------
-    *names : sequence of names
-
+    *names : str or sequence of str
+       If a single str, can specify multiple symbols with string
+       containing space or ',' as separator. 
+    
     Returns
     -------
     ts : list
-       list of Term instance objects named from `args`
+       list of Term instance objects named from `names`
 
     Examples
     --------
     >>> terms('a', 'b', 'c')
     [a, b, c]
+    >>> terms('a, b, c')
+    [a, b, c]
     '''
-    return [Term(n) for n in names]
+    if len(names) > 1 or not isinstance(names[0], basestring):
+        return [Term(n) for n in names]
+    name = names[0]
+    for sep in ', ':
+        if sep in name:
+            return [Term(n.strip()) for n in name.split(sep)]
+    return [Term(name)]
+            
 
 
 class FactorTerm(Term):
@@ -518,7 +529,6 @@ class Formula(object):
         [1, x, y, y, z]
         >>>         
         """
-
         if not is_formula(other):
             raise ValueError('only Formula objects can be added to a Formula')
         f = self.__class__(np.hstack([self.terms, other.terms]))
@@ -543,8 +553,6 @@ class Formula(object):
         >>> f4=f1-f2
         >>> f4.mean
         _b0*x + _b1*z
-        >>>             
-
         """
         if not is_formula(other):
             raise ValueError('only Formula objects can be subtracted from a Formula')
@@ -561,16 +569,12 @@ class Formula(object):
     def __mul__(self, other):
         if not is_formula(other):
             raise ValueError('only two Formulas can be multiplied together')
-
         if is_factor(self):
             if self == other:
                 return self
-
         v = []
-
         # Compute the pairwise product of each term
         # If either one is a Term, use Term's multiplication
-
         for sterm in self.terms:
             for oterm in other.terms:
                 if is_term(sterm):
@@ -596,7 +600,6 @@ class Formula(object):
         by a recarray.
         """
         d = self.design_expr
-
         # Before evaluating, we recreate the formula
         # with numbered terms, and numbered parameters.
 
@@ -705,7 +708,6 @@ class Formula(object):
            each Formula by evaluating its design at the same parameters
            as self.design. If not None, then the return_float is set to True.
         """
-
         self._setup_design()
 
         preterm_recarray = input
@@ -892,7 +894,6 @@ class Factor(Formula):
     A Factor is similar to R's factor. The levels of the Factor can be
     either strings or ints.
     """
-
     # This flag is defined to avoid using isinstance in getterms
     # and getparams.
     _factor_flag = True
@@ -935,7 +936,6 @@ class Factor(Formula):
         if level not in self.levels:
             raise ValueError('level not found')
         return self["%s_%s" % (self.name, str(level))]
-
 
     def _getmaineffect(self, ref=-1):
         v = list(self._terms.copy())

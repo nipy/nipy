@@ -17,12 +17,15 @@ from nipy.testing import assert_almost_equal, assert_true, \
 @parametric
 def test_terms():
     t, = F.terms('a')
-    yield assert_true(type(t) == F.Term)
+    a, b, c = F.Term('a'), F.Term('b'), F.Term('c')
+    yield assert_equal(t, a)
     ts = F.terms('a', 'b', 'c')
-    yield assert_equal(len(ts), 3)
-    # but we don't do the string unpack thing that sympy.symbols does
-    ts = F.terms('abc')
-    yield assert_equal(len(ts), 1)
+    yield assert_equal(ts, (a, b, c))
+    # a string without separator chars returns one symbol.  This is the
+    # future sympy default. 
+    yield assert_equal(F.terms('abc'), [F.Term('abc')])
+    yield assert_equal(F.terms('a b c'), (a, b, c))
+    yield assert_equal(F.terms('a, b, c'), (a, b, c))
     
 
 def test_getparams_terms():
