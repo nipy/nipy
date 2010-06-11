@@ -24,9 +24,12 @@ def test_terms():
     # a string without separator chars returns one symbol.  This is the
     # future sympy default. 
     yield assert_equal(F.terms('abc'), [F.Term('abc')])
+    # separators return multiple symbols
     yield assert_equal(F.terms('a b c'), (a, b, c))
     yield assert_equal(F.terms('a, b, c'), (a, b, c))
-    
+    # nothing returns empty
+    yield assert_equal(F.terms(), [])
+
 
 def test_getparams_terms():
     t = F.Term('t')

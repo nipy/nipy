@@ -163,7 +163,7 @@ def terms(*names):
     Parameters
     ----------
     *names : str or sequence of str
-       If a single str, can specify multiple symbols with string
+       If a single str, can specify multiple ``Term``s with string
        containing space or ',' as separator. 
     
     Returns
@@ -178,14 +178,15 @@ def terms(*names):
     >>> terms('a, b, c')
     [a, b, c]
     '''
-    if len(names) > 1 or not isinstance(names[0], basestring):
-        return [Term(n) for n in names]
-    name = names[0]
-    for sep in ', ':
-        if sep in name:
-            return [Term(n.strip()) for n in name.split(sep)]
-    return [Term(name)]
-            
+    # parse separated single string
+    if len(names) == 1:
+        name = names[0]
+        if isinstance(name, basestring):
+            for sep in ', ':
+                if sep in name:
+                    names = (n.strip() for n in name.split(sep))
+                    break
+    return [Term(n) for n in names]
 
 
 class FactorTerm(Term):
