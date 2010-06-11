@@ -229,19 +229,6 @@ def test_design():
     yield assert_almost_equal, ff.design(n)['1'], 1
 
 
-def test_alias2():
-    f = F.aliased_function('f', lambda x: 2*x)
-    g = F.aliased_function('f', lambda x: np.sqrt(x))
-    x = sympy.Symbol('x')
-
-    l1 = aliased.lambdify(x, f(x))
-    l2 = aliased.lambdify(x, g(x))
-
-    yield assert_equal, str(f(x)), str(g(x))
-    yield assert_equal, l1(3), 6
-    yield assert_equal, l2(3), np.sqrt(3)
-
-
 def test_alias():
     x = F.Term('x')
     f = F.aliased_function('f', lambda x: 2*x)

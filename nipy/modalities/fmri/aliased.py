@@ -35,9 +35,6 @@ class lambdify(object):
         >>> f(3)
         9
         '''
-        if isinstance(expr, sympy.FunctionClass):
-            # NNB t is undefined at this point
-            expr = expr(t)
         n = {} 
         _add_aliases_to_namespace(n, expr)
         self.n = n.copy()
@@ -47,8 +44,8 @@ class lambdify(object):
         self._f = sympy.lambdify(args, expr, self.n)
         self.expr = expr
         
-    def __call__(self, _t):
-        return self._f(_t)
+    def __call__(self, *args, **kwargs):
+        return self._f(*args, **kwargs)
 
 
 class vectorize(lambdify):
@@ -77,45 +74,8 @@ class vectorize(lambdify):
         lambdify.__init__(self, deft, expr.subs(t, deft))
 
 
-class AliasedFunctionClass(sympy.FunctionClass):
-    """ 'anonymous' sympy functions
-
-    Functions that can be replaced with an appropriate callable function
-    when lambdifying.
-
-    No checking is done on the signature of the alias.
-
-    This is not meant to be called by users, rather use
-    'aliased_function'.
-
-    AliasedFunctionClass is a sympy function, so we can
-    write self(Term('t')), for instance.
-    
-    The "alias" means, that we are just using str(self) (say, 'f') to
-    represent some function, which would be difficult or needlessly ugly
-    to represent as a sympy expression.
-    
-    For example, "f" might be a function that represents a linear
-    interpolator based on a sample of 200-300 points. If you create that
-    expression in sympy it will be really slow, and look ridiculous in
-    the interpreter.
-
-    The "alias", something returned from scipy.interpolate.interp1d,
-    say, is later substituted when we lambdify the function for
-    evaluation.  So, another, better, name might be "DeferredFunction"
-    to mimic "DeferredVector" in sympy.
-    """
-    def __new__(cls, arg1, arg2, arg3=None, alias=None):
-        r = sympy.FunctionClass.__new__(cls, arg1, arg2, arg3)
-        if alias is not None:
-            r.alias = new.instancemethod(lambda self, x: alias(x), r, cls)
-        return r
-
-
 def _add_aliases_to_namespace(namespace, *exprs):
-    """
-    Given a sequence of sympy expressions,
-    find all aliases in each expression and add them to the namespace.
+    """ add aliases in sympy `exprs` to namespace `namespace`.
     """
     for expr in exprs:
         if hasattr(expr, 'alias') and isinstance(expr, sympy.FunctionClass):
@@ -138,15 +98,28 @@ def _add_aliases_to_namespace(namespace, *exprs):
     return namespace
 
 
-def aliased_function(symbol, alias):
-    """ Create aliased function with `symbol` and `alias`
+def aliased_function(symfunc, alias):
+    """ Add implementation `alias` to symbolic function `symfunc`
 
     Parameters
     ----------
-    symbol : ``sympy.Symbol`` instance
-
+    symfunc : str or ``sympy.FunctionClass`` instance
+       If str, then create new anonymous sympy function with this name.
+       If `symfunc` is a sympy function, attach implementation to
+       function
     alias : callable
+       numerical implementation of function for use in ``lambdify``
+
+    Returns
+    -------
+    afunc : sympy.FunctionClass instance
+       function with attached implementation
     """
-    y = AliasedFunctionClass(sympy.Function, symbol, alias=alias)
-    return y
+    # if name, create anonymous function to hold alias
+    if isinstance(symfunc, basestring):
+        symfunc = sympy.FunctionClass(sympy.Function, symfunc)
+    # We need to attach as a method because symfunc will be a class
+    symfunc.alias = new.instancemethod(lambda self, *args: alias(*args),
+                                       symfunc, symfunc.__class__)
+    return symfunc
 

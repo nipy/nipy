@@ -16,8 +16,9 @@ import scipy.interpolate
 import sympy
 
 from nipy.modalities.fmri import formula, aliased
+from nipy.modalities.fmri.aliased import aliased_function
 
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_equal
 
 from nipy.testing import parametric
 
@@ -54,3 +55,17 @@ def test_2d():
     aliased._add_aliases_to_namespace(n, e)
     ee = sympy.lambdify((s,t), e, (n, 'numpy'))
     yield assert_almost_equal(ee(B1.x, B2.x), B1.y + B2.y)
+
+
+@parametric
+def test_alias2():
+    f = aliased_function('f', lambda x: 2*x)
+    g = aliased_function('f', lambda x: np.sqrt(x))
+    x = sympy.Symbol('x')
+    l1 = aliased.lambdify(x, f(x))
+    l2 = aliased.lambdify(x, g(x))
+    yield assert_equal(str(f(x)), str(g(x)))
+    yield assert_equal(l1(3), 6)
+    yield assert_equal(l2(3), np.sqrt(3))
+
+
