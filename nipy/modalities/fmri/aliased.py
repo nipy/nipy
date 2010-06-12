@@ -5,73 +5,64 @@ An implementation of Functions in sympy that allow 'anonymous'
 functions that can be evaluated when 'lambdified'. 
 
 """
-import new
 import warnings
 import sympy
 
 
-class lambdify(object):
+def lambdify(args, expr):
+    """ Returns function for fast calculation of numerical values
+
+    A modified version of sympy's lambdify that will find 'aliased'
+    Functions and substitute them appropriately at evaluation time.
+
+    See ``sympy.lambdify`` for more detail.
+
+    Parameters
+    ----------
+    args : object or sequence of objects
+       May well be sympy Symbols
+    expr : expression
+
+    Examples
+    --------
+    >>> x = sympy.Symbol('x')
+    >>> f = lambdify(x, x**2)
+    >>> f(3)
+    9
     """
-    A modified version of sympy's lambdify that
-    will find 'aliased' Functions and substitute
-    them appropriately at evaluation time.
-    """
-    def __init__(self, args, expr):
-        ''' Initialize lambdifier
-
-        This lambdifier only allows there to be one input argument, in
-        fact, because of the __call__ signature.
-
-        Parameters
-        ----------
-        args : object or sequence of objects
-           May well be sympy Symbols
-        expr : expression
-
-        Examples
-        --------
-        >>> x = sympy.Symbol('x')
-        >>> f = lambdify(x, x**2)
-        >>> f(3)
-        9
-        '''
-        n = {} 
-        _add_aliases_to_namespace(n, expr)
-        self.n = n.copy()
-        from sympy.utilities.lambdify import _get_namespace
-        for k, v in  _get_namespace('numpy').items():
-            self.n[k] = v
-        self._f = sympy.lambdify(args, expr, self.n)
-        self.expr = expr
-        
-    def __call__(self, *args, **kwargs):
-        return self._f(*args, **kwargs)
+    n = {} 
+    _add_aliases_to_namespace(n, expr)
+    from sympy.utilities.lambdify import _get_namespace
+    for k, v in  _get_namespace('numpy').items():
+       n[k] = v
+    return sympy.lambdify(args, expr, modules=n)
 
 
-class vectorize(lambdify):
-    """
-    This class can be used to take a (single-valued) sympy
-    expression with only 't' as a Symbol and return a 
-    callable that can be evaluated at an array of floats.
+def vectorize(expr, sym=sympy.Symbol('t')):
+    """Return function for calculation of numerical values at indices
+    
+    You can use this to take a (single-valued) sympy expression `expr` with
+    only 't' as a Symbol and return a callable that can be evaluated at
+    an array of floats.
 
     Parameters
     ----------
     expr : sympy expr
-        Expression with 't' the only Symbol. If it is 
-        an instance of sympy.FunctionClass, 
-        then vectorize expr(t) instead.
-
+       Expression with Symbol `sym` the only Symbol. If it is an
+       instance of sympy.FunctionClass, then vectorize ``expr(sym)``
+       instead.
+    sym : ``sympy.Symbol``, optional
+       symbol contained in `expr`.  Default is ``sympy.Symbol('t')``. 
+    
     Returns
     -------
     f : callable
         A function that can be evaluated at an array of time points.
     """
-    def __init__(self, expr):
-        deft = sympy.DeferredVector('t')
-        t = sympy.Symbol('t')
-        if isinstance(expr, sympy.FunctionClass):
-            expr = expr(t)
-        lambdify.__init__(self, deft, expr.subs(t, deft))
+    def_sym = sympy.DeferredVector(sym.name)
+    if isinstance(expr, sympy.FunctionClass):
+        expr = expr(sym)
+    return lambdify(def_sym, expr.subs(sym, def_sym))
 
 
 def _add_aliases_to_namespace(namespace, *exprs):
@@ -104,8 +95,8 @@ def aliased_function(symfunc, alias):
     Parameters
     ----------
     symfunc : str or ``sympy.FunctionClass`` instance
-       If str, then create new anonymous sympy function with this name.
-       If `symfunc` is a sympy function, attach implementation to
+       If str, then create new anonymous sympy function with this as
+       name.  If `symfunc` is a sympy function, attach implementation to
        function
     alias : callable
        numerical implementation of function for use in ``lambdify``
@@ -113,13 +104,12 @@ def aliased_function(symfunc, alias):
     Returns
     -------
     afunc : sympy.FunctionClass instance
-       function with attached implementation
+       sympy function with attached implementation
     """
     # if name, create anonymous function to hold alias
     if isinstance(symfunc, basestring):
         symfunc = sympy.FunctionClass(sympy.Function, symfunc)
     # We need to attach as a method because symfunc will be a class
-    symfunc.alias = new.instancemethod(lambda self, *args: alias(*args),
-                                       symfunc, symfunc.__class__)
+    symfunc.alias = staticmethod(alias)
     return symfunc
 
