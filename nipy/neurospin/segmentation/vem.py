@@ -97,7 +97,7 @@ class VemTissueClassification(object):
         self.ppm = ppm 
         self.ntissues = ppm.shape[3]
         if mask == None: 
-            mask = tuple(np.mgrid[[slice(0,d) for d in ppm.shape]])
+            mask = tuple(np.mgrid[[slice(0,d) for d in ppm.shape[0:-1]]])
         self.mask = mask 
         self.data_ = data[mask]
         if prior: 
