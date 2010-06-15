@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python 
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
@@ -33,7 +34,7 @@ from os.path import join, split
 import sys
 
 
-# Optinal argument
+# Optional argument
 iterations = 1
 if len(sys.argv)>1: 
     iterations = int(sys.argv[1])
@@ -56,4 +57,5 @@ corr_runs = R.resample()
 for i in range(len(runs)):
     aux = split(runnames[i])
     save_image(corr_runs[i], join('ra'+aux[1]))
+
 

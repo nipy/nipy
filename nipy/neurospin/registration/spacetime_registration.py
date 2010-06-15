@@ -1,10 +1,11 @@
+
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
 from affine import Rigid
 
 from nipy.neurospin.image import apply_affine
-from nipy.neurospin.image._image import cspline_transform, cspline_sample4d
+from nipy.neurospin.image._image import cspline_transform, cspline_sample3d, cspline_sample4d
 from nipy.neurospin.utils.optimize import fmin_steepest
 
 import numpy as np
@@ -123,7 +124,8 @@ class Realign4d(object):
                  im4d, 
                  speedup=_SPEEDUP,
                  optimizer=_OPTIMIZER, 
-                 transforms=None):
+                 transforms=None, 
+                 time_interp=True):
         self.optimizer = optimizer
         dims = im4d.array.shape
         self.dims = dims 
@@ -145,8 +147,14 @@ class Realign4d(object):
         self.from_time = im4d.from_time
         self.timestamps = im4d.tr*np.arange(self.nscans)
         # Compute the 4d cubic spline transform
-        self.cbspline = cspline_transform(im4d.array)
-              
+        self.time_interp = time_interp 
+        if time_interp: 
+            self.cbspline = cspline_transform(im4d.array)
+        else: 
+            self.cbspline = np.zeros(dims)
+            for t in range(dims[3]): 
+                self.cbspline[:,:,:,t] = cspline_transform(im4d.array[:,:,:,t])
+
     def resample_inmask(self, t):
         """
         x,y,z,t are "ideal grid" coordinates 
@@ -154,8 +162,12 @@ class Realign4d(object):
         """
         X, Y, Z = grid_coords(self.xyz, self.transforms[t], 
                               self.from_world, self.to_world)
-        T = self.from_time(Z, self.timestamps[t])
-        cspline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T)
+        if self.time_interp: 
+            T = self.from_time(Z, self.timestamps[t])
+            cspline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T)
+        else: 
+            cspline_sample3d(self.data[:,t], self.cbspline[:,:,:,t], X, Y, Z)
+
 
     def resample_all_inmask(self):
         for t in range(self.nscans):
@@ -264,19 +276,22 @@ class Realign4d(object):
             print('Fully resampling scan %d/%d' % (t+1, self.nscans))
             X, Y, Z = grid_coords(XYZ, self.transforms[t], 
                                   self.from_world, self.to_world)
-            T = self.from_time(Z, self.timestamps[t])
-            cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T)
+            if self.time_interp: 
+                T = self.from_time(Z, self.timestamps[t])
+                cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T)
+            else: 
+                cspline_sample3d(res[:,:,:,t], self.cbspline[:,:,:,t], X, Y, Z)
         return res
     
 
 
 
 
-def resample4d(im4d, transforms=None): 
+def resample4d(im4d, transforms=None, time_interp=True): 
     """
     corr_im4d_array = resample4d(im4d, transforms=None)
     """
-    r = Realign4d(im4d, transforms=transforms)
+    r = Realign4d(im4d, transforms=transforms, time_interp=time_interp)
     return r.resample()
 
 
@@ -284,7 +299,8 @@ def resample4d(im4d, transforms=None):
 def _realign4d(im4d, 
                loops=_WITHIN_LOOPS, 
                speedup=_SPEEDUP, 
-               optimizer=_OPTIMIZER): 
+               optimizer=_OPTIMIZER, 
+               time_interp=True): 
     """
     transforms = _realign4d(im4d, loops=2, speedup=4, optimizer='powell')
 
@@ -293,7 +309,7 @@ def _realign4d(im4d,
     im4d : Image4d instance
 
     """ 
-    r = Realign4d(im4d, speedup=speedup, optimizer=optimizer)
+    r = Realign4d(im4d, speedup=speedup, optimizer=optimizer, time_interp=time_interp)
     for loop in range(loops): 
         r.correct_motion()
     return r.transforms
@@ -303,9 +319,9 @@ def realign4d(runs,
               between_loops=_BETWEEN_LOOPS, 
               speedup=_SPEEDUP, 
               optimizer=_OPTIMIZER, 
-              align_runs=True): 
+              align_runs=True, 
+              time_interp=True): 
     """
-
     Parameters
     ----------
 
