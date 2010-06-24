@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 eneral tools to analyse fMRI datasets (GLM fit)
 sampled on the surface.
@@ -11,9 +13,11 @@ Author : Bertrand Thirion, 2010
 import os
 import glob
 import numpy as np
-from configobj import ConfigObj
-import glm_tools
-import tio
+
+from ...externals.configobj import ConfigObj
+
+from . import glm_tools
+from . import tio
 
 
 ############################################

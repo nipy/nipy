@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This scipt generates a noisy activation image image
 and applies the bayesian structural analysis on it
@@ -17,7 +19,7 @@ import nipy.neurospin.spatial_models.structural_bfls as sbf
 
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
-                       method='simple',verbose = 0):
+                       method='simple', verbose=0):
     """
     Function for performing bayesian structural analysis
     on a set of images.
@@ -56,15 +58,17 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     Fbeta.from_3d_grid(xyz, 18)
 
     # Get  coordinates in mm
+    xyz = xyz[:,1:] # switch to dimension 2
     coord = xyz.astype(np.float)
 
     # get the functional information
     lbeta = np.array([np.ravel(betas[k]) for k in range(nsubj)]).T
 
     # the voxel volume is 1.0
-    g0 = 1.0/(1.0*nvox)*1./np.sqrt(2*np.pi*dmax**2)
-    affine = np.eye(4)
-    shape = (1, ref_dim[0], ref_dim[1])
+    g0 = 1.0/(1.0*nvox)#*1./np.sqrt(2*np.pi*dmax**2)
+    affine = np.eye(3)
+    shape = (ref_dim[0], ref_dim[1])
+    
     lmax=0
     bdensity = 1
     if method=='ipmi':
@@ -82,7 +86,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     if method=='loo':
          mll, ll0 = bsa.compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz,
                                         affine, shape, thq, smin, ths,
-                                        theta, g0)
+                                        theta, g0, verbose=verbose)
          return mll, ll0
     if method=='dev':
         group_map, AF, BF, likelihood = \
@@ -145,7 +149,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                 nls[nls==-1] = np.size(AF)+2
                 for k in range(BF[s].k):
                     xyzk = BF[s].xyz[k].T 
-                    lw[xyzk[1],xyzk[2]] =  nls[k]
+                    lw[xyzk[0],xyzk[1]] =  nls[k]
 
             mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
             mp.axis('off')
@@ -185,8 +189,8 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple'#'dev'#'ipmi'#'sbf'
+method = 'simple_quick'#'dev'#'ipmi'#'sbf'#'loo'#
 
 # run the algo
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method, verbose=verbose)
-mp.show()
+#mp.show()

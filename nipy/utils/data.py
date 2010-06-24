@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Utilities to find files from NIPY data packages
 
@@ -149,7 +151,9 @@ def get_data_path():
     #. Any section = ``DATA``, key = ``path`` value in any files found
        with a ``sorted(glob.glob(os.path.join(sys_dir, '*.ini')))``
        search, where ``sys_dir`` is found with ``get_nipy_system_dir()``
-    #. The result of ``os.path.join(sys.prefix, 'share', 'nipy')``
+    #. If ``sys.prefix`` is ``/usr``, we add
+       ``/usr/local/share/nipy``. We need this because Python 2.6 in
+       Debian / Ubuntu does default installs to ``/usr/local``.
     #. The result of ``get_nipy_user_dir()``
 
     Therefore, any paths found in ``NIPY_DATA_PATH`` will be searched
@@ -166,6 +170,15 @@ def get_data_path():
     Examples
     --------
     >>> pth = get_data_path()
+
+    Notes
+    -----
+    We have to add ``/usr/local/share/nipy`` if sys.prefix is ``/usr``,
+    because Debian has patched distutils in Python 2.6 to do default
+    distutils installs there:
+
+    * http://www.debian.org/doc/packaging-manuals/python-policy/ap-packaging_tools.html#s-distutils
+    * http://www.mail-archive.com/debian-python@lists.debian.org/msg05084.html
     '''
     paths = []
     try:
@@ -183,9 +196,11 @@ def get_data_path():
         if var:
             paths += var.split(os.path.pathsep)
     paths.append(pjoin(sys.prefix, 'share', 'nipy'))
+    if sys.prefix == '/usr':
+        paths.append(pjoin('/usr/local', 'share', 'nipy'))
     paths.append(pjoin(get_nipy_user_dir()))
     return paths
-    
+
 
 def find_data_dir(root_dirs, *names):
     ''' Find relative path given path prefixes to search

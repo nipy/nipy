@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Gaussian Mixture Model Class:
 contains the basic fields and methods of GMMs
@@ -436,7 +438,6 @@ class GMM():
         """
         n = x.shape[0]
         like = np.zeros((n,self.k))
-        #from numpy.linalg import det
 
         for k in range(self.k):
             # compute the data-independent factor first
@@ -444,9 +445,9 @@ class GMM():
             m = np.reshape(self.means[k],(1,self.dim))
             b = self.precisions[k]
             if self.prec_type=='full':
-                #w += np.log(det(b))
                 w += np.log(eigvalsh(b)).sum()
-                q = np.sum(np.dot(m-x,b)*(m-x),1)
+                dx = m-x
+                q = np.sum(np.dot(dx,b)*dx,1)
             else:
                 w += np.sum(np.log(b))
                 q = np.dot((m-x)**2, b)
@@ -847,31 +848,35 @@ class GMM():
                  density of the model one the discrete grid implied by gd
                  by default, this is recomputed
         """
+        import matplotlib.pylab as mp
+        
         # recompute the density if necessary
         if density==None:
             density = self.mixture_likelihood(gd,x)
 
+        import pylab
         if axes is None:
-            axes = mp.figure()
+            axes = pylab.figure()
 
         if gd.dim==1:
-            import matplotlib.pylab as mp
-            step = 3.5*np.std(x)/np.exp(np.log(np.size(x))/3)
-            bins = max(10,(x.max()-x.min())/step)
-            xmin = 1.1*x.min() - 0.1*x.max()
-            xmax = 1.1*x.max() - 0.1*x.min()
-            h,c = np.histogram(x, bins, [xmin,xmax], normed=True)
-            offset = (xmax-xmin)/(2*bins)
+            from nipy.neurospin.utils.emp_null import smoothed_histogram_from_samples
+            h, c = smoothed_histogram_from_samples(x, normalized=True)
+            
+            #step = 3.5*np.std(x)/np.exp(np.log(np.size(x))/3)
+            #bins = max(10,(x.max()-x.min())/step)
+            #xmin = 1.1*x.min() - 0.1*x.max()
+            #xmax = 1.1*x.max() - 0.1*x.min()
+            #h,c = np.histogram(x, bins, [xmin, xmax], normed=True)
+
+            offset = (c.max()-c.min())/(2*c.size)
             grid = gd.make_grid()
         
             h /= h.sum()
             h /= (2*offset)
-            axes.plot(c[:-1]+offset,h)
-            axes.plot(grid, density)
-            axes.show()
+            mp.plot(c[:-1]+offset, h)
+            mp.plot(grid, density)
 
         if gd.dim==2:
-            import matplotlib.pylab as mp
             if nbf>-1:
                 mp.figure(nbf)
             else:

@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 The volume data class
 
@@ -90,7 +92,9 @@ class VolumeData(VolumeField):
             ----------
             target_image : nipy image
                 Nipy image onto the voxel grid of which the data will be
-                resampled.
+                resampled. This can be any kind of img understood by Nipy
+                (datasets, pynifti objects, nibabel object) or a string
+                giving the path to a nifti of analyse image.
             interpolation : None, 'continuous' or 'nearest', optional
                 Interpolation type used when calculating values in
                 different word spaces. If None, the image's interpolation
@@ -106,10 +110,12 @@ class VolumeData(VolumeField):
             Both the target image and the original image should be
             embedded in the same world space.
         """
+        if not hasattr(target_image, 'world_space'):
+            from ..converters import as_volume_img
+            target_image = as_volume_img(target_image)
         if not target_image.world_space == self.world_space:
             raise CompositionError(
                 "The two images are not embedded in the same world space")
-        my_v2w_transform = self.get_transform()
         x, y, z = target_image.get_world_coords()
         new_data = self.values_in_world(x, y, z, 
                                         interpolation=interpolation)

@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Utilities for extracting masks from EPI images and applying them to time
 series.
@@ -168,7 +170,7 @@ def compute_mask_files(input_filename, output_filename=None,
         del vol_arr
     else:
         # List of filenames
-        if len(input_filename) == 0:
+        if len(list(input_filename)) == 0:
             raise ValueError('input_filename should be a non-empty '
                 'list of file names')
         # We have several images, we do mean on the fly, 
@@ -185,7 +187,7 @@ def compute_mask_files(input_filename, output_filename=None,
                 affine = nim.get_affine()
             else:
                 mean_volume += nim.get_data().squeeze()
-        mean_volume /= float(len(input_filename))
+        mean_volume /= float(len(list(input_filename)))
         
     del nim
     if np.isnan(mean_volume).any():
@@ -302,7 +304,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
         
     # Take the "half-intersection", i.e. all the voxels that fall within
     # 50% of the individual masks.
-    mask = (mask > threshold*len(session_files))
+    mask = (mask > threshold*len(list(session_files)))
    
     if cc:
         # Select the largest connected component (each mask is
@@ -347,7 +349,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
         else:
             grp_mask += this_mask
     
-    grp_mask = grp_mask>(threshold*len(input_masks))
+    grp_mask = grp_mask>(threshold*len(list(input_masks)))
     if np.any(grp_mask>0) and cc:
         grp_mask = largest_cc(grp_mask)
     
@@ -393,25 +395,27 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         header: header object
             The header of the first file.
     """
+    assert len(filenames) != 0, ( 
+        'filenames should be a file name or a list of file names, '
+        '%s (type %s) was passed' % (filenames, type(filenames)))
     mask = mask.astype(np.bool)
     if isinstance(filenames, basestring):
         # We have a 4D nifti file
         data_file = load(filenames)
         header = data_file.get_header()
-        data = data_file.get_data()
-        #if isinstance(data, np.memmap):
-        #    data = np.array(data, copy=True)
+        series = data_file.get_data()
+        affine = data_file.get_affine()[:3, :3]
+        del data_file
+        if isinstance(series, np.memmap):
+            series = np.asarray(series).copy()
         if smooth:
-            affine = data_file.get_affine()[:3, :3]
             smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
-            if not data.flags['WRITEABLE']:
-                data = np.asarray(data).copy() # Get rid of memmapping
-            for this_data in np.rollaxis(data, -1):
-                this_data[:] = ndimage.gaussian_filter(this_data,
+            for this_volume in np.rollaxis(series, -1):
+                this_volume[...] = ndimage.gaussian_filter(this_volume,
                                                         smooth_sigma)
-        series = data[mask].astype(dtype)
+        series = series[mask].astype(dtype)
     else:
-        nb_time_points = len(filenames)
+        nb_time_points = len(list(filenames))
         series = np.zeros((mask.sum(), nb_time_points), dtype=dtype)
         for index, filename in enumerate(filenames):
             data_file = load(filename)
@@ -423,9 +427,9 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
                 
             series[:, index] = data[mask].astype(dtype)
             # Free memory early
+            del data
             if index == 0:
                 header = data_file.get_header()
-            del data
 
     return series, header
 

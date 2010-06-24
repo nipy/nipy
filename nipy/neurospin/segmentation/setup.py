@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 import os
 
 def configuration(parent_package='',top_path=None):
@@ -8,7 +10,7 @@ def configuration(parent_package='',top_path=None):
     config.add_data_dir('tests')
     config.add_data_dir('benchmarks')
     config.add_include_dirs(config.name.replace('.', os.sep))
-    config.add_extension('mrf_module', sources=['mrf_module.pyx', 'mrf.c'])
+    config.add_extension('_mrf', sources=['_mrf.pyx', 'mrf.c'])
 
     return config
 

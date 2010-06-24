@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Example of a script that uses the BSA (Bayesian Structural Analysis)
 -- nipy.neurospin.spatial_models.bayesian_structural_analysis --
@@ -33,13 +35,13 @@ betas =[ op.join(data_dir,'spmT_%04d_subj_%02d.nii'%(nbeta,n))
 # set various parameters
 subj_id = ['%04d' %i for i in range(12)]
 theta = float(st.t.isf(0.01,100))
-dmax = 5.
+dmax = 4.
 ths = 0 #2# or nbsubj/4
 thq = 0.95
 verbose = 1
 smin = 5
 swd = tempfile.mkdtemp()
-method='simple'
+method='simple_quick'
 
 # call the function
 AF, BF = make_bsa_image(mask_images, betas, theta, dmax,

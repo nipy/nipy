@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 The main routine of this package that aims at performing the
 extraction of ROIs from multisubject dataset using the localization
@@ -21,9 +23,9 @@ from nipy.neurospin.clustering.hierarchical_clustering import\
      average_link_graph_segment
 import nipy.neurospin.utils.emp_null as en
 
-#------------------------------------------------------------------
-#---------------- Auxiliary functions -----------------------------
-#------------------------------------------------------------------
+####################################################################
+# Ancillary functions
+####################################################################
 
 
 def _hierarchical_asso(bfl,dmax):
@@ -143,7 +145,7 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
     for i in range(bf.k):
         l = bf.subtree(i)
         valid = np.zeros(bf.k)
-        valid[l]=1
+        valid[l] = 1
         vvalid = np.zeros(Fbeta.V)
         vvalid[bf.label>-1] = valid[bf.label[bf.label>-1]]
         vvalid = 1-vvalid
@@ -157,24 +159,25 @@ def _clean_size_and_connectivity_(bf,Fbeta,smin=0):
                     if np.sum(u==j)<mccs:
                         bf.label[iv[u==j]]=i
 
-    bf = _clean_size_(bf,smin)
+    bf = _clean_size_(bf, smin)
     return bf
 
-def make_crmap(AF,coord,verbose=0):
+def make_crmap(AF, coord, verbose=0):
     """
-    crmap = make_crmap(AF,coord)
     Compute the spatial map associated with the AF
     i.e. the confidence interfval for the position of
     the different landmarks
     
     Parameters
     ----------
-    - AF the list of group-level landmarks regions
-    - coord: array of shape(nvox,3): the position of the reference points
+    AF list of group-level landmarks regions
+    coord: array of shape(nvox,3),
+           the position of the reference points
 
     Results
     -------
-    - crmap: array of shape(nvox)
+    crmap: array of shape(nvox)
+           the resulting map
     """
     nvox = coord.shape[0]
     crmap = -np.ones(nvox)
@@ -187,10 +190,10 @@ def make_crmap(AF,coord,verbose=0):
         lscore = np.inf*np.ones(nvox)
         lscore[j] = score 
         crmap[gscore>lscore]=i
-        gscore = np.minimum(gscore,lscore)
+        gscore = np.minimum(gscore, lscore)
     return crmap
 
-def infer_LR(bf,thq=0.95,ths=0,verbose=0):
+def infer_LR(bf, thq=0.95, ths=0, verbose=0):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
@@ -201,7 +204,7 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
        it is assumd that each list corresponds to one subject
        each NROI is assumed to have the roi_features
        'position', 'label' and 'posterior_proba' defined
-    thq=0.95,ths=0 defines the condition (c):
+    thq=0.95, ths=0 defines the condition (c):
                    (c) A label should be present in ths subjects
                    with a probability>thq
                    in order to be valid
@@ -210,9 +213,13 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     -------
     LR : a LR instance, describing a cross-subject set of ROIs
        if inference yields a null results, LR is set to None
-    newlabel :  a relabelling of the individual ROIs, similar to u,
-             which discards
-             labels that do not fulfill the condition (c)
+    newlabel: a relabelling of the individual ROIs, similar to u,
+              which discards
+              labels that do not fulfill the condition (c)
+
+    Fixme
+    -----
+    Should be merged with sbf.build_LR
     """
     # prepare various variables to ease information manipulation
     nbsubj = np.size(bf)
@@ -229,6 +236,10 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
     
     if np.size(u)==0:  return None,None
 
+    for s in range(nbsubj):
+        if bf[s]is not None:
+            dim = len(bf[s].shape)
+    
     coords = []
     subjs=[]
     pps = []
@@ -259,7 +270,7 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
             valid[i]=1
             sj = np.size(j)
             idx = np.zeros(sj)
-            coord = np.zeros((sj,3), np.float)
+            coord = np.zeros((sj, dim), np.float)
             for a in range(sj):
                 sja = subj[j[a]]
                 isja = intrasubj[j[a]]
@@ -298,8 +309,8 @@ def infer_LR(bf,thq=0.95,ths=0,verbose=0):
 
 
 
-def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, affine=np.eye(4), 
-                                  shape=None, thq=0.5,
+def compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4), 
+                     shape=None, thq=0.5,
                      smin=5, ths=0, theta=3.0, g0=1.0, bdensity=0, verbose=0):
     """
     Compute the  Bayesian Structural Activation patterns
@@ -400,7 +411,7 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, affine=np.eye(4),
     gf0 = np.concatenate(gf0)
     p = np.zeros(np.size(nvox))
     g1 = g0
-    dof = 0
+    dof = 1000
     prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
 
     if bdensity:
@@ -408,8 +419,11 @@ def compute_BSA_ipmi(Fbeta,lbeta, coord,dmax, xyz, affine=np.eye(4),
     else:
         spatial_coords = gfc
 
-    p,q =  fc.fdp(gfc, 0.5, g0, g1,dof, prior_precision,
-                  1-gf0, sub, 100, spatial_coords,10,1000)
+    #p,q =  fc.fdp(gfc, 0.5, g0, g1,dof, prior_precision,
+    #              1-gf0, sub, 100, spatial_coords,10,1000)
+    p,q =  dpmm(gfc, 0.5, g0, g1, dof, prior_precision,
+                  1-gf0, sub, 100, spatial_coords, nis=300)
+
     # inference
     valid = q>thq
 
@@ -564,7 +578,7 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, affine=np.eye(4),
     gf0 = np.concatenate(gf0)
     p = np.zeros(np.size(nvox))
     g1 = g0
-    dof = 0
+    dof = 1000
     prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.int)
 
     if bdensity:
@@ -572,8 +586,12 @@ def compute_BSA_dev (Fbeta, lbeta, coord, dmax,  xyz, affine=np.eye(4),
     else:
         spatial_coords = gfc
             
-    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof,prior_precision, 1-gf0,
-                  sub, 100, spatial_coords,10,1000)
+    #p,q =  fc.fdp(gfc, 0.5, g0, g1,dof, prior_precision,
+    #              1-gf0, sub, 100, spatial_coords,10,1000)
+    p,q =  dpmm(gfc, 0.5, g0, g1, dof, prior_precision,
+                  1-gf0, sub, 100, spatial_coords, nis=300)
+    
+    
     valid = q>thq
     if verbose:
         import matplotlib.pylab as mp
@@ -679,9 +697,10 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
     gf0 = np.concatenate(gf0)
     
     # prepare the DPMM
+    dim = coord.shape[1]
     g1 = g0
-    prior_precision =  1./(dmax*dmax)*np.ones((1,3), np.float)
-    dof = 100
+    prior_precision =  1./(dmax*dmax)*np.ones((1,dim), np.float)
+    dof = 10
     spatial_coords = coord
     burnin = 100
     nis = 300
@@ -689,8 +708,10 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
     nii = 100
     # nii = number of iterations to estimate q
 
-    p,q =  fc.fdp(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
-                  sub, burnin, spatial_coords, nis, nii)
+    #p,q =  fc.fdp(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+    #              sub, burnin, spatial_coords, nis, nii)
+    p,q =  dpmm(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+               sub, burnin, spatial_coords, nis)
     
     if verbose:
         import matplotlib.pylab as mp
@@ -699,7 +720,6 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
         h1,c1 = mp.histogram((1-gf0),bins=100)
         h2,c2 = mp.histogram(q,bins=100)
         mp.figure()
-        # We use c1[:len(h1)] to be independant of the change in np.hist
         mp.bar(c1[:len(h1)],h1,width=0.005)
         mp.bar(c2[:len(h2)]+0.003,h2,width=0.005,color='r')
         print 'Number of candidate regions %i, regions found %i' % (
@@ -747,7 +767,45 @@ def bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose=0):
         crmap[label>-1] = aux[label[label>-1]]
  
     return crmap, LR, bf, p
-    
+
+def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1, sub, burnin,
+         spatial_coords=None, nis=1000, co_clust=False, verbose=False):
+    """
+    Apply the dpmm analysis to the data in python
+    """
+    from nipy.neurospin.clustering.imm import MixedIMM
+    dim = gfc.shape[1]
+    migmm = MixedIMM(alpha, dim)
+    migmm.set_priors(gfc)
+    migmm.set_constant_densities(null_dens=g0, prior_dens=g1)
+    migmm._prior_dof = dof
+    migmm._prior_scale = np.diag(prior_precision[0]/dof)
+    migmm._inv_prior_scale = [np.diag(1./(prior_precision[0]/dof))]
+    migmm.sample(gfc, null_class_proba=1-gf1, niter=burnin, init=False,
+                 kfold=sub)
+    if verbose:
+        print 'number of components: ', migmm.k
+
+    #sampling
+    if co_clust:
+        like, pproba, co_clust =  migmm.sample(
+            gfc, null_class_proba=1-gf1, niter=nis,
+            sampling_points=spatial_coords, kfold=sub, co_clustering=co_clust)
+
+        if verbose:
+            print 'number of components: ', migmm.k
+        
+        return like, 1-pproba, co_clust
+    else:
+        like, pproba =  migmm.sample(
+            gfc, null_class_proba=1-gf1, niter=nis,
+            sampling_points=spatial_coords, kfold=sub, co_clustering=co_clust)
+    if verbose:
+        print 'number of components: ', migmm.k
+
+    return like, 1-pproba
+
+
 def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
     """
     Estimation of the population level model of activation density using 
@@ -816,22 +874,21 @@ def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
     nii = 100
     # number of iterations to estimate p
  
-    CoClust, q, p =  fc.fdp2(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
-                   sub, burnin, gfc, nis, nii)
-
-    if verbose:
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.imshow(CoClust,interpolation='nearest')
-        mp.colorbar()
-
+    #CoClust, q, p =  fc.fdp2(gfc, 0.5, g0, g1, dof, prior_precision, 1-gf0,
+    #               sub, burnin, gfc, nis, nii)
+    q, p, CoClust = dpmm(gfc, .5, g0, g1, dof, prior_precision, 1-gf0,
+                         sub, burnin, nis=nis, co_clust=True)
     
-    qq = CoClust>0.5
-    cg = fg.WeightedGraph(np.size(q))
-    cg.from_adjacency(qq)
+    #qq = (CoClust>0.5).astype(np.float)
+    #cg = fg.WeightedGraph(np.size(q))
+    #cg.from_adjacency(qq)
+    cg = fg.wgraph_from_coo_matrix(CoClust)
     u = cg.cc()
     u[p<g0] = u.max()+1+np.arange(np.sum(p<g0))
-    
+
+    if verbose:
+        cg.show(gfc)
+        
     # append some information to the hroi in each subject
     for s in range(nsubj):
         bfs = bf[s]
@@ -844,7 +901,7 @@ def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
             lq = np.zeros(bfs.k)
             lq[leaves] = 1-gf0[sub==s]
             bfs.set_roi_feature('prior_proba',lq)
-                   
+       
             us[leaves] = u[sub==s]
 
             # when parent regions has similarly labelled children,
@@ -978,11 +1035,10 @@ def compute_BSA_simple_quick(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
         how likely they are in the same class according to the model
     """
     
-    bf, gf0, sub, gfc = compute_individual_regions(Fbeta, lbeta, coord, dmax,
-                                                   xyz, affine,  shape,  smin,
-                                                   theta, verbose)
-    crmap, LR, bf, coclust = bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq,
-                                       ths, g0, verbose)
+    bf, gf0, sub, gfc = compute_individual_regions(
+        Fbeta, lbeta, coord, dmax, xyz, affine,  shape,  smin, theta, verbose)
+    crmap, LR, bf, coclust = bsa_dpmm2(
+        Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0, verbose)
 
     return crmap, LR, bf, coclust
 
@@ -1161,9 +1217,12 @@ def compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
         # 
         if np.sum(sub==s)>0:
             spatial_coords = gfc[sub==s]
-            p, q =  fc.fdp(gfc[sub!=s], 0.5, g0, g1, dof, prior_precision,
-                          1-gf0[sub!=s], sub[sub!=s], burnin, spatial_coords,
-                          nis, nii)
+            #p, q =  fc.fdp(
+            #    gfc[sub!=s], 0.5, g0, g1, dof, prior_precision,
+            #    1-gf0[sub!=s], sub[sub!=s], burnin, spatial_coords, nis, nii)
+            p, q =  dpmm(
+                gfc[sub!=s], 0.5, g0, g1, dof, prior_precision,
+                1-gf0[sub!=s], sub[sub!=s], burnin, spatial_coords, nis)
             pp = gf0[sub==s]*g0 + p*(1-gf0[sub==s])
             ll2.append(np.mean(np.log(pp)))
             ll1.append(np.mean(np.log(p)))
