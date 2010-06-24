@@ -152,6 +152,7 @@ class VolumeImg(VolumeGrid):
                                         interpolation=None, copy=True):
         if affine is None and shape is None:
             if copy:
+                import copy
                 return copy.copy(self)
             else:
                 return self
