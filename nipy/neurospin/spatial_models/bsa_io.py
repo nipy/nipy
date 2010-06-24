@@ -40,7 +40,7 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     swd: string, optional
         if not None, output directory
     method='simple': applied region detection method; to be chose among
-                     'simple', 'dev','ipmi'
+                     'simple', 'ipmi'
     subj_id=None: list of strings, identifiers of the subjects.
                   by default it is range(nsubj)
     nbeta='default', string, identifier of the contrast
@@ -114,10 +114,6 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         crmap,AF,BF,p = bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, thq, smin, ths,
                         theta, g0, bdensity, verbose=verbose)
-    if method=='dev':
-        crmap,AF,BF,p = bsa.compute_BSA_dev  (Fbeta, lbeta, coord, 
-                        dmax, xyz[:,:3], affine, ref_dim, 
-                        thq, smin,ths, theta, g0, bdensity, verbose=verbose)
     if method=='simple':
         crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, 

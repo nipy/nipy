@@ -90,9 +90,9 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
          return mll, ll0
     if method=='dev':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_dev(Fbeta, lbeta, coord, dmax, xyz,
-                                       affine, shape, thq,
-                                      smin, ths, theta, g0, bdensity)
+                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, xyz,
+                                       affine, shape, thq, smin, ths, theta,
+                                        g0, bdensity, 'gauss_mixture')
     if method=='simple_quick':
         likelihood = np.zeros(ref_dim)
         group_map, AF, BF, coclustering = \
@@ -173,9 +173,9 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 nsubj = 10
 dimx = 60
 dimy = 60
-pos = 2*np.array([[ 6,  7],
-                  [10, 10],
-                  [15, 10]])
+pos = np.array([[ 12,  14],
+                [20, 20],
+                [30, 20]])
 ampli = np.array([5, 7, 6])
 sjitter = 1.0
 dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
@@ -189,7 +189,7 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple'#'dev'#'ipmi'#'sbf'#'loo'#
+method = 'ipmi'#'simple'#'dev'#'ipmi'#'sbf'#'loo'#
 
 # run the algo
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method, verbose=verbose)
