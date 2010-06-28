@@ -487,7 +487,7 @@ class MultipleROI(object):
         dim = 3
         if self.shape is not None:
             dim = len(self.shape)
-        if np.shape(self.affine)!=(dim+1, dim+1):
+        if np.shape(self.affine)!= (dim+1, dim+1):
             raise ValueError, "affine does not have a correct shape"
        
         if (self.shape!=None)&(len(self.xyz)>0):

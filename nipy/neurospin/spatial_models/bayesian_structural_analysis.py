@@ -642,8 +642,7 @@ def bsa_dpmm2(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq, ths, g0,verbose):
 
 
 def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4), 
-                              shape=None,
-                       thq=0.5, smin=5, ths=0, theta=3.0, g0=1.0,
+                       shape=None,  thq=0.5, smin=5, ths=0, theta=3.0, g0=1.0,
                        verbose=0):
     """
     Compute the  Bayesian Structural Activation paterns - simplified version  
@@ -698,9 +697,11 @@ def compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz, affine=np.eye(4),
     The number of itertions should become a parameter
     """
    
+    #bf, gf0, sub, gfc = compute_individual_regions(
+    #    Fbeta, lbeta, coord, xyz, affine, shape, smin, theta,
+    #    'gauss_mixture', verbose)
     bf, gf0, sub, gfc = compute_individual_regions(
-        Fbeta, lbeta, coord, xyz, affine, shape, smin, theta,
-        'gauss_mixture', verbose)
+        Fbeta, lbeta, coord, xyz, affine, shape, smin, theta, 'prior', verbose)
     
     crmap, LR, bf, p = bsa_dpmm(Fbeta, bf, gf0, sub, gfc, coord, dmax, thq,
                                 ths, g0, verbose)
@@ -820,8 +821,8 @@ def compute_individual_regions(Fbeta, lbeta, coord, xyz, affine=np.eye(4),
         Fbeta.set_field(beta)
         nroi = hroi.NROI_from_field(Fbeta, affine, shape, xyz, refdim=0,
                                     th=theta, smin=smin)
-              
-        if nroi!=None:
+                
+        if nroi is not None:
             nroi.set_discrete_feature_from_index('activation',beta)
             bfm = nroi.discrete_to_roi_features('activation','average')
             bfm = bfm[nroi.isleaf()]
@@ -861,6 +862,12 @@ def compute_individual_regions(Fbeta, lbeta, coord, xyz, affine=np.eye(4),
             elif model=='gam_gauss':
                 bfp  = en.Gamma_Gaussian_fit(beta, bfm, verbose)
                 bf0 = bfp[:,1]
+            elif model=='prior':
+                y0 = st.norm.pdf(bfm)
+                shape_, scale_ = 3., 2.
+                alpha = .01
+                y1 = st.gamma.pdf(bfm, shape_, scale=scale_) 
+                bf0 = np.ravel((1-alpha)*y0 / (alpha*y1 + (1-alpha)*y0))
             else: raise ValueError, 'Unknown model'
             
             gf0.append(bf0)

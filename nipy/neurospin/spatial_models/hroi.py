@@ -65,7 +65,7 @@ def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty, smin = 0)
     nroi = NROI(parents, affine, shape, discrete)
 
     # Create the index of each point within the Field
-    midx = [np.expand_dims(np.nonzero(label==i)[0],1) for i in range(k)]
+    midx = [np.expand_dims(np.nonzero(label==i)[0], 1) for i in range(k)]
     nroi.set_discrete_feature('index', midx)
 
     #define the voxels
@@ -177,7 +177,7 @@ class NROI(MultipleROI,Forest):
             return None
         k = np.size(parents)
         Forest.__init__(self,k,parents)
-        MultipleROI.__init__(self,id, k, affine, shape, xyz)
+        MultipleROI.__init__(self, id, k, affine, shape, xyz)
 
     def clean(self, valid):
         """
