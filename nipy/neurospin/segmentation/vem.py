@@ -22,12 +22,13 @@ def vm_step_gauss(ppm, data_, mask):
     data_: ndarray (1d, masked data)
     mask: 3-element tuple of 1d ndarrays (X,Y,Z)
     """
-    ntissues = ppm.shape[3]
+    ntissues = ppm.shape[-1]
     mu = np.zeros(ntissues)
     sigma = np.zeros(ntissues)
 
     for i in range(ntissues):
-        P = ppm[:,:,:,i][mask]
+        #P = ppm[:,:,:,i][mask]
+        P = ppm.T[i].T[mask]
         Z = P.sum()
         tmp = data_*P
         mu_ = tmp.sum()/Z
@@ -54,13 +55,13 @@ def vm_step_laplace(ppm, data_, mask):
     data_: ndarray (1d, masked data)
     mask: 3-element tuple of 1d ndarrays (X,Y,Z)
     """
-    ntissues = ppm.shape[3]
+    ntissues = ppm.shape[-1]
     mu = np.zeros(ntissues)
     sigma = np.zeros(ntissues)
     ind = np.argsort(data_) # data_[ind] increasing
 
     for i in range(ntissues):
-        P = ppm[:,:,:,i][mask]
+        P = ppm.T[i].T[mask]
         mu_ = wmedian(data_, P, ind) 
         sigma_ = np.sum(np.abs(P*(data_-mu_)))/P.sum()
         mu[i] = mu_ 
@@ -95,10 +96,10 @@ class VemTissueClassification(object):
 
         # Mask data 
         self.ppm = ppm 
-        self.ntissues = ppm.shape[3]
+        self.ntissues = ppm.shape[-1]
         if mask == None: 
-            mask = np.mgrid[[slice(0,d) for d in ppm.shape[0:-1]]]
-            mask = tuple(np.reshape(mask, [3,np.prod(ppm.shape[0:-1])]))
+            mask = np.mgrid[[slice(0,d) for d in data.shape]]
+            mask = tuple(np.reshape(mask, [data.ndim, np.prod(data.shape)]))
         self.mask = mask 
         self.data_ = data[mask]
         if prior: 
@@ -110,7 +111,7 @@ class VemTissueClassification(object):
         # debug 
         print('**************')
         print self.ref_.shape
-        print self.data._shape
+        print self.data_.shape
 
         # Label information 
         if labels == None: 
