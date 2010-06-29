@@ -1,5 +1,5 @@
-# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 """ 
 The main routine of this module aims at performing the
 extraction of ROIs from multisubject dataset using the localization.
@@ -34,7 +34,7 @@ class landmark_regions(hroi.NROI):
     from which subjects at which position it is found.
     """
     def __init__(self, k, parents=None, affine=np.eye(4), shape=None,
-                 id=None, subj=None, coord=None):
+                 id=None, subj=None, coord=None, dmax=1.):
         """
         Building the landmark_region
 
@@ -44,13 +44,16 @@ class landmark_regions(hroi.NROI):
         parents = None: array of shape(self.k) describing the
                 hierarchical relationship
                 if None, parents = np.arange(k) is used instead
-        affine=np.eye(4), array of shape(4,4)
+        affine=np.eye(4), array of shape(4, 4)
             coordinate-defining affine transformation
         shape=None, tuple of length 3 defining the size of the grid
             implicit to the discrete ROI definition  
         subj=None: k-length list of subjects
                    (these correspond to ROI feature)
-        coord=None; k-length list of coordinate arrays
+        coord:  k-length list of arrays
+                coordinates of the nodes in some embedding space. 
+        dmax: float, optional,
+              regularizing prior on region width estimate
 
         fixme
         -----
@@ -64,7 +67,8 @@ class landmark_regions(hroi.NROI):
         hroi.NROI.__init__(self, parents, affine, shape, xyz=xyz, id=id)
         self.set_discrete_feature('position',coord)
         self.subj = subj
-
+        self.dmax = dmax
+        
     def centers(self):
         """
         c = self.centers()
@@ -84,22 +88,28 @@ class landmark_regions(hroi.NROI):
              edk = dr.Euclidian_distance(coord[k]) 
              h[k] = edk.sum()/(size[k]*(size[k]-1))
         return h
-             
-    def HPD(self, k, cs, pval=0.95, dmax=1.0):
+
+    def density (self, k, cs, dmax=None, dof=10):
         """
-        Sample the postreior density of being in k
-        on a grid defined by cs, assuming that the roi is an ellipsoid
-        
+        Posterior density of component k
+
         Parameters
         ----------
-        cs array of shape(n,dim): a set of input coordinates
-        pval=0.95: cutoff for the CR
-        dmax=1.0: an upper bound for the spatial variance
-                  to avoid degenerate variance
-        
+        k: int, less or equal to self.k
+           reference component
+        cs: array of shape(n, dim)
+            a set of input coordinates
+        dmax: float, optional
+              regularizaing constant for tha variance estimation
+        dof: float, optional,
+             strength of the regulaization
+
         Returns
         -------
-        hpd array of shape(n) that yields the value
+        pd: array of shape(n)
+            the posterior density that has been computed
+        delta: array of shape(n)
+               the quadratic term in the gaussian model
         """
         if k>self.k:
             raise ValueError, 'wrong region index'
@@ -110,20 +120,50 @@ class landmark_regions(hroi.NROI):
         
         if cs.shape[1]!=dim:
             raise ValueError, "incompatible dimensions"
-        
+
+        if dmax==None:
+            dmax = self.dmax
+            
+        n_points = coord.shape[0]
         dx = coord-centers[k]
-        covariance = np.dot(dx.T,dx)/coord.shape[0]
-        import numpy.linalg as L
-        U,S,V = L.svd(covariance,0)
-        eps = (dmax**2)/coord.shape[0]
-        sqrts = np.sqrt(1/np.maximum(S,eps))
+        covariance = np.dot(dx.T, dx) / n_points
+        from numpy.linalg import svd
+        U,S,V = svd(covariance,0)
+        #eps = (dmax**2)/coord.shape[0]
+        #sqrts = np.sqrt(1/np.maximum(S, eps))
+        dof = 10
+        S = (n_points*S + dmax**2 * np.ones(dim)*dof)/(n_points + dof)
+        sqrts = 1. / np.sqrt(S)
         dx = cs-centers[k]
-        dx = np.dot(dx,U)
-        dx = np.dot(dx,np.diag(sqrts))
+        dx = np.dot(dx, U)
+        dx = np.dot(dx, np.diag(sqrts))
         delta = np.sum(dx**2,1)
         lcst = -np.log(2*np.pi)*dim/2+(np.log(sqrts)).sum()
-        hpd = np.exp(lcst-delta/2)
-
+        pd = np.exp(lcst-delta/2)
+        return pd, delta
+        
+    def HPD(self, k, cs, pval=0.95, dmax=1.0):
+        """
+        Sample the posterior probability of being in k
+        on a grid defined by cs, assuming that the roi is an ellipsoid
+        
+        Parameters
+        ----------
+        k: int, less or equal to self.k
+           reference component
+        cs: array of shape(n,dim)
+            a set of input coordinates
+        pval: float<1, optional,
+              cutoff for the CR
+        dmax=1.0: an upper bound for the spatial variance
+                  to avoid degenerate variance
+        
+        Returns
+        -------
+        hpd array of shape(n) that yields the value
+        """
+        hpd, delta = self.density (k, cs, dmax)
+        
         import scipy.special as sp
         gamma = 2*sp.erfinv(pval)**2
         #
@@ -192,8 +232,6 @@ class landmark_regions(hroi.NROI):
             label[maux>0] = np.argmax(aux,1)[maux>0]
         return label
 
-    
-
     def show(self):
         """function to print basic information on self
         """
@@ -206,7 +244,7 @@ class landmark_regions(hroi.NROI):
 
     def roi_confidence(self, ths=0, fid='confidence'):
         """
-        assuming that fid='confidence' field has been set 
+        assuming that a certain feature fid field has been set 
         as a discrete feature,
         this creates an approximate p-value that states 
         how confident one might 
@@ -224,7 +262,10 @@ class landmark_regions(hroi.NROI):
                the p-values corresponding to the ROIs
         """
         pvals = np.zeros(self.k)
+
+        # the feature has not been defined
         if self.discrete_features.has_key(fid)==False:
+            print 'using per ROI subject counts'
             for j in range(self.k):
                 subjj = self.subj[j]
                 pvals[j] = np.size(np.unique(subjj))
@@ -243,8 +284,7 @@ class landmark_regions(hroi.NROI):
                     # If noise is too low the variance is 0: ill-defined:
                     vp = max(vp, 1e-14)
                     
-                pvals[j] = stats.norm.sf(ths,mp,np.sqrt(vp))
-                #print ths-mp, mp, np.sqrt(vp),pvals[j],len(np.unique(subjj))
+                pvals[j] = stats.norm.sf(ths, mp, np.sqrt(vp))
         return pvals
 
     def roi_prevalence(self, fid='confidence'):
@@ -289,7 +329,7 @@ class landmark_regions(hroi.NROI):
         cs = np.dot(np.hstack((cs,np.ones((gs,1)))),self.affine.T)[:,:3]
         return cs
         
-    def feature_map(self, feature, imPath=None, pw=0.95):
+    def feature_map(self, feature, pw=0.95):
         """
         Given a set of feature values, produce a feature map,
         assuming that one feature corresponds to one region
@@ -297,44 +337,54 @@ class landmark_regions(hroi.NROI):
         Parameters
         ----------
         feature, array of shape (self.k) : the information to map
-        imPath=None, string yielding the output image path
-                     if not None
         pw=0.95: volume of the Gaussian ellipsoid associated with the ROIs
         
         Returns
         -------
-        The image object
+        
         """
         if np.size(feature)!=self.k:
             raise ValueError, 'Incompatible feature dimension'
-        from nipy.io.imageformats import save, Nifti1Image          
                 
         label = self.map_label(self.generate_coordinates(), pval=pw)
         label = np.reshape(label, self.shape)
-        values = np.zeros(self.shape)
-        values[label>-1] = feature[label[label>-1].astype(np.int)]
-        wim = Nifti1Image(values, self.affine)
-        wim.get_header()['descrip']='feature image'
-        if imPath!=None:
-           save(wim,imPath)
+        return feature[label[label>-1].astype(np.int)]
         
-        return wim
-    
-    def prevalence_map(self, imPath=None, pw=0.95):
+    def weighted_feature_density(self, feature):
         """
-        Particular feature map where feature self.roi_prevalence()
+        Given a set of feature values, produce a weighted feature map,
+        where roi-levle features are mapped smoothly based on the density
+        of the components 
         
         Parameters
         ----------
-        imPath=None, string yielding the output image path
-                     if not None
-        pw=0.95: volume of the Gaussian ellipsoid associated with the ROIs
-        
+        feature: array of shape (self.k),
+                 the information to map
+x        
         Returns
         -------
-        The image object
+        wsm: array of shape(self.shape)
         """
-        return self.feature_map(self.roi_prevalence(), imPath, pw)
+        if np.size(feature)!=self.k:
+            raise ValueError, 'Incompatible feature dimension'
+
+        cs = self.generate_coordinates()
+        aux = np.zeros((cs.shape[0], self.k))
+        for k in range(self.k):
+            aux[:, k], _ = self.density(k, cs)
+            
+        wsum = np.dot(aux, feature)
+        return np.reshape(wsum, self.shape)
+    
+    def prevalence_density(self):
+        """
+        returns a weighted map of self.prevalence
+             
+        Returns
+        -------
+        wp: array of shape(n_samples)
+        """
+        return self.weighted_feature_density(self.roi_prevalence())
 
 def build_LR(BF, ths=0):
     """
@@ -359,6 +409,10 @@ def build_LR(BF, ths=0):
     Note
     ----    
     if no LR can be created then LR=None as an output argument
+
+    fixme
+    -----
+    should be replaces by bsa.infer_LR, with a couple of changes
     """
     nbsubj = np.size(BF)
     subj = [s*np.ones(BF[s].k) for s in range(nbsubj) if BF[s]!=None]

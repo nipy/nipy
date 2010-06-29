@@ -1089,7 +1089,7 @@ class WeightedGraph(Graph):
                 tag[e]=c
         return tag
 
-    def remove_edges(self,valid):
+    def remove_edges(self, valid):
         """
         Removes all the edges for which valid==0
 

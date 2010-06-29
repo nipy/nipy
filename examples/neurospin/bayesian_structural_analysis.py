@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This scipt generates a noisy multi-subject activation image dataset
+This script generates a noisy multi-subject activation image dataset
 and applies the bayesian structural analysis on it
 
 Author : Bertrand Thirion, 2009
@@ -40,7 +40,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
             to make regions meaningful structures
     method= 'simple', string,
             estimation method used ; to be chosen among 
-            'simple', 'dev', 'loo', 'ipmi'
+            'simple', 'quick', 'loo', 'ipmi'
     verbose=0, verbosity mode     
 
     Returns
@@ -93,10 +93,10 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                    bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, xyz,
                                        affine, shape, thq, smin, ths, theta,
                                         g0, bdensity, 'gauss_mixture')
-    if method=='simple_quick':
+    if method=='quick':
         likelihood = np.zeros(ref_dim)
         group_map, AF, BF, coclustering = \
-                   bsa.compute_BSA_simple_quick(Fbeta, lbeta, coord, dmax, xyz,
+                   bsa.compute_BSA_quick(Fbeta, lbeta, coord, dmax, xyz,
                                           affine, shape, thq, smin, ths,
                                           theta, g0)
     if method=='sbf':
@@ -106,7 +106,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                                               ths=ths , pval=thq)
 
         
-    if method not in['loo', 'dev','simple','ipmi','simple_quick','sbf']:
+    if method not in['loo', 'simple', 'ipmi', 'quick', 'sbf']:
         raise ValueError,'method is not ocrreactly defined'
     
     if verbose==0:
