@@ -421,7 +421,7 @@ class GMM():
         like *= self.weights
         return like
 
-    def unweighted_likelihood(self, x):
+    def unweighted_likelihood_(self, x):
         """
         return the likelihood of each data for each component
         the values are not weighted by the component weights
@@ -442,7 +442,7 @@ class GMM():
         for k in range(self.k):
             # compute the data-independent factor first
             w = - np.log(2*np.pi)*self.dim
-            m = np.reshape(self.means[k],(1,self.dim))
+            m = np.reshape(self.means[k], (1, self.dim))
             b = self.precisions[k]
             if self.prec_type=='full':
                 w += np.log(eigvalsh(b)).sum()
@@ -451,6 +451,49 @@ class GMM():
             else:
                 w += np.sum(np.log(b))
                 q = np.dot((m-x)**2, b)
+            w -= q
+            w /= 2
+            like[:,k] = np.exp(w)   
+        return like
+
+    def unweighted_likelihood(self, x):
+        """
+        return the likelihood of each data for each component
+        the values are not weighted by the component weights
+
+        Parameters
+        ----------
+        x: array of shape (n_samples,self.dim)
+           the data used in the estimation process
+
+        Returns
+        -------
+        like, array of shape(n_samples,self.k)
+          unweighted component-wise likelihood
+
+        Note
+        ----
+        Hopefully faster
+        """
+        xt = x.T.copy()
+        n = x.shape[0]
+        like = np.zeros((n, self.k))
+
+        for k in range(self.k):
+            # compute the data-independent factor first
+            w = - np.log(2*np.pi)*self.dim
+            m = np.reshape(self.means[k], (self.dim, 1))
+            b = self.precisions[k]
+            if self.prec_type=='full':
+                w += np.log(eigvalsh(b)).sum()
+                dx = xt-m
+                sqx = dx*np.dot(b,dx)
+                q = np.zeros(n)
+                for d in range(self.dim):
+                    q += sqx[d]
+            else:
+                w += np.sum(np.log(b))
+                q = np.dot(b, (m-xt)**2) # check !!!
             w -= q
             w /= 2
             like[:,k] = np.exp(w)   

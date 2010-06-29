@@ -245,10 +245,10 @@ class IMM(BGMM):
             if np.array(kfold).size != n_samples:
                 raise ValueError, 'kfold and x do not have the same size'
             uk = np.unique(kfold)
+            np.random.shuffle(uk)
             idx = np.zeros(n_samples).astype(np.int)
             for i,k in enumerate(uk):
                 idx += (i*(kfold==k))
-            idx = idx.astype(np.int)
             kmax = uk.max()+1
         
         for k in range(kmax):
@@ -520,8 +520,8 @@ class MixedIMM(IMM):
             if  kfold==None:
                 like = self.simple_update(x, z, plike, null_class_proba)
             else:
-                like = self.cross_validated_update(x, z, plike,
-                                                   null_class_proba, kfold)
+                like, z = self.cross_validated_update(x, z, plike,
+                                                      null_class_proba, kfold)
 
             llike = self.likelihood(x, plike)
             z = self.sample_indicator(llike, null_class_proba)
@@ -546,7 +546,7 @@ class MixedIMM(IMM):
     def simple_update(self, x, z, plike, null_class_proba):
         """
          This is a step in the sampling procedure
-        that uses internal corss_validation
+        that uses internal cross_validation
 
         Parameters
         ----------
@@ -598,6 +598,13 @@ class MixedIMM(IMM):
         -------
         like: array od shape(n_samples),
               the (cross-validated) likelihood of the data
+        z: array of shape(n_samples),
+              the associated membership variables
+
+        Note
+        ----
+        when kfold is an array, there is an internal reshuffling
+        to randomize the order of updates
         """
         n_samples = x.shape[0]
         slike = np.zeros(n_samples)
@@ -613,10 +620,10 @@ class MixedIMM(IMM):
             if np.array(kfold).size != n_samples:
                 raise ValueError, 'kfold and x do not have the same size'
             uk = np.unique(kfold)
+            np.random.shuffle(uk)
             idx = np.zeros(n_samples).astype(np.int)
             for i,k in enumerate(uk):
                 idx += (i*(kfold==k))
-            idx = idx.astype(np.int)
             kmax = uk.max()+1
 
         for k in range(kmax):
@@ -639,7 +646,7 @@ class MixedIMM(IMM):
             z[test] = self.sample_indicator(alike, null_class_proba[test])
             # almost standard, but many new components can be created
 
-        return slike
+        return slike, z
 
 
 
