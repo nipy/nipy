@@ -2,13 +2,12 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Example of a script that uses the BSA (Bayesian Structural Analysis)
--- nipy.neurospin.spatial_models.bayesian_structural_analysis --
+i.e. nipy.neurospin.spatial_models.bayesian_structural_analysis
 module
 
-Please adapt the image paths to make it work on your own data
-
-Author : Bertrand Thirion, 2008-2009
+Author : Bertrand Thirion, 2008-2010
 """
+print __doc__
 
 #autoindent
 import numpy as np
@@ -41,11 +40,12 @@ thq = 0.95
 verbose = 1
 smin = 5
 swd = tempfile.mkdtemp()
-method='ipmi'
+method = 'quick'
+print 'method used:', method
 
 # call the function
-AF, BF = make_bsa_image(mask_images, betas, theta, dmax,
-                        ths, thq, smin, swd, method, subj_id, '%04d'%nbeta)
+AF, BF = make_bsa_image(mask_images, betas, theta, dmax, ths, thq, smin, swd,
+                        method, subj_id, '%04d'%nbeta, reshuffle=True)
 
 # Write the result. OK, this is only a temporary solution
 import pickle

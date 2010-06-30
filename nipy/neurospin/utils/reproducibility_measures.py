@@ -725,9 +725,9 @@ def coord_bsa(mask, betas, theta=3.,dmax=5., ths=0, thq=0.5, smin=0,
     shape = mask.get_shape()
     coord = np.dot(np.hstack((xyz,np.ones((nvox,1)))),affine.T)[:,:3]
 
-    crmap,AF,BF,p = bsa.compute_BSA_simple_quick(Fbeta, betas, coord, dmax, xyz,
-                                            affine, shape, thq, smin,ths, theta,
-                                            g0, verbose=0)
+    crmap,AF,BF,p = bsa.compute_BSA_quick(Fbeta, betas, coord, dmax, xyz,
+                                          affine, shape, thq, smin,ths, theta,
+                                          g0, verbose=0)
     if AF==None:
         return None
     pickle.dump(AF, open(afname, 'w'), 2)
