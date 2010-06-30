@@ -1,3 +1,4 @@
+
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np 
@@ -160,7 +161,8 @@ class VemTissueClassification(object):
         else: 
             print('  ... MRF correction')
             # Deal with mixing matrix and label switching
-            if not self.mixmat == None:
+            mixmat = self.mixmat 
+            if not mixmat == None:
                 mixmat = self.sort_mixmat(mu)
             self.ppm = _ve_step(self.ppm, self.ref_, 
                                 np.array(self.mask, dtype='int'), 
@@ -202,6 +204,5 @@ class VemTissueClassification(object):
         if beta > 0.0: 
             print('  ... Concensus correction')
             fc = _concensus(self.ppm, np.array(self.mask, dtype='int'))
-            print fc
             f = f - .5*beta*fc 
         return f
