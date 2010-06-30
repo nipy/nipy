@@ -398,6 +398,23 @@ def test_dmtx19():
     idx = paradigm.onset[paradigm.index==0].astype(np.int)
     assert_true((X[idx+1,0]==X[idx+2,1]).all())
 
+def test_csv_io():
+    """
+    test the csv io on design matrices
+    """
+    tr = 1.0
+    frametimes = np.linspace(0, 127*tr,128)
+    paradigm = modulated_event_paradigm()
+    DM = dm.DesignMatrix(frametimes, paradigm, hrf_model='Canonical', 
+                         drift_model='Polynomial', drift_order=3)
+    from tempfile import mkdtemp
+    from os.path import join
+    path = join(mkdtemp(), 'dmtx.csv')
+    DM.write_csv(path)
+    DM2 = dm.dmtx_from_csv( path)
+    print np.sum((DM.matrix-DM2.matrix)**2).sum()
+    assert_almost_equal (DM.matrix, DM2.matrix)
+    assert_true (DM.names==DM2.names)
 
 if __name__ == "__main__":
     import nose
