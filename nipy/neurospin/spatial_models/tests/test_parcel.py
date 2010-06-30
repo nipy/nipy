@@ -6,6 +6,7 @@ import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.parcellation as fp
 import nipy.neurospin.graph.graph as fg
 import nipy.neurospin.graph.field as ff
+import nipy.neurospin.clustering as fc
 
 def make_data_field():
     nsubj = 1
@@ -35,14 +36,14 @@ def make_data_field():
                          mu*anat_coord/np.std(anat_coord)))
     g = fg.WeightedGraph(nvox)
     g.from_3d_grid(xyz.astype(np.int),nn)
-    g = ff.Field(nvox,g.edges,g.weights,feature)
+    g = ff.Field(nvox, g.edges, g.weights, feature)
     return g
 
 def test_parcel_one_subj_1():
     nbparcel = 10
     g = make_data_field()
-    u,J0 = g.ward(nbparcel)
-    assert((np.unique(u)==np.arange(nbparcel)).all())
+    u, J0 = g.ward(nbparcel)
+    assert((np.unique(u) == np.arange(nbparcel)).all())
     
 
 def test_parcel_one_subj_2():
@@ -50,15 +51,22 @@ def test_parcel_one_subj_2():
     g = make_data_field()
     seeds = np.argsort(np.random.rand(g.V))[:nbparcel]
     seeds, u, J1 = g.geodesic_kmeans(seeds)
-    assert((np.unique(u)==np.arange(nbparcel)).all())
+    assert((np.unique(u) == np.arange(nbparcel)).all())
 
 
 def test_parcel_one_subj_3():
     nbparcel = 10
     g = make_data_field()
-    w,J0 = g.ward(nbparcel)
+    w, J0 = g.ward(nbparcel)
     seeds, u, J1 = g.geodesic_kmeans(label=w)
-    assert((np.unique(u)==np.arange(nbparcel)).all())
+    assert((np.unique(u) == np.arange(nbparcel)).all())
+
+def test_parcel_one_subj_4():
+    nbparcel = 10
+    g = make_data_field()
+    _, u, _ = fc.kmeans(g.field, nbparcel)
+    assert((np.unique(u) == np.arange(nbparcel)).all())
+
 
 def test_parcel_multi_subj():
     """
