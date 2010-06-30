@@ -2,9 +2,11 @@
 
 """
 Markov random field utils. 
+
+Author: Alexis Roche, 2010.
 """
 
-__version__ = '0.0'
+__version__ = '0.2'
 
 # Includes
 from numpy cimport import_array, ndarray

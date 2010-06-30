@@ -72,7 +72,7 @@ def vm_step_laplace(ppm, data_, mask):
 # VEM algorithm 
 class VemTissueClassification(object): 
 
-    def __init__(self, ppm, data, mask=None, noise='gauss', 
+    def __init__(self, ppm, data, mask, noise='gauss', 
                  prior=True, copy=False, hard=False, 
                  labels=None, mixmat=None): 
         """
@@ -96,9 +96,6 @@ class VemTissueClassification(object):
         # Mask data 
         self.ppm = ppm 
         self.ntissues = ppm.shape[3]
-        if mask == None: 
-            mask = np.mgrid[[slice(0,d) for d in ppm.shape[0:-1]]]
-            mask = tuple(np.reshape(mask, [3,np.prod(ppm.shape[0:-1])]))
         self.mask = mask 
         self.data_ = data[mask]
         if prior: 
@@ -106,11 +103,6 @@ class VemTissueClassification(object):
         else: 
             self.prior_ = np.ones([1,self.ntissues])/float(self.ntissues)
         self.ref_ = np.zeros([self.data_.size, self.ntissues])
-
-        # debug 
-        print('**************')
-        print self.ref_.shape
-        print self.data._shape
 
         # Label information 
         if labels == None: 
