@@ -3,9 +3,8 @@
 """
 An implementation of Functions in sympy that allow 'anonymous'
 functions that can be evaluated when 'lambdified'. 
-
 """
-import warnings
+
 import sympy
 
 
@@ -22,6 +21,9 @@ def lambdify(args, expr):
     args : object or sequence of objects
        May well be sympy Symbols
     expr : expression
+       The expression is anything that can be passed to the sympy
+       lambdify function, meaning anything that gives valid code from
+       ``str(expr)``.
 
     Examples
     --------
@@ -31,10 +33,10 @@ def lambdify(args, expr):
     9
     """
     n = _imp_namespace(expr)
-    # There was a bug in sympy such that ductionaries passed in as first
+    # There was a bug in sympy such that dictionaries passed in as first
     # namespaces to lambdify, before modules, would get overwritten by
     # later calls to lambdify.  The next two lines are to get round this
-    # bug
+    # bug.
     from sympy.utilities.lambdify import _get_namespace
     np_ns = _get_namespace('numpy').copy()
     return sympy.lambdify(args, expr, modules=(n, np_ns))
@@ -70,17 +72,25 @@ def vectorize(expr, sym=sympy.Symbol('t')):
 def _imp_namespace(expr, namespace=None):
     """ Return namespace dict with function implementations
 
+    We need to search for functions in anything that can be thrown at
+    us - that is - anything that could be passed as `expr`.  Examples
+    include sympy expressions, as well tuples, lists and dicts that may
+    contain sympy expressions.
+
     Parameters
     ----------
-    *exprs : sequence of sympy expressions
+    expr : object
+       Something passed to lambdify, that will generate valid code from
+       ``str(expr)``. 
     namespace : None or mapping
        Namespace to fill.  None results in new empty dict
 
     Returns
     -------
     namespace : dict
-       dkct with keys of function names within `expr` and values being
-       numerical implementation of function
+       dkct with keys of implented function names within `expr` and
+       corresponding values being the numerical implementation of
+       function
     """
     if namespace is None:
         namespace = {}
@@ -102,10 +112,11 @@ def _imp_namespace(expr, namespace=None):
             name = expr.func.__name__
             imp = expr.func.alias
             if name in namespace and namespace[name] != imp:
-                raise ValueError('We found two impolemetations with '
-                                 'name ' + name)
+                raise ValueError('We found more than one '
+                                 'implementation with name '
+                                 '"%s"' % name)
             namespace[name] = imp
-    # or they may take Functions as arguments
+    # and / or they may take Functions as arguments
     if hasattr(expr, 'args'):
         for arg in expr.args:
             _imp_namespace(arg, namespace)
