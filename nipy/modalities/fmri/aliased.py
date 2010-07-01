@@ -30,12 +30,14 @@ def lambdify(args, expr):
     >>> f(3)
     9
     """
-    n = {} 
-    _add_aliases_to_namespace(n, expr)
+    n = _imp_namespace(expr)
+    # There was a bug in sympy such that ductionaries passed in as first
+    # namespaces to lambdify, before modules, would get overwritten by
+    # later calls to lambdify.  The next two lines are to get round this
+    # bug
     from sympy.utilities.lambdify import _get_namespace
-    for k, v in  _get_namespace('numpy').items():
-       n[k] = v
-    return sympy.lambdify(args, expr, modules=n)
+    np_ns = _get_namespace('numpy').copy()
+    return sympy.lambdify(args, expr, modules=(n, np_ns))
 
 
 def vectorize(expr, sym=sympy.Symbol('t')):
@@ -65,27 +67,48 @@ def vectorize(expr, sym=sympy.Symbol('t')):
     return lambdify(def_sym, expr.subs(sym, def_sym))
 
 
-def _add_aliases_to_namespace(namespace, *exprs):
-    """ add aliases in sympy `exprs` to namespace `namespace`.
+def _imp_namespace(expr, namespace=None):
+    """ Return namespace dict with function implementations
+
+    Parameters
+    ----------
+    *exprs : sequence of sympy expressions
+    namespace : None or mapping
+       Namespace to fill.  None results in new empty dict
+
+    Returns
+    -------
+    namespace : dict
+       dkct with keys of function names within `expr` and values being
+       numerical implementation of function
     """
-    for expr in exprs:
-        if hasattr(expr, 'alias') and isinstance(expr, sympy.FunctionClass):
-            if namespace.has_key(str(expr)):
-                if namespace[str(expr)] != expr.alias:
-                    warnings.warn('two aliases with the same name were found')
-            namespace[str(expr)] = expr.alias
-        if hasattr(expr, 'func'):
-            if (isinstance(expr.func, sympy.FunctionClass) and
-                hasattr(expr.func, 'alias')):
-                if namespace.has_key(expr.func.__name__):
-                    if namespace[expr.func.__name__] != expr.func.alias:
-                        warnings.warn('two aliases with the same name were found')
-                namespace[expr.func.__name__] = expr.func.alias
-        if hasattr(expr, 'args'):
-            try:
-                _add_aliases_to_namespace(namespace, *expr.args)
-            except TypeError:
-                pass
+    if namespace is None:
+        namespace = {}
+    # tuples, lists, dicts are valid expressions
+    if isinstance(expr, (list, tuple)):
+        for arg in expr:
+            _imp_namespace(arg, namespace)
+        return namespace
+    elif isinstance(expr, dict):
+        for key, val in expr.items():
+            # functions can be in dictionary keys
+            _imp_namespace(key, namespace)
+            _imp_namespace(val, namespace)
+        return namespace
+    # sympy expressions may be Functions themselves
+    if hasattr(expr, 'func'):
+        if (isinstance(expr.func, sympy.FunctionClass) and
+            hasattr(expr.func, 'alias')):
+            name = expr.func.__name__
+            imp = expr.func.alias
+            if name in namespace and namespace[name] != imp:
+                raise ValueError('We found two impolemetations with '
+                                 'name ' + name)
+            namespace[name] = imp
+    # or they may take Functions as arguments
+    if hasattr(expr, 'args'):
+        for arg in expr.args:
+            _imp_namespace(arg, namespace)
     return namespace
 
 

@@ -113,7 +113,9 @@ import sympy
 import numpy as np
 from scipy.linalg import svdvals
 
-from aliased import aliased_function, _add_aliases_to_namespace, vectorize
+from .aliased import (aliased_function,
+                      lambdify,
+                      vectorize)
 
 
 class Term(sympy.Symbol):
@@ -619,11 +621,7 @@ class Formula(object):
         # These "aliased" functions are used for things like
         # the natural splines, etc. You can represent natural splines
         # with sympy but the expression is pretty awful.
-
-        _namespace = {}; 
-        _add_aliases_to_namespace(_namespace, *d)
-
-        self._f = sympy.lambdify(newparams + newterms, d, (_namespace, "numpy"))
+        self._f = lambdify(newparams + newterms, d)
 
         # The input to self.design will be a recarray of that must 
         # have field names that the Formula will expect to see.
