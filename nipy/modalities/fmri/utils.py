@@ -29,8 +29,7 @@ from sympy import cos as sympy_cos
 from sympy import pi as sympy_pi
 
 from . import formula
-from .aliased import aliased_function, vectorize
-
+from .aliased import aliased_function, vectorize, lambdify
 
 t = formula.Term('t')
 
@@ -42,27 +41,22 @@ def fourier_basis(freq):
 
     Parameters
     ----------
-
-    freq : [float]
+    freq : sequence of float
         Frequencies for the terms in the Fourier basis.
 
-    Outputs
+    Returns
     -------
-
     f : Formula
 
     Examples
     --------
-    
     >>> f=fourier_basis([1,2,3])
     >>> f.terms
     array([cos(2*pi*t), sin(2*pi*t), cos(4*pi*t), sin(4*pi*t), cos(6*pi*t),
            sin(6*pi*t)], dtype=object)
     >>> f.mean
     _b0*cos(2*pi*t) + _b1*sin(2*pi*t) + _b2*cos(4*pi*t) + _b3*sin(4*pi*t) + _b4*cos(6*pi*t) + _b5*sin(6*pi*t)
-    >>>               
     """
-
     r = []
     for f in freq:
         r += [sympy_cos((2*sympy_pi*f*t)),
@@ -82,9 +76,9 @@ def linear_interp(times, values, fill=0, name=None, **kw):
 
     Parameters
     ----------
-    times : ndarray
+    times : array-like
         Increasing sequence of times
-    values : ndarray
+    values : array-like
         Values at the specified times
     fill : float, optional
         Value on the interval (-np.inf, times[0]). Default 0.
@@ -100,15 +94,22 @@ def linear_interp(times, values, fill=0, name=None, **kw):
 
     Examples
     --------
-    >>> s=linear_interp([0,4,5.],[2.,4,6], bounds_error=False)
-    >>> tval = np.array([-0.1,0.1,3.9,4.1,5.1]).view(np.dtype([('t', np.float)]))
-    >>> s.design(tval)
-    array([(nan,), (2.0499999999999998,), (3.9500000000000002,),
-           (4.1999999999999993,), (nan,)],
-          dtype=[('interp0(t)', '<f8')])
+    >>> s = linear_interp([0,4,5.],[2.,4,6], bounds_error=False)
+    >>> tval = np.array([-0.1,0.1,3.9,4.1,5.1])
+    >>> res = lambdify(t, s)(tval)
+    >>> # nans outside bounds
+    >>> np.isnan(res)
+    array([ True, False, False, False,  True], dtype=bool)
+    >>> # interpolated values otherwise
+    >>> np.allclose(res[1:-1], [2.05, 3.95, 4.2])
+    True
     """
     # XXX - does interpolation have to be linear?
-    kw['kind'] = 'linear'
+    kind = kw.get('kind')
+    if kind is None:
+        kw['kind'] = 'linear'
+    elif kind != 'linear':
+        raise ValueError('Only linear interpolation supported')
     interp = interp1d(times, values, **kw)
     # make a new name if none provided
     if name is None:
@@ -116,12 +117,14 @@ def linear_interp(times, values, fill=0, name=None, **kw):
         linear_interp.counter += 1
     s = aliased_function(name, interp)
     return s(t)
+
 linear_interp.counter = 0
 
 
 def step_function(times, values, name=None, fill=0):
-    """
-    Right-continuous step function such that
+    """ Right-continuous step function of time t
+
+    Function of t such that
 
     f(times[i]) = values[i]
 
@@ -130,9 +133,9 @@ def step_function(times, values, name=None, fill=0):
 
     Parameters
     ----------
-    times : ndarray
+    times : (N,) sequence
         Increasing sequence of times
-    values : ndarray
+    values : (N,) sequence
         Values at the specified times
     fill : float
         Value on the interval (-np.inf, times[0])
@@ -142,35 +145,31 @@ def step_function(times, values, name=None, fill=0):
 
     Returns
     -------
-    f : Formula
-        A Formula with only a step function, as a function of t.
+    f_t : sympy expr
+       Sympy expression f(t) where f is a sympy implemented anonymous
+       function of time that implements the step function.  To get
+       the numerical version of the function, use ``lambdify(t, f_t)``
 
     Examples
     --------
-    
-    >>> s=step_function([0,4,5],[2,4,6])
-    >>> tval = np.array([-0.1,3.9,4.1,5.1]).view(np.dtype([('t', np.float)]))
-    >>> s.design(tval)
-    array([(0.0,), (2.0,), (4.0,), (6.0,)],
-          dtype=[('step0(t)', '<f8')])
-    >>>
-
+    >>> s = step_function([0,4,5],[2,4,6])
+    >>> tval = np.array([-0.1,3.9,4.1,5.1])
+    >>> lam = lambdify(t, s)
+    >>> lam(tval)
+    array([0, 2, 4, 6])
     """
-    times = np.asarray(times)
-    values = np.asarray(values)        
-
-    def anon(x, times=times, values=values, fill=fill):
-        d = values[1:] - values[:-1]
-        f = np.less(x, times[0]) * fill + np.greater(x, times[0]) * values[0]
-        for i in range(d.shape[0]):
-            f = f + np.greater(x, times[i+1]) * d[i]
-        return f
-
     if name is None:
         name = 'step%d' % step_function.counter
         step_function.counter += 1
+    
+    def _imp(x):
+        x = np.asarray(x)
+        f = np.zeros(x.shape) + fill
+        for time, val in zip(times, values):
+            f[x >= time] = val
+        return f
 
-    s = aliased_function(name, anon)
+    s = aliased_function(name, _imp)
     return s(t)
 
 # Initialize counter for step function
@@ -178,8 +177,7 @@ step_function.counter = 0
 
 
 def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
-    """
-    Return a sum of functions based on a sequence of times.
+    """ Return a sum of functions based on a sequence of times.
 
     Parameters
     ----------
@@ -239,26 +237,27 @@ def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
 
 
 def blocks(intervals, amplitudes=None, g=Symbol('a')):
-    """
-    Return a step function
-    based on a sequence of intervals.
+    """  Step function based on a sequence of intervals.
 
-    Inputs:
-    =======
-
-    intervals : [(float, float)]
-        "On" intervals for the block.
-
-    amplitudes : [float]
-        Optional amplitudes for each block. Defaults to 1.
-
-    g : sympy.Basic
+    Parameters
+    ----------
+    intervals : (S,) sequence of (2,) sequences
+       Seqence (S0, S1, ... S(N-1)) of sequences, where S0 (etc) are
+       sequences of length 2, giving 'on' and 'off' times of block
+    amplitudes : (S,) sequence of float, optional
+       Optional amplitudes for each block. Defaults to 1.
+    g : sympy.Basic, optional
         Optional sympy expression function involving 'a', which
         will be substituted for 'a' in the generator.
 
-    Examples:
-    =========
-    
+    Returns
+    -------
+    b_of_t : sympy expr
+       Sympy expression b(t) where b is a sympy anonymous function of
+       time that implements the block step function
+
+    Examples
+    --------
     >>> tval = np.array([0.4,1.4,2.4,3.4]).view(np.dtype([('t', np.float)]))
     >>> b = blocks([[1,2],[3,4]])
     >>> b.design(tval)
@@ -275,7 +274,6 @@ def blocks(intervals, amplitudes=None, g=Symbol('a')):
     >>> b.design(tval)
     array([(0.0,), (4.0,), (0.0,), (6.0,)], 
           dtype=[('step2(t)', '<f8')])
-
     """
     t = [-np.inf]
     v = [0]
@@ -285,14 +283,11 @@ def blocks(intervals, amplitudes=None, g=Symbol('a')):
             while True:
                 yield 1
         amplitudes = _amplitudes()
-
     for _t, a in zip(intervals, amplitudes):
         t += list(_t)
         v += [g.subs(asymb, a), 0]
-
     t.append(np.inf)
     v.append(0)
-
     return step_function(t, v)
 
 
