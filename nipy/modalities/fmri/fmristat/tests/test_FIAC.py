@@ -17,7 +17,6 @@ from StringIO import StringIO
 
 # Scientific libraries import
 import numpy as np
-from scipy.interpolate import interp1d
 from matplotlib.mlab import csv2rec
 
 from nipy.modalities.fmri import formula, utils, hrf, design
@@ -294,11 +293,6 @@ def matchcol(col, X):
     c = np.nan_to_num(c)
     ind = np.argmax(np.abs(c))
     return ind, c[ind]
-
-
-def interpolate(name, col, t):
-    i = interp1d(t, formula.vectorize(col)(t))
-    return formula.aliased_function(name, i)(formula.t)
 
 
 @parametric

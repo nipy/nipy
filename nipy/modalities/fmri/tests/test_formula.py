@@ -8,12 +8,13 @@ import numpy as np
 import sympy
 import matplotlib.mlab as ML
 
-
 from nipy.modalities.fmri import formula as F
 from nipy.modalities.fmri import aliased
 
-from nipy.testing import assert_almost_equal, assert_true, \
-    assert_equal, assert_false, assert_raises
+from nipy.testing import (assert_almost_equal, assert_true,
+                          assert_equal, assert_false,
+                          assert_raises, parametric)
+
 
 def test_getparams_terms():
 
@@ -229,28 +230,15 @@ def test_design():
     yield assert_almost_equal, ff.design(n)['1'], 1
 
 
-def test_alias2():
-    f = F.aliased_function('f', lambda x: 2*x)
-    g = F.aliased_function('f', lambda x: np.sqrt(x))
-    x = sympy.Symbol('x')
-
-    l1 = aliased.lambdify(x, f(x))
-    l2 = aliased.lambdify(x, g(x))
-
-    yield assert_equal, str(f(x)), str(g(x))
-    yield assert_equal, l1(3), 6
-    yield assert_equal, l2(3), np.sqrt(3)
-
-
+@parametric
 def test_alias():
     x = F.Term('x')
     f = F.aliased_function('f', lambda x: 2*x)
     g = F.aliased_function('g', lambda x: np.sqrt(x))
-
     ff = F.Formula([f(x), g(x)**2])
     n = F.make_recarray([2,4,5], 'x')
-    yield assert_almost_equal, ff.design(n)['f(x)'], n['x']*2
-    yield assert_almost_equal, ff.design(n)['g(x)**2'], n['x']
+    yield assert_almost_equal(ff.design(n)['f(x)'], n['x']*2)
+    yield assert_almost_equal(ff.design(n)['g(x)**2'], n['x'])
 
 
 def test_factor_getterm():
