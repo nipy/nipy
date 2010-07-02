@@ -27,6 +27,59 @@ from numpy.testing import assert_almost_equal, assert_equal, \
 from nipy.testing import parametric
 
 
+x, y = sympy.symbols(('x', 'y'))
+
+
+@parametric
+def test_aliased_function():
+    # Here we check if the default returned functions are anonymous - in
+    # the sense that we can have more than one function with the same name
+    f = aliased_function('f', lambda x: 2*x)
+    g = aliased_function('f', lambda x: np.sqrt(x))
+    l1 = lambdify(x, f(x))
+    l2 = lambdify(x, g(x))
+    yield assert_equal(str(f(x)), str(g(x)))
+    yield assert_equal(l1(3), 6)
+    yield assert_equal(l2(3), np.sqrt(3))
+    # check that we can pass in a sympy function as input
+    func = sympy.Function('myfunc')
+    yield assert_false(hasattr(func, 'alias'))
+    f = aliased_function(func, lambda x: 2*x)
+    yield assert_true(hasattr(func, 'alias'))
+
+
+@parametric
+def test_lambdify():
+    # Test lambdify with implemented functions
+    # first test basic (sympy) lambdify
+    f = sympy.cos
+    yield assert_equal(lambdify(x, f(x))(0), 1)
+    yield assert_equal(lambdify(x, 1 + f(x))(0), 2)
+    yield assert_equal(lambdify((x, y), y + f(x))(0, 1), 2)
+    # make an implemented function and test
+    f = aliased_function("f", lambda x : x+100)
+    yield assert_equal(lambdify(x, f(x))(0), 100)
+    yield assert_equal(lambdify(x, 1 + f(x))(0), 101)
+    yield assert_equal(lambdify((x, y), y + f(x))(0, 1), 101)
+    # Error for functions with same name and different implementation
+    f2 = aliased_function("f", lambda x : x+101)
+    yield assert_raises(ValueError, lambdify, x, f(f2(x)))
+    # our lambdify, like sympy's lambdify, can also handle tuples,
+    # lists, dicts as expressions
+    lam = lambdify(x, (f(x), x))
+    yield assert_equal(lam(3), (103, 3))
+    lam = lambdify(x, [f(x), x])
+    yield assert_equal(lam(3), [103, 3])
+    lam = lambdify(x, [f(x), (f(x), x)])
+    yield assert_equal(lam(3), [103, (103, 3)])
+    lam = lambdify(x, {f(x): x})
+    yield assert_equal(lam(3), {103: 3})
+    lam = lambdify(x, {f(x): x})
+    yield assert_equal(lam(3), {103: 3})
+    lam = lambdify(x, {x: f(x)})
+    yield assert_equal(lam(3), {3: 103})
+
+
 def gen_BrownianMotion():
     X = np.arange(0,5,0.01)
     y = np.random.standard_normal((500,))
@@ -69,29 +122,6 @@ def test_2d():
 
 
 @parametric
-def test_alias_anon():
-    # Here we check if the default returned functions are anonymous - in
-    # the sense that we can have more than one function with the same name
-    f = aliased_function('f', lambda x: 2*x)
-    g = aliased_function('f', lambda x: np.sqrt(x))
-    x = sympy.Symbol('x')
-    l1 = lambdify(x, f(x))
-    l2 = lambdify(x, g(x))
-    yield assert_equal(str(f(x)), str(g(x)))
-    yield assert_equal(l1(3), 6)
-    yield assert_equal(l2(3), np.sqrt(3))
-
-
-@parametric
-def test_func_input():
-    # check that we can pass in a sympy function as input
-    func = sympy.Function('myfunc')
-    yield assert_false(hasattr(func, 'alias'))
-    f = aliased_function(func, lambda x: 2*x)
-    yield assert_true(hasattr(func, 'alias'))
-
-
-@parametric
 def test_vectorize():
     theta = sympy.Symbol('theta')
     num_func = lambdify(theta, sympy.cos(theta))
@@ -108,20 +138,3 @@ def test_vectorize():
     num_func = vectorize(func(theta), theta)
 
 
-@parametric
-def test_alias_tuple():
-    # lambdify can also handle tuples, lists, dicts as expressions
-    f = aliased_function("f", lambda x : x+100)
-    t = sympy.Symbol('t')
-    lam = lambdify(t, (f(t), t))
-    yield assert_equal(lam(3), (103, 3))
-    lam = lambdify(t, [f(t), t])
-    yield assert_equal(lam(3), [103, 3])
-    lam = lambdify(t, [f(t), (f(t), t)])
-    yield assert_equal(lam(3), [103, (103, 3)])
-    lam = lambdify(t, {f(t): t})
-    yield assert_equal(lam(3), {103: 3})
-    lam = lambdify(t, {f(t): t})
-    yield assert_equal(lam(3), {103: 3})
-    lam = lambdify(t, {t: f(t)})
-    yield assert_equal(lam(3), {3: 103})

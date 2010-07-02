@@ -36,7 +36,7 @@ def lambdify(args, expr):
     # There was a bug in sympy such that dictionaries passed in as first
     # namespaces to lambdify, before modules, would get overwritten by
     # later calls to lambdify.  The next two lines are to get round this
-    # bug.
+    # bug.  
     from sympy.utilities.lambdify import _get_namespace
     np_ns = _get_namespace('numpy').copy()
     return sympy.lambdify(args, expr, modules=(n, np_ns))
@@ -88,7 +88,7 @@ def _imp_namespace(expr, namespace=None):
     Returns
     -------
     namespace : dict
-       dkct with keys of implented function names within `expr` and
+       dkct with keys of implemented function names within `expr` and
        corresponding values being the numerical implementation of
        function
     """

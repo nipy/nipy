@@ -570,6 +570,8 @@ class Formula(object):
         a recarray and observed Term values, also specified
         by a recarray.
         """
+        # the design expression is the differentiation of the expression
+        # for the mean.  It is a list
         d = self.design_expr
 
         # Before evaluating, we recreate the formula
@@ -620,7 +622,10 @@ class Formula(object):
 
         # These "aliased" functions are used for things like
         # the natural splines, etc. You can represent natural splines
-        # with sympy but the expression is pretty awful.
+        # with sympy but the expression is pretty awful.  Note that
+        # ``d`` here is list giving the differentiation of the
+        # expression for the mean.  self._f(...) therefore also returns
+        # a list
         self._f = lambdify(newparams + newterms, d)
 
         # The input to self.design will be a recarray of that must 
