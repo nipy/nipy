@@ -3,6 +3,13 @@
 
 import numpy as np
 
+
+# number of scans in design (rows in design matrix)
+N_ROWS = 191
+
+
+# This is the alternative design to the standard, here called
+# 'description'
 # subj3_evt_fonc1.txt
 altdescr = {'block':'''time,sentence,speaker
 2.0,SSt,SSp
@@ -258,6 +265,9 @@ for key, value in altdescr.items():
     altdescr[key] = rec
 
 
+# standard analysis onsets
+event_dict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
+
 descriptions = {'event':"""
   2.00    4 
   5.33    1 
@@ -501,7 +511,19 @@ descriptions = {'event':"""
 453.67    4 
 """}
 
-designs = {'block':
+# convert to record array for convenience
+dtype = np.dtype([('time', np.float), ('event', 'S7')])
+for key, txt in descriptions.items():
+    vals = np.fromstring(txt, sep='\t').reshape(-1, 2)
+    full_def = np.zeros((vals.shape[0],), dtype=dtype)
+    for i, row in enumerate(vals):
+        full_def[i]['time' ] = row[0]
+        full_def[i]['event'] = event_dict[row[1]]
+    descriptions[key] = full_def
+
+
+# fmristat designs, probably saved from matlab to ascii
+fmristat = {'block':
 """
    0.0000000000000000e+00	   1.7972165294585549e-07	   0.0000000000000000e+00	   0.0000000000000000e+00	   0.0000000000000000e+00	  -7.0891758549395515e-07	   0.0000000000000000e+00	   0.0000000000000000e+00	   0.0000000000000000e+00	   1.0000000000000000e+00	  -1.0000000000000000e+00	   1.0000000000000000e+00	  -1.0000000000000000e+00	  -0.0000000000000000e+00	  -3.9964378119605467e+07	
    2.4177346180074877e-02	   5.9438222395961854e-03	   0.0000000000000000e+00	   0.0000000000000000e+00	   0.0000000000000000e+00	  -1.7549188213126270e-02	   0.0000000000000000e+00	   0.0000000000000000e+00	   0.0000000000000000e+00	   1.0000000000000000e+00	  -9.8947368421052628e-01	   9.7905817174515231e-01	  -9.6875229625309800e-01	  -0.0000000000000000e+00	  -3.9964295632754065e+07	
@@ -887,3 +909,7 @@ designs = {'block':
    0.0000000000000000e+00	   1.6420852379208145e-01	  -2.1334707415184437e-02	  -5.3681574445025963e-02	   1.0321791872096504e-01	   3.7630676427107587e-02	  -2.4190077782059498e-02	  -3.3254925682017572e-02	   1.9072667660191583e-01	   1.0000000000000000e+00	   9.8947368421052628e-01	   9.7905817174515231e-01	   9.6875229625309800e-01	   9.6875229625309800e-01	   1.1563238092136064e+08	
    0.0000000000000000e+00	   9.2385672666928986e-02	  -7.5328926144319734e-03	  -2.8536438078967347e-02	  -1.6553095053473525e-02	   1.5410086651862076e-01	  -1.0189388353867119e-02	  -2.9598523553562982e-02	   1.0889515078225322e-01	   1.0000000000000000e+00	   1.0000000000000000e+00	   1.0000000000000000e+00	   1.0000000000000000e+00	   1.0000000000000000e+00	   1.1809099716453132e+08	
 """}
+
+# convert to arrays for convenience
+for key, val in fmristat.items():
+    fmristat[key] = np.fromstring(val, sep='\t').reshape(N_ROWS,-1).T
