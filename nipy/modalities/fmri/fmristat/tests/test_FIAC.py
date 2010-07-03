@@ -28,7 +28,8 @@ from nipy.testing import (parametric, dec, assert_true,
                           assert_almost_equal)
 
 # Local imports
-from FIACdesigns import descriptions, fmristat, altdescr
+from FIACdesigns import (descriptions, fmristat, altdescr,
+                         N_ROWS, time_vector)
 
 
 def protocol(recarr, design_type, *hrfs):
@@ -56,7 +57,7 @@ def protocol(recarr, design_type, *hrfs):
     contrasts : dict
        Dictionary of the contrasts of the experiment.
     """
-    conds = np.unique(recarr['event'])
+    event_types = np.unique(recarr['event'])
     N = recarr.size
     if design_type == 'block':
         keep = np.not_equal((np.arange(N)) % 6, 0)
@@ -68,7 +69,7 @@ def protocol(recarr, design_type, *hrfs):
 
     termdict = {}        
     termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
-    drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
+    drift = formula.natural_spline(hrf.t, knots=[N_ROWS/2.+1.25], intercept=True)
     for i, t in enumerate(drift.terms):
         termdict['drift%d' % i] = t
     # After removing the first frame, keep the remaining
@@ -80,7 +81,7 @@ def protocol(recarr, design_type, *hrfs):
     # This creates expressions
     # named SSt_SSp0, SSt_SSp1, etc.
     # with one expression for each (eventtype, hrf) pair
-    for v in conds:
+    for v in event_types:
         for l, h in enumerate(hrfs):
             k = np.array([events[i] == v for i in 
                           range(times.shape[0])])
@@ -139,7 +140,7 @@ def altprotocol(d, design_type, *hrfs):
 
     termdict = {}        
     termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
-    drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
+    drift = formula.natural_spline(hrf.t, knots=[N_ROWS/2.+1.25], intercept=True)
     for i, t in enumerate(drift.terms):
         termdict['drift%d' % i] = t
 
@@ -203,7 +204,7 @@ event, eTcons, eFcons = protocol(descriptions['event'], 'event', *delay.spectral
 # Now create the design matrices and contrasts
 # The 0 indicates that it will be these columns
 # convolved with the first HRF
-t = formula.make_recarray(np.arange(191)*2.5+1.25, 't')
+t = formula.make_recarray(time_vector, 't')
 X = {}
 c = {}
 D = {}
@@ -288,7 +289,7 @@ def test_agreement():
 def test_event_design():
     block = altdescr['block']
     event = altdescr['event']
-    t = np.arange(191)*2.5+1.25
+    t = time_vector
     
     bkeep = np.not_equal((np.arange(block.time.shape[0])) % 6, 0)
     ekeep = np.greater(np.arange(event.time.shape[0]), 0)

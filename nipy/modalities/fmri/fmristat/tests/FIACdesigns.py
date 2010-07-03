@@ -913,3 +913,7 @@ fmristat = {'block':
 # convert to arrays for convenience
 for key, val in fmristat.items():
     fmristat[key] = np.fromstring(val, sep='\t').reshape(N_ROWS,-1).T
+
+
+# time vector
+time_vector = np.arange(N_ROWS)*2.5+1.25
