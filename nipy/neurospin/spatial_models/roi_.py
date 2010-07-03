@@ -172,7 +172,7 @@ class MultipleROI(object):
         self.dim = dim
 
         #k 
-        self.k = np.maximum(k, 0)
+        self.k = int(np.maximum(k, 0))
         if len(coord) != self.k:
             raise ValueError, 'coord should have length %d' %self.k
         
@@ -188,16 +188,17 @@ class MultipleROI(object):
 
         self.em_dim = coord[0].shape[1]
         for k in range(self.k):
-            if coord[k].shape[1] != em_dim:
+            if coord[k].shape[1] != self.em_dim:
                 raise ValueError, 'Inconsistant coordinate dimensions'        
         if self.em_dim<dim:
             raise ValueError, 'Embedding dimension cannot be smaller than dim'
+        self.coord = []
         for k in range(self.k):
-            self.coord[k] = coord[k]
+            self.coord.append(coord[k])
 
         # volume
-        if len(local_volume) !=k:
-            raise ValueError(), 'local_volume should have a length %d' %self.k
+        if len(local_volume) != self.k:
+            raise ValueError, 'local_volume should have a length %d' %self.k
         self.local_volume = []
         for k in range(self.k):
             if np.size(local_volume[k])!= self.size[k]:
@@ -207,8 +208,8 @@ class MultipleROI(object):
         # topology
         if topology is not None:
             self.topology = []
-            if len(topology) !=k:
-                raise ValueError(), 'Topology should have length %d' %self.k
+            if len(topology) != self.k:
+                raise ValueError, 'Topology should have length %d' %self.k
             for k in range(self.k):
                 if topology[k].shape != (self.size[k], self.size[k]):
                     raise ValueError, 'Incorrect shape for topological model'
@@ -231,26 +232,31 @@ class MultipleROI(object):
             raise ValueError, 'works only for k<%d'%self.k
         return self.local_volume[k]
 
-    def select(self, valid):
+    def select(self, valid, id=''):
         """
         returns an instance of multiple_ROI
         with only the subset of ROIs for which valid
 
         Parameters
         ----------
-        
+        valid: array of shape (self.k),
+               which ROIs will be included in the output
+        id: string, optional,
+            identifier of the output instance 
         """
-        if bmask.size != self.size:
-            raise ValueError, 'Invalid mask size'
+        if valid != self.k:
+            raise ValueError, 'Invalid size for valid'
 
-        svol = self.local_volume[bmask]
-        stopo = reduce_coo_matrix(self.topology, bmask)
-        scoord = self.coord[bmask]
-        DD = DiscreteDomain(self.dim, scoord, svol, stopo, self.referential)
+        svol = [self.local_volume[k] for k in range(self.k) if valid[k]]
+        stopo = [self.topology[k] for k in range(self.k) if valid[k]]
+        scoord = [self.coord[k] for k in range(self.k) if valid[k]]
+        DD = Multiple_ROI(self.dim, valid.sum(), scoord, svol, stopo,
+                          self.referential, id)
 
         for fid in self.features.keys():
             f = self.features.pop(fid)
-            DD.set_feature(fid, f[bmask])
+            sf = [f[k] for k in range(self.k) if valid[k]]
+            DD.set_feature(fid, sf)
         return DD
 
     def set_feature(self, fid, data, override=True):
@@ -261,11 +267,14 @@ class MultipleROI(object):
         ----------
         fid: string,
              feature identifier
-        data: array of shape(self.size, p) or self.size
+        data: list of self.k arrays of shape(self.size[k], p) or self.size[k]
               the feature data 
         """
-        if data.shape[0]!=self.size:
-            raise ValueError, 'Wrong data size'
+        if len(data) != self.k:
+            raise ValueError, 'data should have length k'
+        for k in range(self.k):
+            if data[k].shape[0]!=self.size[k]:
+                raise ValueError, 'Wrong data size'
         
         if (self.features.has_key(fid)) & (override==False):
             return
@@ -273,10 +282,12 @@ class MultipleROI(object):
         self.features.update({fid:data})
             
 
-    def get_feature(self, fid):
+    def get_feature(self, fid, k):
         """return self.features[fid]
         """
-        return self.features[fid]
+        if k>self.k-1:
+            raise ValueError, 'works only for k<%d'%self.k
+        return self.features[fid][k]
 
     def representative_feature(self, fid, method):
         """
@@ -288,45 +299,57 @@ class MultipleROI(object):
         method: string, method used to compute a representative
                 chosen among 'mean', 'max', 'median', 'min' 
         """
-        f = self.get_feature(fid)
-        if method=="mean":
-            return np.mean(f, 0)
-        if method=="min":
-            return np.min(f, 0)
-        if method=="max":
-            return np.max(f, 0)
-        if method=="median":
-            return np.median(f, 0)
-
-
-
-
-    def set_feature(self):
-        """
-        """
-        pass
+        rf = []
+        for k in range(self.k):
+            f = self.get_feature(fid)
+            if method=="mean":
+                rf.append(np.mean(f, 0))
+            if method=="min":
+                rf.append( np.min(f, 0))
+            if method=="max":
+                rf.append(np.max(f, 0))
+            if method=="median":
+                rf.append(np.median(f, 0))
+        return np.array(rf)
     
-    def get_features(self):
-        """
-        """
-        pass
-
-    def check_features(self):
-        """
-        """
-        pass
-
-    def representatiive_feature(self):
-        """
-        """
-        pass
-
     def remove_feature(self):
+        """ Remove a certain feature
         """
-        """
-        pass
+        return self.features.pop(fid)
+        
 
-    def argmax_feature(self):
+    def argmax_feature(self, fid):
+        """ Return the list  of roi-level argmax of feature called fid
+        """
+        af = [argmax(self.feature[fid][k]) for k in range(self.k)]
+        return np.array(af)
+
+
+    def integrate(self, fid=None):
+        """
+        Integrate  certain feature on each ROI and return the k results
+
+        Parameters
+        ----------
+        fid : string,  feature identifier,
+              by default, the 1 function is integrataed, yielding ROI volumes
+
+        Returns
+        -------
+        lsum = array of shape (self.k, self.feature[fid].shape[1]),
+               the results
+        """
+        if fid==None:
+            vol = [np.sum(self.local_volume[k]) for k in range(self.k)] 
+            return (np.array(vol))
+        lsum = []
+        for k in range(self.k):
+            slvk = np.reshape(self.local_volume(k), (self.size[k], 1))
+            sumk = np.sum(self.features[fid][k]*slvk, 0)
+            lsum.append(sumk)
+        return np.array(lsum)
+        
+    def check_features(self):
         """
         """
         pass
@@ -336,15 +359,76 @@ class MultipleROI(object):
         """
         pass
 
-    def clean(self):
-        """
-        """
-        pass
+def mroi_from_label_image(mim, nn=18):
+    """
+    return a MultipleROI instance from the input mask image
 
-    def integrate(self):
-        """
-        """
-        pass
+    Parameters
+    ----------
+    mim: NiftiIImage instance, or string path toward such an image
+         supposedly a label image
+    nn: int, optional
+        neighboring system considered from the image
+        can be 6, 18 or 26
+        
+    Returns
+    -------
+    The MultipleROI  instance
+
+    Note
+    ----
+    Only nonzero labels are considered
+    """
+    if isinstance(mim, basestring):
+        iim = load(mim)
+    else :
+        iim = mim
+
+    return mroi_from_array(iim.get_data(), iim.get_affine(), nn)
+    
+def mroi_from_array(labels, affine=None, nn=0):
+    """
+    return a DiscreteDomain from an n-d array
+    
+    Parameters
+    ----------
+    label: np.array instance
+          a supposedly boolean array that yields the regions
+    affine: np.array, optional
+            affine transform that maps the array coordinates
+            to some embedding space
+            by default, this is np.eye(dim+1, dim+1)
+    nn: int, neighboring system considered,
+        unsued at the moment
+
+    Note
+    ----
+    Only nonzero labels are considered
+    """
+    dim = len(labels.shape)
+    shape = labels.shape
+    if affine is None:
+        affine =  np.eye(dim + 1)
+    ul = np.unique(labels[labels!=0])
+    k = np.size(ul)
+    vol = []
+    coord = []
+    topology = []
+    vvol = np.absolute(np.linalg.det(affine))
+    for q in ul:
+        vol.append(vvol*np.ones(np.sum(labels==k)))
+        coord.append(array_affine_coord(labels==k, affine))
+        topology.append(smatrix_from_nd_array(labels==k, nn))
+    return MultipleROI(dim, q, coord, vol, topology)
+    
+
+
+def mroi_from_balls():
+    """
+    """
+    pass
+
+
 
 class MultipleGridRoi(MultipleROI):
 

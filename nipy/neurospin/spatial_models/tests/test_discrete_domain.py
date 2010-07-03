@@ -160,7 +160,43 @@ def test_grid_domain_mask():
     ddom = grid_domain_from_array(toto)
     mdom = ddom.mask(np.ravel(toto>.5))
     assert (mdom.size==np.sum(toto>.5))
- 
+
+def test_representative():
+    """ test representative computation
+    """
+    toto = np.random.rand(*shape)
+    ddom = domain_from_array(toto)
+    ddom.set_feature('data', np.ravel(toto))
+    dmean = toto.mean()
+    dmin = toto.min()
+    dmax = toto.max()
+    dmed = np.median(toto)
+    assert_almost_equal(ddom.representative_feature('data', 'mean'), dmean)
+    assert_almost_equal(ddom.representative_feature('data', 'min'), dmin)
+    assert_almost_equal(ddom.representative_feature('data', 'max'), dmax)
+    assert_almost_equal(ddom.representative_feature('data', 'median'), dmed)
+
+def test_integrate_1d():
+    """ test integration in 1d
+    """
+    toto = np.random.rand(*shape)
+    ddom = domain_from_array(toto)
+    ddom.set_feature('data', np.ravel(toto))
+    assert_almost_equal(ddom.integrate('data'), toto.sum())
+    
+
+def test_integrate_2d():
+    """test integration in 2d
+    """
+    toto = np.random.rand(*shape)
+    ddom = domain_from_array(toto)
+    ftoto = np.ravel(toto)
+    f2 = np.vstack((ftoto, ftoto)).T
+    print f2.shape
+    ddom.set_feature('data', f2)
+    ts = np.ones(2)*toto.sum()
+    assert_almost_equal(ddom.integrate('data'), ts)
+    
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])

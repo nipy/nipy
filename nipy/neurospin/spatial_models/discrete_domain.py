@@ -205,15 +205,7 @@ def domain_from_image(mim, nn=18):
         iim = load(mim)
     else:
         iim = mim
-
-    dim = 3
-    shape = iim.get_shape()
-    affine = iim.get_affine()
-    mask = iim.get_data()>0
-    vol = np.absolute(np.linalg.det(affine))*np.ones(np.sum(mask))
-    coord = array_affine_coord(mask, affine)
-    topology = smatrix_from_nd_array(mask, nn) 
-    return DiscreteDomain(dim, coord, vol, topology)
+    return domain_from_array( iim.get_data(), iim.get_affine(), nn)
     
 def domain_from_array(mask, affine=None, nn=0):
     """
@@ -286,15 +278,7 @@ def grid_domain_from_image(mim, nn=18):
         iim = load(mim)
     else:
         iim = mim
-
-    dim = 3
-    shape = iim.get_shape()
-    affine = iim.get_affine()
-    mask = iim.get_data()>0
-    ijk = np.array(np.where(mask)).T
-    vol = np.absolute(np.linalg.det(affine))*np.ones(np.sum(mask))
-    topology = smatrix_from_nd_idx(ijk, nn) 
-    return NDGridDomain(dim, ijk, shape, affine, vol, topology)
+    return  grid_domain_from_array(iim.get_data(), iim.get_affine(), nn)
 
 
 def domain_from_mesh(mesh):
@@ -424,7 +408,7 @@ class DiscreteDomain(object):
         ----------
         fid: string, feature id
         method: string, method used to compute a representative
-                chosen among 'mean', 'max', 'median', 'min' 
+                to be chosen among 'mean', 'max', 'median', 'min' 
         """
         f = self.get_feature(fid)
         if method=="mean":
@@ -435,6 +419,28 @@ class DiscreteDomain(object):
             return np.max(f, 0)
         if method=="median":
             return np.median(f, 0)
+
+    def integrate(self, fid):
+        """
+        Integrate  certain feature over the domain and returns the result
+
+        Parameters
+        ----------
+        fid : string,  feature identifier,
+              by default, the 1 function is integrataed, yielding domain volume
+
+        Returns
+        -------
+        lsum = array of shape (self.feature[fid].shape[1]),
+               the result
+        """
+        if fid==None:
+            return np.sum(self.local_volume)
+        ffid = self.features[fid]
+        if np.size(ffid)==ffid.shape[0]:
+            ffid = np.reshape(ffid, (self.size, 1))
+        slv = np.reshape(self.local_volume, (self.size, 1))
+        return np.sum(ffid*slv, 0)
 
 
 class NDGridDomain(DiscreteDomain):
