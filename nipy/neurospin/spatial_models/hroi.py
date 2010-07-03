@@ -16,9 +16,46 @@ import nipy.neurospin.graph.graph as fg
 from nipy.neurospin.graph.forest import Forest
 from nipy.neurospin.spatial_models.roi import MultipleROI
 
+def NROI_from_discrete_domain(dom, data, th=-np.infty, smin=0):
+    """
+    """
+    from nipy.neurospin.graph.field import field_from_coomatrix_and_data
 
+    if th>data.max():
+        return None
+    
+    # check size
+    F = field_from_coomatrix_and_data(dom.topology, data)
+    idx, height, parents, label = Field.threshold_bifurcations(th)
+    
+    k = np.size(idx)
+    if isinstance(dom, NDGridDomain):
+        discrete = [dim.ijk[label==i] for i in range(k)]
+        nroi = NROI(parents, dom.affine, dom.shape, discrete)
+    else:
+        return None #######
+        
+    # Create the index of each point within the Field
+    midx = [np.expand_dims(np.nonzero(label==i)[0], 1) for i in range(k)]
+    nroi.set_discrete_feature('index', midx)
 
-def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty, smin = 0):
+    # perform smin reduction
+    k = 2* nroi.get_k()
+    while k>nroi.get_k():
+        k = nroi.get_k()
+        size = nroi.get_size()
+        nroi.merge_ascending(size>smin,None)
+        nroi.merge_descending(None)
+        size = nroi.get_size()
+        if size.max()<smin: return None
+        
+        nroi.clean(size>smin)
+        nroi.check()
+        
+    return nroi
+
+def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty,
+                    smin = 0):
     """
     Instantiate an NROI object from a given Field and a referntial
     (affine, shape)
@@ -142,7 +179,7 @@ def NROI_from_watershed(Field, affine, shape, xyz, refdim=0, th=-np.infty):
     return nroi
 
 
-class NROI(MultipleROI,Forest):
+class NROI(MultipleROI, Forest):
     """
     Class for ntested ROIs.
     This inherits from both the Forest and MultipleROI

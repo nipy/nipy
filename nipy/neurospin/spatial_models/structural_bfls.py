@@ -15,10 +15,8 @@ Author : Bertrand Thirion, 2006-2008
 
 import numpy as np
 import numpy.random as nr
-
 from scipy import stats
 
-# import nipy.neurospin.clustering.clustering as fc
 import nipy.neurospin.graph.BPmatch as BPmatch
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.graph.graph as fg
