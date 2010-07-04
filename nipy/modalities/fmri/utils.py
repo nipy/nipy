@@ -256,13 +256,23 @@ def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
 
     Examples
     --------
-    >>> events([3,6,9])
-    DiracDelta(-9 + t) + DiracDelta(-6 + t) + DiracDelta(-3 + t)
-    >>> h = Symbol('hrf')
-    >>> events([3,6,9], f=h)
-    hrf(-9 + t) + hrf(-6 + t) + hrf(-3 + t)
-    >>> events([3,6,9], amplitudes=[2,1,-1])
-    -DiracDelta(-9 + t) + 2*DiracDelta(-3 + t) + DiracDelta(-6 + t)
+    We import some sympy stuff so we can test if we've got what we
+    expected
+
+    >>> from sympy import DiracDelta, Symbol, Function
+    >>> from nipy.modalities.fmri.formula import Term
+    >>> t = Term('t')
+    
+    >>> evs = events([3,6,9])
+    >>> evs == DiracDelta(-9 + t) + DiracDelta(-6 + t) + DiracDelta(-3 + t)
+    True
+    >>> hrf = Function('hrf')
+    >>> evs = events([3,6,9], f=hrf)
+    >>> evs == hrf(-9 + t) + hrf(-6 + t) + hrf(-3 + t)
+    True
+    >>> evs = events([3,6,9], amplitudes=[2,1,-1])
+    >>> evs == -DiracDelta(-9 + t) + 2*DiracDelta(-3 + t) + DiracDelta(-6 + t)
+    True
     """
     e = 0
     asymb = Symbol('a')
