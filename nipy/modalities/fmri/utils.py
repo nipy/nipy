@@ -1,11 +1,13 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
-This module defines some convenience functions of time.
+""" This module defines some convenience functions of time.
 
-linear_interp : a Formula for a linearly interpolated function of time
+interp : an expresion for a interpolated function of time
 
-step_function : a Formula for a step function of time
+linear_interp : an expression for a linearly interpolated function of
+   time
+
+step_function : an expression for a step function of time
 
 events : a convenience function to generate sums of events
 
@@ -14,7 +16,6 @@ blocks : a convenience function to generate sums of blocks
 convolve_functions : numerically convolve two functions of time
 
 fourier_basis : a convenience function to generate a Fourier basis
-
 """
 
 import itertools
@@ -30,7 +31,7 @@ from sympy import pi as sympy_pi
 
 from . import formula
 from . import aliased
-from .aliased import aliased_function, vectorize, lambdify
+from .aliased import aliased_function, lambdify
 
 t = formula.Term('t')
 
@@ -324,16 +325,17 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     fn2 : sympy expr
        An expression that is a function of t only.
     interval : (2,) sequence of float
-       The interval over which to convolve the two functions.
+       The start and end of the interval over which to convolve the two
+       functions.
     dt : float
        Time step for discretization.  We use this for creating the
        interpolator to form the numerical implementation
     padding_f : float, optional
-       Padding added to the left and right in the convolution.  Padding
-       value is fraction of the length given by `interval` 
+       Padding fraction added to the left and right in the convolution.
+       Padding value is fraction of the length given by `interval`
     name : None or str, optional
        Name of the convolved function in the resulting expression. 
-       Defaults to one created by linear_interp.
+       Defaults to one created by ``utils.interp``.
             
     Returns
     -------
@@ -350,38 +352,44 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     The convolution of ``f1`` with itself is a triangular wave on [0,2],
     peaking at 1 with height 1
     
-    >>> tri = convolve_functions(f1, f1, [1,2], 0.001, name='conv')
+    >>> tri = convolve_functions(f1, f1, [0,2], 1.0e-3, name='conv')
     >>> print tri
     conv(t)
+
+    Get the numerical values for a time vector
+    
     >>> ftri = aliased.lambdify(t, tri)
-    >>> x = np.linspace(1,2,11)
+    >>> x = np.linspace(0,2,11)
     >>> y = ftri(x)
 
-    This is the resulting y-value (which seem to be numerically off by
-    dt)
+    The peak is at 1
 
-    >>> y
+    >>> x[np.argmax(y)]
+    1.0
+    """
+    # Note that - from the doctest above - y is
+    """
     array([ -3.90255908e-16,   1.99000000e-01,   3.99000000e-01,
            5.99000000e-01,   7.99000000e-01,   9.99000000e-01,
            7.99000000e-01,   5.99000000e-01,   3.99000000e-01,
            1.99000000e-01,   6.74679706e-16])
     """
-
-    max_interval, min_interval = max(interval), min(interval)
-    ltime = max_interval - min_interval
-    time = np.arange(min_interval, max_interval + padding_f * ltime, dt)
-
-    f1 = vectorize(fn1)
-    f2 = vectorize(fn2)
-    _fn1 = np.array(f1(time))
-    _fn2 = np.array(f2(time))
-
+    # - so he peak value is 1-dt - rather than 1 - but we get the same
+    # result from using np.convolve - see tests.
+    mn_i, mx_i = sorted(interval)
+    pad_t = (mx_i - mn_i) * padding_f
+    time = np.arange(mn_i, mx_i + pad_t, dt)
+    # get values at times from expressions
+    f1 = lambdify(t, fn1)
+    f2 = lambdify(t, fn2)
+    _fn1 = np.atleast_1d(f1(time))
+    _fn2 = np.atleast_1d(f2(time))
+    # do convolution
     _fft1 = FFT.rfft(_fn1)
     _fft2 = FFT.rfft(_fn2)
-
     value = FFT.irfft(_fft1 * _fft2) * dt
-    _minshape = min(time.shape[0], value.shape[-1])
+    assert value.ndim == 1
+    _minshape = min(time.shape[0], value.shape[0])
     time = time[0:_minshape]
     value = value[0:_minshape]
-
-    return linear_interp(time + min_interval, value, bounds_error=False, name=name)
+    return interp(time, value, bounds_error=False, name=name)

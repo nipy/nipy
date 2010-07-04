@@ -105,10 +105,57 @@ def test_blocks():
                              [0, 3, 0, 5])
 
 
+def numerical_convolve(func1, func2, interval, dt, padding_f=0.1):
+    mni, mxi = interval
+    diff = mxi - mni
+    pad_t = diff * padding_f
+    time = np.arange(mni, mxi+pad_t, dt)
+    vec1 = func1(time)
+    vec2 = func2(time)
+    value = np.convolve(vec1, vec2) * dt
+    min_s = min(time.size, value.size)
+    time = time[:min_s]
+    value = value[:min_s]
+    return time, value
+
+
 @parametric
 def test_convolve_functions():
-    # square wave
-    expr = (t > 0) * (t < 1)
-    # convolve with 1
-    cf = convolve_functions(expr, 1, [-1, 2], 0.1)
-    lam = lambdify(t, cf)
+    # replicate convolution
+    # This is a square wave on [0,1]
+    f1 = (t > 0) * (t < 1)
+    # ff1 is the numerical implementation of same
+    lam_f1 = lambdify(t, f1)
+    ff1 = lambda x : lam_f1(x).astype(np.int)
+    # The convolution of ``f1`` with itself is a triangular wave on
+    # [0,2], peaking at 1 with height 1
+    tri = convolve_functions(f1, f1, [0,2], 1.0e-3, name='conv')
+    yield assert_equal(str(tri), 'conv(t)')
+    ftri = lambdify(t, tri)
+    time, value = numerical_convolve(ff1, ff1, [0, 2], 1.0e-3)
+    y = ftri(time)
+    # numerical convolve about the same as ours
+    yield assert_array_almost_equal(value, y)
+    # peak is at 1
+    yield assert_array_almost_equal(time[np.argmax(y)], 1)
+    # Flip the interval and get the same result
+    tri = convolve_functions(f1, f1, [2, 0], 1.0e-3)
+    ftri = lambdify(t, tri)
+    y = ftri(time)
+    yield assert_array_almost_equal(value, y)
+    # offset square wave by 1
+    f2 = (t > 1) * (t < 2)
+    tri = convolve_functions(f1, f2, [0,3], 1.0e-3)
+    ftri = lambdify(t, tri)
+    y = ftri(time)
+    yield assert_array_almost_equal(time[np.argmax(y)], 2)
+    # offset both by 1 and start interval at one
+    tri = convolve_functions(f2, f2, [1,3], 1.0e-3)
+    ftri = lambdify(t, tri)
+    # get numerical version
+    lam_f2 = lambdify(t, f2)
+    ff2 = lambda x : lam_f2(x).astype(np.int)
+    time, value = numerical_convolve(ff2, ff2, [1, 3], 1.0e-3)
+    # and our version, compare
+    y = ftri(time)
+    yield assert_array_almost_equal(y, value)
