@@ -707,7 +707,6 @@ def group_reproducibility_metrics(
     xyz = np.where(mask)
     xyz = np.array(xyz).T
     nvox = xyz.shape[0]
-    print nvox
 
     # read the data
     group_con = []
