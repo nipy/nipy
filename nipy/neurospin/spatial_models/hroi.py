@@ -14,7 +14,7 @@ import numpy as np
 import nipy.neurospin.graph.graph as fg
 
 from nipy.neurospin.graph.forest import Forest
-from nipy.neurospin.spatial_models.roi import MultipleROI
+from nipy.neurospin.spatial_models.roi_ import MultipleROI
 
 def NROI_from_discrete_domain(dom, data, th=-np.infty, smin=0):
     """
@@ -178,8 +178,137 @@ def NROI_from_watershed(Field, affine, shape, xyz, refdim=0, th=-np.infty):
     nroi.set_roi_feature('seed', idx)
     return nroi
 
+class NestedROI(MultipleROI):
 
-class NROI(MultipleROI, Forest):
+    def __init__(self, dim, parents, coord, local_volume, topology=None,
+                 referential='', id='' ):
+        """
+        Building the NROI
+        """
+        self.parents = np.ravel(parents)
+        k = parents.size
+        MultipleROI.__init__(self, dim, k, coord, local_volume, topology=None,
+                             referential, id)
+
+    def select(self, valid, id=''):
+        """
+        Remove the rois for which valid==0 and update the hierarchy accordingly
+        Note that auto=True automatically
+        """
+        MultipleROI.select(self, valid, auto=True)
+        if np.sum(valid)==0:
+            self.parents=[]
+        else:
+            self.parents = Forest(self.parents).subforest(valid).parents
+            
+
+        
+    def make_graph(self):
+        """
+        output an fff.graph structure to represent the ROI hierarchy
+        """
+        if self.k==0:
+            return None
+        weights = np.ones(self.k)
+        edges = (np.vstack((np.arange(self.k), self.parents))).T
+        return fg.WeightedGraph(self.k, edges, weights)
+
+    def make_forest(self):
+        """
+        output an fff.forest structure to represent the ROI hierarchy
+        """
+        if self.k==0:
+            return None
+        G = Forest(self.k, self.parents)
+        return G
+
+    def merge_ascending(self, valid):
+        """
+        self.merge_ascending(valid)
+
+        Remove the non-valid items by including them in
+        their parents when it exists
+
+        Parameters
+        ----------
+        valid array of shape(self.k)
+
+        Caveat
+        ------
+        if roi_features have been defined, they will be removed
+        """
+        if np.size(valid)!= self.k:
+            raise ValueError,"not the correct dimension for valid"
+        for j in range(self.k):
+            if valid[j]==0:
+                fj =  self.parents[j]
+                if fj!=j:
+                    self.parents[self.parents==j]=fj
+                    dfj = self.coord[fj]
+                    dj =  self.coord[j]
+                    self.coord[fj] = np.vstack((dfj, dj))
+                    dfj = self.local_volume[fj]
+                    dj =  self.local_volume[j]
+                    self.local_volume[fj] = np.vstack((dfj, dj))
+
+                    fids = self.features.keys()
+                    for fid in fids:
+                        dfj = self.discrete_features[fid][fj]
+                        dj = self.discrete_features[fid][j]
+                        self.discrete_features[fid][fj] = np.vstack((dfj, dj))
+                else:
+                    valid[j]=1
+
+        fids = self.roi_features.keys()
+        for fid in fids: self.remove_roi_feature(fid)
+
+        self.clean(valid)#########
+
+    def merge_descending(self,methods=None):
+        """
+        self.merge_descending()
+        Remove the items with only one son
+        by including them in their son
+        
+        Parameters
+        ----------
+        methods indicates the way possible features are dealt with
+        (not implemented yet)
+
+        Caveat
+        ------
+        if roi_features have been defined, they will be removed
+        """
+        valid = np.ones(self.k).astype('bool')
+        for j in range(self.k):
+            i = np.nonzero(self.parents==j)
+            i = i[0]
+            if np.sum(i!=j)==1:
+                i = int(i[i!=j])
+                di = self.xyz[i]
+                dj =  self.xyz[j]
+                self.xyz[i] = np.vstack((di,dj))
+                self.parents[i] = self.parents[j]
+                valid[j] = 0
+                fids = self.discrete_features.keys()
+                for fid in fids:
+                        di = self.discrete_features[fid][i]
+                        dj = self.discrete_features[fid][j]
+                        self.discrete_features[fid][i] = np.vstack((di,dj))
+
+        # finally remove  the non-valid items
+        fids = self.roi_features.keys()
+        for fid in fids: self.remove_roi_feature(fid)
+        self.clean(valid)
+    
+    def get_parents(self):
+        return self.parents
+
+    def get_k(self):
+       return self.k
+
+
+class NROI_dep(MultipleROI, Forest):
     """
     Class for ntested ROIs.
     This inherits from both the Forest and MultipleROI

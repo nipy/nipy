@@ -235,7 +235,7 @@ class MultipleROI(object):
             raise ValueError, 'works only for k<%d'%self.k
         return self.local_volume[k]
 
-    def select(self, valid, id=''):
+    def select(self, valid, id='', auto=False):
         """
         returns an instance of multiple_ROI
         with only the subset of ROIs for which valid
@@ -245,7 +245,9 @@ class MultipleROI(object):
         valid: array of shape (self.k),
                which ROIs will be included in the output
         id: string, optional,
-            identifier of the output instance 
+            identifier of the output instance
+        auto: bool, optional,
+              if True then self = self.select()
         """
         if valid != self.k:
             raise ValueError, 'Invalid size for valid'
@@ -260,6 +262,10 @@ class MultipleROI(object):
             f = self.features.pop(fid)
             sf = [f[k] for k in range(self.k) if valid[k]]
             DD.set_feature(fid, sf)
+
+        if auto:
+            self = DD
+
         return DD
 
     def set_feature(self, fid, data, override=True):
