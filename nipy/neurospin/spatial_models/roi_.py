@@ -1,5 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+
 import numpy as np
 from nipy.io.imageformats import load, save, Nifti1Image 
 from discrete_domain import *   
@@ -177,7 +178,7 @@ class MultipleROI(object):
             raise ValueError, 'coord should have length %d' %self.k
         
         # number of discrete elements
-        self.size = np.zeros(self.k)
+        self.size = np.zeros(self.k, dtype=np.int)
         for k in range(self.k):
             self.size[k] = coord[k].shape[0]
 
@@ -211,6 +212,8 @@ class MultipleROI(object):
             if len(topology) != self.k:
                 raise ValueError, 'Topology should have length %d' %self.k
             for k in range(self.k):
+                if self.size[k]==1:
+                    continue
                 if topology[k].shape != (self.size[k], self.size[k]):
                     raise ValueError, 'Incorrect shape for topological model'
                 self.topology.append(topology[k])
@@ -282,14 +285,16 @@ class MultipleROI(object):
         self.features.update({fid:data})
             
 
-    def get_feature(self, fid, k):
+    def get_feature(self, fid, k=None):
         """return self.features[fid]
         """
+        if k==None:
+            return self.features[fid]
         if k>self.k-1:
             raise ValueError, 'works only for k<%d'%self.k
         return self.features[fid][k]
 
-    def representative_feature(self, fid, method):
+    def representative_feature(self, fid, method='mean'):
         """
         Compute a statistical representative of the within-Foain feature
 
@@ -301,7 +306,7 @@ class MultipleROI(object):
         """
         rf = []
         for k in range(self.k):
-            f = self.get_feature(fid)
+            f = self.get_feature(fid, k)
             if method=="mean":
                 rf.append(np.mean(f, 0))
             if method=="min":
@@ -344,8 +349,11 @@ class MultipleROI(object):
             return (np.array(vol))
         lsum = []
         for k in range(self.k):
-            slvk = np.reshape(self.local_volume(k), (self.size[k], 1))
-            sumk = np.sum(self.features[fid][k]*slvk, 0)
+            slvk = np.reshape(self.local_volume[k], (self.size[k], 1))
+            sfk = self.features[fid][k]
+            if sfk.size == sfk.shape[0]:
+                sfk = np.reshape(sfk,(self.size[k], 1))
+            sumk = np.sum(sfk*slvk, 0)
             lsum.append(sumk)
         return np.array(lsum)
         
@@ -416,18 +424,41 @@ def mroi_from_array(labels, affine=None, nn=0):
     topology = []
     vvol = np.absolute(np.linalg.det(affine))
     for q in ul:
-        vol.append(vvol*np.ones(np.sum(labels==k)))
-        coord.append(array_affine_coord(labels==k, affine))
-        topology.append(smatrix_from_nd_array(labels==k, nn))
-    return MultipleROI(dim, q, coord, vol, topology)
+        vol.append(vvol*np.ones(np.sum(labels==q)))
+        coord.append(array_affine_coord(labels==q, affine))
+        topology.append(smatrix_from_nd_array(labels==q, nn))
+    return MultipleROI(dim, k, coord, vol, topology)
     
 
-
-def mroi_from_balls():
+def mroi_from_balls(domain, positions, radii):
     """
-    """
-    pass
+    Create discrete ROIs as a set of balls within a certain coordinate systems
 
+    Parameters
+    ----------
+    domain: DiscreteDomain instance,
+            the description of a discrete domain
+    positions: array of shape(k, dim):
+               the positions of the balls
+    radii: array of shape(k):
+           the sphere radii
+    """
+    # checks
+    if np.size(positions)==positions.shape[0]:
+        positions = np.reshape(positions, (positions.size), 1)
+    if positions.shape[1] !=  domain.em_dim:
+        raise ValueError, 'incompatible dimensions for domain and positions'
+    if positions.shape[0] != np.size(radii):
+        raise ValueError, 'incompatible positions and radii provided'
+    coord = []
+    vol = []
+    topology = []
+    for k in range(radii.size): 
+        ik = np.sum((domain.coord-positions[k])**2, 1)<radii[k]**2
+        coord.append(domain.coord[ik])
+        vol.append(domain.local_volume[ik])
+        topology.append(reduce_coo_matrix(domain.topology, ik))
+    return MultipleROI(domain.dim, radii.size, coord, vol, topology)
 
 
 class MultipleGridRoi(MultipleROI):
