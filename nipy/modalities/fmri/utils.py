@@ -30,10 +30,25 @@ from sympy import cos as sympy_cos
 from sympy import pi as sympy_pi
 
 from . import formula
+from .formula import Term
 from . import aliased
 from .aliased import aliased_function, lambdify
 
-t = formula.Term('t')
+T = Term('t')
+
+def lambdify_t(expr):
+    ''' Return sympy function `expr` lambdified as function of t
+
+    Parametric
+    ----------
+    expr : sympy expr
+
+    Returns
+    -------
+    func : callable
+       Numerical implementation of function
+    '''
+    return lambdify(T, expr)
 
 
 def fourier_basis(freq):
@@ -62,8 +77,8 @@ def fourier_basis(freq):
     """
     r = []
     for f in freq:
-        r += [sympy_cos((2*sympy_pi*f*t)),
-              sympy_sin((2*sympy_pi*f*t))]
+        r += [sympy_cos((2*sympy_pi*f*T)),
+              sympy_sin((2*sympy_pi*f*T))]
     return formula.Formula(r)
 
 
@@ -102,9 +117,13 @@ def interp(times, values, fill=0, name=None, **kw):
 
     Examples
     --------
+    We need the 'time' term to make our lambdified function
+    
+    >>> from nipy.modalities.fmri.formula import T
+    
     >>> s = interp([0,4,5.],[2.,4,6], bounds_error=False)
     >>> tval = np.array([-0.1,0.1,3.9,4.1,5.1])
-    >>> res = aliased.lambdify(t, s)(tval)
+    >>> res = lambdify_t(s)(tval)
     >>> # nans outside bounds
     >>> np.isnan(res)
     array([ True, False, False, False,  True], dtype=bool)
@@ -118,7 +137,7 @@ def interp(times, values, fill=0, name=None, **kw):
         name = 'interp%d' % interp.counter
         interp.counter += 1
     s = aliased_function(name, interpolator)
-    return s(t)
+    return s(T)
 
 interp.counter = 0
 
@@ -156,9 +175,13 @@ def linear_interp(times, values, fill=0, name=None, **kw):
 
     Examples
     --------
+    We need the 'time' term to make our lambdified function
+    
+    >>> from nipy.modalities.fmri.formula import T
+    
     >>> s = linear_interp([0,4,5.],[2.,4,6], bounds_error=False)
     >>> tval = np.array([-0.1,0.1,3.9,4.1,5.1])
-    >>> res = aliased.lambdify(t, s)(tval)
+    >>> res = lambdify_t(s)(tval)
     >>> # nans outside bounds
     >>> np.isnan(res)
     array([ True, False, False, False,  True], dtype=bool)
@@ -204,9 +227,13 @@ def step_function(times, values, name=None, fill=0):
 
     Examples
     --------
+    We need the 'time' term to make our lambdified function
+    
+    >>> from nipy.modalities.fmri.formula import T
+
     >>> s = step_function([0,4,5],[2,4,6])
     >>> tval = np.array([-0.1,3.9,4.1,5.1])
-    >>> lam = aliased.lambdify(t, s)
+    >>> lam = lambdify_t(s)
     >>> lam(tval)
     array([ 0.,  2.,  4.,  6.])
     """
@@ -222,7 +249,7 @@ def step_function(times, values, name=None, fill=0):
         return f
 
     s = aliased_function(name, _imp)
-    return s(t)
+    return s(T)
 
 # Initialize counter for step function
 step_function.counter = 0
@@ -260,26 +287,24 @@ def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
     expected
 
     >>> from sympy import DiracDelta, Symbol, Function
-    >>> from nipy.modalities.fmri.formula import Term
-    >>> t = Term('t')
-    
+    >>> from nipy.modalities.fmri.formula import T
     >>> evs = events([3,6,9])
-    >>> evs == DiracDelta(-9 + t) + DiracDelta(-6 + t) + DiracDelta(-3 + t)
+    >>> evs == DiracDelta(-9 + T) + DiracDelta(-6 + T) + DiracDelta(-3 + T)
     True
     >>> hrf = Function('hrf')
     >>> evs = events([3,6,9], f=hrf)
-    >>> evs == hrf(-9 + t) + hrf(-6 + t) + hrf(-3 + t)
+    >>> evs == hrf(-9 + T) + hrf(-6 + T) + hrf(-3 + T)
     True
     >>> evs = events([3,6,9], amplitudes=[2,1,-1])
-    >>> evs == -DiracDelta(-9 + t) + 2*DiracDelta(-3 + t) + DiracDelta(-6 + t)
+    >>> evs == -DiracDelta(-9 + T) + 2*DiracDelta(-3 + T) + DiracDelta(-6 + T)
     True
     """
     e = 0
     asymb = Symbol('a')
     if amplitudes is None:
         amplitudes = itertools.cycle([1])
-    for _t, a in zip(times, amplitudes):
-        e = e + g.subs(asymb, a) * f(t-_t)
+    for time, a in zip(times, amplitudes):
+        e = e + g.subs(asymb, a) * f(T-time)
     return e
 
 
@@ -302,14 +327,18 @@ def blocks(intervals, amplitudes=None):
 
     Examples
     --------
+    We need the 'time' term to make our lambdified function
+    
+    >>> from nipy.modalities.fmri.formula import T
+
     >>> on_off = [[1,2],[3,4]]
     >>> tval = np.array([0.4,1.4,2.4,3.4])
     >>> b = blocks(on_off)
-    >>> lam = aliased.lambdify(t, b)
+    >>> lam = lambdify_t(b)
     >>> lam(tval)
     array([ 0.,  1.,  0.,  1.])
     >>> b = blocks(on_off, amplitudes=[3,5])
-    >>> lam = aliased.lambdify(t, b)
+    >>> lam = lambdify_t(b)
     >>> lam(tval)
     array([ 0.,  3.,  0.,  5.])
     """
@@ -368,7 +397,7 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
 
     Get the numerical values for a time vector
     
-    >>> ftri = aliased.lambdify(t, tri)
+    >>> ftri = lambdify_t(tri)
     >>> x = np.linspace(0,2,11)
     >>> y = ftri(x)
 
@@ -390,8 +419,8 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     pad_t = (mx_i - mn_i) * padding_f
     time = np.arange(mn_i, mx_i + pad_t, dt)
     # get values at times from expressions
-    f1 = lambdify(t, fn1)
-    f2 = lambdify(t, fn2)
+    f1 = lambdify_t(fn1)
+    f2 = lambdify_t(fn2)
     _fn1 = np.atleast_1d(f1(time))
     _fn2 = np.atleast_1d(f2(time))
     # do convolution

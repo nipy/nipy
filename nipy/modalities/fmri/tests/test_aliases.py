@@ -16,7 +16,6 @@ import scipy.interpolate
 import sympy
 
 from nipy.modalities.fmri.aliased import (aliased_function,
-                                          vectorize,
                                           lambdify)
 
 from nose.tools import assert_true, assert_false, assert_raises
@@ -93,19 +92,14 @@ def test_1d():
     B = gen_BrownianMotion()
     Bs = aliased_function("B", B)
     t = sympy.Symbol('t')
-    def_t = sympy.DeferredVector('t')
-    def_expr = 3*sympy.exp(Bs(def_t)) + 4
-    expected = 3*np.exp(B.y)+4
-    ee_lam = lambdify(def_t, def_expr)
-    yield assert_almost_equal(ee_lam(B.x), expected)
-    # use vectorize to do the deferred stuff
     expr = 3*sympy.exp(Bs(t)) + 4
-    ee_vec = vectorize(expr)
+    expected = 3*np.exp(B.y)+4
+    ee_vec = lambdify(t, expr)
     yield assert_almost_equal(ee_vec(B.x), expected)
     # with any arbitrary symbol
     b = sympy.Symbol('b')
     expr = 3*sympy.exp(Bs(b)) + 4
-    ee_vec = vectorize(expr, b)
+    ee_vec = lambdify(b, expr)
     yield assert_almost_equal(ee_vec(B.x), expected)
     
 
@@ -119,22 +113,5 @@ def test_2d():
     e = B1s(s)+B2s(t)
     ee = lambdify((s,t), e)
     yield assert_almost_equal(ee(B1.x, B2.x), B1.y + B2.y)
-
-
-@parametric
-def test_vectorize():
-    theta = sympy.Symbol('theta')
-    num_func = lambdify(theta, sympy.cos(theta))
-    yield assert_equal(num_func(0), 1)
-    # we don't need to do anything for a naturally numpy'ed function
-    yield assert_array_almost_equal(num_func([0, np.pi]), [1, -1])
-    # but we do for single valued functions
-    func = aliased_function('f', lambda x: x**2)
-    num_func = lambdify(theta, func(theta))
-    yield assert_equal(num_func(2), 4)
-    # ** on a list raises a type error
-    yield assert_raises(TypeError, num_func, [2, 3])
-    # so vectorize
-    num_func = vectorize(func(theta), theta)
 
 

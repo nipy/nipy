@@ -42,33 +42,6 @@ def lambdify(args, expr):
     return sympy.lambdify(args, expr, modules=(n, np_ns))
 
 
-def vectorize(expr, sym=sympy.Symbol('t')):
-    """Return function for calculation of numerical values at indices
-    
-    You can use this to take a (single-valued) sympy expression `expr` with
-    only 't' as a Symbol and return a callable that can be evaluated at
-    an array of floats.
-
-    Parameters
-    ----------
-    expr : sympy expr
-       Expression with Symbol `sym` the only Symbol. If it is an
-       instance of sympy.FunctionClass, then vectorize ``expr(sym)``
-       instead.
-    sym : ``sympy.Symbol``, optional
-       symbol contained in `expr`.  Default is ``sympy.Symbol('t')``. 
-    
-    Returns
-    -------
-    f : callable
-        A function that can be evaluated at an array of time points.
-    """
-    def_sym = sympy.DeferredVector(sym.name)
-    if isinstance(expr, sympy.FunctionClass):
-        expr = expr(sym)
-    return lambdify(def_sym, expr.subs(sym, def_sym))
-
-
 def _imp_namespace(expr, namespace=None):
     """ Return namespace dict with function implementations
 
