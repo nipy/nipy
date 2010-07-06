@@ -255,7 +255,8 @@ def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, outputCon=None,
     # get the design matrix
     if isinstance(DesignMatrix, basestring):
         import nipy.neurospin.utils.design_matrix as dm
-        X = dm.DesignMatrix().read_from_csv(DesignMatrix).matrix
+        X = dm.dmtx_from_csv( DesignMatrix).matrix
+        #X = dm.DesignMatrix().read_from_csv(DesignMatrix).matrix
     else:
         X = DesignMatrix.matrix
   
