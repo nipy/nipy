@@ -7,6 +7,8 @@ from scipy.stats import gamma
 
 from nipy.modalities.fmri.hrf import (
     gamma_params,
+    gamma_expr,
+    lambdify_t,
     )
 
 from nose.tools import assert_true, assert_false, \
@@ -17,17 +19,23 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 from nipy.testing import parametric
 
 
-def test_gamma_params():
-    t = np.linspace(0, 20, 5000)
-    alpha = 3.2
-    beta = 1.4
-    gf = gamma(alpha, beta).pdf
-    gt_t = gf(t)
-    pk_i = np.argmax(gt_t)
-    pk = gt_t[pk_i]
-    at_hm_t = t[gt_t >= pk / 2.0]
-    mn_t = np.min(at_hm_t)
-    mx_t = np.max(at_hm_t)
-    fwhm = mx_t - mn_t
-    e_a, e_b, coef = gamma_params(pk, fwhm)
-    print pk, fwhm, e_a, e_b
+@parametric
+def test_gamma():
+    t = np.linspace(0, 30, 5000)
+    # make up some numbers
+    pk_t = 5.0
+    fwhm = 6.0
+    # get the estimated parameters
+    shape, scale, coef = gamma_params(pk_t, fwhm)
+    # get distribution function
+    g_exp = gamma_expr(pk_t, fwhm)
+    # make matching standard distribution
+    gf = gamma(shape, scale=scale).pdf
+    # get values
+    L1t = gf(t)
+    L2t = lambdify_t(g_exp)(t)
+    # they are the same bar a scaling factor
+    nz = np.abs(L1t) > 1e-15
+    sf = np.mean(L1t[nz] / L2t[nz])
+    yield assert_array_almost_equal(L1t , L2t*sf)
+        
