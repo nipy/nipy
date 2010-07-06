@@ -10,49 +10,65 @@ BipartiteGraph (WeightedGraph): Idem but the graph is Bipartite
 
 
 Author: Bertrand Thirion, 2006--2009
-Fixme : add graph creation routines that are more practical 
-      than current procedures
+Fixme: add graph creation routines that are more practical 
+       than current procedures
+       
 """
 
 class Graph:
     """
     This is the basic topological (non-weighted) directed Graph class
-    fields :
-    - V(int) = the number of vertices
-    - E(int) = the number of edges
-    - edges = array of int with shape (E,2) : the edges of the graph
-    """
+    fields:
+
+    Member variables
+    ----------------
+    - V (int > 0): the number of vertices
+    - E (int >= 0): the number of edges
+
+    Properties
+    ----------
+    - vertices (list, type=int, shape=(V,))  vertices id
+    - edges (list, type=int, shape=(E,2)): edges as vertices id tuples
     
-    def __init__(self, V, E=0):
-        self.V = int(V)
-        if self.V < 1:
-            raise ValueError, 'Empty graphs cannot be created'
+    """
 
-        self.E = int(E)
-        if self.E<0:
-            self.E = 0
-
-        self.vertices =  [a for a in range(self.V)]
-        self.edges = np.zeros((self.E,2),np.int)
-
-    def set_edges(self,edges):
+    ### Constructor
+    def __init__(self, V, E=0, edges=None):
         """
-        sets self.edges=edges if
-        1. edges has a correct size
-        2. edges take values in [1..V]
-        """
-        if np.shape(edges)!=np.shape(self.edges):
-            raise ValueError, 'Incompatible size of the edge matrix'
+        Constructor
+
+        Parameters
+        ----------
+        - V (int): the number of vertices
+        - E (int): the number of edges
         
-        if np.size(edges)>0:
-            if edges.max()+1>self.V:
-                raise ValueError, 'Incorrect edge specification'
-        self.edges = edges
-
+        """
+        # deal with vertices
+        self.__set_V(V)
+        self.vertices = np.arange(self.V)
+        
+        # deal with edges
+        if not isinstance(edges, None.__class__):
+            self.__set_E(np.shape(edges)[0])
+            self.set_edges(edges)
+        else:
+            self.__set_E(E)
+            self.set_edges(np.zeros((self.E,2), dtype=int))
+    
+    
+    ### Accessors
     def get_vertices(self):
+        """
+        To get the graph's vertices (as id)
+
+        """
         return self.vertices
     
     def get_edges(self):
+        """
+        To get the graph's edges
+        
+        """
         try:
             temp = self.edges
         except:
@@ -60,23 +76,93 @@ class Graph:
         return temp
 
     def get_V(self):
+        """
+        To get the number of vertices in the graph
+        
+        """
         return self.V
     
     def get_E(self):
+        """
+        To get the number of edges in the graph
+        
+        """
         return self.E
 
+    ### Mutators
+    def __set_V(self, V):
+        """
+        Sets the graph's number of vertices.
+        This methods is defined as private since we don't want
+        the number of vertices to be modified outside the graph object methods.
+        
+        """
+        self.V = int(V)
+        if self.V < 1:
+            raise ValueError, 'Empty graphs cannot be created'
+    
+    def __set_E(self, E):
+        """
+        Sets the graph's number of edges.
+        This methods is defined as private since we don't want
+        the number of edges to be modified outside the graph object methods.
+        
+        """
+        self.E = int(E)
+        if self.E < 0:
+            self.E = 0
+    
+    def set_edges(self, edges):
+        """
+        Sets the graph's edges
+
+        Preconditions
+        -------------
+        - edges has a correct size
+        - edges take values in [1..V]
+        
+        """
+        if (not isinstance(edges, None.__class__) and (edges.size != 0)):
+            if ((np.shape(edges)[0] != self.E) or \
+                (np.shape(edges)[1] != 2)):
+                raise ValueError, 'Incompatible size of the edge matrix'
+            if edges.max()+1 > self.V:
+                raise ValueError, 'Incorrect edge specification'
+            self.edges = edges
+        else:
+            self.edges = []
+        
+
+    ### Methods
     def adjacency(self):
+        """
+        Builds the adjacency matrix of the graph
+
+        Todo
+        ----
+        Maybe can we store the adjacency matrix once computed.
+        We should yet update the edges mutator to take any modification
+        into account.
+
+        """
         A = np.zeros((self.V,self.V))
-        for e in range(self.E):
-            i = self.edges[e][0]
-            j = self.edges[e][1]
-            A[i,j] = 1
-        return(A)
+        A[self.edges[:,0],self.edges[:,1]] = 1
+        
+        return A
 
     def complete(self):
-        self.E = self.V*self.V
-        x = np.array[np.where(np.ones((self.V,self.V)))]
-        self.edges =  np.transpose(x)
+        """
+        Transforms the graph into a complete one.
+        
+        Warning
+        -------
+        Note that this can't be undone since it modifies the graph's edges.
+
+        """
+        V = self.get_V()
+        self.E = V ** 2
+        x = np.array[np.where(np.ones((V,V)))]
+        self.set_edges(np.transpose(x))
 
     def cc(self):
         """
@@ -86,29 +172,32 @@ class Graph:
         Returns
         -------
         label: array of shape(self.V), labelling of the vertices
+        
         """
-        if self.E>0:
-            label = graph_cc(self.edges[:,0],self.edges[:,1], 
-                             np.zeros(self.E),self.V)
+        if self.E > 0:
+            label = graph_cc(self.edges[:,0], self.edges[:,1], 
+                             np.zeros(self.E), self.V)
         else:
             label = np.arange(self.V)        
         return label
 
     def degrees(self):
         """
-        returns the degree of the graph vertices
+        Returns the degree of the graph vertices.
         
         Returns
         -------
-        rdegree: array of shape self.V, the right degree
-        ldegree: array of shape self.V, the left degree
+        rdegree: (array, type=int, shape=(self.V,)), the right degrees
+        ldegree: (array, type=int, shape=(self.V,)), the left degrees
+        
         """
-        if self.E>0:
-            right,left = graph_degrees(self.edges[:,0],self.edges[:,1],self.V)
+        if self.E > 0:
+            right,left = graph_degrees(self.edges[:,0], self.edges[:,1], self.V)
         else:
-            right = np.zeros(self.V,np.int)
-            left = np.zeros(self.V,np.int)
-        return right,left
+            right = np.zeros(self.V, dtype=int)
+            left = np.zeros(self.V, dtype=int)
+        
+        return right, left
 
     def main_cc(self):
         """
@@ -117,17 +206,18 @@ class Graph:
         Returns
         -------
         idx: array of shape (sizeof main cc)
+        
         """
-        if self.E>0:
+        if self.E > 0:
             idx = graph_main_cc(self.edges[:,0], self.edges[:,1], 
-                                                 np.zeros(self.E),self.V)
+                                np.zeros(self.E), self.V)
         else:
             idx = 0     
         return idx
 
     def show(self, ax=None):
         """
-        show the graph as a planar graph
+        Shows the graph as a planar one.
         
         Parameters
         ----------
@@ -137,61 +227,62 @@ class Graph:
         -------
         ax, axis handle
         """
-        import matplotlib.pylab as mp
-        if ax==None:
-            mp.figure()
-            ax = np.subplot(1,1,1)
+        import matplotlib.pylab as plt
+        
+        if ax == None:
+            plt.figure()
+            ax = plt.subplot(1, 1, 1)
 
-        t = (2*np.pi*np.arange(self.V))/self.V
-        mp.plot(np.cos(t),np.sin(t),'.')
-        for e in range(self.E):
-            A = (self.edges[e,0]*2*np.pi)/self.V
-            B = (self.edges[e,1]*2*np.pi)/self.V
-            ax.plot([np.cos(A),np.cos(B)],[np.sin(A),np.sin(B)],'k')
+        t = (2*np.pi*np.arange(self.V)) / self.V
+        plt.plot(np.cos(t), np.sin(t), '.')
+        #for e in range(self.E):
+        #    A = (self.edges[e,0]*2*np.pi) / self.V
+        #    B = (self.edges[e,1]*2*np.pi) / self.V
+        #    ax.plot([np.cos(A),np.cos(B)], [np.sin(A),np.sin(B)], 'k')
+        planar_edges = np.ravel((self.edges*2*np.pi) / self.V)
+        ax.plot(np.cos(planar_edges), np.sin(planar_edges), 'k')
         ax.axis('off')
+        
         return ax
 
         
 
-
 class WeightedGraph(Graph):
     """
     This is the basic weighted, directed graph class implemented in fff 
-    fields :
-    V(int) = the number of vertices
-    E(int) = the number of edges
-    edges = array of int with shape (E,2): 
-          the edges of the graph
-    weihghts = array of int with shape (E): 
-             the weights/length of the graph edges 
+    fields:
+
+    Member variables
+    ----------------
+    - V (int): the number of vertices
+    - E (int): the number of edges
+
+    Properties
+    ----------
+    - vertices (list, type=int, shape=(V,)): vertices id
+    - edges (list, type=int, shape=(E,2)): edges as vertices id tuples
+    - weights (list, type=int, shape=(E,)): weights/lenghts of the graph's edges
+               
     """
+    ### Constructor
     def __init__(self, V, edges=None, weights=None):
         """
+        Constructor
+
         Parameters
         ----------
-        V (int >0): the number of edges of the graph
-        edges=None: array of shape(E,2) 
-                    the edge array of the graph
-        weights=None: array of shape (E)
-                      the asociated weights array
+        - V (int > 0): the number of vertices
+        - edges (array, type=int, shape=(E,2)): edges of the graph
+        - weights (array, type=int, shape=(E,)): weights/lenghts of the edges
+    
         """
-        V = int(V)
-        if V<1:
-            raise ValueError, 'cannot create graph with no vertex'
-        self.V = int(V)
-        self.E = 0
-        if (edges==None)&(weights==None):
-            edges = []
-            weights = []
+        Graph.__init__(self, V, edges=edges)
+
+        if isinstance(weights, None.__class__):
+            new_weights = []
         else:
-            if edges.shape[0]==np.size(weights):
-                E = edges.shape[0]
-                Graph.__init__(self, V, E)
-                Graph.set_edges(self,edges)
-                self.weights = weights
-            else:
-                raise ValueError, 'Incompatible size of the edges\
-                                  and weights matrices'
+            new_weights = weights
+        self.set_weights(new_weights)
         
     def adjacency(self):
         """
@@ -206,76 +297,78 @@ class WeightedGraph(Graph):
         ------
         may break if self.V is large
         Future version should allow sparse matrix coding
+        
         """
-        A = np.zeros((self.V,self.V),np.double)
-        for e in range(self.E):
-            i = self.edges[e][0]
-            j = self.edges[e][1]
-            A[i,j] = self.weights[e]
-        return(A)
+        A = np.zeros((self.V,self.V), dtype=np.double)
+        A[self.edges[:,0],self.edges[:,1]] = self.weights
+        
+        return A
 
-    def from_adjacency(self,A):
+    def from_adjacency(self, A):
         """
         sets the edges of self according to the adjacency matrix M
         
         Parameters
         ----------
-        M: array of shape(sef.V,self.V) 
+        M: array of shape(sef.V, self.V)
+        
         """
         if A.shape[0] != self.V:
-            raise ValueError,"bad size for A"
+            raise ValueError, "bad size for A"
         if A.shape[1] != self.V:
-            raise ValueError,"bad size for A"
+            raise ValueError, "bad size for A"
         
         i,j = np.where(A)
         self.edges = np.transpose(np.vstack((i,j)))
         self.weights = (A[i,j])
         self.E = np.size(i)
 
-    def set_weights(self,weights):
+    def set_weights(self, weights):
         """
         
         Parameters
         ----------
-        weights : an array of shape(self.V),  edges weights
+        weights : an array of shape(self.V), edges weights
+        
         """
-        if np.size(weights)!=self.E:
+        if np.size(weights) != self.E:
             raise ValueError, 'The weight size is not the edges size'
         else:
-            self.weights = np.reshape(weights,(self.E))
+            self.weights = np.reshape(weights, (self.E))
 
     def get_weights(self):
         return self.weights
 
-    def from_3d_grid(self,xyz,k=18):
+    def from_3d_grid(self, xyz, k=18):
         """
-        set the graph to be the topological neighbours graph 
-        of the thre-dimensional coordinate set xyz, 
+        Sets the graph to be the topological neighbours graph 
+        of the three-dimensional coordinates set xyz, 
         in the k-connectivity scheme 
         
         Parameters
         ----------
-        xyz: array of shape (self.V,3) and type np.int,
-        k = 18: the number of neighbours considered. (6,18 or 26)
+        xyz: array of shape (self.V, 3) and type np.int,
+        k = 18: the number of neighbours considered. (6, 18 or 26)
         
         Returns
         -------
         E(int): the number of edges of self
+        
         """
-        if xyz.shape[0]!=self.V:
+        if xyz.shape[0] != self.V:
             raise ValueError, 'xyz should have shape n*3, with n =self.V'
                 
-        if xyz.shape[1]!=3:
+        if xyz.shape[1] != 3:
             raise ValueError, 'xyz should have shape n*3'
         
         graph = graph_3d_grid(xyz, k)
         if graph is not None:
-            i,j,d = graph
+            i, j, d = graph
         else:
             raise TypeError, 'Creating graph from grid failed. '\
                 'Maybe the grid is too big'
         self.E = np.size(i)
-        self.edges = np.zeros((self.E,2),np.int)
+        self.edges = np.zeros((self.E,2), np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
@@ -286,21 +379,21 @@ class WeightedGraph(Graph):
         self.complete()
         makes self a complete graph (i.e. each pair of vertices is an edge)
         """
-        i,j,d = graph_complete(self.V)
-        self.E = self.V*self.V
-        self.edges = np.zeros((self.E,2),np.int)
+        i, j, d = graph_complete(self.V)
+        self.E = self.V * self.V
+        self.edges = np.zeros((self.E,2), np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
         
         
-    def eps(self,X,eps=1.):
+    def eps(self, X, eps=1.):
         """
-        set the graph to be the eps-nearest-neighbours graph of the data
+        Sets the graph to be the eps-nearest-neighbours graph of the data
         
         Parameters
         ----------
-        X array of shape (self.V) or (self.V,p)
+        X: array of shape (self.V) or (self.V,p)
           where p = dimension of the features
           data used for eps-neighbours computation
         eps=1. (float),  the neighborhood width
@@ -317,10 +410,10 @@ class WeightedGraph(Graph):
         for the sake of speed it is advisable to give 
             a PCA-preprocessed matrix X
         """
-        if np.size(X)==X.shape[0]:
-            X = np.reshape(X,(np.size(X),1))
-        if X.shape[0]!=self.V:
-            raise ValueError, 'X.shape[0]!=self.V'
+        if np.size(X) == X.shape[0]:
+            X = np.reshape(X, (np.size(X),1))
+        if X.shape[0] != self.V:
+            raise ValueError, 'X.shape[0] != self.V'
         try:
             eps = float(eps)
         except:
@@ -329,17 +422,17 @@ class WeightedGraph(Graph):
             raise ValueError, 'eps is nan'
         if np.isinf(eps):
             raise ValueError, 'eps is inf'
-        i,j,d = graph_eps(X,eps)
+        i, j, d = graph_eps(X, eps)
         self.E = np.size(i)
-        self.edges = np.zeros((self.E,2),np.int)
+        self.edges = np.zeros((self.E,2), np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
         
         
-    def knn(self,X,k=1):
+    def knn(self, X, k=1):
         """
-        E = knn(X,k)
+        E = knn(X, k)
         set the graph to be the k-nearest-neighbours graph of the data
 
         Parameters
@@ -363,27 +456,27 @@ class WeightedGraph(Graph):
         for the sake of speed it is advisable to give 
             a PCA-preprocessed matrix X.
         """
-        if np.size(X)==X.shape[0]:
-            X = np.reshape(X,(np.size(X),1))
-        if X.shape[0]!=self.V:
+        if np.size(X) == X.shape[0]:
+            X = np.reshape(X, (np.size(X),1))
+        if X.shape[0] != self.V:
             raise ValueError, 'X.shape[0] != self.V'
         try:
-            k=int(k)
+            k = int(k)
         except :
             "k cannot be cast to an int"
         if np.isnan(k):
             raise ValueError, 'k is nan'
         if np.isinf(k):
             raise ValueError, 'k is inf'
-        i,j,d = graph_knn(X,k)
+        i, j, d = graph_knn(X,k)
         self.E = np.size(i)
-        self.edges = np.zeros((self.E,2),np.int)
+        self.edges = np.zeros((self.E,2), np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
         return self.E
 
-    def mst(self,X):
+    def mst(self, X):
         """
         makes self the MST of the array X
 
@@ -405,17 +498,17 @@ class WeightedGraph(Graph):
         As a consequence, the graph comprises (2*self.V-2) edges
         the algorithm uses Boruvska's method
         """
-        if np.size(X)==X.shape[0]:
-            X = np.reshape(X,(np.size(X),1))
-        if X.shape[0]!=self.V:
+        if np.size(X) == X.shape[0]:
+            X = np.reshape(X, (np.size(X),1))
+        if X.shape[0] != self.V:
             raise ValueError, 'X.shape[0] != self.V'
-        i,j,d = graph_mst(X)
+        i, j, d = graph_mst(X)
         self.E = np.size(i)
-        self.edges = np.zeros((self.E,2),np.int)
+        self.edges = np.zeros((self.E,2), np.int)
         self.edges[:,0] = i
         self.edges[:,1] = j
         self.weights = np.array(d)
-        return self.weights.sum()/2
+        return self.weights.sum() / 2
 
 
     def cut_redundancies(self):
@@ -429,17 +522,17 @@ class WeightedGraph(Graph):
         -------
         - E(int): the number of edges, self.E
         """
-        if self.E>0:
-            i,j,d = graph_cut_redundancies( self.edges[:,0], self.edges[:,1], 
-                                            self.weights, self.V)
+        if self.E > 0:
+            i, j, d = graph_cut_redundancies(self.edges[:,0], self.edges[:,1], 
+                                             self.weights, self.V)
             self.E = np.size(i)
-            self.edges = np.zeros((self.E,2),np.int)
+            self.edges = np.zeros((self.E,2), np.int)
             self.edges[:,0] = i
             self.edges[:,1] = j
             self.weights = np.array(d)
         return self.E
         
-    def dijkstra(self,seed=0):
+    def dijkstra(self, seed=0):
         """
         returns all the [graph] geodesic distances starting from seed
         it is mandatory that the graph weights are non-negative
@@ -459,19 +552,19 @@ class WeightedGraph(Graph):
         it is mandatory that the graph weights are non-negative
         """
         try:
-            if self.weights.min()<0:
+            if self.weights.min() < 0:
                 raise ValueError, 'some weights are non-positive'
         except:
-             raise ValueError,'undefined weights'
-        if self.E>0:
-            if np.size(seed)>1:
-                dg = graph_dijkstra_multiseed( self.edges[:,0], 
-                   self.edges[:,1],self.weights,seed,self.V)
+             raise ValueError, 'undefined weights'
+        if self.E > 0:
+            if np.size(seed) > 1:
+                dg = graph_dijkstra_multiseed(self.edges[:,0], self.edges[:,1],
+                                              self.weights, seed, self.V)
             else:
-                dg = graph_dijkstra(self.edges[:,0],
-                self.edges[:,1],self.weights,seed,self.V)
+                dg = graph_dijkstra(self.edges[:,0], self.edges[:,1],
+                                    self.weights, seed, self.V)
         else:
-            dg = np.infty*np.ones(self.V,np.size(seed))
+            dg = np.infty * np.ones(self.V, np.size(seed))
             for i in range(np.size(seed)):
                 dg[seed[i],i] = 0 
         return dg
@@ -502,22 +595,23 @@ class WeightedGraph(Graph):
         if seed == None:
             seed = np.arange(self.V)
 
-        if self.E==0:
-            dg = np.infty*np.ones((self.V,np.size(seed)))
-            for i in range(np.size(seed)): dg[seed[i],i] = 0 
+        if self.E == 0:
+            dg = np.infty * np.ones((self.V,np.size(seed)))
+            for i in range(np.size(seed)):
+                dg[seed[i],i] = 0 
             return dg
         
         try:
-            if self.weights.min()<0:
+            if self.weights.min() < 0:
                 raise ValueError, 'some weights are non-positive'
         except:
-            raise ValueError,'undefined weights'
+            raise ValueError, 'undefined weights'
        
-        dg = graph_floyd(self.edges[:,0], self.edges[:,1], self.weights, 
-                                          seed, self.V)
+        dg = graph_floyd(self.edges[:,0], self.edges[:,1],
+                         self.weights, seed, self.V)
         return dg
 
-    def normalize(self,c=0):
+    def normalize(self, c=0):
         """
         Normalize the graph according to the index c
         Normalization means that the sum of the edges values
