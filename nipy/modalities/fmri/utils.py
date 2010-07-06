@@ -117,10 +117,6 @@ def interp(times, values, fill=0, name=None, **kw):
 
     Examples
     --------
-    We need the 'time' term to make our lambdified function
-    
-    >>> from nipy.modalities.fmri.formula import T
-    
     >>> s = interp([0,4,5.],[2.,4,6], bounds_error=False)
     >>> tval = np.array([-0.1,0.1,3.9,4.1,5.1])
     >>> res = lambdify_t(s)(tval)
@@ -175,10 +171,6 @@ def linear_interp(times, values, fill=0, name=None, **kw):
 
     Examples
     --------
-    We need the 'time' term to make our lambdified function
-    
-    >>> from nipy.modalities.fmri.formula import T
-    
     >>> s = linear_interp([0,4,5.],[2.,4,6], bounds_error=False)
     >>> tval = np.array([-0.1,0.1,3.9,4.1,5.1])
     >>> res = lambdify_t(s)(tval)
@@ -222,15 +214,11 @@ def step_function(times, values, name=None, fill=0):
     -------
     f_t : sympy expr
        Sympy expression f(t) where f is a sympy implemented anonymous
-       function of time that implements the step function.  To get
-       the numerical version of the function, use ``lambdify(t, f_t)``
+       function of time that implements the step function.  To get the
+       numerical version of the function, use ``lambdify_t(f_t)``
 
     Examples
     --------
-    We need the 'time' term to make our lambdified function
-    
-    >>> from nipy.modalities.fmri.formula import T
-
     >>> s = step_function([0,4,5],[2,4,6])
     >>> tval = np.array([-0.1,3.9,4.1,5.1])
     >>> lam = lambdify_t(s)
@@ -287,7 +275,7 @@ def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
     expected
 
     >>> from sympy import DiracDelta, Symbol, Function
-    >>> from nipy.modalities.fmri.formula import T
+    >>> from nipy.modalities.fmri.utils import T
     >>> evs = events([3,6,9])
     >>> evs == DiracDelta(-9 + T) + DiracDelta(-6 + T) + DiracDelta(-3 + T)
     True
@@ -327,10 +315,6 @@ def blocks(intervals, amplitudes=None):
 
     Examples
     --------
-    We need the 'time' term to make our lambdified function
-    
-    >>> from nipy.modalities.fmri.formula import T
-
     >>> on_off = [[1,2],[3,4]]
     >>> tval = np.array([0.4,1.4,2.4,3.4])
     >>> b = blocks(on_off)
@@ -397,7 +381,7 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
 
     Get the numerical values for a time vector
     
-    >>> ftri = lambdify_t(tri)
+    >>> ftri = aliased.lambdify(t, tri)
     >>> x = np.linspace(0,2,11)
     >>> y = ftri(x)
 

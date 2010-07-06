@@ -108,8 +108,7 @@ def test_2d():
     B1, B2 = [gen_BrownianMotion() for _ in range(2)]
     B1s = aliased_function("B1", B1)
     B2s = aliased_function("B2", B2)
-    t = sympy.DeferredVector('t')
-    s = sympy.DeferredVector('s')
+    s, t = sympy.symbols('s', 't')
     e = B1s(s)+B2s(t)
     ee = lambdify((s,t), e)
     yield assert_almost_equal(ee(B1.x, B2.x), B1.y + B2.y)

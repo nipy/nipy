@@ -633,7 +633,7 @@ class Formula(object):
 
         newterms = []
         for i, t in enumerate(terms):
-            newt = sympy.DeferredVector("__t%d__" % (i + random_offset))
+            newt = sympy.Symbol("__t%d__" % (i + random_offset))
             for j, _ in enumerate(d):
                 d[j] = d[j].subs(t, newt)
             newterms.append(newt)

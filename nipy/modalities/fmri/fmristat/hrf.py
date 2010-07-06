@@ -60,8 +60,9 @@ def spectral_decomposition(hrf2decompose,
     dt = time[1] - time[0]
     if delta is None:
         delta = np.arange(-4.5, 4.6, 0.1)
-    # make vectorizer from hrf function and symbol t.  hrft returns
-    # function values when called with values for time as input.
+    # make numerical implementation from hrf function and symbol t.
+    # hrft returns function values when called with values for time as
+    # input.
     hrft = lambdify_t(hrf2decompose(T))
     # Create stack of time-shifted HRFs.  Time varies over row, delta
     # over column.
@@ -154,8 +155,9 @@ def taylor_approx(hrf2decompose,
     dt = time[1] - time[0]
     if delta is None:
         delta = np.arange(-4.5, 4.6, 0.1)
-    # make vectorizer from hrf function and symbol t.  hrft returns
-    # function values when called with values for time as input.
+    # make numerical implementation from hrf function and symbol t.
+    # hrft returns function values when called with values for time as
+    # input.
     hrft = lambdify_t(hrf2decompose(T))
     # interpolator for negative gradient of hrf
     dhrft = interp1d(time, -np.gradient(hrft(time), dt), bounds_error=False,
