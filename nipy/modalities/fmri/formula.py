@@ -118,8 +118,7 @@ import numpy as np
 from scipy.linalg import svdvals, pinv
 
 from .aliased import (aliased_function,
-                      lambdify,
-                      vectorize)
+                      lambdify)
 
 
 class Term(sympy.Symbol):
@@ -154,6 +153,10 @@ class Term(sympy.Symbol):
             return self
         else:
             return sympy.Symbol.__add__(self, other)
+
+
+# time symbol
+T = Term('t')
 
 
 def terms(*names):
@@ -1238,8 +1241,8 @@ def define(name, expr):
     >>> 3*4+4**2
     28
     """
-    v = vectorize(expr)
-    return aliased_function(name, v)(Term('t'))
+    v = lambdify(T, expr)
+    return aliased_function(name, v)(T)
 
 
 def is_term(obj):
