@@ -17,7 +17,7 @@ from StringIO import StringIO
 
 # Scientific libraries import
 import numpy as np
-from matplotlib.mlab import csv2rec
+from scipy.interpolate import interp1d
 
 from nipy.modalities.fmri import formula, utils, hrf, design
 from nipy.modalities.fmri.fmristat import hrf as delay
@@ -28,78 +28,60 @@ from nipy.testing import (parametric, dec, assert_true,
                           assert_almost_equal)
 
 # Local imports
-from FIACdesigns import descriptions, designs, altdescr
+from FIACdesigns import (descriptions, fmristat, altdescr,
+                         N_ROWS, time_vector)
 
 
-def protocol(fh, design_type, *hrfs):
-    """
-    Create an object that can evaluate the FIAC.
+def protocol(recarr, design_type, *hrfs):
+    """ Create an object that can evaluate the FIAC
+    
     Subclass of formula.Formula, but not necessary.
     
-    Parameters:
-    -----------
-    
-    fh : file handler
-    File-like object that reads in the FIAC design,
-    i.e. like file('subj1_evt_fonc3.txt')
-    
-    design_type : str in ['event', 'block']
-    Handles how the 'begin' term is handled.
-    For 'block', the first event of each block
-    is put in this group. For the 'event', 
-    only the first event is put in this group.
-    
-    The 'begin' events are convolved with hrf.glover.
-    
+    Parameters
+    ----------
+    recarr : (N,) structured array
+       with fields 'time' and 'event'
+    design_type : str
+       one of ['event', 'block'].  Handles how the 'begin' term is
+       handled.  For 'block', the first event of each block is put in
+       this group. For the 'event', only the first event is put in this
+       group. The 'begin' events are convolved with hrf.glover.
     hrfs: symoblic HRFs
-    Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp')
-    is convolved with each of these HRFs in order.
+       Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp') is
+       convolved with each of these HRFs in order.
     
-    Outputs:
-    --------
+    Returns
+    -------
     f: Formula
-    Formula for constructing design matrices.
-    
+       Formula for constructing design matrices.
     contrasts : dict
-    Dictionary of the contrasts of the experiment.
+       Dictionary of the contrasts of the experiment.
     """
-    eventdict = {1:'SSt_SSp', 2:'SSt_DSp', 3:'DSt_SSp', 4:'DSt_DSp'}
-
-    fh = fh.read().strip().splitlines()
-
-    times = []
-    events = []
-
-    for row in fh:
-        time, eventtype = map(float, row.split())
-        times.append(time)
-        events.append(eventdict[eventtype])
+    event_types = np.unique(recarr['event'])
+    N = recarr.size
     if design_type == 'block':
-        keep = np.not_equal((np.arange(len(times))) % 6, 0)
+        keep = np.not_equal((np.arange(N)) % 6, 0)
     else:
-        keep = np.greater(np.arange(len(times)), 0)
+        keep = np.greater(np.arange(N), 0)
     # This first frame was used to model out a potentially
     # 'bad' first frame....
-
-    _begin = np.array(times)[~keep]
+    _begin = recarr['time'][~keep]
 
     termdict = {}        
     termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
-    drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
+    drift = formula.natural_spline(hrf.t, knots=[N_ROWS/2.+1.25], intercept=True)
     for i, t in enumerate(drift.terms):
         termdict['drift%d' % i] = t
     # After removing the first frame, keep the remaining
     # events and times
-
-    times = np.array(times)[keep]
-    events = np.array(events)[keep]
+    times = recarr['time'][keep]
+    events = recarr['event'][keep]
 
     # Now, specify the experimental conditions
     # This creates expressions
     # named SSt_SSp0, SSt_SSp1, etc.
     # with one expression for each (eventtype, hrf) pair
-
-    for v in eventdict.values():
+    for v in event_types:
         for l, h in enumerate(hrfs):
             k = np.array([events[i] == v for i in 
                           range(times.shape[0])])
@@ -122,17 +104,15 @@ def protocol(fh, design_type, *hrfs):
     return f, Tcontrasts, Fcontrasts
 
 
-def altprotocol(fh, design_type, *hrfs):
-    """
-    Create an object that can evaluate the FIAC.
+def altprotocol(d, design_type, *hrfs):
+    """ Create an object that can evaluate the FIAC.
+    
     Subclass of formula.Formula, but not necessary.
 
-    Parameters:
-    -----------
-
-    fh : file handler
-        File-like object that reads in the FIAC design,
-        but has a different format (test_FIACdata.altdescr)
+    Parameters
+    ----------
+    d : np.recarray
+       recarray defining design in terms of time, sentence speaker
 
     design_type : str in ['event', 'block']
         Handles how the 'begin' term is handled.
@@ -147,8 +127,6 @@ def altprotocol(fh, design_type, *hrfs):
         is convolved with each of these HRFs in order.
 
     """
-    d = csv2rec(fh)
-
     if design_type == 'block':
         keep = np.not_equal((np.arange(d.time.shape[0])) % 6, 0)
     else:
@@ -162,7 +140,7 @@ def altprotocol(fh, design_type, *hrfs):
 
     termdict = {}        
     termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
-    drift = formula.natural_spline(hrf.t, knots=[191/2.+1.25], intercept=True)
+    drift = formula.natural_spline(hrf.t, knots=[N_ROWS/2.+1.25], intercept=True)
     for i, t in enumerate(drift.terms):
         termdict['drift%d' % i] = t
 
@@ -220,31 +198,27 @@ def altprotocol(fh, design_type, *hrfs):
 
 
 # block and event protocols
-block, bTcons, bFcons = protocol(StringIO(descriptions['block']), 'block', *delay.spectral)
-event, eTcons, eFcons = protocol(StringIO(descriptions['event']), 'event', *delay.spectral)
+block, bTcons, bFcons = protocol(descriptions['block'], 'block', *delay.spectral)
+event, eTcons, eFcons = protocol(descriptions['event'], 'event', *delay.spectral)
 
 # Now create the design matrices and contrasts
 # The 0 indicates that it will be these columns
 # convolved with the first HRF
-t = formula.make_recarray(np.arange(191)*2.5+1.25, 't')
+t = formula.make_recarray(time_vector, 't')
 X = {}
 c = {}
-fmristat = {}
 D = {}
 for f, cons, design_type in [(block, bTcons, 'block'), (event, eTcons, 'event')]:
     X[design_type], c[design_type] = f.design(t, contrasts=cons)
     D[design_type] = f.design(t, return_float=False)
-    fstat = np.array([float(x) for x in designs[design_type].strip().split('\t')])
-    fmristat[design_type] = fstat.reshape((191, fstat.shape[0]/191)).T
-
 
     
 def test_altprotocol():
-    block, bT, bF = protocol(StringIO(descriptions['block']), 'block', *delay.spectral)
-    event, eT, eF = protocol(StringIO(descriptions['event']), 'event', *delay.spectral)
+    block, bT, bF = protocol(descriptions['block'], 'block', *delay.spectral)
+    event, eT, eF = protocol(descriptions['event'], 'event', *delay.spectral)
 
-    blocka, baT, baF = altprotocol(StringIO(altdescr['block']), 'block', *delay.spectral)
-    eventa, eaT, eaF = altprotocol(StringIO(altdescr['event']), 'event', *delay.spectral)
+    blocka, baT, baF = altprotocol(altdescr['block'], 'block', *delay.spectral)
+    eventa, eaT, eaF = altprotocol(altdescr['event'], 'event', *delay.spectral)
 
     for c in bT.keys():
         baf = baT[c]
@@ -308,9 +282,9 @@ def test_agreement():
 
 @dec.slow
 def test_event_design():
-    block = csv2rec(StringIO(altdescr['block']))
-    event = csv2rec(StringIO(altdescr['event']))
-    t = np.arange(191)*2.5+1.25
+    block = altdescr['block']
+    event = altdescr['event']
+    t = time_vector
     
     bkeep = np.not_equal((np.arange(block.time.shape[0])) % 6, 0)
     ekeep = np.greater(np.arange(event.time.shape[0]), 0)

@@ -64,29 +64,33 @@ like the following::
 
 With the Formula, it looks like this:
 
->>> r
-rec.array([(43, 51, 30, 39, 61, 92, 45), (63, 64, 51, 54, 63, 73, 47),
-       (71, 70, 68, 69, 76, 86, 48), (61, 63, 45, 47, 54, 84, 35),
-       (81, 78, 56, 66, 71, 83, 47), (43, 55, 49, 44, 54, 49, 34),
-       (58, 67, 42, 56, 66, 68, 35), (71, 75, 50, 55, 70, 66, 41),
-       (72, 82, 72, 67, 71, 83, 31), (67, 61, 45, 47, 62, 80, 41),
-       (64, 53, 53, 58, 58, 67, 34), (67, 60, 47, 39, 59, 74, 41),
-       (69, 62, 57, 42, 55, 63, 25), (68, 83, 83, 45, 59, 77, 35),
-       (77, 77, 54, 72, 79, 77, 46), (81, 90, 50, 72, 60, 54, 36),
-       (74, 85, 64, 69, 79, 79, 63), (65, 60, 65, 75, 55, 80, 60),
-       (65, 70, 46, 57, 75, 85, 46), (50, 58, 68, 54, 64, 78, 52),
-       (50, 40, 33, 34, 43, 64, 33), (64, 61, 52, 62, 66, 80, 41),
-       (53, 66, 52, 50, 63, 80, 37), (40, 37, 42, 58, 50, 57, 49),
-       (63, 54, 42, 48, 66, 75, 33), (66, 77, 66, 63, 88, 76, 72),
-       (78, 75, 58, 74, 80, 78, 49), (48, 57, 44, 45, 51, 83, 38),
-       (85, 85, 71, 71, 77, 74, 55), (82, 82, 39, 59, 64, 78, 39)],
-      dtype=[('y', '<i8'), ('x1', '<i8'), ('x2', '<i8'), ('x3', '<i8'), ('x4', '<i8'), ('x5', '<i8'), ('x6', '<i8')])
+>>> r = np.rec.array([
+...     (43, 51, 30, 39, 61, 92, 45), (63, 64, 51, 54, 63, 73, 47), 
+...     (71, 70, 68, 69, 76, 86, 48), (61, 63, 45, 47, 54, 84, 35),
+...     (81, 78, 56, 66, 71, 83, 47), (43, 55, 49, 44, 54, 49, 34),
+...     (58, 67, 42, 56, 66, 68, 35), (71, 75, 50, 55, 70, 66, 41),
+...     (72, 82, 72, 67, 71, 83, 31), (67, 61, 45, 47, 62, 80, 41),
+...     (64, 53, 53, 58, 58, 67, 34), (67, 60, 47, 39, 59, 74, 41),
+...     (69, 62, 57, 42, 55, 63, 25), (68, 83, 83, 45, 59, 77, 35),
+...     (77, 77, 54, 72, 79, 77, 46), (81, 90, 50, 72, 60, 54, 36),
+...     (74, 85, 64, 69, 79, 79, 63), (65, 60, 65, 75, 55, 80, 60),
+...     (65, 70, 46, 57, 75, 85, 46), (50, 58, 68, 54, 64, 78, 52),
+...     (50, 40, 33, 34, 43, 64, 33), (64, 61, 52, 62, 66, 80, 41),
+...     (53, 66, 52, 50, 63, 80, 37), (40, 37, 42, 58, 50, 57, 49),
+...     (63, 54, 42, 48, 66, 75, 33), (66, 77, 66, 63, 88, 76, 72),
+...     (78, 75, 58, 74, 80, 78, 49), (48, 57, 44, 45, 51, 83, 38),
+...     (85, 85, 71, 71, 77, 74, 55), (82, 82, 39, 59, 64, 78, 39)],
+...              dtype=[('y', '<i8'), ('x1', '<i8'), ('x2', '<i8'),
+...                     ('x3', '<i8'), ('x4', '<i8'), ('x5', '<i8'),
+...                     ('x6', '<i8')])
 >>> x1 = Term('x1'); x3 = Term('x3')
->>> f = Formula([x1, x3, x1*x3]) I
+>>> f = Formula([x1, x3, x1*x3]) + I
 >>> f.mean
 _b0*x1 + _b1*x3 + _b2*x1*x3 + _b3
->>> # The I is the "intercept" term, I have explicity not
->>> # used R's default of adding it to everything.
+
+The I is the "intercept" term, I have explicity not used R's default of
+adding it to everything.
+
 >>> f.design(r)
 array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
        (70.0, 69.0, 4830.0, 1.0), (63.0, 47.0, 2961.0, 1.0),
@@ -102,7 +106,7 @@ array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
        (66.0, 50.0, 3300.0, 1.0), (37.0, 58.0, 2146.0, 1.0),
        (54.0, 48.0, 2592.0, 1.0), (77.0, 63.0, 4851.0, 1.0),
        (75.0, 74.0, 5550.0, 1.0), (57.0, 45.0, 2565.0, 1.0),
-       (85.0, 71.0, 6035.0, 1.0), (82.0, 59.0, 4838.0, 1.0)],
+       (85.0, 71.0, 6035.0, 1.0), (82.0, 59.0, 4838.0, 1.0)], 
       dtype=[('x1', '<f8'), ('x3', '<f8'), ('x1*x3', '<f8'), ('1', '<f8')])
 '''
 
@@ -111,7 +115,7 @@ from string import lowercase, uppercase
 
 import sympy
 import numpy as np
-from scipy.linalg import svdvals
+from scipy.linalg import svdvals, pinv
 
 from .aliased import (aliased_function,
                       lambdify,
@@ -150,6 +154,41 @@ class Term(sympy.Symbol):
             return self
         else:
             return sympy.Symbol.__add__(self, other)
+
+
+def terms(*names):
+    ''' Return list of terms with names given by `names`
+
+    This is just a convenience in defining a set of terms, and is the
+    equivalent of ``sympy.symbols`` for defining symbols in sympy. 
+
+    Parameters
+    ----------
+    *names : str or sequence of str
+       If a single str, can specify multiple ``Term``s with string
+       containing space or ',' as separator. 
+    
+    Returns
+    -------
+    ts : list
+       list of Term instance objects named from `names`
+
+    Examples
+    --------
+    >>> terms('a', 'b', 'c')
+    [a, b, c]
+    >>> terms('a, b, c')
+    [a, b, c]
+    '''
+    # parse separated single string
+    if len(names) == 1:
+        name = names[0]
+        if isinstance(name, basestring):
+            for sep in ', ':
+                if sep in name:
+                    names = (n.strip() for n in name.split(sep))
+                    break
+    return [Term(n) for n in names]
 
 
 class FactorTerm(Term):
@@ -493,7 +532,6 @@ class Formula(object):
         [1, x, y, y, z]
         >>>         
         """
-
         if not is_formula(other):
             raise ValueError('only Formula objects can be added to a Formula')
         f = self.__class__(np.hstack([self.terms, other.terms]))
@@ -518,8 +556,6 @@ class Formula(object):
         >>> f4=f1-f2
         >>> f4.mean
         _b0*x + _b1*z
-        >>>             
-
         """
         if not is_formula(other):
             raise ValueError('only Formula objects can be subtracted from a Formula')
@@ -536,16 +572,12 @@ class Formula(object):
     def __mul__(self, other):
         if not is_formula(other):
             raise ValueError('only two Formulas can be multiplied together')
-
         if is_factor(self):
             if self == other:
                 return self
-
         v = []
-
         # Compute the pairwise product of each term
         # If either one is a Term, use Term's multiplication
-
         for sterm in self.terms:
             for oterm in other.terms:
                 if is_term(sterm):
@@ -573,7 +605,6 @@ class Formula(object):
         # the design expression is the differentiation of the expression
         # for the mean.  It is a list
         d = self.design_expr
-
         # Before evaluating, we recreate the formula
         # with numbered terms, and numbered parameters.
 
@@ -681,7 +712,6 @@ class Formula(object):
            each Formula by evaluating its design at the same parameters
            as self.design. If not None, then the return_float is set to True.
         """
-
         self._setup_design()
 
         preterm_recarray = input
@@ -719,7 +749,7 @@ class Formula(object):
                 term_recarray[t.name] = preterm_recarray[t.name]
             else:
                 term_recarray['%s_%s' % (t.factor_name, t.level)] = \
-                    np.array(map(lambda x: x == t.level, preterm_recarray[t.factor_name]))
+                    np.array([x == t.level for x in preterm_recarray[t.factor_name]]).reshape(-1)
         # The lambda created in self._setup_design needs to take a tuple of
         # columns as argument, not an ndarray, so each column
         # is extracted and put into float_tuple.
@@ -868,7 +898,6 @@ class Factor(Formula):
     A Factor is similar to R's factor. The levels of the Factor can be
     either strings or ints.
     """
-
     # This flag is defined to avoid using isinstance in getterms
     # and getparams.
     _factor_flag = True
@@ -911,7 +940,6 @@ class Factor(Formula):
         if level not in self.levels:
             raise ValueError('level not found')
         return self["%s_%s" % (self.name, str(level))]
-
 
     def _getmaineffect(self, ref=-1):
         v = list(self._terms.copy())
