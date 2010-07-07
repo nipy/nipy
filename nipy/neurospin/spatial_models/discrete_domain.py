@@ -117,7 +117,7 @@ def smatrix_from_nd_idx(idx, nn=0):
     E = 2*np.size(eA)
     # create a graph structure
     if E==0:
-       return np.arange(n) 
+        return sp.coo_matrix((n, n))
 
     edges = np.vstack((np.hstack((eA, eB)), np.hstack((eB, eA)))).T
     weights = np.ones(E)

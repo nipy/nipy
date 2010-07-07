@@ -212,14 +212,25 @@ class MultipleROI(object):
             if len(topology) != self.k:
                 raise ValueError, 'Topology should have length %d' %self.k
             for k in range(self.k):
-                if self.size[k]==1:
-                    continue
+                #if self.size[k]==1:
+                #    continue
                 if topology[k].shape != (self.size[k], self.size[k]):
                     raise ValueError, 'Incorrect shape for topological model'
                 self.topology.append(topology[k])
 
         self.referential = referential
         self.features = {}
+
+    def copy(self, id=''):
+        """ Returns a copy of self
+        """
+        cp = MultipleROI( self.k, self.coord.copy(), self.local_volume.copy(),
+                          referential=self.referential, id=id )
+        for fid in self.features.keys():
+            f = self.features.pop(fid)
+            sf = [f[k].copy() for k in range(self.k)]
+            cp.set_feature(fid, sf)
+        return cp
         
     def get_coord(self, k):
         """ returns self.coord[k]
@@ -249,13 +260,16 @@ class MultipleROI(object):
         auto: bool, optional,
               if True then self = self.select()
         """
-        if valid != self.k:
+        if valid.size != self.k:
             raise ValueError, 'Invalid size for valid'
 
         svol = [self.local_volume[k] for k in range(self.k) if valid[k]]
-        stopo = [self.topology[k] for k in range(self.k) if valid[k]]
+        if self.topology is not None:
+            stopo = [self.topology[k] for k in range(self.k) if valid[k]]
+        else:
+            stopo = []
         scoord = [self.coord[k] for k in range(self.k) if valid[k]]
-        DD = Multiple_ROI(self.dim, valid.sum(), scoord, svol, stopo,
+        DD = MultipleROI(self.dim, valid.sum(), scoord, svol, stopo,
                           self.referential, id)
 
         for fid in self.features.keys():

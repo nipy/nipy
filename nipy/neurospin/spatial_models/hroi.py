@@ -187,7 +187,7 @@ class NestedROI(MultipleROI):
         """
         self.parents = np.ravel(parents)
         k = parents.size
-        MultipleROI.__init__(self, dim, k, coord, local_volume, topology=None,
+        MultipleROI.__init__(self, dim, k, coord, local_volume, topology,
                              referential, id)
 
     def select(self, valid, id=''):
@@ -196,11 +196,15 @@ class NestedROI(MultipleROI):
         Note that auto=True automatically
         """
         MultipleROI.select(self, valid, auto=True)
+        stop
+        print self.parents
         if np.sum(valid)==0:
             self.parents=[]
+            self.k = 0
         else:
             self.parents = Forest(self.parents).subforest(valid).parents
-            
+            self.k = np.size(parents)
+            print self.parents
 
         
     def make_graph(self):
@@ -285,27 +289,59 @@ class NestedROI(MultipleROI):
             i = i[0]
             if np.sum(i!=j)==1:
                 i = int(i[i!=j])
-                di = self.xyz[i]
-                dj =  self.xyz[j]
-                self.xyz[i] = np.vstack((di,dj))
+                di = self.coord[i]
+                dj =  self.coord[j]
+                self.coord[i] = np.vstack((di, dj))
+                di = self.local_volume[i]
+                dj =  self.local_volume[j]
+                self.local_volume[i] = np.vstack((di, dj))
                 self.parents[i] = self.parents[j]
                 valid[j] = 0
-                fids = self.discrete_features.keys()
+                fids = self.features.keys()
                 for fid in fids:
-                        di = self.discrete_features[fid][i]
-                        dj = self.discrete_features[fid][j]
-                        self.discrete_features[fid][i] = np.vstack((di,dj))
-
+                    di = self.features[fid][i]
+                    dj = self.features[fid][j]
+                    self.features[fid][i] = np.vstack((di, dj))
+                    
         # finally remove  the non-valid items
         fids = self.roi_features.keys()
-        for fid in fids: self.remove_roi_feature(fid)
-        self.clean(valid)
+        for fid in fids: self.remove_feature(fid)
+        self.select(valid)
     
     def get_parents(self):
         return self.parents
 
     def get_k(self):
-       return self.k
+        return self.k
+
+    def reduce_to_leaves(self):
+        """
+        create a  new set of rois which are only the leaves of self
+        """
+        isleaf = Forest(self.k, self.parents).isleaf()
+        k = np.sum(isleaf.astype(np.int))
+        if self.k==0: return NestedROI()
+       
+        parents = np.arange(k)
+        coord = [self.coord[k] for k in np.nonzero(isleaf)[0]]
+        vol = [self.local_volume[k] for k in np.nonzero(isleaf)[0]]
+        nroi = NestedROI(k, parents, coord, local_volume,
+                         referential=self.referential)
+            
+        # now copy the features
+        fids = self.features.keys()
+        for fid in fids:
+            df = [self.features[fid][k] for k in range(self.k) if isleaf[k]]
+            nroi.set_feature(fid, df)
+        return nroi
+
+    def copy(self, id=''):
+        """
+        returns a copy of self
+        """
+        cp = MultipleROI.copy(self, id)
+        cp.parents = self.parents.copy()
+        return cp
 
 
 class NROI_dep(MultipleROI, Forest):
