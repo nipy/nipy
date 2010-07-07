@@ -64,7 +64,7 @@ def protocol(recarr, design_type, *hrfs):
     _begin = recarr['time'][~keep]
 
     termdict = {}        
-    termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
+    termdict['begin'] = utils.define('begin', utils.events(_begin, f=hrf.glover))
     drift = formula.natural_spline(utils.T,
                                    knots=[N_ROWS/2.+1.25],
                                    intercept=True)
@@ -83,7 +83,7 @@ def protocol(recarr, design_type, *hrfs):
         for l, h in enumerate(hrfs):
             k = np.array([events[i] == v for i in 
                           range(times.shape[0])])
-            termdict['%s%d' % (v,l)] = formula.define("%s%d" % (v, l), 
+            termdict['%s%d' % (v,l)] = utils.define("%s%d" % (v, l), 
                                                       utils.events(times[k], f=h))
     f = formula.Formula(termdict.values())
     Tcontrasts = {}
@@ -137,7 +137,7 @@ def altprotocol(d, design_type, *hrfs):
     d = d[keep]
 
     termdict = {}        
-    termdict['begin'] = formula.define('begin', utils.events(_begin, f=hrf.glover))
+    termdict['begin'] = utils.define('begin', utils.events(_begin, f=hrf.glover))
     drift = formula.natural_spline(utils.T,
                                    knots=[N_ROWS/2.+1.25],
                                    intercept=True)
@@ -171,7 +171,7 @@ def altprotocol(d, design_type, *hrfs):
             # 'average0', 'speaker1'
             # and values  that are sympy expressions like average0(t), 
             # speaker1(t)
-            termdict['%s%d' % (key, l)] = formula.define("%s%d" % (key, l), symb)
+            termdict['%s%d' % (key, l)] = utils.define("%s%d" % (key, l), symb)
 
     f = formula.Formula(termdict.values())
 

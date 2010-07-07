@@ -447,8 +447,8 @@ def _polydrift(order, tmax):
     pt = []
     # fixme : ideally  this should be orthonormalized  
     for k in range(order):
-        pt.append(formula.define('poly_drift_%d'%(k+1),t**(k+1)/tmax**(k+1))) 
-    pt.append(formula.define('constant',1.0+0*t))
+        pt.append(utils.define('poly_drift_%d'%(k+1),t**(k+1)/tmax**(k+1))) 
+    pt.append(utils.define('constant',1.0+0*t))
     pol =  formula.Formula(pt)
     return pol
 
@@ -473,8 +473,8 @@ def _cosinedrift(hfcut, tmax, tsteps):
     order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
     for k in range(1,order):
         u = np.sqrt(2.0/tmax) * utils.sympy_cos(np.pi*(t/tmax+ 0.5/tsteps)*k )
-        pt.append(formula.define('cosine_drift_%d'%(k+1),u)) 
-    pt.append(formula.define('constant',1.0+0*t))
+        pt.append(utils.define('cosine_drift_%d'%(k+1),u)) 
+    pt.append(utils.define('constant',1.0+0*t))
     cos =  formula.Formula(pt)
     return cos
 
@@ -488,7 +488,7 @@ def _blankdrift():
     df  a formula that contains a constant regressor
     """
     t = formula.Term('t')
-    pt = [formula.define('constant',1.0+0*t)]
+    pt = [utils.define('constant',1.0+0*t)]
     df =  formula.Formula(pt)
     return df
 
@@ -581,14 +581,14 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
         if nos>0:
             if typep=='event':
                 if hrf_model=="Canonical":
-                    c = formula.define(names[nc],
+                    c = utils.define(names[nc],
                                        utils.events(onsets, values, f=hrf.glover))
                     listc.append(c)
                     hnames.append(names[nc])
                 elif hrf_model=="Canonical With Derivative":
-                    c1 = formula.define(names[nc],
+                    c1 = utils.define(names[nc],
                                         utils.events(onsets, values, f=hrf.glover))
-                    c2 = formula.define(names[nc]+"_derivative",
+                    c2 = utils.define(names[nc]+"_derivative",
                                         utils.events(onsets, values, f=hrf.dglover))
                     listc.append(c1)
                     listc.append(c2)
@@ -603,7 +603,7 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
                         changes = changes[ochanges]
                         lvalues = lvalues[ochanges]
                         
-                        c = formula.define(lnames, utils.step_function(changes, lvalues))
+                        c = utils.define(lnames, utils.step_function(changes, lvalues))
 
                         listc.append(c)
                         hnames.append(lnames)

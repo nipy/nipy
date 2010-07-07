@@ -8,13 +8,16 @@ import numpy as np
 
 from nipy.modalities.fmri.formula import Term
 from nipy.modalities.fmri.aliased import lambdify
-from nipy.modalities.fmri.utils import (events,
-                                        blocks,
-                                        interp,
-                                        linear_interp,
-                                        step_function,
-                                        convolve_functions,
-                                        )
+from nipy.modalities.fmri.utils import (
+    lambdify_t,
+    define,
+    events,
+    blocks,
+    interp,
+    linear_interp,
+    step_function,
+    convolve_functions,
+    )
 from sympy import Symbol, Function, DiracDelta
 import nipy.modalities.fmri.hrf as mfhrf
 
@@ -26,6 +29,17 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 from nipy.testing import parametric
 
 t = Term('t')
+
+
+@parametric
+def test_define():
+    expr = sympy.exp(3*t)
+    yield assert_equal(str(expr), 'exp(3*t)')
+    newf = define('f', expr)
+    yield assert_equal(str(newf), 'f(t)')
+    f = lambdify_t(newf)
+    tval = np.random.standard_normal((3,))
+    yield assert_almost_equal(np.exp(3*tval), f(tval))
 
 
 @parametric

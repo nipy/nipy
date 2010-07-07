@@ -78,20 +78,6 @@ def test_contrast1():
     yield assert_almost_equal, C['both'], np.array([[1,-1,0],[1,1,0]])
 
 
-def test_define():
-    t = F.Term('t')
-    expr = sympy.exp(3*t)
-    yield assert_equal, str(expr), 'exp(3*t)'
-
-    newf = F.define('f', expr)
-    yield assert_equal, str(newf), 'f(t)'
-
-    f = aliased.lambdify(t, newf)
-
-    tval = np.random.standard_normal((3,))
-    yield assert_almost_equal, np.exp(3*tval), f(tval)
-
-
 def test_formula_from_recarray():
     D = np.rec.array([
             (43, 51, 30, 39, 61, 92, 'blue'),

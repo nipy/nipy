@@ -51,6 +51,40 @@ def lambdify_t(expr):
     return lambdify(T, expr)
 
 
+def define(name, expr):
+    """
+    Take an expression of 't' (possibly complicated)
+    and make it a '%s(t)' % name, such that
+    when it evaluates it has the right values.
+
+    Parameters
+    ----------
+    expr : sympy expression, with only 't' as a Symbol
+    name : str
+
+    Returns
+    -------
+    nexpr: sympy expression
+
+    Examples
+    --------
+    >>> t = Term('t')
+    >>> expr = t**2 + 3*t
+    >>> print expr
+    3*t + t**2
+    >>> newexpr = define('f', expr)
+    >>> print newexpr
+    f(t)
+    >>> f = lambdify_t(newexpr)
+    >>> f(4)
+    28
+    >>> 3*4+4**2
+    28
+    """
+    v = lambdify_t(expr)
+    return aliased_function(name, v)(T)
+
+
 def fourier_basis(freq):
     """ sin and cos Formula for Fourier drift
 
@@ -416,3 +450,5 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     time = time[0:_minshape]
     value = value[0:_minshape]
     return interp(time, value, bounds_error=False, name=name)
+
+
