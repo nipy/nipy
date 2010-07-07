@@ -5,6 +5,9 @@ fMRI Design Matrix creation functions.
 """
 
 import numpy as np
+
+import sympy
+
 from nipy.modalities.fmri import formula, utils, hrf
 
 ##########################################################
@@ -472,7 +475,7 @@ def _cosinedrift(hfcut, tmax, tsteps):
     pt = []
     order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
     for k in range(1,order):
-        u = np.sqrt(2.0/tmax) * utils.sympy_cos(np.pi*(t/tmax+ 0.5/tsteps)*k )
+        u = np.sqrt(2.0/tmax) * sympy.cos(np.pi*(t/tmax+ 0.5/tsteps)*k )
         pt.append(utils.define('cosine_drift_%d'%(k+1),u)) 
     pt.append(utils.define('constant',1.0+0*t))
     cos =  formula.Formula(pt)

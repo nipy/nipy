@@ -24,14 +24,11 @@ import numpy as np
 import numpy.fft as FFT
 from scipy.interpolate import interp1d
 
+import sympy
 from sympy import DiracDelta, Symbol 
-from sympy import sin as sympy_sin
-from sympy import cos as sympy_cos
-from sympy import pi as sympy_pi
 
 from . import formula
 from .formula import Term
-from . import aliased
 from .aliased import aliased_function, lambdify
 
 T = Term('t')
@@ -52,14 +49,17 @@ def lambdify_t(expr):
 
 
 def define(name, expr):
-    """
-    Take an expression of 't' (possibly complicated)
-    and make it a '%s(t)' % name, such that
-    when it evaluates it has the right values.
+    """ Create function of t expression from arbitrary expression `expr`
+    
+    Take an arbitrarily complicated expression `expr` of 't' and make it
+    an expression that is a simple function of t, of form ``'%s(t)' %
+    name`` such that when it evaluates (via ``lambdify``) it has the
+    right values.
 
     Parameters
     ----------
-    expr : sympy expression, with only 't' as a Symbol
+    expr : sympy expression
+       with only 't' as a Symbol
     name : str
 
     Returns
@@ -81,8 +81,12 @@ def define(name, expr):
     >>> 3*4+4**2
     28
     """
-    v = lambdify_t(expr)
-    return aliased_function(name, v)(T)
+    # make numerical implementation of expression
+    v = lambdify(T, expr)
+    # convert numerical implementation to sympy function
+    f = aliased_function(name, v)
+    # Return expression that is function of time
+    return f(T)
 
 
 def fourier_basis(freq):
@@ -111,8 +115,8 @@ def fourier_basis(freq):
     """
     r = []
     for f in freq:
-        r += [sympy_cos((2*sympy_pi*f*T)),
-              sympy_sin((2*sympy_pi*f*T))]
+        r += [sympy.cos((2*sympy.pi*f*T)),
+              sympy.sin((2*sympy.pi*f*T))]
     return formula.Formula(r)
 
 
@@ -414,8 +418,9 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     conv(t)
 
     Get the numerical values for a time vector
-    
-    >>> ftri = aliased.lambdify(t, tri)
+
+    >>> from nipy.modalities.fmri.utils import lambdify
+    >>> ftri = lambdify(t, tri)
     >>> x = np.linspace(0,2,11)
     >>> y = ftri(x)
 
