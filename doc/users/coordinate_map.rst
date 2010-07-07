@@ -808,7 +808,7 @@ AffineTransform(
 
 The float64 appearing above is a way of specifying that the "coordinate systems" are vector spaces over the real numbers, rather than, say the complex numbers. It is specified as an optional argument to CoordinateSystem.
 
-Compare this to the way a MINC file is described:
+Compare this to the way a MINC file is described::
 
 ------------------------------------------------------
 jtaylo@ubuntu:~$ mincinfo data.mnc

@@ -1,10 +1,12 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Utility functions for mutli-subjectParcellation:
 this basically uses nipy io lib to perform IO opermation 
 in parcel definition processes
 """
 
-
+from nipy.neurospin.clustering import kmeans
 import numpy as np
 import os.path
 from nipy.io.imageformats import load, save, Nifti1Image 
@@ -375,7 +377,7 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     import nipy.neurospin.graph as fg
     import nipy.neurospin.graph.field as ff
     
-    if method not in ['ward','gkm','ward_and_gkm']:
+    if method not in ['ward','gkm','ward_and_gkm','kmeans']:
         raise ValueError, 'unknown method'
     if nn not in [6,18,26]:
         raise ValueError, 'nn should be 6,18 or 26'
@@ -390,21 +392,22 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     xyz = np.array(np.where(mask>0)).T
     nvox = xyz.shape[0]
 
-    # 1.2 get the main cc of the graph 
-    # to remove the small connected components
-    g = fg.WeightedGraph(nvox)
-    g.from_3d_grid(xyz.astype(np.int),nn)
-
-    aux = np.zeros(g.V).astype('bool')
-    imc = g.main_cc()
-    aux[imc]= True
-    if np.sum(aux)==0:
-        raise ValueError, "empty mask. Cannot proceed"
-    g = g.subgraph(aux)
-    lmask = np.zeros(ref_dim)
-    lmask[xyz[:,0],xyz[:,1],xyz[:,2]]=aux
-    xyz = xyz[aux,:]
-    nvox = xyz.shape[0]
+    if method is not 'kmeans':
+        # 1.2 get the main cc of the graph 
+        # to remove the small connected components
+        g = fg.WeightedGraph(nvox)
+        g.from_3d_grid(xyz.astype(np.int),nn)
+        
+        aux = np.zeros(g.V).astype('bool')
+        imc = g.main_cc()
+        aux[imc]= True
+        if np.sum(aux)==0:
+            raise ValueError, "empty mask. Cannot proceed"
+        g = g.subgraph(aux)
+        lmask = np.zeros(ref_dim)
+        lmask[xyz[:,0],xyz[:,1],xyz[:,2]]=aux
+        xyz = xyz[aux,:]
+        nvox = xyz.shape[0]
 
     # 1.3 from vox to mm
     xyz2 = np.hstack((xyz,np.ones((nvox,1))))
@@ -421,11 +424,15 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     beta = np.array(beta).T
 
     #step 2: parcel the data ---------------------------
-    feature = np.hstack((beta,mu*coord/np.std(coord)))
-    g = ff.Field(nvox,g.edges,g.weights,feature)
+    feature = np.hstack((beta, mu*coord/np.std(coord)))
+    if method is not 'kmeans':
+        g = ff.Field(nvox, g.edges, g.weights, feature)
+
+    if method=='kmeans':
+        cent, u, J = fc.kmeans(feature, nbparcel)
 
     if method=='ward':
-        u,J0 = g.ward(nbparcel)
+        u, J0 = g.ward(nbparcel)
 
     if method=='gkm':
         seeds = np.argsort(np.random.rand(g.V))[:nbparcel]
@@ -451,6 +458,8 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     if fullpath is not None:
         LabelImage = fullpath
     elif write_dir is not None:
+        if method=='kmeans':
+            LabelImage = os.path.join(write_dir,"parcel_kmeans.nii")
         if method=='ward':
             LabelImage = os.path.join(write_dir,"parcel_wards.nii")
         elif method=='gkm':

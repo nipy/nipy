@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 The base volumetric field interface 
 
@@ -88,7 +90,7 @@ class VolumeField(object):
 
 
     def as_volume_img(self, affine=None, shape=None,
-                        interpolation=None):
+                        interpolation=None, copy=True):
         """ Resample the image to be an image with the data points lying
             on a regular grid with an affine mapping to the word space (a
             nipy VolumeImg).

@@ -1,5 +1,6 @@
-from registration_module import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
-
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
+from _registration import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
 from nipy.neurospin.image import apply_affine
 
 import numpy as np

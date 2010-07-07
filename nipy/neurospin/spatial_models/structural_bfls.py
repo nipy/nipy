@@ -1,3 +1,5 @@
+# vi: set ft=python sts=4 ts=4 sw=4 et:
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 """ 
 The main routine of this module aims at performing the
 extraction of ROIs from multisubject dataset using the localization.
@@ -32,7 +34,7 @@ class landmark_regions(hroi.NROI):
     from which subjects at which position it is found.
     """
     def __init__(self, k, parents=None, affine=np.eye(4), shape=None,
-                 id=None, subj=None, coord=None):
+                 id=None, subj=None, coord=None, dmax=1.):
         """
         Building the landmark_region
 
@@ -42,13 +44,16 @@ class landmark_regions(hroi.NROI):
         parents = None: array of shape(self.k) describing the
                 hierarchical relationship
                 if None, parents = np.arange(k) is used instead
-        affine=np.eye(4), array of shape(4,4)
+        affine=np.eye(4), array of shape(4, 4)
             coordinate-defining affine transformation
         shape=None, tuple of length 3 defining the size of the grid
             implicit to the discrete ROI definition  
         subj=None: k-length list of subjects
                    (these correspond to ROI feature)
-        coord=None; k-length list of coordinate arrays
+        coord:  k-length list of arrays
+                coordinates of the nodes in some embedding space. 
+        dmax: float, optional,
+              regularizing prior on region width estimate
 
         fixme
         -----
@@ -62,7 +67,8 @@ class landmark_regions(hroi.NROI):
         hroi.NROI.__init__(self, parents, affine, shape, xyz=xyz, id=id)
         self.set_discrete_feature('position',coord)
         self.subj = subj
-
+        self.dmax = dmax
+        
     def centers(self):
         """
         c = self.centers()
@@ -82,22 +88,28 @@ class landmark_regions(hroi.NROI):
              edk = dr.Euclidian_distance(coord[k]) 
              h[k] = edk.sum()/(size[k]*(size[k]-1))
         return h
-             
-    def HPD(self, k, cs, pval=0.95, dmax=1.0):
+
+    def density (self, k, cs, dmax=None, dof=10):
         """
-        Sample the postreior density of being in k
-        on a grid defined by cs, assuming that the roi is an ellipsoid
-        
+        Posterior density of component k
+
         Parameters
         ----------
-        cs array of shape(n,dim): a set of input coordinates
-        pval=0.95: cutoff for the CR
-        dmax=1.0: an upper bound for the spatial variance
-                  to avoid degenerate variance
-        
-        Results
+        k: int, less or equal to self.k
+           reference component
+        cs: array of shape(n, dim)
+            a set of input coordinates
+        dmax: float, optional
+              regularizaing constant for tha variance estimation
+        dof: float, optional,
+             strength of the regulaization
+
+        Returns
         -------
-        hpd array of shape(n) that yields the value
+        pd: array of shape(n)
+            the posterior density that has been computed
+        delta: array of shape(n)
+               the quadratic term in the gaussian model
         """
         if k>self.k:
             raise ValueError, 'wrong region index'
@@ -108,20 +120,50 @@ class landmark_regions(hroi.NROI):
         
         if cs.shape[1]!=dim:
             raise ValueError, "incompatible dimensions"
-        
+
+        if dmax==None:
+            dmax = self.dmax
+            
+        n_points = coord.shape[0]
         dx = coord-centers[k]
-        covariance = np.dot(dx.T,dx)/coord.shape[0]
-        import numpy.linalg as L
-        U,S,V = L.svd(covariance,0)
-        eps = (dmax**2)/coord.shape[0]
-        sqrts = np.sqrt(1/np.maximum(S,eps))
+        covariance = np.dot(dx.T, dx) / n_points
+        from numpy.linalg import svd
+        U,S,V = svd(covariance,0)
+        #eps = (dmax**2)/coord.shape[0]
+        #sqrts = np.sqrt(1/np.maximum(S, eps))
+        dof = 10
+        S = (n_points*S + dmax**2 * np.ones(dim)*dof)/(n_points + dof)
+        sqrts = 1. / np.sqrt(S)
         dx = cs-centers[k]
-        dx = np.dot(dx,U)
-        dx = np.dot(dx,np.diag(sqrts))
+        dx = np.dot(dx, U)
+        dx = np.dot(dx, np.diag(sqrts))
         delta = np.sum(dx**2,1)
         lcst = -np.log(2*np.pi)*dim/2+(np.log(sqrts)).sum()
-        hpd = np.exp(lcst-delta/2)
-
+        pd = np.exp(lcst-delta/2)
+        return pd, delta
+        
+    def HPD(self, k, cs, pval=0.95, dmax=1.0):
+        """
+        Sample the posterior probability of being in k
+        on a grid defined by cs, assuming that the roi is an ellipsoid
+        
+        Parameters
+        ----------
+        k: int, less or equal to self.k
+           reference component
+        cs: array of shape(n,dim)
+            a set of input coordinates
+        pval: float<1, optional,
+              cutoff for the CR
+        dmax=1.0: an upper bound for the spatial variance
+                  to avoid degenerate variance
+        
+        Returns
+        -------
+        hpd array of shape(n) that yields the value
+        """
+        hpd, delta = self.density (k, cs, dmax)
+        
         import scipy.special as sp
         gamma = 2*sp.erfinv(pval)**2
         #
@@ -176,7 +218,7 @@ class landmark_regions(hroi.NROI):
         dmax=1. : an upper bound for the spatial variance
                 to avoid degenerate variance
     
-        Results
+        Returns
         -------
         label: array of shape (n): the posterior labelling
         """
@@ -190,8 +232,6 @@ class landmark_regions(hroi.NROI):
             label[maux>0] = np.argmax(aux,1)[maux>0]
         return label
 
-    
-
     def show(self):
         """function to print basic information on self
         """
@@ -204,7 +244,7 @@ class landmark_regions(hroi.NROI):
 
     def roi_confidence(self, ths=0, fid='confidence'):
         """
-        assuming that fid='confidence' field has been set 
+        assuming that a certain feature fid field has been set 
         as a discrete feature,
         this creates an approximate p-value that states 
         how confident one might 
@@ -216,13 +256,16 @@ class landmark_regions(hroi.NROI):
         ----------
         ths: integer that yields the representativity threshold 
         
-        Results
+        Returns
         -------
         pvals: array of shape self.k
                the p-values corresponding to the ROIs
         """
         pvals = np.zeros(self.k)
+
+        # the feature has not been defined
         if self.discrete_features.has_key(fid)==False:
+            print 'using per ROI subject counts'
             for j in range(self.k):
                 subjj = self.subj[j]
                 pvals[j] = np.size(np.unique(subjj))
@@ -241,8 +284,7 @@ class landmark_regions(hroi.NROI):
                     # If noise is too low the variance is 0: ill-defined:
                     vp = max(vp, 1e-14)
                     
-                pvals[j] = stats.norm.sf(ths,mp,np.sqrt(vp))
-                #print ths-mp, mp, np.sqrt(vp),pvals[j],len(np.unique(subjj))
+                pvals[j] = stats.norm.sf(ths, mp, np.sqrt(vp))
         return pvals
 
     def roi_prevalence(self, fid='confidence'):
@@ -252,7 +294,7 @@ class landmark_regions(hroi.NROI):
         this creates the expectancy of the confidence measure
         i.e. expected numberof  detection of the roi in the observed group
              
-        Results
+        Returns
         -------
         confid: array of shape self.k
                the population_prevalence
@@ -287,7 +329,7 @@ class landmark_regions(hroi.NROI):
         cs = np.dot(np.hstack((cs,np.ones((gs,1)))),self.affine.T)[:,:3]
         return cs
         
-    def feature_map(self, feature, imPath=None, pw=0.95):
+    def feature_map(self, feature, pw=0.95):
         """
         Given a set of feature values, produce a feature map,
         assuming that one feature corresponds to one region
@@ -295,46 +337,56 @@ class landmark_regions(hroi.NROI):
         Parameters
         ----------
         feature, array of shape (self.k) : the information to map
-        imPath=None, string yielding the output image path
-                     if not None
         pw=0.95: volume of the Gaussian ellipsoid associated with the ROIs
         
         Returns
         -------
-        The image object
+        
         """
         if np.size(feature)!=self.k:
             raise ValueError, 'Incompatible feature dimension'
-        from nipy.io.imageformats import save, Nifti1Image          
                 
         label = self.map_label(self.generate_coordinates(), pval=pw)
         label = np.reshape(label, self.shape)
-        values = np.zeros(self.shape)
-        values[label>-1] = feature[label[label>-1].astype(np.int)]
-        wim = Nifti1Image(values, self.affine)
-        wim.get_header()['descrip']='feature image'
-        if imPath!=None:
-           save(wim,imPath)
+        return feature[label[label>-1].astype(np.int)]
         
-        return wim
-    
-    def prevalence_map(self, imPath=None, pw=0.95):
+    def weighted_feature_density(self, feature):
         """
-        Particular feature map where feature self.roi_prevalence()
+        Given a set of feature values, produce a weighted feature map,
+        where roi-levle features are mapped smoothly based on the density
+        of the components 
         
         Parameters
         ----------
-        imPath=None, string yielding the output image path
-                     if not None
-        pw=0.95: volume of the Gaussian ellipsoid associated with the ROIs
-        
+        feature: array of shape (self.k),
+                 the information to map
+x        
         Returns
         -------
-        The image object
+        wsm: array of shape(self.shape)
         """
-        return self.feature_map(self.roi_prevalence(), imPath, pw)
+        if np.size(feature)!=self.k:
+            raise ValueError, 'Incompatible feature dimension'
 
-def build_LR(BF,ths=0):
+        cs = self.generate_coordinates()
+        aux = np.zeros((cs.shape[0], self.k))
+        for k in range(self.k):
+            aux[:, k], _ = self.density(k, cs)
+            
+        wsum = np.dot(aux, feature)
+        return np.reshape(wsum, self.shape)
+    
+    def prevalence_density(self):
+        """
+        returns a weighted map of self.prevalence
+             
+        Returns
+        -------
+        wp: array of shape(n_samples)
+        """
+        return self.weighted_feature_density(self.roi_prevalence())
+
+def build_LR(BF, ths=0):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
@@ -347,7 +399,7 @@ def build_LR(BF,ths=0):
     ths=0 defines the condition (c):
           A label should be present in ths subjects in order to be valid
     
-    Results
+    Returns
     -------
     LR : a Landmark_regions instance that describes the ROIs found
        in inter-subject inference
@@ -357,6 +409,10 @@ def build_LR(BF,ths=0):
     Note
     ----    
     if no LR can be created then LR=None as an output argument
+
+    fixme
+    -----
+    should be replaces by bsa.infer_LR, with a couple of changes
     """
     nbsubj = np.size(BF)
     subj = [s*np.ones(BF[s].k) for s in range(nbsubj) if BF[s]!=None]
@@ -369,6 +425,10 @@ def build_LR(BF,ths=0):
     intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj)\
                                                    if BF[s]!=None])
    
+    for s in range(nbsubj):
+        if BF[s]is not None:
+            dim = len(BF[s].shape)
+    
     coords = []
     subjs = []
     
@@ -386,7 +446,7 @@ def build_LR(BF,ths=0):
         if  (q>ths):
             valid[i]=1
             sj = np.size(j)
-            coord = np.zeros((sj,3),np.float)
+            coord = np.zeros((sj, dim),np.float)
             for a in range(sj):
                 sja = subj[j[a]]
                 isja = intrasubj[j[a]]
@@ -418,7 +478,7 @@ def build_LR(BF,ths=0):
 
 
 def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0, 
-                               dev=0, nrec=5, nsamples=10):
+                          nrec=5, nsamples=10):
     """
     Computation of the positions where there is a significant
     spatial accumulation of pointwise ROIs. The significance is taken with
@@ -436,15 +496,12 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
               NB: the p-value is corrected only for the number of ROIs
               per subject
     verbose=0: verbosity mode
-    dev=0: If dev=1, a different technique is used for density estimation
-           (WIP)
     nrec=5: number of recursions in the test: When some regions fail to be
             significant at one step, the density is recomputed, 
             and the test is performed again and so on
                 
     Note
     ----
-    19/02/07: new version without the monotonic exclusion heuristic 
     Caveat 1: The NROI instances in BFLs must have a 'position' feature 
            defined beforehand
     Caveat 2: BFLs is edited and modified by this function
@@ -469,21 +526,13 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
     while np.sum((nlm0-nlm)**2)>0:
         nlm0 = nlm.copy()
         
-        if dev==0:
-            weight = _compute_density(BFLc,xyz,dmax)
-        else:
-            weight = _compute_density_dev(BFLc,xyz,dmax)
-
+        weight = _compute_density(BFLc, xyz, dmax)
         sweight = np.sum(weight,1)
         ssw = np.sort(sweight)
         thg = ssw[round((1-pval)*nvox)]
 
         # make surrogate data
-        if dev==0:
-            surweight = _compute_surrogate_density(BFLc,xyz,dmax,nsamples)
-        else:
-            surweight = _compute_surrogate_density_dev(BFLc,xyz,dmax,nsamples)
-        
+        surweight = _compute_surrogate_density(BFLc, xyz, dmax, nsamples)
         srweight = np.sum(surweight,1)
         srw = np.sort(srweight)
         
@@ -522,15 +571,14 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
         if Nlm==0:
             break
 
-    print q,nlm0,nlm
+    print q, nlm0, nlm
 
     for s in range(nbsubj):
         if BFLs[s]!=None:
             BFLs[s]=BFLc[s].copy()
     return a,b
 
-def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0, 
-                        dev=0, nrec=5, nsamples=10):
+def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0, nrec=5, nsamples=10):
     """
     Computation of the positions where there is a significant
     spatial accumulation of pointwise ROIs. The significance is taken with
@@ -548,15 +596,12 @@ def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0,
               NB: the p-value is corrected only for the number of ROIs
               per subject
     verbose=0: verbosity mode
-    dev=0: If dev=1, a different technique is used for density estimation
-           (WIP)
     nrec=5: number of recursions in the test: When some regions fail to be
             significant at one step, the density is recomputed, 
             and the test is performed again and so on
                 
     Note
     ----
-    19/02/07: new version without the monotonic exclusion heuristic 
     Caveat 1: The NROI instances in BFLs must have a 'position' feature 
            defined beforehand
     Caveat 2: BFLs is edited and modified by this function
@@ -572,30 +617,22 @@ def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0,
     q = 0
     while Nlm0>Nlm:
         Nlm0 = Nlm
-        if dev==0:
-            weight = _compute_density(BFLs,xyz,dmax)
-        else:
-            weight = _compute_density_dev(BFLs,xyz,dmax)
+        weight = _compute_density(BFLs,xyz,dmax)
 
         sweight = np.sum(weight,1)
         ssw = np.sort(sweight)
         thg = ssw[round((1-pval)*nvox)]
 
         # make surrogate data
-        if dev==0:
-            surweight = _compute_surrogate_density(BFLs,xyz,dmax,nsamples)
-        else:
-            surweight = _compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples)
-        
+        surweight = _compute_surrogate_density(BFLs,xyz,dmax,nsamples)
         srweight = np.sum(surweight,1)
         srw = np.sort(srweight)
         if verbose>0:
             thf = srw[int((1-min(pval,1))*nvox*nsamples)]
             mnlm = max(1,float(Nlm)/nbsubj)
             imin = min(nvox*nsamples-1,int((1.-pval/mnlm)*nvox*nsamples))
-            # print pval,mnlm, pval/mnlm, 1.-pval/mnlm,np.size(srw),imin
             thcf = srw[imin]
-            print thg,thf,thcf
+            print thg, thf, thcf
         
         if q<1:
             if verbose>1:
@@ -660,7 +697,7 @@ def _fig_density(sweight, surweight, pval, nlm):
     mp.show()
 
 
-def _compute_density(BFLs,xyz,dmax):
+def _compute_density(BFLs, xyz, dmax):
     """
     Computation of the density of the BFLs points in the xyz volume
     dmax is a scale parameter
@@ -669,39 +706,19 @@ def _compute_density(BFLs,xyz,dmax):
     nbsubj = np.size(BFLs)
     sqdmax = 2*dmax*dmax
     weight = np.zeros((nvox,nbsubj),'d')
-    nlm =np.zeros(nbsubj).astype('int')
-    for s in range(nbsubj):
-        if BFLs[s]!=None:
-            nlm[s] = BFLs[s].k
+    nlm = np.zeros(nbsubj).astype('int')
  
     for s in range(nbsubj):
-        if nlm[s]>0:
+        if BFLs[s] is not None:
             coord = BFLs[s].get_roi_feature('position')
-            for i in range(nlm[s]):
+            for i in range(BFLs[s].k):
                 dxyz = xyz - coord[i,:]
                 dw = np.exp(-np.sum(dxyz**2,1)/sqdmax)
-                weight[:,s] = weight[:,s] + dw
+                weight[:,s] += dw
     return weight
 
-                    
-def _compute_density_dev(BFLs,xyz,dmax):
-    """
-    Computation of the density of the BFLs points in the xyz volume
-    dmax is a scale parameter
-    """
-    import nipy.neurospin.utils.smoothing.smoothing as smoothing
-    nvox = xyz.shape[0]
-    nbsubj = np.size(BFLs)
-    weight = np.zeros((nvox,nbsubj),'d')
-    nlm = np.array([BFLs[s].k for s in range(nbsubj)])
-    for s in range(nbsubj):
-        if nlm[s]>0:
-            weight[BFLs[s].seed,s] = 1
-    weight = smoothing.cartesian_smoothing(np.transpose(xyz),weight,dmax)
-    weight = weight*(2*np.pi*dmax*dmax)**1.5
-    return weight
 
-def _compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
+def _compute_surrogate_density(BFLs, xyz, dmax, nsamples=1):
     """
     Cross-validated estimation of random samples of the uniform distributions
     
@@ -714,7 +731,7 @@ def _compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
     dmax kernel width of the density estimator
     nsamples=1: number of surrogate smaples returned
     
-    Results
+    Returns
     -------
     surweight: a (gs*nsamples,nsubj) array of samples
     """
@@ -729,36 +746,10 @@ def _compute_surrogate_density(BFLs,xyz,dmax,nsamples=1):
                 js = (nvox*nr.rand(nlm[s])).astype(np.int)
                 for i in range(nlm[s]):         
                     dxyz = xyz-xyz[js[i],:]
-                    dw = np.exp(-np.sum(dxyz*dxyz,1)/sqdmax)
-                    surweight[nvox*it:nvox*(it+1),s] = surweight[nvox*it:nvox*(it+1),s] + dw
+                    dw = np.exp(-np.sum(dxyz*dxyz, 1)/sqdmax)
+                    surweight[nvox*it:nvox*(it+1), s] += dw
     return surweight
 
-def _compute_surrogate_density_dev(BFLs,xyz,dmax,nsamples=1):
-    """
-    caveat: does not work for nsamples>1
-    This function computes a surrogate density 
-    using graph diffusion techniques
-    """
-    import nipy.neurospin.utils.smoothing.smoothing as smoothing
-    nvox = xyz.shape[0]
-    nbsubj = np.size(BFLs)
-    nlm = np.array([BFLs[s].k for s in range(nbsubj)])
-    aux = np.zeros((nvox, nsamples*nbsubj))
-    for s in range(nbsubj):
-        if nlm[s]>0:
-            for it in range(nsamples):
-                js = (nvox*nr.rand(nlm[s])).astype(np.int)
-                aux[js,s*nsamples+it] = 1.
-
-    aux = smoothing.cartesian_smoothing(xyz.T,aux,dmax)
-    
-    surweight = np.zeros((nvox*nsamples,nbsubj),'d')
-    for s in range(nbsubj):
-        surweight[:,s] = np.reshape(aux[:,s*nsamples:(s+1)*nsamples],
-                                        (nvox*nsamples))
-
-    surweight = surweight*(2*np.pi*dmax*dmax)**1.5
-    return surweight    
 
 def _hierarchical_asso(BF,dmax):
     """
@@ -770,7 +761,7 @@ def _hierarchical_asso(BF,dmax):
           describing ROIs from different subjects
     dmax (float): spatial scale used xhen building associtations
     
-    Results
+    Returns
     -------
     G a graph that represent probabilistic associations between all
       cross-subject pairs of regions.
@@ -813,24 +804,25 @@ def _hierarchical_asso(BF,dmax):
                         eD = np.hstack((eD,ed))
         
     if np.size(eA)>0:
-        edges = np.transpose([eA,eB]).astype(np.int)
-        Gcorr = fg.WeightedGraph(cnlm[nbsubj],edges,eD)
+        edges = np.transpose([eA, eB]).astype(np.int)
+        Gcorr = fg.WeightedGraph(cnlm[nbsubj], edges, eD)
     else:
         Gcorr = []
     return Gcorr
 
 
 
-def RD_cliques(Gc,bstochastic=1):
+def RD_cliques(Gc, bstochastic=1):
     """
     Replicator dynamics graph segmentation: python implementation
     
     Parameters
     ----------
-    Gc: graph to be segmented
+    Gc: nipy.neurospin.graph.WeightedGraph instance,
+        the graph to be segmented
     bstochastic=1 stochastic initialization of the graph
     
-    Results
+    Returns
     -------
     labels : array of shape V, the number of vertices of Gc
     the labelling of the vertices that represent the segmentation
@@ -906,7 +898,7 @@ def merge(Gc,labels):
     labels array of shape V, the number of vertices of Gc
            the labelling of the vertices that represent the segmentation
 
-    Results
+    Returns
     -------
     labels array of shape V, the new labelling after further merging
     Gr the reduced graph after merging
@@ -951,7 +943,7 @@ def segment_graph_rd(Gc, nit=1,verbose=0):
     Gc : nipy.neurospin.graph.graph.WeightedGraph instance
        the graph to be segmented
     
-    Results
+    Returns
     -------
     u : array of shape Gc.V labelling of the vertices 
       that represents the segmentation
@@ -996,7 +988,7 @@ def Compute_Amers (Fbeta, Beta, xyz, affine, shape, coord,  dmax=10.,
     pval = 0.2 : significance p-value for the spatial inference
 
     
-    Results
+    Returns
     -------
     crmap: array of shape (nnodes):
            the resulting group-level labelling of the space
@@ -1021,12 +1013,10 @@ def Compute_Amers (Fbeta, Beta, xyz, affine, shape, coord,  dmax=10.,
             bfls.set_discrete_feature_from_index('position',coord)
             bfls.discrete_to_roi_features('position','average')
             
-        #bfls.make_feature(coord,'position','mean')
         BFLs.append(bfls)
 
-    # _clean_density(BFLs,dmax,coord,pval,verbose=1,dev=0,nrec=5)
-    _clean_density_redraw(BFLs,dmax,coord,pval,verbose=0,dev=0,
-                         nrec=1,nsamples=10)
+    _clean_density_redraw(BFLs, dmax, coord, pval, verbose=0,
+                         nrec=1, nsamples=10)
     
     Gc = _hierarchical_asso(BFLs,dmax)
     Gc.weights = np.log(Gc.weights)-np.log(Gc.weights.min())

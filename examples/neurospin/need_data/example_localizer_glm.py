@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Example of (step-by-step) GLM application and result creation.
 More specifically,
@@ -17,13 +19,14 @@ import numpy as np
 import os.path as op
 import matplotlib.pylab as mp
 import pylab
+import tempfile
 
 from nipy.neurospin.utils.mask import compute_mask_files
 from nipy.io.imageformats import load, save, Nifti1Image
 import get_data_light
 import nipy.neurospin.glm
 import nipy.neurospin.utils.design_matrix as dm
-import tempfile
+from nipy.neurospin.viz import plot_map
 
 #######################################
 # Data and analysis parameters
@@ -135,4 +138,9 @@ for contrast_id in contrasts:
 #########################################
 
 print "All the  results were witten in %s" %swd
+
+kwargs={'cmap':pylab.cm.hot, 'alpha':0.7, 'vmin':2.0, 'anat':None}
+plot_map(write_array, affine, **kwargs)
+
 pylab.show()
+

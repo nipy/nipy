@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module is the interface to the bayesian_structural_analysis (bsa) module
 It handles the images provided as input and produces result images.
@@ -12,9 +14,10 @@ import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.graph.field as ff
 
 
-def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
-                   smin=0, swd=None, method='simple', subj_id=None,
-                   nbeta='default', densPath=None, crPath=None, verbose=0):
+def make_bsa_image(
+    mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5, smin=0, swd=None,
+    method='simple', subj_id=None, nbeta='default', densPath=None,
+    crPath=None, verbose=0, reshuffle=False):
     """
     main function for  performing bsa on a set of images.
     It creates the some output images in the given directory
@@ -38,7 +41,7 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     swd: string, optional
         if not None, output directory
     method='simple': applied region detection method; to be chose among
-                     'simple', 'dev','ipmi'
+                     'simple', 'ipmi'
     subj_id=None: list of strings, identifiers of the subjects.
                   by default it is range(nsubj)
     nbeta='default', string, identifier of the contrast
@@ -49,6 +52,9 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
                   if False, no ime is written
                   if None, many images are written, 
                   with paths computed from swd, subj_id and nbeta
+    reshuffle: bool, optional
+               if true, randomly swap the sign of the data
+    
     Returns
     -------
     AF: an nipy.neurospin.spatial_models.structural_bfls.landmark_regions
@@ -59,7 +65,8 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
        (one per subject) that describe the individual coounterpart of AF
 
     if method=='loo', the output is different:
-        mll, float, the average likelihood of the data under H1 after cross validation
+        mll, float, the average likelihood of the data under the model
+        after cross validation
         ll0, float the log-likelihood of the data under the global null
   
     fixme: unique mask should be allowed
@@ -96,10 +103,13 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
     for s in range(nsubj):
         rbeta = load(betas[s])
         beta = np.reshape(rbeta.get_data(), ref_dim)
-        beta = beta[mask]
-        lbeta.append(beta)
+        lbeta.append(beta[mask])
     lbeta = np.array(lbeta).T
 
+    if reshuffle:
+        rswap = 2*(np.random.randn(nsubj)>0.5)-1
+        lbeta = np.dot(lbeta, np.diag(rswap))
+        
     # launch the method
     g0 = 1.0/(np.absolute(np.linalg.det(affine))*nvox)
     bdensity = 1
@@ -112,19 +122,15 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         crmap,AF,BF,p = bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, thq, smin, ths,
                         theta, g0, bdensity, verbose=verbose)
-    if method=='dev':
-        crmap,AF,BF,p = bsa.compute_BSA_dev  (Fbeta, lbeta, coord, 
-                        dmax, xyz[:,:3], affine, ref_dim, 
-                        thq, smin,ths, theta, g0, bdensity, verbose=verbose)
     if method=='simple':
         crmap,AF,BF,p = bsa.compute_BSA_simple (Fbeta, lbeta, coord, dmax, 
                         xyz[:,:3], affine, ref_dim, 
                         thq, smin, ths, theta, g0, verbose=verbose)
         
-    if method=='simple_quick':
-        crmap,AF,BF,co_clust = bsa.compute_BSA_simple_quick(Fbeta, lbeta, coord, dmax, 
-                        xyz[:,:3], affine, ref_dim, 
-                        thq, smin, ths, theta, g0, verbose=verbose)
+    if method=='quick':
+        crmap, AF, BF, co_clust = bsa.compute_BSA_quick(
+            Fbeta, lbeta, coord, dmax,  xyz[:,:3], affine, ref_dim, 
+            thq, smin, ths, theta, g0, verbose=verbose)
         density = np.zeros(nvox)
         crmap = AF.map_label(coord,0.95,dmax)
 
@@ -141,7 +147,8 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         density = np.zeros(ref_dim)
         density[mask] = p
         wim = Nifti1Image (density, affine)
-        wim.get_header()['descrip'] = 'group-level spatial density of active regions'
+        wim.get_header()['descrip'] = 'group-level spatial density \
+                                       of active regions'
         if densPath==None:
             densPath = op.join(swd,"density_%s.nii"%nbeta)
         save(wim, densPath)
@@ -166,6 +173,12 @@ def make_bsa_image(mask_images, betas, theta=3., dmax= 5., ths=0, thq=0.5,
         wim.get_header()['descrip'] = 'group Level labels from bsa procedure'
         save(wim, crPath)
 
+        # write a prevalence image
+        crPath = op.join(swd, "prevalence_%s.nii"%nbeta)
+        wim = Nifti1Image (AF.prevalence_density(), affine)
+        wim.get_header()['descrip'] = 'Weighted prevalence image'
+        save(wim, crPath)
+            
         #write 3d images for the subjects
         for s in range(nsubj):
             LabelImage = op.join(swd,"AR_s%s_%s.nii"%(subj_id[s],nbeta))

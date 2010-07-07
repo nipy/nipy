@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 ''' Tests for data module '''
 from __future__ import with_statement
 import os
@@ -7,10 +9,6 @@ import sys
 import shutil
 import tempfile
 
-from nose import with_setup
-from nose.tools import assert_true, assert_false, assert_equal, \
-    assert_not_equal, assert_raises, raises
-
 from nipy.utils.data import get_data_path, find_data_dir, \
     DataError, _cfg_value, make_datasource, \
     Datasource, VersionedDatasource, Bomber, \
@@ -19,6 +17,12 @@ from nipy.utils.data import get_data_path, find_data_dir, \
 from nipy.utils.tmpdirs import TemporaryDirectory
 
 import nipy.utils.data as nud
+
+from nose import with_setup
+from nose.tools import assert_true, assert_false, assert_equal, \
+    assert_not_equal, assert_raises, raises
+
+from nipy.testing import parametric
 
 
 GIVEN_ENV = {}
@@ -145,10 +149,14 @@ def test_data_path():
     nud.get_nipy_system_dir = lambda : ''
     # now we should only have the default
     old_pth = get_data_path()
-    # We should have only sys.prefix in there
-    def_dir = pjoin(sys.prefix, 'share', 'nipy')
+    # We should have only sys.prefix and, iff sys.prefix == /usr,
+    # '/usr/local'.  This last to is deal with Debian patching to
+    # distutils.
+    def_dirs = [pjoin(sys.prefix, 'share', 'nipy')]
+    if sys.prefix == '/usr':
+        def_dirs.append(pjoin('/usr/local', 'share', 'nipy'))
     home_nipy = pjoin(os.path.expanduser('~'), '.nipy')
-    yield assert_equal, old_pth, [def_dir, home_nipy]
+    yield assert_equal, old_pth, def_dirs + [home_nipy]
     # then we'll try adding some of our own
     tst_pth = '/a/path' + os.path.pathsep + '/b/ path'
     tst_list = ['/a/path', '/b/ path']
@@ -165,7 +173,7 @@ def test_data_path():
             fobj.write('[DATA]\n')
             fobj.write('path = %s' % tst_pth)
         os.environ[USER_KEY] = tmpdir
-        yield assert_equal, get_data_path(), tst_list + [def_dir, tmpdir]
+        yield assert_equal, get_data_path(), tst_list + def_dirs + [tmpdir]
     del os.environ[USER_KEY]
     yield assert_equal, get_data_path(), old_pth
     # with some trepidation, the system config files
@@ -258,3 +266,4 @@ def test__datasource_or_bomber():
         ds = _datasource_or_bomber('pkg')
         fn = ds.get_filename('some_file.txt')
     
+

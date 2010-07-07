@@ -1,12 +1,13 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Example of a script that uses the BSA (Bayesian Structural Analysis)
--- nipy.neurospin.spatial_models.bayesian_structural_analysis --
+i.e. nipy.neurospin.spatial_models.bayesian_structural_analysis
 module
 
-Please adapt the image paths to make it work on your own data
-
-Author : Bertrand Thirion, 2008-2009
+Author : Bertrand Thirion, 2008-2010
 """
+print __doc__
 
 #autoindent
 import numpy as np
@@ -32,18 +33,19 @@ betas =[ op.join(data_dir,'spmT_%04d_subj_%02d.nii'%(nbeta,n))
 
 # set various parameters
 subj_id = ['%04d' %i for i in range(12)]
-theta = float(st.t.isf(0.01,100))
-dmax = 5.
+theta = float(st.t.isf(0.01, 100))
+dmax = 4.
 ths = 0 #2# or nbsubj/4
 thq = 0.95
 verbose = 1
 smin = 5
 swd = tempfile.mkdtemp()
-method='simple'
+method = 'quick'
+print 'method used:', method
 
 # call the function
-AF, BF = make_bsa_image(mask_images, betas, theta, dmax,
-                        ths, thq, smin, swd, method, subj_id, '%04d'%nbeta)
+AF, BF = make_bsa_image(mask_images, betas, theta, dmax, ths, thq, smin, swd,
+                        method, subj_id, '%04d'%nbeta, reshuffle=True)
 
 # Write the result. OK, this is only a temporary solution
 import pickle

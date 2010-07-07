@@ -8,24 +8,6 @@ This document will serve to organize current development work on nipy.
 It will include current sprint items, future feature ideas, and design
 discussions, etc...
 
-Current Sprint
-==============
-
-**Goal for Feb 27**
-
-Cleanup and document the Image and CoordinateMap classes.  There have
-been various changed to the CoordinateMap classes lately, merge
-Jonathan's branch, finish remaining changes, update docstrings and
-doctests.  Write tutorials explaining these base classes.
-
-Working prototype for interfacing with SPM.
-
-Working prototype for registration visualization.
-
-**Goal for March 20**
-
-Review fff2.neuro code and prepare for sprint.
-
 Documentation
 =============
 
@@ -59,13 +41,8 @@ specific order):
 Bugs
 ====
 
-These should be moved to the nipy_ bug section on launchpad.  Placed
+These should be moved to the nipy_ bug section on github.  Placed
 here until they can be input.
-
-
-* Fix fmri.pca module.  Internally it's referencing old image api that
-  no longer exists like Image.slice_iterator.  Currently all tests are
-  skipped or commented out.
 
 * Fix possible precision error in
   fixes.scipy.ndimage.test_registration function
@@ -82,27 +59,6 @@ here until they can be input.
 
 Refactorings
 ============
-
-* Remove path.py and replace datasource with numpy's version.
-  datasource and path.py cleanup should be done together as nipy's
-  datasource is one of the main users of path.py:
-
-  * Convert from nipy datasource to numpy datasource.  Then remove
-    nipy's datasource.py
-
-  * Delete neuroimaging/utils/path.py.  This custom path module does
-    not provide any benefit over os.path.  Using a non-standard path
-    module adds confusion to the code.  This will require going
-    through the code base and updating all references to the path
-    module.  Perhaps a good use of grin for a global search and
-    replace.
-
-* Rewrite weave code in algorithms/statistics/intrinsic_volumes.py as
-  C extension.
-
-* Cleanup neuroimaging.testing directory.  Possibly rename 'testing'
-  to 'tests'.  Move utils.tests.data.__init__.py to tests and update
-  import statements in all test modules.
 
 * image.save function should accept filename or file-like object.  If
   I have an open file I would like to be able to pass that in also,
@@ -130,9 +86,6 @@ Refactorings
 * Look at image.merge_image function.  Is it still needed?  Does it
   fit into the current api?
 
-* Automated test for modalities.fmri.pca, check for covariance
-  diagonal structure, post pca.
-
 * FmriImageList.emptycopy() - Is there a better way to do this?
   Matthew proposed possibly implementing Gael's dress/undress metadata
   example.
@@ -144,7 +97,6 @@ Refactorings
 
 * Add test data where volumes contain intensity ramps.  Slice with
   generator and test ramp values.
-
 
 * Implement `fmriimagelist blueprint
   <https://blueprints.launchpad.net/nipy/+spec/fmriimagelist>`_.

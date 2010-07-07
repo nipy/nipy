@@ -1,4 +1,5 @@
 *.py[oc]
+*.so
 # setup.py working directory
 build
 # setup.py dist directory

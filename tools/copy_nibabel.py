@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 ''' Script to make a copy of pynifti / brifti for insertion into NIPY tree
 
 It downloads a copy from the repository, patches the paths, tests, makes
@@ -15,7 +17,7 @@ copy_brifti.py /tmp/brifti-0.4.tar.gz brifti-0.4
 cd ~/nipy-repo/trunk-lp/nipy/io
 tar zcvf /tmp/brifti-0.4.tar.gz
 
-then bzr stat, commit as necessary.
+then git stat, commit as necessary.
 
 Or, when working locally, something like:
 
