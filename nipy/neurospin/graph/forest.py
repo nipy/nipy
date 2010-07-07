@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module implements the DAG class of fff2
 Forest(WeightedGraph): This is a special case of a Weighted Graph (i.e.  a set of trees)
@@ -377,7 +379,7 @@ class Forest(WeightedGraph):
         depth = self.depth_from_leaves()
         return depth.max()+1
 
-    def propagate_upward_and(self,prop):
+    def propagate_upward_and(self, prop):
         """
         propagates some binary property in the forest
         that is defined in the leaves
@@ -394,7 +396,7 @@ class Forest(WeightedGraph):
         if np.size(prop)!=self.V:
             raise ValueError,"incoherent size for prop"
 
-        prop[self.isleaf()==False]=True
+        prop[self.isleaf()==False]= True
 
         for j in range(self.tree_depth()):
             for i in range(self.k):

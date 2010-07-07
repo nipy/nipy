@@ -24,24 +24,14 @@ import pylab as pl
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 
-# Local imports
-from nipy.neurospin.datasets import VolumeImg
-
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import coord_transform, find_cut_coords
 
-from .ortho_slicer import OrthoSlicer
+from .ortho_slicer import OrthoSlicer, _xyz_order
 
 ################################################################################
 # Helper functions for 2D plotting of activation maps 
 ################################################################################
-def _xyz_order(map, affine):
-    img = VolumeImg(map, affine=affine, world_space='mine')
-    img = img.xyz_ordered(resample=True, copy=False)
-    map = img.get_data()
-    affine = img.affine
-    return map, affine
-
 
 def _fast_abs_percentile(map):
     """ An algorithm to implement a fast version of the 80-percentile of
@@ -58,7 +48,9 @@ def _fast_abs_percentile(map):
 def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     figure=None, axes=None, title=None, threshold=None,
                     annotate=True, draw_cross=True, 
-                    do3d=False, **kwargs):
+                    do3d=False, 
+                    view_3d=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
+                    **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
 
         Parameters
@@ -105,6 +97,9 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             map in addition to the slicing. If 'interactive', the
             3D visualization is displayed in an additional interactive
             window.
+        view_3d: tuple,
+            The view used to take the screenshot: azimuth, elevation,
+            distance and focalpoint, see the docstring of mlab.view.
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
 
@@ -133,11 +128,6 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         x_map, y_map, z_map = find_cut_coords(map,
                                 activation_threshold=threshold)
         cut_coords = coord_transform(x_map, y_map, z_map, affine)
-    if threshold is not None:
-        if threshold == 0:
-            map = np.ma.masked_equal(map, 0, copy=False)
-        else:
-            map = np.ma.masked_inside(map, -threshold, threshold, copy=False)
     
     if do3d:
         try:
@@ -195,6 +185,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     anat=anat, anat_affine=anat_affine, 
                     offscreen=offscreen, cmap=cmap,
                     threshold=threshold,
+                    view=view_3d,
                     vmin=vmin, vmax=vmax)
 
         ax = fig.add_axes((0.001, 0, 0.29, 1))
@@ -217,6 +208,9 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     if operator.isSequenceType(axes):
         axes = fig.add_axes(axes)
         axes.axis('off')
+
+    if threshold:
+        map = np.ma.masked_inside(map, -threshold, threshold, copy=False)
 
     ortho_slicer = OrthoSlicer(cut_coords, axes=axes)
     # Check that we should indeed plot an anat: we have one, and the

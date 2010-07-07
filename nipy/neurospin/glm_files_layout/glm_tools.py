@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module contains several utiility functions to perform GLM 
 on datasets that are organized according to the layout chosen in brainvisa.
@@ -26,14 +28,16 @@ Note that contrast specification relied on the  contrast_tools module
 Author : Lise Favre, Bertrand Thirion, 2008-2010
 """
 
-import numpy as np
-import commands
 import os
-from configobj import ConfigObj
-
-from nipy.io.imageformats import load, save, Nifti1Image
-import glob
 from os.path import join
+import commands
+import glob
+
+import numpy as np
+
+from ...externals.configobj import ConfigObj
+
+from ...io.imageformats import load, save, Nifti1Image
 
 ############################################
 # Path definition
@@ -218,6 +222,24 @@ def load_image(image_path, mask_path=None ):
     
     return image_data
 
+def save_volume_from_mask_image(path, mask_image, data, descrip=None):
+    """
+    volume saving utility for masked volumes
+    
+    Parameters
+    ----------
+    path, string, output image path
+    mask_image, string,
+               path of ther reference mask image
+    data=None data to be put in the volume
+    descrip=None, a string descibing what the image is
+    """
+    mask = load(mask_image)
+    shape = mask.get_shape()
+    affine = mask.get_affine()
+    mdata = mask.get_data()
+    save_volume(shape, path, affine, mdata, data, descrip)
+    
 def save_volume(shape, path, affine, mask=None, data=None, descrip=None):
     """
     volume saving utility for masked volumes
@@ -417,7 +439,7 @@ def design_matrix(
 #-----------------------------------------------------
 
 def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, glm_info=None,
-           fit="Kalman_AR1", mask_url=None, design_matrix_path=None):
+           fit="Kalman_AR1", mask_url=None):
     """
     Call the GLM Fit function with apropriate arguments
 
@@ -436,8 +458,6 @@ def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, glm_info=None,
          that represents both the model and the fit method
     mask_url=None string, path of the mask file
              if None, no mask is applied
-    design_marix_path: string,
-                       path of the design matrix .csv file
 
     Returns
     -------
@@ -464,7 +484,10 @@ def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, glm_info=None,
     # get the design matrix
     if isinstance(DesignMatrix, basestring):
         import nipy.neurospin.utils.design_matrix as dm
-        X = dm.DesignMatrix().read_from_csv(DesignMatrix).matrix
+        X = dm.dmtx_from_csv( DesignMatrix).matrix
+        #DM = dm.DesignMatrix()
+        #DM.read_from_csv(DesignMatrix)
+        #X  = DM.matrix
     else:
         X = DesignMatrix.matrix
   
@@ -526,7 +549,7 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
     sessions = misc['sessions']
     
     # get the contrasts
-    if isinstance(misc, basestring):
+    if isinstance(contrast_struct, basestring):
         contrast_struct = ConfigObj(contrast_struct) 
     contrasts_names = contrast_struct["contrast"]
 
@@ -535,7 +558,7 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
     if glms is not None:
        designs = glms
     else:             
-        if not kargs.has_key('glms_config'):
+        if not kargs.has_key('glm_config'):
             raise ValueError, "No glms provided"
         else:
             import nipy.neurospin.glm
@@ -554,41 +577,45 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
                         contrast_struct)
     # compute the contrasts
     for i, contrast in enumerate(contrasts_names):
-        contrast_type = contrast_struct[contrast]["Type"]
-        contrast_dimension = contrast_struct[contrast]["Dimension"]
-        final_contrast = []
-        k = i+1
-        multicon = dict()
+        try:
+            contrast_type = contrast_struct[contrast]["Type"]
+            contrast_dimension = contrast_struct[contrast]["Dimension"]
+            final_contrast = []
+            k = i+1
+            multicon = dict()
 
-        for key, value in contrast_struct[contrast].items():
-            if key != "Type" and key != "Dimension":
-                session = "_".join(key.split("_")[:-1])
-                bv = [int(j) != 0 for j in value]
-                if contrast_type == "t" and sum(bv)>0:
-                    _con = designs[session].contrast([int(i) for i in value])
-                    final_contrast.append(_con)
+            for key, value in contrast_struct[contrast].items():
+                if key != "Type" and key != "Dimension":
+                    session = "_".join(key.split("_")[:-1])
+                    bv = [int(j) != 0 for j in value]
+                    if contrast_type == "t" and sum(bv)>0:
+                        _con = designs[session].contrast([int(i) for i in value])
+                        final_contrast.append(_con)
 
-                if contrast_type == "F":
-                    if not multicon.has_key(session):
-                        multicon[session] = np.array(bv)
-                    else:
-                        multicon[session] = np.vstack((multicon[session], bv))
-        if contrast_type == "F":
-            for key, value in multicon.items():
-                if sum([j != 0 for j in value.reshape(-1)]) != 0:
-                    _con = designs[key].contrast(value)
-                    final_contrast.append(_con)
+                    if contrast_type == "F":
+                        if not multicon.has_key(session):
+                            multicon[session] = np.array(bv)
+                        else:
+                            multicon[session] = np.vstack((multicon[session], bv))
+            if contrast_type == "F":
+                for key, value in multicon.items():
+                    if sum([j != 0 for j in value.reshape(-1)]) != 0:
+                        _con = designs[key].contrast(value)    
+                        final_contrast.append(_con)
+        
 
-        design = designs[session]
-        res_contrast = final_contrast[0]
-        for c in final_contrast[1:]:
-            res_contrast = res_contrast + c
-            res_contrast.type = contrast_type
+            design = designs[session]
+            res_contrast = final_contrast[0]
+            for c in final_contrast[1:]:
+                res_contrast = res_contrast + c
+                res_contrast.type = contrast_type
             
-        # write misc information
-        cpp = CompletePaths[contrast]
-        save_all_images(res_contrast, contrast_dimension, mask_url, cpp)
-        misc[model]["con_dofs"][contrast] = res_contrast.dof
+            # write misc information
+            cpp = CompletePaths[contrast]
+            save_all_images(res_contrast, contrast_dimension, mask_url, cpp)
+            misc[model]["con_dofs"][contrast] = res_contrast.dof
+        except ValueError:
+            'contrast %s does not fit into memory -- skipped' %contrast
     misc.write()
 
 

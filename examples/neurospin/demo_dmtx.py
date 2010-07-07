@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Examples of design matrices specification and and computation
 (event-related design, FIR design, etc)
@@ -55,6 +57,6 @@ ax = mp.subplot(1,3,3)
 X3.show(ax=ax)
 ax.set_title('example of FIR design matrix')
 mp.subplots_adjust(top=0.9, bottom=0.25)
-fig.set_size_inches(12, 6, forward=True)
+fig.set_size_inches((12, 6))
 mp.show()
 

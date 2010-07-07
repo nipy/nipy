@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Example of a demo that fits a Bayesian Gaussian Mixture Model (GMM) 
 to  a dataset.
@@ -6,7 +8,7 @@ Variational bayes and Gibbs estimation are sucessively run on the same
 dataset
 
 
-Author : Bertrand Thirion, 2008-2009
+Author : Bertrand Thirion, 2008-2010
 """
 print __doc__
 
@@ -22,9 +24,9 @@ dim = 2
 
 ################################################################################
 # 1. generate a 3-components mixture
-x1 = nr.randn(100, dim)
-x2 = 3+2*nr.randn(50, dim)
-x3 = np.repeat(np.array([-2, 2], ndmin=2), 30, 0) + 0.5*nr.randn(30, dim)
+x1 = nr.randn(25, dim)
+x2 = 3+2*nr.randn(15, dim)
+x3 = np.repeat(np.array([-2, 2], ndmin=2), 10, 0) + 0.5*nr.randn(10, dim)
 x = np.concatenate((x1, x2, x3))
 
 ################################################################################
@@ -62,7 +64,7 @@ for k in krange:
     w, cent, prec, pz = b.sample(x, niter=niter, mem=1)
     bplugin =  bgmm.BGMM(k, dim, cent, prec, w)
     bplugin.guess_priors(x)
-    bfk = bplugin.bayes_factor(x, pz.astype(np.int), nperm=40)
+    bfk = bplugin.bayes_factor(x, pz.astype(np.int), nperm=120)
     print k, 'classes, evidence:', bfk
     if bfk>bbf:
         bestk = k

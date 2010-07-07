@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 These routines perform some hierrachical agglomerative clustering
 of some input data. The following alternatives are proposed:
@@ -28,7 +30,7 @@ import nipy.neurospin.graph.graph as fg
 import nipy.neurospin.graph.forest as fo
 
 from nipy.neurospin.eda.dimension_reduction import Euclidian_distance
-from nipy.neurospin.clustering.clustering import ward
+#from nipy.neurospin.clustering.clustering import ward
 
 class WeightedForest(fo.Forest):
     """

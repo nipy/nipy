@@ -16,7 +16,7 @@ def configuration(parent_package='',top_path=None):
     config.add_data_dir('tests')
     config.add_extension(
                 'routines',
-                sources=['routines.c'],
+                sources=['routines.pyx'],
                 libraries=['cstat'],
                 extra_info=lapack_info,
                 )

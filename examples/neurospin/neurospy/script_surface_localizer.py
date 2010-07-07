@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Script that perform the first-level analysis of a dataset of the localizer
 Here the analysis is perfomed on the cortical of one hemisphere.
@@ -6,10 +8,14 @@ Here the analysis is perfomed on the cortical of one hemisphere.
 Author : Lise Favre, Bertrand Thirion, 2008-2010
 """
 import os
-from configobj import ConfigObj
+
 from numpy import arange
 
-from nipy.neurospin.glm_files_layout import glm_tools, contrast_tools, cortical_glm
+from nipy.externals.configobj import ConfigObj
+
+from nipy.neurospin.glm_files_layout import (glm_tools,
+                                             contrast_tools,
+                                             cortical_glm)
 
 # -----------------------------------------------------------
 # --------- Set the paths -----------------------------------

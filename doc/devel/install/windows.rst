@@ -7,9 +7,7 @@ The easy way - a super-package
 
 The easiest way to get the dependencies is to install PythonXY_ or the
 `Enthought Tool Suite`_ .  This gives you MinGW_, Python_, Numpy_,
-Scipy_, ipython_ and matplotlib_ (and much more).  You will need to
-install PyNIFTI_, and follow the instructions below for
-:ref:`installing-blas-lapack`.
+Scipy_, ipython_ and matplotlib_ (and much more).  
 
 The hard way - by components
 ----------------------------
@@ -22,8 +20,6 @@ Requirements:
 * Download and install the windows binary for Python_
 * Download and install the Numpy_ and Scipy_ binaries
 * Download and install Sympy_
-* Download and install PyNIFTI_
-* Dowload and install BLAS / Lapack - see :ref:`installing-blas-lapack`
 
 Options:
 
@@ -39,30 +35,14 @@ Getting and installing NIPY
 
 You will next need to get the NIPY code via version control:
 
-* Download and install the windows binary for bazaar_
-* Go to the windows menu, find the `bazaar` menu, and run ``bzr`` in a
+* Download and install the windows binary for git_
+* Go to the windows menu, find the ``git`` menu, and run ``git`` in a
   windows terminal.
 
 You should now be able to follow the instructions in
 :ref:`trunk_download`, but with the following modifications:
 
 .. _installing-blas-lapack:
-
-Installing the BLAS / Lapack binaries
--------------------------------------
-
-Download the pre-built BlAS / Lapack libraries for your platform from
-http://www.scipy.org/Installing_SciPy/Windows#ATLAS. You will end up a
-file named something like ``atlas3.6.0_WinNT_P4SSE2.zip``.  Unpack to a
-directory such as ``c:\blas_lapack``.  Make a file ``site.cfg`` that
-will be somewhere on your python path during the build process of NIPY.
-One good place might be in the root NIPY directory, in the same
-directory as the ``nipy`` subdirectory, and the base ``setup.py`` file.
-The ``site.cfg`` file should look something like this::
-
-  [atlas]
-  library_dirs = c:\blas_lapack
-  atlas_libs = lapack, f77blas, cblas, atlas
 
 Running the build / install
 ---------------------------
