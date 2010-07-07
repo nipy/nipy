@@ -1730,7 +1730,7 @@ def drop_io_dim(cm, name):
     --------
     Typical use is in getting a 3D coordinate map from 4D
 
-    >>> cm4d = AffineTranform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
+    >>> cm4d = AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
     >>> cm3d = drop_io_dim(cm4d, 't')
     >>> cm3d.affine
     array([[ 1.,  0.,  0.,  0.],

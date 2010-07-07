@@ -6,10 +6,14 @@ from nipy.testing import (assert_true, assert_equal, assert_raises,
                           assert_almost_equal, parametric)
 
 # this import line is a little ridiculous...
-from nipy.core.reference.coordinate_map import (CoordinateMap, AffineTransform, 
-                                                compose, CoordinateSystem, product,
+from nipy.core.reference.coordinate_map import (CoordinateMap,
+                                                AffineTransform, 
+                                                compose, CoordinateSystem,
+                                                product,
                                                 append_io_dim,
-                                                equivalent, shifted_domain_origin,
+                                                drop_io_dim,
+                                                equivalent,
+                                                shifted_domain_origin,
                                                 shifted_range_origin,
                                                 _as_coordinate_map)
 
@@ -536,4 +540,11 @@ def test_append_io_dim():
                        list('xyzt'))
     yield assert_equal(cm2.function_domain.coord_names,
                        list('ijq'))
-    
+
+
+@parametric
+def test_drop_io_dim():
+    cm4d = AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
+    cm3d = drop_io_dim(cm4d, 't')
+    yield assert_array_equal(cm3d.affine, np.diag([1, 2, 3, 1]))
+
