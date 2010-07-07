@@ -274,7 +274,7 @@ def test_dmtx10():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5))
-    assert_true(np.all((X[paradigm.onset[paradigm.index==0]+2,0]==1)))
+    assert_true(np.all((X[paradigm.onset[paradigm.index==0]+1, 0]==1)))
 
 
 def test_dmtx11():
@@ -288,7 +288,7 @@ def test_dmtx11():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5))
-    assert_true(np.all(X[paradigm.onset[paradigm.index==0]+5,3]==1))
+    assert_true(np.all(X[paradigm.onset[paradigm.index==0]+3, 2]==1))
 
 
 def test_dmtx12():
@@ -302,7 +302,7 @@ def test_dmtx12():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5))
-    assert_true(np.all(X[paradigm.onset[paradigm.index==2]+5,11]==1))
+    assert_true(np.all(X[paradigm.onset[paradigm.index==2]+4, 11]==1))
 
 
 def test_dmtx13():
@@ -316,7 +316,7 @@ def test_dmtx13():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5), fir_duration=2*tr)
-    assert_true(np.all(X[paradigm.onset[paradigm.index==0]+3,0]==1))
+    assert_true(np.all(X[paradigm.onset[paradigm.index==0]+2, 0]==1))
 
 
 def test_dmtx14():
