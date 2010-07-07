@@ -230,8 +230,8 @@ class CoordinateMap(object):
              If they are strings, they should be in 
              mapping.function_domain.coord_names.
 
-        Returns:
-        --------
+        Returns
+        -------
 
         newmapping :CoordinateMap
              A new CoordinateMap with the coordinates of function_domain reordered.
@@ -252,16 +252,14 @@ class CoordinateMap(object):
 
         Parameters
         ----------
-
         order: sequence
              Order to use, defaults to reverse. The elements
              can be integers, strings or 2-tuples of strings.
              If they are strings, they should be in 
              mapping.function_range.coord_names.
 
-        Returns:
-        --------
-
+        Returns
+        -------
         newmapping : CoordinateMap
              A new CoordinateMap with the coordinates of function_range reordered.
 
@@ -285,20 +283,20 @@ class CoordinateMap(object):
         """
         Create a new CoordinateMap with the coordinates of function_domain renamed.
 
-        Inputs:
-        -------
+        Parameters
+        ----------
         newnames: dictionary
-
              A dictionary whose keys are integers or are in
              mapping.function_domain.coord_names
              and whose values are the new names.
 
-        Returns:
+        Returns
         --------
-
         newmaping : CoordinateMap
              A new CoordinateMap with renamed function_domain. 
 
+        Examples
+        --------
         >>> domain = CoordinateSystem('ijk')
         >>> range = CoordinateSystem('xyz')
         >>> cm = CoordinateMap(domain, range, lambda x:x+1)
@@ -322,20 +320,20 @@ class CoordinateMap(object):
         """
         Create a new CoordinateMap with the coordinates of function_domain renamed.
 
-        Inputs:
-        -------
+        Parameters
+        ----------
         newnames: dictionary
-
              A dictionary whose keys are integers or are in
              mapping.function_range.coord_names
              and whose values are the new names.
 
-        Returns:
-        --------
-
+        Returns
+        -------
         newmapping : CoordinateMap
              A new CoordinateMap with renamed function_range. 
 
+        Examples
+        --------
         >>> domain = CoordinateSystem('ijk')
         >>> range = CoordinateSystem('xyz')
         >>> cm = CoordinateMap(domain, range, lambda x:x+1)
@@ -702,7 +700,6 @@ class AffineTransform(object):
         ----------
         coord_names : ``tuple`` of ``string`` 
            Names of Axes in domain CoordinateSystem
-
         name : ``string``
            Name of origin of coordinate system
 
@@ -748,12 +745,13 @@ class AffineTransform(object):
              If they are strings, they should be in 
              mapping.function_domain.coord_names.
 
-        Returns:
-        --------
-
+        Returns
+        -------
         newmapping :AffineTransform
              A new AffineTransform with the coordinates of function_domain reordered.
 
+        Examples
+        --------
         >>> input_cs = CoordinateSystem('ijk')
         >>> output_cs = CoordinateSystem('xyz')
         >>> cm = AffineTransform(input_cs, output_cs, np.identity(4))
@@ -770,19 +768,19 @@ class AffineTransform(object):
 
         Parameters
         ----------
-
         order: sequence
              Order to use, defaults to reverse. The elements
              can be integers, strings or 2-tuples of strings.
              If they are strings, they should be in 
              mapping.function_range.coord_names.
 
-        Returns:
-        --------
-
+        Returns
+        -------
         newmapping : AffineTransform
              A new AffineTransform with the coordinates of function_range reordered.
 
+        Examples
+        --------
         >>> input_cs = CoordinateSystem('ijk')
         >>> output_cs = CoordinateSystem('xyz')
         >>> cm = AffineTransform(input_cs, output_cs, np.identity(4))
@@ -803,20 +801,20 @@ class AffineTransform(object):
         """
         Create a new AffineTransform with the coordinates of function_domain renamed.
 
-        Inputs:
-        -------
+        Parameters
+        ----------
         newnames: dictionary
-
              A dictionary whose keys are integers or are in
              mapping.function_domain.coord_names
              and whose values are the new names.
 
-        Returns:
-        --------
-
+        Returns
+        -------
         newmapping : AffineTransform
              A new AffineTransform with renamed function_domain. 
 
+        Examples
+        --------
         >>> affine_domain = CoordinateSystem('ijk')
         >>> affine_range = CoordinateSystem('xyz')
         >>> affine_matrix = np.identity(4)
@@ -841,20 +839,20 @@ class AffineTransform(object):
         """
         Create a new AffineTransform with the coordinates of function_domain renamed.
 
-        Inputs:
-        -------
+        Parameters
+        ----------
         newnames: dictionary
-
              A dictionary whose keys are integers or are in
              mapping.function_range.coord_names
              and whose values are the new names.
 
-        Returns:
-        --------
-
+        Returns
+        -------
         newmapping : AffineTransform
              A new AffineTransform with renamed function_range.
 
+        Examples
+        --------
         >>> affine_domain = CoordinateSystem('ijk')
         >>> affine_range = CoordinateSystem('xyz')
         >>> affine_matrix = np.identity(4)
@@ -989,6 +987,8 @@ def product(*cmaps):
     -------
     cmap : ``CoordinateMap``
 
+    Examples
+    --------
     >>> inc1 = AffineTransform.from_params('i', 'x', np.diag([2,1]))
     >>> inc2 = AffineTransform.from_params('j', 'y', np.diag([3,1]))
     >>> inc3 = AffineTransform.from_params('k', 'z', np.diag([4,1]))
@@ -1068,6 +1068,8 @@ def compose(*cmaps):
          The resulting CoordinateMap has function_domain == cmaps[-1].function_domain
          and function_range == cmaps[0].function_range
 
+    Examples
+    --------
     >>> cmap = AffineTransform.from_params('i', 'x', np.diag([2.,1.]))
     >>> cmapi = cmap.inverse()
     >>> id1 = compose(cmap,cmapi)
@@ -1110,14 +1112,15 @@ def reordered_domain(mapping, order=None):
          If they are strings, they should be in 
          mapping.function_domain.coord_names.
 
-    Returns:
-    --------
-
+    Returns
+    -------
     newmapping : CoordinateMap or AffineTransform
          A new CoordinateMap with the coordinates of function_domain reordered.
          If isinstance(mapping, AffineTransform), newmapping is also
          an AffineTransform. Otherwise, it is a CoordinateMap.
 
+    Examples
+    --------
     >>> input_cs = CoordinateSystem('ijk')
     >>> output_cs = CoordinateSystem('xyz')
     >>> cm = AffineTransform(input_cs, output_cs, np.identity(4))
@@ -1169,14 +1172,12 @@ def shifted_domain_origin(mapping, difference_vector, new_origin):
 
     Parameters
     ----------
-
     difference_vector : ndarray
         Representing the difference shifted_origin-current_origin
         in the domain's basis.
 
     Examples
     --------
-
     >>> A = np.random.standard_normal((5,6))
     >>> A[-1] = [0,0,0,0,0,1]
     >>> affine_transform = AffineTransform(CS('ijklm', 'oldorigin'), CS('xyzt'), A)
@@ -1203,11 +1204,7 @@ def shifted_domain_origin(mapping, difference_vector, new_origin):
 
     >>> print np.allclose(shifted_affine_transform(point_in_old_basis-difference), affine_transform(point_in_old_basis))
     True
-    >>> 
-
-
     """
-
     new_function_domain = CoordinateSystem(mapping.function_domain.coord_names,
                                            new_origin, 
                                            coord_dtype=mapping.function_domain.coord_dtype)
@@ -1225,20 +1222,19 @@ def shifted_domain_origin(mapping, difference_vector, new_origin):
     else:
         return _compose_cmaps(mapping, _as_coordinate_map(shift_map))
 
+
 def shifted_range_origin(mapping, difference_vector, new_origin):
     """
     Shift the origin of the range. 
 
     Parameters
     ----------
-
     difference_vector : ndarray
         Representing the difference shifted_origin-current_origin
         in the range's basis.
 
     Examples
     --------
-
     >>> A = np.random.standard_normal((5,6))
     >>> A[-1] = [0,0,0,0,0,1]
     >>> affine_transform = AffineTransform(CS('ijklm'), CS('xyzt', 'oldorigin'), A)
@@ -1263,9 +1259,6 @@ def shifted_range_origin(mapping, difference_vector, new_origin):
     True
     >>> np.allclose(shifted_affine_transform(point_in_domain) + difference, affine_transform(point_in_domain))
     True
-    >>> 
-
-
     """
     new_function_range = CoordinateSystem(mapping.function_range.coord_names,
                                           new_origin, 
@@ -1284,26 +1277,27 @@ def shifted_range_origin(mapping, difference_vector, new_origin):
     else:
         return _compose_cmaps(_as_coordinate_map(shift_map), mapping)
 
+
 def renamed_domain(mapping, newnames, name=''):
     """
     Create a new coordmap with the coordinates of function_domain renamed.
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     newnames: dictionary
-
          A dictionary whose keys are integers or are in
          mapping.function_range.coord_names
          and whose values are the new names.
 
-    Returns:
-    --------
-
+    Returns
+    -------
     newmapping : CoordinateMap or AffineTransform
          A new mapping with renamed function_domain. If 
          isinstance(mapping, AffineTransform), newmapping is also
          an AffineTransform. Otherwise, it is a CoordinateMap.
 
+    Examples
+    --------
     >>> affine_domain = CoordinateSystem('ijk')
     >>> affine_range = CoordinateSystem('xyz')
     >>> affine_matrix = np.identity(4)
@@ -1317,11 +1311,7 @@ def renamed_domain(mapping, newnames, name=''):
     Traceback (most recent call last):
        ...
     ValueError: no domain coordinate named l
-
-    >>> 
-
     """
-
     for key in newnames.keys():
         if type(key) == type(0):
             newnames[mapping.function_domain.coord_names[key]] = \
@@ -1363,20 +1353,19 @@ def renamed_range(mapping, newnames):
     Parameters
     ----------
     newnames: dictionary
-
          A dictionary whose keys are integers or in
          mapping.function_range.coord_names
          and whose values are the new names.
 
-
-    Returns:
-    --------
-
+    Returns
+    -------
     newmapping : CoordinateMap or AffineTransform
          A new CoordinateMap with the coordinates of function_range renamed.
          If isinstance(mapping, AffineTransform), newmapping is also
          an AffineTransform. Otherwise, it is a CoordinateMap.
 
+    Examples
+    --------
     >>> affine_domain = CoordinateSystem('ijk')
     >>> affine_range = CoordinateSystem('xyz')
     >>> affine_matrix = np.identity(4)
@@ -1390,11 +1379,7 @@ def renamed_range(mapping, newnames):
     Traceback (most recent call last):
        ...
     ValueError: no range coordinate named w
-
-    >>> 
-
     """
-
     for key in newnames.keys():
         if type(key) == type(0):
             newnames[mapping.function_range.coord_names[key]] = \
@@ -1434,21 +1419,21 @@ def reordered_range(mapping, order=None):
 
     Parameters
     ----------
-
     order: sequence
          Order to use, defaults to reverse. The elements
          can be integers, strings or 2-tuples of strings.
          If they are strings, they should be in 
          mapping.function_range.coord_names.
 
-    Returns:
-    --------
-
+    Returns
+    -------
     newmapping : CoordinateMap or AffineTransform
          A new CoordinateMap with the coordinates of function_range reordered.
          If isinstance(mapping, AffineTransform), newmapping is also
          an AffineTransform. Otherwise, it is a CoordinateMap.
 
+    Examples
+    --------
     >>> input_cs = CoordinateSystem('ijk')
     >>> output_cs = CoordinateSystem('xyz')
     >>> cm = AffineTransform(input_cs, output_cs, np.identity(4))
@@ -1463,11 +1448,8 @@ def reordered_range(mapping, order=None):
 
     Notes
     -----
-
     If no reordering is to be performed, it returns a copy of mapping.
-
     """
-
     ndim = mapping.ndims[1]
     if order is None:
         order = range(ndim)[::-1]
@@ -1506,19 +1488,15 @@ def equivalent(mapping1, mapping2):
 
     Parameters
     ----------
-
     mapping1 : CoordinateMap or AffineTransform
-
     mapping2 : CoordinateMap or AffineTransform
 
     Returns
     -------
-
     are_they_equal : bool
 
     Examples
     --------
-
     >>> ijk = CoordinateSystem('ijk')
     >>> xyz = CoordinateSystem('xyz')
     >>> T = np.random.standard_normal((4,4))
@@ -1557,10 +1535,7 @@ def equivalent(mapping1, mapping2):
     True
     >>> id(F) == id(D)
     False
-    >>> 
-
     """
-
     target_dnames = mapping2.function_domain.coord_names
     target_rnames = mapping2.function_range.coord_names
 
@@ -1584,7 +1559,6 @@ def _as_coordinate_map(cmap):
     Take a mapping AffineTransform and return a
     CoordinateMap with the appropriate functions.
     """
-
     if isinstance(cmap, CoordinateMap):
         return cmap
     elif isinstance(cmap, AffineTransform):
@@ -1611,14 +1585,15 @@ def _as_coordinate_map(cmap):
                              _function,
                              _inverse_function)
     else:
-        raise ValueError('all mappings should be instances of either CoordinateMap or AffineTransform')
+        raise ValueError('all mappings should be instances of '
+                         'either CoordinateMap or AffineTransform')
+
 
 def _compose_affines(*affines):
     """
     Return the composition of a sequence of affines,
     checking the domains and ranges.
     """
-
     cur = AffineTransform(affines[-1].function_domain,
                           affines[-1].function_domain,
                           np.identity(affines[-1].ndims[0]+1,
@@ -1631,6 +1606,7 @@ def _compose_affines(*affines):
         else:
             raise ValueError("domains and ranges don't match up correctly")
     return cur
+
 
 def _compose_cmaps(*cmaps):
     """
@@ -1666,6 +1642,7 @@ def _compose_cmaps(*cmaps):
                 (`cmap.function_domain.dtype`, `cur.function_range.dtype`))
 
     return cur
+
 
 def _product_cmaps(*cmaps):
     ndimin = [cmap.ndims[0] for cmap in cmaps]
