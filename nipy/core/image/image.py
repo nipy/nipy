@@ -339,7 +339,7 @@ class Image(object):
 
     def get_data(self):
         """Return data as a numpy array."""
-        return np.asarray(self._data)
+        return np.asanyarray(self._data)
 
     def __getitem__(self, slice_object):
         """
