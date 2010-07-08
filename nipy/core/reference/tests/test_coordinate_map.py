@@ -274,7 +274,6 @@ def affine_v2w():
 
 def test_affine_init():
     incs, outcs, aff = affine_v2w()
-    print aff, incs, outcs
     cm = AffineTransform(incs, outcs, aff)
     yield assert_equal, cm.function_domain, incs
     yield assert_equal, cm.function_range, outcs
@@ -543,8 +542,58 @@ def test_append_io_dim():
 
 
 @parametric
+def test_mod():
+    from nipy.core.reference.coordinate_map import _matching_orth_dim
+    aff = np.diag([1,2,3,1])
+    for i in range(3):
+        yield assert_equal(_matching_orth_dim(i, aff), (i, ''))
+    aff = np.ones((4,4))
+    for i in range(3):
+        val, msg = _matching_orth_dim(i, aff)
+        yield assert_equal(val, None)
+    aff = np.zeros((3,3))
+    for i in range(2):
+        val, msg = _matching_orth_dim(i, aff)
+        yield assert_equal(val, None)
+    aff = np.array([[1, 0, 0, 1],
+                    [0, 0, 2, 1],
+                    [0, 3, 0, 1],
+                    [0, 0, 0, 1]])
+    val, msg = _matching_orth_dim(1, aff)
+    yield assert_equal(_matching_orth_dim(0, aff), (0, ''))
+    yield assert_equal(_matching_orth_dim(1, aff), (2, ''))
+    yield assert_equal(_matching_orth_dim(2, aff), (1, ''))
+    aff = np.diag([1, 2, 0, 1])
+    aff[:,3] = 1
+    yield assert_equal(_matching_orth_dim(2, aff), (2, ''))
+
+
+@parametric
 def test_drop_io_dim():
+    # test ordinary case of 4d to 3d
     cm4d = AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
     cm3d = drop_io_dim(cm4d, 't')
     yield assert_array_equal(cm3d.affine, np.diag([1, 2, 3, 1]))
-
+    # 3d to 2d
+    cm3d = AffineTransform.from_params('ijk', 'xyz', np.diag([1,2,3,1]))
+    cm2d = drop_io_dim(cm3d, 'z')
+    yield assert_array_equal(cm2d.affine, np.diag([1, 2, 1]))
+    # test zero scaling for dropped dimension
+    cm3d = AffineTransform.from_params('ijk', 'xyz', np.diag([1, 2, 0, 1]))
+    cm2d = drop_io_dim(cm3d, 'z')
+    yield assert_array_equal(cm2d.affine, np.diag([1, 2, 1]))
+    # test not diagonal but orthogonal
+    aff = np.array([[1, 0, 0, 0],
+                    [0, 0, 2, 0],
+                    [0, 3, 0, 0],
+                    [0, 0, 0, 1]])
+    cm3d = AffineTransform.from_params('ijk', 'xyz', aff)
+    cm2d = drop_io_dim(cm3d, 'z')
+    yield assert_array_equal(cm2d.affine, np.diag([1, 2, 1]))
+    cm2d = drop_io_dim(cm3d, 'k')
+    yield assert_array_equal(cm2d.affine, np.diag([1, 3, 1]))
+    # and with zeros scaling for orthogonal dropped dimension
+    aff[2] = 0
+    cm3d = AffineTransform.from_params('ijk', 'xyz', aff)
+    cm2d = drop_io_dim(cm3d, 'z')
+    yield assert_array_equal(cm2d.affine, np.diag([1, 2, 1]))
