@@ -185,7 +185,7 @@ class NestedROI(MultipleROI):
         """
         Building the NROI
         """
-        self.parents = np.ravel(parents)
+        self.parents = np.ravel(parents).astype(np.int)
         k = parents.size
         MultipleROI.__init__(self, dim, k, coord, local_volume, topology,
                              referential, id)
@@ -196,16 +196,14 @@ class NestedROI(MultipleROI):
         Note that auto=True automatically
         """
         MultipleROI.select(self, valid, auto=True)
-        stop
-        print self.parents
         if np.sum(valid)==0:
             self.parents=[]
             self.k = 0
         else:
-            self.parents = Forest(self.parents).subforest(valid).parents
-            self.k = np.size(parents)
-            print self.parents
-
+            self.parents = Forest(len(self.parents), self.parents).subforest(
+                valid.astype(np.bool)).parents.astype(np.int)
+            self.k = np.size(self.parents)
+            
         
     def make_graph(self):
         """
@@ -230,16 +228,16 @@ class NestedROI(MultipleROI):
         """
         self.merge_ascending(valid)
 
-        Remove the non-valid items by including them in
+        Remove the non-valid ROIs by including them in
         their parents when it exists
 
         Parameters
         ----------
         valid array of shape(self.k)
 
-        Caveat
-        ------
-        if roi_features have been defined, they will be removed
+        Note
+        ----
+        if valid[k]==0 and self.parents[k]==k, k is not removed
         """
         if np.size(valid)!= self.k:
             raise ValueError,"not the correct dimension for valid"
@@ -253,7 +251,7 @@ class NestedROI(MultipleROI):
                     self.coord[fj] = np.vstack((dfj, dj))
                     dfj = self.local_volume[fj]
                     dj =  self.local_volume[j]
-                    self.local_volume[fj] = np.vstack((dfj, dj))
+                    self.local_volume[fj] = np.hstack((dfj, dj))
 
                     fids = self.features.keys()
                     for fid in fids:
@@ -263,10 +261,7 @@ class NestedROI(MultipleROI):
                 else:
                     valid[j]=1
 
-        fids = self.roi_features.keys()
-        for fid in fids: self.remove_roi_feature(fid)
-
-        self.clean(valid)#########
+        self.select(valid)
 
     def merge_descending(self,methods=None):
         """
@@ -294,7 +289,7 @@ class NestedROI(MultipleROI):
                 self.coord[i] = np.vstack((di, dj))
                 di = self.local_volume[i]
                 dj =  self.local_volume[j]
-                self.local_volume[i] = np.vstack((di, dj))
+                self.local_volume[i] = np.hstack((di, dj))
                 self.parents[i] = self.parents[j]
                 valid[j] = 0
                 fids = self.features.keys()
@@ -306,7 +301,9 @@ class NestedROI(MultipleROI):
         # finally remove  the non-valid items
         fids = self.roi_features.keys()
         for fid in fids: self.remove_feature(fid)
+        print self.size
         self.select(valid)
+        print self.size
     
     def get_parents(self):
         return self.parents

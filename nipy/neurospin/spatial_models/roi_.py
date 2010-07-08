@@ -207,7 +207,9 @@ class MultipleROI(object):
             self.local_volume.append(np.ravel(local_volume[k]))
         
         # topology
-        if topology is not None:
+        if topology is None:
+            self.topology = None
+        else:
             self.topology = []
             if len(topology) != self.k:
                 raise ValueError, 'Topology should have length %d' %self.k
@@ -259,6 +261,10 @@ class MultipleROI(object):
             identifier of the output instance
         auto: bool, optional,
               if True then self = self.select()
+
+        Returns
+        -------
+        the instance, id auto==False, nothing otherwise
         """
         if valid.size != self.k:
             raise ValueError, 'Invalid size for valid'
@@ -267,20 +273,31 @@ class MultipleROI(object):
         if self.topology is not None:
             stopo = [self.topology[k] for k in range(self.k) if valid[k]]
         else:
-            stopo = []
+            stopo = None
         scoord = [self.coord[k] for k in range(self.k) if valid[k]]
-        DD = MultipleROI(self.dim, valid.sum(), scoord, svol, stopo,
-                          self.referential, id)
-
-        for fid in self.features.keys():
-            f = self.features.pop(fid)
-            sf = [f[k] for k in range(self.k) if valid[k]]
-            DD.set_feature(fid, sf)
 
         if auto:
-            self = DD
+            self.k = valid.sum()
+            self.coord = scoord
+            self.size = np.array([self.coord[k].shape[0]
+                                  for k in range(self.k)])
+            self.volume = svol
+            self.topology = stopo
+            for fid in self.features.keys():
+                f = self.features.pop(fid)
+                sf = [f[k] for k in range(self.k) if valid[k]]
+                self.set_feature(fid, sf)
+            
+        else:
+            DD = MultipleROI(self.dim, valid.sum(), scoord, svol, stopo,
+                             self.referential, id)
+        
+            for fid in self.features.keys():
+                f = self.features.pop(fid)
+                sf = [f[k] for k in range(self.k) if valid[k]]
+                DD.set_feature(fid, sf)
 
-        return DD
+            return DD
 
     def set_feature(self, fid, data, override=True):
         """

@@ -208,11 +208,11 @@ class Forest(WeightedGraph):
         j = np.nonzero(valid[self.parents]==0)[0]
         parents[j] = j
         parents = parents[valid]
-        renumb = np.hstack((0,np.cumsum(valid)))
+        renumb = np.hstack((0, np.cumsum(valid)))
         parents = renumb[parents]
 
-        F = Forest(np.sum(valid),parents)
-        #F.define_graph_attributes()
+        F = Forest(np.sum(valid), parents)
+
         return F
 
     def merge_simple_branches(self):
