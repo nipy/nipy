@@ -62,19 +62,19 @@ Operations on mappings (module level functions)
 """
 
 import warnings
+
 import numpy as np
 
 from nipy.utils.onetime import setattr_on_read
-import nipy.core.transforms.affines as affines
-from nipy.core.reference.coordinate_system import(CoordinateSystem, 
-                                                          safe_dtype)
-from nipy.core.reference.coordinate_system import product as coordsys_product
+from ..transforms import affines
+from .coordinate_system import(CoordinateSystem,
+                               safe_dtype,
+                               product as coordsys_product
+                               )
 
 # shorthand
-
 CS = CoordinateSystem
 
-__docformat__ = 'restructuredtext'
 
 class CoordinateMap(object):
     """A set of domain and range CoordinateSystems and a function between them.
@@ -242,7 +242,6 @@ class CoordinateMap(object):
         >>> print cm.reordered_domain('ikj').function_domain
         CoordinateSystem(coord_names=('i', 'k', 'j'), name='', coord_dtype=float64)
         """
-
         return reordered_domain(self, order)
 
     def reordered_range(self, order=None):
@@ -362,7 +361,6 @@ class CoordinateMap(object):
                              self.function_domain, 
                              self.inverse_function,
                              inverse_function=self.function)
-
        
     def __call__(self, x):
         """Return mapping evaluated at x
@@ -1054,6 +1052,7 @@ def product(*cmaps):
                       "the AffineTransform")
         return _product_cmaps(*[_as_coordinate_map(cmap) for cmap in cmaps])
 
+
 def compose(*cmaps):
     """
     Return the composition of two or more CoordinateMaps.
@@ -1097,7 +1096,6 @@ def compose(*cmaps):
         return _compose_cmaps(*[_as_coordinate_map(cmap) for cmap in cmaps])
 
 
-
 def reordered_domain(mapping, order=None):
     """
     Create a new coordmap with the coordinates of function_domain reordered.
@@ -1129,11 +1127,8 @@ def reordered_domain(mapping, order=None):
 
     Notes
     -----
-
     If no reordering is to be performed, it returns a copy of mapping.
-
     """
-
     ndim = mapping.ndims[0]
     if order is None:
         order = range(ndim)[::-1]
@@ -1738,41 +1733,86 @@ def drop_io_dim(cm, name):
            [ 0.,  0.,  3.,  0.],
            [ 0.,  0.,  0.,  1.]])
     '''
-    aff = cm.affine
+    aff = cm.affine.copy()
     in_dims = list(cm.function_domain.coord_names)
-    nin = len(in_dims)
     out_dims = list(cm.function_range.coord_names)
-    nout = len(out_dims)
     try:
-        i = in_dims.index(name)
+        in_dim = in_dims.index(name)
     except ValueError:
         try:
-            i = out_dims.index(name)
+            out_dim = out_dims.index(name)
         except ValueError:
             raise ValueError('No input or output dimension '
                              'with name (%s)' % name)
-    col_inds = range(nin)
-    row_inds = range(nout)
-    try:
-        col_inds.remove(i)
-    except IndexError:
-        raise ValueError('Should be corresponding input and '
-                         'output dims')
-    try:
-        row_inds.remove(i)
-    except IndexError:
-        raise ValueError('Should be corresponding input and '
-                         'output dims')
-    removed_col = aff[row_inds, i]
-    if np.any(removed_col):
-        raise ValueError('Elements in dimension %d to remove (%s) '
-                         'appear not to be orthogonal '
-                         'to remaining dimensions' % (i, removed_col))
-    aff = aff[:, col_inds + [nin]]
-    aff = aff[row_inds + [nout],:]
-    in_dims = [n for i, n in enumerate(in_dims) if i in col_inds]
-    out_dims = [n for i, n in enumerate(out_dims) if i in row_inds]
+        else: # found out dimension, get in dimension
+            in_dim, msg  = _matching_orth_dim(out_dim, aff)
+    else: # found in dimension, get out dimension
+        out_dim, msg = _matching_orth_dim(in_dim, aff.T)
+    if None in (in_dim, out_dim):
+        raise ValueError(msg)
+    in_dims.pop(in_dim)
+    out_dims.pop(out_dim)
+    M, N = aff.shape
+    rows = range(M)
+    cols = range(N)
+    rows.pop(out_dim)
+    cols.pop(in_dim)
+    aff = aff[rows]
+    aff = aff[:,cols]
     return AffineTransform.from_params(in_dims, out_dims, aff)
+
+
+def _matching_orth_dim(out_i, aff):
+    ''' Find matching more or less orthogonal direction in affine
+
+    IF the corresponding affine row is all 0, and it is the only row
+    that is all 0, then assume this is a 0 scaling rather than a dropped
+    input coordinate, and work out which input coordinate (if any)
+    remains to be claimed.
+
+    Parameters
+    ----------
+    out_i : int
+       Output (range) dimension
+    aff : (M, N) array
+       homogenous affine
+
+    Returns
+    -------
+    in_i : None or int
+       Matching orthogonal input (domain) dimension.  None if none
+       matching.
+    msg : str
+       If `in_i` is None, `msg` returns informative message as to reason
+       for failure to find matching index.
+    '''
+    rzs = aff[:-1,:-1]
+    M, N = rzs.shape
+    if out_i >= M:
+        raise ValueError('%d row number is too high' % out_i)
+    out_row = rzs[out_i]
+    if np.allclose(out_row, 0):
+        # zeros - is this zero scaling?
+        msg = 'zeros in corresponding affine entries'
+        # check for other zero rows - return failure if so
+        out_rows = range(M)
+        out_rows.pop(out_i)
+        for i in out_rows:
+            if np.allclose(rzs[i], 0):
+                # another near zero row
+                return None, msg + ' and other zero rows/cols'
+        # what rows have been claimed already?
+        ornt = affines.io_orientation(aff[out_rows + [M]].T)
+        candidates = set(range(N)) - set(ornt[:,0])
+        if len(candidates) == 1:
+            return candidates.pop(), ''
+        return None, ' and corresponding index is ambiguous'
+    in_i = np.argmax(out_row)
+    sel = range(N)
+    sel.pop(in_i)
+    if not np.allclose(out_row[sel], 0):
+        return None, 'no corresponding orthogonal dimension'
+    return in_i, ''
 
 
 def append_io_dim(cm, in_name, out_name, start=0, step=1):
