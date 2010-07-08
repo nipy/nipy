@@ -2,6 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
+
 # Taken from python doc site, exists in python2.6
 def combinations(iterable, r):
     # combinations('ABCD', 2) --> AB AC AD BC BD CD
@@ -23,24 +24,27 @@ def combinations(iterable, r):
             indices[j] = indices[j-1] + 1
         yield tuple(pool[i] for i in indices)
 
+
 def complex(maximal=[(0, 3, 2, 7),
                      (0, 6, 2, 7),
                      (0, 7, 5, 4),
                      (0, 7, 5, 1),
                      (0, 7, 4, 6),
-                     (0, 3, 1, 7)],
-            vertices=None):
-  
-    """
-    Take a list of maximal simplices (by
-    default a triangulation of a cube into 6 tetrahedra) and
-    computes all faces, edges, vertices.
+                     (0, 3, 1, 7)]):
+    """ Faces from simplices
+    
+    Take a list of maximal simplices (by default a triangulation of a
+    cube into 6 tetrahedra) and computes all faces
 
-    If vertices is not None, then the
-    vertices in 'maximal' are replaced with 
-    these vertices, by index.
-    """
+    Parameters
+    ----------
+    maximal : sequence of sequences, optional
+       Default is triangulation of cube into tetrahedra
 
+    Returns
+    -------
+    faces : dict
+    """
     faces = {}
 
     l = [len(list(x)) for x in maximal]
@@ -57,10 +61,10 @@ def complex(maximal=[(0, 3, 2, 7),
                 faces[k].add(v)
     return faces
 
-def cube_with_strides_center(center=[0,0,0], 
-                             strides=np.empty((2,2,2), np.bool).strides):
-    """
-    Cube in an array of voxels with a given center and strides.
+
+def cube_with_strides_center(center=[0,0,0],
+                             strides=[4, 2, 1]):
+    """ Cube in an array of voxels with a given center and strides.
 
     This triangulates a cube with vertices [center[i] + 1].
     
@@ -69,28 +73,27 @@ def cube_with_strides_center(center=[0,0,0],
 
     The allowable dimensions are [1,2,3].
 
-    Inputs:
-    =======
-
-    center : [int]
-
-    strides : [int]
-
-    Outputs:
-    ========
-
-    complex : {}
-         A dictionary with integer keys representing a simplicial
-         complex. The vertices of the simplicial complex
-         are the indices of the corners of the cube 
-         in a 'flattened' array with specified strides.
-
+    Parameters
+    ----------
+    center : (d,) sequence of int, optional
+       Default is [0, 0, 0]
+    strides : (d,) sequence of int, optional
+       Default is [4, 2, 1].  These are the strides given by
+       ``np.ones((2,2,2), np.bool).strides``
+       
+    Returns
+    -------
+    complex : dict
+       A dictionary with integer keys representing a simplicial
+       complex. The vertices of the simplicial complex are the indices
+       of the corners of the cube in a 'flattened' array with specified
+       strides.
     """
-
     d = len(center)
+    if not 0 < d <= 3:
+        raise ValueError('dimensionality must be 0 < d <= 3')
     if len(strides) != d:
-        raise ValueError, 'center and strides must have the same length'
-
+        raise ValueError('center and strides must have the same length')
     if d == 3:
         maximal = [(0, 3, 2, 7),
                    (0, 6, 2, 7),
@@ -98,7 +101,6 @@ def cube_with_strides_center(center=[0,0,0],
                    (0, 7, 5, 1),
                    (0, 7, 4, 6),
                    (0, 3, 1, 7)]
-
         vertices = []
         for k in range(2):
             for j in range(2):
@@ -124,9 +126,10 @@ def cube_with_strides_center(center=[0,0,0],
     maximal = [tuple([vertices[j] for j in m]) for m in maximal]
     return complex(maximal)
 
+
 def join_complexes(*complexes):
-    """
-    Join a sequence of simplicial complexes.
+    """ Join a sequence of simplicial complexes.
+    
     Returns the union of all the particular faces.
     """
     faces = {}
@@ -231,7 +234,6 @@ def decompose2d(shape, dim=3):
     of a square of a given shape. The vertices in the triangulation
     are indices in a 'flattened' array of the specified shape.
     """
-
     # First do the interior contributions.
     # We first figure out which vertices, edges, triangles
     # are uniquely associated with an interior pixel
@@ -276,6 +278,7 @@ def decompose2d(shape, dim=3):
         for i in range(np.product(shape)):
             yield i
 
+
 def test_EC3(shape):
 
     ts = 0
@@ -294,6 +297,10 @@ def test_EC3(shape):
         ec += 1; vs += 1
     return ts, fs, es, vs, ec
 
+# Tell nose testing framework not to run this as a test
+test_EC3.__test__ = False
+
+
 def test_EC2(shape):
 
     fs = 0
@@ -308,3 +315,8 @@ def test_EC2(shape):
     for v in decompose2d(shape, dim=1):
         ec += 1; vs += 1
     return fs, es, vs, ec
+
+# Tell nose testing framework not to run this as a test
+test_EC2.__test__ = False
+
+
