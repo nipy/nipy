@@ -16,22 +16,22 @@ import nipy.neurospin.graph.graph as fg
 from nipy.neurospin.graph.forest import Forest
 from nipy.neurospin.spatial_models.roi_ import MultipleROI
 
-def NROI_from_discrete_domain(dom, data, th=-np.infty, smin=0):
+def NROI_from_discrete_domain(dom, data, threshold=-np.infty, smin=0):
     """
     """
-    from nipy.neurospin.graph.field import field_from_coomatrix_and_data
+    # from nipy.neurospin.graph.field import field_from_coomatrix_and_data
 
-    if th>data.max():
+    if threshold > data.max():
         return None
     
     # check size
-    F = field_from_coomatrix_and_data(dom.topology, data)
-    idx, height, parents, label = Field.threshold_bifurcations(th)
+    df = field_from_coomatrix_and_data(dom.topology, data)
+    idx, height, parents, label = df.threshold_bifurcations(threshold)
     
     k = np.size(idx)
     if isinstance(dom, NDGridDomain):
         discrete = [dim.ijk[label==i] for i in range(k)]
-        nroi = NROI(parents, dom.affine, dom.shape, discrete)
+        nroi = NestedROI(parents, dom.affine, dom.shape, discrete)
     else:
         return None #######
         
@@ -54,7 +54,7 @@ def NROI_from_discrete_domain(dom, data, th=-np.infty, smin=0):
         
     return nroi
 
-def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty,
+def NROI_from_field(Field, affine, shape, xyz, refdim=0, threshold=-np.infty,
                     smin = 0):
     """
     Instantiate an NROI object from a given Field and a referntial
@@ -72,8 +72,8 @@ def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty,
         implicit to the discrete ROI definition      
     xyz: array of shape (Field.V, 3) that represents grid coordinates
          of the object
-    th is a threshold so that only values above th are considered
-       by default, th = -infty (numpy)
+    threshold is a threshold so that only values above th are considered
+       by default, threshold = -infty (numpy)
     smin is the minimum size (in number of nodes) of the blobs to 
          keep.
 
@@ -89,8 +89,8 @@ def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty,
                  It contains the index in the field from which 
                  each point of each ROI
     """
-    if Field.field[:,refdim].max()>th:
-        idx, height, parents, label = Field.threshold_bifurcations(refdim,th)
+    if Field.field[:,refdim].max()>threshold:
+        idx, height, parents, label = Field.threshold_bifurcations(refdim,threshold)
     else:
         idx = []
         parents = []
@@ -99,7 +99,7 @@ def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty,
     k = np.size(idx)
     if k==0: return None
     discrete = [xyz[label==i] for i in range(k)]
-    nroi = NROI(parents, affine, shape, discrete)
+    nroi = NestedROI(parents, affine, shape, discrete)
 
     # Create the index of each point within the Field
     midx = [np.expand_dims(np.nonzero(label==i)[0], 1) for i in range(k)]
@@ -126,7 +126,7 @@ def NROI_from_field(Field, affine, shape, xyz, refdim=0, th=-np.infty,
         
     return nroi
 
-def NROI_from_watershed(Field, affine, shape, xyz, refdim=0, th=-np.infty):
+def NROI_from_watershed(Field, affine, shape, xyz, refdim=0, threshold=-np.infty):
     """
     Instantiate an NROI object from a given Field and a referential
     
@@ -143,8 +143,8 @@ def NROI_from_watershed(Field, affine, shape, xyz, refdim=0, th=-np.infty):
     xyz: array of shape (Field.V,3) that represents grid coordinates
          of the object
     refdim=0: dimension fo the Field to consider (when multi-dimensional)
-    th is a threshold so that only values above th are considered
-       by default, th = -infty (numpy)
+    threshold is a threshold so that only values above th are considered
+       by default, threshold = -infty (numpy)
 
    Results
    -------
@@ -158,8 +158,8 @@ def NROI_from_watershed(Field, affine, shape, xyz, refdim=0, th=-np.infty):
                  It contains the index in the field from which 
                  each point of each ROI
     """
-    if Field.field[:,refdim].max()>th:
-        idx, height, parents, label = Field.custom_watershed(refdim,th)
+    if Field.field[:,refdim].max()>threshold:
+        idx, height, parents, label = Field.custom_watershed(refdim,threshold)
     else:
         idx = []
         parents = []
@@ -168,7 +168,7 @@ def NROI_from_watershed(Field, affine, shape, xyz, refdim=0, th=-np.infty):
     k = np.size(idx)
     if k==0: return None
     discrete = [xyz[label==i] for i in range(k)]
-    nroi = NROI(parents, affine, shape, discrete)
+    nroi = NestedROI(parents, affine, shape, discrete)
     
     #Create the index of each point within the Field
     midx = [np.expand_dims(np.nonzero(label==i)[0],1) for i in range(k)]
@@ -241,7 +241,8 @@ class NestedROI(MultipleROI):
         """
         if np.size(valid)!= self.k:
             raise ValueError,"not the correct dimension for valid"
-        for j in range(self.k):
+        order = self.make_forest().reorder_from_leaves_to_roots()
+        for j in order:#range(self.k):
             if valid[j]==0:
                 fj =  self.parents[j]
                 if fj!=j:
@@ -279,7 +280,10 @@ class NestedROI(MultipleROI):
         if roi_features have been defined, they will be removed
         """
         valid = np.ones(self.k).astype('bool')
-        for j in range(self.k):
+        # fixme : redoder things
+        
+        order = self.make_forest().reorder_from_leaves_to_roots()[::-1]
+        for j in order:#range(self.k):
             i = np.nonzero(self.parents==j)
             i = i[0]
             if np.sum(i!=j)==1:
@@ -299,31 +303,28 @@ class NestedROI(MultipleROI):
                     self.features[fid][i] = np.vstack((di, dj))
                     
         # finally remove  the non-valid items
-        fids = self.roi_features.keys()
-        for fid in fids: self.remove_feature(fid)
-        print self.size
         self.select(valid)
-        print self.size
-    
+            
     def get_parents(self):
         return self.parents
 
     def get_k(self):
         return self.k
 
-    def reduce_to_leaves(self):
+    def reduce_to_leaves(self, id=''):
         """
         create a  new set of rois which are only the leaves of self
         """
         isleaf = Forest(self.k, self.parents).isleaf()
         k = np.sum(isleaf.astype(np.int))
-        if self.k==0: return NestedROI()
+        if self.k==0: return NestedROI(self.dim, referential=self.referential,
+                                       id=id)
        
         parents = np.arange(k)
         coord = [self.coord[k] for k in np.nonzero(isleaf)[0]]
         vol = [self.local_volume[k] for k in np.nonzero(isleaf)[0]]
-        nroi = NestedROI(k, parents, coord, local_volume,
-                         referential=self.referential)
+        nroi = NestedROI(self.dim, parents, coord, vol,
+                         referential=self.referential, id=id)
             
         # now copy the features
         fids = self.features.keys()
@@ -507,7 +508,7 @@ class NROI_dep(MultipleROI, Forest):
         if self.k==0: return None
         parents = np.arange(k)
         xyz = [self.xyz[k].copy() for k in np.nonzero(isleaf)[0]]
-        nroi = NROI(parents, self.affine, self.shape, xyz)
+        nroi = NROI_dep(parents, self.affine, self.shape, xyz)
 
         # now copy the roi_features
         fids = self.roi_features.keys()
@@ -527,7 +528,7 @@ class NROI_dep(MultipleROI, Forest):
         returns a copy of self
         """
         xyz = [self.xyz[k].copy() for k in range(self.k)]
-        nroi = NROI(self.parents.copy(), self.affine, self.shape ,xyz)
+        nroi = NROI_dep(self.parents.copy(), self.affine, self.shape ,xyz)
 
         # now copy the roi_features
         fids = self.roi_features.keys()

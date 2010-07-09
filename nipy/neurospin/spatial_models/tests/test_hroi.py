@@ -76,7 +76,44 @@ def test_asc_merge_2():
     hroi.merge_ascending(valid)
     assert (hroi.size==s1).all()
 
+def test_desc_merge():
+    """ Test descending merge
+    """
+    hroi,_ = make_hroi()
+    parents = np.arange(hroi.k)
+    parents[1] = 0
+    hroi.parents = parents
+    s1 = hroi.size[0] + hroi.size[1]
+    hroi.merge_descending()
+    assert hroi.size[0]==s1
 
+def test_desc_merge_2():
+    """ Test descending merge
+    """
+    hroi,_ = make_hroi()
+    parents = np.maximum(np.arange(-1, hroi.k-1), 0)
+    hroi.parents = parents
+    hroi.merge_descending()
+    assert hroi.k==1
+
+def test_desc_merge_3():
+    """ Test descending merge
+    """
+    hroi,_ = make_hroi()
+    parents = np.minimum(np.arange(1, hroi.k+1), hroi.k-1)
+    hroi.parents = parents
+    hroi.merge_descending()
+    assert hroi.k==1
+
+def test_leaves():
+    """ Test leaves
+    """
+    hroi,_ = make_hroi()
+    size = hroi.size[1:].copy()
+    lroi = hroi.reduce_to_leaves()
+    assert lroi.k == 8
+    assert (lroi.size==size).all()
+    
 
 if __name__ == "__main__":
     import nose
