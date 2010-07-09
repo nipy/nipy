@@ -15,19 +15,20 @@ The class Grid is meant to take a CoordinateMap and an np.mgrid-like
 notation to create an ArrayCoordMap.
 """
 import numpy as np
-from coordinate_map import CoordinateMap, AffineTransform, compose
-from coordinate_map import product as cmap_product
-from coordinate_map import shifted_range_origin
-from coordinate_system import CoordinateSystem
+
+from .coordinate_map import CoordinateMap, AffineTransform, compose
+from .coordinate_map import product as cmap_product
+from .coordinate_map import shifted_range_origin
+from .coordinate_system import CoordinateSystem
 
 
 class ArrayCoordMap(object):
-    """
+    """ Class combining coordinate map and array shape
+    
     When the function_domain of a CoordinateMap can be thought of as
     'array' coordinates, i.e. an 'input_shape' makes sense. We can
     than evaluate the CoordinateMap at np.indices(input_shape)
     """
-
     def __init__(self, coordmap, shape):
         """
         Parameters
@@ -37,6 +38,10 @@ class ArrayCoordMap(object):
            coordinates.
         shape : sequence of int
            The size of the (implied) underlying array.
+
+        Examples
+        --------
+        
         """
         self.coordmap = coordmap
         self.shape = tuple(shape)

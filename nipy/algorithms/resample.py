@@ -105,7 +105,9 @@ def resample(image, target, mapping, shape, order=3):
         if isinstance(mapping, AffineTransform):
             TW2IW = mapping
         else:
-            TW2IW = CoordinateMap(target.function_range, image.coordmap.function_range, mapping)
+            TW2IW = CoordinateMap(target.function_range,
+                                  image.coordmap.function_range,
+                                  mapping)
     # target voxel to image world mapping
     TV2IW = compose(TW2IW, target)
     # CoordinateMap describing mapping from target voxel to
@@ -117,15 +119,15 @@ def resample(image, target, mapping, shape, order=3):
         interp = ImageInterpolator(image, order=order)
         idata = interp.evaluate(grid.transposed_values)
         del(interp)
-    else:
+    else: # it is an affine transform, but, what if we compose?
         TV2IV = compose(image.coordmap.inverse(), TV2IW)
-        if isinstance(TV2IV, AffineTransform):
+        if isinstance(TV2IV, AffineTransform): # still affine
             A, b = affines.to_matrix_vector(TV2IV.affine)
             idata = affine_transform(np.asarray(image), A,
                                      offset=b,
                                      output_shape=shape,
                                      order=order)
-        else:
+        else: # not affine anymore
             interp = ImageInterpolator(image, order=order)
             grid = ArrayCoordMap.from_shape(TV2IV, shape)
             idata = interp.evaluate(grid.values)
