@@ -16,35 +16,36 @@ import nipy.neurospin.graph.graph as fg
 from nipy.neurospin.graph.forest import Forest
 from nipy.neurospin.spatial_models.roi_ import MultipleROI
 
-def NROI_from_discrete_domain(dom, data, threshold=-np.infty, smin=0):
+def NROI_from_discrete_domain(dom, data, threshold=-np.infty, smin=0, id=''):
     """
     """
-    # from nipy.neurospin.graph.field import field_from_coomatrix_and_data
+    from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
 
     if threshold > data.max():
         return None
     
     # check size
-    df = field_from_coomatrix_and_data(dom.topology, data)
-    idx, height, parents, label = df.threshold_bifurcations(threshold)
-    
+    df = field_from_coo_matrix_and_data(dom.topology, data)
+    idx, height, parents, label = df.threshold_bifurcations(th=threshold)    
     k = np.size(idx)
-    if isinstance(dom, NDGridDomain):
-        discrete = [dim.ijk[label==i] for i in range(k)]
-        nroi = NestedROI(parents, dom.affine, dom.shape, discrete)
-    else:
-        return None #######
-        
+
+    # ?? handle the case k==0
+    scoord = [dom.coord[label==i] for i in range(k)]
+    svol = [dom.local_volume[label==i] for i in range(k)]
+    nroi = NestedROI(dom.dim, parents, scoord, svol,
+                     referential=dom.referential, id=id)
+
     # Create the index of each point within the Field
     midx = [np.expand_dims(np.nonzero(label==i)[0], 1) for i in range(k)]
-    nroi.set_discrete_feature('index', midx)
+    #discrete = [dom.ijk[label==i] for i in range(k)]
+    #nroi.set_feature('index', midx)
 
     # perform smin reduction
     k = 2* nroi.get_k()
     while k>nroi.get_k():
         k = nroi.get_k()
         size = nroi.get_size()
-        nroi.merge_ascending(size>smin,None)
+        nroi.merge_ascending(size>smin, None)
         nroi.merge_descending(None)
         size = nroi.get_size()
         if size.max()<smin: return None
@@ -341,6 +342,9 @@ class NestedROI(MultipleROI):
         cp.parents = self.parents.copy()
         return cp
 
+######################################################################
+# Old NROI class --- deprecated
+######################################################################
 
 class NROI_dep(MultipleROI, Forest):
     """

@@ -246,6 +246,14 @@ class test_Field(TestCase):
         Lab, J2 = F.ward(10)
         self.assert_(J1>J2)
 
+    def test_field_from_coo_matrix(self):
+        import scipy.sparse as sps
+        V = 10
+        a = np.random.rand(V, V)>.9
+        fi = ff.field_from_coo_matrix_and_data(sps.coo_matrix(a), a)
+        print fi.E , a.sum()
+        self.assert_(fi.E==a.sum())
+
 if __name__ == '__main__':
     import nose
     nose.run(argv=['', __file__])

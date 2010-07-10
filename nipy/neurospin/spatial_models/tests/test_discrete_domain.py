@@ -192,7 +192,6 @@ def test_integrate_2d():
     ddom = domain_from_array(toto)
     ftoto = np.ravel(toto)
     f2 = np.vstack((ftoto, ftoto)).T
-    print f2.shape
     ddom.set_feature('data', f2)
     ts = np.ones(2)*toto.sum()
     assert_almost_equal(ddom.integrate('data'), ts)

@@ -11,10 +11,18 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 from nipy.neurospin.spatial_models.hroi import *
 from nipy.neurospin.spatial_models.roi_ import mroi_from_array
+from nipy.neurospin.spatial_models.discrete_domain import domain_from_array
 
 shape = (5, 6, 7)
 
-def make_hroi():
+def make_domain():
+    """Create a mulmtiple ROI instance
+    """
+    labels = np.ones(shape)
+    dom = domain_from_array(labels, affine=None)
+    return dom
+
+def make_mroi():
     """Create a mulmtiple ROI instance
     """
     labels = np.zeros(shape)
@@ -29,6 +37,13 @@ def make_hroi():
     labels += 1
     parents = np.zeros(9)
     mroi = mroi_from_array(labels, affine=None)
+    return mroi, labels
+
+def make_hroi():
+    """Create a mulmtiple ROI instance
+    """
+    mroi, labels=  make_mroi()
+    parents = np.zeros(9)
     hroi = NestedROI(mroi.dim, parents, mroi.coord, mroi.local_volume)
     return hroi, labels
 
@@ -113,7 +128,16 @@ def test_leaves():
     lroi = hroi.reduce_to_leaves()
     assert lroi.k == 8
     assert (lroi.size==size).all()
-    
+
+def test_hroi_from_domain():
+    """ test the creation of ROIs from domain
+    """
+    dom = make_domain()
+    data = np.random.rand(*shape)
+    data[:2, :2, :2] +=2
+    rdata = np.reshape(data, (data.size, 1))
+    hroi = NROI_from_discrete_domain(dom, rdata, threshold=1., smin=0)
+    assert hroi.k==1
 
 if __name__ == "__main__":
     import nose
