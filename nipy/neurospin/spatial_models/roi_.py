@@ -241,6 +241,11 @@ class MultipleROI(object):
             raise ValueError, 'works only for k<%d'%self.k
         return self.coord[k]
 
+    def get_size(self):
+        """ returns size, k-length array
+        """
+        return self.size
+
     def get_volume(self):
         """ returns self.local_volume[k]
         """

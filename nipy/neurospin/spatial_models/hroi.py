@@ -16,7 +16,8 @@ import nipy.neurospin.graph.graph as fg
 from nipy.neurospin.graph.forest import Forest
 from nipy.neurospin.spatial_models.roi_ import MultipleROI
 
-def NROI_from_discrete_domain(dom, data, threshold=-np.infty, smin=0, id=''):
+def NROI_as_discrete_domain_blobs(dom, data, threshold=-np.infty, smin=0,
+                                  id=''):
     """
     """
     from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
@@ -45,13 +46,12 @@ def NROI_from_discrete_domain(dom, data, threshold=-np.infty, smin=0, id=''):
     while k>nroi.get_k():
         k = nroi.get_k()
         size = nroi.get_size()
-        nroi.merge_ascending(size>smin, None)
-        nroi.merge_descending(None)
+        nroi.merge_ascending(size>smin)
+        nroi.merge_descending()
         size = nroi.get_size()
         if size.max()<smin: return None
         
-        nroi.clean(size>smin)
-        nroi.check()
+        nroi.select(size>smin)
         
     return nroi
 
