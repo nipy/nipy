@@ -10,7 +10,8 @@ import numpy as np
 from scipy.ndimage import affine_transform
 
 from .interpolation import ImageInterpolator
-from ..core.api import Image, CoordinateMap, AffineTransform, ArrayCoordMap, compose
+from ..core.api import (Image, CoordinateMap, AffineTransform,
+                        ArrayCoordMap, compose)
 from ..core.transforms import affines
 
 def resample_img2img(source, target, order=3):
@@ -89,14 +90,7 @@ def resample(image, target, mapping, shape, order=3):
     """
     if not callable(mapping):
         if type(mapping) is type(()):
-            # make affine from tuple
-            A, b = mapping
-            ndimout = b.shape[0]
-            ndimin = A.shape[1]
-            mapping  = np.zeros((ndimout+1, ndimin+1))
-            mapping[:ndimout,:ndimin] = A
-            mapping[:ndimout,-1] = b
-            mapping[-1,-1] = 1.
+            mapping = affines.from_matrix_vector(*mapping)
         # image world to target world mapping
         TW2IW = AffineTransform(target.function_range,
                                 image.coordmap.function_range,
