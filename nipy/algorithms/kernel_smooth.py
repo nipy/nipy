@@ -87,7 +87,7 @@ class LinearFilter(object):
         X : array
            array of points
         axis : int, optional
-           axis containing coordinates.  Default -1
+           axis containing coordinates. Default -1
         """
         # copy X
         _X = np.array(X)
@@ -143,7 +143,7 @@ class LinearFilter(object):
             # we need to generalize which axis to iterate over.  By
             # default it should probably be the last.
             raise NotImplementedError('Smoothing volumes in a 4D series '
-                                      ' is broken, pending a rethink')
+                                      'is broken, pending a rethink')
             _out = np.zeros(inimage.shape)
             # iterate over the first (0) axis - this is confusing - see
             # above

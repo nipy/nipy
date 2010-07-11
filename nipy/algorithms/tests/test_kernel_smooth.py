@@ -46,7 +46,9 @@ def test_kernel():
     sdtol = 1.0e-8
     for x in range(6):
         shape = randint(30,60,(3,))
+        # pos of delta
         ii, jj, kk = randint(11,17, (3,))
+        # random affine coordmap (diagonal and translations)
         coordmap = AffineTransform.from_start_step('ijk', 'xyz', 
                                           randint(5,20,(3,))*0.25,
                                           randint(5,10,(3,))*0.5)
@@ -54,22 +56,21 @@ def test_kernel():
         signal = np.zeros(shape)
         signal[ii,jj,kk] = 1.
         signal = Image(signal, coordmap=coordmap)
+        # A filter with coordmap, shape matched to image
         kernel = LinearFilter(coordmap, shape, 
                               fwhm=randint(50,100)/10.)
         # smoothed normalized 3D array
-        ssignal = kernel.smooth(signal)
-        ssignal = np.asarray(ssignal)
+        ssignal = kernel.smooth(signal).get_data()
         ssignal[:] *= kernel.norms[kernel.normalization]
-        # ssignal.size x 3 points array
+        # 3 points * signal.size array
         I = np.indices(ssignal.shape)
         I.shape = (kernel.coordmap.ndims[0], np.product(shape))
-        I = I.T
         # location of maximum in smoothed array
-        i, j, k = I[np.argmax(ssignal[:].flat),:]
+        i, j, k = I[:, np.argmax(ssignal[:].flat)]
         # same place as we put it before smoothing?
         yield assert_equal((i,j,k), (ii,jj,kk))
-        # get physical points relative to position of delta
-        Z = kernel.coordmap(I) - kernel.coordmap([i,j,k])
+        # get physical points position relative to position of delta
+        Z = kernel.coordmap(I.T) - kernel.coordmap([i,j,k])
         _k = kernel(Z)
         _k.shape = ssignal.shape
         yield assert_true((np.corrcoef(_k[:].flat, ssignal[:].flat)[0,1] > tol))
