@@ -218,20 +218,19 @@ class CoordinateSystem(object):
 	--------
 	>>> cs = CoordinateSystem('ijk', coord_dtype=np.float32)
         >>> arr = np.array([1, 2, 3], dtype=np.int16)
-        >>> cs._checked_values(arr.reshape(1,3)) 
-        array([[1, 2, 3]], dtype=int16)
         >>> cs._checked_values(arr) # 1D is OK with matching dimensions 
+        array([[1, 2, 3]], dtype=int16)
+        >>> cs._checked_values(arr.reshape(1,3)) # as is 1 by N
         array([[1, 2, 3]], dtype=int16)
         >>> cs._checked_values(arr.reshape(3,1)) # wrong shape
         Traceback (most recent call last):
            ...
-        ValueError: Array shape[-1] (1) must match CoordinateSystem shape (3).
+        ValueError: Array shape[-1] (1) must match CoordinateSystem ndim (3).
           CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
-
         >>> cs._checked_values(arr[0:2]) # wrong length
         Traceback (most recent call last):
            ...
-        ValueError: 1D array as input should have shape (3,) for CoordinateSystem:
+        ValueError: Array shape[-1] (2) must match CoordinateSystem ndim (3).
           CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
 
         The dtype has to be castable:
@@ -267,7 +266,7 @@ class CoordinateSystem(object):
         >>> cs._checked_values([1, 2])
         Traceback (most recent call last):
            ...
-        ValueError: 1D array as input should have shape (1,) for CoordinateSystem:
+        ValueError: Array shape[-1] (2) must match CoordinateSystem ndim (1).
           CoordinateSystem(coord_names=('x',), name='', coord_dtype=float64)
 
         But of course 2D, N by 1 is OK
@@ -277,22 +276,16 @@ class CoordinateSystem(object):
                [2],
                [3]])
         '''
-        arr = np.asanyarray(arr)
-        if len(arr.shape) < 2:
-            if arr.size != self.ndim:
-                raise ValueError('1D array as input should have shape (%d,) for '
-                                 'CoordinateSystem:\n  %s' % 
-                                 (self.ndim, str(self)))
-            arr = arr.reshape((1, arr.size))
-        elif arr.shape[-1] != self.ndim:
+        arr = np.atleast_2d(arr)
+        if arr.shape[-1] != self.ndim:
             raise ValueError('Array shape[-1] (%s) must match '
-                             'CoordinateSystem shape (%d).\n  %s'
+                             'CoordinateSystem ndim (%d).\n  %s'
                              % (arr.shape[-1], self.ndim, str(self)))
         if not np.can_cast(arr.dtype, self.coord_dtype):
             raise ValueError('Cannot cast array dtype %s to '
                              'CoordinateSystem coord_dtype %s.\n  %s' %
                              (arr.dtype, self.coord_dtype, str(self)))
-        return arr
+        return arr.reshape((-1, self.ndim))
 
 
 def safe_dtype(*dtypes):
@@ -342,13 +335,12 @@ def safe_dtype(*dtypes):
     Traceback (most recent call last):
     ...
     TypeError: dtype must be valid numpy dtype int, uint, float or complex
-
     """
-
     arrays = [np.zeros(2, dtype) for dtype in dtypes]
     notbuiltin = [not a.dtype.isbuiltin for a in arrays]
     if np.any(notbuiltin):
-        raise TypeError('dtype must be valid numpy dtype int, uint, float or complex')
+        raise TypeError('dtype must be valid numpy dtype int, '
+                        'uint, float or complex')
     return np.array(arrays).dtype
 
 
@@ -379,8 +371,6 @@ def product(*coord_systems):
     Traceback (most recent call last):
        ...
     ValueError: coord_names must have distinct names
-    >>>                     
-
     """
 
     coords = []

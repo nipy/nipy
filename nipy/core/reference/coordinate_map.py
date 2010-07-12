@@ -156,12 +156,12 @@ class CoordinateMap(object):
 
         Parameters
         ----------
-        function : callable
-           The function between function_domain and function_range.
         function_domain : :class:`CoordinateSystem`
            The input coordinate system
         function_range : :class:`CoordinateSystem`
            The output coordinate system
+        function : callable
+           The function between function_domain and function_range.
         inverse_function : None or callable, optional
            The optional inverse of function, with the intention being
            ``x = inverse_function(function(x))``.  If the function is
@@ -382,10 +382,11 @@ class CoordinateMap(object):
         >>> cmi([2,6,12])
         array([ 1,  5, 11])
         """
+        x = np.asanyarray(x)
         in_vals = self.function_domain._checked_values(x)
         out_vals = self.function(in_vals)
         final_vals = self.function_range._checked_values(out_vals)
-
+        
         # Try to set the shape reasonably for self.ndims[0] == 1
         if x.ndim == 1:
             return final_vals.reshape(-1)
