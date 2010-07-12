@@ -4,7 +4,7 @@ import numpy as np
 # this import line is a little ridiculous...
 from nipy.core.reference.coordinate_map import (CoordinateMap,
                                                 AffineTransform, 
-                                                compose, CoordinateSystem,
+                                                compose,
                                                 product,
                                                 append_io_dim,
                                                 drop_io_dim,
@@ -12,6 +12,12 @@ from nipy.core.reference.coordinate_map import (CoordinateMap,
                                                 shifted_domain_origin,
                                                 shifted_range_origin,
                                                 _as_coordinate_map)
+from nipy.core.reference.coordinate_system import (
+    CoordinateSystem,
+    CoordinateSystemError)
+
+# shortcut
+CS = CoordinateSystem
 
 from nipy.testing import (assert_true, assert_equal, assert_raises, 
                           assert_false, assert_array_equal,
@@ -34,11 +40,9 @@ def setup():
     E.c = CoordinateMap(x, x, g)        
     E.d = CoordinateMap(x, x, g, inverse_function=f)        
     E.e = AffineTransform.identity('ijk')
-
     A = np.identity(4)
     A[0:3] = np.random.standard_normal((3,4))
     E.mapping = AffineTransform.from_params('ijk' ,'xyz', A)
-    
     E.singular = AffineTransform.from_params('ijk', 'xyzt',
                                     np.array([[ 0,  1,  2,  3],
                                               [ 4,  5,  6,  7],
@@ -125,6 +129,46 @@ def test_renamed():
 
 
 @parametric
+def test_calling_shapes():
+    cs2d = CS('ij')
+    cs1d = CS('i')
+    cm2d = CoordinateMap(cs2d, cs2d, lambda x : x+1)
+    cm1d2d = CoordinateMap(cs1d, cs2d,
+                           lambda x : np.concatenate((x, x), axis=-1))
+    at2d = AffineTransform(cs2d, cs2d, np.array([[1, 0, 1],
+                                                 [0, 1, 1],
+                                                 [0, 0, 1]]))
+    at1d2d = AffineTransform(cs1d, cs2d, np.array([[1,0],
+                                                   [0,1],
+                                                   [0,1]]))
+    # test coordinate maps and affine transforms
+    for xfm2d, xfm1d2d in ((cm2d, cm1d2d), (at2d, at1d2d)):
+        arr = np.array([0, 1])
+        yield assert_array_equal(xfm2d(arr), [1, 2])
+        # test lists work too
+        res = xfm2d([0, 1])
+        yield assert_array_equal(res, [1, 2])
+        # and return arrays (by checking shape attribute)
+        yield assert_equal(res.shape, (2,))
+        # maintaining input shape
+        arr_long = arr[None, None, :]
+        yield assert_array_equal(xfm2d(arr_long), arr_long + 1)
+        # wrong shape array raises error
+        yield assert_raises(CoordinateSystemError, xfm2d, np.zeros((3,)))
+        yield assert_raises(CoordinateSystemError, xfm2d, np.zeros((3,3)))
+        # 1d to 2d
+        arr = np.array(1)
+        yield assert_array_equal(xfm1d2d(arr), [1,1] )
+        arr_long = arr[None, None, None]
+        yield assert_array_equal(xfm1d2d(arr_long),
+                                 np.ones((1,1,2)))
+        # wrong shape array raises error.  Note 1d input requires size 1
+        # as final axis
+        yield assert_raises(CoordinateSystemError, xfm1d2d, np.zeros((3,)))
+        yield assert_raises(CoordinateSystemError, xfm1d2d, np.zeros((3,2)))
+
+    
+@parametric
 def test_call():
     value = 10
     yield assert_true(np.allclose(E.a(value), 2*value))
@@ -138,8 +182,8 @@ def test_call():
     yield assert_true(np.allclose(E.e(value), value))
     # check that error raised for wrong shape
     value = np.array([1., 2.,])
-    yield assert_raises(ValueError, E.e, value)
-    
+    yield assert_raises(CoordinateSystemError, E.e, value)
+
 
 def test_compose():
     value = np.array([[1., 2., 3.]]).T

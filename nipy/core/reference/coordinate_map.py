@@ -157,11 +157,15 @@ class CoordinateMap(object):
         Parameters
         ----------
         function_domain : :class:`CoordinateSystem`
-           The input coordinate system
+           The input coordinate system.
         function_range : :class:`CoordinateSystem`
            The output coordinate system
         function : callable
-           The function between function_domain and function_range.
+           The function between function_domain and function_range.  It
+           should be a callable that accepts arrays of shape (N,
+           function_domain.ndim) and returns arrays of shape (N,
+           function_range.ndim), where N is the number of points for
+           transformation.
         inverse_function : None or callable, optional
            The optional inverse of function, with the intention being
            ``x = inverse_function(function(x))``.  If the function is
@@ -176,12 +180,11 @@ class CoordinateMap(object):
 
         # These attrs define the structure of the coordmap.
 
-        self.function = function
         self.function_domain = function_domain
         self.function_range = function_range
+        self.function = function
         self.inverse_function = inverse_function
         self.ndims = (function_domain.ndim, function_range.ndim)
-
         if not callable(function):
             raise ValueError('The function must be callable.')
         if inverse_function is not None:
@@ -360,14 +363,19 @@ class CoordinateMap(object):
         ----------
         x : array-like
            Values in domain coordinate system space that will be mapped
-           to the range coordinate system space, using
-           ``self.mapping``.  The last dimension of the array is the
-           coordinate dimension.
+           to the range coordinate system space, using ``self.mapping``.
+           The last dimension of the array is the coordinate dimension.
+           Thus `x` can be any array that can be reshaped to (N,
+           self.function_domain.ndim), and that matches
+           self.function_domain dtype.
            
         Returns
         -------
         y : array
-           Values in range coordinate system space
+           Values in range coordinate system space.  If input `x` was
+           shape S + (self.function_domain.ndim) (where S is a tuple of
+           int and can be ()) - then the output `y` will be shape S +
+           (self.function_range.ndim)
 
         Examples
         --------
@@ -383,17 +391,13 @@ class CoordinateMap(object):
         array([ 1,  5, 11])
         """
         x = np.asanyarray(x)
+        out_shape = (self.function_range.ndim,)
+        if x.ndim > 1:
+            out_shape = x.shape[:-1] + out_shape
         in_vals = self.function_domain._checked_values(x)
         out_vals = self.function(in_vals)
         final_vals = self.function_range._checked_values(out_vals)
-        
-        # Try to set the shape reasonably for self.ndims[0] == 1
-        if x.ndim == 1:
-            return final_vals.reshape(-1)
-        elif x.ndim == 0:
-            return np.squeeze(final_vals)
-        else:
-            return final_vals
+        return final_vals.reshape(out_shape)
 
     def __copy__(self):
         """ Create a copy of the coordmap.
@@ -831,13 +835,20 @@ class AffineTransform(object):
         ----------
         x : array-like
            Values in domain coordinate system space that will be mapped
-           to the range coordinate system space, using
-           the homogeneous transform matrix self.affine.
+           to the range coordinate system space, using the homogeneous
+           transform matrix self.affine.  The last dimension of the
+           array is the coordinate dimension.  Thus `x` can be any array
+           that can be reshaped to (N, self.function_domain.ndim), and
+           that matches self.function_domain dtype.
+
            
         Returns
         -------
         y : array
-           Values in range coordinate system space
+           Values in range coordinate system space. If input `x` was
+           shape S + (self.function_domain.ndim) (where S is a tuple of
+           int and can be ()) - then the output `y` will be shape S +
+           (self.function_range.ndim)
 
         Examples
         --------
@@ -856,12 +867,15 @@ class AffineTransform(object):
         >>> affine_transform_inv([2,6,12])
         array([  1.,   5.,  11.])
         """
-        x = np.asarray(x)
+        x = np.asanyarray(x)
+        out_shape = (self.function_range.ndim,)
+        if x.ndim > 1:
+            out_shape = x.shape[:-1] + out_shape
+        in_vals = self.function_domain._checked_values(x)
         A, b = affines.to_matrix_vector(self.affine)
-        x_reshaped = x.reshape((-1, self.ndims[0]))
-        y_reshaped = np.dot(x_reshaped, A.T) + b[np.newaxis,:]
-        y = y_reshaped.reshape(x.shape[:-1] + (self.ndims[1],))
-        return y
+        out_vals = np.dot(in_vals, A.T) + b[np.newaxis,:]
+        final_vals = self.function_range._checked_values(out_vals)
+        return final_vals.reshape(out_shape)
 
     ###################################################################
     #

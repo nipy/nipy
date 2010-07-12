@@ -14,6 +14,9 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 
+class CoordinateSystemError(Exception):
+    pass
+
 
 class CoordinateSystem(object):
     """An ordered sequence of named coordinates of a specified dtype.
@@ -116,18 +119,13 @@ class CoordinateSystem(object):
         # Make sure each coordinate is unique
         if len(set(coord_names)) != len(coord_names):
             raise ValueError('coord_names must have distinct names')
-
         # verify that the dtype is coord_dtype for sanity
         sctypes = (np.sctypes['int'] + np.sctypes['float'] + 
                    np.sctypes['complex'] + np.sctypes['uint'])
         coord_dtype = np.dtype(coord_dtype)
-
-
         if coord_dtype not in sctypes:
             raise ValueError('Coordinate dtype should be one of %s' % `sctypes`)
-
         # Set all the attributes
-
         self.name = name
         self.coord_names = coord_names
         self.coord_dtype = coord_dtype
@@ -225,12 +223,12 @@ class CoordinateSystem(object):
         >>> cs._checked_values(arr.reshape(3,1)) # wrong shape
         Traceback (most recent call last):
            ...
-        ValueError: Array shape[-1] (1) must match CoordinateSystem ndim (3).
+        CoordinateSystemError: Array shape[-1] (1) must match CoordinateSystem ndim (3).
           CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
         >>> cs._checked_values(arr[0:2]) # wrong length
         Traceback (most recent call last):
            ...
-        ValueError: Array shape[-1] (2) must match CoordinateSystem ndim (3).
+        CoordinateSystemError: Array shape[-1] (2) must match CoordinateSystem ndim (3).
           CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
 
         The dtype has to be castable:
@@ -238,7 +236,7 @@ class CoordinateSystem(object):
         >>> cs._checked_values(np.array([1, 2, 3], dtype=np.float64))
         Traceback (most recent call last):
            ...
-        ValueError: Cannot cast array dtype float64 to CoordinateSystem coord_dtype float32.
+        CoordinateSystemError: Cannot cast array dtype float64 to CoordinateSystem coord_dtype float32.
           CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
 
         The input array is unchanged, even if a reshape has
@@ -266,7 +264,7 @@ class CoordinateSystem(object):
         >>> cs._checked_values([1, 2])
         Traceback (most recent call last):
            ...
-        ValueError: Array shape[-1] (2) must match CoordinateSystem ndim (1).
+        CoordinateSystemError: Array shape[-1] (2) must match CoordinateSystem ndim (1).
           CoordinateSystem(coord_names=('x',), name='', coord_dtype=float64)
 
         But of course 2D, N by 1 is OK
@@ -278,13 +276,13 @@ class CoordinateSystem(object):
         '''
         arr = np.atleast_2d(arr)
         if arr.shape[-1] != self.ndim:
-            raise ValueError('Array shape[-1] (%s) must match '
-                             'CoordinateSystem ndim (%d).\n  %s'
-                             % (arr.shape[-1], self.ndim, str(self)))
+            raise CoordinateSystemError('Array shape[-1] (%s) must match '
+                                        'CoordinateSystem ndim (%d).\n  %s'
+                                        % (arr.shape[-1], self.ndim, str(self)))
         if not np.can_cast(arr.dtype, self.coord_dtype):
-            raise ValueError('Cannot cast array dtype %s to '
-                             'CoordinateSystem coord_dtype %s.\n  %s' %
-                             (arr.dtype, self.coord_dtype, str(self)))
+            raise CoordinateSystemError('Cannot cast array dtype %s to '
+                                        'CoordinateSystem coord_dtype %s.\n  %s' %
+                                        (arr.dtype, self.coord_dtype, str(self)))
         return arr.reshape((-1, self.ndim))
 
 
