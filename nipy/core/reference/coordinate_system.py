@@ -225,7 +225,7 @@ class CoordinateSystem(object):
         >>> cs._checked_values(arr.reshape(3,1)) # wrong shape
         Traceback (most recent call last):
            ...
-        ValueError: Array shape[-1] must match CoordinateSystem shape 3.
+        ValueError: Array shape[-1] (1) must match CoordinateSystem shape (3).
           CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
 
         >>> cs._checked_values(arr[0:2]) # wrong length
@@ -285,8 +285,9 @@ class CoordinateSystem(object):
                                  (self.ndim, str(self)))
             arr = arr.reshape((1, arr.size))
         elif arr.shape[-1] != self.ndim:
-            raise ValueError('Array shape[-1] must match CoordinateSystem '
-                             'shape %d.\n  %s' % (self.ndim, str(self)))
+            raise ValueError('Array shape[-1] (%s) must match '
+                             'CoordinateSystem shape (%d).\n  %s'
+                             % (arr.shape[-1], self.ndim, str(self)))
         if not np.can_cast(arr.dtype, self.coord_dtype):
             raise ValueError('Cannot cast array dtype %s to '
                              'CoordinateSystem coord_dtype %s.\n  %s' %

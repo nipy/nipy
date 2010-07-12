@@ -361,7 +361,8 @@ class CoordinateMap(object):
         x : array-like
            Values in domain coordinate system space that will be mapped
            to the range coordinate system space, using
-           ``self.mapping``
+           ``self.mapping``.  The last dimension of the array is the
+           coordinate dimension.
            
         Returns
         -------
@@ -381,7 +382,6 @@ class CoordinateMap(object):
         >>> cmi([2,6,12])
         array([ 1,  5, 11])
         """
-        x = np.asarray(x)
         in_vals = self.function_domain._checked_values(x)
         out_vals = self.function(in_vals)
         final_vals = self.function_range._checked_values(out_vals)

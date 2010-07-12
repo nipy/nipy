@@ -1,10 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
-from nipy.testing import (assert_true, assert_equal, assert_raises, 
-                          assert_false, assert_array_equal,
-                          assert_almost_equal, parametric)
-
 # this import line is a little ridiculous...
 from nipy.core.reference.coordinate_map import (CoordinateMap,
                                                 AffineTransform, 
@@ -17,6 +13,9 @@ from nipy.core.reference.coordinate_map import (CoordinateMap,
                                                 shifted_range_origin,
                                                 _as_coordinate_map)
 
+from nipy.testing import (assert_true, assert_equal, assert_raises, 
+                          assert_false, assert_array_equal,
+                          assert_almost_equal, parametric)
 
 class empty:
     pass
@@ -125,19 +124,22 @@ def test_renamed():
         yield assert_raises, ValueError, B.renamed_domain, {'foo':'y'}
 
 
-
+@parametric
 def test_call():
     value = 10
-    yield assert_true, np.allclose(E.a(value), 2*value)
-    yield assert_true, np.allclose(E.b(value), 2*value)
+    yield assert_true(np.allclose(E.a(value), 2*value))
+    yield assert_true(np.allclose(E.b(value), 2*value))
     # FIXME: this shape just below is not 
     # really expected for a CoordinateMap
-    yield assert_true, np.allclose(E.b([value]), 2*value)
-    yield assert_true, np.allclose(E.c(value), value/2)
-    yield assert_true, np.allclose(E.d(value), value/2)
+    yield assert_true(np.allclose(E.b([value]), 2*value))
+    yield assert_true(np.allclose(E.c(value), value/2))
+    yield assert_true(np.allclose(E.d(value), value/2))
     value = np.array([1., 2., 3.])
-    yield assert_true, np.allclose(E.e(value), value)
-
+    yield assert_true(np.allclose(E.e(value), value))
+    # check that error raised for wrong shape
+    value = np.array([1., 2.,])
+    yield assert_raises(ValueError, E.e, value)
+    
 
 def test_compose():
     value = np.array([[1., 2., 3.]]).T
