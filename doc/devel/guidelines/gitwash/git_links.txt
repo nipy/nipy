@@ -8,6 +8,11 @@
    __not_case_sensitive__, so only one target definition is needed for
    nipy, NIPY, Nipy, etc...
 
+.. PROJECTNAME placeholders
+.. _PROJECTNAME: http://neuroimaging.scipy.org
+.. _`PROJECTNAME github`: http://github.com/nipy
+.. _`PROJECTNAME mailing list`: http://projects.scipy.org/mailman/listinfo/nipy-devel
+
 .. nipy
 .. _nipy: http://neuroimaging.scipy.org
 .. _`nipy github`: http://github.com/nipy

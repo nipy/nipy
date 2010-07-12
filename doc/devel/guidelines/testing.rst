@@ -30,8 +30,8 @@ module name it tests.  This makes it obvious for other developers
 which modules are tested, where to add tests, etc...  An example test
 file and module pairing::
 
-      neuroimaging/core/reference/coordinate_system.py
-      neuroimaging/core/reference/tests/test_coordinate_system.py
+      nipy/core/reference/coordinate_system.py
+      nipy/core/reference/tests/test_coordinate_system.py
 
 All tests go in a test subdirectory for each package.
 
@@ -124,18 +124,9 @@ Running the full test suite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For our tests, we have collected a set of fmri imaging data which are
-required for the tests to run. The data must be downloaded separately
-and installed in your home directory ``$HOME/.nipy/tests/data``.  From
-your home directory::
-
-    mkdir -p .nipy/tests/data
-    svn co http://neuroimaging.scipy.org/svn/ni/data/trunk/fmri .nipy/tests/data
-
-Tests can be run on the package::
-
-    import nipy as ni
-    ni.test()
-
+required for the tests to run.  To do this, download the latest example
+data and template package files from `NIPY data packages`_. See
+:ref:`install-data`.
 
 Running individual tests
 ^^^^^^^^^^^^^^^^^^^^^^^^

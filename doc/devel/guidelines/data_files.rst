@@ -165,7 +165,9 @@ NIPY-related packages such as ``pbrain``).  The ``data`` subdirectory of
   [DEFAULT]
   version = 0.1
 
-giving the version of the data package.  
+giving the version of the data package.
+
+.. _install-data-pkgs:
 
 Installing the data
 ```````````````````

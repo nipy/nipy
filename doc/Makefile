@@ -1,7 +1,8 @@
 # Makefile for Sphinx documentation
 #
 
-WWW=neuroimaging@neuroimaging.scipy.org:www
+SOURCEFORGE_USER ?= matthewbrett
+WWW=$(SOURCEFORGE_USER),nipy@web.sourceforge.net:htdocs/nipy
 
 # You can set these variables from the command line.
 SPHINXOPTS    = #-q # suppress all output but warnings
@@ -24,16 +25,13 @@ help:
 					PAPER=a4 or PAPER=letter)"
 	@echo "  all		make HTML, API and PDF documents"
 	@echo "  clean		remove all generated documents"
-	@echo "  web		make full HTML website locally here:\
-					www/build/html/index.html"
 	@echo
 	@echo "  linkcheck 	check all external links for integrity"
 	@echo "  doctest   	run doctests in reST files"
 	@echo "  pdf		make <latex> and run the PDF generation"
 	@echo "  dist		make <all> and put results in dist/"
 	@echo "  public_html	make <dist> and rsync with public website"
-	@echo "  web_public	make <public_html> for both doc and www\
-					directories."
+	@echo "  gitwash-update update git workflow from source repo"
 
 # Commented these out, wasn't clear if we'd use these targets or not.
 # @echo "  pickle    to make pickle files (usable by e.g. sphinx-web)"
@@ -52,18 +50,11 @@ all: html pdf
 dist: clean all
 	mkdir -p dist
 	ln build/latex/nipy*.pdf dist/
-	cp -al build/html dist/
+	cp -al build/html/* dist/
 	@echo "Build finished.  Final docs are in dist/"
 
 public_html: dist
-	rsync -avH --delete dist/ $(WWW)/doc/manual/
-
-web: html
-	cd www && make html
-	@echo "Build web finished."
-
-web_public: public_html
-	cd www && make public_html
+	rsync -avH --delete dist/* $(WWW)
 
 htmlonly:
 	mkdir -p build/html build/doctrees
@@ -78,6 +69,9 @@ api:
 html: api htmlonly
 	-ln -s build manual
 	@echo "Build HTML and API finished."
+
+gitwash-update:
+	python ../tools/gitwash_dumper.py devel/guidelines nipy
 
 pickle:
 	mkdir -p build/pickle build/doctrees

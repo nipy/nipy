@@ -89,7 +89,7 @@ unused_docs = []
 
 # List of directories, relative to source directories, that shouldn't
 # be searched for source files.
-exclude_trees = ['www']
+# exclude_trees = []
 
 # what to put into API doc (just class doc, just init, or both)
 autoclass_content = 'class'
@@ -111,6 +111,10 @@ pygments_style = 'sphinx'
 
 # Options for HTML output
 # -----------------------
+#
+# The theme to use for HTML and HTML Help pages.  Major themes that come with
+# Sphinx are currently 'default' and 'sphinxdoc'.
+html_theme = 'sphinxdoc'
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
@@ -139,10 +143,10 @@ html_last_updated_fmt = '%b %d, %Y'
 #html_use_smartypants = True
 
 # Content template for the index page.
-html_index = 'www/index.html'
+html_index = 'index.html'
 
 # Custom sidebar templates, maps document names to template names.
-html_sidebars = {'index': 'indexsidebar.html'}
+# html_sidebars = {'index': 'indexsidebar.html'}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -165,7 +169,6 @@ html_copy_source = True
 # Output file base name for HTML help builder.
 htmlhelp_basename = project
 
-
 # Options for LaTeX output
 # ------------------------
 
@@ -180,15 +183,9 @@ htmlhelp_basename = project
 # [howto/manual]).
 
 latex_documents = [
-  ('index', 'nipy.tex', 'Neuroimaging in Python Documentation',
-   ur'The Neuroimaging in Python documentation team.','manual'),
-  ## ('devel/index', 'nipy_devel.tex',
-  ##  'Neuroimaging in Python Developer Documentation',
-  ##  ur'The Neuroimaging in Python documentation team.','manual'),
-  ## ('api/index', 'nipy_ref.tex',
-  ##  'Neuroimaging in Python Reference Guide',
-  ##  ur'The Neuroimaging in Python documentation team.','manual'),
-]
+  ('documentation', 'nipy.tex', 'Neuroimaging in Python Documentation',
+   ur'Neuroimaging in Python team.','manual'),
+  ]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
