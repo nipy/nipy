@@ -361,7 +361,7 @@ def save_all_images(contrast, dim, mask_url, kargs):
     
         html_result.display_results_html(z_file, mask_url, html_file,
                                          threshold=threshold,
-                                         method=method, cluster=cluster)
+                                         method=method, cluster_th=cluster)
 
 ######################################################
 # First Level analysis
@@ -522,7 +522,7 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
     ----------
     contrast_struct, ConfigObj instance or string
                it yields the set of contrasts of the multi-session model
-               or the path to a configobj that specifies the contarsts
+               or the path to a configobj that specifies the contrasts
     misc: misc object instance,
               misc information on the datasets used here
               or path to a configobj file that yields the misc info
@@ -539,7 +539,7 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
                      name of the contrast model used in miscfile
     """
     
-    # read the msic info
+    # read the misc info
     if isinstance(misc, basestring):
         misc = ConfigObj(misc)
     if not misc.has_key(model):
