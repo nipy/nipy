@@ -6,13 +6,13 @@ The orientation functions below also exist in nibabel as ``orientations.py``
 """
 
 import numpy as np
-import numpy.linalg as npl
+import scipy.linalg as spl
 
 def to_matrix_vector(transform):
     """Split a transform into its matrix and vector components.
 
     The tranformation must be represented in homogeneous coordinates
-    and is split into it's rotation matrix and translation vector
+    and is split into its rotation matrix and translation vector
     components.
 
     Parameters
@@ -120,7 +120,7 @@ def io_orientation(affine, tol=None):
     RS = RZS / zooms
     # Transform below is polar decomposition, returning the closest
     # shearless matrix R to RS
-    P, S, Qs = npl.svd(RS)
+    P, S, Qs = spl.svd(RS)
     # Threshold the singular values to determine the rank.
     if tol is None:
         tol = S.max() * np.finfo(S.dtype).eps
