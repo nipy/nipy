@@ -49,8 +49,8 @@ and template files at http://nipy.sourceforge.net/data-packages.
 If you don't have these packages, then, when you run nipy installation,
 you will probably see messages pointing you to the packges you need.
 
-Standard data package installation
-----------------------------------
+Data package installation as an administrator
+---------------------------------------------
 
 The installation procedure, for now, is very basic.  For example, let us
 say that you need the 'nipy-templates' package at
@@ -70,8 +70,8 @@ GUI, and then, using the windows shell or similar::
    cd c:\path\to\extracted\files
    python setup.py install
 
-Non-standard data package installation
---------------------------------------
+Non-administrator data package installation
+-------------------------------------------
 
 The commands above assume you are installing into the default system
 directories.  If you want to install into a custom directory, then (in
