@@ -10,6 +10,108 @@ Source Code
 NIPY uses github_ for our code hosting.  For immediate access to
 the source code, see the `nipy github`_ site.
 
+Checking out the latest version
+===============================
+
+To check out the latest version of nipy you need git_:: 
+
+    git clone git://github.com/nipy/nipy.git
+
+There are two methods to install a development version of nipy.  For
+both methods, build the extensions in place::
+
+    python setup.py build_ext --inplace
+
+Then you can either:
+
+#. Use the ``mynipy`` script in the tools directory of the nipy
+   source.  There are directions and examples in the docstring of that
+   file, but basically it updates a symbolic link in your
+   *site-packages* directory to the inplace build of your source.  The
+   advantage of this method is it does not require any modifications of
+   your PYTHONPATH.
+
+#. Place the source directory in your PYTHONPATH.
+
+With either method, all of the modifications made to your source tree
+will be picked up when nipy is imported.
+
+.. _installing-data:
+
+Optional data packages
+======================
+
+The source code has some very small data files to run the tests with,
+but it doesn't include larger example data files, or the all-important
+brain templates we all use.  You can find packages for the optional data
+and template files at http://nipy.sourceforge.net/data-packages.
+
+If you don't have these packages, then, when you run nipy installation,
+you will probably see messages pointing you to the packges you need.
+
+Data package installation as an administrator
+---------------------------------------------
+
+The installation procedure, for now, is very basic.  For example, let us
+say that you need the 'nipy-templates' package at
+http://nipy.sourceforge.net/data-packages/nipy-templates-0.1.tar.gz
+. You simply download this archive, unpack it, and then run the standard
+``python setup.py install`` on it.  On a unix system this might look
+like::
+
+   curl -O http://nipy.sourceforge.net/data-packages/nipy-templates-0.1.tar.gz
+   tar zxvf nipy-templates-0.1.tar.gz
+   cd nipy-templates-0.1
+   sudo python setup.py install
+
+On windows, download the file, extract the archive to a folder using the
+GUI, and then, using the windows shell or similar::
+
+   cd c:\path\to\extracted\files
+   python setup.py install
+
+Non-administrator data package installation
+-------------------------------------------
+
+The commands above assume you are installing into the default system
+directories.  If you want to install into a custom directory, then (in
+python, or ipython, or a text editor) look at the help for
+``nipy.utils.data.get_data_path()`` . There are instructions there for
+pointing your nipy installation to the installed data.  
+
+On unix
+~~~~~~~
+
+For example, say you installed with::
+
+   cd nipy-templates-0.1
+   python setup.py install --prefix=/home/my-user/some-dir
+
+Then you may want to do make a file ``~/.nipy/config.ini`` with the
+following contents::
+
+   [DATA]
+   /home/my-user/some-dir/share/nipy
+
+On windows
+~~~~~~~~~~
+
+Say you installed with (windows shell)::
+
+   cd nipy-templates-0.1
+   python setup.py install --prefix=c:\some\path
+
+Then first, find out your home directory::
+
+   python -c "import os; print os.path.expanduser('~')"
+
+Let's say that was ``c:\Documents and Settings\My User``.  Then, make a
+new file called ``c:\Documents and Settings\My User\_nipy\config.ini``
+with contents::
+
+   [DATA]
+   c:\some\path\share\nipy
+
 Guidelines
 ==========
 
@@ -37,32 +139,6 @@ to follow these guidelines ourselves:
   evil."
 
 .. _trunk_download:
-
-Checking out the latest version
-===============================
-
-To check out the latest version of nipy you need git_:: 
-
-    git clone git://github.com/nipy/nipy.git
-
-There are two methods to install a development version of nipy.  For
-both methods, build the extensions in place::
-
-    python setup.py build_ext --inplace
-
-Then you can either:
-
-#. Use the ``mynipy`` script in the tools directory of the nipy
-   source.  There are directions and examples in the docstring of that
-   file, but basically it updates a symbolic link in your
-   *site-packages* directory to the inplace build of your source.  The
-   advantage of this method is it does not require any modifications of
-   your PYTHONPATH.
-
-#. Place the source directory in your PYTHONPATH.
-
-With either method, all of the modifications made to your source tree
-will be picked up when nipy is imported.
 
 Submitting a patch
 ==================

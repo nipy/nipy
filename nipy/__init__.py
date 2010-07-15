@@ -1,10 +1,10 @@
 # emacs: -*- coding: utf-8; mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set fileencoding=utf-8 ft=python sts=4 ts=4 sw=4 et:
-from .info import long_description as __doc__
+from .info import (LONG_DESCRIPTION as __doc__,
+                   URL as __url__,
+                   STATUS as __status__)
 
 from .version import version as __version__
-__status__   = 'alpha'
-__url__     = 'http://neuroimaging.scipy.org'
 
 # We require numpy 1.2 for our test suite.  If Tester fails to import,
 # check the version of numpy the user has and inform them they need to
