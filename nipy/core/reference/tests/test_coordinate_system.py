@@ -2,8 +2,11 @@
 import numpy as np
 
 from nipy.testing import *
-from nipy.core.reference.coordinate_system import CoordinateSystem, \
-    product, safe_dtype
+from nipy.core.reference.coordinate_system import (
+    CoordinateSystem,
+    CoordinateSystemError,
+    product,
+    safe_dtype)
 
 class empty:
     pass
@@ -39,12 +42,13 @@ def test_ndim():
     yield assert_equal, cs.ndim, 3
 
 
+@parametric
 def test_unique_coord_names():
     unique = ['i','j','k']
     notuniq = ['i','i','k']
     coordsys = CoordinateSystem(unique)
-    yield assert_equal, coordsys.coord_names, unique
-    yield assert_raises, ValueError, CoordinateSystem, notuniq
+    yield assert_equal(coordsys.coord_names, unique)
+    yield assert_raises(ValueError, CoordinateSystem, notuniq)
 
 
 def test_dtypes():
@@ -104,18 +108,27 @@ def test___str__():
     s = str(E.cs)
     assert_equal(s, "CoordinateSystem(coord_names=('i', 'j', 'k'), name='test', coord_dtype=float32)")
 
+
+@parametric
 def test_checked_values():
     cs = CoordinateSystem('ijk', name='voxels', coord_dtype=np.float32)
     x = np.array([1, 2, 3], dtype=np.int16)
     xc = cs._checked_values(x)
     yield np.allclose, xc, x
     # wrong shape
-    yield assert_raises, ValueError, cs._checked_values, x.reshape(3,1)
+    yield assert_raises(CoordinateSystemError,
+                        cs._checked_values,
+                        x.reshape(3,1))
     # wrong length
-    yield assert_raises, ValueError, cs._checked_values, x[0:2]
+    yield assert_raises(CoordinateSystemError,
+                        cs._checked_values,
+                        x[0:2])
     # wrong dtype
     x = np.array([1,2,3], dtype=np.float64)
-    yield assert_raises, ValueError, cs._checked_values, x
+    yield assert_raises(CoordinateSystemError,
+                        cs._checked_values,
+                        x)
+
 
 def test_safe_dtype():
     yield assert_raises, TypeError, safe_dtype, type('foo')
