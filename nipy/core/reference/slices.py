@@ -60,7 +60,7 @@ def xslice(x, y_spec, z_spec, output_space=''):
     ylim = y_spec[0]
     shape = (z_spec[1], y_spec[1])
     origin = [x,ylim[0],zlim[0]]
-    colvectors = [[0,(ylim[1]-ylim[0])][/(shape[1] - 1.),0],
+    colvectors = [[0,(ylim[1]-ylim[0])/(shape[1] - 1.),0],
                   [0,0,(zlim[1]-zlim[0])/(shape[0] - 1.)]]
     T = from_matrix_vector(np.vstack(colvectors).T, origin)
     affine_domain = CoordinateSystem(['i_y', 'i_z'], 'slice')
