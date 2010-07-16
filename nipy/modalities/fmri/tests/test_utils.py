@@ -18,6 +18,7 @@ from nipy.modalities.fmri.utils import (
     step_function,
     convolve_functions,
     )
+import sympy
 from sympy import Symbol, Function, DiracDelta
 import nipy.modalities.fmri.hrf as mfhrf
 
