@@ -22,13 +22,12 @@ def vm_step_gauss(ppm, data_, mask):
     data_: ndarray (1d, masked data)
     mask: 3-element tuple of 1d ndarrays (X,Y,Z)
     """
-    ntissues = ppm.shape[-1]
+    ntissues = ppm.shape[3]
     mu = np.zeros(ntissues)
     sigma = np.zeros(ntissues)
 
     for i in range(ntissues):
-        #P = ppm[:,:,:,i][mask]
-        P = ppm.T[i].T[mask]
+        P = ppm[:,:,:,i][mask]
         Z = P.sum()
         tmp = data_*P
         mu_ = tmp.sum()/Z
@@ -55,13 +54,13 @@ def vm_step_laplace(ppm, data_, mask):
     data_: ndarray (1d, masked data)
     mask: 3-element tuple of 1d ndarrays (X,Y,Z)
     """
-    ntissues = ppm.shape[-1]
+    ntissues = ppm.shape[3]
     mu = np.zeros(ntissues)
     sigma = np.zeros(ntissues)
     ind = np.argsort(data_) # data_[ind] increasing
 
     for i in range(ntissues):
-        P = ppm.T[i].T[mask]
+        P = ppm[:,:,:,i][mask]
         mu_ = wmedian(data_, P, ind) 
         sigma_ = np.sum(np.abs(P*(data_-mu_)))/P.sum()
         mu[i] = mu_ 
@@ -73,7 +72,7 @@ def vm_step_laplace(ppm, data_, mask):
 # VEM algorithm 
 class VemTissueClassification(object): 
 
-    def __init__(self, ppm, data, mask=None, noise='gauss', 
+    def __init__(self, ppm, data, mask, noise='gauss', 
                  prior=True, copy=False, hard=False, 
                  labels=None, mixmat=None): 
         """
@@ -96,10 +95,7 @@ class VemTissueClassification(object):
 
         # Mask data 
         self.ppm = ppm 
-        self.ntissues = ppm.shape[-1]
-        if mask == None: 
-            mask = np.mgrid[[slice(0,d) for d in data.shape]]
-            mask = tuple(np.reshape(mask, [data.ndim, np.prod(data.shape)]))
+        self.ntissues = ppm.shape[3]
         self.mask = mask 
         self.data_ = data[mask]
         if prior: 
@@ -107,11 +103,6 @@ class VemTissueClassification(object):
         else: 
             self.prior_ = np.ones([1,self.ntissues])/float(self.ntissues)
         self.ref_ = np.zeros([self.data_.size, self.ntissues])
-
-        # debug 
-        print('**************')
-        print self.ref_.shape
-        print self.data_.shape
 
         # Label information 
         if labels == None: 
@@ -123,6 +114,8 @@ class VemTissueClassification(object):
         # Mixing matrix 
         self.mixmat = mixmat
 
+        # Beta parameter
+        self.beta = None
 
     # VM-step: estimate parameters
     def vm_step(self): 
@@ -153,13 +146,16 @@ class VemTissueClassification(object):
         """
         VE-step
         """
+        # Copy beta parameter
+        self.beta = beta 
+
+        # Compute complete-data likelihood maps, replacing very small
+        # values for numerical stability
         for i in range(self.ntissues): 
             self.ref_[:,i] = self.prior_[:,i]**alpha
             self.ref_[:,i] *= self.dist(self.data_, mu[i], sigma[i])
-
-        # Replace very small values for numerical stability 
         self.ref_[:] = np.maximum(self.ref_, TINY) 
-        
+
         # Normalize reference probability map 
         if beta == 0.0: 
             self.ppm[self.mask] = (self.ref_.T/self.ref_.sum(1)).T
@@ -169,7 +165,8 @@ class VemTissueClassification(object):
         else: 
             print('  ... MRF correction')
             # Deal with mixing matrix and label switching
-            if not self.mixmat == None:
+            mixmat = self.mixmat 
+            if not mixmat == None:
                 mixmat = self.sort_mixmat(mu)
             self.ppm = _ve_step(self.ppm, self.ref_, 
                                 np.array(self.mask, dtype='int'), 
@@ -205,12 +202,21 @@ class VemTissueClassification(object):
         return mu, sigma 
 
 
-    def free_energy(self, beta=0.0):
+    def free_energy(self):
+        """
+        Compute the free energy defined as:
+
+        F(q, theta) = int q(x) log q(x)/p(x,y/theta) dx
+
+        associated with input parameters mu,
+        sigma and beta (up to an ignored constant).
+        """
         q_ = self.ppm[self.mask]
+        # Entropy term
         f = np.sum(q_*np.log(np.maximum(q_/self.ref_, TINY)))
-        if beta > 0.0: 
+        # Interaction term
+        if self.beta > 0.0: 
             print('  ... Concensus correction')
             fc = _concensus(self.ppm, np.array(self.mask, dtype='int'))
-            print fc
-            f = f - .5*beta*fc 
+            f -= .5*self.beta*fc 
         return f
