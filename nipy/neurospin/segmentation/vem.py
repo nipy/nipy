@@ -116,7 +116,7 @@ class VemTissueClassification(object):
         self.mixmat = mixmat
 
         # Beta parameter
-        self.beta = 0.0 
+        self.beta = None
 
     # VM-step: estimate parameters
     def vm_step(self): 
