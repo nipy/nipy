@@ -14,8 +14,14 @@ TINY = 1e-30
 def gauss_dist(x, mu, sigma): 
     return np.exp(-.5*((x-mu)/sigma)**2)/sigma
 
+def log_gauss_dist(x, mu, sigma): 
+    return -.5*((x-mu)/sigma)**2 - np.log(sigma)
+
 def laplace_dist(x, mu, sigma): 
     return np.exp(-np.abs((x-mu)/sigma))/sigma
+
+def log_laplace_dist(x, mu, sigma): 
+    return -np.abs((x-mu)/sigma) - np.log(sigma)
 
 def vm_step_gauss(ppm, data_, mask): 
     """
@@ -87,9 +93,11 @@ class VemTissueClassification(object):
         self.hard = hard
         if noise == 'gauss': 
             self.dist = gauss_dist
+            self.log_dist = log_gauss_dist
             self._vm_step = vm_step_gauss
         elif noise == 'laplace':
             self.dist = laplace_dist
+            self.log_dist = log_laplace_dist
             self._vm_step = vm_step_laplace
         else:
             raise ValueError('Unknown noise model')
@@ -198,11 +206,23 @@ class VemTissueClassification(object):
         return mu, sigma 
 
 
-    def free_energy(self, beta=0.0):
+    def free_energy(self, mu, sigma, beta=0.0):
+        """
+        Compute the free energy associated with input parameters mu,
+        sigma and beta (up to an ignored constant).
+        """
         q_ = self.ppm[self.mask]
+        # Entropy term
         f = np.sum(q_*np.log(np.maximum(q_/self.ref_, TINY)))
+        # Likelihood term 
+        fl = 0.0
+        for i in range(q_.shape[1]):
+            tmp = q_[:,i]*self.log_dist(self.data_, mu[i], sigma[i]) 
+            fl += np.sum(tmp)
+        f -= fl
+        # Interaction term
         if beta > 0.0: 
             print('  ... Concensus correction')
             fc = _concensus(self.ppm, np.array(self.mask, dtype='int'))
-            f = f - .5*beta*fc 
+            f -= .5*beta*fc 
         return f
