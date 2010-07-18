@@ -93,7 +93,7 @@ def configuration(parent_package='',top_path=None):
 
     config.add_library('cstat',
                        sources=sources,
-                       define_macros=defs,
+                       macros=defs,
                        library_dirs=library_dirs,
                        libraries=libraries,
                        extra_info=lapack_info)
