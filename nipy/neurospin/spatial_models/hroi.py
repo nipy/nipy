@@ -14,9 +14,45 @@ import numpy as np
 import nipy.neurospin.graph.graph as fg
 
 from nipy.neurospin.graph.forest import Forest
-from nipy.neurospin.spatial_models.roi_ import MultipleROI
+from nipy.neurospin.spatial_models.roi_ import MultipleROI, SubDomains
 
 def NROI_as_discrete_domain_blobs(dom, data, threshold=-np.infty, smin=0,
+                                  id=''):
+    """
+    """
+    from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
+
+    if threshold > data.max():
+        return None
+    
+    # check size
+    df = field_from_coo_matrix_and_data(dom.topology, data)
+    idx, height, parents, label = df.threshold_bifurcations(th=threshold)    
+    k = np.size(idx)
+
+    nroi = HierarchicalROI(dom, label, parents, id=id)
+
+    # Create a signal feature
+    nroi.make_feature('signal', data)
+    
+    # perform smin reduction
+    k = 2* nroi.get_k()
+    while k>nroi.get_k():
+        k = nroi.get_k()
+        size = nroi.get_size()
+        nroi.merge_ascending(size>smin)
+        nroi.merge_descending()
+        if nroi.k==0:
+            break
+        size = nroi.get_size()
+        if size.max()<smin:
+            break #return None
+        
+        nroi.select(size>smin)
+        
+    return nroi
+
+def NROI_as_discrete_domain_blobs_dep(dom, data, threshold=-np.infty, smin=0,
                                   id=''):
     """
     """
@@ -37,10 +73,12 @@ def NROI_as_discrete_domain_blobs(dom, data, threshold=-np.infty, smin=0,
                      referential=dom.referential, id=id)
 
     # Create the index of each point within the Field
-    midx = [np.expand_dims(np.nonzero(label==i)[0], 1) for i in range(k)]
+    #midx = [np.expand_dims(np.nonzero(label==i)[0], 1) for i in range(k)]
     #discrete = [dom.ijk[label==i] for i in range(k)]
     #nroi.set_feature('index', midx)
-
+    beta = [data[label==i] for i in range(k)]
+    nroi.set_feature('signal', beta)
+    
     # perform smin reduction
     k = 2* nroi.get_k()
     while k>nroi.get_k():
@@ -91,7 +129,8 @@ def NROI_from_field(Field, affine, shape, xyz, refdim=0, threshold=-np.infty,
                  each point of each ROI
     """
     if Field.field[:,refdim].max()>threshold:
-        idx, height, parents, label = Field.threshold_bifurcations(refdim,threshold)
+        idx, height, parents, label = Field.threshold_bifurcations(refdim,
+                                                                   threshold)
     else:
         idx = []
         parents = []
@@ -100,7 +139,7 @@ def NROI_from_field(Field, affine, shape, xyz, refdim=0, threshold=-np.infty,
     k = np.size(idx)
     if k==0: return None
     discrete = [xyz[label==i] for i in range(k)]
-    nroi = NestedROI(parents, affine, shape, discrete)
+    nroi = NROI(parents, affine, shape, discrete)
 
     # Create the index of each point within the Field
     midx = [np.expand_dims(np.nonzero(label==i)[0], 1) for i in range(k)]
@@ -179,6 +218,177 @@ def NROI_from_watershed(Field, affine, shape, xyz, refdim=0, threshold=-np.infty
     nroi.set_roi_feature('seed', idx)
     return nroi
 
+########################################################################
+# Hierarchical ROI
+########################################################################
+
+class HierarchicalROI(SubDomains):
+
+    def __init__(self, domain, label, parents, id='' ):
+        """
+        Building the NROI
+        """
+        self.parents = np.ravel(parents).astype(np.int)
+        SubDomains.__init__(self, domain, label, id)
+
+    def select(self, valid, id='', no_empty_label=True):
+        """
+        Remove the rois for which valid==0 and update the hierarchy accordingly
+        Note that auto=True automatically
+        """
+        SubDomains.select(self, valid, id, True, no_empty_label )
+        if np.sum(valid)==0:
+            self.parents=[]
+        else:
+            self.parents = Forest(len(self.parents), self.parents).subforest(
+                valid.astype(np.bool)).parents.astype(np.int)
+            
+        
+    def make_graph(self):
+        """
+        output an fff.graph structure to represent the ROI hierarchy
+        """
+        if self.k==0:
+            return None
+        weights = np.ones(self.k)
+        edges = (np.vstack((np.arange(self.k), self.parents))).T
+        return fg.WeightedGraph(self.k, edges, weights)
+
+    def make_forest(self):
+        """
+        output an fff.forest structure to represent the ROI hierarchy
+        """
+        if self.k==0:
+            return None
+        G = Forest(self.k, self.parents)
+        return G
+
+    def merge_ascending(self, valid):
+        """
+        self.merge_ascending(valid)
+
+        Remove the non-valid ROIs by including them in
+        their parents when it exists
+
+        Parameters
+        ----------
+        valid array of shape(self.k)
+
+        Note
+        ----
+        if valid[k]==0 and self.parents[k]==k, k is not removed
+        """
+        if np.size(valid)!= self.k:
+            raise ValueError,"not the correct dimension for valid"
+        if self.k==0:
+            return
+        order = self.make_forest().reorder_from_leaves_to_roots()
+        for j in order:
+            if valid[j]==0:
+                fj =  self.parents[j]
+                if fj!=j:
+                    self.parents[self.parents==j]=fj
+                    self.label[self.label==j] = fj
+                    fids = self.features.keys()
+                    for fid in fids:
+                        dfj = self.features[fid][fj]
+                        dj = self.features[fid][j]
+                        self.features[fid][fj] = np.vstack((dfj, dj))
+                else:
+                    valid[j]=1
+
+        self.select(valid)
+
+    def merge_descending(self, methods=None):
+        """
+        self.merge_descending()
+        Remove the items with only one son
+        by including them in their son
+        
+        Parameters
+        ----------
+        methods indicates the way possible features are dealt with
+        (not implemented yet)
+
+        Caveat
+        ------
+        if roi_features have been defined, they will be removed
+        """
+        if self.k==0:
+            return
+
+        valid = np.ones(self.k).astype('bool')
+        order = self.make_forest().reorder_from_leaves_to_roots()[::-1]
+        for j in order:
+            i = np.nonzero(self.parents==j)
+            i = i[0]
+            if np.sum(i!=j)==1:
+                i = int(i[i!=j])
+                self.parents[i] = self.parents[j]
+                self.label[self.label==j] = i
+                valid[j] = 0
+                fids = self.features.keys()
+                for fid in fids:
+                    di = self.features[fid][i]
+                    dj = self.features[fid][j]
+                    self.features[fid][i] = np.vstack((di, dj))
+                    
+        # finally remove  the non-valid items
+        self.select(valid)
+            
+    def get_parents(self):
+        return self.parents
+
+    def get_k(self):
+        return self.k
+
+    def isleaf(self):
+        """ 
+        """
+        if self.k==0:
+            return np.array([])
+        return Forest(self.k, self.parents).isleaf()
+        
+    def reduce_to_leaves(self, id=''):
+        """
+        create a  new set of rois which are only the leaves of self
+        """
+        isleaf = Forest(self.k, self.parents).isleaf()
+        label = self.label.copy()
+        label[isleaf[self.label]==0] = -1
+        k = np.sum(isleaf.astype(np.int))
+        if self.k==0:
+            return HierarchicalROI(self.domain, label, np.array([]), id)
+        
+        parents = np.arange(k)
+        nroi = HierarchicalROI(self.domain, label, parents, id)
+            
+        # now copy the features
+        fids = self.features.keys()
+        for fid in fids:
+            df = [self.features[fid][k] for k in range(self.k) if isleaf[k]]
+            nroi.set_feature(fid, df)
+        return nroi
+
+    def copy(self, id=''):
+        """
+        returns a copy of self. self.domain is not copied.
+        """
+        cp = SubDomains.copy(self, id)
+        cp.parents = self.parents.copy()
+        return cp
+
+def make_hroi_from_subdomain(sub_domain, parents):
+    """ Instantiate an HROi from a SubDomain instance and parents
+    """
+    return HierarchicalROI(sub_domain.domain, sub_domain.label, parents,
+                           sub_domain.id)
+
+
+#########################################################################
+# NestedROI class
+#########################################################################
+    
 class NestedROI(MultipleROI):
 
     def __init__(self, dim, parents, coord, local_volume, topology=None,
@@ -312,6 +522,13 @@ class NestedROI(MultipleROI):
     def get_k(self):
         return self.k
 
+    def isleaf(self):
+        """ 
+        """
+        if self.k==0:
+            return np.array([])
+        return Forest(self.k, self.parents).isleaf()
+        
     def reduce_to_leaves(self, id=''):
         """
         create a  new set of rois which are only the leaves of self
@@ -345,8 +562,9 @@ class NestedROI(MultipleROI):
 ######################################################################
 # Old NROI class --- deprecated
 ######################################################################
+from roi import MultipleROI as MROI
 
-class NROI_dep(MultipleROI, Forest):
+class NROI(MROI, Forest):
     """
     Class for ntested ROIs.
     This inherits from both the Forest and MultipleROI
@@ -377,11 +595,12 @@ class NROI_dep(MultipleROI, Forest):
                  that yield the grid position of each grid guy.
         id='nroi', string, region identifier
         """
+        
         if parents==None:
             return None
         k = np.size(parents)
         Forest.__init__(self,k,parents)
-        MultipleROI.__init__(self, id, k, affine, shape, xyz)
+        MROI.__init__(self, id, k, affine, shape, xyz)
 
     def clean(self, valid):
         """
@@ -398,7 +617,7 @@ class NROI_dep(MultipleROI, Forest):
         Forest.__init__(self, sf.V, sf.parents)
 
         # then clean as a multiple ROI
-        MultipleROI.clean(self, valid)
+        MROI.clean(self, valid)
         return self.V
         
         
@@ -577,6 +796,6 @@ class NROI_dep(MultipleROI, Forest):
                 ldata[k]/=card
             self.set_roi_feature(fid,ldata)
         else:
-            ldata = MultipleROI.discrete_to_roi_features(self, fid, method)
+            ldata = MROI.discrete_to_roi_features(self, fid, method)
 
         return ldata

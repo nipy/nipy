@@ -23,6 +23,8 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                         nbeta=[0], method='simple'):
     """
     Function for performing bayesian structural analysis on a set of images.
+
+    Fixme: 'quick' is not tested
     """
     ref_dim = np.shape(betas[0])
     nbsubj = betas.shape[0]
@@ -45,17 +47,21 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     bdensity = 1
     affine = np.eye(3)
     shape = (ref_dim[0], ref_dim[1])
+
+    if method=='simple':
+        from nipy.neurospin.spatial_models.discrete_domain import \
+             domain_from_array
+        dom = domain_from_array(np.ones(ref_dim))
+        group_map, AF, BF, likelihood = \
+                   bsa.compute_BSA_simple(dom, lbeta, dmax, thq, smin, ths,
+                                       theta, g0, bdensity)
+        
     
     if method=='ipmi':
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax,xy, affine, 
                                         shape, thq, smin, ths, theta, g0,
                                         bdensity)
-    if method=='simple':
-        group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_simple(Fbeta, lbeta, coord, dmax,xy,
-                                          affine, shape, thq, smin, ths, 
-                                          theta, g0)
     if method=='sbf':
         pval = 0.2
         group_map, AF, BF = sbf.Compute_Amers (Fbeta, lbeta, xy, affine, 

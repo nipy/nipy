@@ -40,7 +40,7 @@ thq = 0.95
 verbose = 1
 smin = 5
 swd = tempfile.mkdtemp()
-method = 'quick'
+method = 'simple'
 print 'method used:', method
 
 # call the function

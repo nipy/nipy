@@ -292,15 +292,22 @@ def domain_from_mesh(mesh):
 # DiscreteDomain class
 ################################################################
 
-class DiscreteDomain(object):
+
+    
+    
+class ROI(object):
     """
     Descriptor of a certain domain that consists of discrete elements that
     are characterized by a coordinate system and a topology:
     the coordinate system is specified through a coordinate array
     the topology encodes the neighboring system
+
+    fixme
+    -----
+    check that local_volume is positive
     """
     
-    def __init__(self, dim, coord, local_volume, topology, referential=''):
+    def __init__(self, dim, coord, local_volume, rid='', referential=''):
         """
         Parameters
         ----------
@@ -310,8 +317,8 @@ class DiscreteDomain(object):
                explicit coordinates of the domain sites
         local_volume: array of shape(size),
                       yields the volume associated with each site
-        topology: sparse binary coo_matrix of shape (size, size),
-                  that yields the neighboring locations in the domain
+        rid: string, optional,
+             domain identifier 
         referential: string, optional,
                      identifier of the referential of the coordinates system
         
@@ -339,12 +346,8 @@ class DiscreteDomain(object):
             raise ValueError, "Inconsistent Volume size"
         self.local_volume = np.ravel(local_volume) 
         
-        # topology
-        if topology is not None:
-            if topology.shape != (self.size, self.size):
-                raise ValueError, 'Incompatible shape for topological model'
-        self.topology = topology
-
+        
+        self.rid = rid
         self.referential = referential
         self.features = {}
         
@@ -358,17 +361,16 @@ class DiscreteDomain(object):
         """
         return self.local_volume
 
-    def mask(self, bmask):
+    def mask(self, bmask, rid=''):
         """
-        returns an instance of self that has been further masked
+        returns an ROI instance that has been further masked
         """
         if bmask.size != self.size:
             raise ValueError, 'Invalid mask size'
 
         svol = self.local_volume[bmask]
-        stopo = reduce_coo_matrix(self.topology, bmask)
         scoord = self.coord[bmask]
-        DD = DiscreteDomain(self.dim, scoord, svol, stopo, self.referential)
+        DD = ROI(self.dim, scoord, svol, rid,  self.referential)
 
         for fid in self.features.keys():
             f = self.features.pop(fid)
@@ -441,6 +443,52 @@ class DiscreteDomain(object):
             ffid = np.reshape(ffid, (self.size, 1))
         slv = np.reshape(self.local_volume, (self.size, 1))
         return np.sum(ffid*slv, 0)
+
+
+class DiscreteDomain(ROI):
+    """
+    Besides ROI attributed, DiscereteDOmain has a topology,
+    which allows many operations (morphology etc.)
+    """
+    
+    def __init__(self, dim, coord, local_volume, topology, did='',
+                 referential=''):
+        """
+        Parameters
+        ----------
+        dim: int,
+             the (physical) dimension of the domain
+        coord: array of shape(size, em_dim),
+               explicit coordinates of the domain sites
+        local_volume: array of shape(size),
+                      yields the volume associated with each site
+        topology: sparse binary coo_matrix of shape (size, size),
+                  that yields the neighboring locations in the domain
+        did: string, optional,
+             domain identifier 
+        referential: string, optional,
+                     identifier of the referential of the coordinates system
+        """
+        ROI.__init__(self, dim, coord, local_volume, id, referential)
+
+        # topology
+        if topology is not None:
+            if topology.shape != (self.size, self.size):
+                raise ValueError, 'Incompatible shape for topological model'
+        self.topology = topology
+        
+    def mask(self, bmask, did=''):
+        """
+        returns a DiscreteDomain instance that has been further masked
+        """
+        td = ROI.mask(self, bmask)
+        stopo = reduce_coo_matrix(self.topology, bmask)
+        dd = DiscreteDomain(self.dim, td.coord, td.local_volume,
+                            stopo, did, self.referential)
+        
+        for fid in td.features.keys():
+            dd.set_feature(fid, td.features.pop(fid))
+        return dd
 
 
 class NDGridDomain(DiscreteDomain):

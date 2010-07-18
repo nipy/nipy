@@ -408,7 +408,7 @@ class Forest(WeightedGraph):
 
         return prop
 
-    def propagate_upward(self,label):
+    def propagate_upward(self, label):
         """
         label = self.propagate_upward(label)
         Assuming that label is a certain positive integer field
@@ -427,14 +427,15 @@ class Forest(WeightedGraph):
         -------
         label: array of shape(self.V)
         """
-        if np.size(label)!=self.k:
+        if np.size(label)!=self.V:
             raise ValueError,"incoherent size for label"
 
-        f = self.make_forest()
-        ch = f.get_children()
+        #f = self.make_forest()
+        #ch = f.get_children()
+        ch = self.get_children()
         depth = self.depth_from_leaves()
         for j in range(1,depth.max()+1):
-            for i in range(self.k):
+            for i in range(self.V):
                 if depth[i]==j:
                     if np.size(np.unique(label[ch[i]]))==1:
                         label[i] = np.unique(label[ch[i]])
