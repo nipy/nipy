@@ -17,12 +17,12 @@ def configuration(parent_package='',top_path=None):
         # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
         lapack_info = get_info('lapack',0)
 
-    config.add_extension(
-                '_clustering',
-                sources=['clustering.c'],
-                libraries=['cstat'],
-                extra_info=lapack_info,
-                )
+    #config.add_extension(
+    #            '_clustering',
+    #            sources=['clustering.c'],
+    #            libraries=['cstat'],
+    #            extra_info=lapack_info,
+    #            )
     return config
     
 
