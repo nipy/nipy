@@ -25,8 +25,6 @@ extern "C" {
   
   extern void sort_ascending(double *x, int n);
 
-  extern  void fff_rng_draw_noreplace (size_t *list, long k, long N);
-
   extern long fff_array_argmax1d(const fff_array *farray);
 
   extern long fff_array_argmin1d(const fff_array *farray);
@@ -35,7 +33,6 @@ extern "C" {
 
   extern double fff_array_max1d(const fff_array *farray);
 
-  extern int generate_normals(fff_matrix* nvariate, const fff_matrix * means, const fff_matrix * precision);
 
 #ifdef __cplusplus
 }
