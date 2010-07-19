@@ -86,7 +86,7 @@ class DiscreteROI(object):
         """
         eps = 1.e-15
         nim = load(image_path)
-        if (np.absolute(nim.get_affine()-self.affine)).max()>eps:
+        if (np.absolute(nim.get_affine()-self.affine)).max() > eps:
             return False
         if self.shape is not None:
             return np.all(np.equal(nim.get_shape(), self.shape))
@@ -94,7 +94,7 @@ class DiscreteROI(object):
 
     def from_binary_image(self, image_path):
         """
-        Take all the <>0 sites of the image as the ROI
+        Take all the <> 0 sites of the image as the ROI
 
         Parameters
         -----------

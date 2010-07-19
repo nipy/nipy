@@ -1,22 +1,10 @@
 #include "fff_routines.h"
 #include "fff_base.h"
 
-#include <randomkit.h>
-
 #include <stdlib.h>
 #include <stdio.h>
 
 
-/* Draw k different values in the range [0..N-1] */  
-extern  void fff_rng_draw_noreplace (size_t *list, long k, long N)
-{
-  int i; 
-  rk_state state; 
-  rk_seed(1, &state);
-  
-  for (i=0; i<k ; i++)
-	list[i] = floor(N*rk_double(&state));
-}
 
 typedef struct{
   double x; 
@@ -151,22 +139,3 @@ extern double fff_array_max1d(const fff_array *farray)
   return max;
 }
 
-
-extern int generate_normals(fff_matrix* nvariate, const fff_matrix * means, const fff_matrix * precision)
-{
-  rk_state state; 
-  int i,j;
-  double x,s,m;
-
-  rk_seed(1, &state);
-  
-  for (i=0 ; i<nvariate->size1 ; i++)
-	for (j=0 ; j<nvariate->size2 ; j++){
-	  s =  1.0/sqrt(fff_matrix_get(precision,i,j));
-	  m = fff_matrix_get(means,i,j);
-	  x = m + s*rk_gauss(&state);
-	  fff_matrix_set(nvariate,i,j,x);
-	}
-  
-  return(0);
-}

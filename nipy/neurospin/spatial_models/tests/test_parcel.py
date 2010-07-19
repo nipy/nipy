@@ -6,7 +6,7 @@ import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.parcellation as fp
 import nipy.neurospin.graph.graph as fg
 import nipy.neurospin.graph.field as ff
-import nipy.neurospin.clustering as fc
+import nipy.neurospin.clustering.clustering as fc
 
 def make_data_field():
     nsubj = 1
