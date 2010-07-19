@@ -113,24 +113,23 @@ def make_bsa_image(
     BF = [None for s in range(nsubj)]
 
     if method=='ipmi':
-        crmap,AF,BF,p = bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, 
-                        xyz[:,:3], affine, ref_dim, thq, smin, ths,
-                        theta, g0, bdensity, verbose=verbose)
+        crmap,AF,BF,p = bsa.compute_BSA_ipmi(dom, lbeta, dmax, thq, smin,
+                                             ths, theta, verbose=verbose)
     if method=='simple':
         crmap,AF,BF,p = bsa.compute_BSA_simple(
             dom, lbeta, dmax, thq, smin, ths, theta, verbose=verbose)
         
     if method=='quick':
         crmap, AF, BF, co_clust = bsa.compute_BSA_quick(
-            Fbeta, lbeta, coord, dmax,  xyz[:,:3], affine, ref_dim, 
-            thq, smin, ths, theta, g0, verbose=verbose)
+            dom, lbeta, dmax, thq, smin, ths, theta, verbose=verbose)
+            
         density = np.zeros(nvox)
         crmap = AF.map_label(coord,0.95,dmax)
 
     if method=='loo':
-         mll, ll0 = bsa.compute_BSA_loo (Fbeta, lbeta, coord, dmax, 
-                                xyz[:,:3], affine, ref_dim, 
-                                thq, smin,ths, theta, g0, verbose=verbose)
+         mll, ll0 = bsa.compute_BSA_loo (
+             dom, lbeta, dmax, thq, smin, ths, theta, verbose=verbose)
+         
          return mll, ll0
     
                     

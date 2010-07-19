@@ -342,7 +342,8 @@ class SubDomains(object):
                 rf.append(np.mean(f, 0))
             if method=="weighted mean":
                 lvk = self.domain.local_volume[self.label==k]
-                rf.append(np.sum(lvk*f)/np.maximum(eps, np.sum(lvk)))
+                tmp = np.dot(lvk, f)/np.maximum(eps, np.sum(lvk))
+                rf.append(tmp)
             if method=="min":
                 rf.append( np.min(f, 0))
             if method=="max":

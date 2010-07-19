@@ -8,15 +8,15 @@ Author : Bertrand Thirion, 2009
 #autoindent
 
 import numpy as np
-
 import scipy.stats as st
+
+from nipy.testing import assert_true, dec
 
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.spatial_models.structural_bfls as sbf
-
-from nipy.testing import assert_true, dec
+from nipy.neurospin.spatial_models.discrete_domain import domain_from_array
 
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
@@ -47,21 +47,19 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     bdensity = 1
     affine = np.eye(3)
     shape = (ref_dim[0], ref_dim[1])
+    dom = domain_from_array(np.ones(ref_dim))
 
     if method=='simple':
-        from nipy.neurospin.spatial_models.discrete_domain import \
-             domain_from_array
-        dom = domain_from_array(np.ones(ref_dim))
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_simple(dom, lbeta, dmax, thq, smin, ths,
-                                       theta, g0, bdensity)
-        
-    
+                                       theta, g0, bdensity)    
     if method=='ipmi':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax,xy, affine, 
-                                        shape, thq, smin, ths, theta, g0,
-                                        bdensity)
+                   bsa.compute_BSA_ipmi(dom, lbeta, dmax, thq, smin, ths,
+                                       theta, g0, bdensity)
+                   #bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax,xy, affine, 
+                   #                     shape, thq, smin, ths, theta, g0,
+                   #                     bdensity)
     if method=='sbf':
         pval = 0.2
         group_map, AF, BF = sbf.Compute_Amers (Fbeta, lbeta, xy, affine, 
@@ -110,7 +108,7 @@ def test_bsa_methods():
     # (name_of_method, ths_value, data_set, test_function)
     algs_tests = (
         ('simple', half_subjs, null_betas, lambda AF, BF: AF == None),
-        ('ipmi', half_subjs, null_betas, lambda AF, BF: AF == None),
+        ('ipmi', half_subjs, null_betas, lambda AF, BF: AF == []),
         ('simple', 1, pos_betas, lambda AF, BF: AF.k>1),
         ('ipmi', 1, pos_betas, lambda AF, BF: AF.k>1))
     

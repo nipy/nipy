@@ -4,7 +4,7 @@
 This script generates a noisy multi-subject activation image dataset
 and applies the bayesian structural analysis on it
 
-Author : Bertrand Thirion, 2009
+Author : Bertrand Thirion, 2009-2010
 """
 #autoindent
 print __doc__
@@ -16,8 +16,7 @@ import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.spatial_models.structural_bfls as sbf
-from nipy.neurospin.spatial_models.discrete_domain import \
-     domain_from_array
+from nipy.neurospin.spatial_models.discrete_domain import  domain_from_array
 
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
@@ -73,34 +72,33 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     
     lmax=0
     bdensity = 1
-        
-    if method=='simple':
-        dom = domain_from_array(np.ones(ref_dim))
+    dom = domain_from_array(np.ones(ref_dim))
+    
+    if method=='simple':    
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_simple(dom, lbeta, dmax, thq, smin, ths,
                                           theta)
     if method=='quick':
-        dom = domain_from_array(np.ones(ref_dim))
         likelihood = np.zeros(ref_dim)
         group_map, AF, BF, coclustering = \
                    bsa.compute_BSA_quick(dom, lbeta, dmax, thq, smin, ths,
                                          theta)
     if method=='ipmi':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, xyz,
-                                        affine, shape, thq,
-                                        smin, ths, theta, g0, bdensity)
+                   bsa.compute_BSA_ipmi(dom, lbeta, dmax, thq, smin, ths,
+                                          theta, bdensity)
+        #(Fbeta, lbeta, coord, dmax, xyz, affine, shape, thq, smin, ths, theta, g0, bdensity)
 
     if method=='loo':
-         mll, ll0 = bsa.compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz,
-                                        affine, shape, thq, smin, ths,
-                                        theta, g0, verbose=verbose)
-         return mll, ll0
+        mll, ll0 = bsa.compute_BSA_loo(dom, lbeta, dmax, thq, smin, ths,
+                                          theta, bdensity)
+        #(Fbeta, lbeta, coord, dmax, xyz, affine, shape, thq, smin, ths, theta, g0, verbose=verbose)
+        return mll, ll0
     if method=='dev':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, xyz,
-                                       affine, shape, thq, smin, ths, theta,
-                                        g0, bdensity, 'gauss_mixture')
+                   bsa.compute_BSA_ipmi(dom, lbeta, dmax, thq, smin, ths,
+                                          theta, bdensity, 'gauss_mixture')
+        # (Fbeta, lbeta, coord, dmax, xyz, affine, shape, thq, smin, ths, theta, g0, bdensity)
         
     if method=='sbf':
         likelihood = np.zeros(ref_dim)
@@ -110,7 +108,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 
         
     if method not in['loo', 'simple', 'ipmi', 'quick', 'sbf']:
-        raise ValueError,'method is not ocrreactly defined'
+        raise ValueError,'method is not correctly defined'
     
     if verbose==0:
         return AF,BF
@@ -194,5 +192,6 @@ smin = 5
 method = 'quick'#'simple'#'dev'#'ipmi'#'sbf'#'loo'#
 
 # run the algo
-AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method, verbose=verbose)
+AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method,
+                     verbose=verbose)
 #mp.show()

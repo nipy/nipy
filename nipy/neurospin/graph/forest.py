@@ -402,7 +402,7 @@ class Forest(WeightedGraph):
         prop[self.isleaf()==False]= True
 
         for j in range(self.tree_depth()):
-            for i in range(self.k):
+            for i in range(self.V):
                 if prop[i] == False:
                     prop[self.parents[i]] = False
 

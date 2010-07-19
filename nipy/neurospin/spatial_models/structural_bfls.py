@@ -23,6 +23,7 @@ import nipy.neurospin.graph.graph as fg
 from nipy.neurospin.spatial_models import hroi 
 from nipy.neurospin.clustering.hierarchical_clustering import \
     average_link_graph_segment
+from nipy.neurospin.spatial_models.hroi import HierarchicalROI
 
 class landmark_regions(hroi.NROI):
     """
@@ -415,17 +416,21 @@ def build_LR(BF, ths=0):
     nbsubj = np.size(BF)
     subj = [s*np.ones(BF[s].k) for s in range(nbsubj) if BF[s]!=None]
     subj = np.concatenate(subj).astype(np.int)
-    u = [BF[s].get_roi_feature('label') for s in range(nbsubj) if BF[s]!=None]
+    #u = [BF[s].get_roi_feature('label') for s in range(nbsubj) if BF[s]!=None]
+    u = [BF[s].get_roi_feature('label') for s in range(nbsubj) if BF[s].k>0]
     u = np.squeeze(np.concatenate(u))
 
     if np.size(u)==0: return None,None
     nrois = np.size(subj)
     intrasubj = np.concatenate([np.arange(BF[s].k) for s in range(nbsubj)\
                                                    if BF[s]!=None])
-   
-    for s in range(nbsubj):
-        if BF[s]is not None:
-            dim = len(BF[s].shape)
+
+    if isinstance(BF[0], HierarchicalROI):
+        dim = BF[0].domain.em_dim
+    else:
+        for s in range(nbsubj):
+            if BF[s]is not None:
+                dim = len(BF[s].shape)
     
     coords = []
     subjs = []
@@ -458,19 +463,24 @@ def build_LR(BF, ths=0):
     
     # relabel the ROIs
     for s in range(nbsubj):
-        if BF[s]!=None:
+        if BF[s].k>0: #BF[s] is not None:
             us = BF[s].get_roi_feature('label')
             us[us>-1] = maplabel[us[us>-1]]
             BF[s].set_roi_feature('label',us)
-            affine = BF[s].affine
-            shape = BF[s].shape
+            if isinstance(BF[s], HierarchicalROI):
+                ### fixme
+                affine = np.eye(dim+1)
+                shape = 100*np.ones(dim)
+            else:
+                affine = BF[s].affine
+                shape = BF[s].shape
 
     if k>0:
         # create the object
         LR = landmark_regions(k, affine=affine, shape=shape,
                               subj=subjs, coord=coords)  
     else:
-        LR=None
+        LR = None
     return LR, maplabel
 
 
@@ -960,32 +970,34 @@ def segment_graph_rd(Gc, nit=1,verbose=0):
     return u
 
 
-def Compute_Amers (Fbeta, Beta, xyz, affine, shape, coord,  dmax=10.,
-                   thr=3.0, ths=0, pval=0.2,verbose=0):
+def Compute_Amers(dom, lbeta, dmax=10., thr=3.0, ths=0, pval=0.2,verbose=0):
     """
     This is the main function for building the BFLs
 
+
+    lbeta: an array of shape (nbnodes, subjects)
+           the multi-subject statistical maps
+    smin: int, optional
+          minimal size of the regions to validate them
+    theta: float, optional
+           first level threshold
+    method: string, optional,
+           method that is used to provide priori significance
+           can be 'prior', 'gauss_mixture', 'gam_gauss' or 'emp_null'
+    verbose=0: verbosity mode
+    reshuffle=0: if nonzero, reshuffle the positions; this affects bf and gfc
+
     Parameters
     ----------
-    Fbeta :  nipy.neurospin.graph.field.Field instance
-          an  describing the spatial relationships
-          in the dataset. nbnodes = Fbeta.V
-    Beta: an array of shape (nbnodes, subjects):
+    dom : DiscreteDomain instance,
+          generic descriptor of the space domain
+    lbeta: an array of shape (nbnodes, subjects):
            the multi-subject statistical maps
-    xyz array of shape (nnodes,3):
-        the grid coordinates of the field
-    affine=np.eye(4), array of shape(4,4)
-         coordinate-defining affine transformation
-    shape=None, tuple of length 3 defining the size of the grid
-        implicit to the discrete ROI definition   
-    coord array of shape (nnodes,3):
-          spatial coordinates of the nodes
-    dmax=10.: spatial relaxation allowed in the preocedure
-    thr = 3.0: thrshold at the first-level
-    ths = 0, number of subjects to validate a BFL
-    pval = 0.2 : significance p-value for the spatial inference
+    dmax:float, optional, spatial relaxation allowed in the preocedure
+    thr: float, optional, threshold at the first-level
+    ths: float, optional,  number of subjects to validate a BFL
+    pval: float, optional  : significance p-value for the spatial inference
 
-    
     Returns
     -------
     crmap: array of shape (nnodes):
@@ -999,17 +1011,23 @@ def Compute_Amers (Fbeta, Beta, xyz, affine, shape, coord,  dmax=10.,
     """
     BFLs = []
     LW = [] 
-    nbsubj = Beta.shape[1]
-    nvox = Beta.shape[0]
+    nbsubj = lbeta.shape[1]
+    nvox = lbeta.shape[0]
+
+    from nipy.neurospin.graph.field import field_from_coo_matrix_and_data 
+    Fbeta = field_from_coo_matrix_and_data(dom.topology, lbeta[:, 0])
+
     for s in range(nbsubj):
-        beta = np.reshape(Beta[:,s],(nvox,1))
+        beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        bfls = hroi.NROI_from_watershed(Fbeta, affine, shape, xyz,
-                                        refdim=0, th=thr)
+        bfls = hroi.NROI_from_watershed(dom, data, threshold=thr)
+        #bfls = hroi.NROI_from_watershed(Fbeta, affine, shape, xyz,
+        #                                refdim=0, th=thr)
  
-        if bfls!=None:
-            bfls.set_discrete_feature_from_index('position',coord)
-            bfls.discrete_to_roi_features('position','average')
+        if bfls.k>0: # is not None:
+            bfls.make_feature('position', dom.coord)
+            pos = bfls.representative_feature('position', 'mean')
+            bfls.set_roi_features('position', pos)
             
         BFLs.append(bfls)
 
@@ -1023,7 +1041,7 @@ def Compute_Amers (Fbeta, Beta, xyz, affine, shape, coord,  dmax=10.,
     
     # building cliques
     #u = segment_graph_rd(Gc,1)
-    u,cost = average_link_graph_segment(Gc,0.1,Gc.V*1.0/nbsubj)
+    u,cost = average_link_graph_segment(Gc, 0.1, Gc.V*1.0/nbsubj)
 
     # relabel the BFLs
     q = 0
@@ -1031,9 +1049,10 @@ def Compute_Amers (Fbeta, Beta, xyz, affine, shape, coord,  dmax=10.,
         BFLs[s].set_roi_feature('label',u[q:q+BFLs[s].k])
         q += BFLs[s].k
     
-    LR,mlabel = build_LR(BFLs,ths)
+    LR, mlabel = build_LR(BFLs, ths)
     if LR!=None:
-        crmap = LR.map_label(coord,pval = 0.95,dmax=dmax)
+        crmap = LR.map_label(coord, pval=0.95, dmax=dmax)
         
     return crmap, LR, BFLs 
+
 
