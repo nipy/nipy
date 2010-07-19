@@ -360,7 +360,7 @@ class landmark_regions(hroi.NROI):
         ----------
         feature: array of shape (self.k),
                  the information to map
-x        
+       
         Returns
         -------
         wsm: array of shape(self.shape)

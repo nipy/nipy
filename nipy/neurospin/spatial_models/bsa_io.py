@@ -85,7 +85,7 @@ def make_bsa_image(
     affine = nim.get_affine()
     
     # Read the masks and compute the "intersection"
-    mask = np.reshape(intersect_masks(mask_images), ref_dim)
+    mask = np.reshape(intersect_masks(mask_images, threshold=0), ref_dim)
     xyz = np.array(np.where(mask)).T
     nvox = xyz.shape[0]
 
