@@ -148,10 +148,8 @@ def make_bsa_image(
     if crPath==False:
         return AF, BF
 
-    if AF==None:
-        default_idx = 0
-    else:
-        default_idx = AF.k+2
+    
+    default_idx = AF.k+2
 
     if crPath==None and swd==None:
         return AF, BF
@@ -178,12 +176,14 @@ def make_bsa_image(
         for s in range(nsubj):
             LabelImage = op.join(swd,"AR_s%s_%s.nii"%(subj_id[s],nbeta))
             Label = -2*np.ones(ref_dim, 'int16')
-            Label[mask]=-1
-            if BF[s]!=None:
+            Label[mask] = -1
+            if BF[s] != None:
                 nls = BF[s].get_roi_feature('label')
                 nls[nls==-1] = default_idx
-                for k in range(BF[s].k):
-                    Label[mask][BF[s].label==k] =  nls[k]
+                lab = BF[s].label
+                lab[lab>-1] = nls[lab[lab>-1]]
+                Label[mask] = lab
+               
         
             wim = Nifti1Image (Label, affine)
             wim.get_header()['descrip'] = \
@@ -193,14 +193,17 @@ def make_bsa_image(
         # write everything in a single 4D image
         wdim = (ref_dim[0], ref_dim[1], ref_dim[2], nsubj+1)
         Label = -2*np.ones(wdim,'int16')
-        Label[mask,0] = crmap
+        Label[mask, 0] = crmap
         for s in range(nsubj):
             Label[mask,s+1]=-1
             if BF[s]!=None:
                 nls = BF[s].get_roi_feature('label')
                 nls[nls==-1] = default_idx
-                for k in range(BF[s].k):
-                    Label[mask, s+1][BF[s].label==k] =  nls[k]
+                lab = BF[s].label
+                lab[lab>-1] = nls[lab[lab>-1]]
+                Label[mask] = lab
+                #for k in range(BF[s].k):
+                #    Label[mask, s+1][BF[s].label==k] =  nls[k]
         wim = Nifti1Image (Label, affine)
         wim.get_header()['descrip'] = 'group Level and individual labels\
             from bsa procedure'

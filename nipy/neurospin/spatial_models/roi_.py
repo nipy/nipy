@@ -3,7 +3,8 @@
 
 import numpy as np
 from nipy.io.imageformats import load, save, Nifti1Image 
-from discrete_domain import *   
+from discrete_domain import DiscreteDomain, NDGridDomain, domain_from_array, \
+     reduce_coo_matrix, array_affine_coord, smatrix_from_nd_array
 
 ###############################################################################
 # class DiscreteROI 
@@ -837,7 +838,6 @@ def mroi_from_array(labels, affine=None, nn=0):
     Only nonzero labels are considered
     """
     dim = len(labels.shape)
-    shape = labels.shape
     if affine is None:
         affine =  np.eye(dim + 1)
     ul = np.unique(labels[labels!=0])

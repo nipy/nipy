@@ -51,7 +51,6 @@ def smatrix_from_3d_idx(ijk, nn=18):
     coo_mat: a sparse coo matrix,
              adjacency of the neighboring system
     """
-    import nipy.neurospin.graph as fg
     G = fg.WeightedGraph(ijk.shape[0])
     G.from_3d_grid(ijk, nn)
     return G.to_coo_matrix()
@@ -223,7 +222,6 @@ def domain_from_array(mask, affine=None, nn=0):
         unsued at the moment
     """
     dim = len(mask.shape)
-    shape = mask.shape
     if affine is None:
         affine =  np.eye(dim + 1)
     mask = mask>0
@@ -292,9 +290,6 @@ def domain_from_mesh(mesh):
 # DiscreteDomain class
 ################################################################
 
-
-    
-    
 class ROI(object):
     """
     Descriptor of a certain domain that consists of discrete elements that
@@ -568,5 +563,5 @@ class NDGridDomain(DiscreteDomain):
 
         for fid in self.features.keys():
             f = self.features.pop(fid)
-            DD.set_feature(fid, f[mask])
+            DD.set_feature(fid, f[bmask])
         return DD

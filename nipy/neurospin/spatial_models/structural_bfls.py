@@ -994,7 +994,6 @@ def Compute_Amers(dom, lbeta, dmax=10., thr=3.0, ths=0, pval=0.2, verbose=0):
         print Gc.V, Gc.E, Gc.weights.min(), Gc.weights.max()
     
     # building cliques
-    #u = segment_graph_rd(Gc,1)
     u,cost = average_link_graph_segment(Gc, 0.1, Gc.V*1.0/nbsubj)
 
     # relabel the BFLs
