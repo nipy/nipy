@@ -21,7 +21,7 @@ def xslice(x, y_spec, z_spec, output_space=''):
     x : float
        The value at which x is fixed.
     y_spec : sequence
-       A sequence with 2 values of form ((flaat, float), int). The
+       A sequence with 2 values of form ((float, float), int). The
        (float, float) components are the min and max y values; the int
        is the number of points.
     z_spec : sequence
@@ -32,7 +32,7 @@ def xslice(x, y_spec, z_spec, output_space=''):
     Returns
     -------
     affine_transform : AffineTransform
-       An affine transform that describes an plane in 
+       An affine transform that describes an plane in
        LPS coordinates with x fixed.
 
     Examples
@@ -78,7 +78,7 @@ def yslice(y, x_spec, z_spec, output_space=''):
     y : float
        The value at which y is fixed.
     x_spec : sequence
-       A sequence with 2 values of form ((flaat, float), int). The
+       A sequence with 2 values of form ((float, float), int). The
        (float, float) components are the min and max x values; the int
        is the number of points.
     z_spec : sequence
@@ -89,7 +89,7 @@ def yslice(y, x_spec, z_spec, output_space=''):
     Returns
     -------
     affine_transform : AffineTransform
-       An affine transform that describes an plane in 
+       An affine transform that describes an plane in
        LPS coordinates with y fixed.
 
     Examples
@@ -136,7 +136,7 @@ def zslice(z, x_spec, y_spec, output_space=''):
     z : float
        The value at which z is fixed.
     x_spec : sequence
-       A sequence with 2 values of form ((flaat, float), int). The
+       A sequence with 2 values of form ((float, float), int). The
        (float, float) components are the min and max x values; the int
        is the number of points.
     y_spec : sequence
@@ -147,7 +147,7 @@ def zslice(z, x_spec, y_spec, output_space=''):
     Returns
     -------
     affine_transform : AffineTransform
-       An affine transform that describes an plane in 
+       An affine transform that describes an plane in
        LPS coordinates with z fixed.
 
     Examples
@@ -187,22 +187,22 @@ def zslice(z, x_spec, y_spec, output_space=''):
 
 def bounding_box(coordmap, shape):
     """
-    Determine a valid bounding box from a CoordinateMap 
+    Determine a valid bounding box from a CoordinateMap
     and a shape.
 
     Parameters
     ----------
     coordmap : CoordinateMap or AffineTransform
-       Containing mapping between voxel coordinates implied by `shape` and physical
-       coordinates. 
+       Containing mapping between voxel coordinates implied by `shape` and
+       physical coordinates.
     shape : sequence of int
        shape implying array
-       
+
     Returns
     -------
     limits : (N,) tuple of (2,) tuples of float
        minimum and maximum coordinate values in output space (range) of
-       `coordmap`. N is given by coordmap.ndim[1].  
+       `coordmap`. N is given by coordmap.ndim[1].
 
     Examples
     --------
@@ -212,4 +212,4 @@ def bounding_box(coordmap, shape):
     """
     e = ArrayCoordMap.from_shape(coordmap, shape)
     return tuple([(r.min(), r.max()) for r in e.transposed_values])
-    
+
