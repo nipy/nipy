@@ -184,11 +184,13 @@ class SubDomains(object):
         """ Returns a copy of self
         Note that self.domain is not copied
         """
-        cp = SubDomains( self.domain, self.labels.copy(), id=id )
+        cp = SubDomains( self.domain, self.label.copy(), id=id )
         for fid in self.features.keys():
-            f = self.features.pop(fid)
+            f = self.features[fid]
             sf = [f[k].copy() for k in range(self.k)]
             cp.set_feature(fid, sf)
+        for fid in self.roi_features.keys():
+            cp.set_roi_feature(fid, self.roi_features[fid].copy())
         return cp
         
     def get_coord(self, k):
@@ -210,7 +212,7 @@ class SubDomains(object):
             raise ValueError, 'works only for k<%d'%self.k
         return self.domain.local_volume[label==k]
 
-    def select(self, valid, id='', auto=False, no_empty_label=True):
+    def select(self, valid, id='', auto=True, no_empty_label=True):
         """
         returns an instance of multiple_ROI
         with only the subset of ROIs for which valid
@@ -253,14 +255,25 @@ class SubDomains(object):
                     f = self.features.pop(fid)
                     sf = [f[k] for k in range(oldk) if valid[k]]
                     self.set_feature(fid, sf)
+                    
+                for fid in self.roi_features.keys():
+                    f = self.roi_features.pop(fid)
+                    sf = np.array([f[k] for k in range(oldk) if valid[k]])
+                    self.set_roi_feature(fid, sf)
             
             else:
                 for fid in self.features.keys():
-                    f = self.features.pop(fid)
+                    f = self.features(fid)
                     for k in range(self.k):
                         if valid[k]==0:
                             f[k] = np.array([])
-                
+                            
+                #for fid in self.roi_features.keys():
+                #    f = self.roi_features(fid)
+                #    for k in range(self.k):
+                #        if valid[k]==0:
+                #            f[k] = np.array([])
+                            
             self.size = np.array([np.sum(self.label==k)
                                   for k in range(self.k)])
         else:
@@ -306,7 +319,7 @@ class SubDomains(object):
         if len(data) != self.k:
             raise ValueError, 'data should have length k'
         for k in range(self.k):
-            if data[k].shape[0]!=self.size[k]:
+            if data[k].shape[0] != self.size[k]:
                 raise ValueError, 'Wrong data size'
         
         if (self.features.has_key(fid)) & (override==False):

@@ -15,13 +15,12 @@ import nipy.neurospin.graph.graph as fg
 
 from nipy.neurospin.graph.forest import Forest
 from nipy.neurospin.spatial_models.roi_ import MultipleROI, SubDomains
+from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
 
 def NROI_as_discrete_domain_blobs(dom, data, threshold=-np.infty, smin=0,
                                   id=''):
     """
     """
-    from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
-
     if threshold > data.max():
         label = -np.ones(data.shape)
         parents = np.array([])
@@ -55,7 +54,7 @@ def NROI_as_discrete_domain_blobs(dom, data, threshold=-np.infty, smin=0,
 
 def NROI_from_watershed(domain, data, threshold=-np.infty, id=''):
     """
-    Instantiate an NROI object from a given Field and a referential
+    Instantiate an HierrachicalROI as the watershed of a certain dataset
     
     Parameters  
     ----------
@@ -68,11 +67,11 @@ def NROI_from_watershed(domain, data, threshold=-np.infty, id=''):
     
     Returns
     -------
-    the hroi instance
+    the HierachicalROI instance
       
     Fixme
     -----
-    should be a subdomain
+    should be a subdomain (?)
     Additionally a discrete_field is created, with the key 'index'.
                  It contains the index in the field from which 
                  each point of each ROI
@@ -82,126 +81,12 @@ def NROI_from_watershed(domain, data, threshold=-np.infty, id=''):
         parents = np.array([])
         return HierarchicalROI(domain, label, parents, id=id)
 
-    idx, height, parents, label = Field.custom_watershed(refdim,threshold)
-    nroi = HierarchicalROI(dom, label, parents, id=id)
+    df = field_from_coo_matrix_and_data(domain.topology, data)
+    idx, height, parents, label = df.custom_watershed(0, threshold)
+    nroi = HierarchicalROI(domain, label, parents, id=id)
 
     # this is  a custom thing, sorry
     nroi.set_roi_feature('seed', idx)
-    return nroi
-
-
-def NROI_as_discrete_domain_blobs_dep(dom, data, threshold=-np.infty, smin=0,
-                                  id=''):
-    """
-    """
-    from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
-
-    if threshold > data.max():
-        return None
-    
-    # check size
-    df = field_from_coo_matrix_and_data(dom.topology, data)
-    idx, height, parents, label = df.threshold_bifurcations(th=threshold)    
-    k = np.size(idx)
-
-    # ?? handle the case k==0
-    scoord = [dom.coord[label==i] for i in range(k)]
-    svol = [dom.local_volume[label==i] for i in range(k)]
-    nroi = NestedROI(dom.dim, parents, scoord, svol,
-                     referential=dom.referential, id=id)
-
-    # Create the index of each point within the Field
-    #midx = [np.expand_dims(np.nonzero(label==i)[0], 1) for i in range(k)]
-    #discrete = [dom.ijk[label==i] for i in range(k)]
-    #nroi.set_feature('index', midx)
-    beta = [data[label==i] for i in range(k)]
-    nroi.set_feature('signal', beta)
-    
-    # perform smin reduction
-    k = 2* nroi.get_k()
-    while k>nroi.get_k():
-        k = nroi.get_k()
-        size = nroi.get_size()
-        nroi.merge_ascending(size>smin)
-        nroi.merge_descending()
-        size = nroi.get_size()
-        if size.max()<smin: return None
-        
-        nroi.select(size>smin)
-        
-    return nroi
-
-def NROI_from_field(Field, affine, shape, xyz, refdim=0, threshold=-np.infty,
-                    smin = 0):
-    """
-    Instantiate an NROI object from a given Field and a referntial
-    (affine, shape)
-    
-    Parameters
-    ----------
-    Field : nipy.neurospin.graph.field.Field instance
-          in which the nested structure is extracted
-          It is meant to be a the topological representation
-          of a masked image or a mesh
-    affine=np.eye(4), array of shape(4,4)
-         coordinate-defining affine transformation
-    shape=None, tuple of length 3 defining the size of the grid
-        implicit to the discrete ROI definition      
-    xyz: array of shape (Field.V, 3) that represents grid coordinates
-         of the object
-    threshold is a threshold so that only values above th are considered
-       by default, threshold = -infty (numpy)
-    smin is the minimum size (in number of nodes) of the blobs to 
-         keep.
-
-    Results
-    -------
-    the nroi instance
-    
-    Note
-    ----
-    when no region is produced (no Nroi can be defined),
-         the return value is None
-    Additionally, a discrete_field is created, with the key 'index'.
-                 It contains the index in the field from which 
-                 each point of each ROI
-    """
-    if Field.field[:,refdim].max()>threshold:
-        idx, height, parents, label = Field.threshold_bifurcations(refdim,
-                                                                   threshold)
-    else:
-        idx = []
-        parents = []
-        label = -np.ones(Field.V)
-
-    k = np.size(idx)
-    if k==0: return None
-    discrete = [xyz[label==i] for i in range(k)]
-    nroi = NROI(parents, affine, shape, discrete)
-
-    # Create the index of each point within the Field
-    midx = [np.expand_dims(np.nonzero(label==i)[0], 1) for i in range(k)]
-    nroi.set_discrete_feature('index', midx)
-
-    #define the voxels
-    # as an mroi, it should have a method to be instantiated
-    #from a field/masked array ?
-    k = 2* nroi.get_k()
-
-    if k==0:
-        return None
-
-    while k>nroi.get_k():
-        k = nroi.get_k()
-        size = nroi.get_size()
-        nroi.merge_ascending(size>smin,None)
-        nroi.merge_descending(None)
-        size = nroi.get_size()
-        if size.max()<smin: return None
-        
-        nroi.clean(size>smin)
-        nroi.check()
-        
     return nroi
 
 
@@ -226,7 +111,7 @@ class HierarchicalROI(SubDomains):
         """
         SubDomains.select(self, valid, id, True, no_empty_label )
         if np.sum(valid)==0:
-            self.parents=[]
+            self.parents = np.array([])
         else:
             self.parents = Forest(len(self.parents), self.parents).subforest(
                 valid.astype(np.bool)).parents.astype(np.int)
@@ -284,7 +169,7 @@ class HierarchicalROI(SubDomains):
                         self.features[fid][fj] = np.vstack((dfj, dj))
                 else:
                     valid[j]=1
-
+        
         self.select(valid)
 
     def merge_descending(self, methods=None):
@@ -362,8 +247,8 @@ class HierarchicalROI(SubDomains):
         """
         returns a copy of self. self.domain is not copied.
         """
-        cp = SubDomains.copy(self, id)
-        cp.parents = self.parents.copy()
+        cp = make_hroi_from_subdomain(SubDomains.copy(self, id),
+                                      self.parents.copy())
         return cp
 
     def representative_feature(self, fid, method='average'):
@@ -404,9 +289,13 @@ class HierarchicalROI(SubDomains):
 def make_hroi_from_subdomain(sub_domain, parents):
     """ Instantiate an HROi from a SubDomain instance and parents
     """
-    return HierarchicalROI(sub_domain.domain, sub_domain.label, parents,
+    hroi = HierarchicalROI(sub_domain.domain, sub_domain.label, parents,
                            sub_domain.id)
-
+    for k in sub_domain.features.keys():
+        hroi.set_feature(k, sub_domain.features[k])
+    for k in sub_domain.roi_features.keys():
+        hroi.set_roi_feature(k, sub_domain.roi_features[k])
+    return hroi
 
 #########################################################################
 # NestedROI class
@@ -874,4 +763,77 @@ def NROI_from_watershed_dep(Field, affine, shape, xyz, refdim=0, threshold=-np.i
 
     # this is  a custom thing, sorry
     nroi.set_roi_feature('seed', idx)
+    return nroi
+
+def NROI_from_field(Field, affine, shape, xyz, refdim=0, threshold=-np.infty,
+                    smin = 0):
+    """
+    Instantiate an NROI object from a given Field and a referntial
+    (affine, shape)
+    
+    Parameters
+    ----------
+    Field : nipy.neurospin.graph.field.Field instance
+          in which the nested structure is extracted
+          It is meant to be a the topological representation
+          of a masked image or a mesh
+    affine=np.eye(4), array of shape(4,4)
+         coordinate-defining affine transformation
+    shape=None, tuple of length 3 defining the size of the grid
+        implicit to the discrete ROI definition      
+    xyz: array of shape (Field.V, 3) that represents grid coordinates
+         of the object
+    threshold is a threshold so that only values above th are considered
+       by default, threshold = -infty (numpy)
+    smin is the minimum size (in number of nodes) of the blobs to 
+         keep.
+
+    Results
+    -------
+    the nroi instance
+    
+    Note
+    ----
+    when no region is produced (no Nroi can be defined),
+         the return value is None
+    Additionally, a discrete_field is created, with the key 'index'.
+                 It contains the index in the field from which 
+                 each point of each ROI
+    """
+    if Field.field[:,refdim].max()>threshold:
+        idx, height, parents, label = Field.threshold_bifurcations(refdim,
+                                                                   threshold)
+    else:
+        idx = []
+        parents = []
+        label = -np.ones(Field.V)
+
+    k = np.size(idx)
+    if k==0: return None
+    discrete = [xyz[label==i] for i in range(k)]
+    nroi = NROI(parents, affine, shape, discrete)
+
+    # Create the index of each point within the Field
+    midx = [np.expand_dims(np.nonzero(label==i)[0], 1) for i in range(k)]
+    nroi.set_discrete_feature('index', midx)
+
+    #define the voxels
+    # as an mroi, it should have a method to be instantiated
+    #from a field/masked array ?
+    k = 2* nroi.get_k()
+
+    if k==0:
+        return None
+
+    while k>nroi.get_k():
+        k = nroi.get_k()
+        size = nroi.get_size()
+        nroi.merge_ascending(size>smin,None)
+        nroi.merge_descending(None)
+        size = nroi.get_size()
+        if size.max()<smin: return None
+        
+        nroi.clean(size>smin)
+        nroi.check()
+        
     return nroi

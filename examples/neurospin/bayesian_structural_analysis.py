@@ -87,24 +87,18 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_ipmi(dom, lbeta, dmax, thq, smin, ths,
                                           theta, bdensity)
-        #(Fbeta, lbeta, coord, dmax, xyz, affine, shape, thq, smin, ths, theta, g0, bdensity)
-
     if method=='loo':
         mll, ll0 = bsa.compute_BSA_loo(dom, lbeta, dmax, thq, smin, ths,
                                           theta, bdensity)
-        #(Fbeta, lbeta, coord, dmax, xyz, affine, shape, thq, smin, ths, theta, g0, verbose=verbose)
         return mll, ll0
     if method=='dev':
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_ipmi(dom, lbeta, dmax, thq, smin, ths,
                                           theta, bdensity, 'gauss_mixture')
-        # (Fbeta, lbeta, coord, dmax, xyz, affine, shape, thq, smin, ths, theta, g0, bdensity)
-        
     if method=='sbf':
         likelihood = np.zeros(ref_dim)
-        group_map, AF, BF = sbf.Compute_Amers (Fbeta, lbeta, xyz, affine, shape,
-                                              coord, dmax=dmax, thr=theta,
-                                              ths=ths , pval=thq)
+        group_map, AF, BF = sbf.Compute_Amers (
+            dom, lbeta, dmax=dmax, thr=theta, ths=ths, pval=thq)
 
         
     if method not in['loo', 'simple', 'ipmi', 'quick', 'sbf']:
@@ -189,7 +183,7 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'quick'#'simple'#'dev'#'ipmi'#'sbf'#'loo'#
+method = 'simple'#'dev'#'ipmi'#'sbf'#'loo'#'quick'#
 
 # run the algo
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method,

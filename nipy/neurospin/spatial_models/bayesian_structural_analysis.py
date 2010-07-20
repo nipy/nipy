@@ -93,130 +93,6 @@ def _hierarchical_asso(bfl,dmax):
         gcorr = []
     return gcorr
 
-
-def infer_LR(bf, thq=0.95, ths=0, dmax=1., verbose=0):
-    """
-    Given a list of hierarchical ROIs, and an associated labelling, this
-    creates an Amer structure wuch groups ROIs with the same label.
-    
-    Parameters
-    ----------
-    bf : list of nipy.neurospin.spatial_models.hroi.Nroi instances
-       it is assumd that each list corresponds to one subject
-       each NROI is assumed to have the roi_features
-       'position', 'label' and 'posterior_proba' defined
-    thq=0.95, ths=0 defines the condition (c):
-                   (c) A label should be present in ths subjects
-                   with a probability>thq
-                   in order to be valid
-    dmax: float optional,
-          regularizing constant that defines a prior on the region extent
-    
-    Results
-    -------
-    LR : a LR instance, describing a cross-subject set of ROIs
-       if inference yields a null results, LR is set to None
-    newlabel: a relabelling of the individual ROIs, similar to u,
-              which discards
-              labels that do not fulfill the condition (c)
-
-    Fixme
-    -----
-    Should be merged with sbf.build_LR
-    """
-    from nipy.neurospin.spatial_models.hroi import HierarchicalROI
-    
-    # prepare various variables to ease information manipulation
-    nbsubj = np.size(bf)
-    subj = np.concatenate([s*np.ones(bf[s].k, np.int)
-                           for s in range(nbsubj)])#if bf[s]!=None])
-    nrois = np.size(subj)
-    u = np.concatenate([bf[s].get_roi_feature('label')
-                        for s in range(nbsubj)if bf[s].k>0])
-    u = np.squeeze(u)
-    conf =  np.concatenate([bf[s].get_roi_feature('prior_proba')
-                            for s in range(nbsubj)if bf[s].k>0])
-    intrasubj = np.concatenate([np.arange(bf[s].k)
-                                for s in range(nbsubj) ])#if bf[s]!=None])
-    
-    if np.size(u)==0:  return None,None
-    
-    if isinstance(bf[0], HierarchicalROI):
-        dim = bf[0].domain.em_dim
-    else:
-        for s in range(nbsubj):
-            if bf[s]is not None:
-                dim = len(bf[s].shape)
-    
-    coords = []
-    subjs=[]
-    pps = []
-    Mu = int(u.max()+1)
-    valid = np.zeros(Mu).astype(np.int)
-
-    # do some computation to find which regions are worth reporting
-    for i in range(Mu):
-        j = np.nonzero(u==i)
-        j = np.reshape(j,np.size(j))
-        mp = 0.
-        vp = 0.
-        if np.size(j)>1:
-            subjj = subj[j]
-            for ls in np.unique(subjj):
-                lmj = 1-np.prod(1-conf[(u==i)*(subj==ls)])
-                lvj = lmj*(1-lmj)
-                mp = mp+lmj
-                vp = vp+lvj
-        # If noise is too low the variance is 0: ill-defined:
-        vp = max(vp, 1e-14)
-
-        # if above threshold, get some information to create the LR
-        if st.norm.sf(ths,mp,np.sqrt(vp)) >thq:         
-            if verbose:
-                print valid.sum(),ths,mp,thq,\
-                      st.norm.sf(ths,mp,np.sqrt(vp))
-            valid[i]=1
-            sj = np.size(j)
-            idx = np.zeros(sj)
-            coord = np.zeros((sj, dim), np.float)
-            for a in range(sj):
-                sja = subj[j[a]]
-                isja = intrasubj[j[a]]
-                coord[a,:] = bf[sja].get_roi_feature('position')[isja]
-
-            coords.append(coord)
-            subjs.append(subj[j])   
-            pps.append(conf[j])
-
-    maplabel = -np.ones(Mu).astype(np.int)
-    maplabel[valid>0] = np.cumsum(valid[valid>0])-1
-       
-    # relabel the ROIs
-    for s in range(nbsubj):
-        if bf[s].k>0:# is not None:
-            us = bf[s].get_roi_feature('label')
-            us[us>-1] = maplabel[us[us>-1]]
-            bf[s].set_roi_feature('label',us)
-            # temporary fix
-            if isinstance(bf[s], HierarchicalROI):
-                affine = np.eye(dim+1)
-                shape = 100*np.ones(dim)
-            else:
-                affine = bf[s].affine
-                shape = bf[s].shape
-            
-
-    # create the landmark regions structure
-    k = np.sum(valid)
-    if k>0:
-        LR = sbf.landmark_regions(k, affine=affine, shape=shape, subj=subjs,
-                                  coord=coords, dmax=dmax)
-        LR.set_discrete_feature('confidence', pps)
-    else:
-        LR = None
-    return LR, maplabel
-
-
 def _relabel_(label, nl=None):
     """
     Simple utilisity to relabel a pre-existing label vector
@@ -278,7 +154,7 @@ def signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
     return bf0
     
 
-def compute_individual_regions_dev (domain, lbeta, smin=5, theta=3.0,
+def compute_individual_regions (domain, lbeta, smin=5, theta=3.0,
                                method='gauss_mixture', verbose=0, reshuffle=0):
     """
     Compute the  Bayesian Structural Activation paterns -
@@ -393,7 +269,7 @@ def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1, sub, burnin,
     return like, 1-pproba
 
 
-def bsa_dpmm_dev(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
+def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
     """
     Estimation of the population level model of activation density using 
     dpmm and inference
@@ -422,7 +298,7 @@ def bsa_dpmm_dev(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
     -------
     crmap: array of shape (nnodes):
            the resulting group-level labelling of the space
-    LR: a instance of sbf.Landmark_regions that describes the ROIs found
+    LR: a instance of sbf.LandmarkRegions that describes the ROIs found
         in inter-subject inference
         If no such thing can be defined LR is set to None
     bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
@@ -509,7 +385,7 @@ def bsa_dpmm_dev(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one 
-    LR, nl = infer_LR(bf, thq, ths, dmax, verbose=verbose)
+    LR, nl = sbf.build_LR(bf, thq, ths, dmax, verbose=verbose)
 
     # make a group-level map of the landmark position        
     crmap = _relabel_(label, nl)   
@@ -547,7 +423,7 @@ def bsa_dpmm2(bf, gf0, sub, gfc, dmax, thq, ths, verbose):
     -------
     crmap: array of shape (nnodes):
            the resulting group-level labelling of the space
-    LR: a instance of sbf.Landmark_regions that describes the ROIs found
+    LR: a instance of sbf.LandmarkRegions that describes the ROIs found
         in inter-subject inference
         If no such thing can be defined LR is set to None
     bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
@@ -612,7 +488,7 @@ def bsa_dpmm2(bf, gf0, sub, gfc, dmax, thq, ths, verbose):
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one 
-    LR, nl = infer_LR(bf, thq, ths, dmax, verbose=verbose)
+    LR, nl = sbf.build_LR(bf, thq, ths, dmax, verbose=verbose)
 
     # make a group-level map of the landmark position
     crmap = -np.ones(dom.size)
@@ -644,7 +520,7 @@ def compute_BSA_ipmi(domain, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
                contains the likelihood of the data under H1 
                on the set of input nodes
     model: string,
-           model used to infer the prior p_values
+           model used to infer the prior p-values
            can be 'gamma_gauss' or 'gauss_mixture'
     verbose=0 : verbosity mode
     
@@ -652,9 +528,8 @@ def compute_BSA_ipmi(domain, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     -------
     crmap: array of shape (nnodes):
            the resulting group-level labelling of the space
-    LR: a instance of sbf.Landmrak_regions that describes the ROIs found
-        in inter-subject inference
-        If no such thing can be defined LR is set to None
+    LR: instance of sbf.LandmarkRegions,
+        that describes the ROIs found in inter-subject inference
     bf: list of  nipy.neurospin.spatial_models.hroi.Nroi instances
         representing individual ROIs
     p: array of shape (nnodes):
@@ -669,12 +544,12 @@ def compute_BSA_ipmi(domain, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     nbsubj = lbeta.shape[1]
     nvox = domain.size
 
-    bf, gf0, sub, gfc = compute_individual_regions_dev(
+    bf, gf0, sub, gfc = compute_individual_regions(
         domain, lbeta, smin, theta, 'gam_gauss', verbose)
     
     crmap = -np.ones(nvox, np.int)
     u = []
-    AF = []
+    AF = sbf.LandmarkRegions(bf[0].domain, 0, [], [])
     p = np.zeros(nvox)
     if len(sub)<1:
         return crmap, AF, bf, u, p
@@ -696,8 +571,6 @@ def compute_BSA_ipmi(domain, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     else:
         spatial_coords = gfc
 
-    #p,q =  fc.fdp(gfc, 0.5, g0, g1,dof, prior_precision,
-    #              1-gf0, sub, 100, spatial_coords,10,1000)
     p,q =  dpmm(gfc, 0.5, g0, g1, dof, prior_precision,
                   1-gf0, sub, 100, spatial_coords, nis=300)
 
@@ -716,7 +589,6 @@ def compute_BSA_ipmi(domain, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
         if bfs.k>0: # is not None
             bfs.merge_descending()
             bfs.make_feature('position', domain.coord)
-            #bfs.discrete_to_roi_features('position', 'cumulated_average')
             pos = bfs.representative_feature('position', 'cumulated_mean')
             bfs.set_roi_feature('position', pos)
 
@@ -735,11 +607,12 @@ def compute_BSA_ipmi(domain, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
             bf[s].set_roi_feature('label', u[q:q+bf[s].k])
             q += bf[s].k
     
-    LR, mlabel = sbf.build_LR(bf, ths)
+    LR, mlabel = sbf.build_LR(bf, ths=ths)
     if LR is not None:
         crmap = LR.map_label(domain.coord, pval=0.95, dmax=dmax)
     
     return crmap, LR, bf, p
+
 
 def compute_BSA_simple(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
                     method='prior', verbose=0):
@@ -767,7 +640,7 @@ def compute_BSA_simple(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     -------
     crmap: array of shape (nnodes):
            the resulting group-level labelling of the space
-    LR: a instance of sbf.Landmark_regions that describes the ROIs found
+    LR: a instance of sbf.LandmarkRegions that describes the ROIs found
         in inter-subject inference
         If no such thing can be defined LR is set to None
     bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
@@ -786,10 +659,10 @@ def compute_BSA_simple(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     -----
     The number of itertions should become a parameter
     """
-    bf, gf0, sub, gfc = compute_individual_regions_dev(
+    bf, gf0, sub, gfc = compute_individual_regions(
         dom, lbeta, smin, theta, 'prior', verbose)
     
-    crmap, LR, bf, p = bsa_dpmm_dev(bf, gf0, sub, gfc, dmax, thq, ths, verbose)
+    crmap, LR, bf, p = bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose)
     
     return crmap, LR, bf, p
     
@@ -821,7 +694,7 @@ def compute_BSA_quick(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     -------
     crmap: array of shape (nnodes):
            the resulting group-level labelling of the space
-    LR: a instance of sbf.Landmark_regions that describes the ROIs found
+    LR: a instance of sbf.LandmarkRegions that describes the ROIs found
         in inter-subject inference
         If no such thing can be defined LR is set to None
     bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
@@ -830,7 +703,7 @@ def compute_BSA_quick(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
         co-labelling matrix that gives for each pair of cross_subject regions 
         how likely they are in the same class according to the model
     """
-    bf, gf0, sub, gfc = compute_individual_regions_dev(
+    bf, gf0, sub, gfc = compute_individual_regions(
         dom, lbeta, smin, theta, 'prior', verbose)    
     crmap, LR, bf, co_clust = bsa_dpmm2(
         bf, gf0, sub, gfc, dmax, thq, ths, verbose)
@@ -868,7 +741,7 @@ def compute_BSA_loo(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     """
     n_subj = lbeta.shape[1]
     nvox = dom.size
-    bf, gf0, sub, gfc = compute_individual_regions_dev(
+    bf, gf0, sub, gfc = compute_individual_regions(
         dom, lbeta, smin, theta, 'gauss_mixture', verbose)
     
     crmap = -np.ones(nvox, np.int)

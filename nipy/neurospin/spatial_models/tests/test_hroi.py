@@ -133,15 +133,6 @@ def test_leaves():
     assert lroi.k == 8
     assert (lroi.size==size).all()
 
-def test_nroi_from_domain():
-    """ test the creation of ROIs from domain
-    """
-    dom = make_domain()
-    data = np.random.rand(*shape)
-    data[:2, :2, :2] =2
-    rdata = np.reshape(data, (data.size, 1))
-    nroi = NROI_as_discrete_domain_blobs_dep(dom, rdata, threshold=1., smin=0)
-    assert nroi.k==1
 
 #######################################################################
 # Test on hierarchical ROI
