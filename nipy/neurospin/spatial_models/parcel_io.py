@@ -6,7 +6,7 @@ this basically uses nipy io lib to perform IO opermation
 in parcel definition processes
 """
 
-from nipy.neurospin.clustering import kmeans
+from nipy.neurospin.clustering.clustering import kmeans
 import numpy as np
 import os.path
 from nipy.io.imageformats import load, save, Nifti1Image 
