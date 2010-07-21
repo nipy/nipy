@@ -149,7 +149,7 @@ Overview
    # pull changes from github
    git fetch upstream
    # merge from upstream
-   git merge upstream master
+   git merge upstream/master
 
 In detail
 ---------
@@ -230,4 +230,4 @@ To see a linear list of commits for this branch::
 You can also look at the `network graph visualizer`_ for your github_
 repo.
 
-.. include:: git_links.txt
+.. include:: git_links.inc

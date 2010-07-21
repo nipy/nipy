@@ -29,5 +29,5 @@ Create your own forked copy of nipy_
    Now, after a short pause and some 'Hardcore forking action', you
    should find yourself at the home page for your own forked copy of nipy_.
 
-.. include:: git_links.txt
+.. include:: git_links.inc
 
