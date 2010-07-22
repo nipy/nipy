@@ -252,7 +252,7 @@ def test_hroi_from_domain():
     data = np.random.rand(*shape)
     data[:2, :2, :2] =2
     rdata = np.reshape(data, (data.size, 1))
-    hroi = NROI_as_discrete_domain_blobs(dom, rdata, threshold=1., smin=0)
+    hroi = HROI_as_discrete_domain_blobs(dom, rdata, threshold=1., smin=0)
     assert hroi.k==1
 
 if __name__ == "__main__":

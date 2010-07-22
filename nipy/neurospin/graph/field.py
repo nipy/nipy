@@ -53,7 +53,7 @@ class Field(fg.WeightedGraph):
         """
         Parameters
         ----------
-        V (int >0) the number of vertices of the graph
+        V (int > 0) the number of vertices of the graph
         edges=None: the edge array of the graph
         weights=None: the asociated weights array
         field=None: the field data itself

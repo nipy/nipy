@@ -187,7 +187,7 @@ def compute_individual_regions (domain, lbeta, smin=5, theta=3.0,
     gfc, array of shape (nr, coord.shape[1])
          the coordinates of the of the terminal regions
     """
-    from hroi import NROI_as_discrete_domain_blobs
+    from hroi import HROI_as_discrete_domain_blobs
     bf = []
     gfc = []
     gf0 = []
@@ -198,7 +198,7 @@ def compute_individual_regions (domain, lbeta, smin=5, theta=3.0,
     for s in range(n_subj):
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s], (nvox,1))
-        nroi = NROI_as_discrete_domain_blobs(domain, beta, threshold=theta,
+        nroi = HROI_as_discrete_domain_blobs(domain, beta, threshold=theta,
                                              smin=smin, id='nest_blob_s %s'%s)
         
         if nroi.k>0:

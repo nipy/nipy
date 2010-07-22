@@ -12,7 +12,7 @@ import os
 import urllib2
 import tarfile
 
-def getIt():
+def get_it():
     """
     light dataset for multi-subject analysis
     """
@@ -81,6 +81,7 @@ def get_localizer_dataset():
 
     # download MaskImage if necessary
     if os.path.exists(paradigm)==False:
+        print 'Downloading mask image, this make take time'
         datafile = os.path.join(url, 'localizer_paradigm.csv')
         fp = urllib2.urlopen(datafile)
         local_file = open(paradigm, 'w')
@@ -90,6 +91,7 @@ def get_localizer_dataset():
 
     # download raw_fmri if necessary
     if os.path.exists(raw_fmri)==False:
+        print 'Downloading fmri image, this make take time'
         filename = 's12069_swaloc1_corr.nii.gz'
         datafile = os.path.join(url,filename)
         fp = urllib2.urlopen(datafile)
@@ -99,4 +101,4 @@ def get_localizer_dataset():
         local_file.close()
 
 if __name__ == '__main__':
-    getIt()
+    get_it()

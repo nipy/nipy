@@ -113,7 +113,7 @@ def main(**extra_args):
            description = 'This is a neuroimaging python package',
            author = 'Various',
            author_email = 'nipy-devel@neuroimaging.scipy.org',
-           url = 'http://neuroimaging.scipy.org',
+           url = 'http://nipy.org',
            long_description = INFO_VARS['long_description'],
            configuration = configuration,
            cmdclass = cmdclass,

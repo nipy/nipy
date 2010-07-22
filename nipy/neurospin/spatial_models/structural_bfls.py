@@ -323,7 +323,7 @@ class LandmarkRegions(object):
         ----------
         feature: array of shape (self.k),
                  the information to map
-                 
+
         Returns
         -------
         wsm: array of shape(self.shape)
@@ -337,7 +337,7 @@ class LandmarkRegions(object):
             aux[:, k], _ = self.density(k, cs)
             
         wsum = np.dot(aux, feature)
-        return wsum #np.reshape(wsum, self.shape)
+        return wsum
     
     def prevalence_density(self):
         """
