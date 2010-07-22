@@ -92,7 +92,7 @@ class DiscreteGridROI(NDGridDomain):
             data[i] = 1
         return data
         
-    def set_feature_from_image():
+    def set_feature_from_image(fid, image):
         """
         extract some roi-related information from an image
 
@@ -103,13 +103,14 @@ class DiscreteGridROI(NDGridDomain):
         image: string
             image path
         """
-        if self.dim != 3:
-            raise ValueError, "Not sure I can do this, as self.dim is not 3"
-        
-        self.check_header(image_path)
-        nim = load(image_path)  
-        data = nim.get_data()
-        self.set_feature(fid, data)
+        raise NotImplementedError
+        #if self.dim != 3:
+        #    raise ValueError, "Not sure I can do this, as self.dim is not 3"
+        # 
+        #self.check_header(image_path)
+        #nim = load(image_path)  
+        #data = nim.get_data()
+        #self.set_feature(fid, data)
         
 
 def discrete_groi_ball( shape, affine, position, radius, id=''):
@@ -199,19 +200,19 @@ class SubDomains(object):
         """
         if k>self.k-1:
             raise ValueError, 'works only for k<%d'%self.k
-        return self.domain.coord[label.k]
+        return self.domain.coord[self.label.k]
 
     def get_size(self):
         """ returns size, k-length array
         """
         return self.size
 
-    def get_volume(self):
+    def get_volume(self, k):
         """ returns self.local_volume[k]
         """
         if k>self.k-1:
             raise ValueError, 'works only for k<%d'%self.k
-        return self.domain.local_volume[label==k]
+        return self.domain.local_volume[self.label==k]
 
     def select(self, valid, id='', auto=True, no_empty_label=True):
         """
@@ -366,7 +367,7 @@ class SubDomains(object):
                 rf.append(np.median(f, 0))
         return np.array(rf)
     
-    def remove_feature(self):
+    def remove_feature(self, fid):
         """ Remove a certain feature
         """
         return self.features.pop(fid)
@@ -375,7 +376,7 @@ class SubDomains(object):
     def argmax_feature(self, fid):
         """ Return the list  of roi-level argmax of feature called fid
         """
-        af = [argmax(self.feature[fid][k]) for k in range(self.k)]
+        af = [np.argmax(self.feature[fid][k]) for k in range(self.k)]
         return np.array(af)
 
 
@@ -394,7 +395,7 @@ class SubDomains(object):
                the results
         """
         if fid==None:
-            vol = [np.sum(self.domain.local_volume[label==k])
+            vol = [np.sum(self.domain.local_volume[self.label==k])
                    for k in range(self.k)] 
             return (np.array(vol))
         lsum = []
@@ -483,7 +484,7 @@ def subdomain_from_label_image(mim, nn=18):
     else :
         iim = mim
 
-    return sundomain_from_array(iim.get_data(), iim.get_affine(), nn)
+    return subdomain_from_array(iim.get_data(), iim.get_affine(), nn)
 
 def subdomain_from_balls(domain, positions, radii):
     """
@@ -628,7 +629,7 @@ class MultipleROI(object):
         """
         return self.size
 
-    def get_volume(self):
+    def get_volume(self, k):
         """ returns self.local_volume[k]
         """
         if k>self.k-1:
@@ -741,7 +742,7 @@ class MultipleROI(object):
                 rf.append(np.median(f, 0))
         return np.array(rf)
     
-    def remove_feature(self):
+    def remove_feature(self, fid):
         """ Remove a certain feature
         """
         return self.features.pop(fid)
@@ -750,7 +751,7 @@ class MultipleROI(object):
     def argmax_feature(self, fid):
         """ Return the list  of roi-level argmax of feature called fid
         """
-        af = [argmax(self.feature[fid][k]) for k in range(self.k)]
+        af = [np.argmax(self.feature[fid][k]) for k in range(self.k)]
         return np.array(af)
 
 

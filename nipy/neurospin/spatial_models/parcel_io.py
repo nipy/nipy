@@ -53,8 +53,6 @@ def parcel_input(mask_images, nbeta, learning_images,
     
     # Read the referential information
     nim = load(mask_images[0])
-    ref_dim = nim.get_shape()
-    grid_size = np.prod(ref_dim)
     if affine==None:
         affine = nim.get_affine()
     
@@ -145,7 +143,6 @@ def Parcellation_output(Pa, mask_images, learning_images, coord, nbru,
     Pa: the updated Parcellation instance
     """
     nsubj = Pa.nb_subj
-    mxyz = Pa.ijk
     Pa.set_subjects(nbru)
     
     # write the template image
@@ -153,7 +150,6 @@ def Parcellation_output(Pa, mask_images, learning_images, coord, nbru,
     LabelImage = os.path.join(swd,"template_parcel.nii") 
     rmask = load(mask_images[0])
     ref_dim = rmask.get_shape()
-    grid_size = np.prod(ref_dim)
     affine = rmask.get_affine()
     
     Label = np.zeros(ref_dim)
@@ -192,7 +188,7 @@ def Parcellation_output(Pa, mask_images, learning_images, coord, nbru,
             hdr = wim.get_header()
             hdr['descrip'] = 'image of the jacobian of the deformation \
                               associated with the parcellation'
-            save(wim, LabelImage)       
+            save(wim, JacobImage)       
 
     return Pa
 
@@ -217,13 +213,11 @@ def parcellation_output_with_paths(Pa, mask_images, group_path, indiv_path):
     the referential-defining information should be part of the Pa instance
     """
     nsubj = Pa.nb_subj
-    mxyz = Pa.ijk
     
     # write the template image
     tlabs = Pa.group_labels
     rmask = load(mask_images[0])
     ref_dim = rmask.get_shape()
-    grid_size = np.prod(ref_dim)
     affine = rmask.get_affine()
     
     Label = np.zeros(ref_dim)
@@ -324,7 +318,6 @@ def Parcellation_based_analysis(Pa, test_images, numbeta, swd="/tmp",
     # write RFX images
     ref_dim = rbeta.get_shape()
     affine = rbeta.get_affine()
-    grid_size = np.prod(ref_dim)
     tlabs = Pa.group_labels
 
     # write the prfx images
@@ -429,7 +422,7 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
         g = ff.Field(nvox, g.edges, g.weights, feature)
 
     if method=='kmeans':
-        cent, u, J = fc.kmeans(feature, nbparcel)
+        cent, u, J = kmeans(feature, nbparcel)
 
     if method=='ward':
         u, J0 = g.ward(nbparcel)

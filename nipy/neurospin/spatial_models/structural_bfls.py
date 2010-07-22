@@ -73,12 +73,13 @@ class LandmarkRegions(object):
         """ returns the mean distance between points within each LR
         """
         from nipy.neurospin.eda.dimension_reduction import Euclidian_distance
-        coord = self.features['position']
+        
+        coord = self.get_features('position')
         h = np.zeros(self.k)
         for k in range(self.k):
-            pk = self.get_feature('position')
+            pk = coord[k]
             sk = pk.shape[0]
-            edk = dr.Euclidian_distance(pk) 
+            edk = Euclidian_distance(pk) 
             h[k] = edk.sum() / (sk * (sk-1))
         return h
 
@@ -307,8 +308,6 @@ class LandmarkRegions(object):
             for j in range(self.k):
                 subjj = subj[j]
                 conf = self.get_feature(fid)[j]
-                mp = 0.
-                vp = 0.
                 for ls in np.unique(subjj):
                     lmj = 1-np.prod(1-conf[subjj==ls])
                     confid[j] += lmj
@@ -387,7 +386,6 @@ def build_LR(bf, thq=0.95, ths=0, dmax=1., verbose=0):
     nbsubj = np.size(bf)
     subj = np.concatenate([s*np.ones(bf[s].k, np.int)
                            for s in range(nbsubj)])
-    nrois = np.size(subj)
     u = np.concatenate([bf[s].get_roi_feature('label')
                         for s in range(nbsubj)if bf[s].k>0])
     u = np.squeeze(u)
@@ -485,7 +483,6 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
     Caveat 2: BFLs is edited and modified by this function
     """
     nbsubj = np.size(BFLs)
-    sqdmax = 2*dmax*dmax
     nvox = xyz.shape[0]
     nlm = np.zeros(nbsubj)
     for s in range(nbsubj):
@@ -584,7 +581,6 @@ def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0, nrec=5, nsamples=10):
     Caveat 2: BFLs is edited and modified by this function
     """
     nbsubj = np.size(BFLs)
-    sqdmax = 2*dmax*dmax
     nvox = xyz.shape[0]
     nlm = np.array([BFLs[s].k for s in range(nbsubj)]).astype(np.int)
  
@@ -683,8 +679,6 @@ def _compute_density(BFLs, xyz, dmax):
     nbsubj = np.size(BFLs)
     sqdmax = 2*dmax*dmax
     weight = np.zeros((nvox,nbsubj),'d')
-    nlm = np.zeros(nbsubj).astype('int')
- 
     for s in range(nbsubj):
         if BFLs[s] is not None:
             coord = BFLs[s].get_roi_feature('position')
@@ -966,7 +960,6 @@ def Compute_Amers(dom, lbeta, dmax=10., thr=3.0, ths=0, pval=0.2, verbose=0):
     Newlabel: labelling of the individual ROIs
     """
     BFLs = []
-    LW = [] 
     nbsubj = lbeta.shape[1]
     nvox = lbeta.shape[0]
 

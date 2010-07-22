@@ -680,7 +680,6 @@ class MultipleROI(object):
         ldata: array of shape [self.k,fdim ]
                the computed roi-level feature 
         """
-        df = self.discrete_features[fid]
         data = self.discrete_features[fid]
         d0 = data[0]
         if np.size(d0) == np.shape(d0)[0]:

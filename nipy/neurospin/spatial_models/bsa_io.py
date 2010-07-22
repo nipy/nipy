@@ -12,7 +12,6 @@ from nipy.io.imageformats import load, save, Nifti1Image
 
 from nipy.neurospin.utils.mask import intersect_masks
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
-import nipy.neurospin.graph.field as ff
 from discrete_domain import domain_from_image 
 
 
@@ -106,7 +105,6 @@ def make_bsa_image(
         lbeta = np.dot(lbeta, np.diag(rswap))
         
     # launch the method
-    bdensity = 1
     crmap = np.zeros(nvox)
     p = np.zeros(nvox)
     AF = None
@@ -124,7 +122,7 @@ def make_bsa_image(
             dom, lbeta, dmax, thq, smin, ths, theta, verbose=verbose)
             
         density = np.zeros(nvox)
-        crmap = AF.map_label(coord,0.95,dmax)
+        crmap = AF.map_label(dom.coord, 0.95, dmax)
 
     if method=='loo':
          mll, ll0 = bsa.compute_BSA_loo (

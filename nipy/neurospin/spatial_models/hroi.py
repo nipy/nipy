@@ -643,7 +643,7 @@ class NROI(MROI, Forest):
         if self.k==0: return None
         parents = np.arange(k)
         xyz = [self.xyz[k].copy() for k in np.nonzero(isleaf)[0]]
-        nroi = NROI_dep(parents, self.affine, self.shape, xyz)
+        nroi = NROI(parents, self.affine, self.shape, xyz)
 
         # now copy the roi_features
         fids = self.roi_features.keys()
@@ -663,7 +663,7 @@ class NROI(MROI, Forest):
         returns a copy of self
         """
         xyz = [self.xyz[k].copy() for k in range(self.k)]
-        nroi = NROI_dep(self.parents.copy(), self.affine, self.shape ,xyz)
+        nroi = NROI(self.parents.copy(), self.affine, self.shape ,xyz)
 
         # now copy the roi_features
         fids = self.roi_features.keys()
@@ -693,7 +693,6 @@ class NROI(MROI, Forest):
         if method not in['min','max','average','cumulated_average']:
             raise  ValueError, 'unknown method'
         if method=='cumulated_average':
-            df = self.discrete_features[fid]
             data = self.discrete_features[fid]
             d0 = data[0]
             if np.size(d0) == np.shape(d0)[0]:

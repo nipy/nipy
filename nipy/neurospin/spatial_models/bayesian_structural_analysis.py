@@ -15,9 +15,7 @@ import scipy.stats as st
 
 import structural_bfls as sbf
 import nipy.neurospin.graph.graph as fg
-from nipy.neurospin.spatial_models import hroi 
 
-import nipy.neurospin.clustering.clustering as fc
 from nipy.neurospin.graph import BPmatch
 from nipy.neurospin.clustering.hierarchical_clustering import\
      average_link_graph_segment
@@ -213,7 +211,7 @@ def compute_individual_regions (domain, lbeta, smin=5, theta=3.0,
                 ## randomize the positions
                 ## by taking any local maximum of the image
                 temp = np.argsort(np.random.rand(nvox))[:nroi.k]
-                bfc = coord[temp]
+                bfc = domain.coord[temp]
                 nroi.set_roi_feature('position', bfc)
             else:
                 nroi.make_feature('position', domain.coord)
@@ -310,7 +308,6 @@ def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
     n_subj = len(bf)
     
     crmap = -np.ones(dom.size, np.int)
-    u = []
     LR = None
     p = np.zeros(dom.size)
     if len(sub)<1:
@@ -744,8 +741,6 @@ def compute_BSA_loo(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     bf, gf0, sub, gfc = compute_individual_regions(
         dom, lbeta, smin, theta, 'gauss_mixture', verbose)
     
-    crmap = -np.ones(nvox, np.int)
-    LR = None
     p = np.zeros(nvox)
     g0 = 1./(np.sum(dom.local_volume))
     if len(sub)<1:
@@ -762,7 +757,6 @@ def compute_BSA_loo(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     dof = 10
     burnin = 100
     nis = 300
-    nii = 100
     ll1 = []
     ll0 = []
     ll2 = []
@@ -783,7 +777,6 @@ def compute_BSA_loo(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
             ll0.append(np.mean(np.log(g0)))
 
     ml0 = np.mean(np.array(ll0))
-    ml1 = np.mean(np.array(ll1))
     mll = np.mean(np.array(ll2))
     if verbose: 
        print 'average cross-validated log likelihood'
