@@ -160,7 +160,7 @@ def compute_individual_regions (domain, lbeta, smin=5, theta=3.0,
 
     Parameters
     ----------
-    dom : DiscreteDomain instance,
+    dom : StructuredDomain instance,
           generic descriptor of the space domain
     lbeta: an array of shape (nbnodes, subjects)
            the multi-subject statistical maps

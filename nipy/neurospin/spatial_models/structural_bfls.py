@@ -462,15 +462,13 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
     
     Parameters
     ----------
-    BFLs : List of  nipy.neurospin.spatial_models.hroi.Nroi instances
-          describing ROIs from different subjects
-    dmax (float): the kernel width (std) for the spatial density estimator
+    BFLs: list of  nipy.neurospin.spatial_models.hroi.HierrachicalROI
+          instances describing ROIs from different subjects
+    dmax: float, the kernel width (std) for the spatial density estimator
     xyz (nbitems,dimension) array
         set of coordinates on which the test is perfomed
-    pval=0.05 (float, in [0,1]): corrected p-value for the 
-              significance of the test
-              NB: the p-value is corrected only for the number of ROIs
-              per subject
+    pval: float, in [0,1], optional,
+          corrected p-value for the significance of the test
     verbose=0: verbosity mode
     nrec=5: number of recursions in the test: When some regions fail to be
             significant at one step, the density is recomputed, 
@@ -478,29 +476,24 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
                 
     Note
     ----
-    Caveat 1: The NROI instances in BFLs must have a 'position' feature 
-           defined beforehand
-    Caveat 2: BFLs is edited and modified by this function
+    The Hierarchical ROI instances in BFLs must have a 'position' feature
+        defined beforehand
+    BFLs is edited and modified by this function
+    The p-value is corrected only for the number of ROIs
+        per subject
     """
     nbsubj = np.size(BFLs)
     nvox = xyz.shape[0]
-    nlm = np.zeros(nbsubj)
-    for s in range(nbsubj):
-        if BFLs[s] is not None:
-             nlm[s] = BFLs[s].k
+    nlm = np.array([BFLs[s].k for s in range(nbsubj)])
 
     if verbose>0: print nlm
     Nlm = np.sum(nlm)
     nlm0 = 2*nlm
     q = 0
-    BFLc = [None for s in range(nbsubj)]
-    for s in range(nbsubj):
-        if BFLs[s] is not None:
-            BFLc[s] = BFLs[s].copy()
+    BFLc = [BFLs[s].copy() for s in range(nbsubj)]
 
     while np.sum((nlm0-nlm)**2)>0:
-        nlm0 = nlm.copy()
-        
+        nlm0 = nlm.copy()        
         weight = _compute_density(BFLc, xyz, dmax)
         sweight = np.sum(weight,1)
         ssw = np.sort(sweight)
@@ -523,7 +516,6 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
                     
         for s in range(nbsubj):
             if nlm[s]>0:
-                
                 w1 = srweight-surweight[:,s]
                 sw1 = np.sort(w1)
                 imin = min(int((1-pval/nlm[s])*nvox*nsamples), nvox*nsamples-1)
@@ -534,8 +526,7 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
                 valid = (targets>th1)
                 BFLc[s].select(np.ravel(valid))#
                 nlm[s] = BFLc[s].k
-        
-        
+                
         Nlm = sum(nlm);
         q = q+1
         if verbose>0: print nlm
@@ -547,9 +538,8 @@ def _clean_density_redraw(BFLs, dmax, xyz, pval=0.05, verbose=0,
         if Nlm==0:
             break
 
-    for s in range(nbsubj):
-        if BFLs[s] is not None:
-            BFLs[s] = BFLc[s].copy()
+    BFLs = [BFLc[s].copy() for s in range(nbsubj)]
+
     return a, b
 
 def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0, nrec=5, nsamples=10):
@@ -565,10 +555,8 @@ def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0, nrec=5, nsamples=10):
     dmax (float): the kernel width (std) for the spatial density estimator
     xyz (nbitems,dimension) array
         set of coordinates on which the test is perfomed
-    pval=0.05 (float, in [0,1]): corrected p-value for the 
-              significance of the test
-              NB: the p-value is corrected only for the number of ROIs
-              per subject
+    pval: float, in [0,1], optional,
+          corrected p-value for the  significance of the test
     verbose=0: verbosity mode
     nrec=5: number of recursions in the test: When some regions fail to be
             significant at one step, the density is recomputed, 
@@ -579,6 +567,8 @@ def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0, nrec=5, nsamples=10):
     Caveat 1: The NROI instances in BFLs must have a 'position' feature 
            defined beforehand
     Caveat 2: BFLs is edited and modified by this function
+    The p-value is corrected only for the number of ROIs
+        per subject
     """
     nbsubj = np.size(BFLs)
     nvox = xyz.shape[0]
@@ -939,7 +929,7 @@ def Compute_Amers(dom, lbeta, dmax=10., thr=3.0, ths=0, pval=0.2, verbose=0):
 
     Parameters
     ----------
-    dom : DiscreteDomain instance,
+    dom : StructuredDomain instance,
           generic descriptor of the space domain
     lbeta: an array of shape (nbnodes, subjects):
            the multi-subject statistical maps
@@ -969,7 +959,7 @@ def Compute_Amers(dom, lbeta, dmax=10., thr=3.0, ths=0, pval=0.2, verbose=0):
     for s in range(nbsubj):
         beta = np.reshape(lbeta[:,s],(nvox,1))
         Fbeta.set_field(beta)
-        bfls = hroi.NROI_from_watershed(dom, beta, threshold=thr)
+        bfls = hroi.HROI_from_watershed(dom, beta, threshold=thr)
  
         if bfls.k>0:
             bfls.make_feature('position', dom.coord)

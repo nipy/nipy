@@ -1,5 +1,5 @@
 """
-This module define the DiscreteDomain class,
+This module define the StructuredDomain class,
 that represents a generic neuroimaging kind of domain
 This is meant to provide a unified API to deal with n-d imaged and meshes.
 
@@ -180,13 +180,13 @@ def reduce_coo_matrix(mat, mask):
     
 
 #################################################################
-# Functions to instantiate DiscreteDomains
+# Functions to instantiate StructuredDomains
 #################################################################
 
 
 def domain_from_image(mim, nn=18):
     """
-    return a DiscreteDomain instance from the input mask image
+    return a StructuredDomain instance from the input mask image
 
     Parameters
     ----------
@@ -198,7 +198,7 @@ def domain_from_image(mim, nn=18):
         
     Returns
     -------
-    The corresponding DiscreteDomain instance
+    The corresponding StructuredDomain instance
     """
     if isinstance(mim, basestring):
         iim = load(mim)
@@ -208,7 +208,7 @@ def domain_from_image(mim, nn=18):
     
 def domain_from_array(mask, affine=None, nn=0):
     """
-    return a DiscreteDomain from an n-d array
+    return a StructuredDomain from an n-d array
 
     Parameters
     ----------
@@ -228,7 +228,7 @@ def domain_from_array(mask, affine=None, nn=0):
     vol = np.absolute(np.linalg.det(affine))*np.ones(np.sum(mask))
     coord = array_affine_coord(mask, affine)
     topology = smatrix_from_nd_array(mask) 
-    return DiscreteDomain(dim, coord, vol, topology)
+    return StructuredDomain(dim, coord, vol, topology)
 
 def grid_domain_from_array(mask, affine=None, nn=0):
     """
@@ -270,7 +270,7 @@ def grid_domain_from_image(mim, nn=18):
         
     Returns
     -------
-    The corresponding DiscreteDomain instance
+    The corresponding StructuredDomain instance
     """
     if isinstance(mim, basestring):
         iim = load(mim)
@@ -281,16 +281,16 @@ def grid_domain_from_image(mim, nn=18):
 
 def domain_from_mesh(mesh):
     """
-    Instantiate a DiscreteDomain from a gifti mesh
+    Instantiate a StructuredDomain from a gifti mesh
     """
     pass
 
 
 ################################################################
-# DiscreteDomain class
+# StructuredDomain class
 ################################################################
 
-class ROI(object):
+class DiscreteDomain(object):
     """
     Descriptor of a certain domain that consists of discrete elements that
     are characterized by a coordinate system and a topology:
@@ -358,14 +358,14 @@ class ROI(object):
 
     def mask(self, bmask, rid=''):
         """
-        returns an ROI instance that has been further masked
+        returns an DiscreteDomain instance that has been further masked
         """
         if bmask.size != self.size:
             raise ValueError, 'Invalid mask size'
 
         svol = self.local_volume[bmask]
         scoord = self.coord[bmask]
-        DD = ROI(self.dim, scoord, svol, rid,  self.referential)
+        DD = DiscreteDomain(self.dim, scoord, svol, rid,  self.referential)
 
         for fid in self.features.keys():
             f = self.features.pop(fid)
@@ -440,9 +440,9 @@ class ROI(object):
         return np.sum(ffid*slv, 0)
 
 
-class DiscreteDomain(ROI):
+class StructuredDomain(DiscreteDomain):
     """
-    Besides ROI attributed, DiscereteDOmain has a topology,
+    Besides DiscreteDomain attributed, StructuredDomain has a topology,
     which allows many operations (morphology etc.)
     """
     
@@ -464,7 +464,8 @@ class DiscreteDomain(ROI):
         referential: string, optional,
                      identifier of the referential of the coordinates system
         """
-        ROI.__init__(self, dim, coord, local_volume, id, referential)
+        DiscreteDomain.__init__(self, dim, coord, local_volume, id,
+                                referential)
 
         # topology
         if topology is not None:
@@ -474,11 +475,11 @@ class DiscreteDomain(ROI):
         
     def mask(self, bmask, did=''):
         """
-        returns a DiscreteDomain instance that has been further masked
+        returns a StructuredDomain instance that has been further masked
         """
-        td = ROI.mask(self, bmask)
+        td = DiscreteDomain.mask(self, bmask)
         stopo = reduce_coo_matrix(self.topology, bmask)
-        dd = DiscreteDomain(self.dim, td.coord, td.local_volume,
+        dd = StructuredDomain(self.dim, td.coord, td.local_volume,
                             stopo, did, self.referential)
         
         for fid in td.features.keys():
@@ -486,9 +487,9 @@ class DiscreteDomain(ROI):
         return dd
 
 
-class NDGridDomain(DiscreteDomain):
+class NDGridDomain(StructuredDomain):
     """
-    Particular instance of DiscreteDomain, that receives
+    Particular instance of StructuredDomain, that receives
     3 additional variables:
     affine: array of shape (dim+1, dim+1),
             affine transform that maps points to a coordinate system
@@ -545,7 +546,7 @@ class NDGridDomain(DiscreteDomain):
         # coord
         coord = idx_affine_coord(ijk, affine)
 
-        DiscreteDomain.__init__(self, dim, coord, local_volume, topology)
+        StructuredDomain.__init__(self, dim, coord, local_volume, topology)
 
         
     def mask(self, bmask):

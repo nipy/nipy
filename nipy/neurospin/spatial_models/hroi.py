@@ -52,13 +52,13 @@ def HROI_as_discrete_domain_blobs(dom, data, threshold=-np.infty, smin=0,
         nroi.select(size>smin)        
     return nroi
 
-def NROI_from_watershed(domain, data, threshold=-np.infty, id=''):
+def HROI_from_watershed(domain, data, threshold=-np.infty, id=''):
     """
-    Instantiate an HierrachicalROI as the watershed of a certain dataset
+    Instantiate an HierarchicalROI as the watershed of a certain dataset
     
     Parameters  
     ----------
-    domain: discrete_domain.DiscreteDomain instance,
+    domain: discrete_domain.StructuredDomain instance,
             definition of the spatial context
     data: array of shape (domain.size),
           the corresponding data field
@@ -711,58 +711,6 @@ class NROI(MROI, Forest):
 
         return ldata
 
-
-def NROI_from_watershed_dep(Field, affine, shape, xyz, refdim=0, threshold=-np.infty):
-    """
-    Instantiate an NROI object from a given Field and a referential
-    
-    Parameters  
-    ----------
-    Field nipy.neurospin.graph.field.Field instance
-          in which the nested structure is extracted
-          It is meant to be a the topological representation
-          of a masked image or a mesh
-    affine=np.eye(4), array of shape(4,4)
-         coordinate-defining affine transformation
-    shape=None, tuple of length 3 defining the size of the grid
-        implicit to the discrete ROI definition  
-    xyz: array of shape (Field.V,3) that represents grid coordinates
-         of the object
-    refdim=0: dimension fo the Field to consider (when multi-dimensional)
-    threshold is a threshold so that only values above th are considered
-       by default, threshold = -infty (numpy)
-
-   Results
-   -------
-   the nroi instance
-      
-    Note
-    ----
-    when no region is produced (no Nroi can be defined),
-         the return value is None
-    Additionally a discrete_field is created, with the key 'index'.
-                 It contains the index in the field from which 
-                 each point of each ROI
-    """
-    if Field.field[:,refdim].max()>threshold:
-        idx, height, parents, label = Field.custom_watershed(refdim,threshold)
-    else:
-        idx = []
-        parents = []
-        label = -np.ones(Field.V)
-        
-    k = np.size(idx)
-    if k==0: return None
-    discrete = [xyz[label==i] for i in range(k)]
-    nroi = NestedROI(parents, affine, shape, discrete)
-    
-    #Create the index of each point within the Field
-    midx = [np.expand_dims(np.nonzero(label==i)[0],1) for i in range(k)]
-    nroi.set_discrete_feature('index', midx)
-
-    # this is  a custom thing, sorry
-    nroi.set_roi_feature('seed', idx)
-    return nroi
 
 def NROI_from_field(Field, affine, shape, xyz, refdim=0, threshold=-np.infty,
                     smin = 0):

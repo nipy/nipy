@@ -3,7 +3,7 @@
 
 import numpy as np
 from nipy.io.imageformats import load, save, Nifti1Image 
-from discrete_domain import DiscreteDomain, NDGridDomain, domain_from_array, \
+from discrete_domain import StructuredDomain, NDGridDomain, domain_from_array, \
      reduce_coo_matrix, array_affine_coord, smatrix_from_nd_array
 
 ###############################################################################
@@ -11,7 +11,7 @@ from discrete_domain import DiscreteDomain, NDGridDomain, domain_from_array, \
 ###############################################################################
 
 
-class DiscreteROI(DiscreteDomain):
+class DiscreteROI(StructuredDomain):
 
     def __init__(self, dim, coord, local_volume, topology, referential='',
                  id= ''):
@@ -19,7 +19,7 @@ class DiscreteROI(DiscreteDomain):
         This is simply a discrete domain, with an identifier (optional)
         """
         self.id = id
-        DiscreteDomain.__init__(self, dim, coord, local_volume, topology,
+        StructuredDomain.__init__(self, dim, coord, local_volume, topology,
                                 referential)
 
     
@@ -492,7 +492,7 @@ def subdomain_from_balls(domain, positions, radii):
 
     Parameters
     ----------
-    domain: DiscreteDomain instance,
+    domain: StructuredDomain instance,
             the description of a discrete domain
     positions: array of shape(k, dim):
                the positions of the balls
@@ -520,7 +520,7 @@ def subdomain_from_balls(domain, positions, radii):
 
 class MultipleROI(object):
     """
-    idem DiscreteDomain (and DiscreteROI), but here coord,
+    idem StructuredDomain (and DiscreteROI), but here coord,
     local_volume and topology are k-length lists of a arrays and
     coo-matrices
     """
@@ -821,7 +821,7 @@ def mroi_from_label_image(mim, nn=18):
     
 def mroi_from_array(labels, affine=None, nn=0):
     """
-    return a DiscreteDomain from an n-d array
+    return a StructuredDomain from an n-d array
     
     Parameters
     ----------
@@ -860,7 +860,7 @@ def mroi_from_balls(domain, positions, radii):
 
     Parameters
     ----------
-    domain: DiscreteDomain instance,
+    domain: StructuredDomain instance,
             the description of a discrete domain
     positions: array of shape(k, dim):
                the positions of the balls
