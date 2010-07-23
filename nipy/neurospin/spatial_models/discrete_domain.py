@@ -10,7 +10,7 @@ import numpy as np
 import scipy.sparse as sp
 
 import nipy.neurospin.graph as fg
-from nipy.io.imageformats import load
+from nipy.io.imageformats import load, Nifti1Image, save
 
 ##############################################################
 # Ancillary functions
@@ -566,3 +566,15 @@ class NDGridDomain(StructuredDomain):
             f = self.features.pop(fid)
             DD.set_feature(fid, f[bmask])
         return DD
+
+    def to_image(self, path=None):
+        """
+        Write itself as an image, and returns it
+        """
+        data = np.zeros(self.shape).astype(np.int8)
+        data[self.ijk[:,0], self.ijk[:,1], self.ijk[:,2]] = 1
+        nim = Nifti1Image(data, self.affine)
+        nim.get_header()['descrip'] = 'mask image'
+        if path is not None:
+            save(nim, path)
+        return nim

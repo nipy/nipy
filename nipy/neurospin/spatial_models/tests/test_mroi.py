@@ -9,7 +9,7 @@ in ~/.nipy/tests/data
 
 import numpy as np
 from numpy.testing import assert_almost_equal
-from nipy.neurospin.spatial_models.roi_ import *
+from nipy.neurospin.spatial_models.mroi import *
 
 shape = (5, 6, 7)
 

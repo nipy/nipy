@@ -14,7 +14,7 @@ import numpy as np
 import nipy.neurospin.graph.graph as fg
 
 from nipy.neurospin.graph.forest import Forest
-from nipy.neurospin.spatial_models.roi_ import SubDomains
+from nipy.neurospin.spatial_models.mroi import SubDomains
 from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
 
 def HROI_as_discrete_domain_blobs(dom, data, threshold=-np.infty, smin=0,

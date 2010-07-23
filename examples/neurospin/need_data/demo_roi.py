@@ -14,7 +14,9 @@ import matplotlib.pylab as mp
 from nipy.io.imageformats import load, save, Nifti1Image 
 
 from nipy.neurospin.spatial_models.roi import DiscreteROI, MultipleROI
-from nipy.neurospin.spatial_models.discrete_domain import domain_from_image
+from nipy.neurospin.spatial_models.mroi import SubDomains, subdomain_from_balls
+from nipy.neurospin.spatial_models.discrete_domain import domain_from_image, grid_domain_from_image
+import nipy.neurospin.spatial_models.hroi as hroi
 
 import get_data_light
 import tempfile
@@ -30,27 +32,19 @@ mask_image = os.path.join(data_dir,'mask.nii.gz')
 # example 1: create the ROI froma a given position
 # -----------------------------------------------------
 
-position = [0, 0, 0]
-nim = load(mask_image)
-affine = nim.get_affine()
-shape = nim.get_shape()
-roi = DiscreteROI("myroi", affine, shape)
-roi.from_position(np.array(position), 5.0)
-roi.make_image(os.path.join(swd, "myroi.nii"))
-roi.set_feature_from_image('activ', input_image)
-roi.plot_feature('activ')
-
+position = np.array([[0, 0, 0]])
+domain = grid_domain_from_image(mask_image)
+roi = subdomain_from_balls(domain, position, np.array([5.0]))
+roi_domain = domain.mask(roi.label>-1)
+roi_domain.to_image(os.path.join(swd, "myroi.nii"))
 print 'Wrote an ROI mask image in %s' %os.path.join(swd, "myroi.nii")
-
+# fixme: pot roi feature ...
 
 # ----------------------------------------------------
 # ---- example 2: create ROIs from a blob image ------
 # ----------------------------------------------------
 
 # --- 2.a create the  blob image
-import nipy.neurospin.graph.field as ff
-import nipy.neurospin.spatial_models.hroi as hroi
-
 # parameters
 threshold = 3.0 # blob-forming threshold
 smin = 5 # size threshold on bblobs
@@ -59,8 +53,6 @@ smin = 5 # size threshold on bblobs
 nim = load(input_image)
 affine = nim.get_affine()
 shape = nim.get_shape()
-mask_image = Nifti1Image(nim.get_data()**2>0, affine)
-domain = domain_from_image(mask_image)
 data = nim.get_data()
 values = data[data!=0]
 
@@ -92,7 +84,7 @@ roi.make_image(roiPath2)
 
 # --- 2.c take the blob closest to 'position as an ROI'
 roiPath3 = os.path.join(swd, "blob_closest_to_%d_%d_%d.nii")%\
-           (position[0], position[1], position[2])
+           (position[0][0], position[0][1], position[0][2])
 roi.from_position_and_image(blobPath, np.array(position))
 roi.make_image(roiPath3)
 
