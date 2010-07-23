@@ -359,7 +359,7 @@ def build_LR(bf, thq=0.95, ths=0, dmax=1., verbose=0):
     ----------
     bf : list of nipy.neurospin.spatial_models.hroi.Nroi instances
        it is assumd that each list corresponds to one subject
-       each NROI is assumed to have the roi_features
+       each HierarchicalROI is assumed to have the roi_features
        'position', 'label' and 'posterior_proba' defined
     thq=0.95, ths=0 defines the condition (c):
                    (c) A label should be present in ths subjects
@@ -564,8 +564,8 @@ def _clean_density(BFLs, dmax, xyz, pval=0.05, verbose=0, nrec=5, nsamples=10):
                 
     Note
     ----
-    Caveat 1: The NROI instances in BFLs must have a 'position' feature 
-           defined beforehand
+    Caveat 1: The HierarchicalROI instances in BFLs must have a 'position'
+        feature defined beforehand
     Caveat 2: BFLs is edited and modified by this function
     The p-value is corrected only for the number of ROIs
         per subject

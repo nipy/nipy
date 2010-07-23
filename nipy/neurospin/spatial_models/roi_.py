@@ -3,137 +3,15 @@
 
 import numpy as np
 from nipy.io.imageformats import load, save, Nifti1Image 
-from discrete_domain import StructuredDomain, NDGridDomain, domain_from_array, \
+from discrete_domain import\
+     StructuredDomain, NDGridDomain, domain_from_array,\
      reduce_coo_matrix, array_affine_coord, smatrix_from_nd_array
-
-###############################################################################
-# class DiscreteROI 
-###############################################################################
-
-
-class DiscreteROI(StructuredDomain):
-
-    def __init__(self, dim, coord, local_volume, topology, referential='',
-                 id= ''):
-        """
-        This is simply a discrete domain, with an identifier (optional)
-        """
-        self.id = id
-        StructuredDomain.__init__(self, dim, coord, local_volume, topology,
-                                referential)
-
-    
-
-class DiscreteGridROI(NDGridDomain):
-    """
-    fixme : it should depend from DiscreteROI with additional stuff
-    in that case, NDGridDomain will probably have to be removed
-    """
-    
-    def __init__(self, dim, ijk, shape, affine, local_volume, topology,
-                 referential='', id=''):
-        """
-        """
-        self.id = id
-        NDGridDomain.__init__(self, dim, ijk, shape, affine, local_volume,
-                              topology, referential)
-
-    def check_header(self, image_path):
-        """
-        checks that the image is in the header of self
-
-        Parameters
-        ----------
-        image_path: (string) the path of an image (nifti)
-
-        Returns
-        -------
-        True if the affine and shape of the given nifti file correpond
-        to the ROI's.
-        """
-        eps = 1.e-15
-        nim = load(image_path)
-        if (np.absolute(nim.get_affine()-self.affine)).max()>eps:
-            return False
-        if self.shape is not None:
-            return np.all(np.equal(nim.get_shape(), self.shape))
-        return True
-
-    def to_nifti1image(self, image_path=None):
-        """
-        returns and possibly write a binary nifti1image image of self
-
-        Parameters
-        -----------
-        image_path: string, optional, 
-                    the desired image name
-        Note
-        ----
-        Only in 3D at the moment
-        """
-        if self.dim !=3:
-            raise ValueError, "Refusing to create a Nifti1Image \
-            with %s dimensions" %self.dim
-        data = np.zeros(self.shape)
-        data[self.ijk[:, 0], self.ijk[:, 1], self.ijk[:, 2]] = 1
-        
-        wim = Nifti1Image(data, self.affine)
-        wim.get_header()['descrip'] = "ROI %s image"%self.id
-        if image_path !=None:
-            save(wim, image_path)
-        return wim
-
-    def to_array(self):
-        """
-        returns bool array that represents self
-        """
-        data = np.zeros(self.shape)
-        for i in self.ijk:
-            data[i] = 1
-        return data
-        
-    def set_feature_from_image(fid, image):
-        """
-        extract some roi-related information from an image
-
-        Parameters
-        -----------
-        fid: string
-            feature id
-        image: string
-            image path
-        """
-        raise NotImplementedError
-        #if self.dim != 3:
-        #    raise ValueError, "Not sure I can do this, as self.dim is not 3"
-        # 
-        #self.check_header(image_path)
-        #nim = load(image_path)  
-        #data = nim.get_data()
-        #self.set_feature(fid, data)
-        
-
-def discrete_groi_ball( shape, affine, position, radius, id=''):
-    """
-    """
-    pass
-
-
-def discrete_groi_from_mask_image( mask, id=''):
-    """
-    """
-    pass
-
-def discrete_groi_from_labelled_image( image, label, id=''):
-    """
-    """
-    pass
-
 
 
 ###############################################################################
 # class SubDomains
 ###############################################################################
+
 
 class SubDomains(object):
     """
