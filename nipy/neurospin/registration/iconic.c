@@ -1,6 +1,5 @@
 #include "iconic.h"
-
-#include <randomkit.h>
+#include "wichmann_prng.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -245,7 +244,7 @@ void joint_histogram(double* H,
   double *bufTvox = (double*)Tvox; 
   void (*interpolate)(unsigned int, double*, unsigned int, const signed short*, const double*, int, void*); 
   void* interp_params = NULL; 
-  rk_state rng; 
+  prng_state rng; 
 
   /* Reset the source image iterator */
   PyArray_ITER_RESET(iterI);
@@ -260,7 +259,7 @@ void joint_histogram(double* H,
     interpolate = &_tri_interpolation; 
   else { /* interp < 0 */ 
     interpolate = &_rand_interpolation;
-    rk_seed(-interp, &rng); 
+    prng_seed(-interp, &rng); 
     interp_params = (void*)(&rng); 
   }
 
@@ -430,7 +429,7 @@ static inline void _rand_interpolation(unsigned int i,
 				       int nn, 
 				       void* params) 
 { 
-  rk_state* rng = (rk_state*)params; 
+  prng_state* rng = (prng_state*)params; 
   int k;
   unsigned int clampJ_i = clampJ*i;
   const double *bufW;
@@ -439,7 +438,7 @@ static inline void _rand_interpolation(unsigned int i,
   for(k=0, bufW=W, sumW=0.0; k<nn; k++, bufW++) 
     sumW += *bufW; 
   
-  draw = sumW*rk_double(rng); 
+  draw = sumW*prng_double(rng); 
 
   for(k=0, bufW=W, sumW=0.0; k<nn; k++, bufW++) {
     sumW += *bufW; 
