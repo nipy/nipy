@@ -1,7 +1,5 @@
 #include "cubic_spline.h"
 
-#include <randomkit.h>
-
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
