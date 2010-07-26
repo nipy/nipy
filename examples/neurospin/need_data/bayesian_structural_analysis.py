@@ -10,7 +10,7 @@ Author : Bertrand Thirion, 2008-2010
 print __doc__
 
 #autoindent
-import numpy as np
+from numpy import array
 import scipy.stats as st
 import os.path as op
 import tempfile
@@ -20,7 +20,6 @@ import get_data_light
 
 
 # Get the data
-#get_data_light.getIt()
 nbsubj = 12
 nbeta = 29
 data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
@@ -30,6 +29,13 @@ mask_images = [op.join(data_dir,'mask_subj%02d.nii'%n)
 
 betas =[ op.join(data_dir,'spmT_%04d_subj_%02d.nii'%(nbeta,n))
                  for n in range(nbsubj)]
+
+missing_file = array([op.exists(m)==False for m in mask_images+betas]).any()
+
+if missing_file:
+    get_data_light.get_it()
+
+
 
 # set various parameters
 subj_id = ['%04d' %i for i in range(12)]
