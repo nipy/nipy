@@ -5,6 +5,7 @@ from _field import __doc__
 import numpy as np
 import graph as fg
 
+
 """
 This module implements the field structure of nipy.neurospin
 
@@ -12,6 +13,32 @@ Author:Bertrand Thirion, 2006--2009
 
 Fixme : add a subfield method, similar to subgraph
 """
+
+def field_from_coo_matrix_and_data(x, data):
+    """
+    Instantiates a weighted graph from a (sparse) coo_matrix
+
+    Parameters
+    ----------
+    x: (V, V) scipy.sparse.coo_matrix instance,
+       the input matrix
+    data: array of shape (V, dim),
+          the field data
+
+    Returns
+    -------
+    ifield: resulting field instance
+    """
+    if x.shape[0]!=x.shape[1]:
+        raise ValueError, "the input coo_matrix is not square"
+    if data.shape[0] != x.shape[0]:
+        raise ValueError, "data and x do not have consistent shapes"
+    i, j = x.nonzero()
+    edges = np.vstack((i,j)).T
+    weights = x.data
+    ifield =Field(x.shape[0], edges, weights, data)
+    return ifield
+
 
 class Field(fg.WeightedGraph):
     """
@@ -26,7 +53,7 @@ class Field(fg.WeightedGraph):
         """
         Parameters
         ----------
-        V (int >0) the number of vertices of the graph
+        V (int > 0) the number of vertices of the graph
         edges=None: the edge array of the graph
         weights=None: the asociated weights array
         field=None: the field data itself
@@ -76,7 +103,7 @@ class Field(fg.WeightedGraph):
         else:
             self.field = field
 
-    def closing(self,nbiter=1):
+    def closing(self, nbiter=1):
         """
         Morphological closing of the field data. self.field is changed
                       
@@ -85,10 +112,12 @@ class Field(fg.WeightedGraph):
         nbiter=1 : the number of iterations required
         """
         nbiter = int(nbiter)
-        if self.E>0:
-            if nbiter>0:
-                for i in range (self.field.shape[1]):
-                    self.field[:,i] = closing(self.edges[:,0],self.edges[:,1],self.field[:,i],nbiter)
+        if self.E<1:
+            return
+        if nbiter>0:
+            for i in range (self.field.shape[1]):
+                self.field[:,i] = closing(self.edges[:,0], self.edges[:,1],
+                                          self.field[:,i], nbiter)
 
     def opening(self,nbiter=1):
         """
@@ -96,13 +125,15 @@ class Field(fg.WeightedGraph):
         
         Parameters
         ----------
-        nbiter=1 : the number of iterations required
+        nbiter: int, optional, the number of iterations required
         """
         nbiter = int(nbiter)
-        if self.E>0:
-            if nbiter>0:
-                for i in range (self.field.shape[1]):
-                    self.field[:,i] = opening(self.edges[:,0],self.edges[:,1],self.field[:,i],nbiter)
+        if self.E<1:
+            return
+        if nbiter>0:
+            for i in range (self.field.shape[1]):
+                self.field[:,i] = opening(self.edges[:,0], self.edges[:,1],
+                                          self.field[:,i], nbiter)
 
                     
     def dilation(self,nbiter=1):
@@ -111,29 +142,34 @@ class Field(fg.WeightedGraph):
 
         Parameters
         ----------
-        nbiter=1 : the number of iterations required
+        nbiter: int, optional, the number of iterations required
         """
         nbiter = int(nbiter)
-        if self.E>0:
-            if nbiter>0:
-                for i in range (self.field.shape[1]):
-                    self.field[:,i] = dilation(self.edges[:,0], self.edges[:,1],self.field[:,i],nbiter)
+        if self.E<1:
+            return
+        if nbiter>0:
+            for i in range (self.field.shape[1]):
+                self.field[:,i] = dilation(self.edges[:,0], self.edges[:,1],
+                                           self.field[:,i], nbiter)
 
     def erosion(self,nbiter=1):
         """
         self.erosion(nbiter=1)
         Morphological openeing of the field
-        IMPUT
-        nbiter=1 : the number of iterations required
+
+        Parameters
+        ----------
+        nbiter: int, optional, the number of iterations required
         """
         nbiter = int(nbiter)
-        if self.E>0:
-            if nbiter>0:
-                for i in range (self.field.shape[1]):
-                    self.field[:,i] = erosion(self.edges[:,0],self.edges[:,1],
-                                              self.field[:,i],nbiter)
+        if self.E<1:
+            return
+        if nbiter>0:
+            for i in range (self.field.shape[1]):
+                self.field[:,i] = erosion(self.edges[:,0], self.edges[:,1],
+                                          self.field[:,i], nbiter)
 
-    def get_local_maxima(self,refdim=0,th=-np.infty):
+    def get_local_maxima(self, refdim=0, th=-np.infty):
         """
         Look for the local maxima of one dimension (refdim) of self.field
         
@@ -256,7 +292,7 @@ class Field(fg.WeightedGraph):
                         self.edges[:,1], f, th)
         return idx,depth,major,label
 
-    def threshold_bifurcations(self,refdim=0,th=-np.infty):
+    def threshold_bifurcations(self, refdim=0, th=-np.infty):
         """
         analysis of the level sets of the field:
         Bifurcations are defined as changes in the topology in the level sets
@@ -318,7 +354,8 @@ class Field(fg.WeightedGraph):
         label = field_voronoi(self.edges[:,0],self.edges[:,1],self.field,seed)
         return label
 
-    def geodesic_kmeans(self, seeds=None, label=None, maxiter=100,eps=1.e-4,verbose = 0):
+    def geodesic_kmeans(self, seeds=None, label=None, maxiter=100, eps=1.e-4,
+                        verbose = 0):
         """
         Geodesic k-means algorithms: 
         i.e. obtention of clusters that are topologically
@@ -341,9 +378,9 @@ class Field(fg.WeightedGraph):
 
         Returns
         -------
-        seeds: array of shape (p) the final seeds
-        label : array of shape (self.V) the resulting field label
-        J: inertia value
+        seeds: array of shape (p), the final seeds
+        label : array of shape (self.V), the resulting field label
+        J: float, inertia value
         """
         if (np.size(self.field)==0):
             raise ValueError, 'No field has been defined so far'
@@ -377,7 +414,6 @@ class Field(fg.WeightedGraph):
                 cent = np.mean(self.field[lj],0)
                 tj = np.argmin(np.sum((cent-self.field[lj])**2,1))
                 seeds[j] = lj[tj]
-                #inertia += np.sum((self.field[seeds[j]]-self.field[lj])**2)
                 inertia += np.sum((cent-self.field[lj])**2)
             if verbose:
                 print i, inertia

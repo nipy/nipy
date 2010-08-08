@@ -1,8 +1,8 @@
 .. _forking:
 
-===================================
+==========================================
 Making your own copy (fork) of nipy
-===================================
+==========================================
 
 You need to do this only once.  The instructions here are very similar
 to the instructions at http://help.github.com/forking/ - please see that

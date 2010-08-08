@@ -6,6 +6,44 @@ import numpy as np
 from bgmm import generate_normals, BGMM, detsh
 from scipy.special import gammaln
 
+def co_labelling(z, kmax=None, kmin=None):
+    """
+    return a sparse co-labelling matrix given the label vector z
+
+    Parameters
+    ----------
+    z: array of shape(n_samples),
+       the input labels
+    kmax: int, optional,
+          considers only the labels in the range [0, kmax[
+
+    Returns
+    -------
+    colabel: a sparse coo_matrix,
+             yields the co labelling of the data
+             i.e. c[i,j]= 1 if z[i]==z[j], 0 otherwise
+    """
+    from scipy.sparse import coo_matrix
+    n = z.size
+    colabel =  coo_matrix((n,n))
+
+    if kmax==None:
+        kmax = z.max()+1
+
+    if kmin==None:
+        kmin = z.min()-1
+
+    for  k in np.unique(z):
+        if (k<kmax)&(k>kmin):
+            i = np.array(np.nonzero(z==k))
+            row = np.repeat(i, i.size)
+            col = np.ravel(np.tile(i, i.size))
+            data = np.ones((i.size)**2)
+            colabel = colabel + coo_matrix((data, (row,col)), shape=(n,n))
+    return colabel
+    
+    
+
 class IMM(BGMM):
     """
     The class implements Infinite Gaussian Mixture model
@@ -49,7 +87,7 @@ class IMM(BGMM):
         elshape = (1, self.dim, self.dim)
         mx = np.reshape(x.mean(0),(1,self.dim))
         dx = x-mx
-        vx = np.dot(dx.T,dx)/x.shape[0]
+        vx = np.maximum(1.e-15, np.dot(dx.T,dx)/x.shape[0])
         px = np.reshape(np.diag(1.0/np.diag(vx)), elshape)
 
         # set the priors
@@ -66,7 +104,7 @@ class IMM(BGMM):
         # cache some pre-computations
         self._dets_ =  detsh(px[0])
         self._dets = [self._dets_]
-        self._inv_prior_scale = np.reshape(np.linalg.inv(px[0]),elshape)
+        self._inv_prior_scale_ = np.reshape(np.linalg.inv(px[0]),elshape)
 
         self.prior_dens = None
   
@@ -207,10 +245,10 @@ class IMM(BGMM):
             if np.array(kfold).size != n_samples:
                 raise ValueError, 'kfold and x do not have the same size'
             uk = np.unique(kfold)
+            np.random.shuffle(uk)
             idx = np.zeros(n_samples).astype(np.int)
             for i,k in enumerate(uk):
                 idx += (i*(kfold==k))
-            idx = idx.astype(np.int)
             kmax = uk.max()+1
         
         for k in range(kmax):
@@ -267,11 +305,11 @@ class IMM(BGMM):
           the corresponding classification
         """
         # re-dimension the priors in order to match self.k
-        self.prior_means = np.repeat(self.prior_means[:1], self.k, 0)
+        self.prior_means = np.repeat(self._prior_means, self.k, 0)
         self.prior_dof = self._prior_dof*np.ones(self.k)
         self.prior_shrinkage = self._prior_shrinkage*np.ones(self.k)
         self._dets = self._dets_*np.ones(self.k)
-        self._inv_prior_scale = np.repeat(self._inv_prior_scale[:1], self.k, 0)
+        self._inv_prior_scale = np.repeat(self._inv_prior_scale_, self.k, 0)
 
         # initialize some variables
         self.means = np.zeros((self.k, self.dim))
@@ -401,7 +439,7 @@ class MixedIMM(IMM):
         
         Note: use the function set_priors() to set adapted priors
         """
-        IMM.__init__(self, alpha=.5, dim=1)
+        IMM.__init__(self, alpha, dim)
 
     def set_constant_densities(self, null_dens=None, prior_dens=None ):
         """
@@ -419,7 +457,7 @@ class MixedIMM(IMM):
         self.prior_dens = prior_dens
 
     def sample(self, x, null_class_proba, niter=1, sampling_points=None,
-               init=False, kfold=None, verbose=0):
+               init=False, kfold=None, co_clustering=False, verbose=0):
         """
         sample the indicator and parameters
 
@@ -438,6 +476,9 @@ class MixedIMM(IMM):
                parameter of cross-validation control
                by default, no cross-validation is used
                the procedure is faster but less accurate
+        co_clustering: bool, optional
+                       if True,
+                       return a model of data co-labelling across iterations
         verbose=0: verbosity mode
         
         Returns
@@ -447,6 +488,10 @@ class MixedIMM(IMM):
         pproba: array of shape(n_samples),
                 the posterior of being in the null
                 (the posterior of null_class_proba)
+        coclust: only if co_clustering==True,
+                 sparse_matrix of shape (n_samples, n_samples),
+                 frequency of co-labelling of each sample pairs
+                 across iterations 
         """        
         self.check_x(x)
         pproba = np.zeros(x.shape[0])
@@ -466,18 +511,25 @@ class MixedIMM(IMM):
 
         like = self.likelihood(x, plike)
         z = self.sample_indicator(like, null_class_proba)
+
+        if co_clustering:
+            from scipy.sparse import coo_matrix
+            coclust = coo_matrix((x.shape[0], x.shape[0]))
         
         for i in range(niter):
             if  kfold==None:
                 like = self.simple_update(x, z, plike, null_class_proba)
             else:
-                like = self.cross_validated_update(x, z, plike,
-                                                   null_class_proba, kfold)
+                like, z = self.cross_validated_update(x, z, plike,
+                                                      null_class_proba, kfold)
 
             llike = self.likelihood(x, plike)
             z = self.sample_indicator(llike, null_class_proba)
             pproba += z==-1
-            
+
+            if co_clustering:
+                coclust = coclust + co_labelling(z, self.k, -1)
+                                
             if sampling_points==None:
                 average_like += like
             else:
@@ -486,12 +538,15 @@ class MixedIMM(IMM):
                 
         average_like/=niter
         pproba /= niter
+        if co_clustering:
+            coclust /= niter
+            return average_like, pproba, coclust
         return average_like, pproba
 
     def simple_update(self, x, z, plike, null_class_proba):
         """
          This is a step in the sampling procedure
-        that uses internal corss_validation
+        that uses internal cross_validation
 
         Parameters
         ----------
@@ -543,6 +598,13 @@ class MixedIMM(IMM):
         -------
         like: array od shape(n_samples),
               the (cross-validated) likelihood of the data
+        z: array of shape(n_samples),
+              the associated membership variables
+
+        Note
+        ----
+        when kfold is an array, there is an internal reshuffling
+        to randomize the order of updates
         """
         n_samples = x.shape[0]
         slike = np.zeros(n_samples)
@@ -558,8 +620,10 @@ class MixedIMM(IMM):
             if np.array(kfold).size != n_samples:
                 raise ValueError, 'kfold and x do not have the same size'
             uk = np.unique(kfold)
-            idx = np.array([i*(kfold==k) for i,k in enumerate(uk)])
-            idx = idx.astype(np.int)
+            np.random.shuffle(uk)
+            idx = np.zeros(n_samples).astype(np.int)
+            for i,k in enumerate(uk):
+                idx += (i*(kfold==k))
             kmax = uk.max()+1
 
         for k in range(kmax):
@@ -582,7 +646,7 @@ class MixedIMM(IMM):
             z[test] = self.sample_indicator(alike, null_class_proba[test])
             # almost standard, but many new components can be created
 
-        return slike
+        return slike, z
 
 
 
@@ -633,7 +697,7 @@ def example_igmm_wnc():
     migmm.set_priors(x)
     migmm.set_constant_densities(null_dens=g0)
 
-    # warming
+    # burn-in
     ncp = 0.5*np.ones(n)
     migmm.sample(x, null_class_proba=ncp, niter=100, init=True)
     print 'number of components: ', migmm.k

@@ -17,11 +17,11 @@ import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 ################################################################################
 # data simulation
-dimx=60
-dimy=60
-pos = 2*np.array([[ 6,  7],
-                  [10, 10],
-                  [15, 10]])
+dimx = 60
+dimy = 60
+pos = np.array([[ 12,  14],
+                [20, 20],
+                [30, 20]])
 ampli = np.array([3, 4, 4])
 
 nbvox = dimx*dimy

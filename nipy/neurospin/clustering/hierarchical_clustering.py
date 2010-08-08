@@ -30,7 +30,7 @@ import nipy.neurospin.graph.graph as fg
 import nipy.neurospin.graph.forest as fo
 
 from nipy.neurospin.eda.dimension_reduction import Euclidian_distance
-from nipy.neurospin.clustering.clustering import ward
+#from nipy.neurospin.clustering.clustering import ward
 
 class WeightedForest(fo.Forest):
     """

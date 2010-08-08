@@ -249,13 +249,13 @@ def prepare_arrays(data_images, vardata_images, mask_images):
     # Compute xyz coordinates from mask 
     xyz = np.array(np.where(mask>0))
     # Prepare data & vardata arrays 
-    data = np.array([d.get_data()[xyz[0], xyz[1], xyz[2]]
+    data = np.array([(d.get_data()[xyz[0], xyz[1], xyz[2]]).squeeze()
                     for d in data_images]).squeeze()
     if vardata_images == None: 
         vardata = None
     else: 
-        vardata = np.array([d.get_data()[xyz[0], xyz[1], xyz[2]] 
-                           for d in vardata_images]).squeeze()
+        vardata = np.array([(d.get_data()[xyz[0], xyz[1], xyz[2]]).squeeze()
+                            for d in vardata_images]).squeeze()
     return data, vardata, xyz, mask 
 
 

@@ -1,31 +1,84 @@
 {% extends "!layout.html" %}
-
-{% block extrahead %}
-  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience">
-{% endblock %}
+{% set title = 'Neuroimaging in Python' %}
 
 {% block rootrellink %}
-  <li><a href="../../../{{pathto('index') }}">Home</a> |&nbsp;</li>
-  <li><a href="{{ pathto('index') }}">Documentation</a> |&nbsp;</li>
-{% endblock %}
-
-{% block relbar1 %}
-  <div id="header">
-  <table width="100%">
-  <tr>
-    <td style="text-align:left;vertical-align:middle">
-    <a href="../../../{{pathto('index') }}">
-    <img src="{{pathto("_static/reggie2.png", 1)}}" border="0", alt="NIPY"/>
-    </td>
-    <td style="text-align:right;vertical-align:bottom">Neuroimaging in Python
-    </td>
-  </tr>
-  </table>
-  </div>
-{{ super() }}
+  <li><a href="{{pathto('index')}}">NIPY home</a> |&nbsp;</li>
 {% endblock %}
 
 
-{% block sidebar1 %}{{ sidebar() }}{% endblock %}
-{% block sidebar2 %}{% endblock %}
+{% block extrahead %}
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+{% endblock %}
 
+{% block header %}
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="{{pathto('index') }}">
+  <img src="{{ pathto("_static/reggie2.png", 1) }}" alt="NIPY logo"  border="0" />
+</div>
+{% endblock %}
+
+{# This block gets put at the top of the sidebar #}
+{% block sidebarlogo %}
+
+  
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="{{pathto('documentation')}}">Documentation</a></li>
+    <li><a href="{{pathto('devel/index')}}">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.sourceforge.net/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.sourceforge.net/software/projects/">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="http://mail.scipy.org/mailman/listinfo/nipy-devel">Mailing List</a></li>
+    <li><a class="reference external"
+	href="http://nipy.sourceforge.net/software/license/index.html">License</a></li>
+  </ul>
+
+{% endblock %}
+
+{# I had to copy the whole search block just to change the rendered text,
+   so it doesn't mention modules or classes #}
+{%- block sidebarsearch %}
+{%- if pagename != "search" %}
+
+<div id="searchbox-ml" style="display: none">
+  <h3>Search mailing list archive</h3>
+  <script type="text/javascript">
+    function mlsearch(curobj)
+    {
+    curobj.q.value="site:http://mail.scipy.org/pipermail/nipy-devel/ "+curobj.userquery.value
+    }
+  </script>
+  <form action="http://www.google.com/search" method="get" onSubmit="mlsearch(this)">
+    <input name="userquery" size="13" type="text" /> <input type="submit" value="Go" />
+    <input name="q" type="hidden" />
+  </form>
+</div>
+  
+<div id="searchbox-site" style="display: none">
+  <h3>{{ _('Search this site') }}</h3>
+    <form class="search" action="{{ pathto('search') }}" method="get">
+      <input type="text" name="q" size="13" />
+      <input type="submit" value="{{ _('Go') }}" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox-ml').show(0);</script>
+<script type="text/javascript">$('#searchbox-site').show(0);</script>
+{%- endif %}
+
+{# The sidebarsearch block is the last one available in the default sidebar()
+   macro, so the only way to add something to the bottom of the sidebar is to
+   put it here, at the end of the sidebarsearch block (before it closes).
+   #}
+
+{%- endblock %}

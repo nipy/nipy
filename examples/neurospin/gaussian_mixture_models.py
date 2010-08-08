@@ -24,11 +24,11 @@ x = np.concatenate((x1, x2, x3))
 
 # 2. fit the mixture with a bunch of possible models
 krange = range(1,5)
-lgmm = gmm.best_fitting_GMM(x, krange,
-                            prec_type='diag',
-                            niter=100, delta=1.e-4,
-                            ninit=1, verbose=0)
+lgmm = gmm.best_fitting_GMM(x, krange, prec_type='diag', niter=100,
+                            delta=1.e-4, ninit=1, verbose=0)
 
 # 3, plot the result
 z = lgmm.map_label(x)
-gmm.plot2D(x, lgmm, z, show=1, verbose=0)
+gmm.plot2D(x, lgmm, z, verbose=0)
+import pylab
+pylab.show()

@@ -274,7 +274,7 @@ def test_dmtx10():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5))
-    assert_true(np.all((X[paradigm.onset[paradigm.index==0]+2,0]==1)))
+    assert_true(np.all((X[paradigm.onset[paradigm.index==0]+1, 0]==1)))
 
 
 def test_dmtx11():
@@ -288,7 +288,7 @@ def test_dmtx11():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5))
-    assert_true(np.all(X[paradigm.onset[paradigm.index==0]+5,3]==1))
+    assert_true(np.all(X[paradigm.onset[paradigm.index==0]+3, 2]==1))
 
 
 def test_dmtx12():
@@ -302,7 +302,7 @@ def test_dmtx12():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5))
-    assert_true(np.all(X[paradigm.onset[paradigm.index==2]+5,11]==1))
+    assert_true(np.all(X[paradigm.onset[paradigm.index==2]+4, 11]==1))
 
 
 def test_dmtx13():
@@ -316,7 +316,7 @@ def test_dmtx13():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5), fir_duration=2*tr)
-    assert_true(np.all(X[paradigm.onset[paradigm.index==0]+3,0]==1))
+    assert_true(np.all(X[paradigm.onset[paradigm.index==0]+2, 0]==1))
 
 
 def test_dmtx14():
@@ -398,6 +398,23 @@ def test_dmtx19():
     idx = paradigm.onset[paradigm.index==0].astype(np.int)
     assert_true((X[idx+1,0]==X[idx+2,1]).all())
 
+def test_csv_io():
+    """
+    test the csv io on design matrices
+    """
+    tr = 1.0
+    frametimes = np.linspace(0, 127*tr,128)
+    paradigm = modulated_event_paradigm()
+    DM = dm.DesignMatrix(frametimes, paradigm, hrf_model='Canonical', 
+                         drift_model='Polynomial', drift_order=3)
+    from tempfile import mkdtemp
+    from os.path import join
+    path = join(mkdtemp(), 'dmtx.csv')
+    DM.write_csv(path)
+    DM2 = dm.dmtx_from_csv( path)
+    print np.sum((DM.matrix-DM2.matrix)**2).sum()
+    assert_almost_equal (DM.matrix, DM2.matrix)
+    assert_true (DM.names==DM2.names)
 
 if __name__ == "__main__":
     import nose

@@ -11,8 +11,20 @@ Author : Bertrand Thirion, 2010
 
 import numpy as np
 import numpy.random as nr
-from nipy.neurospin.clustering.imm import IMM, MixedIMM
+from nipy.neurospin.clustering.imm import IMM, MixedIMM, co_labelling
 
+def test_colabel():
+    """
+    test the co_lavbelling functionality
+    """
+    z = np.array([0,1,1,0,2])
+    c = co_labelling(z).todense()
+    tc = np.array([[ 1.,  0.,  0.,  1.,  0.],
+                   [ 0.,  1.,  1.,  0.,  0.],
+                   [ 0.,  1.,  1.,  0.,  0.],
+                   [ 1.,  0.,  0.,  1.,  0.],
+                   [ 0.,  0.,  0.,  0.,  1.]])
+    assert (c==tc).all()
 
 def test_imm_loglike_1D():
     """

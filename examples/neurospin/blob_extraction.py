@@ -16,53 +16,47 @@ import matplotlib
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.hroi as hroi
+from nipy.neurospin.spatial_models.discrete_domain import domain_from_array
 
-# simulatean activation image
+# ---------------------------------------------------------
+# simulate an activation image
+# ---------------------------------------------------------
+
 dimx = 60
 dimy = 60
-pos = 2*np.array([[6,7],[10,10],[15,10]])
+pos = np.array([[12, 14], [20, 20], [30, 20]])
 ampli = np.array([3,4,4])
 
 nbvox = dimx*dimy
-dataset = simul.surrogate_2d_dataset(nbsubj=1, dimx=dimx, dimy=dimy,
-                                     pos=pos, ampli=ampli, width=10.0)
-x = np.reshape(dataset, (dimx, dimy, 1))
-beta = np.reshape(x, (nbvox, 1))
+dataset = simul.surrogate_2d_dataset(nbsubj=1, dimx=dimx, dimy=dimy, pos=pos,
+                                     ampli=ampli, width=10.0).squeeze()
+values = dataset.ravel()
 
-xyz = np.array(np.where(x)).T
-nbvox = np.size(xyz, 0)
 
-# build the field instance
-F = ff.Field(nbvox)
-F.from_3d_grid(xyz, 18)
-F.set_field(beta)
+#-------------------------------------------------------
+# Computations
+#------------------------------------------------------- 
 
-# compute the blobs
-th = 2.36
-smin = 5
-affine = np.eye(4)
-shape = (dimx, dimy, 1)
-nroi = hroi.NROI_from_field(F, affine, shape, xyz, refdim=0, th=th, smin = smin)
+# create a domain descriptor associated with this
+domain = domain_from_array(dataset**2>0)
 
-bmap = np.zeros(nbvox)
-label = -np.ones(nbvox)
+nroi = hroi.HROI_as_discrete_domain_blobs(domain, dataset.ravel(),
+                                          threshold=2.0, smin=3)
+label = np.reshape(nroi.label, ((dimx, dimy)))
 
-if nroi!=None:
-    # compute the average signal within each blob
-    nroi.set_discrete_feature_from_index('activation',beta)
-    bfm = nroi.discrete_to_roi_features('activation')
+# create an average activaion image
+nroi.make_feature('activation', dataset.ravel())
+mean_activation = nroi.representative_feature('activation')
+bmap = -np.ones((dimx, dimy))
+for k in range(nroi.k):
+    bmap[label==k] =  mean_activation[k]
 
-    # plot the input image 
-    idx = nroi.discrete_features['index']
-    for k in range(nroi.k):
-        bmap[idx[k]] = bfm[k]
-        label[idx[k]] = k
-        
-label = np.reshape(label,(dimx,dimy))
-bmap = np.reshape(bmap,(dimx,dimy))
+#--------------------------------------------------------
+# Result display
+#--------------------------------------------------------
 
-aux1 = (0-x.min())/(x.max()-x.min())
-aux2 = (bmap.max()-x.min())/(x.max()-x.min())
+aux1 = (0-values.min())/(values.max()-values.min())
+aux2 = (bmap.max()-values.min())/(values.max()-values.min())
 cdict = {'red': ((0.0, 0.0, 0.7), 
                  (aux1, 0.7, 0.7),
                  (aux2, 1.0, 1.0),
@@ -79,7 +73,7 @@ my_cmap = matplotlib.colors.LinearSegmentedColormap('my_colormap',cdict,256)
 
 pl.figure(figsize=(12, 3))
 pl.subplot(1, 3, 1)
-pl.imshow(np.squeeze(x), interpolation='nearest', cmap=my_cmap)
+pl.imshow(dataset, interpolation='nearest', cmap=my_cmap)
 cb = pl.colorbar()
 for t in cb.ax.get_yticklabels():
     t.set_fontsize(16)
@@ -94,7 +88,7 @@ pl.colorbar()
 pl.title('Blob labels')
 
 # plot the blob-averaged signal image
-aux = 0.01#(th-bmap.min())/(bmap.max()-bmap.min())
+aux = 0.01
 cdict = {'red': ((0.0, 0.0, 0.7), (aux, 0.7, 0.7), (1.0, 1.0, 1.0)),
          'green': ((0.0, 0.0, 0.7), (aux, 0.7, 0.0), (1.0, 1.0, 1.0)),
          'blue': ((0.0, 0.0, 0.7), (aux, 0.7, 0.0), (1.0, 0.5, 1.0))}

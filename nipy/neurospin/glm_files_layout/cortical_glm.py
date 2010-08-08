@@ -255,7 +255,8 @@ def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, outputCon=None,
     # get the design matrix
     if isinstance(DesignMatrix, basestring):
         import nipy.neurospin.utils.design_matrix as dm
-        X = dm.DesignMatrix().read_from_csv(DesignMatrix).matrix
+        X = dm.dmtx_from_csv( DesignMatrix).matrix
+        #X = dm.DesignMatrix().read_from_csv(DesignMatrix).matrix
     else:
         X = DesignMatrix.matrix
   
@@ -309,16 +310,17 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
     sessions = misc['sessions']
     
     # get the contrasts
-    if isinstance(misc, basestring):
+    if isinstance(contrast_struct, basestring):
         contrast_struct = ConfigObj(contrast_struct) 
     contrasts_names = contrast_struct["contrast"]
 
     # get the glms
     designs = {}
+    
     if glms is not None:
-       designs = glms
+        designs = glms
     else:             
-        if not kargs.has_key('glms_config'):
+        if not kargs.has_key('glm_config'):
             raise ValueError, "No glms provided"
         else:
             import nipy.neurospin.glm as GLM
