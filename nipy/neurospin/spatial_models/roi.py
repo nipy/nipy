@@ -86,7 +86,7 @@ class DiscreteROI(object):
         """
         eps = 1.e-15
         nim = load(image_path)
-        if (np.absolute(nim.get_affine()-self.affine)).max()>eps:
+        if (np.absolute(nim.get_affine()-self.affine)).max() > eps:
             return False
         if self.shape is not None:
             return np.all(np.equal(nim.get_shape(), self.shape))
@@ -94,7 +94,7 @@ class DiscreteROI(object):
 
     def from_binary_image(self, image_path):
         """
-        Take all the <>0 sites of the image as the ROI
+        Take all the <> 0 sites of the image as the ROI
 
         Parameters
         -----------
@@ -483,9 +483,12 @@ class MultipleROI(object):
         where self.shape = (d1,d2,d3), if shape is defined
      
         """
-        # affine should be a (4,4) array
-        if np.shape(self.affine)!=(4,4):
-           raise ValueError, "affine does not have a correct shape"
+        # affine should be a (dim+1, dim+1) array
+        dim = 3
+        if self.shape is not None:
+            dim = len(self.shape)
+        if np.shape(self.affine)!= (dim+1, dim+1):
+            raise ValueError, "affine does not have a correct shape"
        
         if (self.shape!=None)&(len(self.xyz)>0):
             xyzmin = np.min(np.array([np.min(self.xyz[k],0) 

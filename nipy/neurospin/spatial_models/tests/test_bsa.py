@@ -20,8 +20,9 @@ from nipy.testing import assert_true, dec
 
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
-                        nbeta=[0],method='simple'):
-    """ Function for performing bayesian structural analysis on a set of images.
+                        nbeta=[0], method='simple'):
+    """
+    Function for performing bayesian structural analysis on a set of images.
     """
     ref_dim = np.shape(betas[0])
     nbsubj = betas.shape[0]
@@ -33,7 +34,8 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     Fbeta.from_3d_grid(xyz.astype(np.int), 18)
 
     # Get  coordinates in mm
-    tal = xyz.astype(np.float)
+    xy = xyz[:, 1:]
+    coord = xy.astype(np.float)
 
     # get the functional information
     lbeta = np.array([np.ravel(betas[k]) for k in range(nbsubj)]).T
@@ -41,29 +43,24 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     # the voxel volume is 1.0
     g0 = 1.0/(1.0*nvox)
     bdensity = 1
-    affine = np.eye(4)
-    shape = (1,ref_dim[0],ref_dim[1])
+    affine = np.eye(3)
+    shape = (ref_dim[0], ref_dim[1])
     
     if method=='ipmi':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_ipmi(Fbeta, lbeta, tal, dmax,xyz, affine, 
-                                               shape, thq,
-                                        smin, ths, theta, g0, bdensity)
+                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax,xy, affine, 
+                                        shape, thq, smin, ths, theta, g0,
+                                        bdensity)
     if method=='simple':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_simple(Fbeta, lbeta, tal, dmax,xyz,
+                   bsa.compute_BSA_simple(Fbeta, lbeta, coord, dmax,xy,
                                           affine, shape, thq, smin, ths, 
                                           theta, g0)
-    if method=='dev':
-        group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_dev(Fbeta, lbeta, tal, dmax, xyz, affine, 
-                                              shape, thq,
-                                       smin, ths, theta, g0, bdensity)
     if method=='sbf':
         pval = 0.2
-        group_map, AF, BF = sbf.Compute_Amers (Fbeta, lbeta, xyz, affine, 
+        group_map, AF, BF = sbf.Compute_Amers (Fbeta, lbeta, xy, affine, 
                                                       shape,
-                                               tal, dmax, theta, ths ,pval)
+                                               coord, dmax, theta, ths ,pval)
     return AF, BF
 
 
@@ -73,9 +70,9 @@ def test_bsa_methods():
     nbsubj=10
     dimx=60
     dimy=60
-    pos = 2*np.array([[ 6,  7],
-                      [10, 10],
-                      [15, 10]])
+    pos = np.array([[12,  14],
+                    [20, 20],
+                    [40, 50]])
     # make a dataset with a nothing feature
     null_ampli = np.array([0, 0, 0])
     null_dataset = simul.surrogate_2d_dataset(nbsubj=nbsubj,
@@ -102,18 +99,24 @@ def test_bsa_methods():
     half_subjs = nbsubj/2
     thq = 0.9
     smin = 5
+
     # tuple of tuples with each tuple being
     # (name_of_method, ths_value, data_set, test_function)
-    algs_tests = (('simple', half_subjs, null_betas, lambda AF, BF: AF == None),
-                  ('dev', half_subjs, null_betas, lambda AF, BF: AF == None),
-                  ('ipmi', half_subjs, null_betas, lambda AF, BF: AF == None),
-                  ('simple', 1, pos_betas, lambda AF, BF: AF.k>1),
-                  ('dev', 1, pos_betas, lambda AF, BF: AF.k>1),
-                  ('ipmi', 1, pos_betas, lambda AF, BF: AF.k>1),
-                  )
+    algs_tests = (
+        ('simple', half_subjs, null_betas, lambda AF, BF: AF == None),
+        ('ipmi', half_subjs, null_betas, lambda AF, BF: AF == None),
+        ('simple', 1, pos_betas, lambda AF, BF: AF.k>1),
+        ('ipmi', 1, pos_betas, lambda AF, BF: AF.k>1))
+    
     for name, ths, betas, test_func in algs_tests:
         # run the algo
         AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method = name)
-        yield assert_true, test_func(AF, BF)
-        
+        if test_func(AF, BF)==False:
+            stop
+        assert(test_func(AF, BF))
+        #yield assert_true, test_func(AF, BF)
+    
 
+if __name__ == '__main__':
+    import nose
+    nose.run(argv=['', __file__])

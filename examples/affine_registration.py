@@ -43,7 +43,7 @@ ammon_TO_anubis.npz
 
 Author: Alexis Roche, 2009. 
 """
-from nipy.neurospin import register, transform
+from nipy.neurospin.registration import register, transform
 from nipy.utils import example_data
 from nipy.io.imageformats import load as load_image, save as save_image
 

@@ -379,7 +379,7 @@ class Forest(WeightedGraph):
         depth = self.depth_from_leaves()
         return depth.max()+1
 
-    def propagate_upward_and(self,prop):
+    def propagate_upward_and(self, prop):
         """
         propagates some binary property in the forest
         that is defined in the leaves
@@ -396,7 +396,7 @@ class Forest(WeightedGraph):
         if np.size(prop)!=self.V:
             raise ValueError,"incoherent size for prop"
 
-        prop[self.isleaf()==False]=True
+        prop[self.isleaf()==False]= True
 
         for j in range(self.tree_depth()):
             for i in range(self.k):

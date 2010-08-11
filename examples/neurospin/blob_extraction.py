@@ -17,10 +17,13 @@ import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.hroi as hroi
 
-# simulatean activation image
+# ---------------------------------------------------------
+# simulate an activation image
+# ---------------------------------------------------------
+
 dimx = 60
 dimy = 60
-pos = 2*np.array([[6,7],[10,10],[15,10]])
+pos = np.array([[12, 14], [20, 20], [30, 20]])
 ampli = np.array([3,4,4])
 
 nbvox = dimx*dimy
@@ -32,17 +35,23 @@ beta = np.reshape(x, (nbvox, 1))
 xyz = np.array(np.where(x)).T
 nbvox = np.size(xyz, 0)
 
+#-------------------------------------------------------
+# Computations
+#------------------------------------------------------- 
+
+
 # build the field instance
 F = ff.Field(nbvox)
 F.from_3d_grid(xyz, 18)
 F.set_field(beta)
 
 # compute the blobs
-th = 2.36
+th = -2.36
 smin = 5
 affine = np.eye(4)
 shape = (dimx, dimy, 1)
-nroi = hroi.NROI_from_field(F, affine, shape, xyz, refdim=0, th=th, smin = smin)
+nroi = hroi.NROI_from_field(F, affine, shape, xyz, refdim=0, th=th,
+                            smin = smin)
 
 bmap = np.zeros(nbvox)
 label = -np.ones(nbvox)
@@ -52,7 +61,7 @@ if nroi!=None:
     nroi.set_discrete_feature_from_index('activation',beta)
     bfm = nroi.discrete_to_roi_features('activation')
 
-    # plot the input image 
+    # plot the label image
     idx = nroi.discrete_features['index']
     for k in range(nroi.k):
         bmap[idx[k]] = bfm[k]
@@ -60,6 +69,10 @@ if nroi!=None:
         
 label = np.reshape(label,(dimx,dimy))
 bmap = np.reshape(bmap,(dimx,dimy))
+
+#--------------------------------------------------------
+# Result display
+#--------------------------------------------------------
 
 aux1 = (0-x.min())/(x.max()-x.min())
 aux2 = (bmap.max()-x.min())/(x.max()-x.min())
@@ -94,7 +107,7 @@ pl.colorbar()
 pl.title('Blob labels')
 
 # plot the blob-averaged signal image
-aux = 0.01#(th-bmap.min())/(bmap.max()-bmap.min())
+aux = 0.01
 cdict = {'red': ((0.0, 0.0, 0.7), (aux, 0.7, 0.7), (1.0, 1.0, 1.0)),
          'green': ((0.0, 0.0, 0.7), (aux, 0.7, 0.0), (1.0, 1.0, 1.0)),
          'blue': ((0.0, 0.0, 0.7), (aux, 0.7, 0.0), (1.0, 0.5, 1.0))}
@@ -102,7 +115,7 @@ my_cmap = matplotlib.colors.LinearSegmentedColormap('my_colormap',cdict, 256)
 
 pl.subplot(1, 3, 3)
 pl.imshow(bmap, interpolation='nearest', cmap=my_cmap)
-cb = pl.colorbar()
+cb = pl.coxlorbar()
 for t in cb.ax.get_yticklabels():
     t.set_fontsize(16)
 pl.axis('off')

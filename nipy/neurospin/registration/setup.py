@@ -19,8 +19,8 @@ def configuration(parent_package='',top_path=None):
     config.add_data_dir('benchmarks')
     config.add_include_dirs(config.name.replace('.', os.sep))
     config.add_extension(
-        'registration_module',
-        sources=['registration_module.pyx', 'iconic.c'],
+        '_registration',
+        sources=['_registration.pyx', 'iconic.c'],
         libraries = ['cstat'],
         extra_info=lapack_info,
         )

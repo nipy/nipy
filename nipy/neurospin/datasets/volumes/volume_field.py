@@ -90,7 +90,7 @@ class VolumeField(object):
 
 
     def as_volume_img(self, affine=None, shape=None,
-                        interpolation=None):
+                        interpolation=None, copy=True):
         """ Resample the image to be an image with the data points lying
             on a regular grid with an affine mapping to the word space (a
             nipy VolumeImg).

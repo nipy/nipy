@@ -37,7 +37,7 @@ def register(source,
        (correlation ratio) is the default. If a callable, it should
        take a two-dimensional array representing the image joint
        histogram as an input and return a float. See
-       ``registration_module.pyx``
+       ``_registration.pyx``
     interp : str
        Interpolation method.  One of 'pv': Partial volume, 'tri':
        Trilinear, 'rand': Random interpolation.  See

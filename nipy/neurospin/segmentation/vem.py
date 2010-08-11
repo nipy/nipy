@@ -4,7 +4,7 @@ import numpy as np
 import pylab 
 import os
 
-from mrf_module import _ve_step, _concensus
+from _mrf import _ve_step, _concensus
 
 TINY = 1e-30 
 

@@ -4,7 +4,7 @@ from constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
 from affine import Rigid
 
 from nipy.neurospin.image import apply_affine
-from nipy.neurospin.image.image_module import cspline_transform, cspline_sample4d
+from nipy.neurospin.image._image import cspline_transform, cspline_sample4d
 from nipy.neurospin.utils.optimize import fmin_steepest
 
 import numpy as np
