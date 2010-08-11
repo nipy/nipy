@@ -4,7 +4,7 @@
 This script generates a noisy multi-subject activation image dataset
 and applies the bayesian structural analysis on it
 
-Author : Bertrand Thirion, 2009
+Author : Bertrand Thirion, 2009-2010
 """
 #autoindent
 print __doc__
@@ -16,6 +16,7 @@ import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.spatial_models.structural_bfls as sbf
+from nipy.neurospin.spatial_models.discrete_domain import  domain_from_array
 
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
@@ -65,49 +66,43 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     lbeta = np.array([np.ravel(betas[k]) for k in range(nsubj)]).T
 
     # the voxel volume is 1.0
-    g0 = 1.0/(1.0*nvox)#*1./np.sqrt(2*np.pi*dmax**2)
+    g0 = 1.0/(1.0*nvox)
     affine = np.eye(3)
     shape = (ref_dim[0], ref_dim[1])
     
     lmax=0
     bdensity = 1
-    if method=='ipmi':
-        group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, xyz,
-                                        affine, shape, thq,
-                                        smin, ths, theta, g0, bdensity)
+    dom = domain_from_array(np.ones(ref_dim))
     
-    
-    if method=='simple':
+    if method=='simple':    
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_simple(Fbeta, lbeta, coord, dmax, xyz,
-                                          affine, shape, thq, smin, ths,
-                                          theta, g0)
-    if method=='loo':
-         mll, ll0 = bsa.compute_BSA_loo(Fbeta, lbeta, coord, dmax, xyz,
-                                        affine, shape, thq, smin, ths,
-                                        theta, g0, verbose=verbose)
-         return mll, ll0
-    if method=='dev':
-        group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax, xyz,
-                                       affine, shape, thq, smin, ths, theta,
-                                        g0, bdensity, 'gauss_mixture')
+                   bsa.compute_BSA_simple(dom, lbeta, dmax, thq, smin, ths,
+                                          theta)
     if method=='quick':
         likelihood = np.zeros(ref_dim)
         group_map, AF, BF, coclustering = \
-                   bsa.compute_BSA_quick(Fbeta, lbeta, coord, dmax, xyz,
-                                          affine, shape, thq, smin, ths,
-                                          theta, g0)
+                   bsa.compute_BSA_quick(dom, lbeta, dmax, thq, smin, ths,
+                                         theta)
+    if method=='ipmi':
+        group_map, AF, BF, likelihood = \
+                   bsa.compute_BSA_ipmi(dom, lbeta, dmax, thq, smin, ths,
+                                          theta, bdensity)
+    if method=='loo':
+        mll, ll0 = bsa.compute_BSA_loo(dom, lbeta, dmax, thq, smin, ths,
+                                          theta, bdensity)
+        return mll, ll0
+    if method=='dev':
+        group_map, AF, BF, likelihood = \
+                   bsa.compute_BSA_ipmi(dom, lbeta, dmax, thq, smin, ths,
+                                          theta, bdensity, 'gauss_mixture')
     if method=='sbf':
         likelihood = np.zeros(ref_dim)
-        group_map, AF, BF = sbf.Compute_Amers (Fbeta, lbeta, xyz, affine, shape,
-                                              coord, dmax=dmax, thr=theta,
-                                              ths=ths , pval=thq)
+        group_map, AF, BF = sbf.Compute_Amers (
+            dom, lbeta, dmax=dmax, thr=theta, ths=ths, pval=thq)
 
         
     if method not in['loo', 'simple', 'ipmi', 'quick', 'sbf']:
-        raise ValueError,'method is not ocrreactly defined'
+        raise ValueError,'method is not correctly defined'
     
     if verbose==0:
         return AF,BF
@@ -148,8 +143,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                 nls = BF[s].get_roi_feature('label')
                 nls[nls==-1] = np.size(AF)+2
                 for k in range(BF[s].k):
-                    xyzk = BF[s].xyz[k].T 
-                    lw[xyzk[0],xyzk[1]] =  nls[k]
+                    np.ravel(lw)[BF[s].label==k] =  nls[k]
 
             mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
             mp.axis('off')
@@ -157,8 +151,8 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     mp.figure()
     if nsubj==10:
         for s in range(nsubj):
-            mp.subplot(2,5,s+1)
-            mp.imshow(betas[s],interpolation='nearest',vmin=betas.min(),
+            mp.subplot(2, 5, s+1)
+            mp.imshow(betas[s], interpolation='nearest', vmin=betas.min(),
                       vmax=betas.max())
             mp.axis('off')
 
@@ -189,8 +183,9 @@ ths = 1#nsubj/2
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple'#'dev'#'ipmi'#'sbf'#'loo'#
+method = 'simple'#'dev'#'ipmi'#'sbf'#'loo'#'quick'#
 
 # run the algo
-AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method, verbose=verbose)
+AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method,
+                     verbose=verbose)
 #mp.show()

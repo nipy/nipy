@@ -6,27 +6,29 @@ Forest(WeightedGraph): This is a special case of a Weighted Graph (i.e.  a set o
 
 Main author: Bertrand thirion, 2007-2009
 """
+
 import numpy as np
 from graph import WeightedGraph, graph_to_neighb
 
 class Forest(WeightedGraph):
     """
     This is a Forest structure, i.e. a set of trees
-    - the nodes can be segmented into trees
-    - within each tree a node has one parent and children
-    (hierarchical structure)
-    - some of the nodes can be viewed as leaves, other as roots
-    - the edges within a tree are associated with a weight:
+    The nodes can be segmented into trees
+    Within each tree a node has one parent and children
+        (hierarchical structure)
+    Some of the nodes can be viewed as leaves, other as roots
+    The edges within a tree are associated with a weight:
     +1 from child to parent
     -1 from parent to child
 
-    fields:
-    - V : (int,>0) the number of vertices
-    - E : (int) the number of edges
-    - parents: array of shape (self.V) the parent array
-    - edges: array of shape (self.E,2) reprensenting pairwise neighbors
-    - weights, array of shape (self.E), +1/-1 for scending/descending links 
-    - children: list of arrays that represents the childs of any node
+    fields
+    ------
+    V : (int,>0) the number of vertices
+    E : (int) the number of edges
+    parents: array of shape (self.V) the parent array
+    edges: array of shape (self.E,2) reprensenting pairwise neighbors
+    weights, array of shape (self.E), +1/-1 for scending/descending links 
+    children: list of arrays that represents the childs of any node
     """
     def __init__(self, V, parents=None):
         """
@@ -45,17 +47,17 @@ class Forest(WeightedGraph):
 
         # define the parents
         if parents==None:
-            self.parents = np.arange(self.V)
+            self.parents = np.arange(self.V).astype(np.int)
         else:
             if np.size(parents)!=V:
                 raise ValueError, 'Incorrect size for parents'
             if parents.max()>self.V:
                 raise ValueError, 'Incorrect value for parents' 
             
-            self.parents = np.reshape(parents,self.V)
+            self.parents = np.reshape(parents, self.V).astype(np.int)
 
         self.define_graph_attributes()
-
+        
         if self.check()==0:
             raise ValueError, 'The proposed structure is not a forest'
         self.children = []
@@ -64,17 +66,18 @@ class Forest(WeightedGraph):
         """
         define the edge and weights array
         """          
-        self.edges = np.array([])
+        self.edges = np.array([]).astype(np.int)
         self.weights = np.array([])
         i = np.nonzero(self.parents!=np.arange(self.V))[0]
         if np.size(i)>0:
             E1 = np.hstack((i,self.parents[i]))
             E2 = np.hstack((self.parents[i],i))
-            self.edges = np.transpose(np.vstack((E1,E2)))
-            self.weights = np.hstack((np.ones(np.size(i)),-np.ones(np.size(i))))
-            
+            self.edges = np.transpose(np.vstack((E1,E2))).astype(np.int)
+            self.weights = np.hstack((np.ones(np.size(i)),
+                                      -np.ones(np.size(i))))
+        
         self.E = np.size(self.weights)
-
+        self.edges = self.edges
 
     def compute_children(self):
         """
@@ -173,7 +176,7 @@ class Forest(WeightedGraph):
         """
         leaves = np.ones(self.V).astype('bool')
         if self.E>0:
-            leaves[self.edges[self.weights>0,1]]=0
+            leaves[self.edges[self.weights>0, 1]]=0
         return leaves
 
     def isroot(self):
@@ -208,11 +211,11 @@ class Forest(WeightedGraph):
         j = np.nonzero(valid[self.parents]==0)[0]
         parents[j] = j
         parents = parents[valid]
-        renumb = np.hstack((0,np.cumsum(valid)))
+        renumb = np.hstack((0, np.cumsum(valid)))
         parents = renumb[parents]
 
-        F = Forest(np.sum(valid),parents)
-        #F.define_graph_attributes()
+        F = Forest(np.sum(valid), parents)
+
         return F
 
     def merge_simple_branches(self):
@@ -399,13 +402,13 @@ class Forest(WeightedGraph):
         prop[self.isleaf()==False]= True
 
         for j in range(self.tree_depth()):
-            for i in range(self.k):
+            for i in range(self.V):
                 if prop[i] == False:
                     prop[self.parents[i]] = False
 
         return prop
 
-    def propagate_upward(self,label):
+    def propagate_upward(self, label):
         """
         label = self.propagate_upward(label)
         Assuming that label is a certain positive integer field
@@ -424,14 +427,15 @@ class Forest(WeightedGraph):
         -------
         label: array of shape(self.V)
         """
-        if np.size(label)!=self.k:
+        if np.size(label)!=self.V:
             raise ValueError,"incoherent size for label"
 
-        f = self.make_forest()
-        ch = f.get_children()
+        #f = self.make_forest()
+        #ch = f.get_children()
+        ch = self.get_children()
         depth = self.depth_from_leaves()
         for j in range(1,depth.max()+1):
-            for i in range(self.k):
+            for i in range(self.V):
                 if depth[i]==j:
                     if np.size(np.unique(label[ch[i]]))==1:
                         label[i] = np.unique(label[ch[i]])

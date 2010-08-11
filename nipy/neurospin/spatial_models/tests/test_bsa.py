@@ -8,21 +8,23 @@ Author : Bertrand Thirion, 2009
 #autoindent
 
 import numpy as np
-
 import scipy.stats as st
+
+from nipy.testing import assert_true, dec
 
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 import nipy.neurospin.spatial_models.structural_bfls as sbf
-
-from nipy.testing import assert_true, dec
+from nipy.neurospin.spatial_models.discrete_domain import domain_from_array
 
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
                         nbeta=[0], method='simple'):
     """
     Function for performing bayesian structural analysis on a set of images.
+
+    Fixme: 'quick' is not tested
     """
     ref_dim = np.shape(betas[0])
     nbsubj = betas.shape[0]
@@ -45,22 +47,20 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     bdensity = 1
     affine = np.eye(3)
     shape = (ref_dim[0], ref_dim[1])
-    
-    if method=='ipmi':
-        group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_ipmi(Fbeta, lbeta, coord, dmax,xy, affine, 
-                                        shape, thq, smin, ths, theta, g0,
-                                        bdensity)
+    dom = domain_from_array(np.ones(ref_dim))
+
     if method=='simple':
         group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_simple(Fbeta, lbeta, coord, dmax,xy,
-                                          affine, shape, thq, smin, ths, 
-                                          theta, g0)
+                   bsa.compute_BSA_simple(dom, lbeta, dmax, thq, smin, ths,
+                                       theta, g0, bdensity)    
+    if method=='ipmi':
+        group_map, AF, BF, likelihood = \
+                   bsa.compute_BSA_ipmi(dom, lbeta, dmax, thq, smin, ths,
+                                       theta, g0, bdensity)
     if method=='sbf':
         pval = 0.2
-        group_map, AF, BF = sbf.Compute_Amers (Fbeta, lbeta, xy, affine, 
-                                                      shape,
-                                               coord, dmax, theta, ths ,pval)
+        group_map, AF, BF = sbf.Compute_Amers (
+            dom, lbeta, dmax, theta, ths, pval)
     return AF, BF
 
 
@@ -103,10 +103,11 @@ def test_bsa_methods():
     # tuple of tuples with each tuple being
     # (name_of_method, ths_value, data_set, test_function)
     algs_tests = (
-        ('simple', half_subjs, null_betas, lambda AF, BF: AF == None),
-        ('ipmi', half_subjs, null_betas, lambda AF, BF: AF == None),
+        ('simple', half_subjs, null_betas, lambda AF, BF: AF.k == 0),
+        ('ipmi', half_subjs, null_betas, lambda AF, BF: AF.k == 0),
         ('simple', 1, pos_betas, lambda AF, BF: AF.k>1),
-        ('ipmi', 1, pos_betas, lambda AF, BF: AF.k>1))
+        ('ipmi', 1, pos_betas, lambda AF, BF: AF.k>1),
+        ('sbf', 1 , pos_betas, lambda AF, BF: AF.k>1))
     
     for name, ths, betas, test_func in algs_tests:
         # run the algo

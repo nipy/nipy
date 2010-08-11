@@ -145,7 +145,7 @@ class ContrastList():
         the contrast object
         """
         contrast = ConfigObj(contrast_file)
-        contrast["contrast"] = []
+        contrast_field = []
         for key in self.dic.keys():
             if key[:5] == "drift":
                 continue
@@ -180,6 +180,7 @@ class ContrastList():
                                                  [int(j) for j in row]
             contrast[key]["Dimension"] = dim
             if verbose: print contrast[key]
-            contrast["contrast"].append(key)
+            contrast_field.append(key)
+        contrast["contrast"] = contrast_field
         contrast.write()
         return contrast

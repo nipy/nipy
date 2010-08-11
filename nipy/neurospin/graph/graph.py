@@ -1323,10 +1323,10 @@ class WeightedGraph(Graph):
         sp: scipy.sparse matrix instance,
             that encodes the adjacency matrix of self
         """
-        import scipy.sparse as spp
+        import scipy.sparse as sps
         i = self.edges[:,0]
         j = self.edges[:,1]
-        sm = spp.coo_matrix( (self.weights, (i, j)), shape=(self.V, self.V))
+        sm = sps.coo_matrix( (self.weights, (i, j)), shape=(self.V, self.V))
         return sm
     
 class BipartiteGraph(WeightedGraph):

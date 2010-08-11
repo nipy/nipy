@@ -154,9 +154,9 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
         version = tvtk.Version()
         offscreen = True
         if (version.vtk_major_version, version.vtk_minor_version) < (5, 2):
-            opacity = 1
-        else:
             opacity = .99
+        else:
+            opacity = 1
     ###########################################################################
     # Display the cortical surface (flattenned)
     anat_src = affine_img_src(anat, anat_affine, scale=scale, name='Anat')
