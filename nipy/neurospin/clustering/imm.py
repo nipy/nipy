@@ -3,7 +3,7 @@ Infinite mixture model : A generalization of Bayesian mixture models
 with an unspecified number of classes
 """
 import numpy as np
-from bgmm import generate_normals, BGMM, detsh
+from bgmm import BGMM, detsh
 from scipy.special import gammaln
 
 def co_labelling(z, kmax=None, kmin=None):
@@ -108,7 +108,7 @@ class IMM(BGMM):
 
         self.prior_dens = None
   
-    def set_constant_densities(prior_dens=None ):
+    def set_constant_densities(self, prior_dens=None ):
         """
         Set the null and prior densities as constant
         (over a  supposedly compact domain)
@@ -765,7 +765,6 @@ def main():
     print 'number of components: ', igmm.k
     
     #
-    like =  igmm.sample(x, niter=100, kfold=10)
     print 'number of components: ', igmm.k
 
     if dim<3:

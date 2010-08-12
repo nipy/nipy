@@ -6,7 +6,6 @@ import os
 from os.path import join as pjoin
 from os import environ as env
 import sys
-import shutil
 import tempfile
 
 from nipy.utils.data import get_data_path, find_data_dir, \
@@ -19,10 +18,8 @@ from nipy.utils.tmpdirs import TemporaryDirectory
 import nipy.utils.data as nud
 
 from nose import with_setup
-from nose.tools import assert_true, assert_false, assert_equal, \
-    assert_not_equal, assert_raises, raises
-
-from nipy.testing import parametric
+from nose.tools import assert_equal, \
+    assert_raises, raises
 
 
 GIVEN_ENV = {}

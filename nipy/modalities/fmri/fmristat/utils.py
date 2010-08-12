@@ -6,9 +6,8 @@ Utilities for fmristat
 
 __docformat__ = 'restructuredtext'
 
-import gc, os, fpformat
 
-from numpy import asarray
+import numpy as np
 
 class WholeBrainNormalize(object):
     """

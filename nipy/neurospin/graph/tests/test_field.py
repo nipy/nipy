@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from numpy.testing import *
+from numpy.testing import TestCase
 import numpy as np
 import nipy.neurospin.graph.field as ff
 

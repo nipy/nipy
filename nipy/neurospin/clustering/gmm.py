@@ -10,8 +10,7 @@ Author : Bertrand Thirion, 2006-2009
 """
 
 import numpy as np
-import nipy.neurospin.clustering.clustering as fc
-from numpy.linalg import det, inv, eigvalsh 
+from scipy.linalg import eigvalsh 
 
 class GridDescriptor(object):
     """
@@ -72,7 +71,6 @@ class GridDescriptor(object):
                 xb = self.n_bins
             else:
                 xb = self.n_bins[j]
-            zb = size/xb
             gr = xm +float(xM-xm)/(xb-1)*np.arange(xb).astype('f')
             grange.append(gr)
 
@@ -744,10 +742,8 @@ class GMM():
         
         # alternation of E/M step until convergence
         tiny = 1.e-15
-        cc = np.zeros(np.shape(self.means))
         allOld = -np.infty
         for i in range(niter):
-            cc = self.means.copy()
             l = self._Estep(x)
             all = np.mean(np.log(np.maximum( np.sum(l,1),tiny)))
             if all<allOld+delta:
@@ -920,21 +916,17 @@ class GMM():
             mp.plot(grid, density)
 
         if gd.dim==2:
-            if nbf>-1:
-                mp.figure(nbf)
-            else:
-                mp.figure()
+            mp.figure()
             xm = gd.lim[0]
             xM = gd.lim[1]
             ym = gd.lim[2]
             yM = gd.lim[3]
 
             gd0 = gd.n_bins[0]
-            gd1 = gd.n_bins[1]
-            Pdens= np.reshape(density,(gd0,np.size(density)/gd0))
+            Pdens= np.reshape(density, (gd0, np.size(density)/gd0))
             axes.imshow(Pdens.T, None, None, None, 'nearest',
                       1.0, None, None,'lower',[xm, xM, ym, yM])
-            axes.plot(x[:,0],x[:,1],'.k')
+            axes.plot(x[:, 0], x[:, 1], '.k')
             axes.axis([xm, xM, ym, yM])
         return axes
  
