@@ -6,7 +6,7 @@ from nipy.modalities.fmri.pca import pca
 from nipy.io.api import  load_image
 from nipy.testing import assert_equal, assert_almost_equal, \
     assert_array_almost_equal, funcfile, assert_true, \
-    assert_array_equal, assert_raises, assert_false, \
+    assert_array_equal, assert_raises, \
     parametric
 
 

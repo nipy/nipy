@@ -48,7 +48,7 @@ def test_unscaled_data():
     yield assert_equal, unscaled_arr.dtype.kind, 'i'
     yield assert_equal, scaled_arr.dtype.kind, 'f'
     hdr = img.get_header()
-    aff = img.get_affine()
+    img.get_affine()
     slope = hdr['scl_slope']
     inter = hdr['scl_inter']
     yield assert_array_almost_equal, np.mean(scaled_arr), \

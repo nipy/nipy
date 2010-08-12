@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from numpy.testing import *
 import numpy as np
 import numpy.random as nr
 import nipy.neurospin.graph as fg
@@ -258,8 +257,7 @@ class test_Graph(TestCase):
 
     def test_isconnected(self):
         G = basic_graph()
-        b = G.is_connected()
-        self.assert_(True)
+        self.assert_(G.is_connected())
 
     def test_main_cc(self):
         x = basicdata()
@@ -313,27 +311,15 @@ class test_Graph(TestCase):
         self.assert_(OK)
   
     def test_symmeterize(self):
-        a = np.array([0,0,1,1,2,2,3,3,4,4,5,5,6,6])
-        b = np.array([1,2,2,3,3,4,4,5,5,6,6,0,0,1])
-        edges = np.transpose(np.stack((a,b)))
-        d = np.ones(14);
-        G = fg.WeightedGraph(7, edges,d)
+        a = np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6])
+        b = np.array([1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 0, 0, 1])
+        edges = np.transpose(np.vstack((a, b)))
+        d = np.ones(14)
+        G = fg.WeightedGraph(7, edges, d)
         G.symmeterize()
         d = G.weights
         ok = (d==0.5)
-        OK = ok.all()
-        self.assert_(True)
-
-    def test_symmeterize(self):
-        a = np.array([0,0,1,1,2,2,3,3,4,4,5,5,6,6])
-        b = np.array([1,2,2,3,3,4,4,5,5,6,6,0,0,1])
-        edges = np.transpose(np.vstack((a,b)))
-        d = np.ones(14);
-        G = fg.WeightedGraph(7, edges,d)
-        G.symmeterize()
-        ok = (d==0.5)
-        OK = ok.all()
-        self.assert_(True)
+        self.assert_(ok.all())
 
     def test_voronoi(self):
         a = np.array([0,0,1,1,2,2,3,3,4,4,5,5,6,6])
@@ -345,7 +331,6 @@ class test_Graph(TestCase):
         seed = np.array([0,6])
         label = G.Voronoi_Labelling(seed)
         self.assert_(label[1]==0)
-
         
     def test_voronoi2(self):
         a = np.array([0,0,1,1,2,2,3,3,4,4,5,5,6,6])
@@ -447,7 +432,6 @@ class test_Graph(TestCase):
         """
         Test the generation of a sparse amtrix as output 
         """
-        import scipy.sparse as spp
         a = (np.random.randn(5, 5)>.8).astype(np.float)
         wg = fg.wgraph_from_adjacency(a)
         b = wg.to_coo_matrix().todense()
