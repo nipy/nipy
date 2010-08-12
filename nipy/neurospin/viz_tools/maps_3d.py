@@ -152,7 +152,6 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
     if opacity is None:
         from enthought.tvtk.api import tvtk
         version = tvtk.Version()
-        offscreen = True
         if (version.vtk_major_version, version.vtk_minor_version) < (5, 2):
             opacity = .99
         else:
@@ -317,11 +316,11 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
     # Draw the cursor
     if cut_coords is not None:
         x0, y0, z0 = cut_coords
-        line1 = mlab.plot3d((-90, 90), (y0, y0), (z0, z0), 
-                            color=(.5, .5, .5), tube_radius=0.25)
-        line2 = mlab.plot3d((x0, x0), (-126, 91), (z0, z0), 
-                            color=(.5, .5, .5), tube_radius=0.25)
-        line3 = mlab.plot3d((x0, x0), (y0, y0), (-72, 109), 
+        mlab.plot3d((-90, 90), (y0, y0), (z0, z0), 
+                    color=(.5, .5, .5), tube_radius=0.25)
+        mlab.plot3d((x0, x0), (-126, 91), (z0, z0), 
+                    color=(.5, .5, .5), tube_radius=0.25)
+        mlab.plot3d((x0, x0), (y0, y0), (-72, 109), 
                             color=(.5, .5, .5), tube_radius=0.25)
     
     mlab.view(*view)
