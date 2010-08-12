@@ -285,16 +285,16 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
         threshold = stats.scoreatpercentile(
                                 np.abs(map).ravel(), 80)
     contours = []
-    lower_map = map[map < -threshold]
+    lower_map = map[map <= -threshold]
     if np.any(lower_map):
         contours.append(lower_map.max())
-    upper_map = map[map > threshold]
+    upper_map = map[map >= threshold]
     if np.any(upper_map):
         contours.append(map[map > threshold].min())
 
 
     ###########################################################################
-    # Display the map using volume rendering
+    # Display the map using iso-surfaces
     if len(contours) > 0:
         map_src = affine_img_src(map, affine)
         module = mlab.pipeline.iso_surface(map_src,
