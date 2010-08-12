@@ -8,7 +8,7 @@ from _graph import __doc__, graph_cc, graph_degrees, graph_main_cc, \
             graph_voronoi, graph_symmeterize, graph_antisymmeterize, \
             graph_to_neighb, graph_cross_knn, graph_cross_eps, \
             graph_cross_eps_robust, graph_rd, graph_skeleton, \
-            graph_is_connected
+            graph_is_connected, graph_bpmatch
 import numpy as np
 
 """
