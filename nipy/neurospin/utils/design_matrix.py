@@ -5,6 +5,9 @@ fMRI Design Matrix creation functions.
 """
 
 import numpy as np
+
+import sympy
+
 from nipy.modalities.fmri import formula, utils, hrf
 
 ##########################################################
@@ -200,7 +203,7 @@ class DesignMatrix(object):
                         used in the FIR model
         fir_duration=1., float, duration of the FIR block; 
                          in general it should be equal to the tr    
-        cond_ids=None, list of strin of length (ncond), 
+        cond_ids=None, list of strings of length (ncond), 
                        ids of the experimental conditions. 
                        If None this will be called 'c0',..,'cn'
         add_regs=None, array of shape(naddreg, nbframes)
@@ -228,7 +231,8 @@ class DesignMatrix(object):
             if add_regs.shape[0] == np.size(add_regs):
                 add_regs = np.reshape(add_regs, (np.size(1, add_regs)))
             if add_regs.shape[0] != np.size(frametimes):
-                raise ValueError, 'incorrect specification of additional regressors'
+                raise ValueError, \
+                      'incorrect specification of additional regressors'
             self.n_add_regs = add_regs.shape[1]
         self.add_regs = add_regs
         
@@ -236,8 +240,8 @@ class DesignMatrix(object):
         if  add_reg_names == None:
             self.add_reg_names = ['reg%d'%k for k in range(self.n_add_regs)]
         elif len(add_reg_names)!= self.n_add_regs:
-             raise ValueError, 'Incorrect number of additional regressors names \
-                               was provided'
+             raise ValueError, 'Incorrect number of additional regressors \
+                                names was provided'
         else: 
             self.add_reg_names = add_reg_names
 
@@ -281,7 +285,7 @@ class DesignMatrix(object):
         # Force the design matrix to be full rank at working precision
         self.matrix, self.design_cond = full_rank(self.matrix)
         
-        # complete the names with the drift terms                               
+        # complete the names with the drift terms  
         for k in range(len(self.drift.terms)-1):
             self.names.append('drift_%d'%(k+1))                            
         self.names.append('constant')
@@ -312,7 +316,8 @@ class DesignMatrix(object):
         Parameter
         ---------
         path: string,
-            path of the .csv file that includes the matriox and related information
+            path of the .csv file that includes the matrix
+            and related information
 
         fixme
         -----
@@ -336,6 +341,8 @@ class DesignMatrix(object):
             x = np.array([[float(t) for t in xr] for xr in design])
         self.matrix = x
         self.names = names
+        # self is considered as True
+        self.estimated = True
 
     def show(self, rescale=True, ax=None):
         """
@@ -375,7 +382,24 @@ class DesignMatrix(object):
         
         #mp.subplots_adjust(top=0.99, bottom=0.25)
         return ax
-        
+
+def dmtx_from_csv( path):
+    """
+    return a DesignMatrix instance from  a csv file
+
+    Parameters
+    ----------
+    path: string,
+          path of the .csv file
+
+    Returns
+    -------
+    A DesignMatrix instance
+    """
+    DM = DesignMatrix()
+    DM.read_from_csv(path)
+    return DM
+
 def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
                drift_model='Cosine', hfcut=128, drift_order=1, fir_delays=[0],
                fir_duration=1., cond_ids=None, add_regs=None,
@@ -447,8 +471,8 @@ def _polydrift(order, tmax):
     pt = []
     # fixme : ideally  this should be orthonormalized  
     for k in range(order):
-        pt.append(formula.define('poly_drift_%d'%(k+1),t**(k+1)/tmax**(k+1))) 
-    pt.append(formula.define('constant',1.0+0*t))
+        pt.append(utils.define('poly_drift_%d'%(k+1),t**(k+1)/tmax**(k+1))) 
+    pt.append(utils.define('constant',1.0+0*t))
     pol =  formula.Formula(pt)
     return pol
 
@@ -472,9 +496,9 @@ def _cosinedrift(hfcut, tmax, tsteps):
     pt = []
     order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
     for k in range(1,order):
-        u = np.sqrt(2.0/tmax) * utils.sympy_cos(np.pi*(t/tmax+ 0.5/tsteps)*k )
-        pt.append(formula.define('cosine_drift_%d'%(k+1),u)) 
-    pt.append(formula.define('constant',1.0+0*t))
+        u = np.sqrt(2.0/tmax) * sympy.cos(np.pi*(t/tmax+ 0.5/tsteps)*k )
+        pt.append(utils.define('cosine_drift_%d'%(k+1),u)) 
+    pt.append(utils.define('constant',1.0+0*t))
     cos =  formula.Formula(pt)
     return cos
 
@@ -488,7 +512,7 @@ def _blankdrift():
     df  a formula that contains a constant regressor
     """
     t = formula.Term('t')
-    pt = [formula.define('constant',1.0+0*t)]
+    pt = [utils.define('constant',1.0+0*t)]
     df =  formula.Formula(pt)
     return df
 
@@ -581,14 +605,14 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
         if nos>0:
             if typep=='event':
                 if hrf_model=="Canonical":
-                    c = formula.define(names[nc],
+                    c = utils.define(names[nc],
                                        utils.events(onsets, values, f=hrf.glover))
                     listc.append(c)
                     hnames.append(names[nc])
                 elif hrf_model=="Canonical With Derivative":
-                    c1 = formula.define(names[nc],
+                    c1 = utils.define(names[nc],
                                         utils.events(onsets, values, f=hrf.glover))
-                    c2 = formula.define(names[nc]+"_derivative",
+                    c2 = utils.define(names[nc]+"_derivative",
                                         utils.events(onsets, values, f=hrf.dglover))
                     listc.append(c1)
                     listc.append(c2)
@@ -603,7 +627,7 @@ def convolve_regressors(paradigm, hrf_model, names=None, fir_delays=[0],
                         changes = changes[ochanges]
                         lvalues = lvalues[ochanges]
                         
-                        c = formula.define(lnames, utils.step_function(changes, lvalues))
+                        c = utils.define(lnames, utils.step_function(changes, lvalues))
 
                         listc.append(c)
                         hnames.append(lnames)

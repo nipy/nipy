@@ -580,7 +580,7 @@ class BGMM(GMM):
 
             # scatter
             dx = np.reshape(x[z==k]-empmeans,(pop[k],self.dim))
-            scatter = np.dot(dx.T,dx)
+            scatter = np.dot(dx.T, dx)
             
             # bias
             addcov = np.dot(dm.T, dm)*self.prior_shrinkage[k]
@@ -593,7 +593,7 @@ class BGMM(GMM):
             self.precisions[k] = generate_Wishart(self.dof[k], scale)
             self._detp[k] = detsh(self.precisions[k])
         
-    def update(self, x, z, sqx=None):
+    def update(self, x, z):
         """
         update function (draw a sample of the GMM parameters)
 

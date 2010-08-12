@@ -15,19 +15,20 @@ The class Grid is meant to take a CoordinateMap and an np.mgrid-like
 notation to create an ArrayCoordMap.
 """
 import numpy as np
-from coordinate_map import CoordinateMap, AffineTransform, compose
-from coordinate_map import product as cmap_product
-from coordinate_map import shifted_range_origin
-from coordinate_system import CoordinateSystem
+
+from .coordinate_map import CoordinateMap, AffineTransform, compose
+from .coordinate_map import product as cmap_product
+from .coordinate_map import shifted_range_origin
+from .coordinate_system import CoordinateSystem
 
 
 class ArrayCoordMap(object):
-    """
+    """ Class combining coordinate map and array shape
+    
     When the function_domain of a CoordinateMap can be thought of as
     'array' coordinates, i.e. an 'input_shape' makes sense. We can
     than evaluate the CoordinateMap at np.indices(input_shape)
     """
-
     def __init__(self, coordmap, shape):
         """
         Parameters
@@ -37,6 +38,45 @@ class ArrayCoordMap(object):
            coordinates.
         shape : sequence of int
            The size of the (implied) underlying array.
+
+        Examples
+        --------
+        >>> aff = np.diag([0.6,1.1,2.3,1])
+        >>> aff[:3,3] = (0.1, 0.2, 0.3)
+        >>> cmap = AffineTransform.from_params('ijk', 'xyz', aff)
+        >>> cmap.ndims # number of (input, output) dimensions
+        (3, 3)
+        >>> acmap = ArrayCoordMap(cmap, (1, 2, 3))
+        
+        Real world values at each array coordinate, one row per array
+        coordinate (6 in this case), one column for each output
+        dimension (3 in this case)
+        
+        >>> acmap.values
+        array([[ 0.1,  0.2,  0.3],
+               [ 0.1,  0.2,  2.6],
+               [ 0.1,  0.2,  4.9],
+               [ 0.1,  1.3,  0.3],
+               [ 0.1,  1.3,  2.6],
+               [ 0.1,  1.3,  4.9]])
+
+        Same values, but arranged in np.indices / np.mgrid format, first
+        axis is for number of output coordinates (3 in our case), the
+        rest are for the input shape (1, 2, 3)
+
+        >>> acmap.transposed_values.shape
+        (3, 1, 2, 3)
+        >>> acmap.transposed_values
+        array([[[[ 0.1,  0.1,  0.1],
+                 [ 0.1,  0.1,  0.1]]],
+        <BLANKLINE>
+        <BLANKLINE>
+               [[[ 0.2,  0.2,  0.2],
+                 [ 1.3,  1.3,  1.3]]],
+        <BLANKLINE>
+        <BLANKLINE>
+               [[[ 0.3,  2.6,  4.9],
+                 [ 0.3,  2.6,  4.9]]]])
         """
         self.coordmap = coordmap
         self.shape = tuple(shape)
@@ -66,8 +106,10 @@ class ArrayCoordMap(object):
         tmp_shape = indices.shape
         # reshape indices to be a sequence of coordinates
         indices.shape = (self.coordmap.ndims[0], np.product(self.shape))
+        # evaluate using coordinate map mapping
         _range = self.coordmap(indices.T)
         if transpose:
+            # reconstruct np.indices format for output
             _range = _range.T
             _range.shape = (_range.shape[0],) + tmp_shape[1:]
         return _range 

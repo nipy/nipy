@@ -45,13 +45,13 @@ if not 'extra_setuptools_args' in globals():
 
 
 # Hard and soft dependency checking
-package_check('scipy', INFO_VARS['scipy_min_version'])
-package_check('sympy', INFO_VARS['sympy_min_version'])
+package_check('scipy', INFO_VARS['SCIPY_MIN_VERSION'])
+package_check('sympy', INFO_VARS['SYMPY_MIN_VERSION'])
 def _mayavi_version(pkg_name):
     from enthought.mayavi import version
     return version.version
 package_check('mayavi',
-              INFO_VARS['mayavi_min_version'],
+              INFO_VARS['MAYAVI_MIN_VERSION'],
               optional=True,
               version_getter=_mayavi_version)
 # Cython can be a build dependency
@@ -59,7 +59,7 @@ def _cython_version(pkg_name):
     from Cython.Compiler.Version import version
     return version
 package_check('cython',
-              INFO_VARS['cython_min_version'],
+              INFO_VARS['CYTHON_MIN_VERSION'],
               optional=True,
               version_getter=_cython_version,
               messages={'opt suffix': ' - you will not be able '
@@ -113,11 +113,11 @@ def main(**extra_args):
            description = 'This is a neuroimaging python package',
            author = 'Various',
            author_email = 'nipy-devel@neuroimaging.scipy.org',
-           url = 'http://neuroimaging.scipy.org',
-           long_description = INFO_VARS['long_description'],
+           url = 'http://nipy.org',
+           long_description = INFO_VARS['LONG_DESCRIPTION'],
            configuration = configuration,
            cmdclass = cmdclass,
-           scripts = glob('scripts/*.py'),
+           scripts = glob('scripts/*'),
            **extra_args)
 
 

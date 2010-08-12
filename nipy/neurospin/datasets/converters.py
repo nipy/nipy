@@ -48,7 +48,7 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
         For pynifti objects, the data is transposed.
     """
     if hasattr(obj, 'as_volume_img'):
-        obj = obj.as_volume_img()
+        obj = obj.as_volume_img(copy=copy)
         if copy:
             obj = obj.__copy__()
         return obj
@@ -75,15 +75,8 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
         if filename != '':
             header['filename'] = filename
 
-    if world_space is not None:
-        " Ugly if statement to use elif after "
-    elif header.get('sform_code', 0) == 4:
+    if world_space is None and header.get('sform_code', 0) == 4:
         world_space = 'mni152'
-    elif 'filename' in header:
-        world_space = header['filename']
-    else:
-        # Cheap way to construct an object-specific hash
-        world_space = str(id(obj))
 
     data    = np.asanyarray(data)
     affine  = np.asanyarray(affine)
@@ -104,6 +97,12 @@ def save(filename, obj):
     """ Save an nipy image object to a file.
     """
     obj = as_volume_img(obj, copy=False)
-    imageformats.save(imageformats.Nifti1Image(obj.get_data(), 
-                      obj.affine), filename)
+    hdr = imageformats.Nifti1Header()
+    for key, value in obj.metadata.iteritems():
+        if key in hdr:
+            hdr[key] = value
+    img = imageformats.Nifti1Image(obj.get_data(), 
+                                   obj.affine,
+                                   header=hdr)
+    imageformats.save(img, filename)
 

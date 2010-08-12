@@ -15,6 +15,7 @@ from matplotlib.transforms import Bbox
 
 # Local imports
 from .coord_tools import coord_transform, get_bounds, get_mask_bounds
+from ..datasets import VolumeImg
 
 
 ################################################################################
@@ -42,6 +43,13 @@ if mp.__version__ < '0.99.1':
             return self.__dict__.get(attr, getattr(self.__lut, attr))
 
 
+def _xyz_order(map, affine):
+    img = VolumeImg(map, affine=affine, world_space='mine')
+    img = img.xyz_ordered(resample=True, copy=False)
+    map = img.get_data()
+    affine = img.affine
+    return map, affine
+                    
 
 ################################################################################
 # class OrthoSlicer
@@ -281,7 +289,7 @@ class OrthoSlicer(object):
                     **kwargs)
 
 
-    def plot_map(self, map, affine, **kwargs):
+    def plot_map(self, map, affine, threshold=None, **kwargs):
         """ Plot a 3D map in all the views.
 
             Parameters
@@ -292,9 +300,44 @@ class OrthoSlicer(object):
             affine: 4x4 ndarray
                 The affine matrix giving the transformation from voxel
                 indices to world space.
+            threshold : a number, None, or 'auto'
+                If None is given, the maps are not thresholded.
+                If a number is given, it is used to threshold the maps:
+                values below the threshold are plotted as transparent.
             kwargs:
                 Extra keyword arguments are passed to imshow.
         """
+        if threshold is not None:
+            if threshold == 0:
+                map = np.ma.masked_equal(map, 0, copy=False)
+            else:
+                map = np.ma.masked_inside(map, -threshold, threshold, 
+                                          copy=False)
+
+        self._map_show(map, affine, type='imshow', **kwargs)
+
+
+    def contour_map(self, map, affine, **kwargs):
+        """ Contour a 3D map in all the views.
+
+            Parameters
+            -----------
+            map: 3D ndarray
+                The 3D map to be plotted. If it is a masked array, only
+                the non-masked part will be plotted.
+            affine: 4x4 ndarray
+                The affine matrix giving the transformation from voxel
+                indices to world space.
+            kwargs:
+                Extra keyword arguments are passed to contour.
+        """
+        self._map_show(map, affine, type='contour', **kwargs)
+
+
+    def _map_show(self, map, affine, type='imshow', **kwargs):
+        map, affine = _xyz_order(map, affine)
+        # Force the origin
+        kwargs['origin'] = 'upper'
         if mp.__version__ < '0.99.1':
             cmap = kwargs.get('cmap', 
                         pl.cm.cmap_d[pl.rcParams['image.cmap']])
@@ -324,21 +367,21 @@ class OrthoSlicer(object):
                 kwargs['vmax'] = map.max()
 
         ax = self.axes['x']
-        ax.imshow(np.rot90(map[:, y_map, :]),
+        getattr(ax, type)(np.rot90(map[:, y_map, :]),
                   extent=(xmin, xmax, zmin, zmax),
                   **kwargs)
         self._object_bounds[ax].append((xmin_, xmax_, zmin_, zmax_))
         ax.axis(self._get_object_bounds(ax))
 
         ax = self.axes['y']
-        ax.imshow(np.rot90(map[x_map, :, :]),
+        getattr(ax, type)(np.rot90(map[x_map, :, :]),
                   extent=(ymin, ymax, zmin, zmax),
                   **kwargs)
         self._object_bounds[ax].append((ymin_, ymax_, zmin_, zmax_))
         ax.axis(self._get_object_bounds(ax))
 
         ax = self.axes['z']
-        ax.imshow(np.rot90(map[:, :, z_map]),
+        getattr(ax, type)(np.rot90(map[:, :, z_map]),
                   extent=(xmin, xmax, ymin, ymax),
                   **kwargs)
         self._object_bounds[ax].append((xmin_, xmax_, ymin_, ymax_))

@@ -39,7 +39,7 @@ if len(sys.argv)>1:
 
 # Input files
 fmri_files = [example_data.get_filename('fiac','fiac0',run) for run in ['run1.nii.gz','run2.nii.gz']]
-design_files = [example_data.get_filename('fiac','fiac0',run) for run in ['run1_mat.npz','run2_mat.npz']]
+design_files = [example_data.get_filename('fiac','fiac0',run) for run in ['run1_design.npz','run2_design.npz']]
 mask_file = example_data.get_filename('fiac','fiac0','mask.nii.gz') 
 
 # Get design matrix as numpy array

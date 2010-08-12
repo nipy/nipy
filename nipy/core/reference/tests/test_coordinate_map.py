@@ -1,18 +1,27 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
+# this import line is a little ridiculous...
+from nipy.core.reference.coordinate_map import (CoordinateMap,
+                                                AffineTransform, 
+                                                compose,
+                                                product,
+                                                append_io_dim,
+                                                drop_io_dim,
+                                                equivalent,
+                                                shifted_domain_origin,
+                                                shifted_range_origin,
+                                                _as_coordinate_map)
+from nipy.core.reference.coordinate_system import (
+    CoordinateSystem,
+    CoordinateSystemError)
+
+# shortcut
+CS = CoordinateSystem
+
 from nipy.testing import (assert_true, assert_equal, assert_raises, 
                           assert_false, assert_array_equal,
                           assert_almost_equal, parametric)
-
-# this import line is a little ridiculous...
-from nipy.core.reference.coordinate_map import (CoordinateMap, AffineTransform, 
-                                                compose, CoordinateSystem, product,
-                                                append_io_dim,
-                                                equivalent, shifted_domain_origin,
-                                                shifted_range_origin,
-                                                _as_coordinate_map)
-
 
 class empty:
     pass
@@ -31,11 +40,9 @@ def setup():
     E.c = CoordinateMap(x, x, g)        
     E.d = CoordinateMap(x, x, g, inverse_function=f)        
     E.e = AffineTransform.identity('ijk')
-
     A = np.identity(4)
     A[0:3] = np.random.standard_normal((3,4))
     E.mapping = AffineTransform.from_params('ijk' ,'xyz', A)
-    
     E.singular = AffineTransform.from_params('ijk', 'xyzt',
                                     np.array([[ 0,  1,  2,  3],
                                               [ 4,  5,  6,  7],
@@ -121,18 +128,61 @@ def test_renamed():
         yield assert_raises, ValueError, B.renamed_domain, {'foo':'y'}
 
 
+@parametric
+def test_calling_shapes():
+    cs2d = CS('ij')
+    cs1d = CS('i')
+    cm2d = CoordinateMap(cs2d, cs2d, lambda x : x+1)
+    cm1d2d = CoordinateMap(cs1d, cs2d,
+                           lambda x : np.concatenate((x, x), axis=-1))
+    at2d = AffineTransform(cs2d, cs2d, np.array([[1, 0, 1],
+                                                 [0, 1, 1],
+                                                 [0, 0, 1]]))
+    at1d2d = AffineTransform(cs1d, cs2d, np.array([[1,0],
+                                                   [0,1],
+                                                   [0,1]]))
+    # test coordinate maps and affine transforms
+    for xfm2d, xfm1d2d in ((cm2d, cm1d2d), (at2d, at1d2d)):
+        arr = np.array([0, 1])
+        yield assert_array_equal(xfm2d(arr), [1, 2])
+        # test lists work too
+        res = xfm2d([0, 1])
+        yield assert_array_equal(res, [1, 2])
+        # and return arrays (by checking shape attribute)
+        yield assert_equal(res.shape, (2,))
+        # maintaining input shape
+        arr_long = arr[None, None, :]
+        yield assert_array_equal(xfm2d(arr_long), arr_long + 1)
+        # wrong shape array raises error
+        yield assert_raises(CoordinateSystemError, xfm2d, np.zeros((3,)))
+        yield assert_raises(CoordinateSystemError, xfm2d, np.zeros((3,3)))
+        # 1d to 2d
+        arr = np.array(1)
+        yield assert_array_equal(xfm1d2d(arr), [1,1] )
+        arr_long = arr[None, None, None]
+        yield assert_array_equal(xfm1d2d(arr_long),
+                                 np.ones((1,1,2)))
+        # wrong shape array raises error.  Note 1d input requires size 1
+        # as final axis
+        yield assert_raises(CoordinateSystemError, xfm1d2d, np.zeros((3,)))
+        yield assert_raises(CoordinateSystemError, xfm1d2d, np.zeros((3,2)))
 
+    
+@parametric
 def test_call():
     value = 10
-    yield assert_true, np.allclose(E.a(value), 2*value)
-    yield assert_true, np.allclose(E.b(value), 2*value)
+    yield assert_true(np.allclose(E.a(value), 2*value))
+    yield assert_true(np.allclose(E.b(value), 2*value))
     # FIXME: this shape just below is not 
     # really expected for a CoordinateMap
-    yield assert_true, np.allclose(E.b([value]), 2*value)
-    yield assert_true, np.allclose(E.c(value), value/2)
-    yield assert_true, np.allclose(E.d(value), value/2)
+    yield assert_true(np.allclose(E.b([value]), 2*value))
+    yield assert_true(np.allclose(E.c(value), value/2))
+    yield assert_true(np.allclose(E.d(value), value/2))
     value = np.array([1., 2., 3.])
-    yield assert_true, np.allclose(E.e(value), value)
+    yield assert_true(np.allclose(E.e(value), value))
+    # check that error raised for wrong shape
+    value = np.array([1., 2.,])
+    yield assert_raises(CoordinateSystemError, E.e, value)
 
 
 def test_compose():
@@ -270,7 +320,6 @@ def affine_v2w():
 
 def test_affine_init():
     incs, outcs, aff = affine_v2w()
-    print aff, incs, outcs
     cm = AffineTransform(incs, outcs, aff)
     yield assert_equal, cm.function_domain, incs
     yield assert_equal, cm.function_range, outcs
@@ -536,4 +585,61 @@ def test_append_io_dim():
                        list('xyzt'))
     yield assert_equal(cm2.function_domain.coord_names,
                        list('ijq'))
-    
+
+
+@parametric
+def test_mod():
+    from nipy.core.reference.coordinate_map import _matching_orth_dim
+    aff = np.diag([1,2,3,1])
+    for i in range(3):
+        yield assert_equal(_matching_orth_dim(i, aff), (i, ''))
+    aff = np.ones((4,4))
+    for i in range(3):
+        val, msg = _matching_orth_dim(i, aff)
+        yield assert_equal(val, None)
+    aff = np.zeros((3,3))
+    for i in range(2):
+        val, msg = _matching_orth_dim(i, aff)
+        yield assert_equal(val, None)
+    aff = np.array([[1, 0, 0, 1],
+                    [0, 0, 2, 1],
+                    [0, 3, 0, 1],
+                    [0, 0, 0, 1]])
+    val, msg = _matching_orth_dim(1, aff)
+    yield assert_equal(_matching_orth_dim(0, aff), (0, ''))
+    yield assert_equal(_matching_orth_dim(1, aff), (2, ''))
+    yield assert_equal(_matching_orth_dim(2, aff), (1, ''))
+    aff = np.diag([1, 2, 0, 1])
+    aff[:,3] = 1
+    yield assert_equal(_matching_orth_dim(2, aff), (2, ''))
+
+
+@parametric
+def test_drop_io_dim():
+    # test ordinary case of 4d to 3d
+    cm4d = AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
+    cm3d = drop_io_dim(cm4d, 't')
+    yield assert_array_equal(cm3d.affine, np.diag([1, 2, 3, 1]))
+    # 3d to 2d
+    cm3d = AffineTransform.from_params('ijk', 'xyz', np.diag([1,2,3,1]))
+    cm2d = drop_io_dim(cm3d, 'z')
+    yield assert_array_equal(cm2d.affine, np.diag([1, 2, 1]))
+    # test zero scaling for dropped dimension
+    cm3d = AffineTransform.from_params('ijk', 'xyz', np.diag([1, 2, 0, 1]))
+    cm2d = drop_io_dim(cm3d, 'z')
+    yield assert_array_equal(cm2d.affine, np.diag([1, 2, 1]))
+    # test not diagonal but orthogonal
+    aff = np.array([[1, 0, 0, 0],
+                    [0, 0, 2, 0],
+                    [0, 3, 0, 0],
+                    [0, 0, 0, 1]])
+    cm3d = AffineTransform.from_params('ijk', 'xyz', aff)
+    cm2d = drop_io_dim(cm3d, 'z')
+    yield assert_array_equal(cm2d.affine, np.diag([1, 2, 1]))
+    cm2d = drop_io_dim(cm3d, 'k')
+    yield assert_array_equal(cm2d.affine, np.diag([1, 3, 1]))
+    # and with zeros scaling for orthogonal dropped dimension
+    aff[2] = 0
+    cm3d = AffineTransform.from_params('ijk', 'xyz', aff)
+    cm2d = drop_io_dim(cm3d, 'z')
+    yield assert_array_equal(cm2d.affine, np.diag([1, 2, 1]))

@@ -19,9 +19,9 @@ t = np.cumsum(dt)
 
 
 a = sympy.Symbol('a')
-linear = formula.define('linear', utils.events(t, dt, f=hrf.glover))
-quadratic = formula.define('quad', utils.events(t, dt, f=hrf.glover, g=a**2))
-cubic = formula.define('cubic', utils.events(t, dt, f=hrf.glover, g=a**3))
+linear = utils.define('linear', utils.events(t, dt, f=hrf.glover))
+quadratic = utils.define('quad', utils.events(t, dt, f=hrf.glover, g=a**2))
+cubic = utils.define('cubic', utils.events(t, dt, f=hrf.glover, g=a**3))
 
 f1 = formula.Formula([linear, quadratic, cubic])
 

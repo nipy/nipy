@@ -469,7 +469,8 @@ def map_reproducibility(data, vardata, mask, ngroups, method='crfx',
            # randomly swap the sign of x
            x *= (2*(np.random.rand(len(samples[i]))>0.5)-1)
         
-        vx = vardata[:,samples[i]]
+        if method is not 'crfx':
+            vx = vardata[:,samples[i]]
         csize = kwargs['csize']
         threshold = kwargs['threshold']
 
@@ -480,7 +481,7 @@ def map_reproducibility(data, vardata, mask, ngroups, method='crfx',
             smap = fttest(x,vx)
         elif method=='cmfx':
             smap = mfx_ttest(x,vx)
-        elif methd=='cjt':
+        elif method=='cjt':
              if kwargs.has_key('k'):
                 k = kwargs['k']
              else:
@@ -536,8 +537,9 @@ def peak_reproducibility(data, vardata, mask, ngroups, sigma, method='crfx',
            # apply a random sign swap to x
            x *= (2*(np.random.rand(len(samples[i]))>0.5)-1)
 
-        vx = vardata[:,samples[i]]
-        if method!='bsa':
+        if method is not 'crfx':
+            vx = vardata[:,samples[i]]
+        if method is not 'bsa':
             threshold = kwargs['threshold']
            
             if method =='crfx':
@@ -623,8 +625,9 @@ def cluster_reproducibility(data, vardata, mask, ngroups, sigma,
            # apply a random sign swap to x
            x *= (2*(np.random.rand(len(samples[i]))>0.5)-1)
 
-        vx = vardata[:,samples[i]]
-        if method!='bsa':
+        if method is not 'crfx':
+            vx = vardata[:,samples[i]]
+        if method is not 'bsa':
             csize = kwargs['csize']
             threshold = kwargs['threshold']
            
@@ -634,7 +637,7 @@ def cluster_reproducibility(data, vardata, mask, ngroups, sigma,
                 smap = mfx_ttest(x, vx)
             elif method == 'cffx':
                 smap = fttest(x, vx)
-            elif methd=='cjt':
+            elif method=='cjt':
                 if  kwargs.has_key('k'):
                     k =  kwargs['k']
                 else:   
@@ -668,7 +671,92 @@ def cluster_reproducibility(data, vardata, mask, ngroups, sigma,
     score /= (ngroups*(ngroups-1))
     return score
 
+def group_reproducibility_metrics(
+    mask_images, contrast_images, variance_images, thresholds, ngroups,
+    method, cluster_threshold=10, number_of_samples=10, sigma=6.,
+    do_clusters=True, do_voxels=True, do_peaks=True, swap=False):
+    """
+    Main function to perform reproducibility analysis, including nifti1 io
 
+    Parameters
+    ----------
+    threshold: list or 1-d array,
+               the thresholds to be tested
+
+    Returns
+    -------
+    cluster_rep_results: dictionary,
+                         results of cluster-level reproducibility analysi
+    voxel_rep_results: dictionary,
+                       results of voxel-level reproducibility analysis
+    peak_rep_results: dictionary,
+                      results of peak-level reproducibility analysis
+    """
+    from nipy.io.imageformats import load, save, Nifti1Image 
+    from nipy.neurospin.utils.mask import intersect_masks
+    
+    if ((len(variance_images)==0) & (method is not 'crfx')):
+        raise ValueError, 'Variance images are necessary'
+    
+    nsubj = len(contrast_images)
+    
+    # compute the group mask
+    affine = load(mask_images[0]).get_affine()
+    mask = intersect_masks(mask_images, threshold=0)>0
+    grp_mask = Nifti1Image(mask, affine)
+    xyz = np.where(mask)
+    xyz = np.array(xyz).T
+    nvox = xyz.shape[0]
+
+    # read the data
+    group_con = []
+    group_var = []
+    for s in range(nsubj): 
+        group_con.append(load(contrast_images[s]).get_data()[mask])
+        if len(variance_images)>0:
+            group_var.append(load(variance_images[s]).get_data()[mask])
+    
+    group_con = np.squeeze(np.array(group_con)).T
+    group_con[np.isnan(group_con)] = 0
+    if len(variance_images)>0:
+        group_var = np.squeeze(np.array(group_var)).T
+        group_var[np.isnan(group_var)] = 0
+        group_var = np.maximum(group_var, 1.e-15)
+
+    # perform the analysis
+    voxel_rep_results = {}
+    cluster_rep_results = {}
+    peak_rep_results = {}
+    
+    for ng in ngroups:
+        if do_voxels: voxel_rep_results.update({ng:{}})
+        if do_clusters: cluster_rep_results.update({ng:{}})
+        if do_peaks: peak_rep_results.update({ng:{}})
+        for th in thresholds:
+            kappa = []
+            cls = []
+            pk = []
+            kwargs={'threshold':th, 'csize':cluster_threshold}
+        
+            for i in range(number_of_samples):
+                if do_voxels: 
+                    kappa.append(voxel_reproducibility(
+                        group_con, group_var, grp_mask, ng, method, swap,
+                        **kwargs))
+                if do_clusters:
+                    cls.append(cluster_reproducibility(
+                        group_con, group_var, grp_mask, ng, sigma, method,
+                        swap, **kwargs))
+                if do_peaks:
+                    pk.append(peak_reproducibility(
+                        group_con, group_var, grp_mask, ng, sigma, method,
+                        swap, **kwargs))
+            
+            if do_voxels: voxel_rep_results[ng].update({th: np.array(kappa)})
+            if do_clusters: cluster_rep_results[ng].update({th:np.array(cls)})
+            if do_peaks: peak_rep_results[ng].update({th:np.array(cls)})
+
+    return voxel_rep_results, cluster_rep_results, peak_rep_results
 
 # -------------------------------------------------------
 # ---------- BSA stuff ----------------------------------
@@ -725,9 +813,9 @@ def coord_bsa(mask, betas, theta=3.,dmax=5., ths=0, thq=0.5, smin=0,
     shape = mask.get_shape()
     coord = np.dot(np.hstack((xyz,np.ones((nvox,1)))),affine.T)[:,:3]
 
-    crmap,AF,BF,p = bsa.compute_BSA_simple_quick(Fbeta, betas, coord, dmax, xyz,
-                                            affine, shape, thq, smin,ths, theta,
-                                            g0, verbose=0)
+    crmap,AF,BF,p = bsa.compute_BSA_quick(Fbeta, betas, coord, dmax, xyz,
+                                          affine, shape, thq, smin,ths, theta,
+                                          g0, verbose=0)
     if AF==None:
         return None
     pickle.dump(AF, open(afname, 'w'), 2)

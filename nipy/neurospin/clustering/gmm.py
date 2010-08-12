@@ -421,7 +421,7 @@ class GMM():
         like *= self.weights
         return like
 
-    def unweighted_likelihood(self, x):
+    def unweighted_likelihood_(self, x):
         """
         return the likelihood of each data for each component
         the values are not weighted by the component weights
@@ -438,20 +438,62 @@ class GMM():
         """
         n = x.shape[0]
         like = np.zeros((n,self.k))
-        #from numpy.linalg import det
 
         for k in range(self.k):
             # compute the data-independent factor first
             w = - np.log(2*np.pi)*self.dim
-            m = np.reshape(self.means[k],(1,self.dim))
+            m = np.reshape(self.means[k], (1, self.dim))
             b = self.precisions[k]
             if self.prec_type=='full':
-                #w += np.log(det(b))
                 w += np.log(eigvalsh(b)).sum()
-                q = np.sum(np.dot(m-x,b)*(m-x),1)
+                dx = m-x
+                q = np.sum(np.dot(dx,b)*dx,1)
             else:
                 w += np.sum(np.log(b))
                 q = np.dot((m-x)**2, b)
+            w -= q
+            w /= 2
+            like[:,k] = np.exp(w)   
+        return like
+
+    def unweighted_likelihood(self, x):
+        """
+        return the likelihood of each data for each component
+        the values are not weighted by the component weights
+
+        Parameters
+        ----------
+        x: array of shape (n_samples,self.dim)
+           the data used in the estimation process
+
+        Returns
+        -------
+        like, array of shape(n_samples,self.k)
+          unweighted component-wise likelihood
+
+        Note
+        ----
+        Hopefully faster
+        """
+        xt = x.T.copy()
+        n = x.shape[0]
+        like = np.zeros((n, self.k))
+
+        for k in range(self.k):
+            # compute the data-independent factor first
+            w = - np.log(2*np.pi)*self.dim
+            m = np.reshape(self.means[k], (self.dim, 1))
+            b = self.precisions[k]
+            if self.prec_type=='full':
+                w += np.log(eigvalsh(b)).sum()
+                dx = xt-m
+                sqx = dx*np.dot(b,dx)
+                q = np.zeros(n)
+                for d in range(self.dim):
+                    q += sqx[d]
+            else:
+                w += np.sum(np.log(b))
+                q = np.dot(b, (m-xt)**2) # check !!!
             w -= q
             w /= 2
             like[:,k] = np.exp(w)   
@@ -849,31 +891,35 @@ class GMM():
                  density of the model one the discrete grid implied by gd
                  by default, this is recomputed
         """
+        import matplotlib.pylab as mp
+        
         # recompute the density if necessary
         if density==None:
             density = self.mixture_likelihood(gd,x)
 
+        import pylab
         if axes is None:
-            axes = mp.figure()
+            axes = pylab.figure()
 
         if gd.dim==1:
-            import matplotlib.pylab as mp
-            step = 3.5*np.std(x)/np.exp(np.log(np.size(x))/3)
-            bins = max(10,(x.max()-x.min())/step)
-            xmin = 1.1*x.min() - 0.1*x.max()
-            xmax = 1.1*x.max() - 0.1*x.min()
-            h,c = np.histogram(x, bins, [xmin,xmax], normed=True)
-            offset = (xmax-xmin)/(2*bins)
+            from nipy.neurospin.utils.emp_null import smoothed_histogram_from_samples
+            h, c = smoothed_histogram_from_samples(x, normalized=True)
+            
+            #step = 3.5*np.std(x)/np.exp(np.log(np.size(x))/3)
+            #bins = max(10,(x.max()-x.min())/step)
+            #xmin = 1.1*x.min() - 0.1*x.max()
+            #xmax = 1.1*x.max() - 0.1*x.min()
+            #h,c = np.histogram(x, bins, [xmin, xmax], normed=True)
+
+            offset = (c.max()-c.min())/(2*c.size)
             grid = gd.make_grid()
         
             h /= h.sum()
             h /= (2*offset)
-            axes.plot(c[:-1]+offset,h)
-            axes.plot(grid, density)
-            axes.show()
+            mp.plot(c[:-1]+offset, h)
+            mp.plot(grid, density)
 
         if gd.dim==2:
-            import matplotlib.pylab as mp
             if nbf>-1:
                 mp.figure(nbf)
             else:

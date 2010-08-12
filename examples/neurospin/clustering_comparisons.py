@@ -2,10 +2,11 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Simple demo that partitions a smooth field into 10 clusters
-In that case, Ward's clustering behaves best, by far.
+In most cases, Ward's clustering behaves best.
 
 Author: Bertrand Thirion, 2009
 """
+print __doc__
 
 import numpy as np
 import numpy.random as nr
@@ -19,8 +20,6 @@ nbseeds=10
 F = ff.Field(dx*dy*dz)
 xyz = np.reshape(np.indices((dx,dy,dz)),(3,dx*dy*dz)).T.astype(np.int)
 F.from_3d_grid(xyz,18)
-#data = 3*nr.randn(dx*dy*dz) + np.sum((xyz-xyz.mean(0))**2,1)
-#F.set_field(np.reshape(data,(dx*dy*dz,1)))
 data = nr.randn(dx*dy*dz,1)
 F.set_weights(F.get_weights()/18)
 F.set_field(data)
@@ -32,7 +31,8 @@ seeds, label, J0 = F.geodesic_kmeans(seeds)
 wlabel, J1 = F.ward(nbseeds)
 seeds, label, J2 = F.geodesic_kmeans(seeds,label=wlabel.copy(), eps = 1.e-7)
 
-print 'inertia values for the 3 algorithms: ',J0,J1,J2
+print 'inertia values for the 3 algorithms: '
+print 'geodesic k-means: ', J0, 'wards: ', J1, 'wards + gkm: ', J2
 
 import matplotlib.pylab as mp
 mp.figure()

@@ -6,11 +6,53 @@ this basically uses nipy io lib to perform IO opermation
 in parcel definition processes
 """
 
-
+from nipy.neurospin.clustering.clustering import kmeans
 import numpy as np
 import os.path
 from nipy.io.imageformats import load, save, Nifti1Image 
 from parcellation import Parcellation
+
+def mask_parcellation(mask_images, nb_parcel, output_image=None):
+    """
+    Performs the parcellation of a certain mask
+
+    Parameters
+    ----------
+    mask_images: list of strings,
+                 paths of the mask images that define the common space.
+    nb_parcel: int,
+               number of desired parcels
+    output_image: string, optional
+                   path of the output image
+                   
+    Returns
+    -------
+    wim: Nifti1Imagine instance,  the resulting parcellation
+    """
+    from nipy.neurospin.utils.mask import intersect_masks
+
+    # compute the group mask
+    affine = load(mask_images[0]).get_affine()
+    shape = load(mask_images[0]).get_shape()
+    mask = intersect_masks(mask_images, threshold=0)>0
+    ijk = np.where(mask)
+    ijk = np.array(ijk).T
+    nvox = ijk.shape[0]
+
+    # Get and cluster  coordinates 
+    ijk = np.hstack((ijk,np.ones((nvox,1))))
+    coord = np.dot(ijk, affine.T)[:,:3]
+    cent, tlabs, J = kmeans(coord, nb_parcel)
+        
+    # Write the results
+    label = -np.ones(shape)
+    label[mask]= tlabs
+    wim = Nifti1Image(label, affine)
+    wim.get_header()['descrip'] = 'Label image in %d parcels'%nb_parcel    
+    if output_image is not None:
+        save(wim, output_image)
+    return wim
+    
 
 def parcel_input(mask_images, nbeta, learning_images,
                 ths = .5, fdim=3, affine=None):   
@@ -19,16 +61,16 @@ def parcel_input(mask_images, nbeta, learning_images,
 
     Parameters
     ----------
-    mask_images: list of the paths of the mask images that are used
-                 to define the common space. These can be cortex
-                 segmentations
-                 (resampled at the same resolution as the remainder
-                 of the data)
+    mask_images: list of strings,
+                 paths of the mask images that  define the common space.
+                 These can be cortex segmentations
+                 (at the same resolution as the remainder of the data)
                  Note that nsubj = len(mask_images)
     nbeta: list of integers, 
            ids of the contrast of under study
     learning_images: path of functional images used as input to the
-      parcellation procedure. normally these are statistics(student/normal) images.
+                     parcellation procedure. normally these are statistics
+                     (student/normal) images.
     ths=.5: threshold to select the regions that are common across subjects.
             if ths = .5, thethreshold is half the number of subjects
     fdim=3, int
@@ -53,11 +95,9 @@ def parcel_input(mask_images, nbeta, learning_images,
     
     # Read the referential information
     nim = load(mask_images[0])
-    ref_dim = nim.get_shape()
-    grid_size = np.prod(ref_dim)
     if affine==None:
         affine = nim.get_affine()
-    
+
     # take the individual masks
     mask = []
     for s in range(nsubj):
@@ -65,7 +105,7 @@ def parcel_input(mask_images, nbeta, learning_images,
         temp = np.squeeze(nim.get_data())
         rbeta = load(learning_images[s][0])
         maskb = np.squeeze(rbeta.get_data())
-        temp = np.minimum(temp,1-(maskb==0))        
+        temp = np.minimum(temp, 1-(maskb==0))        
         mask.append(temp)
         # fixme : check that all images are co-registered
         
@@ -80,24 +120,25 @@ def parcel_input(mask_images, nbeta, learning_images,
 
     mask = mask>0
     smask = np.sum(mask,0)>ths
+    
     mxyz = np.array(np.where(smask)).T
     nvox = mxyz.shape[0]
-    mask = mask[:,smask>0].T    
+    mask = mask[:, smask>0].T    
 
     # Compute the position of each voxel in the common space    
-    coord = np.dot(np.hstack((mxyz,np.ones((nvox,1)))),affine.T)[:,:3]
+    coord = np.dot(np.hstack((mxyz, np.ones((nvox, 1)))), affine.T)[:, :3]
         
     # Load the functional data
     istats = []
     for s in range(nsubj): 
         stat = []
-        lxyz = np.array(mxyz[mask[:,s],:])
+        lxyz = np.array(mxyz[mask[:,s], :])
         
         for b in range(nbeta):
             # the stats (noise-normalized contrasts) images
             rbeta = load(learning_images[s][b])
             temp = rbeta.get_data()
-            temp = temp[lxyz[:,0],lxyz[:,1],lxyz[:,2]]
+            temp = temp[lxyz[:,0], lxyz[:,1], lxyz[:,2]]
             temp = np.reshape(temp, np.size(temp))
             stat.append(temp)
 
@@ -107,19 +148,19 @@ def parcel_input(mask_images, nbeta, learning_images,
     # Possibly reduce the dimension of the  functional data
     if fdim<istats[0].shape[1]:
         rstats = np.concatenate(istats)
-        rstats = np.reshape(rstats,(rstats.shape[0],nbeta))
+        rstats = np.reshape(rstats,(rstats.shape[0], nbeta))
         rstats = rstats-np.mean(rstats)
         import numpy.linalg as nl
-        m1,m2,m3 = nl.svd(rstats,0)
-        rstats = np.dot(m1,np.diag(m2))
-        rstats = rstats[:,:fdim]
+        m1,m2,m3 = nl.svd(rstats, 0)
+        rstats = np.dot(m1, np.diag(m2))
+        rstats = rstats[:, :fdim]
         subj = np.concatenate([s*np.ones(istats[s].shape[0]) \
                                for s in range(nsubj)])
         istats = [rstats[subj==s] for s in range (nsubj)]
 
     pa = Parcellation(1,mxyz,mask-1)  
     
-    return pa,istats,coord
+    return pa, istats, coord
 
 def Parcellation_output(Pa, mask_images, learning_images, coord, nbru, 
                         verbose=1,swd = "/tmp"):
@@ -145,7 +186,6 @@ def Parcellation_output(Pa, mask_images, learning_images, coord, nbru,
     Pa: the updated Parcellation instance
     """
     nsubj = Pa.nb_subj
-    mxyz = Pa.ijk
     Pa.set_subjects(nbru)
     
     # write the template image
@@ -153,7 +193,6 @@ def Parcellation_output(Pa, mask_images, learning_images, coord, nbru,
     LabelImage = os.path.join(swd,"template_parcel.nii") 
     rmask = load(mask_images[0])
     ref_dim = rmask.get_shape()
-    grid_size = np.prod(ref_dim)
     affine = rmask.get_affine()
     
     Label = np.zeros(ref_dim)
@@ -192,7 +231,7 @@ def Parcellation_output(Pa, mask_images, learning_images, coord, nbru,
             hdr = wim.get_header()
             hdr['descrip'] = 'image of the jacobian of the deformation \
                               associated with the parcellation'
-            save(wim, LabelImage)       
+            save(wim, JacobImage)       
 
     return Pa
 
@@ -210,20 +249,18 @@ def parcellation_output_with_paths(Pa, mask_images, group_path, indiv_path):
            MNI-coordinates of the brain mask voxels considered in the
            parcellation process
     group_path, string, path of the group-level parcellation image
-    indiv_path, list of strings, paths of the individual parcellation images    
+    indiv_path, list of strings, paths of the individual parcellation images   
     
     fixme
     -----
     the referential-defining information should be part of the Pa instance
     """
     nsubj = Pa.nb_subj
-    mxyz = Pa.ijk
     
     # write the template image
     tlabs = Pa.group_labels
     rmask = load(mask_images[0])
     ref_dim = rmask.get_shape()
-    grid_size = np.prod(ref_dim)
     affine = rmask.get_affine()
     
     Label = np.zeros(ref_dim)
@@ -324,7 +361,6 @@ def Parcellation_based_analysis(Pa, test_images, numbeta, swd="/tmp",
     # write RFX images
     ref_dim = rbeta.get_shape()
     affine = rbeta.get_affine()
-    grid_size = np.prod(ref_dim)
     tlabs = Pa.group_labels
 
     # write the prfx images
@@ -377,7 +413,7 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     import nipy.neurospin.graph as fg
     import nipy.neurospin.graph.field as ff
     
-    if method not in ['ward','gkm','ward_and_gkm']:
+    if method not in ['ward','gkm','ward_and_gkm','kmeans']:
         raise ValueError, 'unknown method'
     if nn not in [6,18,26]:
         raise ValueError, 'nn should be 6,18 or 26'
@@ -392,21 +428,22 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     xyz = np.array(np.where(mask>0)).T
     nvox = xyz.shape[0]
 
-    # 1.2 get the main cc of the graph 
-    # to remove the small connected components
-    g = fg.WeightedGraph(nvox)
-    g.from_3d_grid(xyz.astype(np.int),nn)
-
-    aux = np.zeros(g.V).astype('bool')
-    imc = g.main_cc()
-    aux[imc]= True
-    if np.sum(aux)==0:
-        raise ValueError, "empty mask. Cannot proceed"
-    g = g.subgraph(aux)
-    lmask = np.zeros(ref_dim)
-    lmask[xyz[:,0],xyz[:,1],xyz[:,2]]=aux
-    xyz = xyz[aux,:]
-    nvox = xyz.shape[0]
+    if method is not 'kmeans':
+        # 1.2 get the main cc of the graph 
+        # to remove the small connected components
+        g = fg.WeightedGraph(nvox)
+        g.from_3d_grid(xyz.astype(np.int),nn)
+        
+        aux = np.zeros(g.V).astype('bool')
+        imc = g.main_cc()
+        aux[imc]= True
+        if np.sum(aux)==0:
+            raise ValueError, "empty mask. Cannot proceed"
+        g = g.subgraph(aux)
+        lmask = np.zeros(ref_dim)
+        lmask[xyz[:,0],xyz[:,1],xyz[:,2]]=aux
+        xyz = xyz[aux,:]
+        nvox = xyz.shape[0]
 
     # 1.3 from vox to mm
     xyz2 = np.hstack((xyz,np.ones((nvox,1))))
@@ -423,11 +460,15 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     beta = np.array(beta).T
 
     #step 2: parcel the data ---------------------------
-    feature = np.hstack((beta,mu*coord/np.std(coord)))
-    g = ff.Field(nvox,g.edges,g.weights,feature)
+    feature = np.hstack((beta, mu*coord/np.std(coord)))
+    if method is not 'kmeans':
+        g = ff.Field(nvox, g.edges, g.weights, feature)
+
+    if method=='kmeans':
+        cent, u, J = kmeans(feature, nbparcel)
 
     if method=='ward':
-        u,J0 = g.ward(nbparcel)
+        u, J0 = g.ward(nbparcel)
 
     if method=='gkm':
         seeds = np.argsort(np.random.rand(g.V))[:nbparcel]
@@ -453,6 +494,8 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     if fullpath is not None:
         LabelImage = fullpath
     elif write_dir is not None:
+        if method=='kmeans':
+            LabelImage = os.path.join(write_dir,"parcel_kmeans.nii")
         if method=='ward':
             LabelImage = os.path.join(write_dir,"parcel_wards.nii")
         elif method=='gkm':

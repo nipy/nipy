@@ -95,22 +95,13 @@ To install, simply do::
 
 	python setup.py install --prefix=$HOME/local
 
+.. _install-data:
+
 Installing useful data files
 -----------------------------
 
-You can download template and example data used by nipy from 
-http://nipy.sourceforge.net/data-packages/ 
-and extract it in one of the following path:
-
- * for the template files::
-
-    /usr/share/nipy/nipy/template
-    $HOME/.nipy/nipy/template
-
- * for the example files::
-
-    /usr/share/nipy/nipy/data
-    $HOME/.nipy/nipy/data
+See :ref:`installing-data` for some instructions on installing data
+pacakges.
 
 See :ref:`data-files` for details on how to customize the installation
 paths.
