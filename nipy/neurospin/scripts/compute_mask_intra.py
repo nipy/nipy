@@ -4,7 +4,7 @@
 # python compute_mask.py swa4D.nii.gz mask.nii.gz
 # python compute_mask.py swa*.nii mask.nii.gz
 
-from nipy.neurospin.utils.mask import compute_mask_files
+from nipy.neurospin.mask import compute_mask_files
 import sys
 
 if __name__ == '__main__':

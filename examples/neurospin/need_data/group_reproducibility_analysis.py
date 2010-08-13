@@ -18,7 +18,7 @@ from nipy.io.imageformats import load, save, Nifti1Image
 import tempfile
 import get_data_light
 
-from nipy.neurospin.utils.mask import intersect_masks
+from nipy.neurospin.mask import intersect_masks
 from nipy.neurospin.utils.reproducibility_measures import \
      voxel_reproducibility, cluster_reproducibility, map_reproducibility,\
      group_reproducibility_metrics

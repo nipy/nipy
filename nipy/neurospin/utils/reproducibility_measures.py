@@ -690,7 +690,7 @@ def group_reproducibility_metrics(
                       results of peak-level reproducibility analysis
     """
     from nipy.io.imageformats import load, Nifti1Image 
-    from nipy.neurospin.utils.mask import intersect_masks
+    from ..mask import intersect_masks
     
     if ((len(variance_images)==0) & (method is not 'crfx')):
         raise ValueError, 'Variance images are necessary'

@@ -9,8 +9,8 @@ from __future__ import with_statement
 import numpy as np
 
 import nipy.io.imageformats as nii
-import nipy.neurospin.utils.mask as nnm
-from nipy.neurospin.utils.mask import largest_cc, threshold_connect_components
+from .. import mask as nnm
+from ..mask import largest_cc, threshold_connect_components
 
 from nipy.utils import InTemporaryDirectory
 
