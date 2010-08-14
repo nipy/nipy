@@ -230,7 +230,7 @@ class DesignMatrix(object):
             # check that regressor specification is correct
             if add_regs.shape[0] == np.size(add_regs):
                 add_regs = np.reshape(add_regs, (np.size(1, add_regs)))
-            assert add_regs.shape[0] != np.size(frametimes), \
+            assert add_regs.shape[0] == np.size(frametimes), \
                 ValueError(
                       'incorrect specification of additional regressors: '
                       'length of regressors provided: %s, number of '
