@@ -97,6 +97,12 @@ def save(filename, obj):
     """ Save an nipy image object to a file.
     """
     obj = as_volume_img(obj, copy=False)
-    imageformats.save(imageformats.Nifti1Image(obj.get_data(), 
-                      obj.affine), filename)
+    hdr = imageformats.Nifti1Header()
+    for key, value in obj.metadata.iteritems():
+        if key in hdr:
+            hdr[key] = value
+    img = imageformats.Nifti1Image(obj.get_data(), 
+                                   obj.affine,
+                                   header=hdr)
+    imageformats.save(img, filename)
 
