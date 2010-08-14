@@ -835,7 +835,7 @@ class GMM():
         mpaxes: axes handle to make the figure, optional,
                 if None, a new figure is created
         """
-        if density==None:
+        if density is None:
             density = self.mixture_likelihood(gd.make_grid())
 
         if gd.dim>1:
@@ -846,7 +846,9 @@ class GMM():
         
         xmin = 1.1*x.min() - 0.1*x.max()
         xmax = 1.1*x.max() - 0.1*x.min()
-        h,c = np.histogram(x, bins, [xmin,xmax], normed=True,new=False)
+        h, c = np.histogram(x, bins, [xmin, xmax], normed=True)
+        # Make code robust to new and old behavior of np.histogram
+        c = c[:len(h)]
         offset = (xmax-xmin)/(2*bins)
         c+= offset/2
         grid = gd.make_grid()
@@ -857,18 +859,19 @@ class GMM():
             ax = mp.axes()
         else:
             ax = mpaxes
-        ax.plot(c+offset,h,linewidth=2)
+        ax.plot(c+offset, h, linewidth=2)
           
         for k in range (self.k):
-            ax.plot(grid,density[:,k], linewidth=2)
+            ax.plot(grid, density[:,k], linewidth=2)
         ax.set_title('Fit of the density with a mixture of Gaussians',
                      fontsize=12)
 
         legend = ['data']
         for k in range(self.k):
-            legend.append('component %d' %(k+1))
+            legend.append('component %d' % (k+1))
         l = ax.legend (tuple(legend))
-        for t in l.get_texts(): t.set_fontsize(12)
+        for t in l.get_texts(): 
+            t.set_fontsize(12)
         ax.set_xticklabels(ax.get_xticks(), fontsize=12)
         ax.set_yticklabels(ax.get_yticks(), fontsize=12)
             
