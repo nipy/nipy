@@ -20,3 +20,11 @@ from numpy.testing import Tester
 
 test = Tester().test
 bench = Tester().bench 
+
+# Import here only files that don't draw in compiled code: that way the
+# basic functionality is still usable even if the compiled
+# code is messed up (32/64 bit issues, or binary incompatibilities)
+from .mask import compute_mask_files, compute_mask_sessions, \
+            series_from_mask
+from .datasets import as_volume_img, save
+

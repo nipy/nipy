@@ -2,7 +2,7 @@
 
 import numpy as np
 import numpy.random as nr
-from nipy.neurospin.clustering.ggmixture import *
+from nipy.neurospin.clustering.ggmixture import GGGM, GGM, Gamma
 import scipy.stats as st
 
 def test_GGM1(verbose=0):
@@ -37,7 +37,6 @@ def test_GGM2(verbose=0):
 def test_GGGM0(verbose=0, seed=1):
     G = GGGM()
     sx = 1000
-    dof = 100.
     #x = np.array([float(st.t.rvs(dof)) for i in range(sx)])
     if seed:
         nr = np.random.RandomState([seed])

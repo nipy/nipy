@@ -10,7 +10,6 @@ Author : Bertrand Thirion, 2010
 # python testClustering.py Test_Clustering
 
 import numpy as np
-import numpy.random as nr
 from nipy.neurospin.clustering.imm import IMM, MixedIMM, co_labelling
 
 def test_colabel():
@@ -264,7 +263,6 @@ def test_imm_wnc2():
     
     # warming
     migmm.sample(x, null_class_proba=ncp, niter=100, init=True)
-    g = np.linspace(0, 1, 101)
 
     #sampling
     like, pproba =  migmm.sample(x, null_class_proba=ncp, niter=300)
@@ -292,7 +290,6 @@ def test_imm_wnc3():
     
     # warming
     migmm.sample(x, null_class_proba=ncp, niter=100, init=True)
-    g = np.linspace(0, 1, 101)
 
     #sampling
     like, pproba =  migmm.sample(x, null_class_proba=ncp, niter=300)

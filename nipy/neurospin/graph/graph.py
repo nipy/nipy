@@ -1,7 +1,14 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from _graph import *
-from _graph import __doc__
+from _graph import __doc__, graph_cc, graph_degrees, graph_main_cc, \
+            graph_3d_grid, graph_complete, graph_knn, graph_mst, \
+            graph_dijkstra, graph_dijkstra_multiseed, graph_floyd, \
+            graph_eps, graph_reorder, graph_cut_redundancies, \
+            graph_normalize, graph_set_euclidian, graph_set_gaussian, \
+            graph_voronoi, graph_symmeterize, graph_antisymmeterize, \
+            graph_to_neighb, graph_cross_knn, graph_cross_eps, \
+            graph_cross_eps_robust, graph_rd, graph_skeleton, \
+            graph_is_connected, graph_bpmatch
 import numpy as np
 
 """
@@ -1173,7 +1180,7 @@ class WeightedGraph(Graph):
         """
         ci,ne,we = self.to_neighb()
         li = self.left_incidence()
-        ri = self.right_incidence()
+        self.right_incidence()
         tag = -np.ones(self.E,np.int)
         for v in range(self.V):
             # e = (vw)

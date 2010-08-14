@@ -16,13 +16,11 @@ def test_mtb1():
     MB = tbm.TwoBinomialMixture()
     xmax = 10
     n = 1000
-    x = np.concatenate(((xmax+1)*rand(n),rand(9*n))).astype(np.int)
-    H = np.array([np.sum(x==i) for i in range(xmax+1)])
-    MB.EMalgo(x,xmax)
+    x = np.concatenate(((xmax+1)*rand(n), rand(9*n))).astype(np.int)
+    MB.EMalgo(x, xmax)
     MB.parameters()
     kappa = MB.kappa()
-    print kappa
-    assert((kappa>.7)*(kappa<.8))
+    assert (kappa>.7)*(kappa<.8)
 
 def test_mtb2():
     xmax = 10
@@ -47,12 +45,11 @@ def test_mb3():
 def test_mb4():
     xmax = 5
     n = 100
-    x = np.concatenate((binomial(xmax,0.1,n),binomial(xmax,0.9,n)))
+    x = np.concatenate((binomial(xmax, 0.1, n), binomial(xmax, 0.9, n)))
     MB = tbm.TwoBinomialMixture()
-    MB.EMalgo(x,xmax)
+    MB.EMalgo(x, xmax)
     MB.parameters()
-    kappa  = MB.kappa()
-    assert(np.absolute(MB.Lambda-0.5)<0.1)
+    assert np.absolute(MB.Lambda-0.5) < 0.1
 
 def test_mb5():
     xmax = 3
@@ -70,8 +67,7 @@ def test_mb6():
     MB = tbm.TwoBinomialMixture()
     MB.EMalgo(x,xmax)
     MB.parameters()
-    kappa  = MB.kappa()
-    assert(MB.r0<.1)
+    assert MB.r0<.1 
 
 def test_mb7():
     xmax = 5
@@ -80,8 +76,7 @@ def test_mb7():
     MB = tbm.TwoBinomialMixture()
     MB.EMalgo(x,xmax)
     MB.parameters()
-    kappa = MB.kappa()
-    assert(MB.r1>0.7)
+    assert MB.r1>0.7
     
 if __name__ == "__main__":
     import nose

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 import numpy as np
-from nipy.testing import anatfile, assert_equal, assert_almost_equal, assert_raises
+from nipy.testing import anatfile, assert_equal, assert_almost_equal
 from nipy.io.imageformats import load 
-from nipy.neurospin.image import *
+from nipy.neurospin.image import Image, apply_affine, inverse_affine
 
 I = Image(load(anatfile))
 

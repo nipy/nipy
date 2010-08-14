@@ -114,6 +114,7 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('image')
     config.add_subpackage('segmentation')
     config.add_subpackage('registration')
+    config.add_subpackage('tests')
     
     config.make_config_py() # installs __config__.py
 

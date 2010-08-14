@@ -188,7 +188,6 @@ def get_3d_peaks(image, mask=None, threshold=0., nn=18, order_th=0):
         data = image.get_data().ravel()
         xyz = np.reshape(np.indices(shape),(3,np.prod(shape))).T
     affine = image.get_affine()
-    nvox = np.size(data)
 
     if not (data>threshold).any():
         return None
