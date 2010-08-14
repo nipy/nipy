@@ -3,7 +3,7 @@
 import numpy as np
 # this import line is a little ridiculous...
 from nipy.core.reference.coordinate_map import (CoordinateMap,
-                                                AffineTransform, 
+                                                AffineTransform,
                                                 compose,
                                                 product,
                                                 append_io_dim,
@@ -19,7 +19,7 @@ from nipy.core.reference.coordinate_system import (
 # shortcut
 CS = CoordinateSystem
 
-from nipy.testing import (assert_true, assert_equal, assert_raises, 
+from nipy.testing import (assert_true, assert_equal, assert_raises,
                           assert_false, assert_array_equal,
                           assert_almost_equal, parametric)
 
@@ -37,8 +37,8 @@ def setup():
     x = CoordinateSystem('x', 'x')
     E.a = CoordinateMap(x, x, f)
     E.b = CoordinateMap(x, x, f, inverse_function=g)
-    E.c = CoordinateMap(x, x, g)        
-    E.d = CoordinateMap(x, x, g, inverse_function=f)        
+    E.c = CoordinateMap(x, x, g)
+    E.d = CoordinateMap(x, x, g, inverse_function=f)
     E.e = AffineTransform.identity('ijk')
     A = np.identity(4)
     A[0:3] = np.random.standard_normal((3,4))
@@ -50,7 +50,7 @@ def setup():
                                               [ 8,  9, 10, 11],
                                               [ 0,  0,  0,  1]]))
 
-    
+
 def test_shift_origin():
     CS = CoordinateSystem
 
@@ -167,13 +167,13 @@ def test_calling_shapes():
         yield assert_raises(CoordinateSystemError, xfm1d2d, np.zeros((3,)))
         yield assert_raises(CoordinateSystemError, xfm1d2d, np.zeros((3,2)))
 
-    
+
 @parametric
 def test_call():
     value = 10
     yield assert_true(np.allclose(E.a(value), 2*value))
     yield assert_true(np.allclose(E.b(value), 2*value))
-    # FIXME: this shape just below is not 
+    # FIXME: this shape just below is not
     # really expected for a CoordinateMap
     yield assert_true(np.allclose(E.b([value]), 2*value))
     yield assert_true(np.allclose(E.c(value), value/2))
@@ -211,7 +211,7 @@ def test_compose():
     yield assert_raises, ValueError, compose, affine1, affine2
 
     yield assert_raises, ValueError, compose, affine1, 'foo'
-  
+
     cm1 = CoordinateMap(CoordinateSystem('ijk'),
                         CoordinateSystem('xyz'), np.log)
     cm2 = CoordinateMap(CoordinateSystem('xyz'),
@@ -228,7 +228,7 @@ def test__eq__():
 
     yield assert_true, E.singular == E.singular
     yield assert_false, E.singular != E.singular
-    
+
     A = AffineTransform.from_params('ijk', 'xyz', np.diag([4,3,2,1]))
     B = AffineTransform.from_params('ijk', 'xyz', np.diag([4,3,2,1]))
 
@@ -253,17 +253,17 @@ def test_inverse1():
     inv_d = E.d.inverse()
     ident_b = compose(inv_b,E.b)
     ident_d = compose(inv_d,E.d)
-    value = np.array([[1., 2., 3.]]).T    
+    value = np.array([[1., 2., 3.]]).T
     yield assert_true, np.allclose(ident_b(value), value)
     yield assert_true, np.allclose(ident_d(value), value)
-        
-      
+
+
 def test_compose_cmap():
     value = np.array([1., 2., 3.])
     b = compose(E.e, E.e)
     assert_true(np.allclose(b(value), value))
 
-    
+
 def test_inverse2():
     assert_true(np.allclose(E.e.affine, E.e.inverse().inverse().affine))
 
@@ -329,7 +329,7 @@ def test_affine_init():
 
 
 def test_affine_bottom_row():
-    # homogeneous transformations have bottom rows all zero 
+    # homogeneous transformations have bottom rows all zero
     # except the last one
     yield assert_raises, ValueError, AffineTransform.from_params, 'ij', \
         'x', np.array([[3,4,5],[1,1,1]])
@@ -452,7 +452,7 @@ def test_reordered_range():
     yield assert_equal, recm.function_range.coord_names, ('z', 'y', 'x')
     # reorder with indicies
     recm = cm.reordered_range([2,0,1])
-    yield assert_equal, recm.function_range.coord_names, ('z', 'x', 'y')    
+    yield assert_equal, recm.function_range.coord_names, ('z', 'x', 'y')
 
 
 def test_product():
@@ -467,7 +467,7 @@ def test_product():
     cm2 = CoordinateMap(CoordinateSystem('j'),
                         CoordinateSystem('y'),
                         np.log)
-    cm = product(cm1, cm2) 
+    cm = product(cm1, cm2)
 
     yield assert_equal, affine.function_domain.coord_names, ('i', 'j')
     yield assert_equal, affine.function_range.coord_names, ('x', 'y')
@@ -487,8 +487,8 @@ def test_equivalent():
     A = AffineTransform(ijk, xyz, T)
 
     # now, cycle through
-    # all possible permutations of 
-    # 'ijk' and 'xyz' and confirm that 
+    # all possible permutations of
+    # 'ijk' and 'xyz' and confirm that
     # the mapping is equivalent
 
     yield assert_false, equivalent(A, A.renamed_domain({'i':'foo'}))
@@ -511,9 +511,9 @@ def test_as_coordinate_map():
 
     ijk = CoordinateSystem('ijk')
     xyz = CoordinateSystem('xyz')
-    
+
     A = np.random.standard_normal((4,4))
-    
+
     # bottom row of A is not [0,0,0,1]
     yield assert_raises, ValueError, AffineTransform, ijk, xyz, A
 
@@ -591,6 +591,9 @@ def test_append_io_dim():
 def test_mod():
     from nipy.core.reference.coordinate_map import _matching_orth_dim
     aff = np.diag([1,2,3,1])
+    for i in range(3):
+        yield assert_equal(_matching_orth_dim(i, aff), (i, ''))
+    aff = np.diag([-1,-2,-3,1])
     for i in range(3):
         yield assert_equal(_matching_orth_dim(i, aff), (i, ''))
     aff = np.ones((4,4))
