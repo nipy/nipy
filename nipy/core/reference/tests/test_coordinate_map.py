@@ -450,8 +450,9 @@ def test_equivalent():
             for pxyz in itertools.permutations('xyz'):
                 B = A.reordered_domain(pijk).reordered_range(pxyz)
                 yield assert_true, equivalent(A, B)
-    except ImportError:
-        # just do some if we can't find itertools
+    except (ImportError, AttributeError):
+        # just do some if we can't find itertools, or if itertools
+        # doesn't have permutations
         for pijk in ['ikj', 'kij']:
             for pxyz in ['xzy', 'yxz']:
                 B = A.reordered_domain(pijk).reordered_range(pxyz)
