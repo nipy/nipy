@@ -18,7 +18,7 @@ Author : Bertrand Thirion, 2008-2009
 """
 import numpy as np
 import numpy.random as nr
-from numpy.linalg import inv, pinv, cholesky, eigvalsh 
+from scipy.linalg import inv, cholesky, eigvalsh 
 from scipy.special import gammaln
 import math
 
@@ -654,7 +654,6 @@ class BGMM(GMM):
 
         score = -np.infty
         bpz = -np.infty
-        Mll = 0
         
         for i in range(niter):
             like = self.likelihood(x)
@@ -932,7 +931,8 @@ class VBGMM(BGMM):
             w -= 0.5*np.log(2*np.pi)*self.dim 
             like[:,k] = np.exp(w)   
 
-        if like.min()<0: stop
+        if like.min()<0:
+            raise ValueError, 'Likelihood cannot be negative'
         return like
 
     def evidence(self, x, like=None, verbose=0):
@@ -1109,10 +1109,8 @@ class VBGMM(BGMM):
         """
         # alternation of E/M step until convergence
         tiny = 1.e-15
-        cc = np.zeros(np.shape(self.means))
         allOld = -np.infty
         for i in range(niter):
-            cc = self.means.copy()
             like = self._Estep(x)
             all = np.mean(np.log(np.maximum( np.sum(like,1),tiny)))
             if all<allOld+delta:

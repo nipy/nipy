@@ -110,16 +110,25 @@ array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
       dtype=[('x1', '<f8'), ('x3', '<f8'), ('x1*x3', '<f8'), ('1', '<f8')])
 '''
 
-import warnings
 from string import lowercase, uppercase
 
-import sympy
 import numpy as np
 from scipy.linalg import svdvals, pinv
 
+import sympy
+
 from .aliased import (aliased_function,
-                      lambdify,
-                      vectorize)
+                      lambdify)
+
+
+def define(*args, **kwargs):
+    # Moved to utils module
+    import warnings
+    from . import utils
+    warnings.warn('Please use define function from utils module',
+                  DeprecationWarning,
+                  stacklevel=2)
+    return utils.define(*args, **kwargs)
 
 
 class Term(sympy.Symbol):
@@ -154,6 +163,10 @@ class Term(sympy.Symbol):
             return self
         else:
             return sympy.Symbol.__add__(self, other)
+
+
+# time symbol
+T = Term('t')
 
 
 def terms(*names):
@@ -314,20 +327,20 @@ def make_recarray(rows, names, dtypes=None):
     The following tests depend on machine byte order to pass
     
     >>> arr = np.array([[3,4],[4,6],[6,8]])
-    >>> make_recarray(arr, ['x','y'])
+    >>> make_recarray(arr, ['x','y']) #doctest: +ELLIPSIS
     array([[(3, 4)],
            [(4, 6)],
            [(6, 8)]], 
-          dtype=[('x', '<i8'), ('y', '<i8')])
+          dtype=...
     >>> r = make_recarray(arr, ['w', 'u'])
-    >>> make_recarray(r, ['x','y'])
+    >>> make_recarray(r, ['x','y']) #doctest: +ELLIPSIS
     array([[(3, 4)],
            [(4, 6)],
            [(6, 8)]], 
-          dtype=[('x', '<i8'), ('y', '<i8')])
-    >>> make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int])
+          dtype=...
+    >>> make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int]) #doctest: +ELLIPSIS
     array([(3.0, 4), (4.0, 6), (7.0, 9)], 
-          dtype=[('w', '<f8'), ('v', '<i8')])
+          dtype=...
     """
     # XXX This function is sort of one of convenience
     # Would be nice to use DataArray or something like that
@@ -630,7 +643,7 @@ class Formula(object):
 
         newterms = []
         for i, t in enumerate(terms):
-            newt = sympy.DeferredVector("__t%d__" % (i + random_offset))
+            newt = sympy.Symbol("__t%d__" % (i + random_offset))
             for j, _ in enumerate(d):
                 d[j] = d[j].subs(t, newt)
             newterms.append(newt)
@@ -1205,41 +1218,6 @@ class RandomEffects(Formula):
         """
         D = self.design(term, param=param, return_float=True)
         return np.dot(D, np.dot(self.sigma, D.T))
-
-
-def define(name, expr):
-    """
-    Take an expression of 't' (possibly complicated)
-    and make it a '%s(t)' % name, such that
-    when it evaluates it has the right values.
-
-    Parameters
-    ----------
-    expr : sympy expression, with only 't' as a Symbol
-    name : str
-
-    Returns
-    -------
-    nexpr: sympy expression
-
-    Examples
-    --------
-    >>> t = Term('t')
-    >>> expr = t**2 + 3*t
-    >>> print expr
-    3*t + t**2
-    >>> newexpr = define('f', expr)
-    >>> print newexpr
-    f(t)
-    >>> import aliased
-    >>> f = aliased.lambdify(t, newexpr)
-    >>> f(4)
-    28
-    >>> 3*4+4**2
-    28
-    """
-    v = vectorize(expr)
-    return aliased_function(name, v)(Term('t'))
 
 
 def is_term(obj):

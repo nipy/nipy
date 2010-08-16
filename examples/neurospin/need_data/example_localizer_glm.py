@@ -22,7 +22,7 @@ import os.path as op
 import pylab
 import tempfile
 
-from nipy.neurospin.utils.mask import compute_mask_files
+from nipy.neurospin import compute_mask_files
 from nipy.io.imageformats import load, save, Nifti1Image
 import get_data_light
 import nipy.neurospin.glm

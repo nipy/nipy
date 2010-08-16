@@ -392,7 +392,6 @@ class WeightedForest(fo.Forest):
         if self.check_compatible_height()==False:
             raise ValueError, 'cannot plot myself in my current state'
 
-        n = np.sum(self.isleaf())
         valid = np.zeros(self.V,'bool')
         valid[self.isleaf()]=validleaves.astype('bool')
         nv =  np.sum(validleaves)
@@ -958,7 +957,6 @@ def ward_quick(G, feature, verbose = 0):
     K = _auxiliary_graph(G,Features)
     
     parent = np.arange(2*n-nbcc).astype(np.int)
-    pop = np.ones(2*n-nbcc).astype(np.int)
     height = np.zeros(2*n-nbcc)
     linc = K.left_incidence()
     rinc = K.right_incidence()
@@ -1097,7 +1095,6 @@ def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=0):
     n = G.V
     if stop==-1: stop = np.infty    
     qmax = int(np.minimum(qmax,n-1))
-    nbcc = G.cc().max()+1
     t = ward_quick(G,feature,verbose)
     if verbose: t.plot()
 
@@ -1299,7 +1296,6 @@ def ward(G, feature, verbose=0):
 
     # prepare some variables that are useful tp speed up the algorithm 
     parent = np.arange(2*n-nbcc).astype(np.int)
-    pop = np.ones(2*n-nbcc).astype(np.int)
     height = np.zeros(2*n-nbcc)
     linc = K.left_incidence()
     rinc = K.right_incidence()
@@ -1354,7 +1350,7 @@ def ward(G, feature, verbose=0):
 #------------- Maximum link clustering ------------------------------------
 # -------------------------------------------------------------------------
 
-def maximum_link_euclidian(X,verbose=0):
+def maximum_link_euclidian(X, verbose=0):
     """
     Maximum link clustering based on data matrix.
 
@@ -1383,7 +1379,7 @@ def maximum_link_euclidian(X,verbose=0):
     return t 
 
 
-def maximum_link_distance(D,stop=-1,qmax=-1,verbose=0):
+def maximum_link_distance(D, stop=-1, qmax=-1, verbose=0):
     """
     maximum link clustering based on a pairwise distance matrix.
 
@@ -1408,10 +1404,9 @@ def maximum_link_distance(D,stop=-1,qmax=-1,verbose=0):
     if stop==-1:
         stop = np.infty
 
-    DI = np.infty*np.ones((2*n,2*n))
+    DI = np.infty*np.ones((2*n, 2*n))
     DI[:n,:n]=D+np.diag(np.infty*np.ones(n))
     parent = np.arange(2*n-1, dtype=np.int)
-    pop = np.ones(2*n-1, np.int)
     height = np.zeros(2*n-1)
 
     for q in range(n-1):
@@ -1431,11 +1426,11 @@ def maximum_link_distance(D,stop=-1,qmax=-1,verbose=0):
         DI[:,i] = np.infty
         DI[:,j] = np.infty
 
-    t = WeightedForest(2*n-1,parent,height)
+    t = WeightedForest(2*n-1, parent, height)
 
     return t
 
-def maximum_link_distance_segment(D,stop=-1,qmax=1,verbose=0):
+def maximum_link_distance_segment(D, stop=-1, qmax=1, verbose=0):
     """
     maximum link clustering based on a pairwise distance matrix.
 
@@ -1490,7 +1485,7 @@ def maximum_link_distance_segment(D,stop=-1,qmax=1,verbose=0):
 #----------------------- Visualization ------------------------------------
 # -------------------------------------------------------------------------
 
-def _label_(f,parent,left,labelled):
+def _label_(f,parent, left, labelled):
     temp = np.nonzero(parent==f)
 
     if np.size(temp)>0:

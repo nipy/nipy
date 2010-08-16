@@ -1,95 +1,142 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+""" This module provides definitions of various hemodynamic response
+functions (hrf).
+
+In particular, it provides Gary Glover's canonical HRF, AFNI's default
+HRF, and a spectral HRF.
+
+The Glover HRF is based on:
+
+@article{glover1999deconvolution,
+  title={{Deconvolution of impulse response in event-related BOLD fMRI}},
+  author={Glover, G.H.},
+  journal={NeuroImage},
+  volume={9},
+  number={4},
+  pages={416--429},
+  year={1999},
+  publisher={Orlando, FL: Academic Press, c1992-}
+}
+
+This paramaterization is from fmristat:
+
+http://www.math.mcgill.ca/keith/fmristat/
+
+fmristat models the HRF as the difference of two gamma functions, ``g1``
+and ``g2``, each defined by the timing of the gamma function peaks
+(``pk1, pk2``) and the fwhms (``width1, width2``):
+
+   raw_hrf = g1(pk1, width1) - a2 * g2(pk2, width2)
+
+where ``a2`` is the scale factor for the ``g2`` gamma function.  The
+actual hrf is the raw hrf set to have an integral of 1. 
+
+fmristat used ``pk1, width1, pk2, width2, a2 = (5.4 5.2 10.8 7.35
+0.35)``.  These are parameters to match Glover's 1 second duration
+auditory stimulus curves.  Glover wrote these as:
+
+   y(t) = c1 * t**n1 * exp(t/t1) - a2 * c2 * t**n2 * exp(t/t2)
+
+with ``n1, t1, n2, t2, a2 = (6.0, 0.9, 12, 0.9, 0.35)``.  The difference
+between Glover's expression and ours is because we (and fmristat) use
+the peak location and width to characterize the function rather than
+``n1, t1``.  The values we use are equivalent.  Specifically, in our
+formulation:
+
+>>> n1, t1, c1 = gamma_params(5.4, 5.2)
+>>> np.allclose((n1-1, t1), (6.0, 0.9), rtol=0.02)
+True
+>>> n2, t2, c2 = gamma_params(10.8, 7.35)
+>>> np.allclose((n2-1, t2), (12.0, 0.9), rtol=0.02)
+True
 """
-This module provides definitions of various hemodynamic response functions
-(hrf).
-
-In particular, it provides Gary Glover's canonical HRF, AFNI's default HRF, and
-a spectral HRF.
-"""
-
-__docformat__ = 'restructuredtext'
-
 
 import numpy as np
-from sympy import Symbol, DeferredVector, exp, Derivative, abs, FunctionClass
-from formula import Term, aliased_function
-from aliased import vectorize
+import sympy
 
-# Sympy symbols used below
-
-t = Term('t')
-deft = DeferredVector('t')
+from .formula import aliased_function
+from .utils import lambdify_t, T
 
 def gamma_params(peak_location, peak_fwhm):
-    """
+    """ Parameters for gamma density given peak and width
+    
     TODO: where does the coef come from again.... check fmristat code
 
-    From a peak location and peak fwhm,
-    determine the parameters of a Gamma density
+    From a peak location and peak fwhm, determine the parameters (shape,
+    scale) of a Gamma density:
 
-    f(x) = coef * x**(alpha-1) * exp(-x*beta)
+    f(x) = coef * x**(shape-1) * exp(-x/scale)
 
-    The coefficient returned ensures that
-    the f has integral 1 over [0,np.inf]
+    The coefficient returned ensures that the f has integral 1 over
+    [0,np.inf]
 
     Parameters
     ----------
-        peak_location : float
-            Location of the peak of the Gamma density
-        peak_fwhm : float
-            FWHM at the peak
+    peak_location : float
+       Location of the peak of the Gamma density
+    peak_fwhm : float
+       FWHM at the peak
 
     Returns
     -------
-        alpha : float
-            Shape parameter in the Gamma density
-        beta : float
-            Scale parameter in the Gamma density
-        coef : float
-            Coefficient needed to ensure the density has integral 1.
+    shape : float
+       Shape parameter in the Gamma density
+    scale : float
+       Scale parameter in the Gamma density
+    coef : float
+       Coefficient needed to ensure the density has integral 1.
     """
-    alpha = np.power(peak_location / peak_fwhm, 2) * 8 * np.log(2.0)
-    beta = np.power(peak_fwhm, 2) / peak_location / 8 / np.log(2.0)
-    coef = peak_location**(-alpha) * np.exp(peak_location / beta)
-    return coef * ((t >= 0) * (t+1.0e-14))**(alpha) * exp(-(t+1.0e-14)/beta)
+    shape_m1 = np.power(peak_location / peak_fwhm, 2) * 8 * np.log(2.0)
+    scale = np.power(peak_fwhm, 2) / peak_location / 8 / np.log(2.0)
+    coef = peak_location**(-shape_m1) * np.exp(peak_location / scale)
+    return shape_m1 + 1, scale, coef
+
+
+def gamma_expr(peak_location, peak_fwhm):
+    shape, scale, coef = gamma_params(peak_location, peak_fwhm)
+    return (
+        coef * ((T >= 0) * (T+1.0e-14))**(shape-1)
+        * sympy.exp(-(T+1.0e-14)/scale)
+        )
 
 
 # Glover canonical HRF models
 # they are both Sympy objects
 
 def _getint(f, dt=0.02, t=50):
-    lf = vectorize(f)
+    # numerical integral of function
+    lf = lambdify_t(f)
     tt = np.arange(dt,t+dt,dt)
     return lf(tt).sum() * dt 
 
-deft = DeferredVector('t')
-_gexpr = gamma_params(5.4, 5.2) - 0.35 * gamma_params(10.8,7.35)
+
+_gexpr = gamma_expr(5.4, 5.2) - 0.35 * gamma_expr(10.8, 7.35)
 _gexpr = _gexpr / _getint(_gexpr)
-_glover = vectorize(_gexpr)
+_glover = lambdify_t(_gexpr)
 glover = aliased_function('glover', _glover)
-n = {}
-glovert = vectorize(glover(deft))
+glovert = lambdify_t(glover(T))
 
 # Derivative of Glover HRF
 
-_dgexpr = _gexpr.diff(t)
-dpos = Derivative((t >= 0), t)
+_dgexpr = _gexpr.diff(T)
+dpos = sympy.Derivative((T >= 0), T)
 _dgexpr = _dgexpr.subs(dpos, 0)
-_dgexpr = _dgexpr / _getint(abs(_dgexpr))
-_dglover = vectorize(_dgexpr)
+_dgexpr = _dgexpr / _getint(sympy.abs(_dgexpr))
+_dglover = lambdify_t(_dgexpr)
 dglover = aliased_function('dglover', _dglover)
-dglovert = vectorize(dglover(deft))
+dglovert = lambdify_t(dglover(T))
 
 del(_glover); del(_gexpr); del(dpos); del(_dgexpr); del(_dglover)
 
 # AFNI's HRF
 
-_aexpr = ((t >= 0) * t)**8.6 * exp(-t/0.547)
+_aexpr = ((T >= 0) * T)**8.6 * sympy.exp(-T/0.547)
 _aexpr = _aexpr / _getint(_aexpr)
-_afni = vectorize(_aexpr)
+_afni = lambdify_t(_aexpr)
 afni = aliased_function('afni', _afni)
-afnit = vectorize(afni(deft))
+afnit = lambdify_t(afni(T))
+
 
 # Primitive of the HRF -- temoprary fix to handle blocks
 def igamma_params(peak_location, peak_fwhm):
@@ -116,12 +163,12 @@ def igamma_params(peak_location, peak_fwhm):
     alpha = np.power(peak_location / peak_fwhm, 2) * 8 * np.log(2.0)
     beta = np.power(peak_fwhm, 2) / peak_location / 8 / np.log(2.0)
     ak = int(np.round(alpha+1))
-    P = np.sum([1./sp.gamma(k+1)*((t/beta)**k) for k in range(ak)],0)
-    return (t > 0) * (1-exp(-t/beta)*P)
+    P = np.sum([1./sp.gamma(k+1)*((T/beta)**k) for k in range(ak)],0)
+    return (T > 0) * (1-sympy.exp(-T/beta)*P)
 
 _igexpr = igamma_params(5.4, 5.2) - 0.35 * igamma_params(10.8,7.35)
 _igexpr = _igexpr / _getint(_igexpr)
-_iglover = vectorize(_igexpr)
+_iglover = lambdify_t(_igexpr)
 iglover = aliased_function('iglover', _iglover)
-iglovert = vectorize(iglover(deft))
+iglovert = lambdify_t(iglover(T))
 

@@ -2,7 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import numpy as np
-from nipy.io.imageformats import load, save, Nifti1Image 
+from nipy.io.imageformats import load
 from discrete_domain import\
      StructuredDomain, NDGridDomain, domain_from_array,\
      reduce_coo_matrix, array_affine_coord, smatrix_from_nd_array

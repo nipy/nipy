@@ -1,13 +1,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import numpy as np
 
-from nose.tools import assert_true, assert_false, \
-     assert_equal, assert_raises
+from nose.tools import assert_equal
 
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal
 
-from nipy.io.imageformats import load, save
+from nipy.io.imageformats import load
 from nipy.testing import funcfile
 from nipy.neurospin.registration import Image4d, resample4d
 

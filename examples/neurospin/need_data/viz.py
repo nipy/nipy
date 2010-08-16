@@ -2,31 +2,23 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Example of activation image vizualization
-with nip.neurospin vizualization tools
+with nipy.neurospin vizualization tools
 """
-
 print __doc__
 
-import os.path as op
+import os.path
 import pylab as pl
 from nipy.io.imageformats import load
-from nipy.neurospin.viz import plot_map
+from nipy.neurospin import viz
 import get_data_light
 
 # get the data
-data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data'))
-data_path = op.join(data_dir,'spmT_0029.nii.gz')
-if op.exists(data_path)==False:
-    get_data_light.getIt()
-fim = load(data_path)
-fmap = fim.get_data()
-affine = fim.get_affine()
+data_dir = get_data_light.get_it()
 
-#vizualization parameters
-x, y, z = -52, 10, 22
-threshold = 2.0
-kwargs={'cmap':pl.cm.hot,'alpha':0.7,'vmin':threshold,'anat':None}
+img     = load(os.path.join(data_dir, 'spmT_0029.nii.gz'))
+data    = img.get_data()
+affine  = img.get_affine()
 
-
-plot_map(fmap, affine, cut_coords=(x, y, z), **kwargs)
+viz.plot_map(data, affine, cut_coords=(-52, 10, 22), 
+                        threshold=2.0, cmap=viz.cm.cold_hot)
 pl.show()

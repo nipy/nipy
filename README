@@ -20,8 +20,8 @@ Mailing Lists
 -------------
 
 Please see the developer's list here::
-       
-       http://projects.scipy.org/mailman/listinfo/nipy-devel
+
+    http://projects.scipy.org/mailman/listinfo/nipy-devel
 
 NIPY structure
 ---------------
@@ -29,7 +29,7 @@ NIPY structure
 Currently NIPY consists of the following files and directories:
 
   INSTALL
-    NIPY prerequisites, installation, development, testing, and 
+    NIPY prerequisites, installation, development, testing, and
     troubleshooting.
 
   README

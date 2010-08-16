@@ -6,6 +6,7 @@
 
 import numpy as np
 
+from nipy.modalities.fmri.utils import T, lambdify_t
 import nipy.modalities.fmri.hrf as hrf
 from nipy.modalities.fmri.fmristat.hrf import (spectral_decomposition,
                                                taylor_approx)
@@ -22,7 +23,7 @@ from nipy.testing import parametric
 def test_spectral_decomposition():
     # mainly to test that the second sign follows the first
     spectral, approx = spectral_decomposition(hrf.glover)
-    val_makers = [hrf.vectorize(def_func(hrf.t)) for def_func in spectral]
+    val_makers = [lambdify_t(def_func(T)) for def_func in spectral]
     t = np.linspace(-15,50,3251)
     vals = [val_maker(t) for val_maker in val_makers]
     ind = np.argmax(vals[1])

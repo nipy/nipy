@@ -69,8 +69,8 @@ These commands will write to your user's git configuration file
 To set up on another computer, you can copy your ``~/.gitconfig`` file,
 or run the commands above.
 
-Other configuration recommended by Yarik
-========================================
+Other recommended configurations
+================================
 
 In your ``~/.gitconfig`` file alias section::
 
@@ -83,7 +83,9 @@ To enforce summaries when doing merges(``~/.gitconfig`` file again)::
    [merge]
       summary = true
 
+Or from the command line::
 
-.. include:: git_links.txt
+  git config --global alias.wdiff "diff --color-words"
+  git config --global merge.summary true
 
-
+.. include:: git_links.inc
