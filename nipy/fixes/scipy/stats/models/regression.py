@@ -127,12 +127,12 @@ class OLSModel(LikelihoodModel):
     --------
     >>> import numpy as N
     >>>
-    >>> from nipy.fixes.scipy.stats.models.formula import Term, I
+    >>> from nipy.modalities.fmri.formula import Term, I
     >>> from nipy.fixes.scipy.stats.models.regression import OLSModel
     >>>
     >>> data={'Y':[1,3,4,5,2,3,4],
     ...       'X':range(1,8)}
-    >>> f = term("X") + I
+    >>> f = Term("X") + I
     >>> f.namespace = data
     >>>
     >>> model = OLSModel(f.design())
@@ -398,12 +398,12 @@ class ARModel(OLSModel):
     >>> import numpy as N
     >>> import numpy.random as R
     >>>
-    >>> from nipy.fixes.scipy.stats.models.formula import Term, I
+    >>> from nipy.modalities.fmri.formula import Term, I
     >>> from nipy.fixes.scipy.stats.models.regression import ARModel
     >>>
     >>> data={'Y':[1,3,4,5,8,10,9],
     ...       'X':range(1,8)}
-    >>> f = term("X") + I
+    >>> f = Term("X") + I
     >>> f.namespace = data
     >>>
     >>> model = ARModel(f.design(), 2)
@@ -538,12 +538,12 @@ class WLSModel(OLSModel):
 
     >>> import numpy as N
     >>>
-    >>> from nipy.fixes.scipy.stats.models.formula import Term, I
+    >>> from nipy.modalities.fmri.formula import Term, I
     >>> from nipy.fixes.scipy.stats.models.regression import WLSModel
     >>>
     >>> data={'Y':[1,3,4,5,2,3,4],
     ...       'X':range(1,8)}
-    >>> f = term("X") + I
+    >>> f = Term("X") + I
     >>> f.namespace = data
     >>>
     >>> model = WLSModel(f.design(), weights=range(1,8))

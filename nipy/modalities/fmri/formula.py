@@ -327,20 +327,20 @@ def make_recarray(rows, names, dtypes=None):
     The following tests depend on machine byte order to pass
     
     >>> arr = np.array([[3,4],[4,6],[6,8]])
-    >>> make_recarray(arr, ['x','y'])
+    >>> make_recarray(arr, ['x','y']) #doctest: +ELLIPSIS
     array([[(3, 4)],
            [(4, 6)],
            [(6, 8)]], 
-          dtype=[('x', '<i8'), ('y', '<i8')])
+          dtype=...
     >>> r = make_recarray(arr, ['w', 'u'])
-    >>> make_recarray(r, ['x','y'])
+    >>> make_recarray(r, ['x','y']) #doctest: +ELLIPSIS
     array([[(3, 4)],
            [(4, 6)],
            [(6, 8)]], 
-          dtype=[('x', '<i8'), ('y', '<i8')])
-    >>> make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int])
+          dtype=...
+    >>> make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int]) #doctest: +ELLIPSIS
     array([(3.0, 4), (4.0, 6), (7.0, 9)], 
-          dtype=[('w', '<f8'), ('v', '<i8')])
+          dtype=...
     """
     # XXX This function is sort of one of convenience
     # Would be nice to use DataArray or something like that
