@@ -2,6 +2,11 @@
 Compatibility module
 """
 
-# No relative imports, as they are not permitted with 'import *'
-from nipy.neurospin.mask import *
+import warnings
+warnings.warn(DeprecationWarning(
+    "This module (nipy.neurospin.utils.mask) has been moved and " 
+    "is depreciated. Please update your code to import from "
+    "'nipy.neurospin.mask'."))
+
+from ..mask import *
 
