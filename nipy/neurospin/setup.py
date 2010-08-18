@@ -2,15 +2,34 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import os
 from distutils import log 
+from distutils.msvccompiler import get_build_version as get_msvc_build_version
 
 # Global variables
 LIBS = os.path.realpath('libcstat')
+
+# Configuration copied from numpy/random/setup.py for fixing mingw ftime
+# DLL import problem
+def needs_mingw_ftime_workaround():
+    # We need the mingw workaround for _ftime if the msvc runtime version is
+    # 7.1 or above and we build with mingw ...
+    # ... but we can't easily detect compiler version outside distutils command
+    # context, so we will need to detect in randomkit whether we build with gcc
+    msver = get_msvc_build_version()
+    if msver and msver >= 8:
+        return True
+    return False
+
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
     from numpy.distutils.system_info import get_info
 
     config = Configuration('neurospin', parent_package, top_path)
+
+    # This is also from numpy/random/setup.py - ftime fix
+    defs = []
+    if needs_mingw_ftime_workaround():
+        defs.append(("NPY_NEEDS_MINGW_TIME_WORKAROUND", None))
 
     # cstat library
     config.add_include_dirs(os.path.join(LIBS,'fff'))
@@ -72,9 +91,9 @@ def configuration(parent_package='',top_path=None):
     print('libraries: %s ' % libraries)
     print('lapack_info: %s ' % lapack_info)
 
-
     config.add_library('cstat',
                        sources=sources,
+                       macros=defs,
                        library_dirs=library_dirs,
                        libraries=libraries,
                        extra_info=lapack_info)
@@ -95,6 +114,7 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('image')
     config.add_subpackage('segmentation')
     config.add_subpackage('registration')
+    config.add_subpackage('tests')
     
     config.make_config_py() # installs __config__.py
 

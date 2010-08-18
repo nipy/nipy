@@ -1,10 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+""" Image interpolators using ndimage.
 """
-Image interpolators using ndimage.
-"""
-
-__docformat__ = 'restructuredtext'
 
 import os
 import tempfile
@@ -13,22 +10,20 @@ import numpy as np
 
 from scipy import ndimage
 
-
 class ImageInterpolator(object):
-    """
-    Interpolate Image instance at arbitrary points in world space
+    """ Interpolate Image instance at arbitrary points in world space
     
     The resampling is done with scipy.ndimage.
     """
-
     def __init__(self, image, order=3):
         """
         Parameters
         ----------
         image : Image
            Image to be interpolated
-        order : int
-           order of spline interpolation as used in scipy.ndimage
+        order : int, optional
+           order of spline interpolation as used in scipy.ndimage.
+           Default is 3.
         """
         self.image = image
         self.order = order
@@ -66,14 +61,17 @@ class ImageInterpolator(object):
                 pass
 
     def evaluate(self, points):
-        """
+        """ Resample image at points in world space
+        
         Parameters
         ----------
-        points : values in self.image.coordmap.output_coords 
+        points : array
+           values in self.image.coordmap.output_coords.  Each row is a
+	   point. 
 
         Returns
         -------
-        V: ndarray
+        V : ndarray
            interpolator of self.image evaluated at points
         """
         points = np.array(points, np.float64)

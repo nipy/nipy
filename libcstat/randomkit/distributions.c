@@ -225,7 +225,8 @@ double rk_noncentral_chisquare(rk_state *state, double df, double nonc)
 
 double rk_f(rk_state *state, double dfnum, double dfden)
 {
-    return rk_chisquare(state, dfnum) / rk_chisquare(state, dfden);
+    return ((rk_chisquare(state, dfnum) * dfden) / 
+            (rk_chisquare(state, dfden) * dfnum));
 }
 
 double rk_noncentral_f(rk_state *state, double dfnum, double dfden, double nonc)
@@ -447,7 +448,7 @@ long rk_binomial(rk_state *state, long n, double p)
 
 }
 
-long rk_negative_binomial(rk_state *state, long n, double p)
+long rk_negative_binomial(rk_state *state, double n, double p)
 {
     double Y;
 
@@ -560,6 +561,7 @@ double rk_vonmises(rk_state *state, double mu, double kappa)
     double r, rho, s;
     double U, V, W, Y, Z;
     double result, mod;
+    int neg;
 
     if (kappa < 1e-8)
     {
@@ -573,7 +575,7 @@ double rk_vonmises(rk_state *state, double mu, double kappa)
 
         while (1)
         {
-	    U = rk_double(state);
+        U = rk_double(state);
             Z = cos(M_PI*U);
             W = (1 + s*Z)/(s + Z);
             Y = kappa * (s - W);
@@ -584,15 +586,22 @@ double rk_vonmises(rk_state *state, double mu, double kappa)
             }
         }
 
-	U = rk_double(state);
+        U = rk_double(state);
 
-	result = acos(W);
+        result = acos(W);
         if (U < 0.5)
         {
-	    result = -result;
+        result = -result;
         }
         result += mu;
-        mod = fmod(result, 2*M_PI);
+        neg = (result < 0);
+        mod = fabs(result);
+        mod = (fmod(mod+M_PI, 2*M_PI)-M_PI);
+        if (neg)
+        {
+            mod *= -1;
+        }         
+
         return mod;
     }
 }
@@ -676,16 +685,23 @@ long rk_zipf(rk_state *state, double a)
 {
     double T, U, V;
     long X;
-    double b;
-    
-    b = pow(2.0, a-1.0);
+    double am1, b;
+
+    am1 = a - 1.0;
+    b = pow(2.0, am1);
     do
     {
-        U = rk_double(state);
+        U = 1.0-rk_double(state);
         V = rk_double(state);
-        X = (long)floor(pow(U, -1.0/(a-1.0)));
-        T = pow(1.0 + 1.0/X, a-1.0);  
-    } while ((V *X*(T-1.0)/(b-1.0)) > (T/b));
+        X = (long)floor(pow(U, -1.0/am1));
+        /* The real result may be above what can be represented in a signed
+         * long. It will get casted to -sys.maxint-1. Since this is
+         * a straightforward rejection algorithm, we can just reject this value
+         * in the rejection condition below. This function then models a Zipf
+         * distribution truncated to sys.maxint.
+         */
+        T = pow(1.0 + 1.0/X, am1);
+    } while (((V*X*(T-1.0)/(b-1.0)) > (T/b)) || X < 1);
     return X;
 }
 
@@ -798,7 +814,7 @@ long rk_hypergeometric_hrua(rk_state *state, long good, long bad, long sample)
     if (good > bad) Z = m - Z;
     
     /* another fix from rv.py to allow sample to exceed popsize/2 */
-    if (m < sample) Z = bad - Z;
+    if (m < sample) Z = good - Z;
     
     return Z;
 }
@@ -840,14 +856,29 @@ double rk_triangular(rk_state *state, double left, double mode, double right)
 long rk_logseries(rk_state *state, double p)
 {
     double q, r, U, V;
+    long result;
     
     r = log(1.0 - p);
-    
-    V = rk_double(state);
-    if (V >= p) return 1;
-    U = rk_double(state);
-    q = 1.0 - exp(r*U);
-    if (V <= q*q) return (long)floor(1 + log(V)/log(q));
-    if (V <= q) return 1;
-    return 2;
+
+    while (1) {
+        V = rk_double(state);
+        if (V >= p) {
+            return 1;
+        }
+        U = rk_double(state);
+        q = 1.0 - exp(r*U);
+        if (V <= q*q) {
+            result = (long)floor(1 + log(V)/log(q));
+            if (result < 1) {
+                continue;
+            }
+            else {
+                return result;
+            }
+        }
+        if (V >= q) {
+            return 1;
+        }
+        return 2;
+    }
 }

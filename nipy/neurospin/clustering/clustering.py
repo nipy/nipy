@@ -57,8 +57,6 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001, verbose=0,
             print " cannot find more clusters than items"
         nbclusters = nbitems
     
-    nolabel = 1
-
     if ninit<1:
        if verbose: "need at least one iteration"
        ninit = np.maximum(int(ninit),1)
@@ -68,7 +66,6 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001, verbose=0,
             Labels = Labels.astype(np.int)
             OK = (Labels.min()>-1)&(Labels.max()<nbclusters+1)
             if OK:
-                nolabel = 0
                 maxiter = int(maxiter)
                 if maxiter>0:
                     delta = float(delta)

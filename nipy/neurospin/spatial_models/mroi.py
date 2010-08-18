@@ -2,6 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import numpy as np
+
 from nipy.io.imageformats import load, save, Nifti1Image 
 
 import discrete_domain as ddom

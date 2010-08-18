@@ -243,9 +243,8 @@ def conjunction(x, vx, k):
     -------
     t array of shape(nrows): conjunction statistic
     """     
-    n = x.shape[1]
-    t = np.sort(x/np.sqrt(np.maximum(vx,1.e-15)))
-    cjt = np.sum(t[:,:k],1)
+    t = np.sort(x/np.sqrt(np.maximum(vx, 1.e-15)))
+    cjt = np.sum(t[:,:k], 1)
     return cjt
 
 def ttest(x):
@@ -368,7 +367,6 @@ def voxel_reproducibility(data, vardata, mask, ngroups, method='crfx',
     -------
     kappa (float): the desired  reproducibility index
     """
-    nsubj = data.shape[1]
     rmap = map_reproducibility(data, vardata, mask, ngroups, method, 
                                      swap, verbose, **kwargs)
 
@@ -385,7 +383,6 @@ def voxel_reproducibility_old(data, vardata, mask, ngroups, method='crfx',
     ----
     This uses  the mixture of binomial heuristic, which has been abandoned now  
     """
-    nsubj = data.shape[1]
     rmap = map_reproducibility(data, vardata, mask, ngroups, method, 
                                      swap, verbose, **kwargs)
 
@@ -428,7 +425,7 @@ def draw_samples(nsubj, ngroups, split_method='default'):
     elif split_method=='bootstrap':
         samples = bootstrap_group(nsubj, ngroups)      
     elif split_method=='':
-        samples = plit_group(nsubj, ngroups)
+        samples = split_group(nsubj, ngroups)
     else: raise ValueError, 'unknown splitting method'
  
     return samples
@@ -692,8 +689,8 @@ def group_reproducibility_metrics(
     peak_rep_results: dictionary,
                       results of peak-level reproducibility analysis
     """
-    from nipy.io.imageformats import load, save, Nifti1Image 
-    from nipy.neurospin.utils.mask import intersect_masks
+    from nipy.io.imageformats import load, Nifti1Image 
+    from ..mask import intersect_masks
     
     if ((len(variance_images)==0) & (method is not 'crfx')):
         raise ValueError, 'Variance images are necessary'
@@ -706,7 +703,6 @@ def group_reproducibility_metrics(
     grp_mask = Nifti1Image(mask, affine)
     xyz = np.where(mask)
     xyz = np.array(xyz).T
-    nvox = xyz.shape[0]
 
     # read the data
     group_con = []

@@ -15,10 +15,10 @@ import numpy as np
 import numpy.linalg as npl
 from scipy.interpolate import interp1d
 
-from sympy import Function
-from nipy.modalities.fmri import hrf, formula
-from nipy.modalities.fmri.fmristat.invert import invertR
-
+from ..utils import T, lambdify_t
+from ..aliased import aliased_function
+from .. import hrf
+from .invert import invertR
 
 def spectral_decomposition(hrf2decompose,
                            time=None,
@@ -34,9 +34,9 @@ def spectral_decomposition(hrf2decompose,
 
     Parameters
     ----------
-    hrf2decompose : sympy expression 
-        An expression that can be vectorized
-        as a function of 't'. This is the HRF to be expanded in PCA
+    hrf2decompose : sympy expression
+        An expression that can be lambdified as a function of 't'. This
+        is the HRF to be expanded in PCA
     time : None or np.ndarray, optional
         None gives default value of np.linspace(-15,50,3251) chosen to
         match fMRIstat implementation.  This corresponds to a time
@@ -60,9 +60,10 @@ def spectral_decomposition(hrf2decompose,
     dt = time[1] - time[0]
     if delta is None:
         delta = np.arange(-4.5, 4.6, 0.1)
-    # make vectorizer from hrf function and symbol t.  hrft returns
-    # function values when called with values for time as input.
-    hrft = hrf.vectorize(hrf2decompose(hrf.t))
+    # make numerical implementation from hrf function and symbol t.
+    # hrft returns function values when called with values for time as
+    # input.
+    hrft = lambdify_t(hrf2decompose(T))
     # Create stack of time-shifted HRFs.  Time varies over row, delta
     # over column.
     ts_hrf_vals = np.array([hrft(time - d) for d in delta]).T
@@ -111,7 +112,7 @@ def spectral_decomposition(hrf2decompose,
     symbasis = []
     for i, b in enumerate(basis):
         symbasis.append(
-            formula.aliased_function('%s%d' % (str(hrf2decompose), i), b))
+            aliased_function('%s%d' % (str(hrf2decompose), i), b))
     return symbasis, approx
 
 
@@ -125,7 +126,8 @@ def taylor_approx(hrf2decompose,
     Parameters
     ----------
     hrf2decompose : sympy expression
-        An expression that can be vectorized as a function of 't'. 
+        An expression that can be lambdified as a function of 't'. This
+        is the HRF to be expanded in PCA
     time : None or np.ndarray, optional
         None gives default value of np.linspace(-15,50,3251) chosen to
         match fMRIstat implementation.  This corresponds to a time
@@ -153,9 +155,10 @@ def taylor_approx(hrf2decompose,
     dt = time[1] - time[0]
     if delta is None:
         delta = np.arange(-4.5, 4.6, 0.1)
-    # make vectorizer from hrf function and symbol t.  hrft returns
-    # function values when called with values for time as input.
-    hrft = hrf.vectorize(hrf2decompose(hrf.t))
+    # make numerical implementation from hrf function and symbol t.
+    # hrft returns function values when called with values for time as
+    # input.
+    hrft = lambdify_t(hrf2decompose(T))
     # interpolator for negative gradient of hrf
     dhrft = interp1d(time, -np.gradient(hrft(time), dt), bounds_error=False,
                     fill_value=0.)
@@ -184,7 +187,7 @@ def taylor_approx(hrf2decompose,
      approx.dinverse,
      approx.forward,
      approx.dforward) = invertR(delta, approx.coef)
-    dhrf = formula.aliased_function('d%s' % str(hrf2decompose), dhrft)
+    dhrf = aliased_function('d%s' % str(hrf2decompose), dhrft)
     return [hrf2decompose, dhrf], approx
 
 

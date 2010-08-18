@@ -100,16 +100,8 @@ To install, simply do::
 Installing useful data files
 -----------------------------
 
-You can download template and example data used by nipy from the `NIPY
-data packages`_ site.  Get the versions of the packages with the most
-recent version number.  Install them the normal Python ``setup.py``
-routine.  For example, maybe something like this::
-
-   sudo python setup.py install nipy-data-0.2.tar.gz
-   sudo python setup.py install nipy-templates-0.2.tar.gz
-
-This will extract the data to a standard path, that should let NIPY find
-the data.  
+See :ref:`installing-data` for some instructions on installing data
+pacakges.
 
 See :ref:`data-files` for details on how to customize the installation
 paths.

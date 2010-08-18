@@ -7,7 +7,8 @@ import scipy.stats as st
 
 from nipy.neurospin.utils.random_threshold import randthresh_main
 
-def make_data(n=10, dim=20, r=5, mdim=15, maskdim=20, amplitude=10, noise=1, jitter=None, activation=False):
+def make_data(n=10, dim=20, r=5, mdim=15, maskdim=20, amplitude=10, 
+                            noise=1, jitter=None, activation=False):
     XYZvol = np.zeros((dim,dim,dim),int)
     XYZ = np.array(np.where(XYZvol==0))
     p = XYZ.shape[1]
@@ -38,27 +39,35 @@ def make_data(n=10, dim=20, r=5, mdim=15, maskdim=20, amplitude=10, noise=1, jit
         data[i,I] = X[i,I] + np.random.randn(len(I))*np.sqrt(vardata[i,I])
     return data, XYZ, mask, XYZvol, vardata, signal
 
-class test_random_threshold(unittest.TestCase):
+class TestRandomThreshold(unittest.TestCase):
     
     def test_random_threshold(self):
          # Just run all random threshold functions on toy data
-         # for elementary debugging
+         # for smoke testing
          data, XYZ, mask, XYZvol, vardata, signal = make_data(n=1, dim=20, r=3, mdim=20, maskdim=20, amplitude=4, noise=0, jitter=0, activation=True)
          Y = data[0]
          X = np.clip(-np.log(1 - st.chi2.cdf(Y**2, 1, 0)), 0, 1e10)
          K = (signal == 0).sum() - 100
          verbose=False
-         D = randthresh_main(X,K,XYZ=None,p=np.inf,varwind=True,knownull=True,stop=False,verbose=verbose)
-         D = randthresh_main(Y,K,XYZ=None,p=np.inf,varwind=True,knownull=False,stop=True,verbose=verbose)
+         randthresh_main(X, K, XYZ=None, p=np.inf, varwind=True, 
+                         knownull=True, stop=False, verbose=verbose)
+         randthresh_main(Y, K, XYZ=None, p=np.inf, varwind=True,
+                         knownull=False, stop=True, verbose=verbose)
          
-         D = randthresh_main(X,K,XYZ=None,p=np.inf,varwind=False,knownull=True,stop=True,verbose=verbose)
-         D = randthresh_main(Y,K,XYZ=None,p=np.inf,varwind=False,knownull=False,stop=False,verbose=verbose)
+         randthresh_main(X, K, XYZ=None, p=np.inf, varwind=False, 
+                         knownull=True, stop=True, verbose=verbose)
+         randthresh_main(Y, K, XYZ=None, p=np.inf, varwind=False,
+                         knownull=False, stop=False, verbose=verbose)
          
-         D = randthresh_main(X,K,XYZ=XYZ,p=np.inf,varwind=True,knownull=True,stop=False,verbose=verbose)
-         D = randthresh_main(Y,K,XYZ=XYZ,p=np.inf,varwind=True,knownull=False,stop=False,verbose=verbose)
+         randthresh_main(X, K, XYZ=XYZ, p=np.inf, varwind=True,
+                         knownull=True, stop=False, verbose=verbose)
+         randthresh_main(Y, K, XYZ=XYZ, p=np.inf, varwind=True,
+                         knownull=False, stop=False, verbose=verbose)
          
-         D = randthresh_main(X,K,XYZ=XYZ,p=np.inf,varwind=False,knownull=True,stop=True,verbose=verbose)
-         D = randthresh_main(Y,K,XYZ=XYZ,p=np.inf,varwind=False,knownull=False,stop=True,verbose=verbose)
+         randthresh_main(X, K, XYZ=XYZ, p=np.inf, varwind=False,
+                         knownull=True, stop=True, verbose=verbose)
+         randthresh_main(Y, K, XYZ=XYZ, p=np.inf, varwind=False,
+                         knownull=False, stop=True, verbose=verbose)
 
 
 if __name__ == "__main__":

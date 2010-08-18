@@ -20,7 +20,7 @@ Bertrand Thirion, 2006-2009
 """
 
 import numpy as np
-import numpy.linalg as nl
+import scipy.linalg as nl
 import numpy.random as nr
 import nipy.neurospin.graph.graph as fg
 import nipy.neurospin.graph.field as ff
@@ -71,11 +71,11 @@ def _linear_dim_criterion_(l,k,dimf,n):
     Pp = np.log(2*np.pi)*(m+k+1)/2
 
     Pa = 0
-    nl = l.copy()
-    nl[k:dimf] = v
+    l_ = l.copy()
+    l_[k:dimf] = v
     for i in range(k):
         for j in range (i+1,dimf):
-            Pa = Pa + np.log((l[i]-l[j])*(1./nl[j]-1./nl[i]))+np.log(n)
+            Pa = Pa + np.log((l[i]-l[j])*(1./l_[j]-1./l_[i]))+np.log(n)
 
     Pa = -Pa/2
     lE = Pu+Pl+Pv+Pp+Pa-k*np.log(n)/2
@@ -171,7 +171,6 @@ def CCA(X, Y, eps=1.e-15):
     from numpy.linalg import cholesky, inv, svd
     if Y.shape[0]!=X.shape[0]:
         raise ValueError,"Incompatible dimensions for X and Y"
-    nb = X.shape[0]
     p = X.shape[1]
     q = Y.shape[1]
     sqX = np.dot(X.T,X)
@@ -1086,8 +1085,6 @@ def _sparse_local_correction_for_embedding(G,chart,sigma = 1.0,niter=100):
     K = G.copy()
     K.set_euclidian(chart)
     dY = K.weights 
-    dXY= dx-dY
-    criterion = np.sum(weight*(dx-dY)**2)/G.V
 
     tiny = 1.e-10
     ln = G.list_of_neighbors()
@@ -1098,13 +1095,12 @@ def _sparse_local_correction_for_embedding(G,chart,sigma = 1.0,niter=100):
         grad = np.zeros(np.shape(chart))
         for j in range(G.V):
             k = ln[j]
-            grad[j,:] = np.dot(aux[ci[j]:ci[j+1]],np.squeeze(chart[k,:]-chart[j,:]))/np.size(k)
+            grad[j,:] = np.dot(aux[ci[j]:ci[j+1]],
+                               np.squeeze(chart[k,:]-chart[j,:]))/np.size(k)
 
-        ngrad = np.sum(grad**2,1)
         chart = chart - grad
         K.set_euclidian(chart)
         dY = K.weights
-        criterion = np.sum(weight*(dx-dY)**2)/G.V
     return chart
     
 def partial_floyd_graph(G,k):
@@ -1248,12 +1244,11 @@ def _test_knn_LPP():
 def _test_lE0(verbose=0):
     n = 100
     dim = 2
-    k= 5
-    X = nr.randn(n,dim)
+    x = nr.randn(n,dim)
     G = fg.WeightedGraph(n)
-    G.knn(x,5)
+    G.knn(x, 5)
     G.set_gaussian(x)
-    LE(G,5,verbose)
+    LE(G, 5, verbose)
 
 def _test_lE1(verbose=0):
     n = 100

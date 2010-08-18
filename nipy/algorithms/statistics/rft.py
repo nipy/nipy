@@ -1,7 +1,5 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-__docformat__ = 'restructuredtext'
-
 """
 The theoretical results for  the EC densities appearing in this module
 were partially supported by NSF grant DMS-0405970.
@@ -13,7 +11,6 @@ Taylor, J.E. & Worsley, K.J. (2007).  "Detecting sparse cone alternatives
 Taylor, J.E. & Worsley, K.J. (2007). "Random fields of multivariate
    test statistics, with applications to shape analysis."
    Annals of Statistics, accepted.
-
 """
 
 import numpy as np
@@ -23,23 +20,40 @@ from scipy import stats
 from scipy.misc import factorial
 from scipy.special import gamma, gammaln, beta, hermitenorm
 
-def binomial(n, j):
-    """
-    Binomial coefficient::
+def binomial(n, k):
+    """ Binomial coefficient
 
-           n!
-       ---------
-       (n-j)! j!
-    """
+               n!
+    c =    ---------
+           (n-k)! k!
+           
+    Parameters
+    ----------
+    n : float
+       n of (n, k)
+    k : float
+       k of (n, k)
 
-    if n <= j or n == 0:
+    Returns
+    -------
+    c : float
+
+    Examples
+    --------
+    First 3 values of 4 th row of Pascal triangle
+    
+    >>> [binomial(4, k) for k in range(3)]
+    [1.0, 4.0, 6.0]
+    """
+    if n <= k or n == 0:
         return 0.
-    elif j == 0:
+    elif k == 0:
         return 1.
-    return 1./(beta(n-j+1, j+1)*(n+1))
+    return 1./(beta(n-k+1, k+1)*(n+1))
+
 
 def Q(dim, dfd=np.inf):
-    """
+    """ Q polynomial
 
     If dfd == inf (the default), then
     Q(dim) is the (dim-1)-st Hermite polynomial 
@@ -51,12 +65,9 @@ def Q(dim, dfd=np.inf):
     Worsley, K.J. (1994). 'Local maxima and the expected Euler
     characteristic of excursion sets of \chi^2, F and t fields.'
     Advances in Applied Probability, 26:13-42.
-
     """
-
     m = dfd
     j = dim
-
     if j > 0:
         poly = hermitenorm(j-1)
         poly = np.poly1d(np.around(poly.c))
@@ -69,11 +80,12 @@ def Q(dim, dfd=np.inf):
     else:
         raise ValueError, 'Q defined only for dim > 0'
 
-class ECquasi(np.poly1d):
 
-    """
+class ECquasi(np.poly1d):
+    """ Polynomials with premultiplier
+    
     A subclass of poly1d consisting of polynomials with a premultiplier of the
-    form
+    form:
 
     (1 + x^2/m)^-exponent
 
@@ -82,10 +94,8 @@ class ECquasi(np.poly1d):
 
     These arise often in the EC densities.
 
-    Example
-    -------
-
-
+    Examples
+    --------
     >>> import numpy
     >>> from nipy.algorithms.statistics.rft import ECquasi
     >>> x = numpy.linspace(0,1,101)
@@ -101,32 +111,24 @@ class ECquasi(np.poly1d):
     True
     >>>
     """
-    
-
     def __init__(self, c_or_r, r=0, exponent=None, m=None):
         np.poly1d.__init__(self, c_or_r, r=r, variable='x')
-
         if exponent is None and not hasattr(self, 'exponent'):
             self.exponent = 0
         elif not hasattr(self, 'exponent'):
             self.exponent = exponent
-
-
         if m is None and not hasattr(self, 'm'):
             self.m = np.inf
         elif not hasattr(self, 'm'):
             self.m = m
-
         if not np.isfinite(self.m):
             self.exponent = 0.
 
     def denom_poly(self):
-        """
-        This is the base of the premultiplier: (1+x^2/m).
+        """ Base of the premultiplier: (1+x^2/m).
 
-        Example
-        -------
-
+        Examples
+        --------
         >>> import numpy
         >>> b = ECquasi([3,4,20], m=30, exponent=4)
         >>> d = b.denom_poly()
@@ -134,18 +136,17 @@ class ECquasi(np.poly1d):
         poly1d([ 0.03333333,  0.        ,  1.        ])
         >>> numpy.allclose(d.c, [1./b.m,0,1])
         True
-
         """
         return np.poly1d([1./self.m, 0, 1])
 
     def change_exponent(self, _pow):
-        """
+        """ Change exponent
+        
         Multiply top and bottom by an integer multiple of the
         self.denom_poly.
 
-        Example
-        -------
-
+        Examples
+        --------
         >>> import numpy
         >>> b = ECquasi([3,4,20], m=30, exponent=4)
         >>> x = numpy.linspace(0,1,101)
@@ -156,9 +157,7 @@ class ECquasi(np.poly1d):
                  5.00000000e+00,   4.00000000e+00,   2.00000000e+01],m=30.000000, exponent=7.000000)
         >>> numpy.allclose(c(x), b(x))
         True
-        >>>
         """
-        
         if np.isfinite(self.m):
             _denom_poly = self.denom_poly()
             if int(_pow) != _pow or _pow < 0:
@@ -182,13 +181,13 @@ class ECquasi(np.poly1d):
         else: np.poly1d.__setattr__(self, key, val)
 
     def compatible(self, other):
-        """
+        """ Check compatibility of degrees of freedom
+        
         Check whether the degrees of freedom of two instances are equal
         so that they can be multiplied together.
 
-        Example
-        -------
-
+        Examples
+        --------
         >>> import numpy
         >>> b = ECquasi([3,4,20], m=30, exponent=4)
         >>> x = numpy.linspace(0,1,101)
@@ -200,16 +199,16 @@ class ECquasi(np.poly1d):
         False
         >>>
         """
-        
         if self.m != other.m:
             #raise ValueError, 'quasi polynomials are not compatible, m disagrees'
             return False
         return True
 
     def __add__(self, other):
-        """
-        Add two compatible ECquasi instances together.
+        """ Add two compatible ECquasi instances together.
 
+        Examples
+        --------
         >>> b = ECquasi([3,4,20], m=30, exponent=4)
         >>> c = ECquasi([1], m=30, exponent=4)
         >>> b+c
@@ -218,7 +217,6 @@ class ECquasi(np.poly1d):
         >>> d = ECquasi([1], m=30, exponent=3)
         >>> b+d
         ECquasi([  3.03333333,   4.        ,  21.        ],m=30.000000, exponent=4.000000)
-        >>>
         """
         if self.compatible(other):
             if np.isfinite(self.m):
@@ -236,19 +234,15 @@ class ECquasi(np.poly1d):
                                m=self.m)
 
     def __mul__(self, other):
-        """
-        Multiply two compatible ECquasi instances together.
+        """  Multiply two compatible ECquasi instances together.
 
-        Example
-        -------
-
+        Examples
+        --------
         >>> b=ECquasi([3,4,20], m=30, exponent=4)
         >>> c=ECquasi([1,2], m=30, exponent=4.5)
         >>> b*c
         ECquasi([ 3, 10, 28, 40],m=30.000000, exponent=8.500000)
-        >>>
         """
-
         if np.isscalar(other):
             return ECquasi(self.coeffs * other,
                            m=self.m,
@@ -260,27 +254,21 @@ class ECquasi(np.poly1d):
                            m=self.m)
             
     def __call__(self, val):
-        """
-        Evaluate the ECquasi instance.
+        """Evaluate the ECquasi instance.
 
-        Example
-        -------
-
+        Examples
+        --------
         >>> import numpy
         >>> x = numpy.linspace(0,1,101)
-
         >>> a = ECquasi([3,4,5])
         >>> a
         ECquasi([3, 4, 5],m=inf, exponent=0.000000)
         >>> a(3) == 3*3**2 + 4*3 + 5
         True
-
         >>> b = ECquasi(a.coeffs, m=30, exponent=4)
         >>> numpy.allclose(b(x), a(x) * numpy.power(1+x**2/30, -4))
         True
-        >>>
         """
-
         n = np.poly1d.__call__(self, val)
         _p = self.denom_poly()(val)
         return n / np.power(_p, self.exponent)
@@ -297,30 +285,35 @@ class ECquasi(np.poly1d):
         return not self.__eq__(other)
 
     def __pow__(self, _pow):
-        """
-        Power of a ECquasi instance.
+        """ Power of a ECquasi instance.
 
-        Example
-        -------
-
+        Examples
+        --------
         >>> b = ECquasi([3,4,5],m=10, exponent=3)
         >>> b**2
         ECquasi([ 9, 24, 46, 40, 25],m=10.000000, exponent=6.000000)
-        >>>
         """
         p = np.poly1d.__pow__(self, int(_pow))
         q = ECquasi(p, m=self.m, exponent=_pow*self.exponent)
         return q
 
     def __sub__(self, other):
-        """
-        Subtract other from self.
+        """ Subtract `other` from `self`
 
+        Parameters
+        ----------
+        other : ECquasi instance
+
+        Returns
+        -------
+        subbed : ECquasi
+
+        Examples
+        --------
         >>> b = ECquasi([3,4,20], m=30, exponent=4)
         >>> c = ECquasi([1,2], m=30, exponent=4)
         >>> print b-c
         ECquasi([ 3,  3, 18],m=30.000000, exponent=4.000000)
-        >>>
         """
         return self + (other * -1)
 
@@ -338,12 +331,14 @@ class ECquasi(np.poly1d):
     __rdiv__ = __div__
     
     def deriv(self, m=1):
-        """
-        Evaluate derivative of ECquasi.
+        """ Evaluate derivative of ECquasi
 
-        Example
-        -------
+        Parameters
+        ----------
+        m : int, optional
 
+        Examples
+        --------
         >>> a = ECquasi([3,4,5])
         >>> a.deriv(m=2)
         ECquasi([6],m=inf, exponent=0.000000)
@@ -351,9 +346,7 @@ class ECquasi(np.poly1d):
         >>> b = ECquasi([3,4,5],m=10, exponent=3)
         >>> b.deriv()
         ECquasi([-1.2, -2. ,  3. ,  4. ],m=10.000000, exponent=4.000000)
-        >>>
         """
-
         if m == 1:
             if np.isfinite(self.m):
                 q1 = ECquasi(np.poly1d.deriv(self, m=1),
@@ -371,8 +364,8 @@ class ECquasi(np.poly1d):
             d = self.deriv(m=1)
             return d.deriv(m=m-1)
 
-class fnsum:
 
+class fnsum(object):
     def __init__(self, *items):
         self.items = list(items)
 
@@ -382,14 +375,12 @@ class fnsum:
             v += q(x)
         return v
 
-class IntrinsicVolumes:
+class IntrinsicVolumes(object):
     """
     A simple class that exists only to compute the intrinsic volumes of
     products of sets (that themselves have intrinsic volumes, of course).
     """
-    
     def __init__(self, mu=[1]):
-
         if isinstance(mu, IntrinsicVolumes):
             mu = mu.mu
         self.mu = np.asarray(mu, np.float64)
@@ -399,7 +390,6 @@ class IntrinsicVolumes:
         return str(self.mu)
 
     def __mul__(self, other):
-
         if not isinstance(other, IntrinsicVolumes):
             raise ValueError, 'expecting an IntrinsicVolumes instance'
         order = self.order + other.order + 1
@@ -411,7 +401,8 @@ class IntrinsicVolumes:
                     mu[i] += self.mu[j] * other.mu[i-j]
                 except:
                     pass
-        return IntrinsicVolumes(mu)
+        return self.__class__(mu)
+
 
 class ECcone(IntrinsicVolumes):
     """
@@ -426,9 +417,7 @@ class ECcone(IntrinsicVolumes):
     also affect the (quasi-)polynomial part of the EC density. For
     instance, Hotelling's T^2 random field has a sphere as product,
     as does Roy's maximum root.
-
     """
-
     def __init__(self, mu=[1], dfd=np.inf, search=[1], product=[1]):
         self.dfd = dfd
         IntrinsicVolumes.__init__(self, mu=mu)
@@ -436,13 +425,12 @@ class ECcone(IntrinsicVolumes):
         self.search = IntrinsicVolumes(search)
 
     def __call__(self, x, search=None):
-        """
-        Get expected EC for a search region (default is self.search which
-        itself defaults to [1] giving the survival function.
-        """
-            
-        x = np.asarray(x, np.float64)
+        """ Get expected EC for a search region
 
+        Default is self.search which itself defaults to [1] giving the
+        survival function.
+        """
+        x = np.asarray(x, np.float64)
         if search is None:
             search = self.search
         else:
@@ -490,18 +478,14 @@ class ECcone(IntrinsicVolumes):
                                   # at least m=1
     
     def density(self, x, dim):
-        """
-        The EC density in dimension dim.
+        """ The EC density in dimension `dim`.
         """
         return self(x, search=[0]*dim+[1])
 
 
     def _quasi_polynomials(self, dim):
+        """ list of quasi-polynomials for EC density calculation.
         """
-        Generate a list of quasi-polynomials for use in
-        EC density calculation.
-        """
-
         c = self.mu / np.power(2*np.pi, np.arange(self.order+1.)/2.)
 
         quasi_polynomials = []
@@ -516,12 +500,10 @@ class ECcone(IntrinsicVolumes):
         return quasi_polynomials
 
     def quasi(self, dim):
-        """
-        (Quasi-)polynomial parts of the EC density in dimension dim
-        ignoring a factor of (2\pi)^{-(dim+1)/2} in front.
+        """ (Quasi-)polynomial parts of EC density in dimension `dim`
         
+        - ignoring a factor of (2\pi)^{-(dim+1)/2} in front.
         """
-
         q_even = ECquasi([0], m=self.dfd, exponent=0)
         q_odd = ECquasi([0], m=self.dfd, exponent=0.5)
 
@@ -542,17 +524,17 @@ class ECcone(IntrinsicVolumes):
 
 Gaussian = ECcone
 
+
 def mu_sphere(n, j, r=1):
-    """
+    """ `j`th curvature for `n` dimensional sphere radius `r`
+    
     Return mu_j(S_r(R^n)), the j-th Lipschitz Killing
     curvature of the sphere of radius r in R^n.
 
     From Chapter 6 of
 
     Adler & Taylor, 'Random Fields and Geometry'. 2006.
-    
     """
-
     if j < n:
         if n-1 == j:
             return 2 * np.power(np.pi, n/2.) * np.power(r, n-1) / gamma(n/2.) 
@@ -565,12 +547,13 @@ def mu_sphere(n, j, r=1):
     else:
         return 0
 
-def mu_ball(n, j, r=1):
-    """
-    Return mu_j(B_n(r)), the j-th Lipschitz Killing
-    curvature of the ball of radius r in R^n.
-    """
 
+def mu_ball(n, j, r=1):
+    """ `j`th curvature of `n`-dimensional ball radius `r`
+    
+    Return mu_j(B_n(r)), the j-th Lipschitz Killing curvature of the
+    ball of radius r in R^n.
+    """
     if j <= n:
         if n == j:
             return np.power(np.pi, n/2.) * np.power(r, n) / gamma(n/2. + 1.)
@@ -578,37 +561,35 @@ def mu_ball(n, j, r=1):
             return binomial(n, j) * np.power(r, j) * mu_ball(n,n) / mu_ball(n-j,n-j)
     else:
         return 0
-    
+
+
 def spherical_search(n, r=1):
+    """ A spherical search region of radius r.
     """
-    A spherical search region of radius r.
-    """
-    
     return IntrinsicVolumes([mu_sphere(n,j,r=r) for j in range(n)])
 
+
 def ball_search(n, r=1):
-    """
-    A ball-shaped search region of radius r.
+    """ A ball-shaped search region of radius r.
     """
     return IntrinsicVolumes([mu_ball(n,j,r=r) for j in range(n+1)])
 
 def volume2ball(vol, d=3):
+    """ Approximate volume with ball
+    
+    Approximate intrinsic volumes of a set with a given volume by those
+    of a ball with a given dimension and equal volume.
     """
-    Approximate intrinsic volumes of a set with a given volume by those of a ball with a given dimension and equal volume.
-    """
-
     if d > 0:
         r = np.power(vol * 1. / mu_ball(d, d), 1./d)
         return ball_search(d, r=r)
     else:
         return IntrinsicVolumes([1])
 
+
 class ChiSquared(ECcone):
-
+    """  EC densities for a Chi-Squared(n) random field.
     """
-    EC densities for a Chi-Squared(n) random field.
-    """
-
     def __init__(self, dfn, dfd=np.inf, search=[1]):
         self.dfn = dfn
         ECcone.__init__(self, mu=spherical_search(self.dfn), search=search, dfd=dfd)
@@ -616,20 +597,17 @@ class ChiSquared(ECcone):
     def __call__(self, x, search=None):
         return ECcone.__call__(self, np.sqrt(x), search=search)
 
-class TStat(ECcone):
-    """
-    EC densities for a t random field.
-    """
 
+class TStat(ECcone):
+    """  EC densities for a t random field.
+    """
     def __init__(self, dfd=np.inf, search=[1]):
         ECcone.__init__(self, mu=[1], dfd=dfd, search=search)
-        
+
+
 class FStat(ECcone):
-
+    """ EC densities for a F random field.
     """
-    EC densities for a F random field.
-    """
-
     def __init__(self, dfn, dfd=np.inf, search=[1]):
         self.dfn = dfn
         ECcone.__init__(self, mu=spherical_search(self.dfn), search=search, dfd=dfd)
@@ -639,11 +617,10 @@ class FStat(ECcone):
 
 
 class Roy(ECcone):
+    """ Roy's maximum root
+
+    Maximize an F_{dfd,dfn} statistic over a sphere of dimension k.
     """
-    Roy's maximum root: maximize an F_{dfd,dfn} statistic over a sphere
-    of dimension k.
-    """
-    
     def __init__(self, dfn=1, dfd=np.inf, k=1, search=[1]):
         product = spherical_search(k)
         self.k = k
@@ -654,16 +631,16 @@ class Roy(ECcone):
     def __call__(self, x, search=None):
         return ECcone.__call__(self, np.sqrt(x * self.dfn), search=search)
 
+
 class MultilinearForm(ECcone):
-    """
-    Maximize a multivariate Gaussian form, maximized over spheres
-    of dimension dims. See
+    """ Maximize a multivariate Gaussian form
+
+    Maximized over spheres of dimension dims. See:
 
     Kuri, S. & Takemura, A. (2001).
     'Tail probabilities of the maxima of multilinear forms and
-    their applications.' Ann, Statist. 29(2): 328-371.
+    their applications.' Ann. Statist. 29(2): 328-371.
     """
-
     def __init__(self, *dims, **keywords):
         product = IntrinsicVolumes([1])
 
@@ -678,12 +655,13 @@ class MultilinearForm(ECcone):
 
         ECcone.__init__(self, search=search, product=product)
 
+
 class Hotelling(ECcone):
+    """ Hotelling's T^2
+
+    Maximize an F_{1,dfd}=T_dfd^2 statistic over a sphere of dimension
+    `k`.
     """
-    Hotelling's T^2: maximize an F_{1,dfd}=T_dfd^2 statistic over a sphere
-    of dimension k.
-    """
-    
     def __init__(self, dfd=np.inf, k=1, search=[1]):
         product = spherical_search(k)
         self.k = k
@@ -694,17 +672,14 @@ class Hotelling(ECcone):
 
 
 class OneSidedF(ECcone):
+    """ EC densities for one-sided F statistic
 
-    """
-
-    EC densities for one-sided F statistic in
+    See:
 
     Worsley, K.J. & Taylor, J.E. (2005). 'Detecting fMRI activation
     allowing for unknown latency of the hemodynamic response.'
     Neuroimage, 29,649-654.
-
     """
-    
     def __init__(self, dfn, dfd=np.inf, search=[1]):
         self.dfn = dfn
         self.regions = [spherical_search(dfn), spherical_search(dfn-1)]
@@ -718,8 +693,8 @@ class OneSidedF(ECcone):
         self.mu = self.regions[0].mu
         return (d1 - d2) * 0.5
 
-class ChiBarSquared(ChiSquared):
 
+class ChiBarSquared(ChiSquared):
     def _getmu(self):
         x = np.linspace(0, 2 * self.dfn, 100)
         sf = 0.
@@ -737,17 +712,17 @@ class ChiBarSquared(ChiSquared):
         self._getmu()
 
     def __call__(self, x, dim=0, search=[1]):
-
         if search is None:
             search = self.stat
         else:
             search = IntrinsicVolumes(search) * self.stat
         return FStat.__call__(self, x, dim=dim, search=search)
 
+
 def scale_space(region, interval, kappa=1.):
-    """
-    Work out intrinsic volumes of region x interval in the
-    scale space model. See
+    """ scale space intrinsic volumes of region x interval
+    
+    See:
 
     Siegmund, D.O and Worsley, K.J. (1995). 'Testing for a signal
     with unknown location and scale in a stationary Gaussian random
@@ -759,10 +734,7 @@ def scale_space(region, interval, kappa=1.):
     test statistics, with applications to shape analysis and fMRI.'
 
     (available on http://www.math.mcgill.ca/keith
-    
-
     """
-
     w1, w2 = interval
     region = IntrinsicVolumes(region)
 

@@ -10,7 +10,7 @@ import numpy as np
 import os.path as op
 from nipy.io.imageformats import load, save, Nifti1Image
 
-from nipy.neurospin.utils.mask import intersect_masks
+from nipy.neurospin.mask import intersect_masks
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
 from discrete_domain import domain_from_image 
 

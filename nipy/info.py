@@ -3,8 +3,7 @@
 This script should do no imports.  It only defines variables.
 '''
 
-
-long_description = \
+LONG_DESCRIPTION = \
 """
 Neuroimaging tools for Python (NIPY).
 
@@ -38,7 +37,21 @@ The nipy package contains the following subpackages and modules:
    :style: UML  
 """
 
-scipy_min_version = '0.5'
-sympy_min_version = '0.6.6'
-mayavi_min_version = '3.0'
-cython_min_version = '0.12.1'
+URL='http://nipy.org/nipy'
+STATUS='alpha'
+
+# Dependencies
+SCIPY_MIN_VERSION = '0.5'
+SYMPY_MIN_VERSION = '0.6.6'
+MAYAVI_MIN_VERSION = '3.0'
+CYTHON_MIN_VERSION = '0.12.1'
+
+# Versions and locations of optional data packages
+NIPY_DATA_URL= 'http://nipy.sourceforge.net/data-packages/'
+DATA_PKGS = {'nipy-data': {'version':'0.2'},
+             'nipy-templates': {'version':'0.2'}}
+for key, value in DATA_PKGS.items():
+    value['url'] = '%s%s-%s.tar.gz' % (NIPY_DATA_URL,
+                                       key,
+                                       value['version'])
+del key, value

@@ -24,16 +24,69 @@ import numpy as np
 import numpy.fft as FFT
 from scipy.interpolate import interp1d
 
+import sympy
 from sympy import DiracDelta, Symbol 
-from sympy import sin as sympy_sin
-from sympy import cos as sympy_cos
-from sympy import pi as sympy_pi
 
 from . import formula
-from . import aliased
+from .formula import Term
 from .aliased import aliased_function, lambdify
 
-t = formula.Term('t')
+T = Term('t')
+
+def lambdify_t(expr):
+    ''' Return sympy function `expr` lambdified as function of t
+
+    Parametric
+    ----------
+    expr : sympy expr
+
+    Returns
+    -------
+    func : callable
+       Numerical implementation of function
+    '''
+    return lambdify(T, expr)
+
+
+def define(name, expr):
+    """ Create function of t expression from arbitrary expression `expr`
+    
+    Take an arbitrarily complicated expression `expr` of 't' and make it
+    an expression that is a simple function of t, of form ``'%s(t)' %
+    name`` such that when it evaluates (via ``lambdify``) it has the
+    right values.
+
+    Parameters
+    ----------
+    expr : sympy expression
+       with only 't' as a Symbol
+    name : str
+
+    Returns
+    -------
+    nexpr: sympy expression
+
+    Examples
+    --------
+    >>> t = Term('t')
+    >>> expr = t**2 + 3*t
+    >>> print expr
+    3*t + t**2
+    >>> newexpr = define('f', expr)
+    >>> print newexpr
+    f(t)
+    >>> f = lambdify_t(newexpr)
+    >>> f(4)
+    28
+    >>> 3*4+4**2
+    28
+    """
+    # make numerical implementation of expression
+    v = lambdify(T, expr)
+    # convert numerical implementation to sympy function
+    f = aliased_function(name, v)
+    # Return expression that is function of time
+    return f(T)
 
 
 def fourier_basis(freq):
@@ -62,8 +115,8 @@ def fourier_basis(freq):
     """
     r = []
     for f in freq:
-        r += [sympy_cos((2*sympy_pi*f*t)),
-              sympy_sin((2*sympy_pi*f*t))]
+        r += [sympy.cos((2*sympy.pi*f*T)),
+              sympy.sin((2*sympy.pi*f*T))]
     return formula.Formula(r)
 
 
@@ -104,7 +157,7 @@ def interp(times, values, fill=0, name=None, **kw):
     --------
     >>> s = interp([0,4,5.],[2.,4,6], bounds_error=False)
     >>> tval = np.array([-0.1,0.1,3.9,4.1,5.1])
-    >>> res = aliased.lambdify(t, s)(tval)
+    >>> res = lambdify_t(s)(tval)
     >>> # nans outside bounds
     >>> np.isnan(res)
     array([ True, False, False, False,  True], dtype=bool)
@@ -118,7 +171,7 @@ def interp(times, values, fill=0, name=None, **kw):
         name = 'interp%d' % interp.counter
         interp.counter += 1
     s = aliased_function(name, interpolator)
-    return s(t)
+    return s(T)
 
 interp.counter = 0
 
@@ -158,7 +211,7 @@ def linear_interp(times, values, fill=0, name=None, **kw):
     --------
     >>> s = linear_interp([0,4,5.],[2.,4,6], bounds_error=False)
     >>> tval = np.array([-0.1,0.1,3.9,4.1,5.1])
-    >>> res = aliased.lambdify(t, s)(tval)
+    >>> res = lambdify_t(s)(tval)
     >>> # nans outside bounds
     >>> np.isnan(res)
     array([ True, False, False, False,  True], dtype=bool)
@@ -199,14 +252,14 @@ def step_function(times, values, name=None, fill=0):
     -------
     f_t : sympy expr
        Sympy expression f(t) where f is a sympy implemented anonymous
-       function of time that implements the step function.  To get
-       the numerical version of the function, use ``lambdify(t, f_t)``
+       function of time that implements the step function.  To get the
+       numerical version of the function, use ``lambdify_t(f_t)``
 
     Examples
     --------
     >>> s = step_function([0,4,5],[2,4,6])
     >>> tval = np.array([-0.1,3.9,4.1,5.1])
-    >>> lam = aliased.lambdify(t, s)
+    >>> lam = lambdify_t(s)
     >>> lam(tval)
     array([ 0.,  2.,  4.,  6.])
     """
@@ -222,7 +275,7 @@ def step_function(times, values, name=None, fill=0):
         return f
 
     s = aliased_function(name, _imp)
-    return s(t)
+    return s(T)
 
 # Initialize counter for step function
 step_function.counter = 0
@@ -260,26 +313,24 @@ def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
     expected
 
     >>> from sympy import DiracDelta, Symbol, Function
-    >>> from nipy.modalities.fmri.formula import Term
-    >>> t = Term('t')
-    
+    >>> from nipy.modalities.fmri.utils import T
     >>> evs = events([3,6,9])
-    >>> evs == DiracDelta(-9 + t) + DiracDelta(-6 + t) + DiracDelta(-3 + t)
+    >>> evs == DiracDelta(-9 + T) + DiracDelta(-6 + T) + DiracDelta(-3 + T)
     True
     >>> hrf = Function('hrf')
     >>> evs = events([3,6,9], f=hrf)
-    >>> evs == hrf(-9 + t) + hrf(-6 + t) + hrf(-3 + t)
+    >>> evs == hrf(-9 + T) + hrf(-6 + T) + hrf(-3 + T)
     True
     >>> evs = events([3,6,9], amplitudes=[2,1,-1])
-    >>> evs == -DiracDelta(-9 + t) + 2*DiracDelta(-3 + t) + DiracDelta(-6 + t)
+    >>> evs == -DiracDelta(-9 + T) + 2*DiracDelta(-3 + T) + DiracDelta(-6 + T)
     True
     """
     e = 0
     asymb = Symbol('a')
     if amplitudes is None:
         amplitudes = itertools.cycle([1])
-    for _t, a in zip(times, amplitudes):
-        e = e + g.subs(asymb, a) * f(t-_t)
+    for time, a in zip(times, amplitudes):
+        e = e + g.subs(asymb, a) * f(T-time)
     return e
 
 
@@ -305,11 +356,11 @@ def blocks(intervals, amplitudes=None):
     >>> on_off = [[1,2],[3,4]]
     >>> tval = np.array([0.4,1.4,2.4,3.4])
     >>> b = blocks(on_off)
-    >>> lam = aliased.lambdify(t, b)
+    >>> lam = lambdify_t(b)
     >>> lam(tval)
     array([ 0.,  1.,  0.,  1.])
     >>> b = blocks(on_off, amplitudes=[3,5])
-    >>> lam = aliased.lambdify(t, b)
+    >>> lam = lambdify_t(b)
     >>> lam(tval)
     array([ 0.,  3.,  0.,  5.])
     """
@@ -367,8 +418,9 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     conv(t)
 
     Get the numerical values for a time vector
-    
-    >>> ftri = aliased.lambdify(t, tri)
+
+    >>> from nipy.modalities.fmri.utils import lambdify
+    >>> ftri = lambdify(t, tri)
     >>> x = np.linspace(0,2,11)
     >>> y = ftri(x)
 
@@ -390,8 +442,8 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     pad_t = (mx_i - mn_i) * padding_f
     time = np.arange(mn_i, mx_i + pad_t, dt)
     # get values at times from expressions
-    f1 = lambdify(t, fn1)
-    f2 = lambdify(t, fn2)
+    f1 = lambdify_t(fn1)
+    f2 = lambdify_t(fn2)
     _fn1 = np.atleast_1d(f1(time))
     _fn2 = np.atleast_1d(f2(time))
     # do convolution
@@ -403,3 +455,5 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     time = time[0:_minshape]
     value = value[0:_minshape]
     return interp(time, value, bounds_error=False, name=name)
+
+

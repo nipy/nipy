@@ -110,16 +110,25 @@ array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
       dtype=[('x1', '<f8'), ('x3', '<f8'), ('x1*x3', '<f8'), ('1', '<f8')])
 '''
 
-import warnings
 from string import lowercase, uppercase
 
-import sympy
 import numpy as np
 from scipy.linalg import svdvals, pinv
 
+import sympy
+
 from .aliased import (aliased_function,
-                      lambdify,
-                      vectorize)
+                      lambdify)
+
+
+def define(*args, **kwargs):
+    # Moved to utils module
+    import warnings
+    from . import utils
+    warnings.warn('Please use define function from utils module',
+                  DeprecationWarning,
+                  stacklevel=2)
+    return utils.define(*args, **kwargs)
 
 
 class Term(sympy.Symbol):
@@ -154,6 +163,10 @@ class Term(sympy.Symbol):
             return self
         else:
             return sympy.Symbol.__add__(self, other)
+
+
+# time symbol
+T = Term('t')
 
 
 def terms(*names):
@@ -630,7 +643,7 @@ class Formula(object):
 
         newterms = []
         for i, t in enumerate(terms):
-            newt = sympy.DeferredVector("__t%d__" % (i + random_offset))
+            newt = sympy.Symbol("__t%d__" % (i + random_offset))
             for j, _ in enumerate(d):
                 d[j] = d[j].subs(t, newt)
             newterms.append(newt)
@@ -1205,41 +1218,6 @@ class RandomEffects(Formula):
         """
         D = self.design(term, param=param, return_float=True)
         return np.dot(D, np.dot(self.sigma, D.T))
-
-
-def define(name, expr):
-    """
-    Take an expression of 't' (possibly complicated)
-    and make it a '%s(t)' % name, such that
-    when it evaluates it has the right values.
-
-    Parameters
-    ----------
-    expr : sympy expression, with only 't' as a Symbol
-    name : str
-
-    Returns
-    -------
-    nexpr: sympy expression
-
-    Examples
-    --------
-    >>> t = Term('t')
-    >>> expr = t**2 + 3*t
-    >>> print expr
-    3*t + t**2
-    >>> newexpr = define('f', expr)
-    >>> print newexpr
-    f(t)
-    >>> import aliased
-    >>> f = aliased.lambdify(t, newexpr)
-    >>> f(4)
-    28
-    >>> 3*4+4**2
-    28
-    """
-    v = vectorize(expr)
-    return aliased_function(name, v)(Term('t'))
 
 
 def is_term(obj):

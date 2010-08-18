@@ -10,11 +10,10 @@ from string import join as sjoin
 
 from nipy.algorithms.statistics.utils import combinations
 
-import formula
-from utils import events, fourier_basis as fourier_basis_sym
-    
+from . import formula
+from .utils import events, fourier_basis as fourier_basis_sym
 
-from hrf import glover, dglover
+from .hrf import glover, dglover
 
 def fourier_basis(t, freq):
     """
@@ -23,33 +22,28 @@ def fourier_basis(t, freq):
 
     Parameters
     ----------
-
     t : np.ndarray
         An array of np.float values at which to evaluate
         the design. Common examples would be the acquisition
         times of an fMRI image.
-
-    freq : [float]
+    freq : sequence of float
         Frequencies for the terms in the Fourier basis.
 
     Returns
     -------
-
     X : np.ndarray
 
     Examples
     --------
-
     >>> t = np.linspace(0,50,101)
     >>> drift = fourier_basis(t, np.array([4,6,8]))
     >>> drift.shape
     (101, 6)
-    >>> 
-
     """
     tval = formula.make_recarray(t, ['t'])
     f = fourier_basis_sym(freq)
     return f.design(tval, return_float=True)
+
 
 def natural_spline(t, knots=None, order=3, intercept=True):
     """
@@ -59,37 +53,31 @@ def natural_spline(t, knots=None, order=3, intercept=True):
     Parameters
     ----------
     t : np.array
-
     knots : None or sequence, optional
        Sequence of float.  Default None (same as empty list)
-
     order : int, optional
        Order of the spline. Defaults to a cubic (==3)
-
     intercept : bool, optional
        If True, include a constant function in the natural
        spline. Default is False
 
     Returns
     -------
-
     X : np.ndarray
 
     Examples
     --------
-
     >>> t = np.linspace(0,50,101)
     >>> drift = natural_spline(t, knots=[10,20,30,40])
     >>> drift.shape
     (101, 8)
-    >>> 
-
     """
     tval = formula.make_recarray(t, ['t'])
     t = formula.Term('t')
     f = formula.natural_spline(t, knots=knots, order=order, 
                                intercept=intercept)
     return f.design(tval, return_float=True)
+
 
 def event_design(event_spec, t, order=2, hrfs=[glover]):
     """
@@ -100,50 +88,38 @@ def event_design(event_spec, t, order=2, hrfs=[glover]):
 
     Parameters
     ----------
-
     event_spec : np.recarray
-        A recarray having at least a field named 'time' signifying
-        the event time, and all other fields will be treated as factors
-        in an ANOVA-type model.
-
+       A recarray having at least a field named 'time' signifying the
+       event time, and all other fields will be treated as factors in an
+       ANOVA-type model.
     t : np.ndarray
-        An array of np.float values at which to evaluate
-        the design. Common examples would be the acquisition
-        times of an fMRI image.
-
+       An array of np.float values at which to evaluate the
+       design. Common examples would be the acquisition times of an fMRI
+       image.
     order : int
-        The highest order interaction to be considered in
-        constructing the contrast matrices.
-
+       The highest order interaction to be considered in constructing
+       the contrast matrices.
     hrfs : seq
-        A sequence of (symbolic) HRF that will be convolved
-        with each event. If empty, glover is used.
+       A sequence of (symbolic) HRF that will be convolved with each
+       event. If empty, glover is used.
 
-    Outputs 
+    Returns 
     -------
-    
     X : np.ndarray
-        The design matrix with X.shape[0] == t.shape[0]. The number
-        of columns will depend on the other fields of event_spec.
-
+       The design matrix with X.shape[0] == t.shape[0]. The number of
+       columns will depend on the other fields of event_spec.
     contrasts : dict
-        Dictionary of contrasts that is expected to be of interest
-        from the event specification. For each interaction / effect
-        up to a given order will be returned. Also, a contrast
-        is generated for each interaction / effect for each HRF
-        specified in hrfs.
-    
+       Dictionary of contrasts that is expected to be of interest from
+       the event specification. For each interaction / effect up to a
+       given order will be returned. Also, a contrast is generated for
+       each interaction / effect for each HRF specified in hrfs.
     """
-
     fields = list(event_spec.dtype.names)
     if 'time' not in fields:
         raise ValueError('expecting a field called "time"')
-
     fields.pop(fields.index('time'))
     e_factors = [formula.Factor(n, np.unique(event_spec[n])) for n in fields]
-    
     e_formula = np.product(e_factors)
-
     e_contrasts = {}
     if len(e_factors) > 1:
         for i in range(1, order+1):
@@ -170,12 +146,14 @@ def event_design(event_spec, t, order=2, hrfs=[glover]):
             amplitudes=e_X[n], f=h) for i, n in enumerate(e_dtype.names)]
         for n, c in e_contrasts.items():
             t_contrasts["%s_%d" % (n, l)] = formula.Formula([ \
-                 events(event_spec['time'], amplitudes=c[nn], f=h) for i, nn in enumerate(c.dtype.names)])
+                 events(event_spec['time'], amplitudes=c[nn], f=h)
+                 for i, nn in enumerate(c.dtype.names)])
     t_formula = formula.Formula(t_terms)
     
     tval = formula.make_recarray(t, ['t'])
     X_t, c_t = t_formula.design(tval, contrasts=t_contrasts)
     return X_t, c_t
+
 
 def stack2designs(old_X, new_X, old_contrasts={}, new_contrasts={}):
     """
@@ -189,30 +167,22 @@ def stack2designs(old_X, new_X, old_contrasts={}, new_contrasts={}):
 
     Parameters
     ----------
-
     old_X : np.ndarray
-        A design matrix
-
+       A design matrix
     new_X : np.ndarray
-        A second design matrix to be stacked with old_X
-
+       A second design matrix to be stacked with old_X
     old_contrast : dict
-        Dictionary of contrasts in the old_X column space
-
+       Dictionary of contrasts in the old_X column space
     new_contrasts : dict
-        Dictionary of contrasts in the new_X column space
+       Dictionary of contrasts in the new_X column space
     
-    Outputs
+    Returns
     -------
-
     X : np.ndarray
-        A new design matrix:  np.hstack([old_X, new_X])
-
+       A new design matrix:  np.hstack([old_X, new_X])
     contrasts : dict
-        The new contrast matrices reflecting changes to the columns.
-
+       The new contrast matrices reflecting changes to the columns.
     """
-
     contrasts = {}
 
     if old_X.ndim == 1:
@@ -245,6 +215,7 @@ def stack2designs(old_X, new_X, old_contrasts={}, new_contrasts={}):
 
     return X, contrasts
 
+
 def stack_contrasts(contrasts, name, keys):
     """
     Create a new F-contrast matrix called 'name'
@@ -253,26 +224,22 @@ def stack_contrasts(contrasts, name, keys):
 
     Parameters
     ----------
-
     contrasts : dict
-        Dictionary of contrast matrices
-
+       Dictionary of contrast matrices
     name : str
-        Name of new contrast. Should not already be a key of contrasts.
+       Name of new contrast. Should not already be a key of contrasts.
+    keys : sequence of str
+       Keys of contrasts that are to be stacked.
 
-    keys : [str]
-        Keys of contrasts that are to be stacked.
-
-    Outputs
+    Returns
     -------
-
     None
-
     """
     if name in contrasts.keys():
         raise ValueError('contrast "%s" already exists' % name)
 
     contrasts[name] = np.vstack([contrasts[k] for k in keys])
+
 
 def stack_designs(*pairs):
     """
@@ -281,20 +248,15 @@ def stack_designs(*pairs):
 
     Parameters
     ----------
-
     pairs : sequence filled with (np.ndarray, dict) or np.ndarray
 
-    Outputs
+    Returns
     -------
-
     X : np.ndarray
-        A new design matrix:  np.hstack([old_X, new_X])
-
+       new design matrix:  np.hstack([old_X, new_X])
     contrasts : dict
-        The new contrast matrices reflecting changes to the columns.
-
+       The new contrast matrices reflecting changes to the columns.
     """
-    
     p = pairs[0]
     if len(p) == 1:
         X = p[0]; contrasts={}

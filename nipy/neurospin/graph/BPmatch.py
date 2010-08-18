@@ -11,7 +11,6 @@ Author: Bertrand Thirion , 2006-2008.
 import numpy as np
 
 import graph as fg
-import forest as fo
 from nipy.neurospin.eda.dimension_reduction import Euclidian_distance
 
 
@@ -56,8 +55,6 @@ def match_trivial(c1, c2, scale, eps = 1.e-12 ):
     i, j, k: arrays of shape(E) 
            sparse adjacency matrix of the bipartite association graph
     """
-    s1 = np.size(c1,1)
-    s2 = np.size(c2,1)
     sqs = 2*scale**2
     
     # make a prior
@@ -98,7 +95,6 @@ def BPmatch_slow_asym_dev(c1, c2, G1, G2, scale):
     if G2.V != c2.shape[0]:
         raise ValueError, "incompatible dimension for G2 and c2"
 
-    eps = 1.e-7
     sqs = 2*scale*scale
     ofweight = np.exp(-0.5)
 

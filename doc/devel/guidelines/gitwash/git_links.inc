@@ -14,14 +14,19 @@
 .. _`PROJECTNAME mailing list`: http://projects.scipy.org/mailman/listinfo/nipy-devel
 
 .. nipy
-.. _nipy: http://neuroimaging.scipy.org
-.. _`nipy github`: http://github.com/nipy
-.. _`nipy mailing list`: http://projects.scipy.org/mailman/listinfo/nipy-devel
+.. _nipy: http://nipy.org/nipy
+.. _`nipy github`: http://github.com/nipy/nipy
+.. _`nipy mailing list`: http://mail.scipy.org/mailman/listinfo/nipy-devel
 
 .. ipython
 .. _ipython: http://ipython.scipy.org
-.. _`ipython github`: http://github.com/ipython
+.. _`ipython github`: http://github.com/ipython/ipython
 .. _`ipython mailing list`: http://mail.scipy.org/mailman/listinfo/IPython-dev
+
+.. dipy
+.. _dipy: http://nipy.org/dipy
+.. _`dipy github`: http://github.com/Garyfallidis/dipy
+.. _`dipy mailing list`: http://mail.scipy.org/mailman/listinfo/nipy-devel
 
 .. git stuff
 .. _git: http://git-scm.com/
