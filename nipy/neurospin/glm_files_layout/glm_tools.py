@@ -438,7 +438,7 @@ def design_matrix(
 #------- GLM fit -------------------------------------
 #-----------------------------------------------------
 
-def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, glm_info=None,
+def glm_fit(fMRI_path, DesignMatrix,  output_glm=None, glm_info=None,
            fit="Kalman_AR1", mask_url=None):
     """
     Call the GLM Fit function with apropriate arguments
@@ -447,7 +447,7 @@ def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, glm_info=None,
     ----------
     fMRI_path, string or list of strings,
           path of the fMRI data file(s)
-    design_matrix, DesignMatrix instance, optional
+    design_matrix, DesignMatrix instance,
           design matrix of the model
     output_glm, string, optional
                 path of the output glm .npz dump
@@ -485,9 +485,6 @@ def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, glm_info=None,
     if isinstance(DesignMatrix, basestring):
         import nipy.neurospin.utils.design_matrix as dm
         X = dm.dmtx_from_csv( DesignMatrix).matrix
-        #DM = dm.DesignMatrix()
-        #DM.read_from_csv(DesignMatrix)
-        #X  = DM.matrix
     else:
         X = DesignMatrix.matrix
   
