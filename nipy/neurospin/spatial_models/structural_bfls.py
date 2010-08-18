@@ -39,10 +39,12 @@ class LandmarkRegions(object):
         domain: ROI instance
                 defines the spatial context of the SubDomains
         k: int, the number of regions considered
-        subj: k-length list of subjects
-              (these correspond to ROI feature)
         indiv_coord:  k-length list of arrays, optional,
-                      coordinates of the nodes in some embedding space. 
+                      coordinates of the nodes in some embedding space.
+        subj: k-length list of integers
+              these correspond to and ROI feature:
+              the subject index of individual regions
+
         id: string, optional, identifier
         """
         self.domain = domain

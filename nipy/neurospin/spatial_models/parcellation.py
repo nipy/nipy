@@ -13,6 +13,25 @@ TODO : add a method 'global field', i.e. non-subject-specific info
 
 import numpy as np
 
+###################################################################
+# new parcellation class
+###################################################################
+
+import discrete_domain as dm
+
+class New_Parcellation(object):
+    """ New parcellation class
+    """
+
+    def __init__(self, domain, labellings):
+        """
+        """
+        pass
+
+###################################################################
+# parcellation class
+###################################################################
+
 class Parcellation(object):
     """
     This is the basic Parcellation class:

@@ -7,7 +7,47 @@ from nipy.io.imageformats import load, save, Nifti1Image
 
 import discrete_domain as ddom
 
+###############################################################################
+# class MultiROI
+###############################################################################
 
+
+class MultiROI(object):
+    """
+    This is an abstract class from which different types of
+    multiple ROI classes will be derived
+    """
+
+    def __init__(self, domain, k, rid=''):
+        """
+        Parameters
+        ----------
+        domain: ROI instance
+                defines the spatial context of the SubDomains
+        k: non-negative int, number of regions considered
+        id: string, optional, identifier
+        """
+        self.domain = domain
+        self.k = k
+        self.id = rid
+        self.roi_features = {}
+
+    def set_roi_feature(self, fid, data):
+        """
+        """
+        if len(data) != self.k:
+            raise ValueError, 'data should have length k'
+        self.roi_features.update({fid:data})
+
+    def get_roi_feature(self, fid):
+        return self.roi_features[fid]
+        
+    
+    def select(self, valid):
+        """Select a subset of ROIs and he associated features
+        """
+        pass
+    
 ###############################################################################
 # class SubDomains
 ###############################################################################
