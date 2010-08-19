@@ -161,8 +161,9 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     out = np.rollaxis(out, 0, axis+1)
     return {'basis_vectors': basis_vectors.T,
             'pcnt_var': pcntvar,
-            'basis_projections': out, 
-            'axis': axis}
+            'basis_projections': out,
+            'axis': axis,
+            'C': C}
 
 
 def _get_covariance(data, UX, standardize_from, mask):
