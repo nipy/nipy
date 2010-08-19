@@ -52,16 +52,23 @@ def test_same_cov():
         assert_true(np.all(res['C'] ==
                            res_again['C']))
 
+
 def test_2d_eq_4d():
     arr4d = data['fmridata']
     shp = arr4d.shape
     arr2d =  arr4d.reshape((np.prod(shp[:3]), shp[3]))
-    arr3d = arr4d.reshape((-1, shp[2], shp[3]))
-    res4d = pca(arr4d, axis=-1)
-    res3d = pca(arr3d, axis=-1)
-    res2d = pca(arr2d, axis=-1)
-    assert_array_almost_equal(res2d['basis_vectors'],
-                              res3d['basis_vectors'])
+    arr3d = arr4d.reshape((shp[0], -1, shp[3]))
+    res4d = pca(arr4d, axis=-1, standardize=False)
+    res3d = pca(arr3d, axis=-1, standardize=False)
+    res2d = pca(arr2d, axis=-1, standardize=False)
+    assert_array_almost_equal(res4d['basis_vectors'],
+                              res2d['basis_vectors'])
+    assert_array_almost_equal(res2d['Vs'],
+                              res3d['Vs'])
+    assert_array_almost_equal(res4d['D'],
+                              res3d['D'])
+    assert_array_almost_equal(res4d['C'],
+                              res3d['C'])
     assert_array_almost_equal(res4d['basis_vectors'],
                               res3d['basis_vectors'])
     assert_array_almost_equal(res4d['basis_vectors'],

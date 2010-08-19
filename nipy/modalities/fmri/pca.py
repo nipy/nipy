@@ -137,10 +137,11 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     # final "column space" that the data will be projected onto.
     rank = (SX/SX.max() > tol_ratio).sum()
     UX = UX[:,:rank].T
-    assert np.allclose(UX, VX[:rank])
     # calculate covariance matrix in full-rank column space.  The returned
     # array is roughly: YX = dot(UX, data); C = dot(YX, YX.T), perhaps where the
     # data has been standarized, perhaps summed over slices
+    import hashlib
+    print hashlib.md5(data.ravel()).hexdigest()
     C_full_rank  = _get_covariance(data, UX, rmse_scales_func, mask)
     # find the eigenvalues D and eigenvectors Vs of the covariance
     # matrix
@@ -167,6 +168,9 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
             'pcnt_var': pcntvar,
             'basis_projections': out,
             'axis': axis,
+            'UX': UX,
+            'Vs': Vs,
+            'D': D,
             'C': C_full_rank}
 
 
@@ -183,8 +187,10 @@ def _get_covariance(data, UX, rmse_scales_func, mask):
         # If we have more then 2D, then we iterate over slices in the second
         # dimension, in order to save memory
         slices = [slice(i,i+1) for i in range(data.shape[1])]
-    for s_slice in slices:
+    for i, s_slice in enumerate(slices):
         Y = data[:,s_slice].reshape((n_pts, -1))
+        import hashlib
+        print i, hashlib.md5(Y.ravel()).hexdigest()
         # project data into required space
         YX = np.dot(UX, Y)
         if rmse_scales_func is not None:
