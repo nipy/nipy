@@ -46,8 +46,22 @@ class MultiROI(object):
     def select(self, valid):
         """Select a subset of ROIs and he associated features
         """
-        pass
-    
+        if valid.size != self.k:
+            raise ValueError, 'Invalid size for valid'
+
+        for k in range(self.k):
+            if valid[k]==0:
+                self.label[self.label==k] = -1
+            
+        oldk = self.k
+        self.k = valid.sum()
+                
+        for fid in self.roi_features.keys():
+            f = self.roi_features.pop(fid)
+            sf = np.array([f[k] for k in range(oldk) if valid[k]])
+            self.set_roi_feature(fid, sf)
+            
+          
 ###############################################################################
 # class SubDomains
 ###############################################################################
@@ -368,7 +382,7 @@ class SubDomains(object):
         ----
         Works only if self.dom is an ddom.NDGridDomain
         """
-        if not isinstance(self, ddom.NDGridDomain):
+        if not isinstance(self.domain, ddom.NDGridDomain):
             return None
 
         tmp_image = self.domain.to_image()
@@ -400,7 +414,8 @@ def subdomain_from_array(labels, affine=None, nn=0):
     ----
     Only nonzero labels are considered
     """
-    dom = ddom.domain_from_array(np.ones(labels.shape), affine=affine, nn=nn)
+    dom = ddom.grid_domain_from_array(np.ones(labels.shape), affine=affine,
+                                      nn=nn)
     return SubDomains(dom, labels.astype(np.int))
 
 def subdomain_from_image(mim, nn=18):
