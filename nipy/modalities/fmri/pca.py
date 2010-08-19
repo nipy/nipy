@@ -166,7 +166,8 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     return {'basis_vectors': basis_vectors.T,
             'pcnt_var': pcntvar,
             'basis_projections': out,
-            'axis': axis}
+            'axis': axis,
+            'C': C_full_rank}
 
 
 def _get_covariance(data, UX, rmse_scales_func, mask):
