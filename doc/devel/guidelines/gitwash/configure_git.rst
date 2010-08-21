@@ -9,83 +9,115 @@
 Overview
 ========
 
-::
+Your personal git_ configurations are saved in the ``.gitconfig`` file in
+your home directory.
+Here is an example ``.gitconfig`` file::
 
-  git config --global user.email you@yourdomain.example.com
-  git config --global user.name "Your Name Comes Here"
-
-
-In detail
-=========
-
-This is to tell git_ who you are, for labeling any changes you make to
-the code.  The simplest way to do this is from the command line::
-
-  git config --global user.email you@yourdomain.example.com
-  git config --global user.name "Your Name Comes Here"
-
-This will write the settings into your git configuration file - a file
-called ``.gitconfig`` in your home directory. 
-
-Advanced git configuration
-==========================
-
-You might well benefit from some aliases to common commands.
-
-For example, you might well want to be able to shorten ``git checkout`` to ``git co``. 
-
-The easiest way to do this, is to create a ``.gitconfig`` file in your
-home directory, with contents like this::
-
-  [core]
-          editor = emacs
   [user]
+          name = Your Name
           email = you@yourdomain.example.com
-          name = Your Name Comes Here
+  
   [alias]
-          st = status
-          stat = status
+          ci = commit -a
           co = checkout
-  [color]
-          diff = auto
-          status = true
+          st = status -a
+          stat = status -a
+          br = branch
+          wdiff = diff --color-words
+  
+  [core]
+          editor = vim
 
-(of course you'll need to set your email and name, and may want to set
-your editor).  If you prefer, you can do the same thing from the command
-line::
+  [merge]
+          summary = true
 
-  git config --global core.editor emacs
+You can edit this file directly or you can use the ``git config --global``
+command::
+  
+  git config --global user.name "Your Name"
   git config --global user.email you@yourdomain.example.com
-  git config --global user.name "Your Name Comes Here"
-  git config --global alias.st status
-  git config --global alias.stat status
+  git config --global alias.ci "commit -a"
   git config --global alias.co checkout
-  git config --global color.diff auto
-  git config --global color.status true
-
-These commands will write to your user's git configuration file
-``~/.gitconfig``.
+  git config --global alias.st "status -a"
+  git config --global alias.stat "status -a"
+  git config --global alias.br branch
+  git config --global alias.wdiff "diff --color-words"
+  git config --global core.editor vim
+  git config --global merge.summary true
 
 To set up on another computer, you can copy your ``~/.gitconfig`` file,
 or run the commands above.
 
-Other recommended configurations
-================================
+In detail
+=========
 
-In your ``~/.gitconfig`` file alias section::
+user.name and user.email
+------------------------
 
-   wdiff = diff --color-words
+It is good practice to tell git_ who you are, for labeling any changes
+you make to the code.  The simplest way to do this is from the command
+line::
 
-so that ``git wdiff`` gives a nicely formatted output of the diff. 
+  git config --global user.name "Your Name"
+  git config --global user.email you@yourdomain.example.com
 
-To enforce summaries when doing merges(``~/.gitconfig`` file again)::
+This will write the settings into your git configuration file,  which
+should now contain a user section with your name and email::
+
+  [user]
+        name = Your Name
+        email = you@yourdomain.example.com
+
+Of course you'll need to replace ``Your Name`` and ``you@yourdomain.example.com``
+with your actual name and email address.
+
+Aliases
+-------
+
+You might well benefit from some aliases to common commands.
+
+For example, you might well want to be able to shorten ``git checkout``
+to ``git co``.  Or you may want to alias ``git diff --color-words``
+(which gives a nicely formatted output of the diff) to ``git wdiff``
+
+The following ``git config --global`` commands::
+
+  git config --global alias.ci "commit -a"
+  git config --global alias.co checkout
+  git config --global alias.st "status -a"
+  git config --global alias.stat "status -a"
+  git config --global alias.br branch
+  git config --global alias.wdiff "diff --color-words"
+
+will create an ``alias`` section in your ``.gitconfig`` file with contents
+like this::
+
+  [alias]
+          ci = commit -a
+          co = checkout
+          st = status -a
+          stat = status -a
+          br = branch
+          wdiff = diff --color-words
+
+Editor
+------
+
+You may also want to make sure that your editor of choice is used ::
+
+  git config --global core.editor vim
+
+Merging
+-------
+
+To enforce summaries when doing merges (``~/.gitconfig`` file again)::
 
    [merge]
       summary = true
 
 Or from the command line::
 
-  git config --global alias.wdiff "diff --color-words"
   git config --global merge.summary true
+
 
 .. include:: git_links.inc
