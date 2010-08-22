@@ -366,7 +366,7 @@ class SubDomains(object):
         ax.boxplot(f)
         ax.set_title('ROI-level distribution for feature %s' %fid)
         ax.set_xlabel('Region index')
-        ax.set_xticks(np.arange(1, self.k+1))
+        ax.set_xticks(np.arange(1, self.k+1), np.arange(self.k))
         return ax
         
     def set_roi_feature(self, fid, data):
