@@ -4,7 +4,7 @@
 This is a little demo that simply shows ROI manipulation within
 the nipy framework
 
-Author: Bertrand Thirion, 2009
+Author: Bertrand Thirion, 2009-2010
 """
 print __doc__
 
@@ -20,13 +20,16 @@ import nipy.neurospin.spatial_models.hroi as hroi
 
 import get_data_light
 import tempfile
-#get_data_light.get_it()
+
 
 # paths
-swd = tempfile.mkdtemp()
 data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
 input_image = os.path.join(data_dir,'spmT_0029.nii.gz')
 mask_image = os.path.join(data_dir,'mask.nii.gz')
+#get_data_light.get_it()
+
+# write dir
+swd = tempfile.mkdtemp()
 
 # -----------------------------------------------------
 # example 1: create the ROI froma a given position

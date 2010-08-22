@@ -345,16 +345,30 @@ class SubDomains(object):
         """
         pass
 
-    def plot_feature(self, fid):
-        """plots self.features[fid]
+    def plot_feature(self, fid, ax=None):
         """
-        feature = self.get_feature(fid)
-        import pylab
-        pylab.figure()
-        pylab.title('distribution of feature %s per ROI'%fid)
-        pylab.boxplot(feature)
-        pylab.xlabel('Region index')
+        boxplot the distribution of features within ROIs
+        Note that this assumes 1-d features
 
+        Parameters
+        ----------
+        fid: string,
+             the feature identifier
+        ax: axis handle, optional
+        """
+        f = self.get_feature(fid)
+        #if f[0].shape[1]>1:
+        #    raise ValueError, "cannot plot multi-dimensional\
+        #    features for the moment"
+        if ax is None:      
+            import matplotlib.pylab as mp
+            ax = mp.figure()
+        ax.boxplot(f)
+        ax.set_title('ROI-level distribution for feature %s' %fid)
+        ax.set_xlabel('Region index')
+        ax.set_xticks(np.arange(1, self.k+1))
+        return ax
+        
     def set_roi_feature(self, fid, data):
         """
         Parameters
