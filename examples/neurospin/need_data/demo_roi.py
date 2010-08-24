@@ -15,7 +15,7 @@ from nipy.io.imageformats import load, save, Nifti1Image
 
 import nipy.neurospin.spatial_models.mroi as mroi
 from nipy.neurospin.spatial_models.discrete_domain import \
-     grid_domain_from_image,NDGridDomain 
+     grid_domain_from_image, NDGridDomain 
 import nipy.neurospin.spatial_models.hroi as hroi
 
 import get_data_light

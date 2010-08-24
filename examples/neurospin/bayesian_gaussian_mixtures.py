@@ -54,7 +54,7 @@ pl.title('Variational Bayes')
 ################################################################################
 # 4. the same, with the Gibbs GMM algo
 niter = 1000
-krange = range(2, 6)
+krange = range(1, 6)
 bbf = -np.infty
 for k in krange:
     b = bgmm.BGMM(k, dim)
