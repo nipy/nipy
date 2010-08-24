@@ -85,11 +85,10 @@ static inline void _hard_vote(double* res, int K, size_t pos,
 static inline void _dot(double* y, const double* A, const double* x, int n)
 {
   int i, k; 
-  double *bufA, *bufy, *bufx; 
+  double *bufA=A, *bufy=y, *bufx; 
   double tmp; 
 
-  for (i=0, bufy=y; i<n; i++, bufy++) {
-    bufA = A; 
+  for (i=0; i<n; i++, bufy++) {
     bufx = x; 
     tmp = 0.0; 
     for (k=0; k<n; k++, bufA++, bufx++)
