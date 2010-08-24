@@ -352,7 +352,7 @@ def realign4d(runs,
         return transforms, transforms, None
 
     # Correct between-session motion using the mean image of each corrected run 
-    corr_runs = [resample4d(runs[i], transforms=transforms[i]) for i in range(nruns)]
+    corr_runs = [resample4d(runs[i], transforms=transforms[i], time_interp=time_interp) for i in range(nruns)]
     aux = np.rollaxis(np.asarray([c.mean(3) for c in corr_runs]), 0, 4)
     ## Fake time series with zero inter-slice time 
     ## FIXME: check that all runs have the same to-world transform
