@@ -284,11 +284,9 @@ class Realign4d(object):
     
 
 
-
-
 def resample4d(im4d, transforms=None, time_interp=True): 
     """
-    corr_im4d_array = resample4d(im4d, transforms=None)
+    corr_im4d_array = resample4d(im4d, transforms=None, time_interp=True)
     """
     r = Realign4d(im4d, transforms=transforms, time_interp=time_interp)
     return r.resample()
@@ -301,7 +299,7 @@ def single_run_realign4d(im4d,
                          optimizer=_OPTIMIZER, 
                          time_interp=True): 
     """
-    transforms = single_run_realign4d(im4d, loops=2, speedup=4, optimizer='powell')
+    transforms = single_run_realign4d(im4d, loops=2, speedup=4, optimizer='powell', time_interp=True)
 
     Parameters
     ----------
