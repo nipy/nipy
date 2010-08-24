@@ -42,15 +42,22 @@ def root_mse(arr, axis=0):
     return np.sqrt(np.square(arr).sum(axis=axis) / arr.shape[axis])
 
 
-def test_same_cov():
+def pos1basis(res):
+    ''' Return basis vectors with first row positive '''
+    bvs = res['basis_vectors']
+    return bvs * np.sign(bvs[0])
+
+
+def test_same_basis():
     arr4d = data['fmridata']
     shp = arr4d.shape
     arr2d =  arr4d.reshape((np.prod(shp[:3]), shp[3]))
     res = pca(arr2d, axis=-1)
-    for i in range(5):
+    p1b_0 = pos1basis(res)
+    for i in range(3):
         res_again = pca(arr2d, axis=-1)
-        assert_true(np.all(res['C'] ==
-                           res_again['C']))
+        assert_true(np.all(pos1basis(res_again) ==
+                           p1b_0))
 
 
 def test_2d_eq_4d():
@@ -61,18 +68,10 @@ def test_2d_eq_4d():
     res4d = pca(arr4d, axis=-1, standardize=False)
     res3d = pca(arr3d, axis=-1, standardize=False)
     res2d = pca(arr2d, axis=-1, standardize=False)
-    assert_array_almost_equal(res4d['basis_vectors'],
-                              res2d['basis_vectors'])
-    assert_array_almost_equal(res2d['Vs'],
-                              res3d['Vs'])
-    assert_array_almost_equal(res4d['D'],
-                              res3d['D'])
-    assert_array_almost_equal(res4d['C'],
-                              res3d['C'])
-    assert_array_almost_equal(res4d['basis_vectors'],
-                              res3d['basis_vectors'])
-    assert_array_almost_equal(res4d['basis_vectors'],
-                              res2d['basis_vectors'])
+    assert_array_almost_equal(pos1basis(res4d),
+                              pos1basis(res2d))
+    assert_array_almost_equal(pos1basis(res4d),
+                              pos1basis(res3d))
 
 
 @parametric
