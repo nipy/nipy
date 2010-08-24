@@ -18,7 +18,7 @@ import numpy as np
 import os.path as op
 import matplotlib.pylab as mp
 
-from nipy.io.imageformats import load, save, Nifti1Image
+from nipy.io.imageformats import load, Nifti1Image
 import nipy.neurospin.utils.design_matrix as dm
 from nipy.neurospin.utils.simul_multisubject_fmri_dataset import surrogate_4d_dataset
 import get_data_light
@@ -30,14 +30,14 @@ from nipy.neurospin.spatial_models.roi import MultipleROI
 #######################################
 
 # volume mask
-get_data_light.getIt()
+get_data_light.get_it()
 mask_path = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
                                  'mask.nii.gz'))
 mask = load(mask_path)
 
 # timing
-n_scans  =128
-tr = 2.4
+n_scans = 128
+tr      = 2.4
 
 # paradigm
 frametimes = np.linspace(0, (n_scans-1)*tr, n_scans)
@@ -45,7 +45,7 @@ conditions = np.arange(20)%2
 onsets = np.linspace(5, (n_scans-1)*tr-10, 20) # in seconds
 hrf_model = 'Canonical'
 motion = np.cumsum(np.random.randn(n_scans, 6),0)
-add_reg_names = ['tx','ty','tz','rx','ry','rz']
+add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
 # write directory
 swd = '/tmp'

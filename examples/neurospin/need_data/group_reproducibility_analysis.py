@@ -11,16 +11,11 @@ Neuroimage. 2007 Mar;35(1):105-20.
 
 author: Bertrand Thirion, 2005-2009
 """
-import numpy as np
 import os.path as op
-import cPickle
-from nipy.io.imageformats import load, save, Nifti1Image 
 import tempfile
 import get_data_light
 
-from nipy.neurospin.utils.mask import intersect_masks
 from nipy.neurospin.utils.reproducibility_measures import \
-     voxel_reproducibility, cluster_reproducibility, map_reproducibility,\
      group_reproducibility_metrics
 
 print 'This analysis takes a long while, please be patient'
@@ -29,12 +24,11 @@ print 'This analysis takes a long while, please be patient'
 # Set the paths, data, etc.
 ##############################################################################
 
-get_data_light.getIt()
+data_dir = get_data_light.get_it()
 nsubj = 12
 subj_id = range(nsubj)
 nbeta = 29
-data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
-                                 'group_t_images'))
+data_dir = op.expanduser(op.join(data_dir, 'group_t_images'))
 mask_images = [op.join(data_dir,'mask_subj%02d.nii'%n)
                for n in range(nsubj)]
 
@@ -92,6 +86,7 @@ pylab.xlabel('threshold')
 ##############################################################################
 # create an image
 ##############################################################################
+# XXX
 """
 # this is commented until a new version of the code allows it
 # with the adequate level of abstraction

@@ -2,10 +2,10 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import numpy as np
+
 from nipy.io.imageformats import load, save, Nifti1Image 
-from discrete_domain import\
-     StructuredDomain, NDGridDomain, domain_from_array,\
-     reduce_coo_matrix, array_affine_coord, smatrix_from_nd_array
+
+import discrete_domain as ddom
 
 
 ###############################################################################
@@ -291,10 +291,15 @@ class SubDomains(object):
         """
         pass
 
-    def plot_feature(self):
+    def plot_feature(self, fid):
+        """plots self.features[fid]
         """
-        """
-        pass
+        feature = self.get_feature(fid)
+        import pylab
+        pylab.figure()
+        pylab.title('distribution of feature %s per ROI'%fid)
+        pylab.boxplot(feature)
+        pylab.xlabel('Region index')
 
     def set_roi_feature(self, fid, data):
         """
@@ -311,9 +316,30 @@ class SubDomains(object):
         self.roi_features.update({fid:data})
 
     def get_roi_feature(self, fid):
-        """
+        """roi_features accessor
         """
         return self.roi_features[fid]
+
+    def to_image(self, path=None):
+        """
+        Generates and possiblly writes a label image that represents self.
+
+        Note
+        ----
+        Works only if self.dom is an ddom.NDGridDomain
+        """
+        if not isinstance(self, ddom.NDGridDomain):
+            return None
+
+        tmp_image = self.domain.to_image()
+        label = tmp_image.get_data().copy()-1
+        label[label>-1] = self.label
+        nim = Nifti1Image(label, tmp_image.get_affine())
+        nim.get_header()['descrip'] = 'label image of %s' %self.id
+        if path is not None:
+            save(nim, path)
+        return nim
+    
 
 def subdomain_from_array(labels, affine=None, nn=0):
     """
@@ -334,10 +360,10 @@ def subdomain_from_array(labels, affine=None, nn=0):
     ----
     Only nonzero labels are considered
     """
-    dom = domain_from_array(np.ones(labels.shape), affine=affine, nn=nn)
+    dom = ddom.domain_from_array(np.ones(labels.shape), affine=affine, nn=nn)
     return SubDomains(dom, labels.astype(np.int))
 
-def subdomain_from_label_image(mim, nn=18):
+def subdomain_from_image(mim, nn=18):
     """
     return a SubDomain instance from the input mask image
 
@@ -364,6 +390,25 @@ def subdomain_from_label_image(mim, nn=18):
 
     return subdomain_from_array(iim.get_data(), iim.get_affine(), nn)
 
+def subdomain_from_position_and_image(nim, pos):
+    """
+    keeps the set of labels of the image corresponding to a certain index
+    so that their position is closest to the prescribed one
+    Parameters
+    ----------
+    mim: NiftiIImage instance, or string path toward such an image
+         supposedly a label image
+    pos: array of shape(3) or list of length 3,
+         the prescribed position
+    """
+    tmp = subdomain_from_image(nim)
+    coord = np.array([tmp.domain.coord[tmp.label==k].mean(0)
+                      for k in range(tmp.k)])
+    idx = ((coord-pos)**2).sum(1).argmin()
+    return subdomain_from_array(nim.get_data()==idx, nim.get_affine())
+    
+    
+    
 def subdomain_from_balls(domain, positions, radii):
     """
     Create discrete ROIs as a set of balls within a certain coordinate systems
@@ -727,8 +772,8 @@ def mroi_from_array(labels, affine=None, nn=0):
     vvol = np.absolute(np.linalg.det(affine))
     for q in ul:
         vol.append(vvol*np.ones(np.sum(labels==q)))
-        coord.append(array_affine_coord(labels==q, affine))
-        topology.append(smatrix_from_nd_array(labels==q, nn))
+        coord.append(ddom.array_affine_coord(labels==q, affine))
+        topology.append(ddom.smatrix_from_nd_array(labels==q, nn))
     return MultipleROI(dim, k, coord, vol, topology)
     
 
@@ -759,7 +804,7 @@ def mroi_from_balls(domain, positions, radii):
         ik = np.sum((domain.coord-positions[k])**2, 1)<radii[k]**2
         coord.append(domain.coord[ik])
         vol.append(domain.local_volume[ik])
-        topology.append(reduce_coo_matrix(domain.topology, ik))
+        topology.append(ddom.reduce_coo_matrix(domain.topology, ik))
     return MultipleROI(domain.dim, radii.size, coord, vol, topology)
 
 

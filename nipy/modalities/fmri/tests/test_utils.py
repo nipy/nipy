@@ -22,8 +22,7 @@ import sympy
 from sympy import Symbol, Function, DiracDelta
 import nipy.modalities.fmri.hrf as mfhrf
 
-from nose.tools import (assert_true, assert_false, 
-                        assert_equal, assert_raises, raises)
+from nose.tools import assert_equal, raises
 
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_almost_equal)
@@ -90,7 +89,7 @@ def test_interp():
 
 @raises(ValueError)
 def test_linear_inter_kind():
-    s = linear_interp([0, 1], [1, 2], kind='cubic')
+    linear_interp([0, 1], [1, 2], kind='cubic')
 
 
 @parametric

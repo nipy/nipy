@@ -29,8 +29,6 @@ Author : Lise Favre, Bertrand Thirion, 2008-2010
 """
 
 import os
-from os.path import join
-import commands
 import glob
 
 import numpy as np
@@ -86,7 +84,8 @@ def generate_all_brainvisa_paths( base_path, sessions, fmri_wc,  model_id,
     Returns
     -------
     paths, dictionary
-        containing all the paths that are required to eprform a glm with brainvisa
+        containing all the paths that are required to perform a
+        glm with brainvisa
     """
  
     paths = {}
@@ -96,6 +95,7 @@ def generate_all_brainvisa_paths( base_path, sessions, fmri_wc,  model_id,
         paths['paradigm'] = os.sep.join(( paths['minf'], paradigm_id))
         if not os.path.isfile( paths['paradigm']):
             raise ValueError,"paradigm file %s not found" % paths['paradigm']
+
     paths['mask'] = os.sep.join(( paths['minf'], mask_id))
     paths['misc'] = os.sep.join(( paths['minf'], misc_id))
     paths['contrast_file'] =  os.sep.join(( paths['model'], contrast_id))
@@ -581,7 +581,6 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
             contrast_type = contrast_struct[contrast]["Type"]
             contrast_dimension = contrast_struct[contrast]["Dimension"]
             final_contrast = []
-            k = i+1
             multicon = dict()
 
             for key, value in contrast_struct[contrast].items():
@@ -604,7 +603,6 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
                         final_contrast.append(_con)
         
 
-            design = designs[session]
             res_contrast = final_contrast[0]
             for c in final_contrast[1:]:
                 res_contrast = res_contrast + c

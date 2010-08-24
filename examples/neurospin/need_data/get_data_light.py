@@ -13,56 +13,56 @@ import urllib2
 import tarfile
 
 def get_it():
-    """
-    light dataset for multi-subject analysis
+    """ Lightweight dataset for multi-subject analysis
     """
     # define several paths
     url = 'ftp://ftp.cea.fr/pub/dsv/madic/download/nipy'
     data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
-    MaskImage = os.path.join(data_dir,'mask.nii.gz')
-    InputImage = os.path.join(data_dir,'spmT_0029.nii.gz')
-    GroupData = os.path.join(data_dir,'group_t_images.tar.gz')
+    mask_image = os.path.join(data_dir,'mask.nii.gz')
+    input_image = os.path.join(data_dir,'spmT_0029.nii.gz')
+    group_data = os.path.join(data_dir,'group_t_images.tar.gz')
 
-    # possibly create data_dir
+    # if needed create data_dir
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
         assert os.path.exists(data_dir)
 
-    # download MaskImage if necessary
-    if os.path.exists(MaskImage)==False:
+    # download mask_image if necessary
+    if os.path.exists(mask_image)==False:
         filename = 'mask.nii.gz'
         datafile = os.path.join(url,filename)
         fp = urllib2.urlopen(datafile)
-        local_file = open(MaskImage, 'w')
+        local_file = open(mask_image, 'w')
         local_file.write(fp.read())
         local_file.flush()
         local_file.close()
 
-    # download InputImage if necessary
-    if os.path.exists(InputImage)==False:
+    # download input_image if necessary
+    if os.path.exists(input_image)==False:
         filename = 'spmT_0029.nii.gz'
         datafile = os.path.join(url,filename)
         fp = urllib2.urlopen(datafile)
-        local_file = open(InputImage, 'w')
+        local_file = open(input_image, 'w')
         local_file.write(fp.read())
         local_file.flush()
         local_file.close()
 
-    # download GroupData if necessary
-    if os.path.exists(GroupData)==False:
+    # download group_data if necessary
+    if os.path.exists(group_data)==False:
         filename = 'group_t_images.tar.gz'
         datafile = os.path.join(url,filename)
         fp = urllib2.urlopen(datafile)
-        local_file = open(GroupData, 'w')
+        local_file = open(group_data, 'w')
         local_file.write(fp.read())
         local_file.flush()
         local_file.close()
 
-    #untargzip GroupData
-    tar = tarfile.open(GroupData)
+    #untargzip group_data
+    tar = tarfile.open(group_data)
     tar.extractall(data_dir)
     tar.close()
-    os.remove(GroupData)
+    os.remove(group_data)
+    return data_dir
 
 def get_localizer_dataset():
     """
@@ -79,7 +79,7 @@ def get_localizer_dataset():
         os.makedirs(data_dir)
         assert os.path.exists(data_dir)
 
-    # download MaskImage if necessary
+    # download mask_image if necessary
     if os.path.exists(paradigm)==False:
         print 'Downloading mask image, this make take time'
         datafile = os.path.join(url, 'localizer_paradigm.csv')
