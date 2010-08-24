@@ -168,7 +168,6 @@ class Realign4d(object):
         else: 
             cspline_sample3d(self.data[:,t], self.cbspline[:,:,:,t], X, Y, Z)
 
-
     def resample_all_inmask(self):
         for t in range(self.nscans):
             print('Resampling scan %d/%d' % (t+1, self.nscans))
@@ -296,13 +295,13 @@ def resample4d(im4d, transforms=None, time_interp=True):
 
 
 
-def _realign4d(im4d, 
-               loops=_WITHIN_LOOPS, 
-               speedup=_SPEEDUP, 
-               optimizer=_OPTIMIZER, 
-               time_interp=True): 
+def single_run_realign4d(im4d, 
+                         loops=_WITHIN_LOOPS, 
+                         speedup=_SPEEDUP, 
+                         optimizer=_OPTIMIZER, 
+                         time_interp=True): 
     """
-    transforms = _realign4d(im4d, loops=2, speedup=4, optimizer='powell')
+    transforms = single_run_realign4d(im4d, loops=2, speedup=4, optimizer='powell')
 
     Parameters
     ----------
@@ -346,8 +345,9 @@ def realign4d(runs,
         align_runs = False
 
     # Correct motion and slice timing in each sequence separately
-    transforms = [_realign4d(run, loops=within_loops, 
-                             speedup=speedup, optimizer=optimizer) for run in runs]
+    transforms = [single_run_realign4d(run, loops=within_loops, 
+                                       speedup=speedup, optimizer=optimizer,
+                                       time_interp=time_interp) for run in runs]
     if not align_runs: 
         return transforms, transforms, None
 
@@ -357,8 +357,8 @@ def realign4d(runs,
     ## Fake time series with zero inter-slice time 
     ## FIXME: check that all runs have the same to-world transform
     mean_img = Image4d(aux, to_world=runs[0].to_world, tr=1.0, tr_slices=0.0) 
-    transfo_mean = _realign4d(mean_img, loops=between_loops, speedup=speedup, 
-                              optimizer=optimizer)
+    transfo_mean = single_run_realign4d(mean_img, loops=between_loops, speedup=speedup, 
+                                        optimizer=optimizer, time_interp=time_interp)
 
     # Compose transformations for each run
     ctransforms = [None for i in range(nruns)]
