@@ -49,7 +49,7 @@ def lambdify_t(expr):
 
 def define(name, expr):
     """ Create function of t expression from arbitrary expression `expr`
-    
+
     Take an arbitrarily complicated expression `expr` of 't' and make it
     an expression that is a simple function of t, of form ``'%s(t)' %
     name`` such that when it evaluates (via ``lambdify``) it has the
@@ -123,7 +123,7 @@ def interp(times, values, fill=0, name=None, **kw):
     """ Generic interpolation function of t given `times` and `values`
 
     Imterpolator such that:
-    
+
     f(times[i]) = values[i]
 
     if t < times[0]:
@@ -146,7 +146,7 @@ def interp(times, values, fill=0, name=None, **kw):
         Name of symbolic expression to use. If None, a default is used.
     **kw : keyword args, optional
         passed to ``interp1d``
-        
+
     Returns
     -------
     f : sympy expression 
@@ -179,7 +179,7 @@ def linear_interp(times, values, fill=0, name=None, **kw):
     """ Linear interpolation function of t given `times` and `values`
 
     Imterpolator such that:
-    
+
     f(times[i]) = values[i]
 
     if t < times[0]:
@@ -200,10 +200,10 @@ def linear_interp(times, values, fill=0, name=None, **kw):
         Name of symbolic expression to use. If None, a default is used.
     **kw : keyword args, optional
         passed to ``interp1d``
-        
+
     Returns
     -------
-    f : sympy expression 
+    f : sympy expression
         A Function of t.
 
     Examples
@@ -265,7 +265,7 @@ def step_function(times, values, name=None, fill=0):
     if name is None:
         name = 'step%d' % step_function.counter
         step_function.counter += 1
-    
+
     def _imp(x):
         x = np.asarray(x)
         f = np.zeros(x.shape) + fill
@@ -333,7 +333,7 @@ def events(times, amplitudes=None, f=DiracDelta, g=Symbol('a')):
     return e
 
 
-def blocks(intervals, amplitudes=None):
+def blocks(intervals, amplitudes=None, name=None):
     """ Step function based on a sequence of intervals.
 
     Parameters
@@ -343,6 +343,9 @@ def blocks(intervals, amplitudes=None):
        sequences of length 2, giving 'on' and 'off' times of block
     amplitudes : (S,) sequence of float, optional
        Optional amplitudes for each block. Defaults to 1.
+    name : None or str, optional
+       Name of the convolved function in the resulting expression.
+       Defaults to one created by ``utils.interp``.
 
     Returns
     -------
@@ -372,12 +375,12 @@ def blocks(intervals, amplitudes=None):
         v += [a, 0]
     t.append(np.inf)
     v.append(0)
-    return step_function(t, v)
+    return step_function(t, v, name=name)
 
 
 def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     """ Expression containing numerical convolution of `fn1` with `fn2`
-    
+
     Parameters
     ----------
     fn1 : sympy expr
