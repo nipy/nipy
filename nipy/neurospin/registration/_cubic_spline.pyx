@@ -126,7 +126,7 @@ def cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None):
     tvox = <double*>Tvox.data
 
     # Actual resampling 
-    cast_integer = np.issubclass(dtype.type, np.integer)
+    cast_integer = np.issubdtype(dtype, np.integer)
     cubic_spline_resample3d(im_resampled, im, tvox, cast_integer)
 
     return im_resampled

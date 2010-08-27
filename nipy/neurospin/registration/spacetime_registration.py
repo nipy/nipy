@@ -219,7 +219,7 @@ class Realign4d(object):
         self.m2 -= self.m
         return self.m2.mean()
 
-    def correct_motion(self):
+    def estimate_motion(self):
         optimizer = self.optimizer
 
         def callback(pc):
@@ -308,7 +308,7 @@ def single_run_realign4d(im4d,
     """ 
     r = Realign4d(im4d, speedup=speedup, optimizer=optimizer, time_interp=time_interp)
     for loop in range(loops): 
-        r.correct_motion()
+        r.estimate_motion()
     return r.transforms
 
 def realign4d(runs, 
@@ -373,9 +373,8 @@ def split_affine(a):
 
 class FmriRealign4d(object): 
 
-    def __init__(self, images, tr=None, tr_slices=None, start=0.0, 
-                 slice_order='ascending', interleaved=False, 
-                 time_interp=True):
+    def __init__(self, images, slice_order, interleaved, 
+                 tr=None, tr_slices=None, start=0.0, time_interp=True):
         if not hasattr(images, '__iter__'):
             images = [images]
 
@@ -389,7 +388,7 @@ class FmriRealign4d(object):
         self._transforms = [None for run in self._runs]
         self._time_interp = time_interp 
                       
-    def correct_motion(self, iterations=2, between_loops=None, align_runs=True): 
+    def estimate_motion(self, iterations=2, between_loops=None, align_runs=True): 
         within_loops = iterations 
         if between_loops == None: 
             between_loops = 3*within_loops 

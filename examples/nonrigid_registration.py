@@ -7,7 +7,7 @@ from nipy.neurospin.registration.grid_transform import *
 from nipy.neurospin.image import *
 
 from nipy.utils import example_data
-from nipy.io.imageformats import load, save
+from nipy import load_image, save_image
 
 ### DEBUG
 from numpy.testing import * 
@@ -29,8 +29,8 @@ interp = 'pv'
 optimizer = 'powell'
 
 # Make registration instance
-I = Image(load(source_file))
-J = Image(load(target_file))
+I = load_image(source_file)
+J = load_image(target_file)
 R = IconicRegistration(I, J)
 R.set_source_fov(fixed_npoints=64**3)
 
@@ -42,12 +42,12 @@ cp = np.rollaxis(cp, 0, 4)
 
 # Start with an affine registration
 A0 = Affine()
-A = R.optimize(A0)
-###A = Affine()
+##A = R.optimize(A0)
+A = Affine()
 
 # Save affinely transformed target  
-Jt = J.transform(A, reference=I)
-save(asNifti1Image(Jt), 'affine_anubis_to_ammon.nii')
+##Jt = resample(J, A, reference=I)
+##save_image(Jt, 'affine_anubis_to_ammon.nii')
 
 # Then add control points...
 T0 = SplineTransform(I, cp, sigma=20., grid_coords=True, affine=A)
@@ -67,17 +67,16 @@ print(s-s0)
 """
 
 # Optimize spline transform
-T = R.optimize(T0, method='steepest')
+# T = R.optimize(T0, method='steepest')
 ###T = R.optimize(T0)
 
-###T = T0
+T = T0
 ###T.param = np.load('spline_param.npy')
 
 
 # Resample target image 
-t = np.asarray(T)
-Jt = J.transform(t, reference=I)
-save(asNifti1Image(Jt), 'deform_anubis_to_ammon.nii')
+Jt = resample(J, T, reference=I)
+save_image(Jt, 'deform_anubis_to_ammon.nii')
 
 
 # Test 3
