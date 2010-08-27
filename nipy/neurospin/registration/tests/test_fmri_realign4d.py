@@ -7,16 +7,16 @@ from nose.tools import assert_true, assert_false, \
 
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
-from nipy.io.imageformats import load, save
+from nipy import load_image
 from nipy.testing import funcfile
-from nipy.neurospin.registration import Image4d, resample4d
+from nipy.neurospin.registration.spacetime_registration import Image4d, resample4d
 
 
-im = load(funcfile) 
+im = load_image(funcfile) 
 
 """
 def test_to_time():
-    im4d = Image4d(im.get_data(), im.get_affine(), tr=2., 
+    im4d = Image4d(im.get_data(), im.affine, tr=2., 
                    slice_order='ascending', interleaved=False)
     assert_equal(im4d.to_time(0,0), 0.) 
     assert_equal(im4d.to_time(0,1), im4d.tr)     
@@ -26,7 +26,7 @@ def test_to_time():
 """    
 
 def test_from_time():
-    im4d = Image4d(im.get_data(), im.get_affine(), tr=2., 
+    im4d = Image4d(im.get_data(), im.affine, tr=2., 
                    slice_order='ascending', interleaved=False)
     assert_equal(im4d.from_time(0,0), 0.) 
     assert_equal(im4d.from_time(0,im4d.tr), 1.) 
@@ -34,6 +34,8 @@ def test_from_time():
                    
 
 def test_slice_timing(): 
-    im4d = Image4d(im.get_data(), im.get_affine(), tr=2., tr_slices=0.0)
+    affine = np.eye(4)
+    affine[0:3,0:3] = im.affine[0:3,0:3]
+    im4d = Image4d(im.get_data(), affine, tr=2., tr_slices=0.0)
     x = resample4d(im4d)
     assert_array_almost_equal(im4d.array, x)

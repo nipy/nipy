@@ -3,12 +3,9 @@
 from affine import Affine, Rigid, Similarity
 from grid_transform import GridTransform
 from iconic_registration import IconicRegistration
-from spacetime_registration import Image4d, realign4d, resample4d
-
-from nipy.neurospin.image import Image, asNifti1Image
+from spacetime_registration import FmriRealign4d 
 
 import numpy as np 
-
 
 
 transform_classes = {'affine': Affine, 'rigid': Rigid, 'similarity': Similarity}
@@ -63,7 +60,7 @@ def register(source,
         Object that can be casted to a numpy array. 
 
     """
-    R = IconicRegistration(Image(source), Image(target))
+    R = IconicRegistration(source, target)
     if subsampling == None: 
         R.set_source_fov(fixed_npoints=64**3)
     else:
@@ -88,6 +85,7 @@ def register(source,
     return T
 
 
+"""
 def transform(floating, T, reference=None, interp_order=3):
 
     # Convert assumed nibabel-like input images to local image class
@@ -98,40 +96,5 @@ def transform(floating, T, reference=None, interp_order=3):
     return asNifti1Image(floating.transform(np.asarray(T), grid_coords=False,
                                             reference=reference, interp_order=interp_order))
 
-
-
-class FmriRealign4d(object): 
-
-    def __init__(self, images, tr, tr_slices=None, start=0.0, 
-                 slice_order='ascending', interleaved=False, 
-                 time_interp=True):
-        if not hasattr(images, '__iter__'):
-            images = [images]
-        self._runs = [Image4d(im.get_data(), im.get_affine(),
-                              tr=tr, tr_slices=tr_slices, start=start,
-                              slice_order=slice_order, 
-                              interleaved=interleaved) for im in images]
-        self._transforms = [None for run in self._runs]
-        self._time_interp = time_interp 
-                      
-    def correct_motion(self, iterations=2, between_loops=None, align_runs=True): 
-        within_loops = iterations 
-        if between_loops == None: 
-            between_loops = 3*within_loops 
-        t = realign4d(self._runs, within_loops=within_loops, 
-                      between_loops=between_loops, align_runs=align_runs, 
-                      time_interp=self._time_interp)
-        self._transforms, self._within_run_transforms, self._mean_transforms = t
-
-    def resample(self, align_runs=True): 
-        """
-        Return a list of 4d nibabel-like images corresponding to the resampled runs. 
-        """
-        if align_runs: 
-            transforms = self._transforms
-        else: 
-            transforms = self._within_run_transforms
-        runs = range(len(self._runs))
-        data = [resample4d(self._runs[r], transforms=transforms[r], time_interp=self._time_interp) for r in runs]
-        return [asNifti1Image(Image(data[r], self._runs[r].to_world)) for r in runs]
+"""
 

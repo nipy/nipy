@@ -1,6 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from nipy.neurospin.image import Image, apply_affine, subgrid_affine, inverse_affine
+from affine import apply_affine, subgrid_affine, inverse_affine
 
 import numpy as np 
 from scipy.ndimage import gaussian_filter
@@ -21,11 +21,14 @@ class GridTransform(object):
         self._data = data 
 
     def _generic_init(self, image, affine, nparams): 
-        if isinstance(image, Image): 
+        """
+        input image may be a nipy image or a sequence (array, affine)
+        """
+        if hasattr(image, '__iter__'): 
+            self._shape, self._toworld = image
+        else: 
             self._shape = image.shape
             self._toworld = image.affine
-        else:
-            self._shape, self._toworld = image
         if affine == None:
             self._affine = np.eye(4)
             self._grid_affine = self._toworld

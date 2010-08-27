@@ -1,8 +1,7 @@
 # -*- Mode: Python -*-  
 
 """
-Image processing routines: 
-  * cubic spline sampling 
+Python interface to fast cubic spline sampling routines in C.
 """
 
 __version__ = '0.2'

@@ -1,7 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from _registration import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
-from nipy.neurospin.image import apply_affine
 
 import numpy as np
 
@@ -132,6 +131,33 @@ def preconditioner(radius):
     rad = 1./radius
     sca = 1./radius
     return np.array([1,1,1,rad,rad,rad,sca,sca,sca,rad,rad,rad])
+
+
+def inverse_affine(affine):
+    return np.linalg.inv(affine)
+
+def apply_affine(T, xyz):
+    """
+    XYZ = apply_affine(T, xyz)
+
+    T is a 4x4 matrix.
+    xyz is a Nx3 array of 3d coordinates stored row-wise.  
+    """
+    xyz = np.asarray(xyz)
+    shape = xyz.shape[0:-1]
+    XYZ = np.dot(np.reshape(xyz, (np.prod(shape), 3)), T[0:3,0:3].T)
+    XYZ[:,0] += T[0,3]
+    XYZ[:,1] += T[1,3]
+    XYZ[:,2] += T[2,3]
+    XYZ = np.reshape(XYZ, list(shape)+[3])
+    return XYZ 
+
+def subgrid_affine(affine, slices):
+    steps = map(lambda x: max(x,1), [s.step for s in slices])
+    starts = map(lambda x: max(x,0), [s.start for s in slices])
+    t = np.diag(np.concatenate((steps,[1]),1))
+    t[0:3,3] = starts
+    return np.dot(affine, t)
 
 
 class Affine(object): 

@@ -2,11 +2,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
-from affine import Rigid
+from affine import Rigid, apply_affine
+from _cubic_spline import cspline_transform, cspline_sample3d, cspline_sample4d
 
-from nipy.neurospin.image import apply_affine
-from nipy.neurospin.image._image import cspline_transform, cspline_sample3d, cspline_sample4d
-from nipy.neurospin.utils.optimize import fmin_steepest
+from nipy.core.image.affine_image import AffineImage
+from nipy.algorithms.optimization import fmin_steepest
 
 import numpy as np
 from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
@@ -365,4 +365,48 @@ def realign4d(runs,
     return ctransforms, transforms, transfo_mean
 
 
+def split_affine(a): 
+    sa = np.eye(4)
+    sa[0:3, 0:3] = a[0:3, 0:3]
+    return sa, a[3,3]
+
+
+class FmriRealign4d(object): 
+
+    def __init__(self, images, tr=None, tr_slices=None, start=0.0, 
+                 slice_order='ascending', interleaved=False, 
+                 time_interp=True):
+        if not hasattr(images, '__iter__'):
+            images = [images]
+
+        self._runs = []
+        for im in images: 
+            spatial_affine, _tr = split_affine(im.affine)
+            if tr == None: 
+                tr = _tr
+            self._runs.append(Image4d(im.get_data(), spatial_affine, tr=tr, tr_slices=tr_slices, 
+                                      start=start, slice_order=slice_order, interleaved=interleaved)) 
+        self._transforms = [None for run in self._runs]
+        self._time_interp = time_interp 
+                      
+    def correct_motion(self, iterations=2, between_loops=None, align_runs=True): 
+        within_loops = iterations 
+        if between_loops == None: 
+            between_loops = 3*within_loops 
+        t = realign4d(self._runs, within_loops=within_loops, 
+                      between_loops=between_loops, align_runs=align_runs, 
+                      time_interp=self._time_interp)
+        self._transforms, self._within_run_transforms, self._mean_transforms = t
+
+    def resample(self, align_runs=True): 
+        """
+        Return a list of 4d nibabel-like images corresponding to the resampled runs. 
+        """
+        if align_runs: 
+            transforms = self._transforms
+        else: 
+            transforms = self._within_run_transforms
+        runs = range(len(self._runs))
+        data = [resample4d(self._runs[r], transforms=transforms[r], time_interp=self._time_interp) for r in runs]
+        return [AffineImage(data[r], self._runs[r].to_world, 'ijk') for r in runs]
 

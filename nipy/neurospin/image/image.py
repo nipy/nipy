@@ -367,6 +367,7 @@ def subgrid_affine(affine, slices):
     return np.dot(affine, t)
 
 
+"""
 def sample(data, coords, order=_INTERP_ORDER, dtype=None, background=_BACKGROUND): 
 
     from _image import cspline_transform, cspline_sample3d
@@ -398,6 +399,5 @@ def resample(data, affine, shape=None,
 
     return cspline_resample3d(data, shape, affine, dtype=dtype)
 
-
-
+"""
 
