@@ -66,16 +66,16 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     Returns
     -------
     results : dict
-        $L$ is the number of non-trivial components found after applying
+        $G$ is the number of non-trivial components found after applying
        `tol_ratio` to the projections of `design_keep` and
        `design_resid`.
-    
+
        `results` has keys:
 
-       * ``basis_vectors``: series over `axis`, shape (data.shape[axis], L) -
+       * ``basis_vectors``: series over `axis`, shape (data.shape[axis], G) -
           the eigenvectors of the PCA
        * ``pcnt_var``: percent variance explained by component, shape
-          (L,)
+          (G,)
        * ``basis_projections``: PCA components, with components varying
           over axis `axis`; thus shape given by: ``s = list(data.shape);
           s[axis] = ncomp``
