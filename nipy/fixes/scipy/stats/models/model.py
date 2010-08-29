@@ -257,14 +257,14 @@ class LikelihoodModelResults(object):
         
         Example
         -------
-        >>>import numpy as np
-        >>>from numpy.random import standard_normal as stan
-        >>>import nipy.fixes.scipy.stats.models as SSM
-        >>>x = np.hstack((stan((30,1)),stan((30,1)),stan((30,1))))
-        >>>beta=np.array([3.25, 1.5, 7.0])
-        >>>y = np.dot(x,beta) + stan((30))
-        >>>model = SSM.regression.OLSModel(x, hascons=False).fit(y)
-        >>>model.conf_int(cols=(1,2))
+        >>> import numpy as np
+        >>> from numpy.random import standard_normal as stan
+        >>> import nipy.fixes.scipy.stats.models as SSM
+        >>> x = np.hstack((stan((30,1)),stan((30,1)),stan((30,1))))
+        >>> beta=np.array([3.25, 1.5, 7.0])
+        >>> y = np.dot(x,beta) + stan((30))
+        >>> model = SSM.regression.OLSModel(x, hascons=False).fit(y)
+        >>> model.conf_int(cols=(1,2))
 
         Notes
         -----

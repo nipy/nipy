@@ -141,7 +141,6 @@ mp.legend()
 mp.title('parameters estimates for the roi time courses')
 bx =  mp.subplot(1, 2 ,2)
 mroi.plot_discrete_feature('contrast', bx)
-mp.show()
 
 
 ########################################
