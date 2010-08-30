@@ -9,9 +9,11 @@ in ~/.nipy/tests/data
 
 import numpy as np
 from numpy.testing import assert_almost_equal
-from nipy.neurospin.glm_files_layout.glm_tools import *
 import tempfile
 import os
+
+import nipy.neurospin.utils.design_matrix as dm
+from nipy.neurospin.glm_files_layout.glm_tools import *
 
 #######################################################################
 # Test path generation
@@ -62,7 +64,48 @@ def test_brainvisa_output_3():
                                'con_file', 'res_file']
 
 
+def make_fake_dmtx(n_scans):
+    """ build and return an arbitrary design matrix
+    """
+    conditions = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+    onsets = [30, 70, 80, 10, 50, 90, 20, 40, 60]
+    tr = 100./n_scans
+    paradigm =  dm.EventRelatedParadigm(conditions, onsets)
+    frametimes = np.linspace(0, (n_scans-1)*tr, n_scans)
+    DM = dm.DesignMatrix(frametimes, paradigm, hrf_model='Canonical', 
+                         drift_model='Polynomial', drift_order=3)
+    DM.estimate()
+    return DM
 
+def make_fake_dataset(shape):
+    """
+    Create a random dataset with prescibed shape ;
+    write it at a random location and
+    returns the paths
+    """
+    nim = Nifti1Image(np.random.randn(*shape), np.eye(4))
+    path = os.path.join(tempfile.mkdtemp(), 'fmri.nii')
+    save(nim, path)
+    return path
+
+def test_glm_fit():
+    """ test glm_fit function
+    """
+    n_scans, dimx, dimy, dimz = 50, 5, 5, 5
+    design_matrix = make_fake_dmtx(n_scans)
+    shape = (dimx, dimy, dimz, n_scans)
+    
+    # create some data
+    fMRI_path = make_fake_dataset(shape)
+    
+    glm = glm_fit(fMRI_path, design_matrix)
+    
+    assert np.shape(glm.beta)==(7, dimx, dimy, dimz)
+    assert np.shape(glm.s2)==(dimx, dimy, dimz)
+    assert np.shape(glm.nvbeta)==(7, 7, dimx, dimy, dimz)
+    assert_almost_equal(glm.dof, 43.)
+    
+    
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])
