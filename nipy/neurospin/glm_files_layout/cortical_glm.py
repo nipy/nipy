@@ -211,7 +211,7 @@ def save_texture(path, data):
 
 
 def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, outputCon=None,
-           fit="Kalman_AR1", design_matrix_path=None):
+           fit="Kalman_AR1", design_matrix_path=None, data_scaling=True):
     """
     Call the GLM Fit function with apropriate arguments
 
@@ -230,7 +230,9 @@ def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, outputCon=None,
          that represents both the model and the fit method
     design_marix_path: string,
                        path of the design matrix .csv file
-
+    data_scaling: bool, Optional
+                  scaling of the data to mean value
+                  
     Returns
     -------
     glm, a nipy.neurospin.glm.glm instance representing the GLM
@@ -260,6 +262,14 @@ def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, outputCon=None,
         X = DesignMatrix.matrix
   
     Y = load_texture(fMRI_path)
+
+    # data_scaling to percent of mean, and mean removal
+    if data_scaling:
+        # divide each voxel time course by its mean value, subtract 1,
+        # mulitply by 100 to deal with percent of average BOLD fluctuations 
+        mY = np.repeat(np.expand_dims(Y.mean(-1), -1), Y.shape[-1], Y.ndim-1)
+        Y = 100* (Y/mY - 1)
+        # acveat:untested
 
     glm = nipy.neurospin.glm.glm()
     glm.fit(Y, X, method=method, model=model)
