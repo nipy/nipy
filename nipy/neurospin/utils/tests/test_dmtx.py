@@ -8,6 +8,7 @@ not whether it is exact
 """
 
 import numpy as np
+from os.path import join, dirname
 import nipy.neurospin.utils.design_matrix as dm
 
 from nose.tools import assert_true, assert_equal
@@ -429,7 +430,7 @@ def test_spm_1():
     paradigm =  dm.EventRelatedParadigm(conditions, onsets)
     X1 = dm.DesignMatrix(frametimes, paradigm, drift_model='Blank')
     X1.estimate()
-    spm_dmtx = np.load('spm_dmtx.npz')['arr_0']
+    spm_dmtx = np.load(join(dirname(__file__),'spm_dmtx.npz'))['arr_0']
     assert ((spm_dmtx-X1.matrix)**2).sum()/(spm_dmtx**2).sum()<.1
 
 
@@ -447,7 +448,8 @@ def test_spm_2():
     paradigm =  dm.BlockParadigm(conditions, onsets, duration)
     X1 = dm.DesignMatrix(frametimes, paradigm, drift_model='Blank')
     X1.estimate()
-    spm_dmtx = np.load('spm_dmtx.npz')['arr_1']
+    import os
+    spm_dmtx = np.load(join(dirname(__file__),'spm_dmtx.npz'))['arr_1']
     assert ((spm_dmtx-X1.matrix)**2).sum()/(spm_dmtx**2).sum()<.1
 
     
