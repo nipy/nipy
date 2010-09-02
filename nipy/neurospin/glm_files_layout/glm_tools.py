@@ -439,25 +439,28 @@ def design_matrix(
 #-----------------------------------------------------
 
 def glm_fit(fMRI_path, DesignMatrix,  output_glm=None, glm_info=None,
-           fit="Kalman_AR1", mask_url=None):
+           fit="Kalman_AR1", mask_url=None, data_scaling=True):
     """
     Call the GLM Fit function with apropriate arguments
 
     Parameters
     ----------
-    fMRI_path, string or list of strings,
-          path of the fMRI data file(s)
-    design_matrix, DesignMatrix instance,
-          design matrix of the model
-    output_glm, string, optional
+    fMRI_path: string or list of strings,
+               path of the fMRI data file(s)
+    design_matrix: DesignMatrix instance,
+                   design matrix of the model
+    output_glm: string, optional
                 path of the output glm .npz dump
-    glm_info, string,optional
+    glm_info: string,optional
                path of the output configobj  that gives dome infor on the glm
-    fit= 'Kalman_AR1', string to be chosen among
-         "Kalman_AR1", "Ordinary Least Squares", "Kalman"
+    fit: string, Optional,
+         to be chosen among 'Kalman_AR1', 'Ordinary Least Squares', 'Kalman'
          that represents both the model and the fit method
-    mask_url=None string, path of the mask file
+    mask_url: string, Optional,
+              path of the mask file
              if None, no mask is applied
+    data_scaling: bool, Optional
+                  scaling of the data to mean value
 
     Returns
     -------
@@ -470,7 +473,8 @@ def glm_fit(fMRI_path, DesignMatrix,  output_glm=None, glm_info=None,
     fixme: mask should be optional
     """
     import nipy.neurospin.glm
-    
+
+    # get the model/fit methods
     if fit == "Kalman_AR1":
         model = "ar1"
         method = "kalman"
@@ -487,11 +491,22 @@ def glm_fit(fMRI_path, DesignMatrix,  output_glm=None, glm_info=None,
         X = dm.dmtx_from_csv( DesignMatrix).matrix
     else:
         X = DesignMatrix.matrix
-  
+
+    # load the fMRI data
     Y = load_image(fMRI_path, mask_url)
+
+    # data_scaling to percent of mean, and mean removal
+    if data_scaling:
+        # divide each voxel time course by its mean value, subtract 1,
+        # mulitply by 100 to deal with percent of average BOLD fluctuations 
+        mY = np.repeat(np.expand_dims(Y.mean(-1), -1), Y.shape[-1], Y.ndim-1)
+        Y = 100* (Y/mY - 1)
+
+    # apply the GLM
     glm = nipy.neurospin.glm.glm()
     glm.fit(Y.T, X, method=method, model=model)
 
+    # Write outputs
     if output_glm is not None:
         glm.save(output_glm)
         
