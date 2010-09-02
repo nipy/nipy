@@ -416,6 +416,41 @@ def test_csv_io():
     assert_almost_equal (DM.matrix, DM2.matrix)
     assert_true (DM.names==DM2.names)
 
+def test_spm_1():
+    """
+    Check that the nipy design matrix is close enough to the SPM one
+    (it cannot be identical, because the hrf shape is different)
+    """
+    tr = 1.0
+    frametimes = np.linspace(0, 99, 100)
+    conditions = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+    onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
+    hrf_model = 'Canonical'
+    paradigm =  dm.EventRelatedParadigm(conditions, onsets)
+    X1 = dm.DesignMatrix(frametimes, paradigm, drift_model='Blank')
+    X1.estimate()
+    spm_dmtx = np.load('spm_dmtx.npz')['arr_0']
+    assert ((spm_dmtx-X1.matrix)**2).sum()/(spm_dmtx**2).sum()<.1
+
+
+def test_spm_2():
+    """
+    Check that the nipy design matrix is close enough to the SPM one
+    (it cannot be identical, because the hrf shape is different)
+    """
+    tr = 1.0
+    frametimes = np.linspace(0, 99, 100)
+    conditions = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+    onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
+    duration = 10*np.ones(9)
+    hrf_model = 'Canonical'
+    paradigm =  dm.BlockParadigm(conditions, onsets, duration)
+    X1 = dm.DesignMatrix(frametimes, paradigm, drift_model='Blank')
+    X1.estimate()
+    spm_dmtx = np.load('spm_dmtx.npz')['arr_1']
+    assert ((spm_dmtx-X1.matrix)**2).sum()/(spm_dmtx**2).sum()<.1
+
+    
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])
