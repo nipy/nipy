@@ -79,7 +79,7 @@ class Texture(object):
         if p.textype not in textypes:
             raise TypeError, "On char 0: Texture type not regular, it should be \'ascii\' or \'binar\'"
         #
-        # BINAR
+        # BINARY
         if p.textype == textypes[1]:
             p.byteorder = byteordertypes.get(f_in.read(4))
             if p.byteorder == None:
@@ -98,6 +98,8 @@ class Texture(object):
             # TODO some sanity check on data length
             p.data = []
             for t in range(nb_t):
+                # go forward in the buffer
+                f_in.read(4)
                 nbitems = (_np.frombuffer(f_in.read(4), _np.uint32))[0]
                 size = nbitems*datatype().nbytes
                 p.data.append(_np.frombuffer(f_in.read(size),datatype))
@@ -131,11 +133,20 @@ class Texture(object):
     
     
     def write(self, filename=None):
+        """
+        Write self in a .tex file
+
+        Parameters
+        ----------
+        finename: string, optional,
+                  path to write the resulting file
+        """
         #as aims does not open float64 
         if self.data.dtype == _np.float64:
             self.data = self.data.astype(_np.float32)
         
         try:
+            print self.data.shape[1]
             nb_t = _np.uint32(self.data.shape[0])
         except:
             nb_t = _np.uint32(1)
@@ -170,7 +181,7 @@ class Texture(object):
                 self.data.tofile(f_out, sep=' ')
                 f_out.write(' ')
         
-        # if binar
+        # if binary
         else:
             self.convertToBinary()
             f_out.write(self.textype)

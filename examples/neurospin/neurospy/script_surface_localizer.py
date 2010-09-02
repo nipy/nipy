@@ -27,9 +27,9 @@ Acquisitions = [""]
 Sessions = ["loc1"]
 model_id = "default"
 side = 'right'
-fmri_wc = "rh*.tex"
+fmri_wc = "rh.a*.tex"
 if side=='left':
-    fmri_wc = "lh*.tex"
+    fmri_wc = "lh*.a*.tex"
 
 
 # ---------------------------------------------------------
