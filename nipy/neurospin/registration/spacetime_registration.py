@@ -6,7 +6,7 @@ from affine import Rigid, apply_affine
 from _cubic_spline import cspline_transform, cspline_sample3d, cspline_sample4d
 
 from nipy.core.image.affine_image import AffineImage
-from nipy.algorithms.optimization import fmin_steepest
+from nipy.algorithms.optimize import fmin_steepest
 
 import numpy as np
 from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs

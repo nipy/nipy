@@ -13,7 +13,7 @@ from affine import Affine, apply_affine, inverse_affine, subgrid_affine
 from grid_transform import GridTransform
 
 from nipy.core.image.affine_image import AffineImage
-from nipy.algorithms.optimization import fmin_steepest
+from nipy.algorithms.optimize import fmin_steepest
 
 import numpy as np  
 from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
