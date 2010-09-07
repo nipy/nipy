@@ -65,10 +65,8 @@ def register(source,
 
     """
     R = IconicRegistration(source, target)
-    if subsampling == None: 
-        R.set_source_fov(fixed_npoints=64**3)
-    else:
-        R.set_source_fov(spacing=subsampling)
+    if not subsampling == None: 
+        R.focus(spacing=subsampling)
     R.similarity = similarity
     R.interp = interp
 

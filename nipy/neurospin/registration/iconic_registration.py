@@ -24,6 +24,7 @@ _CLAMP_DTYPE = 'short' # do not edit
 _BINS = 256
 _INTERP = 'pv'
 _OPTIMIZER = 'powell'
+_FIXED_NPOINTS = 64**3
 
 # Dictionary of interpolation methods
 # pv: Partial volume 
@@ -72,7 +73,7 @@ class IconicRegistration(object):
             mask = source_mask.get_data()
         data, s_bins = clamp(source.get_data(), bins=bins[0], mask=mask)
         self._source_image = AffineImage(data, source.affine, 'ijk')
-        self.set_source_fov()
+        self.focus(fixed_npoints=_FIXED_NPOINTS)
  
         # Target image binning and padding with -1 
         mask = None
@@ -101,8 +102,7 @@ class IconicRegistration(object):
 
     interp = property(_get_interp, _set_interp)
         
-    def set_source_fov(self, spacing=[1,1,1], corner=[0,0,0], shape=None, 
-                       fixed_npoints=None):
+    def focus(self, spacing=[1,1,1], corner=[0,0,0], shape=None, fixed_npoints=None):
         
         if shape == None:
             shape = self._source_image.shape

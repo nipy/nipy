@@ -32,7 +32,6 @@ optimizer = 'powell'
 I = load_image(source_file)
 J = load_image(target_file)
 R = IconicRegistration(I, J)
-R.set_source_fov(fixed_npoints=64**3)
 
 # Make Gaussian spline transform instance
 spacing = 16
