@@ -3,7 +3,7 @@
 
 from affine import Affine, Rigid, Similarity, apply_affine
 from grid_transform import GridTransform
-from iconic_registration import IconicRegistration
+from iconic_registration import IconicRegistration, default_fov_size
 from spacetime_registration import FmriRealign4d 
 from _cubic_spline import cspline_transform, cspline_sample3d, cspline_resample3d
 
@@ -67,6 +67,8 @@ def register(source,
     R = IconicRegistration(source, target)
     if not subsampling == None: 
         R.focus(spacing=subsampling)
+    else:
+        R.focus(fov_size=default_fov_size())
     R.similarity = similarity
     R.interp = interp
 

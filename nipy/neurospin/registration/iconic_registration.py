@@ -24,7 +24,7 @@ _CLAMP_DTYPE = 'short' # do not edit
 _BINS = 256
 _INTERP = 'pv'
 _OPTIMIZER = 'powell'
-_FIXED_NPOINTS = 64**3
+_FOV_SIZE = 64**3
 
 # Dictionary of interpolation methods
 # pv: Partial volume 
@@ -32,6 +32,8 @@ _FIXED_NPOINTS = 64**3
 # rand: Random interpolation
 interp_methods = {'pv': 0, 'tri': 1, 'rand': -1}
 
+def default_fov_size():
+    return _FOV_SIZE
 
 class IconicRegistration(object):
     """
@@ -73,7 +75,7 @@ class IconicRegistration(object):
             mask = source_mask.get_data()
         data, s_bins = clamp(source.get_data(), bins=bins[0], mask=mask)
         self._source_image = AffineImage(data, source.affine, 'ijk')
-        self.focus(fixed_npoints=_FIXED_NPOINTS)
+        self.focus(fov_size=None)
  
         # Target image binning and padding with -1 
         mask = None
@@ -102,7 +104,7 @@ class IconicRegistration(object):
 
     interp = property(_get_interp, _set_interp)
         
-    def focus(self, spacing=[1,1,1], corner=[0,0,0], shape=None, fixed_npoints=None):
+    def focus(self, spacing=[1,1,1], corner=[0,0,0], shape=None, fov_size=_FOV_SIZE):
         
         if shape == None:
             shape = self._source_image.shape
@@ -110,9 +112,9 @@ class IconicRegistration(object):
         slicer = lambda : tuple([slice(corner[i],shape[i]+corner[i],spacing[i]) for i in range(3)])
         fov_data = self._source_image.get_data()[slicer()]
 
-        # Adjust spacing to match desired number of points
-        if fixed_npoints: 
-            spacing = subsample(fov_data, npoints=fixed_npoints)
+        # Adjust spacing to match desired field of view size
+        if fov_size: 
+            spacing = subsample(fov_data, npoints=fov_size)
             fov_data = self._source_image.get_data()[slicer()]
 
         self._slices = slicer()
