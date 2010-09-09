@@ -168,14 +168,13 @@ class Affine(object):
     
     def _generic_init(self, array, radius, subtype, flag2d): 
         if array == None: 
-            vec12 = np.zeros(12)
+            self._vec12 = np.zeros(12)
         elif array.shape == (4,4):
-            vec12 = vector12(array)
+            self._vec12 = vector12(array)
         elif array.size == 12: 
-            vec12 = array.ravel()
+            self._vec12 = array.ravel()
         else: 
             raise ValueError('Invalid array')
-        self._set_vec12(vec12)
         self._precond = preconditioner(radius)
         self._subtype = subtype
         self._flag2d = flag2d
@@ -193,30 +192,55 @@ class Affine(object):
         self._vec12 = param_to_vector12(np.asarray(p), self._vec12, 
                                         self._precond, self._stamp)
         
-    param = property(_get_param, _set_param)
+    def _get_translation(self): 
+        return self._vec12[0:3]
+
+    def _set_translation(self, x): 
+        self._vec12[0:3] = x
+
+    def _get_rotation(self):
+        return self._vec12[3:6]
+
+    def _set_rotation(self, x): 
+        self._vec12[3:6] = x
+
+    def _get_scaling(self):
+        return np.exp(self._vec12[6:9])
+
+    def _set_scaling(self, x): 
+        self._vec12[6:9] = np.log(x)
+
+    def _get_shearing(self): 
+        return self._vec12[9:12]
+
+    def _set_shearing(self, x): 
+        self._vec12[9:12] = x
+                
+    def _get_precond(self): 
+        return self._precond 
 
     def _get_vec12(self):
         return self._vec12
 
-    def _set_vec12(self, vec12): 
-        # Specify dtype to allow in-place operations
-        self._vec12 = np.asarray(vec12, dtype='double') 
-        
+    def _set_vec12(self, x): 
+        self._vec12[:] = x
+
+    param = property(_get_param, _set_param)
+    translation = property(_get_translation, _set_translation)
+    rotation = property(_get_rotation, _set_rotation)
+    scaling = property(_get_scaling, _set_scaling)
+    shearing = property(_get_shearing, _set_shearing)
     vec12 = property(_get_vec12, _set_vec12)
-
-    def _get_precond(self): 
-        return self._precond 
-
     precond = property(_get_precond)
 
     def __array__(self, dtype='double'): 
         return matrix44(self._vec12, dtype=dtype)
 
     def __str__(self): 
-        string  = 'translation : %s\n' % self._vec12[0:3].__str__()
-        string += 'rotation    : %s\n' % self._vec12[3:6].__str__()
-        string += 'scaling     : %s\n' % (np.exp(self._vec12[6:9])).__str__()
-        string += 'shearing    : %s' % self._vec12[9:12].__str__()
+        string  = 'translation : %s\n' % str(self.translation)
+        string += 'rotation    : %s\n' % str(self.rotation)
+        string += 'scaling     : %s\n' % str(self.scaling)
+        string += 'shearing    : %s' % str(self.shearing)
         return string
 
     def __mul__(self, other): 
@@ -226,7 +250,7 @@ class Affine(object):
         subtype = max(self._subtype, other._subtype)
         a = affine_classes[subtype]()
         a._precond = self._precond
-        a._set_vec12(vector12(np.dot(self.__array__(), other.__array__()), a._subtype))
+        a._vec12 = vector12(np.dot(self.__array__(), other.__array__()), a._subtype)
         return a
 
     def inv(self):
@@ -235,7 +259,7 @@ class Affine(object):
         """
         a = affine_classes[self._subtype]()
         a._precond = self._precond
-        a._set_vec12(vector12(np.linalg.inv(self.__array__()), self._subtype))
+        a._vec12 = vector12(np.linalg.inv(self.__array__()), self._subtype)
         return a
         
 
@@ -246,8 +270,8 @@ class Rigid(Affine):
         self._generic_init(array, radius, subtype, flag2d)
         
     def __str__(self): 
-        string  = 'translation : %s\n' % self._vec12[0:3].__str__()
-        string += 'rotation    : %s\n' % self._vec12[3:6].__str__()
+        string  = 'translation : %s\n' % str(self.translation)
+        string += 'rotation    : %s\n' % str(self.rotation)
         return string
 
 class Similarity(Affine):
@@ -257,9 +281,9 @@ class Similarity(Affine):
         self._generic_init(array, radius, subtype, flag2d)
 
     def __str__(self): 
-        string  = 'translation : %s\n' % self._vec12[0:3].__str__()
-        string += 'rotation    : %s\n' % self._vec12[3:6].__str__()
-        string += 'scaling     : %s\n' % (np.exp(self._vec12[6])).__str__()
+        string  = 'translation : %s\n' % str(self.translation)
+        string += 'rotation    : %s\n' % str(self.rotation)
+        string += 'scaling     : %s\n' % str(self.scaling[0])
         return string
     
 

@@ -182,8 +182,8 @@ class IconicRegistration(object):
         T = start
         tc0 = T.param
 
-        # Loss function to minimize
-        def loss(tc):
+        # Cost function to minimize
+        def cost(tc):
             T.param = tc
             return -self.eval(T) 
     
@@ -219,7 +219,7 @@ class IconicRegistration(object):
         
         # Output
         print ('Optimizing using %s' % fmin.__name__)
-        T.param = fmin(loss, tc0, callback=callback, **kwargs)
+        T.param = fmin(cost, tc0, callback=callback, **kwargs)
         return T 
 
 
