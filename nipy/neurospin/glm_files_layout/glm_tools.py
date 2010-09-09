@@ -575,14 +575,20 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
         else:
             import nipy.neurospin.glm
             for s in sessions:
-                designs[s] = nipy.neurospin.glm.load(
-                    kargs['glm_config'][s]["GlmDumpFile"])
-
+                try:
+                    designs[s] = nipy.neurospin.glm.load(
+                        kargs['glm_config'][s]["GlmDumpFile"])
+                except:
+                    import warnings
+                    warnings.warn("glm could not be loaded for session %s,\
+                    expect errors" %s)
+                
     # set the mask
     mask_url = None
-    if misc.has_key('mask_url'):
-        mask_url = misc['mask_url']
-
+    if misc.has_key('mask_url'): mask_url = misc['mask_url']
+    if contrast_struct.has_key('mask_url'):
+        mask_url = contrast_struct['mask_url']
+        
     # set the output paths
     if isinstance(CompletePaths, basestring) :
         CompletePaths = generate_brainvisa_ouput_paths(CompletePaths, 
@@ -596,18 +602,19 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
             multicon = dict()
 
             for key, value in contrast_struct[contrast].items():
-                if key != "Type" and key != "Dimension":
+                if key not in ["Type", "Dimension"]:
                     session = "_".join(key.split("_")[:-1])
-                    bv = [int(j) != 0 for j in value]
-                    if contrast_type == "t" and sum(bv)>0:
-                        _con = designs[session].contrast([int(i) for i in value])
+                    bv = np.asarray([int(j) for j in value])
+                    if contrast_type == "t" and bv.any():
+                        _con = designs[session].contrast(bv.astype(np.float))
                         final_contrast.append(_con)
 
                     if contrast_type == "F":
                         if not multicon.has_key(session):
-                            multicon[session] = np.array(bv)
+                            multicon[session] = bv.astype(np.float)
                         else:
-                            multicon[session] = np.vstack((multicon[session], bv))
+                            multicon[session] = np.vstack((
+                                multicon[session], bv.astype(np.float)))
             if contrast_type == "F":
                 for key, value in multicon.items():
                     if sum([j != 0 for j in value.reshape(-1)]) != 0:
