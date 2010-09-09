@@ -104,8 +104,15 @@ class IconicRegistration(object):
 
     interp = property(_get_interp, _set_interp)
         
-    def focus(self, spacing=[1,1,1], corner=[0,0,0], shape=None, fov_size=_FOV_SIZE):
-        
+    def focus(self, spacing=None, corner=[0,0,0], shape=None, fov_size=_FOV_SIZE):
+        """
+        If a 'spacing' argument is provided, then 'fov_size' is discarded. 
+        """
+        if spacing == None: 
+            spacing = [1,1,1]
+        else: 
+            fov_size = None
+
         if shape == None:
             shape = self._source_image.shape
             
