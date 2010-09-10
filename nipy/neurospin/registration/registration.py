@@ -4,7 +4,7 @@
 from affine import Affine, Rigid, Similarity, apply_affine
 from grid_transform import GridTransform
 from iconic_registration import IconicRegistration, default_fov_size
-from spacetime_registration import FmriRealign4d 
+from groupwise_registration import Realign4d, FmriRealign4d 
 from _cubic_spline import cspline_transform, cspline_sample3d, cspline_resample3d
 
 from nipy.core.image.affine_image import AffineImage

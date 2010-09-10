@@ -9,8 +9,8 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 from nipy import load_image
 from nipy.testing import funcfile
-from nipy.neurospin.registration.spacetime_registration import Image4d, resample4d
-
+from nipy.neurospin.registration.groupwise_registration import Image4d, resample4d
+from nipy.neurospin.registration.affine import Rigid
 
 im = load_image(funcfile) 
 
@@ -37,5 +37,5 @@ def test_slice_timing():
     affine = np.eye(4)
     affine[0:3,0:3] = im.affine[0:3,0:3]
     im4d = Image4d(im.get_data(), affine, tr=2., tr_slices=0.0)
-    x = resample4d(im4d)
+    x = resample4d(im4d, [Rigid() for i in range(im4d.shape[3])])
     assert_array_almost_equal(im4d.array, x)

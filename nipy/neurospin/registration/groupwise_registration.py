@@ -1,8 +1,7 @@
-
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
-from affine import Rigid, apply_affine
+from affine import Rigid, Similarity, Affine, apply_affine
 from _cubic_spline import cspline_transform, cspline_sample3d, cspline_sample4d
 
 from nipy.core.image.affine_image import AffineImage
@@ -118,12 +117,13 @@ class Image4d(object):
 
 
 
-class Realign4d(object):
+class Realign4d_Algorithm(object):
 
     def __init__(self, 
                  im4d, 
                  speedup=_SPEEDUP,
                  optimizer=_OPTIMIZER, 
+                 affine_class=Rigid,
                  transforms=None, 
                  time_interp=True):
         self.optimizer = optimizer
@@ -141,7 +141,7 @@ class Realign4d(object):
         self.to_world = im4d.to_world
         self.from_world = np.linalg.inv(self.to_world)
         if transforms == None: 
-            self.transforms = [Rigid() for scan in range(self.nscans)]
+            self.transforms = [affine_class() for scan in range(self.nscans)]
         else: 
             self.transforms = transforms
         self.from_time = im4d.from_time
@@ -284,11 +284,11 @@ class Realign4d(object):
     
 
 
-def resample4d(im4d, transforms=None, time_interp=True): 
+def resample4d(im4d, transforms, time_interp=True): 
     """
     corr_im4d_array = resample4d(im4d, transforms=None, time_interp=True)
     """
-    r = Realign4d(im4d, transforms=transforms, time_interp=time_interp)
+    r = Realign4d_Algorithm(im4d, transforms=transforms, time_interp=time_interp)
     return r.resample()
 
 
@@ -297,6 +297,7 @@ def single_run_realign4d(im4d,
                          loops=_WITHIN_LOOPS, 
                          speedup=_SPEEDUP, 
                          optimizer=_OPTIMIZER, 
+                         affine_class=Rigid, 
                          time_interp=True): 
     """
     transforms = single_run_realign4d(im4d, loops=2, speedup=4, optimizer='powell', time_interp=True)
@@ -306,7 +307,8 @@ def single_run_realign4d(im4d,
     im4d : Image4d instance
 
     """ 
-    r = Realign4d(im4d, speedup=speedup, optimizer=optimizer, time_interp=time_interp)
+    r = Realign4d_Algorithm(im4d, speedup=speedup, optimizer=optimizer, 
+                            time_interp=time_interp, affine_class=affine_class)
     for loop in range(loops): 
         r.estimate_motion()
     return r.transforms
@@ -317,7 +319,8 @@ def realign4d(runs,
               speedup=_SPEEDUP, 
               optimizer=_OPTIMIZER, 
               align_runs=True, 
-              time_interp=True): 
+              time_interp=True, 
+              affine_class=Rigid): 
     """
     Parameters
     ----------
@@ -345,7 +348,8 @@ def realign4d(runs,
     # Correct motion and slice timing in each sequence separately
     transforms = [single_run_realign4d(run, loops=within_loops, 
                                        speedup=speedup, optimizer=optimizer,
-                                       time_interp=time_interp) for run in runs]
+                                       time_interp=time_interp, 
+                                       affine_class=affine_class) for run in runs]
     if not align_runs: 
         return transforms, transforms, None
 
@@ -371,14 +375,17 @@ def split_affine(a):
     return sa, a[3,3]
 
 
-class FmriRealign4d(object): 
+class Realign4d(object): 
 
-    def __init__(self, images, slice_order, interleaved, 
-                 tr=None, tr_slices=None, start=0.0, time_interp=True):
+    def __init__(self, images, affine_class=Rigid):
+        self._generic_init(images, affine_class, _SLICE_ORDER, _INTERLEAVED, 1.0, 0.0, 0.0, False)
+
+    def _generic_init(self, images, affine_class, 
+                      slice_order, interleaved, tr, tr_slices, start, time_interp):
         if not hasattr(images, '__iter__'):
             images = [images]
-
         self._runs = []
+        self.affine_class = affine_class
         for im in images: 
             spatial_affine, _tr = split_affine(im.affine)
             if tr == None: 
@@ -388,13 +395,13 @@ class FmriRealign4d(object):
         self._transforms = [None for run in self._runs]
         self._time_interp = time_interp 
                       
-    def estimate_motion(self, iterations=2, between_loops=None, align_runs=True): 
+    def estimate(self, iterations=2, between_loops=None, align_runs=True): 
         within_loops = iterations 
         if between_loops == None: 
             between_loops = 3*within_loops 
         t = realign4d(self._runs, within_loops=within_loops, 
                       between_loops=between_loops, align_runs=align_runs, 
-                      time_interp=self._time_interp)
+                      time_interp=self._time_interp, affine_class=self.affine_class)
         self._transforms, self._within_run_transforms, self._mean_transforms = t
 
     def resample(self, align_runs=True): 
@@ -408,4 +415,14 @@ class FmriRealign4d(object):
         runs = range(len(self._runs))
         data = [resample4d(self._runs[r], transforms=transforms[r], time_interp=self._time_interp) for r in runs]
         return [AffineImage(data[r], self._runs[r].to_world, 'ijk') for r in runs]
+
+
+
+class FmriRealign4d(Realign4d): 
+
+    def __init__(self, images, slice_order, interleaved,
+                 tr=None, tr_slices=None, start=0.0, time_interp=True, 
+                 affine_class=Rigid):
+        self._generic_init(images, affine_class, slice_order, interleaved, 
+                           tr, tr_slices, start, time_interp)
 
