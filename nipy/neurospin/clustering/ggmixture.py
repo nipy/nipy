@@ -289,7 +289,6 @@ class GGM(object):
         dc = c[1]-c[0]
         y = (1-p)*_gaus_dens(self.mean,self.var,c)*dc
         z = np.zeros(np.size(c))
-        i = np.ravel(np.nonzero(c>0))
         z = _gam_dens(self.shape,self.scale,c)*p*dc
         
         import matplotlib.pylab as mp

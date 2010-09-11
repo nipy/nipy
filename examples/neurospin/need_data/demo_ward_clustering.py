@@ -10,30 +10,28 @@ print __doc__
 
 import numpy as np
 import os
-import matplotlib.pylab as mp
 from nipy.io.imageformats import load, save, Nifti1Image 
-import nipy.neurospin.graph.field as ff
+from nipy.neurospin.graph.field import Field
 import get_data_light
 import tempfile
-get_data_light.getIt()
+data_dir = get_data_light.get_it()
 
 # paths
 swd = tempfile.mkdtemp()
-data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
-InputImage = os.path.join(data_dir,'spmT_0029.nii.gz')
-MaskImage = os.path.join(data_dir,'mask.nii.gz')
+input_image = os.path.join(data_dir, 'spmT_0029.nii.gz')
+mask_image = os.path.join(data_dir, 'mask.nii.gz')
 
-mask = load(MaskImage).get_data()>0
+mask = load(mask_image).get_data()>0
 ijk = np.array(np.where(mask)).T
 nvox = ijk.shape[0]
-data = load(MaskImage).get_data()[mask]
-image_field = ff.Field(nvox)
+data = load(input_image).get_data()[mask]
+image_field = Field(nvox)
 image_field.from_3d_grid(ijk, k=6)
 image_field.set_field(data)
 u = image_field.ward(100)
 
 label_image = os.path.join(swd, 'label.nii')
-wdata = mask.copy()-1
+wdata = mask - 1
 wdata[mask] = u
-save(Nifti1Image(wdata, load(MaskImage).get_affine()), label_image)
-print "Label image written in %s" %label_image
+save(Nifti1Image(wdata, load(mask_image).get_affine()), label_image)
+print "Label image written in %s"  % label_image

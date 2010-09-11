@@ -9,8 +9,8 @@ from __future__ import with_statement
 import numpy as np
 
 import nipy.io.imageformats as nii
-import nipy.neurospin.utils.mask as nnm
-from nipy.neurospin.utils.mask import largest_cc, threshold_connect_components
+from .. import mask as nnm
+from ..mask import largest_cc, threshold_connect_components
 
 from nipy.utils import InTemporaryDirectory
 
@@ -48,7 +48,7 @@ def test_unscaled_data():
     yield assert_equal, unscaled_arr.dtype.kind, 'i'
     yield assert_equal, scaled_arr.dtype.kind, 'f'
     hdr = img.get_header()
-    aff = img.get_affine()
+    img.get_affine()
     slope = hdr['scl_slope']
     inter = hdr['scl_inter']
     yield assert_array_almost_equal, np.mean(scaled_arr), \

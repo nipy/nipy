@@ -117,7 +117,6 @@ def dim_cmap(cmap, factor=.3):
                                                         % factor)
     
     cdict = cmap._segmentdata.copy()
-    out_cdict = dict()
     for c_index, color in enumerate(('red', 'green', 'blue')):
         color_lst = list()
         for value, c1, c2 in cdict[color]:

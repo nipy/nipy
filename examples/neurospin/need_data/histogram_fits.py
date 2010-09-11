@@ -16,7 +16,7 @@ import matplotlib.pylab as mp
 import scipy.stats as st
 import nipy.neurospin.utils.emp_null as en
 import get_data_light
-get_data_light.getIt()
+
 from nipy.io.imageformats import load
 
 # parameters
@@ -24,16 +24,16 @@ verbose = 1
 theta = float(st.t.isf(0.01,100))
 
 # paths
-data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
-MaskImage = os.path.join(data_dir,'mask.nii.gz')
-InputImage = os.path.join(data_dir,'spmT_0029.nii.gz')
+data_dir = get_data_light.get_it()
+mask_image = os.path.join(data_dir, 'mask.nii.gz')
+input_image = os.path.join(data_dir, 'spmT_0029.nii.gz')
 
 # Read the mask
-nim = load(MaskImage)
+nim = load(mask_image)
 mask = nim.get_data()
 
 # read the functional image
-rbeta = load(InputImage)
+rbeta = load(input_image)
 beta = rbeta.get_data()
 beta = beta[mask>0]
 

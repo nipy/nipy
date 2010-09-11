@@ -16,7 +16,6 @@ import numpy as np
 
 from ...externals.configobj import ConfigObj
 
-from . import glm_tools
 from . import tio
 
 
@@ -336,7 +335,6 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
         contrast_type = contrast_struct[contrast]["Type"]
         contrast_dimension = contrast_struct[contrast]["Dimension"]
         final_contrast = []
-        k = i+1
         multicon = dict()
 
         for key, value in contrast_struct[contrast].items():
@@ -358,7 +356,6 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
                     _con = designs[key].contrast(value)
                     final_contrast.append(_con)
 
-        design = designs[session]
         res_contrast = final_contrast[0]
         for c in final_contrast[1:]:
             res_contrast = res_contrast + c

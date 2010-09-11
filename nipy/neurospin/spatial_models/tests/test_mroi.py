@@ -8,8 +8,9 @@ in ~/.nipy/tests/data
 """
 
 import numpy as np
-from numpy.testing import assert_almost_equal
-from nipy.neurospin.spatial_models.mroi import *
+from nipy.neurospin.spatial_models.mroi import mroi_from_array, \
+        mroi_from_balls, domain_from_array, subdomain_from_array, \
+        subdomain_from_balls
 
 shape = (5, 6, 7)
 

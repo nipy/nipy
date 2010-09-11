@@ -12,7 +12,7 @@ from numpy import arange
 
 from nipy.externals.configobj import ConfigObj
 
-from nipy.neurospin.utils.mask import compute_mask_files
+from nipy.neurospin import compute_mask_files
 from nipy.neurospin.glm_files_layout import glm_tools, contrast_tools
 
 # -----------------------------------------------------------

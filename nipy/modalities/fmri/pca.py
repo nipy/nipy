@@ -66,16 +66,16 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     Returns
     -------
     results : dict
-        $L$ is the number of non-trivial components found after applying
+        $G$ is the number of non-trivial components found after applying
        `tol_ratio` to the projections of `design_keep` and
        `design_resid`.
-    
+
        `results` has keys:
 
-       * ``basis_vectors``: series over `axis`, shape (data.shape[axis], L) -
+       * ``basis_vectors``: series over `axis`, shape (data.shape[axis], G) -
           the eigenvectors of the PCA
        * ``pcnt_var``: percent variance explained by component, shape
-          (L,)
+          (G,)
        * ``basis_projections``: PCA components, with components varying
           over axis `axis`; thus shape given by: ``s = list(data.shape);
           s[axis] = ncomp``
@@ -108,16 +108,15 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
         def project_resid(Y):
             return Y - np.dot(projector, Y)
     if standardize:
-        def standardize_from(arr, std_source):
+        def rmse_scales_func(std_source):
             # modifies array in place
             resid = project_resid(std_source)
-            rstd = np.sqrt(np.square(resid).sum(axis=0) / resid.shape[0])
-            # positive 1/rstd
-            rstd_half = np.where(rstd<=0, 0, 1. / rstd)
-            arr *= rstd_half
-            return arr
+            # root mean square of the residual
+            rmse = np.sqrt(np.square(resid).sum(axis=0) / resid.shape[0])
+            # positive 1/rmse
+            return np.where(rmse<=0, 0, 1. / rmse)
     else:
-        standardize_from = None
+        rmse_scales_func = None
     """
     Perform the computations needed for the PCA.  This stores the
     covariance/correlation matrix of the data in the attribute 'C'.  The
@@ -137,61 +136,72 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     # The matrix UX has orthonormal columns and represents the
     # final "column space" that the data will be projected onto.
     rank = (SX/SX.max() > tol_ratio).sum()
-    UX = UX[:,range(rank)].T
-    # calculate covariance matrix
-    C  = _get_covariance(data, UX, standardize_from, mask)
+    UX = UX[:,:rank].T
+    # calculate covariance matrix in full-rank column space.  The returned
+    # array is roughly: YX = dot(UX, data); C = dot(YX, YX.T), perhaps where the
+    # data has been standarized, perhaps summed over slices
+    C_full_rank  = _get_covariance(data, UX, rmse_scales_func, mask)
     # find the eigenvalues D and eigenvectors Vs of the covariance
     # matrix
-    D, Vs = spl.eigh(C)
+    D, Vs = spl.eigh(C_full_rank)
+    # Compute basis vectors in original column space
+    basis_vectors = np.dot(UX.T, Vs).T
     # sort both in descending order of eigenvalues
     order = np.argsort(-D)
     D = D[order]
+    basis_vectors = basis_vectors[order]
     pcntvar = D * 100 / D.sum()
-    basis_vectors = np.dot(UX.T, Vs).T[order]
     """
     Output the component basis_projections
     """
     if ncomp is None:
         ncomp = rank
     subVX = basis_vectors[:ncomp]
-    out = _get_basis_projections(data, subVX, standardize_from)
+    out = _get_basis_projections(data, subVX, rmse_scales_func)
     # Roll PCA image axis back to original position in data array
     if axis < 0:
         axis += data.ndim
     out = np.rollaxis(out, 0, axis+1)
     return {'basis_vectors': basis_vectors.T,
             'pcnt_var': pcntvar,
-            'basis_projections': out, 
+            'basis_projections': out,
             'axis': axis}
 
 
-def _get_covariance(data, UX, standardize_from, mask):
+def _get_covariance(data, UX, rmse_scales_func, mask):
     # number of points in PCA dimension
-    rank = UX.shape[0]
-    n_pts = data.shape[0]
+    rank, n_pts = UX.shape
     C = np.zeros((rank, rank))
     # loop over next dimension to save memory
-    for i in range(data.shape[1]):
-        Y = data[:,i].reshape((n_pts, -1))
+    if data.ndim == 2:
+        # If we have 2D data, just do the covariance all in one shot, by using
+        # a slice that is the equivalent of the ':' slice syntax
+        slices = [slice(None)]
+    else:
+        # If we have more then 2D, then we iterate over slices in the second
+        # dimension, in order to save memory
+        slices = [slice(i,i+1) for i in range(data.shape[1])]
+    for i, s_slice in enumerate(slices):
+        Y = data[:,s_slice].reshape((n_pts, -1))
         # project data into required space
         YX = np.dot(UX, Y)
-        if standardize_from is not None:
-            YX = standardize_from(YX, Y)
+        if rmse_scales_func is not None:
+            YX *= rmse_scales_func(Y)
         if mask is not None:
             # weight data with mask.  Usually the weights will be 0,1
-            YX = YX * np.nan_to_num(mask[i].reshape(Y.shape[1]))
+            YX = YX * np.nan_to_num(mask[s_slice].reshape(Y.shape[1]))
         C += np.dot(YX, YX.T)
     return C
 
 
-def _get_basis_projections(data, subVX, standardize_from):
+def _get_basis_projections(data, subVX, rmse_scales_func):
     ncomp = subVX.shape[0]
     out = np.empty((ncomp,) + data.shape[1:], np.float)
     for i in range(data.shape[1]):
         Y = data[:,i].reshape((data.shape[0], -1))
         U = np.dot(subVX, Y)
-        if standardize_from is not None:
-           U = standardize_from(U, Y)
+        if rmse_scales_func is not None:
+            U *= rmse_scales_func(Y)
         U.shape = (U.shape[0],) + data.shape[2:]
         out[:,i] = U
     return out
@@ -199,7 +209,7 @@ def _get_basis_projections(data, subVX, standardize_from):
 
 def pca_image(xyz_image, axis='t', mask=None, ncomp=None, standardize=True,
               design_keep=None, design_resid='mean', tol_ratio=0.01):
-    """ Compute the PCA of an image over a specified axis. 
+    """ Compute the PCA of an image over a specified axis
 
     Parameters
     ----------
@@ -244,7 +254,7 @@ def pca_image(xyz_image, axis='t', mask=None, ncomp=None, standardize=True,
         $L$ is the number of non-trivial components found after applying
        `tol_ratio` to the projections of `design_keep` and
        `design_resid`.
-    
+
        `results` has keys:
 
        * ``basis_vectors``: series over `axis`, shape (data.shape[axis], L) -
@@ -294,11 +304,11 @@ def pca_image(xyz_image, axis='t', mask=None, ncomp=None, standardize=True,
     # We have to roll the axis back
     roll_index = xyz_image.axes.index(img_first_axis)
     output_img = image_rollaxis(output_img, roll_index, inverse=True)
-    output_xyz = XYZImage(output_img.get_data(), 
+    output_xyz = XYZImage(output_img.get_data(),
                           xyz_image.affine,
                           output_img.axes.coord_names)
     key = 'basis_vectors over %s' % img_first_axis
     res[key] = res['basis_vectors']
     res['basis_projections'] = output_xyz
     return res
-  
+
