@@ -248,11 +248,11 @@ class Realign4d_Algorithm(object):
         # Optimize motion parameters 
         for t in range(self.nscans):
             print('Correcting motion of scan %d/%d...' % (t+1, self.nscans))
-            def loss(pc):
+            def cost(pc):
                 self.transforms[t].param = pc
                 return self.msid(t)
             self.init_motion_detection(t)
-            self.transforms[t].param = fmin(loss, self.transforms[t].param,
+            self.transforms[t].param = fmin(cost, self.transforms[t].param,
                                             callback=callback, **tols)
 
         # At this stage, transforms map an implicit 'ideal' grid to
