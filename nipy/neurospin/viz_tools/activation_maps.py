@@ -37,6 +37,8 @@ def _fast_abs_percentile(map):
     """ An algorithm to implement a fast version of the 80-percentile of
         the absolute value.
     """
+    #XXX: Should use the quantil function in nipy.neurospin.utils, with a
+    # try/except, so as not to fail if there are binary imports failure
     if hasattr(map, 'mask'):
         map = np.asarray(map[np.logical_not(map.mask)])
     map = np.abs(map).ravel()

@@ -16,7 +16,6 @@ class FmriImageList(ImageList):
     """
 
     def __init__(self, images=None, volume_start_times=None, slice_times=None):
-
         """
         A lightweight implementation of an fMRI image as in ImageList
 
@@ -45,9 +44,9 @@ class FmriImageList(ImageList):
         >>> fmrilist = FmriImageList.from_image(funcim)
         >>> ilist = FmriImageList(funcim)
         >>> print asarray(ilist).shape
-        (20, 2, 20, 20)
+        (17, 21, 3, 20)
         >>> print asarray(ilist[4]).shape
-        (2, 20, 20)
+        (21, 3, 20)
 
         """
         ImageList.__init__(self, images=images)
@@ -55,11 +54,15 @@ class FmriImageList(ImageList):
             volume_start_times = 1.
 
         v = asarray(volume_start_times)
-        if v.shape == (len(self.list),):
+        try:
+            length = len(self.list)
+        except TypeError:
+            length = len(self.list.get_data())
+        if v.shape == (length,):
             self.volume_start_times = volume_start_times
         else:
             v = float(volume_start_times)
-            self.volume_start_times = arange(len(self.list)) * v
+            self.volume_start_times = arange(length) * v
 
         self.slice_times = slice_times
 
@@ -80,7 +83,11 @@ class FmriImageList(ImageList):
         self.list[index] = value
 
     def __array__(self):
-        v = empty((len(self.list),) + self.list[0].shape)
+        try:
+            length = len(self.list)
+        except TypeError:
+            length = len(self.list.get_data())
+        v = empty((length,) + self.list[0].shape)
         for i, im in enumerate(self.list):
             v[i] = asarray(im)
         return v

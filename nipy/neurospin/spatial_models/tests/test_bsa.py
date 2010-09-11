@@ -9,8 +9,9 @@ Author : Bertrand Thirion, 2009
 
 import numpy as np
 import scipy.stats as st
+from nose.tools import assert_true
 
-from nipy.testing import assert_true, dec
+from nipy.testing import dec
 
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
@@ -35,18 +36,12 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     Fbeta = ff.Field(nvox)
     Fbeta.from_3d_grid(xyz.astype(np.int), 18)
 
-    # Get  coordinates in mm
-    xy = xyz[:, 1:]
-    coord = xy.astype(np.float)
-
     # get the functional information
     lbeta = np.array([np.ravel(betas[k]) for k in range(nbsubj)]).T
 
     # the voxel volume is 1.0
     g0 = 1.0/(1.0*nvox)
     bdensity = 1
-    affine = np.eye(3)
-    shape = (ref_dim[0], ref_dim[1])
     dom = domain_from_array(np.ones(ref_dim))
 
     if method=='simple':
@@ -112,10 +107,7 @@ def test_bsa_methods():
     for name, ths, betas, test_func in algs_tests:
         # run the algo
         AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method = name)
-        if test_func(AF, BF)==False:
-            stop
-        assert(test_func(AF, BF))
-        #yield assert_true, test_func(AF, BF)
+        yield assert_true, test_func(AF, BF)
     
 
 if __name__ == '__main__':

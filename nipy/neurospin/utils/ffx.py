@@ -6,7 +6,7 @@ Simple module to perform various tests at the voxel-level on images
 
 import numpy as np
 from nipy.io.imageformats import load, save, Nifti1Image
-from nipy.neurospin.utils.mask import intersect_masks
+from ..mask import intersect_masks
 
 def ffx( maskImages, effectImages, varianceImages, resultImage=None):
     """

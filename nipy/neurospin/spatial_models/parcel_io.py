@@ -29,7 +29,7 @@ def mask_parcellation(mask_images, nb_parcel, output_image=None):
     -------
     wim: Nifti1Imagine instance,  the resulting parcellation
     """
-    from nipy.neurospin.utils.mask import intersect_masks
+    from ..mask import intersect_masks
 
     # compute the group mask
     affine = load(mask_images[0]).get_affine()

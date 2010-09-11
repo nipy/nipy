@@ -206,7 +206,7 @@ class DesignMatrix(object):
         cond_ids=None, list of strings of length (ncond), 
                        ids of the experimental conditions. 
                        If None this will be called 'c0',..,'cn'
-        add_regs=None, array of shape(naddreg, nbframes)
+        add_regs=None, array of shape(nbframes, naddreg)
                        additional user-supplied regressors
         add_reg_names=None: list of (naddreg) regressor names
                             if None, while naddreg>0, these will be termed
@@ -230,9 +230,12 @@ class DesignMatrix(object):
             # check that regressor specification is correct
             if add_regs.shape[0] == np.size(add_regs):
                 add_regs = np.reshape(add_regs, (np.size(1, add_regs)))
-            if add_regs.shape[0] != np.size(frametimes):
-                raise ValueError, \
-                      'incorrect specification of additional regressors'
+            assert add_regs.shape[0] == np.size(frametimes), \
+                ValueError(
+                      'incorrect specification of additional regressors: '
+                      'length of regressors provided: %s, number of '
+                      'time-frames: %s' % (add_regs.shape[0], 
+                                           np.size(frametimes)))
             self.n_add_regs = add_regs.shape[1]
         self.add_regs = add_regs
         
@@ -240,8 +243,11 @@ class DesignMatrix(object):
         if  add_reg_names == None:
             self.add_reg_names = ['reg%d'%k for k in range(self.n_add_regs)]
         elif len(add_reg_names)!= self.n_add_regs:
-             raise ValueError, 'Incorrect number of additional regressors \
-                                names was provided'
+             raise ValueError('Incorrect number of additional regressors '
+                                'names was provided (%s provided,  '
+                                '%s expected)' % (len(add_reg_names), 
+                                                  self.n_add_regs)
+                             )
         else: 
             self.add_reg_names = add_reg_names
 

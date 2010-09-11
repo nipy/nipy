@@ -4,9 +4,10 @@
 Test for the converters.
 """
 import os
+import tempfile
 import nose
 
-from .. import as_volume_img
+from .. import as_volume_img, save
 from nipy.io import imageformats
 
 data_file = os.path.join(imageformats.__path__[0], 'tests',
@@ -24,6 +25,16 @@ def test_conversion():
 
 def test_basics():
     yield nose.tools.assert_raises, ValueError, as_volume_img, 'foobar'
+
+
+def test_save():
+    filename = tempfile.mktemp()
+    try:
+        img = as_volume_img(data_file)
+        save(filename, img)
+    finally:
+        if os.path.exists(filename):
+            os.remove(filename)
 
 
 try:

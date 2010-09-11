@@ -162,7 +162,6 @@ def test_evaluate_mfx_spatial():
                       #burnin=10, verbose=verbose)
 
 
-@parametric                    
 def test_update_labels():
     prng = np.random.RandomState(10)
     data, XYZ, XYZvol, vardata, signal = make_data(n=20, dim=20, r=3, 
@@ -174,5 +173,5 @@ def test_update_labels():
     P.label_values = np.zeros((1, p), int)
     P.labels_prior_mask = np.arange(p)
     P.update_labels()
-    yield assert_equal(max(abs(P.labels - np.zeros(p, int))), 0)
+    assert_equal(max(abs(P.labels - np.zeros(p, int))), 0)
 

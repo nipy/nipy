@@ -29,7 +29,7 @@ datatypes = {'U8':_np.uint8,
              'CDOUBLE':_np.clongdouble
              }
 
-class Texture:
+class Texture(object):
     def __init__(self, filename, textype='binar',
                  byteorder='bigindian', data=None):
         if data is None:
@@ -98,7 +98,6 @@ class Texture:
             # TODO some sanity check on data length
             p.data = []
             for t in range(nb_t):
-                current_t = (_np.frombuffer(f_in.read(4), _np.uint32))[0]
                 nbitems = (_np.frombuffer(f_in.read(4), _np.uint32))[0]
                 size = nbitems*datatype().nbytes
                 p.data.append(_np.frombuffer(f_in.read(size),datatype))
@@ -119,7 +118,6 @@ class Texture:
             p.data = []
             pos = 1
             for t in range(nb_t):
-                current_t = _np.int(datatemp[pos])
                 pos += 1
                 nbitems = _np.int(datatemp[pos])
                 pos += 1
@@ -132,13 +130,12 @@ class Texture:
         return p
     
     
-    def write(self,filename=None):
+    def write(self, filename=None):
         #as aims does not open float64 
         if self.data.dtype == _np.float64:
             self.data = self.data.astype(_np.float32)
         
         try:
-            test = self.data.shape[1]
             nb_t = _np.uint32(self.data.shape[0])
         except:
             nb_t = _np.uint32(1)
