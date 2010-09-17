@@ -579,10 +579,9 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
                     designs[s] = nipy.neurospin.glm.load(
                         kargs['glm_config'][s]["GlmDumpFile"])
                 except:
-                    import warnings
-                    warnings.warn("glm could not be loaded for session %s,\
-                    expect errors" %s)
-                
+                    print "glm could not be loaded for session %s, \
+                           expect errors" %s
+
     # set the mask
     mask_url = None
     if misc.has_key('mask_url'): mask_url = misc['mask_url']

@@ -142,6 +142,7 @@ for index, contrast_id in enumerate(contrasts):
     save(contrast_image, contrast_path)
     affine = fmri_image.get_affine()
 
+    
     vmax = max(-write_array.min(), write_array.max())
     plot_map(write_array, affine, 
                 cmap=cm.cold_hot, 
@@ -152,7 +153,7 @@ for index, contrast_id in enumerate(contrasts):
                 threshold=2.5)
     pylab.savefig(op.join(swd, '%s_z_map.png' % contrast_id))
     pylab.clf()
-
+    
 
 
 #########################################
