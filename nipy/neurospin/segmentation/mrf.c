@@ -195,9 +195,6 @@ void ve_step(PyArrayObject* ppm,
     
   /* Copy or not copy */
   if (copy) {
-
-    fprintf(stderr, "COPY ppm\n"); 
-
     ppm_data = (double*)calloc(S, sizeof(double));
     if (ppm_data==NULL) {
       fprintf(stderr, "Cannot allocate ppm copy\n"); 
@@ -216,6 +213,7 @@ void ve_step(PyArrayObject* ppm,
   
   /* Mix votes or not */ 
   if ((PyObject*)mix!=Py_None) {
+    fprintf(stderr, "Mixing matrix provided\n");
     mix_data = (double*)mix->data;
     p0 = (double*)calloc(K, sizeof(double));   
   }

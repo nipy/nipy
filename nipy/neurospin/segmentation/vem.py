@@ -6,7 +6,7 @@ import os
 
 from _mrf import _ve_step, _concensus
 
-TINY = 1e-30 
+TINY = 1e-30
 
 
 # VM-step 
