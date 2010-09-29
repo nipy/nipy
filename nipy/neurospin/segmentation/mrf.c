@@ -161,7 +161,8 @@ static void _ngb26_vote(double* res,
 
  */
 
-#define TINY 1e-20
+#define TINY 1e-300
+
 void ve_step(PyArrayObject* ppm, 
 	     const PyArrayObject* ref,
 	     const PyArrayObject* XYZ, 
