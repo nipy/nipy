@@ -9,12 +9,15 @@ from _mrf import _ve_step, _concensus
 TINY = 1e-30 
 
 
+### debug
+from numpy.testing import assert_equal 
+
 # VM-step 
-def gauss_dist(x, mu, sigma): 
-    return np.exp(-.5*((x-mu)/sigma)**2)/sigma
+def gauss_dist(x, mu, sigma):
+    return np.exp(-.5*((x-float(mu))/float(sigma))**2)/float(sigma)
 
 def laplace_dist(x, mu, sigma): 
-    return np.exp(-np.abs((x-mu)/sigma))/sigma
+    return np.exp(-np.abs((x-float(mu))/float(sigma)))/float(sigma)
 
 def vm_step_gauss(ppm, data_, mask): 
     """
