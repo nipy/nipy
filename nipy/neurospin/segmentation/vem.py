@@ -9,9 +9,6 @@ from _mrf import _ve_step, _concensus
 TINY = 1e-30 
 
 
-### debug
-from numpy.testing import assert_equal 
-
 # VM-step 
 def gauss_dist(x, mu, sigma):
     return np.exp(-.5*((x-float(mu))/float(sigma))**2)/float(sigma)
