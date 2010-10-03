@@ -5,12 +5,16 @@ import sys
 from glob import glob
 from distutils import log
 
-# monkey-patch numpy distutils to use Cython instead of Pyrex
-from build_helpers import (generate_a_pyrex_source, package_check,
+# Import build helpers
+from nisext.sexts import package_check, get_comrec_build
+from build_helpers import (generate_a_pyrex_source,
                            cmdclass, INFO_VARS)
+# monkey-patch numpy distutils to use Cython instead of Pyrex
 from numpy.distutils.command.build_src import build_src
 build_src.generate_a_pyrex_source = generate_a_pyrex_source
 
+# Add custom commit-recording build command
+cmdclass['build_py'] = get_comrec_build('nipy')
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
