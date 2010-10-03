@@ -17,9 +17,10 @@ Tutorials and summaries
 * `git ready`_ - a nice series of tutorials
 * `git casts`_ - video snippets giving git how-tos.
 * `git magic`_ - extended introduction with intermediate detail
+* The `git parable`_ is an easy read explaining the concepts behind git.
+* Our own `git foundation`_ expands on the `git parable`_.
 * Fernando Perez' git page - `Fernando's git page`_ - many links and tips
 * A good but technical page on `git concepts`_
-* Th `git parable`_ is an easy read explaining the concepts behind git.
 * `git svn crash course`_: git_ for those of us used to subversion_
 
 Advanced git workflow
