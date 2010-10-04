@@ -163,7 +163,7 @@ NIPY-related packages such as ``pbrain``).  The ``data`` subdirectory of
 ``config.ini`` file, that has at least an entry like this::
 
   [DEFAULT]
-  version = 0.1
+  version = 0.2
 
 giving the version of the data package.
 
@@ -223,16 +223,19 @@ The data in the data packages will not be under source control.
 The data packages will be available at a central release location.  For
 now this will be: http://nipy.sourceforge.net/data-packages/ .
 
-A package, such as ``nipy-templates-0.1.tar.gz`` will have the following
+A package, such as ``nipy-templates-0.2.tar.gz`` will have the following
 contents::
 
 
   <ROOT>
     |-- setup.py
     |-- README.txt
+    |-- PKG-INFO
     |-- MANIFEST.in
     `-- templates
         |-- ICBM152
+        |   |-- 1mm
+        |   |   `-- T1_brain.nii.gz
         |   `-- 2mm
         |       `-- T1.nii.gz
         |-- colin27
@@ -247,7 +250,7 @@ particular package.  For example, this package installs
 
 Making a new package tarball is simply:
 
-#. Downloading and unpacking e.g ``nipy-templates-0.1.tar.gz`` to form
+#. Downloading and unpacking e.g ``nipy-templates-0.2.tar.gz`` to form
    the directory structure above.
 #. Making any changes to the directory
 #. Running ``setup.py sdist`` to recreate the package.  
