@@ -1,6 +1,4 @@
-.. -*- rst -*- rest mode for emacs
-
-_development-quickstart:
+.. _development-quickstart:
 
 ========================
  Development quickstart
