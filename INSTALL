@@ -1,5 +1,3 @@
-.. _installation:
-
 ====================
 Download and Install
 ====================
@@ -152,5 +150,4 @@ These sites may also be useful:
 .. _MacPorts: http://www.macports.org/
 
 
-.. include:: ../links_names.txt
-
+.. include:: doc/links_names.txt
