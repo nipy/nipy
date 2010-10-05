@@ -1,5 +1,7 @@
 .. -*- rst -*- rest mode for emacs
 
+_development-quickstart:
+
 ========================
  Development quickstart
 ========================
@@ -157,4 +159,4 @@ If you find a bug in nipy, please submit a bug report at the `nipy
 bugs`_ github site so that we can fix it.
 
 
-.. include:: doc/links_names.txt
+.. include:: ../links_names.txt
