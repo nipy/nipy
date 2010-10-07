@@ -105,7 +105,6 @@ def test_dmtx1():
     assert_true(len(names)==7)
 
 
-@parametric
 def test_convolve_regressors():
     """
     tests for convolve_regressors helper function
@@ -115,7 +114,7 @@ def test_convolve_regressors():
     paradigm =  dm.EventRelatedParadigm(conditions, onsets)
     # names not passed -> default names
     f, names = dm.convolve_regressors(paradigm, 'Canonical')
-    yield assert_equal(names, ['c0', 'c1'])
+    assert_equal(names, ['c0', 'c1'])
 
 
 def test_dmtx1b():

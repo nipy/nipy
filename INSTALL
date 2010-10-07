@@ -1,162 +1,156 @@
-.. -*- rst -*- rest mode for emacs
+.. -*- rest -*-
+.. vim:syntax=rest
 
-========================
- Development quickstart
-========================
+====================
+Download and Install
+====================
 
-Source Code
-===========
+This page covers the necessary steps to install and run NIPY.  Below
+is a list of required dependencies, along with additional software
+recommendations.
 
-NIPY uses github_ for our code hosting.  For immediate access to
-the source code, see the `nipy github`_ site.
+NIPY is currently *ALPHA* quality, but is rapidly improving. If you are
+trying to get some work done wait until we have a stable release. For now,
+the code will primarily be of interest to developers.
 
-Checking out the latest version
-===============================
+Dependencies
+------------
 
-To check out the latest version of nipy you need git_::
+Must Have
+^^^^^^^^^
 
-    git clone git://github.com/nipy/nipy.git
+  Python_ 2.5 or later
+  
+  NumPy_ 1.2 or later
 
-There are two methods to install a development version of nipy.  For
-both methods, build the extensions in place::
+  SciPy_ 0.7 or later
+    Numpy and Scipy are high-level, optimized scientific computing libraries.
 
-    python setup.py build_ext --inplace
+  Sympy_ 0.6.6 or later
+    Sympy is a symbolic mathematics library for Python.  We use it for
+    statistical formalae.
 
-Then you can either:
+  gcc_
+    NIPY does contain a few C extensions for optimized
+    routines. Therefore, you must have a compiler to build from
+    source.  XCode_ (OSX) and MinGW_ (Windows) both include gcc.  (*Once
+    we have binary packages, this requirement will not be necessary.*)
 
-#. Use the ``mynipy`` script in the tools directory of the nipy
-   source.  There are directions and examples in the docstring of that
-   file, but basically it updates a symbolic link in your
-   *site-packages* directory to the inplace build of your source.  The
-   advantage of this method is it does not require any modifications of
-   your PYTHONPATH.
+  cython_ 0.11.1 or later
+    Cython is a language that is a fusion of Python and C.  It allows us
+    to write fast code using Python and C syntax, so that it easier to
+    read and maintain.  You need Cython if you are building the
+    development source code (and that is what you have to do at the
+    moment, because we don't yet have a release).
 
-#. Place the source directory in your PYTHONPATH.
+Strong Recommendations
+^^^^^^^^^^^^^^^^^^^^^^
 
-With either method, all of the modifications made to your source tree
-will be picked up when nipy is imported.
+  iPython_
+    Interactive python environment.
 
-.. _installing-data:
+  Matplotlib_
+    2D python plotting library.
 
-Optional data packages
-======================
+Installing from binary packages
+-------------------------------
 
-The source code has some very small data files to run the tests with,
-but it doesn't include larger example data files, or the all-important
-brain templates we all use.  You can find packages for the optional data
-and template files at http://nipy.sourceforge.net/data-packages.
+Currently we do not have binary packages.  Until we do, the easiest
+installation method is to download the source tarball and follow the
+:ref:`building_source` instructions below.
 
-If you don't have these packages, then, when you run nipy installation,
-you will probably see messages pointing you to the packages you need.
+.. _building_source:
 
-Data package installation as an administrator
----------------------------------------------
+Building from source code
+-------------------------
 
-The installation procedure, for now, is very basic.  For example, let us
-say that you need the 'nipy-templates' package at
-http://nipy.sourceforge.net/data-packages/nipy-templates-0.1.tar.gz
-. You simply download this archive, unpack it, and then run the standard
-``python setup.py install`` on it.  On a unix system this might look
-like::
+Developers should look through the 
+:ref:`development quickstart <development-quickstart>` 
+documentation.  There you will find information on building NIPY, the
+required software packages and our developer guidelines.
 
-   curl -O http://nipy.sourceforge.net/data-packages/nipy-templates-0.1.tar.gz
-   tar zxvf nipy-templates-0.1.tar.gz
-   cd nipy-templates-0.1
-   sudo python setup.py install
+If you are primarily interested in using NIPY, download the source
+tarball and follow these instructions for building.  The installation
+process is similar to other Python packages so it will be familiar if
+you have Python experience.
 
-On windows, download the file, extract the archive to a folder using the
-GUI, and then, using the windows shell or similar::
+Unpack the source tarball and change into the source directory.  Once in the
+source directory, you can build the neuroimaging package using::
 
-   cd c:\path\to\extracted\files
-   python setup.py install
+    python setup.py build
 
-Non-administrator data package installation
--------------------------------------------
+To install, simply do::
+   
+    sudo python setup.py install
 
-The commands above assume you are installing into the default system
-directories.  If you want to install into a custom directory, then (in
-python, or ipython, or a text editor) look at the help for
-``nipy.utils.data.get_data_path()`` . There are instructions there for
-pointing your nipy installation to the installed data.
+.. note::
 
-On unix
-~~~~~~~
+    As with any Python_ installation, this will install the modules
+    in your system Python_ *site-packages* directory (which is why you
+    need *sudo*).  Many of us prefer to install development packages in a
+    local directory so as to leave the system python alone.  This is
+    mearly a preference, nothing will go wrong if you install using the
+    *sudo* method.  To install in a local directory, use the **--prefix**
+    option.  For example, if you created a ``local`` directory in your
+    home directory, you would install nipy like this::
 
-For example, say you installed with::
+	python setup.py install --prefix=$HOME/local
 
-   cd nipy-templates-0.1
-   python setup.py install --prefix=/home/my-user/some-dir
+.. _install-data:
 
-Then you may want to do make a file ``~/.nipy/config.ini`` with the
-following contents::
+Installing useful data files
+-----------------------------
 
-   [DATA]
-   /home/my-user/some-dir/share/nipy
+See :ref:`installing-data` for some instructions on installing data
+pacakges.
 
-On windows
-~~~~~~~~~~
+See :ref:`data-files` for details on how to customize the installation
+paths.
 
-Say you installed with (windows shell)::
+Building for 64-bit Snow Leopard
+--------------------------------
 
-   cd nipy-templates-0.1
-   python setup.py install --prefix=c:\some\path
+How you install nipy for Snow Leopard depends on which version of
+Python you have installed.  There are two versions we know work, using
+the Python that shipped with Snow Leopard, and using a 64-bit
+MacPorts_ version.
 
-Then first, find out your home directory::
+If you are using the Python that shipped with Snow Leopard, there are
+detailed instructions on `this blog
+<http://blog.hyperjeff.net/?p=160>`_ for installing numpy_ and scipy_.
+The critical step is to set the appropriate flags for the C and
+Fortran compilers so they match the architecture of your version of
+Python.  You can discover the architecture of your Python by doing the
+following::
 
-   python -c "import os; print os.path.expanduser('~')"
+    file `which python`
 
-Let's say that was ``c:\Documents and Settings\My User``.  Then, make a
-new file called ``c:\Documents and Settings\My User\_nipy\config.ini``
-with contents::
+For example, on my 32-bit Leopard (10.5) it's a Universal binary,
+built for both ppc and i386 architectures::
 
-   [DATA]
-   c:\some\path\share\nipy
+    /usr/local/bin/python: Mach-O universal binary with 2 architectures
+    /usr/local/bin/python (for architecture i386):	Mach-O executable i386
+    /usr/local/bin/python (for architecture ppc):	Mach-O executable ppc
 
-Guidelines
-==========
+On a 64-bit MacPorts_ install on Snow Leopard (10.6), it's built for
+64-bit only::
 
-We have adopted many developer guidelines in an effort to make
-development easy, and the source code readable, consistent and robust.
-Many of our guidelines are adopted from the scipy_ / numpy_ community.
-We welcome new developers to the effort, if you're interested in
-developing code or documentation please join the `nipy mailing list`_
-and introduce yourself.  If you plan to do any code development, we
-ask that you take a look at the following guidelines.  We do our best
-to follow these guidelines ourselves:
+    /opt/local/bin/python: Mach-P 64-bit executable x86_64
 
-* :ref:`howto_document` : Documentation is critical.  This document
-  describes the documentation style, syntax, and tools we use.
+For the 64-bit MacPorts_ install, set the flags and build using this::
 
-* `Numpy/Scipy Coding Style Guidelines:
-  <http://projects.scipy.org/scipy/numpy/wiki/CodingStyleGuidelines>`_
-  This is the coding style we strive to maintain.
+    export MACOSX_DEPLOYMENT_TARGET=10.6
+    export LDFLAGS="-arch x86_64 -Wall -undefined dynamic_lookup -bundle -fPIC"
+    export FFLAGS="-arch x86_64 -O2 -Wall -fPIC"
+    python setup.py build
 
-* :ref:`development-workflow` : This describes our process for version control.
+These sites may also be useful:
 
-* :ref:`testing` : We've adopted a rigorous testing framework.
+* `readline fix for ipython <http://blog.zacharyvoase.com/post/174280299>`_
+* `to graphically select the full 64-bit environment
+  <http://www.ahatfullofsky.comuv.com/English/Programs/SMS/SMS.html>`_
 
-* :ref:`optimization`: "premature optimization is the root of all
-  evil."
-
-.. _trunk_download:
-
-Submitting a patch
-==================
-
-The preferred method to submit a patch is to create a branch of nipy on
-your machine, modify the code and make a patch or patches.  Then email
-the `nipy mailing list`_ and we will review your code and hopefully
-apply (merge) your patch.  See the instructions for
-:ref:`making-patches`.
-
-If you do not wish to use bazaar and github, please feel free to
-file a bug report and submit a patch or email the 
-
-Bug reports
-===========
-
-If you find a bug in nipy, please submit a bug report at the `nipy
-bugs`_ github site so that we can fix it.
+.. _MacPorts: http://www.macports.org/
 
 
 .. include:: doc/links_names.txt

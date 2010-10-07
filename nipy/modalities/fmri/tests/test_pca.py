@@ -42,6 +42,38 @@ def root_mse(arr, axis=0):
     return np.sqrt(np.square(arr).sum(axis=axis) / arr.shape[axis])
 
 
+def pos1basis(res):
+    ''' Return basis vectors with first row positive '''
+    bvs = res['basis_vectors']
+    return bvs * np.sign(bvs[0])
+
+
+def test_same_basis():
+    arr4d = data['fmridata']
+    shp = arr4d.shape
+    arr2d =  arr4d.reshape((np.prod(shp[:3]), shp[3]))
+    res = pca(arr2d, axis=-1)
+    p1b_0 = pos1basis(res)
+    for i in range(3):
+        res_again = pca(arr2d, axis=-1)
+        assert_true(np.all(pos1basis(res_again) ==
+                           p1b_0))
+
+
+def test_2d_eq_4d():
+    arr4d = data['fmridata']
+    shp = arr4d.shape
+    arr2d =  arr4d.reshape((np.prod(shp[:3]), shp[3]))
+    arr3d = arr4d.reshape((shp[0], -1, shp[3]))
+    res4d = pca(arr4d, axis=-1, standardize=False)
+    res3d = pca(arr3d, axis=-1, standardize=False)
+    res2d = pca(arr2d, axis=-1, standardize=False)
+    assert_array_almost_equal(pos1basis(res4d),
+                              pos1basis(res2d))
+    assert_array_almost_equal(pos1basis(res4d),
+                              pos1basis(res3d))
+
+
 @parametric
 def test_input_effects():
     ntotal = data['nimages'] - 1
@@ -109,21 +141,27 @@ def test_2D():
     p = pca(data, standardize=False)
     imgs = p['basis_projections']
     yield assert_true(diagonal_covariance(imgs))
-    
+
 
 @parametric
 def test_PCAMask():
+    # for 2 and 4D case
     ntotal = data['nimages'] - 1
     ncomp = 5
-    p = pca(data['fmridata'], -1, data['mask'], ncomp=ncomp)
-    yield assert_equal(
-        p['basis_vectors'].shape,
-        (data['nimages'], ntotal))
-    yield assert_equal(
-        p['basis_projections'].shape,
-        data['mask'].shape + (ncomp,))
-    yield assert_equal(p['pcnt_var'].shape, (ntotal,))
-    yield assert_almost_equal(p['pcnt_var'].sum(), 100.)
+    arr4d = data['fmridata']
+    mask3d = data['mask']
+    arr2d = arr4d.reshape((-1, data['nimages']))
+    mask1d = mask3d.reshape((-1))
+    for arr, mask in (arr4d, mask3d), (arr2d, mask1d):
+        p = pca(arr, -1, mask, ncomp=ncomp)
+        yield assert_equal(
+            p['basis_vectors'].shape,
+            (data['nimages'], ntotal))
+        yield assert_equal(
+            p['basis_projections'].shape,
+            mask.shape + (ncomp,))
+        yield assert_equal(p['pcnt_var'].shape, (ntotal,))
+        yield assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
 
 def test_PCAMask_nostandardize():
