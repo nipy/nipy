@@ -1,30 +1,77 @@
-*.py[oc]
-*.so
-# setup.py working directory
-build
-# setup.py dist directory
-./dist
-# Editor temporary/working/backup files
-*$
-.*.sw[nop]
-.sw[nop]
-*~
-[#]*#
+# Editor temporary/working/backup files #
+#########################################
 .#*
+[#]*#
+*~
+*$
 *.bak
-*.tmp
-*.tgz
-*.rej
+*.diff
 *.org
 .project
-*.diff
+*.rej
 .settings/
-*.svn/
-# Egg metadata
-./*.egg-info
-# The shelf plugin uses this dir
-./.shelf
-# Mac droppings
-.DS_Store
+.*.sw[nop]
+.sw[nop]
+*.tmp
+
+# Not sure what the next two are for
+*.kpf
+*-stamp
+
+# Compiled source #
+###################
+*.a
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.py[oc]
+*.so
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.bz2
+*.bzip2
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.tbz2
+*.tgz
+*.zip
+
+# Python files #
+################
+build            # setup.py working directory
+_build           # sphinx build directory
+./dist           # setup.py dist directory
+./*.egg-info     # Egg metadata
+./.shelf         # The shelf plugin uses this dir
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# OS generated files #
+######################
+.gdb_history
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# Things specific to this project #
+###################################
 nipy/__config__.py
 nipy/neurospin/__config__.py
+doc/api/generated
+doc/build
+doc/manual
