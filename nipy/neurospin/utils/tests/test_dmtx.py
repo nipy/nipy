@@ -8,6 +8,7 @@ not whether it is exact
 """
 
 import numpy as np
+from os.path import join, dirname
 import nipy.neurospin.utils.design_matrix as dm
 
 from nose.tools import assert_true, assert_equal
@@ -16,13 +17,13 @@ from nipy.testing import parametric
 
 
 def basic_paradigm():
-    conditions = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     paradigm =  dm.EventRelatedParadigm(conditions, onsets)
     return paradigm
 
 def modulated_block_paradigm():
-    conditions = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     duration = 5 + 5 * np.random.rand(len(onsets))
     values = np.random.rand(len(onsets))
@@ -30,14 +31,14 @@ def modulated_block_paradigm():
     return paradigm
 
 def modulated_event_paradigm():
-    conditions = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     values = np.random.rand(len(onsets))
     paradigm = dm.EventRelatedParadigm(conditions, onsets, values)
     return paradigm
 
 def block_paradigm():
-    conditions = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     duration = 5*np.ones(9)
     paradigm = dm.BlockParadigm (conditions, onsets, duration)
@@ -109,7 +110,7 @@ def test_convolve_regressors():
     """
     tests for convolve_regressors helper function
     """
-    conditions = [0, 1]
+    conditions = ['c0', 'c1']
     onsets = [20, 40]
     paradigm =  dm.EventRelatedParadigm(conditions, onsets)
     # names not passed -> default names
@@ -227,7 +228,7 @@ def test_dmtx7():
     tr = 1.0
     frametimes = np.linspace(0,127*tr,128)
     conditions = [0,0,0,1,1,1,3,3,3]
-    # no condition '2'
+    # no condition 'c2'
     onsets=[30,70,100,10,30,90,30,40,60]
     paradigm = np.vstack(([conditions,onsets])).T
     return paradigm
@@ -275,7 +276,8 @@ def test_dmtx10():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5))
-    assert_true(np.all((X[paradigm.onset[paradigm.index==0]+1, 0]==1)))
+    onset = paradigm.onset[paradigm.con_id=='c0'].astype(np.int)
+    assert_true(np.all((X[onset+1, 0]==1)))
 
 
 def test_dmtx11():
@@ -289,7 +291,8 @@ def test_dmtx11():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5))
-    assert_true(np.all(X[paradigm.onset[paradigm.index==0]+3, 2]==1))
+    onset = paradigm.onset[paradigm.con_id=='c0'].astype(np.int)
+    assert_true(np.all(X[onset+3, 2]==1))
 
 
 def test_dmtx12():
@@ -303,7 +306,8 @@ def test_dmtx12():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5))
-    assert_true(np.all(X[paradigm.onset[paradigm.index==2]+4, 11]==1))
+    onset = paradigm.onset[paradigm.con_id=='c2'].astype(np.int)
+    assert_true(np.all(X[onset+4, 11]==1))
 
 
 def test_dmtx13():
@@ -317,7 +321,8 @@ def test_dmtx13():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5), fir_duration=2*tr)
-    assert_true(np.all(X[paradigm.onset[paradigm.index==0]+2, 0]==1))
+    onset = paradigm.onset[paradigm.con_id=='c0'].astype(np.int)
+    assert_true(np.all(X[onset+2, 0]==1))
 
 
 def test_dmtx14():
@@ -332,7 +337,8 @@ def test_dmtx14():
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1,5))
-    assert_true(np.all(X[paradigm.onset[paradigm.index==0]+1,0]==1))
+    onset = paradigm.onset[paradigm.con_id=='c0'].astype(np.int)
+    assert_true(np.all( X[onset+1, 0]==1))
 
 
 def test_dmtx15():
@@ -371,7 +377,8 @@ def test_dmtx17():
     hrf_model = 'Canonical'
     X, names= dm.dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3)
-    assert_true((X[paradigm.onset[paradigm.index==0].astype(np.int)+1,0]>0).all())
+    assert_true((X[paradigm.onset[paradigm.con_id=='c0'].astype(np.int)+1,0]\
+                 > 0).all())
     
 def test_dmtx18():
     """
@@ -383,7 +390,8 @@ def test_dmtx18():
     hrf_model='Canonical'
     X, names= dm.dmtx_light(frametimes, paradigm, hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3)
-    assert_true((X[paradigm.onset[paradigm.index==0].astype(np.int)+3,0]>0).all())
+    assert_true((X[paradigm.onset[paradigm.con_id=='c0'].astype(np.int)+3, 0]\
+                 > 0).all())
 
 def test_dmtx19():
     """
@@ -394,9 +402,9 @@ def test_dmtx19():
     paradigm = modulated_event_paradigm()
     hrf_model='FIR'
     X, names= dm.dmtx_light(frametimes, paradigm, hrf_model=hrf_model, 
-                         drift_model='Polynomial', drift_order=3,
-                         fir_delays=range(1,5))
-    idx = paradigm.onset[paradigm.index==0].astype(np.int)
+                            drift_model='Polynomial', drift_order=3,
+                            fir_delays=range(1,5))
+    idx = paradigm.onset[paradigm.con_id==0].astype(np.int)
     assert_true((X[idx+1,0]==X[idx+2,1]).all())
 
 def test_csv_io():
@@ -417,6 +425,42 @@ def test_csv_io():
     assert_almost_equal (DM.matrix, DM2.matrix)
     assert_true (DM.names==DM2.names)
 
+def test_spm_1():
+    """
+    Check that the nipy design matrix is close enough to the SPM one
+    (it cannot be identical, because the hrf shape is different)
+    """
+    tr = 1.0
+    frametimes = np.linspace(0, 99, 100)
+    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
+    onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
+    hrf_model = 'Canonical'
+    paradigm =  dm.EventRelatedParadigm(conditions, onsets)
+    X1 = dm.DesignMatrix(frametimes, paradigm, drift_model='Blank')
+    X1.estimate()
+    spm_dmtx = np.load(join(dirname(__file__),'spm_dmtx.npz'))['arr_0']
+    assert ((spm_dmtx-X1.matrix)**2).sum()/(spm_dmtx**2).sum()<.1
+
+
+def test_spm_2():
+    """
+    Check that the nipy design matrix is close enough to the SPM one
+    (it cannot be identical, because the hrf shape is different)
+    """
+    tr = 1.0
+    frametimes = np.linspace(0, 99, 100)
+    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
+    onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
+    duration = 10*np.ones(9)
+    hrf_model = 'Canonical'
+    paradigm =  dm.BlockParadigm(conditions, onsets, duration)
+    X1 = dm.DesignMatrix(frametimes, paradigm, drift_model='Blank')
+    X1.estimate()
+    import os
+    spm_dmtx = np.load(join(dirname(__file__),'spm_dmtx.npz'))['arr_1']
+    assert ((spm_dmtx-X1.matrix)**2).sum()/(spm_dmtx**2).sum()<.1
+
+    
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])

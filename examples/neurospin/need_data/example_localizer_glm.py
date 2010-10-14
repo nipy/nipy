@@ -67,8 +67,7 @@ print 'Loading design matrix...'
 paradigm = dm.load_protocol_from_csv_file(paradigm_file, session=0)
 
 design_matrix = dm.DesignMatrix( frametimes, paradigm, hrf_model=hrf_model,
-                                 drift_model=drift_model, hfcut=hfcut,
-                                 cond_ids= conditions)
+                                 drift_model=drift_model, hfcut=hfcut)
 
 design_matrix.show()
 pylab.savefig(op.join(swd, 'design_matrix.png'))
@@ -145,12 +144,12 @@ for index, contrast_id in enumerate(contrasts):
     
     vmax = max(-write_array.min(), write_array.max())
     plot_map(write_array, affine, 
-                cmap=cm.cold_hot, 
-                vmin=-vmax,
-                vmax=vmax,
-                anat=None,
-                figure=10,
-                threshold=2.5)
+             cmap=cm.cold_hot, 
+             vmin=-vmax,
+             vmax=vmax,
+             anat=None,
+             figure=10,
+             threshold=2.5)
     pylab.savefig(op.join(swd, '%s_z_map.png' % contrast_id))
     pylab.clf()
     
