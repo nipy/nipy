@@ -212,9 +212,6 @@ void ve_step(PyArrayObject* ppm,
     vote = &_soft_vote;
   
   /* Mix votes or not */ 
-  /* DEBUUG */ 
-  if ( mix == Py_None ) 
-    fprintf(stderr, "no mixing matrix supplied\n"); 
   if (mix!=Py_None) {
     mix_data = (double*)mix->data;
     p0 = (double*)calloc(K, sizeof(double));   
