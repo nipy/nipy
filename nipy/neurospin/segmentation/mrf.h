@@ -8,7 +8,7 @@ extern "C" {
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
-  extern void mrf_mport_array(void);
+  extern void mrf_import_array(void);
 
   extern void ve_step(PyArrayObject* ppm, 
 		      const PyArrayObject* ref,
