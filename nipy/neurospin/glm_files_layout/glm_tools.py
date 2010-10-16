@@ -84,7 +84,8 @@ def generate_all_brainvisa_paths( base_path, sessions, fmri_wc,  model_id,
     Returns
     -------
     paths, dictionary
-        containing all the paths that are required to eprform a glm with brainvisa
+        containing all the paths that are required to perform a
+        glm with brainvisa
     """
  
     paths = {}
@@ -94,6 +95,7 @@ def generate_all_brainvisa_paths( base_path, sessions, fmri_wc,  model_id,
         paths['paradigm'] = os.sep.join(( paths['minf'], paradigm_id))
         if not os.path.isfile( paths['paradigm']):
             raise ValueError,"paradigm file %s not found" % paths['paradigm']
+
     paths['mask'] = os.sep.join(( paths['minf'], mask_id))
     paths['misc'] = os.sep.join(( paths['minf'], misc_id))
     paths['contrast_file'] =  os.sep.join(( paths['model'], contrast_id))
@@ -436,26 +438,29 @@ def design_matrix(
 #------- GLM fit -------------------------------------
 #-----------------------------------------------------
 
-def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, glm_info=None,
-           fit="Kalman_AR1", mask_url=None):
+def glm_fit(fMRI_path, DesignMatrix,  output_glm=None, glm_info=None,
+           fit="Kalman_AR1", mask_url=None, data_scaling=True):
     """
     Call the GLM Fit function with apropriate arguments
 
     Parameters
     ----------
-    fMRI_path, string or list of strings,
-          path of the fMRI data file(s)
-    design_matrix, DesignMatrix instance, optional
-          design matrix of the model
-    output_glm, string, optional
+    fMRI_path: string or list of strings,
+               path of the fMRI data file(s)
+    design_matrix: DesignMatrix instance,
+                   design matrix of the model
+    output_glm: string, optional
                 path of the output glm .npz dump
-    glm_info, string,optional
+    glm_info: string,optional
                path of the output configobj  that gives dome infor on the glm
-    fit= 'Kalman_AR1', string to be chosen among
-         "Kalman_AR1", "Ordinary Least Squares", "Kalman"
+    fit: string, Optional,
+         to be chosen among 'Kalman_AR1', 'Ordinary Least Squares', 'Kalman'
          that represents both the model and the fit method
-    mask_url=None string, path of the mask file
+    mask_url: string, Optional,
+              path of the mask file
              if None, no mask is applied
+    data_scaling: bool, Optional
+                  scaling of the data to mean value
 
     Returns
     -------
@@ -468,7 +473,8 @@ def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, glm_info=None,
     fixme: mask should be optional
     """
     import nipy.neurospin.glm
-    
+
+    # get the model/fit methods
     if fit == "Kalman_AR1":
         model = "ar1"
         method = "kalman"
@@ -483,16 +489,24 @@ def glm_fit(fMRI_path, DesignMatrix=None,  output_glm=None, glm_info=None,
     if isinstance(DesignMatrix, basestring):
         import nipy.neurospin.utils.design_matrix as dm
         X = dm.dmtx_from_csv( DesignMatrix).matrix
-        #DM = dm.DesignMatrix()
-        #DM.read_from_csv(DesignMatrix)
-        #X  = DM.matrix
     else:
         X = DesignMatrix.matrix
-  
+
+    # load the fMRI data
     Y = load_image(fMRI_path, mask_url)
+
+    # data_scaling to percent of mean, and mean removal
+    if data_scaling:
+        # divide each voxel time course by its mean value, subtract 1,
+        # mulitply by 100 to deal with percent of average BOLD fluctuations 
+        mY = np.repeat(np.expand_dims(Y.mean(-1), -1), Y.shape[-1], Y.ndim-1)
+        Y = 100* (Y/mY - 1)
+
+    # apply the GLM
     glm = nipy.neurospin.glm.glm()
     glm.fit(Y.T, X, method=method, model=model)
 
+    # Write outputs
     if output_glm is not None:
         glm.save(output_glm)
         
@@ -561,14 +575,19 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
         else:
             import nipy.neurospin.glm
             for s in sessions:
-                designs[s] = nipy.neurospin.glm.load(
-                    kargs['glm_config'][s]["GlmDumpFile"])
+                try:
+                    designs[s] = nipy.neurospin.glm.load(
+                        kargs['glm_config'][s]["GlmDumpFile"])
+                except:
+                    print "glm could not be loaded for session %s, \
+                           expect errors" %s
 
     # set the mask
     mask_url = None
-    if misc.has_key('mask_url'):
-        mask_url = misc['mask_url']
-
+    if misc.has_key('mask_url'): mask_url = misc['mask_url']
+    if contrast_struct.has_key('mask_url'):
+        mask_url = contrast_struct['mask_url']
+        
     # set the output paths
     if isinstance(CompletePaths, basestring) :
         CompletePaths = generate_brainvisa_ouput_paths(CompletePaths, 
@@ -582,18 +601,19 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
             multicon = dict()
 
             for key, value in contrast_struct[contrast].items():
-                if key != "Type" and key != "Dimension":
+                if key not in ["Type", "Dimension"]:
                     session = "_".join(key.split("_")[:-1])
-                    bv = [int(j) != 0 for j in value]
-                    if contrast_type == "t" and sum(bv)>0:
-                        _con = designs[session].contrast([int(i) for i in value])
+                    bv = np.asarray([int(j) for j in value])
+                    if contrast_type == "t" and bv.any():
+                        _con = designs[session].contrast(bv.astype(np.float))
                         final_contrast.append(_con)
 
                     if contrast_type == "F":
                         if not multicon.has_key(session):
-                            multicon[session] = np.array(bv)
+                            multicon[session] = bv.astype(np.float)
                         else:
-                            multicon[session] = np.vstack((multicon[session], bv))
+                            multicon[session] = np.vstack((
+                                multicon[session], bv.astype(np.float)))
             if contrast_type == "F":
                 for key, value in multicon.items():
                     if sum([j != 0 for j in value.reshape(-1)]) != 0:

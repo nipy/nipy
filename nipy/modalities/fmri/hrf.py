@@ -136,39 +136,3 @@ _aexpr = _aexpr / _getint(_aexpr)
 _afni = lambdify_t(_aexpr)
 afni = aliased_function('afni', _afni)
 afnit = lambdify_t(afni(T))
-
-
-# Primitive of the HRF -- temoprary fix to handle blocks
-def igamma_params(peak_location, peak_fwhm):
-    """
-    From a peak location and peak fwhm,
-    determine the paramteres of a Gamma density
-    and return an approximate (accurate) approximation of its integral
-    f(x) = int_0^x  coef * t**(alpha-1) * exp(-t*beta) dt
-    so that lim_{x->infty} f(x)=1
-    
-    :Parameters:
-        peak_location : float
-            Location of the peak of the Gamma density
-        peak_fwhm : float
-            FWHM at the peak
-
-    :Returns:
-         the function of t
-
-    NOTE: this is only a temporary fix,
-    and will have to be removed in the long term
-    """
-    import scipy.special as sp
-    alpha = np.power(peak_location / peak_fwhm, 2) * 8 * np.log(2.0)
-    beta = np.power(peak_fwhm, 2) / peak_location / 8 / np.log(2.0)
-    ak = int(np.round(alpha+1))
-    P = np.sum([1./sp.gamma(k+1)*((T/beta)**k) for k in range(ak)],0)
-    return (T > 0) * (1-sympy.exp(-T/beta)*P)
-
-_igexpr = igamma_params(5.4, 5.2) - 0.35 * igamma_params(10.8,7.35)
-_igexpr = _igexpr / _getint(_igexpr)
-_iglover = lambdify_t(_igexpr)
-iglover = aliased_function('iglover', _iglover)
-iglovert = lambdify_t(iglover(T))
-

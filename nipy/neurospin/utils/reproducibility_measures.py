@@ -374,27 +374,6 @@ def voxel_reproducibility(data, vardata, mask, ngroups, method='crfx',
     hr = histo_repro(h)  
     return hr
 
-def voxel_reproducibility_old(data, vardata, mask, ngroups, method='crfx',
-                          swap=False, verbose=0, **kwargs):
-    """
-    see voxel_reproducibility API    
-    
-    Note
-    ----
-    This uses  the mixture of binomial heuristic, which has been abandoned now  
-    """
-    rmap = map_reproducibility(data, vardata, mask, ngroups, method, 
-                                     swap, verbose, **kwargs)
-
-    import two_binomial_mixture as mtb
-    MB = mtb.TwoBinomialMixture()
-    MB.estimate_parameters(rmap, ngroups+1)
-    if verbose:
-        h = np.array([np.sum(rmap==i) for i in range(ngroups+1)])
-        MB.show(h)
-    return MB.kappa()
-
-
 def draw_samples(nsubj, ngroups, split_method='default'):
     """
     Draw randomly ngroups sets of samples from [0..nsubj-1]
@@ -403,11 +382,12 @@ def draw_samples(nsubj, ngroups, split_method='default'):
     ----------
     nsubj, int, the total number of items
     ngroups, int, the number of desired groups
-    split_method= 'default', string to be chosen among 'default', 'bootstrap', 'jacknife'
+    split_method: string, optional,
+                  to be chosen among 'default', 'bootstrap', 'jacknife'
                   if 'bootstrap', then each group will be nsubj 
                      drawn with repetitions among nsubj
-                  if 'jacknife' the population is divided into ngroups disjoint equally-sized 
-                     subgroups
+                  if 'jacknife' the population is divided into
+                      ngroups disjoint equally-sized subgroups
                   if 'default', 'bootstrap' is used when nsubj<10*ngroups
                      otherwise jacknife is used
                   
@@ -415,7 +395,8 @@ def draw_samples(nsubj, ngroups, split_method='default'):
     -------
     samples, a list of ngroups array that represent the subsets.
 
-    fixme : this should allow variable bootstrap, i.e. draw ngroups of groupsize among nsubj
+    fixme : this should allow variable bootstrap,
+    i.e. draw ngroups of groupsize among nsubj
     """
     if split_method=='default':
         if nsubj>10*ngroups:

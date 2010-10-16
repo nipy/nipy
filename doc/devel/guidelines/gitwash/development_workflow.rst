@@ -88,8 +88,9 @@ In more detail
    ``git commit -am 'A commit message'``.  Note the ``-am`` options to
    ``commit``. The ``m`` flag just signals that you're going to type a
    message on the command line.  The ``a`` flag - you can just take on
-   faith - or see `why the -a flag?`_. See also the `git commit`_ manual
-   page.
+   faith - or see `why the -a flag?`_ - and the helpful use-case description in
+   the `tangled working copy problem`_. The `git commit`_ manual
+   page might also be useful.
 #. To push the changes up to your forked repo on github_, do a ``git
    push`` (see `git push`). 
 
