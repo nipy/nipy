@@ -584,6 +584,7 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
 
     # set the mask
     mask_url = None
+
     if misc.has_key('mask_url'): mask_url = misc['mask_url']
     if contrast_struct.has_key('mask_url'):
         mask_url = contrast_struct['mask_url']
@@ -620,7 +621,6 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
                         _con = designs[key].contrast(value)    
                         final_contrast.append(_con)
         
-
             res_contrast = final_contrast[0]
             for c in final_contrast[1:]:
                 res_contrast = res_contrast + c
@@ -628,10 +628,17 @@ def compute_contrasts(contrast_struct, misc, CompletePaths, glms=None,
             
             # write misc information
             cpp = CompletePaths[contrast]
+            if kargs.has_key('cluster'): cpp['cluster'] = kargs['cluster']
+            if kargs.has_key('threshold'): cpp['threshold'] = kargs['threshold']
+            if kargs.has_key('method'): cpp['method'] = kargs['method']
             save_all_images(res_contrast, contrast_dimension, mask_url, cpp)
             misc[model]["con_dofs"][contrast] = res_contrast.dof
-        except ValueError:
-            'contrast %s does not fit into memory -- skipped' %contrast
+        #except ValueError,
+        #    'contrast %s does not fit into memory -- skipped' %contrast
+        except:
+            import sys
+            print "Unexpected error:", sys.exc_info()[0]
+            raise
     misc.write()
 
 
