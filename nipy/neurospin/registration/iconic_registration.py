@@ -32,8 +32,6 @@ _FOV_SIZE = 64**3
 # rand: Random interpolation
 interp_methods = {'pv': 0, 'tri': 1, 'rand': -1}
 
-def default_fov_size():
-    return _FOV_SIZE
 
 class IconicRegistration(object):
     """
@@ -75,7 +73,7 @@ class IconicRegistration(object):
             mask = source_mask.get_data()
         data, s_bins = clamp(source.get_data(), bins=bins[0], mask=mask)
         self._source_image = AffineImage(data, source.affine, 'ijk')
-        self.focus(fov_size=None)
+        self.focus()
  
         # Target image binning and padding with -1 
         mask = None
@@ -105,8 +103,23 @@ class IconicRegistration(object):
     interp = property(_get_interp, _set_interp)
         
     def focus(self, spacing=None, corner=[0,0,0], shape=None, fov_size=_FOV_SIZE):
-        """
-        If a 'spacing' argument is provided, then 'fov_size' is discarded. 
+        """ Defines a bounding box to restrict joint histogram computation. 
+
+        Parameters
+        ----------
+        
+        spacing : sequence (3,) of positive integers
+          Subsampling factors 
+
+        corner : sequence (3,) of positive integers
+          Bounding box origin in voxel coordinates
+
+        shape : sequence (3,) of positive integers
+          Desired bounding box shape 
+
+        fov_size : positive integer
+          Desired number of voxels in the bounding box. If a 'spacing'
+          argument is provided, then 'fov_size' is discarded.
         """
         if spacing == None: 
             spacing = [1,1,1]
