@@ -367,37 +367,3 @@ def subgrid_affine(affine, slices):
     return np.dot(affine, t)
 
 
-def sample(data, coords, order=_INTERP_ORDER, dtype=None, background=_BACKGROUND): 
-
-    from _image import cspline_transform, cspline_sample3d
-    
-    if dtype == None: 
-        dtype = data.dtype
-
-    X, Y, Z = tuple(coords)
-    npts = X.size
-
-    cbspline = cspline_transform(data)
-    output = np.zeros(npts, dtype='double')
-    output = cspline_sample3d(output, cbspline, X, Y, Z)
-    output.astype(dtype)
-    
-    return output
-
-
-
-def resample(data, affine, shape=None, 
-             order=_INTERP_ORDER, dtype=None, background=_BACKGROUND): 
-
-    from _image import cspline_resample3d
-    
-    if shape == None:
-        shape = data.shape
-    if dtype == None: 
-        dtype = data.dtype
-
-    return cspline_resample3d(data, shape, affine, dtype=dtype)
-
-
-
-

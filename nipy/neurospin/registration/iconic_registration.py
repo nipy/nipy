@@ -9,11 +9,11 @@ Questions: alexis.roche@gmail.com
 from constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
 
 from _registration import _joint_histogram, _similarity, builtin_similarities
-from affine import Affine
+from affine import Affine, apply_affine, inverse_affine, subgrid_affine
 from grid_transform import GridTransform
 
-from nipy.neurospin.image import Image, apply_affine
-from nipy.neurospin.utils.optimize import fmin_steepest
+from nipy.core.image.affine_image import AffineImage
+from nipy.algorithms.optimize import fmin_steepest
 
 import numpy as np  
 from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
@@ -21,8 +21,10 @@ from sys import maxint
 
 
 _CLAMP_DTYPE = 'short' # do not edit
+_BINS = 256
 _INTERP = 'pv'
 _OPTIMIZER = 'powell'
+_FOV_SIZE = 64**3
 
 # Dictionary of interpolation methods
 # pv: Partial volume 
@@ -30,32 +32,59 @@ _OPTIMIZER = 'powell'
 # rand: Random interpolation
 interp_methods = {'pv': 0, 'tri': 1, 'rand': -1}
 
+def default_fov_size():
+    return _FOV_SIZE
 
 class IconicRegistration(object):
+    """
+    A class to reprensent a generic intensity-based image registration
+    algorithm.
+    """
 
-    def __init__(self, source, target, bins = 256):
+    def __init__(self, source, target, bins=_BINS, source_mask=None, target_mask=None):
 
         """
-        A class to reprensent a generic intensity-based image
-        registration algorithm.
+        Creates a new iconic registration object.
+
+        Parameters
+        ----------
+        source : nipy image-like
+          Source image 
+
+        target : nipy image-like
+          Target image 
+    
+        bins : int or sequence of ints
+          Number of histogram bins for each image
+
+        source_mask : nipy image-like
+          Mask to apply to source image 
+
+        target_mask : nipy image-like
+          Mask to apply to target image 
+
         """
 
-        # Binning size  
-        if isinstance (bins, (int, long, float)): 
+        # Binning sizes  
+        if not hasattr(bins, '__iter__'): 
             bins = [int(bins), int(bins)]
 
         # Source image binning
-        values, s_bins = clamp(source.values(), bins=bins[0])
-        self._source_image = source.set(values)
-        self.set_source_fov()
+        mask = None
+        if not source_mask == None: 
+            mask = source_mask.get_data()
+        data, s_bins = clamp(source.get_data(), bins=bins[0], mask=mask)
+        self._source_image = AffineImage(data, source.affine, 'ijk')
+        self.focus(fov_size=None)
  
-        # Target image padding + binning
-        values, t_bins = clamp(target.values(), bins=bins[1])
-        _target_image = target.set(values)
+        # Target image binning and padding with -1 
+        mask = None
+        if not target_mask == None: 
+            mask = target_mask.get_data()
+        data, t_bins = clamp(target.get_data(), bins=bins[1], mask=mask)
         self._target = -np.ones(np.array(target.shape)+2, dtype=_CLAMP_DTYPE)
-        _view = self._target[1:-1, 1:-1, 1:-1]
-        _view[:] = _target_image.data[:]
-        self._target_fromworld = target.inv_affine
+        self._target[1:-1, 1:-1, 1:-1] = data
+        self._target_fromworld = inverse_affine(target.affine)
         
         # Histograms
         self._joint_hist = np.zeros([s_bins, t_bins])
@@ -75,24 +104,30 @@ class IconicRegistration(object):
 
     interp = property(_get_interp, _set_interp)
         
-    def set_source_fov(self, spacing=[1,1,1], corner=[0,0,0], shape=None, 
-                       fixed_npoints=None):
-        
+    def focus(self, spacing=None, corner=[0,0,0], shape=None, fov_size=_FOV_SIZE):
+        """
+        If a 'spacing' argument is provided, then 'fov_size' is discarded. 
+        """
+        if spacing == None: 
+            spacing = [1,1,1]
+        else: 
+            fov_size = None
+
         if shape == None:
             shape = self._source_image.shape
             
-        slicer = lambda : [slice(corner[i],shape[i]+corner[i],spacing[i]) for i in range(3)]
-        fov = self._source_image[slicer()]
+        slicer = lambda : tuple([slice(corner[i],shape[i]+corner[i],spacing[i]) for i in range(3)])
+        fov_data = self._source_image.get_data()[slicer()]
 
-        # Adjust spacing to match desired number of points
-        if fixed_npoints: 
-            spacing = subsample(fov.data, npoints=fixed_npoints)
-            fov = self._source_image[slicer()]
+        # Adjust spacing to match desired field of view size
+        if fov_size: 
+            spacing = subsample(fov_data, npoints=fov_size)
+            fov_data = self._source_image.get_data()[slicer()]
 
         self._slices = slicer()
-        self._source = fov.data
-        self._source_npoints = (fov.data >= 0).sum()
-        self._source_toworld = fov.affine
+        self._source = fov_data
+        self._source_npoints = (fov_data >= 0).sum()
+        self._source_toworld = subgrid_affine(self._source_image.affine, self._slices)
 
     def _set_similarity(self, similarity='cr', pdf=None): 
         if isinstance(similarity, str): 
@@ -156,8 +191,8 @@ class IconicRegistration(object):
         T = start
         tc0 = T.param
 
-        # Loss function to minimize
-        def loss(tc):
+        # Cost function to minimize
+        def cost(tc):
             T.param = tc
             return -self.eval(T) 
     
@@ -193,7 +228,7 @@ class IconicRegistration(object):
         
         # Output
         print ('Optimizing using %s' % fmin.__name__)
-        T.param = fmin(loss, tc0, callback=callback, **kwargs)
+        T.param = fmin(cost, tc0, callback=callback, **kwargs)
         return T 
 
 
@@ -229,32 +264,7 @@ class IconicRegistration(object):
         
 
 
-
-def clamp(x, bins=256):
-    """ 
-    Clamp array values that fall within a given mask in the range
-    [0..bins-1] and reset masked values to -1.
-    
-    Parameters
-    ----------
-    x : ndarray
-      The input array
-
-    bins : number 
-      Desired number of bins
-    
-    Returns
-    -------
-    y : ndarray
-      Clamped array
-
-    bins : number 
-      Adjusted number of bins 
-
-    """
-    
-    # Create output array to allow in-place operations
-    y = np.zeros(x.shape, dtype=_CLAMP_DTYPE)
+def _clamp(x, y, bins=_BINS, mask=None):
 
     # Threshold
     dmaxmax = 2**(8*y.dtype.itemsize-1)-1
@@ -281,6 +291,41 @@ def clamp(x, bins=256):
  
     return y, bins 
 
+
+def clamp(x, bins=_BINS, mask=None):
+    """ 
+    Clamp array values that fall within a given mask in the range
+    [0..bins-1] and reset masked values to -1.
+    
+    Parameters
+    ----------
+    x : ndarray
+      The input array
+
+    bins : number 
+      Desired number of bins
+
+    mask : ndarray, tuple or slice
+      Anything such that x[mask] is an array. 
+    
+    Returns
+    -------
+    y : ndarray
+      Clamped array, masked items are assigned -1 
+
+    bins : number 
+      Adjusted number of bins 
+
+    """
+    y = -np.ones(x.shape, dtype=_CLAMP_DTYPE)
+    if mask == None: 
+        y, bins = _clamp(x, y, bins)
+    else:
+        xm = x[mask]
+        ym = y[mask]
+        ym, bins = _clamp(x, ym, bins)
+        y[mask] = ym
+    return y, bins
 
 
 def subsample(data, npoints):

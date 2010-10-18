@@ -1,18 +1,19 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from affine import Affine, Rigid, Similarity
-from grid_transform import GridTransform
-from iconic_registration import IconicRegistration
-from spacetime_registration import Image4d, realign4d, resample4d
 
-from nipy.neurospin.image import Image, asNifti1Image
+from affine import Affine, Rigid, Similarity, apply_affine
+from grid_transform import GridTransform
+from iconic_registration import IconicRegistration, default_fov_size
+from groupwise_registration import Realign4d, FmriRealign4d 
+from _cubic_spline import cspline_transform, cspline_sample3d, cspline_resample3d
+
+from nipy.core.image.affine_image import AffineImage
 
 import numpy as np 
+from scipy.ndimage import affine_transform, map_coordinates
 
-
-
-transform_classes = {'affine': Affine, 'rigid': Rigid, 'similarity': Similarity}
-                     
+_INTERP_ORDER = 3
+                   
 def register(source, 
              target, 
              similarity='cr',
@@ -60,14 +61,14 @@ def register(source,
     Returns
     -------
     T : source-to-target affine transformation 
-        Object that can be casted to a numpy array. 
+      Object that can be casted to a numpy array. 
 
     """
-    R = IconicRegistration(Image(source), Image(target))
-    if subsampling == None: 
-        R.set_source_fov(fixed_npoints=64**3)
+    R = IconicRegistration(source, target)
+    if not subsampling == None: 
+        R.focus(spacing=subsampling)
     else:
-        R.set_source_fov(spacing=subsampling)
+        R.focus(fov_size=default_fov_size())
     R.similarity = similarity
     R.interp = interp
 
@@ -76,62 +77,88 @@ def register(source,
     if isinstance(optimizer, basestring):
         optimizer = [optimizer]
    
+    transforms = {'affine': Affine, 'rigid': Rigid, 'similarity': Similarity}
     T = None
     for i in range(max(len(search), len(optimizer))):
         search_ = search[min(i, len(search)-1)]
         optimizer_ = optimizer[min(i, len(optimizer)-1)]
         if T == None: 
-            T = transform_classes[search_]()
+            T = transforms[search_]()
         else: 
-            T = transform_classes[search_](T.vec12)
+            T = transforms[search_](T.vec12)
         T = R.optimize(T, method=optimizer_)
     return T
 
 
-def transform(floating, T, reference=None, interp_order=3):
 
-    # Convert assumed nibabel-like input images to local image class
-    floating = Image(floating)
-    if not reference == None: 
-        reference = Image(reference)
+def resample(moving, transform, grid_coords=False, reference=None, 
+             dtype=None, interp_order=_INTERP_ORDER):
+    """
+    Apply a transformation to the image considered as 'moving' to
+    bring it into the same grid as a given 'reference' image. For
+    technical reasons, the transformation is assumed to go from the
+    'reference' to the 'moving'.
 
-    return asNifti1Image(floating.transform(np.asarray(T), grid_coords=False,
-                                            reference=reference, interp_order=interp_order))
+    This function uses scipy.ndimage except for the case
+    `interp_order==3`, where a fast cubic spline implementation is
+    used.
+    
+    Parameters
+    ----------
+    moving: nipy-like image
+      Image to be resampled. 
 
+    transform: nd array
+      either a 4x4 matrix describing an affine transformation
+      or a 3xN array describing voxelwise displacements of the
+      reference grid points
+    
+    grid_coords : boolean
+      True if the transform maps to grid coordinates, False if it maps
+      to world coordinates
+    
+    reference: nipy-like image 
+      Reference image, defaults to input. 
+      
+    interp_order: number 
+      spline interpolation order, defaults to 3. 
+    """
+    if reference == None: 
+        reference = moving
+    shape = reference.shape
+    data = moving.get_data()
+    if dtype == None: 
+        dtype = data.dtype
+    t = np.asarray(transform)
+    inv_affine = np.linalg.inv(moving.affine)
 
-
-class FmriRealign4d(object): 
-
-    def __init__(self, images, tr, tr_slices=None, start=0.0, 
-                 slice_order='ascending', interleaved=False, 
-                 time_interp=True):
-        if not hasattr(images, '__iter__'):
-            images = [images]
-        self._runs = [Image4d(im.get_data(), im.get_affine(),
-                              tr=tr, tr_slices=tr_slices, start=start,
-                              slice_order=slice_order, 
-                              interleaved=interleaved) for im in images]
-        self._transforms = [None for run in self._runs]
-        self._time_interp = time_interp 
-                      
-    def correct_motion(self, iterations=2, between_loops=None, align_runs=True): 
-        within_loops = iterations 
-        if between_loops == None: 
-            between_loops = 3*within_loops 
-        t = realign4d(self._runs, within_loops=within_loops, 
-                      between_loops=between_loops, align_runs=align_runs, 
-                      time_interp=self._time_interp)
-        self._transforms, self._within_run_transforms, self._mean_transforms = t
-
-    def resample(self, align_runs=True): 
-        """
-        Return a list of 4d nibabel-like images corresponding to the resampled runs. 
-        """
-        if align_runs: 
-            transforms = self._transforms
+    # Case: affine transform
+    if t.shape[-1] == 4: 
+        if not grid_coords:
+            t = np.dot(inv_affine, np.dot(t, reference.affine))
+        if interp_order == 3: 
+            output = cspline_resample3d(data, shape, t, dtype=dtype)
+            output = output.astype(dtype)
         else: 
-            transforms = self._within_run_transforms
-        runs = range(len(self._runs))
-        data = [resample4d(self._runs[r], transforms=transforms[r], time_interp=self._time_interp) for r in runs]
-        return [asNifti1Image(Image(data[r], self._runs[r].to_world)) for r in runs]
+            output = np.zeros(shape, dtype=dtype)
+            affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
+                             order=interp_order, cval=0, 
+                             output_shape=shape, output=output)
+    
+    # Case: precomputed displacements
+    else:
+        if not grid_coords:
+            t = apply_affine(inv_affine, t)
+        coords = np.rollaxis(t, 3, 0)
+        if interp_order == 3: 
+            cbspline = cspline_transform(data)
+            output = np.zeros(shape, dtype='double')
+            output = cspline_sample3d(output, cbspline, *coords)
+            output = output.astype(dtype)
+        else: 
+            output = map_coordinates(data, coords, order=interp_order, 
+                                     cval=0, output=dtype)
+    
+    return AffineImage(output, reference.affine, 'ijk')
+
 

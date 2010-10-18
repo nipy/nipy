@@ -10,7 +10,22 @@
 #define FLOOR(a)((a)>0.0 ? (int)(a):(((int)(a)-a)!= 0.0 ? (int)(a)-1 : (int)(a)))  
 #define ROUND(a)(FLOOR(a+0.5))
 
-#define CUBIC_SPLINE_MIRROR(x, n, p) \
+/* 
+   Compute left and right cubic spline neighbors. 
+   Use nx as auxiliary variable. 
+
+ */
+#define COMPUTE_NEIGHBORS(x, ddim, nx, px)		\
+  nx = (int)(x + ddim + 2);				\
+  if ((nx>=3) && (nx<=3*ddim)) {			\
+    px = nx - ddim;					\
+    nx = px - 3;					\
+  }							\
+  else							\
+    return 0.0;
+
+
+#define CUBIC_SPLINE_MIRROR(x, n, p)			\
   ((x)<0.0 ? (-(x)) : ((x)>(n) ? ((p)-(x)) : (x)))
 
 /* 
@@ -236,21 +251,14 @@ double cubic_spline_sample1d (double x, const PyArrayObject* Coef)
 
   double *buf;
   int nx, px, xx;
-  double s, aux;
+  double s;
   double bspx[4];
   int posx[4];
   double *buf_bspx;
   int *buf_posx;
 
-  /* Right up superior point */
-  aux = x + ddim; 
-  if ((aux<0) || (aux>3*ddim)) 
-    return 0.0;
-  px = (int)(aux+2) - ddim;
+  COMPUTE_NEIGHBORS(x, ddim, nx, px); 
 
-  /* Left down inferior point */
-  nx = px - 3;
-  
   /* Compute the B-spline values as well as the image positions 
      where to find the B-spline coefficients (including mirror conditions) */ 
   buf_bspx = (double*)bspx;
@@ -305,22 +313,8 @@ double cubic_spline_sample2d (double x, double y, const PyArrayObject* Coef)
   int *buf_posx, *buf_posy;
   int shfty;
 
-
-  /* Right up superior point */
-  aux = x + ddimX; 
-  if ((aux<0) || (aux>3*ddimX)) 
-    return 0.0;
-  px = (int)(aux+2) - ddimX;
-
-  aux = y + ddimY; 
-  if ((aux<0) || (aux>3*ddimY)) 
-    return 0.0;
-  py = (int)(aux+2) - ddimY;
-
-
-  /* Left down inferior point */
-  nx = px - 3;
-  ny = py - 3;
+  COMPUTE_NEIGHBORS(x, ddimX, nx, px);
+  COMPUTE_NEIGHBORS(y, ddimY, ny, py);  
 
   /* Compute the B-spline values as well as the image positions 
      where to find the B-spline coefficients (including mirror conditions) */ 
@@ -396,28 +390,11 @@ double cubic_spline_sample3d (double x, double y, double z, const PyArrayObject*
   double *buf_bspx, *buf_bspy, *buf_bspz;
   int *buf_posx, *buf_posy, *buf_posz;
   int shftyz, shftz;
-
-  /* Right up superior point */
-  aux = x + ddimX; 
-  if ((aux<0) || (aux>3*ddimX)) 
-    return 0.0;
-  px = (int)(aux+2) - ddimX;
-
-  aux = y + ddimY; 
-  if ((aux<0) || (aux>3*ddimY)) 
-    return 0.0;
-  py = (int)(aux+2) - ddimY;
-
-  aux = z + ddimZ; 
-  if ((aux<0) || (aux>3*ddimZ)) 
-    return 0.0;
-  pz = (int)(aux+2) - ddimZ;
-
-  /* Left down inferior point */
-  nx = px - 3;
-  ny = py - 3;
-  nz = pz - 3;
   
+  COMPUTE_NEIGHBORS(x, ddimX, nx, px);
+  COMPUTE_NEIGHBORS(y, ddimY, ny, py);  
+  COMPUTE_NEIGHBORS(z, ddimZ, nz, pz);
+
   /* Compute the B-spline values as well as the image positions 
      where to find the B-spline coefficients (including mirror conditions) */ 
   buf_bspx = (double*)bspx;
@@ -475,7 +452,7 @@ double cubic_spline_sample3d (double x, double y, double z, const PyArrayObject*
     s += aux2 * (*buf_bspz); 
     
   } /* end loop on z */
-  
+
 
   return s;
 
@@ -513,35 +490,12 @@ double cubic_spline_sample4d (double x, double y, double z, double t, const PyAr
   double *buf_bspx, *buf_bspy, *buf_bspz, *buf_bspt;
   int *buf_posx, *buf_posy, *buf_posz, *buf_post;
   int shftyzt, shftzt, shftt;
-
-
-  /* Right up superior point */
-  aux = x + ddimX; 
-  if ((aux<0) || (aux>3*ddimX)) 
-    return 0.0;
-  px = (int)(aux+2) - ddimX;
-
-  aux = y + ddimY; 
-  if ((aux<0) || (aux>3*ddimY)) 
-    return 0.0;
-  py = (int)(aux+2) - ddimY;
-
-  aux = z + ddimZ; 
-  if ((aux<0) || (aux>3*ddimZ)) 
-    return 0.0;
-  pz = (int)(aux+2) - ddimZ;
-
-  aux = t + ddimT; 
-  if ((aux<0) || (aux>3*ddimT)) 
-    return 0.0;
-  pt = (int)(aux+2) - ddimT;
-
-  /* Left down inferior point */
-  nx = px - 3;
-  ny = py - 3;
-  nz = pz - 3;
-  nt = pt - 3;
   
+  COMPUTE_NEIGHBORS(x, ddimX, nx, px);
+  COMPUTE_NEIGHBORS(y, ddimY, ny, py);  
+  COMPUTE_NEIGHBORS(z, ddimZ, nz, pz);
+  COMPUTE_NEIGHBORS(t, ddimT, nt, pt);
+
   /* Compute the B-spline values as well as the image positions 
      where to find the B-spline coefficients (including mirror conditions) */ 
   buf_bspx = (double*)bspx;

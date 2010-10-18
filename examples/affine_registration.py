@@ -44,13 +44,15 @@ ammon_TO_anubis.npz
 
 Author: Alexis Roche, 2009. 
 """
-from nipy.neurospin.registration import register, transform
+from nipy.neurospin.registration import register, resample
 from nipy.utils import example_data
-from nipy.io.imageformats import load as load_image, save as save_image
+from nipy import load_image, save_image
+from nipy.algorithms.resample import resample as resample2
 
 from os.path import join
 import sys
 import time
+import numpy as np
 
 print('Scanning data directory...')
 
@@ -94,11 +96,11 @@ T = register(I, J,
 toc = time.time()
 print('  Registration time: %f sec' % (toc-tic))
 
-
 # Resample source image
 print('Resampling source image...')
 tic = time.time()
-It = transform(I, T.inv(), reference=J)
+#It = resample2(I, J.coordmap, T.inv(), J.shape)
+It = resample(I, T.inv(), reference=J)
 toc = time.time()
 print('  Resampling time: %f sec' % (toc-tic))
 
@@ -108,6 +110,5 @@ print ('Saving resampled source in: %s' % outfile)
 save_image(It, outfile)
 
 # Save transformation matrix
-import numpy as np
 np.save(outfile, np.asarray(T))
 

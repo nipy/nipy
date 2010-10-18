@@ -85,12 +85,11 @@ static inline void _hard_vote(double* res, int K, size_t pos,
 static inline void _dot(double* y, const double* A, const double* x, int n)
 {
   int i, k; 
-  double *bufA, *bufy, *bufx; 
+  double *bufA=(double*)A, *bufy=(double*)y, *bufx; 
   double tmp; 
 
-  for (i=0, bufy=y; i<n; i++, bufy++) {
-    bufA = A; 
-    bufx = x; 
+  for (i=0; i<n; i++, bufy++) {
+    bufx = (double*)x; 
     tmp = 0.0; 
     for (k=0; k<n; k++, bufA++, bufx++)
       tmp += (*bufA)*(*bufx); 
@@ -116,7 +115,7 @@ static void _ngb26_vote(double* res,
                         int z,
                         void* vote_fn, 
 			double* tmp, 
-			double* mix)
+			const double* mix)
 {
   int j = 0, xn, yn, zn, nn = 26, K = ppm->dimensions[3]; 
   int* buf_ngb; 
@@ -162,7 +161,8 @@ static void _ngb26_vote(double* res,
 
  */
 
-#define TINY 1e-20
+#define TINY 1e-300
+
 void ve_step(PyArrayObject* ppm, 
 	     const PyArrayObject* ref,
 	     const PyArrayObject* XYZ, 
@@ -213,10 +213,8 @@ void ve_step(PyArrayObject* ppm,
     vote = &_soft_vote;
   
   /* Mix votes or not */ 
-  /* DEBUUG */ 
-  if ( mix == Py_None ) 
-    fprintf(stderr, "no mixing matrix supplied\n"); 
-  if (mix!=Py_None) {
+  if ((PyObject*)mix!=Py_None) {
+    fprintf(stderr, "Mixing matrix provided\n");
     mix_data = (double*)mix->data;
     p0 = (double*)calloc(K, sizeof(double));   
   }
@@ -281,7 +279,7 @@ double concensus(PyArrayObject* ppm,
 {
   int npts, k, K, kk, x, y, z;
   double *p, *p0 = NULL, *buf;
-  double res, tmp;  
+  double res = 0.0, tmp;  
   PyArrayIterObject* iter;
   int axis = 0; 
   double* ppm_data;
@@ -298,7 +296,7 @@ double concensus(PyArrayObject* ppm,
 
   ppm_data = (double*)ppm->data;
 
-  if (mix!=Py_None) {
+  if ((PyObject*)mix!=Py_None) {
     mix_data = (double*)mix->data;
     p0 = (double*)calloc(K, sizeof(double)); 
   }

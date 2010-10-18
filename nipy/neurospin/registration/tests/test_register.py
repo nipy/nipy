@@ -4,13 +4,12 @@
 
 """
 
-from nipy.io.imageformats import load
+from nipy import load_image
 from nipy.testing import anatfile
 from nipy.neurospin.registration import register
 
 
-anat_img = load(anatfile)
-
+anat_img = load_image(anatfile)
 
 def test_registration():
     aff = register(anat_img, anat_img)
