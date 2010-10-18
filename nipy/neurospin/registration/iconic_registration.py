@@ -6,11 +6,11 @@ Intensity-based matching.
 Questions: alexis.roche@gmail.com
 """
 
-from constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
+from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
 
-from _registration import _joint_histogram, _similarity, builtin_similarities
-from affine import Affine, apply_affine, inverse_affine, subgrid_affine
-from grid_transform import GridTransform
+from ._registration import _joint_histogram, _similarity, builtin_similarities
+from .affine import Affine, apply_affine, inverse_affine, subgrid_affine
+from .grid_transform import GridTransform
 
 from nipy.core.image.affine_image import AffineImage
 from nipy.algorithms.optimize import fmin_steepest
@@ -296,7 +296,7 @@ def clamp(x, bins=_BINS, mask=None):
     """ 
     Clamp array values that fall within a given mask in the range
     [0..bins-1] and reset masked values to -1.
-    
+ 
     Parameters
     ----------
     x : ndarray
@@ -317,6 +317,8 @@ def clamp(x, bins=_BINS, mask=None):
       Adjusted number of bins 
 
     """
+    if bins > np.iinfo(np.short).max:
+        raise ValueError('Too large a bin size')
     y = -np.ones(x.shape, dtype=_CLAMP_DTYPE)
     if mask == None: 
         y, bins = _clamp(x, y, bins)

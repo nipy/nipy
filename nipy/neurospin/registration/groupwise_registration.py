@@ -1,8 +1,8 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
-from affine import Rigid, Similarity, Affine, apply_affine
-from _cubic_spline import cspline_transform, cspline_sample3d, cspline_sample4d
+from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
+from .affine import Rigid, Similarity, Affine, apply_affine
+from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_sample4d
 
 from nipy.core.image.affine_image import AffineImage
 from nipy.algorithms.optimize import fmin_steepest

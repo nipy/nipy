@@ -1,11 +1,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
-from affine import Affine, Rigid, Similarity, apply_affine
-from grid_transform import GridTransform
-from iconic_registration import IconicRegistration, default_fov_size
-from groupwise_registration import Realign4d, FmriRealign4d 
-from _cubic_spline import cspline_transform, cspline_sample3d, cspline_resample3d
+from .affine import Affine, Rigid, Similarity, apply_affine
+from .grid_transform import GridTransform
+from .iconic_registration import IconicRegistration, default_fov_size
+from .groupwise_registration import Realign4d, FmriRealign4d 
+from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_resample3d
 
 from nipy.core.image.affine_image import AffineImage
 
