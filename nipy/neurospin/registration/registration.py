@@ -132,7 +132,7 @@ def resample(moving, transform, grid_coords=False, reference=None,
         t = transform.as_affine()
     elif isinstance(transform, GridTransform): 
         affine = False
-        t = np.asarray(transform) # soon to be replaced 
+        t = transform.as_displacements() 
     else: 
         t = np.asarray(transform)
         affine = t.shape[-1] == 4
