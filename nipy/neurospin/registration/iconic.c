@@ -211,14 +211,14 @@ Negative intensities are ignored.
     nn ++; }
 
 
-void joint_histogram(double* H, 
-		     unsigned int clampI, 
-		     unsigned int clampJ,  
-		     PyArrayIterObject* iterI,
-		     const PyArrayObject* imJ_padded, 
-		     const double* Tvox, 
-		     int affine, 
-		     int interp)
+int joint_histogram(double* H, 
+		    unsigned int clampI, 
+		    unsigned int clampJ,  
+		    PyArrayIterObject* iterI,
+		    const PyArrayObject* imJ_padded, 
+		    const double* Tvox, 
+		    int affine, 
+		    int interp)
 {
   const signed short* J=(signed short*)imJ_padded->data; 
   size_t dimJX=imJ_padded->dimensions[0]-2;
@@ -245,6 +245,38 @@ void joint_histogram(double* H,
   void (*interpolate)(unsigned int, double*, unsigned int, const signed short*, const double*, int, void*); 
   void* interp_params = NULL; 
   prng_state rng; 
+
+
+  /* 
+     Check assumptions regarding input arrays. If it fails, the
+     function will return -1 without doing anything else. 
+     
+     iterI : assumed to iterate over a signed short encoded, possibly
+     non-contiguous array.
+     
+     imJ_padded : assumed C-contiguous (last index varies faster) & signed
+     short encoded.
+     
+     H : assumed C-contiguous. 
+     
+     Tvox : assumed C-contiguous: 
+     
+     either a 3x4=12-sized array (or bigger) for an affine transformation
+
+     or a 3xN array for a pre-computed transformation, with N equal to
+     the size of the array corresponding to iterI (no checking done)
+  
+  */
+  if (PyArray_TYPE(iterI->ao) != NPY_SHORT) {
+    fprintf(stderr, "Invalid type for the array iterator\n");
+    return -1; 
+  }
+  if ( (!PyArray_ISCONTIGUOUS(imJ_padded)) || 
+       (!PyArray_ISCONTIGUOUS(H)) ||
+       (!PyArray_ISCONTIGUOUS(Tvox)) ) {
+    fprintf(stderr, "Some non-contiguous arrays\n");
+    return -1; 
+  }
 
   /* Reset the source image iterator */
   PyArray_ITER_RESET(iterI);
@@ -373,7 +405,7 @@ void joint_histogram(double* H,
   } /* End of loop over voxels */ 
   
 
-  return; 
+  return 0; 
 }
 
 

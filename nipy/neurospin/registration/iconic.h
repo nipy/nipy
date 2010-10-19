@@ -55,14 +55,14 @@ extern "C" {
        1 - TRILINEAR interpolation 
        <0 - RANDOM interpolation with seed=-interp
   */ 
-  extern void joint_histogram(double* H, 
-			      unsigned int clampI, 
-			      unsigned int clampJ,  
-			      PyArrayIterObject* iterI,
-			      const PyArrayObject* imJ_padded, 
-			      const double* Tvox, 
-			      int affine, 
-			      int interp); 
+  extern int joint_histogram(double* H, 
+			     unsigned int clampI, 
+			     unsigned int clampJ,  
+			     PyArrayIterObject* iterI,
+			     const PyArrayObject* imJ_padded, 
+			     const double* Tvox, 
+			     int affine, 
+			     int interp); 
 
 
   extern double entropy(const double* h, unsigned int size, double* n); 

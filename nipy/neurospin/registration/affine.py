@@ -141,7 +141,7 @@ def apply_affine(T, xyz):
     XYZ = apply_affine(T, xyz)
 
     T is a 4x4 matrix.
-    xyz is a Nx3 array of 3d coordinates stored row-wise.  
+    xyz is a Nx3 array of 3d coordinates stored row-wise. 
     """
     xyz = np.asarray(xyz)
     shape = xyz.shape[0:-1]
@@ -149,7 +149,7 @@ def apply_affine(T, xyz):
     XYZ[:,0] += T[0,3]
     XYZ[:,1] += T[1,3]
     XYZ[:,2] += T[2,3]
-    XYZ = np.reshape(XYZ, list(shape)+[3])
+    XYZ = np.reshape(XYZ, shape+(3,))
     return XYZ 
 
 def subgrid_affine(affine, slices):
@@ -219,21 +219,14 @@ class Affine(object):
     def _get_precond(self): 
         return self._precond 
 
-    def _get_vec12(self):
-        return self._vec12
-
-    def _set_vec12(self, x): 
-        self._vec12[:] = x
-
     param = property(_get_param, _set_param)
     translation = property(_get_translation, _set_translation)
     rotation = property(_get_rotation, _set_rotation)
     scaling = property(_get_scaling, _set_scaling)
     shearing = property(_get_shearing, _set_shearing)
-    vec12 = property(_get_vec12, _set_vec12)
     precond = property(_get_precond)
 
-    def __array__(self, dtype='double'): 
+    def as_affine(self, dtype='double'): 
         return matrix44(self._vec12, dtype=dtype)
 
     def __str__(self): 

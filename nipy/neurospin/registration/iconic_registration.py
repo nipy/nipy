@@ -23,8 +23,7 @@ from sys import maxint
 _CLAMP_DTYPE = 'short' # do not edit
 _BINS = 256
 _INTERP = 'pv'
-_OPTIMIZER = 'powell'
-_FOV_SIZE = 64**3
+_NPOINTS = 64**3
 
 # Dictionary of interpolation methods
 # pv: Partial volume 
@@ -39,7 +38,8 @@ class IconicRegistration(object):
     algorithm.
     """
 
-    def __init__(self, from_img, to_img, bins=_BINS, from_mask=None, to_mask=None):
+    def __init__(self, from_img, to_img, from_bins=_BINS, to_bins=None, 
+                 from_mask=None, to_mask=None):
 
         """
         Creates a new iconic registration object.
@@ -52,8 +52,11 @@ class IconicRegistration(object):
         to_img : nipy image-like
           `To` image 
     
-        bins : int or sequence of ints
-          Number of histogram bins for each image
+        from_bins : integer
+          Number of histogram bins to represent the `from` image
+
+        to_bins : integer
+          Number of histogram bins to represent the `to` image
 
         from_mask : nipy image-like
           Mask to apply to the `from` image 
@@ -64,14 +67,15 @@ class IconicRegistration(object):
         """
 
         # Binning sizes  
-        if not hasattr(bins, '__iter__'): 
-            bins = [int(bins), int(bins)]
+        if to_bins == None: 
+            to_bins = from_bins 
 
-        # Clamping of the `from` image 
+        # Clamping of the `from` image. The number of bins may be
+        # overriden if unnecessarily large. 
         mask = None
         if not from_mask == None: 
             mask = from_mask.get_data()
-        data, from_bins = clamp(from_img.get_data(), bins=bins[0], mask=mask)
+        data, from_bins = clamp(from_img.get_data(), bins=from_bins, mask=mask)
         self._from_img = AffineImage(data, from_img.affine, 'ijk')
         self.subsample()
  
@@ -79,7 +83,7 @@ class IconicRegistration(object):
         mask = None
         if not to_mask == None: 
             mask = to_mask.get_data()
-        data, to_bins = clamp(to_img.get_data(), bins=bins[1], mask=mask)
+        data, to_bins = clamp(to_img.get_data(), bins=to_bins, mask=mask)
         self._to_data = -np.ones(np.array(to_img.shape)+2, dtype=_CLAMP_DTYPE)
         self._to_data[1:-1, 1:-1, 1:-1] = data
         self._to_inv_affine = inverse_affine(to_img.affine)
@@ -102,7 +106,7 @@ class IconicRegistration(object):
 
     interp = property(_get_interp, _set_interp)
         
-    def subsample(self, spacing=None, corner=[0,0,0], shape=None, fov_size=_FOV_SIZE):
+    def subsample(self, spacing=None, corner=[0,0,0], size=None, npoints=_NPOINTS):
         """ 
         Defines a subset of the `from` image to restrict joint
         histogram computation.
@@ -116,27 +120,27 @@ class IconicRegistration(object):
         corner : sequence (3,) of positive integers
           Bounding box origin in voxel coordinates
 
-        shape : sequence (3,) of positive integers
-          Desired bounding box shape 
+        size : sequence (3,) of positive integers
+          Desired bounding box size 
 
-        fov_size : positive integer
+        npoints : positive integer
           Desired number of voxels in the bounding box. If a `spacing`
-          argument is provided, then `fov_size` is ignored.
+          argument is provided, then `npoints` is ignored.
         """
         if spacing == None: 
             spacing = [1,1,1]
         else: 
-            fov_size = None
+            npoints = None
 
-        if shape == None:
-            shape = self._from_img.shape
+        if size == None:
+            size = self._from_img.shape
             
-        slicer = lambda : tuple([slice(corner[i],shape[i]+corner[i],spacing[i]) for i in range(3)])
+        slicer = lambda : tuple([slice(corner[i],size[i]+corner[i],spacing[i]) for i in range(3)])
         fov_data = self._from_img.get_data()[slicer()]
 
         # Adjust spacing to match desired field of view size
-        if fov_size: 
-            spacing = ideal_spacing(fov_data, npoints=fov_size)
+        if npoints: 
+            spacing = ideal_spacing(fov_data, npoints=npoints)
             fov_data = self._from_img.get_data()[slicer()]
 
         self._slices = slicer()
@@ -181,7 +185,7 @@ class IconicRegistration(object):
             Tv = apply_affine(self._to_inv_affine, T[self._slices])
         else:
             affine = 1
-            Tv = np.dot(self._to_inv_affine, np.dot(T, self._from_affine)) 
+            Tv = np.dot(self._to_inv_affine, np.dot(T.as_affine(), self._from_affine)) 
         seed = self._interp
         if self._interp < 0:
             seed = - np.random.randint(maxint)

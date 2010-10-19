@@ -10,7 +10,7 @@ class GridTransform(object):
 
     def __init__(self, image, data, affine=None): 
         """
-        image : a neurospin image or a sequence (shape, affine)
+        image : a nipy-like image
         
         data : a 5d array representing the deformation modes, first
         three dimensions should represent space, next dimension should
@@ -63,6 +63,12 @@ class GridTransform(object):
         return res
 
     def IJK(self):
+        """
+        Returns an array of grid coordinates that is aligned with the image data
+        array in the sense that: 
+        
+        arr[i,j,k] corresponds to self.IJK()[i,j,k,:]
+        """
         if not self._IJK == None:
             return self._IJK 
         tmp = np.mgrid[[slice(0, s) for s in self._shape]]
@@ -70,14 +76,12 @@ class GridTransform(object):
         return self._IJK 
         
     def _sample_affine(self): 
-        if self._sampled == None: 
-            self._sampled = apply_affine(self._grid_affine, self.IJK())
-        else: 
-            self._sampled[:] = apply_affine(self._grid_affine, self.IJK())
-
-    def __array__(self):
+        self._sampled = apply_affine(self._grid_affine, self.IJK())
+        
+    def as_displacements(self):
         """
-        Return the displacements sampled on the grid. 
+        Return the displacements sampled on the grid. Displacements
+        are matched with the array output by IJK. 
         """
         self._sample_affine()
         tmp = np.reshape(self._param, (self._param.size,1))
@@ -132,7 +136,7 @@ class SplineTransform(GridTransform):
         res._free_param_idx = self._free_param_idx
         return res 
 
-    def __array__(self): 
+    def as_displacements(self): 
         
         # The trick is to note that sum_i ci G(x-xi) is equivalent to
         # the convolution of the sparse image `c` with a normalized 3d

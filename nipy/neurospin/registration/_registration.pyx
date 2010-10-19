@@ -30,9 +30,9 @@ cdef extern from "iconic.h":
     void L2_moments(double* h, unsigned int size, double* res)
     void L1_moments(double * h, unsigned int size, double *res)
     double entropy(double* h, unsigned int size, double* n)
-    void joint_histogram(double* H, unsigned int clampI, unsigned int clampJ,  
-                         flatiter iterI, ndarray imJ_padded, 
-                         double* Tvox, int affine, int interp)
+    int joint_histogram(double* H, unsigned int clampI, unsigned int clampJ,  
+                        flatiter iterI, ndarray imJ_padded, 
+                        double* Tvox, int affine, int interp)
     double correlation_coefficient(double* H, unsigned int clampI, unsigned int clampJ, double* n)
     double correlation_ratio(double* H, unsigned int clampI, unsigned int clampJ, double* n) 
     double correlation_ratio_L1(double* H, double* hI, unsigned int clampI, unsigned int clampJ, double* n) 
@@ -200,8 +200,10 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int a
     _joint_histogram(H, iterI, imJ, Tvox, interp)
     Comments to follow.
     """
-    cdef double *h, *tvox
-    cdef unsigned int clampI, clampJ
+    cdef:
+        double *h, *tvox
+        unsigned int clampI, clampJ
+        int ret
 
     # Views
     clampI = <unsigned int>H.shape[0]
@@ -210,7 +212,9 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int a
     tvox = <double*>Tvox.data
 
     # Compute joint histogram 
-    joint_histogram(h, clampI, clampJ, iterI, imJ, tvox, affine, interp)
+    ret = joint_histogram(h, clampI, clampJ, iterI, imJ, tvox, affine, interp)
+    if not ret == 0:
+        raise RuntimeError('Joint histogram failed, which is impossible.')
 
     return 
 

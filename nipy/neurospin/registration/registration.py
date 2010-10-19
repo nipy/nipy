@@ -14,8 +14,8 @@ from scipy.ndimage import affine_transform, map_coordinates
 
 _INTERP_ORDER = 3
                    
-def register(source, 
-             target, 
+def register(from_img, 
+             to_img, 
              similarity='cr',
              interp='pv',
              subsampling=None,
@@ -28,10 +28,10 @@ def register(source,
     
     Parameters
     ----------
-    source : nibabel-like image object 
-       Source image 
-    target : nibabel-like image 
-       Target image array
+    from_img : nibabel-like image object 
+       `From` image 
+    to_img : nibabel-like image 
+       `To` image array
     similarity : str or callable
        Cost-function for assessing image similarity.  If a string, one
        of 'cc', 'cr', 'crl1', 'mi', je', 'ce', 'nmi', 'smi'.  'cr'
@@ -60,11 +60,11 @@ def register(source,
 
     Returns
     -------
-    T : source-to-target affine transformation 
+    T : affine transformation 
       Object that can be casted to a numpy array. 
 
     """
-    R = IconicRegistration(source, target)
+    R = IconicRegistration(from_img, to_img)
     if not subsampling == None: 
         R.subsample(spacing=subsampling)
     R.similarity = similarity

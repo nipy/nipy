@@ -18,7 +18,7 @@ def make_data_float64(dx=100, dy=100, dz=50):
     return (256*(np.random.rand(dx, dy, dz) - np.random.rand())).astype('float64')
 
 def _test_clamping(I, thI=0.0, clI=256):
-    R = IconicRegistration(I, I, bins=clI)
+    R = IconicRegistration(I, I, from_bins=clI)
     Ic = R._source
     Ic2 = R._target[1:I.shape[0]+1,1:I.shape[1]+1,1:I.shape[2]+1]
     assert_equal(Ic, Ic2.squeeze())
