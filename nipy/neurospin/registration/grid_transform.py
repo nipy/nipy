@@ -81,10 +81,10 @@ class GridTransform(object):
     def as_displacements(self):
         """
         Return the displacements sampled on the grid. Displacements
-        are matched with the array output by IJK. 
+        are matched with the array output by IJK.
         """
         self._sample_affine()
-        tmp = np.reshape(self._param, (self._param.size,1))
+        tmp = np.reshape(self._param, (-1, 1))
         self._sampled += np.sum(self._data*tmp, 3)
         return self._sampled
 
