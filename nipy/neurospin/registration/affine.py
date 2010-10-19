@@ -184,9 +184,8 @@ class Affine(object):
         self._flag2d = flag2d
         self._stamp = subtype + naffines*(not flag2d)
 
-
     def __call__(self, xyz): 
-        return apply_affine(self.__array__(), xyz)
+        return apply_affine(self.as_affine(), xyz)
 
     def _get_param(self): 
         param = self._vec12/self._precond
@@ -247,7 +246,7 @@ class Affine(object):
         subtype = max(self._subtype, other._subtype)
         a = affine_classes[subtype]()
         a._precond = self._precond
-        a._vec12 = vector12(np.dot(self.__array__(), other.__array__()), a._subtype)
+        a._vec12 = vector12(np.dot(self.as_affine(), other.as_affine()), a._subtype)
         return a
 
     def inv(self):
@@ -256,7 +255,7 @@ class Affine(object):
         """
         a = affine_classes[self._subtype]()
         a._precond = self._precond
-        a._vec12 = vector12(np.linalg.inv(self.__array__()), self._subtype)
+        a._vec12 = vector12(np.linalg.inv(self.as_affine()), self._subtype)
         return a
         
 

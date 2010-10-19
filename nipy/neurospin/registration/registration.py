@@ -127,11 +127,19 @@ def resample(moving, transform, grid_coords=False, reference=None,
     data = moving.get_data()
     if dtype == None: 
         dtype = data.dtype
-    t = np.asarray(transform)
+    if isinstance(transform, Affine): 
+        affine = True
+        t = transform.as_affine()
+    elif isinstance(transform, GridTransform): 
+        affine = False
+        t = np.asarray(transform) # soon to be replaced 
+    else: 
+        t = np.asarray(transform)
+        affine = t.shape[-1] == 4
     inv_affine = np.linalg.inv(moving.affine)
 
     # Case: affine transform
-    if t.shape[-1] == 4: 
+    if affine: 
         if not grid_coords:
             t = np.dot(inv_affine, np.dot(t, reference.affine))
         if interp_order == 3: 

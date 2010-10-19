@@ -55,13 +55,12 @@ extern "C" {
        1 - TRILINEAR interpolation 
        <0 - RANDOM interpolation with seed=-interp
   */ 
-  extern int joint_histogram(double* H, 
+  extern int joint_histogram(PyArrayIterObject* H, 
 			     unsigned int clampI, 
 			     unsigned int clampJ,  
 			     PyArrayIterObject* iterI,
 			     const PyArrayObject* imJ_padded, 
-			     const double* Tvox, 
-			     int affine, 
+			     const PyArrayObject* Tvox, 
 			     int interp); 
 
 

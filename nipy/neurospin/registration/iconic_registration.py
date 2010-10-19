@@ -78,7 +78,12 @@ class IconicRegistration(object):
         data, from_bins = clamp(from_img.get_data(), bins=from_bins, mask=mask)
         self._from_img = AffineImage(data, from_img.affine, 'ijk')
         self.subsample()
- 
+        # self._from_world_coords is a Nx3 array representing the world
+        # coordinates of the `from` clamped (subsampled) image voxels 
+        tmp = np.mgrid[[slice(0, s) for s in self._from_data.shape]]
+        tmp = np.rollaxis(tmp, 0, 1+self._from_data.ndim)
+        self._from_world_coords = apply_affine(self._from_affine, tmp)
+
         # Clamping of the `to` image including padding with -1 
         mask = None
         if not to_mask == None: 
@@ -143,10 +148,9 @@ class IconicRegistration(object):
             spacing = ideal_spacing(fov_data, npoints=npoints)
             fov_data = self._from_img.get_data()[slicer()]
 
-        self._slices = slicer()
         self._from_data = fov_data
         self._from_npoints = (fov_data >= 0).sum()
-        self._from_affine = subgrid_affine(self._from_img.affine, self._slices)
+        self._from_affine = subgrid_affine(self._from_img.affine, slicer())
 
     def _set_similarity(self, similarity='cr', pdf=None): 
         if isinstance(similarity, str): 
@@ -179,14 +183,7 @@ class IconicRegistration(object):
         return np.dot(self._to_inv_affine, np.dot(T, self._from_affine)) 
 
     def eval(self, T):
-        if isinstance(T, GridTransform): 
-            # get voxel displacements from grid transform
-            # TODO: make sure T.shape matches self._from_img.shape
-            affine = 0 
-            Tv = apply_affine(self._to_inv_affine, T[self._slices])
-        else: # affine transformation
-            affine = 1
-            Tv = np.dot(self._to_inv_affine, np.dot(T.as_affine(), self._from_affine)) 
+        Tv = apply_affine(self._to_inv_affine, T(self._from_world_coords))
         seed = self._interp
         if self._interp < 0:
             seed = - np.random.randint(maxint)
@@ -194,7 +191,6 @@ class IconicRegistration(object):
                          self._from_data.flat, ## array iterator
                          self._to_data, 
                          Tv,
-                         affine,
                          seed)
         #self.from_img_hist = np.sum(self._joint_hist, 1)
         #self.to_hist = np.sum(self._joint_hist, 0)

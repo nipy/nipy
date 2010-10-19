@@ -27,17 +27,6 @@ static double _marginalize(double* h,
 			   unsigned int clampI, 
 			   unsigned int clampJ, 
 			   int axis); 
-static inline void _affine_transform(double* Tx, 
-				     double* Ty, 
-				     double* Tz, 
-				     const double* Tvox, 
-				     size_t x, 
-				     size_t y, 
-				     size_t z); 
-static inline double* _precomputed_transform(double* Tx, 
-					     double* Ty, 
-					     double* Tz, 
-					     const double* Tvox); 
 
 static inline void _pv_interpolation(unsigned int i, 
 				     double* H, unsigned int clampJ, 
@@ -211,13 +200,12 @@ Negative intensities are ignored.
     nn ++; }
 
 
-int joint_histogram(double* H, 
+int joint_histogram(PyArrayIterObject* JH, 
 		    unsigned int clampI, 
 		    unsigned int clampJ,  
 		    PyArrayIterObject* iterI,
 		    const PyArrayObject* imJ_padded, 
-		    const double* Tvox, 
-		    int affine, 
+		    const PyArrayObject* Tvox, 
 		    int interp)
 {
   const signed short* J=(signed short*)imJ_padded->data; 
@@ -238,10 +226,10 @@ int joint_histogram(double* H,
   size_t u7 = u6+1; 
   double wx, wy, wz, wxwy, wxwz, wywz; 
   double W0, W2, W3, W4; 
-  size_t x, y, z; 
   int nn, nx, ny, nz;
+  double *H = (double*)PyArray_DATA(JH);  
   double Tx, Ty, Tz; 
-  double *bufTvox = (double*)Tvox; 
+  double *tvox = (double*)PyArray_DATA(Tvox); 
   void (*interpolate)(unsigned int, double*, unsigned int, const signed short*, const double*, int, void*); 
   void* interp_params = NULL; 
   prng_state rng; 
@@ -261,10 +249,11 @@ int joint_histogram(double* H,
      
      Tvox : assumed C-contiguous: 
      
-     either a 3x4=12-sized array (or bigger) for an affine transformation
+       either a 3x4=12-sized array (or bigger) for an affine transformation
 
-     or a 3xN array for a pre-computed transformation, with N equal to
-     the size of the array corresponding to iterI (no checking done)
+       or a 3xN array for a pre-computed transformation, with N equal
+       to the size of the array corresponding to iterI (no checking
+       done)
   
   */
   if (PyArray_TYPE(iterI->ao) != NPY_SHORT) {
@@ -272,7 +261,7 @@ int joint_histogram(double* H,
     return -1; 
   }
   if ( (!PyArray_ISCONTIGUOUS(imJ_padded)) || 
-       (!PyArray_ISCONTIGUOUS(H)) ||
+       (!PyArray_ISCONTIGUOUS(JH)) ||
        (!PyArray_ISCONTIGUOUS(Tvox)) ) {
     fprintf(stderr, "Some non-contiguous arrays\n");
     return -1; 
@@ -306,17 +295,10 @@ int joint_histogram(double* H,
     i = bufI[0];
 
     /* Compute the transformed grid coordinates of current voxel */ 
-    if (affine) {
-      /* Get voxel coordinates and apply transformation on-the-fly*/
-      x = iterI->coordinates[0];
-      y = iterI->coordinates[1];
-      z = iterI->coordinates[2];
-      _affine_transform(&Tx, &Ty, &Tz, Tvox, x, y, z); 
-    }
-    else 
-      /* Use precomputed transformed coordinates */ 
-      bufTvox = _precomputed_transform(&Tx, &Ty, &Tz, (const double*)bufTvox);
-       
+    Tx = *tvox; tvox++;
+    Ty = *tvox; tvox++;
+    Tz = *tvox; tvox++; 
+
     /* Test whether the current voxel is below the intensity
        threshold, or the transformed point is completly outside
        the reference grid */
@@ -481,42 +463,6 @@ static inline void _rand_interpolation(unsigned int i,
   H[J[k]+clampJ_i] += 1;
   
   return; 
-}
-
-
-
-static inline void _affine_transform(double* Tx, double* Ty, double* Tz, 
-				     const double* Tvox, 
-				     size_t x, size_t y, size_t z)
-{
-  double* bufTvox = (double*)Tvox; 
-
-  *Tx = (*bufTvox)*x; bufTvox++;
-  *Tx += (*bufTvox)*y; bufTvox++;
-  *Tx += (*bufTvox)*z; bufTvox++;
-  *Tx += *bufTvox; bufTvox++;
-  *Ty = (*bufTvox)*x; bufTvox++;
-  *Ty += (*bufTvox)*y; bufTvox++;
-  *Ty += (*bufTvox)*z; bufTvox++;
-  *Ty += *bufTvox; bufTvox++;
-  *Tz = (*bufTvox)*x; bufTvox++;
-  *Tz += (*bufTvox)*y; bufTvox++;
-  *Tz += (*bufTvox)*z; bufTvox++;
-  *Tz += *bufTvox;
-
-  return; 
-}
-
-static inline double* _precomputed_transform(double* Tx, double* Ty, double* Tz, 
-					     const double* Tvox)  
-{
-  double* bufTvox = (double*)Tvox; 
-
-  *Tx = *bufTvox; bufTvox++;
-  *Ty = *bufTvox; bufTvox++;
-  *Tz = *bufTvox; bufTvox++; 
-
-  return bufTvox; 
 }
 
 

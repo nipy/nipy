@@ -30,9 +30,9 @@ cdef extern from "iconic.h":
     void L2_moments(double* h, unsigned int size, double* res)
     void L1_moments(double * h, unsigned int size, double *res)
     double entropy(double* h, unsigned int size, double* n)
-    int joint_histogram(double* H, unsigned int clampI, unsigned int clampJ,  
+    int joint_histogram(ndarray H, unsigned int clampI, unsigned int clampJ,  
                         flatiter iterI, ndarray imJ_padded, 
-                        double* Tvox, int affine, int interp)
+                        ndarray Tvox, int interp)
     double correlation_coefficient(double* H, unsigned int clampI, unsigned int clampJ, double* n)
     double correlation_ratio(double* H, unsigned int clampI, unsigned int clampJ, double* n) 
     double correlation_ratio_L1(double* H, double* hI, unsigned int clampI, unsigned int clampJ, double* n) 
@@ -179,7 +179,7 @@ def _texture(ndarray im, ndarray H, Size, int texture, method=None):
 
 def _histogram(ndarray H, flatiter iter):
     """
-    _joint_histogram(H, iterI)
+    _histogram(H, iterI)
     Comments to follow.
     """
     cdef double *h
@@ -195,7 +195,7 @@ def _histogram(ndarray H, flatiter iter):
     return 
 
 
-def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int affine, int interp):
+def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
     """
     _joint_histogram(H, iterI, imJ, Tvox, interp)
     Comments to follow.
@@ -208,11 +208,9 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int a
     # Views
     clampI = <unsigned int>H.shape[0]
     clampJ = <unsigned int>H.shape[1]    
-    h = <double*>H.data
-    tvox = <double*>Tvox.data
 
     # Compute joint histogram 
-    ret = joint_histogram(h, clampI, clampJ, iterI, imJ, tvox, affine, interp)
+    ret = joint_histogram(H, clampI, clampJ, iterI, imJ, Tvox, interp)
     if not ret == 0:
         raise RuntimeError('Joint histogram failed, which is impossible.')
 
