@@ -407,7 +407,6 @@ def design_matrix(
         _session = int(session)
     else:
         _session = misc["sessions"].index(session)
-    _names  = misc["tasks"]
 
     # get the paradigm
     if isinstance(paradigm_file, basestring):
@@ -418,7 +417,7 @@ def design_matrix(
     # compute the design matrix
     dmtx = dm.DesignMatrix(frametimes, _paradigm, hrf_model=hrf_model,
          drift_model=drift_model, hfcut=hfcut, drift_order=drift_order,
-         fir_delays=fir_delays, fir_duration=fir_duration, cond_ids=_names,
+         fir_delays=fir_delays, fir_duration=fir_duration,
          add_regs=add_regs, add_reg_names=add_reg_names)
     dmtx.estimate()
 
