@@ -177,23 +177,21 @@ class HistogramRegistration(object):
     def voxel_transform(self, T):
         """ 
         T is the 4x4 transformation between the real coordinate systems
-        The corresponding voxel transformation is: Tv = Tt^-1 * T * Ts
+        The corresponding voxel transformation is: Tt^-1 * T * Ts
         """
-        ## C-contiguity required
         return np.dot(self._to_inv_affine, np.dot(T, self._from_affine)) 
 
     def eval(self, T):
-        Tv = apply_affine(self._to_inv_affine, T(self._from_world_coords))
-        seed = self._interp
+        # trans_voxel_coords needs be C-contiguous
+        trans_voxel_coords = apply_affine(self._to_inv_affine, T(self._from_world_coords))
+        interp = self._interp
         if self._interp < 0:
-            seed = - np.random.randint(maxint)
+            interp = - np.random.randint(maxint)
         _joint_histogram(self._joint_hist, 
                          self._from_data.flat, ## array iterator
                          self._to_data, 
-                         Tv,
-                         seed)
-        #self.from_img_hist = np.sum(self._joint_hist, 1)
-        #self.to_hist = np.sum(self._joint_hist, 0)
+                         trans_voxel_coords,
+                         interp)
         return _similarity(self._joint_hist, 
                            self._from_hist, 
                            self._to_hist, 
