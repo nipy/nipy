@@ -20,13 +20,9 @@ cdef extern from "math.h":
    double log(double)
 
 
-cdef extern from "iconic.h":
+cdef extern from "joint_histogram.h":
 
-    void iconic_import_array()
-    void histogram(double* H, unsigned int clamp, flatiter iter)
-    void local_histogram(double* H, unsigned int clamp, 
-                         flatiter iter, unsigned int* size)
-    void drange(double* h, unsigned int size, double* res)
+    void joint_histogram_import_array()
     void L2_moments(double* h, unsigned int size, double* res)
     void L1_moments(double * h, unsigned int size, double *res)
     double entropy(double* h, unsigned int size, double* n)
@@ -54,33 +50,10 @@ cdef extern from "iconic.h":
 
 
 # Initialize numpy
-iconic_import_array()
+joint_histogram_import_array()
 import_array()
 import numpy as np
 
-# Enumerate texture measures
-cdef enum texture_measure: 
-    MIN, 
-    MAX, 
-    DRANGE, 
-    MEAN, 
-    VARIANCE, 
-    MEDIAN, 
-    L1DEV, 
-    ENTROPY, 
-    CUSTOM_TEXTURE
-
-# Corresponding Python dictionary 
-builtin_textures = {
-    'min': MIN, 
-    'max': MAX,
-    'drange': DRANGE,
-    'mean': MEAN, 
-    'variance': VARIANCE, 
-    'median': MEDIAN, 
-    'l1dev': L1DEV, 
-    'entropy': ENTROPY, 
-    'custom': CUSTOM_TEXTURE}
 
 # Enumerate similarity measures
 cdef enum similarity_measure:
@@ -115,85 +88,6 @@ builtin_similarities = {
     'llr_mi': LLR_MUTUAL_INFORMATION,
     'llr_smi': LLR_SUPERVISED_MUTUAL_INFORMATION,  
     'custom': CUSTOM_SIMILARITY}
-
-
-def _texture(ndarray im, ndarray H, Size, int texture, method=None): 
-
-    cdef double *res, *h
-    cdef double moments[5]
-    cdef unsigned int clamp
-    cdef unsigned int coords[3], size[3]
-    cdef broadcast multi
-    cdef flatiter im_iter
-
-    # Views
-    clamp = <unsigned int>H.shape[0]
-    h = <double*>H.data
-    
-    # Copy size parameters
-    size[0] = <unsigned int>Size[0]
-    size[1] = <unsigned int>Size[1]
-    size[2] = <unsigned int>Size[2]
-
-    # Allocate output 
-    imtext = np.zeros([im.shape[i] for i in range(im.ndim)], dtype=np.double)
-
-    # Loop over input and output images
-    multi = PyArray_MultiIterNew(2, <void*>imtext, <void*>im)
-    while(multi.index < multi.size):
-        res = <double*>PyArray_MultiIter_DATA(multi, 0)
-        im_iter = <flatiter>multi.iters[1]
-        # Compute local image histogram
-        local_histogram(h, clamp, im_iter, size)
-        # Switch 
-        if texture == MIN:
-            drange(h, clamp, moments)
-            res[0] = moments[0]
-        elif texture == MAX:
-            drange(h, clamp, moments)
-            res[0] = moments[1]
-        elif texture == DRANGE:
-            drange(h, clamp, moments)
-            res[0] = moments[1]-moments[0]
-        elif texture == MEAN: 
-            L2_moments(h, clamp, moments)
-            res[0] = moments[1]
-        elif texture == MEAN: 
-            L2_moments(h, clamp, moments)
-            res[0] = moments[2]
-        elif texture == MEDIAN:
-            L1_moments(h, clamp, moments)
-            res[0] = moments[1] 
-        elif texture == L1DEV: 
-            L1_moments(h, clamp, moments)
-            res[0] = moments[2] 
-        elif texture == ENTROPY: 
-            res[0] = entropy(h, clamp, moments)
-        else: # CUSTOM
-            res[0] = method(H)
-        # Next voxel please
-        PyArray_MultiIter_NEXT(multi)
-   
-    return imtext
-
-
-def _histogram(ndarray H, flatiter iter):
-    """
-    _histogram(H, iterI)
-    Comments to follow.
-    """
-    cdef double *h
-    cdef unsigned int clamp
-
-    # Views
-    clamp = <unsigned int>H.shape[0]
-    h = <double*>H.data
-
-    # Compute image histogram 
-    histogram(h, clamp, iter)
-
-    return 
-
 
 def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
     """

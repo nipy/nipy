@@ -32,7 +32,7 @@ _NPOINTS = 64**3
 interp_methods = {'pv': 0, 'tri': 1, 'rand': -1}
 
 
-class IconicRegistration(object):
+class HistogramRegistration(object):
     """
     A class to reprensent a generic intensity-based image registration
     algorithm.
@@ -42,7 +42,7 @@ class IconicRegistration(object):
                  from_mask=None, to_mask=None):
 
         """
-        Creates a new iconic registration object.
+        Creates a new histogram registration object.
 
         Parameters
         ----------

@@ -1,4 +1,4 @@
-#include "iconic.h"
+#include "joint_histogram.h"
 #include "wichmann_prng.h"
 
 #include <math.h>
@@ -50,122 +50,11 @@ static inline void _rand_interpolation(unsigned int i,
 
 
 /* Numpy import */
-void iconic_import_array(void) { 
+void joint_histogram_import_array(void) {
   import_array(); 
   return;
 }
 
-
-
-/* 
-   
-SINGLE IMAGE HISTOGRAM COMPUTATION. 
-
-This is not relevant to image registration but is useful for texture
-analysis.
-  
-iter : assumed to iterate over a signed short encoded, possibly
-non-contiguous array.
-
-H : assumed C-contiguous. 
-
-Negative intensities are ignored. 
-
-*/
-
-void histogram(double* H, 
-	       unsigned int clamp, 
-	       PyArrayIterObject* iter)
-{
-  signed short *buf;
-  signed short i;
-
-  /* Reset the source image iterator */
-  PyArray_ITER_RESET(iter);
-
-  /* Re-initialize joint histogram */ 
-  memset((void*)H, 0, clamp*sizeof(double));
-
-  /* Loop over source voxels */
-  while(iter->index < iter->size) {
-  
-    /* Source voxel intensity */
-    buf = (signed short*)PyArray_ITER_DATA(iter); 
-    i = buf[0];
-
-    /* Update the histogram only if the current voxel is below the
-       intensity threshold */
-    if (i>=0) 
-      H[i]++; 
-    
-    /* Update source index */ 
-    PyArray_ITER_NEXT(iter); 
-    
-  } /* End of loop over voxels */ 
-  
-
-  return; 
-}
-
-/*
-
-  size should be odd numbers 
-
- */ 
-
-void local_histogram(double* H, 
-		     unsigned int clamp, 
-		     PyArrayIterObject* iter, 
-		     const unsigned int* size)
-{
-  PyArrayObject *block, *im = iter->ao; 
-  PyArrayIterObject* block_iter; 
-  unsigned int i, left, right, center, halfsize, dim, offset=0; 
-  npy_intp block_dims[3];
-
-  UPDATE_ITERATOR_COORDS(iter); 
-
-  /* Compute block corners */ 
-  for (i=0; i<3; i++) {
-    center = iter->coordinates[i];
-    halfsize = size[i]/2; 
-    dim = PyArray_DIM(im, i);
-  
-    /* Left handside corner */ 
-    if (center<halfsize)
-      left = 0; 
-    else
-      left = center-halfsize; 
-
-    /* Right handside corner (plus one)*/ 
-    right = center+halfsize+1; 
-    if (right>dim) 
-      right = dim; 
-
-    /* Block properties */ 
-    offset += left*PyArray_STRIDE(im, i); 
-    block_dims[i] = right-left;
-
-  }
-
-  /* Create the block as a vew and the block iterator */ 
-  block = (PyArrayObject*)PyArray_New(&PyArray_Type, 3, block_dims, 
-				      PyArray_TYPE(im), PyArray_STRIDES(im), 
-				      (void*)(PyArray_DATA(im)+offset), 
-				      PyArray_ITEMSIZE(im),
-				      NPY_BEHAVED, NULL);
-  block_iter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)block); 
-
-  /* Compute block histogram */ 
-  histogram(H, clamp, block_iter); 
-
-  /* Free memory */ 
-  Py_XDECREF(block_iter); 
-  Py_XDECREF(block); 
-
-  return; 
-}		     
-		     
 
 
 
@@ -770,33 +659,6 @@ double supervised_mutual_information(const double* H, const double* F,
   return SMI; 
 }
 
-
-
-void drange(const double* h, unsigned int size, double* res)
-{
-  unsigned int i, left;
-  double *buf;
-
-  /* Find the first value from the left with non-zero mass */
-  buf = (double*)h;
-  for (i=0; i<size; i++, buf++) {
-    if (*buf > 0.0) 
-      break; 
-  }
-  left = i; 
-  res[0] = (double)i;
-  
-  /* Find the first value from the right with non-zero mass */
-  buf = (double*)h; 
-  buf += size-1; 
-  for (i=(size-1); i>=left; i--, buf--) {
-    if (*buf > 0.0) 
-      break; 
-  }
-  res[1] = (double)i;
- 
-  return; 
-}
 
 /* 
    First loop: compute the histogram sum 

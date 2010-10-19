@@ -3,7 +3,7 @@
 
 from .affine import Affine, Rigid, Similarity, apply_affine
 from .grid_transform import GridTransform
-from .iconic_registration import IconicRegistration
+from .histogram_registration import HistogramRegistration
 from .groupwise_registration import Realign4d, FmriRealign4d 
 from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_resample3d
 
@@ -42,7 +42,7 @@ def register(from_img,
     interp : str
        Interpolation method.  One of 'pv': Partial volume, 'tri':
        Trilinear, 'rand': Random interpolation.  See
-       ``iconic.c``
+       ``joint_histogram.c``
     subsampling : None or sequence length 3
        subsampling of image in voxels, where None (default) results 
        in the subsampling to be automatically adjusted to roughly match
@@ -64,7 +64,7 @@ def register(from_img,
       Object that can be casted to a numpy array. 
 
     """
-    R = IconicRegistration(from_img, to_img)
+    R = HistogramRegistration(from_img, to_img)
     if not subsampling == None: 
         R.subsample(spacing=subsampling)
     R.similarity = similarity

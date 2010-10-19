@@ -9,8 +9,8 @@
   relating two images, so you do not need the voxel sizes.
 */
 
-#ifndef ICONIC
-#define ICONIC
+#ifndef JOINT_HISTOGRAM
+#define JOINT_HISTOGRAM
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,18 +26,7 @@ extern "C" {
 
 
   /* Numpy import */
-  extern void iconic_import_array(void);
-
-
-  /* Texture analysis */ 
-  extern void histogram(double* H, 
-			unsigned int clamp, 
-			PyArrayIterObject* iter);
-
-  extern void local_histogram(double* H, 
-			      unsigned int clamp, 
-			      PyArrayIterObject* iter, 
-			      const unsigned int* size);
+  extern void joint_histogram_import_array(void);
 
 
   /* 
@@ -65,12 +54,10 @@ extern "C" {
 
 
   extern double entropy(const double* h, unsigned int size, double* n); 
-  extern void drange(const double* h, unsigned int size, double* res);
-  extern void L2_moments_with_stride(const double * h, unsigned int size, unsigned int stride, 
-				     double* res); 
-  extern void L1_moments_with_stride(const double * h, unsigned int size, unsigned int stride, 
-				     double* res);
-
+  extern void L2_moments_with_stride(const double * h, unsigned int size, 
+				     unsigned int stride, double* res); 
+  extern void L1_moments_with_stride(const double * h, unsigned int size, 
+				     unsigned int stride, double* res);
   extern double correlation_coefficient(const double* H, 
 					unsigned int clampI, 
 					unsigned int clampJ, 
