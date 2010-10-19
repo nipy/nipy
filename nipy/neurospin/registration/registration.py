@@ -66,9 +66,7 @@ def register(source,
     """
     R = IconicRegistration(source, target)
     if not subsampling == None: 
-        R.focus(spacing=subsampling)
-    else:
-        R.focus()
+        R.subsample(spacing=subsampling)
     R.similarity = similarity
     R.interp = interp
 

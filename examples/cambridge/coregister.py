@@ -8,7 +8,7 @@ anat = load_image(join(DATADIR, 'raw_anatomical.nii'))
 func = load_image(join(DATADIR, 'meanafunctional_01.nii'))
 
 R = IconicRegistration(func, anat) 
-R.similarity = 'crL1'
+R.similarity = 'crl1'
 R.interp = 'pv'
 
 T = R.optimize(Affine())

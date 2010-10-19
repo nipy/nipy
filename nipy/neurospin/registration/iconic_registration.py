@@ -39,27 +39,27 @@ class IconicRegistration(object):
     algorithm.
     """
 
-    def __init__(self, source, target, bins=_BINS, source_mask=None, target_mask=None):
+    def __init__(self, from_img, to_img, bins=_BINS, from_mask=None, to_mask=None):
 
         """
         Creates a new iconic registration object.
 
         Parameters
         ----------
-        source : nipy image-like
-          Source image 
+        from_img : nipy image-like
+          `From` image 
 
-        target : nipy image-like
-          Target image 
+        to_img : nipy image-like
+          `To` image 
     
         bins : int or sequence of ints
           Number of histogram bins for each image
 
-        source_mask : nipy image-like
-          Mask to apply to source image 
+        from_mask : nipy image-like
+          Mask to apply to the `from` image 
 
-        target_mask : nipy image-like
-          Mask to apply to target image 
+        to_mask : nipy image-like
+          Mask to apply to the `to` image 
 
         """
 
@@ -67,27 +67,27 @@ class IconicRegistration(object):
         if not hasattr(bins, '__iter__'): 
             bins = [int(bins), int(bins)]
 
-        # Source image binning
+        # Clamping of the `from` image 
         mask = None
-        if not source_mask == None: 
-            mask = source_mask.get_data()
-        data, s_bins = clamp(source.get_data(), bins=bins[0], mask=mask)
-        self._source_image = AffineImage(data, source.affine, 'ijk')
-        self.focus()
+        if not from_mask == None: 
+            mask = from_mask.get_data()
+        data, from_bins = clamp(from_img.get_data(), bins=bins[0], mask=mask)
+        self._from_img = AffineImage(data, from_img.affine, 'ijk')
+        self.subsample()
  
-        # Target image binning and padding with -1 
+        # Clamping of the `to` image including padding with -1 
         mask = None
-        if not target_mask == None: 
-            mask = target_mask.get_data()
-        data, t_bins = clamp(target.get_data(), bins=bins[1], mask=mask)
-        self._target = -np.ones(np.array(target.shape)+2, dtype=_CLAMP_DTYPE)
-        self._target[1:-1, 1:-1, 1:-1] = data
-        self._target_fromworld = inverse_affine(target.affine)
+        if not to_mask == None: 
+            mask = to_mask.get_data()
+        data, to_bins = clamp(to_img.get_data(), bins=bins[1], mask=mask)
+        self._to_data = -np.ones(np.array(to_img.shape)+2, dtype=_CLAMP_DTYPE)
+        self._to_data[1:-1, 1:-1, 1:-1] = data
+        self._to_inv_affine = inverse_affine(to_img.affine)
         
         # Histograms
-        self._joint_hist = np.zeros([s_bins, t_bins])
-        self._source_hist = np.zeros(s_bins)
-        self._target_hist = np.zeros(t_bins)
+        self._joint_hist = np.zeros([from_bins, to_bins])
+        self._from_hist = np.zeros(from_bins)
+        self._to_hist = np.zeros(to_bins)
 
         # Set default registration parameters
         self._set_interp()
@@ -102,8 +102,10 @@ class IconicRegistration(object):
 
     interp = property(_get_interp, _set_interp)
         
-    def focus(self, spacing=None, corner=[0,0,0], shape=None, fov_size=_FOV_SIZE):
-        """ Defines a bounding box to restrict joint histogram computation. 
+    def subsample(self, spacing=None, corner=[0,0,0], shape=None, fov_size=_FOV_SIZE):
+        """ 
+        Defines a subset of the `from` image to restrict joint
+        histogram computation.
 
         Parameters
         ----------
@@ -118,8 +120,8 @@ class IconicRegistration(object):
           Desired bounding box shape 
 
         fov_size : positive integer
-          Desired number of voxels in the bounding box. If a 'spacing'
-          argument is provided, then 'fov_size' is discarded.
+          Desired number of voxels in the bounding box. If a `spacing`
+          argument is provided, then `fov_size` is ignored.
         """
         if spacing == None: 
             spacing = [1,1,1]
@@ -127,20 +129,20 @@ class IconicRegistration(object):
             fov_size = None
 
         if shape == None:
-            shape = self._source_image.shape
+            shape = self._from_img.shape
             
         slicer = lambda : tuple([slice(corner[i],shape[i]+corner[i],spacing[i]) for i in range(3)])
-        fov_data = self._source_image.get_data()[slicer()]
+        fov_data = self._from_img.get_data()[slicer()]
 
         # Adjust spacing to match desired field of view size
         if fov_size: 
-            spacing = subsample(fov_data, npoints=fov_size)
-            fov_data = self._source_image.get_data()[slicer()]
+            spacing = ideal_spacing(fov_data, npoints=fov_size)
+            fov_data = self._from_img.get_data()[slicer()]
 
         self._slices = slicer()
-        self._source = fov_data
-        self._source_npoints = (fov_data >= 0).sum()
-        self._source_toworld = subgrid_affine(self._source_image.affine, self._slices)
+        self._from_data = fov_data
+        self._from_npoints = (fov_data >= 0).sum()
+        self._from_affine = subgrid_affine(self._from_img.affine, self._slices)
 
     def _set_similarity(self, similarity='cr', pdf=None): 
         if isinstance(similarity, str): 
@@ -170,30 +172,30 @@ class IconicRegistration(object):
         The corresponding voxel transformation is: Tv = Tt^-1 * T * Ts
         """
         ## C-contiguity required
-        return np.dot(self._target_fromworld, np.dot(T, self._source_toworld)) 
+        return np.dot(self._to_inv_affine, np.dot(T, self._from_affine)) 
 
     def eval(self, T):
         if isinstance(T, GridTransform): 
-            # TODO: make sure T.shape matches self._source_image.shape
+            # TODO: make sure T.shape matches self._from_img.shape
             affine = 0 
-            Tv = apply_affine(self._target_fromworld, T[self._slices])
+            Tv = apply_affine(self._to_inv_affine, T[self._slices])
         else:
             affine = 1
-            Tv = np.dot(self._target_fromworld, np.dot(T, self._source_toworld)) 
+            Tv = np.dot(self._to_inv_affine, np.dot(T, self._from_affine)) 
         seed = self._interp
         if self._interp < 0:
             seed = - np.random.randint(maxint)
         _joint_histogram(self._joint_hist, 
-                         self._source.flat, ## array iterator
-                         self._target, 
+                         self._from_data.flat, ## array iterator
+                         self._to_data, 
                          Tv,
                          affine,
                          seed)
-        #self.source_hist = np.sum(self._joint_hist, 1)
-        #self.target_hist = np.sum(self._joint_hist, 0)
+        #self.from_img_hist = np.sum(self._joint_hist, 1)
+        #self.to_hist = np.sum(self._joint_hist, 0)
         return _similarity(self._joint_hist, 
-                           self._source_hist, 
-                           self._target_hist, 
+                           self._from_hist, 
+                           self._to_hist, 
                            self._similarity, 
                            self._pdf, 
                            self._similarity_func)
@@ -343,7 +345,7 @@ def clamp(x, bins=_BINS, mask=None):
     return y, bins
 
 
-def subsample(data, npoints):
+def ideal_spacing(data, npoints):
     """  
     Tune spacing factors so that the number of voxels in the
     output block matches a given number.
