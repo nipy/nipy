@@ -180,10 +180,11 @@ class IconicRegistration(object):
 
     def eval(self, T):
         if isinstance(T, GridTransform): 
+            # get voxel displacements from grid transform
             # TODO: make sure T.shape matches self._from_img.shape
             affine = 0 
             Tv = apply_affine(self._to_inv_affine, T[self._slices])
-        else:
+        else: # affine transformation
             affine = 1
             Tv = np.dot(self._to_inv_affine, np.dot(T.as_affine(), self._from_affine)) 
         seed = self._interp
