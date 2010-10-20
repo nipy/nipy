@@ -316,22 +316,26 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, n_sess=1,
     
     output_images = []
     if dmtx is not None:
+        beta = []
         for r in range(dmtx.shape[1]):
-            beta = nd.gaussian_filter(nr.randn(*shape),sk)
-            beta /= np.std(beta)
-            beta *= signal_level
-
+            betar = nd.gaussian_filter(nr.randn(*shape), sk)
+            betar /= np.std(betar)
+            beta.append(signal_level*betar)
+        beta = np.rollaxis(np.array(beta), 0, 4)
+    
     for ns in range(n_sess):
         data = np.zeros(shape_4d)
         
         # make the signal
         if dmtx is not None:
-            for r in range(dmtx.shape[1]):
-                data[mask_data,:] += np.outer(beta[mask_data], dmtx[:,r]) 
-    
+            data[mask_data,:] += np.dot(beta[mask_data], dmtx.T) 
+            #for r in range(dmtx.shape[1]):
+            #    #data[mask_data,:] += np.outer(beta[mask_data], dmtx[:,r]) 
+                
+
         for s in range(n_scans):
             # make some noise
-            noise = nr.randn(shape[0], shape[1], shape[2])
+            noise = nr.randn(*shape)
     
             # smooth the noise
             noise = nd.gaussian_filter(noise, sk)
