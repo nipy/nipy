@@ -5,12 +5,16 @@ import sys
 from glob import glob
 from distutils import log
 
-# monkey-patch numpy distutils to use Cython instead of Pyrex
-from build_helpers import (generate_a_pyrex_source, package_check,
+# Import build helpers
+from nisext.sexts import package_check, get_comrec_build
+from build_helpers import (generate_a_pyrex_source,
                            cmdclass, INFO_VARS)
+# monkey-patch numpy distutils to use Cython instead of Pyrex
 from numpy.distutils.command.build_src import build_src
 build_src.generate_a_pyrex_source = generate_a_pyrex_source
 
+# Add custom commit-recording build command
+cmdclass['build_py'] = get_comrec_build('nipy')
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
@@ -45,6 +49,7 @@ if not 'extra_setuptools_args' in globals():
 
 
 # Hard and soft dependency checking
+package_check('numpy', INFO_VARS['NUMPY_MIN_VERSION'])
 package_check('scipy', INFO_VARS['SCIPY_MIN_VERSION'])
 package_check('sympy', INFO_VARS['SYMPY_MIN_VERSION'])
 def _mayavi_version(pkg_name):
@@ -109,16 +114,24 @@ cmdclass['build_ext'] = MyBuildExt
 def main(**extra_args):
     from numpy.distutils.core import setup
     
-    setup( name = 'nipy',
-           description = 'This is a neuroimaging python package',
-           author = 'Various',
-           author_email = 'nipy-devel@neuroimaging.scipy.org',
-           url = 'http://nipy.org',
-           long_description = INFO_VARS['LONG_DESCRIPTION'],
-           configuration = configuration,
-           cmdclass = cmdclass,
-           scripts = glob('scripts/*'),
-           **extra_args)
+    setup(name=INFO_VARS['NAME'],
+          maintainer=INFO_VARS['MAINTAINER'],
+          maintainer_email=INFO_VARS['MAINTAINER_EMAIL'],
+          description=INFO_VARS['DESCRIPTION'],
+          long_description=INFO_VARS['LONG_DESCRIPTION'],
+          url=INFO_VARS['URL'],
+          download_url=INFO_VARS['DOWNLOAD_URL'],
+          license=INFO_VARS['LICENSE'],
+          classifiers=INFO_VARS['CLASSIFIERS'],
+          author=INFO_VARS['AUTHOR'],
+          author_email=INFO_VARS['AUTHOR_EMAIL'],
+          platforms=INFO_VARS['PLATFORMS'],
+          version=INFO_VARS['VERSION'],
+          requires=INFO_VARS['REQUIRES'],
+          configuration = configuration,
+          cmdclass = cmdclass,
+          scripts = glob('scripts/*'),
+          **extra_args)
 
 
 if __name__ == "__main__":

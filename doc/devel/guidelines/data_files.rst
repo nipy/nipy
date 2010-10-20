@@ -1,7 +1,7 @@
 .. _data-files:
 
-Shipping data files for `nipy`
-===============================
+Design of data packages for the nipy suite
+==========================================
 
 When developing or using nipy, many data files can be useful. We divide
 the data files nipy uses into at least 3 categories
@@ -264,8 +264,7 @@ The process of making a release should be:
 There is an example nipy data package ``nipy-examplepkg`` in the
 ``examples`` directory of the NIPY repository.
 
-The machinery for creating and maintaining data packages is available with::
-   
-   svn co https://nipy.svn.sourceforge.net/svnroot/nipy/data-packaging/trunk
+The machinery for creating and maintaining data packages is available at
+http://github.com/nipy/data-packaging
 
 See the ``README.txt`` file there for more information.
