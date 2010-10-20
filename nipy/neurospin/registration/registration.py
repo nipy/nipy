@@ -74,17 +74,21 @@ def register(from_img,
         search = [search]
     if isinstance(optimizer, basestring):
         optimizer = [optimizer]
-   
+    if len(search) < len(optimizer):
+        n_missing = len(optimizer) - len(search)
+        search += [search[-1]] * n_missing
+    elif len(optimizer) < len(search):
+        n_missing = len(search) - len(optimizer)
+        optimizer += [optimizer[-1]] * n_missing
+
     transforms = {'affine': Affine, 'rigid': Rigid, 'similarity': Similarity}
     T = None
-    for i in range(max(len(search), len(optimizer))):
-        search_ = search[min(i, len(search)-1)]
-        optimizer_ = optimizer[min(i, len(optimizer)-1)]
+    for trans_type, optim_type in zip(search, optimizer):
         if T == None: 
-            T = transforms[search_]()
-        else: 
-            T = transforms[search_](T.vec12)
-        T = R.optimize(T, method=optimizer_)
+            T = transforms[trans_type]()
+        else:
+            T = transforms[trans_type](T.vec12)
+        T = R.optimize(T, method=optim_type)
     return T
 
 

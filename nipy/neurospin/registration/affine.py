@@ -1,9 +1,8 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from _registration import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
-
 import numpy as np
 
+from ._registration import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
 
 # Globals 
 naffines = 3
@@ -14,7 +13,6 @@ id_affine = affines.index('affine')
 # Defaults 
 _radius = 100
 _flag2d = False
-
 
 
 def rotation_mat2vec(R):
@@ -140,21 +138,31 @@ def preconditioner(radius):
 def inverse_affine(affine):
     return np.linalg.inv(affine)
 
-def apply_affine(T, xyz):
-    """
-    XYZ = apply_affine(T, xyz)
 
-    T is a 4x4 matrix.
-    xyz is a Nx3 array of 3d coordinates stored row-wise. 
+def apply_affine(aff, pts):
+    """ Apply affine `T` to points `pts`
+
+    Parameters
+    ----------
+    aff : (N, N) array-like
+        Homogenous affine, probably 4 by 4
+    pts : (P, N-1) array-like
+        Points, one point per row.  N-1 is probably 3.
+
+    Returns
+    -------
+    transformed_pts : (P, N-1) array
+        transformed points
     """
-    xyz = np.asarray(xyz)
-    shape = xyz.shape[0:-1]
-    XYZ = np.dot(np.reshape(xyz, (np.prod(shape), 3)), T[0:3,0:3].T)
-    XYZ[:,0] += T[0,3]
-    XYZ[:,1] += T[1,3]
-    XYZ[:,2] += T[2,3]
-    XYZ = np.reshape(XYZ, shape+(3,))
-    return XYZ 
+    # Apply N by N homogenous affine to P by N-1 array
+    pts = np.asarray(pts)
+    shape = pts.shape
+    pts = pts.reshape((-1, shape[-1]))
+    rzs = aff[:-1,:-1]
+    trans = aff[:-1,-1]
+    res = np.dot(pts, rzs.T) + trans[None,:]
+    return res.reshape(shape)
+
 
 def subgrid_affine(affine, slices):
     steps = map(lambda x: max(x,1), [s.step for s in slices])
@@ -184,7 +192,7 @@ class Affine(object):
         self._flag2d = flag2d
         self._stamp = subtype + naffines*(not flag2d)
 
-    def __call__(self, xyz): 
+    def apply(self, xyz): 
         return apply_affine(self.as_affine(), xyz)
 
     def _get_param(self): 
@@ -231,6 +239,24 @@ class Affine(object):
 
     def as_affine(self, dtype='double'): 
         return matrix44(self._vec12, dtype=dtype)
+
+    def compose(self, other):
+        """ Compose this transform onto another
+
+        Parameters
+        ----------
+        other : Transform
+            transform that we compose onto
+
+        Returns
+        -------
+        composed_transform : Transform
+            a transform implementing the composition of self on `other`
+        """
+        aff = self.as_affine()
+        # Deliberately raise error in non-affine case for now
+        other_aff = other.as_affine()
+        return self.__class__(np.dot(aff, other_aff))
 
     def __str__(self): 
         string  = 'translation : %s\n' % str(self.translation)

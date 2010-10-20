@@ -6,19 +6,24 @@ Intensity-based matching.
 Questions: alexis.roche@gmail.com
 """
 
-from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
+from sys import maxint
 
-from ._registration import _joint_histogram, _similarity, builtin_similarities
-from .affine import Affine, apply_affine, inverse_affine, subgrid_affine
-from .grid_transform import GridTransform
+import numpy as np
+
+from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
 
 from nipy.core.image.affine_image import AffineImage
 from nipy.algorithms.optimize import fmin_steepest
 
-import numpy as np  
-from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
-from sys import maxint
+from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
 
+from ._registration import _joint_histogram, _similarity, builtin_similarities
+from .affine import Affine, inverse_affine, subgrid_affine
+from .grid_transform import GridTransform
+
+
+# Module global - enables online print statements
+DEBUG = True
 
 _CLAMP_DTYPE = 'short' # do not edit
 _BINS = 256
@@ -40,7 +45,6 @@ class HistogramRegistration(object):
 
     def __init__(self, from_img, to_img, from_bins=_BINS, to_bins=None, 
                  from_mask=None, to_mask=None):
-
         """
         Creates a new histogram registration object.
 
@@ -48,22 +52,16 @@ class HistogramRegistration(object):
         ----------
         from_img : nipy image-like
           `From` image 
-
         to_img : nipy image-like
           `To` image 
-    
         from_bins : integer
           Number of histogram bins to represent the `from` image
-
         to_bins : integer
           Number of histogram bins to represent the `to` image
-
         from_mask : nipy image-like
           Mask to apply to the `from` image 
-
         to_mask : nipy image-like
           Mask to apply to the `to` image 
-
         """
 
         # Binning sizes  
@@ -78,11 +76,10 @@ class HistogramRegistration(object):
         data, from_bins = clamp(from_img.get_data(), bins=from_bins, mask=mask)
         self._from_img = AffineImage(data, from_img.affine, 'ijk')
         self.subsample()
-        # self._from_world_coords is a Nx3 array representing the world
-        # coordinates of the `from` clamped (subsampled) image voxels 
+        # We cache the voxel coordinates of the clamped image
         tmp = np.mgrid[[slice(0, s) for s in self._from_data.shape]]
         tmp = np.rollaxis(tmp, 0, 1+self._from_data.ndim)
-        self._from_world_coords = apply_affine(self._from_affine, tmp)
+        self._vox_coords = tmp
 
         # Clamping of the `to` image including padding with -1 
         mask = None
@@ -102,7 +99,6 @@ class HistogramRegistration(object):
         self._set_interp()
         self._set_similarity()
 
-
     def _get_interp(self): 
         return interp_methods.keys()[interp_methods.values().index(self._interp)]
     
@@ -118,16 +114,12 @@ class HistogramRegistration(object):
 
         Parameters
         ----------
-        
         spacing : sequence (3,) of positive integers
           Subsampling factors 
-
         corner : sequence (3,) of positive integers
           Bounding box origin in voxel coordinates
-
         size : sequence (3,) of positive integers
           Desired bounding box size 
-
         npoints : positive integer
           Desired number of voxels in the bounding box. If a `spacing`
           argument is provided, then `npoints` is ignored.
@@ -174,16 +166,16 @@ class HistogramRegistration(object):
 
     similarity = property(_get_similarity, _set_similarity)
 
-    def voxel_transform(self, T):
-        """ 
-        T is the 4x4 transformation between the real coordinate systems
-        The corresponding voxel transformation is: Tt^-1 * T * Ts
-        """
-        return np.dot(self._to_inv_affine, np.dot(T, self._from_affine)) 
-
     def eval(self, T):
+        """ Evaluate similarity function given transform
+
+        Parameters
+        ----------
+        T : Transform
+            Transform object implementing ``apply`` method
+        """
         # trans_voxel_coords needs be C-contiguous
-        trans_voxel_coords = apply_affine(self._to_inv_affine, T(self._from_world_coords))
+        trans_voxel_coords = T.apply(self._vox_coords)
         interp = self._interp
         if self._interp < 0:
             interp = - np.random.randint(maxint)
@@ -200,26 +192,48 @@ class HistogramRegistration(object):
                            self._similarity_func)
 
 
-    def optimize(self, start, method=_OPTIMIZER, **kwargs):
+    def optimize(self, T, method=_OPTIMIZER, **kwargs):
+        """ Optimize transform `T` with respect to similarity
 
-        T = start
+        The input object `T` will change as a result of the optimization.
+
+        Parameters
+        ----------
+        T : object
+            Object representing a transformation that should implement ``apply``
+            method and ``param`` attribute or property
+        method : str
+            Name of optimization function (one of 'powell', 'steepest', 'cg',
+            'bfgs', 'simplex')
+        **kwargs : dict
+            keyword arguments to pass to optimizer
+        """
+        # Pull callback out of keyword arguments, if present
+        callback = kwargs.pop('callback', None)
+
+        # Create transform chain object with T generating params
+        T_chain = TransformChain(self._to_inv_affine(T(self._to_inv_affine)),
+                                 optimizable=T)
         tc0 = T.param
 
         # Cost function to minimize
         def cost(tc):
+            # This is where the similarity function is calculcated
             T.param = tc
             return -self.eval(T) 
-    
-        def callback(tc):
-            T.param = tc
-            print(T)
-            print(str(self.similarity) + ' = %s' % self.eval(T))
-            print('')
-                  
+
+        # Callback during optimization
+        if callback is None and DEBUG:
+            def callback(tc):
+                T.param = tc
+                print(T)
+                print(str(self.similarity) + ' = %s' % self.eval(T))
+                print('')
 
         # Switching to the appropriate optimizer
-        print('Initial guess...')
-        print(T)
+        if DEBUG:
+            print('Initial guess...')
+            print(T)
         if method=='powell':
             fmin = fmin_powell
             kwargs.setdefault('xtol', _XTOL)
@@ -235,15 +249,18 @@ class HistogramRegistration(object):
         elif method=='bfgs':
             fmin = fmin_bfgs
             kwargs.setdefault('gtol', _GTOL)
-        else: # simplex method 
+        elif method == 'simplex':
             fmin = fmin_simplex 
             kwargs.setdefault('xtol', _XTOL)
             kwargs.setdefault('ftol', _FTOL)
-        
+        else:
+            raise ValueError('You crazy bastard, what is this '
+                             'optimizer name %s?' % method)
         # Output
-        print ('Optimizing using %s' % fmin.__name__)
+        if DEBUG:
+            print ('Optimizing using %s' % fmin.__name__)
         T.param = fmin(cost, tc0, callback=callback, **kwargs)
-        return T 
+        return T
 
 
     def explore(self, T0, *args): 
