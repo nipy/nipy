@@ -48,9 +48,12 @@ def display_results_html(zmap_file_path, mask_file_path,
     clusters, info = sm.cluster_stats(zmap, mask, height_th=threshold,
                                       height_control=method.lower(),
                                       cluster_th=cluster_th, nulls=nulls)
-    if clusters == None or info == None:
-        print "No results were written for %s" % zmap_file_path
-        return
+
+    #if clusters == None or info == None:
+    #    print "No results were written for %s" % zmap_file_path
+    #    return
+    if clusters == None:
+        clusters = []
     
     # Make HTML page 
     output = open(output_html_path, mode = "w")
@@ -93,8 +96,10 @@ def display_results_html(zmap_file_path, mask_file_path,
     output.write("</table>\n")
     output.write("Number of voxels : %i<br>\n" % nvox)
     output.write("Number of clusters : %i<br>\n" % nclust)
-    output.write("Threshold Z = %f (%s control at %f)<br>\n" \
-                 % (info['threshold_z'], method, threshold))
+    if info is not None:
+        output.write("Threshold Z = %f (%s control at %f)<br>\n" \
+                     % (info['threshold_z'], method, threshold))
+        
     output.write("Cluster size threshold = %i voxels"%cluster_th)
     output.write("</center></body></html>\n")
     output.close()
