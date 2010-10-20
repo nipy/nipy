@@ -49,9 +49,9 @@ def display_results_html(zmap_file_path, mask_file_path,
                                       height_control=method.lower(),
                                       cluster_th=cluster_th, nulls=nulls)
 
-    if clusters is None:
-        clusters=[]
-        
+    if clusters == None:
+        clusters = []
+    
     # Make HTML page 
     output = open(output_html_path, mode = "w")
     output.write("<html><head><title> Result Sheet for %s \
@@ -99,6 +99,7 @@ def display_results_html(zmap_file_path, mask_file_path,
     if info is not None:
         output.write("Threshold Z = %f (%s control at %f)<br>\n" \
                      % (info['threshold_z'], method, threshold))
+
     output.write("Cluster size threshold = %i voxels"%cluster_th)
     output.write("</center></body></html>\n")
     output.close()
