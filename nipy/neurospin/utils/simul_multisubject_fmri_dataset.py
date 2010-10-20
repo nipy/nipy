@@ -255,7 +255,7 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20), mask=None,
     return dataset
 
 def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, n_sess=1,
-                         dmtx=None, sk=1.0, noise_level=1.0,  
+                         dmtx=None, sk=1.0, noise_level=1.0,  signal_level=1.0,
                          out_image_file=None, verbose=False, seed=False):
     """
     Create surrogate (simulated) 3D activation data with spatial noise.
@@ -278,6 +278,8 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, n_sess=1,
     noise_level: float, optionnal
         Amplitude of the spatial noise.
         amplitude=noise_level)
+    signal_level: float, optional,
+        Amplitude of the signal
     out_image_file: string or None, optionnal
         If not None, the resulting is saved as a nifti file with the
         given file name.
@@ -317,6 +319,7 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, n_sess=1,
         for r in range(dmtx.shape[1]):
             beta = nd.gaussian_filter(nr.randn(*shape),sk)
             beta /= np.std(beta)
+            beta *= signal_level
 
     for ns in range(n_sess):
         data = np.zeros(shape_4d)
@@ -338,9 +341,9 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, n_sess=1,
             data[:,:,:,s] += noise
             data[:,:,:,s] += 100*mask_data
 
-            wim = Nifti1Image( data, affine)
-            output_images.append(wim)
-            if out_image_file is not None:
-                save(wim, out_image_file[s])
+        wim = Nifti1Image( data, affine)
+        output_images.append(wim)
+        if out_image_file is not None:
+            save(wim, out_image_file[s])
 
     return output_images
