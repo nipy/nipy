@@ -67,7 +67,7 @@ X, names = dm.dmtx_light(frametimes, paradigm, drift_model='Cosine', hfcut=128,
 # Get the FMRI data
 #######################################
 
-fmri_data = surrogate_4d_dataset(mask=mask, dmtx=X, seed=1)
+fmri_data = surrogate_4d_dataset(mask=mask, dmtx=X, seed=1)[0]
 
 # if you want to save it as an image
 # data_file = op.join(swd,'fmri_data.nii')

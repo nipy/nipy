@@ -254,9 +254,9 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20), mask=None,
 
     return dataset
 
-def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, dmtx=None,
-                         sk=1.0, noise_level=1.0,  out_image_file=None, 
-                         verbose=False, seed=False):
+def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, n_sess=1,
+                         dmtx=None, sk=1.0, noise_level=1.0,  
+                         out_image_file=None, verbose=False, seed=False):
     """
     Create surrogate (simulated) 3D activation data with spatial noise.
 
@@ -269,7 +269,9 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, dmtx=None,
     n_scans: int, optional,
         number of scans to be simlulated
         overrided by the design matrix
-    dmtx: arrau of shape(n_scans, n_rows),
+    n_sess: int, optional,
+        the number of simulated sessions
+    dmtx: array of shape(n_scans, n_rows),
         the design matrix
     sk: float, optionnal
         Amount of spatial noise smoothness.
@@ -288,8 +290,9 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, dmtx=None,
 
     Returns
     -------
-    dataset: ndarray of shape (shape[0], shape[1], shape[2], n_scans)
-        The surrogate activation map, with dimensions (nbsubj, dimx, dimy, dimz)
+    dataset: a list of n_sess ndarray of shape 
+             (shape[0], shape[1], shape[2], n_scans)
+             The surrogate activation map
     """
     if seed:
         nr = np.random.RandomState([seed])
@@ -308,29 +311,36 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, dmtx=None,
         n_scans = dmtx.shape[0]
     
     shape_4d = tuple((shape[0], shape[1], shape[2], n_scans))
-    data = np.zeros(shape_4d)
-
-    # make the signal
+    
+    output_images = []
     if dmtx is not None:
         for r in range(dmtx.shape[1]):
             beta = nd.gaussian_filter(nr.randn(*shape),sk)
             beta /= np.std(beta)
-            data[mask_data,:] += np.outer(beta[mask_data],dmtx[:,r]) 
-    
-    for s in range(n_scans):
-        # make some noise
-        noise = nr.randn(shape[0], shape[1], shape[2])
-    
-        # smooth the noise
-        noise = nd.gaussian_filter(noise, sk)
-        noise *= noise_level/np.std(noise)
+
+    for ns in range(n_sess):
+        data = np.zeros(shape_4d)
         
-        #make the mixture
-        data[:,:,:,s] += noise
-        data[:,:,:,s] += 100*mask_data
+        # make the signal
+        if dmtx is not None:
+            for r in range(dmtx.shape[1]):
+                data[mask_data,:] += np.outer(beta[mask_data], dmtx[:,r]) 
+    
+        for s in range(n_scans):
+            # make some noise
+            noise = nr.randn(shape[0], shape[1], shape[2])
+    
+            # smooth the noise
+            noise = nd.gaussian_filter(noise, sk)
+            noise *= noise_level/np.std(noise)
+        
+            # make the mixture
+            data[:,:,:,s] += noise
+            data[:,:,:,s] += 100*mask_data
 
-    wim = Nifti1Image( data, affine)
-    if out_image_file is not None:
-        save(wim, out_image_file)
+            wim = Nifti1Image( data, affine)
+            output_images.append(wim)
+            if out_image_file is not None:
+                save(wim, out_image_file[s])
 
-    return wim
+    return output_images
