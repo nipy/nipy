@@ -1,0 +1,5 @@
+* 'permuted' svd in affine.py 
+* rename rotation, scaling, shearing appropriately 
+* spline transform object
+* log-euclidean transform object ???
+* Levenberg-Marquardt
