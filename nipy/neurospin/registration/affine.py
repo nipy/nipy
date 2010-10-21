@@ -83,8 +83,8 @@ def rotation_mat2vec(R):
 def vector12(mat, subtype=id_affine):
     """
     Return a 12-sized vector of natural affine parameters:
-    translation, rotation, log-scale, additional rotation (to allow
-    for shearing when combined with non-unitary scales). 
+    translation, rotation, log-scale, pre-rotation (to allow for
+    shearing when combined with non-unitary scales).
 
     a better naming is
     vec12=[translation, post-rot, logscaling, pre-rot]

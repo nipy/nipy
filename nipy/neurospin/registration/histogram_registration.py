@@ -19,7 +19,7 @@ from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
 
 from ._registration import _joint_histogram, _similarity, builtin_similarities
 from .affine import Affine, inverse_affine, subgrid_affine
-from .grid_transform import GridTransform
+from .chain_transform import ChainTransform 
 
 
 # Module global - enables online print statements
@@ -166,16 +166,17 @@ class HistogramRegistration(object):
 
     similarity = property(_get_similarity, _set_similarity)
 
-    def eval(self, T):
+    def eval(self, Tv):
         """ Evaluate similarity function given transform
 
         Parameters
         ----------
-        T : Transform
-            Transform object implementing ``apply`` method
+        Tv : Transform
+             Transform object implementing ``apply`` method
+             Should map voxel space to voxel space
         """
         # trans_voxel_coords needs be C-contiguous
-        trans_voxel_coords = T.apply(self._vox_coords)
+        trans_voxel_coords = Tv.apply(self._vox_coords)
         interp = self._interp
         if self._interp < 0:
             interp = - np.random.randint(maxint)
@@ -212,28 +213,27 @@ class HistogramRegistration(object):
         callback = kwargs.pop('callback', None)
 
         # Create transform chain object with T generating params
-        T_chain = TransformChain(self._to_inv_affine(T(self._to_inv_affine)),
-                                 optimizable=T)
-        tc0 = T.param
+        Tv = ChainTransform(T, pre=self._from_affine, post=self._to_inv_affine)
+        tc0 = Tv.param
 
         # Cost function to minimize
         def cost(tc):
             # This is where the similarity function is calculcated
-            T.param = tc
-            return -self.eval(T) 
+            Tv.param = tc
+            return -self.eval(Tv) 
 
         # Callback during optimization
         if callback is None and DEBUG:
             def callback(tc):
-                T.param = tc
-                print(T)
-                print(str(self.similarity) + ' = %s' % self.eval(T))
+                Tv.param = tc
+                print(Tv.optimizable)
+                print(str(self.similarity) + ' = %s' % self.eval(Tv))
                 print('')
 
         # Switching to the appropriate optimizer
         if DEBUG:
             print('Initial guess...')
-            print(T)
+            print(Tv.optimizable)
         if method=='powell':
             fmin = fmin_powell
             kwargs.setdefault('xtol', _XTOL)
@@ -259,8 +259,8 @@ class HistogramRegistration(object):
         # Output
         if DEBUG:
             print ('Optimizing using %s' % fmin.__name__)
-        T.param = fmin(cost, tc0, callback=callback, **kwargs)
-        return T
+        Tv.param = fmin(cost, tc0, callback=callback, **kwargs)
+        return Tv.optimizable
 
 
     def explore(self, T0, *args): 

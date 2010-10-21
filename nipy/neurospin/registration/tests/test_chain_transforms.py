@@ -37,8 +37,12 @@ def test_creation():
     aff1 = np.diag([2, 3, 4, 1])
     aff2 = np.eye(4)
     aff2[:3,3] = (10, 11, 12)
+    # generate a random affine with a positive determinant
     aff3 = np.eye(4)
-    aff3[:3,:] = np.random.normal(size=(3,4))
+    aff3[:3,3] = np.random.normal(size=(3,))
+    tmp = np.random.normal(size=(3,3))
+    aff3[:3,:3] = np.sign(npl.det(tmp))*tmp 
+
     # Make affine objects
     aff1_obj, aff2_obj, aff3_obj = [Affine(a) for a in [aff1, aff2.copy(), aff3]]
     pts = np.arange(12).reshape(4,3)
@@ -58,6 +62,14 @@ def test_creation():
     aff2_obj = Affine(aff2.copy())
     # Check apply gives the expected results
     ct = ChainTransform(aff2_obj, pre=aff1_obj)
+    assert_array_almost_equal(aff1_obj.as_affine(), aff1)
+    assert_array_almost_equal(aff2_obj.as_affine(), aff2)
+    tmp = np.dot(aff2, aff1)
+
+    print '****'
+    print tmp
+    print '****'
+
     assert_array_equal(ct.apply(pts),
                        apply_affine(np.dot(aff2, aff1), pts))
     # Check that result is changed by setting params
