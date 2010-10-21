@@ -42,7 +42,8 @@ class ChainTransform(object):
         transformed_pts : array
             N by 3 array of transformed points
         """
-        return self.post.compose(self.optimizable.compose(self.pre)).apply(pts)
+        composed = self.post.compose(self.optimizable.compose(self.pre))
+        return composed.apply(pts)
 
     def _set_param(self, param):
         self.optimizable.param = param

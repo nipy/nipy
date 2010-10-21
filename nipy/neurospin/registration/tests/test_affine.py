@@ -5,7 +5,7 @@ import numpy as np
 from ..affine import Affine, rotation_mat2vec, apply_affine
 
 from nose.tools import assert_true, assert_false
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_array_almost_equal
 from nipy.testing import assert_almost_equal
 
 
@@ -78,3 +78,22 @@ def test_apply_affine():
     assert_array_equal(apply_affine(aff, pts), exp_res)
     # Check we get the same result as the previous implementation
     assert_almost_equal(validated_apply_affine(aff, pts), apply_affine(aff, pts))
+
+
+def test_compsed_affines():
+    aff1 = np.diag([2, 3, 4, 1])
+    aff2 = np.eye(4)
+    aff2[:3,3] = (10, 11, 12)
+    comped = np.dot(aff2, aff1)
+    comped_obj = Affine(comped)
+    assert_array_almost_equal(comped_obj.as_affine(), comped)
+    aff1_obj = Affine(aff1)
+    aff2_obj = Affine(aff2)
+    re_comped = aff2_obj.compose(aff1_obj)
+    assert_array_almost_equal(re_comped.as_affine(), comped)
+    # Crazy, crazy, crazy
+    aff1_remixed = aff1_obj.as_affine()
+    aff2_remixed = aff2_obj.as_affine()
+    comped_remixed = np.dot(aff2_remixed, aff1_remixed)
+    assert_array_almost_equal(comped_remixed,
+                              Affine(comped_remixed).as_affine())

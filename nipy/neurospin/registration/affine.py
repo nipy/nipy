@@ -2,7 +2,8 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-from ._registration import rotation_vec2mat, param_to_vector12, matrix44, affines, _affines
+from nipy.externals.transforms3d.quaternions import mat2quat, quat2axangle
+from ._registration import param_to_vector12, matrix44, affines, _affines
 
 # Globals 
 naffines = 3
@@ -16,68 +17,21 @@ _flag2d = False
 
 
 def rotation_mat2vec(R):
+    """ Rotation vector from rotation matrix `R`
+
+    Parameters
+    ----------
+    R : (3,3) array-like
+        Rotation matrix
+
+    Returns
+    -------
+    vec : (3,) array
+        Rotation vector, where norm of `vec` is the angle ``theta``, and the
+        axis of rotation is given by ``vec / theta``
     """
-    r = rotation_mat2vec(R)
-    
-    Inverse operation of rotation_vec2mat. 
-    
-    The algorithm is based on a quaternion representation, exploiting the
-    fact that the rotation vector r = theta*n associated with a quaternion
-    (x,y,z,w) statisfies:
-    
-      x = sin(theta/2) nx
-      y = sin(theta/2) ny
-      z = sin(theta/2) nz
-      w = cos(theta/2)
-
-
-          |   1 - 2y^2 - 2z^2   2xy - 2zw          2xz+ 2yw         |
-      R = |   2xy + 2zw         1 - 2x^2 - 2z^2    2yz - 2xw	    |
-          |   2xz - 2 yw        2yz + 2xw          1 - 2x^2 - 2y^2  |
-
-	
-    """
-    TINY = 1e-15
-
-    # Compute the trace of the rotation matrix plus one
-    aux = np.sqrt(R.trace()+1.0)
-    
-    if aux > TINY: 
-
-        # Compute the associated quaternion. Notice: trace(R) + 1 = 4w^2
-        quat = np.array([R[2,1]-R[1,2], R[0,2]-R[2,0], R[1,0]-R[0,1], .5*aux])
-        quat[0:3] *= .5/aux
-    
-        # Compute the angle between 0 and PI (ensure that the last
-        # quaternion element is in the range (-1,1))
-        theta = 2*np.arccos(max(-1., min(quat[3], 1.)))
-
-        # Normalize the rotation axis
-        norma = max(np.sqrt((quat[0:3]**2).sum()), TINY)
-        return (theta/norma)*quat[0:3]
-    
-    else: 
-        
-        # Singularity case: theta == PI. In this case, the above
-        # identification is not possible since w=0. 
-        x2 = .25*(1 + R[0][0]-R[1][1]-R[2][2])
-        if x2 > TINY: 
-            xy = .5*R[1][0]
-            xz = .5*R[2][0]
-            n = np.array([x2,xy,xz])
-        else: 
-            y2 = .25*(1 + R[1][1]-R[0][0]-R[2][2])
-            if y2 > TINY: 
-                xy = .5*R[1][0]
-                yz = .5*R[2][1]
-                n = np.array([xy,y2,yz])
-            else: 
-                z2 = .25*(1 + R[2][2]-R[0][0]-R[1][1])
-                if z2 > TINY: 
-                    xz = .5*R[2][0]
-                    yz = .5*R[2][1]
-                    n = np.array([xz,yz,z2])
-        return np.pi*n/np.sqrt((n**2).sum())
+    ax, angle = quat2axangle(mat2quat(R))
+    return ax * angle
 
 
 def vector12(mat, subtype=id_affine):
@@ -114,7 +68,6 @@ def vector12(mat, subtype=id_affine):
         vec12[9:12] = q
     return vec12
 
-    
 
 def preconditioner(radius):
     """

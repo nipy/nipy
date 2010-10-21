@@ -65,28 +65,23 @@ def test_creation():
     assert_array_almost_equal(aff1_obj.as_affine(), aff1)
     assert_array_almost_equal(aff2_obj.as_affine(), aff2)
     tmp = np.dot(aff2, aff1)
-
-    print '****'
-    print tmp
-    print '****'
-
-    assert_array_equal(ct.apply(pts),
+    assert_array_almost_equal(ct.apply(pts),
                        apply_affine(np.dot(aff2, aff1), pts))
     # Check that result is changed by setting params
     assert_array_equal(ct.param, aff2_obj.param)
     ct.param = np.zeros((12,))
-    assert_array_equal(ct.apply(pts), apply_affine(aff1, pts))
+    assert_array_almost_equal(ct.apply(pts), apply_affine(aff1, pts))
     # Does changing params in chain object change components passed in?
     assert_array_equal(aff2_obj.param, np.zeros((12,)))
     # Reset the aff2 object
     aff2_obj = Affine(aff2.copy())
     ct = ChainTransform(aff2_obj, pre=aff1_obj, post=aff3_obj)
-    assert_array_equal(ct.apply(pts),
+    assert_array_almost_equal(ct.apply(pts),
                        apply_affine(np.dot(aff3, np.dot(aff2, aff1)), pts))
     # Check that result is changed by setting params
     assert_array_equal(ct.param, aff2_obj.param)
     ct.param = np.zeros((12,))
-    assert_array_equal(ct.apply(pts), apply_affine(np.dot(aff3, aff1), pts))
+    assert_array_almost_equal(ct.apply(pts), apply_affine(np.dot(aff3, aff1), pts))
     # Does changing params in chain object change components passed in?
     assert_array_equal(aff2_obj.param, np.zeros((12,)))
 
