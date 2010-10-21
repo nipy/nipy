@@ -9,21 +9,25 @@ class ChainTransform(object):
 
         Parameters
         ----------
-        optimizable : Transform
-            Transform that we are optimizing
-        pre : None or Transform, optional
+        optimizable : array or Transform
+            Transform that we are optimizing.  If this is an array, then assume
+            it's an affine matrix.
+        pre : None or array or Transform, optional
             If not None, a transform that should be applied to points before
-            applying the `optimizable` transform
+            applying the `optimizable` transform.  If an array, then assume it's
+            an affine matrix.
         post : None or Transform, optional
             If not None, a transform that should be applied to points after
             applying any `pre` transform, and then the `optimizable`
-            transform.
+            transform.  If an array, assume it's an affine matrix
         """
+        if not hasattr(optimizable, 'apply'):
+            optimizable = Affine(optimizable)
+        if not hasattr(pre, 'apply'):
+            pre = Affine(pre)
+        if not hasattr(post, 'apply'):
+            post = Affine(post)
         self.optimizable = optimizable
-        if pre is None:
-            pre = Affine()
-        if post is None:
-            post = Affine()
         self.pre = pre
         self.post = post
 
