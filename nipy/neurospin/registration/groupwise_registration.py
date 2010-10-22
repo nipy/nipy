@@ -27,11 +27,6 @@ def interp_slice_order(Z, slice_order):
     w = Z - Zf
     Zal = Zf % nslices
     Za = Zal + w
-    """
-    Za = Z % nslices
-    Zal = Za.astype('int')
-    w = Za - Zal 
-    """
     ret = (1-w)*aux[Zal] + w*aux[Zal+1]
     ret += (Z-Za)
     return ret
@@ -45,8 +40,8 @@ def grid_coords(xyz, affine, from_world, to_world):
 
 class Image4d(object):
     """
-    Class to represent a sequence of 3d scans acquired on a
-    slice-by-slice basis.
+    Class to represent a sequence of 3d scans (possibly acquired on a
+    slice-by-slice basis).
     """
     def __init__(self, array, affine, tr, tr_slices=None, start=0.0, 
                  slice_order=_SLICE_ORDER, interleaved=_INTERLEAVED, 
@@ -105,7 +100,6 @@ class Image4d(object):
             return self.nslices - 1 - z
         else:
             return z
-
 
     def grid_time(self, zv, t):
         """
@@ -414,7 +408,7 @@ class Realign4d(object):
             transforms = self._within_run_transforms
         runs = range(len(self._runs))
         data = [resample4d(self._runs[r], transforms=transforms[r], time_interp=self._time_interp) for r in runs]
-        return [AffineImage(data[r], self._runs[r].affine, 'ijk') for r in runs]
+        return [AffineImage(data[r], self._runs[r].affine, 'scanner') for r in runs]
 
 
 

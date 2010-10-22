@@ -169,6 +169,6 @@ def resample(moving, transform, grid_coords=False, reference=None,
             output = map_coordinates(data, coords, order=interp_order, 
                                      cval=0, output=dtype)
     
-    return AffineImage(output, reference.affine, 'ijk')
+    return AffineImage(output, reference.affine, 'scanner')
 
 

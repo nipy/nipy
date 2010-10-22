@@ -74,7 +74,7 @@ class HistogramRegistration(object):
         if not from_mask == None: 
             mask = from_mask.get_data()
         data, from_bins = clamp(from_img.get_data(), bins=from_bins, mask=mask)
-        self._from_img = AffineImage(data, from_img.affine, 'ijk')
+        self._from_img = AffineImage(data, from_img.affine, 'scanner')
         # Set the subsampling.  This also sets the _from_data and _vox_coords
         # attributes
         self.subsample()
