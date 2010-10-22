@@ -8,11 +8,11 @@ import numpy as np
 from scipy import ndimage
 
 # Local imports
-from nipy.core.transforms.affines import from_matrix_vector, \
-                     to_matrix_vector
-from nipy.core.api import AffineTransform, Image, CoordinateSystem
-from nipy.core.reference.coordinate_map import compose, product as cmap_product
-from nipy.algorithms.resample import resample
+from .image import Image
+from ..transforms.affines import to_matrix_vector
+from ..reference.coordinate_system import CoordinateSystem
+from ..reference.coordinate_map import (AffineTransform,
+                                        product as cmap_product)
 
 ################################################################################
 # class `AffineImage`
@@ -86,17 +86,18 @@ class AffineImage(Image):
     def __init__(self, data, affine, coord_sys, metadata=None):
         """ Creates a new nipy image with an affine mapping.
 
-            Parameters
-            ----------
-
-            data : ndarray
-                ndarray representing the data.
-            affine : 4x4 ndarray
-                affine transformation to the reference coordinate system
-            coord_system : string
-                name of the reference coordinate system.
+        Parameters
+        ----------
+        data : ndarray
+            ndarray representing the data.
+        affine : 4x4 ndarray
+            affine transformation to the reference coordinate system
+        coord_system : string
+            name of the reference coordinate system.
         """
-
+        affine = np.asarray(affine)
+        if affine.shape != (4,4):
+            raise ValueError('Affine image takes 4x4 affine as input')
         function_domain = CoordinateSystem(['axis%d' % i for i in range(3)], 
                                         name=coord_sys)
         function_range = CoordinateSystem(['x','y','z'], name='world')
@@ -106,9 +107,9 @@ class AffineImage(Image):
         nonspatial_names = ['axis%d' % i for i in range(3, data.ndim)]
         if nonspatial_names:
             nonspatial_coordmap = AffineTransform.from_start_step(nonspatial_names, nonspatial_names, [0]*(data.ndim-3), [1]*(data.ndim-3))
-            full_coordmap = cmap_product(coordmap, nonspatial_coordmap)
+            full_coordmap = cmap_product(spatial_coordmap, nonspatial_coordmap)
         else:
-            full_coordmap = spatial_coordmap 
+            full_coordmap = spatial_coordmap
 
         self._spatial_coordmap = spatial_coordmap
 
@@ -190,8 +191,8 @@ class AffineImage(Image):
         world_to_world_transform = AffineTransform(affine_transform.function_range,
                                                    self.spatial_coordmap.function_range,
                                                    world_to_world)
-                                                   
-
+        # Delayed import to avoid circular imports
+        from ...algorithms.resample import resample
         if self.ndim == 3:
             im = resample(self, affine_transform, world_to_world_transform,
                           shape, order=interpolation_order)
