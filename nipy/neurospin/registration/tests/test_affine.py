@@ -2,7 +2,9 @@
 
 import numpy as np
 
-from ..affine import Affine, rotation_mat2vec, apply_affine
+from ..affine import (Affine, Affine2D, Rigid, Rigid2D,
+                      Similarity, Similarity2D,
+                      rotation_mat2vec, apply_affine)
 
 from nose.tools import assert_true, assert_false
 from numpy.testing import assert_array_equal, assert_array_almost_equal
@@ -97,3 +99,21 @@ def test_compsed_affines():
     comped_remixed = np.dot(aff2_remixed, aff1_remixed)
     assert_array_almost_equal(comped_remixed,
                               Affine(comped_remixed).as_affine())
+
+
+def test_affine_types():
+    for obj, n_params in ((Affine(), 12),
+                          (Affine2D(), 6),
+                          (Rigid(), 6),
+                          (Rigid2D(), 3),
+                          (Similarity(), 7),
+                          (Similarity2D(), 4),
+                         ):
+        assert_array_equal(obj.param, np.zeros((n_params,)))
+        obj.param = np.ones((n_params,))
+        assert_array_equal(obj.param, np.ones((n_params,)))
+        # Check that round trip works
+        # Won't work for now
+        # Just check that str works without error
+        s = str(obj)
+

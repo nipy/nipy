@@ -5,9 +5,10 @@ import scipy.linalg as spl
 
 from nipy.externals.transforms3d.quaternions import mat2quat, quat2axangle
 
-# Defaults 
+from .transform import Transform
+
+# Defaults
 _radius = 100
-_flag2d = False
 
 # Smallest possible scaling
 TINY = 1e-100
@@ -153,66 +154,10 @@ def subgrid_affine(affine, slices):
     return np.dot(affine, t)
 
 
-class Transform(object):
-    """ A default transformation class
-    """
-    def __init__(self, func):
-        self.func = func
-
-    def apply(self, pts):
-        return self.func(pts)
-
-    def compose(self, other):
-        return self.__class__(
-            lambda pts : self.func(other.apply(pts)))
-
-    @property
-    def param(self):
-        raise AttributeError('No param for generic transform')
-
-
-class SplineTransform(Transform):
-    def __init__(self, control_points, kernel, param=None):
-        """ Create spline transform
-
-        Parameters
-        ----------
-        control_points : (K,3) array-like
-            spline control points
-        kernel : callable
-            kernel G where G(x - x_k) for point x and control point k is the
-            basis for the parameters
-        param : None or (K,3) array, optional
-            coefficients for each control point.  None gives array of zeros as
-            starting default
-        """
-        self.control_points = np.asarray(control_points)
-        K = control_points.shape[0]
-        self.kernel = kernel
-        if param is None:
-            self.param = np.zeros((K,3))
-        else:
-            self.param = np.asarray(param)
-        self._cache = {'last_pts': None, 'Gik': None}
-
-    def apply(self, pts):
-        # logic for applying transform to points
-        if pts is self._cache['last_pts']:
-            Gik = self._cache['Gik']
-        else: # calculate and cache Gik matrix
-            # Gik is an N by K matrix where G is the kernel, i indexes input
-            # points, k indexes control points, and Gik[i, k] is G(x_i - x_k)
-            Gik = None
-            self._cache['last_pts'] = pts
-            self._cache['Gik'] = Gik
-        return np.dot(Gik, self.param)
-
-
 class Affine(Transform): 
-    _param_inds_3d = range(12)
-    _param_inds_2d = [0,1,5,6,7,11]
+    param_inds = range(12)
 
-    def __init__(self, array=None, radius=_radius, flag2d=_flag2d):
+    def __init__(self, array=None, radius=_radius):
         if array == None: 
             self._vec12 = np.zeros(12)
         elif array.shape == (4,4):
@@ -222,12 +167,6 @@ class Affine(Transform):
         else: 
             raise ValueError('Invalid array')
         self._precond = preconditioner(radius)
-        self._flag2d = flag2d
-
-    def _param_inds(self):
-        if self._flag2d:
-            return self._param_inds_2d
-        return self._param_inds_3d
 
     def _vector12(self, aff):
         """
@@ -256,11 +195,11 @@ class Affine(Transform):
 
     def _get_param(self): 
         param = self._vec12/self._precond
-        return param[self._param_inds()]
+        return param[self.param_inds]
 
     def _set_param(self, p):
         p = np.asarray(p)
-        inds = self._param_inds()
+        inds = self.param_inds
         self._vec12[inds] = p * self._precond[inds]
 
     def _get_translation(self): 
@@ -320,20 +259,20 @@ class Affine(Transform):
         aff = self.as_affine()
         return self.__class__(np.dot(aff, other_aff))
 
-    def __str__(self): 
+    def __str__(self):
         string  = 'translation : %s\n' % str(self.translation)
         string += 'rotation    : %s\n' % str(self.rotation)
         string += 'scaling     : %s\n' % str(self.scaling)
         string += 'shearing    : %s' % str(self.shearing)
         return string
 
-    def __mul__(self, other): 
+    def __mul__(self, other):
         """
         Affine composition: T1oT2(x)
         """
         # Choose more capable of input types as output type
-        self_inds = set(self._param_inds())
-        other_inds = set(other._param_inds())
+        self_inds = set(self.param_inds)
+        other_inds = set(other.param_inds)
         if self_inds.issubset(other_inds):
             klass = other.__class__
         elif other_inds.isssubset(self_inds):
@@ -355,9 +294,12 @@ class Affine(Transform):
         return a
 
 
+class Affine2D(Affine):
+    param_inds = [0,1,5,6,7,11]
+
+
 class Rigid(Affine):
-    _param_inds_2d = [0, 1, 5]
-    _param_inds_3d = range(6)
+    param_inds = range(6)
 
     def _vector12(self, aff):
         """
@@ -380,9 +322,12 @@ class Rigid(Affine):
         return string
 
 
+class Rigid2D(Rigid):
+    param_inds = [0,1,5]
+
+
 class Similarity(Affine):
-    _param_inds_2d = [0, 1, 5, 6]
-    _param_inds_3d = range(7)
+    param_inds = range(7)
 
     def _vector12(self, aff):
         """
@@ -403,12 +348,8 @@ class Similarity(Affine):
 
     def _set_param(self, p):
         p = np.asarray(p)
-        if self._flag2d:
-            self._vec12[[0,1,5,6,7]] = (p[[0,1,2,3,3]] *
-                                        self._precond[[0,1,5,6,7]])
-        else:
-            self._vec12[range(9)] = (p[[0,1,2,3,4,5,6,6,6]] *
-                                     self._precond[range(9)])
+        self._vec12[range(9)] = (p[[0,1,2,3,4,5,6,6,6]] *
+                                 self._precond[range(9)])
 
     param = property(Affine._get_param, _set_param)
 
@@ -417,3 +358,15 @@ class Similarity(Affine):
         string += 'rotation    : %s\n' % str(self.rotation)
         string += 'scaling     : %s\n' % str(self.scaling[0])
         return string
+
+
+class Similarity2D(Similarity):
+    param_inds = [0, 1, 5, 6]
+
+    def _set_param(self, p):
+        p = np.asarray(p)
+        self._vec12[[0,1,5,6,7]] = (p[[0,1,2,3,3]] *
+                                    self._precond[[0,1,5,6,7]])
+
+    param = property(Similarity._get_param, _set_param)
+
