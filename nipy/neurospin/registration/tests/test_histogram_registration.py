@@ -4,6 +4,7 @@ import numpy as np
 
 from nipy.core.image.affine_image import AffineImage 
 from ..registration import HistogramRegistration, Affine
+from .._registration import _joint_histogram
 
 from numpy.testing import assert_array_equal
 from nipy.testing import assert_equal, assert_almost_equal, assert_raises
@@ -21,9 +22,10 @@ def make_data_float64(dx=100, dy=100, dz=50):
 
 def _test_clamping(I, thI=0.0, clI=256):
     R = HistogramRegistration(I, I, from_bins=clI)
+    R.subsample(spacing=[1,1,1])
     Ic = R._from_data
-    Ic2 = R._to_data[1:I.shape[0]+1,1:I.shape[1]+1,1:I.shape[2]+1]
-    assert_equal(Ic, Ic2.squeeze())
+    Ic2 = R._to_data[1:-1,1:-1,1:-1]
+    assert_equal(Ic, Ic2)
     dyn = Ic.max() + 1
     assert_equal(dyn, R._joint_hist.shape[0])
     assert_equal(dyn, R._joint_hist.shape[1])
@@ -86,8 +88,24 @@ def test_joint_hist_eval():
     assert_almost_equal(val, 1.0)
     # Try with what should be identity
     R.subsample(spacing=[1,1,1])
+    assert_array_equal(R._from_data.shape, I.shape)
     val = R.eval(null_affine)
     assert_almost_equal(val, 1.0)
+
+
+def test_joint_hist_raw():
+    # Set up call to joint histogram
+    jh_arr = np.zeros((10,10), dtype=np.double)
+    data_shape = (2,3,4)
+    data = np.random.randint(size=data_shape,
+                             low=0, high=10).astype(np.short)
+    data2 = np.zeros(np.array(data_shape)+2, dtype=np.short)
+    data2[:] = -1
+    data2[1:-1,1:-1,1:-1] = data.copy()
+    vox_coords = np.indices(data_shape).transpose((1,2,3,0))
+    vox_coords = vox_coords.astype(np.double)
+    _joint_histogram(jh_arr, data.flat, data2, vox_coords, 0)
+    assert_almost_equal(np.diag(np.diag(jh_arr)), jh_arr)
 
 
 def test_explore(): 

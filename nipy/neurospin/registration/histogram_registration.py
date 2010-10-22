@@ -75,11 +75,9 @@ class HistogramRegistration(object):
             mask = from_mask.get_data()
         data, from_bins = clamp(from_img.get_data(), bins=from_bins, mask=mask)
         self._from_img = AffineImage(data, from_img.affine, 'ijk')
+        # Set the subsampling.  This also sets the _from_data and _vox_coords
+        # attributes
         self.subsample()
-        # We cache the voxel coordinates of the clamped image
-        tmp = np.mgrid[[slice(0, s) for s in self._from_data.shape]]
-        tmp = np.rollaxis(tmp, 0, 1+self._from_data.ndim)
-        self._vox_coords = tmp
 
         # Clamping of the `to` image including padding with -1 
         mask = None
@@ -128,21 +126,19 @@ class HistogramRegistration(object):
             spacing = [1,1,1]
         else: 
             npoints = None
-
         if size == None:
             size = self._from_img.shape
-            
         slicer = lambda : tuple([slice(corner[i],size[i]+corner[i],spacing[i]) for i in range(3)])
         fov_data = self._from_img.get_data()[slicer()]
-
         # Adjust spacing to match desired field of view size
         if npoints: 
             spacing = ideal_spacing(fov_data, npoints=npoints)
             fov_data = self._from_img.get_data()[slicer()]
-
         self._from_data = fov_data
         self._from_npoints = (fov_data >= 0).sum()
         self._from_affine = subgrid_affine(self._from_img.affine, slicer())
+        # We cache the voxel coordinates of the clamped image
+        self._vox_coords = np.indices(self._from_data.shape).transpose((1,2,3,0))
 
     def _set_similarity(self, similarity='cr', pdf=None): 
         if isinstance(similarity, str): 
