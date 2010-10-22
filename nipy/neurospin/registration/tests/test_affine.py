@@ -102,18 +102,30 @@ def test_compsed_affines():
 
 
 def test_affine_types():
-    for obj, n_params in ((Affine(), 12),
-                          (Affine2D(), 6),
-                          (Rigid(), 6),
-                          (Rigid2D(), 3),
-                          (Similarity(), 7),
-                          (Similarity2D(), 4),
-                         ):
+    pts = np.random.normal(size=(10,3))
+    for klass, n_params in ((Affine, 12),
+                            (Affine2D, 6),
+                            (Rigid, 6),
+                            (Rigid2D, 3),
+                            (Similarity, 7),
+                            (Similarity2D, 4),
+                           ):
+        obj = klass()
         assert_array_equal(obj.param, np.zeros((n_params,)))
         obj.param = np.ones((n_params,))
         assert_array_equal(obj.param, np.ones((n_params,)))
         # Check that round trip works
-        # Won't work for now
+        orig_aff = obj.as_affine()
+        obj2 = klass(orig_aff)
+        assert_array_almost_equal(obj2.as_affine(), orig_aff)
+        # Check inverse
+        inv_obj = obj.inv()
+        # Check points transform and invert
+        pts_dash = obj.apply(pts)
+        assert_array_almost_equal(pts, inv_obj.apply(pts_dash))
+        # Check composition with inverse gives identity
+        with_inv = inv_obj.compose(obj)
+        assert_array_almost_equal(with_inv.as_affine(), np.eye(4))
         # Just check that str works without error
         s = str(obj)
 

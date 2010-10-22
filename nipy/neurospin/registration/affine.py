@@ -5,7 +5,7 @@ import scipy.linalg as spl
 
 from nipy.externals.transforms3d.quaternions import mat2quat, quat2axangle
 
-from .transform import Transform
+from .transforms import Transform
 
 # Defaults
 _radius = 100
@@ -345,6 +345,7 @@ class Similarity(Affine):
         s = spl.det(A)**(1/3.)
         vec12[3:6] = rotation_mat2vec(A/s)
         vec12[6:9] = np.log(np.maximum(s, TINY))
+        return vec12
 
     def _set_param(self, p):
         p = np.asarray(p)
@@ -365,8 +366,8 @@ class Similarity2D(Similarity):
 
     def _set_param(self, p):
         p = np.asarray(p)
-        self._vec12[[0,1,5,6,7]] = (p[[0,1,2,3,3]] *
-                                    self._precond[[0,1,5,6,7]])
+        self._vec12[[0,1,5,6,7,8]] = (p[[0,1,2,3,3,3]] *
+                                    self._precond[[0,1,5,6,7,8]])
 
     param = property(Similarity._get_param, _set_param)
 
