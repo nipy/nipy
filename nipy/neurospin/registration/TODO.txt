@@ -3,3 +3,4 @@
 * spline transform object
 * log-euclidean transform object ???
 * Levenberg-Marquardt
+* Affine transform creation 

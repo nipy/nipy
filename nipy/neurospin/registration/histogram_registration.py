@@ -166,8 +166,21 @@ class HistogramRegistration(object):
 
     similarity = property(_get_similarity, _set_similarity)
 
-    def eval(self, Tv):
-        """ Evaluate similarity function given transform
+    def eval(self, T): 
+        """ 
+        Evaluate similarity function given a world-to-world transform. 
+
+        Parameters
+        ----------
+        T : Transform
+            Transform object implementing ``apply`` method
+        """
+        Tv = ChainTransform(T, pre=self._from_affine, post=self._to_inv_affine)
+        return self._eval(Tv)
+
+    def _eval(self, Tv):
+        """ 
+        Evaluate similarity function given a voxel-to-voxel transform. 
 
         Parameters
         ----------
@@ -175,7 +188,8 @@ class HistogramRegistration(object):
              Transform object implementing ``apply`` method
              Should map voxel space to voxel space
         """
-        # trans_voxel_coords needs be C-contiguous
+        # trans_voxel_coords needs be C-contiguous and will be as a
+        # new array
         trans_voxel_coords = Tv.apply(self._vox_coords)
         interp = self._interp
         if self._interp < 0:
@@ -220,14 +234,14 @@ class HistogramRegistration(object):
         def cost(tc):
             # This is where the similarity function is calculcated
             Tv.param = tc
-            return -self.eval(Tv) 
+            return -self._eval(Tv) 
 
         # Callback during optimization
         if callback is None and DEBUG:
             def callback(tc):
                 Tv.param = tc
                 print(Tv.optimizable)
-                print(str(self.similarity) + ' = %s' % self.eval(Tv))
+                print(str(self.similarity) + ' = %s' % self._eval(Tv))
                 print('')
 
         # Switching to the appropriate optimizer
@@ -284,12 +298,13 @@ class HistogramRegistration(object):
         simis = np.zeros(ntrials)
         params = np.zeros([nparams, ntrials])
 
-        T = Affine()
+        Tv = ChainTransform(T0, pre=self._from_affine, post=self._to_inv_affine)
+        param0 = Tv.param 
         for i in range(ntrials):
-            t = T0.param + np.array([D[i] for D in Deltas])
-            T.param = t 
-            simis[i] = self.eval(T)
-            params[:, i] = t 
+            param = param0 + np.array([D[i] for D in Deltas])
+            Tv.param = param 
+            simis[i] = self._eval(Tv)
+            params[:, i] = param
 
         return simis, params
         

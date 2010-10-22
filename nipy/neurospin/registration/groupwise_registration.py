@@ -160,7 +160,7 @@ class Realign4d_Algorithm(object):
         x,y,z,t are "ideal grid" coordinates 
         X,Y,Z,T are "acquisition grid" coordinates 
         """
-        X, Y, Z = grid_coords(self.xyz, self.transforms[t], 
+        X, Y, Z = grid_coords(self.xyz, self.transforms[t].as_affine(), 
                               self.inv_affine, self.affine)
         if self.time_interp: 
             T = self.grid_time(Z, self.timestamps[t])
@@ -273,7 +273,7 @@ class Realign4d_Algorithm(object):
         res = np.zeros(dims)
         for t in range(self.nscans):
             print('Fully resampling scan %d/%d' % (t+1, self.nscans))
-            X, Y, Z = grid_coords(XYZ, self.transforms[t], 
+            X, Y, Z = grid_coords(XYZ, self.transforms[t].as_affine(), 
                                   self.inv_affine, self.affine)
             if self.time_interp: 
                 T = self.grid_time(Z, self.timestamps[t])

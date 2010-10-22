@@ -19,14 +19,14 @@ def make_data_float64(dx=100, dy=100, dz=50):
 
 def _test_clamping(I, thI=0.0, clI=256):
     R = HistogramRegistration(I, I, from_bins=clI)
-    Ic = R._source
-    Ic2 = R._target[1:I.shape[0]+1,1:I.shape[1]+1,1:I.shape[2]+1]
+    Ic = R._from_data
+    Ic2 = R._to_data[1:I.shape[0]+1,1:I.shape[1]+1,1:I.shape[2]+1]
     assert_equal(Ic, Ic2.squeeze())
     dyn = Ic.max() + 1
     assert_equal(dyn, R._joint_hist.shape[0])
     assert_equal(dyn, R._joint_hist.shape[1])
-    assert_equal(dyn, R._source_hist.shape[0])
-    assert_equal(dyn, R._target_hist.shape[0])
+    assert_equal(dyn, R._from_hist.shape[0])
+    assert_equal(dyn, R._to_hist.shape[0])
     return Ic, Ic2
 
 def test_clamping_uint8(): 
@@ -57,9 +57,9 @@ def _test_similarity_measure(simi, val):
     I = AffineImage(make_data_int16(), dummy_affine, 'ijk')
     J = AffineImage(I.get_data().copy(), dummy_affine, 'ijk')
     R = HistogramRegistration(I, J)
-    R.set_source_fov(spacing=[2,1,3])
+    R.subsample(spacing=[2,1,3])
     R.similarity = simi
-    assert_almost_equal(R.eval(np.eye(4)), val)
+    assert_almost_equal(R.eval(Affine()), val)
 
 def test_correlation_coefficient():
     _test_similarity_measure('cc', 1.0) 
@@ -77,13 +77,13 @@ def test_explore():
     T = Affine()
     simi, params = R.explore(T, (0,[-1,0,1]),(1,[-1,0,1]))
 
-def test_iconic():
-    """ Test the iconic registration class.
+def test_histogram_registration():
+    """ Test the histogram registration class.
     """
     I = AffineImage(make_data_int16(), dummy_affine, 'ijk')
     J = AffineImage(I.get_data().copy(), dummy_affine, 'ijk')
     R = HistogramRegistration(I, J)
-    assert_raises(ValueError, R.set_source_fov, spacing=[0,1,3])
+    assert_raises(ValueError, R.subsample, spacing=[0,1,3])
 
 if __name__ == "__main__":
     import nose
