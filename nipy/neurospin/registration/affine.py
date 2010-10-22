@@ -5,7 +5,7 @@ import scipy.linalg as spl
 
 from nipy.externals.transforms3d.quaternions import mat2quat, quat2axangle
 
-from .transforms import Transform
+from .transform import Transform
 
 # Defaults
 _radius = 100
