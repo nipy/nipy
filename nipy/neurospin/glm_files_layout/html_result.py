@@ -12,7 +12,8 @@ from nipy.io.imageformats import load
 def display_results_html(zmap_file_path, mask_file_path,
                          output_html_path, threshold=0.001,
                          method='fpr', cluster_th=0, null_zmax='bonferroni',
-                         null_smax=None, null_s=None, nmaxima=4):
+                         null_smax=None, null_s=None, nmaxima=4,
+                         cluster_pval=.05):
     """
     Parameters
     ----------
@@ -43,14 +44,30 @@ def display_results_html(zmap_file_path, mask_file_path,
     mask = load(mask_file_path)
    
     # Compute cluster statistics
-    #if null_smax != None:
     nulls={'zmax' : null_zmax, 'smax' : null_smax, 's' : null_s}
+    """
+    if null_smax is not None:
+        print "a"
+        clusters, info = sm.cluster_stats(zmap, mask, height_th=threshold,
+                                          nulls=nulls)
+        clusters = [c for c in clusters if c['cluster_pvalue']<cluster_pval]
+    else:
+        print "b"
+        clusters, info = sm.cluster_stats(zmap, mask, height_th=threshold,
+                                          height_control=method.lower(),
+                                          cluster_th=cluster_th, nulls=nulls)
+    """
     clusters, info = sm.cluster_stats(zmap, mask, height_th=threshold,
-                                      height_control=method.lower(),
-                                      cluster_th=cluster_th, nulls=nulls)
-
+                                      nulls=nulls, cluster_th=cluster_th,)
+    clusters = [c for c in clusters if c['cluster_pvalue']<cluster_pval]
+        
+    
+    #if clusters == None or info == None:
+    #    print "No results were written for %s" % zmap_file_path
+    #    return
     if clusters == None:
         clusters = []
+        
     
     # Make HTML page 
     output = open(output_html_path, mode = "w")
@@ -86,9 +103,6 @@ def display_results_html(zmap_file_path, mask_file_path,
                 output.write('<tr><td align="center">' + '</td>\
                 <td align="center">'.join(temp) + '</td><td></td></tr>\n')
 
-    #if clusters == None or info == None:
-    #    print "No results were written for %s" % zmap_file_path
-    #    return
                  
     nclust = len(clusters)
     nvox = sum([clusters[k]['size'] for k in range(nclust)])
@@ -96,11 +110,14 @@ def display_results_html(zmap_file_path, mask_file_path,
     output.write("</table>\n")
     output.write("Number of voxels : %i<br>\n" % nvox)
     output.write("Number of clusters : %i<br>\n" % nclust)
+
     if info is not None:
         output.write("Threshold Z = %f (%s control at %f)<br>\n" \
                      % (info['threshold_z'], method, threshold))
+        output.write("Cluster size threshold p<0.05")
+    else:
+        output.write("Cluster size threshold = %i voxels"%cluster_th)
 
-    output.write("Cluster size threshold = %i voxels"%cluster_th)
     output.write("</center></body></html>\n")
     output.close()
 

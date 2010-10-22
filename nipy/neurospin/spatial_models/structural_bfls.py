@@ -76,7 +76,7 @@ class LandmarkRegions(object):
         """
         from nipy.neurospin.eda.dimension_reduction import Euclidian_distance
         
-        coord = self.get_features('position')
+        coord = self.get_feature('position')
         h = np.zeros(self.k)
         for k in range(self.k):
             pk = coord[k]
