@@ -1,12 +1,16 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from nipy.testing import *
+import numpy as np
 
 from nipy.core.image import affine_image
+from nipy.core.image.affine_image import AffineImage
 from nipy.core.api import Image
-import numpy as np
 from nipy.core.reference.coordinate_map import compose, AffineTransform, CoordinateSystem
 from nipy.algorithms.resample import resample
+
+from nose.tools import (assert_true, assert_equal, assert_raises)
+
+from numpy.testing import assert_array_equal, assert_almost_equal
 
 def generate_im():
     data = np.random.standard_normal((30,40,50))
@@ -21,12 +25,12 @@ def generate_im():
     im = Image(data, affine_mapping)
     return im, affine_im
 
+
 def test_affine_image():
 
     # The file dummy.mnc is available here:
     #
     # http://kff.stanford.edu/~jtaylo/affine_image_testfiles
-
 
     im, a = generate_im()
 
@@ -129,4 +133,13 @@ def test_values_in_world():
     yield assert_almost_equal, v1, np.array(affine_im)[3,4,5]
     yield assert_almost_equal, v2, np.array(affine_im)[4,7,8]
 
+
+def test_4d_affine():
+    arr = np.random.rand(3,4,5,6)
+    assert_raises(ValueError, AffineImage, arr, np.eye(5), 'mni')
+    im = AffineImage(arr, np.eye(4), 'mni')
+    assert_equal(im.coordmap.ndims, (4,4))
+    arr = np.random.rand(3,4,5,6,7)
+    im = AffineImage(arr, np.eye(4), 'mni')
+    assert_equal(im.coordmap.ndims, (5,5))
 
