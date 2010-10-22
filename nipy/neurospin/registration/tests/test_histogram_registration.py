@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-from nipy.testing import assert_equal, assert_almost_equal, assert_raises
 import numpy as np
 
 from nipy.core.image.affine_image import AffineImage 
-from nipy.neurospin.registration import HistogramRegistration, Affine
+from ..registration import HistogramRegistration, Affine
+
+from numpy.testing import assert_array_equal
+from nipy.testing import assert_equal, assert_almost_equal, assert_raises
 
 dummy_affine = np.eye(4)
 
@@ -69,6 +71,24 @@ def test_correlation_ratio():
 
 def test_normalized_mutual_information():
     _test_similarity_measure('nmi', 1.0) 
+
+
+def test_joint_hist_eval():
+    I = AffineImage(make_data_int16(), dummy_affine, 'ijk')
+    J = AffineImage(I.get_data().copy(), dummy_affine, 'ijk')
+    # Obviously the data should be the same
+    assert_array_equal(I.get_data(), J.get_data())
+    # Instantiate default thing
+    R = HistogramRegistration(I, J)
+    R.similarity = 'cc'
+    null_affine = Affine()
+    val = R.eval(null_affine)
+    assert_almost_equal(val, 1.0)
+    # Try with what should be identity
+    R.subsample(spacing=[1,1,1])
+    val = R.eval(null_affine)
+    assert_almost_equal(val, 1.0)
+
 
 def test_explore(): 
     I = AffineImage(make_data_int16(), dummy_affine, 'ijk')
