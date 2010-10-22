@@ -475,4 +475,4 @@ def quat2axangle(quat, identity_thresh=None):
     if n < identity_thresh: 
         # if vec is nearly 0,0,0, this is an identity rotation
         return np.array([1.0, 0, 0]), 0.0
-    return  vec / n, 2 * math.acos(w)
+    return  vec / n, 2 * math.acos(max(min(w,1),-1))
