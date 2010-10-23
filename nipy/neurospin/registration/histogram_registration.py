@@ -187,6 +187,10 @@ class HistogramRegistration(object):
         # trans_voxel_coords needs be C-contiguous and will be as a
         # new array
         trans_voxel_coords = Tv.apply(self._vox_coords)
+
+        ### DEBUG: cache Tv
+        self._Tv = Tv 
+
         interp = self._interp
         if self._interp < 0:
             interp = - np.random.randint(maxint)

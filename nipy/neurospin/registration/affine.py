@@ -69,7 +69,7 @@ def rotation_vec2mat(r):
     return R
 
 
-def matrix44(t, dtype=np.float):
+def matrix44(t, dtype=np.double):
     """
     T = matrix44(t)
 
@@ -256,20 +256,6 @@ class Affine(Transform):
             other_aff = other.as_affine()
         except AttributeError:
             return Transform(self.apply).compose(other)
-        aff = self.as_affine()
-        return self.__class__(np.dot(aff, other_aff))
-
-    def __str__(self):
-        string  = 'translation : %s\n' % str(self.translation)
-        string += 'rotation    : %s\n' % str(self.rotation)
-        string += 'scaling     : %s\n' % str(self.scaling)
-        string += 'shearing    : %s' % str(self.shearing)
-        return string
-
-    def __mul__(self, other):
-        """
-        Affine composition: T1oT2(x)
-        """
         # Choose more capable of input types as output type
         self_inds = set(self.param_inds)
         other_inds = set(other.param_inds)
@@ -281,8 +267,15 @@ class Affine(Transform):
             klass = Affine
         a = klass()
         a._precond = self._precond
-        a._vec12 = a._vector12(np.dot(self.as_affine(), other.as_affine()))
+        a._vec12 = a._vector12(np.dot(self.as_affine(), other_aff))
         return a
+
+    def __str__(self):
+        string  = 'translation : %s\n' % str(self.translation)
+        string += 'rotation    : %s\n' % str(self.rotation)
+        string += 'scaling     : %s\n' % str(self.scaling)
+        string += 'shearing    : %s' % str(self.shearing)
+        return string
 
     def inv(self):
         """
