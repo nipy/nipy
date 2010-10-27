@@ -47,7 +47,8 @@ def _cone3d(shape, ij, pos, ampli, width):
 def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0, 
                          noise_level=1.0, pos=pos, ampli=ampli,
                          spatial_jitter=1.0, signal_jitter=1.0,
-                         width=5.0, out_text_file=None, out_image_file=None, 
+                         width=5.0, width_jitter=0,
+                         out_text_file=None, out_image_file=None, 
                          verbose=False, seed=False):
     """
     Create surrogate (simulated) 2D activation data with spatial noise.
@@ -78,6 +79,8 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
         amplitude specified by ampli
     width: float or ndarray, optionnal
         Width of the activations
+    width_jitter: float
+        Relative width jitter of the blobs
     out_text_file: string or None, optionnal
         If not None, the resulting array is saved as a text file with the
         given file name
@@ -110,9 +113,11 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
         data = np.zeros(shape)
         lpos = pos + spatial_jitter*nr.randn(1, 2)
         lampli = ampli + signal_jitter*nr.randn(np.size(ampli))
+        this_width = width * (1 - width_jitter*nr.randn(np.size(ampli)))
         for k in range(np.size(lampli)):
             data = np.maximum(data,
-                              _cone2d(shape, ij, lpos[k], lampli[k], width))
+                             _cone2d(shape, ij, lpos[k], lampli[k], 
+                                     this_width[k]))
     
         # make some noise
         noise = nr.randn(dimx,dimy)
