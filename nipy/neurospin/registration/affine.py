@@ -80,7 +80,7 @@ def matrix44(t, dtype=np.double):
     size == 6 ==> t is interpreted as translation + rotation
     size == 7 ==> t is interpreted as translation + rotation + isotropic scaling
     7 < size < 12 ==> error
-    size >= 12 ==> t is interpreted as translation + rotation + scaling + shearing 
+    size >= 12 ==> t is interpreted as translation + rotation + scaling + pre-rotation 
     """
     size = t.size
     T = np.eye(4, dtype=dtype)
@@ -109,7 +109,7 @@ def preconditioner(radius):
     To that end, we use a `radius` parameter which represents the
     'typical size' of the object being registered. This is used to
     reformat the parameter vector
-    (translation+rotation+scaling+shearing) so that each element
+    (translation+rotation+scaling+pre-rotation) so that each element
     roughly represents a variation in mm.
     """
     rad = 1./radius
@@ -172,7 +172,7 @@ class Affine(Transform):
         """
         Return a 12-sized vector of natural affine parameters:
         translation, rotation, log-scale, pre-rotation (to allow for
-        shearing when combined with non-unitary scales).
+        pre-rotation when combined with non-unitary scales).
 
         a better naming is
         vec12=[translation, post-rot, logscaling, pre-rot]
@@ -220,10 +220,10 @@ class Affine(Transform):
     def _set_scaling(self, x): 
         self._vec12[6:9] = np.log(x)
 
-    def _get_shearing(self): 
+    def _get_pre_rotation(self): 
         return self._vec12[9:12]
 
-    def _set_shearing(self, x): 
+    def _set_pre_rotation(self, x): 
         self._vec12[9:12] = x
 
     def _get_precond(self): 
@@ -232,7 +232,7 @@ class Affine(Transform):
     translation = property(_get_translation, _set_translation)
     rotation = property(_get_rotation, _set_rotation)
     scaling = property(_get_scaling, _set_scaling)
-    shearing = property(_get_shearing, _set_shearing)
+    pre_rotation = property(_get_pre_rotation, _set_pre_rotation)
     precond = property(_get_precond)
     param = property(_get_param, _set_param)
 
@@ -274,7 +274,7 @@ class Affine(Transform):
         string  = 'translation : %s\n' % str(self.translation)
         string += 'rotation    : %s\n' % str(self.rotation)
         string += 'scaling     : %s\n' % str(self.scaling)
-        string += 'shearing    : %s' % str(self.shearing)
+        string += 'pre-rotation: %s' % str(self.pre_rotation)
         return string
 
     def inv(self):
@@ -298,7 +298,7 @@ class Rigid(Affine):
         """
         Return a 12-sized vector of natural affine parameters:
         translation, rotation, log-scale, pre-rotation (to allow for
-        shearing when combined with non-unitary scales).
+        pre-rotation when combined with non-unitary scales).
 
         a better naming is
         vec12=[translation, post-rot, logscaling, pre-rot]
@@ -326,10 +326,7 @@ class Similarity(Affine):
         """
         Return a 12-sized vector of natural affine parameters:
         translation, rotation, log-scale, pre-rotation (to allow for
-        shearing when combined with non-unitary scales).
-
-        a better naming is
-        vec12=[translation, post-rot, logscaling, pre-rot]
+        pre-rotation when combined with non-unitary scales).
         """
         vec12 = np.zeros((12,))
         vec12[:3] = aff[:3,3]

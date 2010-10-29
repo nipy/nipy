@@ -21,6 +21,8 @@ from ._registration import _joint_histogram, _similarity, builtin_similarities
 from .affine import Affine, inverse_affine, subgrid_affine
 from .chain_transform import ChainTransform 
 
+from .similarity_measures import CorrelationRatio
+
 
 # Module global - enables online print statements
 DEBUG = True
@@ -96,6 +98,7 @@ class HistogramRegistration(object):
         # Set default registration parameters
         self._set_interp()
         self._set_similarity()
+        self.new_similarity = CorrelationRatio(self._joint_hist)
 
     def _get_interp(self): 
         return interp_methods.keys()[interp_methods.values().index(self._interp)]
@@ -199,13 +202,15 @@ class HistogramRegistration(object):
                          self._to_data, 
                          trans_voxel_coords,
                          interp)
+        """
         return _similarity(self._joint_hist, 
                            self._from_hist, 
                            self._to_hist, 
                            self._similarity, 
                            self._pdf, 
                            self._similarity_func)
-
+        """
+        return self.new_similarity()
 
     def optimize(self, T, method=_OPTIMIZER, **kwargs):
         """ Optimize transform `T` with respect to similarity
