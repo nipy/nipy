@@ -158,37 +158,43 @@ class Affine(Transform):
     param_inds = range(12)
 
     def __init__(self, array=None, radius=_radius):
+        self._direct = True
+        self._precond = preconditioner(radius)
         if array == None: 
             self._vec12 = np.zeros(12)
-        elif array.shape == (4,4):
-            self._vec12 = self._vector12(array)
         elif array.size == 12: 
             self._vec12 = array.ravel()
+        elif array.shape == (4,4):
+            self.set_vector12(array)
         else: 
             raise ValueError('Invalid array')
-        self._precond = preconditioner(radius)
 
-    def _vector12(self, aff):
+    def set_vector12(self, aff):
         """
-        Return a 12-sized vector of natural affine parameters:
-        translation, rotation, log-scale, pre-rotation (to allow for
-        pre-rotation when combined with non-unitary scales).
-
-        a better naming is
-        vec12=[translation, post-rot, logscaling, pre-rot]
+        Convert a 4x4 matrix describing an affine transform into a
+        12-sized vector of natural affine parameters: translation,
+        rotation, log-scale, pre-rotation (to allow for pre-rotation
+        when combined with non-unitary scales). In case the transform
+        has a negative determinant, set the `_direct` attribute to
+        False.
         """
         vec12 = np.zeros((12,))
         vec12[0:3] = aff[:3,3]
-        R, s, Q = spl.svd(aff[0:3,0:3]) # mat == R*diag(s)*Q
+        # Use SVD to find orthogonal and diagonal matrices such that
+        # aff[0:3,0:3] == R*S*Q
+        R, s, Q = spl.svd(aff[0:3,0:3]) 
         if spl.det(R) < 0:
             R = -R
             Q = -Q
         r = rotation_mat2vec(R)
+        if spl.det(Q) < 0: 
+            Q = -Q 
+            self._direct = False
         q = rotation_mat2vec(Q)
         vec12[3:6] = r
         vec12[6:9] = np.log(np.maximum(s, TINY))
         vec12[9:12] = q
-        return vec12
+        self._vec12 = vec12
 
     def apply(self, xyz): 
         return apply_affine(self.as_affine(), xyz)
@@ -225,7 +231,10 @@ class Affine(Transform):
 
     def _set_pre_rotation(self, x): 
         self._vec12[9:12] = x
-
+        
+    def _get_direct(self): 
+        return self._direct
+        
     def _get_precond(self): 
         return self._precond 
 
@@ -233,11 +242,15 @@ class Affine(Transform):
     rotation = property(_get_rotation, _set_rotation)
     scaling = property(_get_scaling, _set_scaling)
     pre_rotation = property(_get_pre_rotation, _set_pre_rotation)
+    is_direct = property(_get_direct)
     precond = property(_get_precond)
     param = property(_get_param, _set_param)
 
     def as_affine(self, dtype='double'): 
-        return matrix44(self._vec12, dtype=dtype)
+         T = matrix44(self._vec12, dtype=dtype)
+         if not self._direct: 
+             T[:3,:3] *= -1 
+         return T
 
     def compose(self, other):
         """ Compose this transform onto another
@@ -267,7 +280,7 @@ class Affine(Transform):
             klass = Affine
         a = klass()
         a._precond = self._precond
-        a._vec12 = a._vector12(np.dot(self.as_affine(), other_aff))
+        a.set_vector12(np.dot(self.as_affine(), other_aff))
         return a
 
     def __str__(self):
@@ -283,7 +296,7 @@ class Affine(Transform):
         """
         a = self.__class__()
         a._precond = self._precond
-        a._vec12 = a._vector12(spl.inv(self.as_affine()))
+        a.set_vector12(spl.inv(self.as_affine()))
         return a
 
 
@@ -294,20 +307,24 @@ class Affine2D(Affine):
 class Rigid(Affine):
     param_inds = range(6)
 
-    def _vector12(self, aff):
+    def set_vector12(self, aff):
         """
-        Return a 12-sized vector of natural affine parameters:
-        translation, rotation, log-scale, pre-rotation (to allow for
-        pre-rotation when combined with non-unitary scales).
-
-        a better naming is
-        vec12=[translation, post-rot, logscaling, pre-rot]
+        Convert a 4x4 matrix describing a rigid transform into a
+        12-sized vector of natural affine parameters: translation,
+        rotation, log-scale, pre-rotation (to allow for pre-rotation
+        when combined with non-unitary scales). In case the transform
+        has a negative determinant, set the `_direct` attribute to
+        False.
         """
         vec12 = np.zeros((12,))
         vec12[:3] = aff[:3,3]
-        vec12[3:6] = rotation_mat2vec(aff[:3,:3])
+        R = aff[:3,:3]
+        if spl.det(R) < 0: 
+            R = -R 
+            self._direct = False
+        vec12[3:6] = rotation_mat2vec(R)
         vec12[6:9] = 0.0
-        return vec12
+        self._vec12 = vec12
 
     def __str__(self):
         string  = 'translation : %s\n' % str(self.translation)
@@ -322,20 +339,27 @@ class Rigid2D(Rigid):
 class Similarity(Affine):
     param_inds = range(7)
 
-    def _vector12(self, aff):
+    def set_vector12(self, aff):
         """
-        Return a 12-sized vector of natural affine parameters:
-        translation, rotation, log-scale, pre-rotation (to allow for
-        pre-rotation when combined with non-unitary scales).
+        Convert a 4x4 matrix describing a similarity transform into a
+        12-sized vector of natural affine parameters: translation,
+        rotation, log-scale, pre-rotation (to allow for pre-rotation
+        when combined with non-unitary scales). In case the transform
+        has a negative determinant, set the `_direct` attribute to
+        False.
         """
         vec12 = np.zeros((12,))
         vec12[:3] = aff[:3,3]
         ## A = s R ==> det A = (s)**3 ==> s = (det A)**(1/3)
         A = aff[:3,:3]
-        s = spl.det(A)**(1/3.)
+        detA = spl.det(A)
+        s = np.maximum(np.abs(detA)**(1/3.), TINY)
+        if detA < 0: 
+            A = -A 
+            self._direct = False
         vec12[3:6] = rotation_mat2vec(A/s)
-        vec12[6:9] = np.log(np.maximum(s, TINY))
-        return vec12
+        vec12[6:9] = np.log(s)
+        self._vec12 = vec12
 
     def _set_param(self, p):
         p = np.asarray(p)

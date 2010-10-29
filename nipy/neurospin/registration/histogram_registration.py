@@ -202,15 +202,13 @@ class HistogramRegistration(object):
                          self._to_data, 
                          trans_voxel_coords,
                          interp)
-        """
         return _similarity(self._joint_hist, 
                            self._from_hist, 
                            self._to_hist, 
                            self._similarity, 
                            self._pdf, 
                            self._similarity_func)
-        """
-        return self.new_similarity()
+        #return self.new_similarity()
 
     def optimize(self, T, method=_OPTIMIZER, **kwargs):
         """ Optimize transform `T` with respect to similarity

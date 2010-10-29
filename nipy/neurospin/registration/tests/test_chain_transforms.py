@@ -57,9 +57,9 @@ def test_creation():
     # Check that result is changed by setting params
     assert_array_equal(ct.param, aff2_obj.param)
     ct.param = np.zeros((12,))
-    assert_array_equal(ct.apply(POINTS), POINTS)
+    assert_array_almost_equal(ct.apply(POINTS), POINTS)
     # Does changing params in chain object change components passed in?
-    assert_array_equal(aff2_obj.param, np.zeros((12,)))
+    assert_array_almost_equal(aff2_obj.param, np.zeros((12,)))
     # Reset the aff2 object
     aff2_obj = Affine(AFF2.copy())
     # Check apply gives the expected results
@@ -70,11 +70,11 @@ def test_creation():
     assert_array_almost_equal(ct.apply(POINTS),
                        apply_affine(np.dot(AFF2, AFF1), POINTS))
     # Check that result is changed by setting params
-    assert_array_equal(ct.param, aff2_obj.param)
+    assert_array_almost_equal(ct.param, aff2_obj.param)
     ct.param = np.zeros((12,))
     assert_array_almost_equal(ct.apply(POINTS), apply_affine(AFF1, POINTS))
     # Does changing params in chain object change components passed in?
-    assert_array_equal(aff2_obj.param, np.zeros((12,)))
+    assert_array_almost_equal(aff2_obj.param, np.zeros((12,)))
     # Reset the aff2 object
     aff2_obj = Affine(AFF2.copy())
     ct = ChainTransform(aff2_obj, pre=AFF1_OBJ, post=AFF3_OBJ)
@@ -91,14 +91,14 @@ def test_creation():
 
 def test_inputs():
     # Check that we can pass arrays or None as pre and post
-    assert_array_equal(ChainTransform(AFF2).apply(POINTS),
-                       ChainTransform(AFF2_OBJ).apply(POINTS))
-    assert_array_equal(ChainTransform(AFF2, pre=AFF1).apply(POINTS),
-                       ChainTransform(AFF2_OBJ, pre=AFF1_OBJ).apply(POINTS))
-    assert_array_equal(ChainTransform(AFF2, pre=AFF1, post=AFF3).apply(POINTS),
-                       ChainTransform(AFF2_OBJ, pre=AFF1_OBJ, post=AFF3_OBJ).apply(POINTS))
-    assert_array_equal(ChainTransform(AFF2, pre=None).apply(POINTS),
-                       ChainTransform(AFF2_OBJ).apply(POINTS))
-    assert_array_equal(ChainTransform(AFF2, pre=None, post=None).apply(POINTS),
-                       ChainTransform(AFF2_OBJ).apply(POINTS))
+    assert_array_almost_equal(ChainTransform(AFF2).apply(POINTS),
+                              ChainTransform(AFF2_OBJ).apply(POINTS))
+    assert_array_almost_equal(ChainTransform(AFF2, pre=AFF1).apply(POINTS),
+                              ChainTransform(AFF2_OBJ, pre=AFF1_OBJ).apply(POINTS))
+    assert_array_almost_equal(ChainTransform(AFF2, pre=AFF1, post=AFF3).apply(POINTS),
+                              ChainTransform(AFF2_OBJ, pre=AFF1_OBJ, post=AFF3_OBJ).apply(POINTS))
+    assert_array_almost_equal(ChainTransform(AFF2, pre=None).apply(POINTS),
+                              ChainTransform(AFF2_OBJ).apply(POINTS))
+    assert_array_almost_equal(ChainTransform(AFF2, pre=None, post=None).apply(POINTS),
+                              ChainTransform(AFF2_OBJ).apply(POINTS))
 
