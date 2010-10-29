@@ -1,8 +1,10 @@
 import numpy as np 
 
 def nonzero(x):
+    """
+    Force strictly positive value. 
+    """
     return np.maximum(x, 1e-200)
-
 
 class SimilarityMeasure(object): 
     
@@ -39,17 +41,16 @@ class CorrelationCoefficient(SimilarityMeasure):
     
     def loss(self): 
         rho2 = self()
-        neg_rho2 = np.minimum(1-rho2, TINY) 
         I = (self.I-self.mI)/np.sqrt(nonzero(self.vI))
         J = (self.J-self.mJ)/np.sqrt(nonzero(self.vJ))
         L = rho2*I**2 + rho2*J**2 - 2*self.rho*I*J
-        L *= .5/neg_rho2
-        L += .5*np.log(neg_rho2)
+        tmp = nonzero(1.-rho2) 
+        L *= .5/tmp
+        L += .5*np.log(tmp)
         return L
     
     def averaged_loss(self): 
-        neg_rho2 = np.minimum(1-self(), TINY) 
-        return .5*np.log(neg_rho2)
+        return .5*np.log(nonzero(1-self()))
 
     def __call__(self): 
         npts = self.npoints()
@@ -66,8 +67,11 @@ class CorrelationRatio(SimilarityMeasure):
 
     def loss(self): 
         rho2 = self()
-        print('Sorry, not implemented yet!')
+        print('Sorry, not implemented yet...')
         return 
+
+    def averaged_loss(self): 
+        return .5*np.log(nonzero(1.-self()))
 
     def __call__(self):
         self.npts_J = nonzero(np.sum(self.H, 1))
