@@ -28,4 +28,4 @@ if __name__ == '__main__':
     else:
         inputFilename = sorted(sys.argv[1:-1])
     outputFilename = sys.argv[-1]
-    compute_mask_files(inputFilename, outputFilename, copy_filename = copyIn4Dfilename)
+    compute_mask_files(inputFilename, outputFilename)

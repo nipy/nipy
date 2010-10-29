@@ -199,7 +199,7 @@ def make_bsa_image(
                 nls[nls==-1] = default_idx
                 lab = BF[s].label
                 lab[lab>-1] = nls[lab[lab>-1]]
-                Label[mask] = lab
+                Label[mask, s+1] = lab
                 #for k in range(BF[s].k):
                 #    Label[mask, s+1][BF[s].label==k] =  nls[k]
         wim = Nifti1Image (Label, affine)

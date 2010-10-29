@@ -444,6 +444,8 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
         lmask[xyz[:,0],xyz[:,1],xyz[:,2]]=aux
         xyz = xyz[aux,:]
         nvox = xyz.shape[0]
+    else:
+        lmask = mask
 
     # 1.3 from vox to mm
     xyz2 = np.hstack((xyz,np.ones((nvox,1))))
@@ -456,8 +458,14 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
         lbeta = rbeta.get_data()
         lbeta = lbeta[lmask>0]
         beta.append(lbeta)
-	
-    beta = np.array(beta).T
+
+    beta = np.array(beta)
+    if len(beta.shape)>2:
+        beta = np.squeeze(beta)
+        
+    if beta.shape[0]!=nvox:
+        beta = beta.T
+
 
     #step 2: parcel the data ---------------------------
     feature = np.hstack((beta, mu*coord/np.std(coord)))
