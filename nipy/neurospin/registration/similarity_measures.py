@@ -61,7 +61,6 @@ class MutualInformation(SimilarityMeasure):
         return dist2loss(H/nonzero(self.npoints(H)))
 
 
-"""
 class ParzenMutualInformation(SimilarityMeasure): 
 
     def loss(self, H): 
@@ -69,20 +68,22 @@ class ParzenMutualInformation(SimilarityMeasure):
             self.sigma = .05*np.array(H.shape)
         npts = nonzero(self.npoints(H))
         Hs = H/npts
-        gaussian_filter(Hs, sigma=self.sigma, output=Hs)
+        gaussian_filter(Hs, sigma=self.sigma, mode='constant', output=Hs)
+        """
         hIs = H.sum(0)/npts
-        gaussian_filter(hIs, sigma=self.sigma[1], output=hIs)
+        gaussian_filter(hIs, sigma=self.sigma[1], mode='constant', output=hIs)
         hJs = H.sum(1)/npts
-        gaussian_filter(hJs, sigma=self.sigma[0], output=hJs)
-        return dist2loss(Hs, hIs, hJs)
-"""
+        gaussian_filter(hJs, sigma=self.sigma[0], mode='constant', output=hJs)
+        """
+        return dist2loss(Hs)
 
-class ParzenMutualInformation(SimilarityMeasure): 
+
+class DiscreteParzenMutualInformation(SimilarityMeasure): 
 
     def loss(self, H): 
         if not hasattr(self, 'sigma'): 
             self.sigma = .05*np.array(H.shape)
-        Hs = gaussian_filter(H, sigma=self.sigma)
+        Hs = gaussian_filter(H, sigma=self.sigma, mode='constant')
         Hs /= nonzero(Hs.sum())
         return dist2loss(Hs)
 
@@ -185,6 +186,7 @@ similarity_measures = {
     'mi': MutualInformation, 
     'nmi': NormalizedMutualInformation, 
     'pmi': ParzenMutualInformation,    
+    'dpmi': DiscreteParzenMutualInformation,    
     'cc': CorrelationCoefficient, 
     'cr': CorrelationRatio,
     'crl1': CorrelationRatioL1
