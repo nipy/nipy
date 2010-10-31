@@ -69,12 +69,6 @@ class ParzenMutualInformation(SimilarityMeasure):
         npts = nonzero(self.npoints(H))
         Hs = H/npts
         gaussian_filter(Hs, sigma=self.sigma, mode='constant', output=Hs)
-        """
-        hIs = H.sum(0)/npts
-        gaussian_filter(hIs, sigma=self.sigma[1], mode='constant', output=hIs)
-        hJs = H.sum(1)/npts
-        gaussian_filter(hJs, sigma=self.sigma[0], mode='constant', output=hJs)
-        """
         return dist2loss(Hs)
 
 
@@ -169,7 +163,7 @@ class CorrelationRatioL1(SimilarityMeasure):
         return 
 
     def averaged_loss(self, H): 
-        return .5*np.log(nonzero(1.-self(H)))
+        return np.log(nonzero(1.-self(H)))
 
     def __call__(self, H):
         tmp = np.array([_L1_moments(H[j,:]) for j in range(H.shape[0])])
