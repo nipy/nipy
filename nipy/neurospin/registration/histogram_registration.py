@@ -16,12 +16,10 @@ from nipy.core.image.affine_image import AffineImage
 from nipy.algorithms.optimize import fmin_steepest
 
 from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
-
-from ._registration import _joint_histogram, _similarity, builtin_similarities
-from .affine import Affine, inverse_affine, subgrid_affine
+from ._registration import _joint_histogram
+from .affine import inverse_affine, subgrid_affine, affine_transforms
 from .chain_transform import ChainTransform 
-
-from .similarity_measures import CorrelationRatio
+from .similarity_measures import similarity_measures
 
 
 # Module global - enables online print statements
@@ -32,10 +30,8 @@ _BINS = 256
 _INTERP = 'pv'
 _NPOINTS = 64**3
 
-# Dictionary of interpolation methods
-# pv: Partial volume 
-# tri: Trilinear 
-# rand: Random interpolation
+# Dictionary of interpolation methods (partial volume, trilinear,
+# random)
 interp_methods = {'pv': 0, 'tri': 1, 'rand': -1}
 
 
@@ -44,17 +40,18 @@ class HistogramRegistration(object):
     A class to reprensent a generic intensity-based image registration
     algorithm.
     """
-
-    def __init__(self, from_img, to_img, from_bins=_BINS, to_bins=None, 
-                 from_mask=None, to_mask=None):
+    def __init__(self, from_img, to_img, 
+                 from_bins=_BINS, to_bins=None, 
+                 from_mask=None, to_mask=None, 
+                 similarity='cr', interp='pv', **kwargs):
         """
         Creates a new histogram registration object.
 
         Parameters
         ----------
-        from_img : nipy image-like
+        from_img : nipy-like image
           `From` image 
-        to_img : nipy image-like
+        to_img : nipy-like image
           `To` image 
         from_bins : integer
           Number of histogram bins to represent the `from` image
@@ -63,7 +60,18 @@ class HistogramRegistration(object):
         from_mask : nipy image-like
           Mask to apply to the `from` image 
         to_mask : nipy image-like
-          Mask to apply to the `to` image 
+          Mask to apply to the `to` image
+        similarity : str or callable
+          Cost-function for assessing image similarity. If a string,
+          one of 'cc': correlation coefficient, 'cr': correlation
+          ratio, 'crl1': L1-norm based correlation ratio, 'mi': mutual
+          information, 'nmi': normalized mutual information, 'slr':
+          supervised log-likelihood ratio. If a callable, it should
+          take a two-dimensional array representing the image joint
+          histogram as an input and return a float.
+       interp : str
+         Interpolation method.  One of 'pv': Partial volume, 'tri':
+         Trilinear, 'rand': Random interpolation.  See ``joint_histogram.c``
         """
 
         # Binning sizes  
@@ -96,15 +104,14 @@ class HistogramRegistration(object):
         self._to_hist = np.zeros(to_bins)
 
         # Set default registration parameters
-        self._set_interp()
-        self._set_similarity()
-        self.new_similarity = CorrelationRatio(self._joint_hist)
+        self._set_interp(interp)
+        self._set_similarity(similarity, **kwargs)
 
     def _get_interp(self): 
         return interp_methods.keys()[interp_methods.values().index(self._interp)]
     
-    def _set_interp(self, method=_INTERP): 
-        self._interp = interp_methods[method]
+    def _set_interp(self, interp): 
+        self._interp = interp_methods[interp]
 
     interp = property(_get_interp, _set_interp)
         
@@ -116,7 +123,9 @@ class HistogramRegistration(object):
         Parameters
         ----------
         spacing : sequence (3,) of positive integers
-          Subsampling factors 
+          Subsampling of image in voxels, where None (default) results
+          in the subsampling to be automatically adjusted to roughly
+          match a cubic grid with `npoints` voxels 
         corner : sequence (3,) of positive integers
           Bounding box origin in voxel coordinates
         size : sequence (3,) of positive integers
@@ -143,25 +152,18 @@ class HistogramRegistration(object):
         # We cache the voxel coordinates of the clamped image
         self._vox_coords = np.indices(self._from_data.shape).transpose((1,2,3,0))
 
-    def _set_similarity(self, similarity='cr', pdf=None): 
-        if isinstance(similarity, str): 
-            self._similarity = builtin_similarities[similarity]
-            self._similarity_func = None
+    def _set_similarity(self, similarity='cr', **kwargs): 
+        if similarity in similarity_measures: 
+            self._similarity = similarity
+            self._similarity_call = similarity_measures[similarity](self._joint_hist.shape, **kwargs)
         else: 
-            # TODO: check that similarity is a function with the right
-            # API: similarity(H) where H is the joint histogram 
-            self._similarity = builtin_similarities['custom']
-            self._similarity_func = similarity 
-
-        ## Use array rather than asarray to ensure contiguity 
-        self._pdf = np.array(pdf)  
+            if not hasattr(similarity, '__call__'):
+                raise ValueError('similarity should be callable')
+            self._similarity = 'custom'
+            self._similarity_call = similarity
 
     def _get_similarity(self):
-        builtins = builtin_similarities.values()
-        if self._similarity in builtins: 
-            return builtin_similarities.keys()[builtins.index(self._similarity)]
-        else: 
-            return self._similarity_func
+        return self._similarity
 
     similarity = property(_get_similarity, _set_similarity)
 
@@ -187,45 +189,41 @@ class HistogramRegistration(object):
              Transform object implementing ``apply`` method
              Should map voxel space to voxel space
         """
-        # trans_voxel_coords needs be C-contiguous and will be as a
-        # new array
-        trans_voxel_coords = Tv.apply(self._vox_coords)
-
-        ### DEBUG: cache Tv
-        self._Tv = Tv 
-
+        # trans_vox_coords needs be C-contiguous
+        trans_vox_coords = Tv.apply(self._vox_coords)
         interp = self._interp
         if self._interp < 0:
             interp = - np.random.randint(maxint)
         _joint_histogram(self._joint_hist, 
                          self._from_data.flat, ## array iterator
                          self._to_data, 
-                         trans_voxel_coords,
+                         trans_vox_coords,
                          interp)
-        return _similarity(self._joint_hist, 
-                           self._from_hist, 
-                           self._to_hist, 
-                           self._similarity, 
-                           self._pdf, 
-                           self._similarity_func)
-        #return self.new_similarity()
+        return self._similarity_call(self._joint_hist)
 
-    def optimize(self, T, method=_OPTIMIZER, **kwargs):
-        """ Optimize transform `T` with respect to similarity
+    def optimize(self, T, optimizer=_OPTIMIZER, **kwargs):
+        """ Optimize transform `T` with respect to similarity measure. 
 
         The input object `T` will change as a result of the optimization.
 
         Parameters
         ----------
-        T : object
-            Object representing a transformation that should implement ``apply``
-            method and ``param`` attribute or property
-        method : str
-            Name of optimization function (one of 'powell', 'steepest', 'cg',
-            'bfgs', 'simplex')
+        T : object or str
+          An object representing a transformation that should
+          implement ``apply`` method and ``param`` attribute or
+          property. If a string, one of 'rigid', 'similarity', or
+          'affine'. The corresponding transformation class is then
+          initialized by default.
+        optimizer : str
+          Name of optimization function (one of 'powell', 'steepest',
+          'cg', 'bfgs', 'simplex')
         **kwargs : dict
-            keyword arguments to pass to optimizer
+          keyword arguments to pass to optimizer
         """
+        # Replace T if a string is passed
+        if T in affine_transforms:
+            T = affine_transforms[T]()
+
         # Pull callback out of keyword arguments, if present
         callback = kwargs.pop('callback', None)
 
@@ -251,28 +249,28 @@ class HistogramRegistration(object):
         if DEBUG:
             print('Initial guess...')
             print(Tv.optimizable)
-        if method=='powell':
+        if optimizer=='powell':
             fmin = fmin_powell
             kwargs.setdefault('xtol', _XTOL)
             kwargs.setdefault('ftol', _FTOL)
-        elif method=='steepest':
+        elif optimizer=='steepest':
             fmin = fmin_steepest
             kwargs.setdefault('xtol', _XTOL)
             kwargs.setdefault('ftol', _FTOL)
             kwargs.setdefault('step', _STEP)
-        elif method=='cg':
+        elif optimizer=='cg':
             fmin = fmin_cg
             kwargs.setdefault('gtol', _GTOL)
-        elif method=='bfgs':
+        elif optimizer=='bfgs':
             fmin = fmin_bfgs
             kwargs.setdefault('gtol', _GTOL)
-        elif method == 'simplex':
+        elif optimizer == 'simplex':
             fmin = fmin_simplex 
             kwargs.setdefault('xtol', _XTOL)
             kwargs.setdefault('ftol', _FTOL)
         else:
             raise ValueError('You crazy bastard, what is this '
-                             'optimizer name %s?' % method)
+                             'optimizer name %s?' % optimizer)
         # Output
         if DEBUG:
             print ('Optimizing using %s' % fmin.__name__)
@@ -281,7 +279,6 @@ class HistogramRegistration(object):
 
 
     def explore(self, T0, *args): 
-    
         """
         Evaluate the similarity at the transformations specified by
         sequences of parameter values.

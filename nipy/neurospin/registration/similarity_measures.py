@@ -1,46 +1,118 @@
+from ._registration import _L1_moments
+
 import numpy as np 
+from scipy.ndimage import gaussian_filter
+
+TINY = float(np.finfo(np.double).tiny)
 
 def nonzero(x):
     """
-    Force strictly positive value. 
+    Force strictly positive values. 
     """
-    return np.maximum(x, 1e-200)
+    return np.maximum(x, TINY)
+
+def dist2loss(dist, margI=None, margJ=None): 
+    L = dist 
+    LT = L.T
+    if margI == None: 
+        margI = L.sum(0)
+    if margJ == None: 
+        margJ = L.sum(1)
+    L /= nonzero(margI)
+    LT /= nonzero(margJ)
+    return -np.log(nonzero(L))
+
 
 class SimilarityMeasure(object): 
     
-    def __init__(self, H): 
-        self.H = H
-        self.J, self.I = np.indices(H.shape) 
+    def __init__(self, shape, **kwargs): 
+        self.shape = shape
+        self.J, self.I = np.indices(shape) 
+        for key in kwargs.keys():
+            self.__setattr__(key, kwargs[key])
 
-    def loss(self): 
-        return np.zeros(self.H.shape)
+    def loss(self, H):
+        return np.zeros(H.shape) 
 
-    def npoints(self): 
-        return nonzero(self.H.sum())
+    def npoints(self, H): 
+        return H.sum()
         
-    def averaged_loss(self): 
-        return np.sum(self.H*self.loss())/self.npoints()
+    def overall_loss(self, H): 
+        return np.sum(H*self.loss(H))
 
-    def __call__(self):
-        return -self.averaged_loss()
+    def averaged_loss(self, H): 
+        return np.sum(H*self.loss(H))/nonzero(self.npoints(H))
+
+    def __call__(self, H):
+        return -self.averaged_loss(H)
         
+
+class SupervisedLikelihoodRatio(SimilarityMeasure): 
+
+    def loss(self, H): 
+        if not hasattr(self, 'L'): 
+            self.L = dist2loss(self.dist)
+        return self.L
+
 
 class MutualInformation(SimilarityMeasure): 
 
-    def loss(self): 
-        L = self.H.copy()/self.npoints()
+    def loss(self, H): 
+        return dist2loss(H/nonzero(self.npoints(H)))
+
+
+"""
+class ParzenMutualInformation(SimilarityMeasure): 
+
+    def loss(self, H): 
+        if not hasattr(self, 'sigma'): 
+            self.sigma = .05*np.array(H.shape)
+        npts = nonzero(self.npoints(H))
+        Hs = H/npts
+        gaussian_filter(Hs, sigma=self.sigma, output=Hs)
+        hIs = H.sum(0)/npts
+        gaussian_filter(hIs, sigma=self.sigma[1], output=hIs)
+        hJs = H.sum(1)/npts
+        gaussian_filter(hJs, sigma=self.sigma[0], output=hJs)
+        return dist2loss(Hs, hIs, hJs)
+"""
+
+class ParzenMutualInformation(SimilarityMeasure): 
+
+    def loss(self, H): 
+        if not hasattr(self, 'sigma'): 
+            self.sigma = .05*np.array(H.shape)
+        Hs = gaussian_filter(H, sigma=self.sigma)
+        Hs /= nonzero(Hs.sum())
+        return dist2loss(Hs)
+
+
+class NormalizedMutualInformation(SimilarityMeasure): 
+    """
+    NMI = 2*(1 - H(I,J)/[H(I)+H(J)])
+        = 2*MI/[H(I)+H(J)])
+    """
+    def loss(self, H): 
+        L = H/nonzero(self.npoints(H))
         LT = L.T
-        lI = L.sum(0) 
+        lI = L.sum(0)
         lJ = L.sum(1)
-        L /= lI
-        LT /= lJ
+        self.hI = lI
+        self.hJ = lJ 
         return -np.log(nonzero(L))
+
+    def __call__(self, H):
+        HIJ = self.averaged_loss(H)
+        HI = -np.sum(self.hI*np.log(nonzero(self.hI)))
+        HJ = -np.sum(self.hJ*np.log(nonzero(self.hJ)))
+        return 2*(1-HIJ/nonzero(HI+HJ))
+
 
 
 class CorrelationCoefficient(SimilarityMeasure): 
     
-    def loss(self): 
-        rho2 = self()
+    def loss(self, H): 
+        rho2 = self(H)
         I = (self.I-self.mI)/np.sqrt(nonzero(self.vI))
         J = (self.J-self.mJ)/np.sqrt(nonzero(self.vJ))
         L = rho2*I**2 + rho2*J**2 - 2*self.rho*I*J
@@ -49,47 +121,71 @@ class CorrelationCoefficient(SimilarityMeasure):
         L += .5*np.log(tmp)
         return L
     
-    def averaged_loss(self): 
-        return .5*np.log(nonzero(1-self()))
+    def averaged_loss(self, H): 
+        return .5*np.log(nonzero(1-self(H)))
 
-    def __call__(self): 
-        npts = self.npoints()
-        self.mI = np.sum(self.H*self.I)/npts
-        self.mJ = np.sum(self.H*self.J)/npts
-        self.vI = np.sum(self.H*(self.I)**2)/npts - self.mI**2
-        self.vJ = np.sum(self.H*(self.J)**2)/npts - self.mJ**2
-        self.cIJ = np.sum(self.H*self.J*self.I)/npts - self.mI*self.mJ
+    def __call__(self, H): 
+        npts = nonzero(self.npoints(H))
+        self.mI = np.sum(H*self.I)/npts
+        self.mJ = np.sum(H*self.J)/npts
+        self.vI = np.sum(H*(self.I)**2)/npts - self.mI**2
+        self.vJ = np.sum(H*(self.J)**2)/npts - self.mJ**2
+        self.cIJ = np.sum(H*self.J*self.I)/npts - self.mI*self.mJ
         self.rho = self.cIJ/np.sqrt(self.vI*self.vJ)
         return self.rho**2
 
 
 class CorrelationRatio(SimilarityMeasure):         
 
-    def loss(self): 
-        rho2 = self()
+    def loss(self, H): 
+        rho2 = self(H)
         print('Sorry, not implemented yet...')
         return 
 
-    def averaged_loss(self): 
-        return .5*np.log(nonzero(1.-self()))
+    def averaged_loss(self, H): 
+        return .5*np.log(nonzero(1.-self(H)))
 
-    def __call__(self):
-        self.npts_J = nonzero(np.sum(self.H, 1))
-        self.mI_J = np.sum(self.H*self.I, 1)/self.npts_J
-        self.vI_J = np.sum(self.H*(self.I)**2, 1)/self.npts_J - self.mI_J**2
-        npts = self.npoints()
-        hI = np.sum(self.H, 0)
-        hJ = np.sum(self.H, 1)
-        self.mI = np.sum(hI*self.I[0,:])/npts
-        self.vI = np.sum(hI*self.I[0,:]**2)/npts - self.mI**2
-        mean_vI_J = np.sum(hJ*self.vI_J)/npts
+    def __call__(self, H):
+        self.npts_J = np.sum(H, 1)
+        tmp = nonzero(self.npts_J)
+        self.mI_J = np.sum(H*self.I, 1)/tmp
+        self.vI_J = np.sum(H*(self.I)**2, 1)/tmp - self.mI_J**2
+        self.npts = np.sum(self.npts_J)
+        tmp = nonzero(self.npts)
+        hI = np.sum(H, 0)
+        hJ = np.sum(H, 1)
+        self.mI = np.sum(hI*self.I[0,:])/tmp
+        self.vI = np.sum(hI*self.I[0,:]**2)/tmp - self.mI**2
+        mean_vI_J = np.sum(hJ*self.vI_J)/tmp
         return 1.-mean_vI_J/nonzero(self.vI)
 
 
-class ReverseCorrelationRatio(CorrelationRatio): 
-    
-    def __init__(self, H): 
-        self.H = H.T
-        self.J, self.I = np.indices(H.T.shape) 
+class CorrelationRatioL1(SimilarityMeasure):         
+
+    def loss(self, H): 
+        rho2 = self(H)
+        print('Sorry, not implemented yet...')
+        return 
+
+    def averaged_loss(self, H): 
+        return .5*np.log(nonzero(1.-self(H)))
+
+    def __call__(self, H):
+        tmp = np.array([_L1_moments(H[j,:]) for j in range(H.shape[0])])
+        self.npts_J, self.mI_J, self.sI_J = tmp[:,0], tmp[:,1], tmp[:,2]
+        hI = np.sum(H, 0)
+        hJ = np.sum(H, 1)
+        self.npts, self.mI, self.sI = _L1_moments(hI)
+        mean_sI_J = np.sum(hJ*self.sI_J)/self.npts
+        return 1.-mean_sI_J/nonzero(self.sI)
 
 
+similarity_measures = {
+    'slr': SupervisedLikelihoodRatio,
+    'mi': MutualInformation, 
+    'nmi': NormalizedMutualInformation, 
+    'pmi': ParzenMutualInformation,    
+    'cc': CorrelationCoefficient, 
+    'cr': CorrelationRatio,
+    'crl1': CorrelationRatioL1
+    }

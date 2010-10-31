@@ -1,10 +1,8 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
-from .affine import Affine, Rigid, Similarity, apply_affine
+from .affine import Affine, apply_affine
 from .grid_transform import GridTransform
-from .histogram_registration import HistogramRegistration
-from .groupwise_registration import Realign4d, FmriRealign4d 
 from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_resample3d
 
 from nipy.core.image.affine_image import AffineImage
@@ -14,85 +12,6 @@ from scipy.ndimage import affine_transform, map_coordinates
 
 _INTERP_ORDER = 3
                    
-def register(from_img, 
-             to_img, 
-             similarity='cr',
-             interp='pv',
-             subsampling=None,
-             search='affine',
-             graduate_search=False,
-             optimizer='powell'):
-    
-    """
-    Three-dimensional affine image registration. 
-    
-    Parameters
-    ----------
-    from_img : nibabel-like image object 
-       `From` image 
-    to_img : nibabel-like image 
-       `To` image array
-    similarity : str or callable
-       Cost-function for assessing image similarity.  If a string, one
-       of 'cc', 'cr', 'crl1', 'mi', je', 'ce', 'nmi', 'smi'.  'cr'
-       (correlation ratio) is the default. If a callable, it should
-       take a two-dimensional array representing the image joint
-       histogram as an input and return a float. See
-       ``_registration.pyx``
-    interp : str
-       Interpolation method.  One of 'pv': Partial volume, 'tri':
-       Trilinear, 'rand': Random interpolation.  See
-       ``joint_histogram.c``
-    subsampling : None or sequence length 3
-       subsampling of image in voxels, where None (default) results 
-       in the subsampling to be automatically adjusted to roughly match
-       a cubic grid of 64**3 voxels
-    search : str or sequence 
-       If a string, one of 'affine', 'rigid', 'similarity'; default 'affine'
-       A sequence of strings can be provided to run a graduate search, e.g.
-       by doing first 'rigid', then 'similarity', then 'affine'
-    optimizer : str or sequence 
-       If a string, one of 'simplex', 'powell', 'steepest', 'cg', 'bfgs'
-       Alternatively, a sequence of such strings can be provided to
-       run several optimizers sequentially. If bot `search` and
-       `optimizer` are sequences, then the shorter is filled with its
-       last value to match the longer. 
-
-    Returns
-    -------
-    T : affine transformation 
-      Object that can be casted to a numpy array. 
-
-    """
-    R = HistogramRegistration(from_img, to_img)
-    if not subsampling == None: 
-        R.subsample(spacing=subsampling)
-    R.similarity = similarity
-    R.interp = interp
-
-    if isinstance(search, basestring): 
-        search = [search]
-    if isinstance(optimizer, basestring):
-        optimizer = [optimizer]
-    if len(search) < len(optimizer):
-        n_missing = len(optimizer) - len(search)
-        search += [search[-1]] * n_missing
-    elif len(optimizer) < len(search):
-        n_missing = len(search) - len(optimizer)
-        optimizer += [optimizer[-1]] * n_missing
-
-    transforms = {'affine': Affine, 'rigid': Rigid, 'similarity': Similarity}
-    T = None
-    for trans_type, optim_type in zip(search, optimizer):
-        if T == None: 
-            T = transforms[trans_type]()
-        else:
-            T = transforms[trans_type](T.vec12)
-        T = R.optimize(T, method=optim_type)
-    return T
-
-
-
 def resample(moving, transform, grid_coords=False, reference=None, 
              dtype=None, interp_order=_INTERP_ORDER):
     """

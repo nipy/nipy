@@ -71,6 +71,9 @@ def test_correlation_coefficient():
 def test_correlation_ratio():
     _test_similarity_measure('cr', 1.0) 
 
+def test_correlation_ratio_L1():
+    _test_similarity_measure('crl1', 1.0) 
+
 def test_normalized_mutual_information():
     _test_similarity_measure('nmi', 1.0) 
 

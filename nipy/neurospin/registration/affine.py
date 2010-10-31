@@ -11,7 +11,7 @@ from .transform import Transform
 _radius = 100
 
 # Smallest possible scaling
-TINY = 1e-100
+TINY = float(np.finfo(np.double).tiny)
 
 def rotation_mat2vec(R):
     """ Rotation vector from rotation matrix `R`
@@ -385,3 +385,7 @@ class Similarity2D(Similarity):
 
     param = property(Similarity._get_param, _set_param)
 
+    
+affine_transforms = {'affine': Affine, 'affine2d': Affine2D,
+                     'similarity': Similarity, 'similarity2d': Similarity2D, 
+                     'rigid': Rigid, 'rigid2d': Rigid2D}

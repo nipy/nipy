@@ -44,7 +44,7 @@ ammon_TO_anubis.npz
 
 Author: Alexis Roche, 2009. 
 """
-from nipy.neurospin.registration import register, resample
+from nipy.neurospin.registration import HistogramRegistration, resample
 from nipy.utils import example_data
 from nipy import load_image, save_image
 from nipy.algorithms.resample import resample as resample2
@@ -89,10 +89,8 @@ J = load_image(target_file)
 # np.asarray(T) is a customary 4x4 matrix 
 print('Setting up registration...')
 tic = time.time()
-T = register(I, J, 
-             similarity=similarity, 
-             interp=interp, 
-             optimizer=optimizer)
+R = HistogramRegistration(I, J, similarity=similarity, interp=interp) 
+T = R.optimize('affine', optimizer=optimizer)
 toc = time.time()
 print('  Registration time: %f sec' % (toc-tic))
 

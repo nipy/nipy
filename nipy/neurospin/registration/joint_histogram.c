@@ -12,22 +12,6 @@
 #define ROUND(a)(FLOOR(a+0.5))
 
 
-/* 
-   The following forces numpy to consider a PyArrayIterObject
-   non-contiguous. Otherwise, coordinates won't be updated, apparently
-   for computation time reasons.
-*/
-#define UPDATE_ITERATOR_COORDS(iter)		\
-  iter->contiguous = 0;
-
-
-
-static double _marginalize(double* h, 
-			   const double* H, 
-			   unsigned int clampI, 
-			   unsigned int clampJ, 
-			   int axis); 
-
 static inline void _pv_interpolation(unsigned int i, 
 				     double* H, unsigned int clampJ, 
 				     const signed short* J, 
@@ -48,14 +32,11 @@ static inline void _rand_interpolation(unsigned int i,
 				       void* params); 
 
 
-
 /* Numpy import */
 void joint_histogram_import_array(void) {
   import_array(); 
   return;
 }
-
-
 
 
 /* 
@@ -158,9 +139,6 @@ int joint_histogram(PyArrayIterObject* JH,
 
   /* Reset the source image iterator */
   PyArray_ITER_RESET(iterI);
-
-  /* Make sure the iterator the iterator will update coordinate values */ 
-  UPDATE_ITERATOR_COORDS(iterI); 
 
   /* Set interpolation method */ 
   if (interp==0) 
@@ -355,399 +333,29 @@ static inline void _rand_interpolation(unsigned int i,
 }
 
 
-
-
-/*
-  axis == 0 -> source histogram
-  axis == 1 -> target histogram 
-  
-  returns the sum of H 
-
-*/
-static double _marginalize(double* h, const double* H, unsigned int clampI, unsigned int clampJ, int axis)
-{
-  int i, j; 
-  const double *bufH = H; 
-  double *bufh = h;
-  double hij, sumH = 0.0; 
-  
-  if (axis == 0) {
-    memset((void*)h, 0, clampI*sizeof(double));
-    for (i=0; i<clampI; i++, bufh++) 
-      for (j=0; j<clampJ; j++, bufH++) {
-	hij = *bufH; 
-	sumH += hij; 
-	*bufh += hij; 
-      }
-  }
-  else if (axis == 1) {
-    memset((void*)h, 0, clampJ*sizeof(double));
-    for (j=0; j<clampJ; j++, bufh++) {
-      bufH = H + j; 
-      for (i=0; i<clampI; i++, bufH+=clampJ) {
-	hij = *bufH; 
-	sumH += hij; 
-	*bufh += hij; 
-      }
-    }
-  }
-  
-  return sumH; 
-}
-
-
-
-
-/* =========================================================================
-   HISTOGRAM-BASED SIMILARITY MEASURES 
-   ========================================================================= */
-
-#define TINY 1e-30
-#define NICELOG(x)((x)>(TINY) ? log(x):log(TINY)) 
-
-
-double correlation_coefficient(const double* H, unsigned int clampI, unsigned int clampJ, double* n)
-{
-  int i, j;
-  double CC, mj, mi, mij, mj2, mi2, varj, vari, covij, na;
-  double aux, auxj, auxi;
-  const double *buf;
-
-  /* Initialization */
-  na = 0;
-  mj  = 0;
-  mi  = 0;
-  mij = 0;
-  mj2 = 0;
-  mi2 = 0;
-  
-  /* Computes conditional moments */
-  buf = H;
-  for (i=0; i<clampI; i++) 
-    for (j=0; j<clampJ; j++, buf++) {
-      
-      aux = *buf; /* aux == H(i,j) */
-      auxj = j * aux;
-      auxi = i * aux;
-      
-      na += aux;
-      mj  += auxj;
-      mi  += auxi;
-      mj2 += j * auxj;
-      mi2 += i * auxi;
-      mij += i * auxj;
-      
-  }
-  
-  /* Test if the dataset is empty */
-  if (na <= 0) {
-    *n = 0; 
-    return 0;
-  }
-  
-  /* Normalization */
-  mj  = mj / na;
-  mi  = mi / na;
-  mj2 = mj2 / na;
-  mi2 = mi2 / na;
-  mij = mij / na;
-  
-  /* Compute covariance and variance */
-  covij = mij - mj * mi;
-  covij = SQR(covij);
-  varj  = mj2 - mj * mj;
-  vari  = mi2 - mi * mi;
-  aux = varj * vari;
-  
-  /* Check the variance product is non zero */
-  if (aux <= 0) {
-    *n = na;
-    return 0;
-  }
-  
-  /* Return the correlation coefficient */
-  CC = covij / aux;
-  
-  *n = na; 
-  return CC;
-     
-}
-
-
-double correlation_ratio(const double* H, unsigned int clampI, unsigned int clampJ, double* n)
-{
-  int j;
-  double CR, na, mean, var, cvar, nJ;
-  double moments[5]; 
-
-  /* Initialization */
-  na = mean = var = cvar = 0;
-
-  /* Compute conditional moments */
-  for (j=0; j<clampJ; j++) {
-    L2_moments_with_stride (H+j, clampI, clampJ, moments);
-    nJ = moments[0]; 
-    na += nJ;
-    mean += moments[3]; 
-    var += moments[4]; 
-    cvar += nJ*moments[2];
-  }
-    
-  /* Compute total moments */
-  if (na <= 0) {
-    *n = 0;
-    return 0;
-  }
-  mean /= na;
-  var = var/na - mean*mean;
-  cvar /= na;
-
-  /* Test on total variance */
-  if (var<=0) {
-    *n = na; 
-    return 0;
-  }
-  
-  /* Correlation ratio */
-  *n = na; 
-  CR = 1 - cvar/var;
-
-  return CR;
-  
-}
-
-
-
-double correlation_ratio_L1(const double* H, double* hI, unsigned int clampI, unsigned int clampJ, double* n)
-{
-  int j;
-  double na, med, dev, cdev, nJ, mJ, dJ;
-  double moments[3]; 
-
-  /* Initialization */
-  na = cdev = 0;
-
-  /* Compute conditional moments */  
-  for (j=0; j<clampJ; j++) {
-    L1_moments_with_stride (H+j, clampI, clampJ, moments); 
-    nJ = moments[0]; 
-    mJ = moments[1]; 
-    dJ = moments[2]; 
-    cdev += nJ*dJ;
-    na += nJ;
-  }
-  
-  /* Conditional dispersion */
-  if (na <= 0.0) {
-    *n = 0; 
-    return 0.0;
-  }
-  cdev /= na;
-
-  /* Total dispersion */
-  _marginalize(hI, H, clampI, clampJ, 0); 
-  L1_moments_with_stride (hI, clampI, 1, moments); 
-  med = moments[1]; 
-  dev = moments[2]; 
-
-  /* Test on total dispersion */
-  *n = na; 
-  if (dev==0.0)
-    return 0.0;
-  else
-    return(1 - SQR(cdev)/SQR(dev)); /* Squaring for comparison with CR(L2) */  
-}
-
-
-
-double joint_entropy(const double* H, unsigned int clampI, unsigned int clampJ)
-{
-  double n; 
-  double entIJ = entropy(H, clampI*clampJ, &n); 
-  return entIJ; 
-}
-
-
-double conditional_entropy(const double* H, double* hJ, unsigned int clampI, unsigned int clampJ)
-{
-  double n; 
-  double entIJ, entJ;  
-  _marginalize(hJ, H, clampI, clampJ, 1); 
-  entIJ = entropy(H, clampI*clampJ, &n); 
-  entJ = entropy(hJ, clampJ, &n); 
-  return(entIJ - entJ); /* Entropy of I given J */ 
-}
-
-
-double mutual_information(const double* H, double* hI, unsigned int clampI, double* hJ, unsigned int clampJ, double* n)
-{
-  double entIJ, entI, entJ; 
-  _marginalize(hI, H, clampI, clampJ, 0); 
-  _marginalize(hJ, H, clampI, clampJ, 1); 
-  entI = entropy(hI, clampI, n); 
-  entJ = entropy(hJ, clampJ, n); 
-  entIJ = entropy(H, clampI*clampJ, n); 
-  return(entI + entJ - entIJ); 
-}
-
-/*
-  Normalized mutual information as advocated by Studholme, 98. 
-
-  NMI = 2*(1 - H(I,J)/[H(I)+H(J)])
-  
-*/
-
-double normalized_mutual_information(const double* H, double* hI, unsigned int clampI, double* hJ, unsigned int clampJ, double *n)
-{
-  double entIJ, entI, entJ, aux; 
-  _marginalize(hI, H, clampI, clampJ, 0); 
-  _marginalize(hJ, H, clampI, clampJ, 1); 
-  entI = entropy(hI, clampI, n); 
-  entJ = entropy(hJ, clampJ, n); 
-  entIJ = entropy(H, clampI*clampJ, n);
-  aux = entI + entJ; 
-  if (aux > 0.0) 
-    return(2*(1-entIJ/aux));
-  else 
-    return 0.0; 
-}
-
-
-/*
-
-Supervised mutual information. 
-See Roche, PhD dissertation, University of Nice-Sophia Antipolis, 2001. 
-
-*/ 
-
-double supervised_mutual_information(const double* H, const double* F, 
-				     double* fI, unsigned int clampI, double* fJ, unsigned int clampJ, 
-				     double* n)
-{
-  const double *bufH = H, *bufF = F; 
-  double *buf_fI, *buf_fJ; 
-  int i, j; 
-  double hij, fij, fi, fj, aux, sumF, na = 0.0, SMI = 0.0; 
-
-  sumF = _marginalize(fI, F, clampI, clampJ, 0); 
-  sumF = _marginalize(fJ, F, clampI, clampJ, 1); 
-
-  for (i=0, buf_fI=fI; i<clampI; i++, buf_fI++) {
-    fi = *buf_fI / sumF; /* HACK to implicitely normalize F */ 
-    for (j=0, buf_fJ=fJ; j<clampJ; j++, buf_fJ++, bufH++, bufF++) {
-      hij = *bufH;
-      na += hij;  
-      fj = *buf_fJ;
-      fij = *bufF;
-
-      /* If fi=0 or fj=0, then fij = 0. We conventionally set
-	 fij/(fi*fj) to zero but this might be problematic */ 
-      aux = fi * fj; 
-      if (aux > 0) 
-	aux = fij / aux; 
-      else 
-	aux = 0.0;  
-      SMI += hij * NICELOG(aux); 
-    }
-  }
-
-  *n = na;
-
-  if (*n>0.0) 
-    SMI /= *n; 
-
-  return SMI; 
-}
-
-
 /* 
-   First loop: compute the histogram sum 
-   Second loop: compute actual entropy 
-*/ 
-double entropy(const double* h, unsigned int size, double* n)
-{
-  double E=0.0, sumh=0.0, aux; 
-  unsigned int i; 
-  double *buf;
-
-  buf = (double*)h; 
-  for (i=0; i<size; i++, buf++) 
-    sumh += *buf; 
-
-  if (sumh <= 0) {
-    *n = 0; 
-    return 0.0; 
-  }
-
-  buf = (double*)h; 
-  for (i=0; i<size; i++, buf++) {
-    aux = *buf / sumh; 
-    E -= aux * NICELOG(aux); 
-  }
-
-  *n = sumh; 
-  return E; 
-}
-
-
-/* res must pre-allocated with size=5 */ 
-void L2_moments_with_stride (const double * h, unsigned int size, unsigned int stride, 
-			     double* res)
-{
-  unsigned int i;
-  double mean, var, n, aux, aux2; 
-  const double *buf;
-  double *bufres; 
-
-  n = mean = var = 0;
-  buf = h;
-  for (i=0; i<size; i++, buf+=stride) {
-    aux = *buf; 
-    n += aux;
-    aux2 = i*aux;
-    mean += aux2;
-    var += i*aux2;
-  }
-
-  bufres = res + 3; *bufres = mean; 
-  bufres ++; *bufres = var; 
-  
-  if (n>0) {
-    mean /= n;
-    var = var/n - mean*mean;
-  }
-  
-  bufres = res; *bufres = n; 
-  bufres ++; *bufres = mean; 
-  bufres ++; *bufres = var; 
-
-  return;
-}
-
-
-/* res must be preallocated with size=3 */ 
-void L1_moments_with_stride (const double * h, unsigned int size, unsigned int stride, 
-			     double* res)
+   A function to compute the weighted median in one-dimensional
+   histogram.
+ */
+void L1_moments(double* n_, double* median_, double* dev_, 
+		const double * h, unsigned int size, unsigned int stride)
 {
   int i, med;
   double median, dev, n, cpdf, lim;
   const double *buf;
-  double* bufres; 
+  unsigned int offset = stride/sizeof(double); 
 
   /* Initialisation au cas ou */
   n = median = dev = 0; 
   cpdf = 0;
   buf = h;
-  for (i=0; i<size; i++, buf+=stride) {
+  for (i=0; i<size; i++, buf+=offset) 
     n += *buf;
-  }
   
+  /* Look for index i such that h(i-1) < n/2 and h(i) >= n/2 */
   if (n > 0) {
-  
-    /* On cherche la valeur i telle que h(i-1) < n/2 
-       et h(i) >= n/2 */
-    lim = 0.5*n;
     
+    lim = 0.5*n;
     i = 0;
     buf = h;
     cpdf = *buf;
@@ -755,7 +363,7 @@ void L1_moments_with_stride (const double * h, unsigned int size, unsigned int s
     
     while (cpdf < lim) {
       i ++;
-      buf += stride;
+      buf += offset;
       cpdf += *buf;
       dev += - i*(*buf);
     }
@@ -778,7 +386,6 @@ void L1_moments_with_stride (const double * h, unsigned int size, unsigned int s
        Le terme [1] est actuellement egal a la variable dev.
        Le terme cpdf(med) est actuellement egal a la var. cpdf.
     */
-    
     median = (double)i;
     dev += (2*cpdf - n)*median;
     med = i+1;
@@ -788,8 +395,8 @@ void L1_moments_with_stride (const double * h, unsigned int size, unsigned int s
        la moyenne tronquee (entre i et la dimension) (cf. [2]) */
     
     if (med < size) {
-      buf = h + med*stride;
-      for (i=med; i<size; i ++, buf += stride) 
+      buf = h + med*offset;
+      for (i=med; i<size; i ++, buf += offset) 
 	dev += i*(*buf);
     }
     
@@ -797,9 +404,9 @@ void L1_moments_with_stride (const double * h, unsigned int size, unsigned int s
 
   }
 
-  bufres = res; *bufres = n; 
-  bufres ++; *bufres = median; 
-  bufres ++; *bufres = dev; 
+  *n_ = n; 
+  *median_ = median; 
+  *dev_ = dev; 
 
   return;           
 }
