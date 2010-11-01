@@ -57,23 +57,24 @@ def em(Y, VY, X, C=None, niter=_NITER, log_likelihood=False):
 
     # Initialize outputs
     b = np.zeros((nreg, npts))
+    yfit = np.zeros((nobs, npts))
     s2 = np.inf
 
     # EM loop              
     it = 0
     while it < niter: 
 
-        # E-step: posterior mean and variance of each "true" effect 
-        w1 = 1./nonzero(vy)
-        w2 = 1./nonzero(s2) 
-        vz = 1./(w1+w2)
-        z = vz*(w1*y + w2*np.dot(X, b))
+        # E-step: posterior mean and variance of each "true" effect
+        w1 = 1/nonzero(vy)
+        w2 = 1/nonzero(s2)
+        vz = 1/(w1+w2)
+        z = vz*(w1*y + w2*yfit)
 
         # M-step: update effect and variance
         b = np.dot(PpX, z) 
-        Qz = np.dot(X, b) - z # = Proj_X(z) - z
-        s2 = np.sum(Qz**2 + vz, 0)/float(nobs) 
- 
+        yfit = np.dot(X, b)
+        s2 = np.sum((z-yfit)**2 + vz, 0)/float(nobs) 
+
         # Increase iteration number 
         it += 1
 
