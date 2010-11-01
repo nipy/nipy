@@ -1,5 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+
 import numpy as np
 import nipy.neurospin.spatial_models.hierarchical_parcellation as hp
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
@@ -7,6 +8,57 @@ import nipy.neurospin.spatial_models.parcellation as fp
 import nipy.neurospin.graph.graph as fg
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.clustering.clustering as fc
+
+#####################################################################
+# New part
+#####################################################################
+
+import nipy.neurospin.spatial_models.discrete_domain as dom
+from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
+
+def test_parcel_interface():
+    """ Simply test parcellation interface
+    """
+    # prepare some data
+    shape = (10, 10, 10)
+    n_parcel = 10
+    data =  np.random.randn(np.prod(shape))
+    domain =  dom.grid_domain_from_array(np.ones(shape))
+    g = field_from_coo_matrix_and_data(domain.topology, data)
+    u, J0 = g.ward(n_parcel)
+    tmp = np.array([np.sum(u == k) for k in range(10)])
+
+    #instantiate a parcellation
+    msp = fp.MultiSubjectParcellation(domain, u, u) 
+    assert msp.nb_parcel == n_parcel
+    assert msp.nb_subj == 1
+    assert (msp.population().ravel() == tmp).all()
+
+def test_parcel_feature():
+    """ Simply test parcellation feature interface
+    """
+    # prepare some data
+    shape = (10, 10, 10)
+    n_parcel = 10
+    data =  np.random.randn(np.prod(shape), 1)
+    domain =  dom.grid_domain_from_array(np.ones(shape))
+    g = field_from_coo_matrix_and_data(domain.topology, data)
+    u, J0 = g.ward(n_parcel)
+    tmp = np.array([np.sum(u == k) for k in range(10)])
+
+    #instantiate a parcellation
+    msp = fp.MultiSubjectParcellation(domain, u, u) 
+    msp.make_feature('data', data)
+
+    assert msp.get_feature('data').shape== (n_parcel, 1)
+    
+    # test with a copy
+    #msp2 = msp.copy()
+    #assert msp2.get_feature('data') == msp2.get_feature('data')
+
+#####################################################################
+# Deprecated part
+#####################################################################
 
 def make_data_field():
     nsubj = 1

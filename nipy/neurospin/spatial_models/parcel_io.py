@@ -6,10 +6,11 @@ this basically uses nipy io lib to perform IO opermation
 in parcel definition processes
 """
 
-from nipy.neurospin.clustering.clustering import kmeans
 import numpy as np
 import os.path
 from nipy.io.imageformats import load, save, Nifti1Image 
+from nipy.neurospin.clustering.clustering import kmeans
+
 from parcellation import Parcellation
 from discrete_domain import grid_domain_from_image
 
