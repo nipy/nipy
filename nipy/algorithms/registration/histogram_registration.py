@@ -27,6 +27,7 @@ DEBUG = True
 
 _CLAMP_DTYPE = 'short' # do not edit
 _BINS = 256
+_SIMILARITY = 'crl1'
 _INTERP = 'pv'
 _NPOINTS = 64**3
 
@@ -43,7 +44,8 @@ class HistogramRegistration(object):
     def __init__(self, from_img, to_img, 
                  from_bins=_BINS, to_bins=None, 
                  from_mask=None, to_mask=None, 
-                 similarity='cr', interp='pv', **kwargs):
+                 similarity=_SIMILARITY, interp=_INTERP,
+                 **kwargs):
         """
         Creates a new histogram registration object.
 
