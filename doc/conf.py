@@ -34,7 +34,21 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'ipython_console_highlighting', 
               'inheritance_diagram', 
-              'numpydoc']
+              ]
+
+# Current version (as of 11/2010) of numpydoc is only compatible with sphinx >
+# 1.0.  We keep copies of this version in 'numpy_ext'.  For a while we will also
+# keep a copy of the older numpydoc version to allow compatibility with sphinx
+# 0.6
+try:
+    # With older versions of sphinx, this causes a crash
+    import numpy_ext.numpydoc
+except ImportError:
+    # Older version of sphinx
+    extensions.append('numpy_ext_old.numpydoc')
+else: # probably sphinx >= 1.0
+    extensions.append('numpy_ext.numpydoc')
+    autosummary_generate=True
 
 # Matplotlib sphinx extensions
 # ----------------------------
