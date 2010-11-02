@@ -19,6 +19,9 @@ import sys, os
 # absolute, like shown here.
 sys.path.append(os.path.abspath('sphinxext'))
 
+# We load the nipy release info into a dict by explicit execution
+rel = {}
+execfile('../nipy/info.py', rel)
 
 # Import support for ipython console session syntax highlighting (lives
 # in the sphinxext directory defined above)
@@ -88,9 +91,9 @@ copyright = '2005-2010, Neuroimaging in Python team'
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '0.1'
+version = rel['__version__']
 # The full version, including alpha/beta/rc tags.
-release = '0.1'
+release = version
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
