@@ -46,7 +46,7 @@ def _Field_Gradient_Jac(ref,target):
 
 def _exclusion_map_dep(i,ref,target, targeti):
     """
-    ancillary function to determin admissible values of some position
+    ancillary function to determine admissible values of some position
     within some predefined values
     
     Parameters
@@ -178,12 +178,10 @@ def _Field_Gradient_Jac_Map(i,ref,target, targeti):
             fgj = np.minimum(fgj,aux)
     else:
         fgj = np.zeros(targeti.shape[0])
-
-    
     return fgj
 
-def _optim_hparcel(Ranat, RFeature, Feature, Pa, Gs, anat_coord, lamb=1., 
-                         dmax=10., chunksize=1.e5, niter=5, verbose=0):
+def _optim_hparcel( feature, domain, Gs, nb_parcel, lamb=1., dmax=10., 
+                    chunksize=1.e5, niter=5, verbose=0):
     """
     Core function of the heirrachical parcellation procedure.
     
@@ -199,7 +197,7 @@ def _optim_hparcel(Ranat, RFeature, Feature, Pa, Gs, anat_coord, lamb=1.,
               and feature impact on the algorithm
     dmax = 10: locality parameter (in the space of anat_coord)
          to limit surch volume (CPU save)
-    chunksize=1.e5 not used here (to be removed)
+    chunksize = int, optional
     niter = 5: number of iterations in teh algorithm
     verbose=0: verbosity level
     
@@ -210,21 +208,24 @@ def _optim_hparcel(Ranat, RFeature, Feature, Pa, Gs, anat_coord, lamb=1.,
     Proto_anat: array of shape (nvox) labelling of the common space
                 (template parcellation)
     """
-    Sess = Pa.nb_subj
-    # Ranat,RFeature,Pa,chunksize,dmax,lamb,Gs
+    nb_subj = len(feature)
+
     # a1. perform a rough clustering of the data to make prototype
-    #Labs = np.zeros(RFeature.shape[0])
-    proto, Labs, J = fc.kmeans(RFeature, Pa.k, Labels=None, maxiter=10)
-    proto_anat = [np.mean(Ranat[Labs==k],0) for k in range(Pa.k)]
+    indiv_coord =  (domain.coord[initial_mask[:, s]>-1] for s in range(nb_subj)]
+    reduced_anat, reduced_feature = _reduce_and_concatenate(
+        indiv_coord, feature, chunksize)
+
+    _, labs, _ = fc.kmeans(reduced_feature, nb_parcel, Labels=None, maxiter=10)
+    proto_anat = [np.mean(reduced_anat[labs==k], 0) for k in range(nb_parcel)]
     proto_anat = np.array(proto_anat)
-    proto = [np.mean(RFeature[Labs==k],0) for k in range(Pa.k)]
+    proto = [np.mean(reduced_feature[labs==k], 0) for k in range(nb_parcel)]
     proto = np.array(proto)
 
     # a2. topological model of the parcellation
     # group-level part
-    spatial_proto = ff.Field(Pa.k)
+    spatial_proto = ff.Field(nb_parcel)
     spatial_proto.set_field(proto_anat)
-    spatial_proto.Voronoi_diagram(proto_anat,anat_coord)
+    spatial_proto.Voronoi_diagram(proto_anat, anat_coord)
     spatial_proto.set_gaussian(proto_anat)
     spatial_proto.normalize()
     for git in range(niter):
@@ -232,103 +233,123 @@ def _optim_hparcel(Ranat, RFeature, Feature, Pa, Gs, anat_coord, lamb=1.,
         LPA = []
         U = []
         Energy = 0
-        for s in range(Sess):            
+        for s in range(nb_subj):            
             # b.subject-specific instances of the model
             # b.0 subject-specific information
-            Fs = Feature[s]
-            lac = anat_coord[Pa.label[:,s]>-1]
+            Fs = feature[s]
+            lac = indiv_coord[s]
             target = proto_anat.copy()
     
             for nit in range(1):
-                lseeds = np.zeros(Pa.k,'i')
-                aux = np.argsort(rand(Pa.k))
+                lseeds = np.zeros(nb_parcel, np.int)
+                aux = np.argsort(rand(nb_parcel))
                 tata = 0
                 toto = np.zeros(lac.shape[0])
-                for j in range(Pa.k):
+                for j in range(nb_parcel):
                     # b.1 speed-up :only take a small ball
                     i = aux[j]
-                    dX = lac-target[i,:]
-                    iz = np.nonzero(np.sum(dX**2,1)<dmax**2)
-                    iz = np.reshape(iz,np.size(iz))
+                    dx = lac-target[i,:]
+                    iz = np.nonzero(np.sum(dx**2, 1)<dmax**2)
+                    iz = np.reshape(iz, np.size(iz))
                     if np.size(iz)==0:
-                        iz  = np.array([np.argmin(np.sum(dX**2,1))])
+                        iz  = np.array([np.argmin(np.sum(dx**2,1))])
                     
                     # b.2: anatomical constraints
-                    lanat = np.reshape(lac[iz,:],(np.size(iz),anat_coord.shape[1]))
+                    lanat = np.reshape(lac[iz, :], (np.size(iz), 
+                                                    domain.coord.shape[1]))
                     pot = np.zeros(np.size(iz))
-                    JM,rmin = _exclusion_map(i,spatial_proto,target,lanat)
+                    JM, rmin = _exclusion_map(i, spatial_proto, target, lanat)
                     pot[JM<0] = np.infty
                     pot[JM>=0] = -JM[JM>=0]
                     
                     # b.3: add feature discrepancy
-                    dF = Fs[iz]-proto[i]
-                    dF = np.reshape(dF,(np.size(iz),proto.shape[1]))
-                    pot += lamb*np.sum(dF**2,1)
+                    df = Fs[iz] - proto[i]
+                    df = np.reshape(df, (np.size(iz), proto.shape[1]))
+                    pot += lamb * np.sum(df**2, 1)
                     
                     # b.4: solution
                     pb = 0
-                    if np.sum(np.isinf(pot))==np.size(pot):
-                        pot = np.sum(dX[iz,:]**2,1)
+                    if np.sum(np.isinf(pot)) == np.size(pot):
+                        pot = np.sum(dx[iz,:]**2,1)
                         tata +=1
                         pb = 1
-
+                        
                     sol = iz[np.argmin(pot)]
                     target[i] = lac[sol]
                     
-                    if toto[sol]==1:
-                        print "pb",pb
-                        ln = spatial_proto.list_of_neighbors()
-                        argtoto = np.squeeze(np.nonzero(lseeds==sol))
-                        print i,argtoto,ln[i]
-                        if np.size(argtoto)==1: print [ln[argtoto]]
-                        print target[argtoto]
-                        print target[i]
-                        print rmin
-                        print JM[iz==lseeds[argtoto]]
-                        print pot[iz==lseeds[argtoto]]
-                    lseeds[i]= sol
-                    toto[sol]=1
+                    #if toto[sol]==1:
+                    #    print "pb",pb
+                    #    ln = spatial_proto.list_of_neighbors()
+                    #    argtoto = np.squeeze(np.nonzero(lseeds==sol))
+                    #    print i,argtoto,ln[i]
+                    #    if np.size(argtoto)==1: print [ln[argtoto]]
+                    #    print target[argtoto]
+                    #    print target[i]
+                    #    print rmin
+                    #    print JM[iz==lseeds[argtoto]]
+                    #    print pot[iz==lseeds[argtoto]]
+                    lseeds[i] = sol
+                    toto[sol] = 1
 
                 if verbose>1:
                     jm = _Field_Gradient_Jac(spatial_proto,target)
-                    print jm.min(),jm.max(),np.sum(toto>0),tata
+                    print jm.min(), jm.max(), np.sum(toto>0), tata
             
             # c.subject-specific parcellation
             g = Gs[s]
-            f = ff.Field(g.V,g.edges,g.weights,Fs)
-            u = f.constrained_voronoi(lseeds)
-            U.append(u)
-
-            Energy += np.sum((Fs-proto[u])*(Fs-proto[u]))/np.sum(Pa.label[:,s]>-1)
+            f = ff.Field(g.V, g.edges, g.weights, Fs)
+            U.append(f.constrained_voronoi(lseeds))
+            
+            Energy += np.sum(Fs-proto[U[-1]])**2) / np.sum(initial_mask[:, s]>-1)
             # recompute the prototypes
             # (average in subject s)
-            lproto = [np.mean(Fs[u==k],0) for k in range(Pa.k)]
+            lproto = [np.mean(Fs[u==k], 0) for k in range(nb_parcel)]
             lproto = np.array(lproto)
-            lproto[np.isnan(lproto)] = proto[np.isnan(lproto)]
+            #lproto[np.isnan(lproto)] = proto[np.isnan(lproto)]
             
-            lproto_anat = [np.mean(lac[u==k],0) for k in range(Pa.k)]
+            lproto_anat = [np.mean(lac[u==k],0) for k in range(nb_parcel)]
             lproto_anat = np.array(lproto_anat)
-            lproto_anat[np.isnan(lproto_anat)] = proto_anat[np.isnan(lproto_anat)]
+            #lproto_anat[np.isnan(lproto_anat)] = proto_anat[np.isnan(lproto_anat)]
             
             LP.append(lproto)
             LPA.append(lproto_anat)
 
         # recompute the prototypes across subjects
         proto_mem = proto.copy()
-        proto = np.mean(np.array(LP),0)
-        proto_anat = np.mean(np.array(LPA),0)
-        displ = np.sqrt(np.sum((proto_mem-proto)**2,1).max())
+        proto = np.mean(np.array(LP), 0)
+        proto_anat = np.mean(np.array(LPA), 0)
+        displ = np.sqrt(np.sum((proto_mem-proto)**2, 1).max())
         if verbose:
-            print 'energy',Energy, 'displacement',displ
+            print 'energy', Energy, 'displacement', displ
             
         # recompute the topological model
         spatial_proto.set_field(proto_anat)
-        spatial_proto.Voronoi_diagram(proto_anat,anat_coord)
+        spatial_proto.Voronoi_diagram(proto_anat, domain.coord)
         spatial_proto.set_gaussian(proto_anat)
         spatial_proto.normalize()
 
         if displ<1.e-4*dmax: break
-    return U,proto_anat
+    return U, proto_anat
+
+def _jointly_reduced_data( data1, data2, chunksize):
+    lnvox = data1.shape[0]
+    aux = np.argsort(rand(lnvox)) [:np.minimum(chunksize, lnvox)]
+    rdata1 = data1[aux, :]
+    rdata2 = data2[aux, :]
+    
+def _reduce_and_concatenate(data1, data2, chunksize):
+    nb_subj = len(data1)
+    rset1 = []
+    rset2 = []
+    for s in range(nb_subj):
+        rdata1, rdata2 = _jointly_reduced_data( data1[s], data2[s], 
+                                                chunksize/nb_subj)
+        rset1.append(rdata1)
+        rest2.append(rdata2)
+    rset1 = np.concatenate(rset1)
+    rset2 = np.concatenate(rest2)
+    return rset1, rset2
+
 
 def hparcel(domain, ldata, nb_perm=0, niter=5, mu=10., dmax = 10., 
             lamb = 100.0,  chunksize = 1.e5, verbose=0, initial_mask=None):
@@ -352,70 +373,58 @@ def hparcel(domain, ldata, nb_perm=0, niter=5, mu=10., dmax = 10.,
     Results
     -------
     Pa: the resulting parcellation structure appended with the labelling
-    """
-    
+    """    
     # a various parameters
-    nn = 18
     nbvox = domain.size
     xyz = domain.ijk
     nb_subj = len(ldata)
+    
     if initial_mask is None:
         initial_mask = np.ones((nbvox, nb_subj))
     
     Gs = []
-    Feature = []
-    RFeature = []
-    Ranat = []
-    # browse the data
+    feature = []
+
     for s in range(nb_subj):
+        # build subject-specific models of the data
         lxyz = xyz[initial_mask[:, s]>-1].astype(np.int)
         lnvox = np.sum(initial_mask[:, s]>-1)
-        lac = anat_coord[initial_mask[:, s]>-1]
-        
-        g = fg.WeightedGraph(lnvox)
-        g.from_3d_grid(lxyz,nn)
+        lac = domain.coord[initial_mask[:, s]>-1]
+        g = fg.wgraph_from_coo_matrix(domain.topology)
         g.remove_trivial_edges()
         Gs.append(g)
-        beta = np.reshape(ldata[s],(lnvox,ldata[s].shape[1]))
-        feature = np.hstack((beta,mu*lac/(1.e-15+np.std(anat_coord,0))))
-        Feature.append(feature)
-        
-        aux = np.argsort(rand(lnvox))[:np.minimum(chunksize/nb_subj,lnvox)]
-        RFeature.append(feature[aux,:])
-        Ranat.append(lac[aux,:])
-
-    RFeature = np.concatenate(RFeature)
-    Ranat = np.concatenate(Ranat)
+        beta = np.reshape(ldata[s], (lnvox, ldata[s].shape[1]))
+        lf = np.hstack((beta, mu * lac/(1.e-15 + np.std(domain.coord, 0))))
+        feature.append(lf)
 
     # main function
-    U,proto_anat = _optim_hparcel(Ranat, RFeature, Feature, Pa, Gs, anat_coord,
-                                         lamb, dmax, niter=niter,  
-                                         verbose=verbose)
+    all_labels, proto_anat = _optim_hparcel(
+        feature, domain, Gs, lamb, dmax,  niter=niter, initial_labels, 
+        chunksize=chunksize, verbose=verbose)
 
     # write the individual labelling
-    Labels = -1*np.ones((nbvox,nb_subj)).astype(np.int)
+    labels = -1*np.ones((nbvox, nb_subj)).astype(np.int)
     for s in range(nb_subj):
-        Labels[initial_mask[:,s]>-1,s] = U[s]
-        
-    palc = initial_mask.copy()
-    Pa.set_labels(Labels)
-    if Pa.isfield('functional'): 
-        Pa.remove_feature('functional')
-    Pa.make_feature(ldata,'functional')
-        
+        labels[initial_mask[:,s] > -1, s] = all_labels[s]
+ 
     # compute the group-level labels 
-    u = fc.voronoi(anat_coord,proto_anat)
-    Pa.group_labels  = u
+    template_labels = fc.voronoi(domain_coord, proto_anat)
+    
+    # create the parcellation
+    Pa = MultiSubjectParcellation(domain, individal_labels=labels, 
+                                  template_labels=template_labels)
+    Pa.make_feature(ldata, 'functional')
+        
     if nb_perm>0:
-        Pb = fp.Parcellation(Pa.k,xyz,palc)
-        prfx0 = perm_prfx(Pb, Gs, Feature, ldata,anat_coord, nb_perm, niter, dmax, lamb, chunksize)
+        prfx0 = perm_prfx(domain, Gs, feature, ldata, initial_mask, nb_perm, 
+                          niter,  dmax, lamb, chunksize)
         return Pa, prfx0
     else:
         return Pa
 
 
-def perm_prfx(Pa, Gs, F0, ldata, anat_coord, nb_perm=100, niter=5, dmax = 10., 
-                  lamb = 100.0, chunksize = 1.e5):
+def perm_prfx(domain, Gs, F0, ldata, initial_mask=None, nb_perm=100, niter=5, 
+              dmax = 10., lamb = 100.0, chunksize = 1.e5):
     """
     caveat: assumes that the functional dimension is 1
     """
@@ -425,33 +434,34 @@ def perm_prfx(Pa, Gs, F0, ldata, anat_coord, nb_perm=100, niter=5, dmax = 10.,
     nb_subj = Pa.nb_subj
     palc = initial_mask.copy()
     for q in range(nb_perm):
-        Feature = []
-        RFeature = []
-        Ranat = []
+        feature = []
+        reduced_feature = []
+        reduced_coord = []
         sldata = []
         for s in range(nb_subj):
-            feature = F0[s].copy()
+            lf = F0[s].copy()
             lnvox = np.sum(initial_mask[:,s]>-1)
             lac = anat_coord[initial_mask[:,s]>-1]
             swap = (rand()>0.5)*2-1
-            feature[:,:-adim] = swap*feature[:,:-adim]
+            lf[:,:-adim] = swap*feature[:,:-adim]
             sldata.append(swap*ldata[s])
-            Feature.append(feature)
+            feature.append(lf)
             aux = np.argsort(rand(lnvox))[:np.minimum(chunksize/nb_subj,lnvox)]
-            RFeature.append(feature[aux,:])
-            Ranat.append(lac[aux,:])
+            reduced_feature.append(feature[aux,:])
+            reduced_coord.append(lac[aux,:])
             
-        RFeature = np.concatenate(RFeature)
-        Ranat = np.concatenate(Ranat)    
+        reduced_feature = np.concatenate(reduced_feature)
+        reduced_coord = np.concatenate(reduced_coord)    
         # optimization part
-        U,proto_anat = _optim_hparcel( Ranat, RFeature, Feature, Pa, 
-                                      Gs, anat_coord, lamb, dmax, niter=niter)
+        all_labels, proto_anat = _optim_hparcel( 
+            reduced_coord, reduced_feature, feature, Pa, 
+            Gs, anat_coord, lamb, dmax, niter=niter)
         
-        Labels = -1*np.ones((Pa.nbvox,nb_subj)).astype(np.int)
+        labels = -1*np.ones((Pa.nbvox,nb_subj)).astype(np.int)
         for s in range(nb_subj):
-            Labels[initial_mask[:,s]>-1,s] = U[s]
+            labels[initial_mask[:,s]>-1,s] = all_labels[s]
         
-        Pa.set_labels(Labels)
+        Pa.set_labels(labels)
         if Pa.isfield('functional'): Pa.remove_feature('functional')
         Pa.make_feature(sldata,'functional')
         prfx = Pa.PRFX('functional')
