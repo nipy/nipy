@@ -5,6 +5,33 @@ from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
 from tempfile import mkdtemp
 from os.path import join, exists
 
+def test_mask_parcel():
+    """
+    Test that mask parcellation performs correctly
+    """
+    nb_parcel = 20
+    shape = (10, 10, 10)
+    mask_image = Nifti1Image(np.ones(shape), np.eye(4))
+    wim = mask_parcellation(mask_image, nb_parcel)
+    assert (np.unique(wim.get_data())==np.arange(nb_parcel)).all()
+    
+def test_mask_parcel_multi_subj():
+    """
+    Test that mask parcellation performs correctly
+    """
+    tempdir = mkdtemp()
+    nb_parcel = 20
+    shape = (10, 10, 10)
+    nb_subj = 5
+    mask_image = []
+    for s in range(nb_subj):
+        path = join(tempdir, 'mask%s.nii' %s)
+        save(Nifti1Image(np.random.rand(*shape)>.1, np.eye(4)), path)
+        mask_image.append(path)
+
+    wim = mask_parcellation(mask_image, nb_parcel)
+    assert (np.unique(wim.get_data())==np.arange(nb_parcel)).all()
+    
 def test_parcel_intra_from_3d_image():
     """
     test that a parcellation is generated, starting from an input 3D image

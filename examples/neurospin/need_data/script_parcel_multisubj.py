@@ -8,7 +8,7 @@ import os.path as op
 import tempfile
 
 from nipy.neurospin.spatial_models.parcel_io import parcel_input, \
-    parcellation_output, parcellation_based_analysis
+    write_parcellation_image, parcellation_based_analysis
 from nipy.neurospin.spatial_models.hierarchical_parcellation import hparcel
 import get_data_light
 
@@ -24,8 +24,6 @@ mask_images = [op.join(data_dir, 'mask_subj%02d.nii'%n)
 learn_images =[[ op.join(data_dir, 'spmT_%04d_subj_%02d.nii' % (nb, n))
                  for nb in numbeta]
                 for n in range(nbsubj)]
-test_images=learn_images
-
 nbeta = len(numbeta)
 
 # parameter for the intersection of the mask
@@ -46,25 +44,24 @@ swd = tempfile.mkdtemp()
 
 
 # prepare the parcel structure
-fpa,ldata,coord = parcel_input(mask_images, nbeta, learn_images, ths, fdim)
+domain, ldata = parcel_input(mask_images, learn_images, ths, fdim)
+fpa = dom #???
 fpa.k = nbparcel
 
 # run the algorithm
-fpa = hparcel(fpa, ldata, coord)
+fpa = hparcel(fpa, ldata, domain.coord)
 #fpa,prfx0 = hparcel(fpa,ldata,coord,nbperm=200,niter=5,verbose)
 
 #produce some output images
-parcellation_output(fpa, mask_images, learn_images, coord, subj_id,
-                    verbose=1, swd=swd)
+write_parcellation_images(fpa,  subject_id=subj_id, swd=swd, 
+                          write_jacobian=True)
+
 
 # do some parcellation-based analysis:
 # take some test images whose parcel-based signal needs to be assessed 
 test_images = learn_images
 
-# a design matrix for possibly subject-specific effects
-DMtx = None
-
 # compute and write the parcel-based statistics
-parcellation_based_analysis(fpa, test_images, numbeta, swd, DMtx, verbose)
-
+parcellation_based_analysis(fpa, test_images, 'one_sample', condition_id='29', 
+                            swd=swd)
 print "Wrote everything in %s" % swd

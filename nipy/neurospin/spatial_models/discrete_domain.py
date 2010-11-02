@@ -344,7 +344,17 @@ class DiscreteDomain(object):
         self.id = id
         self.referential = referential
         self.features = {}
-        
+
+    def copy(self):
+        """ Returns a copy of self
+        """
+        new_dom =  DiscreteDomain(self.dim, self.coord.copy(), 
+                                  self.local_volume.copy(), self.id, 
+                                  self.referential)
+        for fid in self.features.keys():
+            new_dom.set_feature(fid, self.get_feature(fid).copy())
+        return new_dom
+
     def get_coord(self):
         """ returns self.coord
         """

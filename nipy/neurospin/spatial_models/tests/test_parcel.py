@@ -21,40 +21,98 @@ def test_parcel_interface():
     """
     # prepare some data
     shape = (10, 10, 10)
-    n_parcel = 10
+    nb_parcel = 10
     data =  np.random.randn(np.prod(shape))
     domain =  dom.grid_domain_from_array(np.ones(shape))
     g = field_from_coo_matrix_and_data(domain.topology, data)
-    u, J0 = g.ward(n_parcel)
-    tmp = np.array([np.sum(u == k) for k in range(10)])
+    u, J0 = g.ward(nb_parcel)
+    tmp = np.array([np.sum(u == k) for k in range(nb_parcel)])
 
     #instantiate a parcellation
     msp = fp.MultiSubjectParcellation(domain, u, u) 
-    assert msp.nb_parcel == n_parcel
+    assert msp.nb_parcel == nb_parcel
     assert msp.nb_subj == 1
     assert (msp.population().ravel() == tmp).all()
+
+def test_parcel_interface_multi_subj():
+    """ test parcellation interface, with multiple subjects
+    """
+    # prepare some data
+    shape = (10, 10, 10)
+    nb_parcel = 10
+    nb_subj = 5
+    v = []
+    for s in range(nb_subj):
+        data =  np.random.randn(np.prod(shape))
+        domain =  dom.grid_domain_from_array(np.ones(shape))
+        g = field_from_coo_matrix_and_data(domain.topology, data)
+        u, J0 = g.ward(nb_parcel)
+        v.append(u)
+
+    v = np.array(v).T    
+    tmp = np.array([np.sum(v == k, 0) for k in range(nb_parcel)])
+
+    #instantiate a parcellation
+    msp = fp.MultiSubjectParcellation(domain, u, v) 
+    assert msp.nb_parcel == nb_parcel
+    assert msp.nb_subj == nb_subj
+    assert (msp.population() == tmp).all()
 
 def test_parcel_feature():
     """ Simply test parcellation feature interface
     """
     # prepare some data
     shape = (10, 10, 10)
-    n_parcel = 10
+    nb_parcel = 10
     data =  np.random.randn(np.prod(shape), 1)
     domain =  dom.grid_domain_from_array(np.ones(shape))
     g = field_from_coo_matrix_and_data(domain.topology, data)
-    u, J0 = g.ward(n_parcel)
-    tmp = np.array([np.sum(u == k) for k in range(10)])
+    u, J0 = g.ward(nb_parcel)
 
     #instantiate a parcellation
     msp = fp.MultiSubjectParcellation(domain, u, u) 
     msp.make_feature('data', data)
-
-    assert msp.get_feature('data').shape== (n_parcel, 1)
+    assert msp.get_feature('data').shape== (nb_parcel, 1)
     
     # test with a copy
-    #msp2 = msp.copy()
-    #assert msp2.get_feature('data') == msp2.get_feature('data')
+    msp2 = msp.copy()
+    assert (msp2.get_feature('data') == msp2.get_feature('data')).all()
+
+    # test a multi_dimensional feature
+    dim = 4
+    msp.make_feature('new', np.random.randn(np.prod(shape), 1, dim))
+    assert msp.get_feature('new').shape== (nb_parcel, 1, dim)
+
+def test_parcel_feature_multi_subj():
+    """ Test parcellation feature interface with multiple subjects
+    """
+    # prepare some data
+    shape = (10, 10, 10)
+    nb_parcel = 10
+    nb_subj = 5
+    v = []
+    for s in range(nb_subj):
+        data =  np.random.randn(np.prod(shape))
+        domain =  dom.grid_domain_from_array(np.ones(shape))
+        g = field_from_coo_matrix_and_data(domain.topology, data)
+        u, J0 = g.ward(nb_parcel)
+        v.append(u)
+
+    v = np.array(v).T    
+    msp = fp.MultiSubjectParcellation(domain, u, v) 
+
+    # test a multi_dimensional feature
+    # dimension 1
+    msp.make_feature('data', np.random.randn(np.prod(shape), nb_subj))
+    assert msp.get_feature('data').shape== (nb_parcel, nb_subj)
+
+    #dimension>1
+    dim = 4    
+    msp.make_feature('data', np.random.randn(np.prod(shape), nb_subj, dim))
+    assert msp.get_feature('data').shape== (nb_parcel, nb_subj, dim)
+    
+    # msp.features['data'] has been overriden
+    assert msp.features.keys() == ['data']
 
 #####################################################################
 # Deprecated part

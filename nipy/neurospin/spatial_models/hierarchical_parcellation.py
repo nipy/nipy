@@ -24,7 +24,7 @@ def _Field_Gradient_Jac(ref,target):
     fgj: array of shape (ref.V) that gives the jacobian
          implied by the ref.field->target transformation.
     """
-    import numpy.linalg as L
+    import numpy.linalg as nl
     n = ref.V
     xyz = ref.field
     dim = xyz.shape[1]
@@ -35,8 +35,8 @@ def _Field_Gradient_Jac(ref,target):
         if np.size(j)>dim-1:
             dx = np.squeeze(xyz[j,:]-xyz[i,:])
             df = np.squeeze(target[j,:]-target[i,:])
-            FG = np.dot(L.pinv(dx),df)
-            fgj.append(L.det(FG))
+            FG = np.dot(nl.pinv(dx),df)
+            fgj.append(nl.det(FG))
         else:
             print i,j
             fgj.append(1)
@@ -182,7 +182,7 @@ def _Field_Gradient_Jac_Map(i,ref,target, targeti):
     
     return fgj
 
-def optim_hparcel(Ranat, RFeature, Feature, Pa, Gs, anat_coord, lamb=1., 
+def _optim_hparcel(Ranat, RFeature, Feature, Pa, Gs, anat_coord, lamb=1., 
                          dmax=10., chunksize=1.e5, niter=5, verbose=0):
     """
     Core function of the heirrachical parcellation procedure.
@@ -330,7 +330,8 @@ def optim_hparcel(Ranat, RFeature, Feature, Pa, Gs, anat_coord, lamb=1.,
         if displ<1.e-4*dmax: break
     return U,proto_anat
 
-def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.0, chunksize = 1.e5,verbose=0):
+def hparcel(domain, ldata, nb_perm=0, niter=5, mu=10., dmax = 10., 
+            lamb = 100.0,  chunksize = 1.e5, verbose=0, initial_mask=None):
     """
     Function that performs the parcellation by optimizing the
     sinter-subject similarity while retaining the connectedness
@@ -338,11 +339,11 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
     
     Parameters
     ----------
-    Pa: a Parcel structure that essentially contains 
-        the grid position information and the individual masks
-    anat_coord: array of shape(nbvox,3) which defines the position
-                 of the grid points in some space
-    nbperm=0: the number of times the parcellation and prfx
+    domain: a discrete_domain.DiscreteDomain instance
+            the yields all the spatial information of the domain 
+    ldata: list of (n_subj) arrays of shape (domain.size, dim)
+           the feature data used to inform the parcellation
+    nb_perm=0: the number of times the parcellation and prfx
               computation is performed on sign-swaped data
     niter=10: number of iterations to obtain the convergence of the method
               information in the clustering algorithm
@@ -355,27 +356,31 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
     
     # a various parameters
     nn = 18
-    nbvox = Pa.nbvox
-    xyz = Pa.ijk
-    Sess = Pa.nb_subj
+    nbvox = domain.size
+    xyz = domain.ijk
+    nb_subj = len(ldata)
+    if initial_mask is None:
+        initial_mask = np.ones((nbvox, nb_subj))
     
     Gs = []
     Feature = []
     RFeature = []
     Ranat = []
     # browse the data
-    for s in range(Sess):
-        lxyz = xyz[Pa.label[:,s]>-1].astype(np.int)
-        lnvox = np.sum(Pa.label[:,s]>-1)
-        lac = anat_coord[Pa.label[:,s]>-1]
+    for s in range(nb_subj):
+        lxyz = xyz[initial_mask[:, s]>-1].astype(np.int)
+        lnvox = np.sum(initial_mask[:, s]>-1)
+        lac = anat_coord[initial_mask[:, s]>-1]
+        
         g = fg.WeightedGraph(lnvox)
         g.from_3d_grid(lxyz,nn)
         g.remove_trivial_edges()
+        Gs.append(g)
         beta = np.reshape(ldata[s],(lnvox,ldata[s].shape[1]))
         feature = np.hstack((beta,mu*lac/(1.e-15+np.std(anat_coord,0))))
-        Gs.append(g)
         Feature.append(feature)
-        aux = np.argsort(rand(lnvox))[:np.minimum(chunksize/Sess,lnvox)]
+        
+        aux = np.argsort(rand(lnvox))[:np.minimum(chunksize/nb_subj,lnvox)]
         RFeature.append(feature[aux,:])
         Ranat.append(lac[aux,:])
 
@@ -383,16 +388,16 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
     Ranat = np.concatenate(Ranat)
 
     # main function
-    U,proto_anat = optim_hparcel(Ranat, RFeature, Feature, Pa, Gs, anat_coord,
+    U,proto_anat = _optim_hparcel(Ranat, RFeature, Feature, Pa, Gs, anat_coord,
                                          lamb, dmax, niter=niter,  
                                          verbose=verbose)
 
     # write the individual labelling
-    Labels = -1*np.ones((nbvox,Sess)).astype(np.int)
-    for s in range(Sess):
-        Labels[Pa.label[:,s]>-1,s] = U[s]
+    Labels = -1*np.ones((nbvox,nb_subj)).astype(np.int)
+    for s in range(nb_subj):
+        Labels[initial_mask[:,s]>-1,s] = U[s]
         
-    palc = Pa.label.copy()
+    palc = initial_mask.copy()
     Pa.set_labels(Labels)
     if Pa.isfield('functional'): 
         Pa.remove_feature('functional')
@@ -401,15 +406,15 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
     # compute the group-level labels 
     u = fc.voronoi(anat_coord,proto_anat)
     Pa.group_labels  = u
-    if nbperm>0:
+    if nb_perm>0:
         Pb = fp.Parcellation(Pa.k,xyz,palc)
-        prfx0 = perm_prfx(Pb, Gs, Feature, ldata,anat_coord, nbperm, niter, dmax, lamb, chunksize)
-        return Pa,prfx0
+        prfx0 = perm_prfx(Pb, Gs, Feature, ldata,anat_coord, nb_perm, niter, dmax, lamb, chunksize)
+        return Pa, prfx0
     else:
         return Pa
 
 
-def perm_prfx(Pa, Gs, F0, ldata, anat_coord, nbperm=100, niter=5, dmax = 10., 
+def perm_prfx(Pa, Gs, F0, ldata, anat_coord, nb_perm=100, niter=5, dmax = 10., 
                   lamb = 100.0, chunksize = 1.e5):
     """
     caveat: assumes that the functional dimension is 1
@@ -417,34 +422,34 @@ def perm_prfx(Pa, Gs, F0, ldata, anat_coord, nbperm=100, niter=5, dmax = 10.,
     # permutations for the assesment of the results
     prfx0 = []
     adim = anat_coord.shape[1]
-    Sess = Pa.nb_subj
-    palc = Pa.label.copy()
-    for q in range(nbperm):
+    nb_subj = Pa.nb_subj
+    palc = initial_mask.copy()
+    for q in range(nb_perm):
         Feature = []
         RFeature = []
         Ranat = []
         sldata = []
-        for s in range(Sess):
+        for s in range(nb_subj):
             feature = F0[s].copy()
-            lnvox = np.sum(Pa.label[:,s]>-1)
-            lac = anat_coord[Pa.label[:,s]>-1]
+            lnvox = np.sum(initial_mask[:,s]>-1)
+            lac = anat_coord[initial_mask[:,s]>-1]
             swap = (rand()>0.5)*2-1
             feature[:,:-adim] = swap*feature[:,:-adim]
             sldata.append(swap*ldata[s])
             Feature.append(feature)
-            aux = np.argsort(rand(lnvox))[:np.minimum(chunksize/Sess,lnvox)]
+            aux = np.argsort(rand(lnvox))[:np.minimum(chunksize/nb_subj,lnvox)]
             RFeature.append(feature[aux,:])
             Ranat.append(lac[aux,:])
             
         RFeature = np.concatenate(RFeature)
         Ranat = np.concatenate(Ranat)    
         # optimization part
-        U,proto_anat = optim_hparcel( Ranat, RFeature, Feature, Pa, 
+        U,proto_anat = _optim_hparcel( Ranat, RFeature, Feature, Pa, 
                                       Gs, anat_coord, lamb, dmax, niter=niter)
         
-        Labels = -1*np.ones((Pa.nbvox,Sess)).astype(np.int)
-        for s in range(Sess):
-            Labels[Pa.label[:,s]>-1,s] = U[s]
+        Labels = -1*np.ones((Pa.nbvox,nb_subj)).astype(np.int)
+        for s in range(nb_subj):
+            Labels[initial_mask[:,s]>-1,s] = U[s]
         
         Pa.set_labels(Labels)
         if Pa.isfield('functional'): Pa.remove_feature('functional')

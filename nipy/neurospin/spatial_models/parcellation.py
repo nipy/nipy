@@ -67,7 +67,7 @@ class MultiSubjectParcellation(object):
                 self.individual_labels = individual_labels[:, np.newaxis]
             self.nb_subj = self.individual_labels.shape[1]
         
-        self.feature = {}
+        self.features = {}
             
             
     def copy(self):
@@ -78,8 +78,8 @@ class MultiSubjectParcellation(object):
                                         self.individual_labels.copy(),
                                         self.nb_parcel)
         
-        for fid in self.feature.key():
-            msp.set_feature(fid, self.get_feature('fid').copy())
+        for fid in self.features.keys():
+            msp.set_feature(fid, self.get_feature(fid).copy())
         return msp
 
     def check(self):
@@ -108,7 +108,7 @@ class MultiSubjectParcellation(object):
     def set_individual_labels(self, individual_labels):
         """
         """
-        self.individual_labeles = individual_labels
+        self.individual_labels = individual_labels
         self.check()
         self.nb_subj = self.individual_labels.shape[1]
 
@@ -127,17 +127,21 @@ class MultiSubjectParcellation(object):
 
     def make_feature(self, fid, data):
         """ Compute parcel-level averages of data
+        
         Parameters
         ----------
         fid: string, the feature identifier
         data: array of shape (self.domain.size, self.nb_subj, dim) or 
               (self.domain.sire, self.nb_subj)
               Some information at the voxel level
+        
+        Returns
+        -------
+        pfeature: array of shape(self.nb_parcel, self.nbsubj, dim)
+                  the computed feature data
         """
         if len(data.shape)<2:
             raise ValueError, "Data array should at least have dimension 2"
-        if len(data.shape)>2:
-            data = np.squeeze(data)
         if len(data.shape)>3:    
             raise ValueError, "Data array should have <4 dimensions"
         if ((data.shape[0] != self.domain.size) or 
@@ -156,7 +160,7 @@ class MultiSubjectParcellation(object):
                 pfeature[k, s] = np.mean(dsk, 0)
         
         self.set_feature(fid, pfeature)
-            
+        return feature
 
 
     def set_feature(self, fid, data):
@@ -173,12 +177,15 @@ class MultiSubjectParcellation(object):
         if (data.shape[0] != self.nb_parcel) or (data.shape[1]!= self.nb_subj):
             raise ValueError, 'incorrect feature size'
         else:
-            self.feature.update({fid:data})
+            self.features.update({fid:data})
     
     def get_feature(self, fid):
         """
+        Parameters
+        ----------
+        fid: string, the feature identifier
         """
-        return self.feature[fid]
+        return self.features[fid]
 
             
 ###################################################################

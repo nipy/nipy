@@ -9,380 +9,242 @@ in parcel definition processes
 import numpy as np
 import os.path
 from nipy.io.imageformats import load, save, Nifti1Image 
+
 from nipy.neurospin.clustering.clustering import kmeans
-
-from parcellation import Parcellation
+#from parcellation import MultiSubjectParcellation
 from discrete_domain import grid_domain_from_image
+from mroi import SubDomains
+from ..mask import intersect_masks
 
-def mask_parcellation(mask_images, nb_parcel, output_image=None):
+def mask_parcellation(mask_images, nb_parcel, threshold=0, output_image=None):
     """
     Performs the parcellation of a certain mask
 
     Parameters
     ----------
-    mask_images: list of strings,
-                 paths of the mask images that define the common space.
+    mask_images: string or Nifti1Image or list of strings/Nifti1Images,
+                 paths of mask image(s) that define(s) the common space.
     nb_parcel: int,
                number of desired parcels
+    threshold: float, optional,
+               level of intersection of the masks
     output_image: string, optional
-                   path of the output image
+                  path of the output image
                    
     Returns
     -------
-    wim: Nifti1Imagine instance,  the resulting parcellation
+    wim: Nifti1Imagine instance,  representing the resulting parcellation
     """
-    from ..mask import intersect_masks
-
-    # compute the group mask
-    affine = load(mask_images[0]).get_affine()
-    shape = load(mask_images[0]).get_shape()
-    mask = intersect_masks(mask_images, threshold=0)>0
-    ijk = np.where(mask)
-    ijk = np.array(ijk).T
-    nvox = ijk.shape[0]
-
-    # Get and cluster  coordinates 
-    ijk = np.hstack((ijk,np.ones((nvox,1))))
-    coord = np.dot(ijk, affine.T)[:,:3]
-    cent, tlabs, J = kmeans(coord, nb_parcel)
+    if isinstance(mask_images, basestring):
+        mask = mask_images
+    elif isinstance(mask_images, Nifti1Image):
+        mask = mask_images
+    else:
+        # mask_images should be a list
+        mask = Nifti1Image(intersect_masks(mask_images, threshold=0)>0, 
+                           load(mask_images[0]).get_affine())
         
-    # Write the results
-    label = -np.ones(shape)
-    label[mask]= tlabs
-    wim = Nifti1Image(label, affine)
-    wim.get_header()['descrip'] = 'Label image in %d parcels'%nb_parcel    
-    if output_image is not None:
-        save(wim, output_image)
-    return wim
-    
+    domain = grid_domain_from_image(mask)
+    cent, labels, J = kmeans(domain.coord, nb_parcel)
+    sub_dom = SubDomains(domain, labels, 'parcellation')
+    return sub_dom.to_image()
 
-def parcel_input(mask_images, nbeta, learning_images,
-                ths = .5, fdim=3, affine=None):   
+def parcel_input(mask_images, learning_images, ths=.5, fdim=None):   
     """
     Instantiating a Parcel structure from a give set of input
 
     Parameters
-    ----------
-    mask_images: list of strings,
-                 paths of the mask images that  define the common space.
-                 These can be cortex segmentations
-                 (at the same resolution as the remainder of the data)
-                 Note that nsubj = len(mask_images)
-    nbeta: list of integers, 
-           ids of the contrast of under study
-    learning_images: path of functional images used as input to the
-                     parcellation procedure. normally these are statistics
-                     (student/normal) images.
+    ---------- 
+    mask_images: string or Nifti1Image or list of strings/Nifti1Images,
+                 paths of mask image(s) that define(s) the common space.
+    learning_images: (nb_subject-) list of  (nb_feature-) list of strings,
+                     paths of feature images used as input to the
+                     parcellation procedure 
     ths=.5: threshold to select the regions that are common across subjects.
             if ths = .5, thethreshold is half the number of subjects
-    fdim=3, int
-            dimension of the data used in subsequent analyses 
-            if smaller than len(nbeta), 
-            a PCA is perfomed to reduce the information in the data
-    affine=None provides the transformation to Talairach space.
-                if affine==None, this is taken from the image header
+    fdim: int, optional
+          if nb_feature (the dimension of the data) used in subsequent analyses 
+          if greater than fdim, 
+          a PCA is perfomed to reduce the information in the data
+          Byd efault, no reduction is performed
 
     Results
     -------
-    pa Parcellation instance  that stores the 
-      individual masks and grid coordinates
-    istats: nsubject-length list of arrays of shape
-      (number of within-mask voxels of each subjet,fdim)
-      which contains the amount of functional information
-      available to parcel the data
-    Talairach: array of size (nvoxels,3): MNI coordinates of the
-      points corresponding to MXYZ
+    domain: discrete_domain.DiscreteDomain instance 
+            that stores the spatial information on the parcelled domain
+    feature: (nb_subect-) list of arrays of shape (domain.size, fdim)
+             feature information available to parcellate the data
     """
-    nsubj = len(mask_images)
+    nb_subj = len(learning_images)
     
-    # Read the referential information
-    nim = load(mask_images[0])
-    if affine==None:
-        affine = nim.get_affine()
-
-    # take the individual masks
-    mask = []
-    for s in range(nsubj):
-        nim = load(mask_images[s])
-        temp = np.squeeze(nim.get_data())
-        rbeta = load(learning_images[s][0])
-        maskb = np.squeeze(rbeta.get_data())
-        temp = np.minimum(temp, 1-(maskb==0))        
-        mask.append(temp)
-        # fixme : check that all images are co-registered
-        
-    mask = np.squeeze(np.array(mask))
-
-    # "intersect" the masks
-    # fixme : this is nasty
-    if ths ==.5:
-        ths = nsubj/2
+    # get a group-level mask
+    if isinstance(mask_images, basestring):
+        mask = mask_images
+    elif isinstance(mask_images, Nifti1Image):
+        mask = mask_images
     else:
-        ths = np.minimum(np.maximum(ths,0),nsubj-1)
-
-    mask = mask>0
-    smask = np.sum(mask,0)>ths
+        # mask_images should be a list
+        mask = Nifti1Image(intersect_masks(mask_images, threshold=0)>0, 
+                           load(mask_images[0]).get_affine())
     
-    mxyz = np.array(np.where(smask)).T
-    nvox = mxyz.shape[0]
-    mask = mask[:, smask>0].T    
+    # build the domain
+    domain = grid_domain_from_image(mask)
+   
+    # load the functional data
+    feature = []
+    nbeta = len(learning_images[0])
+    for s in range(nb_subj):
+        if len(learning_images[s])!=nbeta:
+            raise ValueError, 'Inconsistent number of dimensions'
+        feature.append(np.array([domain.make_feature_from_image(b) 
+                                 for b in learning_images[s]]).T)
 
-    # Compute the position of each voxel in the common space    
-    coord = np.dot(np.hstack((mxyz, np.ones((nvox, 1)))), affine.T)[:, :3]
-        
-    # Load the functional data
-    istats = []
-    for s in range(nsubj): 
-        stat = []
-        lxyz = np.array(mxyz[mask[:,s], :])
-        
-        for b in range(nbeta):
-            # the stats (noise-normalized contrasts) images
-            rbeta = load(learning_images[s][b])
-            temp = rbeta.get_data()
-            temp = temp[lxyz[:,0], lxyz[:,1], lxyz[:,2]]
-            temp = np.reshape(temp, np.size(temp))
-            stat.append(temp)
-
-        stat = np.array(stat)
-        istats.append(stat.T)
-    
     # Possibly reduce the dimension of the  functional data
-    if fdim<istats[0].shape[1]:
-        rstats = np.concatenate(istats)
-        rstats = np.reshape(rstats,(rstats.shape[0], nbeta))
-        rstats = rstats-np.mean(rstats)
+    if (len(feature[0].shape)==1) or (fdim is None):
+        return domain,  feature
+    if fdim < feature[0].shape[1]:
         import numpy.linalg as nl
-        m1,m2,m3 = nl.svd(rstats, 0)
-        rstats = np.dot(m1, np.diag(m2))
-        rstats = rstats[:, :fdim]
-        subj = np.concatenate([s*np.ones(istats[s].shape[0]) \
-                               for s in range(nsubj)])
-        istats = [rstats[subj==s] for s in range (nsubj)]
+        subj = np.concatenate([s*np.ones(feature[s].shape[0]) \
+                               for s in range(nb_subj)])
+        cfeature = np.concatenate(feature)
+        cfeature -= np.mean(cfeature, 0)
+        m1, m2, m3 = nl.svd(cfeature, 0)
+        cfeature = np.dot(m1, np.diag(m2))
+        cfeature = cfeature[:, :fdim]
+        feature = [cfeature[subj==s] for s in range (nb_subj)]
 
-    pa = Parcellation(1,mxyz,mask-1)  
-    
-    return pa, istats, coord
+    return domain, feature
 
-def parcellation_output(Pa, mask_images, learning_images, coord, nbru, 
-                        verbose=1, swd=None):
-    """
-    Function that produces images that describe the spatial structure
-    of the parcellation.  It mainly produces label images at the group
-    and subject level
+
+def write_parcellation_images(Pa, template_path=None, indiv_path=None, 
+                              subject_id=None, swd=None, write_jacobian==False):
+    """ Write images that describe the spatial structure of the parcellation
     
     Parameters
     ----------
-    Pa : Parcellation instance that describes the parcellation
-    mask_images: list of images paths that define the mask
-    learning_images: list of float images containing the input data
-    coord: array of shape (nvox,3) that contains(approximated)
-           MNI-coordinates of the brain mask voxels considered in the
-           parcellation process
-    nbru: list of subject ids
-    verbose=1 : verbosity level
+    Pa : MultiSubjectParcellation instance,
+         the description of the parcellation
+    template_path: string, optional,
+                   path of the group-level parcellation image
+    indiv_path: list of strings, optional 
+                paths of the individual parcellation images 
+    subject_id: list of strings of length Pa.nb_subj
+                subject identifiers, used to infer the paths when not available
     swd: string, optional 
-         output directory
-    
-    Results
-    -------
-    Pa: the updated Parcellation instance
+         output directory used to infer the paths when these are not available
+    write_jacobian: bool, optional,
+                    write the jacobian of the deformation (if applicable)
     """
+    # argument check
     if swd==None:
         from tempfile import mkdtemp
         swd = mkdtemp()
 
-    nsubj = Pa.nb_subj
-    Pa.set_subjects(nbru)
+    if subj_id==None:
+        subj_id = ['subj_%04d' %s for s in range(Pa.nb_subj)]
+
+    if len(subject_id) != Pa.nb_subj:
+        raise ValueError, 'subject_id does not match parcellation'
     
+    # If necessary, generate the paths
+    if template_path is None:
+        template_path = os.path.join(swd, "template_parcel.nii") 
+    if indiv_path is None:
+        indiv_path = [ os.path.join(swd, "parcel%s.nii" % subject_id[s]) 
+                        for s in range(Pa.nb_subj)]
+
     # write the template image
-    tlabs = Pa.group_labels
-    LabelImage = os.path.join(swd, "template_parcel.nii") 
-    rmask = load(mask_images[0])
-    ref_dim = rmask.get_shape()
-    affine = rmask.get_affine()
-    
-    Label = np.zeros(ref_dim)
-    Label[Pa.ijk[:,0],Pa.ijk[:,1],Pa.ijk[:,2]]=tlabs+1
-    
-    wim = Nifti1Image (Label, affine)
-    hdr = wim.get_header()
-    hdr['descrip'] = 'group_level Label image obtained from a \
-                     parcellation procedure'
-    save(wim, LabelImage)
-    
+    tlabs = Pa.template_labels
+    template = SubDomains(domain, tlabs, 'parcellation')
+    template.to_image(template_path, 
+                      descrip= 'Intra-subject parcellation template')
+
     # write subject-related stuff
-    Jac = []
-    if Pa.isfield('jacobian'):
-        Jac = Pa.get_feature('jacobian')
-        Jac = np.reshape(Jac,(Pa.k,nsubj))
+    if Pa.features.has_key('jacobian'):
+        jac = Pa.get_feature('jacobian')
+        jac = np.reshape(Jac, (Pa.k, Pa.nb_subj))
         
-    for s in range(nsubj):
-        # write the images
-        labs = Pa.label[:,s]
-        LabelImage = os.path.join(swd,"parcel%s.nii" % nbru[s])
-        JacobImage = os.path.join(swd,"jacob%s.nii" % nbru[s])      
+    for s in range(nb_subj):
+        # write the individual label images
+        labs = Pa.individual_label[:, s]
+        parcellation = SubDomains(domain, labs, 'parcellation')
+        lim = parcellation.to_image(indiv_path[s], 
+                                    descrip= 'Intra-subject parcellation')
 
-        Label = np.zeros(ref_dim).astype(np.int)
-        Label[Pa.ijk[:,0],Pa.ijk[:,1],Pa.ijk[:,2]]=labs+1
-        wim = Nifti1Image (Label, affine)
-        hdr = wim.get_header()
-        hdr['descrip'] = 'individual Label image obtained \
-                         from a parcellation procedure'
-        save(wim, LabelImage)
-
-        if ((verbose)&(np.size(Jac)>0)):
-            Label = np.zeros(ref_dim)
-            Label[Pa.ijk[:,0],Pa.ijk[:,1],Pa.ijk[:,2]]=Jac[labs,s]
-            wim = Nifti1Image (Label, affine)
-            hdr = wim.get_header()
+        # write the individual jacobian image
+        if (verbose and Pa.features.has_key('jacobian')):
+            # fixme : all this is a bit clumsy
+            jac_data = np.zeros(lim.get_shape())
+            nz_label = lim.get_data()[lim.get_data()>-1]
+            jac_data[lim.get_data()>-1] = jac[nz_label, s]
+            jim = Nifti1Image(jac_data, lim.affine)
+            hdr = jim.get_header()
             hdr['descrip'] = 'image of the jacobian of the deformation \
                               associated with the parcellation'
-            save(wim, JacobImage)       
+            jacobian_image = os.path.join(swd, "jacob%s.nii" % subject_id[s])
+            save(jim, jacobian_image)       
 
-    return Pa
-
-def parcellation_output_with_paths(Pa, mask_images, group_path, indiv_path):
-    """
-    Function that produces images that describe the spatial structure
-    of the parcellation.  It mainly produces label images at the group
-    and subject level
-    
-    Parameters
-    ----------
-    Pa : Parcellation instance that describes the parcellation
-    mask_images: list of images paths that define the mask
-    coord: array of shape (nvox,3) that contains(approximated)
-           MNI-coordinates of the brain mask voxels considered in the
-           parcellation process
-    group_path, string, path of the group-level parcellation image
-    indiv_path, list of strings, paths of the individual parcellation images   
-    
-    fixme
-    -----
-    the referential-defining information should be part of the Pa instance
-    """
-    nsubj = Pa.nb_subj
-    
-    # write the template image
-    tlabs = Pa.group_labels
-    rmask = load(mask_images[0])
-    ref_dim = rmask.get_shape()
-    affine = rmask.get_affine()
-    
-    Label = np.zeros(ref_dim)
-    Label[Pa.ijk[:,0],Pa.ijk[:,1],Pa.ijk[:,2]]=tlabs+1
-    
-    wim = Nifti1Image (Label, affine)
-    hdr = wim.get_header()
-    hdr['descrip'] = 'group_level Label image obtained from a \
-                     parcellation procedure'
-    save(wim, group_path)
-    
-    # write subject-related stuff
-    for s in range(nsubj):
-        # write the images
-        labs = Pa.label[:,s]
-        Label = np.zeros(ref_dim).astype(np.int)
-        Label[Pa.ijk[:,0],Pa.ijk[:,1],Pa.ijk[:,2]]=labs+1
-        wim = Nifti1Image (Label, affine)
-        hdr = wim.get_header()
-        hdr['descrip'] = 'individual Label image obtained \
-                         from a parcellation procedure'
-        save(wim, indiv_path[s])
-    
-
-
-def parcellation_based_analysis(Pa, test_images, numbeta, swd=None, 
-                                    DMtx=None, verbose=1, method_id=0):
+def parcellation_based_analysis(Pa, test_images, test='one_sample', 
+                                rfx_path=None, condition_id='', swd=None):
     """
     This function computes parcel averages and RFX at the parcel-level
 
     Parameters
     ----------
-    Pa Parcellation instance that is updated in this function
-    test_images: double list of paths of functional images used 
-                 as input to for inference. 
-                 Normally these are contrast images.
-                 double list is 
-                 [number of subjects [number of contrasts]]
-    numbeta: list of int of the associated ids
+    Pa: MultiSubjectParcellation instance 
+        the description of the parcellation
+    test_images: (Pa.nb_subj-) list of paths 
+                 paths of images used in the inference procedure
+    test: string, optional,
+          if test=='one_sample', the one_sample statstic is computed
+          otherwise, the parcel-based signal averages are returned
+    rfx_path: string optional,
+              path of the resulting one-sample test image, if applicable
     swd: string, optional 
-         output directory
-    DMtx=None: array od shape (nsubj,ncon) 
-               a design matrix for second-level analyses 
-              (not implemented yet)
-    verbose=1: verbosity level
-    method_id = 0: an id of the method used.
-              This is useful to compare the outcome of different 
-              Parcellation+RFX  procedures
-
-    Results
+         output directory used to compute output path if rfx_path is not given
+    condition_id: string, optional,
+                  contrast/condition id  used to compute output path
+                       
+    Returns
     -------
-    Pa: the updated Parcellation instance
+    test_data: array of shape(Pa.nb_parcel, Pa.nb_subj)
+               the parcel-level signal average if test is not 'one_sample'
+    prfx: array of shape(Pa.nb_parcel),
+          the one-sample t-value if test is 'one_sample'
     """
-    nsubj = Pa.nb_subj
-    mxyz = Pa.ijk.T
-    mask = Pa.label>-1
-    nbeta = len(numbeta)
-    
+    nb_subj = Pa.nb_subj
+ 
     # 1. read the test data
-    # fixme: Check that everybody is in the same referential
-    Test = []
-    for s in range(nsubj):
-        beta = []
-        lxyz = mxyz[:,mask[:,s]]
-        lxyz = np.array(lxyz)
+    if len(test_images) != nb_subj:
+        raise ValueError, 'Inconsistent number of test images'
+ 
+    test = np.array([Pa.domain.make_feature_from_image(ti) 
+                     for ti in test_images[s]]).T
+    
+    test_data = Pa.make_feature('', np.array(test)) 
+    
+    if test is not 'onesample':
+        return test_data
 
-        for b in range(nbeta):
-            # the raw contrast images   
-            rbeta = load(test_images[s][b])
-            temp = rbeta.get_data()
-            temp = temp[lxyz[0,:],lxyz[1,:],lxyz[2,:]]
-            temp = np.reshape(temp, np.size(temp))
-            beta.append(temp)
-            temp[np.isnan(temp)]=0 ##
-
-        beta = np.array(beta)
-        Test.append(beta.T) 
-
-    # 2. compute the parcel-based stuff
-    # and make inference inference (RFX,...)
-
-    prfx = np.zeros((Pa.k,nbeta))
-    vinter = np.zeros(nbeta)
-    for b in range(nbeta):
-        unitest = [np.reshape(Test[s][:,b],(np.size(Test[s][:,b]),1)) \
-                  for s in range(nsubj)]
-        cname = 'contrast_%04d'%(numbeta[b])
-        Pa.make_feature(unitest, cname)
-        prfx[:,b] =  np.reshape(Pa.PRFX(cname,1),Pa.k)
-        vinter[b] = Pa.variance_inter(cname)
-
-    vintra = Pa.variance_intra(Test)
-
-    if verbose:
-        print 'average intra-parcel variance', vintra
-        print 'average intersubject variance', vinter.mean()
-            
-    # 3. Write the stuff
-    # write RFX images
-    ref_dim = rbeta.get_shape()
-    affine = rbeta.get_affine()
-    tlabs = Pa.group_labels
-
-    # write the prfx images
-    for b in range(len(numbeta)):
-        RfxImage = os.path.join(swd,"prfx_%s_%d.nii" % (numbeta[b],method_id))
-        if ((verbose)&(np.size(prfx)>0)):
-            rfx_map = np.zeros(ref_dim)
-            rfx_map[Pa.ijk[:,0],Pa.ijk[:,1],Pa.ijk[:,2]] = prfx[tlabs,b]
-            wim = Nifti1Image (rfx_map, affine)
-            hdr = wim.get_header()
-            hdr['descrip'] = 'parcel-based eandom effects image (in z-variate)'
-            save(wim, RfxImage)     
+    # 2. perform one-sample test
+    # computation
+    from nipy.neurospin.utils.reproducibility_measures import ttest
+    prfx = ttest(test_data)
         
-    return Pa
+    # Write the stuff
+    template = SubDomains(domain, tlabs, 'parcellation')
+    template_image = template.to_image('', '') 
+    labels = template_image.get_data()
+    rfx_map = np.zeros(template_image.get_shape)
+    rfx_map[labels>-1] = prfx[labels[labels>-1]]
+    wim = Nifti1Image(rfx_map, template_image.get_affine())
+    hdr = wim.get_header()
+    hdr['descrip'] = 'parcel-based eandom effects image (in t-variate)'
+
+    if rfx_path is not None:
+        save(wim, rfx_path)       
+        
+    return prfx
 
 
 def one_subj_parcellation(mask_image, betas, nbparcel, nn=6, method='ward', 
@@ -419,7 +281,6 @@ def one_subj_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
     To reduce CPU time, rather use nn=6 (especially with Ward)    
     """
     from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
-    from mroi import SubDomains
 
     if method not in ['ward','gkm','ward_and_gkm','kmeans']:
         raise ValueError, 'unknown method'
@@ -468,8 +329,6 @@ def one_subj_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
         seeds, u, J1 = g.geodesic_kmeans(label=w)
         
     lpa = SubDomains(domain, u, 'parcellation')
-    #pbeta = np.array(lpa.make_feature('', beta))
-    #pccord = np.array(lpa.make_feature('', coord))
 
     if verbose:
         var_beta = np.array( 
@@ -482,8 +341,7 @@ def one_subj_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
         
         print nbparcel, "functional variance", vf, "anatomical variance",va
 
-    # step3:  write the resulting label image
-    
+    # step3:  write the resulting label image    
     if fullpath is not None:
         label_image = fullpath
     elif write_dir is not None:
