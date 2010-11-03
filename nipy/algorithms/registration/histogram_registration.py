@@ -100,10 +100,9 @@ class HistogramRegistration(object):
         self._to_data[1:-1, 1:-1, 1:-1] = data
         self._to_inv_affine = inverse_affine(to_img.affine)
         
-        # Histograms
-        self._joint_hist = np.zeros([from_bins, to_bins])
-        self._from_hist = np.zeros(from_bins)
-        self._to_hist = np.zeros(to_bins)
+        # Joint histogram: must be double contiguous as it will be
+        # passed to C routines which assume so
+        self._joint_hist = np.zeros([from_bins, to_bins], dtype='double')
 
         # Set default registration parameters
         self._set_interp(interp)
@@ -271,8 +270,7 @@ class HistogramRegistration(object):
             kwargs.setdefault('xtol', _XTOL)
             kwargs.setdefault('ftol', _FTOL)
         else:
-            raise ValueError('You crazy bastard, what is this '
-                             'optimizer name %s?' % optimizer)
+            raise ValueError('Unknown optimizer name: %s???' % optimizer)
         # Output
         if DEBUG:
             print ('Optimizing using %s' % fmin.__name__)

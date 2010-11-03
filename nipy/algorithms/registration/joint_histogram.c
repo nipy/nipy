@@ -70,7 +70,7 @@ Negative intensities are ignored.
     nn ++; }
 
 
-int joint_histogram(PyArrayIterObject* JH, 
+int joint_histogram(PyArrayObject* JH, 
 		    unsigned int clampI, 
 		    unsigned int clampJ,  
 		    PyArrayIterObject* iterI,
@@ -337,15 +337,26 @@ static inline void _rand_interpolation(unsigned int i,
    A function to compute the weighted median in one-dimensional
    histogram.
  */
-void L1_moments(double* n_, double* median_, double* dev_, 
-		const double * h, unsigned int size, unsigned int stride)
+int L1_moments(double* n_, double* median_, double* dev_, 
+	       const PyArrayObject* H)
 {
   int i, med;
   double median, dev, n, cpdf, lim;
   const double *buf;
-  unsigned int offset = stride/sizeof(double); 
+  const double* h;
+  unsigned int size;
+  unsigned int offset; 
 
-  /* Initialisation au cas ou */
+  if (PyArray_TYPE(H) != NPY_DOUBLE) {
+    fprintf(stderr, "Input array should be double\n");
+    return -1; 
+  }
+
+  /* Initialize */
+  h = (const double*)PyArray_DATA(H);
+  size = PyArray_DIM(H, 0); 
+  offset = PyArray_STRIDE(H, 0)/sizeof(double); 
+
   n = median = dev = 0; 
   cpdf = 0;
   buf = h;
@@ -369,31 +380,26 @@ void L1_moments(double* n_, double* median_, double* dev_,
     }
     
     /* 
-       On a alors i-1 < med < i. On prend i comme valeur mediane, 
-       meme s'il serait possible de choisir une valeur intermediaire
-       entre i-1 et i, en approchant la fonction de repartition 
-       par une droite. 
+       We then have: i-1 < med < i and choose i as the median
+       (alternatively, an interpolation between i-1 and i could be
+       performed by linearly approximating the cumulative function).
        
-       La dispersion L1 est donnee par :
+       The L1 deviation reads:
        
-       sum*E(|X-med|) = - sum_{i<=med} i h(i)              [1]
+       sum*E(|X-med|) = - sum_{i<=med} i h(i)            [1]
        
                       + sum_{i>med} i h(i)               [2]
      
                       + med * [2*cpdf(med) - sum]        [3]
 
 
-       Le terme [1] est actuellement egal a la variable dev.
-       Le terme cpdf(med) est actuellement egal a la var. cpdf.
+       Term [1] is currently equal to `dev` variable. 
     */
     median = (double)i;
     dev += (2*cpdf - n)*median;
     med = i+1;
-    
-    
-    /* Pour achever le calcul de la deviation L1, il suffit de calculer 
-       la moyenne tronquee (entre i et la dimension) (cf. [2]) */
-    
+        
+    /* Complete computation of the L1 deviation by computing the truncated mean [2]) */
     if (med < size) {
       buf = h + med*offset;
       for (i=med; i<size; i ++, buf += offset) 
@@ -404,11 +410,11 @@ void L1_moments(double* n_, double* median_, double* dev_,
 
   }
 
-  *n_ = n; 
-  *median_ = median; 
-  *dev_ = dev; 
+  n_[0] = n; 
+  median_[0] = median; 
+  dev_[0] = dev; 
 
-  return;           
+  return 0;           
 }
 
 

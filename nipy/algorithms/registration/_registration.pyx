@@ -22,8 +22,7 @@ cdef extern from "joint_histogram.h":
     int joint_histogram(ndarray H, unsigned int clampI, unsigned int clampJ,  
                         flatiter iterI, ndarray imJ_padded, 
                         ndarray Tvox, int interp)
-    void L1_moments(double* n, double* median, double* dev, 
-                    double* h, unsigned int size, unsigned int stride)
+    int L1_moments(double* n, double* median, double* dev, ndarray H)
 
 
 # Initialize numpy
@@ -48,7 +47,7 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int i
     # Compute joint histogram 
     ret = joint_histogram(H, clampI, clampJ, iterI, imJ, Tvox, interp)
     if not ret == 0:
-        raise RuntimeError('Joint histogram failed, which is impossible.')
+        raise RuntimeError('Joint histogram failed because of incorrect input arrays.')
 
     return 
 
@@ -58,9 +57,13 @@ def _L1_moments(ndarray H):
     Compute L1 moments of order 0, 1 and 2 of a one-dimensional
     histogram.
     """
-    cdef double n[0], median[0], dev[0]
-    L1_moments(n, median, dev, <double*>H.data,
-               <unsigned int>H.shape[0], <unsigned int>H.strides[0])
-    return n[0], median[0], dev[0]
+    cdef:
+        double n[1], median[1], dev[1]
+        int ret
 
+    ret = L1_moments(n, median, dev, H)
+    if not ret == 0:
+        raise RuntimeError('L1_moments failed because input array is not double.')
+
+    return n[0], median[0], dev[0]
 

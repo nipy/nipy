@@ -39,7 +39,7 @@ extern "C" {
        1 - TRILINEAR interpolation 
        <0 - RANDOM interpolation with seed=-interp
   */ 
-  extern int joint_histogram(PyArrayIterObject* H, 
+  extern int joint_histogram(PyArrayObject* H, 
 			     unsigned int clampI, 
 			     unsigned int clampJ,  
 			     PyArrayIterObject* iterI,
@@ -47,9 +47,8 @@ extern "C" {
 			     const PyArrayObject* Tvox, 
 			     int interp); 
 
-
-  extern void L1_moments(double* n, double* median, double* dev, 
-			 const double* h, unsigned int size, unsigned int stride);
+  extern int L1_moments(double* n_, double* median_, double* dev_, 
+			const PyArrayObject* H);
 
 
 #ifdef __cplusplus
