@@ -3,7 +3,8 @@
 import numpy as np
 
 from nipy.core.image.affine_image import AffineImage 
-from ..registration import HistogramRegistration, Affine
+from ..affine import Affine
+from ..histogram_registration import HistogramRegistration
 from .._registration import _joint_histogram
 
 from numpy.testing import assert_array_equal
