@@ -30,8 +30,6 @@ def _test_clamping(I, thI=0.0, clI=256):
     dyn = Ic.max() + 1
     assert_equal(dyn, R._joint_hist.shape[0])
     assert_equal(dyn, R._joint_hist.shape[1])
-    assert_equal(dyn, R._from_hist.shape[0])
-    assert_equal(dyn, R._to_hist.shape[0])
     return Ic, Ic2
 
 def test_clamping_uint8(): 
