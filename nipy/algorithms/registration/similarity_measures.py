@@ -171,7 +171,11 @@ class CorrelationRatioL1(SimilarityMeasure):
         hI = np.sum(H, 0)
         hJ = np.sum(H, 1)
         self.npts, self.mI, self.sI = _L1_moments(hI)
-        mean_sI_J = np.sum(hJ*self.sI_J)/self.npts
+        mean_sI_J = np.sum(hJ*self.sI_J)/nonzero(self.npts)
+
+        # DEBUG 
+        print mean_sI_J, self.sI 
+
         return 1.-mean_sI_J/nonzero(self.sI)
 
 
