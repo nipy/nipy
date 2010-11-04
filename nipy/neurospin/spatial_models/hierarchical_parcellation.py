@@ -465,8 +465,8 @@ def perm_prfx(domain, graphs, features, nb_parcel, ldata, initial_mask=None,
         template_labels = voronoi(domain.coord, proto_anat)
     
         # create the parcellation
-        pcl = MultiSubjectParcellation(domain, individal_labels=labels, 
-                                      template_labels=template_labels)
+        pcl = MultiSubjectParcellation(domain, individual_labels=labels, 
+                                       template_labels=template_labels)
         #pdata = pcl.make_feature('functional', ldata)
         pdata = pcl.make_feature('functional', 
                                 np.rollaxis(np.array(ldata), 1, 0))
