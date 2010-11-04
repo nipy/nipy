@@ -5,29 +5,33 @@ Example of script to parcellate mutli-subject data
 author: Bertrand Thirion, 2005-2009
 """
 import os.path as op
+from numpy import array
 import tempfile
 
 from nipy.neurospin.spatial_models.parcel_io import parcel_input, \
-    write_parcellation_image, parcellation_based_analysis
+    write_parcellation_images, parcellation_based_analysis
 from nipy.neurospin.spatial_models.hierarchical_parcellation import hparcel
 import get_data_light
 
 # Get the data
-data_dir = get_data_light.get_it()
-nbsubj = 12
-subj_id = range(nbsubj)
-numbeta = [29]
-data_dir = op.join(data_dir, 'group_t_images')
-mask_images = [op.join(data_dir, 'mask_subj%02d.nii'%n)
-               for n in range(nbsubj)]
+nb_subj = 12
+subj_id = ['subj_%02d'%s for s in range(nb_subj)]
+nbeta = '%04d'%29
+data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
+                                 'group_t_images'))
+mask_images = [op.join(data_dir,'mask_subj%02d.nii'%n)
+               for n in range(nb_subj)]
 
-learn_images =[[ op.join(data_dir, 'spmT_%04d_subj_%02d.nii' % (nb, n))
-                 for nb in numbeta]
-                for n in range(nbsubj)]
-nbeta = len(numbeta)
+learn_images = [op.join(data_dir,'spmT_%s_subj_%02d.nii'%(nbeta , n))
+                for n in range(nb_subj)]
+missing_file = array([op.exists(m)==False for m in mask_images + learn_images]).any()
+learn_images = [[m] for m in learn_images]
+
+if missing_file:
+    get_data_light.get_it()
 
 # parameter for the intersection of the mask
-ths = nbsubj/2
+ths = nb_subj/2
 
 # possibly, dimension reduction can performed on the input data
 # (not recommended)
@@ -42,26 +46,25 @@ nbparcel = 500
 # write dir
 swd = tempfile.mkdtemp()
 
-
 # prepare the parcel structure
 domain, ldata = parcel_input(mask_images, learn_images, ths, fdim)
-fpa = dom #???
-fpa.k = nbparcel
 
 # run the algorithm
-fpa = hparcel(fpa, ldata, domain.coord)
-#fpa,prfx0 = hparcel(fpa,ldata,coord,nbperm=200,niter=5,verbose)
+#fpa = hparcel(domain, ldata, nbparcel)
+fpa,  prfx0 = hparcel(domain, ldata, nbparcel, nb_perm=5, niter=5, 
+                      verbose=verbose)
 
 #produce some output images
-write_parcellation_images(fpa,  subject_id=subj_id, swd=swd, 
-                          write_jacobian=True)
+write_parcellation_images(
+    fpa, subject_id=subj_id, swd=swd, write_jacobian=True)
 
 
 # do some parcellation-based analysis:
 # take some test images whose parcel-based signal needs to be assessed 
-test_images = learn_images
+test_images = [op.join(data_dir,'spmT_%s_subj_%02d.nii'%(nbeta , n))
+                for n in range(nb_subj)]
 
 # compute and write the parcel-based statistics
-parcellation_based_analysis(fpa, test_images, 'one_sample', condition_id='29', 
-                            swd=swd)
+parcellation_based_analysis(
+    fpa, test_images, 'one_sample', condition_id=nbeta, swd=swd)
 print "Wrote everything in %s" % swd

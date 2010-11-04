@@ -160,7 +160,7 @@ class MultiSubjectParcellation(object):
                 pfeature[k, s] = np.mean(dsk, 0)
         
         self.set_feature(fid, pfeature)
-        return feature
+        return pfeature
 
 
     def set_feature(self, fid, data):

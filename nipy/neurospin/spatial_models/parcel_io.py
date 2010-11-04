@@ -117,7 +117,7 @@ def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
 
 
 def write_parcellation_images(Pa, template_path=None, indiv_path=None, 
-                              subject_id=None, swd=None, write_jacobian==False):
+                              subject_id=None, swd=None, write_jacobian=False):
     """ Write images that describe the spatial structure of the parcellation
     
     Parameters
@@ -140,8 +140,8 @@ def write_parcellation_images(Pa, template_path=None, indiv_path=None,
         from tempfile import mkdtemp
         swd = mkdtemp()
 
-    if subj_id==None:
-        subj_id = ['subj_%04d' %s for s in range(Pa.nb_subj)]
+    if subject_id==None:
+        subject_id = ['subj_%04d' %s for s in range(Pa.nb_subj)]
 
     if len(subject_id) != Pa.nb_subj:
         raise ValueError, 'subject_id does not match parcellation'
@@ -155,24 +155,24 @@ def write_parcellation_images(Pa, template_path=None, indiv_path=None,
 
     # write the template image
     tlabs = Pa.template_labels
-    template = SubDomains(domain, tlabs, 'parcellation')
+    template = SubDomains(Pa.domain, tlabs, 'parcellation')
     template.to_image(template_path, 
                       descrip= 'Intra-subject parcellation template')
 
     # write subject-related stuff
     if Pa.features.has_key('jacobian'):
         jac = Pa.get_feature('jacobian')
-        jac = np.reshape(Jac, (Pa.k, Pa.nb_subj))
+        jac = np.reshape(jac, (Pa.k, Pa.nb_subj))
         
-    for s in range(nb_subj):
+    for s in range(Pa.nb_subj):
         # write the individual label images
-        labs = Pa.individual_label[:, s]
-        parcellation = SubDomains(domain, labs, 'parcellation')
+        labs = Pa.individual_labels[:, s]
+        parcellation = SubDomains(Pa.domain, labs, 'parcellation')
         lim = parcellation.to_image(indiv_path[s], 
                                     descrip= 'Intra-subject parcellation')
 
         # write the individual jacobian image
-        if (verbose and Pa.features.has_key('jacobian')):
+        if (write_jacobian and Pa.features.has_key('jacobian')):
             # fixme : all this is a bit clumsy
             jac_data = np.zeros(lim.get_shape())
             nz_label = lim.get_data()[lim.get_data()>-1]
@@ -219,7 +219,7 @@ def parcellation_based_analysis(Pa, test_images, test='one_sample',
         raise ValueError, 'Inconsistent number of test images'
  
     test = np.array([Pa.domain.make_feature_from_image(ti) 
-                     for ti in test_images[s]]).T
+                     for ti in test_images]).T
     
     test_data = Pa.make_feature('', np.array(test)) 
     
@@ -232,7 +232,7 @@ def parcellation_based_analysis(Pa, test_images, test='one_sample',
     prfx = ttest(test_data)
         
     # Write the stuff
-    template = SubDomains(domain, tlabs, 'parcellation')
+    template = SubDomains(Pa.domain, Pa.template_labels, 'parcellation')
     template_image = template.to_image('', '') 
     labels = template_image.get_data()
     rfx_map = np.zeros(template_image.get_shape)
