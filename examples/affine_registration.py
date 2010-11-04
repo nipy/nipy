@@ -62,7 +62,7 @@ source_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+sourc
 target_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+target+'.nii.gz')
 
 # Optional arguments
-similarity = 'cr' 
+similarity = 'crl1' 
 interp = 'pv'
 optimizer = 'powell'
 if len(sys.argv)>1: 
