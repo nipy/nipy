@@ -13,7 +13,7 @@ print __doc__
 import os.path as op
 import tempfile
 from numpy import array
-from nipy.neurospin.spatial_models.parcel_io import one_subj_parcellation
+from nipy.neurospin.spatial_models.parcel_io import fixed_parcellation
 
 # ------------------------------------
 # Get the data (mask+functional image)
@@ -37,9 +37,9 @@ nn = 6
 write_dir = tempfile.mkdtemp()
 verbose = 1
 
-lpa = one_subj_parcellation(mask_image, betas, n_parcels, nn, 'gkm', 
+lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'gkm', 
                             write_dir, mu, verbose)
-lpa = one_subj_parcellation(mask_image, betas, n_parcels, nn, 'ward', 
+lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'ward', 
                             write_dir, mu, verbose)
-lpa = one_subj_parcellation(mask_image, betas, n_parcels, nn, 'ward_and_gkm', 
+lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'ward_and_gkm', 
                             write_dir, mu, verbose)

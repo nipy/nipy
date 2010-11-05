@@ -11,7 +11,6 @@ import os.path
 from nipy.io.imageformats import load, save, Nifti1Image 
 
 from nipy.neurospin.clustering.clustering import kmeans
-#from parcellation import MultiSubjectParcellation
 from discrete_domain import grid_domain_from_image
 from mroi import SubDomains
 from ..mask import intersect_masks
@@ -154,10 +153,11 @@ def write_parcellation_images(Pa, template_path=None, indiv_path=None,
                         for s in range(Pa.nb_subj)]
 
     # write the template image
-    tlabs = Pa.template_labels
+    tlabs = Pa.template_labels.astype(np.int16)
     template = SubDomains(Pa.domain, tlabs, 'parcellation')
     template.to_image(template_path, 
                       descrip= 'Intra-subject parcellation template')
+    print 'write_parcel', tlabs.min(), tlabs.max()
 
     # write subject-related stuff
     if Pa.features.has_key('jacobian'):
@@ -247,11 +247,9 @@ def parcellation_based_analysis(Pa, test_images, test='one_sample',
     return prfx
 
 
-def one_subj_parcellation(mask_image, betas, nbparcel, nn=6, method='ward', 
+def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward', 
                           write_dir=None, mu=10., verbose=0, fullpath=None):
-    """
-    Parcellation of a one-subject dataset
-    Return: a tuple (Parcellation instance, parcellation labels)
+    """ Fixed parcellation of a given dataset
     
     Parameters
     ----------

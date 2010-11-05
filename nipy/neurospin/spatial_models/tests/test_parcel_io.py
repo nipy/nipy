@@ -48,7 +48,7 @@ def test_parcel_intra_from_3d_image():
     nn = 6
     mu = 1.
     for method in ['ward', 'kmeans', 'gkm']:
-        osp = one_subj_parcellation(mask_image, [data_image], n_parcel, nn, 
+        osp = fixed_parcellation(mask_image, [data_image], n_parcel, nn, 
                                     method, tempdir, mu)
         result = join(tempdir, 'parcel_%s.nii'%method)
         assert exists(result)
@@ -71,7 +71,7 @@ def test_parcel_intra_from_3d_images_list():
     nn = 6
     mu = 1.
     method = 'ward'
-    osp = one_subj_parcellation(mask_image, data_image, n_parcel, nn, 
+    osp = fixed_parcellation(mask_image, data_image, n_parcel, nn, 
                                 method, tempdir, mu)
     result = join(tempdir, 'parcel_%s.nii'%method)
     assert exists(result)
@@ -93,7 +93,7 @@ def test_parcel_intra_from_4d_image():
     nn = 6
     mu = 1.
     method = 'ward'
-    osp = one_subj_parcellation(mask_image, [data_image], n_parcel, nn, 
+    osp = fixed_parcellation(mask_image, [data_image], n_parcel, nn, 
                                 method, tempdir, mu)
     result = join(tempdir, 'parcel_%s.nii'%method)
     assert exists(result)

@@ -254,6 +254,7 @@ def _optim_hparcel( feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
     spatial_proto.Voronoi_diagram(proto_anat, domain.coord)
     spatial_proto.set_gaussian(proto_anat)
     spatial_proto.normalize()
+
     for git in range(niter):
         LP = []
         LPA = []
@@ -265,61 +266,48 @@ def _optim_hparcel( feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
             Fs = feature[s]
             lac = indiv_coord[s]
             target = proto_anat.copy()
-    
-            for nit in range(1):
-                lseeds = np.zeros(nb_parcel, np.int)
-                aux = np.argsort(rand(nb_parcel))
-                tata = 0
-                toto = np.zeros(lac.shape[0])
-                for j in range(nb_parcel):
-                    # b.1 speed-up :only take a small ball
-                    i = aux[j]
-                    dx = lac-target[i,:]
-                    iz = np.nonzero(np.sum(dx**2, 1)<dmax**2)
-                    iz = np.reshape(iz, np.size(iz))
-                    if np.size(iz)==0:
-                        iz  = np.array([np.argmin(np.sum(dx**2,1))])
-                    
-                    # b.2: anatomical constraints
-                    lanat = np.reshape(lac[iz, :], (np.size(iz), 
-                                                    domain.coord.shape[1]))
-                    pot = np.zeros(np.size(iz))
-                    JM, rmin = _exclusion_map(i, spatial_proto, target, lanat)
-                    pot[JM<0] = np.infty
-                    pot[JM>=0] = -JM[JM>=0]
-                    
-                    # b.3: add feature discrepancy
-                    df = Fs[iz] - proto[i]
-                    df = np.reshape(df, (np.size(iz), proto.shape[1]))
-                    pot += lamb * np.sum(df**2, 1)
-                    
-                    # b.4: solution
-                    pb = 0
-                    if np.sum(np.isinf(pot)) == np.size(pot):
-                        pot = np.sum(dx[iz,:]**2,1)
-                        tata +=1
-                        pb = 1
-                        
-                    sol = iz[np.argmin(pot)]
-                    target[i] = lac[sol]
-                    
-                    #if toto[sol]==1:
-                    #    print "pb", pb
-                    #    ln = spatial_proto.list_of_neighbors()
-                    #    argtoto = np.squeeze(np.nonzero(lseeds==sol))
-                    #    print i,argtoto,ln[i]
-                    #    if np.size(argtoto)==1: print [ln[argtoto]]
-                    #    print target[argtoto]
-                    #    print target[i]
-                    #    print rmin
-                    #    print JM[iz==lseeds[argtoto]]
-                    #    print pot[iz==lseeds[argtoto]]
-                    lseeds[i] = sol
-                    toto[sol] = 1
 
-                if verbose>1:
-                    jm = _field_gradient_jac(spatial_proto,target)
-                    print jm.min(), jm.max(), np.sum(toto>0), tata
+            lseeds = np.zeros(nb_parcel, np.int)
+            aux = np.argsort(rand(nb_parcel))
+            tata = 0
+            toto = np.zeros(lac.shape[0])
+            for j in range(nb_parcel):
+                # b.1 speed-up :only take a small ball
+                i = aux[j]
+                dx = lac-target[i,:]
+                iz = np.nonzero(np.sum(dx**2, 1)<dmax**2)
+                iz = np.reshape(iz, np.size(iz))
+                if np.size(iz)==0:
+                    iz  = np.array([np.argmin(np.sum(dx**2,1))])
+                    
+                # b.2: anatomical constraints
+                lanat = np.reshape(lac[iz, :], (np.size(iz), 
+                                                domain.coord.shape[1]))
+                pot = np.zeros(np.size(iz))
+                JM, rmin = _exclusion_map(i, spatial_proto, target, lanat)
+                pot[JM<0] = np.infty
+                pot[JM>=0] = -JM[JM>=0]
+                
+                # b.3: add feature discrepancy
+                df = Fs[iz] - proto[i]
+                df = np.reshape(df, (np.size(iz), proto.shape[1]))
+                pot += lamb * np.sum(df**2, 1)
+                
+                # b.4: solution
+                pb = 0
+                if np.sum(np.isinf(pot)) == np.size(pot):
+                    pot = np.sum(dx[iz,:]**2,1)
+                    tata +=1
+                    pb = 1
+                        
+                sol = iz[np.argmin(pot)]
+                target[i] = lac[sol]
+                lseeds[i] = sol
+                toto[sol] = 1
+
+            if verbose>1:
+                jm = _field_gradient_jac(spatial_proto,target)
+                print jm.min(), jm.max(), np.sum(toto>0), tata
             
             # c.subject-specific parcellation
             g = graphs[s] #
@@ -332,11 +320,9 @@ def _optim_hparcel( feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
             # (average in subject s)
             lproto = [np.mean(Fs[U[-1] == k], 0) for k in range(nb_parcel)]
             lproto = np.array(lproto)
-            #lproto[np.isnan(lproto)] = proto[np.isnan(lproto)]
             
             lproto_anat = [np.mean(lac[U[-1] == k],0) for k in range(nb_parcel)]
             lproto_anat = np.array(lproto_anat)
-            #lproto_anat[np.isnan(lproto_anat)] = proto_anat[np.isnan(lproto_anat)]
             
             LP.append(lproto)
             LPA.append(lproto_anat)
@@ -364,21 +350,36 @@ def hparcel(domain, ldata, nb_parcel, nb_perm=0, niter=5, mu=10., dmax = 10.,
             lamb = 100.0,  chunksize = 1.e5, verbose=0, initial_mask=None):
     """
     Function that performs the parcellation by optimizing the
-    sinter-subject similarity while retaining the connectedness
+    inter-subject similarity while retaining the connectedness
     within subject and some consistency across subjects.
     
     Parameters
     ----------
-    domain: a discrete_domain.DiscreteDomain instance
-    the yields all the spatial information of the domain 
+    domain: discrete_domain.DiscreteDomain instance,
+            yields all the spatial information on the parcelled domain 
     ldata: list of (n_subj) arrays of shape (domain.size, dim)
-    the feature data used to inform the parcellation
-    nb_perm=0: the number of times the parcellation and prfx
-    computation is performed on sign-swaped data
-    niter=10: number of iterations to obtain the convergence of the method
-    information in the clustering algorithm
-    mu=10., float, relative weight of anatomical information
-    
+           the feature data used to inform the parcellation
+    nb_parcel: int,
+               the number of parcels
+    nb_perm: int, optional,
+             the number of times the parcellation and prfx
+             computation is performed on sign-swaped data
+    niter: int, optional,
+           number of iterations to obtain the convergence of the method
+           information in the clustering algorithm
+    mu: float, optional,
+        relative weight of anatomical information
+    dmax: float optional,
+          radius of allowed deformations
+    lamb: float optional
+          parameter to control the relative importance of space vs function
+    chunksize; int, optional
+               number of points used in internal sub-sampling
+    verbose: bool, optional,
+             verbosity mode
+    initial_mask: array of shape (domain.size, nb_subj), optional
+                  initial subject-depedent masking of the domain
+
     Results
     -------
     Pa: the resulting parcellation structure appended with the labelling
@@ -400,7 +401,6 @@ def hparcel(domain, ldata, nb_parcel, nb_perm=0, niter=5, mu=10., dmax = 10.,
         beta = np.reshape(ldata[s], (lnvox, ldata[s].shape[1]))
         lf = np.hstack((beta, mu * lac/(1.e-15 + np.std(domain.coord, 0))))
         feature.append(lf)
-        # g = field_from_coo_matrix_and_data(domain.topology, lf)
         g = wgraph_from_coo_matrix(domain.topology) ###
         g.remove_trivial_edges()
         graphs.append(g)
@@ -417,7 +417,7 @@ def hparcel(domain, ldata, nb_parcel, nb_perm=0, niter=5, mu=10., dmax = 10.,
  
     # compute the group-level labels 
     template_labels = voronoi(domain.coord, proto_anat)
-    
+        
     # create the parcellation
     pcl = MultiSubjectParcellation(domain, individual_labels=labels, 
                                   template_labels=template_labels)
@@ -470,7 +470,7 @@ def perm_prfx(domain, graphs, features, nb_parcel, ldata, initial_mask=None,
         #pdata = pcl.make_feature('functional', ldata)
         pdata = pcl.make_feature('functional', 
                                 np.rollaxis(np.array(ldata), 1, 0))
-        prfx = ttest(pdata)
+        prfx = ttest(np.squeeze(pdata))
         if verbose:
             print q, prfx.max(0)
         prfx0.append(prfx.max(0))

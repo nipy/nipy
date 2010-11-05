@@ -389,33 +389,40 @@ class SubDomains(object):
         """
         return self.roi_features[fid]
 
-    def to_image(self, path=None, descrip=None):
-        """
-        Generates and possiblly writes a label image that represents self.
-
+    def to_image(self, path=None, descrip=None, write_type=np.int16):
+        """ Generates and possiblly writes a label image that represents self.
+        
+        Parameters
+        ----------
+        path: string, optional
+              output image path
+        descrip: string, optional,
+                 descritpion associated with the output image
+        write_type: string, optional,
+                    type of the written data 
+                    
         Note
         ----
-        Works only if self.dom is an ddom.NDGridDomain
+        requires that self.dom is an ddom.NDGridDomain
         """
         if not isinstance(self.domain, ddom.NDGridDomain):
+            print 'self.domain is not an NDGridDomain; nothing was written.'
             return None
 
         tmp_image = self.domain.to_image()
-        label = tmp_image.get_data().copy()-1
+        label = tmp_image.get_data().copy().astype(write_type)-1
         label[label>-1] = self.label
         nim = Nifti1Image(label, tmp_image.get_affine())
-        if descrip is not None:
-            nim.get_header()['descrip'] = descrip
-        else:
-            nim.get_header()['descrip'] = 'label image of %s' %self.id
+        if descrip is None:
+            descrip = 'label image of %s' %self.id
+        nim.get_header()['descrip'] = descrip
         if path is not None:
             save(nim, path)
         return nim
     
 
 def subdomain_from_array(labels, affine=None, nn=0):
-    """
-    return a SubDomain from an n-d int array
+    """Return a SubDomain from an n-d int array
     
     Parameters
     ----------
@@ -437,8 +444,7 @@ def subdomain_from_array(labels, affine=None, nn=0):
     return SubDomains(dom, labels.astype(np.int))
 
 def subdomain_from_image(mim, nn=18):
-    """
-    return a SubDomain instance from the input mask image
+    """Return a SubDomain instance from the input mask image
 
     Parameters
     ----------
