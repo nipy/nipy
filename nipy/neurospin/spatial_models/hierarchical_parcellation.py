@@ -64,7 +64,6 @@ def _field_gradient_jac(ref, target):
             FG = np.dot(nl.pinv(dx),df)
             fgj.append(nl.det(FG))
         else:
-            print i,j
             fgj.append(1)
 
     fgj = np.array(fgj)
@@ -150,7 +149,6 @@ def _field_gradient_jac_Map_(i,ref,target, targeti):
     ln = ref.list_of_neighbors() 
     j = ln[i]
     if np.size(j)>0:
-        print xyz[j,:]
         dx = xyz[j,:]-xyz[i,:]
         dx = np.squeeze(dx)
         idx = nl.pinv(dx)

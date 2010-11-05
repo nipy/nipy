@@ -157,7 +157,6 @@ def write_parcellation_images(Pa, template_path=None, indiv_path=None,
     template = SubDomains(Pa.domain, tlabs, 'parcellation')
     template.to_image(template_path, 
                       descrip= 'Intra-subject parcellation template')
-    print 'write_parcel', tlabs.min(), tlabs.max()
 
     # write subject-related stuff
     if Pa.features.has_key('jacobian'):
