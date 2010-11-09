@@ -254,7 +254,7 @@ class Realign4d_Algorithm(object):
         # conventionally aligned with the first scan.
         T0inv = self.transforms[0].inv()
         for t in range(self.nscans): 
-            self.transforms[t] = self.transforms[t]*T0inv 
+            self.transforms[t] = (self.transforms[t]).compose(T0inv) 
         
 
 
@@ -359,7 +359,7 @@ def realign4d(runs,
     # Compose transformations for each run
     ctransforms = [None for i in range(nruns)]
     for i in range(nruns):
-        ctransforms[i] = [t*transfo_mean[i] for t in transforms[i]]
+        ctransforms[i] = [t.compose(transfo_mean[i]) for t in transforms[i]]
     return ctransforms, transforms, transfo_mean
 
 
