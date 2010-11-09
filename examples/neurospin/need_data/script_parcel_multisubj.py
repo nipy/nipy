@@ -48,12 +48,10 @@ domain, ldata = parcel_input(mask_images, learn_images, ths, fdim)
 
 # run the algorithm
 fpa = hparcel(domain, ldata, nbparcel)
-fpa,  prfx0 = hparcel(domain, ldata, nbparcel, nb_perm=5, niter=5, verbose=1)
+#fpa,  prfx0 = hparcel(domain, ldata, nbparcel, nb_perm=5, niter=5, verbose=1)
 
 #produce some output images
-write_parcellation_images(
-    fpa, subject_id=subj_id, swd=swd, write_jacobian=True)
-
+write_parcellation_images( fpa, subject_id=subj_id, swd=swd)
 
 # do some parcellation-based analysis:
 # take some test images whose parcel-based signal needs to be assessed 
@@ -61,6 +59,6 @@ test_images = [op.join(data_dir,'spmT_%s_subj_%02d.nii'%(nbeta , n))
                 for n in range(nb_subj)]
 
 # compute and write the parcel-based statistics
-parcellation_based_analysis(
-    fpa, test_images, 'one_sample', condition_id=nbeta, swd=swd)
+rfx_path = op.join(swd, 'prfx_%s.nii'%nbeta)
+parcellation_based_analysis(fpa, test_images, 'one_sample', rfx_path=rfx_path)
 print "Wrote everything in %s" % swd

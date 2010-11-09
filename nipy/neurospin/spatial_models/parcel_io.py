@@ -116,7 +116,7 @@ def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
 
 
 def write_parcellation_images(Pa, template_path=None, indiv_path=None, 
-                              subject_id=None, swd=None, write_jacobian=False):
+                              subject_id=None, swd=None):
     """ Write images that describe the spatial structure of the parcellation
     
     Parameters
@@ -131,8 +131,6 @@ def write_parcellation_images(Pa, template_path=None, indiv_path=None,
                 subject identifiers, used to infer the paths when not available
     swd: string, optional 
          output directory used to infer the paths when these are not available
-    write_jacobian: bool, optional,
-                    write the jacobian of the deformation (if applicable)
     """
     # argument check
     if swd==None:
@@ -158,11 +156,7 @@ def write_parcellation_images(Pa, template_path=None, indiv_path=None,
     template.to_image(template_path, 
                       descrip= 'Intra-subject parcellation template')
 
-    # write subject-related stuff
-    if Pa.features.has_key('jacobian'):
-        jac = Pa.get_feature('jacobian')
-        jac = np.reshape(jac, (Pa.k, Pa.nb_subj))
-        
+    # write subject-related stuff        
     for s in range(Pa.nb_subj):
         # write the individual label images
         labs = Pa.individual_labels[:, s]
@@ -170,20 +164,8 @@ def write_parcellation_images(Pa, template_path=None, indiv_path=None,
         lim = parcellation.to_image(indiv_path[s], 
                                     descrip= 'Intra-subject parcellation')
 
-        # write the individual jacobian image
-        if (write_jacobian and Pa.features.has_key('jacobian')):
-            # fixme : all this is a bit clumsy
-            jac_data = np.zeros(lim.get_shape())
-            nz_label = lim.get_data()[lim.get_data()>-1]
-            jac_data[lim.get_data()>-1] = jac[nz_label, s]
-            jim = Nifti1Image(jac_data, lim.affine)
-            hdr = jim.get_header()
-            hdr['descrip'] = 'image of the jacobian of the deformation \
-                              associated with the parcellation'
-            jacobian_image = os.path.join(swd, "jacob%s.nii" % subject_id[s])
-            save(jim, jacobian_image)       
 
-def parcellation_based_analysis(Pa, test_images, test='one_sample', 
+def parcellation_based_analysis(Pa, test_images, test_id='one_sample', 
                                 rfx_path=None, condition_id='', swd=None):
     """
     This function computes parcel averages and RFX at the parcel-level
@@ -194,8 +176,8 @@ def parcellation_based_analysis(Pa, test_images, test='one_sample',
         the description of the parcellation
     test_images: (Pa.nb_subj-) list of paths 
                  paths of images used in the inference procedure
-    test: string, optional,
-          if test=='one_sample', the one_sample statstic is computed
+    test_id: string, optional,
+          if test_id=='one_sample', the one_sample statstic is computed
           otherwise, the parcel-based signal averages are returned
     rfx_path: string optional,
               path of the resulting one-sample test image, if applicable
@@ -209,7 +191,7 @@ def parcellation_based_analysis(Pa, test_images, test='one_sample',
     test_data: array of shape(Pa.nb_parcel, Pa.nb_subj)
                the parcel-level signal average if test is not 'one_sample'
     prfx: array of shape(Pa.nb_parcel),
-          the one-sample t-value if test is 'one_sample'
+          the one-sample t-value if test_id is 'one_sample'
     """
     nb_subj = Pa.nb_subj
  
@@ -222,9 +204,9 @@ def parcellation_based_analysis(Pa, test_images, test='one_sample',
     
     test_data = Pa.make_feature('', np.array(test)) 
     
-    if test is not 'onesample':
+    if test_id is not 'one_sample':
         return test_data
-
+    
     # 2. perform one-sample test
     # computation
     from nipy.neurospin.utils.reproducibility_measures import ttest
@@ -234,7 +216,7 @@ def parcellation_based_analysis(Pa, test_images, test='one_sample',
     template = SubDomains(Pa.domain, Pa.template_labels, 'parcellation')
     template_image = template.to_image('', '') 
     labels = template_image.get_data()
-    rfx_map = np.zeros(template_image.get_shape)
+    rfx_map = np.zeros(template_image.get_shape())
     rfx_map[labels>-1] = prfx[labels[labels>-1]]
     wim = Nifti1Image(rfx_map, template_image.get_affine())
     hdr = wim.get_header()
