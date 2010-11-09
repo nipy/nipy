@@ -3,6 +3,7 @@
 from .resample import * 
 from .histogram_registration import * 
 from .affine import * 
+from .groupwise_registration import * 
 
 from numpy.testing import Tester
 
