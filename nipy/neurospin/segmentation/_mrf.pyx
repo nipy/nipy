@@ -2,9 +2,11 @@
 
 """
 Markov random field utils. 
+
+Author: Alexis Roche, 2010.
 """
 
-__version__ = '0.0'
+__version__ = '0.2'
 
 # Includes
 from numpy cimport import_array, ndarray
@@ -16,11 +18,13 @@ cdef extern from "mrf.h":
     void ve_step(ndarray ppm, 
                  ndarray ref,
                  ndarray XYZ, 
+                 ndarray mix, 
                  double beta, 
                  int copy, 
                  int hard)
     double concensus(ndarray ppm, 
-		     ndarray XYZ)
+		     ndarray XYZ, 
+                     ndarray mix)
 
 
 # Initialize numpy
@@ -29,7 +33,7 @@ import_array()
 import numpy as np
 
 
-def _ve_step(ppm, ref, XYZ, double beta, int copy, int hard):
+def _ve_step(ppm, ref, XYZ, double beta, int copy, int hard, mix=None):
     
     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
         raise ValueError('ppm array should be double C-contiguous')
@@ -39,10 +43,11 @@ def _ve_step(ppm, ref, XYZ, double beta, int copy, int hard):
     
     XYZ = np.asarray(XYZ, dtype='int')
     
-    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, beta, copy, hard)
+    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, <ndarray>mix, 
+             beta, copy, hard)
     return ppm 
 
 
-def _concensus(ppm, XYZ): 
-    return concensus(<ndarray>ppm, <ndarray>XYZ) 
+def _concensus(ppm, XYZ, mix=None): 
+    return concensus(<ndarray>ppm, <ndarray>XYZ, <ndarray>mix) 
 

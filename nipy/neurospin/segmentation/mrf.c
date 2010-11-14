@@ -79,6 +79,28 @@ static inline void _hard_vote(double* res, int K, size_t pos,
 }
 
 /*
+  Compute matrix-by-vector multiplication
+  yi = sum_k aik xk  
+ */
+static inline void _dot(double* y, const double* A, const double* x, int n)
+{
+  int i, k; 
+  double *bufA=(double*)A, *bufy=(double*)y, *bufx; 
+  double tmp; 
+
+  for (i=0; i<n; i++, bufy++) {
+    bufx = (double*)x; 
+    tmp = 0.0; 
+    for (k=0; k<n; k++, bufA++, bufx++)
+      tmp += (*bufA)*(*bufx); 
+    *bufy = tmp; 
+  }
+  return;   
+}
+
+
+
+/*
   
   ppm assumed contiguous double (X, Y, Z, K) 
 
@@ -91,7 +113,9 @@ static void _ngb26_vote(double* res,
                         int x,
                         int y, 
                         int z,
-                        void* vote_fn)
+                        void* vote_fn, 
+			double* tmp, 
+			const double* mix)
 {
   int j = 0, xn, yn, zn, nn = 26, K = ppm->dimensions[3]; 
   int* buf_ngb; 
@@ -115,11 +139,15 @@ static void _ngb26_vote(double* res,
     vote(res, K, pos, ppm_data);
     j ++; 
   }
+
+  if (tmp == NULL)
+    return; 
+
+  memcpy((void*)tmp, (void*)res, K*sizeof(double));
+  _dot(res, mix, tmp, K); 
   
   return; 
 }
-
-
 
 
 
@@ -133,17 +161,19 @@ static void _ngb26_vote(double* res,
 
  */
 
-#define TINY 1e-20
+#define TINY 1e-300
+
 void ve_step(PyArrayObject* ppm, 
 	     const PyArrayObject* ref,
 	     const PyArrayObject* XYZ, 
+	     const PyArrayObject* mix, 
 	     double beta,
 	     int copy,
 	     int hard)
 
 {
   int npts, k, K, kk, x, y, z;
-  double *p, *buf;
+  double *p, *p0 = NULL, *buf;
   double psum, tmp;  
   PyArrayIterObject* iter;
   int axis = 0; 
@@ -152,6 +182,7 @@ void ve_step(PyArrayObject* ppm,
   size_t u2 = ppm->dimensions[2]*u3; 
   size_t u1 = ppm->dimensions[1]*u2;
   const double* ref_data = (double*)ref->data;
+  const double* mix_data = NULL; 
   size_t v1 = ref->dimensions[1];
   const int* XYZ_data = (int*)XYZ->data;
   size_t w1 = XYZ->dimensions[1], two_w1=2*w1;
@@ -170,7 +201,7 @@ void ve_step(PyArrayObject* ppm,
       fprintf(stderr, "Cannot allocate ppm copy\n"); 
       return; 
     }
-    (double*)memcpy((void*)ppm_data, (void*)ppm->data, S*sizeof(double));
+    memcpy((void*)ppm_data, (void*)ppm->data, S*sizeof(double));
   }
   else
     ppm_data = (double*)ppm->data;
@@ -181,9 +212,16 @@ void ve_step(PyArrayObject* ppm,
   else
     vote = &_soft_vote;
   
-  /* Allocate auxiliary vector */
+  /* Mix votes or not */ 
+  if ((PyObject*)mix!=Py_None) {
+    fprintf(stderr, "Mixing matrix provided\n");
+    mix_data = (double*)mix->data;
+    p0 = (double*)calloc(K, sizeof(double));   
+  }
+
+  /* Allocate auxiliary vectors */
   p = (double*)calloc(K, sizeof(double)); 
-  
+
   /* Loop over points */ 
   iter = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)XYZ, &axis);
   while(iter->index < iter->size) {
@@ -192,7 +230,7 @@ void ve_step(PyArrayObject* ppm,
     x = XYZ_data[iter->index];
     y = XYZ_data[w1+iter->index];
     z = XYZ_data[two_w1+iter->index]; 
-    _ngb26_vote(p, ppm, x, y, z, (void*)vote); 
+    _ngb26_vote(p, ppm, x, y, z, (void*)vote, p0, mix_data); 
     
     /* Apply exponential transformation and multiply with reference */
     psum = 0.0; 
@@ -219,12 +257,14 @@ void ve_step(PyArrayObject* ppm,
 
   /* If applicable, copy back the auxiliary ppm array into the input */ 
   if (copy) {    
-    (double*)memcpy((void*)ppm->data, (void*)ppm_data, S*sizeof(double));
+    memcpy((void*)ppm->data, (void*)ppm_data, S*sizeof(double));
     free(ppm_data);
   }
 
   /* Free memory */ 
   free(p);
+  if (p0 != NULL) 
+    free(p0);
   Py_XDECREF(iter);
 
   return; 
@@ -233,12 +273,13 @@ void ve_step(PyArrayObject* ppm,
 
 
 double concensus(PyArrayObject* ppm, 
-		 const PyArrayObject* XYZ)
+		 const PyArrayObject* XYZ, 
+		 const PyArrayObject* mix)
 
 {
   int npts, k, K, kk, x, y, z;
-  double *p, *buf;
-  double res, tmp;  
+  double *p, *p0 = NULL, *buf;
+  double res = 0.0, tmp;  
   PyArrayIterObject* iter;
   int axis = 0; 
   double* ppm_data;
@@ -246,6 +287,7 @@ double concensus(PyArrayObject* ppm,
   size_t u2 = ppm->dimensions[2]*u3; 
   size_t u1 = ppm->dimensions[1]*u2;
   const int* XYZ_data = (int*)XYZ->data;
+  const double* mix_data = NULL; 
   size_t w1 = XYZ->dimensions[1], two_w1=2*w1;
 
   /* Dimensions */
@@ -253,7 +295,12 @@ double concensus(PyArrayObject* ppm,
   K = PyArray_DIM((PyArrayObject*)ppm, 3);
 
   ppm_data = (double*)ppm->data;
-  
+
+  if ((PyObject*)mix!=Py_None) {
+    mix_data = (double*)mix->data;
+    p0 = (double*)calloc(K, sizeof(double)); 
+  }
+
   /* Allocate auxiliary vector */
   p = (double*)calloc(K, sizeof(double)); 
   
@@ -265,7 +312,7 @@ double concensus(PyArrayObject* ppm,
     x = XYZ_data[iter->index];
     y = XYZ_data[w1+iter->index];
     z = XYZ_data[two_w1+iter->index]; 
-    _ngb26_vote(p, ppm, x, y, z, &_soft_vote); 
+    _ngb26_vote(p, ppm, x, y, z, &_soft_vote, p0, mix_data); 
     
     /* Calculate the dot product <q,p> where q is the local
        posterior */
@@ -283,6 +330,8 @@ double concensus(PyArrayObject* ppm,
 
   /* Free memory */ 
   free(p);
+  if (p0 != NULL) 
+    free(p0);
   Py_XDECREF(iter);
 
   return res; 

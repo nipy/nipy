@@ -1,0 +1,46 @@
+
+
+Notes
+
+neurospin/registration
+
+registration/
+
+ __init__.py
+	registration.py
+	iconic_registration (intensity based, joint histogram)
+	 renamed joint registration
+	 takes from and two images  and compute joint histogram
+	groupwise_registration.py (motion correction in fmri)
+		register a set of images
+		sum of square differences
+		not using joint histogram
+	affine.py (discribes a general 3d affine transformation and its parametrization)
+	 class affine
+		  params=s(-1)xv12 s: pre_cond
+		  radius for the preconditioner is in translation coordinates
+		  check for rigidity
+	 class 
+		  
+	grid_transform.py (discrete displacements of the from grid)
+	cubic_spline.c (same results as ndimage)
+	wichmann_prng.c (only for the random interplation)
+	iconic.c to be renamed to histogram.c
+	
+				  
+	    
+
+interpolating the histogram 
+avoids the problem of casting the intensity
+
+in C assumes the joint histogram is a signed short array (16bit)
+
+clamp
+
+Make independent tests with checks starting from different registrations.
+Sensible default for the focus function
+What should we do when outside the fov?
+
+
+
+

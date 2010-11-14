@@ -8,5 +8,6 @@ warnings.warn(DeprecationWarning(
     "is depreciated. Please update your code to import from "
     "'nipy.neurospin.mask'."))
 
-from ..mask import *
+# Absolute import, as 'import *' doesnot work with relative imports
+from nipy.neurospin.mask import *
 

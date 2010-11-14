@@ -24,16 +24,16 @@ rarun2.nii
 Author: Alexis Roche, 2009. 
 """
 
-from nipy.neurospin.registration import FmriRealign4d
+from nipy.algorithms.registration import FmriRealign4d
 
-from nipy.io.imageformats import load as load_image, save as save_image
+from nipy import load_image, save_image
 from nipy.utils import example_data
 
 from os.path import join, split
 import sys
 
 
-# Optinal argument
+# Optional argument
 iterations = 1
 if len(sys.argv)>1: 
     iterations = int(sys.argv[1])
@@ -46,8 +46,8 @@ runs = [load_image(run) for run in runnames]
 # Spatio-temporal realigner
 R = FmriRealign4d(runs, tr=2.5, slice_order='ascending', interleaved=True)
 
-# Correct motion within- and between-sessions
-R.correct_motion(iterations=iterations)
+# Estimate motion within- and between-sessions
+R.estimate(iterations=iterations)
 
 # Resample data on a regular space+time lattice using 4d interpolation
 corr_runs = R.resample()
@@ -56,4 +56,5 @@ corr_runs = R.resample()
 for i in range(len(runs)):
     aux = split(runnames[i])
     save_image(corr_runs[i], join('ra'+aux[1]))
+
 

@@ -144,32 +144,6 @@ cdef extern from "fff_array.h":
     void fff_array_mul(fff_array * x, fff_array * y)
     void fff_array_clamp(fff_array* ares, fff_array* asrc, double th, int* clamp)
 
-
-# Exports from randomkit.h
-cdef extern from "randomkit.h":
-
-    ctypedef struct rk_state:
-        pass
-    
-    ctypedef enum rk_error:
-        RK_NOERR = 0
-        RK_ENODEV = 1
-        RK_ERR_MAX = 2
-
-    void rk_seed(unsigned long seed, rk_state *state)
-    rk_error rk_randomseed(rk_state *state)
-    unsigned long rk_random(rk_state *state)
-    long rk_long(rk_state *state)
-    unsigned long rk_ulong(rk_state *state)
-    unsigned long rk_interval(unsigned long max, rk_state *state)
-    double rk_double(rk_state *state)
-    void rk_fill(void *buffer, size_t size, rk_state *state)
-    rk_error rk_devfill(void *buffer, size_t size, int strong)
-    rk_error rk_altfill(void *buffer, size_t size, int strong,
-                        rk_state *state)
-    double rk_gauss(rk_state *state)
-    
-    
 # Exports from the Python fff wrapper
 cdef extern from "fffpy.h":
 

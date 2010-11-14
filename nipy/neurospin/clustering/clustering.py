@@ -225,7 +225,7 @@ def _kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=1.e-4,
         centers_output = centers
         z_output = z
 
-    return centers_output, z_output, J
+    return centers_output, z_output, bJ
 
 def tempTest():
     X1 = np.array([1,0,0,0]) + np.random.randn(1000, 4)

@@ -74,6 +74,9 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
         filename = obj.getFilename()
         if filename != '':
             header['filename'] = filename
+    else:
+        raise ValueError('Invalid type (%s) passed in: cannot convert %s to '
+                    'VolumeImg' % (type(obj), obj))
 
     if world_space is None and header.get('sform_code', 0) == 4:
         world_space = 'mni152'

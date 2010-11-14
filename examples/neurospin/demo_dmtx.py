@@ -17,7 +17,7 @@ tr = 1.0
 nscans = 128
 frametimes = np.linspace(0, (nscans-1)*tr, nscans)
 
-conditions = [0, 0, 0, 1, 1, 1, 3, 3, 3]
+conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c3', 'c3', 'c3']
 onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
 hrf_model = 'Canonical'
 motion = np.cumsum(np.random.randn(128, 6), 0)
@@ -32,7 +32,8 @@ X1 = dm.DesignMatrix(
 
 # block design matrix
 duration = 7*np.ones(9)
-paradigm =  dm.BlockParadigm(index=conditions, onset=onsets, duration=duration)
+paradigm =  dm.BlockParadigm(con_id=conditions, onset=onsets,
+                             duration=duration)
 
 X2 = dm.DesignMatrix(frametimes, paradigm, drift_model='Polynomial',
                          drift_order=3)

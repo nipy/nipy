@@ -14,7 +14,6 @@ Author : Bertrand Thirion, 2008-2009
 
 import numpy as np
 import scipy.ndimage as nd
-from nipy.io.imageformats import save, Nifti1Image 
 
 # definition of the maxima at the group level
 pos = np.array([[6 ,  7],
@@ -48,7 +47,8 @@ def _cone3d(shape, ij, pos, ampli, width):
 def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0, 
                          noise_level=1.0, pos=pos, ampli=ampli,
                          spatial_jitter=1.0, signal_jitter=1.0,
-                         width=5.0, out_text_file=None, out_image_file=None, 
+                         width=5.0, width_jitter=0,
+                         out_text_file=None, out_image_file=None, 
                          verbose=False, seed=False):
     """
     Create surrogate (simulated) 2D activation data with spatial noise.
@@ -79,6 +79,8 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
         amplitude specified by ampli
     width: float or ndarray, optionnal
         Width of the activations
+    width_jitter: float
+        Relative width jitter of the blobs
     out_text_file: string or None, optionnal
         If not None, the resulting array is saved as a text file with the
         given file name
@@ -111,9 +113,11 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
         data = np.zeros(shape)
         lpos = pos + spatial_jitter*nr.randn(1, 2)
         lampli = ampli + signal_jitter*nr.randn(np.size(ampli))
+        this_width = width * (1 - width_jitter*nr.randn(np.size(ampli)))
         for k in range(np.size(lampli)):
             data = np.maximum(data,
-                              _cone2d(shape, ij, lpos[k], lampli[k], width))
+                             _cone2d(shape, ij, lpos[k], lampli[k], 
+                                     this_width[k]))
     
         # make some noise
         noise = nr.randn(dimx,dimy)
@@ -250,13 +254,14 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20), mask=None,
         dataset.tofile(out_text_file)
 
     if out_image_file is not None:
+        from nipy.io.imageformats import save, Nifti1Image 
         save(Nifti1Image( dataset, np.eye(4)), out_image_file)
 
     return dataset
 
-def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, dmtx=None,
-                         sk=1.0, noise_level=1.0,  out_image_file=None, 
-                         verbose=False, seed=False):
+def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, n_sess=1,
+                         dmtx=None, sk=1.0, noise_level=1.0,  signal_level=1.0,
+                         out_image_file=None, verbose=False, seed=False):
     """
     Create surrogate (simulated) 3D activation data with spatial noise.
 
@@ -269,13 +274,17 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, dmtx=None,
     n_scans: int, optional,
         number of scans to be simlulated
         overrided by the design matrix
-    dmtx: arrau of shape(n_scans, n_rows),
+    n_sess: int, optional,
+        the number of simulated sessions
+    dmtx: array of shape(n_scans, n_rows),
         the design matrix
     sk: float, optionnal
         Amount of spatial noise smoothness.
     noise_level: float, optionnal
         Amplitude of the spatial noise.
         amplitude=noise_level)
+    signal_level: float, optional,
+        Amplitude of the signal
     out_image_file: string or None, optionnal
         If not None, the resulting is saved as a nifti file with the
         given file name.
@@ -288,8 +297,9 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, dmtx=None,
 
     Returns
     -------
-    dataset: ndarray of shape (shape[0], shape[1], shape[2], n_scans)
-        The surrogate activation map, with dimensions (nbsubj, dimx, dimy, dimz)
+    dataset: a list of n_sess ndarray of shape 
+             (shape[0], shape[1], shape[2], n_scans)
+             The surrogate activation map
     """
     if seed:
         nr = np.random.RandomState([seed])
@@ -308,29 +318,42 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, dmtx=None,
         n_scans = dmtx.shape[0]
     
     shape_4d = tuple((shape[0], shape[1], shape[2], n_scans))
-    data = np.zeros(shape_4d)
-
-    # make the signal
+    
+    output_images = []
     if dmtx is not None:
+        beta = []
         for r in range(dmtx.shape[1]):
-            beta = nd.gaussian_filter(nr.randn(*shape),sk)
-            beta /= np.std(beta)
-            data[mask_data,:] += np.outer(beta[mask_data],dmtx[:,r]) 
+            betar = nd.gaussian_filter(nr.randn(*shape), sk)
+            betar /= np.std(betar)
+            beta.append(signal_level*betar)
+        beta = np.rollaxis(np.array(beta), 0, 4)
     
-    for s in range(n_scans):
-        # make some noise
-        noise = nr.randn(shape[0], shape[1], shape[2])
-    
-        # smooth the noise
-        noise = nd.gaussian_filter(noise, sk)
-        noise *= noise_level/np.std(noise)
+    for ns in range(n_sess):
+        data = np.zeros(shape_4d)
         
-        #make the mixture
-        data[:,:,:,s] += noise
-        data[:,:,:,s] += 100*mask_data
+        # make the signal
+        if dmtx is not None:
+            data[mask_data,:] += np.dot(beta[mask_data], dmtx.T) 
+            #for r in range(dmtx.shape[1]):
+            #    #data[mask_data,:] += np.outer(beta[mask_data], dmtx[:,r]) 
+                
 
-    wim = Nifti1Image( data, affine)
-    if out_image_file is not None:
-        save(wim, out_image_file)
+        for s in range(n_scans):
+            # make some noise
+            noise = nr.randn(*shape)
+    
+            # smooth the noise
+            noise = nd.gaussian_filter(noise, sk)
+            noise *= noise_level/np.std(noise)
+        
+            # make the mixture
+            data[:,:,:,s] += noise
+            data[:,:,:,s] += 100*mask_data
+            
+        from nipy.io.imageformats import save, Nifti1Image 
+        wim = Nifti1Image( data, affine)
+        output_images.append(wim)
+        if out_image_file is not None:
+            save(wim, out_image_file[s])
 
-    return wim
+    return output_images

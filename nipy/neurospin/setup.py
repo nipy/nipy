@@ -2,22 +2,9 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import os
 from distutils import log 
-from distutils.msvccompiler import get_build_version as get_msvc_build_version
 
 # Global variables
 LIBS = os.path.realpath('libcstat')
-
-# Configuration copied from numpy/random/setup.py for fixing mingw ftime
-# DLL import problem
-def needs_mingw_ftime_workaround():
-    # We need the mingw workaround for _ftime if the msvc runtime version is
-    # 7.1 or above and we build with mingw ...
-    # ... but we can't easily detect compiler version outside distutils command
-    # context, so we will need to detect in randomkit whether we build with gcc
-    msver = get_msvc_build_version()
-    if msver and msver >= 8:
-        return True
-    return False
 
 
 def configuration(parent_package='',top_path=None):
@@ -26,27 +13,13 @@ def configuration(parent_package='',top_path=None):
 
     config = Configuration('neurospin', parent_package, top_path)
 
-    # This is also from numpy/random/setup.py - ftime fix
-    defs = []
-    if needs_mingw_ftime_workaround():
-        defs.append(("NPY_NEEDS_MINGW_TIME_WORKAROUND", None))
-
     # cstat library
     config.add_include_dirs(os.path.join(LIBS,'fff'))
-    config.add_include_dirs(os.path.join(LIBS,'randomkit'))
     config.add_include_dirs(os.path.join(LIBS,'wrapper'))
     config.add_include_dirs(get_numpy_include_dirs())
 
     sources = [os.path.join(LIBS,'fff','*.c')]
     sources.append(os.path.join(LIBS,'wrapper','*.c'))
-
-    # FIXME: the following external library 'mtrand' (C) is copied from 
-    # numpy, and included in the fff library for installation simplicity. 
-    # If numpy happens to expose its API one day, it would be neat to link 
-    # with them rather than copying the source code.
-    #
-    # numpy-trunk/numpy/random/mtrand/
-    sources.append(os.path.join(LIBS,'randomkit','*.c'))
 
     # Link with lapack if found on the system
 
@@ -93,7 +66,6 @@ def configuration(parent_package='',top_path=None):
 
     config.add_library('cstat',
                        sources=sources,
-                       macros=defs,
                        library_dirs=library_dirs,
                        libraries=libraries,
                        extra_info=lapack_info)
@@ -113,7 +85,6 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('datasets')
     config.add_subpackage('image')
     config.add_subpackage('segmentation')
-    config.add_subpackage('registration')
     config.add_subpackage('tests')
     
     config.make_config_py() # installs __config__.py

@@ -22,15 +22,15 @@ class TestAll(TestCase):
         assert_equal(fu.median(x), median(x))
 
     def test_median3(self):
-        x = rand(10,30,11)
+        x = rand(10, 30, 11)
         assert_almost_equal(squeeze(fu.median(x,axis=1)), median(x,axis=1))
 
     def test_mahalanobis(self):
         x = rand(100)
-        A = rand(100,100)
+        A = rand(100, 100)
         A = dot(A.transpose(), A)
         mah = dot(x, dot(inv(A), x))
-        assert_almost_equal(mah, fu.mahalanobis(x, A), decimal=4) 
+        assert_almost_equal(mah, fu.mahalanobis(x, A), decimal=1) 
         
     def test_mahalanobis2(self):
         x = rand(100,3,4)
