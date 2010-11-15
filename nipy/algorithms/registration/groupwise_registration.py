@@ -371,6 +371,7 @@ def realign4d(runs,
 def split_affine(a): 
     sa = np.eye(4)
     sa[0:3, 0:3] = a[0:3, 0:3]
+    sa[0:3, 3] = a[0:3, 4] 
     return sa, a[3,3]
 
 
