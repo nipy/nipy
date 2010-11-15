@@ -1,6 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
+from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP, _DEBUG
 from .affine import Rigid, Similarity, Affine, apply_affine
 from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_sample4d
 
@@ -164,7 +164,8 @@ class Realign4d_Algorithm(object):
 
     def resample_all_inmask(self):
         for t in range(self.nscans):
-            print('Resampling scan %d/%d' % (t+1, self.nscans))
+            if _DEBUG:
+                print('Resampling scan %d/%d' % (t+1, self.nscans))
             self.resample_inmask(t)
 
     def init_motion_detection(self, t):
@@ -218,7 +219,8 @@ class Realign4d_Algorithm(object):
 
         def callback(pc):
             self.transforms[t].param = pc
-            print(self.transforms[t])
+            if _DEBUG:
+                print(self.transforms[t])
 
         if optimizer=='powell':
             tols = {'xtol': _XTOL, 'ftol': _FTOL}
@@ -241,7 +243,8 @@ class Realign4d_Algorithm(object):
 
         # Optimize motion parameters 
         for t in range(self.nscans):
-            print('Correcting motion of scan %d/%d...' % (t+1, self.nscans))
+            if _DEBUG: 
+                print('Correcting motion of scan %d/%d...' % (t+1, self.nscans))
             def cost(pc):
                 self.transforms[t].param = pc
                 return self.msid(t)
@@ -259,14 +262,16 @@ class Realign4d_Algorithm(object):
 
 
     def resample(self):
-        print('Gridding...')
+        if _DEBUG:
+            print('Gridding...')
         dims = self.dims
         XYZ = np.mgrid[0:dims[0], 0:dims[1], 0:dims[2]]
         XYZ = np.rollaxis(XYZ, 0, 4)
         XYZ = np.reshape(XYZ, [np.prod(XYZ.shape[0:-1]), 3])
         res = np.zeros(dims)
         for t in range(self.nscans):
-            print('Fully resampling scan %d/%d' % (t+1, self.nscans))
+            if _DEBUG:
+                print('Fully resampling scan %d/%d' % (t+1, self.nscans))
             X, Y, Z = grid_coords(XYZ, self.transforms[t].as_affine(), 
                                   self.inv_affine, self.affine)
             if self.time_interp: 

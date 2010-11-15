@@ -15,15 +15,11 @@ from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
 from nipy.core.image.affine_image import AffineImage
 from nipy.algorithms.optimize import fmin_steepest
 
-from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
+from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP, _DEBUG
 from ._registration import _joint_histogram
 from .affine import inverse_affine, subgrid_affine, affine_transforms
 from .chain_transform import ChainTransform 
 from .similarity_measures import similarity_measures
-
-
-# Module global - enables online print statements
-DEBUG = True
 
 _CLAMP_DTYPE = 'short' # do not edit
 _BINS = 256
@@ -239,7 +235,7 @@ class HistogramRegistration(object):
             return -self._eval(Tv) 
 
         # Callback during optimization
-        if callback is None and DEBUG:
+        if callback is None and _DEBUG:
             def callback(tc):
                 Tv.param = tc
                 print(Tv.optimizable)
@@ -247,7 +243,7 @@ class HistogramRegistration(object):
                 print('')
 
         # Switching to the appropriate optimizer
-        if DEBUG:
+        if _DEBUG:
             print('Initial guess...')
             print(Tv.optimizable)
         if optimizer=='powell':
@@ -272,7 +268,7 @@ class HistogramRegistration(object):
         else:
             raise ValueError('Unknown optimizer name: %s???' % optimizer)
         # Output
-        if DEBUG:
+        if _DEBUG:
             print ('Optimizing using %s' % fmin.__name__)
         Tv.param = fmin(cost, tc0, callback=callback, **kwargs)
         return Tv.optimizable

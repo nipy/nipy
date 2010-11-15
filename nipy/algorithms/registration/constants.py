@@ -10,4 +10,5 @@ _FTOL = .01
 _GTOL = .1 
 _STEP = .1 
 
-
+# Module global - enables online print statements
+_DEBUG = True
