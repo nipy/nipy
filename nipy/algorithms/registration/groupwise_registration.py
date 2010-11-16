@@ -111,7 +111,7 @@ class Image4d(object):
 
 
 
-class Realign4d_Algorithm(object):
+class Realign4dAlgorithm(object):
 
     def __init__(self, 
                  im4d, 
@@ -287,7 +287,7 @@ def resample4d(im4d, transforms, time_interp=True):
     """
     corr_im4d_array = resample4d(im4d, transforms=None, time_interp=True)
     """
-    r = Realign4d_Algorithm(im4d, transforms=transforms, time_interp=time_interp)
+    r = Realign4dAlgorithm(im4d, transforms=transforms, time_interp=time_interp)
     return r.resample()
 
 
@@ -306,8 +306,8 @@ def single_run_realign4d(im4d,
     im4d : Image4d instance
 
     """ 
-    r = Realign4d_Algorithm(im4d, speedup=speedup, optimizer=optimizer, 
-                            time_interp=time_interp, affine_class=affine_class)
+    r = Realign4dAlgorithm(im4d, speedup=speedup, optimizer=optimizer, 
+                           time_interp=time_interp, affine_class=affine_class)
     for loop in range(loops): 
         r.estimate_motion()
     return r.transforms
@@ -369,9 +369,12 @@ def realign4d(runs,
 
 
 def split_affine(a): 
+    # that's a horrible hack until we fix the inconsistency between
+    # Image and AffineImage
     sa = np.eye(4)
     sa[0:3, 0:3] = a[0:3, 0:3]
-    sa[0:3, 3] = a[0:3, 4] 
+    if a.shape[1] > 4:
+        sa[0:3, 3] = a[0:3, 4] 
     return sa, a[3,3]
 
 
