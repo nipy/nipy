@@ -173,10 +173,9 @@ class Affine(Transform):
         """
         Convert a 4x4 matrix describing an affine transform into a
         12-sized vector of natural affine parameters: translation,
-        rotation, log-scale, pre-rotation (to allow for pre-rotation
-        when combined with non-unitary scales). In case the transform
-        has a negative determinant, set the `_direct` attribute to
-        False.
+        rotation, log-scale, pre-rotation (to allow for shearing when
+        combined with non-unitary scales). In case the transform has a
+        negative determinant, set the `_direct` attribute to False.
         """
         vec12 = np.zeros((12,))
         vec12[0:3] = aff[:3,3]

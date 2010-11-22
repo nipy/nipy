@@ -252,14 +252,17 @@ class Realign4dAlgorithm(object):
             self.transforms[t].param = fmin(cost, self.transforms[t].param,
                                             callback=callback, **tols)
 
-        # At this stage, transforms map an implicit 'ideal' grid to
-        # the 'acquisition' grid. We redefine the ideal grid as being
-        # conventionally aligned with the first scan.
-        T0inv = self.transforms[0].inv()
+    def reset_motion(self, refscan=0):
+        """
+        After motion correction, scans are aligned with a not
+        well-defined 'mean' scan so that transforms map an implicit
+        'ideal' grid to the 'acquisition' grid. We redefine the ideal
+        grid as being conventionally aligned with the first scan.
+        """
+        Tref_inv = self.transforms[refscan].inv()
         for t in range(self.nscans): 
-            self.transforms[t] = (self.transforms[t]).compose(T0inv) 
-        
-
+            self.transforms[t] = (self.transforms[t]).compose(Tref_inv) 
+            
 
     def resample(self):
         if _DEBUG:
@@ -310,6 +313,7 @@ def single_run_realign4d(im4d,
                            time_interp=time_interp, affine_class=affine_class)
     for loop in range(loops): 
         r.estimate_motion()
+    r.reset_motion()
     return r.transforms
 
 def realign4d(runs, 
@@ -390,14 +394,16 @@ class Realign4d(object):
         self._runs = []
         self.affine_class = affine_class
         for im in images: 
-            spatial_affine, _tr = split_affine(im.affine)
+            affine, _tr = split_affine(im.affine)
             if tr == None: 
                 tr = _tr
-            self._runs.append(Image4d(im.get_data(), spatial_affine, tr=tr, tr_slices=tr_slices, 
+            self._runs.append(Image4d(im.get_data(), affine, tr=tr, tr_slices=tr_slices, 
                                       start=start, slice_order=slice_order, interleaved=interleaved)) 
         self._transforms = [None for run in self._runs]
+        self._within_run_transforms = [None for run in self._runs]
+        self._mean_transforms = [None for run in self._runs]
         self._time_interp = time_interp 
-                      
+
     def estimate(self, iterations=2, between_loops=None, align_runs=True): 
         within_loops = iterations 
         if between_loops == None: 
@@ -409,7 +415,8 @@ class Realign4d(object):
 
     def resample(self, align_runs=True): 
         """
-        Return a list of 4d nibabel-like images corresponding to the resampled runs. 
+        Return a list of 4d nipy-like images corresponding to the
+        resampled runs.
         """
         if align_runs: 
             transforms = self._transforms
