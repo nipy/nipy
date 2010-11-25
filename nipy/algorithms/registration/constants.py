@@ -1,14 +1,14 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Constants used by several modules 
+Globals used by several modules 
 """
 
 _OPTIMIZER = 'powell'
-_XTOL = .1
-_FTOL = .01
-_GTOL = .1 
-_STEP = .1 
+_XTOL = 1e-3
+_FTOL = 1e-2
+_GTOL = 1e-1
+_STEP = 1e-1 
 
-# Module global - enables online print statements
+# enables online print statements
 _DEBUG = True
