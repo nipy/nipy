@@ -162,8 +162,8 @@ class Realign4dAlgorithm(object):
 
     def resample_inmask(self, t):
         """
-        x,y,z,t are "ideal grid" coordinates 
-        X,Y,Z,T are "acquisition grid" coordinates 
+        x,y,z,t are "head" grid coordinates 
+        X,Y,Z,T are "scanner" grid coordinates 
         """
         X, Y, Z = grid_coords(self.xyz, self.transforms[t].as_affine(), 
                               self.inv_affine, self.affine)
@@ -185,9 +185,7 @@ class Realign4dAlgorithm(object):
         one.
         """
         self.resample_inmask(t)
-        fixed = range(self.nscans)
-        fixed.remove(t)
-        self.m1 = self.template(self.data[:,fixed])
+        self.m1 = self.template(self.data)
 
     def compute_metric(self, t):
         """
@@ -238,10 +236,13 @@ class Realign4dAlgorithm(object):
 
     def reset_motion(self, refscan=0):
         """
-        Motion correction aligns scans with respect to an average scan
-        so that transforms map an ill-defined 'ideal' grid to the
-        'acquisition' grid. We redefine the ideal grid as being
-        conventionally aligned with the first scan.
+        Motion correction aligns scans with an online template so that
+        transforms map an ill-defined template space to scanner
+        space. We redefine the head space as being conventionally
+        aligned with some reference scan.
+
+        Consequently, the transforms are right multiplied by the first
+        scan's inverse transform (ref scan -> template).
         """
         Tref_inv = self.transforms[refscan].inv()
         for t in range(self.nscans): 

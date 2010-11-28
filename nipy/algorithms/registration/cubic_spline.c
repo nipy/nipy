@@ -15,6 +15,17 @@
    Use nx as auxiliary variable. 
 
  */
+/*
+#define COMPUTE_NEIGHBORS(x, ddim, nx, px)		\
+  nx = (int)(x + ddim + 2);				\
+  if ((nx>=3) && (nx<=3*ddim)) {			\
+    px = nx - ddim;					\
+    nx = px - 3;					\
+  }							\
+  else							\
+    return 0.0;
+*/
+
 #define COMPUTE_NEIGHBORS(x, ddim, nx, px)		\
   nx = (int)(x + ddim + 2);				\
   if ((nx>=3) && (nx<=3*ddim)) {			\
