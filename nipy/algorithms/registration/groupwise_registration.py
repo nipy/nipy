@@ -169,7 +169,7 @@ class Realign4dAlgorithm(object):
                               self.inv_affine, self.affine)
         if self.time_interp: 
             T = self.grid_time(Z, self.timestamps[t])
-            cspline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T)
+            cspline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T, mt=1)
         else: 
             cspline_sample3d(self.data[:,t], self.cbspline[:,:,:,t], X, Y, Z)
 
@@ -264,7 +264,7 @@ class Realign4dAlgorithm(object):
                                   self.inv_affine, self.affine)
             if self.time_interp: 
                 T = self.grid_time(Z, self.timestamps[t])
-                cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T)
+                cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T, mt=1)
             else: 
                 cspline_sample3d(res[:,:,:,t], self.cbspline[:,:,:,t], X, Y, Z)
         return res
