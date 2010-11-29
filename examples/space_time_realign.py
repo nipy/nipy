@@ -34,9 +34,9 @@ import sys
 
 
 # Optional argument
-iterations = 1
+loops = 1 
 if len(sys.argv)>1: 
-    iterations = int(sys.argv[1])
+    loops = int(sys.argv[1])
 
 # Input images are provided with the nipy-data package
 runnames = [example_data.get_filename('fiac','fiac0',run+'.nii.gz') \
@@ -47,7 +47,7 @@ runs = [load_image(run) for run in runnames]
 R = FmriRealign4d(runs, tr=2.5, slice_order='ascending', interleaved=True)
 
 # Estimate motion within- and between-sessions
-R.estimate(iterations=iterations)
+R.estimate(loops=loops)
 
 # Resample data on a regular space+time lattice using 4d interpolation
 corr_runs = R.resample()

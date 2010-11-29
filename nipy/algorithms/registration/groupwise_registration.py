@@ -1,6 +1,5 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP, _DEBUG
 from .affine import Rigid, Similarity, Affine, apply_affine
 from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_sample4d
 
@@ -9,14 +8,23 @@ from nipy.algorithms.optimize import fmin_steepest
 
 import numpy as np
 from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
-        
-_SLICE_ORDER = 'ascending'
-_INTERLEAVED = False
-_SLICE_AXIS = 2 
-_SPEEDUP = 4
-_WITHIN_LOOPS = 2
-_BETWEEN_LOOPS = 5 
-_METRIC = 'ssd'
+
+# Module globals 
+VERBOSE = True # enables online print statements
+OPTIMIZER = 'powell'
+XTOL = 1e-2
+FTOL = 1e-2
+GTOL = 1e-2
+STEPSIZE = 1e-1
+MAXITER = 5
+SLICE_ORDER = 'ascending'
+INTERLEAVED = False
+SLICE_AXIS = 2 
+SPEEDUP = 4
+WITHIN_LOOPS = 2
+BETWEEN_LOOPS = 5 
+METRIC = 'sad'
+
 
 def interp_slice_order(Z, slice_order): 
     Z = np.asarray(Z)
@@ -43,8 +51,8 @@ class Image4d(object):
     slice-by-slice basis).
     """
     def __init__(self, array, affine, tr, tr_slices=None, start=0.0, 
-                 slice_order=_SLICE_ORDER, interleaved=_INTERLEAVED, 
-                 slice_axis=_SLICE_AXIS):
+                 slice_order=SLICE_ORDER, interleaved=INTERLEAVED, 
+                 slice_axis=SLICE_AXIS):
         """
         Configure fMRI acquisition time parameters.
         
@@ -114,12 +122,12 @@ class Realign4dAlgorithm(object):
 
     def __init__(self, 
                  im4d, 
-                 speedup=_SPEEDUP,
-                 optimizer=_OPTIMIZER, 
+                 speedup=SPEEDUP,
+                 optimizer=OPTIMIZER, 
                  affine_class=Rigid,
                  transforms=None, 
                  time_interp=True, 
-                 metric=_METRIC):
+                 metric=METRIC):
         self.optimizer = optimizer
         dims = im4d.array.shape
         self.dims = dims 
@@ -175,7 +183,7 @@ class Realign4dAlgorithm(object):
 
     def resample_all_inmask(self):
         for t in range(self.nscans):
-            if _DEBUG:
+            if VERBOSE:
                 print('Resampling scan %d/%d' % (t+1, self.nscans))
             self.resample_inmask(t)
 
@@ -201,23 +209,23 @@ class Realign4dAlgorithm(object):
 
         def callback(pc):
             self.transforms[t].param = pc
-            if _DEBUG:
+            if VERBOSE:
                 print(self.transforms[t])
 
         if optimizer=='powell':
-            tols = {'xtol': _XTOL, 'ftol': _FTOL}
+            kwargs = {'xtol':XTOL, 'ftol':FTOL}
             fmin = fmin_powell
         elif optimizer=='steepest':
-            tols = {'xtol': _XTOL, 'ftol': _FTOL, 'step':_STEP}
+            kwargs = {'xtol':XTOL, 'ftol': FTOL, 'step':STEPSIZE}
             fmin = fmin_steepest
         elif optimizer=='cg':
-            tols = {'gtol': _GTOL}
+            kwargs = {'gtol':GTOL, 'maxiter':MAXITER}
             fmin = fmin_cg
         elif optimizer=='bfgs':
-            tols = {'gtol': _GTOL}
+            kwargs = {'gtol':GTOL, 'maxiter':MAXITER}
             fmin = fmin_bfgs
         else: # simplex method 
-            tols = {'xtol': _XTOL, 'ftol': _FTOL}
+            kwargs = {'xtol':XTOL, 'ftol':FTOL}
             fmin = fmin_simplex
 
         # Resample data according to the current space/time transformation 
@@ -225,14 +233,14 @@ class Realign4dAlgorithm(object):
 
         # Optimize motion parameters 
         for t in range(self.nscans):
-            if _DEBUG: 
+            if VERBOSE: 
                 print('Correcting motion of scan %d/%d...' % (t+1, self.nscans))
             def cost(pc):
                 self.transforms[t].param = pc
                 return self.compute_metric(t)
             self.make_template(t)
             self.transforms[t].param = fmin(cost, self.transforms[t].param,
-                                            callback=callback, **tols)
+                                            callback=callback, **kwargs)
 
     def reset_motion(self, refscan=0):
         """
@@ -250,7 +258,7 @@ class Realign4dAlgorithm(object):
             
 
     def resample(self):
-        if _DEBUG:
+        if VERBOSE:
             print('Gridding...')
         dims = self.dims
         XYZ = np.mgrid[0:dims[0], 0:dims[1], 0:dims[2]]
@@ -258,7 +266,7 @@ class Realign4dAlgorithm(object):
         XYZ = np.reshape(XYZ, [np.prod(XYZ.shape[0:-1]), 3])
         res = np.zeros(dims)
         for t in range(self.nscans):
-            if _DEBUG:
+            if VERBOSE:
                 print('Fully resampling scan %d/%d' % (t+1, self.nscans))
             X, Y, Z = grid_coords(XYZ, self.transforms[t].as_affine(), 
                                   self.inv_affine, self.affine)
@@ -281,12 +289,12 @@ def resample4d(im4d, transforms, time_interp=True):
 
 
 def single_run_realign4d(im4d, 
-                         loops=_WITHIN_LOOPS, 
-                         speedup=_SPEEDUP, 
-                         optimizer=_OPTIMIZER, 
+                         loops=WITHIN_LOOPS, 
+                         speedup=SPEEDUP, 
+                         optimizer=OPTIMIZER, 
                          affine_class=Rigid, 
                          time_interp=True, 
-                         metric=_METRIC): 
+                         metric=METRIC): 
     """
     transforms = single_run_realign4d(im4d, loops=2, speedup=4, optimizer='powell', time_interp=True)
 
@@ -304,14 +312,14 @@ def single_run_realign4d(im4d,
     return r.transforms
 
 def realign4d(runs, 
-              within_loops=_WITHIN_LOOPS, 
-              between_loops=_BETWEEN_LOOPS, 
-              speedup=_SPEEDUP, 
-              optimizer=_OPTIMIZER, 
+              within_loops=WITHIN_LOOPS, 
+              between_loops=BETWEEN_LOOPS, 
+              speedup=SPEEDUP, 
+              optimizer=OPTIMIZER, 
               align_runs=True, 
               time_interp=True, 
               affine_class=Rigid,
-              metric=_METRIC): 
+              metric=METRIC): 
     """
     Parameters
     ----------
@@ -374,8 +382,8 @@ def split_affine(a):
 
 class Realign4d(object): 
 
-    def __init__(self, images, affine_class=Rigid, metric=_METRIC):
-        self._generic_init(images, affine_class, _SLICE_ORDER, _INTERLEAVED, 1.0, 0.0, 0.0, False, metric)
+    def __init__(self, images, affine_class=Rigid, metric=METRIC):
+        self._generic_init(images, affine_class, SLICE_ORDER, INTERLEAVED, 1.0, 0.0, 0.0, False, metric)
 
     def _generic_init(self, images, affine_class, 
                       slice_order, interleaved, tr, tr_slices, 
@@ -396,14 +404,20 @@ class Realign4d(object):
         self._time_interp = time_interp 
         self.metric = metric
 
-    def estimate(self, iterations=2, between_loops=None, align_runs=True, speedup=_SPEEDUP): 
-        within_loops = iterations 
+    def estimate(self, loops=2, between_loops=None, align_runs=True, 
+                 speedup=SPEEDUP, optimizer=OPTIMIZER): 
+        within_loops = loops
         if between_loops == None: 
             between_loops = 3*within_loops 
-        t = realign4d(self._runs, within_loops=within_loops,
-                      between_loops=between_loops, speedup=speedup, 
-                      align_runs=align_runs, time_interp=self._time_interp,
-                      affine_class=self.affine_class, metric=self.metric)
+        t = realign4d(self._runs, 
+                      within_loops=within_loops,
+                      between_loops=between_loops, 
+                      speedup=speedup, 
+                      optimizer=optimizer,
+                      align_runs=align_runs, 
+                      time_interp=self._time_interp,
+                      affine_class=self.affine_class, 
+                      metric=self.metric)
         self._transforms, self._within_run_transforms, self._mean_transforms = t
 
     def resample(self, align_runs=True): 
@@ -425,7 +439,7 @@ class FmriRealign4d(Realign4d):
 
     def __init__(self, images, slice_order, interleaved,
                  tr=None, tr_slices=None, start=0.0, time_interp=True, 
-                 affine_class=Rigid, metric=_METRIC):
+                 affine_class=Rigid, metric=METRIC):
         self._generic_init(images, affine_class, slice_order, interleaved, 
                            tr, tr_slices, start, time_interp, metric)
 
