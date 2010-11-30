@@ -12,6 +12,7 @@ Neuroimage. 2007 Mar;35(1):105-20.
 author: Bertrand Thirion, 2005-2009
 """
 import os.path as op
+from numpy import array
 import tempfile
 import get_data_light
 
@@ -24,18 +25,30 @@ print 'This analysis takes a long while, please be patient'
 # Set the paths, data, etc.
 ##############################################################################
 
-data_dir = get_data_light.get_it()
 nsubj = 12
 subj_id = range(nsubj)
 nbeta = 29
-data_dir = op.expanduser(op.join(data_dir, 'group_t_images'))
+
+#data_dir = get_data_light.get_it()
+#data_dir = op.expanduser(op.join(data_dir, 'group_t_images'))
+data_dir = op.expanduser( 
+    op.join('~', '.nipy', 'tests', 'data', 'group_t_images'))
+
 mask_images = [op.join(data_dir,'mask_subj%02d.nii'%n)
                for n in range(nsubj)]
-
 stat_images =[ op.join(data_dir,'spmT_%04d_subj_%02d.nii'%(nbeta,n))
                  for n in range(nsubj)]
 contrast_images =[ op.join(data_dir,'con_%04d_subj_%02d.nii'%(nbeta,n))
                  for n in range(nsubj)]
+all_images = mask_images + stat_images + contrast_images
+missing_file = array([op.exists(m)==False for m in all_images]).any()
+
+if missing_file:
+    get_data_light.get_it()
+
+
+
+
 swd = tempfile.mkdtemp('image')
 
 ##############################################################################

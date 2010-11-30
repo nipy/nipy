@@ -32,9 +32,11 @@ from nipy.neurospin.spatial_models.discrete_domain import grid_domain_from_image
 #######################################
 
 # volume mask
-get_data_light.get_it()
 mask_path = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
                                  'mask.nii.gz'))
+if op.exists(mask_path)==False:
+    get_data_light.get_it()
+
 mask = load(mask_path)
 
 # timing

@@ -24,9 +24,12 @@ verbose = 1
 theta = float(st.t.isf(0.01,100))
 
 # paths
-data_dir = get_data_light.get_it()
+#data_dir = get_data_light.get_it()
+data_dir = os.path.expanduser( os.path.join( '~', '.nipy', 'tests', 'data'))
 mask_image = os.path.join(data_dir, 'mask.nii.gz')
 input_image = os.path.join(data_dir, 'spmT_0029.nii.gz')
+if os.path.exists(mask_image)==False or os.path.exists(input_image)==False:
+    get_data_light.get_it()
 
 # Read the mask
 nim = load(mask_image)
@@ -38,12 +41,12 @@ beta = rbeta.get_data()
 beta = beta[mask>0]
 
 mf = mp.figure()
-a1 = mp.subplot(1,3,1)
-a2 = mp.subplot(1,3,2)
-a3 = mp.subplot(1,3,3)
+a1 = mp.subplot(1, 3, 1)
+a2 = mp.subplot(1, 3, 2)
+a3 = mp.subplot(1, 3, 3)
 
 # fit beta's histogram with a Gamma-Gaussian mixture
-bfm = np.array([2.5,3.0,3.5,4.0,4.5])
+bfm = np.array([2.5, 3.0, 3.5, 4.0, 4.5])
 bfp = en.Gamma_Gaussian_fit(beta, bfm, verbose=2, mpaxes=a1)
 
 # fit beta's histogram with a mixture of Gaussians
@@ -55,7 +58,7 @@ bfq = en.three_classes_GMM_fit(beta, bfm, alpha, pstrength,
 # fit the null mode of beta with the robust method
 efdr = en.ENN(beta)
 efdr.learn()
-efdr.plot(bar=0,mpaxes=a3)
+efdr.plot(bar=0, mpaxes=a3)
 
-mf.set_size_inches(15, 5, forward=True)
+mf.set_size_inches(15, 5)
 mp.show()
