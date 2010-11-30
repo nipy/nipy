@@ -3,8 +3,8 @@
 
 import numpy as np
 
-##from .._cubic_spline import *
-from nipy.algorithms.registration._cubic_spline import *
+from .._cubic_spline import *
+#from nipy.algorithms.registration._cubic_spline import *
 
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal)
@@ -37,12 +37,11 @@ def test_sample4d():
 
 
 
-#a = np.random.rand(100)
-
+"""
 a = np.arange(100)
 c = cspline_transform(a)
 x0 = np.arange(100)
 x = np.arange(-4,105)
 b = np.zeros(x.shape)
 b = cspline_sample1d(b, c, x, mode=1)
-
+"""
