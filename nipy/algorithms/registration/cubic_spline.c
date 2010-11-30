@@ -686,8 +686,8 @@ static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz,
 
 
 /* 
-   Compute left and right cubic spline neighbors the oirignal grid
-   mirrored on each side.  Returns 0 if no neighbor can be found.
+   Compute left and right cubic spline neighbors in the image grid
+   mirrored once on each side. Returns 0 if no neighbor can be found.
  */
 static inline int _mirror_grid_neighbors(double x, unsigned int ddim, 
 					 int* nx, int* px)
@@ -705,29 +705,51 @@ static inline int _mirror_grid_neighbors(double x, unsigned int ddim,
 }
 
 /* 
-   Compute left and right cubic spline neighbors. 
+   Compute left and right cubic spline neighbors in the image grid
+   with mirroring only at the border so that any point sufficiently
+   far outside the grid gets interpolated zero.
 
-   The candidate far right neighbor is: 
-   px = floor(x+2)
+   nx = max(-1, floor(x)-1)
+   px = min(dim, floor(x)+2) 
+   
+   If x<=-3 or x>=(ddim+3), there is no neighbor. If the test passes,
+   then we know that -3<x<(ddim+3). 
+   
+   We compute: 
+   aux = (int)(x+3) == floor(x)+3
 
-   If px < 0 or px-3 > ddim, there is no neighbor at all.
+   Next: 
+   nx = max(-1, aux-4)
+   px = min(ddim+1, aux-1) 
+   
+
+   x = 0 --> -1, 2 ok
+   x = -1 --> -1, 1 ok
+   x = -2 --> -1, 0 ok
+   x = -2.5 --> -1, -1 ok
+
+   x = 255 --> 254, 256 ok 
+   x = 256 --> 255, 256 ok 
+   x = 257 --> 256, 256 ok 
 
  */
 
 static inline int _finite_grid_neighbors(double x, unsigned int ddim, 
 					 int* nx, int* px)
 {
-  int ok = 0; 
+  int ok = 0, aux;
+  unsigned int dim = ddim+1;
 
-  *px = (int)(x+2);						
-  if ((px>=0) && (*px<=3+ddim)) {
-    ok = 1; 
-    *nx = *px-3;			
-    if ((*nx<0))			
-      *nx = 0;			
-    if ((*px>ddim))		
-      *px = ddim;		
-  }		
+  if ((x>-3) && (x<(ddim+3))) {
+      ok = 1; 
+      aux = (int)(x+3);
+      *nx = aux-4; 
+      if (*nx<-1)
+	*nx = -1;
+      *px = aux-1;
+      if (*px>dim)
+	*px = dim; 
+    }
 
   return ok; 	
 }
