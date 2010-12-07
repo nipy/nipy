@@ -38,11 +38,20 @@ def interp_slice_order(Z, slice_order):
     ret += (Z-Za)
     return ret
 
-
-def grid_coords(xyz, affine, from_world, to_world):
+def scanner_coords(xyz, affine, from_world, to_world):
     Tv = np.dot(from_world, np.dot(affine, to_world))
     XYZ = apply_affine(Tv, xyz)
     return XYZ[:,0], XYZ[:,1], XYZ[:,2]
+
+def make_grid(dims, speedup=1):
+    s = max(1, int(speedup))
+    #slices = [slice(0, d, s) for d in dims]
+    slices = [slice(s-1, d+1-s, s) for d in dims]
+    xyz = np.mgrid[slices]
+    xyz = np.rollaxis(xyz, 0, 4)
+    xyz = np.reshape(xyz, [np.prod(xyz.shape[0:-1]), 3])  
+    return xyz 
+
 
 
 class Image4d(object):
@@ -108,9 +117,9 @@ class Image4d(object):
         else:
             return z
 
-    def grid_time(self, zv, t):
+    def scanner_time(self, zv, t):
         """
-        tv = grid_time(zv, t)
+        tv = scanner_time(zv, t)
         zv, tv are grid coordinates; t is an actual time value. 
         """
         corr = self.tr_slices*interp_slice_order(self.z_to_slice(zv), self.slice_order)
@@ -129,14 +138,9 @@ class Realign4dAlgorithm(object):
                  time_interp=True, 
                  metric=METRIC):
         self.optimizer = optimizer
-        dims = im4d.array.shape
-        self.dims = dims 
-        self.nscans = dims[3]
-        # Define mask
-        speedup = max(1, int(speedup))
-        xyz = np.mgrid[0:dims[0]:speedup, 0:dims[1]:speedup, 0:dims[2]:speedup]
-        xyz = np.rollaxis(xyz, 0, 4)
-        self.xyz = np.reshape(xyz, [np.prod(xyz.shape[0:-1]), 3])   
+        self.dims = im4d.array.shape
+        self.nscans = self.dims[3]
+        self.xyz = make_grid(self.dims[0:3], speedup)
         masksize = self.xyz.shape[0]
         self.data = np.zeros([masksize, self.nscans], dtype='double')
         # Initialize space/time transformation parameters 
@@ -146,15 +150,15 @@ class Realign4dAlgorithm(object):
             self.transforms = [affine_class() for scan in range(self.nscans)]
         else: 
             self.transforms = transforms
-        self.grid_time = im4d.grid_time
+        self.scanner_time = im4d.scanner_time
         self.timestamps = im4d.tr*np.arange(self.nscans)
         # Compute the 4d cubic spline transform
         self.time_interp = time_interp 
         if time_interp: 
             self.cbspline = cspline_transform(im4d.array)
         else: 
-            self.cbspline = np.zeros(dims)
-            for t in range(dims[3]): 
+            self.cbspline = np.zeros(self.dims)
+            for t in range(self.dims[3]): 
                 self.cbspline[:,:,:,t] = cspline_transform(im4d.array[:,:,:,t])
         # Intensity comparison metric 
         self.diffs = np.zeros(masksize)
@@ -173,10 +177,10 @@ class Realign4dAlgorithm(object):
         x,y,z,t are "head" grid coordinates 
         X,Y,Z,T are "scanner" grid coordinates 
         """
-        X, Y, Z = grid_coords(self.xyz, self.transforms[t].as_affine(), 
-                              self.inv_affine, self.affine)
+        X, Y, Z = scanner_coords(self.xyz, self.transforms[t].as_affine(), 
+                                 self.inv_affine, self.affine)
         if self.time_interp: 
-            T = self.grid_time(Z, self.timestamps[t])
+            T = self.scanner_time(Z, self.timestamps[t])
             cspline_sample4d(self.data[:,t], self.cbspline, X, Y, Z, T, mt=1)
         else: 
             cspline_sample3d(self.data[:,t], self.cbspline[:,:,:,t], X, Y, Z)
@@ -260,18 +264,15 @@ class Realign4dAlgorithm(object):
     def resample(self):
         if VERBOSE:
             print('Gridding...')
-        dims = self.dims
-        XYZ = np.mgrid[0:dims[0], 0:dims[1], 0:dims[2]]
-        XYZ = np.rollaxis(XYZ, 0, 4)
-        XYZ = np.reshape(XYZ, [np.prod(XYZ.shape[0:-1]), 3])
-        res = np.zeros(dims)
+        xyz = make_grid(self.dims[0:3])
+        res = np.zeros(self.dims)
         for t in range(self.nscans):
             if VERBOSE:
                 print('Fully resampling scan %d/%d' % (t+1, self.nscans))
-            X, Y, Z = grid_coords(XYZ, self.transforms[t].as_affine(), 
-                                  self.inv_affine, self.affine)
+            X, Y, Z = scanner_coords(xyz, self.transforms[t].as_affine(), 
+                                     self.inv_affine, self.affine)
             if self.time_interp: 
-                T = self.grid_time(Z, self.timestamps[t])
+                T = self.scanner_time(Z, self.timestamps[t])
                 cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T, mt=1)
             else: 
                 cspline_sample3d(res[:,:,:,t], self.cbspline[:,:,:,t], X, Y, Z)
@@ -383,7 +384,8 @@ def split_affine(a):
 class Realign4d(object): 
 
     def __init__(self, images, affine_class=Rigid, metric=METRIC):
-        self._generic_init(images, affine_class, SLICE_ORDER, INTERLEAVED, 1.0, 0.0, 0.0, False, metric)
+        self._generic_init(images, affine_class, SLICE_ORDER, INTERLEAVED, 
+                           1.0, 0.0, 0.0, False, metric)
 
     def _generic_init(self, images, affine_class, 
                       slice_order, interleaved, tr, tr_slices, 
