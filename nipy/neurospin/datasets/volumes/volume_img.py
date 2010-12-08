@@ -216,8 +216,8 @@ class VolumeImg(VolumeGrid):
             resampled_data = np.concatenate([d[..., np.newaxis]
                                              for d in resampled_data], 
                                             axis=3)
-            resampled_data = np.reshape(resampled_data, shape +
-                                                    data_shape[3:])
+            resampled_data = np.reshape(resampled_data, list(shape) +
+                                            list(data_shape[3:]))
         else:
             resampled_data = ndimage.affine_transform(data, A,
                                                 offset=np.dot(A_inv, b),
