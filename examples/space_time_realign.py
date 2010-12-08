@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python 
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
@@ -25,7 +24,7 @@ rarun2.nii
 Author: Alexis Roche, 2009. 
 """
 
-from nipy.neurospin.registration import FmriRealign4d
+from nipy.algorithms.registration import FmriRealign4d
 
 from nipy import load_image, save_image
 from nipy.utils import example_data

@@ -19,6 +19,9 @@ import sys, os
 # absolute, like shown here.
 sys.path.append(os.path.abspath('sphinxext'))
 
+# We load the nipy release info into a dict by explicit execution
+rel = {}
+execfile('../nipy/info.py', rel)
 
 # Import support for ipython console session syntax highlighting (lives
 # in the sphinxext directory defined above)
@@ -34,7 +37,21 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'ipython_console_highlighting', 
               'inheritance_diagram', 
-              'numpydoc']
+              ]
+
+# Current version (as of 11/2010) of numpydoc is only compatible with sphinx >
+# 1.0.  We keep copies of this version in 'numpy_ext'.  For a while we will also
+# keep a copy of the older numpydoc version to allow compatibility with sphinx
+# 0.6
+try:
+    # With older versions of sphinx, this causes a crash
+    import numpy_ext.numpydoc
+except ImportError:
+    # Older version of sphinx
+    extensions.append('numpy_ext_old.numpydoc')
+else: # probably sphinx >= 1.0
+    extensions.append('numpy_ext.numpydoc')
+    autosummary_generate=True
 
 # Matplotlib sphinx extensions
 # ----------------------------
@@ -74,9 +91,9 @@ copyright = '2005-2010, Neuroimaging in Python team'
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '0.1'
+version = rel['__version__']
 # The full version, including alpha/beta/rc tags.
-release = '0.1'
+release = version
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

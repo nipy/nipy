@@ -2,9 +2,8 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-from nipy.neurospin.registration import *
-from nipy.neurospin.registration.grid_transform import *
-from nipy.neurospin.image import *
+from nipy.algorithms.registration import *
+from nipy.algorithms.registration.grid_transform import *
 
 from nipy.utils import example_data
 from nipy import load_image, save_image
@@ -31,7 +30,7 @@ optimizer = 'powell'
 # Make registration instance
 I = load_image(source_file)
 J = load_image(target_file)
-R = IconicRegistration(I, J)
+R = HistogramRegistration(I, J)
 
 # Make Gaussian spline transform instance
 spacing = 16

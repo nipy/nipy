@@ -109,19 +109,21 @@ locals().update(_cmap_d)
 # Utility to replace a colormap by another in an interval
 ################################################################################
 
-def dim_cmap(cmap, factor=.3):
-    """ Dim a colormap to white.
+def dim_cmap(cmap, factor=.3, to_white=True):
+    """ Dim a colormap to white, or to black.
     """
     assert factor >= 0 and factor <=1, ValueError(
             'Dimming factor must be larger than 0 and smaller than 1, %s was passed.' 
                                                         % factor)
-    
+    if to_white:
+        dimmer = lambda c: 1 - factor*(1-c)
+    else:
+        dimmer = lambda c: factor*c
     cdict = cmap._segmentdata.copy()
     for c_index, color in enumerate(('red', 'green', 'blue')):
         color_lst = list()
         for value, c1, c2 in cdict[color]:
-            color_lst.append((value, 1 - factor*(1-c1), 
-                                     1 - factor*(1-c2)))
+            color_lst.append((value, dimmer(c1), dimmer(c2)))
         cdict[color] = color_lst
 
     return _colors.LinearSegmentedColormap(

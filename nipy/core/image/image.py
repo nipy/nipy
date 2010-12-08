@@ -19,8 +19,8 @@ from nipy.utils.onetime import setattr_on_read
 # functions only, not in Image
 
 from ..reference.coordinate_map import (AffineTransform, 
-                              CoordinateSystem,
-                              CoordinateMap)
+                                        CoordinateSystem,
+                                        CoordinateMap)
 from ..reference.array_coords import ArrayCoordMap
 
 __all__ = ['fromarray', 'subsample']

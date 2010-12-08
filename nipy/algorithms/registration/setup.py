@@ -12,7 +12,7 @@ def configuration(parent_package='',top_path=None):
     config.add_include_dirs(config.name.replace('.', os.sep))
     config.add_extension(
         '_registration',
-        sources=['_registration.pyx', 'iconic.c', 'wichmann_prng.c'])
+        sources=['_registration.pyx', 'joint_histogram.c', 'wichmann_prng.c'])
     config.add_extension(
         '_cubic_spline', 
         sources=['_cubic_spline.pyx', 'cubic_spline.c'])

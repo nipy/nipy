@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python 
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
@@ -9,16 +8,16 @@ inter-subject affine registration using two MR-T1 images from the
 source is 'ammon' and the target is 'anubis'.
 
 Usage: 
-  python affine_matching [criterion][interpolation][optimizer]
+  python affine_matching [objective][interpolation][optimizer]
 
-  Choices for criterion: 
+  Choices for objective: 
     cc   -- correlation coefficient 
-    cr   -- correlation ratio [DEFAULT]
-    crl1 -- correlation ratio, L1 norm version
+    cr   -- correlation ratio 
+    crl1 -- correlation ratio, L1 norm version [DEFAULT]
     mi   -- mutual information
     nmi  -- normalized mutual information
-    je   -- joint entropy 
-    ce   -- conditional entropy 
+    pmi  -- Parzen mutual information
+    dpmi -- discrete Parzen mutual information
 
   Choices for interpolation method: 
     pv   -- partial volume [DEFAULT]
@@ -44,7 +43,7 @@ ammon_TO_anubis.npz
 
 Author: Alexis Roche, 2009. 
 """
-from nipy.neurospin.registration import register, resample
+from nipy.algorithms.registration import HistogramRegistration, resample
 from nipy.utils import example_data
 from nipy import load_image, save_image
 from nipy.algorithms.resample import resample as resample2
@@ -63,7 +62,7 @@ source_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+sourc
 target_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+target+'.nii.gz')
 
 # Optional arguments
-similarity = 'cr' 
+similarity = 'crl1' 
 interp = 'pv'
 optimizer = 'powell'
 if len(sys.argv)>1: 
@@ -89,10 +88,8 @@ J = load_image(target_file)
 # np.asarray(T) is a customary 4x4 matrix 
 print('Setting up registration...')
 tic = time.time()
-T = register(I, J, 
-             similarity=similarity, 
-             interp=interp, 
-             optimizer=optimizer)
+R = HistogramRegistration(I, J, similarity=similarity, interp=interp) 
+T = R.optimize('affine', optimizer=optimizer)
 toc = time.time()
 print('  Registration time: %f sec' % (toc-tic))
 
