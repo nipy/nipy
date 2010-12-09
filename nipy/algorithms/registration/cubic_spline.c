@@ -16,6 +16,7 @@
   else						\
     fun_ptr = &_mirror_grid_neighbors;
 
+
 #define CUBIC_SPLINE_MIRROR(x, n, p)			\
   ((x)<0.0 ? (-(x)) : ((x)>(n) ? ((p)-(x)) : (x)))
 
@@ -41,9 +42,11 @@ static inline void _apply_affine_transform(double* Tx,
 					   size_t y, 
 					   size_t z); 
 static inline int _mirror_grid_neighbors(double x, unsigned int ddim, 
-					 int* nx, int* px); 
+					 int* nx, int* px, 
+					 double* weight); 
 static inline int _finite_grid_neighbors(double x, unsigned int ddim, 
-					 int* nx, int* px); 
+					 int* nx, int* px, 
+					 double* weight); 
 
 
 
@@ -248,10 +251,11 @@ double cubic_spline_sample1d (double x, const PyArrayObject* Coef, int mode)
   int posx[4];
   double *buf_bspx;
   int *buf_posx;
-  int (*compute_neighbors)(double, unsigned int, int*, int*);
+  double w; 
+  int (*compute_neighbors)(double, unsigned int, int*, int*, double*);
 
   SET_NEIGHBOR_COMPUTATION(mode, compute_neighbors); 
-  if (!compute_neighbors(x, ddim, &nx, &px)) 
+  if (!compute_neighbors(x, ddim, &nx, &px, &w)) 
     return 0.0; 
 
   /* Compute the B-spline values as well as the image positions 
@@ -278,7 +282,7 @@ double cubic_spline_sample1d (double x, const PyArrayObject* Coef, int mode)
     
   }
     
-  return s;
+  return w*s;
   
 }
 
@@ -308,16 +312,19 @@ double cubic_spline_sample2d (double x, double y, const PyArrayObject* Coef,
   double *buf_bspx, *buf_bspy;
   int *buf_posx, *buf_posy;
   int shfty;
-  int (*compute_neighbors_x)(double, unsigned int, int*, int*);
-  int (*compute_neighbors_y)(double, unsigned int, int*, int*);
+  double w, wgt; 
+  int (*compute_neighbors_x)(double, unsigned int, int*, int*, double*);
+  int (*compute_neighbors_y)(double, unsigned int, int*, int*, double*);
 
   SET_NEIGHBOR_COMPUTATION(mode_x, compute_neighbors_x); 
-  if (!compute_neighbors_x(x, ddimX, &nx, &px)) 
+  if (!compute_neighbors_x(x, ddimX, &nx, &px, &w)) 
     return 0.0; 
+  wgt = w; 
 
   SET_NEIGHBOR_COMPUTATION(mode_y, compute_neighbors_y); 
-  if (!compute_neighbors_y(y, ddimY, &ny, &py)) 
+  if (!compute_neighbors_y(y, ddimY, &ny, &py, &w)) 
     return 0.0; 
+  wgt *= w; 
 
   /* Compute the B-spline values as well as the image positions 
      where to find the B-spline coefficients (including mirror conditions) */ 
@@ -362,7 +369,7 @@ double cubic_spline_sample2d (double x, double y, const PyArrayObject* Coef,
 
   }
   
-  return s;
+  return wgt*s;
 
 }
 
@@ -394,21 +401,25 @@ double cubic_spline_sample3d (double x, double y, double z, const PyArrayObject*
   double *buf_bspx, *buf_bspy, *buf_bspz;
   int *buf_posx, *buf_posy, *buf_posz;
   int shftyz, shftz;
-  int (*compute_neighbors_x)(double, unsigned int, int*, int*);
-  int (*compute_neighbors_y)(double, unsigned int, int*, int*);
-  int (*compute_neighbors_z)(double, unsigned int, int*, int*);
+  double w, wgt; 
+  int (*compute_neighbors_x)(double, unsigned int, int*, int*, double*);
+  int (*compute_neighbors_y)(double, unsigned int, int*, int*, double*);
+  int (*compute_neighbors_z)(double, unsigned int, int*, int*, double*);
 
   SET_NEIGHBOR_COMPUTATION(mode_x, compute_neighbors_x); 
-  if (!compute_neighbors_x(x, ddimX, &nx, &px)) 
+  if (!compute_neighbors_x(x, ddimX, &nx, &px, &w)) 
     return 0.0; 
+  wgt = w; 
 
   SET_NEIGHBOR_COMPUTATION(mode_y, compute_neighbors_y); 
-  if (!compute_neighbors_y(y, ddimY, &ny, &py)) 
+  if (!compute_neighbors_y(y, ddimY, &ny, &py, &w)) 
     return 0.0; 
+  wgt *= w; 
 
   SET_NEIGHBOR_COMPUTATION(mode_z, compute_neighbors_z); 
-  if (!compute_neighbors_z(z, ddimZ, &nz, &pz)) 
+  if (!compute_neighbors_z(z, ddimZ, &nz, &pz, &w)) 
     return 0.0; 
+  wgt *= w; 
 
   /* Compute the B-spline values as well as the image positions 
      where to find the B-spline coefficients (including mirror conditions) */ 
@@ -469,7 +480,7 @@ double cubic_spline_sample3d (double x, double y, double z, const PyArrayObject*
   } /* end loop on z */
 
 
-  return s;
+  return wgt*s;
 
 }
 
@@ -506,26 +517,31 @@ double cubic_spline_sample4d (double x, double y, double z, double t, const PyAr
   double *buf_bspx, *buf_bspy, *buf_bspz, *buf_bspt;
   int *buf_posx, *buf_posy, *buf_posz, *buf_post;
   int shftyzt, shftzt, shftt;
-  int (*compute_neighbors_x)(double, unsigned int, int*, int*);
-  int (*compute_neighbors_y)(double, unsigned int, int*, int*);
-  int (*compute_neighbors_z)(double, unsigned int, int*, int*);
-  int (*compute_neighbors_t)(double, unsigned int, int*, int*);
+  double w, wgt; 
+  int (*compute_neighbors_x)(double, unsigned int, int*, int*, double*);
+  int (*compute_neighbors_y)(double, unsigned int, int*, int*, double*);
+  int (*compute_neighbors_z)(double, unsigned int, int*, int*, double*);
+  int (*compute_neighbors_t)(double, unsigned int, int*, int*, double*);
 
   SET_NEIGHBOR_COMPUTATION(mode_x, compute_neighbors_x); 
-  if (!compute_neighbors_x(x, ddimX, &nx, &px)) 
+  if (!compute_neighbors_x(x, ddimX, &nx, &px, &w)) 
     return 0.0; 
+  wgt = w;
 
   SET_NEIGHBOR_COMPUTATION(mode_y, compute_neighbors_y); 
-  if (!compute_neighbors_y(y, ddimY, &ny, &py)) 
+  if (!compute_neighbors_y(y, ddimY, &ny, &py, &w)) 
     return 0.0; 
+  wgt *= w; 
 
   SET_NEIGHBOR_COMPUTATION(mode_z, compute_neighbors_z); 
-  if (!compute_neighbors_z(z, ddimZ, &nz, &pz)) 
+  if (!compute_neighbors_z(z, ddimZ, &nz, &pz, &w)) 
     return 0.0; 
+  wgt *= w; 
 
   SET_NEIGHBOR_COMPUTATION(mode_t, compute_neighbors_t); 
-  if (!compute_neighbors_t(t, ddimT, &nt, &pt)) 
+  if (!compute_neighbors_t(t, ddimT, &nt, &pt, &w)) 
     return 0.0; 
+  wgt *= w; 
 
 
   /* Compute the B-spline values as well as the image positions 
@@ -604,7 +620,7 @@ double cubic_spline_sample4d (double x, double y, double z, double t, const PyAr
     
   } /* end loop on t */
   
-  return s;
+  return wgt*s;
 
 }
 
@@ -688,9 +704,10 @@ static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz,
 /* 
    Compute left and right cubic spline neighbors in the image grid
    mirrored once on each side. Returns 0 if no neighbor can be found.
- */
+*/
 static inline int _mirror_grid_neighbors(double x, unsigned int ddim, 
-					 int* nx, int* px)
+					 int* nx, int* px, 					 
+					 double* weight)
 {
   int ok = 0; 
 
@@ -701,54 +718,46 @@ static inline int _mirror_grid_neighbors(double x, unsigned int ddim,
     *nx = *px-3;
   }		
   
+  *weight = 1; 
   return ok; 
 }
 
 /* 
    Compute left and right cubic spline neighbors in the image grid
-   with mirroring only at the border so that any point sufficiently
-   far outside the grid gets interpolated zero.
+   without mirroring only at the border so that any point outside the
+   box by one unit gets interpolated zero.
 
-   nx = max(-1, floor(x)-1)
-   px = min(dim, floor(x)+2) 
-   
-   If x<=-3 or x>=(ddim+3), there is no neighbor. If the test passes,
-   then we know that -3<x<(ddim+3). 
-   
-   We compute: 
-   aux = (int)(x+3) == floor(x)+3
+   0.5 -> aux=2 -> nx = -1, px = 2 ==> -1, 0, 1, 2 
+   0 -> 2 -> nx = -1 -> px = 2 ==> -1, 0, 1, 2 
+   -0.5 -> aux=1 -> nx = -2 -> -1, px = 1 ==> -1, 0, 1
 
-   Next: 
-   nx = max(-1, aux-4)
-   px = min(ddim+1, aux-1) 
-   
+   254.5 -> aux = 256, nx=253, px=256
+   255 -> aux=257, nx=254, px=257 ==> 254, 255, 256 
+   255.5 --> aux=257, nx=254, px=257 ==> 254, 255, 256 
 
-   x = 0 --> -1, 2 ok
-   x = -1 --> -1, 1 ok
-   x = -2 --> -1, 0 ok
-   x = -2.5 --> -1, -1 ok
-
-   x = 255 --> 254, 256 ok 
-   x = 256 --> 255, 256 ok 
-   x = 257 --> 256, 256 ok 
-
- */
+*/
 
 static inline int _finite_grid_neighbors(double x, unsigned int ddim, 
-					 int* nx, int* px)
+					 int* nx, int* px, 
+					 double* weight)
 {
   int ok = 0, aux;
   unsigned int dim = ddim+1;
+  *weight = 1; 
 
-  if ((x>-3) && (x<(ddim+3))) {
+  if ((x>-1) && (x<dim)) {
       ok = 1; 
-      aux = (int)(x+3);
-      *nx = aux-4; 
-      if (*nx<-1)
+      aux = (int)(x+2); 
+      *nx = aux-3; 
+      if (*nx<-1) { /* -1<x<0, nx==-2 */
+	*weight = 1-x;
 	*nx = -1;
-      *px = aux-1;
-      if (*px>dim)
+      }
+      *px = aux;
+      if (*px>dim) { /* ddim<=x<dim, px=dim+1 */ 
+	*weight = dim-x; 
 	*px = dim; 
+      }
     }
 
   return ok; 	

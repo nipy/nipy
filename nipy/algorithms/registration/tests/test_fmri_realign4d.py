@@ -25,12 +25,12 @@ def test_to_time():
     assert_equal(im4d.to_time(im4d.nslices,0), im4d.nslices*im4d.tr_slices)
 """    
 
-def test_grid_time():
+def test_scanner_time():
     im4d = Image4d(im.get_data(), im.affine, tr=2., 
                    slice_order='ascending', interleaved=False)
-    assert_equal(im4d.grid_time(0,0), 0.) 
-    assert_equal(im4d.grid_time(0,im4d.tr), 1.) 
-    assert_equal(im4d.grid_time(1,im4d.tr_slices), 0.) 
+    assert_equal(im4d.scanner_time(0,0), 0.) 
+    assert_equal(im4d.scanner_time(0,im4d.tr), 1.) 
+    assert_equal(im4d.scanner_time(1,im4d.tr_slices), 0.) 
                    
 
 def test_slice_timing(): 
