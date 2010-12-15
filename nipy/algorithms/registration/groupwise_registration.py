@@ -229,7 +229,7 @@ class Realign4dAlgorithm(object):
 
         # Optimize motion parameters - ignore first time frame as it
         # conventionally defines the head coordinate system
-        for t in range(1, self.nscans):
+        for t in range(self.nscans):
             if VERBOSE: 
                 print('Correcting motion at time frame %d/%d...' % (t+1, self.nscans))
             def cost(pc):
@@ -238,6 +238,20 @@ class Realign4dAlgorithm(object):
             self.template = make_template()
             self.transforms[t].param = fmin(cost, self.transforms[t].param, **kwargs)
             self.resample_inmask(t)
+
+    def set_refscan(self, refscan):
+        """
+        The `motion_estimate` method aligns scans with an online
+        template so that spatial transforms map some average head
+        space to the scanner space. To conventionally redefine the
+        head space as being aligned with some reference scan, we need
+        to right compose each head_average-to-scanner transform with
+        the refscan's 'to head_average' transform. 
+        """
+        Tref_inv = self.transforms[refscan].inv()
+        for t in range(self.nscans): 
+            self.transforms[t] = (self.transforms[t]).compose(Tref_inv) 
+
 
     def resample(self):
         if VERBOSE:
@@ -287,6 +301,7 @@ def single_run_realign4d(im4d,
                            metric=metric)
     for loop in range(loops): 
         r.estimate_motion()
+    r.set_refscan(0)
     return r.transforms
 
 def realign4d(runs, 
