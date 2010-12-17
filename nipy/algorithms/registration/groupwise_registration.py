@@ -21,10 +21,10 @@ SLICE_ORDER = 'ascending'
 INTERLEAVED = False
 SLICE_AXIS = 2 
 SPEEDUP = 4
-LOOPS = 2 # loops with each run 
+LOOPS = 2 # loops within each run 
 BETWEEN_LOOPS = 5 
 METRIC = 'sad'
-
+REFSCAN = 0 
 
 def interp_slice_order(Z, slice_order): 
     Z = np.asarray(Z)
@@ -135,8 +135,8 @@ class Realign4dAlgorithm(object):
                  affine_class=Rigid,
                  transforms=None, 
                  time_interp=True, 
-                 metric=METRIC):
-        self.optimizer = optimizer
+                 metric=METRIC, 
+                 refscan=REFSCAN):
         self.dims = im4d.array.shape
         self.nscans = self.dims[3]
         self.xyz = make_grid(self.dims[0:3], speedup)
@@ -169,17 +169,25 @@ class Realign4dAlgorithm(object):
             self.metric = lambda d: np.mean(np.abs(d)) 
         else:
             raise ValueError('unknown metric')
-    
+        # The reference scan conventionally defines the head
+        # coordinate system
+        self.refscan = refscan 
+        # Set the optimization (minimization) method
+        self.set_fmin(optimizer)
+
     def compute_metric(self, t):
         """
         Intensity difference metric
         """
-        self.resample_inmask(t)
+        self.resample(t)
         self.diffs[:] = self.data[:,t] - self.template
         return self.metric(self.diffs)
 
-    def resample_inmask(self, t):
+    def resample(self, t):
         """
+        Resample a particular time frame on the (sub-sampled) working
+        grid.
+ 
         x,y,z,t are "head" grid coordinates 
         X,Y,Z,T are "scanner" grid coordinates 
         """
@@ -191,55 +199,64 @@ class Realign4dAlgorithm(object):
         else: 
             cspline_sample3d(self.data[:,t], self.cbspline[:,:,:,t], X, Y, Z)
 
-    def resample_all_inmask(self):
-        for t in range(self.nscans):
-            if VERBOSE:
-                print('Resampling scan %d/%d' % (t+1, self.nscans))
-            self.resample_inmask(t)
-
-    def estimate_motion(self, adaptive_template=True):
-        optimizer = self.optimizer
-
+    def set_fmin(self, optimizer): 
+        """
+        Return the minimization function. 
+        """
         if optimizer=='powell':
-            kwargs = {'xtol':XTOL, 'ftol':FTOL}
-            fmin = fmin_powell
+            self.fmin_kwargs = {'xtol':XTOL, 'ftol':FTOL}
+            self.fmin = fmin_powell
         elif optimizer=='steepest':
-            kwargs = {'xtol':XTOL, 'ftol': FTOL, 'step':STEPSIZE}
-            fmin = fmin_steepest
+            self.fmin_kwargs = {'xtol':XTOL, 'ftol': FTOL, 'step':STEPSIZE}
+            self.fmin = fmin_steepest
         elif optimizer=='cg':
-            kwargs = {'gtol':GTOL, 'maxiter':MAXITER}
-            fmin = fmin_cg
+            self.fmin_kwargs = {'gtol':GTOL, 'maxiter':MAXITER}
+            self.fmin = fmin_cg
         elif optimizer=='bfgs':
-            kwargs = {'gtol':GTOL, 'maxiter':MAXITER}
-            fmin = fmin_bfgs
+            self.fmin_kwargs = {'gtol':GTOL, 'maxiter':MAXITER}
+            self.fmin = fmin_bfgs
         elif optimizer=='simplex':
-            kwargs = {'xtol':XTOL, 'ftol':FTOL}
-            fmin = fmin_simplex
+            self.fmin_kwargs = {'xtol':XTOL, 'ftol':FTOL}
+            self.fmin = fmin_simplex
         else: 
             raise ValueError('unknown optimizer')
 
-        # Resample data according to the current space/time transformation 
-        self.resample_all_inmask()
 
-        # Template estimation strategy
-        if adaptive_template:
-            make_template = self.make_template
-        else:
-            make_template = lambda: self.data[:,0]
+    def estimate_motion_at_time(self, t, update_template=True):
+        """ 
+        Estimate motion at a particular time frame.
+        """
+        if VERBOSE: 
+            print('Estimating motion at time frame %d/%d...' % (t+1, self.nscans))
+        def cost(pc): 
+            self.transforms[t].param = pc
+            return self.compute_metric(t)
+        if update_template: 
+            self.template = self.make_template()
+        self.transforms[t].param = self.fmin(cost, self.transforms[t].param, **self.fmin_kwargs)
+        self.resample(t)
 
-        # Optimize motion parameters - ignore first time frame as it
-        # conventionally defines the head coordinate system
+
+    def estimate_motion(self, update_template=True):
+        """
+        Estimate motion parameters for the whole sequence. 
+        """
+
+        # Resample all time frames according to the current space/time
+        # transformation
         for t in range(self.nscans):
-            if VERBOSE: 
-                print('Correcting motion at time frame %d/%d...' % (t+1, self.nscans))
-            def cost(pc):
-                self.transforms[t].param = pc
-                return self.compute_metric(t)
-            self.template = make_template()
-            self.transforms[t].param = fmin(cost, self.transforms[t].param, **kwargs)
-            self.resample_inmask(t)
+            if VERBOSE:
+                print('Resampling scan %d/%d' % (t+1, self.nscans))
+            self.resample(t)
 
-    def set_refscan(self, refscan):
+        # Optimize motion parameters 
+        for t in range(self.nscans):
+            self.estimate_motion_at_time(t, update_template=update_template)
+            if VERBOSE: 
+                print(self.transforms[t]) 
+
+
+    def align_to_refscan(self):
         """
         The `motion_estimate` method aligns scans with an online
         template so that spatial transforms map some average head
@@ -248,12 +265,12 @@ class Realign4dAlgorithm(object):
         to right compose each head_average-to-scanner transform with
         the refscan's 'to head_average' transform. 
         """
-        Tref_inv = self.transforms[refscan].inv()
+        Tref_inv = self.transforms[self.refscan].inv()
         for t in range(self.nscans): 
             self.transforms[t] = (self.transforms[t]).compose(Tref_inv) 
 
 
-    def resample(self):
+    def resample_full_data(self):
         if VERBOSE:
             print('Gridding...')
         xyz = make_grid(self.dims[0:3])
@@ -277,7 +294,7 @@ def resample4d(im4d, transforms, time_interp=True):
     corr_im4d_array = resample4d(im4d, transforms=None, time_interp=True)
     """
     r = Realign4dAlgorithm(im4d, transforms=transforms, time_interp=time_interp)
-    return r.resample()
+    return r.resample_full_data()
 
 
 
@@ -296,12 +313,15 @@ def single_run_realign4d(im4d,
     im4d : Image4d instance
 
     """ 
-    r = Realign4dAlgorithm(im4d, speedup=speedup, optimizer=optimizer, 
-                           time_interp=time_interp, affine_class=affine_class, 
+    r = Realign4dAlgorithm(im4d, 
+                           speedup=speedup, 
+                           optimizer=optimizer, 
+                           time_interp=time_interp, 
+                           affine_class=affine_class, 
                            metric=metric)
     for loop in range(loops): 
         r.estimate_motion()
-    r.set_refscan(0)
+        r.align_to_refscan()
     return r.transforms
 
 def realign4d(runs, 
