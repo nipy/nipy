@@ -170,12 +170,12 @@ class Realign4dAlgorithm(object):
         else:
             raise ValueError('unknown metric')
         # The reference scan conventionally defines the head
-        # coordinate system
-        self.refscan = refscan 
+        # coordinate system 
+        self.refscan = refscan
         # Set the optimization (minimization) method
         self.set_fmin(optimizer)
 
-    def compute_metric(self, t):
+    def discrepancy(self, t):
         """
         Intensity difference metric
         """
@@ -230,12 +230,11 @@ class Realign4dAlgorithm(object):
             print('Estimating motion at time frame %d/%d...' % (t+1, self.nscans))
         def cost(pc): 
             self.transforms[t].param = pc
-            return self.compute_metric(t)
+            return self.discrepancy(t)
         if update_template: 
             self.template = self.make_template()
         self.transforms[t].param = self.fmin(cost, self.transforms[t].param, **self.fmin_kwargs)
         self.resample(t)
-
 
     def estimate_motion(self, update_template=True):
         """
@@ -248,6 +247,10 @@ class Realign4dAlgorithm(object):
             if VERBOSE:
                 print('Resampling scan %d/%d' % (t+1, self.nscans))
             self.resample(t)
+
+        # Set template as reference scan if non-adaptive strategy    
+        if not update_template:
+            self.template = self.data[:,self.refscan].copy()
 
         # Optimize motion parameters 
         for t in range(self.nscans):

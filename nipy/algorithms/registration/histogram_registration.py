@@ -242,7 +242,7 @@ class HistogramRegistration(object):
             return -self._eval(Tv) 
 
         # Callback during optimization
-        if callback is None and VERBOSE:
+        if callback == None and VERBOSE:
             def callback(tc):
                 Tv.param = tc
                 print(Tv.optimizable)
