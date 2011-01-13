@@ -23,7 +23,7 @@ SLICE_AXIS = 2
 SPEEDUP = 4
 LOOPS = 2 # loops within each run 
 BETWEEN_LOOPS = 5 
-METRIC = 'sad'
+METRIC = 'ssd'
 REFSCAN = 0 
 
 def interp_slice_order(Z, slice_order): 
@@ -161,14 +161,17 @@ class Realign4dAlgorithm(object):
                 self.cbspline[:,:,:,t] = cspline_transform(im4d.array[:,:,:,t])
         # Intensity comparison metric 
         self.diffs = np.zeros(masksize)
+        self.diffs0 = np.zeros(masksize)
         if metric == 'ssd':
-            self.make_template = lambda: np.mean(self.data, 1)
-            self.metric = lambda d: np.mean(d**2) 
+            self.mode = np.mean
+            self.metric = lambda d, d0: np.mean(d**2)/np.mean(d0**2) 
         elif metric == 'sad':
-            self.make_template = lambda: np.median(self.data, 1)
-            self.metric = lambda d: np.mean(np.abs(d)) 
+            self.mode = np.median
+            self.metric = lambda d, d0: np.mean(np.abs(d))/np.mean(np.abs(d0)) 
         else:
             raise ValueError('unknown metric')
+        self.make_template = lambda: self.mode(self.data, 1)
+        self.null = 0
         # The reference scan conventionally defines the head
         # coordinate system 
         self.refscan = refscan
@@ -181,7 +184,8 @@ class Realign4dAlgorithm(object):
         """
         self.resample(t)
         self.diffs[:] = self.data[:,t] - self.template
-        return self.metric(self.diffs)
+        self.diffs0[:] = self.data[:,t] - self.null
+        return self.metric(self.diffs, self.diffs0)
 
     def resample(self, t):
         """
@@ -251,6 +255,10 @@ class Realign4dAlgorithm(object):
         # Set template as reference scan if non-adaptive strategy    
         if not update_template:
             self.template = self.data[:,self.refscan].copy()
+
+       # We define the 'null' intensity value as simply the mode of
+       # the (subsampled) data prior to motion correction 
+        self.null = self.mode(self.data)
 
         # Optimize motion parameters 
         for t in range(self.nscans):
@@ -322,6 +330,12 @@ def single_run_realign4d(im4d,
                            time_interp=time_interp, 
                            affine_class=affine_class, 
                            metric=metric)
+
+    """
+    ### hack: first pass with ref scan as template 
+    r.estimate_motion(update_template=False) 
+    loops = loops - 1
+    """
     for loop in range(loops): 
         r.estimate_motion()
         r.align_to_refscan()
