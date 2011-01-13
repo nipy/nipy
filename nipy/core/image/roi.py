@@ -13,7 +13,7 @@ import gc
 
 import numpy as np
 
-class ROI:
+class ROI(object):
     """
     This is the basic ROI class, which we model as basically
     a function defined on Euclidean space, i.e. R^3. For practical
