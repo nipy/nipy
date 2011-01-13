@@ -55,7 +55,7 @@ class Contrast(dict):
                 res[key] = array(self[key]) * con
             return res
 
-class ContrastList():
+class ContrastList(object):
     """
     Class to handle contrasts when in a brainvisa-like envrionment.
     See ./glm_tools for more details on this framework
