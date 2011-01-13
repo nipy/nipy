@@ -226,7 +226,7 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
     return gd1, ax
 
 
-class GMM():
+class GMM(object):
     """
     Standard GMM.
 

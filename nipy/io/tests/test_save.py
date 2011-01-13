@@ -11,7 +11,7 @@ from nipy.testing import assert_true, assert_false, assert_equal, \
 from nipy.io.api import load_image, save_image
 from nipy.core import api
 
-class Tempfile():
+class Tempfile(object):
     file = None
 
 tmpfile = Tempfile()
