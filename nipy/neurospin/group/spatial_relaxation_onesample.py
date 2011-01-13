@@ -29,7 +29,7 @@ def log_gaussian_pdf(x, m, v):
 #####################################################################################
 # spatial relaxation multivariate statistic class
 
-class multivariate_stat:
+class multivariate_stat(object):
     def __init__(self, data, vardata=None, XYZ=None, std=None, sigma=None, 
                     labels=None, network=None, v_shape=3, v_scale=20, 
                     std_shape=3, std_scale=20, m_mean_rate=1e-3, 

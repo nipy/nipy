@@ -279,7 +279,7 @@ def peak_XYZ(XYZ, Tvalues, labels, label_values):
 #======================================
 #======================================
 
-class permutation_test:
+class permutation_test(object):
     """
     This generic permutation test class contains the calibration method
     which is common to the derived classes permutation_test_onesample and 

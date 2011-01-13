@@ -546,7 +546,7 @@ def LPP(G, X, dim, verbose=0, maxiter=1000):
 # --------------- main classes -------------------------------
 # ------------------------------------------------------------
 
-class NLDR:
+class NLDR(object):
     """
     This is a generic class for non-linear dimension reduction techniques
          (NLDR) the main members are:
