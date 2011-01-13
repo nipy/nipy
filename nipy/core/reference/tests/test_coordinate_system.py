@@ -8,7 +8,7 @@ from nipy.core.reference.coordinate_system import (
     product,
     safe_dtype)
 
-class empty:
+class empty(object):
     pass
 
 E = empty()

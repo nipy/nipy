@@ -13,7 +13,7 @@ DEF_DOFMAX = 1e10
 models = {'spherical':['ols', 'kalman'], 
 	  'ar1':['kalman']}
 
-class glm:
+class glm(object):
     def __init__(self, Y=None, X=None, formula=None, axis=0, 
              model='spherical', method=None, niter=2):
 
@@ -135,7 +135,7 @@ class glm:
                 
 
 
-class contrast:
+class contrast(object):
 
     def __init__(self, dim, type='t', tiny=DEF_TINY, dofmax=DEF_DOFMAX):
         """
