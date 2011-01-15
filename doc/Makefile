@@ -39,7 +39,7 @@ help:
 # @echo "  changes   to make an overview over all changed/added/deprecated items"
 
 clean:
-	-rm -rf build/* dist/* *~ api/generated
+	-rm -rf build/* dist/* *~ api/generated neurospin/generated
 	-rm -f manual
 
 pdf: latex
