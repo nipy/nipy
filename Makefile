@@ -9,6 +9,7 @@ clean:
 	find . -regex ".*~" -exec rm -rf "{}" \;
 	find . -regex ".*#" -exec rm -rf "{}" \;
 	rm -rf build
+	$(MAKE) -C doc clean
 
 dev: clean
 	python setup.py build_ext --inplace
