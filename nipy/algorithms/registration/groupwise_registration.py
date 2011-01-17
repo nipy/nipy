@@ -14,7 +14,7 @@ VERBOSE = True # enables online print statements
 OPTIMIZER = 'powell'
 XTOL = 1e-2
 FTOL = 1e-2
-GTOL = 1e-2
+GTOL = 1e-3
 STEPSIZE = 1e-1
 MAXITER = 5
 SLICE_ORDER = 'ascending'
@@ -171,7 +171,6 @@ class Realign4dAlgorithm(object):
         else:
             raise ValueError('unknown metric')
         self.make_template = lambda: self.mode(self.data, 1)
-        self.null = 0
         # The reference scan conventionally defines the head
         # coordinate system 
         self.refscan = refscan
@@ -242,30 +241,26 @@ class Realign4dAlgorithm(object):
 
     def estimate_motion(self, update_template=True):
         """
-        Estimate motion parameters for the whole sequence. 
+        Optimize motion parameters for the whole sequence. 
         """
-
         # Resample all time frames according to the current space/time
         # transformation
         for t in range(self.nscans):
             if VERBOSE:
                 print('Resampling scan %d/%d' % (t+1, self.nscans))
             self.resample(t)
-
-        # Set template as reference scan if non-adaptive strategy    
-        if not update_template:
+        # Set template as reference scan (will be overwritten if update_template is True)
+        if not hasattr(self, 'template'): 
             self.template = self.data[:,self.refscan].copy()
-
-       # We define the 'null' intensity value as simply the mode of
-       # the (subsampled) data prior to motion correction 
-        self.null = self.mode(self.data)
-
-        # Optimize motion parameters 
+        # We define the 'null' intensity value as simply the mode of
+        # the (subsampled) data prior to motion correction
+        if not hasattr(self, 'null'): 
+            self.null = self.mode(self.data)
+        # Sequential optimization 
         for t in range(self.nscans):
             self.estimate_motion_at_time(t, update_template=update_template)
             if VERBOSE: 
                 print(self.transforms[t]) 
-
 
     def align_to_refscan(self):
         """
@@ -338,7 +333,9 @@ def single_run_realign4d(im4d,
     """
     for loop in range(loops): 
         r.estimate_motion()
-        r.align_to_refscan()
+        #r.align_to_refscan()
+
+    r.align_to_refscan()
     return r.transforms
 
 def realign4d(runs, 
