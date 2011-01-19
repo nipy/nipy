@@ -4,7 +4,7 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 
-class VarianceFunction:
+class VarianceFunction(object):
     """
     Variance function that relates the variance of a random variable
     to its mean. Defaults to 1.
@@ -25,7 +25,7 @@ class VarianceFunction:
 
 constant = VarianceFunction()
 
-class Power:
+class Power(object):
     """
     Power variance function:
 
@@ -52,7 +52,7 @@ class Power:
         """
         return np.power(np.fabs(mu), self.power)
 
-class Binomial:
+class Binomial(object):
     """
     Binomial variance function
 

@@ -3,7 +3,7 @@
 import numpy as np
 import scipy.stats
 
-class Link:
+class Link(object):
 
     """
     A generic link function for one-parameter exponential

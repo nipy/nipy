@@ -19,7 +19,7 @@ from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
 from ._registration import _joint_histogram
 from .affine import inverse_affine, subgrid_affine, affine_transforms
 from .chain_transform import ChainTransform 
-from .similarity_measures import similarity_measures
+from .similarity_measures import similarity_measures as _sms
 
 
 # Module global - enables online print statements
@@ -154,9 +154,9 @@ class HistogramRegistration(object):
         self._vox_coords = np.indices(self._from_data.shape).transpose((1,2,3,0))
 
     def _set_similarity(self, similarity='cr', **kwargs): 
-        if similarity in similarity_measures: 
+        if similarity in _sms:
             self._similarity = similarity
-            self._similarity_call = similarity_measures[similarity](self._joint_hist.shape, **kwargs)
+            self._similarity_call = _sms[similarity](self._joint_hist.shape, **kwargs)
         else: 
             if not hasattr(similarity, '__call__'):
                 raise ValueError('similarity should be callable')

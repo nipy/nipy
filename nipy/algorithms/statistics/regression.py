@@ -47,7 +47,7 @@ def output_resid(results):
     """
     return results.resid
 
-class RegressionOutput:
+class RegressionOutput(object):
     """
     A class to output things in GLM passes through arrays of data.
     """
@@ -70,7 +70,7 @@ class RegressionOutput:
         self.img[index] = value
         
 
-class RegressionOutputList:
+class RegressionOutputList(object):
     """
     A class to output more than one thing
     from a GLM pass through arrays of data.
@@ -135,7 +135,7 @@ def output_AR1(results):
     rho = np.add.reduce(resid[0:-1]*resid[1:] / np.add.reduce(resid[1:-1]**2))
     return rho
     
-class AREstimator:
+class AREstimator(object):
     """
     A class that whose instances can estimate
     AR(p) coefficients from residuals

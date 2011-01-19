@@ -63,7 +63,7 @@ def square_gaussian_filter(input, sigma, output = None, mode = "reflect", cval =
 
 
 
-class displacement_field:
+class displacement_field(object):
     """
     Sampling of multiple vector-valued displacement fields on a 3D-lattice.
     Displacement fields are generated as linear combinations of fixed displacements.
@@ -223,7 +223,7 @@ class displacement_field:
         return U, V, W, I
 
 
-class gaussian_random_field:
+class gaussian_random_field(object):
     def __init__(self, XYZ, sigma, n=1):
         self.XYZ = XYZ
         self.sigma = sigma

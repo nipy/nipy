@@ -24,7 +24,7 @@ Fixme: add graph creation routines that are more practical
        
 """
 
-class Graph:
+class Graph(object):
     """
     This is the basic topological (non-weighted) directed Graph class
     fields:

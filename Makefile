@@ -9,6 +9,7 @@ clean:
 	find . -regex ".*~" -exec rm -rf "{}" \;
 	find . -regex ".*#" -exec rm -rf "{}" \;
 	rm -rf build
+	$(MAKE) -C doc clean
 
 dev: clean
 	python setup.py build_ext --inplace
@@ -21,11 +22,6 @@ build:
 
 install:
 	python setup.py install
-
-# Update nisext subtree from remote
-update-nisext:
-	git fetch nisext
-	git merge --squash -s subtree --no-commit nisext/master
 
 # Print out info for possible install methods
 check-version-info:

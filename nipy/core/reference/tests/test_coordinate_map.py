@@ -23,7 +23,7 @@ from nipy.testing import (assert_true, assert_equal, assert_raises,
                           assert_false, assert_array_equal,
                           assert_almost_equal, parametric)
 
-class empty:
+class empty(object):
     pass
 
 E = empty()
