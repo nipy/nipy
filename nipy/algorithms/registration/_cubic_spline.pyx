@@ -33,6 +33,7 @@ cubic_spline_import_array()
 import_array()
 import numpy as np
 
+modes = {'zero': 0, 'nearest': 1, 'reflect': 2}
 
 def cspline_transform(ndarray x):
     c = np.zeros([x.shape[i] for i in range(x.ndim)], dtype=np.double)
@@ -43,7 +44,7 @@ cdef ndarray _reshaped_double(object in_arr, ndarray sh_arr):
     shape = [sh_arr.shape[i] for i in range(sh_arr.ndim)]
     return np.reshape(in_arr, shape).astype(np.double)
 
-def cspline_sample1d(ndarray R, ndarray C, X=0, int mode=0):
+def cspline_sample1d(ndarray R, ndarray C, X=0, mode='zero'):
     cdef double *r, *x
     cdef broadcast multi
     Xa = _reshaped_double(X, R) 
@@ -56,7 +57,7 @@ def cspline_sample1d(ndarray R, ndarray C, X=0, int mode=0):
     return R
 
 def cspline_sample2d(ndarray R, ndarray C, X=0, Y=0, 
-                     int mx=0, int my=0):
+                     mx='zero', my='zero'):
     cdef double *r, *x, *y
     cdef broadcast multi
     Xa = _reshaped_double(X, R)
@@ -66,12 +67,12 @@ def cspline_sample2d(ndarray R, ndarray C, X=0, Y=0,
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
         x = <double*>PyArray_MultiIter_DATA(multi, 1)
         y = <double*>PyArray_MultiIter_DATA(multi, 2)
-        r[0] = cubic_spline_sample2d(x[0], y[0], C, mx, my)
+        r[0] = cubic_spline_sample2d(x[0], y[0], C, modes[mx], modes[my])
         PyArray_MultiIter_NEXT(multi)
     return R
 
 def cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0, 
-                     int mx=0, int my=0, int mz=0):
+                     mx='zero', my='zero', mz='zero'):
     cdef double *r, *x, *y, *z
     cdef broadcast multi
     Xa = _reshaped_double(X, R)
@@ -83,13 +84,13 @@ def cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0,
         x = <double*>PyArray_MultiIter_DATA(multi, 1)
         y = <double*>PyArray_MultiIter_DATA(multi, 2)
         z = <double*>PyArray_MultiIter_DATA(multi, 3)
-        r[0] = cubic_spline_sample3d(x[0], y[0], z[0], C, mx, my, mz)
+        r[0] = cubic_spline_sample3d(x[0], y[0], z[0], C, modes[mx], modes[my], modes[mz])
         PyArray_MultiIter_NEXT(multi)
     return R
 
 
 def cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0, 
-                     int mx=0, int my=0, int mz=0, int mt=0):
+                     mx='zero', my='zero', mz='zero', mt='zero'):
     """
     cubic_spline_sample4d(R, C, X=0, Y=0, Z=0, T=0):
 
@@ -108,13 +109,13 @@ def cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0,
         y = <double*>PyArray_MultiIter_DATA(multi, 2)
         z = <double*>PyArray_MultiIter_DATA(multi, 3)
         t = <double*>PyArray_MultiIter_DATA(multi, 4)
-        r[0] = cubic_spline_sample4d(x[0], y[0], z[0], t[0], C, mx, my, mz, mt)
+        r[0] = cubic_spline_sample4d(x[0], y[0], z[0], t[0], C, modes[mx], modes[my], modes[mz], modes[mt])
         PyArray_MultiIter_NEXT(multi)
     return R
 
 
 def cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
-                       int mx=0, int my=0, int mz=0):
+                       mx='zero', my='zero', mz='zero'):
     """
     cspline_resample3d(im, dims, Tvox, dtype=None)
 
@@ -137,7 +138,7 @@ def cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
     # Actual resampling 
     cast_integer = np.issubdtype(dtype, np.integer)
     cubic_spline_resample3d(im_resampled, im, tvox, cast_integer,
-                            mx, my, mz)
+                            modes[mx], modes[my], modes[mz])
 
     return im_resampled
 

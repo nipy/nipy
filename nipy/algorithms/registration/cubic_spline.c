@@ -13,26 +13,32 @@
 #define CUBIC_SPLINE_MIRROR(x, n, p)			\
   ((x)<0.0 ? (-(x)) : ((x)>(n) ? ((p)-(x)) : (x)))
 
+/*
+  Three different boundary conditions are implemented:
+      mode == 0 : 'zero'
+      mode == 1: 'nearest'
+      mode == 2: 'mirror'
+ */
 #define BOUNDARY_CONDITIONS(mode, x, w, ddim, dim)	\
-  if (mode==0) {				\
-    if (x<-1)					\
-      return 0.0;				\	
-    else if (x<0) {				\
-      w = 1+x;					\
-      x = 0;					\
-    }						\
-    else if (x>dim)				\
-      return 0.0;				\
-    else if (x>ddim) {				\
-      w = dim-x;				\
-      x = ddim;					\
-    }						\
-  }						\
-  else if (mode==1) {				\
-    if (x<0)					\
-      x = 0;					\
-    else if (x>ddim)				\
-      x = ddim;					\
+  if (mode==0) {					\
+    if (x<-1)						\
+      return 0.0;					\
+    else if (x<0) {					\
+      w = 1+x;						\
+      x = 0;						\
+    }							\
+    else if (x>dim)					\
+      return 0.0;					\
+    else if (x>ddim) {					\
+      w = dim-x;					\
+      x = ddim;						\
+    }							\
+  }							\
+  else if (mode==1) {					\
+    if (x<0)						\
+      x = 0;						\
+    else if (x>ddim)					\
+      x = ddim;						\
   }						
 
 #define COMPUTE_NEIGHBORS(x, ddim, nx, px)		\
@@ -41,8 +47,8 @@
 
 /* 
    The following marco forces numpy to consider a PyArrayIterObject
-   non-contiguous. Otherwise, coordinates won't be updated, apparently
-   for computation time reasons.  
+   non-contiguous. Otherwise, coordinates won't be updated - don't
+   know whether this is a bug or not. 
 */
 #define UPDATE_ITERATOR_COORDS(iter)		\
   iter->contiguous = 0;
