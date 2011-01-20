@@ -7,7 +7,7 @@ from nipy.core.image.affine_image import AffineImage
 from nipy.algorithms.optimize import fmin_steepest
 
 import numpy as np
-from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
+from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs, fmin_ncg
 
 # Module globals 
 VERBOSE = True # enables online print statements
@@ -18,7 +18,7 @@ OPTIMIZER = 'powell'
 XTOL = 1e-5
 FTOL = 1e-4
 GTOL = 1e-5
-STEPSIZE = 1e-1
+STEPSIZE = 1e-6
 MAXITER = None
 MAXFUN = None
 LOOPS = 3 # loops within each run 
@@ -27,9 +27,9 @@ SPEEDUP = 4
 SUBSAMPLING = SPEEDUP, SPEEDUP, SPEEDUP
 BORDERS = 1, 1, 1 
 REFSCAN = 0 
-INTERP_PAD_SPACE = 'reflect'
-INTERP_PAD_TIME ='reflect'
-
+EXTRAPOLATE_SPACE = 'reflect'
+EXTRAPOLATE_TIME ='reflect'
+TINY = float(np.finfo(np.double).tiny)
 
 def interp_slice_order(Z, slice_order): 
     Z = np.asarray(Z)
@@ -144,6 +144,7 @@ class Realign4dAlgorithm(object):
                  xtol=XTOL, 
                  ftol=FTOL, 
                  gtol=GTOL,
+                 stepsize=STEPSIZE, 
                  maxiter=MAXITER, 
                  maxfun=MAXFUN, 
                  refscan=REFSCAN):
@@ -169,15 +170,18 @@ class Realign4dAlgorithm(object):
             self.cbspline = np.zeros(self.dims, dtype='double')
             for t in range(self.dims[3]): 
                 self.cbspline[:,:,:,t] = cspline_transform(im4d.array[:,:,:,t])
-        # Auxiliary array for intensity difference computations 
-        self.diffs = np.zeros(masksize, dtype='double')
-        self.diffs0 = np.zeros(masksize, dtype='double')
         # The reference scan conventionally defines the head
         # coordinate system
         self.refscan = refscan
-        # Set the optimization (minimization) method
-        self.set_fmin(optimizer, xtol, ftol, gtol, maxiter, maxfun)
+        # Set the minimization method
+        self.set_fmin(optimizer, stepsize, xtol, ftol, gtol, maxiter, maxfun)
         self.optimize_template = optimize_template 
+        # Auxiliary array for realignment estimation
+        self._res = np.zeros(masksize, dtype='double')
+        self._res0 = np.zeros(masksize, dtype='double')
+        self._aux = np.zeros(masksize, dtype='double')
+        self.A = np.zeros((masksize, self.transforms[0].param.size), dtype='double')
+        self._pc = None
 
     def resample(self, t):
         """
@@ -194,95 +198,172 @@ class Realign4dAlgorithm(object):
             cspline_sample4d(self.data[:,t], 
                              self.cbspline, 
                              X, Y, Z, T, 
-                             mx=INTERP_PAD_SPACE,
-                             my=INTERP_PAD_SPACE,
-                             mz=INTERP_PAD_SPACE,
-                             mt=INTERP_PAD_TIME)
+                             mx=EXTRAPOLATE_SPACE,
+                             my=EXTRAPOLATE_SPACE,
+                             mz=EXTRAPOLATE_SPACE,
+                             mt=EXTRAPOLATE_TIME)
         else: 
             cspline_sample3d(self.data[:,t], 
                              self.cbspline[:,:,:,t], 
                              X, Y, Z,
-                             mx=INTERP_PAD_SPACE,
-                             my=INTERP_PAD_SPACE,
-                             mz=INTERP_PAD_SPACE)
+                             mx=EXTRAPOLATE_SPACE,
+                             my=EXTRAPOLATE_SPACE,
+                             mz=EXTRAPOLATE_SPACE)
 
-    def set_fmin(self, optimizer, 
-                 xtol=XTOL, ftol=FTOL, gtol=GTOL, 
-                 maxiter=MAXITER, maxfun=MAXFUN): 
+
+    def resample_full_data(self):
+        if VERBOSE:
+            print('Gridding...')
+        xyz = make_grid(self.dims[0:3])
+        res = np.zeros(self.dims)
+        for t in range(self.nscans):
+            if VERBOSE:
+                print('Fully resampling scan %d/%d' % (t+1, self.nscans))
+            X, Y, Z = scanner_coords(xyz, self.transforms[t].as_affine(), 
+                                     self.inv_affine, self.affine)
+            if self.time_interp: 
+                T = self.scanner_time(Z, self.timestamps[t])
+                cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T, mt='nearest')
+            else:
+                cspline_sample3d(res[:,:,:,t], self.cbspline[:,:,:,t], X, Y, Z)
+        return res
+
+    def set_fmin(self, optimizer, stepsize, xtol, ftol, gtol, maxiter, maxfun): 
         """
         Return the minimization function. 
         """
+        self.stepsize = stepsize
+        self.fmin_use_derivatives = True
+        self.fmin_args = []
         if optimizer=='simplex':
             self.fmin_kwargs = {'xtol':xtol, 'ftol':ftol, 'maxiter':maxiter, 'maxfun':maxfun}
             self.fmin = fmin_simplex
+            self.fmin_use_derivatives = False
         elif optimizer=='powell':
             self.fmin_kwargs = {'xtol':xtol, 'ftol':ftol, 'maxiter':maxiter, 'maxfun':maxfun}
             self.fmin = fmin_powell
+            self.fmin_use_derivatives = False
         elif optimizer=='cg':
-            self.fmin_kwargs = {'gtol':gtol, 'maxiter':maxiter}
+            self.fmin_kwargs = {'gtol':gtol, 'maxiter':maxiter, 'fprime':None}
             self.fmin = fmin_cg
         elif optimizer=='bfgs':
-            self.fmin_kwargs = {'gtol':gtol, 'maxiter':maxiter}
+            self.fmin_kwargs = {'gtol':gtol, 'maxiter':maxiter, 'fprime':None}
             self.fmin = fmin_bfgs
+        elif optimizer=='ncg':
+            self.fmin_args = ['fprime']
+            self.fmin_kwargs = {'avextol':xtol, 'maxiter':maxiter, 'fhess':None}
+            self.fmin = fmin_ncg
         elif optimizer=='steepest':
-            self.fmin_kwargs = {'xtol':xtol, 'ftol': ftol, 'step':STEPSIZE, 'maxiter':maxiter}
+            self.fmin_kwargs = {'xtol':xtol, 'ftol': ftol, 'maxiter':maxiter, 'fprime':None}
             self.fmin = fmin_steepest
         else: 
             raise ValueError('unknown optimizer: %s' % optimizer)
 
-    def init_align_energy(self, t): 
+    def init_instant_motion(self, t): 
         """
-        The idea is to decompose the full sequence variance via:
+        Pre-compute and cache some constants (at fixed time) for
+        repeated computations of the alignment energy.
 
-        V = (n-1)/n V1 + (n-1)/n^2 (x1-m1)^2
-           = alpha + beta d2,
+        The idea is to decompose the average temporal variance via:
 
-        with alpha=(n-1)/n V1, beta = (n-1)/n^2, d2 = (x1-m1)^2. 
-        
-        Only the second term is variable when one image moves while
-        all other images are fixed.
+        V = (n-1)/n V* + (n-1)/n^2 (x-m*)^2
 
-        The alignment enery is defined by the ratio:
-       
-        V = (n-1)/n V1 + (n-1)/n^2 (x1-m1)^2
-        V0 = (n-1)/n V01 + (n-1)/n^2 (x1-m01)^2
+        with x the considered volume at time t, and m* the mean of all
+        resampled volumes but x. Only the second term is variable when
 
-        V/W = [n*V1+(x1-m1)^2] / [n*V01+(x1-m01)^2]
+        one volumes while the others are fixed. A similar
+        decomposition is used for the global variance, so we end up
+        with:
+
+        V/V0 = [nV* + (x-m*)^2] / [nV0* + (x-m0*)^2] 
         """
         fixed = range(self.nscans)
         fixed.remove(t)
         aux = self.data[:, fixed]
         if self.optimize_template:
-            self.template = np.mean(aux, 1)
-        self.offset_numerator = self.nscans * np.mean((aux.T-self.template)**2)
-        self.null = np.mean(aux)
-        self.offset_denominator = self.nscans * np.mean((aux-self.null)**2)
+            self.mu = np.mean(aux, 1)
+        self.offset = self.nscans * np.mean((aux.T-self.mu)**2)
+        self.mu0 = np.mean(aux)
+        self.offset0 = self.nscans * np.mean((aux-self.mu0)**2)
+        self._t = t
+        self._pc = None
 
-    def align_energy(self, t):
+    def set_transform(self, t, pc):
+        self.transforms[t].param = pc
+        self.resample(t)
+
+    def _init_energy(self, pc):
+        if pc is self._pc:
+            return
+        self.set_transform(self._t, pc) 
+        self._pc = pc
+        self._res[:] = self.data[:,self._t] - self.mu[:]
+        self._V = np.maximum(self.offset + np.mean(self._res**2), TINY)
+        self._res0[:] = self.data[:,self._t] - self.mu0
+        self._V0 = np.maximum(self.offset0 + np.mean(self._res0**2), TINY)
+        if self.fmin_use_derivatives:
+            # linearize the data wrt the transform parameters
+            # use the auxiliary array to save the current resampled data 
+            self._aux[:] = self.data[:,self._t] 
+            basis = np.eye(6)
+            for j in range(pc.size): 
+                self.set_transform(self._t, pc+self.stepsize*basis[j])
+                self.A[:,j] = (self.data[:,self._t]-self._aux)/self.stepsize
+            self.transforms[self._t].param = pc
+            self.data[:,self._t] = self._aux[:]
+            # pre-compute gradient and hessian of numerator and
+            # denominator
+            c = 2/float(self.data.shape[0])
+            self._dV = c*np.dot(self.A.T, self._res)
+            self._dV0 = c*np.dot(self.A.T, self._res0)
+            self._H = c*np.dot(self.A.T, self.A)
+
+    def _energy(self): 
         """
-        The alignment energy is defined as the ratio between the
+        The alignment energy is defined as half the ratio between the
         average temporal variance in the sequence and the global
         spatio-temporal variance.
         """
-        self.resample(t)
-        self.diffs[:] = self.data[:,t] - self.template
-        self.diffs0[:] = self.data[:,t] - self.null
-        numerator = self.offset_numerator + np.mean(self.diffs**2) 
-        denominator = self.offset_denominator + np.mean(self.diffs0**2) 
-        return numerator / denominator 
+        #  return np.mean(self._res**2)
+        return np.log(self._V/self._V0)
 
-    def estimate_motion_at_time(self, t):
+    def _energy_gradient(self): 
+        #return (2/float(self.data.shape[0]))*np.dot(self.A.T, self._res)
+        return self._dV/self._V - self._dV0/self._V0
+
+    def _energy_hessian(self): 
+        # return (2/float(self.data.shape[0]))*np.dot(self.A.T, self.A)
+        return (1/self._V-1/self._V0)*self._H - np.dot(self._dV, self._dV.T)/(self._V**2) + np.dot(self._dV0, self._dV0.T)/(self._V0**2)
+
+    def estimate_instant_motion(self, t):
         """ 
-        Estimate motion at a particular time.
+        Estimate motion parameters at a particular time.
         """
         if VERBOSE: 
             print('Estimating motion at time frame %d/%d...' % (t+1, self.nscans))
-        def cost(pc): 
-            self.transforms[t].param = pc
-            return self.align_energy(t)
-        self.init_align_energy(t) 
-        self.transforms[t].param = self.fmin(cost, self.transforms[t].param, **self.fmin_kwargs)
-        self.resample(t)
+        def f(pc): 
+            self._init_energy(pc)
+            return self._energy() 
+        def fprime(pc): 
+            self._init_energy(pc)
+            return self._energy_gradient()            
+        def fhess(pc): 
+            self._init_energy(pc)
+            return self._energy_hessian()
+
+        self.init_instant_motion(t) 
+
+        args = []
+        if 'fprime' in self.fmin_args:
+            args += [fprime]
+        if 'fprime' in self.fmin_kwargs: 
+            self.fmin_kwargs['fprime'] = fprime
+        if 'fhess' in self.fmin_kwargs: 
+            self.fmin_kwargs['fhess'] = fhess
+
+        pc = self.fmin(f, self.transforms[t].param, *args, **self.fmin_kwargs)
+        self.set_transform(t, pc)
+
 
     def estimate_motion(self):
         """
@@ -298,9 +379,9 @@ class Realign4dAlgorithm(object):
         # Set the template as the reference scan (will be overwritten
         # if template is to be optimized)
         if not hasattr(self, 'template'): 
-            self.template = self.data[:,self.refscan].copy()
+            self.mu = self.data[:,self.refscan].copy()
         for t in range(self.nscans):
-            self.estimate_motion_at_time(t)
+            self.estimate_instant_motion(t)
             if VERBOSE: 
                 print(self.transforms[t]) 
 
@@ -316,25 +397,6 @@ class Realign4dAlgorithm(object):
         Tref_inv = self.transforms[self.refscan].inv()
         for t in range(self.nscans): 
             self.transforms[t] = (self.transforms[t]).compose(Tref_inv) 
-
-
-    def resample_full_data(self):
-        if VERBOSE:
-            print('Gridding...')
-        xyz = make_grid(self.dims[0:3])
-        res = np.zeros(self.dims)
-        for t in range(self.nscans):
-            if VERBOSE:
-                print('Fully resampling scan %d/%d' % (t+1, self.nscans))
-            X, Y, Z = scanner_coords(xyz, self.transforms[t].as_affine(), 
-                                     self.inv_affine, self.affine)
-            if self.time_interp: 
-                T = self.scanner_time(Z, self.timestamps[t])
-                cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T, mt=1)
-            else:
-                cspline_sample3d(res[:,:,:,t], self.cbspline[:,:,:,t], X, Y, Z)
-        return res
-    
 
 
 def resample4d(im4d, transforms, time_interp=True): 
@@ -362,6 +424,7 @@ def single_run_realign4d(im4d,
                          xtol=XTOL, 
                          ftol=FTOL, 
                          gtol=GTOL, 
+                         stepsize=STEPSIZE, 
                          maxiter=MAXITER, 
                          maxfun=MAXFUN):
     """
@@ -384,7 +447,7 @@ def single_run_realign4d(im4d,
             x = [x for i in range(repeats)]
         else:
             if not len(x) == repeats:
-                raise ValueError('inconsistent loops and speedup arguments')
+                raise ValueError('inconsistent length in arguments')
         return x
 
     speedup = format_arg(speedup) 
@@ -392,12 +455,13 @@ def single_run_realign4d(im4d,
     xtol = format_arg(xtol)
     ftol = format_arg(ftol) 
     gtol = format_arg(gtol)
+    stepsize = format_arg(stepsize) 
     maxiter = format_arg(maxiter)
     maxfun = format_arg(maxfun) 
 
     transforms = None
-    opt_params = zip(loops, speedup, optimizer, xtol, ftol, gtol, maxiter, maxfun)
-    for loops_, speedup_, optimizer_, xtol_, ftol_, gtol_, maxiter_, maxfun_ in opt_params:
+    opt_params = zip(loops, speedup, optimizer, xtol, ftol, gtol, stepsize, maxiter, maxfun)
+    for loops_, speedup_, optimizer_, xtol_, ftol_, gtol_, stepsize_, maxiter_, maxfun_ in opt_params:
         subsampling = adjust_subsampling(speedup_, im4d.array.shape[0:3])
 
         print('****** SUBSAMPLING FACTORS') 
@@ -413,6 +477,7 @@ def single_run_realign4d(im4d,
                                xtol=xtol_, 
                                ftol=ftol_, 
                                gtol=gtol_, 
+                               stepsize=stepsize_,
                                maxiter=maxiter_, 
                                maxfun=maxfun_)
         for loop in range(loops_): 
@@ -435,6 +500,7 @@ def realign4d(runs,
               xtol=XTOL, 
               ftol=FTOL, 
               gtol=GTOL, 
+              stepsize=STEPSIZE, 
               maxiter=MAXITER, 
               maxfun=MAXFUN):
     """
@@ -472,6 +538,7 @@ def realign4d(runs,
                                        xtol=xtol, 
                                        ftol=ftol, 
                                        gtol=gtol,
+                                       stepsize=stepsize, 
                                        maxiter=maxiter, 
                                        maxfun=maxfun) for run in runs]
     if not align_runs: 
@@ -492,7 +559,8 @@ def realign4d(runs,
                                         optimizer=optimizer, 
                                         xtol=xtol, 
                                         ftol=ftol, 
-                                        gtol=gtol, 
+                                        gtol=gtol,
+                                        stepsize=stepsize,  
                                         maxiter=maxiter, 
                                         maxfun=maxfun)
 
@@ -547,6 +615,7 @@ class Realign4d(object):
                  xtol=XTOL, 
                  ftol=FTOL, 
                  gtol=GTOL,
+                 stepsize=STEPSIZE, 
                  maxiter=MAXITER, 
                  maxfun=MAXFUN):
         if between_loops == None: 
@@ -563,6 +632,7 @@ class Realign4d(object):
                       xtol=xtol, 
                       ftol=ftol,
                       gtol=gtol, 
+                      stepsize=stepsize, 
                       maxiter=maxiter, 
                       maxfun=maxfun)
         self._transforms, self._within_run_transforms, self._mean_transforms = t
