@@ -19,6 +19,7 @@
    brainvisa_repositories
    repository_api
    pipelining_api
+   simple_viewer
    usecases/index
    refactoring/index
    comparisons/index
