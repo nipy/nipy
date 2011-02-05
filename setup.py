@@ -85,13 +85,11 @@ from numpy.distutils.command.install_data import install_data
 from numpy.distutils.command.build_ext import build_ext
 
 def data_install_msgs():
-    from nipy.utils import make_datasource, DataError
-    for name in ('templates', 'data'):
-        try:
-            make_datasource('nipy', name)
-        except DataError, exception:
-            log.warn('%s\n%s' % ('_'*80, exception))
-        
+    from nipy.utils import templates, example_data
+    for dpkg in (templates, example_data):
+        if hasattr(dpkg, 'msg'): # a bomber object, warn
+            log.warn('%s\n%s' % ('_'*80, dpkg.msg))
+
 
 class MyInstallData(install_data):
     """ Subclass the install_data to generate data install warnings if necessary
