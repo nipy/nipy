@@ -8,7 +8,7 @@ It handles the images provided as input and produces result images.
 
 import numpy as np
 import os.path as op
-from nipy.io.imageformats import load, save, Nifti1Image
+from nibabel import load, save, Nifti1Image
 
 from nipy.neurospin.mask import intersect_masks
 import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa

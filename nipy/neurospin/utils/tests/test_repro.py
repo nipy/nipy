@@ -32,7 +32,7 @@ def apply_repro_analysis_analysis(dataset, thresholds=[3.0], method = 'crfx'):
     """
     perform the reproducibility  analysis according to the 
     """
-    from nipy.io.imageformats import Nifti1Image 
+    from nibabel import Nifti1Image
 
     nsubj, dimx, dimy = dataset.shape
     

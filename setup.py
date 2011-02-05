@@ -6,7 +6,12 @@ from glob import glob
 from distutils import log
 
 # Import build helpers
-from nisext.sexts import package_check, get_comrec_build
+try:
+    from nisext.sexts import package_check, get_comrec_build
+except ImportError:
+    raise RuntimeError('Need nisext package from nibabel installation'
+                       ' - please install nibabel first')
+
 from build_helpers import (generate_a_pyrex_source,
                            cmdclass, INFO_VARS)
 # monkey-patch numpy distutils to use Cython instead of Pyrex
@@ -51,6 +56,7 @@ if not 'extra_setuptools_args' in globals():
 # Hard and soft dependency checking
 package_check('numpy', INFO_VARS['NUMPY_MIN_VERSION'])
 package_check('scipy', INFO_VARS['SCIPY_MIN_VERSION'])
+package_check('nibabel', INFO_VARS['NIBABEL_MIN_VERSION'])
 package_check('sympy', INFO_VARS['SYMPY_MIN_VERSION'])
 def _mayavi_version(pkg_name):
     from enthought.mayavi import version

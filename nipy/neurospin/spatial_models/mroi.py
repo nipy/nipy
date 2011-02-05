@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from nipy.io.imageformats import load, save, Nifti1Image 
+from nibabel import load, save, Nifti1Image 
 
 import discrete_domain as ddom
 

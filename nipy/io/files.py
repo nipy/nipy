@@ -20,7 +20,7 @@ import os
 
 import numpy as np
 
-import nipy.io.imageformats as formats
+import nibabel as nib
 
 from nipy.core.api import Image, is_image
 from nifti_ref import (ni_affine_pixdim_from_affine, affine_transform_from_array)
@@ -54,7 +54,7 @@ def load(filename):
     >>> img.shape
     (33, 41, 25)
     """
-    img = formats.load(filename)
+    img = nib.load(filename)
     aff = img.get_affine()
     shape = img.get_shape()
     hdr = img.get_header()
@@ -156,9 +156,9 @@ def save(img, filename, dtype=None):
 
     ftype = _type_from_filename(filename)
     if ftype.startswith('nifti1'):
-        klass = formats.Nifti1Image
+        klass = nib.Nifti1Image
     elif ftype == 'analyze':
-        klass = formats.Spm2AnalyzeImage
+        klass = nib.Spm2AnalyzeImage
     else:
         raise ValueError('Cannot save file type "%s"' % ftype)
     # make new image

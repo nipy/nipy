@@ -10,7 +10,12 @@ third-party software included here for convenience.
 from onetime import OneTimeProperty, setattr_on_read
 from tmpdirs import TemporaryDirectory, InTemporaryDirectory
 
-from data import make_datasource, DataError, templates, example_data
+from nibabel.data import make_datasource, DataError, datasource_or_bomber
+
+# Module level datasource instances for convenience
+from ..info import DATA_PKGS
+templates = datasource_or_bomber(DATA_PKGS['nipy-templates'])
+example_data = datasource_or_bomber(DATA_PKGS['nipy-data'])
 
 from nipy.testing import Tester
 test = Tester().test

@@ -2,7 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-from nipy.io.imageformats import Nifti1Image
+from nibabel import Nifti1Image
 from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
     surrogate_2d_dataset
 #from nipy.neurospin.utils.threshold import threshold_array, threshold_z_array

@@ -7,7 +7,7 @@ the activations found in an activation SPM, similar to SPM arrays
 Author: Lise Favre, Alexis Roche, Bertrand Thirion, 2008--2010
 """
 
-from nipy.io.imageformats import load
+from nibabel import load
 
 def display_results_html(zmap_file_path, mask_file_path,
                          output_html_path, threshold=0.001,
