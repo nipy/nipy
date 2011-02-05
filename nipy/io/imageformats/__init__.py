@@ -11,3 +11,5 @@ import warnings
 warnings.warn('Please use nibabel instead of nipy.io.imageformats',
              DeprecationWarning,
              stacklevel=2)
+
+from nibabel import load, save, Nifti1Image
