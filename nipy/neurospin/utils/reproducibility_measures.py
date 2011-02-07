@@ -322,7 +322,7 @@ def statistics_from_position(target, data, sigma=1.0):
                 1 is good
                 0 is bad
     """
-    from nipy.neurospin.eda.dimension_reduction import Euclidian_distance as ed
+    from nipy.neurospin.utils.fast_distance  import euclidean_distance as ed
     if data==None:
         if target==None:
             return 0.# or 1.0, can be debated
@@ -331,9 +331,9 @@ def statistics_from_position(target, data, sigma=1.0):
     if target==None:
         return 0.
     
-    dmatrix = ed(data,target)/sigma
+    dmatrix = ed(data, target)/sigma
     sensitivity = dmatrix.min(0)
-    sensitivity = np.exp(-0.5*sensitivity**2)
+    sensitivity = np.exp(-0.5 * sensitivity**2 )
     sensitivity = np.mean(sensitivity)
     return sensitivity
 

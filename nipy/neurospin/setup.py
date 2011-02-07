@@ -73,7 +73,6 @@ def configuration(parent_package='',top_path=None):
     # Subpackages
     config.add_subpackage('bindings')
     config.add_subpackage('clustering')
-    config.add_subpackage('eda')
     config.add_subpackage('glm')
     config.add_subpackage('glm_files_layout')
     config.add_subpackage('graph')

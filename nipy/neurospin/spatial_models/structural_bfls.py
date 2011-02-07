@@ -74,15 +74,18 @@ class LandmarkRegions(object):
     def homogeneity(self):
         """ returns the mean distance between points within each LR
         """
-        from nipy.neurospin.eda.dimension_reduction import Euclidian_distance
+        from nipy.neurospin.utils.fast_distance import euclidean_distance
         
         coord = self.get_feature('position')
         h = np.zeros(self.k)
         for k in range(self.k):
             pk = coord[k]
             sk = pk.shape[0]
-            edk = Euclidian_distance(pk) 
-            h[k] = edk.sum() / (sk * (sk-1))
+            if sk < 2:
+                h[k] = 0
+            else:
+                edk = euclidean_distance(pk) 
+                h[k] = edk.sum() / (sk * (sk - 1))
         return h
 
     def density (self, k, coord=None, dmax=1., dof=10):

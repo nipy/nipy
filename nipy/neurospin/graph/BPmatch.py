@@ -11,8 +11,7 @@ Author: Bertrand Thirion , 2006-2008.
 import numpy as np
 
 import graph as fg
-from nipy.neurospin.eda.dimension_reduction import Euclidian_distance
-
+from nipy.neurospin.utils.fast_distance import euclidean_distance
 
 def BPmatch(c1, c2, graph, dmax):
     """
@@ -58,7 +57,7 @@ def match_trivial(c1, c2, scale, eps = 1.e-12 ):
     sqs = 2*scale**2
     
     # make a prior
-    D = Euclidian_distance(c1,c2)
+    D = euclidean_distance(c1,c2)
     W = np.exp(-D*D/sqs);
     W = W*(D<3*scale);
     sW = np.sum(W,1)
@@ -99,7 +98,7 @@ def BPmatch_slow_asym_dev(c1, c2, G1, G2, scale):
     ofweight = np.exp(-0.5)
 
     # get the distances
-    D = Euclidian_distance(c1,c2)
+    D = euclidean_distance(c1,c2)
     W = np.exp(-D*D/sqs)
 
     # add an extra default value and normalize

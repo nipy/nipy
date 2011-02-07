@@ -29,8 +29,7 @@ import numpy as np
 import nipy.neurospin.graph.graph as fg
 import nipy.neurospin.graph.forest as fo
 
-from nipy.neurospin.eda.dimension_reduction import Euclidian_distance
-#from nipy.neurospin.clustering.clustering import ward
+from nipy.neurospin.utils.fast_distance import euclidean_distance
 
 class WeightedForest(fo.Forest):
     """
@@ -434,7 +433,7 @@ def average_link_euclidian(X,verbose=0):
     if X.shape[0]==np.size(X):
         X = np.reshape(X,(np.size(X),1))
     if np.size(X)<10000:
-        D = Euclidian_distance(X)
+        D = euclidean_distance(X)
     else:
         raise ValueError, "The distance matrix is too large"
     
@@ -1371,7 +1370,7 @@ def maximum_link_euclidian(X, verbose=0):
     if X.shape[0]==np.size(X):
         X = np.reshape(X,(np.size(X),1))
     if np.size(X)<10000:
-        D = Euclidian_distance(X)
+        D = euclidean_distance(X)
     else:
         raise ValueError, "The distance matrix is too large"
     
