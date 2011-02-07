@@ -29,7 +29,7 @@ def test_match_trivial_1():
     assert_almost_equal(a.sum(1),[1,1,1])
 
 def test_match_trivial_2():
-    c1 = np.array([[0],[1],[2]])
+    c1 = np.array([[0],[1],[2]]).astype(np.float)
     c2 = c1+0.4
     dmax = 1.0
     i, j, k = match_trivial(c1, c2, dmax)
