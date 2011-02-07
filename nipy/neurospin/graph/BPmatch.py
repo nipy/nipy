@@ -10,8 +10,8 @@ Author: Bertrand Thirion , 2006-2008.
 
 import numpy as np
 
-import graph as fg
 from nipy.neurospin.utils.fast_distance import euclidean_distance
+from _graph import graph_bpmatch
 
 def BPmatch(c1, c2, graph, dmax):
     """
@@ -31,7 +31,7 @@ def BPmatch(c1, c2, graph, dmax):
     i, j, k: arrays of shape(E) 
              sparse adjacency matrix of the bipartite association graph
     """ 
-    belief = fg.graph_bpmatch(c1, c2, graph, dmax)
+    belief = graph_bpmatch(c1, c2, graph, dmax)
     i,j = np.where(belief);
     k = belief[i, j]
     return i, j, k
