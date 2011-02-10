@@ -6,6 +6,7 @@ import numpy as np
 from bgmm import BGMM, detsh
 from scipy.special import gammaln
 
+
 def co_labelling(z, kmax=None, kmin=None):
     """
     return a sparse co-labelling matrix given the label vector z
@@ -25,24 +26,23 @@ def co_labelling(z, kmax=None, kmin=None):
     """
     from scipy.sparse import coo_matrix
     n = z.size
-    colabel =  coo_matrix((n,n))
+    colabel = coo_matrix((n, n))
 
-    if kmax==None:
-        kmax = z.max()+1
+    if kmax == None:
+        kmax = z.max() + 1
 
-    if kmin==None:
-        kmin = z.min()-1
+    if kmin == None:
+        kmin = z.min() - 1
 
     for  k in np.unique(z):
-        if (k<kmax)&(k>kmin):
-            i = np.array(np.nonzero(z==k))
+        if (k < kmax) & (k > kmin):
+            i = np.array(np.nonzero(z == k))
             row = np.repeat(i, i.size)
             col = np.ravel(np.tile(i, i.size))
-            data = np.ones((i.size)**2)
-            colabel = colabel + coo_matrix((data, (row,col)), shape=(n,n))
+            data = np.ones((i.size) ** 2)
+            colabel = colabel + coo_matrix((data, (row, col)), shape=(n, n))
     return colabel
-    
-    
+
 
 class IMM(BGMM):
     """
@@ -66,17 +66,16 @@ class IMM(BGMM):
         self.dim = dim
         self.alpha = alpha
         self.k = 0
-        self.prec_type='full'
-                
+        self.prec_type = 'full'
+
         # initialize weights
         self.weights = [1]
-        
+
     def set_priors(self, x):
-        """
-        Set the priors in order of having them weakly uninformative
+        """ Set the priors in order of having them weakly uninformative
         this is from  Fraley and raftery;
         Journal of Classification 24:155-181 (2007)
-        
+
         Parameters
         ----------
         x, array of shape (n_samples,self.dim)
@@ -85,33 +84,31 @@ class IMM(BGMM):
         # a few parameters
         small = 0.01
         elshape = (1, self.dim, self.dim)
-        mx = np.reshape(x.mean(0),(1,self.dim))
-        dx = x-mx
-        vx = np.maximum(1.e-15, np.dot(dx.T,dx)/x.shape[0])
-        px = np.reshape(np.diag(1.0/np.diag(vx)), elshape)
+        mx = np.reshape(x.mean(0), (1, self.dim))
+        dx = x - mx
+        vx = np.maximum(1.e-15, np.dot(dx.T, dx) / x.shape[0])
+        px = np.reshape(np.diag(1.0 / np.diag(vx)), elshape)
 
         # set the priors
         self._prior_means = mx
         self.prior_means = mx
         self.prior_weights = self.alpha
-        self._prior_scale = px 
-        self.prior_scale = px 
-        self._prior_dof = self.dim+2
+        self._prior_scale = px
+        self.prior_scale = px
+        self._prior_dof = self.dim + 2
         self.prior_dof = [self._prior_dof]
         self._prior_shrinkage = small
         self.prior_shrinkage = [self._prior_shrinkage]
-        
-        # cache some pre-computations
-        self._dets_ =  detsh(px[0])
-        self._dets = [self._dets_]
-        self._inv_prior_scale_ = np.reshape(np.linalg.inv(px[0]),elshape)
 
+        # cache some pre-computations
+        self._dets_ = detsh(px[0])
+        self._dets = [self._dets_]
+        self._inv_prior_scale_ = np.reshape(np.linalg.inv(px[0]), elshape)
         self.prior_dens = None
-  
-    def set_constant_densities(self, prior_dens=None ):
-        """
-        Set the null and prior densities as constant
-        (over a  supposedly compact domain)
+
+    def set_constant_densities(self, prior_dens=None):
+        """Set the null and prior densities as constant
+        (assuming a compact domain)
 
         Parameters
         ----------
@@ -120,11 +117,9 @@ class IMM(BGMM):
         """
         self.prior_dens = prior_dens
 
-    
     def sample(self, x, niter=1, sampling_points=None, init=False,
                kfold=None, verbose=0):
-        """
-        sample the indicator and parameters
+        """sample the indicator and parameters
 
         Parameters
         ----------
@@ -140,16 +135,14 @@ class IMM(BGMM):
                by default, no cross-validation is used
                the procedure is faster but less accurate
         verbose=0: verbosity mode
-        
+
         Returns
         -------
         likelihood: array of shape(nbpoints)
-                    total likelihood of the model 
-        
-        """        
+                    total likelihood of the model
+        """
         self.check_x(x)
-        
-        if sampling_points==None:
+        if sampling_points == None:
             average_like = np.zeros(x.shape[0])
         else:
             average_like = np.zeros(sampling_points.shape[0])
@@ -160,24 +153,24 @@ class IMM(BGMM):
         if init:
             self.k = 1
             z = np.zeros(x.shape[0])
-            self.update(x,z)
+            self.update(x, z)
 
         like = self.likelihood(x, plike)
         z = self.sample_indicator(like)
-        
+
         for i in range(niter):
-            if  kfold==None:
+            if  kfold == None:
                 like = self.simple_update(x, z, plike)
             else:
                 like = self.cross_validated_update(x, z, plike, kfold)
-            
-            if sampling_points==None:
+
+            if sampling_points == None:
                 average_like += like
             else:
                 average_like += np.sum(
                     self.likelihood(sampling_points, splike), 1)
 
-        average_like/=niter
+        average_like /= niter
         return average_like
 
     def simple_update(self, x, z, plike):
@@ -202,12 +195,12 @@ class IMM(BGMM):
         like = self.likelihood(x, plike)
         # standard + likelihood under the prior
         # like has shape (x.shape[0], self.k+1)
-        
+
         z = self.sample_indicator(like)
         # almost standard, but many new components can be created
-        
+
         self.reduce(z)
-        self.update(x,z)
+        self.update(x, z)
         return like.sum(1)
 
     def cross_validated_update(self, x, z, plike, kfold=10):
@@ -236,47 +229,44 @@ class IMM(BGMM):
 
         if np.isscalar(kfold):
             aux = np.argsort(np.random.rand(n_samples))
-            idx = -np.ones(n_samples).astype(np.int)
-            j = np.ceil(n_samples/kfold)    
+            idx = - np.ones(n_samples).astype(np.int)
+            j = np.ceil(n_samples / kfold)
             kmax = kfold
             for k in range(kmax):
-                idx[aux[k*j:min(n_samples,j*(k+1))]] = k
+                idx[aux[k * j:min(n_samples, j * (k + 1))]] = k
         else:
             if np.array(kfold).size != n_samples:
-                raise ValueError, 'kfold and x do not have the same size'
+                raise ValueError('kfold and x do not have the same size')
             uk = np.unique(kfold)
             np.random.shuffle(uk)
             idx = np.zeros(n_samples).astype(np.int)
-            for i,k in enumerate(uk):
-                idx += (i*(kfold==k))
-            kmax = uk.max()+1
-        
+            for i, k in enumerate(uk):
+                idx += (i * (kfold == k))
+            kmax = uk.max() + 1
+
         for k in range(kmax):
             test = np.zeros(n_samples).astype('bool')
-            test[idx==k] = 1
+            test[idx == k] = 1
             train = np.logical_not(test)
-            
+
             # remove a fraction of the data
             # and re-estimate the clusters
             z[train] = self.reduce(z[train])
             self.update(x[train], z[train])
-            
+
             # draw the membership for the left-out datas
             alike = self.likelihood(x[test], plike[test])
-            slike[test] = alike.sum(1) 
+            slike[test] = alike.sum(1)
             # standard + likelihood under the prior
             # like has shape (x.shape[0], self.k+1)
-            
+
             z[test] = self.sample_indicator(alike)
             # almost standard, but many new components can be created
 
         return slike
-            
 
     def reduce(self, z):
-        """
-        reduce the assignments by removing empty clusters
-        and update self.k
+        """Reduce the assignments by removing empty clusters and update self.k
 
         Parameters
         ----------
@@ -287,15 +277,14 @@ class IMM(BGMM):
         -------
         z: the remapped values
         """
-        uz = np.unique(z[z>-1])
-        for i,k in enumerate(uz):
-            z[z==k] = i
-        self.k = z.max()+1
+        uz = np.unique(z[z > - 1])
+        for i, k in enumerate(uz):
+            z[z == k] = i
+        self.k = z.max() + 1
         return z
-    
+
     def update(self, x, z):
-        """
-        update function (draw a sample of the IMM parameters)
+        """ Update function (draw a sample of the IMM parameters)
 
         Parameters
         ----------
@@ -306,36 +295,34 @@ class IMM(BGMM):
         """
         # re-dimension the priors in order to match self.k
         self.prior_means = np.repeat(self._prior_means, self.k, 0)
-        self.prior_dof = self._prior_dof*np.ones(self.k)
-        self.prior_shrinkage = self._prior_shrinkage*np.ones(self.k)
-        self._dets = self._dets_*np.ones(self.k)
+        self.prior_dof = self._prior_dof * np.ones(self.k)
+        self.prior_shrinkage = self._prior_shrinkage * np.ones(self.k)
+        self._dets = self._dets_ * np.ones(self.k)
         self._inv_prior_scale = np.repeat(self._inv_prior_scale_, self.k, 0)
 
         # initialize some variables
         self.means = np.zeros((self.k, self.dim))
         self.precisions = np.zeros((self.k, self.dim, self.dim))
-        
+
         # proceed with the update
         BGMM.update(self, x, z)
-        
+
     def update_weights(self, z):
         """
         Given the allocation vector z, resmaple the weights parameter
-        
+
         Parameters
         ----------
         z array of shape (n_samples), type = np.int
           the allocation variable
         """
-        pop =  np.hstack((self.pop(z), 0))
+        pop = np.hstack((self.pop(z), 0))
         self.weights = pop + self.prior_weights
         self.weights /= self.weights.sum()
 
-   
     def sample_indicator(self, like):
-        """
-        sample the indicator from the likelihood
-        
+        """ Sample the indicator from the likelihood
+
         Parameters
         ----------
         like: array of shape (nbitem,self.k)
@@ -348,71 +335,69 @@ class IMM(BGMM):
         Note
         ----
         The behaviour is different from standard bgmm
-        in that z can take arbitrary values 
+        in that z can take arbitrary values
         """
         z = BGMM.sample_indicator(self, like)
-        z[z==self.k] = self.k + np.arange(np.sum(z==self.k))
+        z[z == self.k] = self.k + np.arange(np.sum(z == self.k))
         return z
 
     def likelihood_under_the_prior(self, x):
-        """
-        Computes the likelihood of x under the prior
-        
+        """ Computes the likelihood of x under the prior
+
         Parameters
         ----------
         x, array of shape (self.n_samples,self.dim)
-        
+
         returns
         -------
         w, the likelihood of x under the prior model (unweighted)
         """
         if self.prior_dens is not None:
-            return self.prior_dens*np.ones(x.shape[0])
-        
+            return self.prior_dens * np.ones(x.shape[0])
+
         a = self._prior_dof
         tau = self._prior_shrinkage
-        tau /= (1+tau)
+        tau /= (1 + tau)
         m = self._prior_means
         b = self._prior_scale
         ib = np.linalg.inv(b[0])
         ldb = np.log(detsh(b[0]))
 
-        scalar_w = np.log(tau/np.pi) *self.dim
-        scalar_w += 2*gammaln((a+1)/2)
-        scalar_w -= 2*gammaln((a-self.dim)/2)
-        scalar_w -= ldb*a
-        
+        scalar_w = np.log(tau / np.pi) * self.dim
+        scalar_w += 2 * gammaln((a + 1) / 2)
+        scalar_w -= 2 * gammaln((a - self.dim) / 2)
+        scalar_w -= ldb * a
         w = scalar_w * np.ones(x.shape[0])
-        
+
         for i in range(x.shape[0]):
-            w[i] -= (a+1) * np.log(detsh(ib + tau*(m-x[i:i+1])*(m-x[i:i+1]).T))
-            
-        w = w/2
-        
+            w[i] -= (a + 1) * np.log(detsh(ib + tau * (m - x[i:i + 1]) *
+                                           (m - x[i:i + 1]).T))
+
+        w /= 2
         return np.exp(w)
-   
+
     def likelihood(self, x, plike=None):
         """
         return the likelihood of the model for the data x
         the values are weighted by the components weights
-        
+
         Parameters
         ----------
         x: array of shape (n_samples, self.dim),
            the data used in the estimation process
         plike: array os shape (n_samples), optional,x
                the desnity of each point under the prior
-        
+
         Returns
         -------
         like, array of shape(nbitem,self.k)
         component-wise likelihood
         """
-        if plike==None:
+        if plike == None:
             plike = self.likelihood_under_the_prior(x)
 
-        plike = np.reshape(plike,(x.shape[0], 1))
-        if self.k>0:
+        plike = np.reshape(plike, (x.shape[0], 1))
+        if self.k > 0:
             like = self.unweighted_likelihood(x)
             like = np.hstack((like, plike))
         else:
@@ -436,12 +421,12 @@ class MixedIMM(IMM):
                the parameter for cluster creation
         dim: int, optional,
              the dimension of the the data
-        
+
         Note: use the function set_priors() to set adapted priors
         """
         IMM.__init__(self, alpha, dim)
 
-    def set_constant_densities(self, null_dens=None, prior_dens=None ):
+    def set_constant_densities(self, null_dens=None, prior_dens=None):
         """
         Set the null and prior densities as constant
         (over a  supposedly compact domain)
@@ -480,34 +465,34 @@ class MixedIMM(IMM):
                        if True,
                        return a model of data co-labelling across iterations
         verbose=0: verbosity mode
-        
+
         Returns
         -------
         likelihood: array of shape(nbpoints)
-                    total likelihood of the model 
+                    total likelihood of the model
         pproba: array of shape(n_samples),
                 the posterior of being in the null
                 (the posterior of null_class_proba)
         coclust: only if co_clustering==True,
                  sparse_matrix of shape (n_samples, n_samples),
                  frequency of co-labelling of each sample pairs
-                 across iterations 
-        """        
+                 across iterations
+        """
         self.check_x(x)
         pproba = np.zeros(x.shape[0])
-        
-        if sampling_points==None:
+
+        if sampling_points == None:
             average_like = np.zeros(x.shape[0])
         else:
             average_like = np.zeros(sampling_points.shape[0])
             splike = self.likelihood_under_the_prior(sampling_points)
 
         plike = self.likelihood_under_the_prior(x)
-        
+
         if init:
             self.k = 1
             z = np.zeros(x.shape[0])
-            self.update(x,z)
+            self.update(x, z)
 
         like = self.likelihood(x, plike)
         z = self.sample_indicator(like, null_class_proba)
@@ -515,9 +500,9 @@ class MixedIMM(IMM):
         if co_clustering:
             from scipy.sparse import coo_matrix
             coclust = coo_matrix((x.shape[0], x.shape[0]))
-        
+
         for i in range(niter):
-            if  kfold==None:
+            if  kfold == None:
                 like = self.simple_update(x, z, plike, null_class_proba)
             else:
                 like, z = self.cross_validated_update(x, z, plike,
@@ -525,18 +510,18 @@ class MixedIMM(IMM):
 
             llike = self.likelihood(x, plike)
             z = self.sample_indicator(llike, null_class_proba)
-            pproba += z==-1
+            pproba += (z == - 1)
 
             if co_clustering:
                 coclust = coclust + co_labelling(z, self.k, -1)
-                                
-            if sampling_points==None:
+
+            if sampling_points == None:
                 average_like += like
             else:
                 average_like += np.sum(
                     self.likelihood(sampling_points, splike), 1)
-                
-        average_like/=niter
+
+        average_like /= niter
         pproba /= niter
         if co_clustering:
             coclust /= niter
@@ -544,9 +529,7 @@ class MixedIMM(IMM):
         return average_like, pproba
 
     def simple_update(self, x, z, plike, null_class_proba):
-        """
-         This is a step in the sampling procedure
-        that uses internal cross_validation
+        """ One step in the sampling procedure (one data sweep)
 
         Parameters
         ----------
@@ -567,12 +550,12 @@ class MixedIMM(IMM):
         like = self.likelihood(x, plike)
         # standard + likelihood under the prior
         # like has shape (x.shape[0], self.k+1)
-        
+
         z = self.sample_indicator(like, null_class_proba)
         # almost standard, but many new components can be created
-        
+
         self.reduce(z)
-        self.update(x,z)
+        self.update(x, z)
         return like.sum(1)
 
     def cross_validated_update(self, x, z, plike, null_class_proba, kfold=10):
@@ -608,52 +591,50 @@ class MixedIMM(IMM):
         """
         n_samples = x.shape[0]
         slike = np.zeros(n_samples)
-        
+
         if np.isscalar(kfold):
             aux = np.argsort(np.random.rand(n_samples))
-            idx = -np.ones(n_samples).astype(np.int)
-            j = np.ceil(n_samples/kfold)    
+            idx = - np.ones(n_samples).astype(np.int)
+            j = np.ceil(n_samples / kfold)
             kmax = kfold
             for k in range(kmax):
-                idx[aux[k*j:min(n_samples,j*(k+1))]] = k
+                idx[aux[k * j:min(n_samples, j * (k + 1))]] = k
         else:
             if np.array(kfold).size != n_samples:
-                raise ValueError, 'kfold and x do not have the same size'
+                raise ValueError('kfold and x do not have the same size')
             uk = np.unique(kfold)
             np.random.shuffle(uk)
             idx = np.zeros(n_samples).astype(np.int)
-            for i,k in enumerate(uk):
-                idx += (i*(kfold==k))
-            kmax = uk.max()+1
+            for i, k in enumerate(uk):
+                idx += (i * (kfold == k))
+            kmax = uk.max() + 1
 
         for k in range(kmax):
             # split at iteration k
             test = np.zeros(n_samples).astype('bool')
-            test[idx==k] = 1
+            test[idx == k] = 1
             train = np.logical_not(test)
-            
+
             # remove a fraction of the data
             # and re-estimate the clusters
             z[train] = self.reduce(z[train])
             self.update(x[train], z[train])
-            
+
             # draw the membership for the left-out data
             alike = self.likelihood(x[test], plike[test])
-            slike[test] = alike.sum(1) 
+            slike[test] = alike.sum(1)
             # standard + likelihood under the prior
             # like has shape (x.shape[0], self.k+1)
-            
+
             z[test] = self.sample_indicator(alike, null_class_proba[test])
             # almost standard, but many new components can be created
 
         return slike, z
 
-
-
     def sample_indicator(self, like, null_class_proba):
         """
         sample the indicator from the likelihood
-        
+
         Parameters
         ----------
         like: array of shape (nbitem,self.k)
@@ -670,90 +651,20 @@ class MixedIMM(IMM):
         Here z=-1 encodes for the null class
         """
         n = like.shape[0]
-        conditional_like_1 = ((1-null_class_proba)*like.T).T
-        conditional_like_0 = np.reshape(null_class_proba*self.null_dens, (n,1))
+        conditional_like_1 = ((1 - null_class_proba) * like.T).T
+        conditional_like_0 = np.reshape(null_class_proba *
+                                        self.null_dens, (n, 1))
         conditional_like = np.hstack((conditional_like_0, conditional_like_1))
-        z = BGMM.sample_indicator(self, conditional_like)-1
-        z[z==self.k] = self.k + np.arange(np.sum(z==self.k))
+        z = BGMM.sample_indicator(self, conditional_like) - 1
+        z[z == self.k] = self.k + np.arange(np.sum(z == self.k))
         return z
-
-def example_igmm_wnc():
-    """
-    Example of IMM with a null class
-    points are generated in [0,1] interval witha  higher density close to 0
-    the null points are assumed to occur uniformly over [0,1]
-    
-    the algorithm correctly identifies the points  close to 0
-    as the 'active' set
-    """
-    n = 50
-    dim = 1
-    alpha = .5
-    g0 = 1.
-    x = np.random.rand(n, dim)
-    x[:.3*n] *= .2
-    x[:.1*n] *= .3
-    migmm = MixedIMM(alpha, dim)
-    migmm.set_priors(x)
-    migmm.set_constant_densities(null_dens=g0)
-
-    # burn-in
-    ncp = 0.5*np.ones(n)
-    migmm.sample(x, null_class_proba=ncp, niter=100, init=True)
-    print 'number of components: ', migmm.k
-    
-    from gmm import GridDescriptor
-    gd = GridDescriptor(1, [0,1], 101)
-
-    #sampling
-    like, pproba =  migmm.sample(x, null_class_proba=ncp, niter=1000,
-                         sampling_points=gd.make_grid(), kfold=10)
-    print 'number of components: ', migmm.k
-
-    # the density should sum to 1
-    print 'density sum', 0.01*like.sum()
-    migmm.show(x, gd, density=like)
-
-    import pylab
-    pylab.figure()
-    pylab.plot(x, pproba, '.')
-    pylab.title('posterior probability of being in the null class')
-    pylab.xlabel('data')
-    pylab.ylabel('proba of being in the null class')
-    pylab.show()
-    
-    return migmm 
-
-def example_imm_1d():
-    n = 100
-    dim = 1
-    alpha = .5
-    x = np.random.randn(n, dim)
-    x[:.3*n] *= 2
-    x[:.1*n] += 3
-    igmm = IMM(alpha, dim)
-    igmm.set_priors(x)
-
-    # warming
-    igmm.sample(x, niter=100, init=True)
-    print 'number of components: ', igmm.k
-
-    from gmm import GridDescriptor
-    gd = GridDescriptor(1, [-9,11], 201)
-
-    #sampling
-    like =  igmm.sample(x, niter=1000, sampling_points=gd.make_grid())
-    print 'number of components: ', igmm.k
-
-    print 'density sum', 0.1*like.sum()
-    igmm.show(x, gd, density=like)
-    
-    return igmm 
 
 
 def main():
+    """ Illustrative example of the behaviour of imm
+    """
     n = 100
-    dim = 3
+    dim = 2
     alpha = .5
     aff = np.random.randn(dim, dim)
     x = np.dot(np.random.randn(n, dim), aff)
@@ -763,16 +674,15 @@ def main():
     # warming
     igmm.sample(x, niter=100, kfold=10)
     print 'number of components: ', igmm.k
-    
+
     #
     print 'number of components: ', igmm.k
 
-    if dim<3:
+    if dim < 3:
         from gmm import plot2D
         plot2D(x, igmm, verbose=1)
-    return igmm 
-    
-    
+    return igmm
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     main()
