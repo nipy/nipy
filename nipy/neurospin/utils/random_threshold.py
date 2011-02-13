@@ -4,8 +4,8 @@
 # Random Thresholding Procedure (after M. Lavielle and C. Ludena)
 
 import numpy as np
-import scipy.stats as ST
-import nipy.neurospin.graph as FG
+import scipy.stats as st
+import nipy.neurospin.graph as fg
 from nipy.neurospin.group.routines import add_lines
 
 tol = 1e-10
@@ -91,7 +91,7 @@ def randthresh(Y, K, p=np.inf, stop=False, verbose=False, varwind=False,
         X = Y
     else:
         v = np.square(Y).mean()
-        X = np.clip( - np.log(1 - ST.chi2.cdf(Y ** 2, 1, 0, scale=v)), 0,
+        X = np.clip( - np.log(1 - st.chi2.cdf(Y ** 2, 1, 0, scale=v)), 0,
                       1 / tol)
         D["v"] = v
     T = test_stat(X, p=np.inf)
@@ -175,7 +175,7 @@ def randthresh_connex(Y, K, XYZ, p=np.inf, stop=False, verbose=False,
         X = Y
     else:
         v = np.square(Y).mean()
-        X = np.clip( - np.log(1 - ST.chi2.cdf(Y ** 2, 1, 0, scale=v)),
+        X = np.clip( - np.log(1 - st.chi2.cdf(Y ** 2, 1, 0, scale=v)),
                        0, 1 / tol)
         D["v"] = v
     T = test_stat(X, p=np.inf)
@@ -353,11 +353,11 @@ def randthresh_fixwind_gaussnull(Y, K, p=np.inf, stop=False, one_sided=False,
     sortY = sortY[:: - 1]
     for k in xrange(2, n - K):
         if one_sided:
-            X = np.clip( - np.log(1 - ST.norm.cdf(sortY[k + 1: k + K + 1],
+            X = np.clip( - np.log(1 - st.norm.cdf(sortY[k + 1: k + K + 1],
                                                   scale=std[k])), 0, 1 / tol)
         else:
             X = np.clip( -
-                np.log(1 - ST.chi2.cdf(sortY[k + 1: k + K + 1],
+                np.log(1 - st.chi2.cdf(sortY[k + 1: k + K + 1],
                                        1, 0, scale=V[k])), 0, 1 / tol)
 
         # Ratio of expectations
@@ -413,11 +413,11 @@ def randthresh_varwind_gaussnull(Y, K, p=np.inf, stop=False, one_sided=False,
     sortY = sortY[:: - 1]
     for k in xrange(2, n - K):
         if one_sided:
-            X = np.clip( - np.log(1 - ST.norm.cdf(sortY[k + 1:],
+            X = np.clip( - np.log(1 - st.norm.cdf(sortY[k + 1:],
                                                   scale=std[k])), 0, 1 / tol)
         else:
             X = np.clip( -
-                np.log(1 - ST.chi2.cdf(sortY[k + 1:], 1, 0, scale=V[k])), 0,
+                np.log(1 - st.chi2.cdf(sortY[k + 1:], 1, 0, scale=V[k])), 0,
                 1 / tol)
         # Ratio of expectations
         B = np.arange(1, n - k) * ( 1 + I[: n - 1 - k].sum() - \
@@ -618,18 +618,18 @@ def randthresh_fixwind_gaussnull_connex(X, K, XYZ, p=np.inf, stop=False,
         V[k] = (sortX[Ik].sum() + sortX[k + 1:].sum()) / float(nk + n - k - 1)
         #Partial sums
         if nk >= K:
-            T = np.clip( - np.log(1 - ST.chi2.cdf(
+            T = np.clip( - np.log(1 - st.chi2.cdf(
                         sortX[Ik[:K]], 1, 0, scale=V[k])), 0, 1 / tol).cumsum()
         elif nk == 0:
             T = np.clip( -
-                np.log(1 - ST.chi2.cdf(sortX[k + 1:k + K + 1], 1, 0,
+                np.log(1 - st.chi2.cdf(sortX[k + 1:k + K + 1], 1, 0,
                                        scale=V[k])), 0, 1 / tol).cumsum()
         else:
             T[:nk] = np.clip( -
-                np.log(1 - ST.chi2.cdf(sortX[Ik], 1, 0, scale=V[k])), 0,
+                np.log(1 - st.chi2.cdf(sortX[Ik], 1, 0, scale=V[k])), 0,
                 1 / tol).cumsum()
             T[nk:] = T[nk - 1] + np.clip( -
-                np.log(1 - ST.chi2.cdf(sortX[k + 1:k + K - nk + 1], 1, 0,
+                np.log(1 - st.chi2.cdf(sortX[k + 1:k + K - nk + 1], 1, 0,
                                        scale=V[k])), 0, 1 / tol).cumsum()
         # Conditional expectations
         Q = B * T[ - 1]
@@ -695,15 +695,15 @@ def randthresh_varwind_gaussnull_connex(X, K, XYZ, p=np.inf, stop=False,
         #Partial sums
         if nk == 0:
             T = np.clip( -
-                np.log(1 - ST.chi2.cdf(sortX[k + 1:], 1, 0, scale=V[k])), 0,
+                np.log(1 - st.chi2.cdf(sortX[k + 1:], 1, 0, scale=V[k])), 0,
                 1 / tol).cumsum()
         else:
             T = np.zeros(n - k + nk - 1, float)
             T[:nk] = np.clip( -
-                np.log(1 - ST.chi2.cdf(sortX[Ik], 1, 0, scale=V[k])), 0,
+                np.log(1 - st.chi2.cdf(sortX[Ik], 1, 0, scale=V[k])), 0,
                 1 / tol).cumsum()
             T[nk:] = T[nk-1] + np.clip( -
-                np.log(1 - ST.chi2.cdf(sortX[k + 1:], 1, 0, scale=V[k])), 0,
+                np.log(1 - st.chi2.cdf(sortX[k + 1:], 1, 0, scale=V[k])), 0,
                 1 / tol).cumsum()
         #Conditional expectations
         Q = B * T[-1]
@@ -752,31 +752,16 @@ def test_stat(X, p=np.inf):
         return sum(np.abs(T - Q) ** p) / (n ** (0.5 * p + 1))
 
 
-def null_distribution(n, nsimu):
-    """ Sample from test statistic null distribution
-
-    Parameters
-    ==========
-    n,nsimu: Number of observations, sample size
-    S (nsimu,): sample
-    Pretty costly. Simpler is to use the approximate
-    tail probability:
-    P(T > 0.65 | H0) = 0.05
-    """
-    X = np.random.exponential(size=n * nsimu).reshape(nsimu, n)
-    return np.array( [ test_stat( X[i] ) for i in xrange(nsimu) ] )
-
-
 def isolated(XYZ, k=18):
     """
     Outputs an index I of isolated points from their integer coordinates,
     XYZ (3, n), and under k-connectivity, k = 6, 18 or 24.
     """
-    A, B, D = FG.graph_3d_grid(XYZ.transpose(), k)
+    A, B, D = fg.graph_3d_grid(XYZ.transpose(), k)
     # Number of vertices
     V = max(A) + 1
     # Labels of connected components
-    label = FG.graph_cc(A, B, D, V)
+    label = fg.graph_cc(A, B, D, V)
     # Isolated points
     ncc = label.max() + 1
     p = XYZ.shape[1]
