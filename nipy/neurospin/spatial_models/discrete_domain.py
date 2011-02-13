@@ -252,7 +252,7 @@ def grid_domain_from_array(mask, affine=None, nn=0):
         
     mask = mask>0
     ijk = np.array(np.where(mask)).T
-    vol = np.absolute(np.linalg.det(affine))*np.ones(np.sum(mask))
+    vol = np.absolute(np.linalg.det(affine[:3, :3]))*np.ones(np.sum(mask))
     topology = smatrix_from_nd_idx(ijk, nn) 
     return NDGridDomain(dim, ijk, shape, affine, vol, topology)
 
@@ -270,7 +270,7 @@ def grid_domain_from_image(mim, nn=18):
         
     Returns
     -------
-    The corresponding StructuredDomain instance
+    The corresponding NDGridDomain instance
     """
     if isinstance(mim, basestring):
         iim = load(mim)
@@ -302,7 +302,7 @@ class DiscreteDomain(object):
     check that local_volume is positive
     """
     
-    def __init__(self, dim, coord, local_volume, rid='', referential=''):
+    def __init__(self, dim, coord, local_volume, id='', referential=''):
         """
         Parameters
         ----------
@@ -312,7 +312,7 @@ class DiscreteDomain(object):
                explicit coordinates of the domain sites
         local_volume: array of shape(size),
                       yields the volume associated with each site
-        rid: string, optional,
+        id: string, optional,
              domain identifier 
         referential: string, optional,
                      identifier of the referential of the coordinates system
@@ -340,9 +340,8 @@ class DiscreteDomain(object):
         if np.size(local_volume)!= self.size:
             raise ValueError, "Inconsistent Volume size"
         self.local_volume = np.ravel(local_volume) 
-        
-        
-        self.rid = rid
+                
+        self.id = id
         self.referential = referential
         self.features = {}
         
@@ -356,7 +355,7 @@ class DiscreteDomain(object):
         """
         return self.local_volume
 
-    def mask(self, bmask, rid=''):
+    def mask(self, bmask, id=''):
         """
         returns an DiscreteDomain instance that has been further masked
         """
@@ -365,7 +364,7 @@ class DiscreteDomain(object):
 
         svol = self.local_volume[bmask]
         scoord = self.coord[bmask]
-        DD = DiscreteDomain(self.dim, scoord, svol, rid,  self.referential)
+        DD = DiscreteDomain(self.dim, scoord, svol, id,  self.referential)
 
         for fid in self.features.keys():
             f = self.features.pop(fid)
@@ -538,8 +537,8 @@ class NDGridDomain(StructuredDomain):
         
         # ijk
         if np.size(ijk)==ijk.shape[0]:
-            ijk = np.reshape(ijk, (ijk.size,1))
-        if (ijk.max(0)+1>shape).any():
+            ijk = np.reshape(ijk, (ijk.size, 1))
+        if (ijk.max(0)+1 > shape).any():
             raise ValueError, 'Provided indices do not fit within shape'
         self.ijk = ijk
 
@@ -574,7 +573,38 @@ class NDGridDomain(StructuredDomain):
         data = np.zeros(self.shape).astype(np.int8)
         data[self.ijk[:,0], self.ijk[:,1], self.ijk[:,2]] = 1
         nim = Nifti1Image(data, self.affine)
-        nim.get_header()['descrip'] = 'mask image'
+        nim.get_header()['descrip'] = 'mask image representing domain %s' %self.id
         if path is not None:
             save(nim, path)
         return nim
+
+    def make_feature_from_image(self, path, fid=''):
+        """
+        Extract the information from an image to make it a domain a feature
+        
+        Parameters
+        ----------
+        path: string or Nifti1Image instance,
+              the image from which one wished to extract data
+        fid: string, optional
+             identifier of the resulting feature. 
+             if '', the feature is not stored
+        
+        Returns
+        -------
+        the correponding set of values
+        """
+        if isinstance(path, basestring):
+            nim = load(path)
+        else:
+            nim = path
+        
+        if (nim.get_affine()!=self.affine).any():
+            raise ValueError, 'nim and self do not have the same referential'
+        
+        data = nim.get_data()
+        feature = data[self.ijk[:,0], self.ijk[:,1], self.ijk[:,2]]
+        if fid is not '':
+            self.features[fid] = feature
+        
+        return feature 

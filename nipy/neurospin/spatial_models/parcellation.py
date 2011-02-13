@@ -12,21 +12,30 @@ TODO : add a method 'global field', i.e. non-subject-specific info
 """
 
 import numpy as np
+import discrete_domain as dm
 
 ###################################################################
 # new parcellation class
 ###################################################################
 
-import discrete_domain as dm
 
-class New_Parcellation(object):
-    """ New parcellation class
+
+class NewParcellation(object):
+    """ 
     """
 
-    def __init__(self, domain, labellings):
+    def __init__(self, domain, label):
         """
+        Parameters
+        ----------
+        domain: discrete_domain.DiscreteDomain instance,
+                definition of the space considered in the parcellation
+        labelling: array of shape domain.size() 
+                   definition of the domain labelling
         """
-        pass
+        self.domain = domain
+        self.label = label
+
 
 ###################################################################
 # parcellation class

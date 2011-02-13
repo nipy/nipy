@@ -8,7 +8,7 @@ import os.path as op
 import tempfile
 
 from nipy.neurospin.spatial_models.parcel_io import parcel_input, \
-    Parcellation_output, Parcellation_based_analysis
+    parcellation_output, parcellation_based_analysis
 from nipy.neurospin.spatial_models.hierarchical_parcellation import hparcel
 import get_data_light
 
@@ -54,7 +54,7 @@ fpa = hparcel(fpa, ldata, coord)
 #fpa,prfx0 = hparcel(fpa,ldata,coord,nbperm=200,niter=5,verbose)
 
 #produce some output images
-Parcellation_output(fpa, mask_images, learn_images, coord, subj_id,
+parcellation_output(fpa, mask_images, learn_images, coord, subj_id,
                     verbose=1, swd=swd)
 
 # do some parcellation-based analysis:
@@ -65,6 +65,6 @@ test_images = learn_images
 DMtx = None
 
 # compute and write the parcel-based statistics
-Parcellation_based_analysis(fpa, test_images, numbeta, swd, DMtx, verbose)
+parcellation_based_analysis(fpa, test_images, numbeta, swd, DMtx, verbose)
 
 print "Wrote everything in %s" % swd

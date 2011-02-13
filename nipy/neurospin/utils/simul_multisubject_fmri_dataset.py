@@ -5,11 +5,11 @@ This module conatins a function to produce a dataset which simulates
 a collection of 2D images This dataset is saved as a 3D image
 (each slice being a subject) and a 3D array
 
-example of use: surrogate_2d_dataset(nbsubj=1,fid="/tmp/toto.dat",verbose=1)
+example of use: surrogate_2d_dataset(nbsubj=1, fid="/tmp/toto.dat", verbose=1)
 
 todo: rewrite it as a class
 
-Author : Bertrand Thirion, 2008-2009
+Author : Bertrand Thirion, 2008-2010
 """
 
 import numpy as np
@@ -148,6 +148,7 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     return dataset
 
 
+
 def surrogate_3d_dataset(nbsubj=1, shape=(20, 20, 20), mask=None,
                          sk=1.0, noise_level=1.0, pos=None, ampli=None,
                          spatial_jitter=1.0, signal_jitter=1.0,
@@ -162,7 +163,7 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20, 20, 20), mask=None,
         generated.
     shape=(20,20,20): tuple of integers,
          the shape of each image
-    mask=None: brifti image instance,
+    mask=None: Nifti1Image instance,
         referential- and mask- defining image (overrides shape)
     sk: float, optionnal
         Amount of spatial noise smoothness.
@@ -217,6 +218,7 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20, 20, 20), mask=None,
     # make the signal
     for s in range(nbsubj):
         data = np.zeros(shape)
+        lampli = []
         if pos is not None:
             if len(pos) != len(ampli):
                 raise ValueError('ampli and pos do not have the same len')
@@ -244,6 +246,8 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20, 20, 20), mask=None,
         mp.colorbar()
 
     dataset = np.array(dataset)
+    if nbsubj==1:
+        dataset = dataset[0]
 
     if out_text_file is not None:
         dataset.tofile(out_text_file)

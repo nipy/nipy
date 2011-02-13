@@ -403,7 +403,7 @@ def hparcel(Pa,ldata,anat_coord,nbperm=0,niter=5, mu=10.,dmax = 10., lamb = 100.
     Pa.group_labels  = u
     if nbperm>0:
         Pb = fp.Parcellation(Pa.k,xyz,palc)
-        prfx0 = perm_prfx(Pb,Gs,Feature, ldata,anat_coord,nbperm,niter,dmax, lamb, chunksize)
+        prfx0 = perm_prfx(Pb, Gs, Feature, ldata,anat_coord, nbperm, niter, dmax, lamb, chunksize)
         return Pa,prfx0
     else:
         return Pa

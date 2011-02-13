@@ -11,6 +11,7 @@ import numpy as np
 import os.path
 from nipy.io.imageformats import load, save, Nifti1Image 
 from parcellation import Parcellation
+from discrete_domain import grid_domain_from_image
 
 def mask_parcellation(mask_images, nb_parcel, output_image=None):
     """
@@ -162,8 +163,8 @@ def parcel_input(mask_images, nbeta, learning_images,
     
     return pa, istats, coord
 
-def Parcellation_output(Pa, mask_images, learning_images, coord, nbru, 
-                        verbose=1,swd = "/tmp"):
+def parcellation_output(Pa, mask_images, learning_images, coord, nbru, 
+                        verbose=1, swd=None):
     """
     Function that produces images that describe the spatial structure
     of the parcellation.  It mainly produces label images at the group
@@ -179,18 +180,23 @@ def Parcellation_output(Pa, mask_images, learning_images, coord, nbru,
            parcellation process
     nbru: list of subject ids
     verbose=1 : verbosity level
-    swd = '/tmp': write directory
+    swd: string, optional 
+         output directory
     
     Results
     -------
     Pa: the updated Parcellation instance
     """
+    if swd==None:
+        from tempfile import mkdtemp
+        swd = mkdtemp()
+
     nsubj = Pa.nb_subj
     Pa.set_subjects(nbru)
     
     # write the template image
     tlabs = Pa.group_labels
-    LabelImage = os.path.join(swd,"template_parcel.nii") 
+    LabelImage = os.path.join(swd, "template_parcel.nii") 
     rmask = load(mask_images[0])
     ref_dim = rmask.get_shape()
     affine = rmask.get_affine()
@@ -286,7 +292,7 @@ def parcellation_output_with_paths(Pa, mask_images, group_path, indiv_path):
     
 
 
-def Parcellation_based_analysis(Pa, test_images, numbeta, swd="/tmp", 
+def parcellation_based_analysis(Pa, test_images, numbeta, swd=None, 
                                     DMtx=None, verbose=1, method_id=0):
     """
     This function computes parcel averages and RFX at the parcel-level
@@ -300,7 +306,8 @@ def Parcellation_based_analysis(Pa, test_images, numbeta, swd="/tmp",
                  double list is 
                  [number of subjects [number of contrasts]]
     numbeta: list of int of the associated ids
-    swd='/tmp': write directory
+    swd: string, optional 
+         output directory
     DMtx=None: array od shape (nsubj,ncon) 
                a design matrix for second-level analyses 
               (not implemented yet)
@@ -377,7 +384,7 @@ def Parcellation_based_analysis(Pa, test_images, numbeta, swd="/tmp",
     return Pa
 
 
-def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward', 
+def one_subj_parcellation(mask_image, betas, nbparcel, nn=6, method='ward', 
                           write_dir=None, mu=10., verbose=0, fullpath=None):
     """
     Parcellation of a one-subject dataset
@@ -385,7 +392,7 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     
     Parameters
     ----------
-    MaskImage: path to the mask-defining_image of the subject
+    domain/mask_image
     betas: list of paths to activation images from the subject
     nbparcel, int : number fo desired parcels
     nn=6: number of nearest neighbors  to define the image topology 
@@ -410,68 +417,41 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     Ward's + GKM is expensive but quite good
     To reduce CPU time, rather use nn=6 (especially with Ward)    
     """
-    import nipy.neurospin.graph as fg
-    import nipy.neurospin.graph.field as ff
-    
+    from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
+    from mroi import SubDomains
+
     if method not in ['ward','gkm','ward_and_gkm','kmeans']:
         raise ValueError, 'unknown method'
     if nn not in [6,18,26]:
         raise ValueError, 'nn should be 6,18 or 26'
-    nbeta = len(betas)
     
     # step 1: load the data ----------------------------
-    #1.1 the mask image
-    nim = load(MaskImage)
-    ref_dim =  nim.get_shape()
-    affine = nim.get_affine()
-    mask = nim.get_data()
-    xyz = np.array(np.where(mask>0)).T
-    nvox = xyz.shape[0]
+    # 1.1 the domain
+    domain = grid_domain_from_image(mask_image, nn)
 
     if method is not 'kmeans':
         # 1.2 get the main cc of the graph 
         # to remove the small connected components
-        g = fg.WeightedGraph(nvox)
-        g.from_3d_grid(xyz.astype(np.int),nn)
-        
-        aux = np.zeros(g.V).astype('bool')
-        imc = g.main_cc()
-        aux[imc]= True
-        if np.sum(aux)==0:
-            raise ValueError, "empty mask. Cannot proceed"
-        g = g.subgraph(aux)
-        lmask = np.zeros(ref_dim)
-        lmask[xyz[:,0],xyz[:,1],xyz[:,2]]=aux
-        xyz = xyz[aux,:]
-        nvox = xyz.shape[0]
-    else:
-        lmask = mask
+        pass
+    
+    coord = domain.coord
 
-    # 1.3 from vox to mm
-    xyz2 = np.hstack((xyz,np.ones((nvox,1))))
-    coord = np.dot(xyz2, affine.T)[:,:3]
-
-    # 1.4 read the functional data
-    beta = []
-    for b in range(nbeta):
-        rbeta = load(betas[b])
-        lbeta = rbeta.get_data()
-        lbeta = lbeta[lmask>0]
-        beta.append(lbeta)
-
-    beta = np.array(beta)
+    # 1.3 read the functional data
+    beta = np.array([domain.make_feature_from_image(b) for b in betas])
+    
     if len(beta.shape)>2:
         beta = np.squeeze(beta)
         
-    if beta.shape[0]!=nvox:
+    if beta.shape[0]!=domain.size:
         beta = beta.T
-
-
-    #step 2: parcel the data ---------------------------
+        
     feature = np.hstack((beta, mu*coord/np.std(coord)))
-    if method is not 'kmeans':
-        g = ff.Field(nvox, g.edges, g.weights, feature)
 
+    #step 2: parcellate the data ---------------------------
+
+    if method is not 'kmeans':
+        g = field_from_coo_matrix_and_data(domain.topology, feature)
+        
     if method=='kmeans':
         cent, u, J = kmeans(feature, nbparcel)
 
@@ -485,39 +465,34 @@ def one_subj_parcellation(MaskImage, betas, nbparcel, nn=6, method='ward',
     if method=='ward_and_gkm':
         w,J0 = g.ward(nbparcel)
         seeds, u, J1 = g.geodesic_kmeans(label=w)
+        
+    lpa = SubDomains(domain, u, 'parcellation')
+    #pbeta = np.array(lpa.make_feature('', beta))
+    #pccord = np.array(lpa.make_feature('', coord))
 
-    lpa = Parcellation(nbparcel, xyz, np.reshape(u,(nvox,1)))
     if verbose:
-        pi = np.reshape(lpa.population(), nbparcel)
-        vi = np.sum(lpa.var_feature_intra([beta])[0], 1)
-        vf = np.dot(pi,vi)/nvox
-        va =  np.dot(pi,np.sum(lpa.var_feature_intra([coord])[0],1))/nvox
+        var_beta = np.array( 
+            [np.var(beta[lpa.label==k], 0).sum() for k in range(lpa.k)])
+        var_coord = np.array( 
+            [np.var(coord[lpa.label==k], 0).sum() for k in range(lpa.k)])
+        size = lpa.get_size()
+        vf = np.dot(var_beta, size) / size.sum()
+        va =  np.dot(var_coord, size) / size.sum()
+        
         print nbparcel, "functional variance", vf, "anatomical variance",va
 
-
     # step3:  write the resulting label image
-    Label = -np.ones(ref_dim,'int16')
-    Label[lmask>0] = u
-
-    if fullpath is not None:
-        LabelImage = fullpath
-    elif write_dir is not None:
-        if method=='kmeans':
-            LabelImage = os.path.join(write_dir,"parcel_kmeans.nii")
-        if method=='ward':
-            LabelImage = os.path.join(write_dir,"parcel_wards.nii")
-        elif method=='gkm':
-            LabelImage = os.path.join(write_dir,"parcel_gkmeans.nii")
-        elif method=='ward_and_gkm':
-            LabelImage = os.path.join(write_dir,"parcel_wgkmeans.nii")
-    else:
-        LabelImage = None
     
-    if LabelImage is not None:
-        wim = Nifti1Image(Label, affine)
-        hdr = wim.get_header()
-        hdr['descrip'] = 'Intra-subject parcellation image'
-        save(wim, LabelImage)
-        print "Wrote the parcellation images as %s" %LabelImage
+    if fullpath is not None:
+        label_image = fullpath
+    elif write_dir is not None:
+        label_image = os.path.join(write_dir, "parcel_%s.nii"%method)
+    else:
+        label_image = None
+            
+    if label_image is not None:
+        lpa.to_image(label_image, descrip= 'Intra-subject parcellation image')
+        if verbose:
+            print "Wrote the parcellation images as %s" %label_image
 
-    return lpa, Label
+    return lpa

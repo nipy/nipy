@@ -107,6 +107,18 @@ def test_image_domain():
     ddom = domain_from_image(nim)
     ref = np.sum(toto)*np.absolute(np.linalg.det(affine))
     assert_almost_equal (np.sum(ddom.local_volume), ref)
+
+def test_image_feature():
+    """Test the construction of domain based on image ad relaetd feature
+    """
+    mask = np.random.randn(*shape[:3])>.5
+    noise = np.random.randn(*shape[:3])
+    affine = np.eye(4)
+    mim = Nifti1Image(mask, affine)
+    nim = Nifti1Image(noise, affine)
+    ddom = grid_domain_from_image(mim)
+    ddom.make_feature_from_image(nim, 'noise')
+    assert_almost_equal (ddom.features['noise'], noise[mask])
     
 def test_array_grid_domain():
     """Test the construction of grid domain based on array
@@ -123,7 +135,7 @@ def test_image_grid_domain():
     affine[3:,:3]=0
     nim = Nifti1Image(toto, affine)
     ddom = grid_domain_from_image(nim)
-    ref = np.sum(toto)*np.absolute(np.linalg.det(affine))
+    ref = np.sum(toto)*np.absolute(np.linalg.det(affine[:3, :3]))
     assert_almost_equal (np.sum(ddom.local_volume), ref)
 
 def test_feature():
