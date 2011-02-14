@@ -17,42 +17,108 @@ from nipy.neurospin.graph.forest import Forest
 from nipy.neurospin.spatial_models.mroi import SubDomains
 from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
 
-def HROI_as_discrete_domain_blobs(dom, data, threshold=-np.infty, smin=0,
-                                  id=''):
+def hroi_agglomeration(input_hroi, criterion='size', smin=0):
+    """ Performs an agglomeration then a selction of regions 
+    so that a certain size or volume criterion is staisfied
+    
+    Parameters
+    ----------
+    input_hroi: HierachicalROI instance,
+                the input hROI
+    criterion: string, optional
+               to be chosen among 'size' or 'volume'
+    smin: float, optional
+          the applied criterion
+    
+    Returns
+    -------
+    output_hroi:  HierachicalROI instance
     """
+    if criterion not in ['size', 'volume']:
+        return ValueError, 'unknown criterion'
+    output_hroi = input_hroi.copy()
+    k = 2* output_hroi.get_k()
+    
+    # iteratively agglomertae regions  that are too small
+    while k > output_hroi.get_k():
+        k = output_hroi.get_k()
+        if criterion=='size':
+            value = output_hroi.get_size()
+        if criterion=='volume':
+            value = np.array(
+                [output_hroi.domain.get_volume(output_hroi.label==i) 
+                 for i in range(output_hroi.k)])
+        output_hroi.merge_ascending(value > smin)
+        output_hroi.merge_descending()
+        if output_hroi.k==0:
+            break
+        value = output_hroi.get_size()
+        if value.max()<smin:
+            break 
+
+    # finally remove those regions for which the criterion cannot be matched 
+    output_hroi.select(value > smin)        
+    return output_hroi
+    
+
+def HROI_as_discrete_domain_blobs(domain, data, threshold=-np.infty, smin=0,
+                                  rid='', criterion='size'):
+    """ Instantiate an HierarchicalROI as the blob decomposition
+    of data in a certain domain
+    
+    Parameters  
+    ----------
+    domain: discrete_domain.StructuredDomain instance,
+            definition of the spatial context
+    data: array of shape (domain.size),
+          the corresponding data field
+    threshold: float optional,
+               thresholding level
+    smin: float, optional,
+          a threhsold on region size or cardinality. 
+    rid: string, optional,
+         a region identifier
+
+    Returns
+    -------
+    nroi: HierachicalROI instance
     """
     if threshold > data.max():
         label = -np.ones(data.shape)
         parents = np.array([])
-        return HierarchicalROI(dom, label, parents, id=id)
+        return HierarchicalROI(domain, label, parents, rid=rid)
     
     # check size
-    df = field_from_coo_matrix_and_data(dom.topology, data)
+    df = field_from_coo_matrix_and_data(domain.topology, data)
     idx, height, parents, label = df.threshold_bifurcations(th=threshold)    
-    k = np.size(idx)
+    #k = np.size(idx)
 
-    nroi = HierarchicalROI(dom, label, parents, id=id)
+    nroi = HierarchicalROI(domain, label, parents, rid=rid)
 
     # Create a signal feature
     nroi.make_feature('signal', np.reshape(data, (np.size(data), 1)))
     
+    # agglomerate regions in order to compact the structure if necessary  
+    nroi =  hroi_agglomeration(nroi, criterion=criterion, smin=smin)
+    """
     # perform smin reduction
     k = 2* nroi.get_k()
-    while k>nroi.get_k():
+    while k > nroi.get_k():
         k = nroi.get_k()
         size = nroi.get_size()
-        nroi.merge_ascending(size>smin)
+        nroi.merge_ascending(size > smin)
         nroi.merge_descending()
         if nroi.k==0:
             break
         size = nroi.get_size()
         if size.max()<smin:
-            break #return None
+            break 
         
-        nroi.select(size>smin)        
+    nroi.select(size>smin)        
+    """
     return nroi
 
-def HROI_from_watershed(domain, data, threshold=-np.infty, id=''):
+def HROI_from_watershed(domain, data, threshold=-np.infty, rid=''):
     """
     Instantiate an HierarchicalROI as the watershed of a certain dataset
     
@@ -79,11 +145,11 @@ def HROI_from_watershed(domain, data, threshold=-np.infty, id=''):
     if threshold > data.max():
         label = -np.ones(data.shape)
         parents = np.array([])
-        return HierarchicalROI(domain, label, parents, id=id)
+        return HierarchicalROI(domain, label, parents, rid=rid)
 
     df = field_from_coo_matrix_and_data(domain.topology, data)
     idx, height, parents, label = df.custom_watershed(0, threshold)
-    nroi = HierarchicalROI(domain, label, parents, id=id)
+    nroi = HierarchicalROI(domain, label, parents, rid=rid)
 
     # this is  a custom thing, sorry
     nroi.set_roi_feature('seed', idx)
@@ -97,19 +163,19 @@ def HROI_from_watershed(domain, data, threshold=-np.infty, id=''):
 
 class HierarchicalROI(SubDomains):
 
-    def __init__(self, domain, label, parents, id='' ):
+    def __init__(self, domain, label, parents, rid='' ):
         """
         Building the HierarchicalROI
         """
         self.parents = np.ravel(parents).astype(np.int)
-        SubDomains.__init__(self, domain, label, id)
+        SubDomains.__init__(self, domain, label, rid)
 
-    def select(self, valid, id='', no_empty_label=True):
+    def select(self, valid, rid='', no_empty_label=True):
         """
         Remove the rois for which valid==0 and update the hierarchy accordingly
         Note that auto=True automatically
         """
-        SubDomains.select(self, valid, id, True, no_empty_label )
+        SubDomains.select(self, valid, rid, True, no_empty_label )
         if np.sum(valid)==0:
             self.parents = np.array([])
         else:
@@ -222,7 +288,7 @@ class HierarchicalROI(SubDomains):
             return np.array([])
         return Forest(self.k, self.parents).isleaf()
         
-    def reduce_to_leaves(self, id=''):
+    def reduce_to_leaves(self, rid=''):
         """
         create a  new set of rois which are only the leaves of self
         """
@@ -231,10 +297,10 @@ class HierarchicalROI(SubDomains):
         label[isleaf[self.label]==0] = -1
         k = np.sum(isleaf.astype(np.int))
         if self.k==0:
-            return HierarchicalROI(self.domain, label, np.array([]), id)
+            return HierarchicalROI(self.domain, label, np.array([]), rid)
         
         parents = np.arange(k)
-        nroi = HierarchicalROI(self.domain, label, parents, id)
+        nroi = HierarchicalROI(self.domain, label, parents, rid)
             
         # now copy the features
         fids = self.features.keys()
@@ -243,11 +309,11 @@ class HierarchicalROI(SubDomains):
             nroi.set_feature(fid, df)
         return nroi
 
-    def copy(self, id=''):
+    def copy(self, rid=''):
         """
         returns a copy of self. self.domain is not copied.
         """
-        cp = make_hroi_from_subdomain(SubDomains.copy(self, id),
+        cp = make_hroi_from_subdomain(SubDomains.copy(self, rid),
                                       self.parents.copy())
         return cp
 

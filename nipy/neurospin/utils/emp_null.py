@@ -261,6 +261,11 @@ class ENN(object):
         efp = (self.p0 * st.norm.sf(self.x, self.mu, self.sigma)
                * self.n / np.arange(self.n, 0, - 1))
         efp = np.minimum(efp, 1)
+        ix = np.argsort(self.x)
+        for i in range(np.size(efp) - 1, 0, - 1):
+            efp[ix[i - 1]] = np.maximum(efp[ix[i]], efp[ix[i - 1]])
+        self.sorted_x = self.x[ix]
+        self.sorted_fdr = efp[ix]
         return efp
 
     def threshold(self, alpha=0.05, verbose=0):
@@ -317,12 +322,36 @@ class ENN(object):
 
     def fdr(self, theta):
         """Given a threshold theta, find the estimated fdr
+
+        Parameter
+        ---------
+        theta: float or array of shape (n_samples)
+               values to test
+
+        Returns
+        -------
+        afp: value of array of shape(n)
         """
-        import scipy.stats as st
-        if self.learned == 0:
-            self.learn()
-        efp = self.p0 * st.norm.sf(theta, self.mu, self.sigma)\
-              * float(self.n) / np.sum(self.x > theta)
+        from scipy.stats import norm
+        self.fdrcurve()
+        if np.isscalar(theta):
+            if theta > self.sorted_x[ - 1]:
+                return 0
+            maj = np.where(self.sorted_x >= theta)[0][0]
+            efp = (self.p0 * norm.sf(theta, self.mu, self.sigma) * self.n\
+                  / np.sum(self.x >= theta))
+            efp = np.maximum(self.sorted_fdr[maj], efp)
+        else:
+            efp = []
+            for th in theta:
+                if th > self.sorted_x[ - 1]:
+                    efp.append(0)
+                    continue
+                maj = self.sorted_fdr[np.where(self.sorted_x >= th)[0][0]]
+                efp.append(np.maximum(maj, self.p0 * st.norm.sf(th, self.mu,
+                           self.sigma) * self.n / np.sum(self.x >= th)))
+            efp = np.array(efp)
+            #
         efp = np.minimum(efp, 1)
         return efp
 

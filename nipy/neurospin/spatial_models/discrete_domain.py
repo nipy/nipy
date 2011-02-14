@@ -279,13 +279,129 @@ def grid_domain_from_image(mim, nn=18):
     return  grid_domain_from_array(iim.get_data(), iim.get_affine(), nn)
 
 
-def domain_from_mesh(mesh):
+################################################################
+# Domain from mesh
+################################################################
+
+
+class MeshDomain(object):
+    """
+    temporary class to handle meshes
+    """
+
+    def __init__(self, coord, triangles):
+        """
+        Parameters
+        ----------
+        coord: array of shape (n_vertices, 3),
+               the node coordinates
+        triangles: array of shape(n_triables, 3),
+                   indices of the nodes per triangle
+
+        fixme
+        -----
+        Consistency checks to implement
+        """
+        self.coord = coord
+        self.triangles = triangles
+        self.V = len(coord)
+    
+    def area(self):
+        """
+        Returns
+        -------
+        area: array of shape self.V,
+              area of each node 
+        """
+        E = len(self.triangles)
+        narea = np.zeros(self.V)
+
+        def _area (a,b):
+            """
+            area spanned by the vectors(a,b) in 3D
+            """
+            c = np.array([a[1]*b[2]-a[2]*b[1], -a[0]*b[2]+a[2]*b[0],
+                          a[0]*b[1]-a[1]*b[0]])
+            return np.sqrt((c**2).sum())
+        
+        for e in range(E):
+            i, j, k = self.triangles[e]
+            a = self.coord[i]-self.coord[k]
+            b = self.coord[j]-self.coord[k]
+            ar = _area(a, b)
+            narea[i] += ar
+            narea[j] += ar
+            narea[k] += ar
+        
+        narea/=6
+        # because division by 2 has been 'forgotten' in area computation
+        # the area of a triangle is divided into the 3 vertices
+        return narea
+
+    def topology(self):
+        """
+        returns a sparse matrix that represents the connectivity in self 
+        """
+        
+	E = len(self.triangles)
+	edges = np.zeros((3*E,2))
+	weights = np.zeros(3*E)
+	
+	for i in range(E):
+            sa, sb, sc = self.triangles[i]
+            edges[3*i] = np.array([sa, sb])
+            edges[3*i+1] = np.array([sa, sc])
+            edges[3*i+2] = np.array([sb, sc])	
+			
+        G = fg.WeightedGraph(self.V, edges, weights)
+
+	# symmeterize the graph
+	G.symmeterize()
+
+	# remove redundant edges
+	G.cut_redundancies()
+
+	# make it a metric graph
+	G.set_euclidian(self.coord)
+        return G.to_coo_matrix()
+
+
+def domain_from_mesh(mesh, nibabel=True):
     """
     Instantiate a StructuredDomain from a gifti mesh
+
+    Parameters
+    ----------
+    mesh: nibabel gifti mesh instance, or path to such a mesh
     """
-    pass
+    if nibabel:
+        if isinstance(mesh, basestring):
+            from nibabel.gifti.gifti import loadImage
+            mesh_ = loadImage(mesh)
+        else:
+            mesh_ = mesh
+            
+        if len(mesh_.darrays) == 2:
+            cor, tri = mesh_.darrays
+        elif len(mesh_.darrays) == 3:
+            cor, nor, tri = mesh_.darrays
+        else:
+            raise Exception("%d arrays in gifti file (case not handled)" \
+                            %len(mesh_.darrays))
+        mesh_dom = MeshDomain(cor.data, tri.data)
+    else:
+        from gifti import loadImage
+        mesh_  = loadImage(mesh)
+        cor = mesh_.arrays[0].data
+        tri = mesh_.arrays[1].data
+        mesh_dom = MeshDomain(cor, tri)
+    
+    vol = mesh_dom.area()
+    topology = mesh_dom.topology()
+    dim = 2
+    return StructuredDomain(dim, mesh_dom.coord, vol, topology)
 
-
+    
 ################################################################
 # StructuredDomain class
 ################################################################

@@ -10,7 +10,7 @@ Author : Bertrand Thirion, 2008-2009
 
 import numpy as np
 from numpy.random import randn
-from nipy.neurospin.clustering.hierarchical_clustering import *
+import nipy.neurospin.clustering.hierarchical_clustering as hc
 import nipy.neurospin.graph as fg
 import nipy.neurospin.graph.field as ff
 
@@ -18,7 +18,7 @@ def alc_test_basic():
     np.random.seed(0)
     x = np.random.randn(10, 2)
     x[:7,0] += 3
-    t = average_link_euclidian(x, 1)
+    t = hc.average_link_euclidian(x, 1)
     u = t.split(2)
     v = np.zeros(10)
     v[:7]=1
@@ -29,7 +29,7 @@ def mlc_test_basic():
     np.random.seed(0)
     x = np.random.randn(10, 2)
     x[:7,0] += 3
-    t = maximum_link_euclidian(x, 1)
+    t = hc.maximum_link_euclidian(x, 1)
     u = t.split(2)
     v = np.zeros(10)
     v[:7]=1
@@ -43,7 +43,7 @@ def ward_nograph_test_basic1(n=100, k=5):
     np.random.seed(0)
     x = np.random.randn(n, 2)
     x[:int(0.7*n)] += 3
-    t = ward_simple(x)
+    t = hc.ward_simple(x)
     u = t.split(2)
     v = np.zeros(n)
     v[:int(0.7*n)]=1
@@ -56,7 +56,7 @@ def alcd_test_basic():
     x[:7,0] += 3
     dist = np.array([[np.sqrt(np.sum((x[i]-x[j])**2))
                       for i in range(10)] for j in range(10)])
-    u,cost = average_link_distance_segment(dist, qmax=2)
+    u,cost = hc.average_link_distance_segment(dist, qmax=2)
     v = np.zeros(10)
     v[:7]=1
     w = np.absolute(u-v)
@@ -68,7 +68,7 @@ def mlcd_test_basic():
     x[:7,0] += 3
     dist = np.array([[np.sqrt(np.sum((x[i]-x[j])**2))
                       for i in range(10)] for j in range(10)])
-    u,cost = maximum_link_distance_segment(dist, qmax=2)
+    u,cost = hc.maximum_link_distance_segment(dist, qmax=2)
     v = np.zeros(10)
     v[:7]=1
     w = np.absolute(u-v)
@@ -83,7 +83,7 @@ def alg_test_basic(n=100,k=5):
     x[:int(0.7*n)] += 3
     G = fg.WeightedGraph(n)
     G.knn(x, k)
-    t = average_link_graph(G)
+    t = hc.average_link_graph(G)
     u = t.split(2)
     v = np.zeros(n)
     v[:int(0.7*n)]=1
@@ -103,7 +103,7 @@ def alg_test_2():
     x[int(0.8*n):] -= 10
     G = fg.WeightedGraph(n)
     G.knn(x, k)
-    t = average_link_graph(G)
+    t = hc.average_link_graph(G)
     u = t.split(2)
     assert(u.max()==2)
 
@@ -116,7 +116,7 @@ def alg_test_3(n=100,k=5):
     x[:int(0.7*n)] += 3
     G = fg.WeightedGraph(n)
     G.knn(x, k)
-    u, cost = average_link_graph_segment(G, qmax=2)
+    u, cost = hc.average_link_graph_segment(G, qmax=2)
     v = np.zeros(n)
     v[:int(0.7*n)]=1
     w = np.absolute(u-v)
@@ -130,7 +130,7 @@ def ward_test_basic(n=100,k=5):
     x[:int(0.7*n)] += 3
     G = fg.WeightedGraph(n)
     G.knn(x, k)
-    t = ward(G,x)
+    t = hc.ward(G,x)
     u = t.split(2)
     v = np.zeros(n)
     v[:int(0.7*n)]=1
@@ -145,7 +145,7 @@ def wardq_test_basic(n=100,k=5):
     x[:int(0.7*n)] += 3
     G = fg.WeightedGraph(n)
     G.knn(x, k)
-    t = ward_quick(G, x)
+    t = hc.ward_quick(G, x)
     u = t.split(2)
     v = np.zeros(n)
     v[:int(0.7*n)]=1
@@ -165,7 +165,7 @@ def wardq_test_2():
     x[int(0.8*n):] -= 10
     G = fg.WeightedGraph(n)
     G.knn(x, k)
-    t = ward_quick(G, x)
+    t = hc.ward_quick(G, x)
     u = t.split(2)
     assert(u.max()==2)
 
@@ -179,7 +179,7 @@ def wardf_test(n=100,k=5):
     F = ff.Field(n)
     F.knn(x, 5)
     F.set_field(x)
-    u,cost = ward_field_segment(F,qmax=2)
+    u,cost = hc.ward_field_segment(F,qmax=2)
     v = np.zeros(n)
     v[:int(0.7*n)]=1
     w = np.absolute(u-v)
@@ -193,7 +193,7 @@ def wards_test_basic(n=100,k=5):
     x[:int(0.7*n)] += 3
     G = fg.WeightedGraph(n)
     G.knn(x, k)
-    u,cost =  ward_segment(G, x, qmax=2)
+    u,cost =  hc.ward_segment(G, x, qmax=2)
     v = np.zeros(n)
     v[:int(0.7*n)]=1
     w = np.absolute(u-v)
@@ -210,7 +210,7 @@ def wards_test_3():
     x[int(0.8*n):] -= 10
     G = fg.WeightedGraph(n)
     G.knn(x,k)
-    u,cost = ward_segment(G, x, qmax=2)
+    u,cost = hc.ward_segment(G, x, qmax=2)
     assert(u.max()==2)
 
 def cost_test(n=100, k=5):
@@ -221,7 +221,7 @@ def cost_test(n=100, k=5):
     x = np.random.randn(n, 2)
     G = fg.WeightedGraph(n)
     G.knn(x, k)
-    u, cost =  ward_segment(G, x)
+    u, cost =  hc.ward_segment(G, x)
     print cost.max()/n, np.var(x, 0).sum()
     assert np.abs(cost.max()/(n*np.var(x,0).sum()) - 1)<1.e-6
 
@@ -234,10 +234,10 @@ def ward_test_more(n=100, k=5, verbose=0):
     X[:np.ceil(n/3)] += 5
     G = fg.WeightedGraph(n)
     G.knn(X, 5)
-    u,c = ward_segment(G, X, stop=-1, qmax=1, verbose=verbose)
-    u1,c = ward_segment(G, X, stop=-1, qmax=k, verbose=verbose)
-    u,c = ward_quick_segment(G, X, stop=-1, qmax=1, verbose=verbose)
-    u2,c = ward_quick_segment(G, X, stop=-1, qmax=k, verbose=verbose)
+    u,c = hc.ward_segment(G, X, stop=-1, qmax=1, verbose=verbose)
+    u1,c = hc.ward_segment(G, X, stop=-1, qmax=k, verbose=verbose)
+    u,c = hc.ward_quick_segment(G, X, stop=-1, qmax=1, verbose=verbose)
+    u2,c = hc.ward_quick_segment(G, X, stop=-1, qmax=k, verbose=verbose)
     assert(np.sum(u1==u2)==n)
 
 

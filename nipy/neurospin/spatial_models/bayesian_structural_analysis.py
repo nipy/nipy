@@ -59,30 +59,30 @@ def _hierarchical_asso(bfl,dmax):
     geb = []
     ged = []
     for s in range(nbsubj):
-        if bfl[s].k>0: # us not None:
-            for t in range(s):
-                if bfl[t].k >0: #is not None :
-                    cs =  bfl[s].get_roi_feature('position')
-                    ct = bfl[t].get_roi_feature('position')
-                    Gs = bfl[s].make_forest()
-                    Gs.anti_symmeterize()
+        if bfl[s].k<1:
+            continue
+        for t in range(s):
+            if bfl[t].k <1:
+                continue 
+            cs =  bfl[s].get_roi_feature('position')
+            ct = bfl[t].get_roi_feature('position')
+            Gs = bfl[s].make_forest()
+            Gs.anti_symmeterize()
             
-                    Gt = bfl[t].make_forest()
-                    Gt.anti_symmeterize()
+            Gt = bfl[t].make_forest()
+            Gt.anti_symmeterize()
 
-                    ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(
-                        cs, ct, Gs, Gt, dmax)
-                    if np.size(ea)>0:
-                        gea = np.hstack((gea, ea+cnlm[s]))
-                        geb = np.hstack((geb, eb+cnlm[t]))
-                        ged = np.hstack((ged, ed))
+            ea,eb,ed = BPmatch.BPmatch_slow_asym_dev( cs, ct, Gs, Gt, dmax)
+            if np.size(ea)>0:
+                gea = np.hstack((gea, ea+cnlm[s]))
+                geb = np.hstack((geb, eb+cnlm[t]))
+                ged = np.hstack((ged, ed))
 
-                    ea,eb,ed = BPmatch.BPmatch_slow_asym_dev(
-                        ct, cs, Gt, Gs, dmax)
-                    if np.size(ea)>0:
-                        gea = np.hstack((gea, ea+cnlm[t]))
-                        geb = np.hstack((geb, eb+cnlm[s]))
-                        ged = np.hstack((ged, ed))
+            ea,eb,ed = BPmatch.BPmatch_slow_asym_dev( ct, cs, Gt, Gs, dmax)
+            if np.size(ea)>0:
+                gea = np.hstack((gea, ea+cnlm[t]))
+                geb = np.hstack((geb, eb+cnlm[s]))
+                ged = np.hstack((ged, ed))
 
     if np.size(gea)>0:
         edges = np.transpose([gea, geb]).astype(np.int)
@@ -116,13 +116,13 @@ def _relabel_(label, nl=None):
 
 def signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
     """
-    Convert a set of z-values to posterior probabilities of being active
+    Convert a set of z-values to posterior probabilities of not being active
 
     Parameters
     ----------
-    test: array pf shape(n_samples, 1),
+    test: array pf shape(n_samples),
            data that is assessed
-    learn: array pf shape(n_samples, 1), optional
+    learn: array pf shape(n_samples), optional
            data to learn a mixture model
     method: string, optional, to be chosen within
             ['gauss_mixture', 'emp_null', 'gam_gauss', 'prior']
@@ -139,7 +139,7 @@ def signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
     elif method== 'emp_null':
         enn = en.ENN(learn)
         enn.learn()
-        bf0 = np.reshape(enn.fdr(test),np.size(bf0))
+        bf0 = np.reshape(enn.fdr(test),np.size(test))
     elif method=='gam_gauss':
         bfp  = en.Gamma_Gaussian_fit(learn, test, verbose)
         bf0 = bfp[:,1]
@@ -153,7 +153,8 @@ def signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
     
 
 def compute_individual_regions (domain, lbeta, smin=5, theta=3.0,
-                               method='gauss_mixture', verbose=0, reshuffle=0):
+                                method='gauss_mixture', verbose=0, reshuffle=0, 
+                                criterion='size', assign_val='weighted_mean'):
     """
     Compute the  Bayesian Structural Activation paterns -
     with statistical validation
@@ -171,9 +172,15 @@ def compute_individual_regions (domain, lbeta, smin=5, theta=3.0,
     method: string, optional,
            method that is used to provide priori significance
            can be 'prior', 'gauss_mixture', 'gam_gauss' or 'emp_null'
-    verbose=0: verbosity mode
-    reshuffle=0: if nonzero, reshuffle the positions; this affects bf and gfc
-    
+    verbose: verbosity mode, optional
+    reshuffle:bool, otpional, 
+              if nonzero, reshuffle the positions; this affects bf and gfc
+    criterion: string, optional,
+               'size' or 'volume', thresholdding criterion
+    assign_val: string, optional,
+                to  be chosen in 'weighted mean', 'mean', 'min', 'max'
+                heuristic to assigna  blob-level signal
+
     Returns
     -------
     bf list of nipy.neurospin.spatial_models.hroi.Nroi instances
@@ -181,11 +188,15 @@ def compute_individual_regions (domain, lbeta, smin=5, theta=3.0,
        let nr be the number of terminal regions across subjects
     gf0, array of shape (nr)
          the mixture-based prior probability 
-         that the terminal regions are true positives
+         that the terminal regions are false positives
     sub, array of shape (nr)
          the subject index associated with the terminal regions
     gfc, array of shape (nr, coord.shape[1])
          the coordinates of the of the terminal regions
+
+    Fixme
+    -----
+    Should allow for subject specific domains
     """
     from hroi import HROI_as_discrete_domain_blobs
     bf = []
@@ -199,10 +210,11 @@ def compute_individual_regions (domain, lbeta, smin=5, theta=3.0,
         # description in terms of blobs
         beta = np.reshape(lbeta[:,s], (nvox,1))
         nroi = HROI_as_discrete_domain_blobs(domain, beta, threshold=theta,
-                                             smin=smin, id='nest_blob_s %s'%s)
+                                             smin=smin, rid='nest_blob_s %s'%s)
         
-        if nroi.k>0:
-            bfm = nroi.representative_feature('signal', 'weighted mean')
+        if nroi is not None and nroi.k > 0:
+            #bfm = nroi.representative_feature('signal', 'weighted mean')
+            bfm = nroi.representative_feature('signal', 'max')
             bfm = bfm[nroi.isleaf()]
             
             # get the regions position
@@ -386,7 +398,6 @@ def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
 
     # make a group-level map of the landmark position        
     crmap = _relabel_(label, nl)   
-    
     return crmap, LR, bf, p
 
 
@@ -403,7 +414,7 @@ def bsa_dpmm2(bf, gf0, sub, gfc, dmax, thq, ths, verbose):
        let nr be the number of terminal regions across subjects
     gf0, array of shape (nr)
          the mixture-based prior probability 
-         that the terminal regions are true positives
+         that the terminal regions are false positives
     sub, array of shape (nr)
          the subject index associated with the terminal regions
     gfc, array of shape (nr, coord.shape[1])

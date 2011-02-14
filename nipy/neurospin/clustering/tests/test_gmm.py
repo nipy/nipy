@@ -121,10 +121,8 @@ def test_em_loglike6():
     lgmm.estimate(x)
     ll1 =  lgmm.average_log_like(x)
     ll2 = lgmm.average_log_like(y)
-    ent = 0.5*(1+np.log(2*np.pi))
     dkl = 0.5*offset**2
-    print ll2, ll1,dkl
-    assert ll2<ll1
+    assert ll2 < ll1
 
 def test_em_selection():
     """
@@ -163,7 +161,6 @@ def test_em_gmm_full(verbose=0):
         bic[k-1] = lgmm.estimate(x,maxiter,delta,verbose)
         if verbose: print "bic of the %d-classes model"%k, bic
 
-    z = lgmm.map_label(x)
     assert(bic[4]<bic[1])
 
 
@@ -312,7 +309,6 @@ def test_em_gmm_cv(verbose=0):
     for  k in [1,3,10]:
         lgmm = GMM(k,dim,prec_type)
         lgmm.initialize(xtrain)
-        bic = lgmm.estimate(xtrain,maxiter,delta)
         ll.append(lgmm.test(xtest).mean())
             
     assert(ll[4]<ll[1])
