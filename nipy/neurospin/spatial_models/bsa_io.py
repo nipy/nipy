@@ -42,7 +42,7 @@ def make_bsa_image(
     swd: string, optional
         if not None, output directory
     method='simple': applied region detection method; to be chose among
-                     'simple', 'ipmi'
+                     'simple', 'quick', 'loo'
     subj_id=None: list of strings, identifiers of the subjects.
                   by default it is range(nsubj)
     nbeta='default', string, identifier of the contrast
@@ -110,9 +110,6 @@ def make_bsa_image(
     AF = None
     BF = [None for s in range(nsubj)]
 
-    if method=='ipmi':
-        crmap,AF,BF,p = bsa.compute_BSA_ipmi(dom, lbeta, dmax, thq, smin,
-                                             ths, theta, verbose=verbose)
     if method=='simple':
         crmap,AF,BF,p = bsa.compute_BSA_simple(
             dom, lbeta, dmax, thq, smin, ths, theta, verbose=verbose)

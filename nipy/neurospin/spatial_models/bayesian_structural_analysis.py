@@ -3,11 +3,18 @@
 """
 The main routine of this package that aims at performing the
 extraction of ROIs from multisubject dataset using the localization
-and activation strength of extracted regions.  This has been puclished
-in Thirion et al. High level group analysis of FMRI data based on
+and activation strength of extracted regions.  
+
+This has been published in 
+
+Thirion et al. High level group analysis of FMRI data based on
 Dirichlet process mixture models, IPMI 2007
 
-Author : Bertrand Thirion, 2006-2009
+Thirion et al. 
+Accurate Deﬁnition of Brain Regions Position Through the 
+Functional Landmark Approach, MICCAI 2010
+
+Author : Bertrand Thirion, 2006-2011
 """
 
 import numpy as np
@@ -15,81 +22,13 @@ import scipy.stats as st
 
 import structural_bfls as sbf
 import nipy.neurospin.graph.graph as fg
-
-from nipy.neurospin.graph import BPmatch
-from nipy.neurospin.clustering.hierarchical_clustering import\
-     average_link_graph_segment
 import nipy.neurospin.utils.emp_null as en
+from hroi import HROI_as_discrete_domain_blobs
 
 ####################################################################
 # Ancillary functions
 ####################################################################
 
-
-def _hierarchical_asso(bfl,dmax):
-    """
-    Compting an association graph of the ROIs defined
-    across different subjects
-
-    Parameters
-    ----------
-    bfl a list of ROI hierarchies, one for each subject
-    dmax : spatial scale used when building associtations
-
-    Results
-    -------
-    G a graph that represent probabilistic associations between all
-      cross-subject pairs of regions.
-    
-    Note that the probabilities are normalized
-    on a within-subject basis.
-    """
-    nbsubj = np.size(bfl)
-    nlm = np.zeros(nbsubj)
-    for i in range(nbsubj):
-        if bfl[i]!=None:
-            nlm[i] = bfl[i].k
-
-    cnlm = np.hstack(([0],np.cumsum(nlm)))
-    if cnlm.max()==0:
-        gcorr = []
-        return gcorr
-
-    gea = []
-    geb = []
-    ged = []
-    for s in range(nbsubj):
-        if bfl[s].k<1:
-            continue
-        for t in range(s):
-            if bfl[t].k <1:
-                continue 
-            cs =  bfl[s].get_roi_feature('position')
-            ct = bfl[t].get_roi_feature('position')
-            Gs = bfl[s].make_forest()
-            Gs.anti_symmeterize()
-            
-            Gt = bfl[t].make_forest()
-            Gt.anti_symmeterize()
-
-            ea,eb,ed = BPmatch.BPmatch_slow_asym_dev( cs, ct, Gs, Gt, dmax)
-            if np.size(ea)>0:
-                gea = np.hstack((gea, ea+cnlm[s]))
-                geb = np.hstack((geb, eb+cnlm[t]))
-                ged = np.hstack((ged, ed))
-
-            ea,eb,ed = BPmatch.BPmatch_slow_asym_dev( ct, cs, Gt, Gs, dmax)
-            if np.size(ea)>0:
-                gea = np.hstack((gea, ea+cnlm[t]))
-                geb = np.hstack((geb, eb+cnlm[s]))
-                ged = np.hstack((ged, ed))
-
-    if np.size(gea)>0:
-        edges = np.transpose([gea, geb]).astype(np.int)
-        gcorr = fg.WeightedGraph(cnlm[nbsubj],edges,ged)
-    else:
-        gcorr = []
-    return gcorr
 
 def _relabel_(label, nl=None):
     """
@@ -198,7 +137,6 @@ def compute_individual_regions (domain, lbeta, smin=5, theta=3.0,
     -----
     Should allow for subject specific domains
     """
-    from hroi import HROI_as_discrete_domain_blobs
     bf = []
     gfc = []
     gf0 = []
@@ -504,122 +442,9 @@ def bsa_dpmm2(bf, gf0, sub, gfc, dmax, thq, ths, verbose):
  
     return crmap, LR, bf, CoClust
 
-
 ###########################################################################
 # Main functions
 ###########################################################################
-
-def compute_BSA_ipmi(domain, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
-                     bdensity=0, model="gam_gauss", verbose=0):
-    """
-    Compute the  Bayesian Structural Activation patterns
-    with approach described in IPMI'07 paper
-
-    Parameters
-    ----------
-    domsin: StructuredDomain instance,
-            Description of the spatial context of the data
-    lbeta: an array of shape (nbnodes, subjects):
-           the multi-subject statistical maps
-    thq = 0.5 (float): posterior significance threshold should be in [0,1]
-    smin = 5 (int): minimal size of the regions to validate them
-    theta = 3.0 (float): first level threshold
-    bdensity=0 if bdensity=1, the variable p in ouput
-               contains the likelihood of the data under H1 
-               on the set of input nodes
-    model: string,
-           model used to infer the prior p-values
-           can be 'gamma_gauss' or 'gauss_mixture'
-    verbose=0 : verbosity mode
-    
-    Returns
-    -------
-    crmap: array of shape (nnodes):
-           the resulting group-level labelling of the space
-    LR: instance of sbf.LandmarkRegions,
-        that describes the ROIs found in inter-subject inference
-    bf: list of  nipy.neurospin.spatial_models.hroi.Nroi instances
-        representing individual ROIs
-    p: array of shape (nnodes):
-       likelihood of the data under H1 over some sampling grid
-    
-    Note
-    ----
-    This is historically the first version,
-    but probably not the  most optimal
-    It should not be changed for historical reason
-    """
-    nbsubj = lbeta.shape[1]
-    nvox = domain.size
-
-    bf, gf0, sub, gfc = compute_individual_regions(
-        domain, lbeta, smin, theta, 'gam_gauss', verbose)
-    
-    crmap = -np.ones(nvox, np.int)
-    u = []
-    AF = sbf.LandmarkRegions(bf[0].domain, 0, [], [])
-    p = np.zeros(nvox)
-    if len(sub)<1:
-        return crmap, AF, bf, u, p
-
-    # inter-subject analysis
-    # use the DPMM (core part)
-    dim = domain.em_dim
-    sub = np.concatenate(sub).astype(np.int) 
-    gfc = np.concatenate(gfc)
-    gf0 = np.concatenate(gf0)
-    p = np.zeros(np.size(nvox))
-    g0 = 1./(np.sum(domain.local_volume))
-    g1 = g0
-    dof = 1000
-    prior_precision =  1./(dmax*dmax)*np.ones((1,dim))
-
-    if bdensity:
-        spatial_coords = domain.coord
-    else:
-        spatial_coords = gfc
-
-    p,q =  dpmm(gfc, 0.5, g0, g1, dof, prior_precision,
-                  1-gf0, sub, 100, spatial_coords, nis=300)
-
-    # inference
-    valid = q>thq
-
-    # remove non-significant regions
-    for s in range(nbsubj):
-        bfs = bf[s]
-        if bfs.k>0: # is not None
-            valids = -np.ones(bfs.k).astype('bool')
-            valids[bfs.isleaf()] = valid[sub==s]
-            valids = bfs.make_forest().propagate_upward_and(valids)
-            bfs.select(valids)
-            
-        if bfs.k>0: # is not None
-            bfs.merge_descending()
-            bfs.make_feature('position', domain.coord)
-            pos = bfs.representative_feature('position', 'cumulated_mean')
-            bfs.set_roi_feature('position', pos)
-
-    # compute probabilitsic correspondences across subjects
-    gc = _hierarchical_asso(bf, np.sqrt(2)*dmax)
-
-    if gc == []:
-        return crmap,AF,bf,p
-
-    # make hard clusters through clustering
-    u, cost = average_link_graph_segment(gc, 0.2, gc.V*1.0/nbsubj)
-
-    q = 0
-    for s in range(nbsubj):
-        if bf[s].k>0: # is not None
-            bf[s].set_roi_feature('label', u[q:q+bf[s].k])
-            q += bf[s].k
-    
-    LR, mlabel = sbf.build_LR(bf, ths=ths)
-    if LR is not None:
-        crmap = LR.map_label(domain.coord, pval=0.95, dmax=dmax)
-    
-    return crmap, LR, bf, p
 
 
 def compute_BSA_simple(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
