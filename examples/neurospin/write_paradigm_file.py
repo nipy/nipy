@@ -29,22 +29,25 @@ time = np.array([
 # Because it's cutpasted from Matlab(tm), i substract 1 at the end ;-)
 
 #onset types
-type = np.array([
+trial_type = np.array([
         8, 8, 11, 1, 3, 10, 5, 10, 4, 6, 10, 2, 7, 9, 9, 7, 7, 11, 11, 9, 1, 4,
         11, 5, 6, 9, 11, 11, 7, 3, 10, 11, 2, 11, 11, 11, 7, 11, 11, 6, 10, 2, 
         8, 11, 9, 7, 7, 2, 3, 10, 1, 8, 2, 9, 3, 8, 9, 4, 7, 1, 11, 11, 11, 1, 
         7, 9, 8, 8, 2, 2, 2, 6, 6, 1, 8, 1, 5, 3, 8, 10, 11, 11, 9, 1, 7, 4, 4,
         8, 2, 1, 1, 11, 5, 2, 11, 10, 9, 5, 10, 10]) - 1
 
-time = time[type < 10]
-type = type[type < 10]
-sess = np.zeros(np.size(time))
-pdata = np.vstack((sess, type, time)).T
+condition_ids = [ 'damier_H', 'damier_V', 'clicDaudio', 'clicGaudio', 
+'clicDvideo', 'clicGvideo', 'calculaudio', 'calculvideo', 'phrasevideo', 
+'phraseaudio' ]
+
+time = time[trial_type < 10]
+cid = np.array([condition_ids[i] for i in trial_type[trial_type < 10]])
+sess = np.zeros(np.size(time)).astype('int8')
+pdata = np.vstack((sess, cid, time)).T
 csvfile = tempfile.mkdtemp() + '/localizer_paradigm.csv'
 fid = open(csvfile, "wb" )
 writer = csv.writer(fid, delimiter=' ')
 for row in pdata:
-    print row
     writer.writerow(row)
 
 fid.close()

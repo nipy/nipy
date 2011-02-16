@@ -5,16 +5,10 @@ import numpy as np
 import nipy.neurospin.spatial_models.hierarchical_parcellation as hp
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.spatial_models.parcellation as fp
-import nipy.neurospin.graph.graph as fg
-import nipy.neurospin.graph.field as ff
-import nipy.neurospin.clustering.clustering as fc
-
-#####################################################################
-# New part
-#####################################################################
-
 import nipy.neurospin.spatial_models.discrete_domain as dom
 from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
+
+
 
 def test_parcel_interface():
     """ Simply test parcellation interface

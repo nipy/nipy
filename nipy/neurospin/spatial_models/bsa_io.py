@@ -74,8 +74,8 @@ def make_bsa_image(
     """
     # Sanity check
     if len(mask_images) != len(betas):
-        raise ValueError("the number of masks and activation images
-        should be the same")
+        raise ValueError("the number of masks and activation images" \
+                             "should be the same")
     nsubj = len(mask_images)
     if subj_id == None:
         subj_id = [str(i) for i in range(nsubj)]

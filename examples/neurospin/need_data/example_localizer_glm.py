@@ -160,7 +160,7 @@ for index, contrast_id in enumerate(contrasts):
 #########################################
 
 print "All the  results were witten in %s" %swd
-"""
+
 plot_map(write_array, affine, 
                 cmap=cm.cold_hot,
                 vmin=-vmax,
@@ -168,7 +168,7 @@ plot_map(write_array, affine,
                 anat=None,
                 figure=10,
                 threshold=3)
-"""
+
 """
 plot_map(write_array, affine, 
                 cmap=cm.cold_hot,
@@ -177,7 +177,7 @@ plot_map(write_array, affine,
                 anat=None,
                 figure=10,
                 threshold=3, do3d=True)
-"""
+
 from nipy.neurospin import viz3d
 viz3d.plot_map_3d(write_array, affine, 
                 cmap=cm.cold_hot,
@@ -185,6 +185,6 @@ viz3d.plot_map_3d(write_array, affine,
                 vmax=vmax,
                 anat=None,
                 threshold=3)
-
+"""
 pylab.show()
 
