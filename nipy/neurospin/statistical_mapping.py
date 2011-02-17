@@ -14,7 +14,7 @@ from nipy.neurospin.group.permutation_test import \
 #so that name starts with upper case
 
 # Use the brifti image object
-from nipy.io.imageformats import Nifti1Image as Image 
+from nibabel import Nifti1Image as Image 
 
 
 ################################################################################

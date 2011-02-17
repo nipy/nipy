@@ -8,14 +8,14 @@ import tempfile
 import nose
 
 from .. import as_volume_img, save
-from nipy.io import imageformats
+import nibabel as nib
 
-data_file = os.path.join(imageformats.__path__[0], 'tests',
+data_file = os.path.join(nib.__path__[0], 'tests',
                                             'data', 'example4d.nii.gz')
 
 def test_conversion():
 
-    brifti_obj = imageformats.load(data_file)
+    brifti_obj = nib.load(data_file)
     vol_img = as_volume_img(data_file)
     yield nose.tools.assert_equals, as_volume_img(vol_img), \
                     vol_img

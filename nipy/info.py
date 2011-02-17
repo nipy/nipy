@@ -83,17 +83,34 @@ STATUS              = 'alpha'
 # versions
 NUMPY_MIN_VERSION='1.0'
 SCIPY_MIN_VERSION = '0.5'
+NIBABEL_MIN_VERSION = '1.0'
 SYMPY_MIN_VERSION = '0.6.6'
 MAYAVI_MIN_VERSION = '3.0'
 CYTHON_MIN_VERSION = '0.12.1'
 
 # Versions and locations of optional data packages
 NIPY_DATA_URL= 'http://nipy.sourceforge.net/data-packages/'
-DATA_PKGS = {'nipy-data': {'version':'0.2'},
-             'nipy-templates': {'version':'0.2'}}
+DATA_PKGS = {'nipy-data': {'min version':'0.2',
+                           'relpath':'nipy/data'},
+             'nipy-templates': {'min version':'0.2',
+                                'relpath':'nipy/templates'}
+            }
+NIPY_INSTALL_HINT = \
+"""You can download and install the package from:
+
+%s
+
+Check the instructions in the INSTALL file in the nipy source tree, or online at
+http://nipy.org/nipy/stable/devel/development_quickstart.html#optional-data-packages
+
+If you have the package, have you set the path to the package correctly?"""
+
 for key, value in DATA_PKGS.items():
-    value['url'] = '%s%s-%s.tar.gz' % (NIPY_DATA_URL,
-                                       key,
-                                       value['version'])
-del key, value
+    url = '%s%s-%s.tar.gz' % (NIPY_DATA_URL,
+                              key,
+                              value['min version'])
+    value['name'] = key
+    value['install hint'] = NIPY_INSTALL_HINT % url
+
+del key, value, url
 

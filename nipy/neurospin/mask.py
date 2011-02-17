@@ -10,7 +10,8 @@ import numpy as np
 from scipy import linalg, ndimage
 
 # Neuroimaging libraries imports
-from nipy.io.imageformats import load, nifti1, save, AnalyzeImage
+from nibabel import load, nifti1, save
+from nibabel.loadsave import read_img_data
 
 
 ################################################################################
@@ -73,46 +74,6 @@ def threshold_connect_components(map, threshold, copy=True):
 # Utilities to calculate masks
 ################################################################################
 
-# FIXME: Should this function be replaced by the native functionality
-# added to brifti
-def get_unscaled_img(fname):
-    ''' Function to get image, data without scalefactor applied
-
-    If the image is of Analyze type, and is integer format, and has
-    single scalefactor that is usually applied, then read the raw
-    integer data from disk, rather than using the higher-level get_data
-    method, that would apply the scalefactor.  We do this because there
-    seemed to be images for which the integer binning in the raw file
-    data was needed for the histogram-like mask calculation in
-    ``compute_mask_files``.
-
-    By loading the image in this function we can guarantee that the
-    image as loaded from disk is the source of the current image data.
-
-    Parameters
-    ----------
-    fname : str
-       filename of image
-
-    Returns
-    -------
-    img : imageformats Image object
-    arr : ndarray
-    '''
-    img = load(fname)
-    if isinstance(img, AnalyzeImage):
-        dt = img.get_data_dtype()
-        if dt.kind in ('i', 'u'):
-            from nipy.io.imageformats.header_ufuncs import read_unscaled_data
-            from nipy.io.imageformats.volumeutils import allopen
-            # get where the image data is, given input filename
-            ft = img.filespec_to_files(fname)
-            hdr = img.get_header()
-            # read unscaled data from disk
-            return img, read_unscaled_data(hdr, allopen(ft['image']))
-    return img, img.get_data()
-
-
 def compute_mask_files(input_filename, output_filename=None, 
                         return_mean=False, m=0.2, M=0.9, cc=1):
     """
@@ -151,7 +112,8 @@ def compute_mask_files(input_filename, output_filename=None,
     """
     if isinstance(input_filename, basestring):
         # One single filename
-        nim, vol_arr = get_unscaled_img(input_filename)
+        nim = load(input_filename)
+        vol_arr = read_img_data(nim, prefer='unscaled')
         header = nim.get_header()
         affine = nim.get_affine()
         if vol_arr.ndim == 4:

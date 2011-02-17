@@ -145,7 +145,7 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
         dataset.tofile(out_text_file)
 
     if out_image_file is not None:
-        from nipy.io.imageformats import save, Nifti1Image 
+        from nibabel import save, Nifti1Image 
         save(Nifti1Image( dataset, np.eye(4)), out_image_file)
 
     return dataset
@@ -254,7 +254,7 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20,20,20), mask=None,
         dataset.tofile(out_text_file)
 
     if out_image_file is not None:
-        from nipy.io.imageformats import save, Nifti1Image 
+        from nibabel import save, Nifti1Image 
         save(Nifti1Image( dataset, np.eye(4)), out_image_file)
 
     return dataset
@@ -350,7 +350,7 @@ def surrogate_4d_dataset(shape=(20,20,20), mask=None, n_scans=1, n_sess=1,
             data[:,:,:,s] += noise
             data[:,:,:,s] += 100*mask_data
             
-        from nipy.io.imageformats import save, Nifti1Image 
+        from nibabel import save, Nifti1Image 
         wim = Nifti1Image( data, affine)
         output_images.append(wim)
         if out_image_file is not None:

@@ -16,7 +16,7 @@ import os
 import numpy as np
 from scipy import ndimage
 
-from nipy.io.imageformats import load
+from nibabel import load
 
 # The sform for MNI templates
 mni_sform = np.array([[-1, 0, 0,   90],
@@ -29,7 +29,7 @@ mni_sform_inv = np.linalg.inv(mni_sform)
 def find_mni_template():
     """ Try to find an MNI template on the disk.
     """
-    from nipy.utils.data import templates, DataError
+    from nipy.utils import templates, DataError
     try:
         filename = templates.get_filename(
                             'ICBM152', '1mm', 'T1_brain.nii.gz')

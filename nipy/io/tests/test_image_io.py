@@ -6,6 +6,8 @@ from tempfile import mkstemp
 
 import numpy as np
 
+from nibabel.spatialimages import ImageFileError
+
 from nipy.testing import assert_true, assert_equal, assert_raises, \
     assert_array_equal, assert_array_almost_equal, funcfile, parametric
 
@@ -48,7 +50,7 @@ def teardown_module():
 
 def test_badfile():
     filename = "bad_file.foo"
-    yield assert_raises, RuntimeError, load_image, filename
+    assert_raises(ImageFileError, load_image, filename)
 
 
 @if_templates

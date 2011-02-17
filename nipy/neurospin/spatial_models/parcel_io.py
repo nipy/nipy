@@ -9,7 +9,7 @@ in parcel definition processes
 from nipy.neurospin.clustering.clustering import kmeans
 import numpy as np
 import os.path
-from nipy.io.imageformats import load, save, Nifti1Image 
+from nibabel import load, save, Nifti1Image 
 from parcellation import Parcellation
 
 def mask_parcellation(mask_images, nb_parcel, output_image=None):

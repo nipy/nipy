@@ -35,7 +35,7 @@ import numpy as np
 
 from ...externals.configobj import ConfigObj
 
-from ...io.imageformats import load, save, Nifti1Image
+from nibabel import load, save, Nifti1Image
 
 ############################################
 # Path definition

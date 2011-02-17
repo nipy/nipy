@@ -8,8 +8,8 @@ import os
 
 import numpy as np
 
-from nipy.io import imageformats
-from nipy.io.imageformats.spatialimages import SpatialImage
+import nibabel as nib
+from nibabel.spatialimages import SpatialImage
 
 from .volumes.volume_img import VolumeImg
 
@@ -56,15 +56,16 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
     elif isinstance(obj, basestring):
         if not os.path.exists(obj):
             raise ValueError("The file '%s' cannot be found" % obj)
-        obj = imageformats.load(obj)
+        obj = nib.load(obj)
         copy = False
     
     if isinstance(obj, SpatialImage):
         data   = obj.get_data()
         affine = obj.get_affine()
         header = dict(obj.get_header())
-        if obj._files:
-            header['filename'] = obj._files['image']
+        fname = obj.file_map['image'].filename
+        if fname:
+            header['filename'] = fname
     elif hasattr(obj, 'data') and hasattr(obj, 'sform') and \
                                             hasattr(obj, 'getVolumeExtent'):
         # Duck-types to a pynifti object
@@ -100,12 +101,12 @@ def save(filename, obj):
     """ Save an nipy image object to a file.
     """
     obj = as_volume_img(obj, copy=False)
-    hdr = imageformats.Nifti1Header()
+    hdr = nib.Nifti1Header()
     for key, value in obj.metadata.iteritems():
         if key in hdr:
             hdr[key] = value
-    img = imageformats.Nifti1Image(obj.get_data(), 
+    img = nib.Nifti1Image(obj.get_data(), 
                                    obj.affine,
                                    header=hdr)
-    imageformats.save(img, filename)
+    nib.save(img, filename)
 

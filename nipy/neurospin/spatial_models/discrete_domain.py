@@ -9,8 +9,9 @@ Author: Bertrand Thirion, 2010
 import numpy as np
 import scipy.sparse as sp
 
+from nibabel import load, Nifti1Image, save
+
 import nipy.neurospin.graph as fg
-from nipy.io.imageformats import load, Nifti1Image, save
 
 ##############################################################
 # Ancillary functions
