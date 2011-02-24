@@ -14,17 +14,16 @@ VERBOSE = True # enables online print statements
 SLICE_ORDER = 'ascending'
 INTERLEAVED = False
 SLICE_AXIS = 2 
-OPTIMIZER = 'powell'
+OPTIMIZER = 'ncg'
 XTOL = 1e-5
-FTOL = 1e-4
+FTOL = 1e-5
 GTOL = 1e-5
 STEPSIZE = 1e-6
-MAXITER = None
+MAXITER = 64
 MAXFUN = None
-LOOPS = 3 # loops within each run 
-BETWEEN_LOOPS = 5 # loops used to realign different runs 
-SPEEDUP = 4
-SUBSAMPLING = SPEEDUP, SPEEDUP, SPEEDUP
+LOOPS = 5, 1 # loops within each run 
+BETWEEN_LOOPS = 5, 1 # loops used to realign different runs 
+SPEEDUP = 5, 2
 BORDERS = 1, 1, 1 
 REFSCAN = 0 
 EXTRAPOLATE_SPACE = 'reflect'
@@ -137,7 +136,7 @@ class Realign4dAlgorithm(object):
                  affine_class=Rigid,
                  transforms=None, 
                  time_interp=True, 
-                 subsampling=SUBSAMPLING,
+                 subsampling=(1,1,1),
                  borders=BORDERS, 
                  optimizer=OPTIMIZER, 
                  optimize_template=True, 
@@ -463,10 +462,6 @@ def single_run_realign4d(im4d,
     opt_params = zip(loops, speedup, optimizer, xtol, ftol, gtol, stepsize, maxiter, maxfun)
     for loops_, speedup_, optimizer_, xtol_, ftol_, gtol_, stepsize_, maxiter_, maxfun_ in opt_params:
         subsampling = adjust_subsampling(speedup_, im4d.array.shape[0:3])
-
-        print('****** SUBSAMPLING FACTORS') 
-        print subsampling 
-
         r = Realign4dAlgorithm(im4d, 
                                transforms=transforms, 
                                affine_class=affine_class,
@@ -619,7 +614,7 @@ class Realign4d(object):
                  maxiter=MAXITER, 
                  maxfun=MAXFUN):
         if between_loops == None: 
-            between_loops = 3*loops 
+            between_loops = loops 
         t = realign4d(self._runs, 
                       affine_class=self.affine_class,
                       time_interp=self._time_interp,

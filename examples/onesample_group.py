@@ -1,9 +1,9 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
+from nibabel import Nifti1Image as Image
 
 import nipy.neurospin.statistical_mapping as sm
-from nipy.io.imageformats import Nifti1Image as Image
 from nipy.utils import example_data
 
 def remake_images(): 

@@ -18,9 +18,9 @@ Example:
 
 Author: Alexis Roche, 2009. 
 """
+from nibabel import load as load_image, save as save_image
 
 from nipy.neurospin.statistical_mapping import LinearModel
-from nipy.io.imageformats import load as load_image, save as save_image
 from nipy.utils import example_data
 
 import numpy as np
