@@ -36,16 +36,16 @@ trial_type = np.array([
         7, 9, 8, 8, 2, 2, 2, 6, 6, 1, 8, 1, 5, 3, 8, 10, 11, 11, 9, 1, 7, 4, 4,
         8, 2, 1, 1, 11, 5, 2, 11, 10, 9, 5, 10, 10]) - 1
 
-condition_ids = [ 'damier_H', 'damier_V', 'clicDaudio', 'clicGaudio', 
-'clicDvideo', 'clicGvideo', 'calculaudio', 'calculvideo', 'phrasevideo', 
-'phraseaudio' ]
+condition_ids = ['damier_H', 'damier_V', 'clicDaudio', 'clicGaudio', 
+                 'clicDvideo', 'clicGvideo', 'calculaudio', 'calculvideo', 
+                 'phrasevideo', 'phraseaudio']
 
 time = time[trial_type < 10]
 cid = np.array([condition_ids[i] for i in trial_type[trial_type < 10]])
 sess = np.zeros(np.size(time)).astype('int8')
 pdata = np.vstack((sess, cid, time)).T
 csvfile = tempfile.mkdtemp() + '/localizer_paradigm.csv'
-fid = open(csvfile, "wb" )
+fid = open(csvfile, "wb")
 writer = csv.writer(fid, delimiter=' ')
 for row in pdata:
     writer.writerow(row)

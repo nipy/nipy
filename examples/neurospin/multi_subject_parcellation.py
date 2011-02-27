@@ -10,14 +10,13 @@ print __doc__
 import numpy as np
 import nipy.neurospin.spatial_models.hierarchical_parcellation as hp
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
-import nipy.neurospin.spatial_models.parcellation as fp
 import nipy.neurospin.spatial_models.discrete_domain as dom
 
 # step 1:  generate some synthetic data
 nsubj = 10
 dimx = 60
 dimy = 60
-pos = 3 * np.array([[ 6, 7],
+pos = 3 * np.array([[6, 7],
                   [10, 10],
                   [15, 10]])
 ampli = np.array([5, 7, 6])
@@ -34,18 +33,18 @@ ldata = np.reshape(dataset, (nsubj, dimx * dimy, 1))
 domain = dom.grid_domain_from_array(np.ones(ref_dim))
 
 # step 3 : run the algorithm
-Pa =  hp.hparcel(domain, ldata, nbparcel, mu = 3.0)
+Pa = hp.hparcel(domain, ldata, nbparcel, mu=3.0)
 # note: play with mu to change the 'stiffness of the parcellation'
-	
+
 # step 4:  look at the results
-Label =  np.array([np.reshape(Pa.individual_labels[:, s], (dimx, dimy))
+Label = np.array([np.reshape(Pa.individual_labels[:, s], (dimx, dimy))
                    for s in range(nsubj)])
 
 import matplotlib.pylab as mp
 mp.figure()
 mp.title('Input data')
 for s in range(nsubj):
-    mp.subplot(2, 5, s+1)
+    mp.subplot(2, 5, s + 1)
     mp.imshow(dataset[s], interpolation='nearest')
     mp.axis('off')
 
@@ -56,6 +55,3 @@ for s in range(nsubj):
     mp.imshow(Label[s], interpolation='nearest', vmin=-1, vmax=nbparcel)
     mp.axis('off')
 mp.show()
-
-
-
