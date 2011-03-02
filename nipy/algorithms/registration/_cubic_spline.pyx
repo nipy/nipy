@@ -52,7 +52,7 @@ def cspline_sample1d(ndarray R, ndarray C, X=0, mode='zero'):
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
         x = <double*>PyArray_MultiIter_DATA(multi, 1)
-        r[0] = cubic_spline_sample1d(x[0], C, mode)
+        r[0] = cubic_spline_sample1d(x[0], C, modes[mode])
         PyArray_MultiIter_NEXT(multi)
     return R
 

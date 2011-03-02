@@ -1,5 +1,8 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+"""
+This script is currently broken so do not try to run it... 
+"""
 import numpy as np
 
 from nipy.algorithms.registration import *
@@ -14,7 +17,7 @@ from numpy.testing import *
 from os.path import join
 import time
 
-print('Scanning data directory...')
+print('This script is currently broken so do not try to run it...')
 
 # Input images are provided with the nipy-data package
 source = 'ammon'

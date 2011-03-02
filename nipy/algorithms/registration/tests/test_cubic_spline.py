@@ -19,7 +19,7 @@ def test_sample1d():
     b = np.zeros(100)
     b = cspline_sample1d(b, c, x)
     assert_array_almost_equal(a, b)
-    b = cspline_sample1d(b, c, x, mode=1)
+    b = cspline_sample1d(b, c, x, mode='nearest')
     assert_array_almost_equal(a, b)
 
 
@@ -28,10 +28,10 @@ def test_sample4d():
     c = cspline_transform(a)
     x = np.mgrid[0:4,0:5,0:6,0:7]
     b = np.zeros(a.shape)
-    args = list(x) + [0,0,0,0]
+    args = list(x) 
     b = cspline_sample4d(b, c, *args)
     assert_array_almost_equal(a, b)
-    args = list(x) + [1,1,1,1]
+    args = list(x) + ['nearest' for i in range(4)]
     b = cspline_sample4d(b, c, *args)
     assert_array_almost_equal(a, b)
 
