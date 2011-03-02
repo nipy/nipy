@@ -31,6 +31,7 @@ from nipy.utils import example_data
 
 from os.path import join, split
 import sys
+import tempfile
 
 # Input images are provided with the nipy-data package
 runnames = [example_data.get_filename('fiac','fiac0',run+'.nii.gz') \
@@ -47,8 +48,9 @@ R.estimate()
 corr_runs = R.resample()
 
 # Save images 
+savedir = tempfile.mkdtemp()
 for i in range(len(runs)):
     aux = split(runnames[i])
-    save_image(corr_runs[i], join('ra'+aux[1]))
+    save_image(corr_runs[i], join(savedir, 'ra'+aux[1]))
 
 
