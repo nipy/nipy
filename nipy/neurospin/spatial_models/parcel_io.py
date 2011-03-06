@@ -8,7 +8,8 @@ in parcel definition processes
 
 import numpy as np
 import os.path
-from nipy.io.imageformats import load, save, Nifti1Image
+
+from nibabel import load, save, Nifti1Image
 
 from nipy.neurospin.clustering.clustering import kmeans
 from discrete_domain import grid_domain_from_image

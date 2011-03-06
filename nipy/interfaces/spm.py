@@ -10,7 +10,7 @@ import numpy as np
 from scipy.io import savemat
 
 from nipy.utils import InTemporaryDirectory, setattr_on_read
-from nipy.io.imageformats import load
+from nibabel import load
 from nipy.interfaces.matlab import run_matlab_script
 
 

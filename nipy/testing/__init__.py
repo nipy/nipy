@@ -2,12 +2,11 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """The testing directory contains a small set of imaging files to be
 used for doctests only.  More thorough tests and example data will be
-stored in a nipy data packages that you can download separately - see
-:mod:`nipy.utils.data`
+stored in a nipy data packages that you can download separately.
 
 .. note:
 
-   We use the ``nose`` testing framework for tests.  
+   We use the ``nose`` testing framework for tests.
 
    Nose is a dependency for the tests, but should not be a dependency
    for running the algorithms in the NIPY library.  This file should

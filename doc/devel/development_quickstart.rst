@@ -71,10 +71,10 @@ Non-administrator data package installation
 -------------------------------------------
 
 The commands above assume you are installing into the default system
-directories.  If you want to install into a custom directory, then (in
-python, or ipython, or a text editor) look at the help for
-``nipy.utils.data.get_data_path()`` . There are instructions there for
-pointing your nipy installation to the installed data.
+directories.  If you want to install into a custom directory, then (in python,
+or ipython, or a text editor) look at the help for
+``nibabel.data.get_data_path()`` . There are instructions there for pointing
+your nipy installation to the installed data.
 
 On unix
 ~~~~~~~

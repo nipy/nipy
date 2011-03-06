@@ -160,7 +160,7 @@ def get_peak_position_from_thresholded_map(smap, mask, threshold):
               where k= number of clusters
               if no such cluster exists, None is returned
     """
-    from nipy.io.imageformats import Nifti1Image
+    from nibabel import Nifti1Image
     from nipy.neurospin.statistical_mapping import get_3d_peaks
     # create an image to represent smap
     simage = np.zeros(mask.get_shape())
@@ -664,7 +664,7 @@ def group_reproducibility_metrics(
     peak_rep_results: dictionary,
                       results of peak-level reproducibility analysis
     """
-    from nipy.io.imageformats import load, Nifti1Image
+    from nibabel import load, Nifti1Image
     from ..mask import intersect_masks
 
     if ((len(variance_images) == 0) & (method is not 'crfx')):

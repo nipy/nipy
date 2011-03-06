@@ -6,7 +6,12 @@ from glob import glob
 from distutils import log
 
 # Import build helpers
-from nisext.sexts import package_check, get_comrec_build
+try:
+    from nisext.sexts import package_check, get_comrec_build
+except ImportError:
+    raise RuntimeError('Need nisext package from nibabel installation'
+                       ' - please install nibabel first')
+
 from build_helpers import (generate_a_pyrex_source,
                            cmdclass, INFO_VARS)
 # monkey-patch numpy distutils to use Cython instead of Pyrex
@@ -51,6 +56,7 @@ if not 'extra_setuptools_args' in globals():
 # Hard and soft dependency checking
 package_check('numpy', INFO_VARS['NUMPY_MIN_VERSION'])
 package_check('scipy', INFO_VARS['SCIPY_MIN_VERSION'])
+package_check('nibabel', INFO_VARS['NIBABEL_MIN_VERSION'])
 package_check('sympy', INFO_VARS['SYMPY_MIN_VERSION'])
 def _mayavi_version(pkg_name):
     from enthought.mayavi import version
@@ -79,13 +85,11 @@ from numpy.distutils.command.install_data import install_data
 from numpy.distutils.command.build_ext import build_ext
 
 def data_install_msgs():
-    from nipy.utils import make_datasource, DataError
-    for name in ('templates', 'data'):
-        try:
-            make_datasource('nipy', name)
-        except DataError, exception:
-            log.warn('%s\n%s' % ('_'*80, exception))
-        
+    from nipy.utils import templates, example_data
+    for dpkg in (templates, example_data):
+        if hasattr(dpkg, 'msg'): # a bomber object, warn
+            log.warn('%s\n%s' % ('_'*80, dpkg.msg))
+
 
 class MyInstallData(install_data):
     """ Subclass the install_data to generate data install warnings if necessary
