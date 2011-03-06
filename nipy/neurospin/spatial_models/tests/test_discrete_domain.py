@@ -114,7 +114,7 @@ def test_image_feature():
     mask = np.random.randn(*shape[:3])>.5
     noise = np.random.randn(*shape[:3])
     affine = np.eye(4)
-    mim = Nifti1Image(mask, affine)
+    mim = Nifti1Image(mask.astype('u8'), affine)
     nim = Nifti1Image(noise, affine)
     ddom = grid_domain_from_image(mim)
     ddom.make_feature_from_image(nim, 'noise')

@@ -8,7 +8,7 @@ print __doc__
 
 import os.path
 import pylab as pl
-from nipy.io.imageformats import load
+from nibabel import load
 from nipy.neurospin import viz
 import get_data_light
 

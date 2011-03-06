@@ -17,7 +17,7 @@ import scipy.stats as st
 import nipy.neurospin.utils.emp_null as en
 import get_data_light
 
-from nipy.io.imageformats import load
+from nibabel import load
 
 # parameters
 verbose = 1

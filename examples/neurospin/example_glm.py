@@ -15,7 +15,7 @@ import numpy as np
 import os.path as op
 import tempfile
 
-from nipy.io.imageformats import save, Nifti1Image
+from nibabel import save, Nifti1Image
 import nipy.neurospin.utils.design_matrix as dm
 from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
      surrogate_4d_dataset

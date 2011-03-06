@@ -18,7 +18,7 @@ import numpy as np
 import os.path as op
 import matplotlib.pylab as mp
 
-from nipy.io.imageformats import load, Nifti1Image
+from nibabel import load, Nifti1Image
 import nipy.neurospin.utils.design_matrix as dm
 from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
     surrogate_4d_dataset

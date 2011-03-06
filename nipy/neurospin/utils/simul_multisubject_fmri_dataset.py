@@ -143,7 +143,7 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
 
     if out_image_file is not None:
         from nibabel import save, Nifti1Image 
-        save(Nifti1Image(dataset, np.eye(4)), out_image_file)
+        save(Nifti1Image( dataset, np.eye(4)), out_image_file)
 
     return dataset
 
@@ -254,7 +254,7 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20, 20, 20), mask=None,
 
     if out_image_file is not None:
         from nibabel import save, Nifti1Image 
-        save(Nifti1Image(dataset, np.eye(4)), out_image_file)
+        save(Nifti1Image( dataset, np.eye(4)), out_image_file)
 
     return dataset
 

@@ -41,7 +41,8 @@ def mask_parcellation(mask_images, nb_parcel, threshold=0, output_image=None):
         mask = mask_images
     else:
         # mask_images should be a list
-        mask = Nifti1Image(intersect_masks(mask_images, threshold=0) > 0,
+        mask_data = intersect_masks(mask_images, threshold=0) > 0
+        mask = Nifti1Image(mask_data.astype('u8'),
                            load(mask_images[0]).get_affine())
 
     domain = grid_domain_from_image(mask)

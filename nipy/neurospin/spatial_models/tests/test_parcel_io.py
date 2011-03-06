@@ -26,7 +26,8 @@ def test_mask_parcel_multi_subj():
     mask_image = []
     for s in range(nb_subj):
         path = join(tempdir, 'mask%s.nii' %s)
-        save(Nifti1Image(np.random.rand(*shape)>.1, np.eye(4)), path)
+        save(Nifti1Image((np.random.rand(*shape)>.1).astype('u8'),
+                         np.eye(4)), path)
         mask_image.append(path)
 
     wim = mask_parcellation(mask_image, nb_parcel)

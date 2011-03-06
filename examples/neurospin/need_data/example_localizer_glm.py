@@ -23,7 +23,7 @@ import pylab
 import tempfile
 
 from nipy.neurospin import compute_mask_files
-from nipy.io.imageformats import load, save, Nifti1Image
+from nibabel import load, save, Nifti1Image
 import get_data_light
 import nipy.neurospin.glm
 import nipy.neurospin.utils.design_matrix as dm

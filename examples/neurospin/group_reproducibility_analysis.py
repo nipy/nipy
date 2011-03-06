@@ -33,7 +33,7 @@ betas = np.reshape(dataset, (nsubj, dimx, dimy))
 func = np.reshape(betas, (nsubj, dimx * dimy)).T
 var = np.ones((dimx * dimy, nsubj))
 
-from nipy.io.imageformats import Nifti1Image 
+from nibabel import Nifti1Image
 mask = Nifti1Image(np.ones((dimx, dimy, 1)), np.eye(4))
 
 ###############################################################################
