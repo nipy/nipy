@@ -11,7 +11,7 @@ print __doc__
 import numpy as np
 import os
 import matplotlib.pylab as mp
-from nipy.io.imageformats import load, save, Nifti1Image 
+from nibabel import load, save, Nifti1Image
 
 import nipy.neurospin.spatial_models.mroi as mroi
 from nipy.neurospin.spatial_models.discrete_domain import \

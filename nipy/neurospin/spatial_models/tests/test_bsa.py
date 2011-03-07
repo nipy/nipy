@@ -48,14 +48,6 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_simple(dom, lbeta, dmax, thq, smin, ths,
                                        theta, g0, bdensity)    
-    if method=='ipmi':
-        group_map, AF, BF, likelihood = \
-                   bsa.compute_BSA_ipmi(dom, lbeta, dmax, thq, smin, ths,
-                                       theta, g0, bdensity)
-    if method=='sbf':
-        pval = 0.2
-        group_map, AF, BF = sbf.Compute_Amers (
-            dom, lbeta, dmax, theta, ths, pval)
     return AF, BF
 
 
@@ -99,10 +91,7 @@ def test_bsa_methods():
     # (name_of_method, ths_value, data_set, test_function)
     algs_tests = (
         ('simple', half_subjs, null_betas, lambda AF, BF: AF.k == 0),
-        ('ipmi', half_subjs, null_betas, lambda AF, BF: AF.k == 0),
-        ('simple', 1, pos_betas, lambda AF, BF: AF.k>1),
-        ('ipmi', 1, pos_betas, lambda AF, BF: AF.k>1),
-        ('sbf', 1 , pos_betas, lambda AF, BF: AF.k>1))
+        ('simple', 1, pos_betas, lambda AF, BF: AF.k>1))
     
     for name, ths, betas, test_func in algs_tests:
         # run the algo

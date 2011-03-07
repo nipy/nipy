@@ -26,7 +26,7 @@ class Paradigm(object):
         Parameters
         ----------
         con_id: array of shape (n_events), type = string, optional
-               identifier of the events 
+               identifier of the events
         onset: array of shape (n_events), type = float, optional,
                onset time (in s.) of the events
         amplitude: array of shape (n_events), type = float, optional,
@@ -40,22 +40,22 @@ class Paradigm(object):
             self.n_events = len(con_id)
             try:
                 # this is only for backward compatibility:
-                #if con_id were integers, they become a string 
-                self.con_id = np.array(['c'+str(int(float(c)))
+                #if con_id were integers, they become a string
+                self.con_id = np.array(['c' + str(int(float(c)))
                                         for c in con_id])
             except:
                 self.con_id = np.ravel(np.array(con_id)).astype('str')
 
-        if onset is not None: 
+        if onset is not None:
             if len(onset) != self.n_events:
-                raise ValueError,\
-                      'inconsistant definition of ids and onsets'
+                raise ValueError(
+                    'inconsistant definition of ids and onsets')
             self.onset = np.ravel(np.array(onset)).astype(np.float)
         if amplitude is not None:
             if len(amplitude) != self.n_events:
-                raise ValueError, 'inconsistant definition of amplitude'
+                raise ValueError('inconsistant definition of amplitude')
             self.amplitude = np.ravel(np.array(amplitude))
-        self.type='event'
+        self.type = 'event'
         self.n_conditions = len(np.unique(self.con_id))
 
 
@@ -72,7 +72,7 @@ class EventRelatedParadigm(Paradigm):
         onset: array of shape (n_events), type = float, optional
                onset time (in s.) of the events
         amplitude: array of shape (n_events), type = float, optional,
-                   amplitude of the events (if applicable)   
+                   amplitude of the events (if applicable)
         """
         Paradigm.__init__(self, con_id, onset, amplitude)
 
@@ -91,14 +91,13 @@ class BlockParadigm(Paradigm):
                onset time (in s.) of the events
         amplitude: array of shape (n_events), type = float, optional,
                    amplitude of the events (if applicable)
-                   
         """
         Paradigm.__init__(self, con_id, onset, amplitude)
         self.duration = duration
         self.type = 'block'
         if duration is not None:
             if len(duration) != self.n_events:
-                raise ValueError, 'inconsistant definition of duration'
+                raise ValueError('inconsistant definition of duration')
             self.duration = np.ravel(np.array(duration))
 
 
@@ -107,7 +106,7 @@ def load_protocol_from_csv_file(path, session=None):
     Read a (.csv) paradigm file consisting of values yielding
     (occurence time, (duration), event ID, modulation)
     and returns a paradigm instance or a dictionary of paradigm instances
-    
+
     Parameters
     ----------
     path: string,
@@ -115,8 +114,8 @@ def load_protocol_from_csv_file(path, session=None):
     session: int, optional
              session number.
              by default the output is a dictionary
-             of session-level dictionaries indexed by session 
-    
+             of session-level dictionaries indexed by session
+
     Returns
     -------
     paradigm, paradigm instance (if session is provided), or
@@ -139,7 +138,7 @@ def load_protocol_from_csv_file(path, session=None):
     csvfile = open(path)
     dialect = csv.Sniffer().sniff(csvfile.read())
     csvfile.seek(0)
-    reader = csv.reader(open(path, "rb"),dialect)
+    reader = csv.reader(open(path, "rb"), dialect)
 
     # load the csv as a protocol array
     protocol = []
@@ -156,20 +155,20 @@ def load_protocol_from_csv_file(path, session=None):
             duration.append(float(row[3]))
         if len(row) > 4:
             amplitude.append(row(4))
-    
+
     protocol = [np.array(sess), np.array(cid), np.array(onset),
                 np.array(duration), np.array(amplitude)]
     protocol = protocol[:len(row)]
-    
+
     def read_session(protocol, session):
         """ return a paradigm instance corresponding to session
         """
         ps = (protocol[0] == session)
-        if np.sum(ps)==0:
+        if np.sum(ps) == 0:
             return None
         if len(protocol) > 4:
             paradigm = BlockParadigm(protocol[1][ps], protocol[2][ps],
-                                     protocol[3][ps],  protocol[4][ps])
+                                     protocol[3][ps], protocol[4][ps])
         elif len(protocol) > 3:
             amplitude = np.ones(np.sum(ps))
             paradigm = BlockParadigm(protocol[1][ps], protocol[2][ps],
@@ -178,10 +177,10 @@ def load_protocol_from_csv_file(path, session=None):
             amplitude = np.ones(np.sum(ps))
             paradigm = EventRelatedParadigm(protocol[1][ps], protocol[2][ps],
                                             amplitude)
-        if (len(protocol) > 3) and (protocol[3][ps]==0).all():
+        if (len(protocol) > 3) and (protocol[3][ps] == 0).all():
             paradigm = EventRelatedParadigm(protocol[1][ps], protocol[2][ps],
                                             protocol[4][ps])
-            
+
         return paradigm
 
     sessions = np.unique(protocol[0])
@@ -191,7 +190,6 @@ def load_protocol_from_csv_file(path, session=None):
             paradigm[s] = read_session(protocol, s)
     else:
         paradigm = read_session(protocol, session)
-        
     return paradigm
 
 
@@ -219,19 +217,19 @@ class DesignMatrix(object):
         hrf_model: string, optional,
                    that specifies the hemodynamic reponse function
                    it can be 'Canonical', 'Canonical With Derivative' or 'FIR'
-        drift_model: string, optional 
+        drift_model: string, optional
                      specifies the desired drift model,
                      to be chosen among 'Polynomial', 'Cosine', 'Blank'
-        hfcut: float, optional 
+        hfcut: float, optional
                cut frequency of the low-pass filter
-        drift_order: int, optional 
-                     order of the dirft model (in case it is polynomial) 
-        fir_delays: array of shape(nb_onsets) or list, optional, 
-                    in case of FIR design, yields the array of delays 
+        drift_order: int, optional
+                     order of the dirft model (in case it is polynomial)
+        fir_delays: array of shape(nb_onsets) or list, optional,
+                    in case of FIR design, yields the array of delays
                     used in the FIR model
         fir_duration: float, optional
-                      duration of the FIR block; 
-                      in general it should be equal to the tr    
+                      duration of the FIR block;
+                      in general it should be equal to the tr
         add_regs: array of shape(nbframes, naddreg), optional
                   additional user-supplied regressors
         add_reg_names: list of (naddreg) regressor names, optional
@@ -255,11 +253,11 @@ class DesignMatrix(object):
         # check drift specification
         if drift_model not in ['Cosine', 'Polynomial', 'Blank']:
             raise ValueError("fit model is %s, should belong to \
-            ['Cosine', 'Polynomial', 'Blank']"%drift_model)
+            ['Cosine', 'Polynomial', 'Blank']" % drift_model)
 
-        # todo : check arguments       
+        # todo : check arguments
         # check that additional regressor specification is correct
-        if add_regs==None:
+        if add_regs == None:
             n_add_regs = 0
         else:
             if add_regs.shape[0] == np.size(add_regs):
@@ -268,22 +266,21 @@ class DesignMatrix(object):
                 ValueError(
                       'incorrect specification of additional regressors: '
                       'length of regressors provided: %s, number of '
-                      'time-frames: %s' % (add_regs.shape[0], 
+                      'time-frames: %s' % (add_regs.shape[0],
                                            np.size(frametimes)))
             n_add_regs = add_regs.shape[1]
         self.add_regs = add_regs
 
         # check that additional regressor names are well specified
         if  add_reg_names == None:
-            self.add_reg_names = ['reg%d'%k for k in range(n_add_regs)]
-        elif len(add_reg_names)!= n_add_regs:
+            self.add_reg_names = ['reg%d' % k for k in range(n_add_regs)]
+        elif len(add_reg_names) != n_add_regs:
             raise ValueError(
                 'Incorrect number of additional regressor names was provided'
                 '(%s provided, %s expected) % (len(add_reg_names),'
                 'n_add_regs)')
-        else: 
+        else:
             self.add_reg_names = add_reg_names
-
 
     def estimate(self):
         """
@@ -300,7 +297,7 @@ class DesignMatrix(object):
                                self.drift_order, self.hfcut)
 
         # paradigm-related formula
-        if self.paradigm==None:
+        if self.paradigm == None:
             n_main_regressors = 0
             self.formula = self.drift
             self.names = []
@@ -312,44 +309,39 @@ class DesignMatrix(object):
             n_main_regressors = len(self.names)
             self.formula = self.conditions + self.drift
 
-        # sample the matrix    
+        # sample the matrix
         self.matrix = build_dmtx(self.formula, self.frametimes).T
-        ## ugly  workaround the fact that NaN can occur when trials
-        ## are earlier than scans (!)
-        ##self.matrix[np.isnan(self.matrix)] = 0
-    
+
         # add user-supplied regressors
         if self.add_regs is not None:
             # put them between paradigm and drift regressors
-            self.matrix = np.hstack((self.matrix[:,:n_main_regressors],
+            self.matrix = np.hstack((self.matrix[:, :n_main_regressors],
                                      self.add_regs,
-                                     self.matrix[:,n_main_regressors:]))
-        
+                                     self.matrix[:, n_main_regressors:]))
+
             # add the corresponding names
             self.names = self.names + self.add_reg_names
 
         # Force the design matrix to be full rank at working precision
         self.matrix, self.design_cond = full_rank(self.matrix)
-        
-        # complete the names with the drift terms  
-        for k in range(len(self.drift.terms)-1):
-            self.names.append('drift_%d'%(k+1))                            
+
+        # complete the names with the drift terms
+        for k in range(len(self.drift.terms) - 1):
+            self.names.append('drift_%d' % (k + 1))
         self.names.append('constant')
         self.estimated = True
 
-
     def write_csv(self, path):
-        """
-        write self.matrix as a csv file witha propriate column names
-        
+        """ write self.matrix as a csv file with apropriate column names
+
         Parameters
         ----------
-        path: string, path of the resulting csv file           
+        path: string, path of the resulting csv file
         """
-        import csv 
-        if self.estimated==False:
-           self.estimate()
-        
+        import csv
+        if self.estimated == False:
+            self.estimate()
+
         fid = open(path, "wb")
         writer = csv.writer(fid)
         writer.writerow(self.names)
@@ -373,8 +365,7 @@ class DesignMatrix(object):
         csvfile = open(path)
         dialect = csv.Sniffer().sniff(csvfile.read())
         csvfile.seek(0)
-        reader = csv.reader(open(path, "rb"),dialect)
-    
+        reader = csv.reader(open(path, "rb"), dialect)
         boolfirst = True
         design = []
         for row in reader:
@@ -383,14 +374,14 @@ class DesignMatrix(object):
                 boolfirst = False
             else:
                 design.append([row[j] for j in range(len(row))])
-                
+
             x = np.array([[float(t) for t in xr] for xr in design])
 
         if self.frametimes is not None:
             if x.shape[0] != len(self.frametimes):
-                raise ValueError( "The provided matrix has shape (%d, %d),\
+                raise ValueError("The provided matrix has shape (%d, %d),\
                 which does not fit with len(frametimes) =%d"\
-                %(x.shape[0], x.shape[1], len(self.frametimes)))
+                % (x.shape[0], x.shape[1], len(self.frametimes)))
 
         self.matrix = x
         self.names = names
@@ -410,16 +401,15 @@ class DesignMatrix(object):
         -------
         ax, figure handle
         """
-        if self.estimated==False:
+        if self.estimated == False:
             self.estimate()
-            
+
         x = self.matrix.copy()
-        
         if rescale:
-            x = x/np.sqrt(np.sum(x**2,0))
+            x = x / np.sqrt(np.sum(x ** 2, 0))
 
         import matplotlib.pylab as mp
-        if ax is None:         
+        if ax is None:
             mp.figure()
             ax = mp.subplot(1, 1, 1)
 
@@ -429,14 +419,13 @@ class DesignMatrix(object):
 
         if self.names is not None:
             ax.set_xticks(range(len(self.names)))
-            ax.set_xticklabels( self.names, rotation=60, ha='right')
-        
-        #mp.subplots_adjust(top=0.99, bottom=0.25)
+            ax.set_xticklabels(self.names, rotation=60, ha='right')
+
         return ax
 
+
 def dmtx_from_csv(path):
-    """
-    return a DesignMatrix instance from  a csv file
+    """ Return a DesignMatrix instance from  a csv file
 
     Parameters
     ----------
@@ -451,12 +440,12 @@ def dmtx_from_csv(path):
     dmtx.read_from_csv(path)
     return dmtx
 
+
 def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
                drift_model='Cosine', hfcut=128, drift_order=1, fir_delays=[0],
                fir_duration=1., add_regs=None, add_reg_names=None, path=None):
-    """
-    Make a design matrix while avoiding framework
-    
+    """Make a design matrix while avoiding framework
+
     Parameters
     ----------
     frametimes: array of shape(nbframes),
@@ -470,20 +459,20 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
     drift_model, string that specifies the desired drift model,
                 to be chosen among 'Polynomial', 'Cosine', 'Blank'
     hfcut=128  float , cut frequency of the low-pass filter
-    drift_order=1, int, order of the dirft model (in case it is polynomial) 
+    drift_order=1, int, order of the dirft model (in case it is polynomial)
     fir_delays=[0], optional, array of shape(nb_onsets) or list
-                    in case of FIR design, yields the array of delays 
+                    in case of FIR design, yields the array of delays
                     used in the FIR model
-    fir_duration=1., float, duration of the FIR block; 
-                     in general it should be equal to the tr    
+    fir_duration=1., float, duration of the FIR block
+                     in general it should be equal to the tr
     add_regs=None, array of shape (nbframes, naddreg)
                    additional user-supplied regressors
     add_reg_names=None, list of (naddreg) regressor names
                         if None, while naddreg>0, these will be termed
-                        'reg_%i',i=0..naddreg-1
+                        'reg_%i',i=0..naddreg - 1
     path: string, optional
          if not None, the matrix is written as a .csv file at the given path
-                 
+
     Returns
     -------
     dmtx array of shape(nreg, nbframes):
@@ -499,78 +488,77 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
         dmtx.write_csv(path)
     return dmtx.matrix, dmtx.names
 
+
 def _polydrift(order, tmax):
-    """
-    Create a polynomial drift formula
-    
+    """Create a polynomial drift formula
+
     Parameters
     ----------
     order, int, number of polynomials in the drift model
     tmax, float maximal time value used in the sequence
           this is used to normalize porperly the columns
-    
+
     Returns
     -------
-    pol a formula that contains all the polynomial drift 
+    pol a formula that contains all the polynomial drift
     plus a constant regressor
     """
     t = formula.Term('t')
     pt = []
-    # fixme : ideally  this should be orthonormalized  
+    # fixme : ideally  this should be orthonormalized
     for k in range(order):
-        pt.append(utils.define('poly_drift_%d'%(k+1),t**(k+1)/tmax**(k+1))) 
-    pt.append(utils.define('constant',1.0+0*t))
-    pol =  formula.Formula(pt)
+        pt.append(utils.define('poly_drift_%d' % (k + 1),
+                               t ** (k + 1) / tmax ** (k + 1)))
+    pt.append(utils.define('constant', 1.0 + 0 * t))
+    pol = formula.Formula(pt)
     return pol
 
 
 def _cosinedrift(hfcut, tmax, tsteps):
-    """
-    Create a cosine drift formula
+    """Create a cosine drift formula
 
     Parameters
     ----------
     hfcut, float , cut frequency of the low-pass filter
     tmax, float  maximal time value used in the sequence
     tsteps, int,  number of TRs in the sequence
-    
+
     Returns
     -------
-    cos  a formula that contains all the polynomial drift 
+    cos  a formula that contains all the polynomial drift
     plus a constant regressor
     """
     t = formula.Term('t')
     pt = []
     order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
-    for k in range(1,order):
-        u = np.sqrt(2.0/tmax) * sympy.cos(np.pi*(t/tmax+ 0.5/tsteps)*k )
-        pt.append(utils.define('cosine_drift_%d'%(k+1),u)) 
-    pt.append(utils.define('constant',1.0+0*t))
-    cos =  formula.Formula(pt)
+    for k in range(1, order):
+        u = np.sqrt(2.0 / tmax) * sympy.cos(np.pi *
+                                            (t / tmax + 0.5 / tsteps) * k)
+        pt.append(utils.define('cosine_drift_%d' % (k + 1), u))
+    pt.append(utils.define('constant', 1.0 + 0 * t))
+    cos = formula.Formula(pt)
     return cos
 
 
 def _blankdrift():
-    """
-    Create the blank drift formula
-    
+    """ Create the blank drift formula
+
     Returns
     -------
     df  a formula that contains a constant regressor
     """
     t = formula.Term('t')
-    pt = [utils.define('constant',1.0+0*t)]
-    df =  formula.Formula(pt)
+    pt = [utils.define('constant', 1.0 + 0 * t)]
+    df = formula.Formula(pt)
     return df
 
 
 def set_drift(DriftModel, frametimes, order=1, hfcut=128.):
-    """
-    Create the drift formula
-    
+    """Create the drift formula
+
     Parameters
     ----------
-    DriftModel: string, 
+    DriftModel: string,
                 to be chosen among 'Polynomial', 'Cosine', 'Blank'
                 that specifies the desired drift model
     frametimes: array of shape(ntimes),
@@ -584,41 +572,40 @@ def set_drift(DriftModel, frametimes, order=1, hfcut=128.):
     -------
     df, the resulting drift formula
     """
-    if DriftModel=='Polynomial':
+    if DriftModel == 'Polynomial':
         d = _polydrift(order, frametimes.max())
-    elif DriftModel=='Cosine':
+    elif DriftModel == 'Cosine':
         d = _cosinedrift(hfcut, frametimes.max(), frametimes.size)
-    elif DriftModel=='Blank':
-        d  = _blankdrift()
+    elif DriftModel == 'Blank':
+        d = _blankdrift()
     else:
-        raise NotImplementedError,"unknown drift model"
+        raise NotImplementedError("unknown drift model")
     return d
 
 
-def convolve_regressors(paradigm, hrf_model, end_time,
-                        fir_delays=[0], fir_duration = 1.):
-    """
-    Creation of  a formula that represents 
+def convolve_regressors(paradigm, hrf_model, end_time, fir_delays=[0],
+                        fir_duration=1.):
+    """ Creation of  a formula that represents
     the convolution of the conditions onset with a certain hrf model
-    
+
     Parameters
     ----------
     paradigm: paradigm instance
-    hrf_model: string that can be 'Canonical', 
+    hrf_model: string that can be 'Canonical',
                'Canonical With Derivative' or 'FIR'
                that specifies the hemodynamic reponse function
     end_time: float,
               end time of the paradigm (needed only for block designs)
     fir_delays=[0], optional, array of shape(nb_onsets) or list
-                    in case of FIR design, yields the array of delays 
+                    in case of FIR design, yields the array of delays
                     used in the FIR model
-    fir_duration=1., float, duration of the FIR block; 
-                     in general it should eb equal to the tr    
- 
+    fir_duration=1., float, duration of the FIR block
+                     in general it should eb equal to the tr
+
     Returns
     -------
     f: formula instance,
-       contains the convolved regressors as functions of time    
+       contains the convolved regressors as functions of time
     names: list of strings,
            the condition names, that depend on the hrf model used
            if 'Canonical' then this is identical to the input names
@@ -632,82 +619,79 @@ def convolve_regressors(paradigm, hrf_model, end_time,
     listc = []
     hnames = []
     typep = paradigm.type
- 
+
     for nc in np.unique(paradigm.con_id):
-        onsets =  paradigm.onset[paradigm.con_id==nc]
+        onsets = paradigm.onset[paradigm.con_id == nc]
         nos = np.size(onsets)
         if paradigm.amplitude is not None:
-            values = paradigm.amplitude[paradigm.con_id==nc]
+            values = paradigm.amplitude[paradigm.con_id == nc]
         else:
             values = np.ones(nos)
-        if nos<1:
+        if nos < 1:
             continue
-        if typep=='event':
-            if hrf_model=="Canonical":
+        if typep == 'event':
+            if hrf_model == "Canonical":
                 c = utils.define(
                     nc, utils.events(onsets, values, f=hrf.glover))
                 listc.append(c)
                 hnames.append(nc)
-            elif hrf_model=="Canonical With Derivative":
+            elif hrf_model == "Canonical With Derivative":
                 c1 = utils.define(
                     nc, utils.events(onsets, values, f=hrf.glover))
-                c2 = utils.define( nc + "_derivative",
+                c2 = utils.define(nc + "_derivative",
                                    utils.events(onsets, values, f=hrf.dglover))
                 listc.append(c1)
                 listc.append(c2)
                 hnames.append(nc)
                 hnames.append(nc + "_derivative")
-            elif hrf_model=="FIR":
-                for i,ft in enumerate(fir_delays):
-                    lnames = nc + "_delay_%d"%i
-                    changes = np.hstack((onsets+ft,
-                                         onsets+ft+fir_duration))
+            elif hrf_model == "FIR":
+                for i, ft in enumerate(fir_delays):
+                    lnames = nc + "_delay_%d" % i
+                    changes = np.hstack((onsets + ft,
+                                         onsets + ft + fir_duration))
                     ochanges = np.argsort(changes)
                     lvalues = np.hstack((values, np.zeros(nos)))
                     changes = changes[ochanges]
                     lvalues = lvalues[ochanges]
-                    
                     c = utils.define(lnames,
                                      utils.step_function(changes, lvalues))
-
                     listc.append(c)
                     hnames.append(lnames)
             else:
-                raise NotImplementedError,'unknown hrf model'
-        elif typep=='block':
-            offsets =  onsets + paradigm.duration[paradigm.con_id==nc]
+                raise NotImplementedError('unknown hrf model')
+        elif typep == 'block':
+            offsets = onsets + paradigm.duration[paradigm.con_id == nc]
             intervals = [[on, off] for (on, off) in zip(onsets, offsets)]
             blks = utils.blocks(intervals, values)
             changes = np.hstack((onsets, offsets))
-            cvalues = np.hstack((values, -values))
-            if hrf_model=="Canonical":
-                c = utils.convolve_functions( blks, hrf.glover(hrf.T),
-                                              [0, end_time], 0.001)
+            cvalues = np.hstack((values, - values))
+            if hrf_model == "Canonical":
+                c = utils.convolve_functions(blks, hrf.glover(hrf.T),
+                                             [0, end_time], 0.001)
                 listc.append(c)
                 hnames.append(nc)
-            elif hrf_model=="Canonical With Derivative":
-                c1 = utils.convolve_functions( blks, hrf.glover(hrf.T),
-                                               [0, end_time], 0.001)
+            elif hrf_model == "Canonical With Derivative":
+                c1 = utils.convolve_functions(blks, hrf.glover(hrf.T),
+                                              [0, end_time], 0.001)
                 c2 = utils.events(changes, cvalues, f=hrf.glover)
                 listc.append(c1)
                 listc.append(c2)
                 hnames.append(nc)
                 hnames.append(nc + "_derivative")
-            elif hrf_model=="FIR":
-                raise NotImplementedError,\
-                      'block design are not compatible with FIR'
+            elif hrf_model == "FIR":
+                raise NotImplementedError(
+                    'block design are not compatible with FIR')
             else:
-                raise NotImplementedError,'unknown hrf model'  
-    
+                raise NotImplementedError('unknown hrf model')
+
     # create the formula
     p = formula.Formula(listc)
-     
+
     return p, hnames
 
 
 def build_dmtx(form, frametimes):
-    """
-    This is a work arount to control the order of the regressor 
+    """ Work-around to control the order of the regressor
     in the design matrix construction
 
     Parameters
@@ -718,7 +702,7 @@ def build_dmtx(form, frametimes):
                 the time sampling grid
 
     Returns
-    -------     
+    -------
     X: array of shape (nrows,nb_time_samples)
        the resulting matrix
     """
@@ -729,7 +713,7 @@ def build_dmtx(form, frametimes):
         lf = formula.Formula([ft])
         X.append(lf.design(t, return_float=True))
     X = np.array(X)
-    return X 
+    return X
 
 
 def full_rank(X, cmax=1e15):
@@ -747,14 +731,14 @@ def full_rank(X, cmax=1e15):
     X: array of shape(nrows,ncols) after regularization
     cmax=1.e-15, float tolerance for condition number
     """
-    U, s, V = np.linalg.svd(X,0)
-    sM = s.max()
-    sm = s.min()
-    c = sM/sm
+    U, s, V = np.linalg.svd(X, 0)
+    smax = s.max()
+    smin = s.min()
+    c = smax / smin
     if c < cmax:
         return X, c
     print 'Warning: matrix is singular at working precision, regularizing...'
-    lda = (sM-cmax*sm)/(cmax-1)
+    lda = (smax - cmax * smin) / (cmax - 1)
     s = s + lda
     X = np.dot(U, np.dot(np.diag(s), V))
     return X, cmax

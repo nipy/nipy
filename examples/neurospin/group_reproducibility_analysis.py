@@ -16,12 +16,12 @@ from nipy.neurospin.utils.reproducibility_measures import \
      peak_reproducibility
 
 
-################################################################################
+###############################################################################
 # Generate the data 
 nsubj = 105
 dimx = 60
 dimy = 60
-pos = np.array([[ 12,  14],
+pos = np.array([[12, 14],
                 [20, 20],
                 [30, 20]])
 ampli = np.array([2.5, 3.5, 3])
@@ -30,13 +30,13 @@ dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy,
 betas = np.reshape(dataset, (nsubj, dimx, dimy))
 
 # set the variance at 1 everywhere
-func = np.reshape(betas,(nsubj, dimx*dimy)).T
-var = np.ones((dimx*dimy, nsubj))
+func = np.reshape(betas, (nsubj, dimx * dimy)).T
+var = np.ones((dimx * dimy, nsubj))
 
-from nipy.io.imageformats import Nifti1Image 
-mask = Nifti1Image(np.ones((dimx, dimy, 1)),np.eye(4))
+from nibabel import Nifti1Image
+mask = Nifti1Image(np.ones((dimx, dimy, 1)), np.eye(4))
 
-################################################################################
+###############################################################################
 # Run reproducibility analysis 
 
 ngroups = 10
@@ -56,7 +56,7 @@ clt = []
 pk = []
 sens = []
 for threshold in thresholds:
-    kwargs={'threshold':threshold,'csize':csize}
+    kwargs={'threshold': threshold, 'csize': csize}
     kappa = []
     cls = []
     sent = []
@@ -80,7 +80,7 @@ for threshold in thresholds:
     clt.append(np.array(cls))
     pk.append(np.array(peaks))
     
-################################################################################
+###############################################################################
 # Visualize the results
 import scipy.stats as st
 aux = st.norm.sf(thresholds)
@@ -90,24 +90,24 @@ a = mp.figure()
 mp.subplot(1, 3, 1)
 mp.boxplot(kap)
 mp.title('voxel-level reproducibility', fontsize=12)
-mp.xticks(range(1,1+len(thresholds)),thresholds)
+mp.xticks(range(1, 1 + len(thresholds)), thresholds)
 mp.xlabel('threshold')
 mp.subplot(1, 3, 2)
 mp.boxplot(clt)
 mp.title('cluster-level reproducibility', fontsize=12)
-mp.xticks(range(1,1+len(thresholds)),thresholds)
+mp.xticks(range(1, 1 + len(thresholds)), thresholds)
 mp.xlabel('threshold')
-mp.subplot(1,3,3)
-mp.boxplot(pk,notch=1)
+mp.subplot(1, 3, 3)
+mp.boxplot(pk, notch=1)
 mp.title('peak-level reproducibility', fontsize=12)
-mp.xticks(range(1,1+len(thresholds)),thresholds)
+mp.xticks(range(1, 1 + len(thresholds)), thresholds)
 mp.xlabel('threshold')
 a.set_figwidth(10.)
 a.set_size_inches(12, 5)
 
 mp.figure()
-for q,threshold in enumerate(thresholds):
-    mp.subplot(3, len(thresholds)/3+1, q+1)
+for q, threshold in enumerate(thresholds):
+    mp.subplot(3, len(thresholds) / 3 + 1, q + 1)
     rmap = map_reproducibility(func, var, mask, ngroups,
                            method, verbose, threshold=threshold,
                            csize=csize)
@@ -119,4 +119,3 @@ for q,threshold in enumerate(thresholds):
 
 mp.suptitle('Map reproducibility for different thresholds') 
 mp.show()
-

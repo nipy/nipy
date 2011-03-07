@@ -16,7 +16,7 @@ import os.path as op
 import numpy as np
 import tempfile
 
-from nipy.io.imageformats import load, save, Nifti1Image
+from nibabel import load, save, Nifti1Image
 import nipy.neurospin.graph.field as ff
 import nipy.neurospin.spatial_models.hroi as hroi
 from nipy.neurospin.spatial_models.discrete_domain import domain_from_image
@@ -35,7 +35,8 @@ smin = 5 # size threshold on bblobs
 
 # prepare the data
 nim = load(input_image)
-mask_image = Nifti1Image(nim.get_data()**2>0, nim.get_affine())
+mask_image = Nifti1Image((nim.get_data() ** 2 > 0).astype('u8'),
+                         nim.get_affine())
 domain = domain_from_image(mask_image)
 data = nim.get_data()
 values = data[data!=0]

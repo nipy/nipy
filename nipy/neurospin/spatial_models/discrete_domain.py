@@ -17,9 +17,9 @@ import nipy.neurospin.graph as fg
 # Ancillary functions
 ##############################################################
 
+
 def smatrix_from_3d_array(mask, nn=18):
-    """
-    Create a sparse adjacency matrix from an array
+    """Create a sparse adjacency matrix from an array
 
     Parameters
     ----------
@@ -36,10 +36,10 @@ def smatrix_from_3d_array(mask, nn=18):
     ijk = np.array(np.where(mask)).T
     return smatrix_from_3d_idx(ijk, nn)
 
+
 def smatrix_from_3d_idx(ijk, nn=18):
-    """
-    Create a sparse adjacency matrix from 3d index system
-    
+    """Create a sparse adjacency matrix from 3d index system
+
     Parameters
     ----------
     idx:array of shape (n_samples, 3), type int
@@ -56,16 +56,16 @@ def smatrix_from_3d_idx(ijk, nn=18):
     G.from_3d_grid(ijk, nn)
     return G.to_coo_matrix()
 
+
 def smatrix_from_nd_array(mask, nn=0):
-    """
-    Create a sparse adjacency matrix from an arbitrary nd array
+    """ Create a sparse adjacency matrix from an arbitrary nd array
 
     Parameters
     ----------
     mask : nd array,
            input array, interpreted as a mask
     nn: int, optional
-        nd neighboring system, unsused at the moment 
+        nd neighboring system, unsused at the moment
 
     Returns
     -------
@@ -75,9 +75,9 @@ def smatrix_from_nd_array(mask, nn=0):
     idx = np.array(np.where(mask)).T
     return smatrix_from_nd_idx(idx, nn)
 
+
 def smatrix_from_nd_idx(idx, nn=0):
-    """
-    Create a sparse adjacency matrix from nd index system
+    """ Create a sparse adjacency matrix from nd index system
 
     Parameters
     ----------
@@ -93,47 +93,46 @@ def smatrix_from_nd_idx(idx, nn=0):
     """
     n = idx.shape[0]
     dim = idx.shape[1]
-    nidx = idx-idx.min(0)
-    
+    nidx = idx - idx.min(0)
     eA = []
     eB = []
 
     # compute the edges in each possible direction
     for d in range(dim):
-        mi = nidx.max(0)+2
-        a = np.hstack((1, np.cumprod(mi[:dim-1])))
+        mi = nidx.max(0) + 2
+        a = np.hstack((1, np.cumprod(mi[:dim - 1])))
         v1 = np.dot(nidx, a)
-        assert(np.size(v1)==np.size(np.unique(v1)))
+        assert(np.size(v1) == np.size(np.unique(v1)))
         o1 = np.argsort(v1)
         sv1 = v1[o1]
-        nz = np.squeeze(np.nonzero(sv1[:n-1]-sv1[1:]==-1))
-        nz = np.reshape(nz,np.size(nz))
+        nz = np.squeeze(np.nonzero(sv1[:n - 1] - sv1[1:] == - 1))
+        nz = np.reshape(nz, np.size(nz))
         eA.append(o1[nz])
-        eB.append(o1[nz+1])
+        eB.append(o1[nz + 1])
         nidx = np.roll(nidx, 1, 1)
-        
+
     eA = np.concatenate(eA)
-    eB =  np.concatenate(eB)
-    E = 2*np.size(eA)
+    eB = np.concatenate(eB)
+    E = 2 * np.size(eA)
     # create a graph structure
-    if E==0:
+    if E == 0:
         return sp.coo_matrix((n, n))
 
     edges = np.vstack((np.hstack((eA, eB)), np.hstack((eB, eA)))).T
     weights = np.ones(E)
     G = fg.WeightedGraph(n, edges, weights)
     return G.to_coo_matrix()
-    
+
+
 def array_affine_coord(mask, affine):
-    """
-    Compute coordinates from a boolean array and an affine transform
+    """Compute coordinates from a boolean array and an affine transform
 
     Parameters
     ----------
     mask: nd array,
            input array, interpreted as a mask
     affine: (n+1, n+1) matrix,
-            affine transform that maps the mask points to some embedding space 
+            affine transform that maps the mask points to some embedding space
 
     Returns
     -------
@@ -143,16 +142,16 @@ def array_affine_coord(mask, affine):
     idx = np.array(np.where(mask)).T
     return idx_affine_coord(idx, affine)
 
+
 def idx_affine_coord(idx, affine):
-    """
-    Compute coordinates from a set of indexes and an affine transform
+    """Compute coordinates from a set of indexes and an affine transform
 
     Parameters
     ----------
     idx:array of shape (n_samples, dim), type int
         indexes of certain positions in a nd space
     affine: (n+1, n+1) matrix,
-            affine transform that maps the mask points to some embedding space 
+            affine transform that maps the mask points to some embedding space
 
     Returns
     -------
@@ -161,24 +160,24 @@ def idx_affine_coord(idx, affine):
     """
     size = idx.shape[0]
     hidx = np.hstack((idx, np.ones((size, 1))))
-    coord = np.dot(hidx, affine.T)[:,:-1]
+    coord = np.dot(hidx, affine.T)[:, : - 1]
     return coord
 
+
 def reduce_coo_matrix(mat, mask):
-    """
-    reduce a supposedly coo_matrix to the vertices in the mask
+    """Reduce a supposedly coo_matrix to the vertices in the mask
 
     Parameters
     ----------
     mat: sparse coo_matrix,
          input matrix
     mask: boolean array of shape mat.shape[0],
-          desired elements 
+          desired elements
     """
     G = fg.wgraph_from_coo_matrix(mat)
     K = G.subgraph(mask)
     return K.to_coo_matrix()
-    
+
 
 #################################################################
 # Functions to instantiate StructuredDomains
@@ -186,8 +185,7 @@ def reduce_coo_matrix(mat, mask):
 
 
 def domain_from_image(mim, nn=18):
-    """
-    return a StructuredDomain instance from the input mask image
+    """Return a StructuredDomain instance from the input mask image
 
     Parameters
     ----------
@@ -196,7 +194,7 @@ def domain_from_image(mim, nn=18):
     nn: int, optional
         neighboring system considered from the image
         can be 6, 18 or 26
-        
+
     Returns
     -------
     The corresponding StructuredDomain instance
@@ -205,11 +203,11 @@ def domain_from_image(mim, nn=18):
         iim = load(mim)
     else:
         iim = mim
-    return domain_from_array( iim.get_data(), iim.get_affine(), nn)
-    
+    return domain_from_array(iim.get_data(), iim.get_affine(), nn)
+
+
 def domain_from_array(mask, affine=None, nn=0):
-    """
-    return a StructuredDomain from an n-d array
+    """Return a StructuredDomain from an n-d array
 
     Parameters
     ----------
@@ -224,16 +222,16 @@ def domain_from_array(mask, affine=None, nn=0):
     """
     dim = len(mask.shape)
     if affine is None:
-        affine =  np.eye(dim + 1)
-    mask = mask>0
-    vol = np.absolute(np.linalg.det(affine))*np.ones(np.sum(mask))
+        affine = np.eye(dim + 1)
+    mask = mask > 0
+    vol = np.absolute(np.linalg.det(affine)) * np.ones(np.sum(mask))
     coord = array_affine_coord(mask, affine)
-    topology = smatrix_from_nd_array(mask) 
+    topology = smatrix_from_nd_array(mask)
     return StructuredDomain(dim, coord, vol, topology)
 
+
 def grid_domain_from_array(mask, affine=None, nn=0):
-    """
-    return a NDGridDomain from an n-d array
+    """Return a NDGridDomain from an n-d array
 
     Parameters
     ----------
@@ -249,17 +247,17 @@ def grid_domain_from_array(mask, affine=None, nn=0):
     dim = len(mask.shape)
     shape = mask.shape
     if affine is None:
-        affine =  np.eye(dim + 1)
-        
-    mask = mask>0
+        affine = np.eye(dim + 1)
+
+    mask = mask > 0
     ijk = np.array(np.where(mask)).T
-    vol = np.absolute(np.linalg.det(affine))*np.ones(np.sum(mask))
-    topology = smatrix_from_nd_idx(ijk, nn) 
+    vol = np.absolute(np.linalg.det(affine[:3, :3])) * np.ones(np.sum(mask))
+    topology = smatrix_from_nd_idx(ijk, nn)
     return NDGridDomain(dim, ijk, shape, affine, vol, topology)
 
+
 def grid_domain_from_image(mim, nn=18):
-    """
-    return a NDGridDomain instance from the input mask image
+    """Return a NDGridDomain instance from the input mask image
 
     Parameters
     ----------
@@ -268,28 +266,142 @@ def grid_domain_from_image(mim, nn=18):
     nn: int, optional
         neighboring system considered from the image
         can be 6, 18 or 26
-        
+
     Returns
     -------
-    The corresponding StructuredDomain instance
+    The corresponding NDGridDomain instance
     """
     if isinstance(mim, basestring):
         iim = load(mim)
     else:
         iim = mim
-    return  grid_domain_from_array(iim.get_data(), iim.get_affine(), nn)
+    return grid_domain_from_array(iim.get_data(), iim.get_affine(), nn)
 
 
-def domain_from_mesh(mesh):
+################################################################
+# Domain from mesh
+################################################################
+
+
+class MeshDomain(object):
     """
-    Instantiate a StructuredDomain from a gifti mesh
+    temporary class to handle meshes
     """
-    pass
+
+    def __init__(self, coord, triangles):
+        """
+        Parameters
+        ----------
+        coord: array of shape (n_vertices, 3),
+               the node coordinates
+        triangles: array of shape(n_triables, 3),
+                   indices of the nodes per triangle
+
+        fixme
+        -----
+        Consistency checks to implement
+        """
+        self.coord = coord
+        self.triangles = triangles
+        self.V = len(coord)
+
+    def area(self):
+        """
+        Returns
+        -------
+        area: array of shape self.V,
+              area of each node
+        """
+        E = len(self.triangles)
+        narea = np.zeros(self.V)
+
+        def _area(a, b):
+            """area spanned by the vectors(a,b) in 3D
+            """
+            c = np.array([a[1] * b[2] - a[2] * b[1],
+                          - a[0] * b[2] + a[2] * b[0],
+                          a[0] * b[1] - a[1] * b[0]])
+            return np.sqrt((c ** 2).sum())
+
+        for e in range(E):
+            i, j, k = self.triangles[e]
+            a = self.coord[i] - self.coord[k]
+            b = self.coord[j] - self.coord[k]
+            ar = _area(a, b)
+            narea[i] += ar
+            narea[j] += ar
+            narea[k] += ar
+
+        narea /= 6
+        # because division by 2 has been 'forgotten' in area computation
+        # the area of a triangle is divided into the 3 vertices
+        return narea
+
+    def topology(self):
+        """returns a sparse matrix that represents the connectivity in self
+        """
+        E = len(self.triangles)
+        edges = np.zeros((3 * E, 2))
+        weights = np.zeros(3 * E)
+
+        for i in range(E):
+            sa, sb, sc = self.triangles[i]
+            edges[3 * i] = np.array([sa, sb])
+            edges[3 * i + 1] = np.array([sa, sc])
+            edges[3 * i + 2] = np.array([sb, sc])
+
+        G = fg.WeightedGraph(self.V, edges, weights)
+
+        # symmeterize the graph
+        G.symmeterize()
+
+        # remove redundant edges
+        G.cut_redundancies()
+
+        # make it a metric graph
+        G.set_euclidian(self.coord)
+        return G.to_coo_matrix()
+
+
+def domain_from_mesh(mesh, nibabel=True):
+    """Instantiate a StructuredDomain from a gifti mesh
+
+    Parameters
+    ----------
+    mesh: nibabel gifti mesh instance, or path to such a mesh
+    """
+    if nibabel:
+        if isinstance(mesh, basestring):
+            from nibabel.gifti.gifti import loadImage
+            mesh_ = loadImage(mesh)
+        else:
+            mesh_ = mesh
+
+        if len(mesh_.darrays) == 2:
+            cor, tri = mesh_.darrays
+        elif len(mesh_.darrays) == 3:
+            cor, nor, tri = mesh_.darrays
+        else:
+            raise Exception("%d arrays in gifti file (case not handled)" \
+                            % len(mesh_.darrays))
+        mesh_dom = MeshDomain(cor.data, tri.data)
+    else:
+        from gifti import loadImage
+        mesh_ = loadImage(mesh)
+        cor = mesh_.arrays[0].data
+        tri = mesh_.arrays[1].data
+        mesh_dom = MeshDomain(cor, tri)
+
+    vol = mesh_dom.area()
+    topology = mesh_dom.topology()
+    dim = 2
+    return StructuredDomain(dim, mesh_dom.coord, vol, topology)
 
 
 ################################################################
 # StructuredDomain class
 ################################################################
+
 
 class DiscreteDomain(object):
     """
@@ -302,8 +414,8 @@ class DiscreteDomain(object):
     -----
     check that local_volume is positive
     """
-    
-    def __init__(self, dim, coord, local_volume, rid='', referential=''):
+
+    def __init__(self, dim, coord, local_volume, id='', referential=''):
         """
         Parameters
         ----------
@@ -313,15 +425,14 @@ class DiscreteDomain(object):
                explicit coordinates of the domain sites
         local_volume: array of shape(size),
                       yields the volume associated with each site
-        rid: string, optional,
-             domain identifier 
+        id: string, optional,
+             domain identifier
         referential: string, optional,
                      identifier of the referential of the coordinates system
-        
+
         Caveat
         ------
         em_dim may be greater than dim e.g. (meshes coordinate in 3D)
-
         """
         # dimension
         self.dim = dim
@@ -333,20 +444,28 @@ class DiscreteDomain(object):
         if np.size(coord) == coord.shape[0]:
             coord = np.reshape(coord, (np.size(coord), 1))
         self.em_dim = coord.shape[1]
-        if self.em_dim<dim:
-            raise ValueError, 'Embedding dimension cannot be smaller than dim'
+        if self.em_dim < dim:
+            raise ValueError('Embedding dimension cannot be smaller than dim')
         self.coord = coord
 
         # volume
-        if np.size(local_volume)!= self.size:
-            raise ValueError, "Inconsistent Volume size"
-        self.local_volume = np.ravel(local_volume) 
-        
-        
-        self.rid = rid
+        if np.size(local_volume) != self.size:
+            raise ValueError("Inconsistent Volume size")
+        self.local_volume = np.ravel(local_volume)
+        self.id = id
         self.referential = referential
         self.features = {}
-        
+
+    def copy(self):
+        """ Returns a copy of self
+        """
+        new_dom = DiscreteDomain(self.dim, self.coord.copy(),
+                                  self.local_volume.copy(), self.id,
+                                  self.referential)
+        for fid in self.features.keys():
+            new_dom.set_feature(fid, self.get_feature(fid).copy())
+        return new_dom
+
     def get_coord(self):
         """ returns self.coord
         """
@@ -357,16 +476,15 @@ class DiscreteDomain(object):
         """
         return self.local_volume
 
-    def mask(self, bmask, rid=''):
-        """
-        returns an DiscreteDomain instance that has been further masked
+    def mask(self, bmask, id=''):
+        """ returns an DiscreteDomain instance that has been further masked
         """
         if bmask.size != self.size:
-            raise ValueError, 'Invalid mask size'
+            raise ValueError('Invalid mask size')
 
         svol = self.local_volume[bmask]
         scoord = self.coord[bmask]
-        DD = DiscreteDomain(self.dim, scoord, svol, rid,  self.referential)
+        DD = DiscreteDomain(self.dim, scoord, svol, id, self.referential)
 
         for fid in self.features.keys():
             f = self.features.pop(fid)
@@ -374,24 +492,22 @@ class DiscreteDomain(object):
         return DD
 
     def set_feature(self, fid, data, override=True):
-        """
-        Append a feature 'fid'
-        
+        """ Append a feature 'fid'
+
         Parameters
         ----------
         fid: string,
              feature identifier
         data: array of shape(self.size, p) or self.size
-              the feature data 
+              the feature data
         """
-        if data.shape[0]!=self.size:
-            raise ValueError, 'Wrong data size'
-        
-        if (self.features.has_key(fid)) & (override==False):
+        if data.shape[0] != self.size:
+            raise ValueError('Wrong data size')
+
+        if (fid in self.features) & (override == False):
             return
-            
-        self.features.update({fid:data})
-            
+
+        self.features.update({fid: data})
 
     def get_feature(self, fid):
         """return self.features[fid]
@@ -399,28 +515,26 @@ class DiscreteDomain(object):
         return self.features[fid]
 
     def representative_feature(self, fid, method):
-        """
-        Compute a statistical representative of the within-Foain feature
+        """Compute a statistical representative of the within-Foain feature
 
         Parameters
         ----------
         fid: string, feature id
         method: string, method used to compute a representative
-                to be chosen among 'mean', 'max', 'median', 'min' 
+                to be chosen among 'mean', 'max', 'median', 'min'
         """
         f = self.get_feature(fid)
-        if method=="mean":
+        if method == "mean":
             return np.mean(f, 0)
-        if method=="min":
+        if method == "min":
             return np.min(f, 0)
-        if method=="max":
+        if method == "max":
             return np.max(f, 0)
-        if method=="median":
+        if method == "median":
             return np.median(f, 0)
 
     def integrate(self, fid):
-        """
-        Integrate  certain feature over the domain and returns the result
+        """Integrate  certain feature over the domain and returns the result
 
         Parameters
         ----------
@@ -432,13 +546,13 @@ class DiscreteDomain(object):
         lsum = array of shape (self.feature[fid].shape[1]),
                the result
         """
-        if fid==None:
+        if fid == None:
             return np.sum(self.local_volume)
         ffid = self.features[fid]
-        if np.size(ffid)==ffid.shape[0]:
+        if np.size(ffid) == ffid.shape[0]:
             ffid = np.reshape(ffid, (self.size, 1))
         slv = np.reshape(self.local_volume, (self.size, 1))
-        return np.sum(ffid*slv, 0)
+        return np.sum(ffid * slv, 0)
 
 
 class StructuredDomain(DiscreteDomain):
@@ -446,7 +560,7 @@ class StructuredDomain(DiscreteDomain):
     Besides DiscreteDomain attributed, StructuredDomain has a topology,
     which allows many operations (morphology etc.)
     """
-    
+
     def __init__(self, dim, coord, local_volume, topology, did='',
                  referential=''):
         """
@@ -461,7 +575,7 @@ class StructuredDomain(DiscreteDomain):
         topology: sparse binary coo_matrix of shape (size, size),
                   that yields the neighboring locations in the domain
         did: string, optional,
-             domain identifier 
+             domain identifier
         referential: string, optional,
                      identifier of the referential of the coordinates system
         """
@@ -471,18 +585,17 @@ class StructuredDomain(DiscreteDomain):
         # topology
         if topology is not None:
             if topology.shape != (self.size, self.size):
-                raise ValueError, 'Incompatible shape for topological model'
+                raise ValueError('Incompatible shape for topological model')
         self.topology = topology
-        
+
     def mask(self, bmask, did=''):
-        """
-        returns a StructuredDomain instance that has been further masked
+        """returns a StructuredDomain instance that has been further masked
         """
         td = DiscreteDomain.mask(self, bmask)
         stopo = reduce_coo_matrix(self.topology, bmask)
         dd = StructuredDomain(self.dim, td.coord, td.local_volume,
                             stopo, did, self.referential)
-        
+
         for fid in td.features.keys():
             dd.set_feature(fid, td.features.pop(fid))
         return dd
@@ -515,7 +628,7 @@ class NDGridDomain(StructuredDomain):
         shape: dim-tuple,
            shape of the domain
         affine: array of shape (dim+1, dim+1),
-            affine transform that maps points to a coordinate system   
+            affine transform that maps points to a coordinate system
         local_volume: array of shape(size),
                       yields the volume associated with each site
         topology: sparse binary coo_matrix of shape (size, size),
@@ -528,20 +641,20 @@ class NDGridDomain(StructuredDomain):
         local_volume might be computed on-the-fly as |det(affine)|
         """
         # shape
-        if len(shape)!=dim:
-            raise ValueError, 'Incompatible shape and dim'
+        if len(shape) != dim:
+            raise ValueError('Incompatible shape and dim')
         self.shape = shape
 
         # affine
-        if affine.shape != (dim+1, dim+1):
-            raise ValueError, 'Incompatible dim and affine'
+        if affine.shape != (dim + 1, dim + 1):
+            raise ValueError('Incompatible dim and affine')
         self.affine = affine
-        
+
         # ijk
-        if np.size(ijk)==ijk.shape[0]:
-            ijk = np.reshape(ijk, (ijk.size,1))
-        if (ijk.max(0)+1>shape).any():
-            raise ValueError, 'Provided indices do not fit within shape'
+        if np.size(ijk) == ijk.shape[0]:
+            ijk = np.reshape(ijk, (ijk.size, 1))
+        if (ijk.max(0) + 1 > shape).any():
+            raise ValueError('Provided indices do not fit within shape')
         self.ijk = ijk
 
         # coord
@@ -549,13 +662,11 @@ class NDGridDomain(StructuredDomain):
 
         StructuredDomain.__init__(self, dim, coord, local_volume, topology)
 
-        
     def mask(self, bmask):
-        """
-        returns an instance of self that has been further masked
+        """Returns an instance of self that has been further masked
         """
         if bmask.size != self.size:
-            raise ValueError, 'Invalid mask size'
+            raise ValueError('Invalid mask size')
 
         svol = self.local_volume[bmask]
         stopo = reduce_coo_matrix(self.topology, bmask)
@@ -569,13 +680,43 @@ class NDGridDomain(StructuredDomain):
         return DD
 
     def to_image(self, path=None):
-        """
-        Write itself as an image, and returns it
+        """Write itself as an image, and returns it
         """
         data = np.zeros(self.shape).astype(np.int8)
-        data[self.ijk[:,0], self.ijk[:,1], self.ijk[:,2]] = 1
+        data[self.ijk[:, 0], self.ijk[:, 1], self.ijk[:, 2]] = 1
         nim = Nifti1Image(data, self.affine)
-        nim.get_header()['descrip'] = 'mask image'
+        nim.get_header()['descrip'] = 'mask image representing domain %s' \
+            % self.id
         if path is not None:
             save(nim, path)
         return nim
+
+    def make_feature_from_image(self, path, fid=''):
+        """Extract the information from an image to make it a domain a feature
+
+        Parameters
+        ----------
+        path: string or Nifti1Image instance,
+              the image from which one wished to extract data
+        fid: string, optional
+             identifier of the resulting feature.
+             if '', the feature is not stored
+
+        Returns
+        -------
+        the correponding set of values
+        """
+        if isinstance(path, basestring):
+            nim = load(path)
+        else:
+            nim = path
+
+        if (nim.get_affine() != self.affine).any():
+            raise ValueError('nim and self do not have the same referential')
+
+        data = nim.get_data()
+        feature = data[self.ijk[:, 0], self.ijk[:, 1], self.ijk[:, 2]]
+        if fid is not '':
+            self.features[fid] = feature
+
+        return feature

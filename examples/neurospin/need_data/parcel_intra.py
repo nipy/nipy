@@ -10,13 +10,10 @@ author: Bertrand Thirion, 2005-2009
 """
 print __doc__
 
-import os.path
+import os.path as op
 import tempfile
-
-from nipy.neurospin.spatial_models.parcel_io import one_subj_parcellation
-
-import get_data_light
-data_dir = get_data_light.get_it()
+from numpy import array
+from nipy.neurospin.spatial_models.parcel_io import fixed_parcellation
 
 # ------------------------------------
 # Get the data (mask+functional image)
@@ -24,8 +21,14 @@ data_dir = get_data_light.get_it()
 # time courses could be used instead
 
 n_beta = [29]
-mask_image = os.path.join(data_dir, 'mask.nii.gz')
-betas = [os.path.join(data_dir, 'spmT_%04d.nii.gz' % n) for n in n_beta]
+data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data'))
+mask_image = op.join(data_dir, 'mask.nii.gz')
+betas = [op.join(data_dir, 'spmT_%04d.nii.gz' % n) 
+         for n in n_beta]
+missing_file = array([op.exists(m)==False for m in [mask_image]+betas]).any()
+if missing_file:
+    import get_data_light
+    get_data_light.get_it()
 
 # set the parameters
 n_parcels = 500
@@ -34,9 +37,9 @@ nn = 6
 write_dir = tempfile.mkdtemp()
 verbose = 1
 
-lpa = one_subj_parcellation(mask_image, betas, n_parcels, nn, 'gkm', 
+lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'gkm', 
                             write_dir, mu, verbose)
-lpa = one_subj_parcellation(mask_image, betas, n_parcels, nn, 'ward', 
+lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'ward', 
                             write_dir, mu, verbose)
-lpa = one_subj_parcellation(mask_image, betas, n_parcels, nn, 'ward_and_gkm', 
+lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'ward_and_gkm', 
                             write_dir, mu, verbose)

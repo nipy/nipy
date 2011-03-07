@@ -9,7 +9,7 @@ print __doc__
 
 import numpy as np
 import os
-from nipy.io.imageformats import load, save, Nifti1Image 
+from nibabel import load, save, Nifti1Image
 from nipy.neurospin.graph.field import Field
 import get_data_light
 import tempfile

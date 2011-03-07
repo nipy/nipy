@@ -12,39 +12,41 @@ import numpy as np
 from numpy.linalg import pinv
 import scipy.stats as st
 
-class FDR(object):
-    """
-    This is the basic class to handle false discovery rate computation
-    parameter:
-    fdr.x the samples from which the fdr is derived
-    x is assumed to be a normal variate
 
-    The Benjamini-Horchberg procedure is used 
+class FDR(object):
+    """ Basic class to handle false discovery rate computation
+    Members:
+    x the samples from which the fdr is derived, assumed to be a normal variate
+
+    The Benjamini-Horchberg procedure is used
     """
-    
+
     def __init__(self, x):
         """
-        x is assumed to be a 1-d array
+        Parameters
+        ----------
+        x: 1-d array
         """
         self.x = np.squeeze(x)
-        
+
     def all_fdr(self, x=None, verbose=0):
         """
         Returns all the FDR (false discovery rates) values for the sample x
-        
+
         Parameters
         -----------
-        x : ndarray of shape (n)
+        x : ndarray of shape (n),
             The normal variates
-        
+
         Results
         -------
         fdr : ndarray of shape (n)
             The set of all FDRs
         """
-        if x==None:x=self.x
+        if x == None:
+            x = self.x
         pvals = st.norm.sf(x)
-        return(self.all_fdr_from_pvals(pvals,verbose))
+        return(self.all_fdr_from_pvals(pvals, verbose))
 
     def all_fdr_from_pvals(self, pv, verbose=0):
         """
@@ -54,24 +56,24 @@ class FDR(object):
         -----------
         pv : ndarray of shape (n)
             The samples p-value
-        
+
         Returns
         --------
         q : array of shape(n)
             The corresponding fdrs
         """
         pv = self.check_pv(pv)
-        if pv==None:
+        if pv == None:
             pv = self.pv
         n = np.size(pv)
         isx = np.argsort(pv)
         q = np.zeros(n)
         for ip in range(n):
-            q[isx[ip]] = np.minimum(1, 
-                                np.maximum(n*pv[isx[ip]]/(ip+1), q[isx[ip]]))
-            if (ip<n-1):
-                q[isx[ip+1]] = q[isx[ip]]
-        
+            q[isx[ip]] = np.minimum(1, np.maximum(n * pv[isx[ip]] / (ip + 1),
+                                                  q[isx[ip]]))
+            if (ip < n - 1):
+                q[isx[ip + 1]] = q[isx[ip]]
+
         if verbose:
             import matplotlib.pylab as mp
             mp.figure()
@@ -81,7 +83,7 @@ class FDR(object):
     def check_pv(self, pv):
         """
         Do some basic checks on the pv array: each value should be within [0,1]
-        
+
         Parameters
         ----------
         pv : array of shape (n)
@@ -93,57 +95,53 @@ class FDR(object):
             The sample p-values
         """
         pv = np.squeeze(pv)
-        if pv.min()<0:
+        if pv.min() < 0:
             print pv.min()
-            raise ValueError, "Negative p-values"
-        if pv.max()>1:
+            raise ValueError("Negative p-values")
+        if pv.max() > 1:
             print pv.max()
-            raise ValueError, "P-values greater than 1!"
+            raise ValueError("P-values greater than 1!")
         return pv
 
     def pth_from_pvals(self, pv, alpha=0.05):
-        """
-        Given a set pv of p-values, returns the critical
-        p-value associated with an FDR alpha
-        
+        """ Returns the critical p-value associated with an FDR alpha
+
         Parameters
         -----------
         alpha : float
             The desired FDR significance
-        pv : array of shape (n) 
+        pv : array of shape (n),
             The samples p-value
-        
+
         Returns
         -------
         pth: float
             The p value corresponding to the FDR alpha
         """
         pv = self.check_pv(pv)
-        
         npv = np.size(pv)
-        pcorr = alpha/npv
+        pcorr = alpha / npv
         spv = np.sort(pv)
         ip = 0
         pth = 0.
-        while (spv[ip]<pcorr*(ip+1))&(ip<npv):
+        while (spv[ip] < pcorr * (ip + 1)) & (ip < npv):
             pth = spv[ip]
-            ip = ip+1
+            ip = ip + 1
         return pth
 
     def threshold_from_student(self, df, alpha=0.05, x=None):
-        """
-        Given an array t of student variates with df dofs, returns the 
-        critical p-value associated with alpha.
-        
+        """Given an array t of student variates with df dofs,
+        returns the critical p-value associated with alpha.
+
         Parameters
-        -----------
+        ----------
         df : float
             The number of degrees of freedom
         alpha : float, optional
             The desired significance
         x : ndarray, optional
             The variate. By default self.x is used
-        
+
         Returns
         --------
         th : float
@@ -161,95 +159,93 @@ class FDR(object):
         Given an array x of normal variates, this function returns the
         critical p-value associated with alpha.
         x is explicitly assumed to be normal distributed under H_0
-        
+
         Parameters
         -----------
         alpha: float, optional
             The desired significance, by default 0.05
-        x : ndarray, optional
+        x: ndarray, optional
             The variate. By default self.x is used
 
         Returns
-        --------
-        th : float
+        -------
+        th: float,
             The threshold in variate value
         """
-        if x==None:x=self.x
+        if x == None:
+            x = self.x
         pvals = st.norm.sf(x)
-        pth = self.pth_from_pvals(pvals,alpha)
+        pth = self.pth_from_pvals(pvals, alpha)
         return st.norm.isf(pth)
-    
+
 
 class ENN(object):
-    """
-    Class to compute the empirical null normal fit to the data.
+    """Class to compute the empirical null normal fit to the data.
 
     The data which is used to estimate the FDR, assuming a gaussian null
     from Schwartzmann et al., NeuroImage 44 (2009) 71--82
     """
-    
+
     def __init__(self, x):
-        """
-        Initiate an empirical null normal object.
+        """Initialize an empirical null normal object.
 
         Parameters
         -----------
         x : 1D ndarray
             The data used to estimate the empirical null.
         """
-        x = np.reshape(x,(-1, ))
+        x = np.reshape(x, ( - 1))
         self.x = np.sort(x)
         self.n = np.size(x)
         self.learned = 0
 
     def learn(self, left=0.2, right=0.8):
         """
-        Estimate the proportion, mean and variance of a gaussian distribution 
+        Estimate the proportion, mean and variance of a gaussian distribution
         for a fraction of the data
 
         Parameters
-        -----------
-        left : float, optional
-            Left cut parameter to prevent fitting non-gaussian data         
-        right : float, optional 
-            Right cut parameter to prevent fitting non-gaussian data
+        ----------
+        left: float, optional
+              Left cut parameter to prevent fitting non-gaussian data
+        right: float, optional
+               Right cut parameter to prevent fitting non-gaussian data
 
-        Notes
-        ------
-
+        Note
+        ----
         This method stores the following attributes:
-         * mu = mu
-         * p0 = min(1, np.exp(lp0))
-         * sqsigma : standard deviation of the estimated normal
-           distribution
-         * sigma = np.sqrt(sqsigma) : variance of the estimated
-           normal distribution
+        mu = mu
+        p0 = min(1, np.exp(lp0))
+        sqsigma: standard deviation of the estimated normal
+                 distribution
+        sigma: np.sqrt(sqsigma) : variance of the estimated
+               normal distribution
         """
         # take a central subsample of x
-        x = self.x[int(self.n*left):int(self.n*right)]
-    
+        x = self.x[int(self.n * left): int(self.n * right)]
+
         # generate the histogram
-        step = 3.5*np.std(self.x)/np.exp(np.log(self.n)/3)
-        bins = max(10, (self.x.max() - self.x.min())/step)
+        step = 3.5 * np.std(self.x) / np.exp(np.log(self.n) / 3)
+        bins = max(10, (self.x.max() - self.x.min()) / step)
         hist, ledge = np.histogram(x, bins=bins)
-        step = ledge[1]-ledge[0]
-        medge = ledge + 0.5*step
-    
+        step = ledge[1] - ledge[0]
+        medge = ledge + 0.5 * step
+
         # remove null bins
-        whist = hist>0
+        whist = hist > 0
         hist = hist[whist]
         medge = medge[whist]
         hist = hist.astype('f')
 
         # fit the histogram
-        DMtx = np.ones((3, np.sum(whist)))
-        DMtx[1] = medge
-        DMtx[2] = medge**2
-        coef = np.dot(np.log(hist), pinv(DMtx))
-        sqsigma = -1.0/(2*coef[2])
-        mu = coef[1]*sqsigma
-        lp0 = (coef[0]- np.log(step*self.n) 
-                + 0.5*np.log(2*np.pi*sqsigma) + mu**2/(2*sqsigma))
+        dmtx = np.ones((3, np.sum(whist)))
+        dmtx[1] = medge
+        dmtx[2] = medge ** 2
+        coef = np.dot(np.log(hist), pinv(dmtx))
+        sqsigma = -1.0 / (2 * coef[2])
+        mu = coef[1] * sqsigma
+        lp0 = (coef[0] - np.log(step * self.n)
+                + 0.5 * np.log(2 * np.pi * sqsigma) + mu ** 2 / (2 * sqsigma))
         self.mu = mu
         self.p0 = min(1, np.exp(lp0))
         self.sigma = np.sqrt(sqsigma)
@@ -260,11 +256,16 @@ class ENN(object):
         Returns the fdr associated with any point of self.x
         """
         import scipy.stats as st
-        if self.learned==0:
+        if self.learned == 0:
             self.learn()
-        efp = ( self.p0*st.norm.sf(self.x, self.mu, self.sigma)
-               *self.n/np.arange(self.n,0,-1))
+        efp = (self.p0 * st.norm.sf(self.x, self.mu, self.sigma)
+               * self.n / np.arange(self.n, 0, - 1))
         efp = np.minimum(efp, 1)
+        ix = np.argsort(self.x)
+        for i in range(np.size(efp) - 1, 0, - 1):
+            efp[ix[i - 1]] = np.maximum(efp[ix[i]], efp[ix[i - 1]])
+        self.sorted_x = self.x[ix]
+        self.sorted_fdr = efp[ix]
         return efp
 
     def threshold(self, alpha=0.05, verbose=0):
@@ -277,26 +278,26 @@ class ENN(object):
             the chosen false discovery rate threshold.
         verbose : boolean, optional
             the verbosity level, if True a plot is generated.
-        
+
         Results
         --------
         theta: float
             the critical value associated with the provided fdr
         """
         efp = self.fdrcurve()
+
         if verbose:
             self.plot(efp, alpha)
-    
+
         if efp[-1] > alpha:
             print "the maximal value is %f , the corresponding fdr is %f " \
-                    % (self.x[-1], efp[-1])
+                    % (self.x[ - 1], efp[ - 1])
             return np.infty
-        j = np.argmin(efp[::-1] < alpha) + 1
-        return 0.5*(self.x[-j] + self.x[-j+1])
+        j = np.argmin(efp[:: - 1] < alpha) + 1
+        return 0.5 * (self.x[ - j] + self.x[ - j + 1])
 
     def uncorrected_threshold(self, alpha=0.001, verbose=0):
-        """
-        Compute the threshold correponding to a specificity alpha for x
+        """ Compute the threshold correponding to a specificity alpha for x
 
         Parameters
         -----------
@@ -304,13 +305,13 @@ class ENN(object):
             the chosen false discovery rate threshold.
         verbose : boolean, optional
             the verbosity level, if True a plot is generated.
-        
+
         Results
         --------
         theta: float
             the critical value associated with the provided p-value
         """
-        if self.learned==0:
+        if self.learned == 0:
             self.learn()
         threshold = st.norm.isf(alpha, self.mu, self.sigma)
         if not np.isfinite(threshold):
@@ -319,52 +320,74 @@ class ENN(object):
             self.plot()
         return threshold
 
-    def fdr(self,theta):
+    def fdr(self, theta):
+        """Given a threshold theta, find the estimated fdr
+
+        Parameter
+        ---------
+        theta: float or array of shape (n_samples)
+               values to test
+
+        Returns
+        -------
+        afp: value of array of shape(n)
         """
-        given a threshold theta, find the estimated fdr
-        """
-        import scipy.stats as st
-        if self.learned==0:
-            self.learn()
-        efp = self.p0*st.norm.sf(theta,self.mu,self.sigma)\
-              *float(self.n)/np.sum(self.x>theta)
-        efp = np.minimum(efp,1)
+        from scipy.stats import norm
+        self.fdrcurve()
+        if np.isscalar(theta):
+            if theta > self.sorted_x[ - 1]:
+                return 0
+            maj = np.where(self.sorted_x >= theta)[0][0]
+            efp = (self.p0 * norm.sf(theta, self.mu, self.sigma) * self.n\
+                  / np.sum(self.x >= theta))
+            efp = np.maximum(self.sorted_fdr[maj], efp)
+        else:
+            efp = []
+            for th in theta:
+                if th > self.sorted_x[ - 1]:
+                    efp.append(0)
+                    continue
+                maj = self.sorted_fdr[np.where(self.sorted_x >= th)[0][0]]
+                efp.append(np.maximum(maj, self.p0 * st.norm.sf(th, self.mu,
+                           self.sigma) * self.n / np.sum(self.x >= th)))
+            efp = np.array(efp)
+            #
+        efp = np.minimum(efp, 1)
         return efp
 
     def plot(self, efp=None, alpha=0.05, bar=1, mpaxes=None):
-        """
-        plot the  histogram of x
-        
+        """plot the  histogram of x
+
         Parameters
         ------------
-        efp : float, optional 
+        efp : float, optional
             The empirical fdr (corresponding to x)
-            if efp==None, the false positive rate threshod plot is not 
+            if efp==None, the false positive rate threshod plot is not
             drawn.
-        alpha : float, optional 
+        alpha : float, optional
             The chosen fdr threshold
         bar=1 : bool, optional
-        mpaxes=None: if not None, handle to an axes where the fig.
-        will be drawn. Avoids creating unnecessarily new figures.
-        """ 
+        mpaxes=None: if not None, handle to an axes where the fig
+        will be drawn. Avoids creating unnecessarily new figures
+        """
         if not self.learned:
             self.learn()
         n = np.size(self.x)
-        bins = max(10, int(2*np.exp(np.log(n)/3.)))
+        bins = max(10, int(2 * np.exp(np.log(n) / 3.)))
         hist, ledge = np.histogram(self.x, bins=bins)
-        hist = hist.astype('f')/hist.sum()
-        step = ledge[1]-ledge[0]
-        medge = ledge + 0.5*step
+        hist = hist.astype('f') / hist.sum()
+        step = ledge[1] - ledge[0]
+        medge = ledge + 0.5 * step
         import scipy.stats as st
-        g = self.p0*st.norm.pdf(medge, self.mu, self.sigma) 
+        g = self.p0 * st.norm.pdf(medge, self.mu, self.sigma)
         hist /= step
-        
+
         import matplotlib.pylab as mp
-        if mpaxes==None:
+        if mpaxes == None:
             mp.figure()
-            ax = mp.subplot(1,1,1)
+            ax = mp.subplot(1, 1, 1)
         else:
-            ax = mpaxes 
+            ax = mpaxes
         if bar:
             # We need to cut ledge to len(hist) to accomodate for pre and
             # post numpy 1.3 hist semantic change.
@@ -381,18 +404,15 @@ class ENN(object):
 
         if efp != None:
             ax.plot(self.x, np.minimum(alpha, efp), 'k')
-    
 
- 
+
 def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
-                          verbose=0, fixed_scale=False, mpaxes=None, bias=0, 
+                          verbose=0, fixed_scale=False, mpaxes=None, bias=0,
                           theta=0, return_estimator=False):
-    """
-     Fit the data with a 3-classes Gaussian Mixture Model,
+    """ Fit the data with a 3-classes Gaussian Mixture Model,
     i.e. computing some probability that the voxels of a certain map
     are in class disactivated, null or active
 
-    
     Parameters
     ----------
     x array of shape (nvox,1): the map to be analysed
@@ -416,7 +436,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
     return_estimator: boolean, optional
             If return_estimator is true, the estimator object is
             returned.
-    
+
     Results
     -------
     bfp : array of shape (nbitems,3):
@@ -433,31 +453,31 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
     - class 2 represenst the null class
     - class 3 represents the positsive class
     """
-    nvox = np.size(x)
-    x = np.reshape(x,(nvox,1))
-    if test==None:
-        test = x
-    if np.size(test)==0:
-        return None
-    
     from nipy.neurospin.clustering.bgmm import VBGMM
     from nipy.neurospin.clustering.gmm import GridDescriptor
-    
-    sx = np.sort(x,0)   
-    nclasses=3
-    
-    # set the priors from a reasonable model of the data (!)
 
-    # prior means 
-    mb0 = np.mean(sx[:alpha*nvox])
-    mb2 = np.mean(sx[(1-alpha)*nvox:])
-    prior_means = np.reshape(np.array([mb0,0,mb2]),(nclasses,1))
+    nvox = np.size(x)
+    x = np.reshape(x, (nvox, 1))
+    if test == None:
+        test = x
+    if np.size(test) == 0:
+        return None
+
+    sx = np.sort(x, 0)
+    nclasses = 3
+
+    # set the priors from a reasonable model of the data (!)
+    # prior means
+    mb0 = np.mean(sx[ : alpha * nvox])
+    mb2 = np.mean(sx[(1 - alpha) * nvox:])
+    prior_means = np.reshape(np.array([mb0, 0, mb2]), (nclasses, 1))
     if fixed_scale:
-        prior_scale = np.ones((nclasses,1,1)) * 1./(prior_strength)
+        prior_scale = np.ones((nclasses, 1, 1)) * 1. / (prior_strength)
     else:
-        prior_scale = np.ones((nclasses,1,1)) * 1./(prior_strength*np.var(x))
+        prior_scale = np.ones((nclasses, 1, 1)) * 1. / \
+            (prior_strength * np.var(x))
     prior_dof = np.ones(nclasses) * prior_strength
-    prior_weights = np.array([alpha,1-2*alpha,alpha]) * prior_strength
+    prior_weights = np.array([alpha, 1 - 2 * alpha, alpha]) * prior_strength
     prior_shrinkage = np.ones(nclasses) * prior_strength
 
     # instantiate the class and set the priors
@@ -467,26 +487,26 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
                            prior_dof, prior_shrinkage)
 
     # estimate the model
-    BayesianGMM.estimate(x, delta = 1.e-8, verbose=max(0, verbose-1))
+    BayesianGMM.estimate(x, delta=1.e-8, verbose=max(0, verbose-1))
 
     # create a sampling grid
     if (verbose or bias):
-        gd = GridDescriptor(1) 
-        gd.set([x.min(),x.max()],100)
+        gd = GridDescriptor(1)
+        gd.set([x.min(), x.max()], 100)
         gdm = gd.make_grid().squeeze()
         lj = BayesianGMM.likelihood(gd.make_grid())
-    
+
     # estimate the prior weights
     bfp = BayesianGMM.likelihood(test)
     if bias:
-        lw = np.sum(lj[gdm>theta],0)
-        weights = BayesianGMM.weights/(BayesianGMM.weights.sum())
-        bfp = (lw/weights)*BayesianGMM.slikelihood(test)
-    
-    if verbose>1:
+        lw = np.sum(lj[gdm > theta], 0)
+        weights = BayesianGMM.weights / (BayesianGMM.weights.sum())
+        bfp = (lw / weights) * BayesianGMM.slikelihood(test)
+
+    if verbose > 1:
         BayesianGMM.show_components(x, gd, lj, mpaxes)
 
-    bfp = (bfp.T/bfp.sum(1)).T
+    bfp = (bfp.T / bfp.sum(1)).T
     if not return_estimator:
         return bfp
     else:
@@ -498,7 +518,7 @@ def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
     """
     Computing some prior probabilities that the voxels of a certain map
     are in class disactivated, null or active uning a gamma-Gaussian mixture
-    
+
     Parameters
     ------------
     x: array of shape (nvox,)
@@ -515,16 +535,16 @@ def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
     bias: float, optional
             lower bound on the gaussian variance (to avoid shrinkage)
     gaussian_mix: float, optional
-            if nonzero, lower bound on the gaussian mixing weight 
+            if nonzero, lower bound on the gaussian mixing weight
             (to avoid shrinkage)
     return_estimator: boolean, optional
             If return_estimator is true, the estimator object is
             returned.
-    
+
     Returns
     -------
     bfp: array of shape (nbitems,3)
-            The probability of each component in the mixture model for each 
+            The probability of each component in the mixture model for each
             test value
     estimator: nipy.neurospin.clustering.ggmixture.GGGM object
         The estimator object, returned only if return_estimator is true.
@@ -534,7 +554,7 @@ def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
     Ggg.init_fdr(x)
     Ggg.estimate(x, niter=100, delta=1.e-8, bias=bias, verbose=0,
                     gaussian_mix=gaussian_mix)
-    if verbose>1:
+    if verbose > 1:
         # hyper-verbose mode
         Ggg.show(x, mpaxes=mpaxes)
         Ggg.parameters()
@@ -542,16 +562,16 @@ def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
         test = x
 
     test = np.reshape(test, np.size(test))
-   
+
     bfp = np.array(Ggg.posterior(test)).T
     if return_estimator:
         return bfp, Ggg
     return bfp
 
+
 def smoothed_histogram_from_samples(x, bins=None, nbins=256, normalized=False):
-    """
-    Returns the smooth histogram corresponding to the  density
-    underlying the smples in x
+    """ Returns the smooth histogram corresponding to the  density
+    underlying the samples in x
 
     Parameters
     ----------
@@ -563,31 +583,31 @@ def smoothed_histogram_from_samples(x, bins=None, nbins=256, normalized=False):
            the number of bins of the resulting histogram
     Normalized: bool, optional
                 if True, the result is returned as a density value
-                
+
     Returns
     -------
     h: array of shape (nbins)
        the histogram
     bins: array of shape(nbins+1),
-       the bins location
+          the bins location
     """
     from scipy.ndimage import gaussian_filter1d
-    
+
     # first define the bins
     if bins is None:
         h, bins = np.histogram(x, nbins)
-        bins = bins.mean()+1.2*(bins-bins.mean())
+        bins = bins.mean() + 1.2 * (bins - bins.mean())
         h, bins = np.histogram(x, bins)
-        
+
     # possibly normalize to density
-    h = 1.0*h
-    dc = bins[1]-bins[0]
+    h = 1.0 * h
+    dc = bins[1] - bins[0]
     if normalized:
-        h /= (dc*h.sum())
-        
+        h /= (dc * h.sum())
+
     # define the optimal width
-    sigma = x.std()/(dc*np.exp(.2*np.log(x.size)))
-    
+    sigma = x.std() / (dc * np.exp(.2 * np.log(x.size)))
+
     # smooth the histogram
     h = gaussian_filter1d(h, sigma, mode='constant')
 

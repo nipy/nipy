@@ -19,12 +19,12 @@ import numpy as np
 import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
 import nipy.neurospin.utils.emp_null as en
 
-################################################################################
+###############################################################################
 # simulate the data
 dimx = 60
 dimy = 60
-pos = 2*np.array([[6,7],[10,10],[15,10]])
-ampli = np.array([3,4,4])
+pos = 2 * np.array([[6, 7], [10, 10], [15, 10]])
+ampli = np.array([3, 4, 4])
 
 dataset = simul.surrogate_2d_dataset(nbsubj=1, dimx=dimx, dimy=dimy, pos=pos,
                                      ampli=ampli, width=10.0).squeeze()
@@ -38,7 +38,7 @@ pl.title('Raw data')
 
 Beta = dataset.ravel().squeeze()
 
-################################################################################
+###############################################################################
 # fit Beta's histogram with a Gamma-Gaussian mixture
 gam_gaus_pp = en.Gamma_Gaussian_fit(Beta, Beta)
 gam_gaus_pp = np.reshape(gam_gaus_pp, (dimx, dimy, 3))
@@ -57,7 +57,7 @@ pl.imshow(gam_gaus_pp[..., 2], cmap=pl.cm.hot)
 pl.title('Gamma-Gaussian mixture,\n third component posterior proba.')
 pl.colorbar()
 
-################################################################################
+###############################################################################
 # fit Beta's histogram with a mixture of Gaussians
 alpha = 0.01
 gaus_mix_pp = en.three_classes_GMM_fit(Beta, None, 
@@ -79,7 +79,7 @@ pl.imshow(gaus_mix_pp[..., 2], cmap=pl.cm.hot)
 pl.title('Gamma-Gaussian mixture,\n third component posterior proba.')
 pl.colorbar()
 
-################################################################################
+###############################################################################
 # Fit the null mode of Beta with an empirical normal null
 
 efdr = en.ENN(Beta)
@@ -87,11 +87,7 @@ emp_null_fdr = efdr.fdr(Beta)
 emp_null_fdr = emp_null_fdr.reshape((dimx, dimy))
 
 pl.subplot(3, 3, 3)
-pl.imshow(1-emp_null_fdr, cmap=pl.cm.hot)
+pl.imshow(1 - emp_null_fdr, cmap=pl.cm.hot)
 pl.colorbar()
 pl.title('Empirical FDR\n ')
-
-#efdr.plot()
-#pl.title('Empirical FDR fit')
-
 pl.show()
