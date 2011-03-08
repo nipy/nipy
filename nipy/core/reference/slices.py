@@ -56,13 +56,15 @@ def xslice(x, y_spec, z_spec, output_space=''):
     >>> bounding_box(x30, (y_spec[1], z_spec[1]))
     ((30.0, 30.0), (-114.0, 114.0), (-70.0, 100.0))
     """
-    zlim = z_spec[0]
-    ylim = y_spec[0]
-    shape = (z_spec[1], y_spec[1])
-    origin = [x,ylim[0],zlim[0]]
-    colvectors = [[0,(ylim[1]-ylim[0])/(shape[1] - 1.),0],
-                  [0,0,(zlim[1]-zlim[0])/(shape[0] - 1.)]]
-    T = from_matrix_vector(np.vstack(colvectors).T, origin)
+    (ymin, ymax), yno = y_spec
+    y_tick = (ymax-ymin) / (yno - 1.0)
+    (zmin, zmax), zno = z_spec
+    z_tick = (zmax-zmin) / (zno - 1.0)
+    origin = [x, ymin, zmin]
+    colvectors = np.asarray([[0, 0],
+                             [y_tick, 0],
+                             [0, z_tick]])
+    T = from_matrix_vector(colvectors, origin)
     affine_domain = CoordinateSystem(['i_y', 'i_z'], 'slice')
     affine_range = CoordinateSystem(lps_output_coordnames, output_space)
     return AffineTransform(affine_domain,
@@ -114,13 +116,15 @@ def yslice(y, x_spec, z_spec, output_space=''):
     >>> bounding_box(y70, (x_spec[1], z_spec[1]))
     ((-92.0, 92.0), (70.0, 70.0), (-70.0, 100.0))
     """
-    xlim = x_spec[0]
-    zlim = z_spec[0]
-    shape = (z_spec[1], x_spec[1])
-    origin = [xlim[0],y,zlim[0]]
-    colvectors = [[(xlim[1]-xlim[0])/(shape[1] - 1.),0,0],
-                  [0,0,(zlim[1]-zlim[0])/(shape[0] - 1.)]]
-    T = from_matrix_vector(np.vstack(colvectors).T, origin)
+    (xmin, xmax), xno = x_spec
+    x_tick = (xmax-xmin) / (xno - 1.0)
+    (zmin, zmax), zno = z_spec
+    z_tick = (zmax-zmin) / (zno - 1.0)
+    origin = [xmin, y, zmin]
+    colvectors = np.asarray([[x_tick, 0],
+                             [0, 0],
+                             [0, z_tick]])
+    T = from_matrix_vector(colvectors, origin)
     affine_domain = CoordinateSystem(['i_x', 'i_z'], 'slice')
     affine_range = CoordinateSystem(lps_output_coordnames, output_space)
     return AffineTransform(affine_domain,
@@ -147,8 +151,8 @@ def zslice(z, x_spec, y_spec, output_space=''):
     Returns
     -------
     affine_transform : AffineTransform
-       An affine transform that describes an plane in
-       LPS coordinates with z fixed.
+       An affine transform that describes a plane in LPS coordinates with z
+       fixed.
 
     Examples
     --------
@@ -171,13 +175,15 @@ def zslice(z, x_spec, y_spec, output_space=''):
     >>> bounding_box(z40, (x_spec[1], y_spec[1]))
     ((-92.0, 92.0), (-114.0, 114.0), (40.0, 40.0))
     """
-    xlim = x_spec[0]
-    ylim = y_spec[0]
-    shape = (y_spec[1], x_spec[1])
-    origin = [xlim[0],ylim[0],z]
-    colvectors = [[(xlim[1]-xlim[0])/(shape[1] - 1.),0,0],
-                  [0,(ylim[1]-ylim[0])/(shape[0] - 1.),0]]
-    T = from_matrix_vector(np.vstack(colvectors).T, origin)
+    (xmin, xmax), xno = x_spec
+    x_tick = (xmax-xmin) / (xno - 1.0)
+    (ymin, ymax), yno = y_spec
+    y_tick = (ymax-ymin) / (yno - 1.0)
+    origin = [xmin, ymin, z]
+    colvectors = np.asarray([[x_tick, 0],
+                             [0, y_tick],
+                             [0, 0]])
+    T = from_matrix_vector(colvectors, origin)
     affine_domain = CoordinateSystem(['i_x', 'i_y'], 'slice')
     affine_range = CoordinateSystem(lps_output_coordnames, output_space)
     return AffineTransform(affine_domain,

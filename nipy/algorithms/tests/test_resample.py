@@ -12,7 +12,7 @@ from nipy.io.api import load_image
 from nose.tools import assert_true, assert_raises
 
 from numpy.testing import assert_array_almost_equal
-from nipy.testing import funcfile, anatfile, parametric
+from nipy.testing import funcfile, anatfile
 
 
 def test_resample_img2img():
@@ -230,27 +230,34 @@ def test_2d_from_3d():
     yield assert_array_almost_equal, np.asarray(ir), np.asarray(i[10])
 
 
-@parametric
 def test_slice_from_3d():
     # Resample a 3d image, returning a zslice, yslice and xslice
     # 
     # This example creates a coordmap that coincides with
-    # the 10th slice of an image, and checks that
-    # resampling agrees with the data in the 10th slice.
+    # a given z, y, or x slice of an image, and checks that
+    # resampling agrees with the data in the given slice.
     shape = (100,90,80)
-    g = AffineTransform.from_params('ijk', 'xyz', np.diag([0.5,0.5,0.5,1]))
-    i = Image(np.ones(shape), g)
-    i[50:55,40:55,30:33] = 3
-    a = np.identity(4)
+    g = AffineTransform.from_params('ijk',
+                                    'xyz',
+                                    np.diag([0.5,0.5,0.5,1]))
+    img = Image(np.ones(shape), g)
+    img[50:55,40:55,30:33] = 3
+    I = np.identity(4)
     zsl = slices.zslice(26,
+                        ((0,49.5), 100),
+                        ((0,44.5), 90),
+                        img.reference)
+    ir = resample(img, zsl, I, (100, 90))
+    assert_true(np.allclose(np.asarray(ir), np.asarray(img[:,:,53])))
+    ysl = slices.yslice(22,
+                        ((0,49.5), 100),
+                        ((0,39.5), 80),
+                        img.reference)
+    ir = resample(img, ysl, I, (100, 80))
+    assert_true(np.allclose(np.asarray(ir), np.asarray(img[:,45,:])))
+    xsl = slices.xslice(15.5,
                         ((0,44.5), 90),
                         ((0,39.5), 80),
-                        i.reference)
-    ir = resample(i, zsl, a, (90, 80))
-    yield assert_true(np.allclose(np.asarray(ir), np.asarray(i[53])))
-    ysl = slices.yslice(22, (0,49.5), (0,39.5), i.reference, (100,80))
-    ir = resample(i, ysl.coordmap, a, ysl.shape)
-    yield assert_true(np.allclose(np.asarray(ir), np.asarray(i[:,45])))
-    xsl = slices.xslice(15.5, (0,49.5), (0,44.5), i.reference, (100,90))
-    ir = resample(i, xsl.coordmap, a, xsl.shape)
-    yield assert_true(np.allclose(np.asarray(ir), np.asarray(i[:,:,32])))
+                        img.reference)
+    ir = resample(img, xsl, I, (90, 80))
+    assert_true(np.allclose(np.asarray(ir), np.asarray(img[32,:,:])))
