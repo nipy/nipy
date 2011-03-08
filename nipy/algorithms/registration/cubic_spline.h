@@ -42,16 +42,18 @@ extern "C" {
   */
   extern void cubic_spline_transform(PyArrayObject* res, const PyArrayObject* src);
 
-  extern double cubic_spline_sample1d(double x, const PyArrayObject* coef); 
-  extern double cubic_spline_sample2d(double x, double y, const PyArrayObject* coef); 
-  extern double cubic_spline_sample3d(double x, double y, double z, const PyArrayObject* coef); 
-  extern double cubic_spline_sample4d(double x, double y, double z, double t, const PyArrayObject* coef); 
+  extern double cubic_spline_sample1d(double x, const PyArrayObject* coef, 
+				      int mode); 
+  extern double cubic_spline_sample2d(double x, double y, const PyArrayObject* coef,
+				      int mode_x, int mode_y);
+  extern double cubic_spline_sample3d(double x, double y, double z, const PyArrayObject* coef, 
+				      int mode_x, int mode_y, int mode_z);
+  extern double cubic_spline_sample4d(double x, double y, double z, double t, const PyArrayObject* coef,
+				      int mode_x, int mode_y, int mode_z, int mode_t); 
+  extern void cubic_spline_resample3d(PyArrayObject* im_resampled, const PyArrayObject* im, 
+				      const double* Tvox, int cast_integer,
+				      int mode_x, int mode_y, int mode_z);
 
-
-  extern void cubic_spline_resample3d(PyArrayObject* im_resampled, 
-				      const PyArrayObject* im, 
-				      const double* Tvox, 
-				      int cast_integer); 
     
 
 #ifdef __cplusplus
