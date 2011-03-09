@@ -15,21 +15,24 @@ from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
 from nipy.core.image.affine_image import AffineImage
 from nipy.algorithms.optimize import fmin_steepest
 
-from .constants import _OPTIMIZER, _XTOL, _FTOL, _GTOL, _STEP
 from ._registration import _joint_histogram
 from .affine import inverse_affine, subgrid_affine, affine_transforms
 from .chain_transform import ChainTransform 
 from .similarity_measures import similarity_measures as _sms
 
-
-# Module global - enables online print statements
-DEBUG = True
-
-_CLAMP_DTYPE = 'short' # do not edit
-_BINS = 256
-_SIMILARITY = 'crl1'
-_INTERP = 'pv'
-_NPOINTS = 64**3
+# Module globals
+VERBOSE = True # enables online print statements
+OPTIMIZER = 'powell'
+XTOL = 1e-2
+FTOL = 1e-2
+GTOL = 1e-3
+STEPSIZE = 1e-1 
+MAXITER = 25 
+CLAMP_DTYPE = 'short' # do not edit
+BINS = 256
+SIMILARITY = 'crl1'
+INTERP = 'pv'
+NPOINTS = 64**3
 
 # Dictionary of interpolation methods (partial volume, trilinear,
 # random)
@@ -42,9 +45,9 @@ class HistogramRegistration(object):
     algorithm.
     """
     def __init__(self, from_img, to_img, 
-                 from_bins=_BINS, to_bins=None, 
+                 from_bins=BINS, to_bins=None, 
                  from_mask=None, to_mask=None, 
-                 similarity=_SIMILARITY, interp=_INTERP,
+                 similarity=SIMILARITY, interp=INTERP,
                  **kwargs):
         """
         Creates a new histogram registration object.
@@ -96,7 +99,7 @@ class HistogramRegistration(object):
         if not to_mask == None: 
             mask = to_mask.get_data()
         data, to_bins = clamp(to_img.get_data(), bins=to_bins, mask=mask)
-        self._to_data = -np.ones(np.array(to_img.shape)+2, dtype=_CLAMP_DTYPE)
+        self._to_data = -np.ones(np.array(to_img.shape)+2, dtype=CLAMP_DTYPE)
         self._to_data[1:-1, 1:-1, 1:-1] = data
         self._to_inv_affine = inverse_affine(to_img.affine)
         
@@ -116,7 +119,7 @@ class HistogramRegistration(object):
 
     interp = property(_get_interp, _set_interp)
         
-    def subsample(self, spacing=None, corner=[0,0,0], size=None, npoints=_NPOINTS):
+    def subsample(self, spacing=None, corner=[0,0,0], size=None, npoints=NPOINTS):
         """ 
         Defines a subset of the `from` image to restrict joint
         histogram computation.
@@ -202,7 +205,7 @@ class HistogramRegistration(object):
                          interp)
         return self._similarity_call(self._joint_hist)
 
-    def optimize(self, T, optimizer=_OPTIMIZER, **kwargs):
+    def optimize(self, T, optimizer=OPTIMIZER, **kwargs):
         """ Optimize transform `T` with respect to similarity measure. 
 
         The input object `T` will change as a result of the optimization.
@@ -239,7 +242,7 @@ class HistogramRegistration(object):
             return -self._eval(Tv) 
 
         # Callback during optimization
-        if callback is None and DEBUG:
+        if callback == None and VERBOSE:
             def callback(tc):
                 Tv.param = tc
                 print(Tv.optimizable)
@@ -247,32 +250,34 @@ class HistogramRegistration(object):
                 print('')
 
         # Switching to the appropriate optimizer
-        if DEBUG:
+        if VERBOSE:
             print('Initial guess...')
             print(Tv.optimizable)
         if optimizer=='powell':
             fmin = fmin_powell
-            kwargs.setdefault('xtol', _XTOL)
-            kwargs.setdefault('ftol', _FTOL)
+            kwargs.setdefault('xtol', XTOL)
+            kwargs.setdefault('ftol', FTOL)
         elif optimizer=='steepest':
             fmin = fmin_steepest
-            kwargs.setdefault('xtol', _XTOL)
-            kwargs.setdefault('ftol', _FTOL)
-            kwargs.setdefault('step', _STEP)
+            kwargs.setdefault('xtol', XTOL)
+            kwargs.setdefault('ftol', FTOL)
+            kwargs.setdefault('step', STEPSIZE)
         elif optimizer=='cg':
             fmin = fmin_cg
-            kwargs.setdefault('gtol', _GTOL)
+            kwargs.setdefault('gtol', GTOL)
+            kwargs.setdefault('maxiter', MAXITER)
         elif optimizer=='bfgs':
             fmin = fmin_bfgs
-            kwargs.setdefault('gtol', _GTOL)
+            kwargs.setdefault('gtol', GTOL)
+            kwargs.setdefault('maxiter', MAXITER)
         elif optimizer == 'simplex':
             fmin = fmin_simplex 
-            kwargs.setdefault('xtol', _XTOL)
-            kwargs.setdefault('ftol', _FTOL)
+            kwargs.setdefault('xtol', XTOL)
+            kwargs.setdefault('ftol', FTOL)
         else:
             raise ValueError('Unknown optimizer name: %s???' % optimizer)
         # Output
-        if DEBUG:
+        if VERBOSE:
             print ('Optimizing using %s' % fmin.__name__)
         Tv.param = fmin(cost, tc0, callback=callback, **kwargs)
         return Tv.optimizable
@@ -310,7 +315,7 @@ class HistogramRegistration(object):
         
 
 
-def _clamp(x, y, bins=_BINS, mask=None):
+def _clamp(x, y, bins=BINS, mask=None):
 
     # Threshold
     dmaxmax = 2**(8*y.dtype.itemsize-1)-1
@@ -338,7 +343,7 @@ def _clamp(x, y, bins=_BINS, mask=None):
     return y, bins 
 
 
-def clamp(x, bins=_BINS, mask=None):
+def clamp(x, bins=BINS, mask=None):
     """ 
     Clamp array values that fall within a given mask in the range
     [0..bins-1] and reset masked values to -1.
@@ -365,7 +370,7 @@ def clamp(x, bins=_BINS, mask=None):
     """
     if bins > np.iinfo(np.short).max:
         raise ValueError('Too large a bin size')
-    y = -np.ones(x.shape, dtype=_CLAMP_DTYPE)
+    y = -np.ones(x.shape, dtype=CLAMP_DTYPE)
     if mask == None: 
         y, bins = _clamp(x, y, bins)
     else:

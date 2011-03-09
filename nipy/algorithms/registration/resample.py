@@ -16,9 +16,7 @@ def resample(moving, transform, grid_coords=False, reference=None,
              dtype=None, interp_order=_INTERP_ORDER):
     """
     Apply a transformation to the image considered as 'moving' to
-    bring it into the same grid as a given 'reference' image. For
-    technical reasons, the transformation is assumed to go from the
-    'reference' to the 'moving'.
+    bring it into the same grid as a given 'reference' image. 
 
     This function uses scipy.ndimage except for the case
     `interp_order==3`, where a fast cubic spline implementation is
@@ -30,9 +28,11 @@ def resample(moving, transform, grid_coords=False, reference=None,
       Image to be resampled. 
 
     transform: nd array
-      either a 4x4 matrix describing an affine transformation
-      or a 3xN array describing voxelwise displacements of the
-      reference grid points
+      Either a 4x4 matrix describing an affine transformation,
+      or an array with last dimension 3 describing voxelwise
+      displacements of the reference grid points.
+      For technical reasons, the transform is assumed to go from the
+      'reference' to the 'moving'.
     
     grid_coords : boolean
       True if the transform maps to grid coordinates, False if it maps
@@ -42,7 +42,7 @@ def resample(moving, transform, grid_coords=False, reference=None,
       Reference image, defaults to input. 
       
     interp_order: number 
-      spline interpolation order, defaults to 3. 
+      Spline interpolation order, defaults to 3. 
     """
     if reference == None: 
         reference = moving

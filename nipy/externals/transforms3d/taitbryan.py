@@ -321,7 +321,7 @@ def quat2euler(q):
     large.
     '''
     # delayed import to avoid cyclic dependencies
-    import transforms3d.quaternions as nq
+    from . import quaternions as nq
     return mat2euler(nq.quat2mat(q))
 
 
@@ -355,7 +355,7 @@ def euler2axangle(z=0, y=0, x=0):
     1.5
     '''
     # delayed import to avoid cyclic dependencies
-    import transforms3d.quaternions as nq
+    from . import quaternions as nq
     return nq.quat2axangle(euler2quat(z, y, x))
 
     
@@ -390,6 +390,6 @@ def axangle2euler(vector, theta):
     repetition is large.
     '''
     # delayed import to avoid cyclic dependencies
-    import transforms3d.quaternions as nq
+    from . import quaternions as nq
     M = nq.axangle2rmat(vector, theta)
     return mat2euler(M)

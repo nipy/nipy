@@ -51,6 +51,7 @@ from nipy.algorithms.resample import resample as resample2
 from os.path import join
 import sys
 import time
+import tempfile
 import numpy as np
 
 print('Scanning data directory...')
@@ -60,6 +61,7 @@ source = 'ammon'
 target = 'anubis'
 source_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+source+'.nii.gz')
 target_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+target+'.nii.gz')
+savedir = tempfile.mkdtemp()
 
 # Optional arguments
 similarity = 'crl1' 
@@ -102,7 +104,7 @@ toc = time.time()
 print('  Resampling time: %f sec' % (toc-tic))
 
 # Save resampled source
-outfile =  source+'_TO_'+target+'.nii'
+outfile =  join(savedir, source+'_TO_'+target+'.nii')
 print ('Saving resampled source in: %s' % outfile)
 save_image(It, outfile)
 
