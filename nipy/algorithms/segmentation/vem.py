@@ -9,9 +9,12 @@ from _mrf import _ve_step, _concensus
 TINY = 1e-300
 NITERS = 20
 BETA = 0.2 
+VERBOSE = True
 
 
-
+def print_(s): 
+    if VERBOSE: 
+        print(s) 
 
 def gauss_dist(x, mu, sigma):
     return np.exp(-.5*((x-float(mu))/float(sigma))**2)/float(sigma)
@@ -30,7 +33,7 @@ def vm_step_gauss(ppm, data_masked, mask):
     sigma = np.zeros(nclasses)
     prop = np.zeros(nclasses)
     for i in range(nclasses):
-        P = ppm.T[i].T[mask]
+        P = ppm[..., i][mask]
         Z = P.sum()
         tmp = data_masked*P
         mu[i] = tmp.sum()/Z
@@ -62,7 +65,7 @@ def vm_step_laplace(ppm, data_masked, mask):
     prop = np.zeros(nclasses)
     sorted_indices = np.argsort(data_masked) # data_masked[ind] increasing
     for i in range(nclasses):
-        P = ppm.T[i].T[mask]
+        P = ppm[..., i][mask]
         mu[i] = weighted_median(data_masked, P, sorte_indices) 
         sigma[i] = np.sum(np.abs(P*(data_masked-mu[i])))/P.sum()
         prop[i] = P.sum()/float(data_masked.size) 
@@ -133,7 +136,7 @@ class VEM(object):
         # Mixing matrix 
         self.mixmat = mixmat
 
-        # Cach beta parameter
+        # Cache beta parameter
         self._beta = BETA
 
     # VM-step: estimate parameters
@@ -182,7 +185,7 @@ class VEM(object):
         # Update and normalize reference probabibility map using
         # neighborhood information (mean-field theory)
         else: 
-            print('  ... MRF regularization')
+            print_('  ... MRF regularization')
             # Deal with mixing matrix and label switching
             mixmat = self.mixmat 
             if not mixmat == None:
@@ -196,24 +199,24 @@ class VEM(object):
 
         do_vm_step = (mu==None)
 
-        def format(x, default=0.0): 
+        def check(x, default=0.0): 
             if x == None: 
                 return default*np.ones(self.nclasses, dtype='double')
             else: 
                 return np.asarray(x, dtype='double')
-        mu = format(mu) 
-        sigma = format(sigma)
-        prop = format(prop, default=1./self.nclasses)
+        mu = check(mu) 
+        sigma = check(sigma)
+        prop = check(prop, default=1./self.nclasses)
         prop0 = prop
 
         for i in range(niters):
-            print('VEM iter %d/%d' % (i+1, niters))
-            print('  VM-step...')
+            print_('VEM iter %d/%d' % (i+1, niters))
+            print_('  VM-step...')
             if do_vm_step: 
                 mu, sigma, prop = self.vm_step()
                 if freeze_prop:
                     prop = prop0
-            print('  VE-step...')
+            print_('  VE-step...')
             self.ve_step(mu, sigma, prop, beta=beta)
             do_vm_step = True
 
