@@ -29,6 +29,7 @@ def plot_tsdiffs(results, axes=None):
         import matplotlib.pyplot as plt
         n_plots = 4
         fig = plt.figure()
+        fig.set_size_inches([10,10])
         axes = [plt.subplot(n_plots, 1, i+1) for i in range(n_plots)]
         
     def xmax_labels(ax, val, xlabel, ylabel):
@@ -44,7 +45,15 @@ def plot_tsdiffs(results, axes=None):
     
     # plot of diff by slice
     ax = axes[1]
-    ax.plot(scaled_slice_diff, 'x')
+    #Set up the color map for the different slices:
+    X, Y = np.meshgrid(np.arange(scaled_slice_diff.shape[0]),
+                       np.arange(scaled_slice_diff.shape[1]))
+
+    # Use HSV in order to code the slices from bottom to top:
+    ax.scatter(X.T.ravel(),scaled_slice_diff.ravel(),
+               c=Y.T.ravel(),cmap=cm.hsv,
+               alpha=0.2)
+
     xmax_labels(ax, T-1,
                 'Difference image number',
                 'Slice by slice variance')
@@ -54,7 +63,7 @@ def plot_tsdiffs(results, axes=None):
     ax.plot(results['volume_means'] / mean_means)
     xmax_labels(ax, T,
                 'Image number',
-                'Scaled mean voxel intensity')
+                'Scaled mean \n voxel intensity')
     
     # slice plots min max mean
     ax = axes[3]
@@ -65,7 +74,7 @@ def plot_tsdiffs(results, axes=None):
     ax.hold(False)
     xmax_labels(ax, S+1,
                 'Slice number',
-                'Max/mean/min slice variation')
+                'Max/mean/min \n slice variation')
     return axes
 
 
