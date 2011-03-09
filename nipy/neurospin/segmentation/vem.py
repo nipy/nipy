@@ -7,7 +7,9 @@ import os
 from _mrf import _ve_step, _concensus
 
 TINY = 1e-300
-
+NITERS = 20
+ALPHA = 1.0
+BETA = 0.2 
 
 # VM-step 
 def gauss_dist(x, mu, sigma):
@@ -22,11 +24,11 @@ def vm_step_gauss(ppm, data_, mask):
     data_: ndarray (1d, masked data)
     mask: 3-element tuple of 1d ndarrays (X,Y,Z)
     """
-    ntissues = ppm.shape[3]
-    mu = np.zeros(ntissues)
-    sigma = np.zeros(ntissues)
+    nclasses = ppm.shape[3]
+    mu = np.zeros(nclasses)
+    sigma = np.zeros(nclasses)
 
-    for i in range(ntissues):
+    for i in range(nclasses):
         P = ppm[:,:,:,i][mask]
         Z = P.sum()
         tmp = data_*P
@@ -37,7 +39,7 @@ def vm_step_gauss(ppm, data_, mask):
     return mu, sigma 
 
 
-def wmedian(x, w, ind): 
+def weighted_median(x, w, ind): 
     F = np.cumsum(w[ind])
     f = .5*(w.sum()+1)
     i = np.searchsorted(F, f)
@@ -54,14 +56,14 @@ def vm_step_laplace(ppm, data_, mask):
     data_: ndarray (1d, masked data)
     mask: 3-element tuple of 1d ndarrays (X,Y,Z)
     """
-    ntissues = ppm.shape[3]
-    mu = np.zeros(ntissues)
-    sigma = np.zeros(ntissues)
+    nclasses = ppm.shape[3]
+    mu = np.zeros(nclasses)
+    sigma = np.zeros(nclasses)
     ind = np.argsort(data_) # data_[ind] increasing
 
-    for i in range(ntissues):
+    for i in range(nclasses):
         P = ppm[:,:,:,i][mask]
-        mu_ = wmedian(data_, P, ind) 
+        mu_ = weighted_median(data_, P, ind) 
         sigma_ = np.sum(np.abs(P*(data_-mu_)))/P.sum()
         mu[i] = mu_ 
         sigma[i] = sigma_
@@ -69,11 +71,13 @@ def vm_step_laplace(ppm, data_, mask):
 
 
 
-# VEM algorithm 
-class VemTissueClassification(object): 
+class VEM(object): 
+    """
+    Classification via VEM algorithm.
+    """
 
-    def __init__(self, ppm, data, mask, noise='gauss', 
-                 prior=True, copy=False, hard=False, 
+    def __init__(self, data, nclasses, mask=None, noise='gauss', 
+                 ppm=None, copy=False, hard=False, 
                  labels=None, mixmat=None): 
         """
         data: ndarray (3d)
@@ -93,29 +97,35 @@ class VemTissueClassification(object):
         else:
             raise ValueError('Unknown noise model')
 
-        # Mask data 
-        self.ppm = ppm 
-        self.ntissues = ppm.shape[3]
+        # No mask situation
+        if mask == None: 
+            mask = [slice(0, s) for s in data.shape]
+
+        # If a ppm is provided, interpret it as a prior, otherwise
+        # create ppm from scratch and assume flat prior.
+        if ppm == None:
+            self.ppm = np.zeros(list(data.shape)+[nclasses])
+            self.ppm[mask] = 1/float(nclasses)
+        else:
+            self.ppm = ppm 
         self.mask = mask 
+        self.prior_ = self.ppm[mask]
         self.data_ = data[mask]
-        if prior: 
-            self.prior_ = ppm[mask]
-        else: 
-            self.prior_ = np.ones([1,self.ntissues])/float(self.ntissues)
-        self.ref_ = np.zeros([self.data_.size, self.ntissues])
+        self.ref_ = np.zeros([self.data_.size, nclasses])
+        self.nclasses = nclasses
 
         # Label information 
         if labels == None: 
-            labels = [str(l) for l in range(self.ntissues)]
-        if not len(labels) == self.ntissues: 
+            labels = [str(l) for l in range(nclasses)]
+        if not len(labels) == self.nclasses: 
             raise ValueError('Wrong length for labels sequence') 
         self.labels = labels
 
         # Mixing matrix 
         self.mixmat = mixmat
 
-        # Beta parameter
-        self.beta = None
+        # Cached beta parameter
+        self._beta = None
 
     # VM-step: estimate parameters
     def vm_step(self): 
@@ -140,18 +150,17 @@ class VemTissueClassification(object):
         return mixmat
     
 
-
     # VE-step: update tissue probability map
-    def ve_step(self, mu, sigma, alpha=1., beta=0.0): 
+    def ve_step(self, mu, sigma, alpha=ALPHA, beta=BETA): 
         """
         VE-step
         """
-        # Copy beta parameter
-        self.beta = beta 
+        # Cache beta parameter
+        self._beta = beta 
 
         # Compute complete-data likelihood maps, replacing very small
         # values for numerical stability
-        for i in range(self.ntissues): 
+        for i in range(self.nclasses): 
             self.ref_[:,i] = self.prior_[:,i]**alpha
             self.ref_[:,i] *= self.dist(self.data_, mu[i], sigma[i])
         self.ref_[:] = np.maximum(self.ref_, TINY) 
@@ -173,17 +182,7 @@ class VemTissueClassification(object):
                                 beta, self.copy, self.hard, mixmat)
             
 
-    def __call__(self, mu=None, sigma=None, alphas=None, betas=None, niters=5): 
-
-        if betas == None: 
-            betas = np.zeros(niters)
-        else: 
-            niters = len(betas)
-        if alphas == None: 
-            alphas = np.ones(niters)
-
-        if not len(alphas) == niters: 
-            raise ValueError('Inconsistent length for alphas and betas.')
+    def run(self, mu=None, sigma=None, alpha=ALPHA, beta=BETA, niters=NITERS): 
 
         do_vm_step = (mu==None)
         if not do_vm_step: 
@@ -196,7 +195,7 @@ class VemTissueClassification(object):
             if do_vm_step: 
                 mu, sigma = self.vm_step()
             print('  VE-step...')
-            self.ve_step(mu, sigma, alpha=alphas[i], beta=betas[i])
+            self.ve_step(mu, sigma, alpha=alpha, beta=beta)
             do_vm_step = True
 
         return mu, sigma 
@@ -215,8 +214,8 @@ class VemTissueClassification(object):
         # Entropy term
         f = np.sum(q_*np.log(np.maximum(q_/self.ref_, TINY)))
         # Interaction term
-        if self.beta > 0.0: 
+        if self._beta > 0.0: 
             print('  ... Concensus correction')
             fc = _concensus(self.ppm, np.array(self.mask, dtype='int'))
-            f -= .5*self.beta*fc 
+            f -= .5*self._beta*fc 
         return f
