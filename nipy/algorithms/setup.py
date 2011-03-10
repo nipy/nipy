@@ -7,6 +7,7 @@ def configuration(parent_package='',top_path=None):
     config.add_data_dir('tests')
 
     config.add_subpackage('registration')
+    config.add_subpackage('segmentation')
     config.add_subpackage('statistics')
     config.add_subpackage('diagnostics')
 
