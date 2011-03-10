@@ -50,7 +50,7 @@ def _fast_abs_percentile(map):
 def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     figure=None, axes=None, title=None, threshold=None,
                     annotate=True, draw_cross=True, 
-                    do3d=False, 
+                    do3d=False, threshold_3d=None,
                     view_3d=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
                     **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
@@ -99,6 +99,9 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             map in addition to the slicing. If 'interactive', the
             3D visualization is displayed in an additional interactive
             window.
+        threshold_3d:
+            The threshold to use for the 3D view (if any). Defaults to
+            the same threshold as that used for the 2D view.
         view_3d: tuple,
             The view used to take the screenshot: azimuth, elevation,
             distance and focalpoint, see the docstring of mlab.view.
@@ -183,10 +186,12 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         vmax = kwargs.get('vmax', map.max())
         kwargs['vmax'] = vmax
         from enthought.mayavi import mlab
+        if threshold_3d is None:
+            threshold_3d = threshold
         plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
                     anat=anat, anat_affine=anat_affine, 
                     offscreen=offscreen, cmap=cmap,
-                    threshold=threshold,
+                    threshold=threshold_3d,
                     view=view_3d,
                     vmin=vmin, vmax=vmax)
 
