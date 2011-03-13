@@ -3,8 +3,8 @@
 import numpy as np
 import scipy.stats as sp_stats
 
+from nipy.algorithms.registration import apply_affine
 from nipy.neurospin.graph.field import Field
-from nipy.neurospin.image import apply_affine
 from nipy.neurospin.utils import emp_null
 from nipy.neurospin.glm import glm
 from nipy.neurospin.group.permutation_test import \

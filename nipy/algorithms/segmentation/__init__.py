@@ -1,3 +1,4 @@
+from .vem import * 
 
 from numpy.testing import Tester
 

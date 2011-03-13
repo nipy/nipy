@@ -31,9 +31,13 @@ cdef extern from "mrf.h":
 mrf_import_array()
 import_array()
 import numpy as np
-
+import warnings
 
 def _ve_step(ppm, ref, XYZ, double beta, int copy, int hard, mix=None):
+
+    if not XYZ.shape[0] == 3: 
+        warnings.warn('MRF regularization only implemented in 3D, doing nothing')
+        return ppm
     
     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
         raise ValueError('ppm array should be double C-contiguous')
