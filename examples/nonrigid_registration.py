@@ -3,21 +3,17 @@
 """
 This script is currently broken so do not try to run it... 
 """
-import numpy as np
-
-from nipy.algorithms.registration import *
-from nipy.algorithms.registration.grid_transform import *
-
-from nipy.utils import example_data
-from nipy import load_image, save_image
-
-### DEBUG
-from numpy.testing import * 
-
 from os.path import join
 import time
 
-print('This script is currently broken so do not try to run it...')
+import numpy as np
+### DEBUG
+from numpy.testing import * 
+
+from nipy import load_image, save_image
+from nipy.algorithms.registration import *
+from nipy.utils import example_data
+
 
 # Input images are provided with the nipy-data package
 source = 'ammon'
@@ -26,14 +22,31 @@ source_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+sourc
 target_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+target+'.nii.gz')
 
 # Optional arguments
-similarity = 'cr' 
+similarity = 'crl1' 
 interp = 'pv'
 optimizer = 'powell'
 
 # Make registration instance
 I = load_image(source_file)
 J = load_image(target_file)
-R = HistogramRegistration(I, J)
+R = HistogramRegistration(I, J, similarity=similarity, interp=interp)
+
+# Global affine registration 
+Ag = Affine() 
+R.optimize(Ag)
+
+# Block matching 
+A = Ag.copy() 
+dims = np.array(I.shape)/5
+R.subsample(corner=dims, size=dims)
+R.optimize(A)
+
+
+
+print(Ag) 
+print(A) 
+
+"""
 
 # Make Gaussian spline transform instance
 spacing = 16
@@ -52,6 +65,7 @@ A = Affine()
 
 # Then add control points...
 T0 = SplineTransform(I, cp, sigma=20., grid_coords=True, affine=A)
+"""
 
 """
 # Test 1
@@ -71,14 +85,15 @@ print(s-s0)
 # T = R.optimize(T0, method='steepest')
 ###T = R.optimize(T0)
 
-T = T0
+###T = T0
 ###T.param = np.load('spline_param.npy')
 
 
 # Resample target image 
+"""
 Jt = resample(J, T, reference=I)
 save_image(Jt, 'deform_anubis_to_ammon.nii')
-
+"""
 
 # Test 3
 """

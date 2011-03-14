@@ -3,13 +3,12 @@
 import numpy as np
 import scipy.linalg as spl
 
-from nipy.externals.transforms3d.quaternions import mat2quat, quat2axangle
-
+from ...externals.transforms3d.quaternions import mat2quat, quat2axangle
 from .transform import Transform
 from ..utils.affines import apply_affine
 
 # Defaults
-_radius = 100
+RADIUS = 100
 
 # Smallest possible scaling
 TINY = float(np.finfo(np.double).tiny)
@@ -133,19 +132,26 @@ def subgrid_affine(affine, slices):
 class Affine(Transform): 
     param_inds = range(12)
 
-    def __init__(self, array=None, radius=_radius):
+    def __init__(self, array=None, radius=RADIUS):
         self._direct = True
         self._precond = preconditioner(radius)
         if array == None: 
             self._vec12 = np.zeros(12)
         elif array.size == 12: 
-            self._vec12 = array.ravel()
+            self._vec12 = array.ravel().copy()
         elif array.shape == (4,4):
-            self.set_vector12(array)
+            self.from_mat44(array)
         else: 
             raise ValueError('Invalid array')
 
-    def set_vector12(self, aff):
+    def copy(self): 
+        new = Affine()
+        new._direct = self._direct
+        new._precond = self._precond
+        new._vec12 = self._vec12.copy() 
+        return new
+
+    def from_mat44(self, aff):
         """
         Convert a 4x4 matrix describing an affine transform into a
         12-sized vector of natural affine parameters: translation,
@@ -255,7 +261,7 @@ class Affine(Transform):
             klass = Affine
         a = klass()
         a._precond = self._precond
-        a.set_vector12(np.dot(self.as_affine(), other_aff))
+        a.from_mat44(np.dot(self.as_affine(), other_aff))
         return a
 
     def __str__(self):
@@ -271,7 +277,7 @@ class Affine(Transform):
         """
         a = self.__class__()
         a._precond = self._precond
-        a.set_vector12(spl.inv(self.as_affine()))
+        a.from_mat44(spl.inv(self.as_affine()))
         return a
 
 
@@ -282,7 +288,7 @@ class Affine2D(Affine):
 class Rigid(Affine):
     param_inds = range(6)
 
-    def set_vector12(self, aff):
+    def from_mat44(self, aff):
         """
         Convert a 4x4 matrix describing a rigid transform into a
         12-sized vector of natural affine parameters: translation,
@@ -314,7 +320,7 @@ class Rigid2D(Rigid):
 class Similarity(Affine):
     param_inds = range(7)
 
-    def set_vector12(self, aff):
+    def from_mat44(self, aff):
         """
         Convert a 4x4 matrix describing a similarity transform into a
         12-sized vector of natural affine parameters: translation,

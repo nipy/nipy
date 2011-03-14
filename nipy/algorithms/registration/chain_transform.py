@@ -21,6 +21,8 @@ class ChainTransform(object):
             applying any `pre` transform, and then the `optimizable`
             transform.  If an array, assume it's an affine matrix
         """
+        if not hasattr(optimizable, 'param'):
+            raise ValueError('Input transform should be optimizable')
         if not hasattr(optimizable, 'apply'):
             optimizable = Affine(optimizable)
         if not hasattr(pre, 'apply'):

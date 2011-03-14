@@ -4,20 +4,22 @@
 from ..utils.affines import apply_affine
 from .affine import Affine
 from .grid_transform import GridTransform
+from .affine import inverse_affine
 from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_resample3d
+from .chain_transform import ChainTransform 
 
 from ...core.image.affine_image import AffineImage
 
 import numpy as np 
 from scipy.ndimage import affine_transform, map_coordinates
 
-_INTERP_ORDER = 3
+INTERP_ORDER = 3
                    
 def resample(moving, transform, grid_coords=False, reference=None, 
-             dtype=None, interp_order=_INTERP_ORDER):
+             dtype=None, interp_order=INTERP_ORDER):
     """
     Apply a transformation to the image considered as 'moving' to
-    bring it into the same grid as a given 'reference' image. 
+    bring it into the same grid as a given `reference` image. 
 
     This function uses scipy.ndimage except for the case
     `interp_order==3`, where a fast cubic spline implementation is
@@ -28,12 +30,10 @@ def resample(moving, transform, grid_coords=False, reference=None,
     moving: nipy-like image
       Image to be resampled. 
 
-    transform: nd array
-      Either a 4x4 matrix describing an affine transformation,
-      or an array with last dimension 3 describing voxelwise
-      displacements of the reference grid points.
-      For technical reasons, the transform is assumed to go from the
-      'reference' to the 'moving'.
+    transform: transform object 
+      Represents a transform that goes from the `reference` image to
+      the `moving` image. It should have either an `apply` method, or
+      an `as_affine` method.
     
     grid_coords : boolean
       True if the transform maps to grid coordinates, False if it maps
@@ -47,42 +47,32 @@ def resample(moving, transform, grid_coords=False, reference=None,
     """
     if reference == None: 
         reference = moving
-    shape = reference.shape
     data = moving.get_data()
     if dtype == None: 
         dtype = data.dtype
-    if isinstance(transform, Affine): 
-        affine = True
-        t = transform.as_affine()
-    elif isinstance(transform, GridTransform): 
-        affine = False
-        t = transform.as_displacements() 
-    else: 
-        t = np.asarray(transform)
-        affine = t.shape[-1] == 4
-    inv_affine = np.linalg.inv(moving.affine)
-
     # Case: affine transform
-    if affine: 
-        if not grid_coords:
-            t = np.dot(inv_affine, np.dot(t, reference.affine))
+    if hasattr(transform, 'as_affine'): 
+        Tv = transform.as_affine()
+        if not grid_coords: 
+            Tv = np.dot(inverse_affine(moving.affine), np.dot(Tv, reference.affine))
         if interp_order == 3: 
-            output = cspline_resample3d(data, shape, t, dtype=dtype)
+            output = cspline_resample3d(data, reference.shape, Tv, dtype=dtype)
             output = output.astype(dtype)
         else: 
-            output = np.zeros(shape, dtype=dtype)
-            affine_transform(data, t[0:3,0:3], offset=t[0:3,3],
+            output = np.zeros(reference.shape, dtype=dtype)
+            affine_transform(data, Tv[0:3,0:3], offset=Tv[0:3,3],
                              order=interp_order, cval=0, 
-                             output_shape=shape, output=output)
-    
-    # Case: precomputed displacements
-    else:
+                             output_shape=reference.shape, output=output)
+    # Case: non-affine transform
+    else: 
+        Tv = transform 
         if not grid_coords:
-            t = apply_affine(inv_affine, t)
-        coords = np.rollaxis(t, 3, 0)
+            Tv = ChainTransform(Tv, pre=reference.affine, post=inverse_affine(moving.affine))
+        coords = Tv.apply(np.indices(reference.shape).transpose((1,2,3,0)))
+        coords = np.rollaxis(coords, 3, 0)
         if interp_order == 3: 
             cbspline = cspline_transform(data)
-            output = np.zeros(shape, dtype='double')
+            output = np.zeros(reference.shape, dtype='double')
             output = cspline_sample3d(output, cbspline, *coords)
             output = output.astype(dtype)
         else: 

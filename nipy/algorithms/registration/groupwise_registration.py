@@ -2,13 +2,12 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from ..utils.affines import apply_affine
 from .affine import Rigid, Similarity, Affine
-from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_sample4d
-
-from nipy.core.image.affine_image import AffineImage
-from nipy.algorithms.optimize import fmin_steepest
-
 import numpy as np
 from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs, fmin_ncg
+from ...core.image.affine_image import AffineImage
+from ..optimize import fmin_steepest
+from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_sample4d
+
 
 # Module globals 
 VERBOSE = True # enables online print statements
