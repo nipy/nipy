@@ -41,6 +41,9 @@ dims = np.array(I.shape)/5
 R.subsample(corner=dims, size=dims)
 R.optimize(A)
 
+"""
+0-1*2-3*4-5
+"""
 
 
 print(Ag) 

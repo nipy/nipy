@@ -7,11 +7,10 @@ from .grid_transform import GridTransform
 from .affine import inverse_affine
 from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_resample3d
 from .chain_transform import ChainTransform 
-
-from ...core.image.affine_image import AffineImage
-
 import numpy as np 
 from scipy.ndimage import affine_transform, map_coordinates
+from ...core.image.affine_image import AffineImage
+
 
 INTERP_ORDER = 3
                    
@@ -36,8 +35,8 @@ def resample(moving, transform, grid_coords=False, reference=None,
       an `as_affine` method.
     
     grid_coords : boolean
-      True if the transform maps to grid coordinates, False if it maps
-      to world coordinates
+      True if the transform maps grid coordinates, False if it maps
+      world coordinates. 
     
     reference: nipy-like image 
       Reference image, defaults to input. 
@@ -64,10 +63,10 @@ def resample(moving, transform, grid_coords=False, reference=None,
                              order=interp_order, cval=0, 
                              output_shape=reference.shape, output=output)
     # Case: non-affine transform
-    else: 
+    else:
         Tv = transform 
         if not grid_coords:
-            Tv = ChainTransform(Tv, pre=reference.affine, post=inverse_affine(moving.affine))
+            Tv = Affine(inverse_affine(moving.affine)).compose(Tv.compose(reference.affine))
         coords = Tv.apply(np.indices(reference.shape).transpose((1,2,3,0)))
         coords = np.rollaxis(coords, 3, 0)
         if interp_order == 3: 

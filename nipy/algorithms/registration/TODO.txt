@@ -19,6 +19,12 @@ Transform
     |
     --> SplineTransform
 
+|
+--> PolyAffine
+    |
+    --> PolyRigid, PolySimilarity, ... 
+
+
 ChainTransform
 
 Any registration method should take a generic transform argument
