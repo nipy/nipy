@@ -4,8 +4,8 @@ import unittest
 
 import numpy as np
 
-from nipy.neurospin.group import permutation_test as PT
-import nipy.neurospin.graph as fg
+from .. import permutation_test as PT
+from ...graph import graph_3d_grid, WeightedGraph
 
 nperms = 2
 ndraws = 10
@@ -37,12 +37,12 @@ class test_permutation_test(unittest.TestCase):
         
     def test_onesample_graph(self):
         data, vardata, XYZ = make_data()
-        A, B, D = fg.graph_3d_grid(XYZ.transpose())
+        A, B, D = graph_3d_grid(XYZ.transpose())
         V = max(A) + 1
         E = len(A)
         edges = np.concatenate((A.reshape(E, 1), B.reshape(E, 1)), axis=1)
         weights = D
-        G = fg.WeightedGraph(V, edges, weights)
+        G = WeightedGraph(V, edges, weights)
         # rfx calibration
         P = PT.permutation_test_onesample_graph(data, G, ndraws=ndraws)
         c = [(P.random_Tvalues[P.ndraws*(0.95)],None)]

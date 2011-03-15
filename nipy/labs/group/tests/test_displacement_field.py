@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-import nipy.neurospin.group.displacement_field as df
+from ..displacement_field import displacement_field, gaussian_random_field
 
 def make_data(n=10, dim=20, r=5, mdim=15, maskdim=20, amplitude=10, noise=1, jitter=None, activation=False):
     XYZvol = np.zeros((dim,dim,dim),int)
@@ -41,7 +41,7 @@ class test_displacement_field(unittest.TestCase):
     
     def test_sample_prior(self, verbose=False):
         data, XYZ, mask, XYZvol, vardata, signal = make_data(n=20, dim=20, r=3, mdim=15, maskdim=15, amplitude=5, noise=1, jitter=1, activation=True)
-        D = df.displacement_field(XYZ, sigma=2.5, n=data.shape[0], mask=mask)
+        D = displacement_field(XYZ, sigma=2.5, n=data.shape[0], mask=mask)
         B = len(D.block)
         for b in np.random.permutation(range(B)):
             for i in xrange(data.shape[0]):
@@ -56,7 +56,7 @@ class test_displacement_field(unittest.TestCase):
     
     def test_sample_rand_walk(self, verbose=False):
         data, XYZ, mask, XYZvol, vardata, signal = make_data(n=20, dim=20, r=3, mdim=15, maskdim=15, amplitude=5, noise=1, jitter=1, activation=True)
-        D = df.displacement_field(XYZ, sigma=2.5*np.ones(3), n=data.shape[0], mask=mask)
+        D = displacement_field(XYZ, sigma=2.5*np.ones(3), n=data.shape[0], mask=mask)
         B = len(D.block)
         for b in np.random.permutation(range(B)):
             for i in xrange(data.shape[0]):
@@ -71,7 +71,7 @@ class test_displacement_field(unittest.TestCase):
     
     def test_sample_prior(self, verbose=False):
         data, XYZ, mask, XYZvol, vardata, signal = make_data(n=20, dim=20, r=3, mdim=15, maskdim=15, amplitude=5, noise=1, jitter=1, activation=True)
-        D = df.displacement_field(XYZ, sigma=2.5, n=data.shape[0], mask=mask)
+        D = displacement_field(XYZ, sigma=2.5, n=data.shape[0], mask=mask)
         B = len(D.block)
         for b in np.random.permutation(range(B)):
             for i in xrange(data.shape[0]):
@@ -86,7 +86,7 @@ class test_displacement_field(unittest.TestCase):
     
     def test_sample_all_blocks(self, verbose=False):
         data, XYZ, mask, XYZvol, vardata, signal = make_data(n=20, dim=20, r=3, mdim=15, maskdim=15, amplitude=5, noise=1, jitter=1, activation=True)
-        D = df.displacement_field(XYZ, sigma=2.5, n=data.shape[0], mask=mask)
+        D = displacement_field(XYZ, sigma=2.5, n=data.shape[0], mask=mask)
         for i in xrange(data.shape[0]):
             if verbose:
                 print 'sampling field', i
@@ -101,7 +101,7 @@ class test_gaussian_random_field(unittest.TestCase):
     def test_sample(self, verbose=False):
         data, XYZ, mask, XYZvol, vardata, signal = make_data(n=20, dim=20, r=3, mdim=15, maskdim=15, amplitude=5, noise=1, jitter=1, activation=True)
         n=data.shape[0]
-        D = df.gaussian_random_field(XYZ, 2.5, n)
+        D = gaussian_random_field(XYZ, 2.5, n)
         for i in xrange(n):
             if verbose:
                 print 'sampling field', i+1, 'out of', n

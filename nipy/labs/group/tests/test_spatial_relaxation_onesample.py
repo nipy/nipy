@@ -2,10 +2,10 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-import nipy.neurospin.group.spatial_relaxation_onesample as os
+from ..spatial_relaxation_onesample import multivariate_stat
 
-from nipy.testing import (parametric, dec, assert_true, 
-                          assert_equal, assert_almost_equal)
+from ....testing import (parametric, dec, assert_true, 
+                         assert_equal, assert_almost_equal)
                           
 verbose = False
 
@@ -49,13 +49,13 @@ def test_evaluate_exact():
     p = len(signal)
     XYZvol *= 0
     XYZvol[list(XYZ)] = np.arange(p)
-    P = os.multivariate_stat(data)
+    P = multivariate_stat(data)
     P.init_hidden_variables()
     P.evaluate(nsimu=100, burnin=100, J=[XYZvol[5, 5, 5]], 
                compute_post_mean=True, verbose=verbose)
     P.log_likelihood_values = P.compute_log_region_likelihood()
     # Verify code consistency
-    Q = os.multivariate_stat(data, vardata*0, XYZ, std=0, sigma=5)
+    Q = multivariate_stat(data, vardata*0, XYZ, std=0, sigma=5)
     Q.init_hidden_variables()
     Q.evaluate(nsimu=100, burnin=100, J = [XYZvol[5,5,5]], 
                compute_post_mean=True, update_spatial=False, 
@@ -74,7 +74,7 @@ def test_model_selection_exact():
     data, XYZ, XYZvol, vardata, signal = make_data(n=30, dim=20, r=3, 
                 amplitude=1, noise=0, jitter=0, prng=prng)
     labels = (signal > 0).astype(int)
-    P1 = os.multivariate_stat(data, labels=labels)
+    P1 = multivariate_stat(data, labels=labels)
     P1.init_hidden_variables()
     P1.evaluate(nsimu=100, burnin=10, verbose=verbose)
     L1 = P1.compute_log_region_likelihood()
@@ -84,7 +84,7 @@ def test_model_selection_exact():
     M1 = L1 + Prior1[:-1] - Post1[:-1]
     yield assert_almost_equal(M1.mean(), 
                               P1.compute_marginal_likelihood().mean(), 0)
-    P0 = os.multivariate_stat(data, labels=labels)
+    P0 = multivariate_stat(data, labels=labels)
     P0.network *= 0
     P0.init_hidden_variables()
     P0.evaluate(nsimu=100, burnin=100, verbose=verbose)
@@ -108,7 +108,7 @@ def test_model_selection_mfx_spatial_rand_walk():
                                 r=3, amplitude=3, noise=1,
                                 jitter=0.5, prng=prng)
     labels = (signal > 0).astype(int)
-    P = os.multivariate_stat(data, vardata, XYZ, std=0.5, sigma=5, labels=labels)
+    P = multivariate_stat(data, vardata, XYZ, std=0.5, sigma=5, labels=labels)
     P.network[:] = 0
     P.init_hidden_variables()
     P.evaluate(nsimu=100, burnin=100, verbose=verbose, 
@@ -144,7 +144,7 @@ def test_evaluate_mfx_spatial():
     data, XYZ, XYZvol, vardata, signal = make_data(n=20, 
                 dim=10, r=3, amplitude=5, noise=1, jitter=1,
                 prng=prng)
-    P = os.multivariate_stat(data, vardata, XYZ, std=1, sigma=3)
+    P = multivariate_stat(data, vardata, XYZ, std=1, sigma=3)
     P.init_hidden_variables()
     P.evaluate(nsimu=5, burnin=5, 
                J=[P.D.XYZ_vol[10, 10, 10]],
@@ -166,7 +166,7 @@ def test_update_labels():
     prng = np.random.RandomState(10)
     data, XYZ, XYZvol, vardata, signal = make_data(n=20, dim=20, r=3, 
                     amplitude=5, noise=1, jitter=1, prng=prng)
-    P = os.multivariate_stat(data, vardata, XYZ)
+    P = multivariate_stat(data, vardata, XYZ)
     P.init_hidden_variables()
     p = P.data.shape[1]
     P.labels_prior = np.ones((1, p), float)

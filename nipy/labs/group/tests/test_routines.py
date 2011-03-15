@@ -3,7 +3,7 @@
 from numpy.testing import assert_equal, assert_almost_equal
 import numpy as np
 
-from nipy.neurospin.group import routines, onesample, twosample
+from .. import routines, onesample, twosample
 
 def slow_add_lines(A, B, I):
     for i in xrange(len(I)):
