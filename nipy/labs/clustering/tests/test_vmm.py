@@ -11,14 +11,17 @@ Author : Bertrand Thirion, 2010
 
 import numpy as np
 #from numpy.testing import assert_almost_equal
+from ..von_mises_fisher_mixture import (VonMisesMixture,
+                                        sphere_density, 
+                                        select_vmm, 
+                                        select_vmm_cv)
 
-import nipy.labs.clustering.von_mises_fisher_mixture as vmm
 
 def test_spherical_area():
     """
     test the co_lavbelling functionality
     """
-    points, area = vmm.sphere_density(100)
+    points, area = sphere_density(100)
     assert (np.abs(area.sum()-4*np.pi)<1.e-2)
 
 def test_von_mises_fisher_density():
@@ -31,11 +34,11 @@ def test_von_mises_fisher_density():
 
     for precision in [.1, 1., 10., 100.]:
         k = 1
-        vmd = vmm.VonMisesMixture(k, precision, null_class=False)
+        vmd = VonMisesMixture(k, precision, null_class=False)
         vmd.estimate(x)
     
         # check that it sums to 1
-        s, area = vmm.sphere_density(100)
+        s, area = sphere_density(100)
         assert np.abs((vmd.mixture_density(s)*area).sum()-1)<1.e-2
 
 def test_von_mises_fisher_density_plus_null():
@@ -47,11 +50,11 @@ def test_von_mises_fisher_density_plus_null():
 
     for precision in [.1, 1., 10., 100.]:
         k = 1
-        vmd = vmm.VonMisesMixture(k, precision, null_class=True)
+        vmd = VonMisesMixture(k, precision, null_class=True)
         vmd.estimate(x)
     
         # check that it sums to 1
-        s, area = vmm.sphere_density(100)
+        s, area = sphere_density(100)
         assert np.abs((vmd.mixture_density(s)*area).sum()-1)<1.e-2
 
 def test_von_mises_mixture_density():
@@ -64,11 +67,11 @@ def test_von_mises_mixture_density():
 
     k = 3
     for precision in [.1, 1., 10., 100.]:
-        vmd = vmm.VonMisesMixture(k, precision, null_class=False)
+        vmd = VonMisesMixture(k, precision, null_class=False)
         vmd.estimate(x)
     
         # check that it sums to 1
-        s, area = vmm.sphere_density(100)
+        s, area = sphere_density(100)
         assert np.abs((vmd.mixture_density(s)*area).sum()-1)<1.e-2
 
 
@@ -81,11 +84,11 @@ def test_von_mises_mixture_density_plus_null():
 
     k = 3
     for precision in [.1, 1., 10., 100.]:
-        vmd = vmm.VonMisesMixture(k, precision, null_class=True)
+        vmd = VonMisesMixture(k, precision, null_class=True)
         vmd.estimate(x)
     
         # check that it sums to 1
-        s, area = vmm.sphere_density(100)
+        s, area = sphere_density(100)
         assert np.abs((vmd.mixture_density(s)*area).sum()-1)<1.e-2
 
 def test_dimension_selection_bic():
@@ -101,7 +104,7 @@ def test_dimension_selection_bic():
     x = (x.T / np.sqrt(np.sum(x**2, 1))).T
 
     precision = 100.
-    my_vmm = vmm.select_vmm(range(1,8), precision, False, x)
+    my_vmm = select_vmm(range(1,8), precision, False, x)
     assert my_vmm.k==3
 
 def test_dimension_selection_cv():
@@ -116,7 +119,7 @@ def test_dimension_selection_cv():
 
     precision = 50.
     sub = np.repeat(np.arange(10), 2)
-    my_vmm = vmm.select_vmm_cv(range(1,8), precision, x, cv_index=sub, 
+    my_vmm = select_vmm_cv(range(1,8), precision, x, cv_index=sub, 
                         null_class=False, ninit=5)
     z = np.argmax(my_vmm.responsibilities(x), 1)
     assert len(np.unique(z))>1

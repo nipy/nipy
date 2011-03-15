@@ -5,8 +5,14 @@
 
 import numpy as np
 import numpy.random as nr
-from ..gmm import GMM, sample, grid_descriptor, best_fitting_GMM
+from ..gmm import GMM, best_fitting_GMM
 
+# Alexis, 3/15/11: t
+# The following imports from gmm fail:
+#  GMM_old, grid_descriptor, sample
+#
+# Although the associated tests are desactivated, they should be
+# removed
 
 def test_em_loglike0():
     """
