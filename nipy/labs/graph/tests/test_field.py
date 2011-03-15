@@ -2,13 +2,13 @@
 
 from numpy.testing import TestCase
 import numpy as np
-import nipy.neurospin.graph.field as ff
+from ..field import Field, field_from_coo_matrix_and_data
 
 def basic_field():
     dx = 10
     dy = 10
     dz = 10
-    F = ff.Field(dx*dy*dz)
+    F = Field(dx*dy*dz)
     
     xyz = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
     F.from_3d_grid(xyz,26)
@@ -21,7 +21,7 @@ def basic_field_random():
     dx = 10
     dy = 10
     dz = 1
-    F = ff.Field(dx*dy*dz)
+    F = Field(dx*dy*dz)
     
     xyz = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
     F.from_3d_grid(xyz,26)
@@ -33,7 +33,7 @@ def basic_field_2():
     dx = 10
     dy = 10
     dz = 10
-    F = ff.Field(dx*dy*dz)
+    F = Field(dx*dy*dz)
     xyz = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
     toto = np.array([[x-5,y-5,z-5] for z in range(dz) for y in range(dy) for x in range(dx)] )
 
@@ -47,7 +47,7 @@ def basic_graph():
     dy = 10
     dz = 10
     xyz = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
-    G = ff.Field(dx*dy*dz)
+    G = Field(dx*dy*dz)
     G.from_3d_grid(xyz,26);
     return G 
 
@@ -250,7 +250,7 @@ class test_Field(TestCase):
         import scipy.sparse as sps
         V = 10
         a = np.random.rand(V, V)>.9
-        fi = ff.field_from_coo_matrix_and_data(sps.coo_matrix(a), a)
+        fi = field_from_coo_matrix_and_data(sps.coo_matrix(a), a)
         print fi.E , a.sum()
         self.assert_(fi.E==a.sum())
 

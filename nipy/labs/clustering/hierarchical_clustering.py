@@ -26,12 +26,12 @@ Author : Bertrand Thirion,Pamela Guevara, 2006-2009
 
 import numpy as np
 
-import nipy.neurospin.graph.graph as fg
-import nipy.neurospin.graph.forest as fo
-from nipy.neurospin.utils.fast_distance import euclidean_distance
+from ..graph.graph import WeightedGraph 
+from ..graph.forest import Forest 
+from ..utils.fast_distance import euclidean_distance
 
 
-class WeightedForest(fo.Forest):
+class WeightedForest(Forest):
     """
     This is a weighted Forest structure, i.e. a tree
     - each node has one parent and children
@@ -620,7 +620,7 @@ def average_link_graph(G):
     # prepare a graph with twice the number of vertices
     n = G.V
     nbcc = G.cc().max() + 1
-    K = fg.WeightedGraph(2 * G.V)
+    K = WeightedGraph(2 * G.V)
     K.E = G.E
     K.edges = G.edges.copy()
     K.weights = G.weights.copy()
@@ -768,7 +768,7 @@ def _auxiliary_graph(G, Features):
     this graph will contain the connectivity information
     along the merges.
     """
-    K = fg.WeightedGraph(2 * G.V - 1)
+    K = WeightedGraph(2 * G.V - 1)
     K.E = G.E
     K.edges = G.edges.copy()
     K.weights = np.zeros(K.E)
@@ -1030,7 +1030,7 @@ def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=0):
 
     Parameters
     ----------
-    G: neurospin.graph.WeightedGraph instance
+    G: labs.graph.WeightedGraph instance
        the input graph (a topological graph essentially)
     feature array of shape (G.V,dim_feature)
             vectorial information related to the graph vertices

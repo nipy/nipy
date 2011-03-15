@@ -2,7 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-from nipy.neurospin.viz_tools.coord_tools import coord_transform, find_cut_coords
+from ..coord_tools import coord_transform, find_cut_coords
 
 def test_coord_transform_trivial():
     sform = np.eye(4)

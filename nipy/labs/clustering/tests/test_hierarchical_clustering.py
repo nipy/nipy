@@ -10,9 +10,9 @@ Author : Bertrand Thirion, 2008-2009
 
 import numpy as np
 from numpy.random import randn
-import nipy.neurospin.clustering.hierarchical_clustering as hc
-import nipy.neurospin.graph as fg
-import nipy.neurospin.graph.field as ff
+import nipy.labs.clustering.hierarchical_clustering as hc
+from ...graph.graph import WeightedGraph
+from ...graph.field import Field
 
 def alc_test_basic():
     np.random.seed(0)
@@ -81,7 +81,7 @@ def alg_test_basic(n=100,k=5):
     np.random.seed(0)
     x = np.random.randn(n, 2)
     x[:int(0.7*n)] += 3
-    G = fg.WeightedGraph(n)
+    G = WeightedGraph(n)
     G.knn(x, k)
     t = hc.average_link_graph(G)
     u = t.split(2)
@@ -101,7 +101,7 @@ def alg_test_2():
     x = np.random.randn(n, 2)
     x[:int(0.3*n)] += 10
     x[int(0.8*n):] -= 10
-    G = fg.WeightedGraph(n)
+    G = WeightedGraph(n)
     G.knn(x, k)
     t = hc.average_link_graph(G)
     u = t.split(2)
@@ -114,7 +114,7 @@ def alg_test_3(n=100,k=5):
     np.random.seed(0)
     x = np.random.randn(n, 2)
     x[:int(0.7*n)] += 3
-    G = fg.WeightedGraph(n)
+    G = WeightedGraph(n)
     G.knn(x, k)
     u, cost = hc.average_link_graph_segment(G, qmax=2)
     v = np.zeros(n)
@@ -128,7 +128,7 @@ def ward_test_basic(n=100,k=5):
     np.random.seed(0)
     x = np.random.randn(n, 2)
     x[:int(0.7*n)] += 3
-    G = fg.WeightedGraph(n)
+    G = WeightedGraph(n)
     G.knn(x, k)
     t = hc.ward(G,x)
     u = t.split(2)
@@ -143,7 +143,7 @@ def wardq_test_basic(n=100,k=5):
     np.random.seed(0)
     x = np.random.randn(n, 2)
     x[:int(0.7*n)] += 3
-    G = fg.WeightedGraph(n)
+    G = WeightedGraph(n)
     G.knn(x, k)
     t = hc.ward_quick(G, x)
     u = t.split(2)
@@ -163,7 +163,7 @@ def wardq_test_2():
     x = np.random.randn(n, 2)
     x[:int(0.3*n)] += 10
     x[int(0.8*n):] -= 10
-    G = fg.WeightedGraph(n)
+    G = WeightedGraph(n)
     G.knn(x, k)
     t = hc.ward_quick(G, x)
     u = t.split(2)
@@ -176,7 +176,7 @@ def wardf_test(n=100,k=5):
     np.random.seed(0)
     x = np.random.randn(n,2)
     x[:int(0.7*n)] += 3
-    F = ff.Field(n)
+    F = Field(n)
     F.knn(x, 5)
     F.set_field(x)
     u,cost = hc.ward_field_segment(F,qmax=2)
@@ -191,7 +191,7 @@ def wards_test_basic(n=100,k=5):
     np.random.seed(0)
     x = np.random.randn(n, 2)
     x[:int(0.7*n)] += 3
-    G = fg.WeightedGraph(n)
+    G = WeightedGraph(n)
     G.knn(x, k)
     u,cost =  hc.ward_segment(G, x, qmax=2)
     v = np.zeros(n)
@@ -208,7 +208,7 @@ def wards_test_3():
     x = np.random.randn(n,2)
     x[:int(0.3*n)] += 10
     x[int(0.8*n):] -= 10
-    G = fg.WeightedGraph(n)
+    G = WeightedGraph(n)
     G.knn(x,k)
     u,cost = hc.ward_segment(G, x, qmax=2)
     assert(u.max()==2)
@@ -219,7 +219,7 @@ def cost_test(n=100, k=5):
     """
     np.random.seed(0)
     x = np.random.randn(n, 2)
-    G = fg.WeightedGraph(n)
+    G = WeightedGraph(n)
     G.knn(x, k)
     u, cost =  hc.ward_segment(G, x)
     print cost.max()/n, np.var(x, 0).sum()
@@ -232,7 +232,7 @@ def ward_test_more(n=100, k=5, verbose=0):
     np.random.seed(0)
     X = randn(n,2)
     X[:np.ceil(n/3)] += 5
-    G = fg.WeightedGraph(n)
+    G = WeightedGraph(n)
     G.knn(X, 5)
     u,c = hc.ward_segment(G, X, stop=-1, qmax=1, verbose=verbose)
     u1,c = hc.ward_segment(G, X, stop=-1, qmax=k, verbose=verbose)

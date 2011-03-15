@@ -363,7 +363,7 @@ class GMM(object):
         x, array of shape (n_samples,self.dim)
            the data used in the estimation process
         """
-        import nipy.neurospin.clustering.clustering as fc
+        from .clustering import kmeans
         n = x.shape[0]
 
         #1. set the priors
@@ -371,7 +371,7 @@ class GMM(object):
 
         # 2. initialize the memberships
         if self.k > 1:
-            _, z, _ = fc.kmeans(x, self.k)
+            _, z, _ = kmeans(x, self.k)
         else:
             z = np.zeros(n).astype(np.int)
 
@@ -883,8 +883,7 @@ class GMM(object):
             axes = pylab.figure()
 
         if gd.dim == 1:
-            from nipy.neurospin.utils.emp_null import \
-                smoothed_histogram_from_samples
+            from ..utils.emp_null import smoothed_histogram_from_samples
             h, c = smoothed_histogram_from_samples(x, normalized=True)
             offset = (c.max() - c.min()) / (2 * c.size)
             grid = gd.make_grid()

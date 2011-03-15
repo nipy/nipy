@@ -9,7 +9,7 @@ import graph as fg
 
 
 """
-This module implements the field structure of nipy.neurospin
+This module implements the field structure of nipy-neurospin
 
 Author:Bertrand Thirion, 2006--2009
 
@@ -441,7 +441,7 @@ class Field(fg.WeightedGraph):
                the resulting field label
         J (float): the resulting inertia
         """
-        from nipy.neurospin.clustering.hierarchical_clustering\
+        from ..clustering.hierarchical_clustering\
              import ward_segment
         label, J = ward_segment(self, self.field, qmax=nbcluster)
 

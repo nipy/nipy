@@ -2,7 +2,7 @@
 
 import numpy as np
 import numpy.random as nr
-from nipy.neurospin.clustering.ggmixture import GGGM, GGM, Gamma
+from ..ggmixture import GGGM, GGM, Gamma
 import scipy.stats as st
 
 def test_GGM1(verbose=0):

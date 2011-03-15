@@ -20,7 +20,7 @@ from scipy.linalg import inv, cholesky, eigvalsh
 from scipy.special import gammaln
 import math
 
-import nipy.neurospin.clustering.clustering as fc
+from .clustering import kmeans
 from gmm import GMM
 
 ##################################################################
@@ -493,7 +493,7 @@ class BGMM(GMM):
            the data used in the estimation process
         """
         if self.k > 1:
-            cent, z, J = fc.kmeans(x, self.k)
+            cent, z, J = kmeans(x, self.k)
         else:
             z = np.zeros(x.shape[0]).astype(np.int)
         self.update(x, z)
@@ -1040,7 +1040,7 @@ class VBGMM(BGMM):
         """
         n = x.shape[0]
         if self.k > 1:
-            cent, z, J = fc.kmeans(x, self.k)
+            cent, z, J = kmeans(x, self.k)
         else:
             z = np.zeros(x.shape[0]).astype(np.int)
         l = np.zeros((n, self.k))

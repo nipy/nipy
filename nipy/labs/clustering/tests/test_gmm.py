@@ -5,8 +5,8 @@
 
 import numpy as np
 import numpy.random as nr
-from nipy.neurospin.clustering.gmm import GMM
-import nipy.neurospin.clustering.gmm as gmm
+from ..gmm import GMM, sample, grid_descriptor, best_fitting_GMM
+
 
 def test_em_loglike0():
     """
@@ -135,8 +135,8 @@ def test_em_selection():
     x = np.concatenate((nr.randn(100,dim),3+2*nr.randn(100,dim)))
 
     krange = range(1,10)
-    lgmm = gmm.best_fitting_GMM(x,krange,prec_type='full',
-                                niter=100,delta = 1.e-4,ninit=1,verbose=0)
+    lgmm = best_fitting_GMM(x,krange,prec_type='full',
+                            niter=100,delta = 1.e-4,ninit=1,verbose=0)
     assert (lgmm.k<4)
     
 
@@ -325,7 +325,7 @@ def _test_select_gmm_old_full(verbose=0):
     k = 2
     prec_type = 'full'
 
-    lgmm = gmm.GMM_old(k,dim,prec_type)
+    lgmm = GMM_old(k,dim,prec_type)
     maxiter = 300
     delta = 0.001
     ninit = 5
@@ -339,9 +339,9 @@ def _test_select_gmm_old_full(verbose=0):
         xmax = 1.1*x[:, 0].max() - 0.1*x[:, 0].min()
         ymin = 1.1*x[:, 1].min() - 0.1*x[:, 1].max()
         ymax = 1.1*x[:, 1].max() - 0.1*x[:, 1].min()
-        gd = gmm.grid_descriptor(2)
+        gd = grid_descriptor(2)
         gd.getinfo([xmin, xmax, ymin, ymax], [50, 50])
-        gmm.sample(gd, x, verbose=0)
+        sample(gd, x, verbose=0)
         
     assert(lgmm.k<5)
     
@@ -357,7 +357,7 @@ def _test_select_gmm_old_diag(verbose=0):
     k = 2
     prec_type = 'diag'
 
-    lgmm = gmm.GMM_old(k,dim,prec_type)
+    lgmm = GMM_old(k,dim,prec_type)
     maxiter = 300
     delta = 0.001
     ninit = 5
@@ -371,9 +371,9 @@ def _test_select_gmm_old_diag(verbose=0):
         xmax = 1.1*x[:, 0].max() - 0.1*x[:, 0].min()
         ymin = 1.1*x[:, 1].min() - 0.1*x[:, 1].max()
         ymax = 1.1*x[:, 1].max() - 0.1*x[:, 1].min()
-        gd = gmm.grid_descriptor(2)
+        gd = grid_descriptor(2)
         gd.getinfo([xmin, xmax, ymin, ymax], [50, 50])
-        gmm.sample(gd, x, verbose=0)
+        sample(gd, x, verbose=0)
         
     assert(lgmm.k<5)
 
@@ -381,5 +381,6 @@ def _test_select_gmm_old_diag(verbose=0):
 if __name__ == '__main__':
     import nose
     nose.run(argv=['', __file__])
+
 
 

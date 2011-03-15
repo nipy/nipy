@@ -3,10 +3,9 @@
 import numpy as np
 
 from nibabel import Nifti1Image
-from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
+from ..utils.simul_multisubject_fmri_dataset import \
     surrogate_2d_dataset
-#from nipy.neurospin.utils.threshold import threshold_array, threshold_z_array
-from nipy.neurospin.statistical_mapping import cluster_stats
+from ..statistical_mapping import cluster_stats
 
 def make_surrogate_data():
     """ Return a single deterministic 3D image 

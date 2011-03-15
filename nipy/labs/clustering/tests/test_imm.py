@@ -10,7 +10,7 @@ Author : Bertrand Thirion, 2010
 # python testClustering.py Test_Clustering
 
 import numpy as np
-from nipy.neurospin.clustering.imm import IMM, MixedIMM, co_labelling
+from ..imm import IMM, MixedIMM, co_labelling
 
 def test_colabel():
     """

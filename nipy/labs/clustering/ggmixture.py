@@ -445,7 +445,7 @@ class GGGM(object):
             x = x.copy()
         # positive gamma
         i = np.ravel(np.nonzero(x > 0))
-        from nipy.neurospin.utils import emp_null as en
+        from ..utils import emp_null as en
         lfdr = en.FDR(x)
 
         if np.size(i) > 0:

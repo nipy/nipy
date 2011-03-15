@@ -11,8 +11,7 @@ Author : Bertrand Thirion, 2009
 
 import numpy as np
 import numpy.random as nr
-from nipy.neurospin.clustering.bgmm import BGMM, VBGMM, dirichlet_eval, \
-    multinomial, dkl_gaussian 
+from ..bgmm import BGMM, VBGMM, dirichlet_eval, multinomial, dkl_gaussian 
 
 
 def test_dirichlet_eval():

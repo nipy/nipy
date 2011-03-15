@@ -12,7 +12,7 @@ Author : Bertrand Thirion, 2010
 import numpy as np
 #from numpy.testing import assert_almost_equal
 
-import nipy.neurospin.clustering.von_mises_fisher_mixture as vmm
+import nipy.labs.clustering.von_mises_fisher_mixture as vmm
 
 def test_spherical_area():
     """
