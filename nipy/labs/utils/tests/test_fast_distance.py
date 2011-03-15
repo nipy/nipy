@@ -6,7 +6,7 @@ Test the fast distance estimator
 import numpy as np
 from numpy.testing import assert_almost_equal
 
-from nipy.neurospin.utils.fast_distance import euclidean_distance as ed 
+from ..fast_distance import euclidean_distance as ed 
 
 def test_euclidean_1():
     """ test that the euclidean distance is as expected

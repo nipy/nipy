@@ -19,7 +19,7 @@ Bertrand Thirion, 2009-2010
 """
 
 import numpy as np
-import nipy.neurospin.graph as fg
+from ..graph import WeightedGraph
 
 
 # ---------------------------------------------------------
@@ -76,7 +76,7 @@ def cluster_threshold(map, mask, th, csize):
     binary = np.zeros(np.size(map)).astype(np.int)
 
     if np.size(ithr) > 0:
-        G = fg.WeightedGraph(np.size(ithr))
+        G = WeightedGraph(np.size(ithr))
         G.from_3d_grid(ijk[ithr], 18)
 
         # get the connected components
@@ -123,7 +123,7 @@ def get_cluster_position_from_thresholded_map(smap, mask, thr=3.0, csize=10):
     affine = mask.get_affine()
 
     # first build a graph
-    g = fg.WeightedGraph(nstv)
+    g = WeightedGraph(nstv)
     ijk = np.array(np.where(mask.get_data())).T
     g.from_3d_grid(ijk[ithr], 18)
     coord = np.dot(np.hstack((ijk, np.ones((len(smap), 1)))), affine.T)[:, :3]
@@ -161,7 +161,7 @@ def get_peak_position_from_thresholded_map(smap, mask, threshold):
               if no such cluster exists, None is returned
     """
     from nibabel import Nifti1Image
-    from nipy.neurospin.statistical_mapping import get_3d_peaks
+    from ..statistical_mapping import get_3d_peaks
     # create an image to represent smap
     simage = np.zeros(mask.get_shape())
     simage[mask.get_data() > 0] = smap
@@ -247,8 +247,8 @@ def conjunction(x, vx, k):
 def ttest(x):
     """Returns the t-test for each row of the data x
     """
-    import nipy.neurospin.group.onesample as fos
-    t = fos.stat(x.T, id='student', axis=0)
+    from ..group.onesample import stat
+    t = stat(x.T, id='student', axis=0)
     return np.squeeze(t)
 
 
@@ -285,8 +285,8 @@ def mfx_ttest(x, vx):
     -------
     t array of shape(nrows): mixed effect statistics array
     """
-    import nipy.neurospin.group.onesample as fos
-    t = fos.stat_mfx(x.T, vx.T, id='student_mfx', axis=0)
+    from ..group.onesample import stat_mfx
+    t = stat_mfx(x.T, vx.T, id='student_mfx', axis=0)
     return np.squeeze(t)
 
 
@@ -317,7 +317,7 @@ def statistics_from_position(target, data, sigma=1.0):
                 1 is good
                 0 is bad
     """
-    from nipy.neurospin.utils.fast_distance  import euclidean_distance as ed
+    from .fast_distance import euclidean_distance as ed
     if data == None:
         if target == None:
             return 0.# could be 1.0 ?
@@ -744,7 +744,7 @@ def group_reproducibility_metrics(
 def coord_bsa(mask, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
               afname='/tmp/af.pic'):
     """ main function for  performing bsa on a dataset
-    where bsa =  nipy.neurospin.spatial_models.bayesian_structural_analysis
+    where bsa =  nipy.labs.spatial_models.bayesian_structural_analysis
 
     Parameters
     ----------
@@ -770,8 +770,8 @@ def coord_bsa(mask, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     afcoord array of shape(number_of_regions,3):
             coordinate of the found landmark regions
     """
-    import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
-    import nipy.neurospin.graph.field as ff
+    from ..spatial_models.bayesian_structural_analysis import compute_BSA_quick
+    from ..graph.field import Field
     import  pickle
 
     nvox = mask.get_data().sum()
@@ -779,7 +779,7 @@ def coord_bsa(mask, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     xyz = np.array(np.where(mask.get_data())).T
 
     # create the field strcture that encodes image topology
-    Fbeta = ff.Field(nvox)
+    Fbeta = Field(nvox)
     Fbeta.from_3d_grid(xyz.astype(np.int), 18)
 
     # volume density
@@ -790,7 +790,7 @@ def coord_bsa(mask, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     shape = mask.get_shape()
     coord = np.dot(np.hstack((xyz, np.ones((nvox, 1)))), affine.T)[:, :3]
 
-    crmap, AF, BF, p = bsa.compute_BSA_quick(
+    crmap, AF, BF, p = compute_BSA_quick(
         Fbeta, betas, coord, dmax, xyz, affine, shape, thq, smin, ths, theta,
         g0, verbose=0)
     if AF == None:

@@ -443,7 +443,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
         the posterior probability of each test item belonging to each component
         in the GMM (sum to 1 across the 3 classes)
         if np.size(test)==0, i.e. nbitem==0, None is returned
-    estimator : nipy.neurospin.clustering.GMM object
+    estimator : nipy.labs.clustering.GMM object
         The estimator object, returned only if return_estimator is true.
 
     Note
@@ -453,8 +453,8 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
     - class 2 represenst the null class
     - class 3 represents the positsive class
     """
-    from nipy.neurospin.clustering.bgmm import VBGMM
-    from nipy.neurospin.clustering.gmm import GridDescriptor
+    from ..clustering.bgmm import VBGMM
+    from ..clustering.gmm import GridDescriptor
 
     nvox = np.size(x)
     x = np.reshape(x, (nvox, 1))
@@ -546,10 +546,10 @@ def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
     bfp: array of shape (nbitems,3)
             The probability of each component in the mixture model for each
             test value
-    estimator: nipy.neurospin.clustering.ggmixture.GGGM object
+    estimator: nipy.labs.clustering.ggmixture.GGGM object
         The estimator object, returned only if return_estimator is true.
     """
-    from nipy.neurospin.clustering import ggmixture
+    from ..clustering import ggmixture
     Ggg = ggmixture.GGGM()
     Ggg.init_fdr(x)
     Ggg.estimate(x, niter=100, delta=1.e-8, bias=bias, verbose=0,

@@ -7,7 +7,7 @@ import warnings
 
 import numpy as np
 
-from nipy.neurospin.utils.emp_null import ENN, smoothed_histogram_from_samples
+from ..emp_null import ENN, smoothed_histogram_from_samples
 
 def setup():
     # Suppress warnings during tests to reduce noise

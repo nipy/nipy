@@ -6,7 +6,7 @@ Test surrogate data generation.
 
 import numpy as np
 
-from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
+from ..simul_multisubject_fmri_dataset import \
     surrogate_2d_dataset, surrogate_3d_dataset 
 
 def test_surrogate_array():

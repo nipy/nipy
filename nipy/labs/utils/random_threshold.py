@@ -5,8 +5,8 @@
 
 import numpy as np
 import scipy.stats as st
-import nipy.neurospin.graph as fg
-from nipy.neurospin.group.routines import add_lines
+from ..graph import graph_3d_grid, graph_cc
+from ..group.routines import add_lines
 
 tol = 1e-10
 
@@ -757,11 +757,11 @@ def isolated(XYZ, k=18):
     Outputs an index I of isolated points from their integer coordinates,
     XYZ (3, n), and under k-connectivity, k = 6, 18 or 24.
     """
-    A, B, D = fg.graph_3d_grid(XYZ.transpose(), k)
+    A, B, D = graph_3d_grid(XYZ.transpose(), k)
     # Number of vertices
     V = max(A) + 1
     # Labels of connected components
-    label = fg.graph_cc(A, B, D, V)
+    label = graph_cc(A, B, D, V)
     # Isolated points
     ncc = label.max() + 1
     p = XYZ.shape[1]

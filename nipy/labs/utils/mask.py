@@ -4,9 +4,9 @@ Compatibility module
 
 import warnings
 warnings.warn(DeprecationWarning(
-    "This module (nipy.neurospin.utils.mask) has been moved and "
+    "This module (nipy.labs.utils.mask) has been moved and "
     "is depreciated. Please update your code to import from "
-    "'nipy.neurospin.mask'."))
+    "'nipy.labs.mask'."))
 
 # Absolute import, as 'import *' doesnot work with relative imports
-from nipy.neurospin.mask import *
+from ..mask import *

@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import scipy.stats as st
 
-from nipy.neurospin.utils.random_threshold import randthresh_main
+from ..random_threshold import randthresh_main
 
 def make_data(n=10, dim=20, r=5, mdim=15, maskdim=20, amplitude=10, 
                             noise=1, jitter=None, activation=False):

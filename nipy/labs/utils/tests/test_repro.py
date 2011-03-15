@@ -8,9 +8,9 @@ not whether it is exact
 """
 
 import numpy as np
-import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
-from nipy.neurospin.utils.reproducibility_measures import \
-     voxel_reproducibility, cluster_reproducibility
+from ..simul_multisubject_fmri_dataset import surrogate_2d_dataset
+from ..reproducibility_measures import \
+    voxel_reproducibility, cluster_reproducibility
 
 def make_dataset(ampli_factor=1.0, nsubj=10):
     """
@@ -22,9 +22,9 @@ def make_dataset(ampli_factor=1.0, nsubj=10):
     dimy = 60
     pos = 2*np.array([[ 6,  7], [10, 10], [15, 10]])
     ampli = ampli_factor*np.array([5, 6, 7])
-    dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
-                                         pos=pos, ampli=ampli, width=5.0, 
-                                         seed=1)
+    dataset = surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
+                                   pos=pos, ampli=ampli, width=5.0, 
+                                   seed=1)
     return dataset
 
 
