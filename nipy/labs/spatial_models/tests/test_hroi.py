@@ -9,10 +9,9 @@ in ~/.nipy/tests/data
 
 import numpy as np
 
-from nipy.neurospin.spatial_models.hroi import \
-            HROI_as_discrete_domain_blobs, make_hroi_from_subdomain
-from nipy.neurospin.spatial_models.mroi import subdomain_from_array
-from nipy.neurospin.spatial_models.discrete_domain import domain_from_array
+from ..hroi import HROI_as_discrete_domain_blobs, make_hroi_from_subdomain
+from ..mroi import subdomain_from_array
+from ..discrete_domain import domain_from_array
 
 shape = (5, 6, 7)
 

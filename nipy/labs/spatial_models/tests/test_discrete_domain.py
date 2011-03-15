@@ -9,7 +9,7 @@ in ~/.nipy/tests/data
 
 import numpy as np
 from numpy.testing import assert_almost_equal
-from nipy.neurospin.spatial_models.discrete_domain import *
+from ..discrete_domain import *
 from nibabel import Nifti1Image
 
 shape = np.array([5, 6, 7, 8, 9])

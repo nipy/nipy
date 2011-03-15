@@ -11,9 +11,9 @@ import os.path
 
 from nibabel import load, save, Nifti1Image
 
-from nipy.neurospin.clustering.clustering import kmeans
-from discrete_domain import grid_domain_from_image
-from mroi import SubDomains
+from ..clustering.clustering import kmeans
+from .discrete_domain import grid_domain_from_image
+from .mroi import SubDomains
 from ..mask import intersect_masks
 
 
@@ -209,7 +209,7 @@ def parcellation_based_analysis(Pa, test_images, test_id='one_sample',
 
     # 2. perform one-sample test
     # computation
-    from nipy.neurospin.utils.reproducibility_measures import ttest
+    from ..utils.reproducibility_measures import ttest
     prfx = ttest(test_data)
 
     # Write the stuff
@@ -260,7 +260,7 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
     Ward's + GKM is expensive but quite good
     To reduce CPU time, rather use nn=6 (especially with Ward)
     """
-    from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
+    from ..graph.field import field_from_coo_matrix_and_data
 
     if method not in ['ward', 'gkm', 'ward_and_gkm', 'kmeans']:
         raise ValueError('unknown method')

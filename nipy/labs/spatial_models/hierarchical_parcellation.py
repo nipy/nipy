@@ -9,10 +9,10 @@ Author: Bertrand Thirion, 2008
 import numpy as np
 from numpy.random import rand
 
-from nipy.neurospin.clustering.clustering import kmeans, voronoi
-from nipy.neurospin.spatial_models.parcellation import MultiSubjectParcellation
-from nipy.neurospin.graph.field import field_from_coo_matrix_and_data, Field
-from nipy.neurospin.graph.graph import wgraph_from_coo_matrix
+from ..clustering.clustering import kmeans, voronoi
+from .parcellation import MultiSubjectParcellation
+from ..graph.field import field_from_coo_matrix_and_data, Field
+from ..graph.graph import wgraph_from_coo_matrix
 
 
 def _jointly_reduce_data(data1, data2, chunksize):
@@ -437,7 +437,7 @@ def perm_prfx(domain, graphs, features, nb_parcel, ldata, initial_mask=None,
     """
     caveat: assumes that the functional dimension is 1
     """
-    from nipy.neurospin.utils.reproducibility_measures import ttest
+    from ..utils.reproducibility_measures import ttest
     # permutations for the assesment of the results
     prfx0 = []
     adim = domain.coord.shape[1]

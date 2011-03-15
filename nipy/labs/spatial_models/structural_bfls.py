@@ -69,7 +69,7 @@ class LandmarkRegions(object):
     def homogeneity(self):
         """ returns the mean distance between points within each LR
         """
-        from nipy.neurospin.utils.fast_distance import euclidean_distance
+        from ..utils.fast_distance import euclidean_distance
 
         coord = self.get_feature('position')
         h = np.zeros(self.k)
@@ -353,7 +353,7 @@ def build_LR(bf, thq=0.95, ths=0, dmax=1., verbose=0):
 
     Parameters
     ----------
-    bf : list of nipy.neurospin.spatial_models.hroi.Nroi instances
+    bf : list of nipy.labs.spatial_models.hroi.Nroi instances
        it is assumd that each list corresponds to one subject
        each HierarchicalROI is assumed to have the roi_features
        'position', 'label' and 'posterior_proba' defined

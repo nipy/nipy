@@ -18,10 +18,10 @@ Author : Bertrand Thirion, 2006-2011
 import numpy as np
 import scipy.stats as st
 
-import structural_bfls as sbf
-import nipy.neurospin.graph.graph as fg
-import nipy.neurospin.utils.emp_null as en
-from hroi import HROI_as_discrete_domain_blobs
+from .structural_bfls import build_LR
+from ..graph.graph import wgraph_from_coo_matrix
+from ..utils.emp_null import ENN, three_classes_GMM_fit, Gamma_Gaussian_fit
+from .hroi import HROI_as_discrete_domain_blobs
 
 ####################################################################
 # Ancillary functions
@@ -68,15 +68,15 @@ def signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
     if method == 'gauss_mixture':
         prior_strength = 100
         fixed_scale = True
-        bfp = en.three_classes_GMM_fit(
+        bfp = three_classes_GMM_fit(
             learn, test, alpha, prior_strength, verbose, fixed_scale)
         bf0 = bfp[:, 1]
     elif method == 'emp_null':
-        enn = en.ENN(learn)
+        enn = ENN(learn)
         enn.learn()
         bf0 = np.reshape(enn.fdr(test), np.size(test))
     elif method == 'gam_gauss':
-        bfp = en.Gamma_Gaussian_fit(learn, test, verbose)
+        bfp = Gamma_Gaussian_fit(learn, test, verbose)
         bf0 = bfp[:, 1]
     elif method == 'prior':
         y0 = st.norm.pdf(test)
@@ -117,7 +117,7 @@ def compute_individual_regions(domain, lbeta, smin=5, theta=3.0,
 
     Returns
     -------
-    bf list of nipy.neurospin.spatial_models.hroi.Nroi instances
+    bf list of nipy.labs.spatial_models.hroi.Nroi instances
        representing individual ROIs
        let nr be the number of terminal regions across subjects
     gf0, array of shape (nr)
@@ -178,7 +178,7 @@ def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1, sub, burnin,
          spatial_coords=None, nis=1000, co_clust=False, verbose=False):
     """Apply the dpmm analysis to compute clusters from regions coordinates
     """
-    from nipy.neurospin.clustering.imm import MixedIMM
+    from nipy.labs.clustering.imm import MixedIMM
 
     dim = gfc.shape[1]
     migmm = MixedIMM(alpha, dim)
@@ -217,7 +217,7 @@ def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
 
     Parameters
     ----------
-    bf list of nipy.neurospin.spatial_models.hroi.HierarchicalROI instances
+    bf list of nipy.labs.spatial_models.hroi.HierarchicalROI instances
        representing individual ROIs
        let nr be the number of terminal regions across subjects
     gf0, array of shape (nr)
@@ -242,7 +242,7 @@ def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
     LR: a instance of sbf.LandmarkRegions that describes the ROIs found
         in inter-subject inference
         If no such thing can be defined LR is set to None
-    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+    bf: List of  nipy.labs.spatial_models.hroi.Nroi instances
         representing individual ROIs
     p: array of shape (nnodes):
        likelihood of the data under H1 over some sampling grid
@@ -285,7 +285,7 @@ def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
         print 'Number of candidate regions %i, regions found %i' % (
                     np.size(q), q.sum())
 
-    from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
+    from ..graph.field import field_from_coo_matrix_and_data
     Fbeta = field_from_coo_matrix_and_data(dom.topology, p)
     _, _, _, label = Fbeta.custom_watershed(0, g0)
 
@@ -320,7 +320,7 @@ def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one
-    LR, nl = sbf.build_LR(bf, thq, ths, dmax, verbose=verbose)
+    LR, nl = build_LR(bf, thq, ths, dmax, verbose=verbose)
 
     # make a group-level map of the landmark position
     crmap = _relabel_(label, nl)
@@ -333,7 +333,7 @@ def bsa_dpmm2(bf, gf0, sub, gfc, dmax, thq, ths, verbose):
 
     Parameters
     ----------
-    bf list of nipy.neurospin.spatial_models.hroi.HierarchicalROI instances
+    bf list of nipy.labs.spatial_models.hroi.HierarchicalROI instances
        representing individual ROIs
        let nr be the number of terminal regions across subjects
     gf0, array of shape (nr)
@@ -358,7 +358,7 @@ def bsa_dpmm2(bf, gf0, sub, gfc, dmax, thq, ths, verbose):
     LR: a instance of sbf.LandmarkRegions that describes the ROIs found
         in inter-subject inference
         If no such thing can be defined LR is set to None
-    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+    bf: List of  nipy.labs.spatial_models.hroi.Nroi instances
         representing individual ROIs
     Coclust: array of shape (nr,nr):
              co-labelling matrix that gives for each pair of inputs
@@ -387,7 +387,7 @@ def bsa_dpmm2(bf, gf0, sub, gfc, dmax, thq, ths, verbose):
     q, p, CoClust = dpmm(gfc, .5, g0, g1, dof, prior_precision, 1 - gf0,
                          sub, burnin, nis=nis, co_clust=True)
 
-    cg = fg.wgraph_from_coo_matrix(CoClust)
+    cg = wgraph_from_coo_matrix(CoClust)
     cg.remove_edges(cg.weights > .5)
     u = cg.cc()
     u[p < g0] = u.max() + 1 + np.arange(np.sum(p < g0))
@@ -417,7 +417,7 @@ def bsa_dpmm2(bf, gf0, sub, gfc, dmax, thq, ths, verbose):
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one
-    LR, nl = sbf.build_LR(bf, thq, ths, dmax, verbose=verbose)
+    LR, nl = build_LR(bf, thq, ths, dmax, verbose=verbose)
 
     # make a group-level map of the landmark position
     crmap = - np.ones(dom.size)
@@ -459,7 +459,7 @@ def compute_BSA_simple(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     LR: a instance of sbf.LandmarkRegions that describes the ROIs found
         in inter-subject inference
         If no such thing can be defined LR is set to None
-    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+    bf: List of  nipy.labs.spatial_models.hroi.Nroi instances
         representing individual ROIs
     p: array of shape (nnodes):
        likelihood of the data under H1 over some sampling grid
@@ -511,7 +511,7 @@ def compute_BSA_quick(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     LR: a instance of sbf.LandmarkRegions that describes the ROIs found
         in inter-subject inference
         If no such thing can be defined LR is set to None
-    bf: List of  nipy.neurospin.spatial_models.hroi.Nroi instances
+    bf: List of  nipy.labs.spatial_models.hroi.Nroi instances
         representing individual ROIs
     coclust: array of shape (nr, nr):
         co-labelling matrix that gives for each pair of cross_subject regions

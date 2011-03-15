@@ -11,11 +11,11 @@ Author : Bertrand Thirion, 2009-2011
 """
 
 import numpy as np
-import nipy.neurospin.graph.graph as fg
 
-from nipy.neurospin.graph.forest import Forest
-from nipy.neurospin.spatial_models.mroi import SubDomains
-from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
+from ..graph.graph import WeightedGraph 
+from ..graph.forest import Forest
+from .mroi import SubDomains
+from ..graph.field import field_from_coo_matrix_and_data
 
 NINF = - np.infty
 
@@ -176,7 +176,7 @@ class HierarchicalROI(SubDomains):
             return None
         weights = np.ones(self.k)
         edges = (np.vstack((np.arange(self.k), self.parents))).T
-        return fg.WeightedGraph(self.k, edges, weights)
+        return WeightedGraph(self.k, edges, weights)
 
     def make_forest(self):
         """output an fff.forest structure to represent the ROI hierarchy

@@ -2,11 +2,11 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import numpy as np
-import nipy.neurospin.spatial_models.hierarchical_parcellation as hp
-import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
-import nipy.neurospin.spatial_models.parcellation as fp
-import nipy.neurospin.spatial_models.discrete_domain as dom
-from nipy.neurospin.graph.field import field_from_coo_matrix_and_data
+from ..hierarchical_parcellation import hparcel 
+from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
+from ..parcellation import MultiSubjectParcellation
+from ..discrete_domain import grid_domain_from_array
+from ...graph.field import field_from_coo_matrix_and_data
 
 
 
@@ -17,13 +17,13 @@ def test_parcel_interface():
     shape = (5, 5, 5)
     nb_parcel = 10
     data =  np.random.randn(np.prod(shape))
-    domain =  dom.grid_domain_from_array(np.ones(shape))
+    domain =  grid_domain_from_array(np.ones(shape))
     g = field_from_coo_matrix_and_data(domain.topology, data)
     u, J0 = g.ward(nb_parcel)
     tmp = np.array([np.sum(u == k) for k in range(nb_parcel)])
 
     #instantiate a parcellation
-    msp = fp.MultiSubjectParcellation(domain, u, u) 
+    msp = MultiSubjectParcellation(domain, u, u) 
     assert msp.nb_parcel == nb_parcel
     assert msp.nb_subj == 1
     assert (msp.population().ravel() == tmp).all()
@@ -38,7 +38,7 @@ def test_parcel_interface_multi_subj():
     v = []
     for s in range(nb_subj):
         data =  np.random.randn(np.prod(shape))
-        domain =  dom.grid_domain_from_array(np.ones(shape))
+        domain = grid_domain_from_array(np.ones(shape))
         g = field_from_coo_matrix_and_data(domain.topology, data)
         u, J0 = g.ward(nb_parcel)
         v.append(u)
@@ -47,7 +47,7 @@ def test_parcel_interface_multi_subj():
     tmp = np.array([np.sum(v == k, 0) for k in range(nb_parcel)])
 
     #instantiate a parcellation
-    msp = fp.MultiSubjectParcellation(domain, u, v) 
+    msp = MultiSubjectParcellation(domain, u, v) 
     assert msp.nb_parcel == nb_parcel
     assert msp.nb_subj == nb_subj
     assert (msp.population() == tmp).all()
@@ -59,12 +59,12 @@ def test_parcel_feature():
     shape = (5, 5, 5)
     nb_parcel = 10
     data =  np.random.randn(np.prod(shape), 1)
-    domain =  dom.grid_domain_from_array(np.ones(shape))
+    domain = grid_domain_from_array(np.ones(shape))
     g = field_from_coo_matrix_and_data(domain.topology, data)
     u, J0 = g.ward(nb_parcel)
 
     #instantiate a parcellation
-    msp = fp.MultiSubjectParcellation(domain, u, u) 
+    msp = MultiSubjectParcellation(domain, u, u) 
     msp.make_feature('data', data)
     assert msp.get_feature('data').shape== (nb_parcel, 1)
     
@@ -87,13 +87,13 @@ def test_parcel_feature_multi_subj():
     v = []
     for s in range(nb_subj):
         data =  np.random.randn(np.prod(shape))
-        domain =  dom.grid_domain_from_array(np.ones(shape))
+        domain = grid_domain_from_array(np.ones(shape))
         g = field_from_coo_matrix_and_data(domain.topology, data)
         u, J0 = g.ward(nb_parcel)
         v.append(u)
 
     v = np.array(v).T    
-    msp = fp.MultiSubjectParcellation(domain, u, v) 
+    msp = MultiSubjectParcellation(domain, u, v) 
 
     # test a multi_dimensional feature
     # dimension 1
@@ -116,15 +116,15 @@ def test_parcel_hierarchical():
     nsubj = 10
     dimx = 40
     dimy = 40
-    dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy)
+    dataset = surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy)
 
     # step 2 : prepare all the information for the parcellation
     nb_parcel = 10
-    domain = dom.grid_domain_from_array(dataset[0]**2, np.eye(3))
+    domain = grid_domain_from_array(dataset[0]**2, np.eye(3))
     ldata = np.reshape(dataset, (nsubj, dimx*dimy, 1))
 
     # step 3 : run the algorithm
-    Pa =  hp.hparcel(domain, ldata, nb_parcel)
+    Pa =  hparcel(domain, ldata, nb_parcel)
     	
     # step 4:  look at the results
     Label =  Pa.individual_labels
@@ -141,15 +141,15 @@ def test_prfx():
     nsubj = 10
     dimx = 40
     dimy = 40
-    dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy)
+    dataset = surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy)
 
     # step 2 : prepare all the information for the parcellation
     nb_parcel = 10
-    domain = dom.grid_domain_from_array(dataset[0]**2, np.eye(3))
+    domain = grid_domain_from_array(dataset[0]**2, np.eye(3))
     ldata = np.reshape(dataset, (nsubj, dimx*dimy, 1))
 
     # step 3 : run the algorithm
-    Pa =  hp.hparcel(domain, ldata, nb_parcel)
+    Pa =  hparcel(domain, ldata, nb_parcel)
     pdata = Pa.make_feature('functional', 
                             np.rollaxis(np.array(ldata), 1, 0))
     one_sample = np.squeeze(pdata.mean(0)/pdata.std(0))

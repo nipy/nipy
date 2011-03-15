@@ -9,9 +9,10 @@ import numpy as np
 import os.path as op
 from nibabel import load, save, Nifti1Image
 
-from nipy.neurospin.mask import intersect_masks
-import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
-from discrete_domain import domain_from_image
+from ..mask import intersect_masks
+from .bayesian_structural_analysis import (compute_BSA_simple, 
+                                           compute_BSA_quick, compute_BSA_loo)
+from .discrete_domain import domain_from_image
 
 
 def make_bsa_image(
@@ -56,11 +57,11 @@ def make_bsa_image(
 
     Returns
     -------
-    AF: an nipy.neurospin.spatial_models.structural_bfls.landmark_regions
+    AF: an nipy.labs.spatial_models.structural_bfls.landmark_regions
         instance that describes the structures found at the group level
          None is returned if nothing has been found significant
          at the group level
-    BF : a list of nipy.neurospin.spatial_models.hroi.Nroi instances
+    BF : a list of nipy.labs.spatial_models.hroi.Nroi instances
        (one per subject) that describe the individual coounterpart of AF
 
     if method=='loo', the output is different:
@@ -111,18 +112,18 @@ def make_bsa_image(
     BF = [None for s in range(nsubj)]
 
     if method == 'simple':
-        crmap, AF, BF, p = bsa.compute_BSA_simple(
+        crmap, AF, BF, p = compute_BSA_simple(
             dom, lbeta, dmax, thq, smin, ths, theta, verbose=verbose)
 
     if method == 'quick':
-        crmap, AF, BF, co_clust = bsa.compute_BSA_quick(
+        crmap, AF, BF, co_clust = compute_BSA_quick(
             dom, lbeta, dmax, thq, smin, ths, theta, verbose=verbose)
 
         density = np.zeros(nvox)
         crmap = AF.map_label(dom.coord, 0.95, dmax)
 
     if method == 'loo':
-        mll, ll0 = bsa.compute_BSA_loo(
+        mll, ll0 = compute_BSA_loo(
             dom, lbeta, dmax, thq, smin, ths, theta, verbose=verbose)
         return mll, ll0
 

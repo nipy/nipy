@@ -11,7 +11,7 @@ import scipy.sparse as sp
 
 from nibabel import load, Nifti1Image, save
 
-import nipy.neurospin.graph as fg
+from ..graph import WeightedGraph, wgraph_from_coo_matrix
 
 ##############################################################
 # Ancillary functions
@@ -52,7 +52,7 @@ def smatrix_from_3d_idx(ijk, nn=18):
     coo_mat: a sparse coo matrix,
              adjacency of the neighboring system
     """
-    G = fg.WeightedGraph(ijk.shape[0])
+    G = WeightedGraph(ijk.shape[0])
     G.from_3d_grid(ijk, nn)
     return G.to_coo_matrix()
 
@@ -120,7 +120,7 @@ def smatrix_from_nd_idx(idx, nn=0):
 
     edges = np.vstack((np.hstack((eA, eB)), np.hstack((eB, eA)))).T
     weights = np.ones(E)
-    G = fg.WeightedGraph(n, edges, weights)
+    G = WeightedGraph(n, edges, weights)
     return G.to_coo_matrix()
 
 
@@ -174,7 +174,7 @@ def reduce_coo_matrix(mat, mask):
     mask: boolean array of shape mat.shape[0],
           desired elements
     """
-    G = fg.wgraph_from_coo_matrix(mat)
+    G = wgraph_from_coo_matrix(mat)
     K = G.subgraph(mask)
     return K.to_coo_matrix()
 
@@ -350,7 +350,7 @@ class MeshDomain(object):
             edges[3 * i + 1] = np.array([sa, sc])
             edges[3 * i + 2] = np.array([sb, sc])
 
-        G = fg.WeightedGraph(self.V, edges, weights)
+        G = WeightedGraph(self.V, edges, weights)
 
         # symmeterize the graph
         G.symmeterize()

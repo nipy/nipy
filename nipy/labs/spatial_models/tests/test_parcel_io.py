@@ -1,6 +1,6 @@
 from numpy.testing import assert_almost_equal
-from nipy.neurospin.spatial_models.parcel_io import *
-from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
+from ..parcel_io import *
+from ...utils.simul_multisubject_fmri_dataset import \
     surrogate_3d_dataset, surrogate_4d_dataset 
 from tempfile import mkdtemp
 from os.path import join, exists

@@ -8,8 +8,8 @@ in ~/.nipy/tests/data
 """
 
 import numpy as np
-import nipy.neurospin.spatial_models.discrete_domain as dd
-from nipy.neurospin.spatial_models.mroi import *
+from ..mroi import *
+from ..discrete_domain import domain_from_array
 
 shape = (5, 6, 7)
 
@@ -80,7 +80,7 @@ def test_sd_representative():
 
 
 def test_sd_from_ball():
-    dom = dd.domain_from_array(np.ones((10, 10)))
+    dom = domain_from_array(np.ones((10, 10)))
     radii = np.array([2, 2, 2])
     positions = np.array([[3, 3], [3, 7], [7, 7]])
     subdomain = subdomain_from_balls(dom, positions, radii)
