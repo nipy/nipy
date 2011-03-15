@@ -11,7 +11,7 @@ def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
     from numpy.distutils.system_info import get_info
 
-    config = Configuration('neurospin', parent_package, top_path)
+    config = Configuration('labs', parent_package, top_path)
 
     # cstat library
     config.add_include_dirs(os.path.join(LIBS,'fff'))

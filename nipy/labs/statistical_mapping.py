@@ -4,10 +4,10 @@ import numpy as np
 import scipy.stats as sp_stats
 
 from nipy.algorithms.registration import apply_affine
-from nipy.neurospin.graph.field import Field
-from nipy.neurospin.utils import emp_null
-from nipy.neurospin.glm import glm
-from nipy.neurospin.group.permutation_test import \
+from .graph.field import Field
+from .utils import emp_null
+from .glm import glm
+from .group.permutation_test import \
      permutation_test_onesample, permutation_test_twosample
 
 # FIXME: rename permutation_test_onesample class
