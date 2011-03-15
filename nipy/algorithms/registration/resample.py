@@ -49,6 +49,7 @@ def resample(moving, transform, grid_coords=False, reference=None,
     data = moving.get_data()
     if dtype == None: 
         dtype = data.dtype
+    
     # Case: affine transform
     if hasattr(transform, 'as_affine'): 
         Tv = transform.as_affine()
@@ -62,11 +63,12 @@ def resample(moving, transform, grid_coords=False, reference=None,
             affine_transform(data, Tv[0:3,0:3], offset=Tv[0:3,3],
                              order=interp_order, cval=0, 
                              output_shape=reference.shape, output=output)
+    
     # Case: non-affine transform
     else:
         Tv = transform 
         if not grid_coords:
-            Tv = Affine(inverse_affine(moving.affine)).compose(Tv.compose(reference.affine))
+            Tv = Affine(inverse_affine(moving.affine)).compose(Tv.compose(Affine(reference.affine)))
         coords = Tv.apply(np.indices(reference.shape).transpose((1,2,3,0)))
         coords = np.rollaxis(coords, 3, 0)
         if interp_order == 3: 
