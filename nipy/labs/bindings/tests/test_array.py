@@ -6,7 +6,7 @@
 
 from numpy.testing import assert_almost_equal, assert_equal
 import numpy as np
-import nipy.neurospin.bindings as fb
+from .. import *
 
 
 MAX_TEST_SIZE = 30
@@ -23,7 +23,7 @@ def random_shape(size):
 
 def _test_array_get(x):
     pos = np.asarray(x.shape)/2
-    a = fb.array_get(x, pos[0], pos[1], pos[2], pos[3])
+    a = array_get(x, pos[0], pos[1], pos[2], pos[3])
     assert_equal(a, x[pos[0], pos[1], pos[2], pos[3]])
 
 
@@ -34,7 +34,7 @@ def test_array_get():
 
 
 def _test_array_get_block(x):
-    b0 = fb.array_get_block(x, 1, 8, 2, 1, 8, 2, 1, 8, 2, 1, 8, 2)
+    b0 = array_get_block(x, 1, 8, 2, 1, 8, 2, 1, 8, 2, 1, 8, 2)
     b = x[1:8:2, 1:8:2, 1:8:2, 1:8:2]
     assert_equal(b0, b)
 
@@ -44,7 +44,7 @@ def test_array_get_block():
 
 
 def _test_array_add(x, y): 
-    z = fb.array_add(x, y)
+    z = array_add(x, y)
     assert_equal(z, x+y)
 
 def test_array_add(): 
@@ -54,7 +54,7 @@ def test_array_add():
     _test_array_add(x, y)
 
 def _test_array_mul(x, y): 
-    z = fb.array_mul(x, y)
+    z = array_mul(x, y)
     assert_equal(z, x*y)
 
 def test_array_mul(): 
@@ -64,7 +64,7 @@ def test_array_mul():
     _test_array_mul(x, y)
 
 def _test_array_sub(x, y): 
-    z = fb.array_sub(x, y)
+    z = array_sub(x, y)
     assert_equal(z, x-y)
 
 def test_array_sub(): 
@@ -74,7 +74,7 @@ def test_array_sub():
     _test_array_sub(x, y)
 
 def _test_array_div(x, y): 
-    z = fb.array_div(x, y)
+    z = array_div(x, y)
     assert_almost_equal(z, x/y)
 
 def test_array_div(): 

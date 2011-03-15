@@ -2,9 +2,9 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 # Test numpy bindings
 
-from nipy.testing import *
 import numpy as np
-import nipy.neurospin.bindings as fb
+from ....testing import *
+from .. import *
 
 
 
@@ -29,17 +29,17 @@ def test_type_conversions_to_fff():
     # use np.sctypes for testing numpy types, np.typeDict.values
     # contains a lot of duplicates.  There are 140 values in
     # np.typeDict, but only 21 unique numpy types.  But only 11 fff
-    # types in fb.c_types.
+    # types in c_types.
     for type_key in np.sctypes:
         for npy_t in np.sctypes[type_key]:
-            t, nbytes = fb.fff_type(np.dtype(npy_t))
+            t, nbytes = fff_type(np.dtype(npy_t))
             if not t == 'unknown type':
                 yield assert_equal, nbytes, np.dtype(npy_t).itemsize
 
 
 def test_type_conversions_in_C():
-    for t in fb.c_types:
-        npy_t, nbytes = fb.npy_type(t)
+    for t in c_types:
+        npy_t, nbytes = npy_type(t)
         yield assert_equal, npy_t, t
 
 
@@ -49,9 +49,9 @@ def test_type_conversions_in_C():
 
 def _test_copy_vector(x):
     # use fff
-    y0 = fb.copy_vector(x, 0)
+    y0 = copy_vector(x, 0)
     # use numpy
-    y1 = fb.copy_vector(x, 1) 
+    y1 = copy_vector(x, 1) 
     yield assert_equal, y0, x
     yield assert_equal, y1, x
 
@@ -78,7 +78,7 @@ def test_copy_vector_uint8():
 """
 
 def _test_pass_vector(x):
-    y = fb.pass_vector(x)
+    y = pass_vector(x)
     assert_equal(y, x)
 
 def test_pass_vector():
@@ -95,9 +95,9 @@ def test_pass_vector_uint8():
 
 
 def _test_pass_matrix(x):
-    y = fb.pass_matrix(x)
+    y = pass_matrix(x)
     yield assert_equal, y, x
-    y = fb.pass_matrix(x.T)
+    y = pass_matrix(x.T)
     yield assert_equal, y, x.T
 
 def test_pass_matrix():
@@ -117,9 +117,9 @@ def test_pass_matrix_uint8():
 
 
 def _test_pass_array(x):
-    y = fb.pass_array(x)
+    y = pass_array(x)
     yield assert_equal, y, x
-    y = fb.pass_array(x.T)
+    y = pass_array(x.T)
     yield assert_equal, y, x.T
 
 def test_pass_array():
@@ -148,10 +148,10 @@ def _test_pass_vector_via_iterator(X, pos=0):
     Assume X.ndim == 2
     """
     # axis == 0 
-    x = fb.pass_vector_via_iterator(X, axis=0, niters=pos)
+    x = pass_vector_via_iterator(X, axis=0, niters=pos)
     yield assert_equal, x, X[:, pos]
     # axis == 1
-    x = fb.pass_vector_via_iterator(X, axis=1, niters=pos)
+    x = pass_vector_via_iterator(X, axis=1, niters=pos)
     yield assert_equal, x, X[pos, :]
 
 def test_pass_vector_via_iterator():
@@ -187,9 +187,9 @@ def test_pass_vector_via_iterator_shift_uint8():
 
 def _test_copy_via_iterators(Y):
     for axis in range(4):
-        Z = fb.copy_via_iterators(Y, axis)
+        Z = copy_via_iterators(Y, axis)
         yield assert_equal, Z, Y
-        ZT = fb.copy_via_iterators(Y.T, axis)
+        ZT = copy_via_iterators(Y.T, axis)
         yield assert_equal, ZT, Y.T 
 
 def test_copy_via_iterators():
@@ -209,9 +209,9 @@ def test_copy_via_iterators_uint8():
 
 def _test_sum_via_iterators(Y):
     for axis in range(4):
-        Z = fb.sum_via_iterators(Y, axis)
+        Z = sum_via_iterators(Y, axis)
         yield assert_almost_equal, Z, Y.sum(axis)
-        ZT = fb.sum_via_iterators(Y.T, axis)
+        ZT = sum_via_iterators(Y.T, axis)
         yield assert_almost_equal, ZT, Y.T.sum(axis)
 
 def test_sum_via_iterators():

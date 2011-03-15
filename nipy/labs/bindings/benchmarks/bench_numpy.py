@@ -4,8 +4,8 @@ import time
 
 import numpy as np
 
-from nipy.testing import *
-import nipy.neurospin.bindings as fb
+from ....testing import *
+from .. import *
 
 
 def time_ratio(t0,t1):
@@ -16,10 +16,10 @@ def time_ratio(t0,t1):
 
 def time_copy_vector(x):
     t0 = time.clock()
-    y0 = fb.copy_vector(x, 0) 
+    y0 = copy_vector(x, 0) 
     dt0 = time.clock()-t0
     t1 = time.clock()
-    y1 = fb.copy_vector(x, 1) 
+    y1 = copy_vector(x, 1) 
     dt1 = time.clock()-t1
     ratio = time_ratio(dt0,dt1)
     print('  using fff_array: %f sec' % dt0)
