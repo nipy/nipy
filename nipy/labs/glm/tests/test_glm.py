@@ -2,7 +2,7 @@
 
 from numpy.testing import assert_almost_equal, TestCase
 import numpy as np
-from nipy.neurospin.glm.glm import glm
+from ..glm import glm
 
 class TestFitting(TestCase):
 

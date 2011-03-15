@@ -4,7 +4,9 @@ import numpy as np
 import scipy.stats as sps
 
 import kalman
-from nipy.neurospin.utils import mahalanobis
+from ..utils import mahalanobis
+from ..utils.zscore import zscore
+
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
@@ -222,7 +224,6 @@ class contrast(object):
             self._pvalue = self.pvalue(baseline)
 
         # Avoid inf values kindly supplied by scipy.
-        from nipy.neurospin.utils.zscore import zscore
         z = zscore(self._pvalue)
         return z
 
