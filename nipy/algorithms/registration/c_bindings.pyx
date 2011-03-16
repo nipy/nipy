@@ -1,18 +1,29 @@
 # -*- Mode: Python -*-  
 
 """
-Python interface to fast cubic spline sampling routines in C.
+Bindings for various image registration routines written in C: joint
+histogram computation, cubic spline interpolation, non-rigid
+transformations. 
 """
 
-__version__ = '0.2'
+__version__ = '0.3'
 
 
 # Includes
-from numpy cimport import_array, ndarray, broadcast, PyArray_MultiIterNew, PyArray_MultiIter_DATA, PyArray_MultiIter_NEXT
+from numpy cimport (import_array, ndarray, flatiter, broadcast, 
+                    PyArray_MultiIterNew, PyArray_MultiIter_DATA, 
+                    PyArray_MultiIter_NEXT)
+
 
 # Externals
+cdef extern from "joint_histogram.h":
+    void joint_histogram_import_array()
+    int joint_histogram(ndarray H, unsigned int clampI, unsigned int clampJ,  
+                        flatiter iterI, ndarray imJ_padded, 
+                        ndarray Tvox, int interp)
+    int L1_moments(double* n, double* median, double* dev, ndarray H)
+
 cdef extern from "cubic_spline.h":
-    
     void cubic_spline_import_array()
     void cubic_spline_transform(ndarray res, ndarray src)
     double cubic_spline_sample1d(double x, ndarray coef, 
@@ -27,15 +38,54 @@ cdef extern from "cubic_spline.h":
                                  double* Tvox, int cast_integer,
                                  int mode_x, int mode_y, int mode_z)
 
-
 # Initialize numpy
+joint_histogram_import_array()
 cubic_spline_import_array()
 import_array()
 import numpy as np
 
+# Globals
 modes = {'zero': 0, 'nearest': 1, 'reflect': 2}
 
-def cspline_transform(ndarray x):
+
+def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
+    """
+    Compute the joint histogram given a transformation trial. 
+    """
+    cdef:
+        double *h, *tvox
+        unsigned int clampI, clampJ
+        int ret
+
+    # Views
+    clampI = <unsigned int>H.shape[0]
+    clampJ = <unsigned int>H.shape[1]    
+
+    # Compute joint histogram 
+    ret = joint_histogram(H, clampI, clampJ, iterI, imJ, Tvox, interp)
+    if not ret == 0:
+        raise RuntimeError('Joint histogram failed because of incorrect input arrays.')
+
+    return 
+
+
+def _L1_moments(ndarray H):
+    """
+    Compute L1 moments of order 0, 1 and 2 of a one-dimensional
+    histogram.
+    """
+    cdef:
+        double n[1], median[1], dev[1]
+        int ret
+
+    ret = L1_moments(n, median, dev, H)
+    if not ret == 0:
+        raise RuntimeError('L1_moments failed because input array is not double.')
+
+    return n[0], median[0], dev[0]
+
+
+def _cspline_transform(ndarray x):
     c = np.zeros([x.shape[i] for i in range(x.ndim)], dtype=np.double)
     cubic_spline_transform(c, x)
     return c
@@ -44,7 +94,7 @@ cdef ndarray _reshaped_double(object in_arr, ndarray sh_arr):
     shape = [sh_arr.shape[i] for i in range(sh_arr.ndim)]
     return np.reshape(in_arr, shape).astype(np.double)
 
-def cspline_sample1d(ndarray R, ndarray C, X=0, mode='zero'):
+def _cspline_sample1d(ndarray R, ndarray C, X=0, mode='zero'):
     cdef double *r, *x
     cdef broadcast multi
     Xa = _reshaped_double(X, R) 
@@ -56,8 +106,8 @@ def cspline_sample1d(ndarray R, ndarray C, X=0, mode='zero'):
         PyArray_MultiIter_NEXT(multi)
     return R
 
-def cspline_sample2d(ndarray R, ndarray C, X=0, Y=0, 
-                     mx='zero', my='zero'):
+def _cspline_sample2d(ndarray R, ndarray C, X=0, Y=0, 
+                      mx='zero', my='zero'):
     cdef double *r, *x, *y
     cdef broadcast multi
     Xa = _reshaped_double(X, R)
@@ -71,8 +121,8 @@ def cspline_sample2d(ndarray R, ndarray C, X=0, Y=0,
         PyArray_MultiIter_NEXT(multi)
     return R
 
-def cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0, 
-                     mx='zero', my='zero', mz='zero'):
+def _cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0, 
+                      mx='zero', my='zero', mz='zero'):
     cdef double *r, *x, *y, *z
     cdef broadcast multi
     Xa = _reshaped_double(X, R)
@@ -89,11 +139,9 @@ def cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0,
     return R
 
 
-def cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0, 
-                     mx='zero', my='zero', mz='zero', mt='zero'):
+def _cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0, 
+                      mx='zero', my='zero', mz='zero', mt='zero'):
     """
-    cubic_spline_sample4d(R, C, X=0, Y=0, Z=0, T=0):
-
     In-place cubic spline sampling. R.dtype must be 'double'. 
     """
     cdef double *r, *x, *y, *z, *t
@@ -114,11 +162,9 @@ def cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0,
     return R
 
 
-def cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
-                       mx='zero', my='zero', mz='zero'):
+def _cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
+                        mx='zero', my='zero', mz='zero'):
     """
-    cspline_resample3d(im, dims, Tvox, dtype=None)
-
     Note that the input transformation Tvox will be re-ordered in C
     convention if needed.
     """
@@ -141,6 +187,4 @@ def cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
                             modes[mx], modes[my], modes[mz])
 
     return im_resampled
-
-
 

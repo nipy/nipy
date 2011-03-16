@@ -6,7 +6,8 @@ import numpy as np
 from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs, fmin_ncg
 from ...core.image.affine_image import AffineImage
 from ..optimize import fmin_steepest
-from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_sample4d
+from .affine import Rigid, Similarity, Affine
+from .c_bindings import _cspline_transform, _cspline_sample3d, _cspline_sample4d
 
 
 # Module globals 
@@ -27,7 +28,7 @@ SPEEDUP = 5, 2
 BORDERS = 1, 1, 1 
 REFSCAN = 0 
 EXTRAPOLATE_SPACE = 'reflect'
-EXTRAPOLATE_TIME ='reflect'
+EXTRAPOLATE_TIME = 'reflect'
 TINY = float(np.finfo(np.double).tiny)
 
 def interp_slice_order(Z, slice_order): 
@@ -164,11 +165,11 @@ class Realign4dAlgorithm(object):
         # Compute the 4d cubic spline transform
         self.time_interp = time_interp 
         if time_interp: 
-            self.cbspline = cspline_transform(im4d.array)
+            self.cbspline = _cspline_transform(im4d.array)
         else: 
             self.cbspline = np.zeros(self.dims, dtype='double')
             for t in range(self.dims[3]): 
-                self.cbspline[:,:,:,t] = cspline_transform(im4d.array[:,:,:,t])
+                self.cbspline[:,:,:,t] = _cspline_transform(im4d.array[:,:,:,t])
         # The reference scan conventionally defines the head
         # coordinate system
         self.refscan = refscan
@@ -194,21 +195,21 @@ class Realign4dAlgorithm(object):
                                  self.inv_affine, self.affine)
         if self.time_interp: 
             T = self.scanner_time(Z, self.timestamps[t])
-            cspline_sample4d(self.data[:,t], 
-                             self.cbspline, 
-                             X, Y, Z, T, 
-                             mx=EXTRAPOLATE_SPACE,
-                             my=EXTRAPOLATE_SPACE,
-                             mz=EXTRAPOLATE_SPACE,
-                             mt=EXTRAPOLATE_TIME)
+            _cspline_sample4d(self.data[:,t], 
+                              self.cbspline, 
+                              X, Y, Z, T, 
+                              mx=EXTRAPOLATE_SPACE,
+                              my=EXTRAPOLATE_SPACE,
+                              mz=EXTRAPOLATE_SPACE,
+                              mt=EXTRAPOLATE_TIME)
         else: 
-            cspline_sample3d(self.data[:,t], 
-                             self.cbspline[:,:,:,t], 
-                             X, Y, Z,
-                             mx=EXTRAPOLATE_SPACE,
-                             my=EXTRAPOLATE_SPACE,
-                             mz=EXTRAPOLATE_SPACE)
-
+            _cspline_sample3d(self.data[:,t], 
+                              self.cbspline[:,:,:,t], 
+                              X, Y, Z,
+                              mx=EXTRAPOLATE_SPACE,
+                              my=EXTRAPOLATE_SPACE,
+                              mz=EXTRAPOLATE_SPACE)
+            
 
     def resample_full_data(self):
         if VERBOSE:
@@ -222,9 +223,9 @@ class Realign4dAlgorithm(object):
                                      self.inv_affine, self.affine)
             if self.time_interp: 
                 T = self.scanner_time(Z, self.timestamps[t])
-                cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T, mt='nearest')
+                _cspline_sample4d(res[:,:,:,t], self.cbspline, X, Y, Z, T, mt='nearest')
             else:
-                cspline_sample3d(res[:,:,:,t], self.cbspline[:,:,:,t], X, Y, Z)
+                _cspline_sample3d(res[:,:,:,t], self.cbspline[:,:,:,t], X, Y, Z)
         return res
 
     def set_fmin(self, optimizer, stepsize, xtol, ftol, gtol, maxiter, maxfun): 

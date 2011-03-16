@@ -1,4 +1,4 @@
-from ._registration import _L1_moments
+from .c_bindings import _L1_moments
 
 import numpy as np 
 from scipy.ndimage import gaussian_filter

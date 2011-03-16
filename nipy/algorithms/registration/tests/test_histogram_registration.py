@@ -5,7 +5,7 @@ import numpy as np
 from ....core.image.affine_image import AffineImage 
 from ..affine import Affine
 from ..histogram_registration import HistogramRegistration
-from .._registration import _joint_histogram
+from ..c_bindings import _joint_histogram
 
 from numpy.testing import assert_array_equal
 from ....testing import assert_equal, assert_almost_equal, assert_raises

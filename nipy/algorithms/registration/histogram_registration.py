@@ -14,7 +14,7 @@ from scipy.optimize import fmin as fmin_simplex, fmin_powell, fmin_cg, fmin_bfgs
 
 from ...core.image.affine_image import AffineImage
 from ..optimize import fmin_steepest
-from ._registration import _joint_histogram
+from .c_bindings import _joint_histogram
 from .affine import inverse_affine, subgrid_affine, affine_transforms
 from .chain_transform import ChainTransform 
 from .similarity_measures import similarity_measures as _sms
