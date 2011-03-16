@@ -1,9 +1,10 @@
+from os.path import join, exists
+from tempfile import mkdtemp
 from numpy.testing import assert_almost_equal
+
 from ..parcel_io import *
 from ...utils.simul_multisubject_fmri_dataset import \
     surrogate_3d_dataset, surrogate_4d_dataset 
-from tempfile import mkdtemp
-from os.path import join, exists
 
 def test_mask_parcel():
     """

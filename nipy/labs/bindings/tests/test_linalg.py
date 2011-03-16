@@ -6,7 +6,7 @@
 
 from numpy.testing import assert_equal
 import numpy as np
-from .. import *
+from .. import vector_get, vector_set 
 
 n = 15
 

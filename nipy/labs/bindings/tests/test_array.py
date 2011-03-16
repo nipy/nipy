@@ -6,7 +6,8 @@
 
 from numpy.testing import assert_almost_equal, assert_equal
 import numpy as np
-from .. import *
+from .. import (array_get, array_get_block, array_add, 
+                array_sub, array_mul, array_div) 
 
 
 MAX_TEST_SIZE = 30
@@ -26,12 +27,10 @@ def _test_array_get(x):
     a = array_get(x, pos[0], pos[1], pos[2], pos[3])
     assert_equal(a, x[pos[0], pos[1], pos[2], pos[3]])
 
-
 def test_array_get():
     d0, d1, d2, d3 = random_shape(4)
     x = np.random.rand(d0, d1, d2, d3)-.5
     _test_array_get(x)
-
 
 def _test_array_get_block(x):
     b0 = array_get_block(x, 1, 8, 2, 1, 8, 2, 1, 8, 2, 1, 8, 2)
@@ -41,7 +40,6 @@ def _test_array_get_block(x):
 def test_array_get_block(): 
     x = np.random.rand(10, 10, 10, 10)-.5
     _test_array_get_block(x)
-
 
 def _test_array_add(x, y): 
     z = array_add(x, y)

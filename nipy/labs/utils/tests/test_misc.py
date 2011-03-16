@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-from numpy.testing import assert_almost_equal, assert_equal, TestCase
-
 import numpy as np
 from scipy import special
+
+from numpy.testing import assert_almost_equal, assert_equal, TestCase
 
 from ..routines import median, mahalanobis, gamln, psi
 

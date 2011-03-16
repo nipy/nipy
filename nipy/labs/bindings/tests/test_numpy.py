@@ -4,7 +4,8 @@
 
 import numpy as np
 from ....testing import *
-from .. import *
+from .. import (c_types, fff_type, npy_type, copy_vector, 
+                pass_vector, pass_vector_via_iterator)
 
 
 

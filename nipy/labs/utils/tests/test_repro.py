@@ -9,8 +9,8 @@ not whether it is exact
 
 import numpy as np
 from ..simul_multisubject_fmri_dataset import surrogate_2d_dataset
-from ..reproducibility_measures import \
-    voxel_reproducibility, cluster_reproducibility
+from ..reproducibility_measures import (voxel_reproducibility, 
+                                        cluster_reproducibility)
 
 def make_dataset(ampli_factor=1.0, nsubj=10):
     """

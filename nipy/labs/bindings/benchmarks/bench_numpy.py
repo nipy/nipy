@@ -5,7 +5,7 @@ import time
 import numpy as np
 
 from ....testing import *
-from .. import *
+from .. import copy_vector
 
 
 def time_ratio(t0,t1):

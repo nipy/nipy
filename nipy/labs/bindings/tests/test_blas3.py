@@ -8,7 +8,8 @@
 
 from numpy.testing import assert_almost_equal
 import numpy as np
-from .. import *
+from .. import (blas_dgemm, blas_dsymm, blas_dtrmm, 
+                blas_dtrsm, blas_dsyrk, blas_dsyr2k)
 
 n1 = 10
 n2 = 13

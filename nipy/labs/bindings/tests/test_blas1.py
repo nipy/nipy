@@ -6,8 +6,8 @@
 
 from numpy.testing import assert_almost_equal
 import numpy as np
-from .. import *
-
+from .. import (blas_dnrm2, blas_dasum, blas_ddot, 
+                blas_daxpy, blas_dscal)
 n = 15
 
 
