@@ -4,7 +4,6 @@
 import numpy as np
 
 from .._cubic_spline import *
-#from nipy.algorithms.registration._cubic_spline import *
 
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal)

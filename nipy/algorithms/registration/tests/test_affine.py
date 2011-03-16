@@ -8,7 +8,7 @@ from ..affine import (Affine, Affine2D, Rigid, Rigid2D,
 
 from nose.tools import assert_true, assert_false
 from numpy.testing import assert_array_equal, assert_array_almost_equal
-from nipy.testing import assert_almost_equal
+from ....testing import assert_almost_equal
 
 
 def random_vec12(subtype='affine'): 
