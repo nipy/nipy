@@ -13,6 +13,8 @@ RADIUS = 100
 # Smallest possible scaling
 TINY = float(np.finfo(np.double).tiny)
 
+
+
 def rotation_mat2vec(R):
     """ Rotation vector from rotation matrix `R`
 
@@ -145,9 +147,9 @@ class Affine(Transform):
             raise ValueError('Invalid array')
 
     def copy(self): 
-        new = Affine()
+        new = self.__class__()
         new._direct = self._direct
-        new._precond = self._precond
+        new._precond[:] = self._precond[:]
         new._vec12 = self._vec12.copy() 
         return new
 
@@ -260,7 +262,7 @@ class Affine(Transform):
         else: # neither one contains capabilities of the other
             klass = Affine
         a = klass()
-        a._precond = self._precond
+        a._precond[:] = self._precond[:]
         a.from_matrix44(np.dot(self.as_affine(), other_aff))
         return a
 
@@ -276,7 +278,7 @@ class Affine(Transform):
         Return the inverse affine transform. 
         """
         a = self.__class__()
-        a._precond = self._precond
+        a._precond[:] = self._precond[:]
         a.from_matrix44(spl.inv(self.as_affine()))
         return a
 
