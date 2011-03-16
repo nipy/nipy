@@ -1,7 +1,7 @@
 import numpy as np 
 
 from nipy.algorithms.registration.polyaffine import *
-
+from nipy.algorithms.registration.c_bindings import _apply_polyaffine
 
 #xyz = np.random.rand(19, 3) 
 #centers = np.random.rand(10, 3) 
@@ -16,15 +16,26 @@ def id_affine():
     return np.eye(4) 
 
 
-centers = [np.random.rand(3) for i in range(5)]
-affines = [id_affine() for i in range(5)]
-sigma = .0001
+NCENTERS = 2
+NPTS = 100
 
+centers = [np.random.rand(3) for i in range(NCENTERS)]
+affines = [random_affine() for i in range(NCENTERS)]
+sigma = 1
+xyz = np.random.rand(NPTS, 3) 
+
+"""
 T = PolyAffine(centers, affines, sigma) 
-
-xyz = np.random.rand(2, 3) 
 t = T.apply(xyz) 
 t2 = T.apply2(xyz) 
+"""
+
+txyz = xyz.copy()
+
+affines = np.array(affines)
+_affines = np.reshape(affines[:,0:3,:], (NCENTERS, 12))
+
+_apply_polyaffine(txyz, centers, _affines, sigma) 
 
 
 #zoo = T.apply(np.asarray(centers))

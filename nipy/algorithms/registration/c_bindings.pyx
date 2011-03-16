@@ -38,9 +38,15 @@ cdef extern from "cubic_spline.h":
                                  double* Tvox, int cast_integer,
                                  int mode_x, int mode_y, int mode_z)
 
+cdef extern from "polyaffine.h": 
+    void polyaffine_import_array()
+    void apply_polyaffine(ndarray XYZ, ndarray Centers, ndarray Affines, double sigma)
+
+
 # Initialize numpy
 joint_histogram_import_array()
 cubic_spline_import_array()
+polyaffine_import_array()
 import_array()
 import numpy as np
 
@@ -178,7 +184,7 @@ def _cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
 
     # Ensure that the Tvox array is C-contiguous (required by the
     # underlying C routine)
-    Tvox = np.asarray(Tvox, order='C')
+    Tvox = np.asarray(Tvox, dtype='double', order='C')
     tvox = <double*>Tvox.data
 
     # Actual resampling 
@@ -188,3 +194,9 @@ def _cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
 
     return im_resampled
 
+
+def _apply_polyaffine(xyz, centers, affines, sigma): 
+    xyz = np.asarray(xyz, dtype='double', order='C')
+    centers = np.asarray(centers, dtype='double', order='C')
+    affines = np.asarray(affines, dtype='double', order='C')
+    apply_polyaffine(xyz, centers, affines, sigma) 

@@ -14,7 +14,8 @@ def configuration(parent_package='',top_path=None):
         sources=['c_bindings.pyx', 
                  'joint_histogram.c', 
                  'wichmann_prng.c', 
-                 'cubic_spline.c'])
+                 'cubic_spline.c', 
+                 'polyaffine.c'])
     return config
 
 
