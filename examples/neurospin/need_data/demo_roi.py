@@ -13,10 +13,10 @@ import os
 import matplotlib.pylab as mp
 from nibabel import load, save, Nifti1Image
 
-import nipy.neurospin.spatial_models.mroi as mroi
-from nipy.neurospin.spatial_models.discrete_domain import \
+import nipy.labs.spatial_models.mroi as mroi
+from nipy.labs.spatial_models.discrete_domain import \
      grid_domain_from_image, NDGridDomain 
-import nipy.neurospin.spatial_models.hroi as hroi
+import nipy.labs.spatial_models.hroi as hroi
 
 import get_data_light
 import tempfile

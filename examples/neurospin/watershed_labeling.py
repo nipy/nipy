@@ -13,8 +13,8 @@ import numpy as np
 import matplotlib
 import matplotlib.pylab as mp
 
-import nipy.neurospin.graph.field as ff
-import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
+import nipy.labs.graph.field as ff
+import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 
 ###############################################################################
 # data simulation

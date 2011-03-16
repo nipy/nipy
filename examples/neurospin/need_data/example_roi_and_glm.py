@@ -19,13 +19,13 @@ import os.path as op
 import matplotlib.pylab as mp
 
 from nibabel import load, Nifti1Image
-import nipy.neurospin.utils.design_matrix as dm
-from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
+import nipy.labs.utils.design_matrix as dm
+from nipy.labs.utils.simul_multisubject_fmri_dataset import \
     surrogate_4d_dataset
 import get_data_light
-import nipy.neurospin.glm as GLM
-import nipy.neurospin.spatial_models.mroi as mroi
-from nipy.neurospin.spatial_models.discrete_domain import grid_domain_from_image
+import nipy.labs.glm as GLM
+import nipy.labs.spatial_models.mroi as mroi
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
 
 #######################################
 # Simulation parameters

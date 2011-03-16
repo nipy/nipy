@@ -10,7 +10,7 @@ print __doc__
 
 import numpy as np
 import pylab as mp
-import nipy.neurospin.utils.design_matrix as dm
+import nipy.labs.utils.design_matrix as dm
 
 # frame times
 tr = 1.0

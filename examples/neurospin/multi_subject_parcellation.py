@@ -8,9 +8,9 @@ Note how the middle parcels adapt to the individual configuration.
 print __doc__
 
 import numpy as np
-import nipy.neurospin.spatial_models.hierarchical_parcellation as hp
-import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
-import nipy.neurospin.spatial_models.discrete_domain as dom
+import nipy.labs.spatial_models.hierarchical_parcellation as hp
+import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
+import nipy.labs.spatial_models.discrete_domain as dom
 
 # step 1:  generate some synthetic data
 nsubj = 10

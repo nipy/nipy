@@ -13,9 +13,9 @@ import numpy as np
 import scipy.stats as st
 import matplotlib.pylab as mp
 
-import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
-import nipy.neurospin.spatial_models.bayesian_structural_analysis as bsa
-from nipy.neurospin.spatial_models.discrete_domain import  domain_from_array
+import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
+import nipy.labs.spatial_models.bayesian_structural_analysis as bsa
+from nipy.labs.spatial_models.discrete_domain import  domain_from_array
 
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 

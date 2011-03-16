@@ -2,7 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Example of a script that uses the BSA (Bayesian Structural Analysis)
-i.e. nipy.neurospin.spatial_models.bayesian_structural_analysis
+i.e. nipy.labs.spatial_models.bayesian_structural_analysis
 module
 
 Author : Bertrand Thirion, 2008-2010
@@ -15,7 +15,7 @@ from scipy import stats
 import os.path as op
 import tempfile
 
-from nipy.neurospin.spatial_models.bsa_io import make_bsa_image
+from nipy.labs.spatial_models.bsa_io import make_bsa_image
 import get_data_light
 
 # Get the data

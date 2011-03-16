@@ -8,9 +8,9 @@ import os.path as op
 from numpy import array
 import tempfile
 
-from nipy.neurospin.spatial_models.parcel_io import parcel_input, \
+from nipy.labs.spatial_models.parcel_io import parcel_input, \
     write_parcellation_images, parcellation_based_analysis
-from nipy.neurospin.spatial_models.hierarchical_parcellation import hparcel
+from nipy.labs.spatial_models.hierarchical_parcellation import hparcel
 import get_data_light
 
 # Get the data

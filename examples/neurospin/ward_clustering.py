@@ -10,8 +10,8 @@ import numpy as np
 from numpy.random import randn, rand
 import matplotlib.pylab as mp
 
-from nipy.neurospin import graph
-from nipy.neurospin.clustering.hierarchical_clustering import ward
+from nipy.labs import graph
+from nipy.labs.clustering.hierarchical_clustering import ward
 
 # n = number of points, k = number of nearest neighbours
 n = 100

@@ -2,14 +2,14 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Example of activation image vizualization
-with nipy.neurospin vizualization tools
+with nipy.labs vizualization tools
 """
 print __doc__
 
 import os.path
 import pylab as pl
 from nibabel import load
-from nipy.neurospin import viz
+from nipy.labs import viz
 import get_data_light
 
 # get the data

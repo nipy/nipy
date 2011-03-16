@@ -11,7 +11,7 @@ print __doc__
 
 import numpy as np
 
-import nipy.neurospin.clustering.gmm as gmm
+import nipy.labs.clustering.gmm as gmm
 
 
 dim = 2

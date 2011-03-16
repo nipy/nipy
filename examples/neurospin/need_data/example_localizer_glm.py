@@ -22,12 +22,12 @@ import os.path as op
 import pylab
 import tempfile
 
-from nipy.neurospin import compute_mask_files
+from nipy.labs import compute_mask_files
 from nibabel import load, save, Nifti1Image
 import get_data_light
-import nipy.neurospin.glm
-import nipy.neurospin.utils.design_matrix as dm
-from nipy.neurospin.viz import plot_map, cm
+import nipy.labs.glm
+import nipy.labs.utils.design_matrix as dm
+from nipy.labs.viz import plot_map, cm
 
 #######################################
 # Data and analysis parameters
@@ -90,7 +90,7 @@ fmri_image = load(data_path)
 Y = fmri_image.get_data()[mask_array]
 model = "ar1"
 method = "kalman"
-my_glm = nipy.neurospin.glm.glm()
+my_glm = nipy.labs.glm.glm()
 glm = my_glm.fit(Y.T, design_matrix.matrix,
                  method="kalman", model="ar1")
 
@@ -178,7 +178,7 @@ plot_map(write_array, affine,
                 figure=10,
                 threshold=3, do3d=True)
 
-from nipy.neurospin import viz3d
+from nipy.labs import viz3d
 viz3d.plot_map_3d(write_array, affine, 
                 cmap=cm.cold_hot,
                 vmin=-vmax,

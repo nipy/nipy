@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
-from nipy.neurospin.group import permutation_test as PT
+from nipy.labs.group import permutation_test as PT
 
 
 def make_data(n=10, mask_shape=(10, 10, 10), axis=0, r=3, signal=5):

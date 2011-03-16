@@ -16,7 +16,7 @@ from numpy import array
 import tempfile
 import get_data_light
 
-from nipy.neurospin.utils.reproducibility_measures import \
+from nipy.labs.utils.reproducibility_measures import \
      group_reproducibility_metrics
 
 print 'This analysis takes a long while, please be patient'

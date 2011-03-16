@@ -10,7 +10,7 @@ print __doc__
 
 import numpy as np
 import numpy.random as nr
-import nipy.neurospin.graph.field as ff
+import nipy.labs.graph.field as ff
 
 
 dx = 50

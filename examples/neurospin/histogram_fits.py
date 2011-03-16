@@ -16,8 +16,8 @@ print __doc__
 
 import numpy as np
 
-import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
-import nipy.neurospin.utils.emp_null as en
+import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
+import nipy.labs.utils.emp_null as en
 
 ###############################################################################
 # simulate the data

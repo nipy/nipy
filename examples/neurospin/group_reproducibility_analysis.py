@@ -10,8 +10,8 @@ print __doc__
 
 import numpy as np
 
-import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
-from nipy.neurospin.utils.reproducibility_measures import \
+import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
+from nipy.labs.utils.reproducibility_measures import \
      voxel_reproducibility, cluster_reproducibility, map_reproducibility,\
      peak_reproducibility
 

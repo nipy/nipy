@@ -12,9 +12,9 @@ print __doc__
 
 import numpy as np
 
-import nipy.neurospin.spatial_models.hroi as hroi
-import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
-from nipy.neurospin.spatial_models.discrete_domain import domain_from_array
+import nipy.labs.spatial_models.hroi as hroi
+import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
+from nipy.labs.spatial_models.discrete_domain import domain_from_array
 
 ##############################################################################
 # simulate the data

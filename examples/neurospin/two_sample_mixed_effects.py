@@ -6,7 +6,7 @@ Demo two sample mixed effect models;
 print __doc__
 
 import numpy as np
-from nipy.neurospin.group import twosample
+from nipy.labs.group import twosample
 
 n1 = 8
 n2 = 8

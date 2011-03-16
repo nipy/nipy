@@ -13,9 +13,9 @@ import numpy as np
 import pylab as pl
 import matplotlib
 
-import nipy.neurospin.utils.simul_multisubject_fmri_dataset as simul
-import nipy.neurospin.spatial_models.hroi as hroi
-from nipy.neurospin.spatial_models.discrete_domain import domain_from_array
+import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
+import nipy.labs.spatial_models.hroi as hroi
+from nipy.labs.spatial_models.discrete_domain import domain_from_array
 
 # ---------------------------------------------------------
 # simulate an activation image

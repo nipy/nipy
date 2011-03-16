@@ -16,10 +16,10 @@ import os.path as op
 import tempfile
 
 from nibabel import save, Nifti1Image
-import nipy.neurospin.utils.design_matrix as dm
-from nipy.neurospin.utils.simul_multisubject_fmri_dataset import \
+import nipy.labs.utils.design_matrix as dm
+from nipy.labs.utils.simul_multisubject_fmri_dataset import \
      surrogate_4d_dataset
-import nipy.neurospin.glm as GLM
+import nipy.labs.glm as GLM
 
 #######################################
 # Simulation parameters

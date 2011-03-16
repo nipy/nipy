@@ -17,9 +17,9 @@ import numpy as np
 import tempfile
 
 from nibabel import load, save, Nifti1Image
-import nipy.neurospin.graph.field as ff
-import nipy.neurospin.spatial_models.hroi as hroi
-from nipy.neurospin.spatial_models.discrete_domain import domain_from_image
+import nipy.labs.graph.field as ff
+import nipy.labs.spatial_models.hroi as hroi
+from nipy.labs.spatial_models.discrete_domain import domain_from_image
 
 # data paths
 import get_data_light

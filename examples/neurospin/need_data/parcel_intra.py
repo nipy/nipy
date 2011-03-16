@@ -13,7 +13,7 @@ print __doc__
 import os.path as op
 import tempfile
 from numpy import array
-from nipy.neurospin.spatial_models.parcel_io import fixed_parcellation
+from nipy.labs.spatial_models.parcel_io import fixed_parcellation
 
 # ------------------------------------
 # Get the data (mask+functional image)
