@@ -2,9 +2,9 @@
 Image registration
 ==================
 
-.. currentmodule:: nipy.neurospin.image_registration
+.. currentmodule:: nipy.labs.image_registration
 
-The module :mod:`nipy.neurospin.image_registration` currently
+The module :mod:`nipy.labs.image_registration` currently
 implements general 3D affine intensity-based image registration and
 space-time realignment for fMRI data (simultaneous slice timing and
 motion correction):

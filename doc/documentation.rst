@@ -17,7 +17,7 @@
    :maxdepth: 2
 
    users/index.rst
-   neurospin/index.rst
+   labs/index.rst
    devel/index.rst
    faq/index.rst
    api/index.rst

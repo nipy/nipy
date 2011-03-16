@@ -2,9 +2,9 @@
 Empirical null
 ==============
 
-.. currentmodule:: nipy.neurospin.utils.emp_null
+.. currentmodule:: nipy.labs.utils.emp_null
 
-The :mod:`nipy.neurospin.utils.emp_null` module contains a class that fits a
+The :mod:`nipy.labs.utils.emp_null` module contains a class that fits a
 gaussian model to the central part of an histogram, following Schwartzman
 et al, 2009. This is typically necessary to estimate a fdr when one is
 not certain that the data behaves as a standard normal under H_0.
@@ -26,7 +26,7 @@ distribution, with a central gaussian, and a wide one, it uses the
 central distribution as a null hypothesis, and returns the threshold
 followingr which the data can be claimed to belong to the wide gaussian:
 
-.. plot:: neurospin/plots/enn_demo.py
+.. plot:: labs/plots/enn_demo.py
     :include-source:
 
 The threshold evaluated with the :meth:`ENN.threshold` method is around

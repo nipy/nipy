@@ -2,9 +2,9 @@
 Plotting of activation maps
 =====================================
 
-.. currentmodule:: nipy.neurospin.viz_tools.activation_maps
+.. currentmodule:: nipy.labs.viz_tools.activation_maps
 
-The module :mod:`nipy.neurospin.viz` provides functions to plot
+The module :mod:`nipy.labs.viz` provides functions to plot
 visualization of activation maps in a non-interactive way.
 
 2D cuts of an activation map can be plotted and superimposed on an
@@ -28,7 +28,7 @@ An example
 
 ::
 
-    from nipy.neurospin.viz import plot_map, mni_sform, coord_transform
+    from nipy.labs.viz import plot_map, mni_sform, coord_transform
 
     # First, create a fake activation map: a 3D image in MNI space with
     # a large rectangle of activation around Broca Area
@@ -59,7 +59,7 @@ The same plot can be obtained fully automaticaly, by letting
 In this simple example, the code will easily detect the bar as activation
 and position the cut at the center of the bar.
 
-`nipy.neurospin.viz` functions
+`nipy.labs.viz` functions
 -------------------------------------------------
 
 .. autosummary::
@@ -71,9 +71,9 @@ and position the cut at the center of the bar.
 3D plotting utilities
 ---------------------------
 
-.. currentmodule:: nipy.neurospin.viz_tools.maps_3d
+.. currentmodule:: nipy.labs.viz_tools.maps_3d
 
-The module :mod:`nipy.neurospin.viz3d` can be used as helpers to
+The module :mod:`nipy.labs.viz3d` can be used as helpers to
 represent neuroimaging volumes with Mayavi2_. 
 
 .. autosummary::

@@ -3,7 +3,7 @@
 NeuroSpin tools
 ==========================
 
-The package `nipy.neurospin` hosts tools that where originally developped
+The package `nipy.labs` hosts tools that where originally developped
 at NeuroSpin, France.
 
 
