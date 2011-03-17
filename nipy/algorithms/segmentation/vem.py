@@ -3,7 +3,8 @@
 import numpy as np 
 import os
 
-from ._mrf import _ve_step, _concensus
+from .c_bindings import _ve_step, _concensus
+
 
 TINY = 1e-300
 NITERS = 20
