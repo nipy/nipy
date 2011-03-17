@@ -157,7 +157,7 @@ static void _ngb26_vote(double* res,
 
   ref assumed contiguous double (NPTS, K)
 
-  XYZ assumed contiguous usigned int (3, NPTS)
+  XYZ assumed contiguous usigned int (NPTS, 3)
 
  */
 
@@ -172,11 +172,11 @@ void ve_step(PyArrayObject* ppm,
 	     int hard)
 
 {
-  int npts, k, K, kk, x, y, z;
+  int k, K, kk, x, y, z;
   double *p, *p0 = NULL, *buf;
   double psum, tmp;  
   PyArrayIterObject* iter;
-  int axis = 0; 
+  int axis = 1; 
   double* ppm_data;
   size_t u3 = ppm->dimensions[3]; 
   size_t u2 = ppm->dimensions[2]*u3; 
@@ -184,13 +184,11 @@ void ve_step(PyArrayObject* ppm,
   const double* ref_data = (double*)ref->data;
   const double* mix_data = NULL; 
   size_t v1 = ref->dimensions[1];
-  const int* XYZ_data = (int*)XYZ->data;
-  size_t w1 = XYZ->dimensions[1], two_w1=2*w1;
+  int* xyz; 
   void (*vote)(double*,int,size_t,const double*);
   size_t S; 
 
   /* Dimensions */
-  npts = PyArray_DIM((PyArrayObject*)XYZ, 1);
   K = PyArray_DIM((PyArrayObject*)ppm, 3);
   S = PyArray_SIZE(ppm);
     
@@ -226,10 +224,11 @@ void ve_step(PyArrayObject* ppm,
   iter = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)XYZ, &axis);
   while(iter->index < iter->size) {
     
-    /* Compute the average ppm in the neighborhood */ 
-    x = XYZ_data[iter->index];
-    y = XYZ_data[w1+iter->index];
-    z = XYZ_data[two_w1+iter->index]; 
+    /* Compute the average ppm in the neighborhood */
+    xyz = PyArray_ITER_DATA(iter); 
+    x = xyz[0];
+    y = xyz[1];
+    z = xyz[2];
     _ngb26_vote(p, ppm, x, y, z, (void*)vote, p0, mix_data); 
     
     /* Apply exponential transformation and multiply with reference */
@@ -277,21 +276,19 @@ double concensus(PyArrayObject* ppm,
 		 const PyArrayObject* mix)
 
 {
-  int npts, k, K, kk, x, y, z;
+  int k, K, kk, x, y, z;
   double *p, *p0 = NULL, *buf;
   double res = 0.0, tmp;  
   PyArrayIterObject* iter;
-  int axis = 0; 
+  int axis = 1; 
   double* ppm_data;
   size_t u3 = ppm->dimensions[3]; 
   size_t u2 = ppm->dimensions[2]*u3; 
   size_t u1 = ppm->dimensions[1]*u2;
-  const int* XYZ_data = (int*)XYZ->data;
+  int* xyz; 
   const double* mix_data = NULL; 
-  size_t w1 = XYZ->dimensions[1], two_w1=2*w1;
 
   /* Dimensions */
-  npts = PyArray_DIM((PyArrayObject*)XYZ, 1);
   K = PyArray_DIM((PyArrayObject*)ppm, 3);
 
   ppm_data = (double*)ppm->data;
@@ -309,9 +306,10 @@ double concensus(PyArrayObject* ppm,
   while(iter->index < iter->size) {
     
     /* Compute the average ppm in the neighborhood */ 
-    x = XYZ_data[iter->index];
-    y = XYZ_data[w1+iter->index];
-    z = XYZ_data[two_w1+iter->index]; 
+    xyz = PyArray_ITER_DATA(iter); 
+    x = xyz[0];
+    y = xyz[1];
+    z = xyz[2];
     _ngb26_vote(p, ppm, x, y, z, &_soft_vote, p0, mix_data); 
     
     /* Calculate the dot product <q,p> where q is the local

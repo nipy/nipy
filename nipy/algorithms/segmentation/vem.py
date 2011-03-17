@@ -98,9 +98,14 @@ class VEM(object):
         """
         # Make default mask (required by MRF regularization) 
         if mask == None: 
-            coords = np.mgrid[[slice(0, s) for s in data.shape]]
-            mask = tuple([c.ravel() for c in coords])
-        self.mask = mask
+            XYZ = np.mgrid[[slice(0, s) for s in data.shape]]
+            XYZ = np.reshape(XYZ, (XYZ.shape[0], np.prod(XYZ.shape[1::]))).T
+        else:
+            XYZ = np.zeros((len(mask[0]), len(mask)), dtype='int')
+            for i in range(len(mask)):
+                XYZ[:,i] = mask[i]
+        self._XYZ = np.asarray(XYZ, dtype='int', order='C')  
+        self.mask = tuple(XYZ.T)
 
         # If a ppm is provided, interpret it as a prior, otherwise
         # create ppm from scratch and assume flat prior.
@@ -190,8 +195,7 @@ class VEM(object):
             mixmat = self.mixmat 
             if not mixmat == None:
                 mixmat = self.sort_mixmat(mu)
-            self.ppm = _ve_step(self.ppm, self.posterior_ext_field, 
-                                np.array(self.mask, dtype='int'), 
+            self.ppm = _ve_step(self.ppm, self.posterior_ext_field, self._XYZ,  
                                 beta, self.copy, self.hard, mixmat)
             
 
@@ -237,6 +241,6 @@ class VEM(object):
         f = np.sum(q*np.log(np.maximum(q/self.posterior_ext_field, TINY)))
         # Interaction term
         if self._beta > 0.0: 
-            fc = _concensus(self.ppm, np.array(self.mask, dtype='int'))
+            fc = _concensus(self.ppm, self._XYZ)
             f -= .5*self._beta*fc 
         return f
