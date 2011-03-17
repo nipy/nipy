@@ -16,27 +16,26 @@ def id_affine():
     return np.eye(4) 
 
 
-NCENTERS = 2
+NCENTERS = 5
 NPTS = 100
 
 centers = [np.random.rand(3) for i in range(NCENTERS)]
 affines = [random_affine() for i in range(NCENTERS)]
-sigma = 1
+sigma = 1.
 xyz = np.random.rand(NPTS, 3) 
+#xyz = np.array(centers)
 
-"""
+
 T = PolyAffine(centers, affines, sigma) 
 t = T.apply(xyz) 
-t2 = T.apply2(xyz) 
-"""
 
+"""
 txyz = xyz.copy()
 
 affines = np.array(affines)
 _affines = np.reshape(affines[:,0:3,:], (NCENTERS, 12))
 
 _apply_polyaffine(txyz, centers, _affines, sigma) 
+"""
 
-
-#zoo = T.apply(np.asarray(centers))
 

@@ -56,9 +56,11 @@ print('Block matching time: %f' % dt)
 centers = np.array(corners) + (dims-1)/2.
 centers = apply_affine(I.affine, centers) 
 
-
-
+# Resample target image 
 T = PolyAffine(centers, affines, 100., A)
+Jt = resample(J, T, reference=I)
+save_image(Jt, 'deform_anubis_to_ammon.nii')
+
 
 """
 0-1*2-3*4-5
@@ -66,58 +68,3 @@ T = PolyAffine(centers, affines, 100., A)
 
 
 
-
-"""
-
-# Make Gaussian spline transform instance
-spacing = 16
-slices = [slice(0,s.stop,s.step*spacing) for s in R._slices]
-cp = np.mgrid[slices]
-cp = np.rollaxis(cp, 0, 4)
-
-# Start with an affine registration
-A0 = Affine()
-##A = R.optimize(A0)
-A = Affine()
-
-# Save affinely transformed target  
-##Jt = resample(J, A, reference=I)
-##save_image(Jt, 'affine_anubis_to_ammon.nii')
-
-# Then add control points...
-T0 = SplineTransform(I, cp, sigma=20., grid_coords=True, affine=A)
-"""
-
-"""
-# Test 1
-s = R.eval(T0)
-sa = R.eval(T0.affine)
-assert_almost_equal(s, sa)
-
-# Test 2
-T = SplineTransform(I, cp, sigma=5., grid_coords=True, affine=A)
-T.param += 1.
-s0 = R.eval(T0)
-s = R.eval(T)
-print(s-s0)
-"""
-
-# Optimize spline transform
-# T = R.optimize(T0, method='steepest')
-###T = R.optimize(T0)
-
-###T = T0
-###T.param = np.load('spline_param.npy')
-
-
-# Resample target image 
-"""
-Jt = resample(J, T, reference=I)
-save_image(Jt, 'deform_anubis_to_ammon.nii')
-"""
-
-# Test 3
-"""
-ts = t[R._slices+[slice(0,3)]]
-tts = T[R._slices]()
-"""

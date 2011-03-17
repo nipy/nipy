@@ -4,7 +4,7 @@ import numpy as np
 
 from .transform import Transform
 from .affine import inverse_affine, apply_affine
-
+from .c_bindings import _apply_polyaffine
 
 def kernel_matrix(xyz, centers, sigma): 
     """
@@ -44,7 +44,7 @@ class PolyAffine(Transform):
         """
 
         # Format input arguments
-        centers = np.asarray(centers) 
+        centers = np.asarray(centers, dtype='double', order='C')
         sigma = float(sigma) 
         if hasattr(affines[0], 'as_affine'):
             affines = np.array([a.as_affine() for a in affines]) 
@@ -69,7 +69,7 @@ class PolyAffine(Transform):
         # Cache some stuff 
         self.centers = centers
         self.sigma = sigma 
-        self.Q = Q
+        self.affines = np.reshape(Q[:,0:3,:], (len(self.centers), 12))
 
         # debug
         self.K = K
@@ -81,25 +81,10 @@ class PolyAffine(Transform):
         """
         xyz is an (N, 3) array 
         """
-        K = kernel_matrix(np.asarray(xyz), self.centers, self.sigma)
-        res = np.zeros((xyz.shape[0], 3))
-        for i in range(len(self.centers)): 
-            res[i] += (K[:,i]*apply_affine(self.Q[i], xyz).T).T
-        return res 
+        txyz = np.array(xyz, copy=True, dtype='double', order='C')
+        _apply_polyaffine(txyz, self.centers, self.affines, self.sigma) 
+        return txyz
 
-
-
-    def apply2(self, xyz): 
-        """
-        xyz is an (N, 3) array 
-        """
-        K = kernel_matrix(np.asarray(xyz), self.centers, self.sigma)
-        N = xyz.shape[0]
-        KQ = np.dot(self.Q.T, K.T).T # (N, 3, 4)
-        res = np.zeros((N, 3))
-        for i in range(N): 
-            res[i] = np.dot(KQ[i,:,0:3], xyz[i,:]) + KQ[i,:,-1]
-        return res 
 
 #def compose(self, other): 
 
