@@ -72,7 +72,7 @@ gt = [gt_csf, gt_gm, gt_wm]
 mu, sigma = moment_matching(im, mask)
 
 vem = VEM(im.get_data(), 3, mask=mask, labels=LABELS)
-vem.run(mu=mu, sigma=sigma, prop=[.20, .47, .33], freeze_prop=False, niters=25, beta=0.3)
+vem.run(mu=mu, sigma=sigma, prop=[.20, .47, .33], freeze_prop=False, niters=25, beta=1.2)
 
 d = fuzzy_dice(gt, vem.ppm, LABELS, mask)
 print(d) 
