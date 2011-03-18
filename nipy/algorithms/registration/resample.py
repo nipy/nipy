@@ -2,19 +2,19 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 from ..utils.affines import apply_affine
-from .affine import Affine
-from .grid_transform import GridTransform
-from .affine import inverse_affine
-from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_resample3d
 from .chain_transform import ChainTransform 
 import numpy as np 
 from scipy.ndimage import affine_transform, map_coordinates
 from ...core.image.affine_image import AffineImage
+from .affine import inverse_affine, Affine
+from .c_bindings import _cspline_transform, _cspline_sample3d, _cspline_resample3d
+
 
 
 INTERP_ORDER = 3
                    
-def resample(moving, transform, grid_coords=False, reference=None, 
+def resample(moving, transform, reference=None, 
+             mov_voxel_coords=False, ref_voxel_coords=False, 
              dtype=None, interp_order=INTERP_ORDER):
     """
     Apply a transformation to the image considered as 'moving' to
@@ -34,9 +34,13 @@ def resample(moving, transform, grid_coords=False, reference=None,
       the `moving` image. It should have either an `apply` method, or
       an `as_affine` method.
     
-    grid_coords : boolean
-      True if the transform maps grid coordinates, False if it maps
-      world coordinates. 
+    mov_voxel_coords : boolean
+      True if the transform maps to voxel coordinates, False if it
+      maps to world coordinates.
+
+    ref_voxel_coords : boolean
+      True if the transform maps from voxel coordinates, False if it
+      maps from world coordinates.
     
     reference: nipy-like image 
       Reference image, defaults to input. 
@@ -53,10 +57,12 @@ def resample(moving, transform, grid_coords=False, reference=None,
     # Case: affine transform
     if hasattr(transform, 'as_affine'): 
         Tv = transform.as_affine()
-        if not grid_coords: 
-            Tv = np.dot(inverse_affine(moving.affine), np.dot(Tv, reference.affine))
+        if not ref_voxel_coords:
+            Tv = np.dot(Tv, reference.affine)
+        if not mov_voxel_coords: 
+            Tv = np.dot(inverse_affine(moving.affine), Tv)
         if interp_order == 3: 
-            output = cspline_resample3d(data, reference.shape, Tv, dtype=dtype)
+            output = _cspline_resample3d(data, reference.shape, Tv, dtype=dtype)
             output = output.astype(dtype)
         else: 
             output = np.zeros(reference.shape, dtype=dtype)
@@ -67,14 +73,17 @@ def resample(moving, transform, grid_coords=False, reference=None,
     # Case: non-affine transform
     else:
         Tv = transform 
-        if not grid_coords:
-            Tv = Affine(inverse_affine(moving.affine)).compose(Tv.compose(Affine(reference.affine)))
-        coords = Tv.apply(np.indices(reference.shape).transpose((1,2,3,0)))
-        coords = np.rollaxis(coords, 3, 0)
+        if not ref_voxel_coords:
+            Tv = Tv.compose(Affine(reference.affine))
+        if not mov_voxel_coords:
+            Tv = Affine(inverse_affine(moving.affine)).compose(Tv)
+        coords = np.indices(reference.shape).transpose((1,2,3,0))
+        coords = np.reshape(coords, (np.prod(reference.shape), 3))
+        coords = Tv.apply(coords).T
         if interp_order == 3: 
-            cbspline = cspline_transform(data)
+            cbspline = _cspline_transform(data)
             output = np.zeros(reference.shape, dtype='double')
-            output = cspline_sample3d(output, cbspline, *coords)
+            output = _cspline_sample3d(output, cbspline, *coords)
             output = output.astype(dtype)
         else: 
             output = map_coordinates(data, coords, order=interp_order, 

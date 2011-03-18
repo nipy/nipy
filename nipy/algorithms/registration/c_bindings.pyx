@@ -40,7 +40,7 @@ cdef extern from "cubic_spline.h":
 
 cdef extern from "polyaffine.h": 
     void polyaffine_import_array()
-    void apply_polyaffine(ndarray XYZ, ndarray Centers, ndarray Affines, double sigma)
+    void apply_polyaffine(ndarray XYZ, ndarray Centers, ndarray Affines, ndarray Sigma)
 
 
 # Initialize numpy
@@ -195,8 +195,19 @@ def _cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
     return im_resampled
 
 
-def _apply_polyaffine(xyz, centers, affines, sigma): 
-    xyz = np.asarray(xyz, dtype='double', order='C')
-    centers = np.asarray(centers, dtype='double', order='C')
-    affines = np.asarray(affines, dtype='double', order='C')
+def check_array(ndarray x, int dim, int exp_dim, xname): 
+    if not x.flags['C_CONTIGUOUS'] or not x.dtype=='double':
+        raise ValueError('%s array should be double C-contiguous' % xname)
+    if not dim == exp_dim: 
+        raise ValueError('%s has size %d in last dimension, %d expected' % (xname, dim, exp_dim))
+
+def _apply_polyaffine(ndarray xyz, ndarray centers, ndarray affines, ndarray sigma): 
+
+    check_array(xyz, xyz.shape[1], 3, 'xyz') 
+    check_array(centers, centers.shape[1], 3, 'centers')
+    check_array(affines, affines.shape[1], 12, 'affines')
+    check_array(sigma, sigma.size, 3, 'sigma')
+    if not centers.shape[0] == affines.shape[0]: 
+        raise ValueError('centers and affines arrays should have same shape[0]')
+
     apply_polyaffine(xyz, centers, affines, sigma) 

@@ -248,11 +248,17 @@ class Affine(Transform):
         composed_transform : Transform
             a transform implementing the composition of self on `other`
         """
-        try:
-            other_aff = other.as_affine()
-        except AttributeError:
-            return Transform(self.apply).compose(other)
-        # Choose more capable of input types as output type
+        # If other is not an Affine, use either its left compose
+        # method, if available, or the generic compose method
+        if not hasattr(other, 'as_affine'):
+            if hasattr(other, 'left_compose'): 
+                return other.left_compose(self)
+            else:
+                return Transform(self.apply).compose(other)
+        
+        # Affine case: choose more capable of input types as output
+        # type
+        other_aff = other.as_affine()
         self_inds = set(self.param_inds)
         other_inds = set(other.param_inds)
         if self_inds.issubset(other_inds):

@@ -3,100 +3,111 @@
 import numpy as np
 
 from .transform import Transform
-from .affine import inverse_affine, apply_affine
+from .affine import apply_affine
 from .c_bindings import _apply_polyaffine
 
-def kernel_matrix(xyz, centers, sigma): 
-    """
-    Compute covariance matrix
-    
-    Kij = g(xi-cj) 
-    """
-    dim = centers.shape[1]
-    D = np.zeros((xyz.shape[0], dim, centers.shape[0]))
-    D -= centers.T 
-    Dt = np.transpose(D, (2,1,0))
-    Dt += xyz.T 
-    return np.exp(-.5*np.sum(D**2, 1)/sigma**2) 
+TINY_SIGMA = 1e-200
 
 
 class PolyAffine(Transform): 
 
-    def __init__(self, centers, affines, sigma, glob_affine=None): 
+    def __init__(self, centers, affines, sigma, glob_affine=None):
         """
         centers: N times 3 array 
 
-        We are given a set of affine transforms Ti with centers xi,
-        and a global affine Tg. The polyaffine transform is defined,
-        up to a right composition with a global affine, as:
+        We are given a set of affine transforms T_i with centers x_i,
+        all in homogeneous coordinates. The polyaffine transform is
+        defined, up to a right composition with a global affine, as:
 
-        T(x) = sum_i g(x-xi) Qi x
+        T(x) = sum_i w_i(x) T_i x
 
-        where Qi = K^-1 Ti.Tg^-1, g is the isotropic Gaussian kernel
-        with standard deviation `sigma`, and K is the matrix with
-        general element Kij = g(xi-xj).
-
-        Therefore, we have: 
-        
-        sum_j g(xi-xj) Qj = Ti, for all i 
-        
-        => T(x) = sum_j g(xi-xj) Qj 
+        where w_i(x) = g(x-x_i)/Z(x) are normalized Gaussian weights
+        that sum up to one for every x.
         """
 
         # Format input arguments
-        centers = np.asarray(centers, dtype='double', order='C')
-        sigma = float(sigma) 
+        self.centers = np.asarray(centers, dtype='double', order='C')
+        self.sigma = np.zeros(3)
+        self.sigma[:] = np.maximum(TINY_SIGMA, sigma)
         if hasattr(affines[0], 'as_affine'):
             affines = np.array([a.as_affine() for a in affines]) 
         else:
             affines = np.asarray(affines)
-        if glob_affine == None: 
-            glob_affine = np.eye(4) 
-        elif hasattr(glob_affine, 'as_affine'):
-            glob_affine = glob_affine.as_affine()
-        else: 
-            glob_affine = np.asarray(glob_affine)
+        if hasattr(glob_affine, 'as_affine'):
+            self.glob_affine = glob_affine.as_affine()
+        else:
+            self.glob_affine = glob_affine
 
-        # Correct local affines for overlapping kernels
-        T = np.dot(affines, inverse_affine(glob_affine))
-        T = T[:, 0:3, :]
-        K = kernel_matrix(centers, centers, sigma)
-        L = np.linalg.cholesky(K) # K = L L.T
-        Linv = np.linalg.inv(L) 
-        Kinv = np.dot(Linv.T, Linv) 
-        Q = np.dot(T.T, Kinv.T).T
+        # Cache a (N, 12) matrix containing the affines coefficients,
+        # should be C-contiguous double.
+        self._affines = np.zeros((len(self.centers), 12))
+        self._affines[:] = np.reshape(affines[:,0:3,:], (len(self.centers), 12))
+        
 
-        # Cache some stuff 
-        self.centers = centers
-        self.sigma = sigma 
-        self.affines = np.reshape(Q[:,0:3,:], (len(self.centers), 12))
+    def affine(self, i): 
+        aff = np.eye(4)
+        aff[0:3,:] = self._affines[i].reshape(3,4)
+        return aff 
 
-        # debug
-        self.K = K
-        self.Kinv = Kinv 
-        self.T = T         
+
+    def affines(self): 
+        return [self.affine(i) for i in range(len(self.centers))]
 
 
     def apply(self, xyz): 
         """
         xyz is an (N, 3) array 
         """
-        txyz = np.array(xyz, copy=True, dtype='double', order='C')
-        _apply_polyaffine(txyz, self.centers, self.affines, self.sigma) 
+        # txyz should be double C-contiguous for the the cython
+        # routine _apply_polyaffine
+        if self.glob_affine == None: 
+            txyz = np.array(xyz, copy=True, dtype='double', order='C')
+        else:
+            txyz = apply_affine(self.glob_affine, xyz) 
+        _apply_polyaffine(txyz, self.centers, self._affines, self.sigma) 
         return txyz
 
 
-#def compose(self, other): 
+    def compose(self, other): 
+        """ 
+        Compose this transform onto another
 
+        Parameters
+        ----------
+        other : Transform
+            transform that we compose onto
 
+        Returns
+        -------
+        composed_transform : Transform
+            a transform implementing the composition of self on `other`
+        """
+        # If other is not an Affine, use the generic compose method 
+        if not hasattr(other, 'as_affine'): 
+            return Transform(self.apply).compose(other)
+        
+        # Affine case: the result is a polyaffine transform with same
+        # local affines
+        if self.glob_affine == None: 
+            glob_affine = other.as_affine()
+        else:
+            glob_affine = np.dot(self.glob_affine, other.as_affine())
 
-"""
+        return self.__class__(self.centers, self.affines(), self.sigma, 
+                              glob_affine=glob_affine)
+         
 
-x : N x 3 x N 
+    def left_compose(self, other): 
 
-x += centers.T 
-y = np.transpose()
+        # If other is not an Affine, use the generic compose method 
+        if not hasattr(other, 'as_affine'): 
+            return Transform(other.apply).compose(self)
 
-x[i, :, j] == centers[j]
+        # Affine case: the result is a polyaffine transform with same
+        # global affine
+        other_affine = other.as_affine() 
+        affines = [np.dot(other_affine, self.affine(i)) \
+                       for i in range(len(self.centers))]
+        return self.__class__(self.centers, affines, self.sigma, 
+                              glob_affine=self.glob_affine)
 
-"""
