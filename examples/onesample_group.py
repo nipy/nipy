@@ -3,7 +3,7 @@
 import numpy as np
 from nibabel import Nifti1Image as Image
 
-import nipy.neurospin.statistical_mapping as sm
+import nipy.labs.statistical_mapping as sm
 from nipy.utils import example_data
 
 def remake_images(): 

@@ -5,7 +5,7 @@ from .affine import Affine, apply_affine
 from .grid_transform import GridTransform
 from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_resample3d
 
-from nipy.core.image.affine_image import AffineImage
+from ...core.image.affine_image import AffineImage
 
 import numpy as np 
 from scipy.ndimage import affine_transform, map_coordinates
