@@ -100,11 +100,12 @@ class VEM(object):
         if mask == None: 
             XYZ = np.mgrid[[slice(0, s) for s in data.shape]]
             XYZ = np.reshape(XYZ, (XYZ.shape[0], np.prod(XYZ.shape[1::]))).T
+            XYZ = np.asarray(XYZ, dtype='int', order='C')
         else:
             XYZ = np.zeros((len(mask[0]), len(mask)), dtype='int')
             for i in range(len(mask)):
                 XYZ[:,i] = mask[i]
-        self._XYZ = np.asarray(XYZ, dtype='int', order='C')  
+        self._XYZ = XYZ
         self.mask = tuple(XYZ.T)
 
         # If a ppm is provided, interpret it as a prior, otherwise

@@ -79,7 +79,7 @@ else:
 
 mu, sigma = moment_matching(im, mask)
 vem = VEM(im.get_data(), 3, mask=mask, labels=LABELS)
-vem.run(mu=mu, sigma=sigma, prop=[.20, .47, .33], freeze_prop=False, niters=niters, beta=1.2)
+vem.run(mu=mu, sigma=sigma, prop=[.20, .47, .33], freeze_prop=False, niters=niters, beta=0.1)
 classif = hard_classification(im, mask, vem.ppm) 
 
 outfile = join(tempfile.mkdtemp(), 'classif.nii')
