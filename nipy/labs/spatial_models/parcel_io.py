@@ -85,7 +85,8 @@ def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
         mask = mask_images
     else:
         # mask_images should be a list
-        mask = Nifti1Image(intersect_masks(mask_images, threshold=0) > 0,
+        grp_mask = intersect_masks(mask_images, threshold=0) > 0
+        mask = Nifti1Image(grp_mask.astype('u8'),
                            load(mask_images[0]).get_affine())
 
     # build the domain
