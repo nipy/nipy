@@ -40,12 +40,12 @@ if missing_file:
 subj_id = ['%04d' %i for i in range(12)]
 theta = float(stats.t.isf(0.01, 100))
 dmax = 4.
-ths = 0 #2# or nbsubj/4
+ths = 0
 thq = 0.95
 verbose = 1
 smin = 5
 swd = tempfile.mkdtemp()
-method = 'simple'
+method = 'quick'
 print 'method used:', method
 
 # call the function

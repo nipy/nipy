@@ -17,8 +17,8 @@ from .discrete_domain import domain_from_image
 
 def make_bsa_image(
     mask_images, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, swd=None,
-    method='simple', subj_id=None, nbeta='default', densPath=None,
-    crPath=None, verbose=0, reshuffle=False):
+    method='simple', subj_id=None, nbeta='default', dens_path=None,
+    cr_path=None, verbose=0, reshuffle=False):
     """ Main function for  performing bsa on a set of images.
     It creates the some output images in the given directory
 
@@ -45,10 +45,10 @@ def make_bsa_image(
     subj_id=None: list of strings, identifiers of the subjects.
                   by default it is range(nsubj)
     nbeta='default', string, identifier of the contrast
-    densPath=None, string, path of the output density image
+    dens_path=None, string, path of the output density image
                    if False, no image is written
                    if None, the path is computed from swd, nbeta
-    crPath=None,  string, path of the (4D) output label image
+    cr_path=None,  string, path of the (4D) output label image
                   if False, no ime is written
                   if None, many images are written,
                   with paths computed from swd, subj_id and nbeta
@@ -87,7 +87,7 @@ def make_bsa_image(
     affine = nim.get_affine()
 
     # Read the masks and compute the "intersection"
-    mask = np.reshape(intersect_masks(mask_images), ref_dim)
+    mask = np.reshape(intersect_masks(mask_images), ref_dim).astype('u8')
 
     # encode it as a domain
     dom = domain_from_image(Nifti1Image(mask, affine), nn=18)
@@ -98,7 +98,7 @@ def make_bsa_image(
     for s in range(nsubj):
         rbeta = load(betas[s])
         beta = np.reshape(rbeta.get_data(), ref_dim)
-        lbeta.append(beta[mask])
+        lbeta.append(beta[mask > 0])
     lbeta = np.array(lbeta).T
 
     if reshuffle:
@@ -129,73 +129,73 @@ def make_bsa_image(
 
     # Write the results as images
     # the spatial density image
-    if densPath != False:
+    if dens_path is not False:
         density = np.zeros(ref_dim)
-        density[mask] = p
+        density[mask > 0] = p
         wim = Nifti1Image(density, affine)
         wim.get_header()['descrip'] = 'group-level spatial density \
                                        of active regions'
-        if densPath == None:
-            densPath = op.join(swd, "density_%s.nii" % nbeta)
-        save(wim, densPath)
+        if dens_path == None:
+            dens_path = op.join(swd, "density_%s.nii" % nbeta)
+        save(wim, dens_path)
 
-    if crPath == False:
+    if cr_path == False:
         return AF, BF
 
     default_idx = AF.k + 2
 
-    if crPath == None and swd == None:
+    if cr_path == None and swd == None:
         return AF, BF
 
-    if crPath == None:
+    if cr_path == None:
         # write a 3D image for group-level labels
-        crPath = op.join(swd, "CR_%s.nii" % nbeta)
-        Label = - 2 * np.ones(ref_dim, 'int16')
-        Label[mask] = crmap
-        wim = Nifti1Image(Label, affine)
+        cr_path = op.join(swd, "CR_%s.nii" % nbeta)
+        labels = - 2 * np.ones(ref_dim)
+        labels[mask > 0] = crmap
+        wim = Nifti1Image(labels.astype('int16'), affine)
         wim.get_header()['descrip'] = 'group Level labels from bsa procedure'
-        save(wim, crPath)
+        save(wim, cr_path)
 
         # write a prevalence image
-        crPath = op.join(swd, "prevalence_%s.nii" % nbeta)
+        cr_path = op.join(swd, "prevalence_%s.nii" % nbeta)
         prev = np.zeros(ref_dim)
-        prev[mask] = AF.prevalence_density()
+        prev[mask > 0] = AF.prevalence_density()
         wim = Nifti1Image(prev, affine)
         wim.get_header()['descrip'] = 'Weighted prevalence image'
-        save(wim, crPath)
+        save(wim, cr_path)
 
         # write 3d images for the subjects
         for s in range(nsubj):
-            LabelImage = op.join(swd, "AR_s%s_%s.nii" % (subj_id[s], nbeta))
-            Label = - 2 * np.ones(ref_dim, 'int16')
-            Label[mask] = -1
+            label_image = op.join(swd, "AR_s%s_%s.nii" % (subj_id[s], nbeta))
+            labels = - 2 * np.ones(ref_dim)
+            labels[mask > 0] = -1
             if BF[s] is not None:
                 nls = BF[s].get_roi_feature('label')
                 nls[nls == - 1] = default_idx
                 lab = BF[s].label
                 lab[lab > - 1] = nls[lab[lab > - 1]]
-                Label[mask] = lab
+                labels[mask > 0] = lab
 
-            wim = Nifti1Image(Label, affine)
+            wim = Nifti1Image(labels.astype('int16'), affine)
             wim.get_header()['descrip'] = \
                 'Individual label image from bsa procedure'
-            save(wim, LabelImage)
+            save(wim, label_image)
     else:
         # write everything in a single 4D image
         wdim = (ref_dim[0], ref_dim[1], ref_dim[2], nsubj + 1)
-        Label = - 2 * np.ones(wdim, 'int16')
-        Label[mask, 0] = crmap
+        labels = - 2 * np.ones(wdim, 'int16')
+        labels[mask > 0, 0] = crmap
         for s in range(nsubj):
-            Label[mask, s + 1] = - 1
+            labels[mask > 0, s + 1] = - 1
             if BF[s] is not None:
                 nls = BF[s].get_roi_feature('label')
                 nls[nls == - 1] = default_idx
                 lab = BF[s].label
                 lab[lab > - 1] = nls[lab[lab > - 1]]
-                Label[mask, s + 1] = lab
-        wim = Nifti1Image(Label, affine)
+                labels[mask > 0, s + 1] = lab
+        wim = Nifti1Image(labels, affine)
         wim.get_header()['descrip'] = 'group Level and individual labels\
             from bsa procedure'
-        save(wim, crPath)
+        save(wim, cr_path)
 
     return AF, BF
