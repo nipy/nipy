@@ -1,28 +1,20 @@
 #!/usr/bin/env python 
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
-Perform brain tissue classification from skull stripped T1 image in
-CSF, GM and WM.
-
-Usage: 
-  python tissue_classification img_file [niters][mask_file]
-
-If no mask image is provided, the mask is defined by thresholding the
-input image above zero (strictly). 
-"""
 
 from os.path import join, split
+from optparse import OptionParser
 import sys
-import tempfile 
+from tempfile import mkdtemp
 import numpy as np 
 
 from nipy import load_image, save_image 
 from nipy.core.image.affine_image import AffineImage 
 from nipy.algorithms.segmentation import VEM
 
-
 LABELS = ('CSF','GM','WM')
+NITERS = 5
+BETA = 0.1 
 
 def moment_matching(im, mask):
     """
@@ -40,17 +32,17 @@ def moment_matching(im, mask):
     b = m - a*m_
     return a*mu_ + b, a*sigma_ 
 
-def fuzzy_dice(gt, ppm, labels, mask):
+def fuzzy_dice(gpm, ppm, labels, mask):
     """
     Fuzzy dice index. 
     """
     dices = np.zeros(len(LABELS))
-    if gt == None: 
+    if gpm == None: 
         return dices
     for kk in range(len(LABELS)): 
         tissue = labels[kk]
         k = LABELS.index(tissue)
-        pk = gt[k].get_data()[mask]
+        pk = gpm[k].get_data()[mask]
         qk = ppm[mask][:,kk]
         PQ = np.sum(np.sqrt(np.maximum(pk*qk, 0)))
         P = np.sum(pk)
@@ -64,36 +56,66 @@ def hard_classification(im, mask, ppm):
     return AffineImage(tmp, im.affine, 'scanner')
 
 
-if len(sys.argv)<2:
-    raise ValueError('Missing input image.') 
-im = load_image(sys.argv[1])
-if len(sys.argv)>2: 
-    niters = int(sys.argv[2])
-    magic = niters<0
-    niters = abs(niters) 
-if len(sys.argv)>3:
-    mask_im = load_image(sys.argv[3])
-    mask = np.where(mask_im.get_data()>0)
-else:
-    mask = np.where(im.get_data()>0)
+# Parse command line 
+usage = 'usage: %prog [options] img_file'
 
+description = 'Perform brain tissue classification from skull stripped T1 image in \
+CSF, GM and WM. If no mask image is provided, the mask is defined by \
+thresholding the input image above zero (strictly).'
+
+parser = OptionParser(usage=usage, description=description)
+parser.add_option('-n', '--niters', dest='niters', 
+                  help='number of iterations (default=%d)' % NITERS)
+parser.add_option('-b', '--beta', dest='beta', 
+                  help='Markov random field beta parameter (default=%f)' % BETA)
+parser.add_option('-m', '--mask', dest='mask', help='mask image')
+parser.add_option('-c', '--probc', dest='probc', help='CSF probability map')
+parser.add_option('-g', '--probg', dest='probg', help='gray matter probability map')
+parser.add_option('-w', '--probw', dest='probw', help='white matter probability map')
+opts, args = parser.parse_args() 
+
+# Input image
+if len(args)>0: 
+    im = load_image(args[0])
+else: 
+    print('Missing input image.') 
+    sys.exit()
+
+# Number of iterations 
+if opts.niters == None:
+    niters = NITERS
+else:
+    niters = int(opts.niters)
+
+# Beta parameter
+if opts.beta == None: 
+    beta = BETA
+else:
+    beta = float(opts.beta)
+
+# Input mask image 
+if opts.mask == None: 
+    mask = np.where(im.get_data()>0)
+else:
+    mask_im = load_image(opts.mask)
+    mask = np.where(mask_im.get_data()>0)
+
+# Perform tissue classification
 mu, sigma = moment_matching(im, mask)
 vem = VEM(im.get_data(), 3, mask=mask, labels=LABELS)
-vem.run(mu=mu, sigma=sigma, prop=[.20, .47, .33], freeze_prop=False, niters=niters, beta=0.1)
+vem.run(mu=mu, sigma=sigma, prop=[.20, .47, .33], freeze_prop=False, niters=niters, beta=beta)
 classif = hard_classification(im, mask, vem.ppm) 
 
-outfile = join(tempfile.mkdtemp(), 'classif.nii')
+# Save label image
+outfile = join(mkdtemp(), 'classif.nii')
 save_image(classif, outfile)
 print('Label image saved in: %s' % outfile) 
 
-############################################################
-if magic: 
+# Compute fuzzy Dice indices if a complete prob model is provided 
+if not opts.probc == None and not opts.probg == None and not opts.probw == None:
     print('Computing Dice index') 
-    datadir, _ = split(sys.argv[1]) 
-    prefix = 'phantom_1.0mm_normal_'
-    fuzzy_model = [prefix+t+'_.nii' for t in ('csf','gry','wht')]
-    gt = [load_image(join(datadir, f)) for f in fuzzy_model]
-    d = fuzzy_dice(gt, vem.ppm, LABELS, mask)
+    gpm = [load_image(opts.probc), load_image(opts.probg), load_image(opts.probw)]
+    d = fuzzy_dice(gpm, vem.ppm, LABELS, mask)
     print('Fuzzy Dice indices: %s' % d) 
 
 
