@@ -126,7 +126,7 @@ class CorrelationCoefficient(SimilarityMeasure):
         self.vI = np.sum(H*(self.I)**2)/npts - self.mI**2
         self.vJ = np.sum(H*(self.J)**2)/npts - self.mJ**2
         self.cIJ = np.sum(H*self.J*self.I)/npts - self.mI*self.mJ
-        self.rho = self.cIJ/np.sqrt(self.vI*self.vJ)
+        self.rho = self.cIJ/nonzero(np.sqrt(self.vI*self.vJ))
         return self.rho**2
 
 

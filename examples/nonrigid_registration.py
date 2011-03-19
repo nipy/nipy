@@ -13,12 +13,15 @@ from nipy.utils import example_data
 
 from nipy.algorithms.registration.polyaffine import PolyAffine
 
-def debug_resample(Tv, I, J):
-    Tv = Affine(inverse_affine(J.affine)).compose(Tv)
-    coords = np.indices(I.shape).transpose((1,2,3,0))
-    coords = np.reshape(coords, (np.prod(I.shape), 3))
-    coords = Tv.apply(coords).T
-    return coords
+
+def get_blocks(shape, segments, step, skip): 
+    skipf = segments-skip 
+    size = np.array(shape)/segments
+    tmp = np.mgrid[skip:skipf:step, skip:skipf:step, skip:skipf:step]
+    tmp = np.reshape(tmp, (3, np.prod(tmp.shape[1:]))).T
+    return tmp*size, size
+
+
 
 # Input images are provided with the nipy-data package
 source = 'ammon'
@@ -44,35 +47,30 @@ R.optimize(A)
 Av = A.compose(Affine(I.affine))
 Jat = resample(J, Av, reference=I, ref_voxel_coords=True)
 save_image(Jat, 'affine_anubis_to_ammon.nii')
-###ca = debug_resample(Av, I, J) 
 
 # Region matching 
 t0 = time.time()
-dims = np.array(I.shape)/5
-corners = []
+
+##corners, size = get_blocks(I.shape, 3, 1, 0) #.5 size
+##corners, size = get_blocks(I.shape, 6, 2, 0) #.75 size
+##corners, size = get_blocks(I.shape, 6, 1, 0) # .5 size
+
+corners, size = get_blocks(I.shape, 5, 2, 1) 
+
 affines = []
-for cz in (1,2,3):
-    for cy in (1,2,3): 
-        for cx in (1,2,3): 
-            corner = np.array((cx,cy,cz))*dims
-            print('Doing block: %s' % corner) 
-            Ar = A.copy() 
-            R.subsample(corner=corner, size=dims)
-            R.optimize(Ar)
-            corners.append(corner)
-            affines.append(Ar) 
+for corner in corners: 
+    print('Doing block: %s' % corner) 
+    Ar = A.copy() 
+    R.subsample(corner=corner, size=size)
+    R.optimize(Ar)
+    affines.append(Ar) 
+
 
 # Create polyaffine transform 
 t1 = time.time()
-centers = np.array(corners) + (dims-1)/2.
-### centers = apply_affine(I.affine, centers) 
-"""
-T = PolyAffine(centers, [Ar.compose(A.inv()) for Ar in affines], 
-               dims, glob_affine=A.compose(Affine(I.affine)))
-"""
-
+centers = np.array(corners) + (size-1)/2.
 affines = [Ar.compose(Affine(I.affine)) for Ar in affines]
-Tv = PolyAffine(centers, affines, .5*dims)
+Tv = PolyAffine(centers, affines, .5*size)
 
 # Resample target image 
 t2 = time.time()
