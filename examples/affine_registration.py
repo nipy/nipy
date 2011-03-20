@@ -4,54 +4,21 @@
 """
 This script requires the nipy-data package to run. It is an example of
 inter-subject affine registration using two MR-T1 images from the
-'sulcal 2000' database acquired at CEA, SHFJ, Orsay, France. The
-source is 'ammon' and the target is 'anubis'.
-
-Usage: 
-  python affine_matching [objective][interpolation][optimizer]
-
-  Choices for objective: 
-    cc   -- correlation coefficient 
-    cr   -- correlation ratio 
-    crl1 -- correlation ratio, L1 norm version [DEFAULT]
-    mi   -- mutual information
-    nmi  -- normalized mutual information
-    pmi  -- Parzen mutual information
-    dpmi -- discrete Parzen mutual information
-
-  Choices for interpolation method: 
-    pv   -- partial volume [DEFAULT]
-    tri  -- trilinear
-    rand -- random 
-
-  Choices for optimizer: 
-    simplex
-    powell [DEFAULT]
-    steepest
-    cg 
-    bfgs
-
-Running this script will result in two files being created in the
-working directory:
-
-ammon_TO_anubis.nii 
-  the source image resampled according to the target coordinate system
-
-ammon_TO_anubis.npz 
-  a numpy data file containing the 4x4 matrix that maps the source to 
-  the target coordinate system
-
-Author: Alexis Roche, 2009. 
+sulcal 2000 database acquired at CEA, SHFJ, Orsay, France. The source
+is 'ammon' and the target is 'anubis'. Running it will result in a
+resampled ammon image being created in a temp directory.
 """
+
 from nipy.algorithms.registration import HistogramRegistration, resample
 from nipy.utils import example_data
 from nipy import load_image, save_image
 from nipy.algorithms.resample import resample as resample2
 
 from os.path import join
+from optparse import OptionParser
+from tempfile import mkdtemp
 import sys
 import time
-import tempfile
 import numpy as np
 
 print('Scanning data directory...')
@@ -61,18 +28,41 @@ source = 'ammon'
 target = 'anubis'
 source_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+source+'.nii.gz')
 target_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+target+'.nii.gz')
-savedir = tempfile.mkdtemp()
+
+# Parse arguments
+parser = OptionParser(description=__doc__)
+
+doc_similarity = 'similarity measure: cc (correlation coefficient), \
+cr (correlation ratio), crl1 (correlation ratio in L1 norm), \
+mi (mutual information), nmi (normalized mutual information), \
+pmi (Parzen mutual information), dpmi (discrete Parzen mutual \
+information). Default is crl1.'
+
+doc_interp = 'interpolation method: tri (trilinear), pv (partial volume), \
+rand (random). Default is pv.'
+
+doc_optimizer = 'optimization method: simplex, powell, steepest, cg, bfgs. \
+Default is powell.'
+
+parser.add_option('-s', '--similarity', dest='similarity', 
+                  help=doc_similarity)
+parser.add_option('-i', '--interp', dest='interp', 
+                  help=doc_interp)
+parser.add_option('-o', '--optimizer', dest='optimizer', 
+                  help=doc_optimizer)
+opts, args = parser.parse_args()
+
 
 # Optional arguments
 similarity = 'crl1' 
 interp = 'pv'
 optimizer = 'powell'
-if len(sys.argv)>1: 
-    similarity = sys.argv[1]
-    if len(sys.argv)>2: 
-        interp = sys.argv[2]
-        if len(sys.argv)>3: 
-            optimizer = sys.argv[3]
+if not opts.similarity == None: 
+    similarity = opts.similarity
+if not opts.interp == None: 
+    interp = opts.interp
+if not opts.optimizer == None: 
+    optimizer = opts.optimizer
 
 # Print messages
 print ('Source brain: %s' % source)
@@ -104,7 +94,7 @@ toc = time.time()
 print('  Resampling time: %f sec' % (toc-tic))
 
 # Save resampled source
-outfile =  join(savedir, source+'_TO_'+target+'.nii')
+outfile =  join(mkdtemp(), source+'_TO_'+target+'.nii')
 print ('Saving resampled source in: %s' % outfile)
 save_image(It, outfile)
 
