@@ -131,6 +131,7 @@ class WeightedForest(Forest):
         -------
         ax, the axis handle
         """
+        import matplotlib.pylab as mp
         if self.check_compatible_height() == False:
             raise ValueError('cannot plot myself in my current state')
 
@@ -155,7 +156,6 @@ class WeightedForest(Forest):
 
         # 3. plot
         if ax == None:
-            import matplotlib.pylab as mp
             mp.figure()
             ax = mp.subplot(1, 1, 1)
 
