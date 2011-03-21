@@ -26,9 +26,9 @@ Author : Bertrand Thirion,Pamela Guevara, 2006-2009
 
 import numpy as np
 
-from ..graph.graph import WeightedGraph 
-from ..graph.forest import Forest 
-from ..utils.fast_distance import euclidean_distance
+from nipy.labs.graph.graph import WeightedGraph 
+from nipy.labs.graph.forest import Forest 
+from nipy.labs.utils.fast_distance import euclidean_distance
 
 
 class WeightedForest(Forest):

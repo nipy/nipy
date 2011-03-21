@@ -441,7 +441,7 @@ class Field(fg.WeightedGraph):
                the resulting field label
         J (float): the resulting inertia
         """
-        from ..clustering.hierarchical_clustering\
+        from nipy.algorithms.clustering.hierarchical_clustering\
              import ward_segment
         label, J = ward_segment(self, self.field, qmax=nbcluster)
 

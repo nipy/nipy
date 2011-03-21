@@ -12,11 +12,13 @@ import numpy as np
 import numpy.random as nr
 import nipy.labs.graph.field as ff
 
-
 dx = 50
 dy = 50
 dz = 1
 nbseeds = 10
+
+data = np.random.randn()
+
 F = ff.Field(dx * dy * dz)
 xyz = np.reshape(np.indices((dx, dy, dz)), (3, dx * dy * dz)).T.astype(np.int)
 F.from_3d_grid(xyz, 18)

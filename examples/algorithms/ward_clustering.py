@@ -11,7 +11,7 @@ from numpy.random import randn, rand
 import matplotlib.pylab as mp
 
 from nipy.labs import graph
-from nipy.labs.clustering.hierarchical_clustering import ward
+from nipy.algorithms.clustering.hierarchical_clustering import ward
 
 # n = number of points, k = number of nearest neighbours
 n = 100

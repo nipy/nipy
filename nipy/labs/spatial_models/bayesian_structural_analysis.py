@@ -178,7 +178,7 @@ def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1, sub, burnin,
          spatial_coords=None, nis=1000, co_clust=False, verbose=False):
     """Apply the dpmm analysis to compute clusters from regions coordinates
     """
-    from ..clustering.imm import MixedIMM
+    from nipy.algorithms.clustering.imm import MixedIMM
 
     dim = gfc.shape[1]
     migmm = MixedIMM(alpha, dim)

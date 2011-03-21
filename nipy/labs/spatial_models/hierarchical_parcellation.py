@@ -9,7 +9,7 @@ Author: Bertrand Thirion, 2008
 import numpy as np
 from numpy.random import rand
 
-from ..clustering.clustering import kmeans, voronoi
+from nipy.algorithms.clustering.clustering import kmeans, voronoi
 from .parcellation import MultiSubjectParcellation
 from ..graph.field import field_from_coo_matrix_and_data, Field
 from ..graph.graph import wgraph_from_coo_matrix
