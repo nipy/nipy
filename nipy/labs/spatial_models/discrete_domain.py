@@ -372,8 +372,8 @@ def domain_from_mesh(mesh, nibabel=True):
     """
     if nibabel:
         if isinstance(mesh, basestring):
-            from nibabel.gifti.gifti import loadImage
-            mesh_ = loadImage(mesh)
+            from nibabel.gifti import read
+            mesh_ = read(mesh)
         else:
             mesh_ = mesh
 
