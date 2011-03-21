@@ -15,7 +15,6 @@ import scipy.special as sp
 import numpy.random as nr
 
 
-
 #############################################################################
 # Auxiliary functions #######################################################
 #############################################################################
@@ -445,7 +444,7 @@ class GGGM(object):
             x = x.copy()
         # positive gamma
         i = np.ravel(np.nonzero(x > 0))
-        from ..utils import emp_null as en
+        from nipy.labs.utils import emp_null as en
         lfdr = en.FDR(x)
 
         if np.size(i) > 0:
