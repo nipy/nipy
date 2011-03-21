@@ -10,23 +10,18 @@ print __doc__
 
 import numpy as np
 import numpy.random as nr
-import nipy.labs.graph.field as ff
+from nipy.labs.graph.field import Field
+from scipy.ndimage import gaussian_filter
 
 dx = 50
 dy = 50
 dz = 1
 nbseeds = 10
-
-data = np.random.randn()
-
-F = ff.Field(dx * dy * dz)
+data = gaussian_filter( np.random.randn(dx, dy), 2)
+F = Field(dx * dy * dz)
 xyz = np.reshape(np.indices((dx, dy, dz)), (3, dx * dy * dz)).T.astype(np.int)
 F.from_3d_grid(xyz, 18)
-data = nr.randn(dx * dy * dz, 1)
-F.set_weights(F.get_weights() / 18)
 F.set_field(data)
-F.diffusion(5)
-data = F.get_field()
 
 seeds = np.argsort(nr.rand(F.V))[:nbseeds]
 seeds, label, J0 = F.geodesic_kmeans(seeds)
