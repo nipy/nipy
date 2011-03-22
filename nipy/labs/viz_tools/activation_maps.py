@@ -128,7 +128,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
-        threshold = _fast_abs_percentile(map)  
+        threshold = _fast_abs_percentile(map)*(1 + 1e-4)
     if cut_coords is None:
         x_map, y_map, z_map = find_cut_coords(map,
                                 activation_threshold=threshold)
