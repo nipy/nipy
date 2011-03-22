@@ -15,5 +15,5 @@ Contents:
    users/index.rst
    devel/index.rst
    faq/index.rst
-   neurospin/index.rst
+   labs/index.rst
    api/index.rst

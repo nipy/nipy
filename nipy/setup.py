@@ -44,13 +44,11 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('testing')
     config.add_subpackage('externals')
 
-    # Note: this is a special subpackage, where all the code from Neurospin
-    # that up until now had been living in the 'fff2' branch will go.
-    # Eventually the code contained therein will be migrated to whichever parts
-    # of the main package it logically belongs in.  But initially we are
-    # putting everythin under this subpackage to make the management and
-    # migration easier.
-    config.add_subpackage('neurospin')
+    # Note: this is a special subpackage containing that will later be
+    # migrated to whichever parts of the main package they logically
+    # belong in. But initially we are putting everythin under this
+    # subpackage to make the management and migration easier.
+    config.add_subpackage('labs')
 
     # List all data directories to be loaded here
     config.add_data_dir('testing')

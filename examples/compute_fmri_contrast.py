@@ -18,13 +18,12 @@ Example:
 
 Author: Alexis Roche, 2009. 
 """
-from nibabel import load as load_image, save as save_image
-
-from nipy.neurospin.statistical_mapping import LinearModel
-from nipy.utils import example_data
-
 import numpy as np
 import sys
+from nibabel import load as load_image, save as save_image
+
+from nipy.labs.statistical_mapping import LinearModel
+from nipy.utils import example_data
 
 # Optional argument
 cvect = [1,0,0,0]
