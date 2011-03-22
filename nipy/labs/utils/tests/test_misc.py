@@ -23,9 +23,9 @@ class TestAll(TestCase):
         assert_almost_equal(np.squeeze(median(x,axis=1)), np.median(x,axis=1))
 
     def test_mahalanobis(self):
-        x = np.random.rand(100)
-        A = np.random.rand(100, 100)
-        A = np.dot(A.transpose(), A)
+        x = np.random.rand(100) / 100
+        A = np.random.rand(100, 100) / 100
+        A = np.dot(A.transpose(), A) + np.eye(100)
         mah = np.dot(x, np.dot(np.linalg.inv(A), x))
         assert_almost_equal(mah, mahalanobis(x, A), decimal=1) 
         
