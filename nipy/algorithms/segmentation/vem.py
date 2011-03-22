@@ -3,7 +3,7 @@
 import numpy as np 
 import os
 
-from .c_bindings import _ve_step, _concensus
+from ._segmentation import _ve_step, _interaction_energy
 
 
 TINY = 1e-300
@@ -97,6 +97,8 @@ class VEM(object):
           Sequence of one-dimensional coordinate arrays
         """
         # Make default mask (required by MRF regularization) 
+        # This will be passed to the _ve_step C-routine, which assumes
+        # a contiguous int array and raise an error otherwise. 
         if mask == None: 
             XYZ = np.mgrid[[slice(0, s) for s in data.shape]]
             XYZ = np.reshape(XYZ, (XYZ.shape[0], np.prod(XYZ.shape[1::]))).T
@@ -112,11 +114,11 @@ class VEM(object):
         # create ppm from scratch and assume flat prior.
         if ppm == None:
             self.ppm = np.zeros(list(data.shape)+[nclasses])
-            self.ppm[mask] = 1./nclasses
+            self.ppm[self.mask] = 1./nclasses
         else:
             self.ppm = ppm 
-        self.data_masked = data[mask]
-        self.prior_ext_field = self.ppm[mask]
+        self.data_masked = data[self.mask]
+        self.prior_ext_field = self.ppm[self.mask]
         self.posterior_ext_field = np.zeros([self.data_masked.size, nclasses])
         self.nclasses = nclasses
         
@@ -153,6 +155,9 @@ class VEM(object):
         return self._vm_step(self.ppm, self.data_masked, self.mask)
 
     def sort_labels(self, mu):
+        """
+        Sort the array labels to match mean tissue intensities ``mu``.
+        """        
         K = len(mu)
         tmp = np.asarray(self.labels)
         labels = np.zeros(K, dtype=tmp.dtype)
@@ -179,7 +184,8 @@ class VEM(object):
         # Compute complete-data likelihood maps, replacing very small
         # values for numerical stability
         for i in range(self.nclasses): 
-            self.posterior_ext_field[:,i] = self.prior_ext_field[:,i]*self.dist(self.data_masked, mu[i], sigma[i])
+            self.posterior_ext_field[:,i] = self.prior_ext_field[:,i] * \
+                self.dist(self.data_masked, mu[i], sigma[i])
             if not prop == None: 
                 self.posterior_ext_field[:,i] *= prop[i]
         self.posterior_ext_field[:] = np.maximum(self.posterior_ext_field, TINY) 
@@ -219,13 +225,13 @@ class VEM(object):
             print_('  VM-step...')
             if do_vm_step: 
                 mu, sigma, prop = self.vm_step()
-                if freeze_prop:
-                    prop = prop0
+                if freeze_prop: # account for label switching
+                    prop = prop0[np.argsort(mu)]
             print_('  VE-step...')
             self.ve_step(mu, sigma, prop, beta=beta)
             do_vm_step = True
 
-        return mu, sigma 
+        return mu, sigma, prop
 
 
     def free_energy(self):
@@ -242,6 +248,6 @@ class VEM(object):
         f = np.sum(q*np.log(np.maximum(q/self.posterior_ext_field, TINY)))
         # Interaction term
         if self._beta > 0.0: 
-            fc = _concensus(self.ppm, self._XYZ)
+            fc = _interaction_energy(self.ppm, self._XYZ)
             f -= .5*self._beta*fc 
         return f

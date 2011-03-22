@@ -18,9 +18,9 @@ extern "C" {
 		      int copy,
 		      int hard);
 
-  extern double concensus(PyArrayObject* ppm, 
-			  const PyArrayObject* XYZ, 
-			  const PyArrayObject* mix); 
+  extern double interaction_energy(PyArrayObject* ppm, 
+				   const PyArrayObject* XYZ, 
+				   const PyArrayObject* mix); 
 
 
 #ifdef __cplusplus

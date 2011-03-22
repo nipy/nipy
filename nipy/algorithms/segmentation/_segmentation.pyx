@@ -22,9 +22,9 @@ cdef extern from "mrf.h":
                  double beta, 
                  int copy, 
                  int hard)
-    double concensus(ndarray ppm, 
-		     ndarray XYZ, 
-                     ndarray mix)
+    double interaction_energy(ndarray ppm, 
+                              ndarray XYZ, 
+                              ndarray mix)
 
 
 # Initialize numpy
@@ -54,7 +54,7 @@ def _ve_step(ppm, ref, XYZ, double beta, int copy, int hard, mix=None):
     return ppm 
 
 
-def _concensus(ppm, XYZ, mix=None): 
+def _interaction_energy(ppm, XYZ, mix=None): 
 
     if not XYZ.shape[1] == 3: 
         warnings.warn('MRF regularization only implemented in 3D, doing nothing')
@@ -67,5 +67,5 @@ def _concensus(ppm, XYZ, mix=None):
         if not mix.flags['C_CONTIGUOUS'] or not mix.dtype=='double':
             raise ValueError('mix array should be double C-contiguous')
 
-    return concensus(<ndarray>ppm, <ndarray>XYZ, <ndarray>mix) 
+    return interaction_energy(<ndarray>ppm, <ndarray>XYZ, <ndarray>mix) 
 

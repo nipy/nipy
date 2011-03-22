@@ -9,8 +9,8 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('segmentation', parent_package, top_path)
     config.add_data_dir('tests')
     config.add_include_dirs(config.name.replace('.', os.sep))
-    config.add_extension('c_bindings', sources=['c_bindings.pyx', 
-                                                'mrf.c'])
+    config.add_extension('_segmentation', sources=['_segmentation.pyx', 
+                                                   'mrf.c'])
 
     return config
 

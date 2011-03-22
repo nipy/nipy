@@ -271,9 +271,9 @@ void ve_step(PyArrayObject* ppm,
 
 
 
-double concensus(PyArrayObject* ppm, 
-		 const PyArrayObject* XYZ, 
-		 const PyArrayObject* mix)
+double interaction_energy(PyArrayObject* ppm, 
+			  const PyArrayObject* XYZ, 
+			  const PyArrayObject* mix)
 
 {
   int k, K, kk, x, y, z;

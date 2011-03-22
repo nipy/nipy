@@ -13,8 +13,10 @@ from nipy.core.image.affine_image import AffineImage
 from nipy.algorithms.segmentation import VEM
 
 LABELS = ('CSF','GM','WM')
-NITERS = 5
-BETA = 0.1 
+NITERS = 10
+BETA = 0.2
+PROP = [.33, .33, .33]
+FREEZE_PROP = True
 
 def moment_matching(im, mask):
     """
@@ -103,11 +105,17 @@ else:
 # Perform tissue classification
 mu, sigma = moment_matching(im, mask)
 vem = VEM(im.get_data(), 3, mask=mask, labels=LABELS)
-vem.run(mu=mu, sigma=sigma, prop=[.20, .47, .33], freeze_prop=False, niters=niters, beta=beta)
-classif = hard_classification(im, mask, vem.ppm) 
+mu, sigma, prop = vem.run(mu=mu, sigma=sigma, 
+                          prop=PROP, freeze_prop=FREEZE_PROP, 
+                          beta=beta, niters=niters)
+# Display information 
+print('Estimated tissue means: %s' % mu) 
+print('Estimated tissue std deviates: %s' % sigma) 
+print('Estimated tissue proportions: %s' % prop) 
 
-# Save label image
-outfile = join(mkdtemp(), 'classif.nii')
+# Generate hard tissue classification image 
+classif = hard_classification(im, mask, vem.ppm) 
+outfile = join(mkdtemp(), 'hard_classif.nii')
 save_image(classif, outfile)
 print('Label image saved in: %s' % outfile) 
 
