@@ -7,11 +7,23 @@ typically necessary to estimate a fdr when one is not certain that the
 data behaves as a standard normal under H_0.
 
 Author : Bertrand Thirion, 2008-2009
+
+Fixme
+====
+FDR should consider only arrays of p-values
+
 """
+
 import numpy as np
 from numpy.linalg import pinv
 import scipy.stats as st
 
+
+def all_fdr_gaussian(x):
+    """
+    """
+    pvals = st.norm.sf(np.squeeze(x))
+    return(FDR(pvals).all_fdr_from_pvals())
 
 class FDR(object):
     """ Basic class to handle false discovery rate computation
@@ -49,8 +61,7 @@ class FDR(object):
         return(self.all_fdr_from_pvals(pvals, verbose))
 
     def all_fdr_from_pvals(self, pv, verbose=0):
-        """
-        Returns the fdr associated with each the values
+        """ Returns the fdr associated with each the values
 
         Parameters
         -----------

@@ -11,6 +11,7 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('statistics')
     config.add_subpackage('diagnostics')
     config.add_subpackage('clustering')
+    config.add_subpackage('routines')
 
     return config
 
