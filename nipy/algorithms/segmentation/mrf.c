@@ -43,33 +43,50 @@ int ngb26 [] = {1,0,0,
 		0,0,-1}; 
 
 
-
-static inline void _soft_vote(double* res, int K, size_t pos, 
-			      const double* ppm_data)
+/* Compute the (negated) expected interaction energy of a voxel with
+   some neighbor */ 
+static inline void _get_message_mf(double* res, int K, size_t pos, 
+				   const double* ppm_data, const double* aux)
 {
   size_t p = pos;
-  double* buf_res = res;
+  double* buf = res;
   int k;
   
-  for (k=0; k<K; k++, buf_res++, p++)
-    *buf_res += ppm_data[p];
+  for (k=0; k<K; k++, buf++, p++)
+    *buf += ppm_data[p];
   
   return;
 }
 
+static inline void _finalize_inbox_mf(double* res, int K, const double* aux) 
+{
+  int k; 
+  double* buf; 
 
-static inline void _hard_vote(double* res, int K, size_t pos, 
-			      const double* ppm_data)
+  for (k=0, buf=res; k<K; k++, buf++) 
+    *buf = exp(aux[0]*(*buf));
+
+  return; 
+}
+
+static inline void _initialize_inbox_mf(double* res, int K)
+{ 
+  memset ((void*)res, 0, K*sizeof(double));
+  return; 
+}
+
+static inline void _get_message_icm(double* res, int K, size_t pos,  
+				    const double* ppm_data, const double* aux)
 {
   size_t p = pos;
   int k, kmax = -1;
-  double max = 0, aux;
-  
+  double max = 0, tmp;
+
   for (k=0; k<K; k++, p++) {
-    aux = ppm_data[p];
-    if (aux>max) {
+    tmp = ppm_data[p];
+    if (tmp>max) {
       kmax = k;
-      max = aux;
+      max = tmp;
     }
   }
   if (kmax >= 0)
@@ -78,44 +95,57 @@ static inline void _hard_vote(double* res, int K, size_t pos,
   return;
 }
 
-/*
-  Compute matrix-by-vector multiplication
-  yi = sum_k aik xk  
- */
-static inline void _dot(double* y, const double* A, const double* x, int n)
+static inline void _get_message_bp(double* res, int K, size_t pos, 
+				   const double* ppm_data, const double* aux)
 {
-  int i, k; 
-  double *bufA=(double*)A, *bufy=(double*)y, *bufx; 
-  double tmp; 
+  size_t p = pos;
+  double* buf = res;
+  int k;
+  double prob; 
 
-  for (i=0; i<n; i++, bufy++) {
-    bufx = (double*)x; 
-    tmp = 0.0; 
-    for (k=0; k<n; k++, bufA++, bufx++)
-      tmp += (*bufA)*(*bufx); 
-    *bufy = tmp; 
+  for (k=0; k<K; k++, buf++, p++) {
+    prob = ppm_data[p];
+    *buf *= aux[0]*prob + 1; 
   }
-  return;   
+  
+  return;
+}
+
+static inline void _initialize_inbox_bp(double* res, int K)
+{ 
+  double *buf = res; 
+  int k; 
+
+  for (k=0; k<K; k++, buf++)
+    *buf = 1.0; 
+
+  /* memset ((void*)res, 1, K*sizeof(double));*/
+  return; 
 }
 
 
 
 /*
+  Compute the incoming messages at a given voxel as a function of the
+  class label, and aggregate them across neighbors.
   
-  ppm assumed contiguous double (X, Y, Z, K) 
+  The vode_fn argument is a pointer to the function that actually
+  computes the expected interaction energy with a particular neighbor.
 
+  ppm assumed contiguous double (X, Y, Z, K) 
   res assumed preallocated with size >= K 
 
 */
 
-static void _ngb26_vote(double* res, 
-                        const PyArrayObject* ppm,  
-                        int x,
-                        int y, 
-                        int z,
-                        void* vote_fn, 
-			double* tmp, 
-			const double* mix)
+static void _ngb26_compound_messages(double* res, 
+				     const PyArrayObject* ppm,  
+				     int x,
+				     int y, 
+				     int z,
+				     void* initialize_inbox,
+				     void* get_message,
+				     void* finalize_inbox,
+				     const double* aux)			
 {
   int j = 0, xn, yn, zn, nn = 26, K = ppm->dimensions[3]; 
   int* buf_ngb; 
@@ -124,27 +154,27 @@ static void _ngb26_vote(double* res,
   size_t u2 = ppm->dimensions[2]*u3; 
   size_t u1 = ppm->dimensions[1]*u2;
   size_t pos; 
-  void (*vote)(double*,int,size_t,const double*) = vote_fn;
-  
+  void (*_initialize_inbox)(double*,int) = initialize_inbox;
+  void (*_get_message)(double*,int,size_t,const double*,const double*) = get_message;
+  void (*_finalize_inbox)(double*,int,const double*) = finalize_inbox;
+
   /*  Re-initialize output array */
-  memset ((void*)res, 0, K*sizeof(double));
+  _initialize_inbox(res, K); 
   
-  /* Loop over neighbors */ 
+  /* Loop over neighbors */
   buf_ngb = ngb26; 
   while (j < nn) {
     xn = x + *buf_ngb; buf_ngb++; 
     yn = y + *buf_ngb; buf_ngb++;
     zn = z + *buf_ngb; buf_ngb++;
     pos = xn*u1 + yn*u2 + zn*u3;
-    vote(res, K, pos, ppm_data);
+    _get_message(res, K, pos, ppm_data, aux);
     j ++; 
   }
 
-  if (tmp == NULL)
-    return; 
-
-  memcpy((void*)tmp, (void*)res, K*sizeof(double));
-  _dot(res, mix, tmp, K); 
+  /* Finalize total message computation */
+  if (_finalize_inbox != NULL) 
+    _finalize_inbox(res, K, aux); 
   
   return; 
 }
@@ -154,26 +184,22 @@ static void _ngb26_vote(double* res,
 
 /*
   ppm assumed contiguous double (X, Y, Z, K) 
-
   ref assumed contiguous double (NPTS, K)
-
   XYZ assumed contiguous usigned int (NPTS, 3)
-
- */
+*/
 
 #define TINY 1e-300
 
 void ve_step(PyArrayObject* ppm, 
 	     const PyArrayObject* ref,
 	     const PyArrayObject* XYZ, 
-	     const PyArrayObject* mix, 
 	     double beta,
 	     int copy,
-	     int hard)
+	     int scheme)
 
 {
   int k, K, kk, x, y, z;
-  double *p, *p0 = NULL, *buf;
+  double *p, *buf;
   double psum, tmp;  
   PyArrayIterObject* iter;
   int axis = 1; 
@@ -182,11 +208,14 @@ void ve_step(PyArrayObject* ppm,
   size_t u2 = ppm->dimensions[2]*u3; 
   size_t u1 = ppm->dimensions[1]*u2;
   const double* ref_data = (double*)ref->data;
-  const double* mix_data = NULL; 
   size_t v1 = ref->dimensions[1];
   int* xyz; 
-  void (*vote)(double*,int,size_t,const double*);
+  void (*initialize_inbox)(double*,int);
+  void (*get_message)(double*,int,size_t,const double*,const double*);
+  void (*finalize_inbox)(double*,int,const double*);
   size_t S; 
+  double* aux;
+
 
   /* Dimensions */
   K = PyArray_DIM((PyArrayObject*)ppm, 3);
@@ -204,17 +233,44 @@ void ve_step(PyArrayObject* ppm,
   else
     ppm_data = (double*)ppm->data;
   
-  /* Hard or soft vote */
-  if (hard)
-    vote = &_hard_vote;
-  else
-    vote = &_soft_vote;
-  
-  /* Mix votes or not */ 
-  if ((PyObject*)mix!=Py_None) {
-    fprintf(stderr, "Mixing matrix provided\n");
-    mix_data = (double*)mix->data;
-    p0 = (double*)calloc(K, sizeof(double));   
+  /* Select message passging scheme: mean-field, ICM or
+     belief-propagation */
+  switch (scheme) {
+  case 0: 
+    {
+      initialize_inbox = &_initialize_inbox_mf;
+      get_message = &_get_message_mf;
+      finalize_inbox = &_finalize_inbox_mf;
+      aux = (double*)calloc(1, sizeof(double));   
+      aux[0] = beta; 
+    }
+    break; 
+  case 1: 
+    {
+      initialize_inbox = &_initialize_inbox_mf;
+      get_message = &_get_message_icm;
+      finalize_inbox = &_finalize_inbox_mf;
+      aux = (double*)calloc(1, sizeof(double));
+      aux[0] = beta; 
+    }
+    break; 
+  case 2: 
+    {
+      initialize_inbox = &_initialize_inbox_bp;
+      get_message = &_get_message_bp;    
+      finalize_inbox = NULL; 
+      aux = (double*)calloc(1, sizeof(double));
+      aux[0] = exp(beta) - 1; 
+      if (aux[0] < 0) 
+	aux[0] = 0; 
+    }
+    break; 
+  default: 
+    {
+      fprintf(stderr, "Unknown message passing scheme\n");
+      return; 
+    }
+    break; 
   }
 
   /* Allocate auxiliary vectors */
@@ -229,12 +285,16 @@ void ve_step(PyArrayObject* ppm,
     x = xyz[0];
     y = xyz[1];
     z = xyz[2];
-    _ngb26_vote(p, ppm, x, y, z, (void*)vote, p0, mix_data); 
+    _ngb26_compound_messages(p, ppm, x, y, z, 
+			     (void*)initialize_inbox, 
+			     (void*)get_message, 
+			     (void*)finalize_inbox, 
+			     aux); 
     
-    /* Apply exponential transformation and multiply with reference */
+    /* Multiply with reference and compute normalization constant */
     psum = 0.0; 
     for (k=0, kk=(iter->index)*v1, buf=p; k<K; k++, kk++, buf++) {
-      tmp = exp(beta*(*buf)) * ref_data[kk];
+      tmp = (*buf) * ref_data[kk];
       psum += tmp; 
       *buf = tmp; 
     }
@@ -262,8 +322,8 @@ void ve_step(PyArrayObject* ppm,
 
   /* Free memory */ 
   free(p);
-  if (p0 != NULL) 
-    free(p0);
+  if (aux != NULL) 
+    free(aux); 
   Py_XDECREF(iter);
 
   return; 
@@ -272,12 +332,11 @@ void ve_step(PyArrayObject* ppm,
 
 
 double interaction_energy(PyArrayObject* ppm, 
-			  const PyArrayObject* XYZ, 
-			  const PyArrayObject* mix)
+			  const PyArrayObject* XYZ)
 
 {
   int k, K, kk, x, y, z;
-  double *p, *p0 = NULL, *buf;
+  double *p, *buf;
   double res = 0.0, tmp;  
   PyArrayIterObject* iter;
   int axis = 1; 
@@ -286,17 +345,10 @@ double interaction_energy(PyArrayObject* ppm,
   size_t u2 = ppm->dimensions[2]*u3; 
   size_t u1 = ppm->dimensions[1]*u2;
   int* xyz; 
-  const double* mix_data = NULL; 
 
   /* Dimensions */
   K = PyArray_DIM((PyArrayObject*)ppm, 3);
-
   ppm_data = (double*)ppm->data;
-
-  if ((PyObject*)mix!=Py_None) {
-    mix_data = (double*)mix->data;
-    p0 = (double*)calloc(K, sizeof(double)); 
-  }
 
   /* Allocate auxiliary vector */
   p = (double*)calloc(K, sizeof(double)); 
@@ -310,7 +362,8 @@ double interaction_energy(PyArrayObject* ppm,
     x = xyz[0];
     y = xyz[1];
     z = xyz[2];
-    _ngb26_vote(p, ppm, x, y, z, &_soft_vote, p0, mix_data); 
+    _ngb26_compound_messages(p, ppm, x, y, z, &_initialize_inbox_mf, 
+			     &_get_message_mf, NULL, NULL); 
     
     /* Calculate the dot product <q,p> where q is the local
        posterior */
@@ -328,8 +381,6 @@ double interaction_energy(PyArrayObject* ppm,
 
   /* Free memory */ 
   free(p);
-  if (p0 != NULL) 
-    free(p0);
   Py_XDECREF(iter);
 
   return res; 

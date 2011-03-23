@@ -18,13 +18,11 @@ cdef extern from "mrf.h":
     void ve_step(ndarray ppm, 
                  ndarray ref,
                  ndarray XYZ, 
-                 ndarray mix, 
                  double beta, 
                  int copy, 
-                 int hard)
+                 int scheme)
     double interaction_energy(ndarray ppm, 
-                              ndarray XYZ, 
-                              ndarray mix)
+                              ndarray XYZ)
 
 
 # Initialize numpy
@@ -33,7 +31,7 @@ import_array()
 import numpy as np
 import warnings
 
-def _ve_step(ppm, ref, XYZ, double beta, int copy, int hard, mix=None):
+def _ve_step(ppm, ref, XYZ, double beta, int copy, int scheme):
 
     if not XYZ.shape[1] == 3: 
         warnings.warn('MRF regularization only implemented in 3D, doing nothing')
@@ -44,17 +42,13 @@ def _ve_step(ppm, ref, XYZ, double beta, int copy, int hard, mix=None):
         raise ValueError('ref array should be double C-contiguous')
     if not XYZ.flags['C_CONTIGUOUS'] or not XYZ.dtype=='int':
         raise ValueError('XYZ array should be int C-contiguous')
-    if not mix==None: 
-        if not mix.flags['C_CONTIGUOUS'] or not mix.dtype=='double':
-            raise ValueError('mix array should be double C-contiguous')
 
-    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, <ndarray>mix, 
-             beta, copy, hard)
+    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, beta, copy, scheme)
 
     return ppm 
 
 
-def _interaction_energy(ppm, XYZ, mix=None): 
+def _interaction_energy(ppm, XYZ): 
 
     if not XYZ.shape[1] == 3: 
         warnings.warn('MRF regularization only implemented in 3D, doing nothing')
@@ -63,9 +57,6 @@ def _interaction_energy(ppm, XYZ, mix=None):
         raise ValueError('ppm array should be double C-contiguous')
     if not XYZ.flags['C_CONTIGUOUS'] or not XYZ.dtype=='int':
         raise ValueError('XYZ array should be int C-contiguous')
-    if not mix==None: 
-        if not mix.flags['C_CONTIGUOUS'] or not mix.dtype=='double':
-            raise ValueError('mix array should be double C-contiguous')
 
-    return interaction_energy(<ndarray>ppm, <ndarray>XYZ, <ndarray>mix) 
+    return interaction_energy(<ndarray>ppm, <ndarray>XYZ) 
 

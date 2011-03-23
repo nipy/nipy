@@ -13,14 +13,12 @@ extern "C" {
   extern void ve_step(PyArrayObject* ppm, 
 		      const PyArrayObject* ref,
 		      const PyArrayObject* XYZ, 
-		      const PyArrayObject* mix, 
 		      double beta,
 		      int copy,
-		      int hard);
+		      int mtype);
 
   extern double interaction_energy(PyArrayObject* ppm, 
-				   const PyArrayObject* XYZ, 
-				   const PyArrayObject* mix); 
+				   const PyArrayObject* XYZ); 
 
 
 #ifdef __cplusplus

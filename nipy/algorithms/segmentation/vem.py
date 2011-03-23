@@ -11,7 +11,6 @@ NITERS = 20
 BETA = 0.2 
 VERBOSE = True
 
-
 def print_(s): 
     if VERBOSE: 
         print(s) 
@@ -73,14 +72,18 @@ def vm_step_laplace(ppm, data_masked, mask):
 
 
 
+message_passing = {'mf':0, 'icm':1, 'bp':2}
+noise_model = {'gauss': (gauss_dist, vm_step_gauss), 
+               'laplace': (laplace_dist, vm_step_laplace)} 
+
 class VEM(object): 
     """
     Classification via VEM algorithm.
     """
-
+    
     def __init__(self, data, nclasses, mask=None, noise='gauss', 
-                 ppm=None, copy=False, hard=False,
-                 labels=None, mixmat=None): 
+                 ppm=None, copy=False, scheme='mf', 
+                 labels=None): 
         """
         A class to represent a variational EM algorithm for tissue
         classification.
@@ -124,13 +127,12 @@ class VEM(object):
         
         # Inference scheme parameters 
         self.copy = copy
-        self.hard = hard
-        if noise == 'gauss': 
-            self.dist = gauss_dist
-            self._vm_step = vm_step_gauss
-        elif noise == 'laplace':
-            self.dist = laplace_dist
-            self._vm_step = vm_step_laplace
+        if scheme in message_passing: 
+            self.scheme = message_passing[scheme]
+        else: 
+            raise ValueError('Unknown message passing scheme') 
+        if noise in noise_model: 
+            self.dist, self._vm_step = noise_model[noise]
         else:
             raise ValueError('Unknown noise model')
 
@@ -140,9 +142,6 @@ class VEM(object):
         if not len(labels) == self.nclasses: 
             raise ValueError('Wrong length for labels sequence') 
         self.labels = labels
-
-        # Mixing matrix 
-        self.mixmat = mixmat
 
         # Cache beta parameter
         self._beta = BETA
@@ -163,14 +162,6 @@ class VEM(object):
         labels = np.zeros(K, dtype=tmp.dtype)
         labels[np.argsort(mu)] = tmp
         return list(labels)
-
-    def sort_mixmat(self, mu): 
-        K = len(mu)
-        mixmat = np.zeros([K,K]) 
-        I, J = np.mgrid[0:K, 0:K]
-        idx = np.argsort(mu) 
-        mixmat[idx[I], idx[J]] = np.asarray(self.mixmat)
-        return mixmat
     
 
     # VE-step: update tissue probability map
@@ -198,12 +189,8 @@ class VEM(object):
         # neighborhood information (mean-field theory)
         else: 
             print_('  ... MRF regularization')
-            # Deal with mixing matrix and label switching
-            mixmat = self.mixmat 
-            if not mixmat == None:
-                mixmat = self.sort_mixmat(mu)
             self.ppm = _ve_step(self.ppm, self.posterior_ext_field, self._XYZ,  
-                                beta, self.copy, self.hard, mixmat)
+                                beta, self.copy, self.scheme)
             
 
     def run(self, mu=None, sigma=None, prop=None, beta=BETA, niters=NITERS, freeze_prop=True): 

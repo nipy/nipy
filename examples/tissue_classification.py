@@ -15,8 +15,10 @@ from nipy.algorithms.segmentation import VEM
 LABELS = ('CSF','GM','WM')
 NITERS = 10
 BETA = 0.2
+SCHEME = 'mf'
 PROP = [.33, .33, .33]
 FREEZE_PROP = True
+
 
 def moment_matching(im, mask):
     """
@@ -70,8 +72,11 @@ parser.add_option('-n', '--niters', dest='niters',
                   help='number of iterations (default=%d)' % NITERS)
 parser.add_option('-b', '--beta', dest='beta', 
                   help='Markov random field beta parameter (default=%f)' % BETA)
+parser.add_option('-s', '--scheme', dest='scheme', 
+                  help='message passing scheme (mf, icm or bp, default=%s)' % SCHEME)
+
 parser.add_option('-m', '--mask', dest='mask', help='mask image')
-parser.add_option('-c', '--probc', dest='probc', help='CSF probability map')
+parser.add_option('-c', '--probc', dest='probc', help='csf probability map')
 parser.add_option('-g', '--probg', dest='probg', help='gray matter probability map')
 parser.add_option('-w', '--probw', dest='probw', help='white matter probability map')
 opts, args = parser.parse_args() 
@@ -95,6 +100,12 @@ if opts.beta == None:
 else:
     beta = float(opts.beta)
 
+# Message passing scheme
+if opts.scheme == None:
+    scheme = SCHEME
+else:
+    scheme = opts.scheme
+
 # Input mask image 
 if opts.mask == None: 
     mask = np.where(im.get_data()>0)
@@ -104,10 +115,13 @@ else:
 
 # Perform tissue classification
 mu, sigma = moment_matching(im, mask)
-vem = VEM(im.get_data(), 3, mask=mask, labels=LABELS)
+vem = VEM(im.get_data(), 3, mask=mask, labels=LABELS, scheme=scheme)
 mu, sigma, prop = vem.run(mu=mu, sigma=sigma, 
                           prop=PROP, freeze_prop=FREEZE_PROP, 
                           beta=beta, niters=niters)
+
+print vem.free_energy() 
+
 # Display information 
 print('Estimated tissue means: %s' % mu) 
 print('Estimated tissue std deviates: %s' % sigma) 
