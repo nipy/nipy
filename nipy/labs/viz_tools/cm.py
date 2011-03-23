@@ -3,6 +3,7 @@
 """
 Matplotlib colormaps useful for neuroimaging.
 """
+import numpy as _np
 
 from matplotlib import cm as _cm
 from matplotlib import colors as _colors
@@ -49,6 +50,28 @@ def _pigtailed_cmap(cmap, swap_order=('green', 'red', 'blue')):
                                     for (p, c1, c2) in orig_cdict[color]])
 
     return cdict
+
+
+def alpha_cmap(color, name=''):
+    """ Return a colormap with the given color, and alpha going from
+        zero to 1.
+
+        Parameters
+        ----------
+        color: (r, g, b)
+            A triplet of floats ranging from 0 to 1
+    """
+    red, green, blue = color[:3]
+    cmapspec = [(red, green, blue, 0.), 
+                (red, green, blue, 1.),
+               ]
+    cmap = _colors.LinearSegmentedColormap.from_list(
+                                '%s_transparent' % name, cmapspec, _cm.LUTSIZE)
+    cmap._init()
+    cmap._lut[:, -1] = _np.linspace(.5, 1.0, cmap._lut.shape[0])
+    cmap._lut[-1, -1] = 0
+    return cmap
+
 
 
 ################################################################################
@@ -101,6 +124,15 @@ for _cmapname in _cmaps_data.keys():
                                 _cmapname, _cmapspec, _cm.LUTSIZE)
         _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap.from_list(
                                 _cmapname_r, _revspec, _cm.LUTSIZE)
+
+################################################################################
+# A few transparent colormaps
+for color, name in (((1, 0, 0), 'red'),
+                    ((0, 1, 0), 'blue'),
+                    ((0, 0, 1), 'green'),
+                      ):
+    _cmap_d['%s_transparent' % name] = alpha_cmap(color, name=name)
+
 
 locals().update(_cmap_d)
 

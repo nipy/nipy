@@ -8,6 +8,7 @@ the data.
 """
 
 import numpy as np
+from scipy import ndimage
 
 import pylab as pl
 import matplotlib as mp
@@ -15,6 +16,7 @@ from matplotlib.transforms import Bbox
 
 # Local imports
 from .coord_tools import coord_transform, get_bounds, get_mask_bounds
+from . import cm
 from ..datasets import VolumeImg
 
 
@@ -50,6 +52,30 @@ def _xyz_order(map, affine):
     affine = img.affine
     return map, affine
                     
+
+def _detect_edges(map):
+    """A small edge detection routine for 2D images"""
+    edges = ndimage.sobel(map, mode='constant', axis=0)
+    edges **= 2
+    edges2 = ndimage.sobel(map, mode='constant', axis=1)
+    edges2 **= 2
+    edges += edges2
+    return edges
+    
+
+def _fast_abs_percentile(map, percentile=80):
+    """ An algorithm to implement a fast version of the percentile of
+        the absolute value.
+    """
+    #XXX: Should use the quantil function in nipy.labs.utils, with a
+    # try/except, so as not to fail if there are binary imports failure
+    if hasattr(map, 'mask'):
+        map = np.asarray(map[np.logical_not(map.mask)])
+    map = np.abs(map).ravel()
+    map.sort()
+    nb = map.size
+    return map[.01*percentile*nb]
+
 
 ################################################################################
 # class OrthoSlicer
@@ -407,6 +433,58 @@ class OrthoSlicer(object):
                   **kwargs)
         self._object_bounds[ax].append((xmin_, xmax_, ymin_, ymax_))
         ax.axis(self._get_object_bounds(ax))
+
+
+    def edge_map(self, map, affine, cmap=cm.red_transparent):
+        """ Plot the edges of a 3D map in all the views.
+
+            Parameters
+            -----------
+            map: 3D ndarray
+                The 3D map to be plotted. If it is a masked array, only
+                the non-masked part will be plotted.
+            affine: 4x4 ndarray
+                The affine matrix giving the transformation from voxel
+                indices to world space.
+            cmap: matplotlib colormap, optional
+                The colormaps used to display the edge map
+        """
+        map, affine = _xyz_order(map, affine)
+        # Force the origin
+        kwargs = dict(cmap=cmap)
+        kwargs['origin'] = 'upper'
+        if mp.__version__ < '0.99.1':
+            cmap = kwargs.get('cmap', 
+                        pl.cm.cmap_d[pl.rcParams['image.cmap']])
+            kwargs['cmap'] = CMapProxy(cmap)
+        x, y, z = self._cut_coords
+        x_map, y_map, z_map = [int(round(c)) for c in 
+                               coord_transform(x, y, z, np.linalg.inv(affine))]
+        (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(map.shape, affine)
+
+        this_map = _detect_edges(np.rot90(map[:, y_map, :]))
+        threshold = _fast_abs_percentile(this_map, 92)
+        vmax = .7*threshold + .3*this_map.max()
+        this_map = np.ma.masked_less(this_map, threshold, copy=False)
+        getattr(self.axes['x'], 'imshow')(this_map, 
+                                    extent=(xmin, xmax, zmin, zmax), 
+                                    vmax=vmax, **kwargs)
+
+        this_map = _detect_edges(np.rot90(map[x_map, :, :]))
+        threshold = _fast_abs_percentile(this_map, 92)
+        vmax = .7*threshold + .3*this_map.max()
+        this_map = np.ma.masked_less(this_map, threshold, copy=False)
+        getattr(self.axes['y'], 'imshow')(this_map, 
+                                    extent=(ymin, ymax, zmin, zmax), 
+                                    vmax=vmax, **kwargs)
+
+        this_map = _detect_edges(np.rot90(map[:, :, z_map]))
+        threshold = _fast_abs_percentile(this_map, 92)
+        vmax = .7*threshold + .3*this_map.max()
+        this_map = np.ma.masked_less(this_map, threshold, copy=False)
+        getattr(self.axes['z'], 'imshow')(this_map, 
+                                    extent=(xmin, xmax, ymin, ymax), 
+                                    vmax=vmax, **kwargs)
 
 
 def demo_ortho_slicer():

@@ -27,24 +27,11 @@ from matplotlib.axes import Axes
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import coord_transform, find_cut_coords
 
-from .ortho_slicer import OrthoSlicer, _xyz_order
+from .ortho_slicer import OrthoSlicer, _xyz_order, _fast_abs_percentile
 
 ################################################################################
 # Helper functions for 2D plotting of activation maps 
 ################################################################################
-
-def _fast_abs_percentile(map):
-    """ An algorithm to implement a fast version of the 80-percentile of
-        the absolute value.
-    """
-    #XXX: Should use the quantil function in nipy.labs.utils, with a
-    # try/except, so as not to fail if there are binary imports failure
-    if hasattr(map, 'mask'):
-        map = np.asarray(map[np.logical_not(map.mask)])
-    map = np.abs(map).ravel()
-    map.sort()
-    nb = map.size
-    return map[.8*nb]
 
 
 def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
@@ -271,11 +258,11 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None,
             vmean = .5*(vmin + vmax)
             ptp = .5*(vmax - vmin)
             if not operator.isNumberType(dim):
-                dim = 1.6
+                dim = .6
             if black_bg:
-                vmax = vmean + dim*ptp
+                vmax = vmean + (1+dim)*ptp
             else:
-                vmin = vmean - dim*ptp
+                vmin = vmean - (1+dim)*ptp
         ortho_slicer.plot_map(anat, anat_affine, cmap=pl.cm.gray,
                               vmin=vmin, vmax=vmax)
 
