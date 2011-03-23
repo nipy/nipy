@@ -74,7 +74,7 @@ class OrthoSlicer(object):
         best in the viewing area.
     """
 
-    def __init__(self, cut_coords, axes=None):
+    def __init__(self, cut_coords, axes=None, black_bg=False):
         """ Create 3 linked axes for plotting orthogonal cuts.
 
             Parameters
@@ -83,6 +83,9 @@ class OrthoSlicer(object):
                 The cut position, in world space.
             axes: matplotlib axes object, optional
                 The axes that will be subdivided in 3.
+            black_bg: boolean, optional
+                If True, the background of the figure will be put to
+                black
         """
         self._cut_coords = cut_coords
         if axes is None:
@@ -93,6 +96,7 @@ class OrthoSlicer(object):
         bb = axes.get_position()
         self.rect = (bb.x0, bb.y0, bb.x1, bb.y1)
         self._object_bounds = dict()
+        self._black_bg = black_bg
 
         # Create our axes:
         self.axes = dict()
@@ -154,7 +158,12 @@ class OrthoSlicer(object):
         if cut_coords is None:
             cut_coords = self._cut_coords
         x, y, z = cut_coords
-
+        kwargs = kwargs.copy()
+        if not 'color' in kwargs:
+            if self._black_bg:
+                kwargs['color'] = 'w'
+            else:
+                kwargs['color'] = 'k'
         ax = self.axes['x']
         ax.axvline(x, ymin=.05, ymax=.95, **kwargs)
         ax.axhline(z, **kwargs)
@@ -186,6 +195,14 @@ class OrthoSlicer(object):
                 Extra keyword arguments are passed to matplotlib's text
                 function.
         """
+        kwargs = kwargs.copy()
+        if not 'color' in kwargs:
+            if self._black_bg:
+                kwargs['color'] = 'w'
+            else:
+                kwargs['color'] = 'k'
+
+        bg_color = ('k' if self._black_bg else 'w')
         if left_right:
             ax_z = self.axes['z']
             ax_z.text(.1, .95, 'L', 
@@ -194,7 +211,7 @@ class OrthoSlicer(object):
                     verticalalignment='top',
                     size=size,
                     bbox=dict(boxstyle="square,pad=0", 
-                              ec="1", fc="1", alpha=.9),
+                              ec=bg_color, fc=bg_color, alpha=.9),
                     **kwargs)
 
             ax_z.text(.9, .95, 'R', 
@@ -203,7 +220,7 @@ class OrthoSlicer(object):
                     verticalalignment='top',
                     size=size,
                     bbox=dict(boxstyle="square,pad=0", 
-                              ec="1", fc="1", alpha=.9),
+                              ec=bg_color, fc=bg_color, alpha=.9),
                     **kwargs)
 
             ax_x = self.axes['x']
@@ -213,7 +230,7 @@ class OrthoSlicer(object):
                     verticalalignment='top',
                     size=size,
                     bbox=dict(boxstyle="square,pad=0", 
-                              ec="1", fc="1", alpha=.9),
+                              ec=bg_color, fc=bg_color, alpha=.9),
                     **kwargs)
             ax_x.text(.9, .95, 'R', 
                     transform=ax_x.transAxes,
@@ -221,7 +238,7 @@ class OrthoSlicer(object):
                     verticalalignment='top',
                     size=size,
                     bbox=dict(boxstyle="square,pad=0", 
-                              ec="1", fc="1", alpha=.9),
+                              ec=bg_color, fc=bg_color, alpha=.9),
                     **kwargs)
 
         if positions:
@@ -232,7 +249,7 @@ class OrthoSlicer(object):
                     verticalalignment='bottom',
                     size=size,
                     bbox=dict(boxstyle="square,pad=0", 
-                              ec="1", fc="1", alpha=.9),
+                              ec=bg_color, fc=bg_color, alpha=.9),
                     **kwargs)
             ax_y = self.axes['y']
             ax_y.text(0, 0, 'x=%i' % x,
@@ -241,7 +258,7 @@ class OrthoSlicer(object):
                     verticalalignment='bottom',
                     size=size,
                     bbox=dict(boxstyle="square,pad=0", 
-                              ec="1", fc="1", alpha=.9),
+                              ec=bg_color, fc=bg_color, alpha=.9),
                     **kwargs)
             ax_z.text(0, 0, 'z=%i' % z,
                     transform=ax_z.transAxes,
@@ -249,12 +266,12 @@ class OrthoSlicer(object):
                     verticalalignment='bottom',
                     size=size,
                     bbox=dict(boxstyle="square,pad=0", 
-                              ec="1", fc="1", alpha=.9),
+                              ec=bg_color, fc=bg_color, alpha=.9),
                     **kwargs)
 
 
-    def title(self, text, x=0.01, y=0.99, size=15, color='w', 
-                bgcolor='k', alpha=.9, **kwargs):
+    def title(self, text, x=0.01, y=0.99, size=15, color=None, 
+                bgcolor=None, alpha=.9, **kwargs):
         """ Write a title to the view.
 
             Parameters
@@ -279,6 +296,10 @@ class OrthoSlicer(object):
                 Extra keyword arguments are passed to matplotlib's text
                 function.
         """
+        if color is None:
+            color = 'k' if self._black_bg else 'w'
+        if bgcolor is None:
+            bgcolor = 'w' if self._black_bg else 'k'
         self.frame_axes.text(x, y, text, 
                     transform=self.frame_axes.transAxes,
                     horizontalalignment='left',
