@@ -572,20 +572,23 @@ class OrthoSlicer(object):
                                coord_transform(x, y, z, np.linalg.inv(affine))]
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(map.shape, affine)
 
-        edge_mask = _edge_map(np.rot90(map[:, y_map, :]))
-        getattr(self.axes['x'], 'imshow')(edge_mask,
-                                    extent=(xmin, xmax, zmin, zmax), 
-                                    vmin=0, **kwargs)
+        if y_map >= 0 and y_map < map.shape[1]:
+            edge_mask = _edge_map(np.rot90(map[:, y_map, :]))
+            getattr(self.axes['x'], 'imshow')(edge_mask,
+                                        extent=(xmin, xmax, zmin, zmax), 
+                                        vmin=0, **kwargs)
 
-        edge_mask = _edge_map(np.rot90(map[x_map, :, :]))
-        getattr(self.axes['y'], 'imshow')(edge_mask,
-                                    extent=(ymin, ymax, zmin, zmax), 
-                                    vmin=0, **kwargs)
+        if x_map >= 0 and x_map < map.shape[0]:
+            edge_mask = _edge_map(np.rot90(map[x_map, :, :]))
+            getattr(self.axes['y'], 'imshow')(edge_mask,
+                                        extent=(ymin, ymax, zmin, zmax), 
+                                        vmin=0, **kwargs)
 
-        edge_mask = _edge_map(np.rot90(map[:, :, z_map]))
-        getattr(self.axes['z'], 'imshow')(edge_mask, 
-                                    extent=(xmin, xmax, ymin, ymax), 
-                                    vmin=0, **kwargs)
+        if z_map >= 0 and z_map < map.shape[-1]:
+            edge_mask = _edge_map(np.rot90(map[:, :, z_map]))
+            getattr(self.axes['z'], 'imshow')(edge_mask, 
+                                        extent=(xmin, xmax, ymin, ymax), 
+                                        vmin=0, **kwargs)
 
 
 def demo_ortho_slicer():
@@ -596,7 +599,6 @@ def demo_ortho_slicer():
     from anat_cache import _AnatCache
     map, affine, _ = _AnatCache.get_anat()
     oslicer.plot_map(map, affine, cmap=pl.cm.gray)
-    pl.show()
-    pl.draw()
+    return oslicer
 
 
