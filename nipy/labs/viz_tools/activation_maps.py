@@ -206,18 +206,24 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     return ortho_slicer
 
 
-def plot_anat(anat, anat_affine, cut_coords=None, figure=None, 
+def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None, 
               axes=None, title=None, annotate=True, draw_cross=True,
               black_bg=False, dim=False):
     """ Plot three cuts of an anatomical image (Frontal, Axial, and Lateral)
 
         Parameters
         ----------
-        anat : 3D ndarray
-            The anatomical image to be used as a background.
-        anat_affine : 4x4 ndarray
+        anat : 3D ndarray, optional
+            The anatomical image to be used as a background. If None is 
+            given, nipy tries to find a T1 template.
+        anat_affine : 4x4 ndarray, optional
             The affine matrix going from the anatomical image voxel space to 
-            MNI space.
+            MNI space. This parameter is not used when the default 
+            anatomical is used, but it is compulsory when using an
+            explicite anatomical image.
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
+            new figure is created.
         cut_coords: 3-tuple of floats or None, optional
             The MNI coordinates of the point where the cut is performed, in 
             MNI coordinates and order.
