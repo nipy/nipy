@@ -39,6 +39,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     annotate=True, draw_cross=True, 
                     do3d=False, threshold_3d=None,
                     view_3d=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
+                    black_bg=False,
                     **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
 
@@ -92,6 +93,11 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         view_3d: tuple,
             The view used to take the screenshot: azimuth, elevation,
             distance and focalpoint, see the docstring of mlab.view.
+        black_bg: boolean, optional
+            If True, the background of the image is set to be black. If
+            you whish to save figures with a black background, you
+            will need to pass "facecolor='k', edgecolor='k'" to pylab's
+            savefig.
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
 
@@ -115,6 +121,8 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
+        # Threshold epsilon above a percentile value, to be sure that some 
+        # voxels are indeed threshold
         threshold = _fast_abs_percentile(map) + 1e-5
     if cut_coords is None:
         x_map, y_map, z_map = find_cut_coords(map,
@@ -136,7 +144,8 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             size = (10, 2.6)
         else:
             size = (6.6, 2.6)
-        figure = pl.figure(figure, figsize=size, facecolor='w')
+        facecolor = 'k' if black_bg else 'w'
+        figure = pl.figure(figure, figsize=size, facecolor=facecolor)
     else:
         if isinstance(axes, Axes):
             assert axes.figure is figure, ("The axes passed are not "
@@ -191,19 +200,57 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
     ortho_slicer = plot_anat(anat, anat_affine, cut_coords=cut_coords,
                              figure=figure, axes=axes, title=title,
-                             annotate=annotate, draw_cross=draw_cross)
+                             annotate=annotate, draw_cross=draw_cross,
+                             black_bg=black_bg)
     ortho_slicer.plot_map(map, affine, **kwargs)
     return ortho_slicer
 
 
-def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None, 
+def plot_anat(anat, anat_affine, cut_coords=None, figure=None, 
               axes=None, title=None, annotate=True, draw_cross=True,
               black_bg=False, dim=False):
-    # XXX: docstring
+    """ Plot three cuts of an anatomical image (Frontal, Axial, and Lateral)
+
+        Parameters
+        ----------
+        anat : 3D ndarray
+            The anatomical image to be used as a background.
+        anat_affine : 4x4 ndarray
+            The affine matrix going from the anatomical image voxel space to 
+            MNI space.
+        cut_coords: 3-tuple of floats or None, optional
+            The MNI coordinates of the point where the cut is performed, in 
+            MNI coordinates and order.
+            If None is given, the center of image is taken as a cut point.
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
+            new figure is created.
+        axes : matplotlib axes or 4 tuple of float: (xmin, xmax, ymin, ymin), optional
+            The axes, or the coordinates, in matplotlib figure space, 
+            of the axes used to display the plot. If None, the complete 
+            figure is used.
+        title : string, optional
+            The title dispayed on the figure.
+        annotate: boolean, optional
+            If annotate is True, positions and left/right annotation
+            are added to the plot.
+        draw_cross: boolean, optional
+            If draw_cross is True, a cross is drawn on the plot to
+            indicate the cut plosition.
+        black_bg: boolean, optional
+            If True, the background of the image is set to be black. If
+            you whish to save figures with a black background, you
+            will need to pass "facecolor='k', edgecolor='k'" to pylab's
+            savefig.
+
+        Notes
+        -----
+        Arrays should be passed in numpy convention: (x, y, z)
+        ordered.
+    """
     # Make sure that we have a figure
     facecolor = 'k' if black_bg else 'w'
     if not isinstance(figure, Figure):
-        # XXX: need to deal with the fact that color get set here
         figure = pl.figure(figure, figsize=(6.6, 2.6),
                            facecolor=facecolor)
     else:
