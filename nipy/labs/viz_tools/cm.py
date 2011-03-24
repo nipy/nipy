@@ -58,10 +58,13 @@ def alpha_cmap(color, name=''):
 
         Parameters
         ----------
-        color: (r, g, b)
-            A triplet of floats ranging from 0 to 1
+        color: (r, g, b), or a string
+            A triplet of floats ranging from 0 to 1, or a matplotlib
+            color string
     """
-    red, green, blue = color[:3]
+    red, green, blue = _colors.colorConverter.to_rgb(color)
+    if name == '' and hasattr(color, 'startswith'):
+        name = color
     cmapspec = [(red, green, blue, 0.), 
                 (red, green, blue, 1.),
                ]
