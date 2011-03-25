@@ -1,17 +1,16 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-this module contains a class that fits a gaussian model to the central
+This module contains several routines to get corrected p-values estimates, 
+based on the observation of data/p-values. It yields 3 main approaches:
+- benjamini-Hochberg fdr
+- a class that fits a gaussian model to the central
 part of an histogram, following schwartzman et al, 2009. This is
 typically necessary to estimate a fdr when one is not certain that the
 data behaves as a standard normal under H_0.
+- a model based on gaussian mixture modelling
 
-Author : Bertrand Thirion, 2008-2009
-
-Fixme
-====
-FDR should consider only arrays of p-values
-
+Author : Bertrand Thirion, 2008-2011
 """
 
 import numpy as np
