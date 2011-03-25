@@ -20,10 +20,32 @@ import scipy.stats as st
 
 
 def all_fdr_gaussian(x):
-    """
+    """Return the fdr of all values assuming a Gaussian distribution
     """
     pvals = st.norm.sf(np.squeeze(x))
-    return(FDR(pvals).all_fdr_from_pvals())
+    return(FDR(pvals).all_fdr())
+
+def gaussian_fdr_threshold(x, alpha=0.05):
+        """
+        Given an array x of normal variates, this function returns the
+        critical p-value associated with alpha.
+        x is explicitly assumed to be normal distributed under H_0
+
+        Parameters
+        -----------
+        x: ndarray, the input data
+        alpha: float, optional, the desired significance
+
+        Returns
+        -------
+        th: float,
+            The threshold in variate value
+        """
+        pvals = st.norm.sf(x)
+        pth = FDR(pvals).pth_from_pvals(pvals, alpha)
+        print pth, pvals.min(), alpha, x
+        return st.norm.isf(pth)
+
 
 class FDR(object):
     """ Basic class to handle false discovery rate computation
@@ -33,34 +55,16 @@ class FDR(object):
     The Benjamini-Horchberg procedure is used
     """
 
-    def __init__(self, x):
+    def __init__(self, pv=None):
         """
         Parameters
         ----------
-        x: 1-d array
+        pv: array of p-values
         """
-        self.x = np.squeeze(x)
+        if pv is not None:
+            self.pv = self.check_pv(pv)
 
-    def all_fdr(self, x=None, verbose=0):
-        """
-        Returns all the FDR (false discovery rates) values for the sample x
-
-        Parameters
-        -----------
-        x : ndarray of shape (n),
-            The normal variates
-
-        Results
-        -------
-        fdr : ndarray of shape (n)
-            The set of all FDRs
-        """
-        if x == None:
-            x = self.x
-        pvals = st.norm.sf(x)
-        return(self.all_fdr_from_pvals(pvals, verbose))
-
-    def all_fdr_from_pvals(self, pv, verbose=0):
+    def all_fdr(self, pv=None, verbose=0):
         """ Returns the fdr associated with each the values
 
         Parameters
@@ -76,6 +80,8 @@ class FDR(object):
         pv = self.check_pv(pv)
         if pv == None:
             pv = self.pv
+        if pv == None:
+            return None
         n = np.size(pv)
         isx = np.argsort(pv)
         q = np.zeros(n)
@@ -105,6 +111,8 @@ class FDR(object):
         pv : array of shape (n)
             The sample p-values
         """
+        if pv is None:
+            return None
         pv = np.squeeze(pv)
         if pv.min() < 0:
             print pv.min()
@@ -112,24 +120,30 @@ class FDR(object):
         if pv.max() > 1:
             print pv.max()
             raise ValueError("P-values greater than 1!")
+        if np.isscalar(pv):
+            pv = np.array([pv])
         return pv
 
-    def pth_from_pvals(self, pv, alpha=0.05):
+    def pth_from_pvals(self, pv=None, alpha=0.05):
         """ Returns the critical p-value associated with an FDR alpha
 
         Parameters
         -----------
-        alpha : float
-            The desired FDR significance
-        pv : array of shape (n),
+        pv : array of shape (n), optional
             The samples p-value
-
+        alpha : float, optional
+            The desired FDR significance
+        
         Returns
         -------
         pth: float
             The p value corresponding to the FDR alpha
         """
         pv = self.check_pv(pv)
+        if pv == None:
+            pv = self.pv
+        if pv == None:
+            return None
         npv = np.size(pv)
         pcorr = alpha / npv
         spv = np.sort(pv)
@@ -137,60 +151,11 @@ class FDR(object):
         pth = 0.
         while (spv[ip] < pcorr * (ip + 1)) & (ip < npv):
             pth = spv[ip]
-            ip = ip + 1
+            ip += 1
         return pth
+    
 
-    def threshold_from_student(self, df, alpha=0.05, x=None):
-        """Given an array t of student variates with df dofs,
-        returns the critical p-value associated with alpha.
-
-        Parameters
-        ----------
-        df : float
-            The number of degrees of freedom
-        alpha : float, optional
-            The desired significance
-        x : ndarray, optional
-            The variate. By default self.x is used
-
-        Returns
-        --------
-        th : float
-            The threshold in variate value
-        """
-        df = float(df)
-        if x is None:
-            x = self.x
-        pvals = st.t.sf(x, df)
-        pth = self.pth_from_pvals(pvals, alpha)
-        return st.t.isf(pth, df)
-
-    def threshold(self, alpha=0.05, x=None):
-        """
-        Given an array x of normal variates, this function returns the
-        critical p-value associated with alpha.
-        x is explicitly assumed to be normal distributed under H_0
-
-        Parameters
-        -----------
-        alpha: float, optional
-            The desired significance, by default 0.05
-        x: ndarray, optional
-            The variate. By default self.x is used
-
-        Returns
-        -------
-        th: float,
-            The threshold in variate value
-        """
-        if x == None:
-            x = self.x
-        pvals = st.norm.sf(x)
-        pth = self.pth_from_pvals(pvals, alpha)
-        return st.norm.isf(pth)
-
-
-class ENN(object):
+class NormalEmpiricalNull(object):
     """Class to compute the empirical null normal fit to the data.
 
     The data which is used to estimate the FDR, assuming a gaussian null
