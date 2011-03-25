@@ -14,17 +14,17 @@ import os
 import numpy as np
 import matplotlib.pylab as mp
 import scipy.stats as st
-import nipy.labs.utils.emp_null as en
-import get_data_light
 
 from nibabel import load
+import nipy.algorithms.statistics.empirical_pvalue as en
+import get_data_light
+
 
 # parameters
 verbose = 1
 theta = float(st.t.isf(0.01,100))
 
 # paths
-#data_dir = get_data_light.get_it()
 data_dir = os.path.expanduser( os.path.join( '~', '.nipy', 'tests', 'data'))
 mask_image = os.path.join(data_dir, 'mask.nii.gz')
 input_image = os.path.join(data_dir, 'spmT_0029.nii.gz')

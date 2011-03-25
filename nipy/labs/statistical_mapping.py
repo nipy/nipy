@@ -5,7 +5,7 @@ import scipy.stats as sp_stats
 
 from nipy.algorithms.registration import apply_affine
 from .graph.field import Field
-from .utils import emp_null
+from ..algorithms.statistics import empirical_pvalue
 from .glm import glm
 from .group.permutation_test import \
      permutation_test_onesample, permutation_test_twosample
@@ -66,7 +66,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
     if height_control == 'fpr':
         zth = sp_stats.norm.isf(height_th)
     elif height_control == 'fdr':
-        zth = emp_null.gaussian_fdr_threshold(zmap, height_th)
+        zth = empirical_pvalue.gaussian_fdr_threshold(zmap, height_th)
     elif height_control == 'bonferroni':
         zth = sp_stats.norm.isf(height_th/nvoxels)
     else: ## Brute-force thresholding 
@@ -101,7 +101,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
     clusters.sort(cmp=smaller)
 
     # FDR-corrected p-values
-    fdr_pvalue = emp_null.all_fdr_gaussian(zmap)[above_th]
+    fdr_pvalue = empirical_pvalue.all_fdr_gaussian(zmap)[above_th]
 
     # Default "nulls"
     if not nulls.has_key('zmax'):

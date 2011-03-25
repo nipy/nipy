@@ -20,8 +20,8 @@ import scipy.stats as st
 
 from .structural_bfls import build_LR
 from ..graph.graph import wgraph_from_coo_matrix
-from ..utils.emp_null import NormalEmpiricalNull, three_classes_GMM_fit, \
-    Gamma_Gaussian_fit
+from ...algorithms.statistics.empirical_pvalue import \
+    NormalEmpiricalNull, three_classes_GMM_fit, Gamma_Gaussian_fit
 from .hroi import HROI_as_discrete_domain_blobs
 
 ####################################################################

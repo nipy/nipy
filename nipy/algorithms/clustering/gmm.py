@@ -883,7 +883,8 @@ class GMM(object):
             axes = pylab.figure()
 
         if gd.dim == 1:
-            from ..utils.emp_null import smoothed_histogram_from_samples
+            from ..statistics.empirical_pvalue import \
+                smoothed_histogram_from_samples
             h, c = smoothed_histogram_from_samples(x, normalized=True)
             offset = (c.max() - c.min()) / (2 * c.size)
             grid = gd.make_grid()

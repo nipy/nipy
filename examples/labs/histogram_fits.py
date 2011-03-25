@@ -17,7 +17,7 @@ print __doc__
 import numpy as np
 
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
-import nipy.labs.utils.emp_null as en
+import nipy.algorithms.statistics.empirical_pvalue as en
 
 ###############################################################################
 # simulate the data
