@@ -4,7 +4,6 @@ import numpy as np
 
 from ..activation_maps import demo_plot_map, plot_anat
 from ..anat_cache import mni_sform, _AnatCache
-from ..ortho_slicer import demo_ortho_slicer
 
 try:
     import matplotlib as mp
@@ -25,12 +24,6 @@ if do_test:
         pl.switch_backend('svg')
         demo_plot_map()
 
-    def test_demo_ortho_slicer():
-        # This is only a smoke test
-        mp.use('svg', warn=False)
-        import pylab as pl
-        pl.switch_backend('svg')
-        demo_ortho_slicer()
 
     def test_plot_anat():
         # This is only a smoke test
