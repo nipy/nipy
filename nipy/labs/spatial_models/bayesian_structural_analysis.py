@@ -20,7 +20,8 @@ import scipy.stats as st
 
 from .structural_bfls import build_LR
 from ..graph.graph import wgraph_from_coo_matrix
-from ..utils.emp_null import ENN, three_classes_GMM_fit, Gamma_Gaussian_fit
+from ..utils.emp_null import NormalEmpiricalNull, three_classes_GMM_fit, \
+    Gamma_Gaussian_fit
 from .hroi import HROI_as_discrete_domain_blobs
 
 ####################################################################
@@ -72,7 +73,7 @@ def signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
             learn, test, alpha, prior_strength, verbose, fixed_scale)
         bf0 = bfp[:, 1]
     elif method == 'emp_null':
-        enn = ENN(learn)
+        enn = NormalEmpiricalNull(learn)
         enn.learn()
         bf0 = np.reshape(enn.fdr(test), np.size(test))
     elif method == 'gam_gauss':

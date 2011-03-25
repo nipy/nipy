@@ -82,7 +82,7 @@ pl.colorbar()
 ###############################################################################
 # Fit the null mode of Beta with an empirical normal null
 
-efdr = en.ENN(Beta)
+efdr = en.NormalEmpiricalNull(Beta)
 emp_null_fdr = efdr.fdr(Beta)
 emp_null_fdr = emp_null_fdr.reshape((dimx, dimy))
 

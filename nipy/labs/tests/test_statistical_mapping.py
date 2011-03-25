@@ -51,7 +51,8 @@ def test_5():
 
 def test_6():
     img = make_surrogate_data()
-    clusters, info = cluster_stats(img, img, height_th=.05, height_control='fdr', cluster_th=0, nulls={})
+    clusters, info = cluster_stats(img, img, height_th=.05, 
+                                   height_control='fdr', cluster_th=0, nulls={})
     print len(clusters), sum([c['size'] for c in clusters])
     assert len(clusters)==4
 

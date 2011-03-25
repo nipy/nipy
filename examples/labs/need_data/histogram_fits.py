@@ -56,7 +56,7 @@ bfq = en.three_classes_GMM_fit(beta, bfm, alpha, pstrength,
                                verbose=2, mpaxes=a2)
 
 # fit the null mode of beta with the robust method
-efdr = en.ENN(beta)
+efdr = en.NormalEmpiricalNull(beta)
 efdr.learn()
 efdr.plot(bar=0, mpaxes=a3)
 
