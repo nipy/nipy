@@ -6,9 +6,12 @@
 
 import numpy as np
 
-from nipy.modalities.fmri.formula import Term
-from nipy.modalities.fmri.aliased import lambdify
-from nipy.modalities.fmri.utils import (
+import sympy
+from sympy import Symbol, Function, DiracDelta
+from nipy.fixes.sympy.utilities.lambdify import lambdify
+
+from ..formula import Term
+from ..utils import (
     lambdify_t,
     define,
     events,
@@ -18,9 +21,7 @@ from nipy.modalities.fmri.utils import (
     step_function,
     convolve_functions,
     )
-import sympy
-from sympy import Symbol, Function, DiracDelta
-import nipy.modalities.fmri.hrf as mfhrf
+from .. import hrf
 
 from nose.tools import assert_equal, raises
 
@@ -68,7 +69,7 @@ def test_events():
                        evs)
     # test no error for numpy int arrays
     onsets = np.array([30, 70, 100], dtype=np.int64)
-    evs = events(onsets, f=mfhrf.glover)
+    evs = events(onsets, f=hrf.glover)
 
 
 @parametric
