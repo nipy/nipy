@@ -21,7 +21,7 @@ from ..utils import (
     step_function,
     convolve_functions,
     )
-from .. import hrf as mfhrf
+from .. import hrf
 
 from nose.tools import assert_equal, raises
 
@@ -69,7 +69,7 @@ def test_events():
                        evs)
     # test no error for numpy int arrays
     onsets = np.array([30, 70, 100], dtype=np.int64)
-    evs = events(onsets, f=mfhrf.glover)
+    evs = events(onsets, f=hrf.glover)
 
 
 @parametric
