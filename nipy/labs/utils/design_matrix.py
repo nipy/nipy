@@ -420,7 +420,7 @@ class DesignMatrix(object):
         if self.names is not None:
             ax.set_xticks(range(len(self.names)))
             ax.set_xticklabels(self.names, rotation=60, ha='right')
-
+            
         return ax
 
 
