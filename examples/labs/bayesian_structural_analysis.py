@@ -113,11 +113,11 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     mp.colorbar(shrink=.8)
 
     
-    fig_output = mp.figure(figsize=(8, 4))
+    fig_output = mp.figure(figsize=(8, 3.5))
     fig_output.text(.5, .9, "Individual landmark regions", ha="center")
     for s in range(nsubj):
         ax = mp.subplot(nsubj / 5, 5, s + 1)
-        ax.set_position([.02, .02, .96, .96])
+        #ax.set_position([.02, .02, .96, .96])
         lw = - np.ones(ref_dim)
         if BF[s] is not None:
             nls = BF[s].get_roi_feature('label')
@@ -128,11 +128,11 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
         mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
         mp.axis('off')
 
-    fig_input = mp.figure(figsize=(8, 4))
+    fig_input = mp.figure(figsize=(8, 3.5))
     fig_input.text(.5,.9, "Input activation maps", ha='center')
     for s in range(nsubj):
         ax = mp.subplot(nsubj / 5, 5, s + 1)
-        ax.set_position([.02, .02, .96, .96])
+        #ax.set_position([.02, .02, .96, .96])
         mp.imshow(betas[s], interpolation='nearest', vmin=betas.min(),
                   vmax=betas.max())
         mp.axis('off')
