@@ -15,8 +15,8 @@ import scipy.interpolate
 
 import sympy
 
-from nipy.modalities.fmri.aliased import (aliased_function,
-                                          lambdify)
+from nipy.fixes.sympy.utilities.lambdify import (implemented_function,
+                                                 lambdify)
 
 from nose.tools import assert_true, assert_false, assert_raises
 
@@ -30,11 +30,11 @@ x, y = sympy.symbols(('x', 'y'))
 
 
 @parametric
-def test_aliased_function():
+def test_implemented_function():
     # Here we check if the default returned functions are anonymous - in
     # the sense that we can have more than one function with the same name
-    f = aliased_function('f', lambda x: 2*x)
-    g = aliased_function('f', lambda x: np.sqrt(x))
+    f = implemented_function('f', lambda x: 2*x)
+    g = implemented_function('f', lambda x: np.sqrt(x))
     l1 = lambdify(x, f(x))
     l2 = lambdify(x, g(x))
     yield assert_equal(str(f(x)), str(g(x)))
@@ -43,7 +43,7 @@ def test_aliased_function():
     # check that we can pass in a sympy function as input
     func = sympy.Function('myfunc')
     yield assert_false(hasattr(func, 'alias'))
-    f = aliased_function(func, lambda x: 2*x)
+    f = implemented_function(func, lambda x: 2*x)
     yield assert_true(hasattr(func, 'alias'))
 
 
@@ -56,12 +56,12 @@ def test_lambdify():
     yield assert_equal(lambdify(x, 1 + f(x))(0), 2)
     yield assert_equal(lambdify((x, y), y + f(x))(0, 1), 2)
     # make an implemented function and test
-    f = aliased_function("f", lambda x : x+100)
+    f = implemented_function("f", lambda x : x+100)
     yield assert_equal(lambdify(x, f(x))(0), 100)
     yield assert_equal(lambdify(x, 1 + f(x))(0), 101)
     yield assert_equal(lambdify((x, y), y + f(x))(0, 1), 101)
     # Error for functions with same name and different implementation
-    f2 = aliased_function("f", lambda x : x+101)
+    f2 = implemented_function("f", lambda x : x+101)
     yield assert_raises(ValueError, lambdify, x, f(f2(x)))
     # our lambdify, like sympy's lambdify, can also handle tuples,
     # lists, dicts as expressions
@@ -90,7 +90,7 @@ def gen_BrownianMotion():
 @parametric
 def test_1d():
     B = gen_BrownianMotion()
-    Bs = aliased_function("B", B)
+    Bs = implemented_function("B", B)
     t = sympy.Symbol('t')
     expr = 3*sympy.exp(Bs(t)) + 4
     expected = 3*np.exp(B.y)+4
@@ -106,8 +106,8 @@ def test_1d():
 @parametric
 def test_2d():
     B1, B2 = [gen_BrownianMotion() for _ in range(2)]
-    B1s = aliased_function("B1", B1)
-    B2s = aliased_function("B2", B2)
+    B1s = implemented_function("B1", B1)
+    B2s = implemented_function("B2", B2)
     s, t = sympy.symbols('s', 't')
     e = B1s(s)+B2s(t)
     ee = lambdify((s,t), e)

@@ -3,13 +3,13 @@
 import numpy as np 
 import os
 
-from ._mrf import _ve_step, _concensus
+from ._segmentation import _ve_step, _interaction_energy
+
 
 TINY = 1e-300
 NITERS = 20
 BETA = 0.2 
 VERBOSE = True
-
 
 def print_(s): 
     if VERBOSE: 
@@ -72,14 +72,18 @@ def vm_step_laplace(ppm, data_masked, mask):
 
 
 
+message_passing = {'mf':0, 'icm':1, 'bp':2}
+noise_model = {'gauss': (gauss_dist, vm_step_gauss), 
+               'laplace': (laplace_dist, vm_step_laplace)} 
+
 class VEM(object): 
     """
     Classification via VEM algorithm.
     """
-
+    
     def __init__(self, data, nclasses, mask=None, noise='gauss', 
-                 ppm=None, copy=False, hard=False,
-                 labels=None, mixmat=None): 
+                 ppm=None, copy=False, scheme='mf', 
+                 labels=None): 
         """
         A class to represent a variational EM algorithm for tissue
         classification.
@@ -96,32 +100,39 @@ class VEM(object):
           Sequence of one-dimensional coordinate arrays
         """
         # Make default mask (required by MRF regularization) 
+        # This will be passed to the _ve_step C-routine, which assumes
+        # a contiguous int array and raise an error otherwise. 
         if mask == None: 
-            coords = np.mgrid[[slice(0, s) for s in data.shape]]
-            mask = tuple([c.ravel() for c in coords])
-        self.mask = mask
+            XYZ = np.mgrid[[slice(0, s) for s in data.shape]]
+            XYZ = np.reshape(XYZ, (XYZ.shape[0], np.prod(XYZ.shape[1::]))).T
+            XYZ = np.asarray(XYZ, dtype='int', order='C')
+        else:
+            XYZ = np.zeros((len(mask[0]), len(mask)), dtype='int')
+            for i in range(len(mask)):
+                XYZ[:,i] = mask[i]
+        self._XYZ = XYZ
+        self.mask = tuple(XYZ.T)
 
         # If a ppm is provided, interpret it as a prior, otherwise
         # create ppm from scratch and assume flat prior.
         if ppm == None:
             self.ppm = np.zeros(list(data.shape)+[nclasses])
-            self.ppm[mask] = 1./nclasses
+            self.ppm[self.mask] = 1./nclasses
         else:
             self.ppm = ppm 
-        self.data_masked = data[mask]
-        self.prior_ext_field = self.ppm[mask]
+        self.data_masked = data[self.mask]
+        self.prior_ext_field = self.ppm[self.mask]
         self.posterior_ext_field = np.zeros([self.data_masked.size, nclasses])
         self.nclasses = nclasses
         
         # Inference scheme parameters 
         self.copy = copy
-        self.hard = hard
-        if noise == 'gauss': 
-            self.dist = gauss_dist
-            self._vm_step = vm_step_gauss
-        elif noise == 'laplace':
-            self.dist = laplace_dist
-            self._vm_step = vm_step_laplace
+        if scheme in message_passing: 
+            self.scheme = message_passing[scheme]
+        else: 
+            raise ValueError('Unknown message passing scheme') 
+        if noise in noise_model: 
+            self.dist, self._vm_step = noise_model[noise]
         else:
             raise ValueError('Unknown noise model')
 
@@ -131,9 +142,6 @@ class VEM(object):
         if not len(labels) == self.nclasses: 
             raise ValueError('Wrong length for labels sequence') 
         self.labels = labels
-
-        # Mixing matrix 
-        self.mixmat = mixmat
 
         # Cache beta parameter
         self._beta = BETA
@@ -146,19 +154,14 @@ class VEM(object):
         return self._vm_step(self.ppm, self.data_masked, self.mask)
 
     def sort_labels(self, mu):
+        """
+        Sort the array labels to match mean tissue intensities ``mu``.
+        """        
         K = len(mu)
         tmp = np.asarray(self.labels)
         labels = np.zeros(K, dtype=tmp.dtype)
         labels[np.argsort(mu)] = tmp
         return list(labels)
-
-    def sort_mixmat(self, mu): 
-        K = len(mu)
-        mixmat = np.zeros([K,K]) 
-        I, J = np.mgrid[0:K, 0:K]
-        idx = np.argsort(mu) 
-        mixmat[idx[I], idx[J]] = np.asarray(self.mixmat)
-        return mixmat
     
 
     # VE-step: update tissue probability map
@@ -172,7 +175,8 @@ class VEM(object):
         # Compute complete-data likelihood maps, replacing very small
         # values for numerical stability
         for i in range(self.nclasses): 
-            self.posterior_ext_field[:,i] = self.prior_ext_field[:,i]*self.dist(self.data_masked, mu[i], sigma[i])
+            self.posterior_ext_field[:,i] = self.prior_ext_field[:,i] * \
+                self.dist(self.data_masked, mu[i], sigma[i])
             if not prop == None: 
                 self.posterior_ext_field[:,i] *= prop[i]
         self.posterior_ext_field[:] = np.maximum(self.posterior_ext_field, TINY) 
@@ -185,13 +189,8 @@ class VEM(object):
         # neighborhood information (mean-field theory)
         else: 
             print_('  ... MRF regularization')
-            # Deal with mixing matrix and label switching
-            mixmat = self.mixmat 
-            if not mixmat == None:
-                mixmat = self.sort_mixmat(mu)
-            self.ppm = _ve_step(self.ppm, self.posterior_ext_field, 
-                                np.array(self.mask, dtype='int'), 
-                                beta, self.copy, self.hard, mixmat)
+            self.ppm = _ve_step(self.ppm, self.posterior_ext_field, self._XYZ,  
+                                beta, self.copy, self.scheme)
             
 
     def run(self, mu=None, sigma=None, prop=None, beta=BETA, niters=NITERS, freeze_prop=True): 
@@ -213,13 +212,13 @@ class VEM(object):
             print_('  VM-step...')
             if do_vm_step: 
                 mu, sigma, prop = self.vm_step()
-                if freeze_prop:
-                    prop = prop0
+                if freeze_prop: # account for label switching
+                    prop = prop0[np.argsort(mu)]
             print_('  VE-step...')
             self.ve_step(mu, sigma, prop, beta=beta)
             do_vm_step = True
 
-        return mu, sigma 
+        return mu, sigma, prop
 
 
     def free_energy(self):
@@ -236,6 +235,6 @@ class VEM(object):
         f = np.sum(q*np.log(np.maximum(q/self.posterior_ext_field, TINY)))
         # Interaction term
         if self._beta > 0.0: 
-            fc = _concensus(self.ppm, np.array(self.mask, dtype='int'))
+            fc = _interaction_energy(self.ppm, self._XYZ)
             f -= .5*self._beta*fc 
         return f

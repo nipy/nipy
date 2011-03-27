@@ -7,8 +7,9 @@ Test functions for models.formula
 import numpy as np
 import sympy
 
-from nipy.modalities.fmri import formula as F
-from nipy.modalities.fmri import aliased
+from nipy.fixes.sympy.utilities.lambdify import implemented_function
+
+from .. import formula as F
 
 from nipy.testing import (assert_almost_equal, assert_true,
                           assert_equal, assert_false,
@@ -224,8 +225,8 @@ def test_design():
 @parametric
 def test_alias():
     x = F.Term('x')
-    f = F.aliased_function('f', lambda x: 2*x)
-    g = F.aliased_function('g', lambda x: np.sqrt(x))
+    f = implemented_function('f', lambda x: 2*x)
+    g = implemented_function('g', lambda x: np.sqrt(x))
     ff = F.Formula([f(x), g(x)**2])
     n = F.make_recarray([2,4,5], 'x')
     yield assert_almost_equal(ff.design(n)['f(x)'], n['x']*2)

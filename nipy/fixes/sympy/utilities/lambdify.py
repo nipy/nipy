@@ -2,11 +2,16 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 An implementation of Functions in sympy that allow 'anonymous'
-functions that can be evaluated when 'lambdified'. 
+functions that can be evaluated when 'lambdified'.
+
+This code will be sympy as of the version after 0.6.7.  As of writing, this
+wasn't released, but let's call it sympy version 0.7.  We'll remove this copy in
+favor of the code in sympy when - say - 0.7 is in the current and the previous
+version of Ubuntu.
 """
+import numpy as np
 
 import sympy
-
 
 def lambdify(args, expr):
     """ Returns function for fast calculation of numerical values
@@ -96,7 +101,7 @@ def _imp_namespace(expr, namespace=None):
     return namespace
 
 
-def aliased_function(symfunc, alias):
+def implemented_function(symfunc, alias):
     """ Add implementation `alias` to symbolic function `symfunc`
 
     Parameters
@@ -120,3 +125,6 @@ def aliased_function(symfunc, alias):
     symfunc.alias = staticmethod(alias)
     return symfunc
 
+
+aliased_function = np.deprecate_with_doc(
+    'Please use sympy.utilities.implemented_function')(implemented_function)
