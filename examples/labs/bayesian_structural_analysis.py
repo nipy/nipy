@@ -88,11 +88,12 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
         AF.show()
 
     group_map.shape = ref_dim
-    mp.figure()
-    mp.subplot(1, 3, 1)
+    mp.figure(figsize=(8, 3))
+    ax = mp.subplot(1, 3, 1)
     mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
-    mp.title('Blob separation map')
-    mp.colorbar()
+    mp.title('Blob separation map', fontsize=10)
+    mp.axis('off')
+    plop = mp.colorbar(shrink=.8)
 
     if AF != None:
         group_map = AF.map_label(coord, 0.95, dmax)
@@ -100,19 +101,23 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     
     mp.subplot(1, 3, 2)
     mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
-    mp.title('group-level position 95% \n confidence regions')
-    mp.colorbar()
+    mp.title('group-level position 95% \n confidence regions', fontsize=10)
+    mp.axis('off')
+    mp.colorbar(shrink=.8)
 
     mp.subplot(1, 3, 3)
     likelihood.shape = ref_dim
     mp.imshow(likelihood, interpolation='nearest')
-    mp.title('Spatial density under h1')
-    mp.colorbar()
+    mp.title('Spatial density under h1', fontsize=10)
+    mp.axis('off')
+    mp.colorbar(shrink=.8)
 
     
-    mp.figure()
+    fig_output = mp.figure(figsize=(8, 3.5))
+    fig_output.text(.5, .9, "Individual landmark regions", ha="center")
     for s in range(nsubj):
-        mp.subplot(nsubj / 5, 5, s + 1)
+        ax = mp.subplot(nsubj / 5, 5, s + 1)
+        #ax.set_position([.02, .02, .96, .96])
         lw = - np.ones(ref_dim)
         if BF[s] is not None:
             nls = BF[s].get_roi_feature('label')
@@ -123,9 +128,11 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
         mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
         mp.axis('off')
 
-    mp.figure()
+    fig_input = mp.figure(figsize=(8, 3.5))
+    fig_input.text(.5,.9, "Input activation maps", ha='center')
     for s in range(nsubj):
-        mp.subplot(nsubj / 5, 5, s + 1)
+        ax = mp.subplot(nsubj / 5, 5, s + 1)
+        #ax.set_position([.02, .02, .96, .96])
         mp.imshow(betas[s], interpolation='nearest', vmin=betas.min(),
                   vmax=betas.max())
         mp.axis('off')

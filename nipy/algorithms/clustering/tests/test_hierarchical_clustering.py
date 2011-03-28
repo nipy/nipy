@@ -19,8 +19,8 @@ from ..hierarchical_clustering import (average_link_euclidian,
                                        ward, ward_simple, ward_quick, 
                                        ward_segment, ward_field_segment,
                                        ward_quick_segment)
-from ...graph.graph import WeightedGraph
-from ...graph.field import Field
+from nipy.labs.graph.graph import WeightedGraph
+from nipy.labs.graph.field import Field
 
 def alc_test_basic():
     np.random.seed(0)

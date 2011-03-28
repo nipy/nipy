@@ -16,8 +16,8 @@ import numpy as np
 import numpy.random as nr
 import pylab as pl
 
-import nipy.labs.clustering.bgmm as bgmm
-from nipy.labs.clustering.gmm import plot2D
+import nipy.algorithms.clustering.bgmm as bgmm
+from nipy.algorithms.clustering.gmm import plot2D
 
 
 dim = 2

@@ -7,7 +7,8 @@ import warnings
 
 import numpy as np
 
-from ..emp_null import ENN, smoothed_histogram_from_samples
+from ..empirical_pvalue import \
+    NormalEmpiricalNull, smoothed_histogram_from_samples
 
 def setup():
     # Suppress warnings during tests to reduce noise
@@ -24,7 +25,7 @@ def test_efdr():
     x[:3000] += 3
     #
     # make the tests
-    efdr = ENN(x)
+    efdr = NormalEmpiricalNull(x)
     np.testing.assert_array_less(efdr.fdr(3.0), 0.2)
     np.testing.assert_array_less(-efdr.threshold(alpha=0.05), -2.8)
     np.testing.assert_array_less(-efdr.uncorrected_threshold(alpha=0.001), -2.5)

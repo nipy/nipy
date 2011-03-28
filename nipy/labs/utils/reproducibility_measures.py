@@ -317,7 +317,7 @@ def statistics_from_position(target, data, sigma=1.0):
                 1 is good
                 0 is bad
     """
-    from .fast_distance import euclidean_distance as ed
+    from nipy.algorithms.routines.fast_distance import euclidean_distance as ed
     if data == None:
         if target == None:
             return 0.# could be 1.0 ?
@@ -675,7 +675,7 @@ def group_reproducibility_metrics(
     # compute the group mask
     affine = load(mask_images[0]).get_affine()
     mask = intersect_masks(mask_images, threshold=0) > 0
-    grp_mask = Nifti1Image(mask, affine)
+    grp_mask = Nifti1Image(mask.astype('u8'), affine)
     xyz = np.where(mask)
     xyz = np.array(xyz).T
 
