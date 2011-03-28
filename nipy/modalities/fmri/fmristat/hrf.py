@@ -15,8 +15,9 @@ import numpy as np
 import numpy.linalg as npl
 from scipy.interpolate import interp1d
 
+from nipy.fixes.sympy.utilities.lambdify import implemented_function
+
 from ..utils import T, lambdify_t
-from ..aliased import aliased_function
 from .. import hrf
 from .invert import invertR
 
@@ -112,7 +113,7 @@ def spectral_decomposition(hrf2decompose,
     symbasis = []
     for i, b in enumerate(basis):
         symbasis.append(
-            aliased_function('%s%d' % (str(hrf2decompose), i), b))
+            implemented_function('%s%d' % (str(hrf2decompose), i), b))
     return symbasis, approx
 
 
@@ -187,7 +188,7 @@ def taylor_approx(hrf2decompose,
      approx.dinverse,
      approx.forward,
      approx.dforward) = invertR(delta, approx.coef)
-    dhrf = aliased_function('d%s' % str(hrf2decompose), dhrft)
+    dhrf = implemented_function('d%s' % str(hrf2decompose), dhrft)
     return [hrf2decompose, dhrf], approx
 
 

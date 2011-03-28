@@ -55,7 +55,8 @@ True
 import numpy as np
 import sympy
 
-from .formula import aliased_function
+from nipy.fixes.sympy.utilities.lambdify import implemented_function
+
 from .utils import lambdify_t, T
 
 def gamma_params(peak_location, peak_fwhm):
@@ -114,7 +115,7 @@ def _getint(f, dt=0.02, t=50):
 _gexpr = gamma_expr(5.4, 5.2) - 0.35 * gamma_expr(10.8, 7.35)
 _gexpr = _gexpr / _getint(_gexpr)
 _glover = lambdify_t(_gexpr)
-glover = aliased_function('glover', _glover)
+glover = implemented_function('glover', _glover)
 glovert = lambdify_t(glover(T))
 
 # Derivative of Glover HRF
@@ -124,7 +125,7 @@ dpos = sympy.Derivative((T >= 0), T)
 _dgexpr = _dgexpr.subs(dpos, 0)
 _dgexpr = _dgexpr / _getint(sympy.abs(_dgexpr))
 _dglover = lambdify_t(_dgexpr)
-dglover = aliased_function('dglover', _dglover)
+dglover = implemented_function('dglover', _dglover)
 dglovert = lambdify_t(dglover(T))
 
 del(_glover); del(_gexpr); del(dpos); del(_dgexpr); del(_dglover)
@@ -134,5 +135,5 @@ del(_glover); del(_gexpr); del(dpos); del(_dgexpr); del(_dglover)
 _aexpr = ((T >= 0) * T)**8.6 * sympy.exp(-T/0.547)
 _aexpr = _aexpr / _getint(_aexpr)
 _afni = lambdify_t(_aexpr)
-afni = aliased_function('afni', _afni)
+afni = implemented_function('afni', _afni)
 afnit = lambdify_t(afni(T))

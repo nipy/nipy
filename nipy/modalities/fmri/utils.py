@@ -29,7 +29,7 @@ from sympy import DiracDelta, Symbol
 
 from . import formula
 from .formula import Term
-from .aliased import aliased_function, lambdify
+from nipy.fixes.sympy.utilities.lambdify import implemented_function, lambdify
 
 T = Term('t')
 
@@ -84,7 +84,7 @@ def define(name, expr):
     # make numerical implementation of expression
     v = lambdify(T, expr)
     # convert numerical implementation to sympy function
-    f = aliased_function(name, v)
+    f = implemented_function(name, v)
     # Return expression that is function of time
     return f(T)
 
@@ -170,7 +170,7 @@ def interp(times, values, fill=0, name=None, **kw):
     if name is None:
         name = 'interp%d' % interp.counter
         interp.counter += 1
-    s = aliased_function(name, interpolator)
+    s = implemented_function(name, interpolator)
     return s(T)
 
 interp.counter = 0
@@ -274,7 +274,7 @@ def step_function(times, values, name=None, fill=0):
             f[x >= time] = val
         return f
 
-    s = aliased_function(name, _imp)
+    s = implemented_function(name, _imp)
     return s(T)
 
 # Initialize counter for step function
@@ -419,7 +419,6 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
 
     Get the numerical values for a time vector
 
-    >>> from nipy.modalities.fmri.utils import lambdify
     >>> ftri = lambdify(t, tri)
     >>> x = np.linspace(0,2,11)
     >>> y = ftri(x)

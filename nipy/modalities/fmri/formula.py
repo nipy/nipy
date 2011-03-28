@@ -117,8 +117,8 @@ from scipy.linalg import svdvals, pinv
 
 import sympy
 
-from .aliased import (aliased_function,
-                      lambdify)
+from nipy.fixes.sympy.utilities.lambdify import (implemented_function,
+                                                 lambdify)
 
 
 def define(*args, **kwargs):
@@ -884,14 +884,14 @@ def natural_spline(t, knots=None, order=3, intercept=False):
         n = 'ns_%d' % i
         def f(x, i=i):
             return x**i
-        s = aliased_function(n, f)
+        s = implemented_function(n, f)
         fns.append(s(t))
 
     for j, k in enumerate(knots):
         n = 'ns_%d' % (j+i+1,)
         def f(x, k=k, order=order):
             return (x-k)**order * np.greater(x, k)
-        s = aliased_function(n, f)
+        s = implemented_function(n, f)
         fns.append(s(t))
 
     if not intercept:
