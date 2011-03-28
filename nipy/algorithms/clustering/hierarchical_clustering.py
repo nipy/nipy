@@ -26,9 +26,9 @@ Author : Bertrand Thirion,Pamela Guevara, 2006-2009
 
 import numpy as np
 
-from ..graph.graph import WeightedGraph 
-from ..graph.forest import Forest 
-from ..utils.fast_distance import euclidean_distance
+from nipy.labs.graph.graph import WeightedGraph 
+from nipy.labs.graph.forest import Forest 
+from ..routines.fast_distance import euclidean_distance
 
 
 class WeightedForest(Forest):
@@ -131,6 +131,7 @@ class WeightedForest(Forest):
         -------
         ax, the axis handle
         """
+        import matplotlib.pylab as mp
         if self.check_compatible_height() == False:
             raise ValueError('cannot plot myself in my current state')
 
@@ -155,7 +156,6 @@ class WeightedForest(Forest):
 
         # 3. plot
         if ax == None:
-            import matplotlib.pylab as mp
             mp.figure()
             ax = mp.subplot(1, 1, 1)
 

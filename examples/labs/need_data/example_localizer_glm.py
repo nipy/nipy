@@ -69,7 +69,10 @@ paradigm = dm.load_protocol_from_csv_file(paradigm_file, session=0)
 design_matrix = dm.DesignMatrix( frametimes, paradigm, hrf_model=hrf_model,
                                  drift_model=drift_model, hfcut=hfcut)
 
-design_matrix.show()
+ax = design_matrix.show()
+ax.set_position([.05, .25, .9, .65])
+ax.set_title('Design matrix')
+
 pylab.savefig(op.join(swd, 'design_matrix.png'))
 # design_matrix.save(...)
 

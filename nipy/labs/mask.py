@@ -289,7 +289,6 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
     Given a list of input mask images, generate the output image which
     is the the threshold-level intersection of the inputs 
 
-    
     Parameters
     ----------
     input_masks: list of strings or ndarrays
@@ -297,7 +296,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
         individual masks.
     output_filename, string:
         Path of the output image, if None no file is saved.
-    threshold: float within [0, 1], optional
+    threshold: float within [0, 1[, optional
         gives the level of the intersection.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
@@ -308,7 +307,12 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
     -------
     grp_mask, boolean array of shape the image shape
     """  
-    grp_mask = None 
+    grp_mask = None
+    if threshold > 1:
+        raise ValueError('The threshold should be < 1')
+    if threshold <0:
+        raise ValueError('The threshold should be > 0')
+    threshold = min(threshold, 1.e-7)
 
     for this_mask in input_masks:
         if isinstance(this_mask, basestring):
@@ -319,8 +323,8 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
         else:
             grp_mask += this_mask
     
-    grp_mask = grp_mask>(threshold*len(list(input_masks)))
-    if np.any(grp_mask>0) and cc:
+    grp_mask = grp_mask > (threshold * len(list(input_masks)))
+    if np.any(grp_mask > 0) and cc:
         grp_mask = largest_cc(grp_mask)
     
     if output_filename is not None:
@@ -338,7 +342,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
                                          )
         save(output_image, output_filename)
 
-    return grp_mask>0
+    return grp_mask > 0
 
 
 ################################################################################

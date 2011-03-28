@@ -17,7 +17,7 @@ print __doc__
 import numpy as np
 
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
-import nipy.labs.utils.emp_null as en
+import nipy.algorithms.statistics.empirical_pvalue as en
 
 ###############################################################################
 # simulate the data
@@ -82,7 +82,7 @@ pl.colorbar()
 ###############################################################################
 # Fit the null mode of Beta with an empirical normal null
 
-efdr = en.ENN(Beta)
+efdr = en.NormalEmpiricalNull(Beta)
 emp_null_fdr = efdr.fdr(Beta)
 emp_null_fdr = emp_null_fdr.reshape((dimx, dimy))
 

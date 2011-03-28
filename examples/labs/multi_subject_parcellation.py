@@ -41,14 +41,14 @@ Label = np.array([np.reshape(Pa.individual_labels[:, s], (dimx, dimy))
                    for s in range(nsubj)])
 
 import matplotlib.pylab as mp
-mp.figure()
+mp.figure(figsize=(8, 4))
 mp.title('Input data')
 for s in range(nsubj):
     mp.subplot(2, 5, s + 1)
     mp.imshow(dataset[s], interpolation='nearest')
     mp.axis('off')
 
-mp.figure()
+mp.figure(figsize=(8, 4))
 mp.title('Resulting parcels')
 for s in range(nsubj):
     mp.subplot(2, 5, s+1)
