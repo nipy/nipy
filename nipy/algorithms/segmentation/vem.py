@@ -65,7 +65,7 @@ def vm_step_laplace(ppm, data_masked, mask):
     sorted_indices = np.argsort(data_masked) # data_masked[ind] increasing
     for i in range(nclasses):
         P = ppm[..., i][mask]
-        mu[i] = weighted_median(data_masked, P, sorted_indices) 
+        mu[i] = weighted_median(data_masked, P, sorte_indices) 
         sigma[i] = np.sum(np.abs(P*(data_masked-mu[i])))/P.sum()
         prop[i] = P.sum()/float(data_masked.size) 
     return mu, sigma, prop
