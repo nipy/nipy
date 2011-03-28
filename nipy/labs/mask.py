@@ -172,7 +172,7 @@ def compute_mask_files(input_filename, output_filename=None,
 
 
 def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9, 
-                                                cc=1):
+                                                cc=True, opening=True):
     """
     Compute a mask file from fMRI data in 3D or 4D ndarrays.
 
@@ -196,6 +196,10 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
         upper fraction of the histogram to be discarded.
     cc: boolean, optional
         if cc is True, only the largest connect component is kept.
+    opening: boolean, optional
+        if opening is True, an morphological opening is performed, to keep 
+        only large structures. This step is useful to remove parts of
+        the skull that might have been included.
 
     Returns
     -------
@@ -218,7 +222,11 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
 
     if cc:
         mask = largest_cc(mask)
+    if opening:
+        mask = ndimage.binary_opening(mask.astype(np.int),
+                                        iterations=2)
     return mask.astype(bool)
+
 
 
 def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):

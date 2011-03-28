@@ -1,9 +1,10 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+""" Smoke testing the cm module
+"""
 import numpy as np
 
-from ..activation_maps import demo_plot_map, plot_anat
-from ..anat_cache import mni_sform, _AnatCache
+from ..cm import dim_cmap, replace_inside
 
 try:
     import matplotlib as mp
@@ -17,31 +18,18 @@ except ImportError:
 
 
 if do_test:
-    def test_demo_plot_map():
+    def test_dim_cmap():
+        # This is only a smoke test
+        mp.use('svg', warn=False)
+        import pylab as pl
+        dim_cmap(pl.cm.jet)
+        
+
+    def test_replace_inside():
         # This is only a smoke test
         mp.use('svg', warn=False)
         import pylab as pl
         pl.switch_backend('svg')
-        demo_plot_map()
-
-
-    def test_plot_anat():
-        # This is only a smoke test
-        mp.use('svg', warn=False)
-        import pylab as pl
-        pl.switch_backend('svg')
-        ortho_slicer = plot_anat()
-        data = np.zeros((100, 100, 100))
-        data[3:-3, 3:-3, 3:-3] = 1
-        ortho_slicer.edge_map(data, mni_sform, color='c')
-
-
-    def test_anat_cache():
-        # A smoke test, that can work only if the templates are installed
-        try:
-            _AnatCache.get_blurred()
-        except OSError:
-            "The templates are not there"
-            pass
+        replace_inside(pl.cm.jet, pl.cm.hsv, .2, .8)
 
 
