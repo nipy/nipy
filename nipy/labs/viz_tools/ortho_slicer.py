@@ -231,13 +231,14 @@ class OrthoSlicer(object):
         axes.set_zorder(1)
         bb = axes.get_position()
         self.rect = (bb.x0, bb.y0, bb.x1, bb.y1)
+        x0, y0, x1, y1 = self.rect
         self._object_bounds = dict()
         self._black_bg = black_bg
 
         # Create our axes:
         self.axes = dict()
         for index, name in enumerate(('x', 'y', 'z')):
-            ax = pl.axes([0.3*index, 0, .3, 1])
+            ax = pl.axes([0.3*index*x0, y0, .3*(x1-x0), y1-y0])
             ax.axis('off')
             self.axes[name] = ax
             ax.set_axes_locator(self._locator)
@@ -275,8 +276,8 @@ class OrthoSlicer(object):
         left_dict[x_ax] = x0
         left_dict[y_ax] = x0 + width_dict[x_ax]
         left_dict[z_ax] = x0 + width_dict[x_ax] + width_dict[y_ax]
-        return Bbox([[left_dict[axes], 0], 
-                     [left_dict[axes] + width_dict[axes], 1]])
+        return Bbox([[left_dict[axes], y0], 
+                     [left_dict[axes] + width_dict[axes], y1]])
 
 
     def draw_cross(self, cut_coords=None, **kwargs):
