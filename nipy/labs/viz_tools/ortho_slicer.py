@@ -238,7 +238,7 @@ class OrthoSlicer(object):
         # Create our axes:
         self.axes = dict()
         for index, name in enumerate(('x', 'y', 'z')):
-            ax = pl.axes([0.3*index*x0, y0, .3*(x1-x0), y1-y0])
+            ax = pl.axes([0.3*index*(x1-x0) + x0, y0, .3*(x1-x0), y1-y0])
             ax.axis('off')
             self.axes[name] = ax
             ax.set_axes_locator(self._locator)
