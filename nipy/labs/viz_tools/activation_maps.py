@@ -319,10 +319,10 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None,
         ortho_slicer.plot_map(anat, anat_affine, cmap=pl.cm.gray,
                               vmin=vmin, vmax=vmax)
 
-    if annotate:
-        ortho_slicer.annotate()
-    if draw_cross:
-        ortho_slicer.draw_cross()
+        if annotate:
+            ortho_slicer.annotate()
+        if draw_cross:
+            ortho_slicer.draw_cross()
 
     if title is not None and not title == '':
         ortho_slicer.title(title)
