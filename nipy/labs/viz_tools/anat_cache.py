@@ -39,21 +39,22 @@ def find_mni_template():
         pass
     possible_paths = [
      ('', 'usr', 'share', 'fsl', 'data', 'standard', 'avg152T1_brain.nii.gz'),
+     ('', 'usr', 'share', 'data', 'fsl-mni152-templates', 'avg152T1_brain.nii.gz'),
      ('', 'usr', 'local', 'share', 'fsl', 'data', 'standard', 'avg152T1_brain.nii.gz'),
             ]
     if 'FSLDIR' in os.environ:
         fsl_path = os.environ['FSLDIR'].split(os.sep)
-        fsl_path.extend('data', 'standard', 'avg152T1_brain.nii.gz')
-        possible_paths.append()
+        fsl_path.extend(('data', 'standard', 'avg152T1_brain.nii.gz'))
+        possible_paths.append(fsl_path)
     for path in possible_paths:
         filename = os.sep.join((path))
         if os.path.exists(filename):
             return filename
-        
+
 
 
 ################################################################################
-# Caching of the MNI template. 
+# Caching of the MNI template.
 ################################################################################
 
 class _AnatCache(object):
