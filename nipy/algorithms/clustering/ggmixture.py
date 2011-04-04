@@ -12,7 +12,6 @@ Author: Bertrand Thirion and Merlin Keller 2005-2008
 import numpy as np
 import scipy.stats as st
 import scipy.special as sp
-import numpy.random as nr
 
 
 #############################################################################
@@ -24,7 +23,7 @@ def _dichopsi_log(u, v, y, eps=0.00001):
     """ Implements the dichotomic part of the solution of psi(c)-log(c)=y
     """
     if u > v:
-        s, u, v = u, v, s
+        u, v = v, u
     t = (u + v) / 2
     if np.absolute(u - v) < eps:
         return t

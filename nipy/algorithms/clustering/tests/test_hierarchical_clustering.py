@@ -10,77 +10,13 @@ Author : Bertrand Thirion, 2008-2009
 
 import numpy as np
 from numpy.random import randn
-from ..hierarchical_clustering import (average_link_euclidian, 
-                                       maximum_link_euclidian, 
-                                       average_link_distance_segment, 
-                                       maximum_link_distance_segment, 
-                                       average_link_graph, 
+from ..hierarchical_clustering import (average_link_graph, 
                                        average_link_graph_segment,
-                                       ward, ward_simple, ward_quick, 
+                                       ward, ward_quick, 
                                        ward_segment, ward_field_segment,
                                        ward_quick_segment)
 from nipy.labs.graph.graph import WeightedGraph
 from nipy.labs.graph.field import Field
-
-def alc_test_basic():
-    np.random.seed(0)
-    x = np.random.randn(10, 2)
-    x[:7,0] += 3
-    t = average_link_euclidian(x, 1)
-    u = t.split(2)
-    v = np.zeros(10)
-    v[:7]=1
-    w = np.absolute(u-v)
-    assert(np.sum(w*(1-w))==0)
-
-def mlc_test_basic():
-    np.random.seed(0)
-    x = np.random.randn(10, 2)
-    x[:7,0] += 3
-    t = maximum_link_euclidian(x, 1)
-    u = t.split(2)
-    v = np.zeros(10)
-    v[:7]=1
-    w = np.absolute(u-v)
-    assert(np.sum(w*(1-w))==0)
-    
-def ward_nograph_test_basic1(n=100, k=5):
-    """
-    Check that we obtain the correct solution in a simplistic case 
-    """
-    np.random.seed(0)
-    x = np.random.randn(n, 2)
-    x[:int(0.7*n)] += 3
-    t = ward_simple(x)
-    u = t.split(2)
-    v = np.zeros(n)
-    v[:int(0.7*n)]=1
-    w = np.absolute(u-v)
-    assert(np.sum(w*(1-w))==0)
-
-def alcd_test_basic():
-    np.random.seed(0)
-    x = np.random.randn(10, 2)
-    x[:7,0] += 3
-    dist = np.array([[np.sqrt(np.sum((x[i]-x[j])**2))
-                      for i in range(10)] for j in range(10)])
-    u,cost = average_link_distance_segment(dist, qmax=2)
-    v = np.zeros(10)
-    v[:7]=1
-    w = np.absolute(u-v)
-    assert(np.sum(w*(1-w))==0)
-
-def mlcd_test_basic():
-    np.random.seed(0)
-    x = np.random.randn(10, 2)
-    x[:7,0] += 3
-    dist = np.array([[np.sqrt(np.sum((x[i]-x[j])**2))
-                      for i in range(10)] for j in range(10)])
-    u,cost = maximum_link_distance_segment(dist, qmax=2)
-    v = np.zeros(10)
-    v[:7]=1
-    w = np.absolute(u-v)
-    assert(np.sum(w*(1-w))==0)
 
 def alg_test_basic(n=100,k=5):
     """
