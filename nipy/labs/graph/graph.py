@@ -12,7 +12,7 @@ from _graph import __doc__, graph_cc, graph_degrees, graph_main_cc, \
 import numpy as np
 
 """
-This module implements the main graph classes of fff2
+This module implements the main graph classes of nipy.labs.graph
 Graph: basic topological graph, i.e. vertices and edges. Not well developed
 WeightedGraph (Graph): Idem plus values asociated with vertices
 BipartiteGraph (WeightedGraph): Idem but the graph is Bipartite
@@ -921,62 +921,6 @@ class WeightedGraph(Graph):
         K = WeightedGraph(V, Kedges, Kweights)
         return K
 
-    def Kruskal_dev(self):
-        """
-        Creates the Minimum Spanning Tree  self using Kruskal's algo.
-        efficient is self is sparse
-
-        Returns
-        -------
-        K: WeightedGraph instance, the resulting MST
-
-        Note
-        ----
-        if self contains several connected components,
-        self.Kruskal() will also retain a graph with k connected components
-        """
-        k = self.cc().max() + 1
-        E = 2 * self.V - 2
-        V = self.V
-        Kedges = np.zeros((E, 2)).astype(np.int)
-        Kweights = np.zeros(E)
-        iw = np.argsort(self.weights)
-        label = np.arange(2 * V - 1)
-        j = 0
-        for i in range(V - k):
-            a = self.edges[iw[j], 0]
-            b = self.edges[iw[j], 1]
-            d = self.weights[iw[j]]
-            la = label[a]
-            lb = label[b]
-            while la != label[la]:
-                la = label[la]
-            while lb != label[lb]:
-                lb = label[lb]
-            while la == lb:
-                j = j + 1
-                a = self.edges[iw[j], 0]
-                b = self.edges[iw[j], 1]
-                d = self.weights[iw[j]]
-                la = label[a]
-                lb = label[b]
-                while la != label[la]:
-                    la = label[la]
-                while lb != label[lb]:
-                    lb = label[lb]
-
-            if la != lb:
-                label[la] = V + i
-                label[lb] = V + i
-                Kedges[2 * i, 0] = a
-                Kedges[2 * i, 1] = b
-                Kedges[2 * i + 1, 0] = b
-                Kedges[2 * i + 1, 1] = a
-                Kweights[2 * i] = d
-                Kweights[2 * i + 1] = d
-
-        K = WeightedGraph(V, Kedges, Kweights)
-        return K
 
     def Voronoi_diagram(self, seeds, samples):
         """
@@ -1228,32 +1172,6 @@ class WeightedGraph(Graph):
             raise ValueError("Error in the c function")
 
         return int(b)
-
-    def WeightedDegree(self, c):
-        """
-        returns the sum of weighted degree of graph self
-
-        Parameters
-        ----------
-        c (int): side selection
-          if c==0 considering left side
-          if c==1 considering right side of the edges
-
-       Returns
-       -------
-        wd: array of shape (self.V),
-           the resulting weighted degree
-
-        Note: slow implementation
-        """
-        if c == 0:
-            mlist = self.left_incidence()
-        else:
-            mlist = self.right_incidence()
-        w = self.get_weights()
-        wd = [np.sum(w[n]) for n in mlist]
-        wd = np.array(wd)
-        return wd
 
     def to_coo_matrix(self):
         """
