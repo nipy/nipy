@@ -9,6 +9,7 @@ from _graph import __doc__, graph_cc, graph_degrees, graph_main_cc, \
             graph_to_neighb, graph_cross_knn, graph_cross_eps, \
             graph_cross_eps_robust, graph_rd, graph_skeleton, \
             graph_is_connected
+
 import numpy as np
 
 """
@@ -1181,9 +1182,12 @@ class WeightedGraph(Graph):
             that encodes the adjacency matrix of self
         """
         import scipy.sparse as sps
-        i = self.edges[:, 0]
-        j = self.edges[:, 1]
-        sm = sps.coo_matrix((self.weights, (i, j)), shape=(self.V, self.V))
+        if self.E > 0:
+            i = self.edges[:, 0]
+            j = self.edges[:, 1]
+            sm = sps.coo_matrix((self.weights, (i, j)), shape=(self.V, self.V))
+        else:
+            sm = sps.coo_matrix((self.V, self.V))
         return sm
 
 

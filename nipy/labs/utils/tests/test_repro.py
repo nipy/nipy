@@ -10,7 +10,8 @@ not whether it is exact
 import numpy as np
 from ..simul_multisubject_fmri_dataset import surrogate_2d_dataset
 from ..reproducibility_measures import (voxel_reproducibility, 
-                                        cluster_reproducibility)
+                                        cluster_reproducibility,
+                                        peak_reproducibility)
 
 def make_dataset(ampli_factor=1.0, nsubj=10):
     """
@@ -18,8 +19,8 @@ def make_dataset(ampli_factor=1.0, nsubj=10):
     if null, no activation is added
     """
     nsubj = 10
-    dimx = 60
-    dimy = 60
+    dimx = 50
+    dimy = 50
     pos = 2*np.array([[ 6,  7], [10, 10], [15, 10]])
     ampli = ampli_factor*np.array([5, 6, 7])
     dataset = surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
@@ -28,46 +29,47 @@ def make_dataset(ampli_factor=1.0, nsubj=10):
     return dataset
 
 
-def apply_repro_analysis_analysis(dataset, thresholds=[3.0], method = 'crfx'):
+def apply_repro_analysis(dataset, thresholds=[3.0], method = 'crfx'):
     """
     perform the reproducibility  analysis according to the 
     """
-    from nibabel import Nifti1Image
+    from nipy.labs.spatial_models.discrete_domain import grid_domain_from_array
 
     nsubj, dimx, dimy = dataset.shape
     
-    func = np.reshape(dataset,(nsubj, dimx*dimy)).T
-    var = np.ones((dimx*dimy, nsubj))
-    #xyz = np.reshape(np.indices((dimx, dimy,1)).T,(dimx*dimy,3))
-    #coord = xyz.astype(np.float)
-    mask = Nifti1Image(np.ones((dimx, dimy, 1)),np.eye(4))
-    
-    ngroups = 10
+    func = np.reshape(dataset,(nsubj, dimx * dimy)).T
+    var = np.ones((dimx * dimy, nsubj))
+    domain = grid_domain_from_array(np.ones((dimx, dimy, 1)))
+
+    ngroups = 5
     sigma = 2.0
     csize = 10
-    niter = 10
+    niter = 5
     verbose = 0
     swap = False
 
-    kap = []
-    clt = []
+    kap, clt, pkd = [], [], []
     for threshold in thresholds:
-        kappa = []
-        cls = []
-        kwargs={'threshold':threshold,'csize':csize}        
+        kappa, cls, pks = [], [], []
+        kwargs = {'threshold':threshold, 'csize':csize}        
         for i in range(niter):
-            k = voxel_reproducibility(func, var, mask, ngroups,
+            k = voxel_reproducibility(func, var, domain, ngroups,
                                   method, swap, verbose, **kwargs)
             kappa.append(k)
-            cld = cluster_reproducibility(func, var, mask, ngroups, sigma,
+            cld = cluster_reproducibility(func, var, domain, ngroups, sigma,
                                       method, swap, verbose, **kwargs)
             cls.append(cld)
+            pk = peak_reproducibility(func, var, domain, ngroups, sigma,
+                                      method, swap, verbose, **kwargs)
+            pks.append(pk)
         
         kap.append(np.array(kappa))
         clt.append(np.array(cls))
+        pkd.append(np.array(pks))
     kap = np.array(kap)
     clt = np.array(clt)
-    return kap,clt
+    pkd = np.array(pkd)
+    return kap, clt, pkd
 
 def test_repro1():
     """
@@ -75,8 +77,9 @@ def test_repro1():
     using bootstrap
     """
     dataset = make_dataset()
-    kap,clt = apply_repro_analysis_analysis(dataset)
-    assert ((kap.mean()>0.3) & (kap.mean()<0.9))
+    kap, clt, pks = apply_repro_analysis(dataset)
+    assert ((kap.mean() > 0.3) & (kap.mean() < 0.9))
+    assert (pks.mean() > 0.4)
 
 def test_repro2():
     """
@@ -84,7 +87,7 @@ def test_repro2():
     using cluster-level rfx, bootstrap
     """
     dataset = make_dataset()
-    kap,clt = apply_repro_analysis_analysis(dataset, thresholds=[5.0])
+    kap, clt, pks = apply_repro_analysis(dataset, thresholds=[5.0])
     assert (clt.mean()>0.5)
 
     
@@ -94,18 +97,9 @@ def test_repro3():
     using cluster-level rfx, bootstrap
     """
     dataset = make_dataset(ampli_factor=0)
-    kap,clt = apply_repro_analysis_analysis(dataset, thresholds=[4.0])
-    print kap.mean(1)
-    assert (kap.mean(1)<0.3)
-
-def test_repro4():
-    """
-    Test on the cluster repro. values for a null dataset
-    using cluster-level rfx, bootstrap
-    """
-    dataset = make_dataset(ampli_factor=0)
-    kap, clt = apply_repro_analysis_analysis(dataset, thresholds=[4.0])
-    assert (clt.mean(1)<0.3)
+    kap, clt, pks = apply_repro_analysis(dataset, thresholds=[4.0])
+    assert (kap.mean(1) < 0.3)
+    assert (clt.mean(1) < 0.3)
 
 def test_repro5():
     """
@@ -113,17 +107,9 @@ def test_repro5():
     using cluster-level mfx, bootstrap
     """
     dataset = make_dataset()
-    kap,clt = apply_repro_analysis_analysis(dataset, method='cmfx')
-    assert (kap.mean(1)>0.5)
-
-def test_repro6():
-    """
-    Test on the kappa values for a non-null dataset
-    using cluster-level mfx, bootstrap
-    """
-    dataset = make_dataset()
-    kap,clt = apply_repro_analysis_analysis(dataset, method='cmfx')
-    assert (clt.mean(1)>0.5)
+    kap, clt, pks = apply_repro_analysis(dataset, method='cmfx')
+    assert (kap.mean(1) > 0.5)
+    assert (clt.mean(1) > 0.5)
 
 def test_repro7():
     """
@@ -131,20 +117,10 @@ def test_repro7():
     using jacknife subsampling
     """
     dataset = make_dataset(nsubj = 101)
-    kap,clt = apply_repro_analysis_analysis(dataset, thresholds=[5.0])
-    assert ((kap.mean()>0.4))
+    kap, clt, pks = apply_repro_analysis(dataset, thresholds=[5.0])
+    assert ((kap.mean() > 0.4))
+    assert ((clt.mean() > 0.5))    
 
-def test_repro8():
-    """
-    Test on the kappa values for a standard dataset
-    using jacknife subsampling
-    """
-    dataset = make_dataset(nsubj = 101)
-    kap,clt = apply_repro_analysis_analysis(dataset, thresholds=[5.0])
-    assert ((clt.mean()>0.5))
-
-
-    
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])
