@@ -164,8 +164,8 @@ def write_parcellation_images(Pa, template_path=None, indiv_path=None,
         # write the individual label images
         labs = Pa.individual_labels[:, s]
         parcellation = SubDomains(Pa.domain, labs, 'parcellation')
-        lim = parcellation.to_image(indiv_path[s],
-                                    descrip='Intra-subject parcellation')
+        parcellation.to_image(indiv_path[s],
+                              descrip='Intra-subject parcellation')
 
 
 def parcellation_based_analysis(Pa, test_images, test_id='one_sample',
@@ -215,11 +215,7 @@ def parcellation_based_analysis(Pa, test_images, test_id='one_sample',
 
     # Write the stuff
     template = SubDomains(Pa.domain, Pa.template_labels, 'parcellation')
-    template_image = template.to_image('', '')
-    labels = template_image.get_data()
-    rfx_map = np.zeros(template_image.get_shape())
-    rfx_map[labels > - 1] = prfx[labels[labels > - 1]]
-    wim = Nifti1Image(rfx_map, template_image.get_affine())
+    wim = template.to_image(data=prfx)
     hdr = wim.get_header()
     hdr['descrip'] = 'parcel-based eandom effects image (in t-variate)'
     if rfx_path is not None:

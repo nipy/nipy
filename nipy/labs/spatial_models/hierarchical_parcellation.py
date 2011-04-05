@@ -11,7 +11,7 @@ from numpy.random import rand
 
 from nipy.algorithms.clustering.clustering import kmeans, voronoi
 from .parcellation import MultiSubjectParcellation
-from ..graph.field import field_from_coo_matrix_and_data, Field
+from ..graph.field import Field
 from ..graph.graph import wgraph_from_coo_matrix
 
 
@@ -300,7 +300,6 @@ def _optim_hparcel(feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
                 if np.sum(np.isinf(pot)) == np.size(pot):
                     pot = np.sum(dx[iz] ** 2, 1)
                     tata += 1
-                    pb = 1
 
                 sol = iz[np.argmin(pot)]
                 target[i] = lac[sol]

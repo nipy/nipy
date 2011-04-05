@@ -79,7 +79,8 @@ def cluster_threshold(stat_map, domain, th, csize):
     
     binary = - np.ones(domain.size)
     binary[stat_map > th] = label
-    for i in range(label.max() + 1):
+    nbcc = len(np.unique(label))
+    for i in range(nbcc):
         if np.sum(label == i) < csize:
             binary[binary == i] = - 1
 
@@ -87,7 +88,8 @@ def cluster_threshold(stat_map, domain, th, csize):
     return binary
 
 
-def get_cluster_position_from_thresholded_map(stat_map, domain, thr=3.0, csize=10):
+def get_cluster_position_from_thresholded_map(stat_map, domain, thr=3.0, 
+                                              csize=10):
     """
     the clusters above thr of size greater than csize in
     18-connectivity are computed
@@ -731,8 +733,8 @@ def group_reproducibility_metrics(
 # -------------------------------------------------------
 
 
-def coord_bsa(domain, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
-              afname='/tmp/af.pic'):
+def coord_bsa(domain, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
+              afname=None):
     """ main function for  performing bsa on a dataset
     where bsa =  nipy.labs.spatial_models.bayesian_structural_analysis
 
@@ -761,23 +763,13 @@ def coord_bsa(domain, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
             coordinate of the found landmark regions
     """
     from ..spatial_models.bayesian_structural_analysis import compute_BSA_quick
-    from ..graph.field import Field
-    import  pickle
-
-    # create the field strcture that encodes image topology
-    Fbeta = Field(nvox)
-    Fbeta.from_3d_grid(xyz.astype(np.int), 18)
-
-    # volume density
-    g0 = 1.0 / domain.local_volume.sum()
-
-    coord = domain.get_coord()
 
     crmap, AF, BF, p = compute_BSA_quick(
-        Fbeta, betas, coord, dmax, xyz, affine, shape, thq, smin, ths, theta,
-        g0, verbose=0)
+        domain, betas, dmax, thq, smin, ths, theta,  verbose=0)
     if AF == None:
         return None
-    #pickle.dump(AF, open(afname, 'w'), 2)
+    if afname is not None:
+        import pickle
+        pickle.dump(AF, afname)
     afcoord = AF.discrete_to_roi_features('position')
     return afcoord

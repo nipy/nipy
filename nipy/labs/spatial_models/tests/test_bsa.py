@@ -53,12 +53,12 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 @dec.slow    
 def test_bsa_methods():
     # generate the data
-    nbsubj=10
-    dimx=60
-    dimy=60
-    pos = np.array([[12,  14],
+    nbsubj = 5
+    dimx = 40
+    dimy = 40
+    pos = np.array([[12, 14],
                     [20, 20],
-                    [40, 50]])
+                    [30, 35]])
     # make a dataset with a nothing feature
     null_ampli = np.array([0, 0, 0])
     null_dataset = surrogate_2d_dataset(nbsubj=nbsubj,
@@ -81,8 +81,8 @@ def test_bsa_methods():
     pos_betas = np.reshape(pos_dataset, (nbsubj, dimx, dimy))
     # set various parameters
     theta = float(st.t.isf(0.01, 100))
-    dmax = 5./1.5
-    half_subjs = nbsubj/2
+    dmax = 5. / 1.5
+    half_subjs = nbsubj / 2
     thq = 0.9
     smin = 5
 

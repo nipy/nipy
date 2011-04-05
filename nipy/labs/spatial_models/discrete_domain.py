@@ -176,6 +176,8 @@ def reduce_coo_matrix(mat, mask):
     """
     G = wgraph_from_coo_matrix(mat)
     K = G.subgraph(mask)
+    if K is None:
+        return None
     return K.to_coo_matrix()
 
 
@@ -296,14 +298,11 @@ class MeshDomain(object):
                the node coordinates
         triangles: array of shape(n_triables, 3),
                    indices of the nodes per triangle
-
-        fixme
-        -----
-        Consistency checks to implement
         """
         self.coord = coord
         self.triangles = triangles
         self.V = len(coord)
+        # fixme: implement consistency checks
 
     def area(self):
         """
@@ -402,10 +401,6 @@ class DiscreteDomain(object):
     are characterized by a coordinate system and a topology:
     the coordinate system is specified through a coordinate array
     the topology encodes the neighboring system
-
-    fixme
-    -----
-    check that local_volume is positive
     """
 
     def __init__(self, dim, coord, local_volume, id='', referential=''):
@@ -436,7 +431,12 @@ class DiscreteDomain(object):
         # coordinate system
         if np.size(coord) == coord.shape[0]:
             coord = np.reshape(coord, (np.size(coord), 1))
-        self.em_dim = coord.shape[1]
+        
+        if np.size(coord) == 0:
+            self.em_dim = dim
+        else:
+            self.em_dim = coord.shape[1]
+
         if self.em_dim < dim:
             raise ValueError('Embedding dimension cannot be smaller than dim')
         self.coord = coord
@@ -444,6 +444,9 @@ class DiscreteDomain(object):
         # volume
         if np.size(local_volume) != self.size:
             raise ValueError("Inconsistent Volume size")
+        if (local_volume < 0).any():
+            raise ValueError('Volume should be positive')
+
         self.local_volume = np.ravel(local_volume)
         self.id = id
         self.referential = referential
@@ -472,7 +475,10 @@ class DiscreteDomain(object):
     def connected_components(self):
         """returns a labelling of the domain into connected components
         """
-        return wgraph_from_coo_matrix(self.topology).cc()
+        if self.topology is not None:
+            return wgraph_from_coo_matrix(self.topology).cc()
+        else:
+            return []
 
     def mask(self, bmask, id=''):
         """ returns an DiscreteDomain instance that has been further masked
@@ -649,10 +655,10 @@ class NDGridDomain(StructuredDomain):
         self.affine = affine
 
         # ijk
-        if np.size(ijk) == ijk.shape[0]:
+        if (np.size(ijk) == ijk.shape[0]) & (np.size(ijk) > 0):
             ijk = np.reshape(ijk, (ijk.size, 1))
-        if (ijk.max(0) + 1 > shape).any():
-            raise ValueError('Provided indices do not fit within shape')
+            if (ijk.max(0) + 1 > shape).any():
+                raise ValueError('Provided indices do not fit within shape')
         self.ijk = ijk
 
         # coord
