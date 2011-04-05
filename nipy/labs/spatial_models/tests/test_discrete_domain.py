@@ -9,7 +9,13 @@ in ~/.nipy/tests/data
 
 import numpy as np
 from numpy.testing import assert_almost_equal
-from ..discrete_domain import *
+from ..discrete_domain import (smatrix_from_nd_idx, 
+                               smatrix_from_3d_array, 
+                               smatrix_from_nd_array, 
+                               domain_from_array, 
+                               domain_from_image, 
+                               grid_domain_from_array, 
+                               grid_domain_from_image)
 from nibabel import Nifti1Image
 
 shape = np.array([5, 6, 7, 8, 9])
@@ -26,33 +32,33 @@ def test_smatrix_1d():
     """
     idx = generate_dataset(shape[:1])
     sm = smatrix_from_nd_idx(idx, nn=0)
-    assert(sm.data.size==2*shape[0]-2)
+    assert(sm.data.size == 2 * shape[0] - 2)
 
 def test_smatrix_2d():
-    """Test the 2-d topological domain
+    """Test the 2-d opological domain
     """
     idx = generate_dataset(shape[:2])
     sm = smatrix_from_nd_idx(idx, nn=0)
-    ne = 2*(2*np.prod(shape[:2])-shape[0]-shape[1])
-    assert(sm.data.size==ne)
+    ne = 2 * (2 * np.prod(shape[:2]) - shape[0] - shape[1])
+    assert(sm.data.size == ne)
 
 def test_smatrix_3d():
     """Test the 3-d topological domain
     """
     idx = generate_dataset(shape[:3])
     sm = smatrix_from_nd_idx(idx)
-    ne = 2*(3*np.prod(shape[:3])-shape[0]*shape[1]-shape[0]*shape[2]
-            -shape[1]*shape[2])
-    assert(sm.data.size==ne)
+    ne = 2 * (3 * np.prod(shape[:3]) - shape[0] * shape[1] 
+              - shape[0] * shape[2] - shape[1] * shape[2])
+    assert(sm.data.size == ne)
 
 def test_smatrix_4d():
     """Test the 4-d topological domain
     """
     idx = generate_dataset(shape[:4])
     sm = smatrix_from_nd_idx(idx)
-    ne = 4*np.prod(shape[:4])
+    ne = 4 * np.prod(shape[:4])
     for d in range(4):
-        ne -= np.prod(shape[:4])/shape[d]
+        ne -= np.prod(shape[:4]) / shape[d]
     ne *= 2
     assert(sm.data.size==ne)
 
@@ -61,7 +67,7 @@ def test_smatrix_5d():
     """
     idx = generate_dataset(shape)
     sm = smatrix_from_nd_idx(idx)
-    ne = 5*np.prod(shape)
+    ne = 5 * np.prod(shape)
     for d in range(5):
         ne -= np.prod(shape)/shape[d]
     ne *= 2
@@ -83,9 +89,9 @@ def test_matrix_from_3d_array():
     """
     toto = np.ones(shape[:3])
     sm = smatrix_from_3d_array(toto, 6)
-    ne = 3*np.prod(shape[:3])
+    ne = 3 * np.prod(shape[:3])
     for d in range(3):
-        ne -= np.prod(shape[:3])/shape[d]
+        ne -= np.prod(shape[:3]) / shape[d]
     ne *= 2
     print sm.data, ne
     assert((sm.data > 0).sum() == ne)
@@ -102,7 +108,7 @@ def test_connected_components():
     """
     toto = np.ones(shape)
     ddom = domain_from_array(toto)
-    assert (ddom.connected_components == np.zeros(domain.size))
+    assert (ddom.connected_components() == np.zeros(ddom.size)).all()
 
 def test_image_domain():
     """Test the construction of domain based on image

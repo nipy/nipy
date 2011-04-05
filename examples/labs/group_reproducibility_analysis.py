@@ -14,7 +14,7 @@ import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 from nipy.labs.utils.reproducibility_measures import \
      voxel_reproducibility, cluster_reproducibility, map_reproducibility,\
      peak_reproducibility
-
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_array
 
 ###############################################################################
 # Generate the data 
@@ -32,9 +32,7 @@ betas = np.reshape(dataset, (nsubj, dimx, dimy))
 # set the variance at 1 everywhere
 func = np.reshape(betas, (nsubj, dimx * dimy)).T
 var = np.ones((dimx * dimy, nsubj))
-
-from nibabel import Nifti1Image
-mask = Nifti1Image(np.ones((dimx, dimy, 1)), np.eye(4))
+domain = grid_domain_from_array(np.ones((dimx, dimy, 1)))
 
 ###############################################################################
 # Run reproducibility analysis 
@@ -62,16 +60,16 @@ for threshold in thresholds:
     sent = []
     peaks = []
     for i in range(niter):
-        k = voxel_reproducibility(func, var, mask, ngroups,
+        k = voxel_reproducibility(func, var, domain, ngroups,
                                   method, swap, verbose, **kwargs)
         kappa.append(k)
-        cld = cluster_reproducibility(func, var, mask, ngroups, sigma,
+        cld = cluster_reproducibility(func, var, domain, ngroups, sigma,
                                       method, swap, verbose, **kwargs)
         cls.append(cld)
-        peak = peak_reproducibility(func, var, mask, ngroups, sigma,
+        peak = peak_reproducibility(func, var, domain, ngroups, sigma,
                                       method, swap, verbose, **kwargs)
         peaks.append(peak)
-        seni = map_reproducibility(func, var, mask, ngroups,
+        seni = map_reproducibility(func, var, domain, ngroups,
                            method, True, verbose, threshold=threshold,
                            csize=csize).mean()/ngroups
         sent.append(seni)
@@ -108,7 +106,7 @@ a.set_size_inches(12, 5)
 mp.figure()
 for q, threshold in enumerate(thresholds):
     mp.subplot(3, len(thresholds) / 3 + 1, q + 1)
-    rmap = map_reproducibility(func, var, mask, ngroups,
+    rmap = map_reproducibility(func, var, domain, ngroups,
                            method, verbose, threshold=threshold,
                            csize=csize)
     rmap = np.reshape(rmap, (dimx, dimy))
