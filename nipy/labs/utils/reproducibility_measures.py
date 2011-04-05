@@ -19,8 +19,7 @@ Bertrand Thirion, 2009-2010
 """
 
 import numpy as np
-from ..graph import WeightedGraph
-
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_array
 
 # ---------------------------------------------------------
 # ----- cluster handling functions ------------------------
@@ -49,15 +48,15 @@ def histo_repro(h):
     return res / nf
 
 
-def cluster_threshold(map, mask, th, csize):
+def cluster_threshold(stat_map, domain, th, csize):
     """Perform a thresholding of a map at the cluster-level
 
     Parameters
     ----------
-    map: array of shape(nbvox)
+    stat_map: array of shape(nbvox)
          the input data
-    mask: Nifti1Image instance,
-          referential- and mask-defining image
+    domain: Nifti1Image instance,
+          referential- and domain-defining image
     th (float): cluster-forming threshold
     cisze (int>0): cluster size threshold
 
@@ -69,40 +68,36 @@ def cluster_threshold(map, mask, th, csize):
     ----
     Should be replaced by a more standard function in the future
     """
-    ijk = np.array(np.where(mask.get_data())).T
-    if map.shape[0] != ijk.shape[0]:
+    if stat_map.shape[0] != domain.size:
         raise ValueError('incompatible dimensions')
-    ithr = np.nonzero(map > th)[0]
-    binary = np.zeros(np.size(map)).astype(np.int)
+    
+    # first build a domain of supra_threshold regions
+    thresholded_domain = domain.mask(stat_map > th)
 
-    if np.size(ithr) > 0:
-        G = WeightedGraph(np.size(ithr))
-        G.from_3d_grid(ijk[ithr], 18)
+    # get the connected components
+    label = thresholded_domain.connected_components()
+    
+    binary = - np.ones(domain.size)
+    binary[stat_map > th] = label
+    for i in range(label.max() + 1):
+        if np.sum(label == i) < csize:
+            binary[binary == i] = - 1
 
-        # get the connected components
-        label = G.cc() + 1
-        binary[ithr] = label
-
-        #remove the small clusters
-        for i in range(label.max() + 1):
-            if np.sum(label == i) < csize:
-                binary[binary == i] = 0
-
-        binary = (binary > 0)
+    binary = (binary > -1)
     return binary
 
 
-def get_cluster_position_from_thresholded_map(smap, mask, thr=3.0, csize=10):
+def get_cluster_position_from_thresholded_map(stat_map, domain, thr=3.0, csize=10):
     """
     the clusters above thr of size greater than csize in
     18-connectivity are computed
 
     Parameters
     ----------
-    smap : array of shape (nbvox),
+    stat_map : array of shape (nbvox),
            map to threshold
     mask: Nifti1Image instance,
-          referential- and mask-defining image
+          referential- and domain-defining image
     thr: float, optional,
          cluster-forming threshold
     cisze=10: int
@@ -116,26 +111,23 @@ def get_cluster_position_from_thresholded_map(smap, mask, thr=3.0, csize=10):
               if no such cluster exists, None is returned
     """
     # if no supra-threshold voxel, return
-    ithr = np.nonzero(smap > thr)[0]
-    if np.size(ithr) == 0:
+    if (stat_map <= thr).all():
         return None
-    nstv = np.size(ithr)
-    affine = mask.get_affine()
 
-    # first build a graph
-    g = WeightedGraph(nstv)
-    ijk = np.array(np.where(mask.get_data())).T
-    g.from_3d_grid(ijk[ithr], 18)
-    coord = np.dot(np.hstack((ijk, np.ones((len(smap), 1)))), affine.T)[:, :3]
+    # first build a domain of supra_threshold regions
+    thresholded_domain = domain.mask(stat_map > thr)
 
     # get the connected components
-    label = g.cc()
+    label = thresholded_domain.connected_components()
+    
+    # get the coordinates
+    coord = thresholded_domain.get_coord()
+
+    # get the barycenters
     baryc = []
     for i in range(label.max() + 1):
-        ji = np.nonzero(label == i)[0]
-        if np.size(ji) >= csize:
-            idx = ithr[ji]
-            baryc.append(np.mean(coord[idx], 0))
+        if np.sum(label==i) >= csize:
+            baryc.append(np.mean(coord[label == i], 0))
 
     if len(baryc) == 0:
         return None
@@ -144,14 +136,14 @@ def get_cluster_position_from_thresholded_map(smap, mask, thr=3.0, csize=10):
     return baryc
 
 
-def get_peak_position_from_thresholded_map(smap, mask, threshold):
+def get_peak_position_from_thresholded_map(stat_map, domain, threshold):
     """The peaks above thr in 18-connectivity are computed
 
     Parameters
     ----------
-    smap: array of shape (nbvox): map to threshold
-    mask: referential- and mask-defining image
-    thr=3.0 (float) cluster-forming threshold
+    stat_map: array of shape (nbvox): map to threshold
+    deomain: referential- and domain-defining image
+    thr, float: cluster-forming threshold
 
     Returns
     -------
@@ -160,13 +152,12 @@ def get_peak_position_from_thresholded_map(smap, mask, threshold):
               where k= number of clusters
               if no such cluster exists, None is returned
     """
-    from nibabel import Nifti1Image
     from ..statistical_mapping import get_3d_peaks
-    # create an image to represent smap
-    simage = np.zeros(mask.get_shape())
-    simage[mask.get_data() > 0] = smap
-    sim = Nifti1Image(simage, mask.get_affine())
-    peaks = get_3d_peaks(sim, threshold=threshold, order_th=2)
+
+    # create an image to represent stat_map
+    simage = domain.to_image(data=stat_map)
+    
+    peaks = get_3d_peaks(simage, threshold=threshold, order_th=2)
     if peaks == None:
         return None
 
@@ -338,7 +329,7 @@ def statistics_from_position(target, data, sigma=1.0):
 # -------------------------------------------------------
 
 
-def voxel_reproducibility(data, vardata, mask, ngroups, method='crfx',
+def voxel_reproducibility(data, vardata, domain, ngroups, method='crfx',
                           swap=False, verbose=0, **kwargs):
     """ return a measure of voxel-level reproducibility of activation patterns
 
@@ -350,7 +341,7 @@ def voxel_reproducibility(data, vardata, mask, ngroups, method='crfx',
              the corresponding variance information
              ngroups (int):
              Number of subbgroups to be drawn
-    mask: referential- and mask-defining image
+    domain: referential- and domain-defining image
     ngourps: int,
              number of groups to be used in the resampling procedure
     method: string, to be chosen among 'crfx', 'cmfx', 'cffx'
@@ -361,7 +352,7 @@ def voxel_reproducibility(data, vardata, mask, ngroups, method='crfx',
     -------
     kappa (float): the desired  reproducibility index
     """
-    rmap = map_reproducibility(data, vardata, mask, ngroups, method,
+    rmap = map_reproducibility(data, vardata, domain, ngroups, method,
                                      swap, verbose, **kwargs)
 
     h = np.array([np.sum(rmap == i) for i in range(ngroups + 1)])
@@ -407,7 +398,7 @@ def draw_samples(nsubj, ngroups, split_method='default'):
     return samples
 
 
-def map_reproducibility(data, vardata, mask, ngroups, method='crfx',
+def map_reproducibility(data, vardata, domain, ngroups, method='crfx',
                         swap=False, verbose=0, **kwargs):
     """ Return a reproducibility map for the given method
 
@@ -417,7 +408,7 @@ def map_reproducibility(data, vardata, mask, ngroups, method='crfx',
           the input data from which everything is computed
     vardata: array of the same size
              the corresponding variance information
-    mask: referential- and mask-defining image
+    domain: referential- and domain-defining image
     ngroups (int): the size of each subrgoup to be studied
     threshold (float): binarization threshold
               (makes sense only if method==rfx)
@@ -449,28 +440,28 @@ def map_reproducibility(data, vardata, mask, ngroups, method='crfx',
 
         # compute the statistical maps according to the method you like
         if method == 'crfx':
-            smap = ttest(x)
+            stat_map = ttest(x)
         elif method == 'cffx':
-            smap = fttest(x, vx)
+            stat_map = fttest(x, vx)
         elif method == 'cmfx':
-            smap = mfx_ttest(x, vx)
+            stat_map = mfx_ttest(x, vx)
         elif method == 'cjt':
             # if kwargs.has_key('k'):
             if 'k' in kwargs:
                 k = kwargs['k']
             else:
                 k = nsubj / 2
-            smap = conjunction(x, vx, k)
+            stat_map = conjunction(x, vx, k)
         else:
             raise ValueError('unknown method')
 
         # add the binarized map to a reproducibility map
-        rmap += cluster_threshold(smap, mask, threshold, csize) > 0
+        rmap += cluster_threshold(stat_map, domain, threshold, csize) > 0
 
     return rmap
 
 
-def peak_reproducibility(data, vardata, mask, ngroups, sigma, method='crfx',
+def peak_reproducibility(data, vardata, domain, ngroups, sigma, method='crfx',
                          swap=False, verbose=0, **kwargs):
     """ Return a measure of cluster-level reproducibility
     of activation patterns
@@ -482,7 +473,7 @@ def peak_reproducibility(data, vardata, mask, ngroups, sigma, method='crfx',
           the input data from which everything is computed
     vardata: array of shape (nvox,nsubj)
              the variance of the data that is also available
-    mask: refenrtial- and mask-defining image
+    domain: refenrtial- and domain-defining image
     ngroups (int),
              Number of subbgroups to be drawn
     sigma: float, parameter that encodes how far far is
@@ -516,19 +507,20 @@ def peak_reproducibility(data, vardata, mask, ngroups, sigma, method='crfx',
             threshold = kwargs['threshold']
 
             if method == 'crfx':
-                smap = ttest(x)
+                stat_map = ttest(x)
             elif method == 'cmfx':
-                smap = mfx_ttest(x, vx)
+                stat_map = mfx_ttest(x, vx)
             elif method == 'cffx':
-                smap = fttest(x, vx)
+                stat_map = fttest(x, vx)
             elif method == 'cjt':
                 if 'k' in kwargs:
                     k = kwargs['k']
                 else:
                     k = nsubj / 2
-                smap = conjunction(x, vx, k)
+                stat_map = conjunction(x, vx, k)
 
-            pos = get_peak_position_from_thresholded_map(smap, mask, threshold)
+            pos = get_peak_position_from_thresholded_map(
+                stat_map, domain, threshold)
             all_pos.append(pos)
         else:
             # method='bsa' is a special case
@@ -541,7 +533,7 @@ def peak_reproducibility(data, vardata, mask, ngroups, sigma, method='crfx',
             smin = kwargs['smin']
             niter = kwargs['niter']
             afname = afname + '_%02d_%04d.pic' % (niter, i)
-            pos = coord_bsa(mask, tx, theta, dmax, ths, thq, smin, afname)
+            pos = coord_bsa(domain, tx, theta, dmax, ths, thq, smin, afname)
             all_pos.append(pos)
 
     # derive a kernel-based goodness measure from the pairwise comparison
@@ -555,7 +547,7 @@ def peak_reproducibility(data, vardata, mask, ngroups, sigma, method='crfx',
     return score
 
 
-def cluster_reproducibility(data, vardata, mask, ngroups, sigma,
+def cluster_reproducibility(data, vardata, domain, ngroups, sigma,
                             method='crfx', swap=False, verbose=0,
                             **kwargs):
     """Returns a measure of cluster-level reproducibility
@@ -568,7 +560,7 @@ def cluster_reproducibility(data, vardata, mask, ngroups, sigma,
           the input data from which everything is computed
     vardata: array of shape (nvox,nsubj)
              the variance of the data that is also available
-    mask: referential- and mask- defining image instance
+    domain: referential- and domain- defining image instance
     ngroups (int),
              Number of subbgroups to be drawn
     sigma (float): parameter that encodes how far far is
@@ -603,18 +595,18 @@ def cluster_reproducibility(data, vardata, mask, ngroups, sigma,
             csize = kwargs['csize']
             threshold = kwargs['threshold']
             if method == 'crfx':
-                smap = ttest(x)
+                stat_map = ttest(x)
             elif method == 'cmfx':
-                smap = mfx_ttest(x, vx)
+                stat_map = mfx_ttest(x, vx)
             elif method == 'cffx':
-                smap = fttest(x, vx)
+                stat_map = fttest(x, vx)
             elif method == 'cjt':
                 if  'k' in kwargs:
                     k = kwargs['k']
                 else:
                     k = nsubj / 2
-                smap = conjunction(x, vx, k)
-            pos = get_cluster_position_from_thresholded_map(smap, mask,
+                stat_map = conjunction(x, vx, k)
+            pos = get_cluster_position_from_thresholded_map(stat_map, domain,
                                                             threshold, csize)
             all_pos.append(pos)
         else:
@@ -628,7 +620,7 @@ def cluster_reproducibility(data, vardata, mask, ngroups, sigma,
             smin = kwargs['smin']
             niter = kwargs['niter']
             afname = afname + '_%02d_%04d.pic' % (niter, i)
-            pos = coord_bsa(mask, tx, theta, dmax, ths, thq, smin, afname)
+            pos = coord_bsa(domain, tx, theta, dmax, ths, thq, smin, afname)
         all_pos.append(pos)
 
     # derive a kernel-based goodness measure from the pairwise comparison
@@ -664,9 +656,9 @@ def group_reproducibility_metrics(
     peak_rep_results: dictionary,
                       results of peak-level reproducibility analysis
     """
-    from nibabel import load, Nifti1Image
+    from nibabel import load
     from ..mask import intersect_masks
-
+    
     if ((len(variance_images) == 0) & (method is not 'crfx')):
         raise ValueError('Variance images are necessary')
 
@@ -675,9 +667,7 @@ def group_reproducibility_metrics(
     # compute the group mask
     affine = load(mask_images[0]).get_affine()
     mask = intersect_masks(mask_images, threshold=0) > 0
-    grp_mask = Nifti1Image(mask.astype('u8'), affine)
-    xyz = np.where(mask)
-    xyz = np.array(xyz).T
+    domain = grid_domain_from_array(mask, affine)
 
     # read the data
     group_con = []
@@ -715,15 +705,15 @@ def group_reproducibility_metrics(
             for i in range(number_of_samples):
                 if do_voxels:
                     kappa.append(voxel_reproducibility(
-                            group_con, group_var, grp_mask, ng, method, swap,
+                            group_con, group_var, domain, ng, method, swap,
                             **kwargs))
                 if do_clusters:
                     cls.append(cluster_reproducibility(
-                            group_con, group_var, grp_mask, ng, sigma, method,
+                            group_con, group_var, domain, ng, sigma, method,
                             swap, **kwargs))
                 if do_peaks:
                     pk.append(peak_reproducibility(
-                            group_con, group_var, grp_mask, ng, sigma, method,
+                            group_con, group_var, domain, ng, sigma, method,
                             swap, **kwargs))
 
             if do_voxels:
@@ -741,15 +731,15 @@ def group_reproducibility_metrics(
 # -------------------------------------------------------
 
 
-def coord_bsa(mask, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
+def coord_bsa(domain, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
               afname='/tmp/af.pic'):
     """ main function for  performing bsa on a dataset
     where bsa =  nipy.labs.spatial_models.bayesian_structural_analysis
 
     Parameters
     ----------
-    mask: image instance,
-          referential- and mask-defining image
+    domain: image instance,
+          referential- and domain-defining image
     betas: array of shape (nbnodes, subjects),
            the multi-subject statistical maps
     theta: float, optional
@@ -774,27 +764,20 @@ def coord_bsa(mask, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     from ..graph.field import Field
     import  pickle
 
-    nvox = mask.get_data().sum()
-    affine = mask.get_affine()
-    xyz = np.array(np.where(mask.get_data())).T
-
     # create the field strcture that encodes image topology
     Fbeta = Field(nvox)
     Fbeta.from_3d_grid(xyz.astype(np.int), 18)
 
     # volume density
-    voxvol = np.absolute(np.linalg.det(affine))
-    g0 = 1.0 / (voxvol * nvox)
+    g0 = 1.0 / domain.local_volume.sum()
 
-    affine = mask.get_affine()
-    shape = mask.get_shape()
-    coord = np.dot(np.hstack((xyz, np.ones((nvox, 1)))), affine.T)[:, :3]
+    coord = domain.get_coord()
 
     crmap, AF, BF, p = compute_BSA_quick(
         Fbeta, betas, coord, dmax, xyz, affine, shape, thq, smin, ths, theta,
         g0, verbose=0)
     if AF == None:
         return None
-    pickle.dump(AF, open(afname, 'w'), 2)
+    #pickle.dump(AF, open(afname, 'w'), 2)
     afcoord = AF.discrete_to_roi_features('position')
     return afcoord

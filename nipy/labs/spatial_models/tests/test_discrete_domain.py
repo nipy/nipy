@@ -88,14 +88,21 @@ def test_matrix_from_3d_array():
         ne -= np.prod(shape[:3])/shape[d]
     ne *= 2
     print sm.data, ne
-    assert((sm.data>0).sum()==ne)
+    assert((sm.data > 0).sum() == ne)
 
 def test_array_domain():
     """Test the construction of domain based on array
     """
     toto = np.ones(shape)
     ddom = domain_from_array(toto)
-    assert (np.sum(ddom.local_volume)==np.prod(shape))
+    assert (np.sum(ddom.local_volume) == np.prod(shape))
+
+def test_connected_components():
+    """Test the estimation of connected components
+    """
+    toto = np.ones(shape)
+    ddom = domain_from_array(toto)
+    assert (ddom.connected_components == np.zeros(domain.size))
 
 def test_image_domain():
     """Test the construction of domain based on image

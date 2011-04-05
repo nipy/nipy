@@ -469,6 +469,11 @@ class DiscreteDomain(object):
         """
         return self.local_volume
 
+    def connected_components(self):
+        """returns a labelling of the domain into connected components
+        """
+        return wgraph_from_coo_matrix(self.topology).cc()
+
     def mask(self, bmask, id=''):
         """ returns an DiscreteDomain instance that has been further masked
         """
@@ -672,12 +677,23 @@ class NDGridDomain(StructuredDomain):
             DD.set_feature(fid, f[bmask])
         return DD
 
-    def to_image(self, path=None):
-        """Write itself as an image, and returns it
+    def to_image(self, path=None, data=None):
+        """Write itself as a binary image, and returns it
+        
+        Parameters
+        ==========
+        path: string, path of the output image, if any
+        data: array of shape self.size,
+              data to put in the nonzer-region of the image
         """
-        data = np.zeros(self.shape).astype(np.int8)
-        data[self.ijk[:, 0], self.ijk[:, 1], self.ijk[:, 2]] = 1
-        nim = Nifti1Image(data, self.affine)
+        wdata = np.zeros(self.shape).astype(np.int8)
+        wdata[self.ijk[:, 0], self.ijk[:, 1], self.ijk[:, 2]] = 1
+        if data is not None:
+            if data.size != self.size:
+                raise ValueError('incorrect data size')
+            wdata[wdata > 0] = data
+
+        nim = Nifti1Image(wdata, self.affine)
         nim.get_header()['descrip'] = 'mask image representing domain %s' \
             % self.id
         if path is not None:
