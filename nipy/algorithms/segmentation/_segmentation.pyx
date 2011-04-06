@@ -19,7 +19,7 @@ cdef extern from "mrf.h":
                  ndarray ref,
                  ndarray XYZ, 
                  double beta, 
-                 int copy, 
+                 int synchronous, 
                  int scheme)
     double interaction_energy(ndarray ppm, 
                               ndarray XYZ)
@@ -31,7 +31,7 @@ import_array()
 import numpy as np
 import warnings
 
-def _ve_step(ppm, ref, XYZ, double beta, int copy, int scheme):
+def _ve_step(ppm, ref, XYZ, double beta, int synchronous, int scheme):
 
     if not XYZ.shape[1] == 3: 
         warnings.warn('MRF regularization only implemented in 3D, doing nothing')
@@ -43,7 +43,7 @@ def _ve_step(ppm, ref, XYZ, double beta, int copy, int scheme):
     if not XYZ.flags['C_CONTIGUOUS'] or not XYZ.dtype=='int':
         raise ValueError('XYZ array should be int C-contiguous')
 
-    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, beta, copy, scheme)
+    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, beta, synchronous, scheme)
 
     return ppm 
 

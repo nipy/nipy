@@ -40,7 +40,6 @@ def vm_step_gauss(ppm, data_masked, mask):
         prop[i] = Z/float(data_masked.size) 
     return mu, sigma, prop
 
-
 def weighted_median(x, w, ind): 
     F = np.cumsum(w[ind])
     f = .5*(w.sum()+1)
@@ -82,7 +81,7 @@ class VEM(object):
     """
     
     def __init__(self, data, nclasses, mask=None, noise='gauss', 
-                 ppm=None, copy=False, scheme='mf', 
+                 ppm=None, synchronous=False, scheme='mf', 
                  labels=None): 
         """
         A class to represent a variational EM algorithm for tissue
@@ -126,7 +125,7 @@ class VEM(object):
         self.nclasses = nclasses
         
         # Inference scheme parameters 
-        self.copy = copy
+        self.synchronous = synchronous
         if scheme in message_passing: 
             self.scheme = message_passing[scheme]
         else: 
@@ -190,7 +189,7 @@ class VEM(object):
         else: 
             print_('  ... MRF regularization')
             self.ppm = _ve_step(self.ppm, self.posterior_ext_field, self._XYZ,  
-                                beta, self.copy, self.scheme)
+                                beta, self.synchronous, self.scheme)
             
 
     def run(self, mu=None, sigma=None, prop=None, beta=BETA, niters=NITERS, freeze_prop=True): 

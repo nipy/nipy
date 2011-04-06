@@ -1,3 +1,4 @@
+from .brain_segmentation import * 
 from .vem import * 
 
 from numpy.testing import Tester
