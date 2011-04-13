@@ -12,15 +12,15 @@ from nipy import load_image, save_image
 from nipy.core.image.affine_image import AffineImage 
 from nipy.algorithms.segmentation import brain_segmentation
 
-K_CSF = 1
-K_GM = 1
-K_WM = 1
 NITERS = 10
 BETA = 0.2
 SCHEME = 'mf'
 NOISE = 'gauss'
 FREEZE_PROP = True
-
+LABELS = ('CSF', 'GM', 'WM')
+K_CSF = 1
+K_GM = 1
+K_WM = 1
 
 def fuzzy_dice(gpm, ppm, mask):
     """
@@ -97,9 +97,21 @@ scheme = get_argument('scheme', SCHEME)
 noise = get_argument('noise', NOISE)
 freeze_prop = get_argument('freeze_prop', FREEZE_PROP)
 
+
+# Labels
+labels = []
+labels += ['CSF' for k in range(k_csf)]
+labels += ['GM' for k in range(k_gm)]
+labels += ['WM' for k in range(k_wm)]
+mixmat = []
+mixmat += [[1,0,0] for k in range(k_csf)]
+mixmat += [[0,1,0] for k in range(k_gm)]
+mixmat += [[0,0,1] for k in range(k_wm)]
+mixmat = np.array(mixmat) 
+
 # Perform tissue classification
 ppm_img, label_img = brain_segmentation(img, mask_img=mask_img, beta=beta, niters=niters, 
-                                        k_csf=k_csf, k_gm=k_gm, k_wm=k_wm,
+                                        labels=labels, mixmat=mixmat,  
                                         noise=noise, freeze_prop=freeze_prop, 
                                         scheme=SCHEME)
 outfile = join(mkdtemp(), 'hard_classif.nii')

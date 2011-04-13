@@ -4,9 +4,6 @@ from nipy.core.image.affine_image import AffineImage
 
 from .vem import VEM
 
-K_CSF = 1
-K_GM = 1
-K_WM = 1
 NITERS = 25
 BETA = 0.2
 SCHEME = 'mf'
@@ -17,7 +14,7 @@ LABELS = ('CSF', 'GM', 'WM')
 VERBOSE = True
 
 
-def initialize_parameters(data, k_csf, k_gm, k_wm): 
+def initialize_parameters(data, klasses): 
     """
     Rough parameter initialization by moment matching with a brainweb
     image for which accurate parameters are known.
@@ -29,20 +26,8 @@ def initialize_parameters(data, k_csf, k_gm, k_wm):
     ref_glob_mean = 1643.1
     ref_glob_std = 502.8
     
-    # Labels
-    labels = []
-    labels += ['CSF' for k in range(k_csf)]
-    labels += ['GM' for k in range(k_gm)]
-    labels += ['WM' for k in range(k_wm)]
-    
     # Moment matching 
-    def dummy_grid(o, k): 
-        return -0.5 + o + np.arange(1, (k+1), dtype='double')/(k+1)
-    x_csf = dummy_grid(0, k_csf) # in [-.5,.5]
-    x_gm = dummy_grid(1, k_gm) # in [.5,1.5]
-    x_wm = dummy_grid(2, k_wm) # in [1.5,2.5]
-    x = np.concatenate((x_csf, x_gm, x_wm))
-
+    x = np.linspace(0, 2, num=klasses) 
     prop = np.ones(len(x))/len(x)
     mu = np.zeros(len(x))
     sigma = np.zeros(len(x))
@@ -57,12 +42,12 @@ def initialize_parameters(data, k_csf, k_gm, k_wm):
     a = np.std(data) / ref_glob_std
     b = np.mean(data) - a*ref_glob_mean
 
-    return a*mu + b, a*sigma, prop, labels
+    return a*mu + b, a*sigma, prop
 
 
 
 def brain_segmentation(img, mask_img=None, hard=False, niters=NITERS, 
-                       k_csf=K_CSF, k_gm=K_GM, k_wm=K_WM, 
+                       labels=LABELS, mixmat=None,  
                        noise=NOISE, beta=BETA, freeze_prop=FREEZE_PROP, 
                        scheme=SCHEME, synchronous=SYNCHRONOUS):
     
@@ -99,8 +84,8 @@ def brain_segmentation(img, mask_img=None, hard=False, niters=NITERS,
     mask = np.where(mask_img.get_data()>0)
 
     # Perform tissue classification
-    mu, sigma, prop, labels = initialize_parameters(img.get_data()[mask], k_csf, k_gm, k_wm)
-    vem = VEM(img.get_data(), len(labels), mask=mask, labels=labels, scheme=scheme, noise=noise)
+    mu, sigma, prop = initialize_parameters(img.get_data()[mask], len(labels))
+    vem = VEM(img.get_data(), labels, mask=mask, scheme=scheme, noise=noise)
     mu, sigma, prop = vem.run(mu=mu, sigma=sigma, prop=prop, freeze_prop=freeze_prop, 
                               beta=beta, niters=niters)
 
@@ -110,13 +95,15 @@ def brain_segmentation(img, mask_img=None, hard=False, niters=NITERS,
         print('Estimated tissue std deviates: %s' % sigma) 
         if not freeze_prop: 
             print('Estimated tissue proportions: %s' % prop) 
-        
-    # Sort and merge equivalent classes
-    labels = vem.sort_labels(mu)
-    ppm = np.zeros(list(img.shape)+[3]) 
-    for k in range(len(labels)): 
-        kk = LABELS.index(labels[k])
-        ppm[..., kk][mask] += vem.ppm[..., k][mask]
+
+    # Sort and merge equivalent classes mixmat should be a matrix with
+    # shape (K, 3), each row describing the probability of tissues
+    # given the corresponding label.
+    if mixmat == None: 
+        ppm = vem.ppm
+    else:
+        ppm = np.zeros(list(img.shape)+[mixmat.shape[1]]) 
+        ppm[mask] = np.dot(vem.ppm[mask], mixmat) 
     del vem 
 
     # Create output images 

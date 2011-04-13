@@ -80,9 +80,8 @@ class VEM(object):
     Classification via VEM algorithm.
     """
     
-    def __init__(self, data, nclasses, mask=None, noise='gauss', 
-                 ppm=None, synchronous=False, scheme='mf', 
-                 labels=None): 
+    def __init__(self, data, labels, mask=None, noise='gauss', 
+                 ppm=None, synchronous=False, scheme='mf'): 
         """
         A class to represent a variational EM algorithm for tissue
         classification.
@@ -92,12 +91,20 @@ class VEM(object):
         data: array 
           Image data (n-dimensional)
           
-        nclasses: int
-          Desired number of classes
+        labels: int or sequence 
+          Desired number of classes, or sequence of strings
 
         mask: sequence
           Sequence of one-dimensional coordinate arrays
         """
+        # Labels
+        if hasattr(labels, '__iter__'): 
+            self.nclasses = len(labels) 
+            self.labels = labels 
+        else: 
+            self.nclasses = int(labels)
+            self.labels = [str(l) for l in range(self.nclasses)]
+
         # Make default mask (required by MRF regularization) 
         # This will be passed to the _ve_step C-routine, which assumes
         # a contiguous int array and raise an error otherwise. 
@@ -115,14 +122,13 @@ class VEM(object):
         # If a ppm is provided, interpret it as a prior, otherwise
         # create ppm from scratch and assume flat prior.
         if ppm == None:
-            self.ppm = np.zeros(list(data.shape)+[nclasses])
-            self.ppm[self.mask] = 1./nclasses
+            self.ppm = np.zeros(list(data.shape)+[self.nclasses])
+            self.ppm[self.mask] = 1./self.nclasses
         else:
             self.ppm = ppm 
         self.data_masked = data[self.mask]
         self.prior_ext_field = self.ppm[self.mask]
-        self.posterior_ext_field = np.zeros([self.data_masked.size, nclasses])
-        self.nclasses = nclasses
+        self.posterior_ext_field = np.zeros([self.data_masked.size, self.nclasses])
         
         # Inference scheme parameters 
         self.synchronous = synchronous
@@ -134,13 +140,6 @@ class VEM(object):
             self.dist, self._vm_step = noise_model[noise]
         else:
             raise ValueError('Unknown noise model')
-
-        # Label information 
-        if labels == None: 
-            labels = [str(l) for l in range(nclasses)]
-        if not len(labels) == self.nclasses: 
-            raise ValueError('Wrong length for labels sequence') 
-        self.labels = labels
 
         # Cache beta parameter
         self._beta = BETA
