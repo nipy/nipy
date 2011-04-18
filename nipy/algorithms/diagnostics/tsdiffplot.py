@@ -20,13 +20,13 @@ def plot_tsdiffs(results, axes=None):
        :func:`nipy.algorithms.diagnostics.time_slice_diff`
     
     '''
+    import matplotlib.pyplot as plt
     T = len(results['volume_means'])
     S = results['slice_mean_diff2'].shape[1]
     mean_means = np.mean(results['volume_means'])
     scaled_slice_diff = results['slice_mean_diff2'] / mean_means
 
     if axes is None:
-        import matplotlib.pyplot as plt
         n_plots = 4
         fig = plt.figure()
         fig.set_size_inches([10,10])
@@ -51,7 +51,7 @@ def plot_tsdiffs(results, axes=None):
 
     # Use HSV in order to code the slices from bottom to top:
     ax.scatter(X.T.ravel(),scaled_slice_diff.ravel(),
-               c=Y.T.ravel(),cmap=cm.hsv,
+               c=Y.T.ravel(),cmap=plt.cm.hsv,
                alpha=0.2)
 
     xmax_labels(ax, T-1,
