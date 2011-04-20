@@ -293,13 +293,9 @@ def safe_dtype(*dtypes):
     cast to numpy dtypes.  See numpy.sctypes for a list of valid
     dtypes.  Composite dtypes and string dtypes are not safe dtypes.
 
-    To see if your dtypes are valid, build a numpy array of each dtype
-    and the resulting object should return *1* from the
-    varname.dtype.isbuiltin attribute.
-
     Parameters
     ----------
-    dtypes : sequence of builtin ``np.dtype``
+    dtypes : sequence of ``np.dtype``
 
     Returns
     -------
@@ -307,7 +303,6 @@ def safe_dtype(*dtypes):
 
     Examples
     --------
-
     >>> c1 = CoordinateSystem('ij', 'input', coord_dtype=np.float32)
     >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex)
     >>> safe_dtype(c1.coord_dtype, c2.coord_dtype)
@@ -317,7 +312,7 @@ def safe_dtype(*dtypes):
     >>> safe_dtype(type('foo'))
     Traceback (most recent call last):
     ...
-    TypeError: dtype must be valid numpy dtype int, uint, float or complex
+    TypeError: dtype must be valid numpy dtype bool, int, uint, float or complex
 
     >>> # Check for a valid dtype
     >>> myarr = np.zeros(2, np.float32)
@@ -332,13 +327,13 @@ def safe_dtype(*dtypes):
     >>> safe_dtype(mydtype)
     Traceback (most recent call last):
     ...
-    TypeError: dtype must be valid numpy dtype int, uint, float or complex
+    TypeError: dtype must be valid numpy dtype bool, int, uint, float or complex
     """
     arrays = [np.zeros(2, dtype) for dtype in dtypes]
-    notbuiltin = [not a.dtype.isbuiltin for a in arrays]
-    if np.any(notbuiltin):
-        raise TypeError('dtype must be valid numpy dtype int, '
-                        'uint, float or complex')
+    kinds = [a.dtype.kind for a in arrays]
+    if not set(kinds).issubset('iubfc'):
+        raise TypeError('dtype must be valid numpy dtype bool, '
+                        'int, uint, float or complex')
     return np.array(arrays).dtype
 
 
