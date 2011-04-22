@@ -147,6 +147,13 @@ def test_safe_dtype():
     yield assert_equal, dt, np.float32
     dt = safe_dtype(np.float32, np.int64, np.uint32)
     yield assert_equal, dt, np.float64
+    # test byteswapped types - isbuiltin will be false
+    orig_dt = np.dtype('f')
+    dt = safe_dtype(orig_dt, np.int64, np.uint32)
+    yield assert_equal, dt, np.float64
+    swapped_dt = orig_dt.newbyteorder()
+    dt = safe_dtype(swapped_dt, np.int64, np.uint32)
+    yield assert_equal, dt, np.float64
 
 
 def test_product():
