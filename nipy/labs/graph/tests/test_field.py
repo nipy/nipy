@@ -5,14 +5,13 @@ import numpy as np
 from ..field import Field, field_from_coo_matrix_and_data
 
 def basic_field():
-    dx = 10
-    dy = 10
-    dz = 10
-    F = Field(dx*dy*dz)
+    dx, dy, dz = 10, 10, 10
+    F = Field(dx * dy * dz)
     
-    xyz = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
-    F.from_3d_grid(xyz,26)
-    data = np.sum(xyz,1).astype('d')
+    xyz = np.array( [[x, y, z] for z in range(dz) for y in range(dy) 
+                     for x in range(dx)] )
+    F.from_3d_grid(xyz, 26)
+    data = np.sum(xyz, 1).astype('d')
     F.set_field(data)
     return F
 
@@ -21,11 +20,12 @@ def basic_field_random():
     dx = 10
     dy = 10
     dz = 1
-    F = Field(dx*dy*dz)
+    F = Field(dx * dy * dz)
     
-    xyz = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
-    F.from_3d_grid(xyz,26)
-    data = 0.5*nr.randn(dx*dy*dz,1)+np.sum(xyz,1).astype('d')
+    xyz = np.array( [[x, y, z] for z in range(dz) for y in range(dy) 
+                     for x in range(dx)] )
+    F.from_3d_grid(xyz, 26)
+    data = 0.5 * nr.randn(dx * dy * dz,1) + np.sum(xyz, 1).astype('d')
     F.set_field(data)
     return F
 

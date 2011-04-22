@@ -18,8 +18,7 @@ Fixme : add a subfield method, similar to subgraph
 
 
 def field_from_coo_matrix_and_data(x, data):
-    """
-    Instantiates a weighted graph from a (sparse) coo_matrix
+    """ Instantiates a weighted graph from a (sparse) coo_matrix
 
     Parameters
     ----------
@@ -42,6 +41,23 @@ def field_from_coo_matrix_and_data(x, data):
     ifield = Field(x.shape[0], edges, weights, data)
     return ifield
 
+def field_from_graph_and_data(g, data):
+    """ Instantiate a Fieldfrom a WeightedGraph plus some feature data    
+    Parameters
+    ----------
+    x: (V, V) scipy.sparse.coo_matrix instance,
+       the input matrix
+    data: array of shape (V, dim),
+          the field data
+
+    Returns
+    -------
+    ifield: resulting field instance
+    """
+    if data.shape[0] != g.V:
+        raise ValueError("data and g do not have consistent shapes")
+    ifield = Field(g.V, g.edges, g.weights, data)
+    return ifield
 
 class Field(fg.WeightedGraph):
     """

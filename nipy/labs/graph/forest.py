@@ -94,13 +94,16 @@ class Forest(WeightedGraph):
         """
         self.children = [np.array([]) for v in range(self.V)]
         if self.E > 0:
-            i = self.weights < 0
-            a = self.edges[i, 0]
-            b = self.edges[i, 1]
-            ci, ne, we = graph_to_neighb(a, b, np.ones(np.size(a)), self.V)
-
-            self.children = [np.array(ne[ci[v]:ci[v + 1]])
-                              for v in range(self.V)]
+            K = self.copy()
+            K.remove_edges(K.weights < 0)
+            self.children = K.to_coo_matrix().tolil().rows.tolist()
+            #i = self.weights < 0
+            #a = self.edges[i, 0]
+            #b = self.edges[i, 1]
+            #ci, ne, we = graph_to_neighb(a, b, np.ones(np.size(a)), self.V)
+            #
+            #self.children = [np.array(ne[ci[v]:ci[v + 1]])
+            #                  for v in range(self.V)]
 
     def get_children(self, v=-1):
         """

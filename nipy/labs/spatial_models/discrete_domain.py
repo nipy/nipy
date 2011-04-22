@@ -355,7 +355,7 @@ class MeshDomain(object):
         G.symmeterize()
 
         # remove redundant edges
-        G.cut_redundancies()
+        G = G.cut_redundancies()
 
         # make it a metric graph
         G.set_euclidian(self.coord)

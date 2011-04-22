@@ -634,11 +634,11 @@ def _auxiliary_graph(G, Features):
     K = WeightedGraph(2 * G.V - 1)
     K.E = G.E
     K.edges = G.edges.copy()
-    K.weights = np.zeros(K.E)
-    #
+    K.weights = np.ones(K.E)
     K.symmeterize()
-    valid = K.edges[:, 0] < K.edges[:, 1]
-    K.remove_edges(valid)
+    if K.E > 0:    
+        valid = K.edges[:, 0] < K.edges[:, 1]
+        K.remove_edges(valid)
     #
     K.remove_trivial_edges()
     _initial_inertia(K, Features)
