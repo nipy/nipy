@@ -74,14 +74,7 @@ extern "C" {
     \param thisone the fff_graph structure to be deleted
   */
   extern void fff_graph_delete( fff_graph* thisone );
-  /*! 
-    \brief Reset function (with partial destruction) for 
-    the fff_graph structure 
-    \param thisone the fff_graph structure to be reset
-    \param v the number of edges to be set
-    \param e the number of vertices to be set
-  */
-  extern void fff_graph_reset( fff_graph** thisone, const long v, const long e );
+
   /*! 
     \brief Other Constructor for the fff_graph structure 
     \param v the number of edges to be set
@@ -100,33 +93,7 @@ extern "C" {
     \param D the values of edges to be set
   */
   extern fff_graph* fff_graph_build_safe(const long v, const long e, const fff_array *A, const fff_array* B, const fff_vector *D );
-   /*! 
-    \brief Fill a graph structures with data
-    \param thisone existing graph
-    \param A the origins of edges to be set
-    \param B the ends of edges to be set
-    \param D the values of edges to be set
-  */
-  extern void fff_graph_set( fff_graph* thisone , const long *A, const long* B, const double*D );
-  /*! 
-    \brief Fill a graph structures with data
-    \param thisone existing graph
-    \param A the origins of edges to be set
-    \param B the ends of edges to be set
-    \param D the values of edges to be set
-  */
-  extern void fff_graph_set_safe( fff_graph* thisone , const fff_array *A, const fff_array* B, const fff_vector *D );
-  /*! 
-    \brief edit the structure of a graph
-    \param A the origins of edges
-    \param B the ends of edges 
-    \param D the values of edges 
-    \param thisone the edited graph
-
-    Caveat : It is assumed that sufficient memory has been allocated for A,B,D
-    (G->E elements)
-  */
-  extern void fff_graph_edit(long *A, long* B, double*D, const fff_graph* thisone );
+ 
    /*! 
     \brief edit the structure of a graph
     \param A the origins of edges
@@ -135,71 +102,6 @@ extern "C" {
     \param thisone the edited graph
   */
   extern void fff_graph_edit_safe(fff_array *A, fff_array* B, fff_vector *D, const fff_graph* thisone );
- 
-  
-  /*! \brief Normalization of the values of a graph per rows
-    \param G graph that is being normalized
-	\param SR the row-wise sums
-	
-    the weights G->eD are normalized so that
-    sum {G->eA[j]==i} G->eD[j] = 1 
-	SR should be allocated G->V elements
-  */
-
-  extern void fff_graph_normalize_rows(fff_graph* G, fff_vector*SR);
-  
-  /*! \brief Normalization of the values of a graph per columns
-    \param G graph that is being normalized
-	\param SC the column-wise sums
-
-    the weights G->eD are normalized so that
-    sum {G->eB[j]==i} G->eD[j] = 1 
-	SC should be allocated G->V elements
-  */
-  extern void fff_graph_normalize_columns(fff_graph* G, fff_vector* SC);
-
- /*! \brief Normalization of the values of a graph per columns
-    \param G graph that is being normalized
-	\param SR the row-wise sums
-	\param SC the column-wise sums
-
-    the weights G->eD are normalized symmetrically
-	SR and SC should be allocated G->V elements
- */
-  extern void fff_graph_normalize_symmetric(fff_graph* G, fff_vector* SR, fff_vector *SC);
-
-  /*! \brief Basic sparse-graph Copy function
-       \param G2 copy graph  
-       \param G1 original graph
-
-       G2 = G1;
-       Note that G2 must have the same number of edges as G1, and
-       must be allocated the correct memory size.
-  */
-  extern void fff_graph_copy(fff_graph* G2,const fff_graph* G1);
-  
-  /*! \brief Extraction of a subgraph from a given graph
-       \param K output graph
-       \param G input graph
-       \param v list of vertices to be retained in the graph
-       
-       All the egdges adjacent to a vertex not in v are removed 
-       It should be notices that the vertices are relabeled to [0..n-1]
-       where n = size(v) 
-  */
-  extern void fff_get_subgraph(fff_graph **K, const fff_graph *G, const fff_array* v);
- 
-  /*! \brief Extraction of a subgraph from a given graph
-       \param K output graph
-       \param G input graph
-       \param b is nonzero for each edge to be retained.
-       
-       b is assumed to have G->V elements.
-       All the egdges adjacent to a vertex i such that b[i]=0 are removed 
-       It should be notices that the vertices are relabeled to [0..n-1]
-       where n = size(v) 
-  */
-  extern void fff_extract_subgraph(fff_graph **K, const fff_graph *G, long* b);
   
   /*
     \brief Conversion of a graph into a neighboring system

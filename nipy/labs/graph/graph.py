@@ -1,10 +1,8 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from _graph import ( __doc__, graph_cc,
-                     graph_3d_grid, graph_knn, graph_mst,
+from _graph import ( __doc__, graph_cc, graph_3d_grid, graph_knn, graph_mst,
                      graph_dijkstra, graph_dijkstra_multiseed, graph_floyd,
-                     graph_eps, graph_normalize,
-                     graph_voronoi, graph_cross_knn, 
+                     graph_eps, graph_voronoi, graph_cross_knn, 
                      graph_cross_eps, graph_cross_eps_robust, graph_rd, 
                      graph_skeleton)
 
@@ -558,6 +556,7 @@ class WeightedGraph(Graph):
         ----
         Note that when sum_{edge[e, .] == a } D[e] = 0, nothing is performed
         """
+        from scipy.sparse import dia_matrix
         c = int(c)
         if not c in [0, 1, 2]:
             raise ValueError('c must be equal to 0, 1 or 2')
@@ -567,24 +566,27 @@ class WeightedGraph(Graph):
                 return np.zeros(self.V)
             else:
                 return np.zeros(self.V), np.zeros(self.V)
-        # adj = self.to_coo_matrix().tocsr()
-        if c < 2:
-            
-            i, j, d, s = graph_normalize(self.edges[:, 0], self.edges[:, 1],
-                    self.weights, c, self.V)
-        else:
-            i, j, d, s, t = graph_normalize(self.edges[:, 0], self.edges[:, 1],
-                      self.weights, c, self.V)
-
-        self.E = np.size(i)
-        self.edges = np.zeros((self.E, 2), np.int)
-        self.edges[:, 0] = i
-        self.edges[:, 1] = j
-        self.weights = d
-        if c < 2:
-            return s
-        else:
-            return s, t
+        adj = self.to_coo_matrix().tocsr()
+        s1 = adj.sum(0)
+        s2 = adj.sum(1)
+        if c == 1:
+            s = dia_matrix((1. / s1, 0), shape=(self.V, self.V))
+            adj = s * adj
+            self.weights = wgraph_from_adjacency(adj).get_weights()
+            return np.asarray(s1)
+        if c == 0:
+            s = dia_matrix((1. / s2.T, 0), shape=(self.V, self.V))
+            adj = adj * s
+            self.weights = wgraph_from_adjacency(adj).get_weights()
+            return np.asarray(s2)
+        if c == 2:
+            s1 = dia_matrix((1. / np.sqrt(s1), 0), 
+                            shape=(self.V, self.V))
+            s2 = dia_matrix((1. / np.sqrt(adj.sum(1)), 0), 
+                            shape=(self.V, self.V))
+            adj = (s1 * adj) * s2
+            self.weights = wgraph_from_adjacency(adj).get_weights()
+            return np.asarray(s1), np.asarray(s2)
 
     def set_euclidian(self, X):
         """
