@@ -142,30 +142,6 @@ then (B[e] A[e] D[e]) is another edge \n\
 - trivial edges are included, and have distance 0.\n\
   ";
 
-static char graph_normalize_doc[] = 
-" a,b,d,s = graph_normalize(a,b,d,c=0,V)\n\
-Normalize the graph according to the index c\n\
-Normalization means that the sum of the edges values \n\
-that go into or out each vertex must sum to 1 \n\
-INPUT:\n\
-- The edges of the input graph are defined through the couple of 1-d arrays \n\
-A,B such that [A[e] B[e]] are the vertices and D[e] an associated attribute \n\
-(distance/weight/affinity) \n\
-- c is an index that designates the array \n\
-according to which D is normalized \n\
-It is an optional argument, by default c = 0\n\
-c == 0 => for each vertex a, sum{A[e]=a} D[e]=1 \n\
-c == 1 => for each vertex b, sum{B[e]=b} D[e]=1 \n\
-c == 2 => a symmetric normalization is performed \n\
-- V is the numner of vertices of the graph\n\
-It is an optional argument, by default v = max(max(a),max(b))+1\n\
-OUTPUT:\n\
-- The arrays A,B,D normalized as required \n\
-- s: the values sum{A[e]=a} D[e](resp sum{B[e]=b} D[e]) \n\
-- if c==2, t= sum{B[e]=a} D[e]\n\
-note that when sum(A[e]=a) D[e]=0, nothing is performed \n\
-";
-
 static char graph_cc_doc[] = 
 " label = graph_cc(a,b,d,V)\n\
   returns the connected components as labels.\n\
@@ -641,75 +617,6 @@ static PyObject* graph_3d_grid(PyObject* self, PyObject* args)
  ************ Part 2 : graph analysis ***************************
  ***************************************************************/
 
-static PyObject* graph_normalize(PyObject* self, PyObject* args)
-{
-  PyArrayObject *a, *b, *d, *s, *t;
-  int eA,eB,V=0;
-  int c=0;
-
-  /* Parse input */ 
-  /* see http://www.python.org/doc/1.5.2p2/ext/parseTuple.html*/
-  int OK = PyArg_ParseTuple( args, "O!O!O!|ii:graph_normalize", 
-			     &PyArray_Type, &a,
-			     &PyArray_Type, &b,
-			     &PyArray_Type, &d,
-			     &c,			     
-                             &V
-                             ); 
-  if (!OK) Py_RETURN_NONE; 
-    
-  /* prepare C arguments */
-  fff_array* A = fff_array_fromPyArray( a ); 
-  fff_array* B = fff_array_fromPyArray( b );
-  fff_vector* D = fff_vector_fromPyArray(d);
-  int E = A->dimX;
-  if (V<1){
-     eA = (int)_fff_array_max1d(A)+1;
-     eB = (int)_fff_array_max1d(B)+1;
-     if (eA>V) V = eA;
-     if (eB>V) V = eB;
-   }
-
-  /* do the job */
-  fff_graph *G = fff_graph_build_safe(V,E,A,B,D);
-  fff_vector* S = fff_vector_new(V);
-  fff_vector* T = NULL;
-  
-  if (c>2) c=0;
-
-  switch (c)
-    {
-    case 0:{
-      fff_graph_normalize_rows(G,S);
-      break;}
-    case 1:{
-      fff_graph_normalize_columns(G,S);
-      break;}
-	case 2:{
-	  T = fff_vector_new(V);
-      fff_graph_normalize_symmetric(G,S,T);
-      break;}
-    }
-  fff_graph_edit_safe(A,B,D,G);
-  fff_graph_delete(G);
-  
-  /* get the results as python arrrays*/
-  s = fff_vector_toPyArray( S );
-  a = fff_array_toPyArray( A );
-  b = fff_array_toPyArray( B );
-  d = fff_vector_toPyArray( D );
-
-  /* Output tuple */
-  PyObject* ret;
-  if (c<2)ret = Py_BuildValue("NNNN",a,b,d,s);
-  else{
-	t = fff_vector_toPyArray( T );
-	ret = Py_BuildValue("NNNNN",a,b,d,s,t);
-  }
-	
-  return ret;
-}
-
 static PyArrayObject* graph_cc(PyObject* self, PyObject* args)
 {
   PyArrayObject *a, *b, *d, *l;
@@ -1032,10 +939,6 @@ static PyMethodDef module_methods[] = {
    (PyCFunction)graph_3d_grid,          /* corresponding C function */
    METH_KEYWORDS,          /* ordinary (not keyword) arguments */
    graph_3d_grid_doc},        /* doc string */
-   {"graph_normalize",        /* name of func when called from Python */
-   (PyCFunction)graph_normalize,          /* corresponding C function */
-   METH_KEYWORDS,          /* ordinary (not keyword) arguments */
-   graph_normalize_doc},        /* doc string */
   {"graph_cc",        /* name of func when called from Python */
    (PyCFunction)graph_cc,          /* corresponding C function */
    METH_KEYWORDS,          /* ordinary (not keyword) arguments */
