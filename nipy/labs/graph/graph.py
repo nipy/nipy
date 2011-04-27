@@ -1,14 +1,12 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from _graph import __doc__, graph_cc, graph_degrees, graph_main_cc, \
-            graph_3d_grid, graph_complete, graph_knn, graph_mst, \
-            graph_dijkstra, graph_dijkstra_multiseed, graph_floyd, \
-            graph_eps, graph_reorder, graph_cut_redundancies, \
-            graph_normalize, graph_set_euclidian, graph_set_gaussian, \
-            graph_voronoi, graph_symmeterize, graph_antisymmeterize, \
-            graph_to_neighb, graph_cross_knn, graph_cross_eps, \
-            graph_cross_eps_robust, graph_rd, graph_skeleton, \
-            graph_is_connected
+from _graph import ( __doc__, graph_cc,
+                     graph_3d_grid, graph_knn, graph_mst,
+                     graph_dijkstra, graph_dijkstra_multiseed, graph_floyd,
+                     graph_eps, graph_normalize,
+                     graph_voronoi, graph_cross_knn, 
+                     graph_cross_eps, graph_cross_eps_robust, graph_rd, 
+                     graph_skeleton)
 
 import numpy as np
 
@@ -178,8 +176,9 @@ class Graph(object):
         idx: array of shape (sizeof main cc)
         """
         if self.E > 0:
-            idx = graph_main_cc(self.edges[:, 0], self.edges[:, 1],
-                                np.zeros(self.E), self.V)
+            cc = self.cc()
+            pop = np.array([np.sum(cc == k) for k in np.unique(cc)])
+            idx = np.nonzero(cc == pop.argmax())[0]
         else:
             idx = 0
         return idx
@@ -207,6 +206,11 @@ class Graph(object):
         ax.plot(np.cos(planar_edges), np.sin(planar_edges), 'k')
         ax.axis('off')
         return ax
+
+
+#####################################################################
+# WeightedGraph
+#####################################################################
 
 
 def wgraph_from_coo_matrix(x):
@@ -563,8 +567,9 @@ class WeightedGraph(Graph):
                 return np.zeros(self.V)
             else:
                 return np.zeros(self.V), np.zeros(self.V)
-
+        # adj = self.to_coo_matrix().tocsr()
         if c < 2:
+            
             i, j, d, s = graph_normalize(self.edges[:, 0], self.edges[:, 1],
                     self.weights, c, self.V)
         else:
@@ -596,8 +601,8 @@ class WeightedGraph(Graph):
         if X.shape[0] != self.V:
             raise ValueError('X.shape[0] != self.V')
         if self.E > 0:
-            d = graph_set_euclidian(self.edges[:, 0], self.edges[:, 1], X)
-        self.weights = d
+            d = np.sum((X[self.edges[:, 0]] - X[self.edges[:, 1]]) ** 2, 1)
+        self.weights = np.sqrt(d)
 
     def set_gaussian(self, X, sigma=0):
         """
@@ -618,8 +623,9 @@ class WeightedGraph(Graph):
         """
         sigma = float(sigma)
         if sigma < 0:
-            raise ValueError('sigma < 0')
-        d = graph_set_euclidian(self.edges[:, 0], self.edges[:, 1], X)
+            raise ValueError('sigma should be positive')
+        self.set_euclidian(X)
+        d = self.weights
         
         if sigma == 0:
             sigma = (d ** 2).mean()
@@ -652,29 +658,6 @@ class WeightedGraph(Graph):
         self.edges = symg.edges
         self.weights = symg.weights
         return self.E
-
-    def to_neighb(self):
-        """
-        converts the graph to a neighboring system
-        The neighboring system is nothing but a (sparser)
-        representation of the edge matrix
-
-        Returns
-        -------
-        ci, ne, we: arrays of shape (self.V+1), (self.E), (self.E)
-            such that self.edges, self.weights
-            is coded such that:
-            for j in [ci[a] ci[a+1][, there exists en edge e so that
-            (edge[e, 0]=a, edge[e, 1]=ne[j], self.weights[e] = we[j])
-        """
-        if self.E > 0:
-            ci, ne, we = graph_to_neighb(self.edges[:, 0], self.edges[:, 1],
-                     self.weights, self.V)
-        else:
-            ci = []
-            ne = []
-            we = []
-        return ci, ne, we
 
     def Voronoi_Labelling(self, seed):
         """performs a voronoi labelling of the graph
@@ -938,24 +921,6 @@ class WeightedGraph(Graph):
 
         return ax
 
-    def converse_edge(self):
-        """
-        Returns the index of the edge (j, i) for each edge (i, j)
-        Note: a C implementation might be necessary
-        """
-        ci, ne, we = self.to_neighb()
-        li = self.left_incidence()
-        tag = - np.ones(self.E, np.int)
-        for v in range(self.V):
-            # e = (vw)
-            for e in li[v]:
-                w = self.edges[e, 1]
-                # c=(wv)
-                liw = np.array(li[w])
-                c = liw[self.edges[li[w], 1] == v]
-                tag[e] = c
-        return tag
-
     def remove_edges(self, valid):
         """ Removes all the edges for which valid==0
 
@@ -1048,12 +1013,8 @@ class WeightedGraph(Graph):
             return True
         if self.E == 0:
             return False
-        b = graph_is_connected(self.edges[:, 0], self.edges[:, 1],
-                        self.weights, self.V)
-        if b == -1:
-            raise ValueError("Error in the c function")
-
-        return int(b)
+        cc = self.cc()
+        return int(cc.max() == 0)
 
     def to_coo_matrix(self):
         """

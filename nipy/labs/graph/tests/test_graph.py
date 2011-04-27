@@ -353,13 +353,6 @@ class test_Graph(TestCase):
         g = G.subgraph(valid)
         self.assert_(g.edges.max() < n / 2)
 
-    def tets_converse(self,n=10):
-        G = complete_graph(n)
-        c = G.converse_edge()
-        eps = (( c - np.ravel(np.reshape(np.arange(n ** 2), 
-                                         (n, n)).T)) ** 2).sum()
-        self.assert_(eps < 1.e-7)
-
     def test_graph_create_from_array(self):
         """
         Test the creation of a graph from a sparse coo_matrix 
