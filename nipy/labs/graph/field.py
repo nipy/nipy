@@ -26,7 +26,7 @@ def field_from_coo_matrix_and_data(x, data):
        the input matrix
     data: array of shape (V, dim),
           the field data
-
+h
     Returns
     -------
     ifield: resulting field instance
@@ -243,7 +243,7 @@ class Field(fg.WeightedGraph):
         if np.size(self.field) == 0:
             raise ValueError('No field has been defined so far')
         if self.field.shape[1] - 1 < refdim:
-            raise ValueError(refdim > field.shape[1])
+            raise ValueError(refdim > self.shape[1])
         depth = self.V * np.ones(self.V, np.int)
         if self.E > 0:
             depth = local_maxima(self.edges[:, 0], self.edges[:, 1],

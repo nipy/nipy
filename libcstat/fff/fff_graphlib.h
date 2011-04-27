@@ -75,15 +75,6 @@ extern "C" {
   */
   extern void fff_graph_delete( fff_graph* thisone );
   /*! 
-    \brief Constructor for the fff_graph structure : builds a complete graph
-    \param v : number of vertices
-    
-    by convetion, the edge values are all set to 1
-    excepte for trivial edges (i.e. edges e such that A[e]==B[e]) w
-    here the value is 0
-  */
-  extern  fff_graph* fff_graph_complete( const long v);
-  /*! 
     \brief Reset function (with partial destruction) for 
     the fff_graph structure 
     \param thisone the fff_graph structure to be reset
@@ -144,87 +135,7 @@ extern "C" {
     \param thisone the edited graph
   */
   extern void fff_graph_edit_safe(fff_array *A, fff_array* B, fff_vector *D, const fff_graph* thisone );
-
- /*! 
-    \brief recompute the length of the edges as euclidian distances
-    \param G input graph
-    \param X data matrix 
-
-    The value of the edges are reset so that
-    eD[i] = |X[eA[i]]-X[eB[i]]|
-  */
-  extern void fff_graph_set_euclidian(fff_graph *G, const fff_matrix *X);
-   /*! 
-    \brief recompute the length of the edges as euclidian distances
-    \param G input graph
-    \param X data matrix 
-    \param sigma the parameter of the kernel
-
-    The value of the edges are reset so that
-    eD[i] = exp(-|X[eA[i]]-X[eB[i]]|^2/(2*sigma^2))
-  */
-  extern void fff_graph_set_Gaussian(fff_graph *G, const fff_matrix *X, const double sigma);
-  /*! 
-    \brief recompute the length of the edges as euclidian distances
-    \param G input graph
-    \param X data matrix 
-
-    The value of the edges are reset so that
-    eD[i] = exp(-|X[eA[i]]-X[eB[i]]|^2/(2*sigma^2))
-    In this case, sigma^2 is the average value of |X[eA[i]]-X[eB[i]]|^2
-    across edges.
-  */
-  extern void fff_graph_auto_Gaussian(fff_graph *G, const fff_matrix *X);
-
-  /*! 
-     \brief Computation of the  vertices "left" degrees
-     \param degrees resulting integer vector
-     \param G graph for which the computation is performed 
  
-     The left degree of a vertex v is the number of edges (a b)
-     for which a==v
-  */
-  extern void fff_graph_ldegrees( long* degrees, const fff_graph* G);  
-  /*! 
-    \brief Computation of the  vertices "right" degrees
-    \param degrees resulting integer vector
-    \param G graph for which the computation is performed 
-    
-    The right degree of a vertex v is the number of edges (a b)
-    for which b==v
-  */
-  extern void fff_graph_rdegrees(long* degrees, const fff_graph* G);
-  /*! 
-    \brief Computation of the  vertices complete degrees
-    \param degrees resulting integer vector
-    \param G graph for which the computation is performed 
-
-    The complete degree of a vertex v is the sum of left and right degree.
-  */
-  extern void fff_graph_degrees(long* degrees, const fff_graph* G);
-   /*! 
-     \brief Reordering of the graph edges according to their origin 
-     \param G graph that is being reordered
-     
-     The sparse adjacency matrix [eA(i) eB(i) eD(i)] is rewritten so that
-     i->eA(i) increases and i->eB(i)|eA(i)=e incereases
-   */
-  extern void fff_graph_reorderA(fff_graph* G);
-  /*! 
-    \brief Reordering of the graph edges according to their end
-    \param G graph that is being reordered
-    
-    The sparse adjacency matrix [eA(i) eB(i) eD(i)] is rewritten so that
-    i->eB(i) increases and i->eA(i)|eB(i)=e incereases
-  */
-  extern void fff_graph_reorderB(fff_graph* G);
-  /*! \brief Reordering of the graph edges according to their value
-       \param G graph that is being reordered
-
-       The sparse adjacency matrix [eA(i) eB(i) eD(i)] is rewritten so that
-       i->eD(i) increases 
-  */
-  extern void fff_graph_reorderD(fff_graph* G);
   
   /*! \brief Normalization of the values of a graph per rows
     \param G graph that is being normalized
@@ -256,16 +167,6 @@ extern "C" {
 	SR and SC should be allocated G->V elements
  */
   extern void fff_graph_normalize_symmetric(fff_graph* G, fff_vector* SR, fff_vector *SC);
-  
-   /*! 
-     \brief removing the edges that are defined more than once
-     \param G1 imput (redundant) graph
-     \param G2 output (non-redundant) graph
-     
-     G2 = G1, but redundancies in the edge vectors are removed
-     Note that G1 is reordered
-   */
-  extern void fff_graph_cut_redundancies(fff_graph** G2, fff_graph* G1);
 
   /*! \brief Basic sparse-graph Copy function
        \param G2 copy graph  
@@ -276,24 +177,6 @@ extern "C" {
        must be allocated the correct memory size.
   */
   extern void fff_graph_copy(fff_graph* G2,const fff_graph* G1);
-  
-  /*! \brief Graph anti-symmetrization function
-       \param G2 copy graph  
-       \param G1 original graph
-       
-       G2 = G1-G1.T;
-       G2 is allocated during the procedure
-  */
-  extern long fff_graph_antisymmeterize(fff_graph** G2,const fff_graph* G1);
-
-  /*! \brief Graph symmetrization function
-       \param G2 copy graph  
-       \param G1 original graph
-       
-       G2 = (G1+G1.T)/2;
-       G2 is allocated during the procedure
-  */
-  extern long fff_graph_symmeterize(fff_graph** G2,const fff_graph* G1);
   
   /*! \brief Extraction of a subgraph from a given graph
        \param K output graph
@@ -317,33 +200,6 @@ extern "C" {
        where n = size(v) 
   */
   extern void fff_extract_subgraph(fff_graph **K, const fff_graph *G, long* b);
-  /*
-    \brief Conversion of a graph into a matrix
-    \param A resulting matrix
-    \param G original graph
-
-    A is a full matrix form of the ajacency matrix
-  */
-  extern void fff_graph_to_matrix(fff_matrix** A,const fff_graph* G);
-  /*
-    \brief Conversion of a graph into a matrix
-    \param G resulting graph
-    \param A original matrix
-
-    G is the graph whose adjacency matrix is coded by A.
-    A is required to be square.
-    Note that G is a full graph, even at places (i,j) where A[i][j] = 0.
-  */
-  extern void fff_matrix_to_graph(fff_graph** G, const fff_matrix* A);
-  
-   /*
-    \brief remove edges with value 0
-    \param G resulting graph
-	
-	checks that eD != 0
-	The new number of edges is returned
-  */
-  extern int fff_remove_null_edges(fff_graph** G);
   
   /*
     \brief Conversion of a graph into a neighboring system
@@ -554,17 +410,6 @@ extern "C" {
   */
   double fff_graph_skeleton(fff_graph* K,const fff_graph* G);
 
-   /*!
-    \brief graph connectedness test
-    \param G  sparse graph
- 
-    Given a graphG (V vertices),
-    this algorithm returns 1 is the graph is connected
-    It is assumed that the graph is undirected 
-    (i.e. connectivity is assessed in the non-directed sense)
-  */
-  extern int fff_graph_isconnected(const fff_graph* G);
-
   /*!
     \brief graph labelling by connected components
     \param label resulting labels     
@@ -580,20 +425,6 @@ extern "C" {
     the number of cc's is returned
   */
   extern long fff_graph_cc_label(long* label, const fff_graph* G);
-  
-  /*!
-    \brief returns the greatest connected component of the graph
-    \param G  graph
-    \param Mcc vector of vertices within the greatest cc
-    
-    Given a graphG (V vertices),
-    this algorithm builds a vector that contains all the vertices contained
-    in the main cc. The number of vertices is the size of the vector.
-    Note that the vertices are considered as part of [0..G->V-1].
-    Mcc is allocated in the function.
-    The number of c's is returned.
-  */
-  extern long fff_graph_main_cc(fff_array** Mcc, const fff_graph* G);
   
   /*!
     \brief Dijkstra's algorithm
