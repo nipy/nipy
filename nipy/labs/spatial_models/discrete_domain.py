@@ -11,7 +11,7 @@ import scipy.sparse as sp
 
 from nibabel import load, Nifti1Image, save
 
-from ..graph import WeightedGraph, wgraph_from_coo_matrix
+from ..graph import WeightedGraph, wgraph_from_coo_matrix, wgraph_from_3d_grid
 
 ##############################################################
 # Ancillary functions
@@ -52,8 +52,7 @@ def smatrix_from_3d_idx(ijk, nn=18):
     coo_mat: a sparse coo matrix,
              adjacency of the neighboring system
     """
-    G = WeightedGraph(ijk.shape[0])
-    G.from_3d_grid(ijk, nn)
+    G = wgraph_from_3d_grid(ijk, nn)
     return G.to_coo_matrix()
 
 

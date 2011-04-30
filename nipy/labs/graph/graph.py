@@ -1,10 +1,9 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from _graph import ( __doc__, graph_cc, graph_3d_grid, graph_knn, graph_mst,
+from _graph import ( __doc__, graph_cc, graph_3d_grid, graph_mst, graph_rd,
                      graph_dijkstra, graph_dijkstra_multiseed, graph_floyd,
-                     graph_eps, graph_voronoi, graph_cross_knn, 
-                     graph_cross_eps, graph_cross_eps_robust, graph_rd, 
-                     graph_skeleton)
+                     graph_voronoi, graph_skeleton
+                     )
 
 import numpy as np
 
@@ -278,8 +277,8 @@ def knn(X, k=1):
     
     Parameters
     ----------
-    X array of shape (n_samples, n_features)
-    k=1 :  is the number of neighbours considered
+    X, array of shape (n_samples, n_features): the input data
+    k, int, optional:  is the number of neighbours considered
     
     Returns
     -------
@@ -287,12 +286,11 @@ def knn(X, k=1):
     
     Note
     ----
-    the knn system is symmeterized: if (ab) is one of the edges
-    then (ba) is also included
-    trivial edges (aa) are not included
-    for the sake of speed it is advisable to give
-    a PCA-preprocessed matrix X.
+    The knn system is symmeterized: if (ab) is one of the edges
+    then (ba) is also included    
     """
+    from nipy.algorithms.routines.fast_distance import euclidean_distance
+
     if np.size(X) == X.shape[0]:
         X = np.reshape(X, (np.size(X), 1))
     try:
@@ -303,9 +301,20 @@ def knn(X, k=1):
         raise ValueError('k is nan')
     if np.isinf(k):
         raise ValueError('k is inf')
-    i, j, d = graph_knn(X, k)
-    edges = np.vstack((i, j)).T
-    return WeightedGraph(X.shape[0], edges, d) 
+    k = min(k, X.shape[0] - 1)
+
+    # create the distance matrix
+    dist = euclidean_distance(X)
+    sorted_dist = dist.copy()
+    sorted_dist.sort(0)
+ 
+    # neighbour system
+    bool_knn = dist < sorted_dist[k + 1]
+    bool_knn += bool_knn.T
+    bool_knn -= np.diag(np.diag(bool_knn))
+    dist *= (bool_knn > 0)
+    return wgraph_from_adjacency(dist)
+ 
 
 def eps(X, eps=1.):
     """Returns the eps-nearest-neighbours graph of the data
@@ -318,13 +327,8 @@ def eps(X, eps=1.):
     Returns
     -------
     the resulting graph instance
-
-    Note
-    ----
-    trivial edges (aa) are included
-    for the sake of speed it is advisable to give
-    a PCA-preprocessed matrix X
     """
+    from nipy.algorithms.routines.fast_distance import euclidean_distance
     if np.size(X) == X.shape[0]:
         X = np.reshape(X, (np.size(X), 1))
     try:
@@ -335,9 +339,69 @@ def eps(X, eps=1.):
         raise ValueError('eps is nan')
     if np.isinf(eps):
         raise ValueError('eps is inf')
-    i, j, d = graph_eps(X, eps)
+    dist = euclidean_distance(X)
+    dist = dist * (dist < eps) 
+
+    # this would is just for numerical reasons
+    dist -= np.diag(np.diag(dist))
+    return wgraph_from_adjacency(dist)
+
+def _six_neighb(xyz):
+    """ Utilitity that computes the six neighbors on a 3d grid
+    """
+    if np.size(xyz) == 0:
+       return None
+    lxyz = xyz - xyz.min(0)
+    mi = lxyz.max(0) + 2
+    
+    a0 = np.array([1, mi[0], mi[0] * mi[1]])
+    a1 = np.array([mi[1] * mi[2], 1, mi[1]])
+    a2 = np.array([mi[2], mi[2] * mi[0], 1, mi[2]])
+
+    # compute the edges in each possible direction
+    eA, eB = [], []
+    for a in [a0, a1, a2]:
+        v1 = np.dot(lxyz, a)
+        o1 = np.argsort(v1)
+        sv1 = v1[o1]
+        nz = np.squeeze(np.nonzero(sv1[: - 1] - sv1[1:] == - 1))
+        nz = np.reshape(nz, np.size(nz))
+        eA.append(o1[nz])
+        eB.append(o1[nz + 1])
+        eA.append(o1[nz + 1])
+        eB.append(o1[nz])
+    
+    eA = np.concatenate(eA)
+    eB =  np.concatenate(eB)
+    weights = np.ones_like(eA)
+    return eA, eB, weights
+
+def wgraph_from_3d_grid(xyz, k=18):
+    """Create graph as the set of topological neighbours
+    of the three-dimensional coordinates set xyz,
+    in the k-connectivity scheme
+    
+    Parameters
+    ----------
+    xyz: array of shape (nsamples, 3) and type np.int,
+    k = 18: the number of neighbours considered. (6, 18 or 26)
+    
+    Returns
+    -------
+    the WeightedGraph instance
+    """    
+    if xyz.shape[1] != 3:
+        raise ValueError('xyz should have shape n * 3')
+    
+    graph = graph_3d_grid(xyz, k)
+    if graph is not None:
+        i, j, d = graph
+    else:
+        raise TypeError('Creating graph from grid failed. '\
+                            'Maybe the grid is too big')
     edges = np.vstack((i, j)).T
-    return WeightedGraph(X.shape[0], edges, d)
+    return WeightedGraph(xyz.shape[0], edges, d)
+
 
 
 def concatenate_graphs(G1, G2):
@@ -822,8 +886,8 @@ class WeightedGraph(Graph):
                                   to the same space")
 
         #1. define the graph knn(samples, seeds, 2)
-        i, j, d = graph_cross_knn(samples, seeds, 2)
-
+        j = cross_knn(samples, seeds, 2).edges[:, 1] 
+        
         #2. put all the pairs i the target graph
         Ns = np.shape(samples)[0]
         self.E = Ns
@@ -1052,9 +1116,42 @@ def check_feature_matrices(X, Y):
         Y = np.reshape(Y, (np.size(Y), 1))
     if X.shape[1] != Y.shape[1]:
         raise ValueError('X.shape[1] should = Y.shape[1]')
-    
+
+def bipartite_graph_from_coo_matrix(x):
+    """
+    Instantiates a weighted graph from a (sparse) coo_matrix
+
+    Parameters
+    ----------
+    x: scipy.sparse.coo_matrix instance, the input matrix
+
+    Returns
+    -------
+    bg: BipartiteGraph instance
+    """
+    i, j = x.nonzero()
+    edges = np.vstack((i, j)).T
+    weights = x.data
+    wg = BipartiteGraph(x.shape[0], x.shape[1], edges, weights)
+    return wg
+
+
+def bipartite_graph_from_adjacency(x):
+    """Instantiates a weighted graph from a square 2D array
+
+    Parameters
+    ----------
+    x: 2D array instance, the input array
+
+    Returns
+    -------
+    wg: BipartiteGraph instance
+    """
+    from scipy.sparse import coo_matrix
+    return bipartite_graph_from_coo_matrix(coo_matrix(x))
+
 def cross_eps(X, Y, eps=1.):
-    """ Return the eps-neighbours graph of from X to Y
+    """Return the eps-neighbours graph of from X to Y
     
     Parameters
     ----------
@@ -1071,6 +1168,7 @@ def cross_eps(X, Y, eps=1.):
     for the sake of speed it is advisable to give PCA-preprocessed
     matrices X and Y.
     """
+    from nipy.algorithms.routines.fast_distance import euclidean_distance
     check_feature_matrices(X, Y)
     try:
         eps = float(eps)
@@ -1079,44 +1177,10 @@ def cross_eps(X, Y, eps=1.):
     if np.isnan(eps):
         raise ValueError('eps is nan')
     if np.isinf(eps):
-        raise ValueError('eps is inf')
-    i, j, d = graph_cross_eps(X, Y, eps)   
-    edges = np.vstack((i, j)).T
-    return BipartiteGraph(X.shape[0], Y.shape[0], edges, d)
-
-def cross_eps_robust(X, Y, eps=1.):
-    """ returns the eps-neighbours graph of from X to Y
-    this procedure is robust in the sense that for each row of X
-    at least one matching row Y is found, even though the distance
-    is greater than eps.
-
-    Parameters
-    ----------
-    X, Y arrays of shape (n1, p) and (n2, p)
-    where p = common dimension of the features
-    eps=1, float: the neighbourhood size considered
-
-    Returns
-    -------
-    self.E (int) the number of edges of the resulting graph
-    
-    Note
-    ----
-    for the sake of speed it is advisable to give
-    PCA-preprocessed matrices X and Y.
-    """
-    check_feature_matrices(X, Y)
-    try:
-        eps = float(eps)
-    except:
-        "eps cannot be cast to a float"
-    if np.isnan(eps):
-        raise ValueError('eps is nan')
-    if np.isinf(eps):
-        raise ValueError('eps is inf')
-    i, j, d = graph_cross_eps_robust(X, Y, eps)
-    edges = np.vstack((i, j)).T
-    return BipartiteGraph(X.shape[0], Y.shape[0], edges, d)
+        raise ValueError('eps is inf')    
+    dist = euclidean_distance(X, Y)
+    dist = dist * (dist < eps) 
+    return bipartite_graph_from_adjacency(dist)
 
 
 def cross_knn(X, Y, k=1):
@@ -1137,6 +1201,7 @@ def cross_knn(X, Y, k=1):
     for the sake of speed it is advised to give
     PCA-transformed matrices X and Y.
     """
+    from nipy.algorithms.routines.fast_distance import euclidean_distance
     check_feature_matrices(X, Y)
     try:
         k = int(k)
@@ -1146,9 +1211,19 @@ def cross_knn(X, Y, k=1):
         raise ValueError('k is nan')
     if np.isinf(k):
         raise ValueError('k is inf')
-    i, j, d = graph_cross_knn(X, Y, k)
-    edges = np.vstack((i, j)).T
-    return BipartiteGraph(X.shape[0], Y.shape[0], edges, d)
+    k = min(k, Y.shape[0] -1)
+
+    # create the distance matrix
+    dist = euclidean_distance(X, Y)
+    dist = np.maximum(dist, 1.e-15)
+    sorted_dist = dist.copy()
+    sorted_dist.sort(1)
+ 
+    # neighbour system
+    bool_knn = (dist.T < sorted_dist[:, k]).T
+    dist *= (bool_knn > 0)
+    return bipartite_graph_from_adjacency(dist)
+
 
 class BipartiteGraph(WeightedGraph):
     """

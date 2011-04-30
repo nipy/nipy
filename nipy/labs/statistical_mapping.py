@@ -4,7 +4,8 @@ import numpy as np
 import scipy.stats as sp_stats
 
 from nipy.algorithms.registration import apply_affine
-from .graph.field import Field
+from .graph.field import field_from_graph_and_data
+from .graph.graph import wgraph_from_3d_grid
 from ..algorithms.statistics import empirical_pvalue
 from .glm import glm
 from .group.permutation_test import \
@@ -81,8 +82,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
 
     # Clustering
     ## Extract local maxima and connex components above some threshold
-    ff = Field(np.size(zmap_th), field=zmap_th)
-    ff.from_3d_grid(xyz_th, k=18)
+    ff = field_from_graph_and_data(wgraph_from_3d_grid(xyz_th, k=18), zmap_th)
     maxima, depth = ff.get_local_maxima(th=zth)
     labels = ff.cc()
     ## Make list of clusters, each cluster being a dictionary
@@ -196,8 +196,7 @@ def get_3d_peaks(image, mask=None, threshold=0., nn=18, order_th=0):
         return None
 
     # Extract local maxima and connex components above some threshold
-    ff = Field(np.size(data), field=data)
-    ff.from_3d_grid(xyz, k=18)
+    ff = field_from_graph_and_data(wgraph_from_3d_grid(xyz, k=18), data)
     maxima, order = ff.get_local_maxima(th=threshold)
 
     # retain only the maxima greater than the specified order
