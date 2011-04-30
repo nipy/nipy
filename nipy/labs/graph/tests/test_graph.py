@@ -7,7 +7,7 @@ from unittest import TestCase
 from ..graph import (WeightedGraph, BipartiteGraph, concatenate_graphs, 
                      wgraph_from_adjacency, wgraph_from_coo_matrix, 
                      complete_graph, mst, knn, eps, cross_knn, cross_eps, 
-                     cross_eps_robust, concatenate_graphs)
+                     concatenate_graphs, wgraph_from_3d_grid)
 
 
 def basicdata():
@@ -34,8 +34,8 @@ class test_Graph(TestCase):
     def test_complete(self):
         v = 10
         G = complete_graph(v)
-        a = G.get_edges()[:,0]
-        b = G.get_edges()[:,1]
+        a = G.get_edges()[:, 0]
+        b = G.get_edges()[:, 1]
         inds = np.indices((v, v)).reshape( (2, v * v) )
         self.assert_( ( inds == (a, b) ).all() )
   
@@ -67,16 +67,15 @@ class test_Graph(TestCase):
         d = G.weights
         G.set_gaussian(x)
         D = G.weights
-        sigma = sum(d * d)/len(d)
+        sigma = sum(d * d) / len(d)
         OK = np.allclose(D, np.exp(-d * d / (2 * sigma)), 1e-7)
         self.assert_(OK)
 
     def test_eps_1(self):
         x = basicdata()
-        # G = WeightedGraph(x.shape[0])
-        G = eps(x,1.)
+        G = eps(x, 1.)
         D = G.weights
-        OK = (np.size(D)==16)
+        OK = (np.size(D) == 16)
         self.assert_(OK)
         OK = (D < 1).all()
         self.assert_(OK)
@@ -85,7 +84,7 @@ class test_Graph(TestCase):
         x = basicdata()
         G = mst(x)
         D = G.weights
-        OK = (np.size(D)==18)
+        OK = (np.size(D) == 18)
         self.assert_(OK)
 
     def test_cross_knn_1(self):
@@ -96,7 +95,7 @@ class test_Graph(TestCase):
         
     def test_cross_knn_2(self):
         x = basicdata()
-        G = cross_knn(x,x,1)
+        G = cross_knn(x, x, 1)
         OK = (G.E == 10)
         self.assert_(OK)  
 
@@ -107,52 +106,41 @@ class test_Graph(TestCase):
         D = G.weights
         self.assert_((D < 1).all())
         
-    def test_cross_eps_robust(self):
-        x = basicdata()
-        y = x + 0.1 * nr.randn(x.shape[0], x.shape[1])
-        G = cross_eps(x, y, 1.)
-        D1 = G.weights
-        G2 = cross_eps_robust(x, y, 1.)
-        D2 = G.weights
-        self.assert_(D2.sum() >= D1.sum())
-
     def test_grid_3d_1(self):
+        """ Test the 6 nn graphs on 3d grid
+        """
         nx, ny, nz = 9, 6, 1
         xyz = np.mgrid[0:nx, 0:ny, 0:nz]
-        XYZ = np.reshape(xyz,(3, nx * ny * nz)).T
-        G = WeightedGraph(XYZ.shape[0])
-        G.from_3d_grid(XYZ,6)
+        xyz = np.reshape(xyz, (3, nx * ny * nz)).T
+        G = wgraph_from_3d_grid(xyz, 6)
         self.assert_(G.E==240)
 
     def test_grid_3d_2(self):
-        nx = 9;
-        ny = 6
-        nz = 1;
-        xyz = np.mgrid[0:nx,0:ny,0:nz]
-        XYZ = np.transpose(np.reshape(xyz,(3,nx*ny*nz)))
-        G = WeightedGraph(XYZ.shape[0])
-        G.from_3d_grid(XYZ,18)
-        self.assert_(G.E==400)
+        """ Test the 18-nn graph on a 3d grid
+        """
+        nx, ny, nz = 9, 6, 1
+        xyz = np.mgrid[0:nx, 0:ny, 0:nz]
+        xyz = np.reshape(xyz,(3, nx * ny * nz)).T
+        G = wgraph_from_3d_grid(xyz, 18)
+        self.assert_(G.E == 400)
         
     def test_grid_3d_3(self):
-        nx = 9;
-        ny = 6
-        nz = 1;
-        xyz = np.mgrid[0:nx,0:ny,0:nz];
-        XYZ = np.transpose(np.reshape(xyz,(3,nx*ny*nz)));
-        G = WeightedGraph(XYZ.shape[0])
-        G.from_3d_grid(XYZ,26)
-        self.assert_(G.E==400)
+        """ Test the 26-nn graph on a 3d grid
+        """
+        nx, ny, nz = 9, 6, 1
+        xyz = np.mgrid[0:nx, 0:ny, 0:nz]
+        xyz = np.reshape(xyz,(3, nx * ny * nz)).T
+        G = wgraph_from_3d_grid(xyz, 26)
+        self.assert_(G.E == 400)
 
     def test_grid_3d_4(self):
         nx, ny, nz = 10, 10, 10
-        XYZ = np.transpose(np.reshape(np.indices((nx,ny,nz)),(3,nx*ny*nz)))
-        G = WeightedGraph(XYZ.shape[0])
-        G.from_3d_grid(XYZ,26)
+        xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
+        G = wgraph_from_3d_grid(xyz, 26)
         D = G.weights
-        self.assert_( sum(D==1)==5400 )
-        self.assert_( np.size(D)==21952 )
-        self.assert_( sum(D<1.5)==16120 )
+        self.assert_(sum(D == 1)==5400 )
+        self.assert_(np.size(D) == 21952 )
+        self.assert_(sum(D < 1.5) == 16120 )
 
     def test_cut_redundancies(self):
         G = basic_graph()

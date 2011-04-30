@@ -7,8 +7,10 @@ import numpy as np
 import scipy.misc as sm
 
 # Our own imports
-from ..graph import graph_3d_grid, graph_cc
-from ..graph.field import Field
+from ..graph import graph_3d_grid, graph_cc, 
+from ..graph.graph import wgraph_from_3d_grid
+from ..graph.field import Field, field_from_graph_and_data
+
 from ..utils import zscore 
 from .onesample import stat as os_stat, stat_mfx as os_stat_mfx
 from .twosample import stat as ts_stat, stat_mfx as ts_stat_mfx
@@ -103,9 +105,8 @@ def extract_clusters_from_diam(T,XYZ,th,diam,k=18):
         else:
             # build the field
             p = len(T[I])
-            F = Field(p)
-            F.from_3d_grid(np.transpose(XYZ[:,I]),k)
-            F.set_field(np.reshape(T[I],(p,1)))
+            F = field_from_graph_and_data(
+                wgraph_from_3d_grid(XYZ[:, I].T, k), np.reshape(T[I],(p,1)))
             # compute the blobs
             idx, height, parent,label = F.threshold_bifurcations(0,th)
             nidx = np.size(idx)

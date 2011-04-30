@@ -2,57 +2,48 @@
 
 from numpy.testing import TestCase
 import numpy as np
-from ..field import Field, field_from_coo_matrix_and_data
+from ..field import (Field, field_from_coo_matrix_and_data, 
+                     field_from_graph_and_data)
+from ..graph import wgraph_from_3d_grid
+
 
 def basic_field():
     dx, dy, dz = 10, 10, 10
-    F = Field(dx * dy * dz)
-    
     xyz = np.array( [[x, y, z] for z in range(dz) for y in range(dy) 
                      for x in range(dx)] )
-    F.from_3d_grid(xyz, 26)
     data = np.sum(xyz, 1).astype('d')
-    F.set_field(data)
+    F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
+
 
 def basic_field_random():
     import numpy.random as nr
-    dx = 10
-    dy = 10
-    dz = 1
-    F = Field(dx * dy * dz)
-    
+    dx, dy, dz = 10, 10, 1
     xyz = np.array( [[x, y, z] for z in range(dz) for y in range(dy) 
                      for x in range(dx)] )
-    F.from_3d_grid(xyz, 26)
     data = 0.5 * nr.randn(dx * dy * dz,1) + np.sum(xyz, 1).astype('d')
-    F.set_field(data)
+    F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
+
 
 def basic_field_2():
-    dx = 10
-    dy = 10
-    dz = 10
-    F = Field(dx*dy*dz)
-    xyz = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
-    toto = np.array([[x-5,y-5,z-5] for z in range(dz) for y in range(dy) for x in range(dx)] )
-
-    data = np.sum(toto*toto,1) 
-    F.from_3d_grid(xyz,26)
-    F.set_field(data)
+    dx, dy, dz = 10, 10, 10
+    xyz = np.array([[x,y,z] for z in range(dz) for y in range(dy) 
+                    for x in range(dx)] )
+    toto = np.array([[x - 5, y - 5, z - 5] for z in range(dz) 
+                     for y in range(dy) for x in range(dx)] )
+    data = np.sum(toto ** 2, 1) 
+    F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
 
+
 def basic_graph():
-    dx = 10
-    dy = 10
-    dz = 10
-    xyz = np.array( [[x,y,z] for z in range(dz) for y in range(dy) for x in range(dx)] )
-    G = Field(dx*dy*dz)
-    G.from_3d_grid(xyz,26);
-    return G 
-
-
-
+    dx, dy, dz = 10, 10, 10
+    xyz = np.array([[x,y,z] for z in range(dz) for y in range(dy) 
+                    for x in range(dx)] )
+    data = np.zeros(xyz.shape[0])
+    F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)    
+    return F 
 
 
 class test_Field(TestCase):

@@ -31,19 +31,15 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     xyz = np.array(np.where(betas[:1])).T
     nvox = np.size(xyz, 0)
     
-    # create the field strcture that encodes image topology
-    Fbeta = Field(nvox)
-    Fbeta.from_3d_grid(xyz.astype(np.int), 18)
-
     # get the functional information
     lbeta = np.array([np.ravel(betas[k]) for k in range(nbsubj)]).T
 
     # the voxel volume is 1.0
-    g0 = 1.0/(1.0*nvox)
+    g0 = 1.0 / (1.0 * nvox)
     bdensity = 1
     dom = domain_from_array(np.ones(ref_dim))
 
-    if method=='simple':
+    if method == 'simple':
         group_map, AF, BF, likelihood = \
                    compute_BSA_simple(dom, lbeta, dmax, thq, smin, ths,
                                       theta, g0, bdensity)    
