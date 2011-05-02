@@ -105,7 +105,35 @@ class test_Graph(TestCase):
         G = cross_eps(x, y, 1.)
         D = G.weights
         self.assert_((D < 1).all())
-        
+    
+    def test_3d_grid(self):
+        """test the 6nn graph
+        """
+        x0 = np.array([0, 0, 0])
+        x1 = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [-1, 0, 0], [0, -1, 0],
+                      [0, 0, -1]])
+        x2 = np.array([[1, 1, 0], [0, 1, 1], [1, 0, 1], [1, -1, 0], [0, 1, -1],
+                      [1, 0, -1], [-1, 1, 0], [0, -1, 1], [-1, 0, 1], 
+                      [-1, -1, 0], [-1, 0, -1], [0, -1, -1]])
+        x3 = np.array([[1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1],
+                       [-1, 1, 1], [-1, 1, -1], [-1, -1, 1], [-1, -1, -1]])
+        for x in x1:
+            xyz = np.vstack((x0, x))
+            assert wgraph_from_3d_grid(xyz, 6).E == 2
+            assert wgraph_from_3d_grid(xyz, 18).E == 2
+            assert wgraph_from_3d_grid(xyz, 26).E == 2
+        for x in x2:
+            xyz = np.vstack((x0, x))
+            assert wgraph_from_3d_grid(xyz, 6).E == 0
+            assert wgraph_from_3d_grid(xyz, 18).E == 2
+            assert wgraph_from_3d_grid(xyz, 26).E == 2
+        for x in x3:
+            xyz = np.vstack((x0, x))
+            assert wgraph_from_3d_grid(xyz, 6).E == 0
+            assert wgraph_from_3d_grid(xyz, 18).E == 0
+            assert wgraph_from_3d_grid(xyz, 26).E == 2
+            
+
     def test_grid_3d_1(self):
         """ Test the 6 nn graphs on 3d grid
         """
@@ -113,8 +141,8 @@ class test_Graph(TestCase):
         xyz = np.mgrid[0:nx, 0:ny, 0:nz]
         xyz = np.reshape(xyz, (3, nx * ny * nz)).T
         G = wgraph_from_3d_grid(xyz, 6)
-        self.assert_(G.E==240)
-
+        self.assert_(G.E == 186)
+    
     def test_grid_3d_2(self):
         """ Test the 18-nn graph on a 3d grid
         """
@@ -122,7 +150,7 @@ class test_Graph(TestCase):
         xyz = np.mgrid[0:nx, 0:ny, 0:nz]
         xyz = np.reshape(xyz,(3, nx * ny * nz)).T
         G = wgraph_from_3d_grid(xyz, 18)
-        self.assert_(G.E == 400)
+        self.assert_(G.E == 346)
         
     def test_grid_3d_3(self):
         """ Test the 26-nn graph on a 3d grid
@@ -131,16 +159,27 @@ class test_Graph(TestCase):
         xyz = np.mgrid[0:nx, 0:ny, 0:nz]
         xyz = np.reshape(xyz,(3, nx * ny * nz)).T
         G = wgraph_from_3d_grid(xyz, 26)
-        self.assert_(G.E == 400)
+        self.assert_(G.E == 346)
 
     def test_grid_3d_4(self):
         nx, ny, nz = 10, 10, 10
         xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
         G = wgraph_from_3d_grid(xyz, 26)
         D = G.weights
+        # 6 * 9 * 10 * 10
         self.assert_(sum(D == 1)==5400 )
-        self.assert_(np.size(D) == 21952 )
-        self.assert_(sum(D < 1.5) == 16120 )
+        # 26 * 8 ** 3 + 6 * 8 ** 2 * 17 + 12 * 8 * 11 + 8 * 7 
+        self.assert_(np.size(D) == 20952 )
+        # 18 * 8 ** 3 + 6 * 8 ** 2 * 13 + 12 * 8 * 9 + 8 * 6
+        self.assert_(sum(D < 1.5) == 15120)
+
+    def test_grid_3d_5(self):
+        nx, ny, nz = 10, 10, 10
+        xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
+        G = wgraph_from_3d_grid(xyz, 26)
+        D = G.weights.copy()
+        G.set_euclidian(xyz)
+        assert (np.allclose(G.weights, D, 1.e-7))
 
     def test_cut_redundancies(self):
         G = basic_graph()
