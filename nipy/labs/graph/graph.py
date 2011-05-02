@@ -346,35 +346,56 @@ def eps(X, eps=1.):
     dist -= np.diag(np.diag(dist))
     return wgraph_from_adjacency(dist)
 
-def _six_neighb(xyz):
+def grid_graph(xyz, k):
     """ Utilitity that computes the six neighbors on a 3d grid
     """
     if np.size(xyz) == 0:
        return None
     lxyz = xyz - xyz.min(0)
-    mi = lxyz.max(0) + 2
+    m = 3 * lxyz.max(0).sum() + 2
     
-    a0 = np.array([1, mi[0], mi[0] * mi[1]])
-    a1 = np.array([mi[1] * mi[2], 1, mi[1]])
-    a2 = np.array([mi[2], mi[2] * mi[0], 1, mi[2]])
-
+    # six neighbours
+    N6 = [np.array([1, m, m ** 2]), np.array([m ** 2, 1, m]), 
+         np.array([m, m ** 2, 1])]
+    
+    # eighteen neighbours
+    N18 = [np.array([1 + m, 1 - m, m ** 2]), 
+           np.array([1 + m, m - 1, m ** 2]),
+           np.array([m ** 2, 1 + m, 1 - m]), 
+           np.array([m ** 2, 1 + m, m - 1]),
+           np.array([1 - m, m ** 2, 1 + m]), 
+           np.array([m - 1, m ** 2, 1 + m])]
+    
+    # twenty-six neighbours            
+    N26 = [np.array([1 + m + m ** 2, 1 - m, 1 - m ** 2]), 
+           np.array([1 + m + m ** 2, m - 1, 1 - m ** 2]), 
+           np.array([1 + m + m ** 2, 1 - m, m ** 2 - 1]), 
+           np.array([1 + m + m ** 2, m - 1, m ** 2 - 1])] 
+           
     # compute the edges in each possible direction
-    eA, eB = [], []
-    for a in [a0, a1, a2]:
-        v1 = np.dot(lxyz, a)
-        o1 = np.argsort(v1)
-        sv1 = v1[o1]
-        nz = np.squeeze(np.nonzero(sv1[: - 1] - sv1[1:] == - 1))
-        nz = np.reshape(nz, np.size(nz))
-        eA.append(o1[nz])
-        eB.append(o1[nz + 1])
-        eA.append(o1[nz + 1])
-        eB.append(o1[nz])
+    def create_edges(lxyz, NN, l1dist=1, eA=np.array([]), eB=np.array([]), 
+                     weights=np.array([])):
+        q = 0
+        for a in NN:
+            v1 = np.dot(lxyz, a)
+            o1 = np.argsort(v1)
+            sv1 = v1[o1]
+            nz = np.squeeze(np.nonzero(sv1[: - 1] - sv1[1:] == - l1dist))
+            o1z, o1z1 = o1[nz], o1[nz + 1]
+            eA = np.hstack((eA, o1z, o1z1))
+            eB = np.hstack((eB, o1z1, o1z))
+            q += 2 * np.size(nz)
+
+        weights = np.hstack((weights, np.sqrt(l1dist) * np.ones(q)))
+        return eA, eB, weights
     
-    eA = np.concatenate(eA)
-    eB =  np.concatenate(eB)
-    weights = np.ones_like(eA)
-    return eA, eB, weights
+    i, j, d = create_edges(lxyz, N6, 1.)
+    if k >= 18:
+        i, j, d = create_edges(lxyz, N18, 2, i, j, d)
+    if k == 26:
+        i, j, d = create_edges(lxyz, N26, 3, i, j, d)
+    i, j = i.astype(np.int), j.astype(np.int)
+    return i, j, d
 
 def wgraph_from_3d_grid(xyz, k=18):
     """Create graph as the set of topological neighbours
@@ -393,12 +414,13 @@ def wgraph_from_3d_grid(xyz, k=18):
     if xyz.shape[1] != 3:
         raise ValueError('xyz should have shape n * 3')
     
-    graph = graph_3d_grid(xyz, k)
-    if graph is not None:
-        i, j, d = graph
-    else:
-        raise TypeError('Creating graph from grid failed. '\
-                            'Maybe the grid is too big')
+    i, j, d = grid_graph(xyz, k)
+    #graph = graph_3d_grid(xyz, k)
+    #if graph is not None:
+    #    i, j, d = graph
+    #else:
+    #    raise TypeError('Creating graph from grid failed. '\
+    #                        'Maybe the grid is too big')
     edges = np.vstack((i, j)).T
     return WeightedGraph(xyz.shape[0], edges, d)
 
