@@ -119,69 +119,7 @@ extern "C" {
     neigh and weight must be allocated G->E elements
   */
   extern long fff_graph_to_neighb(fff_array *cindices, fff_array * neighb, fff_vector* weight, const fff_graph* G);
-
- 
-  /*!
-    \brief k-Cartesian-neighbours graph construction
-    \param G resulting graph
-    \param xyz input coordinates in 3D
-    \param k number of neighbors (6,18 or 26)
-
-    This algorithm builds a graph whose adjacency matrix 
-    represents the k-neighoring relationship, of the input data xyz.
-    xyz is  written as an N*3 matrix 
-    G is built inside of the function with N vertices and E edges 
-    (E<= (k+1)*N here) during the algo.
-    the number of edges is returned
-  */
-  extern long fff_graph_grid(fff_graph** G, const fff_array* xyz, const long k);
-  /*!
-    \brief Six-Cartesian-neighbours graph construction
-    \param G resulting graph
-    \param xyz input coordinates in 3D
-    \param N number of points considered
-
-    This algorithm builds a graph whose adjacency matrix 
-    represents the 6-neighoring relationship, of the input data xyz.
-    xyz is assumed to be written ss x[0],..,x[N-1],y[0],..,y[N-1],
-    z[0],..,z[N-1].
-    G is built inside of the function with N vertices and E edges 
-    (E<= 7*N here) during the algo.
-    the number of edges is returned
-  */
-  extern long fff_graph_grid_six(fff_graph** G,const long* xyz, const long N);
-/*!
-    \brief eighteen-Cartesian-neighbours graph construction
-    \param G resulting graph
-    \param xyz input coordinates
-    \param N number of points
-
-    This algorithm builds a graph whose adjacency matrix 
-    represents the 18-neighoring relationship, of the input data xyz.
-    xyz is assumed to be written ss x[0],..,x[N-1],y[0],..,y[N-1],
-    z[0],..,z[N-1].
-    G is built inside of the function with N vertices and E edges 
-    (E<= 19*N here) during the algo.
-    the number of edges is returned
-  */
-  extern long fff_graph_grid_eighteen(fff_graph** G,const long* xyz, const long N);
-    /*!
-    \brief twenty-six-Cartesian-neighbours graph construction
-    \param G resulting graph
-    \param xyz input coordinates 
-    \param N number of points
-
-    This algorithm builds a graph whose adjacency matrix 
-    represents the neighoring relationship, of the input data xyz.
-    xyz is assumed to be written ss x[0],..,x[N-1],y[0],..,y[N-1],
-    z[0],..,z[N-1].
-    G is built inside of the function with N vertices and E edges 
-    (E<= 27*N here) during the algo.
-    the number of edges is returned
-  */
-  extern long fff_graph_grid_twenty_six(fff_graph** G,const long* xyz, const long N);
-   
- 
+    
    /*!
     \brief Minimum Spanning Tree construction
     \param X data matrix. 

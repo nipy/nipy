@@ -7,7 +7,7 @@ import numpy as np
 import scipy.misc as sm
 
 # Our own imports
-from ..graph import graph_3d_grid, graph_cc, 
+from ..graph import graph_cc, wgraph_from_3d_grid
 from ..graph.graph import wgraph_from_3d_grid
 from ..graph.field import Field, field_from_graph_and_data
 
@@ -45,12 +45,7 @@ def extract_clusters_from_thresh(T,XYZ,th,k=18):
     I = np.where(T >= th)[0]
     if len(I)>0:
         SupraThreshXYZ = XYZ[:, I]
-        # Compute graph associated to suprathresh_coords
-        A, B, D = graph_3d_grid(SupraThreshXYZ.transpose(),k)
-        # Number of vertices
-        V = max(A) + 1
-        # Labels of connected components
-        CC_label = graph_cc(A,B,D,V)
+        CC_label = wgraph_from_3d_grid(SupraThreshXYZ.T, k).cc()
         labels[I] = CC_label
     return labels
 

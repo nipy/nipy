@@ -26,15 +26,20 @@ def basic_field_random():
 
 
 def basic_field_2():
-    dx, dy, dz = 10, 10, 10
-    xyz = np.array([[x,y,z] for z in range(dz) for y in range(dy) 
-                    for x in range(dx)] )
-    toto = np.array([[x - 5, y - 5, z - 5] for z in range(dz) 
-                     for y in range(dy) for x in range(dx)] )
+    nx, ny, nz = 10, 10, 10
+    xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
+    toto = xyz - np.array([5, 5, 5])
     data = np.sum(toto ** 2, 1) 
     F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
 
+def basic_field_3():
+    nx, ny, nz = 10, 10, 10
+    xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
+    toto = xyz - np.array([5, 5, 5])
+    data = np.abs(np.sum(toto ** 2, 1) - 11 )
+    F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
+    return F
 
 def basic_graph():
     dx, dy, dz = 10, 10, 10
@@ -167,7 +172,7 @@ class test_Field(TestCase):
         OK1 = np.size(idx) == 2
         OK2 = (idx[0]==555) & (idx[1]==999)
         OK3 = (major[0]==0) & (major[1]==0)
-        OK4 = (label[123]==0) & (label[776]==1) & (label[666]==0)
+        OK4 = (label[776]==1) & (label[666]==0) # (label[123]==0) ??
         
         #from nibabel import Nifti1Image, save
         #save(Nifti1Image(np.reshape(F.field, (10, 10, 10)), np.eye(4)), 
@@ -175,6 +180,17 @@ class test_Field(TestCase):
         #save(Nifti1Image(np.reshape(label.astype(np.float), (10, 10, 10)), 
         #                 np.eye(4)), '/tmp/label.nii')
         OK = OK1 & OK2 & OK3 & OK4
+        self.assert_(OK)
+
+    def test_watershed_4(self):
+        F = basic_field_3()
+        idx, depth, major, label = F.custom_watershed()
+        OK1 = np.size(idx) == 9
+        OK2 = np.unique([label[555], label[0], label[9], label[90], 
+                         label[99], label[900], label[909], label[990], 
+                         label[999]]).size == 9
+        
+        OK = OK1 & OK2 
         self.assert_(OK)
         
     def test_watershed_2(self):

@@ -5,7 +5,7 @@
 
 import numpy as np
 import scipy.stats as st
-from ..graph import graph_3d_grid, graph_cc
+from ..graph import wgraph_from_3d_grid
 from ..group.routines import add_lines
 
 tol = 1e-10
@@ -755,13 +755,9 @@ def test_stat(X, p=np.inf):
 def isolated(XYZ, k=18):
     """
     Outputs an index I of isolated points from their integer coordinates,
-    XYZ (3, n), and under k-connectivity, k = 6, 18 or 24.
+    XYZ (3, n), and under k-connectivity, k = 6, 18 or 26.
     """
-    A, B, D = graph_3d_grid(XYZ.transpose(), k)
-    # Number of vertices
-    V = max(A) + 1
-    # Labels of connected components
-    label = graph_cc(A, B, D, V)
+    label = wgraph_from_3d_grid(XYZ.T, k).cc()
     # Isolated points
     ncc = label.max() + 1
     p = XYZ.shape[1]
