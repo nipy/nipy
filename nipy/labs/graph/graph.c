@@ -41,23 +41,6 @@ then (B[e] A[e] D[e]) is another edge \n\
 - As a consequence, the graph comprises (2n-2) edges \n\
   ";
 
-static char graph_3d_grid_doc[] = 
-" (A,B,D) = graph_3d_grid(XYZ,k)\n\
-  Building the 6-nn, 18-nn or 26nn of the data, \n\
-which are sampled on a three-dimensional grid \n\
- INPUT:\n\
-- The array XYZ is assumed to be a n*3 coordinate matrix \n\
-which are assumed to have integer values.  \n\
-- k (=6 or 18 or 26) is the neighboring system considered \n\
- OUTPUT:\n\
-The edges of the resulting (directed) graph are defined through the triplet of 1-d arrays \n\
-A,B,D such that [A[e] B[e]] are the vertices D[e] = ||A[e]-B[e]|| Euclidian.\n\
-NB:\n\
-- The edge system is symmeterized: if (A[e] B[e] D[e]) is one of the edges \n\
-then (B[e] A[e] D[e]) is another edge \n\
-- trivial edges are included, and have distance 0.\n\
-  ";
-
 static char graph_cc_doc[] = 
 " label = graph_cc(a,b,d,V)\n\
   returns the connected components as labels.\n\
@@ -267,51 +250,6 @@ static PyObject* graph_skeleton(PyObject* self, PyObject* args)
   return ret;
 }
 
-static PyObject* graph_3d_grid(PyObject* self, PyObject* args)
-{
-  PyArrayObject *xyz, *a, *b, *d;
-  int E,k=18;
-
-  /* Parse input */ 
-  
-  /* see http://www.python.org/doc/1.5.2p2/ext/parseTuple.html*/
-  int OK = PyArg_ParseTuple( args, "O!|i:graph_3d_grid", 
-			  &PyArray_Type, &xyz, 
-			  &k); 
-  if (!OK) Py_RETURN_NONE; 
-  
-  fff_array* XYZ = fff_array_fromPyArray( xyz );   
-  fff_graph *G;
-
-  E = fff_graph_grid(&G,XYZ, k);
-  
-  if (E == -1) {
-      FFF_WARNING("Graph creation failed");
-      Py_RETURN_NONE;
-  }
-
-
-  fff_array_delete(XYZ);
-
-  fff_array *A = fff_array_new1d(FFF_LONG,E);
-  fff_array *B = fff_array_new1d(FFF_LONG,E);
-  fff_vector *D = fff_vector_new(E);
-
-  fff_graph_edit_safe(A,B,D,G);
-  fff_graph_delete(G);
-  /* get the results as python arrrays*/
-  a = fff_array_toPyArray( A );
-  b = fff_array_toPyArray( B );
-  d = fff_vector_toPyArray( D );
-  
-  /* Output tuple */
-  PyObject* ret = Py_BuildValue("NNN", 
-				a, 
-				b,
-				d); 
-  
-  return ret;
-} 
 
 /****************************************************************
  ************ Part 2 : graph analysis ***************************
@@ -615,10 +553,6 @@ static PyMethodDef module_methods[] = {
    (PyCFunction)graph_mst,             /* corresponding C function */
    METH_KEYWORDS,          /* ordinary (not keyword) arguments */
    graph_mst_doc},        /* doc string */
-  {"graph_3d_grid",        /* name of func when called from Python */
-   (PyCFunction)graph_3d_grid,          /* corresponding C function */
-   METH_KEYWORDS,          /* ordinary (not keyword) arguments */
-   graph_3d_grid_doc},        /* doc string */
   {"graph_cc",        /* name of func when called from Python */
    (PyCFunction)graph_cc,          /* corresponding C function */
    METH_KEYWORDS,          /* ordinary (not keyword) arguments */

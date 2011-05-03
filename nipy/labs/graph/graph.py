@@ -1,6 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from _graph import ( __doc__, graph_cc, graph_3d_grid, graph_mst, graph_rd,
+from _graph import ( __doc__, graph_cc, graph_mst, graph_rd,
                      graph_dijkstra, graph_dijkstra_multiseed, graph_floyd,
                      graph_voronoi, graph_skeleton
                      )
@@ -346,8 +346,20 @@ def eps(X, eps=1.):
     dist -= np.diag(np.diag(dist))
     return wgraph_from_adjacency(dist)
 
-def grid_graph(xyz, k):
-    """ Utilitity that computes the six neighbors on a 3d grid
+
+def graph_3d_grid(xyz, k=18):
+    """ Utility that computes the six neighbors on a 3d grid
+    
+    Parameters
+    ----------
+    xyz: array of shape (n_samples, 3); grid coordinates of the points
+    k: neighboring system, equal to 6, 18, or 26
+    
+    Returns
+    -------
+    i, j, d 3 arrays of shape (E), 
+            where E is the number of edges in the resulting graph
+            (i, j) represent the edges, d their weights
     """
     if np.size(xyz) == 0:
        return None
@@ -385,7 +397,6 @@ def grid_graph(xyz, k):
             eA = np.hstack((eA, o1z, o1z1))
             eB = np.hstack((eB, o1z1, o1z))
             q += 2 * np.size(nz)
-
         weights = np.hstack((weights, np.sqrt(l1dist) * np.ones(q)))
         return eA, eB, weights
     
@@ -395,7 +406,10 @@ def grid_graph(xyz, k):
     if k == 26:
         i, j, d = create_edges(lxyz, N26, 3, i, j, d)
     i, j = i.astype(np.int), j.astype(np.int)
+    order = np.argsort(i + j * (len(i) + 1))
+    i, j, d = i[order], j[order], d[order]
     return i, j, d
+
 
 def wgraph_from_3d_grid(xyz, k=18):
     """Create graph as the set of topological neighbours
@@ -413,17 +427,12 @@ def wgraph_from_3d_grid(xyz, k=18):
     """    
     if xyz.shape[1] != 3:
         raise ValueError('xyz should have shape n * 3')
-    
-    i, j, d = grid_graph(xyz, k)
-    #graph = graph_3d_grid(xyz, k)
-    #if graph is not None:
-    #    i, j, d = graph
-    #else:
-    #    raise TypeError('Creating graph from grid failed. '\
-    #                        'Maybe the grid is too big')
+    if k not in [6, 18, 26]:
+        raise ValueError, 'k should be equal to 6, 18 or 26'
+
+    i, j, d = graph_3d_grid(xyz, k)
     edges = np.vstack((i, j)).T
     return WeightedGraph(xyz.shape[0], edges, d)
-
 
 
 def concatenate_graphs(G1, G2):

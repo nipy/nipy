@@ -174,12 +174,33 @@ class test_Graph(TestCase):
         self.assert_(sum(D < 1.5) == 15120)
 
     def test_grid_3d_5(self):
-        nx, ny, nz = 10, 10, 10
+        nx, ny, nz = 5, 5, 5
         xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
         G = wgraph_from_3d_grid(xyz, 26)
         D = G.weights.copy()
         G.set_euclidian(xyz)
         assert (np.allclose(G.weights, D, 1.e-7))
+
+    def test_grid_3d_6(self):
+        nx, ny, nz = 5, 5, 5
+        xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
+        adj = wgraph_from_3d_grid(xyz, 26).to_coo_matrix().tolil()
+        assert len(adj.rows[63]) == 26
+        for i in [62, 64, 58, 68, 38, 88, 57, 67, 37, 87, 59, 69, 39, 89, 33, 
+                  83, 43, 93, 32, 82, 42, 92, 34, 84, 44, 94]:
+            assert i in adj.rows[63]
+
+    def test_grid_3d_7(self):
+        """ Check that the grid graph is symmetric
+        """
+        xyz = np.array(np.where(np.random.rand(5, 5, 5) > 0.5)).T
+        adj = wgraph_from_3d_grid(xyz, 6).to_coo_matrix()
+        assert (adj - adj.T).nnz == 0
+        adj = wgraph_from_3d_grid(xyz, 18).to_coo_matrix()
+        assert (adj - adj.T).nnz == 0
+        adj = wgraph_from_3d_grid(xyz, 26).to_coo_matrix()
+        assert (adj - adj.T).nnz == 0
+        
 
     def test_cut_redundancies(self):
         G = basic_graph()

@@ -26,7 +26,7 @@ def field_from_coo_matrix_and_data(x, data):
        the input matrix
     data: array of shape (V, dim),
           the field data
-h
+
     Returns
     -------
     ifield: resulting field instance
@@ -85,12 +85,12 @@ class Field(fg.WeightedGraph):
         self.E = 0
         self.edges = []
         self.weights = []
-        if (edges == None) & (weights == None):
-            pass # fixme
-        else:
+        if (edges is not None) or (weights is not None):
             if edges.shape[0] == np.size(weights):
-                E = edges.shape[0]
-                # fixme: quick and dirty
+                if len(edges) == 0:
+                    E = 0
+                else:
+                    E = edges.shape[0]
                 self.V = V
                 self.E = E
                 self.edges = edges
