@@ -7,23 +7,6 @@
 
 /* doc */ 
 
-static char graph_mst_doc[] = 
-" (A,B,D) = graph_mst(X)\n\
-  Building the MST of the data \n\
-INPUT:\n\
-The array X is assumed to be a n*p feature matrix \n\
-where n is the number of features \n\
-and p is the dimension of the features \n\
-It is assumed that the features are embedded in a (locally) Euclidian space \n\
-OUTPUT:\n\
-The edges of the resulting (directed) graph are defined through the triplet of 1-d arrays \n\
-A,B,D such that [A[e] B[e]] are the vertices D[e] = ||A[e]-B[e]|| Euclidian.\n\
-NB:\n\
-- The edge system is symmeterized: if (A[e] B[e] D[e]) is one of the edges \n\
-then (B[e] A[e] D[e]) is another edge \n\
-- As a consequence, the graph comprises (2n-2) edges \n\
-  ";
-
 static char graph_skeleton_doc[] = 
 " (A,B,D) = graph_mst(A1,B1,D1)\n\
   Building the MST of the data \n\
@@ -39,20 +22,6 @@ NB:\n\
 - The edge system is symmeterized: if (A[e] B[e] D[e]) is one of the edges \n\
 then (B[e] A[e] D[e]) is another edge \n\
 - As a consequence, the graph comprises (2n-2) edges \n\
-  ";
-
-static char graph_cc_doc[] = 
-" label = graph_cc(a,b,d,V)\n\
-  returns the connected components as labels.\n\
-  the graph is assumed symmetric \n\
-  INPUT:\n\
-- The edges of the input graph are defined through the couple of 1-d arrays \n\
-A,B such that [A[e] B[e]] are the vertices and D[e] an associated attribute \n\
-(distance/weight/affinity) \n\
-- V is the numner of vertices of the graph\n\
-It is an optional argument, by default v = max(max(a),max(b))+1\n\
-OUTPUT:\n\
-- label is a length V label vector\n\
   ";
 
 static char graph_dijkstra_doc[] = 
@@ -158,45 +127,6 @@ static double _fff_array_max1d(const fff_array *farray)
  ***************************************************************/
 
 
-static PyObject* graph_mst(PyObject* self, PyObject* args)
-{
-  PyArrayObject *x, *a, *b, *d;
-  
-  /* Parse input */ 
-  /* see http://www.python.org/doc/1.5.2p2/ext/parseTuple.html*/
-  int OK = PyArg_ParseTuple( args, "O!:graph_mst", 
-			  &PyArray_Type, &x); 
-  if (!OK) Py_RETURN_NONE; 
-  
-  /* prepare C arguments */
-  fff_matrix* X = fff_matrix_fromPyArray( x );
-  int V = X->size1; 
-  int E = 2*(V-1);
-  fff_graph *G = fff_graph_new(V,E);
-  fff_array *A = fff_array_new1d(FFF_LONG,E);
-  fff_array *B = fff_array_new1d(FFF_LONG,E);
-  fff_vector *D = fff_vector_new(E);
-
-  /* do the job */
-  fff_graph_MST(G, X);   
-  fff_graph_edit_safe(A,B,D,G);
-  fff_graph_delete(G);
-  fff_matrix_delete(X);
-
-  /* get the results as python arrrays*/
-  a = fff_array_toPyArray( A );
-  b =  fff_array_toPyArray( B );
-  d = fff_vector_toPyArray( D );
-  
-  /* Output tuple */
-  PyObject* ret = Py_BuildValue("NNN", 
-				a, 
-				b,
-				d); 
-  
-  return ret;
-}
-
 static PyObject* graph_skeleton(PyObject* self, PyObject* args)
 {
   PyArrayObject *a, *b, *d;
@@ -254,49 +184,6 @@ static PyObject* graph_skeleton(PyObject* self, PyObject* args)
 /****************************************************************
  ************ Part 2 : graph analysis ***************************
  ***************************************************************/
-
-static PyArrayObject* graph_cc(PyObject* self, PyObject* args)
-{
-  PyArrayObject *a, *b, *d, *l;
-  int eA,eB,V=0;
-
-  /* Parse input */ 
-  /* see http://www.python.org/doc/1.5.2p2/ext/parseTuple.html*/
-  int OK = PyArg_ParseTuple( args, "O!O!O!|i:graph_cc", 
-			     &PyArray_Type, &a,
-			     &PyArray_Type, &b,
-			     &PyArray_Type, &d,
-			     &V
-			     ); 
-  if (!OK) return NULL; 
-    
-  /* prepare C arguments */
-  fff_array* A = fff_array_fromPyArray( a ); 
-  fff_array* B = fff_array_fromPyArray( b );
-  fff_vector* D = fff_vector_fromPyArray(d);
-  int E = A->dimX;
-  if (V<1){
-     eA = (int)_fff_array_max1d(A)+1;
-     eB = (int)_fff_array_max1d(B)+1;
-     if (eA>V) V = eA;
-     if (eB>V) V = eB;
-   }
-  fff_array *label = fff_array_new1d(FFF_LONG,V);
-  
-  /* do the job */
-  fff_graph *G = fff_graph_build_safe(V,E,A,B,D);
-  fff_array_delete(A);
-  fff_array_delete(B);
-  fff_vector_delete(D);
-  
-  fff_graph_cc_label(label->data,G);
-  fff_graph_delete(G);
-  
-  /* get the results as python arrrays*/
-  l = fff_array_toPyArray( label );
-  
-  return l;
-}
 
 static PyArrayObject* graph_dijkstra(PyObject* self, PyObject* args)
 {
@@ -549,14 +436,6 @@ static PyArrayObject* graph_rd(PyObject* self, PyObject* args)
 
 
 static PyMethodDef module_methods[] = {
-  {"graph_mst",           /* name of func when called from Python */
-   (PyCFunction)graph_mst,             /* corresponding C function */
-   METH_KEYWORDS,          /* ordinary (not keyword) arguments */
-   graph_mst_doc},        /* doc string */
-  {"graph_cc",        /* name of func when called from Python */
-   (PyCFunction)graph_cc,          /* corresponding C function */
-   METH_KEYWORDS,          /* ordinary (not keyword) arguments */
-   graph_cc_doc},        /* doc string */
   {"graph_dijkstra",        /* name of func when called from Python */
    (PyCFunction)graph_dijkstra,          /* corresponding C function */
    METH_KEYWORDS,          /* ordinary (not keyword) arguments */

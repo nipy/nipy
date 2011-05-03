@@ -120,21 +120,6 @@ extern "C" {
   */
   extern long fff_graph_to_neighb(fff_array *cindices, fff_array * neighb, fff_vector* weight, const fff_graph* G);
     
-   /*!
-    \brief Minimum Spanning Tree construction
-    \param X data matrix. 
-    \param G resulting sparse graph
-
-    This algorithm builds a graph whose vertices are the list of items
-    and whose edges for the MST of X.
-    The data matrix should be dimensioned as (nb items * feature dimension)
-    The number of edges is 2*nb vertices-2, due to the symmetry.
-    The metric used in the algo is Euclidian.
-    The algo used is Boruvska's algorithm. It is not fully optimized yet.
-
-    The length of the MST is returned
-  */
-  double fff_graph_MST(fff_graph* G,const fff_matrix* X);
 
 /*!
     \brief Minimum Spanning Tree construction from an existing graph
