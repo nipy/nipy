@@ -1,8 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from _graph import ( __doc__, graph_cc, graph_mst, graph_rd,
-                     graph_dijkstra, graph_dijkstra_multiseed, graph_floyd,
-                     graph_voronoi, graph_skeleton
+from _graph import ( __doc__,  graph_dijkstra, graph_dijkstra_multiseed, 
+                     graph_floyd, graph_rd, graph_voronoi, graph_skeleton
                      )
 
 import numpy as np
@@ -144,11 +143,8 @@ class Graph(object):
         """
         #from scipy.sparse import cs_graph_components
         #_, label = cs_graph_components(self.adjacency())
-        if self.E > 0:
-            label = graph_cc(self.edges[:, 0], self.edges[:, 1],
-                             np.zeros(self.E), self.V)
-        else:
-            label = np.arange(self.V)
+        lil = self.to_coo_matrix().tolil().rows.tolist()
+        label = lil_cc(lil)
         return label
 
     def degrees(self):
@@ -254,7 +250,7 @@ def complete_graph(n):
 
 
 def mst(X):
-    """ Returns the WeightedGraph that is the minimum Spanning Tree of X
+    """  Returns the WeightedGraph that is the minimum Spanning Tree of X
     
     Parameters
     ----------
@@ -264,12 +260,47 @@ def mst(X):
     -------
     the corresponding WeightedGraph instance
     """
-    if np.size(X) == X.shape[0]:
-        X = np.reshape(X, (np.size(X), 1))
+    n = X.shape[0]
+    label = np.arange(n).astype(np.int)
     
-    i, j, d = graph_mst(X)
-    edges = np.vstack((i, j)).T
-    return WeightedGraph(X.shape[0], edges, d) 
+    edges = np.zeros((0, 2)).astype(np.int)
+    # upper bound on maxdist**2
+    maxdist = 4 * np.sum((X - X[0])**2, 1).max()
+    nbcc = n
+    while nbcc > 1:
+        mindist = maxdist * np.ones(nbcc)
+        link = - np.ones((nbcc, 2)).astype(np.int)
+
+        # find nearest neighbors
+        for n1 in range(n):
+            j = label[n1]
+            newdist = np.sum((X[n1] - X)**2, 1)
+            newdist[label==j] = maxdist
+            n2 = np.argmin(newdist)
+            if newdist[n2] < mindist[j]:
+                mindist[j] = newdist[n2]
+                link[j] = np.array([n1, n2])                    
+
+        # merge nearest neighbors
+        nnbcc = nbcc
+        idx = np.arange(nbcc)
+        for i in range(nnbcc):
+            k, j = label[link[i]]
+            while k > idx[k]:
+                k = idx[k]
+            while j > idx[j]:
+                j = idx[j]
+            if k != j:
+                edges = np.vstack((edges, link[i], 
+                                   np.array([link[i, 1], link[i, 0]])))
+            idx[max(j, k)] = min(j, k)
+            nbcc -= 1
+        # relabel the graph
+        label = WeightedGraph(n, edges, np.ones(edges.shape[0])).cc()
+        nbcc = label.max() + 1
+     
+    d = np.sqrt(np.sum((X[edges[:, 0]] - X[edges[:, 1]]) ** 2, 1)) 
+    return WeightedGraph(n, edges, d)
 
 
 def knn(X, k=1):
@@ -345,6 +376,38 @@ def eps(X, eps=1.):
     # this would is just for numerical reasons
     dist -= np.diag(np.diag(dist))
     return wgraph_from_adjacency(dist)
+
+
+def lil_cc(lil):
+    """ Returns the connected comonents of a graph represented as a 
+    list of lists
+
+    Parameters
+    ----------
+    lil: a list of list representing the graph neighbors
+    
+    Returns
+    -------
+    label a vector of shape len(lil): connected components labelling
+
+    Note
+    ----
+    dramatically slow for non-sparse graphs
+    """
+    n = len(lil)
+    visited = np.zeros(n).astype(np.int)
+    label = - np.ones(n).astype(np.int)
+    k = 0
+    while (visited == 0).any():
+        front =  [np.argmin(visited)]
+        while len(front) > 0:
+            pivot = front.pop(0)
+            if visited[pivot] == 0:
+                visited[pivot] = 1
+                label[pivot] = k
+                front += lil[pivot]
+        k += 1
+    return label
 
 
 def graph_3d_grid(xyz, k=18):

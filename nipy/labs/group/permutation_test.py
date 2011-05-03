@@ -7,8 +7,7 @@ import numpy as np
 import scipy.misc as sm
 
 # Our own imports
-from ..graph import graph_cc, wgraph_from_3d_grid
-from ..graph.graph import wgraph_from_3d_grid
+from ..graph import wgraph_from_3d_grid
 from ..graph.field import Field, field_from_graph_and_data
 
 from ..utils import zscore 
