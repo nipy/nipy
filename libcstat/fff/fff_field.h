@@ -27,15 +27,7 @@ extern "C" {
 #include "fff_matrix.h"  
 #include "fff_blas.h"
 
-/*!
-\brief sparse kernel diffusion
-\param field field of data that is diffused
-\param G graph
-Interpreting the graph G as a sparse kernel, the algorithm
-performs one iteration of diffusion on the field data.
-*/
-  extern int fff_field_diffusion(fff_vector *field, const fff_graph* G);
-  
+
 /*!
     \brief customized watershed analysis of the field
     \param idx gives the indices of the maxima in each bassin

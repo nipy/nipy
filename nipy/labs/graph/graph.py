@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from _graph import ( __doc__,  graph_dijkstra, graph_dijkstra_multiseed, 
-                     graph_floyd, graph_rd, graph_voronoi
+                     graph_floyd, graph_voronoi
                      )
 
 import numpy as np
@@ -347,7 +347,7 @@ def knn(X, k=1):
     return wgraph_from_adjacency(dist)
  
 
-def eps(X, eps=1.):
+def eps_nn(X, eps=1.):
     """Returns the eps-nearest-neighbours graph of the data
     
     Parameters
@@ -855,10 +855,39 @@ class WeightedGraph(Graph):
         cliques: array of shape (self.V), type (np.int)
           labelling of the vertices according to the clique they belong to
         """
-        cliques = np.arange(self.V)
-        if self.E > 0:
-            cliques = graph_rd(self.edges[:, 0], self.edges[:, 1],
-                    self.weights, self.V)
+        if (self.weights < 0).any():
+            raise ValueError('cliques definition require a positive graph')
+
+        cliques, size = - np.ones(self.V), np.zeros(self.V)
+        adj = self.to_coo_matrix()
+        
+        for k in range(self.V):
+            u = cliques < 0
+            w = np.zeros_like(u)
+            # replicator dynamics iterations
+            for q in range(self.V):
+                w = u.copy()
+                u = (adj * u) * w
+                if u.sum() == 0:
+                    break
+                u /= u.sum()
+                if ((w - u) ** 2).sum() < 1.e-12: 
+                    break
+
+            # threshold the result
+            threshold = 1. / max(2., 1. * np.sum(cliques == - 1))
+            cliques[u > threshold] = k
+            if np.sum(u > threshold) == 0:
+                break
+            size[k] = np.sum(u > threshold)
+            if cliques.min() > -1 :
+                break
+        # sort the labels
+        size = size[size > 0]
+        order = np.argsort(- size)
+        label = cliques.copy()
+        for k, vv in enumerate(order):
+            cliques[label == vv] = k
         return cliques
 
     def remove_trivial_edges(self):

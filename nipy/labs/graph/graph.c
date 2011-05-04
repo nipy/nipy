@@ -71,20 +71,6 @@ OUTPUT:\n\
 Note that it has the size (nbseed)\n\
   ";
 
-static char graph_rd_doc[] = 
-" cliques = graph_voronoi(a,b,d,V)\n\
-  performs a clique extraction of the graph using replicator dynamics  \n\
-  d>=0 is mandatory ; it is checked in the function c\n \
-INPUT:\n\
-- The edges of the input graph are defined through the couple of 1-d arrays \n\
-A,B such that [A[e] B[e]] are the vertices and D[e] an associated attribute \n\
-(distance/weight/affinity) \n\
-- V is the numner of vertices of the graph\n\
-It is an optional argument, by default v = max(max(a),max(b))+1\n\
-OUTPUT:\n\
-- the labelling of the vertices according to the clique they belong to \n\
-Note that it has the size (V)\n\
-  ";
 
 static char module_doc[] = 
 " Graph routines.\n\
@@ -317,50 +303,6 @@ static PyArrayObject* graph_voronoi(PyObject* self, PyObject* args)
   return l;
 }
 
-static PyArrayObject* graph_rd(PyObject* self, PyObject* args)
-{
-  PyArrayObject *a, *b, *d, *l;
-  int eA, eB, V = 0;
-  
-  /* Parse input */ 
-  /* see http://www.python.org/doc/1.5.2p2/ext/parseTuple.html*/
-  int OK = PyArg_ParseTuple( args, "O!O!O!|i:graph_rd", 
-			     &PyArray_Type, &a,
-			     &PyArray_Type, &b,
-			     &PyArray_Type, &d,
-			     &V
-			     ); 
-  if (!OK) return NULL;   
-
-  /* prepare C arguments */
-  fff_array* A = fff_array_fromPyArray( a ); 
-  fff_array* B = fff_array_fromPyArray( b );
-  fff_vector* D = fff_vector_fromPyArray(d);
-  int E = A->dimX;
-  if (V<1){
-     eA = (int)_fff_array_max1d(A)+1;
-     eB = (int)_fff_array_max1d(B)+1;
-     if (eA>V) V = eA;
-     if (eB>V) V = eB;
-   }
-  /* do the job */
-  
-  fff_graph *G = fff_graph_build_safe(V,E,A,B,D);
-  fff_array_delete(A);
-  fff_array_delete(B);
-  fff_vector_delete(D);
-  
-  fff_array *label = fff_array_new1d(FFF_LONG,V); 
-    
-  fff_graph_cliques(label,G);
-  
-  fff_graph_delete(G);
-  /* get the results as python arrrays*/
-  l = fff_array_toPyArray( label);
-  
-  return l;
-}
-
 
 static PyMethodDef module_methods[] = {
   {"graph_dijkstra",        /* name of func when called from Python */
@@ -379,11 +321,7 @@ static PyMethodDef module_methods[] = {
    (PyCFunction)graph_voronoi,          /* corresponding C function */
    METH_KEYWORDS,          /* ordinary (not keyword) arguments */
    graph_voronoi_doc},        /* doc string */
-   {"graph_rd",        /* name of func when called from Python */
-   (PyCFunction)graph_rd,          /* corresponding C function */
-   METH_KEYWORDS,          /* ordinary (not keyword) arguments */
-   graph_rd_doc},        /* doc string */
-    {NULL, NULL,0,NULL}
+  {NULL, NULL,0,NULL}
 
 };
 
