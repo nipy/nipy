@@ -7,22 +7,6 @@
 
 /* doc */ 
 
-static char graph_skeleton_doc[] = 
-" (A,B,D) = graph_mst(A1,B1,D1)\n\
-  Building the MST of the data \n\
-INPUT:\n\
-The array X is assumed to be a n*p feature matrix \n\
-where n is the number of features \n\
-and p is the dimension of the features \n\
-It is assumed that the features are embedded in a (locally) Euclidian space \n\
-OUTPUT:\n\
-The edges of the resulting (directed) graph are defined through the triplet of 1-d arrays \n\
-A,B,D such that [A[e] B[e]] are the vertices D[e] = ||A[e]-B[e]|| Euclidian.\n\
-NB:\n\
-- The edge system is symmeterized: if (A[e] B[e] D[e]) is one of the edges \n\
-then (B[e] A[e] D[e]) is another edge \n\
-- As a consequence, the graph comprises (2n-2) edges \n\
-  ";
 
 static char graph_dijkstra_doc[] = 
 " dg = graph_dijkstra(a,b,d,seed,V)\n\
@@ -122,63 +106,6 @@ static double _fff_array_max1d(const fff_array *farray)
   return max;
 }
 
-/****************************************************************
- ************ Part 1 : creating graphs **************************
- ***************************************************************/
-
-
-static PyObject* graph_skeleton(PyObject* self, PyObject* args)
-{
-  PyArrayObject *a, *b, *d;
-  int V;
-  /* Parse input */ 
-  /* see http://www.python.org/doc/1.5.2p2/ext/parseTuple.html*/
-  int OK = PyArg_ParseTuple( args, "O!O!O!|i:graph_skeleton", 
-			     &PyArray_Type, &a,
-			     &PyArray_Type, &b,
-			     &PyArray_Type, &d,
-							 &V); 
-  if (!OK) Py_RETURN_NONE; 
-  
-  /* prepare C arguments */
-  fff_array* A = fff_array_fromPyArray( a ); 
-  fff_array* B = fff_array_fromPyArray( b );
-  fff_vector* D = fff_vector_fromPyArray(d);
-  int E = A->dimX;
-
-  /* do the job */
-  fff_graph *G = fff_graph_build_safe(V,E,A,B,D);
-  
-  fff_array_delete(A);
-  fff_array_delete(B);
-  fff_vector_delete(D);
-
-  E = 2*(V-1);
-  fff_graph *K = fff_graph_new(V,E);
-
- /* do the job */
-  fff_graph_skeleton(K, G);   
-  A = fff_array_new1d(FFF_LONG,E);
-  B = fff_array_new1d(FFF_LONG,E);
-  D = fff_vector_new(E);  
-  
-  fff_graph_edit_safe(A,B,D,K);
-  fff_graph_delete(G);
-  fff_graph_delete(K);
-
-  /* get the results as python arrrays*/
-  a = fff_array_toPyArray( A );
-  b =  fff_array_toPyArray( B );
-  d = fff_vector_toPyArray( D );
-  
-  /* Output tuple */
-  PyObject* ret = Py_BuildValue("NNN", 
-				a, 
-				b,
-				d); 
-  
-  return ret;
-}
 
 
 /****************************************************************
@@ -456,10 +383,6 @@ static PyMethodDef module_methods[] = {
    (PyCFunction)graph_rd,          /* corresponding C function */
    METH_KEYWORDS,          /* ordinary (not keyword) arguments */
    graph_rd_doc},        /* doc string */
-   {"graph_skeleton",        /* name of func when called from Python */
-    (PyCFunction)graph_skeleton,          /* corresponding C function */
-    METH_KEYWORDS,          /*ordinary (not keyword) arguments */
-    graph_skeleton_doc},        /* doc string */
     {NULL, NULL,0,NULL}
 
 };

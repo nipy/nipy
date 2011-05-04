@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from _graph import ( __doc__,  graph_dijkstra, graph_dijkstra_multiseed, 
-                     graph_floyd, graph_rd, graph_voronoi, graph_skeleton
+                     graph_floyd, graph_rd, graph_voronoi
                      )
 
 import numpy as np
@@ -1104,26 +1104,6 @@ class WeightedGraph(Graph):
         """ returns a copy of self
         """
         G = WeightedGraph(self.V, self.edges.copy(), self.weights.copy())
-        return G
-
-    def skeleton(self):
-        """
-        returns a MST that based on self.weights
-        Note: self must be connected
-        """
-        # check that self is connected
-        u = self.cc()
-        if u.max() > 0:
-            raise ValueError("cannot create the skeleton for \
-                              unconnected graphs")
-        i, j, d = graph_skeleton(self.edges[:, 0], self.edges[:, 1],
-                                self.weights, self.V)
-        E = np.size(i)
-        edges = np.zeros((E, 2), np.int)
-        edges[:, 0] = i
-        edges[:, 1] = j
-        weights = np.array(d)
-        G = WeightedGraph(self.V, edges, weights)
         return G
 
     def left_incidence(self):
