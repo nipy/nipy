@@ -119,37 +119,6 @@ extern "C" {
     neigh and weight must be allocated G->E elements
   */
   extern long fff_graph_to_neighb(fff_array *cindices, fff_array * neighb, fff_vector* weight, const fff_graph* G);
-    
-
-/*!
-    \brief Minimum Spanning Tree construction from an existing graph
-    \param G input graph
-    \param K resulting sparse graph
-
-    This algorithm builds a graph whose vertices are the list of items
-    The number of edges is 2*nb vertices-2, due to the symmetry.
-    The metric used in the algo is Euclidian.
-    The algo used is Boruvska's algorithm. It is not fully optimized yet.
-
-    The length of the MST or "skeleton" is returned
-  */
-  double fff_graph_skeleton(fff_graph* K,const fff_graph* G);
-
-  /*!
-    \brief graph labelling by connected components
-    \param label resulting labels     
-    \param G  sparse graph
- 
-    Given a graphG (V vertices),
-    this algorithm builds a set of labels of size V, where each vertex 
-    of one connected component of the graph has a given label
-    It is assumed that label has been allocated enough size (G->V sizeof(double))
-    It is assumed that the graph is undirected 
-    (i.e. connectivity is assessed in the non-directed sense)
-
-    the number of cc's is returned
-  */
-  extern long fff_graph_cc_label(long* label, const fff_graph* G);
   
   /*!
     \brief Dijkstra's algorithm
