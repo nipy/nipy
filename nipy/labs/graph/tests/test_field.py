@@ -7,9 +7,8 @@ from ..graph import wgraph_from_3d_grid
 
 
 def basic_field():
-    dx, dy, dz = 10, 10, 10
-    xyz = np.array( [[x, y, z] for z in range(dz) for y in range(dy) 
-                     for x in range(dx)] )
+    nx, ny, nz = 10, 10, 10
+    xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
     data = np.sum(xyz, 1).astype('d')
     F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
@@ -17,10 +16,9 @@ def basic_field():
 
 def basic_field_random():
     import numpy.random as nr
-    dx, dy, dz = 10, 10, 1
-    xyz = np.array( [[x, y, z] for z in range(dz) for y in range(dy) 
-                     for x in range(dx)] )
-    data = 0.5 * nr.randn(dx * dy * dz,1) + np.sum(xyz, 1).astype('d')
+    nx, ny, nz = 10, 10, 1
+    xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
+    data = 0.5 * nr.randn(nx * ny * nz, 1) + np.sum(xyz, 1).astype('d')
     F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
 
@@ -56,34 +54,36 @@ class test_Field(TestCase):
         F  = basic_field()
         F.field[555] = 30
         depth = F.local_maxima()
-        Dep = np.zeros(1000,'i')
-        Dep[555] = 4; 
-        Dep[999] = 3; 
-        OK = sum(np.absolute(Dep-depth))<1.e-7
-        self.assert_(OK)
+        dep = np.zeros(1000, np.int)
+        dep[555] = 5 
+        dep[999] = 3 
+        assert sum(np.absolute(dep-depth))<1.e-7
 
     def test_max_2(self):
         F  = basic_field()
         F.field[555] = 28
         idx,depth = F.get_local_maxima()
         self.assert_(len(idx) == 2)
-        self.assert_(np.alltrue( idx == (555, 999) ))
-        self.assert_(np.alltrue( depth == (4, 3) ))
+        self.assert_(np.alltrue( idx == (555, 999)))
+        self.assert_(np.alltrue( depth == (5, 3)))
 
     def test_max_3(self):
         F  = basic_field()
         F.field[555] = 27
-        idx,depth = F.get_local_maxima()
-        OK = (np.size(idx)==2)&(idx[0]==555)&(idx[1]==999)&(depth[0]==6)&(depth[1]==6)
-        self.assert_(OK)
+        idx, depth = F.get_local_maxima()
+        assert (np.size(idx) == 2) 
+        assert (idx[0] == 555)
+        assert (idx[1] == 999)
+        assert (depth[0] == 5)
+        assert (depth[1] == 5)
 
     def test_max_4(self):
         F  = basic_field()
         F.field[555] = 28
-        idx,depth = F.get_local_maxima(0,27)
-        OK = (np.size(idx)==1)&(idx[0]==555)&(depth[0]==1)
-        self.assert_(OK)
-        
+        idx, depth = F.get_local_maxima(0, 27.5)
+        assert (np.size(idx) == 1)
+        assert (idx[0] == 555)
+        assert (depth[0] == 1)
 
     def test_smooth_1(self):
         G  = basic_graph()
@@ -118,12 +118,10 @@ class test_Field(TestCase):
         F.field[555] = 30
         F.field[664] = 0
         F.dilation(2)
-        OK1 = (F.field[737]==30)
-        OK2 = (F.field[0]==6)
-        OK3 = (F.field[999]==27)
-        OK4 = (F.field[664]==30)
-        OK = OK1 & OK2 & OK3 & OK4
-        self.assert_(OK)
+        assert (F.field[737] == 30)
+        assert (F.field[0] == 6)
+        assert (F.field[999] == 27)
+        assert (F.field[664] == 30)
 
     def test_erosion(self):
         F  = basic_field()
@@ -131,12 +129,10 @@ class test_Field(TestCase):
         F.field[664] = 0
         F.erosion(2)
         field = F.get_field()
-        OK1 = (field[737]==11)
-        OK2 = (field[0]==0)
-        OK3 = (field[999]==21)
-        OK4 = (field[664]==0)
-        OK = OK1 & OK2 & OK3 & OK4
-        self.assert_(OK)
+        assert (field[737] == 11)
+        assert (field[0] == 0)
+        assert (field[999] == 21)
+        assert (field[664] == 0)
 
     def test_opening(self):
         F  = basic_field()
@@ -144,25 +140,22 @@ class test_Field(TestCase):
         F.field[664] = 0
         F.opening(2)
         field = F.get_field()
-        OK1 = (field[737]==17)
-        OK2 = (field[0]==0)
-        OK3 = (field[999]==21)
-        OK4 = (field[555]==16)
-        OK = OK1 & OK2 & OK3 & OK4
-        self.assert_(OK)
-
+        assert (field[737] == 17)
+        assert (field[0] == 0)
+        assert (field[999] == 21)
+        assert (field[555] == 16)
+    
     def test_closing(self):
         F  = basic_field()
         F.field[555] = 30
         F.field[664] = 0
         F.closing(2)
         field = F.get_field()
-        OK1 = (field[737]==17)
-        OK2 = (field[0]==6)
-        OK3 = (field[999]==27)
-        OK4 = (field[555]==30)
-        OK = OK1 & OK2 & OK3 & OK4
-        self.assert_(OK)
+        assert (field[737] == 17)
+        assert (field[0] == 6)
+        assert (field[999] == 27)
+        assert (field[555] == 30)
+
 
     def test_watershed_1(self):
         F = basic_field()

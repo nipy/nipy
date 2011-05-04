@@ -1,20 +1,16 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from _field import closing, custom_watershed, diffusion, dilation, erosion, \
-    field_voronoi, get_local_maxima, local_maxima, opening, \
-    threshold_bifurcations
+"""
+This module implements the field structure of the so-called field structure,
+cwhich is a graph + a vectorial feature, with a bunch of associated operations.
+
+Author:Bertrand Thirion, 2006--2011
+"""
+
+from _field import custom_watershed, field_voronoi, threshold_bifurcations
 from _field import __doc__
 import numpy as np
-import graph as fg
-
-
-"""
-This module implements the field structure of nipy-neurospin
-
-Author:Bertrand Thirion, 2006--2009
-
-Fixme : add a subfield method, similar to subgraph
-"""
+from graph import WeightedGraph
 
 
 def field_from_coo_matrix_and_data(x, data):
@@ -59,7 +55,7 @@ def field_from_graph_and_data(g, data):
     ifield = Field(g.V, g.edges, g.weights, data)
     return ifield
 
-class Field(fg.WeightedGraph):
+class Field(WeightedGraph):
     """
     This is the basic field structure,
          which contains the weighted graph structure
@@ -109,9 +105,6 @@ class Field(fg.WeightedGraph):
             else:
                 self.field = field
 
-    def print_field(self):
-        print self.field
-
     def get_field(self):
         return self.field
 
@@ -132,12 +125,8 @@ class Field(fg.WeightedGraph):
         nbiter=1 : the number of iterations required
         """
         nbiter = int(nbiter)
-        if self.E < 1:
-            return
-        if nbiter > 0:
-            for i in range(self.field.shape[1]):
-                self.field[:, i] = closing(self.edges[:, 0], self.edges[:, 1],
-                                          self.field[:, i], nbiter)
+        self.dilation(nbiter) 
+        self.erosion(nbiter)
 
     def opening(self, nbiter=1):
         """ Morphological opening of the field data.
@@ -148,12 +137,8 @@ class Field(fg.WeightedGraph):
         nbiter: int, optional, the number of iterations required
         """
         nbiter = int(nbiter)
-        if self.E < 1:
-            return
-        if nbiter > 0:
-            for i in range(self.field.shape[1]):
-                self.field[:, i] = opening(self.edges[:, 0], self.edges[:, 1],
-                                          self.field[:, i], nbiter)
+        self.erosion(nbiter)
+        self.dilation(nbiter)
 
     def dilation(self, nbiter=1):
         """
@@ -162,14 +147,18 @@ class Field(fg.WeightedGraph):
         Parameters
         ----------
         nbiter: int, optional, the number of iterations required
+        
+        fixme
+        -----
+        cython
         """
+        from scipy.sparse import dia_matrix
         nbiter = int(nbiter)
-        if self.E < 1:
-            return
-        if nbiter > 0:
-            for i in range(self.field.shape[1]):
-                self.field[:, i] = dilation(self.edges[:, 0], self.edges[:, 1],
-                                           self.field[:, i], nbiter)
+        adj = self.to_coo_matrix() + dia_matrix(
+            (np.ones(self.V), 0), (self.V, self.V))
+        rows = adj.tolil().rows
+        for i in range(nbiter):
+            self.field = np.array([self.field[row].max() for row in rows])
 
     def erosion(self, nbiter=1):
         """Morphological openeing of the field
@@ -179,14 +168,15 @@ class Field(fg.WeightedGraph):
         nbiter: int, optional, the number of iterations required
         """
         nbiter = int(nbiter)
-        if self.E < 1:
-            return
-        if nbiter > 0:
-            for i in range(self.field.shape[1]):
-                self.field[:, i] = erosion(self.edges[:, 0], self.edges[:, 1],
-                                          self.field[:, i], nbiter)
+        lil = self.to_coo_matrix().tolil().rows.tolist()
+        for i in range(nbiter):
+            nf = np.zeros_like(self.field)
+            for k, neighbors in enumerate(lil):
+                nf[k] = self.field[neighbors].min(0)
+            self.field = nf     
 
-    def get_local_maxima(self, refdim=0, th=-1 * np.infty):
+
+    def get_local_maxima(self, refdim=0, th= - np.infty):
         """
         Look for the local maxima of one dimension (refdim) of self.field
 
@@ -204,31 +194,20 @@ class Field(fg.WeightedGraph):
                topological depth of the local maxima :
                depth[idx[i]] = q means that idx[i] is a q-order maximum
         """
-        refdim = int(refdim)
-        if np.size(self.field) == 0:
-            raise ValueError('No field has been defined so far')
-        if self.field.shape[1] - 1 < refdim:
-            raise ValueError('refdim > field.shape[1]')
-        idx = np.arange(np.sum(self.field > th))
-        depth = self.V * np.ones(np.sum(self.field > th), np.int)
-        if self.E > 0:
-            try:
-                idx, depth = get_local_maxima(
-                    self.edges[:, 0], self.edges[:, 1], self.field[:, refdim],
-                    th)
-            except:
-                idx = []
-                depth = []
-
+        depth_all = self.local_maxima(refdim, th)
+        idx = np.ravel(np.where(depth_all))
+        depth = depth_all[idx]
         return idx, depth
 
-    def local_maxima(self, refdim=0):
+    def local_maxima(self, refdim=0, th = -np.infty):
         """
         Look for all the local maxima of a field
 
         Parameters
         ----------
         refdim (int) field dimension over which the maxima are looked after
+        th: float, optional
+            threshold so that only values above th are considered
 
         Returns
         -------
@@ -244,10 +223,26 @@ class Field(fg.WeightedGraph):
             raise ValueError('No field has been defined so far')
         if self.field.shape[1] - 1 < refdim:
             raise ValueError(refdim > self.shape[1])
-        depth = self.V * np.ones(self.V, np.int)
-        if self.E > 0:
-            depth = local_maxima(self.edges[:, 0], self.edges[:, 1],
-                                 self.field[:, refdim])
+        depth = np.zeros(self.V, np.int)
+        
+        # create a subfield(thresholding)
+        sf = self.subfield(self.field[:, refdim] >= th)
+        initial_field = sf.field[:, refdim]
+        sf.field = initial_field.copy()
+        
+        # compute the depth in the subgraph
+        ldepth = sf.V * np.ones(sf.V, np.int)
+        for k in range(sf.V):
+            dilated_field_old = sf.field
+            sf.dilation(1)
+            non_max = sf.field > dilated_field_old 
+            ldepth[non_max] = np.minimum(k, ldepth[non_max])
+            if (non_max == False).all():
+                ldepth[sf.field == initial_field] = np.maximum(k, 1)
+                break
+
+        # write all the depth values
+        depth[self.field[:, refdim] >= th] = ldepth
         return depth
 
     def diffusion(self, nbiter=1):
@@ -257,17 +252,16 @@ class Field(fg.WeightedGraph):
 
         Parameters
         ----------
-        nbiter=1: the number of iterations required
-                  (the larger the smoother)
+        nbiter: int, optional the number of iterations required
 
         Note
         ----
         The process is run for all the dimensions of the field
         """
         nbiter = int(nbiter)
-        if (self.E > 0) & (nbiter > 0) & (np.size(self.field) > 0):
-            self.field = diffusion(self.edges[:, 0], self.edges[:, 1],
-                                   self.weights, self.field, nbiter)
+        adj = self.to_coo_matrix()
+        for i in range(nbiter):
+            self.field = adj * self.field
 
     def custom_watershed(self, refdim=0, th=-1 * np.infty):
         """
@@ -498,4 +492,8 @@ class Field(fg.WeightedGraph):
         if G == None:
             return None
         field = self.field[valid]
-        return Field(G.V, G.edges, G.weights, field)
+        if len(G.edges) == 0:
+            edges = np.array([[], []]).T
+        else:
+            edges = G.edges
+        return Field(G.V, edges, G.weights, field)
