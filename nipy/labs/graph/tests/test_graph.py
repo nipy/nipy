@@ -6,7 +6,7 @@ from unittest import TestCase
 
 from ..graph import (WeightedGraph, BipartiteGraph, concatenate_graphs, 
                      wgraph_from_adjacency, wgraph_from_coo_matrix, 
-                     complete_graph, mst, knn, eps, cross_knn, cross_eps, 
+                     complete_graph, mst, knn, eps_nn, cross_knn, cross_eps, 
                      concatenate_graphs, wgraph_from_3d_grid)
 
 
@@ -73,7 +73,7 @@ class test_Graph(TestCase):
 
     def test_eps_1(self):
         x = basicdata()
-        G = eps(x, 1.)
+        G = eps_nn(x, 1.)
         D = G.weights
         OK = (np.size(D) == 16)
         self.assert_(OK)
@@ -444,7 +444,7 @@ class test_Graph(TestCase):
         x = basicdata()
         dmax = np.sqrt((x ** 2).sum())
         m = mst(x)
-        g = eps(x, dmax)
+        g = eps_nn(x, dmax)
         k = g.kruskal()
         assert np.abs(k.weights.sum() - m.weights.sum() < 1.e-7)
 
@@ -458,6 +458,16 @@ class test_Graph(TestCase):
         sg = cg.subgraph(valid)
         assert (sg.edges == bg.edges).all()
         assert (sg.weights == bg.weights).all()
+
+    def test_cliques(self):
+        """ test the computation of cliques
+        """
+        x = np.random.rand(20, 2)
+        x[15:] += 2.
+        g = knn(x, 5)
+        g.set_gaussian(x, 1.)
+        cliques = g.cliques()
+        assert len(np.unique(cliques)) > 1
 
 if __name__ == '__main__':
     import nose

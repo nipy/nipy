@@ -200,20 +200,6 @@ extern "C" {
   */
   extern long fff_graph_voronoi(fff_array *label, const fff_graph* G,const  fff_array *seeds);
 
-  
-/*!
-    \brief Cliques extraction algorithm based on replicator dynamics
-    \param cliques a labelling of the vertices according to the clique they belong to
-    \param G  graph
-    
-    Given a graph with positive weights, this algo recursively 
-    searches for the largest clique using RD framework.
-    Note that due to stochastic initialization, the results may 
-    vary from time to time
-  */
-  extern long fff_graph_cliques(fff_array *cliques, const fff_graph* G);
-
-
 #ifdef __cplusplus
 }
 #endif

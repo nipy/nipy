@@ -13,32 +13,6 @@ static long  _fff_list_add( long *listn, double *listd,  const long newn, const 
 static long _fff_list_move( long *listn, double *listd,  const long newn, const double newd, const long k, const long j);
 
 
-int fff_field_diffusion( fff_vector *field, const fff_graph* G)
-{
-    int V = G->V;
-    int E = G->E;
-    int i;
-    double temp;
-    fff_vector *cfield;
-
-    if ((int)(field->size)!=V){
-      FFF_WARNING(" incompatible matrix size \n");
-      return(1);
-    }
-
-    cfield = fff_vector_new(V);
-    fff_vector_memcpy(cfield,field);
-    fff_vector_set_all(field,0);
-
-    for(i=0 ; i<E ; i++){
-      temp = fff_vector_get(field,G->eB[i])+ G->eD[i]*fff_vector_get(cfield,G->eA[i]);
-      fff_vector_set(field,G->eB[i],temp);
-    }
-   
-    fff_vector_delete(cfield);
-    return(0);
-}
-
 extern int fff_custom_watershed(fff_array **idx, fff_array **depth, fff_array **major, fff_array* label,  const fff_vector *field, const fff_graph* G)
 {
   int i,r,N = G->V;
