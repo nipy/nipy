@@ -176,6 +176,23 @@ class Graph(object):
             idx = 0
         return idx
 
+    def to_coo_matrix(self):
+        """
+        Returns
+        -------
+        sp: scipy.sparse matrix instance,
+            that encodes the adjacency matrix of self
+        """
+        import scipy.sparse as sps
+        if self.E > 0:
+            i = self.edges[:, 0]
+            j = self.edges[:, 1]
+            sm = sps.coo_matrix((np.ones(self.E), (i, j)), 
+                                shape=(self.V, self.V))
+        else:
+            sm = sps.coo_matrix((self.V, self.V))
+        return sm
+
     def show(self, ax=None):
         """Shows the graph as a planar one.
 

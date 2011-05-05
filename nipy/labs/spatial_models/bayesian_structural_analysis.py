@@ -288,7 +288,7 @@ def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
 
     from ..graph.field import field_from_coo_matrix_and_data
     Fbeta = field_from_coo_matrix_and_data(dom.topology, p)
-    _, _, _, label = Fbeta.custom_watershed(0, g0)
+    _, label = Fbeta.custom_watershed(0, g0)
 
     # append some information to the hroi in each subject
     for s in range(n_subj):

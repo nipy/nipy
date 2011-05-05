@@ -187,15 +187,15 @@ extern int fff_custom_watershed_th(fff_array **idx, fff_array **depth, fff_array
       nA = G->eA[i];
       nB = G->eB[i];
       if (fff_vector_get(field,nA)>th)
-		if (fff_vector_get(mfield,nA)<fff_vector_get(mfield,nB)){
-		  fff_array_set1d (win, nA, 0);
-		  if (fff_vector_get(Mfield,nA)<fff_vector_get(mfield,nB)){
-			fff_vector_set (Mfield,nA, fff_vector_get(mfield,nB));
-			fff_array_set1d(maj2,nA,fff_array_get1d( maj2,nB));
-			if (fff_array_get1d(incwin,nA)==r)
+	if (fff_vector_get(mfield,nA)<fff_vector_get(mfield,nB)){
+	  fff_array_set1d (win, nA, 0);
+	  if (fff_vector_get(Mfield,nA)<fff_vector_get(mfield,nB)){
+	    fff_vector_set (Mfield,nA, fff_vector_get(mfield,nB));
+	    fff_array_set1d(maj2,nA,fff_array_get1d( maj2,nB));
+	    if (fff_array_get1d(incwin,nA)==r)
 	      fff_array_set1d(maj1,nA,fff_array_get1d(maj2,nB));
-		  }
-		}
+	  }
+	}
     }
     remain = 0;
     
