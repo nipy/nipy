@@ -38,9 +38,9 @@ th = 2.36
 
 # compute the field structure and perform the watershed
 Fbeta = ff.Field(nbvox)
-Fbeta.from_3d_grid(xyz.T.astype('i'), 18)
+Fbeta.from_3d_grid(xyz.T.astype(np.int), 18)
 Fbeta.set_field(beta)
-idx, depth, major, label = Fbeta.custom_watershed(0, th)
+idx, label = Fbeta.custom_watershed(0, th)
 
 #compute the region-based signal average
 bfm = np.array([np.mean(beta[label == k]) for k in range(label.max() + 1)])

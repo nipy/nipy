@@ -161,48 +161,32 @@ class test_Field(TestCase):
         F = basic_field()
         F.field[555] = 28
         F.field[664] = 0
-        idx, depth, major, label = F.custom_watershed()
-        OK1 = np.size(idx) == 2
-        OK2 = (idx[0]==555) & (idx[1]==999)
-        OK3 = (major[0]==0) & (major[1]==0)
-        OK4 = (label[776]==1) & (label[666]==0) # (label[123]==0) ??
+        idx, label = F.custom_watershed()
+        assert np.size(idx) == 2
+        assert (idx[0]==555) & (idx[1]==999)
+        assert (label[776]==1) & (label[666]==0) & (label[123]==0)
         
-        #from nibabel import Nifti1Image, save
-        #save(Nifti1Image(np.reshape(F.field, (10, 10, 10)), np.eye(4)), 
-        #     '/tmp/data.nii')
-        #save(Nifti1Image(np.reshape(label.astype(np.float), (10, 10, 10)), 
-        #                 np.eye(4)), '/tmp/label.nii')
-        OK = OK1 & OK2 & OK3 & OK4
-        self.assert_(OK)
-
     def test_watershed_4(self):
         F = basic_field_3()
-        idx, depth, major, label = F.custom_watershed()
-        OK1 = np.size(idx) == 9
-        OK2 = np.unique([label[555], label[0], label[9], label[90], 
-                         label[99], label[900], label[909], label[990], 
-                         label[999]]).size == 9
-        
-        OK = OK1 & OK2 
-        self.assert_(OK)
+        idx, label = F.custom_watershed()
+        assert np.size(idx) == 9
+        assert np.unique([label[555], label[0], label[9], label[90], 
+                          label[99], label[900], label[909], label[990], 
+                          label[999]]).size == 9
         
     def test_watershed_2(self):
         F = basic_field_2()
         F.field[555] = 10
         F.field[664] = 0
-        idx,depth, major,label = F.custom_watershed()
-        OK1 = np.size(idx)==9
-        OK3 = (major[0]==0)&(major[6]==0)
-        OK = OK1 & OK3
-        self.assert_(OK)
+        idx, label = F.custom_watershed()
+        assert np.size(idx)==9
 
     def test_watershed_3(self):
         F  = basic_field_2()
         F.field[555] = 10
         F.field[664] = 0
-        idx,depth, major,label = F.custom_watershed(0,11)
-        OK = np.size(idx)==8
-        self.assert_(OK)
+        idx, label = F.custom_watershed(0,11)
+        assert np.size(idx)==8
 
     def test_bifurcations_1(self):
         F = basic_field()   

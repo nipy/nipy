@@ -160,6 +160,26 @@ class Field(WeightedGraph):
         for i in range(nbiter):
             self.field = np.array([self.field[row].max() for row in rows])
 
+    def highest_neighbor(self, refdim=0):
+        """ Computes the neighbor with highest field value along refdim
+
+        Parameters
+        ----------
+        refdim: int optiontal, the dimension to consider
+        
+        Returns
+        -------
+        hneighb: array of shape(self.V), index of the neighbor with highest 
+                 value
+        """
+        from scipy.sparse import dia_matrix
+        refdim = int(refdim)
+        adj = self.to_coo_matrix() + dia_matrix(
+            (np.ones(self.V), 0), (self.V, self.V))
+        rows = adj.tolil().rows
+        hneighb = np.array([row[self.field[row].argmax()] for row in rows])
+        return hneighb
+
     def erosion(self, nbiter=1):
         """Morphological openeing of the field
 
@@ -263,7 +283,7 @@ class Field(WeightedGraph):
         for i in range(nbiter):
             self.field = adj * self.field
 
-    def custom_watershed(self, refdim=0, th=-1 * np.infty):
+    def custom_watershed_(self, refdim=0, th=-1 * np.infty):
         """
         watershed analysis of the field.
         Note that bassins are found aound each maximum
@@ -304,6 +324,80 @@ class Field(WeightedGraph):
             idx, depth, major, label = custom_watershed(self.edges[:, 0],
                         self.edges[:, 1], f, th)
         return idx, depth, major, label
+
+    def custom_watershed(self, refdim=0, th=-1 * np.infty):
+        """ customized watershed analysis of the field.
+        Note that bassins are found around each maximum
+        (and not minimum as conventionally)
+
+        Parameters
+        ----------
+        refdim: int, optional
+        th: float optional, threshold of the field
+
+        Returns
+        -------
+        idx: array of shape (nbassins)
+             indices of the vertices that are local maxima
+        depth: array of shape (nbassins)
+               topological the depth of the bassins
+               depth[idx[i]] = q means that idx[i] is a q-order maximum
+               Note that this is also the diameter of the basins
+               associated with local maxima
+        major: array of shape (nbassins)
+               label of the maximum which dominates each local maximum
+               i.e. it describes the hierarchy of the local maxima
+        label : array of shape (self.V)
+              labelling of the vertices according to their bassin
+        """ 
+        import numpy.ma as ma
+        from graph import Graph
+
+        if (np.size(self.field) == 0):
+            raise ValueError('No field has been defined so far')
+        if self.field.shape[1] - 1 < refdim:
+            raise ValueError('refdim>field.shape[1]')
+
+        label = - np.ones(self.V, np.int)
+        
+        # create a subfield(thresholding)
+        sf = self.subfield(self.field[:, refdim] >= th)
+        initial_field = sf.field[:, refdim]
+        sf.field = initial_field.copy()
+
+        # compute the basins
+        hneighb = sf.highest_neighbor()
+        edges = np.vstack((hneighb, np.arange(sf.V))).T
+        edges = np.vstack((edges, np.vstack((np.arange(sf.V), hneighb)).T))
+        aux = Graph(sf.V, edges.shape[0], edges)
+        llabel = aux.cc()
+        n_bassins = len(np.unique(llabel))
+        
+        ## compute the depth in the subgraph
+        #ldepth = sf.V * np.ones(sf.V, np.int)
+        #for k in range(sf.V):
+        #    dilated_field_old = sf.field
+        #    hn = sf.highest_neighbor()
+        #    sf.dilation(1)
+        #    non_max = sf.field > dilated_field_old 
+        #    ldepth[non_max] = np.minimum(k, ldepth[non_max])
+        #    hneighb[non_max] = hn[non_max]
+        #    if (non_max == False).all():
+        #        ldepth[sf.field == initial_field] = np.maximum(k, 1)
+        #        break
+        ## get the information on local maxima
+        #lidx = np.array([ma.array(sf.field, mask=(llabel!=c)).argmax() 
+        #                 for c in range(n_bassins)])
+        #depth = ldepth[lidx]
+        #lmajor = hneighb[lidx]
+        
+        # write all the depth values
+        label[self.field[:, refdim] >= th] = llabel
+        idx =  np.array([ma.array(
+                    self.field[:, refdim], mask=(label!=c)).argmax()
+                         for c in range(n_bassins)])
+        #major = label[lmajor]
+        return idx, label
 
     def threshold_bifurcations(self, refdim=0, th=-1 * np.infty):
         """

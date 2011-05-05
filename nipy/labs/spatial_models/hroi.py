@@ -134,7 +134,8 @@ def HROI_from_watershed(domain, data, threshold=NINF, rid=''):
         return HierarchicalROI(domain, label, parents, rid=rid)
 
     df = field_from_coo_matrix_and_data(domain.topology, data)
-    idx, height, parents, label = df.custom_watershed(0, threshold)
+    idx, label = df.custom_watershed(0, threshold)
+    parents = np.arange(idx.size)
     nroi = HierarchicalROI(domain, label, parents, rid=rid)
 
     # this is  a custom thing, sorry
