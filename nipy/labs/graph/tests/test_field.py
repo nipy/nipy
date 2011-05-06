@@ -190,17 +190,14 @@ class test_Field(TestCase):
 
     def test_bifurcations_1(self):
         F = basic_field()   
-        idx,height, parent,label = F.threshold_bifurcations()
-        OK1= (idx==999)
-        OK2= (parent==0);
-        OK = OK1 & OK2
-        self.assert_(OK)
-
+        idx, parent,label = F.threshold_bifurcations()
+        assert (idx == 999)
+        assert (parent == 0);
+        
     def test_bifurcations_2(self):
         F = basic_field_2()
-        idx,height, parent,label = F.threshold_bifurcations()
-        OK = np.size(idx==15)
-        self.assert_(OK)
+        idx, parent, label = F.threshold_bifurcations()
+        assert np.size(idx) == 15
 
     def test_geodesic_kmeans(self,nbseeds=10,verbose=0):
         import numpy.random as nr

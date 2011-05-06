@@ -94,7 +94,7 @@ def HROI_as_discrete_domain_blobs(domain, data, threshold=NINF, smin=0,
 
     # check size
     df = field_from_coo_matrix_and_data(domain.topology, data)
-    idx, height, parents, label = df.threshold_bifurcations(th=threshold)
+    idx, parents, label = df.threshold_bifurcations(th=threshold)
     nroi = HierarchicalROI(domain, label, parents, rid=rid)
 
     # Create a signal feature

@@ -102,8 +102,10 @@ def extract_clusters_from_diam(T,XYZ,th,diam,k=18):
             F = field_from_graph_and_data(
                 wgraph_from_3d_grid(XYZ[:, I].T, k), np.reshape(T[I],(p,1)))
             # compute the blobs
-            idx, height, parent,label = F.threshold_bifurcations(0,th)
+            idx, parent,label = F.threshold_bifurcations(0,th)
             nidx = np.size(idx)
+            height = np.array([np.ceil(np.sum(label == i) ** (1./3)) 
+                               for i in np.arange(nidx)])
             #root = nidx-1
             root = np.where(np.arange(nidx)==parent)[0]
             # Can constraint be met within current region?
