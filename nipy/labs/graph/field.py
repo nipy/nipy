@@ -7,9 +7,11 @@ cwhich is a graph + a vectorial feature, with a bunch of associated operations.
 Author:Bertrand Thirion, 2006--2011
 """
 
-from _field import custom_watershed, field_voronoi, threshold_bifurcations
+from _field import field_voronoi
 from _field import __doc__
+
 import numpy as np
+
 from graph import WeightedGraph
 
 
@@ -283,48 +285,6 @@ class Field(WeightedGraph):
         for i in range(nbiter):
             self.field = adj * self.field
 
-    def custom_watershed_(self, refdim=0, th=-1 * np.infty):
-        """
-        watershed analysis of the field.
-        Note that bassins are found aound each maximum
-        (and not minimum as conventionally)
-
-        Parameters
-        ----------
-        th is a threshold so that only values above th are considered
-        by default, th = -infty (numpy)
-
-        Returns
-        -------
-        idx: array of shape (nbassins)
-             indices of the vertices that are local maxima
-        depth: array of shape (nbassins)
-               topological the depth of the bassins
-               depth[idx[i]] = q means that idx[i] is a q-order maximum
-               Note that this is also the diameter of the basins
-               associated with local maxima
-        major: array of shape (nbassins)
-               label of the maximum which dominates each local maximum
-               i.e. it describes the hierarchy of the local maxima
-        label : array of shape (self.V)
-              labelling of the vertices according to their bassin
-        """
-        if (np.size(self.field) == 0):
-            raise ValueError('No field has been defined so far')
-        if self.field.shape[1] - 1 < refdim:
-            raise ValueError('refdim>field.shape[1]')
-        f = self.field[:, refdim]
-        idx = np.nonzero(f > th)
-        idx = np.reshape(idx, np.size(idx))
-        depth = self.V * np.ones(np.sum(f > th), np.int)
-        major = np.arange(np.sum(f > th))
-        label = np.zeros(self.V, np.int)
-        label[idx] = major
-        if self.E > 0:
-            idx, depth, major, label = custom_watershed(self.edges[:, 0],
-                        self.edges[:, 1], f, th)
-        return idx, depth, major, label
-
     def custom_watershed(self, refdim=0, th=-1 * np.infty):
         """ customized watershed analysis of the field.
         Note that bassins are found around each maximum
@@ -372,25 +332,7 @@ class Field(WeightedGraph):
         aux = Graph(sf.V, edges.shape[0], edges)
         llabel = aux.cc()
         n_bassins = len(np.unique(llabel))
-        
-        ## compute the depth in the subgraph
-        #ldepth = sf.V * np.ones(sf.V, np.int)
-        #for k in range(sf.V):
-        #    dilated_field_old = sf.field
-        #    hn = sf.highest_neighbor()
-        #    sf.dilation(1)
-        #    non_max = sf.field > dilated_field_old 
-        #    ldepth[non_max] = np.minimum(k, ldepth[non_max])
-        #    hneighb[non_max] = hn[non_max]
-        #    if (non_max == False).all():
-        #        ldepth[sf.field == initial_field] = np.maximum(k, 1)
-        #        break
-        ## get the information on local maxima
-        #lidx = np.array([ma.array(sf.field, mask=(llabel!=c)).argmax() 
-        #                 for c in range(n_bassins)])
-        #depth = ldepth[lidx]
-        #lmajor = hneighb[lidx]
-        
+                
         # write all the depth values
         label[self.field[:, refdim] >= th] = llabel
         idx =  np.array([ma.array(
@@ -399,7 +341,7 @@ class Field(WeightedGraph):
         #major = label[lmajor]
         return idx, label
 
-    def threshold_bifurcations(self, refdim=0, th=-1 * np.infty):
+    def threshold_bifurcations(self, refdim=0, th=- np.infty):
         """
         analysis of the level sets of the field:
         Bifurcations are defined as changes in the topology in the level sets
@@ -426,19 +368,50 @@ class Field(WeightedGraph):
         label: array of shape (self.V)
                a labelling of thevertices according to their bassin
         """
+        import numpy.ma as ma
         if (np.size(self.field) == 0):
             raise ValueError('No field has been defined so far')
         if self.field.shape[1] - 1 < refdim:
             raise ValueError('refdim>field.shape[1]')
-        idx = np.nonzero(self.field[:, refdim] > th)
-        height = self.V * np.ones(np.sum(self.field > th))
-        parents = np.arange(np.sum(self.field > th))
-        label = np.zeros(self.V, np.int)
-        label[idx] = parents
-        if self.E > 0:
-            idx, height, parents, label = threshold_bifurcations(\
-                self.edges[:, 0], self.edges[:, 1], self.field[:, refdim], th)
-        return idx, height, parents, label
+        
+        label = - np.ones(self.V, np.int)
+        
+        # create a subfield(thresholding)
+        sf = self.subfield(self.field[:, refdim] >= th)
+        initial_field = sf.field[:, refdim].copy()
+        sf.field = initial_field.copy()
+        
+        # explore the subfield
+        order = np.argsort(- initial_field)
+        rows = sf.to_coo_matrix().tolil().rows
+        llabel, parent = - np.ones(sf.V, np.int), np.arange (2 * self.V + 1)
+        q = 0
+        for i in order:
+            if (llabel[rows[i]] > -1).any():
+                nlabel = np.unique(llabel[rows[i]])
+                if nlabel[0] == -1:
+                    nlabel = nlabel[1:]
+                while (parent[nlabel] != nlabel).any():
+                    nlabel = np.unique(parent[nlabel])
+                if len(nlabel) == 1:
+                    j = nlabel[0]
+                    llabel[i] = j
+                else:
+                    llabel[i] = q
+                    parent[nlabel]= q 
+                    q += 1
+            else:
+                llabel[i] = q
+                parent[q] = q
+                q += 1
+        parent = parent[:q]
+        
+        # write all the depth values
+        label[self.field[:, refdim] >= th] = llabel
+        idx =  np.array([ma.array(
+                    self.field[:, refdim], mask=(label!=c)).argmax()
+                         for c in range(q)])
+        return idx, parent, label
 
     def constrained_voronoi(self, seed):
         """Voronoi parcellation of the field starting from the input seed
