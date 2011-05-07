@@ -17,12 +17,6 @@ def configuration(parent_package='',top_path=None):
         lapack_info = get_info('lapack',0)
 
     config.add_extension(
-                '_graph',
-                sources=['graph.c'],
-                libraries=['cstat'],
-                extra_info=lapack_info,
-                )
-    config.add_extension(
                 '_field',
                 sources=['field.c'],
                 libraries=['cstat'],

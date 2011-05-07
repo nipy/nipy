@@ -1,9 +1,5 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from _graph import ( __doc__,  graph_dijkstra, graph_dijkstra_multiseed, 
-                     graph_floyd, graph_voronoi
-                     )
-
 import numpy as np
 
 """
@@ -632,7 +628,7 @@ class WeightedGraph(Graph):
         """
         A = self.to_coo_matrix().tocsr().tocoo()
         return wgraph_from_coo_matrix(A)
-        
+    
     def dijkstra(self, seed=0):
         """
         returns all the [graph] geodesic distances starting from seed
@@ -652,24 +648,57 @@ class WeightedGraph(Graph):
         ----
         it is mandatory that the graph weights are non-negative
         """
+        import heapq
+        if hasattr(seed, '__iter__') == False:
+            seed = [seed]
         try:
-            if self.weights.min() < 0:
+            if (self.weights < 0).any():
                 raise ValueError('some weights are non-positive')
         except:
             raise ValueError('undefined weights')
-        if self.E > 0:
-            if np.size(seed) > 1:
-                dg = graph_dijkstra_multiseed(
-                    self.edges[:, 0], self.edges[:, 1], self.weights, seed,
-                    self.V)
-            else:
-                dg = graph_dijkstra(self.edges[:, 0], self.edges[:, 1],
-                                    self.weights, seed, self.V)
-        else:
-            dg = np.infty * np.ones(self.V, np.size(seed))
-            for i in range(np.size(seed)):
-                dg[seed[i], i] = 0
-        return dg
+        dist, active = np.infty * np.ones(self.V), np.ones(self.V) 
+        idx, neighb, weight = self.compact_neighb()
+        dist[seed] = 0
+        dg = zip(np.zeros_like(seed), seed)
+        heapq.heapify(dg)
+        for j in range(self.V):
+            end = False
+            while True:
+                if len(dg) == 0:
+                    end = True
+                    break
+                node = heapq.heappop(dg)
+                if active[node[1]]:
+                    break
+            if end:
+                break
+            dwin, win = node
+            active[win] = False
+            # the folllowing loop might be vectorized
+            for i in range(idx[win], idx[win + 1]):
+                l, newdist = neighb[i], dwin + weight[i] 
+                if  newdist < dist[l]:
+                    heapq.heappush(dg, (newdist, l))
+                    dist[l] = newdist
+        return dist
+        
+    def compact_neighb(self):
+        """ returns a compact representation of self
+        
+        Returns
+        -------
+        idx: array of of shape(self.V + 1): 
+            the positions where to find the neighors of each node 
+            within neighb and weights
+        neighb: array of shape(self.E), concatenated list of neighbors
+        weights: array of shape(self.E), concatenated list of weights   
+        """
+        order = np.argsort(self.edges[:, 0] * self.V + self.edges[:, 1])
+        neighb = self.edges[order, 1]
+        weights = self.weights[order]
+        degree, _  = self.degrees()
+        idx = np.hstack((0, np.cumsum(degree))).astype(np.int)
+        return idx, neighb, weights
 
     def floyd(self, seed=None):
         """
@@ -692,25 +721,15 @@ class WeightedGraph(Graph):
         It is mandatory that the graph weights are non-negative
         The algorithm  proceeds byr epeating dijkstra's algo for each
             seed. floyd's algo is not used (O(self.V)^3 complexity...)
-        By convention, infinte distances are coded with sum(self.wedges)+1
         """
         if seed == None:
             seed = np.arange(self.V)
-
-        if self.E == 0:
-            dg = np.infty * np.ones((self.V, np.size(seed)))
-            for i in range(np.size(seed)):
-                dg[seed[i], i] = 0
-            return dg
-
-        try:
-            if self.weights.min() < 0:
-                raise ValueError('some weights are non-positive')
-        except:
-            raise ValueError('undefined weights')
-
-        dg = graph_floyd(self.edges[:, 0], self.edges[:, 1],
-                         self.weights, seed, self.V)
+        dg = None
+        for s in seed:
+            if dg == None:
+                dg = self.dijkstra(s)
+            else:
+                dg = np.vstack((dg, self.dijkstra(s)))
         return dg
 
     def normalize(self, c=0):
@@ -835,8 +854,8 @@ class WeightedGraph(Graph):
         self.edges = symg.edges
         self.weights = symg.weights
         return self.E
-
-    def Voronoi_Labelling(self, seed):
+    
+    def voronoi_labelling(self, seed):
         """performs a voronoi labelling of the graph
 
         Parameters
@@ -847,20 +866,44 @@ class WeightedGraph(Graph):
         Returns
         -------
         labels: array of shape (self.V) the labelling of the vertices
-
-        fixme: how is dealt the case of diconnected graph ?
         """
-        if np.size(seed) == 0:
-            raise ValueError('empty seed')
-        if seed.max() > self.V-1:
-            raise ValueError('seed.max()>self.V-1')
-        labels = - np.ones(self.V, np.int)
-        labels[seed] = np.arange(np.size(seed))
-        if self.E > 0:
-            labels = graph_voronoi(self.edges[:, 0], self.edges[:, 1],
-                   self.weights, seed, self.V)
-
-        return labels
+        import heapq
+        if hasattr(seed, '__iter__') == False:
+            seed = [seed]
+        try:
+            if (self.weights < 0).any():
+                raise ValueError('some weights are non-positive')
+        except:
+            raise ValueError('undefined weights')
+        dist, active = np.infty * np.ones(self.V), np.ones(self.V) 
+        label = - np.ones(self.V)
+        idx, neighb, weight = self.compact_neighb()
+        dist[seed] = 0
+        label[seed] = np.arange(len(seed))
+        dg = zip(np.zeros_like(seed), seed)
+        heapq.heapify(dg)
+        for j in range(self.V):
+            end = False
+            while True:
+                if len(dg) == 0:
+                    end = True
+                    break
+                node = heapq.heappop(dg)
+                if active[node[1]]:
+                    break
+            if end:
+                break
+            dwin, win = node
+            active[win] = False
+            # the folllowing loop might be vectorized
+            for i in range(idx[win], idx[win + 1]):
+                l, newdist = neighb[i], dwin + weight[i] 
+                if  newdist < dist[l]:
+                    heapq.heappush(dg, (newdist, l))
+                    dist[l] = newdist
+                    label[l] = label[win]
+        return label
+        
 
     def cliques(self):
         """
