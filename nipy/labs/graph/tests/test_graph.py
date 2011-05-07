@@ -271,55 +271,73 @@ class test_Graph(TestCase):
         G = knn(x, 1)
         l = G.cc()
         l = G.main_cc()
-        OK = np.size(l)==6
-        self.assert_(OK)
+        assert np.size(l)==6
 
     def test_dijkstra(self):
+        """ Test dijkstra's algorithm
+        """
         G = basic_graph()
         l = G.dijkstra(0)
-        OK = (np.absolute(l[10]-20*np.sin(np.pi/20))<1.e-7)
-        self.assert_(OK)
+        assert (np.absolute(l[10] - 20 * np.sin(np.pi / 20)) < 1.e-7)
+
+    def test_dijkstra_multiseed(self):
+        """ Test dijkstra's algorithm, multi_seed version
+        """
+        G = basic_graph()
+        l = G.dijkstra([0, 1])
+        assert (np.absolute(l[10] - 18 * np.sin(np.pi / 20)) < 1.e-7)
+
 
     def test_dijkstra2(self):
+        """ Test dijkstra's algorithm, API detail
+        """
         G = basic_graph()
         l = G.dijkstra()
-        OK = (np.absolute(l[10]-20*np.sin(np.pi/20))<1.e-7)
-        self.assert_(OK)
+        assert (np.absolute(l[10] - 20 * np.sin(np.pi / 20)) < 1.e-7)
+        
+    def test_compact_representation(self):
+        """ Test that the compact representation of the graph is indeed correct
+        """
+        G = basic_graph()
+        idx, ne, we = G.compact_neighb()
+        assert len(idx) == 21
+        assert idx[0] == 0
+        assert idx[20] == G.E
+        assert len(ne) == G.E
+        assert len(we) == G.E
 
     def test_floyd_1(self):
+        """ Test Floyd's algo without seed
+        """
         G = basic_graph()
         l = G.floyd()
-        OK = True
         for i in range(10):
-            plop = np.absolute(np.diag(l,i)-2*i*np.sin(2*np.pi/40))
-            OK = OK & (plop.max()<1.e-4)
-        self.assert_(OK)
+            plop = np.absolute(np.diag(l, i) - 2 * i * np.sin(2 * np.pi / 40))
+            assert(plop.max()<1.e-4)
 
     def test_floyd_2(self):
+        """ Test Floyd's algo, with seed
+        """
         G = basic_graph()
         seeds = np.array([0,10])
         l = G.floyd(seeds)
         
-        OK = True
-
         for i in range(10):
             plop = np.absolute(l[0,i]-2*i*np.sin(2*np.pi/40))
-            OK = OK & (plop.max()<1.e-4)
+            assert (plop.max()<1.e-4)
             plop = np.absolute(l[0,19-i]-2*(i+1)*np.sin(2*np.pi/40))
-            OK = OK & (plop.max()<1.e-4)
+            assert (plop.max()<1.e-4)
 
         for i in range(10):
             plop = np.absolute(l[1,i]-2*(10-i)*np.sin(2*np.pi/40))
-            OK = OK & (plop.max()<1.e-4)
+            assert (plop.max()<1.e-4)
             plop = np.absolute(l[1,19-i]-2*(9-i)*np.sin(2*np.pi/40))
-            OK = OK & (plop.max()<1.e-4)
-        
-        self.assert_(OK)
+            assert (plop.max()<1.e-4)
   
     def test_symmeterize(self):
         a = np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6])
         b = np.array([1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 0, 0, 1])
-        edges = np.transpose(np.vstack((a, b)))
+        edges = np.vstack((a, b)).T
         d = np.ones(14)
         G = WeightedGraph(7, edges, d)
         G.symmeterize()
@@ -328,37 +346,43 @@ class test_Graph(TestCase):
         self.assert_(ok.all())
 
     def test_voronoi(self):
-        a = np.array([0,0,1,1,2,2,3,3,4,4,5,5,6,6])
-        b = np.array([1,2,2,3,3,4,4,5,5,6,6,0,0,1])
-        d = np.array([1,2,1,2,1,2,1,2,1,2,1,2,1,2]);
-        edges = np.transpose(np.vstack((a,b)))
+        """ test voronoi labelling with 2 seeds
+        """
+        a = np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6])
+        b = np.array([1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 0, 0, 1])
+        d = np.array([1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2]);
+        edges = np.transpose(np.vstack((a, b)))
         G = WeightedGraph(7, edges,d)
         G.symmeterize()
-        seed = np.array([0,6])
-        label = G.Voronoi_Labelling(seed)
-        self.assert_(label[1]==0)
+        seed = np.array([0, 6])
+        label = G.voronoi_labelling(seed)
+        assert(label[1] == 0)
         
     def test_voronoi2(self):
-        a = np.array([0,0,1,1,2,2,3,3,4,4,5,5,6,6])
-        b = np.array([1,2,2,3,3,4,4,5,5,6,6,0,0,1])
-        d = np.array([1,2,1,2,1,2,1,2,1,2,1,2,1,2]);
-        edges = np.transpose(np.vstack((a,b)))
+        """ test voronoi labelling with one seed
+        """
+        a = np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6])
+        b = np.array([1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 0, 0, 1])
+        d = np.array([1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2]);
+        edges = np.vstack((a, b)).T
         G = WeightedGraph(7, edges,d)
         G.symmeterize()
         seed = np.array([0])
-        label = G.Voronoi_Labelling(seed)
-        self.assert_(label[4]==0)
+        label = G.voronoi_labelling(seed)
+        assert(label[4] == 0)
  
     def test_voronoi3(self):
-        a = np.array([0,1,2,5,6])
-        b = np.array([1,2,3,6,0])
-        d = np.array([1,1,1,1,1]);
-        edges = np.transpose(np.vstack((a,b)))
+        """ test voronoi labelling with non-connected components
+        """
+        a = np.array([0, 1, 2, 5, 6])
+        b = np.array([1, 2, 3, 6, 0])
+        d = np.array([1, 1, 1, 1, 1]);
+        edges = np.vstack((a, b)).T
         G = WeightedGraph(7, edges,d)
         G.symmeterize()
         seed = np.array([0])
-        label = G.Voronoi_Labelling(seed)
-        self.assert_(label[4]==-1)
+        label = G.voronoi_labelling(seed)
+        assert(label[4] == - 1)
 
     def test_concatenate1(self,n=10,verbose=0):
         x1 = nr.randn(n,2) 
