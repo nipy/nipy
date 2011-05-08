@@ -6,10 +6,6 @@ cwhich is a graph + a vectorial feature, with a bunch of associated operations.
 
 Author:Bertrand Thirion, 2006--2011
 """
-
-from _field import field_voronoi
-from _field import __doc__
-
 import numpy as np
 
 from graph import WeightedGraph
@@ -431,8 +427,10 @@ class Field(WeightedGraph):
         if np.size(self.field) == 0:
             raise ValueError('No field has been defined so far')
         seed = seed.astype(np.int)
-        label = field_voronoi(self.edges[:, 0], self.edges[:, 1], self.field,
-                              seed)
+        weights = np.sqrt(np.sum((self.field[self.edges[:, 0]] - 
+                                  self.field[self.edges[:, 1]]) ** 2, 1))
+        g = WeightedGraph(self.V, self.edges, weights)
+        label = g.voronoi_labelling(seed)
         return label
 
     def geodesic_kmeans(self, seeds=None, label=None, maxiter=100, eps=1.e-4,
@@ -484,8 +482,7 @@ class Field(WeightedGraph):
             k = np.size(seeds)
 
         for i in range(maxiter):
-            label = field_voronoi(self.edges[:, 0], self.edges[:, 1],
-                                  self.field, seeds)
+            label = self.constrained_voronoi(seeds)
             #update the seeds
             inertia = 0
             pinteria = 0

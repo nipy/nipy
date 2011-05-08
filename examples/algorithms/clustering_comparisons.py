@@ -20,7 +20,7 @@ nbseeds = 10
 data = gaussian_filter( np.random.randn(dx, dy), 2)
 F = Field(dx * dy * dz)
 xyz = np.reshape(np.indices((dx, dy, dz)), (3, dx * dy * dz)).T.astype(np.int)
-F.from_3d_grid(xyz, 18)
+F.from_3d_grid(xyz, 6)
 F.set_field(data)
 
 seeds = np.argsort(nr.rand(F.V))[:nbseeds]
@@ -32,7 +32,7 @@ print 'inertia values for the 3 algorithms: '
 print 'geodesic k-means: ', J0, 'wards: ', J1, 'wards + gkm: ', J2
 
 import matplotlib.pylab as mp
-mp.figure()
+mp.figure(figsize=(8, 4))
 mp.subplot(1, 3, 1)
 mp.imshow(np.reshape(data, (dx, dy)), interpolation='nearest')
 mp.title('Input data')
