@@ -6,43 +6,36 @@ from ..field import (Field, field_from_coo_matrix_and_data,
 from ..graph import wgraph_from_3d_grid
 
 
-def basic_field():
-    nx, ny, nz = 10, 10, 10
+def basic_field(nx=10, ny=10, nz=10):
     xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
     data = np.sum(xyz, 1).astype('d')
     F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
 
 
-def basic_field_random():
+def basic_field_random(nx=10, ny=10, nz=1):
     import numpy.random as nr
-    nx, ny, nz = 10, 10, 1
     xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
     data = 0.5 * nr.randn(nx * ny * nz, 1) + np.sum(xyz, 1).astype('d')
     F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
 
-
-def basic_field_2():
-    nx, ny, nz = 10, 10, 10
+def basic_field_2(nx=10, ny=10, nz=10):
     xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
     toto = xyz - np.array([5, 5, 5])
     data = np.sum(toto ** 2, 1) 
     F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
 
-def basic_field_3():
-    nx, ny, nz = 10, 10, 10
+def basic_field_3(nx=10, ny=10, nz=10):
     xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
     toto = xyz - np.array([5, 5, 5])
     data = np.abs(np.sum(toto ** 2, 1) - 11 )
     F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
 
-def basic_graph():
-    dx, dy, dz = 10, 10, 10
-    xyz = np.array([[x,y,z] for z in range(dz) for y in range(dy) 
-                    for x in range(dx)] )
+def basic_graph(nx=10, ny=10, nz=10):
+    xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
     data = np.zeros(xyz.shape[0])
     F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)    
     return F 
@@ -199,13 +192,32 @@ class test_Field(TestCase):
         idx, parent, label = F.threshold_bifurcations()
         assert np.size(idx) == 15
 
-    def test_geodesic_kmeans(self,nbseeds=10,verbose=0):
+    def test_geodesic_kmeans(self, nbseeds=3):
+        """ Test the geodisc k-means algorithm
+        """
+        import numpy.random as nr
+        F = basic_field_random(5, 5, 1)
+        seeds = np.argsort(nr.rand(F.V))[:nbseeds]
+        seeds, label, inertia = F.geodesic_kmeans(seeds)
+        for i in range(nbseeds):
+            assert label[seeds[i]] == i     
+        print np.unique(label), np.arange(nbseeds)
+        assert np.array([i in np.unique(label) 
+                         for i in np.arange(nbseeds)]).all()
+    
+    def test_constrained_voronoi(self, nbseeds=3):
+        """ Test the geodisc k-means algorithm
+        """
         import numpy.random as nr
         F = basic_field_random()
         seeds = np.argsort(nr.rand(F.V))[:nbseeds]
-        F.geodesic_kmeans(seeds)
-        OK = True
-        self.assert_(OK)
+        label = F.constrained_voronoi(seeds)
+        for i in range(nbseeds):
+            assert label[seeds[i]] == i     
+        print np.unique(label), np.arange(nbseeds)
+        assert np.array([i in np.unique(label) 
+                         for i in np.arange(nbseeds)]).all()
+
 
     def test_subfield(self):
         import numpy.random as nr

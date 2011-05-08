@@ -876,7 +876,7 @@ class WeightedGraph(Graph):
         except:
             raise ValueError('undefined weights')
         dist, active = np.infty * np.ones(self.V), np.ones(self.V) 
-        label = - np.ones(self.V)
+        label = - np.ones(self.V, np.int)
         idx, neighb, weight = self.compact_neighb()
         dist[seed] = 0
         label[seed] = np.arange(len(seed))

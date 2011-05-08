@@ -7,6 +7,7 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('graph', parent_package, top_path)
     config.add_data_dir('tests')
    
+    """
     # We need this because libcstat.a is linked to lapack, which can
     # be a fortran library, and the linker needs this information.
     from numpy.distutils.system_info import get_info
@@ -15,14 +16,8 @@ def configuration(parent_package='',top_path=None):
         # But on OSX that may not give us what we need, so try with 'lapack'
         # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
         lapack_info = get_info('lapack',0)
+    """
 
-    config.add_extension(
-                '_field',
-                sources=['field.c'],
-                libraries=['cstat'],
-                extra_info=lapack_info,
-                )
-    
     return config
     
 
