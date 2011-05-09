@@ -66,8 +66,7 @@ class Forest(WeightedGraph):
         self.children = []
 
     def define_graph_attributes(self):
-        """
-        define the edge and weights array
+        """define the edge and weights array
         """
         self.edges = np.array([]).astype(np.int)
         self.weights = np.array([])
@@ -115,8 +114,7 @@ class Forest(WeightedGraph):
             return self.children[v]
 
     def get_descendents(self, v):
-        """
-        returns the nodes that are children of v
+        """returns the nodes that are children of v as a list
         """
         v = int(v)
         if v < 0:
@@ -133,6 +131,7 @@ class Forest(WeightedGraph):
                 temp = self.get_descendents(w)
                 for q in temp:
                     desc.append(q)
+        desc.sort()
         return desc
 
     def check(self):
@@ -178,10 +177,13 @@ class Forest(WeightedGraph):
         return leaves
 
     def isroot(self):
-        """
-        returns a bool array of shape(self.V)
-        so that isleaf==1 iff the node is a root in the forest
-        i.e. : is its own parent
+        """ returns an indicator of nodes being roots
+        
+        Returns
+        -------
+        isleaf, array of shape(self.V, bool),
+                so that isleaf==1 iff the node is a root in the forest
+                i.e. : is its own parent
         """
         roots = np.array(self.parents == np.arange(self.V))
         return roots
@@ -217,9 +219,12 @@ class Forest(WeightedGraph):
         return F
 
     def merge_simple_branches(self):
-        """
-        merge the branches of the forest that are the only child
-        of the parent branch into their child
+        """ Return a subforest, where subbranches have been merged:
+        
+        Returns
+        -------
+        sf, Forest instance, 
+            same as self, but nodes with single child have been deleted
         """
         valid = np.ones(self.V).astype('bool')
         children = self.get_children()
@@ -245,6 +250,9 @@ class Forest(WeightedGraph):
         ----
         by convention infinte distances are given the distance np.infty
         """
+        if (hasattr(seed, '__iter__') == False) & (seed is not None):
+            seed = [seed]
+            
         if self.E > 0:
             w = self.weights.copy()
             self.weights = np.absolute(self.weights)
@@ -253,7 +261,7 @@ class Forest(WeightedGraph):
             self.weights = w
             return dg
         else:
-            return np.array([])
+            return np.infty * np.ones((self.V, self.V))
 
     def depth_from_leaves(self):
         """
@@ -371,8 +379,7 @@ class Forest(WeightedGraph):
         return bresult
 
     def tree_depth(self):
-        """
-        return the maximal depth of any node in the tree
+        """ Returns the number of hierrachical levels in the tree
         """
         depth = self.depth_from_leaves()
         return depth.max() + 1
@@ -391,6 +398,7 @@ class Forest(WeightedGraph):
         -------
         prop, array of shape(self.V), the output property field
         """
+        prop = np.asanyarray(prop).copy()
         if np.size(prop) != self.V:
             raise ValueError("incoherent size for prop")
 
@@ -404,12 +412,7 @@ class Forest(WeightedGraph):
         return prop
 
     def propagate_upward(self, label):
-        """
-        label = self.propagate_upward(label)
-        Assuming that label is a certain positive integer field
-        (i.e. labels)
-        that is defined at the leaves of the tree
-        and can be compared,
+        """ Assuming that label is a certain positive integer field
         this propagates these labels to the parents whenever
         the children nodes have coherent properties
         otherwise the parent value is unchanged
@@ -422,6 +425,7 @@ class Forest(WeightedGraph):
         -------
         label: array of shape(self.V)
         """
+        label = np.asanyarray(label).copy()
         if np.size(label) != self.V:
             raise ValueError("incoherent size for label")
 
@@ -433,36 +437,3 @@ class Forest(WeightedGraph):
                     if np.size(np.unique(label[ch[i]])) == 1:
                         label[i] = np.unique(label[ch[i]])
         return label
-
-    def rooted_subtree(self, k):
-        """
-        l = self.subtree(k)
-        returns an array of the nodes included in the subtree rooted in k
-
-        Parameters
-        ----------
-        k (int): the vertex from which the subtree is searched
-
-        Returns
-        -------
-        idx: array of shape>=1, the index of the nodes beneath k
-
-        Fixme
-        -----
-        should return a Forest and/or a vector of booleans
-        """
-        if ((k > self.V) or (k < 0)):
-            raise ValueError("incoherent value for k")
-
-        valid = np.zeros(self.V)
-        valid[k] = 1
-        sk = 0
-        while valid.sum() > sk:
-            sk = valid.sum().copy()
-            for i in range(self.V):
-                if valid[self.parents[i]] == 1:
-                    valid[i] = 1
-
-        idx = np.nonzero(valid)
-        idx = np.reshape(idx, np.size(idx))
-        return idx

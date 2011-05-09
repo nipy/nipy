@@ -37,7 +37,7 @@ n2 = nroi.reduce_to_leaves()
 
 td = n1.make_forest().depth_from_leaves()
 root = np.argmax(td)
-lv = n1.make_forest().rooted_subtree(root)
+lv = n1.make_forest().get_descendents(root)
 u = nroi.make_graph().cc()
 
 nroi.make_feature('activation', dataset.ravel())
