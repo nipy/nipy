@@ -4,9 +4,8 @@ import numpy as np
 import numpy.random as nr
 from unittest import TestCase
 
-from ..graph import (WeightedGraph, BipartiteGraph, concatenate_graphs, 
+from ..graph import (WeightedGraph, complete_graph, mst, knn, eps_nn, 
                      wgraph_from_adjacency, wgraph_from_coo_matrix, 
-                     complete_graph, mst, knn, eps_nn, cross_knn, cross_eps, 
                      concatenate_graphs, wgraph_from_3d_grid)
 
 
@@ -87,25 +86,6 @@ class test_Graph(TestCase):
         OK = (np.size(D) == 18)
         self.assert_(OK)
 
-    def test_cross_knn_1(self):
-        x = basicdata()
-        G = cross_knn(x, x, 2)
-        OK = (G.E == 20)
-        self.assert_(OK)
-        
-    def test_cross_knn_2(self):
-        x = basicdata()
-        G = cross_knn(x, x, 1)
-        OK = (G.E == 10)
-        self.assert_(OK)  
-
-    def test_cross_eps_1(self):
-        x = basicdata()
-        y = x + 0.1 * nr.randn(x.shape[0], x.shape[1])
-        G = cross_eps(x, y, 1.)
-        D = G.weights
-        self.assert_((D < 1).all())
-    
     def test_3d_grid(self):
         """test the 6nn graph
         """
