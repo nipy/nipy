@@ -691,7 +691,10 @@ class NDGridDomain(StructuredDomain):
         data: array of shape self.size,
               data to put in the nonzer-region of the image
         """
-        wdata = np.zeros(self.shape).astype(np.int8)
+        if data is None:
+            wdata = np.zeros(self.shape, np.int8)
+        else:
+            wdata = np.zeros(self.shape, data.dtype)
         wdata[self.ijk[:, 0], self.ijk[:, 1], self.ijk[:, 2]] = 1
         if data is not None:
             if data.size != self.size:

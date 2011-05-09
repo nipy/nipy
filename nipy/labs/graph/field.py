@@ -138,7 +138,7 @@ class Field(WeightedGraph):
         self.erosion(nbiter)
         self.dilation(nbiter)
 
-    def dilation(self, nbiter=1):
+    def dilation(self, nbiter=1, fast=True):
         """
         Morphological dimlation of the field data. self.field is changed
 
@@ -150,13 +150,22 @@ class Field(WeightedGraph):
         -----
         cython
         """
-        from scipy.sparse import dia_matrix
         nbiter = int(nbiter)
-        adj = self.to_coo_matrix() + dia_matrix(
-            (np.ones(self.V), 0), (self.V, self.V))
-        rows = adj.tolil().rows
-        for i in range(nbiter):
-            self.field = np.array([self.field[row].max() for row in rows])
+        if fast:
+            from _graph import dilation
+            if self.E > 0:
+                if (self.field.size == self.V):
+                    self.field = self.field.reshape((self.V, 1))
+                idx, neighb, _ = self.compact_neighb()
+                for i in range(nbiter):
+                    dilation(self.field, idx, neighb)
+        else: 
+            from scipy.sparse import dia_matrix
+            adj = self.to_coo_matrix() + dia_matrix(
+                (np.ones(self.V), 0), (self.V, self.V))
+            rows = adj.tolil().rows
+            for i in range(nbiter):
+                self.field = np.array([self.field[row].max(0) for row in rows])
 
     def highest_neighbor(self, refdim=0):
         """ Computes the neighbor with highest field value along refdim
@@ -251,12 +260,12 @@ class Field(WeightedGraph):
         # compute the depth in the subgraph
         ldepth = sf.V * np.ones(sf.V, np.int)
         for k in range(sf.V):
-            dilated_field_old = sf.field
+            dilated_field_old = sf.field.ravel().copy()
             sf.dilation(1)
-            non_max = sf.field > dilated_field_old 
+            non_max = sf.field.ravel() > dilated_field_old 
             ldepth[non_max] = np.minimum(k, ldepth[non_max])
             if (non_max == False).all():
-                ldepth[sf.field == initial_field] = np.maximum(k, 1)
+                ldepth[sf.field.ravel() == initial_field] = np.maximum(k, 1)
                 break
 
         # write all the depth values
@@ -530,7 +539,8 @@ class Field(WeightedGraph):
     def copy(self):
         """ copy function
         """
-        return Field(self.V, self.edges, self.weights, self.field)
+        return Field(self.V, self.edges.copy(), 
+                     self.weights.copy(), self.field.copy())
 
     def subfield(self, valid):
         """
