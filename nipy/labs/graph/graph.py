@@ -672,11 +672,17 @@ class WeightedGraph(Graph):
             dwin, win = node
             active[win] = False
             # the folllowing loop might be vectorized
-            for i in range(idx[win], idx[win + 1]):
+            l = neighb[idx[win]: idx[win + 1]] 
+            newdist = dwin + weight[idx[win]: idx[win + 1]]
+            who = newdist < dist[l] 
+            for  z in zip(newdist[who], l[who]):
+                heapq.heappush(dg, z)
+            dist[l[who]] = newdist[who]
+            """for i in range(idx[win], idx[win + 1]):
                 l, newdist = neighb[i], dwin + weight[i] 
                 if  newdist < dist[l]:
                     heapq.heappush(dg, (newdist, l))
-                    dist[l] = newdist
+                    dist[l] = newdist"""
         return dist
         
     def compact_neighb(self):
@@ -691,7 +697,7 @@ class WeightedGraph(Graph):
         weights: array of shape(self.E), concatenated list of weights   
         """
         order = np.argsort(self.edges[:, 0] * self.V + self.edges[:, 1])
-        neighb = self.edges[order, 1]
+        neighb = self.edges[order, 1].astype(np.int)
         weights = self.weights[order]
         degree, _  = self.degrees()
         idx = np.hstack((0, np.cumsum(degree))).astype(np.int)

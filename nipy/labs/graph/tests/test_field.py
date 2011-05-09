@@ -116,6 +116,18 @@ class test_Field(TestCase):
         assert (F.field[999] == 27)
         assert (F.field[664] == 30)
 
+    def test_dilation2(self):
+        """ test equality of cuthon and python versions
+        """
+        F  = basic_field()
+        F.field[555] = 30
+        F.field[664] = 0
+        h = F.copy()
+        h.dilation(2)
+        g = F.copy()
+        g.dilation(2, False)
+        assert (h.field == g.field).all()
+
     def test_erosion(self):
         F  = basic_field()
         F.field[555] = 30
