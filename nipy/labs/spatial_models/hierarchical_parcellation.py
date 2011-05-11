@@ -296,7 +296,6 @@ def _optim_hparcel(feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
                 pot += lamb * np.sum(df ** 2, 1)
 
                 # b.4: solution
-                pb = 0
                 if np.sum(np.isinf(pot)) == np.size(pot):
                     pot = np.sum(dx[iz] ** 2, 1)
                     tata += 1

@@ -1,20 +1,20 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import numpy as np
-
 """
-This module implements the  BipartiteGraph, class, 
+This module implements the  BipartiteGraph, class,
 used to represent weighted bipartite graph
-
 
 Author: Bertrand Thirion, 2006--2011
 """
 
+import numpy as np
+
 from graph import WeightedGraph
+
 
 def check_feature_matrices(X, Y):
     """ checks wether the dismension of X and Y are consistent
-    
+
     Parameters
     ----------
     X, Y arrays of shape (n1, p) and (n2, p)
@@ -26,6 +26,7 @@ def check_feature_matrices(X, Y):
         Y = np.reshape(Y, (np.size(Y), 1))
     if X.shape[1] != Y.shape[1]:
         raise ValueError('X.shape[1] should = Y.shape[1]')
+
 
 def bipartite_graph_from_coo_matrix(x):
     """
@@ -60,9 +61,10 @@ def bipartite_graph_from_adjacency(x):
     from scipy.sparse import coo_matrix
     return bipartite_graph_from_coo_matrix(coo_matrix(x))
 
+
 def cross_eps(X, Y, eps=1.):
     """Return the eps-neighbours graph of from X to Y
-    
+
     Parameters
     ----------
     X, Y arrays of shape (n1, p) and (n2, p)
@@ -87,27 +89,27 @@ def cross_eps(X, Y, eps=1.):
     if np.isnan(eps):
         raise ValueError('eps is nan')
     if np.isinf(eps):
-        raise ValueError('eps is inf')    
+        raise ValueError('eps is inf')
     dist = euclidean_distance(X, Y)
-    dist = dist * (dist < eps) 
+    dist = dist * (dist < eps)
     return bipartite_graph_from_adjacency(dist)
 
 
 def cross_knn(X, Y, k=1):
     """return the k-nearest-neighbours graph of from X to Y
-    
+
     Parameters
     ----------
     X, Y arrays of shape (n1, p) and (n2, p)
     where p = common dimension of the features
     eps=1, float: the neighbourhood size considered
-    
+
     Returns
     -------
     BipartiteGraph instance
-    
+
     Note
-    ----        
+    ----
     for the sake of speed it is advised to give
     PCA-transformed matrices X and Y.
     """
@@ -128,7 +130,7 @@ def cross_knn(X, Y, k=1):
     dist = np.maximum(dist, 1.e-15)
     sorted_dist = dist.copy()
     sorted_dist.sort(1)
- 
+
     # neighbour system
     bool_knn = (dist.T < sorted_dist[:, k]).T
     dist *= (bool_knn > 0)
@@ -230,12 +232,11 @@ class BipartiteGraph(WeightedGraph):
 
         if self.E > 0:
             win_edges = valid[self.edges[:, 0]]
-            edges = self.edges[win_edges, :]
+            edges = self.edges[win_edges]
             weights = self.weights[win_edges]
             if renumb:
                 rindex = np.hstack((0, np.cumsum(valid > 0)))
                 edges[:, 0] = rindex[edges[:, 0]]
-                #print np.sum(valid), self.W, edges, weights
                 G = BipartiteGraph(np.sum(valid), self.W, edges, weights)
             else:
                 G = BipartiteGraph(self.V, self.W, edges, weights)
@@ -268,7 +269,7 @@ class BipartiteGraph(WeightedGraph):
 
         if self.E > 0:
             win_edges = valid[self.edges[:, 1]]
-            edges = self.edges[win_edges, :]
+            edges = self.edges[win_edges]
             weights = self.weights[win_edges]
             if renumb:
                 rindex = np.hstack((0, np.cumsum(valid > 0)))
@@ -281,4 +282,3 @@ class BipartiteGraph(WeightedGraph):
             G = self.copy()
 
         return G
-

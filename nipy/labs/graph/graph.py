@@ -9,6 +9,7 @@ Author: Bertrand Thirion, 2006--2011
 """
 import numpy as np
 
+
 class Graph(object):
     """ Basic topological (non-weighted) directed Graph class
 
@@ -121,7 +122,7 @@ class Graph(object):
         if self.E > 0:
             i = self.edges[:, 0]
             j = self.edges[:, 1]
-            adj = sps.coo_matrix((np.ones(self.E), (i, j)), 
+            adj = sps.coo_matrix((np.ones(self.E), (i, j)),
                                 shape=(self.V, self.V))
         else:
             adj = sps.coo_matrix((self.V, self.V))
@@ -180,7 +181,7 @@ class Graph(object):
         if self.E > 0:
             i = self.edges[:, 0]
             j = self.edges[:, 1]
-            sm = sps.coo_matrix((np.ones(self.E), (i, j)), 
+            sm = sps.coo_matrix((np.ones(self.E), (i, j)),
                                 shape=(self.V, self.V))
         else:
             sm = sps.coo_matrix((self.V, self.V))
@@ -261,21 +262,21 @@ def complete_graph(n):
 
 def mst(X):
     """  Returns the WeightedGraph that is the minimum Spanning Tree of X
-    
+
     Parameters
     ----------
     X: data array, of shape(n_samples, n_features)
-    
+
     Returns
     -------
     the corresponding WeightedGraph instance
     """
     n = X.shape[0]
     label = np.arange(n).astype(np.int)
-    
+
     edges = np.zeros((0, 2)).astype(np.int)
     # upper bound on maxdist**2
-    maxdist = 4 * np.sum((X - X[0])**2, 1).max()
+    maxdist = 4 * np.sum((X - X[0]) ** 2, 1).max()
     nbcc = n
     while nbcc > 1:
         mindist = maxdist * np.ones(nbcc)
@@ -284,12 +285,12 @@ def mst(X):
         # find nearest neighbors
         for n1 in range(n):
             j = label[n1]
-            newdist = np.sum((X[n1] - X)**2, 1)
-            newdist[label==j] = maxdist
+            newdist = np.sum((X[n1] - X) ** 2, 1)
+            newdist[label == j] = maxdist
             n2 = np.argmin(newdist)
             if newdist[n2] < mindist[j]:
                 mindist[j] = newdist[n2]
-                link[j] = np.array([n1, n2])                    
+                link[j] = np.array([n1, n2])
 
         # merge nearest neighbors
         nnbcc = nbcc
@@ -301,34 +302,34 @@ def mst(X):
             while j > idx[j]:
                 j = idx[j]
             if k != j:
-                edges = np.vstack((edges, link[i], 
+                edges = np.vstack((edges, link[i],
                                    np.array([link[i, 1], link[i, 0]])))
             idx[max(j, k)] = min(j, k)
             nbcc -= 1
         # relabel the graph
         label = WeightedGraph(n, edges, np.ones(edges.shape[0])).cc()
         nbcc = label.max() + 1
-     
-    d = np.sqrt(np.sum((X[edges[:, 0]] - X[edges[:, 1]]) ** 2, 1)) 
+
+    d = np.sqrt(np.sum((X[edges[:, 0]] - X[edges[:, 1]]) ** 2, 1))
     return WeightedGraph(n, edges, d)
 
 
 def knn(X, k=1):
     """returns the k-nearest-neighbours graph of the data
-    
+
     Parameters
     ----------
     X, array of shape (n_samples, n_features): the input data
     k, int, optional:  is the number of neighbours considered
-    
+
     Returns
     -------
-    the corresponding WeightedGraph instance 
-    
+    the corresponding WeightedGraph instance
+
     Note
     ----
     The knn system is symmeterized: if (ab) is one of the edges
-    then (ba) is also included    
+    then (ba) is also included
     """
     from nipy.algorithms.routines.fast_distance import euclidean_distance
 
@@ -348,21 +349,21 @@ def knn(X, k=1):
     dist = euclidean_distance(X)
     sorted_dist = dist.copy()
     sorted_dist.sort(0)
- 
+
     # neighbour system
     bool_knn = dist < sorted_dist[k + 1]
     bool_knn += bool_knn.T
     bool_knn -= np.diag(np.diag(bool_knn))
     dist *= (bool_knn > 0)
     return wgraph_from_adjacency(dist)
- 
+
 
 def eps_nn(X, eps=1.):
     """Returns the eps-nearest-neighbours graph of the data
-    
+
     Parameters
     ----------
-    X, array of shape (n_samples, n_features), input data 
+    X, array of shape (n_samples, n_features), input data
     eps, float, optional: the neighborhood width
 
     Returns
@@ -381,7 +382,7 @@ def eps_nn(X, eps=1.):
     if np.isinf(eps):
         raise ValueError('eps is inf')
     dist = euclidean_distance(X)
-    dist = dist * (dist < eps) 
+    dist = dist * (dist < eps)
 
     # this would is just for numerical reasons
     dist -= np.diag(np.diag(dist))
@@ -389,13 +390,13 @@ def eps_nn(X, eps=1.):
 
 
 def lil_cc(lil):
-    """ Returns the connected comonents of a graph represented as a 
+    """ Returns the connected comonents of a graph represented as a
     list of lists
 
     Parameters
     ----------
     lil: a list of list representing the graph neighbors
-    
+
     Returns
     -------
     label a vector of shape len(lil): connected components labelling
@@ -409,7 +410,7 @@ def lil_cc(lil):
     label = - np.ones(n).astype(np.int)
     k = 0
     while (visited == 0).any():
-        front =  [np.argmin(visited)]
+        front = [np.argmin(visited)]
         while len(front) > 0:
             pivot = front.pop(0)
             if visited[pivot] == 0:
@@ -422,43 +423,43 @@ def lil_cc(lil):
 
 def graph_3d_grid(xyz, k=18):
     """ Utility that computes the six neighbors on a 3d grid
-    
+
     Parameters
     ----------
     xyz: array of shape (n_samples, 3); grid coordinates of the points
     k: neighboring system, equal to 6, 18, or 26
-    
+
     Returns
     -------
-    i, j, d 3 arrays of shape (E), 
+    i, j, d 3 arrays of shape (E),
             where E is the number of edges in the resulting graph
             (i, j) represent the edges, d their weights
     """
     if np.size(xyz) == 0:
-       return None
+        return None
     lxyz = xyz - xyz.min(0)
     m = 3 * lxyz.max(0).sum() + 2
-    
+
     # six neighbours
-    N6 = [np.array([1, m, m ** 2]), np.array([m ** 2, 1, m]), 
+    N6 = [np.array([1, m, m ** 2]), np.array([m ** 2, 1, m]),
          np.array([m, m ** 2, 1])]
-    
+
     # eighteen neighbours
-    N18 = [np.array([1 + m, 1 - m, m ** 2]), 
+    N18 = [np.array([1 + m, 1 - m, m ** 2]),
            np.array([1 + m, m - 1, m ** 2]),
-           np.array([m ** 2, 1 + m, 1 - m]), 
+           np.array([m ** 2, 1 + m, 1 - m]),
            np.array([m ** 2, 1 + m, m - 1]),
-           np.array([1 - m, m ** 2, 1 + m]), 
+           np.array([1 - m, m ** 2, 1 + m]),
            np.array([m - 1, m ** 2, 1 + m])]
-    
-    # twenty-six neighbours            
-    N26 = [np.array([1 + m + m ** 2, 1 - m, 1 - m ** 2]), 
-           np.array([1 + m + m ** 2, m - 1, 1 - m ** 2]), 
-           np.array([1 + m + m ** 2, 1 - m, m ** 2 - 1]), 
-           np.array([1 + m + m ** 2, m - 1, m ** 2 - 1])] 
-           
+
+    # twenty-six neighbours
+    N26 = [np.array([1 + m + m ** 2, 1 - m, 1 - m ** 2]),
+           np.array([1 + m + m ** 2, m - 1, 1 - m ** 2]),
+           np.array([1 + m + m ** 2, 1 - m, m ** 2 - 1]),
+           np.array([1 + m + m ** 2, m - 1, m ** 2 - 1])]
+
     # compute the edges in each possible direction
-    def create_edges(lxyz, NN, l1dist=1, eA=np.array([]), eB=np.array([]), 
+    def create_edges(lxyz, NN, l1dist=1, eA=np.array([]), eB=np.array([]),
                      weights=np.array([])):
         q = 0
         for a in NN:
@@ -472,7 +473,7 @@ def graph_3d_grid(xyz, k=18):
             q += 2 * np.size(nz)
         weights = np.hstack((weights, np.sqrt(l1dist) * np.ones(q)))
         return eA, eB, weights
-    
+
     i, j, d = create_edges(lxyz, N6, 1.)
     if k >= 18:
         i, j, d = create_edges(lxyz, N18, 2, i, j, d)
@@ -488,20 +489,20 @@ def wgraph_from_3d_grid(xyz, k=18):
     """Create graph as the set of topological neighbours
     of the three-dimensional coordinates set xyz,
     in the k-connectivity scheme
-    
+
     Parameters
     ----------
     xyz: array of shape (nsamples, 3) and type np.int,
     k = 18: the number of neighbours considered. (6, 18 or 26)
-    
+
     Returns
     -------
     the WeightedGraph instance
-    """    
+    """
     if xyz.shape[1] != 3:
         raise ValueError('xyz should have shape n * 3')
     if k not in [6, 18, 26]:
-        raise ValueError, 'k should be equal to 6, 18 or 26'
+        raise ValueError('k should be equal to 6, 18 or 26')
 
     i, j, d = graph_3d_grid(xyz, k)
     edges = np.vstack((i, j)).T
@@ -616,8 +617,8 @@ class WeightedGraph(Graph):
 
     def cut_redundancies(self):
         """ Returns a graph with redundant edges removed:
-        edges (ab) is present ony once in the edge matrix: 
-        The weights are added.
+        ecah edge (ab) is present ony once in the edge matrix:
+        the correspondng weights are added.
 
         Returns
         -------
@@ -625,7 +626,7 @@ class WeightedGraph(Graph):
         """
         A = self.to_coo_matrix().tocsr().tocoo()
         return wgraph_from_coo_matrix(A)
-    
+
     def dijkstra(self, seed=0):
         """
         returns all the [graph] geodesic distances starting from seed
@@ -653,7 +654,7 @@ class WeightedGraph(Graph):
                 raise ValueError('some weights are non-positive')
         except:
             raise ValueError('undefined weights')
-        dist, active = np.infty * np.ones(self.V), np.ones(self.V) 
+        dist, active = np.infty * np.ones(self.V), np.ones(self.V)
         idx, neighb, weight = self.compact_neighb()
         dist[seed] = 0
         dg = zip(np.zeros_like(seed), seed)
@@ -672,34 +673,29 @@ class WeightedGraph(Graph):
             dwin, win = node
             active[win] = False
             # the folllowing loop might be vectorized
-            l = neighb[idx[win]: idx[win + 1]] 
+            l = neighb[idx[win]: idx[win + 1]]
             newdist = dwin + weight[idx[win]: idx[win + 1]]
-            who = newdist < dist[l] 
+            who = newdist < dist[l]
             for  z in zip(newdist[who], l[who]):
                 heapq.heappush(dg, z)
             dist[l[who]] = newdist[who]
-            """for i in range(idx[win], idx[win + 1]):
-                l, newdist = neighb[i], dwin + weight[i] 
-                if  newdist < dist[l]:
-                    heapq.heappush(dg, (newdist, l))
-                    dist[l] = newdist"""
         return dist
-        
+
     def compact_neighb(self):
         """ returns a compact representation of self
-        
+
         Returns
         -------
-        idx: array of of shape(self.V + 1): 
-            the positions where to find the neighors of each node 
-            within neighb and weights
+        idx: array of of shape(self.V + 1):
+             the positions where to find the neighors of each node
+             within neighb and weights
         neighb: array of shape(self.E), concatenated list of neighbors
-        weights: array of shape(self.E), concatenated list of weights   
+        weights: array of shape(self.E), concatenated list of weights
         """
         order = np.argsort(self.edges[:, 0] * self.V + self.edges[:, 1])
         neighb = self.edges[order, 1].astype(np.int)
         weights = self.weights[order]
-        degree, _  = self.degrees()
+        degree, _ = self.degrees()
         idx = np.hstack((0, np.cumsum(degree))).astype(np.int)
         return idx, neighb, weights
 
@@ -777,9 +773,9 @@ class WeightedGraph(Graph):
             self.weights = wgraph_from_adjacency(adj).get_weights()
             return np.asarray(s2)
         if c == 2:
-            s1 = dia_matrix((1. / np.sqrt(s1), 0), 
+            s1 = dia_matrix((1. / np.sqrt(s1), 0),
                             shape=(self.V, self.V))
-            s2 = dia_matrix((1. / np.sqrt(adj.sum(1)), 0), 
+            s2 = dia_matrix((1. / np.sqrt(adj.sum(1)), 0),
                             shape=(self.V, self.V))
             adj = (s1 * adj) * s2
             self.weights = wgraph_from_adjacency(adj).get_weights()
@@ -825,7 +821,7 @@ class WeightedGraph(Graph):
             raise ValueError('sigma should be positive')
         self.set_euclidian(X)
         d = self.weights
-        
+
         if sigma == 0:
             sigma = (d ** 2).mean()
 
@@ -838,7 +834,7 @@ class WeightedGraph(Graph):
         the current self.adjacency
         """
         A = self.to_coo_matrix()
-        symg =  wgraph_from_adjacency((A + A.T) / 2)
+        symg = wgraph_from_adjacency((A + A.T) / 2)
         self.E = symg.E
         self.edges = symg.edges
         self.weights = symg.weights
@@ -852,12 +848,12 @@ class WeightedGraph(Graph):
         its current adjacency matrix
         """
         A = self.to_coo_matrix()
-        symg =  wgraph_from_adjacency((A - A.T) / 2)
+        symg = wgraph_from_adjacency((A - A.T) / 2)
         self.E = symg.E
         self.edges = symg.edges
         self.weights = symg.weights
         return self.E
-    
+
     def voronoi_labelling(self, seed):
         """performs a voronoi labelling of the graph
 
@@ -878,7 +874,7 @@ class WeightedGraph(Graph):
                 raise ValueError('some weights are non-positive')
         except:
             raise ValueError('undefined weights')
-        dist, active = np.infty * np.ones(self.V), np.ones(self.V) 
+        dist, active = np.infty * np.ones(self.V), np.ones(self.V)
         label = - np.ones(self.V, np.int)
         idx, neighb, weight = self.compact_neighb()
         dist[seed] = 0
@@ -900,13 +896,12 @@ class WeightedGraph(Graph):
             active[win] = False
             # the folllowing loop might be vectorized
             for i in range(idx[win], idx[win + 1]):
-                l, newdist = neighb[i], dwin + weight[i] 
+                l, newdist = neighb[i], dwin + weight[i]
                 if  newdist < dist[l]:
                     heapq.heappush(dg, (newdist, l))
                     dist[l] = newdist
                     label[l] = label[win]
         return label
-        
 
     def cliques(self):
         """
@@ -923,7 +918,7 @@ class WeightedGraph(Graph):
 
         cliques, size = - np.ones(self.V), np.zeros(self.V)
         adj = self.to_coo_matrix()
-        
+
         for k in range(self.V):
             u = cliques < 0
             w = np.zeros_like(u)
@@ -934,7 +929,7 @@ class WeightedGraph(Graph):
                 if u.sum() == 0:
                     break
                 u /= u.sum()
-                if ((w - u) ** 2).sum() < 1.e-12: 
+                if ((w - u) ** 2).sum() < 1.e-12:
                     break
 
             # threshold the result
@@ -943,7 +938,7 @@ class WeightedGraph(Graph):
             if np.sum(u > threshold) == 0:
                 break
             size[k] = np.sum(u > threshold)
-            if cliques.min() > -1 :
+            if cliques.min() > - 1:
                 break
         # sort the labels
         size = size[size > 0]
@@ -1043,7 +1038,6 @@ class WeightedGraph(Graph):
         K = WeightedGraph(V, Kedges, Kweights)
         return K
 
-
     def Voronoi_diagram(self, seeds, samples):
         """
         Defines the graph as the Voronoi diagram (VD)
@@ -1073,8 +1067,8 @@ class WeightedGraph(Graph):
                                   to the same space")
 
         #1. define the graph knn(samples, seeds, 2)
-        j = cross_knn(samples, seeds, 2).edges[:, 1] 
-        
+        j = cross_knn(samples, seeds, 2).edges[:, 1]
+
         #2. put all the pairs i the target graph
         Ns = np.shape(samples)[0]
         self.E = Ns
@@ -1264,4 +1258,3 @@ class WeightedGraph(Graph):
         else:
             sm = sps.coo_matrix((self.V, self.V))
         return sm
-
