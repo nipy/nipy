@@ -35,8 +35,9 @@ def field_from_coo_matrix_and_data(x, data):
     ifield = Field(x.shape[0], edges, weights, data)
     return ifield
 
+
 def field_from_graph_and_data(g, data):
-    """ Instantiate a Fieldfrom a WeightedGraph plus some feature data    
+    """ Instantiate a Fieldfrom a WeightedGraph plus some feature data
     Parameters
     ----------
     x: (V, V) scipy.sparse.coo_matrix instance,
@@ -52,6 +53,7 @@ def field_from_graph_and_data(g, data):
         raise ValueError("data and g do not have consistent shapes")
     ifield = Field(g.V, g.edges, g.weights, data)
     return ifield
+
 
 class Field(WeightedGraph):
     """
@@ -123,7 +125,7 @@ class Field(WeightedGraph):
         nbiter=1 : the number of iterations required
         """
         nbiter = int(nbiter)
-        self.dilation(nbiter) 
+        self.dilation(nbiter)
         self.erosion(nbiter)
 
     def opening(self, nbiter=1):
@@ -145,7 +147,7 @@ class Field(WeightedGraph):
         Parameters
         ----------
         nbiter: int, optional, the number of iterations required
-        
+
         fixme
         -----
         cython
@@ -159,7 +161,7 @@ class Field(WeightedGraph):
                 idx, neighb, _ = self.compact_neighb()
                 for i in range(nbiter):
                     dilation(self.field, idx, neighb)
-        else: 
+        else:
             from scipy.sparse import dia_matrix
             adj = self.to_coo_matrix() + dia_matrix(
                 (np.ones(self.V), 0), (self.V, self.V))
@@ -173,10 +175,10 @@ class Field(WeightedGraph):
         Parameters
         ----------
         refdim: int optiontal, the dimension to consider
-        
+
         Returns
         -------
-        hneighb: array of shape(self.V), index of the neighbor with highest 
+        hneighb: array of shape(self.V), index of the neighbor with highest
                  value
         """
         from scipy.sparse import dia_matrix
@@ -200,10 +202,9 @@ class Field(WeightedGraph):
             nf = np.zeros_like(self.field)
             for k, neighbors in enumerate(lil):
                 nf[k] = self.field[neighbors].min(0)
-            self.field = nf     
+            self.field = nf
 
-
-    def get_local_maxima(self, refdim=0, th= - np.infty):
+    def get_local_maxima(self, refdim=0, th=-np.infty):
         """
         Look for the local maxima of one dimension (refdim) of self.field
 
@@ -226,7 +227,7 @@ class Field(WeightedGraph):
         depth = depth_all[idx]
         return idx, depth
 
-    def local_maxima(self, refdim=0, th = -np.infty):
+    def local_maxima(self, refdim=0, th=-np.infty):
         """
         Look for all the local maxima of a field
 
@@ -251,18 +252,18 @@ class Field(WeightedGraph):
         if self.field.shape[1] - 1 < refdim:
             raise ValueError(refdim > self.shape[1])
         depth = np.zeros(self.V, np.int)
-        
+
         # create a subfield(thresholding)
         sf = self.subfield(self.field[:, refdim] >= th)
         initial_field = sf.field[:, refdim]
         sf.field = initial_field.copy()
-        
+
         # compute the depth in the subgraph
         ldepth = sf.V * np.ones(sf.V, np.int)
         for k in range(sf.V):
             dilated_field_old = sf.field.ravel().copy()
             sf.dilation(1)
-            non_max = sf.field.ravel() > dilated_field_old 
+            non_max = sf.field.ravel() > dilated_field_old
             ldepth[non_max] = np.minimum(k, ldepth[non_max])
             if (non_max == False).all():
                 ldepth[sf.field.ravel() == initial_field] = np.maximum(k, 1)
@@ -314,7 +315,7 @@ class Field(WeightedGraph):
                i.e. it describes the hierarchy of the local maxima
         label : array of shape (self.V)
               labelling of the vertices according to their bassin
-        """ 
+        """
         import numpy.ma as ma
         from graph import Graph
 
@@ -324,7 +325,7 @@ class Field(WeightedGraph):
             raise ValueError('refdim>field.shape[1]')
 
         label = - np.ones(self.V, np.int)
-        
+
         # create a subfield(thresholding)
         sf = self.subfield(self.field[:, refdim] >= th)
         initial_field = sf.field[:, refdim]
@@ -337,16 +338,16 @@ class Field(WeightedGraph):
         aux = Graph(sf.V, edges.shape[0], edges)
         llabel = aux.cc()
         n_bassins = len(np.unique(llabel))
-                
+
         # write all the depth values
         label[self.field[:, refdim] >= th] = llabel
-        idx =  np.array([ma.array(
-                    self.field[:, refdim], mask=(label!=c)).argmax()
-                         for c in range(n_bassins)])
+        idx = np.array([ma.array(
+                    self.field[:, refdim], mask=(label != c)).argmax()
+                        for c in range(n_bassins)])
         #major = label[lmajor]
         return idx, label
 
-    def threshold_bifurcations(self, refdim=0, th=- np.infty):
+    def threshold_bifurcations(self, refdim=0, th=-np.infty):
         """
         analysis of the level sets of the field:
         Bifurcations are defined as changes in the topology in the level sets
@@ -378,18 +379,18 @@ class Field(WeightedGraph):
             raise ValueError('No field has been defined so far')
         if self.field.shape[1] - 1 < refdim:
             raise ValueError('refdim>field.shape[1]')
-        
+
         label = - np.ones(self.V, np.int)
-        
+
         # create a subfield(thresholding)
         sf = self.subfield(self.field[:, refdim] >= th)
         initial_field = sf.field[:, refdim].copy()
         sf.field = initial_field.copy()
-        
+
         # explore the subfield
         order = np.argsort(- initial_field)
         rows = sf.to_coo_matrix().tolil().rows
-        llabel, parent = - np.ones(sf.V, np.int), np.arange (2 * self.V + 1)
+        llabel, parent = - np.ones(sf.V, np.int), np.arange(2 * self.V + 1)
         q = 0
         for i in order:
             if (llabel[rows[i]] > -1).any():
@@ -403,18 +404,18 @@ class Field(WeightedGraph):
                     llabel[i] = j
                 else:
                     llabel[i] = q
-                    parent[nlabel]= q 
+                    parent[nlabel] = q
                     q += 1
             else:
                 llabel[i] = q
                 parent[q] = q
                 q += 1
         parent = parent[:q]
-        
+
         # write all the depth values
         label[self.field[:, refdim] >= th] = llabel
-        idx =  np.array([ma.array(
-                    self.field[:, refdim], mask=(label!=c)).argmax()
+        idx = np.array([ma.array(
+                    self.field[:, refdim], mask=(label != c)).argmax()
                          for c in range(q)])
         return idx, parent, label
 
@@ -436,7 +437,7 @@ class Field(WeightedGraph):
         if np.size(self.field) == 0:
             raise ValueError('No field has been defined so far')
         seed = seed.astype(np.int)
-        weights = np.sqrt(np.sum((self.field[self.edges[:, 0]] - 
+        weights = np.sqrt(np.sum((self.field[self.edges[:, 0]] -
                                   self.field[self.edges[:, 1]]) ** 2, 1))
         g = WeightedGraph(self.V, self.edges, weights)
         label = g.voronoi_labelling(seed)
@@ -539,7 +540,7 @@ class Field(WeightedGraph):
     def copy(self):
         """ copy function
         """
-        return Field(self.V, self.edges.copy(), 
+        return Field(self.V, self.edges.copy(),
                      self.weights.copy(), self.field.copy())
 
     def subfield(self, valid):

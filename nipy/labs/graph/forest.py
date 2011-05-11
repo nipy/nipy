@@ -178,7 +178,7 @@ class Forest(WeightedGraph):
 
     def isroot(self):
         """ returns an indicator of nodes being roots
-        
+
         Returns
         -------
         isleaf, array of shape(self.V, bool),
@@ -220,10 +220,10 @@ class Forest(WeightedGraph):
 
     def merge_simple_branches(self):
         """ Return a subforest, where subbranches have been merged:
-        
+
         Returns
         -------
-        sf, Forest instance, 
+        sf, Forest instance,
             same as self, but nodes with single child have been deleted
         """
         valid = np.ones(self.V).astype('bool')
@@ -252,7 +252,7 @@ class Forest(WeightedGraph):
         """
         if (hasattr(seed, '__iter__') == False) & (seed is not None):
             seed = [seed]
-            
+
         if self.E > 0:
             w = self.weights.copy()
             self.weights = np.absolute(self.weights)

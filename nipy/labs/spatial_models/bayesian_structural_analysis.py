@@ -573,7 +573,6 @@ def compute_BSA_loo(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     dof = 10
     burnin = 100
     nis = 300
-    ll1 = []
     ll0 = []
     ll2 = []
 
