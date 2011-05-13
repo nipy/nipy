@@ -3,11 +3,12 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 from os.path import join, split
-from argparse import ArgumentParser
 import sys
 from tempfile import mkdtemp
+
 import numpy as np 
 
+from nipy.externals.argparse import ArgumentParser
 from nipy import load_image, save_image 
 from nipy.core.image.affine_image import AffineImage 
 from nipy.algorithms.segmentation import brain_segmentation
