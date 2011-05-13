@@ -23,6 +23,22 @@ def initialize_parameters(data, klasses):
     """
     Rough parameter initialization by moment matching with a brainweb
     image for which accurate parameters are known.
+
+    Parameters
+    ----------
+    data: array
+      Image data. 
+    klasses: int
+      Number of desired classes. 
+   
+    Returns
+    -------
+    means: array
+      Initial class-specific intensity means
+    stdevs: array
+      Initial class-specific intensity standard deviations
+    props: array
+      Initial class-specific volume proportions 
     """
     # Brainweb reference mean and standard devs
     ref_mu = np.array(BRAINWEB_MEANS)
