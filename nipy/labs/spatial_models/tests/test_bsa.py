@@ -13,7 +13,7 @@ from nose.tools import assert_true
 
 from nipy.testing import dec
 
-from ...graph.field import Field 
+from nipy.algorithms.graph.field import Field 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
 from ..bayesian_structural_analysis import compute_BSA_simple
 from ..discrete_domain import domain_from_array

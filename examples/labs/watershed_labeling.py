@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pylab as mp
 
-import nipy.labs.graph.field as ff
+from nipy.algorithms.graph.field import Field
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 
 ###############################################################################
@@ -37,7 +37,7 @@ nbvox = np.size(xyz, 1)
 th = 2.36
 
 # compute the field structure and perform the watershed
-Fbeta = ff.Field(nbvox)
+Fbeta = Field(nbvox)
 Fbeta.from_3d_grid(xyz.T.astype(np.int), 18)
 Fbeta.set_field(beta)
 idx, label = Fbeta.custom_watershed(0, th)

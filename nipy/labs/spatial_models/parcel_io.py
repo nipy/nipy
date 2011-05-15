@@ -257,7 +257,7 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
     Ward's + GKM is expensive but quite good
     To reduce CPU time, rather use nn=6 (especially with Ward)
     """
-    from ..graph.field import field_from_coo_matrix_and_data
+    from nipy.algorithms.graph.field import field_from_coo_matrix_and_data
 
     if method not in ['ward', 'gkm', 'ward_and_gkm', 'kmeans']:
         raise ValueError('unknown method')

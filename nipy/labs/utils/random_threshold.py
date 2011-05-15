@@ -5,7 +5,7 @@
 
 import numpy as np
 import scipy.stats as st
-from ..graph import wgraph_from_3d_grid
+from nipy.algorithms.graph import wgraph_from_3d_grid
 from ..group.routines import add_lines
 
 tol = 1e-10

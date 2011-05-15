@@ -11,8 +11,8 @@ from numpy.random import rand
 
 from nipy.algorithms.clustering.clustering import kmeans, voronoi
 from .parcellation import MultiSubjectParcellation
-from ..graph.field import Field
-from ..graph.graph import wgraph_from_coo_matrix
+from nipy.algorithms.graph.field import Field
+from nipy.algorithms.graph.graph import wgraph_from_coo_matrix
 
 
 def _jointly_reduce_data(data1, data2, chunksize):

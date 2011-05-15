@@ -12,10 +12,10 @@ Author : Bertrand Thirion, 2009-2011
 
 import numpy as np
 
-from ..graph.graph import WeightedGraph 
-from ..graph.forest import Forest
+from nipy.algorithms.graph.graph import WeightedGraph 
+from nipy.algorithms.graph.forest import Forest
+from nipy.algorithms.graph.field import field_from_coo_matrix_and_data
 from .mroi import SubDomains
-from ..graph.field import field_from_coo_matrix_and_data
 
 NINF = - np.infty
 

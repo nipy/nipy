@@ -26,8 +26,8 @@ Author : Bertrand Thirion,Pamela Guevara, 2006-2009
 
 import numpy as np
 
-from nipy.labs.graph.graph import WeightedGraph 
-from nipy.labs.graph.forest import Forest 
+from ..graph.graph import WeightedGraph 
+from ..graph.forest import Forest 
 
 
 class WeightedForest(Forest):

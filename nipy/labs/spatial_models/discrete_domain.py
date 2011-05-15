@@ -11,7 +11,8 @@ import scipy.sparse as sp
 
 from nibabel import load, Nifti1Image, save
 
-from ..graph import WeightedGraph, wgraph_from_coo_matrix, wgraph_from_3d_grid
+from nipy.algorithms.graph import (WeightedGraph, wgraph_from_coo_matrix, 
+                                   wgraph_from_3d_grid)
 
 ##############################################################
 # Ancillary functions

@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 
 from .. import permutation_test as pt
-from ...graph import wgraph_from_3d_grid
+from nipy.algorithms.graph import wgraph_from_3d_grid
 
 nperms = 2
 ndraws = 10
