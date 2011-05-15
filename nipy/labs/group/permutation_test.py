@@ -7,8 +7,8 @@ import numpy as np
 import scipy.misc as sm
 
 # Our own imports
-from ..graph import wgraph_from_3d_grid
-from ..graph.field import Field, field_from_graph_and_data
+from nipy.algorithms.graph import wgraph_from_3d_grid
+from nipy.algorithms.graph.field import Field, field_from_graph_and_data
 
 from ..utils import zscore 
 from .onesample import stat as os_stat, stat_mfx as os_stat_mfx

@@ -10,7 +10,7 @@ print __doc__
 
 import numpy as np
 import numpy.random as nr
-from nipy.labs.graph.field import Field
+from nipy.algorithms.graph.field import Field
 from scipy.ndimage import gaussian_filter
 
 dx = 50

@@ -4,8 +4,8 @@ import numpy as np
 import scipy.stats as sp_stats
 
 from nipy.algorithms.registration import apply_affine
-from .graph.field import field_from_graph_and_data
-from .graph.graph import wgraph_from_3d_grid
+from nipy.algorithms.graph.field import field_from_graph_and_data
+from nipy.algorithms.graph.graph import wgraph_from_3d_grid
 from ..algorithms.statistics import empirical_pvalue
 from .glm import glm
 from .group.permutation_test import \

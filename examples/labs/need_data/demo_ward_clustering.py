@@ -9,10 +9,12 @@ print __doc__
 
 import numpy as np
 import os
-from nibabel import load, save, Nifti1Image
-from nipy.labs.graph.field import Field
-import get_data_light
 import tempfile
+
+from nibabel import load, save, Nifti1Image
+from nipy.algorithms.graph.field import Field
+import get_data_light
+
 
 # paths
 swd = tempfile.mkdtemp()

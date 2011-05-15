@@ -2,12 +2,12 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import numpy as np
+
+from nipy.algorithms.graph.field import field_from_coo_matrix_and_data
 from ..hierarchical_parcellation import hparcel 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
 from ..parcellation import MultiSubjectParcellation
 from ..discrete_domain import grid_domain_from_array
-from ...graph.field import field_from_coo_matrix_and_data
-
 
 
 def test_parcel_interface():

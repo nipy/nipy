@@ -15,8 +15,8 @@ from ..hierarchical_clustering import (average_link_graph,
                                        ward, ward_quick, 
                                        ward_segment, ward_field_segment,
                                        ward_quick_segment)
-from nipy.labs.graph.graph import WeightedGraph, knn
-from nipy.labs.graph.field import field_from_graph_and_data
+from nipy.algorithms.graph.graph import WeightedGraph, knn
+from nipy.algorithms.graph.field import field_from_graph_and_data
 
 def alg_test_basic(n=100,k=5):
     """
