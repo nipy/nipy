@@ -478,7 +478,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
         weights = BayesianGMM.weights / (BayesianGMM.weights.sum())
         bfp = (lw / weights) * BayesianGMM.slikelihood(test)
 
-    if mpaxes is not False:
+    if verbose and (mpaxes is not False):
         BayesianGMM.show_components(x, gd, lj, mpaxes)
 
     bfp = (bfp.T / bfp.sum(1)).T
