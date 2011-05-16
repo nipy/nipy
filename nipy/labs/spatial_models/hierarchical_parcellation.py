@@ -407,18 +407,19 @@ def hparcel(domain, ldata, nb_parcel, nb_perm=0, niter=5, mu=10., dmax=10.,
     all_labels, proto_anat = _optim_hparcel(
         feature, domain, graphs, nb_parcel, lamb, dmax, niter, initial_mask,
         chunksize=chunksize, verbose=verbose)
-
+    
     # write the individual labelling
     labels = - np.ones((nbvox, nb_subj)).astype(np.int)
     for s in range(nb_subj):
         labels[initial_mask[:, s] > -1, s] = all_labels[s]
-
+    
     # compute the group-level labels
     template_labels = voronoi(domain.coord, proto_anat)
 
     # create the parcellation
     pcl = MultiSubjectParcellation(domain, individual_labels=labels,
-                                  template_labels=template_labels)
+                                  template_labels=template_labels, 
+                                   nb_parcel=nb_parcel)
     pcl.make_feature('functional', np.rollaxis(np.array(ldata), 1, 0))
 
     if nb_perm > 0:
