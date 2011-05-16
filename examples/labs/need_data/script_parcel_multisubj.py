@@ -50,8 +50,9 @@ domain, ldata = parcel_input(mask_images, learn_images, ths, fdim)
 fpa = hparcel(domain, ldata, nbparcel)
 #fpa,  prfx0 = hparcel(domain, ldata, nbparcel, nb_perm=5, niter=5, verbose=1)
 
+
 #produce some output images
-write_parcellation_images( fpa, subject_id=subj_id, swd=swd)
+write_parcellation_images(fpa, subject_id=subj_id, swd=swd)
 
 # do some parcellation-based analysis:
 # take some test images whose parcel-based signal needs to be assessed 

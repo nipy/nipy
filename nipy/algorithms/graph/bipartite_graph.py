@@ -80,7 +80,7 @@ def cross_eps(X, Y, eps=1.):
     for the sake of speed it is advisable to give PCA-preprocessed
     matrices X and Y.
     """
-    from nipy.algorithms.routines.fast_distance import euclidean_distance
+    from scipy.sparse import coo_matrix
     check_feature_matrices(X, Y)
     try:
         eps = float(eps)
@@ -90,9 +90,18 @@ def cross_eps(X, Y, eps=1.):
         raise ValueError('eps is nan')
     if np.isinf(eps):
         raise ValueError('eps is inf')
-    dist = euclidean_distance(X, Y)
-    dist = dist * (dist < eps)
-    return bipartite_graph_from_adjacency(dist)
+    ij = np.zeros((0, 2))
+    data = np.zeros(0)
+    for i, x in enumerate(X):
+        dist = np.sum((Y - x) ** 2, 1)
+        idx = np.asanyarray(np.where(dist < eps))
+        data = np.hstack((data, dist[idx.ravel()]))
+        ij = np.vstack((ij, np.hstack((
+                        i * np.ones((idx.size, 1)), idx.T)))).astype(np.int)
+    
+    data = np.maximum(data, 1.e-15)
+    adj = coo_matrix((data, ij.T), shape=(X.shape[0], Y.shape[0]))
+    return bipartite_graph_from_coo_matrix(adj)
 
 
 def cross_knn(X, Y, k=1):
@@ -113,7 +122,7 @@ def cross_knn(X, Y, k=1):
     for the sake of speed it is advised to give
     PCA-transformed matrices X and Y.
     """
-    from nipy.algorithms.routines.fast_distance import euclidean_distance
+    from scipy.sparse import coo_matrix
     check_feature_matrices(X, Y)
     try:
         k = int(k)
@@ -124,17 +133,19 @@ def cross_knn(X, Y, k=1):
     if np.isinf(k):
         raise ValueError('k is inf')
     k = min(k, Y.shape[0] -1)
-
-    # create the distance matrix
-    dist = euclidean_distance(X, Y)
-    dist = np.maximum(dist, 1.e-15)
-    sorted_dist = dist.copy()
-    sorted_dist.sort(1)
-
-    # neighbour system
-    bool_knn = (dist.T < sorted_dist[:, k]).T
-    dist *= (bool_knn > 0)
-    return bipartite_graph_from_adjacency(dist)
+    
+    ij = np.zeros((0, 2))
+    data = np.zeros(0)
+    for i, x in enumerate(X):
+        dist = np.sum((Y - x) ** 2, 1)
+        idx = np.argsort(dist)[:k]
+        data = np.hstack((data, dist[idx]))
+        ij = np.vstack((ij, np.hstack((
+                        i * np.ones((k, 1)), np.reshape(idx, (k, 1))))))
+    
+    data = np.maximum(data, 1.e-15)
+    adj = coo_matrix((data, ij.T), shape=(X.shape[0], Y.shape[0]))
+    return bipartite_graph_from_coo_matrix(adj)
 
 
 class BipartiteGraph(WeightedGraph):

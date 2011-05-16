@@ -395,7 +395,7 @@ class SubDomains(object):
             label[label > - 1] = self.label
             wdata = label
         else:
-            wdata = np.zeros(label.get_shape(), data.dtype)
+            wdata = np.zeros(label.shape, data.dtype)
             wdata[label > -1] = data[self.label]
 
         nim = Nifti1Image(wdata, tmp_image.get_affine())
