@@ -4,9 +4,6 @@ import numpy as np
 
 from ..vem import VEM 
 
-from nose.tools import assert_true, assert_false
-from numpy.testing import assert_array_equal, assert_array_almost_equal
-
 
 def test_vem_2d(): 
     data = np.random.rand(51,49)
