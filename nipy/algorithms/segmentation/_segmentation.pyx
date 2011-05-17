@@ -13,23 +13,23 @@ from numpy cimport import_array, ndarray
 
 # Externals
 cdef extern from "mrf.h":
-    
     void mrf_import_array()
-    void ve_step(ndarray ppm, 
+    void ve_step(ndarray ppm,
                  ndarray ref,
                  ndarray XYZ, 
-                 double beta, 
-                 int synchronous, 
+                 double beta,
+                 int synchronous,
                  int scheme)
-    double interaction_energy(ndarray ppm, 
+    double interaction_energy(ndarray ppm,
                               ndarray XYZ)
-
+    
 
 # Initialize numpy
 mrf_import_array()
 import_array()
 import numpy as np
 import warnings
+
 
 def _ve_step(ppm, ref, XYZ, double beta, int synchronous, int scheme):
 
