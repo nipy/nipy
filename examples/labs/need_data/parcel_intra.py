@@ -23,9 +23,9 @@ from nipy.labs.spatial_models.parcel_io import fixed_parcellation
 n_beta = [29]
 data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data'))
 mask_image = op.join(data_dir, 'mask.nii.gz')
-betas = [op.join(data_dir, 'spmT_%04d.nii.gz' % n) 
-         for n in n_beta]
-missing_file = array([op.exists(m)==False for m in [mask_image]+betas]).any()
+betas = [op.join(data_dir, 'spmT_%04d.nii.gz' % n) for n in n_beta]
+missing_file = array(
+    [op.exists(m) == False for m in [mask_image] + betas]).any()
 if missing_file:
     import get_data_light
     get_data_light.get_it()

@@ -225,11 +225,21 @@ class test_Field(TestCase):
         seeds = np.argsort(nr.rand(F.V))[:nbseeds]
         label = F.constrained_voronoi(seeds)
         for i in range(nbseeds):
-            assert label[seeds[i]] == i     
-        print np.unique(label), np.arange(nbseeds)
+            assert label[seeds[i]] == i
         assert np.array([i in np.unique(label) 
                          for i in np.arange(nbseeds)]).all()
 
+    def test_constrained_voronoi_2(self, nbseeds=3):
+        """ Test the geodisc k-means algorithm
+        """
+        xyz, x = np.zeros((30, 3)), np.arange(30)
+        xyz[:, 0] = x
+        y = np.array((x / 10), np.float)
+        F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 6),  y)
+        seeds = np.array([1, 18, 25])
+        label = F.constrained_voronoi(seeds)
+        print label
+        assert (label == (x / 10)).all()
 
     def test_subfield(self):
         import numpy.random as nr

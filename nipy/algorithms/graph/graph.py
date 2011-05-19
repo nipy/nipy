@@ -692,12 +692,15 @@ class WeightedGraph(Graph):
         neighb: array of shape(self.E), concatenated list of neighbors
         weights: array of shape(self.E), concatenated list of weights
         """
-        order = np.argsort(self.edges[:, 0] * self.V + self.edges[:, 1])
+        order = np.argsort(self.edges[:, 0] * float(self.V) + self.edges[:, 1])
+        #self.edges = self.edges[order]
+        #self.weights = self.weights[order]
         neighb = self.edges[order, 1].astype(np.int)
         weights = self.weights[order]
         degree, _ = self.degrees()
         idx = np.hstack((0, np.cumsum(degree))).astype(np.int)
         return idx, neighb, weights
+        #return idx, self.edges[:, 1], self.weights
 
     def floyd(self, seed=None):
         """
