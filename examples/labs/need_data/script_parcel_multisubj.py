@@ -24,14 +24,15 @@ mask_images = [op.join(data_dir,'mask_subj%02d.nii'%n)
 
 learn_images = [op.join(data_dir,'spmT_%s_subj_%02d.nii'%(nbeta , n))
                 for n in range(nb_subj)]
-missing_file = array([op.exists(m)==False for m in mask_images + learn_images]).any()
+missing_file = array([op.exists(m)==False 
+                      for m in mask_images + learn_images]).any()
 learn_images = [[m] for m in learn_images]
 
 if missing_file:
     get_data_light.get_it()
 
 # parameter for the intersection of the mask
-ths = nb_subj/2
+ths = .5
 
 # possibly, dimension reduction can performed on the input data
 # (not recommended)
@@ -47,7 +48,7 @@ swd = tempfile.mkdtemp()
 domain, ldata = parcel_input(mask_images, learn_images, ths, fdim)
 
 # run the algorithm
-fpa = hparcel(domain, ldata, nbparcel)
+fpa = hparcel(domain, ldata, nbparcel, verbose=1)
 #fpa,  prfx0 = hparcel(domain, ldata, nbparcel, nb_perm=5, niter=5, verbose=1)
 
 

@@ -312,7 +312,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
         raise ValueError('The threshold should be < 1')
     if threshold <0:
         raise ValueError('The threshold should be > 0')
-    threshold = min(threshold, 1.e-7)
+    threshold = min(threshold, 1 - 1.e-7)
 
     for this_mask in input_masks:
         if isinstance(this_mask, basestring):
@@ -324,6 +324,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
             grp_mask += this_mask
     
     grp_mask = grp_mask > (threshold * len(list(input_masks)))
+    
     if np.any(grp_mask > 0) and cc:
         grp_mask = largest_cc(grp_mask)
     
