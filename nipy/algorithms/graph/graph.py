@@ -1,9 +1,22 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This module implements the main graph classes of nipy.labs.graph
-Graph: basic topological graph, i.e. vertices and edges. Not well developed
-WeightedGraph (Graph): Idem plus values asociated with vertices
+This module implements two graph classes:
+
+Graph: basic topological graph, i.e. vertices and edges. This kind of
+object only has topological properties
+
+WeightedGraph (Graph): also has a value associated with edges, called
+weights, that are used in some computational procedures (e.g. path
+length computation).  Importantly these objects are equivalent to
+square sparse matrices, which is used to perform certain computations.
+
+This module also provides several functions to
+instantiate WeightedGraphs from data:
+- k nearest neighbours (where samples are rows of a 2D-array)
+- epsilon-neighbors (where sample rows of a 2D-array)
+- representation of the neighbors on a 3d grid (6-, 18- and 26-neighbors)
+- Minimum Spanning Tree (where samples are rows of a 2D-array)
 
 Author: Bertrand Thirion, 2006--2011
 """
@@ -628,10 +641,8 @@ class WeightedGraph(Graph):
         return wgraph_from_coo_matrix(A)
 
     def dijkstra(self, seed=0):
-        """
-        returns all the [graph] geodesic distances starting from seed
-        it is mandatory that the graph weights are non-negative
-
+        """ Returns all the [graph] geodesic distances starting from seed
+x
         Parameters
         ----------
         seed (int, >-1, <self.V) or array of shape(p)
@@ -693,19 +704,14 @@ class WeightedGraph(Graph):
         weights: array of shape(self.E), concatenated list of weights
         """
         order = np.argsort(self.edges[:, 0] * float(self.V) + self.edges[:, 1])
-        #self.edges = self.edges[order]
-        #self.weights = self.weights[order]
         neighb = self.edges[order, 1].astype(np.int)
         weights = self.weights[order]
         degree, _ = self.degrees()
         idx = np.hstack((0, np.cumsum(degree))).astype(np.int)
         return idx, neighb, weights
-        #return idx, self.edges[:, 1], self.weights
 
     def floyd(self, seed=None):
-        """
-        Compute all the geodesic distances starting from seeds
-        it is mandatory that the graph weights are non-negative
+        """ Compute all the geodesic distances starting from seeds
 
         Parameters
         ----------
@@ -735,8 +741,7 @@ class WeightedGraph(Graph):
         return dg
 
     def normalize(self, c=0):
-        """
-        Normalize the graph according to the index c
+        """ Normalize the graph according to the index c
         Normalization means that the sum of the edges values
         that go into or out each vertex must sum to 1
 
@@ -805,7 +810,7 @@ class WeightedGraph(Graph):
     def set_gaussian(self, X, sigma=0):
         """
         Compute the weights  of the graph as a gaussian function
-        of the dinstance  between the corresponding rows of X,
+        of the distance  between the corresponding rows of X,
         which represents an embdedding of self
 
         Parameters
@@ -844,9 +849,7 @@ class WeightedGraph(Graph):
         return self.E
 
     def anti_symmeterize(self):
-        """
-
-        anti-symmeterize the self , ie produces the graph
+        """anti-symmeterize self, i.e. produces the graph
         whose adjacency matrix would be the antisymmetric part of
         its current adjacency matrix
         """
@@ -858,7 +861,7 @@ class WeightedGraph(Graph):
         return self.E
 
     def voronoi_labelling(self, seed):
-        """performs a voronoi labelling of the graph
+        """ Performs a voronoi labelling of the graph
 
         Parameters
         ----------
@@ -907,8 +910,7 @@ class WeightedGraph(Graph):
         return label
 
     def cliques(self):
-        """
-        Extraction of the graphe cliques
+        """ Extraction of the graphe cliques
         these are defined using replicator dynamics equations
 
         Returns
@@ -952,8 +954,7 @@ class WeightedGraph(Graph):
         return cliques
 
     def remove_trivial_edges(self):
-        """
-        Removes trivial edges, i.e. edges that are (vv)-like
+        """ Removes trivial edges, i.e. edges that are (vv)-like
         self.weights and self.E are corrected accordingly
 
         Returns
@@ -968,7 +969,7 @@ class WeightedGraph(Graph):
         return self.E
 
     def subgraph(self, valid):
-        """Creates a subgraph with the vertices for which valid>0
+        """ Creates a subgraph with the vertices for which valid>0
         and with the correponding set of edges
 
         Parameters
@@ -1041,9 +1042,8 @@ class WeightedGraph(Graph):
         K = WeightedGraph(V, Kedges, Kweights)
         return K
 
-    def Voronoi_diagram(self, seeds, samples):
-        """
-        Defines the graph as the Voronoi diagram (VD)
+    def voronoi_diagram(self, seeds, samples):
+        """ Defines the graph as the Voronoi diagram (VD)
         that links the seeds.
         The VD is defined using the sample points.
 
