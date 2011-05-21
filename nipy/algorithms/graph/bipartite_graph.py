@@ -1,15 +1,16 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This module implements the  BipartiteGraph, class,
-used to represent weighted bipartite graph
+This module implements the BipartiteGraph class, used to represent
+weighted bipartite graph: it contains two types of vertices, say
+'left' and 'right'; then edges can only exist between 'left' and
+'right' vertices. For simplicity the vertices of either side are
+labeled [1..V] and [1..W] respectively.
 
 Author: Bertrand Thirion, 2006--2011
 """
 
 import numpy as np
-
-from graph import WeightedGraph
 
 
 def check_feature_matrices(X, Y):
@@ -98,7 +99,7 @@ def cross_eps(X, Y, eps=1.):
         data = np.hstack((data, dist[idx.ravel()]))
         ij = np.vstack((ij, np.hstack((
                         i * np.ones((idx.size, 1)), idx.T)))).astype(np.int)
-    
+
     data = np.maximum(data, 1.e-15)
     adj = coo_matrix((data, ij.T), shape=(X.shape[0], Y.shape[0]))
     return bipartite_graph_from_coo_matrix(adj)
@@ -133,7 +134,7 @@ def cross_knn(X, Y, k=1):
     if np.isinf(k):
         raise ValueError('k is inf')
     k = min(k, Y.shape[0] -1)
-    
+
     ij = np.zeros((0, 2))
     data = np.zeros(0)
     for i, x in enumerate(X):
@@ -142,13 +143,13 @@ def cross_knn(X, Y, k=1):
         data = np.hstack((data, dist[idx]))
         ij = np.vstack((ij, np.hstack((
                         i * np.ones((k, 1)), np.reshape(idx, (k, 1))))))
-    
+
     data = np.maximum(data, 1.e-15)
     adj = coo_matrix((data, ij.T), shape=(X.shape[0], Y.shape[0]))
     return bipartite_graph_from_coo_matrix(adj)
 
 
-class BipartiteGraph(WeightedGraph):
+class BipartiteGraph(object):
     """
     Bipartite graph class:
     a graph there are two types of nodes, such that
@@ -189,10 +190,21 @@ class BipartiteGraph(WeightedGraph):
                 self.E = E
                 self.edges = - np.ones((E, 2), np.int)
                 self.set_edges(edges)
-                WeightedGraph.set_weights(self, weights)
+                self.set_weights(weights)
             else:
                 raise ValueError('Incompatible size of the edges and \
                                   weights matrices')
+
+    def set_weights(self, weights):
+        """
+        Parameters
+        ----------
+        weights, array of shape(self.V): edges weights
+        """
+        if np.size(weights) != self.E:
+            raise ValueError('The weight size is not the edges size')
+        else:
+            self.weights = np.reshape(weights, (self.E))
 
     def set_edges(self, edges):
         """

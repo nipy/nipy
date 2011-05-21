@@ -1,8 +1,17 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This module implements the DAG class of Forest(WeightedGraph):
-This is a special case of a Weighted Graph (i.e.  a set of trees)
+This module implements the Forest class, a Forest being understood as
+a graph with a hierarchical structure.  Each connected component of a
+forest is a tree.  The main characteristic is that each node has a
+single parent, so that a Forest is fully characterized by a "parent"
+array, that defines the unique parent of each node.  The directed
+relationships are encoded by the weight sign.
+
+Note that some methods of WeightedGraph class (e.g. dijkstra's
+algorithm) require positive weights, so that they cannot work on
+forests in the current implementation. Specific methods
+(e.g. all_sidtance()) have been set instead.
 
 Main author: Bertrand thirion, 2007-2011
 """
@@ -16,19 +25,19 @@ class Forest(WeightedGraph):
     This is a Forest structure, i.e. a set of trees
     The nodes can be segmented into trees
     Within each tree a node has one parent and children
-        (hierarchical structure)
+    that describe the associated hierarchical structure.
     Some of the nodes can be viewed as leaves, other as roots
     The edges within a tree are associated with a weight:
     +1 from child to parent
     -1 from parent to child
 
-    fields
-    ------
+    Class Members
+    -------------
     V : (int,>0) the number of vertices
     E : (int) the number of edges
     parents: array of shape (self.V) the parent array
-    edges: array of shape (self.E,2) reprensenting pairwise neighbors
-    weights, array of shape (self.E), +1/-1 for scending/descending links
+    edges: array of shape (self.E,2) representing pairwise neighbors
+    weights, array of shape (self.E), +1/-1 for ascending/descending links
     children: list of arrays that represents the childs of any node
     """
 
@@ -82,14 +91,7 @@ class Forest(WeightedGraph):
         self.edges = self.edges
 
     def compute_children(self):
-        """
-        self.compute_children()
-        define the children list
-
-        Returns
-        -------
-        children: a list of self.V lists,
-                  that yields the children of each node
+        """Define the children of each node (stored in self.children)
         """
         self.children = [np.array([]) for v in range(self.V)]
         if self.E > 0:
@@ -98,9 +100,16 @@ class Forest(WeightedGraph):
             self.children = K.to_coo_matrix().tolil().rows.tolist()
 
     def get_children(self, v=-1):
-        """
-        returns the list list of children arrays in all the forest
-        if v==-1 or the children of v otherwise
+        """ Get the children of a node/each node
+
+        Parameters
+        ----------
+        v: int, optional, a node index
+
+        Returns
+        -------
+        children: list of int the list of children of node v (if v is provided)
+                  a list of lists of int, the children of all nodes otherwise
         """
         v = int(v)
         if v > -1:
@@ -115,6 +124,14 @@ class Forest(WeightedGraph):
 
     def get_descendents(self, v):
         """returns the nodes that are children of v as a list
+
+        Parameters
+        ----------
+        v: int, a node index
+
+        Returns
+        -------
+        desc: list of int, the list of all descendant of the input node
         """
         v = int(v)
         if v < 0:
@@ -135,8 +152,7 @@ class Forest(WeightedGraph):
         return desc
 
     def check(self):
-        """
-        Check that the proposed  is indeed a graph, i.e. contains no loop
+        """Check that self is indeed a forest, i.e. contains no loop
 
         Returns
         -------
@@ -166,10 +182,11 @@ class Forest(WeightedGraph):
         return b
 
     def isleaf(self):
-        """
-        returns a bool array of shape(self.V)
-        so that isleaf==1 iff the node is a leaf in the forest
-        (has no kids)
+        """ Identification of the leaves of the forest
+
+        Returns
+        -------
+        leaves: bool array of shape(self.V), indicator of the forest's leaves
         """
         leaves = np.ones(self.V).astype('bool')
         if self.E > 0:
@@ -177,32 +194,29 @@ class Forest(WeightedGraph):
         return leaves
 
     def isroot(self):
-        """ returns an indicator of nodes being roots
+        """ Returns an indicator of nodes being roots
 
         Returns
         -------
-        isleaf, array of shape(self.V, bool),
-                so that isleaf==1 iff the node is a root in the forest
-                i.e. : is its own parent
+        roots, array of shape(self.V, bool), indicator of the forest's roots
         """
         roots = np.array(self.parents == np.arange(self.V))
         return roots
 
     def subforest(self, valid):
-        """
-        creates a subforest with the vertices
-        for which valid>0
-        and with the correponding set of edges
-        the children of deleted vertices become
-        their own parent
+        """ Creates a subforest with the vertices for which valid > 0
 
         Parameters
         ----------
-        valid: array of shape (self.V)
+        valid: array of shape (self.V): idicator of the selected nodes
 
         Returns
         -------
-        a new forest instance
+        subforest: a new forest instance, with a reduced set of nodes
+
+        Note
+        ----
+        the children of deleted vertices become their own parent
         """
         if np.size(valid) != self.V:
             raise ValueError("incompatible size for self anf valid")
@@ -219,12 +233,11 @@ class Forest(WeightedGraph):
         return F
 
     def merge_simple_branches(self):
-        """ Return a subforest, where subbranches have been merged:
+        """ Return a subforest, where chained branches are collapsed
 
         Returns
         -------
-        sf, Forest instance,
-            same as self, but nodes with single child have been deleted
+        sf, Forest instance, same as self, without any chain
         """
         valid = np.ones(self.V).astype('bool')
         children = self.get_children()
@@ -234,8 +247,7 @@ class Forest(WeightedGraph):
         return self.subforest(valid)
 
     def all_distances(self, seed=None):
-        """
-        returns all the distances of the graph  as a tree
+        """returns all the distances of the graph  as a tree
 
         Parameters
         ----------
@@ -248,7 +260,7 @@ class Forest(WeightedGraph):
 
         Note
         ----
-        by convention infinte distances are given the distance np.infty
+        by convention infinite distances are given the distance np.infty
         """
         if (hasattr(seed, '__iter__') == False) & (seed is not None):
             seed = [seed]
@@ -264,10 +276,8 @@ class Forest(WeightedGraph):
             return np.infty * np.ones((self.V, self.V))
 
     def depth_from_leaves(self):
-        """
-        compute a labelling of the nodes
-        which is 0 for the leaves, 1 for their parents etc
-        and maximal for the roots
+        """compute an index for each node: 0 for the leaves, 1 for
+        their parents etc. and maximal for the roots.
 
         Returns
         -------
@@ -285,10 +295,8 @@ class Forest(WeightedGraph):
         return depth
 
     def reorder_from_leaves_to_roots(self):
-        """
-        reorder the tree so that the leaves come first
-        then their parents and so on, and the roots are last
-        the permutation necessary to apply to all vertex-based information
+        """reorder the tree so that the leaves come first then their
+        parents and so on, and the roots are last.
 
         Returns
         -------
@@ -306,13 +314,11 @@ class Forest(WeightedGraph):
         return order
 
     def leaves_of_a_subtree(self, ids, custom=False):
-        """
-        tests whether the given nodes within ids represent
-        all the leaves of a certain subtree of self
+        """tests whether the given nodes are the leaves of a certain subtree
 
         Parameters
         ----------
-        idds: array of shape (n) that takes values in [0..self.V-1]
+        ids: array of shape (n) that takes values in [0..self.V-1]
         custom == False, boolean
                if custom==true the behavior of the function is more specific
                - the different connected components are considered
@@ -379,15 +385,13 @@ class Forest(WeightedGraph):
         return bresult
 
     def tree_depth(self):
-        """ Returns the number of hierrachical levels in the tree
+        """ Returns the number of hierarchical levels in the tree
         """
         depth = self.depth_from_leaves()
         return depth.max() + 1
 
     def propagate_upward_and(self, prop):
-        """
-        propagates some binary property in the forest
-        that is defined in the leaves
+        """propagates from leaves to roots some binary property of the nodes
         so that prop[parents] = logical_and(prop[children])
 
         Parameters
@@ -412,7 +416,8 @@ class Forest(WeightedGraph):
         return prop
 
     def propagate_upward(self, label):
-        """ Assuming that label is a certain positive integer field
+        """ Propagation of a certain labelling from leves to roots
+        Assuming that label is a certain positive integer field
         this propagates these labels to the parents whenever
         the children nodes have coherent properties
         otherwise the parent value is unchanged

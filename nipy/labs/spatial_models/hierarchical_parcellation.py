@@ -254,7 +254,7 @@ def _optim_hparcel(feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
     # group-level part
     spatial_proto = Field(nb_parcel)
     spatial_proto.set_field(proto_anat)
-    spatial_proto.Voronoi_diagram(proto_anat, domain.coord)
+    spatial_proto.voronoi_diagram(proto_anat, domain.coord)
     spatial_proto.set_gaussian(proto_anat)
     spatial_proto.normalize()
     
@@ -334,7 +334,7 @@ def _optim_hparcel(feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
 
         # recompute the topological model
         spatial_proto.set_field(proto_anat)
-        spatial_proto.Voronoi_diagram(proto_anat, domain.coord)
+        spatial_proto.voronoi_diagram(proto_anat, domain.coord)
         spatial_proto.set_gaussian(proto_anat)
         spatial_proto.normalize()
         

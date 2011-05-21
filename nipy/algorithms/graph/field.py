@@ -1,8 +1,14 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This module implements the field structure of the so-called field structure,
-cwhich is a graph + a vectorial feature, with a bunch of associated operations.
+This module implements the Field class, which simply a WeightedGraph
+(see the graph.py) module, plus an arrray that yields (possibly
+multi-dimnesional) features associated with graph vertices. This
+allows some kinds of computations (all thoses relating to mathematical
+morphology, diffusion etc.)
+
+Certain functions are provided to Instantiate Fields easily, given a
+WeightedGraph and feature data.
 
 Author:Bertrand Thirion, 2006--2011
 """
