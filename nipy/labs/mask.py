@@ -384,7 +384,8 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         if isinstance(series, np.memmap):
             series = np.asarray(series).copy()
         if smooth:
-            smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
+            smooth_sigma = np.abs(
+                            np.dot(linalg.inv(affine), np.ones(3))*smooth)
             for this_volume in np.rollaxis(series, -1):
                 this_volume[...] = ndimage.gaussian_filter(this_volume,
                                                         smooth_sigma)
@@ -397,7 +398,8 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
             data = data_file.get_data()
             if smooth:
                 affine = data_file.get_affine()[:3, :3]
-                smooth_sigma = np.dot(linalg.inv(affine), np.ones(3))*smooth
+                smooth_sigma = np.abs(
+                            np.dot(linalg.inv(affine), np.ones(3))*smooth)
                 data = ndimage.gaussian_filter(data, smooth_sigma)
                 
             series[:, index] = data[mask].astype(dtype)
