@@ -52,6 +52,40 @@ def _pigtailed_cmap(cmap, swap_order=('green', 'red', 'blue')):
     return cdict
 
 
+def _concat_cmap(cmap1, cmap2):
+    """ Utility function to make a new colormap by concatenating two
+        colormaps.
+    """
+    cdict = dict()
+
+    cdict1 = cmap1._segmentdata.copy()
+    cdict2 = cmap2._segmentdata.copy()
+    if not callable(cdict1['red']):
+        for c in ['red', 'green', 'blue']:
+            cdict[c] = [(0.5*p, c1, c2) for (p, c1, c2) in cdict1[c]]
+    else:
+        for c in ['red', 'green', 'blue']:
+            cdict[c] = []
+        ps = _np.linspace(0, 1, 10)
+        colors = cmap1(ps)
+        for p, (r, g, b, a) in zip(ps, colors):
+            cdict['red'].append((.5*p, r, r))
+            cdict['green'].append((.5*p, g, g))
+            cdict['blue'].append((.5*p, b, b))
+    if not callable(cdict2['red']):
+        for c in ['red', 'green', 'blue']:
+            cdict[c].extend([(0.5*(1+p), c1, c2) for (p, c1, c2) in cdict2[c]])
+    else:
+        ps = _np.linspace(0, 1, 10)
+        colors = cmap2(ps)
+        for p, (r, g, b, a) in zip(ps, colors):
+            cdict['red'].append((.5*(1+p), r, r))
+            cdict['green'].append((.5*(1+p), g, g))
+            cdict['blue'].append((.5*(1+p), b, b))
+
+    return cdict
+
+
 def alpha_cmap(color, name=''):
     """ Return a colormap with the given color, and alpha going from
         zero to 1.
@@ -101,7 +135,10 @@ _cmaps_data = dict(
     black_green  = _rotate_cmap(_cm.hot,
                             swap_order=('red', 'blue', 'green')),
     black_red    = _cm.hot._segmentdata.copy(),
+    ocean_hot    = _concat_cmap(_cm.ocean, _cm.hot_r),
 )
+
+
 
 ################################################################################
 # Build colormaps and their reverse.
