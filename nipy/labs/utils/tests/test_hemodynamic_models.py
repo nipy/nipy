@@ -164,7 +164,7 @@ def test_hkernel():
     h = _hrf_kernel('FIR', tr, fir_delays = np.arange(4))
     assert len(h) == 4
     for dh in h:
-        assert dh.sum() == 1.
+        assert dh.sum() == 16.
     
 def test_make_regressor_1():
     """ test the generated regressor
@@ -196,7 +196,7 @@ def test_make_regressor_3():
     reg, reg_names = compute_regressor(condition, hrf_model, frametimes, 
                                        fir_delays=np.arange(4))
     assert (np.unique(reg) == np.array([0, 1])).all()
-    assert (np.sum(reg, 1) == np.array([3, 3, 3, 3])).all()
+    assert (np.sum(reg, 0) == np.array([3, 3, 3, 3])).all()
     assert len(reg_names) == 4
 
 if __name__ == "__main__":
