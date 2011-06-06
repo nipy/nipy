@@ -100,10 +100,10 @@ def test_sample_condition_3():
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frametimes = np.linspace(0, 49, 50)
     reg, rf = sample_condition(condition, frametimes, oversampling=10)
-    assert_almost_equal(reg.sum(), 6.)
-    assert reg[10] == .1
-    assert reg[380] == .1
-    assert reg[210] == .1
+    assert_almost_equal(reg.sum(), 60.)
+    assert reg[10] == 1
+    assert reg[380] == 1
+    assert reg[210] == 1
     assert np.sum(reg > 0) == 60
     
 def test_sample_condition_4():
@@ -173,7 +173,7 @@ def test_make_regressor_1():
     frametimes = np.linspace(0, 69, 70)
     hrf_model = 'spm'
     reg, reg_names = compute_regressor(condition, hrf_model, frametimes)
-    assert_almost_equal(reg.sum() * 16, 6, 1)
+    assert_almost_equal(reg.sum(), 6, 1)
     assert reg_names[0] == 'cond'
 
 def test_make_regressor_2():

@@ -185,8 +185,8 @@ def sample_condition(exp_condition, frametimes, oversampling=16):
     regressor = np.cumsum(regressor)
     
     # normalize the regressor in case of  block design
-    if (duration > 0).any():
-        regressor /= oversampling
+    #if (duration > 0).any():
+    #    regressor /= oversampling
     
     return regressor, hr_frametimes
 
@@ -316,7 +316,7 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
     -------
     """
     # this is the average tr in this session, not necessarily the true tr
-    tr = frametimes.max() / (np.size(frametimes) - 1)
+    tr = float(frametimes.max()) / (np.size(frametimes) - 1)
     
     # 1. create the high temporal resolution regressor
     hr_regressor, hr_frametimes = sample_condition(
