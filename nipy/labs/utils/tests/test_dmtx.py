@@ -49,22 +49,38 @@ def block_paradigm():
     paradigm = BlockParadigm (conditions, onsets, duration)
     return paradigm
 
-def write_paradigm(paradigm):
+def write_paradigm(paradigm, session):
     """Function to write a paradigm to a file and retrn the address
     """
     import tempfile
     csvfile = tempfile.mkdtemp() + '/paradigm.csv'
-    paradigm.write_to_csv(csvfile)
+    paradigm.write_to_csv(csvfile, session)
     return csvfile
-
 
 def test_read_paradigm():
     """ test that a paradigm is correctly read
     """
+    session = 'sess'
     paradigm = block_paradigm()
-    csvfile = write_paradigm(paradigm)
-    read_paradigm = load_protocol_from_csv_file(csvfile)[0]
+    csvfile = write_paradigm(paradigm, session)
+    read_paradigm = load_protocol_from_csv_file(csvfile)[session]
     assert (read_paradigm.onset == paradigm.onset).all()
+
+    paradigm = modulated_event_paradigm()
+    csvfile = write_paradigm(paradigm, session)
+    read_paradigm = load_protocol_from_csv_file(csvfile)[session]
+    assert (read_paradigm.onset == paradigm.onset).all()
+
+    paradigm = modulated_block_paradigm()
+    csvfile = write_paradigm(paradigm, session)
+    read_paradigm = load_protocol_from_csv_file(csvfile)[session]
+    assert (read_paradigm.onset == paradigm.onset).all()
+
+    paradigm = basic_paradigm()
+    csvfile = write_paradigm(paradigm, session)
+    read_paradigm = load_protocol_from_csv_file(csvfile)[session]
+    assert (read_paradigm.onset == paradigm.onset).all()
+    
 
 
 def test_show_dmtx():

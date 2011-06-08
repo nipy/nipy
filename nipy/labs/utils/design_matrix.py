@@ -17,8 +17,7 @@ from hemodynamic_models import compute_regressor, _orthogonalize
 
 
 class Paradigm(object):
-    """
-    Simple class to hanle the experimental paradigm in one session
+    """ Simple class to hanle the experimental paradigm in one session
     """
 
     def __init__(self, con_id=None, onset=None, amplitude=None):
@@ -58,23 +57,23 @@ class Paradigm(object):
         self.type = 'event'
         self.n_conditions = len(np.unique(self.con_id))
         
-    def write_to_csv(self, csv_file, session=0):
+    def write_to_csv(self, csv_file, session='0'):
         """ Write the paradigm to a csv file
         
         Parameters
         ----------
         csv_file: string, path of the csv file
-        session: int, optional, session index
+        session: string, optional, session identifier
         """
         import csv
         fid = open(csv_file, "wb")
         writer = csv.writer(fid, delimiter=' ')
         n_pres = np.size(self.con_id)
-        sess = session * np.ones(n_pres)
+        sess = np.repeat(session, n_pres)
         pdata = np.vstack((sess, self.con_id, self.onset)).T
         
         # add the duration information
-        if self.type == 'block':
+        if self.type == 'event':
             duration = np.zeros(np.size(self.con_id))
         else:
             duration = self.duration
@@ -83,7 +82,7 @@ class Paradigm(object):
         # add the amplitude information
         if self.amplitude is not None:
             amplitude = np.reshape(self.amplitude, (n_pres, 1))
-            pdata = np.hstack((self.pdata, amplitude))
+            pdata = np.hstack((pdata, amplitude))
             
         # write pdata
         for row in pdata:
@@ -143,8 +142,7 @@ def load_protocol_from_csv_file(path, session=None):
     ----------
     path: string,
           path to a .csv file that describes the paradigm
-    session: int, optional
-             session number.
+    session: string, optional, session identifier
              by default the output is a dictionary
              of session-level dictionaries indexed by session
 
@@ -158,9 +156,8 @@ def load_protocol_from_csv_file(path, session=None):
     ----
     It is assumed that the csv file contains the following columns:
     (session id, condition id, onset),
-    plus possibly (duration) and (amplitude)
-    If all the durations are 0, the paradigm will be treated as event-related
-    If only some of the durations are zero, there will probably we trouble
+    plus possibly (duration) and/or (amplitude)
+    If all the durations are 0, the paradigm will be handled as event-related
 
     fixme
     -----
@@ -173,20 +170,15 @@ def load_protocol_from_csv_file(path, session=None):
     reader = csv.reader(open(path, "rb"), dialect)
 
     # load the csv as a protocol array
-    protocol = []
-    sess = []
-    cid = []
-    onset = []
-    duration = []
-    amplitude = []
+    sess, cid, onset, amplitude, duration = [], [], [], [], []
     for row in reader:
-        sess.append(int(float(row[0])))
+        sess.append(row[0])
         cid.append(row[1])
         onset.append(float(row[2]))
         if len(row) > 3:
             duration.append(float(row[3]))
         if len(row) > 4:
-            amplitude.append(row(4))
+            amplitude.append(row[4])
 
     protocol = [np.array(sess), np.array(cid), np.array(onset),
                 np.array(duration), np.array(amplitude)]
@@ -198,26 +190,26 @@ def load_protocol_from_csv_file(path, session=None):
         ps = (protocol[0] == session)
         if np.sum(ps) == 0:
             return None
+        ampli = np.ones(np.sum(ps))
         if len(protocol) > 4:
-            lp = protocol[:][ps]
-            paradigm = BlockParadigm(lp[0], lp[1], lp[2], lp[3], lp[4])
+            _, cid, onset, duration, ampli = [lp[ps] for lp in protocol]
+            if (duration == 0).all():
+                paradigm = EventRelatedParadigm(cid, onset, ampli)
+            else:
+                paradigm = BlockParadigm(cid, onset, duration, ampli)
         elif len(protocol) > 3:
-            lp = [p[ps] for p in protocol[1:4]] + [np.ones(np.sum(ps))]
-            paradigm = BlockParadigm(lp[0], lp[1], lp[2], lp[3])
-        else:
-            amplitude = np.ones(np.sum(ps))
-            paradigm = EventRelatedParadigm(protocol[1][ps], protocol[2][ps],
-                                            amplitude)
-        if (len(protocol) > 4) and (protocol[3][ps] == 0).all():
-            paradigm = EventRelatedParadigm(protocol[1][ps], protocol[2][ps],
-                                            protocol[4][ps])
+            _, cid, onset, duration = [lp[ps] for lp in protocol]
+            paradigm = BlockParadigm(cid, onset, duration, ampli)
+        else:            
+            _, cid, onset = [lp[ps] for lp in protocol]
+            paradigm = EventRelatedParadigm(cid, onset, ampli)
         return paradigm
 
     sessions = np.unique(protocol[0])
     if session is None:
         paradigm = {}
-        for s in sessions:
-            paradigm[s] = read_session(protocol, s)
+        for session in sessions:
+            paradigm[session] = read_session(protocol, session)
     else:
         paradigm = read_session(protocol, session)
     return paradigm
