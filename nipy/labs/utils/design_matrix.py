@@ -57,6 +57,38 @@ class Paradigm(object):
             self.amplitude = np.ravel(np.array(amplitude))
         self.type = 'event'
         self.n_conditions = len(np.unique(self.con_id))
+        
+    def write_to_csv(self, csv_file, session=0):
+        """ Write the paradigm to a csv file
+        
+        Parameters
+        ----------
+        csv_file: string, path of the csv file
+        session: int, optional, session index
+        """
+        import csv
+        fid = open(csv_file, "wb")
+        writer = csv.writer(fid, delimiter=' ')
+        n_pres = np.size(self.con_id)
+        sess = session * np.ones(n_pres)
+        pdata = np.vstack((sess, self.con_id, self.onset)).T
+        
+        # add the duration information
+        if self.type == 'block':
+            duration = np.zeros(np.size(self.con_id))
+        else:
+            duration = self.duration
+        pdata = np.hstack((pdata, np.reshape(duration, (n_pres, 1))))
+        
+        # add the amplitude information
+        if self.amplitude is not None:
+            amplitude = np.reshape(self.amplitude, (n_pres, 1))
+            pdata = np.hstack((self.pdata, amplitude))
+            
+        # write pdata
+        for row in pdata:
+            writer.writerow(row)
+        fid.close()
 
 
 class EventRelatedParadigm(Paradigm):
@@ -167,20 +199,18 @@ def load_protocol_from_csv_file(path, session=None):
         if np.sum(ps) == 0:
             return None
         if len(protocol) > 4:
-            paradigm = BlockParadigm(protocol[1][ps], protocol[2][ps],
-                                     protocol[3][ps], protocol[4][ps])
+            lp = protocol[:][ps]
+            paradigm = BlockParadigm(lp[0], lp[1], lp[2], lp[3], lp[4])
         elif len(protocol) > 3:
-            amplitude = np.ones(np.sum(ps))
-            paradigm = BlockParadigm(protocol[1][ps], protocol[2][ps],
-                                     protocol[3][ps], amplitude)
+            lp = [p[ps] for p in protocol[1:4]] + [np.ones(np.sum(ps))]
+            paradigm = BlockParadigm(lp[0], lp[1], lp[2], lp[3])
         else:
             amplitude = np.ones(np.sum(ps))
             paradigm = EventRelatedParadigm(protocol[1][ps], protocol[2][ps],
                                             amplitude)
-        if (len(protocol) > 3) and (protocol[3][ps] == 0).all():
+        if (len(protocol) > 4) and (protocol[3][ps] == 0).all():
             paradigm = EventRelatedParadigm(protocol[1][ps], protocol[2][ps],
                                             protocol[4][ps])
-
         return paradigm
 
     sessions = np.unique(protocol[0])

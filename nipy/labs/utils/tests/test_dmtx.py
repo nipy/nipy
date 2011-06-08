@@ -9,9 +9,9 @@ not whether it is exact
 
 import numpy as np
 from os.path import join, dirname
-from ..design_matrix import (EventRelatedParadigm, BlockParadigm, 
-                             convolve_regressors, DesignMatrix, 
-                             dmtx_light, dmtx_from_csv)
+from ..design_matrix import (EventRelatedParadigm, BlockParadigm, dmtx_light, 
+                             convolve_regressors, DesignMatrix, dmtx_from_csv,
+                             load_protocol_from_csv_file)
                              
 from nose.tools import assert_true, assert_equal
 from numpy.testing import assert_almost_equal
@@ -23,6 +23,7 @@ def basic_paradigm():
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     paradigm =  EventRelatedParadigm(conditions, onsets)
     return paradigm
+
 
 def modulated_block_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
@@ -47,6 +48,32 @@ def block_paradigm():
     duration = 5 * np.ones(9)
     paradigm = BlockParadigm (conditions, onsets, duration)
     return paradigm
+
+def write_paradigm(paradigm):
+    """Function to write a paradigm to a file and retrn the address
+    """
+    import tempfile
+    csvfile = tempfile.mkdtemp() + '/paradigm.csv'
+    paradigm.write_to_csv(csvfile)
+    return csvfile
+
+
+def test_read_paradigm():
+    """ test that a paradigm is correctly read
+    """
+    paradigm = block_paradigm()
+    csvfile = write_paradigm(paradigm)
+    read_paradigm = load_protocol_from_csv_file(csvfile)[0]
+    assert (read_paradigm.onset == paradigm.onset).all()
+
+
+def test_show_dmtx():
+    """ test that the show code indeed (formally) runs
+    """
+    frametimes = np.linspace(0, 127 * 1.,128)
+    DM = DesignMatrix(frametimes, drift_model='Polynomial', drift_order=3)
+    ax = DM.show()
+    assert (ax is not None)
 
 
 def test_dmtx0():
@@ -244,7 +271,7 @@ def test_dmtx9():
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
     hrf_model = 'FIR'
-    X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
+    X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                             drift_model='Polynomial', drift_order=3,
                             fir_delays=range(1, 5))
     assert_true(len(names) == 16)
@@ -256,7 +283,7 @@ def test_dmtx10():
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
     hrf_model = 'FIR'
-    X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
+    X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1, 5))
     onset = paradigm.onset[paradigm.con_id == 'c0'].astype(np.int)
@@ -271,7 +298,7 @@ def test_dmtx11():
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
     hrf_model = 'FIR'
-    X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
+    X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1, 5))
     onset = paradigm.onset[paradigm.con_id == 'c0'].astype(np.int)
@@ -285,7 +312,7 @@ def test_dmtx12():
     frametimes = np.linspace(0, 127 * tr,128)
     paradigm = basic_paradigm()
     hrf_model = 'FIR'
-    X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
+    X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1, 5))
     onset = paradigm.onset[paradigm.con_id == 'c2'].astype(np.int)
@@ -299,9 +326,9 @@ def test_dmtx13():
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
     hrf_model = 'FIR'
-    X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
-                         drift_model='Polynomial', drift_order=3,
-                         fir_delays=range(1, 5))
+    X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
+                          drift_model='Polynomial', drift_order=3,
+                          fir_delays=range(1, 5))
     onset = paradigm.onset[paradigm.con_id == 'c0'].astype(np.int)
     assert_true(np.all(X[onset + 1, 0] == 1))
 
@@ -314,7 +341,7 @@ def test_dmtx14():
     frametimes = np.linspace(0, 127 * tr, 128) + tr / 2
     paradigm = basic_paradigm()
     hrf_model = 'FIR'
-    X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
+    X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3,
                          fir_delays=range(1, 5))
     onset = paradigm.onset[paradigm.con_id == 'c0'].astype(np.int)
@@ -329,7 +356,7 @@ def test_dmtx15():
     paradigm = basic_paradigm()
     hrf_model='Canonical'
     ax = np.random.randn(128, 4)
-    X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
+    X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3, add_regs=ax)
     assert(len(names) == 11)
     assert(X.shape[1] == 11)
@@ -342,7 +369,7 @@ def test_dmtx16():
     paradigm = basic_paradigm()
     hrf_model ='Canonical'
     ax = np.random.randn(128, 4)
-    X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
+    X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3, add_regs=ax)
     assert_almost_equal(X[:, 3: 7], ax)
 
@@ -354,7 +381,7 @@ def test_dmtx17():
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = modulated_event_paradigm()
     hrf_model = 'Canonical'
-    X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
+    X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3)
     ct = paradigm.onset[paradigm.con_id == 'c0'].astype(np.int) + 1
     assert((X[ct, 0] > 0).all())
@@ -367,7 +394,7 @@ def test_dmtx18():
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = modulated_block_paradigm()
     hrf_model = 'Canonical'
-    X, names= dmtx_light(frametimes, paradigm, hrf_model=hrf_model,
+    X, names = dmtx_light(frametimes, paradigm, hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3)
     ct = paradigm.onset[paradigm.con_id == 'c0'].astype(np.int) + 3
     assert((X[ct, 0] > 0).all())
@@ -436,12 +463,6 @@ def test_spm_2():
     X1 = DesignMatrix(frametimes, paradigm, drift_model='Blank')
     X1.estimate()
     spm_dmtx = np.load(join(dirname(__file__),'spm_dmtx.npz'))['arr_1']
-    #import pylab
-    #pylab.figure()
-    #pylab.plot(spm_dmtx[:, 0], 'b')
-    #pylab.plot(16 * X1.matrix[:, 0], 'g')
-    #pylab.show()
-    #stop
     assert ((spm_dmtx - X1.matrix) ** 2).sum() / (spm_dmtx ** 2).sum() < .1
     
 
