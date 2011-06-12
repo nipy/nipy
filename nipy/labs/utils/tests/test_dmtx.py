@@ -9,9 +9,10 @@ not whether it is exact
 
 import numpy as np
 from os.path import join, dirname
-from ..design_matrix import (EventRelatedParadigm, BlockParadigm, dmtx_light, 
-                             convolve_regressors, DesignMatrix, dmtx_from_csv,
-                             load_protocol_from_csv_file, make_dmtx)
+from ..experimental_paradigm import (EventRelatedParadigm, BlockParadigm, 
+                                     load_protocol_from_csv_file)
+from ..design_matrix import ( 
+    dmtx_light, _convolve_regressors, DesignMatrix, dmtx_from_csv, make_dmtx)
                              
 from nose.tools import assert_true, assert_equal
 from numpy.testing import assert_almost_equal
@@ -48,39 +49,6 @@ def block_paradigm():
     duration = 5 * np.ones(9)
     paradigm = BlockParadigm (conditions, onsets, duration)
     return paradigm
-
-def write_paradigm(paradigm, session):
-    """Function to write a paradigm to a file and retrn the address
-    """
-    import tempfile
-    csvfile = tempfile.mkdtemp() + '/paradigm.csv'
-    paradigm.write_to_csv(csvfile, session)
-    return csvfile
-
-def test_read_paradigm():
-    """ test that a paradigm is correctly read
-    """
-    session = 'sess'
-    paradigm = block_paradigm()
-    csvfile = write_paradigm(paradigm, session)
-    read_paradigm = load_protocol_from_csv_file(csvfile)[session]
-    assert (read_paradigm.onset == paradigm.onset).all()
-
-    paradigm = modulated_event_paradigm()
-    csvfile = write_paradigm(paradigm, session)
-    read_paradigm = load_protocol_from_csv_file(csvfile)[session]
-    assert (read_paradigm.onset == paradigm.onset).all()
-
-    paradigm = modulated_block_paradigm()
-    csvfile = write_paradigm(paradigm, session)
-    read_paradigm = load_protocol_from_csv_file(csvfile)[session]
-    assert (read_paradigm.onset == paradigm.onset).all()
-
-    paradigm = basic_paradigm()
-    csvfile = write_paradigm(paradigm, session)
-    read_paradigm = load_protocol_from_csv_file(csvfile)[session]
-    assert (read_paradigm.onset == paradigm.onset).all()
-    
 
 
 def test_show_dmtx():
@@ -157,7 +125,7 @@ def test_convolve_regressors():
     paradigm =  EventRelatedParadigm(conditions, onsets)
     # names not passed -> default names
     frametimes = np.arange(100)
-    f, names = convolve_regressors(paradigm, 'Canonical', frametimes)
+    f, names = _convolve_regressors(paradigm, 'Canonical', frametimes)
     assert_equal(names, ['c0', 'c1'])
 
 

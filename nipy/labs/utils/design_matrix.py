@@ -1,228 +1,216 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-fMRI Design Matrix creation functions.
+Tis module implements fMRI Design Matrix creation.
+The DesignMatrix object is just a container that represents the design matrix.
+Computations of the different parts of the design matrix are confined 
+to the make_dmtx() function, that instantiates the DesignMatrix object.
+All the remainder are just ancillary functions.
+
+Design matrices contain three different types of regressors:
+1. Task-related regressors, that result from the convolution 
+of the experimental paradigm regressors with hemodynamic models
+2. User-specified regressors, that represent infomation available on the data,
+e.g. motion parameters, physiological data resmapled at the acqusition rate,
+or sinusoidal regressors that model the signal at a fresuency of interest.
+3. Drift regressors, that represnet low_frequency phenomena of no interest 
+in the data; they need to be included to reduce variance estimates.
+
+Author: Bertrand Thirion, 2009-2011
 """
 
 import numpy as np
 
-import sympy
-
-from nipy.modalities.fmri import formula, utils, hrf
 from hemodynamic_models import compute_regressor, _orthogonalize
 
-##########################################################
-# Paradigm handling
-##########################################################
 
+######################################################################
+# Ancillary functions
+######################################################################
 
-class Paradigm(object):
-    """ Simple class to hanle the experimental paradigm in one session
-    """
-
-    def __init__(self, con_id=None, onset=None, amplitude=None):
-        """
-        Parameters
-        ----------
-        con_id: array of shape (n_events), type = string, optional
-               identifier of the events
-        onset: array of shape (n_events), type = float, optional,
-               onset time (in s.) of the events
-        amplitude: array of shape (n_events), type = float, optional,
-                   amplitude of the events (if applicable)
-        """
-        self.con_id = con_id
-        self.onset = onset
-        self.amplitude = amplitude
-        self.n_event = 0
-        if con_id is not None:
-            self.n_events = len(con_id)
-            try:
-                # this is only for backward compatibility:
-                #if con_id were integers, they become a string
-                self.con_id = np.array(['c' + str(int(float(c)))
-                                        for c in con_id])
-            except:
-                self.con_id = np.ravel(np.array(con_id)).astype('str')
-
-        if onset is not None:
-            if len(onset) != self.n_events:
-                raise ValueError(
-                    'inconsistant definition of ids and onsets')
-            self.onset = np.ravel(np.array(onset)).astype(np.float)
-        if amplitude is not None:
-            if len(amplitude) != self.n_events:
-                raise ValueError('inconsistant definition of amplitude')
-            self.amplitude = np.ravel(np.array(amplitude))
-        self.type = 'event'
-        self.n_conditions = len(np.unique(self.con_id))
-        
-    def write_to_csv(self, csv_file, session='0'):
-        """ Write the paradigm to a csv file
-        
-        Parameters
-        ----------
-        csv_file: string, path of the csv file
-        session: string, optional, session identifier
-        """
-        import csv
-        fid = open(csv_file, "wb")
-        writer = csv.writer(fid, delimiter=' ')
-        n_pres = np.size(self.con_id)
-        sess = np.repeat(session, n_pres)
-        pdata = np.vstack((sess, self.con_id, self.onset)).T
-        
-        # add the duration information
-        if self.type == 'event':
-            duration = np.zeros(np.size(self.con_id))
-        else:
-            duration = self.duration
-        pdata = np.hstack((pdata, np.reshape(duration, (n_pres, 1))))
-        
-        # add the amplitude information
-        if self.amplitude is not None:
-            amplitude = np.reshape(self.amplitude, (n_pres, 1))
-            pdata = np.hstack((pdata, amplitude))
-            
-        # write pdata
-        for row in pdata:
-            writer.writerow(row)
-        fid.close()
-
-
-class EventRelatedParadigm(Paradigm):
-    """ Class to handle event-related paradigms
-    """
-
-    def __init__(self, con_id=None, onset=None, amplitude=None):
-        """
-        Parameters
-        ----------
-        con_id: array of shape (n_events), type = string, optional
-               id of the events (name of the exprimental condition)
-        onset: array of shape (n_events), type = float, optional
-               onset time (in s.) of the events
-        amplitude: array of shape (n_events), type = float, optional,
-                   amplitude of the events (if applicable)
-        """
-        Paradigm.__init__(self, con_id, onset, amplitude)
-
-
-class BlockParadigm(Paradigm):
-    """ Class to handle block paradigms
-    """
-
-    def __init__(self, con_id=None, onset=None, duration=None, amplitude=None):
-        """
-        Parameters
-        ----------
-        con_id: array of shape (n_events), type = string, optional
-               id of the events (name of the exprimental condition)
-        onset: array of shape (n_events), type = float, optional
-               onset time (in s.) of the events
-        amplitude: array of shape (n_events), type = float, optional,
-                   amplitude of the events (if applicable)
-        """
-        Paradigm.__init__(self, con_id, onset, amplitude)
-        self.duration = duration
-        self.type = 'block'
-        if duration is not None:
-            if len(duration) != self.n_events:
-                raise ValueError('inconsistant definition of duration')
-            self.duration = np.ravel(np.array(duration))
-
-
-def load_protocol_from_csv_file(path, session=None):
-    """
-    Read a (.csv) paradigm file consisting of values yielding
-    (occurence time, (duration), event ID, modulation)
-    and returns a paradigm instance or a dictionary of paradigm instances
+def _poly_drift(order, frametimes):
+    """Create a polynomial drift matrix
 
     Parameters
     ----------
-    path: string,
-          path to a .csv file that describes the paradigm
-    session: string, optional, session identifier
-             by default the output is a dictionary
-             of session-level dictionaries indexed by session
+    order, int, number of polynomials in the drift model
+    tmax, float maximal time value used in the sequence
+          this is used to normalize porperly the columns
 
     Returns
     -------
-    paradigm, paradigm instance (if session is provided), or
-              dictionary of paradigm instances otherwise,
-              the resulting session-by-session paradigm
-
-    Note
-    ----
-    It is assumed that the csv file contains the following columns:
-    (session id, condition id, onset),
-    plus possibly (duration) and/or (amplitude)
-    If all the durations are 0, the paradigm will be handled as event-related
-
-    fixme
-    -----
-    would be much clearer if amplitude was put before duration in the .csv
+    pol, array of shape(n_scans, order + 1) 
+         all the polynomial drift plus a constant regressor
     """
-    import csv
-    csvfile = open(path)
-    dialect = csv.Sniffer().sniff(csvfile.read())
-    csvfile.seek(0)
-    reader = csv.reader(open(path, "rb"), dialect)
+    order = int(order)
+    pol = np.zeros((np.size(frametimes), order + 1))
+    tmax = frametimes.max()
+    for k in range(order + 1):
+        pol[:, k] = (frametimes / tmax) ** k
+    pol = _orthogonalize(pol)
+    pol = np.hstack((pol[:, 1:], pol[:, :1]))
+    return pol
 
-    # load the csv as a protocol array
-    sess, cid, onset, amplitude, duration = [], [], [], [], []
-    for row in reader:
-        sess.append(row[0])
-        cid.append(row[1])
-        onset.append(float(row[2]))
-        if len(row) > 3:
-            duration.append(float(row[3]))
-        if len(row) > 4:
-            amplitude.append(row[4])
 
-    protocol = [np.array(sess), np.array(cid), np.array(onset),
-                np.array(duration), np.array(amplitude)]
-    protocol = protocol[:len(row)]
+def _cosine_drift(hfcut, frametimes):
+    """Create a cosine drift matrix
 
-    def read_session(protocol, session):
-        """ return a paradigm instance corresponding to session
-        """
-        ps = (protocol[0] == session)
-        if np.sum(ps) == 0:
-            return None
-        ampli = np.ones(np.sum(ps))
-        if len(protocol) > 4:
-            _, cid, onset, duration, ampli = [lp[ps] for lp in protocol]
-            if (duration == 0).all():
-                paradigm = EventRelatedParadigm(cid, onset, ampli)
-            else:
-                paradigm = BlockParadigm(cid, onset, duration, ampli)
-        elif len(protocol) > 3:
-            _, cid, onset, duration = [lp[ps] for lp in protocol]
-            paradigm = BlockParadigm(cid, onset, duration, ampli)
-        else:            
-            _, cid, onset = [lp[ps] for lp in protocol]
-            paradigm = EventRelatedParadigm(cid, onset, ampli)
-        return paradigm
+    Parameters
+    ----------
+    hfcut, float , cut frequency of the low-pass filter
+    frametimes: array of shape(nscans): the sampling time
 
-    sessions = np.unique(protocol[0])
-    if session is None:
-        paradigm = {}
-        for session in sessions:
-            paradigm[session] = read_session(protocol, session)
+    Returns
+    -------
+    cdrift:  array of shape(n_scans, n_drifts)
+             polynomial drifts plus a constant regressor
+    """
+    tmax = frametimes.max()
+    tsteps = len(frametimes)
+    order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
+    cdrift = np.zeros((tsteps, order))
+    for k in range(1, order):
+        cdrift[:, k - 1] = np.sqrt(2.0 / tmax) * np.cos(
+            np.pi * (frametimes / tmax + 0.5 / tsteps) * k)
+    cdrift[:, order - 1] = np.ones_like(frametimes)
+    return cdrift
+
+
+def _blank_drift(frametimes):
+    """ Create the blank drift matrix
+    Returns
+    -------
+    np.ones_like(frametimes)
+    """
+    return np.reshape(np.ones_like(frametimes), (np.size(frametimes), 1))
+
+
+def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
+    """Create the drift matrix
+
+    Parameters
+    ----------
+    DriftModel: string,
+                to be chosen among 'Polynomial', 'Cosine', 'Blank'
+                that specifies the desired drift model
+    frametimes: array of shape(n_scans),
+                list of values representing the desired TRs
+    order: int, optional,
+           order of the dirft model (in case it is polynomial)
+    hfcut: float, optional,
+           frequency cut in case of a cosine model
+
+    Returns
+    -------
+    drift: array of shape(n_scans, n_drifts), the drift matrix
+    names: list of length(ndrifts), the associated names
+    """
+    if drift_model == 'Polynomial':
+        drift = _poly_drift(order, frametimes)
+    elif drift_model == 'Cosine':
+        drift = _cosine_drift(hfcut, frametimes)
+    elif drift_model == 'Blank':
+        drift = _blank_drift(frametimes)
     else:
-        paradigm = read_session(protocol, session)
-    return paradigm
+        raise NotImplementedError("unknown drift model")
+    names = []
+    for k in range(drift.shape[1] - 1):
+        names.append('drift_%d' % (k + 1))
+    names.append('constant')
+    
+    return drift, names
 
 
-##########################################################
-# Design Matrices
-##########################################################
+def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
+    """ Creation of  a matrix that comprises
+    the convolution of the conditions onset with a certain hrf model
 
+    Parameters
+    ----------
+    paradigm: paradigm instance
+    hrf_model: string that can be 'Canonical',
+               'Canonical With Derivative' or 'FIR'
+               that specifies the hemodynamic reponse function
+    frametimes: array od shape(n_scans)
+                the targeted timing for the design matrix
+    fir_delays=[0], optional, array of shape(nb_onsets) or list
+                    in case of FIR design, yields the array of delays
+                    used in the FIR model
+
+    Returns
+    -------
+    rmatrix: array of shape(n_scans, n_regressors),
+             contains the convolved regressors 
+             associated with the experimental condition
+    names: list of strings,
+           the condition names, that depend on the hrf model used
+           if 'Canonical' then this is identical to the input names
+           if 'Canonical With Derivative', then two names are produced for
+             input name 'name': 'name' and 'name_derivative'
+    """
+    hnames = []
+    rmatrix = None
+    for nc in np.unique(paradigm.con_id):
+        onsets = paradigm.onset[paradigm.con_id == nc]
+        nos = np.size(onsets)
+        if paradigm.amplitude is not None:
+            values = paradigm.amplitude[paradigm.con_id == nc]
+        else:
+            values = np.ones(nos)
+        if nos < 1:
+            continue
+        if paradigm.type == 'event':
+            duration = np.zeros_like(onsets)
+        else:
+            duration = paradigm.duration[paradigm.con_id == nc]
+        exp_condition = (onsets, duration, values)
+        reg, names = compute_regressor(exp_condition, hrf_model, frametimes, 
+                                       con_id=nc, fir_delays=fir_delays)
+        hnames += names
+        if rmatrix == None: 
+            rmatrix = reg
+        else:
+            rmatrix = np.hstack((rmatrix, reg))
+    return rmatrix, hnames
+
+
+def _full_rank(X, cmax=1e15):
+    """
+    This function possibly adds a scalar matrix to X
+    to guarantee that the condition number is smaller than a given threshold.
+
+    Parameters
+    ----------
+    X: array of shape(nrows,ncols)
+    cmax=1.e-15, float tolerance for condition number
+
+    Returns
+    -------
+    X: array of shape(nrows,ncols) after regularization
+    cmax=1.e-15, float tolerance for condition number
+    """
+    U, s, V = np.linalg.svd(X, 0)
+    smax, smin = s.max(), s.min()
+    c = smax / smin
+    if c < cmax:
+        return X, c
+    print 'Warning: matrix is singular at working precision, regularizing...'
+    lda = (smax - cmax * smin) / (cmax - 1)
+    s = s + lda
+    X = np.dot(U, np.dot(np.diag(s), V))
+    return X, cmax
+
+
+
+######################################################################
+# Design matrix
+######################################################################
 
 class DesignMatrix():
     """ This is a conteneur for a light-weight class for design matrices
-    lass members
+    
+    Class members
+    -------------
     matrix: array of shape(n_scans, n_regressors), 
             the numerical specification of the matrix
     names: list of len (n_regressors);
@@ -362,7 +350,7 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='Canonical',
     # step 1: paradigm-related regressors
     if paradigm is not None:
         # create the condition-related regressors
-        matrix, names = convolve_regressors(
+        matrix, names = _convolve_regressors(
             paradigm, hrf_model, frametimes, fir_delays)
            
     # step 2: additional regressors
@@ -372,12 +360,12 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='Canonical',
         names += add_reg_names
         
     # setp 3: drifts
-    drift, dnames = make_drift(drift_model, frametimes, drift_order, hfcut)
+    drift, dnames = _make_drift(drift_model, frametimes, drift_order, hfcut)
     matrix = np.hstack((matrix, drift))
     names += dnames
 
     # step 4: Force the design matrix to be full rank at working precision
-    matrix, _ = full_rank(matrix)
+    matrix, _ = _full_rank(matrix)
 
     # complete the names with the drift terms
     return DesignMatrix(matrix, names, frametimes)
@@ -437,173 +425,3 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
     return dmtx_.matrix, dmtx_.names
 
 
-def _poly_drift(order, frametimes):
-    """Create a polynomial drift formula
-
-    Parameters
-    ----------
-    order, int, number of polynomials in the drift model
-    tmax, float maximal time value used in the sequence
-          this is used to normalize porperly the columns
-
-    Returns
-    -------
-    pol, array of shape(n_scans, order + 1) 
-         all the polynomial drift plus a constant regressor
-    """
-    order = int(order)
-    pol = np.zeros((np.size(frametimes), order + 1))
-    tmax = frametimes.max()
-    for k in range(order + 1):
-        pol[:, k] = (frametimes / tmax) ** k
-    pol = _orthogonalize(pol)
-    pol = np.hstack((pol[:, 1:], pol[:, :1]))
-    return pol
-
-
-def _cosine_drift(hfcut, frametimes):
-    """Create a cosine drift matrix
-
-    Parameters
-    ----------
-    hfcut, float , cut frequency of the low-pass filter
-    frametimes: array of shape(nscans): the sampling time
-
-    Returns
-    -------
-    cdrift:  array of shape(n_scans, n_drifts)
-             polynomial drifts plus a constant regressor
-    """
-    tmax = frametimes.max()
-    tsteps = len(frametimes)
-    order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
-    cdrift = np.zeros((tsteps, order))
-    for k in range(1, order):
-        cdrift[:, k - 1] = np.sqrt(2.0 / tmax) * np.cos(
-            np.pi * (frametimes / tmax + 0.5 / tsteps) * k)
-    cdrift[:, order - 1] = np.ones_like(frametimes)
-    return cdrift
-
-
-def _blank_drift(frametimes):
-    """ Create the blank drift matrix
-    Returns
-    -------
-    np.ones_like(frametimes)
-    """
-    return np.reshape(np.ones_like(frametimes), (np.size(frametimes), 1))
-
-
-def make_drift(drift_model, frametimes, order=1, hfcut=128.):
-    """Create the drift matrix
-
-    Parameters
-    ----------
-    DriftModel: string,
-                to be chosen among 'Polynomial', 'Cosine', 'Blank'
-                that specifies the desired drift model
-    frametimes: array of shape(n_scans),
-                list of values representing the desired TRs
-    order: int, optional,
-           order of the dirft model (in case it is polynomial)
-    hfcut: float, optional,
-           frequency cut in case of a cosine model
-
-    Returns
-    -------
-    drift: array of shape(n_scans, n_drifts), the drift matrix
-    names: list of length(ndrifts), the associated names
-    """
-    if drift_model == 'Polynomial':
-        drift = _poly_drift(order, frametimes)
-    elif drift_model == 'Cosine':
-        drift = _cosine_drift(hfcut, frametimes)
-    elif drift_model == 'Blank':
-        drift = _blank_drift(frametimes)
-    else:
-        raise NotImplementedError("unknown drift model")
-    names = []
-    for k in range(drift.shape[1] - 1):
-        names.append('drift_%d' % (k + 1))
-    names.append('constant')
-    
-    return drift, names
-
-
-def convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
-    """ Creation of  a formula that represents
-    the convolution of the conditions onset with a certain hrf model
-
-    Parameters
-    ----------
-    paradigm: paradigm instance
-    hrf_model: string that can be 'Canonical',
-               'Canonical With Derivative' or 'FIR'
-               that specifies the hemodynamic reponse function
-    frametimes: array od shape(n_scans)
-                the targeted timing for the design matrix
-    fir_delays=[0], optional, array of shape(nb_onsets) or list
-                    in case of FIR design, yields the array of delays
-                    used in the FIR model
-
-    Returns
-    -------
-    f: formula instance,
-       contains the convolved regressors as functions of time
-    names: list of strings,
-           the condition names, that depend on the hrf model used
-           if 'Canonical' then this is identical to the input names
-           if 'Canonical With Derivative', then two names are produced for
-             input name 'name': 'name' and 'name_derivative'
-    """
-    hnames = []
-    rmatrix = None
-    for nc in np.unique(paradigm.con_id):
-        onsets = paradigm.onset[paradigm.con_id == nc]
-        nos = np.size(onsets)
-        if paradigm.amplitude is not None:
-            values = paradigm.amplitude[paradigm.con_id == nc]
-        else:
-            values = np.ones(nos)
-        if nos < 1:
-            continue
-        if paradigm.type == 'event':
-            duration = np.zeros_like(onsets)
-        else:
-            duration = paradigm.duration[paradigm.con_id == nc]
-        exp_condition = (onsets, duration, values)
-        reg, names = compute_regressor(exp_condition, hrf_model, frametimes, 
-                                       con_id=nc, fir_delays=fir_delays)
-        hnames += names
-        if rmatrix == None: 
-            rmatrix = reg
-        else:
-            rmatrix = np.hstack((rmatrix, reg))
-    return rmatrix, hnames
-
-
-def full_rank(X, cmax=1e15):
-    """
-    This function possibly adds a scalar matrix to X
-    to guarantee that the condition number is smaller than a given threshold.
-
-    Parameters
-    ----------
-    X: array of shape(nrows,ncols)
-    cmax=1.e-15, float tolerance for condition number
-
-    Returns
-    -------
-    X: array of shape(nrows,ncols) after regularization
-    cmax=1.e-15, float tolerance for condition number
-    """
-    U, s, V = np.linalg.svd(X, 0)
-    smax, smin = s.max(), s.min()
-    c = smax / smin
-    if c < cmax:
-        return X, c
-    print 'Warning: matrix is singular at working precision, regularizing...'
-    lda = (smax - cmax * smin) / (cmax - 1)
-    s = s + lda
-    X = np.dot(U, np.dot(np.diag(s), V))
-    return X, cmax
