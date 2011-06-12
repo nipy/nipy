@@ -11,7 +11,7 @@ import numpy as np
 from os.path import join, dirname
 from ..design_matrix import (EventRelatedParadigm, BlockParadigm, dmtx_light, 
                              convolve_regressors, DesignMatrix, dmtx_from_csv,
-                             load_protocol_from_csv_file)
+                             load_protocol_from_csv_file, make_dmtx)
                              
 from nose.tools import assert_true, assert_equal
 from numpy.testing import assert_almost_equal
@@ -87,7 +87,7 @@ def test_show_dmtx():
     """ test that the show code indeed (formally) runs
     """
     frametimes = np.linspace(0, 127 * 1.,128)
-    DM = DesignMatrix(frametimes, drift_model='Polynomial', drift_order=3)
+    DM = make_dmtx(frametimes, drift_model='Polynomial', drift_order=3)
     ax = DM.show()
     assert (ax is not None)
 
@@ -438,8 +438,8 @@ def test_csv_io():
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = modulated_event_paradigm()
-    DM = DesignMatrix(frametimes, paradigm, hrf_model='Canonical', 
-                         drift_model='Polynomial', drift_order=3)
+    DM = make_dmtx(frametimes, paradigm, hrf_model='Canonical', 
+              drift_model='Polynomial', drift_order=3)
     path = join(mkdtemp(), 'dmtx.csv')
     DM.write_csv(path)
     DM2 = dmtx_from_csv( path)
@@ -458,8 +458,7 @@ def test_spm_1():
     onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
     hrf_model = 'Canonical'
     paradigm =  EventRelatedParadigm(conditions, onsets)
-    X1 = DesignMatrix(frametimes, paradigm, drift_model='Blank')
-    X1.estimate()
+    X1 = make_dmtx(frametimes, paradigm, drift_model='Blank')
     spm_dmtx = np.load(join(dirname(__file__),'spm_dmtx.npz'))['arr_0']
     assert ((spm_dmtx - X1.matrix) ** 2).sum() / (spm_dmtx ** 2).sum() < .1
 
@@ -476,8 +475,7 @@ def test_spm_2():
     duration = 10 * np.ones(9)
     hrf_model = 'Canonical'
     paradigm =  BlockParadigm(conditions, onsets, duration)
-    X1 = DesignMatrix(frametimes, paradigm, drift_model='Blank')
-    X1.estimate()
+    X1 = make_dmtx(frametimes, paradigm, drift_model='Blank')
     spm_dmtx = np.load(join(dirname(__file__),'spm_dmtx.npz'))['arr_1']
     assert ((spm_dmtx - X1.matrix) ** 2).sum() / (spm_dmtx ** 2).sum() < .1
     
