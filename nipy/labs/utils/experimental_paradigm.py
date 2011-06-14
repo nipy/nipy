@@ -7,9 +7,8 @@ paradigms: block and event-related paradigms. They correspond to 2
 clases EventRelatedParadigm and BlockParadigm. Both are implemented
 here, together with functions to write paradigms to csv files.
 
-Note 
----- 
-
+Note
+----
 Although the Paradigm object have no notion of session or acquitions
 (they are assumed to correspond to a sequenstion acquisition, called
 'session' in SPM jargon), the .csv file used to represent paardigmmay
@@ -66,10 +65,10 @@ class Paradigm(object):
             self.amplitude = np.ravel(np.array(amplitude))
         self.type = 'event'
         self.n_conditions = len(np.unique(self.con_id))
-        
+
     def write_to_csv(self, csv_file, session='0'):
         """ Write the paradigm to a csv file
-        
+
         Parameters
         ----------
         csv_file: string, path of the csv file
@@ -81,19 +80,19 @@ class Paradigm(object):
         n_pres = np.size(self.con_id)
         sess = np.repeat(session, n_pres)
         pdata = np.vstack((sess, self.con_id, self.onset)).T
-        
+
         # add the duration information
         if self.type == 'event':
             duration = np.zeros(np.size(self.con_id))
         else:
             duration = self.duration
         pdata = np.hstack((pdata, np.reshape(duration, (n_pres, 1))))
-        
+
         # add the amplitude information
         if self.amplitude is not None:
             amplitude = np.reshape(self.amplitude, (n_pres, 1))
             pdata = np.hstack((pdata, amplitude))
-            
+
         # write pdata
         for row in pdata:
             writer.writerow(row)
@@ -210,7 +209,7 @@ def load_protocol_from_csv_file(path, session=None):
         elif len(protocol) > 3:
             _, cid, onset, duration = [lp[ps] for lp in protocol]
             paradigm = BlockParadigm(cid, onset, duration, ampli)
-        else:            
+        else:
             _, cid, onset = [lp[ps] for lp in protocol]
             paradigm = EventRelatedParadigm(cid, onset, ampli)
         return paradigm

@@ -3,17 +3,17 @@
 """
 Tis module implements fMRI Design Matrix creation.
 The DesignMatrix object is just a container that represents the design matrix.
-Computations of the different parts of the design matrix are confined 
+Computations of the different parts of the design matrix are confined
 to the make_dmtx() function, that instantiates the DesignMatrix object.
 All the remainder are just ancillary functions.
 
 Design matrices contain three different types of regressors:
-1. Task-related regressors, that result from the convolution 
+1. Task-related regressors, that result from the convolution
 of the experimental paradigm regressors with hemodynamic models
 2. User-specified regressors, that represent infomation available on the data,
 e.g. motion parameters, physiological data resmapled at the acqusition rate,
 or sinusoidal regressors that model the signal at a fresuency of interest.
-3. Drift regressors, that represnet low_frequency phenomena of no interest 
+3. Drift regressors, that represnet low_frequency phenomena of no interest
 in the data; they need to be included to reduce variance estimates.
 
 Author: Bertrand Thirion, 2009-2011
@@ -28,6 +28,7 @@ from hemodynamic_models import compute_regressor, _orthogonalize
 # Ancillary functions
 ######################################################################
 
+
 def _poly_drift(order, frametimes):
     """Create a polynomial drift matrix
 
@@ -39,7 +40,7 @@ def _poly_drift(order, frametimes):
 
     Returns
     -------
-    pol, array of shape(n_scans, order + 1) 
+    pol, array of shape(n_scans, order + 1)
          all the polynomial drift plus a constant regressor
     """
     order = int(order)
@@ -117,7 +118,6 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
     for k in range(drift.shape[1] - 1):
         names.append('drift_%d' % (k + 1))
     names.append('constant')
-    
     return drift, names
 
 
@@ -140,7 +140,7 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
     Returns
     -------
     rmatrix: array of shape(n_scans, n_regressors),
-             contains the convolved regressors 
+             contains the convolved regressors
              associated with the experimental condition
     names: list of strings,
            the condition names, that depend on the hrf model used
@@ -164,10 +164,10 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
         else:
             duration = paradigm.duration[paradigm.con_id == nc]
         exp_condition = (onsets, duration, values)
-        reg, names = compute_regressor(exp_condition, hrf_model, frametimes, 
+        reg, names = compute_regressor(exp_condition, hrf_model, frametimes,
                                        con_id=nc, fir_delays=fir_delays)
         hnames += names
-        if rmatrix == None: 
+        if rmatrix == None:
             rmatrix = reg
         else:
             rmatrix = np.hstack((rmatrix, reg))
@@ -201,26 +201,25 @@ def _full_rank(X, cmax=1e15):
     return X, cmax
 
 
-
 ######################################################################
 # Design matrix
 ######################################################################
 
+
 class DesignMatrix():
     """ This is a conteneur for a light-weight class for design matrices
-    
+    This class is only used to make IO and vizualization
+
     Class members
     -------------
-    matrix: array of shape(n_scans, n_regressors), 
+    matrix: array of shape(n_scans, n_regressors),
             the numerical specification of the matrix
     names: list of len (n_regressors);
            the names asociated with the columns
     frametimes: array of shape(n_scans), optional,
                 the occurrence time of the matrix rows
-           
-    This class is only used to make IO and vizualization
     """
-    
+
     def __init__(self, matrix, names, frametimes=None):
         """
         """
@@ -231,19 +230,20 @@ class DesignMatrix():
         if frametimes is not None:
             if frametimes.size != matrix.shape[0]:
                 raise ValueError(
-                    'The number of frametimes should equate the number of rows')
-            
+                    'The number %d of frametimes is different from the' + \
+                    'number %d of rows' % (frametimes.size, matrix.shape[0]))
+
         self.frametimes = frametimes
         self.matrix = matrix_
         self.names = names
-        
+
     def write_csv(self, path):
         """ write self.matrix as a csv file with apropriate column names
 
         Parameters
         ----------
         path: string, path of the resulting csv file
-        
+
         Note
         ----
         the frametimes are not written
@@ -254,7 +254,6 @@ class DesignMatrix():
         writer.writerow(self.names)
         writer.writerows(self.matrix)
         fid.close()
-
 
     def show(self, rescale=True, ax=None):
         """Vizualization of a design matrix
@@ -284,7 +283,7 @@ class DesignMatrix():
 
         if self.names is not None:
             ax.set_xticks(range(len(self.names)))
-            ax.set_xticklabels(self.names, rotation=60, ha='right')            
+            ax.set_xticklabels(self.names, rotation=60, ha='right')
         return ax
 
 
@@ -292,7 +291,7 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='Canonical',
               drift_model='Cosine', hfcut=128, drift_order=1,
               fir_delays=[0], add_regs=None, add_reg_names=None):
     """ Generate a design matrix from the input parameters
-    
+
     Parameters
     ----------
     frametimes: array of shape(nbframes), the timing of the scans
@@ -316,8 +315,8 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='Canonical',
     add_reg_names: list of (naddreg) regressor names, optional
                    if None, while naddreg>0, these will be termed
                    'reg_%i',i=0..naddreg-1
-    
-    Returns 
+
+    Returns
     -------
     DesignMatrix instance
     """
@@ -333,7 +332,7 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='Canonical',
             'incorrect specification of additional regressors: '
             'length of regressors provided: %s, number of '
             'time-frames: %s' % (add_regs.shape[0], np.size(frametimes)))
- 
+
     # check that additional regressor names are well specified
     if  add_reg_names == None:
         add_reg_names = ['reg%d' % k for k in range(n_add_regs)]
@@ -342,23 +341,23 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='Canonical',
             'Incorrect number of additional regressor names was provided'
             '(%s provided, %s expected) % (len(add_reg_names),'
             'n_add_regs)')
-    
+
     # computation of the matrix
     names = []
     matrix = np.zeros((frametimes.size, 0))
-    
+
     # step 1: paradigm-related regressors
     if paradigm is not None:
         # create the condition-related regressors
         matrix, names = _convolve_regressors(
             paradigm, hrf_model, frametimes, fir_delays)
-           
+
     # step 2: additional regressors
     if add_regs is not None:
         # add user-supplied regressors and corresponding names
         matrix = np.hstack((matrix, add_regs))
         names += add_reg_names
-        
+
     # setp 3: drifts
     drift, dnames = _make_drift(drift_model, frametimes, drift_order, hfcut)
     matrix = np.hstack((matrix, drift))
@@ -395,7 +394,7 @@ def dmtx_from_csv(path, frametimes=None):
             boolfirst = False
         else:
             design.append([row[j] for j in range(len(row))])
-            
+
     x = np.array([[float(t) for t in xr] for xr in design])
     return(DesignMatrix(x, names, frametimes))
 
@@ -419,9 +418,6 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
     """
     dmtx_ = make_dmtx(frametimes, paradigm, hrf_model, drift_model, hfcut,
                       drift_order, fir_delays, add_regs, add_reg_names)
-    
     if path is not None:
         dmtx_.write_csv(path)
     return dmtx_.matrix, dmtx_.names
-
-
