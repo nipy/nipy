@@ -25,9 +25,10 @@ import scipy.stats as st
 
 from nipy.labs import compute_mask_files
 from nibabel import load, save, Nifti1Image
-#import nipy.labs.glm
-from nipy.labs.utils.design_matrix import make_dmtx
-from nipy.labs.utils.experimental_paradigm import load_protocol_from_csv_file
+
+from nipy.modalities.fmri.design_matrix import make_dmtx
+from nipy.modalities.fmri.experimental_paradigm import \
+    load_protocol_from_csv_file
 from nipy.labs.viz import plot_map, cm
 from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
 
@@ -79,7 +80,7 @@ ax.set_position([.05, .25, .9, .65])
 ax.set_title('Design matrix')
 
 pylab.savefig(op.join(swd, 'design_matrix.png'))
-# design_matrix.save(...)
+# design_matrix.write_csv(...)
 
 ########################################
 # Mask the data

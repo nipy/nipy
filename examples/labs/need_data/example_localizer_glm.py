@@ -26,8 +26,9 @@ from nipy.labs import compute_mask_files
 from nibabel import load, save, Nifti1Image
 import get_data_light
 import nipy.labs.glm
-from nipy.labs.utils.design_matrix import make_dmtx
-from nipy.labs.utils.experimental_paradigm import load_protocol_from_csv_file
+from nipy.modalities.fmri.design_matrix import make_dmtx
+from nipy.modalities.fmri.experimental_paradigm import \
+    load_protocol_from_csv_file
 from nipy.labs.viz import plot_map, cm
 
 #######################################

@@ -19,8 +19,8 @@ import os.path as op
 import matplotlib.pylab as mp
 
 from nibabel import load, Nifti1Image
-from nipy.labs.utils.design_matrix import dmtx_light
-from nipy.labs.utils.experimental_paradigm import EventRelatedParadigm
+from nipy.modalities.fmri.design_matrix import dmtx_light
+from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
 from nipy.labs.utils.simul_multisubject_fmri_dataset import \
     surrogate_4d_dataset
 import get_data_light

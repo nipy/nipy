@@ -10,8 +10,8 @@ print __doc__
 
 import numpy as np
 import pylab as mp
-from nipy.labs.utils.design_matrix import make_dmtx
-from nipy.labs.utils.experimental_paradigm import \
+from nipy.modalities.fmri.design_matrix import make_dmtx
+from nipy.modalities.fmri.experimental_paradigm import \
     EventRelatedParadigm, BlockParadigm
 
 # frame times
