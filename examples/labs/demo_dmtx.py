@@ -10,7 +10,9 @@ print __doc__
 
 import numpy as np
 import pylab as mp
-import nipy.labs.utils.design_matrix as dm
+from nipy.labs.utils.design_matrix import make_dmtx
+from nipy.labs.utils.experimental_paradigm import \
+    EventRelatedParadigm, BlockParadigm
 
 # frame times
 tr = 1.0
@@ -25,26 +27,26 @@ motion = np.cumsum(np.random.randn(128, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
 #event-related design matrix
-paradigm = dm.EventRelatedParadigm(conditions, onsets)
+paradigm = EventRelatedParadigm(conditions, onsets)
 
-X1 = dm.DesignMatrix(
+X1 = make_dmtx(
     frametimes, paradigm, drift_model='Polynomial', drift_order=3,
     add_regs=motion, add_reg_names=add_reg_names)
 
 # block design matrix
 duration = 7 * np.ones(9)
-paradigm = dm.BlockParadigm(con_id=conditions, onset=onsets,
+paradigm = BlockParadigm(con_id=conditions, onset=onsets,
                              duration=duration)
 
-X2 = dm.DesignMatrix(frametimes, paradigm, drift_model='Polynomial',
+X2 = make_dmtx(frametimes, paradigm, drift_model='Polynomial',
                          drift_order=3)
 
 # FIR model
-paradigm = dm.EventRelatedParadigm(conditions, onsets)
+paradigm = EventRelatedParadigm(conditions, onsets)
 hrf_model = 'FIR'
-X3 = dm.DesignMatrix(frametimes, paradigm, hrf_model='FIR',
-                      drift_model='Polynomial', drift_order=3,
-                      fir_delays=range(1, 6))
+X3 = make_dmtx(frametimes, paradigm, hrf_model='FIR',
+               drift_model='Polynomial', drift_order=3,
+               fir_delays=range(1, 6))
 
 # plot the results
 fig = mp.figure(figsize=(10, 6))

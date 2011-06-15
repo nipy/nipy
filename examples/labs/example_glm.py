@@ -20,6 +20,7 @@ import nipy.labs.utils.design_matrix as dm
 from nipy.labs.utils.simul_multisubject_fmri_dataset import \
      surrogate_4d_dataset
 import nipy.labs.glm as GLM
+from nipy.labs.utils.experimental_paradigm import EventRelatedParadigm
 
 #######################################
 # Simulation parameters
@@ -48,10 +49,10 @@ swd = tempfile.mkdtemp()
 # Design matrix
 ########################################
 
-paradigm = dm.EventRelatedParadigm(conditions, onsets)
+paradigm = EventRelatedParadigm(conditions, onsets)
 X, names = dm.dmtx_light(frametimes, paradigm, drift_model='Cosine', hfcut=128,
-               hrf_model=hrf_model, add_regs=motion,
-               add_reg_names=add_reg_names)
+                         hrf_model=hrf_model, add_regs=motion,
+                         add_reg_names=add_reg_names)
 
 
 #######################################

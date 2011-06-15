@@ -26,7 +26,8 @@ from nipy.labs import compute_mask_files
 from nibabel import load, save, Nifti1Image
 import get_data_light
 import nipy.labs.glm
-import nipy.labs.utils.design_matrix as dm
+from nipy.labs.utils.design_matrix import make_dmtx
+from nipy.labs.utils.experimental_paradigm import load_protocol_from_csv_file
 from nipy.labs.viz import plot_map, cm
 
 #######################################
@@ -45,7 +46,7 @@ n_scans = 128
 tr = 2.4
 
 # paradigm
-frametimes = np.linspace(0, (n_scans-1)*tr, n_scans)
+frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
 conditions = [ 'damier_H', 'damier_V', 'clicDaudio', 'clicGaudio', 
 'clicDvideo', 'clicGvideo', 'calculaudio', 'calculvideo', 'phrasevideo', 
 'phraseaudio' ]
@@ -64,10 +65,10 @@ print 'Computation will be performed in temporary directory: %s' % swd
 ########################################
 
 print 'Loading design matrix...'
-paradigm = dm.load_protocol_from_csv_file(paradigm_file, session=0)
+paradigm = load_protocol_from_csv_file(paradigm_file, session='0.0')
 
-design_matrix = dm.DesignMatrix( frametimes, paradigm, hrf_model=hrf_model,
-                                 drift_model=drift_model, hfcut=hfcut)
+design_matrix = make_dmtx( frametimes, paradigm, hrf_model=hrf_model,
+                           drift_model=drift_model, hfcut=hfcut)
 
 ax = design_matrix.show()
 ax.set_position([.05, .25, .9, .65])
