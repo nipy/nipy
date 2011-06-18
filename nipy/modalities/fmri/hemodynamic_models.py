@@ -56,7 +56,7 @@ def spm_hrf(tr, oversampling=16, time_length=32., onset=0.):
 
 
 def glover_hrf(tr, oversampling=16, time_length=32., onset=0.):
-    """ Implementatin of the Glover hrf model
+    """ Implementation of the Glover hrf model
 
     Parameters
     ----------
@@ -129,8 +129,8 @@ def spm_dispersion_derivative(tr, oversampling=16, time_length=32., onset=0.):
 
     Returns
     -------
-    dhrf: array of shape(length / tr * oversmapling, float),
-          dhrf sampling on the oversmapled time grid
+    dhrf: array of shape(length / tr * oversampling, float),
+          dhrf sampling on the oversampled time grid
     """
     dd = .01
     dhrf = 1. / dd * (gamma_difference_hrf(tr, oversampling, time_length,
@@ -144,7 +144,7 @@ def sample_condition(exp_condition, frametimes, oversampling=16):
 
     Parameters
     ----------
-    exp_condition: a tuple of 3 arrays of shape n, corresponing
+    exp_condition: a tuple of 3 arrays of shape n, corresponding
                    to  (onsets, duration, value),
                    describing the experimental condition
     frametimes: array of shape(n)
@@ -191,9 +191,9 @@ def resample_regressor(hr_regressor, hr_frametimes, frametimes, kind='linear'):
     Parameters
     ----------
     hr_regressor: array of shape(n),
-                  the regressor time course sampled at high temproal resolution
+                  the regressor time course sampled at high temporal resolution
     hr_frametimes: array of shape(n),
-                   the correponding time stamps
+                   the corresponding time stamps
     frametimes: array of shape(p),
                 the desired time stamps
     kind: string, optional, the kind of desired interpolation
@@ -213,7 +213,7 @@ def _orthogonalize(X):
 
     Parameters
     ----------
-    X: array of shape(n, p), the data to be orthogonalize
+    X: array of shape(n, p), the data to be orthogonalized
 
     Returns
     -------
@@ -315,6 +315,20 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
     creg: array of shape(n_scans, n_reg): computed regressors sampled
                                           at frametimes
     reg_names: list of strings, corresponding regressor names
+
+    Note
+    ----
+    The different hemodynamic models can be understood as follows:
+    'spm': this is the hrf model used in spm
+    'spm_time': this is the spm model plus its time derivative (2 regressors)
+    'spm_time_dispersion': idem, plus dispersion derivative (3 regressors)
+    'canonical': this one corresponds to the Glover hrf
+    'canonical_derivative': the Glover hrf + time derivative (2 regressors)
+    'fir': finite impulse response basis, a set of delayed dirac models 
+           with arbitrary length. This one currently assumes regularly spaced 
+           frametimes (i.e. fixed time of repetition).
+    It is expected that spm standard and Glover model would not yield 
+    large differences in most cases.
     """
     # this is the average tr in this session, not necessarily the true tr
     tr = float(frametimes.max()) / (np.size(frametimes) - 1)

@@ -346,7 +346,7 @@ def test_dmtx15():
     assert(X.shape[1] == 11)
 
 def test_dmtx16():
-    """ Check that additional regressors are put at the reight place
+    """ Check that additional regressors are put at the right place
     """
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)

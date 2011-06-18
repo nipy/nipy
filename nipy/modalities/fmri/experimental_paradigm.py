@@ -4,15 +4,15 @@
 This module implements an object to deal with experimental paradigms.
 In fMRI data analysis, there are two main types of experimental
 paradigms: block and event-related paradigms. They correspond to 2
-clases EventRelatedParadigm and BlockParadigm. Both are implemented
+classes EventRelatedParadigm and BlockParadigm. Both are implemented
 here, together with functions to write paradigms to csv files.
 
 Note
 ----
-Although the Paradigm object have no notion of session or acquitions
-(they are assumed to correspond to a sequenstion acquisition, called
-'session' in SPM jargon), the .csv file used to represent paardigmmay
-be multi-session, so it is assmed that the first column of a file
+Although the Paradigm object have no notion of session or acquisitions
+(they are assumed to correspond to a sequential acquisition, called
+'session' in SPM jargon), the .csv file used to represent paradigm may
+be multi-session, so it is assumed that the first column of a file
 yielding a paradigm is in fact a session index
 
 Author: Bertrand Thirion, 2009-2011
@@ -26,7 +26,7 @@ import numpy as np
 
 
 class Paradigm(object):
-    """ Simple class to hanle the experimental paradigm in one session
+    """ Simple class to handle the experimental paradigm in one session
     """
 
     def __init__(self, con_id=None, onset=None, amplitude=None):
@@ -57,11 +57,11 @@ class Paradigm(object):
         if onset is not None:
             if len(onset) != self.n_events:
                 raise ValueError(
-                    'inconsistant definition of ids and onsets')
+                    'inconsistent definition of ids and onsets')
             self.onset = np.ravel(np.array(onset)).astype(np.float)
         if amplitude is not None:
             if len(amplitude) != self.n_events:
-                raise ValueError('inconsistant definition of amplitude')
+                raise ValueError('inconsistent definition of amplitude')
             self.amplitude = np.ravel(np.array(amplitude))
         self.type = 'event'
         self.n_conditions = len(np.unique(self.con_id))
@@ -108,7 +108,7 @@ class EventRelatedParadigm(Paradigm):
         Parameters
         ----------
         con_id: array of shape (n_events), type = string, optional
-               id of the events (name of the exprimental condition)
+               id of the events (name of the experimental condition)
         onset: array of shape (n_events), type = float, optional
                onset time (in s.) of the events
         amplitude: array of shape (n_events), type = float, optional,
@@ -126,7 +126,7 @@ class BlockParadigm(Paradigm):
         Parameters
         ----------
         con_id: array of shape (n_events), type = string, optional
-               id of the events (name of the exprimental condition)
+               id of the events (name of the experimental condition)
         onset: array of shape (n_events), type = float, optional
                onset time (in s.) of the events
         amplitude: array of shape (n_events), type = float, optional,
@@ -137,14 +137,14 @@ class BlockParadigm(Paradigm):
         self.type = 'block'
         if duration is not None:
             if len(duration) != self.n_events:
-                raise ValueError('inconsistant definition of duration')
+                raise ValueError('inconsistent definition of duration')
             self.duration = np.ravel(np.array(duration))
 
 
 def load_protocol_from_csv_file(path, session=None):
     """
     Read a (.csv) paradigm file consisting of values yielding
-    (occurence time, (duration), event ID, modulation)
+    (occurrence time, (duration), event ID, modulation)
     and returns a paradigm instance or a dictionary of paradigm instances
 
     Parameters

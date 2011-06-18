@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Tis module implements fMRI Design Matrix creation.
+This module implements fMRI Design Matrix creation.
 The DesignMatrix object is just a container that represents the design matrix.
 Computations of the different parts of the design matrix are confined
 to the make_dmtx() function, that instantiates the DesignMatrix object.
@@ -10,10 +10,10 @@ All the remainder are just ancillary functions.
 Design matrices contain three different types of regressors:
 1. Task-related regressors, that result from the convolution
 of the experimental paradigm regressors with hemodynamic models
-2. User-specified regressors, that represent infomation available on the data,
-e.g. motion parameters, physiological data resmapled at the acqusition rate,
-or sinusoidal regressors that model the signal at a fresuency of interest.
-3. Drift regressors, that represnet low_frequency phenomena of no interest
+2. User-specified regressors, that represent information available on the data,
+e.g. motion parameters, physiological data resampled at the acquisition rate,
+or sinusoidal regressors that model the signal at a frequency of interest.
+3. Drift regressors, that represent low_frequency phenomena of no interest
 in the data; they need to be included to reduce variance estimates.
 
 Author: Bertrand Thirion, 2009-2011
@@ -36,7 +36,7 @@ def _poly_drift(order, frametimes):
     ----------
     order, int, number of polynomials in the drift model
     tmax, float maximal time value used in the sequence
-          this is used to normalize porperly the columns
+          this is used to normalize properly the columns
 
     Returns
     -------
@@ -97,7 +97,7 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
     frametimes: array of shape(n_scans),
                 list of values representing the desired TRs
     order: int, optional,
-           order of the dirft model (in case it is polynomial)
+           order of the drift model (in case it is polynomial)
     hfcut: float, optional,
            frequency cut in case of a cosine model
 
@@ -130,8 +130,8 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
     paradigm: paradigm instance
     hrf_model: string that can be 'Canonical',
                'Canonical With Derivative' or 'FIR'
-               that specifies the hemodynamic reponse function
-    frametimes: array od shape(n_scans)
+               that specifies the hemodynamic response function
+    frametimes: array of shape(n_scans)
                 the targeted timing for the design matrix
     fir_delays=[0], optional, array of shape(nb_onsets) or list
                     in case of FIR design, yields the array of delays
@@ -181,12 +181,12 @@ def _full_rank(X, cmax=1e15):
 
     Parameters
     ----------
-    X: array of shape(nrows,ncols)
+    X: array of shape(nrows, ncols)
     cmax=1.e-15, float tolerance for condition number
 
     Returns
     -------
-    X: array of shape(nrows,ncols) after regularization
+    X: array of shape(nrows, ncols) after regularization
     cmax=1.e-15, float tolerance for condition number
     """
     U, s, V = np.linalg.svd(X, 0)
@@ -207,15 +207,15 @@ def _full_rank(X, cmax=1e15):
 
 
 class DesignMatrix():
-    """ This is a conteneur for a light-weight class for design matrices
-    This class is only used to make IO and vizualization
+    """ This is a container for a light-weight class for design matrices
+    This class is only used to make IO and visualization
 
     Class members
     -------------
     matrix: array of shape(n_scans, n_regressors),
             the numerical specification of the matrix
     names: list of len (n_regressors);
-           the names asociated with the columns
+           the names associated with the columns
     frametimes: array of shape(n_scans), optional,
                 the occurrence time of the matrix rows
     """
@@ -238,7 +238,7 @@ class DesignMatrix():
         self.names = names
 
     def write_csv(self, path):
-        """ write self.matrix as a csv file with apropriate column names
+        """ write self.matrix as a csv file with appropriate column names
 
         Parameters
         ----------
@@ -256,7 +256,7 @@ class DesignMatrix():
         fid.close()
 
     def show(self, rescale=True, ax=None):
-        """Vizualization of a design matrix
+        """Visualization of a design matrix
 
         Parameters
         ----------
@@ -296,9 +296,9 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='Canonical',
     ----------
     frametimes: array of shape(nbframes), the timing of the scans
     paradigm: Paradigm instance, optional
-              descritpion of the experimental paradigm
+              description of the experimental paradigm
     hrf_model: string, optional,
-               that specifies the hemodynamic reponse function
+               that specifies the hemodynamic response function
                it can be 'Canonical', 'Canonical With Derivative' or 'FIR'
     drift_model: string, optional
                  specifies the desired drift model,
@@ -306,7 +306,7 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='Canonical',
     hfcut: float, optional
            cut frequency of the low-pass filter
     drift_order: int, optional
-                 order of the dirft model (in case it is polynomial)
+                 order of the drift model (in case it is polynomial)
     fir_delays: array of shape(nb_onsets) or list, optional,
                 in case of FIR design, yields the array of delays
                 used in the FIR model
@@ -406,7 +406,7 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
 
     Parameters
     ----------
-    see dmtx, plus
+    see make_dmtx, plus
     path: string, optional: a path to write the output
 
     Returns

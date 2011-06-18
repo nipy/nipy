@@ -48,7 +48,7 @@ def block_paradigm():
     return paradigm
 
 def write_paradigm(paradigm, session):
-    """Function to write a paradigm to a file and retrn the address
+    """Function to write a paradigm to a file and return the address
     """
     import tempfile
     csvfile = tempfile.mkdtemp() + '/paradigm.csv'

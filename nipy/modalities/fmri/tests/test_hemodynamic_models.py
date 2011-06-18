@@ -9,14 +9,14 @@ from ..hemodynamic_models import (
 
 
 def test_spm_hrf():
-    """ test that the spm_hrf is coorectly normalise and has coorect length
+    """ test that the spm_hrf is correctly normalized and has correct length
     """
     h = spm_hrf(2.0)
     assert_almost_equal(h.sum(), 1)
     assert len(h) == 256
 
 def test_spm_hrf_derivative():
-    """ test that the spm_hrf is coorectly normalise and has coorect length
+    """ test that the spm_hrf is correctly normalized and has correct length
     """
     h = spm_time_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
@@ -26,14 +26,14 @@ def test_spm_hrf_derivative():
     assert len(h) == 256
 
 def test_glover_hrf():
-    """ test that the spm_hrf is coorectly normalise and has coorect length
+    """ test that the spm_hrf is correctly normalized and has correct length
     """
     h = glover_hrf(2.0)
     assert_almost_equal(h.sum(), 1)
     assert len(h) == 256
 
 def test_glover_time_derivative():
-    """ test that the spm_hrf is coorectly normalise and has coorect length
+    """ test that the spm_hrf is correctly normalized and has correct length
     """
     h = glover_time_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
@@ -56,7 +56,7 @@ def test_resample_regressor_nl():
     assert_almost_equal(z, np.cos(y), decimal=2)
 
 def test_orthogonalize():
-    """ test that the ortogonalization is OK 
+    """ test that the orthogonalization is OK 
     """
     X = np.random.randn(100, 5)
     X = _orthogonalize(X)
@@ -65,7 +65,7 @@ def test_orthogonalize():
     assert (K ** 2).sum() < 1.e-16
 
 def test_orthogonalize_trivial():
-    """ test that the ortogonalization is OK 
+    """ test that the orthogonalization is OK 
     """
     X = np.random.randn(100)
     Y = X.copy()
