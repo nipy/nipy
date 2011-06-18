@@ -19,7 +19,8 @@ import os.path as op
 import matplotlib.pylab as mp
 
 from nibabel import load, Nifti1Image
-import nipy.labs.utils.design_matrix as dm
+from nipy.modalities.fmri.design_matrix import dmtx_light
+from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
 from nipy.labs.utils.simul_multisubject_fmri_dataset import \
     surrogate_4d_dataset
 import get_data_light
@@ -59,10 +60,10 @@ swd = '/tmp'
 ########################################
 
 paradigm = np.vstack(([conditions, onsets])).T
-paradigm = dm.EventRelatedParadigm(conditions, onsets)
-X, names = dm.dmtx_light(frametimes, paradigm, drift_model='Cosine', hfcut=128,
-               hrf_model=hrf_model, add_regs=motion,
-               add_reg_names=add_reg_names)
+paradigm = EventRelatedParadigm(conditions, onsets)
+X, names = dmtx_light(frametimes, paradigm, drift_model='Cosine', hfcut=128,
+                      hrf_model=hrf_model, add_regs=motion,
+                      add_reg_names=add_reg_names)
 
 
 #######################################
@@ -175,20 +176,20 @@ for k in range(my_roi.k):
 ############################################
 
 fir_order = 6
-X_fir,name_dir = dm.dmtx_light(
+X_fir,name_dir = dmtx_light(
     frametimes, paradigm, hrf_model='FIR', drift_model='Cosine', drift_order=3,
-    fir_delays = tr*np.arange(fir_order), fir_duration=tr, add_regs=motion,
+    fir_delays=tr * np.arange(fir_order), add_regs=motion,
     add_reg_names=add_reg_names)
 glm.fit(ROI_tc.T, X_fir, method=method, model=model)
 
 mp.figure()
 for k in range(my_roi.k):
-    mp.subplot(my_roi.k, 1, k+1)
-    var = np.diag(glm.nvbeta[:,:,k])*glm.s2[k]
-    mp.errorbar(np.arange(fir_order), glm.beta[:fir_order,k],
+    mp.subplot(my_roi.k, 1, k + 1)
+    var = np.diag(glm.nvbeta[:,:,k]) * glm.s2[k]
+    mp.errorbar(np.arange(fir_order), glm.beta[:fir_order, k],
                 yerr=np.sqrt(var[:fir_order]))
-    mp.errorbar(np.arange(fir_order), glm.beta[fir_order:2*fir_order,k],
-                yerr=np.sqrt(var[fir_order:2*fir_order]))
+    mp.errorbar(np.arange(fir_order), glm.beta[fir_order:2 * fir_order, k],
+                yerr=np.sqrt(var[fir_order:2 * fir_order]))
     mp.legend(('condition c0','condition c1'))
     mp.title('estimated hrf shape')
     mp.xlabel('time(scans)')

@@ -25,12 +25,14 @@ import scipy.stats as st
 
 from nipy.labs import compute_mask_files
 from nibabel import load, save, Nifti1Image
-import get_data_light
-import nipy.labs.glm
-import nipy.labs.utils.design_matrix as dm
+
+from nipy.modalities.fmri.design_matrix import make_dmtx
+from nipy.modalities.fmri.experimental_paradigm import \
+    load_protocol_from_csv_file
 from nipy.labs.viz import plot_map, cm
 from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
 
+import get_data_light
 
 #######################################
 # Data and analysis parameters
@@ -48,7 +50,7 @@ n_scans = 128
 tr = 2.4
 
 # paradigm
-frametimes = np.linspace(0, (n_scans-1)*tr, n_scans)
+frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
 conditions = [ 'damier_H', 'damier_V', 'clicDaudio', 'clicGaudio', 
 'clicDvideo', 'clicGvideo', 'calculaudio', 'calculvideo', 'phrasevideo', 
 'phraseaudio' ]
@@ -67,17 +69,18 @@ print 'Computation will be performed in temporary directory: %s' % swd
 ########################################
 
 print 'Loading design matrix...'
-paradigm = dm.load_protocol_from_csv_file(paradigm_file, session=0)
 
-design_matrix = dm.DesignMatrix( frametimes, paradigm, hrf_model=hrf_model,
-                                 drift_model=drift_model, hfcut=hfcut)
+paradigm = load_protocol_from_csv_file(paradigm_file).values()[0]
+
+design_matrix = make_dmtx(frametimes, paradigm, hrf_model=hrf_model,
+                          drift_model=drift_model, hfcut=hfcut)
 
 ax = design_matrix.show()
 ax.set_position([.05, .25, .9, .65])
 ax.set_title('Design matrix')
 
 pylab.savefig(op.join(swd, 'design_matrix.png'))
-# design_matrix.save(...)
+# design_matrix.write_csv(...)
 
 ########################################
 # Mask the data
@@ -95,7 +98,7 @@ mask_array = compute_mask_files( data_path, mask_path, False, 0.4, 0.9)
 contrasts = {}
 contrast_id = conditions
 for i in range(len(conditions)):
-    contrasts['%s' % conditions[i]]= np.eye(len(design_matrix.names))[2*i]
+    contrasts['%s' % conditions[i]]= np.eye(len(design_matrix.names))[2 * i]
 
 # and more complex/ interesting ones
 contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\

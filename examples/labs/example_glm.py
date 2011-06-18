@@ -5,7 +5,7 @@ This is an example where
 1. An sequence of fMRI volumes are simulated
 2. A design matrix describing all the effects related to the data is computed
 3. A GLM is applied to all voxels
-4. A contarst image is created
+4. A contrast image is created
 
 Author : Bertrand Thirion, 2010
 """
@@ -16,10 +16,11 @@ import os.path as op
 import tempfile
 
 from nibabel import save, Nifti1Image
-import nipy.labs.utils.design_matrix as dm
+import nipy.modalities.fmri.design_matrix as dm
 from nipy.labs.utils.simul_multisubject_fmri_dataset import \
      surrogate_4d_dataset
 import nipy.labs.glm as GLM
+from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
 
 #######################################
 # Simulation parameters
@@ -48,10 +49,10 @@ swd = tempfile.mkdtemp()
 # Design matrix
 ########################################
 
-paradigm = dm.EventRelatedParadigm(conditions, onsets)
+paradigm = EventRelatedParadigm(conditions, onsets)
 X, names = dm.dmtx_light(frametimes, paradigm, drift_model='Cosine', hfcut=128,
-               hrf_model=hrf_model, add_regs=motion,
-               add_reg_names=add_reg_names)
+                         hrf_model=hrf_model, add_regs=motion,
+                         add_reg_names=add_reg_names)
 
 
 #######################################
