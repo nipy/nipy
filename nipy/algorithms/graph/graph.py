@@ -399,7 +399,8 @@ def eps_nn(X, eps=1.):
     if np.isinf(eps):
         raise ValueError('eps is inf')
     dist = euclidean_distance(X)
-    dist = dist * (dist < eps)
+    dist = np.maximum(dist, 1.e-16)
+    dist[dist >= eps] = 0
 
     # this would is just for numerical reasons
     dist -= np.diag(np.diag(dist))
