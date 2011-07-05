@@ -40,7 +40,7 @@ def detsh(H):
 
     Returns
     -------
-    dh, float, the detrminant
+    dh: float, the detrminant
     """
     return np.prod(eigvalsh(H))
 
@@ -288,7 +288,7 @@ def dkl_wishart(a1, B1, a2, B2):
 
     Returns
     -------
-    dkl, Float, the Kullback-Leibler divergence
+    dkl: float, the Kullback-Leibler divergence
     """
     from scipy.special import psi, gammaln
     tiny = 1.e-15
@@ -378,7 +378,7 @@ class BGMM(GMM):
 
     fixme
     -----
-    only 'full' preicsion is supported
+    only 'full' precision is supported
     """
 
     def __init__(self, k=1, dim=1, means=None, precisions=None,
@@ -516,7 +516,7 @@ class BGMM(GMM):
 
     def update_weights(self, z):
         """
-        Given the allocation vector z, resmaple the weights parameter
+        Given the allocation vector z, resample the weights parameter
 
         Parameters
         ----------
