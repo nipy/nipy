@@ -40,7 +40,7 @@ def detsh(H):
 
     Returns
     -------
-    dh: float, the detrminant
+    dh: float, the determinant
     """
     return np.prod(eigvalsh(H))
 
