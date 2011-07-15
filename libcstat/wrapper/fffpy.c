@@ -129,11 +129,12 @@ fff_vector* fff_vector_fromPyArray(const PyArrayObject* x)
 */ 
 PyArrayObject* fff_vector_toPyArray(fff_vector* y) 
 {
+  PyArrayObject* x; 
+  size_t size;
+  npy_intp dims[1]; 
    if (y == NULL) 
     return NULL;
-  PyArrayObject* x; 
-  size_t size = y->size;
-  npy_intp dims[1]; 
+   size = y->size;
 
   dims[0] = (npy_intp) size;  
  
@@ -181,6 +182,8 @@ PyArrayObject* fff_vector_const_toPyArray(const fff_vector* y)
 fff_matrix* fff_matrix_fromPyArray(const PyArrayObject* x) 
 {
   fff_matrix* y;
+  npy_intp dim[2];
+  PyArrayObject* xd;
 
   /* Check that the input object is a two-dimensional array */ 
   if (PyArray_NDIM(x) != 2) {
@@ -206,8 +209,10 @@ fff_matrix* fff_matrix_fromPyArray(const PyArrayObject* x)
   else {
     size_t dim0 = PyArray_DIM(x,0), dim1 = PyArray_DIM(x,1);
     y = fff_matrix_new((size_t)dim0, (size_t)dim1); 
-    npy_intp dim[2] = {dim0, dim1}; 
-    PyArrayObject* xd = (PyArrayObject*) PyArray_SimpleNewFromData(2, dim, NPY_DOUBLE, (void*)y->data);
+    dim[0] = dim0;  
+    dim[1] = dim1;
+
+    xd = (PyArrayObject*) PyArray_SimpleNewFromData(2, dim, NPY_DOUBLE, (void*)y->data);
     PyArray_CastTo(xd, (PyArrayObject*)x); 
     Py_XDECREF(xd);
   }
@@ -223,13 +228,16 @@ fff_matrix* fff_matrix_fromPyArray(const PyArrayObject* x)
 */ 
 PyArrayObject* fff_matrix_toPyArray(fff_matrix* y) 
 {
+  PyArrayObject* x; 
+  size_t size1;
+  size_t size2;
+  size_t tda;
+  npy_intp dims[2]; 
   if (y == NULL) 
     return NULL;
-  PyArrayObject* x; 
-  size_t size1 = y->size1;
-  size_t size2 = y->size2;
-  size_t tda = y->tda; 
-  npy_intp dims[2]; 
+  size1 = y->size1;
+  size2 = y->size2;
+  tda = y->tda; 
 
   dims[0] = (npy_intp) size1;  
   dims[1] = (npy_intp) size2;  
@@ -428,12 +436,16 @@ fff_array* fff_array_fromPyArray(const PyArrayObject* x)
 
 PyArrayObject* fff_array_toPyArray(fff_array* y) 
 {
-  if (y == NULL) 
-    return NULL;
   PyArrayObject* x; 
-  npy_intp dims[4] = {y->dimX, y->dimY, y->dimZ, y->dimT};
+  npy_intp dims[4];
   int datatype; 
   fff_array* yy;
+  if (y == NULL) 
+    return NULL;
+  dims[0] = y->dimX;
+  dims[1] = y->dimY;
+  dims[2] = y->dimZ;
+  dims[3] = y->dimT;
 
   /* Match data type */
   datatype = fff_datatype_toNumPy(y->datatype); 
