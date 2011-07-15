@@ -11,6 +11,9 @@
 #define UROUND(a) ((int)(a+0.5))
 #define ROUND(a)(FLOOR(a+0.5))
 
+#ifdef _WIN32
+#define inline __inline
+#endif
 
 static inline void _pv_interpolation(unsigned int i, 
 				     double* H, unsigned int clampJ, 

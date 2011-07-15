@@ -35,11 +35,7 @@ extern "C" {
 #ifdef NO_APPEND_FORTRAN
 # define FFF_FNAME(x) x
 #else
-#ifdef _MSC_VER /* _WIN32 */
-# define FFF_FNAME(x) x
-#else
 # define FFF_FNAME(x) x##_
-#endif
 #endif 
 
 
