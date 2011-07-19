@@ -153,8 +153,9 @@ class Graph(object):
             from scipy.sparse import cs_graph_components
             _, label = cs_graph_components(self.adjacency())
         except:
-            lil = self.to_coo_matrix().tolil().rows.tolist()
-            label = lil_cc(lil)
+            pass
+        lil = self.to_coo_matrix().tolil().rows.tolist()
+        label = lil_cc(lil)
         return label
 
     def degrees(self):
