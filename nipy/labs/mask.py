@@ -362,6 +362,8 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         smooth: False or float, optional
             If smooth is not False, it gives the size, in voxel of the
             spatial smoothing to apply to the signal.
+            This size is a Gaussian 'sigma' parameter, multiply it by
+            sqrt(8 * log(2)) ~ 2.35 to have a FWHM.
         
         Returns
         --------
@@ -374,6 +376,9 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         'filenames should be a file name or a list of file names, '
         '%s (type %s) was passed' % (filenames, type(filenames)))
     mask = mask.astype(np.bool)
+    if smooth:
+        # Convert from a sigma to a FWHM:
+        smooth /= np.sqrt(8 * np.log(2))
     if isinstance(filenames, basestring):
         # We have a 4D nifti file
         data_file = load(filenames)
@@ -384,8 +389,8 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         if isinstance(series, np.memmap):
             series = np.asarray(series).copy()
         if smooth:
-            smooth_sigma = np.abs(
-                            np.dot(linalg.inv(affine), np.ones(3))*smooth)
+            vox_size = np.sqrt(np.sum(affine **2, axis=0))
+            smooth_sigma = smooth / vox_size
             for this_volume in np.rollaxis(series, -1):
                 this_volume[...] = ndimage.gaussian_filter(this_volume,
                                                         smooth_sigma)
@@ -398,8 +403,8 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
             data = data_file.get_data()
             if smooth:
                 affine = data_file.get_affine()[:3, :3]
-                smooth_sigma = np.abs(
-                            np.dot(linalg.inv(affine), np.ones(3))*smooth)
+                vox_size = np.sqrt(np.sum(affine **2, axis=0))
+                smooth_sigma = smooth / vox_size
                 data = ndimage.gaussian_filter(data, smooth_sigma)
                 
             series[:, index] = data[mask].astype(dtype)
