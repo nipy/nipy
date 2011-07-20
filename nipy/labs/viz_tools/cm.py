@@ -135,9 +135,11 @@ _cmaps_data = dict(
     black_green  = _rotate_cmap(_cm.hot,
                             swap_order=('red', 'blue', 'green')),
     black_red    = _cm.hot._segmentdata.copy(),
-    ocean_hot    = _concat_cmap(_cm.ocean, _cm.hot_r),
 )
 
+if hasattr(_cm, 'ocean'):
+    # MPL 0.99 doesn't have Ocean
+    _cmaps_data['ocean_hot'] =  _concat_cmap(_cm.ocean, _cm.hot_r)
 
 
 ################################################################################
