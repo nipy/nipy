@@ -362,8 +362,6 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         smooth: False or float, optional
             If smooth is not False, it gives the size, in voxel of the
             spatial smoothing to apply to the signal.
-            This size is a Gaussian 'sigma' parameter, multiply it by
-            sqrt(8 * log(2)) ~ 2.35 to have a FWHM.
         
         Returns
         --------
