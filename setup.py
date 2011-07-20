@@ -59,8 +59,18 @@ package_check('scipy', INFO_VARS['SCIPY_MIN_VERSION'])
 package_check('nibabel', INFO_VARS['NIBABEL_MIN_VERSION'])
 package_check('sympy', INFO_VARS['SYMPY_MIN_VERSION'])
 def _mayavi_version(pkg_name):
-    from enthought.mayavi import version
-    return version.version
+    """Mayavi2 pruned enthought. namespace at 4.0.0
+    """
+    v = ''
+    try:
+        from mayavi import version
+        v = version.version
+        if v == '':
+            v = '4.0.0' # must be the one in Debian
+    except ImportError:
+        from enthought.mayavi import version
+        v = version.version
+    return v
 package_check('mayavi',
               INFO_VARS['MAYAVI_MIN_VERSION'],
               optional=True,
