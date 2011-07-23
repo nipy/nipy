@@ -178,11 +178,15 @@ cpdef double mu2_tri(double D00, double D01, double D02,
   -------
   mu2 : float
   """
-  cdef double C00, C01, C11
+  cdef double C00, C01, C11, L
   C00 = D11 - 2*D01 + D00
   C01 = D12 - D01 - D02 + D00
   C11 = D22 - 2*D02 + D00
-  return sqrt((C00 * C11 - C01 * C01)) * 0.5
+  L = C00 * C11 - C01 * C01
+  # Negative area appeared to result from floating point errors on PPC
+  if L < 0:
+      return 0.0
+  return sqrt(L) * 0.5
 
 
 cpdef double mu1_tri(double D00, double D01, double D02,
