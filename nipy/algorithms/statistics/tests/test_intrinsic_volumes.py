@@ -154,25 +154,25 @@ def test_lips1_disjoint():
 
 def test_lips2_disjoint():
     phi = intvol.Lips2d
-
     box1, box2, edge1, edge2 = nonintersecting_boxes((40,40))
     c = np.indices((40,40)).astype(np.float)
     d = np.random.standard_normal((40,40,40))
-
     U = randorth(p=6)[0:2]
     e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
-
-    yield assert_almost_equal, phi(c, box1 + box2), phi(c, box1) + \
-        phi(c, box2)
-    yield assert_almost_equal, phi(d, box1 + box2), phi(d, box1) + \
-        phi(d, box2)
-    yield assert_almost_equal, phi(e, box1 + box2), phi(e, box1) + \
-        phi(e, box2)
-    yield assert_almost_equal, phi(e, box1 + box2), phi(c, box1 + box2) 
-    yield assert_almost_equal, phi(e, box1 + box2), \
-        (np.array([elsym([e[1]-e[0]-1 for e in edge1], i) for i in range(3)]) +
-         np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(3)]))
+    assert_almost_equal(phi(c, box1 + box2),
+                        phi(c, box1) + phi(c, box2))
+    assert_almost_equal(phi(d, box1 + box2),
+                        phi(d, box1) + phi(d, box2))
+    assert_almost_equal(phi(e, box1 + box2),
+                        phi(e, box1) + phi(e, box2))
+    assert_almost_equal(phi(e, box1 + box2), phi(c, box1 + box2))
+    assert_almost_equal(phi(e, box1 + box2),
+                        np.array([elsym([e[1]-e[0]-1 for e in edge1], i)
+                                   for i in range(3)]) +
+                        np.array([elsym([e[1]-e[0]-1 for e in edge2], i)
+                                  for i in range(3)])
+                       )
 
 
 @parametric
