@@ -121,6 +121,28 @@ from nipy.fixes.sympy.utilities.lambdify import (implemented_function,
                                                  lambdify)
 
 
+def _make_dummy(name):
+    """ Make dummy variable of given name
+
+    Parameters
+    ----------
+    name : str
+        name of dummy variable
+
+    Returns
+    -------
+    dum : `Dummy` instance
+
+    Notes
+    -----
+    The interface to Dummy changed between 0.6.7 and 0.7.0
+    """
+    from distutils.version import LooseVersion
+    if LooseVersion(sympy.__version__) >= LooseVersion('0.7.0'):
+        return sympy.Dummy(name)
+    return sympy.Symbol(name, dummy=True)
+
+
 def define(*args, **kwargs):
     # Moved to utils module
     import warnings
@@ -438,9 +460,8 @@ class Formula(object):
                     "variables in front.")
 
     def _getdiff(self):
-        p = list(set(getparams(self.mean)))
-        p.sort()
-        return [s.doit() for s in sympy.diff(self.mean, p)]
+        params = sorted(list(set(getparams(self.mean))))
+        return [sympy.diff(self.mean, p).doit() for p in params]
     design_expr = property(_getdiff)
 
     def _getdtype(self):
@@ -656,7 +677,7 @@ class Formula(object):
         params = getparams(self.design_expr)
         newparams = []
         for i, p in enumerate(params):
-            newp = sympy.Symbol("__p%d__" % (i + random_offset), dummy=True)
+            newp = _make_dummy("__p%d__" % (i + random_offset))
             for j, _ in enumerate(d):
                 d[j] = d[j].subs(p, newp)
             newparams.append(newp)
@@ -670,7 +691,7 @@ class Formula(object):
         # ``d`` here is list giving the differentiation of the
         # expression for the mean.  self._f(...) therefore also returns
         # a list
-        self._f = lambdify(newparams + newterms, d)
+        self._f = lambdify(newparams + newterms, d, ("numpy"))
 
         # The input to self.design will be a recarray of that must 
         # have field names that the Formula will expect to see.
@@ -1183,8 +1204,7 @@ class RandomEffects(Formula):
 
         self._counter = 0
         if sigma is None:
-            self.sigma = np.diag([sympy.Symbol('s2_%d' % i, dummy=True) for i in 
-                                  range(q)])
+            self.sigma = np.diag([_make_dummy('s2_%d' % i) for i in range(q)])
         else:
             self.sigma = sigma
         if self.sigma.shape != (q,q):
