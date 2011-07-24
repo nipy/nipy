@@ -1,6 +1,6 @@
 
 Plotting of activation maps
-=====================================
+===========================
 
 .. currentmodule:: nipy.labs.viz_tools.activation_maps
 
@@ -18,13 +18,13 @@ a summary of the output of a calculation.
 
 .. _Mayavi2: http://code.enthought.com/projects/mayavi
 
-.. warning:: 
+.. warning::
 
     The content of the module will change over time, as neuroimaging
     volumetric data structures are used instead of plain numpy arrays.
 
 An example
------------
+----------
 
 ::
 
@@ -34,12 +34,12 @@ An example
     # a large rectangle of activation around Broca Area
     import numpy as np
     mni_sform_inv = np.linalg.inv(mni_sform)
-    # Color a asymetric rectangle around Broca area:
+    # Color an asymmetric rectangle around Broca area:
     x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
     map = np.zeros((182, 218, 182))
     map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
-    
+
     # We use a masked array to add transparency to the parts that we are
     # not interested in:
     thresholded_map = np.ma.masked_less(map, 0.5)
@@ -51,16 +51,16 @@ This creates the following image:
 
 .. image:: viz.png
 
-The same plot can be obtained fully automaticaly, by letting
-:func:`plot_map` find the activation threshold and the cut coordinnates::
+The same plot can be obtained fully automatically, by letting
+:func:`plot_map` find the activation threshold and the cut coordinates::
 
-    auto_plot_map(map, mni_sform, threshold='auto')
+    plot_map(map, mni_sform, threshold='auto')
 
 In this simple example, the code will easily detect the bar as activation
 and position the cut at the center of the bar.
 
 `nipy.labs.viz` functions
--------------------------------------------------
+-------------------------
 
 .. autosummary::
     :toctree: generated
@@ -69,12 +69,12 @@ and position the cut at the center of the bar.
 
 
 3D plotting utilities
----------------------------
+---------------------
 
 .. currentmodule:: nipy.labs.viz_tools.maps_3d
 
 The module :mod:`nipy.labs.viz3d` can be used as helpers to
-represent neuroimaging volumes with Mayavi2_. 
+represent neuroimaging volumes with Mayavi2_.
 
 .. autosummary::
     :toctree: generated
@@ -82,8 +82,8 @@ represent neuroimaging volumes with Mayavi2_.
     plot_map_3d
     plot_anat_3d
 
-More versalite visualizations, the core idea is that given a 3D map
-and an affine, the data is exposed in Mayavi as a volumic source, with
+For more versatile visualizations the core idea is that given a 3D map
+and an affine, the data is exposed in Mayavi as a volumetric source, with
 world space coordinates corresponding to figure coordinates.
 Visualization modules can be applied on this data source as explained in
 the `Mayavi manual
