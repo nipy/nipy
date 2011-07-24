@@ -25,7 +25,9 @@ import get_data_light
 #get_data_light.get_it()
 
 data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data'))
-input_image = op.join(data_dir,'spmT_0029.nii.gz')
+input_image = op.join(data_dir, 'spmT_0029.nii.gz')
+if op.exists(input_image) == False:
+    get_data_light.get_it()
 swd = tempfile.mkdtemp()
 
 # parameters

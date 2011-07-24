@@ -14,8 +14,7 @@ import matplotlib.pylab as mp
 from nibabel import load, save, Nifti1Image
 
 import nipy.labs.spatial_models.mroi as mroi
-from nipy.labs.spatial_models.discrete_domain import \
-     grid_domain_from_image, NDGridDomain 
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
 import nipy.labs.spatial_models.hroi as hroi
 
 import get_data_light
@@ -26,7 +25,9 @@ import tempfile
 data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
 input_image = os.path.join(data_dir,'spmT_0029.nii.gz')
 mask_image = os.path.join(data_dir,'mask.nii.gz')
-#get_data_light.get_it()
+if (os.path.exists(input_image) == False) or (
+    os.path.exists(mask_image) == False):
+    get_data_light.get_it()
 
 # write dir
 swd = tempfile.mkdtemp()
