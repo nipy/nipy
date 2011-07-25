@@ -37,9 +37,9 @@ nn = 6
 write_dir = tempfile.mkdtemp()
 verbose = 1
 
-lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'gkm', 
+lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'gkm',
                             write_dir, mu, verbose)
-lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'ward', 
+lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'ward',
                             write_dir, mu, verbose)
-lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'ward_and_gkm', 
+lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'ward_and_gkm',
                             write_dir, mu, verbose)

@@ -51,9 +51,9 @@ tr = 2.4
 
 # paradigm
 frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
-conditions = [ 'damier_H', 'damier_V', 'clicDaudio', 'clicGaudio', 
-'clicDvideo', 'clicGvideo', 'calculaudio', 'calculvideo', 'phrasevideo', 
-'phraseaudio' ]
+conditions = ['damier_H', 'damier_V', 'clicDaudio', 'clicGaudio', 'clicDvideo',
+              'clicGvideo', 'calculaudio', 'calculvideo', 'phrasevideo',
+              'phraseaudio']
 
 # confounds
 hrf_model = 'Canonical With Derivative'
@@ -87,8 +87,8 @@ pylab.savefig(op.join(swd, 'design_matrix.png'))
 ########################################
 
 print 'Computing a brain mask...'
-mask_path = op.join(swd, 'mask.nii') 
-mask_array = compute_mask_files( data_path, mask_path, False, 0.4, 0.9)
+mask_path = op.join(swd, 'mask.nii')
+mask_array = compute_mask_files(data_path, mask_path, False, 0.4, 0.9)
 
 #########################################
 # Specify the contrasts
@@ -98,7 +98,7 @@ mask_array = compute_mask_files( data_path, mask_path, False, 0.4, 0.9)
 contrasts = {}
 contrast_id = conditions
 for i in range(len(conditions)):
-    contrasts['%s' % conditions[i]]= np.eye(len(design_matrix.names))[2 * i]
+    contrasts['%s' % conditions[i]] = np.eye(len(design_matrix.names))[2 * i]
 
 # and more complex/ interesting ones
 contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\
@@ -106,18 +106,18 @@ contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\
 contrasts["video"] = contrasts["clicDvideo"] + contrasts["clicGvideo"] + \
                      contrasts["calculvideo"] + contrasts["phrasevideo"]
 contrasts["left"] = contrasts["clicGaudio"] + contrasts["clicGvideo"]
-contrasts["right"] = contrasts["clicDaudio"] + contrasts["clicDvideo"] 
-contrasts["computation"] = contrasts["calculaudio"] +contrasts["calculvideo"]
+contrasts["right"] = contrasts["clicDaudio"] + contrasts["clicDvideo"]
+contrasts["computation"] = contrasts["calculaudio"] + contrasts["calculvideo"]
 contrasts["sentences"] = contrasts["phraseaudio"] + contrasts["phrasevideo"]
 contrasts["H-V"] = contrasts["damier_H"] - contrasts["damier_V"]
-contrasts["V-H"] =contrasts["damier_V"] - contrasts["damier_H"]
+contrasts["V-H"] = contrasts["damier_V"] - contrasts["damier_H"]
 contrasts["left-right"] = contrasts["left"] - contrasts["right"]
 contrasts["right-left"] = contrasts["right"] - contrasts["left"]
 contrasts["audio-video"] = contrasts["audio"] - contrasts["video"]
 contrasts["video-audio"] = contrasts["video"] - contrasts["audio"]
 contrasts["computation-sentences"] = contrasts["computation"] -  \
                                      contrasts["sentences"]
-contrasts["reading-visual"] = contrasts["sentences"]*2 - \
+contrasts["reading-visual"] = contrasts["sentences"] * 2 - \
                               contrasts["damier_H"] - contrasts["damier_V"]
 
 output = {}
@@ -151,7 +151,7 @@ for val in np.unique(ar1):
     m = ARModel(X, val)
     d = Y[armask]
     results = m.fit(d.T)
-    
+
     # Output the results for each contrast
     for (contrast_id, contrast_val) in contrasts.items():
         resT = results.Tcontrast(contrast_val)
@@ -165,46 +165,44 @@ for val in np.unique(ar1):
 
 print 'Computing contrasts...'
 for index, contrast_id in enumerate(contrasts):
-    print '  Contrast % 2i out of %i: %s' % (index+1, 
-                                             len(contrasts), contrast_id)
-    contrast_path = op.join(swd, '%s_z_map.nii'% contrast_id)
+    print '  Contrast % 2i out of %i: %s' % (
+        index + 1, len(contrasts), contrast_id)
+    contrast_path = op.join(swd, '%s_z_map.nii' % contrast_id)
     write_array = mask_array.astype(np.float)
-    z_values = st.norm.isf(st.t.sf(output[contrast_id]['t'],result.df_resid))
+    z_values = st.norm.isf(st.t.sf(output[contrast_id]['t'], result.df_resid))
     write_array[mask_array] = z_values
-    contrast_image = Nifti1Image(write_array, fmri_image.get_affine() )
+    contrast_image = Nifti1Image(write_array, fmri_image.get_affine())
     save(contrast_image, contrast_path)
     affine = fmri_image.get_affine()
 
-    
-    vmax = max(-write_array.min(), write_array.max())
-    plot_map(write_array, affine, 
-             cmap=cm.cold_hot, 
-             vmin=-vmax,
+    vmax = max(- write_array.min(), write_array.max())
+    plot_map(write_array, affine,
+             cmap=cm.cold_hot,
+             vmin=- vmax,
              vmax=vmax,
              anat=None,
              figure=10,
              threshold=2.5)
     pylab.savefig(op.join(swd, '%s_z_map.png' % contrast_id))
     pylab.clf()
-    
 
 
 #########################################
 # End
 #########################################
 
-print "All the  results were witten in %s" %swd
+print "All the  results were witten in %s" % swd
 
-plot_map(write_array, affine, 
+plot_map(write_array, affine,
                 cmap=cm.cold_hot,
-                vmin=-vmax,
+                vmin=- vmax,
                 vmax=vmax,
                 anat=None,
                 figure=10,
                 threshold=3)
 
 """
-plot_map(write_array, affine, 
+plot_map(write_array, affine,
                 cmap=cm.cold_hot,
                 vmin=-vmax,
                 vmax=vmax,
@@ -213,7 +211,7 @@ plot_map(write_array, affine,
                 threshold=3, do3d=True)
 
 from nipy.labs import viz3d
-viz3d.plot_map_3d(write_array, affine, 
+viz3d.plot_map_3d(write_array, affine,
                 cmap=cm.cold_hot,
                 vmin=-vmax,
                 vmax=vmax,
@@ -221,4 +219,3 @@ viz3d.plot_map_3d(write_array, affine,
                 threshold=3)
 """
 pylab.show()
-

@@ -15,10 +15,10 @@ import get_data_light
 # get the data
 data_dir = get_data_light.get_it()
 
-img     = load(os.path.join(data_dir, 'spmT_0029.nii.gz'))
-data    = img.get_data()
-affine  = img.get_affine()
+img = load(os.path.join(data_dir, 'spmT_0029.nii.gz'))
+data = img.get_data()
+affine = img.get_affine()
 
-viz.plot_map(data, affine, cut_coords=(-52, 10, 22), 
+viz.plot_map(data, affine, cut_coords=(-52, 10, 22),
                         threshold=2.0, cmap=viz.cm.cold_hot)
 pl.show()

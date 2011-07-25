@@ -25,10 +25,10 @@ verbose = 1
 theta = float(st.t.isf(0.01, 100))
 
 # paths
-data_dir = os.path.expanduser( os.path.join( '~', '.nipy', 'tests', 'data'))
+data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
 mask_image = os.path.join(data_dir, 'mask.nii.gz')
 input_image = os.path.join(data_dir, 'spmT_0029.nii.gz')
-if os.path.exists(mask_image)==False or os.path.exists(input_image)==False:
+if os.path.exists(mask_image) == False or os.path.exists(input_image) == False:
     get_data_light.get_it()
 
 # Read the mask
@@ -40,7 +40,7 @@ rbeta = load(input_image)
 beta = rbeta.get_data()
 beta = beta[mask > 0]
 
-mf = mp.figure(figsize=(13,5))
+mf = mp.figure(figsize=(13, 5))
 a1 = mp.subplot(1, 3, 1)
 a2 = mp.subplot(1, 3, 2)
 a3 = mp.subplot(1, 3, 3)
