@@ -33,15 +33,14 @@ from nipy.testing import parametric
 t = Term('t')
 
 
-@parametric
 def test_define():
     expr = sympy.exp(3*t)
-    yield assert_equal(str(expr), 'exp(3*t)')
+    assert_equal(str(expr), 'exp(3*t)')
     newf = define('f', expr)
-    yield assert_equal(str(newf), 'f(t)')
+    assert_equal(str(newf), 'f(t)')
     f = lambdify_t(newf)
     tval = np.random.standard_normal((3,))
-    yield assert_almost_equal(np.exp(3*tval), f(tval))
+    assert_almost_equal(np.exp(3*tval), f(tval))
 
 
 @parametric

@@ -10,6 +10,7 @@ import sympy
 from nipy.fixes.sympy.utilities.lambdify import implemented_function
 
 from .. import formula as F
+from ..formula import terms, Term
 
 from nipy.testing import (assert_almost_equal, assert_true,
                           assert_equal, assert_false,
@@ -18,19 +19,30 @@ from nipy.testing import (assert_almost_equal, assert_true,
 
 @parametric
 def test_terms():
-    t, = F.terms('a')
-    a, b, c = F.Term('a'), F.Term('b'), F.Term('c')
-    yield assert_equal(t, a)
-    ts = F.terms('a', 'b', 'c')
-    yield assert_equal(ts, (a, b, c))
+    t = terms('a')
+    assert_true(isinstance(t, Term))
+    a, b, c = Term('a'), Term('b'), Term('c')
+    assert_equal(t, a)
+    ts = terms(('a', 'b', 'c'))
+    assert_equal(ts, (a, b, c))
     # a string without separator chars returns one symbol.  This is the
-    # future sympy default. 
-    yield assert_equal(F.terms('abc'), [F.Term('abc')])
+    # sympy 0.7 behavior
+    assert_equal(terms('abc'), Term('abc'))
     # separators return multiple symbols
-    yield assert_equal(F.terms('a b c'), (a, b, c))
-    yield assert_equal(F.terms('a, b, c'), (a, b, c))
-    # nothing returns empty
-    yield assert_equal(F.terms(), [])
+    assert_equal(terms('a b c'), (a, b, c))
+    assert_equal(terms('a, b, c'), (a, b, c))
+    # no arg is an error
+    assert_raises(TypeError, terms)
+    # but empty arg returns empty tuple
+    assert_equal(terms(()), ())
+    # Test behavior of deprecated each_char kwarg
+    try:
+        res = terms('abc', each_char=False)
+    except TypeError:
+        return
+    assert_equal(res, Term('abc'))
+    assert_equal(terms('abc', each_char=True), (a, b, c))
+
 
 
 def test_getparams_terms():
@@ -129,14 +141,18 @@ def test_random_effects():
 
     c = F.RandomEffects(subj_factor.terms, sigma=np.array([[4,1],[1,6]]))
     C = c.cov(subj)
-    yield assert_almost_equal, C, [[4,4,4,1,1],
-                                          [4,4,4,1,1],
-                                          [4,4,4,1,1],
-                                          [1,1,1,6,6],
-                                          [1,1,1,6,6]]
-
-    a = sympy.Symbol('a')
-    b = sympy.Symbol('b')
+    assert_almost_equal(C, [[4,4,4,1,1],
+                            [4,4,4,1,1],
+                            [4,4,4,1,1],
+                            [1,1,1,6,6],
+                            [1,1,1,6,6]])
+    # Sympy 0.7.0 does not cancel 1.0 * A to A; however, the dot product in the
+    # covariance calculation returns floats, which are them multiplied by the
+    # terms to give term * 1.0, etc.  We just insert the annoying floating point
+    # here for the test, relying on sympy to do the same thing here as in the
+    # dot product
+    a = sympy.Symbol('a') * 1.0
+    b = sympy.Symbol('b') * 1.0
     c = F.RandomEffects(subj_factor.terms, sigma=np.array([[a,0],[0,b]]))
     C = c.cov(subj)
     t = np.equal(C, [[a,a,a,0,0],
@@ -144,7 +160,7 @@ def test_random_effects():
                      [a,a,a,0,0],
                      [0,0,0,b,b],
                      [0,0,0,b,b]])
-    yield assert_true, np.alltrue(t)
+    assert_true(np.alltrue(t))
 
 
 def test_design_expression():
@@ -243,7 +259,7 @@ def test_factor_getterm():
     m = fac.main_effect
     yield assert_equal, set(m.terms), set([fac['f_1']-fac['f_2']])
 
-    
+
 def test_stratify():
     fac = F.Factor('x', [2,3])
 
@@ -276,7 +292,8 @@ def test_nonlin1():
     fac = F.Factor('f', 'ab')
     f = F.Formula([sympy.exp(fac.stratify(x).mean)]) + F.I
     params = F.getparams(f.mean)
-    yield assert_equal, set([str(p) for p in params]), set(['_x0', '_x1', '_b0', '_b1'])
+    assert_equal(set([str(p) for p in params]),
+                 set(['_x0', '_x1', '_b0', '_b1']))
     test1 = set(['1',
                  'exp(_x0*f_a + _x1*f_b)',
                  '_b0*f_a*exp(_x0*f_a + _x1*f_b)',
@@ -285,7 +302,7 @@ def test_nonlin1():
                  'exp(_x0*f_a + _x1*f_b)',
                  '_b1*f_a*exp(_x0*f_a + _x1*f_b)',
                  '_b1*f_b*exp(_x0*f_a + _x1*f_b)'])
-    yield assert_true, test1 or test2
+    assert_true(test1 or test2)
     n = F.make_recarray([(2,3,'a'),(4,5,'b'),(5,6,'a')], 'xyf', ['d','d','S1'])
     p = F.make_recarray([1,2,3,4], ['_x0', '_x1', '_b0', '_b1'])
     A = f.design(n, p)
