@@ -45,7 +45,7 @@ def lambdify_t(expr):
     func : callable
        Numerical implementation of function
     '''
-    return lambdify(T, expr)
+    return lambdify(T, expr, "numpy")
 
 
 def define(name, expr):
@@ -82,7 +82,7 @@ def define(name, expr):
     28
     """
     # make numerical implementation of expression
-    v = lambdify(T, expr)
+    v = lambdify(T, expr, "numpy")
     # convert numerical implementation to sympy function
     f = implemented_function(name, v)
     # Return expression that is function of time
