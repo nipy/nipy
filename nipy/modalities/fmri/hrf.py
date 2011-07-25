@@ -54,6 +54,11 @@ True
 
 import numpy as np
 import sympy
+# backwards compatibility with sympy 0.6.x
+try:
+    sympy_abs = sympy.Abs # 0.7.0
+except AttributeError:
+    sympy_abs = sympy.abs
 
 from nipy.fixes.sympy.utilities.lambdify import implemented_function
 
@@ -123,7 +128,7 @@ glovert = lambdify_t(glover(T))
 _dgexpr = _gexpr.diff(T)
 dpos = sympy.Derivative((T >= 0), T)
 _dgexpr = _dgexpr.subs(dpos, 0)
-_dgexpr = _dgexpr / _getint(sympy.abs(_dgexpr))
+_dgexpr = _dgexpr / _getint(sympy_abs(_dgexpr))
 _dglover = lambdify_t(_dgexpr)
 dglover = implemented_function('dglover', _dglover)
 dglovert = lambdify_t(dglover(T))
