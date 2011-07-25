@@ -3,6 +3,10 @@
 #include <math.h>
 #include <stdlib.h>
 
+#ifdef _WIN32
+#define inline __inline
+#endif
+
 
 /* Numpy import */
 void mrf_import_array(void) { 

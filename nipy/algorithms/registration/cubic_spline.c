@@ -9,6 +9,9 @@
 #define FLOOR(a)((a)>0.0 ? (int)(a):(((int)(a)-a)!= 0.0 ? (int)(a)-1 : (int)(a)))  
 #define ROUND(a)(FLOOR(a+0.5))
 
+#ifdef _WIN32
+#define inline __inline
+#endif
 
 #define CUBIC_SPLINE_MIRROR(x, n, p)			\
   ((x)<0.0 ? (-(x)) : ((x)>(n) ? ((p)-(x)) : (x)))
