@@ -10,6 +10,7 @@ import sympy
 from nipy.fixes.sympy.utilities.lambdify import implemented_function
 
 from .. import formula as F
+from ..formula import terms, Term
 
 from nipy.testing import (assert_almost_equal, assert_true,
                           assert_equal, assert_false,
@@ -18,19 +19,30 @@ from nipy.testing import (assert_almost_equal, assert_true,
 
 @parametric
 def test_terms():
-    t, = F.terms('a')
-    a, b, c = F.Term('a'), F.Term('b'), F.Term('c')
-    yield assert_equal(t, a)
-    ts = F.terms('a', 'b', 'c')
-    yield assert_equal(ts, (a, b, c))
+    t = terms('a')
+    assert_true(isinstance(t, Term))
+    a, b, c = Term('a'), Term('b'), Term('c')
+    assert_equal(t, a)
+    ts = terms(('a', 'b', 'c'))
+    assert_equal(ts, (a, b, c))
     # a string without separator chars returns one symbol.  This is the
-    # future sympy default. 
-    yield assert_equal(F.terms('abc'), [F.Term('abc')])
+    # sympy 0.7 behavior
+    assert_equal(terms('abc'), Term('abc'))
     # separators return multiple symbols
-    yield assert_equal(F.terms('a b c'), (a, b, c))
-    yield assert_equal(F.terms('a, b, c'), (a, b, c))
-    # nothing returns empty
-    yield assert_equal(F.terms(), [])
+    assert_equal(terms('a b c'), (a, b, c))
+    assert_equal(terms('a, b, c'), (a, b, c))
+    # no arg is an error
+    assert_raises(TypeError, terms)
+    # but empty arg returns empty tuple
+    assert_equal(terms(()), ())
+    # Test behavior of deprecated each_char kwarg
+    try:
+        res = terms('abc', each_char=False)
+    except TypeError:
+        return
+    assert_equal(res, Term('abc'))
+    assert_equal(terms('abc', each_char=True), (a, b, c))
+
 
 
 def test_getparams_terms():
