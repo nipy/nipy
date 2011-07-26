@@ -50,7 +50,11 @@ def affine_img_src(data, affine, scale=1, name='AffineImage',
         The affine should be diagonal.
     """
     # Late import to avoid triggering wx imports before needed.
-    from enthought.mayavi.sources.api import ArraySource
+    try:
+        from mayavi.sources.api import ArraySource
+    except ImportError:
+        # Try out old install of Mayavi, with namespace packages
+        from enthought.mayavi.sources.api import ArraySource
     center = np.r_[0, 0, 0, 1]
     spacing = np.diag(affine)[:3]
     origin = np.dot(affine, center)[:3]
@@ -100,7 +104,11 @@ def m2screenshot(mayavi_fig=None, mpl_axes=None, autocrop=True):
     """
     import pylab as pl
     # Late import to avoid triggering wx imports before needed.
-    from enthought.mayavi import mlab
+    try:
+        from mayavi import mlab
+    except ImportError:
+        # Try out old install of Mayavi, with namespace packages
+        from enthought.mayavi import mlab
 
     if mayavi_fig is None:
         mayavi_fig = mlab.gcf()
@@ -131,7 +139,11 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
                  opacity=None,
                  outline_color=None):
     # Late import to avoid triggering wx imports before needed.
-    from enthought.mayavi import mlab
+    try:
+        from mayavi import mlab
+    except ImportError:
+        # Try out old install of Mayavi, with namespace packages
+        from enthought.mayavi import mlab
     fig = mlab.gcf()
     disable_render = fig.scene.disable_render
     fig.scene.disable_render = True
@@ -150,7 +162,11 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
                                         2).T.ravel()
 
     if opacity is None:
-        from enthought.tvtk.api import tvtk
+        try:
+            from tvtk.api import tvtk
+        except ImportError:
+            # Try out old install of Mayavi, with namespace packages
+            from enthought.tvtk.api import tvtk
         version = tvtk.Version()
         if (version.vtk_major_version, version.vtk_minor_version) < (5, 2):
             opacity = .99
@@ -263,11 +279,19 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
     """
     # Late import to avoid triggering wx imports before needed.
-    from enthought.mayavi import mlab
+    try:
+        from mayavi import mlab
+    except ImportError:
+        # Try out old install of Mayavi, with namespace packages
+        from enthought.mayavi import mlab
     if offscreen:
         global off_screen_engine
         if off_screen_engine is None:
-            from enthought.mayavi.core.off_screen_engine import OffScreenEngine
+            try:
+                from mayavi.core.off_screen_engine import OffScreenEngine
+            except ImportError:
+                # Try out old install of Mayavi, with namespace packages
+                from enthought.mayavi.core.off_screen_engine import OffScreenEngine
             off_screen_engine = OffScreenEngine()
         off_screen_engine.start()
         fig = mlab.figure('__private_plot_map_3d__', 
