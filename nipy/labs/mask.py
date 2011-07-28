@@ -220,10 +220,13 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     
     mask = (reference_volume >= threshold)
 
+    if opening:
+        mask = ndimage.binary_erosion(mask.astype(np.int),
+                                        iterations=2)
     if cc:
         mask = largest_cc(mask)
     if opening:
-        mask = ndimage.binary_opening(mask.astype(np.int),
+        mask = ndimage.binary_dilation(mask.astype(np.int),
                                         iterations=2)
     return mask.astype(bool)
 
