@@ -11,12 +11,13 @@ import numpy as np
 import nibabel as nib
 
 from .. import mask as nnm
-from ..mask import largest_cc, threshold_connect_components
+from ..mask import largest_cc, threshold_connect_components, \
+        series_from_mask
 
 from nipy.utils import InTemporaryDirectory
 
 from nipy.testing import assert_equal, assert_true, \
-    assert_array_almost_equal, assert_array_equal, funcfile, anatfile
+    assert_array_equal, anatfile
 
 
 def test_largest_cc():
@@ -59,6 +60,30 @@ def test_mask_files():
         yield assert_array_equal, msk1, msk2
 
 
+def test_series_from_mask():
+    """ Test the smoothing of the timeseries extraction
+    """
+    # A delta in 3D
+    data = np.zeros((40, 40, 40, 2))
+    data[20, 20, 20] = 1
+    mask = np.ones((40, 40, 40), dtype=np.bool)
+    with InTemporaryDirectory():
+        for affine in (np.eye(4), np.diag((1, 1, -1, 1)),
+                        np.diag((.5, 1, .5, 1))):
+            img = nib.Nifti1Image(data, affine)
+            nib.save(img, 'testing.nii')
+            series, header = series_from_mask('testing.nii', mask, smooth=9)
+            series = np.reshape(series[:, 0], (40, 40, 40))
+            vmax = series.max()
+            # We are expecting a full-width at half maximum of
+            # 9mm/voxel_size:
+            above_half_max = series > .5*vmax
+            for axis in (0, 1, 2):
+                proj = np.any(np.any(np.rollaxis(above_half_max,
+                                axis=axis), axis=-1), axis=-1)
+                assert_equal(proj.sum(), 9/np.abs(affine[axis, axis]))
+            
+        
 
 
 if __name__ == "__main__":
