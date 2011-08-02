@@ -81,7 +81,7 @@ REQUIRES            = ["numpy", "scipy", "sympy"]
 STATUS              = 'alpha'
 
 # versions
-NUMPY_MIN_VERSION='1.0'
+NUMPY_MIN_VERSION='1.2'
 SCIPY_MIN_VERSION = '0.5'
 NIBABEL_MIN_VERSION = '1.0'
 SYMPY_MIN_VERSION = '0.6.6'
