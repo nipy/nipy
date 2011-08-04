@@ -72,12 +72,13 @@ class NipyNoseTester(NoseTester):
         plugins += [p() for p in nose.plugins.builtin.plugins]
         return argv, plugins
 
-    def test(self, label='fast', verbose=1, extra_argv=None, doctests=False,
+    def test(self, label='fast', verbose=1, extra_argv=None, doctests=True,
              coverage=False):
         """
         Run tests for module using nose.
 
-        Identical to numpy version, but using our own TestProgram class
+        Identical to numpy version, but using our own TestProgram class, and
+        with `doctests` defaulting to True
 
         Parameters
         ----------
@@ -97,7 +98,7 @@ class NipyNoseTester(NoseTester):
         extra_argv : list, optional
             List with any extra arguments to pass to nosetests.
         doctests : bool, optional
-            If True, run doctests in module. Default is False.
+            If True, run doctests in module. Default is True
         coverage : bool, optional
             If True, report coverage of NumPy code. Default is False.
             (This requires the `coverage module:
