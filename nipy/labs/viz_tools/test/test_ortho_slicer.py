@@ -9,29 +9,25 @@ from ..ortho_slicer import demo_ortho_slicer, _edge_detect, \
 
 from ..anat_cache import find_mni_template
 
-try:
+from ....utils.optpkg import optional_package
+pl, have_mpl, _ = optional_package('pylab')
+
+if have_mpl:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
     mp.use('svg', warn=False)
-    import pylab as pl
     pl.switch_backend('svg')
-    do_test = True
-except ImportError:
-    do_test = False
 
-################################################################################
-# First some smoke testing for graphics-related code
-if do_test:
+    ###########################################################################
+    # First some smoke testing for graphics-related code
     def test_demo_ortho_slicer():
         # This is only a smoke test
         # conditioned on presence of MNI templated
         if not find_mni_template():
             raise nose.SkipTest("MNI Template is absent for the smoke test")
         mp.use('svg', warn=False)
-        import pylab as pl
         pl.switch_backend('svg')
         demo_ortho_slicer()
-
 
 
 ################################################################################
