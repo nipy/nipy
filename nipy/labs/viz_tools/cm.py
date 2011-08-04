@@ -5,8 +5,10 @@ Matplotlib colormaps useful for neuroimaging.
 """
 import numpy as _np
 
-from matplotlib import cm as _cm
-from matplotlib import colors as _colors
+# Import matplotlib - an optional package
+from ...utils.optpkg import optional_package
+_cm, _, _ = optional_package('matplotlib.cm')
+_colors, _, _ = optional_package('matplotlib.colors')
 
 ################################################################################
 # Custom colormaps for two-tailed symmetric statistics
