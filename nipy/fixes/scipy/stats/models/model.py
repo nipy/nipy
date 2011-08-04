@@ -264,7 +264,7 @@ class LikelihoodModelResults(object):
         >>> beta=np.array([3.25, 1.5, 7.0])
         >>> y = np.dot(x,beta) + stan((30))
         >>> model = SSM.regression.OLSModel(x, hascons=False).fit(y)
-        >>> model.conf_int(cols=(1,2))
+        >>> confidence_intervals = model.conf_int(cols=(1,2))
 
         Notes
         -----
