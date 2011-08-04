@@ -14,7 +14,7 @@ from scipy import ndimage, signal
 
 # Optional matplotlib imports
 from ...utils.optpkg import optional_package
-pl, _, _ = optional_package('pylab')
+pl, have_mpl, _ = optional_package('pylab')
 mpl, _, _ = optional_package('matplotlib')
 mplt, _, _ = optional_package('matplotlib.transforms')
 
@@ -32,7 +32,7 @@ except ImportError, e:
 
 ################################################################################
 # Bugware to have transparency work OK with MPL < .99.1
-if mpl.__version__ < '0.99.1':
+if have_mpl and mpl.__version__ < '0.99.1':
     # We wrap the lut as a callable and replace its evalution to put
     # alpha to zero where the mask is true. This is what is done in 
     # MPL >= .99.1
