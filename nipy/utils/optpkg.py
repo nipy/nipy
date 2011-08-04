@@ -27,7 +27,7 @@ def optional_package(name, trip_msg=None):
         If we can import the package, return it.  Otherwise return an object
         raising an error when accessed
     have_pkg : bool
-        True if import for package was succesful, false otherwise
+        True if import for package was successful, false otherwise
     module_setup : function
         callable usually set as ``setup_module`` in calling namespace, to allow
         skipping tests.
@@ -58,23 +58,21 @@ def optional_package(name, trip_msg=None):
     >>> hasattr(pkg, 'path')
     True
 
-    Or a submodule if that's what you asked for
+    Or a submodule if that's what we asked for
 
     >>> subpkg, _, _ = optional_package('os.path')
     >>> hasattr(subpkg, 'dirname')
     True
     """
+    # fromlist=[None] results in submodule being returned, rather than the top
+    # level module.  See help(__import__)
     try:
-        pkg = __import__(name)
+        pkg = __import__(name, fromlist=[None])
     except ImportError:
         pass
     else: # import worked
         # top level module
-        if not '.' in name:
-            return pkg, True, lambda : None
-        # submodule
-        subpkg = eval(name.replace(pkg.__name__, 'pkg', 1))
-        return subpkg, True, lambda : None
+        return pkg, True, lambda : None
     if trip_msg is None:
         trip_msg = ('We need package %s for these functions, but '
                     '``import %s`` raised an ImportError'
