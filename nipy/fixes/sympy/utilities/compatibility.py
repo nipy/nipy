@@ -27,7 +27,7 @@ def iterable(i, exclude=(basestring, dict)):
 
     Examples:
 
-    >>> from sympy.utilities.iterables import iterable
+    >>> from nipy.fixes.sympy.utilities.compatibility import iterable
     >>> from sympy import Tuple
     >>> things = [[1], (1,), set([1]), Tuple(1), (j for j in [1, 2]), {1:2}, '1', 1]
     >>> for i in things:
@@ -73,7 +73,7 @@ def is_sequence(i, include=None):
 
     Examples:
 
-    >>> from sympy.utilities.iterables import is_sequence
+    >>> from nipy.fixes.sympy.utilities.compatibility import is_sequence
     >>> from types import GeneratorType
     >>> is_sequence([])
     True

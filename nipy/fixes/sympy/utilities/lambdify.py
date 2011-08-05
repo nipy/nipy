@@ -129,7 +129,7 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True):
 
     Usage:
     >>> from sympy import sqrt, sin
-    >>> from sympy.utilities.lambdify import lambdify
+    >>> from nipy.fixes.sympy.utilities.lambdify import lambdify
     >>> from sympy.abc import x, y, z
     >>> f = lambdify(x, x**2)
     >>> f(2)
@@ -194,7 +194,7 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True):
     ``implemented_function`` factory:
 
     >>> from sympy.abc import x, y, z
-    >>> from sympy.utilities.lambdify import lambdify, implemented_function
+    >>> from nipy.fixes.sympy.utilities.lambdify import lambdify, implemented_function
     >>> from sympy import Function
     >>> f = implemented_function(Function('f'), lambda x : x+1)
     >>> func = lambdify(x, f(x))
@@ -264,7 +264,7 @@ def lambdastr(args, expr, printer=None):
     Returns a string that can be evaluated to a lambda function.
 
     >>> from sympy.abc import x, y, z
-    >>> from sympy.utilities.lambdify import lambdastr
+    >>> from nipy.fixes.sympy.utilities.lambdify import lambdastr
     >>> lambdastr(x, x**2)
     'lambda x: (x**2)'
     >>> lambdastr((x,y,z), [z,y,x])
@@ -320,7 +320,7 @@ def _imp_namespace(expr, namespace=None):
     Examples
     --------
     >>> from sympy.abc import x, y, z
-    >>> from sympy.utilities.lambdify import implemented_function, _imp_namespace
+    >>> from nipy.fixes.sympy.utilities.lambdify import implemented_function, _imp_namespace
     >>> from sympy import Function
     >>> f = implemented_function(Function('f'), lambda x : x+1)
     >>> g = implemented_function(Function('g'), lambda x : x*10)
@@ -384,7 +384,7 @@ def implemented_function(symfunc, implementation):
     Examples
     --------
     >>> from sympy.abc import x, y, z
-    >>> from sympy.utilities.lambdify import lambdify, implemented_function
+    >>> from nipy.fixes.sympy.utilities.lambdify import lambdify, implemented_function
     >>> from sympy import Function
     >>> f = implemented_function(Function('f'), lambda x : x+1)
     >>> lam_f = lambdify(x, f(x))
