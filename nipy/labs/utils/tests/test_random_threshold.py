@@ -31,7 +31,9 @@ def make_data(n=10, dim=20, r=5, mdim=15, maskdim=20, amplitude=10,
         if activation:
             o = np.array([dim/2,dim/2,dim/2])
             if jitter!=None:
-                o += np.round(np.random.randn(3)*jitter).clip(r-mdim/2,mdim/2-r)
+                # numpy 2 casting rules do no allow in place addition of ints
+                # and floats - hence not in-place here
+                o = o + np.round(np.random.randn(3)*jitter).clip(r-mdim/2,mdim/2-r)
             #print o
         Ii = XYZvol[o[0]-r:o[0]+r,o[1]-r:o[1]+r,o[2]-r:o[2]+r].ravel()
         X[i,Ii] += amplitude

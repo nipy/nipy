@@ -31,7 +31,8 @@ def make_data(n=10, dim=np.array([20,20,20]), r=5, amplitude=10, noise=1,
         X[i] = prng.randn(p)
         o = np.array(dim/2)
         if jitter!=None:
-            o += np.round(prng.randn(3)*jitter).clip(r-dim/2,dim/2-r)
+            # Not in place to avoid stricter numpy 2 casting
+            o = o + np.round(prng.randn(3)*jitter).clip(r-dim/2,dim/2-r)
         Ii = XYZvol[o[0]-r:o[0]+r, o[1]-r:o[1]+r, o[2]-r:o[2]+r].ravel()
         X[i,Ii] += amplitude
         vardata[i] = np.square(prng.randn(p))*noise**2

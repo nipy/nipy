@@ -7,7 +7,7 @@ series.
 
 # Major scientific libraries imports
 import numpy as np
-from scipy import linalg, ndimage
+from scipy import ndimage
 
 # Neuroimaging libraries imports
 from nibabel import load, nifti1, save
@@ -321,7 +321,10 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
         if grp_mask is None:
             grp_mask = this_mask.copy().astype(np.int)
         else:
-            grp_mask += this_mask
+            # If this_mask is floating point and grp_mask is integer, numpy 2
+            # casting rules raise an error for in-place addition. Hence we do it
+            # long-hand. XXX should the masks be coerced to int before addition?
+            grp_mask = grp_mask + this_mask
     
     grp_mask = grp_mask > (threshold * len(list(input_masks)))
     
