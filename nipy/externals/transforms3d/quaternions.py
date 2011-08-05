@@ -376,14 +376,15 @@ def axangle2quat(vector, theta, is_normalized=False):
     >>> q = axangle2quat([1, 0, 0], np.pi)
     >>> np.allclose(q, [0, 1, 0,  0])
     True
-    
+
     Notes
     -----
     Formula from http://mathworld.wolfram.com/EulerParameters.html
     '''
     vector = np.array(vector)
     if not is_normalized:
-        vector /= math.sqrt(np.dot(vector, vector))
+        # Not in place to avoid numpy's stricter casting rules
+        vector = vector / math.sqrt(np.dot(vector, vector))
     t2 = theta / 2.0
     st2 = math.sin(t2)
     return np.concatenate(([math.cos(t2)],
