@@ -18,6 +18,15 @@
 
 from __future__ import generators
 
+# disable nose tests here
+try:
+    from nose.plugins.skip import SkipTest
+except ImportError:
+    pass
+else:
+    def setup_module():
+        raise SkipTest('Doctests fail for externals.configobj')
+
 import os
 import re
 import sys

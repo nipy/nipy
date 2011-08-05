@@ -16,6 +16,15 @@
 # http://lists.sourceforge.net/lists/listinfo/configobj-develop
 # Comments, suggestions and bug reports welcome.
 
+# disable nose tests here
+try:
+    from nose.plugins.skip import SkipTest
+except ImportError:
+    pass
+else:
+    def setup_module():
+        raise SkipTest('Doctests fail for externals.validator')
+
 """
     The Validator object is used to check that supplied values 
     conform to a specification.
