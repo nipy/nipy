@@ -64,10 +64,10 @@ def optional_package(name, trip_msg=None):
     >>> hasattr(subpkg, 'dirname')
     True
     """
-    # fromlist=[None] results in submodule being returned, rather than the top
+    # fromlist=[''] results in submodule being returned, rather than the top
     # level module.  See help(__import__)
     try:
-        pkg = __import__(name, fromlist=[None])
+        pkg = __import__(name, fromlist=[''])
     except ImportError:
         pass
     else: # import worked
