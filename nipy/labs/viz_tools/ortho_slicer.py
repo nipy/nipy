@@ -12,9 +12,11 @@ import warnings
 import numpy as np
 from scipy import ndimage, signal
 
-import pylab as pl
-import matplotlib as mp
-from matplotlib.transforms import Bbox
+# Optional matplotlib imports
+from ...utils.optpkg import optional_package
+pl, have_mpl, _ = optional_package('pylab')
+mpl, _, _ = optional_package('matplotlib')
+mplt, _, _ = optional_package('matplotlib.transforms')
 
 # Local imports
 from .coord_tools import coord_transform, get_bounds, get_mask_bounds
@@ -30,7 +32,7 @@ except ImportError, e:
 
 ################################################################################
 # Bugware to have transparency work OK with MPL < .99.1
-if mp.__version__ < '0.99.1':
+if have_mpl and mpl.__version__ < '0.99.1':
     # We wrap the lut as a callable and replace its evalution to put
     # alpha to zero where the mask is true. This is what is done in 
     # MPL >= .99.1
@@ -276,8 +278,8 @@ class OrthoSlicer(object):
         left_dict[x_ax] = x0
         left_dict[y_ax] = x0 + width_dict[x_ax]
         left_dict[z_ax] = x0 + width_dict[x_ax] + width_dict[y_ax]
-        return Bbox([[left_dict[axes], y0], 
-                     [left_dict[axes] + width_dict[axes], y1]])
+        return mplt.Bbox([[left_dict[axes], y0], 
+                          [left_dict[axes] + width_dict[axes], y1]])
 
 
     def draw_cross(self, cut_coords=None, **kwargs):
@@ -496,7 +498,7 @@ class OrthoSlicer(object):
         map, affine = _xyz_order(map, affine)
         # Force the origin
         kwargs['origin'] = 'upper'
-        if mp.__version__ < '0.99.1':
+        if mpl.__version__ < '0.99.1':
             cmap = kwargs.get('cmap', 
                         pl.cm.cmap_d[pl.rcParams['image.cmap']])
             kwargs['cmap'] = CMapProxy(cmap)
@@ -564,7 +566,7 @@ class OrthoSlicer(object):
         # Force the origin
         kwargs = dict(cmap=cm.alpha_cmap(color=color))
         kwargs['origin'] = 'upper'
-        if mp.__version__ < '0.99.1':
+        if mpl.__version__ < '0.99.1':
             cmap = kwargs.get('cmap', 
                         pl.cm.cmap_d[pl.rcParams['image.cmap']])
             kwargs['cmap'] = CMapProxy(cmap)
