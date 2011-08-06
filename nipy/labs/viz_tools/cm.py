@@ -142,9 +142,9 @@ if have_mpl:
     if hasattr(_cm, 'ocean'):
         # MPL 0.99 doesn't have Ocean
         _cmaps_data['ocean_hot'] =  _concat_cmap(_cm.ocean, _cm.hot_r)
-
-    _cmaps_data['hot_white_bone'] = _concat_cmap(_cm.afmhot, _cm.bone_r)
-    _cmaps_data['hot_black_bone'] = _concat_cmap(_cm.afmhot_r, _cm.bone)
+    if hasattr(_cm, 'afmhot'): # or afmhot
+        _cmaps_data['hot_white_bone'] = _concat_cmap(_cm.afmhot, _cm.bone_r)
+        _cmaps_data['hot_black_bone'] = _concat_cmap(_cm.afmhot_r, _cm.bone)
 
 
     ################################################################################
