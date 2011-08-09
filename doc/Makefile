@@ -91,6 +91,8 @@ htmlhelp:
 latex: api
 	mkdir -p build/latex build/doctrees
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) build/latex
+	# Clear bug for longtable column output in sphinx
+	python ../tools/fix_longtable.py build/latex/nipy.tex
 	@echo
 	@echo "Build finished; the LaTeX files are in build/latex."
 	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \
