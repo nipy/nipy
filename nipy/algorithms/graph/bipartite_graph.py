@@ -150,9 +150,9 @@ def cross_knn(X, Y, k=1):
 
 
 class BipartiteGraph(object):
-    """
-    Bipartite graph class:
-    a graph there are two types of nodes, such that
+    """ Bipartite graph class
+
+    A graph for which there are two types of nodes, such that
     edges can exist only between nodes of type 1 and type 2 (not within)
     fields of this class:
     V (int, > 0) the number of type 1 vertices
@@ -163,7 +163,7 @@ class BipartiteGraph(object):
     """
 
     def __init__(self, V, W, edges=None, weights=None):
-        """ Contructor
+        """ Constructor
 
         Parameters
         ----------
@@ -196,7 +196,8 @@ class BipartiteGraph(object):
                                   weights matrices')
 
     def set_weights(self, weights):
-        """
+        """ Set weights `weights` to edges
+
         Parameters
         ----------
         weights, array of shape(self.V): edges weights
@@ -207,7 +208,8 @@ class BipartiteGraph(object):
             self.weights = np.reshape(weights, (self.E))
 
     def set_edges(self, edges):
-        """
+        """ Set edges to graph
+
         sets self.edges=edges if
              1. edges has a correct size
              2. edges take values in [0..V-1]*[0..W-1]
