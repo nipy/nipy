@@ -33,7 +33,8 @@ class MultiSubjectParcellation(object):
 
     def __init__(self, domain, template_labels=None, individual_labels=None,
                  nb_parcel=None):
-        """
+        """ Initialize multi-subject parcellation
+
         Parameters
         ----------
         domain: discrete_domain.DiscreteDomain instance,
@@ -159,13 +160,15 @@ class MultiSubjectParcellation(object):
         return pfeature
 
     def set_feature(self, fid, data):
-        """
+        """ Set feature defined by `fid` and `data` into ``self``
+
         Parameters
         ----------
-        fid: string, the feature identifier
+        fid: string
+            the feature identifier
         data: array of shape (self.nb_parcel, self.nb_subj, dim) or
               (self.nb_parcel, self.nb_subj)
-              the data to be set as parcel- and subject-level information
+            the data to be set as parcel- and subject-level information
         """
         if len(data.shape) < 2:
             raise ValueError("Data array should at least have dimension 2")
@@ -176,7 +179,8 @@ class MultiSubjectParcellation(object):
             self.features.update({fid: data})
 
     def get_feature(self, fid):
-        """
+        """ Get feature defined by `fid`
+
         Parameters
         ----------
         fid: string, the feature identifier
