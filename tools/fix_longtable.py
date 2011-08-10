@@ -8,7 +8,9 @@ lt_LL = re.compile(
     r"longtable}{(L+)}")
 
 def replacer(match):
-    return r"longtable}{%s}" % match.groups()[0].lower()
+    args =  '|' + 'l|' * len(match.groups()[0])
+    return "longtable}{%s}" % args
+
 
 if len(sys.argv) != 2:
     raise RuntimeError("Enter path to tex file only")
