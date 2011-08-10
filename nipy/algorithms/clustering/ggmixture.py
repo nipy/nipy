@@ -28,7 +28,7 @@ def _dichopsi_log(u, v, y, eps=0.00001):
     if np.absolute(u - v) < eps:
         return t
     else:
-        if sp.psi(t) - sp.log(t) > y:
+        if sp.psi(t) - np.log(t) > y:
             return _dichopsi_log(u, t, y, eps)
         else:
             return _dichopsi_log(t, v, y, eps)
@@ -41,12 +41,12 @@ def _psi_solve(y, eps=0.00001):
         print "y", y
         raise ValueError("y>0, the problem cannot be solved")
     u = 1.
-    if y > sp.psi(u) - sp.log(u):
-        while sp.psi(u) - sp.log(u) < y:
+    if y > sp.psi(u) - np.log(u):
+        while sp.psi(u) - np.log(u) < y:
             u *= 2
         u /= 2
     else:
-        while sp.psi(u) - sp.log(u) > y:
+        while sp.psi(u) - np.log(u) > y:
             u /= 2
     return _dichopsi_log(u, 2 * u, y, eps)
 
