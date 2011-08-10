@@ -5,7 +5,7 @@ import numpy as np
 
 from nibabel import load, save, Nifti1Image
 
-import discrete_domain as ddom
+from . import discrete_domain as ddom
 
 ##############################################################################
 # class MultiROI
@@ -19,7 +19,8 @@ class MultiROI(object):
     """
 
     def __init__(self, domain, k, rid=''):
-        """
+        """ Initialize multi ROI instance
+
         Parameters
         ----------
         domain: ROI instance
@@ -75,7 +76,8 @@ class SubDomains(object):
     """
 
     def __init__(self, domain, label, id='', no_empty_label=True):
-        """
+        """ Initialize subdomains instance
+
         Parameters
         ----------
         domain: ROI instance
@@ -209,16 +211,16 @@ class SubDomains(object):
             return SD
 
     def make_feature(self, fid, data, override=True):
-        """Extract a set of ffeatures from a domain map
+        """Extract a set of features from a domain map
 
         Parameters
         ----------
-        fid: string,
-             feature identifier
+        fid: string
+            feature identifier
         data: array of shape(deomain.size) or (domain, size, dim),
-              domain map from which ROI features are axtracted
+            domain map from which ROI features are axtracted
         override: bool, optional,
-                  Allow feature overriding
+            Allow feature overriding
         """
         if data.shape[0] != self.domain.size:
             raise ValueError("Incorrect data provided")
@@ -333,7 +335,7 @@ class SubDomains(object):
 
         Parameters
         ----------
-        fid: string,
+        fid: string
              the feature identifier
         ax: axis handle, optional
         """
@@ -349,11 +351,14 @@ class SubDomains(object):
         return ax
 
     def set_roi_feature(self, fid, data):
-        """
+        """ Set feature defined by `fid` and `data` into ``self``
+
         Parameters
         ----------
-        fid: string, feature identifier
-        data: array of shape(self.k, p), with p>0
+        fid: string
+            feature identifier
+        data: array
+            shape(self.k, p), with p>0
         """
         if data.shape[0] != self.k:
             print data.shape[0], self.k, fid
@@ -368,15 +373,15 @@ class SubDomains(object):
         return self.roi_features[fid]
 
     def to_image(self, path=None, descrip=None, write_type=np.int16, data=None):
-        """ Generates and possiblly writes a label image that represents self.
+        """ Generates and possibly writes a label image that represents self.
 
         Parameters
         ----------
         path: string, optional
               output image path
-        descrip: string, optional,
+        descrip: string, optional
                  descritpion associated with the output image
-        write_type: string, optional,
+        write_type: string, optional
                     type of the written data
         data: array os shape (self.k), optional,
               information to write into the image
@@ -461,6 +466,7 @@ def subdomain_from_position_and_image(nim, pos):
     """
     keeps the set of labels of the image corresponding to a certain index
     so that their position is closest to the prescribed one
+
     Parameters
     ----------
     mim: NiftiIImage instance, or string path toward such an image
@@ -482,11 +488,11 @@ def subdomain_from_balls(domain, positions, radii):
     Parameters
     ----------
     domain: StructuredDomain instance,
-            the description of a discrete domain
+        the description of a discrete domain
     positions: array of shape(k, dim):
-               the positions of the balls
+        the positions of the balls
     radii: array of shape(k):
-           the sphere radii
+        the sphere radii
     """
     # checks
     if np.size(positions) == positions.shape[0]:

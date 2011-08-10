@@ -291,7 +291,8 @@ class MeshDomain(object):
     """
 
     def __init__(self, coord, triangles):
-        """
+        """ Initialize mesh domain instance
+
         Parameters
         ----------
         coord: array of shape (n_vertices, 3),
@@ -305,7 +306,8 @@ class MeshDomain(object):
         # fixme: implement consistency checks
 
     def area(self):
-        """
+        """ Return array of areas for each node
+
         Returns
         -------
         area: array of shape self.V,
@@ -404,7 +406,8 @@ class DiscreteDomain(object):
     """
 
     def __init__(self, dim, coord, local_volume, id='', referential=''):
-        """
+        """ Initialize discrete domain instance
+
         Parameters
         ----------
         dim: int,
@@ -567,7 +570,8 @@ class StructuredDomain(DiscreteDomain):
 
     def __init__(self, dim, coord, local_volume, topology, did='',
                  referential=''):
-        """
+        """ Initialize structured domain instance
+
         Parameters
         ----------
         dim: int,
@@ -622,7 +626,8 @@ class NDGridDomain(StructuredDomain):
 
     def __init__(self, dim, ijk, shape, affine, local_volume, topology,
                 referential=''):
-        """
+        """ Initialize ndgrid domain instance
+
         Parameters
         ----------
         dim: int,

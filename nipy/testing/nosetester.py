@@ -5,6 +5,7 @@ Removes some specialisms from the numpy NoseTester class
 The main purpose is to use the usual doctest running plugin for nose rather than
 the specialized numpy doctest plugin.
 """
+import os
 
 from numpy.testing.nosetester import NoseTester, import_nose
 
@@ -29,6 +30,30 @@ else:
             return nose.core.TestProgram.makeConfig(self, *args, **kwargs)
 
 
+class Unplugger(object):
+    """ Nose plugin to remove named plugin late in loading
+
+    By default it removes the "doctest" plugin.
+
+    Note the code does not use nose, so we don't have to shield it from import
+    when we don't have nose.
+    """
+    name = 'unplugger'
+    enabled = True # always enabled
+    score = 4000 # load late in order to be after builtins
+
+    def __init__(self, to_unplug='doctest'):
+        self.to_unplug = to_unplug
+
+    def options(self, parser, env):
+        pass
+
+    def configure(self, options, config):
+        # Pull named plugin out of plugins list
+        config.plugins.plugins = [p for p in config.plugins.plugins
+                                  if p.name != self.to_unplug]
+
+
 class NipyNoseTester(NoseTester):
     """ Numpy-like testing class
 
@@ -46,9 +71,7 @@ class NipyNoseTester(NoseTester):
         swap standard doctests (which we do want) for numpy doctests (which we
         don't).
 
-        Parameters
-        ----------
-        (see numpy.testing.nosetester.NoseTester.prepare_test_args)
+        For parameters see numpy.testing.nosetester.NoseTester.prepare_test_args
 
         Returns
         -------
@@ -85,13 +108,12 @@ class NipyNoseTester(NoseTester):
         label : {'fast', 'full', '', attribute identifier}, optional
             Identifies the tests to run. This can be a string to pass to the
             nosetests executable with the '-A' option, or one of
-            several special values.
-            Special values are:
-                'fast' - the default - which corresponds to the ``nosetests -A``
-                         option of 'not slow'.
-                'full' - fast (as above) and slow tests as in the
-                         'no -A' option to nosetests - this is the same as ''.
-            None or '' - run all tests.
+            several special values.  Special values are:
+            * 'fast' - the default - which corresponds to the ``nosetests -A``
+              option of 'not slow'.
+            * 'full' - fast (as above) and slow tests as in the
+              'no -A' option to nosetests - this is the same as ''.
+            * None or '' - run all tests.
             attribute_identifier - string passed directly to nosetests as '-A'.
         verbose : int, optional
             Verbosity value for test outputs, in the range 1-10. Default is 1.
@@ -152,3 +174,74 @@ class NipyNoseTester(NoseTester):
                                                doctests, coverage)
         t = self.test_program_maker(argv=argv, exit=False, plugins=plugins)
         return t.result
+
+    def bench(self, label='fast', verbose=1, extra_argv=None):
+        """
+        Run benchmarks for module using nose.
+
+        This version is from numpy, and adds a patch to stop this routine
+        running doctests even if enabled in the user's nose configuration.
+
+        Parameters
+        ----------
+        label : {'fast', 'full', '', attribute identifier}, optional
+            Identifies the benchmarks to run. This can be a string to pass to the
+            nosetests executable with the '-A' option, or one of
+            several special values.
+            Special values are:
+            * 'fast' - the default - which corresponds to the ``nosetests -A``
+              option of 'not slow'.
+            * 'full' - fast (as above) and slow benchmarks as in the
+              'no -A' option to nosetests - this is the same as ''.
+            * None or '' - run all tests.
+            attribute_identifier - string passed directly to nosetests as '-A'.
+        verbose : int, optional
+            Verbosity value for test outputs, in the range 1-10. Default is 1.
+        extra_argv : list, optional
+            List with any extra arguments to pass to nosetests.
+
+        Returns
+        -------
+        success : bool
+            Returns True if running the benchmarks works, False if an error
+            occurred.
+
+        Notes
+        -----
+        Benchmarks are like tests, but have names starting with "bench" instead
+        of "test", and can be found under the "benchmarks" sub-directory of the
+        module.
+
+        Each NumPy module exposes `bench` in its namespace to run all benchmarks
+        for it.
+
+        Examples
+        --------
+        >>> success = np.lib.bench()
+        Running benchmarks for numpy.lib
+        ...
+        using 562341 items:
+        unique:
+        0.11
+        unique1d:
+        0.11
+        ratio: 1.0
+        nUnique: 56230 == 56230
+        ...
+        OK
+
+        >>> success
+        True
+
+        """
+        # get plugin to disable doctests
+        add_plugins = [Unplugger('doctest')]
+
+        print "Running benchmarks for %s" % self.package_name
+        self._show_system_info()
+
+        argv = self._test_argv(label, verbose, extra_argv)
+        argv += ['--match', r'(?:^|[\\b_\\.%s-])[Bb]ench' % os.sep]
+
+        nose = import_nose()
+        return nose.run(argv=argv, addplugins=add_plugins)

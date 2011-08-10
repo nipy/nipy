@@ -9,6 +9,18 @@ __docformat__ = 'restructuredtext'
 # FIXME: This module needs some attention. There are no unit tests for it
 # so it's hard to say whether it works correctly or not.
 
+"""
+* What role does the ROI.coordinate_system play?  It does not seem to be used
+* The DiscreteROI seems to assume that the ``voxels`` are mm (real value)
+  points, but the CoordinateMapROI assumes (by indexing the image) that the
+  voxels are i,j,k indices
+* The coordmap no longer has a .shape attribute, so can't support the mask
+  method in CoordinateMapROI any more.
+"""
+import warnings
+
+warnings.warn('The ROI module is not stable, and is probably broken')
+
 import gc
 
 import numpy as np
@@ -22,32 +34,36 @@ class ROI(object):
     """
 
     def __init__(self, coordinate_system):
-        """
-        :Parameters:
-            coordinate_system : TODO
-                TODO
+        """ Initialize ROI instance
+
+        Parameters
+        ----------
+        coordinate_system : ``CoordinateSystem`` instance
         """
         self.coordinate_system = coordinate_system
+
 
 class ContinuousROI(ROI):
     """
     Create an `ROI` with a binary function in a given coordinate system.
     """
-    ndim = 3
-    def __init__(self, coordinate_system, bfn, args=None, ndim=ndim):
-        """
-        :Parameters:
-            coordinate_system : TODO
-                TODO
-            bfn : TODO
-                TODO
-            args : TODO
-                TODO
-            ndim : ``int``
-                TODO
+    def __init__(self, coordinate_system, bfn, args=None, ndim=3):
+        """ Initialize continuous ROI instance
+
+        Parameters
+        ----------
+        coordinate_system : ``CoordinateSystem`` instance
+            TODO
+        bfn : callable
+            binary function accepting real-value points as input, and any args
+            in `args`, returning 1 at points inside the ROI and 0 for points
+            outside the ROI.
+        args : sequence
+            arguments to be passed to `bfn` other then real-valued points
+        ndim : int
+            number of dimensions.
         """
         ROI.__init__(self, coordinate_system)
-
         if args is None:
             self.args = {}
         else:
@@ -57,7 +73,6 @@ class ContinuousROI(ROI):
             raise ValueError(
               'first argument to ROI should be a callable function.')
         # test whether it executes properly
-
         try:
             bfn(np.array([[0.,] * ndim]))
         except:
@@ -65,75 +80,64 @@ class ContinuousROI(ROI):
               'binary function bfn in ROI failed on ' + `[0.] * ndim`)
 
     def __call__(self, real):
-        """
-        :Parameters:
-            real : TODO
-                TODO
+        """ Call binary function on points in `real`
+        Parameters
+        ----------
+        real : array shape (N, ndim)
+            Array defining N points
 
-        :Returns: TODO
+        Returns
+        -------
+        inside_tf : array shape (N,)
+            Array corresponding to `real` where 0 means that point was outside
+            the ROI, and 1 means it was inside the ROI.
         """
         return np.not_equal(self.bfn(real, **self.args), 0)
 
-    def todiscrete(self, voxels):        
-        """
-        Return a `DiscreteROI` instance at the voxels in the ROI.
+    def todiscrete(self, voxels):
+        """ Return a `DiscreteROI` instance at the `voxels` in the ROI.
 
-        :Parameters:
-            voxels : TODO
-                TODO
+        Parameters
+        ----------
+        voxels : array shape (N, 3)
+            voxel points in real space
 
-        :Returns: `DiscreteROI`
+        Returns
+        -------
+        droi : ``DiscreteROI`` instance
+            discrete ROI where roi defined by voxels inside `self`
         """
         v = []
         for voxel in voxels:
             if self(voxel):
                 v.append(voxel)
         return DiscreteROI(self.coordinate_system, v)
-    
-    def tocoordmap(self, coordmap):        
-        """
-        Return a `CoordinateMapROI` instance at the voxels in the ROI.
 
-        :Parameters:
-            coordmap : TODO
-                TODO
-
-        :Returns: `CoordinateMapROI`
-        """
-        v = []
-        for voxel in iter(coordmap):
-            if self(voxel):
-                v.append(voxel)
-        return CoordinateMapROI(self.coordinate_system, v, coordmap)
 
 class DiscreteROI(ROI):
     """
-    TODO
+    ROI defined from discrete points
     """
-    
-
     def __init__(self, coordinate_system, voxels):
-        """
-        :Parameters:
-            coordinate_system : TODO
-                TODO
-            voxels : TODO
-                TODO
+        """ Initialize discrete ROI
 
+        Parameters
+        ----------
+        coordinate_system : TODO
+            TODO
+        voxels : sequence
         """
         ROI.__init__(self, coordinate_system)
         self.voxels = set(voxels)
 
     def __iter__(self):
-        """
-        :Returns: ``self``
+        """ Return iterator
         """
         self.voxels = iter(self.voxels)
         return self
 
     def next(self):
-        """
-        :Returns: TODO
+        """ Return next point in ROI
         """
         return self.voxels.next()
 
@@ -142,37 +146,41 @@ class DiscreteROI(ROI):
         Pool data from an image over the ROI -- return fn evaluated at
         each voxel.
 
-        :Parameters:
-            fn : TODO
-                TODO
-            extras : ``dict``
-                TODO
+        Parameters
+        ----------
+        fn : callable
+            function to apply to each voxel
+        \\**extras : kwargs
+            keyword arguments to pass to `fn`
 
-        :Returns: TODO
+        Returns
+        -------
+        proc_pts : list
+            result of `fn` applied to each point within ROI
         """
         return [fn(voxel, **extra) for voxel in self.voxels]
-        
+
     def feature(self, fn, **extra):
-        """
-        Return a feature of an image within the ROI. Feature args are 'args',
-        while ``extra`` are for the readall method. Default is to reduce a ufunc
-        over the ROI. Any other operations should be able to ignore superfluous
-        keywords arguments, i.e. use ``extra``.
+        """ Return a feature of an image within the ROI.
 
-        :Parameters:
-            fn : TODO
-                TODO
-            extra : ``dict
-                TODO
+        Take the mean of voxel (point) features in ROI.
 
-        :Returns: `DiscreteROI`
+        Parameters
+        ----------
+        fn : callable
+            accepts point and kwargs \\**extra, returns value for that point
+            (see ``pool`` method)
+        \\**extra : kwargs
+            keyword arguments to pass to `fn`
 
-        :Raises ValueError: TODO
-        :Raises NotImplementedError: TODO        
+        Returns
+        -------
+        val : object
+            result of ``np.mean`` when applied to the values output from `fn`
         """
         pooled_data = self.pool(fn, **extra)
         return np.mean(pooled_data)
-        
+
     def __add__(self, other):
         if isinstance(other, DiscreteROI):
             if other.coordinate_system == self.coordinate_system:
@@ -188,52 +196,66 @@ class DiscreteROI(ROI):
 class CoordinateMapROI(DiscreteROI):
 
     def __init__(self, coordinate_system, voxels, coordmap):
-        """
-        :Parameters:
-            coordinate_system : TODO
-                TODO
-            voxels : TODO
-                TODO
-            coordmap : TODO
-                TODO
-        
+        """ Initialize coordinate map ROI instance
+
+        Parameters
+        ----------
+        coordinate_system : TODO
+            TODO
+        voxels : TODO
+            TODO
+        coordmap : TODO
+            TODO
         """
         DiscreteROI.__init__(self, coordinate_system, voxels)
         self.coordmap = coordmap
-        # we assume that voxels are (i,j,k) indices?
+        # we assume that voxels are (i,j,k) indices - see ``pool`` method
 
     def pool(self, image):
-        """
-        Pool data from an image over the ROI -- return fn evaluated at
-        each voxel.
+        """ Pool data from an image over the ROI
 
-        :Parameters:
-            image : `image.Image`
-                TODO
+        Return image value for each voxel in ROI
 
-        :Returns: TODO
+        Parameters
+        ----------
+        image : `image.Image`
+            or something with a ``get_data`` method
 
-        :Raises ValueError: TODO
+        Returns
+        -------
+        vals : list
+            values in `image` at voxel points given by ``self.voxels``
+
+        Raises
+        ------
+        ValueError: if coordinate maps of image and ROI do not match
         """
         if image.coordmap != self.coordmap:
             raise ValueError(
               'to pool an image over a CoordinateMapROI the coordmaps must agree')
-
-        tmp = image.readall()
+        tmp = image.get_data()
         v = [tmp[voxel] for voxel in self.voxels]
 
         del(tmp); gc.collect()
         return v
-        
-    def __mul__(self, other):
-        """
-        :Parameters:
-            other : TODO
-                TODO
-        :Returns: `CoordinateMapROI`
 
-        :Raises ValueError: TODO
-        :Raises NotImplementedError: TODO
+    def __mul__(self, other):
+        """ Union of two coordinate map ROIs
+
+        Parameters
+        ----------
+        other : ``CoordinateMapROI`` instance
+            roi to combine with ``self``
+
+        Returns
+        -------
+        union_roi : ``CoordinateMapROI`` instance
+            ROI that is the union of points between ``self`` and `other`
+
+        Raises
+        ------
+        ValueError: if coordinate maps of ``self`` and `other` do not agree
+        NotImplementedError: if `other` is not a ``CoordinateMapROI``
         """
         if isinstance(other, CoordinateMapROI):
             if other.coordmap == self.coordmap:
@@ -246,53 +268,32 @@ class CoordinateMapROI(DiscreteROI):
             raise NotImplementedError(
               'only unions of CoordinateMapROIs with themselves are implemented')
 
-    def mask(self):
-        """
+    def mask(self, img):
+        """ Return image with ones within ROI, zeros elsewhere
+
         :Returns: ``numpy.ndarray`
         """
+        raise NotImplementedError('The coordmap interface has changed')
         m = np.zeros(self.coordmap.shape, np.int32)
         for v in self.voxels:
             m[v] = 1.
         return m
-    
-class ROIall(CoordinateMapROI):
-    """
-    An ROI for an entire coordmap. Save time by avoiding compressing, etc.
-    """
 
-    def mask(self, image):
-        """
-        :Parameters:
-            image : TODO
-                TODO
-
-        :Return: ``numpy.ndarray`
-        """
-        try:
-            mapping = image.spatial_mapping
-        except:
-            mapping = image # is it a mapping?
-        return np.ones(mapping.shape)
-
-    def pool(self, image):
-        """
-        :Parameters:
-            image : `image.Image`
-
-        :Returns: ``None``
-        """
-        tmp = image.readall()
-        tmp.shape = np.product(tmp)
 
 def roi_sphere_fn(center, radius):
-    """
-    :Parameters:
-        center : TODO
-            TODO
-        radius : TODO
-            TODO
+    """ Binary function for sphere with `center` and `radius`
 
-    :Returns: TODO
+    Parameters
+    center : sequence
+        real coordinates point for sphere center
+    radius : float
+        sphere radius
+
+    Returns
+    -------
+    sph_fn : function
+        binary function accepting points as input, return True if point is
+        within sphere, False otherwise
     """
     def test(real):
         diff = np.array([real[i] - center[i] for i in range(real.shape[0])])
@@ -308,13 +309,18 @@ def roi_ellipse_fn(center, form, a = 1.0):
 
     Form must be positive definite.
 
-    :Parameters:
-        form : TODO
-            TODO
-        a : ``float``
-            TODO
-            
-    :Returns: TODO
+    Parameters
+    ----------
+    form : TODO
+        TODO
+    a : float
+        TODO
+
+    Returns
+    -------
+    ellipse_fn : function
+        binary function of point, returning True if point is within ellipse,
+        False otherwise
     """
     from numpy.linalg import cholesky, inv
     _cholinv = cholesky(inv(form))
@@ -342,23 +348,18 @@ def roi_from_array_sampling_coordmap(data, coordmap):
     Return a `CoordinateMapROI` from an array (data) on a coordmap.
     interpolation. Obvious ways to extend this.
 
-    :Parameters:
-        data : TODO
-            TODO
-        coordmap : TODO
-            TODO
+    Parameters
+    ----------
+    data : array
+        Non-zero values in `data` define points in ROI
+    coordmap : ``CoordinateMap`` instance
+        coordinate map defining relationship of ijk(etc) indices in `data` and
+        point space
 
-    :Returns: `CoordinateMapROI`
+    Returns
+    -------
+    cm_roi : ``CoordinateMapROI``
     """
-
-    if coordmap.shape != data.shape:
-        raise ValueError, 'coordmap shape does not agree with data shape'
     voxels = np.nonzero(data)
     coordinate_system = coordmap.output_coordinate_system
     return CoordinateMapROI(coordinate_system, voxels, coordmap)
-
-class ROISequence(list):
-    """
-    TODO
-    """
-    pass

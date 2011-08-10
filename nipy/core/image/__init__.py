@@ -8,8 +8,8 @@ and the data itself.
 """
 __docformat__ = 'restructuredtext'
 
-import image, roi, generators
-from image import Image
+from . import image,  generators
+from .image import Image
 
 from nipy.testing import Tester
 test = Tester().test
