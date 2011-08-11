@@ -15,7 +15,7 @@ try:
     import pylab as pl
     from matplotlib import transforms
 except ImportError:
-    skip_if_running_nose()
+    skip_if_running_nose('Could not import matplotlib')
     
 
 # Local imports

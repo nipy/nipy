@@ -10,7 +10,7 @@ try:
     import pylab as pl
     pl.switch_backend('svg')
 except ImportError:
-    raise nose.SkipTest
+    raise nose.SkipTest('Could not import matplotlib')
 
 from ..ortho_slicer import demo_ortho_slicer
 

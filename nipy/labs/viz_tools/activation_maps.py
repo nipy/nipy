@@ -27,7 +27,7 @@ from nipy.utils.skip_test import skip_if_running_nose
 try:
     import pylab as pl
 except ImportError:
-    skip_if_running_nose()
+    skip_if_running_nose('Could not import matplotlib')
  
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import coord_transform, find_cut_coords

@@ -11,7 +11,7 @@ try:
     from matplotlib import cm as _cm
     from matplotlib import colors as _colors
 except ImportError:
-    skip_if_running_nose()
+    skip_if_running_nose('Could not import matplotlib')
  
 ################################################################################
 # Custom colormaps for two-tailed symmetric statistics

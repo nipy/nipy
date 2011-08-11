@@ -4,8 +4,13 @@
 import sys
 import inspect
 
-def skip_if_running_nose():
+def skip_if_running_nose(msg=None):
     """ Raise a SkipTest if we appear to be running the nose test loader.
+
+    Parameters
+    ==========
+    msg: string, optional
+        The message issued when SkipTest is raised
     """
     if not 'nose' in sys.modules:
         return
@@ -21,7 +26,10 @@ def skip_if_running_nose():
         loader_file_name = loader_file_name[:-1]
     for frame, file_name, line_num, func_name, line, number in stack:
         if file_name == loader_file_name:
-            raise nose.SkipTest
+            if msg is not None:
+                raise nose.SkipTest(msg)
+            else:
+                raise nose.SkipTest
 
 
 

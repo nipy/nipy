@@ -10,7 +10,7 @@ try:
     import pylab as pl
     pl.switch_backend('svg')
 except ImportError:
-    raise SkipTest
+    raise SkipTest('Could not import matplotlib')
 
 from ..activation_maps import demo_plot_map, plot_anat
 from ..anat_cache import mni_sform, _AnatCache

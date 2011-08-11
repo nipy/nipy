@@ -11,7 +11,7 @@ try:
     import pylab as pl
     pl.switch_backend('svg')
 except ImportError:
-    raise SkipTest
+    raise SkipTest('Could not import matplotlib')
 
 from ..cm import dim_cmap, replace_inside
 
