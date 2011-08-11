@@ -2,18 +2,18 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Smoke testing the cm module
 """
+from nose import SkipTest
 
-from ..cm import dim_cmap, replace_inside
-
-from ....utils.optpkg import optional_package
-pl, have_mpl, setup_module = optional_package('pylab')
-
-
-if have_mpl:
+try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
     mp.use('svg', warn=False)
+    import pylab as pl
     pl.switch_backend('svg')
+except ImportError:
+    raise SkipTest
+
+from ..cm import dim_cmap, replace_inside
 
 
 def test_dim_cmap():

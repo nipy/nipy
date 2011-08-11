@@ -5,11 +5,14 @@ Matplotlib colormaps useful for neuroimaging.
 """
 import numpy as _np
 
-# Import matplotlib - an optional package
-from ...utils.optpkg import optional_package
-_cm, have_mpl, _ = optional_package('matplotlib.cm')
-_colors, _, _ = optional_package('matplotlib.colors')
+from nipy.utils.skip_test import skip_if_running_nose
 
+try:
+    from matplotlib import cm as _cm
+    from matplotlib import colors as _colors
+except ImportError:
+    skip_if_running_nose()
+ 
 ################################################################################
 # Custom colormaps for two-tailed symmetric statistics
 ################################################################################
@@ -115,73 +118,72 @@ def alpha_cmap(color, name=''):
 
 ################################################################################
 # Our colormaps definition
-if have_mpl:
-    _cmaps_data = dict(
-        cold_hot     = _pigtailed_cmap(_cm.hot),
-        brown_blue   = _pigtailed_cmap(_cm.bone),
-        cyan_copper  = _pigtailed_cmap(_cm.copper),
-        cyan_orange  = _pigtailed_cmap(_cm.YlOrBr_r),
-        blue_red     = _pigtailed_cmap(_cm.Reds_r),
-        brown_cyan   = _pigtailed_cmap(_cm.Blues_r),
-        purple_green = _pigtailed_cmap(_cm.Greens_r,
-                        swap_order=('red', 'blue', 'green')),
-        purple_blue  = _pigtailed_cmap(_cm.Blues_r,
-                        swap_order=('red', 'blue', 'green')),
-        blue_orange  = _pigtailed_cmap(_cm.Oranges_r,
-                        swap_order=('green', 'red', 'blue')),
-        black_blue   = _rotate_cmap(_cm.hot),
-        black_purple = _rotate_cmap(_cm.hot,
-                                        swap_order=('blue', 'red', 'green')),
-        black_pink   = _rotate_cmap(_cm.hot,
-                                swap_order=('blue', 'green', 'red')),
-        black_green  = _rotate_cmap(_cm.hot,
-                                swap_order=('red', 'blue', 'green')),
-        black_red    = _cm.hot._segmentdata.copy(),
-    )
+_cmaps_data = dict(
+    cold_hot     = _pigtailed_cmap(_cm.hot),
+    brown_blue   = _pigtailed_cmap(_cm.bone),
+    cyan_copper  = _pigtailed_cmap(_cm.copper),
+    cyan_orange  = _pigtailed_cmap(_cm.YlOrBr_r),
+    blue_red     = _pigtailed_cmap(_cm.Reds_r),
+    brown_cyan   = _pigtailed_cmap(_cm.Blues_r),
+    purple_green = _pigtailed_cmap(_cm.Greens_r,
+                    swap_order=('red', 'blue', 'green')),
+    purple_blue  = _pigtailed_cmap(_cm.Blues_r,
+                    swap_order=('red', 'blue', 'green')),
+    blue_orange  = _pigtailed_cmap(_cm.Oranges_r,
+                    swap_order=('green', 'red', 'blue')),
+    black_blue   = _rotate_cmap(_cm.hot),
+    black_purple = _rotate_cmap(_cm.hot,
+                                    swap_order=('blue', 'red', 'green')),
+    black_pink   = _rotate_cmap(_cm.hot,
+                            swap_order=('blue', 'green', 'red')),
+    black_green  = _rotate_cmap(_cm.hot,
+                            swap_order=('red', 'blue', 'green')),
+    black_red    = _cm.hot._segmentdata.copy(),
+)
 
-    if hasattr(_cm, 'ocean'):
-        # MPL 0.99 doesn't have Ocean
-        _cmaps_data['ocean_hot'] =  _concat_cmap(_cm.ocean, _cm.hot_r)
-    if hasattr(_cm, 'afmhot'): # or afmhot
-        _cmaps_data['hot_white_bone'] = _concat_cmap(_cm.afmhot, _cm.bone_r)
-        _cmaps_data['hot_black_bone'] = _concat_cmap(_cm.afmhot_r, _cm.bone)
-
-
-    ################################################################################
-    # Build colormaps and their reverse.
-    _cmap_d = dict()
-
-    for _cmapname in _cmaps_data.keys():
-        _cmapname_r = _cmapname + '_r'
-        _cmapspec = _cmaps_data[_cmapname]
-        if 'red' in _cmapspec:
-            _cmaps_data[_cmapname_r] = _cm.revcmap(_cmapspec)
-            _cmap_d[_cmapname] = _colors.LinearSegmentedColormap(
-                                    _cmapname, _cmapspec, _cm.LUTSIZE)
-            _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap(
-                                    _cmapname_r, _cmaps_data[_cmapname_r],
-                                    _cm.LUTSIZE)
-        else:
-            _revspec = list(reversed(_cmapspec))
-            if len(_revspec[0]) == 2:    # e.g., (1, (1.0, 0.0, 1.0))
-                _revspec = [(1.0 - a, b) for a, b in _revspec]
-            _cmaps_data[_cmapname_r] = _revspec
-
-            _cmap_d[_cmapname] = _colors.LinearSegmentedColormap.from_list(
-                                    _cmapname, _cmapspec, _cm.LUTSIZE)
-            _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap.from_list(
-                                    _cmapname_r, _revspec, _cm.LUTSIZE)
-
-    ################################################################################
-    # A few transparent colormaps
-    for color, name in (((1, 0, 0), 'red'),
-                        ((0, 1, 0), 'blue'),
-                        ((0, 0, 1), 'green'),
-                        ):
-        _cmap_d['%s_transparent' % name] = alpha_cmap(color, name=name)
+if hasattr(_cm, 'ocean'):
+    # MPL 0.99 doesn't have Ocean
+    _cmaps_data['ocean_hot'] =  _concat_cmap(_cm.ocean, _cm.hot_r)
+if hasattr(_cm, 'afmhot'): # or afmhot
+    _cmaps_data['hot_white_bone'] = _concat_cmap(_cm.afmhot, _cm.bone_r)
+    _cmaps_data['hot_black_bone'] = _concat_cmap(_cm.afmhot_r, _cm.bone)
 
 
-    locals().update(_cmap_d)
+################################################################################
+# Build colormaps and their reverse.
+_cmap_d = dict()
+
+for _cmapname in _cmaps_data.keys():
+    _cmapname_r = _cmapname + '_r'
+    _cmapspec = _cmaps_data[_cmapname]
+    if 'red' in _cmapspec:
+        _cmaps_data[_cmapname_r] = _cm.revcmap(_cmapspec)
+        _cmap_d[_cmapname] = _colors.LinearSegmentedColormap(
+                                _cmapname, _cmapspec, _cm.LUTSIZE)
+        _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap(
+                                _cmapname_r, _cmaps_data[_cmapname_r],
+                                _cm.LUTSIZE)
+    else:
+        _revspec = list(reversed(_cmapspec))
+        if len(_revspec[0]) == 2:    # e.g., (1, (1.0, 0.0, 1.0))
+            _revspec = [(1.0 - a, b) for a, b in _revspec]
+        _cmaps_data[_cmapname_r] = _revspec
+
+        _cmap_d[_cmapname] = _colors.LinearSegmentedColormap.from_list(
+                                _cmapname, _cmapspec, _cm.LUTSIZE)
+        _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap.from_list(
+                                _cmapname_r, _revspec, _cm.LUTSIZE)
+
+################################################################################
+# A few transparent colormaps
+for color, name in (((1, 0, 0), 'red'),
+                    ((0, 1, 0), 'blue'),
+                    ((0, 0, 1), 'green'),
+                    ):
+    _cmap_d['%s_transparent' % name] = alpha_cmap(color, name=name)
+
+
+locals().update(_cmap_d)
 
 
 ################################################################################

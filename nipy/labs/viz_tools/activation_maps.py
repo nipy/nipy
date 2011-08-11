@@ -21,14 +21,19 @@ import operator
 # delayed, so that the part module can be used without them).
 import numpy as np
 
-# Import pylab - an optional import
-from ...utils.optpkg import optional_package
-pl, _, _ = optional_package('pylab')
+# Import pylab
+from nipy.utils.skip_test import skip_if_running_nose
 
+try:
+    import pylab as pl
+except ImportError:
+    skip_if_running_nose()
+ 
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import coord_transform, find_cut_coords
 
-from .ortho_slicer import OrthoSlicer, _xyz_order, _fast_abs_percentile
+from .ortho_slicer import OrthoSlicer, _xyz_order
+from edge_detect import _fast_abs_percentile
 
 ################################################################################
 # Helper functions for 2D plotting of activation maps 

@@ -2,18 +2,19 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-from ..activation_maps import demo_plot_map, plot_anat
-from ..anat_cache import mni_sform, _AnatCache
-
-from ....utils.optpkg import optional_package
-pl, have_mpl, setup_module = optional_package('pylab')
-
-
-if have_mpl:
+from nose import SkipTest
+try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
     mp.use('svg', warn=False)
+    import pylab as pl
     pl.switch_backend('svg')
+except ImportError:
+    raise SkipTest
+
+from ..activation_maps import demo_plot_map, plot_anat
+from ..anat_cache import mni_sform, _AnatCache
+
 
 
 def test_demo_plot_map():
