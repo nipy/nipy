@@ -15,7 +15,8 @@ class VonMisesMixture(object):
 
     def __init__(self, k, precision, means=None, weights=None,
                  null_class=False):
-        """
+        """ Initialize Von Mises mixture
+
         Parameters
         ----------
         k: int,
@@ -82,20 +83,23 @@ class VonMisesMixture(object):
         return np.exp(self.log_density_per_component(x))
 
     def weighted_density(self, x):
-        """
+        """ Return weighted density
+
         Parameters
         ----------
-        x: array fo shape(n,3)
+        x: array shape(n,3)
            should be on the unit sphere
 
         Returns
         -------
-        like: array of shape(n, self.k)
+        like: array
+            of shape(n, self.k)
         """
         return(self.density_per_component(x) * self.weights)
 
     def log_weighted_density(self, x):
-        """
+        """ Return log weighted density
+
         Parameters
         ----------
         x: array fo shape(n,3)
@@ -108,7 +112,8 @@ class VonMisesMixture(object):
         return(self.log_density_per_component(x) + np.log(self.weights))
 
     def mixture_density(self, x):
-        """
+        """ Return mixture density
+
         Parameters
         ----------
         x: array fo shape(n,3)
@@ -122,7 +127,8 @@ class VonMisesMixture(object):
         return np.sum(wl, 1)
 
     def responsibilities(self, x):
-        """
+        """ Return responsibilities
+
         Parameters
         ----------
         x: array fo shape(n,3)
@@ -139,7 +145,8 @@ class VonMisesMixture(object):
         return resp
 
     def estimate_weights(self, z):
-        """
+        """ Calculate and set weights from `z`
+
         Parameters
         ----------
         z: array of shape(self.k)
@@ -147,7 +154,8 @@ class VonMisesMixture(object):
         self.weights = np.sum(z, 0) / z.sum()
 
     def estimate_means(self, x, z):
-        """
+        """ Calculate and set means from `x` and `z`
+
         Parameters
         ----------
         x: array fo shape(n,3)
@@ -158,7 +166,8 @@ class VonMisesMixture(object):
         self.means = (m.T / np.sqrt(np.sum(m ** 2, 1))).T
 
     def estimate(self, x, maxiter=100, miniter=1, bias=None):
-        """
+        """ Return average log density across samples
+
         Parameters
         ----------
         x: array fo shape(n,3)
@@ -372,7 +381,7 @@ def select_vmm_cv(krange, precision, x, null_class, cv_index,
 def sphere_density(npoints):
     """Return the points and area of a npoints**2 points sampled on a sphere
 
-    returns
+    Returns
     -------
     s : array of shape(npoints ** 2, 3)
     area: array of shape(npoints)

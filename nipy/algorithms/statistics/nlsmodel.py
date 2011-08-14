@@ -15,29 +15,34 @@ class NLSModel(Model):
     Class representing a simple nonlinear least squares model.
     """
 
-    def __init__(self, Y, design, f, grad, theta, niter=10):        
-        """
-        :Parameters:
-            Y : TODO
-                the data in the NLS model
-            design : TODO
-                the deisng matrix, X
-            f : TODO
-                the map between the linear parameters (in the design matrix) and
-                the nonlinear parameters (theta)
-            grad :  TODO          
-                the gradient of f, this should be a function of an nxp design
-                matrix X and qx1 vector theta that returns an nxq matrix
-                df_i/dtheta_j where
+    def __init__(self, Y, design, f, grad, theta, niter=10):
+        """ Initialize non-linear model instance
+
+        Parameters
+        ----------
+        Y : ndarray
+            the data in the NLS model
+        design : ndarray
+            the design matrix, X
+        f : callable
+            the map between the (linear parameters (in the design matrix) and
+            the nonlinear parameters (theta)) and the predicted data. `f`
+            accepts the design matrix and the parameters (theta) as input, and
+            returns the predicted data at that design.
+        grad : callable
+            the gradient of f, this should be a function of an nxp design
+            matrix X and qx1 vector theta that returns an nxq matrix
+            df_i/dtheta_j where:
+
+            .. math::
 
                 f_i(theta) = f(X[i], theta)
-               
-                is the nonlinear response function for the i-th instance in
-                the model.
+
+            is the nonlinear response function for the i-th instance in
+            the model.
+        niter : int
+            number of iterations
         """
-
-
-
         Model.__init__(self)
         self.Y = Y
         self.design = design
@@ -49,7 +54,6 @@ class NLSModel(Model):
             if self.Y.shape[0] != self.design.shape[0]:
                 raise ValueError, 'Y should be same shape as design'
 
-        
     def _Y_changed(self):
         if self.design is not None:
             if self.Y.shape[0] != self.design.shape[0]:
@@ -61,24 +65,36 @@ class NLSModel(Model):
                 raise ValueError, 'Y should be same shape as design'
 
     def getZ(self):
-        """
-        :Returns: ``None``
+        """ Set Z into `self`
+
+        Returns
+        -------
+        None
         """
         self._Z = self.grad(self.design, self.theta)
 
     def getomega(self):
-        """
-        :Returns: ``None``
+        """ Set omega into `self`
+
+        Returns
+        -------
+        None
         """
         self._omega = self.predict() - np.dot(self._Z, self.theta)
 
     def predict(self, design=None):
-        """
-        :Parameters:
-            design : TODO
-                TODO
+        """ Get predicted values for `design` or ``self.design``
 
-        :Returns: TODO
+        Parameters
+        ----------
+        design : None or array
+            design at which to predict data.  If None (the default) then use the
+            initial design in ``self.design``
+
+        Returns
+        -------
+        y_predicted : array
+            predicted data at given (or initial) design
         """
         if design is None:
             design = self.design
@@ -87,13 +103,20 @@ class NLSModel(Model):
     def SSE(self):
         """ Sum of squares error.
 
-        :Returns; TODO
+        Returns
+        -------
+        sse: float
+            sum of squared residuals
         """
         return sum((self.Y - self.predict())**2)
 
     def __iter__(self):
-        """
-        :Returns: ``self``
+        """ Get iterator from model instance
+
+        Returns
+        -------
+        itor : iterator
+            Returns ``self``
         """
         if self.theta is not None:
             self.initial = self.theta
@@ -107,8 +130,11 @@ class NLSModel(Model):
         return self
 
     def next(self):
-        """
-        :Returns: ``None``
+        """ Do an iteration of fit
+
+        Returns
+        -------
+        None
         """
         if self._iter < self.niter:
             self.getZ()
