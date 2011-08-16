@@ -54,10 +54,59 @@ def check_have_module_context():
     1
     """
 
+def check_fails():
+    """ Check inversion directive
+
+    The directive is mainly for tests
+
+    >>> 'black' #doctest: +NOT_EQUAL
+    'white'
+    >>> 'white' #doctest: +NOT_EQUAL
+    'black'
+    """
+
+def check_ignore_output():
+    """ Check IGNORE_OUTPUT option works
+
+    >>> 'The answer' #doctest: +IGNORE_OUTPUT
+    42
+    >>> 'The answer' #doctest: +IGNORE_OUTPUT
+    'The answer'
+    """
+
+def check_sympy_equal():
+    """ Check SYMPY_EQUAL option
+
+    >>> from sympy import symbols
+    >>> a, b, c = symbols('a, b, c')
+    >>> a + b #doctest: +SYMPY_EQUAL
+    b + a
+    >>> a + b #doctest: +SYMPY_EQUAL
+    a + b
+    >>> a + b #doctest: +SYMPY_EQUAL +NOT_EQUAL
+    a + c
+    >>> a + b #doctest: +SYMPY_EQUAL +NOT_EQUAL
+    a - b
+    """
+
+def check_fp_equal():
+    """ Check floating point equal
+
+    >>> 0.12345678 #doctest: +FP_6DP_EQUAL
+    0.1234569
+    >>> 0.12345678 #doctest: +FP_6DP_EQUAL +NOT_EQUAL
+    0.1234564
+    >>> 0.12345678 #doctest: +FP_4DP_EQUAL
+    0.1235
+    >>> 0.12345678 #doctest: +FP_6DP_EQUAL +NOT_EQUAL
+    0.1235
+    """
+
 
 if __name__ == '__main__':
     # Run tests outside nipy test rig
+    import sys
     import nose
     from nipy.testing.doctester import NipyDoctest
-    argv = ['', __file__, '--with-nipydoctest']
+    argv = [sys.argv[0], __file__, '--with-nipydoctest'] + sys.argv[1:]
     nose.core.TestProgram(argv=argv, addplugins=[NipyDoctest()])
