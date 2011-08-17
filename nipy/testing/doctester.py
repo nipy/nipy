@@ -10,8 +10,8 @@ IGNORE_OUTPUT = register_optionflag('IGNORE_OUTPUT')
 SYMPY_EQUAL = register_optionflag('SYMPY_EQUAL')
 STRIP_ARRAY_REPR = register_optionflag('STRIP_ARRAY_REPR')
 NOT_EQUAL = register_optionflag('NOT_EQUAL')
-FP_4DP_EQUAL =  register_optionflag('FP_4DP_EQUAL')
-FP_6DP_EQUAL =  register_optionflag('FP_6DP_EQUAL')
+FP_4DP =  register_optionflag('FP_4DP')
+FP_6DP =  register_optionflag('FP_6DP')
 
 FP_REG = re.compile(r'(?<![0-9a-zA-Z_.])'
                     r'(\d+\.\d+)'
@@ -110,10 +110,10 @@ class NipyOutputChecker(NumpyOutputChecker):
             want = strip_array_repr(want)
             got = strip_array_repr(got)
         # If testing floating point, round to required number of digits
-        if optionflags & (FP_4DP_EQUAL | FP_6DP_EQUAL):
-            if optionflags & FP_4DP_EQUAL:
+        if optionflags & (FP_4DP | FP_6DP):
+            if optionflags & FP_4DP:
                 dp = 4
-            elif optionflags & FP_6DP_EQUAL:
+            elif optionflags & FP_6DP:
                 dp = 6
             want = round_numbers(want, dp)
             got = round_numbers(got, dp)

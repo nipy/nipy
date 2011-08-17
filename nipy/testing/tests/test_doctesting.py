@@ -92,13 +92,13 @@ def check_sympy_equal():
 def check_fp_equal():
     """ Check floating point equal
 
-    >>> 0.12345678 #doctest: +FP_6DP_EQUAL
+    >>> 0.12345678 #doctest: +FP_6DP
     0.1234569
-    >>> 0.12345678 #doctest: +FP_6DP_EQUAL +NOT_EQUAL
+    >>> 0.12345678 #doctest: +FP_6DP +NOT_EQUAL
     0.1234564
-    >>> 0.12345678 #doctest: +FP_4DP_EQUAL
+    >>> 0.12345678 #doctest: +FP_4DP
     0.1235
-    >>> 0.12345678 #doctest: +FP_6DP_EQUAL +NOT_EQUAL
+    >>> 0.12345678 #doctest: +FP_6DP +NOT_EQUAL
     0.1235
     """
 
@@ -120,7 +120,7 @@ def check_combinations():
 
     >>> 0.33333 #doctest: +SYMPY_EQUAL +NOT_EQUAL
     0.3333
-    >>> 0.33333 #doctest: +SYMPY_EQUAL +FP_4DP_EQUAL
+    >>> 0.33333 #doctest: +SYMPY_EQUAL +FP_4DP
     0.3333
     >>> arr = np.arange(5, dtype='i2')
 
