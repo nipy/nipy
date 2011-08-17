@@ -102,6 +102,34 @@ def check_fp_equal():
     0.1235
     """
 
+def check_array_repr():
+    """ Stripping of array repr
+
+    >>> arr = np.arange(5, dtype='i2')
+
+    The test should match with and without the array repr
+
+    >>> arr #doctest: +STRIP_ARRAY_REPR
+    [0, 1, 2, 3, 4]
+    >>> arr #doctest: +STRIP_ARRAY_REPR
+    array([0, 1, 2, 3, 4], dtype=int16)
+    """
+
+def check_combinations():
+    """ Check the processing combines as expected
+
+    >>> 0.33333 #doctest: +SYMPY_EQUAL +NOT_EQUAL
+    0.3333
+    >>> 0.33333 #doctest: +SYMPY_EQUAL +FP_4DP_EQUAL
+    0.3333
+    >>> arr = np.arange(5, dtype='i2')
+
+    This next will not sympify unless the array repr is removed
+
+    >>> arr #doctest: +STRIP_ARRAY_REPR +SYMPY_EQUAL
+    array([0, 1, 2, 3, 4], dtype=int16)
+    """
+
 
 if __name__ == '__main__':
     # Run tests outside nipy test rig

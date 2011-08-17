@@ -3,12 +3,25 @@
 
 import numpy as np
 
-from ..doctester import round_numbers
+from ..doctester import round_numbers, strip_array_repr
 
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal)
 
 from nose.tools import assert_true, assert_equal, assert_raises
+
+
+def test_strip_array_repr():
+    # check array repr removal
+    for arr in (np.array(1),
+                np.array(1, dtype=bool),
+                np.arange(12),
+                np.arange(12).reshape((3,4)),
+                np.zeros((3,4), dtype=[('f1', 'f'), ('f2', int)])):
+        expected = arr.tolist()
+        list_repr = strip_array_repr(repr(arr)).replace('\n', '')
+        actual = eval(list_repr)
+        assert_equal(expected, actual)
 
 
 def test_round_numbers():
