@@ -1181,18 +1181,27 @@ def fullrank(X, r=None):
 
 class RandomEffects(Formula):
     """ Covariance matrices for common random effects analyses.
-    
+
     Examples
     --------
+    Two subjects (here named 2 and 3):
+
     >>> subj = make_recarray([2,2,2,3,3], 's')
     >>> subj_factor = Factor('s', [2,3])
+
+    By default the covariance matrix is symbolic.  The display differs a little
+    between sympy versions (hence we don't check it in the doctests):
+
     >>> c = RandomEffects(subj_factor.terms)
-    >>> c.cov(subj)
+    >>> c.cov(subj) #doctest: +IGNORE_OUTPUT
     array([[_s2_0, _s2_0, _s2_0, 0, 0],
            [_s2_0, _s2_0, _s2_0, 0, 0],
            [_s2_0, _s2_0, _s2_0, 0, 0],
            [0, 0, 0, _s2_1, _s2_1],
            [0, 0, 0, _s2_1, _s2_1]], dtype=object)
+
+    With a numeric `sigma`, you get a numeric array:
+
     >>> c = RandomEffects(subj_factor.terms, sigma=np.array([[4,1],[1,6]]))
     >>> c.cov(subj)
     array([[ 4.,  4.,  4.,  1.,  1.],
@@ -1200,10 +1209,10 @@ class RandomEffects(Formula):
            [ 4.,  4.,  4.,  1.,  1.],
            [ 1.,  1.,  1.,  6.,  6.],
            [ 1.,  1.,  1.,  6.,  6.]])
-
     """
     def __init__(self, seq, sigma=None, char = 'e'):
-        """
+        """ Initialize random effects instance
+
         Parameters
         ----------
         seq : [``sympy.Basic``]
@@ -1230,26 +1239,21 @@ class RandomEffects(Formula):
 
     def cov(self, term, param=None):
         """
-        Compute the covariance matrix for
-        some given data.
+        Compute the covariance matrix for some given data.
 
         Parameters:
         -----------
-
         term : np.recarray
-             Recarray including fields corresponding to the Terms in 
+             Recarray including fields corresponding to the Terms in
              getparams(self.design_expr).
-
         param : np.recarray
-             Recarray including fields that are not Terms in 
+             Recarray including fields that are not Terms in
              getparams(self.design_expr)
-        
+
         Outputs:
         --------
-
         C : ndarray
              Covariance matrix implied by design and self.sigma.
-
         """
         D = self.design(term, param=param, return_float=True)
         return np.dot(D, np.dot(self.sigma, D.T))
@@ -1274,6 +1278,6 @@ def is_formula(obj):
 
 
 def is_factor(obj):
-    """ Is obj a Formula?
+    """ Is obj a Factor?
     """
     return hasattr(obj, "_factor_flag")
