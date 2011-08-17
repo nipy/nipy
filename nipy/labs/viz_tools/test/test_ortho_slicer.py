@@ -2,44 +2,31 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import nose
 
-import numpy as np
 
-from ..ortho_slicer import demo_ortho_slicer, _edge_detect, \
-        _fast_abs_percentile
-
-from ..anat_cache import find_mni_template
-
-from ....utils.optpkg import optional_package
-pl, have_mpl, _ = optional_package('pylab')
-
-if have_mpl:
+try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
     mp.use('svg', warn=False)
+    import pylab as pl
     pl.switch_backend('svg')
+except ImportError:
+    raise nose.SkipTest('Could not import matplotlib')
 
-    ###########################################################################
-    # First some smoke testing for graphics-related code
-    def test_demo_ortho_slicer():
-        # This is only a smoke test
-        # conditioned on presence of MNI templated
-        if not find_mni_template():
-            raise nose.SkipTest("MNI Template is absent for the smoke test")
-        mp.use('svg', warn=False)
-        pl.switch_backend('svg')
-        demo_ortho_slicer()
+from ..ortho_slicer import demo_ortho_slicer
 
+from ..anat_cache import find_mni_template
 
 ################################################################################
-# Actual unit tests
-def test_fast_abs_percentile():
-    data = np.arange(1, 100)
-    for p in range(10, 100, 10):
-        yield nose.tools.assert_equal, _fast_abs_percentile(data, p-1), p
+# Some smoke testing for graphics-related code
+
+def test_demo_ortho_slicer():
+    # This is only a smoke test
+    # conditioned on presence of MNI templated
+    if not find_mni_template():
+        raise nose.SkipTest("MNI Template is absent for the smoke test")
+    mp.use('svg', warn=False)
+    import pylab as pl
+    pl.switch_backend('svg')
+    demo_ortho_slicer()
 
 
-def test_edge_detect():
-    img = np.zeros((10, 10))
-    img[:5] = 1
-    _, edge_mask = _edge_detect(img)
-    np.testing.assert_almost_equal(img[4], 1)
