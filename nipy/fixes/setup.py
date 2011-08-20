@@ -6,6 +6,8 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('scipy')
     config.add_subpackage('sympy')
     config.add_subpackage('sympy.utilities')
+    config.add_subpackage('numpy')
+    config.add_subpackage('numpy.testing')
     return config
 
 if __name__ == '__main__':
