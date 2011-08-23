@@ -15,10 +15,9 @@ import numpy as np
 
 from nibabel.onetime import setattr_on_read
 
-# These imports are used in the fromarray and subsample 
-# functions only, not in Image
-
-from ..reference.coordinate_map import (AffineTransform, 
+# These imports are used in the fromarray and subsample functions only, not in
+# Image
+from ..reference.coordinate_map import (AffineTransform,
                                         CoordinateSystem,
                                         CoordinateMap)
 from ..reference.array_coords import ArrayCoordMap
@@ -96,13 +95,12 @@ class Image(object):
             return self.coordmap.affine
         raise AttributeError, 'Nonlinear transform does not have an affine.'
     _doc['affine'] = "Affine transformation if one exists."
-    
+
     ###################################################################
     #
     # Properties
     #
     ###################################################################
-
 
     def _getheader(self):
         # data loaded from a file should have a header
@@ -136,9 +134,9 @@ class Image(object):
     #
     ###################################################################
 
-    def __init__(self, data, coordmap, metadata={}):
+    def __init__(self, data, coordmap, metadata=None):
         """Create an `Image` object from array and `CoordinateMap` object.
-        
+
         Images are most often created through the module functions load and
         fromarray.
 
@@ -147,13 +145,15 @@ class Image(object):
         data : array
         coordmap : `AffineTransform` object
         metadata : dict
-        
+
         See Also
         --------
         load : load `Image` from a file
         save : save `Image` to a file
         fromarray : create an `Image` from a numpy array
         """
+        if metadata is None:
+            metadata = {}
         if data is None or coordmap is None:
             raise ValueError('expecting an array and CoordinateMap instance')
         if not isinstance(coordmap, AffineTransform):
@@ -166,7 +166,8 @@ class Image(object):
         self._data = data
         self.coordmap = coordmap
         if self.axes.ndim != self._data.ndim:
-            raise ValueError('the number of axes implied by the coordmap do not match the number of axes of the data')
+            raise ValueError('the number of axes implied by the coordmap do '
+                             'not match the number of axes of the data')
         self.metadata = metadata
 
     ###################################################################
@@ -177,7 +178,7 @@ class Image(object):
 
     def reordered_reference(self, order=None):
         """ Return new Image with reordered output coordinates
-        
+
         New Image coordmap has reordered output coordinates. This does
         not transpose the data.
 
@@ -192,8 +193,8 @@ class Image(object):
         -------
         r_img : object
            Image of same class as `self`, with reordered output
-           coordinates. 
-        
+           coordinates.
+
         Examples
         --------
         >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6], 'domain', 'range')
@@ -234,8 +235,8 @@ class Image(object):
         -------
         r_img : object
            Image of same class as `self`, with reordered output
-           coordinates. 
-        
+           coordinates.
+
         Examples
         --------
         >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6], 'domain', 'range')
@@ -285,7 +286,7 @@ class Image(object):
         ----------
         **names_dict : dict
            with keys being old names, and values being new names
-           
+
         Returns
         -------
         newimg : Image
@@ -311,7 +312,7 @@ class Image(object):
         ----------
         **names_dict : dict
            with keys being old names, and values being new names
-           
+
         Returns
         -------
         newimg : Image
@@ -346,7 +347,7 @@ class Image(object):
 
     def __getitem__(self, slice_object):
         """ Slicing an image returns an Image.
-        
+
         Just calls the function subsample.
         """
         warnings.warn('slicing Images is deprecated, '
