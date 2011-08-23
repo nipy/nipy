@@ -1,5 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+
+
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
     config = Configuration('algorithms', parent_package, top_path)
@@ -8,6 +10,7 @@ def configuration(parent_package='', top_path=None):
 
     config.add_subpackage('registration')
     config.add_subpackage('segmentation')
+    config.add_subpackage('permutation_test')
     config.add_subpackage('statistics')
     config.add_subpackage('diagnostics')
     config.add_subpackage('clustering')
