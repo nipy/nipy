@@ -4,16 +4,16 @@ import numpy as np
 
 from .transform import Transform
 from .affine import apply_affine
-from .c_bindings import _apply_polyaffine
+from ._registration import _apply_polyaffine
 
 TINY_SIGMA = 1e-200
 
 
-class PolyAffine(Transform): 
+class PolyAffine(Transform):
 
     def __init__(self, centers, affines, sigma, glob_affine=None):
         """
-        centers: N times 3 array 
+        centers: N times 3 array
 
         We are given a set of affine transforms T_i with centers x_i,
         all in homogeneous coordinates. The polyaffine transform is
@@ -30,7 +30,7 @@ class PolyAffine(Transform):
         self.sigma = np.zeros(3)
         self.sigma[:] = np.maximum(TINY_SIGMA, sigma)
         if hasattr(affines[0], 'as_affine'):
-            affines = np.array([a.as_affine() for a in affines]) 
+            affines = np.array([a.as_affine() for a in affines])
         else:
             affines = np.asarray(affines)
         if hasattr(glob_affine, 'as_affine'):
@@ -41,35 +41,31 @@ class PolyAffine(Transform):
         # Cache a (N, 12) matrix containing the affines coefficients,
         # should be C-contiguous double.
         self._affines = np.zeros((len(self.centers), 12))
-        self._affines[:] = np.reshape(affines[:,0:3,:], (len(self.centers), 12))
-        
+        self._affines[:] = np.reshape(affines[:, 0:3, :], (len(self.centers), 12))
 
-    def affine(self, i): 
+    def affine(self, i):
         aff = np.eye(4)
-        aff[0:3,:] = self._affines[i].reshape(3,4)
-        return aff 
+        aff[0:3, :] = self._affines[i].reshape(3,4)
+        return aff
 
-
-    def affines(self): 
+    def affines(self):
         return [self.affine(i) for i in range(len(self.centers))]
 
-
-    def apply(self, xyz): 
+    def apply(self, xyz):
         """
-        xyz is an (N, 3) array 
+        xyz is an (N, 3) array
         """
         # txyz should be double C-contiguous for the the cython
         # routine _apply_polyaffine
-        if self.glob_affine == None: 
+        if self.glob_affine == None:
             txyz = np.array(xyz, copy=True, dtype='double', order='C')
         else:
-            txyz = apply_affine(self.glob_affine, xyz) 
-        _apply_polyaffine(txyz, self.centers, self._affines, self.sigma) 
+            txyz = apply_affine(self.glob_affine, xyz)
+        _apply_polyaffine(txyz, self.centers, self._affines, self.sigma)
         return txyz
 
-
-    def compose(self, other): 
-        """ 
+    def compose(self, other):
+        """
         Compose this transform onto another
 
         Parameters
@@ -82,32 +78,30 @@ class PolyAffine(Transform):
         composed_transform : Transform
             a transform implementing the composition of self on `other`
         """
-        # If other is not an Affine, use the generic compose method 
-        if not hasattr(other, 'as_affine'): 
+        # If other is not an Affine, use the generic compose method
+        if not hasattr(other, 'as_affine'):
             return Transform(self.apply).compose(other)
-        
+
         # Affine case: the result is a polyaffine transform with same
         # local affines
-        if self.glob_affine == None: 
+        if self.glob_affine == None:
             glob_affine = other.as_affine()
         else:
             glob_affine = np.dot(self.glob_affine, other.as_affine())
 
-        return self.__class__(self.centers, self.affines(), self.sigma, 
+        return self.__class__(self.centers, self.affines(), self.sigma,
                               glob_affine=glob_affine)
-         
 
-    def left_compose(self, other): 
+    def left_compose(self, other):
 
-        # If other is not an Affine, use the generic compose method 
-        if not hasattr(other, 'as_affine'): 
+        # If other is not an Affine, use the generic compose method
+        if not hasattr(other, 'as_affine'):
             return Transform(other.apply).compose(self)
 
         # Affine case: the result is a polyaffine transform with same
         # global affine
-        other_affine = other.as_affine() 
+        other_affine = other.as_affine()
         affines = [np.dot(other_affine, self.affine(i)) \
                        for i in range(len(self.centers))]
-        return self.__class__(self.centers, affines, self.sigma, 
+        return self.__class__(self.centers, affines, self.sigma,
                               glob_affine=self.glob_affine)
-
