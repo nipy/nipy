@@ -7,13 +7,9 @@ Intensity-based image registration
 from sys import maxint
 
 import numpy as np
-from scipy.optimize import (fmin as fmin_simplex,
-                            fmin_powell,
-                            fmin_cg,
-                            fmin_bfgs)
 
 from ...core.image.affine_image import AffineImage
-from ..optimize import fmin_steepest
+from .optimizer import configure_optimizer
 from .affine import inverse_affine, subgrid_affine, affine_transforms
 from .chain_transform import ChainTransform
 from .similarity_measures import similarity_measures as _sms
@@ -26,8 +22,8 @@ OPTIMIZER = 'powell'
 XTOL = 1e-2
 FTOL = 1e-2
 GTOL = 1e-3
-STEPSIZE = 1e-1
 MAXITER = 25
+MAXFUN = None
 CLAMP_DTYPE = 'short'  # do not edit
 BINS = 256
 SIMILARITY = 'crl1'
@@ -112,7 +108,8 @@ class HistogramRegistration(object):
         self._set_similarity(similarity, **kwargs)
 
     def _get_interp(self):
-        return interp_methods.keys()[interp_methods.values().index(self._interp)]
+        return interp_methods.keys()\
+            [interp_methods.values().index(self._interp)]
 
     def _set_interp(self, interp):
         self._interp = interp_methods[interp]
@@ -145,7 +142,9 @@ class HistogramRegistration(object):
             npoints = None
         if size == None:
             size = self._from_img.shape
-        slicer = lambda : tuple([slice(corner[i], size[i] + corner[i], spacing[i]) for i in range(3)])
+        slicer = lambda: tuple([slice(corner[i],
+                                      size[i] + corner[i],
+                                      spacing[i]) for i in range(3)])
         fov_data = self._from_img.get_data()[slicer()]
         # Adjust spacing to match desired field of view size
         if npoints:
@@ -155,12 +154,14 @@ class HistogramRegistration(object):
         self._from_npoints = (fov_data >= 0).sum()
         self._from_affine = subgrid_affine(self._from_img.affine, slicer())
         # We cache the voxel coordinates of the clamped image
-        self._vox_coords = np.indices(self._from_data.shape).transpose((1, 2, 3, 0))
+        self._vox_coords =\
+            np.indices(self._from_data.shape).transpose((1, 2, 3, 0))
 
     def _set_similarity(self, similarity='cr', **kwargs):
         if similarity in _sms:
             self._similarity = similarity
-            self._similarity_call = _sms[similarity](self._joint_hist.shape, **kwargs)
+            self._similarity_call =\
+                _sms[similarity](self._joint_hist.shape, **kwargs)
         else:
             if not hasattr(similarity, '__call__'):
                 raise ValueError('similarity should be callable')
@@ -244,6 +245,7 @@ class HistogramRegistration(object):
 
         # Callback during optimization
         if callback == None and VERBOSE:
+
             def callback(tc):
                 Tv.param = tc
                 print(Tv.optimizable)
@@ -254,35 +256,23 @@ class HistogramRegistration(object):
         if VERBOSE:
             print('Initial guess...')
             print(Tv.optimizable)
-        if optimizer == 'powell':
-            fmin = fmin_powell
-            kwargs.setdefault('xtol', XTOL)
-            kwargs.setdefault('ftol', FTOL)
-        elif optimizer == 'steepest':
-            fmin = fmin_steepest
-            kwargs.setdefault('xtol', XTOL)
-            kwargs.setdefault('ftol', FTOL)
-            kwargs.setdefault('step', STEPSIZE)
-        elif optimizer == 'cg':
-            fmin = fmin_cg
-            kwargs.setdefault('gtol', GTOL)
-            kwargs.setdefault('maxiter', MAXITER)
-        elif optimizer == 'bfgs':
-            fmin = fmin_bfgs
-            kwargs.setdefault('gtol', GTOL)
-            kwargs.setdefault('maxiter', MAXITER)
-        elif optimizer == 'simplex':
-            fmin = fmin_simplex 
-            kwargs.setdefault('xtol', XTOL)
-            kwargs.setdefault('ftol', FTOL)
-        else:
-            raise ValueError('Unknown optimizer name: %s???' % optimizer)
+
+        kwargs.setdefault('xtol', XTOL)
+        kwargs.setdefault('ftol', FTOL)
+        kwargs.setdefault('gtol', GTOL)
+        kwargs.setdefault('maxiter', MAXITER)
+        kwargs.setdefault('maxfun', MAXFUN)
+
+        fmin, args, kwargs = configure_optimizer(optimizer,
+                                                 fprime=None,
+                                                 fhess=None,
+                                                 **kwargs)
+
         # Output
         if VERBOSE:
             print ('Optimizing using %s' % fmin.__name__)
-        Tv.param = fmin(cost, tc0, callback=callback, **kwargs)
+        Tv.param = fmin(cost, tc0, *args, callback=callback, **kwargs)
         return Tv.optimizable
-
 
     def explore(self, T0, *args):
         """
@@ -294,17 +284,18 @@ class HistogramRegistration(object):
         explore(T0, (0, [-1,0,1]), (4, [-2.,2]))
         """
         nparams = T0.param.size
-        sizes = np.ones(nparams)
         deltas = [[0] for i in range(nparams)]
         for a in args:
             deltas[a[0]] = a[1]
         grids = np.mgrid[[slice(0, len(d)) for d in deltas]]
         ntrials = np.prod(grids.shape[1:])
-        Deltas = [np.asarray(deltas[i])[grids[i,:]].ravel() for i in range(nparams)]
+        Deltas = [np.asarray(deltas[i])[grids[i, :]].ravel()\
+                      for i in range(nparams)]
         simis = np.zeros(ntrials)
         params = np.zeros([nparams, ntrials])
 
-        Tv = ChainTransform(T0, pre=self._from_affine, post=self._to_inv_affine)
+        Tv = ChainTransform(T0, pre=self._from_affine,
+                            post=self._to_inv_affine)
         param0 = Tv.param
         for i in range(ntrials):
             param = param0 + np.array([D[i] for D in Deltas])

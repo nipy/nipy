@@ -41,11 +41,12 @@ class PolyAffine(Transform):
         # Cache a (N, 12) matrix containing the affines coefficients,
         # should be C-contiguous double.
         self._affines = np.zeros((len(self.centers), 12))
-        self._affines[:] = np.reshape(affines[:, 0:3, :], (len(self.centers), 12))
+        self._affines[:] = np.reshape(affines[:, 0:3, :],
+                                      (len(self.centers), 12))
 
     def affine(self, i):
         aff = np.eye(4)
-        aff[0:3, :] = self._affines[i].reshape(3,4)
+        aff[0:3, :] = self._affines[i].reshape(3, 4)
         return aff
 
     def affines(self):
