@@ -65,7 +65,6 @@ import warnings
 
 import numpy as np
 
-from nipy.utils.onetime import setattr_on_read
 from ..transforms import affines
 from .coordinate_system import(CoordinateSystem,
                                safe_dtype,

@@ -9,12 +9,11 @@ from __future__ import with_statement
 import numpy as np
 
 import nibabel as nib
+from nibabel.tmpdirs import InTemporaryDirectory
 
 from .. import mask as nnm
 from ..mask import largest_cc, threshold_connect_components, \
         series_from_mask
-
-from nipy.utils import InTemporaryDirectory
 
 from nipy.testing import assert_equal, assert_true, \
     assert_array_equal, anatfile

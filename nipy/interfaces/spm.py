@@ -9,9 +9,11 @@ import numpy as np
 
 from scipy.io import savemat
 
-from nipy.utils import InTemporaryDirectory, setattr_on_read
 from nibabel import load
-from nipy.interfaces.matlab import run_matlab_script
+from nibabel.onetime import setattr_on_read
+from nibabel.tmpdirs import InTemporaryDirectory
+
+from .matlab import run_matlab_script
 
 
 class SpmInfo(object):
