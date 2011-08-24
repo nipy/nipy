@@ -7,9 +7,6 @@ restricted to the neuroimaging community. This package may contain
 third-party software included here for convenience.
 """
 
-from onetime import OneTimeProperty, setattr_on_read
-from tmpdirs import TemporaryDirectory, InTemporaryDirectory
-
 from nibabel.data import make_datasource, DataError, datasource_or_bomber
 
 # Module level datasource instances for convenience
