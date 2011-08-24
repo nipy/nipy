@@ -13,7 +13,7 @@ import warnings
 
 import numpy as np
 
-from nipy.utils.onetime import setattr_on_read
+from nibabel.onetime import setattr_on_read
 
 # These imports are used in the fromarray and subsample 
 # functions only, not in Image
