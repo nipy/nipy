@@ -1,6 +1,12 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-""" General matlab interface code """
+""" General matlab interface code
+
+This is for nipy convenience.  If you're doing heavy matlab interfacing, please
+use NiPype instead:
+
+http://nipy.org/nipype
+"""
 
 # Stdlib imports
 import os
@@ -14,7 +20,7 @@ matlab_cmd = 'matlab -nojvm -nosplash'
 def run_matlab(cmd):
     subprocess.call('%s -r \"%s;exit\" ' % (matlab_cmd, cmd),
                     shell=True)
-    
+
 
 def run_matlab_script(script_lines, script_name='pyscript'):
     ''' Put multiline matlab script into script file and run '''
@@ -34,26 +40,24 @@ def mlab_tempfile(dir=None):
 
     Parameters
     ----------
-    
-      dir : str
+    dir : str
         A path to use as the starting directory.  Note that this directory must
-        already exist, it is NOT created if it doesn't (in that case, OSError
-        is raised instead).
+        already exist, it is NOT created if it doesn't (in that case, OSError is
+        raised instead).
 
     Returns
     -------
-      f : A file-like object.
+    f : file-like object
 
     Examples
     --------
-
     >>> f = mlab_tempfile()
-    >>> '-' not in f.name
+    >>> pth, fname = os.path.split(f.name)
+    >>> '-' not in fname
     True
     >>> f.close()
     """
     valid_name = re.compile(r'^\w+$')
-
     # Make temp files until we get one whose name is a valid matlab identifier,
     # since matlab imposes that constraint.  Since the temp file routines may
     # return names that aren't valid matlab names, but we can't control that
@@ -62,7 +66,7 @@ def mlab_tempfile(dir=None):
     for n in range(100):
         f = tempfile.NamedTemporaryFile(suffix='.m',prefix='tmp_matlab_',
                                         dir=dir)
-        # Check the file name for matlab compilance
+        # Check the file name for matlab compliance
         fname =  os.path.splitext(os.path.basename(f.name))[0]
         if valid_name.match(fname):
             break
@@ -71,5 +75,4 @@ def mlab_tempfile(dir=None):
         f.close()
     else:
         raise ValueError("Could not make temp file after 100 tries")
-        
     return f
