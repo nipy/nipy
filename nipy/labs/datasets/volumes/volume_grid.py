@@ -233,6 +233,11 @@ class VolumeGrid(VolumeData):
         y = y.ravel()
         z = z.ravel()
         i, j, k = transform.inverse_mapping(x, y, z)
+        coords = np.c_[i, j, k].T
+        # work round an ndimage deficiency in scipy <= 0.9.0.
+        # See: https://github.com/scipy/scipy/pull/64
+        if coords.dtype == np.dtype(np.intp):
+            coords = coords.astype(np.dtype(coords.dtype.str))
         data = self.get_data()
         data_shape = list(data.shape)
         n_dims = len(data_shape)
@@ -242,14 +247,14 @@ class VolumeGrid(VolumeData):
             # computational cost
             data = np.reshape(data, data_shape[:3] + [-1])
             data = np.rollaxis(data, 3)
-            values = [ ndimage.map_coordinates(slice, np.c_[i, j, k].T,
-                                                  order=interpolation_order)
+            values = [ ndimage.map_coordinates(slice, coords,
+                                               order=interpolation_order)
                        for slice in data]
             values = np.array(values)
             values = np.swapaxes(values, 0, -1)
             values = np.reshape(values, shape + data_shape[3:])
         else:
-            values = ndimage.map_coordinates(data, np.c_[i, j, k].T,
+            values = ndimage.map_coordinates(data, coords,
                                         order=interpolation_order)
             values = np.reshape(values, shape)
         return values
