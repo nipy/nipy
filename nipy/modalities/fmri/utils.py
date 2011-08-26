@@ -70,7 +70,7 @@ def define(name, expr):
     --------
     >>> t = Term('t')
     >>> expr = t**2 + 3*t
-    >>> print expr
+    >>> print expr #doctest: +SYMPY_EQUAL
     3*t + t**2
     >>> newexpr = define('f', expr)
     >>> print newexpr
