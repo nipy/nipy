@@ -16,9 +16,9 @@ import sys
 import nose
 from nipy.testing.nosetester import prepare_imports, fpw_opt_str
 from nipy.testing.doctester import NipyDoctest
+from nipy.fixes.numpy.testing.noseclasses import KnownFailure
 
 if __name__ == '__main__':
     prepare_imports()
     argv = sys.argv + ['--with-nipydoctest', fpw_opt_str()]
-    print argv
-    nose.core.TestProgram(argv=argv, addplugins=[NipyDoctest()])
+    nose.core.TestProgram(argv=argv, addplugins=[NipyDoctest(), KnownFailure()])
