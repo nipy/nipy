@@ -4,15 +4,15 @@ import warnings
 
 import numpy as np
 
-from nipy.testing import assert_true, assert_false, assert_equal, \
-    assert_raises, assert_array_almost_equal, TestCase, \
-    anatfile, parametric, assert_almost_equal
+from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
 
-from nipy.core.image import image
-from nipy.core.api import Image, fromarray, subsample, slice_maker
-from nipy.core.api import parcels, data_generator, write_data
+from numpy.testing import (assert_array_almost_equal, TestCase,
+                           assert_almost_equal, assert_array_equal)
 
-from nipy.core.reference.coordinate_map import AffineTransform
+from .. import image
+from ...api import Image, fromarray, subsample, slice_maker
+from ...api import parcels, data_generator, write_data
+from ...reference.coordinate_map import AffineTransform
 
 def setup():
     # Suppress warnings during tests to reduce noise
@@ -245,6 +245,30 @@ def test_synchronized_order():
 
     yield assert_equal, im_unscrambled3.axes, im.axes
     yield assert_equal, im_unscrambled3.reference, im.reference
+
+
+def test_iter_axis():
+    # axis iteration helper function.  This function also tests rollaxis,
+    # because iter_axis uses rollaxis
+    iter_axis = image.iter_axis
+    data = np.arange(24).reshape((4,3,2))
+    img = fromarray(data, 'ijk', 'xyz')
+    for ax_id, ax_no in (('i',0), ('j',1), ('k',2),
+                        ('x',0), ('y',1), ('z',2),
+                        (0,0), (1,1), (2,2),
+                        (-1,2)):
+        slices = list(iter_axis(img, ax_id))
+        expected_shape = list(data.shape)
+        g_len = expected_shape.pop(ax_no)
+        assert_equal(len(slices), g_len)
+        for s in slices:
+            assert_equal(list(s.shape), expected_shape)
+        # test asarray
+        slicer = [slice(None) for i in range(data.ndim)]
+        for i, s in enumerate(iter_axis(img, ax_id, asarray=True)):
+            slicer[ax_no] = i
+            assert_array_equal(s, data[slicer])
+
 
 def test_rollaxis():
     data = np.random.standard_normal((3,4,7,5))

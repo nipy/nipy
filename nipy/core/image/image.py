@@ -538,6 +538,47 @@ def rollaxis(img, axis, inverse=False):
     return img.reordered_axes(order).reordered_reference(order)
 
 
+def iter_axis(img, axis, asarray=False):
+    """ Return generator to slice an image `img` over `axis`
+
+    Parameters
+    ----------
+    img : ``Image`` instance
+    axis : int or str
+        axis identifier, either name or axis number
+    asarray : {False, True}, optional
+
+    Returns
+    -------
+    g : generator
+        such that list(g) returns a list of slices over `axis`.  If `asarray` is
+        `False` the slices are images.  If `asarray` is True, slices are the
+        data from the images.
+
+    Examples
+    --------
+    >>> data = np.arange(24).reshape((4,3,2))
+    >>> img = fromarray(data, 'ijk', 'xyz')
+    >>> slices = list(iter_axis(img, 'j'))
+    >>> len(slices)
+    3
+    >>> slices[0].shape
+    (4, 2)
+    >>> slices = list(iter_axis(img, 'k', asarray=True))
+    >>> slices[1].sum() == data[:,:,1].sum()
+    True
+    """
+    rimg = rollaxis(img, axis)
+    n = rimg.shape[0]
+    def gen():
+        for i in range(n):
+            if asarray:
+                yield rimg[i].get_data()
+            else:
+                yield rimg[i]
+    return gen()
+
+
 def synchronized_order(img, target_img,
                        axes=True,
                        reference=True):
