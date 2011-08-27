@@ -21,7 +21,7 @@ from .image.affine_image import AffineImage
 
 from .image.image_list import ImageList
 
-from .image.generators import (parcels, data_generator, write_data,
+from .utils.generators import (parcels, data_generator, write_data,
                                slice_generator, f_generator,
                                matrix_generator)
 

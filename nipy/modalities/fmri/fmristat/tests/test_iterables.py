@@ -6,9 +6,9 @@ from numpy.random import standard_normal as noise
 
 from nipy.io.api import load_image
 from nipy.modalities.fmri.api import FmriImageList, fmri_generator
-from nipy.core.image.generators import (write_data, parcels,
+from nipy.core.utils.generators import (write_data, parcels,
                                         f_generator)
-                                        
+
 from nipy.fixes.scipy.stats.models.regression import OLSModel as ols_model
 
 from numpy.testing import assert_array_almost_equal
