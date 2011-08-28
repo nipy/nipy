@@ -73,7 +73,7 @@ def parcels(data, labels=None, exclude=[]):
 def data_generator(data, iterable=None):
     """ Return generator for ``[(i, data[i]) for i in iterable]``
 
-    If iterables is None, it defaults to range(data.shape[0])
+    If iterable is None, it defaults to range(data.shape[0])
 
     Examples
     --------
