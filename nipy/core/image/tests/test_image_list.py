@@ -20,6 +20,9 @@ def test_image_list():
     # Test non-image construction
     a = np.arange(10)
     assert_raises(ValueError, ImageList, a)
+
+    # Test axis must be specified
+    assert_raises(ValueError, ImageList.from_image, img)
     assert_raises(ValueError, ImageList.from_image, img, None)
 
     # check all the axes

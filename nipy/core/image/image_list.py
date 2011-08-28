@@ -13,19 +13,25 @@ class ImageList(object):
 
     def __init__(self, images=None):
         """
-        A lightweight implementation of a list of images.
+        An implementation of a list of images.
 
         Parameters
         ----------
         images : iterable
-           a iterable and sliceable object whose items are meant to be images;
-           this is checked by asserting that each has a `coordmap` attribute
+           an iterable object whose items are meant to be images; this is
+           checked by asserting that each has a `coordmap` attribute and a
+           ``get_data`` method.  Note that Image objects are not iterable by
+           default; use the ``from_image`` classmethod or ``iter_axis`` function
+           to convert images to image lists - see examples below for the latter.
 
+        Examples
+        --------
         >>> from nipy.testing import funcfile
-        >>> from nipy.core.api import Image, ImageList
+        >>> from nipy.core.api import Image, ImageList, iter_axis
         >>> from nipy.io.api import load_image
         >>> funcim = load_image(funcfile)
-        >>> ilist = ImageList(funcim)
+        >>> iterable_img = iter_axis(funcim, 't')
+        >>> ilist = ImageList(iterable_img)
         >>> sublist = ilist[2:5]
 
         Slicing an ImageList returns a new ImageList
@@ -41,35 +47,39 @@ class ImageList(object):
         >>> isinstance(newimg, ImageList)
         False
         >>> np.asarray(sublist).shape
-        (3, 2, 20, 20)
+        (3, 17, 21, 3)
         >>> np.asarray(newimg).shape
-        (2, 20, 20)
+        (17, 21, 3)
         """
         if images is None:
             self.list = []
             return
+        images = list(images)
         for im in images:
-            if not hasattr(im, "coordmap"):
-                raise ValueError("expecting each element of images "
-                                 "to have a 'coordmap' attribute")
+            if not (hasattr(im, "coordmap") and hasattr(im, "get_data")):
+                raise ValueError("Expecting each element of images "
+                                 "to have a ``coordmap`` attribute "
+                                 "and a ``get_data`` method")
         self.list = images
 
     @classmethod
-    def from_image(klass, image, axis=0):
-        """ Create an image list from an image
+    def from_image(klass, image, axis=None):
+        """ Create an image list from an `image` by slicing over `axis`
 
         Parameters
         ----------
         image : object
             object with ``coordmap`` attribute
-        axis : int
+        axis : str or int
             axis of `image` that should become the axis indexed by the image
-            list
+            list.
 
         Returns
         -------
         ilist : ``ImageList`` instance
         """
+        if axis is None:
+            raise ValueError('Must specify image axis')
         # Now, reorder the axes and reference
         image = img_rollaxis(image, axis)
 
@@ -111,17 +121,11 @@ class ImageList(object):
         """
         self.list[index]
         """
+        # Integer slices return elements
         if type(index) is type(1):
             return self.list[index]
-        else:
-            return ImageList(images=self.list[index])
-
-    def __getslice__(self, i, j):
-        """
-        Return another ImageList instance consisting with
-        images self.list[i:j]
-        """
-        return ImageList(images=self.list[i:j])
+        # List etc slicing return new instances of self.__class__
+        return self.__class__(images=self.list[index])
 
     def __array__(self):
         """Return data in ndarray.  Called through numpy.array.
@@ -129,14 +133,17 @@ class ImageList(object):
         Examples
         --------
         >>> from nipy.testing import funcfile
-        >>> from nipy.core.api import ImageList
         >>> from nipy.io.api import load_image
         >>> funcim = load_image(funcfile)
-        >>> ilist = ImageList(funcim)
+        >>> ilist = ImageList.from_image(funcim, axis='t')
         >>> np.asarray(ilist).shape
-        (20, 2, 20, 20)
+        (20, 17, 21, 3)
         """
-        return np.asarray([np.asarray(im) for im in self.list])
+        length = len(self.list)
+        v = np.empty((length,) + self.list[0].shape)
+        for i, im in enumerate(self.list):
+            v[i] = im.get_data()
+        return v
 
     def __iter__(self):
         self._iter = iter(self.list)
@@ -144,4 +151,3 @@ class ImageList(object):
 
     def next(self):
         return self._iter.next()
-
