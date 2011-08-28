@@ -23,50 +23,42 @@ def test_resample_img2img():
     yield assert_raises, ValueError, resample_img2img, fimg, aimg
 
 
-
 # Hackish flag for enabling of pylab plots of resamplingstest_2d_from_3d
 gui_review = False
 
 def test_rotate2d():
-    # Rotate an image in 2d on a square grid,
-    # should result in transposed image
-    
+    # Rotate an image in 2d on a square grid, should result in transposed image
     g = AffineTransform.from_params('ij', 'xy', np.diag([0.7,0.5,1]))
     g2 = AffineTransform.from_params('ij', 'xy', np.diag([0.5,0.7,1]))
-
     i = Image(np.ones((100,100)), g)
-    i[50:55,40:55] = 3.
-
+    # This sets the image data by writing into the array
+    i.get_data()[50:55,40:55] = 3.
     a = np.array([[0,1,0],
                   [1,0,0],
                   [0,0,1]], np.float)
-
     ir = resample(i, g2, a, (100, 100))
-    yield assert_array_almost_equal, np.asarray(ir).T, i
+    assert_array_almost_equal(ir.get_data().T, i.get_data())
 
 
 def test_rotate2d2():
-    # Rotate an image in 2d on a non-square grid,
-    # should result in transposed image
-    
+    # Rotate an image in 2d on a non-square grid, should result in transposed
+    # image
     g = AffineTransform.from_params('ij', 'xy', np.diag([0.7,0.5,1]))
     g2 = AffineTransform.from_params('ij', 'xy', np.diag([0.5,0.7,1]))
-
     i = Image(np.ones((100,80)), g)
-    i[50:55,40:55] = 3.
-
+    # This sets the image data by writing into the array
+    i.get_data()[50:55,40:55] = 3.
     a = np.array([[0,1,0],
                   [1,0,0],
                   [0,0,1]], np.float)
-
     ir = resample(i, g2, a, (80,100))
-    yield assert_array_almost_equal, np.asarray(ir).T, i
+    assert_array_almost_equal(ir.get_data().T, i.get_data())
 
 
 def test_rotate2d3():
     # Another way to rotate/transpose the image, similar to
-    # test_rotate2d2 and test_rotate2d except the world of the
-    # output coordmap are the same as the world of the
+    # test_rotate2d2 and test_rotate2d, except the world of the
+    # output coordmap is the same as the world of the
     # original image. That is, the data is transposed on disk, but the
     # output coordinates are still 'x,'y' order, not 'y', 'x' order as
     # above
@@ -74,44 +66,38 @@ def test_rotate2d3():
     # this functionality may or may not be used a lot. if data is to
     # be transposed but one wanted to keep the NIFTI order of output
     # coords this would do the trick
-
     g = AffineTransform.from_params('xy', 'ij', np.diag([0.5,0.7,1]))
     i = Image(np.ones((100,80)), g)
-    i[50:55,40:55] = 3.
-
+    # This sets the image data by writing into the array
+    i.get_data()[50:55,40:55] = 3.
     a = np.identity(3)
     g2 = AffineTransform.from_params('xy', 'ij', np.array([[0,0.5,0],
                                                   [0.7,0,0],
                                                   [0,0,1]]))
     ir = resample(i, g2, a, (80,100))
-    v2v = compose(g.inverse(), g2)
-    yield assert_array_almost_equal, np.asarray(ir).T, i
-    
+    assert_array_almost_equal(ir.get_data().T, i.get_data())
+
 
 def test_rotate3d():
     # Rotate / transpose a 3d image on a non-square grid
-
     g = AffineTransform.from_params('ijk', 'xyz', np.diag([0.5,0.6,0.7,1]))
     g2 = AffineTransform.from_params('ijk', 'xyz', np.diag([0.5,0.7,0.6,1]))
-
     shape = (100,90,80)
     i = Image(np.ones(shape), g)
-    i[50:55,40:55,30:33] = 3.
-    
+    i.get_data()[50:55,40:55,30:33] = 3.
     a = np.array([[1,0,0,0],
                   [0,0,1,0],
                   [0,1,0,0],
                   [0,0,0,1.]])
-
     ir = resample(i, g2, a, (100,80,90))
-    yield assert_array_almost_equal, np.transpose(np.asarray(ir), (0,2,1)), i
+    assert_array_almost_equal(np.transpose(ir.get_data(), (0,2,1)),
+                              i.get_data())
 
 
 def test_resample2d():
     g = AffineTransform.from_params('ij', 'xy', np.diag([0.5,0.5,1]))
     i = Image(np.ones((100,90)), g)
-    i[50:55,40:55] = 3.
-    
+    i.get_data()[50:55,40:55] = 3.
     # This mapping describes a mapping from the "target" physical
     # coordinates to the "image" physical coordinates.  The 3x3 matrix
     # below indicates that the "target" physical coordinates are related
@@ -123,7 +109,7 @@ def test_resample2d():
     a = np.identity(3)
     a[:2,-1] = 4.
     ir = resample(i, i.coordmap, a, (100,90))
-    yield assert_array_almost_equal, ir[42:47,32:47], 3.
+    assert_array_almost_equal(ir.get_data()[42:47,32:47], 3.)
 
 
 def test_resample2d1():
@@ -131,7 +117,7 @@ def test_resample2d1():
     # an AffineTransform instance
     g = AffineTransform.from_params('ij', 'xy', np.diag([0.5,0.5,1]))
     i = Image(np.ones((100,90)), g)
-    i[50:55,40:55] = 3.
+    i.get_data()[50:55,40:55] = 3.
     a = np.identity(3)
     a[:2,-1] = 4.
     A = np.identity(2)
@@ -139,19 +125,19 @@ def test_resample2d1():
     def mapper(x):
         return np.dot(x, A.T) + b
     ir = resample(i, i.coordmap, mapper, (100,90))
-    yield assert_array_almost_equal, ir[42:47,32:47], 3.
+    assert_array_almost_equal(ir.get_data()[42:47,32:47], 3.)
 
 
 def test_resample2d2():
     g = AffineTransform.from_params('ij', 'xy', np.diag([0.5,0.5,1]))
     i = Image(np.ones((100,90)), g)
-    i[50:55,40:55] = 3.
+    i.get_data()[50:55,40:55] = 3.
     a = np.identity(3)
     a[:2,-1] = 4.
     A = np.identity(2)
     b = np.ones(2)*4
     ir = resample(i, i.coordmap, (A, b), (100,90))
-    yield assert_array_almost_equal, ir[42:47,32:47], 3.
+    assert_array_almost_equal(ir.get_data()[42:47,32:47], 3.)
 
 
 def test_resample2d3():
@@ -159,18 +145,18 @@ def test_resample2d3():
     # the transform: here it is an (A,b) pair
     g = AffineTransform.from_params('ij', 'xy', np.diag([0.5,0.5,1]))
     i = Image(np.ones((100,90)), g)
-    i[50:55,40:55] = 3.
+    i.get_data()[50:55,40:55] = 3.
     a = np.identity(3)
     a[:2,-1] = 4.
     ir = resample(i, i.coordmap, a, (100,90))
-    yield assert_array_almost_equal, ir[42:47,32:47], 3.
-    
+    assert_array_almost_equal(ir.get_data()[42:47,32:47], 3.)
+
 
 def test_resample3d():
     g = AffineTransform.from_params('ijk', 'xyz', np.diag([0.5,0.5,0.5,1]))
     shape = (100,90,80)
     i = Image(np.ones(shape), g)
-    i[50:55,40:55,30:33] = 3.
+    i.get_data()[50:55,40:55,30:33] = 3.
     # This mapping describes a mapping from the "target" physical
     # coordinates to the "image" physical coordinates.  The 4x4 matrix
     # below indicates that the "target" physical coordinates are related
@@ -182,7 +168,7 @@ def test_resample3d():
     a = np.identity(4)
     a[:3,-1] = [3,4,5]
     ir = resample(i, i.coordmap, a, (100,90,80))
-    yield assert_array_almost_equal, ir[44:49,32:47,20:23], 3.
+    assert_array_almost_equal(ir.get_data()[44:49,32:47,20:23], 3.)
 
 
 def test_nonaffine():
@@ -196,7 +182,7 @@ def test_nonaffine():
         in_names, out_names, tin_names, tout_names = names
         g = AffineTransform.from_params(in_names, out_names, np.identity(3))
         img = Image(np.ones((100,90)), g)
-        img[50:55,40:55] = 3.
+        img.get_data()[50:55,40:55] = 3.
         tcoordmap = AffineTransform.from_start_step(
             tin_names,
             tout_names,
@@ -223,16 +209,16 @@ def test_2d_from_3d():
     shape = (100,90,80)
     g = AffineTransform.from_params('ijk', 'xyz', np.diag([0.5,0.5,0.5,1]))
     i = Image(np.ones(shape), g)
-    i[50:55,40:55,30:33] = 3.
+    i.get_data()[50:55,40:55,30:33] = 3.
     a = np.identity(4)
     g2 = ArrayCoordMap.from_shape(g, shape)[10]
     ir = resample(i, g2.coordmap, a, g2.shape)
-    yield assert_array_almost_equal, np.asarray(ir), np.asarray(i[10])
+    assert_array_almost_equal(ir.get_data(), i[10].get_data())
 
 
 def test_slice_from_3d():
     # Resample a 3d image, returning a zslice, yslice and xslice
-    # 
+    #
     # This example creates a coordmap that coincides with
     # a given z, y, or x slice of an image, and checks that
     # resampling agrees with the data in the given slice.
@@ -241,23 +227,23 @@ def test_slice_from_3d():
                                     'xyz',
                                     np.diag([0.5,0.5,0.5,1]))
     img = Image(np.ones(shape), g)
-    img[50:55,40:55,30:33] = 3
+    img.get_data()[50:55,40:55,30:33] = 3
     I = np.identity(4)
     zsl = slices.zslice(26,
                         ((0,49.5), 100),
                         ((0,44.5), 90),
                         img.reference)
     ir = resample(img, zsl, I, (100, 90))
-    assert_true(np.allclose(np.asarray(ir), np.asarray(img[:,:,53])))
+    assert_array_almost_equal(ir.get_data(), img[:,:,53].get_data())
     ysl = slices.yslice(22,
                         ((0,49.5), 100),
                         ((0,39.5), 80),
                         img.reference)
     ir = resample(img, ysl, I, (100, 80))
-    assert_true(np.allclose(np.asarray(ir), np.asarray(img[:,45,:])))
+    assert_array_almost_equal(ir.get_data(), img[:,45,:].get_data())
     xsl = slices.xslice(15.5,
                         ((0,44.5), 90),
                         ((0,39.5), 80),
                         img.reference)
     ir = resample(img, xsl, I, (90, 80))
-    assert_true(np.allclose(np.asarray(ir), np.asarray(img[32,:,:])))
+    assert_array_almost_equal(ir.get_data(), img[32,:,:].get_data())

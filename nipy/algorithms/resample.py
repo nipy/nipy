@@ -16,11 +16,11 @@ from ..core.transforms import affines
 
 def resample_img2img(source, target, order=3):
     """  Resample `source` image to space of `target` image
-    
+
     This wraps the resample function to resample one image onto another.
     The output of the function will give an image with shape of the
     target and data from the source
-    
+
     Parameters
     ----------
     source : ``Image``
@@ -33,11 +33,11 @@ def resample_img2img(source, target, order=3):
 
     Returns
     -------
-    output : ``Image`` 
-       Image with interpolated data and output.coordmap == target.coordmap 
+    output : ``Image``
+       Image with interpolated data and output.coordmap == target.coordmap
 
     Examples
-    --------      
+    --------
     >>> from nipy.testing import funcfile, anatfile
     >>> from nipy.io.api import load_image
     >>> aimg_source = load_image(anatfile)
