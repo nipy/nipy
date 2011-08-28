@@ -6,13 +6,13 @@ import warnings
 
 import numpy as np
 
-from nipy.modalities.fmri.api import fmri_generator, FmriImageList
+from nipy.modalities.fmri.api import axis0_generator, FmriImageList
 from nipy.core.api import parcels, fromarray
 from nipy.io.api import  load_image, save_image
 
 from nose.tools import assert_equal, assert_true
 
-from nipy.testing import funcfile, parametric
+from nipy.testing import funcfile
 
 
 def setup():
@@ -45,17 +45,16 @@ def test_write():
     os.remove(fname)
 
 
-@parametric
 def test_iter():
     img = load_image(funcfile)
     img_shape = img.shape
     exp_shape = (img_shape[0],) + img_shape[2:]
     j = 0
-    for i, d in fmri_generator(img):
+    for i, d in axis0_generator(img.get_data()):
         j += 1
-        yield assert_equal(d.shape, exp_shape)
+        assert_equal(d.shape, exp_shape)
         del(i); gc.collect()
-    yield assert_equal(j, img_shape[1])
+    assert_equal(j, img_shape[1])
 
 
 def test_subcoordmap():
@@ -64,13 +63,14 @@ def test_subcoordmap():
     xform = img.affine[:,1:]
     assert_true(np.allclose(subcoordmap.affine[1:], xform[1:]))
     assert_true(np.allclose(subcoordmap.affine[0], [0,0,0,img.coordmap([3,0,0,0])[0]]))
-        
+
 
 def test_labels1():
     img = load_image(funcfile)
-    parcelmap = fromarray(np.asarray(img[0]), 'kji', 'zyx')    
+    data = img.get_data()
+    parcelmap = fromarray(np.asarray(img[0]), 'kji', 'zyx')
     parcelmap = (np.asarray(parcelmap) * 100).astype(np.int32)
     v = 0
-    for i, d in fmri_generator(img, parcels(parcelmap)):
+    for i, d in axis0_generator(data, parcels(parcelmap)):
         v += d.shape[1]
     assert_equal(v, parcelmap.size)

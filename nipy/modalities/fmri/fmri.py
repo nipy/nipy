@@ -105,38 +105,33 @@ class FmriImageList(ImageList):
                      slice_times=slice_times)
 
 
-def fmri_generator(data, iterable=None):
-    """
-    This function takes an iterable object and returns a generator that
-    looks like:
+def axis0_generator(data, slicers=None):
+    """ Takes array-like `data`, returning slices over axes > 0
 
-    [numpy.asarray(data)[:,item] for item in iterator]
+    This function takes an array-like object `data` and yields tuples of slicing
+    thing and slices like::
 
-    This can be used to get time series out of a 4d fMRI image, if and
-    only if time varies across axis 0.
+        [slicer, np.asarray(data)[:,slicer] for slicer in slicer]
+
+    which in the default (`slicers` is None) case, boils down to::
+
+        [i, np.asarray(data)[:,i] for i in range(data.shape[1])]
+
+    This can be used to get arrays of time series out of an array if the time
+    axis is axis 0.
 
     Parameters
     ----------
     data : array-like
        object such that ``arr = np.asarray(data)`` returns an array of
        at least 2 dimensions.
-    iterable : None or sequence
-       sequence of objects that can be used to index array ``arr``
-       returned from data.  If None, default is
-       ``range(data.shape[1])``, in which case the generator will
-       return elements  ``[arr[:,0], arr[:,1] ... ]``
-
-    Notes
-    -----
-    If data is an ``FmriImageList`` instance, there is more overhead
-    involved in calling ``numpy.asarray(data)`` than if data is an Image
-    instance or an array.
+    slicers : None or sequence
+       sequence of objects that can be used to slice into array ``arr``
+       returned from data.  If None, default is ``range(data.shape[1])``
     """
-    warnings.warn('generator _assumes_ time as first axis in array; '
-                  'this may well not be true for Images')
-    data = np.asarray(data)
-    if iterable is None:
-        iterable = range(data.shape[1])
-    for item in iterable:
-        yield item, data[:,item]
+    arr = np.asarray(data)
+    if slicers is None:
+        slicers = range(arr.shape[1])
+    for slicer in slicers:
+        yield slicer, arr[:,slicer]
 
