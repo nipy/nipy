@@ -30,7 +30,7 @@ def modulated_block_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     duration = 5 + 5 * np.random.rand(len(onsets))
-    values = np.random.rand(len(onsets))
+    values = 1 + np.random.rand(len(onsets))
     paradigm = BlockParadigm(conditions, onsets, duration, values)
     return paradigm
 
@@ -38,7 +38,7 @@ def modulated_block_paradigm():
 def modulated_event_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    values = np.random.rand(len(onsets))
+    values = 1 + np.random.rand(len(onsets))
     paradigm = EventRelatedParadigm(conditions, onsets, values)
     return paradigm
 
@@ -78,7 +78,7 @@ def test_dmtx0b():
     frametimes = np.linspace(0, 127 * tr,128)
     X, names= dmtx_light(frametimes, drift_model='Polynomial',
                             drift_order=3)
-    assert_almost_equal(X[:,0], np.linspace(-0.5, .5,128))
+    assert_almost_equal(X[:, 0], np.linspace(- 0.5, .5, 128))
 
 
 def test_dmtx0c():
@@ -111,7 +111,7 @@ def test_dmtx1():
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model='Canonical'
+    hrf_model = 'Canonical'
     X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                             drift_model='Polynomial', drift_order=3)
     assert_true(len(names)==7)
@@ -162,7 +162,7 @@ def test_dmtx1d():
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model='Canonical'
+    hrf_model = 'Canonical'
     X,names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                         drift_model='Polynomial', drift_order=3)
     assert_true((np.isnan(X) == 0).all())
@@ -173,7 +173,7 @@ def test_dmtx2():
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model='Canonical'
+    hrf_model = 'Canonical'
     X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                         drift_model='Cosine', hfcut=63)
     assert_true(len(names) == 8)
@@ -207,7 +207,7 @@ def test_dmtx5():
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = block_paradigm()
-    hrf_model='Canonical'
+    hrf_model = 'Canonical'
     X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3)
     assert_true(len(names) == 7)
@@ -218,7 +218,7 @@ def test_dmtx6():
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = block_paradigm()
-    hrf_model='Canonical With Derivative'
+    hrf_model = 'Canonical With Derivative'
     X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3)
     assert_true(len(names) == 10)
@@ -338,7 +338,7 @@ def test_dmtx15():
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model='Canonical'
+    hrf_model = 'Canonical'
     ax = np.random.randn(128, 4)
     X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3, add_regs=ax)
@@ -351,7 +351,7 @@ def test_dmtx16():
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model ='Canonical'
+    hrf_model = 'Canonical'
     ax = np.random.randn(128, 4)
     X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='Polynomial', drift_order=3, add_regs=ax)
