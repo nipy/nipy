@@ -574,13 +574,11 @@ def iter_axis(img, axis, asarray=False):
     """
     rimg = rollaxis(img, axis)
     n = rimg.shape[0]
-    def gen():
-        for i in range(n):
-            if asarray:
-                yield rimg[i].get_data()
-            else:
-                yield rimg[i]
-    return gen()
+    for i in range(rimg.shape[0]):
+        if asarray:
+            yield rimg[i].get_data()
+        else:
+            yield rimg[i]
 
 
 def synchronized_order(img, target_img,
