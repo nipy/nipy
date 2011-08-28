@@ -332,6 +332,10 @@ class Image(object):
 
     def __setitem__(self, index, value):
         """Setting values of an image, set values in the data array."""
+        warnings.warn("Please don't use ``img[x] = y``; use "
+                      "``img.get_data()[x]  = y`` instead",
+                      DeprecationWarning,
+                      stacklevel=2)
         self._data[index] = value
 
     def __array__(self):
