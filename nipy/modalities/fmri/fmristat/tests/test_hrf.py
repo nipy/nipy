@@ -6,20 +6,16 @@
 
 import numpy as np
 
-from nipy.modalities.fmri.utils import T, lambdify_t
-import nipy.modalities.fmri.hrf as hrf
-from nipy.modalities.fmri.fmristat.hrf import (spectral_decomposition,
-                                               taylor_approx)
+from ...utils import T, lambdify_t
+from ... import hrf
+from ..hrf import spectral_decomposition
 
 from nose.tools import assert_true, assert_false, \
-     assert_equal, assert_raises
+        assert_equal, assert_raises
 
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
-from nipy.testing import parametric
 
-
-@parametric
 def test_spectral_decomposition():
     # mainly to test that the second sign follows the first
     spectral, approx = spectral_decomposition(hrf.glover)
@@ -27,7 +23,7 @@ def test_spectral_decomposition():
     t = np.linspace(-15,50,3251)
     vals = [val_maker(t) for val_maker in val_makers]
     ind = np.argmax(vals[1])
-    yield assert_true(vals[0][ind] > 0)
+    assert_true(vals[0][ind] > 0)
     # test that we can get several components
     spectral, approx = spectral_decomposition(hrf.glover, ncomp=5)
-    yield assert_equal(len(spectral), 5)
+    assert_equal(len(spectral), 5)
