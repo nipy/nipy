@@ -360,6 +360,16 @@ class Image(object):
                       stacklevel=2)
         return subsample(self, slice_object)
 
+    def __iter__(self):
+        """ Images do not have default iteration
+
+        This is because it's not obvious that axis 0 is the right axis to
+        iterate over.  For example, we often want to iterate over the time or
+        volume axis, and this is more likely to be axis 3
+        """
+        raise TypeError("Images do not have default iteration; "
+                        "you can use ``iter_axis(img, axis)`` instead.")
+
     def __eq__(self, other):
         return (isinstance(other, self.__class__)
                 and np.all(self.get_data() == other.get_data())
@@ -382,7 +392,7 @@ class Image(object):
 
 class SliceMaker(object):
     """ This class just creates slice objects for image resampling
-    
+
     It only has a __getitem__ method that returns its argument.
 
     XXX Wouldn't need this if there was a way
