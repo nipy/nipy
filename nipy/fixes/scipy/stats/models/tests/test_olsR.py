@@ -1,10 +1,10 @@
 
 import numpy as np
-from nipy.fixes.scipy.stats.models.regression import OLSModel
+from ..regression import OLSModel
 import nipy.testing as niptest
 import scipy.stats
 
-from exampledata import x, y
+from .exampledata import x, y
 
 Rscript = '''
 d = read.table('data.csv', header=T, sep=' ')
