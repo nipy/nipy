@@ -4,9 +4,9 @@ import numpy as np
 import numpy.linalg as L
 import numpy.random as R
 
-from nipy.testing import (assert_equal, assert_almost_equal, dec, parametric)
+from ....testing import (assert_equal, assert_almost_equal)
 
-from nipy.algorithms.statistics import intvol, utils
+from .. import intvol, utils
 
 
 def symnormal(p=10):
@@ -20,7 +20,7 @@ def randorth(p=10):
     """
     A = symnormal(p)
     return L.eig(A)[1]
-                
+
 
 def box(shape, edges):
     data = np.zeros(shape)
@@ -43,7 +43,7 @@ def randombox(shape):
         if edges[j][0] == edges[j][1]:
             edges[j][0] = 0; edges[j][1] = shape[j]/2+1
     return edges, box(shape, edges)
-        
+
 
 def elsym(edgelen, order=1):
     """
@@ -72,15 +72,14 @@ def nonintersecting_boxes(shape):
     0
     >>> c = np.indices((40,)).astype(np.float)
     >>> intvol.Lips1d(c, b1)
-    10.0
+    array([  1.,  10.])
     >>> intvol.Lips1d(c, b2)
-    28.0
+    array([  1.,  28.])
     >>> intvol.Lips1d(c, b1+b2)
-    39.0
+    array([  1.,  39.])
 
-    The function creates two boxes such that
-    the 'dilated' box1 does not intersect with box2.
-    Additivity works in this case.
+    The function creates two boxes such that the 'dilated' box1 does not
+    intersect with box2.  Additivity works in this case.
     """
     while True:
         edge1, box1 = randombox(shape)
@@ -130,6 +129,54 @@ def test_ec_disjoint():
         yield assert_almost_equal, e(box1 + box2), e(box1) + e(box2)
 
 
+def test_lips_wrapping():
+    # Test that shapes touching the edge do not combine by wrapping
+    # Test that simple disjoint boxes at edge do not combine by wrapping.
+    b1 = np.zeros(40, np.int)
+    b1[:11] = 1
+    b2 = np.zeros(40, np.int)
+    b2[11:] = 1
+    # lines are disjoint
+    assert_equal((b1*b2).sum(), 0)
+    c = np.indices(b1.shape).astype(np.float)
+    assert_equal(intvol.Lips1d(c, b1), (1, 10))
+    assert_equal(intvol.Lips1d(c, b2), (1, 28))
+    assert_equal(intvol.Lips1d(c, b1+b2), (1, 39.0))
+    # 2D
+    b1 = b1[:,None]
+    b2 = b2[:,None]
+    # boxes are disjoint
+    assert_equal((b1*b2).sum(), 0)
+    c = np.indices(b1.shape).astype(np.float)
+    assert_equal(intvol.Lips2d(c, b1), (1, 10, 0))
+    assert_equal(intvol.Lips2d(c, b2), (1, 28, 0))
+    assert_equal(intvol.Lips2d(c, b1+b2), (1, 39.0, 0))
+    # 3D
+    b1 = b1[:,:,None]
+    b2 = b2[:,:,None]
+    assert_equal(b1.shape, (40,1,1))
+    # boxes are disjoint
+    assert_equal((b1*b2).sum(), 0)
+    c = np.indices(b1.shape).astype(np.float)
+    assert_equal(intvol.Lips3d(c, b1), (1, 10, 0, 0))
+    assert_equal(intvol.Lips3d(c, b2), (1, 28, 0, 0))
+    assert_equal(intvol.Lips3d(c, b1+b2), (1, 39.0, 0, 0))
+    # Shapes which are squeezable should still return sensible answers
+    # Test simple ones line / box / volume
+    funcer = {1:intvol.Lips1d,2:intvol.Lips2d,3:intvol.Lips3d}
+    for box_shape, exp_ivs in [[(10,),(1,9)],
+                               [(10,1),(1,9,0)],
+                               [(1,10),(1,9,0)],
+                               [(10,1,1), (1,9,0,0)],
+                               [(1, 10, 1), (1,9,0,0)],
+                               [(1, 1, 10), (1,9,0,0)]]:
+        nd = len(box_shape)
+        func = funcer[nd]
+        c = np.indices(box_shape).astype(np.float)
+        b = np.ones(box_shape, dtype=np.int)
+        assert_equal(func(c, b), exp_ivs)
+
+
 def test_lips1_disjoint():
     phi = intvol.Lips1d
     box1, box2, edge1, edge2 = nonintersecting_boxes((30,))
@@ -175,7 +222,6 @@ def test_lips2_disjoint():
                        )
 
 
-@parametric
 def test_lips3_disjoint():
     phi = intvol.Lips3d
     box1, box2, edge1, edge2 = nonintersecting_boxes((40,)*3)
@@ -186,11 +232,11 @@ def test_lips3_disjoint():
     e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
 
-    yield assert_almost_equal(phi(c, box1 + box2), phi(c, box1) + phi(c, box2))
-    yield assert_almost_equal(phi(d, box1 + box2), phi(d, box1) + phi(d, box2))
-    yield assert_almost_equal(phi(e, box1 + box2), phi(e, box1) + phi(e, box2))
-    yield assert_almost_equal(phi(e, box1 + box2), phi(c, box1 + box2))
-    yield assert_almost_equal(
+    assert_almost_equal(phi(c, box1 + box2), phi(c, box1) + phi(c, box2))
+    assert_almost_equal(phi(d, box1 + box2), phi(d, box1) + phi(d, box2))
+    assert_almost_equal(phi(e, box1 + box2), phi(e, box1) + phi(e, box2))
+    assert_almost_equal(phi(e, box1 + box2), phi(c, box1 + box2))
+    assert_almost_equal(
         phi(e, box1 + box2),
         (np.array([elsym([e[1]-e[0]-1 for e in edge1], i) for i in range(4)]) +
          np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(4)])))

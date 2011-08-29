@@ -378,7 +378,11 @@ def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
     Returns
     -------
     mu : ndarray
-         Array of intrinsic volumes [mu0, mu1, mu2, mu3]
+        Array of intrinsic volumes [mu0, mu1, mu2, mu3], being, respectively:
+        #. Euler characteristic
+        #. 2 * mean caliper diameter
+        #. 0.5 * surface area
+        #. Volume.
 
     Notes
     -----
@@ -394,6 +398,20 @@ def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
     """
+
+    # if the data can be squeezed, we must use the lower dimensional
+    # function
+    if np.squeeze(mask).ndim == 2:
+        value = np.zeros(4)
+        squeezed = np.squeeze(mask).shape
+        value[:3] = Lips2d(coords.reshape((coords.shape[0],)+squeezed), np.squeeze(mask))
+        return value
+    elif np.squeeze(mask).ndim == 1:
+        value = np.zeros(4)
+        squeezed = np.squeeze(mask).shape
+        value[:2] = Lips1d(coords.reshape((coords.shape[0],)+squeezed), np.squeeze(mask))
+        return value
+
     if not set(np.unique(mask)).issubset([0,1]):
       raise ValueError('mask should be filled with 0/1 '
                        'values, but be of type np.int')
@@ -408,7 +426,7 @@ def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
     cdef np.ndarray[DTYPE_int_t, ndim=3] pmask
 
     # d3 and d4 are lists of triangles and tetrahedra 
-    # associated to particular voxels in the cuve
+    # associated to particular voxels in the cube
 
     cdef np.ndarray[DTYPE_int_t, ndim=2] d4
     cdef np.ndarray[DTYPE_int_t, ndim=2] m4
@@ -628,7 +646,10 @@ def Lips2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
     Returns
     -------
     mu : ndarray
-         Array of intrinsic volumes [mu0, mu1, mu2]
+        Array of intrinsic volumes [mu0, mu1, mu2], being, respectively:
+        #. Euler characteristic
+        #. 2 * mean caliper diameter
+        #. Area.
 
     Notes
     -----
@@ -641,6 +662,14 @@ def Lips2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
     """
+    # if the data can be squeezed, we must use the lower dimensional
+    # function
+    if np.squeeze(mask).ndim == 1:
+        value = np.zeros(3)
+        squeezed = np.squeeze(mask).shape
+        value[:2] = Lips1d(coords.reshape((coords.shape[0],)+squeezed), np.squeeze(mask))
+        return value
+
     if not set(np.unique(mask)).issubset([0,1]):
       raise ValueError('mask should be filled with 0/1 '
                        'values, but be of type np.int')
@@ -868,11 +897,10 @@ def EC2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
 def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
            np.ndarray[DTYPE_int_t, ndim=1] mask):
     """
-    Given a 1d mask and coordinates, estimate the intrinsic volumes
-    of the masked region. The region is broken up into
-    edges / vertices, which are included based on whether
-    all voxels in the edge / vertex are
-    in the mask or not.
+    Given a 1d mask and coordinates, estimate the intrinsic volumes of the
+    masked region. The region is broken up into edges / vertices, which are
+    included based on whether all voxels in the edge / vertex are in the mask or
+    not.
 
     Parameters
     ----------
@@ -885,7 +913,9 @@ def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
     Returns
     -------
     mu : ndarray
-         Array of intrinsic volumes [mu0, mu1]
+        Array of intrinsic volumes [mu0, mu1], being, respectively:
+        #. Euler characteristic
+        #. Line segment length
 
     Notes
     -----
@@ -947,7 +977,7 @@ def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
 
       m = mask[i]
       if m:
-        m = m * (mask[(i+1) % s0] * (i < s0))
+        m = m * (mask[(i+1) % s0] * ((i+1) < s0))
         l1 = l1 + m * mu1_edge(D[0,0], D[0,1], D[1,1])
         l0 = l0 - m
 
