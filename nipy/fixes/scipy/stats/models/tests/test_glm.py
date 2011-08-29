@@ -5,32 +5,27 @@ Test functions for models.GLM
 """
 
 import numpy as np
-import numpy.random as R
-from numpy.testing import *
 
-import nipy.fixes.scipy.stats.models as S
-import nipy.fixes.scipy.stats.models.glm as models
+from .. import family
+from ..glm import Model as GLM
 
-W = R.standard_normal
+from nose.tools import assert_equal
 
-class TestRegression(TestCase):
-
-    def test_Logistic(self):
-        X = W((40,10))
-        Y = np.greater(W((40,)), 0)
-        family = S.family.Binomial()
-        cmodel = models(design=X, family=S.family.Binomial())
-        results = cmodel.fit(Y)
-        self.assertEquals(results.df_resid, 30)
-
-    def test_Logisticdegenerate(self):
-        X = W((40,10))
-        X[:,0] = X[:,1] + X[:,2]
-        Y = np.greater(W((40,)), 0)
-        family = S.family.Binomial()
-        cmodel = models(design=X, family=S.family.Binomial())
-        results = cmodel.fit(Y)
-        self.assertEquals(results.df_resid, 31)
+W = np.random.standard_normal
 
 
+def test_Logistic():
+    X = W((40,10))
+    Y = np.greater(W((40,)), 0)
+    cmodel = GLM(design=X, family=family.Binomial())
+    results = cmodel.fit(Y)
+    assert_equal(results.df_resid, 30)
 
+
+def test_Logisticdegenerate():
+    X = W((40,10))
+    X[:,0] = X[:,1] + X[:,2]
+    Y = np.greater(W((40,)), 0)
+    cmodel = GLM(design=X, family=family.Binomial())
+    results = cmodel.fit(Y)
+    assert_equal(results.df_resid, 31)
