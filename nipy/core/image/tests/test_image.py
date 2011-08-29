@@ -6,8 +6,9 @@ import numpy as np
 
 from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
 
-from numpy.testing import (assert_array_almost_equal, TestCase,
-                           assert_almost_equal, assert_array_equal)
+from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
+                           assert_array_equal)
+
 
 from .. import image
 from ..image import iter_axis
@@ -140,7 +141,7 @@ def test_slicing_returns_image():
     assert_equal(img1D.ndim, 1)
 
 
-class ArrayLikeObj(TestCase):
+class ArrayLikeObj(object):
     """The data attr in Image is an array-like object.
     Test the array-like interface that we'll expect to support."""
     def __init__(self):
