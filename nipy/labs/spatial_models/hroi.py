@@ -187,7 +187,7 @@ class HierarchicalROI(SubDomains):
         G = Forest(self.k, self.parents)
         return G
 
-    def merge_ascending(self, valid):
+    def merge_ascending(self, valid, ignore=[]):
         """Remove the non-valid ROIs by including them in
         their parents when it exists
 
@@ -214,7 +214,14 @@ class HierarchicalROI(SubDomains):
                     for fid in fids:
                         dfj = self.features[fid][fj]
                         dj = self.features[fid][j]
-                        self.features[fid][fj] = np.vstack((dfj, dj))
+                        if fid in ignore:
+                            dj[:] = dfj[0]
+                        if len(dfj.shape) == 1:
+                            dfj = dfj.reshape((-1, 1))
+                        if len(dj.shape) == 1:
+                            dj = dj.reshape((-1, 1))
+                        self.features[fid][fj] = np.concatenate(
+                            (np.ravel(dfj), np.ravel(dj)))
                 else:
                     valid[j] = 1
 
@@ -249,7 +256,8 @@ class HierarchicalROI(SubDomains):
                 for fid in fids:
                     di = self.features[fid][i]
                     dj = self.features[fid][j]
-                    self.features[fid][i] = np.vstack((di, dj))
+                    self.features[fid][i] = np.concatenate(
+                        (np.ravel(di), np.ravel(dj)))
 
         # finally remove  the non-valid items
         self.select(valid)
@@ -268,15 +276,17 @@ class HierarchicalROI(SubDomains):
         return Forest(self.k, self.parents).isleaf()
 
     def reduce_to_leaves(self, rid=''):
-        """create a  new set of rois which are only the leaves of self
+        """Create a  new set of rois which are only the leaves of self
+
         """
+        if self.k == 0:
+            return HierarchicalROI(
+                self.domain, -np.ones(self.domain.size), np.array([]), rid)
         isleaf = Forest(self.k, self.parents).isleaf()
         label = self.label.copy()
         label[isleaf[self.label] == 0] = -1
         k = np.sum(isleaf.astype(np.int))
-        if self.k == 0:
-            return HierarchicalROI(self.domain, label, np.array([]), rid)
-
+        
         parents = np.arange(k)
         nroi = HierarchicalROI(self.domain, label, parents, rid)
 

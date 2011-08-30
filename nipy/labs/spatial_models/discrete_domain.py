@@ -343,7 +343,7 @@ class MeshDomain(object):
         """
         E = len(self.triangles)
         edges = np.zeros((3 * E, 2))
-        weights = np.zeros(3 * E)
+        weights = np.ones(3 * E)
 
         for i in range(E):
             sa, sb, sc = self.triangles[i]
@@ -354,7 +354,7 @@ class MeshDomain(object):
         G = WeightedGraph(self.V, edges, weights)
 
         # symmeterize the graph
-        G.symmeterize()
+        G = G.symmeterize()
 
         # remove redundant edges
         G = G.cut_redundancies()

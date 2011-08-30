@@ -44,7 +44,7 @@ class MultiROI(object):
         return self.roi_features[fid]
 
     def select(self, valid):
-        """Select a subset of ROIs and he associated features
+        """Select a subset of ROIs and their associated features
         """
         if valid.size != self.k:
             raise ValueError('Invalid size for valid')
@@ -276,7 +276,8 @@ class SubDomains(object):
                 rf.append(np.mean(f, 0))
             if method == "weighted mean":
                 lvk = self.domain.local_volume[self.label == k]
-                tmp = np.dot(lvk, f) / np.maximum(eps, np.sum(lvk))
+                tmp = np.dot(lvk, f.reshape((-1, 1))) / \
+                    np.maximum(eps, np.sum(lvk))
                 rf.append(tmp)
             if method == "min":
                 rf.append(np.min(f, 0))
@@ -395,14 +396,13 @@ class SubDomains(object):
             return None
 
         tmp_image = self.domain.to_image()
-        label = tmp_image.get_data().copy().astype(write_type)-1
+        label = tmp_image.get_data().copy().astype(write_type) - 1
         if data is None:
             label[label > - 1] = self.label
             wdata = label
         else:
             wdata = np.zeros(label.shape, data.dtype)
-            wdata[label > -1] = data[self.label]
-
+            wdata[label > -1] = data
         nim = Nifti1Image(wdata, tmp_image.get_affine())
         if descrip is None:
             descrip = 'label image of %s' % self.id

@@ -849,11 +849,13 @@ x
         the current self.adjacency
         """
         A = self.to_coo_matrix()
+        
         symg = wgraph_from_adjacency((A + A.T) / 2)
         self.E = symg.E
         self.edges = symg.edges
         self.weights = symg.weights
-        return self.E
+        
+        return self
 
     def anti_symmeterize(self):
         """anti-symmeterize self, i.e. produces the graph
