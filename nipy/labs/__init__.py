@@ -13,7 +13,7 @@ functions for fMRI
 This module contains several objects and functions for fMRI processing.
 """
 
-from numpy.testing import Tester
+from nipy.testing import Tester
 
 # No subpackage should be imported here to avoid run-time errors
 # related to missing dependencies or binary incompatibilities

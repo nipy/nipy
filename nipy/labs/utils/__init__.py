@@ -1,9 +1,8 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from routines import *
-from zscore import zscore
+from .routines import *
+from .zscore import zscore
 
-from numpy.testing import Tester
-
+from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench

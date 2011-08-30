@@ -1,8 +1,0 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""Nipy Test Suite Runner.
-"""
-
-from nipy.testing import nitest
-
-nitest.main()

@@ -2,10 +2,4 @@
  Nipy Tools
 ============
 
-This directory contains various tools used by the nipy developers.
-Some of these are meant to be run from the command-line.  For these
-command-line tools we're created an installer, setup.py, which
-installs the tools in your bin directory and updates the mode to
-executable.  To install the command-line tools simple do::
-
-  python setup.py install
+This directory contains various tools used by us developers.
