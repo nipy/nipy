@@ -5,8 +5,7 @@ from .histogram_registration import *
 from .affine import *
 from .groupwise_registration import *
 
-from numpy.testing import Tester
-
+from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench
 

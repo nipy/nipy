@@ -3,8 +3,50 @@
 Sets doctests to run by default
 Use our own doctest plugin (based on that of numpy)
 """
-
 from ..fixes.numpy.testing.nosetester import NoseTester, import_nose
+
+def fpw_opt_str():
+    """ Return first-package-wins option string for this version of nose
+
+    Versions of nose prior to 1.1.0 needed ``=True`` for ``first-package-wins``,
+    versions after won't accept it.
+
+    changeset:   816:c344a4552d76
+    http://code.google.com/p/python-nose/issues/detail?id=293
+
+    Returns
+    -------
+    fpw_str : str
+        Either '--first-package-wins' or '--first-package-wins=True' depending
+        on the nose version we are running.
+    """
+    # protect nose import to provide comprehensible error if missing
+    nose = import_nose()
+    config = nose.config.Config()
+    fpw_str = '--first-package-wins'
+    opt_parser = config.getParser('')
+    opt_def = opt_parser.get_option('--first-package-wins')
+    if opt_def is None:
+        raise RuntimeError('Nose does not accept "first-package-wins"'
+                           ' - is this an old nose version?')
+    if opt_def.takes_value(): # the =True variant
+        fpw_str += '=True'
+    return fpw_str
+
+
+def prepare_imports():
+    """ Prepare any imports for testing run
+
+    At the moment, we prepare matplotlib by trying to make it use a backend that
+    does not need a display
+    """
+    try:
+        import matplotlib as mpl
+    except ImportError:
+        pass
+    else:
+        mpl.use('svg')
+
 
 class NipyNoseTester(NoseTester):
     """ Numpy-like testing class
@@ -65,5 +107,9 @@ class NipyNoseTester(NoseTester):
         >>> import nipy.algorithms
         >>> nipy.algorithms.test() #doctest: +SKIP
         """
+        prepare_imports()
+        if extra_argv is None:
+            extra_argv = []
+        extra_argv.append(fpw_opt_str())
         return super(NipyNoseTester, self).test(label, verbose, extra_argv,
                                                 doctests, coverage)
