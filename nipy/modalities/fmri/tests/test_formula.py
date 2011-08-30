@@ -188,11 +188,9 @@ def test_mul():
 
 def test_make_recarray():
     m = F.make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int])
-
-    yield assert_equal, m.dtype.names, ['w', 'v']
-
+    assert_equal(m.dtype.names, ('w', 'v'))
     m2 = F.make_recarray(m, 'xy')
-    yield assert_equal, m2.dtype.names, ['x', 'y']
+    assert_equal(m2.dtype.names, ('x', 'y'))
 
 
 def test_str_formula():
@@ -292,7 +290,7 @@ def test_nonlin1():
 def test_intercept():
     dz = F.make_recarray([2,3,4],'z')
     v = F.I.design(dz, return_float=False)
-    yield assert_equal, v.dtype.names, ['intercept']
+    assert_equal(v.dtype.names, ('intercept',))
 
 
 def test_nonlin2():
