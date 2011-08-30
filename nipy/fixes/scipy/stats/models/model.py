@@ -6,7 +6,7 @@ from numpy.linalg import inv
 
 from scipy.stats import t
 
-from nipy.fixes.scipy.stats.models.utils import pos_recipr
+from nipy.algorithms.utils.matrices import pos_recipr
 import numpy.lib.recfunctions as nprf
 from descriptors import setattr_on_read
 
@@ -68,23 +68,36 @@ class LikelihoodModelResults(object):
 # not computed in, say, the fit method of OLSModel
 
     ''' Class to contain results from likelihood models '''
-    def __init__(self, theta, Y, model, cov=None, dispersion=1., nuisance=None, rank=None):
+    def __init__(self, theta, Y, model, cov=None, dispersion=1., nuisance=None,
+                 rank=None):
         ''' Set up results structure
-        theta     - parameter estimates from estimated model
-        Y - data
-        model - LikelihoodModel instance
-        cov : covariance of thetas
-        dispersion: multiplicative factor in front of cov
-        nuisance : parameter estimates needed to compute logL
 
-        The covariance of thetas is given by 
+        Parameters
+        ----------
+        theta : ndarray
+            parameter estimates from estimated model
+        Y : ndarray
+            data
+        model : ``LikelihoodModel`` instance
+            model used to generate fit
+        cov : None or ndarray, optional
+            covariance of thetas
+        dispersion : scalar, optional
+            multiplicative factor in front of `cov`
+        nuisance : None of ndarray
+            parameter estimates needed to compute logL
+        rank : None or scalar
+            rank of the model.  If rank is not None, it is used for df_model
+            instead of the usual counting of parameters.
 
-        dispersion * cov
+        Notes
+        -----
+        The covariance of thetas is given by:
 
-        For (some subset of models) scale will typically be the
-        mean square error from the estimated model (sigma^2)
+            dispersion * cov
 
-        If rank is not None, it is used for df_model instead of the usual counting of parameters.
+        For (some subset of models) `dispersion` will typically be the mean
+        square error from the estimated model (sigma^2)
         '''
         self.theta = theta
         self.Y = Y
@@ -144,13 +157,14 @@ class LikelihoodModelResults(object):
         return _t
 
     def vcov(self, matrix=None, column=None, dispersion=None, other=None):
-        """
-        Returns the variance/covariance matrix of a linear contrast
-        of the estimates of theta, multiplied by dispersion which
-        will often be an estimate of dispersion, like, sigma^2.
+        """ Variance/covariance matrix of linear contrast
 
-        The covariance of
-        interest is either specified as a (set of) column(s) or a matrix.
+        Returns the variance/covariance matrix of a linear contrast of the
+        estimates of theta, multiplied by `dispersion` which will often be an
+        estimate of `dispersion`, like, sigma^2.
+
+        The covariance of interest is either specified as a (set of) column(s)
+        or a matrix.
         """
         if self.cov is None:
             raise ValueError, 'need covariance of parameters for computing (unnormalized) covariances'
@@ -223,7 +237,6 @@ class LikelihoodModelResults(object):
         See the contrast module to see how to specify contrasts.
         In particular, the matrices from these contrasts will always be
         non-singular in the sense above.
-
         """
 
         ctheta = np.dot(matrix, self.theta)
@@ -251,23 +264,29 @@ class LikelihoodModelResults(object):
             ie., `alpha` = .05 returns a 95% confidence interval.
         cols : tuple, optional
             `cols` specifies which confidence intervals to return
-                
-        Returns : array
-            Each item contains [lower, upper]
-        
+        dispersion : None or scalar
+            scale factor for the variance / covariance (see class docstring and
+            ``vcov`` method docstring)
+
+        Returns
+        -------
+        cis : ndarray
+            `cis` is shape ``(len(cols), 2)`` where each row contains [lower,
+            upper] for the given entry in `cols`
+
         Example
         -------
-        >>> import numpy as np
         >>> from numpy.random import standard_normal as stan
-        >>> import nipy.fixes.scipy.stats.models as SSM
+        >>> from nipy.fixes.scipy.stats.models.regression import OLSModel
         >>> x = np.hstack((stan((30,1)),stan((30,1)),stan((30,1))))
         >>> beta=np.array([3.25, 1.5, 7.0])
         >>> y = np.dot(x,beta) + stan((30))
-        >>> model = SSM.regression.OLSModel(x, hascons=False).fit(y)
-        >>> model.conf_int(cols=(1,2))
+        >>> model = OLSModel(x, hascons=False).fit(y)
+        >>> confidence_intervals = model.conf_int(cols=(1,2))
 
         Notes
         -----
+        Confidence intervals are two-tailed.
         TODO:
         tails : string, optional
             `tails` can be "two", "upper", or "lower"

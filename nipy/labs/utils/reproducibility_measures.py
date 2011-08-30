@@ -310,7 +310,7 @@ def statistics_from_position(target, data, sigma=1.0):
                 1 is good
                 0 is bad
     """
-    from nipy.algorithms.routines.fast_distance import euclidean_distance as ed
+    from ...algorithms.utils.fast_distance import euclidean_distance as ed
     if data == None:
         if target == None:
             return 0.# could be 1.0 ?

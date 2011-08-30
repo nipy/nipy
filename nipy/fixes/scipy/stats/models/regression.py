@@ -21,22 +21,21 @@ General reference for regression models:
 __docformat__ = 'restructuredtext en'
 
 import warnings
-from string import join as sjoin
-from csv import reader
 
 import numpy as np
 from scipy.linalg import norm, toeplitz
 
 from nipy.fixes.scipy.stats.models.model import LikelihoodModel, \
      LikelihoodModelResults
-from nipy.fixes.scipy.stats.models import utils
+from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
 
 from scipy import stats
-from scipy.stats.stats import ss
+import scipy.linalg as spl
 
-from descriptors import setattr_on_read
+from .model import LikelihoodModel, LikelihoodModelResults
+from . import utils
 
-import numpy.lib.recfunctions as nprf
+from .descriptors import setattr_on_read
 
 def categorical(data):
     '''
@@ -114,8 +113,8 @@ class OLSModel(LikelihoodModel):
         inherit from the OLSModel will whiten the design.
     calc_beta : ndarray
         This is the Moore-Penrose pseudoinverse of the whitened design matrix.
-    normalized_cov_beta : ndarray                      
-        np.dot(calc_beta, calc_beta.T)  
+    normalized_cov_beta : ndarray
+        np.dot(calc_beta, calc_beta.T)
     df_resid : integer
         Degrees of freedom of the residuals.
         Number of observations less the rank of the design.
@@ -125,29 +124,21 @@ class OLSModel(LikelihoodModel):
 
     Examples
     --------
-    >>> import numpy as N
-    >>>
-    >>> from nipy.modalities.fmri.formula import Term, I
-    >>> from nipy.fixes.scipy.stats.models.regression import OLSModel
-    >>>
-    >>> data={'Y':[1,3,4,5,2,3,4],
-    ...       'X':range(1,8)}
-    >>> f = Term("X") + I
-    >>> f.namespace = data
-    >>>
-    >>> model = OLSModel(f.design())
+    >>> from nipy.modalities.fmri.formula import Term, Formula
+    >>> data = np.rec.fromarrays(([1,3,4,5,2,3,4], range(1,8)), names=('Y', 'X'))
+    >>> f = Formula([Term("X"), 1])
+    >>> dmtx = f.design(data, return_float=True)
+    >>> model = OLSModel(dmtx)
     >>> results = model.fit(data['Y'])
-    >>>
-    >>> results.beta
+    >>> results.theta
     array([ 0.25      ,  2.14285714])
     >>> results.t()
     array([ 0.98019606,  1.87867287])
-    >>> print results.Tcontrast([0,1])
+    >>> print results.Tcontrast([0,1]) #doctest: +FP_6DP
     <T contrast: effect=2.14285714286, sd=1.14062281591, t=1.87867287326, df_den=5>
-    >>> print results.Fcontrast(np.identity(2))
+    >>> print results.Fcontrast(np.eye(2)) #doctest: +FP_6DP
     <F contrast: F=19.4607843137, df_den=5, df_num=2>
     """
-
     def __init__(self, design, hascons=True):
         super(OLSModel, self).__init__()
         self.initialize(design, hascons)
@@ -157,11 +148,11 @@ class OLSModel(LikelihoodModel):
 # TODO: handle case for noconstant regression
         self.design = design
         self.wdesign = self.whiten(self.design)
-        self.calc_beta = np.linalg.pinv(self.wdesign)
+        self.calc_beta = spl.pinv(self.wdesign)
         self.normalized_cov_beta = np.dot(self.calc_beta,
-                                         np.transpose(self.calc_beta))
+                                          np.transpose(self.calc_beta))
         self.df_total = self.wdesign.shape[0]
-        self.df_model = utils.rank(self.design)
+        self.df_model = matrix_rank(self.design)
         self.df_resid = self.df_total - self.df_model
 
     def logL(self, beta, Y, nuisance=None):
@@ -346,7 +337,7 @@ class OLSModel(LikelihoodModel):
         """
         Compute rank of design matrix
         """
-        return utils.rank(self.wdesign)
+        return matrix_rank(self.wdesign)
 
     def fit(self, Y):
 #    def fit(self, Y, robust=None):
@@ -366,10 +357,9 @@ class OLSModel(LikelihoodModel):
         ----------
         Y : array-like
             The dependent variable for the Least Squares problem.
-            
 
-        Returns 
-        --------
+        Returns
+        -------
         fit : RegressionResults
         """
         wY = self.whiten(Y)
@@ -380,6 +370,7 @@ class OLSModel(LikelihoodModel):
                                  wY, wresid, dispersion=dispersion,
                                  cov=self.normalized_cov_beta)
         return lfit
+
 
 class ARModel(OLSModel):
     """
@@ -395,52 +386,63 @@ class ARModel(OLSModel):
 
     Examples
     --------
-    >>> import numpy as N
-    >>> import numpy.random as R
-    >>>
-    >>> from nipy.modalities.fmri.formula import Term, I
-    >>> from nipy.fixes.scipy.stats.models.regression import ARModel
-    >>>
-    >>> data={'Y':[1,3,4,5,8,10,9],
-    ...       'X':range(1,8)}
-    >>> f = Term("X") + I
-    >>> f.namespace = data
-    >>>
-    >>> model = ARModel(f.design(), 2)
+    >>> from nipy.modalities.fmri.formula import Term, Formula
+    >>> data = np.rec.fromarrays(([1,3,4,5,8,10,9], range(1,8)), names=('Y', 'X'))
+    >>> f = Formula([Term("X"), 1])
+    >>> dmtx = f.design(data, return_float=True)
+    >>> model = ARModel(dmtx, 2)
+
+    We go through the ``model.iterative_fit`` procedure long-hand:
+
     >>> for i in range(6):
     ...     results = model.fit(data['Y'])
     ...     print "AR coefficients:", model.rho
-    ...     rho, sigma = model.yule_walker(data["Y"] - results.predict)
-    ...     model = ARModel(model.design, rho)
+    ...     rho, sigma = yule_walker(data["Y"] - results.predicted,
+    ...                              order=2,
+    ...                              df=model.df_resid)
+    ...     model = ARModel(model.design, rho) #doctest: +FP_6DP
     ...
     AR coefficients: [ 0.  0.]
-    AR coefficients: [-0.52571491 -0.84496178]
-    AR coefficients: [-0.620642   -0.88654567]
-    AR coefficients: [-0.61887622 -0.88137957]
-    AR coefficients: [-0.61894058 -0.88152761]
-    AR coefficients: [-0.61893842 -0.88152263]
-    >>> results.beta
-    array([ 1.58747943, -0.56145497])
-    >>> results.t()
-    array([ 30.796394  ,  -2.66543144])
-    >>> print results.Tcontrast([0,1])
-    <T contrast: effect=-0.561454972239, sd=0.210643186553, t=-2.66543144085, df_den=5>
-    >>> print results.Fcontrast(np.identity(2))
-    <F contrast: F=2762.42812716, df_den=5, df_num=2>
-    >>>
+    AR coefficients: [-0.61530877 -1.01542645]
+    AR coefficients: [-0.72660832 -1.06201457]
+    AR coefficients: [-0.7220361  -1.05365352]
+    AR coefficients: [-0.72229201 -1.05408193]
+    AR coefficients: [-0.722278   -1.05405838]
+    >>> results.theta #doctest: +FP_6DP
+    array([ 1.59564228, -0.58562172])
+    >>> results.t() #doctest: +FP_6DP
+    array([ 38.0890515 ,  -3.45429252])
+    >>> print results.Tcontrast([0,1]) #doctest: +FP_6DP
+    <T contrast: effect=-0.58562172384377043, sd=0.16953449108110835, t=-3.4542925165805847, df_den=5>
+    >>> print results.Fcontrast(np.identity(2)) #doctest: +FP_6DP
+    <F contrast: F=4216.810299725842, df_den=5, df_num=2>
+
+    Reinitialize the model, and do the automated iterative fit
+
     >>> model.rho = np.array([0,0])
     >>> model.iterative_fit(data['Y'], niter=3)
-    >>> print model.rho
-    [-0.61887622 -0.88137957]
+    >>> print model.rho #doctest: +FP_6DP
+    [-0.7220361  -1.05365352]
     """
     def __init__(self, design, rho):
+        """ Initialize AR model instance
+
+        Parameters
+        ----------
+        design : ndarray
+            2D array with design matrix
+        rho : int or array-like
+            If int, gives order of model, and initializes rho to zeros.  If
+            ndarray, gives initial estimate of rho. Be careful as ``ARModel(X,
+            1) != ARModel(X, 1.0)``.
+        """
         if type(rho) is type(1):
             self.order = rho
             self.rho = np.zeros(self.order, np.float64)
         else:
             self.rho = np.squeeze(np.asarray(rho))
             if len(self.rho.shape) not in [0,1]:
-                raise ValueError, "AR parameters must be a scalar or a vector"
+                raise ValueError("AR parameters must be a scalar or a vector")
             if self.rho.shape == ():
                 self.rho.shape = (1,)
             self.order = self.rho.shape[0]
@@ -451,34 +453,44 @@ class ARModel(OLSModel):
         Perform an iterative two-stage procedure to estimate AR(p)
         parameters and regression coefficients simultaneously.
 
-        :Parameters:
-            Y : TODO
-                TODO
-            niter : ``integer``
-                the number of iterations
+        Parameters
+        ----------
+        Y : ndarray
+            data to which to fit model
+        niter : optional, int
+            the number of iterations (default 3)
+
+        Returns
+        -------
+        None
         """
         for i in range(niter):
             self.initialize(self.design)
             results = self.fit(Y)
-            self.rho, _ = yule_walker(Y - results.predict,
-                                      order=self.order, df=self.df)
+            self.rho, _ = yule_walker(Y - results.predicted,
+                                      order=self.order, df=self.df_resid)
 
     def whiten(self, X):
-        """
-        Whiten a series of columns according to an AR(p)
-        covariance structure.
+        """ Whiten a series of columns according to AR(p) covariance structure
 
-        :Parameters:
-            X : TODO
-                TODO
+        Parameters
+        ----------
+        X : array-like
+            array to whiten
+
+        Returns
+        -------
+        wX : ndarray
+            X whitened with order self.order AR
         """
         X = np.asarray(X, np.float64)
         _X = X.copy()
         for i in range(self.order):
             _X[(i+1):] = _X[(i+1):] - self.rho[i] * X[0:-(i+1)]
         return _X
-    
-def yule_walker(X, order=1, method="unbiased", df=None, inv=False):    
+
+
+def yule_walker(X, order=1, method="unbiased", df=None, inv=False):
     """
     Estimate AR(p) parameters from a sequence X using Yule-Walker equation.
 
@@ -488,74 +500,80 @@ def yule_walker(X, order=1, method="unbiased", df=None, inv=False):
 
     http://en.wikipedia.org/wiki/Autoregressive_moving_average_model
 
-    :Parameters:
-        X : a 1d ndarray
-        method : ``string``
-               Method can be "unbiased" or "mle" and this determines
-               denominator in estimate of autocorrelation function (ACF)
-               at lag k. If "mle", the denominator is n=r.shape[0], if
-               "unbiased" the denominator is n-k.
-        df : ``integer``
-               Specifies the degrees of freedom. If df is supplied,
-               then it is assumed the X has df degrees of
-               freedom rather than n.
-    """
+    Parameters
+    ----------
+    X : (N,) ndarray
+    order : int, optional
+        Order of AR process.
+    method : str, optional
+        Method can be "unbiased" or "mle" and this determines denominator in
+        estimate of autocorrelation function (ACF) at lag k. If "mle", the
+        denominator is N=X.shape[0], if "unbiased" the denominator is N-k.
+    df : int, optional
+        Specifies the degrees of freedom. If df is supplied, then it is assumed
+        the X has df degrees of freedom rather than N.
+    inv : bool, optional
+        Whether to return the inverse of the R matrix (see code)
 
+    Returns
+    -------
+    rho : (`order`,) ndarray
+    sigma : int
+        standard deviation of the residuals after fit
+    R_inv : ndarray
+        If `inv` is True, also return the inverse of the R matrix
+
+    Notes
+    -----
+    See also
+    http://en.wikipedia.org/wiki/AR_model#Calculation_of_the_AR_parameters
+    """
     method = str(method).lower()
     if method not in ["unbiased", "mle"]:
-        raise ValueError, "ACF estimation method must be 'unbiased' \
-        or 'MLE'"
+        raise ValueError("ACF estimation method must be 'unbiased or 'MLE'")
     X = np.asarray(X, np.float64)
+    if X.ndim != 1:
+        raise ValueError("Expecting a vector to estimate AR parameters")
     X -= X.mean(0)
     n = df or X.shape[0]
-
     if method == "unbiased":
         den = lambda k: n - k
     else:
         den = lambda k: n
-
-    if len(X.shape) != 1:
-        raise ValueError, "expecting a vector to estimate AR parameters"
     r = np.zeros(order+1, np.float64)
     r[0] = (X**2).sum() / den(0)
     for k in range(1,order+1):
         r[k] = (X[0:-k]*X[k:]).sum() / den(k)
-    R = toeplitz(r[:-1])
-
-    rho = np.linalg.solve(R, r[1:])
+    R = spl.toeplitz(r[:-1])
+    rho = spl.solve(R, r[1:])
     sigmasq = r[0] - (r[1:]*rho).sum()
     if inv == True:
-        return rho, np.sqrt(sigmasq), np.linalg.inv(R)
-    else:
-        return rho, np.sqrt(sigmasq)
+        return rho, np.sqrt(sigmasq), spl.inv(R)
+    return rho, np.sqrt(sigmasq)
+
 
 class WLSModel(OLSModel):
     """
-    A regression model with diagonal but non-identity covariance
-    structure. The weights are presumed to be
-    (proportional to the) inverse of the
-    variance of the observations.
+    A regression model with diagonal but non-identity covariance structure.
 
-    >>> import numpy as N
-    >>>
-    >>> from nipy.modalities.fmri.formula import Term, I
-    >>> from nipy.fixes.scipy.stats.models.regression import WLSModel
-    >>>
-    >>> data={'Y':[1,3,4,5,2,3,4],
-    ...       'X':range(1,8)}
-    >>> f = Term("X") + I
-    >>> f.namespace = data
-    >>>
-    >>> model = WLSModel(f.design(), weights=range(1,8))
+    The weights are presumed to be (proportional to the) inverse of the variance
+    of the observations.
+
+    Examples
+    --------
+    >>> from nipy.modalities.fmri.formula import Term, Formula
+    >>> data = np.rec.fromarrays(([1,3,4,5,2,3,4], range(1,8)), names=('Y', 'X'))
+    >>> f = Formula([Term("X"), 1])
+    >>> dmtx = f.design(data, return_float=True)
+    >>> model = WLSModel(dmtx, weights=range(1,8))
     >>> results = model.fit(data['Y'])
-    >>>
-    >>> results.beta
+    >>> results.theta
     array([ 0.0952381 ,  2.91666667])
     >>> results.t()
     array([ 0.35684428,  2.0652652 ])
-    >>> print results.Tcontrast([0,1])
+    >>> print results.Tcontrast([0,1]) #doctest: +FP_6DP
     <T contrast: effect=2.91666666667, sd=1.41224801095, t=2.06526519708, df_den=5>
-    >>> print results.Fcontrast(np.identity(2))
+    >>> print results.Fcontrast(np.identity(2)) #doctest: +FP_6DP
     <F contrast: F=26.9986072423, df_den=5, df_num=2>
     """
     def __init__(self, design, weights=1):
@@ -586,6 +604,7 @@ class WLSModel(OLSModel):
                 v[:,i] = X[:,i] * c
             return v
 
+
 class RegressionResults(LikelihoodModelResults):
     """
     This class summarizes the fit of a linear regression model.
@@ -608,8 +627,6 @@ class RegressionResults(LikelihoodModelResults):
         """
         Residuals from the fit.
         """
-        beta = self.theta # the LikelihoodModelResults has parameters named 'theta'
-        X = self.model.design
         return self.Y - self.predicted
 
     @setattr_on_read
@@ -628,10 +645,8 @@ class RegressionResults(LikelihoodModelResults):
 
         See: Montgomery and Peck 3.2.1 p. 68
              Davidson and MacKinnon 15.2 p 662
-
         """
-
-        return self.resid * utils.pos_recipr(np.sqrt(self.dispersion))
+        return self.resid * pos_recipr(np.sqrt(self.dispersion))
 
 # predict is a verb
 # do the predicted values need to be done automatically, then?
@@ -650,11 +665,11 @@ class RegressionResults(LikelihoodModelResults):
     def R2_adj(self):
         """
         Return the R^2 value for each row of the response Y.
-        
+
         Notes
         -----
         Changed to the textbook definition of R^2.
-        
+
         See: Davidson and MacKinnon p 74
         """
         if not self.model.has_intercept:
@@ -667,11 +682,11 @@ class RegressionResults(LikelihoodModelResults):
     def R2(self):
         """
         Return the adjusted R^2 value for each row of the response Y.
-        
+
         Notes
         -----
         Changed to the textbook definition of R^2.
-        
+
         See: Davidson and MacKinnon p 74
         """
         d = self.SSE / self.SST
@@ -680,8 +695,7 @@ class RegressionResults(LikelihoodModelResults):
     @setattr_on_read
     def SST(self):
         """
-        Total sum of squares. If not from an OLS model
-        this is "pseudo"-SST.
+        Total sum of squares. If not from an OLS model this is "pseudo"-SST.
         """
         if not self.model.has_intercept:
             warnings.warn("model does not have intercept term, SST inappropriate")
@@ -690,8 +704,7 @@ class RegressionResults(LikelihoodModelResults):
     @setattr_on_read
     def SSE(self):
         """
-        Error sum of squares. If not from an OLS model
-        this is "pseudo"-SSE.
+        Error sum of squares. If not from an OLS model this is "pseudo"-SSE.
         """
         return (self.wresid**2).sum(0)
 
@@ -706,14 +719,14 @@ class RegressionResults(LikelihoodModelResults):
     def MSR(self):
         """
         Mean square (regression)
-        """        
+        """
         return self.SSR / (self.df_model - 1)
 
     @setattr_on_read
     def MSE(self):
         """
         Mean square (error)
-        """        
+        """
         return self.SSE / self.df_resid
 
     @setattr_on_read
@@ -736,16 +749,11 @@ class RegressionResults(LikelihoodModelResults):
 
 
 class GLSModel(OLSModel):
-
     """
     Generalized least squares model with a general covariance structure
-
-    This should probably go into nipy.fixes.scipy.stats.models.regression
-
     """
-
     def __init__(self, design, sigma):
-        self.cholsigmainv = np.linalg.cholesky(np.linalg.pinv(sigma)).T
+        self.cholsigmainv = spl.linalg.cholesky(spl.linalg.pinv(sigma)).T
         super(GLSModel, self).__init__(design)
 
     def whiten(self, Y):
@@ -757,11 +765,10 @@ def isestimable(C, D):
     From an q x p contrast matrix C and an n x p design matrix D, checks
     if the contrast C is estimable by looking at the rank of vstack([C,D]) and
     verifying it is the same as the rank of D.
-    
     """
     if C.ndim == 1:
         C.shape = (C.shape[0], 1)
     new = np.vstack([C, D])
-    if utils.rank(new) != utils.rank(D):
+    if matrix_rank(new) != matrix_rank(D):
         return False
     return True

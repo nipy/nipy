@@ -10,7 +10,7 @@ import numpy as np
 from scipy.linalg import toeplitz
 
 from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
-from nipy.fixes.scipy.stats.models.utils import pos_recipr
+from nipy.algorithms.utils.matrices import pos_recipr
 
 # nipy core imports
 from nipy.core.api import Image, parcels, matrix_generator, AffineTransform

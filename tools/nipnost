@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+# vim: ft=python
+""" Run nosetests using nipy doctest plugin
+
+Use as ``nosetests`` except we always run the doctests, and we use the nipy
+doctest plugin, which adds some new flags, and features, such as adding ``np``
+to the namespace of tests, and discovering docstrings in cython modules.
+
+To reproduce a standard ``nipy.test()`` run::
+
+    nipnost -A "not slow" /path/to/nipy/nipy
+
+"""
+
+import sys
+import nose
+from nipy.testing.nosetester import prepare_imports, fpw_opt_str
+from nipy.testing.doctester import NipyDoctest
+from nipy.fixes.numpy.testing.noseclasses import KnownFailure
+
+if __name__ == '__main__':
+    prepare_imports()
+    argv = sys.argv + ['--with-nipydoctest', fpw_opt_str()]
+    nose.core.TestProgram(argv=argv, addplugins=[NipyDoctest(), KnownFailure()])
