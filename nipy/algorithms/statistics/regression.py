@@ -14,16 +14,14 @@ __docformat__ = 'restructuredtext'
 import numpy as np
 import numpy.linalg as L
 from scipy.linalg import toeplitz
-from nipy.fixes.scipy.stats.models.utils import pos_recipr
+from ..utils.matrices import pos_recipr
 
 def output_T(contrast, results, effect=None, sd=None, t=None):
     """
     This convenience function outputs the results of a Tcontrast
     from a regression
     """
-    r = results.Tcontrast(contrast.matrix, sd=sd,
-                          t=t)
-
+    r = results.Tcontrast(contrast.matrix, sd=sd, t=t)
     v = []
     if effect is not None:
         v.append(r.effect)
@@ -32,13 +30,15 @@ def output_T(contrast, results, effect=None, sd=None, t=None):
     if t is not None:
         v.append(r.t)
     return v
-    
+
+
 def output_F(results, contrast):
     """
     This convenience function outputs the results of an Fcontrast
     from a regression
     """
     return results.Fcontrast(contrast.matrix).F
+
 
 def output_resid(results):
     """
@@ -47,18 +47,22 @@ def output_resid(results):
     """
     return results.resid
 
+
 class RegressionOutput(object):
     """
     A class to output things in GLM passes through arrays of data.
     """
 
     def __init__(self, img, fn, output_shape=None):
-        """ 
-        :Parameters:
-            `img` : the output Image
-            `fn` : a function that is applied to a scipy.stats.models.model.LikelihoodModelResults instance
-
-        """ 
+        """
+        Parameters
+        ----------
+        img : ``Image`` instance
+            The output Image
+        fn : callable
+            A function that is applied to a
+            models.model.LikelihoodModelResults instance
+        """
         self.img = img
         self.fn = fn
         self.output_shape = output_shape
@@ -68,7 +72,7 @@ class RegressionOutput(object):
 
     def __setitem__(self, index, value):
         self.img[index] = value
-        
+
 
 class RegressionOutputList(object):
     """
@@ -80,12 +84,16 @@ class RegressionOutputList(object):
         return self.fn(x)
 
     def __init__(self, imgs, fn):
-        """ 
-        :Parameters:
-            `imgs` : the list of output images
-            `fn` : a function that is applied to a scipy.stats.models.model.LikelihoodModelResults instance
+        """ Initialize regression output list
 
-        """ 
+        Parameters
+        ----------
+        imgs : list
+            The list of output images
+        fn : callable
+            A function that is applied to a
+            models.model.LikelihoodModelResults instance
+        """
         self.list = imgs
         self.fn = fn
 
@@ -94,7 +102,6 @@ class RegressionOutputList(object):
 
 
 class TOutput(RegressionOutputList):
-
     """
     Output contrast related to a T contrast
     from a GLM pass through data.
@@ -114,17 +121,17 @@ class TOutput(RegressionOutputList):
         if t is not None:
             self.list.append(t)
 
+
 class ArrayOutput(RegressionOutput):
     """
     Output an array from a GLM pass through data.
 
     By default, the function called is output_resid, so residuals
     are output.
-
     """
-
     def __init__(self, img, fn):
         RegressionOutput.__init__(self, img, fn)
+
 
 def output_AR1(results):
     """
@@ -134,52 +141,54 @@ def output_AR1(results):
     resid = results.resid
     rho = np.add.reduce(resid[0:-1]*resid[1:] / np.add.reduce(resid[1:-1]**2))
     return rho
-    
+
+
 class AREstimator(object):
     """
     A class that whose instances can estimate
     AR(p) coefficients from residuals
     """
-
     def __init__(self, model, p=1):
-        """
-        :Parameters:
-            `coordmap` : TODO
-                TODO
-            `model` : TODO
-                A scipy.stats.models.regression.OLSmodel instance
-            `p` : int
-                Order of AR(p) noise
+        """ Bias-correcting AR estimation class
+
+        Parameters
+        ----------
+        model : ``OSLModel`` instance
+            A models.regression.OLSmodel instance, where `model` has attribute ``design``
+        p : int, optional
+            Order of AR(p) noise
         """
         self.p = p
         self._setup_bias_correct(model)
 
     def _setup_bias_correct(self, model):
-
         R = np.identity(model.design.shape[0]) - np.dot(model.design, model.calc_beta)
         M = np.zeros((self.p+1,)*2)
         I = np.identity(R.shape[0])
-
         for i in range(self.p+1):
             Di = np.dot(R, toeplitz(I[i]))
             for j in range(self.p+1):
                 Dj = np.dot(R, toeplitz(I[j]))
                 M[i,j] = np.diagonal((np.dot(Di, Dj))/(1.+(i>0))).sum()
-                    
         self.invM = L.inv(M)
         return
-    
+
     def __call__(self, results):
-        """
-        :Parameters:
-            `results` : a scipy.stats.models.model.LikelihoodModelResults instance
-        :Returns: ``numpy.ndarray``
-        """
-        resid = results.resid.reshape((results.resid.shape[0],
-                                       np.product(results.resid.shape[1:])))
+        """ Calculate AR(p) coefficients from `results`.``residuals``
 
+        Parameters
+        ----------
+        results : Results instance
+            A models.model.LikelihoodModelResults instance
+
+        Returns
+        -------
+        ar_p : array
+            AR(p) coefficients
+        """
+        resid = results.resid.reshape(
+            (results.resid.shape[0], np.product(results.resid.shape[1:])))
         sum_sq = results.scale.reshape(resid.shape[1:]) * results.df_resid
-
         cov = np.zeros((self.p + 1,) + sum_sq.shape)
         cov[0] = sum_sq
         for i in range(1, self.p+1):
@@ -187,4 +196,3 @@ class AREstimator(object):
         cov = np.dot(self.invM, cov)
         output = cov[1:] * pos_recipr(cov[0])
         return np.squeeze(output)
-

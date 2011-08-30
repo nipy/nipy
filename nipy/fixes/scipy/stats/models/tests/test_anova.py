@@ -7,7 +7,7 @@ import numpy as np
 import scipy.stats
 
 from nipy.modalities.fmri import formula as F
-from nipy.fixes.scipy.stats.models.utils import rank
+from nipy.algorithms.utils.matrices import matrix_rank
 from nipy.fixes.scipy.stats.models.regression import OLSModel
 
 from nipy.testing import (assert_true, assert_equal, assert_array_equal,
@@ -125,7 +125,7 @@ Y = D['Days']
 beta = np.dot(np.linalg.pinv(X), Y)
 XTXinv = np.linalg.pinv(np.dot(X.T, X))
 resid = Y - np.dot(X, beta)
-df_resid = (X.shape[0] - rank(X)) # residual degrees of freedom
+df_resid = (X.shape[0] - matrix_rank(X)) # residual degrees of freedom
 sigmasq = (resid**2).sum() / df_resid
 
 SS = {}

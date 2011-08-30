@@ -6,7 +6,7 @@ from numpy.linalg import inv
 
 from scipy.stats import t
 
-from nipy.fixes.scipy.stats.models.utils import pos_recipr
+from nipy.algorithms.utils.matrices import pos_recipr
 import numpy.lib.recfunctions as nprf
 from descriptors import setattr_on_read
 
