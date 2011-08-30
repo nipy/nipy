@@ -19,7 +19,7 @@ from nipy.core.api import Image, parcels, matrix_generator, AffineTransform
 from nipy.io.api import save_image
 
 # fmri imports
-from nipy.modalities.fmri.api import FmriImageList, fmri_generator
+from ..api import FmriImageList, fmri_generator
 
 import nipy.algorithms.statistics.regression as regression
 
@@ -65,7 +65,7 @@ class ModelOutputImage(object):
         else:
             raise ValueError('trying to set value on saved'
                              'ModelOutputImage')
-        
+
 
 def model_generator(formula, data, volume_start_times, iterable=None, 
                     slicetimes=None, model_type=OLSModel, 
@@ -102,7 +102,7 @@ class OLS(object):
        object[0] returns an object with attribute ``shape``.
     formula :  :class:`nipy.modalities.fmri.formula.Formula`
     outputs :
-    volume_start_times : 
+    volume_start_times :
     """
 
     def __init__(self, fmri_image, formula, outputs=[], 
@@ -115,7 +115,7 @@ class OLS(object):
             self.volume_start_times = self.fmri_image.volume_start_times
         else:
             self.volume_start_times = volume_start_times
-            
+
     def execute(self):
         m = model_generator(self.formula, self.data,
                             self.volume_start_times,
@@ -125,7 +125,7 @@ class OLS(object):
         def reshape(i, x):
             if len(x.shape) == 2:
                 if type(i) is type(1):
-                    x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]                        
+                    x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]
                 if type(i) not in [type([]), type(())]:
                     i = (i,)
                 else:
@@ -143,6 +143,9 @@ def estimateAR(resid, design, order=1):
     """
     Estimate AR parameters using bias correction from fMRIstat.
 
+    Note - this code contains the same algorithms as
+    ``nipy.algorithms.statistics.regression.AREstimator``.
+
     Parameters
     ----------
     resid:  residual image
@@ -150,7 +153,7 @@ def estimateAR(resid, design, order=1):
 
     Returns
     -------
-    output : 
+    output :
     """
     p = order
 
@@ -163,7 +166,7 @@ def estimateAR(resid, design, order=1):
         for j in range(p+1):
             Dj = np.dot(R, toeplitz(I[j]))
             M[i,j] = np.diagonal((np.dot(Di, Dj))/(1.+(i>0))).sum()
-                    
+
     invM = np.linalg.inv(M)
 
     rresid = np.asarray(resid).reshape(resid.shape[0], 
@@ -239,7 +242,6 @@ class AR1(object):
               i) 'slices through the z-axis'
               ii) 'parcels of approximately constant AR1 coefficient'
             """
-    
             if len(x.shape) == 2:
                 if type(i) is type(1):
                     x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]
@@ -270,28 +272,33 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
     fmri_image : ``FmriImageList``
         object such that ``object[0]`` has attributes ``shape`` and
         ``coordmap``
-
+    effect : {True, False}, optional
+        whether to write an effect image
+    sd : {True, False}, optional
+        whether to write a standard deviation image
+    t : {True, False}, optional
+        whether to write a t image
+    clobber : {False, True}, optional
+        whether to overwrite images that exist.
     """
     def build_filename(label):
         index = outbase.find('.')
         return ''.join([outbase[:index], '_', label, outbase[index:]])
     if effect:
         effectim = ModelOutputImage(build_filename('effect'),
-                                    fmri_image[0].coordmap, 
+                                    fmri_image[0].coordmap,
                                     fmri_image[0].shape, clobber=clobber)
     else:
         effectim = None
-
     if sd:
         sdim = ModelOutputImage(build_filename('sd'),
-                                fmri_image[0].coordmap, fmri_image[0].shape, 
+                                fmri_image[0].coordmap, fmri_image[0].shape,
                                 clobber=clobber)
     else:
         sdim = None
-
     if t:
         tim = ModelOutputImage(build_filename('t'),
-                               fmri_image[0].coordmap,fmri_image[0].shape, 
+                               fmri_image[0].coordmap,fmri_image[0].shape,
                                clobber=clobber)
     else:
         tim = None
@@ -304,19 +311,19 @@ def output_F(outfile, contrast, fmri_image, clobber=False):
     Parameters
     ----------
     outfile :
-    contrast : 
+    contrast :
     fmri_image : ``FmriImageList``
         object such that ``object[0]`` has attributes ``shape`` and
         ``coordmap``
     clobber : bool
         if True, overwrites previous output; if False, raises error
-    '''    
-    f = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape, 
+    '''
+    f = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape,
                          clobber=clobber)
-    return regression.RegressionOutput(f, lambda x: 
+    return regression.RegressionOutput(f, lambda x:
                                        regression.output_F(x, contrast))
 
-                             
+
 def output_AR1(outfile, fmri_image, clobber=False):
     """
     Create an output file of the AR1 parameter from the OLS pass of
@@ -361,9 +368,8 @@ def output_resid(outfile, fmri_image, clobber=False):
 
     Returns
     -------
-    regression_output : 
+    regression_output :
     """
-
     if isinstance(fmri_image, FmriImageList):
         n = len(fmri_image.list)
         T = np.zeros((5,5))
@@ -393,7 +399,6 @@ def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
 
     In the regression setting, results is generally going to be a
     scipy.stats.models.model.LikelihoodModelResults instance.
-    
     """
     for i, results in iterable:
         for output in outputs:
@@ -405,9 +410,7 @@ def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
                 for j, l in enumerate(output.list):
                     k, d = reshape(i, r[j])
                     l[k] = d
-
     # flush outputs, if necessary
-
     for output in outputs:
         if isinstance(output, regression.RegressionOutput):
             if hasattr(output.img, 'save'):
