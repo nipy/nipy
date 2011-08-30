@@ -11,6 +11,15 @@ from nibabel.tmpdirs import InTemporaryDirectory
 
 from nipy.testing import funcfile
 
+def test_model_out_img():
+    # Model output image
+    # Just caches an image
+    pass
+
+
+def test_resid():
+    # Test residual output routine
+    pass
 
 # FIXME: This does many things, but it does not test any values
 # with asserts.
