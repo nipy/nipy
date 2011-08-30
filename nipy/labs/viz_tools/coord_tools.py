@@ -87,7 +87,8 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
             mask = not_mask
         else:
             mask *= not_mask
-        map = np.asarray(map)
+    # Deal with memmaps and mask arrays
+    map = np.asarray(map)
     my_map = map.copy()
     if mask is not None:
         slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
