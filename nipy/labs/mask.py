@@ -381,7 +381,7 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         '%s (type %s) was passed' % (filenames, type(filenames)))
     mask = mask.astype(np.bool)
     if smooth is not False:
-        smooth = np.asarray(smooth)
+        smooth = np.asarray(smooth).astype(float)
         # Convert from a sigma to a FWHM:
         smooth /= np.sqrt(8 * np.log(2))
     if isinstance(filenames, basestring):
