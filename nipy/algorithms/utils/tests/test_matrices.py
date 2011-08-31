@@ -10,6 +10,8 @@ from nose.tools import (assert_true, assert_equal, assert_false,
 
 from numpy.testing import (assert_almost_equal, assert_array_almost_equal)
 
+# Seed random number generator
+
 
 def test_matrix_rank():
     # Full rank matrix
@@ -26,7 +28,8 @@ def test_matrix_rank():
 
 
 def test_full_rank():
-    X = np.random.standard_normal((40,5))
+    rng = np.random.RandomState(20110831)
+    X = rng.standard_normal((40,5))
     # A quick rank check
     assert_equal(matrix_rank(X), 5)
     X[:,0] = X[:,1] + X[:,2]
