@@ -5,6 +5,7 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('core', parent_package, top_path)
 
     config.add_subpackage('image')
+    config.add_subpackage('utils')
     config.add_subpackage('reference')
     config.add_subpackage('transforms')
 
