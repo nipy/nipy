@@ -8,7 +8,8 @@ and the data itself.
 """
 __docformat__ = 'restructuredtext'
 
-from . import image,  generators
+# You'd usually use nipy.core.api for these
+from . import image
 from .image import Image
 
 from nipy.testing import Tester

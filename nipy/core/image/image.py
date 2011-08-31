@@ -15,10 +15,9 @@ import numpy as np
 
 from nibabel.onetime import setattr_on_read
 
-# These imports are used in the fromarray and subsample 
-# functions only, not in Image
-
-from ..reference.coordinate_map import (AffineTransform, 
+# These imports are used in the fromarray and subsample functions only, not in
+# Image
+from ..reference.coordinate_map import (AffineTransform,
                                         CoordinateSystem,
                                         CoordinateMap)
 from ..reference.array_coords import ArrayCoordMap
@@ -96,13 +95,12 @@ class Image(object):
             return self.coordmap.affine
         raise AttributeError, 'Nonlinear transform does not have an affine.'
     _doc['affine'] = "Affine transformation if one exists."
-    
+
     ###################################################################
     #
     # Properties
     #
     ###################################################################
-
 
     def _getheader(self):
         # data loaded from a file should have a header
@@ -136,9 +134,9 @@ class Image(object):
     #
     ###################################################################
 
-    def __init__(self, data, coordmap, metadata={}):
+    def __init__(self, data, coordmap, metadata=None):
         """Create an `Image` object from array and `CoordinateMap` object.
-        
+
         Images are most often created through the module functions load and
         fromarray.
 
@@ -147,13 +145,15 @@ class Image(object):
         data : array
         coordmap : `AffineTransform` object
         metadata : dict
-        
+
         See Also
         --------
         load : load `Image` from a file
         save : save `Image` to a file
         fromarray : create an `Image` from a numpy array
         """
+        if metadata is None:
+            metadata = {}
         if data is None or coordmap is None:
             raise ValueError('expecting an array and CoordinateMap instance')
         if not isinstance(coordmap, AffineTransform):
@@ -166,7 +166,8 @@ class Image(object):
         self._data = data
         self.coordmap = coordmap
         if self.axes.ndim != self._data.ndim:
-            raise ValueError('the number of axes implied by the coordmap do not match the number of axes of the data')
+            raise ValueError('the number of axes implied by the coordmap do '
+                             'not match the number of axes of the data')
         self.metadata = metadata
 
     ###################################################################
@@ -177,7 +178,7 @@ class Image(object):
 
     def reordered_reference(self, order=None):
         """ Return new Image with reordered output coordinates
-        
+
         New Image coordmap has reordered output coordinates. This does
         not transpose the data.
 
@@ -192,8 +193,8 @@ class Image(object):
         -------
         r_img : object
            Image of same class as `self`, with reordered output
-           coordinates. 
-        
+           coordinates.
+
         Examples
         --------
         >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6], 'domain', 'range')
@@ -234,8 +235,8 @@ class Image(object):
         -------
         r_img : object
            Image of same class as `self`, with reordered output
-           coordinates. 
-        
+           coordinates.
+
         Examples
         --------
         >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6], 'domain', 'range')
@@ -285,7 +286,7 @@ class Image(object):
         ----------
         **names_dict : dict
            with keys being old names, and values being new names
-           
+
         Returns
         -------
         newimg : Image
@@ -311,7 +312,7 @@ class Image(object):
         ----------
         **names_dict : dict
            with keys being old names, and values being new names
-           
+
         Returns
         -------
         newimg : Image
@@ -331,6 +332,10 @@ class Image(object):
 
     def __setitem__(self, index, value):
         """Setting values of an image, set values in the data array."""
+        warnings.warn("Please don't use ``img[x] = y``; use "
+                      "``img.get_data()[x]  = y`` instead",
+                      DeprecationWarning,
+                      stacklevel=2)
         self._data[index] = value
 
     def __array__(self):
@@ -346,7 +351,7 @@ class Image(object):
 
     def __getitem__(self, slice_object):
         """ Slicing an image returns an Image.
-        
+
         Just calls the function subsample.
         """
         warnings.warn('slicing Images is deprecated, '
@@ -354,6 +359,16 @@ class Image(object):
                       DeprecationWarning,
                       stacklevel=2)
         return subsample(self, slice_object)
+
+    def __iter__(self):
+        """ Images do not have default iteration
+
+        This is because it's not obvious that axis 0 is the right axis to
+        iterate over.  For example, we often want to iterate over the time or
+        volume axis, and this is more likely to be axis 3
+        """
+        raise TypeError("Images do not have default iteration; "
+                        "you can use ``iter_axis(img, axis)`` instead.")
 
     def __eq__(self, other):
         return (isinstance(other, self.__class__)
@@ -377,7 +392,7 @@ class Image(object):
 
 class SliceMaker(object):
     """ This class just creates slice objects for image resampling
-    
+
     It only has a __getitem__ method that returns its argument.
 
     XXX Wouldn't need this if there was a way
@@ -535,6 +550,45 @@ def rollaxis(img, axis, inverse=False):
         order.remove(0)
         order.insert(axis, 0)
     return img.reordered_axes(order).reordered_reference(order)
+
+
+def iter_axis(img, axis, asarray=False):
+    """ Return generator to slice an image `img` over `axis`
+
+    Parameters
+    ----------
+    img : ``Image`` instance
+    axis : int or str
+        axis identifier, either name or axis number
+    asarray : {False, True}, optional
+
+    Returns
+    -------
+    g : generator
+        such that list(g) returns a list of slices over `axis`.  If `asarray` is
+        `False` the slices are images.  If `asarray` is True, slices are the
+        data from the images.
+
+    Examples
+    --------
+    >>> data = np.arange(24).reshape((4,3,2))
+    >>> img = fromarray(data, 'ijk', 'xyz')
+    >>> slices = list(iter_axis(img, 'j'))
+    >>> len(slices)
+    3
+    >>> slices[0].shape
+    (4, 2)
+    >>> slices = list(iter_axis(img, 'k', asarray=True))
+    >>> slices[1].sum() == data[:,:,1].sum()
+    True
+    """
+    rimg = rollaxis(img, axis)
+    n = rimg.shape[0]
+    for i in range(rimg.shape[0]):
+        if asarray:
+            yield rimg[i].get_data()
+        else:
+            yield rimg[i]
 
 
 def synchronized_order(img, target_img,
