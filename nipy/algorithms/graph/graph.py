@@ -844,9 +844,10 @@ x
         self.weights = w
 
     def symmeterize(self):
-        """ symmeterize self , modify edges and weights
-        so that self.adjacency  becomes the symmetric part of
-        the current self.adjacency
+        """Symmeterize self, modify edges and weights so that
+        self.adjacency becomes the symmetric part of the current
+        self.adjacency.
+        
         """
         A = self.to_coo_matrix()
         

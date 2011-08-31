@@ -373,7 +373,8 @@ class SubDomains(object):
         """
         return self.roi_features[fid]
 
-    def to_image(self, path=None, descrip=None, write_type=np.int16, data=None):
+    def to_image(self, path=None, descrip=None,
+                 write_type=np.int16, data=None):
         """ Generates and possibly writes a label image that represents self.
 
         Parameters
@@ -396,13 +397,13 @@ class SubDomains(object):
             return None
 
         tmp_image = self.domain.to_image()
-        label = tmp_image.get_data().copy().astype(write_type) - 1
+        mask = tmp_image.get_data().copy().astype(bool)
         if data is None:
-            label[label > - 1] = self.label
-            wdata = label
+            wdata = np.zeros(mask.shape, self.label.dtype)
+            wdata[mask] = self.label
         else:
-            wdata = np.zeros(label.shape, data.dtype)
-            wdata[label > -1] = data
+            wdata = np.zeros(mask.shape, data.dtype)
+            wdata[mask] = data
         nim = Nifti1Image(wdata, tmp_image.get_affine())
         if descrip is None:
             descrip = 'label image of %s' % self.id

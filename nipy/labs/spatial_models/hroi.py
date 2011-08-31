@@ -189,11 +189,16 @@ class HierarchicalROI(SubDomains):
 
     def merge_ascending(self, valid, ignore=[]):
         """Remove the non-valid ROIs by including them in
-        their parents when it exists
+        their parents when it exists.
 
         Parameters
         ----------
-        valid array of shape(self.k)
+        valid: array of shape(self.k)
+        ignore: list of str
+          List of the features to be ignored for the children's voxels
+          (the children's voxels will be merged in the parent blob and
+          assigned the (assumed unique) value of the parent's voxel for
+          that feature).
 
         Note
         ----
