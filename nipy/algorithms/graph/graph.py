@@ -348,7 +348,7 @@ def knn(X, k=1):
     The knn system is symmeterized: if (ab) is one of the edges
     then (ba) is also included
     """
-    from nipy.algorithms.routines.fast_distance import euclidean_distance
+    from ..utils.fast_distance import euclidean_distance
 
     if np.size(X) == X.shape[0]:
         X = np.reshape(X, (np.size(X), 1))
@@ -387,7 +387,7 @@ def eps_nn(X, eps=1.):
     -------
     the resulting graph instance
     """
-    from nipy.algorithms.routines.fast_distance import euclidean_distance
+    from ..utils.fast_distance import euclidean_distance
     if np.size(X) == X.shape[0]:
         X = np.reshape(X, (np.size(X), 1))
     try:

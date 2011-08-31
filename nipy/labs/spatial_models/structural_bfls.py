@@ -69,7 +69,7 @@ class LandmarkRegions(object):
     def homogeneity(self):
         """ returns the mean distance between points within each LR
         """
-        from ...algorithms.routines.fast_distance import euclidean_distance
+        from ...algorithms.utils.fast_distance import euclidean_distance
 
         coord = self.get_feature('position')
         h = np.zeros(self.k)

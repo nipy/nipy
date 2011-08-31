@@ -16,7 +16,7 @@ import os, fpformat
 
 import numpy as np
 import numpy.linalg as L
-from nipy.fixes.scipy.stats.models.utils import pos_recipr, recipr0
+from nipy.algorithms.utils.matrices import pos_recipr, recipr0
 # FIXME: This is broken. Don't know how to fix it
 #from nipy.fixes.scipy.stats.models.contrast import Contrast, ContrastResults
 

@@ -103,8 +103,7 @@ def test_step_function():
     s = step_function([0,4,5],[4,2,1])
     lam = lambdify(t, s)
     yield assert_array_equal(lam(tval), [0, 4, 4, 2, 2, 1])
-    
-    
+
 
 @parametric
 def test_blocks():

@@ -1,19 +1,17 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-TODO
+Utilities for one sample t-tests
 """
 __docformat__ = 'restructuredtext'
 
-import gc
-
 import numpy as np
-from nipy.fixes.scipy.stats.models.utils import pos_recipr
+from ..utils.matrices import pos_recipr
 
 def estimate_mean(Y, sd):
     """ Estimate the mean of a sample given information about
-    the standard deviations of each entry. 
-   
+    the standard deviations of each entry.
+
     Parameters
     ----------
     Y : ndarray
@@ -50,7 +48,7 @@ def estimate_mean(Y, sd):
     var_total = scale * pos_recipr(W.sum(0))
 
     value = {}
-    value['resid'] = resid        
+    value['resid'] = resid
     value['effect'] = effect
     value['sd'] = np.sqrt(var_total)
     value['t'] = value['effect'] * pos_recipr(value['sd'])
@@ -62,11 +60,11 @@ def estimate_mean(Y, sd):
     return value
 
 def estimate_varatio(Y, sd, df=None, niter=10):
-    """
-    
+    """ Estimate variance fixed/random effects variance ratio
+
     In a one-sample random effects problem, estimate
     the ratio between the fixed effects variance and
-    the random effects variance. 
+    the random effects variance.
 
     Parameters
     ----------
@@ -84,7 +82,7 @@ def estimate_varatio(Y, sd, df=None, niter=10):
         length == number of subjects.
     niter : int, optional
         Number of EM iterations to perform (default 10)
-    
+
     Returns
     -------
     value : dict
@@ -122,12 +120,9 @@ def estimate_varatio(Y, sd, df=None, niter=10):
         ptrS = 1 + (Sm * W).sum(0) - (Sm * W**2).sum(0) * Winv
         sigma2 = np.squeeze((sigma2 * ptrS + (sigma2**2) * (R**2).sum(0)) / nsubject)
     sigma2 = sigma2 - minS
-
     if df is None:
         df = np.ones(nsubject)
-            
     df.shape = (1, nsubject)
-        
     _Sshape = S.shape
     S.shape = (S.shape[0], np.product(S.shape[1:]))
 
@@ -140,4 +135,3 @@ def estimate_varatio(Y, sd, df=None, niter=10):
         for key in value.keys():
             value[key] = np.squeeze(value[key])
     return value
-
