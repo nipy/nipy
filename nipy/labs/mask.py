@@ -197,9 +197,10 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     cc: boolean, optional
         if cc is True, only the largest connect component is kept.
     opening: boolean, optional
-        if opening is True, an morphological opening is performed, to keep 
-        only large structures. This step is useful to remove parts of
-        the skull that might have been included.
+        if opening is True, an morphological opening is performed on the
+        mask (erosion, largest connect component selection and dilation), 
+        to keep only large structures. This step is useful to remove parts 
+        of the skull that might have been included.
 
     Returns
     -------
@@ -220,10 +221,13 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     
     mask = (reference_volume >= threshold)
 
+    if opening:
+        mask = ndimage.binary_erosion(mask.astype(np.int),
+                                        iterations=2)
     if cc:
         mask = largest_cc(mask)
     if opening:
-        mask = ndimage.binary_opening(mask.astype(np.int),
+        mask = ndimage.binary_dilation(mask.astype(np.int),
                                         iterations=2)
     return mask.astype(bool)
 
@@ -362,8 +366,8 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
             Files are grouped by session.
         mask: 3d ndarray
             3D mask array: true where a voxel should be used.
-        smooth: False or float, optional
-            If smooth is not False, it gives the size, in voxel of the
+        smooth: False or float, or triplet of float, optional
+            If smooth is not False, it gives the size, in mm of the
             spatial smoothing to apply to the signal.
         
         Returns
@@ -377,7 +381,8 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         'filenames should be a file name or a list of file names, '
         '%s (type %s) was passed' % (filenames, type(filenames)))
     mask = mask.astype(np.bool)
-    if smooth:
+    if smooth is not False:
+        smooth = np.asarray(smooth).astype(float)
         # Convert from a sigma to a FWHM:
         smooth /= np.sqrt(8 * np.log(2))
     if isinstance(filenames, basestring):
@@ -389,7 +394,7 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         del data_file
         if isinstance(series, np.memmap):
             series = np.asarray(series).copy()
-        if smooth:
+        if smooth is not False:
             vox_size = np.sqrt(np.sum(affine **2, axis=0))
             smooth_sigma = smooth / vox_size
             for this_volume in np.rollaxis(series, -1):
@@ -402,7 +407,7 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         for index, filename in enumerate(filenames):
             data_file = load(filename)
             data = data_file.get_data()
-            if smooth:
+            if smooth is not False:
                 affine = data_file.get_affine()[:3, :3]
                 vox_size = np.sqrt(np.sum(affine **2, axis=0))
                 smooth_sigma = smooth / vox_size

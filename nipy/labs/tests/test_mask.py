@@ -67,11 +67,18 @@ def test_series_from_mask():
     data[20, 20, 20] = 1
     mask = np.ones((40, 40, 40), dtype=np.bool)
     with InTemporaryDirectory():
+        # First test that with smooth=False there is no smoothing going
+        # on
+        img = nib.Nifti1Image(data, np.eye(4))
+        nib.save(img, 'testing.nii')
+        series, _ = series_from_mask('testing.nii', mask, smooth=False)
+        series = np.reshape(series[:, 0], (40, 40, 40))
+        np.testing.assert_array_equal(data[..., 0], series)
         for affine in (np.eye(4), np.diag((1, 1, -1, 1)),
                         np.diag((.5, 1, .5, 1))):
             img = nib.Nifti1Image(data, affine)
             nib.save(img, 'testing.nii')
-            series, header = series_from_mask('testing.nii', mask, smooth=9)
+            series, _ = series_from_mask('testing.nii', mask, smooth=9)
             series = np.reshape(series[:, 0], (40, 40, 40))
             vmax = series.max()
             # We are expecting a full-width at half maximum of
