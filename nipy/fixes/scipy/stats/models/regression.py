@@ -23,7 +23,11 @@ __docformat__ = 'restructuredtext en'
 import warnings
 
 import numpy as np
-import numpy.lib.recfunctions as nprf
+from scipy.linalg import norm, toeplitz
+
+from nipy.fixes.scipy.stats.models.model import LikelihoodModel, \
+     LikelihoodModelResults
+from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
 
 from scipy import stats
 import scipy.linalg as spl
@@ -148,7 +152,7 @@ class OLSModel(LikelihoodModel):
         self.normalized_cov_beta = np.dot(self.calc_beta,
                                           np.transpose(self.calc_beta))
         self.df_total = self.wdesign.shape[0]
-        self.df_model = utils.rank(self.design)
+        self.df_model = matrix_rank(self.design)
         self.df_resid = self.df_total - self.df_model
 
     def logL(self, beta, Y, nuisance=None):
@@ -333,7 +337,7 @@ class OLSModel(LikelihoodModel):
         """
         Compute rank of design matrix
         """
-        return utils.rank(self.wdesign)
+        return matrix_rank(self.wdesign)
 
     def fit(self, Y):
 #    def fit(self, Y, robust=None):
@@ -642,7 +646,7 @@ class RegressionResults(LikelihoodModelResults):
         See: Montgomery and Peck 3.2.1 p. 68
              Davidson and MacKinnon 15.2 p 662
         """
-        return self.resid * utils.pos_recipr(np.sqrt(self.dispersion))
+        return self.resid * pos_recipr(np.sqrt(self.dispersion))
 
 # predict is a verb
 # do the predicted values need to be done automatically, then?
@@ -765,6 +769,6 @@ def isestimable(C, D):
     if C.ndim == 1:
         C.shape = (C.shape[0], 1)
     new = np.vstack([C, D])
-    if utils.rank(new) != utils.rank(D):
+    if matrix_rank(new) != matrix_rank(D):
         return False
     return True

@@ -112,10 +112,8 @@ array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
 
 from string import lowercase, uppercase
 
-
-
 import numpy as np
-from scipy.linalg import svdvals, pinv
+from scipy.linalg import pinv
 
 import sympy
 
@@ -124,6 +122,8 @@ SYMPY_0p6 = LooseVersion(sympy.__version__) < LooseVersion('0.7.0')
 
 from nipy.fixes.sympy.utilities.lambdify import (implemented_function,
                                                  lambdify)
+
+from nipy.algorithms.utils.matrices import matrix_rank, full_rank
 
 
 def make_dummy(name):
@@ -1119,64 +1119,23 @@ def contrast_from_cols_or_rows(L, D, pseudo=None):
     """
     L = np.asarray(L)
     D = np.asarray(D)
-    
     n, p = D.shape
-
     if L.shape[0] != n and L.shape[1] != p:
-        raise ValueError, 'shape of L and D mismatched'
-
+        raise ValueError('shape of L and D mismatched')
     if pseudo is None:
         pseudo = pinv(D)
-
     if L.shape[0] == n:
         C = np.dot(pseudo, L).T
     else:
         C = np.dot(pseudo, np.dot(D, L.T)).T
-        
     Lp = np.dot(D, C.T)
-
     if len(Lp.shape) == 1:
         Lp.shape = (n, 1)
-        
-    if rank(Lp) != Lp.shape[1]:
-        Lp = fullrank(Lp)
+    Lp_rank = matrix_rank(Lp)
+    if Lp_rank != Lp.shape[1]:
+        Lp = full_rank(Lp, Lp_rank)
         C = np.dot(pseudo, Lp).T
-
     return np.squeeze(C)
-
-
-def rank(X, cond=1.0e-12):
-    # XXX Is this in scipy somewhere?
-    """ Return the rank of a matrix X
-
-    Rank based on its generalized inverse, not the SVD.
-    """
-    X = np.asarray(X)
-    if len(X.shape) == 2:
-        D = svdvals(X)
-        return int(np.add.reduce(np.greater(D / D.max(), cond).astype(np.int32)))
-    else:
-        return int(not np.alltrue(np.equal(X, 0.)))
-
-
-def fullrank(X, r=None):
-    """ Return a matrix whose column span is the same as X
-    using an SVD decomposition.
-
-    If the rank of X is known it can be specified by r-- no check is
-    made to ensure that this really is the rank of X.
-    """
-
-    if r is None:
-        r = rank(X)
-
-    V, D, U = np.linalg.svd(X, full_matrices=0)
-    order = np.argsort(D)
-    order = order[::-1]
-    value = []
-    for i in range(r):
-        value.append(V[:,order[i]])
-    return np.asarray(np.transpose(value)).astype(np.float64)
 
 
 class RandomEffects(Formula):

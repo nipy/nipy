@@ -20,9 +20,10 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 from numpy.linalg import det
-from nipy.fixes.scipy.stats.models.utils import pos_recipr
 
 from nipy.core.api import Image
+
+from .utils.matrices import pos_recipr
 
 class Resels(object):
     """The Resels class.
@@ -147,6 +148,7 @@ class Resels(object):
 
         return self
 
+
 class ReselImage(Resels):
 
     def __init__(self, resels=None, fwhm=None, **keywords):
@@ -189,6 +191,7 @@ class ReselImage(Resels):
             ``self``
         """
         return self
+
 
 def _calc_detlam(xx, yy, zz, yx, zx, zy):
     """

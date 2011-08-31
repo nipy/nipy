@@ -12,12 +12,11 @@ from nipy.fixes.sympy.utilities.lambdify import implemented_function
 from .. import formula as F
 from ..formula import terms, Term
 
-from nipy.testing import (assert_almost_equal, assert_true,
-                          assert_equal, assert_false,
-                          assert_raises, parametric)
+from nose.tools import (assert_true, assert_equal, assert_false,
+                        assert_raises)
 
+from numpy.testing import assert_almost_equal
 
-@parametric
 def test_terms():
     t = terms('a')
     assert_true(isinstance(t, Term))
@@ -44,7 +43,6 @@ def test_terms():
     assert_equal(terms('abc', each_char=True), (a, b, c))
 
 
-
 def test_getparams_terms():
     t = F.Term('t')
     x, y, z = [sympy.Symbol(l) for l in 'xyz']
@@ -54,7 +52,7 @@ def test_getparams_terms():
     matrix_expr = np.array([[x,y*t],[y,z]])
     yield assert_equal, set(F.getparams(matrix_expr)), set([x,y,z])
     yield assert_equal, set(F.getterms(matrix_expr)), set([t])
-    
+
 
 def test_formula_params():
     t = F.Term('t')
@@ -182,7 +180,6 @@ def test_mul():
     f2 = F.Factor('t', [2,3,4])
     t2 = f['t_2']
     x = F.Term('x')
-    
     yield assert_equal, t2, t2*t2
     yield assert_equal, f, f*f
     yield assert_false, f == f2
@@ -191,13 +188,11 @@ def test_mul():
 
 def test_make_recarray():
     m = F.make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int])
-
-    yield assert_equal, m.dtype.names, ['w', 'v']
-
+    assert_equal(m.dtype.names, ('w', 'v'))
     m2 = F.make_recarray(m, 'xy')
-    yield assert_equal, m2.dtype.names, ['x', 'y']
+    assert_equal(m2.dtype.names, ('x', 'y'))
 
-    
+
 def test_str_formula():
     t1 = F.Term('x')
     t2 = F.Term('y')
@@ -238,15 +233,14 @@ def test_design():
     yield assert_almost_equal, ff.design(n)['1'], 1
 
 
-@parametric
 def test_alias():
     x = F.Term('x')
     f = implemented_function('f', lambda x: 2*x)
     g = implemented_function('g', lambda x: np.sqrt(x))
     ff = F.Formula([f(x), g(x)**2])
     n = F.make_recarray([2,4,5], 'x')
-    yield assert_almost_equal(ff.design(n)['f(x)'], n['x']*2)
-    yield assert_almost_equal(ff.design(n)['g(x)**2'], n['x'])
+    assert_almost_equal(ff.design(n)['f(x)'], n['x']*2)
+    assert_almost_equal(ff.design(n)['g(x)**2'], n['x'])
 
 
 def test_factor_getterm():
@@ -266,22 +260,6 @@ def test_stratify():
     y = sympy.Symbol('y')
     f = sympy.Function('f')
     yield assert_raises, ValueError, fac.stratify, f(y)
-
-
-def test_fullrank():
-    X = np.random.standard_normal((40,5))
-    X[:,0] = X[:,1] + X[:,2]
-
-    Y1 = F.fullrank(X)
-    yield assert_equal, Y1.shape, (40,4)
-
-    Y2 = F.fullrank(X, r=3)
-    yield assert_equal, Y2.shape, (40,3)
-
-    Y3 = F.fullrank(X, r=4)
-    yield assert_equal, Y3.shape, (40,4)
-
-    yield assert_almost_equal, Y1, Y3
 
 
 def test_nonlin1():
@@ -312,7 +290,7 @@ def test_nonlin1():
 def test_intercept():
     dz = F.make_recarray([2,3,4],'z')
     v = F.I.design(dz, return_float=False)
-    yield assert_equal, v.dtype.names, ['intercept']
+    assert_equal(v.dtype.names, ('intercept',))
 
 
 def test_nonlin2():
@@ -331,7 +309,7 @@ def test_Rintercept():
     yf = y.formula
     newf = (xf+F.I)*(yf+F.I)
     assert_equal(set(newf.terms), set([x,y,x*y,sympy.Number(1)]))
-    
+
 
 def test_return_float():
     x = F.Term('x')
@@ -345,14 +323,10 @@ def test_return_float():
 
 def test_subtract():
     x, y, z = [F.Term(l) for l in 'xyz']
-
     f1 = F.Formula([x,y])
     f2 = F.Formula([x,y,z])
-
     f3 = f2 - f1
-
     yield assert_equal, set(f3.terms), set([z])
-    
     f4 = F.Formula([y,z])
     f5 = f1 - f4
     yield assert_equal, set(f5.terms), set([x])
@@ -364,7 +338,6 @@ def test_subs():
     z = F.Term('z')
     f = F.Formula([t1, t2])
     g = f.subs(t1, z)
-
     yield assert_equal, list(g.terms), [z, t2]
 
 
