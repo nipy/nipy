@@ -197,9 +197,10 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     cc: boolean, optional
         if cc is True, only the largest connect component is kept.
     opening: boolean, optional
-        if opening is True, an morphological opening is performed, to keep 
-        only large structures. This step is useful to remove parts of
-        the skull that might have been included.
+        if opening is True, an morphological opening is performed on the
+        mask (erosion, largest connect component selection and dilation), 
+        to keep only large structures. This step is useful to remove parts 
+        of the skull that might have been included.
 
     Returns
     -------
