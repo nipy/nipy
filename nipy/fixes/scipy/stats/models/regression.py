@@ -139,13 +139,20 @@ class OLSModel(LikelihoodModel):
     >>> print results.Fcontrast(np.eye(2)) #doctest: +FP_6DP
     <F contrast: F=19.4607843137, df_den=5, df_num=2>
     """
-    def __init__(self, design, hascons=True):
+    def __init__(self, design):
+        """
+        Parameters
+        ----------
+        design : array-like
+            This is your design matrix.  Data are assumed to be column ordered with
+            observations in rows.
+        """
         super(OLSModel, self).__init__()
-        self.initialize(design, hascons)
+        self.initialize(design)
 
-    def initialize(self, design, hascons=True):
-# Jonathan: PLEASE don't assume we have a constant...
-# TODO: handle case for noconstant regression
+    def initialize(self, design):
+        # Jonathan: PLEASE don't assume we have a constant...
+        # TODO: handle case for noconstant regression
         self.design = design
         self.wdesign = self.whiten(self.design)
         self.calc_beta = spl.pinv(self.wdesign)
