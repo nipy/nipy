@@ -23,17 +23,14 @@ __docformat__ = 'restructuredtext en'
 import warnings
 
 import numpy as np
-from scipy.linalg import norm, toeplitz
 
-from nipy.fixes.scipy.stats.models.model import LikelihoodModel, \
-     LikelihoodModelResults
-from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
 
 from scipy import stats
 import scipy.linalg as spl
 
+from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
+
 from .model import LikelihoodModel, LikelihoodModelResults
-from . import utils
 
 from .descriptors import setattr_on_read
 
@@ -79,29 +76,18 @@ def categorical(data):
 #Docs are a little vague and there are no good examples
 #Some of these attributes are most likely intended to be private I imagine
 class OLSModel(LikelihoodModel):
-    """    
-    A simple ordinary least squares model.
+    """ A simple ordinary least squares model.
 
     Parameters
     ----------
-        `design`: array-like
-            This is your design matrix.  Data are assumed to be column ordered
-            with observations in rows.
+    design : array-like
+        This is your design matrix.  Data are assumed to be column ordered with
+        observations in rows.
 
     Methods
     -------
+    model.__init___(design)
     model.logL(b=self.beta, Y)
-        Returns the log-likelihood of the parameter estimates
-
-        Parameters
-        ----------
-        b : array-like
-            `b` is an array of parameter estimates the log-likelihood of which 
-            is to be tested.
-        Y : array-like
-            `Y` is the vector of dependent variables.            
-    model.__init___(design, hascons=True)
-        Creates a `OLSModel` from a design.
 
     Attributes
     ----------
@@ -119,7 +105,7 @@ class OLSModel(LikelihoodModel):
         Degrees of freedom of the residuals.
         Number of observations less the rank of the design.
     df_model : integer
-        Degres of freedome of the model.
+        Degrees of freedome of the model.
         The rank of the design.
 
     Examples
@@ -164,56 +150,54 @@ class OLSModel(LikelihoodModel):
 
     def logL(self, beta, Y, nuisance=None):
         # Jonathan: this is overwriting an abstract method of LikelihoodModel
-        '''
-        Returns the value of the loglikelihood function at beta.
-        
+        r''' Returns the value of the loglikelihood function at beta.
+
         Given the whitened design matrix, the loglikelihood is evaluated
         at the parameter vector, beta, for the dependent variable, Y
         and the nuisance parameter, sigma.
 
         Parameters
         ----------
-
         beta : ndarray
             The parameter estimates.  Must be of length df_model.
-
         Y : ndarray
-            The dependent variable.
-
+            The dependent variable
         nuisance : dict, optional
-            A dict with key 'sigma', which is an optional 
-            estimate of sigma. If None, defaults to its
-            maximum likelihood estimate (with beta fixed)
-            as
-            
-            sum((Y - X*beta)**2) / n
+            A dict with key 'sigma', which is an optional estimate of sigma. If
+            None, defaults to its maximum likelihood estimate (with beta fixed)
+            as:
+
+                sum((Y - X*beta)**2) / n
 
             where n=Y.shape[0], X=self.design.
 
         Returns
         -------
-        The value of the loglikelihood function.
-        
+        loglf : float
+            The value of the loglikelihood function.
 
         Notes
         -----
         The log-Likelihood Function is defined as
-        .. math:: \ell(\beta,\sigma,Y)=
-        -\frac{n}{2}\log(2\pi\sigma^2) - \|Y-X\beta\|^2/(2\sigma^2)
-        ..
+        .. math::
 
-        The parameter :math:`\sigma` above is what is sometimes
-        referred to as a nuisance parameter. That is, the likelihood
-        is considered as a function of :math:`\beta`, but to evaluate it,
-        a value of :math:`\sigma` is needed.
+            \ell(\beta,\sigma,Y)=
+            -\frac{n}{2}\log(2\pi\sigma^2) - \|Y-X\beta\|^2/(2\sigma^2)
+
+        The parameter :math:`\sigma` above is what is sometimes referred to as a
+        nuisance parameter. That is, the likelihood is considered as a function
+        of :math:`\beta`, but to evaluate it, a value of :math:`\sigma` is
+        needed.
 
         If :math:`\sigma` is not provided, then its maximum likelihood
-        estimate
-        .. math::\hat{\sigma}(\beta) = \frac{\text{SSE}(\beta)}{n}
+        estimate:
 
-        is plugged in. This likelihood is now a function
-        of only :math:`\beta` and is technically referred to as 
-        a profile-likelihood.
+        .. math::
+
+            \hat{\sigma}(\beta) = \frac{\text{SSE}(\beta)}{n}
+
+        is plugged in. This likelihood is now a function of only :math:`\beta`
+        and is technically referred to as a profile-likelihood.
 
         References
         ----------
@@ -230,30 +214,25 @@ class OLSModel(LikelihoodModel):
             sigmasq = nuisance['sigma']
         loglf = -n/2.*np.log(2*np.pi*sigmasq) - SSE / (2*sigmasq)
         return loglf
-    
+
     def score(self, beta, Y, nuisance=None):
         # Jonathan: this is overwriting an abstract method of LikelihoodModel
-        '''
-        Returns the score function, the gradient of the loglikelihood function at (beta, Y, nuisance).
+        ''' Returns the score function, the gradient of the loglikelihood function at (beta, Y, nuisance).
 
         See logL for details.
-        
+
         Parameters
         ----------
-
         beta : ndarray
             The parameter estimates.  Must be of length df_model.
-
         Y : ndarray
             The dependent variable.
-
         nuisance : dict, optional
-            A dict with key 'sigma', which is an optional 
-            estimate of sigma. If None, defaults to its
-            maximum likelihood estimate (with beta fixed)
-            as
-            
-            sum((Y - X*beta)**2) / n
+            A dict with key 'sigma', which is an optional estimate of sigma. If
+            None, defaults to its maximum likelihood estimate (with beta fixed)
+            as::
+
+                sum((Y - X*beta)**2) / n
 
             where n=Y.shape[0], X=self.design.
 
@@ -274,41 +253,34 @@ class OLSModel(LikelihoodModel):
 
     def information(self, beta, nuisance=None):
         # Jonathan: this is overwriting an abstract method of LikelihoodModel
-        '''
-        Returns the information matrix at (beta, Y, nuisance).
-        
+        ''' Returns the information matrix at (beta, Y, nuisance).
+
         See logL for details.
 
         Parameters
         ----------
-
         beta : ndarray
             The parameter estimates.  Must be of length df_model.
-
         nuisance : dict
-            A dict with key 'sigma', which is an 
-            estimate of sigma. If None, defaults to its
-            maximum likelihood estimate (with beta fixed)
-            as
-            
-            sum((Y - X*beta)**2) / n
+            A dict with key 'sigma', which is an estimate of sigma. If None,
+            defaults to its maximum likelihood estimate (with beta fixed) as::
+
+                sum((Y - X*beta)**2) / n
 
             where n=Y.shape[0], X=self.design.
 
         Returns
         -------
-        The information matrix, the negative of the inverse of the
-        Hessian of the
-        of the log-likelihood function evaluated at (theta, Y, nuisance).
-        
-
+        info : array
+            The information matrix, the negative of the inverse of the Hessian
+            of the of the log-likelihood function evaluated at (theta, Y,
+            nuisance).
         '''
         X = self.design
         sigmasq = nuisance['sigma']
         C = sigmasq * np.dot(X.T, X)
         return C
 
-                      
 #   Note: why have a function that doesn't do anything? does it have to be here to be
 #   overwritten?
 #   Could this be replaced with the sandwich estimators 
@@ -319,11 +291,20 @@ class OLSModel(LikelihoodModel):
 #   is such that not much of OLSModel has to be changed
 
     def whiten(self, X):
-        """
-        This matrix is the matrix whose pseudoinverse is ultimately
-        used in estimating the coefficients. For OLSModel, it is
-        does nothing. For WLSmodel, ARmodel, it pre-applies
-        a square root of the covariance matrix to X.
+        """ Whiten design matrix
+
+        Parameters
+        ----------
+        X : array
+            design matrix
+
+        Returns
+        -------
+        wX : array
+            This matrix is the matrix whose pseudoinverse is ultimately
+            used in estimating the coefficients. For OLSModel, it is
+            does nothing. For WLSmodel, ARmodel, it pre-applies
+            a square root of the covariance matrix to X.
         """
         return X
 
