@@ -15,38 +15,35 @@ from nose.tools import assert_equal
 from numpy.testing import assert_array_almost_equal
 
 
-W = standard_normal
+RNG = np.random.RandomState(20110901)
+X = RNG.standard_normal((40,10))
+Y = RNG.standard_normal((40,))
+
 
 def test_OLS():
-    X = W((40,10))
-    Y = W((40,))
     model = OLSModel(design=X)
     results = model.fit(Y)
     assert_equal(results.df_resid, 30)
 
 
 def test_AR():
-    X = W((40,10))
-    Y = W((40,))
     model = ARModel(design=X, rho=0.4)
     results = model.fit(Y)
     assert_equal(results.df_resid, 30)
 
 
 def test_OLS_degenerate():
-    X = W((40,10))
-    X[:,0] = X[:,1] + X[:,2]
-    Y = W((40,))
-    model = OLSModel(design=X)
+    Xd = X.copy()
+    Xd[:,0] = Xd[:,1] + Xd[:,2]
+    model = OLSModel(design=Xd)
     results = model.fit(Y)
     assert_equal(results.df_resid, 31)
 
 
 def test_AR_degenerate():
-    X = W((40,10))
-    X[:,0] = X[:,1] + X[:,2]
-    Y = W((40,))
-    model = ARModel(design=X, rho=0.9)
+    Xd = X.copy()
+    Xd[:,0] = Xd[:,1] + Xd[:,2]
+    model = ARModel(design=Xd, rho=0.9)
     results = model.fit(Y)
     assert_equal(results.df_resid, 31)
 
