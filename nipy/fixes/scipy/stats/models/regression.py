@@ -34,44 +34,6 @@ from .model import LikelihoodModel, LikelihoodModelResults
 
 from .descriptors import setattr_on_read
 
-def categorical(data):
-    '''
-    Returns an array changing categorical variables to dummy variables.
-
-    Take a structured or record array and returns an array with categorical variables.
-
-    Notes
-    -----
-    This returns a dummy variable for EVERY distinct string.  If noconsant
-    then this is okay.  Otherwise, a "intercept" needs to be designated in regression.
-
-    Returns the same array as it's given right now, consider returning a structured 
-    and plain ndarray (with names stripped, etc.)
-    '''
-    if not data.dtype.names and not data.mask.any():
-        print data.dtype
-        print "There is not a categorical variable?"
-        return data
-    #if data.mask.any():
-    #    print "Masked arrays are not handled yet."
-    #    return data
-
-    elif data.dtype.names:  # this will catch both structured and record
-                            # arrays, no other array could have string data!
-                            # not sure about masked arrays yet
-        for i in range(len(data.dtype)):
-            if data.dtype[i].type is np.string_:
-                tmp_arr = np.unique(data.field(i))
-                tmp_dummy = (tmp_arr[:,np.newaxis]==data.field(i)).astype(float)
-# .field only works for record arrays
-# tmp_dummy is a number of dummies x number of observations array
-                data=nprf.drop_fields(data,data.dtype.names[i],usemask=False, 
-                                asrecarray=True)
-                data=nprf.append_fields(data,tmp_arr.strip("\""), data=tmp_dummy,
-                                    usemask=False, asrecarray=True)
-        return data
-
-
 #How to document a class?
 #Docs are a little vague and there are no good examples
 #Some of these attributes are most likely intended to be private I imagine
