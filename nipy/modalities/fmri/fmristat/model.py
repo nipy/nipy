@@ -4,6 +4,8 @@
 This module defines the two default GLM passes of fmristat
 """
 
+import copy
+
 import os.path as path
 
 import numpy as np
@@ -20,6 +22,7 @@ from nipy.io.api import save_image
 
 # fmri imports
 from ..api import FmriImageList, fmri_generator
+from ..formula import make_recarray
 
 import nipy.algorithms.statistics.regression as regression
 
@@ -38,7 +41,9 @@ class ModelOutputImage(object):
 
     def __init__(self, filename, coordmap, shape, clobber=False):
         self.filename = filename
-        self._im = Image(np.zeros(shape), coordmap)
+        self._im_data = np.zeros(shape)
+        self._im = Image(self._im_data, coordmap)
+        # Using a dangerous undocumented API here
         self.clobber = clobber
         self._flushed = False
 
@@ -53,29 +58,29 @@ class ModelOutputImage(object):
         del(self._im)
 
     def __getitem__(self, item):
-        if not self._flushed:
-            return self._im[item]
-        else:
+        if self._flushed:
             raise ValueError('trying to read value from a '
                              'saved ModelOutputImage')
+        return self._im_data[item]
 
     def __setitem__(self, item, value):
-        if not self._flushed:
-            self._im[item] = value
-        else:
+        if self._flushed:
             raise ValueError('trying to set value on saved'
                              'ModelOutputImage')
+        self._im_data[item] = value
 
 
-def model_generator(formula, data, volume_start_times, iterable=None, 
-                    slicetimes=None, model_type=OLSModel, 
+def model_generator(formula, data, volume_start_times, iterable=None,
+                    slicetimes=None, model_type=OLSModel,
                     model_params = lambda x: ()):
     """
     Generator for the models for a pass of fmristat analysis.
     """
+    volume_start_times = make_recarray(volume_start_times.astype(float), 't')
     for i, d in matrix_generator(fmri_generator(data, iterable=iterable)):
         model_args = model_params(i) # model may depend on i
-        rmodel = model_type(formula.design(volume_start_times), *model_args)
+        design = formula.design(volume_start_times, return_float=True)
+        rmodel = model_type(design.view(float), *model_args)
         yield i, d, rmodel
 
 
@@ -117,6 +122,7 @@ class OLS(object):
             self.volume_start_times = volume_start_times
 
     def execute(self):
+        start_times = make_recarray(self.volume_start_times, 't')
         m = model_generator(self.formula, self.data,
                             self.volume_start_times,
                             model_type=OLSModel)
@@ -209,7 +215,7 @@ class AR1(object):
         self.formula = formula
         self.outputs = outputs
         # Cleanup rho values, truncate them to a scale of 0.01
-        g = rho.coordmap.copy()
+        g = copy.copy(rho.coordmap)
         rho = np.asarray(rho)
         m = np.isnan(rho)
         r = (np.clip(rho,-1,1) * 100).astype(np.int) / 100.
@@ -375,11 +381,11 @@ def output_resid(outfile, fmri_image, clobber=False):
         T = np.zeros((5,5))
         g = fmri_image[0].coordmap
         T[1:,1:] = fmri_image[0].affine
-        T[0,0] = (fmri_image.volume_start_times[1:] - 
+        T[0,0] = (fmri_image.volume_start_times[1:] -
                   fmri_image.volume_start_times[:-1]).mean()
         # FIXME: NIFTI specific naming here
-        innames = ["l"] + list(g.input_coords.coord_names)
-        outnames = ["t"] + list(g.output_coords.coord_names)
+        innames = ["l"] + list(g.function_range.coord_names)
+        outnames = ["t"] + list(g.function_domain.coord_names)
         cmap = AffineTransform.from_params(innames,
                                   outnames, T)
         shape = (n,) + fmri_image[0].shape

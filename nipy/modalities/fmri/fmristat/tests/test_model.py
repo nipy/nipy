@@ -1,20 +1,39 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import warnings
 
+import numpy as np
+
+from nipy.core.api import Image
 from nipy.io.api import load_image
 
 from  .. import model
+from ..model import ModelOutputImage
 from ...api import FmriImageList
 from ...formula import Formula, Term, make_recarray
 from nibabel.tmpdirs import InTemporaryDirectory
 
-from nipy.testing import funcfile
+from nose.tools import assert_raises
+
+from numpy.testing import assert_array_equal
+from nipy.testing import funcfile, anatfile
 
 def test_model_out_img():
     # Model output image
-    # Just caches an image
-    pass
+    cmap = load_image(anatfile).coordmap
+    shape = (2,3,4)
+    fname = 'myfile.nii'
+    with InTemporaryDirectory():
+        moi = ModelOutputImage(fname, cmap, shape)
+        for i in range(shape[0]):
+            moi[i] = i
+        for i in range(shape[0]):
+            assert_array_equal(moi[i], i)
+        moi.save()
+        assert_raises(ValueError, moi.__setitem__, 0, 1)
+        assert_raises(ValueError, moi.__getitem__, 0)
+        new_img = load_image(fname)
+        for i in range(shape[0]):
+            assert_array_equal(new_img[i].get_data(), i)
 
 
 def test_resid():
