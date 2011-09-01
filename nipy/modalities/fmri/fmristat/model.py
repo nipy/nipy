@@ -312,7 +312,7 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
 
 
 def output_F(outfile, contrast, fmri_image, clobber=False):
-    ''' output F
+    ''' output F statistic images
 
     Parameters
     ----------
@@ -327,7 +327,7 @@ def output_F(outfile, contrast, fmri_image, clobber=False):
     f = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape,
                          clobber=clobber)
     return regression.RegressionOutput(f, lambda x:
-                                       regression.output_F(x, contrast))
+                                       regression.output_F(contrast, x))
 
 
 def output_AR1(outfile, fmri_image, clobber=False):

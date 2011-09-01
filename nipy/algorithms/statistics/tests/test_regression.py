@@ -5,7 +5,7 @@ import numpy as np
 
 from nipy.fixes.scipy.stats.models.regression import OLSModel
 
-from ..regression import output_T
+from ..regression import output_T, output_F
 
 from nose.tools import assert_true, assert_equal, assert_raises
 
@@ -15,17 +15,36 @@ from numpy.testing import (assert_array_almost_equal,
 
 N = 10
 X = np.c_[np.linspace(-1,1,N), np.ones((N,))]
-Y = np.random.normal(size=(10,1)) * 10 + 100
+RNG = np.random.RandomState(20110901)
+Y = RNG.normal(size=(10,1)) * 10 + 100
 MODEL = OLSModel(X)
+RESULTS = MODEL.fit(Y)
 C1 = [1, 0]
 
-def test_output_T():
-    # Test output_T convenience function
-    results = MODEL.fit(Y)
+
+def test_model():
+    # Check basics about the model fit
     # Check we fit the mean
-    assert_array_almost_equal(results.theta[1], np.mean(Y))
+    assert_array_almost_equal(RESULTS.theta[1], np.mean(Y))
+
+
+def test_output_T():
     # Check we get required outputs
-    t = results.t(0)
-    assert_array_almost_equal([t], output_T(C1, results, t=True))
+    t = RESULTS.t(0)
+    assert_array_almost_equal([t], output_T(C1, RESULTS, t=True))
+
+
+def test_output_F():
+    # Test output_F convenience function
+    rng = np.random.RandomState(ord('F'))
+    Y = rng.normal(size=(10,1)) * 10 + 100
+    X = np.c_[rng.normal(size=(10,3)), np.ones((N,))]
+    c1 = np.zeros((X.shape[1],))
+    c1[0] = 1
+    model = OLSModel(X)
+    results = model.fit(Y)
+    # Check we get required outputs
+    exp_f = results.t(0) **2
+    assert_array_almost_equal(exp_f, output_F(c1, results))
 
 

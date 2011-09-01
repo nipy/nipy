@@ -56,12 +56,12 @@ def output_T(contrast, results, effect=None, sd=None, t=None):
     return v
 
 
-def output_F(results, contrast):
+def output_F(contrast, results):
     """
     This convenience function outputs the results of an Fcontrast
     from a regression
     """
-    return results.Fcontrast(contrast.matrix).F
+    return results.Fcontrast(contrast).F
 
 
 def output_resid(results):
