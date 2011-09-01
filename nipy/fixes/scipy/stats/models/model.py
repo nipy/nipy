@@ -2,13 +2,11 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 from numpy.linalg import inv
-#from scipy import optimize
 
 from scipy.stats import t
 
 from nipy.algorithms.utils.matrices import pos_recipr
-import numpy.lib.recfunctions as nprf
-from descriptors import setattr_on_read
+from .descriptors import setattr_on_read
 
 class Model(object):
     """
@@ -39,6 +37,7 @@ class Model(object):
         in self.results, which itself should have a predict method.
         """
         self.results.predict(design)
+
 
 class LikelihoodModel(Model):
 
@@ -201,21 +200,39 @@ class LikelihoodModelResults(object):
 #                 dispersion=np.eye(len(self.resid))*dispersion
 #             return np.dot(np.dot(self.calc_theta, dispersion), self.calc_theta.T)
 
-    def Tcontrast(self, matrix, t=True, sd=True, dispersion=None):
+    def Tcontrast(self, matrix, store=('t', 'effect', 'sd'), dispersion=None):
+        """ Compute a Tcontrast for a row vector `matrix`
+
+        To get the t-statistic for a single column, use the 't' method.
+
+        Parameters
+        ----------
+        matrix : 1D array
+            contrast matrix
+        store : sequence
+            components of t to store in results output object.  Defaults to all
+            components ('t', 'effect', 'sd').
+        dispersion : float
+
+        Returns
+        -------
+        res : ``TContrastResults`` object
         """
-        Compute a Tcontrast for a row vector matrix. To get the t-statistic
-        for a single column, use the 't' method.
-        """
-
-        _t = _sd = None
-
-        _effect = np.dot(matrix, self.theta)
-
-        if sd:
-            _sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
-        if t:
-            _t = _effect * pos_recipr(_sd)
-        return TContrastResults(effect=_effect, t=_t, sd=_sd, df_den=self.df_resid)
+        store = set(store)
+        if not store.issubset(('t', 'effect', 'sd')):
+            raise ValueError('Unexpected store request in %s' % store)
+        st_t = st_effect = st_sd = t = effect = sd = None
+        if 't' in store or 'effect' in store:
+            effect = np.dot(matrix, self.theta)
+            if 'effect' in store:
+                st_effect = effect
+        if 't' in store or 'sd' in store:
+            sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
+            if 'sd' in store:
+                st_sd = sd
+        if 't' in store:
+            st_t = effect * pos_recipr(sd)
+        return TContrastResults(effect=st_effect, t=st_t, sd=st_sd, df_den=self.df_resid)
 
 # Jonathan: for an F-statistic, the options 't', 'sd' do not make sense. The 'effect' option
 # does make sense, but is rarely looked at in practice.
@@ -238,15 +255,11 @@ class LikelihoodModelResults(object):
         In particular, the matrices from these contrasts will always be
         non-singular in the sense above.
         """
-
         ctheta = np.dot(matrix, self.theta)
-
         if matrix.ndim == 1:
             matrix = matrix.reshape((1, matrix.shape[0]))
-
         if dispersion is None:
             dispersion = self.dispersion
-
         q = matrix.shape[0]
         if invcov is None:
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
@@ -281,7 +294,7 @@ class LikelihoodModelResults(object):
         >>> x = np.hstack((stan((30,1)),stan((30,1)),stan((30,1))))
         >>> beta=np.array([3.25, 1.5, 7.0])
         >>> y = np.dot(x,beta) + stan((30))
-        >>> model = OLSModel(x, hascons=False).fit(y)
+        >>> model = OLSModel(x).fit(y)
         >>> confidence_intervals = model.conf_int(cols=(1,2))
 
         Notes

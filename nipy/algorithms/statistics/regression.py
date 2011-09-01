@@ -17,17 +17,41 @@ from scipy.linalg import toeplitz
 from ..utils.matrices import pos_recipr
 
 def output_T(contrast, results, effect=None, sd=None, t=None):
+    """ Convenience function to collect t contrast results
+
+    Parameters
+    ----------
+    contrast : array
+        contrast matrix
+    results : object
+        implementing Tcontrast method
+    effect : {None, False, True}, optional
+        flag as to whether to append effect (None -> False)
+    sd : {None, False, True}, optional
+        flag as to whether to append standard deviation (None -> False)
+    t : {None, False, True}, optional
+        flag as to whether to append t (None -> False)
+
+    Returns
+    -------
+    res_list : list
+        List of results.  It will be len(3) if all of `effect`, `sd` and `t` are
+        True, and empty if they are all False
     """
-    This convenience function outputs the results of a Tcontrast
-    from a regression
-    """
-    r = results.Tcontrast(contrast.matrix, sd=sd, t=t)
+    store = []
+    if effect:
+        store.append('effect')
+    if sd:
+        store.append('sd')
+    if t:
+        store.append('t')
+    r = results.Tcontrast(contrast, store=store)
     v = []
-    if effect is not None:
+    if effect:
         v.append(r.effect)
-    if sd is not None:
+    if sd:
         v.append(r.sd)
-    if t is not None:
+    if t:
         v.append(r.t)
     return v
 
