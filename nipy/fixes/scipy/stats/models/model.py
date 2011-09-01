@@ -207,7 +207,7 @@ class LikelihoodModelResults(object):
 
         Parameters
         ----------
-        matrix : 1D array
+        matrix : 1D array-like
             contrast matrix
         store : sequence
             components of t to store in results output object.  Defaults to all
@@ -223,11 +223,12 @@ class LikelihoodModelResults(object):
             raise ValueError('Unexpected store request in %s' % store)
         st_t = st_effect = st_sd = t = effect = sd = None
         if 't' in store or 'effect' in store:
-            effect = np.dot(matrix, self.theta)
+            effect = np.squeeze(np.dot(matrix, self.theta))
             if 'effect' in store:
                 st_effect = effect
         if 't' in store or 'sd' in store:
             sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
+            sd = np.squeeze(sd)
             if 'sd' in store:
                 st_sd = sd
         if 't' in store:
@@ -254,7 +255,23 @@ class LikelihoodModelResults(object):
         See the contrast module to see how to specify contrasts.
         In particular, the matrices from these contrasts will always be
         non-singular in the sense above.
+
+        Parameters
+        ----------
+        matrix : 1D array-like
+            contrast matrix
+        dispersion : None or float
+            If None, use ``self.dispersion``
+        invcov : None or array
+            Known inverse of variance covariance matrix. If None, calculate this
+            matrix.
+
+        Returns
+        -------
+        f_res : ``FContrastResults`` instance
+            with attributes F, df_den, df_num
         """
+        matrix = np.asarray(matrix)
         ctheta = np.dot(matrix, self.theta)
         if matrix.ndim == 1:
             matrix = matrix.reshape((1, matrix.shape[0]))
@@ -264,6 +281,7 @@ class LikelihoodModelResults(object):
         if invcov is None:
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
         F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) * pos_recipr((q * dispersion))
+        F = np.squeeze(F)
         return FContrastResults(F=F, df_den=self.df_resid, df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):
