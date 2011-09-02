@@ -210,7 +210,11 @@ class Realign4dAlgorithm(object):
 
         # The reference scan conventionally defines the head
         # coordinate system
-        self.refscan = refscan
+        self.optimize_template = optimize_template
+        if not optimize_template and refscan == None:
+            self.refscan = REFSCAN
+        else:
+            self.refscan = refscan
 
         # Set the minimization method
         self.set_fmin(optimizer, stepsize,
@@ -219,7 +223,6 @@ class Realign4dAlgorithm(object):
                       gtol=gtol,
                       maxiter=maxiter,
                       maxfun=maxfun)
-        self.optimize_template = optimize_template
 
         # Auxiliary array for realignment estimation
         self._res = np.zeros(masksize, dtype='double')
@@ -427,6 +430,8 @@ class Realign4dAlgorithm(object):
         to right compose each head_average-to-scanner transform with
         the refscan's 'to head_average' transform.
         """
+        if self.refscan == None:
+            return
         Tref_inv = self.transforms[self.refscan].inv()
         for t in range(self.nscans):
             self.transforms[t] = (self.transforms[t]).compose(Tref_inv)
@@ -463,7 +468,8 @@ def single_run_realign4d(im4d,
                          gtol=GTOL,
                          stepsize=STEPSIZE,
                          maxiter=MAXITER,
-                         maxfun=MAXFUN):
+                         maxfun=MAXFUN,
+                         refscan=REFSCAN):
     """
     Realign a single run in space and time.
 
@@ -509,6 +515,7 @@ def single_run_realign4d(im4d,
                                time_interp=time_interp,
                                subsampling=subsampling,
                                borders=borders,
+                               refscan=refscan,
                                optimizer=optimizer_,
                                xtol=xtol_,
                                ftol=ftol_,
@@ -539,7 +546,8 @@ def realign4d(runs,
               gtol=GTOL,
               stepsize=STEPSIZE,
               maxiter=MAXITER,
-              maxfun=MAXFUN):
+              maxfun=MAXFUN,
+              refscan=REFSCAN):
     """
     Parameters
     ----------
@@ -577,7 +585,8 @@ def realign4d(runs,
                                        gtol=gtol,
                                        stepsize=stepsize,
                                        maxiter=maxiter,
-                                       maxfun=maxfun) for run in runs]
+                                       maxfun=maxfun,
+                                       refscan=refscan) for run in runs]
     if not align_runs:
         return transforms, transforms, None
 
@@ -585,10 +594,16 @@ def realign4d(runs,
     # corrected run, and creating a fake time series with no temporal
     # smoothness
     ## FIXME: check that all runs have the same to-world transform
-    corr_runs = [resample4d(runs[i], transforms=transforms[i],
-                            time_interp=time_interp) for i in range(nruns)]
-    aux = np.rollaxis(np.asarray([c.mean(3) for c in corr_runs]), 0, 4)
-    mean_img = Image4d(aux, affine=runs[0].affine, tr=1.0, tr_slices=0.0)
+    mean_img_shape = list(runs[0].get_array().shape[0:3]) + [len(nruns)]
+    mean_img_data = np.zeros(mean_img_shape)
+    for i in range(nruns):
+        corr_run = resample4d(runs[i], transforms=transforms[i],
+                              time_interp=time_interp)
+        mean_img_data[..., i] = corr_run.mean(3)
+        gc.enable()
+        gc.collect()
+    mean_img = Image4d(mean_img_data, affine=runs[0].affine,
+                       tr=1.0, tr_slices=0.0)
     transfo_mean = single_run_realign4d(mean_img,
                                         affine_class=affine_class,
                                         time_interp=False,
@@ -671,7 +686,8 @@ class Realign4d(object):
                  gtol=GTOL,
                  stepsize=STEPSIZE,
                  maxiter=MAXITER,
-                 maxfun=MAXFUN):
+                 maxfun=MAXFUN,
+                 refscan=REFSCAN):
         if between_loops == None:
             between_loops = loops
         t = realign4d(self._runs,
@@ -688,24 +704,30 @@ class Realign4d(object):
                       gtol=gtol,
                       stepsize=stepsize,
                       maxiter=maxiter,
-                      maxfun=maxfun)
+                      maxfun=maxfun,
+                      refscan=refscan)
         self._transforms, self._within_run_transforms,\
             self._mean_transforms = t
 
-    def resample(self, align_runs=True):
+    def resample(self, r=None, align_runs=True):
         """
-        Return a list of 4d nipy-like images corresponding to the
-        resampled runs.
+        Return the resampled run number r as a 4d nipy-like
+        image. Returns all runs as a list of images if r == None.
         """
         if align_runs:
             transforms = self._transforms
         else:
             transforms = self._within_run_transforms
         runs = range(len(self._runs))
-        data = [resample4d(self._runs[r], transforms=transforms[r],\
+        if r == None:
+            data = [resample4d(self._runs[r], transforms=transforms[r],
                                time_interp=self._time_interp) for r in runs]
-        return [AffineImage(data[r], self._runs[r].affine, 'scanner')\
-                    for r in runs]
+            return [AffineImage(data[r], self._runs[r].affine, 'scanner')\
+                        for r in runs]
+        else:
+            data = resample4d(self._runs[r], transforms=transforms[r],
+                              time_interp=self._time_interp)
+            return AffineImage(data, self._runs[r].affine, 'scanner')
 
 
 class FmriRealign4d(Realign4d):

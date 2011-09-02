@@ -42,13 +42,13 @@ runs = [load(run) for run in runnames]
 R = FmriRealign4d(runs, tr=2.5, slice_order='ascending', interleaved=True)
 
 # Estimate motion within- and between-sessions
-R.estimate()
+R.estimate(refscan=None)
 
 # Resample data on a regular space+time lattice using 4d interpolation
-corr_runs = R.resample()
 
 # Save images
 savedir = tempfile.mkdtemp()
 for i in range(len(runs)):
-    aux = split(runnames[i])
-    save_image(corr_runs[i], join(savedir, 'ra' + aux[1]))
+    corr_run = R.resample(i)
+    fname = 'ra' + split(runnames[i])[1]
+    save_image(corr_run, join(savedir, fname))
