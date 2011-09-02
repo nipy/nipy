@@ -1,5 +1,5 @@
 """
-This module define the StructuredDomain class,
+This module defines the StructuredDomain class,
 that represents a generic neuroimaging kind of domain
 This is meant to provide a unified API to deal with n-d imaged and meshes.
 
@@ -11,8 +11,8 @@ import scipy.sparse as sp
 
 from nibabel import load, Nifti1Image, save
 
-from nipy.algorithms.graph import (WeightedGraph, wgraph_from_coo_matrix, 
-                                   wgraph_from_3d_grid)
+from nipy.algorithms.graph import WeightedGraph, wgraph_from_coo_matrix, \
+    wgraph_from_3d_grid
 
 ##############################################################
 # Ancillary functions
@@ -33,6 +33,7 @@ def smatrix_from_3d_array(mask, nn=18):
     -------
     coo_mat: a sparse coo matrix,
              adjacency of the neighboring system
+
     """
     ijk = np.array(np.where(mask)).T
     return smatrix_from_3d_idx(ijk, nn)
@@ -52,13 +53,14 @@ def smatrix_from_3d_idx(ijk, nn=18):
     -------
     coo_mat: a sparse coo matrix,
              adjacency of the neighboring system
+
     """
     G = wgraph_from_3d_grid(ijk, nn)
     return G.to_coo_matrix()
 
 
 def smatrix_from_nd_array(mask, nn=0):
-    """ Create a sparse adjacency matrix from an arbitrary nd array
+    """Create a sparse adjacency matrix from an arbitrary nd array
 
     Parameters
     ----------
@@ -71,13 +73,14 @@ def smatrix_from_nd_array(mask, nn=0):
     -------
     coo_mat: a sparse coo matrix,
              adjacency of the neighboring system
+
     """
     idx = np.array(np.where(mask)).T
     return smatrix_from_nd_idx(idx, nn)
 
 
 def smatrix_from_nd_idx(idx, nn=0):
-    """ Create a sparse adjacency matrix from nd index system
+    """Create a sparse adjacency matrix from nd index system
 
     Parameters
     ----------
@@ -90,6 +93,7 @@ def smatrix_from_nd_idx(idx, nn=0):
     -------
     coo_mat: a sparse coo matrix,
              adjacency of the neighboring system
+
     """
     n = idx.shape[0]
     dim = idx.shape[1]
@@ -138,6 +142,7 @@ def array_affine_coord(mask, affine):
     -------
     coords: array of shape(sum(mask>0), n),
             the computed coordinates
+
     """
     idx = np.array(np.where(mask)).T
     return idx_affine_coord(idx, affine)
@@ -157,10 +162,11 @@ def idx_affine_coord(idx, affine):
     -------
     coords: array of shape(sum(mask>0), n),
             the computed coordinates
+
     """
     size = idx.shape[0]
     hidx = np.hstack((idx, np.ones((size, 1))))
-    coord = np.dot(hidx, affine.T)[:, : - 1]
+    coord = np.dot(hidx, affine.T)[:, 0:-1]
     return coord
 
 
@@ -173,6 +179,7 @@ def reduce_coo_matrix(mat, mask):
          input matrix
     mask: boolean array of shape mat.shape[0],
           desired elements
+
     """
     G = wgraph_from_coo_matrix(mat)
     K = G.subgraph(mask)
@@ -200,6 +207,7 @@ def domain_from_image(mim, nn=18):
     Returns
     -------
     The corresponding StructuredDomain instance
+
     """
     if isinstance(mim, basestring):
         iim = load(mim)
@@ -221,6 +229,7 @@ def domain_from_array(mask, affine=None, nn=0):
             by default, this is np.eye(dim+1, dim+1)
     nn: neighboring system considered
         unsued at the moment
+
     """
     dim = len(mask.shape)
     if affine is None:
@@ -245,6 +254,7 @@ def grid_domain_from_array(mask, affine=None, nn=0):
             by default, this is np.eye(dim+1, dim+1)
     nn: neighboring system considered
         unsued at the moment
+
     """
     dim = len(mask.shape)
     shape = mask.shape
@@ -253,7 +263,7 @@ def grid_domain_from_array(mask, affine=None, nn=0):
 
     mask = mask > 0
     ijk = np.array(np.where(mask)).T
-    vol = np.absolute(np.linalg.det(affine[:3, :3])) * np.ones(np.sum(mask))
+    vol = np.absolute(np.linalg.det(affine[:3, 0:3])) * np.ones(np.sum(mask))
     topology = smatrix_from_nd_idx(ijk, nn)
     return NDGridDomain(dim, ijk, shape, affine, vol, topology)
 
@@ -272,6 +282,7 @@ def grid_domain_from_image(mim, nn=18):
     Returns
     -------
     The corresponding NDGridDomain instance
+
     """
     if isinstance(mim, basestring):
         iim = load(mim)
@@ -291,7 +302,7 @@ class MeshDomain(object):
     """
 
     def __init__(self, coord, triangles):
-        """ Initialize mesh domain instance
+        """Initialize mesh domain instance
 
         Parameters
         ----------
@@ -299,6 +310,7 @@ class MeshDomain(object):
                the node coordinates
         triangles: array of shape(n_triables, 3),
                    indices of the nodes per triangle
+
         """
         self.coord = coord
         self.triangles = triangles
@@ -306,18 +318,19 @@ class MeshDomain(object):
         # fixme: implement consistency checks
 
     def area(self):
-        """ Return array of areas for each node
+        """Return array of areas for each node
 
         Returns
         -------
         area: array of shape self.V,
               area of each node
+
         """
         E = len(self.triangles)
         narea = np.zeros(self.V)
 
         def _area(a, b):
-            """area spanned by the vectors(a,b) in 3D
+            """Area spanned by the vectors(a,b) in 3D
             """
             c = np.array([a[1] * b[2] - a[2] * b[1],
                           - a[0] * b[2] + a[2] * b[0],
@@ -339,7 +352,7 @@ class MeshDomain(object):
         return narea
 
     def topology(self):
-        """returns a sparse matrix that represents the connectivity in self
+        """Returns a sparse matrix that represents the connectivity in self
         """
         E = len(self.triangles)
         edges = np.zeros((3 * E, 2))
@@ -370,6 +383,7 @@ def domain_from_mesh(mesh):
     Parameters
     ----------
     mesh: nibabel gifti mesh instance, or path to such a mesh
+
     """
     if isinstance(mesh, basestring):
         from nibabel.gifti import read
@@ -403,10 +417,11 @@ class DiscreteDomain(object):
     are characterized by a coordinate system and a topology:
     the coordinate system is specified through a coordinate array
     the topology encodes the neighboring system
+
     """
 
     def __init__(self, dim, coord, local_volume, id='', referential=''):
-        """ Initialize discrete domain instance
+        """Initialize discrete domain instance
 
         Parameters
         ----------
@@ -424,6 +439,7 @@ class DiscreteDomain(object):
         Caveat
         ------
         em_dim may be greater than dim e.g. (meshes coordinate in 3D)
+
         """
         # dimension
         self.dim = dim
@@ -434,7 +450,7 @@ class DiscreteDomain(object):
         # coordinate system
         if np.size(coord) == coord.shape[0]:
             coord = np.reshape(coord, (np.size(coord), 1))
-        
+
         if np.size(coord) == 0:
             self.em_dim = dim
         else:
@@ -456,7 +472,7 @@ class DiscreteDomain(object):
         self.features = {}
 
     def copy(self):
-        """ Returns a copy of self
+        """Returns a copy of self
         """
         new_dom = DiscreteDomain(self.dim, self.coord.copy(),
                                   self.local_volume.copy(), self.id,
@@ -466,12 +482,12 @@ class DiscreteDomain(object):
         return new_dom
 
     def get_coord(self):
-        """ returns self.coord
+        """Returns self.coord
         """
         return self.coord
 
     def get_volume(self):
-        """ returns self.local_volume
+        """Returns self.local_volume
         """
         return self.local_volume
 
@@ -484,7 +500,7 @@ class DiscreteDomain(object):
             return []
 
     def mask(self, bmask, id=''):
-        """ returns an DiscreteDomain instance that has been further masked
+        """Returns an DiscreteDomain instance that has been further masked
         """
         if bmask.size != self.size:
             raise ValueError('Invalid mask size')
@@ -499,7 +515,7 @@ class DiscreteDomain(object):
         return DD
 
     def set_feature(self, fid, data, override=True):
-        """ Append a feature 'fid'
+        """Append a feature 'fid'
 
         Parameters
         ----------
@@ -507,6 +523,7 @@ class DiscreteDomain(object):
              feature identifier
         data: array of shape(self.size, p) or self.size
               the feature data
+
         """
         if data.shape[0] != self.size:
             raise ValueError('Wrong data size')
@@ -517,7 +534,7 @@ class DiscreteDomain(object):
         self.features.update({fid: data})
 
     def get_feature(self, fid):
-        """return self.features[fid]
+        """Return self.features[fid]
         """
         return self.features[fid]
 
@@ -529,6 +546,7 @@ class DiscreteDomain(object):
         fid: string, feature id
         method: string, method used to compute a representative
                 to be chosen among 'mean', 'max', 'median', 'min'
+
         """
         f = self.get_feature(fid)
         if method == "mean":
@@ -552,6 +570,7 @@ class DiscreteDomain(object):
         -------
         lsum = array of shape (self.feature[fid].shape[1]),
                the result
+
         """
         if fid == None:
             return np.sum(self.local_volume)
@@ -570,7 +589,7 @@ class StructuredDomain(DiscreteDomain):
 
     def __init__(self, dim, coord, local_volume, topology, did='',
                  referential=''):
-        """ Initialize structured domain instance
+        """Initialize structured domain instance
 
         Parameters
         ----------
@@ -586,6 +605,7 @@ class StructuredDomain(DiscreteDomain):
              domain identifier
         referential: string, optional,
                      identifier of the referential of the coordinates system
+
         """
         DiscreteDomain.__init__(self, dim, coord, local_volume, id,
                                 referential)
@@ -597,7 +617,7 @@ class StructuredDomain(DiscreteDomain):
         self.topology = topology
 
     def mask(self, bmask, did=''):
-        """returns a StructuredDomain instance that has been further masked
+        """Returns a StructuredDomain instance that has been further masked
         """
         td = DiscreteDomain.mask(self, bmask)
         stopo = reduce_coo_matrix(self.topology, bmask)
@@ -622,11 +642,12 @@ class NDGridDomain(StructuredDomain):
 
     This is to allow easy conversion to images when dim==3,
     and for compatibility with previous classes
+
     """
 
     def __init__(self, dim, ijk, shape, affine, local_volume, topology,
                 referential=''):
-        """ Initialize ndgrid domain instance
+        """Initialize ndgrid domain instance
 
         Parameters
         ----------
@@ -648,6 +669,7 @@ class NDGridDomain(StructuredDomain):
         Fixme
         -----
         local_volume might be computed on-the-fly as |det(affine)|
+
         """
         # shape
         if len(shape) != dim:
@@ -690,12 +712,13 @@ class NDGridDomain(StructuredDomain):
 
     def to_image(self, path=None, data=None):
         """Write itself as a binary image, and returns it
-        
+
         Parameters
-        ==========
+        ----------
         path: string, path of the output image, if any
         data: array of shape self.size,
               data to put in the nonzer-region of the image
+
         """
         if data is None:
             wdata = np.zeros(self.shape, np.int8)
@@ -728,6 +751,7 @@ class NDGridDomain(StructuredDomain):
         Returns
         -------
         the correponding set of values
+
         """
         if isinstance(path, basestring):
             nim = load(path)

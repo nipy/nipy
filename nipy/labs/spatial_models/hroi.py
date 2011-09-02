@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This module contains the specification of 'heierarchical ROI' object,
+This module contains the specification of 'hierarchical ROI' object,
 Which is used in spatial models of the library such as structural analysis
 
 The connection with other classes is not completely satisfactory at the moment:
@@ -12,30 +12,31 @@ Author : Bertrand Thirion, 2009-2011
 
 import numpy as np
 
-from nipy.algorithms.graph.graph import WeightedGraph 
+from nipy.algorithms.graph.graph import WeightedGraph
 from nipy.algorithms.graph.forest import Forest
 from nipy.algorithms.graph.field import field_from_coo_matrix_and_data
 from .mroi import SubDomains
 
-NINF = - np.infty
+NINF = -np.infty
 
 
 def hroi_agglomeration(input_hroi, criterion='size', smin=0):
-    """ Performs an agglomeration then a selction of regions
-    so that a certain size or volume criterion is staisfied
+    """Performs an agglomeration then a selection of regions
+    so that a certain size or volume criterion is satisfied.
 
     Parameters
     ----------
-    input_hroi: HierachicalROI instance,
-                the input hROI
+    input_hroi: HierarchicalROI instance,
+      The input hROI
     criterion: string, optional
-               to be chosen among 'size' or 'volume'
+      To be chosen among 'size' or 'volume'
     smin: float, optional
-          the applied criterion
+      The applied criterion
 
     Returns
     -------
-    output_hroi:  HierachicalROI instance
+    output_hroi:  HierarchicalROI instance
+
     """
     if criterion not in ['size', 'volume']:
         return ValueError('unknown criterion')
@@ -67,8 +68,8 @@ def hroi_agglomeration(input_hroi, criterion='size', smin=0):
 
 def HROI_as_discrete_domain_blobs(domain, data, threshold=NINF, smin=0,
                                   rid='', criterion='size'):
-    """ Instantiate an HierarchicalROI as the blob decomposition
-    of data in a certain domain
+    """Instantiate an HierarchicalROI as the blob decomposition
+    of data in a certain domain.
 
     Parameters
     ----------
@@ -79,13 +80,14 @@ def HROI_as_discrete_domain_blobs(domain, data, threshold=NINF, smin=0,
     threshold: float optional,
                thresholding level
     smin: float, optional,
-          a threhsold on region size or cardinality.
+          a threshold on region size or cardinality.
     rid: string, optional,
          a region identifier
 
     Returns
     -------
     nroi: HierachicalROI instance
+
     """
     if threshold > data.max():
         label = - np.ones(data.shape)
@@ -119,14 +121,14 @@ def HROI_from_watershed(domain, data, threshold=NINF, rid=''):
 
     Returns
     -------
-    the HierachicalROI instance
+    The HierachicalROI instance
 
     Fixme
     -----
-    should be a subdomain (?)
+    should be a sub-domain (?)
     Additionally a discrete_field is created, with the key 'index'.
-                 It contains the index in the field from which
-                 each point of each ROI
+    It contains the index in the field from which each point of each ROI.
+
     """
     if threshold > data.max():
         label = - np.ones(data.shape)
@@ -159,8 +161,16 @@ class HierarchicalROI(SubDomains):
         SubDomains.__init__(self, domain, label, rid)
 
     def select(self, valid, rid='', no_empty_label=True):
-        """
-        Remove the rois for which valid==0 and update the hierarchy accordingly
+        """Remove rois for which valid == 0 and update
+           the hierarchy accordingly.
+
+        Parameters
+        ----------
+        valid: boolean array of shape(self.k)
+          Array defining which regions must be merged.
+          If valid[i] == False, the i_th region is discarded.
+
+        /!\ fixme: what does this refers to?
         Note that auto=True automatically
         """
         SubDomains.select(self, valid, rid, True, no_empty_label)
@@ -171,7 +181,8 @@ class HierarchicalROI(SubDomains):
                 valid.astype(np.bool)).parents.astype(np.int)
 
     def make_graph(self):
-        """ output an fff.graph structure to represent the ROI hierarchy
+        """Output an fff.graph structure to represent the ROI hierarchy
+
         """
         if self.k == 0:
             return None
@@ -180,7 +191,8 @@ class HierarchicalROI(SubDomains):
         return WeightedGraph(self.k, edges, weights)
 
     def make_forest(self):
-        """output an fff.forest structure to represent the ROI hierarchy
+        """Output an fff.forest structure to represent the ROI hierarchy
+
         """
         if self.k == 0:
             return None
@@ -193,7 +205,9 @@ class HierarchicalROI(SubDomains):
 
         Parameters
         ----------
-        valid: array of shape(self.k)
+        valid: boolean array of shape(self.k)
+          Array defining which regions must be merged.
+          If valid[i] == False, the i_th region is merged in its parent.
         ignore: list of str
           List of the features to be ignored for the children's voxels
           (the children's voxels will be merged in the parent blob and
@@ -202,7 +216,8 @@ class HierarchicalROI(SubDomains):
 
         Note
         ----
-        if valid[k]==0 and self.parents[k]==k, k is not removed
+        If valid[k]==0 and self.parents[k]==k, k is not removed
+
         """
         if np.size(valid) != self.k:
             raise ValueError("not the correct dimension for valid")
@@ -291,7 +306,7 @@ class HierarchicalROI(SubDomains):
         label = self.label.copy()
         label[isleaf[self.label] == 0] = -1
         k = np.sum(isleaf.astype(np.int))
-        
+
         parents = np.arange(k)
         nroi = HierarchicalROI(self.domain, label, parents, rid)
 
@@ -314,17 +329,26 @@ class HierarchicalROI(SubDomains):
 
         Parameters
         ----------
-        fid(string) the discrete feature under consideration
-        method='average' the assessment method
+        fid: str,
+          The discrete feature under consideration.
+        method: str,
+          The assessment method. Values can be:
+          - 'mean' (default)
+          - 'min'
+          - 'max'
+          - 'cumulated mean'
+          - 'median'
+          - 'weighted mean'
 
         Returns
         -------
-        the computed roi-feature is returned
+        The computed roi-feature is returned
+
         """
-        if method not in['min', 'max', 'mean', 'cumulated_mean', 'median',
+        if method not in['min', 'max', 'mean', 'cumulated mean', 'median',
                          'weighted mean']:
             raise  ValueError('unknown method')
-        if method == 'cumulated_mean':
+        if method == 'cumulated mean':
             data = self.features[fid]
             d0 = data[0]
             if np.size(d0) == np.shape(d0)[0]:
@@ -345,7 +369,8 @@ class HierarchicalROI(SubDomains):
 
 
 def make_hroi_from_subdomain(sub_domain, parents):
-    """ Instantiate an HROi from a SubDomain instance and parents
+    """Instantiate an HROi from a SubDomain instance and parents
+
     """
     hroi = HierarchicalROI(sub_domain.domain, sub_domain.label, parents,
                            sub_domain.id)

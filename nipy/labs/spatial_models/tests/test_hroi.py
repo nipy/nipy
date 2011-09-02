@@ -35,21 +35,21 @@ def make_hroi(empty=False):
     parents = np.array([])
     if not empty:
         labels[4:, 5:, 6:] = 1
-        labels[:2, :2, :2] = 2
+        labels[:2, 0:2, 0:2] = 2
         labels[:2, 5:, 6:] = 3
-        labels[:2, :2, 6:] = 4
-        labels[4:, :2, 6:] = 5
-        labels[4:, :2, :2] = 6
-        labels[4:, 5:, :2] = 7
-        labels[:2, 5:, :2] = 8
+        labels[:2, 0:2, 6:] = 4
+        labels[4:, 0:2, 6:] = 5
+        labels[4:, 0:2, 0:2] = 6
+        labels[4:, 5:, 0:2] = 7
+        labels[:2, 5:, 0:2] = 8
         parents = np.zeros(9)
     else:
         labels = -np.ones(shape)
         parents = np.array([])
-    
+
     sd = subdomain_from_array(labels, affine=None, nn=0)
     hroi = make_hroi_from_subdomain(sd, parents)
-    return hroi 
+    return hroi
 
 
 def test_hroi():
@@ -70,7 +70,7 @@ def test_hroi_isleaf():
 
 
 def test_hroi_isleaf_2():
-    """ Test tree pruning, with prent remapping 
+    """Test tree pruning, with prent remapping
     """
     hroi = make_hroi()
     valid = np.ones(9).astype(np.bool)
@@ -173,10 +173,10 @@ def test_leaves():
     print lroi.size, size
     assert (lroi.size == size).all()
 
-    
+
 def test_leaves_empty():
     """Test the reduce_to_leaves method on an HROI containing no node
-    
+
     """
     hroi = make_hroi(empty=True)
     lroi = hroi.reduce_to_leaves()
@@ -186,7 +186,7 @@ def test_leaves_empty():
 def test_hroi_from_domain():
     dom = make_domain()
     data = np.random.rand(*shape)
-    data[:2, :2, :2] = 2
+    data[:2, 0:2, 0:2] = 2
     rdata = np.reshape(data, (data.size, 1))
     hroi = HROI_as_discrete_domain_blobs(dom, rdata, threshold=1., smin=0)
     assert hroi.k == 1

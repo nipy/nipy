@@ -9,17 +9,11 @@ in ~/.nipy/tests/data
 
 import numpy as np
 from numpy.testing import assert_almost_equal
-from ..discrete_domain import (smatrix_from_nd_idx, 
-                               smatrix_from_3d_array, 
-                               smatrix_from_nd_array, 
-                               domain_from_array, 
-                               domain_from_image,
-                               domain_from_mesh,
-                               grid_domain_from_array, 
-                               grid_domain_from_image)
+from ..discrete_domain import smatrix_from_nd_idx, smatrix_from_3d_array, \
+    smatrix_from_nd_array, domain_from_array, domain_from_image, \
+    domain_from_mesh, grid_domain_from_array, grid_domain_from_image
 from nibabel import Nifti1Image
 import nibabel.gifti as nbg
-
 
 shape = np.array([5, 6, 7, 8, 9])
 
@@ -54,7 +48,7 @@ def test_smatrix_3d():
     """
     idx = generate_dataset(shape[:3])
     sm = smatrix_from_nd_idx(idx)
-    ne = 2 * (3 * np.prod(shape[:3]) - shape[0] * shape[1] 
+    ne = 2 * (3 * np.prod(shape[:3]) - shape[0] * shape[1]
               - shape[0] * shape[2] - shape[1] * shape[2])
     assert(sm.data.size == ne)
 
@@ -96,7 +90,7 @@ def test_smatrix_5d_bis():
 
 
 def test_matrix_from_3d_array():
-    """Test the topology using the nipy.graph approach 
+    """Test the topology using the nipy.graph approach
     """
     toto = np.ones(shape[:3])
     sm = smatrix_from_3d_array(toto, 6)
@@ -129,7 +123,7 @@ def test_image_domain():
     """
     toto = np.ones(shape[:3])
     affine = np.random.randn(4, 4)
-    affine[3:, :3] = 0
+    affine[3:, 0:3] = 0
     nim = Nifti1Image(toto, affine)
     ddom = domain_from_image(nim)
     ref = np.sum(toto) * np.absolute(np.linalg.det(affine))
@@ -148,7 +142,7 @@ def test_image_feature():
     ddom.make_feature_from_image(nim, 'noise')
     assert_almost_equal(ddom.features['noise'], noise[mask])
 
-    
+
 def test_array_grid_domain():
     """Test the construction of grid domain based on array
     """
@@ -162,10 +156,10 @@ def test_image_grid_domain():
     """
     toto = np.ones(shape[:3])
     affine = np.random.randn(4, 4)
-    affine[3:, :3] = 0
+    affine[3:, 0:3] = 0
     nim = Nifti1Image(toto, affine)
     ddom = grid_domain_from_image(nim)
-    ref = np.sum(toto) * np.absolute(np.linalg.det(affine[:3, :3]))
+    ref = np.sum(toto) * np.absolute(np.linalg.det(affine[:3, 0:3]))
     assert_almost_equal(np.sum(ddom.local_volume), ref)
 
 
@@ -189,7 +183,7 @@ def test_mask_feature():
     plop = mdom.get_feature('data')
     assert_almost_equal(plop, toto[toto > .5])
 
-    
+
 def test_domain_mask():
     """test domain masking
     """
@@ -198,7 +192,7 @@ def test_domain_mask():
     mdom = ddom.mask(np.ravel(toto > .5))
     assert (mdom.size == np.sum(toto > .5))
 
-    
+
 def test_grid_domain_mask():
     """test grid domain masking
     """
@@ -219,7 +213,7 @@ def test_domain_from_mesh():
                             [0, 1, 3],
                             [0, 2, 3],
                             [1, 2, 3]])
-    darrays = [nbg.GiftiDataArray(coords)] + [nbg.GiftiDataArray(triangles)] 
+    darrays = [nbg.GiftiDataArray(coords)] + [nbg.GiftiDataArray(triangles)]
     toy_image = nbg.GiftiImage(darrays=darrays)
     domain_from_mesh(toy_image)
 
@@ -247,7 +241,7 @@ def test_integrate_1d():
     ddom = domain_from_array(toto)
     ddom.set_feature('data', np.ravel(toto))
     assert_almost_equal(ddom.integrate('data'), toto.sum())
-    
+
 
 def test_integrate_2d():
     """test integration in 2d
@@ -259,7 +253,7 @@ def test_integrate_2d():
     ddom.set_feature('data', f2)
     ts = np.ones(2) * toto.sum()
     assert_almost_equal(ddom.integrate('data'), ts)
-    
+
 
 if __name__ == "__main__":
     import nose
