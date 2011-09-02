@@ -77,11 +77,16 @@ def model_generator(formula, data, volume_start_times, iterable=None,
     Generator for the models for a pass of fmristat analysis.
     """
     volume_start_times = make_recarray(volume_start_times.astype(float), 't')
-    for i, d in matrix_generator(fmri_generator(data, iterable=iterable)):
-        model_args = model_params(i) # model may depend on i
+    # Generator for slices of the data with time as first axis
+    axis0_gen = fmri_generator(data, iterable=iterable)
+    # Iterate over 2D slices of the data
+    for indexer, indexed_data in matrix_generator(axis0_gen):
+        model_args = model_params(indexer) # model may depend on i
+        # Get the design for these volume start times
         design = formula.design(volume_start_times, return_float=True)
-        rmodel = model_type(design.view(float), *model_args)
-        yield i, d, rmodel
+        # Make the model from the design
+        rmodel = model_type(design, *model_args)
+        yield indexer, indexed_data, rmodel
 
 
 def results_generator(model_iterable):
@@ -122,7 +127,6 @@ class OLS(object):
             self.volume_start_times = volume_start_times
 
     def execute(self):
-        start_times = make_recarray(self.volume_start_times, 't')
         m = model_generator(self.formula, self.data,
                             self.volume_start_times,
                             model_type=OLSModel)
@@ -231,11 +235,13 @@ class AR1(object):
         iterable = parcels(self.rho, exclude=[np.inf])
         def model_params(i):
             return (np.asarray(self.rho)[i].mean(),)
+        # Generates indexer, data, model
         m = model_generator(self.formula, self.data,
                             self.volume_start_times,
                             iterable=iterable,
                             model_type=ARModel,
                             model_params=model_params)
+        # Generates indexer, data, 2D results
         r = results_generator(m)
 
         def reshape(i, x):
@@ -248,19 +254,23 @@ class AR1(object):
               i) 'slices through the z-axis'
               ii) 'parcels of approximately constant AR1 coefficient'
             """
-            if len(x.shape) == 2:
-                if type(i) is type(1):
+            if len(x.shape) == 2: # 2D imput matrix
+                if type(i) is type(1): # integer indexing
+                    # reshape to ND (where N is probably 4)
                     x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]
+                # Convert lists to tuples, put anything else into a tuple
                 if type(i) not in [type([]), type(())]:
                     i = (i,)
                 else:
                     i = tuple(i)
+                # Add : to indexing
                 i = (slice(None,None,None),) + tuple(i)
-            else:
-                if type(i) is type(1):
+            else: # not 2D
+                if type(i) is type(1): # integer indexing
                     x.shape = self.fmri_image[0].shape[1:]
             return i, x
 
+        # Put results pulled from results generator r, into outputs
         o = generate_output(self.outputs, r, reshape=reshape)
 
 
@@ -274,8 +284,9 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
         for the TContrast.  For example, outbase='output.nii' will
         result in the following files (assuming defaults for all other
         params): output_effect.nii, output_sd.nii, output_t.nii
-    contrast : a TContrast
-    fmri_image : ``FmriImageList``
+    contrast : array
+        F contrast matrix
+    fmri_image : ``FmriImageList`` or ``Image``
         object such that ``object[0]`` has attributes ``shape`` and
         ``coordmap``
     effect : {True, False}, optional
@@ -318,7 +329,7 @@ def output_F(outfile, contrast, fmri_image, clobber=False):
     ----------
     outfile :
     contrast :
-    fmri_image : ``FmriImageList``
+    fmri_image : ``FmriImageList`` or ``Image``
         object such that ``object[0]`` has attributes ``shape`` and
         ``coordmap``
     clobber : bool
@@ -342,12 +353,12 @@ def output_AR1(outfile, fmri_image, clobber=False):
        object such that ``object[0]`` has attributes ``coordmap`` and ``shape``
     clobber : bool
        if True, overwrite previous output
-    
+
     Returns
     -------
-    regression_output : 
+    regression_output : ``RegressionOutput`` instance
     """
-    outim = ModelOutputImage(outfile, fmri_image[0].coordmap, 
+    outim = ModelOutputImage(outfile, fmri_image[0].coordmap,
                              fmri_image[0].shape, clobber=clobber)
     return regression.RegressionOutput(outim, regression.output_AR1)
 
@@ -405,16 +416,31 @@ def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
 
     In the regression setting, results is generally going to be a
     scipy.stats.models.model.LikelihoodModelResults instance.
+
+    Parameters
+    ----------
+    outputs : sequence
+        sequence of output objects
+    iterable : object
+        Object which iterates, returning tuples of (indexer, results), where
+        ``indexer`` can be used to index into the `outputs`
+    reshape : callable
+        accepts two arguments, first is the indexer, and the second is the array
+        which will be indexed; returns modified indexer and array ready for
+        slicing with modified indexer.
     """
-    for i, results in iterable:
+    for indexer, results in iterable:
         for output in outputs:
+            # Might be regression output object
             if not hasattr(output, "list"): # lame test here
-                k, d = reshape(i, output(results))
+                k, d = reshape(indexer, output(results))
                 output[k] = d
             else:
+                # or a regression output list (like a TOutput, with several
+                # images to output to)
                 r = output(results)
                 for j, l in enumerate(output.list):
-                    k, d = reshape(i, r[j])
+                    k, d = reshape(indexer, r[j])
                     l[k] = d
     # flush outputs, if necessary
     for output in outputs:

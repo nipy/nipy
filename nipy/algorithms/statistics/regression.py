@@ -132,6 +132,8 @@ class TOutput(RegressionOutputList):
     """
     def __init__(self, contrast, effect=None,
                  sd=None, t=None):
+        # Returns a list of arrays, being [effect, sd, t] when all these are not
+        # None
         self.fn = lambda x: output_T(contrast,
                                      x,
                                      effect=effect,
