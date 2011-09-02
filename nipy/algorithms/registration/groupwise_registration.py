@@ -1,9 +1,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from ..utils.affines import apply_affine
+
+import gc
 import numpy as np
 
 from ...core.image.affine_image import AffineImage
+from ..utils.affines import apply_affine
 from .optimizer import configure_optimizer, use_derivatives
 from .affine import Rigid
 from ._registration import (_cspline_transform,
@@ -66,9 +68,11 @@ class Image4d(object):
     Class to represent a sequence of 3d scans (possibly acquired on a
     slice-by-slice basis).
 
+    Object remains empty until the data array is actually loaded in memory.
+
     Parameters
     ----------
-    array : nd array or proxy
+    array : nd array or proxy (function that actually gets the array)
     """
     def __init__(self, array, affine, tr, tr_slices=None, start=0.0,
                  slice_order=SLICE_ORDER, interleaved=INTERLEAVED,
@@ -83,17 +87,39 @@ class Image4d(object):
                   time origin
         slice_order : string or array
         """
-        self.array = array
-        self.affine = affine
-        nslices = array.shape[slice_axis]
+        if isinstance(array, np.ndarray):
+            self._array = array
+            self._init_timing_parameters()
+            self._get_array = None
+        else:
+            self._array = None
+            self._get_array = array
 
+        self.affine = np.asarray(affine)
+        self.tr = float(tr)
+        self.start = float(start)
+        self.interleaved = bool(interleaved)
+        self.slice_axis = int(slice_axis)
+        # unformatted parameters
+        self._tr_slices = tr_slices
+        self._slice_order = slice_order
+
+    def get_array(self):
+        if self._array == None:
+            self._array = self._get_array()
+            self._init_timing_parameters()
+        return self._array
+
+    def _init_timing_parameters(self):
+        # Number of slices
+        nslices = self.get_array().shape[self.slice_axis]
+        self.nslices = nslices
         # Default slice repetition time (no silence)
-        if tr_slices == None:
-            tr_slices = tr / float(nslices)
-
+        if self._tr_slices == None:
+            self.tr_slices = self.tr / float(nslices)
         # Set slice order
-        if isinstance(slice_order, str):
-            if not interleaved:
+        if isinstance(self._slice_order, str):
+            if not self.interleaved:
                 aux = range(nslices)
             else:
                 p = nslices / 2
@@ -102,20 +128,15 @@ class Image4d(object):
                     aux.extend([i, p + i])
                 if nslices % 2:
                     aux.append(nslices - 1)
-            if slice_order == 'descending':
+            if self._slice_order == 'descending':
                 aux.reverse()
-            slice_order = aux
-
-        # Set timing values
-        self.nslices = nslices
-        self.tr = float(tr)
-        self.tr_slices = float(tr_slices)
-        self.start = float(start)
-        self.slice_order = np.asarray(slice_order)
-        self.interleaved = bool(interleaved)
-        # assume that the world referential is 'scanner' as defined by
-        # the nifti norm
-        self.reversed_slices = affine[slice_axis][slice_axis] < 0
+            self.slice_order = np.array(aux)
+        else:
+            self.slice_order = np.asarray(self.slice_order)
+        # Assume that the world referential is 'scanner' as defined by
+        # the Nifti norm
+        self.reversed_slices =\
+            self.affine[self.slice_axis][self.slice_axis] < 0
 
     def z_to_slice(self, z):
         """
@@ -137,6 +158,11 @@ class Image4d(object):
                                                    self.slice_order)
         return (t - self.start - corr) / self.tr
 
+    def free_array(self):
+        self._array = None
+        gc.enable()
+        gc.collect()
+
 
 class Realign4dAlgorithm(object):
 
@@ -156,7 +182,7 @@ class Realign4dAlgorithm(object):
                  maxiter=MAXITER,
                  maxfun=MAXFUN,
                  refscan=REFSCAN):
-        self.dims = im4d.array.shape
+        self.dims = im4d.get_array().shape
         self.nscans = self.dims[3]
         self.xyz = make_grid(self.dims[0:3], subsampling, borders)
         masksize = self.xyz.shape[0]
@@ -175,12 +201,12 @@ class Realign4dAlgorithm(object):
         # Compute the 4d cubic spline transform
         self.time_interp = time_interp
         if time_interp:
-            self.cbspline = _cspline_transform(im4d.array)
+            self.cbspline = _cspline_transform(im4d.get_array())
         else:
             self.cbspline = np.zeros(self.dims, dtype='double')
             for t in range(self.dims[3]):
                 self.cbspline[:, :, :, t] =\
-                    _cspline_transform(im4d.array[:, :, :, t])
+                    _cspline_transform(im4d.get_array()[:, :, :, t])
 
         # The reference scan conventionally defines the head
         # coordinate system
@@ -414,7 +440,9 @@ def resample4d(im4d, transforms, time_interp=True):
     """
     r = Realign4dAlgorithm(im4d, transforms=transforms,
                            time_interp=time_interp)
-    return r.resample_full_data()
+    res = r.resample_full_data()
+    im4d.free_array()
+    return res
 
 
 def adjust_subsampling(speedup, dims):
@@ -474,7 +502,7 @@ def single_run_realign4d(im4d,
                      stepsize, maxiter, maxfun)
     for loops_, speedup_, optimizer_, xtol_, ftol_, gtol_,\
             stepsize_, maxiter_, maxfun_ in opt_params:
-        subsampling = adjust_subsampling(speedup_, im4d.array.shape[0:3])
+        subsampling = adjust_subsampling(speedup_, im4d.get_array().shape[0:3])
         r = Realign4dAlgorithm(im4d,
                                transforms=transforms,
                                affine_class=affine_class,
@@ -492,6 +520,7 @@ def single_run_realign4d(im4d,
             r.estimate_motion()
         r.align_to_refscan()
         transforms = r.transforms
+        im4d.free_array()
 
     return transforms
 
@@ -581,14 +610,27 @@ def realign4d(runs,
     return ctransforms, transforms, transfo_mean
 
 
-def split_affine(a):
-    # that's a horrible hack until we fix the inconsistency between
-    # Image and AffineImage
-    sa = np.eye(4)
-    sa[0:3, 0:3] = a[0:3, 0:3]
-    if a.shape[1] > 4:
-        sa[0:3, 3] = a[0:3, 4]
-    return sa, a[3, 3]
+def split_affine(im):
+    """
+    Get the affine transform of a 4D image.
+
+    For now, this involves a hack due to the current inconsistency
+    between Image and AffineImage.
+
+    Parameters
+    ----------
+    im : image
+      Either a nipy image or a nibabel image.
+    """
+    if hasattr(im, 'affine'):
+        a = im.affine
+        sa = np.eye(4)
+        sa[0:3, 0:3] = a[0:3, 0:3]
+        if a.shape[1] > 4:
+            sa[0:3, 3] = a[0:3, 4]
+        return sa, a[3, 3]
+    else:
+        return im.get_affine(), None
 
 
 class Realign4d(object):
@@ -605,10 +647,10 @@ class Realign4d(object):
         self._runs = []
         self.affine_class = affine_class
         for im in images:
-            affine, _tr = split_affine(im.affine)
+            affine, _tr = split_affine(im)
             if tr == None:
                 tr = _tr
-            self._runs.append(Image4d(im.get_data(), affine,
+            self._runs.append(Image4d(im.get_data, affine,
                                       tr=tr, tr_slices=tr_slices,
                                       start=start, slice_order=slice_order,
                                       interleaved=interleaved))
