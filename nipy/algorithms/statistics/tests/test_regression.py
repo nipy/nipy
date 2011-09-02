@@ -30,8 +30,22 @@ def test_model():
 
 def test_output_T():
     # Check we get required outputs
-    t = RESULTS.t(0)
-    assert_array_almost_equal([t], output_T(C1, RESULTS, t=True))
+    res = RESULTS.Tcontrast(C1) # all return values
+    # default is all return values
+    assert_array_almost_equal([res.effect, res.sd, res.t],
+                              output_T(C1, RESULTS))
+    assert_array_almost_equal([res.effect, res.sd, res.t],
+                              output_T(C1, RESULTS, ('effect', 'sd', 't')))
+    # Input order determines return order
+    assert_array_almost_equal([res.t, res.effect, res.sd],
+                              output_T(C1, RESULTS, ('t', 'effect', 'sd')))
+    # And can select inputs
+    assert_array_almost_equal([res.t],
+                              output_T(C1, RESULTS, ('t',)))
+    assert_array_almost_equal([res.sd],
+                              output_T(C1, RESULTS, ('sd',)))
+    assert_array_almost_equal([res.effect],
+                              output_T(C1, RESULTS, ('effect',)))
 
 
 def test_output_F():

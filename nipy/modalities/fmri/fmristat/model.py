@@ -276,7 +276,8 @@ class AR1(object):
 
 def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
              clobber=False):
-    """
+    """ Return t contrast regression outputs list for `contrast`
+
     Parameters
     ----------
     outbase : string
@@ -297,6 +298,17 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
         whether to write a t image
     clobber : {False, True}, optional
         whether to overwrite images that exist.
+
+    Returns
+    -------
+    reglist : ``RegressionOutputList`` instance
+        Regression output list with selected outputs, where selection is by
+        inputs `effect`, `sd` and `t`
+
+    Notes
+    -----
+    Note that this routine uses the corresponding ``output_T`` routine in
+    statistics.regression, but indirectly via the TOutput object.
     """
     def build_filename(label):
         index = outbase.find('.')

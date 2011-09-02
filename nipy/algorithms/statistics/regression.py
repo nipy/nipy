@@ -16,7 +16,7 @@ import numpy.linalg as L
 from scipy.linalg import toeplitz
 from ..utils.matrices import pos_recipr
 
-def output_T(contrast, results, effect=None, sd=None, t=None):
+def output_T(contrast, results, retvals=('effect', 'sd', 't')):
     """ Convenience function to collect t contrast results
 
     Parameters
@@ -25,35 +25,26 @@ def output_T(contrast, results, effect=None, sd=None, t=None):
         contrast matrix
     results : object
         implementing Tcontrast method
-    effect : {None, False, True}, optional
-        flag as to whether to append effect (None -> False)
-    sd : {None, False, True}, optional
-        flag as to whether to append standard deviation (None -> False)
-    t : {None, False, True}, optional
-        flag as to whether to append t (None -> False)
+    retvals : sequence, optional
+        None or more of strings 'effect', 'sd', 't', where the presence of the
+        string means that that output will be returned.
 
     Returns
     -------
     res_list : list
-        List of results.  It will be len(3) if all of `effect`, `sd` and `t` are
-        True, and empty if they are all False
+        List of results.  It will have the same length as `retvals` and the
+        elements will be in the same order as retvals
     """
-    store = []
-    if effect:
-        store.append('effect')
-    if sd:
-        store.append('sd')
-    if t:
-        store.append('t')
-    r = results.Tcontrast(contrast, store=store)
-    v = []
-    if effect:
-        v.append(r.effect)
-    if sd:
-        v.append(r.sd)
-    if t:
-        v.append(r.t)
-    return v
+    r = results.Tcontrast(contrast, store=retvals)
+    returns = []
+    for valname in retvals:
+        if valname == 'effect':
+            returns.append(r.effect)
+        if valname == 'sd':
+            returns.append(r.sd)
+        if valname == 't':
+            returns.append(r.t)
+    return returns
 
 
 def output_F(contrast, results):
@@ -127,25 +118,26 @@ class RegressionOutputList(object):
 
 class TOutput(RegressionOutputList):
     """
-    Output contrast related to a T contrast
-    from a GLM pass through data.
+    Output contrast related to a T contrast from a GLM pass through data.
     """
-    def __init__(self, contrast, effect=None,
-                 sd=None, t=None):
+    def __init__(self, contrast, effect=None, sd=None, t=None):
         # Returns a list of arrays, being [effect, sd, t] when all these are not
         # None
-        self.fn = lambda x: output_T(contrast,
-                                     x,
-                                     effect=effect,
-                                     sd=sd,
-                                     t=t)
+        # Compile list of desired return values
+        retvals = []
+        # Set self.list to contain selected input catching objects
         self.list = []
-        if effect is not None:
+        if not effect is None:
+            retvals.append('effect')
             self.list.append(effect)
-        if sd is not None:
+        if not sd is None:
+            retvals.append('sd')
             self.list.append(sd)
-        if t is not None:
+        if not t is None:
+            retvals.append('t')
             self.list.append(t)
+        # Set return function to return selected inputs
+        self.fn = lambda x: output_T(contrast, x, retvals)
 
 
 class ArrayOutput(RegressionOutput):
