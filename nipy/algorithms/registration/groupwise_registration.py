@@ -53,7 +53,8 @@ def scanner_coords(xyz, affine, from_world, to_world):
 
 
 def make_grid(dims, subsampling=(1, 1, 1), borders=(0, 0, 0)):
-    slices = [slice(b, d - b, s) for d, s, b in zip(dims, subsampling, borders)]
+    slices = [slice(b, d - b, s)\
+                  for d, s, b in zip(dims, subsampling, borders)]
     xyz = np.mgrid[slices]
     xyz = np.rollaxis(xyz, 0, 4)
     xyz = np.reshape(xyz, [np.prod(xyz.shape[0:-1]), 3])
@@ -64,6 +65,10 @@ class Image4d(object):
     """
     Class to represent a sequence of 3d scans (possibly acquired on a
     slice-by-slice basis).
+
+    Parameters
+    ----------
+    array : nd array or proxy
     """
     def __init__(self, array, affine, tr, tr_slices=None, start=0.0,
                  slice_order=SLICE_ORDER, interleaved=INTERLEAVED,
@@ -94,7 +99,7 @@ class Image4d(object):
                 p = nslices / 2
                 aux = []
                 for i in range(p):
-                    aux.extend([i, p+i])
+                    aux.extend([i, p + i])
                 if nslices % 2:
                     aux.append(nslices - 1)
             if slice_order == 'descending':
@@ -551,7 +556,8 @@ def realign4d(runs,
     # corrected run, and creating a fake time series with no temporal
     # smoothness
     ## FIXME: check that all runs have the same to-world transform
-    corr_runs = [resample4d(runs[i], transforms=transforms[i], time_interp=time_interp) for i in range(nruns)]
+    corr_runs = [resample4d(runs[i], transforms=transforms[i],
+                            time_interp=time_interp) for i in range(nruns)]
     aux = np.rollaxis(np.asarray([c.mean(3) for c in corr_runs]), 0, 4)
     mean_img = Image4d(aux, affine=runs[0].affine, tr=1.0, tr_slices=0.0)
     transfo_mean = single_run_realign4d(mean_img,
@@ -602,8 +608,10 @@ class Realign4d(object):
             affine, _tr = split_affine(im.affine)
             if tr == None:
                 tr = _tr
-            self._runs.append(Image4d(im.get_data(), affine, tr=tr, tr_slices=tr_slices,
-                                      start=start, slice_order=slice_order, interleaved=interleaved))
+            self._runs.append(Image4d(im.get_data(), affine,
+                                      tr=tr, tr_slices=tr_slices,
+                                      start=start, slice_order=slice_order,
+                                      interleaved=interleaved))
         self._transforms = [None for run in self._runs]
         self._within_run_transforms = [None for run in self._runs]
         self._mean_transforms = [None for run in self._runs]
@@ -639,7 +647,8 @@ class Realign4d(object):
                       stepsize=stepsize,
                       maxiter=maxiter,
                       maxfun=maxfun)
-        self._transforms, self._within_run_transforms, self._mean_transforms = t
+        self._transforms, self._within_run_transforms,\
+            self._mean_transforms = t
 
     def resample(self, align_runs=True):
         """
@@ -651,8 +660,10 @@ class Realign4d(object):
         else:
             transforms = self._within_run_transforms
         runs = range(len(self._runs))
-        data = [resample4d(self._runs[r], transforms=transforms[r], time_interp=self._time_interp) for r in runs]
-        return [AffineImage(data[r], self._runs[r].affine, 'scanner') for r in runs]
+        data = [resample4d(self._runs[r], transforms=transforms[r],\
+                               time_interp=self._time_interp) for r in runs]
+        return [AffineImage(data[r], self._runs[r].affine, 'scanner')\
+                    for r in runs]
 
 
 class FmriRealign4d(Realign4d):
