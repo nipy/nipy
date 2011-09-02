@@ -93,6 +93,7 @@ def test_make_feature():
     subdomain = make_subdomain()
     data = np.random.randn(np.prod(shape))
     subdomain.make_feature('data', data)
+    print [i.shape for i in subdomain.get_feature('data')]
     assert (subdomain.features['data'][3] == data[subdomain.label==3]).all()
     
 if __name__ == "__main__":

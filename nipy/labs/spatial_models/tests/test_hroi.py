@@ -102,7 +102,7 @@ def test_asc_merge_2():
 
 
 def test_asc_merge_3():
-    """ Test ascending merge
+    """Test ascending merge
     """
     hroi = make_hroi()
     hroi.make_feature('labels', hroi.label)
@@ -114,6 +114,21 @@ def test_asc_merge_3():
     assert hroi.size[0] == s1
     assert np.unique(hroi.get_feature('labels')[0]).size == 2
     assert np.unique(hroi.get_feature('labels2')[0]).size == 1
+
+
+def test_asc_merge_4():
+    """Test ascending merge
+
+    """
+    hroi = make_hroi()
+    hroi.make_feature('labels', hroi.label)
+    valid = np.ones(9).astype(np.bool)
+    valid[0] = 0
+    parents = hroi.parents
+    parents = parents + 1
+    parents[8] = 8
+    hroi.parents = parents
+    hroi.merge_ascending(valid)
 
 
 def test_desc_merge():

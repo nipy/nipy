@@ -253,6 +253,8 @@ class SubDomains(object):
     def get_feature(self, fid, k=None):
         """return self.features[fid]
         """
+        if self.k == 0:
+            return []
         if k == None:
             return self.features[fid]
         if k > self.k - 1:
