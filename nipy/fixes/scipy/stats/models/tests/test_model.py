@@ -60,11 +60,21 @@ def test_model():
     assert_array_almost_equal(RESULTS.theta, [1.773, 2.5], 3)
 
 
-def test_t_output():
+def test_t_contrast():
     # Test indivudual t against R
     assert_array_almost_equal(RESULTS.t(0), 3.25)
     assert_array_almost_equal(RESULTS.t(1), 7.181, 3)
-    # Test t contrast output
+    # And contrast
+    assert_array_almost_equal(RESULTS.Tcontrast([1,0]).t, 3.25)
+    assert_array_almost_equal(RESULTS.Tcontrast([0,1]).t, 7.181, 3)
+    # Input matrix checked for size
+    assert_raises(ValueError, RESULTS.Tcontrast, [1])
+    assert_raises(ValueError, RESULTS.Tcontrast, [1, 0, 0])
+    # And shape
+    assert_raises(ValueError, RESULTS.Tcontrast, np.array([1, 0])[:,None])
+
+
+def test_t_output():
     # Check we get required outputs
     exp_t = RESULTS.t(0)
     exp_effect = RESULTS.theta[0]
@@ -102,14 +112,8 @@ def test_f_output():
     # Test with matrix against R
     res = RESULTS.Fcontrast(np.eye(2))
     assert_array_almost_equal(31.06, res.F, 2)
-    # Test on larger matrix
-    rng = np.random.RandomState(ord('F'))
-    Y = rng.normal(size=(10,1)) * 10 + 100
-    X = np.c_[rng.normal(size=(10,3)), np.ones((N,))]
-    c1 = np.zeros((X.shape[1],))
-    c1[0] = 1
-    model = OLSModel(X)
-    results = model.fit(Y)
-    # Check we get required outputs
-    exp_f = results.t(0)**2
-    assert_array_almost_equal(exp_f, results.Fcontrast(c1))
+    # Input matrix checked for size
+    assert_raises(ValueError, RESULTS.Fcontrast, [1])
+    assert_raises(ValueError, RESULTS.Fcontrast, [1, 0, 0])
+    # And shape
+    assert_raises(ValueError, RESULTS.Fcontrast, np.array([1, 0])[:,None])

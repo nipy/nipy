@@ -218,6 +218,16 @@ class LikelihoodModelResults(object):
         -------
         res : ``TContrastResults`` object
         """
+        matrix = np.asarray(matrix)
+        # 1D vectors assumed to be row vector
+        if matrix.ndim == 1:
+            matrix = matrix[None,:]
+        if matrix.shape[0] != 1:
+            raise ValueError("t contrasts should have only one row")
+        if matrix.shape[1] != self.theta.shape[0]:
+            raise ValueError("t contrasts should be length P=%d, "
+                             "but this is length %d" % (self.theta.shape[0],
+                                                        matrix.shape[1]))
         store = set(store)
         if not store.issubset(('t', 'effect', 'sd')):
             raise ValueError('Unexpected store request in %s' % store)
@@ -244,9 +254,9 @@ class LikelihoodModelResults(object):
         """
         Compute an Fcontrast for a contrast matrix.
 
-        Here, matrix M is assumed to be non-singular. More precisely,
+        Here, matrix M is assumed to be non-singular. More precisely::
 
-        M pX pX' M'
+            M pX pX' M'
 
         is assumed invertible. Here, pX is the generalized inverse of the
         design matrix of the model. There can be problems in non-OLS models
@@ -272,6 +282,13 @@ class LikelihoodModelResults(object):
             with attributes F, df_den, df_num
         """
         matrix = np.asarray(matrix)
+        # 1D vectors assumed to be row vector
+        if matrix.ndim == 1:
+            matrix = matrix[None,:]
+        if matrix.shape[1] != self.theta.shape[0]:
+            raise ValueError("F contrasts should have shape[1] P=%d, "
+                             "but this has shape[1] %d" % (self.theta.shape[0],
+                                                           matrix.shape[1]))
         ctheta = np.dot(matrix, self.theta)
         if matrix.ndim == 1:
             matrix = matrix.reshape((1, matrix.shape[0]))
