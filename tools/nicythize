@@ -15,6 +15,9 @@ Originally written by Dag Sverre Seljebotn.
 This version copied from:
 
 https://raw.github.com/dagss/private-scipy-refactor/cythonize/cythonize.py
+
+Note: this script does not check any of the dependent C libraries; it only
+operates on the Cython .pyx files.
 """
 
 import os
