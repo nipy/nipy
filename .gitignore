@@ -74,3 +74,4 @@ __config__.py
 doc/api/generated
 doc/build/
 doc/manual
+cythonize.dat
