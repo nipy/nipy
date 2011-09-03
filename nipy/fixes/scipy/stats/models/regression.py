@@ -502,6 +502,132 @@ def yule_walker(X, order=1, method="unbiased", df=None, inv=False):
     return rho, np.sqrt(sigmasq)
 
 
+def ar_bias_corrector(design, calc_beta, order=1):
+    """ Return bias correcting matrix for design and AR order `order`
+
+    There is a slight bias in the rho estimates on residuals due to the
+    correlations induced in the residuals by fitting a linear model.  See [1]
+
+    This routine implements the bias correction described in appendix A.1 of
+    [1]
+
+    Parameters
+    ----------
+    design : array
+        Design matrix
+    calc_beta : array
+        Moore-Penrose pseudoinverse of the (maybe) whitened design matrix.  This
+        is matrix that, when applied to the (maybe whitened) data, produces the
+        betas.
+    order : int, optional
+        Order p of AR(p) process
+
+    Returns
+    -------
+    invM : array
+        Matrix to bias correct estimated covariance matrix in calculating the AR
+        coefficients
+
+    References
+    ----------
+    [1] K.J. Worsley, C.H. Liao, J. Aston, V. Petre, G.H. Duncan, F. Morales,
+    A.C. Evans (2002) A General Statistical Analysis for fMRI Data.  Neuroimage
+    15:1:15
+    """
+    R = np.eye(design.shape[0]) - np.dot(design, calc_beta)
+    M = np.zeros((order+1,)*2)
+    I = np.eye(R.shape[0])
+    for i in range(order+1):
+        Di = np.dot(R, spl.toeplitz(I[i]))
+        for j in range(order+1):
+            Dj = np.dot(R, spl.toeplitz(I[j]))
+            M[i,j] = np.diag((np.dot(Di, Dj))/(1.+(i>0))).sum()
+    return spl.inv(M)
+
+
+def ar_bias_correct(results, order, invM=None):
+    """ Apply bias correction in calculating AR(p) coefficients from `results`
+
+    There is a slight bias in the rho estimates on residuals due to the
+    correlations induced in the residuals by fitting a linear model.  See [1]
+
+    This routine implements the bias correction described in appendix A.1 of
+    [1]
+
+    Parameters
+    ----------
+    results : results object
+        Has attributes ``resid``, ``scale``, ``df_resid`` and (see below) maybe
+        ``model``
+    order : int
+        Order ``p`` of AR(p) model
+    invM : None or array
+        Known bias correcting matrix for covariance.  If None, calculate from
+        ``results.model``
+
+    Returns
+    -------
+    rho : array
+        Bias-corrected AR(p) coefficients
+    """
+    if invM is None:
+        model = results.model
+        invM = ar_bias_corrector(model.design, model.calc_beta, order)
+    in_shape = results.resid.shape
+    N = in_shape[0]
+    # Allows results residuals to have shapes other than 2D
+    resid = results.resid.reshape((N, -1))
+    # glm.Model fit methods fill in a ``scale`` estimate. For simpler
+    # models, there is no scale estimate written into the results.  However, the
+    # same calculation resolves (with Gaussian family) to ``np.sum(resid**2) /
+    # results.df_resid``. See ``estimate_scale`` from glm.Model
+    if hasattr(results, 'scale'):
+        sum_sq = results.scale.reshape(resid.shape[1:]) * results.df_resid
+    else: # No scale in results
+        sum_sq = np.sum(resid**2, axis=0)
+    cov = np.zeros((order + 1,) + sum_sq.shape)
+    cov[0] = sum_sq
+    for i in range(1, order+1):
+        cov[i] = np.sum(resid[i:] * resid[0:-i], axis=0)
+    # cov is shape (order+1, V) where V = np.product(in_shape[1:])
+    cov = np.dot(invM, cov)
+    output = cov[1:] * pos_recipr(cov[0])
+    return np.squeeze(output.reshape((order,) + in_shape[1:]))
+
+
+class AREstimator(object):
+    """
+    A class to estimate AR(p) coefficients from residuals
+    """
+    def __init__(self, model, p=1):
+        """ Bias-correcting AR estimation class
+
+        Parameters
+        ----------
+        model : ``OSLModel`` instance
+            A models.regression.OLSmodel instance, where `model` has attribute ``design``
+        p : int, optional
+            Order of AR(p) noise
+        """
+        self.p = p
+        self.invM = ar_bias_corrector(model.design, model.calc_beta, p)
+
+    def __call__(self, results):
+        """ Calculate AR(p) coefficients from `results`.``residuals``
+
+        Parameters
+        ----------
+        results : Results instance
+            A models.model.LikelihoodModelResults instance
+
+        Returns
+        -------
+        ar_p : array
+            AR(p) coefficients
+        """
+        return ar_bias_correct(results, self.p, self.invM)
+
+
 class WLSModel(OLSModel):
     """
     A regression model with diagonal but non-identity covariance structure.

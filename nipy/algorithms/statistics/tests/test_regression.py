@@ -60,5 +60,3 @@ def test_output_F():
     # Check we get required outputs
     exp_f = results.t(0) **2
     assert_array_almost_equal(exp_f, output_F(c1, results))
-
-
