@@ -6,6 +6,7 @@ import scipy.linalg as spl
 from nipy.externals.transforms3d.quaternions import mat2quat, quat2axangle
 
 from .transform import Transform
+from ..utils.affines import apply_affine
 
 # Defaults
 _radius = 100
@@ -119,31 +120,6 @@ def preconditioner(radius):
 
 def inverse_affine(affine):
     return spl.inv(affine)
-
-
-def apply_affine(aff, pts):
-    """ Apply affine `T` to points `pts`
-
-    Parameters
-    ----------
-    aff : (N, N) array-like
-        Homogenous affine, probably 4 by 4
-    pts : (P, N-1) array-like
-        Points, one point per row.  N-1 is probably 3.
-
-    Returns
-    -------
-    transformed_pts : (P, N-1) array
-        transformed points
-    """
-    # Apply N by N homogenous affine to P by N-1 array
-    pts = np.asarray(pts)
-    shape = pts.shape
-    pts = pts.reshape((-1, shape[-1]))
-    rzs = aff[:-1,:-1]
-    trans = aff[:-1,-1]
-    res = np.dot(pts, rzs.T) + trans[None,:]
-    return res.reshape(shape)
 
 
 def subgrid_affine(affine, slices):
