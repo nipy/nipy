@@ -7,6 +7,7 @@ import numpy as np
 from ..regression import OLSModel
 
 from nose.tools import assert_true, assert_equal, assert_raises
+from nose import SkipTest
 
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal)
@@ -58,10 +59,15 @@ def test_model():
     assert_array_almost_equal(RESULTS.theta[1], np.mean(Y))
     # Check we get the same as R
     assert_array_almost_equal(RESULTS.theta, [1.773, 2.5], 3)
-    assert_array_almost_equal(
-        np.percentile(RESULTS.resid, [0,25,50,75,100]),
-        [-1.6970, -0.6667, 0.0000, 0.6667, 1.6970],
-        4)
+    try:
+        percentile = np.percentile
+    except AttributeError:
+        # Numpy <=1.4.1 does not have percentile function
+        raise SkipTest('Numpy does not have percentile function')
+    pcts = percentile(RESULTS.resid, [0,25,50,75,100])
+    assert_array_almost_equal(np.percentile(RESULTS.resid, [0,25,50,75,100])
+                              [-1.6970, -0.6667, 0, 0.6667, 1.6970],
+                              4)
 
 
 def test_t_contrast():
