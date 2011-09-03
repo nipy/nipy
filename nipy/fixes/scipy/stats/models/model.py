@@ -234,18 +234,17 @@ class LikelihoodModelResults(object):
         store = set(store)
         if not store.issubset(('t', 'effect', 'sd')):
             raise ValueError('Unexpected store request in %s' % store)
-        st_t = st_effect = st_sd = t = effect = sd = None
+        st_t = st_effect = st_sd = effect = sd = None
         if 't' in store or 'effect' in store:
-            effect = np.squeeze(np.dot(matrix, self.theta))
+            effect = np.dot(matrix, self.theta)
             if 'effect' in store:
-                st_effect = effect
+                st_effect = np.squeeze(effect)
         if 't' in store or 'sd' in store:
             sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
-            sd = np.squeeze(sd)
             if 'sd' in store:
-                st_sd = sd
+                st_sd = np.squeeze(sd)
         if 't' in store:
-            st_t = effect * pos_recipr(sd)
+            st_t = np.squeeze(effect * pos_recipr(sd))
         return TContrastResults(effect=st_effect, t=st_t, sd=st_sd, df_den=self.df_resid)
 
 # Jonathan: for an F-statistic, the options 't', 'sd' do not make sense. The 'effect' option
@@ -378,10 +377,10 @@ class TContrastResults(object):
 
     def __array__(self):
         return np.asarray(self.t)
-        
+
     def __str__(self):
-        return '<T contrast: effect=%s, sd=%s, t=%s, df_den=%d>' % \
-            (`self.effect`, `self.sd`, `self.t`, self.df_den)
+        return ('<T contrast: effect=%s, sd=%s, t=%s, df_den=%d>' %
+                (self.effect, self.sd, self.t, self.df_den))
 
 
 
