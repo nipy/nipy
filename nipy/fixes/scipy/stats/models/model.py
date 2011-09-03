@@ -3,10 +3,13 @@
 import numpy as np
 from numpy.linalg import inv
 
-from scipy.stats import t
+from scipy.stats import t as t_distribution
 
 from nipy.algorithms.utils.matrices import pos_recipr
 from .descriptors import setattr_on_read
+
+# Inverse t cumulative distribution
+inv_t_cdf = t_distribution.ppf
 
 class Model(object):
     """
@@ -340,17 +343,19 @@ class LikelihoodModelResults(object):
             `tails` can be "two", "upper", or "lower"
         '''
         if cols is None:
-            lower = self.theta - t.ppf(1-alpha/2,self.df_resid) *\
+            lower = self.theta - inv_t_cdf(1-alpha/2,self.df_resid) *\
                     np.diag(np.sqrt(self.vcov(dispersion=dispersion)))
-            upper = self.theta + t.ppf(1-alpha/2,self.df_resid) *\
+            upper = self.theta + inv_t_cdf(1-alpha/2,self.df_resid) *\
                     np.diag(np.sqrt(self.vcov(dispersion=dispersion)))
         else:
             lower=[]
             upper=[]
             for i in cols:
-                lower.append(self.theta[i] - t.ppf(1-alpha/2,self.df_resid) *\
+                lower.append(
+                    self.theta[i] - inv_t_cdf(1-alpha/2,self.df_resid) *
                     np.diag(np.sqrt(self.vcov(dispersion=dispersion)))[i])
-                upper.append(self.theta[i] + t.ppf(1-alpha/2,self.df_resid) *\
+                upper.append(
+                    self.theta[i] + inv_t_cdf(1-alpha/2,self.df_resid) *
                     np.diag(np.sqrt(self.vcov(dispersion=dispersion)))[i])
         return np.asarray(zip(lower,upper))
 
