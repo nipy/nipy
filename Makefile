@@ -12,16 +12,19 @@ clean:
 	$(MAKE) -C doc clean
 
 dev: clean
-	python setup.py build_ext --inplace
+	$(PYTHON) setup.py build_ext --inplace
 
 test:
-	cd .. && python -c 'import nipy; nipy.test()'
+	cd .. && $(PYTHON) -c 'import nipy; nipy.test()'
 
 build:
-	python setup.py build
+	$(PYTHON) setup.py build
 
 install:
-	python setup.py install
+	$(PYTHON) setup.py install
+
+cythonize:
+	$(PYTHON) tools/nicythize
 
 # Print out info for possible install methods
 check-version-info:
