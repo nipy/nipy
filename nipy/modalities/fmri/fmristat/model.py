@@ -2,6 +2,18 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module defines the two default GLM passes of fmristat
+
+The results of both passes of the GLM get pushed around by generators, which
+know how to get out the (probably 3D) data for each slice, or parcel (for the
+AR) case, estimate in 2D, then store the data back again in its original shape.
+
+The containers here, in the execute methods, know how to reshape the data on the
+way into the estimation (to 2D), then back again, to 3D, or 4D.
+
+It's relatively easy to do this when just iterating over simple slices, but it
+gets a bit more complicated when taking arbitrary shaped samples from the image,
+as we do for estimating the AR coefficients, where we take all the voxels with
+similar AR coefficients at once.
 """
 
 import copy

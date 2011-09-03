@@ -1,12 +1,21 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
-This module provides various convenience functions for extracting
-statistics from regression analysis techniques to model the
-relationship between the dependent and independent variables.
+""" Convenience functions and classes for statistics on images.
 
-As well as a convenience class to output the result, RegressionOutput
+These functions and classes support the return of statistical test results from
+iterations through data.
 
+The basic container here is the RegressionOutput.  This does two basic things:
+
+* via __call__, processes a result object from a regression to produce
+  something, usually an array
+* via slicing (__setitem__), it can store stuff, usually arrays.
+
+We use these by other objects (see algorithms.statistics.fmri.fmristat) slicing
+data out of images, fitting models to the data to create results objects, and
+then passing them to these here ``RegressionOutput`` containers via call, to get
+useful arrays, and then putting the results back into the ``RegressionOutput``
+containers via slicing (__setitem__).
 """
 
 __docformat__ = 'restructuredtext'
