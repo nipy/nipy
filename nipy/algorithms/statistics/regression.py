@@ -140,17 +140,6 @@ class TOutput(RegressionOutputList):
         self.fn = lambda x: output_T(contrast, x, retvals)
 
 
-class ArrayOutput(RegressionOutput):
-    """
-    Output an array from a GLM pass through data.
-
-    By default, the function called is output_resid, so residuals
-    are output.
-    """
-    def __init__(self, img, fn):
-        RegressionOutput.__init__(self, img, fn)
-
-
 def output_AR1(results):
     """
     Compute the usual AR(1) parameter on
