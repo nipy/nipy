@@ -7,9 +7,13 @@ from nipy.io.api import load_image
 from nipy.core.image.image import rollaxis as img_rollaxis
 
 from  .. import model
-from ..model import ModelOutputImage
+from ..model import ModelOutputImage, estimateAR
 from ...api import FmriImageList
 from ...formula import Formula, Term, make_recarray
+
+from nipy.fixes.scipy.stats.models.regression import (
+    OLSModel, ar_bias_corrector, ar_bias_correct)
+
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nose.tools import assert_raises, assert_true, assert_equal
@@ -84,3 +88,34 @@ def test_run():
                                       e_img.get_data() / sd_img.get_data())
             assert_true(np.all(np.abs(t_data) < 6))
 
+
+def test_ar_modeling():
+    # Compare against standard routines
+    rng = np.random.RandomState(20110903)
+    N = 10
+    Y = rng.normal(size=(N,1)) * 10 + 100
+    X = np.c_[np.linspace(-1,1,N), np.ones((N,))]
+    my_model = OLSModel(X)
+    results = my_model.fit(Y)
+    # fmristat wrapper
+    rhos = estimateAR(results.resid, my_model.design, order=2)
+    assert_equal(rhos.shape, (2,))
+    assert_true(np.all(np.abs(rhos <= 1)))
+    # standard routine
+    rhos2 = ar_bias_correct(results, 2)
+    assert_array_almost_equal(rhos, rhos2, 8)
+    # Make 2D and 3D Y
+    Y = rng.normal(size=(N,4)) * 10 + 100
+    results = my_model.fit(Y)
+    rhos = estimateAR(results.resid, my_model.design, order=2)
+    assert_equal(rhos.shape, (2,4))
+    assert_true(np.all(np.abs(rhos <= 1)))
+    rhos2 = ar_bias_correct(results, 2)
+    assert_array_almost_equal(rhos, rhos2, 8)
+    # 3D
+    results.resid = np.reshape(results.resid, (N,2,2))
+    rhos = estimateAR(results.resid, my_model.design, order=2)
+    assert_equal(rhos.shape, (2,2,2))
+    assert_true(np.all(np.abs(rhos <= 1)))
+    rhos2 = ar_bias_correct(results, 2)
+    assert_array_almost_equal(rhos, rhos2, 8)

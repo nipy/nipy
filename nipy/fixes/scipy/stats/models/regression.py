@@ -556,9 +556,10 @@ def ar_bias_correct(results, order, invM=None):
 
     Parameters
     ----------
-    results : results object
-        Has attributes ``resid``, ``scale``, ``df_resid`` and (see below) maybe
-        ``model``
+    results : ndarray or results object
+        If ndarray, assume these are residuals, from a simple model.  If a
+        results object, with attribute ``resid``, then use these for the
+        residuals. See Notes for more detail
     order : int
         Order ``p`` of AR(p) model
     invM : None or array
@@ -569,14 +570,28 @@ def ar_bias_correct(results, order, invM=None):
     -------
     rho : array
         Bias-corrected AR(p) coefficients
+
+    Notes
+    -----
+    If `results` has attributes ``resid`` and ``scale``, then assume ``scale``
+    has come from a fit of a potentially customized model, and we use that for
+    the sum of squared residuals.  In this case we also need
+    ``results.df_resid``.  Otherwise we assume this is a simple Gaussian model,
+    like OLS, and take the simple sum of squares of the residuals.
     """
     if invM is None:
+        # We need a model from ``results`` if invM is not specified
         model = results.model
         invM = ar_bias_corrector(model.design, model.calc_beta, order)
-    in_shape = results.resid.shape
+    if hasattr(results, 'resid'):
+        resid = results.resid
+    else:
+        resid = results
+    in_shape = resid.shape
     N = in_shape[0]
-    # Allows results residuals to have shapes other than 2D
-    resid = results.resid.reshape((N, -1))
+    # Allows results residuals to have shapes other than 2D.  This allows us to
+    # use this routine for image data as well as more standard 2D model data
+    resid = resid.reshape((N, -1))
     # glm.Model fit methods fill in a ``scale`` estimate. For simpler
     # models, there is no scale estimate written into the results.  However, the
     # same calculation resolves (with Gaussian family) to ``np.sum(resid**2) /

@@ -9,10 +9,11 @@ import copy
 import os.path as path
 
 import numpy as np
-from scipy.linalg import toeplitz
+import scipy.linalg as spl
 
-from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
-from nipy.algorithms.utils.matrices import pos_recipr
+from nipy.fixes.scipy.stats.models.regression import (OLSModel, ARModel,
+                                                      ar_bias_corrector,
+                                                      ar_bias_correct)
 
 # nipy core imports
 from nipy.core.api import Image, parcels, matrix_generator, AffineTransform
@@ -153,45 +154,19 @@ def estimateAR(resid, design, order=1):
     """
     Estimate AR parameters using bias correction from fMRIstat.
 
-    Note - this code contains the same algorithms as
-    ``nipy.algorithms.statistics.regression.AREstimator``.
-
     Parameters
     ----------
-    resid:  residual image
+    resid:  array-like
+        residuals from model
     model:  an OLS model used to estimate residuals
 
     Returns
     -------
-    output :
+    output : array
+        shape (order, resid
     """
-    p = order
-
-    R = np.identity(design.shape[0]) - np.dot(design, np.linalg.pinv(design))
-    M = np.zeros((p+1,)*2)
-    I = np.identity(R.shape[0])
-
-    for i in range(p+1):
-        Di = np.dot(R, toeplitz(I[i]))
-        for j in range(p+1):
-            Dj = np.dot(R, toeplitz(I[j]))
-            M[i,j] = np.diagonal((np.dot(Di, Dj))/(1.+(i>0))).sum()
-
-    invM = np.linalg.inv(M)
-
-    rresid = np.asarray(resid).reshape(resid.shape[0], 
-                                       np.product(resid.shape[1:]))
-    sum_sq = np.sum(rresid**2, axis=0)
-
-    cov = np.zeros((p + 1,) + sum_sq.shape)
-    cov[0] = sum_sq
-    for i in range(1, p+1):
-        cov[i] = np.add.reduce(rresid[i:] * rresid[0:-i], 0)
-    cov = np.dot(invM, cov)
-    output = cov[1:] * pos_recipr(cov[0])
-    output = np.squeeze(output)
-    output.shape = resid.shape[1:]
-    return output
+    invM = ar_bias_corrector(design, spl.pinv(design), order)
+    return ar_bias_correct(resid, order, invM)
 
 
 class AR1(object):
