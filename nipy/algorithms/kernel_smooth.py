@@ -21,7 +21,7 @@ class LinearFilter(object):
     '''
 
     normalization = 'l1sum'
-    
+
     def __init__(self, coordmap, shape, fwhm=6.0, scale=1.0, location=0.0,
                  cov=None):
         """
@@ -110,7 +110,7 @@ class LinearFilter(object):
 
     def __call__(self, X, axis=-1):
         ''' Compute kernel from points
-        
+
         Parameters
         ----------
         X : array
@@ -124,11 +124,11 @@ class LinearFilter(object):
 
     def smooth(self, inimage, clean=False, is_fft=False):
         """ Apply smoothing to `inimage`
-        
+
         Parameters
         ----------
         inimage : ``Image``
-           The image to be smoothed.  Should be 3D. 
+           The image to be smoothed.  Should be 3D.
         clean : bool, optional
            Should we call ``nan_to_num`` on the data before smoothing?
         is_fft : bool, optional
@@ -152,11 +152,12 @@ class LinearFilter(object):
             nslice = 1
         else:
             raise NotImplementedError('expecting either 3 or 4-d image')
+        in_data = inimage.get_data()
         for _slice in range(nslice):
-            if inimage.ndim == 4:
-                data = inimage[_slice]
-            elif inimage.ndim == 3:
-                data = inimage[:]
+            if in_data.ndim == 4:
+                data = in_data[_slice]
+            elif in_data.ndim == 3:
+                data = in_data[:]
             if clean:
                 data = np.nan_to_num(data)
             if not is_fft:
@@ -171,7 +172,7 @@ class LinearFilter(object):
                 data += self.location
             gc.collect()
             # Write out data 
-            if inimage.ndim == 4:
+            if in_data.ndim == 4:
                 _out[_slice] = data
             else:
                 _out = data
