@@ -314,18 +314,27 @@ def output_F(outfile, contrast, fmri_image, clobber=False):
 
     Parameters
     ----------
-    outfile :
-    contrast :
+    outfile : str
+        filename for F contrast image
+    contrast : array
+        F contrast matrix
     fmri_image : ``FmriImageList`` or ``Image``
         object such that ``object[0]`` has attributes ``shape`` and
         ``coordmap``
     clobber : bool
         if True, overwrites previous output; if False, raises error
+
+    Returns
+    -------
+    f_reg_out : ``RegressionOutput`` instance
+        Object that can a) be called with a results instance as argument,
+        returning an array, and b) accept the output array for storing, via
+        ``obj[slice_spec] = arr`` type slicing.
     '''
     f = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape,
                          clobber=clobber)
     return regression.RegressionOutput(f, lambda x:
-                                       regression.output_F(contrast, x))
+                                       regression.output_F(x, contrast))
 
 
 def output_AR1(outfile, fmri_image, clobber=False):

@@ -12,19 +12,17 @@ As well as a convenience class to output the result, RegressionOutput
 __docformat__ = 'restructuredtext'
 
 import numpy as np
-import numpy.linalg as L
-from scipy.linalg import toeplitz
-from ..utils.matrices import pos_recipr
 
-def output_T(contrast, results, retvals=('effect', 'sd', 't')):
+
+def output_T(results, contrast, retvals=('effect', 'sd', 't')):
     """ Convenience function to collect t contrast results
 
     Parameters
     ----------
-    contrast : array
-        contrast matrix
     results : object
         implementing Tcontrast method
+    contrast : array
+        contrast matrix
     retvals : sequence, optional
         None or more of strings 'effect', 'sd', 't', where the presence of the
         string means that that output will be returned.
@@ -47,10 +45,22 @@ def output_T(contrast, results, retvals=('effect', 'sd', 't')):
     return returns
 
 
-def output_F(contrast, results):
+def output_F(results, contrast):
     """
     This convenience function outputs the results of an Fcontrast
     from a regression
+
+    Parameters
+    ----------
+    results : object
+        implementing Tcontrast method
+    contrast : array
+        contrast matrix
+
+    Returns
+    -------
+    F : array
+        array of F values
     """
     return results.Fcontrast(contrast).F
 
@@ -137,7 +147,7 @@ class TOutput(RegressionOutputList):
             retvals.append('t')
             self.list.append(t)
         # Set return function to return selected inputs
-        self.fn = lambda x: output_T(contrast, x, retvals)
+        self.fn = lambda x: output_T(x, contrast, retvals)
 
 
 def output_AR1(results):

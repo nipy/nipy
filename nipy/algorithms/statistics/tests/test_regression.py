@@ -33,19 +33,19 @@ def test_output_T():
     res = RESULTS.Tcontrast(C1) # all return values
     # default is all return values
     assert_array_almost_equal([res.effect, res.sd, res.t],
-                              output_T(C1, RESULTS))
+                              output_T(RESULTS, C1))
     assert_array_almost_equal([res.effect, res.sd, res.t],
-                              output_T(C1, RESULTS, ('effect', 'sd', 't')))
+                              output_T(RESULTS, C1, ('effect', 'sd', 't')))
     # Input order determines return order
     assert_array_almost_equal([res.t, res.effect, res.sd],
-                              output_T(C1, RESULTS, ('t', 'effect', 'sd')))
+                              output_T(RESULTS, C1, ('t', 'effect', 'sd')))
     # And can select inputs
     assert_array_almost_equal([res.t],
-                              output_T(C1, RESULTS, ('t',)))
+                              output_T(RESULTS, C1, ('t',)))
     assert_array_almost_equal([res.sd],
-                              output_T(C1, RESULTS, ('sd',)))
+                              output_T(RESULTS, C1, ('sd',)))
     assert_array_almost_equal([res.effect],
-                              output_T(C1, RESULTS, ('effect',)))
+                              output_T(RESULTS, C1, ('effect',)))
 
 
 def test_output_F():
@@ -59,4 +59,4 @@ def test_output_F():
     results = model.fit(Y)
     # Check we get required outputs
     exp_f = results.t(0) **2
-    assert_array_almost_equal(exp_f, output_F(c1, results))
+    assert_array_almost_equal(exp_f, output_F(results, c1))
