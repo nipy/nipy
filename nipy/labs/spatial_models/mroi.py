@@ -235,7 +235,7 @@ class SubDomains(object):
         self.set_feature(fid, dat, override)
 
     def set_feature(self, fid, data, override=True):
-        """Append a feature 'fid'
+        """Append a feature `fid`
 
         Parameters
         ----------
@@ -387,8 +387,7 @@ class SubDomains(object):
         """
         return self.roi_features[fid]
 
-    def to_image(self, path=None, descrip=None,
-                 write_type=np.int16, data=None):
+    def to_image(self, path=None, descrip=None, data=None):
         """Generates and possibly writes a label image that represents self.
 
         Parameters
@@ -397,8 +396,6 @@ class SubDomains(object):
               output image path
         descrip: string, optional
                  descritpion associated with the output image
-        write_type: string, optional
-                    type of the written data
         data: array os shape (self.k), optional,
               information to write into the image
 

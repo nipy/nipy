@@ -126,7 +126,7 @@ def HROI_from_watershed(domain, data, threshold=NINF, rid=''):
     Fixme
     -----
     should be a sub-domain (?)
-    Additionally a discrete_field is created, with the key 'index'.
+    Additionally a discrete_field is created, with the key `index`.
     It contains the index in the field from which each point of each ROI.
 
     """
@@ -170,8 +170,9 @@ class HierarchicalROI(SubDomains):
           Array defining which regions must be merged.
           If valid[i] == False, the i_th region is discarded.
 
-        /!\ fixme: what does this refers to?
+        (fixme: what does this refers to?)
         Note that auto=True automatically
+
         """
         SubDomains.select(self, valid, rid, True, no_empty_label)
         if np.sum(valid) == 0:
@@ -199,7 +200,7 @@ class HierarchicalROI(SubDomains):
         G = Forest(self.k, self.parents)
         return G
 
-    def merge_ascending(self, valid, ignore=[]):
+    def merge_ascending(self, valid):
         """Remove the non-valid ROIs by including them in
         their parents when it exists.
 
@@ -208,11 +209,6 @@ class HierarchicalROI(SubDomains):
         valid: boolean array of shape(self.k)
           Array defining which regions must be merged.
           If valid[i] == False, the i_th region is merged in its parent.
-        ignore: list of str
-          List of the features to be ignored for the children's voxels
-          (the children's voxels will be merged in the parent blob and
-          assigned the (assumed unique) value of the parent's voxel for
-          that feature).
 
         Note
         ----
@@ -234,8 +230,6 @@ class HierarchicalROI(SubDomains):
                     for fid in fids:
                         dfj = self.features[fid][fj]
                         dj = self.features[fid][j]
-                        if fid in ignore:
-                            dj[:] = dfj[0]
                         if len(dfj.shape) == 1:
                             dfj = dfj.reshape((-1, 1))
                         if len(dj.shape) == 1:

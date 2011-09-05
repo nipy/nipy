@@ -8,6 +8,7 @@ in ~/.nipy/tests/data
 """
 
 import numpy as np
+from numpy.testing import assert_equal
 from ..mroi import *
 from ..discrete_domain import domain_from_array
 
@@ -35,19 +36,19 @@ def make_subdomain():
 
 
 def test_subdomain():
-    """Test basic constructio of mulitple_roi
+    """Test basic construction of multiple_roi
     """
     mroi = make_subdomain()
-    assert mroi.k == 8
+    assert_equal(mroi.k, 8)
 
 
 def test_subdomain2():
-    """ Test mroi.size
+    """Test mroi.size
     """
     subdomain = make_subdomain()
-    assert len(subdomain.size) == 8
+    assert_equal(len(subdomain.size), 8)
     for k in range(8):
-        assert subdomain.size[k] == np.sum(subdomain.label == k)
+        assert_equal(subdomain.size[k], np.sum(subdomain.label == k))
 
 
 def test_subdomain_feature():
@@ -57,7 +58,7 @@ def test_subdomain_feature():
     aux = np.random.randn(np.prod(shape))
     data = [aux[subdomain.label == k] for k in range(8)]
     subdomain.set_feature('data', data)
-    assert (subdomain.features['data'][0] == data[0]).all()
+    assert_equal(subdomain.features['data'][0], data[0])
 
 
 def test_sd_integrate():
@@ -69,7 +70,7 @@ def test_sd_integrate():
     subdomain.set_feature('data', data)
     sums = subdomain.integrate('data')
     for k in range(8):
-        assert sums[k] == np.sum(data[k])
+        assert_equal(sums[k], np.sum(data[k]))
 
 
 def test_sd_representative():
@@ -81,7 +82,7 @@ def test_sd_representative():
     subdomain.set_feature('data', data)
     sums = subdomain.representative_feature('data')
     for k in range(8):
-        assert sums[k] == np.mean(data[k])
+        assert_equal(sums[k], np.mean(data[k]))
 
 
 def test_sd_from_ball():
@@ -89,18 +90,17 @@ def test_sd_from_ball():
     radii = np.array([2, 2, 2])
     positions = np.array([[3, 3], [3, 7], [7, 7]])
     subdomain = subdomain_from_balls(dom, positions, radii)
-    assert subdomain.k == 3
-    assert (subdomain.size == np.array([9, 9, 9])).all()
+    assert_equal(subdomain.k, 3)
+    assert_equal(subdomain.size, np.array([9, 9, 9]))
 
 
 def test_make_feature():
-    """ tust the feature building capability
+    """Test the feature building capability
     """
     subdomain = make_subdomain()
     data = np.random.randn(np.prod(shape))
     subdomain.make_feature('data', data)
-    print [i.shape for i in subdomain.get_feature('data')]
-    assert (subdomain.features['data'][3] == data[subdomain.label == 3]).all()
+    assert_equal(subdomain.features['data'][3], data[subdomain.label == 3])
 
 
 if __name__ == "__main__":

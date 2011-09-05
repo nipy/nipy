@@ -8,6 +8,7 @@ in ~/.nipy/tests/data
 """
 
 import numpy as np
+from numpy.testing import assert_equal
 
 from ..hroi import HROI_as_discrete_domain_blobs, make_hroi_from_subdomain
 from ..mroi import subdomain_from_array
@@ -56,7 +57,7 @@ def test_hroi():
     """ Test basic construction of mulitple_roi
     """
     hroi = make_hroi()
-    assert hroi.k == 9
+    assert_equal(hroi.k, 9)
 
 
 def test_hroi_isleaf():
@@ -66,17 +67,17 @@ def test_hroi_isleaf():
     valid = np.ones(9).astype(np.bool)
     valid[1] = 0
     hroi.select(valid)
-    assert hroi.k == 8
+    assert_equal(hroi.k, 8)
 
 
 def test_hroi_isleaf_2():
-    """Test tree pruning, with prent remapping
+    """Test tree pruning, with parent remapping
     """
     hroi = make_hroi()
     valid = np.ones(9).astype(np.bool)
     valid[0] = 0
     hroi.select(valid)
-    assert (hroi.parents == np.arange(8).astype(np.int)).all()
+    assert_equal(hroi.parents, np.arange(8).astype(np.int))
 
 
 def test_asc_merge():
@@ -87,7 +88,7 @@ def test_asc_merge():
     valid = np.ones(9).astype(np.bool)
     valid[1] = 0
     hroi.merge_ascending(valid)
-    assert hroi.size[0] == s1
+    assert_equal(hroi.size[0], s1)
 
 
 def test_asc_merge_2():
@@ -98,22 +99,7 @@ def test_asc_merge_2():
     valid = np.ones(9).astype(np.bool)
     valid[0] = 0
     hroi.merge_ascending(valid)
-    assert (hroi.size == s1).all()
-
-
-def test_asc_merge_3():
-    """Test ascending merge
-    """
-    hroi = make_hroi()
-    hroi.make_feature('labels', hroi.label)
-    hroi.make_feature('labels2', hroi.label)
-    s1 = hroi.size[0] + hroi.size[1]
-    valid = np.ones(9).astype(np.bool)
-    valid[1] = 0
-    hroi.merge_ascending(valid, ignore=['labels2'])
-    assert hroi.size[0] == s1
-    assert np.unique(hroi.get_feature('labels')[0]).size == 2
-    assert np.unique(hroi.get_feature('labels2')[0]).size == 1
+    assert_equal(hroi.size, s1)
 
 
 def test_asc_merge_4():
@@ -129,6 +115,11 @@ def test_asc_merge_4():
     parents[8] = 8
     hroi.parents = parents
     hroi.merge_ascending(valid)
+    assert_equal(hroi.k, 8)
+    print hroi.get_feature('labels')[0]
+    assert_equal(len(np.asarray(hroi.get_feature('labels')[0]).shape), 1)
+    assert_equal(np.unique(hroi.get_feature('labels')[0]).size, 2)
+    assert_equal(np.unique(hroi.get_feature('labels')[1]).size, 1)
 
 
 def test_desc_merge():
@@ -140,7 +131,7 @@ def test_desc_merge():
     hroi.parents = parents
     s1 = hroi.size[0] + hroi.size[1]
     hroi.merge_descending()
-    assert hroi.size[0] == s1
+    assert_equal(hroi.size[0], s1)
 
 
 def test_desc_merge_2():
@@ -150,7 +141,7 @@ def test_desc_merge_2():
     parents = np.maximum(np.arange(-1, hroi.k - 1), 0)
     hroi.parents = parents
     hroi.merge_descending()
-    assert hroi.k == 1
+    assert_equal(hroi.k, 1)
 
 
 def test_desc_merge_3():
@@ -160,7 +151,7 @@ def test_desc_merge_3():
     parents = np.minimum(np.arange(1, hroi.k + 1), hroi.k - 1)
     hroi.parents = parents
     hroi.merge_descending()
-    assert hroi.k == 1
+    assert_equal(hroi.k, 1)
 
 
 def test_leaves():
@@ -169,9 +160,9 @@ def test_leaves():
     hroi = make_hroi()
     size = hroi.size[1:].copy()
     lroi = hroi.reduce_to_leaves()
-    assert lroi.k == 8
+    assert_equal(lroi.k, 8)
     print lroi.size, size
-    assert (lroi.size == size).all()
+    assert_equal(lroi.size, size)
 
 
 def test_leaves_empty():
@@ -180,7 +171,7 @@ def test_leaves_empty():
     """
     hroi = make_hroi(empty=True)
     lroi = hroi.reduce_to_leaves()
-    assert lroi.k == 0
+    assert_equal(lroi.k, 0)
 
 
 def test_hroi_from_domain():
@@ -189,7 +180,7 @@ def test_hroi_from_domain():
     data[:2, 0:2, 0:2] = 2
     rdata = np.reshape(data, (data.size, 1))
     hroi = HROI_as_discrete_domain_blobs(dom, rdata, threshold=1., smin=0)
-    assert hroi.k == 1
+    assert_equal(hroi.k, 1)
 
 if __name__ == "__main__":
     import nose

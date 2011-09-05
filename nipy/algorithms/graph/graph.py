@@ -847,15 +847,12 @@ x
         """Symmeterize self, modify edges and weights so that
         self.adjacency becomes the symmetric part of the current
         self.adjacency.
-        
         """
         A = self.to_coo_matrix()
-        
         symg = wgraph_from_adjacency((A + A.T) / 2)
         self.E = symg.E
         self.edges = symg.edges
         self.weights = symg.weights
-        
         return self
 
     def anti_symmeterize(self):

@@ -8,7 +8,7 @@ in ~/.nipy/tests/data
 """
 
 import numpy as np
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_equal
 from ..discrete_domain import smatrix_from_nd_idx, smatrix_from_3d_array, \
     smatrix_from_nd_array, domain_from_array, domain_from_image, \
     domain_from_mesh, grid_domain_from_array, grid_domain_from_image
@@ -31,7 +31,7 @@ def test_smatrix_1d():
     """
     idx = generate_dataset(shape[:1])
     sm = smatrix_from_nd_idx(idx, nn=0)
-    assert(sm.data.size == 2 * shape[0] - 2)
+    assert_equal(sm.data.size, 2 * shape[0] - 2)
 
 
 def test_smatrix_2d():
@@ -40,7 +40,7 @@ def test_smatrix_2d():
     idx = generate_dataset(shape[:2])
     sm = smatrix_from_nd_idx(idx, nn=0)
     ne = 2 * (2 * np.prod(shape[:2]) - shape[0] - shape[1])
-    assert(sm.data.size == ne)
+    assert_equal(sm.data.size, ne)
 
 
 def test_smatrix_3d():
@@ -50,7 +50,7 @@ def test_smatrix_3d():
     sm = smatrix_from_nd_idx(idx)
     ne = 2 * (3 * np.prod(shape[:3]) - shape[0] * shape[1]
               - shape[0] * shape[2] - shape[1] * shape[2])
-    assert(sm.data.size == ne)
+    assert_equal(sm.data.size, ne)
 
 
 def test_smatrix_4d():
@@ -62,7 +62,7 @@ def test_smatrix_4d():
     for d in range(4):
         ne -= np.prod(shape[:4]) / shape[d]
     ne *= 2
-    assert(sm.data.size == ne)
+    assert_equal(sm.data.size, ne)
 
 
 def test_smatrix_5d():
@@ -74,7 +74,7 @@ def test_smatrix_5d():
     for d in range(5):
         ne -= np.prod(shape) / shape[d]
     ne *= 2
-    assert(sm.data.size == ne)
+    assert_equal(sm.data.size, ne)
 
 
 def test_smatrix_5d_bis():
@@ -86,7 +86,7 @@ def test_smatrix_5d_bis():
     for d in range(5):
         ne -= np.prod(shape) / shape[d]
     ne *= 2
-    assert(sm.data.size == ne)
+    assert_equal(sm.data.size, ne)
 
 
 def test_matrix_from_3d_array():
@@ -99,7 +99,7 @@ def test_matrix_from_3d_array():
         ne -= np.prod(shape[:3]) / shape[d]
     ne *= 2
     print sm.data, ne
-    assert((sm.data > 0).sum() == ne)
+    assert_equal((sm.data > 0).sum(), ne)
 
 
 def test_array_domain():
@@ -107,7 +107,7 @@ def test_array_domain():
     """
     toto = np.ones(shape)
     ddom = domain_from_array(toto)
-    assert (np.sum(ddom.local_volume) == np.prod(shape))
+    assert_equal(np.sum(ddom.local_volume), np.prod(shape))
 
 
 def test_connected_components():
@@ -115,7 +115,7 @@ def test_connected_components():
     """
     toto = np.ones(shape)
     ddom = domain_from_array(toto)
-    assert (ddom.connected_components() == np.zeros(ddom.size)).all()
+    assert_equal(ddom.connected_components(), np.zeros(ddom.size))
 
 
 def test_image_domain():
@@ -131,7 +131,7 @@ def test_image_domain():
 
 
 def test_image_feature():
-    """Test the construction of domain based on image ad related feature
+    """Test the construction of domain based on image and related feature
     """
     mask = np.random.randn(*shape[:3]) > .5
     noise = np.random.randn(*shape[:3])
@@ -148,7 +148,7 @@ def test_array_grid_domain():
     """
     toto = np.ones(shape)
     ddom = grid_domain_from_array(toto)
-    assert (np.sum(ddom.local_volume) == np.prod(shape))
+    assert_equal(np.sum(ddom.local_volume), np.prod(shape))
 
 
 def test_image_grid_domain():
@@ -190,7 +190,7 @@ def test_domain_mask():
     toto = np.random.rand(*shape)
     ddom = domain_from_array(toto)
     mdom = ddom.mask(np.ravel(toto > .5))
-    assert (mdom.size == np.sum(toto > .5))
+    assert_equal(mdom.size, np.sum(toto > .5))
 
 
 def test_grid_domain_mask():
@@ -199,7 +199,7 @@ def test_grid_domain_mask():
     toto = np.random.rand(*shape)
     ddom = grid_domain_from_array(toto)
     mdom = ddom.mask(np.ravel(toto > .5))
-    assert (mdom.size == np.sum(toto > .5))
+    assert_equal(mdom.size, np.sum(toto > .5))
 
 
 def test_domain_from_mesh():
@@ -215,7 +215,9 @@ def test_domain_from_mesh():
                             [1, 2, 3]])
     darrays = [nbg.GiftiDataArray(coords)] + [nbg.GiftiDataArray(triangles)]
     toy_image = nbg.GiftiImage(darrays=darrays)
-    domain_from_mesh(toy_image)
+    domain = domain_from_mesh(toy_image)
+    # if we get there, we could build the domain, and that's what we wanted.
+    assert_equal(domain.get_coord(), coords)
 
 
 def test_representative():
