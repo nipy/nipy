@@ -113,7 +113,7 @@ def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
         cfeature -= np.mean(cfeature, 0)
         m1, m2, m3 = nl.svd(cfeature, 0)
         cfeature = np.dot(m1, np.diag(m2))
-        cfeature = cfeature[:, :fdim]
+        cfeature = cfeature[:, 0:fdim]
         feature = [cfeature[subj == s] for s in range(nb_subj)]
 
     return domain, feature

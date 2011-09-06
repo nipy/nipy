@@ -19,7 +19,7 @@ class MultiROI(object):
     """
 
     def __init__(self, domain, k, rid=''):
-        """ Initialize multi ROI instance
+        """Initialize multi ROI instance
 
         Parameters
         ----------
@@ -27,6 +27,7 @@ class MultiROI(object):
                 defines the spatial context of the SubDomains
         k: non-negative int, number of regions considered
         id: string, optional, identifier
+
         """
         self.domain = domain
         self.k = k
@@ -44,7 +45,8 @@ class MultiROI(object):
         return self.roi_features[fid]
 
     def select(self, valid):
-        """Select a subset of ROIs and he associated features
+        """Select a subset of ROIs and their associated features
+
         """
         if valid.size != self.k:
             raise ValueError('Invalid size for valid')
@@ -76,7 +78,7 @@ class SubDomains(object):
     """
 
     def __init__(self, domain, label, id='', no_empty_label=True):
-        """ Initialize subdomains instance
+        """Initialize subdomains instance
 
         Parameters
         ----------
@@ -89,6 +91,7 @@ class SubDomains(object):
         no_empty_label: Bool, optional
                          if True absent label values are collapsed
                         otherwise, label is kept but empty regions might exist
+
         """
         # check that label is consistant with domain
         if np.size(label) != domain.size:
@@ -114,8 +117,10 @@ class SubDomains(object):
         self.roi_features = {}
 
     def copy(self, id=''):
-        """ Returns a copy of self
-        Note that self.domain is not copied
+        """Returns a copy of self.
+
+        Note that self.domain is not copied.
+
         """
         cp = SubDomains(self.domain, self.label.copy(), id=id)
         for fid in self.features.keys():
@@ -127,26 +132,26 @@ class SubDomains(object):
         return cp
 
     def get_coord(self, k):
-        """ returns self.coord[k]
+        """Returns self.coord[k]
         """
         if k > self.k - 1:
             raise ValueError('works only for k < %d' % self.k)
         return self.domain.coord[self.label.k]
 
     def get_size(self):
-        """ returns size, k-length array
+        """Returns size, k-length array
         """
         return self.size
 
     def get_volume(self, k):
-        """ returns self.local_volume[k]
+        """Returns self.local_volume[k]
         """
         if k > self.k - 1:
             raise ValueError('works only for k<%d' % self.k)
         return self.domain.local_volume[self.label == k]
 
     def select(self, valid, id='', auto=True, no_empty_label=True):
-        """returns an instance of multiple_ROI
+        """Returns an instance of multiple_ROI
         with only the subset of ROIs for which valid
 
         Parameters
@@ -162,7 +167,8 @@ class SubDomains(object):
 
         Returns
         -------
-        the instance, if auto==False, nothing otherwise
+        The instance, if auto==False, nothing otherwise
+
         """
         if valid.size != self.k:
             raise ValueError('Invalid size for valid')
@@ -221,6 +227,7 @@ class SubDomains(object):
             domain map from which ROI features are axtracted
         override: bool, optional,
             Allow feature overriding
+
         """
         if data.shape[0] != self.domain.size:
             raise ValueError("Incorrect data provided")
@@ -228,7 +235,7 @@ class SubDomains(object):
         self.set_feature(fid, dat, override)
 
     def set_feature(self, fid, data, override=True):
-        """Append a feature 'fid'
+        """Append a feature `fid`
 
         Parameters
         ----------
@@ -238,6 +245,7 @@ class SubDomains(object):
               the feature data
         override: bool, optional,
                   Allow feature overriding
+
         """
         if len(data) != self.k:
             raise ValueError('data should have length k')
@@ -251,8 +259,10 @@ class SubDomains(object):
         self.features.update({fid: data})
 
     def get_feature(self, fid, k=None):
-        """return self.features[fid]
+        """Return self.features[fid]
         """
+        if self.k == 0:
+            return []
         if k == None:
             return self.features[fid]
         if k > self.k - 1:
@@ -267,6 +277,7 @@ class SubDomains(object):
         fid: string, feature id
         method: string, method used to compute a representative
                 chosen among 'mean', 'max', 'median', 'min', 'weighted mean'
+
         """
         rf = []
         eps = 1.e-15
@@ -276,7 +287,8 @@ class SubDomains(object):
                 rf.append(np.mean(f, 0))
             if method == "weighted mean":
                 lvk = self.domain.local_volume[self.label == k]
-                tmp = np.dot(lvk, f) / np.maximum(eps, np.sum(lvk))
+                tmp = np.dot(lvk, f.reshape((-1, 1))) / \
+                    np.maximum(eps, np.sum(lvk))
                 rf.append(tmp)
             if method == "min":
                 rf.append(np.min(f, 0))
@@ -287,12 +299,12 @@ class SubDomains(object):
         return np.array(rf)
 
     def remove_feature(self, fid):
-        """ Remove a certain feature
+        """Remove a certain feature
         """
         return self.features.pop(fid)
 
     def argmax_feature(self, fid):
-        """ Return the list  of roi-level argmax of feature called fid
+        """Return the list  of roi-level argmax of feature called fid
         """
         af = [np.argmax(self.feature[fid][k]) for k in range(self.k)]
         return np.array(af)
@@ -309,6 +321,7 @@ class SubDomains(object):
         -------
         lsum = array of shape (self.k, self.feature[fid].shape[1]),
                the results
+
         """
         if fid == None:
             vol = [np.sum(self.domain.local_volume[self.label == k])
@@ -330,7 +343,7 @@ class SubDomains(object):
         pass
 
     def plot_feature(self, fid, ax=None):
-        """ boxplot the distribution of features within ROIs
+        """Boxplot the distribution of features within ROIs
         Note that this assumes 1-d features
 
         Parameters
@@ -338,6 +351,7 @@ class SubDomains(object):
         fid: string
              the feature identifier
         ax: axis handle, optional
+
         """
         f = self.get_feature(fid)
         if ax is None:
@@ -351,7 +365,7 @@ class SubDomains(object):
         return ax
 
     def set_roi_feature(self, fid, data):
-        """ Set feature defined by `fid` and `data` into ``self``
+        """Set feature defined by `fid` and `data` into ``self``
 
         Parameters
         ----------
@@ -359,6 +373,7 @@ class SubDomains(object):
             feature identifier
         data: array
             shape(self.k, p), with p>0
+
         """
         if data.shape[0] != self.k:
             print data.shape[0], self.k, fid
@@ -372,8 +387,8 @@ class SubDomains(object):
         """
         return self.roi_features[fid]
 
-    def to_image(self, path=None, descrip=None, write_type=np.int16, data=None):
-        """ Generates and possibly writes a label image that represents self.
+    def to_image(self, path=None, descrip=None, data=None):
+        """Generates and possibly writes a label image that represents self.
 
         Parameters
         ----------
@@ -381,28 +396,26 @@ class SubDomains(object):
               output image path
         descrip: string, optional
                  descritpion associated with the output image
-        write_type: string, optional
-                    type of the written data
         data: array os shape (self.k), optional,
               information to write into the image
 
         Note
         ----
         requires that self.dom is an ddom.NDGridDomain
+
         """
         if not isinstance(self.domain, ddom.NDGridDomain):
             print 'self.domain is not an NDGridDomain; nothing was written.'
             return None
 
         tmp_image = self.domain.to_image()
-        label = tmp_image.get_data().copy().astype(write_type)-1
+        mask = tmp_image.get_data().copy().astype(bool)
         if data is None:
-            label[label > - 1] = self.label
-            wdata = label
+            wdata = np.zeros(mask.shape, self.label.dtype)
+            wdata[mask] = self.label
         else:
-            wdata = np.zeros(label.shape, data.dtype)
-            wdata[label > -1] = data[self.label]
-
+            wdata = np.zeros(mask.shape, data.dtype)
+            wdata[mask] = data
         nim = Nifti1Image(wdata, tmp_image.get_affine())
         if descrip is None:
             descrip = 'label image of %s' % self.id
@@ -429,6 +442,7 @@ def subdomain_from_array(labels, affine=None, nn=0):
     Note
     ----
     Only nonzero labels are considered
+
     """
     dom = ddom.grid_domain_from_array(np.ones(labels.shape), affine=affine,
                                       nn=nn)
@@ -453,6 +467,7 @@ def subdomain_from_image(mim, nn=18):
     Note
     ----
     Only nonzero labels are considered
+
     """
     if isinstance(mim, basestring):
         iim = load(mim)
@@ -463,8 +478,7 @@ def subdomain_from_image(mim, nn=18):
 
 
 def subdomain_from_position_and_image(nim, pos):
-    """
-    keeps the set of labels of the image corresponding to a certain index
+    """Keep the set of labels of the image corresponding to a certain index
     so that their position is closest to the prescribed one
 
     Parameters
@@ -473,6 +487,7 @@ def subdomain_from_position_and_image(nim, pos):
          supposedly a label image
     pos: array of shape(3) or list of length 3,
          the prescribed position
+
     """
     tmp = subdomain_from_image(nim)
     coord = np.array([tmp.domain.coord[tmp.label == k].mean(0)
@@ -482,7 +497,7 @@ def subdomain_from_position_and_image(nim, pos):
 
 
 def subdomain_from_balls(domain, positions, radii):
-    """ Create discrete ROIs as a set of balls
+    """Create discrete ROIs as a set of balls
     within a certain coordinate systems
 
     Parameters
@@ -493,6 +508,7 @@ def subdomain_from_balls(domain, positions, radii):
         the positions of the balls
     radii: array of shape(k):
         the sphere radii
+
     """
     # checks
     if np.size(positions) == positions.shape[0]:

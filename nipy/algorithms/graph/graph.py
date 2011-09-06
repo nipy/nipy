@@ -844,16 +844,16 @@ x
         self.weights = w
 
     def symmeterize(self):
-        """ symmeterize self , modify edges and weights
-        so that self.adjacency  becomes the symmetric part of
-        the current self.adjacency
+        """Symmeterize self, modify edges and weights so that
+        self.adjacency becomes the symmetric part of the current
+        self.adjacency.
         """
         A = self.to_coo_matrix()
         symg = wgraph_from_adjacency((A + A.T) / 2)
         self.E = symg.E
         self.edges = symg.edges
         self.weights = symg.weights
-        return self.E
+        return self
 
     def anti_symmeterize(self):
         """anti-symmeterize self, i.e. produces the graph
