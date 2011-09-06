@@ -352,13 +352,33 @@ class Image(object):
     def __getitem__(self, slice_object):
         """ Slicing an image returns an Image.
 
-        Just calls the function subsample.
+        Parameters
+        ----------
+        slice_object: int, slice or sequence of slice
+            An object representing a numpy 'slice'.
+
+        Returns
+        -------
+        img_subsampled: Image
+            An Image with data self.get_data()[slice_object] and an
+            appropriately corrected CoordinateMap.
+
+        Examples
+        --------
+        >>> from nipy.io.api import load_image
+        >>> from nipy.testing import funcfile
+        >>> im = load_image(funcfile)
+        >>> frame3 = im[:,:,:,3]
+        >>> np.allclose(frame3.get_data(), im.get_data()[:,:,:,3])
+        True
         """
-        warnings.warn('slicing Images is deprecated, '
-                      'use subsample instead',
-                      DeprecationWarning,
-                      stacklevel=2)
-        return subsample(self, slice_object)
+        data = self.get_data()[slice_object]
+        g = ArrayCoordMap(self.coordmap, self.shape)[slice_object]
+        coordmap = g.coordmap
+        if coordmap.function_domain.ndim > 0:
+            return self.__class__(data, coordmap, metadata=self.metadata)
+        else:
+            return data
 
     def __iter__(self):
         """ Images do not have default iteration
@@ -408,14 +428,23 @@ slice_maker = SliceMaker()
 
 
 def subsample(img, slice_object):
-    """ Subsample an image. 
+    """ Subsample an image
+
+    Please don't use this function, but use direct image slicing instead.  That
+    is, replace::
+
+        frame3 = subsample(im, slice_maker[:,:,:,3])
+
+    with::
+
+        frame3 = im[:,:,:,3]
 
     Parameters
     ----------
     img : Image
     slice_object: int, slice or sequence of slice
        An object representing a numpy 'slice'.
-    
+
     Returns
     -------
     img_subsampled: Image
@@ -429,16 +458,14 @@ def subsample(img, slice_object):
     >>> from nipy.core.api import subsample, slice_maker
     >>> im = load_image(funcfile)
     >>> frame3 = subsample(im, slice_maker[:,:,:,3])
-    >>> from nipy.testing import funcfile, assert_almost_equal
-    >>> assert_almost_equal(frame3.get_data(), im.get_data()[:,:,:,3])
+    >>> np.allclose(frame3.get_data(), im.get_data()[:,:,:,3])
+    True
     """
-    data = img.get_data()[slice_object]
-    g = ArrayCoordMap(img.coordmap, img.shape)[slice_object]
-    coordmap = g.coordmap
-    if coordmap.function_domain.ndim > 0:
-        return img.__class__(data, coordmap, metadata=img.metadata)
-    else:
-        return data
+    warnings.warn('subsample is deprecated, please use image '
+                  'slicing instead (e.g. img[:,:,1]',
+                  DeprecationWarning,
+                  stacklevel=2)
+    return img.__getitem__(slice_object)
 
 
 def fromarray(data, innames, outnames, coordmap=None):
