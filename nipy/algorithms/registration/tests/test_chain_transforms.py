@@ -25,7 +25,8 @@ import numpy as np
 import numpy.linalg as npl
 
 from ..chain_transform import ChainTransform
-from ..affine import Affine, apply_affine
+from ...utils.affines import apply_affine
+from ..affine import Affine
 
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal)

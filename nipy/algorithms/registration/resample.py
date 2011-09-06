@@ -1,7 +1,8 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
-from .affine import Affine, apply_affine
+from ..utils.affines import apply_affine
+from .affine import Affine
 from .grid_transform import GridTransform
 from ._cubic_spline import cspline_transform, cspline_sample3d, cspline_resample3d
 

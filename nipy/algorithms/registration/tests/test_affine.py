@@ -4,7 +4,7 @@ import numpy as np
 
 from ..affine import (Affine, Affine2D, Rigid, Rigid2D,
                       Similarity, Similarity2D,
-                      rotation_mat2vec, apply_affine)
+                      rotation_mat2vec)
 
 from nose.tools import assert_true, assert_false
 from numpy.testing import assert_array_equal, assert_array_almost_equal
@@ -54,35 +54,6 @@ def test_rotation_mat2vec():
     assert_false(np.isnan(r).max())
 
 
-def validated_apply_affine(T, xyz):
-    # This was the original apply_affine implementation that we've stashed here
-    # to test against
-    xyz = np.asarray(xyz)
-    shape = xyz.shape[0:-1]
-    XYZ = np.dot(np.reshape(xyz, (np.prod(shape), 3)), T[0:3,0:3].T)
-    XYZ[:,0] += T[0,3]
-    XYZ[:,1] += T[1,3]
-    XYZ[:,2] += T[2,3]
-    XYZ = np.reshape(XYZ, shape+(3,))
-    return XYZ
-
-
-def test_apply_affine():
-    aff = np.diag([2, 3, 4, 1])
-    pts = np.random.uniform(size=(4,3))
-    assert_array_equal(apply_affine(aff, pts),
-                       pts * [[2, 3, 4]])
-    aff[:3,3] = [10, 11, 12]
-    assert_array_equal(apply_affine(aff, pts),
-                       pts * [[2, 3, 4]] + [[10, 11, 12]])
-    aff[:3,:] = np.random.normal(size=(3,4))
-    exp_res = np.concatenate((pts.T, np.ones((1,4))), axis=0)
-    exp_res = np.dot(aff, exp_res)[:3,:].T
-    assert_array_equal(apply_affine(aff, pts), exp_res)
-    # Check we get the same result as the previous implementation
-    assert_almost_equal(validated_apply_affine(aff, pts), apply_affine(aff, pts))
-
-
 def test_composed_affines():
     aff1 = np.diag([2, 3, 4, 1])
     aff2 = np.eye(4)
@@ -100,6 +71,7 @@ def test_composed_affines():
     comped_remixed = np.dot(aff2_remixed, aff1_remixed)
     assert_array_almost_equal(comped_remixed,
                               Affine(comped_remixed).as_affine())
+
 
 def test_affine_types():
     pts = np.random.normal(size=(10,3))
