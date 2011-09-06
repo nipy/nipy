@@ -579,8 +579,7 @@ class XYZImage(Image):
             # do nothing
             return im
          else:
-            from nipy.core.image.image import subsample
-            im = subsample(im.to_image(), tuple(slice_list))
+            im = im.to_image()[tuple(slice_list)]
             return XYZImage.from_image(im)
 
     #---------------------------------------------------------------------------
