@@ -257,7 +257,7 @@ def _optim_hparcel(feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
     spatial_proto.voronoi_diagram(proto_anat, domain.coord)
     spatial_proto.set_gaussian(proto_anat)
     spatial_proto.normalize()
-    
+
     for git in range(niter):
         LP = []
         LPA = []
@@ -311,16 +311,16 @@ def _optim_hparcel(feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
             g = graphs[s]
             f = Field(g.V, g.edges, g.weights, Fs)
             U.append(f.constrained_voronoi(lseeds))
-            
+
             Energy += np.sum((Fs - proto[U[-1]]) ** 2) / \
                 np.sum(initial_mask[:, s] > - 1)
             # recompute the prototypes
             # (average in subject s)
             lproto = [np.mean(Fs[U[-1] == k], 0) for k in range(nb_parcel)]
             lproto = np.array(lproto)
-            lproto_anat = np.array([np.mean(lac[U[ - 1] == k], 0)
+            lproto_anat = np.array([np.mean(lac[U[-1] == k], 0)
                                     for k in range(nb_parcel)])
-                        
+
             LP.append(lproto)
             LPA.append(lproto_anat)
 
@@ -337,7 +337,7 @@ def _optim_hparcel(feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
         spatial_proto.voronoi_diagram(proto_anat, domain.coord)
         spatial_proto.set_gaussian(proto_anat)
         spatial_proto.normalize()
-        
+
         if displ < 1.e-4 * dmax:
             break
     return U, proto_anat
@@ -405,18 +405,18 @@ def hparcel(domain, ldata, nb_parcel, nb_perm=0, niter=5, mu=10., dmax=10.,
     all_labels, proto_anat = _optim_hparcel(
         feature, domain, graphs, nb_parcel, lamb, dmax, niter, initial_mask,
         chunksize=chunksize, verbose=verbose)
-    
+
     # write the individual labelling
     labels = - np.ones((nbvox, nb_subj)).astype(np.int)
     for s in range(nb_subj):
         labels[initial_mask[:, s] > -1, s] = all_labels[s]
-    
+
     # compute the group-level labels
     template_labels = voronoi(domain.coord, proto_anat)
-    
+
     # create the parcellation
     pcl = MultiSubjectParcellation(domain, individual_labels=labels,
-                                  template_labels=template_labels, 
+                                   template_labels=template_labels,
                                    nb_parcel=nb_parcel)
     pcl.make_feature('functional', np.rollaxis(np.array(ldata), 1, 0))
 
@@ -445,7 +445,7 @@ def perm_prfx(domain, graphs, features, nb_parcel, ldata, initial_mask=None,
         for s in range(nb_subj):
             lf = features[s].copy()
             swap = (rand() > 0.5) * 2 - 1
-            lf[ :, : - adim] = swap * lf[ :, : - adim]
+            lf[:, 0:-adim] = swap * lf[:, 0:-adim]
             sldata.append(swap * ldata[s])
             feature.append(lf)
 

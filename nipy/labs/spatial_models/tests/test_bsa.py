@@ -13,13 +13,12 @@ from nose.tools import assert_true
 
 from nipy.testing import dec
 
-from nipy.algorithms.graph.field import Field 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
 from ..bayesian_structural_analysis import compute_BSA_simple
 from ..discrete_domain import domain_from_array
 
 
-def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
+def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
                         nbeta=[0], method='simple'):
     """
     Function for performing bayesian structural analysis on a set of images.
@@ -30,7 +29,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     nbsubj = betas.shape[0]
     xyz = np.array(np.where(betas[:1])).T
     nvox = np.size(xyz, 0)
-    
+
     # get the functional information
     lbeta = np.array([np.ravel(betas[k]) for k in range(nbsubj)]).T
 
@@ -42,11 +41,11 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     if method == 'simple':
         group_map, AF, BF, likelihood = \
                    compute_BSA_simple(dom, lbeta, dmax, thq, smin, ths,
-                                      theta, g0, bdensity)    
+                                      theta, g0, bdensity)
     return AF, BF
 
 
-@dec.slow    
+@dec.slow
 def test_bsa_methods():
     # generate the data
     nbsubj = 5
@@ -59,7 +58,7 @@ def test_bsa_methods():
     null_ampli = np.array([0, 0, 0])
     null_dataset = surrogate_2d_dataset(nbsubj=nbsubj,
                                         dimx=dimx,
-                                        dimy=dimy, 
+                                        dimy=dimy,
                                         pos=pos,
                                         ampli=null_ampli,
                                         width=5.0,
@@ -69,7 +68,7 @@ def test_bsa_methods():
     pos_ampli = np.array([5, 7, 6])
     pos_dataset = surrogate_2d_dataset(nbsubj=nbsubj,
                                        dimx=dimx,
-                                       dimy=dimy, 
+                                       dimy=dimy,
                                        pos=pos,
                                        ampli=pos_ampli,
                                        width=5.0,
@@ -86,13 +85,13 @@ def test_bsa_methods():
     # (name_of_method, ths_value, data_set, test_function)
     algs_tests = (
         ('simple', half_subjs, null_betas, lambda AF, BF: AF.k == 0),
-        ('simple', 1, pos_betas, lambda AF, BF: AF.k>1))
-    
+        ('simple', 1, pos_betas, lambda AF, BF: AF.k > 1))
+
     for name, ths, betas, test_func in algs_tests:
         # run the algo
-        AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method = name)
+        AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method=name)
         yield assert_true, test_func(AF, BF)
-    
+
 
 if __name__ == '__main__':
     import nose

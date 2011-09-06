@@ -10,7 +10,7 @@ import os.path as op
 from nibabel import load, save, Nifti1Image
 
 from ..mask import intersect_masks
-from .bayesian_structural_analysis import (compute_BSA_simple, 
+from .bayesian_structural_analysis import (compute_BSA_simple,
                                            compute_BSA_quick, compute_BSA_loo)
 from .discrete_domain import domain_from_image
 
