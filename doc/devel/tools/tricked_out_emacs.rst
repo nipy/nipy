@@ -18,7 +18,7 @@ version of the rst.el_ file from the docutils_ site.
 
 .. _rst.el: http://docutils.sourceforge.net/tools/editors/emacs/rst.el
 
-``rst`` mode automates many important ReST tasks like building and updateing
+``rst`` mode automates many important ReST tasks like building and updating
 table-of-contents, and promoting or demoting section headings.  Here
 is the basic ``.emacs`` configuration::
 
@@ -46,15 +46,18 @@ Some helpful functions::
 
         Shift region to the right
 
-On - for example - Ubuntu, the default ``M-x rst-compile`` command
-uses ``rst2html.py`` whereas the command installed is ``rst2html``.
-Time for a symlink.
+.. note::
+
+   On older Debian-based releases, the default ``M-x rst-compile`` command
+   uses ``rst2html.py`` whereas the command installed is ``rst2html``.
+   Symlink was required as a quick fix.
+
 
 doctest mode
 -------------
 
-This useful mode for writing doctests (``doctest-mode.el``) came with
-my ``python-mode`` package in Ubuntu.  Or see doctest-mode_ project page.
+This useful mode for writing doctests (``doctest-mode.el``) cames with
+``python-mode`` package on Debian-based systems.  Otherwise see doctest-mode_ project page.
 
 code checkers
 -------------
@@ -63,7 +66,7 @@ Code checkers within emacs can be useful to check code for errors,
 unused variables, imports and so on.  Alternatives are pychecker_,
 pylint_ and pyflakes_. Note that rope_ (below) also does some code
 checking.  pylint_ and pyflakes_ work best with emacs flymake_,
-which usually comes with emacs. 
+which usually comes with emacs.
 
 pychecker_
 ``````````
@@ -71,12 +74,12 @@ pychecker_
 This appears to be plumbed in with ``python-mode``, just do ``M-x
 py-pychecker-run``.  If you try this, and pychecker_ is not installed,
 you will get an error.  You can install it using your package manager
-(``pychecker`` in Ubuntu) or from the pychecker_ webpage.
+(``pychecker`` on Debian-based systems) or from the pychecker_ webpage.
 
 pylint_
 ```````
 
-Install pylint_.  Ubuntu packages pylint_ as ``pylint``. Put the
+Install pylint_.  Debian packages pylint_ as ``pylint``. Put the
 `flymake .emacs snippet`_ in your ``.emacs`` file.  You will see, in the
 emacs_python_mode_ page, that you will need to save this::
 
@@ -111,7 +114,7 @@ emacs_python_mode_ page, that you will need to save this::
     p.close()
 
 as ``epylint`` somewhere on your system path, and test that ``epylint
-somepyfile.py`` works.  
+somepyfile.py`` works.
 
 pyflakes
 ````````
@@ -128,15 +131,15 @@ Add this to your .emacs file::
   ;; set code checker here from "epylint", "pyflakes"
   (setq pycodechecker "pyflakes")
   (when (load "flymake" t)
-    (defun flymake-pycodecheck-init () 
-      (let* ((temp-file (flymake-init-create-temp-buffer-copy 
-			 'flymake-create-temp-inplace)) 
-	     (local-file (file-relative-name 
-			  temp-file 
-			  (file-name-directory buffer-file-name)))) 
-	(list pycodechecker (list local-file)))) 
-    (add-to-list 'flymake-allowed-file-name-masks 
-		 '("\\.py\\'" flymake-pycodecheck-init))) 
+    (defun flymake-pycodecheck-init ()
+      (let* ((temp-file (flymake-init-create-temp-buffer-copy
+			 'flymake-create-temp-inplace))
+	     (local-file (file-relative-name
+			  temp-file
+			  (file-name-directory buffer-file-name))))
+	(list pycodechecker (list local-file))))
+    (add-to-list 'flymake-allowed-file-name-masks
+		 '("\\.py\\'" flymake-pycodecheck-init)))
 
 and set which of pylint_ ("epylint") or pyflakes_ ("pyflakes") you
 want to use.
@@ -150,7 +153,7 @@ ropemacs_
 rope_  is a python refactoring library, and ropemacs_ is an emacs
 interface to it, that uses pymacs_.  pymacs_ is an interface between
 emacs lisp and python that allows emacs to call into python and python
-to call back into emacs.  
+to call back into emacs.
 
 Install
 ````````
