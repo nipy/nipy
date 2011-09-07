@@ -73,9 +73,9 @@ class Image4d(object):
 
     Parameters
     ----------
-    array : nd array or proxy (function that actually gets the array)
+    data : nd array or proxy (function that actually gets the array)
     """
-    def __init__(self, array, affine, tr, tr_slices=None, start=0.0,
+    def __init__(self, data, affine, tr, tr_slices=None, start=0.0,
                  slice_order=SLICE_ORDER, interleaved=INTERLEAVED,
                  slice_axis=SLICE_AXIS):
         """
@@ -97,27 +97,29 @@ class Image4d(object):
         self._tr_slices = tr_slices
         self._slice_order = slice_order
 
-        if isinstance(array, np.ndarray):
-            self._array = array
-            self._get_array = None
+        if isinstance(data, np.ndarray):
+            self._data = data
+            self._get_data = None
             self._init_timing_parameters()
         else:
-            self._array = None
-            self._get_array = array
+            self._data = None
+            self._get_data = data
 
-    def get_array(self):
-        if self._array == None:
-            self._array = self._get_array()
+    def get_data(self):
+        if self._data == None:
+            self._data = self._get_data()
             self._init_timing_parameters()
-        return self._array
+        return self._data
 
     def _init_timing_parameters(self):
         # Number of slices
-        nslices = self.get_array().shape[self.slice_axis]
+        nslices = self.get_data().shape[self.slice_axis]
         self.nslices = nslices
         # Default slice repetition time (no silence)
         if self._tr_slices == None:
             self.tr_slices = self.tr / float(nslices)
+        else:
+            self.tr_slices = float(self._tr_slices)
         # Set slice order
         if isinstance(self._slice_order, str):
             if not self.interleaved:
@@ -159,9 +161,9 @@ class Image4d(object):
                                                    self.slice_order)
         return (t - self.start - corr) / self.tr
 
-    def free_array(self):
-        if not self._get_array == None:
-            self._array = None
+    def free_data(self):
+        if not self._get_data == None:
+            self._data = None
         gc.enable()
         gc.collect()
 
@@ -184,7 +186,7 @@ class Realign4dAlgorithm(object):
                  maxiter=MAXITER,
                  maxfun=MAXFUN,
                  refscan=REFSCAN):
-        self.dims = im4d.get_array().shape
+        self.dims = im4d.get_data().shape
         self.nscans = self.dims[3]
         self.xyz = make_grid(self.dims[0:3], subsampling, borders)
         masksize = self.xyz.shape[0]
@@ -203,12 +205,12 @@ class Realign4dAlgorithm(object):
         # Compute the 4d cubic spline transform
         self.time_interp = time_interp
         if time_interp:
-            self.cbspline = _cspline_transform(im4d.get_array())
+            self.cbspline = _cspline_transform(im4d.get_data())
         else:
             self.cbspline = np.zeros(self.dims, dtype='double')
             for t in range(self.dims[3]):
                 self.cbspline[:, :, :, t] =\
-                    _cspline_transform(im4d.get_array()[:, :, :, t])
+                    _cspline_transform(im4d.get_data()[:, :, :, t])
 
         # The reference scan conventionally defines the head
         # coordinate system
@@ -448,7 +450,7 @@ def resample4d(im4d, transforms, time_interp=True):
     r = Realign4dAlgorithm(im4d, transforms=transforms,
                            time_interp=time_interp)
     res = r.resample_full_data()
-    im4d.free_array()
+    im4d.free_data()
     return res
 
 
@@ -510,7 +512,7 @@ def single_run_realign4d(im4d,
                      stepsize, maxiter, maxfun)
     for loops_, speedup_, optimizer_, xtol_, ftol_, gtol_,\
             stepsize_, maxiter_, maxfun_ in opt_params:
-        subsampling = adjust_subsampling(speedup_, im4d.get_array().shape[0:3])
+        subsampling = adjust_subsampling(speedup_, im4d.get_data().shape[0:3])
         r = Realign4dAlgorithm(im4d,
                                transforms=transforms,
                                affine_class=affine_class,
@@ -529,7 +531,7 @@ def single_run_realign4d(im4d,
             r.estimate_motion()
         r.align_to_refscan()
         transforms = r.transforms
-        im4d.free_array()
+        im4d.free_data()
 
     return transforms
 
@@ -596,7 +598,7 @@ def realign4d(runs,
     # corrected run, and creating a fake time series with no temporal
     # smoothness
     ## FIXME: check that all runs have the same to-world transform
-    mean_img_shape = list(runs[0].get_array().shape[0:3]) + [nruns]
+    mean_img_shape = list(runs[0].get_data().shape[0:3]) + [nruns]
     mean_img_data = np.zeros(mean_img_shape)
     for i in range(nruns):
         corr_run = resample4d(runs[i], transforms=transforms[i],
