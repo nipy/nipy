@@ -2,15 +2,30 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module defines the two default GLM passes of fmristat
+
+The results of both passes of the GLM get pushed around by generators, which
+know how to get out the (probably 3D) data for each slice, or parcel (for the
+AR) case, estimate in 2D, then store the data back again in its original shape.
+
+The containers here, in the execute methods, know how to reshape the data on the
+way into the estimation (to 2D), then back again, to 3D, or 4D.
+
+It's relatively easy to do this when just iterating over simple slices, but it
+gets a bit more complicated when taking arbitrary shaped samples from the image,
+as we do for estimating the AR coefficients, where we take all the voxels with
+similar AR coefficients at once.
 """
+
+import copy
 
 import os.path as path
 
 import numpy as np
-from scipy.linalg import toeplitz
+import scipy.linalg as spl
 
-from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
-from nipy.algorithms.utils.matrices import pos_recipr
+from nipy.fixes.scipy.stats.models.regression import (OLSModel, ARModel,
+                                                      ar_bias_corrector,
+                                                      ar_bias_correct)
 
 # nipy core imports
 from nipy.core.api import Image, parcels, matrix_generator, AffineTransform
@@ -19,7 +34,8 @@ from nipy.core.api import Image, parcels, matrix_generator, AffineTransform
 from nipy.io.api import save_image
 
 # fmri imports
-from nipy.modalities.fmri.api import FmriImageList, fmri_generator
+from ..api import FmriImageList, fmri_generator
+from ..formula import make_recarray
 
 import nipy.algorithms.statistics.regression as regression
 
@@ -38,7 +54,9 @@ class ModelOutputImage(object):
 
     def __init__(self, filename, coordmap, shape, clobber=False):
         self.filename = filename
-        self._im = Image(np.zeros(shape), coordmap)
+        self._im_data = np.zeros(shape)
+        self._im = Image(self._im_data, coordmap)
+        # Using a dangerous undocumented API here
         self.clobber = clobber
         self._flushed = False
 
@@ -53,30 +71,35 @@ class ModelOutputImage(object):
         del(self._im)
 
     def __getitem__(self, item):
-        if not self._flushed:
-            return self._im[item]
-        else:
+        if self._flushed:
             raise ValueError('trying to read value from a '
                              'saved ModelOutputImage')
+        return self._im_data[item]
 
     def __setitem__(self, item, value):
-        if not self._flushed:
-            self._im[item] = value
-        else:
+        if self._flushed:
             raise ValueError('trying to set value on saved'
                              'ModelOutputImage')
-        
+        self._im_data[item] = value
 
-def model_generator(formula, data, volume_start_times, iterable=None, 
-                    slicetimes=None, model_type=OLSModel, 
+
+def model_generator(formula, data, volume_start_times, iterable=None,
+                    slicetimes=None, model_type=OLSModel,
                     model_params = lambda x: ()):
     """
     Generator for the models for a pass of fmristat analysis.
     """
-    for i, d in matrix_generator(fmri_generator(data, iterable=iterable)):
-        model_args = model_params(i) # model may depend on i
-        rmodel = model_type(formula.design(volume_start_times), *model_args)
-        yield i, d, rmodel
+    volume_start_times = make_recarray(volume_start_times.astype(float), 't')
+    # Generator for slices of the data with time as first axis
+    axis0_gen = fmri_generator(data, iterable=iterable)
+    # Iterate over 2D slices of the data
+    for indexer, indexed_data in matrix_generator(axis0_gen):
+        model_args = model_params(indexer) # model may depend on i
+        # Get the design for these volume start times
+        design = formula.design(volume_start_times, return_float=True)
+        # Make the model from the design
+        rmodel = model_type(design, *model_args)
+        yield indexer, indexed_data, rmodel
 
 
 def results_generator(model_iterable):
@@ -102,7 +125,7 @@ class OLS(object):
        object[0] returns an object with attribute ``shape``.
     formula :  :class:`nipy.modalities.fmri.formula.Formula`
     outputs :
-    volume_start_times : 
+    volume_start_times :
     """
 
     def __init__(self, fmri_image, formula, outputs=[], 
@@ -115,7 +138,7 @@ class OLS(object):
             self.volume_start_times = self.fmri_image.volume_start_times
         else:
             self.volume_start_times = volume_start_times
-            
+
     def execute(self):
         m = model_generator(self.formula, self.data,
                             self.volume_start_times,
@@ -125,7 +148,7 @@ class OLS(object):
         def reshape(i, x):
             if len(x.shape) == 2:
                 if type(i) is type(1):
-                    x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]                        
+                    x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]
                 if type(i) not in [type([]), type(())]:
                     i = (i,)
                 else:
@@ -145,40 +168,17 @@ def estimateAR(resid, design, order=1):
 
     Parameters
     ----------
-    resid:  residual image
+    resid:  array-like
+        residuals from model
     model:  an OLS model used to estimate residuals
 
     Returns
     -------
-    output : 
+    output : array
+        shape (order, resid
     """
-    p = order
-
-    R = np.identity(design.shape[0]) - np.dot(design, np.linalg.pinv(design))
-    M = np.zeros((p+1,)*2)
-    I = np.identity(R.shape[0])
-
-    for i in range(p+1):
-        Di = np.dot(R, toeplitz(I[i]))
-        for j in range(p+1):
-            Dj = np.dot(R, toeplitz(I[j]))
-            M[i,j] = np.diagonal((np.dot(Di, Dj))/(1.+(i>0))).sum()
-                    
-    invM = np.linalg.inv(M)
-
-    rresid = np.asarray(resid).reshape(resid.shape[0], 
-                                       np.product(resid.shape[1:]))
-    sum_sq = np.sum(rresid**2, axis=0)
-
-    cov = np.zeros((p + 1,) + sum_sq.shape)
-    cov[0] = sum_sq
-    for i in range(1, p+1):
-        cov[i] = np.add.reduce(rresid[i:] * rresid[0:-i], 0)
-    cov = np.dot(invM, cov)
-    output = cov[1:] * pos_recipr(cov[0])
-    output = np.squeeze(output)
-    output.shape = resid.shape[1:]
-    return output
+    invM = ar_bias_corrector(design, spl.pinv(design), order)
+    return ar_bias_correct(resid, order, invM)
 
 
 class AR1(object):
@@ -206,7 +206,7 @@ class AR1(object):
         self.formula = formula
         self.outputs = outputs
         # Cleanup rho values, truncate them to a scale of 0.01
-        g = rho.coordmap.copy()
+        g = copy.copy(rho.coordmap)
         rho = np.asarray(rho)
         m = np.isnan(rho)
         r = (np.clip(rho,-1,1) * 100).astype(np.int) / 100.
@@ -222,11 +222,13 @@ class AR1(object):
         iterable = parcels(self.rho, exclude=[np.inf])
         def model_params(i):
             return (np.asarray(self.rho)[i].mean(),)
+        # Generates indexer, data, model
         m = model_generator(self.formula, self.data,
                             self.volume_start_times,
                             iterable=iterable,
                             model_type=ARModel,
                             model_params=model_params)
+        # Generates indexer, data, 2D results
         r = results_generator(m)
 
         def reshape(i, x):
@@ -239,26 +241,30 @@ class AR1(object):
               i) 'slices through the z-axis'
               ii) 'parcels of approximately constant AR1 coefficient'
             """
-    
-            if len(x.shape) == 2:
-                if type(i) is type(1):
+            if len(x.shape) == 2: # 2D imput matrix
+                if type(i) is type(1): # integer indexing
+                    # reshape to ND (where N is probably 4)
                     x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]
+                # Convert lists to tuples, put anything else into a tuple
                 if type(i) not in [type([]), type(())]:
                     i = (i,)
                 else:
                     i = tuple(i)
+                # Add : to indexing
                 i = (slice(None,None,None),) + tuple(i)
-            else:
-                if type(i) is type(1):
+            else: # not 2D
+                if type(i) is type(1): # integer indexing
                     x.shape = self.fmri_image[0].shape[1:]
             return i, x
 
+        # Put results pulled from results generator r, into outputs
         o = generate_output(self.outputs, r, reshape=reshape)
 
 
 def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
              clobber=False):
-    """
+    """ Return t contrast regression outputs list for `contrast`
+
     Parameters
     ----------
     outbase : string
@@ -266,32 +272,49 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
         for the TContrast.  For example, outbase='output.nii' will
         result in the following files (assuming defaults for all other
         params): output_effect.nii, output_sd.nii, output_t.nii
-    contrast : a TContrast
-    fmri_image : ``FmriImageList``
+    contrast : array
+        F contrast matrix
+    fmri_image : ``FmriImageList`` or ``Image``
         object such that ``object[0]`` has attributes ``shape`` and
         ``coordmap``
+    effect : {True, False}, optional
+        whether to write an effect image
+    sd : {True, False}, optional
+        whether to write a standard deviation image
+    t : {True, False}, optional
+        whether to write a t image
+    clobber : {False, True}, optional
+        whether to overwrite images that exist.
 
+    Returns
+    -------
+    reglist : ``RegressionOutputList`` instance
+        Regression output list with selected outputs, where selection is by
+        inputs `effect`, `sd` and `t`
+
+    Notes
+    -----
+    Note that this routine uses the corresponding ``output_T`` routine in
+    statistics.regression, but indirectly via the TOutput object.
     """
     def build_filename(label):
         index = outbase.find('.')
         return ''.join([outbase[:index], '_', label, outbase[index:]])
     if effect:
         effectim = ModelOutputImage(build_filename('effect'),
-                                    fmri_image[0].coordmap, 
+                                    fmri_image[0].coordmap,
                                     fmri_image[0].shape, clobber=clobber)
     else:
         effectim = None
-
     if sd:
         sdim = ModelOutputImage(build_filename('sd'),
-                                fmri_image[0].coordmap, fmri_image[0].shape, 
+                                fmri_image[0].coordmap, fmri_image[0].shape,
                                 clobber=clobber)
     else:
         sdim = None
-
     if t:
         tim = ModelOutputImage(build_filename('t'),
-                               fmri_image[0].coordmap,fmri_image[0].shape, 
+                               fmri_image[0].coordmap,fmri_image[0].shape,
                                clobber=clobber)
     else:
         tim = None
@@ -299,24 +322,33 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
 
 
 def output_F(outfile, contrast, fmri_image, clobber=False):
-    ''' output F
+    ''' output F statistic images
 
     Parameters
     ----------
-    outfile :
-    contrast : 
-    fmri_image : ``FmriImageList``
+    outfile : str
+        filename for F contrast image
+    contrast : array
+        F contrast matrix
+    fmri_image : ``FmriImageList`` or ``Image``
         object such that ``object[0]`` has attributes ``shape`` and
         ``coordmap``
     clobber : bool
         if True, overwrites previous output; if False, raises error
-    '''    
-    f = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape, 
+
+    Returns
+    -------
+    f_reg_out : ``RegressionOutput`` instance
+        Object that can a) be called with a results instance as argument,
+        returning an array, and b) accept the output array for storing, via
+        ``obj[slice_spec] = arr`` type slicing.
+    '''
+    f = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape,
                          clobber=clobber)
-    return regression.RegressionOutput(f, lambda x: 
+    return regression.RegressionOutput(f, lambda x:
                                        regression.output_F(x, contrast))
 
-                             
+
 def output_AR1(outfile, fmri_image, clobber=False):
     """
     Create an output file of the AR1 parameter from the OLS pass of
@@ -329,12 +361,12 @@ def output_AR1(outfile, fmri_image, clobber=False):
        object such that ``object[0]`` has attributes ``coordmap`` and ``shape``
     clobber : bool
        if True, overwrite previous output
-    
+
     Returns
     -------
-    regression_output : 
+    regression_output : ``RegressionOutput`` instance
     """
-    outim = ModelOutputImage(outfile, fmri_image[0].coordmap, 
+    outim = ModelOutputImage(outfile, fmri_image[0].coordmap,
                              fmri_image[0].shape, clobber=clobber)
     return regression.RegressionOutput(outim, regression.output_AR1)
 
@@ -361,19 +393,18 @@ def output_resid(outfile, fmri_image, clobber=False):
 
     Returns
     -------
-    regression_output : 
+    regression_output :
     """
-
     if isinstance(fmri_image, FmriImageList):
         n = len(fmri_image.list)
         T = np.zeros((5,5))
         g = fmri_image[0].coordmap
         T[1:,1:] = fmri_image[0].affine
-        T[0,0] = (fmri_image.volume_start_times[1:] - 
+        T[0,0] = (fmri_image.volume_start_times[1:] -
                   fmri_image.volume_start_times[:-1]).mean()
         # FIXME: NIFTI specific naming here
-        innames = ["l"] + list(g.input_coords.coord_names)
-        outnames = ["t"] + list(g.output_coords.coord_names)
+        innames = ["l"] + list(g.function_range.coord_names)
+        outnames = ["t"] + list(g.function_domain.coord_names)
         cmap = AffineTransform.from_params(innames,
                                   outnames, T)
         shape = (n,) + fmri_image[0].shape
@@ -393,21 +424,33 @@ def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
 
     In the regression setting, results is generally going to be a
     scipy.stats.models.model.LikelihoodModelResults instance.
-    
+
+    Parameters
+    ----------
+    outputs : sequence
+        sequence of output objects
+    iterable : object
+        Object which iterates, returning tuples of (indexer, results), where
+        ``indexer`` can be used to index into the `outputs`
+    reshape : callable
+        accepts two arguments, first is the indexer, and the second is the array
+        which will be indexed; returns modified indexer and array ready for
+        slicing with modified indexer.
     """
-    for i, results in iterable:
+    for indexer, results in iterable:
         for output in outputs:
+            # Might be regression output object
             if not hasattr(output, "list"): # lame test here
-                k, d = reshape(i, output(results))
+                k, d = reshape(indexer, output(results))
                 output[k] = d
             else:
+                # or a regression output list (like a TOutput, with several
+                # images to output to)
                 r = output(results)
                 for j, l in enumerate(output.list):
-                    k, d = reshape(i, r[j])
+                    k, d = reshape(indexer, r[j])
                     l[k] = d
-
     # flush outputs, if necessary
-
     for output in outputs:
         if isinstance(output, regression.RegressionOutput):
             if hasattr(output.img, 'save'):
