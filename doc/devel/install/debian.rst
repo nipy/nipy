@@ -1,12 +1,23 @@
 ===================================
- Ubuntu / debian developer install
+ Debian / Ubuntu developer install
 ===================================
 
-See :ref:`installation`
+Dependencies
+------------
 
-This assumes a recent (Ubuntu >= 8.04) version.
+See :ref:`installation` for the installation instructions.  Since NiPy
+is provided within stock distribution (``main`` component of Debian,
+and ``universe`` of Ubuntu), to install all necessary requirements it
+is enough to::
 
-Requirements::
+    sudo apt-get build-dep python-nipy
+
+.. note::
+
+   Above invocation assumes that you have references to ``Source``
+   repository listed with ``deb-src`` prefixes in your apt .list files.
+
+Otherwise, you can revert to manual installation with::
 
    sudo apt-get build-essential
    sudo apt-get install python-dev
@@ -14,7 +25,11 @@ Requirements::
    sudo apt-get install liblapack-dev
    sudo apt-get install python-sympy
 
-Options::
+
+Useful additions
+----------------
+
+Some functionality in NiPy requires additional modules::
 
    sudo apt-get install ipython
    sudo apt-get install python-matplotlib
@@ -24,6 +39,9 @@ For getting the code via version control::
 
    sudo apt-get install git-core
 
-Then follow the instructions at :ref:`trunk_download`
+Then follow the instructions at :ref:`trunk_download`.
 
+And for easier control of multiple Python modules installations
+(e.g. different versions of IPython)::
 
+   sudo apt-get install virtualenvwrapper

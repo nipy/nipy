@@ -52,12 +52,17 @@ Strong Recommendations
   Matplotlib_
     2D python plotting library.
 
+
 Installing from binary packages
 -------------------------------
 
-Currently we do not have binary packages.  Until we do, the easiest
-installation method is to download the source tarball and follow the
-:ref:`building_source` instructions below.
+Currently we have binary packages for snapshot releases only for
+Debian-based systems.  Stock Debian_ and Ubuntu_ installations come
+with some snapshot of NiPy available.  For more up-to-date packages of
+NiPy you can use NeuroDebian_ repository.  For the other OSes and
+Linux distributions, the easiest installation method is to download
+the source tarball and follow the :ref:`building_source` instructions
+below.
 
 .. _building_source:
 
@@ -89,7 +94,7 @@ To install, simply do::
     in your system Python_ *site-packages* directory (which is why you
     need *sudo*).  Many of us prefer to install development packages in a
     local directory so as to leave the system python alone.  This is
-    mearly a preference, nothing will go wrong if you install using the
+    merely a preference, nothing will go wrong if you install using the
     *sudo* method.  To install in a local directory, use the **--prefix**
     option.  For example, if you created a ``local`` directory in your
     home directory, you would install nipy like this::
@@ -102,7 +107,7 @@ Installing useful data files
 -----------------------------
 
 See :ref:`installing-data` for some instructions on installing data
-pacakges.
+packages.
 
 See :ref:`data-files` for details on how to customize the installation
 paths.
