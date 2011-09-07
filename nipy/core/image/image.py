@@ -532,11 +532,31 @@ def rollaxis(img, axis, inverse=False):
     >>> data = np.zeros((30,40,50,5))
     >>> affine_transform = AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
     >>> im = Image(data, affine_transform)
+    >>> im.coordmap
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='', coord_dtype=float64),
+       affine=array([[ 1.,  0.,  0.,  0.,  0.],
+                     [ 0.,  2.,  0.,  0.,  0.],
+                     [ 0.,  0.,  3.,  0.,  0.],
+                     [ 0.,  0.,  0.,  4.,  0.],
+                     [ 0.,  0.,  0.,  0.,  1.]])
+    )
     >>> im_t_first = rollaxis(im, 't')
     >>> np.diag(im_t_first.affine)
     array([ 4.,  1.,  2.,  3.,  1.])
     >>> im_t_first.shape
     (5, 30, 40, 50)
+    >>> im_t_first.coordmap
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('t', 'x', 'y', 'z'), name='', coord_dtype=float64),
+       affine=array([[ 4.,  0.,  0.,  0.,  0.],
+                     [ 0.,  1.,  0.,  0.,  0.],
+                     [ 0.,  0.,  2.,  0.,  0.],
+                     [ 0.,  0.,  0.,  3.,  0.],
+                     [ 0.,  0.,  0.,  0.,  1.]])
+    )
     """
     if axis not in ([-1] +
                     range(img.axes.ndim) +
