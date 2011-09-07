@@ -27,6 +27,12 @@
 .. _LGPL: http://www.gnu.org/copyleft/lesser.html
 .. _MIT License: http://www.opensource.org/licenses/mit-license.php
 
+.. Operating systems and distributions
+
+.. _Debian: http://www.debian.org
+.. _NeuroDebian: http://neuro.debian.net
+.. _Ubuntu: http://www.ubuntu.com
+
 .. Working process
 .. _pynifti: http://niftilib.sourceforge.net/pynifti/
 .. _nifticlibs: http://nifti.nimh.nih.gov
