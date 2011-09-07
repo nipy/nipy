@@ -6,6 +6,7 @@ import numpy as np
 
 from ...core.image.affine_image import AffineImage
 from ..utils.affines import apply_affine
+from .image_utils import get_affine
 from .optimizer import configure_optimizer, use_derivatives
 from .affine import Rigid
 from ._registration import (_cspline_transform,
@@ -625,29 +626,6 @@ def realign4d(runs,
     return ctransforms, transforms, transfo_mean
 
 
-def split_affine(im):
-    """
-    Get the affine transform of a 4D image.
-
-    For now, this involves a hack due to the current inconsistency
-    between Image and AffineImage.
-
-    Parameters
-    ----------
-    im : image
-      Either a nipy image or a nibabel image.
-    """
-    if hasattr(im, 'affine'):
-        a = im.affine
-        sa = np.eye(4)
-        sa[0:3, 0:3] = a[0:3, 0:3]
-        if a.shape[1] > 4:
-            sa[0:3, 3] = a[0:3, 4]
-        return sa, a[3, 3]
-    else:
-        return im.get_affine(), None
-
-
 class Realign4d(object):
 
     def __init__(self, images, affine_class=Rigid):
@@ -662,10 +640,7 @@ class Realign4d(object):
         self._runs = []
         self.affine_class = affine_class
         for im in images:
-            affine, _tr = split_affine(im)
-            if tr == None:
-                tr = _tr
-            self._runs.append(Image4d(im.get_data, affine,
+            self._runs.append(Image4d(im.get_data, get_affine(im),
                                       tr=tr, tr_slices=tr_slices,
                                       start=start, slice_order=slice_order,
                                       interleaved=interleaved))

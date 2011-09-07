@@ -9,6 +9,7 @@ from sys import maxint
 import numpy as np
 
 from ...core.image.affine_image import AffineImage
+from .image_utils import get_affine
 from .optimizer import configure_optimizer
 from .affine import inverse_affine, subgrid_affine, affine_transforms
 from .chain_transform import ChainTransform
@@ -85,7 +86,7 @@ class HistogramRegistration(object):
         if not from_mask == None:
             mask = from_mask.get_data()
         data, from_bins = clamp(from_img.get_data(), bins=from_bins, mask=mask)
-        self._from_img = AffineImage(data, from_img.affine, 'scanner')
+        self._from_img = AffineImage(data, get_affine(from_img), 'scanner')
         # Set the subsampling.  This also sets the _from_data and _vox_coords
         # attributes
         self.subsample()
@@ -97,7 +98,7 @@ class HistogramRegistration(object):
         data, to_bins = clamp(to_img.get_data(), bins=to_bins, mask=mask)
         self._to_data = -np.ones(np.array(to_img.shape) + 2, dtype=CLAMP_DTYPE)
         self._to_data[1:-1, 1:-1, 1:-1] = data
-        self._to_inv_affine = inverse_affine(to_img.affine)
+        self._to_inv_affine = inverse_affine(get_affine(to_img))
 
         # Joint histogram: must be double contiguous as it will be
         # passed to C routines which assume so
@@ -152,7 +153,8 @@ class HistogramRegistration(object):
             fov_data = self._from_img.get_data()[slicer()]
         self._from_data = fov_data
         self._from_npoints = (fov_data >= 0).sum()
-        self._from_affine = subgrid_affine(self._from_img.affine, slicer())
+        self._from_affine = subgrid_affine(get_affine(self._from_img),
+                                           slicer())
         # We cache the voxel coordinates of the clamped image
         self._vox_coords =\
             np.indices(self._from_data.shape).transpose((1, 2, 3, 0))

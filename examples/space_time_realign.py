@@ -48,6 +48,7 @@ R.estimate(refscan=None)
 
 # Save images
 savedir = tempfile.mkdtemp()
+print('Saving results in: %s' % savedir)
 for i in range(len(runs)):
     corr_run = R.resample(i)
     fname = 'ra' + split(runnames[i])[1]

@@ -3,6 +3,7 @@
 
 from scipy.ndimage import affine_transform, map_coordinates
 from ...core.image.affine_image import AffineImage
+from .image_utils import get_affine
 from .affine import inverse_affine, Affine
 from ._registration import (_cspline_transform,
                             _cspline_sample3d,
@@ -57,9 +58,9 @@ def resample(moving, transform, reference=None,
     if hasattr(transform, 'as_affine'):
         Tv = transform.as_affine()
         if not ref_voxel_coords:
-            Tv = np.dot(Tv, reference.affine)
+            Tv = np.dot(Tv, get_affine(reference))
         if not mov_voxel_coords:
-            Tv = np.dot(inverse_affine(moving.affine), Tv)
+            Tv = np.dot(inverse_affine(get_affine(moving)), Tv)
         if interp_order == 3:
             output = _cspline_resample3d(data, reference.shape, Tv, dtype=dtype)
             output = output.astype(dtype)
@@ -73,9 +74,9 @@ def resample(moving, transform, reference=None,
     else:
         Tv = transform
         if not ref_voxel_coords:
-            Tv = Tv.compose(Affine(reference.affine))
+            Tv = Tv.compose(Affine(get_affine(reference)))
         if not mov_voxel_coords:
-            Tv = Affine(inverse_affine(moving.affine)).compose(Tv)
+            Tv = Affine(inverse_affine(get_affine(moving))).compose(Tv)
         coords = np.indices(reference.shape).transpose((1, 2, 3, 0))
         coords = np.reshape(coords, (np.prod(reference.shape), 3))
         coords = Tv.apply(coords).T
@@ -88,4 +89,4 @@ def resample(moving, transform, reference=None,
             output = map_coordinates(data, coords, order=interp_order,
                                      cval=0, output=dtype)
 
-    return AffineImage(output, reference.affine, 'scanner')
+    return AffineImage(output, get_affine(reference), 'scanner')

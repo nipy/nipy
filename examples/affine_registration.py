@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
@@ -17,7 +17,6 @@ from nipy.algorithms.resample import resample as resample2
 from os.path import join
 from optparse import OptionParser
 from tempfile import mkdtemp
-import sys
 import time
 import numpy as np
 
@@ -26,8 +25,10 @@ print('Scanning data directory...')
 # Input images are provided with the nipy-data package
 source = 'ammon'
 target = 'anubis'
-source_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+source+'.nii.gz')
-target_file = example_data.get_filename('neurospin','sulcal2000','nobias_'+target+'.nii.gz')
+source_file = example_data.get_filename('neurospin', 'sulcal2000',
+                                        'nobias_' + source + '.nii.gz')
+target_file = example_data.get_filename('neurospin', 'sulcal2000',
+                                        'nobias_' + target + '.nii.gz')
 
 # Parse arguments
 parser = OptionParser(description=__doc__)
@@ -44,24 +45,24 @@ rand (random). Default is pv.'
 doc_optimizer = 'optimization method: simplex, powell, steepest, cg, bfgs. \
 Default is powell.'
 
-parser.add_option('-s', '--similarity', dest='similarity', 
+parser.add_option('-s', '--similarity', dest='similarity',
                   help=doc_similarity)
-parser.add_option('-i', '--interp', dest='interp', 
+parser.add_option('-i', '--interp', dest='interp',
                   help=doc_interp)
-parser.add_option('-o', '--optimizer', dest='optimizer', 
+parser.add_option('-o', '--optimizer', dest='optimizer',
                   help=doc_optimizer)
 opts, args = parser.parse_args()
 
 
 # Optional arguments
-similarity = 'crl1' 
+similarity = 'crl1'
 interp = 'pv'
 optimizer = 'powell'
-if not opts.similarity == None: 
+if not opts.similarity == None:
     similarity = opts.similarity
-if not opts.interp == None: 
+if not opts.interp == None:
     interp = opts.interp
-if not opts.optimizer == None: 
+if not opts.optimizer == None:
     optimizer = opts.optimizer
 
 # Print messages
@@ -76,14 +77,14 @@ I = load_image(source_file)
 J = load_image(target_file)
 
 # Perform affine registration
-# The output is an array-like object such that 
-# np.asarray(T) is a customary 4x4 matrix 
+# The output is an array-like object such that
+# np.asarray(T) is a customary 4x4 matrix
 print('Setting up registration...')
 tic = time.time()
-R = HistogramRegistration(I, J, similarity=similarity, interp=interp) 
+R = HistogramRegistration(I, J, similarity=similarity, interp=interp)
 T = R.optimize('affine', optimizer=optimizer)
 toc = time.time()
-print('  Registration time: %f sec' % (toc-tic))
+print('  Registration time: %f sec' % (toc - tic))
 
 # Resample source image
 print('Resampling source image...')
@@ -91,13 +92,12 @@ tic = time.time()
 #It = resample2(I, J.coordmap, T.inv(), J.shape)
 It = resample(I, T.inv(), reference=J)
 toc = time.time()
-print('  Resampling time: %f sec' % (toc-tic))
+print('  Resampling time: %f sec' % (toc - tic))
 
 # Save resampled source
-outfile =  join(mkdtemp(), source+'_TO_'+target+'.nii')
+outfile = join(mkdtemp(), source + '_TO_' + target + '.nii')
 print ('Saving resampled source in: %s' % outfile)
 save_image(It, outfile)
 
 # Save transformation matrix
 np.save(outfile, np.asarray(T))
-
