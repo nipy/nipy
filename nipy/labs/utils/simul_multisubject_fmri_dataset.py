@@ -315,6 +315,9 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
     if dmtx is not None:
         n_scans = dmtx.shape[0]
 
+    if hasattr(out_image_file, '__iter__') == False:
+        out_image_file = [out_image_file]
+
     shape_4d = tuple((shape[0], shape[1], shape[2], n_scans))
 
     output_images = []
@@ -348,6 +351,6 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
         wim = Nifti1Image( data, affine)
         output_images.append(wim)
         if out_image_file is not None:
-            save(wim, out_image_file[s])
+            save(wim, out_image_file[ns])
 
     return output_images
