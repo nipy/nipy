@@ -29,23 +29,18 @@ def resample(moving, transform, reference=None,
     ----------
     moving: nipy-like image
       Image to be resampled.
-
     transform: transform object
       Represents a transform that goes from the `reference` image to
       the `moving` image. It should have either an `apply` method, or
       an `as_affine` method.
-
     mov_voxel_coords : boolean
       True if the transform maps to voxel coordinates, False if it
       maps to world coordinates.
-
     ref_voxel_coords : boolean
       True if the transform maps from voxel coordinates, False if it
       maps from world coordinates.
-
     reference: nipy-like image
       Reference image, defaults to input.
-
     interp_order: number
       Spline interpolation order, defaults to 3.
     """
