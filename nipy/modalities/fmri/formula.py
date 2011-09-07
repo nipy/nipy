@@ -760,6 +760,15 @@ class Formula(object):
            Formula) pairs where a contrast matrix is constructed for
            each Formula by evaluating its design at the same parameters
            as self.design. If not None, then the return_float is set to True.
+
+        Returns
+        -------
+        des : 2D array
+            design matrix
+        cmatrices : dict, optional
+            Dictionary with keys from `contrasts` input, and contrast matrices
+            corresponding to `des` design matrix.  Returned only if `contrasts`
+            input is not None
         """
         self._setup_design()
 

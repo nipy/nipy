@@ -1,79 +1,121 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import os
-import warnings
-from shutil import rmtree
-from tempfile import mkstemp, mkdtemp
 
-from nipy.testing import TestCase, funcfile, dec
+import numpy as np
 
 from nipy.io.api import load_image
+from nipy.core.image.image import rollaxis as img_rollaxis
 
-import nipy.modalities.fmri.fmristat.model as model
-from nipy.modalities.fmri.api import FmriImageList
+from  .. import model
+from ..model import ModelOutputImage, estimateAR
+from ...api import FmriImageList
+from ...formula import Formula, Term, make_recarray
 
-# FIXME: these things are obsolete
-# from nipy.modalities.fmri.formula import \
-#     ExperimentalQuantitative
-# from nipy.fixes.scipy.stats.models.contrast import Contrast
+from nipy.fixes.scipy.stats.models.regression import (
+    OLSModel, ar_bias_corrector, ar_bias_correct)
 
-def setup():
-    # Suppress warnings during tests to reduce noise
-    warnings.simplefilter("ignore")
+from nibabel.tmpdirs import InTemporaryDirectory
 
-def teardown():
-    # Clear list of warning filters
-    warnings.resetwarnings()
+from nose.tools import assert_raises, assert_true, assert_equal
+
+from numpy.testing import assert_array_equal, assert_array_almost_equal
+from nipy.testing import funcfile, anatfile
+
+def test_model_out_img():
+    # Model output image
+    cmap = load_image(anatfile).coordmap
+    shape = (2,3,4)
+    fname = 'myfile.nii'
+    with InTemporaryDirectory():
+        moi = ModelOutputImage(fname, cmap, shape)
+        for i in range(shape[0]):
+            moi[i] = i
+        for i in range(shape[0]):
+            assert_array_equal(moi[i], i)
+        moi.save()
+        assert_raises(ValueError, moi.__setitem__, 0, 1)
+        assert_raises(ValueError, moi.__getitem__, 0)
+        new_img = load_image(fname)
+        for i in range(shape[0]):
+            assert_array_equal(new_img[i].get_data(), i)
 
 
-class test_fMRIstat_model(TestCase):
+def test_run():
+    ar1_fname = 'ar1_out.nii'
+    funcim = load_image(funcfile)
+    fmriims = FmriImageList.from_image(funcim, volume_start_times=2.)
+    one_vol = fmriims[0]
+    # Formula - with an intercept
+    t = Term('t')
+    f = Formula([t, t**2, t**3, 1])
+    # Design matrix and contrasts
+    time_vector = make_recarray(fmriims.volume_start_times, 't')
+    con_defs = dict(c=t, c2=t+t**2)
+    desmtx, cmatrices = f.design(time_vector, contrasts=con_defs)
 
-    def setUp(self):
-        # Using mkstemp instead of NamedTemporaryFile.  MS Windows
-        # cannot reopen files created with NamedTemporaryFile.
-        _, self.ar1 = mkstemp(prefix='ar1_', suffix='.nii')
-        _, self.resid_OLS = mkstemp(prefix='resid_OSL_', suffix='.nii')
-        _, self.F = mkstemp(prefix='F_', suffix='.nii')
-        _, self.resid = mkstemp(prefix='resid_', suffix='.nii')
-        # Use a temp directory for the model.output_T images
-        self.out_dir = mkdtemp()
+    # Run with Image and ImageList
+    for inp_img in (img_rollaxis(funcim, 't'), fmriims):
+        with InTemporaryDirectory():
+            # Run OLS model
+            outputs = []
+            outputs.append(model.output_AR1(ar1_fname, fmriims))
+            outputs.append(model.output_resid('resid_OLS_out.nii', fmriims))
+            ols = model.OLS(fmriims, f, outputs)
+            ols.execute()
+            # Run AR1 model
+            outputs = []
+            outputs.append(
+                model.output_T('T_out.nii', cmatrices['c'], fmriims))
+            outputs.append(
+                model.output_F('F_out.nii', cmatrices['c2'], fmriims))
+            outputs.append(
+                model.output_resid('resid_AR_out.nii', fmriims))
+            rho = load_image(ar1_fname)
+            ar = model.AR1(fmriims, f, rho, outputs)
+            ar.execute()
+            f_img = load_image('F_out.nii')
+            assert_equal(f_img.shape, one_vol.shape)
+            f_data = f_img.get_data()
+            assert_true(np.all((f_data>=0) & (f_data<30)))
+            resid_img = load_image('resid_AR_out.nii')
+            assert_equal(resid_img.shape, funcim.shape[3:] + one_vol.shape)
+            assert_array_almost_equal(np.mean(resid_img.get_data()), 0, 3)
+            e_img = load_image('T_out_effect.nii')
+            sd_img = load_image('T_out_sd.nii')
+            t_img = load_image('T_out_t.nii')
+            t_data = t_img.get_data()
+            assert_array_almost_equal(t_data,
+                                      e_img.get_data() / sd_img.get_data())
+            assert_true(np.all(np.abs(t_data) < 6))
 
-    def tearDown(self):
-        os.remove(self.ar1)
-        os.remove(self.resid_OLS)
-        os.remove(self.F)
-        os.remove(self.resid)
-        rmtree(self.out_dir)
 
-    # FIXME: This does many things, but it does not test any values
-    # with asserts.
-    @dec.skipif(True)
-    def testrun(self):
-        funcim = load_image(funcfile)
-        fmriims = FmriImageList.from_image(funcim, volume_start_times=2.)
-
-        f1 = ExperimentalQuantitative("f1", lambda t:t)
-        f2 = ExperimentalQuantitative("f1", lambda t:t**2)
-        f3 = ExperimentalQuantitative("f1", lambda t:t**3)
-
-        f = f1 + f2 + f3
-        c = Contrast(f1, f)
-        c.compute_matrix(fmriims.volume_start_times)
-        c2 = Contrast(f1 + f2, f)
-        c2.compute_matrix(fmriims.volume_start_times)
-
-        outputs = []
-        outputs.append(model.output_AR1(self.ar1, fmriims, clobber=True))
-        outputs.append(model.output_resid(self.resid_OLS, fmriims, 
-                                          clobber=True))
-        ols = model.OLS(fmriims, f, outputs)
-        ols.execute()
-
-        outputs = []
-        out_fn = os.path.join(self.out_dir, 'out.nii')
-        outputs.append(model.output_T(out_fn, c, fmriims, clobber=True))
-        outputs.append(model.output_F(self.F, c2, fmriims, clobber=True))
-        outputs.append(model.output_resid(self.resid, fmriims, clobber=True))
-        rho = load_image(self.ar1)
-        ar = model.AR1(fmriims, f, rho, outputs)
-        ar.execute()
+def test_ar_modeling():
+    # Compare against standard routines
+    rng = np.random.RandomState(20110903)
+    N = 10
+    Y = rng.normal(size=(N,1)) * 10 + 100
+    X = np.c_[np.linspace(-1,1,N), np.ones((N,))]
+    my_model = OLSModel(X)
+    results = my_model.fit(Y)
+    # fmristat wrapper
+    rhos = estimateAR(results.resid, my_model.design, order=2)
+    assert_equal(rhos.shape, (2,))
+    assert_true(np.all(np.abs(rhos <= 1)))
+    # standard routine
+    rhos2 = ar_bias_correct(results, 2)
+    assert_array_almost_equal(rhos, rhos2, 8)
+    # Make 2D and 3D Y
+    Y = rng.normal(size=(N,4)) * 10 + 100
+    results = my_model.fit(Y)
+    rhos = estimateAR(results.resid, my_model.design, order=2)
+    assert_equal(rhos.shape, (2,4))
+    assert_true(np.all(np.abs(rhos <= 1)))
+    rhos2 = ar_bias_correct(results, 2)
+    assert_array_almost_equal(rhos, rhos2, 8)
+    # 3D
+    results.resid = np.reshape(results.resid, (N,2,2))
+    rhos = estimateAR(results.resid, my_model.design, order=2)
+    assert_equal(rhos.shape, (2,2,2))
+    assert_true(np.all(np.abs(rhos <= 1)))
+    rhos2 = ar_bias_correct(results, 2)
+    assert_array_almost_equal(rhos, rhos2, 8)

@@ -2,13 +2,14 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 from numpy.linalg import inv
-#from scipy import optimize
 
-from scipy.stats import t
+from scipy.stats import t as t_distribution
 
 from nipy.algorithms.utils.matrices import pos_recipr
-import numpy.lib.recfunctions as nprf
-from descriptors import setattr_on_read
+from .descriptors import setattr_on_read
+
+# Inverse t cumulative distribution
+inv_t_cdf = t_distribution.ppf
 
 class Model(object):
     """
@@ -39,6 +40,7 @@ class Model(object):
         in self.results, which itself should have a predict method.
         """
         self.results.predict(design)
+
 
 class LikelihoodModel(Model):
 
@@ -201,21 +203,49 @@ class LikelihoodModelResults(object):
 #                 dispersion=np.eye(len(self.resid))*dispersion
 #             return np.dot(np.dot(self.calc_theta, dispersion), self.calc_theta.T)
 
-    def Tcontrast(self, matrix, t=True, sd=True, dispersion=None):
+    def Tcontrast(self, matrix, store=('t', 'effect', 'sd'), dispersion=None):
+        """ Compute a Tcontrast for a row vector `matrix`
+
+        To get the t-statistic for a single column, use the 't' method.
+
+        Parameters
+        ----------
+        matrix : 1D array-like
+            contrast matrix
+        store : sequence
+            components of t to store in results output object.  Defaults to all
+            components ('t', 'effect', 'sd').
+        dispersion : float
+
+        Returns
+        -------
+        res : ``TContrastResults`` object
         """
-        Compute a Tcontrast for a row vector matrix. To get the t-statistic
-        for a single column, use the 't' method.
-        """
-
-        _t = _sd = None
-
-        _effect = np.dot(matrix, self.theta)
-
-        if sd:
-            _sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
-        if t:
-            _t = _effect * pos_recipr(_sd)
-        return TContrastResults(effect=_effect, t=_t, sd=_sd, df_den=self.df_resid)
+        matrix = np.asarray(matrix)
+        # 1D vectors assumed to be row vector
+        if matrix.ndim == 1:
+            matrix = matrix[None,:]
+        if matrix.shape[0] != 1:
+            raise ValueError("t contrasts should have only one row")
+        if matrix.shape[1] != self.theta.shape[0]:
+            raise ValueError("t contrasts should be length P=%d, "
+                             "but this is length %d" % (self.theta.shape[0],
+                                                        matrix.shape[1]))
+        store = set(store)
+        if not store.issubset(('t', 'effect', 'sd')):
+            raise ValueError('Unexpected store request in %s' % store)
+        st_t = st_effect = st_sd = effect = sd = None
+        if 't' in store or 'effect' in store:
+            effect = np.dot(matrix, self.theta)
+            if 'effect' in store:
+                st_effect = np.squeeze(effect)
+        if 't' in store or 'sd' in store:
+            sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
+            if 'sd' in store:
+                st_sd = np.squeeze(sd)
+        if 't' in store:
+            st_t = np.squeeze(effect * pos_recipr(sd))
+        return TContrastResults(effect=st_effect, t=st_t, sd=st_sd, df_den=self.df_resid)
 
 # Jonathan: for an F-statistic, the options 't', 'sd' do not make sense. The 'effect' option
 # does make sense, but is rarely looked at in practice.
@@ -226,9 +256,9 @@ class LikelihoodModelResults(object):
         """
         Compute an Fcontrast for a contrast matrix.
 
-        Here, matrix M is assumed to be non-singular. More precisely,
+        Here, matrix M is assumed to be non-singular. More precisely::
 
-        M pX pX' M'
+            M pX pX' M'
 
         is assumed invertible. Here, pX is the generalized inverse of the
         design matrix of the model. There can be problems in non-OLS models
@@ -237,20 +267,40 @@ class LikelihoodModelResults(object):
         See the contrast module to see how to specify contrasts.
         In particular, the matrices from these contrasts will always be
         non-singular in the sense above.
+
+        Parameters
+        ----------
+        matrix : 1D array-like
+            contrast matrix
+        dispersion : None or float
+            If None, use ``self.dispersion``
+        invcov : None or array
+            Known inverse of variance covariance matrix. If None, calculate this
+            matrix.
+
+        Returns
+        -------
+        f_res : ``FContrastResults`` instance
+            with attributes F, df_den, df_num
         """
-
+        matrix = np.asarray(matrix)
+        # 1D vectors assumed to be row vector
+        if matrix.ndim == 1:
+            matrix = matrix[None,:]
+        if matrix.shape[1] != self.theta.shape[0]:
+            raise ValueError("F contrasts should have shape[1] P=%d, "
+                             "but this has shape[1] %d" % (self.theta.shape[0],
+                                                           matrix.shape[1]))
         ctheta = np.dot(matrix, self.theta)
-
         if matrix.ndim == 1:
             matrix = matrix.reshape((1, matrix.shape[0]))
-
         if dispersion is None:
             dispersion = self.dispersion
-
         q = matrix.shape[0]
         if invcov is None:
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
         F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) * pos_recipr((q * dispersion))
+        F = np.squeeze(F)
         return FContrastResults(F=F, df_den=self.df_resid, df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):
@@ -281,7 +331,7 @@ class LikelihoodModelResults(object):
         >>> x = np.hstack((stan((30,1)),stan((30,1)),stan((30,1))))
         >>> beta=np.array([3.25, 1.5, 7.0])
         >>> y = np.dot(x,beta) + stan((30))
-        >>> model = OLSModel(x, hascons=False).fit(y)
+        >>> model = OLSModel(x).fit(y)
         >>> confidence_intervals = model.conf_int(cols=(1,2))
 
         Notes
@@ -292,17 +342,19 @@ class LikelihoodModelResults(object):
             `tails` can be "two", "upper", or "lower"
         '''
         if cols is None:
-            lower = self.theta - t.ppf(1-alpha/2,self.df_resid) *\
+            lower = self.theta - inv_t_cdf(1-alpha/2,self.df_resid) *\
                     np.diag(np.sqrt(self.vcov(dispersion=dispersion)))
-            upper = self.theta + t.ppf(1-alpha/2,self.df_resid) *\
+            upper = self.theta + inv_t_cdf(1-alpha/2,self.df_resid) *\
                     np.diag(np.sqrt(self.vcov(dispersion=dispersion)))
         else:
             lower=[]
             upper=[]
             for i in cols:
-                lower.append(self.theta[i] - t.ppf(1-alpha/2,self.df_resid) *\
+                lower.append(
+                    self.theta[i] - inv_t_cdf(1-alpha/2,self.df_resid) *
                     np.diag(np.sqrt(self.vcov(dispersion=dispersion)))[i])
-                upper.append(self.theta[i] + t.ppf(1-alpha/2,self.df_resid) *\
+                upper.append(
+                    self.theta[i] + inv_t_cdf(1-alpha/2,self.df_resid) *
                     np.diag(np.sqrt(self.vcov(dispersion=dispersion)))[i])
         return np.asarray(zip(lower,upper))
 
@@ -325,10 +377,10 @@ class TContrastResults(object):
 
     def __array__(self):
         return np.asarray(self.t)
-        
+
     def __str__(self):
-        return '<T contrast: effect=%s, sd=%s, t=%s, df_den=%d>' % \
-            (`self.effect`, `self.sd`, `self.t`, self.df_den)
+        return ('<T contrast: effect=%s, sd=%s, t=%s, df_den=%d>' %
+                (self.effect, self.sd, self.t, self.df_den))
 
 
 

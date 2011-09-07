@@ -23,85 +23,33 @@ __docformat__ = 'restructuredtext en'
 import warnings
 
 import numpy as np
-from scipy.linalg import norm, toeplitz
 
-from nipy.fixes.scipy.stats.models.model import LikelihoodModel, \
-     LikelihoodModelResults
-from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
 
 from scipy import stats
 import scipy.linalg as spl
 
+from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
+
 from .model import LikelihoodModel, LikelihoodModelResults
-from . import utils
 
 from .descriptors import setattr_on_read
-
-def categorical(data):
-    '''
-    Returns an array changing categorical variables to dummy variables.
-
-    Take a structured or record array and returns an array with categorical variables.
-
-    Notes
-    -----
-    This returns a dummy variable for EVERY distinct string.  If noconsant
-    then this is okay.  Otherwise, a "intercept" needs to be designated in regression.
-
-    Returns the same array as it's given right now, consider returning a structured 
-    and plain ndarray (with names stripped, etc.)
-    '''
-    if not data.dtype.names and not data.mask.any():
-        print data.dtype
-        print "There is not a categorical variable?"
-        return data
-    #if data.mask.any():
-    #    print "Masked arrays are not handled yet."
-    #    return data
-
-    elif data.dtype.names:  # this will catch both structured and record
-                            # arrays, no other array could have string data!
-                            # not sure about masked arrays yet
-        for i in range(len(data.dtype)):
-            if data.dtype[i].type is np.string_:
-                tmp_arr = np.unique(data.field(i))
-                tmp_dummy = (tmp_arr[:,np.newaxis]==data.field(i)).astype(float)
-# .field only works for record arrays
-# tmp_dummy is a number of dummies x number of observations array
-                data=nprf.drop_fields(data,data.dtype.names[i],usemask=False, 
-                                asrecarray=True)
-                data=nprf.append_fields(data,tmp_arr.strip("\""), data=tmp_dummy,
-                                    usemask=False, asrecarray=True)
-        return data
-
 
 #How to document a class?
 #Docs are a little vague and there are no good examples
 #Some of these attributes are most likely intended to be private I imagine
 class OLSModel(LikelihoodModel):
-    """    
-    A simple ordinary least squares model.
+    """ A simple ordinary least squares model.
 
     Parameters
     ----------
-        `design`: array-like
-            This is your design matrix.  Data are assumed to be column ordered
-            with observations in rows.
+    design : array-like
+        This is your design matrix.  Data are assumed to be column ordered with
+        observations in rows.
 
     Methods
     -------
+    model.__init___(design)
     model.logL(b=self.beta, Y)
-        Returns the log-likelihood of the parameter estimates
-
-        Parameters
-        ----------
-        b : array-like
-            `b` is an array of parameter estimates the log-likelihood of which 
-            is to be tested.
-        Y : array-like
-            `Y` is the vector of dependent variables.            
-    model.__init___(design, hascons=True)
-        Creates a `OLSModel` from a design.
 
     Attributes
     ----------
@@ -119,7 +67,7 @@ class OLSModel(LikelihoodModel):
         Degrees of freedom of the residuals.
         Number of observations less the rank of the design.
     df_model : integer
-        Degres of freedome of the model.
+        Degrees of freedome of the model.
         The rank of the design.
 
     Examples
@@ -139,13 +87,20 @@ class OLSModel(LikelihoodModel):
     >>> print results.Fcontrast(np.eye(2)) #doctest: +FP_6DP
     <F contrast: F=19.4607843137, df_den=5, df_num=2>
     """
-    def __init__(self, design, hascons=True):
+    def __init__(self, design):
+        """
+        Parameters
+        ----------
+        design : array-like
+            This is your design matrix.  Data are assumed to be column ordered with
+            observations in rows.
+        """
         super(OLSModel, self).__init__()
-        self.initialize(design, hascons)
+        self.initialize(design)
 
-    def initialize(self, design, hascons=True):
-# Jonathan: PLEASE don't assume we have a constant...
-# TODO: handle case for noconstant regression
+    def initialize(self, design):
+        # Jonathan: PLEASE don't assume we have a constant...
+        # TODO: handle case for noconstant regression
         self.design = design
         self.wdesign = self.whiten(self.design)
         self.calc_beta = spl.pinv(self.wdesign)
@@ -157,56 +112,54 @@ class OLSModel(LikelihoodModel):
 
     def logL(self, beta, Y, nuisance=None):
         # Jonathan: this is overwriting an abstract method of LikelihoodModel
-        '''
-        Returns the value of the loglikelihood function at beta.
-        
+        r''' Returns the value of the loglikelihood function at beta.
+
         Given the whitened design matrix, the loglikelihood is evaluated
         at the parameter vector, beta, for the dependent variable, Y
         and the nuisance parameter, sigma.
 
         Parameters
         ----------
-
         beta : ndarray
             The parameter estimates.  Must be of length df_model.
-
         Y : ndarray
-            The dependent variable.
-
+            The dependent variable
         nuisance : dict, optional
-            A dict with key 'sigma', which is an optional 
-            estimate of sigma. If None, defaults to its
-            maximum likelihood estimate (with beta fixed)
-            as
-            
-            sum((Y - X*beta)**2) / n
+            A dict with key 'sigma', which is an optional estimate of sigma. If
+            None, defaults to its maximum likelihood estimate (with beta fixed)
+            as:
+
+                sum((Y - X*beta)**2) / n
 
             where n=Y.shape[0], X=self.design.
 
         Returns
         -------
-        The value of the loglikelihood function.
-        
+        loglf : float
+            The value of the loglikelihood function.
 
         Notes
         -----
         The log-Likelihood Function is defined as
-        .. math:: \ell(\beta,\sigma,Y)=
-        -\frac{n}{2}\log(2\pi\sigma^2) - \|Y-X\beta\|^2/(2\sigma^2)
-        ..
+        .. math::
 
-        The parameter :math:`\sigma` above is what is sometimes
-        referred to as a nuisance parameter. That is, the likelihood
-        is considered as a function of :math:`\beta`, but to evaluate it,
-        a value of :math:`\sigma` is needed.
+            \ell(\beta,\sigma,Y)=
+            -\frac{n}{2}\log(2\pi\sigma^2) - \|Y-X\beta\|^2/(2\sigma^2)
+
+        The parameter :math:`\sigma` above is what is sometimes referred to as a
+        nuisance parameter. That is, the likelihood is considered as a function
+        of :math:`\beta`, but to evaluate it, a value of :math:`\sigma` is
+        needed.
 
         If :math:`\sigma` is not provided, then its maximum likelihood
-        estimate
-        .. math::\hat{\sigma}(\beta) = \frac{\text{SSE}(\beta)}{n}
+        estimate:
 
-        is plugged in. This likelihood is now a function
-        of only :math:`\beta` and is technically referred to as 
-        a profile-likelihood.
+        .. math::
+
+            \hat{\sigma}(\beta) = \frac{\text{SSE}(\beta)}{n}
+
+        is plugged in. This likelihood is now a function of only :math:`\beta`
+        and is technically referred to as a profile-likelihood.
 
         References
         ----------
@@ -223,30 +176,25 @@ class OLSModel(LikelihoodModel):
             sigmasq = nuisance['sigma']
         loglf = -n/2.*np.log(2*np.pi*sigmasq) - SSE / (2*sigmasq)
         return loglf
-    
+
     def score(self, beta, Y, nuisance=None):
         # Jonathan: this is overwriting an abstract method of LikelihoodModel
-        '''
-        Returns the score function, the gradient of the loglikelihood function at (beta, Y, nuisance).
+        ''' Returns the score function, the gradient of the loglikelihood function at (beta, Y, nuisance).
 
         See logL for details.
-        
+
         Parameters
         ----------
-
         beta : ndarray
             The parameter estimates.  Must be of length df_model.
-
         Y : ndarray
             The dependent variable.
-
         nuisance : dict, optional
-            A dict with key 'sigma', which is an optional 
-            estimate of sigma. If None, defaults to its
-            maximum likelihood estimate (with beta fixed)
-            as
-            
-            sum((Y - X*beta)**2) / n
+            A dict with key 'sigma', which is an optional estimate of sigma. If
+            None, defaults to its maximum likelihood estimate (with beta fixed)
+            as::
+
+                sum((Y - X*beta)**2) / n
 
             where n=Y.shape[0], X=self.design.
 
@@ -267,41 +215,34 @@ class OLSModel(LikelihoodModel):
 
     def information(self, beta, nuisance=None):
         # Jonathan: this is overwriting an abstract method of LikelihoodModel
-        '''
-        Returns the information matrix at (beta, Y, nuisance).
-        
+        ''' Returns the information matrix at (beta, Y, nuisance).
+
         See logL for details.
 
         Parameters
         ----------
-
         beta : ndarray
             The parameter estimates.  Must be of length df_model.
-
         nuisance : dict
-            A dict with key 'sigma', which is an 
-            estimate of sigma. If None, defaults to its
-            maximum likelihood estimate (with beta fixed)
-            as
-            
-            sum((Y - X*beta)**2) / n
+            A dict with key 'sigma', which is an estimate of sigma. If None,
+            defaults to its maximum likelihood estimate (with beta fixed) as::
+
+                sum((Y - X*beta)**2) / n
 
             where n=Y.shape[0], X=self.design.
 
         Returns
         -------
-        The information matrix, the negative of the inverse of the
-        Hessian of the
-        of the log-likelihood function evaluated at (theta, Y, nuisance).
-        
-
+        info : array
+            The information matrix, the negative of the inverse of the Hessian
+            of the of the log-likelihood function evaluated at (theta, Y,
+            nuisance).
         '''
         X = self.design
         sigmasq = nuisance['sigma']
         C = sigmasq * np.dot(X.T, X)
         return C
 
-                      
 #   Note: why have a function that doesn't do anything? does it have to be here to be
 #   overwritten?
 #   Could this be replaced with the sandwich estimators 
@@ -312,11 +253,20 @@ class OLSModel(LikelihoodModel):
 #   is such that not much of OLSModel has to be changed
 
     def whiten(self, X):
-        """
-        This matrix is the matrix whose pseudoinverse is ultimately
-        used in estimating the coefficients. For OLSModel, it is
-        does nothing. For WLSmodel, ARmodel, it pre-applies
-        a square root of the covariance matrix to X.
+        """ Whiten design matrix
+
+        Parameters
+        ----------
+        X : array
+            design matrix
+
+        Returns
+        -------
+        wX : array
+            This matrix is the matrix whose pseudoinverse is ultimately
+            used in estimating the coefficients. For OLSModel, it is
+            does nothing. For WLSmodel, ARmodel, it pre-applies
+            a square root of the covariance matrix to X.
         """
         return X
 
@@ -550,6 +500,147 @@ def yule_walker(X, order=1, method="unbiased", df=None, inv=False):
     if inv == True:
         return rho, np.sqrt(sigmasq), spl.inv(R)
     return rho, np.sqrt(sigmasq)
+
+
+def ar_bias_corrector(design, calc_beta, order=1):
+    """ Return bias correcting matrix for design and AR order `order`
+
+    There is a slight bias in the rho estimates on residuals due to the
+    correlations induced in the residuals by fitting a linear model.  See [1]
+
+    This routine implements the bias correction described in appendix A.1 of
+    [1]
+
+    Parameters
+    ----------
+    design : array
+        Design matrix
+    calc_beta : array
+        Moore-Penrose pseudoinverse of the (maybe) whitened design matrix.  This
+        is matrix that, when applied to the (maybe whitened) data, produces the
+        betas.
+    order : int, optional
+        Order p of AR(p) process
+
+    Returns
+    -------
+    invM : array
+        Matrix to bias correct estimated covariance matrix in calculating the AR
+        coefficients
+
+    References
+    ----------
+    [1] K.J. Worsley, C.H. Liao, J. Aston, V. Petre, G.H. Duncan, F. Morales,
+    A.C. Evans (2002) A General Statistical Analysis for fMRI Data.  Neuroimage
+    15:1:15
+    """
+    R = np.eye(design.shape[0]) - np.dot(design, calc_beta)
+    M = np.zeros((order+1,)*2)
+    I = np.eye(R.shape[0])
+    for i in range(order+1):
+        Di = np.dot(R, spl.toeplitz(I[i]))
+        for j in range(order+1):
+            Dj = np.dot(R, spl.toeplitz(I[j]))
+            M[i,j] = np.diag((np.dot(Di, Dj))/(1.+(i>0))).sum()
+    return spl.inv(M)
+
+
+def ar_bias_correct(results, order, invM=None):
+    """ Apply bias correction in calculating AR(p) coefficients from `results`
+
+    There is a slight bias in the rho estimates on residuals due to the
+    correlations induced in the residuals by fitting a linear model.  See [1]
+
+    This routine implements the bias correction described in appendix A.1 of
+    [1]
+
+    Parameters
+    ----------
+    results : ndarray or results object
+        If ndarray, assume these are residuals, from a simple model.  If a
+        results object, with attribute ``resid``, then use these for the
+        residuals. See Notes for more detail
+    order : int
+        Order ``p`` of AR(p) model
+    invM : None or array
+        Known bias correcting matrix for covariance.  If None, calculate from
+        ``results.model``
+
+    Returns
+    -------
+    rho : array
+        Bias-corrected AR(p) coefficients
+
+    Notes
+    -----
+    If `results` has attributes ``resid`` and ``scale``, then assume ``scale``
+    has come from a fit of a potentially customized model, and we use that for
+    the sum of squared residuals.  In this case we also need
+    ``results.df_resid``.  Otherwise we assume this is a simple Gaussian model,
+    like OLS, and take the simple sum of squares of the residuals.
+    """
+    if invM is None:
+        # We need a model from ``results`` if invM is not specified
+        model = results.model
+        invM = ar_bias_corrector(model.design, model.calc_beta, order)
+    if hasattr(results, 'resid'):
+        resid = results.resid
+    else:
+        resid = results
+    in_shape = resid.shape
+    N = in_shape[0]
+    # Allows results residuals to have shapes other than 2D.  This allows us to
+    # use this routine for image data as well as more standard 2D model data
+    resid = resid.reshape((N, -1))
+    # glm.Model fit methods fill in a ``scale`` estimate. For simpler
+    # models, there is no scale estimate written into the results.  However, the
+    # same calculation resolves (with Gaussian family) to ``np.sum(resid**2) /
+    # results.df_resid``. See ``estimate_scale`` from glm.Model
+    if hasattr(results, 'scale'):
+        sum_sq = results.scale.reshape(resid.shape[1:]) * results.df_resid
+    else: # No scale in results
+        sum_sq = np.sum(resid**2, axis=0)
+    cov = np.zeros((order + 1,) + sum_sq.shape)
+    cov[0] = sum_sq
+    for i in range(1, order+1):
+        cov[i] = np.sum(resid[i:] * resid[0:-i], axis=0)
+    # cov is shape (order+1, V) where V = np.product(in_shape[1:])
+    cov = np.dot(invM, cov)
+    output = cov[1:] * pos_recipr(cov[0])
+    return np.squeeze(output.reshape((order,) + in_shape[1:]))
+
+
+class AREstimator(object):
+    """
+    A class to estimate AR(p) coefficients from residuals
+    """
+    def __init__(self, model, p=1):
+        """ Bias-correcting AR estimation class
+
+        Parameters
+        ----------
+        model : ``OSLModel`` instance
+            A models.regression.OLSmodel instance, where `model` has attribute ``design``
+        p : int, optional
+            Order of AR(p) noise
+        """
+        self.p = p
+        self.invM = ar_bias_corrector(model.design, model.calc_beta, p)
+
+    def __call__(self, results):
+        """ Calculate AR(p) coefficients from `results`.``residuals``
+
+        Parameters
+        ----------
+        results : Results instance
+            A models.model.LikelihoodModelResults instance
+
+        Returns
+        -------
+        ar_p : array
+            AR(p) coefficients
+        """
+        return ar_bias_correct(results, self.p, self.invM)
 
 
 class WLSModel(OLSModel):
