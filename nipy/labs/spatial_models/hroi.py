@@ -200,7 +200,7 @@ class HierarchicalROI(SubDomains):
         G = Forest(self.k, self.parents)
         return G
 
-    def merge_ascending(self, valid):
+    def merge_ascending(self, valid, ignore=None):
         """Remove the non-valid ROIs by including them in
         their parents when it exists.
 
@@ -209,12 +209,19 @@ class HierarchicalROI(SubDomains):
         valid: boolean array of shape(self.k)
           Array defining which regions must be merged.
           If valid[i] == False, the i_th region is merged in its parent.
+        ignore: list of str
+          List of the features to be ignored for the children's voxels
+          (the children's voxels will be merged in the parent blob and
+          assigned the (assumed unique) value of the parent's voxel for
+          that feature).
 
         Note
         ----
         If valid[k]==0 and self.parents[k]==k, k is not removed
 
         """
+        if ignore is None:
+            ignore = []
         if np.size(valid) != self.k:
             raise ValueError("not the correct dimension for valid")
         if self.k == 0:
@@ -230,6 +237,8 @@ class HierarchicalROI(SubDomains):
                     for fid in fids:
                         dfj = self.features[fid][fj]
                         dj = self.features[fid][j]
+                        if fid in ignore:
+                            dj[:] = dfj[0]
                         if len(dfj.shape) == 1:
                             dfj = dfj.reshape((-1, 1))
                         if len(dj.shape) == 1:

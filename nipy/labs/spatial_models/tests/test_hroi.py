@@ -102,6 +102,21 @@ def test_asc_merge_2():
     assert_equal(hroi.size, s1)
 
 
+def test_asc_merge_3():
+    """Test ascending merge
+    """
+    hroi = make_hroi()
+    hroi.make_feature('labels', hroi.label)
+    hroi.make_feature('labels2', hroi.label)
+    s1 = hroi.size[0] + hroi.size[1]
+    valid = np.ones(9).astype(np.bool)
+    valid[1] = 0
+    hroi.merge_ascending(valid, ignore=['labels2'])
+    assert_equal(hroi.size[0], s1)
+    assert_equal(np.unique(hroi.get_feature('labels')[0]).size, 2)
+    assert_equal(np.unique(hroi.get_feature('labels2')[0]).size, 1)
+
+
 def test_asc_merge_4():
     """Test ascending merge
 
