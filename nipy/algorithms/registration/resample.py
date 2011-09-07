@@ -1,6 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
+import numpy as np
 from scipy.ndimage import affine_transform, map_coordinates
 from ...core.image.affine_image import AffineImage
 from .image_utils import get_affine
@@ -62,7 +63,8 @@ def resample(moving, transform, reference=None,
         if not mov_voxel_coords:
             Tv = np.dot(inverse_affine(get_affine(moving)), Tv)
         if interp_order == 3:
-            output = _cspline_resample3d(data, reference.shape, Tv, dtype=dtype)
+            output = _cspline_resample3d(data, reference.shape,
+                                         Tv, dtype=dtype)
             output = output.astype(dtype)
         else:
             output = np.zeros(reference.shape, dtype=dtype)
