@@ -88,14 +88,6 @@ class Image4d(object):
                   time origin
         slice_order : string or array
         """
-        if isinstance(array, np.ndarray):
-            self._array = array
-            self._init_timing_parameters()
-            self._get_array = None
-        else:
-            self._array = None
-            self._get_array = array
-
         self.affine = np.asarray(affine)
         self.tr = float(tr)
         self.start = float(start)
@@ -104,6 +96,14 @@ class Image4d(object):
         # unformatted parameters
         self._tr_slices = tr_slices
         self._slice_order = slice_order
+
+        if isinstance(array, np.ndarray):
+            self._array = array
+            self._get_array = None
+            self._init_timing_parameters()
+        else:
+            self._array = None
+            self._get_array = array
 
     def get_array(self):
         if self._array == None:
@@ -160,7 +160,8 @@ class Image4d(object):
         return (t - self.start - corr) / self.tr
 
     def free_array(self):
-        self._array = None
+        if not self._get_array == None:
+            self._array = None
         gc.enable()
         gc.collect()
 
@@ -595,7 +596,7 @@ def realign4d(runs,
     # corrected run, and creating a fake time series with no temporal
     # smoothness
     ## FIXME: check that all runs have the same to-world transform
-    mean_img_shape = list(runs[0].get_array().shape[0:3]) + [len(nruns)]
+    mean_img_shape = list(runs[0].get_array().shape[0:3]) + [nruns]
     mean_img_data = np.zeros(mean_img_shape)
     for i in range(nruns):
         corr_run = resample4d(runs[i], transforms=transforms[i],
@@ -603,6 +604,7 @@ def realign4d(runs,
         mean_img_data[..., i] = corr_run.mean(3)
         gc.enable()
         gc.collect()
+
     mean_img = Image4d(mean_img_data, affine=runs[0].affine,
                        tr=1.0, tr_slices=0.0)
     transfo_mean = single_run_realign4d(mean_img,
