@@ -42,8 +42,6 @@ You will next need to get the NIPY code via version control:
 You should now be able to follow the instructions in
 :ref:`trunk_download`, but with the following modifications:
 
-.. _installing-blas-lapack:
-
 Running the build / install
 ---------------------------
 
