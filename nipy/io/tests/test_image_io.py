@@ -2,50 +2,37 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import os
 import warnings
-from tempfile import mkstemp
 
 import numpy as np
 
 from nibabel.spatialimages import ImageFileError
 
-from nipy.testing import assert_true, assert_equal, assert_raises, \
-    assert_array_equal, assert_array_almost_equal, funcfile, parametric
-
-from nipy.testing.decorators import if_templates
-
-from nipy.utils import templates, DataError
-
-from nipy.io.api import load_image, save_image, as_image
+from ..api import load_image, save_image, as_image
 from nipy.core.api import fromarray
 
+from nipy.testing import (assert_true, assert_equal, assert_raises,
+                          assert_array_equal, assert_array_almost_equal,
+                          assert_almost_equal, funcfile)
 
-gfilename = ''
-gtmpfile = None
+from nibabel.tmpdirs import InTemporaryDirectory
+
+from nipy.testing.decorators import if_templates
+from nipy.utils import templates, DataError
+
 gimg = None
+
+def setup_module():
+    global gimg
+    try:
+        gimg = load_template_img()
+    except DataError:
+        pass
 
 
 def load_template_img():
     return load_image(
         templates.get_filename(
             'ICBM152', '2mm', 'T1.nii.gz'))
-
-
-def setup_module():
-    warnings.simplefilter("ignore")
-    global gfilename, gtmpfile, gimg
-    try:
-        gimg = load_template_img()
-    except DataError:
-        pass
-    fd, gfilename = mkstemp(suffix='.nii.gz')
-    gtmpfile = open(gfilename)
-
-
-def teardown_module():
-    warnings.resetwarnings()
-    global gtmpfile, gfilename
-    gtmpfile.close()
-    os.unlink(gfilename)
 
 
 def test_badfile():
@@ -56,7 +43,7 @@ def test_badfile():
 @if_templates
 def test_maxminmean_values():
     # loaded array values from SPM
-    y = np.asarray(gimg)
+    y = gimg.get_data()
     yield assert_equal, y.shape, tuple(gimg.shape)
     yield assert_array_almost_equal, y.max(), 1.000000059
     yield assert_array_almost_equal, y.mean(), 0.273968048
@@ -66,9 +53,10 @@ def test_maxminmean_values():
 @if_templates
 def test_nondiag():
     gimg.affine[0,1] = 3.0
-    save_image(gimg, gtmpfile.name)
-    img2 = load_image(gtmpfile.name)
-    yield assert_true, np.allclose(img2.affine, gimg.affine)
+    with InTemporaryDirectory():
+        save_image(gimg, 'img.nii')
+        img2 = load_image('img.nii')
+        assert_almost_equal(img2.affine, gimg.affine)
 
 
 def uint8_to_dtype(dtype, name):
@@ -81,35 +69,10 @@ def uint8_to_dtype(dtype, name):
     data = data.astype(np.uint8) # randint returns np.int32
     img = fromarray(data, 'kji', 'zxy')
     newimg = save_image(img, name, dtype=dtype)
-    newdata = np.asarray(newimg)
-    return newdata, data
+    return newimg.get_data(), data
 
 
-def test_scaling_uint8_to_uint8():
-    dtype = np.uint8
-    newdata, data = uint8_to_dtype(dtype, gtmpfile.name)
-    yield assert_true, np.allclose(newdata, data)
-
-
-def test_scaling_uint8_to_uint16():
-    dtype = np.uint16
-    newdata, data = uint8_to_dtype(dtype, gtmpfile.name)
-    yield assert_true, np.allclose(newdata, data)
-
-
-def test_scaling_uint8_to_float32():
-    dtype = np.float32
-    newdata, data = uint8_to_dtype(dtype, gtmpfile.name)
-    yield assert_true, np.allclose(newdata, data)
-
-
-def test_scaling_uint8_to_int32():
-    dtype = np.int32
-    newdata, data = uint8_to_dtype(dtype, gtmpfile.name)
-    yield assert_true, np.allclose(newdata, data)
-
-
-def float32_to_dtype(dtype):
+def float32_to_dtype(dtype, name):
     # Utility function for the scaling_float32 function
     dtype = dtype
     shape = (2,3,4)
@@ -121,15 +84,19 @@ def float32_to_dtype(dtype):
     # random.normal will return data as native machine type
     data = data.astype(np.float32)
     img = fromarray(data, 'kji', 'zyx')
-    newimg = save_image(img, gtmpfile.name, dtype=dtype)
-    newdata = np.asarray(newimg)
-    return newdata, data
+    newimg = save_image(img, name, dtype=dtype)
+    return newimg.get_data(), data
 
 
-def test_scaling_float32():
-    for dtype in (np.uint8, np.uint16, np.int16, np.float32):
-        newdata, data = float32_to_dtype(dtype)
-        yield assert_array_almost_equal, newdata, data
+def test_scaling():
+    with InTemporaryDirectory():
+        for dtype_type in (np.uint8, np.uint16,
+                           np.int16, np.int32,
+                           np.float32):
+            newdata, data = uint8_to_dtype(dtype_type, 'img.nii')
+            assert_almost_equal(newdata, data)
+            newdata, data = float32_to_dtype(dtype_type, 'img.nii')
+            assert_almost_equal(newdata, data)
 
 
 @if_templates
@@ -144,70 +111,61 @@ def test_header_roundtrip():
     hdr['descrip'] = 'descrip for TestImage:test_header_roundtrip'
     hdr['slice_end'] = 12
     img.header = hdr
-    save_image(img, tmpfile.name)
-    newimg = load_image(tmpfile.name)
+    with InTemporaryDirectory():
+        save_image(img, 'img.nii.gz')
+        newimg = load_image('img.nii.gz')
     newhdr = newimg.header
-    tmpfile.close()
-    os.unlink(name)
-    yield (assert_array_almost_equal,
-           newhdr['slice_duration'],
-           hdr['slice_duration'])
-    yield assert_equal, newhdr['intent_p1'], hdr['intent_p1']
-    yield assert_equal, newhdr['descrip'], hdr['descrip']
-    yield assert_equal, newhdr['slice_end'], hdr['slice_end']
+    assert_array_almost_equal(newhdr['slice_duration'],
+                              hdr['slice_duration'])
+    assert_equal(newhdr['intent_p1'], hdr['intent_p1'])
+    assert_equal(newhdr['descrip'], hdr['descrip'])
+    assert_equal(newhdr['slice_end'], hdr['slice_end'])
 
 
 @if_templates
 def test_file_roundtrip():
     img = load_template_img()
-    fd, name = mkstemp(suffix='.nii.gz')
-    tmpfile = open(name)
-    save_image(img, tmpfile.name)
-    img2 = load_image(tmpfile.name)
-    data = np.asarray(img)
-    data2 = np.asarray(img2)
-    tmpfile.close()
-    os.unlink(name)
+    data = img.get_data()
+    with InTemporaryDirectory():
+        save_image(img, 'img.nii.gz')
+        img2 = load_image('img.nii.gz')
+        data2 = img2.get_data()
     # verify data
-    yield assert_true, np.allclose(data2, data)
-    yield assert_true, np.allclose(data2.mean(), data.mean())
-    yield assert_true, np.allclose(data2.min(), data.min())
-    yield assert_true, np.allclose(data2.max(), data.max())
+    assert_almost_equal(data2, data)
+    assert_almost_equal(data2.mean(), data.mean())
+    assert_almost_equal(data2.min(), data.min())
+    assert_almost_equal(data2.max(), data.max())
     # verify shape and ndims
-    yield assert_equal, img2.shape, img.shape
-    yield assert_equal, img2.ndim, img.ndim
+    assert_equal(img2.shape, img.shape)
+    assert_equal(img2.ndim, img.ndim)
     # verify affine
-    yield assert_true, np.allclose(img2.affine, img.affine)
+    assert_almost_equal(img2.affine, img.affine)
 
 
 def test_roundtrip_fromarray():
     data = np.random.rand(10,20,30)
     img = fromarray(data, 'kji', 'xyz')
-    fd, name = mkstemp(suffix='.nii.gz')
-    tmpfile = open(name)
-    save_image(img, tmpfile.name)
-    img2 = load_image(tmpfile.name)
-    data2 = np.asarray(img2)
-    tmpfile.close()
-    os.unlink(name)
+    with InTemporaryDirectory():
+        save_image(img, 'img.nii.gz')
+        img2 = load_image('img.nii.gz')
+        data2 = img2.get_data()
     # verify data
-    yield assert_true, np.allclose(data2, data)
-    yield assert_true, np.allclose(data2.mean(), data.mean())
-    yield assert_true, np.allclose(data2.min(), data.min())
-    yield assert_true, np.allclose(data2.max(), data.max())
+    assert_almost_equal(data2, data)
+    assert_almost_equal(data2.mean(), data.mean())
+    assert_almost_equal(data2.min(), data.min())
+    assert_almost_equal(data2.max(), data.max())
     # verify shape and ndims
-    yield assert_equal, img2.shape, img.shape
-    yield assert_equal, img2.ndim, img.ndim
+    assert_equal(img2.shape, img.shape)
+    assert_equal(img2.ndim, img.ndim)
     # verify affine
-    yield assert_true, np.allclose(img2.affine, img.affine)
+    assert_almost_equal(img2.affine, img.affine)
 
 
-@parametric
 def test_as_image():
     # test image creation / pass through function
     img = as_image(funcfile) # string filename
     img1 = as_image(unicode(funcfile))
     img2 = as_image(img)
-    yield assert_equal(img.affine, img1.affine)
-    yield assert_array_equal(np.asarray(img), np.asarray(img1))
-    yield assert_true(img is img2)
+    assert_equal(img.affine, img1.affine)
+    assert_array_equal(img.get_data(), img1.get_data())
+    assert_true(img is img2)
