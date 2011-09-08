@@ -6,8 +6,8 @@ from nose.tools import assert_equal
 from numpy.testing import assert_array_almost_equal
 import numpy as np 
 
-from nipy import load_image
-from nipy.testing import funcfile
+from .... import load_image
+from ....testing import funcfile
 
 from ..groupwise_registration import Image4d, resample4d
 from ..affine import Rigid
