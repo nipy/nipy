@@ -40,7 +40,10 @@ def test_full_rank():
     assert_equal(Y2.shape, (40,3))
     Y3 = full_rank(X, r=4)
     assert_equal(Y3.shape, (40,4))
-    assert_almost_equal(Y1, Y3)
+    # Windows - there seems to be some randomness in the SVD result; standardize
+    # column signs before comparison
+    flipper = np.sign(Y1[0]) * np.sign(Y3[0])
+    assert_almost_equal(Y1, Y3 * flipper)
 
 
 def test_pos_recipr():
