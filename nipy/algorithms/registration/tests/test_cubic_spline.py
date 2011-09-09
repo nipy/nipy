@@ -3,16 +3,16 @@
 
 import numpy as np
 
-from ..c_bindings import (_cspline_transform, _cspline_sample1d, 
-                          _cspline_sample4d)
+from .._registration import (_cspline_transform,
+                             _cspline_sample1d,
+                             _cspline_sample4d)
 
-from numpy.testing import (assert_array_almost_equal,
-                           assert_array_equal)
+from numpy.testing import assert_array_almost_equal
 
 from nose.tools import assert_true, assert_equal, assert_raises
 
 
-def test_sample1d(): 
+def test_sample1d():
     a = np.random.rand(100)
     c = _cspline_transform(a)
     x = np.arange(100)
@@ -23,25 +23,14 @@ def test_sample1d():
     assert_array_almost_equal(a, b)
 
 
-def test_sample4d(): 
-    a = np.random.rand(4,5,6,7)
+def test_sample4d():
+    a = np.random.rand(4, 5, 6, 7)
     c = _cspline_transform(a)
-    x = np.mgrid[0:4,0:5,0:6,0:7]
+    x = np.mgrid[0:4, 0:5, 0:6, 0:7]
     b = np.zeros(a.shape)
-    args = list(x) 
+    args = list(x)
     b = _cspline_sample4d(b, c, *args)
     assert_array_almost_equal(a, b)
     args = list(x) + ['nearest' for i in range(4)]
     b = _cspline_sample4d(b, c, *args)
     assert_array_almost_equal(a, b)
-
-
-
-"""
-a = np.arange(100)
-c = _cspline_transform(a)
-x0 = np.arange(100)
-x = np.arange(-4,105)
-b = np.zeros(x.shape)
-b = _cspline_sample1d(b, c, x, mode=1)
-"""
