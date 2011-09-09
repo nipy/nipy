@@ -6,8 +6,8 @@ from ..histogram_registration import HistogramRegistration
 import numpy as np 
 from numpy.testing import assert_array_almost_equal
 
-from nipy import load_image
-from nipy.testing import anatfile
+from .... import load_image
+from ....testing import anatfile
 
 anat_img = load_image(anatfile)
 

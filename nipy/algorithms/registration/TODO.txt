@@ -4,3 +4,34 @@
 * log-euclidean transform object ???
 * Levenberg-Marquardt
 * Affine transform creation 
+
+--------------------------------------------
+
+Transform objects 
+
+Transform 
+|
+--> Affine 
+    |
+    --> Rigid, Similarity, ...
+|
+--> GridTransform 
+    |
+    --> SplineTransform
+
+|
+--> PolyAffine
+    |
+    --> PolyRigid, PolySimilarity, ... 
+
+
+ChainTransform
+
+Any registration method should take a generic transform argument
+having an `apply` method and a `param` attribute or property.
+
+Internally, it may create a ChainTransform object to represent
+voxel-to-voxel transforms or other kinds of compositions. The
+transform supplied by the user should be optimizable (have a `param`
+attribute).
+
