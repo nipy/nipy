@@ -24,15 +24,15 @@ import warnings
 
 import numpy as np
 
-
 from scipy import stats
 import scipy.linalg as spl
+
+from nibabel.onetime import setattr_on_read
 
 from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
 
 from .model import LikelihoodModel, LikelihoodModelResults
 
-from .descriptors import setattr_on_read
 
 #How to document a class?
 #Docs are a little vague and there are no good examples

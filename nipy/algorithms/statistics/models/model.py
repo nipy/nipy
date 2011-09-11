@@ -5,9 +5,9 @@ from numpy.linalg import inv
 
 from scipy.stats import t as t_distribution
 
-from ...utils.matrices import pos_recipr
+from nibabel.onetime import setattr_on_read
 
-from .descriptors import setattr_on_read
+from ...utils.matrices import pos_recipr
 
 # Inverse t cumulative distribution
 inv_t_cdf = t_distribution.ppf
