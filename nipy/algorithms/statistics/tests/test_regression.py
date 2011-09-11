@@ -3,7 +3,8 @@
 
 import numpy as np
 
-from ..regression import output_T, output_F, OLSModel
+from ..models.regression import OLSModel
+from ..regression import output_T, output_F
 
 from nose.tools import assert_true, assert_equal, assert_raises
 
