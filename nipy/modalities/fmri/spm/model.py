@@ -5,7 +5,7 @@ import gc, os, fpformat, time
 import numpy as np
 import numpy.linalg as L
 from scipy.stats import f as FDbn
-from nipy.fixes.scipy.stats.models.regression import OLSModel, GLSModel
+from nipy.algorithms.statistics.models.regression import OLSModel, GLSModel
 
 from nipy.core.api import Image
 from nipy.modalities.fmri.fmristat import model as fmristat
@@ -19,9 +19,8 @@ def Fmask(Fimg, dfnum, dfdenom, pvalue=1.0e-04):
     an F contrast.
     """
 
-    ## TODO check nipy.fixes.scipy.stats.models.contrast to see if rank is
+    ## TODO check nipy.algorithms.statistics.models.contrast to see if rank is
     ## correctly set -- I don't think it is right now.
-    
     print dfnum, dfdenom
     thresh = FDbn.ppf(pvalue, dfnum, dfdenom)
     return Image(np.greater(np.asarray(Fimg), thresh), Fimg.grid.copy())

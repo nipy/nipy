@@ -5,7 +5,8 @@ from numpy.linalg import inv
 
 from scipy.stats import t as t_distribution
 
-from nipy.algorithms.utils.matrices import pos_recipr
+from ...utils.matrices import pos_recipr
+
 from .descriptors import setattr_on_read
 
 # Inverse t cumulative distribution
@@ -327,7 +328,7 @@ class LikelihoodModelResults(object):
         Example
         -------
         >>> from numpy.random import standard_normal as stan
-        >>> from nipy.fixes.scipy.stats.models.regression import OLSModel
+        >>> from nipy.algorithms.statistics.models.regression import OLSModel
         >>> x = np.hstack((stan((30,1)),stan((30,1)),stan((30,1))))
         >>> beta=np.array([3.25, 1.5, 7.0])
         >>> y = np.dot(x,beta) + stan((30))

@@ -13,7 +13,9 @@ import numpy as np
 
 from ... import formula, utils, hrf, design
 from .. import hrf as delay
-from nipy.fixes.scipy.stats.models.regression import OLSModel
+
+from nipy.algorithms.statistics.models.regression import OLSModel
+from nipy.algorithms.statistics.formula import formulae
 
 # testing imports
 from nipy.testing import (dec, assert_true, assert_almost_equal)

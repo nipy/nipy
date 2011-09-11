@@ -23,9 +23,8 @@ import os.path as path
 import numpy as np
 import scipy.linalg as spl
 
-from nipy.fixes.scipy.stats.models.regression import (OLSModel, ARModel,
-                                                      ar_bias_corrector,
-                                                      ar_bias_correct)
+from nipy.algorithms.statistics.models.regression import (
+    OLSModel, ARModel, ar_bias_corrector, ar_bias_correct)
 
 # nipy core imports
 from nipy.core.api import Image, parcels, matrix_generator, AffineTransform

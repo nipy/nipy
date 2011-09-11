@@ -3,9 +3,7 @@
 
 import numpy as np
 
-from nipy.fixes.scipy.stats.models.regression import OLSModel
-
-from ..regression import output_T, output_F
+from ..regression import output_T, output_F, OLSModel
 
 from nose.tools import assert_true, assert_equal, assert_raises
 

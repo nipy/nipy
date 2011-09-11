@@ -30,7 +30,7 @@ from nipy.modalities.fmri.design_matrix import make_dmtx
 from nipy.modalities.fmri.experimental_paradigm import \
     load_protocol_from_csv_file
 from nipy.labs.viz import plot_map, cm
-from nipy.fixes.scipy.stats.models.regression import OLSModel, ARModel
+from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
 
 import get_data_light
 

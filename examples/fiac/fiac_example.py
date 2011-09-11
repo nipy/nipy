@@ -15,15 +15,15 @@ from os.path import join as pjoin
 import numpy as np
 
 # From NIPY
-from nipy.fixes.scipy.stats.models.regression import (OLSModel, ARModel,
-                                                      isestimable )
+from nipy.algorithms.statistics.models.regression import (OLSModel, ARModel,
+                                                          isestimable)
 from nipy.modalities.fmri.fmristat import hrf as delay
 from nipy.modalities.fmri import formula, design, hrf
 from nipy.io.api import load_image, save_image
 from nipy.core import api
 from nipy.core.image.image import rollaxis as image_rollaxis
 
-from nipy.algorithms.statistics import onesample 
+from nipy.algorithms.statistics import onesample
 
 # Local
 import fiac_util as futil
