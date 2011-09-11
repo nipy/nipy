@@ -72,7 +72,7 @@ class OLSModel(LikelihoodModel):
 
     Examples
     --------
-    >>> from nipy.modalities.fmri.formula import Term, Formula
+    >>> from nipy.algorithms.statistics.api import Term, Formula
     >>> data = np.rec.fromarrays(([1,3,4,5,2,3,4], range(1,8)), names=('Y', 'X'))
     >>> f = Formula([Term("X"), 1])
     >>> dmtx = f.design(data, return_float=True)
@@ -336,7 +336,7 @@ class ARModel(OLSModel):
 
     Examples
     --------
-    >>> from nipy.modalities.fmri.formula import Term, Formula
+    >>> from nipy.algorithms.statistics.api import Term, Formula
     >>> data = np.rec.fromarrays(([1,3,4,5,8,10,9], range(1,8)), names=('Y', 'X'))
     >>> f = Formula([Term("X"), 1])
     >>> dmtx = f.design(data, return_float=True)
@@ -652,7 +652,7 @@ class WLSModel(OLSModel):
 
     Examples
     --------
-    >>> from nipy.modalities.fmri.formula import Term, Formula
+    >>> from nipy.algorithms.statistics.api import Term, Formula
     >>> data = np.rec.fromarrays(([1,3,4,5,2,3,4], range(1,8)), names=('Y', 'X'))
     >>> f = Formula([Term("X"), 1])
     >>> dmtx = f.design(data, return_float=True)

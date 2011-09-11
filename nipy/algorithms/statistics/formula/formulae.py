@@ -901,14 +901,12 @@ def natural_spline(t, knots=None, order=3, intercept=False):
     Returns
     -------
     formula : Formula
-         A Formula with (len(knots) + order) Terms
-         (if intercept=False, otherwise includes one more Term), 
-         made up of the natural spline functions.
+         A Formula with (len(knots) + order) Terms (if intercept=False,
+         otherwise includes one more Term), made up of the natural spline
+         functions.
 
     Examples
     --------
-    The following results depend on machine byte order
-       
     >>> x = Term('x')
     >>> n = natural_spline(x, knots=[1,3,4], order=3)
     >>> xval = np.array([3,5,7.]).view(np.dtype([('x', np.float)]))
@@ -919,8 +917,6 @@ def natural_spline(t, knots=None, order=3, intercept=False):
     >>> d = n.design(xval)
     >>> print d.dtype.descr
     [('ns_1(x)', '<f8'), ('ns_2(x)', '<f8'), ('ns_3(x)', '<f8'), ('ns_4(x)', '<f8'), ('ns_5(x)', '<f8'), ('ns_6(x)', '<f8')]
-    >>>                    
-                    
     """
     if knots is None:
         knots = {}

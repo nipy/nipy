@@ -10,7 +10,8 @@ import sympy
 from sympy import Symbol, Function, DiracDelta
 from nipy.fixes.sympy.utilities.lambdify import lambdify
 
-from ..formula import Term
+from nipy.algorithms.statistics.formula import Term
+
 from ..utils import (
     lambdify_t,
     define,

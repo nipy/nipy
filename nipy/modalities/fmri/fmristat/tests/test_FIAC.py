@@ -11,7 +11,7 @@ Taylor, J.E. & Worsley, K.J. (2005). \'Inference for
 
 import numpy as np
 
-from ... import formula, utils, hrf, design
+from ... import utils, hrf, design
 from .. import hrf as delay
 
 from nipy.algorithms.statistics.models.regression import OLSModel
@@ -27,7 +27,7 @@ from .FIACdesigns import (descriptions, fmristat, altdescr,
 def protocol(recarr, design_type, *hrfs):
     """ Create an object that can evaluate the FIAC
 
-    Subclass of formula.Formula, but not necessary.
+    Subclass of formulae.Formula, but not necessary.
 
     Parameters
     ----------
@@ -61,7 +61,7 @@ def protocol(recarr, design_type, *hrfs):
 
     termdict = {}
     termdict['begin'] = utils.define('begin', utils.events(_begin, f=hrf.glover))
-    drift = formula.natural_spline(utils.T,
+    drift = formulae.natural_spline(utils.T,
                                    knots=[N_ROWS/2.+1.25],
                                    intercept=True)
     for i, t in enumerate(drift.terms):
@@ -81,7 +81,7 @@ def protocol(recarr, design_type, *hrfs):
                           range(times.shape[0])])
             termdict['%s%d' % (v,l)] = utils.define("%s%d" % (v, l), 
                                                       utils.events(times[k], f=h))
-    f = formula.Formula(termdict.values())
+    f = formulae.Formula(termdict.values())
     Tcontrasts = {}
     Tcontrasts['average'] = (termdict['SSt_SSp0'] + termdict['SSt_DSp0'] +
                              termdict['DSt_SSp0'] + termdict['DSt_DSp0']) / 4.
@@ -93,7 +93,7 @@ def protocol(recarr, design_type, *hrfs):
                                  termdict['DSt_SSp0'] + termdict['DSt_DSp0'])
     # Ftest
     Fcontrasts = {}
-    Fcontrasts['overall1'] = formula.Formula(Tcontrasts.values())
+    Fcontrasts['overall1'] = formulae.Formula(Tcontrasts.values())
 
     return f, Tcontrasts, Fcontrasts
 
@@ -101,7 +101,7 @@ def protocol(recarr, design_type, *hrfs):
 def altprotocol(d, design_type, *hrfs):
     """ Create an object that can evaluate the FIAC.
 
-    Subclass of formula.Formula, but not necessary.
+    Subclass of formulae.Formula, but not necessary.
 
     Parameters
     ----------
@@ -134,7 +134,7 @@ def altprotocol(d, design_type, *hrfs):
 
     termdict = {}
     termdict['begin'] = utils.define('begin', utils.events(_begin, f=hrf.glover))
-    drift = formula.natural_spline(utils.T,
+    drift = formulae.natural_spline(utils.T,
                                    knots=[N_ROWS/2.+1.25],
                                    intercept=True)
     for i, t in enumerate(drift.terms):
@@ -143,14 +143,14 @@ def altprotocol(d, design_type, *hrfs):
     # Now, specify the experimental conditions
     # The elements of termdict are DiracDeltas, rather than HRFs
 
-    st = formula.Factor('sentence', ['DSt', 'SSt'])
-    sp = formula.Factor('speaker', ['DSp', 'SSp'])
+    st = formulae.Factor('sentence', ['DSt', 'SSt'])
+    sp = formulae.Factor('speaker', ['DSp', 'SSp'])
 
     indic = {}
     indic['sentence'] =  st.main_effect
     indic['speaker'] =  sp.main_effect
     indic['interaction'] = st.main_effect * sp.main_effect
-    indic['average'] = formula.I
+    indic['average'] = formulae.I
 
     for key in indic.keys():
         # The matrix signs will be populated with +- 1's
@@ -169,7 +169,7 @@ def altprotocol(d, design_type, *hrfs):
             # speaker1(t)
             termdict['%s%d' % (key, l)] = utils.define("%s%d" % (key, l), symb)
 
-    f = formula.Formula(termdict.values())
+    f = formulae.Formula(termdict.values())
 
     Tcontrasts = {}
     Tcontrasts['average'] = termdict['average0']
@@ -180,13 +180,13 @@ def altprotocol(d, design_type, *hrfs):
     # F tests
 
     Fcontrasts = {}
-    Fcontrasts['overall1'] = formula.Formula(Tcontrasts.values())
+    Fcontrasts['overall1'] = formulae.Formula(Tcontrasts.values())
 
     nhrf = len(hrfs)
-    Fcontrasts['averageF'] = formula.Formula([termdict['average%d' % j] for j in range(nhrf)])
-    Fcontrasts['speakerF'] = formula.Formula([termdict['speaker%d' % j] for j in range(nhrf)])
-    Fcontrasts['sentenceF'] = formula.Formula([termdict['sentence%d' % j] for j in range(nhrf)])
-    Fcontrasts['interactionF'] = formula.Formula([termdict['interaction%d' % j] for j in range(nhrf)])
+    Fcontrasts['averageF'] = formulae.Formula([termdict['average%d' % j] for j in range(nhrf)])
+    Fcontrasts['speakerF'] = formulae.Formula([termdict['speaker%d' % j] for j in range(nhrf)])
+    Fcontrasts['sentenceF'] = formulae.Formula([termdict['sentence%d' % j] for j in range(nhrf)])
+    Fcontrasts['interactionF'] = formulae.Formula([termdict['interaction%d' % j] for j in range(nhrf)])
 
     Fcontrasts['overall2'] = Fcontrasts['averageF'] + Fcontrasts['speakerF'] + Fcontrasts['sentenceF'] + Fcontrasts['interactionF']
 
@@ -200,7 +200,7 @@ event, eTcons, eFcons = protocol(descriptions['event'], 'event', *delay.spectral
 # Now create the design matrices and contrasts
 # The 0 indicates that it will be these columns
 # convolved with the first HRF
-t = formula.make_recarray(time_vector, 't')
+t = formulae.make_recarray(time_vector, 't')
 X = {}
 c = {}
 D = {}
@@ -218,12 +218,12 @@ def test_altprotocol():
 
     for c in bT.keys():
         baf = baT[c]
-        if not isinstance(baf, formula.Formula):
-            baf = formula.Formula([baf])
+        if not isinstance(baf, formulae.Formula):
+            baf = formulae.Formula([baf])
 
         bf = bT[c]
-        if not isinstance(bf, formula.Formula):
-            bf = formula.Formula([bf])
+        if not isinstance(bf, formulae.Formula):
+            bf = formulae.Formula([bf])
 
     X = baf.design(t, return_float=True)
     Y = bf.design(t, return_float=True)
@@ -236,12 +236,12 @@ def test_altprotocol():
 
     for c in bF.keys():
         baf = baF[c]
-        if not isinstance(baf, formula.Formula):
-            baf = formula.Formula([baf])
+        if not isinstance(baf, formulae.Formula):
+            baf = formulae.Formula([baf])
 
         bf = bF[c]
-        if not isinstance(bf, formula.Formula):
-            bf = formula.Formula([bf])
+        if not isinstance(bf, formulae.Formula):
+            bf = formulae.Formula([bf])
 
     X = baf.design(t, return_float=True)
     Y = bf.design(t, return_float=True)

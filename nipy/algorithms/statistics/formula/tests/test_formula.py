@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Test functions for models.formula
+Test functions for formulae
 """
 
 import numpy as np
@@ -9,8 +9,8 @@ import sympy
 
 from nipy.fixes.sympy.utilities.lambdify import implemented_function
 
-from .. import formula as F
-from ..formula import terms, Term
+from .. import formulae as F
+from ..formulae import terms, Term
 
 from nose.tools import (assert_true, assert_equal, assert_false,
                         assert_raises)

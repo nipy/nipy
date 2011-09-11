@@ -62,7 +62,7 @@ class SecondStage(object):
        object returning 4D array from ``np.asarray``, having attribute
        ``volume_start_times`` (if `volume_start_times` is None), and
        such that ``object[0]`` returns something with attributes ``shape``
-    formula :  :class:`nipy.modalities.fmri.formula.Formula`
+    formula :  :class:`nipy.algorithms.statistics.formula.Formula`
     sigma : 
     outputs :
     volume_start_times : 

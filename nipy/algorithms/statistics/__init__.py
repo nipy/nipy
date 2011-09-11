@@ -5,4 +5,4 @@ TODO
 """
 __docformat__ = 'restructuredtext'
 
-import intvol, rft, onesample
+from . import intvol, rft, onesample, formula
