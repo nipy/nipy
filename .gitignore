@@ -28,6 +28,7 @@
 *.o
 *.py[oc]
 *.so
+*.pyd
 
 # Packages #
 ############
