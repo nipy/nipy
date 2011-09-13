@@ -2,13 +2,15 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-from nipy.modalities.fmri.api import FmriImageList
-from nipy.modalities.fmri.pca import pca_image
+from ..pca import pca_image
 from nipy.core.api import Image
 from nipy.core.image.xyz_image import XYZImage
 from nipy.core.image.image import rollaxis as image_rollaxis
 from nipy.io.api import  load_image
-from nipy.testing import *
+
+from nose.tools import assert_raises
+from numpy.testing import (assert_equal, assert_almost_equal)
+from nipy.testing import funcfile
 
 data_dict = {}
 
@@ -68,31 +70,30 @@ def test_PCAMask():
     yield assert_equal, p['basis_projections'].xyz_transform, data_dict['mask'].xyz_transform
 
 
-@parametric
 def test_not_spatial():
     # we can't do PCA over spatial axes
     ncomp = 5
     for i, o, n in zip('ijk', 'xyz', [0,1,2]):
-        yield assert_raises(ValueError,
-                            pca_image,
-                            data_dict['fmridata'],
-                            i,
-                            data_dict['mask'],
-                            ncomp)
-        yield assert_raises(ValueError,
-                            pca_image,
-                            data_dict['fmridata'],
-                            o,
-                            data_dict['mask'],
-                            ncomp)
-        yield assert_raises(ValueError,
-                            pca_image,
-                            data_dict['fmridata'],
-                            n,
-                            data_dict['mask'],
-                            ncomp)
+        assert_raises(ValueError,
+                      pca_image,
+                      data_dict['fmridata'],
+                      i,
+                      data_dict['mask'],
+                      ncomp)
+        assert_raises(ValueError,
+                      pca_image,
+                      data_dict['fmridata'],
+                      o,
+                      data_dict['mask'],
+                      ncomp)
+        assert_raises(ValueError,
+                      pca_image,
+                      data_dict['fmridata'],
+                      n,
+                      data_dict['mask'],
+                      ncomp)
 
-@parametric
+
 def test_PCAMask_nostandardize():
     nimages = data_dict['nimages']
     ntotal = nimages - 1
@@ -100,13 +101,13 @@ def test_PCAMask_nostandardize():
     p = pca_image(data_dict['fmridata'], 't',
                   data_dict['mask'],
                   ncomp=ncomp, standardize=False)
-    yield assert_equal(_rank(p), ntotal)
-    yield assert_equal(p['basis_vectors over t'].shape, (nimages, ntotal))
-    yield assert_equal(p['basis_projections'].shape, data_dict['mask'].shape + (ncomp,))
-    yield assert_equal(p['pcnt_var'].shape, (ntotal,))
-    yield assert_almost_equal(p['pcnt_var'].sum(), 100.)
-    yield assert_equal(p['basis_projections'].axes.coord_names, ['i','j','k','PCA components'])
-    yield assert_equal(p['basis_projections'].xyz_transform, data_dict['mask'].xyz_transform)
+    assert_equal(_rank(p), ntotal)
+    assert_equal(p['basis_vectors over t'].shape, (nimages, ntotal))
+    assert_equal(p['basis_projections'].shape, data_dict['mask'].shape + (ncomp,))
+    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert_almost_equal(p['pcnt_var'].sum(), 100.)
+    assert_equal(p['basis_projections'].axes.coord_names, ['i','j','k','PCA components'])
+    assert_equal(p['basis_projections'].xyz_transform, data_dict['mask'].xyz_transform)
 
 
 def test_PCANoMask():

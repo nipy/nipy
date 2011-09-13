@@ -7,7 +7,6 @@
 #-----------------------------------------------------------------------------
 
 # Stdlib
-import warnings
 from tempfile import NamedTemporaryFile
 from os.path import join as pjoin
 
@@ -15,15 +14,15 @@ from os.path import join as pjoin
 import numpy as np
 
 # From NIPY
-from nipy.fixes.scipy.stats.models.regression import (OLSModel, ARModel,
-                                                      isestimable )
+from nipy.algorithms.statistics.api import (OLSModel, ARModel, make_recarray)
 from nipy.modalities.fmri.fmristat import hrf as delay
-from nipy.modalities.fmri import formula, design, hrf
+from nipy.modalities.fmri import design, hrf
 from nipy.io.api import load_image, save_image
 from nipy.core import api
+from nipy.core.api import Image
 from nipy.core.image.image import rollaxis as image_rollaxis
 
-from nipy.algorithms.statistics import onesample 
+from nipy.algorithms.statistics import onesample
 
 # Local
 import fiac_util as futil
@@ -62,7 +61,7 @@ def run_model(subj, run):
     # This recarray of times has one column named 't'
     # It is used in the function design.event_design
     # to create the design matrices.
-    volume_times_rec = formula.make_recarray(volume_times, 't')
+    volume_times_rec = make_recarray(volume_times, 't')
     # Get a path description dictionary that contains all the path data
     # relevant to this subject/run
     path_info = futil.path_info(subj,run)
@@ -77,7 +76,7 @@ def run_model(subj, run):
     # been run once, and get_experiment_initial() will simply load the
     # newly-formatted design description files (.csv) into record arrays.
     experiment, initial = futil.get_experiment_initial(path_info)
-    
+
     # Create design matrices for the "initial" and "experiment" factors,
     # saving the default contrasts. 
 
@@ -115,7 +114,7 @@ def run_model(subj, run):
     # in the model as confounds.
 
     X_initial, _ = design.event_design(initial, volume_times_rec,
-                                       hrfs=[hrf.glover]) 
+                                       hrfs=[hrf.glover])
 
     # In addition to factors, there is typically a "drift" term
     # In this case, the drift is a natural cubic spline with
@@ -157,13 +156,13 @@ def run_model(subj, run):
 
     cons['speaker'] = np.vstack([cons['speaker_0'], cons['speaker_1']])
     cons['sentence'] = np.vstack([cons['sentence_0'], cons['sentence_1']])
-    cons['sentence:speaker'] = np.vstack([cons['sentence:speaker_0'], 
+    cons['sentence:speaker'] = np.vstack([cons['sentence:speaker_0'],
                                           cons['sentence:speaker_1']])
 
     #----------------------------------------------------------------------
     # Data loading
     #----------------------------------------------------------------------
-    
+
     # Load in the fMRI data, saving it as an array
     # It is transposed to have time as the first dimension,
     # i.e. fmri[t] gives the t-th volume.
@@ -174,7 +173,7 @@ def run_model(subj, run):
 
     fmri = fmri_im.get_data() # now, it's an ndarray
 
-    nvol, volshape = fmri.shape[0], fmri.shape[1:] 
+    nvol, volshape = fmri.shape[0], fmri.shape[1:]
     nslice, sliceshape = volshape[0], volshape[1:]
 
     #----------------------------------------------------------------------
@@ -208,7 +207,7 @@ def run_model(subj, run):
 
     # We split the contrasts into F-tests and t-tests.
     # XXX helper function should do this
-    
+
     fcons = {}; tcons = {}
     for n, v in cons.items():
         v = np.squeeze(v)
@@ -225,13 +224,13 @@ def run_model(subj, run):
         tempdict = {}
         for v in ['sd', 't', 'effect']:
             tempdict[v] = np.memmap(NamedTemporaryFile(prefix='%s%s.nii' \
-                                    % (n,v)), dtype=np.float, 
+                                    % (n,v)), dtype=np.float,
                                     shape=volshape, mode='w+')
         output[n] = tempdict
-    
+
     for n in fcons:
         output[n] = np.memmap(NamedTemporaryFile(prefix='%s%s.nii' \
-                                    % (n,v)), dtype=np.float, 
+                                    % (n,v)), dtype=np.float,
                                     shape=volshape, mode='w+')
 
     # Loop over the unique values of ar1
@@ -255,19 +254,15 @@ def run_model(subj, run):
 
     # Dump output to disk
     odir = futil.output_dir(path_info,tcons,fcons)
-
+    # The coordmap for a single volume in the time series
+    vol0_map = fmri_im[0].coormap
     for n in tcons:
         for v in ['t', 'sd', 'effect']:
-            lpi_im = LPIImage(output[n][v], fmri_lpi.affine,
-                              fmri_lpi.axes.coord_names[:3])
-            im = Image(lpi_im._data, lpi_im.coordmap) # This is necessary to save the results for now
+            im = Image(output[n][v], vol0_map)
             save_image(im, pjoin(odir, n, '%s.nii' % v))
 
     for n in fcons:
-        lpi_im = LPIImage(output[n], fmri_lpi.affine,
-                          fmri_lpi.axes.coord_names[:3])
-        im = Image(lpi_im._data, lpi_im.coordmap) # This is necessary to save the results for now
-        im = api.Image(output[n], affine_coordmap)
+        im = Image(output[n], vol0_map)
         save_image(im, pjoin(odir, n, "F.nii"))
 
 
@@ -432,8 +427,7 @@ def group_analysis_signs(design, contrast, mask, signs=None):
     return minT, maxT
 
 
-def permutation_test(design, contrast, mask=GROUP_MASK,
-                     nsample=1000):
+def permutation_test(design, contrast, mask=GROUP_MASK, nsample=1000):
     """
     Perform a permutation (sign) test for a given design type and
     contrast. It is a Monte Carlo test because we only sample nsample
@@ -441,36 +435,22 @@ def permutation_test(design, contrast, mask=GROUP_MASK,
 
     Parameters
     ----------
-
     design: one of ['block', 'event']
-
     contrast: str
-
     nsample: int
 
     Returns
     -------
-
     min_vals: np.ndarray
-
     max_vals: np.ndarray
     """
-
     maska = np.asarray(mask).astype(np.bool)
-
     subjects = futil.subject_dirs(design, contrast)
-    
     Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,maska]
                   for s in subjects])
     nsubj = Y.shape[0]
-
-    signs = 2*np.greater(np.random.sample(size=(nsample, nsubj)), 
-                         0.5) - 1
-    ipvars('signs')
-    min_vals, max_vals = group_analysis_signs(design, 
-                                              contrast, 
-                                              maska, 
-                                              signs)
+    signs = 2*np.greater(np.random.sample(size=(nsample, nsubj)), 0.5) - 1
+    min_vals, max_vals = group_analysis_signs(design, contrast, maska, signs)
     return min_vals, max_vals
 
 

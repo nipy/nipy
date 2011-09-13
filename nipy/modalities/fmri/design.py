@@ -3,17 +3,18 @@
 """
 Convenience functions for specifying a design in the GLM
 """
-
-import numpy as np
-from scipy.interpolate import interp1d
 from string import join as sjoin
 
-from nipy.algorithms.statistics.utils import combinations
+import numpy as np
 
-from . import formula
+from nipy.algorithms.statistics.utils import combinations
+from nipy.algorithms.statistics.formula import formulae
+from nipy.algorithms.statistics.formula.formulae import (
+    Formula, Factor, Term, make_recarray)
+
 from .utils import events, fourier_basis as fourier_basis_sym
 
-from .hrf import glover, dglover
+from .hrf import glover
 
 def fourier_basis(t, freq):
     """
@@ -40,19 +41,20 @@ def fourier_basis(t, freq):
     >>> drift.shape
     (101, 6)
     """
-    tval = formula.make_recarray(t, ['t'])
+    tval = make_recarray(t, ['t'])
     f = fourier_basis_sym(freq)
     return f.design(tval, return_float=True)
 
 
-def natural_spline(t, knots=None, order=3, intercept=True):
+def natural_spline(tvals, knots=None, order=3, intercept=True):
     """
-    Create a design matrix with columns given by a
-    natural spline of a given order and a specified set of knots.
+    Create a design matrix with columns given by a natural spline of a given
+    order and a specified set of knots.
 
     Parameters
     ----------
-    t : np.array
+    tvals : np.array
+        Time values
     knots : None or sequence, optional
        Sequence of float.  Default None (same as empty list)
     order : int, optional
@@ -67,16 +69,15 @@ def natural_spline(t, knots=None, order=3, intercept=True):
 
     Examples
     --------
-    >>> t = np.linspace(0,50,101)
-    >>> drift = natural_spline(t, knots=[10,20,30,40])
+    >>> tvals = np.linspace(0,50,101)
+    >>> drift = natural_spline(tvals, knots=[10,20,30,40])
     >>> drift.shape
     (101, 8)
     """
-    tval = formula.make_recarray(t, ['t'])
-    t = formula.Term('t')
-    f = formula.natural_spline(t, knots=knots, order=order, 
-                               intercept=intercept)
-    return f.design(tval, return_float=True)
+    tvals = make_recarray(tvals, ['t'])
+    t = Term('t')
+    f = formulae.natural_spline(t, knots=knots, order=order, intercept=intercept)
+    return f.design(tvals, return_float=True)
 
 
 def event_design(event_spec, t, order=2, hrfs=[glover]):
@@ -118,7 +119,7 @@ def event_design(event_spec, t, order=2, hrfs=[glover]):
     if 'time' not in fields:
         raise ValueError('expecting a field called "time"')
     fields.pop(fields.index('time'))
-    e_factors = [formula.Factor(n, np.unique(event_spec[n])) for n in fields]
+    e_factors = [Factor(n, np.unique(event_spec[n])) for n in fields]
     e_formula = np.product(e_factors)
     e_contrasts = {}
     if len(e_factors) > 1:
@@ -128,7 +129,7 @@ def event_design(event_spec, t, order=2, hrfs=[glover]):
                 fs = [c[1].main_effect for c in comb]
                 e_contrasts[sjoin(names, ':')] = np.product(fs).design(event_spec)
 
-    e_contrasts['constant'] = formula.I.design(event_spec)
+    e_contrasts['constant'] = formulae.I.design(event_spec)
 
     # Design and contrasts in event space
     # TODO: make it so I don't have to call design twice here
@@ -145,12 +146,12 @@ def event_design(event_spec, t, order=2, hrfs=[glover]):
         t_terms += [events(event_spec['time'], \
             amplitudes=e_X[n], f=h) for i, n in enumerate(e_dtype.names)]
         for n, c in e_contrasts.items():
-            t_contrasts["%s_%d" % (n, l)] = formula.Formula([ \
+            t_contrasts["%s_%d" % (n, l)] = Formula([ \
                  events(event_spec['time'], amplitudes=c[nn], f=h)
                  for i, nn in enumerate(c.dtype.names)])
-    t_formula = formula.Formula(t_terms)
+    t_formula = Formula(t_terms)
     
-    tval = formula.make_recarray(t, ['t'])
+    tval = make_recarray(t, ['t'])
     X_t, c_t = t_formula.design(tval, contrasts=t_contrasts)
     return X_t, c_t
 

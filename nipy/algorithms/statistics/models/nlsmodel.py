@@ -1,13 +1,14 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-TODO
+Non-linear least squares model
 """
 __docformat__ = 'restructuredtext'
 
 import numpy as np
-import numpy.linalg as L
-from nipy.fixes.scipy.stats.models.model import Model
+import scipy.linalg as spl
+
+from .model import Model
 
 class NLSModel(Model):
 
@@ -139,7 +140,7 @@ class NLSModel(Model):
         if self._iter < self.niter:
             self.getZ()
             self.getomega()
-            Zpinv = L.pinv(self._Z)
+            Zpinv = spl.pinv(self._Z)
             self.theta = np.dot(Zpinv, self.Y - self._omega)
         else:
             raise StopIteration

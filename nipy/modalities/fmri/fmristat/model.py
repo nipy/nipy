@@ -23,9 +23,8 @@ import os.path as path
 import numpy as np
 import scipy.linalg as spl
 
-from nipy.fixes.scipy.stats.models.regression import (OLSModel, ARModel,
-                                                      ar_bias_corrector,
-                                                      ar_bias_correct)
+from nipy.algorithms.statistics.models.regression import (
+    OLSModel, ARModel, ar_bias_corrector, ar_bias_correct)
 
 # nipy core imports
 from nipy.core.api import Image, parcels, matrix_generator, AffineTransform
@@ -35,9 +34,9 @@ from nipy.io.api import save_image
 
 # fmri imports
 from ..api import FmriImageList, fmri_generator
-from ..formula import make_recarray
 
 import nipy.algorithms.statistics.regression as regression
+from nipy.algorithms.statistics.formula import make_recarray
 
 
 class ModelOutputImage(object):
@@ -123,7 +122,7 @@ class OLS(object):
        object returning 4D data from np.asarray, with first
        (``object[0]``) axis being the independent variable of the model;
        object[0] returns an object with attribute ``shape``.
-    formula :  :class:`nipy.modalities.fmri.formula.Formula`
+    formula :  :class:`nipy.algorithms.statistics.formula.Formula`
     outputs :
     volume_start_times :
     """
@@ -191,7 +190,7 @@ class AR1(object):
        object returning 4D array from ``np.asarray``, having attribute
        ``volume_start_times`` (if `volume_start_times` is None), and
        such that ``object[0]`` returns something with attributes ``shape``
-    formula :  :class:`nipy.modalities.fmri.formula.Formula`
+    formula :  :class:`nipy.algorithms.statistics.formula.Formula`
     rho : ``Image``
        image of AR(1) coefficients.  Returning data from
        ``np.asarray(rho)``, and having attribute ``coordmap``

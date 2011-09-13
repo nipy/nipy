@@ -25,10 +25,9 @@ import numpy.fft as FFT
 from scipy.interpolate import interp1d
 
 import sympy
-from sympy import DiracDelta, Symbol 
+from sympy import DiracDelta, Symbol
 
-from . import formula
-from .formula import Term
+from nipy.algorithms.statistics.formula.formulae import Term, Formula
 from nipy.fixes.sympy.utilities.lambdify import implemented_function, lambdify
 
 T = Term('t')
@@ -117,7 +116,7 @@ def fourier_basis(freq):
     for f in freq:
         r += [sympy.cos((2*sympy.pi*f*T)),
               sympy.sin((2*sympy.pi*f*T))]
-    return formula.Formula(r)
+    return Formula(r)
 
 
 def interp(times, values, fill=0, name=None, **kw):
