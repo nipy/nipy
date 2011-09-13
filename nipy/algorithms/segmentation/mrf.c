@@ -48,27 +48,27 @@ int ngb26 [] = {1,0,0,
 
 
 /* Compute the (negated) expected interaction energy of a voxel with
-   some neighbor */ 
+   some neighbor */
 static inline void _get_message_mf(double* res, int K, size_t pos, 
 				   const double* ppm_data, const double* aux)
 {
-  size_t p = pos;
-  double* buf = res;
+  double *buf = res, *buf_ppm = (double*)ppm_data + pos;
   int k;
   
-  for (k=0; k<K; k++, buf++, p++)
-    *buf += ppm_data[p];
-  
+  for (k=0, buf, buf_ppm; k<K; k++, buf++, buf_ppm++)
+    *buf += *buf_ppm;
+
   return;
 }
 
 static inline void _finalize_inbox_mf(double* res, int K, const double* aux) 
 {
   int k; 
-  double* buf; 
+  double* buf;
+  double aux0 = aux[0];
 
   for (k=0, buf=res; k<K; k++, buf++) 
-    *buf = exp(aux[0]*(*buf));
+    *buf = exp(aux0 * (*buf));
 
   return; 
 }
@@ -82,12 +82,12 @@ static inline void _initialize_inbox_mf(double* res, int K)
 static inline void _get_message_icm(double* res, int K, size_t pos,  
 				    const double* ppm_data, const double* aux)
 {
-  size_t p = pos;
   int k, kmax = -1;
   double max = 0, tmp;
+  double *buf_ppm = (double*)ppm_data + pos;
 
-  for (k=0; k<K; k++, p++) {
-    tmp = ppm_data[p];
+  for (k=0; k<K; k++, buf_ppm++) {
+    tmp = *buf_ppm;
     if (tmp>max) {
       kmax = k;
       max = tmp;
@@ -102,15 +102,12 @@ static inline void _get_message_icm(double* res, int K, size_t pos,
 static inline void _get_message_bp(double* res, int K, size_t pos, 
 				   const double* ppm_data, const double* aux)
 {
-  size_t p = pos;
-  double* buf = res;
+  double *buf = res, *buf_ppm = (double*)ppm_data + pos;
   int k;
-  double prob; 
+  double aux0 = aux[0]; 
 
-  for (k=0; k<K; k++, buf++, p++) {
-    prob = ppm_data[p];
-    *buf *= aux[0]*prob + 1; 
-  }
+  for (k=0; k<K; k++, buf++, buf_ppm++) 
+    *buf *= aux0 * (*buf_ppm) + 1; 
   
   return;
 }
@@ -164,7 +161,7 @@ static void _ngb26_compound_messages(double* res,
 
   /*  Re-initialize output array */
   _initialize_inbox(res, K); 
-  
+
   /* Loop over neighbors */
   buf_ngb = ngb26; 
   while (j < nn) {
@@ -220,11 +217,10 @@ void ve_step(PyArrayObject* ppm,
   size_t S; 
   double* aux;
 
-
   /* Dimensions */
   K = PyArray_DIM((PyArrayObject*)ppm, 3);
   S = PyArray_SIZE(ppm);
-    
+
   /* Copy or not copy */
   if (copy) {
     ppm_data = (double*)calloc(S, sizeof(double));
@@ -271,7 +267,6 @@ void ve_step(PyArrayObject* ppm,
     break; 
   default: 
     {
-      fprintf(stderr, "Unknown message passing scheme\n");
       return; 
     }
     break; 
@@ -282,8 +277,9 @@ void ve_step(PyArrayObject* ppm,
 
   /* Loop over points */ 
   iter = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)XYZ, &axis);
+
   while(iter->index < iter->size) {
-    
+
     /* Compute the average ppm in the neighborhood */
     xyz = PyArray_ITER_DATA(iter); 
     x = xyz[0];
@@ -311,12 +307,11 @@ void ve_step(PyArrayObject* ppm,
     else
       for (k=0, buf=p; k<K; k++, kk++, buf++)
 	ppm_data[kk] = (*buf+TINY/(double)K)/(psum+TINY); 
-    
+
     /* Update iterator */ 
     PyArray_ITER_NEXT(iter); 
   
   }
-
 
   /* If applicable, copy back the auxiliary ppm array into the input */ 
   if (copy) {    

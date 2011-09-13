@@ -56,7 +56,10 @@ def initialize_parameters(data, klasses):
     mu[J] = ref_mu[1] + (x[J] - 1) * (ref_mu[2] - ref_mu[1])
     sigma[J] = ref_sigma[1] + (x[J] - 1) * (ref_sigma[2] - ref_sigma[1])
 
-    a = np.std(data) / BRAINWEB_GLOBAL_STDEV
+    # Alexis, Sep 9 2011: have to explicitly convert the result of
+    # np.std to a float, otherwise we get a memmap object and the
+    # ensuing division crashes!
+    a = float(np.std(data)) / BRAINWEB_GLOBAL_STDEV
     b = np.mean(data) - a * BRAINWEB_GLOBAL_MEAN
 
     return a * mu + b, a * sigma, prop
