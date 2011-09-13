@@ -6,12 +6,11 @@ import numpy as np
 
 import scipy.stats
 
-from nipy.modalities.fmri import formula as F
-from nipy.algorithms.utils.matrices import matrix_rank
-from nipy.fixes.scipy.stats.models.regression import OLSModel
+from ...formula.formulae import Factor, make_recarray
+from ....utils.matrices import matrix_rank
+from ..regression import OLSModel
 
-from nipy.testing import (assert_true, assert_equal, assert_array_equal,
-                          assert_almost_equal)
+from nipy.testing import (assert_equal, assert_almost_equal)
 
 
 data = """0.0      1      1      1
@@ -91,12 +90,12 @@ data = """0.0      1      1      1
 D = []
 for row in StringIO(data):
     D.append(map(float, row.split()))
-D = F.make_recarray(D, ['Days', 'Duration', 'Weight', 'ID'])
+D = make_recarray(D, ['Days', 'Duration', 'Weight', 'ID'])
 
 # Create the categorical regressors, known as Factors
 
-f1 = F.Factor('Duration', [1,2])
-f2 = F.Factor('Weight', [1,2,3])
+f1 = Factor('Duration', [1,2])
+f2 = Factor('Weight', [1,2,3])
 
 twoway = f1 * f2
 

@@ -1,8 +1,9 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
-from nipy.fixes.scipy.stats.models.family import links as L
-from nipy.fixes.scipy.stats.models.family import varfuncs as V
+
+from . import links as L
+from . import varfuncs as V
 
 class Family(object):
 

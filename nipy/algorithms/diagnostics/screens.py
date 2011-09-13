@@ -6,8 +6,8 @@ from os.path import join as pjoin
 import numpy as np
 
 from ...core.api import Image, drop_io_dim, append_io_dim
-from ...io.api import load_image, save_image
-from ...modalities.fmri import pca
+from ...io.api import save_image
+from ..utils import pca
 from .timediff import time_slice_diffs
 from .tsdiffplot import plot_tsdiffs
 

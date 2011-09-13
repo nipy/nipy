@@ -9,10 +9,12 @@ from nipy.core.image.image import rollaxis as img_rollaxis
 from  .. import model
 from ..model import ModelOutputImage, estimateAR
 from ...api import FmriImageList
-from ...formula import Formula, Term, make_recarray
 
-from nipy.fixes.scipy.stats.models.regression import (
+from nipy.algorithms.statistics.models.regression import (
     OLSModel, ar_bias_corrector, ar_bias_correct)
+from nipy.algorithms.statistics.formula.formulae import(
+    Formula, Term, make_recarray)
+
 
 from nibabel.tmpdirs import InTemporaryDirectory
 

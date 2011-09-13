@@ -1,18 +1,17 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import numpy as np 
-import sympy as sym
+import numpy as np
 from numpy.random import randn
 
+from nipy.algorithms.statistics.api import Term
 from nipy.modalities.fmri.model import LinearModel
-from nipy.modalities.fmri import formula, hrf
 
 """
 todo
 - deal with multiple session
 - instantiate from a .csv file
 - add modulations of the regressors
-- add FIR model 
+- add FIR model
 - normalization of the amplitude -> check SPM
 - contrasts based on fatcors (lm.contrast(m1))
 - convolution of regressors with hrf
@@ -29,16 +28,16 @@ n=50
 tr = 0.6
 offset = tr/2
 timestamps = np.linspace(offset,offset+tr*(n-1),n)
-# caveat : time units can only be seconds 
+# caveat : time units can only be seconds
 
 ux_values = np.cumsum(randn(np.size(timestamps)))
 
 # Define symbolic regressors
-m1 = formula.Term('visual')
-m2 = formula.Term('audio')
-w1 = formula.Term('word1')
-w2 = formula.Term('word2')
-w3 = formula.Term('word3')
+m1 = Term('visual')
+m2 = Term('audio')
+w1 = Term('word1')
+w2 = Term('word2')
+w3 = Term('word3')
 
 c1 = m1*w1
 c2 = m1*w2
@@ -47,13 +46,13 @@ c4 = m2*w1
 c5 = m2*w2
 c6 = m2*w3
 
-hb = formula.Term('heartbeat')
-ux = formula.Term('translation x')
-uy = formula.Term('translation y')
-uz = formula.Term('translation z')
+hb = Term('heartbeat')
+ux = Term('translation x')
+uy = Term('translation y')
+uz = Term('translation z')
 
 
-# Instantiate a model 
+# Instantiate a model
 lm = LinearModel(hrf=['glover','dglover'])
 
 # event regressors
@@ -80,8 +79,6 @@ con_vect = lm.contrast(c2-c3,'glover')
 con_vect = lm.contrast(c1-c3,'glover')
 con_vect = lm.contrast(c1-c3)
 con_vect = lm.contrast(2*c1-c2-c3)
-
-
 
 X = X/np.sqrt(np.sum(X**2,0))
 import matplotlib.pylab as mp

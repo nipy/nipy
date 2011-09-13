@@ -3,12 +3,13 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 
+from nipy.algorithms.statistics.models.nlsmodel import NLSModel
+
 def invertR(delta, IRF, niter=20):
     """
     If IRF has 2 components (w0, w1) return an estimate of the inverse of
     r=w1/w0, as in Liao et al. (2002). Fits a simple arctan model to the
     ratio w1/w0.
-
     """
 
     R = IRF[1](delta) / IRF[0](delta)
@@ -35,14 +36,13 @@ def invertR(delta, IRF, niter=20):
     else:
         c = -(delta.max() / (np.pi/2)) * 1.2
 
-    from nipy.algorithms.statistics import nlsmodel
     design = R.reshape(R.shape[0], 1)
-    model = nlsmodel.NLSModel(Y=delta,
-                              design=design,
-                              f=f,
-                              grad=grad,
-                              theta=np.array([4., 0.5, 0]),
-                              niter=niter)
+    model = NLSModel(Y=delta,
+                     design=design,
+                     f=f,
+                     grad=grad,
+                     theta=np.array([4., 0.5, 0]),
+                     niter=niter)
 
     for iteration in model:
         model.next()

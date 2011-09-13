@@ -7,8 +7,9 @@ General linear models
 """
 
 import numpy as np
-from nipy.fixes.scipy.stats.models import family
-from nipy.fixes.scipy.stats.models.regression import WLSModel
+
+from . import family
+from .regression import WLSModel
 
 class Model(WLSModel):
 

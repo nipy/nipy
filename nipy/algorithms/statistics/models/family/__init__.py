@@ -12,5 +12,5 @@ These families are described in
 
 '''
 
-from nipy.fixes.scipy.stats.models.family.family import Gaussian, Family, \
-     Poisson, Gamma, InverseGaussian, Binomial
+from .family import (Gaussian, Family, Poisson, Gamma, InverseGaussian,
+                     Binomial)
