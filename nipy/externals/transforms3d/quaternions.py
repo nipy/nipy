@@ -472,7 +472,7 @@ def quat2axangle(quat, identity_thresh=None):
             identity_thresh = np.finfo(vec.dtype).eps * 3
         except ValueError: # integer type
             identity_thresh = _FLOAT_EPS * 3
-    n = math.sqrt(x*x + y*y + z*z)
+    n = min(math.sqrt(x*x + y*y + z*z), _MAX_FLOAT)
     if n < identity_thresh: 
         # if vec is nearly 0,0,0, this is an identity rotation
         return np.array([1.0, 0, 0]), 0.0
