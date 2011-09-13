@@ -13,36 +13,19 @@
 #define inline __inline
 #endif
 
-#define CUBIC_SPLINE_MIRROR(x, n, p)			\
-  ((x)<0.0 ? (-(x)) : ((x)>(n) ? ((p)-(x)) : (x)))
 
 /*
   Three different boundary conditions are implemented:
       mode == 0 : 'zero'
       mode == 1: 'nearest'
-      mode == 2: 'mirror'
+      mode == 2: 'reflect'
+
+  Depending on the mode, the input coordinate x is mirrored so as to
+  fall within the image bounds [0..ddim] and a weight w is computed.
  */
-#define BOUNDARY_CONDITIONS(mode, x, w, ddim, dim)	\
-  if (mode==0) {					\
-    if (x<-1)						\
-      return 0.0;					\
-    else if (x<0) {					\
-      w = 1+x;						\
-      x = 0;						\
-    }							\
-    else if (x>dim)					\
-      return 0.0;					\
-    else if (x>ddim) {					\
-      w = dim-x;					\
-      x = ddim;						\
-    }							\
-  }							\
-  else if (mode==1) {					\
-    if (x<0)						\
-      x = 0;						\
-    else if (x>ddim)					\
-      x = ddim;						\
-  }						
+#define APPLY_BOUNDARY_CONDITIONS(mode, x, w, ddim)		\
+  if (!_apply_boundary_conditions(mode, ddim, &x, &w))		\
+    return 0.0;
 
 #define COMPUTE_NEIGHBORS(x, ddim, nx, px)		\
   if (!_mirror_grid_neighbors(x, ddim, &nx, &px))	\
@@ -57,21 +40,18 @@
   iter->contiguous = 0;
 
 
-
 static void _cubic_spline_transform1d(double* res, double* src, unsigned int dim, 
 				      unsigned int res_stride, unsigned int src_stride); 
 static void _cubic_spline_transform(PyArrayObject* res, int axis, double* work); 
-static inline void _copy_double_buffer(double* res, double* src, unsigned int dim, unsigned int src_stride);
+static inline void _copy_double_buffer(double* res, double* src, unsigned int dim,
+				       unsigned int src_stride);
+static inline int _mirrored_position(int x, unsigned int ddim);
+static inline int _apply_boundary_conditions(int mode, unsigned int ddim, 
+					     double* x, double* w);
 static inline int _mirror_grid_neighbors(double x, unsigned int ddim, int* nx, int* px);
-static inline void _apply_affine_transform(double* Tx, 
-					   double* Ty, 
-					   double* Tz, 
+static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz, 
 					   const double* Tvox, 
-					   size_t x, 
-					   size_t y, 
-					   size_t z); 
-
-
+					   size_t x, size_t y, size_t z); 
 
 
 /* Numpy import */
@@ -249,24 +229,12 @@ void cubic_spline_transform(PyArrayObject* res, const PyArrayObject* src)
 }
 
 
-/* 
-
-   The mode parameter determines the boundary conditions. 
-
-   mode == 0 --> 'zero'
-   mode == 1 --> 'nearest'
-   mode == 2 --> 'reflect'
-
-*/
-
 double cubic_spline_sample1d (double x, const PyArrayObject* Coef, int mode) 
 {
 
-  unsigned int dim = PyArray_DIM(Coef, 0); 
+  unsigned int ddim = PyArray_DIM(Coef, 0) - 1; 
   unsigned int offset = PyArray_STRIDE(Coef, 0)/sizeof(double); 
   double *coef = PyArray_DATA(Coef); 
-  unsigned int ddim = dim-1;
-  unsigned int two_ddim = 2*ddim;
   double *buf;
   int nx, px, xx;
   double s;
@@ -276,7 +244,7 @@ double cubic_spline_sample1d (double x, const PyArrayObject* Coef, int mode)
   int *buf_posx;
   double w = 1; 
 
-  BOUNDARY_CONDITIONS(mode, x, w, ddim, dim); 
+  APPLY_BOUNDARY_CONDITIONS(mode, x, w, ddim); 
   COMPUTE_NEIGHBORS(x, ddim, nx, px);  
 
   /* Compute the B-spline values as well as the image positions 
@@ -285,7 +253,7 @@ double cubic_spline_sample1d (double x, const PyArrayObject* Coef, int mode)
   buf_posx = (int*)posx;
   for (xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++) {
     *buf_bspx = cubic_spline_basis(x-(double)xx);
-    *buf_posx = CUBIC_SPLINE_MIRROR(xx, ddim, two_ddim);
+    *buf_posx = _mirrored_position(xx, ddim);
   }
 
   /* Compute the interpolated value incrementally */
@@ -313,15 +281,11 @@ double cubic_spline_sample2d (double x, double y, const PyArrayObject* Coef,
 			      int mode_x, int mode_y)
 {
 
-  unsigned int dimX = PyArray_DIM(Coef, 0);
-  unsigned int dimY = PyArray_DIM(Coef, 1);
+  unsigned int ddimX = PyArray_DIM(Coef, 0) - 1;
+  unsigned int ddimY = PyArray_DIM(Coef, 1) - 1;
   unsigned int offX = PyArray_STRIDE(Coef, 0)/sizeof(double); 
   unsigned int offY = PyArray_STRIDE(Coef, 1)/sizeof(double); 
   double *coef = PyArray_DATA(Coef); 
-  unsigned int ddimX = dimX-1;
-  unsigned int ddimY = dimY-1;
-  unsigned int two_ddimX = 2*ddimX;
-  unsigned int two_ddimY = 2*ddimY;
   double *buf;
   int nx, ny, px, py, xx, yy;
   double s, aux;
@@ -332,9 +296,9 @@ double cubic_spline_sample2d (double x, double y, const PyArrayObject* Coef,
   int shfty;
   double wx = 1, wy = 1; 
 
-  BOUNDARY_CONDITIONS(mode_x, x, wx, ddimX, dimX); 
+  APPLY_BOUNDARY_CONDITIONS(mode_x, x, wx, ddimX); 
   COMPUTE_NEIGHBORS(x, ddimX, nx, px); 
-  BOUNDARY_CONDITIONS(mode_y, y, wy, ddimY, dimY); 
+  APPLY_BOUNDARY_CONDITIONS(mode_y, y, wy, ddimY); 
   COMPUTE_NEIGHBORS(y, ddimY, ny, py);  
 
   /* Compute the B-spline values as well as the image positions 
@@ -343,14 +307,14 @@ double cubic_spline_sample2d (double x, double y, const PyArrayObject* Coef,
   buf_posx = (int*)posx;
   for (xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++) {
     *buf_bspx = cubic_spline_basis(x-(double)xx);
-    *buf_posx = CUBIC_SPLINE_MIRROR(xx, ddimX, two_ddimX);
+    *buf_posx = _mirrored_position(xx, ddimX);
   }
 
   buf_bspy = (double*)bspy;
   buf_posy = (int*)posy;
   for (yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++) {
     *buf_bspy = cubic_spline_basis(y-(double)yy);
-    *buf_posy = CUBIC_SPLINE_MIRROR(yy, ddimY, two_ddimY);
+    *buf_posy = _mirrored_position(yy, ddimY);
   }
 
 
@@ -388,19 +352,13 @@ double cubic_spline_sample2d (double x, double y, const PyArrayObject* Coef,
 double cubic_spline_sample3d (double x, double y, double z, const PyArrayObject* Coef,
 			      int mode_x, int mode_y, int mode_z)
 {
-  unsigned int dimX = PyArray_DIM(Coef, 0);
-  unsigned int dimY = PyArray_DIM(Coef, 1);
-  unsigned int dimZ = PyArray_DIM(Coef, 2);
+  unsigned int ddimX = PyArray_DIM(Coef, 0) - 1;
+  unsigned int ddimY = PyArray_DIM(Coef, 1) - 1;
+  unsigned int ddimZ = PyArray_DIM(Coef, 2) - 1;
   unsigned int offX = PyArray_STRIDE(Coef, 0)/sizeof(double); 
   unsigned int offY = PyArray_STRIDE(Coef, 1)/sizeof(double); 
   unsigned int offZ = PyArray_STRIDE(Coef, 2)/sizeof(double); 
   double *coef = PyArray_DATA(Coef); 
-  unsigned int ddimX = dimX-1;
-  unsigned int ddimY = dimY-1;
-  unsigned int ddimZ = dimZ-1;
-  unsigned int two_ddimX = 2*ddimX;
-  unsigned int two_ddimY = 2*ddimY;
-  unsigned int two_ddimZ = 2*ddimZ;
   double *buf;
   int nx, ny, nz, px, py, pz;
   int xx, yy, zz;
@@ -412,34 +370,34 @@ double cubic_spline_sample3d (double x, double y, double z, const PyArrayObject*
   int shftyz, shftz;
   double wx = 1, wy = 1, wz = 1; 
 
-  BOUNDARY_CONDITIONS(mode_x, x, wx, ddimX, dimX); 
+  APPLY_BOUNDARY_CONDITIONS(mode_x, x, wx, ddimX); 
   COMPUTE_NEIGHBORS(x, ddimX, nx, px); 
-  BOUNDARY_CONDITIONS(mode_y, y, wy, ddimY, dimY); 
+  APPLY_BOUNDARY_CONDITIONS(mode_y, y, wy, ddimY); 
   COMPUTE_NEIGHBORS(y, ddimY, ny, py);  
-  BOUNDARY_CONDITIONS(mode_z, z, wz, ddimZ, dimZ); 
+  APPLY_BOUNDARY_CONDITIONS(mode_z, z, wz, ddimZ); 
   COMPUTE_NEIGHBORS(z, ddimZ, nz, pz);  
-  
+
   /* Compute the B-spline values as well as the image positions 
      where to find the B-spline coefficients (including mirror conditions) */ 
   buf_bspx = (double*)bspx;
   buf_posx = (int*)posx;
   for (xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++) {
     *buf_bspx = cubic_spline_basis(x-(double)xx);
-    *buf_posx = CUBIC_SPLINE_MIRROR(xx, ddimX, two_ddimX);
+    *buf_posx = _mirrored_position(xx, ddimX);
   }
 
   buf_bspy = (double*)bspy;
   buf_posy = (int*)posy;
   for (yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++) {
     *buf_bspy = cubic_spline_basis(y-(double)yy);
-    *buf_posy = CUBIC_SPLINE_MIRROR(yy, ddimY, two_ddimY);
+    *buf_posy = _mirrored_position(yy, ddimY);
   }
 
   buf_bspz = (double*)bspz;
   buf_posz = (int*)posz;
   for (zz = nz; zz <= pz; zz ++, buf_bspz ++, buf_posz ++) {
     *buf_bspz = cubic_spline_basis(z-(double)zz);
-    *buf_posz = CUBIC_SPLINE_MIRROR(zz, ddimZ, two_ddimZ);
+    *buf_posz = _mirrored_position(zz, ddimZ);
   }
 
   /* Compute the interpolated value incrementally */
@@ -487,23 +445,15 @@ double cubic_spline_sample3d (double x, double y, double z, const PyArrayObject*
 double cubic_spline_sample4d (double x, double y, double z, double t, const PyArrayObject* Coef,
 			      int mode_x, int mode_y, int mode_z, int mode_t)
 {
-  unsigned int dimX = PyArray_DIM(Coef, 0);
-  unsigned int dimY = PyArray_DIM(Coef, 1);
-  unsigned int dimZ = PyArray_DIM(Coef, 2);
-  unsigned int dimT = PyArray_DIM(Coef, 3);
+  unsigned int ddimX = PyArray_DIM(Coef, 0) - 1;
+  unsigned int ddimY = PyArray_DIM(Coef, 1) - 1;
+  unsigned int ddimZ = PyArray_DIM(Coef, 2) - 1;
+  unsigned int ddimT = PyArray_DIM(Coef, 3) - 1;
   unsigned int offX = PyArray_STRIDE(Coef, 0)/sizeof(double); 
   unsigned int offY = PyArray_STRIDE(Coef, 1)/sizeof(double); 
   unsigned int offZ = PyArray_STRIDE(Coef, 2)/sizeof(double); 
   unsigned int offT = PyArray_STRIDE(Coef, 3)/sizeof(double); 
   double *coef = PyArray_DATA(Coef); 
-  unsigned int ddimX = dimX-1;
-  unsigned int ddimY = dimY-1;
-  unsigned int ddimZ = dimZ-1;
-  unsigned int ddimT = dimT-1;
-  unsigned int two_ddimX = 2*ddimX;
-  unsigned int two_ddimY = 2*ddimY;
-  unsigned int two_ddimZ = 2*ddimZ;
-  unsigned int two_ddimT = 2*ddimT;
   double *buf;
   int nx, ny, nz, nt, px, py, pz, pt;
   int xx, yy, zz, tt;
@@ -515,13 +465,13 @@ double cubic_spline_sample4d (double x, double y, double z, double t, const PyAr
   int shftyzt, shftzt, shftt;
   double wx = 1, wy = 1, wz = 1, wt = 1; 
 
-  BOUNDARY_CONDITIONS(mode_x, x, wx, ddimX, dimX); 
+  APPLY_BOUNDARY_CONDITIONS(mode_x, x, wx, ddimX); 
   COMPUTE_NEIGHBORS(x, ddimX, nx, px); 
-  BOUNDARY_CONDITIONS(mode_y, y, wy, ddimY, dimY); 
+  APPLY_BOUNDARY_CONDITIONS(mode_y, y, wy, ddimY); 
   COMPUTE_NEIGHBORS(y, ddimY, ny, py);  
-  BOUNDARY_CONDITIONS(mode_z, z, wz, ddimZ, dimZ); 
+  APPLY_BOUNDARY_CONDITIONS(mode_z, z, wz, ddimZ); 
   COMPUTE_NEIGHBORS(z, ddimZ, nz, pz);    
-  BOUNDARY_CONDITIONS(mode_t, t, wt, ddimT, dimT); 
+  APPLY_BOUNDARY_CONDITIONS(mode_t, t, wt, ddimT); 
   COMPUTE_NEIGHBORS(t, ddimT, nt, pt); 
 
   /* Compute the B-spline values as well as the image positions 
@@ -530,28 +480,28 @@ double cubic_spline_sample4d (double x, double y, double z, double t, const PyAr
   buf_posx = (int*)posx;
   for (xx = nx; xx <= px; xx ++, buf_bspx ++, buf_posx ++) {
     *buf_bspx = cubic_spline_basis(x-(double)xx);
-    *buf_posx = CUBIC_SPLINE_MIRROR(xx, ddimX, two_ddimX);
+    *buf_posx = _mirrored_position(xx, ddimX);
   }
 
   buf_bspy = (double*)bspy;
   buf_posy = (int*)posy;
   for (yy = ny; yy <= py; yy ++, buf_bspy ++, buf_posy ++) {
     *buf_bspy = cubic_spline_basis(y-(double)yy);
-    *buf_posy = CUBIC_SPLINE_MIRROR(yy, ddimY, two_ddimY);
+    *buf_posy = _mirrored_position(yy, ddimY);
   }
 
   buf_bspz = (double*)bspz;
   buf_posz = (int*)posz;
   for (zz = nz; zz <= pz; zz ++, buf_bspz ++, buf_posz ++) {
     *buf_bspz = cubic_spline_basis(z-(double)zz);
-    *buf_posz = CUBIC_SPLINE_MIRROR(zz, ddimZ, two_ddimZ);
+    *buf_posz = _mirrored_position(zz, ddimZ);
   }
 
   buf_bspt = (double*)bspt;
   buf_post = (int*)post;
   for (tt = nt; tt <= pt; tt ++, buf_bspt ++, buf_post ++) {
     *buf_bspt = cubic_spline_basis(t-(double)tt);
-    *buf_post = CUBIC_SPLINE_MIRROR(tt, ddimT, two_ddimT);
+    *buf_post = _mirrored_position(tt, ddimT);
   }
   
 
@@ -659,7 +609,8 @@ void cubic_spline_resample3d(PyArrayObject* im_resampled, const PyArrayObject* i
 }
 
 static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz, 
-					   const double* Tvox, size_t x, size_t y, size_t z)
+					   const double* Tvox,
+					   size_t x, size_t y, size_t z)
 {
   double* bufTvox = (double*)Tvox; 
 
@@ -680,6 +631,61 @@ static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz,
 }
 
 
+/* 
+   Convert an input grid coordinate x into another grid coordinate
+   within [0, ddim], possibly using a reflection. This function
+   implicitely assumes that -ddim < x < 2*ddim
+ */
+static inline int _mirrored_position(int x, unsigned int ddim)
+{
+  if (x < 0)
+    return -x;
+  else if (x > ddim) 
+    return 2 * ddim - x;
+  else
+    return x;
+}
+
+/*
+Depending on the chosen mode, mirror the position and set the weight.
+*/
+static inline int _apply_boundary_conditions(int mode, unsigned int ddim, 
+					     double* x, double* w)
+{
+  int ok = 1; 
+  unsigned int dim = ddim + 1; 
+  int neg_ddim;
+  unsigned int two_ddim;
+
+  if (mode == 0) {
+    if (*x < -1)
+      ok = 0;
+    else if (*x < 0) {
+      *w = 1 + *x;
+      *x = 0;
+    }
+    else if (*x > dim)
+      ok = 0;
+    else if (*x > ddim) {
+      *w = dim - *x;
+      *x = ddim;
+    }
+  }
+  else if (mode == 1) {
+    if (*x < 0)
+      *x = 0;
+    else if (*x > ddim)
+      *x = ddim;
+  }
+  else{ /* mode==2 */
+    neg_ddim = -ddim; 
+    two_ddim = 2 * ddim; 
+    if ((*x < neg_ddim) || (*x > two_ddim))
+      ok = 0;
+  }
+  
+  return ok; 
+}
 
 /* 
    Compute left and right cubic spline neighbors in the image grid
