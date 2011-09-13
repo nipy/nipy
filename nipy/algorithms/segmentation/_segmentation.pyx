@@ -28,35 +28,31 @@ cdef extern from "mrf.h":
 mrf_import_array()
 import_array()
 import numpy as np
-import warnings
 
 
 def _ve_step(ppm, ref, XYZ, double beta, int synchronous, int scheme):
 
-    if not XYZ.shape[1] == 3: 
-        warnings.warn('MRF regularization only implemented in 3D, doing nothing')
-        return ppm
     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
         raise ValueError('ppm array should be double C-contiguous')
     if not ref.flags['C_CONTIGUOUS'] or not ref.dtype=='double':
         raise ValueError('ref array should be double C-contiguous')
     if not XYZ.flags['C_CONTIGUOUS'] or not XYZ.dtype=='int':
         raise ValueError('XYZ array should be int C-contiguous')
+    if not XYZ.shape[1] == 3: 
+        raise ValueError('XYZ array should be 3D')
 
     ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, beta, synchronous, scheme)
-
     return ppm 
 
 
 def _interaction_energy(ppm, XYZ): 
 
-    if not XYZ.shape[1] == 3: 
-        warnings.warn('MRF regularization only implemented in 3D, doing nothing')
-        return ppm
     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
         raise ValueError('ppm array should be double C-contiguous')
     if not XYZ.flags['C_CONTIGUOUS'] or not XYZ.dtype=='int':
         raise ValueError('XYZ array should be int C-contiguous')
+    if not XYZ.shape[1] == 3: 
+        raise ValueError('XYZ array should be 3D')
 
     return interaction_energy(<ndarray>ppm, <ndarray>XYZ) 
 
