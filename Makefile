@@ -2,8 +2,10 @@
 
 PYTHON = python
 
-clean:
+clean-pyc:
 	find . -regex ".*\.pyc" -exec rm -rf "{}" \;
+
+clean: clean-pyc
 	find . -regex ".*\.so" -exec rm -rf "{}" \;
 	find . -regex ".*\.pyd" -exec rm -rf "{}" \;
 	find . -regex ".*~" -exec rm -rf "{}" \;
