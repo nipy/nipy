@@ -8,8 +8,8 @@ import numpy as np
 import nipy as ni
 from ..screens import screen
 from ..timediff import time_slice_diffs
-from ....modalities.fmri.pca import pca
-from ....modalities.fmri.tests.test_pca import res2pos1
+from ...utils.pca import pca
+from ...utils.tests.test_pca import res2pos1
 
 from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
 
