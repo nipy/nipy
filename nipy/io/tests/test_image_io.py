@@ -1,7 +1,5 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import os
-import warnings
 
 import numpy as np
 
@@ -12,7 +10,7 @@ from nipy.core.api import fromarray
 
 from nipy.testing import (assert_true, assert_equal, assert_raises,
                           assert_array_equal, assert_array_almost_equal,
-                          assert_almost_equal, funcfile)
+                          assert_almost_equal, funcfile, anatfile)
 
 from nibabel.tmpdirs import InTemporaryDirectory
 
@@ -99,22 +97,18 @@ def test_scaling():
             assert_almost_equal(newdata, data)
 
 
-@if_templates
 def test_header_roundtrip():
-    img = load_template_img()
-    fd, name = mkstemp(suffix='.nii.gz')
-    tmpfile = open(name)
-    hdr = img.header
+    img = load_image(anatfile)
+    hdr = img.metadata['header']
     # Update some header values and make sure they're saved
     hdr['slice_duration'] = 0.200
     hdr['intent_p1'] = 2.0
     hdr['descrip'] = 'descrip for TestImage:test_header_roundtrip'
     hdr['slice_end'] = 12
-    img.header = hdr
     with InTemporaryDirectory():
         save_image(img, 'img.nii.gz')
         newimg = load_image('img.nii.gz')
-    newhdr = newimg.header
+    newhdr = newimg.metadata['header']
     assert_array_almost_equal(newhdr['slice_duration'],
                               hdr['slice_duration'])
     assert_equal(newhdr['intent_p1'], hdr['intent_p1'])
@@ -122,9 +116,8 @@ def test_header_roundtrip():
     assert_equal(newhdr['slice_end'], hdr['slice_end'])
 
 
-@if_templates
 def test_file_roundtrip():
-    img = load_template_img()
+    img = load_image(anatfile)
     data = img.get_data()
     with InTemporaryDirectory():
         save_image(img, 'img.nii.gz')

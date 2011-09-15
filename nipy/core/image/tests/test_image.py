@@ -4,17 +4,19 @@ import warnings
 
 import numpy as np
 
-from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
-
-from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
-                           assert_array_equal)
-
+import nibabel as nib
 
 from .. import image
 from ..image import iter_axis
 from ...api import Image, fromarray
 from ...api import parcels, data_generator, write_data
 from ...reference.coordinate_map import AffineTransform
+
+from nose.tools import (assert_true, assert_false, assert_equal,
+                        assert_not_equal, assert_raises)
+
+from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
+                           assert_array_equal)
 
 def setup():
     # Suppress warnings during tests to reduce noise
@@ -196,9 +198,26 @@ def test_defaults_ND():
         assert_true(isinstance(img._data, np.ndarray))
         assert_equal(img.ndim, len(arr_shape))
         assert_equal(img.shape, arr_shape)
-        assert_raises(AttributeError, getattr, img, 'header')
         assert_equal(img.affine.shape, (img.ndim+1, img.ndim+1))
         assert_true(img.affine.diagonal().all())
+        # img.header deprecated, when removed, test will raise Error
+        assert_raises(AttributeError, getattr, img, 'header')
+
+
+def test_header():
+    # Property header interface deprecated
+    arr = np.arange(24).reshape((2,3,4))
+    coordmap = AffineTransform.from_params('xyz', 'ijk', np.eye(4))
+    header = nib.Nifti1Header()
+    img = Image(arr, coordmap, metadata={'header': header})
+    assert_equal(img.metadata['header'], header)
+    # This interface deprecated
+    assert_equal(img.header, header)
+    hdr2 = nib.Nifti1Header()
+    hdr2['descrip'] = 'from fullness of heart'
+    assert_not_equal(img.header, hdr2)
+    img.header = hdr2
+    assert_equal(img.header, hdr2)
 
 
 def test_synchronized_order():
