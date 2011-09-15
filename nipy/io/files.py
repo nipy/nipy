@@ -54,12 +54,11 @@ def load(filename):
     """
     img = nib.load(filename)
     aff = img.get_affine()
-    shape = img.get_shape()
     hdr = img.get_header()
     # If the header implements it, get a list of names, one per axis,
     # and put this into the coordinate map.  In fact, no image format
     # implements this at the moment, so in practice, the following code
-    # is not currently called. 
+    # is not currently called.
     axis_renames = {}
     try:
         axis_names = hdr.axis_names
@@ -77,8 +76,8 @@ def load(filename):
     # affine_transform is a 3-d transform
     affine_transform3d, affine_transform = \
         affine_transform_from_array(aff, 'ijk', pixdim=zooms[3:])
-    img = Image(img.get_data(), affine_transform.renamed_domain(axis_renames))
-    img.header = hdr
+    img = Image(img.get_data(), affine_transform.renamed_domain(axis_renames),
+                metadata={'header': hdr})
     return img
 
 

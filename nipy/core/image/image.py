@@ -103,28 +103,25 @@ class Image(object):
     ###################################################################
 
     def _getheader(self):
-        # data loaded from a file should have a header
-        try:
-            return self._header
-        except AttributeError:
+        # data loaded from a file may have a header
+        warnings.warn("Please don't use ``img.header``; use"
+                      "``img.metadata['header'] instead",
+                      DeprecationWarning,
+                      stacklevel=2)
+        hdr = self.metadata.get('header')
+        if hdr is None:
             raise AttributeError('Image created from arrays '
                                  'may not have headers.')
+        return hdr
     def _setheader(self, header):
-        warnings.warn('Image.header may be deprecated if '
-                      'load_image returns an LPIImage')
-        self._header = header
+        warnings.warn("Please don't use ``img.header``; use"
+                      "``img.metadata['header'] instead",
+                      DeprecationWarning,
+                      stacklevel=2)
+        self.metadata['header'] = header
     _doc['header'] = \
-    """The file header dictionary for this image.  In order to update
-    the header, you must first make a copy of the header, set the
-    values you wish to change, then set the image header to the
-    updated header.
-
-    Example
-    -------
-    hdr = img.header
-    hdr['slice_duration'] = 0.200
-    hdr['descrip'] = 'My image registered with MNI152.'
-    img.header = hdr
+    """The file header structure for this image, if available.  This interface
+    will soon go away - you should use ``img.metadata['header'] instead.
     """
     header = property(_getheader, _setheader, doc=_doc['header'])
 
