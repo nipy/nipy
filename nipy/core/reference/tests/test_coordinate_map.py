@@ -3,19 +3,14 @@
 import numpy as np
 
 # this import line is a little ridiculous...
-from nipy.core.reference.coordinate_map import (CoordinateMap,
-                                                AffineTransform,
-                                                compose,
-                                                product,
-                                                append_io_dim,
-                                                drop_io_dim,
-                                                equivalent,
-                                                shifted_domain_origin,
-                                                shifted_range_origin,
-                                                _as_coordinate_map)
-from nipy.core.reference.coordinate_system import (
-    CoordinateSystem,
-    CoordinateSystemError)
+from ..coordinate_map import (CoordinateMap, AffineTransform, compose, product,
+                              append_io_dim, drop_io_dim, equivalent,
+                              shifted_domain_origin, shifted_range_origin,
+                              CoordMapMaker, CoordMapMakerError,
+                              _as_coordinate_map)
+
+from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,
+                                 CoordSysMaker, CoordSysMakerError)
 
 # shortcut
 CS = CoordinateSystem
@@ -615,3 +610,68 @@ def test_drop_io_dim():
     cm3d = AffineTransform.from_params('ijk', 'xyz', aff)
     cm2d = drop_io_dim(cm3d, 'z')
     assert_array_equal(cm2d.affine, np.diag([1, 2, 1]))
+
+
+def test_make_cmap():
+    # Routine to put the guessing back into making coordinate maps
+    d_names = list('ijklm')
+    r_names = list('xyztu')
+    domain_maker = CoordSysMaker(d_names, 'array')
+    range_maker = CoordSysMaker(r_names, 'world')
+    cmm = CoordMapMaker(domain_maker, range_maker)
+    # Making with generic functions and with affines
+    xform = lambda x : x+1
+    inv_xform = lambda x : x-1
+    diag_vals = range(2,8)
+    for i in range(1, 6):
+        dcs = CS(d_names[:i], 'array')
+        rcs = CS(r_names[:i], 'world')
+        # Generic
+        assert_equal(cmm.make_cmap(i, xform, inv_xform),
+                     CoordinateMap(dcs, rcs, xform, inv_xform))
+        assert_equal(cmm.make_cmap(i, xform), CoordinateMap(dcs, rcs, xform))
+        # Affines
+        aff = np.diag(diag_vals[:i] + [1])
+        assert_equal(cmm.make_affine(aff), AffineTransform(dcs, rcs, aff))
+        # Test that the call method selects what it got correctly
+        assert_equal(cmm(i, xform, inv_xform),
+                     CoordinateMap(dcs, rcs, xform, inv_xform))
+        assert_equal(cmm(i, xform), CoordinateMap(dcs, rcs, xform))
+        assert_equal(cmm(aff), AffineTransform(dcs, rcs, aff))
+    # For affines, we can append dimensions by adding on the diagonal
+    aff = np.diag([2,3,4,1])
+    dcs = CS(d_names[:4], 'array')
+    rcs = CS(r_names[:4], 'world')
+    assert_equal(cmm.make_affine(aff, 5),
+                 AffineTransform(CS(d_names[:4], 'array'),
+                                 CS(r_names[:4], 'world'),
+                                 np.diag([2,3,4,5,1])))
+    assert_equal(cmm.make_affine(aff, [5,6]),
+                 AffineTransform(CS(d_names[:5], 'array'),
+                                 CS(r_names[:5], 'world'),
+                                 np.diag([2,3,4,5,6,1])))
+    # we can add offsets too
+    exp_aff = np.diag([2,3,4,5,6,1])
+    exp_aff[3:5,-1] = [7,8]
+    assert_equal(cmm.make_affine(aff, [5,6],[7,8]),
+                 AffineTransform(CS(d_names[:5], 'array'),
+                                 CS(r_names[:5], 'world'),
+                                 exp_aff))
+    # The zooms (diagonal elements) and offsets must match in length
+    assert_raises(CoordMapMakerError, cmm.make_affine, aff, [5,6], 7)
+    # Check non-square affines
+    aff = np.array([[2,0,0],
+                    [0,3,0],
+                    [0,0,1],
+                    [0,0,1]])
+    dcs = CS(d_names[:2], 'array')
+    rcs = CS(r_names[:3], 'world')
+    assert_equal(cmm.make_affine(aff), AffineTransform(dcs, rcs, aff))
+    dcs = CS(d_names[:3], 'array')
+    rcs = CS(r_names[:4], 'world')
+    exp_aff = np.array([[2,0,0,0],
+                        [0,3,0,0],
+                        [0,0,0,1],
+                        [0,0,4,0],
+                        [0,0,0,1]])
+    assert_equal(cmm.make_affine(aff, 4), AffineTransform(dcs, rcs, exp_aff))

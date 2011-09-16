@@ -176,4 +176,23 @@ def test_product():
     yield assert_equal, cs.coord_dtype, np.complex64
     yield assert_equal, cs.dtype, np.dtype([('y', np.complex64),
                                             ('x', np.complex64)])
-    
+
+
+from ..coordinate_system import CoordSysMaker, CoordSysMakerError
+
+def test_coordsys_maker():
+    # Things that help making coordinate maps
+    ax_names = list('ijklm')
+    nl = len(ax_names)
+    cs_maker = CoordSysMaker(ax_names, 'myname')
+    for i in range(1,nl+1):
+        assert_equal(cs_maker(i),
+                     CoordinateSystem(ax_names[:i], 'myname', np.float))
+    assert_raises(CoordSysMakerError, cs_maker, nl+1)
+    # You can pass in your own name
+    assert_equal(cs_maker(i, 'anothername'),
+                 CoordinateSystem(ax_names[:i+1], 'anothername', np.float))
+    # And your own dtype if you really want
+    assert_equal(cs_maker(i, coord_dtype=np.int32),
+                 CoordinateSystem(ax_names[:i+1], 'myname', np.int32))
+
