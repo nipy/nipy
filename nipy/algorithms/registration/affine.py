@@ -12,6 +12,7 @@ RADIUS = 100
 
 # Smallest possible scaling
 TINY = float(np.finfo(np.double).tiny)
+HUGE = float(np.finfo(np.double).max)
 
 
 def rotation_mat2vec(R):
@@ -57,8 +58,12 @@ def rotation_vec2mat(r):
     leading to:
 
     R = I + (1-theta2/6)*Sr + (1/2-theta2/24)*Sr^2
+
+    If the angle is infinite, a very large value is substituted. The
+    resulting rotation is then probably meaningless but is at least
+    a continuous function of the input vector.
     """
-    theta = spl.norm(r)
+    theta = np.minimum(np.sqrt(np.sum(r ** 2)), HUGE)
     if theta > 1e-30:
         n = r / theta
         Sn = np.array([[0, -n[2], n[1]], [n[2], 0, -n[0]], [-n[1], n[0], 0]])
