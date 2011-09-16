@@ -74,3 +74,57 @@ def apply_affine(aff, pts):
     trans = aff[:-1,-1]
     res = np.dot(pts, rzs.T) + trans[None,:]
     return res.reshape(shape)
+
+
+def append_diag(aff, steps, starts=()):
+    """ Add diagonal elements `steps` and translations `starts` to affine
+
+    Parameters
+    ----------
+    aff : 2D array
+        N by M affine matrix
+    steps : scalar or sequence
+        diagonal elements to append.
+    starts : scalar or sequence
+        elements to append to last column of `aff`, representing translations
+        corresponding to the `steps`. If empty, expands to a vector of zeros
+        of the same length as `steps`
+
+    Returns
+    -------
+    aff_plus : 2D array
+        Now P by Q where L = ``len(steps)`` and P == N+L, Q=N+L
+
+    Examples
+    --------
+    >>> aff = np.eye(4)
+    >>> aff[:3,:3] = np.arange(9).reshape((3,3))
+    >>> append_diag(aff, [9, 10], [99,100])
+    array([[   0.,    1.,    2.,    0.,    0.,    0.],
+           [   3.,    4.,    5.,    0.,    0.,    0.],
+           [   6.,    7.,    8.,    0.,    0.,    0.],
+           [   0.,    0.,    0.,    9.,    0.,   99.],
+           [   0.,    0.,    0.,    0.,   10.,  100.],
+           [   0.,    0.,    0.,    0.,    0.,    1.]])
+    """
+    aff = np.asarray(aff)
+    steps = np.atleast_1d(steps)
+    starts = np.atleast_1d(starts)
+    n_steps = len(steps)
+    if len(starts) == 0:
+        starts = np.zeros(n_steps, dtype=steps.dtype)
+    elif len(starts) != n_steps:
+        raise ValueError('Steps should have same length as starts')
+    old_n_out, old_n_in = aff.shape[0]-1, aff.shape[1]-1
+    # make new affine
+    aff_plus = np.zeros((old_n_out + n_steps + 1,
+                         old_n_in + n_steps + 1), dtype=aff.dtype)
+    # Get stuff from old affine
+    aff_plus[:old_n_out,:old_n_in] = aff[:old_n_out, :old_n_in]
+    aff_plus[:old_n_out,-1] = aff[:old_n_out,-1]
+    # Add new diagonal elements
+    for i, el in enumerate(steps):
+        aff_plus[old_n_out+i, old_n_in+i] = el
+    # Add translations for new affine, plus last 1
+    aff_plus[old_n_out:,-1] = list(starts) + [1]
+    return aff_plus

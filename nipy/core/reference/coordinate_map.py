@@ -1807,19 +1807,14 @@ def append_io_dim(cm, in_name, out_name, start=0, step=1):
            [ 0.,  0.,  0.,  5.,  9.],
            [ 0.,  0.,  0.,  0.,  1.]])
     '''
+    # delayed import to avoid circular import errors
+    from ...algorithms.utils.affines import append_diag
     aff = cm.affine
     in_dims = list(cm.function_domain.coord_names)
-    nin = len(in_dims)
     out_dims = list(cm.function_range.coord_names)
-    nout = len(out_dims)
     in_dims.append(in_name)
     out_dims.append(out_name)
-    aff_plus = np.zeros((nout+2, nin+2))
-    aff_plus[:nout,:nin] = aff[:nout, :nin]
-    aff_plus[:nout,-1] = aff[:nout,-1]
-    aff_plus[nout,nin] = step
-    aff_plus[-1,-1] = 1
-    aff_plus[nout,-1] = start
+    aff_plus = append_diag(aff, [step], [start])
     return AffineTransform.from_params(in_dims, out_dims, aff_plus)
 
 
