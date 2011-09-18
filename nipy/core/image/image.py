@@ -17,9 +17,7 @@ from nibabel.onetime import setattr_on_read
 
 # These imports are used in the fromarray and subsample functions only, not in
 # Image
-from ..reference.coordinate_map import (AffineTransform,
-                                        CoordinateSystem,
-                                        CoordinateMap)
+from ..reference.coordinate_map import (AffineTransform, CoordinateSystem)
 from ..reference.array_coords import ArrayCoordMap
 
 __all__ = ['fromarray', 'subsample']
@@ -76,7 +74,7 @@ class Image(object):
 
     @setattr_on_read
     def ndim(self):
-        return self._data.ndim
+        return len(self._data.shape)
     _doc['ndim'] = "Number of data dimensions."
 
     @setattr_on_read
@@ -139,30 +137,32 @@ class Image(object):
 
         Parameters
         ----------
-        data : array
+        data : array-like
+            object that as attribute ``shape`` and returns an array from
+            ``np.asarray(data)``
         coordmap : `AffineTransform` object
+            coordmap mapping the domain (input) voxel axes of the image to the
+            range (reference, output) axes - usually mm in real world space
         metadata : dict
+            Freeform metadata for image.  Most common contents is ``header``
+            from nifti etc loaded images.
 
         See Also
         --------
-        load : load `Image` from a file
-        save : save `Image` to a file
+        load : load ``Image`` from a file
+        save : save ``Image`` to a file
         fromarray : create an `Image` from a numpy array
         """
         if metadata is None:
             metadata = {}
-        if data is None or coordmap is None:
-            raise ValueError('expecting an array and CoordinateMap instance')
+        ndim = len(data.shape)
         if not isinstance(coordmap, AffineTransform):
             raise ValueError('coordmap must be an AffineTransform')
-        # they don't inherit from each other anymore
-        if isinstance(coordmap, CoordinateMap):
-            raise ValueError('coordmap must be an AffineTransform')
-        # self._data is an array-like object.  It must implement a subset of
-        # array methods  (Need to specify these, for now implied in pyniftio)
+        # self._data is an array-like object.  It must have a shape attribute
+        # (see above) and return an array from np.array(data)
         self._data = data
         self.coordmap = coordmap
-        if self.axes.ndim != self._data.ndim:
+        if coordmap.function_domain.ndim != ndim:
             raise ValueError('the number of axes implied by the coordmap do '
                              'not match the number of axes of the data')
         self.metadata = metadata

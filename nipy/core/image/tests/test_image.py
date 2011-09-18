@@ -33,7 +33,7 @@ gimg = fromarray(_data, 'ijk', 'xyz')
 def test_init():
     new = Image(gimg.get_data(), gimg.coordmap)
     assert_array_almost_equal(gimg.get_data(), new.get_data())
-    assert_raises(ValueError, Image, None, None)
+    assert_raises(TypeError, Image)
 
 
 def test_maxmin_values():
@@ -149,19 +149,9 @@ class ArrayLikeObj(object):
     def __init__(self):
         self._data = np.ones((2,3,4))
 
-    def get_ndim(self):
-        return self._data.ndim
-    ndim = property(get_ndim)
-
-    def get_shape(self):
+    @property
+    def shape(self):
         return self._data.shape
-    shape = property(get_shape)
-
-    def __getitem__(self, index):
-        return self._data[index]
-
-    def __setitem__(self, index, value):
-        self._data[index] = value
 
     def __array__(self):
         return self._data
