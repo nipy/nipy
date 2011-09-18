@@ -28,7 +28,7 @@ class test_permutation_test(unittest.TestCase):
         # rfx calibration
         P = pt.permutation_test_onesample(data, XYZ, ndraws=ndraws)
         c = [(P.random_Tvalues[P.ndraws*(0.95)],None), (
-                P.random_Tvalues[P.ndraws*(0.5)], 10)]
+                P.random_Tvalues[P.ndraws*(0.5)], 18.)]
         r = np.ones(data.shape[1],int)
         r[data.shape[1]/2:] *= 10
         #p_values, cluster_results, region_results = P.calibrate(nperms=100, clusters=c, regions=[r])
