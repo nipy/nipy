@@ -1,4 +1,59 @@
 """ Utilities for working with Images and common neuroimaging spaces
+
+>>> from nipy.core.api import Image, vox2mni, img_rollaxis, xyz_affine, as_xyz_affable
+
+Make a standard 4D xyzt image in MNI space.
+
+First the data and affine:
+
+>>> data = np.arange(24).reshape((1,2,3,4))
+>>> affine = np.diag([2,3,4,1])
+
+We can add the TR (==2.0) to make the full 5x5 affine we need
+
+>>> img = Image(data, vox2mni(affine, 2.0))
+>>> img.affine
+array([[ 2.,  0.,  0.,  0.,  0.],
+       [ 0.,  3.,  0.,  0.,  0.],
+       [ 0.,  0.,  4.,  0.,  0.],
+       [ 0.,  0.,  0.,  2.,  0.],
+       [ 0.,  0.,  0.,  0.,  1.]])
+
+In this case the neuroimaging 'xyz_affine' is just the 4x4 from the 5x5 in the image
+
+>>> xyz_affine(img)
+array([[ 2.,  0.,  0.,  0.],
+       [ 0.,  3.,  0.,  0.],
+       [ 0.,  0.,  4.,  0.],
+       [ 0.,  0.,  0.,  1.]])
+
+However, if we roll time first in the image array, we can't any longer get an
+xyz_affine that makes sense in relationship to the voxel data:
+
+>>> img_t0 = img_rollaxis(img, 't')
+>>> xyz_affine(img_t0)
+Traceback (most recent call last):
+    ...
+AffineError: Dropped dimensions not orthogonal to xyz
+
+But we can fix this:
+
+>>> img_t0_affable = as_xyz_affable(img_t0)
+>>> xyz_affine(img_t0_affable)
+array([[ 2.,  0.,  0.,  0.],
+       [ 0.,  3.,  0.,  0.],
+       [ 0.,  0.,  4.,  0.],
+       [ 0.,  0.,  0.,  1.]])
+
+It also works with nibabel images, which can only have xyz_affines:
+
+>>> import nibabel as nib
+>>> nimg = nib.Nifti1Image(data, affine)
+>>> xyz_affine(nimg)
+array([[2, 0, 0, 0],
+       [0, 3, 0, 0],
+       [0, 0, 4, 0],
+       [0, 0, 0, 1]])
 """
 
 import numpy as np
