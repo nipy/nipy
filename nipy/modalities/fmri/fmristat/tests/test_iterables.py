@@ -6,7 +6,7 @@ from numpy.random import standard_normal as noise
 
 from nipy.io.api import load_image
 from nipy.core.image.image import rollaxis as img_rollaxis
-from nipy.modalities.fmri.api import FmriImageList, fmri_generator
+from nipy.modalities.fmri.api import FmriImageList, axis0_generator
 from nipy.core.utils.generators import (write_data, parcels,
                                         f_generator)
 
@@ -78,7 +78,7 @@ def test_iterate_over_image():
     # Fit a model, iterating over the slices of an array
     # associated to an FmriImage.
     c = np.zeros(FDATA.shape[1:]) + 0.5
-    res_gen = result_generator(flatten_generator(fmri_generator(FDATA)))
+    res_gen = result_generator(flatten_generator(axis0_generator(FDATA)))
     write_data(c, unflatten_generator(contrast_generator(res_gen)))
     # Fit a model, iterating over the array associated to an
     # FmriImage, iterating over a list of ROIs defined by binary
@@ -88,11 +88,11 @@ def test_iterate_over_image():
     a = np.asarray(FDATA[0])
     p = np.greater(a, a.mean())
     d = np.ones(FDATA.shape[1:]) * 2.0
-    flat_gen = flatten_generator(fmri_generator(FDATA, parcels(p)))
+    flat_gen = flatten_generator(axis0_generator(FDATA, parcels(p)))
     write_data(d, contrast_generator(result_generator(flat_gen)))
     assert_array_almost_equal(d, c)
 
     e = np.zeros(FDATA.shape[1:]) + 3.0
-    flat_gen2 = flatten_generator(fmri_generator(FDATA, parcels(p)))
+    flat_gen2 = flatten_generator(axis0_generator(FDATA, parcels(p)))
     write_data(e, f_generator(contrast, result_generator(flat_gen2)))
     assert_array_almost_equal(d, e)

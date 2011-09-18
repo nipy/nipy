@@ -33,7 +33,7 @@ from nipy.core.api import Image, parcels, matrix_generator, AffineTransform
 from nipy.io.api import save_image
 
 # fmri imports
-from ..api import FmriImageList, fmri_generator
+from ..api import FmriImageList, axis0_generator
 
 import nipy.algorithms.statistics.regression as regression
 from nipy.algorithms.statistics.formula import make_recarray
@@ -90,7 +90,7 @@ def model_generator(formula, data, volume_start_times, iterable=None,
     """
     volume_start_times = make_recarray(volume_start_times.astype(float), 't')
     # Generator for slices of the data with time as first axis
-    axis0_gen = fmri_generator(data, iterable=iterable)
+    axis0_gen = axis0_generator(data, slicers=iterable)
     # Iterate over 2D slices of the data
     for indexer, indexed_data in matrix_generator(axis0_gen):
         model_args = model_params(indexer) # model may depend on i
