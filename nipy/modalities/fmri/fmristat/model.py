@@ -25,6 +25,7 @@ import scipy.linalg as spl
 
 from nipy.algorithms.statistics.models.regression import (
     OLSModel, ARModel, ar_bias_corrector, ar_bias_correct)
+from nipy.algorithms.statistics.formula import make_recarray
 
 # nipy core imports
 from nipy.core.api import Image, parcels, matrix_generator, AffineTransform
@@ -35,8 +36,7 @@ from nipy.io.api import save_image
 # fmri imports
 from ..api import FmriImageList, axis0_generator
 
-import nipy.algorithms.statistics.regression as regression
-from nipy.algorithms.statistics.formula import make_recarray
+from . import outputters
 
 
 class ModelOutputImage(object):
@@ -294,7 +294,7 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
     Notes
     -----
     Note that this routine uses the corresponding ``output_T`` routine in
-    statistics.regression, but indirectly via the TOutput object.
+    :mod:`outputters`, but indirectly via the TOutput object.
     """
     def build_filename(label):
         index = outbase.find('.')
@@ -317,7 +317,7 @@ def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,
                                clobber=clobber)
     else:
         tim = None
-    return regression.TOutput(contrast, effect=effectim, sd=sdim, t=tim)
+    return outputters.TOutput(contrast, effect=effectim, sd=sdim, t=tim)
 
 
 def output_F(outfile, contrast, fmri_image, clobber=False):
@@ -344,8 +344,8 @@ def output_F(outfile, contrast, fmri_image, clobber=False):
     '''
     f = ModelOutputImage(outfile, fmri_image[0].coordmap, fmri_image[0].shape,
                          clobber=clobber)
-    return regression.RegressionOutput(f, lambda x:
-                                       regression.output_F(x, contrast))
+    return outputters.RegressionOutput(f, lambda x:
+                                       outputters.output_F(x, contrast))
 
 
 def output_AR1(outfile, fmri_image, clobber=False):
@@ -367,7 +367,7 @@ def output_AR1(outfile, fmri_image, clobber=False):
     """
     outim = ModelOutputImage(outfile, fmri_image[0].coordmap,
                              fmri_image[0].shape, clobber=clobber)
-    return regression.RegressionOutput(outim, regression.output_AR1)
+    return outputters.RegressionOutput(outim, outputters.output_AR1)
 
 
 def output_resid(outfile, fmri_image, clobber=False):
@@ -414,7 +414,7 @@ def output_resid(outfile, fmri_image, clobber=False):
         raise ValueError, "expecting FmriImageList or 4d Image"
 
     outim = ModelOutputImage(outfile, cmap, shape, clobber=clobber)
-    return regression.RegressionOutput(outim, regression.output_resid)
+    return outputters.RegressionOutput(outim, outputters.output_resid)
 
 
 def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
@@ -451,10 +451,10 @@ def generate_output(outputs, iterable, reshape=lambda x, y: (x, y)):
                     l[k] = d
     # flush outputs, if necessary
     for output in outputs:
-        if isinstance(output, regression.RegressionOutput):
+        if isinstance(output, outputters.RegressionOutput):
             if hasattr(output.img, 'save'):
                 output.img.save()
-        elif isinstance(output, regression.RegressionOutputList):
+        elif isinstance(output, outputters.RegressionOutputList):
             for im in output.list:
                 if hasattr(im, 'save'):
                     im.save()
