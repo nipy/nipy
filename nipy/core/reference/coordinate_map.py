@@ -65,7 +65,9 @@ import warnings
 
 import numpy as np
 
-from ..transforms import affines
+from nibabel.orientations import io_orientation
+
+from ..transforms.affines import from_matrix_vector, to_matrix_vector
 from .coordinate_system import(CoordinateSystem,
                                safe_dtype,
                                product as coordsys_product
@@ -598,7 +600,7 @@ class AffineTransform(object):
         """
         if type(params) == type(()):
             A, b = params
-            params = affines.from_matrix_vector(A, b)
+            params = from_matrix_vector(A, b)
         ndim = (len(innames) + 1, len(outnames) + 1)
         if params.shape != ndim[::-1]:
             raise ValueError('shape and number of axis names do not agree')
@@ -871,7 +873,7 @@ class AffineTransform(object):
         if x.ndim > 1:
             out_shape = x.shape[:-1] + out_shape
         in_vals = self.function_domain._checked_values(x)
-        A, b = affines.to_matrix_vector(self.affine)
+        A, b = to_matrix_vector(self.affine)
         out_vals = np.dot(in_vals, A.T) + b[np.newaxis,:]
         final_vals = self.function_range._checked_values(out_vals)
         return final_vals.reshape(out_shape)
@@ -1504,7 +1506,7 @@ def _as_coordinate_map(cmap):
         return cmap
     elif isinstance(cmap, AffineTransform):
         affine_transform = cmap
-        A, b = affines.to_matrix_vector(affine_transform.affine)
+        A, b = to_matrix_vector(affine_transform.affine)
 
         def _function(x):
             value = np.dot(x, A.T)
@@ -1513,7 +1515,7 @@ def _as_coordinate_map(cmap):
 
         affine_transform_inv = affine_transform.inverse()
         if affine_transform_inv:
-            Ainv, binv = affines.to_matrix_vector(affine_transform_inv.affine)
+            Ainv, binv = to_matrix_vector(affine_transform_inv.affine)
             def _inverse_function(x):
                 value = np.dot(x, Ainv.T)
                 value += binv
@@ -1625,7 +1627,7 @@ def _product_affines(*affine_mappings):
     j = 0
 
     for l, affine in enumerate(affine_mappings):
-        A, b = affines.to_matrix_vector(affine.affine)
+        A, b = to_matrix_vector(affine.affine)
         M[i:(i+ndimout[l]),j:(j+ndimin[l])] = A
         M[i:(i+ndimout[l]),-1] = b
         product_domain.extend(affine.function_domain.coord_names)
@@ -1758,7 +1760,7 @@ def _matching_orth_dim(out_i, aff):
                 # another near zero row
                 return None, msg + ' and other zero rows/cols'
         # what rows have been claimed already?
-        ornt = affines.io_orientation(aff[out_rows + [M]].T)
+        ornt = io_orientation(aff[out_rows + [M]].T)
         candidates = set(range(N)) - set(ornt[:,0])
         if len(candidates) == 1:
             return candidates.pop(), ''
