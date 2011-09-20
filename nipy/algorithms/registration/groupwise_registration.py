@@ -24,6 +24,7 @@ XTOL = 1e-5
 FTOL = 1e-5
 GTOL = 1e-5
 STEPSIZE = 1e-6
+SMALL = 1e-20
 MAXITER = 64
 MAXFUN = None
 LOOPS = 5, 1  # loops within each run
@@ -33,7 +34,6 @@ BORDERS = 1, 1, 1
 REFSCAN = 0
 EXTRAPOLATE_SPACE = 'reflect'
 EXTRAPOLATE_TIME = 'reflect'
-TINY = float(np.finfo(np.double).tiny)
 
 
 def interp_slice_order(Z, slice_order):
@@ -338,9 +338,10 @@ class Realign4dAlgorithm(object):
         self.set_transform(self._t, pc)
         self._pc = pc
         self._res[:] = self.data[:, self._t] - self.mu[:]
-        self._V = np.maximum(self.offset + np.mean(self._res ** 2), TINY)
+        self._V = np.maximum(self.offset + np.mean(self._res ** 2), SMALL)
         self._res0[:] = self.data[:, self._t] - self.mu0
-        self._V0 = np.maximum(self.offset0 + np.mean(self._res0 ** 2), TINY)
+        self._V0 = np.maximum(self.offset0 + np.mean(self._res0 ** 2), SMALL)
+
         if self.use_derivatives:
             # linearize the data wrt the transform parameters
             # use the auxiliary array to save the current resampled data
@@ -372,8 +373,8 @@ class Realign4dAlgorithm(object):
 
     def _energy_hessian(self):
         return (1 / self._V - 1 / self._V0) * self._H\
-            - np.dot(self._dV, self._dV.T) / (self._V ** 2)\
-            + np.dot(self._dV0, self._dV0.T) / (self._V0 ** 2)
+            - np.dot(self._dV, self._dV.T) / np.maximum(self._V ** 2, SMALL)\
+            + np.dot(self._dV0, self._dV0.T) / np.maximum(self._V0 ** 2, SMALL)
 
     def estimate_instant_motion(self, t):
         """
@@ -396,7 +397,6 @@ class Realign4dAlgorithm(object):
             return self._energy_hessian()
 
         self.init_instant_motion(t)
-
         fmin, args, kwargs =\
             configure_optimizer(self.optimizer,
                                 fprime=fprime,
@@ -416,6 +416,7 @@ class Realign4dAlgorithm(object):
             if VERBOSE:
                 print('Resampling scan %d/%d' % (t + 1, self.nscans))
             self.resample(t)
+
         # Set the template as the reference scan (will be overwritten
         # if template is to be optimized)
         if not hasattr(self, 'template'):
@@ -510,6 +511,7 @@ def single_run_realign4d(im4d,
     opt_params = zip(loops, speedup, optimizer,
                      xtol, ftol, gtol,
                      stepsize, maxiter, maxfun)
+
     for loops_, speedup_, optimizer_, xtol_, ftol_, gtol_,\
             stepsize_, maxiter_, maxfun_ in opt_params:
         subsampling = adjust_subsampling(speedup_, im4d.get_data().shape[0:3])
@@ -529,6 +531,7 @@ def single_run_realign4d(im4d,
                                maxfun=maxfun_)
         for loop in range(loops_):
             r.estimate_motion()
+
         r.align_to_refscan()
         transforms = r.transforms
         im4d.free_data()
@@ -570,8 +573,6 @@ def realign4d(runs,
     """
 
     # Single-session case
-    if not hasattr(runs, '__iter__'):
-        runs = [runs]
     nruns = len(runs)
     if nruns == 1:
         align_runs = False
@@ -600,6 +601,7 @@ def realign4d(runs,
     ## FIXME: check that all runs have the same to-world transform
     mean_img_shape = list(runs[0].get_data().shape[0:3]) + [nruns]
     mean_img_data = np.zeros(mean_img_shape)
+
     for i in range(nruns):
         corr_run = resample4d(runs[i], transforms=transforms[i],
                               time_interp=time_interp)
@@ -639,7 +641,7 @@ class Realign4d(object):
     def _generic_init(self, images, affine_class,
                       slice_order, interleaved, tr, tr_slices,
                       start, time_interp):
-        if not hasattr(images, '__iter__'):
+        if hasattr(images, 'get_data'):
             images = [images]
         self._runs = []
         self.affine_class = affine_class

@@ -31,7 +31,12 @@ def test_slice_timing():
     assert_array_almost_equal(im4d.get_data(), x)
 
 
-def test_realign4d():
-    runs = [im, im]
-    R = FmriRealign4d(runs, tr=2., slice_order='ascending', interleaved=False)
-    R.estimate(refscan=None, loops=(1,0), between_loops=(1,0))
+def test_realign4d_single_run():
+    R = FmriRealign4d(im, tr=2., slice_order='ascending', interleaved=False)
+    R.estimate(refscan=None, loops=(1, 0), between_loops=(1, 0))
+
+
+def test_realign4d_two_runs():
+    R = FmriRealign4d([im, im], tr=2., slice_order='ascending',
+                      interleaved=False)
+    R.estimate(refscan=None, loops=(1, 0), between_loops=(1, 0))

@@ -7,11 +7,17 @@ from ...externals.transforms3d.quaternions import mat2quat, quat2axangle
 from .transform import Transform
 from ..utils.affines import apply_affine
 
-# Defaults
+# Globals
 RADIUS = 100
-
-# Smallest possible scaling
+MAX_ANGLE = 1e10 * 2 * np.pi
+SMALL_ANGLE = 1e-30
+MAX_DIST = 1e10
+LOG_MAX_DIST = np.log(MAX_DIST)
 TINY = float(np.finfo(np.double).tiny)
+
+
+def threshold(x, th):
+    return np.maximum(np.minimum(x, th), -th)
 
 
 def rotation_mat2vec(R):
@@ -57,9 +63,16 @@ def rotation_vec2mat(r):
     leading to:
 
     R = I + (1-theta2/6)*Sr + (1/2-theta2/24)*Sr^2
+
+    To avoid numerical instabilities, an upper threshold is applied to
+    the angle. It is chosen to be a multiple of 2*pi, hence the
+    resulting rotation is then the identity matrix. This strategy warrants
+    that the output matrix is a continuous function of the input vector.
     """
-    theta = spl.norm(r)
-    if theta > 1e-30:
+    theta = np.sqrt(np.sum(r ** 2))
+    if theta > MAX_ANGLE:
+        return np.eye(3)
+    elif theta > SMALL_ANGLE:
         n = r / theta
         Sn = np.array([[0, -n[2], n[1]], [n[2], 0, -n[0]], [-n[1], n[0], 0]])
         R = np.eye(3) + np.sin(theta) * Sn\
@@ -95,11 +108,11 @@ def matrix44(t, dtype=np.double):
     elif size == 7:
         T[0:3, 0:3] = t[6] * R
     else:
-        S = np.diag(np.exp(t[6:9]))
+        S = np.diag(threshold(np.exp(t[6:9]), LOG_MAX_DIST))
         Q = rotation_vec2mat(t[9:12])
         # Beware: R*s*Q
         T[0:3, 0:3] = np.dot(R, np.dot(S, Q))
-    T[0:3, 3] = t[0:3]
+    T[0:3, 3] = threshold(t[0:3], MAX_DIST)
     return T
 
 
