@@ -351,7 +351,7 @@ def euler2axangle(z=0, y=0, x=0):
     >>> vec, theta = euler2axangle(0, 1.5, 0)
     >>> np.allclose(vec, [0, 1, 0])
     True
-    >>> theta
+    >>> print(theta)
     1.5
     '''
     # delayed import to avoid cyclic dependencies
