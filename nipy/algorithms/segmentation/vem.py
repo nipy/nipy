@@ -107,14 +107,20 @@ class VEM(object):
             self.nclasses = int(labels)
             self.labels = [str(l) for l in range(self.nclasses)]
 
-        # Make default mask (required by MRF regularization)
-        # This will be passed to the _ve_step C-routine, which assumes
-        # a contiguous int array and raise an error otherwise.
+        # Make default mask (required by MRF regularization) This will
+        # be passed to the _ve_step C-routine, which assumes a
+        # contiguous int array and raise an error otherwise.  Voxels
+        # on the image borders are further rejected to avoid
+        # segmentation faults.
         if mask == None:
-            XYZ = np.mgrid[[slice(0, s) for s in data.shape]]
+            XYZ = np.mgrid[[slice(1, s - 1) for s in data.shape]]
             XYZ = np.reshape(XYZ, (XYZ.shape[0], np.prod(XYZ.shape[1::]))).T
             XYZ = np.asarray(XYZ, dtype='int', order='C')
         else:
+            submask = (mask[0] > 0) * (mask[0] < data.shape[0] - 1)
+            for i in range(1, len(mask)):
+                submask *= (mask[i] > 0) * (mask[i] < data.shape[i] - 1)
+            mask = [mask[i][submask] for i in range(len(mask))]
             XYZ = np.zeros((len(mask[0]), len(mask)), dtype='int')
             for i in range(len(mask)):
                 XYZ[:, i] = mask[i]
@@ -182,7 +188,7 @@ class VEM(object):
                                                  TINY)
 
         # Normalize reference probability map
-        if beta == 0.0:
+        if beta == 0.0 or self._XYZ.shape[1] != 3:
             self.ppm[self.mask] = (self.posterior_ext_field.T /
                                    self.posterior_ext_field.sum(1)).T
 

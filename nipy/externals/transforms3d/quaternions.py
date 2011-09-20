@@ -25,7 +25,7 @@ _FLOAT_EPS = np.finfo(np.float).eps
 
 def fillpositive(xyz, w2_thresh=None):
     ''' Compute unit quaternion from last 3 values
-    
+   
     Parameters
     ----------
     xyz : iterable
@@ -470,10 +470,13 @@ def quat2axangle(quat, identity_thresh=None):
     if identity_thresh is None:
         try:
             identity_thresh = np.finfo(vec.dtype).eps * 3
-        except ValueError: # integer type
+        except ValueError:  # integer type
             identity_thresh = _FLOAT_EPS * 3
-    n = math.sqrt(x*x + y*y + z*z)
-    if n < identity_thresh: 
+    len2 = x * x + y * y + z * z
+    if len2 < identity_thresh ** 2:
         # if vec is nearly 0,0,0, this is an identity rotation
         return np.array([1.0, 0, 0]), 0.0
-    return  vec / n, 2 * math.acos(max(min(w,1),-1))
+    theta = 2 * math.acos(max(min(w, 1), -1))
+    if len2 == float('inf'):
+        return np.zeros((3,)), theta
+    return vec / math.sqrt(len2), theta
