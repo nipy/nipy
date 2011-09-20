@@ -108,7 +108,7 @@ def matrix44(t, dtype=np.double):
     elif size == 7:
         T[0:3, 0:3] = t[6] * R
     else:
-        S = np.diag(threshold(np.exp(t[6:9]), LOG_MAX_DIST))
+        S = np.diag(np.exp(threshold(t[6:9], LOG_MAX_DIST)))
         Q = rotation_vec2mat(t[9:12])
         # Beware: R*s*Q
         T[0:3, 0:3] = np.dot(R, np.dot(S, Q))
