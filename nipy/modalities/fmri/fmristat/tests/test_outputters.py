@@ -3,8 +3,8 @@
 
 import numpy as np
 
-from ..models.regression import OLSModel
-from ..regression import output_T, output_F
+from nipy.algorithms.statistics.api  import OLSModel
+from ..outputters import output_T, output_F
 
 from nose.tools import assert_true, assert_equal, assert_raises
 
