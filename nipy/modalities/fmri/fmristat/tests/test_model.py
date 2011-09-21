@@ -40,6 +40,7 @@ def test_model_out_img():
         new_img = load_image(fname)
         for i in range(shape[0]):
             assert_array_equal(new_img[i].get_data(), i)
+        del new_img
 
 
 def test_run():
@@ -89,6 +90,8 @@ def test_run():
             assert_array_almost_equal(t_data,
                                       e_img.get_data() / sd_img.get_data())
             assert_true(np.all(np.abs(t_data) < 6))
+            # Need to delete to help windows delete temporary files
+            del rho, resid_img, f_img, e_img, sd_img, t_img, f_data, t_data
 
 
 def test_ar_modeling():
