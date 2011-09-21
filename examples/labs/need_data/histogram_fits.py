@@ -28,8 +28,8 @@ theta = float(st.t.isf(0.01, 100))
 data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
 mask_image = os.path.join(data_dir, 'mask.nii.gz')
 input_image = os.path.join(data_dir, 'spmT_0029.nii.gz')
-if os.path.exists(mask_image) == False or os.path.exists(input_image) == False:
-    get_data_light.get_it()
+if (not os.path.exists(mask_image)) or (not os.path.exists(input_image)):
+    get_data_light.get_second_level_dataset()
 
 # Read the mask
 nim = load(mask_image)

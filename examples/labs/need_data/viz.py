@@ -13,7 +13,7 @@ from nipy.labs import viz
 import get_data_light
 
 # get the data
-data_dir = get_data_light.get_it()
+data_dir = get_data_light.get_second_level_dataset()
 
 img = load(os.path.join(data_dir, 'spmT_0029.nii.gz'))
 data = img.get_data()

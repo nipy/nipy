@@ -35,8 +35,8 @@ from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
 # volume mask
 mask_path = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
                                  'mask.nii.gz'))
-if op.exists(mask_path) == False:
-    get_data_light.get_it()
+if not op.exists(mask_path):
+    get_data_light.get_second_level_dataset()
 
 mask = load(mask_path)
 
@@ -107,7 +107,7 @@ contrast_image = Nifti1Image(zmap, mask.get_affine())
 # Create ROIs
 ########################################
 
-positions = np.array([[60, - 30, 5], [50, 27, 5]])
+positions = np.array([[60, -30, 5], [50, 27, 5]])
 # in mm (here in the MNI space)
 radii = np.array([8, 6])
 

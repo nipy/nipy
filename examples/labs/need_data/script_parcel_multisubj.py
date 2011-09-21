@@ -13,6 +13,7 @@ from nipy.labs.spatial_models.parcel_io import parcel_input, \
 from nipy.labs.spatial_models.hierarchical_parcellation import hparcel
 import get_data_light
 
+
 # Get the data
 nb_subj = 12
 subj_id = ['subj_%02d' % s for s in range(nb_subj)]
@@ -24,12 +25,12 @@ mask_images = [op.join(data_dir, 'mask_subj%02d.nii' % n)
 
 learn_images = [op.join(data_dir, 'spmT_%s_subj_%02d.nii' % (nbeta, n))
                 for n in range(nb_subj)]
-missing_file = array([op.exists(m) == False
-                      for m in mask_images + learn_images]).any()
+missing_file = array(
+    [not op.exists(m) for m in mask_images + learn_images]).any()
 learn_images = [[m] for m in learn_images]
 
 if missing_file:
-    get_data_light.get_it()
+    get_data_light.get_second_level_dataset()
 
 # parameter for the intersection of the mask
 ths = .5

@@ -36,7 +36,7 @@ from nipy.labs.viz import plot_map, cm
 #######################################
 
 # volume mask
-get_data_light.get_localizer_dataset()
+get_data_light.get_first_level_dataset()
 data_path = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
                                  's12069_swaloc1_corr.nii.gz'))
 paradigm_file = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
@@ -149,7 +149,7 @@ for index, contrast_id in enumerate(contrasts):
     vmax = max(- write_array.min(), write_array.max())
     plot_map(write_array, affine,
              cmap=cm.cold_hot,
-             vmin=- vmax,
+             vmin=-vmax,
              vmax=vmax,
              anat=None,
              figure=10,
@@ -166,7 +166,7 @@ print "All the  results were witten in %s" % swd
 
 plot_map(write_array, affine,
                 cmap=cm.cold_hot,
-                vmin=- vmax,
+                vmin=-vmax,
                 vmax=vmax,
                 anat=None,
                 figure=10,

@@ -25,9 +25,8 @@ import tempfile
 data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
 input_image = os.path.join(data_dir, 'spmT_0029.nii.gz')
 mask_image = os.path.join(data_dir, 'mask.nii.gz')
-if (os.path.exists(input_image) == False) or (
-    os.path.exists(mask_image) == False):
-    get_data_light.get_it()
+if (not os.path.exists(input_image)) or (not os.path.exists(mask_image)):
+    get_data_light.get_second_level_dataset()
 
 # write dir
 swd = tempfile.mkdtemp()
@@ -40,7 +39,7 @@ position = np.array([[0, 0, 0]])
 domain = grid_domain_from_image(mask_image)
 roi = mroi.subdomain_from_balls(domain, position, np.array([5.0]))
 
-roi_domain = domain.mask(roi.label > - 1)
+roi_domain = domain.mask(roi.label > -1)
 roi_domain.to_image(os.path.join(swd, "myroi.nii"))
 print 'Wrote an ROI mask image in %s' % os.path.join(swd, "myroi.nii")
 # fixme: pot roi feature ...

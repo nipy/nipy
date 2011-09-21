@@ -283,9 +283,9 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
         amplitude=noise_level)
     signal_level: float, optional,
         Amplitude of the signal
-    out_image_file: string or None, optionnal
-        If not None, the resulting is saved as a nifti file with the
-        given file name.
+    out_image_file: string or list of strings or None, optionnal
+        If not None, the resulting is saved as a (set of) nifti file(s) with the
+        given file path(s)
     verbose: boolean, optionnal
         If verbose is true, the data for the last subject is plotted as
         a 2D image.
@@ -315,9 +315,9 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
     if dmtx is not None:
         n_scans = dmtx.shape[0]
 
-    if hasattr(out_image_file, '__iter__') == False:
+    if (out_image_file is not None) and isinstance(out_image_file, basesetring):
         out_image_file = [out_image_file]
-
+    
     shape_4d = tuple((shape[0], shape[1], shape[2], n_scans))
 
     output_images = []

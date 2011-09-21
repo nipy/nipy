@@ -40,10 +40,10 @@ stat_images = [op.join(data_dir, 'spmT_%04d_subj_%02d.nii' % (nbeta, n))
 contrast_images = [op.join(data_dir, 'con_%04d_subj_%02d.nii' % (nbeta, n))
                  for n in range(nsubj)]
 all_images = mask_images + stat_images + contrast_images
-missing_file = array([op.exists(m) == False for m in all_images]).any()
+missing_file = array([not op.exists(m) for m in all_images]).any()
 
 if missing_file:
-    get_data_light.get_it()
+    get_data_light.get_second_level_dataset()
 
 swd = tempfile.mkdtemp('image')
 

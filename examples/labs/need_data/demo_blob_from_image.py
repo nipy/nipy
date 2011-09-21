@@ -20,14 +20,14 @@ from nibabel import load, save, Nifti1Image
 import nipy.labs.spatial_models.hroi as hroi
 from nipy.labs.spatial_models.discrete_domain import domain_from_image
 
-# data paths
 import get_data_light
-#get_data_light.get_it()
 
+
+# data paths
 data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data'))
 input_image = op.join(data_dir, 'spmT_0029.nii.gz')
-if op.exists(input_image) == False:
-    get_data_light.get_it()
+if not op.exists(input_image):
+    get_data_light.get_second_level_dataset()
 swd = tempfile.mkdtemp()
 
 # parameters
@@ -71,7 +71,7 @@ save(wim, op.join(swd, "bmap.nii"))
 # saving the image of the end blobs or leaves
 lroi = nroi.reduce_to_leaves()
 
-wlabel = - 2 * np.ones(nim.get_shape())
+wlabel = -2 * np.ones(nim.get_shape())
 wlabel[data != 0] = lroi.label
 wim = Nifti1Image(wlabel, nim.get_affine())
 wim.get_header()['descrip'] = 'blob image extracted from %s' % input_image

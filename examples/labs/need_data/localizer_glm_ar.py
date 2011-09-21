@@ -39,7 +39,7 @@ import get_data_light
 #######################################
 
 # volume mask
-get_data_light.get_localizer_dataset()
+get_data_light.get_first_level_dataset()
 data_path = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
                                  's12069_swaloc1_corr.nii.gz'))
 paradigm_file = op.expanduser(op.join('~', '.nipy', 'tests', 'data',

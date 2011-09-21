@@ -13,7 +13,7 @@ import urllib2
 import tarfile
 
 
-def get_it():
+def get_second_level_dataset():
     """ Lightweight dataset for multi-subject analysis
     """
     # define several paths
@@ -29,7 +29,7 @@ def get_it():
         assert os.path.exists(data_dir)
 
     # download mask_image if necessary
-    if os.path.exists(mask_image) == False:
+    if not os.path.exists(mask_image):
         filename = 'mask.nii.gz'
         datafile = os.path.join(url, filename)
         fp = urllib2.urlopen(datafile)
@@ -39,7 +39,7 @@ def get_it():
         local_file.close()
 
     # download input_image if necessary
-    if os.path.exists(input_image) == False:
+    if not os.path.exists(input_image):
         filename = 'spmT_0029.nii.gz'
         datafile = os.path.join(url, filename)
         fp = urllib2.urlopen(datafile)
@@ -49,7 +49,7 @@ def get_it():
         local_file.close()
 
     # download group_data if necessary
-    if os.path.exists(group_data) == False:
+    if not os.path.exists(group_data):
         filename = 'group_t_images.tar.gz'
         datafile = os.path.join(url, filename)
         fp = urllib2.urlopen(datafile)
@@ -66,9 +66,8 @@ def get_it():
     return data_dir
 
 
-def get_localizer_dataset():
-    """
-    Heavier dataset (30 MO) for first-level analysis
+def get_first_level_dataset():
+    """ Heavier dataset (30 MO) for first-level analysis
     """
     # define several paths
     url = 'ftp://ftp.cea.fr/pub/dsv/madic/download/nipy'
@@ -82,7 +81,7 @@ def get_localizer_dataset():
         assert os.path.exists(data_dir)
 
     # download mask_image if necessary
-    if os.path.exists(paradigm) == False:
+    if not os.path.exists(paradigm):
         print 'Downloading mask image, this make take time'
         datafile = os.path.join(url, 'localizer_paradigm.csv')
         fp = urllib2.urlopen(datafile)
@@ -92,7 +91,7 @@ def get_localizer_dataset():
         local_file.close()
 
     # download raw_fmri if necessary
-    if os.path.exists(raw_fmri) == False:
+    if not os.path.exists(raw_fmri):
         print 'Downloading fmri image, this make take time'
         filename = 's12069_swaloc1_corr.nii.gz'
         datafile = os.path.join(url, filename)
@@ -105,4 +104,4 @@ def get_localizer_dataset():
     return data_dir
 
 if __name__ == '__main__':
-    get_it()
+    get_second_level_dataset()

@@ -29,11 +29,10 @@ mask_images = [op.join(data_dir, 'mask_subj%02d.nii' % n)
 betas = [op.join(data_dir, 'spmT_%04d_subj_%02d.nii' % (nbeta, n))
          for n in range(nbsubj)]
 
-missing_file = array([op.exists(m) == False
-                      for m in mask_images + betas]).any()
+missing_file = array([not op.exists(m) for m in mask_images + betas]).any()
 
 if missing_file:
-    get_data_light.get_it()
+    get_data_light.get_second_level_dataset()
 
 # set various parameters
 subj_id = ['%04d' % i for i in range(12)]
