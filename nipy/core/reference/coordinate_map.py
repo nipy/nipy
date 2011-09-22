@@ -65,7 +65,9 @@ import warnings
 
 import numpy as np
 
-from ..transforms import affines
+from nibabel.orientations import io_orientation
+
+from ..transforms.affines import from_matrix_vector, to_matrix_vector
 from .coordinate_system import(CoordinateSystem,
                                safe_dtype,
                                product as coordsys_product
@@ -175,10 +177,7 @@ class CoordinateMap(object):
         -------
         coordmap : CoordinateMap
         """
-        warnings.warn('CoordinateMaps are not as robust as AffineTransform')
-
         # These attrs define the structure of the coordmap.
-
         self.function_domain = function_domain
         self.function_range = function_range
         self.function = function
@@ -589,7 +588,7 @@ class AffineTransform(object):
 
         Returns
         -------
-        aff : `AffineTransform`
+        aff : ``AffineTransform``
 
         Notes
         -----
@@ -598,11 +597,10 @@ class AffineTransform(object):
         """
         if type(params) == type(()):
             A, b = params
-            params = affines.from_matrix_vector(A, b)
+            params = from_matrix_vector(A, b)
         ndim = (len(innames) + 1, len(outnames) + 1)
         if params.shape != ndim[::-1]:
             raise ValueError('shape and number of axis names do not agree')
-        dtype = params.dtype
         function_domain = CoordinateSystem(innames, domain_name)
         function_range = CoordinateSystem(outnames, range_name)
         return AffineTransform(function_domain, function_range, params)
@@ -871,7 +869,7 @@ class AffineTransform(object):
         if x.ndim > 1:
             out_shape = x.shape[:-1] + out_shape
         in_vals = self.function_domain._checked_values(x)
-        A, b = affines.to_matrix_vector(self.affine)
+        A, b = to_matrix_vector(self.affine)
         out_vals = np.dot(in_vals, A.T) + b[np.newaxis,:]
         final_vals = self.function_range._checked_values(out_vals)
         return final_vals.reshape(out_shape)
@@ -1504,7 +1502,7 @@ def _as_coordinate_map(cmap):
         return cmap
     elif isinstance(cmap, AffineTransform):
         affine_transform = cmap
-        A, b = affines.to_matrix_vector(affine_transform.affine)
+        A, b = to_matrix_vector(affine_transform.affine)
 
         def _function(x):
             value = np.dot(x, A.T)
@@ -1513,7 +1511,7 @@ def _as_coordinate_map(cmap):
 
         affine_transform_inv = affine_transform.inverse()
         if affine_transform_inv:
-            Ainv, binv = affines.to_matrix_vector(affine_transform_inv.affine)
+            Ainv, binv = to_matrix_vector(affine_transform_inv.affine)
             def _inverse_function(x):
                 value = np.dot(x, Ainv.T)
                 value += binv
@@ -1625,7 +1623,7 @@ def _product_affines(*affine_mappings):
     j = 0
 
     for l, affine in enumerate(affine_mappings):
-        A, b = affines.to_matrix_vector(affine.affine)
+        A, b = to_matrix_vector(affine.affine)
         M[i:(i+ndimout[l]),j:(j+ndimin[l])] = A
         M[i:(i+ndimout[l]),-1] = b
         product_domain.extend(affine.function_domain.coord_names)
@@ -1758,7 +1756,7 @@ def _matching_orth_dim(out_i, aff):
                 # another near zero row
                 return None, msg + ' and other zero rows/cols'
         # what rows have been claimed already?
-        ornt = affines.io_orientation(aff[out_rows + [M]].T)
+        ornt = io_orientation(aff[out_rows + [M]].T)
         candidates = set(range(N)) - set(ornt[:,0])
         if len(candidates) == 1:
             return candidates.pop(), ''
@@ -1805,19 +1803,187 @@ def append_io_dim(cm, in_name, out_name, start=0, step=1):
            [ 0.,  0.,  0.,  5.,  9.],
            [ 0.,  0.,  0.,  0.,  1.]])
     '''
+    # delayed import to avoid circular import errors
+    from ...algorithms.utils.affines import append_diag
     aff = cm.affine
     in_dims = list(cm.function_domain.coord_names)
-    nin = len(in_dims)
     out_dims = list(cm.function_range.coord_names)
-    nout = len(out_dims)
     in_dims.append(in_name)
     out_dims.append(out_name)
-    aff_plus = np.zeros((nout+2, nin+2))
-    aff_plus[:nout,:nin] = aff[:nout, :nin]
-    aff_plus[:nout,-1] = aff[:nout,-1]
-    aff_plus[nout,nin] = step
-    aff_plus[-1,-1] = 1
-    aff_plus[nout,-1] = start
+    aff_plus = append_diag(aff, [step], [start])
     return AffineTransform.from_params(in_dims, out_dims, aff_plus)
 
 
+class CoordMapMakerError(Exception):
+    pass
+
+
+class CoordMapMaker(object):
+    """ Class to create coordinate maps of different dimensions
+    """
+    generic_maker = CoordinateMap
+    affine_maker = AffineTransform
+
+    def __init__(self, domain_maker, range_maker):
+        """ Create coordinate map maker
+
+        Parameters
+        ----------
+        domain_maker : callable
+            A coordinate system maker, returning a coordinate system with input
+            argument only ``N``, an integer giving the length of the coordinate
+            map.
+        range_maker : callable
+            A coordinate system maker, returning a coordinate system with input
+            argument only ``N``, an integer giving the length of the coordinate
+            map.
+
+        Examples
+        --------
+        >>> from nipy.core.reference.coordinate_system import CoordSysMaker
+        >>> dmaker = CoordSysMaker('ijkl', 'generic-array')
+        >>> rmaker = CoordSysMaker('xyzt', 'generic-scanner')
+        >>> cm_maker = CoordMapMaker(dmaker, rmaker)
+        """
+        self.domain_maker = domain_maker
+        self.range_maker = range_maker
+
+    def make_affine(self, affine, append_zooms=(), append_offsets=()):
+        """ Create affine coordinate map
+
+        Parameters
+        ----------
+        affine : (M, N) array-like
+            Array expressing the affine tranformation
+        append_zooms : scalar or sequence length E
+            If scalar, converted to sequence length E==1. Append E entries to
+            the diagonal of `affine` (see examples)
+        append_offsets : scalar or sequence length F
+            If scalar, converted to sequence length F==1. If F==0, and E!=0, use
+            sequence of zeros length E.  Append E entries to the translations
+            (final column) of `affine` (see examples).
+
+        Returns
+        -------
+        affmap : ``AffineTransform`` coordinate map
+
+        Examples
+        --------
+        >>> from nipy.core.reference.coordinate_system import CoordSysMaker
+        >>> dmaker = CoordSysMaker('ijkl', 'generic-array')
+        >>> rmaker = CoordSysMaker('xyzt', 'generic-scanner')
+        >>> cm_maker = CoordMapMaker(dmaker, rmaker)
+        >>> cm_maker.make_affine(np.diag([2,3,4,1]))
+        AffineTransform(
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='generic-array', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='generic-scanner', coord_dtype=float64),
+           affine=array([[ 2.,  0.,  0.,  0.],
+                         [ 0.,  3.,  0.,  0.],
+                         [ 0.,  0.,  4.,  0.],
+                         [ 0.,  0.,  0.,  1.]])
+        )
+
+        We can add extra orthogonal dimensions, by specifying the diagonal
+        elements:
+
+        >>> cm_maker.make_affine(np.diag([2,3,4,1]), 6)
+        AffineTransform(
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='generic-array', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='generic-scanner', coord_dtype=float64),
+           affine=array([[ 2.,  0.,  0.,  0.,  0.],
+                         [ 0.,  3.,  0.,  0.,  0.],
+                         [ 0.,  0.,  4.,  0.,  0.],
+                         [ 0.,  0.,  0.,  6.,  0.],
+                         [ 0.,  0.,  0.,  0.,  1.]])
+        )
+
+        Or the diagonal elements and the offset elements:
+
+        >>> cm_maker.make_affine(np.diag([2,3,4,1]), [6], [9])
+        AffineTransform(
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='generic-array', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='generic-scanner', coord_dtype=float64),
+           affine=array([[ 2.,  0.,  0.,  0.,  0.],
+                         [ 0.,  3.,  0.,  0.,  0.],
+                         [ 0.,  0.,  4.,  0.,  0.],
+                         [ 0.,  0.,  0.,  6.,  9.],
+                         [ 0.,  0.,  0.,  0.,  1.]])
+        )
+        """
+        # delayed import to avoid circular import errors
+        from ...algorithms.utils.affines import append_diag
+        affine = np.asarray(affine)
+        append_zooms = np.atleast_1d(append_zooms)
+        append_offsets = np.atleast_1d(append_offsets)
+        extra_N = len(append_zooms)
+        if len(append_offsets) == 0:
+            append_offsets = np.zeros(extra_N, dtype=append_zooms.dtype)
+        elif len(append_offsets) != extra_N:
+            raise CoordMapMakerError('Need same number of offsets as zooms')
+        if extra_N != 0:
+            affine = append_diag(affine, append_zooms, append_offsets)
+        return self.affine_maker(self.domain_maker(affine.shape[1] - 1),
+                                 self.range_maker(affine.shape[0] -1),
+                                 affine)
+
+    def make_cmap(self, domain_N, xform, inv_xform=None):
+        """ Coordinate map with transform function `xform`
+
+        Parameters
+        ----------
+        domain_N : int
+            Number of domain coordinates
+        xform : callable
+            Function that transforms points of dimension `domain_N`
+        inv_xform : None or callable, optional
+            Function, such that ``inv_xform(xform(pts))`` returns ``pts``
+
+        Returns
+        -------
+        cmap : ``CoordinateMap``
+
+        Examples
+        --------
+        >>> from nipy.core.reference.coordinate_system import CoordSysMaker
+        >>> dmaker = CoordSysMaker('ijkl', 'generic-array')
+        >>> rmaker = CoordSysMaker('xyzt', 'generic-scanner')
+        >>> cm_maker = CoordMapMaker(dmaker, rmaker)
+        >>> cm_maker.make_cmap(4, lambda x : x+1) #doctest: +ELLIPSIS
+        CoordinateMap(
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='generic-array', coord_dtype=float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='generic-scanner', coord_dtype=float64),
+           function=<function <lambda> at ...>
+          )
+        """
+        domain_cs = self.domain_maker(domain_N)
+        ex_pt = np.zeros((1, domain_N), dtype=domain_cs.coord_dtype)
+        xformed_pt = xform(ex_pt)
+        range_N = xformed_pt.shape[1]
+        return self.generic_maker(domain_cs,
+                                  self.range_maker(range_N),
+                                  xform,
+                                  inv_xform)
+
+    def __call__(self, *args, **kwargs):
+        """ Create affine or non-affine coordinate map
+
+        Parameters
+        ----------
+        \\*args :
+            Arguments to ``make_affine`` or ``make_cmap`` methods. We check the
+            first argument to see if it is a scalar or an affine, and pass the
+            \\*args, \\*\\*kwargs to ``make_cmap`` or ``make_affine``
+            respectively
+        \\*\\*kwargs:
+            See above
+
+        Returns
+        -------
+        cmap : ``CoordinateMap`` or ``AffineTransform``
+            Affine if the first \\*arg was an affine array, otherwise a
+            Coordinate Map.
+        """
+        arg0 = np.asarray(args[0])
+        if arg0.shape == ():
+            return self.make_cmap(*args, **kwargs)
+        return self.make_affine(*args, **kwargs)

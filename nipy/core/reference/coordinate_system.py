@@ -44,10 +44,7 @@ class CoordinateSystem(object):
     True
 
     Two CoordinateSystems are equal if they have the same dtype
-    and the same name.  The
-    CoordinateSystem names may be different.
-
-    XXX This is changed now: the "name" indicates the origin
+    and the same names and the same name.
 
     >>> another_cs = CoordinateSystem(names, 'not irrelevant', np.float)
     >>> cs == another_cs
@@ -56,7 +53,6 @@ class CoordinateSystem(object):
     True
     >>> cs.name == another_cs.name
     False
-
     """
 
     _doc = {}
@@ -82,9 +78,9 @@ class CoordinateSystem(object):
 
     def __init__(self, coord_names, name='', coord_dtype=np.float):
         """Create a coordinate system with a given name and coordinate names.
-        
+
         The CoordinateSystem has two dtype attributes:
-        
+
         #. self.coord_dtype is the dtype of the individual coordinate values
         #. self.dtype is the recarray dtype for the CoordinateSystem
            which combines the coord_names and the coord_dtype.  This
@@ -108,12 +104,9 @@ class CoordinateSystem(object):
         >>> c = CoordinateSystem('ij', name='input')
         >>> print c
         CoordinateSystem(coord_names=('i', 'j'), name='input', coord_dtype=float64)
-        
         >>> c.coord_dtype
         dtype('float64')
-
         """
-
         # this allows coord_names to be an iterator and have a length
         coord_names = tuple(coord_names)
         # Make sure each coordinate is unique
@@ -132,14 +125,14 @@ class CoordinateSystem(object):
         self.ndim = len(coord_names)
         self.dtype = np.dtype([(name, self.coord_dtype) 
                                for name in self.coord_names])
-        
+
     # All attributes are read only
 
     def __setattr__(self, key, value):
         if key in self.__dict__:
             raise AttributeError('the value of %s has already been set and all attributes are read-only' % key)
         object.__setattr__(self, key, value)
-    
+
     def index(self, coord_name):
         """Return the index of a given named coordinate.
 
@@ -345,14 +338,13 @@ def product(*coord_systems):
     Parameters
     ----------
     coord_systems : sequence of :class:`CoordinateSystem`
-    
+
     Returns
     -------
     product_coord_system : :class:`CoordinateSystem`
 
     Examples
     --------
-
     >>> c1 = CoordinateSystem('ij', 'input', coord_dtype=np.float32)
     >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex)
     >>> c3 = CoordinateSystem('ik', 'in3')
@@ -371,3 +363,68 @@ def product(*coord_systems):
         coords += c.coord_names
     dtype = safe_dtype(*[c.coord_dtype for c in coord_systems])
     return CoordinateSystem(coords, 'product', coord_dtype=dtype)
+
+
+class CoordSysMakerError(Exception):
+    pass
+
+
+class CoordSysMaker(object):
+    """ Class to create similar coordinate maps of different dimensions
+    """
+    coord_sys_klass = CoordinateSystem
+
+    def __init__(self, coord_names, name='', coord_dtype=np.float):
+        """Create a coordsys maker with given axis `coord_names`
+
+        Parameters
+        ----------
+        coord_names : iterable
+           A sequence of coordinate names.
+        name : string, optional
+           The name of the coordinate system
+        coord_dtype : np.dtype, optional
+           The dtype of the coord_names.  This should be a built-in
+           numpy scalar dtype. (default is np.float).  The value can
+           by anything that can be passed to the np.dtype constructor.
+           For example ``np.float``, ``np.dtype(np.float)`` or ``f8``
+           all result in the same ``coord_dtype``.
+
+        Examples
+        --------
+        >>> cmkr = CoordSysMaker('ijk', 'a name')
+        >>> print cmkr(2)
+        CoordinateSystem(coord_names=('i', 'j'), name='a name', coord_dtype=float64)
+        >>> print cmkr(3)
+        CoordinateSystem(coord_names=('i', 'j', 'k'), name='a name', coord_dtype=float64)
+        """
+        self.coord_names = tuple(coord_names)
+        self.name = name
+        self.coord_dtype = coord_dtype
+
+    def __call__(self, N, name=None, coord_dtype=None):
+        """ Create coordinate system of length `N`
+
+        Parameters
+        ----------
+        N : int
+            length of coordinate map
+        name : None or str, optional
+            Name of coordinate map.  Default is ``self.name``
+        coord_dtype : None or dtype
+            ``coord_dtype`` of returned coordinate system.  Default is
+            ``self.coord_dtype``
+
+        Returns
+        -------
+        csys : coordinate system
+        """
+        if name is None:
+            name = self.name
+        if coord_dtype is None:
+            coord_dtype = self.coord_dtype
+        if N > len(self.coord_names):
+            raise CoordSysMakerError('Not enough axis names (have %d, '
+                                     'you asked for %d)' %
+                                     (len(self.coord_names), N))
+        return self.coord_sys_klass(self.coord_names[:N], name, coord_dtype)
