@@ -1,58 +1,46 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import os
-from tempfile import mkstemp
 import numpy as np
-
-from nipy.testing import assert_true, assert_false, assert_equal, \
-    assert_array_almost_equal, funcfile
-
 
 from nipy.io.api import load_image, save_image
 from nipy.core import api
+from nipy.utils.tmpdirs import InTemporaryDirectory
 
-class Tempfile(object):
-    file = None
+from nipy.testing import (assert_true, assert_false, assert_equal,
+                          assert_array_almost_equal, funcfile)
 
-tmpfile = Tempfile()
 
-def setup():
-    fd, tmpfile.name = mkstemp(suffix='.nii')
-    tmpfile.file = open(tmpfile.name)
-
-def teardown():
-    tmpfile.file.close()
-    os.unlink(tmpfile.name)
+TMP_FNAME = 'afile.nii'
 
 
 def test_save1():
     # A test to ensure that when a file is saved, the affine and the
     # data agree. This image comes from a NIFTI file
-
     img = load_image(funcfile)
-    save_image(img, tmpfile.name)
-    img2 = load_image(tmpfile.name)
-    yield assert_true, np.allclose(img.affine, img2.affine)
-    yield assert_equal, img.shape, img2.shape
-    yield assert_true, np.allclose(np.asarray(img2), np.asarray(img))
+    with InTemporaryDirectory():
+        save_image(img, TMP_FNAME)
+        img2 = load_image(TMP_FNAME)
+        assert_array_almost_equal(img.affine, img2.affine)
+        assert_equal(img.shape, img2.shape)
+        assert_array_almost_equal(img2.get_data(), img.get_data())
+        del img2
 
 
 def test_save2():
     # A test to ensure that when a file is saved, the affine and the
     # data agree. This image comes from a NIFTI file 
-
     shape = (13,5,7,3)
     step = np.array([3.45,2.3,4.5,6.93])
-
     cmap = api.AffineTransform.from_start_step('ijkt', 'xyzt', [1,3,5,0], step)
-
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
-    save_image(img, tmpfile.name)
-    img2 = load_image(tmpfile.name)
-    yield assert_true, np.allclose(img.affine, img2.affine)
-    yield assert_equal, img.shape, img2.shape
-    yield assert_true, np.allclose(np.asarray(img2), np.asarray(img))
+    with InTemporaryDirectory():
+        save_image(img, TMP_FNAME)
+        img2 = load_image(TMP_FNAME)
+        assert_array_almost_equal(img.affine, img2.affine)
+        assert_equal(img.shape, img2.shape)
+        assert_array_almost_equal(img2.get_data(), img.get_data())
+        del img2
 
 
 def test_save2b():
@@ -62,25 +50,23 @@ def test_save2b():
     # 'diagonal' for the space part.  this should raise a warnings
     # about 'non-diagonal' affine matrix
 
-    # make a 5x5 transformatio
+    # make a 5x5 transformation
     step = np.array([3.45,2.3,4.5,6.9])
     A = np.random.standard_normal((4,4))
     B = np.diag(list(step)+[1])
     B[:4,:4] = A
-
     shape = (13,5,7,3)
     cmap = api.AffineTransform.from_params('ijkt', 'xyzt', B)
-
     data = np.random.standard_normal(shape)
-
     img = api.Image(data, cmap)
-
-    save_image(img, tmpfile.name)
-    img2 = load_image(tmpfile.name)
-    yield assert_false, np.allclose(img.affine, img2.affine)
-    yield assert_true, np.allclose(img.affine[:3,:3], img2.affine[:3,:3])
-    yield assert_equal, img.shape, img2.shape
-    yield assert_true, np.allclose(np.asarray(img2), np.asarray(img))
+    with InTemporaryDirectory():
+        save_image(img, TMP_FNAME)
+        img2 = load_image(TMP_FNAME)
+        assert_false(np.allclose(img.affine, img2.affine))
+        assert_array_almost_equal(img.affine[:3,:3], img2.affine[:3,:3])
+        assert_equal(img.shape, img2.shape)
+        assert_array_almost_equal(img2.get_data(), img.get_data())
+        del img2
 
 # JT: nifti_ref doesn't reorder axes anymore so these tests
 # are no longer expected to work
@@ -97,8 +83,8 @@ def test_save2b():
 
 #     data = np.random.standard_normal(shape)
 #     img = api.Image(data, cmap)
-#     save_image(img, tmpfile.name)
-#     img2 = load_image(tmpfile.name)
+#     save_image(img, TMP_FNAME)
+#     img2 = load_image(TMP_FNAME)
 
 #     yield assert_equal, tuple([img.shape[l] for l in [3,0,1,2]]), img2.shape
 #     a = np.transpose(np.asarray(img), [3,0,1,2])
@@ -118,8 +104,8 @@ def test_save2b():
 #     cmap = api.AffineTransform.from_start_step('lkji', 'tzyx', [2,5,3,1], step)
 #     data = np.random.standard_normal(shape)
 #     img = api.Image(data, cmap)
-#     save_image(img, tmpfile.name)
-#     img2 = load_image(tmpfile.name)
+#     save_image(img, TMP_FNAME)
+#     img2 = load_image(TMP_FNAME)
 #     P = np.array([[0,0,0,1,0],
 #                   [0,0,1,0,0],
 #                   [0,1,0,0,0],
