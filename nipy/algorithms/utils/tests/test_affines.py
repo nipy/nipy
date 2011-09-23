@@ -3,9 +3,9 @@
 
 import numpy as np
 
-from ..affines import apply_affine
+from ..affines import apply_affine, append_diag
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_raises
 from numpy.testing import assert_array_equal, assert_almost_equal
 
 
@@ -63,3 +63,37 @@ def test_apply_affine():
         exp_res = exp_pts.reshape((2,3,nd))
         assert_array_equal(res, exp_res)
 
+
+def test_append_diag():
+    # Routine for appending diagonal elements
+    assert_array_equal(append_diag(np.diag([2,3,1]), [1]),
+                       np.diag([2,3,1,1]))
+    assert_array_equal(append_diag(np.diag([2,3,1]), [1,1]),
+                       np.diag([2,3,1,1,1]))
+    aff = np.array([[2,0,0],
+                    [0,3,0],
+                    [0,0,1],
+                    [0,0,1]])
+    assert_array_equal(append_diag(aff, [5], [9]),
+                       [[2,0,0,0],
+                        [0,3,0,0],
+                        [0,0,0,1],
+                        [0,0,5,9],
+                        [0,0,0,1]])
+    assert_array_equal(append_diag(aff, [5,6], [9,10]),
+                       [[2,0,0,0,0],
+                        [0,3,0,0,0],
+                        [0,0,0,0,1],
+                        [0,0,5,0,9],
+                        [0,0,0,6,10],
+                        [0,0,0,0,1]])
+    aff = np.array([[2,0,0,0],
+                    [0,3,0,0],
+                    [0,0,0,1]])
+    assert_array_equal(append_diag(aff, [5], [9]),
+                       [[2,0,0,0,0],
+                        [0,3,0,0,0],
+                        [0,0,0,5,9],
+                        [0,0,0,0,1]])
+    # Length of starts has to match length of steps
+    assert_raises(ValueError, append_diag, aff, [5,6], [9])

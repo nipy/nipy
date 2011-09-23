@@ -1,12 +1,11 @@
 
 import numpy as np
 
-from nipy.testing import *
-from nipy.core.reference.coordinate_system import (
-    CoordinateSystem,
-    CoordinateSystemError,
-    product,
-    safe_dtype)
+from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,
+                                 product, safe_dtype)
+
+from nose.tools import assert_true, assert_equal, assert_raises
+
 
 class empty(object):
     pass
@@ -15,15 +14,15 @@ E = empty()
 
 def setup():
     E.name = "test"
-    E.axes = ['i', 'j', 'k']
+    E.axes = ('i', 'j', 'k')
     E.coord_dtype = np.float32
     E.cs = CoordinateSystem(E.axes, E.name, E.coord_dtype)
 
 
 def test_CoordinateSystem():
-    yield assert_equal, E.cs.name, E.name
-    yield assert_equal, E.cs.coord_names, E.axes
-    yield assert_equal, E.cs.coord_dtype, E.coord_dtype
+    assert_equal(E.cs.name, E.name)
+    assert_equal(E.cs.coord_names, E.axes)
+    assert_equal(E.cs.coord_dtype, E.coord_dtype)
 
 
 def test_iterator_coordinate():
@@ -32,7 +31,7 @@ def test_iterator_coordinate():
         yield 'j'
         yield 'k'
     coordsys = CoordinateSystem(gen(), name='test_iter')
-    assert_equal(coordsys.coord_names, ['i','j','k'])
+    assert_equal(coordsys.coord_names, ('i','j','k'))
 
 
 def test_ndim():
@@ -42,13 +41,12 @@ def test_ndim():
     yield assert_equal, cs.ndim, 3
 
 
-@parametric
 def test_unique_coord_names():
-    unique = ['i','j','k']
-    notuniq = ['i','i','k']
+    unique = ('i','j','k')
+    notuniq = ('i','i','k')
     coordsys = CoordinateSystem(unique)
-    yield assert_equal(coordsys.coord_names, unique)
-    yield assert_raises(ValueError, CoordinateSystem, notuniq)
+    assert_equal(coordsys.coord_names, unique)
+    assert_raises(ValueError, CoordinateSystem, notuniq)
 
 
 def test_dtypes():
@@ -101,7 +99,7 @@ def test__ne__():
 
 def test___eq__():
     c1 = CoordinateSystem(E.cs.coord_names, E.cs.name, E.coord_dtype)
-    yield assert_true, c1 == E.cs
+    assert_equal(c1, E.cs)
 
 
 def test___str__():
@@ -109,25 +107,18 @@ def test___str__():
     assert_equal(s, "CoordinateSystem(coord_names=('i', 'j', 'k'), name='test', coord_dtype=float32)")
 
 
-@parametric
 def test_checked_values():
     cs = CoordinateSystem('ijk', name='voxels', coord_dtype=np.float32)
     x = np.array([1, 2, 3], dtype=np.int16)
     xc = cs._checked_values(x)
-    yield np.allclose, xc, x
+    np.allclose(xc, x)
     # wrong shape
-    yield assert_raises(CoordinateSystemError,
-                        cs._checked_values,
-                        x.reshape(3,1))
+    assert_raises(CoordinateSystemError, cs._checked_values, x.reshape(3,1))
     # wrong length
-    yield assert_raises(CoordinateSystemError,
-                        cs._checked_values,
-                        x[0:2])
+    assert_raises(CoordinateSystemError, cs._checked_values, x[0:2])
     # wrong dtype
     x = np.array([1,2,3], dtype=np.float64)
-    yield assert_raises(CoordinateSystemError,
-                        cs._checked_values,
-                        x)
+    assert_raises(CoordinateSystemError, cs._checked_values, x)
 
 
 def test_safe_dtype():
@@ -185,4 +176,23 @@ def test_product():
     yield assert_equal, cs.coord_dtype, np.complex64
     yield assert_equal, cs.dtype, np.dtype([('y', np.complex64),
                                             ('x', np.complex64)])
-    
+
+
+from ..coordinate_system import CoordSysMaker, CoordSysMakerError
+
+def test_coordsys_maker():
+    # Things that help making coordinate maps
+    ax_names = list('ijklm')
+    nl = len(ax_names)
+    cs_maker = CoordSysMaker(ax_names, 'myname')
+    for i in range(1,nl+1):
+        assert_equal(cs_maker(i),
+                     CoordinateSystem(ax_names[:i], 'myname', np.float))
+    assert_raises(CoordSysMakerError, cs_maker, nl+1)
+    # You can pass in your own name
+    assert_equal(cs_maker(i, 'anothername'),
+                 CoordinateSystem(ax_names[:i+1], 'anothername', np.float))
+    # And your own dtype if you really want
+    assert_equal(cs_maker(i, coord_dtype=np.int32),
+                 CoordinateSystem(ax_names[:i+1], 'myname', np.int32))
+
