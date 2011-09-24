@@ -10,7 +10,7 @@ Author : Bertrand Thirion, 2008-2010
 
 import numpy as np
 import scipy.ndimage as nd
-from nibabel import save, Nifti1Image 
+from nibabel import save, Nifti1Image
 
 # definition of the maxima at the group level
 pos = np.array([[6, 7],
@@ -41,7 +41,7 @@ def _cone3d(shape, ij, pos, ampli, width):
     return temp
 
 
-def surrogate_2d_dataset(n_subj=10, shape=(30,30), sk=1.0,
+def surrogate_2d_dataset(n_subj=10, shape=(30, 30), sk=1.0,
                          noise_level=1.0, pos=pos, ampli=ampli,
                          spatial_jitter=1.0, signal_jitter=1.0,
                          width=5.0, width_jitter=0,
@@ -126,10 +126,9 @@ def surrogate_2d_dataset(n_subj=10, shape=(30,30), sk=1.0,
         dataset.tofile(out_text_file)
 
     if out_image_file is not None:
-        save(Nifti1Image( dataset, np.eye(4)), out_image_file)
+        save(Nifti1Image(dataset, np.eye(4)), out_image_file)
 
     return dataset
-
 
 
 def surrogate_3d_dataset(n_subj=1, shape=(20, 20, 20), mask=None,
@@ -144,7 +143,7 @@ def surrogate_3d_dataset(n_subj=1, shape=(20, 20, 20), mask=None,
     n_subj: integer, optionnal
         The number of subjects, ie the number of different maps
         generated.
-    shape=(20,20,20): tuple of integers,
+    shape=(20,20,20): tuple of 3 integers,
          the shape of each image
     mask=None: Nifti1Image instance,
         referential- and mask- defining image (overrides shape)
@@ -221,14 +220,14 @@ def surrogate_3d_dataset(n_subj=1, shape=(20, 20, 20), mask=None,
         dataset.append(data)
 
     dataset = np.array(dataset)
-    if n_subj==1:
+    if n_subj == 1:
         dataset = dataset[0]
 
     if out_text_file is not None:
         dataset.tofile(out_text_file)
 
     if out_image_file is not None:
-        save(Nifti1Image( dataset, np.eye(4)), out_image_file)
+        save(Nifti1Image(dataset, np.eye(4)), out_image_file)
 
     return dataset
 
@@ -259,7 +258,7 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
     signal_level: float, optional,
         Amplitude of the signal
     out_image_file: string or list of strings or None, optionnal
-        If not None, the resulting is saved as a (set of) nifti file(s) with the
+        If not None, the resulting is saved as (set of) nifti file(s) with the
         given file path(s)
     seed=False:  int, optionnal
         If seed is not False, the random number generator is initialized
@@ -289,8 +288,8 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
 
     if (out_image_file is not None) and isinstance(out_image_file, basestring):
         out_image_file = [out_image_file]
-    
-    shape_4d = tuple((shape[0], shape[1], shape[2], n_scans))
+
+    shape_4d = shape + (n_scans,)
 
     output_images = []
     if dmtx is not None:
@@ -320,7 +319,7 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
             data[:, :, :, s] += noise
             data[:, :, :, s] += 100 * mask_data
 
-        wim = Nifti1Image( data, affine)
+        wim = Nifti1Image(data, affine)
         output_images.append(wim)
         if out_image_file is not None:
             save(wim, out_image_file[ns])
