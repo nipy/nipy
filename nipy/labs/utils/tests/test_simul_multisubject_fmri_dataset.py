@@ -25,8 +25,8 @@ def test_surrogate_array():
                       [5, 18]])
     ampli = np.random.random(5)
     data = surrogate_2d_dataset(n_subj=1, noise_level=0, spatial_jitter=0,
-                                signal_jitter=0, pos=pos, dimx=20,
-                                dimy=20, ampli=ampli).squeeze()
+                                signal_jitter=0, pos=pos, shape=(20,20),
+                                ampli=ampli).squeeze()
     x, y = pos.T
     np.testing.assert_array_equal(data[x, y], ampli)
 
