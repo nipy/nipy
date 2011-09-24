@@ -45,7 +45,7 @@ extern "C" {
 			     PyArrayIterObject* iterI,
 			     const PyArrayObject* imJ_padded, 
 			     const PyArrayObject* Tvox, 
-			     int interp); 
+			     long interp); 
 
   extern int L1_moments(double* n_, double* median_, double* dev_, 
 			const PyArrayObject* H);
