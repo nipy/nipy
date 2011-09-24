@@ -90,7 +90,7 @@ def test_parcel_intra_from_4d_image():
     shape = (10, 10, 10)
     mask_image = Nifti1Image(np.ones(shape), np.eye(4))
     data_image = join(tempdir, 'image.nii')
-    surrogate_3d_dataset(nbsubj=10, mask=mask_image, out_image_file=data_image)
+    surrogate_3d_dataset(n_subj=10, mask=mask_image, out_image_file=data_image)
 
     #run the algo
     n_parcel = 10

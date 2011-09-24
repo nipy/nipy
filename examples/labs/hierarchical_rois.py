@@ -18,12 +18,11 @@ from nipy.labs.spatial_models.discrete_domain import domain_from_array
 
 ##############################################################################
 # simulate the data
-dimx = 60
-dimy = 60
+shape = (60, 60)
 pos = np.array([[12, 14], [20, 20], [30, 20]])
 ampli = np.array([3, 4, 4])
 
-dataset = simul.surrogate_2d_dataset(nbsubj=1, dimx=dimx, dimy=dimy, pos=pos,
+dataset = simul.surrogate_2d_dataset(n_subj=1, shape=shape, pos=pos,
                                      ampli=ampli, width=10.0).squeeze()
 
 # create a domain descriptor associated with this
@@ -43,7 +42,7 @@ u = nroi.make_graph().cc()
 nroi.make_feature('activation', dataset.ravel())
 nroi.representative_feature('activation')
 
-label = np.reshape(n1.label, (dimx, dimy))
+label = np.reshape(n1.label, shape)
 
 # make a figure
 import matplotlib.pylab as mp

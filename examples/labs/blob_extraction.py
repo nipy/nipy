@@ -21,13 +21,10 @@ from nipy.labs.spatial_models.discrete_domain import domain_from_array
 # simulate an activation image
 # ---------------------------------------------------------
 
-dimx = 60
-dimy = 60
+shape = (60, 60)
 pos = np.array([[12, 14], [20, 20], [30, 20]])
 ampli = np.array([3, 4, 4])
-
-nbvox = dimx * dimy
-dataset = simul.surrogate_2d_dataset(nbsubj=1, dimx=dimx, dimy=dimy, pos=pos,
+dataset = simul.surrogate_2d_dataset(n_subj=1, shape=shape, pos=pos,
                                      ampli=ampli, width=10.0).squeeze()
 values = dataset.ravel()
 
@@ -41,12 +38,12 @@ domain = domain_from_array(dataset ** 2 > 0)
 
 nroi = hroi.HROI_as_discrete_domain_blobs(domain, dataset.ravel(),
                                           threshold=2.0, smin=3)
-label = np.reshape(nroi.label, ((dimx, dimy)))
+label = np.reshape(nroi.label, shape)
 
 # create an average activaion image
 nroi.make_feature('activation', dataset.ravel())
 mean_activation = nroi.representative_feature('activation')
-bmap = - np.ones((dimx, dimy))
+bmap = - np.ones(shape)
 for k in range(nroi.k):
     bmap[label == k] = mean_activation[k]
 

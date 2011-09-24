@@ -40,7 +40,7 @@ ths = .5
 fdim = 3
 
 # number of parcels
-nbparcel = 500
+nbparcel = 200
 
 # write dir
 swd = tempfile.mkdtemp()
@@ -50,8 +50,6 @@ domain, ldata = parcel_input(mask_images, learn_images, ths, fdim)
 
 # run the algorithm
 fpa = hparcel(domain, ldata, nbparcel, verbose=1)
-#fpa,  prfx0 = hparcel(domain, ldata, nbparcel, nb_perm=5, niter=5, verbose=1)
-
 
 #produce some output images
 write_parcellation_images(fpa, subject_id=subj_id, swd=swd)
