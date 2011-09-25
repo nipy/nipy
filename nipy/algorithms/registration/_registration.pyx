@@ -54,7 +54,7 @@ import numpy as np
 modes = {'zero': 0, 'nearest': 1, 'reflect': 2}
 
 
-def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, int interp):
+def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, long interp):
     """
     Compute the joint histogram given a transformation trial. 
     """

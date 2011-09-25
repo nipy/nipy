@@ -79,7 +79,7 @@ int joint_histogram(PyArrayObject* JH,
 		    PyArrayIterObject* iterI,
 		    const PyArrayObject* imJ_padded, 
 		    const PyArrayObject* Tvox, 
-		    int interp)
+		    long interp)
 {
   const signed short* J=(signed short*)imJ_padded->data; 
   size_t dimJX=imJ_padded->dimensions[0]-2;
