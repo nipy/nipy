@@ -16,6 +16,7 @@ import matplotlib
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 import nipy.labs.spatial_models.hroi as hroi
 from nipy.labs.spatial_models.discrete_domain import domain_from_array
+from nipy.labs.spatial_models.mroi import subdomain_from_array
 
 # ---------------------------------------------------------
 # simulate an activation image
@@ -31,21 +32,20 @@ values = dataset.ravel()
 
 #-------------------------------------------------------
 # Computations
-#------------------------------------------------------- 
+#-------------------------------------------------------
 
 # create a domain descriptor associated with this
 domain = domain_from_array(dataset ** 2 > 0)
 
 nroi = hroi.HROI_as_discrete_domain_blobs(domain, dataset.ravel(),
                                           threshold=2.0, smin=3)
-label = np.reshape(nroi.label, shape)
-
 # create an average activaion image
-nroi.make_feature('activation', dataset.ravel())
-mean_activation = nroi.representative_feature('activation')
-bmap = - np.ones(shape)
-for k in range(nroi.k):
-    bmap[label == k] = mean_activation[k]
+flat_dataset = dataset.ravel()
+activation = [flat_dataset[nroi.select_id(id, roi=False)]
+              for id in nroi.get_id()]
+nroi.set_feature('activation', activation)
+bmap = nroi.feature_to_voxel_map(
+    'activation', roi=True, method="mean").reshape((dimx, dimy))
 
 #--------------------------------------------------------
 # Result display
@@ -73,13 +73,14 @@ pl.imshow(dataset, interpolation='nearest', cmap=my_cmap)
 cb = pl.colorbar()
 for t in cb.ax.get_yticklabels():
     t.set_fontsize(16)
-    
+
 pl.axis('off')
 pl.title('Thresholded data')
 
 # plot the blob label image
 pl.subplot(1, 3, 2)
-pl.imshow(label, interpolation='nearest')
+pl.imshow(nroi.feature_to_voxel_map('id', roi=True).reshape((dimx, dimy)),
+          interpolation='nearest')
 pl.colorbar()
 pl.title('Blob labels')
 
