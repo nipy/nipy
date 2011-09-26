@@ -64,6 +64,7 @@ class Forest(WeightedGraph):
             if np.size(parents) != V:
                 raise ValueError('Incorrect size for parents')
             if parents.max() > self.V:
+                import pdb; pdb.set_trace()
                 raise ValueError('Incorrect value for parents')
 
             self.parents = np.reshape(parents, self.V).astype(np.int)
@@ -113,7 +114,7 @@ class Forest(WeightedGraph):
         """
         v = int(v)
         if v > -1:
-            if v > self.V-1:
+            if v > self.V - 1:
                 raise ValueError('the given node index is too high')
         if self.children == []:
             self.compute_children()
@@ -122,7 +123,7 @@ class Forest(WeightedGraph):
         else:
             return self.children[v]
 
-    def get_descendents(self, v):
+    def get_descendents(self, v, exclude_self=False):
         """returns the nodes that are children of v as a list
 
         Parameters
@@ -149,6 +150,8 @@ class Forest(WeightedGraph):
                 for q in temp:
                     desc.append(q)
         desc.sort()
+        if exclude_self and v in desc:
+            desc = [i for i in desc if i != v]
         return desc
 
     def check(self):
@@ -224,7 +227,7 @@ class Forest(WeightedGraph):
         parents = self.parents.copy()
         j = np.nonzero(valid[self.parents] == 0)[0]
         parents[j] = j
-        parents = parents[valid]
+        parents = parents[valid.astype(bool)]
         renumb = np.hstack((0, np.cumsum(valid)))
         parents = renumb[parents]
 

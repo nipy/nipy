@@ -40,10 +40,12 @@ root = np.argmax(td)
 lv = n1.make_forest().get_descendents(root)
 u = nroi.make_graph().cc()
 
-nroi.make_feature('activation', dataset.ravel())
-nroi.representative_feature('activation')
+flat_data = dataset.ravel()
+activation = [flat_data[nroi.select_id(id, roi=False)]
+              for id in nroi.get_id()]
+nroi.set_feature('activation', activation)
 
-label = np.reshape(n1.label, (dimx, dimy))
+label = np.reshape(n1.feature_to_voxel_map('id', roi=True), (dimx, dimy))
 
 # make a figure
 import matplotlib.pylab as mp
