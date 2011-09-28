@@ -1,8 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
-import numpy.linalg as L
-import numpy.random as R
+import numpy.linalg as npl
 
 from ....testing import (assert_equal, assert_almost_equal)
 
@@ -10,7 +9,7 @@ from .. import intvol, utils
 
 
 def symnormal(p=10):
-    M = R.standard_normal((p,p))
+    M = np.random.standard_normal((p,p))
     return (M + M.T) / np.sqrt(2)
 
 
@@ -19,7 +18,7 @@ def randorth(p=10):
     A random orthogonal matrix.
     """
     A = symnormal(p)
-    return L.eig(A)[1]
+    return npl.eig(A)[1]
 
 
 def box(shape, edges):
@@ -35,7 +34,7 @@ def randombox(shape):
     """
     Generate a random box, returning the box and the edge lengths
     """
-    edges = [R.random_integers(0, shape[j], size=(2,)) 
+    edges = [np.random.random_integers(0, shape[j], size=(2,))
              for j in range(len(shape))]
 
     for j in range(len(shape)):
@@ -126,12 +125,11 @@ def test_ec_disjoint():
              2:intvol.EC2d,
              1:intvol.EC1d}[i]
         box1, box2, _, _ = nonintersecting_boxes((40,)*i)
-        yield assert_almost_equal, e(box1 + box2), e(box1) + e(box2)
+        assert_almost_equal(e(box1 + box2), e(box1) + e(box2))
 
 
 def test_lips_wrapping():
     # Test that shapes touching the edge do not combine by wrapping
-    # Test that simple disjoint boxes at edge do not combine by wrapping.
     b1 = np.zeros(40, np.int)
     b1[:11] = 1
     b2 = np.zeros(40, np.int)
@@ -261,7 +259,16 @@ def test_slices():
     m[10,10:14,9:15] = 1
     yield assert_almost_equal, e(m), 1
     yield assert_almost_equal, p(D,m), [1,8,15,0]
-        
 
 
-
+def test_ec_wrapping():
+    # Test wrapping for EC1 calculation
+    assert_equal(intvol.EC1d(np.ones((6,), dtype=np.int)), 1)
+    box1 = np.array([1, 1, 0, 1, 1, 1], dtype=np.int)
+    assert_equal(intvol.EC1d(box1), 2)
+    # 2D
+    box1 = np.zeros((3,6), dtype=np.int)
+    box1[1] = 1
+    assert_equal(intvol.EC2d(box1), 1)
+    box1[1, 3] = 0
+    assert_equal(intvol.EC2d(box1), 2)
