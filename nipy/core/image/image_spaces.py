@@ -109,7 +109,7 @@ def xyz_affine(img, name2xyz=None):
     >>> img.coordmap
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('mni-x', 'mni-y', 'mni-z', 't'), name='mni', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 2.,  0.,  0.,  0.,  0.],
                      [ 0.,  3.,  0.,  0.,  0.],
                      [ 0.,  0.,  4.,  0.,  0.],
@@ -163,7 +163,7 @@ def is_xyz_affable(img, name2xyz=None):
     >>> img.coordmap
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('mni-x', 'mni-y', 'mni-z', 't'), name='mni', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 2.,  0.,  0.,  0.,  0.],
                      [ 0.,  3.,  0.,  0.,  0.],
                      [ 0.,  0.,  4.,  0.,  0.],
@@ -176,7 +176,7 @@ def is_xyz_affable(img, name2xyz=None):
     >>> time0_img.coordmap
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='array', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('t', 'mni-x', 'mni-y', 'mni-z'), name='mni', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('t', 'mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S'), name='mni', coord_dtype=float64),
        affine=array([[ 5.,  0.,  0.,  0.,  0.],
                      [ 0.,  2.,  0.,  0.,  0.],
                      [ 0.,  0.,  3.,  0.,  0.],

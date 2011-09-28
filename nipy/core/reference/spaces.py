@@ -9,9 +9,10 @@ from ...fixes.nibabel import io_orientation
 from .coordinate_system import CoordSysMaker
 from .coordinate_map import CoordMapMaker
 
-scanner_names = ['scanner-' + label for label in 'xyz'] + ['t']
-mni_names = ['mni-' + label for label in 'xyz'] + ['t']
-talairach_names = ['talairach-' + label for label in 'xyz'] + ['t']
+_labels = 'x=L->R', 'y=P->A', 'z=I->S'
+scanner_names = ['scanner-' + label for label in _labels] + ['t']
+mni_names = ['mni-' + label for label in _labels] + ['t']
+talairach_names = ['talairach-' + label for label in _labels] + ['t']
 
 # Some standard coordinate system makers
 voxel_cs = CoordSysMaker('ijkl', 'array')
@@ -88,7 +89,7 @@ def xyz_affine(coordmap, name2xyz=None):
     >>> cmap
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('mni-x', 'mni-y', 'mni-z', 't'), name='mni', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 2.,  0.,  0.,  0.,  0.],
                      [ 0.,  3.,  0.,  0.,  0.],
                      [ 0.,  0.,  4.,  0.,  0.],
@@ -145,12 +146,12 @@ def xyz_order(coordsys, name2xyz=None):
     >>> from nipy.core.api import CoordinateSystem
     >>> xyzt_cs = mni_cs(4) # coordsys with t (time) last
     >>> xyzt_cs
-    CoordinateSystem(coord_names=('mni-x', 'mni-y', 'mni-z', 't'), name='mni', coord_dtype=float64)
+    CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64)
     >>> xyz_order(xyzt_cs)
     [0, 1, 2, 3]
     >>> tzyx_cs = CoordinateSystem(xyzt_cs.coord_names[::-1], 'reversed')
     >>> tzyx_cs
-    CoordinateSystem(coord_names=('t', 'mni-z', 'mni-y', 'mni-x'), name='reversed', coord_dtype=float64)
+    CoordinateSystem(coord_names=('t', 'mni-z=I->S', 'mni-y=P->A', 'mni-x=L->R'), name='reversed', coord_dtype=float64)
     >>> xyz_order(tzyx_cs)
     [3, 2, 1, 0]
     """
@@ -193,7 +194,7 @@ def is_xyz_affable(coordmap, name2xyz=None):
     >>> cmap
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('mni-x', 'mni-y', 'mni-z', 't'), name='mni', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 2.,  0.,  0.,  0.,  0.],
                      [ 0.,  3.,  0.,  0.,  0.],
                      [ 0.,  0.,  4.,  0.,  0.],
@@ -206,7 +207,7 @@ def is_xyz_affable(coordmap, name2xyz=None):
     >>> time0_cmap
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='array', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('mni-x', 'mni-y', 'mni-z', 't'), name='mni', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 0.,  2.,  0.,  0.,  0.],
                      [ 0.,  0.,  3.,  0.,  0.],
                      [ 0.,  0.,  0.,  4.,  0.],

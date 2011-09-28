@@ -21,7 +21,11 @@ VARS = {}
 
 def setup():
     d_names = list('ijkl')
-    r_names = ['mni-x', 'mni-y', 'mni-z', 't']
+    xyzs = 'x=L->R', 'y=P->A', 'z=I->S'
+    mni_xyzs = ['mni-' + suff for suff in xyzs]
+    scanner_xyzs = ['scanner-' + suff for suff in xyzs]
+    talairach_xyzs = ['talairach-' + suff for suff in xyzs]
+    r_names = mni_xyzs + ['t']
     d_cs_r3 = CS(d_names[:3], 'array')
     d_cs_r4 = CS(d_names[:4], 'array')
     r_cs_r3 = CS(r_names[:3], 'mni')
@@ -50,10 +54,9 @@ def test_image_creation():
 def test_default_makers():
     # Tests that the makers make expected coordinate maps
     for csm, r_names, r_name in (
-        (vox2scanner, ('scanner-x', 'scanner-y', 'scanner-z', 't'), 'scanner'),
-        (vox2mni, ('mni-x', 'mni-y', 'mni-z', 't'), 'mni'),
-        (vox2talairach,('talairach-x', 'talairach-y', 'talairach-z', 't'),
-         'talairach')):
+        (vox2scanner, VARS['scanner_xyzs'] + ['t'], 'scanner'),
+        (vox2mni, VARS['mni_xyzs'] + ['t'], 'mni'),
+        (vox2talairach, VARS['talairach_xyzs'] + ['t'], 'talairach')):
         for i in range(1,5):
             dom_cs = CS('ijkl'[:i], 'array')
             ran_cs = CS(r_names[:i], r_name)
@@ -144,9 +147,9 @@ def test_xyz_order():
     # Getting xyz ordering from a coordinate system
     assert_array_equal(xyz_order(VARS['r_cs_r3']), [0,1,2])
     assert_array_equal(xyz_order(VARS['r_cs_r4']), [0,1,2,3])
-    r_cs = CS(('mni-x', 'mni-y', 'mni-q'), 'mni')
+    r_cs = CS(('mni-x=L->R', 'mni-y=P->A', 'mni-q'), 'mni')
     assert_raises(AxesError, xyz_order, r_cs)
-    r_cs = CS(('t', 'mni-x', 'mni-z', 'mni-y'), 'mni')
+    r_cs = CS(('t', 'mni-x=L->R', 'mni-z=I->S', 'mni-y=P->A'), 'mni')
     assert_array_equal(xyz_order(r_cs), [1, 3, 2, 0])
     # Can pass in own validator
     my_valtor = dict(ditch='x', leading='y', blind='z')

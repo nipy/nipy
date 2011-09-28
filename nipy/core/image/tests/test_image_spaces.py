@@ -35,7 +35,7 @@ def test_image_xyz_affine():
     assert_array_equal(xyz_affine(nimg), aff)
     # Any dimensions not spatial, AxesError
     d_cs = CS('ijk', 'array')
-    r_cs = CS(('mni-x', 'mni-y', 'mni-q'), 'mni')
+    r_cs = CS(('mni-x=L->R', 'mni-y=P->A', 'mni-q'), 'mni')
     cmap = AffineTransform(d_cs,r_cs, aff)
     img = Image(arr, cmap)
     assert_raises(AxesError, xyz_affine, img)
@@ -77,7 +77,7 @@ def test_image_as_xyz_affable():
     arr = np.arange(24).reshape((2,3,4))
     aff = np.diag([2,3,4,1])
     d_cs = CS('ijk', 'array')
-    r_cs = CS(('mni-x', 'mni-y', 'mni-q'), 'mni')
+    r_cs = CS(('mni-x=L->R', 'mni-y=P->A', 'mni-q'), 'mni')
     cmap = AffineTransform(d_cs, r_cs, aff)
     img = Image(arr, cmap)
     assert_raises(AxesError, as_xyz_affable, img)
