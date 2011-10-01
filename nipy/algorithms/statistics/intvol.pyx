@@ -67,7 +67,7 @@ cpdef double mu3_tet(double D00, double D01, double D02, double D03,
         C01 * (C01 * C22 - C02 * C12) +
         C02 * (C01 * C12 - C11 * C02))
   # Rounding errors near 0 cause NaNs
-  if v2 < 0:
+  if v2 <= 0:
       return 0
   return sqrt(v2) / 6.
 
@@ -134,10 +134,12 @@ cpdef double mu1_tet(double D00, double D01, double D02, double D03,
 
 cdef inline double limited_acos(double val) nogil:
     """ Check for -1 <= val <= 1 before returning acos(val)
+
+    Avoids nan values from small rounding errors
     """
-    if val > 1:
+    if val >= 1:
         return 0
-    elif val < -1:
+    elif val <= -1:
         return PI
     return acos(val)
 
