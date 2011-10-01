@@ -159,8 +159,9 @@ cpdef double _mu1_tetface(double Ds0s0,
     cdef double length, norm_proj0, norm_proj1, inner_prod_proj
 
     A00 = Ds1s1 - 2 * Ds0s1 + Ds0s0
-    # all norms divided by this value, leading to NaN value for output
-    if A00 == 0:
+    # all norms divided by this value, leading to NaN value for output, for
+    # values <= 0
+    if A00 <= 0:
       return 0
     A11 = Dt0t0 - 2 * Ds0t0 + Ds0s0
     A22 = Dt1t1 - 2 * Ds0t1 + Ds0s0
