@@ -32,17 +32,18 @@ cdef extern from "math.h" nogil:
     double sqrt(double x)
     double fabs(double x)
     double log2(double x)
-    double acos(double x)    
+    double acos(double x)
     bint isnan(double x)
 
-    
+
 cpdef double mu3_tet(double D00, double D01, double D02, double D03,
-                     double D11, double D12, double D13, 
-                     double D22, double D23, 
+                     double D11, double D12, double D13,
+                     double D22, double D23,
                      double D33) nogil:
-  """
-  Compute the 3rd intrinsic volume (just volume in this case) of 
-  a tetrahedron with coordinates [coords[v0], coords[v1], coords[v2], coords[v3]].
+  """ Compute the 3rd intrinsic volume of a tetrahedron.
+
+  3rd intrinsic volume (just volume in this case) of a tetrahedron with
+  coordinates [coords[v0], coords[v1], coords[v2], coords[v3]].
 
   Parameters
   ----------
@@ -68,12 +69,13 @@ cpdef double mu3_tet(double D00, double D01, double D02, double D03,
 
 
 cpdef double mu2_tet(double D00, double D01, double D02, double D03,
-                     double D11, double D12, double D13, 
+                     double D11, double D12, double D13,
                      double D22, double D23,
                      double D33) nogil:
-  """
-  Compute the 2nd intrinsic volume (half the surface area) of 
-  a tetrahedron with coordinates [coords[v0], coords[v1], coords[v2], coords[v3]].
+  """ Compute the 2nd intrinsic volume of tetrahedron
+
+  2nd intrinsic volume (half the surface area) of a tetrahedron with coordinates
+  [coords[v0], coords[v1], coords[v2], coords[v3]].
 
   Parameters
   ----------
@@ -93,13 +95,13 @@ cpdef double mu2_tet(double D00, double D01, double D02, double D03,
   mu += mu2_tri(D00, D01, D03, D11, D13, D33)
   return mu * 0.5
 
-  
+
 cpdef double mu1_tet(double D00, double D01, double D02, double D03,
                      double D11, double D12, double D13, 
                      double D22, double D23,
                      double D33) nogil:
-  """ Return 3rd intinsic volume of tetrahedron
-  
+  """ Return 3rd intrinsic volume of tetrahedron
+
   Compute the 3rd intrinsic volume (sum of external angles * edge
   lengths) of a tetrahedron with coordinates [coords[v0], coords[v1],
   coords[v2], coords[v3]].
@@ -163,9 +165,10 @@ cdef double _mu1_tetface(double Ds0s0,
 cpdef double mu2_tri(double D00, double D01, double D02,
                      double D11, double D12,
                      double D22) nogil:
-  """
-  Compute the 2nd intrinsic volume (just area in this case) of
-  a triangle with coordinates [coords[v0], coords[v1], coords[v2]].
+  """ Compute the 2nd intrinsic volume of triangle
+
+  2nd intrinsic volume (just area in this case) of a triangle with coordinates
+  [coords[v0], coords[v1], coords[v2]].
 
   Parameters
   ----------
@@ -192,9 +195,10 @@ cpdef double mu2_tri(double D00, double D01, double D02,
 cpdef double mu1_tri(double D00, double D01, double D02,
                      double D11, double D12,
                      double D22) nogil:
-  """
-  Compute the 1st intrinsic volume (1/2 the perimeter of
-  a triangle with coordinates [coords[v0], coords[v1], coords[v2]].
+  """ Compute the 1st intrinsic volume of triangle
+
+  1st intrinsic volume (1/2 the perimeter) of a triangle with coordinates
+  [coords[v0], coords[v1], coords[v2]].
 
   Parameters
   ----------
@@ -213,12 +217,12 @@ cpdef double mu1_tri(double D00, double D01, double D02,
   mu += mu1_edge(D11, D12, D22)
   return mu * 0.5
 
-  
+
 cpdef double mu1_edge(double D00, double D01, 
                       double D11) nogil:
-  """
-  Compute the 1st intrinsic volume (length)
-  of a line segment with coordinates [coords[v0], coords[v1]]
+  """ Compute the 1st intrinsic volume (length) of line segment
+
+  Length of a line segment with coordinates [coords[v0], coords[v1]]
 
   Parameters
   ----------
@@ -235,13 +239,12 @@ cpdef double mu1_edge(double D00, double D01,
 
 
 def EC3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
-    """
-    Given a 3d mask, compute the 0th intrinsic volume
-    (Euler characteristic)
-    of the masked region. The region is broken up into tetrahedra /
-    triangles / edges / vertices, which are included based on whether
-    all voxels in the tetrahedron / triangle / edge / vertex are
-    in the mask or not.
+    """ Compute Euler characteristic of region within `mask`
+
+    Given a 3d `mask`, compute the 0th intrinsic volume (Euler characteristic)
+    of the masked region. The region is broken up into tetrahedra / triangles /
+    edges / vertices, which are included based on whether all voxels in the
+    tetrahedron / triangle / edge / vertex are in the mask or not.
 
     Parameters
     ----------
@@ -360,12 +363,12 @@ def EC3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
 
 def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
            np.ndarray[DTYPE_int_t, ndim=3] mask):
-    """
-    Given a 3d mask and coordinates, estimate the intrinsic volumes
-    of the masked region. The region is broken up into tetrahedra / 
-    triangles / edges / vertices, which are included based on whether
-    all voxels in the tetrahedron / triangle / edge / vertex are
-    in the mask or not.
+    """ Estimated intrinsic volumes within masked region given coordinates
+
+    Given a 3d `mask` and coordinates `coords`, estimate the intrinsic volumes
+    of the masked region. The region is broken up into tetrahedra / triangles /
+    edges / vertices, which are included based on whether all voxels in the
+    tetrahedron / triangle / edge / vertex are in the mask or not.
 
     Parameters
     ----------
@@ -416,18 +419,16 @@ def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
       raise ValueError('mask should be filled with 0/1 '
                        'values, but be of type np.int')
     # 'flattened' coords (2d array)
-    cdef np.ndarray[DTYPE_float_t, ndim=2] fcoords 
+    cdef np.ndarray[DTYPE_float_t, ndim=2] fcoords
     cdef np.ndarray[DTYPE_float_t, ndim=2] D
 
     # 'flattened' mask (1d array)
-
     cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
     cdef np.ndarray[DTYPE_int_t, ndim=1] fpmask
     cdef np.ndarray[DTYPE_int_t, ndim=3] pmask
 
-    # d3 and d4 are lists of triangles and tetrahedra 
+    # d3 and d4 are lists of triangles and tetrahedra
     # associated to particular voxels in the cube
-
     cdef np.ndarray[DTYPE_int_t, ndim=2] d4
     cdef np.ndarray[DTYPE_int_t, ndim=2] m4
     cdef np.ndarray[DTYPE_int_t, ndim=2] d3
@@ -628,12 +629,12 @@ def _convert_stride1(v, stride1, stride2):
 
 def Lips2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
            np.ndarray[DTYPE_int_t, ndim=2] mask):
-    """
-    Given a 2d mask and coordinates, estimate the intrinsic volumes
-    of the masked region. The region is broken up into
-    triangles / edges / vertices, which are included based on whether
-    all voxels in the triangle / edge / vertex are
-    in the mask or not.
+    """ Estimate intrinsic volumes for 2d region in `mask` given `coords`
+
+    Given a 2d `mask` and coordinates `coords`, estimate the intrinsic volumes
+    of the masked region. The region is broken up into triangles / edges /
+    vertices, which are included based on whether all voxels in the triangle /
+    edge / vertex are in the mask or not.
 
     Parameters
     ----------
@@ -793,13 +794,12 @@ def Lips2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
 
 
 def EC2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
-    """
-    Given a 2d mask, compute the 0th intrinsic volume
-    (Euler characteristic)
-    of the masked region. The region is broken up into 
-    triangles / edges / vertices, which are included based on whether
-    all voxels in the triangle / edge / vertex are
-    in the mask or not.
+    """ Compute Euler characteristic of 2D region in `mask`
+
+    Given a 2d `mask`, compute the 0th intrinsic volume (Euler characteristic)
+    of the masked region. The region is broken up into triangles / edges /
+    vertices, which are included based on whether all voxels in the triangle /
+    edge / vertex are in the mask or not.
 
     Parameters
     ----------
@@ -896,11 +896,12 @@ def EC2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
 
 def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
            np.ndarray[DTYPE_int_t, ndim=1] mask):
-    """
-    Given a 1d mask and coordinates, estimate the intrinsic volumes of the
-    masked region. The region is broken up into edges / vertices, which are
-    included based on whether all voxels in the edge / vertex are in the mask or
-    not.
+    """ Estimate intrinsic volumes for 1D region in `mask` given `coords`
+
+    Given a 1d `mask` and coordinates `coords`, estimate the intrinsic volumes
+    of the masked region. The region is broken up into edges / vertices, which
+    are included based on whether all voxels in the edge / vertex are in the
+    mask or not.
 
     Parameters
     ----------
@@ -986,7 +987,7 @@ def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
 
 
 def EC1d(np.ndarray[DTYPE_int_t, ndim=1] mask):
-    """ Compute Euler characteristic for 1d mask
+    """ Compute Euler characteristic for 1d `mask`
 
     Given a 1d mask `mask`, compute the 0th intrinsic volume (Euler
     characteristic) of the masked region. The region is broken up into edges /
