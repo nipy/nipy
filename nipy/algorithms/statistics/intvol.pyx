@@ -555,10 +555,6 @@ def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
                         w3 = d4[l,7]
 
                         m = m * fpmask[v1] * fpmask[v2] * fpmask[v3]
-                        d = m * mu3_tet(D[w0,w0], D[w0,w1], D[w0,w2], 
-                                        D[w0,w3], D[w1,w1], D[w1,w2], 
-                                        D[w1,w3], D[w2,w2], D[w2,w3],
-                                        D[w3,w3])
 
                         l3 = l3 + m * mu3_tet(D[w0,w0], D[w0,w1], D[w0,w2], 
                                               D[w0,w3], D[w1,w1], D[w1,w2], 
