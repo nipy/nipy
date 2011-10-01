@@ -56,16 +56,20 @@ cpdef double mu3_tet(double D00, double D01, double D02, double D03,
   -------
   mu3 : float
   """
-  cdef double C00, C01, C02, C11, C12, C22
+  cdef double C00, C01, C02, C11, C12, C22, v2
   C00 = D00 - 2*D03 + D33
   C01 = D01 - D13 - D03 + D33
   C02 = D02 - D23 - D03 + D33
   C11 = D11 - 2*D13 + D33
   C12 = D12 - D13 - D23 + D33
   C22 = D22 - 2*D23 + D33
-  return sqrt((C00 * (C11 * C22 - C12 * C12) -
-               C01 * (C01 * C22 - C02 * C12) +
-               C02 * (C01 * C12 - C11 * C02))) / 6.
+  v2 = (C00 * (C11 * C22 - C12 * C12) -
+        C01 * (C01 * C22 - C02 * C12) +
+        C02 * (C01 * C12 - C11 * C02))
+  # Rounding errors near 0 cause NaNs
+  if v2 < 0:
+      return 0
+  return sqrt(v2) / 6.
 
 
 cpdef double mu2_tet(double D00, double D01, double D02, double D03,
@@ -128,18 +132,28 @@ cpdef double mu1_tet(double D00, double D01, double D02, double D03,
   return mu
 
 
+cdef inline double limited_acos(double val) nogil:
+    """ Check for -1 <= val <= 1 before returning acos(val)
+    """
+    if val > 1:
+        return 0
+    elif val < -1:
+        return PI
+    return acos(val)
+
+
 @cython.cdivision(True)
-cdef double _mu1_tetface(double Ds0s0,
-                         double Ds0s1,
-                         double Ds1s1,
-                         double Ds0t0,
-                         double Ds0t1,
-                         double Ds1t0,
-                         double Ds1t1,
-                         double Dt0t0,
-                         double Dt0t1,
-                         double Dt1t1) nogil:
-    cdef double A00, A01, A02, A11, A12, A22, np_len, a
+cpdef double _mu1_tetface(double Ds0s0,
+                          double Ds0s1,
+                          double Ds1s1,
+                          double Ds0t0,
+                          double Ds0t1,
+                          double Ds1t0,
+                          double Ds1t1,
+                          double Dt0t0,
+                          double Dt0t1,
+                          double Dt1t1) nogil:
+    cdef double A00, A01, A02, A11, A12, A22, np_len, a, acosval
     cdef double length, norm_proj0, norm_proj1, inner_prod_proj
 
     A00 = Ds1s1 - 2 * Ds0s1 + Ds0s0
@@ -157,8 +171,10 @@ cdef double _mu1_tetface(double Ds0s0,
     inner_prod_proj = A12 - A01 * A02 / A00
     np_len = norm_proj0 * norm_proj1
     if np_len <= 0: # would otherwise lead to NaN return value
-      return 0
-    a = (PI - acos(inner_prod_proj / sqrt(np_len))) * length / (2 * PI)
+        return 0
+    # hedge for small rounding errors above 1 and below -1
+    acosval = limited_acos(inner_prod_proj / sqrt(np_len))
+    a = (PI - acosval) * length / (2 * PI)
     return a
 
 
