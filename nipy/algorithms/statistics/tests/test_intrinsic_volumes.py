@@ -94,8 +94,29 @@ def nonintersecting_boxes(shape):
     return box1, box2, edge1, edge2
 
 
+def pts2mu3_tet(d, a, b, c):
+    """ Accept point coordinates for calling mu3tet
+    """
+    D00 = np.dot(d, d)
+    D01 = np.dot(d, a)
+    D02 = np.dot(d, b)
+    D03 = np.dot(d, c)
+    D11 = np.dot(a, a)
+    D12 = np.dot(a, b)
+    D13 = np.dot(a, c)
+    D22 = np.dot(b, b)
+    D23 = np.dot(b, c)
+    D33 = np.dot(c, c)
+    return intvol.mu3_tet(D00, D01, D02, D03, D11, D12, D13, D22, D23, D33)
+
+
 def test_mu3tet():
     assert_equal(intvol.mu3_tet(0,0,0,0,1,0,0,1,0,1), 1./6)
+    assert_equal(intvol.mu3_tet(0,0,0,0,0,0,0,0,0,0), 0)
+    res = pts2mu3_tet([2,2,2],[3,2,2],[2,3,2],[2,2,3])
+    assert_equal(res, 1./6)
+    # This used to generate nan values
+    assert_equal(intvol.mu3_tet(0,0,0,0,1,0,0,-1,0,1), 0)
 
 
 def test_mu2tri():
