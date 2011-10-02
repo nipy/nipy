@@ -14,6 +14,9 @@ cimport numpy as np
 
 from scipy.sparse import dok_matrix
 
+# Array helper
+from nipy.utils.arrays import strides_from
+
 # local imports
 from utils import cube_with_strides_center, join_complexes
 
@@ -461,8 +464,7 @@ def EC3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
     return l0
 
 
-def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
-           np.ndarray[DTYPE_int_t, ndim=3] mask):
+def Lips3d(coords, mask):
     """ Estimated intrinsic volumes within masked region given coordinates
 
     Given a 3d `mask` and coordinates `coords`, estimate the intrinsic volumes
@@ -501,9 +503,9 @@ def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
     """
-
-    # if the data can be squeezed, we must use the lower dimensional
-    # function
+    if mask.shape != coords.shape[1:]:
+        raise ValueError('shape of mask does not match coordinates')
+    # if the data can be squeezed, we must use the lower dimensional function
     if np.squeeze(mask).ndim == 2:
         value = np.zeros(4)
         squeezed = np.squeeze(mask).shape
@@ -518,60 +520,68 @@ def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
     if not set(np.unique(mask)).issubset([0,1]):
       raise ValueError('mask should be filled with 0/1 '
                        'values, but be of type np.int')
-    # 'flattened' coords (2d array)
-    cdef np.ndarray[DTYPE_float_t, ndim=2] fcoords
-    cdef np.ndarray[DTYPE_float_t, ndim=2] D
+    cdef:
+        # c-level versions of the arrays
+        np.ndarray[DTYPE_float_t, ndim=4] coords_c
+        np.ndarray[DTYPE_int_t, ndim=3] mask_c
+        # 'flattened' coords (2d array)
+        np.ndarray[DTYPE_float_t, ndim=2] fcoords
+        np.ndarray[DTYPE_float_t, ndim=2] D
+        # 'flattened' mask (1d array)
+        np.ndarray[DTYPE_int_t, ndim=1] fmask
+        np.ndarray[DTYPE_int_t, ndim=1] fpmask
+        np.ndarray[DTYPE_int_t, ndim=3] pmask
+        # d3 and d4 are lists of triangles and tetrahedra
+        # associated to particular voxels in the cube
+        np.ndarray[DTYPE_int_t, ndim=2] d4
+        np.ndarray[DTYPE_int_t, ndim=2] m4
+        np.ndarray[DTYPE_int_t, ndim=2] d3
+        np.ndarray[DTYPE_int_t, ndim=2] m3
+        np.ndarray[DTYPE_int_t, ndim=2] d2
+        np.ndarray[DTYPE_int_t, ndim=2] m2
+        np.ndarray[DTYPE_int_t, ndim=1] cvertices
+        # scalars
+        np.npy_intp i, j, k, l, s0, s1, s2, ds4, ds3, ds2
+        np.npy_intp index, pindex, m, nvox, r, s, rr, ss, mr, ms
+        np.npy_intp ss0, ss1, ss2 # strides
+        np.npy_intp v0, v1, v2, v3 # vertices for mask
+        np.npy_intp w0, w1, w2, w3 # vertices for data
+        double l0, l1, l2, l3
+        double res
 
-    # 'flattened' mask (1d array)
-    cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
-    cdef np.ndarray[DTYPE_int_t, ndim=1] fpmask
-    cdef np.ndarray[DTYPE_int_t, ndim=3] pmask
-
-    # d3 and d4 are lists of triangles and tetrahedra
-    # associated to particular voxels in the cube
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d4
-    cdef np.ndarray[DTYPE_int_t, ndim=2] m4
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d3
-    cdef np.ndarray[DTYPE_int_t, ndim=2] m3
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d2
-    cdef np.ndarray[DTYPE_int_t, ndim=2] m2
-    cdef np.ndarray[DTYPE_int_t, ndim=1] cvertices
-
-    cdef long i, j, k, l, s0, s1, s2, ds4, ds3, ds2
-    cdef long index, pindex, m, nvox, r, s, rr, ss, mr, ms
-    cdef long ss0, ss1, ss2 # strides
-    cdef long v0, v1, v2, v3 # vertices for mask
-    cdef long w0, w1, w2, w3 # vertices for data
-    cdef double l0, l1, l2, l3
-    cdef double res
-
+    coords_c = coords
+    mask_c = mask
     l0 = 0; l1 = 0; l2 = 0; l3 = 0
 
-    pmask = np.zeros((mask.shape[0]+1, mask.shape[1]+1, mask.shape[2]+1), np.int)
-    pmask[:-1,:-1,:-1] = mask
+    pmask_shape = np.array(mask.shape) + 1
+    pmask = np.zeros(pmask_shape, np.int)
+    pmask[:-1,:-1,:-1] = mask_c
 
     s0, s1, s2 = (pmask.shape[0], pmask.shape[1], pmask.shape[2])
 
-    fpmask = pmask.reshape((s0*s1*s2))
-    fmask = mask.reshape((s0-1)*(s1-1)*(s2-1))
-
-    if (mask.shape[0], mask.shape[1], mask.shape[2]) != (coords.shape[1], coords.shape[2], coords.shape[3]):
-        raise ValueError('shape of mask does not match coordinates')
-
-    fcoords = coords.reshape((coords.shape[0], (s0-1)*(s1-1)*(s2-1)))
-    n = fcoords.shape[0]
+    fpmask = pmask.reshape(-1)
+    fmask = mask_c.reshape(-1)
+    fcoords = coords_c.reshape((coords_c.shape[0], -1))
 
     # First do the interior contributions.
     # We first figure out which vertices, edges, triangles, tetrahedra
     # are uniquely associated with an interior voxel
 
-    # The mask is copied into a larger array,
-    # hence it will have different strides than the data
-
-    strides = np.empty((s0, s1, s2), np.bool).strides
-    dstrides = np.empty((s0-1, s1-1, s2-1), np.bool).strides
-    cvertices = np.array([[[dstrides[0]*i+dstrides[1]*j+dstrides[2]*k for i in range(2)] for j in range(2)] for k in range(2)]).ravel()
-    cvertices.sort()
+    # The mask is copied into a larger array, hence it will have different
+    # strides than the data
+    cdef:
+        np.ndarray[DTYPE_int_t, ndim=1] strides
+        np.ndarray[DTYPE_int_t, ndim=1] dstrides
+    strides = np.array(strides_from(pmask_shape, np.bool), dtype=np.intp)
+    dstrides = np.array(strides_from(mask.shape, np.bool), dtype=np.intp)
+    ss0, ss1, ss2 = strides[0], strides[1], strides[2]
+    ss0d, ss1d, ss2d = dstrides[0], dstrides[1], dstrides[2]
+    verts = []
+    for i in range(2):
+        for j in range(2):
+            for k in range(2):
+                verts.append(ss0d * i + ss1d * j + ss2d * k)
+    cvertices = np.array(sorted(verts), np.int)
 
     union = join_complexes(*[cube_with_strides_center((0,0,1), strides),
                              cube_with_strides_center((0,1,0), strides),
@@ -597,10 +607,7 @@ def Lips3d(np.ndarray[DTYPE_float_t, ndim=4] coords,
     d2 = np.hstack([m2, d2])
     ds2 = d2.shape[0]
 
-    ss0, ss1, ss2 = strides[0], strides[1], strides[2]
-    ss0d, ss1d, ss2d = dstrides[0], dstrides[1], dstrides[2]
-
-    nvox = (s0-1)*(s1-1)*(s2-1)
+    nvox = mask.size
 
     D = np.zeros((8,8))
 
