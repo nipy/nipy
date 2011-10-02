@@ -94,8 +94,8 @@ def nonintersecting_boxes(shape):
     return box1, box2, edge1, edge2
 
 
-def pts2mu3_tet(d, a, b, c):
-    """ Accept point coordinates for calling mu3tet
+def pts2dots(d, a, b, c):
+    """ Convert point coordinates to dot products
     """
     D00 = np.dot(d, d)
     D01 = np.dot(d, a)
@@ -107,14 +107,32 @@ def pts2mu3_tet(d, a, b, c):
     D22 = np.dot(b, b)
     D23 = np.dot(b, c)
     D33 = np.dot(c, c)
-    return intvol.mu3_tet(D00, D01, D02, D03, D11, D12, D13, D22, D23, D33)
+    return D00, D01, D02, D03, D11, D12, D13, D22, D23, D33
+
+
+def pts2mu3_tet(d, a, b, c):
+    """ Accept point coordinates for calling mu3tet
+    """
+    return intvol.mu3_tet(*pts2dots(d, a, b, c))
+
+
+def wiki_tet_vol(d, a, b, c):
+    # Wikipedia formula for generalized tetrahedron volume
+    d, a, b, c = [np.array(e) for e in d, a, b, c]
+    cp = np.cross((b-d),(c-d))
+    v2t6 = np.dot((a-d), cp)
+    return np.sqrt(v2t6) / 6.
 
 
 def test_mu3tet():
     assert_equal(intvol.mu3_tet(0,0,0,0,1,0,0,1,0,1), 1./6)
     assert_equal(intvol.mu3_tet(0,0,0,0,0,0,0,0,0,0), 0)
-    res = pts2mu3_tet([2,2,2],[3,2,2],[2,3,2],[2,2,3])
-    assert_equal(res, 1./6)
+    d = [2,2,2]
+    a = [3,2,2]
+    b = [2,3,2]
+    c = [2,2,3]
+    assert_equal(pts2mu3_tet(d, a, b, c), 1./6)
+    assert_equal(wiki_tet_vol(d, a, b, c), 1./6)
     # This used to generate nan values
     assert_equal(intvol.mu3_tet(0,0,0,0,1,0,0,-1,0,1), 0)
 
@@ -129,6 +147,29 @@ def test_mu1tri():
 
 def test_mu2tet():
     assert_equal(intvol.mu2_tet(0,0,0,0,1,0,0,1,0,1), (3./2 + np.sqrt(3./4))/2)
+
+
+def pts2mu1_tet(d, a, b, c):
+    """ Accept point coordinates for calling mu1_tet
+    """
+    return intvol.mu1_tet(*pts2dots(d, a, b, c))
+
+
+def test_mu1_tet():
+    res1 = pts2mu1_tet([2,2,2],[3,2,2],[2,3,2],[2,2,3])
+    res2 = pts2mu1_tet([0,0,0],[1,0,0],[0,1,0],[0,0,1])
+    assert_equal(res1, res2)
+    assert_equal(intvol.mu1_tet(0,0,0,0,0,0,0,0,0,0), 0)
+    # This used to generate nan values
+    assert_equal(intvol.mu1_tet(0,0,0,0,1,0,0,-1,0,1), 0)
+
+
+def test__mu1_tetface():
+    # Test for out of range acos value sequences.  I'm ashamed to say I found
+    # these sequences accidentally in a failing test with random numbers
+    _mu1_tetface = intvol._mu1_tetface
+    assert_almost_equal(_mu1_tetface(1, 0, 0, 10, 10, 0, 0, 20, 20, 40), 0)
+    assert_almost_equal(_mu1_tetface(36, 0, 0, 18, 48, 0, 0, 1, 30,  63), 3)
 
 
 def test_ec():
