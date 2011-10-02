@@ -43,18 +43,37 @@ cpdef double mu3_tet(double D00, double D01, double D02, double D03,
   """ Compute the 3rd intrinsic volume of a tetrahedron.
 
   3rd intrinsic volume (just volume in this case) of a tetrahedron with
-  coordinates [coords[v0], coords[v1], coords[v2], coords[v3]].
+  coordinates implied by dot products below.
 
   Parameters
   ----------
-  coords : ndarray((*,2))
-       An array of coordinates of vertices of tetrahedron.
-  v0, v1, v2, v3 : int
-       Indices for vertices of the tetrahedron.
+  D00 : float
+    If ``cv0`` is a 3-vector of coordinates for the first vertex, `D00` is
+    ``cv0.dot(cv0)``
+  D01 : float
+    ``cv0.dot(cv1)`` where ``cv1`` is the coordinates for the second
+    vertex.
+  D02 : float
+    ``cv0.dot(cv2)``
+  D03 : float
+    ``cv0.dot(cv3)``
+  D11 : float
+    ``cv1.dot(cv1)``
+  D12 : float
+    ``cv1.dot(cv2)``
+  D13 : float
+    ``cv1.dot(cv3)``
+  D22 : float
+    ``cv2.dot(cv2)``
+  D23 : float
+    ``cv2.dot(cv2)``
+  D33 : float
+    ``cv3.dot(cv3)``
 
   Returns
   -------
   mu3 : float
+    volume of tetrahedron
   """
   cdef double C00, C01, C02, C11, C12, C22, v2
   C00 = D00 - 2*D03 + D33
@@ -79,18 +98,37 @@ cpdef double mu2_tet(double D00, double D01, double D02, double D03,
   """ Compute the 2nd intrinsic volume of tetrahedron
 
   2nd intrinsic volume (half the surface area) of a tetrahedron with coordinates
-  [coords[v0], coords[v1], coords[v2], coords[v3]].
+  implied by dot products below.
 
   Parameters
   ----------
-  coords : ndarray((*,2))
-       An array of coordinates of vertices of tetrahedron.
-  v0, v1, v2, v3 : int
-       Indices for vertices of the tetrahedron.
+  D00 : float
+    If ``cv0`` is a 3-vector of coordinates for the first vertex, `D00` is
+    ``cv0.dot(cv0)``
+  D01 : float
+    ``cv0.dot(cv1)`` where ``cv1`` is the coordinates for the second
+    vertex.
+  D02 : float
+    ``cv0.dot(cv2)``
+  D03 : float
+    ``cv0.dot(cv3)``
+  D11 : float
+    ``cv1.dot(cv1)``
+  D12 : float
+    ``cv1.dot(cv2)``
+  D13 : float
+    ``cv1.dot(cv3)``
+  D22 : float
+    ``cv2.dot(cv2)``
+  D23 : float
+    ``cv2.dot(cv2)``
+  D33 : float
+    ``cv3.dot(cv3)``
 
   Returns
   -------
   mu2 : float
+    Half tetrahedron surface area
   """
   cdef double mu = 0
   mu += mu2_tri(D00, D01, D02, D11, D12, D22)
@@ -101,25 +139,44 @@ cpdef double mu2_tet(double D00, double D01, double D02, double D03,
 
 
 cpdef double mu1_tet(double D00, double D01, double D02, double D03,
-                     double D11, double D12, double D13, 
+                     double D11, double D12, double D13,
                      double D22, double D23,
                      double D33) nogil:
   """ Return 3rd intrinsic volume of tetrahedron
 
   Compute the 3rd intrinsic volume (sum of external angles * edge
-  lengths) of a tetrahedron with coordinates [coords[v0], coords[v1],
-  coords[v2], coords[v3]].
+  lengths) of a tetrahedron for which the input arguments represent the
+  coordinate dot products of the vertices.
 
   Parameters
   ----------
-  coords : ndarray((*,2))
-       An array of coordinates of vertices of tetrahedron.
-  v0, v1, v2, v3 : int
-       Indices for vertices of the tetrahedron.
+  D00 : float
+    If ``cv0`` is a 3-vector of coordinates for the first vertex, `D00` is
+    ``cv0.dot(cv0)``
+  D01 : float
+    ``cv0.dot(cv1)`` where ``cv1`` is the coordinates for the second
+    vertex.
+  D02 : float
+    ``cv0.dot(cv2)``
+  D03 : float
+    ``cv0.dot(cv3)``
+  D11 : float
+    ``cv1.dot(cv1)``
+  D12 : float
+    ``cv1.dot(cv2)``
+  D13 : float
+    ``cv1.dot(cv3)``
+  D22 : float
+    ``cv2.dot(cv2)``
+  D23 : float
+    ``cv2.dot(cv2)``
+  D33 : float
+    ``cv3.dot(cv3)``
 
-  Outputs:
-  --------
+  Returns
+  -------
   mu1 : float
+    3rd intrinsic volume of tetrahedron
   """
   cdef double mu
   mu = 0
@@ -187,18 +244,29 @@ cpdef double mu2_tri(double D00, double D01, double D02,
   """ Compute the 2nd intrinsic volume of triangle
 
   2nd intrinsic volume (just area in this case) of a triangle with coordinates
-  [coords[v0], coords[v1], coords[v2]].
+  implied by the dot products below.
 
   Parameters
   ----------
-  coords : ndarray((*,2))
-       An array of coordinates of vertices of tetrahedron.
-  v0, v1, v2 : int
-       Indices for vertices of the tetrahedron.
+  D00 : float
+    If ``cv0`` is a 3-vector of coordinates for the first vertex, `D00` is
+    ``cv0.dot(cv0)``
+  D01 : float
+    ``cv0.dot(cv1)`` where ``cv1`` is the coordinates for the second
+    vertex.
+  D02 : float
+    ``cv0.dot(cv2)``
+  D11 : float
+    ``cv1.dot(cv1)``
+  D12 : float
+    ``cv1.dot(cv2)``
+  D22 : float
+    ``cv2.dot(cv2)``
 
   Returns
   -------
   mu2 : float
+    area of triangle
   """
   cdef double C00, C01, C11, L
   C00 = D11 - 2*D01 + D00
@@ -217,18 +285,29 @@ cpdef double mu1_tri(double D00, double D01, double D02,
   """ Compute the 1st intrinsic volume of triangle
 
   1st intrinsic volume (1/2 the perimeter) of a triangle with coordinates
-  [coords[v0], coords[v1], coords[v2]].
+  implied by the dot products below.
 
   Parameters
   ----------
-  coords : ndarray((*,2))
-       An array of coordinates of vertices of tetrahedron.
-  v0, v1, v2 : int
-       Indices for vertices of the tetrahedron.
+  D00 : float
+    If ``cv0`` is a 3-vector of coordinates for the first vertex, `D00` is
+    ``cv0.dot(cv0)``
+  D01 : float
+    ``cv0.dot(cv1)`` where ``cv1`` is the coordinates for the second
+    vertex.
+  D02 : float
+    ``cv0.dot(cv2)``
+  D11 : float
+    ``cv1.dot(cv1)``
+  D12 : float
+    ``cv1.dot(cv2)``
+  D22 : float
+    ``cv2.dot(cv2)``
 
   Returns
   -------
   mu1 : float
+    1/2 perimeter of triangle
   """
   cdef double mu = 0
   mu += mu1_edge(D00, D01, D11)
@@ -237,22 +316,26 @@ cpdef double mu1_tri(double D00, double D01, double D02,
   return mu * 0.5
 
 
-cpdef double mu1_edge(double D00, double D01, 
-                      double D11) nogil:
+cpdef double mu1_edge(double D00, double D01, double D11) nogil:
   """ Compute the 1st intrinsic volume (length) of line segment
 
-  Length of a line segment with coordinates [coords[v0], coords[v1]]
+  Length of a line segment with vertex coordinates implied by dot products
+  below.
 
   Parameters
   ----------
-  coords : ndarray((*,2))
-       An array of coordinates of vertices of tetrahedron.
-  v0, v1 : int
-       Indices for vertices of the tetrahedron.
+  D00 : float
+    If ``cv0`` is a 3-vector of coordinates for the line start, `D00` is
+    ``cv0.dot(cv0)``
+  D01 : float
+    ``cv0.dot(cv1)`` where ``cv1`` is the coordinates for the line end.
+  D11 : float
+    ``cv1.dot(cv1)``
 
   Returns
   -------
   mu0 : float
+    length of line segment
   """
   return sqrt(D00 - 2*D01 + D11)
 
@@ -267,20 +350,18 @@ def EC3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
 
     Parameters
     ----------
-    coords : ndarray((*,i,j,k))
-         Coordinates for the voxels in the mask
     mask : ndarray((i,j,k), np.int)
-         Binary mask determining whether or not
-         a voxel is in the mask.
+         Binary mask determining whether or not a voxel is in the mask.
 
     Returns
     -------
     mu0 : int
+        Euler characteristic
 
     Notes
     -----
-    The array mask is assumed to be binary. At the time of writing, it
-    is not clear how to get cython to use np.bool arrays.
+    The array mask is assumed to be binary. At the time of writing, it is not
+    clear how to get cython to use np.bool arrays.
 
     The 3d cubes are triangulated into 6 tetrahedra of equal volume, as
     described in the reference below.
@@ -656,8 +737,7 @@ def Lips2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
     coords : ndarray((*,i,j))
          Coordinates for the voxels in the mask
     mask : ndarray((i,j), np.int)
-         Binary mask determining whether or not
-         a voxel is in the mask.
+         Binary mask determining whether or not a voxel is in the mask.
 
     Returns
     -------
@@ -819,12 +899,12 @@ def EC2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
     Parameters
     ----------
     mask : ndarray((i,j), np.int)
-         Binary mask determining whether or not
-         a voxel is in the mask.
+         Binary mask determining whether or not a voxel is in the mask.
 
     Returns
     -------
     mu0 : int
+        Euler characteristic
 
     Notes
     -----
@@ -923,8 +1003,7 @@ def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
     coords : ndarray((*,i))
          Coordinates for the voxels in the mask
     mask : ndarray((i,), np.int)
-         Binary mask determining whether or not
-         a voxel is in the mask.
+         Binary mask determining whether or not a voxel is in the mask.
 
     Returns
     -------
@@ -1012,12 +1091,12 @@ def EC1d(np.ndarray[DTYPE_int_t, ndim=1] mask):
     Parameters
     ----------
     mask : ndarray((i,), np.int)
-         Binary mask determining whether or not
-         a voxel is in the mask.
+         Binary mask determining whether or not a voxel is in the mask.
 
     Returns
     -------
     mu0 : int
+        Euler characteristic
 
     Notes
     -----
