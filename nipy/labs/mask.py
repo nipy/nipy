@@ -384,7 +384,9 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         # We have a 4D nifti file
         data_file = load(filenames)
         header = data_file.get_header()
-        series = data_file.get_data()
+        series = data_file.get_data().astype(dtype)
+        # SPM tends to put NaNs in the data outside the brain
+        series[np.isnan(series)] = 0
         affine = data_file.get_affine()[:3, :3]
         del data_file
         if isinstance(series, np.memmap):
@@ -395,20 +397,22 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
             for this_volume in np.rollaxis(series, -1):
                 this_volume[...] = ndimage.gaussian_filter(this_volume,
                                                         smooth_sigma)
-        series = series[mask].astype(dtype)
+        series = series[mask]
     else:
         nb_time_points = len(list(filenames))
         series = np.zeros((mask.sum(), nb_time_points), dtype=dtype)
         for index, filename in enumerate(filenames):
             data_file = load(filename)
-            data = data_file.get_data()
-            if smooth:
+            data = data_file.get_data().astype(dtype)
+            # SPM tends to put NaNs in the data outside the brain
+            data[np.isnan(data)] = 0
+            if smooth is not False:
                 affine = data_file.get_affine()[:3, :3]
                 vox_size = np.sqrt(np.sum(affine **2, axis=0))
                 smooth_sigma = smooth / vox_size
                 data = ndimage.gaussian_filter(data, smooth_sigma)
                 
-            series[:, index] = data[mask].astype(dtype)
+            series[:, index] = data[mask]
             # Free memory early
             del data
             if index == 0:
