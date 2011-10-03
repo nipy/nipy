@@ -353,7 +353,8 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
 # Time series extraction
 ################################################################################
 
-def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
+def series_from_mask(filenames, mask, dtype=np.float32, 
+                     smooth=False, replace_nans=True):
     """ Read the time series from the given sessions filenames, using the mask.
 
         Parameters
@@ -365,6 +366,9 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         smooth: False or float, optional
             If smooth is not False, it gives the size, in voxel of the
             spatial smoothing to apply to the signal.
+        replace_nans: boolean
+            If replace_nans is True, the NaNs found in the images will be
+            replaced by zeros
         
         Returns
         --------
@@ -385,8 +389,9 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         data_file = load(filenames)
         header = data_file.get_header()
         series = data_file.get_data().astype(dtype)
-        # SPM tends to put NaNs in the data outside the brain
-        series[np.isnan(series)] = 0
+        if replace_nans:
+            # SPM tends to put NaNs in the data outside the brain
+            series[np.isnan(series)] = 0
         affine = data_file.get_affine()[:3, :3]
         del data_file
         if isinstance(series, np.memmap):
@@ -404,8 +409,9 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         for index, filename in enumerate(filenames):
             data_file = load(filename)
             data = data_file.get_data().astype(dtype)
-            # SPM tends to put NaNs in the data outside the brain
-            data[np.isnan(data)] = 0
+            if replace_nans:
+                # SPM tends to put NaNs in the data outside the brain
+                data[np.isnan(data)] = 0
             if smooth is not False:
                 affine = data_file.get_affine()[:3, :3]
                 vox_size = np.sqrt(np.sum(affine **2, axis=0))
