@@ -244,8 +244,9 @@ def test_lips1_disjoint():
     phi = intvol.Lips1d
     box1, box2, edge1, edge2 = nonintersecting_boxes((30,))
     c = np.indices((30,)).astype(np.float)
+    # Test N dimensional coordinates (N=10)
     d = np.random.standard_normal((10,)+(30,))
-
+    # Test rotation causes no change in volumes
     U = randorth(p=6)[:1]
     e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
@@ -266,7 +267,9 @@ def test_lips2_disjoint():
     phi = intvol.Lips2d
     box1, box2, edge1, edge2 = nonintersecting_boxes((40,40))
     c = np.indices((40,40)).astype(np.float)
-    d = np.random.standard_normal((40,40,40))
+    # Test N dimensional coordinates (N=10)
+    d = np.random.standard_normal((10,40,40))
+    # Test rotation causes no change in volumes
     U = randorth(p=6)[0:2]
     e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
@@ -289,8 +292,9 @@ def test_lips3_disjoint():
     phi = intvol.Lips3d
     box1, box2, edge1, edge2 = nonintersecting_boxes((40,)*3)
     c = np.indices((40,)*3).astype(np.float)
-    d = np.random.standard_normal((40,40,40,40))
-
+    # Test N dimensional coordinates (N=10)
+    d = np.random.standard_normal((10,40,40,40))
+    # Test rotation causes no change in volumes
     U = randorth(p=6)[0:3]
     e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]

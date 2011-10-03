@@ -1036,58 +1036,42 @@ def Lips1d(np.ndarray[np.float_t, ndim=2] coords,
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
     """
-
+    if mask.shape[0] != coords.shape[1]:
+        raise ValueError('shape of mask does not match coordinates')
     if not set(np.unique(mask)).issubset([0,1]):
       raise ValueError('mask should be filled with 0/1 '
                        'values, but be of type np.int')
-    # 'flattened' coords (2d array)
-
-    # d3 and d4 are lists of triangles
-    # associated to particular voxels in the square
-
-    cdef long i, j, k, l, r, s, rr, ss, mr, ms, s0, ds2, index, m
-    cdef long ss0, ss0d # strides
-    cdef long v0, v1 # vertices
-    cdef double l0, l1
-    cdef double res
+    cdef:
+        np.npy_intp i, l, r, s, rr, ss, mr, ms, s0, index, m
+        double l0, l1
+        double res
 
     l0 = 0; l1 = 0
-
     s0 = mask.shape[0]
-
-    if mask.shape[0] != coords.shape[1]:
-        raise ValueError('shape of mask does not match coordinates')
-
-    n = coords.shape[0]
-
-    # First do the interior contributions.
-    # We first figure out which vertices, edges, triangles, tetrahedra
-    # are uniquely associated with an interior voxel
-
     D = np.zeros((2,2))
 
     for i in range(s0):
-      for r in range(2):
-        rr = (i+r) % s0
-        mr = mask[rr]
-        for s in range(r+1):
-          res = 0
-          ss = (i+s) % s0
-          ms = mask[ss]
-          if mr * ms * ((i+r) < s0) * ((i+s) < s0):
-            for l in range(coords.shape[0]):
-              res += coords[l,ss] * coords[l,rr]
-            D[r,s] = res
-            D[s,r] = res
-          else:
-            D[r,s] = 0
-            D[s,r] = 0
+        for r in range(2):
+            rr = (i+r) % s0
+            mr = mask[rr]
+            for s in range(r+1):
+                res = 0
+                ss = (i+s) % s0
+                ms = mask[ss]
+                if mr * ms * ((i+r) < s0) * ((i+s) < s0):
+                    for l in range(coords.shape[0]):
+                        res += coords[l,ss] * coords[l,rr]
+                        D[r,s] = res
+                        D[s,r] = res
+                else:
+                    D[r,s] = 0
+                    D[s,r] = 0
 
-      m = mask[i]
-      if m:
-        m = m * (mask[(i+1) % s0] * ((i+1) < s0))
-        l1 = l1 + m * mu1_edge(D[0,0], D[0,1], D[1,1])
-        l0 = l0 - m
+        m = mask[i]
+        if m:
+            m = m * (mask[(i+1) % s0] * ((i+1) < s0))
+            l1 = l1 + m * mu1_edge(D[0,0], D[0,1], D[1,1])
+            l0 = l0 - m
 
     l0 += mask.sum()
     return np.array([l0,l1])
@@ -1128,24 +1112,16 @@ def EC1d(np.ndarray[np.intp_t, ndim=1] mask):
     if not set(np.unique(mask)).issubset([0,1]):
       raise ValueError('mask should be filled with 0/1 '
                        'values, but be of type np.int')
-    # 'flattened' coords (2d array)
-
-    # d3 and d4 are lists of triangles
-    # associated to particular voxels in the square
-
-    cdef long i, m, s0
-    cdef double l0 = 0
-
-    # First do the interior contributions.
-    # We first figure out which vertices, edges, triangles, tetrahedra
-    # are uniquely associated with an interior voxel
+    cdef:
+        np.npy_intp i, m, s0
+        double l0 = 0
 
     s0 = mask.shape[0]
     for i in range(s0):
-      m = mask[i]
-      if m:
-        m = m * (mask[(i+1) % s0] * ((i+1) < s0))
-        l0 = l0 - m
+        m = mask[i]
+        if m:
+            m = m * (mask[(i+1) % s0] * ((i+1) < s0))
+            l0 = l0 - m
 
     l0 += mask.sum()
     return l0
