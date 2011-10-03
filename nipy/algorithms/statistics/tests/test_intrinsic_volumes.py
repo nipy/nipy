@@ -223,7 +223,9 @@ def test_lips_wrapping():
     assert_equal(intvol.Lips3d(c, b1+b2), (1, 39.0, 0, 0))
     # Shapes which are squeezable should still return sensible answers
     # Test simple ones line / box / volume
-    funcer = {1:intvol.Lips1d,2:intvol.Lips2d,3:intvol.Lips3d}
+    funcer = {1: (intvol.Lips1d, intvol.EC1d),
+              2: (intvol.Lips2d, intvol.EC2d),
+              3: (intvol.Lips3d, intvol.EC3d)}
     for box_shape, exp_ivs in [[(10,),(1,9)],
                                [(10,1),(1,9,0)],
                                [(1,10),(1,9,0)],
@@ -231,10 +233,11 @@ def test_lips_wrapping():
                                [(1, 10, 1), (1,9,0,0)],
                                [(1, 1, 10), (1,9,0,0)]]:
         nd = len(box_shape)
-        func = funcer[nd]
+        lips_func, ec_func = funcer[nd]
         c = np.indices(box_shape).astype(np.float)
         b = np.ones(box_shape, dtype=np.int)
-        assert_equal(func(c, b), exp_ivs)
+        assert_equal(lips_func(c, b), exp_ivs)
+        assert_equal(ec_func(b), exp_ivs[0])
 
 
 def test_lips1_disjoint():
@@ -334,3 +337,9 @@ def test_ec_wrapping():
     assert_equal(intvol.EC2d(box1), 1)
     box1[1, 3] = 0
     assert_equal(intvol.EC2d(box1), 2)
+    # 3D
+    box1 = np.zeros((3,6,3), dtype=np.int)
+    box1[1, :, 1] = 1
+    assert_equal(intvol.EC3d(box1), 1)
+    box1[1, 3, 1] = 0
+    assert_equal(intvol.EC3d(box1), 2)
