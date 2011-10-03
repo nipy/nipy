@@ -11,6 +11,7 @@ from numpy.testing import measure
 def bench_lip3():
     np.random.seed(20111001)
     phi = intvol.Lips3d
+    EC3d = intvol.EC3d
     repeat = 4
     bx_sz = 60
     box1, box2, edge1, edge2 = nonintersecting_boxes((bx_sz,)*3)
@@ -25,4 +26,5 @@ def bench_lip3():
     e.shape = (e.shape[0],) + c.shape[1:]
     print 'Box1+2 d %6.2f\n' % measure('phi(d, box1 + box2)', repeat),
     print 'Box1+2 e %6.2f\n' % measure('phi(e, box1 + box2)', repeat),
+    print 'Box1+2 EC %6.2f\n' % measure('EC3d(box1 + box2)', repeat),
     sys.stdout.flush()

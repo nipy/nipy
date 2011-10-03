@@ -337,7 +337,7 @@ cpdef double mu1_edge(double D00, double D01, double D11) nogil:
   return sqrt(D00 - 2*D01 + D11)
 
 
-def EC3d(np.ndarray[np.intp_t, ndim=3] mask):
+def EC3d(mask):
     """ Compute Euler characteristic of region within `mask`
 
     Given a 3d `mask`, compute the 0th intrinsic volume (Euler characteristic)
@@ -372,35 +372,38 @@ def EC3d(np.ndarray[np.intp_t, ndim=3] mask):
     if not set(np.unique(mask)).issubset([0,1]):
       raise ValueError('mask should be filled with 0/1 '
                        'values, but be of type np.int')
-    # 'flattened' mask (1d array)
-    cdef np.ndarray[np.intp_t, ndim=1] fmask
+    cdef:
+        # c-level versions of the array
+        np.ndarray[np.intp_t, ndim=3] mask_c
+        # 'flattened' mask (1d array)
+        np.ndarray[np.intp_t, ndim=1] fmask
+        # d3 and d4 are lists of triangles and tetrahedra
+        # associated to particular voxels in the cuve
+        np.ndarray[np.intp_t, ndim=2] d2
+        np.ndarray[np.intp_t, ndim=2] d3
+        np.ndarray[np.intp_t, ndim=2] d4
+        # scalars
+        np.npy_intp i, j, k, l, s0, s1, s2, ds2, ds3, ds4, index, m, nvox
+        np.npy_intp ss0, ss1, ss2 # strides
+        np.npy_intp v0, v1, v2, v3 # vertices
+        np.npy_intp l0 = 0
 
-    # d3 and d4 are lists of triangles and tetrahedra 
-    # associated to particular voxels in the cuve
+    mask_c = mask
 
-    cdef np.ndarray[np.intp_t, ndim=2] d2
-    cdef np.ndarray[np.intp_t, ndim=2] d3
-    cdef np.ndarray[np.intp_t, ndim=2] d4
-
-    cdef long i, j, k, l, s0, s1, s2, ds2, ds3, ds4, index, m, nvox
-    cdef long ss0, ss1, ss2 # strides
-    cdef long v0, v1, v2, v3 # vertices
-    cdef long l0 = 0
-
-    cdef np.ndarray[np.intp_t, ndim=3] pmask
-    pmask = np.zeros((mask.shape[0]+1, mask.shape[1]+1, mask.shape[2]+1), np.int)
-    pmask[:-1,:-1,:-1] = mask
+    pmask_shape = np.array(mask.shape) + 1
+    pmask = np.zeros(pmask_shape, np.int)
+    pmask[:-1,:-1,:-1] = mask_c
 
     s0, s1, s2 = (pmask.shape[0], pmask.shape[1], pmask.shape[2])
 
-    fmask = pmask.reshape((s0*s1*s2))
-
-    strides = np.empty((s0, s1, s2), np.bool).strides
+    fmask = pmask.reshape(-1)
+    cdef:
+        np.ndarray[np.intp_t, ndim=1] strides
+    strides = np.array(strides_from(pmask_shape, np.bool), dtype=np.intp)
 
     # First do the interior contributions.
     # We first figure out which vertices, edges, triangles, tetrahedra
     # are uniquely associated with an interior voxel
-
     union = join_complexes(*[cube_with_strides_center((0,0,1), strides),
                              cube_with_strides_center((0,1,0), strides),
                              cube_with_strides_center((0,1,1), strides),
@@ -422,7 +425,7 @@ def EC3d(np.ndarray[np.intp_t, ndim=3] mask):
     ss1 = strides[1]
     ss2 = strides[2]
 
-    nvox = s0*s1*s2
+    nvox = mask.size
 
     for i in range(s0-1):
         for j in range(s1-1):
