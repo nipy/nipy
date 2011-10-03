@@ -3,9 +3,10 @@
 import numpy as np
 import numpy.linalg as npl
 
-from ....testing import (assert_equal, assert_almost_equal)
-
 from .. import intvol, utils
+
+from nose.tools import assert_equal, assert_raises
+from numpy.testing import assert_array_equal, assert_almost_equal
 
 
 def symnormal(p=10):
@@ -199,18 +200,18 @@ def test_lips_wrapping():
     # lines are disjoint
     assert_equal((b1*b2).sum(), 0)
     c = np.indices(b1.shape).astype(np.float)
-    assert_equal(intvol.Lips1d(c, b1), (1, 10))
-    assert_equal(intvol.Lips1d(c, b2), (1, 28))
-    assert_equal(intvol.Lips1d(c, b1+b2), (1, 39.0))
+    assert_array_equal(intvol.Lips1d(c, b1), (1, 10))
+    assert_array_equal(intvol.Lips1d(c, b2), (1, 28))
+    assert_array_equal(intvol.Lips1d(c, b1+b2), (1, 39.0))
     # 2D
     b1 = b1[:,None]
     b2 = b2[:,None]
     # boxes are disjoint
     assert_equal((b1*b2).sum(), 0)
     c = np.indices(b1.shape).astype(np.float)
-    assert_equal(intvol.Lips2d(c, b1), (1, 10, 0))
-    assert_equal(intvol.Lips2d(c, b2), (1, 28, 0))
-    assert_equal(intvol.Lips2d(c, b1+b2), (1, 39.0, 0))
+    assert_array_equal(intvol.Lips2d(c, b1), (1, 10, 0))
+    assert_array_equal(intvol.Lips2d(c, b2), (1, 28, 0))
+    assert_array_equal(intvol.Lips2d(c, b1+b2), (1, 39.0, 0))
     # 3D
     b1 = b1[:,:,None]
     b2 = b2[:,:,None]
@@ -218,9 +219,9 @@ def test_lips_wrapping():
     # boxes are disjoint
     assert_equal((b1*b2).sum(), 0)
     c = np.indices(b1.shape).astype(np.float)
-    assert_equal(intvol.Lips3d(c, b1), (1, 10, 0, 0))
-    assert_equal(intvol.Lips3d(c, b2), (1, 28, 0, 0))
-    assert_equal(intvol.Lips3d(c, b1+b2), (1, 39.0, 0, 0))
+    assert_array_equal(intvol.Lips3d(c, b1), (1, 10, 0, 0))
+    assert_array_equal(intvol.Lips3d(c, b2), (1, 28, 0, 0))
+    assert_array_equal(intvol.Lips3d(c, b1+b2), (1, 39.0, 0, 0))
     # Shapes which are squeezable should still return sensible answers
     # Test simple ones line / box / volume
     funcer = {1: (intvol.Lips1d, intvol.EC1d),
@@ -236,7 +237,7 @@ def test_lips_wrapping():
         lips_func, ec_func = funcer[nd]
         c = np.indices(box_shape).astype(np.float)
         b = np.ones(box_shape, dtype=np.int)
-        assert_equal(lips_func(c, b), exp_ivs)
+        assert_array_equal(lips_func(c, b), exp_ivs)
         assert_equal(ec_func(b), exp_ivs[0])
 
 
@@ -251,16 +252,18 @@ def test_lips1_disjoint():
     e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
 
-    yield assert_almost_equal, phi(c, box1 + box2), \
-        phi(c, box1) + phi(c, box2)
-    yield assert_almost_equal, phi(d, box1 + box2), \
-        phi(d, box1) + phi(d, box2)
-    yield assert_almost_equal, phi(e, box1 + box2), \
-        phi(e, box1) + phi(e, box2)
-    yield assert_almost_equal, phi(e, box1 + box2), phi(c, box1 + box2) 
-    yield assert_almost_equal, phi(e, box1 + box2), \
-        (np.array([elsym([e[1]-e[0]-1 for e in edge1], i) for i in range(2)])+
-         np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(2)]))
+    assert_almost_equal(phi(c, box1 + box2), phi(c, box1) + phi(c, box2))
+    assert_almost_equal(phi(d, box1 + box2), phi(d, box1) + phi(d, box2))
+    assert_almost_equal(phi(e, box1 + box2), phi(e, box1) + phi(e, box2))
+    assert_almost_equal(phi(e, box1 + box2), phi(c, box1 + box2))
+    assert_almost_equal(phi(e, box1 + box2),
+                        (np.array(
+                            [elsym([e[1]-e[0]-1
+                                    for e in edge1], i) for i in range(2)]) +
+                        np.array(
+                            [elsym([e[1]-e[0]-1
+                                    for e in edge2], i) for i in range(2)])))
+    assert_raises(ValueError, phi, c[...,None], box1)
 
 
 def test_lips2_disjoint():
@@ -286,6 +289,8 @@ def test_lips2_disjoint():
                         np.array([elsym([e[1]-e[0]-1 for e in edge2], i)
                                   for i in range(3)])
                        )
+    assert_raises(ValueError, phi, c[...,None], box1)
+    assert_raises(ValueError, phi, c[:,:,1], box1)
 
 
 def test_lips3_disjoint():
@@ -307,6 +312,8 @@ def test_lips3_disjoint():
         phi(e, box1 + box2),
         (np.array([elsym([e[1]-e[0]-1 for e in edge1], i) for i in range(4)]) +
          np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(4)])))
+    assert_raises(ValueError, phi, c[...,None], box1)
+    assert_raises(ValueError, phi, c[:,:,:,1], box1)
 
 
 def test_slices():

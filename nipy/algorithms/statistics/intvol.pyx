@@ -471,8 +471,9 @@ def Lips3d(coords, mask):
 
     Parameters
     ----------
-    coords : ndarray((*,i,j,k))
-         Coordinates for the voxels in the mask
+    coords : ndarray((N,i,j,k))
+         Coordinates for the voxels in the mask. ``N`` will often be 3 (for 3
+         dimensional coordinates, but can be any integer > 0
     mask : ndarray((i,j,k), np.int)
          Binary mask determining whether or not
          a voxel is in the mask.
@@ -503,15 +504,14 @@ def Lips3d(coords, mask):
     if mask.shape != coords.shape[1:]:
         raise ValueError('shape of mask does not match coordinates')
     # if the data can be squeezed, we must use the lower dimensional function
-    if np.squeeze(mask).ndim == 2:
+    mask = np.squeeze(mask)
+    if mask.ndim < 3:
         value = np.zeros(4)
-        squeezed = np.squeeze(mask).shape
-        value[:3] = Lips2d(coords.reshape((coords.shape[0],)+squeezed), np.squeeze(mask))
-        return value
-    elif np.squeeze(mask).ndim == 1:
-        value = np.zeros(4)
-        squeezed = np.squeeze(mask).shape
-        value[:2] = Lips1d(coords.reshape((coords.shape[0],)+squeezed), np.squeeze(mask))
+        coords = coords.reshape((coords.shape[0],) + mask.shape)
+        if mask.ndim == 2:
+            value[:3] = Lips2d(coords, mask)
+        elif mask.ndim == 1:
+            value[:2] = Lips1d(coords, mask)
         return value
 
     if not set(np.unique(mask)).issubset([0,1]):
@@ -737,8 +737,9 @@ def Lips2d(coords, mask):
 
     Parameters
     ----------
-    coords : ndarray((*,i,j))
-         Coordinates for the voxels in the mask
+    coords : ndarray((N,i,j,k))
+         Coordinates for the voxels in the mask. ``N`` will often be 2 (for 2
+         dimensional coordinates, but can be any integer > 0
     mask : ndarray((i,j), np.int)
          Binary mask determining whether or not a voxel is in the mask.
 
@@ -764,10 +765,11 @@ def Lips2d(coords, mask):
     if mask.shape != coords.shape[1:]:
         raise ValueError('shape of mask does not match coordinates')
     # if the data can be squeezed, we must use the lower dimensional function
-    if np.squeeze(mask).ndim == 1:
+    mask = np.squeeze(mask)
+    if mask.ndim == 1:
         value = np.zeros(3)
-        squeezed = np.squeeze(mask).shape
-        value[:2] = Lips1d(coords.reshape((coords.shape[0],)+squeezed), np.squeeze(mask))
+        coords = coords.reshape((coords.shape[0],) + mask.shape)
+        value[:2] = Lips1d(coords, mask)
         return value
 
     if not set(np.unique(mask)).issubset([0,1]):
@@ -1013,8 +1015,9 @@ def Lips1d(np.ndarray[np.float_t, ndim=2] coords,
 
     Parameters
     ----------
-    coords : ndarray((*,i))
-         Coordinates for the voxels in the mask
+    coords : ndarray((N,i,j,k))
+         Coordinates for the voxels in the mask. ``N`` will often be 1 (for 1
+         dimensional coordinates, but can be any integer > 0
     mask : ndarray((i,), np.int)
          Binary mask determining whether or not a voxel is in the mask.
 
