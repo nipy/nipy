@@ -21,12 +21,6 @@ from nipy.utils.arrays import strides_from
 from utils import cube_with_strides_center, join_complexes
 
 
-DTYPE_float = np.float
-ctypedef np.float_t DTYPE_float_t
-
-DTYPE_int = np.int
-ctypedef np.int_t DTYPE_int_t
-
 cdef double PI = np.pi
 
 
@@ -343,7 +337,7 @@ cpdef double mu1_edge(double D00, double D01, double D11) nogil:
   return sqrt(D00 - 2*D01 + D11)
 
 
-def EC3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
+def EC3d(np.ndarray[np.intp_t, ndim=3] mask):
     """ Compute Euler characteristic of region within `mask`
 
     Given a 3d `mask`, compute the 0th intrinsic volume (Euler characteristic)
@@ -379,21 +373,21 @@ def EC3d(np.ndarray[DTYPE_int_t, ndim=3] mask):
       raise ValueError('mask should be filled with 0/1 '
                        'values, but be of type np.int')
     # 'flattened' mask (1d array)
-    cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
+    cdef np.ndarray[np.intp_t, ndim=1] fmask
 
     # d3 and d4 are lists of triangles and tetrahedra 
     # associated to particular voxels in the cuve
 
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d2
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d3
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d4
+    cdef np.ndarray[np.intp_t, ndim=2] d2
+    cdef np.ndarray[np.intp_t, ndim=2] d3
+    cdef np.ndarray[np.intp_t, ndim=2] d4
 
     cdef long i, j, k, l, s0, s1, s2, ds2, ds3, ds4, index, m, nvox
     cdef long ss0, ss1, ss2 # strides
     cdef long v0, v1, v2, v3 # vertices
     cdef long l0 = 0
 
-    cdef np.ndarray[DTYPE_int_t, ndim=3] pmask
+    cdef np.ndarray[np.intp_t, ndim=3] pmask
     pmask = np.zeros((mask.shape[0]+1, mask.shape[1]+1, mask.shape[2]+1), np.int)
     pmask[:-1,:-1,:-1] = mask
 
@@ -522,24 +516,24 @@ def Lips3d(coords, mask):
                        'values, but be of type np.int')
     cdef:
         # c-level versions of the arrays
-        np.ndarray[DTYPE_float_t, ndim=4] coords_c
-        np.ndarray[DTYPE_int_t, ndim=3] mask_c
+        np.ndarray[np.float_t, ndim=4] coords_c
+        np.ndarray[np.intp_t, ndim=3] mask_c
         # 'flattened' coords (2d array)
-        np.ndarray[DTYPE_float_t, ndim=2] fcoords
-        np.ndarray[DTYPE_float_t, ndim=2] D
+        np.ndarray[np.float_t, ndim=2] fcoords
+        np.ndarray[np.float_t, ndim=2] D
         # 'flattened' mask (1d array)
-        np.ndarray[DTYPE_int_t, ndim=1] fmask
-        np.ndarray[DTYPE_int_t, ndim=1] fpmask
-        np.ndarray[DTYPE_int_t, ndim=3] pmask
+        np.ndarray[np.intp_t, ndim=1] fmask
+        np.ndarray[np.intp_t, ndim=1] fpmask
+        np.ndarray[np.intp_t, ndim=3] pmask
         # d3 and d4 are lists of triangles and tetrahedra
         # associated to particular voxels in the cube
-        np.ndarray[DTYPE_int_t, ndim=2] d4
-        np.ndarray[DTYPE_int_t, ndim=2] m4
-        np.ndarray[DTYPE_int_t, ndim=2] d3
-        np.ndarray[DTYPE_int_t, ndim=2] m3
-        np.ndarray[DTYPE_int_t, ndim=2] d2
-        np.ndarray[DTYPE_int_t, ndim=2] m2
-        np.ndarray[DTYPE_int_t, ndim=1] cvertices
+        np.ndarray[np.intp_t, ndim=2] d4
+        np.ndarray[np.intp_t, ndim=2] m4
+        np.ndarray[np.intp_t, ndim=2] d3
+        np.ndarray[np.intp_t, ndim=2] m3
+        np.ndarray[np.intp_t, ndim=2] d2
+        np.ndarray[np.intp_t, ndim=2] m2
+        np.ndarray[np.intp_t, ndim=1] cvertices
         # scalars
         np.npy_intp i, j, k, l, s0, s1, s2, ds4, ds3, ds2
         np.npy_intp index, pindex, m, nvox, r, s, rr, ss, mr, ms
@@ -570,8 +564,8 @@ def Lips3d(coords, mask):
     # The mask is copied into a larger array, hence it will have different
     # strides than the data
     cdef:
-        np.ndarray[DTYPE_int_t, ndim=1] strides
-        np.ndarray[DTYPE_int_t, ndim=1] dstrides
+        np.ndarray[np.intp_t, ndim=1] strides
+        np.ndarray[np.intp_t, ndim=1] dstrides
     strides = np.array(strides_from(pmask_shape, np.bool), dtype=np.intp)
     dstrides = np.array(strides_from(mask.shape, np.bool), dtype=np.intp)
     ss0, ss1, ss2 = strides[0], strides[1], strides[2]
@@ -730,8 +724,8 @@ def _convert_stride1(v, stride1, stride2):
     return v0 * stride2[0]
 
 
-def Lips2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
-           np.ndarray[DTYPE_int_t, ndim=2] mask):
+def Lips2d(np.ndarray[np.float_t, ndim=3] coords,
+           np.ndarray[np.intp_t, ndim=2] mask):
     """ Estimate intrinsic volumes for 2d region in `mask` given `coords`
 
     Given a 2d `mask` and coordinates `coords`, estimate the intrinsic volumes
@@ -777,18 +771,18 @@ def Lips2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
       raise ValueError('mask should be filled with 0/1 '
                        'values, but be of type np.int')
     # 'flattened' coords (2d array)
-    cdef np.ndarray[DTYPE_float_t, ndim=2] fcoords 
+    cdef np.ndarray[np.float_t, ndim=2] fcoords 
 
     # 'flattened' mask (1d array)
-    cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
-    cdef np.ndarray[DTYPE_int_t, ndim=1] fpmask
-    cdef np.ndarray[DTYPE_int_t, ndim=2] pmask
+    cdef np.ndarray[np.intp_t, ndim=1] fmask
+    cdef np.ndarray[np.intp_t, ndim=1] fpmask
+    cdef np.ndarray[np.intp_t, ndim=2] pmask
 
     # d3 and d4 are lists of triangles
     # associated to particular voxels in the square
 
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d3
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d2
+    cdef np.ndarray[np.intp_t, ndim=2] d3
+    cdef np.ndarray[np.intp_t, ndim=2] d2
 
     cdef long i, j, k, l, r, s, rr, ss, mr, ms, s0, s1, ds2, ds3, index, m, npix
     cdef long ss0, ss1, ss0d, ss1d # strides
@@ -895,7 +889,7 @@ def Lips2d(np.ndarray[DTYPE_float_t, ndim=3] coords,
     return np.array([l0,l1,l2])
 
 
-def EC2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
+def EC2d(np.ndarray[np.intp_t, ndim=2] mask):
     """ Compute Euler characteristic of 2D region in `mask`
 
     Given a 2d `mask`, compute the 0th intrinsic volume (Euler characteristic)
@@ -931,20 +925,20 @@ def EC2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
       raise ValueError('mask should be filled with 0/1 '
                        'values, but be of type np.int')
     # 'flattened' mask (1d array)
-    cdef np.ndarray[DTYPE_int_t, ndim=1] fmask
+    cdef np.ndarray[np.intp_t, ndim=1] fmask
 
     # d3 and d4 are lists of triangles and tetrahedra 
     # associated to particular voxels in the cuve
 
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d2
-    cdef np.ndarray[DTYPE_int_t, ndim=2] d3
+    cdef np.ndarray[np.intp_t, ndim=2] d2
+    cdef np.ndarray[np.intp_t, ndim=2] d3
 
     cdef long i, j, k, l, s0, s1, s2, ds2, ds3, index, m
     cdef long ss0, ss1, ss2 # strides
     cdef long v0, v1, v2, v3 # vertices
     cdef long l0 = 0
 
-    cdef np.ndarray[DTYPE_int_t, ndim=2] pmask
+    cdef np.ndarray[np.intp_t, ndim=2] pmask
     pmask = np.zeros((mask.shape[0]+1, mask.shape[1]+1), np.int)
     pmask[:-1,:-1] = mask
 
@@ -996,8 +990,8 @@ def EC2d(np.ndarray[DTYPE_int_t, ndim=2] mask):
     return l0
 
 
-def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
-           np.ndarray[DTYPE_int_t, ndim=1] mask):
+def Lips1d(np.ndarray[np.float_t, ndim=2] coords,
+           np.ndarray[np.intp_t, ndim=1] mask):
     """ Estimate intrinsic volumes for 1D region in `mask` given `coords`
 
     Given a 1d `mask` and coordinates `coords`, estimate the intrinsic volumes
@@ -1087,7 +1081,7 @@ def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
     return np.array([l0,l1])
 
 
-def EC1d(np.ndarray[DTYPE_int_t, ndim=1] mask):
+def EC1d(np.ndarray[np.intp_t, ndim=1] mask):
     """ Compute Euler characteristic for 1d `mask`
 
     Given a 1d mask `mask`, compute the 0th intrinsic volume (Euler
