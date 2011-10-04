@@ -173,11 +173,6 @@ def test_ArrayLikeObj():
     assert_array_equal(img.get_data(), 4)
 
 
-array2D_shape = (2,3)
-array3D_shape = (2,3,4)
-array4D_shape = (2,3,4,5)
-
-
 def test_defaults_ND():
     for arr_shape, in_names, out_names in (
         ((2,3), 'kj', 'yz'),
@@ -208,6 +203,18 @@ def test_header():
     assert_not_equal(img.header, hdr2)
     img.header = hdr2
     assert_equal(img.header, hdr2)
+
+
+def test_from_image():
+    # from_image classmethod copies
+    arr = np.arange(24).reshape((2,3,4))
+    coordmap = AffineTransform.from_params('xyz', 'ijk', np.eye(4))
+    img = Image(arr, coordmap, metadata={'field': 'value'})
+    img2 = Image.from_image(img)
+    assert_array_equal(img.get_data(), img2.get_data())
+    assert_equal(img.coordmap, img2.coordmap)
+    assert_equal(img.metadata, img2.metadata)
+    assert_false(img.metadata is img2.metadata)
 
 
 def test_synchronized_order():

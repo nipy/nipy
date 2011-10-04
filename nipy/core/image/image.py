@@ -10,6 +10,7 @@ create Image instances and work on them:
 * is_image : test for an object obeying the Image API
 """
 import warnings
+from copy import copy
 
 import numpy as np
 
@@ -405,6 +406,28 @@ class Image(object):
             '\n         '.join(repr(self.coordmap).split('\n')))
         np.set_printoptions(**options)
         return representation
+
+    @classmethod
+    def from_image(klass, img):
+        """ Classmethod to new instance of this `klass` from instance `img`
+
+        Parameters
+        ----------
+        img : object
+            object with method ``get_data``, and attributes ``coordmap``,
+            ``metadata``
+
+        Returns
+        -------
+        img : object
+            Image instance of type `klass`
+
+        Notes
+        -----
+        Subclasses of ``Image`` with different semantics for ``__init__`` will
+        need to override this classmethod.
+        """
+        return klass(img.get_data(), copy(img.coordmap), copy(img.metadata))
 
 
 class SliceMaker(object):
