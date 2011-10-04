@@ -6,7 +6,7 @@ import numpy as np
 from nibabel.spatialimages import ImageFileError
 
 from ..api import load_image, save_image, as_image
-from nipy.core.api import fromarray
+from nipy.core.api import AffineTransform as AfT, Image
 
 from nipy.testing import (assert_true, assert_equal, assert_raises,
                           assert_array_equal, assert_array_almost_equal,
@@ -65,7 +65,7 @@ def uint8_to_dtype(dtype, name):
     data[0,0,0] = 0
     data[1,0,0] = dmax
     data = data.astype(np.uint8) # randint returns np.int32
-    img = fromarray(data, 'kji', 'zxy')
+    img = Image(data, AfT('kji', 'zxy', np.eye(4)))
     newimg = save_image(img, name, dtype=dtype)
     return newimg.get_data(), data
 
@@ -81,7 +81,7 @@ def float32_to_dtype(dtype, name):
     data[1,0,0] = np.finfo(np.float32).min
     # random.normal will return data as native machine type
     data = data.astype(np.float32)
-    img = fromarray(data, 'kji', 'zyx')
+    img = Image(data, AfT('kji', 'zyx', np.eye(4)))
     newimg = save_image(img, name, dtype=dtype)
     return newimg.get_data(), data
 
@@ -135,9 +135,9 @@ def test_file_roundtrip():
     assert_almost_equal(img2.affine, img.affine)
 
 
-def test_roundtrip_fromarray():
+def test_roundtrip_from_array():
     data = np.random.rand(10,20,30)
-    img = fromarray(data, 'kji', 'xyz')
+    img = Image(data, AfT('kji', 'xyz', np.eye(4)))
     with InTemporaryDirectory():
         save_image(img, 'img.nii.gz')
         img2 = load_image('img.nii.gz')

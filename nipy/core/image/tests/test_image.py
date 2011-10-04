@@ -7,8 +7,7 @@ import numpy as np
 import nibabel as nib
 
 from .. import image
-from ..image import iter_axis
-from ...api import Image, fromarray
+from ..image import Image, iter_axis, is_image
 from ...api import parcels, data_generator, write_data
 from ...reference.coordinate_map import AffineTransform
 
@@ -27,7 +26,7 @@ def teardown():
     warnings.resetwarnings()
 
 _data = np.arange(24).reshape((4,3,2))
-gimg = fromarray(_data, 'ijk', 'xyz')
+gimg = Image(_data, AffineTransform('ijk', 'xyz', np.eye(4)))
 
 
 def test_init():
@@ -130,7 +129,7 @@ def test_parcels3():
 
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
-    img = fromarray(data, 'kji', 'zyx')
+    img = Image(data, AffineTransform('kji', 'zyx', np.eye(4)))
     assert_true(isinstance(img, Image))
     assert_equal(img.ndim, 3)
     # 2D slice
@@ -184,7 +183,8 @@ def test_defaults_ND():
         ((2,3,4), 'ijk', 'zyx'),
         ((2,3,4,5), 'hijk', 'zyxt')):
         data = np.ones(arr_shape)
-        img = image.fromarray(data, in_names, out_names)
+        ndim = len(arr_shape)
+        img = Image(data, AffineTransform(in_names, out_names, np.eye(ndim+1)))
         assert_true(isinstance(img._data, np.ndarray))
         assert_equal(img.ndim, len(arr_shape))
         assert_equal(img.shape, arr_shape)
@@ -240,7 +240,7 @@ def test_iter_axis():
     # because iter_axis uses rollaxis
     iter_axis = image.iter_axis
     data = np.arange(24).reshape((4,3,2))
-    img = fromarray(data, 'ijk', 'xyz')
+    img = Image(data, AffineTransform('ijk', 'xyz', np.eye(4)))
     for ax_id, ax_no in (('i',0), ('j',1), ('k',2),
                         ('x',0), ('y',1), ('z',2),
                         (0,0), (1,1), (2,2),

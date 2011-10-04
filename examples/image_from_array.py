@@ -1,6 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""Create a nifti image from a numpy array and an affine transform."""
+"""Create a nifti image from a numpy array and an affine transform.
+"""
 
 import os
 
@@ -8,24 +9,20 @@ import numpy as np
 
 from nipy.core.api import Image, AffineTransform
 from nipy.io.api import save_image, load_image
-from nipy.utils import make_datasource
 
-# Make the templates datasource
-templates = make_datasource(dict(relpath='nipy/templates'))
+# This is just the filename for a tiny example file
+from nipy.testing import anatfile
 
 # Load an image to get the array and affine
-filename = templates.get_filename('ICBM152', '2mm', 'T1.nii.gz')
-assert os.path.exists(filename)
-
+#
 # Use one of our test files to get an array and affine (as numpy array) from.
-img = load_image(filename)
+img = load_image(anatfile)
 arr = np.asarray(img)
 affine_array = img.coordmap.affine.copy()
 
 ################################################################################
 # START HERE
 ################################################################################
-
 
 # 1) Create a CoordinateMap from the affine transform which specifies
 # the mapping from input to output coordinates.
@@ -39,7 +36,7 @@ outnames = ('zyx')
 # either way works
 
 # Build a CoordinateMap to create the image with
-affine_coordmap = AffineTransform.from_params(innames, outnames, affine_array)
+affine_coordmap = AffineTransform(innames, outnames, affine_array)
 
 # 2) Create a nipy image from the array and CoordinateMap
 
@@ -50,7 +47,7 @@ newimg = Image(arr, affine_coordmap)
 # END HERE, for testing purposes only.
 ################################################################################
 # Imports used just for development and testing.  Users typically
-# would not uses these when creating an image.
+# would not use these when creating an image.
 from tempfile import mkstemp
 from nipy.testing import assert_equal
 
