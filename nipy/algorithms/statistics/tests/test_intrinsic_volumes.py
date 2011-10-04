@@ -316,6 +316,21 @@ def test_lips3_disjoint():
     assert_raises(ValueError, phi, c[:,:,:,1], box1)
 
 
+def test_lips3_nans():
+    # These boxes caused nans in the Lips3 disjoint box tests
+    phi = intvol.Lips3d
+    box1 = np.zeros((40,40,40), dtype=np.int)
+    box2 = box1.copy()
+    box1[23:30,22:32,9:13] = 1
+    box2[7:22,0,8:17] = 1
+    c = np.indices(box1.shape).astype(np.float)
+    assert_array_equal(np.isnan(phi(c, box2)), False)
+    U = randorth(p=6)[0:3]
+    e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
+    e.shape = (e.shape[0],) +  c.shape[1:]
+    assert_array_equal(np.isnan(phi(e, box1 + box2)), False)
+
+
 def test_slices():
     # Slices have EC 1...
     e = intvol.EC3d
