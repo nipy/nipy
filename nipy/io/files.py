@@ -16,9 +16,12 @@ import os
 import numpy as np
 
 import nibabel as nib
+from nibabel.affines import append_diag
 
-from nipy.core.api import Image, is_image
-from .nifti_ref import (ni_affine_pixdim_from_affine, affine_transform_from_array)
+from ..core.image.image import Image, is_image
+from ..core.reference.coordinate_map import AffineTransform
+from .nifti_ref import (ni_affine_pixdim_from_affine, get_input_cs,
+                        get_output_cs)
 
 
 def load(filename):
@@ -50,30 +53,16 @@ def load(filename):
     img = nib.load(filename)
     aff = img.get_affine()
     hdr = img.get_header()
-    # If the header implements it, get a list of names, one per axis,
-    # and put this into the coordinate map.  In fact, no image format
-    # implements this at the moment, so in practice, the following code
-    # is not currently called.
-    axis_renames = {}
-    try:
-        axis_names = hdr.axis_names
-    except AttributeError:
-        pass
-    else:
-        # axis_renames is a dictionary: dict([(int, str)]) that has keys
-        # in range(3). The axes of the Image are renamed from 'ijk' using
-        # these names
-        for i in range(min([len(axis_names), 3])):
-            name = axis_names[i]
-            if not (name is None or name == ''):
-                axis_renames[i] = name
     zooms = hdr.get_zooms()
-    # affine_transform is a 3-d transform
-    affine_transform3d, affine_transform = \
-        affine_transform_from_array(aff, 'ijk', pixdim=zooms[3:])
-    img = Image(img.get_data(), affine_transform.renamed_domain(axis_renames),
-                metadata={'header': hdr})
-    return img
+    # If the header allows, get names of image axes, otherwise guess
+    input_cs = get_input_cs(hdr)
+    # If the header allows, get names of output axes, otherwise guess
+    output_cs = get_output_cs(hdr)
+    # Append any dimensions not present in our 4x4 affine
+    if len(zooms) > 3:
+        aff = append_diag(aff, zooms[3:])
+    cmap = AffineTransform(input_cs, output_cs, aff)
+    return Image(img._data, cmap, metadata={'header': hdr})
 
 
 def save(img, filename, dtype=None):
