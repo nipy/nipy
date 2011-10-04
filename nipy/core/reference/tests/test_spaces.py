@@ -6,16 +6,18 @@ import numpy as np
 from nibabel.affines import from_matvec
 
 from ...image.image import Image
-from ..coordinate_system import CoordinateSystem as CS
+from ..coordinate_system import CoordinateSystem as CS, CoordSysMakerError
 from ..coordinate_map import AffineTransform, CoordinateMap
 from ..spaces import (vox2mni, vox2scanner, vox2talairach, vox2unknown,
                       vox2aligned, xyz_affine, xyz_order, SpaceTypeError,
-                      AxesError, AffineError)
+                      AxesError, AffineError, XYZSpace, known_space,
+                      known_spaces)
 
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal)
 
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises
+from nose.tools import (assert_true, assert_false, assert_equal, assert_raises,
+                        assert_not_equal)
 
 VARS = {}
 
@@ -34,6 +36,71 @@ def setup():
     r_cs_r3 = CS(r_names[:3], 'mni')
     r_cs_r4 = CS(r_names[:4], 'mni')
     VARS.update(locals())
+
+
+def test_xyz_space():
+    # Space objects
+    sp = XYZSpace('hijo')
+    assert_equal(sp.name, 'hijo')
+    exp_labels = ['hijo-' + L for L in 'x=L->R', 'y=P->A', 'z=I->S']
+    exp_map = dict(zip('xyz', exp_labels))
+    assert_equal([sp.x, sp.y, sp.z], exp_labels)
+    assert_equal(sp.as_tuple(), tuple(exp_labels))
+    assert_equal(sp.as_map(), exp_map)
+    known = {}
+    sp.register_to(known)
+    assert_equal(known, dict(zip(exp_labels, 'xyz')))
+    # Coordinate system making, and __contains__ tests
+    csm = sp.to_coordsys_maker()
+    cs = csm(2)
+    assert_equal(cs, CS(exp_labels[:2], 'hijo'))
+    # This is only 2 dimensions, not fully in space
+    assert_false(cs in sp)
+    cs = csm(3)
+    assert_equal(cs, CS(exp_labels, 'hijo'))
+    # We now have all 3, this in in the space
+    assert_true(cs in sp)
+    # More dimensions than default, error
+    assert_raises(CoordSysMakerError, csm, 4)
+    # But we can pass in names for further dimensions
+    csm = sp.to_coordsys_maker('tuv')
+    cs = csm(6)
+    assert_equal(cs, CS(exp_labels + list('tuv'), 'hijo'))
+    # These are also in the space, because they contain xyz
+    assert_true(cs in sp)
+    # But, to be in the space, x,y,z have to be first and in the right order
+    cs = CS(exp_labels, 'hijo')
+    assert_true(cs in sp)
+    cs = CS(exp_labels[::-1], 'hijo')
+    assert_false(cs in sp)
+    cs = CS(['t'] + exp_labels, 'hijo')
+    assert_false(cs in sp)
+    # The coordinate system name doesn't matter though
+    cs = CS(exp_labels, 'hija')
+    assert_true(cs in sp)
+    # Images, and coordinate maps, also work
+    cmap = AffineTransform('ijk', cs, np.eye(4))
+    assert_true(cmap in sp)
+    img = Image(np.zeros((2,3,4)), cmap)
+    assert_true(img in sp)
+    # equality
+    assert_equal(XYZSpace('hijo'), XYZSpace('hijo'))
+    assert_not_equal(XYZSpace('hijo'), XYZSpace('hija'))
+
+
+def test_known_space():
+    # Known space utility routine
+    for sp in known_spaces:
+        cs = sp.to_coordsys_maker()(3)
+        assert_equal(known_space(cs), sp)
+    cs = CS('xyz')
+    assert_equal(known_space(cs), None)
+    sp0 = XYZSpace('hijo')
+    sp1 = XYZSpace('hija')
+    custom_spaces = (sp0, sp1)
+    for sp in custom_spaces:
+        cs = sp.to_coordsys_maker()(3)
+        assert_equal(known_space(cs, custom_spaces), sp)
 
 
 def test_image_creation():
