@@ -179,7 +179,7 @@ class XYZSpace(object):
 
 
 # Generic coordinate map maker for voxels (function_domain)
-voxel_cs = CoordSysMaker('ijklmnop', 'array')
+voxel_csm = CoordSysMaker('ijklmnop', 'array')
 
 # Module level mapping from key=name to values in 'x' or 'y' or 'z'
 known_names = {}
@@ -190,8 +190,8 @@ for _name in ('unknown', 'scanner', 'aligned', 'mni', 'talairach'):
     _space = XYZSpace(_name)
     known_spaces.append(_space)
     _space.register_to(known_names)
-    _csm = _space.to_coordsys_maker('t')
-    _cmm = CoordMapMaker(voxel_cs, _csm)
+    _csm = _space.to_coordsys_maker('tuvw')
+    _cmm = CoordMapMaker(voxel_csm, _csm)
     # Put these into the module namespace
     exec('%s_space = _space' % _name)
     exec('%s_csm = _csm' % _name)
