@@ -8,8 +8,9 @@ from nibabel.affines import from_matvec
 from ...image.image import Image
 from ..coordinate_system import CoordinateSystem as CS
 from ..coordinate_map import AffineTransform, CoordinateMap
-from ..spaces import (vox2mni, vox2scanner, vox2talairach, xyz_affine,
-                      xyz_order, SpaceTypeError, AxesError, AffineError)
+from ..spaces import (vox2mni, vox2scanner, vox2talairach, vox2unknown,
+                      vox2aligned, xyz_affine, xyz_order, SpaceTypeError,
+                      AxesError, AffineError)
 
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal)
@@ -24,6 +25,8 @@ def setup():
     xyzs = 'x=L->R', 'y=P->A', 'z=I->S'
     mni_xyzs = ['mni-' + suff for suff in xyzs]
     scanner_xyzs = ['scanner-' + suff for suff in xyzs]
+    unknown_xyzs = ['unknown-' + suff for suff in xyzs]
+    aligned_xyzs = ['aligned-' + suff for suff in xyzs]
     talairach_xyzs = ['talairach-' + suff for suff in xyzs]
     r_names = mni_xyzs + ['t']
     d_cs_r3 = CS(d_names[:3], 'array')
@@ -55,6 +58,8 @@ def test_default_makers():
     # Tests that the makers make expected coordinate maps
     for csm, r_names, r_name in (
         (vox2scanner, VARS['scanner_xyzs'] + ['t'], 'scanner'),
+        (vox2unknown, VARS['unknown_xyzs'] + ['t'], 'unknown'),
+        (vox2aligned, VARS['aligned_xyzs'] + ['t'], 'aligned'),
         (vox2mni, VARS['mni_xyzs'] + ['t'], 'mni'),
         (vox2talairach, VARS['talairach_xyzs'] + ['t'], 'talairach')):
         for i in range(1,5):

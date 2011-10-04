@@ -11,17 +11,23 @@ from .coordinate_map import CoordMapMaker
 
 _labels = 'x=L->R', 'y=P->A', 'z=I->S'
 scanner_names = ['scanner-' + label for label in _labels] + ['t']
+unknown_names = ['unknown-' + label for label in _labels] + ['t']
+aligned_names = ['aligned-' + label for label in _labels] + ['t']
 mni_names = ['mni-' + label for label in _labels] + ['t']
 talairach_names = ['talairach-' + label for label in _labels] + ['t']
 
 # Some standard coordinate system makers
 voxel_cs = CoordSysMaker('ijkl', 'array')
 scanner_cs = CoordSysMaker(scanner_names, 'scanner')
+unknown_cs = CoordSysMaker(unknown_names, 'unknown')
+aligned_cs = CoordSysMaker(aligned_names, 'aligned')
 mni_cs = CoordSysMaker(mni_names, 'mni')
 talairach_cs = CoordSysMaker(talairach_names, 'talairach')
 
 # Standard coordinate map makers
 vox2scanner = CoordMapMaker(voxel_cs, scanner_cs)
+vox2unknown = CoordMapMaker(voxel_cs, unknown_cs)
+vox2aligned = CoordMapMaker(voxel_cs, aligned_cs)
 vox2mni = CoordMapMaker(voxel_cs, mni_cs)
 vox2talairach = CoordMapMaker(voxel_cs, talairach_cs)
 
