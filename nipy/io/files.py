@@ -51,7 +51,7 @@ def load(filename):
     return nifti2nipy(ni_img)
 
 
-def save(img, filename, dtype=None):
+def save(img, filename, io_dtype=None):
     """Write the image to a file.
 
     Parameters
@@ -59,6 +59,11 @@ def save(img, filename, dtype=None):
     img : An `Image` object
     filename : string
         Should be a valid filename.
+    io_dtype : None or dtype specifier, optional
+        dtype to save data to disk.  Set into header before save as hint for
+        output format to chose dtype to save to. Not every format supports every
+        dtype, so some values of this parameter will raise errors.  The default
+        (`io_dtype` == None) is to use the dtype of the image data.
 
     Returns
     -------
@@ -122,6 +127,11 @@ def save(img, filename, dtype=None):
         saver = nib.spm2analyze.save
     else:
         raise ValueError('Cannot save file type "%s"' % ftype)
+    # Set output dtype if possible
+    hdr = ni_img.get_header()
+    # Set io dtype if possible
+    if not io_dtype is None:
+        hdr.set_data_dtype(io_dtype)
     # make new image
     saver(ni_img, filename)
     return img

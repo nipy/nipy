@@ -16,6 +16,7 @@ from nibabel.tmpdirs import InTemporaryDirectory
 
 from nipy.testing.decorators import if_templates
 from nipy.utils import templates, DataError
+from nibabel.tests.test_round_trip import big_bad_ulp
 
 gimg = None
 
@@ -57,44 +58,64 @@ def test_nondiag():
         assert_almost_equal(img2.affine, gimg.affine)
 
 
-def uint8_to_dtype(dtype, name):
-    dtype = dtype
+def randimg_in2out(rng, in_dtype, out_dtype, name):
+    in_dtype = np.dtype(in_dtype)
+    out_dtype = np.dtype(out_dtype)
     shape = (2,3,4)
-    dmax = np.iinfo(np.uint8).max
-    data = np.random.randint(0, dmax, size=shape)
-    data[0,0,0] = 0
+    if in_dtype.kind in 'iu':
+        info = np.iinfo(in_dtype)
+        dmin, dmax = info.min, info.max
+        data = rng.randint(dmin, dmax, size=shape)
+    elif in_dtype.kind == 'f':
+        info = np.finfo(in_dtype)
+        dmin, dmax = info.min, info.max
+        # set some value for scaling our data
+        scale = np.iinfo(np.uint16).max * 2.0
+        data = rng.normal(size=shape, scale=scale)
+    data[0,0,0] = dmin
     data[1,0,0] = dmax
-    data = data.astype(np.uint8) # randint returns np.int32
+    data = data.astype(in_dtype)
     img = Image(data, AfT('kji', 'zxy', np.eye(4)))
-    newimg = save_image(img, name, dtype=dtype)
+    # The io_dtype won't be visible until the image is loaded
+    newimg = save_image(img, name, io_dtype=out_dtype)
     return newimg.get_data(), data
 
 
-def float32_to_dtype(dtype, name):
-    # Utility function for the scaling_float32 function
-    dtype = dtype
-    shape = (2,3,4)
-    # set some value value for scaling our data
-    scale = np.iinfo(np.uint16).max * 2.0
-    data = np.random.normal(size=(2,3,4), scale=scale)
-    data[0,0,0] = np.finfo(np.float32).max
-    data[1,0,0] = np.finfo(np.float32).min
-    # random.normal will return data as native machine type
-    data = data.astype(np.float32)
-    img = Image(data, AfT('kji', 'zyx', np.eye(4)))
-    newimg = save_image(img, name, dtype=dtype)
-    return newimg.get_data(), data
-
-
-def test_scaling():
+def test_scaling_io_dtype():
+    # Does io_dtype get set?
+    # Is scaling correctly applied?
+    rng = np.random.RandomState(19660520) # VBD
+    ulp1_f32 = np.finfo(np.float32).eps
+    types = (np.uint8, np.uint16, np.int16, np.int32, np.float32)
     with InTemporaryDirectory():
-        for dtype_type in (np.uint8, np.uint16,
-                           np.int16, np.int32,
-                           np.float32):
-            newdata, data = uint8_to_dtype(dtype_type, 'img.nii')
-            assert_almost_equal(newdata, data)
-            newdata, data = float32_to_dtype(dtype_type, 'img.nii')
-            assert_almost_equal(newdata, data)
+        for in_type in types:
+            for out_type in types:
+                data, _ = randimg_in2out(rng, in_type, out_type, 'img.nii')
+                img = load_image('img.nii')
+                # Check the output type is as expected
+                hdr = img.metadata['header']
+                assert_equal(hdr.get_data_dtype().type, out_type)
+                # Check the data is within reasonable bounds. The exact bounds
+                # are a little annoying to calculate - see
+                # nibabel/tests/test_round_trip for inspiration
+                data_back = img.get_data()
+                top = np.abs(data - data_back)
+                nzs = (top !=0) & (data !=0)
+                abs_err = top[nzs]
+                if abs_err.size != 0: # all exact, that's OK.
+                    continue
+                rel_err = abs_err / data[nzs]
+                if np.dtype(out_type).kind in 'iu':
+                    slope, inter = hdr.get_slope_inter()
+                    abs_err_thresh = slope / 2.0
+                    rel_err_thresh = ulp1_f32
+                elif np.dtype(out_type).kind == 'f':
+                    abs_err_thresh = big_bad_ulp(data.astype(out_type))[nzs]
+                    rel_err_thresh = ulp1_f32
+                assert_true(np.all(
+                    (abs_err <= abs_err_thresh) |
+                    (rel_err <= rel_err_thresh)))
+        del img
 
 
 def test_header_roundtrip():
