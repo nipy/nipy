@@ -171,7 +171,6 @@ def compute_individual_regions(domain, lbeta, smin=5, theta=3.0,
             sub.append(s * np.ones(np.size(bfm)))
 
         bf.append(nroi)
-        #import pdb; pdb.set_trace()
     return bf, gf0, sub, gfc
 
 
@@ -401,7 +400,8 @@ def bsa_dpmm2(bf, gf0, sub, gfc, dmax, thq, ths, verbose):
     for s in range(n_subj):
         bfs = bf[s]
         if bfs is not None:
-            leaves = bfs.isleaf()
+            leaves = np.asarray(
+                [bfs.select_id(id) for id in bfs.get_leaves_id()])
             us = - np.ones(bfs.k).astype(np.int)
             lq = np.zeros(bfs.k)
             lq[leaves] = q[sub == s]

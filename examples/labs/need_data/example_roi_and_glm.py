@@ -18,7 +18,7 @@ import numpy as np
 import os.path as op
 import matplotlib.pylab as mp
 
-from nibabel import load, Nifti1Image
+from nibabel import save, load, Nifti1Image
 from nipy.modalities.fmri.design_matrix import dmtx_light
 from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
 from nipy.labs.utils.simul_multisubject_fmri_dataset import \
@@ -115,18 +115,24 @@ domain = grid_domain_from_image(mask)
 my_roi = mroi.subdomain_from_balls(domain, positions, radii)
 
 # to save an image of the ROIs
-my_roi.to_image(op.join(swd, "roi.nii"))
+save(my_roi.to_image(), op.join(swd, "roi.nii"))
 
 # exact the time courses with ROIs
-my_roi.make_feature('signal', fmri_data.get_data()[mask.get_data()>0])
+thresholded_fmri = fmri_data.get_data()[mask.get_data() > 0]
+signal_feature = [thresholded_fmri[my_roi.select_id(id, roi=False)]
+                  for id in my_roi.get_id()]
+my_roi.set_feature('signal', signal_feature)
 
 # ROI average time courses
-avg_signal = my_roi.representative_feature('signal')
-my_roi.set_roi_feature('signal', avg_signal)                       
+my_roi.set_roi_feature('signal_avg', my_roi.representative_feature('signal'))
 
 # roi-level contrast average
-my_roi.make_feature('contrast', contrast_image.get_data()[mask.get_data()>0])
-my_roi.set_roi_feature('contrast', my_roi.representative_feature('contrast'))
+thresholded_contrast = contrast_image.get_data()[mask.get_data() > 0]
+contrast_feature = [thresholded_contrast[my_roi.select_id(id, roi=False)]
+                    for id in my_roi.get_id()]
+my_roi.set_feature('contrast', contrast_feature)
+my_roi.set_roi_feature('contrast_avg',
+                       my_roi.representative_feature('contrast'))
 
 
 ########################################
@@ -134,7 +140,7 @@ my_roi.set_roi_feature('contrast', my_roi.representative_feature('contrast'))
 ########################################
 
 nreg = len(names)
-ROI_tc = my_roi.get_roi_feature('signal')
+ROI_tc = my_roi.get_roi_feature('signal_avg')
 glm.fit(ROI_tc.T, X, method=method, model=model)
 
 mp.figure()
