@@ -305,7 +305,7 @@ class HierarchicalROI(SubDomains):
         self.recompute_labels()
 
     def make_graph(self):
-        """Output an fff.graph structure to represent the ROI hierarchy.
+        """Output an nipy graph structure to represent the ROI hierarchy.
 
         """
         if self.k == 0:
@@ -315,7 +315,7 @@ class HierarchicalROI(SubDomains):
         return WeightedGraph(self.k, edges, weights)
 
     def make_forest(self):
-        """Output an fff.forest structure to represent the ROI hierarchy.
+        """Output an nipy forest structure to represent the ROI hierarchy.
 
         """
         if self.k == 0:
@@ -551,7 +551,7 @@ class HierarchicalROI(SubDomains):
         return cp
 
     def representative_feature(self, fid, method='mean', id=None,
-                               ignore_children=True):
+                               ignore_children=True, assess_quality=True):
         """Compute a ROI representative of a given feature.
 
         Parameters
@@ -562,15 +562,24 @@ class HierarchicalROI(SubDomains):
           Method used to compute a representative.
           Chosen among 'mean' (default), 'max', 'median', 'min',
           'weighted mean'.
+        id: any hashable type
+          Id of the ROI from which we want to extract a representative feature.
+          Can be None (default) if we want to get all ROIs's representatives.
         ignore_children: bool,
           Specify if the volume of the node should include
           (ignore_children = False) or not the one of its children
           (ignore_children = True).
+        assess_quality: bool
+          If True, a new roi feature is created, which represent the quality
+          of the feature representative (the number of non-nan value for the
+          feature over the ROI size).
+          Default is False.
 
         """
         rf = []
         eps = 1.e-15
-        for k in self.get_id():
+        feature_quality = np.zeros(self.k)
+        for i, k in enumerate(self.get_id()):
             f = self.get_feature(fid, k)
             p_pos = self.select_id(k)
             if not ignore_children:
@@ -581,8 +590,16 @@ class HierarchicalROI(SubDomains):
                 for c in desc:
                     f = np.concatenate(
                         (f, self.get_feature(fid, self.get_id()[c])))
+            # NaN-resistant representative
+            if f.ndim == 2:
+                nan = np.isnan(f.sum(1))
+            else:
+                nan = np.isnan(f)
+            # feature quality
+            feature_quality[i] = (~nan).sum() / float(nan.size)
+            # compute representative
             if method == "mean":
-                rf.append(np.mean(f))
+                rf.append(np.mean(f[~nan], 0))
             if method == "weighted mean":
                 lvk = self.get_local_volume(k)
                 if not ignore_children:
@@ -591,19 +608,22 @@ class HierarchicalROI(SubDomains):
                         lvk = np.concatenate(
                             (lvk,
                              self.get_local_volume(fid, self.select_id(c))))
-                tmp = np.dot(lvk, f.reshape((-1, 1))) / \
-                    np.maximum(eps, np.sum(lvk))
+                tmp = np.dot(lvk[~nan], f[~nan].reshape((-1, 1))) / \
+                    np.maximum(eps, np.sum(lvk[~nan]))
                 rf.append(tmp)
             if method == "min":
-                rf.append(np.min(f))
+                rf.append(np.min(f[~nan]))
             if method == "max":
-                rf.append(np.max(f))
+                rf.append(np.max(f[~nan]))
             if method == "median":
-                rf.append(np.median(f))
+                rf.append(np.median(f[~nan], 0))
         if id is not None:
             summary_feature = rf[self.select_id(id)]
         else:
             summary_feature = rf
+
+        if assess_quality:
+            self.set_roi_feature('%s_quality' % fid, feature_quality)
         return np.array(summary_feature)
 
 

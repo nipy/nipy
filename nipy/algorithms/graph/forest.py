@@ -64,7 +64,6 @@ class Forest(WeightedGraph):
             if np.size(parents) != V:
                 raise ValueError('Incorrect size for parents')
             if parents.max() > self.V:
-                import pdb; pdb.set_trace()
                 raise ValueError('Incorrect value for parents')
 
             self.parents = np.reshape(parents, self.V).astype(np.int)

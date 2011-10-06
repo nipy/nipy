@@ -344,30 +344,8 @@ class SubDomains(object):
                     raise ValueError('Wrong data size for region `%i`' % k)
             self.features.update({fid: data})
 
-    def feature_from_roi_feature(self, roi_feature, new_feature=None):
-        """Create a voxel-wise feature from a ROI feature.
-
-        Parameters
-        ----------
-        roi_feature: str,
-          Identifier of the source ROI feature
-        new_feature: str,
-          If not None, a new feature is created with the name `new_feature`.
-          Otherwise, no new feature is created, the result is only returned.
-
-        Return
-        ------
-        new_data: list of arrays of shape=(roi_size, feature_dim)
-          The new feature, obtained from the ROI one.
-
-        """
-        new_data = [[roi_feature[self.select_id(id)]] * self.get_size(id)
-                    for id in self.get_id()]
-        if new_feature is not None:
-            self.set_feature(new_feature, new_data)
-        return new_data
-
-    def representative_feature(self, fid, method='mean', id=None):
+    def representative_feature(self, fid, method='mean', id=None,
+                               assess_quality=False):
         """Compute a ROI representative of a given feature.
 
         Parameters
@@ -378,6 +356,14 @@ class SubDomains(object):
           Method used to compute a representative.
           Chosen among 'mean' (default), 'max', 'median', 'min',
           'weighted mean'.
+        id: any hashable type
+          Id of the ROI from which we want to extract a representative feature.
+          Can be None (default) if we want to get all ROIs's representatives.
+        assess_quality: bool
+          If True, a new roi feature is created, which represent the quality
+          of the feature representative (the number of non-nan value for the
+          feature over the ROI size).
+          Default is False.
 
         Return
         ------
@@ -387,25 +373,37 @@ class SubDomains(object):
         """
         rf = []
         eps = 1.e-15
-        for k in self.get_id():
+        feature_quality = np.zeros(self.k)
+        for i, k in enumerate(self.get_id()):
             f = self.get_feature(fid, k)
+            # NaN-resistant representative
+            if f.ndim == 2:
+                nan = np.isnan(f.sum(1))
+            else:
+                nan = np.isnan(f)
+            # feature quality
+            feature_quality[i] = (~nan).sum() / float(nan.size)
+            # compute representative
             if method == "mean":
-                rf.append(np.mean(f))
+                rf.append(np.mean(f[~nan], 0))
             if method == "weighted mean":
-                lvk = self.get_local_volume(k)
-                tmp = np.dot(lvk, f.reshape((-1, 1))) / \
+                lvk = self.get_local_volume(k)[~nan]
+                tmp = np.dot(lvk, f[~nan].reshape((-1, 1))) / \
                     np.maximum(eps, np.sum(lvk))
                 rf.append(tmp)
             if method == "min":
-                rf.append(np.min(f))
+                rf.append(np.min(f[~nan]))
             if method == "max":
-                rf.append(np.max(f))
+                rf.append(np.max(f[~nan]))
             if method == "median":
-                rf.append(np.median(f))
+                rf.append(np.median(f[~nan], 0))
         if id is not None:
             summary_feature = rf[self.select_id(id)]
         else:
             summary_feature = rf
+
+        if assess_quality:
+            self.set_roi_feature('%s_quality' % fid, feature_quality)
         return np.array(summary_feature)
 
     def remove_feature(self, fid):
@@ -439,7 +437,7 @@ class SubDomains(object):
         Return
         ------
         res: array-like, shape=(domain.size, feature_dim)
-          A flat array, giving the correspondancies between voxels
+          A flat array, giving the correspondence between voxels
           and the feature.
 
         """
@@ -635,7 +633,7 @@ class SubDomains(object):
 
         if fid is None:
             # write a binary representation of the domain if no fid provided
-            nim = self.domain.to_image()
+            nim = self.domain.to_image(data=(self.label != -1).astype(int))
             if descrip is None:
                 descrip = 'binary representation of MROI'
         else:
@@ -665,7 +663,7 @@ class SubDomains(object):
                         data[self.select_id(i, roi=False)] = \
                             summary_feature[self.select_id(i)]
             # MROI object was defined on a masked image: we square it back.
-            wdata = np.zeros(mask.shape, data.dtype)
+            wdata = -np.ones(mask.shape, data.dtype)
             wdata[mask] = data
             nim = Nifti1Image(wdata, tmp_image.get_affine())
         # set description of the image
