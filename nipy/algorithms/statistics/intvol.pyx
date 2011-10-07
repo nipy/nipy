@@ -986,13 +986,12 @@ def Lips1d(np.ndarray[DTYPE_float_t, ndim=2] coords,
 
 
 def EC1d(np.ndarray[DTYPE_int_t, ndim=1] mask):
-    """
-    Given a 1d mask, compute the 0th intrinsic volume
-    (Euler characteristic)
-    of the masked region. The region is broken up into 
-    edges / vertices, which are included based on whether
-    all voxels in the edge / vertex are
-    in the mask or not.
+    """ Compute Euler characteristic for 1d mask
+
+    Given a 1d mask `mask`, compute the 0th intrinsic volume (Euler
+    characteristic) of the masked region. The region is broken up into edges /
+    vertices, which are included based on whether all voxels in the edge /
+    vertex are in the mask or not.
 
     Parameters
     ----------
@@ -1037,7 +1036,7 @@ def EC1d(np.ndarray[DTYPE_int_t, ndim=1] mask):
     for i in range(s0):
       m = mask[i]
       if m:
-        m = m * (mask[(i+1) % s0] * (i < s0))
+        m = m * (mask[(i+1) % s0] * ((i+1) < s0))
         l0 = l0 - m
 
     l0 += mask.sum()
