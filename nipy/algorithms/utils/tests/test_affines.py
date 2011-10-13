@@ -6,7 +6,8 @@ import numpy as np
 from ..affines import apply_affine, append_diag
 
 from nose.tools import assert_equal, assert_raises
-from numpy.testing import assert_array_equal, assert_almost_equal
+from numpy.testing import assert_array_equal, assert_almost_equal, \
+     assert_array_almost_equal
 
 
 def validated_apply_affine(T, xyz):
@@ -61,7 +62,7 @@ def test_apply_affine():
         exp_pts = np.dot(aff, new_pts)
         exp_pts = np.rollaxis(exp_pts[:-1,:], 0, 2)
         exp_res = exp_pts.reshape((2,3,nd))
-        assert_array_equal(res, exp_res)
+        assert_array_almost_equal(res, exp_res)
 
 
 def test_append_diag():
