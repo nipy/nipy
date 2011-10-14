@@ -14,7 +14,7 @@ from nose.tools import assert_true, assert_equal, assert_raises
 def test_strides_from():
     for shape in ((3,), (2,3), (2,3,4), (5,4,3,2)):
         for order in 'FC':
-            for dtype in np.sum(np.sctypes.values()):
+            for dtype in sum(np.sctypes.values(), []):
                 if dtype is str:
                     dtype = 'S3'
                 elif dtype is unicode:
