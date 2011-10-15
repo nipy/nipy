@@ -353,8 +353,8 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
 # Time series extraction
 ################################################################################
 
-def series_from_mask(filenames, mask, dtype=np.float32, 
-                     smooth=False, replace_nans=True):
+def series_from_mask(filenames, mask, dtype=np.float32,
+                     smooth=False, ensure_finite=True):
     """ Read the time series from the given sessions filenames, using the mask.
 
         Parameters
@@ -366,10 +366,10 @@ def series_from_mask(filenames, mask, dtype=np.float32,
         smooth: False or float, optional
             If smooth is not False, it gives the size, in voxel of the
             spatial smoothing to apply to the signal.
-        replace_nans: boolean
-            If replace_nans is True, the NaNs found in the images will be
-            replaced by zeros
-        
+        ensure_finite: boolean
+            If ensure_finite is True, the non-finite values (NaNs and infs)
+            found in the images will be replaced by zeros
+
         Returns
         --------
         session_series: ndarray
@@ -377,7 +377,7 @@ def series_from_mask(filenames, mask, dtype=np.float32,
         header: header object
             The header of the first file.
     """
-    assert len(filenames) != 0, ( 
+    assert len(filenames) != 0, (
         'filenames should be a file name or a list of file names, '
         '%s (type %s) was passed' % (filenames, type(filenames)))
     mask = mask.astype(np.bool)
@@ -388,10 +388,11 @@ def series_from_mask(filenames, mask, dtype=np.float32,
         # We have a 4D nifti file
         data_file = load(filenames)
         header = data_file.get_header()
-        series = data_file.get_data().astype(dtype)
-        if replace_nans:
+        series = data_file.get_data()
+        if ensure_finite:
             # SPM tends to put NaNs in the data outside the brain
-            series[np.isnan(series)] = 0
+            series[np.logical_not(np.isfinite(series))] = 0
+        series = series.astype(dtype)
         affine = data_file.get_affine()[:3, :3]
         del data_file
         if isinstance(series, np.memmap):
@@ -408,16 +409,17 @@ def series_from_mask(filenames, mask, dtype=np.float32,
         series = np.zeros((mask.sum(), nb_time_points), dtype=dtype)
         for index, filename in enumerate(filenames):
             data_file = load(filename)
-            data = data_file.get_data().astype(dtype)
-            if replace_nans:
+            data = data_file.get_data()
+            if ensure_finite:
                 # SPM tends to put NaNs in the data outside the brain
-                data[np.isnan(data)] = 0
+                data[np.logical_not(np.isfinite(data))] = 0
+            data = data.astype(dtype)
             if smooth is not False:
                 affine = data_file.get_affine()[:3, :3]
                 vox_size = np.sqrt(np.sum(affine **2, axis=0))
                 smooth_sigma = smooth / vox_size
                 data = ndimage.gaussian_filter(data, smooth_sigma)
-                
+
             series[:, index] = data[mask]
             # Free memory early
             del data
