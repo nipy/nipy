@@ -5,7 +5,6 @@ Test functions for models.regression
 """
 
 import numpy as np
-from numpy.random import standard_normal
 
 import scipy.linalg as spl
 
@@ -109,7 +108,7 @@ def test_ar_estimator():
     rhos2 = ar_bias_correct(results, 2)
     assert_array_almost_equal(rhos, rhos2, 8)
     rhos3 = ar_bias_correct(results, 2, invM)
-    assert_array_equal(rhos2, rhos3)
+    assert_array_almost_equal(rhos2, rhos3)
     # Passing in a simple array
     rhos4 = ar_bias_correct(results.resid, 2, invM)
     assert_array_almost_equal(rhos3, rhos4)
