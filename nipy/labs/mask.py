@@ -376,6 +376,11 @@ def series_from_mask(filenames, mask, dtype=np.float32,
             3D array of time course: (session, voxel, time)
         header: header object
             The header of the first file.
+
+        Notes
+        -----
+        When using smoothing, ensure_finite should be True: as elsewhere non
+        finite values will spread accross the image.
     """
     assert len(filenames) != 0, (
         'filenames should be a file name or a list of file names, '
