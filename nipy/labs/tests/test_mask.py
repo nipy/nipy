@@ -81,8 +81,14 @@ def test_series_from_mask():
                 proj = np.any(np.any(np.rollaxis(above_half_max,
                                 axis=axis), axis=-1), axis=-1)
                 assert_equal(proj.sum(), 9/np.abs(affine[axis, axis]))
-            
-        
+
+        # Check that NaNs in the data do not propagate
+        data[10, 10, 10] = np.NaN
+        img = nib.Nifti1Image(data, affine)
+        nib.save(img, 'testing.nii')
+        series, header = series_from_mask('testing.nii', mask, smooth=9)
+        assert_true(np.all(np.isfinite(series)))
+
 
 
 if __name__ == "__main__":

@@ -353,7 +353,8 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
 # Time series extraction
 ################################################################################
 
-def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
+def series_from_mask(filenames, mask, dtype=np.float32,
+                     smooth=False, ensure_finite=True):
     """ Read the time series from the given sessions filenames, using the mask.
 
         Parameters
@@ -365,15 +366,23 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         smooth: False or float, optional
             If smooth is not False, it gives the size, in voxel of the
             spatial smoothing to apply to the signal.
-        
+        ensure_finite: boolean
+            If ensure_finite is True, the non-finite values (NaNs and infs)
+            found in the images will be replaced by zeros
+
         Returns
         --------
         session_series: ndarray
             3D array of time course: (session, voxel, time)
         header: header object
             The header of the first file.
+
+        Notes
+        -----
+        When using smoothing, ensure_finite should be True: as elsewhere non
+        finite values will spread accross the image.
     """
-    assert len(filenames) != 0, ( 
+    assert len(filenames) != 0, (
         'filenames should be a file name or a list of file names, '
         '%s (type %s) was passed' % (filenames, type(filenames)))
     mask = mask.astype(np.bool)
@@ -385,6 +394,10 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
         data_file = load(filenames)
         header = data_file.get_header()
         series = data_file.get_data()
+        if ensure_finite:
+            # SPM tends to put NaNs in the data outside the brain
+            series[np.logical_not(np.isfinite(series))] = 0
+        series = series.astype(dtype)
         affine = data_file.get_affine()[:3, :3]
         del data_file
         if isinstance(series, np.memmap):
@@ -395,20 +408,24 @@ def series_from_mask(filenames, mask, dtype=np.float32, smooth=False):
             for this_volume in np.rollaxis(series, -1):
                 this_volume[...] = ndimage.gaussian_filter(this_volume,
                                                         smooth_sigma)
-        series = series[mask].astype(dtype)
+        series = series[mask]
     else:
         nb_time_points = len(list(filenames))
         series = np.zeros((mask.sum(), nb_time_points), dtype=dtype)
         for index, filename in enumerate(filenames):
             data_file = load(filename)
             data = data_file.get_data()
-            if smooth:
+            if ensure_finite:
+                # SPM tends to put NaNs in the data outside the brain
+                data[np.logical_not(np.isfinite(data))] = 0
+            data = data.astype(dtype)
+            if smooth is not False:
                 affine = data_file.get_affine()[:3, :3]
                 vox_size = np.sqrt(np.sum(affine **2, axis=0))
                 smooth_sigma = smooth / vox_size
                 data = ndimage.gaussian_filter(data, smooth_sigma)
-                
-            series[:, index] = data[mask].astype(dtype)
+
+            series[:, index] = data[mask]
             # Free memory early
             del data
             if index == 0:
