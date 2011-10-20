@@ -10,8 +10,9 @@ in ~/.nipy/tests/data
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal
 from ..discrete_domain import smatrix_from_nd_idx, smatrix_from_3d_array, \
-    smatrix_from_nd_array, domain_from_array, domain_from_image, \
-    domain_from_mesh, grid_domain_from_array, grid_domain_from_image
+    smatrix_from_nd_array, domain_from_binary_array, domain_from_image, \
+    domain_from_mesh, grid_domain_from_binary_array, grid_domain_from_image, \
+    grid_domain_from_shape
 from nibabel import Nifti1Image
 import nibabel.gifti as nbg
 
@@ -106,7 +107,7 @@ def test_array_domain():
     """Test the construction of domain based on array
     """
     toto = np.ones(shape)
-    ddom = domain_from_array(toto)
+    ddom = domain_from_binary_array(toto)
     assert_equal(np.sum(ddom.local_volume), np.prod(shape))
 
 
@@ -114,7 +115,7 @@ def test_connected_components():
     """Test the estimation of connected components
     """
     toto = np.ones(shape)
-    ddom = domain_from_array(toto)
+    ddom = domain_from_binary_array(toto)
     assert_equal(ddom.connected_components(), np.zeros(ddom.size))
 
 
@@ -147,7 +148,7 @@ def test_array_grid_domain():
     """Test the construction of grid domain based on array
     """
     toto = np.ones(shape)
-    ddom = grid_domain_from_array(toto)
+    ddom = grid_domain_from_binary_array(toto)
     assert_equal(np.sum(ddom.local_volume), np.prod(shape))
 
 
@@ -163,11 +164,18 @@ def test_image_grid_domain():
     assert_almost_equal(np.sum(ddom.local_volume), ref)
 
 
+def test_shape_grid_domain():
+    """
+    """
+    ddom = grid_domain_from_shape(shape)
+    assert_equal(np.sum(ddom.local_volume), np.prod(shape))
+
+
 def test_feature():
     """ test feature inclusion
     """
     toto = np.random.rand(*shape)
-    ddom = domain_from_array(toto)
+    ddom = domain_from_binary_array(toto)
     ddom.set_feature('data', np.ravel(toto))
     plop = ddom.get_feature('data')
     assert_almost_equal(plop, np.ravel(toto))
@@ -177,7 +185,7 @@ def test_mask_feature():
     """ test_feature_masking
     """
     toto = np.random.rand(*shape)
-    ddom = domain_from_array(toto)
+    ddom = domain_from_binary_array(toto)
     ddom.set_feature('data', np.ravel(toto))
     mdom = ddom.mask(np.ravel(toto > .5))
     plop = mdom.get_feature('data')
@@ -188,7 +196,7 @@ def test_domain_mask():
     """test domain masking
     """
     toto = np.random.rand(*shape)
-    ddom = domain_from_array(toto)
+    ddom = domain_from_binary_array(toto)
     mdom = ddom.mask(np.ravel(toto > .5))
     assert_equal(mdom.size, np.sum(toto > .5))
 
@@ -197,7 +205,7 @@ def test_grid_domain_mask():
     """test grid domain masking
     """
     toto = np.random.rand(*shape)
-    ddom = grid_domain_from_array(toto)
+    ddom = grid_domain_from_binary_array(toto)
     mdom = ddom.mask(np.ravel(toto > .5))
     assert_equal(mdom.size, np.sum(toto > .5))
 
@@ -224,7 +232,7 @@ def test_representative():
     """ test representative computation
     """
     toto = np.random.rand(*shape)
-    ddom = domain_from_array(toto)
+    ddom = domain_from_binary_array(toto)
     ddom.set_feature('data', np.ravel(toto))
     dmean = toto.mean()
     dmin = toto.min()
@@ -240,7 +248,7 @@ def test_integrate_1d():
     """ test integration in 1d
     """
     toto = np.random.rand(*shape)
-    ddom = domain_from_array(toto)
+    ddom = domain_from_binary_array(toto)
     ddom.set_feature('data', np.ravel(toto))
     assert_almost_equal(ddom.integrate('data'), toto.sum())
 
@@ -249,7 +257,7 @@ def test_integrate_2d():
     """test integration in 2d
     """
     toto = np.random.rand(*shape)
-    ddom = domain_from_array(toto)
+    ddom = domain_from_binary_array(toto)
     ftoto = np.ravel(toto)
     f2 = np.vstack((ftoto, ftoto)).T
     ddom.set_feature('data', f2)

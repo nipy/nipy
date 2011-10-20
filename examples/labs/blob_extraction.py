@@ -15,8 +15,7 @@ import matplotlib
 
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 import nipy.labs.spatial_models.hroi as hroi
-from nipy.labs.spatial_models.discrete_domain import domain_from_array
-from nipy.labs.spatial_models.mroi import subdomain_from_array
+from nipy.labs.spatial_models.discrete_domain import domain_from_binary_array
 
 # ---------------------------------------------------------
 # simulate an activation image
@@ -38,7 +37,7 @@ values = dataset.ravel()
 #-------------------------------------------------------
 
 # create a domain descriptor associated with this
-domain = domain_from_array(dataset ** 2 > 0)
+domain = domain_from_binary_array(dataset ** 2 > 0)
 
 nroi = hroi.HROI_as_discrete_domain_blobs(domain, dataset.ravel(),
                                           threshold=2.0, smin=3)

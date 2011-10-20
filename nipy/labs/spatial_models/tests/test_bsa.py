@@ -15,7 +15,7 @@ from nipy.testing import dec
 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
 from ..bayesian_structural_analysis import compute_BSA_simple
-from ..discrete_domain import domain_from_array
+from ..discrete_domain import domain_from_binary_array
 
 
 def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
@@ -36,7 +36,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     # the voxel volume is 1.0
     g0 = 1.0 / (1.0 * nvox)
     bdensity = 1
-    dom = domain_from_array(np.ones(ref_dim))
+    dom = domain_from_binary_array(np.ones(ref_dim))
 
     if method == 'simple':
         group_map, AF, BF, likelihood = \
