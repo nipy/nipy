@@ -10,17 +10,16 @@ from ..statistical_mapping import cluster_stats
 def make_surrogate_data():
     """ Return a single deterministic 3D image 
     """
-    dimx = 40
-    dimy = 40
+    shape = (40, 40)
     pos   = np.array([[ 2, 10],
                       [10,  4],
                       [20, 30],
                       [30, 20]])
-    ampli = np.array([5,5,5,5])
-    data = surrogate_2d_dataset(nbsubj=1, pos=pos, dimx=40, noise_level=0,
-                                dimy=40, ampli=ampli, spatial_jitter=0,
+    ampli = np.array([5, 5, 5, 5])
+    data = surrogate_2d_dataset(n_subj=1, pos=pos, shape=shape, noise_level=0,
+                                ampli=ampli, spatial_jitter=0,
                                 signal_jitter=0).squeeze()
-    data = np.reshape(data,(dimx,dimy,1))
+    data = np.reshape(data, (shape[0], shape[1], 1))
     return Nifti1Image(data, np.eye(4))
     
 def test1():

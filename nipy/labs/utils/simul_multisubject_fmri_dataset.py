@@ -5,16 +5,12 @@ This module conatins a function to produce a dataset which simulates
 a collection of 2D images This dataset is saved as a 3D image
 (each slice being a subject) and a 3D array
 
-example of use: surrogate_2d_dataset(nbsubj=1, fid="/tmp/toto.dat", verbose=1)
-
-todo: rewrite it as a class
-
 Author : Bertrand Thirion, 2008-2010
 """
 
 import numpy as np
 import scipy.ndimage as nd
-from nibabel import save, Nifti1Image 
+from nibabel import save, Nifti1Image
 
 # definition of the maxima at the group level
 pos = np.array([[6, 7],
@@ -45,23 +41,21 @@ def _cone3d(shape, ij, pos, ampli, width):
     return temp
 
 
-def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
+def surrogate_2d_dataset(n_subj=10, shape=(30, 30), sk=1.0,
                          noise_level=1.0, pos=pos, ampli=ampli,
                          spatial_jitter=1.0, signal_jitter=1.0,
                          width=5.0, width_jitter=0,
                          out_text_file=None, out_image_file=None,
-                         verbose=False, seed=False):
+                         seed=False):
     """ Create surrogate (simulated) 2D activation data with spatial noise
 
     Parameters
     -----------
-    nbsubj: integer, optionnal
+    n_subj: integer, optionnal
         The number of subjects, ie the number of different maps
         generated.
-    dimx: integer, optionnal
-        The x size of the array returned.
-    dimy: integer
-        The y size of the array returned.
+    shape=(30,30): tuple of integers,
+         the shape of each image
     sk: float, optionnal
         Amount of spatial noise smoothness.
     noise_level: float, optionnal
@@ -87,9 +81,6 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     out_image_file: string or None, optionnal
         If not None, the resulting is saved as a nifti file with the
         given file name.
-    verbose: boolean, optionnal
-        If verbose is true, the data for the last subject is plotted as
-        a 2D image.
     seed=False:  int, optionnal
         If seed is not False, the random number generator is initialized
         at a certain value
@@ -97,18 +88,17 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
     Returns
     -------
     dataset: 3D ndarray
-        The surrogate activation map, with dimensions (nbsubj, dimx, dimy)
+        The surrogate activation map, with dimensions (n_subj, *shape)
     """
     if seed:
         nr = np.random.RandomState([seed])
     else:
         import numpy.random as nr
 
-    shape = (dimx, dimy)
     ij = np.array(np.where(np.ones(shape))).T
     dataset = []
 
-    for s in range(nbsubj):
+    for s in range(n_subj):
         # make the signal
         data = np.zeros(shape)
         lpos = pos + spatial_jitter * nr.randn(1, 2)
@@ -119,7 +109,7 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
                                             this_width[k]))
 
         # make some noise
-        noise = nr.randn(dimx, dimy)
+        noise = nr.randn(*shape)
 
         # smooth the noise
         noise = nd.gaussian_filter(noise, sk)
@@ -128,14 +118,7 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
 
         #make the mixture
         data += np.reshape(noise, shape)
-
         dataset.append(data)
-
-    if verbose:
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.imshow(data, interpolation='nearest')
-        mp.colorbar()
 
     dataset = np.array(dataset)
 
@@ -143,25 +126,24 @@ def surrogate_2d_dataset(nbsubj=10, dimx=30, dimy=30, sk=1.0,
         dataset.tofile(out_text_file)
 
     if out_image_file is not None:
-        save(Nifti1Image( dataset, np.eye(4)), out_image_file)
+        save(Nifti1Image(dataset, np.eye(4)), out_image_file)
 
     return dataset
 
 
-
-def surrogate_3d_dataset(nbsubj=1, shape=(20, 20, 20), mask=None,
+def surrogate_3d_dataset(n_subj=1, shape=(20, 20, 20), mask=None,
                          sk=1.0, noise_level=1.0, pos=None, ampli=None,
                          spatial_jitter=1.0, signal_jitter=1.0,
                          width=5.0, out_text_file=None, out_image_file=None,
-                         verbose=False, seed=False):
+                         seed=False):
     """Create surrogate (simulated) 3D activation data with spatial noise.
 
     Parameters
     -----------
-    nbsubj: integer, optionnal
+    n_subj: integer, optionnal
         The number of subjects, ie the number of different maps
         generated.
-    shape=(20,20,20): tuple of integers,
+    shape=(20,20,20): tuple of 3 integers,
          the shape of each image
     mask=None: Nifti1Image instance,
         referential- and mask- defining image (overrides shape)
@@ -188,9 +170,6 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20, 20, 20), mask=None,
     out_image_file: string or None, optionnal
         If not None, the resulting is saved as a nifti file with the
         given file name.
-    verbose: boolean, optionnal
-        If verbose is true, the data for the last subject is plotted as
-        a 2D image.
     seed=False:  int, optionnal
         If seed is not False, the random number generator is initialized
         at a certain value
@@ -199,7 +178,7 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20, 20, 20), mask=None,
     -------
     dataset: 3D ndarray
         The surrogate activation map, with dimensions
-        (nbsubj, dimx, dimy, dimz)
+        (n_subj, *shape)
     """
     if seed:
         nr = np.random.RandomState([seed])
@@ -216,7 +195,7 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20, 20, 20), mask=None,
     dataset = []
 
     # make the signal
-    for s in range(nbsubj):
+    for s in range(n_subj):
         data = np.zeros(shape)
         lampli = []
         if pos is not None:
@@ -237,30 +216,25 @@ def surrogate_3d_dataset(nbsubj=1, shape=(20, 20, 20), mask=None,
 
         # make the mixture
         data += noise
+        data[mask_data == 0] = 0
         dataset.append(data)
 
-    if verbose:
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.imshow(data, interpolation='nearest')
-        mp.colorbar()
-
     dataset = np.array(dataset)
-    if nbsubj==1:
+    if n_subj == 1:
         dataset = dataset[0]
 
     if out_text_file is not None:
         dataset.tofile(out_text_file)
 
     if out_image_file is not None:
-        save(Nifti1Image( dataset, np.eye(4)), out_image_file)
+        save(Nifti1Image(dataset, np.eye(4)), out_image_file)
 
     return dataset
 
 
 def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
                          dmtx=None, sk=1.0, noise_level=1.0, signal_level=1.0,
-                         out_image_file=None, verbose=False, seed=False):
+                         out_image_file=None, seed=False):
     """ Create surrogate (simulated) 3D activation data with spatial noise.
 
     Parameters
@@ -283,12 +257,9 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
         amplitude=noise_level)
     signal_level: float, optional,
         Amplitude of the signal
-    out_image_file: string or None, optionnal
-        If not None, the resulting is saved as a nifti file with the
-        given file name.
-    verbose: boolean, optionnal
-        If verbose is true, the data for the last subject is plotted as
-        a 2D image.
+    out_image_file: string or list of strings or None, optionnal
+        If not None, the resulting is saved as (set of) nifti file(s) with the
+        given file path(s)
     seed=False:  int, optionnal
         If seed is not False, the random number generator is initialized
         at a certain value
@@ -315,7 +286,10 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
     if dmtx is not None:
         n_scans = dmtx.shape[0]
 
-    shape_4d = tuple((shape[0], shape[1], shape[2], n_scans))
+    if (out_image_file is not None) and isinstance(out_image_file, basestring):
+        out_image_file = [out_image_file]
+
+    shape_4d = shape + (n_scans,)
 
     output_images = []
     if dmtx is not None:
@@ -345,9 +319,9 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
             data[:, :, :, s] += noise
             data[:, :, :, s] += 100 * mask_data
 
-        wim = Nifti1Image( data, affine)
+        wim = Nifti1Image(data, affine)
         output_images.append(wim)
         if out_image_file is not None:
-            save(wim, out_image_file[s])
+            save(wim, out_image_file[ns])
 
     return output_images

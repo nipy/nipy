@@ -21,12 +21,11 @@ import nipy.algorithms.statistics.empirical_pvalue as en
 
 ###############################################################################
 # simulate the data
-dimx = 60
-dimy = 60
+shape = (60, 60)
 pos = 2 * np.array([[6, 7], [10, 10], [15, 10]])
 ampli = np.array([3, 4, 4])
 
-dataset = simul.surrogate_2d_dataset(nbsubj=1, dimx=dimx, dimy=dimy, pos=pos,
+dataset = simul.surrogate_2d_dataset(n_subj=1, shape=shape, pos=pos,
                                      ampli=ampli, width=10.0).squeeze()
 
 import pylab as pl
@@ -41,7 +40,7 @@ Beta = dataset.ravel().squeeze()
 ###############################################################################
 # fit Beta's histogram with a Gamma-Gaussian mixture
 gam_gaus_pp = en.Gamma_Gaussian_fit(Beta, Beta)
-gam_gaus_pp = np.reshape(gam_gaus_pp, (dimx, dimy, 3))
+gam_gaus_pp = np.reshape(gam_gaus_pp, (shape[0], shape[1], 3))
 
 pl.figure(fig.number)
 pl.subplot(3, 3, 4)
@@ -62,7 +61,7 @@ pl.colorbar()
 alpha = 0.01
 gaus_mix_pp = en.three_classes_GMM_fit(Beta, None, 
                                        alpha, prior_strength=100)
-gaus_mix_pp = np.reshape(gaus_mix_pp, (dimx, dimy, 3))
+gaus_mix_pp = np.reshape(gaus_mix_pp, (shape[0], shape[1], 3))
 
 
 pl.figure(fig.number)
@@ -84,7 +83,7 @@ pl.colorbar()
 
 efdr = en.NormalEmpiricalNull(Beta)
 emp_null_fdr = efdr.fdr(Beta)
-emp_null_fdr = emp_null_fdr.reshape((dimx, dimy))
+emp_null_fdr = emp_null_fdr.reshape(shape)
 
 pl.subplot(3, 3, 3)
 pl.imshow(1 - emp_null_fdr, cmap=pl.cm.hot)

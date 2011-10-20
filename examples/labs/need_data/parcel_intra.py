@@ -24,11 +24,10 @@ n_beta = [29]
 data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data'))
 mask_image = op.join(data_dir, 'mask.nii.gz')
 betas = [op.join(data_dir, 'spmT_%04d.nii.gz' % n) for n in n_beta]
-missing_file = array(
-    [op.exists(m) == False for m in [mask_image] + betas]).any()
+missing_file = array([not op.exists(m) for m in [mask_image] + betas]).any()
 if missing_file:
     import get_data_light
-    get_data_light.get_it()
+    get_data_light.get_second_level_dataset()
 
 # set the parameters
 n_parcels = 500
@@ -37,9 +36,9 @@ nn = 6
 write_dir = tempfile.mkdtemp()
 verbose = 1
 
-lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'gkm', 
+lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'gkm',
                             write_dir, mu, verbose)
-lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'ward', 
+lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'ward',
                             write_dir, mu, verbose)
-lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'ward_and_gkm', 
+lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'ward_and_gkm',
                             write_dir, mu, verbose)

@@ -216,7 +216,7 @@ def parcellation_based_analysis(Pa, test_images, test_id='one_sample',
 
     # Write the stuff
     template = SubDomains(Pa.domain, Pa.template_labels, 'parcellation')
-    wim = template.to_image(data=prfx)
+    wim = template.to_image(data=prfx[Pa.template_labels])
     hdr = wim.get_header()
     hdr['descrip'] = 'parcel-based eandom effects image (in t-variate)'
     if rfx_path is not None:

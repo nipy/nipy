@@ -144,22 +144,20 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 ###############################################################################
 
 # generate the data
-nsubj = 10
-dimx = 60
-dimy = 60
+n_subj = 10
+shape = (60, 60)
 pos = np.array([[12, 14],
                 [20, 20],
                 [30, 20]])
 ampli = np.array([5, 7, 6])
 sjitter = 1.0
-dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
-                                     pos=pos, ampli=ampli, width=5.0)
-betas = np.reshape(dataset, (nsubj, dimx, dimy))
+betas = simul.surrogate_2d_dataset(n_subj=n_subj, shape=shape, pos=pos, 
+                                     ampli=ampli, width=5.0)
 
 # set various parameters
 theta = float(st.t.isf(0.01, 100))
 dmax = 5. / 1.5
-ths = nsubj / 4
+ths = n_subj / 4
 thq = 0.9
 verbose = 1
 smin = 5

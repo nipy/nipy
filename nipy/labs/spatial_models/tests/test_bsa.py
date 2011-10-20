@@ -26,12 +26,12 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     Fixme: 'quick' is not tested
     """
     ref_dim = np.shape(betas[0])
-    nbsubj = betas.shape[0]
+    n_subj = betas.shape[0]
     xyz = np.array(np.where(betas[:1])).T
     nvox = np.size(xyz, 0)
 
     # get the functional information
-    lbeta = np.array([np.ravel(betas[k]) for k in range(nbsubj)]).T
+    lbeta = np.array([np.ravel(betas[k]) for k in range(n_subj)]).T
 
     # the voxel volume is 1.0
     g0 = 1.0 / (1.0 * nvox)
@@ -48,36 +48,33 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 @dec.slow
 def test_bsa_methods():
     # generate the data
-    nbsubj = 5
-    dimx = 40
-    dimy = 40
+    n_subj = 5
+    shape = (40, 40)
     pos = np.array([[12, 14],
                     [20, 20],
                     [30, 35]])
     # make a dataset with a nothing feature
     null_ampli = np.array([0, 0, 0])
-    null_dataset = surrogate_2d_dataset(nbsubj=nbsubj,
-                                        dimx=dimx,
-                                        dimy=dimy,
+    null_betas = surrogate_2d_dataset(n_subj=n_subj,
+                                        shape=shape,
                                         pos=pos,
                                         ampli=null_ampli,
                                         width=5.0,
                                         seed=1)
-    null_betas = np.reshape(null_dataset, (nbsubj, dimx, dimy))
+    #null_betas = np.reshape(null_dataset, (n_subj, shape[0], shape[1]))
     # make a dataset with a something feature
     pos_ampli = np.array([5, 7, 6])
-    pos_dataset = surrogate_2d_dataset(nbsubj=nbsubj,
-                                       dimx=dimx,
-                                       dimy=dimy,
+    pos_betas = surrogate_2d_dataset(n_subj=n_subj,
+                                       shape=shape,
                                        pos=pos,
                                        ampli=pos_ampli,
                                        width=5.0,
                                        seed=2)
-    pos_betas = np.reshape(pos_dataset, (nbsubj, dimx, dimy))
+    #pos_betas = np.reshape(pos_dataset, (n_subj, shape[0], shape[1]))
     # set various parameters
     theta = float(st.t.isf(0.01, 100))
     dmax = 5. / 1.5
-    half_subjs = nbsubj / 2
+    half_subjs = n_subj / 2
     thq = 0.9
     smin = 5
 
