@@ -1006,7 +1006,7 @@ x
             edges = renumb[edges]
             G = WeightedGraph(np.sum(valid > 0), edges, weights)
         else:
-            G = WeightedGraph(np.sum(valid) > 0)
+            G = WeightedGraph(np.sum(valid > 0))
 
         return G
 

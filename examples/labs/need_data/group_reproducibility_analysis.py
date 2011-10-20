@@ -5,9 +5,10 @@ Example of script to analyse the reproducibility in group studies
 using a bootstrap procedure
 
 This reproduces approximately the work described in
-Analysis of a large fMRI cohort: Statistical and methodological issues for group analyses.
+'Analysis of a large fMRI cohort:
+Statistical and methodological issues for group analyses'
 Thirion B, Pinel P, Meriaux S, Roche A, Dehaene S, Poline JB.
-Neuroimage. 2007 Mar;35(1):105-20. 
+Neuroimage. 2007 Mar;35(1):105-20.
 
 author: Bertrand Thirion, 2005-2009
 """
@@ -29,25 +30,20 @@ nsubj = 12
 subj_id = range(nsubj)
 nbeta = 29
 
-#data_dir = get_data_light.get_it()
-#data_dir = op.expanduser(op.join(data_dir, 'group_t_images'))
-data_dir = op.expanduser( 
+data_dir = op.expanduser(
     op.join('~', '.nipy', 'tests', 'data', 'group_t_images'))
 
-mask_images = [op.join(data_dir,'mask_subj%02d.nii'%n)
+mask_images = [op.join(data_dir, 'mask_subj%02d.nii' % n)
                for n in range(nsubj)]
-stat_images =[ op.join(data_dir,'spmT_%04d_subj_%02d.nii'%(nbeta,n))
+stat_images = [op.join(data_dir, 'spmT_%04d_subj_%02d.nii' % (nbeta, n))
                  for n in range(nsubj)]
-contrast_images =[ op.join(data_dir,'con_%04d_subj_%02d.nii'%(nbeta,n))
+contrast_images = [op.join(data_dir, 'con_%04d_subj_%02d.nii' % (nbeta, n))
                  for n in range(nsubj)]
 all_images = mask_images + stat_images + contrast_images
-missing_file = array([op.exists(m)==False for m in all_images]).any()
+missing_file = array([not op.exists(m) for m in all_images]).any()
 
 if missing_file:
-    get_data_light.get_it()
-
-
-
+    get_data_light.get_second_level_dataset()
 
 swd = tempfile.mkdtemp('image')
 
@@ -66,7 +62,7 @@ swap = False
 
 voxel_results, cluster_results, peak_results = group_reproducibility_metrics(
     mask_images, contrast_images, [], thresholds, ngroups, method,
-    cluster_threshold=csize, number_of_samples=niter, sigma=sigma, 
+    cluster_threshold=csize, number_of_samples=niter, sigma=sigma,
     do_clusters=True, do_voxels=True, do_peaks=True, swap=swap)
 
 kap = [k for k in voxel_results[ngroups[0]].values()]
@@ -82,24 +78,23 @@ pylab.figure()
 pylab.subplot(1, 3, 1)
 pylab.boxplot(kap)
 pylab.title('voxel-level reproducibility')
-pylab.xticks(range(1,1+len(thresholds)), thresholds)
+pylab.xticks(range(1, 1 + len(thresholds)), thresholds)
 pylab.xlabel('threshold')
 pylab.subplot(1, 3, 2)
 pylab.boxplot(clt)
 pylab.title('cluster-level reproducibility')
-pylab.xticks(range(1,1+len(thresholds)), thresholds)
+pylab.xticks(range(1, 1 + len(thresholds)), thresholds)
 pylab.xlabel('threshold')
 pylab.subplot(1, 3, 3)
 pylab.boxplot(clt)
 pylab.title('cluster-level reproducibility')
-pylab.xticks(range(1,1+len(thresholds)), thresholds)
+pylab.xticks(range(1, 1 + len(thresholds)), thresholds)
 pylab.xlabel('threshold')
 
 
 ##############################################################################
 # create an image
 ##############################################################################
-# XXX
 """
 # this is commented until a new version of the code allows it
 # with the adequate level of abstraction

@@ -70,13 +70,13 @@ def cluster_threshold(stat_map, domain, th, csize):
     """
     if stat_map.shape[0] != domain.size:
         raise ValueError('incompatible dimensions')
-    
+
     # first build a domain of supra_threshold regions
     thresholded_domain = domain.mask(stat_map > th)
 
     # get the connected components
     label = thresholded_domain.connected_components()
-    
+
     binary = - np.ones(domain.size)
     binary[stat_map > th] = label
     nbcc = len(np.unique(label))
@@ -88,7 +88,7 @@ def cluster_threshold(stat_map, domain, th, csize):
     return binary
 
 
-def get_cluster_position_from_thresholded_map(stat_map, domain, thr=3.0, 
+def get_cluster_position_from_thresholded_map(stat_map, domain, thr=3.0,
                                               csize=10):
     """
     the clusters above thr of size greater than csize in
@@ -121,14 +121,14 @@ def get_cluster_position_from_thresholded_map(stat_map, domain, thr=3.0,
 
     # get the connected components
     label = thresholded_domain.connected_components()
-    
+
     # get the coordinates
     coord = thresholded_domain.get_coord()
 
     # get the barycenters
     baryc = []
     for i in range(label.max() + 1):
-        if np.sum(label==i) >= csize:
+        if np.sum(label == i) >= csize:
             baryc.append(np.mean(coord[label == i], 0))
 
     if len(baryc) == 0:
@@ -159,6 +159,7 @@ def get_peak_position_from_thresholded_map(stat_map, domain, threshold):
     # create an image to represent stat_map
     simage = domain.to_image(data=stat_map)
     
+    # extract the peaks
     peaks = get_3d_peaks(simage, threshold=threshold, order_th=2)
     if peaks == None:
         return None
@@ -660,7 +661,7 @@ def group_reproducibility_metrics(
     """
     from nibabel import load
     from ..mask import intersect_masks
-    
+
     if ((len(variance_images) == 0) & (method is not 'crfx')):
         raise ValueError('Variance images are necessary')
 
@@ -733,7 +734,7 @@ def group_reproducibility_metrics(
 # -------------------------------------------------------
 
 
-def coord_bsa(domain, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
+def coord_bsa(domain, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
               afname=None):
     """ main function for  performing bsa on a dataset
     where bsa =  nipy.labs.spatial_models.bayesian_structural_analysis
@@ -765,7 +766,7 @@ def coord_bsa(domain, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     from ..spatial_models.bayesian_structural_analysis import compute_BSA_quick
 
     crmap, AF, BF, p = compute_BSA_quick(
-        domain, betas, dmax, thq, smin, ths, theta,  verbose=0)
+        domain, betas, dmax, thq, smin, ths, theta, verbose=0)
     if AF == None:
         return None
     if afname is not None:

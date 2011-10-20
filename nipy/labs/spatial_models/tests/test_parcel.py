@@ -116,15 +116,14 @@ def test_parcel_hierarchical():
     """Test the algorithm for hierrachical parcellation
     """
     # step 1:  generate some synthetic data
-    nsubj = 10
-    dimx = 40
-    dimy = 40
-    dataset = surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy)
+    n_subj = 10
+    shape = (30, 30)
+    dataset = surrogate_2d_dataset(n_subj=n_subj, shape=shape)
 
     # step 2 : prepare all the information for the parcellation
     nb_parcel = 10
     domain = grid_domain_from_array(dataset[0] ** 2, np.eye(3))
-    ldata = np.reshape(dataset, (nsubj, dimx * dimy, 1))
+    ldata = np.reshape(dataset, (n_subj, np.prod(shape), 1))
 
     # step 3 : run the algorithm
     Pa = hparcel(domain, ldata, nb_parcel)
@@ -132,7 +131,7 @@ def test_parcel_hierarchical():
     # step 4:  look at the results
     Label = Pa.individual_labels
     control = True
-    for s in range(nsubj):
+    for s in range(n_subj):
         control *= (np.unique(Label[:, s]) == np.arange(nb_parcel)).all()
 
     assert(control)
@@ -142,15 +141,14 @@ def test_prfx():
     """Test the ability to construct parcel features and random effects models
     """
     # step 1:  generate some synthetic data
-    nsubj = 10
-    dimx = 40
-    dimy = 40
-    dataset = surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy)
+    n_subj = 10
+    shape = (30, 30)
+    dataset = surrogate_2d_dataset(n_subj=n_subj, shape=shape)
 
     # step 2 : prepare all the information for the parcellation
     nb_parcel = 10
     domain = grid_domain_from_array(dataset[0] ** 2, np.eye(3))
-    ldata = np.reshape(dataset, (nsubj, dimx * dimy, 1))
+    ldata = np.reshape(dataset, (n_subj, np.prod(shape), 1))
 
     # step 3 : run the algorithm
     Pa = hparcel(domain, ldata, nb_parcel)

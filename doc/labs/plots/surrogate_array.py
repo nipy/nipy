@@ -12,7 +12,7 @@ pos = np.array([[10, 10],
 ampli = np.array([4, 5, 2])
 
 # First generate some noiseless data
-noiseless_data = surrogate_2d_dataset(nbsubj=1, noise_level=0, spatial_jitter=0,
+noiseless_data = surrogate_2d_dataset(n_subj=1, noise_level=0, spatial_jitter=0,
                                 signal_jitter=0, pos=pos, ampli=ampli)
 
 pl.figure(figsize=(10, 3))
@@ -21,7 +21,7 @@ pl.imshow(noiseless_data[0])
 pl.title('Noise-less data')
 
 # Second, generate some group data, with default noise parameters
-group_data = surrogate_2d_dataset(nbsubj=3, pos=pos, ampli=ampli)
+group_data = surrogate_2d_dataset(n_subj=3, pos=pos, ampli=ampli)
 
 pl.subplot(1, 4, 2)
 pl.imshow(group_data[0])
