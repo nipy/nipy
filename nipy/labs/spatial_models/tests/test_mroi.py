@@ -10,7 +10,7 @@ in ~/.nipy/tests/data
 import numpy as np
 from numpy.testing import assert_equal
 from ..mroi import *
-from ..discrete_domain import domain_from_array
+from ..discrete_domain import domain_from_binary_array
 
 shape = (5, 6, 7)
 
@@ -135,7 +135,7 @@ def test_sd_representative():
 
 
 def test_sd_from_ball():
-    dom = domain_from_array(np.ones((10, 10)))
+    dom = domain_from_binary_array(np.ones((10, 10)))
     radii = np.array([2, 2, 2])
     positions = np.array([[3, 3], [3, 7], [7, 7]])
     subdomain = subdomain_from_balls(dom, positions, radii)

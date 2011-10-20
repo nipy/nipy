@@ -286,7 +286,7 @@ class SubDomains(object):
         if fid not in self.features:
             raise ValueError("the `%s` feature does not exist" % fid)
         if id is not None:
-            feature = self.features[fid][self.select_id(id)]
+            feature = np.asarray(self.features[fid][self.select_id(id)])
         else:
             feature = self.features[fid]
         return feature
@@ -732,7 +732,7 @@ def subdomain_from_array(labels, affine=None, nn=0):
     Only labels > -1 are considered.
 
     """
-    dom = ddom.grid_domain_from_array(
+    dom = ddom.grid_domain_from_binary_array(
         np.ones(labels.shape), affine=affine, nn=nn)
     return SubDomains(dom, labels.astype(np.int))
 
