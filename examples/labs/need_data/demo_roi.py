@@ -43,6 +43,7 @@ roi_domain = domain.mask(roi.label > -1)
 dom_img = roi_domain.to_image()
 save(dom_img, os.path.join(swd, "myroi.nii"))
 print 'Wrote an ROI mask image in %s' % os.path.join(swd, "myroi.nii")
+
 # fixme: pot roi feature ...
 
 # ----------------------------------------------------

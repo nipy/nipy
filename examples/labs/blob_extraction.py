@@ -38,6 +38,7 @@ domain = domain_from_binary_array(dataset ** 2 > 0)
 
 nroi = hroi.HROI_as_discrete_domain_blobs(domain, dataset.ravel(),
                                           threshold=2.0, smin=3)
+
 # create an average activaion image
 flat_dataset = dataset.ravel()
 activation = [flat_dataset[nroi.select_id(id, roi=False)]
