@@ -47,8 +47,10 @@ def mask_parcellation(mask_images, nb_parcel, threshold=0, output_image=None):
 
     domain = grid_domain_from_image(mask)
     cent, labels, J = kmeans(domain.coord, nb_parcel)
-    sub_dom = SubDomains(domain, labels, 'parcellation')
-    return sub_dom.to_image()
+    sub_dom = SubDomains(domain, labels)
+    # get id (or labels) image
+    wim = sub_dom.to_image(fid='id', roi=True)
+    return wim
 
 
 def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
@@ -102,7 +104,7 @@ def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
         feature.append(np.array([domain.make_feature_from_image(b)
                                  for b in learning_images[s]]).T)
 
-    # Possibly reduce the dimension of the  functional data
+    # Possibly reduce the dimension of the functional data
     if (len(feature[0].shape) == 1) or (fdim is None):
         return domain, feature
     if fdim < feature[0].shape[1]:
@@ -156,17 +158,19 @@ def write_parcellation_images(Pa, template_path=None, indiv_path=None,
 
     # write the template image
     tlabs = Pa.template_labels.astype(np.int16)
-    template = SubDomains(Pa.domain, tlabs, 'parcellation')
-    template.to_image(template_path,
-                      descrip='Intra-subject parcellation template')
+    template = SubDomains(Pa.domain, tlabs)
+    template_img = template.to_image(
+        fid='id', roi=True, descrip='Intra-subject parcellation template')
+    save(template_img, template_path)
 
     # write subject-related stuff
     for s in range(Pa.nb_subj):
         # write the individual label images
         labs = Pa.individual_labels[:, s]
-        parcellation = SubDomains(Pa.domain, labs, 'parcellation')
-        parcellation.to_image(indiv_path[s],
-                              descrip='Intra-subject parcellation')
+        parcellation = SubDomains(Pa.domain, labs)
+        parcellation_img = parcellation.to_image(
+            fid='id', roi=True, descrip='Intra-subject parcellation')
+        save(parcellation_img, indiv_path[s])
 
 
 def parcellation_based_analysis(Pa, test_images, test_id='one_sample',
@@ -215,10 +219,10 @@ def parcellation_based_analysis(Pa, test_images, test_id='one_sample',
     prfx = ttest(test_data)
 
     # Write the stuff
-    template = SubDomains(Pa.domain, Pa.template_labels, 'parcellation')
-    wim = template.to_image(data=prfx[Pa.template_labels])
+    template = SubDomains(Pa.domain, Pa.template_labels)
+    wim = template.to_image(prfx)
     hdr = wim.get_header()
-    hdr['descrip'] = 'parcel-based eandom effects image (in t-variate)'
+    hdr['descrip'] = 'parcel-based random effects image (in t-variate)'
     if rfx_path is not None:
         save(wim, rfx_path)
 
@@ -306,7 +310,7 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
         w, _ = g.ward(nbparcel)
         _, u, _ = g.geodesic_kmeans(label=w)
 
-    lpa = SubDomains(domain, u, 'parcellation')
+    lpa = SubDomains(domain, u)
 
     if verbose:
         var_beta = np.array(
@@ -327,7 +331,9 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
         label_image = None
 
     if label_image is not None:
-        lpa.to_image(label_image, descrip='Intra-subject parcellation image')
+        lpa_img = lpa.to_image(
+            fid='id', roi=True, descrip='Intra-subject parcellation image')
+        save(lpa_img, label_image)
         if verbose:
             print "Wrote the parcellation images as %s" % label_image
 

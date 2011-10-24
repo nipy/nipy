@@ -3,348 +3,505 @@
 
 import numpy as np
 
-from nibabel import load, save, Nifti1Image
+from nibabel import load, Nifti1Image
 
 from . import discrete_domain as ddom
-
-##############################################################################
-# class MultiROI
-##############################################################################
-
-
-class MultiROI(object):
-    """
-    This is an abstract class from which different types of
-    multiple ROI classes will be derived
-    """
-
-    def __init__(self, domain, k, rid=''):
-        """Initialize multi ROI instance
-
-        Parameters
-        ----------
-        domain: ROI instance
-                defines the spatial context of the SubDomains
-        k: non-negative int, number of regions considered
-        id: string, optional, identifier
-
-        """
-        self.domain = domain
-        self.k = k
-        self.id = rid
-        self.roi_features = {}
-
-    def set_roi_feature(self, fid, data):
-        """
-        """
-        if len(data) != self.k:
-            raise ValueError('data should have length k')
-        self.roi_features.update({fid: data})
-
-    def get_roi_feature(self, fid):
-        return self.roi_features[fid]
-
-    def select(self, valid):
-        """Select a subset of ROIs and their associated features
-
-        """
-        if valid.size != self.k:
-            raise ValueError('Invalid size for valid')
-
-        for k in range(self.k):
-            if valid[k] == 0:
-                self.label[self.label == k] = - 1
-
-        oldk = self.k
-        self.k = valid.sum()
-
-        for fid in self.roi_features.keys():
-            f = self.roi_features.pop(fid)
-            sf = np.array([f[k] for k in range(oldk) if valid[k]])
-            self.set_roi_feature(fid, sf)
 
 
 ##############################################################################
 # class SubDomains
 ##############################################################################
-
-
 class SubDomains(object):
     """
-    This is another implementation of Multiple ROI,
-    where the reference to a given domain is explicit
+    This is a class to represent multiple ROI objects, where the
+    reference to a given domain is explicit.
 
-    fixme : make roi_features implementation consistent
+    A mutliple ROI object is a set of ROI defined on a given domain,
+    each having its own 'region-level' characteristics (ROI features).
+
+    Every voxel of the domain can have its own characteristics yet,
+    defined at the 'voxel-level', but those features can only be accessed
+    familywise (i.e. the values are grouped by ROI).
+
+    Parameters
+    ----------
+    `k`: int,
+      Number of ROI in the SubDomains object
+    `label`: array of shape (domain.size), dtype=np.int,
+      An array use to define which voxel belongs to which ROI.
+      The label values greater than -1 correspond to subregions
+      labelling. The labels are recomputed so as to be consecutive
+      integers.
+      The labels should not be accessed outside this class. One has to
+      use the API mapping methods instead.
+    `features`: dict{str: list of object, length=self.k}
+      Describe the voxels features, grouped by ROI
+    `roi_features`: dict{str: array-like, shape=(self.k, roi_feature_dim)
+      Describe the ROI features. A special feature, `id`, is read-only and
+      is used to give an unique identifier for region, which is persistent
+      through the MROI objects manipulations. On should access the different
+      ROI's features using ids.
+
     """
 
-    def __init__(self, domain, label, id='', no_empty_label=True):
+    def __init__(self, domain, label, id=None):
         """Initialize subdomains instance
 
         Parameters
         ----------
         domain: ROI instance
-                defines the spatial context of the SubDomains
+          defines the spatial context of the SubDomains
         label: array of shape (domain.size), dtype=np.int,
-               the label values greater than -1 correspond to subregions
-               labelling
-        id: string, optional, identifier
-        no_empty_label: Bool, optional
-                         if True absent label values are collapsed
-                        otherwise, label is kept but empty regions might exist
+          An array use to define which voxel belongs to which ROI.
+          The label values greater than -1 correspond to subregions
+          labelling. The labels are recomputed so as to be consecutive
+          integers.
+          The labels should not be accessed outside this class. One has to
+          use the select_id() mapping method instead.
+        id: array of shape (n_roi)
+          Define the ROI identifiers. Once an id has been associated to a ROI
+          it becomes impossible to change it using the API. Hence, one
+          should access ROI through their id to avoid hazardous manipulations.
 
         """
-        # check that label is consistant with domain
+        # check that label size is consistent with domain
         if np.size(label) != domain.size:
             raise ValueError('inconsistent labels and domains specification')
         self.domain = domain
         self.label = np.reshape(label, label.size).astype(np.int)
-
-        if no_empty_label:
-            # remove labels with no discrete element
-            lmap = np.unique(label[label > - 1])
-            for i, k in enumerate(lmap):
-                self.label[self.label == k] = i
-
-        # number or ROIs : number of labels>-1
-        self.k = self.label.max() + 1
-        self.size = np.array([np.sum(self.label == k) for k in range(self.k)])
-
-        #id
-        self.id = id
+        # use continuous labels
+        self.recompute_labels()
 
         # initialize empty feature/roi_feature dictionaries
         self.features = {}
         self.roi_features = {}
+        # set `id` feature: unique and persistent identifier for each roi
+        if id is None:
+            # ids correspond to initial labels
+            self.set_roi_feature('id', np.arange(self.k))
+        else:
+            # use user-provided ids
+            if len(id) != self.k:
+                raise ValueError("incorrect shape for `id`")
+            else:
+                self.set_roi_feature('id', id)
 
-    def copy(self, id=''):
+    ###
+    # Methods for internal use: id and labels manipulations
+    ###
+    def recompute_labels(self):
+        """Redefine labels so that they are consecutive integers.
+
+        Labels are used as a map to associate voxels to a given ROI.
+        It is an inner object that should not be accessed outside this class.
+        The number of nodes is updated appropriately.
+
+        Note
+        ----
+        This method must be called everytime the MROI structure is modified.
+
+        """
+        lmap = np.unique(self.label[self.label > - 1])
+        for i, k in enumerate(lmap):
+            self.label[self.label == k] = i
+        # number of ROIs: number of labels > -1
+        self.k = np.amax(self.label) + 1
+
+    def get_id(self):
+        """Return ROI's id list.
+
+        Users must access ROIs with the use of the identifiers of this list
+        and the methods that give access to their properties/features.
+
+        """
+        return self.get_roi_feature('id')
+
+    def select_id(self, id, roi=True):
+        """Convert a ROI id into an index to be used to index features safely.
+
+        Parameter
+        ---------
+        id: any hashable type, must be in self.get_id()
+          The id of the region one wants to access.
+        roi: boolean
+          If True (default), return the ROI index in the ROI list.
+          If False, return the indices of the voxels of the ROI with the given
+          id. That way, internal access to self.label can be made.
+
+        Return
+        ------
+        index: int or np.array of shape (roi.size, )
+          Either the position of the ROI in the ROI list (if roi == True),
+          or the positions of the voxels of the ROI with id `id`
+          with respect to the self.label array.
+
+        """
+        if id not in self.get_id():
+            raise ValueError("Unexisting `id` provided")
+        if roi:
+            index = int(np.where(self.get_id() == id)[0])
+        else:
+            index = np.where(self.label == np.where(self.get_id() == id)[0])[0]
+        return index
+
+    ###
+    # General purpose methods
+    ###
+    def copy(self):
         """Returns a copy of self.
 
         Note that self.domain is not copied.
 
         """
-        cp = SubDomains(self.domain, self.label.copy(), id=id)
+        cp = SubDomains(self.domain, self.label.copy(), id=self.get_id())
         for fid in self.features.keys():
-            f = self.features[fid]
-            sf = [f[k].copy() for k in range(self.k)]
+            f = self.get_feature(fid)
+            sf = [np.array(f[k]).copy() for k in range(self.k)]
             cp.set_feature(fid, sf)
         for fid in self.roi_features.keys():
-            cp.set_roi_feature(fid, self.roi_features[fid].copy())
+            cp.set_roi_feature(fid, self.get_roi_feature(fid).copy())
         return cp
 
-    def get_coord(self, k):
-        """Returns self.coord[k]
-        """
-        if k > self.k - 1:
-            raise ValueError('works only for k < %d' % self.k)
-        return self.domain.coord[self.label.k]
-
-    def get_size(self):
-        """Returns size, k-length array
-        """
-        return self.size
-
-    def get_volume(self, k):
-        """Returns self.local_volume[k]
-        """
-        if k > self.k - 1:
-            raise ValueError('works only for k<%d' % self.k)
-        return self.domain.local_volume[self.label == k]
-
-    def select(self, valid, id='', auto=True, no_empty_label=True):
-        """Returns an instance of multiple_ROI
-        with only the subset of ROIs for which valid
+    ###
+    # Getters for very basic features or roi features
+    ###
+    def get_coord(self, id=None):
+        """Get coordinates of ROI's voxels
 
         Parameters
         ----------
-        valid: array of shape (self.k),
-               which ROIs will be included in the output
-        id: string, optional,
-            identifier of the output instance
-        auto: bool, optional,
-              if True then self = self.select()
-        no_empty_label: bool, optional,
-                        if True, labels with no matching site are excluded
+        id: any hashable type
+          Id of the ROI from which we want the voxels' coordinates.
+          Can be None (default) if we want all ROIs's voxels coordinates.
 
-        Returns
-        -------
-        The instance, if auto==False, nothing otherwise
+        Return
+        ------
+        coords: array-like, shape=(roi_size, domain_dimension),
+          if an id is provided,
+             or list of arrays of shape(roi_size, domain_dimension)
+          if no id provided (default)
 
         """
-        if valid.size != self.k:
-            raise ValueError('Invalid size for valid')
-
-        if auto:
-            for k in range(self.k):
-                if valid[k] == 0:
-                    self.label[self.label == k] = -1
-            self.id = id
-            if no_empty_label:
-                lmap = np.unique(self.label[self.label > - 1])
-                for i, k in enumerate(lmap):
-                    self.label[self.label == k] = i
-
-                oldk = self.k
-                # number or ROIs : number of labels>-1
-                self.k = self.label.max() + 1
-                self.size = np.array([np.sum(self.label == k)
-                                      for k in range(self.k)])
-
-                for fid in self.features.keys():
-                    f = self.features.pop(fid)
-                    sf = [f[k] for k in range(oldk) if valid[k]]
-                    self.set_feature(fid, sf)
-
-                for fid in self.roi_features.keys():
-                    f = self.roi_features.pop(fid)
-                    sf = np.array([f[k] for k in range(oldk) if valid[k]])
-                    self.set_roi_feature(fid, sf)
-
-            else:
-                for fid in self.features.keys():
-                    f = self.features(fid)
-                    for k in range(self.k):
-                        if valid[k] == 0:
-                            f[k] = np.array([])
-
-            self.size = np.array([np.sum(self.label == k)
-                                  for k in range(self.k)])
+        if id is not None:
+            coords = self.domain.coord[self.select_id(id, roi=False)]
         else:
-            label = - np.ones(self.domain.size)
-            remap = np.arange(self.k)
-            remap[valid == 0] = - 1
-            label[self.label > - 1] = remap[self.label[self.label > - 1]]
-            SD = SubDomains(self.domain, label, no_empty_label=no_empty_label)
-            return SD
+            coords = [self.domain.coord[self.select_id(k, roi=False)]
+                      for k in self.get_id()]
+        return coords
 
-    def make_feature(self, fid, data, override=True):
-        """Extract a set of features from a domain map
+    def get_size(self, id=None):
+        """Get ROI size (counted in terms of voxels)
 
         Parameters
         ----------
-        fid: string
-            feature identifier
-        data: array of shape(deomain.size) or (domain, size, dim),
-            domain map from which ROI features are axtracted
-        override: bool, optional,
-            Allow feature overriding
+        id: any hashable type
+          Id of the ROI from which we want to get the size.
+          Can be None (default) if we want all ROIs's sizes.
+
+        Return
+        ------
+        size: int
+          if an id is provided,
+             or list of int
+          if no id provided (default)
 
         """
-        if data.shape[0] != self.domain.size:
-            raise ValueError("Incorrect data provided")
-        dat = [data[self.label == k] for k in range(self.k)]
-        self.set_feature(fid, dat, override)
+        if id is not None:
+            size = np.size(self.select_id(id, roi=False))
+        else:
+            size = np.array(
+                [np.size(self.select_id(k, roi=False)) for k in self.get_id()])
+        return size
 
-    def set_feature(self, fid, data, override=True):
-        """Append a feature `fid`
+    def get_local_volume(self, id=None):
+        """Get volume of ROI's voxels
 
         Parameters
         ----------
-        fid: string,
-             feature identifier
-        data: list of self.k arrays of shape(self.size[k], p) or self.size[k]
-              the feature data
+        id: any hashable type
+          Id of the ROI from which we want the voxels' volumes.
+          Can be None (default) if we want all ROIs's voxels volumes.
+
+        Return
+        ------
+        loc_volume: array-like, shape=(roi_size, ),
+          if an id is provided,
+             or list of arrays of shape(roi_size, )
+          if no id provided (default)
+
+        """
+        if id is not None:
+            loc_volume = self.domain.local_volume[
+                self.select_id(id, roi=False)]
+        else:
+            loc_volume = [self.domain.local_volume[
+                    self.select_id(k, roi=False)] for k in self.get_id()]
+        return loc_volume
+
+    def get_volume(self, id=None):
+        """Get ROI volume
+
+        Parameters
+        ----------
+        id: any hashable type
+          Id of the ROI from which we want to get the volume.
+          Can be None (default) if we want all ROIs's volumes.
+
+        Return
+        ------
+        volume: float
+          if an id is provided,
+             or list of float
+          if no id provided (default)
+
+        """
+        if id is not None:
+            volume = np.sum(self.get_local_volume(id))
+        else:
+            volume = np.asarray([np.sum(k) for k in self.get_local_volume()])
+        return volume
+
+    ###
+    # Methods for features manipulation (user level)
+    ###
+    def get_feature(self, fid, id=None):
+        """Return a voxel-wise feature, grouped by ROI.
+
+        Parameters
+        ----------
+        fid: str,
+          Feature to be returned
+        id: any hashable type
+          Id of the ROI from which we want to get the feature.
+          Can be None (default) if we want all ROIs's features.
+
+        Return
+        ------
+        feature: array-like, shape=(roi_size, feature_dim)
+          if an id is provided,
+             or list of arrays, shape=(roi_size, feature_dim)
+          if no id provided (default)
+
+        """
+        if fid not in self.features:
+            raise ValueError("the `%s` feature does not exist" % fid)
+        if id is not None:
+            feature = np.asarray(self.features[fid][self.select_id(id)])
+        else:
+            feature = self.features[fid]
+        return feature
+
+    def set_feature(self, fid, data, id=None, override=False):
+        """Append or modify a feature
+
+        Parameters
+        ----------
+        fid: str,
+          feature identifier
+        data: list of self.k arrays of shape(self.size[k], p) or
+              array of shape(self.size[k])
+          the feature data
+        id: any hashable type
+          Id of the ROI from which we want to set the feature.
+          Can be None (default) if we want to set all ROIs's features.
         override: bool, optional,
                   Allow feature overriding
 
-        """
-        if len(data) != self.k:
-            raise ValueError('data should have length k')
-        for k in range(self.k):
-            if data[k].shape[0] != self.size[k]:
-                raise ValueError('Wrong data size')
+        Note that we cannot create a feature having the same name than
+        a ROI feature.
 
-        if (fid in self.features) & (override == False):
+        """
+        # ensure that the `id` field will not be modified
+        if fid == 'id':
+            override = False
+        # check the feature is already present if setting a single roi
+        if fid not in self.features and len(data) != self.k:
+            raise ValueError("`%s` feature does not exist, create it first"
+                             % fid)
+        if fid in self.roi_features:
+            raise ValueError("a roi_feature called `%s` already exists" % fid)
+        # check we will not override anything
+        if fid in self.features and not override:
+            #TODO: raise a warning
             return
+        # modify one particular region
+        if id is not None:
+            # check data size
+            roi_size = self.get_size(id)
+            if len(data) != roi_size:
+                raise ValueError("data for region `%i` should have length %i"
+                                 % (id, roi_size))
+            # update feature
+            the_feature = self.get_feature(fid, id)
+            the_feature[self.select_id(id)] = data
+        # modify all regions
+        else:
+            # check data size
+            if len(data) != self.k:
+                raise ValueError("data should have length %i" % self.k)
+            for k in self.get_id():
+                if len(data[self.select_id(k)]) != self.get_size(k):
+                    raise ValueError('Wrong data size for region `%i`' % k)
+            self.features.update({fid: data})
 
-        self.features.update({fid: data})
-
-    def get_feature(self, fid, k=None):
-        """Return self.features[fid]
-        """
-        if self.k == 0:
-            return []
-        if k == None:
-            return self.features[fid]
-        if k > self.k - 1:
-            raise ValueError('works only for k<%d' % self.k)
-        return self.features[fid][k]
-
-    def representative_feature(self, fid, method='mean'):
-        """Compute a statistical representative of the within-Foain feature
+    def representative_feature(self, fid, method='mean', id=None,
+                               assess_quality=False):
+        """Compute a ROI representative of a given feature.
 
         Parameters
         ----------
-        fid: string, feature id
-        method: string, method used to compute a representative
-                chosen among 'mean', 'max', 'median', 'min', 'weighted mean'
+        fid: str,
+          Feature id
+        method: str,
+          Method used to compute a representative.
+          Chosen among 'mean' (default), 'max', 'median', 'min',
+          'weighted mean'.
+        id: any hashable type
+          Id of the ROI from which we want to extract a representative feature.
+          Can be None (default) if we want to get all ROIs's representatives.
+        assess_quality: bool
+          If True, a new roi feature is created, which represent the quality
+          of the feature representative (the number of non-nan value for the
+          feature over the ROI size).
+          Default is False.
+
+        Return
+        ------
+        summary_feature: np.ndarray, shape=(self.k, feature_dim)
+          Representative feature computed according to `method`.
 
         """
         rf = []
         eps = 1.e-15
-        for k in range(self.k):
+        feature_quality = np.zeros(self.k)
+        for i, k in enumerate(self.get_id()):
             f = self.get_feature(fid, k)
+            # NaN-resistant representative
+            if f.ndim == 2:
+                nan = np.isnan(f.sum(1))
+            else:
+                nan = np.isnan(f)
+            # feature quality
+            feature_quality[i] = (~nan).sum() / float(nan.size)
+            # compute representative
             if method == "mean":
-                rf.append(np.mean(f, 0))
+                rf.append(np.mean(f[~nan], 0))
             if method == "weighted mean":
-                lvk = self.domain.local_volume[self.label == k]
-                tmp = np.dot(lvk, f.reshape((-1, 1))) / \
+                lvk = self.get_local_volume(k)[~nan]
+                tmp = np.dot(lvk, f[~nan].reshape((-1, 1))) / \
                     np.maximum(eps, np.sum(lvk))
                 rf.append(tmp)
             if method == "min":
-                rf.append(np.min(f, 0))
+                rf.append(np.min(f[~nan]))
             if method == "max":
-                rf.append(np.max(f, 0))
+                rf.append(np.max(f[~nan]))
             if method == "median":
-                rf.append(np.median(f, 0))
-        return np.array(rf)
+                rf.append(np.median(f[~nan], 0))
+        if id is not None:
+            summary_feature = rf[self.select_id(id)]
+        else:
+            summary_feature = rf
+
+        if assess_quality:
+            self.set_roi_feature('%s_quality' % fid, feature_quality)
+        return np.array(summary_feature)
 
     def remove_feature(self, fid):
         """Remove a certain feature
+
+        Parameters
+        ----------
+        fid: str,
+          Feature id
+
+        Return
+        ------
+        The removed feature.
+
         """
         return self.features.pop(fid)
 
-    def argmax_feature(self, fid):
-        """Return the list  of roi-level argmax of feature called fid
-        """
-        af = [np.argmax(self.feature[fid][k]) for k in range(self.k)]
-        return np.array(af)
+    def feature_to_voxel_map(self, fid, roi=False, method="mean"):
+        """Convert a feature to a flat voxel-mapping array.
 
-    def integrate(self, fid=None):
+        Paramters
+        ---------
+        fid: str,
+          Identifier of the feature to be mapped.
+        roi: bool,
+          If true, compute the map from a ROI feature.
+        method: str,
+          Representative feature computation method if `fid` is a feature
+          and `roi` is True.
+
+        Return
+        ------
+        res: array-like, shape=(domain.size, feature_dim)
+          A flat array, giving the correspondence between voxels
+          and the feature.
+
+        """
+        res = np.zeros(self.label.size)
+        if not roi:
+            f = self.get_feature(fid)
+            for id in self.get_id():
+                res[self.select_id(id, roi=False)] = f[self.select_id(id)]
+        else:
+            if fid in self.roi_features.keys():
+                f = self.get_roi_feature(fid)
+                for id in self.get_id():
+                    res[self.select_id(id, roi=False)] = f[self.select_id(id)]
+            elif fid in self.features.keys():
+                f = self.representative_feature(fid, method=method)
+                for id in self.get_id():
+                    res[self.select_id(id, roi=False)] = f[self.select_id(id)]
+            else:
+                raise ValueError("Wrong feature id provided")
+        return res
+
+    def integrate(self, fid=None, id=None):
         """Integrate  certain feature on each ROI and return the k results
 
         Parameters
         ----------
-        fid : string,  feature identifier,
-              by default, the 1 function is integrataed, yielding ROI volumes
+        fid : str
+          Feature identifier.
+          By default, the 1 function is integrated, yielding ROI volumes.
+        id: any hashable type
+          The ROI on which we want to integrate.
+          Can be None if we want the results for every region.
 
         Returns
         -------
         lsum = array of shape (self.k, self.feature[fid].shape[1]),
-               the results
+          The results
 
         """
         if fid == None:
-            vol = [np.sum(self.domain.local_volume[self.label == k])
-                   for k in range(self.k)]
-            return (np.array(vol))
-        lsum = []
-        for k in range(self.k):
-            slvk = np.expand_dims(self.domain.local_volume[self.label == k], 1)
-            sfk = self.features[fid][k]
-            if sfk.size == sfk.shape[0]:
-                sfk = np.reshape(sfk, (self.size[k], 1))
-            sumk = np.sum(sfk * slvk, 0)
-            lsum.append(sumk)
+            # integrate the 1 function if no feature id provided
+            if id is not None:
+                lsum = self.get_volume(id)
+            else:
+                lsum = [self.get_volume(k) for k in self.get_id()]
+        else:
+            if id is not None:
+                slvk = np.expand_dims(self.get_local_volume(id), 1)
+                sfk = self.get_feature(fid, id)
+                sfk = np.reshape(sfk, (-1, 1))
+                lsum = np.sum(sfk * slvk, 0)
+            else:
+                lsum = []
+                for k in self.get_id():
+                    slvk = np.expand_dims(self.get_local_volume(k), 1)
+                    sfk = self.get_feature(fid, k)
+                    sfk = np.reshape(sfk, (-1, 1))
+                    sumk = np.sum(sfk * slvk, 0)
+                    lsum.append(sumk)
         return np.array(lsum)
 
-    def check_features(self):
-        """
-        """
-        pass
-
     def plot_feature(self, fid, ax=None):
-        """Boxplot the distribution of features within ROIs
-        Note that this assumes 1-d features
+        """Boxplot the distribution of features within ROIs.
+        Note that this assumes 1-d features.
 
         Parameters
         ----------
@@ -364,65 +521,196 @@ class SubDomains(object):
         ax.set_xticks(np.arange(1, self.k + 1))
         return ax
 
-    def set_roi_feature(self, fid, data):
-        """Set feature defined by `fid` and `data` into ``self``
+    ###
+    # Methods for ROI features manipulation (user level)
+    ###
+    def get_roi_feature(self, fid, id=None):
+        """
+        """
+        if id is not None:
+            feature = self.roi_features[fid][self.select_id(id)]
+        else:
+            feature = np.asarray(self.roi_features[fid])
+        return feature
+
+    def set_roi_feature(self, fid, data, id=None, override=False):
+        """Append or modify a ROI feature
 
         Parameters
         ----------
-        fid: string
-            feature identifier
-        data: array
-            shape(self.k, p), with p>0
+        fid: str,
+          feature identifier
+        data: list of self.k features or a single feature
+          The ROI feature data
+        id: any hashable type
+          Id of the ROI of which we want to set the ROI feature.
+          Can be None (default) if we want to set all ROIs's ROI features.
+        override: bool, optional,
+                  Allow feature overriding
+
+        Note that we cannot create a ROI feature having the same name than
+        a feature.
+        Note that the `id` feature cannot be modified as an internal
+        component.
 
         """
-        if data.shape[0] != self.k:
-            print data.shape[0], self.k, fid
-            raise ValueError("Incompatible information of the provided data")
-        if np.size(data) == self.k:
-            data = np.reshape(data, (self.k, 1))
-        self.roi_features.update({fid: data})
+        # check we do not modify the `id` feature
+        if 'id' in self.roi_features.keys() and fid == 'id':
+            return
+        # check we will not override anything
+        if fid in self.roi_features and not override:
+            #TODO: raise a warning
+            return
+        # check the feature is already present if setting a single roi
+        if fid not in self.roi_features and len(data) != self.k:
+            raise ValueError("`%s` feature does not exist, create it first")
+        if fid in self.features:
+            raise ValueError("a feature called `%s` already exists" % fid)
 
-    def get_roi_feature(self, fid):
-        """roi_features accessor
+        # modify one particular region
+        if id is not None:
+            # check data size
+            if len(data) != 1:
+                raise ValueError("data for region `%i` should have length 1")
+            # update feature
+            the_feature = self.get_roi_feature(fid)
+            the_feature[self.select_id(id)] = data
+        else:
+            # check data size
+            if len(data) != self.k:
+                raise ValueError("data should have length %i" % self.k)
+            self.roi_features.update({fid: np.ravel(data)})
+
+    def remove_roi_feature(self, fid):
+        """Remove a certain ROI feature.
+
+        The `id` ROI feature cannot be removed.
+
+        Return
+        ------
+        The removed Roi feature.
+
         """
-        return self.roi_features[fid]
+        if fid != 'id':
+            feature = self.roi_features.pop(fid)
+        else:
+            feature = self.get_id()
+        return feature
+        #TODO: raise a warning otherwise
 
-    def to_image(self, path=None, descrip=None, data=None):
-        """Generates and possibly writes a label image that represents self.
+    def to_image(self, fid=None, roi=False, method="mean", descrip=None):
+        """Generates a label image that represents self.
 
         Parameters
         ----------
-        path: string, optional
-              output image path
-        descrip: string, optional
-                 descritpion associated with the output image
-        data: array os shape (self.k), optional,
-              information to write into the image
+        fid: str,
+          Feature to be represented. If None, a binary image of the MROI
+          domain will be we created.
+        roi: bool,
+          Whether or not to write the desired feature as a ROI one.
+          (i.e. a ROI feature corresponding to `fid` will be looked upon,
+          and if not found, a representative feature will be computed from
+          the `fid` feature).
+        method: str,
+          If a feature is written as a ROI feature, this keyword tweaks
+          the way the representative feature is computed.
+        descrip: str,
+          Description of the image, to be written in its header.
 
         Note
         ----
         requires that self.dom is an ddom.NDGridDomain
+
+        Return
+        ------
+        nim: nibabel nifti image
+          Nifti image corresponding to the ROI feature to be written.
 
         """
         if not isinstance(self.domain, ddom.NDGridDomain):
             print 'self.domain is not an NDGridDomain; nothing was written.'
             return None
 
-        tmp_image = self.domain.to_image()
-        mask = tmp_image.get_data().copy().astype(bool)
-        if data is None:
-            wdata = np.zeros(mask.shape, self.label.dtype)
-            wdata[mask] = self.label
+        if fid is None:
+            # write a binary representation of the domain if no fid provided
+            nim = self.domain.to_image(data=(self.label != -1).astype(int))
+            if descrip is None:
+                descrip = 'binary representation of MROI'
         else:
-            wdata = np.zeros(mask.shape, data.dtype)
+            data = -np.ones(self.label.size)
+            tmp_image = self.domain.to_image()
+            mask = tmp_image.get_data().copy().astype(bool)
+            if not roi:
+                # write a feature
+                if fid not in self.features:
+                    raise ValueError("`%s` feature could not be found" % fid)
+                for i in self.get_id():
+                    data[self.select_id(i, roi=False)] = \
+                        self.get_feature(fid, i)
+            else:
+                # write a roi feature
+                if fid in self.roi_features:
+                    # write from existing roi feature
+                    for i in self.get_id():
+                        data[self.select_id(i, roi=False)] = \
+                            self.get_roi_feature(
+                            fid, i)
+                elif fid in self.features:
+                    # write from representative feature
+                    summary_feature = self.representative_feature(
+                        fid, method=method)
+                    for i in self.get_id():
+                        data[self.select_id(i, roi=False)] = \
+                            summary_feature[self.select_id(i)]
+            # MROI object was defined on a masked image: we square it back.
+            wdata = -np.ones(mask.shape, data.dtype)
             wdata[mask] = data
-        nim = Nifti1Image(wdata, tmp_image.get_affine())
-        if descrip is None:
-            descrip = 'label image of %s' % self.id
-        nim.get_header()['descrip'] = descrip
-        if path is not None:
-            save(nim, path)
+            nim = Nifti1Image(wdata, tmp_image.get_affine())
+        # set description of the image
+        if descrip is not None:
+            nim.get_header()['descrip'] = descrip
         return nim
+
+    ###
+    # ROIs structure manipulation
+    ###
+    def select_roi(self, id_list):
+        """Returns an instance of MROI with only the subset of chosen ROIs.
+
+        Parameters
+        ----------
+        id_list: list of id (any hashable type)
+          The id of the ROI to be kept in the structure.
+
+        """
+        # handle the case of an empty selection
+        if len(id_list) == 0:
+            self = SubDomains(self.domain, -np.ones(self.label.size))
+            return
+        # convert id to indices
+        id_list_pos = np.ravel([self.select_id(k) for k in id_list])
+        # set new labels (= map between voxels and ROI)
+        for id in self.get_id():
+            if id not in id_list:
+                self.label[self.select_id(id, roi=False)] = -1
+        self.recompute_labels()
+        self.roi_features['id'] = np.ravel([id_list])
+
+        # set new features
+        # (it's ok to do that after labels and id modification since we are
+        # poping out the former features and use the former id indices)
+        for fid in self.features.keys():
+            f = self.remove_feature(fid)
+            sf = [f[id] for id in id_list_pos]
+            self.set_feature(fid, sf)
+        # set new ROI features
+        # (it's ok to do that after labels and id modification since we are
+        # poping out the former features and use the former id indices)
+        for fid in self.roi_features.keys():
+            if fid != 'id':
+                f = self.remove_roi_feature(fid)
+                sf = np.ravel(f[id_list_pos])
+                self.set_roi_feature(fid, sf)
 
 
 def subdomain_from_array(labels, affine=None, nn=0):
@@ -431,42 +719,41 @@ def subdomain_from_array(labels, affine=None, nn=0):
     Parameters
     ----------
     label: np.array instance
-          a supposedly boolean array that yields the regions
+      A supposedly boolean array that yields the regions.
     affine: np.array, optional
-            affine transform that maps the array coordinates
-            to some embedding space
-            by default, this is np.eye(dim+1, dim+1)
-    nn: int, neighboring system considered,
-        unsued at the moment
+      Affine transform that maps the array coordinates
+      to some embedding space by default, this is np.eye(dim+1, dim+1).
+    nn: int,
+      Neighboring system considered.
+      Unused at the moment.
 
     Note
     ----
-    Only nonzero labels are considered
+    Only labels > -1 are considered.
 
     """
-    dom = ddom.grid_domain_from_array(np.ones(labels.shape), affine=affine,
-                                      nn=nn)
+    dom = ddom.grid_domain_from_binary_array(
+        np.ones(labels.shape), affine=affine, nn=nn)
     return SubDomains(dom, labels.astype(np.int))
 
 
 def subdomain_from_image(mim, nn=18):
-    """Return a SubDomain instance from the input mask image
+    """Return a SubDomain instance from the input mask image.
 
     Parameters
     ----------
     mim: NiftiIImage instance, or string path toward such an image
-         supposedly a label image
+      supposedly a label image
     nn: int, optional
-        neighboring system considered from the image
-        can be 6, 18 or 26
+      Neighboring system considered from the image can be 6, 18 or 26.
 
     Returns
     -------
-    The MultipleROI  instance
+    The MultipleROI instance
 
     Note
     ----
-    Only nonzero labels are considered
+    Only labels > -1 are considered
 
     """
     if isinstance(mim, basestring):
@@ -479,7 +766,7 @@ def subdomain_from_image(mim, nn=18):
 
 def subdomain_from_position_and_image(nim, pos):
     """Keep the set of labels of the image corresponding to a certain index
-    so that their position is closest to the prescribed one
+    so that their position is closest to the prescribed one.
 
     Parameters
     ----------
@@ -497,8 +784,8 @@ def subdomain_from_position_and_image(nim, pos):
 
 
 def subdomain_from_balls(domain, positions, radii):
-    """Create discrete ROIs as a set of balls
-    within a certain coordinate systems
+    """Create discrete ROIs as a set of balls within a certain
+    coordinate systems.
 
     Parameters
     ----------

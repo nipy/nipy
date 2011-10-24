@@ -18,7 +18,7 @@ import tempfile
 
 from nibabel import load, save, Nifti1Image
 import nipy.labs.spatial_models.hroi as hroi
-from nipy.labs.spatial_models.discrete_domain import domain_from_image
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
 
 import get_data_light
 
@@ -38,7 +38,7 @@ smin = 5 # size threshold on bblobs
 nim = load(input_image)
 mask_image = Nifti1Image((nim.get_data() ** 2 > 0).astype('u8'),
                          nim.get_affine())
-domain = domain_from_image(mask_image)
+domain = grid_domain_from_image(mask_image)
 data = nim.get_data()
 values = data[data != 0]
 
@@ -47,34 +47,26 @@ nroi = hroi.HROI_as_discrete_domain_blobs(domain, values,
                                           threshold=threshold, smin=smin)
 
 # compute region-level activation averages
-nroi.make_feature('activation', values)
+activation = [values[nroi.select_id(id, roi=False)] for id in nroi.get_id()]
+nroi.set_feature('activation', activation)
 average_activation = nroi.representative_feature('activation')
-bmap = - np.zeros(domain.size)
-for k in range(nroi.k):
-    bmap[nroi.label == k] = average_activation[k]
 
-# saving the blob image, i. e. a label image
-wlabel = -2 * np.ones(nim.get_shape())
-wlabel[data != 0] = nroi.label
-wim = Nifti1Image(wlabel, nim.get_affine())
-wim.get_header()['descrip'] = 'blob image extracted from %s' % input_image
+# saving the blob image,i. e. a label image
+descrip = "blob image extracted from %s" % input_image
+wim = nroi.to_image('id', roi=True, descrip=descrip)
 save(wim, op.join(swd, "blob.nii"))
 
 # saving the image of the average-signal-per-blob
-wlabel = np.zeros(nim.get_shape())
-wlabel[data != 0] = bmap
-wim = Nifti1Image(wlabel, nim.get_affine())
-wim.get_header()['descrip'] = 'blob average signal extracted from %s' \
-                              % input_image
+descrip = "blob average signal extracted from %s" % input_image
+wim = nroi.to_image('activation', roi=True, descrip=descrip)
 save(wim, op.join(swd, "bmap.nii"))
 
 # saving the image of the end blobs or leaves
-lroi = nroi.reduce_to_leaves()
+lroi = nroi.copy()
+lroi.reduce_to_leaves()
 
-wlabel = -2 * np.ones(nim.get_shape())
-wlabel[data != 0] = lroi.label
-wim = Nifti1Image(wlabel, nim.get_affine())
-wim.get_header()['descrip'] = 'blob image extracted from %s' % input_image
+descrip = "blob image extracted from %s" % input_image
+wim = lroi.to_image('id', roi=True, descrip=descrip)
 save(wim, op.join(swd, "leaves.nii"))
 
 print "Wrote the blob image in %s" % op.join(swd, "blob.nii")
