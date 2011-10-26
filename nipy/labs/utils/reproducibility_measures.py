@@ -19,7 +19,8 @@ Bertrand Thirion, 2009-2010
 """
 
 import numpy as np
-from nipy.labs.spatial_models.discrete_domain import grid_domain_from_array
+from nipy.labs.spatial_models.discrete_domain import \
+    grid_domain_from_binary_array
 
 # ---------------------------------------------------------
 # ----- cluster handling functions ------------------------
@@ -670,7 +671,7 @@ def group_reproducibility_metrics(
     # compute the group mask
     affine = load(mask_images[0]).get_affine()
     mask = intersect_masks(mask_images, threshold=0) > 0
-    domain = grid_domain_from_array(mask, affine)
+    domain = grid_domain_from_binary_array(mask, affine)
 
     # read the data
     group_con = []
