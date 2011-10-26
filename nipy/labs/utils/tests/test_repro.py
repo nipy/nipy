@@ -31,13 +31,14 @@ def apply_repro_analysis(dataset, thresholds=[3.0], method = 'crfx'):
     """
     perform the reproducibility  analysis according to the 
     """
-    from nipy.labs.spatial_models.discrete_domain import grid_domain_from_array
+    from nipy.labs.spatial_models.discrete_domain import \
+        grid_domain_from_binary_array
 
     n_subj, dimx, dimy = dataset.shape
     
     func = np.reshape(dataset,(n_subj, dimx * dimy)).T
     var = np.ones((dimx * dimy, n_subj))
-    domain = grid_domain_from_array(np.ones((dimx, dimy, 1)))
+    domain = grid_domain_from_binary_array(np.ones((dimx, dimy, 1)))
 
     ngroups = 5
     sigma = 2.0
