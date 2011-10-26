@@ -14,7 +14,8 @@ import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 from nipy.labs.utils.reproducibility_measures import \
      voxel_reproducibility, cluster_reproducibility, map_reproducibility,\
      peak_reproducibility
-from nipy.labs.spatial_models.discrete_domain import grid_domain_from_array
+from nipy.labs.spatial_models.discrete_domain import \
+    grid_domain_from_binary_array
 
 ###############################################################################
 # Generate the data 
@@ -31,7 +32,7 @@ n_vox = np.prod(shape)
 # set the variance at 1 everywhere
 func = np.reshape(betas, (n_subj, n_vox)).T
 var = np.ones((n_vox, n_subj))
-domain = grid_domain_from_array(np.ones((shape[0], shape[1], 1)))
+domain = grid_domain_from_binary_array(np.ones((shape[0], shape[1], 1)))
 
 ###############################################################################
 # Run reproducibility analysis 
