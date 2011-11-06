@@ -20,6 +20,12 @@ extern "C" {
   extern double interaction_energy(PyArrayObject* ppm, 
 				   const PyArrayObject* XYZ); 
 
+  extern void gen_ve_step(PyArrayObject* ppm, 
+			  const PyArrayObject* ref,
+			  const PyArrayObject* XYZ, 
+			  const PyArrayObject* U, 
+			  double beta);
+
 
 #ifdef __cplusplus
 }
