@@ -88,6 +88,15 @@ def test_select_roi():
     assert(mroi.k == 1)
     assert_equal(mroi.get_roi_feature('data_mean', 0), 0)
 
+def test_roi_features():
+    """
+    """
+    mroi = make_subdomain()
+    aux = np.random.randn(np.prod(shape))
+    dshape = (8, 3)
+    data = np.random.randn(*dshape)
+    mroi.set_roi_feature('data_mean', data)
+    assert mroi.roi_features['data_mean'].shape == dshape
 
 def test_subdomain_feature():
     """Test the basic construction of features
