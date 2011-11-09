@@ -579,7 +579,7 @@ class SubDomains(object):
             # check data size
             if len(data) != self.k:
                 raise ValueError("data should have length %i" % self.k)
-            self.roi_features.update({fid: np.ravel(data)})
+            self.roi_features.update({fid: data})
 
     def remove_roi_feature(self, fid):
         """Remove a certain ROI feature.

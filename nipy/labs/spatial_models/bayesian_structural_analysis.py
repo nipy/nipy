@@ -169,7 +169,7 @@ def compute_individual_regions(domain, lbeta, smin=5, theta=3.0,
             bf0 = signal_to_pproba(bfm, learn, method)
             gf0.append(bf0)
             sub.append(s * np.ones(np.size(bfm)))
-
+            
         bf.append(nroi)
     return bf, gf0, sub, gfc
 
@@ -312,7 +312,7 @@ def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
                     for k in range(bfs.k)]
             j = label[np.array(midx)]
             us[leaves_pos] = j[leaves_pos]
-
+            
             # when parent regions has similarly labelled children,
             # include it also
             us = bfs.make_forest().propagate_upward(us)
