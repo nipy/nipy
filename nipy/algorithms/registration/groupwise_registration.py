@@ -3,6 +3,7 @@
 
 import gc
 import numpy as np
+from nibabel import io_orientation
 
 from ...core.image.affine_image import AffineImage
 from ..utils.affines import apply_affine
@@ -18,7 +19,6 @@ from ._registration import (_cspline_transform,
 VERBOSE = True  # enables online print statements
 SLICE_ORDER = 'ascending'
 INTERLEAVED = False
-SLICE_AXIS = 2
 OPTIMIZER = 'ncg'
 XTOL = 1e-5
 FTOL = 1e-5
@@ -76,8 +76,7 @@ class Image4d(object):
     data : nd array or proxy (function that actually gets the array)
     """
     def __init__(self, data, affine, tr, tr_slices=None, start=0.0,
-                 slice_order=SLICE_ORDER, interleaved=INTERLEAVED,
-                 slice_axis=SLICE_AXIS):
+                 slice_order=SLICE_ORDER, interleaved=INTERLEAVED):
         """
         Configure fMRI acquisition time parameters.
 
@@ -92,7 +91,12 @@ class Image4d(object):
         self.tr = float(tr)
         self.start = float(start)
         self.interleaved = bool(interleaved)
-        self.slice_axis = int(slice_axis)
+
+        # guess the slice axis and direction (z-axis)
+        orient = io_orientation(self.affine)
+        self.slice_axis = int(np.where(orient[:, 0] == 2)[0])
+        self.slice_direction = int(orient[self.slice_axis, 1])
+
         # unformatted parameters
         self._tr_slices = tr_slices
         self._slice_order = slice_order
@@ -136,10 +140,6 @@ class Image4d(object):
             self.slice_order = np.array(aux)
         else:
             self.slice_order = np.asarray(self.slice_order)
-        # Assume that the world referential is 'scanner' as defined by
-        # the Nifti norm
-        self.reversed_slices =\
-            self.affine[self.slice_axis][self.slice_axis] < 0
 
     def z_to_slice(self, z):
         """
@@ -147,7 +147,7 @@ class Image4d(object):
         order wrt the scanner coordinate system convention (slice 0 ==
         bottom of the head)
         """
-        if self.reversed_slices:
+        if self.slice_direction < 0:
             return self.nslices - 1 - z
         else:
             return z
