@@ -2,6 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import gc
+import warnings
 import numpy as np
 from nibabel import io_orientation
 
@@ -186,6 +187,7 @@ class Realign4dAlgorithm(object):
                  maxiter=MAXITER,
                  maxfun=MAXFUN,
                  refscan=REFSCAN):
+
         self.dims = im4d.get_data().shape
         self.nscans = self.dims[3]
         self.xyz = make_grid(self.dims[0:3], subsampling, borders)
@@ -402,8 +404,20 @@ class Realign4dAlgorithm(object):
                                 fprime=fprime,
                                 fhess=fhess,
                                 **self.optimizer_kwargs)
-        pc = fmin(f, self.transforms[t].param, *args, **kwargs)
-        self.set_transform(t, pc)
+
+        # With scipy >= 0.9, some scipy minimization functions like
+        # fmin_bfgs may crash due to the subroutine
+        # `scalar_search_armijo` returning None as a stepsize when
+        # unhappy about the objective function. This seems to have the
+        # potential to occur in groupwise registration when using
+        # strong image subsampling, i.e. at the coarser levels of the
+        # multiscale pyramid. To avoid crashes, we insert a try/catch
+        # instruction.
+        try:
+            pc = fmin(f, self.transforms[t].param, *args, **kwargs)
+            self.set_transform(t, pc)
+        except:
+            warnings.warn('Minimization failed')
 
     def estimate_motion(self):
         """
@@ -529,6 +543,7 @@ def single_run_realign4d(im4d,
                                stepsize=stepsize_,
                                maxiter=maxiter_,
                                maxfun=maxfun_)
+
         for loop in range(loops_):
             r.estimate_motion()
 
