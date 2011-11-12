@@ -77,7 +77,8 @@ class Image4d(object):
     data : nd array or proxy (function that actually gets the array)
     """
     def __init__(self, data, affine, tr, tr_slices=None, start=0.0,
-                 slice_order=SLICE_ORDER, interleaved=INTERLEAVED):
+                 slice_order=SLICE_ORDER, interleaved=INTERLEAVED,
+                 slice_info=None):
         """
         Configure fMRI acquisition time parameters.
 
@@ -87,6 +88,8 @@ class Image4d(object):
         start   : starting acquisition time respective to the implicit
                   time origin
         slice_order : string or array
+        slice_info : a tuple with slice axis as the first element and
+          direction as the second, for instance (2, 1)
         """
         self.affine = np.asarray(affine)
         self.tr = float(tr)
@@ -94,9 +97,13 @@ class Image4d(object):
         self.interleaved = bool(interleaved)
 
         # guess the slice axis and direction (z-axis)
-        orient = io_orientation(self.affine)
-        self.slice_axis = int(np.where(orient[:, 0] == 2)[0])
-        self.slice_direction = int(orient[self.slice_axis, 1])
+        if slice_info == None:
+            orient = io_orientation(self.affine)
+            self.slice_axis = int(np.where(orient[:, 0] == 2)[0])
+            self.slice_direction = int(orient[self.slice_axis, 1])
+        else:
+            self.slice_axis = int(slice_info[0])
+            self.slice_direction = int(slice_info[1])
 
         # unformatted parameters
         self._tr_slices = tr_slices
@@ -653,11 +660,11 @@ class Realign4d(object):
 
     def __init__(self, images, affine_class=Rigid):
         self._generic_init(images, affine_class, SLICE_ORDER, INTERLEAVED,
-                           1.0, 0.0, 0.0, False)
+                           1.0, 0.0, 0.0, False, None)
 
     def _generic_init(self, images, affine_class,
                       slice_order, interleaved, tr, tr_slices,
-                      start, time_interp):
+                      start, time_interp, slice_info):
         if not hasattr(images, '__iter__'):
             images = [images]
         self._runs = []
@@ -666,7 +673,8 @@ class Realign4d(object):
             self._runs.append(Image4d(im.get_data, get_affine(im),
                                       tr=tr, tr_slices=tr_slices,
                                       start=start, slice_order=slice_order,
-                                      interleaved=interleaved))
+                                      interleaved=interleaved,
+                                      slice_info=slice_info))
         self._transforms = [None for run in self._runs]
         self._within_run_transforms = [None for run in self._runs]
         self._mean_transforms = [None for run in self._runs]
@@ -731,8 +739,7 @@ class Realign4d(object):
 class FmriRealign4d(Realign4d):
 
     def __init__(self, images, slice_order, interleaved,
-                 tr=None, tr_slices=None,
-                 start=0.0, time_interp=True,  affine_class=Rigid):
+                 tr=None, tr_slices=None, start=0.0, time_interp=True,
+                 affine_class=Rigid, slice_info=None):
         self._generic_init(images, affine_class, slice_order, interleaved,
-                           tr, tr_slices,
-                           start, time_interp)
+                           tr, tr_slices, start, time_interp, slice_info)
