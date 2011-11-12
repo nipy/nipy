@@ -23,6 +23,13 @@ def test_scanner_time():
     assert_equal(im4d.scanner_time(1, im4d.tr_slices), 0.)
 
 
+def test_slice_info():
+    im4d = Image4d(im.get_data(), im.affine, tr=2.,
+                   slice_info=(1, -1))
+    assert_equal(im4d.slice_axis, 1)
+    assert_equal(im4d.slice_direction, -1)
+
+
 def test_slice_timing():
     affine = np.eye(4)
     affine[0:3, 0:3] = im.affine[0:3, 0:3]
@@ -34,4 +41,4 @@ def test_slice_timing():
 def test_realign4d():
     runs = [im, im]
     R = FmriRealign4d(runs, tr=2., slice_order='ascending', interleaved=False)
-    R.estimate(refscan=None, loops=(1,0), between_loops=(1,0))
+    R.estimate(refscan=None, loops=(1, 0), between_loops=(1, 0))
