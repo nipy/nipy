@@ -155,12 +155,12 @@ betas = simul.surrogate_2d_dataset(n_subj=n_subj, shape=shape, pos=pos,
 
 # set various parameters
 theta = float(st.t.isf(0.01, 100))
-dmax = 5. / 1.5
+dmax = 4. / 1.5
 ths = n_subj / 4
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple'#'loo'#'quick'#
+method = 'simple' # 'quick' #  'loo' #
 
 # run the algo
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method,
