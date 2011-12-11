@@ -633,11 +633,11 @@ class SubDomains(object):
 
         if fid is None:
             # write a binary representation of the domain if no fid provided
-            nim = self.domain.to_image(data=(self.label != -1).astype(int))
+            nim = self.domain.to_image(data=(self.label != -1).astype(np.int32))
             if descrip is None:
                 descrip = 'binary representation of MROI'
         else:
-            data = -np.ones(self.label.size)
+            data = -np.ones(self.label.size, dtype=np.int32)
             tmp_image = self.domain.to_image()
             mask = tmp_image.get_data().copy().astype(bool)
             if not roi:
