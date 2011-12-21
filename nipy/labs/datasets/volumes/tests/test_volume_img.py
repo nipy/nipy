@@ -243,3 +243,9 @@ def test_transformation():
         yield np.testing.assert_almost_equal, data, img.get_data()
 
 
+def test_get_affine():
+    shape = (1., 2., 3., 4.)
+    data = np.random.randint(0, 10, shape)
+    affine = np.eye(4)
+    ref_im = VolumeImg(data, affine, 'mine')
+    np.testing.assert_equal(ref_im.affine, ref_im.get_affine())
