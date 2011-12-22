@@ -44,16 +44,16 @@ def hroi_agglomeration(input_hroi, criterion='size', smin=0):
         return ValueError('unknown criterion')
     output_hroi = input_hroi.copy()
     k = 2 * output_hroi.k
+    if criterion == 'size':
+        value = output_hroi.get_size()
+    if criterion == 'volume':
+        value = output_hroi.get_volume()
 
     # iteratively agglomerate regions that are too small
     while k > output_hroi.k:
         k = output_hroi.k
-        if criterion == 'size':
-            value = output_hroi.get_size()
-        if criterion == 'volume':
-            value = output_hroi.get_volume()
         # regions agglomeration
-        output_hroi.merge_ascending(output_hroi.get_id()[value > smin])
+        output_hroi.merge_ascending(output_hroi.get_id()[value <= smin])
         # suppress parents nodes having only one child
         output_hroi.merge_descending()
         # early stopping 1
@@ -336,19 +336,21 @@ class HierarchicalROI(SubDomains):
           List of the ROI features that will be pooled from the children
           when they are merged into their parents. Otherwise, the receiving
           parent would keep its own ROI feature.
-
         """
         if pull_features is None:
             pull_features = []
         if self.k == 0:
             return
+        id_list_ = id_list.copy()
         # reorder to avoid introducing discrepancies
         self.make_forest().reorder_from_leaves_to_roots()
         id_list = [k for k in self.get_id() if k in id_list]
+
         # keep trace of the ROI to be merged since ids can change during merge
         map_id = {}
         for i in id_list:
             map_id.update({i: i})
+
         # merge nodes, one at a time
         for c_old_id in id_list:
             # define alias for clearer indexing
@@ -402,9 +404,10 @@ class HierarchicalROI(SubDomains):
                     map_id.update({dj[p_pos]: dj[c_pos]})
                 dj = dj[np.arange(self.k) != c_pos]
                 self.roi_features['id'] = dj
+                
                 # update HROI structure
                 self.recompute_labels()
-
+                
     def merge_descending(self, pull_features=None):
         """ Remove the items with only one son by including them in their son
 

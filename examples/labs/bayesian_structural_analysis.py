@@ -93,7 +93,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
     mp.title('Blob separation map', fontsize=10)
     mp.axis('off')
-    plop = mp.colorbar(shrink=.8)
+    mp.colorbar(shrink=.8)
 
     if AF != None:
         group_map = AF.map_label(coord, 0.95, dmax)
@@ -131,8 +131,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     fig_input = mp.figure(figsize=(8, 3.5))
     fig_input.text(.5,.9, "Input activation maps", ha='center')
     for s in range(nsubj):
-        ax = mp.subplot(nsubj / 5, 5, s + 1)
-        #ax.set_position([.02, .02, .96, .96])
+        mp.subplot(nsubj / 5, 5, s + 1)
         mp.imshow(betas[s], interpolation='nearest', vmin=betas.min(),
                   vmax=betas.max())
         mp.axis('off')
@@ -156,12 +155,12 @@ betas = simul.surrogate_2d_dataset(n_subj=n_subj, shape=shape, pos=pos,
 
 # set various parameters
 theta = float(st.t.isf(0.01, 100))
-dmax = 5. / 1.5
+dmax = 4. / 1.5
 ths = n_subj / 4
 thq = 0.9
 verbose = 1
 smin = 5
-method = 'simple'#'loo'#'quick'#
+method = 'simple' # 'quick' #  'loo' #
 
 # run the algo
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method,

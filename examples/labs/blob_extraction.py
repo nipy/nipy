@@ -44,7 +44,7 @@ activation = [flat_dataset[nroi.select_id(id, roi=False)]
               for id in nroi.get_id()]
 nroi.set_feature('activation', activation)
 bmap = nroi.feature_to_voxel_map(
-    'activation', roi=True, method="mean").reshape((dimx, dimy))
+    'activation', roi=True, method="mean").reshape(shape)
 
 #--------------------------------------------------------
 # Result display
@@ -78,7 +78,7 @@ pl.title('Thresholded data')
 
 # plot the blob label image
 pl.subplot(1, 3, 2)
-pl.imshow(nroi.feature_to_voxel_map('id', roi=True).reshape((dimx, dimy)),
+pl.imshow(nroi.feature_to_voxel_map('id', roi=True).reshape(shape),
           interpolation='nearest')
 pl.colorbar()
 pl.title('Blob labels')
