@@ -145,7 +145,7 @@ def compute_individual_regions(domain, lbeta, smin=5, theta=3.0,
         beta = np.reshape(lbeta[:, s], (nvox, 1))
         nroi = HROI_as_discrete_domain_blobs(
             domain, beta, threshold=theta, smin=smin)
-
+        
         if nroi is not None and nroi.k > 0:
             bfm = nroi.representative_feature('signal', 'weighted mean')
             bfm = bfm[[nroi.select_id(id) for id in nroi.get_leaves_id()]]
@@ -169,7 +169,7 @@ def compute_individual_regions(domain, lbeta, smin=5, theta=3.0,
             bf0 = signal_to_pproba(bfm, learn, method)
             gf0.append(bf0)
             sub.append(s * np.ones(np.size(bfm)))
-
+            
         bf.append(nroi)
     return bf, gf0, sub, gfc
 
@@ -192,7 +192,7 @@ def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1, sub, burnin,
     if verbose:
         print 'number of components: ', migmm.k
 
-    #sampling
+    # sampling
     if co_clust:
         like, pproba, co_clust = migmm.sample(
             gfc, null_class_proba=1 - gf1, niter=nis,
@@ -312,7 +312,7 @@ def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
                     for k in range(bfs.k)]
             j = label[np.array(midx)]
             us[leaves_pos] = j[leaves_pos]
-
+            
             # when parent regions has similarly labelled children,
             # include it also
             us = bfs.make_forest().propagate_upward(us)
@@ -389,7 +389,8 @@ def bsa_dpmm2(bf, gf0, sub, gfc, dmax, thq, ths, verbose):
                          sub, burnin, nis=nis, co_clust=True)
 
     cg = wgraph_from_coo_matrix(CoClust)
-    cg.remove_edges(cg.weights > .5)
+    if cg.E > 0:
+        cg.remove_edges(cg.weights > .5)
     u = cg.cc()
     u[p < g0] = u.max() + 1 + np.arange(np.sum(p < g0))
 
