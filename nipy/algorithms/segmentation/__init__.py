@@ -5,4 +5,3 @@ from .vem import (gauss_dist, laplace_dist, vm_step_gauss, weighted_median,
 from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench
-
