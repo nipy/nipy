@@ -341,7 +341,7 @@ class HierarchicalROI(SubDomains):
             pull_features = []
         if self.k == 0:
             return
-        id_list_ = id_list.copy()
+
         # reorder to avoid introducing discrepancies
         self.make_forest().reorder_from_leaves_to_roots()
         id_list = [k for k in self.get_id() if k in id_list]
