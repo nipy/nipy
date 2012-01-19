@@ -8,12 +8,14 @@ from ._segmentation import (_ve_step,
 TINY = 1e-50
 HUGE = 1e50
 NITERS = 10
+NGB_SIZE = 26
 
 
 class Segmentation(object):
 
     def __init__(self, data, mu=None, sigma=None,
-                 ppm=None, prior=None, U=None, beta=0,
+                 ppm=None, prior=None, U=None,
+                 ngb_size=NGB_SIZE, beta=0,
                  bottom_corner=(0, 0, 0), top_corner=(0, 0, 0),
                  mask=None):
 
@@ -89,6 +91,7 @@ class Segmentation(object):
         else:
             self.prior = None
 
+        self.ngb_size = int(ngb_size)
         self.set_energy(U, beta)
 
         # Should check whether input data is consistent with parameter
@@ -118,10 +121,6 @@ class Segmentation(object):
             sigma = np.dot(tmp, self.data) / Z - np.dot(mu_, mu_.T)
             self.mu[i] = mu
             self.sigma[i] = sigma
-
-            print('*******************')
-            print P.sum(-1)
-            print Z, mu, sigma
 
         gc.enable()
         gc.collect()
@@ -160,10 +159,10 @@ class Segmentation(object):
             print('  ... MRF regularization')
             if self.U == None:
                 self.ppm = _ve_step(self.ppm, self.ext_field, self.XYZ,
-                                    self.beta, False, 0)
+                                    self.ngb_size, self.beta, False, 0)
             else:
                 self.ppm = _gen_ve_step(self.ppm, self.ext_field, self.XYZ,
-                                        self.U, self.beta)
+                                        self.U, self.ngb_size, self.beta)
 
         gc.enable()
         gc.collect()
@@ -178,6 +177,10 @@ class Segmentation(object):
             self.vm_step(freeze=freeze)
         self.is_ppm = True
 
-
-def maximum_a_posteriori(ppm):
-    return ppm.argmax(-1)
+    def maximum_a_posteriori(self):
+        """
+        Return the maximum a posterior label map
+        """
+        x = np.zeros(self.ppm.shape[0:-1], dtype='uint8')
+        x[self.mask] = self.ppm[self.mask].argmax(-1) + 1
+        return x

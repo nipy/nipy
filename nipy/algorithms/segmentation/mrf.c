@@ -14,10 +14,13 @@ void mrf_import_array(void) {
   return;
 }
 
-/*
-  Compute the mean value of a vector image in the 26-neighborhood
-  of a given element with indices (x,y,z). 
-*/
+/* Encode neighborhood systems using static arrays */
+int ngb6 [] = {1,0,0,
+	       -1,0,0,
+	       0,1,0,
+	       0,-1,0,
+	       0,0,1,
+	       0,0,-1}; 
 
 int ngb26 [] = {1,0,0,
 		-1,0,0,
@@ -45,6 +48,24 @@ int ngb26 [] = {1,0,0,
 		-1,1,-1, 
 		0,0,1,
 		0,0,-1}; 
+
+
+
+static int* _select_neighborhood_system(int ngb_size) {
+  if (ngb_size == 6) { 
+    fprintf(stderr, "6-neighborhood system\n"); 
+    return ngb6;
+  }
+  else if (ngb_size == 26) {
+    fprintf(stderr, "26-neighborhood system\n"); 
+    return ngb26;
+  }
+  else {
+    fprintf(stderr, "Unknown neighborhood system\n");
+    return NULL; 
+  }
+}
+
 
 
 /* Compute the (negated) expected interaction energy of a voxel with
@@ -138,18 +159,20 @@ static inline void _initialize_inbox_bp(double* res, int K)
 
 */
 
-static void _ngb26_compound_messages(double* res,
-				     const PyArrayObject* ppm,
-				     int x,
-				     int y, 
-				     int z,
-				     void* initialize_inbox,
-				     void* get_message,
-				     void* finalize_inbox,
-				     const double* aux)			
+static void _ngb_compound_messages(double* res,
+				   const PyArrayObject* ppm,
+				   int x,
+				   int y, 
+				   int z,
+				   void* initialize_inbox,
+				   void* get_message,
+				   void* finalize_inbox,
+				   const double* aux,
+				   const int* ngb,
+				   int ngb_size)			
 {
-  int j = 0, xn, yn, zn, nn = 26, K = ppm->dimensions[3]; 
-  int* buf_ngb; 
+  int j = 0, xn, yn, zn, K = ppm->dimensions[3]; 
+  const int* buf_ngb; 
   const double* ppm_data = (double*)ppm->data; 
   size_t u3 = K; 
   size_t u2 = ppm->dimensions[2]*u3; 
@@ -163,8 +186,8 @@ static void _ngb26_compound_messages(double* res,
   _initialize_inbox(res, K); 
 
   /* Loop over neighbors */
-  buf_ngb = ngb26; 
-  while (j < nn) {
+  buf_ngb = ngb;
+  while (j < ngb_size) {
     xn = x + *buf_ngb; buf_ngb++; 
     yn = y + *buf_ngb; buf_ngb++;
     zn = z + *buf_ngb; buf_ngb++;
@@ -193,7 +216,8 @@ static void _ngb26_compound_messages(double* res,
 
 void ve_step(PyArrayObject* ppm, 
 	     const PyArrayObject* ref,
-	     const PyArrayObject* XYZ, 
+	     const PyArrayObject* XYZ,
+	     int ngb_size, 
 	     double beta,
 	     int copy,
 	     int scheme)
@@ -211,6 +235,7 @@ void ve_step(PyArrayObject* ppm,
   const double* ref_data = (double*)ref->data;
   size_t v1 = ref->dimensions[1];
   int* xyz; 
+  int* ngb;
   void (*initialize_inbox)(double*,int);
   void (*get_message)(double*,int,size_t,const double*,const double*);
   void (*finalize_inbox)(double*,int,const double*);
@@ -233,7 +258,10 @@ void ve_step(PyArrayObject* ppm,
   else
     ppm_data = (double*)ppm->data;
   
-  /* Select message passging scheme: mean-field, ICM or
+  /* Neighborhood system */
+  ngb = _select_neighborhood_system(ngb_size);
+
+  /* Select message passing scheme: mean-field, ICM or
      belief-propagation */
   switch (scheme) {
   case 0: 
@@ -267,6 +295,7 @@ void ve_step(PyArrayObject* ppm,
     break; 
   default: 
     {
+      fprintf(stderr, "Unknown message-passing scheme\n"); 
       return; 
     }
     break; 
@@ -285,11 +314,11 @@ void ve_step(PyArrayObject* ppm,
     x = xyz[0];
     y = xyz[1];
     z = xyz[2];
-    _ngb26_compound_messages(p, ppm, x, y, z, 
-			     (void*)initialize_inbox, 
-			     (void*)get_message, 
-			     (void*)finalize_inbox, 
-			     aux); 
+    _ngb_compound_messages(p, ppm, x, y, z, 
+			   (void*)initialize_inbox, 
+			   (void*)get_message, 
+			   (void*)finalize_inbox, 
+			   aux, (const int*)ngb, ngb_size); 
     
     /* Multiply with reference and compute normalization constant */
     psum = 0.0; 
@@ -331,7 +360,8 @@ void ve_step(PyArrayObject* ppm,
 
 
 double interaction_energy(PyArrayObject* ppm, 
-			  const PyArrayObject* XYZ)
+			  const PyArrayObject* XYZ,
+			  int ngb_size)
 
 {
   int k, K, kk, x, y, z;
@@ -344,6 +374,10 @@ double interaction_energy(PyArrayObject* ppm,
   size_t u2 = ppm->dimensions[2]*u3; 
   size_t u1 = ppm->dimensions[1]*u2;
   int* xyz; 
+  int* ngb;
+
+  /* Neighborhood system */
+  ngb = _select_neighborhood_system(ngb_size);
 
   /* Dimensions */
   K = PyArray_DIM((PyArrayObject*)ppm, 3);
@@ -361,8 +395,9 @@ double interaction_energy(PyArrayObject* ppm,
     x = xyz[0];
     y = xyz[1];
     z = xyz[2];
-    _ngb26_compound_messages(p, ppm, x, y, z, &_initialize_inbox, 
-			     &_get_message, NULL, NULL); 
+    _ngb_compound_messages(p, ppm, x, y, z, &_initialize_inbox, 
+			   &_get_message, NULL, NULL,
+			   (const int*)ngb, ngb_size); 
     
     /* Calculate the dot product <q,p> where q is the local
        posterior */
@@ -387,16 +422,18 @@ double interaction_energy(PyArrayObject* ppm,
 
 
 
-static void _ngb26_integrate(double* res,
-			     const PyArrayObject* ppm,
-			     int x,
-			     int y, 
-			     int z,
-			     const double* U, 
-			     double beta)			
+static void _ngb_integrate(double* res,
+			   const PyArrayObject* ppm,
+			   int x,
+			   int y, 
+			   int z,
+			   const double* U, 
+			   double beta, 
+			   const int* ngb,
+			   int ngb_size)			
 {
-  int j = 0, xn, yn, zn, nn = 26, k, kk, K = ppm->dimensions[3]; 
-  int* buf_ngb; 
+  int j = 0, xn, yn, zn, k, kk, K = ppm->dimensions[3]; 
+  const int* buf_ngb; 
   const double* ppm_data = (double*)ppm->data; 
   double *buf, *buf_ppm, *q, *buf_U;
   size_t u3 = K; 
@@ -408,8 +445,8 @@ static void _ngb26_integrate(double* res,
   memset ((void*)res, 0, K*sizeof(double));
 
   /* Loop over neighbors */
-  buf_ngb = ngb26; 
-  while (j < nn) {
+  buf_ngb = ngb; 
+  while (j < ngb_size) {
     xn = x + *buf_ngb; buf_ngb++; 
     yn = y + *buf_ngb; buf_ngb++;
     zn = z + *buf_ngb; buf_ngb++;
@@ -435,7 +472,8 @@ static void _ngb26_integrate(double* res,
 void gen_ve_step(PyArrayObject* ppm, 
 		 const PyArrayObject* ref,
 		 const PyArrayObject* XYZ, 
-		 const PyArrayObject* U, 
+		 const PyArrayObject* U,
+		 int ngb_size,
 		 double beta)
 
 {
@@ -452,6 +490,10 @@ void gen_ve_step(PyArrayObject* ppm,
   const double* U_data = (double*)U->data;
   size_t v1 = ref->dimensions[1];
   int* xyz; 
+  int* ngb;
+
+  /* Neighborhood system */
+  ngb = _select_neighborhood_system(ngb_size);
 
   /* Number of classes */
   K = PyArray_DIM((PyArrayObject*)ppm, 3);
@@ -472,7 +514,7 @@ void gen_ve_step(PyArrayObject* ppm,
     x = xyz[0];
     y = xyz[1];
     z = xyz[2];
-    _ngb26_integrate(p, ppm, x, y, z, U_data, beta);
+    _ngb_integrate(p, ppm, x, y, z, U_data, beta, (const int*)ngb, ngb_size);
     
     /* Multiply with reference and compute normalization constant */
     psum = 0.0; 

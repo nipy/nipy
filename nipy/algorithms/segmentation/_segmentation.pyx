@@ -17,16 +17,19 @@ cdef extern from "mrf.h":
     void ve_step(ndarray ppm,
                  ndarray ref,
                  ndarray XYZ, 
+                 int ngb_size,
                  double beta,
                  int synchronous,
                  int scheme)
     double interaction_energy(ndarray ppm,
-                              ndarray XYZ)
+                              ndarray XYZ,                 
+                              int ngb_size)
 
     void gen_ve_step(ndarray ppm, 
                      ndarray ref,
                      ndarray XYZ, 
-                     ndarray U, 
+                     ndarray U,
+                     int ngb_size, 
                      double beta)
     
 
@@ -36,7 +39,7 @@ import_array()
 import numpy as np
 
 
-def _ve_step(ppm, ref, XYZ, double beta, int synchronous, int scheme):
+def _ve_step(ppm, ref, XYZ, int ngb_size, double beta, int synchronous, int scheme):
 
     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
         raise ValueError('ppm array should be double C-contiguous')
@@ -47,11 +50,12 @@ def _ve_step(ppm, ref, XYZ, double beta, int synchronous, int scheme):
     if not XYZ.shape[1] == 3: 
         raise ValueError('XYZ array should be 3D')
 
-    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, beta, synchronous, scheme)
+    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, 
+             ngb_size, beta, synchronous, scheme)
     return ppm 
 
 
-def _interaction_energy(ppm, XYZ): 
+def _interaction_energy(ppm, XYZ, int ngb_size): 
 
     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
         raise ValueError('ppm array should be double C-contiguous')
@@ -60,10 +64,10 @@ def _interaction_energy(ppm, XYZ):
     if not XYZ.shape[1] == 3: 
         raise ValueError('XYZ array should be 3D')
 
-    return interaction_energy(<ndarray>ppm, <ndarray>XYZ) 
+    return interaction_energy(<ndarray>ppm, <ndarray>XYZ, ngb_size) 
 
 
-def _gen_ve_step(ppm, ref, XYZ, U, double beta):
+def _gen_ve_step(ppm, ref, XYZ, U, int ngb_size, double beta):
 
     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
         raise ValueError('ppm array should be double C-contiguous')
@@ -74,6 +78,7 @@ def _gen_ve_step(ppm, ref, XYZ, U, double beta):
     if not XYZ.shape[1] == 3: 
         raise ValueError('XYZ array should be 3D')
 
-    gen_ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, <ndarray>U, beta)
+    gen_ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, <ndarray>U, 
+                 ngb_size, beta)
     return ppm 
 
