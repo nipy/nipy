@@ -2,8 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import gc
 import numpy as np
-from ._segmentation import (_ve_step,
-                            _gen_ve_step)
+from ._segmentation import _ve_step
 
 TINY = 1e-50
 HUGE = 1e50
@@ -37,22 +36,21 @@ class Segmentation(object):
         # the image borders are further rejected to avoid segmentation
         # faults.
         if mask == None:
-            mask = [slice(max(bc, 1), s - max(tc, 1))\
+            mask = [slice(max(bc, 0), s - max(tc, 0))\
                         for s, bc, tc in zip(space_shape,
                                              bottom_corner,
                                              top_corner)]
             XYZ = np.mgrid[mask]
             XYZ = np.reshape(XYZ, (XYZ.shape[0], np.prod(XYZ.shape[1::]))).T
-            self.XYZ = np.asarray(XYZ, dtype='int', order='C')
+            self.XYZ = np.asarray(XYZ, dtype='uint', order='C')
         else:
-            submask = (mask[0] > 0) * (mask[0] < space_shape[0] - 1)
-            for i in range(1, len(mask)):
-                submask *= (mask[i] > 0) * (mask[i] < space_shape[i] - 1)
-            mask = [mask[i][submask] for i in range(len(mask))]
             data_msk = data[mask]
-            XYZ = np.zeros((len(mask[0]), len(mask)), dtype='int')
-            for i in range(len(mask)):
-                XYZ[:, i] = mask[i]
+            mask_size = mask.sum()
+            X, Y, Z = np.where(mask > 0)
+            XYZ = np.zeros((mask_size, 3), dtype='uint')
+            XYZ[:, 0] = X
+            XYZ[:, 1] = Y
+            XYZ[:, 2] = Z
             self.XYZ = XYZ
 
         self.mask = mask
@@ -98,10 +96,12 @@ class Segmentation(object):
         # sizes
 
     def set_energy(self, U, beta):
-        if not U == None:
-            self.U = np.asarray(U).copy()  # make sure it's C-contiguous
-        else:
-            self.U = None
+        if not U == None:  # make sure it's C-contiguous
+            self.U = np.asarray(U).copy() 
+        else:  # Potts model
+            U = np.ones((self.nclasses, self.nclasses))
+            U[np.diag_indices(self.nclasses)] = 0
+            self.U = U
         self.beta = float(beta)
 
     def vm_step(self, freeze=()):
@@ -157,12 +157,8 @@ class Segmentation(object):
                 self.ppm[self.mask].shape)
         else:
             print('  ... MRF regularization')
-            if self.U == None:
-                self.ppm = _ve_step(self.ppm, self.ext_field, self.XYZ,
-                                    self.ngb_size, self.beta, False, 0)
-            else:
-                self.ppm = _gen_ve_step(self.ppm, self.ext_field, self.XYZ,
-                                        self.U, self.ngb_size, self.beta)
+            self.ppm = _ve_step(self.ppm, self.ext_field, self.XYZ,
+                                self.U, self.ngb_size, self.beta)
 
         gc.enable()
         gc.collect()

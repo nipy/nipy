@@ -13,21 +13,12 @@ extern "C" {
   extern void ve_step(PyArrayObject* ppm, 
 		      const PyArrayObject* ref,
 		      const PyArrayObject* XYZ, 
+		      const PyArrayObject* U, 
 		      int ngb_size,
-		      double beta,
-		      int copy,
-		      int mtype);
+		      double beta);
 
-  extern double interaction_energy(PyArrayObject* ppm, 
-				   const PyArrayObject* XYZ,
-				   int ngb_size); 
-
-  extern void gen_ve_step(PyArrayObject* ppm, 
-			  const PyArrayObject* ref,
-			  const PyArrayObject* XYZ, 
-			  const PyArrayObject* U, 
-			  int ngb_size,
-			  double beta);
+  extern PyArrayObject* make_edges(const PyArrayObject* mask,
+				   int ngb_size);
 
 
 #ifdef __cplusplus

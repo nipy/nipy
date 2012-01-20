@@ -4,7 +4,6 @@ from ...core.image.image_spaces import (make_xyz_image,
                                         as_xyz_image,
                                         xyz_affine)
 
-from .vem import VEM
 
 NITERS = 25
 BETA = 0.2
