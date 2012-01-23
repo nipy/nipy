@@ -48,7 +48,7 @@ def _ve_step(ppm, ref, XYZ, U, int ngb_size, double beta):
 
 def _make_edges(mask, int ngb_size):
     
-    if not mask.flags['C_CONTIGUOUS'] or not mask.dtype=='uint':
-        raise ValueError('mask array should be unsigned int and C-contiguous')
+    if not mask.flags['C_CONTIGUOUS'] or not mask.dtype=='int':
+        raise ValueError('mask array should be int and C-contiguous')
 
     return make_edges(mask, ngb_size)

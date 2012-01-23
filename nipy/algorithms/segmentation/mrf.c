@@ -72,9 +72,9 @@ static int* _select_neighborhood_system(int ngb_size) {
   Perform the VE-step of a VEM algorithm for a general Markov random
   field segmentation model.
 
-  ppm assumed contiguous double (X, Y, Z, K) 
-  ref assumed contiguous double (NPTS, K)
-  XYZ assumed contiguous unsigned int (NPTS, 3)
+  ppm assumed C-contiguous double (X, Y, Z, K) 
+  ref assumed C-contiguous double (NPTS, K)
+  XYZ assumed C-contiguous unsigned int (NPTS, 3)
 */
 
 #define TINY 1e-300
@@ -209,36 +209,41 @@ void ve_step(PyArrayObject* ppm,
 }
 
 
-/* Given a mask, compute list of edges corresponding to a given
-   neighborhood system.
+/* 
+   Given an array of indices representing points in a regular 3d grid,
+   compute the list of index pairs corresponding to connected points
+   according to a given neighborhood system.
 
-   mask assumed C-contiguous unsigned int
+   `idx` array assumed C-contiguous int, values are the indices of the
+   voxels in the non-masked 3d array, negative for masked voxels.
 
-   Returned array `edges` has shape (N, 2) where is the number of
-   edges to be determined within the function.  
+   Returned array `edges` has shape (NEDGES, 2) where the number of
+   edges is to be determined within the function.
 */
 
-PyArrayObject* make_edges(const PyArrayObject* mask,
+PyArrayObject* make_edges(const PyArrayObject* idx,
 			  int ngb_size)
 {
   int* ngb = _select_neighborhood_system(ngb_size); 
-  PyArrayIterObject* iter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)mask);
+  PyArrayIterObject* iter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)idx);
   int* buf_ngb; 
   unsigned int xi, yi, zi, xj, yj, zj;
-  unsigned int u2 = mask->dimensions[2]; 
-  unsigned int u1 = mask->dimensions[1]*u2;
-  unsigned int u0 = mask->dimensions[0]*u1;
+  unsigned int u2 = idx->dimensions[2]; 
+  unsigned int u1 = idx->dimensions[1]*u2;
+  unsigned int u0 = idx->dimensions[0]*u1;
   unsigned int mask_size = 0, n_edges = 0;
-  unsigned int *buf_mask, *edges_data, *buf_edges;
+  int idx_i;
+  int *buf_idx;
+  unsigned int *edges_data, *buf_edges;
   unsigned int j;
   long int pos;
   PyArrayObject* edges;
   npy_intp dim[2] = {0, 2};
  
-  /* First loop over the input mask to determine the mask size */
+  /* First loop over the input array to determine the mask size */
   while(iter->index < iter->size) {
-    buf_mask = (unsigned int*)PyArray_ITER_DATA(iter);
-    if (*buf_mask > 0)
+    buf_idx = (int*)PyArray_ITER_DATA(iter);
+    if (*buf_idx >= 0)
       mask_size ++;
     PyArray_ITER_NEXT(iter); 
   }
@@ -247,7 +252,7 @@ PyArrayObject* make_edges(const PyArrayObject* mask,
      memory space */
   edges_data = (unsigned int*)malloc(2 * ngb_size * mask_size * sizeof(unsigned int)); 
 
-  /* Second loop over the input mask */
+  /* Second loop over the input array */
   PyArray_ITER_RESET(iter);
   iter->contiguous = 0; /* To force coordinates to be updated */
   buf_edges = edges_data;
@@ -256,13 +261,15 @@ PyArrayObject* make_edges(const PyArrayObject* mask,
     xi = iter->coordinates[0];
     yi = iter->coordinates[1]; 
     zi = iter->coordinates[2]; 
-    buf_mask = (unsigned int*)PyArray_ITER_DATA(iter);
-    
+    buf_idx = (int*)PyArray_ITER_DATA(iter);
+    idx_i = *buf_idx;
+
     /* Loop over neighbors if current point is within the mask */
-    if (*buf_mask > 0) {
+    if (idx_i >= 0) {
       buf_ngb = ngb;
       j = 0;
       while (j < ngb_size) {
+
 	/* Get neighbor coordinates */
 	xj = xi + *buf_ngb; buf_ngb++; 
 	yj = yi + *buf_ngb; buf_ngb++;
@@ -273,13 +280,14 @@ PyArrayObject* make_edges(const PyArrayObject* mask,
 	/* Store edge if neighbor is within the mask */
 	if ((pos < 0) || (pos >= u0))
 	  continue;
-	buf_mask = (unsigned int*)mask->data + pos;	
-	if (*buf_mask == 0)
+	buf_idx = (int*)idx->data + pos;
+	if (*buf_idx < 0)
 	  continue;
-	buf_edges[0] = iter->index;
-	buf_edges[1] = pos;
+	buf_edges[0] = idx_i;
+	buf_edges[1] = *buf_idx;
 	n_edges ++;
 	buf_edges += 2;
+
       }
     }
     
@@ -288,7 +296,7 @@ PyArrayObject* make_edges(const PyArrayObject* mask,
     
   }
 
-  /* Reallocate edges array to account for missing edges */
+  /* Reallocate edges array to account for connections suppressed due to masking */
   edges_data = realloc((void *)edges_data, 2 * n_edges * sizeof(unsigned int)); 
   dim[0] = n_edges;
   edges = (PyArrayObject*) PyArray_SimpleNewFromData(2, dim, NPY_UINT, (void*)edges_data);
