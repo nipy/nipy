@@ -12,6 +12,7 @@ from ...utils.matrices import pos_recipr
 # Inverse t cumulative distribution
 inv_t_cdf = t_distribution.ppf
 
+
 class Model(object):
     """
     A (predictive) statistical model. The class Model itself does nothing
@@ -60,7 +61,8 @@ class LikelihoodModel(Model):
 
     def information(self, theta, nuisance=None):
         """
-        Fisher information matrix: the inverse of the expected value of -d^2 logL/dtheta^2.
+        Fisher information matrix: the inverse of the expected value of
+        - d^2 logL / dtheta^2.
         """
         raise NotImplementedError
 
@@ -69,8 +71,8 @@ class LikelihoodModelResults(object):
 # Jonathan: This is the class in which
 # things like AIC, BIC, llf would be implemented as methods,
 # not computed in, say, the fit method of OLSModel
-
     ''' Class to contain results from likelihood models '''
+
     def __init__(self, theta, Y, model, cov=None, dispersion=1., nuisance=None,
                  rank=None):
         ''' Set up results structure
@@ -106,14 +108,16 @@ class LikelihoodModelResults(object):
         self.Y = Y
         self.model = model
         if cov is None:
-            self.cov = self.model.information(self.theta, nuisance=self.nuisance)
+            self.cov = self.model.information(self.theta,
+                                              nuisance=self.nuisance)
         else:
             self.cov = cov
         self.dispersion = dispersion
         self.nuisance = nuisance
 
         self.df_total = Y.shape[0]
-        self.df_model = model.df_model # put this as a parameter of LikelihoodModel
+        self.df_model = model.df_model
+        # put this as a parameter of LikelihoodModel
         self.df_resid = self.df_total - self.df_model
 
     @setattr_on_read
@@ -129,7 +133,7 @@ class LikelihoodModelResults(object):
         Akaike Information Criterion
         """
         p = self.theta.shape[0]
-        return -2*self.logL + 2*p
+        return -2 * self.logL + 2 * p
 
     @setattr_on_read
     def BIC(self):
@@ -138,7 +142,7 @@ class LikelihoodModelResults(object):
         """
         n = self.Y.shape[0]
         p = self.theta.shape[0]
-        return -2*self.logL + np.log(n)*p
+        return - 2 * self.logL + np.log(n) * p
 
     def t(self, column=None):
         """
@@ -170,7 +174,8 @@ class LikelihoodModelResults(object):
         or a matrix.
         """
         if self.cov is None:
-            raise ValueError, 'need covariance of parameters for computing (unnormalized) covariances'
+            raise ValueError('need covariance of parameters for computing' +\
+                             '(unnormalized) covariances')
 
         if dispersion is None:
             dispersion = self.dispersion
@@ -180,7 +185,7 @@ class LikelihoodModelResults(object):
             if column.shape == ():
                 return self.cov[column, column] * dispersion
             else:
-                return self.cov[column][:,column] * dispersion
+                return self.cov[column][:, column] * dispersion
 
         elif matrix is not None:
             if other is None:
@@ -194,15 +199,15 @@ class LikelihoodModelResults(object):
 # need to generalize for the case when dispersion is not a scalar
 # and we have robust estimates of \Omega the error covariance matrix
 #
-# Jonathan: here, dispersion's shape has NOTHING to do with 
+# Jonathan: here, dispersion's shape has NOTHING to do with
 # resid.shape. In the nipy applications, the same model is fit
 # at 1000s of voxels at once, each one having a separate dispersion estimate.
 # The fix below seems to assume heteroscedastic errors.
 # this is what the class WLSModel is for...
 #
-#             if dispersion.size==1:
-#                 dispersion=np.eye(len(self.resid))*dispersion
-#             return np.dot(np.dot(self.calc_theta, dispersion), self.calc_theta.T)
+#     if dispersion.size == 1:
+#         dispersion = np.eye(len(self.resid)) * dispersion
+#     return np.dot(np.dot(self.calc_theta, dispersion), self.calc_theta.T)
 
     def Tcontrast(self, matrix, store=('t', 'effect', 'sd'), dispersion=None):
         """ Compute a Tcontrast for a row vector `matrix`
@@ -225,7 +230,7 @@ class LikelihoodModelResults(object):
         matrix = np.asarray(matrix)
         # 1D vectors assumed to be row vector
         if matrix.ndim == 1:
-            matrix = matrix[None,:]
+            matrix = matrix[None]
         if matrix.shape[0] != 1:
             raise ValueError("t contrasts should have only one row")
         if matrix.shape[1] != self.theta.shape[0]:
@@ -246,12 +251,16 @@ class LikelihoodModelResults(object):
                 st_sd = np.squeeze(sd)
         if 't' in store:
             st_t = np.squeeze(effect * pos_recipr(sd))
-        return TContrastResults(effect=st_effect, t=st_t, sd=st_sd, df_den=self.df_resid)
+        return TContrastResults(effect=st_effect, t=st_t, sd=st_sd,
+                                df_den=self.df_resid)
 
-# Jonathan: for an F-statistic, the options 't', 'sd' do not make sense. The 'effect' option
+# Jonathan: for an F-statistic, the options 't', 'sd' do not make sense.
+#    The 'effect' option
 # does make sense, but is rarely looked at in practice.
 # Usually, you just want the F-statistic.
-#    def Fcontrast(self, matrix, eff=True, t=True, sd=True, dispersion=None, invcov=None):
+#    def Fcontrast(self, matrix, eff=True, t=True, sd=True,
+#    dispersion=None, invcov=None):
+# Bertrand: when we want to re-use this, we need the effect and covariance
 
     def Fcontrast(self, matrix, dispersion=None, invcov=None):
         """
@@ -276,8 +285,8 @@ class LikelihoodModelResults(object):
         dispersion : None or float
             If None, use ``self.dispersion``
         invcov : None or array
-            Known inverse of variance covariance matrix. If None, calculate this
-            matrix.
+            Known inverse of variance covariance matrix.
+            If None, calculate this matrix.
 
         Returns
         -------
@@ -287,7 +296,7 @@ class LikelihoodModelResults(object):
         matrix = np.asarray(matrix)
         # 1D vectors assumed to be row vector
         if matrix.ndim == 1:
-            matrix = matrix[None,:]
+            matrix = matrix[None]
         if matrix.shape[1] != self.theta.shape[0]:
             raise ValueError("F contrasts should have shape[1] P=%d, "
                              "but this has shape[1] %d" % (self.theta.shape[0],
@@ -300,9 +309,11 @@ class LikelihoodModelResults(object):
         q = matrix.shape[0]
         if invcov is None:
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
-        F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) * pos_recipr((q * dispersion))
+        F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) *\
+            pos_recipr((q * dispersion))
         F = np.squeeze(F)
-        return FContrastResults(F=F, df_den=self.df_resid, df_num=invcov.shape[0])
+        return FContrastResults(F=F, df_den=self.df_resid,
+                                df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):
         '''
@@ -343,21 +354,20 @@ class LikelihoodModelResults(object):
             `tails` can be "two", "upper", or "lower"
         '''
         if cols is None:
-            lower = self.theta - inv_t_cdf(1-alpha/2,self.df_resid) *\
+            lower = self.theta - inv_t_cdf(1 - alpha / 2, self.df_resid) *\
                     np.diag(np.sqrt(self.vcov(dispersion=dispersion)))
-            upper = self.theta + inv_t_cdf(1-alpha/2,self.df_resid) *\
+            upper = self.theta + inv_t_cdf(1 - alpha / 2, self.df_resid) *\
                     np.diag(np.sqrt(self.vcov(dispersion=dispersion)))
         else:
-            lower=[]
-            upper=[]
+            lower, upper = [], []
             for i in cols:
                 lower.append(
-                    self.theta[i] - inv_t_cdf(1-alpha/2,self.df_resid) *
+                    self.theta[i] - inv_t_cdf(1 - alpha / 2, self.df_resid) *
                     np.diag(np.sqrt(self.vcov(dispersion=dispersion)))[i])
                 upper.append(
-                    self.theta[i] + inv_t_cdf(1-alpha/2,self.df_resid) *
+                    self.theta[i] + inv_t_cdf(1 - alpha / 2, self.df_resid) *
                     np.diag(np.sqrt(self.vcov(dispersion=dispersion)))[i])
-        return np.asarray(zip(lower,upper))
+            return np.asarray(zip(lower, upper))
 
 
 class TContrastResults(object):
@@ -384,7 +394,6 @@ class TContrastResults(object):
                 (self.effect, self.sd, self.t, self.df_den))
 
 
-
 class FContrastResults(object):
     """
     Results from looking at a particular contrast of coefficients in
@@ -402,8 +411,7 @@ class FContrastResults(object):
 
     def __array__(self):
         return np.asarray(self.F)
-        
+
     def __str__(self):
         return '<F contrast: F=%s, df_den=%d, df_num=%d>' % \
             (`self.F`, self.df_den, self.df_num)
-
