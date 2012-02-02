@@ -34,9 +34,6 @@ from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
 from .model import LikelihoodModel, LikelihoodModelResults
 
 
-#How to document a class?
-#Docs are a little vague and there are no good examples
-#Some of these attributes are most likely intended to be private I imagine
 class OLSModel(LikelihoodModel):
     """ A simple ordinary least squares model.
 
@@ -73,7 +70,8 @@ class OLSModel(LikelihoodModel):
     Examples
     --------
     >>> from nipy.algorithms.statistics.api import Term, Formula
-    >>> data = np.rec.fromarrays(([1,3,4,5,2,3,4], range(1,8)), names=('Y', 'X'))
+    >>> data = np.rec.fromarrays(([1,3,4,5,2,3,4], range(1,8)),
+    names=('Y', 'X'))
     >>> f = Formula([Term("X"), 1])
     >>> dmtx = f.design(data, return_float=True)
     >>> model = OLSModel(dmtx)
@@ -83,16 +81,19 @@ class OLSModel(LikelihoodModel):
     >>> results.t()
     array([ 0.98019606,  1.87867287])
     >>> print results.Tcontrast([0,1]) #doctest: +FP_6DP
-    <T contrast: effect=2.14285714286, sd=1.14062281591, t=1.87867287326, df_den=5>
+    <T contrast: effect=2.14285714286, sd=1.14062281591, t=1.87867287326,
+    df_den=5>
     >>> print results.Fcontrast(np.eye(2)) #doctest: +FP_6DP
     <F contrast: F=19.4607843137, df_den=5, df_num=2>
     """
+
     def __init__(self, design):
         """
         Parameters
         ----------
         design : array-like
-            This is your design matrix.  Data are assumed to be column ordered with
+            This is your design matrix.
+            Data are assumed to be column ordered with
             observations in rows.
         """
         super(OLSModel, self).__init__()
@@ -146,10 +147,10 @@ class OLSModel(LikelihoodModel):
             \ell(\beta,\sigma,Y)=
             -\frac{n}{2}\log(2\pi\sigma^2) - \|Y-X\beta\|^2/(2\sigma^2)
 
-        The parameter :math:`\sigma` above is what is sometimes referred to as a
-        nuisance parameter. That is, the likelihood is considered as a function
-        of :math:`\beta`, but to evaluate it, a value of :math:`\sigma` is
-        needed.
+        The parameter :math:`\sigma` above is what is sometimes referred to
+        as a nuisance parameter. That is, the likelihood is considered
+        as a function of :math:`\beta`, but to evaluate it,
+        a value of :math:`\sigma` is xneeded.
 
         If :math:`\sigma` is not provided, then its maximum likelihood
         estimate:
@@ -169,17 +170,18 @@ class OLSModel(LikelihoodModel):
         wY = self.whiten(Y)
         r = wY - np.dot(X, beta)
         n = self.df_total
-        SSE = (r**2).sum(0)
+        SSE = (r ** 2).sum(0)
         if nuisance is None:
             sigmasq = SSE / n
         else:
             sigmasq = nuisance['sigma']
-        loglf = -n/2.*np.log(2*np.pi*sigmasq) - SSE / (2*sigmasq)
+        loglf = - n / 2. * np.log(2 * np.pi * sigmasq) - SSE / (2 * sigmasq)
         return loglf
 
     def score(self, beta, Y, nuisance=None):
         # Jonathan: this is overwriting an abstract method of LikelihoodModel
-        ''' Returns the score function, the gradient of the loglikelihood function at (beta, Y, nuisance).
+        ''' Returns the score function, the gradient of the loglikelihood
+        function at (beta, Y, nuisance).
 
         See logL for details.
 
@@ -207,7 +209,7 @@ class OLSModel(LikelihoodModel):
         r = wY - np.dot(X, beta)
         n = self.df_total
         if nuisance is None:
-            SSE = (r**2).sum(0)
+            SSE = (r ** 2).sum(0)
             sigmasq = SSE / n
         else:
             sigmasq = nuisance['sigma']
@@ -243,12 +245,12 @@ class OLSModel(LikelihoodModel):
         C = sigmasq * np.dot(X.T, X)
         return C
 
-#   Note: why have a function that doesn't do anything? does it have to be here to be
-#   overwritten?
-#   Could this be replaced with the sandwich estimators 
+#   Note: why have a function that doesn't do anything?
+#    does it have to be here to be overwritten?
+#   Could this be replaced with the sandwich estimators
 #   without writing a subclass?
 #
-#   Jonathan: the subclasses WLSModel, ARModel and GLSModel all 
+#   Jonathan: the subclasses WLSModel, ARModel and GLSModel all
 #   overwrite this method. The point of these subclasses
 #   is such that not much of OLSModel has to be changed
 
@@ -296,7 +298,7 @@ class OLSModel(LikelihoodModel):
 # This functionality is in WLSmodel. (Weighted least squares models assume
 # covariance is diagonal, i.e. heteroscedastic).
 
-# Some of the quantities, like AIC and BIC are defined for 
+# Some of the quantities, like AIC and BIC are defined for
 # any model with a likelihood and they should be properties
 # of the LikelihoodModel
         """
@@ -315,7 +317,8 @@ class OLSModel(LikelihoodModel):
         wY = self.whiten(Y)
         beta = np.dot(self.calc_beta, wY)
         wresid = wY - np.dot(self.wdesign, beta)
-        dispersion = np.sum(wresid**2, 0) / (self.wdesign.shape[0] - self.wdesign.shape[1])
+        dispersion = np.sum(wresid ** 2, 0) / (self.wdesign.shape[0] -
+                                                self.wdesign.shape[1])
         lfit = RegressionResults(beta, Y, self,
                                  wY, wresid, dispersion=dispersion,
                                  cov=self.normalized_cov_beta)
@@ -337,7 +340,8 @@ class ARModel(OLSModel):
     Examples
     --------
     >>> from nipy.algorithms.statistics.api import Term, Formula
-    >>> data = np.rec.fromarrays(([1,3,4,5,8,10,9], range(1,8)), names=('Y', 'X'))
+    >>> data = np.rec.fromarrays(([1,3,4,5,8,10,9], range(1,8)),
+                                   names=('Y', 'X'))
     >>> f = Formula([Term("X"), 1])
     >>> dmtx = f.design(data, return_float=True)
     >>> model = ARModel(dmtx, 2)
@@ -363,7 +367,8 @@ class ARModel(OLSModel):
     >>> results.t() #doctest: +FP_6DP
     array([ 38.0890515 ,  -3.45429252])
     >>> print results.Tcontrast([0,1]) #doctest: +FP_6DP
-    <T contrast: effect=-0.58562172384377043, sd=0.16953449108110835, t=-3.4542925165805847, df_den=5>
+    <T contrast: effect=-0.58562172384377043, sd=0.16953449108110835,
+    t=-3.4542925165805847, df_den=5>
     >>> print results.Fcontrast(np.identity(2)) #doctest: +FP_6DP
     <F contrast: F=4216.810299725842, df_den=5, df_num=2>
 
@@ -374,6 +379,7 @@ class ARModel(OLSModel):
     >>> print model.rho #doctest: +FP_6DP
     [-0.7220361  -1.05365352]
     """
+
     def __init__(self, design, rho):
         """ Initialize AR model instance
 
@@ -391,7 +397,7 @@ class ARModel(OLSModel):
             self.rho = np.zeros(self.order, np.float64)
         else:
             self.rho = np.squeeze(np.asarray(rho))
-            if len(self.rho.shape) not in [0,1]:
+            if len(self.rho.shape) not in [0, 1]:
                 raise ValueError("AR parameters must be a scalar or a vector")
             if self.rho.shape == ():
                 self.rho.shape = (1,)
@@ -425,7 +431,7 @@ class ARModel(OLSModel):
 
         Parameters
         ----------
-        X : array-like
+        X : array-like of shape (n_features)
             array to whiten
 
         Returns
@@ -436,7 +442,7 @@ class ARModel(OLSModel):
         X = np.asarray(X, np.float64)
         _X = X.copy()
         for i in range(self.order):
-            _X[(i+1):] = _X[(i+1):] - self.rho[i] * X[0:-(i+1)]
+            _X[(i + 1):] = _X[(i + 1):] - self.rho[i] * X[0: - (i + 1)]
         return _X
 
 
@@ -452,16 +458,16 @@ def yule_walker(X, order=1, method="unbiased", df=None, inv=False):
 
     Parameters
     ----------
-    X : (N,) ndarray
+    X :  ndarray of shape(n)
     order : int, optional
         Order of AR process.
     method : str, optional
         Method can be "unbiased" or "mle" and this determines denominator in
         estimate of autocorrelation function (ACF) at lag k. If "mle", the
-        denominator is N=X.shape[0], if "unbiased" the denominator is N-k.
+        denominator is n=X.shape[0], if "unbiased" the denominator is n-k.
     df : int, optional
         Specifies the degrees of freedom. If df is supplied, then it is assumed
-        the X has df degrees of freedom rather than N.
+        the X has df degrees of freedom rather than n.
     inv : bool, optional
         Whether to return the inverse of the R matrix (see code)
 
@@ -490,13 +496,13 @@ def yule_walker(X, order=1, method="unbiased", df=None, inv=False):
         den = lambda k: n - k
     else:
         den = lambda k: n
-    r = np.zeros(order+1, np.float64)
-    r[0] = (X**2).sum() / den(0)
-    for k in range(1,order+1):
-        r[k] = (X[0:-k]*X[k:]).sum() / den(k)
-    R = spl.toeplitz(r[:-1])
+    r = np.zeros(order + 1, np.float64)
+    r[0] = (X ** 2).sum() / den(0)
+    for k in range(1, order + 1):
+        r[k] = (X[0: - k] * X[k:]).sum() / den(k)
+    R = spl.toeplitz(r[: - 1])
     rho = spl.solve(R, r[1:])
-    sigmasq = r[0] - (r[1:]*rho).sum()
+    sigmasq = r[0] - (r[1:] * rho).sum()
     if inv == True:
         return rho, np.sqrt(sigmasq), spl.inv(R)
     return rho, np.sqrt(sigmasq)
@@ -516,17 +522,17 @@ def ar_bias_corrector(design, calc_beta, order=1):
     design : array
         Design matrix
     calc_beta : array
-        Moore-Penrose pseudoinverse of the (maybe) whitened design matrix.  This
-        is matrix that, when applied to the (maybe whitened) data, produces the
-        betas.
+        Moore-Penrose pseudoinverse of the (maybe) whitened design matrix.
+        This is the matrix that, when applied to the (maybe whitened) data,
+        produces the betas.
     order : int, optional
         Order p of AR(p) process
 
     Returns
     -------
     invM : array
-        Matrix to bias correct estimated covariance matrix in calculating the AR
-        coefficients
+        Matrix to bias correct estimated covariance matrix
+        in calculating the AR coefficients
 
     References
     ----------
@@ -535,13 +541,13 @@ def ar_bias_corrector(design, calc_beta, order=1):
     15:1:15
     """
     R = np.eye(design.shape[0]) - np.dot(design, calc_beta)
-    M = np.zeros((order+1,)*2)
+    M = np.zeros((order + 1,) * 2)
     I = np.eye(R.shape[0])
-    for i in range(order+1):
+    for i in range(order + 1):
         Di = np.dot(R, spl.toeplitz(I[i]))
-        for j in range(order+1):
+        for j in range(order + 1):
             Dj = np.dot(R, spl.toeplitz(I[j]))
-            M[i,j] = np.diag((np.dot(Di, Dj))/(1.+(i>0))).sum()
+            M[i, j] = np.diag((np.dot(Di, Dj)) / (1. + (i > 0))).sum()
     return spl.inv(M)
 
 
@@ -588,23 +594,24 @@ def ar_bias_correct(results, order, invM=None):
     else:
         resid = results
     in_shape = resid.shape
-    N = in_shape[0]
+    n_features = in_shape[0]
     # Allows results residuals to have shapes other than 2D.  This allows us to
     # use this routine for image data as well as more standard 2D model data
-    resid = resid.reshape((N, -1))
+    resid = resid.reshape((n_features, - 1))
     # glm.Model fit methods fill in a ``scale`` estimate. For simpler
-    # models, there is no scale estimate written into the results.  However, the
-    # same calculation resolves (with Gaussian family) to ``np.sum(resid**2) /
-    # results.df_resid``. See ``estimate_scale`` from glm.Model
+    # models, there is no scale estimate written into the results.
+    # However, the same calculation resolves (with Gaussian family)
+    # to ``np.sum(resid**2) / results.df_resid``.
+    # See ``estimate_scale`` from glm.Model
     if hasattr(results, 'scale'):
         sum_sq = results.scale.reshape(resid.shape[1:]) * results.df_resid
     else: # No scale in results
-        sum_sq = np.sum(resid**2, axis=0)
+        sum_sq = np.sum(resid ** 2, axis=0)
     cov = np.zeros((order + 1,) + sum_sq.shape)
     cov[0] = sum_sq
-    for i in range(1, order+1):
-        cov[i] = np.sum(resid[i:] * resid[0:-i], axis=0)
-    # cov is shape (order+1, V) where V = np.product(in_shape[1:])
+    for i in range(1, order + 1):
+        cov[i] = np.sum(resid[i:] * resid[0:- i], axis=0)
+    # cov is shape (order + 1, V) where V = np.product(in_shape[1:])
     cov = np.dot(invM, cov)
     output = cov[1:] * pos_recipr(cov[0])
     return np.squeeze(output.reshape((order,) + in_shape[1:]))
@@ -614,13 +621,15 @@ class AREstimator(object):
     """
     A class to estimate AR(p) coefficients from residuals
     """
+
     def __init__(self, model, p=1):
         """ Bias-correcting AR estimation class
 
         Parameters
         ----------
         model : ``OSLModel`` instance
-            A models.regression.OLSmodel instance, where `model` has attribute ``design``
+            A models.regression.OLSmodel instance,
+            where `model` has attribute ``design``
         p : int, optional
             Order of AR(p) noise
         """
@@ -644,16 +653,16 @@ class AREstimator(object):
 
 
 class WLSModel(OLSModel):
-    """
-    A regression model with diagonal but non-identity covariance structure.
+    """ A regression model with diagonal but non-identity covariance structure.
 
-    The weights are presumed to be (proportional to the) inverse of the variance
-    of the observations.
+    The weights are presumed to be (proportional to the) inverse
+    of the variance of the observations.
 
     Examples
     --------
     >>> from nipy.algorithms.statistics.api import Term, Formula
-    >>> data = np.rec.fromarrays(([1,3,4,5,2,3,4], range(1,8)), names=('Y', 'X'))
+    >>> data = np.rec.fromarrays(([1,3,4,5,2,3,4], range(1,8)),
+    names=('Y', 'X'))
     >>> f = Formula([Term("X"), 1])
     >>> dmtx = f.design(data, return_float=True)
     >>> model = WLSModel(dmtx, weights=range(1,8))
@@ -663,10 +672,12 @@ class WLSModel(OLSModel):
     >>> results.t()
     array([ 0.35684428,  2.0652652 ])
     >>> print results.Tcontrast([0,1]) #doctest: +FP_6DP
-    <T contrast: effect=2.91666666667, sd=1.41224801095, t=2.06526519708, df_den=5>
+    <T contrast: effect=2.91666666667, sd=1.41224801095, t=2.06526519708,
+    df_den=5>
     >>> print results.Fcontrast(np.identity(2)) #doctest: +FP_6DP
     <F contrast: F=26.9986072423, df_den=5, df_num=2>
     """
+
     def __init__(self, design, weights=1):
         weights = np.array(weights)
         if weights.shape == (): # scalar
@@ -674,15 +685,14 @@ class WLSModel(OLSModel):
         else:
             design_rows = design.shape[0]
             if not(weights.shape[0] == design_rows and
-                   weights.size == design_rows) :
+                   weights.size == design_rows):
                 raise ValueError(
                     'Weights must be scalar or same length as design')
             self.weights = weights.reshape(design_rows)
         super(WLSModel, self).__init__(design)
 
     def whiten(self, X):
-        """
-        Whitener for WLS model, multiplies by sqrt(self.weights)
+        """ Whitener for WLS model, multiplies by sqrt(self.weights)
         """
         X = np.asarray(X, np.float64)
 
@@ -692,7 +702,7 @@ class WLSModel(OLSModel):
             c = np.sqrt(self.weights)
             v = np.zeros(X.shape, np.float64)
             for i in range(X.shape[1]):
-                v[:,i] = X[:,i] * c
+                v[:, i] = X[:, i] * c
             return v
 
 
@@ -702,14 +712,16 @@ class RegressionResults(LikelihoodModelResults):
 
     It handles the output of contrasts, estimates of covariance, etc.
     """
-    def __init__(self, theta, Y, model, wY, wresid, cov=None, dispersion=1., nuisance=None):
-        """
-        See LikelihoodModelResults constructor.
 
-        The only difference is that the whitened Y and residual values are stored for
-        a regression model.
+    def __init__(self, theta, Y, model, wY, wresid, cov=None, dispersion=1.,
+                 nuisance=None):
+        """See LikelihoodModelResults constructor.
+
+        The only difference is that the whitened Y and residual values
+        are stored for a regression model.
         """
-        LikelihoodModelResults.__init__(self, theta, Y, model, cov, dispersion, nuisance)
+        LikelihoodModelResults.__init__(self, theta, Y, model, cov,
+                                        dispersion, nuisance)
         self.wY = wY
         self.wresid = wresid
 
@@ -727,12 +739,13 @@ class RegressionResults(LikelihoodModelResults):
 
         Notes
         -----
-        Is this supposed to return "stanardized residuals," residuals standardized
+        Is this supposed to return "stanardized residuals,"
+        residuals standardized
         to have mean zero and approximately unit variance?
 
-        d_i = e_i/sqrt(MS_E)
+        d_i = e_i / sqrt(MS_E)
 
-        Where MS_E = SSE/(n - k)
+        Where MS_E = SSE / (n - k)
 
         See: Montgomery and Peck 3.2.1 p. 68
              Davidson and MacKinnon 15.2 p 662
@@ -745,17 +758,16 @@ class RegressionResults(LikelihoodModelResults):
 
     @setattr_on_read
     def predicted(self):
+        """ Return linear predictor values from a design matrix.
         """
-        Return linear predictor values from a design matrix.
-        """
-        beta = self.theta # the LikelihoodModelResults has parameters named 'theta'
+        beta = self.theta
+        # the LikelihoodModelResults has parameters named 'theta'
         X = self.model.design
         return np.dot(X, beta)
 
-    @setattr_on_read 
+    @setattr_on_read
     def R2_adj(self):
-        """
-        Return the R^2 value for each row of the response Y.
+        """Return the R^2 value for each row of the response Y.
 
         Notes
         -----
@@ -764,12 +776,13 @@ class RegressionResults(LikelihoodModelResults):
         See: Davidson and MacKinnon p 74
         """
         if not self.model.has_intercept:
-            warnings.warn("model does not have intercept term, SST inappropriate")
+            warnings.warn("model does not have intercept term, " +\
+                          "SST inappropriate")
         d = 1. - self.R2
         d *= ((self.df_total - 1.) / self.df_resid)
         return 1 - d
 
-    @setattr_on_read 
+    @setattr_on_read
     def R2(self):
         """
         Return the adjusted R^2 value for each row of the response Y.
@@ -785,64 +798,56 @@ class RegressionResults(LikelihoodModelResults):
 
     @setattr_on_read
     def SST(self):
-        """
-        Total sum of squares. If not from an OLS model this is "pseudo"-SST.
+        """Total sum of squares. If not from an OLS model this is "pseudo"-SST.
         """
         if not self.model.has_intercept:
-            warnings.warn("model does not have intercept term, SST inappropriate")
-        return ((self.wY - self.wY.mean(0))**2).sum(0)
+            warnings.warn("model does not have intercept term, " +\
+                          "SST inappropriate")
+        return ((self.wY - self.wY.mean(0)) ** 2).sum(0)
 
     @setattr_on_read
     def SSE(self):
+        """Error sum of squares. If not from an OLS model this is "pseudo"-SSE.
         """
-        Error sum of squares. If not from an OLS model this is "pseudo"-SSE.
-        """
-        return (self.wresid**2).sum(0)
+        return (self.wresid ** 2).sum(0)
 
     @setattr_on_read
     def SSR(self):
-        """
-        Regression sum of squares
-        """
+        """ Regression sum of squares """
         return self.SST - self.SSE
 
     @setattr_on_read
     def MSR(self):
-        """
-        Mean square (regression)
-        """
+        """ Mean square (regression)"""
         return self.SSR / (self.df_model - 1)
 
     @setattr_on_read
     def MSE(self):
-        """
-        Mean square (error)
-        """
+        """ Mean square (error) """
         return self.SSE / self.df_resid
 
     @setattr_on_read
     def MST(self):
-        """
-        Mean square (total)
+        """ Mean square (total)
         """
         return self.SST / (self.df_total - 1)
 
     @setattr_on_read
     def F_overall(self):
-        """
-        Overall goodness of fit F test, comparing model
-        to a model with just an intercept. If not an OLS
-        model this is a pseudo-F.
+        """ Overall goodness of fit F test,
+        comparing model to a model with just an intercept.
+        If not an OLS model this is a pseudo-F.
         """
         F = self.MSR / self.MSE
         Fp = stats.f.sf(F, self.df_model - 1, self.df_resid)
-        return {'F':F, 'p_value':Fp, 'df_num': self.df_model-1, 'df_den': self.df_resid}
+        return {'F': F, 'p_value': Fp, 'df_num': self.df_model-1,
+                'df_den': self.df_resid}
 
 
 class GLSModel(OLSModel):
+    """Generalized least squares model with a general covariance structure
     """
-    Generalized least squares model with a general covariance structure
-    """
+
     def __init__(self, design, sigma):
         self.cholsigmainv = spl.linalg.cholesky(spl.linalg.pinv(sigma)).T
         super(GLSModel, self).__init__(design)
