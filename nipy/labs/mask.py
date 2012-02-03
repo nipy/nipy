@@ -229,7 +229,8 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
 
 
 
-def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
+def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
+    threshold=0.5, return_mean=False):
     """ Compute a common mask for several sessions of fMRI data.
 
         Uses the mask-finding algorithmes to extract masks for each
@@ -254,17 +255,30 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
         upper fraction of the histogram to be discarded.
     cc: boolean, optional
         if cc is True, only the largest connect component is kept.
+    return_mean: boolean, optional
+        if return_mean is True, the mean image accross subjects is
+        returned.
 
     Returns
     -------
     mask : 3D boolean ndarray 
         The brain mask
+    mean : 3D float array
+        The mean image
     """
     mask = None
+    mean = None
     for index, session in enumerate(session_files):
         this_mask = compute_mask_files(session,
                                        m=m, M=M,
-                                       cc=cc).astype(np.int8)
+                                       cc=cc, return_mean=return_mean)
+        if return_mean:
+            this_mask, this_mean = this_mask
+            if mean is None:
+                mean = this_mean.astype(np.float)
+            else:
+                mean += this_mean
+        this_mask = this_mask.astype(np.int8)
         if mask is None:
             mask = this_mask
         else:
@@ -280,8 +294,14 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
         # Select the largest connected component (each mask is
         # connect, but the half-interesection may not be):
         mask = largest_cc(mask)
+    mask = mask.astype(np.bool)
 
-    return mask.astype(np.bool)
+    if return_mean:
+        # Divide by the number of sessions
+        mean /= index + 1
+        return mask, mean
+
+    return mask
 
 
 def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
