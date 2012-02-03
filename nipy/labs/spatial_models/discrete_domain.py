@@ -191,32 +191,7 @@ def reduce_coo_matrix(mat, mask):
 #################################################################
 # Functions to instantiate StructuredDomains
 #################################################################
-
-
-def domain_from_image(mim, nn=18):
-    """Return a StructuredDomain instance from the input mask image
-
-    Parameters
-    ----------
-    mim: NiftiIImage instance, or string path toward such an image
-         supposedly a mask (where is used to crate the DD)
-    nn: int, optional
-        neighboring system considered from the image
-        can be 6, 18 or 26
-
-    Returns
-    -------
-    The corresponding StructuredDomain instance
-
-    """
-    if isinstance(mim, basestring):
-        iim = load(mim)
-    else:
-        iim = mim
-    return domain_from_array(iim.get_data(), iim.get_affine(), nn)
-
-
-def domain_from_array(mask, affine=None, nn=0):
+def domain_from_binary_array(mask, affine=None, nn=0):
     """Return a StructuredDomain from an n-d array
 
     Parameters
@@ -241,7 +216,30 @@ def domain_from_array(mask, affine=None, nn=0):
     return StructuredDomain(dim, coord, vol, topology)
 
 
-def grid_domain_from_array(mask, affine=None, nn=0):
+def domain_from_image(mim, nn=18):
+    """Return a StructuredDomain instance from the input mask image
+
+    Parameters
+    ----------
+    mim: NiftiIImage instance, or string path toward such an image
+         supposedly a mask (where is used to crate the DD)
+    nn: int, optional
+        neighboring system considered from the image
+        can be 6, 18 or 26
+
+    Returns
+    -------
+    The corresponding StructuredDomain instance
+
+    """
+    if isinstance(mim, basestring):
+        iim = load(mim)
+    else:
+        iim = mim
+    return domain_from_binary_array(iim.get_data(), iim.get_affine(), nn)
+
+
+def grid_domain_from_binary_array(mask, affine=None, nn=0):
     """Return a NDGridDomain from an n-d array
 
     Parameters
@@ -288,7 +286,31 @@ def grid_domain_from_image(mim, nn=18):
         iim = load(mim)
     else:
         iim = mim
-    return grid_domain_from_array(iim.get_data(), iim.get_affine(), nn)
+    return grid_domain_from_binary_array(iim.get_data(), iim.get_affine(), nn)
+
+
+def grid_domain_from_shape(shape, affine=None):
+    """Return a NDGridDomain from an n-d array
+
+    Parameters
+    ----------
+    shape: tuple
+      the shape of a rectangular domain.
+    affine: np.array, optional
+      affine transform that maps the array coordinates
+      to some embedding space.
+      By default, this is np.eye(dim+1, dim+1)
+
+    """
+    dim = len(shape)
+    if affine is None:
+        affine = np.eye(dim + 1)
+
+    rect = np.ones(shape)
+    ijk = np.array(np.where(rect)).T
+    vol = np.absolute(np.linalg.det(affine[:3, 0:3])) * np.ones(np.sum(rect))
+    topology = smatrix_from_nd_idx(ijk, 0)
+    return NDGridDomain(dim, ijk, shape, affine, vol, topology)
 
 
 ################################################################

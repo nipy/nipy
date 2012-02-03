@@ -2,7 +2,9 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import gc
+import warnings
 import numpy as np
+from nibabel import io_orientation
 
 from ...core.image.affine_image import AffineImage
 from ..utils.affines import apply_affine
@@ -18,7 +20,6 @@ from ._registration import (_cspline_transform,
 VERBOSE = True  # enables online print statements
 SLICE_ORDER = 'ascending'
 INTERLEAVED = False
-SLICE_AXIS = 2
 OPTIMIZER = 'ncg'
 XTOL = 1e-5
 FTOL = 1e-5
@@ -77,7 +78,7 @@ class Image4d(object):
     """
     def __init__(self, data, affine, tr, tr_slices=None, start=0.0,
                  slice_order=SLICE_ORDER, interleaved=INTERLEAVED,
-                 slice_axis=SLICE_AXIS):
+                 slice_info=None):
         """
         Configure fMRI acquisition time parameters.
 
@@ -87,12 +88,23 @@ class Image4d(object):
         start   : starting acquisition time respective to the implicit
                   time origin
         slice_order : string or array
+        slice_info : a tuple with slice axis as the first element and
+          direction as the second, for instance (2, 1)
         """
         self.affine = np.asarray(affine)
         self.tr = float(tr)
         self.start = float(start)
         self.interleaved = bool(interleaved)
-        self.slice_axis = int(slice_axis)
+
+        # guess the slice axis and direction (z-axis)
+        if slice_info == None:
+            orient = io_orientation(self.affine)
+            self.slice_axis = int(np.where(orient[:, 0] == 2)[0])
+            self.slice_direction = int(orient[self.slice_axis, 1])
+        else:
+            self.slice_axis = int(slice_info[0])
+            self.slice_direction = int(slice_info[1])
+
         # unformatted parameters
         self._tr_slices = tr_slices
         self._slice_order = slice_order
@@ -136,10 +148,6 @@ class Image4d(object):
             self.slice_order = np.array(aux)
         else:
             self.slice_order = np.asarray(self.slice_order)
-        # Assume that the world referential is 'scanner' as defined by
-        # the Nifti norm
-        self.reversed_slices =\
-            self.affine[self.slice_axis][self.slice_axis] < 0
 
     def z_to_slice(self, z):
         """
@@ -147,7 +155,7 @@ class Image4d(object):
         order wrt the scanner coordinate system convention (slice 0 ==
         bottom of the head)
         """
-        if self.reversed_slices:
+        if self.slice_direction < 0:
             return self.nslices - 1 - z
         else:
             return z
@@ -186,6 +194,7 @@ class Realign4dAlgorithm(object):
                  maxiter=MAXITER,
                  maxfun=MAXFUN,
                  refscan=REFSCAN):
+
         self.dims = im4d.get_data().shape
         self.nscans = self.dims[3]
         self.xyz = make_grid(self.dims[0:3], subsampling, borders)
@@ -402,8 +411,20 @@ class Realign4dAlgorithm(object):
                                 fprime=fprime,
                                 fhess=fhess,
                                 **self.optimizer_kwargs)
-        pc = fmin(f, self.transforms[t].param, *args, **kwargs)
-        self.set_transform(t, pc)
+
+        # With scipy >= 0.9, some scipy minimization functions like
+        # fmin_bfgs may crash due to the subroutine
+        # `scalar_search_armijo` returning None as a stepsize when
+        # unhappy about the objective function. This seems to have the
+        # potential to occur in groupwise registration when using
+        # strong image subsampling, i.e. at the coarser levels of the
+        # multiscale pyramid. To avoid crashes, we insert a try/catch
+        # instruction.
+        try:
+            pc = fmin(f, self.transforms[t].param, *args, **kwargs)
+            self.set_transform(t, pc)
+        except:
+            warnings.warn('Minimization failed')
 
     def estimate_motion(self):
         """
@@ -529,6 +550,7 @@ def single_run_realign4d(im4d,
                                stepsize=stepsize_,
                                maxiter=maxiter_,
                                maxfun=maxfun_)
+
         for loop in range(loops_):
             r.estimate_motion()
 
@@ -638,11 +660,11 @@ class Realign4d(object):
 
     def __init__(self, images, affine_class=Rigid):
         self._generic_init(images, affine_class, SLICE_ORDER, INTERLEAVED,
-                           1.0, 0.0, 0.0, False)
+                           1.0, 0.0, 0.0, False, None)
 
     def _generic_init(self, images, affine_class,
                       slice_order, interleaved, tr, tr_slices,
-                      start, time_interp):
+                      start, time_interp, slice_info):
         if not hasattr(images, '__iter__'):
             images = [images]
         self._runs = []
@@ -651,7 +673,8 @@ class Realign4d(object):
             self._runs.append(Image4d(im.get_data, get_affine(im),
                                       tr=tr, tr_slices=tr_slices,
                                       start=start, slice_order=slice_order,
-                                      interleaved=interleaved))
+                                      interleaved=interleaved,
+                                      slice_info=slice_info))
         self._transforms = [None for run in self._runs]
         self._within_run_transforms = [None for run in self._runs]
         self._mean_transforms = [None for run in self._runs]
@@ -716,8 +739,7 @@ class Realign4d(object):
 class FmriRealign4d(Realign4d):
 
     def __init__(self, images, slice_order, interleaved,
-                 tr=None, tr_slices=None,
-                 start=0.0, time_interp=True,  affine_class=Rigid):
+                 tr=None, tr_slices=None, start=0.0, time_interp=True,
+                 affine_class=Rigid, slice_info=None):
         self._generic_init(images, affine_class, slice_order, interleaved,
-                           tr, tr_slices,
-                           start, time_interp)
+                           tr, tr_slices, start, time_interp, slice_info)

@@ -1,4 +1,4 @@
-.. -*- rest -*-
+.. -*- rst -*-
 .. vim:syntax=rest
 
 ====================
@@ -20,7 +20,7 @@ Must Have
 ^^^^^^^^^
 
   Python_ 2.5 or later
-  
+
   NumPy_ 1.2 or later
 
   SciPy_ 0.7 or later
@@ -30,24 +30,30 @@ Must Have
     Sympy is a symbolic mathematics library for Python.  We use it for
     statistical formalae.
 
+
+Must Have to Build
+^^^^^^^^^^^^^^^^^^
+
+If your OS/distribution does not provide you with binary build of
+NIPY, you would need few additional components to be able to build
+NIPY directly from sources
+
   gcc_
     NIPY does contain a few C extensions for optimized
     routines. Therefore, you must have a compiler to build from
-    source.  XCode_ (OSX) and MinGW_ (Windows) both include gcc.  (*Once
-    we have binary packages, this requirement will not be necessary.*)
+    source.  XCode_ (OSX) and MinGW_ (Windows) both include gcc.
 
   cython_ 0.11.1 or later
     Cython is a language that is a fusion of Python and C.  It allows us
     to write fast code using Python and C syntax, so that it easier to
-    read and maintain.  You need Cython if you are building the
-    development source code (and that is what you have to do at the
-    moment, because we don't yet have a release).
+    read and maintain.
+
 
 Strong Recommendations
 ^^^^^^^^^^^^^^^^^^^^^^
 
   iPython_
-    Interactive python environment.
+    Interactive Python environment.
 
   Matplotlib_
     2D python plotting library.
@@ -69,13 +75,13 @@ below.
 Building from source code
 -------------------------
 
-Developers should look through the 
-:ref:`development quickstart <development-quickstart>` 
+Developers should look through the
+:ref:`development quickstart <development-quickstart>`
 documentation.  There you will find information on building NIPY, the
 required software packages and our developer guidelines.
 
 If you are primarily interested in using NIPY, download the source
-tarball and follow these instructions for building.  The installation
+tarball (e.g. from `nipy github`_) and follow these instructions for building.  The installation
 process is similar to other Python packages so it will be familiar if
 you have Python experience.
 
@@ -85,7 +91,7 @@ source directory, you can build the neuroimaging package using::
     python setup.py build
 
 To install, simply do::
-   
+
     sudo python setup.py install
 
 .. note::
@@ -115,7 +121,7 @@ paths.
 Building for 64-bit Snow Leopard
 --------------------------------
 
-How you install nipy for Snow Leopard depends on which version of
+How you install NIPY for Snow Leopard depends on which version of
 Python you have installed.  There are two versions we know work, using
 the Python that shipped with Snow Leopard, and using a 64-bit
 MacPorts_ version.
@@ -151,7 +157,7 @@ For the 64-bit MacPorts_ install, set the flags and build using this::
 
 These sites may also be useful:
 
-* `readline fix for ipython <http://blog.zacharyvoase.com/post/174280299>`_
+* `readline fix for IPython <http://blog.zacharyvoase.com/post/174280299>`_
 * `to graphically select the full 64-bit environment
   <http://www.ahatfullofsky.comuv.com/English/Programs/SMS/SMS.html>`_
 

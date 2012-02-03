@@ -75,7 +75,8 @@ def threshold_connect_components(map, threshold, copy=True):
 ################################################################################
 
 def compute_mask_files(input_filename, output_filename=None, 
-                        return_mean=False, m=0.2, M=0.9, cc=1):
+                        return_mean=False, m=0.2, M=0.9, cc=1,
+                        exclude_zeros=False):
     """
     Compute a mask file from fMRI nifti file(s)
 
@@ -101,6 +102,10 @@ def compute_mask_files(input_filename, output_filename=None,
         upper fraction of the histogram to be discarded.
     cc: boolean, optional
         if cc is True, only the largest connect component is kept.
+    exclude_zeros: boolean, optional
+        Consider zeros as missing values for the computation of the
+        threshold. This option is useful if the images have been
+        resliced with a large padding of zeros.
 
     Returns
     -------
@@ -157,7 +162,8 @@ def compute_mask_files(input_filename, output_filename=None,
         tmp[np.isnan(tmp)] = 0
         mean_volume = tmp
         
-    mask = compute_mask(mean_volume, first_volume, m, M, cc)
+    mask = compute_mask(mean_volume, first_volume, m, M, cc,
+                        exclude_zeros=exclude_zeros)
       
     if output_filename is not None:
         header['descrip'] = 'mask'
@@ -172,7 +178,7 @@ def compute_mask_files(input_filename, output_filename=None,
 
 
 def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9, 
-                                                cc=True, opening=True):
+                        cc=True, opening=True, exclude_zeros=False):
     """
     Compute a mask file from fMRI data in 3D or 4D ndarrays.
 
@@ -200,6 +206,10 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
         if opening is True, an morphological opening is performed, to keep 
         only large structures. This step is useful to remove parts of
         the skull that might have been included.
+    exclude_zeros: boolean, optional
+        Consider zeros as missing values for the computation of the
+        threshold. This option is useful if the images have been
+        resliced with a large padding of zeros.
 
     Returns
     -------
@@ -209,6 +219,8 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     if reference_volume is None:
         reference_volume = mean_volume
     sorted_input = np.sort(mean_volume.reshape(-1))
+    if exclude_zeros:
+        sorted_input = sorted_input[sorted_input != 0]
     limiteinf = np.floor(m * len(sorted_input))
     limitesup = np.floor(M * len(sorted_input))
 
@@ -229,7 +241,8 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
 
 
 
-def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
+def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
+                          threshold=0.5, exclude_zeros=False):
     """ Compute a common mask for several sessions of fMRI data.
 
         Uses the mask-finding algorithmes to extract masks for each
@@ -254,6 +267,10 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
         upper fraction of the histogram to be discarded.
     cc: boolean, optional
         if cc is True, only the largest connect component is kept.
+    exclude_zeros: boolean, optional
+        Consider zeros as missing values for the computation of the
+        threshold. This option is useful if the images have been
+        resliced with a large padding of zeros.
 
     Returns
     -------
@@ -262,9 +279,9 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     """
     mask = None
     for index, session in enumerate(session_files):
-        this_mask = compute_mask_files(session,
-                                       m=m, M=M,
-                                       cc=cc).astype(np.int8)
+        this_mask = compute_mask_files(session, m=m, M=M, cc=cc,
+                                       exclude_zeros=exclude_zeros,
+                                       ).astype(np.int8)
         if mask is None:
             mask = this_mask
         else:
@@ -353,8 +370,8 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
 # Time series extraction
 ################################################################################
 
-def series_from_mask(filenames, mask, dtype=np.float32, 
-                     smooth=False, replace_nans=True):
+def series_from_mask(filenames, mask, dtype=np.float32,
+                     smooth=False, ensure_finite=True):
     """ Read the time series from the given sessions filenames, using the mask.
 
         Parameters
@@ -366,18 +383,23 @@ def series_from_mask(filenames, mask, dtype=np.float32,
         smooth: False or float, optional
             If smooth is not False, it gives the size, in voxel of the
             spatial smoothing to apply to the signal.
-        replace_nans: boolean
-            If replace_nans is True, the NaNs found in the images will be
-            replaced by zeros
-        
+        ensure_finite: boolean
+            If ensure_finite is True, the non-finite values (NaNs and infs)
+            found in the images will be replaced by zeros
+
         Returns
         --------
         session_series: ndarray
             3D array of time course: (session, voxel, time)
         header: header object
             The header of the first file.
+
+        Notes
+        -----
+        When using smoothing, ensure_finite should be True: as elsewhere non
+        finite values will spread accross the image.
     """
-    assert len(filenames) != 0, ( 
+    assert len(filenames) != 0, (
         'filenames should be a file name or a list of file names, '
         '%s (type %s) was passed' % (filenames, type(filenames)))
     mask = mask.astype(np.bool)
@@ -388,10 +410,11 @@ def series_from_mask(filenames, mask, dtype=np.float32,
         # We have a 4D nifti file
         data_file = load(filenames)
         header = data_file.get_header()
-        series = data_file.get_data().astype(dtype)
-        if replace_nans:
+        series = data_file.get_data()
+        if ensure_finite:
             # SPM tends to put NaNs in the data outside the brain
-            series[np.isnan(series)] = 0
+            series[np.logical_not(np.isfinite(series))] = 0
+        series = series.astype(dtype)
         affine = data_file.get_affine()[:3, :3]
         del data_file
         if isinstance(series, np.memmap):
@@ -408,16 +431,17 @@ def series_from_mask(filenames, mask, dtype=np.float32,
         series = np.zeros((mask.sum(), nb_time_points), dtype=dtype)
         for index, filename in enumerate(filenames):
             data_file = load(filename)
-            data = data_file.get_data().astype(dtype)
-            if replace_nans:
+            data = data_file.get_data()
+            if ensure_finite:
                 # SPM tends to put NaNs in the data outside the brain
-                data[np.isnan(data)] = 0
+                data[np.logical_not(np.isfinite(data))] = 0
+            data = data.astype(dtype)
             if smooth is not False:
                 affine = data_file.get_affine()[:3, :3]
                 vox_size = np.sqrt(np.sum(affine **2, axis=0))
                 smooth_sigma = smooth / vox_size
                 data = ndimage.gaussian_filter(data, smooth_sigma)
-                
+
             series[:, index] = data[mask]
             # Free memory early
             del data

@@ -18,7 +18,7 @@ import numpy as np
 import os.path as op
 import matplotlib.pylab as mp
 
-from nibabel import load, Nifti1Image
+from nibabel import save, load, Nifti1Image
 from nipy.modalities.fmri.design_matrix import dmtx_light
 from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
 from nipy.labs.utils.simul_multisubject_fmri_dataset import \
@@ -35,21 +35,21 @@ from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
 # volume mask
 mask_path = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
                                  'mask.nii.gz'))
-if op.exists(mask_path)==False:
-    get_data_light.get_it()
+if not op.exists(mask_path):
+    get_data_light.get_second_level_dataset()
 
 mask = load(mask_path)
 
 # timing
 n_scans = 128
-tr      = 2.4
+tr = 2.4
 
 # paradigm
-frametimes = np.linspace(0, (n_scans-1)*tr, n_scans)
-conditions = np.arange(20)%2
-onsets = np.linspace(5, (n_scans-1)*tr-10, 20) # in seconds
+frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
+conditions = np.arange(20) % 2
+onsets = np.linspace(5, (n_scans - 1) * tr - 10, 20) # in seconds
 hrf_model = 'Canonical'
-motion = np.cumsum(np.random.randn(n_scans, 6),0)
+motion = np.cumsum(np.random.randn(n_scans, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
 # write directory
@@ -81,7 +81,7 @@ fmri_data = surrogate_4d_dataset(mask=mask, dmtx=X, seed=1)[0]
 ########################################
 
 # GLM fit
-Y = fmri_data.get_data()[mask.get_data()>0, :]
+Y = fmri_data.get_data()[mask.get_data() > 0]
 model = "ar1"
 method = "kalman"
 glm = GLM.glm()
@@ -96,7 +96,7 @@ my_contrast = glm.contrast(contrast)
 # compute the constrast image related to it
 zvals = my_contrast.zscore()
 zmap = mask.get_data().astype(np.float)
-zmap[zmap>0] = zmap[zmap>0]*zvals
+zmap[zmap > 0] = zmap[zmap > 0] * zvals
 contrast_image = Nifti1Image(zmap, mask.get_affine())
 # if you want to save the contrast as an image
 # contrast_path = op.join(swd, 'zmap.nii')
@@ -107,46 +107,51 @@ contrast_image = Nifti1Image(zmap, mask.get_affine())
 # Create ROIs
 ########################################
 
-positions = np.array([[60, -30, 5],[50, 27, 5]])
+positions = np.array([[60, -30, 5], [50, 27, 5]])
 # in mm (here in the MNI space)
-radii = np.array([8,6])
+radii = np.array([8, 6])
 
 domain = grid_domain_from_image(mask)
 my_roi = mroi.subdomain_from_balls(domain, positions, radii)
 
 # to save an image of the ROIs
-my_roi.to_image(op.join(swd, "roi.nii"))
+save(my_roi.to_image(), op.join(swd, "roi.nii"))
 
 # exact the time courses with ROIs
-my_roi.make_feature('signal', fmri_data.get_data()[mask.get_data()>0])
+thresholded_fmri = fmri_data.get_data()[mask.get_data() > 0]
+signal_feature = [thresholded_fmri[my_roi.select_id(id, roi=False)]
+                  for id in my_roi.get_id()]
+my_roi.set_feature('signal', signal_feature)
 
 # ROI average time courses
-avg_signal = my_roi.representative_feature('signal')
-my_roi.set_roi_feature('signal', avg_signal)                       
+my_roi.set_roi_feature('signal_avg', my_roi.representative_feature('signal'))
 
 # roi-level contrast average
-my_roi.make_feature('contrast', contrast_image.get_data()[mask.get_data()>0])
-my_roi.set_roi_feature('contrast', my_roi.representative_feature('contrast'))
-
+thresholded_contrast = contrast_image.get_data()[mask.get_data() > 0]
+contrast_feature = [thresholded_contrast[my_roi.select_id(id, roi=False)]
+                    for id in my_roi.get_id()]
+my_roi.set_feature('contrast', contrast_feature)
+my_roi.set_roi_feature('contrast_avg',
+                       my_roi.representative_feature('contrast'))
 
 ########################################
 # GLM analysis on the ROI average time courses
 ########################################
 
 nreg = len(names)
-ROI_tc = my_roi.get_roi_feature('signal')
+ROI_tc = my_roi.get_roi_feature('signal_avg')
 glm.fit(ROI_tc.T, X, method=method, model=model)
 
 mp.figure()
 mp.subplot(1, 2, 1)
-b1 = mp.bar(np.arange(nreg-1), glm.beta[:-1,0], width=.4, color='blue',
+b1 = mp.bar(np.arange(nreg - 1), glm.beta[:-1, 0], width=.4, color='blue',
             label='r1')
-b2 = mp.bar(np.arange(nreg-1)+0.3, glm.beta[:-1,1], width=.4, color='red',
-            label='r2')
+b2 = mp.bar(np.arange(nreg - 1) + 0.3, glm.beta[:- 1, 1], width=.4,
+            color='red', label='r2')
 mp.xticks(np.arange(nreg-1), names[:-1])
 mp.legend()
 mp.title('parameters estimates for the roi time courses')
-bx =  mp.subplot(1, 2 ,2)
+bx = mp.subplot(1, 2, 2)
 
 my_roi.plot_feature('contrast', bx)
 mp.show()
@@ -156,19 +161,19 @@ mp.show()
 # fitted and adjusted response
 ########################################
 
-res = ROI_tc -np.dot(glm.beta.T, X.T)
+res = ROI_tc - np.dot(glm.beta.T, X.T)
 proj = np.eye(nreg)
 proj[2:] = 0
-fit = np.dot(np.dot(glm.beta.T,proj),X.T)
+fit = np.dot(np.dot(glm.beta.T, proj), X.T)
 
 # plot it
 mp.figure()
 for k in range(my_roi.k):
-    mp.subplot(my_roi.k, 1, k+1)
+    mp.subplot(my_roi.k, 1, k + 1)
     mp.plot(fit[k])
-    mp.plot(fit[k] + res[k],'r')
+    mp.plot(fit[k] + res[k], 'r')
     mp.xlabel('time (scans)')
-    mp.legend(('effects','adjusted'))
+    mp.legend(('effects', 'adjusted'))
 
 
 ###########################################
@@ -176,7 +181,7 @@ for k in range(my_roi.k):
 ############################################
 
 fir_order = 6
-X_fir,name_dir = dmtx_light(
+X_fir, name_dir = dmtx_light(
     frametimes, paradigm, hrf_model='FIR', drift_model='Cosine', drift_order=3,
     fir_delays=tr * np.arange(fir_order), add_regs=motion,
     add_reg_names=add_reg_names)
@@ -185,13 +190,12 @@ glm.fit(ROI_tc.T, X_fir, method=method, model=model)
 mp.figure()
 for k in range(my_roi.k):
     mp.subplot(my_roi.k, 1, k + 1)
-    var = np.diag(glm.nvbeta[:,:,k]) * glm.s2[k]
+    var = np.diag(glm.nvbeta[:, :, k]) * glm.s2[k]
     mp.errorbar(np.arange(fir_order), glm.beta[:fir_order, k],
                 yerr=np.sqrt(var[:fir_order]))
     mp.errorbar(np.arange(fir_order), glm.beta[fir_order:2 * fir_order, k],
                 yerr=np.sqrt(var[fir_order:2 * fir_order]))
-    mp.legend(('condition c0','condition c1'))
+    mp.legend(('condition c0', 'condition c1'))
     mp.title('estimated hrf shape')
     mp.xlabel('time(scans)')
 mp.show()
-

@@ -7,7 +7,7 @@ from nipy.algorithms.graph.field import field_from_coo_matrix_and_data
 from ..hierarchical_parcellation import hparcel
 from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
 from ..parcellation import MultiSubjectParcellation
-from ..discrete_domain import grid_domain_from_array
+from ..discrete_domain import grid_domain_from_binary_array
 
 
 def test_parcel_interface():
@@ -17,7 +17,7 @@ def test_parcel_interface():
     shape = (5, 5, 5)
     nb_parcel = 10
     data = np.random.randn(np.prod(shape))
-    domain = grid_domain_from_array(np.ones(shape))
+    domain = grid_domain_from_binary_array(np.ones(shape))
     g = field_from_coo_matrix_and_data(domain.topology, data)
     u, J0 = g.ward(nb_parcel)
     tmp = np.array([np.sum(u == k) for k in range(nb_parcel)])
@@ -39,7 +39,7 @@ def test_parcel_interface_multi_subj():
     v = []
     for s in range(nb_subj):
         data = np.random.randn(np.prod(shape))
-        domain = grid_domain_from_array(np.ones(shape))
+        domain = grid_domain_from_binary_array(np.ones(shape))
         g = field_from_coo_matrix_and_data(domain.topology, data)
         u, J0 = g.ward(nb_parcel)
         v.append(u)
@@ -61,7 +61,7 @@ def test_parcel_feature():
     shape = (5, 5, 5)
     nb_parcel = 10
     data = np.random.randn(np.prod(shape), 1)
-    domain = grid_domain_from_array(np.ones(shape))
+    domain = grid_domain_from_binary_array(np.ones(shape))
     g = field_from_coo_matrix_and_data(domain.topology, data)
     u, J0 = g.ward(nb_parcel)
 
@@ -90,7 +90,7 @@ def test_parcel_feature_multi_subj():
     v = []
     for s in range(nb_subj):
         data = np.random.randn(np.prod(shape))
-        domain = grid_domain_from_array(np.ones(shape))
+        domain = grid_domain_from_binary_array(np.ones(shape))
         g = field_from_coo_matrix_and_data(domain.topology, data)
         u, J0 = g.ward(nb_parcel)
         v.append(u)
@@ -116,15 +116,14 @@ def test_parcel_hierarchical():
     """Test the algorithm for hierrachical parcellation
     """
     # step 1:  generate some synthetic data
-    nsubj = 10
-    dimx = 40
-    dimy = 40
-    dataset = surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy)
+    n_subj = 10
+    shape = (30, 30)
+    dataset = surrogate_2d_dataset(n_subj=n_subj, shape=shape)
 
     # step 2 : prepare all the information for the parcellation
     nb_parcel = 10
-    domain = grid_domain_from_array(dataset[0] ** 2, np.eye(3))
-    ldata = np.reshape(dataset, (nsubj, dimx * dimy, 1))
+    domain = grid_domain_from_binary_array(dataset[0] ** 2, np.eye(3))
+    ldata = np.reshape(dataset, (n_subj, np.prod(shape), 1))
 
     # step 3 : run the algorithm
     Pa = hparcel(domain, ldata, nb_parcel)
@@ -132,7 +131,7 @@ def test_parcel_hierarchical():
     # step 4:  look at the results
     Label = Pa.individual_labels
     control = True
-    for s in range(nsubj):
+    for s in range(n_subj):
         control *= (np.unique(Label[:, s]) == np.arange(nb_parcel)).all()
 
     assert(control)
@@ -142,15 +141,14 @@ def test_prfx():
     """Test the ability to construct parcel features and random effects models
     """
     # step 1:  generate some synthetic data
-    nsubj = 10
-    dimx = 40
-    dimy = 40
-    dataset = surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy)
+    n_subj = 10
+    shape = (30, 30)
+    dataset = surrogate_2d_dataset(n_subj=n_subj, shape=shape)
 
     # step 2 : prepare all the information for the parcellation
     nb_parcel = 10
-    domain = grid_domain_from_array(dataset[0] ** 2, np.eye(3))
-    ldata = np.reshape(dataset, (nsubj, dimx * dimy, 1))
+    domain = grid_domain_from_binary_array(dataset[0] ** 2, np.eye(3))
+    ldata = np.reshape(dataset, (n_subj, np.prod(shape), 1))
 
     # step 3 : run the algorithm
     Pa = hparcel(domain, ldata, nb_parcel)

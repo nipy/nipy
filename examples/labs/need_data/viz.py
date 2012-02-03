@@ -14,7 +14,7 @@ from nipy.utils import example_data
 import get_data_light
 
 # get the data
-data_dir = get_data_light.get_it()
+data_dir = get_data_light.get_second_level_dataset()
 
 # First example, with a anatomical template
 img     = load(os.path.join(data_dir, 'spmT_0029.nii.gz'))

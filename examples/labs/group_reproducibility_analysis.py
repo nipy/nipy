@@ -14,25 +14,25 @@ import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 from nipy.labs.utils.reproducibility_measures import \
      voxel_reproducibility, cluster_reproducibility, map_reproducibility,\
      peak_reproducibility
-from nipy.labs.spatial_models.discrete_domain import grid_domain_from_array
+from nipy.labs.spatial_models.discrete_domain import \
+    grid_domain_from_binary_array
 
 ###############################################################################
 # Generate the data 
-nsubj = 105
-dimx = 60
-dimy = 60
+n_subj = 105
+shape = (60, 60)
 pos = np.array([[12, 14],
                 [20, 20],
                 [30, 20]])
 ampli = np.array([2.5, 3.5, 3])
-dataset = simul.surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
-                                     pos=pos, ampli=ampli, width=5.0)
-betas = np.reshape(dataset, (nsubj, dimx, dimy))
+betas = simul.surrogate_2d_dataset(n_subj=n_subj, shape=shape, pos=pos, 
+                                     ampli=ampli, width=5.0)
 
+n_vox = np.prod(shape)
 # set the variance at 1 everywhere
-func = np.reshape(betas, (nsubj, dimx * dimy)).T
-var = np.ones((dimx * dimy, nsubj))
-domain = grid_domain_from_array(np.ones((dimx, dimy, 1)))
+func = np.reshape(betas, (n_subj, n_vox)).T
+var = np.ones((n_vox, n_subj))
+domain = grid_domain_from_binary_array(np.ones((shape[0], shape[1], 1)))
 
 ###############################################################################
 # Run reproducibility analysis 
@@ -109,7 +109,7 @@ for q, threshold in enumerate(thresholds):
     rmap = map_reproducibility(func, var, domain, ngroups,
                            method, verbose, threshold=threshold,
                            csize=csize)
-    rmap = np.reshape(rmap, (dimx, dimy))
+    rmap = np.reshape(rmap, shape)
     mp.imshow(rmap, interpolation=None, vmin=0, vmax=ngroups)
     mp.title('threshold: %f' % threshold, fontsize=10)
     mp.axis('off')

@@ -23,21 +23,19 @@ nbsubj = 12
 nbeta = 29
 data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
                                  'group_t_images'))
-mask_images = [op.join(data_dir,'mask_subj%02d.nii'%n)
+mask_images = [op.join(data_dir, 'mask_subj%02d.nii' % n)
                for n in range(nbsubj)]
 
-betas =[ op.join(data_dir,'spmT_%04d_subj_%02d.nii'%(nbeta,n))
-                 for n in range(nbsubj)]
+betas = [op.join(data_dir, 'spmT_%04d_subj_%02d.nii' % (nbeta, n))
+         for n in range(nbsubj)]
 
-missing_file = array([op.exists(m)==False for m in mask_images+betas]).any()
+missing_file = array([not op.exists(m) for m in mask_images + betas]).any()
 
 if missing_file:
-    get_data_light.get_it()
-
-
+    get_data_light.get_second_level_dataset()
 
 # set various parameters
-subj_id = ['%04d' %i for i in range(12)]
+subj_id = ['%04d' % i for i in range(12)]
 theta = float(stats.t.isf(0.01, 100))
 dmax = 4.
 ths = 0
@@ -54,9 +52,9 @@ AF, BF = make_bsa_image(mask_images, betas, theta, dmax, ths, thq, smin, swd,
 
 # Write the result. OK, this is only a temporary solution
 import pickle
-picname = op.join(swd,"AF_%04d.pic" %nbeta)
+picname = op.join(swd, "AF_%04d.pic" % nbeta)
 pickle.dump(AF, open(picname, 'w'), 2)
-picname = op.join(swd,"BF_%04d.pic" %nbeta)
+picname = op.join(swd, "BF_%04d.pic" % nbeta)
 pickle.dump(BF, open(picname, 'w'), 2)
 
 print "Wrote all the results in directory %s" % swd

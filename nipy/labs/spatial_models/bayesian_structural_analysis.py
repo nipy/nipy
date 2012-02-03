@@ -144,25 +144,24 @@ def compute_individual_regions(domain, lbeta, smin=5, theta=3.0,
         # description in terms of blobs
         beta = np.reshape(lbeta[:, s], (nvox, 1))
         nroi = HROI_as_discrete_domain_blobs(
-            domain, beta, threshold=theta, smin=smin, rid='nest_blob_s %s' % s)
-
+            domain, beta, threshold=theta, smin=smin)
+        
         if nroi is not None and nroi.k > 0:
             bfm = nroi.representative_feature('signal', 'weighted mean')
-            bfm = bfm[nroi.isleaf()]
-
+            bfm = bfm[[nroi.select_id(id) for id in nroi.get_leaves_id()]]
             # get the regions position
             if reshuffle:
-                nroi = nroi.reduce_to_leaves()
+                nroi.reduce_to_leaves()
                 ## randomize the positions
                 ## by taking any local maximum of the image
-                temp = np.argsort(np.random.rand(nvox))[: nroi.k]
+                temp = np.argsort(np.random.rand(nvox))[:nroi.k]
                 bfc = domain.coord[temp]
-                nroi.set_roi_feature('position', bfc)
             else:
-                nroi.make_feature('position', domain.coord)
-                bfc = nroi.representative_feature('position', 'mean')
-                nroi.set_roi_feature('position', bfc)
-                bfc = bfc[nroi.isleaf()]
+                mean_pos = np.asarray(
+                    [np.mean(coords, 0) for coords in nroi.get_coord()])
+                nroi.set_roi_feature('position', mean_pos)
+                bfc = mean_pos[[nroi.select_id(id)
+                                for id in nroi.get_leaves_id()]]
             gfc.append(bfc)
 
             # compute the prior proba of being null
@@ -170,7 +169,7 @@ def compute_individual_regions(domain, lbeta, smin=5, theta=3.0,
             bf0 = signal_to_pproba(bfm, learn, method)
             gf0.append(bf0)
             sub.append(s * np.ones(np.size(bfm)))
-
+            
         bf.append(nroi)
     return bf, gf0, sub, gfc
 
@@ -193,7 +192,7 @@ def dpmm(gfc, alpha, g0, g1, dof, prior_precision, gf1, sub, burnin,
     if verbose:
         print 'number of components: ', migmm.k
 
-    #sampling
+    # sampling
     if co_clust:
         like, pproba, co_clust = migmm.sample(
             gfc, null_class_proba=1 - gf1, niter=nis,
@@ -294,25 +293,26 @@ def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
     for s in range(n_subj):
         bfs = bf[s]
         if bfs.k > 0:
-            leaves = bfs.isleaf()
+            leaves_pos = [bfs.select_id(k) for k in bfs.get_leaves_id()]
             us = - np.ones(bfs.k).astype(np.int)
 
             # set posterior proba
             lq = np.zeros(bfs.k)
-            lq[leaves] = q[sub == s]
+            lq[leaves_pos] = q[sub == s]
             bfs.set_roi_feature('posterior_proba', lq)
 
             # set prior proba
             lq = np.zeros(bfs.k)
-            lq[leaves] = 1 - gf0[sub == s]
+            lq[leaves_pos] = 1 - gf0[sub == s]
             bfs.set_roi_feature('prior_proba', lq)
 
-            pos = bfs.representative_feature('position', 'mean')
+            pos = np.asarray(
+                [np.mean(coords, 0) for coords in bfs.get_coord()])
             midx = [np.argmin(np.sum((dom.coord - pos[k]) ** 2, 1))
                     for k in range(bfs.k)]
             j = label[np.array(midx)]
-            us[leaves] = j[leaves]
-
+            us[leaves_pos] = j[leaves_pos]
+            
             # when parent regions has similarly labelled children,
             # include it also
             us = bfs.make_forest().propagate_upward(us)
@@ -389,7 +389,8 @@ def bsa_dpmm2(bf, gf0, sub, gfc, dmax, thq, ths, verbose):
                          sub, burnin, nis=nis, co_clust=True)
 
     cg = wgraph_from_coo_matrix(CoClust)
-    cg.remove_edges(cg.weights > .5)
+    if cg.E > 0:
+        cg.remove_edges(cg.weights > .5)
     u = cg.cc()
     u[p < g0] = u.max() + 1 + np.arange(np.sum(p < g0))
 
@@ -400,7 +401,8 @@ def bsa_dpmm2(bf, gf0, sub, gfc, dmax, thq, ths, verbose):
     for s in range(n_subj):
         bfs = bf[s]
         if bfs is not None:
-            leaves = bfs.isleaf()
+            leaves = np.asarray(
+                [bfs.select_id(id) for id in bfs.get_leaves_id()])
             us = - np.ones(bfs.k).astype(np.int)
             lq = np.zeros(bfs.k)
             lq[leaves] = q[sub == s]

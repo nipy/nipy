@@ -13,19 +13,17 @@ from ..reproducibility_measures import (voxel_reproducibility,
                                         cluster_reproducibility,
                                         peak_reproducibility)
 
-def make_dataset(ampli_factor=1.0, nsubj=10):
+def make_dataset(ampli_factor=1.0, n_subj=10):
     """
     Generate a standard multi-subject as a set of multi-subject 2D maps
     if null, no activation is added
     """
-    nsubj = 10
-    dimx = 50
-    dimy = 50
-    pos = 2*np.array([[ 6,  7], [10, 10], [15, 10]])
-    ampli = ampli_factor*np.array([5, 6, 7])
-    dataset = surrogate_2d_dataset(nbsubj=nsubj, dimx=dimx, dimy=dimy, 
-                                   pos=pos, ampli=ampli, width=5.0, 
-                                   seed=1)
+    n_subj = 10
+    shape = (40, 40)
+    pos = 2 * np.array([[ 6,  7], [10, 10], [15, 10]])
+    ampli = ampli_factor * np.array([5, 6, 7])
+    dataset = surrogate_2d_dataset(n_subj=n_subj, shape=shape, pos=pos, 
+                                   ampli=ampli, width=5.0, seed=1)
     return dataset
 
 
@@ -33,13 +31,14 @@ def apply_repro_analysis(dataset, thresholds=[3.0], method = 'crfx'):
     """
     perform the reproducibility  analysis according to the 
     """
-    from nipy.labs.spatial_models.discrete_domain import grid_domain_from_array
+    from nipy.labs.spatial_models.discrete_domain import \
+        grid_domain_from_binary_array
 
-    nsubj, dimx, dimy = dataset.shape
+    n_subj, dimx, dimy = dataset.shape
     
-    func = np.reshape(dataset,(nsubj, dimx * dimy)).T
-    var = np.ones((dimx * dimy, nsubj))
-    domain = grid_domain_from_array(np.ones((dimx, dimy, 1)))
+    func = np.reshape(dataset,(n_subj, dimx * dimy)).T
+    var = np.ones((dimx * dimy, n_subj))
+    domain = grid_domain_from_binary_array(np.ones((dimx, dimy, 1)))
 
     ngroups = 5
     sigma = 2.0
@@ -116,7 +115,7 @@ def test_repro7():
     Test on the kappa values for a standard dataset
     using jacknife subsampling
     """
-    dataset = make_dataset(nsubj = 101)
+    dataset = make_dataset(n_subj = 101)
     kap, clt, pks = apply_repro_analysis(dataset, thresholds=[5.0])
     assert ((kap.mean() > 0.4))
     assert ((clt.mean() > 0.5))    

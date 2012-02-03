@@ -13,7 +13,9 @@ clean: clean-pyc
 	rm -rf build
 	$(MAKE) -C doc clean
 
-dev: clean
+clean-dev: clean dev
+
+dev: cythonize
 	$(PYTHON) setup.py build_ext --inplace
 
 test:

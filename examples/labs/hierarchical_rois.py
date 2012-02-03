@@ -14,20 +14,19 @@ import numpy as np
 
 import nipy.labs.spatial_models.hroi as hroi
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
-from nipy.labs.spatial_models.discrete_domain import domain_from_array
+from nipy.labs.spatial_models.discrete_domain import domain_from_binary_array
 
 ##############################################################################
 # simulate the data
-dimx = 60
-dimy = 60
+shape = (60, 60)
 pos = np.array([[12, 14], [20, 20], [30, 20]])
 ampli = np.array([3, 4, 4])
 
-dataset = simul.surrogate_2d_dataset(nbsubj=1, dimx=dimx, dimy=dimy, pos=pos,
+dataset = simul.surrogate_2d_dataset(n_subj=1, shape=shape, pos=pos,
                                      ampli=ampli, width=10.0).squeeze()
 
 # create a domain descriptor associated with this
-domain = domain_from_array(dataset ** 2 > 0)
+domain = domain_from_binary_array(dataset ** 2 > 0)
 
 nroi = hroi.HROI_as_discrete_domain_blobs(domain, dataset.ravel(),
                                           threshold=2.0, smin=3)
@@ -40,10 +39,12 @@ root = np.argmax(td)
 lv = n1.make_forest().get_descendents(root)
 u = nroi.make_graph().cc()
 
-nroi.make_feature('activation', dataset.ravel())
-nroi.representative_feature('activation')
+flat_data = dataset.ravel()
+activation = [flat_data[nroi.select_id(id, roi=False)]
+              for id in nroi.get_id()]
+nroi.set_feature('activation', activation)
 
-label = np.reshape(n1.label, (dimx, dimy))
+label = np.reshape(n1.feature_to_voxel_map('id', roi=True), shape)
 
 # make a figure
 import matplotlib.pylab as mp

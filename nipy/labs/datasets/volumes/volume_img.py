@@ -112,7 +112,6 @@ class VolumeImg(VolumeGrid):
                               interpolation=self.interpolation,
                               )
 
-
     # Inherit docstring
     like_from_data.__doc__ = VolumeGrid.like_from_data.__doc__
 
@@ -120,10 +119,11 @@ class VolumeImg(VolumeGrid):
     def get_transform(self):
         return AffineTransform('voxel_space', self.world_space, self.affine)
 
-
     # Inherit docstring
     get_transform.__doc__ = VolumeGrid.get_transform.__doc__
 
+    def get_affine(self):
+        return self.affine
 
     def resampled_to_img(self, target_image, interpolation=None):
         if not hasattr(target_image, 'world_space'):

@@ -2,6 +2,7 @@ from os.path import join, exists
 from tempfile import mkdtemp
 
 from ..parcel_io import *
+from numpy.testing import assert_equal
 from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
 
 
@@ -13,7 +14,8 @@ def test_mask_parcel():
     shape = (10, 10, 10)
     mask_image = Nifti1Image(np.ones(shape), np.eye(4))
     wim = mask_parcellation(mask_image, nb_parcel)
-    assert (np.unique(wim.get_data()) == np.arange(nb_parcel)).all()
+    #import pdb; pdb.set_trace()
+    assert_equal(np.unique(wim.get_data()), np.arange(nb_parcel))
 
 
 def test_mask_parcel_multi_subj():
@@ -32,7 +34,7 @@ def test_mask_parcel_multi_subj():
         mask_image.append(path)
 
     wim = mask_parcellation(mask_image, nb_parcel)
-    assert (np.unique(wim.get_data()) == np.arange(nb_parcel)).all()
+    assert_equal(np.unique(wim.get_data()), np.arange(nb_parcel))
 
 
 def test_parcel_intra_from_3d_image():
@@ -55,7 +57,7 @@ def test_parcel_intra_from_3d_image():
                                     method, tempdir, mu)
         result = join(tempdir, 'parcel_%s.nii' % method)
         assert exists(result)
-        assert osp.k == n_parcel
+        assert_equal(osp.k, n_parcel)
 
 
 def test_parcel_intra_from_3d_images_list():
@@ -79,7 +81,7 @@ def test_parcel_intra_from_3d_images_list():
                              method, tempdir, mu)
     result = join(tempdir, 'parcel_%s.nii' % method)
     assert exists(result)
-    assert osp.k == n_parcel
+    assert_equal(osp.k, n_parcel)
 
 
 def test_parcel_intra_from_4d_image():
@@ -90,7 +92,7 @@ def test_parcel_intra_from_4d_image():
     shape = (10, 10, 10)
     mask_image = Nifti1Image(np.ones(shape), np.eye(4))
     data_image = join(tempdir, 'image.nii')
-    surrogate_3d_dataset(nbsubj=10, mask=mask_image, out_image_file=data_image)
+    surrogate_3d_dataset(n_subj=10, mask=mask_image, out_image_file=data_image)
 
     #run the algo
     n_parcel = 10
@@ -101,7 +103,7 @@ def test_parcel_intra_from_4d_image():
                                 method, tempdir, mu)
     result = join(tempdir, 'parcel_%s.nii' % method)
     assert exists(result)
-    assert osp.k == n_parcel
+    assert_equal(osp.k, n_parcel)
 
 
 if __name__ == "__main__":

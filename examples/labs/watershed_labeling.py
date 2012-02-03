@@ -19,37 +19,36 @@ import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 ###############################################################################
 # data simulation
 
-dimx = 60
-dimy = 60
+shape = (60, 60)
 pos = np.array([[12, 14],
                 [20, 20],
                 [30, 20]])
 ampli = np.array([3, 4, 4])
 
-nbvox = dimx * dimy
-x = simul.surrogate_2d_dataset(nbsubj=1, dimx=dimx, dimy=dimy,
-                               pos=pos, ampli=ampli, width=10.0)
+n_vox = np.prod(shape)
+x = simul.surrogate_2d_dataset(n_subj=1, shape=shape, pos=pos, ampli=ampli, 
+                               width=10.0)
 
-x = np.reshape(x, (dimx, dimy, 1))
-beta = np.reshape(x, (nbvox, 1))
+x = np.reshape(x, (shape[0], shape[1], 1))
+beta = np.reshape(x, (n_vox, 1))
 xyz = np.array(np.where(x))
-nbvox = np.size(xyz, 1)
+n_vox = np.size(xyz, 1)
 th = 2.36
 
 # compute the field structure and perform the watershed
-Fbeta = Field(nbvox)
+Fbeta = Field(n_vox)
 Fbeta.from_3d_grid(xyz.T.astype(np.int), 18)
 Fbeta.set_field(beta)
 idx, label = Fbeta.custom_watershed(0, th)
 
 #compute the region-based signal average
 bfm = np.array([np.mean(beta[label == k]) for k in range(label.max() + 1)])
-bmap = np.zeros(nbvox)
+bmap = np.zeros(n_vox)
 if label.max() > - 1:
     bmap[label > - 1] = bfm[label[label > - 1]]
 
-label = np.reshape(label, (dimx, dimy))
-bmap = np.reshape(bmap, (dimx, dimy))
+label = np.reshape(label, shape)
+bmap = np.reshape(bmap, shape)
 
 ###############################################################################
 # plot the input image
