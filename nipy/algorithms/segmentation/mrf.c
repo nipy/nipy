@@ -72,6 +72,9 @@ static int* _select_neighborhood_system(int ngb_size) {
   Perform the VE-step of a VEM algorithm for a general Markov random
   field segmentation model.
 
+  Compute exp[-2 * beta * SUM_j (U * qj)] for a given voxel, where the
+  sum is on the neighbors.
+
   ppm assumed C-contiguous double (X, Y, Z, K) 
   ref assumed C-contiguous double (NPTS, K)
   XYZ assumed C-contiguous unsigned int (NPTS, 3)
@@ -80,15 +83,15 @@ static int* _select_neighborhood_system(int ngb_size) {
 #define TINY 1e-300
 
 
-static void _ngb_integrate(double* res,
-			   const PyArrayObject* ppm,
-			   int x,
-			   int y, 
-			   int z,
-			   const double* U, 
-			   double beta, 
-			   const int* ngb,
-			   int ngb_size)			
+static void _ngb_factor(double* res,
+			const PyArrayObject* ppm,
+			int x,
+			int y, 
+			int z,
+			const double* U, 
+			double beta, 
+			const int* ngb,
+			int ngb_size)			
 {
   int j = 0, xn, yn, zn, k, kk, K = ppm->dimensions[3]; 
   const int* buf_ngb; 
@@ -126,7 +129,7 @@ static void _ngb_integrate(double* res,
 
   /* Finalize total message computation */
   for (k=0, buf=res; k<K; k++, buf++) 
-    *buf = exp(-beta * (*buf));
+    *buf = exp(-2 * beta * (*buf));
 
   return; 
 }
@@ -177,7 +180,7 @@ void ve_step(PyArrayObject* ppm,
     x = xyz[0];
     y = xyz[1];
     z = xyz[2];
-    _ngb_integrate(p, ppm, x, y, z, U_data, beta, (const int*)ngb, ngb_size);
+    _ngb_factor(p, ppm, x, y, z, U_data, beta, (const int*)ngb, ngb_size);
     
     /* Multiply with reference and compute normalization constant */
     psum = 0.0;

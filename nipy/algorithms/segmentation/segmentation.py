@@ -7,14 +7,15 @@ from ._segmentation import _ve_step
 TINY = 1e-50
 HUGE = 1e50
 NITERS = 10
-NGB_SIZE = 26
+NGB_SIZE = 6
+BETA = 0.5
 
 
 class Segmentation(object):
 
     def __init__(self, data, mu=None, sigma=None,
                  ppm=None, prior=None, U=None,
-                 ngb_size=NGB_SIZE, beta=0,
+                 ngb_size=NGB_SIZE, beta=BETA,
                  bottom_corner=(0, 0, 0), top_corner=(0, 0, 0),
                  mask=None):
 
@@ -81,7 +82,6 @@ class Segmentation(object):
         else:
             raise ValueError('missing information')
         self.nclasses = nclasses
-        self.ext_field = np.zeros([self.data.shape[0], nclasses])
 
         if not prior == None:
             self.prior = np.asarray(prior)[self.mask].reshape(\
@@ -97,7 +97,7 @@ class Segmentation(object):
 
     def set_energy(self, U, beta):
         if not U == None:  # make sure it's C-contiguous
-            self.U = np.asarray(U).copy() 
+            self.U = np.asarray(U).copy()
         else:  # Potts model
             U = np.ones((self.nclasses, self.nclasses))
             U[np.diag_indices(self.nclasses)] = 0
@@ -125,11 +125,14 @@ class Segmentation(object):
         gc.enable()
         gc.collect()
 
-    def ve_step(self):
+    def ext_field(self):
+        """
+        Compute external field (no voxel interactions), namely the
+        likelihood times the first-order component of the prior if
+        non-uniform
+        """
+        field = np.zeros([self.data.shape[0], self.nclasses])
 
-        print(' VE step...')
-
-        # Compute posterior external field (no voxel interactions)
         for i in range(self.nclasses):
             print('  tissue %d' % i)
             centered_data = self.data - self.mu[i]
@@ -142,22 +145,29 @@ class Segmentation(object):
                     np.maximum(TINY, np.linalg.det(self.sigma[i])))
             maha = np.sum(centered_data * np.dot(inv_sigma,
                                                  centered_data.T).T, 1)
-            self.ext_field[:, i] = np.exp(-.5 * maha)
-            self.ext_field[:, i] *= norm_factor
+            field[:, i] = np.exp(-.5 * maha)
+            field[:, i] *= norm_factor
 
         if not self.prior == None:
-            self.ext_field *= self.prior
-        self.ext_field.clip(TINY, HUGE, out=self.ext_field)
+            field *= self.prior
+        field.clip(TINY, HUGE, out=field)
+
+        return field
+
+    def ve_step(self):
+
+        print(' VE step...')
+        field = self.ext_field()
 
         if self.beta == 0:
             print('  ... Normalizing...')
-            tmp = self.ext_field.T
+            tmp = field.T
             tmp /= tmp.sum(0)
-            self.ppm[self.mask] = self.ext_field.reshape(\
+            self.ppm[self.mask] = field.reshape(\
                 self.ppm[self.mask].shape)
         else:
             print('  ... MRF regularization')
-            self.ppm = _ve_step(self.ppm, self.ext_field, self.XYZ,
+            self.ppm = _ve_step(self.ppm, field, self.XYZ,
                                 self.U, self.ngb_size, self.beta)
 
         gc.enable()
