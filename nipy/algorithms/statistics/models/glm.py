@@ -11,6 +11,7 @@ import numpy as np
 from . import family
 from .regression import WLSModel
 
+
 class Model(WLSModel):
 
     niter = 10
@@ -24,7 +25,7 @@ class Model(WLSModel):
         self.dev = np.inf
         return self
 
-    def deviance(self, Y=None, results=None, scale = 1.):
+    def deviance(self, Y=None, results=None, scale=1.):
         """
         Return (unnormalized) log-likelihood for GLM.
 
@@ -42,7 +43,8 @@ class Model(WLSModel):
         Y = self.Y
         self.weights = self.family.weights(results.mu)
         self.initialize(self.design)
-        Z = results.predicted + self.family.link.deriv(results.mu) * (Y - results.mu)
+        Z = results.predicted + self.family.link.deriv(results.mu) *\
+            (Y - results.mu)
         newresults = super(Model, self).fit(self, Z)
         newresults.Y = Y
         newresults.mu = self.family.link.inverse(newresults.predicted)
