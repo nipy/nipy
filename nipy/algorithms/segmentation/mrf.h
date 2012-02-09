@@ -20,6 +20,10 @@ extern "C" {
   extern PyArrayObject* make_edges(const PyArrayObject* mask,
 				   int ngb_size);
 
+  extern double interaction_energy(PyArrayObject* ppm, 
+				   const PyArrayObject* XYZ,
+				   const PyArrayObject* U,
+				   int ngb_size);
 
 #ifdef __cplusplus
 }

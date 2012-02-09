@@ -22,6 +22,12 @@ cdef extern from "mrf.h":
                  double beta)
     ndarray make_edges(ndarray mask,
                        int ngb_size)
+    double interaction_energy(ndarray ppm, 
+                              ndarray XYZ,
+                              ndarray U,
+                              int ngb_size)
+
+
 
 # Initialize numpy
 mrf_import_array()
@@ -40,6 +46,8 @@ def _ve_step(ppm, ref, XYZ, U, int ngb_size, double beta):
         raise ValueError('XYZ array should be uint C-contiguous')
     if not XYZ.shape[1] == 3: 
         raise ValueError('XYZ array should be 3D')
+    if not U.flags['C_CONTIGUOUS'] or not U.dtype=='double':
+        raise ValueError('U array should be double C-contiguous')
 
     ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, <ndarray>U, 
              ngb_size, beta)
@@ -52,3 +60,18 @@ def _make_edges(mask, int ngb_size):
         raise ValueError('mask array should be int and C-contiguous')
 
     return make_edges(mask, ngb_size)
+
+
+def _interaction_energy(ppm, XYZ, U, int ngb_size):
+
+    if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
+        raise ValueError('ppm array should be double C-contiguous')
+    if not XYZ.flags['C_CONTIGUOUS'] or not XYZ.dtype=='uint':
+        raise ValueError('XYZ array should be uint C-contiguous')
+    if not XYZ.shape[1] == 3: 
+        raise ValueError('XYZ array should be 3D')
+    if not U.flags['C_CONTIGUOUS'] or not U.dtype=='double':
+        raise ValueError('U array should be double C-contiguous')
+
+    return interaction_energy(<ndarray>ppm, <ndarray>XYZ, <ndarray>U,
+                               ngb_size)

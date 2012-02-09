@@ -2,7 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import gc
 import numpy as np
-from ._segmentation import _ve_step
+from ._segmentation import _ve_step, _interaction_energy
 
 TINY = 1e-50
 HUGE = 1e50
@@ -183,10 +183,40 @@ class Segmentation(object):
             self.vm_step(freeze=freeze)
         self.is_ppm = True
 
-    def maximum_a_posteriori(self):
+    def map(self):
         """
         Return the maximum a posterior label map
         """
         x = np.zeros(self.ppm.shape[0:-1], dtype='uint8')
         x[self.mask] = self.ppm[self.mask].argmax(-1) + 1
         return x
+
+    def free_energy(self, ppm=None):
+        """
+        Compute the free energy defined as:
+
+        F(q, theta) = int q(x) log q(x)/p(x,y/theta) dx
+
+        associated with input parameters mu,
+        sigma and beta (up to an ignored constant).
+        """
+        if ppm == None:
+            ppm = self.ppm
+        q = ppm[self.mask]
+        # Entropy term
+        field = self.ext_field()
+        f1 = np.sum(q * np.log(np.maximum(q / field, TINY)))
+        # Interaction term
+        if self.beta > 0.0:
+            f2 = self.beta * _interaction_energy(ppm, self.XYZ,
+                                                 self.U, self.ngb_size)
+        return f1, f2
+
+
+def binarize_ppm(q):
+    """
+    Assume input ppm is masked (ndim==2)
+    """
+    bin_q = np.zeros(q.shape)
+    bin_q[(range(q.shape[0]), np.argmax(q, axis=1))] = 1.
+    return bin_q

@@ -83,15 +83,14 @@ static int* _select_neighborhood_system(int ngb_size) {
 #define TINY 1e-300
 
 
-static void _ngb_factor(double* res,
-			const PyArrayObject* ppm,
-			int x,
-			int y, 
-			int z,
-			const double* U, 
-			double beta, 
-			const int* ngb,
-			int ngb_size)			
+static void _ngb_integrate(double* res,
+			   const PyArrayObject* ppm,
+			   int x,
+			   int y, 
+			   int z,
+			   const double* U, 
+			   const int* ngb,
+			   int ngb_size)
 {
   int j = 0, xn, yn, zn, k, kk, K = ppm->dimensions[3]; 
   const int* buf_ngb; 
@@ -126,10 +125,6 @@ static void _ngb_factor(double* res,
 
     j ++; 
   }
-
-  /* Finalize total message computation */
-  for (k=0, buf=res; k<K; k++, buf++) 
-    *buf = exp(-2 * beta * (*buf));
 
   return; 
 }
@@ -175,17 +170,18 @@ void ve_step(PyArrayObject* ppm,
 
   while(iter->index < iter->size) {
 
-    /* Compute the average ppm in the neighborhood */
+    /* Integrate the energy in the neighborhood */
     xyz = PyArray_ITER_DATA(iter);
     x = xyz[0];
     y = xyz[1];
     z = xyz[2];
-    _ngb_factor(p, ppm, x, y, z, U_data, beta, (const int*)ngb, ngb_size);
-    
-    /* Multiply with reference and compute normalization constant */
+    _ngb_integrate(p, ppm, x, y, z, U_data, (const int*)ngb, ngb_size);
+
+    /* Apply exponential transform, multiply with reference and
+       compute normalization constant */
     psum = 0.0;
     for (k=0, kk=(iter->index)*v1, buf=p; k<K; k++, kk++, buf++) {
-      tmp = (*buf) * ref_data[kk];
+      tmp = exp(-2 * beta * (*buf)) * ref_data[kk];
       psum += tmp;
       *buf = tmp;
     }
@@ -308,4 +304,75 @@ PyArrayObject* make_edges(const PyArrayObject* idx,
   Py_XDECREF(iter);
 
   return edges;
+}
+
+
+/* 
+   Compute the interaction energy:
+
+   sum_i,j qi^T U qj
+   = sum_i qi^T sum_j U qj   
+   
+*/
+
+
+double interaction_energy(PyArrayObject* ppm, 
+			  const PyArrayObject* XYZ,
+			  const PyArrayObject* U,
+			  int ngb_size)
+
+{
+  int k, K, kk, x, y, z;
+  double *p, *buf;
+  double res = 0.0, tmp;  
+  PyArrayIterObject* iter;
+  int axis = 1; 
+  double* ppm_data;
+  size_t u3 = ppm->dimensions[3]; 
+  size_t u2 = ppm->dimensions[2]*u3; 
+  size_t u1 = ppm->dimensions[1]*u2;
+  int* xyz; 
+  const double* U_data = (double*)U->data;
+  int* ngb;
+
+  /* Neighborhood system */
+  ngb = _select_neighborhood_system(ngb_size);
+
+  /* Dimensions */
+  K = PyArray_DIM((PyArrayObject*)ppm, 3);
+  ppm_data = (double*)ppm->data;
+
+  /* Allocate auxiliary vector */
+  p = (double*)calloc(K, sizeof(double)); 
+  
+  /* Loop over points */ 
+  iter = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)XYZ, &axis);
+  while(iter->index < iter->size) {
+    
+    /* Compute the average ppm in the neighborhood */ 
+    xyz = PyArray_ITER_DATA(iter); 
+    x = xyz[0];
+    y = xyz[1];
+    z = xyz[2];
+    _ngb_integrate(p, ppm, x, y, z, U_data, (const int*)ngb, ngb_size);
+    
+    /* Calculate the dot product qi^T p where qi is the local
+       posterior */
+    tmp = 0.0; 
+    kk = x*u1 + y*u2 + z*u3; 
+    for (k=0, buf=p; k<K; k++, kk++, buf++)
+      tmp += ppm_data[kk]*(*buf);
+
+    /* Update overall energy */ 
+    res += tmp; 
+
+    /* Update iterator */ 
+    PyArray_ITER_NEXT(iter); 
+  }
+
+  /* Free memory */ 
+  free(p);
+  Py_XDECREF(iter);
+
+  return res; 
 }
