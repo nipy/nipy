@@ -225,8 +225,23 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     inner_cdict = inner_cmap._segmentdata.copy()
 
     cdict = dict()
+    for this_cdict, cmap in [(outer_cdict, outer_cmap),
+                             (inner_cdict, inner_cmap)]:
+        if callable(this_cdict['red']):
+            ps = _np.linspace(0, 1, 25)
+            colors = cmap(ps)
+            this_cdict['red'] = list()
+            this_cdict['green'] = list()
+            this_cdict['blue'] = list()
+            for p, (r, g, b, a) in zip(ps, colors):
+                this_cdict['red'].append((p, r, r))
+                this_cdict['green'].append((p, g, g))
+                this_cdict['blue'].append((p, b, b))
+
+
     for c_index, color in enumerate(('red', 'green', 'blue')):
         color_lst = list()
+
         for value, c1, c2 in outer_cdict[color]:
             if value >= vmin:
                 break
