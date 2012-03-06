@@ -16,7 +16,7 @@ try:
     from matplotlib import transforms
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
-    
+
 
 # Local imports
 from .coord_tools import coord_transform, get_bounds, get_mask_bounds
@@ -28,7 +28,7 @@ from ..datasets import VolumeImg
 # Bugware to have transparency work OK with MPL < .99.1
 if mpl.__version__ < '0.99.1':
     # We wrap the lut as a callable and replace its evalution to put
-    # alpha to zero where the mask is true. This is what is done in 
+    # alpha to zero where the mask is true. This is what is done in
     # MPL >= .99.1
     from matplotlib import colors
     class CMapProxy(colors.Colormap):
@@ -56,8 +56,104 @@ def _xyz_order(map, affine):
     affine = img.affine
     return map, affine
 
+
 ################################################################################
-# class OrthoSlicer
+# class CutAxes
+################################################################################
+
+class CutAxes(object):
+    """ An MPL axis-like object that displays a cut of 3D volumes
+    """
+
+    def __init__(self, ax, direction, coord):
+        """ An MPL axis-like object that displays a cut of 3D volumes
+
+            Parameters
+            ==========
+            ax: a MPL axes instance
+                The axes in which the plots will be drawn
+            direction: {'x', 'y', 'z'}
+                The directions of the cut
+            coord: float
+                The coordinnate along the direction of the cut
+        """
+        self.ax = ax
+        self.direction = direction
+        self.coord = coord
+        self._object_bounds = list()
+
+
+    def do_cut(self, map, affine):
+        """ Cut the 3D volume into a 2D slice
+
+            Parameters
+            ==========
+            map: 3D ndarray
+                The 3D volume to cut
+            affine: 4x4 ndarray
+                The affine of the volume
+        """
+        coords = [0, 0, 0]
+        coords['yxz'.index(self.direction)] = self.coord
+        x_map, y_map, z_map = [int(round(c)) for c in
+                               coord_transform(coords[0],
+                                               coords[1],
+                                               coords[2],
+                                               np.linalg.inv(affine))]
+        if self.direction == 'x':
+            cut = np.rot90(map[:, y_map, :])
+        elif self.direction == 'y':
+            cut = np.rot90(map[x_map, :, :])
+        elif self.direction == 'z':
+            cut = np.rot90(map[:, :, z_map])
+        else:
+            raise ValueError('Invalid value for direction %s' %
+                             self.direction)
+        return cut
+
+
+    def draw_cut(self, cut, data_bounds, bounding_box,
+                  type='imshow', **kwargs):
+        # kwargs massaging
+        kwargs['origin'] = 'upper'
+        if mpl.__version__ < '0.99.1':
+            cmap = kwargs.get('cmap',
+                        pl.cm.cmap_d[pl.rcParams['image.cmap']])
+            kwargs['cmap'] = CMapProxy(cmap)
+
+        if self.direction == 'x':
+            (xmin, xmax), (_, _), (zmin, zmax) = data_bounds
+            (xmin_, xmax_), (_, _), (zmin_, zmax_) = bounding_box
+        elif self.direction == 'y':
+            (_, _), (xmin, xmax), (zmin, zmax) = data_bounds
+            (_, _), (xmin_, xmax_), (zmin_, zmax_) = bounding_box
+        elif self.direction == 'z':
+            (xmin, xmax), (zmin, zmax), (_, _) = data_bounds
+            (xmin_, xmax_), (zmin_, zmax_), (_, _) = bounding_box
+        else:
+            raise ValueError('Invalid value for direction %s' %
+                             self.direction)
+        ax = self.ax
+        getattr(ax, type)(cut, extent=(xmin, xmax, zmin, zmax), **kwargs)
+
+        self._object_bounds.append((xmin_, xmax_, zmin_, zmax_))
+        ax.axis(self._get_object_bounds())
+
+
+    def _get_object_bounds(self):
+        """ Return the bounds of the objects on this axes.
+        """
+        xmins, xmaxs, ymins, ymaxs = np.array(self._object_bounds).T
+        xmax = max(xmaxs.max(), xmins.max())
+        xmin = min(xmins.min(), xmaxs.min())
+        ymax = max(ymaxs.max(), ymins.max())
+        ymin = min(ymins.min(), ymaxs.min())
+        return xmin, xmax, ymin, ymax
+
+
+
+################################################################################
+# class BaseSlicer
 ################################################################################
 
 class BaseSlicer(object):
@@ -94,18 +190,7 @@ class BaseSlicer(object):
         self._init_axes()
 
 
-    def _get_object_bounds(self, ax):
-        """ Return the bounds of the objects on one axes.
-        """
-        xmins, xmaxs, ymins, ymaxs = np.array(self._object_bounds[ax]).T
-        xmax = max(xmaxs.max(), xmins.max())
-        xmin = min(xmins.min(), xmaxs.min())
-        ymax = max(ymaxs.max(), ymins.max())
-        ymin = min(ymins.min(), ymaxs.min())
-        return xmin, xmax, ymin, ymax
-
-
-    def title(self, text, x=0.01, y=0.99, size=15, color=None, 
+    def title(self, text, x=0.01, y=0.99, size=15, color=None,
                 bgcolor=None, alpha=.9, **kwargs):
         """ Write a title to the view.
 
@@ -217,12 +302,13 @@ class OrthoSlicer(BaseSlicer):
         x0, y0, x1, y1 = self.rect
         # Create our axes:
         self.axes = dict()
-        for index, name in enumerate(('x', 'y', 'z')):
+        for index, direction in enumerate(('x', 'y', 'z')):
             ax = pl.axes([0.3*index*(x1-x0) + x0, y0, .3*(x1-x0), y1-y0])
             ax.axis('off')
-            self.axes[name] = ax
+            coord = self._cut_coords['yxz'.index(direction)]
+            cut_ax = CutAxes(ax, direction, coord)
+            self.axes[direction] = cut_ax
             ax.set_axes_locator(self._locator)
-            self._object_bounds[ax] = list()
 
 
     def _locator(self, axes, renderer):
@@ -231,12 +317,12 @@ class OrthoSlicer(BaseSlicer):
         """
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
-        ax_dict = self.axes
-        x_ax = ax_dict['x']
-        y_ax = ax_dict['y']
-        z_ax = ax_dict['z']
-        for ax in ax_dict.itervalues():
-            bounds = self._get_object_bounds(ax)
+        cut_ax_dict = self.axes
+        x_ax = cut_ax_dict['x']
+        y_ax = cut_ax_dict['y']
+        z_ax = cut_ax_dict['z']
+        for cut_ax in cut_ax_dict.itervalues():
+            bounds = cut_ax._get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
                 # succesful. As it happens asyncroniously (during a
@@ -244,15 +330,15 @@ class OrthoSlicer(BaseSlicer):
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
             xmin, xmax, ymin, ymax = bounds
-            width_dict[ax] = (xmax - xmin)
+            width_dict[cut_ax.ax] = (xmax - xmin)
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.iteritems():
             width_dict[ax] = width/total_width*(x1 -x0)
         left_dict = dict()
-        left_dict[x_ax] = x0
-        left_dict[y_ax] = x0 + width_dict[x_ax]
-        left_dict[z_ax] = x0 + width_dict[x_ax] + width_dict[y_ax]
-        return transforms.Bbox([[left_dict[axes], y0], 
+        left_dict[x_ax.ax] = x0
+        left_dict[y_ax.ax] = x0 + width_dict[x_ax.ax]
+        left_dict[z_ax.ax] = x0 + width_dict[x_ax.ax] + width_dict[y_ax.ax]
+        return transforms.Bbox([[left_dict[axes], y0],
                           [left_dict[axes] + width_dict[axes], y1]])
 
 
@@ -263,7 +349,7 @@ class OrthoSlicer(BaseSlicer):
             Parameters
             ----------
             cut_coords: 3-tuple of floats, optional
-                The position of the cross to draw. If none is passed, the 
+                The position of the cross to draw. If none is passed, the
                 ortho_slicer's cut coordinnates are used.
             kwargs:
                 Extra keyword arguments are passed to axhline
@@ -277,16 +363,15 @@ class OrthoSlicer(BaseSlicer):
                 kwargs['color'] = '.8'
             else:
                 kwargs['color'] = 'k'
-        ax = self.axes['x']
+        ax = self.axes['x'].ax
         ax.axvline(x, ymin=.05, ymax=.95, **kwargs)
         ax.axhline(z, **kwargs)
 
-        ax = self.axes['y']
-        xmin, xmax, ymin, ymax = self._get_object_bounds(ax)
+        ax = self.axes['y'].ax
         ax.axvline(y, ymin=.05, ymax=.95, **kwargs)
         ax.axhline(z, xmax=.95, **kwargs)
 
-        ax = self.axes['z']
+        ax = self.axes['z'].ax
         ax.axvline(x, ymin=.05, ymax=.95, **kwargs)
         ax.axhline(y, **kwargs)
 
@@ -317,17 +402,17 @@ class OrthoSlicer(BaseSlicer):
 
         bg_color = ('k' if self._black_bg else 'w')
         if left_right:
-            ax_z = self.axes['z']
-            ax_z.text(.1, .95, 'L', 
+            ax_z = self.axes['z'].ax
+            ax_z.text(.1, .95, 'L',
                     transform=ax_z.transAxes,
                     horizontalalignment='left',
                     verticalalignment='top',
                     size=size,
-                    bbox=dict(boxstyle="square,pad=0", 
+                    bbox=dict(boxstyle="square,pad=0",
                               ec=bg_color, fc=bg_color, alpha=.8),
                     **kwargs)
 
-            ax_z.text(.9, .95, 'R', 
+            ax_z.text(.9, .95, 'R',
                     transform=ax_z.transAxes,
                     horizontalalignment='right',
                     verticalalignment='top',
@@ -336,8 +421,8 @@ class OrthoSlicer(BaseSlicer):
                               ec=bg_color, fc=bg_color, alpha=.8),
                     **kwargs)
 
-            ax_x = self.axes['x']
-            ax_x.text(.1, .95, 'L', 
+            ax_x = self.axes['x'].ax
+            ax_x.text(.1, .95, 'L',
                     transform=ax_x.transAxes,
                     horizontalalignment='left',
                     verticalalignment='top',
@@ -345,12 +430,12 @@ class OrthoSlicer(BaseSlicer):
                     bbox=dict(boxstyle="square,pad=0", 
                               ec=bg_color, fc=bg_color, alpha=.8),
                     **kwargs)
-            ax_x.text(.9, .95, 'R', 
+            ax_x.text(.9, .95, 'R',
                     transform=ax_x.transAxes,
                     horizontalalignment='right',
                     verticalalignment='top',
                     size=size,
-                    bbox=dict(boxstyle="square,pad=0", 
+                    bbox=dict(boxstyle="square,pad=0",
                               ec=bg_color, fc=bg_color, alpha=.8),
                     **kwargs)
 
@@ -364,7 +449,7 @@ class OrthoSlicer(BaseSlicer):
                     bbox=dict(boxstyle="square,pad=0", 
                               ec=bg_color, fc=bg_color, alpha=.9),
                     **kwargs)
-            ax_y = self.axes['y']
+            ax_y = self.axes['y'].ax
             ax_y.text(0, 0, 'x=%i' % x,
                     transform=ax_y.transAxes,
                     horizontalalignment='left',
@@ -385,16 +470,9 @@ class OrthoSlicer(BaseSlicer):
 
     def _map_show(self, map, affine, type='imshow', **kwargs):
         map, affine = _xyz_order(map, affine)
-        # Force the origin
-        kwargs['origin'] = 'upper'
-        if mpl.__version__ < '0.99.1':
-            cmap = kwargs.get('cmap', 
-                        pl.cm.cmap_d[pl.rcParams['image.cmap']])
-            kwargs['cmap'] = CMapProxy(cmap)
-        x, y, z = self._cut_coords
-        x_map, y_map, z_map = [int(round(c)) for c in 
-                               coord_transform(x, y, z, np.linalg.inv(affine))]
-        (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(map.shape, affine)
+
+        data_bounds = get_bounds(map.shape, affine)
+        (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
 
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
                                         xmin, xmax, ymin, ymax, zmin, zmax
@@ -415,27 +493,17 @@ class OrthoSlicer(BaseSlicer):
             if not 'vmax' in kwargs:
                 kwargs['vmax'] = map.max()
 
-        ax = self.axes['x']
-        getattr(ax, type)(np.rot90(map[:, y_map, :]),
-                  extent=(xmin, xmax, zmin, zmax),
-                  **kwargs)
-        self._object_bounds[ax].append((xmin_, xmax_, zmin_, zmax_))
-        ax.axis(self._get_object_bounds(ax))
+        bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
 
-        ax = self.axes['y']
-        getattr(ax, type)(np.rot90(map[x_map, :, :]),
-                  extent=(ymin, ymax, zmin, zmax),
-                  **kwargs)
-        self._object_bounds[ax].append((ymin_, ymax_, zmin_, zmax_))
-        ax.axis(self._get_object_bounds(ax))
-
-        ax = self.axes['z']
-        getattr(ax, type)(np.rot90(map[:, :, z_map]),
-                  extent=(xmin, xmax, ymin, ymax),
-                  **kwargs)
-        self._object_bounds[ax].append((xmin_, xmax_, ymin_, ymax_))
-        ax.axis(self._get_object_bounds(ax))
-
+        # For each ax, cut the data and plot it
+        for cut_ax in self.axes.itervalues():
+            try:
+                cut = cut_ax.do_cut(map, affine)
+            except IndexError:
+                # We are cutting outside the indices of the data
+                continue
+            cut_ax.draw_cut(cut, data_bounds, bounding_box,
+                            type=type, **kwargs)
 
     def edge_map(self, map, affine, color='r'):
         """ Plot the edges of a 3D map in all the views.
@@ -452,36 +520,19 @@ class OrthoSlicer(BaseSlicer):
                 The color used to display the edge map
         """
         map, affine = _xyz_order(map, affine)
-        # Force the origin
         kwargs = dict(cmap=cm.alpha_cmap(color=color))
-        kwargs['origin'] = 'upper'
-        if mpl.__version__ < '0.99.1':
-            cmap = kwargs.get('cmap', 
-                        pl.cm.cmap_d[pl.rcParams['image.cmap']])
-            kwargs['cmap'] = CMapProxy(cmap)
-        x, y, z = self._cut_coords
-        x_map, y_map, z_map = [int(round(c)) for c in 
-                               coord_transform(x, y, z, np.linalg.inv(affine))]
-        (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(map.shape, affine)
+        data_bounds = get_bounds(map.shape, affine)
 
-        if y_map >= 0 and y_map < map.shape[1]:
-            edge_mask = _edge_map(np.rot90(map[:, y_map, :]))
-            getattr(self.axes['x'], 'imshow')(edge_mask,
-                                        extent=(xmin, xmax, zmin, zmax), 
-                                        vmin=0, **kwargs)
-
-        if x_map >= 0 and x_map < map.shape[0]:
-            edge_mask = _edge_map(np.rot90(map[x_map, :, :]))
-            getattr(self.axes['y'], 'imshow')(edge_mask,
-                                        extent=(ymin, ymax, zmin, zmax), 
-                                        vmin=0, **kwargs)
-
-        if z_map >= 0 and z_map < map.shape[-1]:
-            edge_mask = _edge_map(np.rot90(map[:, :, z_map]))
-            getattr(self.axes['z'], 'imshow')(edge_mask, 
-                                        extent=(xmin, xmax, ymin, ymax), 
-                                        vmin=0, **kwargs)
-
+        # For each ax, cut the data and plot it
+        for cut_ax in self.axes.itervalues():
+            try:
+                cut = cut_ax.do_cut(map, affine)
+                edge_mask = _edge_map(cut)
+            except IndexError:
+                # We are cutting outside the indices of the data
+                continue
+            cut_ax.draw_cut(edge_mask, data_bounds, data_bounds,
+                            type='imshow', **kwargs)
 
 def demo_ortho_slicer():
     """ A small demo of the OrthoSlicer functionality.
