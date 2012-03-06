@@ -3,7 +3,7 @@
 """
 The Slicer classes.
 
-The main purpose of these class is to have auto adjust of axes size to
+The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
 
@@ -60,23 +60,9 @@ def _xyz_order(map, affine):
 # class OrthoSlicer
 ################################################################################
 
-class OrthoSlicer(object):
-    """ A class to create 3 linked axes for plotting orthogonal
-        cuts of 3D maps.
-
-        Attributes
-        ----------
-
-        axes: dictionnary of axes
-            The 3 axes used to plot each view.
-        frame_axes: axes
-            The axes framing the whole set of views.
-
-        Notes
-        -----
-
-        The extent of the different axes are adjusted to fit the data
-        best in the viewing area.
+class BaseSlicer(object):
+    """ The main purpose of these class is to have auto adjust of axes size
+        to the data with different layout of cuts.
     """
 
     def __init__(self, cut_coords, axes=None, black_bg=False):
@@ -103,18 +89,9 @@ class OrthoSlicer(object):
         axes.set_zorder(1)
         bb = axes.get_position()
         self.rect = (bb.x0, bb.y0, bb.x1, bb.y1)
-        x0, y0, x1, y1 = self.rect
         self._object_bounds = dict()
         self._black_bg = black_bg
-
-        # Create our axes:
-        self.axes = dict()
-        for index, name in enumerate(('x', 'y', 'z')):
-            ax = pl.axes([0.3*index*(x1-x0) + x0, y0, .3*(x1-x0), y1-y0])
-            ax.axis('off')
-            self.axes[name] = ax
-            ax.set_axes_locator(self._locator)
-            self._object_bounds[ax] = list()
+        self._init_axes()
 
 
     def _get_object_bounds(self, ax):
@@ -126,6 +103,126 @@ class OrthoSlicer(object):
         ymax = max(ymaxs.max(), ymins.max())
         ymin = min(ymins.min(), ymaxs.min())
         return xmin, xmax, ymin, ymax
+
+
+    def title(self, text, x=0.01, y=0.99, size=15, color=None, 
+                bgcolor=None, alpha=.9, **kwargs):
+        """ Write a title to the view.
+
+            Parameters
+            ----------
+            text: string
+                The text of the title
+            x: float, optional
+                The horizontal position of the title on the frame in 
+                fraction of the frame width.
+            y: float, optional
+                The vertical position of the title on the frame in 
+                fraction of the frame height.
+            size: integer, optional
+                The size of the title text.
+            color: matplotlib color specifier, optional
+                The color of the font of the title.
+            bgcolor: matplotlib color specifier, optional
+                The color of the background of the title.
+            alpha: float, optional
+                The alpha value for the background.
+            kwargs:
+                Extra keyword arguments are passed to matplotlib's text
+                function.
+        """
+        if color is None:
+            color = 'k' if self._black_bg else 'w'
+        if bgcolor is None:
+            bgcolor = 'w' if self._black_bg else 'k'
+        self.frame_axes.text(x, y, text, 
+                    transform=self.frame_axes.transAxes,
+                    horizontalalignment='left',
+                    verticalalignment='top',
+                    size=size, color=color,
+                    bbox=dict(boxstyle="square,pad=.3", 
+                              ec=bgcolor, fc=bgcolor, alpha=alpha),
+                    **kwargs)
+
+
+    def plot_map(self, map, affine, threshold=None, **kwargs):
+        """ Plot a 3D map in all the views.
+
+            Parameters
+            -----------
+            map: 3D ndarray
+                The 3D map to be plotted. If it is a masked array, only
+                the non-masked part will be plotted.
+            affine: 4x4 ndarray
+                The affine matrix giving the transformation from voxel
+                indices to world space.
+            threshold : a number, None, or 'auto'
+                If None is given, the maps are not thresholded.
+                If a number is given, it is used to threshold the maps:
+                values below the threshold are plotted as transparent.
+            kwargs:
+                Extra keyword arguments are passed to imshow.
+        """
+        if threshold is not None:
+            if threshold == 0:
+                map = np.ma.masked_equal(map, 0, copy=False)
+            else:
+                map = np.ma.masked_inside(map, -threshold, threshold, 
+                                          copy=False)
+
+        self._map_show(map, affine, type='imshow', **kwargs)
+
+
+    def contour_map(self, map, affine, **kwargs):
+        """ Contour a 3D map in all the views.
+
+            Parameters
+            -----------
+            map: 3D ndarray
+                The 3D map to be plotted. If it is a masked array, only
+                the non-masked part will be plotted.
+            affine: 4x4 ndarray
+                The affine matrix giving the transformation from voxel
+                indices to world space.
+            kwargs:
+                Extra keyword arguments are passed to contour.
+        """
+        self._map_show(map, affine, type='contour', **kwargs)
+
+
+################################################################################
+# class OrthoSlicer
+################################################################################
+
+class OrthoSlicer(BaseSlicer):
+    """ A class to create 3 linked axes for plotting orthogonal
+        cuts of 3D maps.
+
+        Attributes
+        ----------
+
+        axes: dictionnary of axes
+            The 3 axes used to plot each view.
+        frame_axes: axes
+            The axes framing the whole set of views.
+
+        Notes
+        -----
+
+        The extent of the different axes are adjusted to fit the data
+        best in the viewing area.
+    """
+
+    def _init_axes(self):
+        x0, y0, x1, y1 = self.rect
+        # Create our axes:
+        self.axes = dict()
+        for index, name in enumerate(('x', 'y', 'z')):
+            ax = pl.axes([0.3*index*(x1-x0) + x0, y0, .3*(x1-x0), y1-y0])
+            ax.axis('off')
+            self.axes[name] = ax
+            ax.set_axes_locator(self._locator)
+            self._object_bounds[ax] = list()
 
 
     def _locator(self, axes, renderer):
@@ -284,91 +381,6 @@ class OrthoSlicer(object):
                     bbox=dict(boxstyle="square,pad=0", 
                               ec=bg_color, fc=bg_color, alpha=.9),
                     **kwargs)
-
-
-    def title(self, text, x=0.01, y=0.99, size=15, color=None, 
-                bgcolor=None, alpha=.9, **kwargs):
-        """ Write a title to the view.
-
-            Parameters
-            ----------
-            text: string
-                The text of the title
-            x: float, optional
-                The horizontal position of the title on the frame in 
-                fraction of the frame width.
-            y: float, optional
-                The vertical position of the title on the frame in 
-                fraction of the frame height.
-            size: integer, optional
-                The size of the title text.
-            color: matplotlib color specifier, optional
-                The color of the font of the title.
-            bgcolor: matplotlib color specifier, optional
-                The color of the background of the title.
-            alpha: float, optional
-                The alpha value for the background.
-            kwargs:
-                Extra keyword arguments are passed to matplotlib's text
-                function.
-        """
-        if color is None:
-            color = 'k' if self._black_bg else 'w'
-        if bgcolor is None:
-            bgcolor = 'w' if self._black_bg else 'k'
-        self.frame_axes.text(x, y, text, 
-                    transform=self.frame_axes.transAxes,
-                    horizontalalignment='left',
-                    verticalalignment='top',
-                    size=size, color=color,
-                    bbox=dict(boxstyle="square,pad=.3", 
-                              ec=bgcolor, fc=bgcolor, alpha=alpha),
-                    **kwargs)
-
-
-    def plot_map(self, map, affine, threshold=None, **kwargs):
-        """ Plot a 3D map in all the views.
-
-            Parameters
-            -----------
-            map: 3D ndarray
-                The 3D map to be plotted. If it is a masked array, only
-                the non-masked part will be plotted.
-            affine: 4x4 ndarray
-                The affine matrix giving the transformation from voxel
-                indices to world space.
-            threshold : a number, None, or 'auto'
-                If None is given, the maps are not thresholded.
-                If a number is given, it is used to threshold the maps:
-                values below the threshold are plotted as transparent.
-            kwargs:
-                Extra keyword arguments are passed to imshow.
-        """
-        if threshold is not None:
-            if threshold == 0:
-                map = np.ma.masked_equal(map, 0, copy=False)
-            else:
-                map = np.ma.masked_inside(map, -threshold, threshold, 
-                                          copy=False)
-
-        self._map_show(map, affine, type='imshow', **kwargs)
-
-
-    def contour_map(self, map, affine, **kwargs):
-        """ Contour a 3D map in all the views.
-
-            Parameters
-            -----------
-            map: 3D ndarray
-                The 3D map to be plotted. If it is a masked array, only
-                the non-masked part will be plotted.
-            affine: 4x4 ndarray
-                The affine matrix giving the transformation from voxel
-                indices to world space.
-            kwargs:
-                Extra keyword arguments are passed to contour.
-        """
-        self._map_show(map, affine, type='contour', **kwargs)
 
 
     def _map_show(self, map, affine, type='imshow', **kwargs):
