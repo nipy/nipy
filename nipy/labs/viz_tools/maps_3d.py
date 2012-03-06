@@ -137,7 +137,22 @@ def m2screenshot(mayavi_fig=None, mpl_axes=None, autocrop=True):
 def plot_anat_3d(anat=None, anat_affine=None, scale=1,
                  sulci_opacity=0.5, gyri_opacity=0.3,
                  opacity=None,
+                 skull_percentile=78, wm_percentile=79,
                  outline_color=None):
+    """
+        Parameters
+        ==========
+        skull_percentile : float, optional
+            The percentile of the values in the image that delimit the 
+            skull from the outside of the brain. The smaller the fraction
+            of you field of view is occupied by the brain, the larger
+            this value should be.
+        wm_percentile : float, optional
+            The percentile of the values in the image that delimit the
+            white matter from the grey matter. Typical this is 
+            skull_percentile + 1
+
+    """
     # Late import to avoid triggering wx imports before needed.
     try:
         from mayavi import mlab
@@ -150,16 +165,26 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
     if anat is None:
         anat, anat_affine, anat_max = _AnatCache.get_anat()
         anat_blurred = _AnatCache.get_blurred()
+        skull_threshold = 4800
+        inner_threshold = 5000
+        upper_threshold = 7227.8
     else:
         from scipy import ndimage
         # XXX: This should be in a separate function
+        voxel_size = np.sqrt((anat_affine[:3, :3]**2).sum()/3.)
+        skull_threshold = stats.scoreatpercentile(anat.ravel(), 
+                skull_percentile)
+        inner_threshold = stats.scoreatpercentile(anat.ravel(), 
+                wm_percentile)
+        upper_threshold = anat.max()
         anat_blurred = ndimage.gaussian_filter(
-                                        (ndimage.morphology.binary_fill_holes(
-                                            ndimage.gaussian_filter(
-                                                    (anat > 4800).astype(np.float), 6)
-                                                > 0.5
-                                            )).astype(np.float),
-                                        2).T.ravel()
+                            (ndimage.morphology.binary_fill_holes(
+                                ndimage.gaussian_filter(
+                                    (anat > skull_threshold).astype(np.float), 
+                                    6./voxel_size)
+                                    > 0.5
+                                )).astype(np.float),
+                            2./voxel_size).T.ravel()
 
     if opacity is None:
         try:
@@ -194,11 +219,12 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
     cortex = mlab.pipeline.surface(cortex_surf,
                 colormap='copper', 
                 opacity=opacity,
-                vmin=4800, vmax=5000)
+                vmin=skull_threshold, 
+                vmax=inner_threshold)
     cortex.enable_contours = True
     cortex.contour.filled_contours = True
     cortex.contour.auto_contours = False
-    cortex.contour.contours = [0, 5000, 7227.8]
+    cortex.contour.contours = [0, inner_threshold, upper_threshold]
     #cortex.actor.property.backface_culling = True
     # XXX: Why do we do 'frontface_culling' to see the front.
     cortex.actor.property.frontface_culling = True
