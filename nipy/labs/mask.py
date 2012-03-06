@@ -75,7 +75,8 @@ def threshold_connect_components(map, threshold, copy=True):
 ################################################################################
 
 def compute_mask_files(input_filename, output_filename=None, 
-                        return_mean=False, m=0.2, M=0.9, cc=1):
+                        return_mean=False, m=0.2, M=0.9, cc=1,
+                        exclude_zeros=False):
     """
     Compute a mask file from fMRI nifti file(s)
 
@@ -101,6 +102,10 @@ def compute_mask_files(input_filename, output_filename=None,
         upper fraction of the histogram to be discarded.
     cc: boolean, optional
         if cc is True, only the largest connect component is kept.
+    exclude_zeros: boolean, optional
+        Consider zeros as missing values for the computation of the
+        threshold. This option is useful if the images have been
+        resliced with a large padding of zeros.
 
     Returns
     -------
@@ -157,7 +162,8 @@ def compute_mask_files(input_filename, output_filename=None,
         tmp[np.isnan(tmp)] = 0
         mean_volume = tmp
         
-    mask = compute_mask(mean_volume, first_volume, m, M, cc)
+    mask = compute_mask(mean_volume, first_volume, m, M, cc,
+                        exclude_zeros=exclude_zeros)
       
     if output_filename is not None:
         header['descrip'] = 'mask'
@@ -172,7 +178,7 @@ def compute_mask_files(input_filename, output_filename=None,
 
 
 def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9, 
-                                                cc=True, opening=True):
+                        cc=True, opening=True, exclude_zeros=False):
     """
     Compute a mask file from fMRI data in 3D or 4D ndarrays.
 
@@ -200,6 +206,10 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
         if opening is True, an morphological opening is performed, to keep 
         only large structures. This step is useful to remove parts of
         the skull that might have been included.
+    exclude_zeros: boolean, optional
+        Consider zeros as missing values for the computation of the
+        threshold. This option is useful if the images have been
+        resliced with a large padding of zeros.
 
     Returns
     -------
@@ -209,6 +219,8 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     if reference_volume is None:
         reference_volume = mean_volume
     sorted_input = np.sort(mean_volume.reshape(-1))
+    if exclude_zeros:
+        sorted_input = sorted_input[sorted_input != 0]
     limiteinf = np.floor(m * len(sorted_input))
     limitesup = np.floor(M * len(sorted_input))
 
@@ -229,7 +241,8 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
 
 
 
-def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
+def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
+                          threshold=0.5, exclude_zeros=False):
     """ Compute a common mask for several sessions of fMRI data.
 
         Uses the mask-finding algorithmes to extract masks for each
@@ -254,6 +267,10 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
         upper fraction of the histogram to be discarded.
     cc: boolean, optional
         if cc is True, only the largest connect component is kept.
+    exclude_zeros: boolean, optional
+        Consider zeros as missing values for the computation of the
+        threshold. This option is useful if the images have been
+        resliced with a large padding of zeros.
 
     Returns
     -------
@@ -262,9 +279,9 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5):
     """
     mask = None
     for index, session in enumerate(session_files):
-        this_mask = compute_mask_files(session,
-                                       m=m, M=M,
-                                       cc=cc).astype(np.int8)
+        this_mask = compute_mask_files(session, m=m, M=M, cc=cc,
+                                       exclude_zeros=exclude_zeros,
+                                       ).astype(np.int8)
         if mask is None:
             mask = this_mask
         else:
