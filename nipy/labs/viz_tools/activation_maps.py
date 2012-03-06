@@ -32,7 +32,7 @@ except ImportError:
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import coord_transform, find_cut_coords
 
-from .ortho_slicer import OrthoSlicer, _xyz_order
+from .slicers import OrthoSlicer, _xyz_order
 from edge_detect import _fast_abs_percentile
 
 ################################################################################
