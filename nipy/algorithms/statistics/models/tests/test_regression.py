@@ -91,7 +91,7 @@ def test_ar_estimator():
     assert_array_almost_equal(rhos, rhos2, 8)
     invM = ar_bias_corrector(my_model.design, my_model.calc_beta, 2)
     rhos3 = ar_bias_correct(results, 2, invM)
-    assert_array_equal(rhos2, rhos3)
+    assert_array_almost_equal(rhos2, rhos3)
     # Check orders 1 and 3
     rhos = ar_bias_correct(results, 1)
     assert_equal(rhos.shape, ())

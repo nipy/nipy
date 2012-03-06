@@ -215,7 +215,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
 def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None, 
               axes=None, title=None, annotate=True, draw_cross=True,
-              black_bg=False, dim=False):
+              black_bg=False, dim=False, cmap=pl.cm.gray):
     """ Plot three cuts of an anatomical image (Frontal, Axial, and Lateral)
 
         Parameters
@@ -255,6 +255,8 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None,
             you whish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
+        cmap: matplotlib colormap, optional
+            The colormap for the anat
 
         Notes
         -----
@@ -323,7 +325,7 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None,
                 vmax = vmean + (1+dim)*ptp
             else:
                 vmin = vmean - (1+dim)*ptp
-        ortho_slicer.plot_map(anat, anat_affine, cmap=pl.cm.gray,
+        ortho_slicer.plot_map(anat, anat_affine, cmap=cmap,
                               vmin=vmin, vmax=vmax)
 
         if annotate:
