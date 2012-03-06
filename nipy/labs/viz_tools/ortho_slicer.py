@@ -139,7 +139,14 @@ class OrthoSlicer(object):
         y_ax = ax_dict['y']
         z_ax = ax_dict['z']
         for ax in ax_dict.itervalues():
-            xmin, xmax, ymin, ymax = self._get_object_bounds(ax)
+            bounds = self._get_object_bounds(ax)
+            if not bounds:
+                # This happens if the call to _map_show was not
+                # succesful. As it happens asyncroniously (during a
+                # refresh of the figure) we capture the problem and
+                # ignore it: it only adds a non informative traceback
+                bounds = [0, 1, 0, 1]
+            xmin, xmax, ymin, ymax = bounds
             width_dict[ax] = (xmax - xmin)
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.iteritems():
