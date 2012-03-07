@@ -28,7 +28,7 @@ try:
     import pylab as pl
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
- 
+
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import coord_transform, find_cut_coords
 
@@ -36,7 +36,7 @@ from .slicers import OrthoSlicer, _xyz_order
 from edge_detect import _fast_abs_percentile
 
 ################################################################################
-# Helper functions for 2D plotting of activation maps 
+# Helper functions for 2D plotting of activation maps
 ################################################################################
 
 
@@ -213,7 +213,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     return ortho_slicer
 
 
-def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None, 
+def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None,
               axes=None, title=None, annotate=True, draw_cross=True,
               black_bg=False, dim=False, cmap=pl.cm.gray):
     """ Plot three cuts of an anatomical image (Frontal, Axial, and Lateral)
@@ -300,9 +300,9 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None,
     # cut_coords are in its range
     x, y, z = cut_coords
 
-    if (anat is not False 
+    if (anat is not False
                 and np.all(
-                 np.array(coord_transform(x, y, z, np.linalg.inv(anat_affine))) 
+                 np.array(coord_transform(x, y, z, np.linalg.inv(anat_affine)))
                             < anat.shape)):
         if canonical_anat:
             # We special-case the 'canonical anat', as we don't need
