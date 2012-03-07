@@ -32,15 +32,17 @@ def test_plot_anat():
     mp.use('svg', warn=False)
     import pylab as pl
     pl.switch_backend('svg')
-    ortho_slicer = plot_anat()
-    data = np.zeros((100, 100, 100))
+    data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
-    ortho_slicer.edge_map(data, mni_sform, color='c')
+    ortho_slicer = plot_anat(data, mni_sform, dim=True)
+    ortho_slicer = plot_anat(data, mni_sform, cut_coords=(80, -120, -60))
     # Saving forces a draw, and thus smoke-tests the axes locators
     pl.savefig(tempfile.TemporaryFile())
+    ortho_slicer.edge_map(data, mni_sform, color='c')
+
     z_slicer = plot_anat(slicer='z')
-    z_slicer.edge_map(data, mni_sform, color='c')
     pl.savefig(tempfile.TemporaryFile())
+    z_slicer.edge_map(data, mni_sform, color='c')
     # Smoke test coordinate finder, with and without mask
     plot_map(np.ma.masked_equal(data, 0), mni_sform, slicer='x')
     plot_map(data, mni_sform, slicer='y')

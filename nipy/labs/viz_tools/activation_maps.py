@@ -129,10 +129,10 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
-        # Threshold epsilon above a percentile value, to be sure that some 
+        # Threshold epsilon above a percentile value, to be sure that some
         # voxels are indeed threshold
         threshold = _fast_abs_percentile(map) + 1e-5
-    
+
     if do3d:
         try:
             try:
