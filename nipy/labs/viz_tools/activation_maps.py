@@ -190,7 +190,6 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         ax = slicer.axes.values()[0].ax.figure.add_axes((0.001, 0, 0.29, 1))
         ax.axis('off')
         m2screenshot(mpl_axes=ax)
-        axes = (0.3, 0, .7, 1.)
         if offscreen:
             # Clean up, so that the offscreen engine doesn't become the
             # default

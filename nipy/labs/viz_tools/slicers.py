@@ -257,6 +257,8 @@ class BaseSlicer(object):
 
         if axes is None:
             axes = [0., 0., 1., 1.]
+            if leave_space:
+                axes = [0.3, 0, .7, 1.]
         if operator.isSequenceType(axes):
             axes = figure.add_axes(axes)
             axes.axis('off')
