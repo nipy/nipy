@@ -125,6 +125,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     if np.any(nan_mask):
         map = map.copy()
         map[nan_mask] = 0
+    del nan_mask
 
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
