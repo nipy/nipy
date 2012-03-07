@@ -32,7 +32,7 @@ except ImportError:
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import coord_transform
 
-from .slicers import OrthoSlicer, _xyz_order
+from .slicers import SLICERS, _xyz_order
 from edge_detect import _fast_abs_percentile
 
 ################################################################################
@@ -42,7 +42,7 @@ from edge_detect import _fast_abs_percentile
 
 def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     figure=None, axes=None, title=None, threshold=None,
-                    annotate=True, draw_cross=True, 
+                    annotate=True, draw_cross=True, slicer='ortho',
                     do3d=False, threshold_3d=None,
                     view_3d=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
                     black_bg=False,
@@ -145,7 +145,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
             do3d = False
 
-    slicer = OrthoSlicer.init_with_figure(data=map, affine=affine,
+    slicer = SLICERS[slicer].init_with_figure(data=map, affine=affine,
                                           threshold=threshold,
                                           cut_coords=cut_coords,
                                           figure=figure, axes=axes,
@@ -230,14 +230,10 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
             warnings.warn(repr(e))
 
     black_bg = slicer._black_bg
-    # Check that we should indeed plot an anat: we have one, and the
+    # XXX: Check that we should indeed plot an anat: we have one, and the
     # cut_coords are in its range
-    x, y, z = slicer._cut_coords
 
-    if (anat is not False
-                and np.all(
-                 np.array(coord_transform(x, y, z, np.linalg.inv(anat_affine)))
-                            < anat.shape)):
+    if anat is not False:
         if canonical_anat:
             # We special-case the 'canonical anat', as we don't need
             # to do a few transforms to it.

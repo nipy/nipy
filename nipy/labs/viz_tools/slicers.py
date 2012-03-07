@@ -197,7 +197,8 @@ class BaseSlicer(object):
     """ The main purpose of these class is to have auto adjust of axes size
         to the data with different layout of cuts.
     """
-    _default_figsize = (6.6, 2.6)
+    # This actually encodes the figsize for only one axe
+    _default_figsize = [2.2, 2.6]
 
     def __init__(self, cut_coords, axes=None, black_bg=False):
         """ Create 3 linked axes for plotting orthogonal cuts.
@@ -244,10 +245,12 @@ class BaseSlicer(object):
 
         # Make sure that we have a figure
         figsize = cls._default_figsize
+        # Adjust for the number of axes
+        figsize[0] *= len(cut_coords)
         facecolor = 'k' if black_bg else 'w'
         if not isinstance(figure, pl.Figure):
             if leave_space:
-                figsize = figsize[0] + 3.4, figsize[1]
+                figsize[0] += 3.4
             figure = pl.figure(figure, figsize=figsize,
                             facecolor=facecolor)
         else:
@@ -449,7 +452,7 @@ class BaseSlicer(object):
 
         if positions:
             for cut_ax in self.axes.values():
-                cut_ax.draw_left_right(size=size, bg_color=bg_color,
+                cut_ax.draw_position(size=size, bg_color=bg_color,
                                        **kwargs)
 
 
@@ -600,6 +603,32 @@ class BaseStackedSlicer(BaseSlicer):
         The extent of the different axes are adjusted to fit the data
         best in the viewing area.
     """
+    @classmethod
+    def find_cut_coords(cls, data=None, affine=None, threshold=None,
+                        cut_coords=None):
+        if cut_coords is None:
+            if data is None or data is False:
+                bounds = ((-40, 40), (-30, 30), (-30, 75))
+            else:
+                if hasattr(data, 'mask'):
+                    mask = np.logical_not(data.mask)
+                else:
+                    # The mask will be anything that is fairly different
+                    # from the values in the corners
+                    edge_value = float(data[0, 0, 0] + data[0, -1, 0] 
+                                     + data[-1, 0, 0] + data[0, 0, -1]
+                                     + data[-1, -1, 0] + data[-1, 0, -1]
+                                     + data[0, -1, -1] + data[-1, -1, -1]
+                                    )
+                    edge_value /= 6
+                    mask = np.abs(data - edge_value) > .005*data.ptp()
+                xmin, xmax, ymin, ymax, zmin, zmax = \
+                                get_mask_bounds(mask, affine)
+                bounds = (xmin, xmax), (ymin, ymax), (zmin, zmax)
+            lower, upper = bounds['xyz'.index(cls._direction)]
+            cut_coords = np.linspace(lower, upper, 10).tolist()
+        return cut_coords
+
 
     def _init_axes(self):
         x0, y0, x1, y1 = self.rect
@@ -673,3 +702,7 @@ class ZSlicer(BaseStackedSlicer):
     _direction = 'z'
 
 
+SLICERS = dict(ortho=OrthoSlicer,
+               x=XSlicer,
+               y=YSlicer,
+               z=ZSlicer)
