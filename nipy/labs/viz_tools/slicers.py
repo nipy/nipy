@@ -7,6 +7,8 @@ The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
 
+import operator
+
 import numpy as np
 from nipy.utils.skip_test import skip_if_running_nose
 
@@ -19,13 +21,11 @@ except ImportError:
 
 
 # Local imports
-from .coord_tools import coord_transform, get_bounds, get_mask_bounds
+from .coord_tools import coord_transform, get_bounds, get_mask_bounds, \
+        find_cut_coords
 from .edge_detect import _edge_map
 from . import cm
 from ..datasets import VolumeImg
-
-# XXX: going to need factory for slicers giving default figure size and
-# optional computation of cut coordinnates?
 
 ################################################################################
 # Bugware to have transparency work OK with MPL < .99.1
@@ -188,6 +188,7 @@ class CutAxes(object):
                             ec=bg_color, fc=bg_color, alpha=.9),
                 **kwargs)
 
+
 ################################################################################
 # class BaseSlicer
 ################################################################################
@@ -196,6 +197,7 @@ class BaseSlicer(object):
     """ The main purpose of these class is to have auto adjust of axes size
         to the data with different layout of cuts.
     """
+    _default_figsize = (6.6, 2.6)
 
     def __init__(self, cut_coords, axes=None, black_bg=False):
         """ Create 3 linked axes for plotting orthogonal cuts.
@@ -224,6 +226,41 @@ class BaseSlicer(object):
         self._object_bounds = dict()
         self._black_bg = black_bg
         self._init_axes()
+
+
+    @staticmethod
+    def find_cut_coords(data=None, affine=None, threshold=None,
+                        cut_coords=None):
+        # Implement this as a staticmethod or a classmethod when
+        # subclassing
+        raise NotImplementedError
+
+    @classmethod
+    def init_with_figure(cls, data=None, affine=None, threshold=None,
+                         cut_coords=None, figure=None, axes=None,
+                         black_bg=False, leave_space=False):
+        cut_coords = cls.find_cut_coords(data, affine, threshold,
+                                         cut_coords)
+
+        # Make sure that we have a figure
+        figsize = cls._default_figsize
+        facecolor = 'k' if black_bg else 'w'
+        if not isinstance(figure, pl.Figure):
+            if leave_space:
+                figsize = figsize[0] + 3.4, figsize[1]
+            figure = pl.figure(figure, figsize=figsize,
+                            facecolor=facecolor)
+        else:
+            if isinstance(axes, pl.Axes):
+                assert axes.figure is figure, ("The axes passed are not "
+                "in the figure")
+
+        if axes is None:
+            axes = [0., 0., 1., 1.]
+        if operator.isSequenceType(axes):
+            axes = figure.add_axes(axes)
+            axes.axis('off')
+        return cls(cut_coords, axes, black_bg)
 
 
     def title(self, text, x=0.01, y=0.99, size=15, color=None,
@@ -436,6 +473,18 @@ class OrthoSlicer(BaseSlicer):
         The extent of the different axes are adjusted to fit the data
         best in the viewing area.
     """
+    @staticmethod
+    def find_cut_coords(data=None, affine=None, threshold=None,
+                        cut_coords=None):
+        if cut_coords is None:
+            if data is None or data is False:
+                cut_coords = (0, 0, 0)
+            else:
+                x_map, y_map, z_map = find_cut_coords(data,
+                                        activation_threshold=threshold)
+                cut_coords = coord_transform(x_map, y_map, z_map, affine)
+        return cut_coords
+
 
     def _init_axes(self):
         x0, y0, x1, y1 = self.rect
@@ -620,3 +669,5 @@ class YSlicer(BaseStackedSlicer):
 
 class ZSlicer(BaseStackedSlicer):
     _direction = 'z'
+
+
