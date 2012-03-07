@@ -615,7 +615,7 @@ class BaseStackedSlicer(BaseSlicer):
                 else:
                     # The mask will be anything that is fairly different
                     # from the values in the corners
-                    edge_value = float(data[0, 0, 0] + data[0, -1, 0] 
+                    edge_value = float(data[0, 0, 0] + data[0, -1, 0]
                                      + data[-1, 0, 0] + data[0, 0, -1]
                                      + data[-1, -1, 0] + data[-1, 0, -1]
                                      + data[0, -1, -1] + data[-1, -1, -1]
@@ -625,7 +625,7 @@ class BaseStackedSlicer(BaseSlicer):
                 xmin, xmax, ymin, ymax, zmin, zmax = \
                                 get_mask_bounds(mask, affine)
                 bounds = (xmin, xmax), (ymin, ymax), (zmin, zmax)
-            lower, upper = bounds['xyz'.index(cls._direction)]
+            lower, upper = bounds['yxz'.index(cls._direction)]
             cut_coords = np.linspace(lower, upper, 10).tolist()
         return cut_coords
 
@@ -666,11 +666,12 @@ class BaseStackedSlicer(BaseSlicer):
         for ax, width in width_dict.iteritems():
             width_dict[ax] = width/total_width*(x1 -x0)
         left_dict = dict()
-        left = x0
+        left = float(x0)
         for coord, cut_ax in sorted(cut_ax_dict.items()):
             left_dict[cut_ax.ax] = left
             this_width = width_dict[cut_ax.ax]
             left += this_width
+        print len(width_dict), left_dict[axes] + width_dict[axes]
         return transforms.Bbox([[left_dict[axes], y0],
                                 [left_dict[axes] + width_dict[axes], y1]])
 
@@ -692,10 +693,12 @@ class BaseStackedSlicer(BaseSlicer):
 
 class XSlicer(BaseStackedSlicer):
     _direction = 'x'
+    _default_figsize = [2.2, 2.3]
 
 
 class YSlicer(BaseStackedSlicer):
     _direction = 'y'
+    _default_figsize = [2.6, 2.3]
 
 
 class ZSlicer(BaseStackedSlicer):

@@ -41,12 +41,11 @@ from edge_detect import _fast_abs_percentile
 
 
 def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
-                    figure=None, axes=None, title=None, threshold=None,
-                    annotate=True, draw_cross=True, slicer='ortho',
+                    slicer='ortho', figure=None, axes=None, title=None,
+                    threshold=None, annotate=True, draw_cross=True,
                     do3d=False, threshold_3d=None,
                     view_3d=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
-                    black_bg=False,
-                    **kwargs):
+                    black_bg=False, **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
 
         Parameters
@@ -55,24 +54,30 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             The activation map, as a 3D image.
         affine : 4x4 ndarray
             The affine matrix going from image voxel space to MNI space.
-        cut_coords: 3-tuple of floats or None
-            The MNI coordinates of the point where the cut is performed, in 
+        cut_coords: None, or a tuple of floats
+            The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
-            If None is given, the cut point is calculated automaticaly.
+            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
+            For slicer == 'x', 'y', or 'z', then these are the
+            coordinates of each cut in the corresponding direction.
+            If None is given, the cuts is calculated automaticaly.
         anat : 3D ndarray or False, optional
-            The anatomical image to be used as a background. If None, the 
+            The anatomical image to be used as a background. If None, the
             MNI152 T1 1mm template is used. If False, no anat is displayed.
         anat_affine : 4x4 ndarray, optional
             The affine matrix going from the anatomical image voxel space to 
             MNI space. This parameter is not used when the default 
             anatomical is used, but it is compulsory when using an
             explicite anatomical image.
+        slicer: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts. With 'ortho' three cuts are
+            performed in orthogonal directions
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
         axes : matplotlib axes or 4 tuple of float: (xmin, xmax, ymin, ymin), optional
-            The axes, or the coordinates, in matplotlib figure space, 
-            of the axes used to display the plot. If None, the complete 
+            The axes, or the coordinates, in matplotlib figure space,
+            of the axes used to display the plot. If None, the complete
             figure is used.
         title : string, optional
             The title dispayed on the figure.
@@ -268,16 +273,15 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
     return slicer
 
 
-def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None,
-              axes=None, title=None, annotate=True, draw_cross=True,
-              black_bg=False, dim=False, cmap=pl.cm.gray, slicer='ortho',
-              ):
+def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
+              figure=None, axes=None, title=None, annotate=True,
+              draw_cross=True, black_bg=False, dim=False, cmap=pl.cm.gray):
     """ Plot three cuts of an anatomical image (Frontal, Axial, and Lateral)
 
         Parameters
         ----------
         anat : 3D ndarray, optional
-            The anatomical image to be used as a background. If None is 
+            The anatomical image to be used as a background. If None is
             given, nipy tries to find a T1 template.
         anat_affine : 4x4 ndarray, optional
             The affine matrix going from the anatomical image voxel space to 
@@ -287,16 +291,22 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None,
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        cut_coords: 3-tuple of floats or None, optional
-            The MNI coordinates of the point where the cut is performed, in 
+        cut_coords: None, or a tuple of floats
+            The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
-            If None is given, the center of image is taken as a cut point.
+            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
+            For slicer == 'x', 'y', or 'z', then these are the
+            coordinates of each cut in the corresponding direction.
+            If None is given, the cuts is calculated automaticaly.
+        slicer: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts. With 'ortho' three cuts are
+            performed in orthogonal directions
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
         axes : matplotlib axes or 4 tuple of float: (xmin, xmax, ymin, ymin), optional
-            The axes, or the coordinates, in matplotlib figure space, 
-            of the axes used to display the plot. If None, the complete 
+            The axes, or the coordinates, in matplotlib figure space,
+            of the axes used to display the plot. If None, the complete
             figure is used.
         title : string, optional
             The title dispayed on the figure.
