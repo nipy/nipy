@@ -135,7 +135,10 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     
     if do3d:
         try:
-            from enthought.mayavi import version
+            try:
+                from mayavi import version
+            except ImportError:
+                from enthought.mayavi import version
             if not int(version.version[0]) > 2:
                 raise ImportError
         except ImportError:
@@ -152,7 +155,10 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     # Use Mayavi for the 3D plotting
     if do3d:
         from .maps_3d import plot_map_3d, m2screenshot
-        from enthought.tvtk.api import tvtk
+        try:
+            from tvtk.api import tvtk
+        except ImportError:
+            from enthought.tvtk.api import tvtk
         version = tvtk.Version()
         offscreen = True
         if (version.vtk_major_version, version.vtk_minor_version) < (5, 2):
@@ -168,7 +174,10 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         kwargs['vmin'] = vmin
         vmax = kwargs.get('vmax', map.max())
         kwargs['vmax'] = vmax
-        from enthought.mayavi import mlab
+        try:
+            from mayavi import mlab
+        except ImportError:
+            from enthought.mayavi import mlab
         if threshold_3d is None:
             threshold_3d = threshold
         plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
@@ -178,7 +187,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     view=view_3d,
                     vmin=vmin, vmax=vmax)
 
-        ax = figure.add_axes((0.001, 0, 0.29, 1))
+        ax = slicer.axes.values()[0].ax.figure.add_axes((0.001, 0, 0.29, 1))
         ax.axis('off')
         m2screenshot(mpl_axes=ax)
         axes = (0.3, 0, .7, 1.)
@@ -187,7 +196,10 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             # default
             mlab.clf()
             engine = mlab.get_engine()
-            from enthought.mayavi.core.registry import registry
+            try:
+                from mayavi.core.registry import registry
+            except:
+                from enthought.mayavi.core.registry import registry
             for key, value in registry.engines.iteritems():
                 if value is engine:
                     registry.engines.pop(key)
