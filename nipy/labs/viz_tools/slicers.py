@@ -24,6 +24,9 @@ from .edge_detect import _edge_map
 from . import cm
 from ..datasets import VolumeImg
 
+# XXX: going to need factory for slicers giving default figure size and
+# optional computation of cut coordinnates?
+
 ################################################################################
 # Bugware to have transparency work OK with MPL < .99.1
 if mpl.__version__ < '0.99.1':
@@ -137,10 +140,10 @@ class CutAxes(object):
         getattr(ax, type)(cut, extent=(xmin, xmax, zmin, zmax), **kwargs)
 
         self._object_bounds.append((xmin_, xmax_, zmin_, zmax_))
-        ax.axis(self._get_object_bounds())
+        ax.axis(self.get_object_bounds())
 
 
-    def _get_object_bounds(self):
+    def get_object_bounds(self):
         """ Return the bounds of the objects on this axes.
         """
         xmins, xmaxs, ymins, ymaxs = np.array(self._object_bounds).T
@@ -151,6 +154,39 @@ class CutAxes(object):
         return xmin, xmax, ymin, ymax
 
 
+    def draw_left_right(self, size, bg_color, **kwargs):
+        if self.direction == 'y':
+            return
+        ax = self.ax
+        ax.text(.1, .95, 'L',
+                transform=ax.transAxes,
+                horizontalalignment='left',
+                verticalalignment='top',
+                size=size,
+                bbox=dict(boxstyle="square,pad=0",
+                            ec=bg_color, fc=bg_color, alpha=.8),
+                **kwargs)
+
+        ax.text(.9, .95, 'R',
+                transform=ax.transAxes,
+                horizontalalignment='right',
+                verticalalignment='top',
+                size=size,
+                bbox=dict(boxstyle="square,pad=0",
+                            ec=bg_color, fc=bg_color, alpha=.8),
+                **kwargs)
+
+
+    def draw_position(self, size, bg_color, **kwargs):
+        ax = self.ax
+        ax.text(0, 0, '%s=%i' % (self.direction, self.coord),
+                transform=ax.transAxes,
+                horizontalalignment='left',
+                verticalalignment='bottom',
+                size=size,
+                bbox=dict(boxstyle="square,pad=0",
+                            ec=bg_color, fc=bg_color, alpha=.9),
+                **kwargs)
 
 ################################################################################
 # class BaseSlicer
@@ -275,6 +311,109 @@ class BaseSlicer(object):
         self._map_show(map, affine, type='contour', **kwargs)
 
 
+    def _map_show(self, map, affine, type='imshow', **kwargs):
+        map, affine = _xyz_order(map, affine)
+
+        data_bounds = get_bounds(map.shape, affine)
+        (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
+
+        xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
+                                        xmin, xmax, ymin, ymax, zmin, zmax
+        if hasattr(map, 'mask'):
+            not_mask = np.logical_not(map.mask)
+            xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
+                            get_mask_bounds(not_mask, affine)
+            if kwargs.get('vmin') is None and kwargs.get('vmax') is None:
+                # Avoid dealing with masked arrays: they are slow
+                masked_map = np.asarray(map)[not_mask]
+                if kwargs.get('vmin') is None:
+                    kwargs['vmin'] = masked_map.min()
+                if kwargs.get('max') is None:
+                    kwargs['vmax'] = masked_map.max()
+        else:
+            if not 'vmin' in kwargs:
+                kwargs['vmin'] = map.min()
+            if not 'vmax' in kwargs:
+                kwargs['vmax'] = map.max()
+
+        bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
+
+        # For each ax, cut the data and plot it
+        for cut_ax in self.axes.itervalues():
+            try:
+                cut = cut_ax.do_cut(map, affine)
+            except IndexError:
+                # We are cutting outside the indices of the data
+                continue
+            cut_ax.draw_cut(cut, data_bounds, bounding_box,
+                            type=type, **kwargs)
+
+
+    def edge_map(self, map, affine, color='r'):
+        """ Plot the edges of a 3D map in all the views.
+
+            Parameters
+            -----------
+            map: 3D ndarray
+                The 3D map to be plotted. If it is a masked array, only
+                the non-masked part will be plotted.
+            affine: 4x4 ndarray
+                The affine matrix giving the transformation from voxel
+                indices to world space.
+            color: matplotlib color: string or (r, g, b) value
+                The color used to display the edge map
+        """
+        map, affine = _xyz_order(map, affine)
+        kwargs = dict(cmap=cm.alpha_cmap(color=color))
+        data_bounds = get_bounds(map.shape, affine)
+
+        # For each ax, cut the data and plot it
+        for cut_ax in self.axes.itervalues():
+            try:
+                cut = cut_ax.do_cut(map, affine)
+                edge_mask = _edge_map(cut)
+            except IndexError:
+                # We are cutting outside the indices of the data
+                continue
+            cut_ax.draw_cut(edge_mask, data_bounds, data_bounds,
+                            type='imshow', **kwargs)
+
+    def annotate(self, left_right=True, positions=True, size=12, **kwargs):
+        """ Add annotations to the plot.
+
+            Parameters
+            ----------
+            left_right: boolean, optional
+                If left_right is True, annotations indicating which side
+                is left and which side is right are drawn.
+            positions: boolean, optional
+                If positions is True, annotations indicating the
+                positions of the cuts are drawn.
+            size: integer, optional
+                The size of the text used.
+            kwargs:
+                Extra keyword arguments are passed to matplotlib's text
+                function.
+        """
+        kwargs = kwargs.copy()
+        if not 'color' in kwargs:
+            if self._black_bg:
+                kwargs['color'] = 'w'
+            else:
+                kwargs['color'] = 'k'
+
+        bg_color = ('k' if self._black_bg else 'w')
+        if left_right:
+            for cut_ax in self.axes.values():
+                cut_ax.draw_left_right(size=size, bg_color=bg_color,
+                                       **kwargs)
+
+        if positions:
+            for cut_ax in self.axes.values():
+                cut_ax.draw_left_right(size=size, bg_color=bg_color,
+                                       **kwargs)
+
+
 ################################################################################
 # class OrthoSlicer
 ################################################################################
@@ -322,7 +461,7 @@ class OrthoSlicer(BaseSlicer):
         y_ax = cut_ax_dict['y']
         z_ax = cut_ax_dict['z']
         for cut_ax in cut_ax_dict.itervalues():
-            bounds = cut_ax._get_object_bounds()
+            bounds = cut_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
                 # succesful. As it happens asyncroniously (during a
@@ -376,163 +515,6 @@ class OrthoSlicer(BaseSlicer):
         ax.axhline(y, **kwargs)
 
 
-    def annotate(self, left_right=True, positions=True, size=12, **kwargs):
-        """ Add annotations to the plot.
-
-            Parameters
-            ----------
-            left_right: boolean, optional
-                If left_right is True, annotations indicating which side
-                is left and which side is right are drawn.
-            positions: boolean, optional
-                If positions is True, annotations indicating the
-                positions of the cuts are drawn.
-            size: integer, optional
-                The size of the text used.
-            kwargs:
-                Extra keyword arguments are passed to matplotlib's text
-                function.
-        """
-        kwargs = kwargs.copy()
-        if not 'color' in kwargs:
-            if self._black_bg:
-                kwargs['color'] = 'w'
-            else:
-                kwargs['color'] = 'k'
-
-        bg_color = ('k' if self._black_bg else 'w')
-        if left_right:
-            ax_z = self.axes['z'].ax
-            ax_z.text(.1, .95, 'L',
-                    transform=ax_z.transAxes,
-                    horizontalalignment='left',
-                    verticalalignment='top',
-                    size=size,
-                    bbox=dict(boxstyle="square,pad=0",
-                              ec=bg_color, fc=bg_color, alpha=.8),
-                    **kwargs)
-
-            ax_z.text(.9, .95, 'R',
-                    transform=ax_z.transAxes,
-                    horizontalalignment='right',
-                    verticalalignment='top',
-                    size=size,
-                    bbox=dict(boxstyle="square,pad=0", 
-                              ec=bg_color, fc=bg_color, alpha=.8),
-                    **kwargs)
-
-            ax_x = self.axes['x'].ax
-            ax_x.text(.1, .95, 'L',
-                    transform=ax_x.transAxes,
-                    horizontalalignment='left',
-                    verticalalignment='top',
-                    size=size,
-                    bbox=dict(boxstyle="square,pad=0", 
-                              ec=bg_color, fc=bg_color, alpha=.8),
-                    **kwargs)
-            ax_x.text(.9, .95, 'R',
-                    transform=ax_x.transAxes,
-                    horizontalalignment='right',
-                    verticalalignment='top',
-                    size=size,
-                    bbox=dict(boxstyle="square,pad=0",
-                              ec=bg_color, fc=bg_color, alpha=.8),
-                    **kwargs)
-
-        if positions:
-            x, y, z  = self._cut_coords
-            ax_x.text(0, 0, 'y=%i' % y,
-                    transform=ax_x.transAxes,
-                    horizontalalignment='left',
-                    verticalalignment='bottom',
-                    size=size,
-                    bbox=dict(boxstyle="square,pad=0", 
-                              ec=bg_color, fc=bg_color, alpha=.9),
-                    **kwargs)
-            ax_y = self.axes['y'].ax
-            ax_y.text(0, 0, 'x=%i' % x,
-                    transform=ax_y.transAxes,
-                    horizontalalignment='left',
-                    verticalalignment='bottom',
-                    size=size,
-                    bbox=dict(boxstyle="square,pad=0", 
-                              ec=bg_color, fc=bg_color, alpha=.9),
-                    **kwargs)
-            ax_z.text(0, 0, 'z=%i' % z,
-                    transform=ax_z.transAxes,
-                    horizontalalignment='left',
-                    verticalalignment='bottom',
-                    size=size,
-                    bbox=dict(boxstyle="square,pad=0", 
-                              ec=bg_color, fc=bg_color, alpha=.9),
-                    **kwargs)
-
-
-    def _map_show(self, map, affine, type='imshow', **kwargs):
-        map, affine = _xyz_order(map, affine)
-
-        data_bounds = get_bounds(map.shape, affine)
-        (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
-
-        xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                                        xmin, xmax, ymin, ymax, zmin, zmax
-        if hasattr(map, 'mask'):
-            not_mask = np.logical_not(map.mask)
-            xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                            get_mask_bounds(not_mask, affine)
-            if kwargs.get('vmin') is None and kwargs.get('vmax') is None:
-                # Avoid dealing with masked arrays: they are slow
-                masked_map = np.asarray(map)[not_mask]
-                if kwargs.get('vmin') is None:
-                    kwargs['vmin'] = masked_map.min()
-                if kwargs.get('max') is None:
-                    kwargs['vmax'] = masked_map.max()
-        else:
-            if not 'vmin' in kwargs:
-                kwargs['vmin'] = map.min()
-            if not 'vmax' in kwargs:
-                kwargs['vmax'] = map.max()
-
-        bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
-
-        # For each ax, cut the data and plot it
-        for cut_ax in self.axes.itervalues():
-            try:
-                cut = cut_ax.do_cut(map, affine)
-            except IndexError:
-                # We are cutting outside the indices of the data
-                continue
-            cut_ax.draw_cut(cut, data_bounds, bounding_box,
-                            type=type, **kwargs)
-
-    def edge_map(self, map, affine, color='r'):
-        """ Plot the edges of a 3D map in all the views.
-
-            Parameters
-            -----------
-            map: 3D ndarray
-                The 3D map to be plotted. If it is a masked array, only
-                the non-masked part will be plotted.
-            affine: 4x4 ndarray
-                The affine matrix giving the transformation from voxel
-                indices to world space.
-            color: matplotlib color: string or (r, g, b) value
-                The color used to display the edge map
-        """
-        map, affine = _xyz_order(map, affine)
-        kwargs = dict(cmap=cm.alpha_cmap(color=color))
-        data_bounds = get_bounds(map.shape, affine)
-
-        # For each ax, cut the data and plot it
-        for cut_ax in self.axes.itervalues():
-            try:
-                cut = cut_ax.do_cut(map, affine)
-                edge_mask = _edge_map(cut)
-            except IndexError:
-                # We are cutting outside the indices of the data
-                continue
-            cut_ax.draw_cut(edge_mask, data_bounds, data_bounds,
-                            type='imshow', **kwargs)
 
 def demo_ortho_slicer():
     """ A small demo of the OrthoSlicer functionality.
@@ -545,3 +527,96 @@ def demo_ortho_slicer():
     return oslicer
 
 
+################################################################################
+# class BaseStackedSlicer
+################################################################################
+
+class BaseStackedSlicer(BaseSlicer):
+    """ A class to create linked axes for plotting stacked
+        cuts of 3D maps.
+
+        Attributes
+        ----------
+
+        axes: dictionnary of axes
+            The axes used to plot each view.
+        frame_axes: axes
+            The axes framing the whole set of views.
+
+        Notes
+        -----
+
+        The extent of the different axes are adjusted to fit the data
+        best in the viewing area.
+    """
+
+    def _init_axes(self):
+        x0, y0, x1, y1 = self.rect
+        # Create our axes:
+        self.axes = dict()
+        fraction = 1./len(self._cut_coords)
+        for index, coord in enumerate(self._cut_coords):
+            coord = float(coord)
+            ax = pl.axes([fraction*index*(x1-x0) + x0, y0,
+                          fraction*(x1-x0), y1-y0])
+            ax.axis('off')
+            cut_ax = CutAxes(ax, self._direction, coord)
+            self.axes[coord] = cut_ax
+            ax.set_axes_locator(self._locator)
+
+
+    def _locator(self, axes, renderer):
+        """ The locator function used by matplotlib to position axes.
+            Here we put the logic used to adjust the size of the axes.
+        """
+        x0, y0, x1, y1 = self.rect
+        width_dict = dict()
+        cut_ax_dict = self.axes
+        for cut_ax in cut_ax_dict.itervalues():
+            bounds = cut_ax.get_object_bounds()
+            if not bounds:
+                # This happens if the call to _map_show was not
+                # succesful. As it happens asyncroniously (during a
+                # refresh of the figure) we capture the problem and
+                # ignore it: it only adds a non informative traceback
+                bounds = [0, 1, 0, 1]
+            xmin, xmax, ymin, ymax = bounds
+            width_dict[cut_ax.ax] = (xmax - xmin)
+        total_width = float(sum(width_dict.values()))
+        for ax, width in width_dict.iteritems():
+            width_dict[ax] = width/total_width*(x1 -x0)
+        left_dict = dict()
+        left = x0
+        for coord, cut_ax in sorted(cut_ax_dict.items()):
+            left_dict[cut_ax.ax] = left
+            this_width = width_dict[cut_ax.ax]
+            left += this_width
+        return transforms.Bbox([[left_dict[axes], y0],
+                                [left_dict[axes] + width_dict[axes], y1]])
+
+
+    def draw_cross(self, cut_coords=None, **kwargs):
+        """ Draw a crossbar on the plot to show where the cut is
+            performed.
+
+            Parameters
+            ----------
+            cut_coords: 3-tuple of floats, optional
+                The position of the cross to draw. If none is passed, the
+                ortho_slicer's cut coordinnates are used.
+            kwargs:
+                Extra keyword arguments are passed to axhline
+        """
+        return
+
+
+class XSlicer(BaseStackedSlicer):
+    _direction = 'x'
+
+
+class YSlicer(BaseStackedSlicer):
+    _direction = 'y'
+
+
+class ZSlicer(BaseStackedSlicer):
+    _direction = 'z'
