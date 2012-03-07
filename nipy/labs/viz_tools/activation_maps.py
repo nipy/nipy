@@ -270,7 +270,8 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
 
 def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None,
               axes=None, title=None, annotate=True, draw_cross=True,
-              black_bg=False, dim=False, cmap=pl.cm.gray):
+              black_bg=False, dim=False, cmap=pl.cm.gray, slicer='ortho',
+              ):
     """ Plot three cuts of an anatomical image (Frontal, Axial, and Lateral)
 
         Parameters
@@ -318,7 +319,7 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None,
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
     """
-    slicer = OrthoSlicer.init_with_figure(data=anat, affine=anat_affine,
+    slicer = SLICERS[slicer].init_with_figure(data=anat, affine=anat_affine,
                                           threshold=0, cut_coords=cut_coords,
                                           figure=figure, axes=axes,
                                           black_bg=black_bg)
@@ -342,7 +343,7 @@ def demo_plot_map(do3d=False, **kwargs):
     assert z_map +1 == 95
     map[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     return plot_map(map, mni_sform, threshold='auto',
-                        title="Broca's area", figure=512, do3d=do3d,
+                        title="Broca's area", do3d=do3d,
                         **kwargs)
 
 

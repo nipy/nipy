@@ -224,7 +224,6 @@ class BaseSlicer(object):
         axes.set_zorder(1)
         bb = axes.get_position()
         self.rect = (bb.x0, bb.y0, bb.x1, bb.y1)
-        self._object_bounds = dict()
         self._black_bg = black_bg
         self._init_axes()
 
@@ -243,12 +242,13 @@ class BaseSlicer(object):
         cut_coords = cls.find_cut_coords(data, affine, threshold,
                                          cut_coords)
 
-        # Make sure that we have a figure
-        figsize = cls._default_figsize
-        # Adjust for the number of axes
-        figsize[0] *= len(cut_coords)
-        facecolor = 'k' if black_bg else 'w'
         if not isinstance(figure, pl.Figure):
+            # Make sure that we have a figure
+            figsize = cls._default_figsize[:]
+            # Adjust for the number of axes
+            figsize[0] *= len(cut_coords)
+            facecolor = 'k' if black_bg else 'w'
+
             if leave_space:
                 figsize[0] += 3.4
             figure = pl.figure(figure, figsize=figsize,
