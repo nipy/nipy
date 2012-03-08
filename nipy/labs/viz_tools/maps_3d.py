@@ -272,7 +272,7 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
             The MNI coordinates of a 3D cursor to indicate a feature
             or a cut, in MNI coordinates and order.
         anat : 3D ndarray, optional
-            The anatomical image to be used as a background. If None, the 
+            The anatomical image to be used as a background. If None, the
             MNI152 T1 1mm template is used. If False, no anatomical
             image is used.
         anat_affine : 4x4 ndarray, optional
@@ -291,7 +291,7 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
         vmax : float, optional
             The maximum value, for the colormap
         cmap : a callable, or a pylab colormap
-            A callable returning a (n, 4) array for n values between 
+            A callable returning a (n, 4) array for n values between
             0 and 1 for the colors. This can be for instance a pylab
             colormap.
 
@@ -299,7 +299,7 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
         -----
 
         If you are using a VTK version below 5.2, there is no way to
-        avoid opening a window during the rendering under Linux. This is 
+        avoid opening a window during the rendering under Linux. This is
         necessary to use the graphics card for the rendering. You must
         maintain this window on top of others and on the screen.
 
@@ -350,18 +350,18 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
         module = mlab.pipeline.iso_surface(map_src,
                                         contours=contours,
                                         vmin=vmin, vmax=vmax)
-        if callable(cmap):
+        if hasattr(cmap, '__call__'):
             # Stick the colormap in mayavi
             module.module_manager.scalar_lut_manager.lut.table \
                     = (255*cmap(np.linspace(0, 1, 256))).astype(np.int)
     else:
         module = None
-   
+
     if not anat is False:
         plot_anat_3d(anat=anat, anat_affine=anat_affine, scale=1.05,
                      outline_color=(.9, .9, .9),
                      gyri_opacity=.2)
-   
+
     ###########################################################################
     # Draw the cursor
     if cut_coords is not None:
@@ -372,7 +372,7 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     color=(.5, .5, .5), tube_radius=0.25)
         mlab.plot3d((x0, x0), (y0, y0), (-72, 109), 
                             color=(.5, .5, .5), tube_radius=0.25)
-    
+
     mlab.view(*view)
     fig.scene.disable_render = disable_render
     
