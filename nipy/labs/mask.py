@@ -74,7 +74,7 @@ def threshold_connect_components(map, threshold, copy=True):
 # Utilities to calculate masks
 ################################################################################
 
-def compute_mask_files(input_filename, output_filename=None, 
+def compute_mask_files(input_filename, output_filename=None,
                         return_mean=False, m=0.2, M=0.9, cc=1,
                         exclude_zeros=False):
     """
@@ -86,7 +86,7 @@ def compute_mask_files(input_filename, output_filename=None,
     m and M of the total image histogram.
 
     In case of failure, it is usually advisable to increase m.
-   
+
     Parameters
     ----------
     input_filename : string
@@ -94,7 +94,7 @@ def compute_mask_files(input_filename, output_filename=None,
     output_filename : string or None, optional
         path to save the output nifti image (if not None).
     return_mean : boolean, optional
-        if True, and output_filename is None, return the mean image also, as 
+        if True, and output_filename is None, return the mean image also, as
         a 3D array (2nd return argument).
     m : float, optional
         lower fraction of the histogram to be discarded.
@@ -109,7 +109,7 @@ def compute_mask_files(input_filename, output_filename=None,
 
     Returns
     -------
-    mask : 3D boolean array 
+    mask : 3D boolean array
         The brain mask
     mean_image : 3d ndarray, optional
         The main of all the images used to estimate the mask. Only
@@ -155,20 +155,20 @@ def compute_mask_files(input_filename, output_filename=None,
             else:
                 mean_volume += nim.get_data().squeeze()
         mean_volume /= float(len(list(input_filename)))
-        
+
     del nim
     if np.isnan(mean_volume).any():
         tmp = mean_volume.copy()
         tmp[np.isnan(tmp)] = 0
         mean_volume = tmp
-        
+
     mask = compute_mask(mean_volume, first_volume, m, M, cc,
                         exclude_zeros=exclude_zeros)
-      
+
     if output_filename is not None:
         header['descrip'] = 'mask'
-        output_image = nifti1.Nifti1Image(mask.astype(np.uint8), 
-                                            affine=affine, 
+        output_image = nifti1.Nifti1Image(mask.astype(np.uint8),
+                                            affine=affine,
                                             header=header)
         save(output_image, output_filename)
     if not return_mean:
@@ -177,7 +177,7 @@ def compute_mask_files(input_filename, output_filename=None,
         return mask, mean_volume
 
 
-def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9, 
+def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
                         cc=True, opening=True, exclude_zeros=False):
     """
     Compute a mask file from fMRI data in 3D or 4D ndarrays.
@@ -188,13 +188,13 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     m and M of the total image histogram.
 
     In case of failure, it is usually advisable to increase m.
-   
+
     Parameters
     ----------
-    mean_volume : 3D ndarray 
+    mean_volume : 3D ndarray
         mean EPI image, used to compute the threshold for the mask.
     reference_volume: 3D ndarray, optional
-        reference volume used to compute the mask. If none is give, the 
+        reference volume used to compute the mask. If none is give, the
         mean volume is used.
     m : float, optional
         lower fraction of the histogram to be discarded.
@@ -203,7 +203,7 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     cc: boolean, optional
         if cc is True, only the largest connect component is kept.
     opening: boolean, optional
-        if opening is True, an morphological opening is performed, to keep 
+        if opening is True, an morphological opening is performed, to keep
         only large structures. This step is useful to remove parts of
         the skull that might have been included.
     exclude_zeros: boolean, optional
@@ -213,7 +213,7 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
 
     Returns
     -------
-    mask : 3D boolean ndarray 
+    mask : 3D boolean ndarray
         The brain mask
     """
     if reference_volume is None:
@@ -227,9 +227,9 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     delta = sorted_input[limiteinf + 1:limitesup + 1] \
             - sorted_input[limiteinf:limitesup]
     ia = delta.argmax()
-    threshold = 0.5 * (sorted_input[ia + limiteinf] 
+    threshold = 0.5 * (sorted_input[ia + limiteinf]
                         + sorted_input[ia + limiteinf  +1])
-    
+
     mask = (reference_volume >= threshold)
 
     if cc:
@@ -249,7 +249,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
         session, and then keep only the main connected component of the
         a given fraction of the intersection of all the masks.
 
- 
+
     Parameters
     ----------
     session_files : list of list of strings
@@ -277,7 +277,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
 
     Returns
     -------
-    mask : 3D boolean ndarray 
+    mask : 3D boolean ndarray
         The brain mask
     mean : 3D float array
         The mean image
@@ -302,11 +302,11 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
             mask += this_mask
         # Free memory early
         del this_mask
-        
+
     # Take the "half-intersection", i.e. all the voxels that fall within
     # 50% of the individual masks.
     mask = (mask > threshold*len(list(session_files)))
-   
+
     if cc:
         # Select the largest connected component (each mask is
         # connect, but the half-interesection may not be):
@@ -315,7 +315,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
 
     if return_mean:
         # Divide by the number of sessions
-        mean /= index + 1
+        mean /= len(session_files)
         return mask, mean
 
     return mask
