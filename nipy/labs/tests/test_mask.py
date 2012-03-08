@@ -72,10 +72,12 @@ def test_mask_files():
         a_fname = 'fourd_anat.nii'
         nib.save(img, a_fname)
         # check 4D mask
-        msk1 = nnm.compute_mask_files(a_fname)
+        msk1, mean1 = nnm.compute_mask_files(a_fname, return_mean=True)
         # and mask from identical list of 3D files
-        msk2 = nnm.compute_mask_files([anatfile, anatfile])
+        msk2, mean2 = nnm.compute_mask_files([anatfile, anatfile],
+                                             return_mean=True)
         yield assert_array_equal, msk1, msk2
+        yield assert_array_equal, mean1, mean2
 
 
 def test_series_from_mask():
