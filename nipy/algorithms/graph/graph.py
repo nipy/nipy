@@ -21,7 +21,7 @@ instantiate WeightedGraphs from data:
 Author: Bertrand Thirion, 2006--2011
 """
 import numpy as np
-
+from scipy.sparse import coo_matrix
 
 class Graph(object):
     """ Basic topological (non-weighted) directed Graph class
@@ -131,14 +131,13 @@ class Graph(object):
         adj: scipy.sparse matrix instance,
             that encodes the adjacency matrix of self
         """
-        import scipy.sparse as sps
         if self.E > 0:
             i = self.edges[:, 0]
             j = self.edges[:, 1]
-            adj = sps.coo_matrix((np.ones(self.E), (i, j)),
+            adj = coo_matrix((np.ones(self.E), (i, j)),
                                 shape=(self.V, self.V))
         else:
-            adj = sps.coo_matrix((self.V, self.V))
+            adj = coo_matrix((self.V, self.V))
         return adj
 
     def cc(self):
@@ -194,14 +193,12 @@ class Graph(object):
         sp: scipy.sparse matrix instance,
             that encodes the adjacency matrix of self
         """
-        import scipy.sparse as sps
         if self.E > 0:
-            i = self.edges[:, 0]
-            j = self.edges[:, 1]
-            sm = sps.coo_matrix((np.ones(self.E), (i, j)),
+            i, j = self.edges.T
+            sm = coo_matrix((np.ones(self.E), (i, j)),
                                 shape=(self.V, self.V))
         else:
-            sm = sps.coo_matrix((self.V, self.V))
+            sm = coo_matrix((self.V, self.V))
         return sm
 
     def show(self, ax=None):
@@ -266,7 +263,6 @@ def wgraph_from_adjacency(x):
     -------
     wg: WeightedGraph instance
     """
-    from scipy.sparse import coo_matrix
     a = coo_matrix(x)
     return wgraph_from_coo_matrix(a)
 
@@ -779,12 +775,12 @@ x
         s2 = adj.sum(1)
         if c == 1:
             s = dia_matrix((1. / s1, 0), shape=(self.V, self.V))
-            adj = s * adj
+            adj = adj * s
             self.weights = wgraph_from_adjacency(adj).get_weights()
             return np.asarray(s1)
         if c == 0:
             s = dia_matrix((1. / s2.T, 0), shape=(self.V, self.V))
-            adj = adj * s
+            adj = s * adj
             self.weights = wgraph_from_adjacency(adj).get_weights()
             return np.asarray(s2)
         if c == 2:
@@ -1261,11 +1257,9 @@ x
         sp: scipy.sparse matrix instance
             that encodes the adjacency matrix of self
         """
-        import scipy.sparse as sps
         if self.E > 0:
-            i = self.edges[:, 0]
-            j = self.edges[:, 1]
-            sm = sps.coo_matrix((self.weights, (i, j)), shape=(self.V, self.V))
+            i, j = self.edges.T
+            sm = coo_matrix((self.weights, (i, j)), shape=(self.V, self.V))
         else:
-            sm = sps.coo_matrix((self.V, self.V))
+            sm = coo_matrix((self.V, self.V))
         return sm

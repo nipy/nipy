@@ -88,18 +88,17 @@ class Field(WeightedGraph):
         self.edges = []
         self.weights = []
         if (edges is not None) or (weights is not None):
-            if edges.shape[0] == np.size(weights):
-                if len(edges) == 0:
-                    E = 0
-                else:
-                    E = edges.shape[0]
-                self.V = V
-                self.E = E
-                self.edges = edges
-                self.weights = weights
+            if len(edges) == 0:
+                E = 0
+            elif edges.shape[0] == np.size(weights):
+                E = edges.shape[0]
             else:
                 raise ValueError('Incompatible size of the edges \
                                   and weights matrices')
+            self.V = V
+            self.E = E
+            self.edges = edges
+            self.weights = weights
         self.field = []
         if field == None:
             pass
