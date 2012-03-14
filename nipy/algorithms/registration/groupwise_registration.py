@@ -147,7 +147,7 @@ class Image4d(object):
                 aux.reverse()
             self.slice_order = np.array(aux)
         else:
-            self.slice_order = np.asarray(self.slice_order)
+            self.slice_order = np.asarray(self._slice_order)
 
     def z_to_slice(self, z):
         """
