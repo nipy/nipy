@@ -3,7 +3,7 @@
 
 from nose.tools import assert_equal
 
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 import numpy as np
 
 from .... import load_image
@@ -28,6 +28,25 @@ def test_slice_info():
                    slice_info=(1, -1))
     assert_equal(im4d.slice_axis, 1)
     assert_equal(im4d.slice_direction, -1)
+
+
+def test_image4d_init():
+    nslices = 5
+    data = np.zeros((3, 4, nslices, 6))
+    aff = np.eye(4)
+    tr = 2.0
+    img4d = Image4d(data, aff, tr)
+    assert_array_equal(img4d.slice_order, range(nslices))
+    img4d = Image4d(data, aff, tr, slice_order='ascending')
+    assert_array_equal(img4d.slice_order, range(nslices))
+    img4d = Image4d(data, aff, tr, slice_order='descending')
+    assert_array_equal(img4d.slice_order, range(nslices)[::-1])
+    # can pass array
+    img4d = Image4d(data, aff, tr, slice_order=np.arange(nslices))
+    assert_array_equal(img4d.slice_order, range(nslices))
+    # or list
+    img4d = Image4d(data, aff, tr, slice_order=range(nslices))
+    assert_array_equal(img4d.slice_order, range(nslices))
 
 
 def test_slice_timing():
