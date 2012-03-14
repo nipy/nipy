@@ -12,7 +12,7 @@ try:
 except ImportError:
     raise nose.SkipTest('Could not import matplotlib')
 
-from ..ortho_slicer import demo_ortho_slicer
+from ..slicers import demo_ortho_slicer
 
 from ..anat_cache import find_mni_template
 

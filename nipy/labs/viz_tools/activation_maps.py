@@ -28,25 +28,24 @@ try:
     import pylab as pl
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
- 
-from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
-from .coord_tools import coord_transform, find_cut_coords
 
-from .ortho_slicer import OrthoSlicer, _xyz_order
+from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
+from .coord_tools import coord_transform
+
+from .slicers import SLICERS, _xyz_order
 from edge_detect import _fast_abs_percentile
 
 ################################################################################
-# Helper functions for 2D plotting of activation maps 
+# Helper functions for 2D plotting of activation maps
 ################################################################################
 
 
 def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
-                    figure=None, axes=None, title=None, threshold=None,
-                    annotate=True, draw_cross=True, 
+                    slicer='ortho', figure=None, axes=None, title=None,
+                    threshold=None, annotate=True, draw_cross=True,
                     do3d=False, threshold_3d=None,
                     view_3d=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
-                    black_bg=False,
-                    **kwargs):
+                    black_bg=False, **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
 
         Parameters
@@ -55,24 +54,30 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             The activation map, as a 3D image.
         affine : 4x4 ndarray
             The affine matrix going from image voxel space to MNI space.
-        cut_coords: 3-tuple of floats or None
-            The MNI coordinates of the point where the cut is performed, in 
+        cut_coords: None, or a tuple of floats
+            The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
-            If None is given, the cut point is calculated automaticaly.
+            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
+            For slicer == 'x', 'y', or 'z', then these are the
+            coordinates of each cut in the corresponding direction.
+            If None is given, the cuts is calculated automaticaly.
         anat : 3D ndarray or False, optional
-            The anatomical image to be used as a background. If None, the 
+            The anatomical image to be used as a background. If None, the
             MNI152 T1 1mm template is used. If False, no anat is displayed.
         anat_affine : 4x4 ndarray, optional
             The affine matrix going from the anatomical image voxel space to 
             MNI space. This parameter is not used when the default 
             anatomical is used, but it is compulsory when using an
             explicite anatomical image.
+        slicer: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts. With 'ortho' three cuts are
+            performed in orthogonal directions
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
         axes : matplotlib axes or 4 tuple of float: (xmin, xmax, ymin, ymin), optional
-            The axes, or the coordinates, in matplotlib figure space, 
-            of the axes used to display the plot. If None, the complete 
+            The axes, or the coordinates, in matplotlib figure space,
+            of the axes used to display the plot. If None, the complete
             figure is used.
         title : string, optional
             The title dispayed on the figure.
@@ -125,43 +130,40 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     if np.any(nan_mask):
         map = map.copy()
         map[nan_mask] = 0
+    del nan_mask
 
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
-        # Threshold epsilon above a percentile value, to be sure that some 
+        # Threshold epsilon above a percentile value, to be sure that some
         # voxels are indeed threshold
         threshold = _fast_abs_percentile(map) + 1e-5
-    if cut_coords is None:
-        x_map, y_map, z_map = find_cut_coords(map,
-                                activation_threshold=threshold)
-        cut_coords = coord_transform(x_map, y_map, z_map, affine)
-    
+
     if do3d:
         try:
-            from enthought.mayavi import version
+            try:
+                from mayavi import version
+            except ImportError:
+                from enthought.mayavi import version
             if not int(version.version[0]) > 2:
                 raise ImportError
         except ImportError:
             warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
             do3d = False
 
-    # Make sure that we have a figure
-    if not isinstance(figure, pl.Figure):
-        if do3d:
-            size = (10, 2.6)
-        else:
-            size = (6.6, 2.6)
-        facecolor = 'k' if black_bg else 'w'
-        figure = pl.figure(figure, figsize=size, facecolor=facecolor)
-    else:
-        if isinstance(axes, pl.Axes):
-            assert axes.figure is figure, ("The axes passed are not "
-            "in the figure")
+    slicer = SLICERS[slicer].init_with_figure(data=map, affine=affine,
+                                          threshold=threshold,
+                                          cut_coords=cut_coords,
+                                          figure=figure, axes=axes,
+                                          black_bg=black_bg,
+                                          leave_space=do3d)
 
     # Use Mayavi for the 3D plotting
     if do3d:
         from .maps_3d import plot_map_3d, m2screenshot
-        from enthought.tvtk.api import tvtk
+        try:
+            from tvtk.api import tvtk
+        except ImportError:
+            from enthought.tvtk.api import tvtk
         version = tvtk.Version()
         offscreen = True
         if (version.vtk_major_version, version.vtk_minor_version) < (5, 2):
@@ -177,7 +179,10 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         kwargs['vmin'] = vmin
         vmax = kwargs.get('vmax', map.max())
         kwargs['vmax'] = vmax
-        from enthought.mayavi import mlab
+        try:
+            from mayavi import mlab
+        except ImportError:
+            from enthought.mayavi import mlab
         if threshold_3d is None:
             threshold_3d = threshold
         plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
@@ -187,96 +192,39 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     view=view_3d,
                     vmin=vmin, vmax=vmax)
 
-        ax = figure.add_axes((0.001, 0, 0.29, 1))
+        ax = slicer.axes.values()[0].ax.figure.add_axes((0.001, 0, 0.29, 1))
         ax.axis('off')
         m2screenshot(mpl_axes=ax)
-        axes = (0.3, 0, .7, 1.)
         if offscreen:
             # Clean up, so that the offscreen engine doesn't become the
             # default
             mlab.clf()
             engine = mlab.get_engine()
-            from enthought.mayavi.core.registry import registry
+            try:
+                from mayavi.core.registry import registry
+            except:
+                from enthought.mayavi.core.registry import registry
             for key, value in registry.engines.iteritems():
                 if value is engine:
                     registry.engines.pop(key)
                     break
 
+
     if threshold:
         map = np.ma.masked_inside(map, -threshold, threshold, copy=False)
 
-    ortho_slicer = plot_anat(anat, anat_affine, cut_coords=cut_coords,
-                             figure=figure, axes=axes, title=title,
-                             annotate=annotate, draw_cross=draw_cross,
-                             black_bg=black_bg)
-    ortho_slicer.plot_map(map, affine, **kwargs)
-    return ortho_slicer
+
+    _plot_anat(slicer, anat, anat_affine, title=title,
+               annotate=annotate, draw_cross=draw_cross)
+
+    slicer.plot_map(map, affine, **kwargs)
+    return slicer
 
 
-def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None, 
-              axes=None, title=None, annotate=True, draw_cross=True,
-              black_bg=False, dim=False):
-    """ Plot three cuts of an anatomical image (Frontal, Axial, and Lateral)
-
-        Parameters
-        ----------
-        anat : 3D ndarray, optional
-            The anatomical image to be used as a background. If None is 
-            given, nipy tries to find a T1 template.
-        anat_affine : 4x4 ndarray, optional
-            The affine matrix going from the anatomical image voxel space to 
-            MNI space. This parameter is not used when the default 
-            anatomical is used, but it is compulsory when using an
-            explicite anatomical image.
-        figure : integer or matplotlib figure, optional
-            Matplotlib figure used or its number. If None is given, a
-            new figure is created.
-        cut_coords: 3-tuple of floats or None, optional
-            The MNI coordinates of the point where the cut is performed, in 
-            MNI coordinates and order.
-            If None is given, the center of image is taken as a cut point.
-        figure : integer or matplotlib figure, optional
-            Matplotlib figure used or its number. If None is given, a
-            new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, xmax, ymin, ymin), optional
-            The axes, or the coordinates, in matplotlib figure space, 
-            of the axes used to display the plot. If None, the complete 
-            figure is used.
-        title : string, optional
-            The title dispayed on the figure.
-        annotate: boolean, optional
-            If annotate is True, positions and left/right annotation
-            are added to the plot.
-        draw_cross: boolean, optional
-            If draw_cross is True, a cross is drawn on the plot to
-            indicate the cut plosition.
-        black_bg: boolean, optional
-            If True, the background of the image is set to be black. If
-            you whish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to pylab's
-            savefig.
-
-        Notes
-        -----
-        Arrays should be passed in numpy convention: (x, y, z)
-        ordered.
+def _plot_anat(slicer, anat, anat_affine, title=None,
+               annotate=True, draw_cross=True, dim=False, cmap=pl.cm.gray):
+    """ Internal function used to plot anatomy
     """
-    # Make sure that we have a figure
-    facecolor = 'k' if black_bg else 'w'
-    if not isinstance(figure, pl.Figure):
-        figure = pl.figure(figure, figsize=(6.6, 2.6),
-                           facecolor=facecolor)
-    else:
-        if isinstance(axes, pl.Axes):
-            assert axes.figure is figure, ("The axes passed are not "
-            "in the figure")
-
-    if axes is None:
-        axes = [0., 0., 1., 1.]
-    if operator.isSequenceType(axes):
-        axes = figure.add_axes(axes)
-        axes.axis('off')
-
     canonical_anat = False
     if anat is None:
         try:
@@ -286,22 +234,11 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None,
             anat = False
             warnings.warn(repr(e))
 
-    if cut_coords is None:
-        if anat is False:
-            cut_coords = (0, 0, 0)
-        else:
-            x, y, z = .5*np.array(anat.shape)
-            cut_coords = coord_transform(x, y, z, anat_affine) 
-
-    ortho_slicer = OrthoSlicer(cut_coords, axes=axes, black_bg=black_bg)
-    # Check that we should indeed plot an anat: we have one, and the
+    black_bg = slicer._black_bg
+    # XXX: Check that we should indeed plot an anat: we have one, and the
     # cut_coords are in its range
-    x, y, z = cut_coords
 
-    if (anat is not False 
-                and np.all(
-                 np.array(coord_transform(x, y, z, np.linalg.inv(anat_affine))) 
-                            < anat.shape)):
+    if anat is not False:
         if canonical_anat:
             # We special-case the 'canonical anat', as we don't need
             # to do a few transforms to it.
@@ -323,17 +260,83 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, figure=None,
                 vmax = vmean + (1+dim)*ptp
             else:
                 vmin = vmean - (1+dim)*ptp
-        ortho_slicer.plot_map(anat, anat_affine, cmap=pl.cm.gray,
+        slicer.plot_map(anat, anat_affine, cmap=cmap,
                               vmin=vmin, vmax=vmax)
 
         if annotate:
-            ortho_slicer.annotate()
+            slicer.annotate()
         if draw_cross:
-            ortho_slicer.draw_cross()
+            slicer.draw_cross()
 
     if title is not None and not title == '':
-        ortho_slicer.title(title)
-    return ortho_slicer
+        slicer.title(title)
+    return slicer
+
+
+def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
+              figure=None, axes=None, title=None, annotate=True,
+              draw_cross=True, black_bg=False, dim=False, cmap=pl.cm.gray):
+    """ Plot three cuts of an anatomical image (Frontal, Axial, and Lateral)
+
+        Parameters
+        ----------
+        anat : 3D ndarray, optional
+            The anatomical image to be used as a background. If None is
+            given, nipy tries to find a T1 template.
+        anat_affine : 4x4 ndarray, optional
+            The affine matrix going from the anatomical image voxel space to 
+            MNI space. This parameter is not used when the default 
+            anatomical is used, but it is compulsory when using an
+            explicite anatomical image.
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
+            new figure is created.
+        cut_coords: None, or a tuple of floats
+            The MNI coordinates of the point where the cut is performed, in
+            MNI coordinates and order.
+            If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
+            For slicer == 'x', 'y', or 'z', then these are the
+            coordinates of each cut in the corresponding direction.
+            If None is given, the cuts is calculated automaticaly.
+        slicer: {'ortho', 'x', 'y', 'z'}
+            Choose the direction of the cuts. With 'ortho' three cuts are
+            performed in orthogonal directions
+        figure : integer or matplotlib figure, optional
+            Matplotlib figure used or its number. If None is given, a
+            new figure is created.
+        axes : matplotlib axes or 4 tuple of float: (xmin, xmax, ymin, ymin), optional
+            The axes, or the coordinates, in matplotlib figure space,
+            of the axes used to display the plot. If None, the complete
+            figure is used.
+        title : string, optional
+            The title dispayed on the figure.
+        annotate: boolean, optional
+            If annotate is True, positions and left/right annotation
+            are added to the plot.
+        draw_cross: boolean, optional
+            If draw_cross is True, a cross is drawn on the plot to
+            indicate the cut plosition.
+        black_bg: boolean, optional
+            If True, the background of the image is set to be black. If
+            you whish to save figures with a black background, you
+            will need to pass "facecolor='k', edgecolor='k'" to pylab's
+            savefig.
+        cmap: matplotlib colormap, optional
+            The colormap for the anat
+
+        Notes
+        -----
+        Arrays should be passed in numpy convention: (x, y, z)
+        ordered.
+    """
+    slicer = SLICERS[slicer].init_with_figure(data=anat, affine=anat_affine,
+                                          threshold=0, cut_coords=cut_coords,
+                                          figure=figure, axes=axes,
+                                          black_bg=black_bg)
+
+    _plot_anat(slicer, anat, anat_affine, title=title,
+               annotate=annotate, draw_cross=draw_cross, dim=dim, cmap=cmap)
+    return slicer
 
 
 def demo_plot_map(do3d=False, **kwargs):
@@ -350,7 +353,7 @@ def demo_plot_map(do3d=False, **kwargs):
     assert z_map +1 == 95
     map[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     return plot_map(map, mni_sform, threshold='auto',
-                        title="Broca's area", figure=512, do3d=do3d,
+                        title="Broca's area", do3d=do3d,
                         **kwargs)
 
 

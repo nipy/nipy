@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from os.path import join as pjoin
 import sys
 from glob import glob
 from distutils import log
@@ -34,7 +35,7 @@ def configuration(parent_package='',top_path=None):
     #    'nipy.core.image')
     # Robert Kern recommends setting quiet=True on the numpy list, stating
     # these messages are probably only used in debugging numpy distutils.
-    config.get_version('nipy/version.py') # sets config.version
+    config.get_version(pjoin('nipy', 'info.py')) # sets config.version
     config.add_subpackage('nipy', 'nipy')
     return config
 
@@ -127,7 +128,7 @@ cmdclass['build_ext'] = MyBuildExt
 
 def main(**extra_args):
     from numpy.distutils.core import setup
-    
+
     setup(name=INFO_VARS['NAME'],
           maintainer=INFO_VARS['MAINTAINER'],
           maintainer_email=INFO_VARS['MAINTAINER_EMAIL'],

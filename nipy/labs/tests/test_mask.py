@@ -16,7 +16,7 @@ from ..mask import largest_cc, threshold_connect_components, \
         series_from_mask
 
 from nipy.testing import assert_equal, assert_true, \
-    assert_array_equal, anatfile
+    assert_array_equal, anatfile, assert_false
 
 
 def test_largest_cc():
@@ -41,22 +41,43 @@ def test_threshold_connect_components():
     yield assert_true, np.all(a == b)
 
 
+def test_mask():
+    mean_image = np.ones((9, 9))
+    mean_image[3:-3, 3:-3] = 10
+    mean_image[5, 5] = 100
+    mask1 = nnm.compute_mask(mean_image)
+    mask2 = nnm.compute_mask(mean_image, exclude_zeros=True)
+    # With an array with no zeros, exclude_zeros should not make
+    # any difference
+    yield assert_array_equal, mask1, mask2
+    # Check that padding with zeros does not change the extracted mask
+    mean_image2 = np.zeros((30, 30))
+    mean_image2[:9, :9] = mean_image
+    mask3 = nnm.compute_mask(mean_image2, exclude_zeros=True)
+    yield assert_array_equal, mask1, mask3[:9, :9]
+    # However, without exclude_zeros, it does
+    mask3 = nnm.compute_mask(mean_image2)
+    yield assert_false, np.allclose(mask1, mask3[:9, :9])
+
+
 def test_mask_files():
     with InTemporaryDirectory():
         # Make a 4D file from the anatomical example
         img = nib.load(anatfile)
         arr = img.get_data()
-        a2 = np.zeros(arr.shape + (2,))
-        a2[:,:,:,0] = arr
-        a2[:,:,:,1] = arr
+        a2 = np.zeros(arr.shape + (2, ))
+        a2[:, :, :, 0] = arr
+        a2[:, :, :, 1] = arr
         img = nib.Nifti1Image(a2, np.eye(4))
         a_fname = 'fourd_anat.nii'
         nib.save(img, a_fname)
         # check 4D mask
-        msk1 = nnm.compute_mask_files(a_fname)
+        msk1, mean1 = nnm.compute_mask_files(a_fname, return_mean=True)
         # and mask from identical list of 3D files
-        msk2 = nnm.compute_mask_files([anatfile, anatfile])
+        msk2, mean2 = nnm.compute_mask_files([anatfile, anatfile],
+                                             return_mean=True)
         yield assert_array_equal, msk1, msk2
+        yield assert_array_equal, mean1, mean2
 
 
 def test_series_from_mask():

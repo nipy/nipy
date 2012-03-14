@@ -12,13 +12,13 @@ try:
     from matplotlib import colors as _colors
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
- 
+
 ################################################################################
 # Custom colormaps for two-tailed symmetric statistics
 ################################################################################
 
 ################################################################################
-# Helper functions 
+# Helper functions
 
 def _rotate_cmap(cmap, swap_order=('green', 'red', 'blue')):
     """ Utility function to swap the colors of a colormap.
@@ -65,7 +65,7 @@ def _concat_cmap(cmap1, cmap2):
 
     cdict1 = cmap1._segmentdata.copy()
     cdict2 = cmap2._segmentdata.copy()
-    if not callable(cdict1['red']):
+    if not hasattr(cdict1['red'], '__call__'):
         for c in ['red', 'green', 'blue']:
             cdict[c] = [(0.5*p, c1, c2) for (p, c1, c2) in cdict1[c]]
     else:
@@ -77,7 +77,7 @@ def _concat_cmap(cmap1, cmap2):
             cdict['red'].append((.5*p, r, r))
             cdict['green'].append((.5*p, g, g))
             cdict['blue'].append((.5*p, b, b))
-    if not callable(cdict2['red']):
+    if not hasattr(cdict2['red'], '__call__'):
         for c in ['red', 'green', 'blue']:
             cdict[c].extend([(0.5*(1+p), c1, c2) for (p, c1, c2) in cdict2[c]])
     else:
@@ -225,8 +225,23 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     inner_cdict = inner_cmap._segmentdata.copy()
 
     cdict = dict()
+    for this_cdict, cmap in [(outer_cdict, outer_cmap),
+                             (inner_cdict, inner_cmap)]:
+        if hasattr(this_cdict['red'], '__call__'):
+            ps = _np.linspace(0, 1, 25)
+            colors = cmap(ps)
+            this_cdict['red'] = list()
+            this_cdict['green'] = list()
+            this_cdict['blue'] = list()
+            for p, (r, g, b, a) in zip(ps, colors):
+                this_cdict['red'].append((p, r, r))
+                this_cdict['green'].append((p, g, g))
+                this_cdict['blue'].append((p, b, b))
+
+
     for c_index, color in enumerate(('red', 'green', 'blue')):
         color_lst = list()
+
         for value, c1, c2 in outer_cdict[color]:
             if value >= vmin:
                 break
