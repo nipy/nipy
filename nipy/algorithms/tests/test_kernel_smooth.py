@@ -19,6 +19,9 @@ def test_anat_smooth():
     anat = load_image(anatfile)
     smoother = LinearFilter(anat.coordmap, anat.shape)
     sanat = smoother.smooth(anat)
+    assert_equal(sanat.shape, anat.shape)
+    assert_equal(sanat.coordmap, anat.coordmap)
+    assert_false(np.allclose(sanat.get_data(), anat.get_data()))
 
 
 def test_func_smooth():
