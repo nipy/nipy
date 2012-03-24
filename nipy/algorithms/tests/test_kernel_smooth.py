@@ -4,17 +4,17 @@
 import numpy as np
 from numpy.random import random_integers as randint
 
-from nipy import load_image
-from nipy.algorithms.kernel_smooth import LinearFilter
-from nipy.core.api import Image
-from nipy.core.reference.coordinate_map import AffineTransform
+from ... import load_image
+from ..kernel_smooth import LinearFilter, sigma2fwhm, fwhm2sigma
 
-from nipy.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
+from ...core.api import Image
+from ...core.reference.coordinate_map import AffineTransform
 
-from nipy.testing import (assert_true, assert_equal, assert_raises,
-                          anatfile, funcfile)
+from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
 
-# No test here?
+from ...testing import (anatfile, funcfile)
+
+
 def test_anat_smooth():
     anat = load_image(anatfile)
     smoother = LinearFilter(anat.coordmap, anat.shape)
