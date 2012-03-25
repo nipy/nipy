@@ -455,11 +455,11 @@ def graph_3d_grid(xyz, k=18):
     m = 3 * lxyz.max(0).sum() + 2
 
     # six neighbours
-    N6 = [np.array([1, m, m ** 2]), np.array([m ** 2, 1, m]),
+    n6 = [np.array([1, m, m ** 2]), np.array([m ** 2, 1, m]),
          np.array([m, m ** 2, 1])]
 
     # eighteen neighbours
-    N18 = [np.array([1 + m, 1 - m, m ** 2]),
+    n18 = [np.array([1 + m, 1 - m, m ** 2]),
            np.array([1 + m, m - 1, m ** 2]),
            np.array([m ** 2, 1 + m, 1 - m]),
            np.array([m ** 2, 1 + m, m - 1]),
@@ -467,33 +467,35 @@ def graph_3d_grid(xyz, k=18):
            np.array([m - 1, m ** 2, 1 + m])]
 
     # twenty-six neighbours
-    N26 = [np.array([1 + m + m ** 2, 1 - m, 1 - m ** 2]),
+    n26 = [np.array([1 + m + m ** 2, 1 - m, 1 - m ** 2]),
            np.array([1 + m + m ** 2, m - 1, 1 - m ** 2]),
            np.array([1 + m + m ** 2, 1 - m, m ** 2 - 1]),
            np.array([1 + m + m ** 2, m - 1, m ** 2 - 1])]
 
     # compute the edges in each possible direction
-    def create_edges(lxyz, NN, l1dist=1, eA=np.array([]), eB=np.array([]),
+    def create_edges(lxyz, nn, l1dist=1, left=np.array([]), right=np.array([]),
                      weights=np.array([])):
         q = 0
-        for a in NN:
-            v1 = np.dot(lxyz, a)
+        for nn_row in nn:
+            v1 = np.dot(lxyz, nn_row)
             o1 = np.argsort(v1)
             sv1 = v1[o1]
             nz = np.squeeze(np.nonzero(sv1[: - 1] - sv1[1:] == - l1dist))
             o1z, o1z1 = o1[nz], o1[nz + 1]
-            eA = np.hstack((eA, o1z, o1z1))
-            eB = np.hstack((eB, o1z1, o1z))
+            left = np.hstack((left, o1z, o1z1))
+            right = np.hstack((right, o1z1, o1z))
             q += 2 * np.size(nz)
         weights = np.hstack((weights, np.sqrt(l1dist) * np.ones(q)))
-        return eA, eB, weights
+        return left, right, weights
 
-    i, j, d = create_edges(lxyz, N6, 1.)
+    i, j, d = create_edges(lxyz, n6, 1.)
     if k >= 18:
-        i, j, d = create_edges(lxyz, N18, 2, i, j, d)
+        i, j, d = create_edges(lxyz, n18, 2, i, j, d)
     if k == 26:
-        i, j, d = create_edges(lxyz, N26, 3, i, j, d)
+        i, j, d = create_edges(lxyz, n26, 3, i, j, d)
     i, j = i.astype(np.int), j.astype(np.int)
+
+    # reorder the edges to have a more standard order
     order = np.argsort(i + j * (len(i) + 1))
     i, j, d = i[order], j[order], d[order]
     return i, j, d

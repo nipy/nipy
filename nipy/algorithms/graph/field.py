@@ -259,8 +259,8 @@ class Field(WeightedGraph):
         depth = np.zeros(self.V, np.int)
 
         # create a subfield(thresholding)
-        sf = self.subfield(self.field[:, refdim] >= th)
-        initial_field = sf.field[:, refdim]
+        sf = self.subfield(self.field.T[refdim] >= th)
+        initial_field = sf.field.T[refdim]
         sf.field = initial_field.copy()
 
         # compute the depth in the subgraph
