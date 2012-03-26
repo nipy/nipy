@@ -30,8 +30,7 @@ def test_slice_info():
     assert_equal(im4d.slice_direction, -1)
 
 
-def test_image4d_init():
-    nslices = 5
+def _test_image4d_init(nslices):
     data = np.zeros((3, 4, nslices, 6))
     aff = np.eye(4)
     tr = 2.0
@@ -54,6 +53,14 @@ def test_image4d_init():
     # or list
     img4d = Image4d(data, aff, tr, slice_order=range(nslices))
     assert_array_equal(img4d.slice_order, range(nslices))
+
+
+def test_image4d_init_5slices():
+    _test_image4d_init(5)
+
+
+def test_image4d_init_6slices():
+    _test_image4d_init(6)
 
 
 def test_slice_timing():
