@@ -341,73 +341,54 @@ class HierarchicalROI(SubDomains):
             pull_features = []
         if self.k == 0:
             return
-
-        # reorder to avoid introducing discrepancies
-        self.make_forest().reorder_from_leaves_to_roots()
         id_list = [k for k in self.get_id() if k in id_list]
 
-        # keep trace of the ROI to be merged since ids can change during merge
-        map_id = {}
-        for i in id_list:
-            map_id.update({i: i})
+        # relabel maps old labels to new labels 
+        relabel = np.arange(self.k)
 
         # merge nodes, one at a time
-        for c_old_id in id_list:
+        for c_id in id_list:
             # define alias for clearer indexing
-            c_id = map_id[c_old_id]
             c_pos = self.select_id(c_id)
             p_pos = self.parents[c_pos]
             p_id = self.get_id()[p_pos]
+            
             if p_pos != c_pos:
+                # this will be used in many places
+                mask_pos = np.ones(self.k, np.bool)
+                mask_pos[c_pos] = False
+                
+                # set new parents
+                self.parents = self.parents[mask_pos]
+                self.parents[self.parents == c_pos] = p_pos
+                self.parents[self.parents > c_pos] -=  1
+                self.k -= 1
+
+                # merge labels
+                relabel[relabel == c_id] = p_id
+
                 # compute new features
                 for fid in self.features.keys():
-                    # preserve voxels order in the feature
-                    c_mask = np.zeros(self.label.size, dtype=bool)
-                    c_mask[self.select_id(c_id, roi=False)] = True
-                    p_mask = np.zeros(self.label.size, dtype=bool)
-                    p_mask[self.select_id(p_id, roi=False)] = True
-                    # build new feature
-                    c_feature = self.get_feature(fid, c_id)
-                    p_feature = self.get_feature(fid, p_id)
-                    new_feature = np.zeros(self.label.size)
-                    new_feature[c_mask] = c_feature
-                    new_feature[p_mask] = p_feature
-                    new_feature = new_feature[c_mask + p_mask]
                     # replace feature
                     # (without the API since self is in an inconsistent state)
                     dj = self.get_feature(fid)
-                    dj[p_pos] = new_feature
+                    dj[p_pos] = np.hstack((dj[self.select_id(c_id)], 
+                                           dj[self.select_id(p_id)]))
                     del dj[c_pos]
                     self.features[fid] = dj
+
                 # compute new roi features
                 for fid in self.roi_features.keys():
-                    if fid != 'id':
-                        dj = self.get_roi_feature(fid)
-                        if fid in pull_features:
-                            # modify only if `pull` requested
-                            dj[p_pos] = dj[c_pos]
-                        dj = dj[np.arange(self.k) != c_pos]
-                        self.roi_features[fid] = dj
-                # set new parents
-                self.parents[self.parents == c_pos] = p_pos.astype(int)
-                former_pos = np.where(np.arange(self.k) == c_pos)[0]
-                self.parents = self.parents[np.arange(self.k) != c_pos]
-                self.parents[self.parents > former_pos] = \
-                    self.parents[self.parents > former_pos] - 1
-                # merge labels
-                self.label[self.select_id(c_id, roi=False)] = p_pos
-                # set ids
-                dj = self.get_roi_feature('id')
-                if 'id' in pull_features:
-                    # modify only if `pull` requested
-                    dj[p_pos] = dj[c_pos]
-                    map_id.update({dj[p_pos]: dj[c_pos]})
-                dj = dj[np.arange(self.k) != c_pos]
-                self.roi_features['id'] = dj
-                
-                # update HROI structure
-                self.recompute_labels()
-                
+                    dj = self.get_roi_feature(fid)
+                    if fid in pull_features:
+                        # modify only if `pull` requested
+                        dj[p_pos] = dj[c_pos]
+                    self.roi_features[fid] = dj[mask_pos]
+
+        # update the labels        
+        self.label[self.label > -1] = relabel[self.label[self.label > - 1]]
+        self.recompute_labels()
+
     def merge_descending(self, pull_features=None):
         """ Remove the items with only one son by including them in their son
 
@@ -422,78 +403,62 @@ class HierarchicalROI(SubDomains):
         """
         if pull_features is None:
             pull_features = []
+
         if self.k == 0:
             return
-        # reorder to avoid introducing discrepancies
-        valid = []
-        self.make_forest().reorder_from_leaves_to_roots()
-        # keep trace of the ROI to be merged since ids can change during merge
-        map_id = {}
-        for i in self.get_id():
-            map_id.update({i: i})
+        
+        # relabel maps old labels to new labels 
+        relabel = np.arange(self.k)
+
         # merge nodes, one at a time
         id_list = self.get_id()[:: - 1]
-        for p_old_id in id_list:
-            p_id = map_id[p_old_id]
+        
+        for p_id in id_list:
             p_pos = self.select_id(p_id)
             p_children = np.nonzero(self.parents == p_pos)[0]
+            
             if p_pos in p_children:
                 # remove current node from its children list
                 p_children = p_children[p_children != p_pos]
+
             if p_children.size == 1:
                 # merge node if it has only one child
                 c_pos = p_children[0]
                 c_id = self.get_id()[c_pos]
-                valid.append(p_old_id)
-                # compute new features
-                for fid in self.features.keys():
-                    # preserve voxels order in the feature
-                    c_mask = np.zeros(self.label.size, dtype=bool)
-                    c_mask[self.select_id(c_id, roi=False)] = True
-                    p_mask = np.zeros(self.label.size, dtype=bool)
-                    p_mask[self.select_id(p_id, roi=False)] = True
-                    # build new feature
-                    c_feature = self.get_feature(fid, c_id)
-                    p_feature = self.get_feature(fid, p_id)
-                    new_feature = np.zeros(self.label.size)
-                    new_feature[c_mask] = c_feature
-                    new_feature[p_mask] = p_feature
-                    new_feature = new_feature[c_mask + p_mask]
-                    # replace feature
-                    # (without the API since self is in an inconsistent state)
-                    dj = self.get_feature(fid)
-                    dj[c_pos] = new_feature
-                    del dj[p_pos]
-                    self.features[fid] = dj
-                # compute new ROI features
-                for fid in self.roi_features.keys():
-                    if fid != 'id':
-                        dj = self.get_roi_feature(fid)
-                        if fid in pull_features:
-                            # modify only if `pull` requested
-                            dj[c_pos] = dj[p_pos]
-                        dj = dj[np.arange(self.k) != p_pos]
-                        self.roi_features[fid] = dj
+                mask_pos = np.ones(self.k, np.bool)
+                mask_pos[p_pos] = False
+
                 # set new parents
                 self.parents[c_pos] = self.parents[p_pos]
                 if self.parents[c_pos] == p_pos:
                     self.parents[c_pos] = c_pos
-                former_pos = np.where(np.arange(self.k) == p_pos)[0]
-                self.parents = self.parents[np.arange(self.k) != p_pos]
-                self.parents[self.parents > former_pos] = \
-                    self.parents[self.parents > former_pos] - 1
+                self.parents = self.parents[mask_pos]
+                self.parents[self.parents > p_pos] -= 1
                 # merge labels
-                self.label[self.label == p_pos] = c_pos
-                # set ids
-                dj = self.get_roi_feature('id')
-                if 'id' in pull_features:
-                    # modify only if `pull` requested
-                    dj[c_pos] = dj[p_pos]
-                    map_id.update({dj[c_pos]: dj[p_pos]})
-                dj = dj[np.arange(self.k) != p_pos]
-                self.roi_features['id'] = dj
-                # update HROI structure
-                self.recompute_labels()
+                relabel[relabel == p_pos] = relabel[c_pos]
+                self.k -= 1
+                
+                # compute new features
+                for fid in self.features.keys():
+                    # replace feature
+                    # (without the API since self is in an inconsistent state)
+                    dj = self.get_feature(fid)
+                    dj[c_pos] = np.hstack((dj[self.select_id(c_id)], 
+                                           dj[self.select_id(p_id)]))
+                    del dj[p_pos]
+                    self.features[fid] = dj
+
+                # compute new roi features
+                for fid in self.roi_features.keys():
+                    dj = self.get_roi_feature(fid)
+                    if fid in pull_features:
+                        # modify only if `pull` requested
+                        dj[c_pos] = dj[p_pos]
+                    self.roi_features[fid] = dj[mask_pos]
+                                        
+        # update HROI structure
+        self.label[self.label > -1] = relabel[self.label[self.label > - 1]]
+        self.recompute_labels()
 
     def get_parents(self):
         """Return the parent of each node in the hierarchy
@@ -503,8 +468,7 @@ class HierarchicalROI(SubDomains):
         TODO:
         The purpose of this class API is not to rely on this order, so
         we should have self.parents as a list of ids instead of a list of
-        positions.
-
+        positions
         """
         return self.parents
 
