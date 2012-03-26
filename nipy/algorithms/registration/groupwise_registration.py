@@ -28,13 +28,20 @@ STEPSIZE = 1e-6
 SMALL = 1e-20
 MAXITER = 64
 MAXFUN = None
-LOOPS = 5, 1  # loops within each run
-BETWEEN_LOOPS = 5, 1  # loops used to realign different runs
-SPEEDUP = 5, 2
 BORDERS = 1, 1, 1
 REFSCAN = 0
 EXTRAPOLATE_SPACE = 'reflect'
 EXTRAPOLATE_TIME = 'reflect'
+
+LOOPS = 5  # loops within each run
+BETWEEN_LOOPS = 5  # loops used to realign different runs
+SPEEDUP = 5  # image sub-sampling factor for speeding up
+"""
+# How to tune those parameters for a multi-resolution implementation
+LOOPS = 5, 1
+BETWEEN_LOOPS = 5, 1
+SPEEDUP = 5, 2
+"""
 
 
 def interp_slice_order(Z, slice_order):
