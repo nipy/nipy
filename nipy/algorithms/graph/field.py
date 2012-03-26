@@ -396,24 +396,27 @@ class Field(WeightedGraph):
         order = np.argsort(- initial_field)
         rows = sf.to_coo_matrix().tolil().rows
         llabel, parent = - np.ones(sf.V, np.int), np.arange(2 * self.V + 1)
+        # q will denote the region index
         q = 0
         for i in order:
-            if (llabel[rows[i]] > -1).any():
+            if (llabel[rows[i]] > - 1).any():
                 nlabel = np.unique(llabel[rows[i]])
                 if nlabel[0] == -1:
                     nlabel = nlabel[1:]
-                while (parent[nlabel] != nlabel).any():
-                    nlabel = np.unique(parent[nlabel])
+                nlabel = np.unique(parent[nlabel])
+                assert (nlabel == parent[nlabel]).all()
                 if len(nlabel) == 1:
-                    j = nlabel[0]
-                    llabel[i] = j
+                    # we are at a regular point
+                    llabel[i] = nlabel[0]
                 else:
+                    # we are at a saddle point
                     llabel[i] = q
-                    parent[nlabel] = q
+                    for j in nlabel:
+                        parent[parent == j] = q
                     q += 1
             else:
+                # this is a new component
                 llabel[i] = q
-                parent[q] = q
                 q += 1
         parent = parent[:q]
 
