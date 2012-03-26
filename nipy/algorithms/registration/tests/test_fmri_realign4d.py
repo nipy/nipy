@@ -41,6 +41,13 @@ def test_image4d_init():
     assert_array_equal(img4d.slice_order, range(nslices))
     img4d = Image4d(data, aff, tr, slice_order='descending')
     assert_array_equal(img4d.slice_order, range(nslices)[::-1])
+    # test interleaved slice order
+    slice_order = range(nslices)[::2] + range(nslices)[1::2]
+    img4d = Image4d(data, aff, tr, slice_order='ascending', interleaved=True)
+    assert_array_equal(img4d.slice_order, slice_order)
+    slice_order.reverse()
+    img4d = Image4d(data, aff, tr, slice_order='descending', interleaved=True)
+    assert_array_equal(img4d.slice_order, slice_order)
     # can pass array
     img4d = Image4d(data, aff, tr, slice_order=np.arange(nslices))
     assert_array_equal(img4d.slice_order, range(nslices))
