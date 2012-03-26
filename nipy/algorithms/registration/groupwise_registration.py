@@ -152,12 +152,7 @@ class Image4d(object):
             if not self.interleaved:
                 aux = range(nslices)
             else:
-                p = nslices / 2
-                aux = []
-                for i in range(p):
-                    aux.extend([i, p + i])
-                if nslices % 2:
-                    aux.append(nslices - 1)
+                aux = range(nslices)[0::2] + range(nslices)[1::2]
             if self._slice_order == 'descending':
                 aux.reverse()
             self.slice_order = np.array(aux)
