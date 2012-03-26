@@ -103,8 +103,8 @@ class Image4d(object):
         slice_info : None or tuple, optional
             None, or a tuple with slice axis as the first element and direction
             as the second, for instance (2, 1).  If None, then guess the slice
-            axis, and direction, as the closest to the z axis, as estimated from
-            the affine.
+            axis, and direction, as the closest to the z axis, as estimated
+            from the affine.
         """
         self.affine = np.asarray(affine)
         self.tr = float(tr)
