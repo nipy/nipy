@@ -15,7 +15,7 @@ import matplotlib
 
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 import nipy.labs.spatial_models.hroi as hroi
-from nipy.labs.spatial_models.discrete_domain import domain_from_binary_array
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_shape
 
 # ---------------------------------------------------------
 # simulate an activation image
@@ -28,20 +28,16 @@ dataset = simul.surrogate_2d_dataset(n_subj=1, shape=shape, pos=pos,
                                      ampli=ampli, width=10.0).squeeze()
 values = dataset.ravel()
 
-
 #-------------------------------------------------------
 # Computations
 #-------------------------------------------------------
 
 # create a domain descriptor associated with this
-domain = domain_from_binary_array(dataset ** 2 > 0)
+domain = grid_domain_from_shape(shape)
+nroi = hroi.HROI_as_discrete_domain_blobs(domain, values, threshold=2.0, smin=3)
 
-nroi = hroi.HROI_as_discrete_domain_blobs(domain, dataset.ravel(),
-                                          threshold=2.0, smin=3)
 # create an average activaion image
-flat_dataset = dataset.ravel()
-activation = [flat_dataset[nroi.select_id(id, roi=False)]
-              for id in nroi.get_id()]
+activation = [values[nroi.select_id(id, roi=False)] for id in nroi.get_id()]
 nroi.set_feature('activation', activation)
 bmap = nroi.feature_to_voxel_map(
     'activation', roi=True, method="mean").reshape(shape)

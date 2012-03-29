@@ -188,6 +188,7 @@ class Field(WeightedGraph):
         """
         from scipy.sparse import dia_matrix
         refdim = int(refdim)
+        # add self-edges toa void singularities, when taking the maximum
         adj = self.to_coo_matrix() + dia_matrix(
             (np.ones(self.V), 0), (self.V, self.V))
         rows = adj.tolil().rows
@@ -333,8 +334,6 @@ class Field(WeightedGraph):
 
         # create a subfield(thresholding)
         sf = self.subfield(self.field[:, refdim] >= th)
-        initial_field = sf.field[:, refdim]
-        sf.field = initial_field.copy()
 
         # compute the basins
         hneighb = sf.highest_neighbor()
@@ -349,7 +348,6 @@ class Field(WeightedGraph):
         idx = np.array([ma.array(
                     self.field[:, refdim], mask=(label != c)).argmax()
                         for c in range(n_bassins)])
-        #major = label[lmajor]
         return idx, label
 
     def threshold_bifurcations(self, refdim=0, th=-np.infty):
