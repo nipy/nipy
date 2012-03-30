@@ -97,15 +97,15 @@ class CutAxes(object):
                 The affine of the volume
         """
         coords = [0, 0, 0]
-        coords['yxz'.index(self.direction)] = self.coord
+        coords['xyz'.index(self.direction)] = self.coord
         x_map, y_map, z_map = [int(round(c)) for c in
                                coord_transform(coords[0],
                                                coords[1],
                                                coords[2],
                                                np.linalg.inv(affine))]
-        if self.direction == 'x':
+        if self.direction == 'y':
             cut = np.rot90(map[:, y_map, :])
-        elif self.direction == 'y':
+        elif self.direction == 'x':
             cut = np.rot90(map[x_map, :, :])
         elif self.direction == 'z':
             cut = np.rot90(map[:, :, z_map])
@@ -124,10 +124,10 @@ class CutAxes(object):
                         pl.cm.cmap_d[pl.rcParams['image.cmap']])
             kwargs['cmap'] = CMapProxy(cmap)
 
-        if self.direction == 'x':
+        if self.direction == 'y':
             (xmin, xmax), (_, _), (zmin, zmax) = data_bounds
             (xmin_, xmax_), (_, _), (zmin_, zmax_) = bounding_box
-        elif self.direction == 'y':
+        elif self.direction == 'x':
             (_, _), (xmin, xmax), (zmin, zmax) = data_bounds
             (_, _), (xmin_, xmax_), (zmin_, zmax_) = bounding_box
         elif self.direction == 'z':
@@ -155,7 +155,7 @@ class CutAxes(object):
 
 
     def draw_left_right(self, size, bg_color, **kwargs):
-        if self.direction == 'y':
+        if self.direction == 'x':
             return
         ax = self.ax
         ax.text(.1, .95, 'L',
@@ -495,10 +495,10 @@ class OrthoSlicer(BaseSlicer):
         x0, y0, x1, y1 = self.rect
         # Create our axes:
         self.axes = dict()
-        for index, direction in enumerate(('x', 'y', 'z')):
+        for index, direction in enumerate(('y', 'x', 'z')):
             ax = pl.axes([0.3*index*(x1-x0) + x0, y0, .3*(x1-x0), y1-y0])
             ax.axis('off')
-            coord = self._cut_coords['yxz'.index(direction)]
+            coord = self._cut_coords['xyz'.index(direction)]
             cut_ax = CutAxes(ax, direction, coord)
             self.axes[direction] = cut_ax
             ax.set_axes_locator(self._locator)
@@ -528,8 +528,8 @@ class OrthoSlicer(BaseSlicer):
         for ax, width in width_dict.iteritems():
             width_dict[ax] = width/total_width*(x1 -x0)
         left_dict = dict()
-        left_dict[x_ax.ax] = x0
-        left_dict[y_ax.ax] = x0 + width_dict[x_ax.ax]
+        left_dict[y_ax.ax] = x0
+        left_dict[x_ax.ax] = x0 + width_dict[y_ax.ax]
         left_dict[z_ax.ax] = x0 + width_dict[x_ax.ax] + width_dict[y_ax.ax]
         return transforms.Bbox([[left_dict[axes], y0],
                           [left_dict[axes] + width_dict[axes], y1]])
@@ -556,11 +556,11 @@ class OrthoSlicer(BaseSlicer):
                 kwargs['color'] = '.8'
             else:
                 kwargs['color'] = 'k'
-        ax = self.axes['x'].ax
+        ax = self.axes['y'].ax
         ax.axvline(x, ymin=.05, ymax=.95, **kwargs)
         ax.axhline(z, **kwargs)
 
-        ax = self.axes['y'].ax
+        ax = self.axes['x'].ax
         ax.axvline(y, ymin=.05, ymax=.95, **kwargs)
         ax.axhline(z, xmax=.95, **kwargs)
 
