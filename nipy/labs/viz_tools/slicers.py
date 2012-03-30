@@ -155,7 +155,7 @@ class CutAxes(object):
 
 
     def draw_left_right(self, size, bg_color, **kwargs):
-        if self.direction == 'y':
+        if self.direction == 'x':
             return
         ax = self.ax
         ax.text(.1, .95, 'L',
@@ -556,11 +556,11 @@ class OrthoSlicer(BaseSlicer):
                 kwargs['color'] = '.8'
             else:
                 kwargs['color'] = 'k'
-        ax = self.axes['x'].ax
+        ax = self.axes['y'].ax
         ax.axvline(x, ymin=.05, ymax=.95, **kwargs)
         ax.axhline(z, **kwargs)
 
-        ax = self.axes['y'].ax
+        ax = self.axes['x'].ax
         ax.axvline(y, ymin=.05, ymax=.95, **kwargs)
         ax.axhline(z, xmax=.95, **kwargs)
 
