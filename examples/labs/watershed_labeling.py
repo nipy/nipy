@@ -4,7 +4,7 @@
 This scipt generates a noisy activation image image
 and performs a watershed segmentation in it.
 
-Author : Bertrand Thirion, 2009
+Author : Bertrand Thirion, 2009--2012
 """
 #autoindent
 print __doc__

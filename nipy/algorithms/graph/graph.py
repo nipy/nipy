@@ -557,8 +557,8 @@ class WeightedGraph(Graph):
     - V (int): the number of vertices
     - E (int): the number of edges
 
-    Properties
-    ----------
+    Methods
+    -------
     - vertices (list, type=int, shape=(V,)): vertices id
     - edges (list, type=int, shape=(E,2)): edges as vertices id tuples
     - weights (list, type=int, shape=(E,)): weights/lenghts

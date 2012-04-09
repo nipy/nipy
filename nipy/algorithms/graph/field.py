@@ -16,6 +16,8 @@ import numpy as np
 
 from graph import WeightedGraph
 
+NEGINF = -np.infty
+
 
 def field_from_coo_matrix_and_data(x, data):
     """ Instantiates a weighted graph from a (sparse) coo_matrix
@@ -210,14 +212,14 @@ class Field(WeightedGraph):
                 nf[k] = self.field[neighbors].min(0)
             self.field = nf
 
-    def get_local_maxima(self, refdim=0, th=-np.infty):
+    def get_local_maxima(self, refdim=0, th=NEGINF):
         """
         Look for the local maxima of one dimension (refdim) of self.field
 
         Parameters
         ----------
         refdim (int) the field dimension over which the maxima are looked after
-        th = -np.infty (float, optional)
+        th = float, optional
             threshold so that only values above th are considered
 
         Returns
@@ -233,7 +235,7 @@ class Field(WeightedGraph):
         depth = depth_all[idx]
         return idx, depth
 
-    def local_maxima(self, refdim=0, th=-np.infty):
+    def local_maxima(self, refdim=0, th=NEGINF):
         """
         Look for all the local maxima of a field
 
@@ -297,7 +299,7 @@ class Field(WeightedGraph):
         for i in range(nbiter):
             self.field = adj * self.field
 
-    def custom_watershed(self, refdim=0, th=-1 * np.infty):
+    def custom_watershed(self, refdim=0, th=NEGINF):
         """ customized watershed analysis of the field.
         Note that bassins are found around each maximum
         (and not minimum as conventionally)
@@ -311,14 +313,6 @@ class Field(WeightedGraph):
         -------
         idx: array of shape (nbassins)
              indices of the vertices that are local maxima
-        depth: array of shape (nbassins)
-               topological the depth of the bassins
-               depth[idx[i]] = q means that idx[i] is a q-order maximum
-               Note that this is also the diameter of the basins
-               associated with local maxima
-        major: array of shape (nbassins)
-               label of the maximum which dominates each local maximum
-               i.e. it describes the hierarchy of the local maxima
         label : array of shape (self.V)
               labelling of the vertices according to their bassin
         """
@@ -350,7 +344,7 @@ class Field(WeightedGraph):
                         for c in range(n_bassins)])
         return idx, label
 
-    def threshold_bifurcations(self, refdim=0, th=-np.infty):
+    def threshold_bifurcations(self, refdim=0, th=NEGINF):
         """
         analysis of the level sets of the field:
         Bifurcations are defined as changes in the topology in the level sets
@@ -402,7 +396,6 @@ class Field(WeightedGraph):
                 if nlabel[0] == -1:
                     nlabel = nlabel[1:]
                 nlabel = np.unique(parent[nlabel])
-                assert (nlabel == parent[nlabel]).all()
                 if len(nlabel) == 1:
                     # we are at a regular point
                     llabel[i] = nlabel[0]
