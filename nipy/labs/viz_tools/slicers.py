@@ -146,6 +146,9 @@ class CutAxes(object):
     def get_object_bounds(self):
         """ Return the bounds of the objects on this axes.
         """
+        if len(self._object_bounds) == 0:
+            # Nothing plotted yet
+            return -.01, .01, -.01, .01
         xmins, xmaxs, ymins, ymaxs = np.array(self._object_bounds).T
         xmax = max(xmaxs.max(), xmins.max())
         xmin = min(xmins.min(), xmaxs.min())
