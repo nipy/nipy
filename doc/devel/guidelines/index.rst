@@ -15,6 +15,7 @@
    howto_document
    sphinx_helpers
    gitwash/index
+   commit_codes
    testing
    debugging
    optimization
