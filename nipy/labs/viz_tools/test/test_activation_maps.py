@@ -40,6 +40,9 @@ def test_plot_anat():
     pl.savefig(tempfile.TemporaryFile())
     ortho_slicer.edge_map(data, mni_sform, color='c')
 
+    # Test saving with empty plot
+    z_slicer = plot_anat(anat=False, slicer='z')
+    pl.savefig(tempfile.TemporaryFile())
     z_slicer = plot_anat(slicer='z')
     pl.savefig(tempfile.TemporaryFile())
     z_slicer.edge_map(data, mni_sform, color='c')
