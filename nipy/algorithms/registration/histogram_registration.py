@@ -368,7 +368,8 @@ def clamp(x, bins=BINS, mask=None):
         y, bins = _clamp(x, y, bins)
     else:
         ym = y[mask]
-        ym, bins = _clamp(x, ym, bins)
+        xm = x[mask]
+        ym, bins = _clamp(xm, ym, bins)
         y[mask] = ym
     return y, bins
 
