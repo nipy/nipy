@@ -152,6 +152,22 @@ def test_histogram_registration():
     J = AffineImage(I.get_data().copy(), dummy_affine, 'ijk')
     R = HistogramRegistration(I, J)
     assert_raises(ValueError, R.subsample, spacing=[0, 1, 3])
+    
+def test_histogram_masked_registration():
+    """ Test the histogram registration class.
+    """
+    I = AffineImage(make_data_int16(dx=100, dy=100, dz=50), dummy_affine, 'ijk')
+    J = AffineImage(make_data_int16(dx=100, dy=100, dz=50), dummy_affine, 'ijk')
+    mask = (np.zeros((100,100,50)) == 1)
+    mask[10:20,10:20,10:20] = True
+    mask_img = AffineImage(mask, dummy_affine, 'ijk')
+    R = HistogramRegistration(I, J, to_mask=mask_img, from_mask=mask_img)
+    sim1 = R.eval(Affine())
+    I = AffineImage(I.get_data()[mask].reshape(10,10,10), dummy_affine, 'ijk')
+    J = AffineImage(J.get_data()[mask].reshape(10,10,10), dummy_affine, 'ijk')
+    R = HistogramRegistration(I, J)
+    sim2 = R.eval(Affine())
+    assert_equal(sim1, sim2)
 
 
 if __name__ == "__main__":
