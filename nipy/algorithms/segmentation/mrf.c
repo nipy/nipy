@@ -92,7 +92,7 @@ static void _ngb_integrate(double* res,
 			   const int* ngb,
 			   int ngb_size)
 {
-  int j = 0, xn, yn, zn, k, kk, K = ppm->dimensions[3]; 
+  int j, xn, yn, zn, k, kk, K = ppm->dimensions[3]; 
   const int* buf_ngb; 
   const double* ppm_data = (double*)ppm->data; 
   double *buf, *buf_ppm, *q, *buf_U;
@@ -107,7 +107,7 @@ static void _ngb_integrate(double* res,
 
   /* Loop over neighbors */
   buf_ngb = ngb; 
-  while (j < ngb_size) {
+  for (j=0; j<ngb_size; j++) {
     xn = x + *buf_ngb; buf_ngb++; 
     yn = y + *buf_ngb; buf_ngb++;
     zn = z + *buf_ngb; buf_ngb++;
@@ -122,8 +122,6 @@ static void _ngb_integrate(double* res,
     for (k=0, buf=res, buf_U=(double*)U; k<K; k++, buf++)
       for (kk=0, q=buf_ppm; kk<K; kk++, q++, buf_U++)
 	*buf += *buf_U * *q;
-
-    j ++; 
   }
 
   return; 
@@ -266,15 +264,13 @@ PyArrayObject* make_edges(const PyArrayObject* idx,
     /* Loop over neighbors if current point is within the mask */
     if (idx_i >= 0) {
       buf_ngb = ngb;
-      j = 0;
-      while (j < ngb_size) {
+      for (j=0; j<ngb_size; j++) {
 
 	/* Get neighbor coordinates */
 	xj = xi + *buf_ngb; buf_ngb++; 
 	yj = yi + *buf_ngb; buf_ngb++;
 	zj = zi + *buf_ngb; buf_ngb++;
 	pos = xj*u1 + yj*u2 + zj;
-	j ++;
 
 	/* Store edge if neighbor is within the mask */
 	if ((pos < 0) || (pos >= u0))
