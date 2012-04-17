@@ -63,11 +63,12 @@ class Segmentation(object):
             self.data = data_msk.reshape((np.prod(data_msk.shape[0:-1]),
                                           data_msk.shape[-1]))
 
-        # If no initial ppm is provided, assume sensible `mu` and
-        # `sigma` are provided
+        # By default, the ppm is initialized as a collection of
+        # uniform distributions
         if ppm == None:
             nclasses = len(mu)
             self.ppm = np.zeros(list(space_shape) + [nclasses])
+            self.ppm[mask] = 1. / nclasses
             self.is_ppm = False
             self.mu = np.asarray(mu, dtype='double').reshape(\
                 (nclasses, nchannels))
