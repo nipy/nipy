@@ -86,7 +86,6 @@ def test_asc_merge():
     hroi = make_hroi()
     s1 = hroi.get_size(0) + hroi.get_size(1)
     total_size = np.sum([hroi.get_size(id) for id in hroi.get_id()])
-    #import pdb; pdb.set_trace()
     assert_equal(hroi.get_size(0, ignore_children=False), total_size)
     hroi.merge_ascending([1])
     assert_equal(hroi.get_size(0), s1)
@@ -96,7 +95,6 @@ def test_asc_merge_2():
     """ Test ascending merge
 
     Test that ROI being their own parent are inchanged.
-
     """
     hroi = make_hroi()
     s1 = hroi.get_size(0)

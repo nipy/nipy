@@ -31,7 +31,7 @@ def field_from_coo_matrix_and_data(x, data):
 
     Returns
     -------
-    ifield: resulting field instance
+    ifield: resulting Field instance
     """
     if x.shape[0] != x.shape[1]:
         raise ValueError("the input coo_matrix is not square")
@@ -124,8 +124,8 @@ class Field(WeightedGraph):
             self.field = field
 
     def closing(self, nbiter=1):
-        """
-        Morphological closing of the field data. self.field is changed
+        """Morphological closing of the field data. 
+        self.field is changed inplace
 
         Parameters
         ----------
@@ -136,7 +136,7 @@ class Field(WeightedGraph):
         self.erosion(nbiter)
 
     def opening(self, nbiter=1):
-        """ Morphological opening of the field data.
+        """Morphological opening of the field data.
         self.field is changed inplace
 
         Parameters
@@ -190,7 +190,7 @@ class Field(WeightedGraph):
         """
         from scipy.sparse import dia_matrix
         refdim = int(refdim)
-        # add self-edges toa void singularities, when taking the maximum
+        # add self-edges to avoid singularities, when taking the maximum
         adj = self.to_coo_matrix() + dia_matrix(
             (np.ones(self.V), 0), (self.V, self.V))
         rows = adj.tolil().rows
@@ -236,8 +236,7 @@ class Field(WeightedGraph):
         return idx, depth
 
     def local_maxima(self, refdim=0, th=NEGINF):
-        """
-        Look for all the local maxima of a field
+        """Returns all the local maxima of a field
 
         Parameters
         ----------
@@ -282,9 +281,8 @@ class Field(WeightedGraph):
         return depth
 
     def diffusion(self, nbiter=1):
-        """
-        diffusion of a field of data in the weighted graph structure
-        Note that this changes self.field
+        """diffusion of the field data in the weighted graph structure
+        self.field is changed inplace
 
         Parameters
         ----------
@@ -345,8 +343,7 @@ class Field(WeightedGraph):
         return idx, label
 
     def threshold_bifurcations(self, refdim=0, th=NEGINF):
-        """
-        analysis of the level sets of the field:
+        """Analysis of the level sets of the field:
         Bifurcations are defined as changes in the topology in the level sets
         when the level (threshold) is varied
         This can been thought of as a kind of Morse analysis
@@ -436,8 +433,8 @@ class Field(WeightedGraph):
         if np.size(self.field) == 0:
             raise ValueError('No field has been defined so far')
         seed = seed.astype(np.int)
-        weights = np.sqrt(np.sum((self.field[self.edges[:, 0]] -
-                                  self.field[self.edges[:, 1]]) ** 2, 1))
+        weights = np.sqrt(np.sum((self.field[self.edges.T[0]] -
+                                  self.field[self.edges.T[1]]) ** 2, 1))
         g = WeightedGraph(self.V, self.edges, weights)
         label = g.voronoi_labelling(seed)
         return label
@@ -480,7 +477,7 @@ class Field(WeightedGraph):
         if seeds == None:
             k = label.max() + 1
             if np.size(np.unique(label)) != k:
-                raise ValueError('missing values, I cannot proceed')
+                raise ValueError('missing values, cannot proceed')
             seeds = np.zeros(k).astype(np.int)
             for  j in range(k):
                 lj = np.nonzero(label == j)[0]
@@ -491,8 +488,9 @@ class Field(WeightedGraph):
             k = np.size(seeds)
 
         for i in range(maxiter):
+            # voronoi labelling
             label = self.constrained_voronoi(seeds)
-            #update the seeds
+            # update the seeds
             inertia = 0
             pinteria = 0
             for  j in range(k):
@@ -543,9 +541,7 @@ class Field(WeightedGraph):
                      self.weights.copy(), self.field.copy())
 
     def subfield(self, valid):
-        """
-        Returns a subfield of self,
-        with only the vertices such that valid >0
+        """Returns a subfield of self, with only vertices such that valid > 0
 
         Parameters
         ----------
@@ -560,7 +556,7 @@ class Field(WeightedGraph):
         Note
         ----
         The vertices are renumbered as [1..p] where p = sum(valid>0)
-        when sum(valid==0) then None is returned
+        when sum(valid) == 0 then None is returned
         """
         G = self.subgraph(valid)
         if G == None:
