@@ -625,7 +625,7 @@ class BaseStackedSlicer(BaseSlicer):
                 xmin, xmax, ymin, ymax, zmin, zmax = \
                                 get_mask_bounds(mask, affine)
                 bounds = (xmin, xmax), (ymin, ymax), (zmin, zmax)
-            lower, upper = bounds['yxz'.index(cls._direction)]
+            lower, upper = bounds['xyz'.index(cls._direction)]
             cut_coords = np.linspace(lower, upper, 10).tolist()
         return cut_coords
 
