@@ -16,7 +16,7 @@ import numpy as np
 
 from graph import WeightedGraph
 
-NEGINF = -np.infty
+NEGINF = -np.inf
 
 
 def field_from_coo_matrix_and_data(x, data):
@@ -473,7 +473,7 @@ class Field(WeightedGraph):
         if (seeds == None) and (label == None):
             raise ValueError('No initialization has been provided')
         k = np.size(seeds)
-        inertia_old = np.infty
+        inertia_old = NEGINF
         if seeds == None:
             k = label.max() + 1
             if np.size(np.unique(label)) != k:

@@ -670,7 +670,7 @@ x
                 raise ValueError('some weights are non-positive')
         except:
             raise ValueError('undefined weights')
-        dist, active = np.infty * np.ones(self.V), np.ones(self.V)
+        dist, active = np.inf * np.ones(self.V), np.ones(self.V)
         idx, neighb, weight = self.compact_neighb()
         dist[seed] = 0
         dg = zip(np.zeros_like(seed), seed)
@@ -885,7 +885,7 @@ x
                 raise ValueError('some weights are non-positive')
         except:
             raise ValueError('undefined weights')
-        dist, active = np.infty * np.ones(self.V), np.ones(self.V)
+        dist, active = np.inf * np.ones(self.V), np.ones(self.V)
         label = - np.ones(self.V, np.int)
         idx, neighb, weight = self.compact_neighb()
         dist[seed] = 0

@@ -111,7 +111,7 @@ def test_gmm_bf(kmax=4, seed=1):
 
     x = nr.randn(n_samples, dim)
 
-    bbf = -np.infty
+    bbf = -np.inf
     for k in range(1, kmax):
         b = BGMM(k, dim)
         b.guess_priors(x)
@@ -149,7 +149,7 @@ def test_vbgmm_select(kmax=6):
     n_samples, dim, offset=100, 3, 2
     x = nr.randn(n_samples, dim)
     x[:30] += offset
-    be = -np.infty
+    be = - np.inf
     for  k in range(1, kmax):
         b = VBGMM(k, dim)
         b.guess_priors(x)

@@ -196,7 +196,7 @@ class VonMisesMixture(object):
 
         # EM algorithm
         assert not(np.isnan(self.means).any())
-        pll = - np.infty
+        pll = - np.inf
         for i in range(maxiter):
             ll = np.log(self.mixture_density(x)).mean()
             z = self.responsibilities(x)
@@ -276,7 +276,7 @@ def estimate_robust_vmm(k, precision, null_class, x, ninit=10, bias=None,
     maxiter: int, optional,
              maximum number of iterations after each initialization
     """
-    score = - np.infty
+    score = - np.inf
     for i in range(ninit):
         aux = VonMisesMixture(k, precision, null_class=null_class)
         ll = aux.estimate(x, bias=bias)
@@ -305,7 +305,7 @@ def select_vmm(krange, precision, null_class, x, ninit=10, bias=None,
           a prior probability of not being in the null class
     verbose: Bool, optional
     """
-    score = - np.infty
+    score = - np.inf
     for k in krange:
         aux = estimate_robust_vmm(k, precision, null_class, x, ninit, bias,
                                   maxiter)
@@ -341,10 +341,10 @@ def select_vmm_cv(krange, precision, x, null_class, cv_index,
     maxiter: int, optional,
     bias: array of shape (n), prior
     """
-    score = - np.infty
+    score = - np.inf
     mll = []
     for k in krange:
-        mll.append( - np.infty)
+        mll.append( - np.inf)
         for j in range(1):
             ll = np.zeros_like(cv_index).astype(np.float)
             for i in np.unique(cv_index):

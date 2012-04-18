@@ -169,7 +169,7 @@ class LandmarkRegions(object):
             if alpha > 1:
                 raise ValueError("no solution for alpha>1")
             if alpha > 1 - 1.e-15:
-                return np.infty
+                return np.inf
             if alpha < 0:
                 raise ValueError("no solution for alpha<0")
             if alpha < 1.e-15:

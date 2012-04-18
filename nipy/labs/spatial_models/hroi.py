@@ -19,7 +19,7 @@ from nipy.algorithms.graph.forest import Forest
 from nipy.algorithms.graph.field import field_from_coo_matrix_and_data
 from .mroi import SubDomains
 
-NINF = -np.infty
+NINF = - np.inf
 
 
 def hroi_agglomeration(input_hroi, criterion='size', smin=0):
