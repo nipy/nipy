@@ -91,12 +91,9 @@ class Segmentation(object):
             self.prior = None
 
         self.ngb_size = int(ngb_size)
-        self.set_energy(U, beta)
+        self.set_markov_prior(beta, U=U)
 
-        # Should check whether input data is consistent with parameter
-        # sizes
-
-    def set_energy(self, U, beta):
+    def set_markov_prior(self, beta, U=None):
         if not U == None:  # make sure it's C-contiguous
             self.U = np.asarray(U).copy()
         else:  # Potts model
