@@ -211,6 +211,8 @@ class Segmentation(object):
         if self.beta > 0.0:
             f2 = self.beta * _interaction_energy(ppm, self.XYZ,
                                                  self.U, self.ngb_size)
+        else:
+            f2 = 0.0
         return f1, f2
 
 
