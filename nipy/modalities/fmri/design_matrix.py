@@ -150,6 +150,11 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
     """
     hnames = []
     rmatrix = None
+    if hrf_model == 'FIR':
+        oversampling = 1
+    else:
+        oversampling = 16
+
     for nc in np.unique(paradigm.con_id):
         onsets = paradigm.onset[paradigm.con_id == nc]
         nos = np.size(onsets)
@@ -165,7 +170,8 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
             duration = paradigm.duration[paradigm.con_id == nc]
         exp_condition = (onsets, duration, values)
         reg, names = compute_regressor(exp_condition, hrf_model, frametimes,
-                                       con_id=nc, fir_delays=fir_delays)
+                                       con_id=nc, fir_delays=fir_delays, 
+                                       oversampling=oversampling)
         hnames += names
         if rmatrix == None:
             rmatrix = reg

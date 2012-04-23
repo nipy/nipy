@@ -156,8 +156,11 @@ def sample_condition(exp_condition, frametimes, oversampling=16):
     """
     # generate the oversampled frame times
     n = frametimes.size
-    hr_frametimes = np.linspace(0, frametimes.max() * (1 + 1. / (n - 1)),
-                                n * oversampling + 1)
+    if oversampling == 1:
+        hr_frametimes = frametimes
+    else:
+        hr_frametimes = np.linspace(0, frametimes.max() * (1 + 1. / (n - 1)),
+                                    n * oversampling + 1)
 
     # get the regressor information
     onsets, duration, values = exp_condition
@@ -324,7 +327,7 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
     'spm_time_dispersion': idem, plus dispersion derivative (3 regressors)
     'canonical': this one corresponds to the Glover hrf
     'canonical_derivative': the Glover hrf + time derivative (2 regressors)
-    'fir': finite impulse response basis, a set of delayed dirac models 
+    'FIR': finite impulse response basis, a set of delayed dirac models 
            with arbitrary length. This one currently assumes regularly spaced 
            frametimes (i.e. fixed time of repetition).
     It is expected that spm standard and Glover model would not yield 
@@ -348,8 +351,9 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
     creg = resample_regressor(conv_reg, hr_frametimes, frametimes)
 
     # 5. ortogonalize the regressors
-    creg = _orthogonalize(creg)
-
+    if hrf_model is not 'FIR':
+        creg = _orthogonalize(creg)
+        
     # 6 generate regressor names
     reg_names = _regressor_names(con_id, hrf_model, fir_delays=fir_delays)
     return creg, reg_names
