@@ -52,14 +52,10 @@ int ngb26 [] = {1,0,0,
 
 
 static int* _select_neighborhood_system(int ngb_size) {
-  if (ngb_size == 6) { 
-    fprintf(stderr, "6-neighborhood system\n"); 
+  if (ngb_size == 6)
     return ngb6;
-  }
-  else if (ngb_size == 26) {
-    fprintf(stderr, "26-neighborhood system\n"); 
+  else if (ngb_size == 26) 
     return ngb26;
-  }
   else {
     fprintf(stderr, "Unknown neighborhood system\n");
     return NULL; 

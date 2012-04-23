@@ -103,9 +103,6 @@ class Segmentation(object):
         self.beta = float(beta)
 
     def vm_step(self, freeze=()):
-
-        print(' VM step...')
-
         classes = range(self.nclasses)
         for i in freeze:
             classes.remove(i)
@@ -132,7 +129,6 @@ class Segmentation(object):
         field = np.zeros([self.data.shape[0], self.nclasses])
 
         for i in range(self.nclasses):
-            print('  tissue %d' % i)
             centered_data = self.data - self.mu[i]
             if self.nchannels == 1:
                 inv_sigma = 1. / np.maximum(TINY, self.sigma[i])
@@ -154,17 +150,14 @@ class Segmentation(object):
 
     def ve_step(self):
 
-        print(' VE step...')
         field = self.ext_field()
 
         if self.beta == 0:
-            print('  ... Normalizing...')
             tmp = field.T
             tmp /= tmp.sum(0)
             self.ppm[self.mask] = field.reshape(\
                 self.ppm[self.mask].shape)
         else:
-            print('  ... MRF regularization')
             self.ppm = _ve_step(self.ppm, field, self.XYZ,
                                 self.U, self.ngb_size, self.beta)
 
@@ -176,7 +169,6 @@ class Segmentation(object):
         if self.is_ppm:
             self.vm_step(freeze=freeze)
         for i in range(niters):
-            print(' Iter %d/%d...' % (i + 1, niters))
             self.ve_step()
             self.vm_step(freeze=freeze)
         self.is_ppm = True
