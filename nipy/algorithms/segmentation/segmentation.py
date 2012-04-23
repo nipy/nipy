@@ -70,9 +70,9 @@ class Segmentation(object):
             self.ppm = np.zeros(list(space_shape) + [nclasses])
             self.ppm[mask] = 1. / nclasses
             self.is_ppm = False
-            self.mu = np.asarray(mu, dtype='double').reshape(\
+            self.mu = np.array(mu, dtype='double').reshape(\
                 (nclasses, nchannels))
-            self.sigma = np.asarray(sigma, dtype='double').reshape(\
+            self.sigma = np.array(sigma, dtype='double').reshape(\
                 (nclasses, nchannels, nchannels))
         elif mu == None:
             nclasses = ppm.shape[-1]
