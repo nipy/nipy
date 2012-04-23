@@ -440,7 +440,7 @@ def fusion(K, pop, i, j, k):
             i1 = idxk[acorr[a]]
             i2 = idxk[acorr[a + 1]]
             K.weights[i1] = K.weights[i1] + K.weights[i2]
-            K.weights[i2] = - np.infty
+            K.weights[i2] = - np.inf
             K.edges[i2] = -1
 
     #right side
@@ -453,7 +453,7 @@ def fusion(K, pop, i, j, k):
             i1 = idxk[acorr[a]]
             i2 = idxk[acorr[a + 1]]
             K.weights[i1] = K.weights[i1] + K.weights[i2]
-            K.weights[i2] = - np.infty
+            K.weights[i2] = - np.inf
             K.edges[i2] = - 1
 
 
@@ -476,7 +476,7 @@ def average_link_graph(G):
     e.g. distance-based procedures).  Thus the tree is created with
     negated affinity values, in roder to respect the traditional
     ordering of cluster potentials. individual points have the
-    potential (-np.infty).
+    potential (-np.inf).
     This problem is handled transparently inthe associated segment functionp.
     """
 
@@ -490,7 +490,7 @@ def average_link_graph(G):
 
     parent = np.arange(2 * n - nbcc, dtype=np.int)
     pop = np.ones(2 * n - nbcc, np.int)
-    height = np.infty * np.ones(2 * n - nbcc)
+    height = np.inf * np.ones(2 * n - nbcc)
 
     # iteratively merge clusters
     for q in range(n - nbcc):
@@ -505,10 +505,10 @@ def average_link_graph(G):
 
         # 2. remove the current edge
         K.edges[m] = -1
-        K.weights[m] = - np.infty
+        K.weights[m] = - np.inf
         m = np.nonzero((K.edges[:, 0] == j) * (K.edges[:, 1] == i))[0]
         K.edges[m] = - 1
-        K.weights[m] = - np.infty
+        K.weights[m] = - np.inf
 
         # 3. merge the edges with third part edges
         parent[i] = k
@@ -622,7 +622,7 @@ def _initial_inertia(K, Features, seeds=None):
             if (aux[i] or aux[j]):
                 K.weights[e] = _inertia(i, j, Features)
             else:
-                K.weights[e] = np.infty
+                K.weights[e] = np.inf
 
 
 def _auxiliary_graph(G, Features):
@@ -735,7 +735,7 @@ def _remap(K, i, j, k, Features, linc, rinc):
         for a in range(np.size(scorr) - 1):
             if scorr[a] == scorr[a + 1]:
                 i2 = idxk[acorr[a + 1]]
-                K.weights[i2] = np.infty
+                K.weights[i2] = np.inf
                 rinc[K.edges[i2, 1]].remove(i2)
                 K.edges[i2] = - 1
                 linc[k].remove(i2)
@@ -749,7 +749,7 @@ def _remap(K, i, j, k, Features, linc, rinc):
         for a in range(np.size(scorr) - 1):
             if scorr[a] == scorr[a + 1]:
                 i2 = idxk[acorr[a + 1]]
-                K.weights[i2] = np.infty
+                K.weights[i2] = np.inf
                 linc[K.edges[i2, 0]].remove(i2)
                 K.edges[i2] = - 1
                 rinc[k].remove(i2)
@@ -805,7 +805,7 @@ def ward_quick(G, feature, verbose=0):
     while (q < n - nbcc):
         # 1. find the lightest edges
         aux = np.zeros(2 * n)
-        ape = np.nonzero(K.weights < np.infty)
+        ape = np.nonzero(K.weights < np.inf)
         ape = np.reshape(ape, np.size(ape))
         idx = np.argsort(K.weights[ape])
 
@@ -830,7 +830,7 @@ def ward_quick(G, feature, verbose=0):
 
             # 2. remove the current edge
             K.edges[m] = -1
-            K.weights[m] = np.infty
+            K.weights[m] = np.inf
             linc[i].remove(m)
             rinc[j].remove(m)
 
@@ -838,7 +838,7 @@ def ward_quick(G, feature, verbose=0):
             if np.sum(K.edges[ml, 1] == i) > 0:
                 m = ml[np.flatnonzero(K.edges[ml, 1] == i)]
                 K.edges[m] = -1
-                K.weights[m] = np.infty
+                K.weights[m] = np.inf
                 linc[j].remove(m)
                 rinc[i].remove(m)
 
@@ -928,7 +928,7 @@ def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=0):
 
     n = G.V
     if stop == - 1:
-        stop = np.infty
+        stop = np.inf
     qmax = int(np.minimum(qmax, n - 1))
     t = ward_quick(G, feature, verbose)
     if verbose:
@@ -992,7 +992,7 @@ def ward_segment(G, feature, stop=-1, qmax=1, verbose=0):
     if qmax == -1:
         qmax = n - 1
     if stop == -1:
-        stop = np.infty
+        stop = np.inf
     qmax = int(np.minimum(qmax, n - 1))
 
     t = ward(G, feature, verbose)
@@ -1073,7 +1073,7 @@ def ward(G, feature, verbose=0):
 
         # 2. remove the current edge
         K.edges[m] = - 1
-        K.weights[m] = np.infty
+        K.weights[m] = np.inf
         linc[i].remove(m)
         rinc[j].remove(m)
 
@@ -1081,7 +1081,7 @@ def ward(G, feature, verbose=0):
         if np.sum(K.edges[ml, 1] == i) > 0:
             m = ml[np.flatnonzero(K.edges[ml, 1] == i)]
             K.edges[m] = -1
-            K.weights[m] = np.infty
+            K.weights[m] = np.inf
             linc[j].remove(m)
             rinc[i].remove(m)
 

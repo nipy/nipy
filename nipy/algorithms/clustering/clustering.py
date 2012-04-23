@@ -128,7 +128,7 @@ def _EStep(x, centers):
     """
     nbitem = x.shape[0]
     z = - np.ones(nbitem).astype(np.int)
-    mindist = np.infty * np.ones(nbitem)
+    mindist = np.inf * np.ones(nbitem)
     k = centers.shape[0]
     for q in range(k):
         dist = np.sum((x - centers[q]) ** 2, 1)
@@ -189,7 +189,7 @@ def _kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=1.e-4,
     nbitem = X.shape[0]
 
     vdata = np.mean(np.var(X, 0))
-    bJ = np.infty
+    bJ = np.inf
     for it in range(ninit):
         # init
         if Labels == None:

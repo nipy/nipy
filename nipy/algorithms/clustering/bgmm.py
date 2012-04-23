@@ -652,8 +652,8 @@ class BGMM(GMM):
         if mem:
             possibleZ = - np.ones((x.shape[0], niter)).astype(np.int)
 
-        score = - np.infty
-        bpz = - np.infty
+        score = - np.inf
+        bpz = - np.inf
 
         for i in range(niter):
             like = self.likelihood(x)
@@ -1086,7 +1086,7 @@ class VBGMM(BGMM):
         """
         # alternation of E/M step until convergence
         tiny = 1.e-15
-        av_ll_old = - np.infty
+        av_ll_old = - np.inf
         for i in range(niter):
             like = self._Estep(x)
             av_ll = np.mean(np.log(np.maximum(np.sum(like, 1), tiny)))

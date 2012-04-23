@@ -267,7 +267,7 @@ class NormalEmpiricalNull(object):
         if efp[-1] > alpha:
             print "the maximal value is %f , the corresponding fdr is %f " \
                     % (self.x[ - 1], efp[ - 1])
-            return np.infty
+            return np.inf
         j = np.argmin(efp[:: - 1] < alpha) + 1
         return 0.5 * (self.x[ - j] + self.x[ - j + 1])
 
@@ -407,7 +407,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
          that takes into account the thershold theta. Not rigorous.
     theta = 0 the threshold used to correct the posterior p-values
           when bias=1; normally, it is such that test>theta
-          note that if theta = -np.infty, the method has a standard behaviour
+          note that if theta = -np.inf, the method has a standard behaviour
     return_estimator: boolean, optional
             If return_estimator is true, the estimator object is
             returned.

@@ -32,7 +32,7 @@ x = np.concatenate((x1, x2, x3))
 ###############################################################################
 #2. fit the mixture with a bunch of possible models, using Variational Bayes
 krange = range(1, 10)
-be = - np.infty
+be = - np.inf
 for  k in krange:
     b = bgmm.VBGMM(k, dim)
     b.guess_priors(x)
@@ -55,7 +55,7 @@ pl.title('Variational Bayes')
 # 4. the same, with the Gibbs GMM algo
 niter = 1000
 krange = range(1, 6)
-bbf = - np.infty
+bbf = - np.inf
 for k in krange:
     b = bgmm.BGMM(k, dim)
     b.guess_priors(x)

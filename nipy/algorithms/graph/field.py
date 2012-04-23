@@ -16,6 +16,8 @@ import numpy as np
 
 from graph import WeightedGraph
 
+NEGINF = -np.inf
+
 
 def field_from_coo_matrix_and_data(x, data):
     """ Instantiates a weighted graph from a (sparse) coo_matrix
@@ -29,7 +31,7 @@ def field_from_coo_matrix_and_data(x, data):
 
     Returns
     -------
-    ifield: resulting field instance
+    ifield: resulting Field instance
     """
     if x.shape[0] != x.shape[1]:
         raise ValueError("the input coo_matrix is not square")
@@ -88,18 +90,17 @@ class Field(WeightedGraph):
         self.edges = []
         self.weights = []
         if (edges is not None) or (weights is not None):
-            if edges.shape[0] == np.size(weights):
-                if len(edges) == 0:
-                    E = 0
-                else:
-                    E = edges.shape[0]
-                self.V = V
-                self.E = E
-                self.edges = edges
-                self.weights = weights
+            if len(edges) == 0:
+                E = 0
+            elif edges.shape[0] == np.size(weights):
+                E = edges.shape[0]
             else:
                 raise ValueError('Incompatible size of the edges \
                                   and weights matrices')
+            self.V = V
+            self.E = E
+            self.edges = edges
+            self.weights = weights
         self.field = []
         if field == None:
             pass
@@ -123,8 +124,8 @@ class Field(WeightedGraph):
             self.field = field
 
     def closing(self, nbiter=1):
-        """
-        Morphological closing of the field data. self.field is changed
+        """Morphological closing of the field data. 
+        self.field is changed inplace
 
         Parameters
         ----------
@@ -135,7 +136,7 @@ class Field(WeightedGraph):
         self.erosion(nbiter)
 
     def opening(self, nbiter=1):
-        """ Morphological opening of the field data.
+        """Morphological opening of the field data.
         self.field is changed inplace
 
         Parameters
@@ -189,6 +190,7 @@ class Field(WeightedGraph):
         """
         from scipy.sparse import dia_matrix
         refdim = int(refdim)
+        # add self-edges to avoid singularities, when taking the maximum
         adj = self.to_coo_matrix() + dia_matrix(
             (np.ones(self.V), 0), (self.V, self.V))
         rows = adj.tolil().rows
@@ -210,14 +212,14 @@ class Field(WeightedGraph):
                 nf[k] = self.field[neighbors].min(0)
             self.field = nf
 
-    def get_local_maxima(self, refdim=0, th=-np.infty):
+    def get_local_maxima(self, refdim=0, th=NEGINF):
         """
         Look for the local maxima of one dimension (refdim) of self.field
 
         Parameters
         ----------
         refdim (int) the field dimension over which the maxima are looked after
-        th = -np.infty (float, optional)
+        th = float, optional
             threshold so that only values above th are considered
 
         Returns
@@ -233,9 +235,8 @@ class Field(WeightedGraph):
         depth = depth_all[idx]
         return idx, depth
 
-    def local_maxima(self, refdim=0, th=-np.infty):
-        """
-        Look for all the local maxima of a field
+    def local_maxima(self, refdim=0, th=NEGINF):
+        """Returns all the local maxima of a field
 
         Parameters
         ----------
@@ -260,8 +261,8 @@ class Field(WeightedGraph):
         depth = np.zeros(self.V, np.int)
 
         # create a subfield(thresholding)
-        sf = self.subfield(self.field[:, refdim] >= th)
-        initial_field = sf.field[:, refdim]
+        sf = self.subfield(self.field.T[refdim] >= th)
+        initial_field = sf.field.T[refdim]
         sf.field = initial_field.copy()
 
         # compute the depth in the subgraph
@@ -280,9 +281,8 @@ class Field(WeightedGraph):
         return depth
 
     def diffusion(self, nbiter=1):
-        """
-        diffusion of a field of data in the weighted graph structure
-        Note that this changes self.field
+        """diffusion of the field data in the weighted graph structure
+        self.field is changed inplace
 
         Parameters
         ----------
@@ -297,7 +297,7 @@ class Field(WeightedGraph):
         for i in range(nbiter):
             self.field = adj * self.field
 
-    def custom_watershed(self, refdim=0, th=-1 * np.infty):
+    def custom_watershed(self, refdim=0, th=NEGINF):
         """ customized watershed analysis of the field.
         Note that bassins are found around each maximum
         (and not minimum as conventionally)
@@ -311,14 +311,6 @@ class Field(WeightedGraph):
         -------
         idx: array of shape (nbassins)
              indices of the vertices that are local maxima
-        depth: array of shape (nbassins)
-               topological the depth of the bassins
-               depth[idx[i]] = q means that idx[i] is a q-order maximum
-               Note that this is also the diameter of the basins
-               associated with local maxima
-        major: array of shape (nbassins)
-               label of the maximum which dominates each local maximum
-               i.e. it describes the hierarchy of the local maxima
         label : array of shape (self.V)
               labelling of the vertices according to their bassin
         """
@@ -334,8 +326,6 @@ class Field(WeightedGraph):
 
         # create a subfield(thresholding)
         sf = self.subfield(self.field[:, refdim] >= th)
-        initial_field = sf.field[:, refdim]
-        sf.field = initial_field.copy()
 
         # compute the basins
         hneighb = sf.highest_neighbor()
@@ -350,12 +340,10 @@ class Field(WeightedGraph):
         idx = np.array([ma.array(
                     self.field[:, refdim], mask=(label != c)).argmax()
                         for c in range(n_bassins)])
-        #major = label[lmajor]
         return idx, label
 
-    def threshold_bifurcations(self, refdim=0, th=-np.infty):
-        """
-        analysis of the level sets of the field:
+    def threshold_bifurcations(self, refdim=0, th=NEGINF):
+        """Analysis of the level sets of the field:
         Bifurcations are defined as changes in the topology in the level sets
         when the level (threshold) is varied
         This can been thought of as a kind of Morse analysis
@@ -397,24 +385,26 @@ class Field(WeightedGraph):
         order = np.argsort(- initial_field)
         rows = sf.to_coo_matrix().tolil().rows
         llabel, parent = - np.ones(sf.V, np.int), np.arange(2 * self.V + 1)
+        # q will denote the region index
         q = 0
         for i in order:
-            if (llabel[rows[i]] > -1).any():
+            if (llabel[rows[i]] > - 1).any():
                 nlabel = np.unique(llabel[rows[i]])
                 if nlabel[0] == -1:
                     nlabel = nlabel[1:]
-                while (parent[nlabel] != nlabel).any():
-                    nlabel = np.unique(parent[nlabel])
+                nlabel = np.unique(parent[nlabel])
                 if len(nlabel) == 1:
-                    j = nlabel[0]
-                    llabel[i] = j
+                    # we are at a regular point
+                    llabel[i] = nlabel[0]
                 else:
+                    # we are at a saddle point
                     llabel[i] = q
-                    parent[nlabel] = q
+                    for j in nlabel:
+                        parent[parent == j] = q
                     q += 1
             else:
+                # this is a new component
                 llabel[i] = q
-                parent[q] = q
                 q += 1
         parent = parent[:q]
 
@@ -443,8 +433,8 @@ class Field(WeightedGraph):
         if np.size(self.field) == 0:
             raise ValueError('No field has been defined so far')
         seed = seed.astype(np.int)
-        weights = np.sqrt(np.sum((self.field[self.edges[:, 0]] -
-                                  self.field[self.edges[:, 1]]) ** 2, 1))
+        weights = np.sqrt(np.sum((self.field[self.edges.T[0]] -
+                                  self.field[self.edges.T[1]]) ** 2, 1))
         g = WeightedGraph(self.V, self.edges, weights)
         label = g.voronoi_labelling(seed)
         return label
@@ -483,11 +473,11 @@ class Field(WeightedGraph):
         if (seeds == None) and (label == None):
             raise ValueError('No initialization has been provided')
         k = np.size(seeds)
-        inertia_old = np.infty
+        inertia_old = NEGINF
         if seeds == None:
             k = label.max() + 1
             if np.size(np.unique(label)) != k:
-                raise ValueError('missing values, I cannot proceed')
+                raise ValueError('missing values, cannot proceed')
             seeds = np.zeros(k).astype(np.int)
             for  j in range(k):
                 lj = np.nonzero(label == j)[0]
@@ -498,8 +488,9 @@ class Field(WeightedGraph):
             k = np.size(seeds)
 
         for i in range(maxiter):
+            # voronoi labelling
             label = self.constrained_voronoi(seeds)
-            #update the seeds
+            # update the seeds
             inertia = 0
             pinteria = 0
             for  j in range(k):
@@ -550,9 +541,7 @@ class Field(WeightedGraph):
                      self.weights.copy(), self.field.copy())
 
     def subfield(self, valid):
-        """
-        Returns a subfield of self,
-        with only the vertices such that valid >0
+        """Returns a subfield of self, with only vertices such that valid > 0
 
         Parameters
         ----------
@@ -567,7 +556,7 @@ class Field(WeightedGraph):
         Note
         ----
         The vertices are renumbered as [1..p] where p = sum(valid>0)
-        when sum(valid==0) then None is returned
+        when sum(valid) == 0 then None is returned
         """
         G = self.subgraph(valid)
         if G == None:

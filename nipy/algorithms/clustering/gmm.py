@@ -128,7 +128,7 @@ def best_fitting_GMM(x, krange, prec_type='full', niter=100, delta=1.e-4,
         x = np.reshape(x, (np.size(x), 1))
 
     dim = x.shape[1]
-    bestbic = - np.infty
+    bestbic = - np.inf
     for k in krange:
         lgmm = GMM(k, dim, prec_type)
         gmmk = lgmm.initialize_and_estimate(x, None, niter, delta, ninit,
@@ -730,7 +730,7 @@ class GMM(object):
 
         # alternation of E/M step until convergence
         tiny = 1.e-15
-        av_ll_old = - np.infty
+        av_ll_old = - np.inf
         for i in range(niter):
             l = self._Estep(x)
             av_ll = np.mean(np.log(np.maximum(np.sum(l, 1), tiny)))
@@ -768,7 +768,7 @@ class GMM(object):
         -------
         the best model is returned
         """
-        bestbic = - np.infty
+        bestbic = - np.inf
         bestgmm = GMM(self.k, self.dim, self.prec_type)
         bestgmm.initialize(x)
 

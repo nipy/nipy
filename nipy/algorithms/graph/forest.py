@@ -262,7 +262,7 @@ class Forest(WeightedGraph):
 
         Note
         ----
-        by convention infinite distances are given the distance np.infty
+        by convention infinite distances are given the distance np.inf
         """
         if (hasattr(seed, '__iter__') == False) & (seed is not None):
             seed = [seed]
@@ -271,11 +271,11 @@ class Forest(WeightedGraph):
             w = self.weights.copy()
             self.weights = np.absolute(self.weights)
             dg = self.floyd(seed)
-            dg[dg == (np.sum(self.weights) + 1)] = np.infty
+            dg[dg == (np.sum(self.weights) + 1)] = np.inf
             self.weights = w
             return dg
         else:
-            return np.infty * np.ones((self.V, self.V))
+            return np.inf * np.ones((self.V, self.V))
 
     def depth_from_leaves(self):
         """compute an index for each node: 0 for the leaves, 1 for
