@@ -4,7 +4,7 @@
 This scipt generates a noisy activation image image
 and performs a watershed segmentation in it.
 
-Author : Bertrand Thirion, 2009
+Author : Bertrand Thirion, 2009--2012
 """
 #autoindent
 print __doc__
@@ -13,7 +13,8 @@ import numpy as np
 import matplotlib
 import matplotlib.pylab as mp
 
-from nipy.algorithms.graph.field import Field
+from nipy.labs.spatial_models.hroi import HROI_from_watershed
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_shape
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 
 ###############################################################################
@@ -24,26 +25,19 @@ pos = np.array([[12, 14],
                 [20, 20],
                 [30, 20]])
 ampli = np.array([3, 4, 4])
-
-n_vox = np.prod(shape)
 x = simul.surrogate_2d_dataset(n_subj=1, shape=shape, pos=pos, ampli=ampli, 
-                               width=10.0)
+                               width=10.0).squeeze()
 
-x = np.reshape(x, (shape[0], shape[1], 1))
-beta = np.reshape(x, (n_vox, 1))
-xyz = np.array(np.where(x))
-n_vox = np.size(xyz, 1)
 th = 2.36
 
 # compute the field structure and perform the watershed
-Fbeta = Field(n_vox)
-Fbeta.from_3d_grid(xyz.T.astype(np.int), 18)
-Fbeta.set_field(beta)
-idx, label = Fbeta.custom_watershed(0, th)
+domain = grid_domain_from_shape(shape)
+nroi = HROI_from_watershed(domain, np.ravel(x), threshold=th)
+label = nroi.label
 
 #compute the region-based signal average
-bfm = np.array([np.mean(beta[label == k]) for k in range(label.max() + 1)])
-bmap = np.zeros(n_vox)
+bfm = np.array([np.mean(x.ravel()[label == k]) for k in range(label.max() + 1)])
+bmap = np.zeros(x.size)
 if label.max() > - 1:
     bmap[label > - 1] = bfm[label[label > - 1]]
 

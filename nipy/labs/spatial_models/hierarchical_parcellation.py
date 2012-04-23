@@ -286,7 +286,7 @@ def _optim_hparcel(feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
                                              domain.coord.shape[1]))
                 pot = np.zeros(np.size(iz))
                 JM, rmin = _exclusion_map(i, spatial_proto, target, lanat)
-                pot[JM < 0] = np.infty
+                pot[JM < 0] = np.inf
                 pot[JM >= 0] = - JM[JM >= 0]
 
                 # b.3: add feature discrepancy
