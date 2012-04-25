@@ -81,30 +81,13 @@ class Image4d(object):
 
     Parameters
     ----------
-    data : nd array or proxy (function that actually gets the array)
+      data : nd array or proxy (function that actually gets the array)
     """
     def __init__(self, data, affine, tr, tr_slices=None, start=0.0,
                  slice_order=SLICE_ORDER, interleaved=INTERLEAVED,
                  slice_info=None):
         """
         Configure fMRI acquisition time parameters.
-
-        tr  : inter-scan repetition time, i.e. the time elapsed
-              between two consecutive scans
-        tr_slices : inter-slice repetition time, same as tr for slices
-        start   : starting acquisition time respective to the implicit
-                  time origin
-        slice_order : str or array-like, optional
-            If str, one of {'ascending', 'descending'}.  If array-like, then the
-            order in which the slices were collected in time.
-        interleaved : bool, optional
-            Whether slice acquisition order is interleaved.  Ignored if
-            `slice_order` is array-like.
-        slice_info : None or tuple, optional
-            None, or a tuple with slice axis as the first element and direction
-            as the second, for instance (2, 1).  If None, then guess the slice
-            axis, and direction, as the closest to the z axis, as estimated
-            from the affine.
         """
         self.affine = np.asarray(affine)
         self.tr = float(tr)
@@ -751,5 +734,60 @@ class FmriRealign4d(Realign4d):
     def __init__(self, images, slice_order, interleaved,
                  tr=None, tr_slices=None, start=0.0, time_interp=True,
                  affine_class=Rigid, slice_info=None):
+
+        """
+        Spatiotemporal realignment class for fMRI series.
+
+        Parameters
+        ----------
+        images : image or list of images
+          Single or multiple input 4d images representing one or
+          several fMRI runs
+
+        tr : float
+          Inter-scan repetition time, i.e. the time elapsed between
+          two consecutive scans
+
+        tr_slices : float
+          Inter-slice repetition time, same as tr for slices
+
+        start : float
+          Starting acquisition time respective to the implicit time
+          origin
+
+        slice_order : str or array-like
+          If str, one of {'ascending', 'descending'}. If array-like,
+          then the order in which the slices were collected in
+          time. For instance, the following represents an ascending
+          contiguous sequence:
+
+          slice_order = [0, 1, 2, ...]
+
+        interleaved : bool
+          Whether slice acquisition order is interleaved. Ignored if
+          `slice_order` is array-like.
+
+          If slice_order=='ascending' and interleaved==True, the
+          assumed slice order is:
+
+          [0, 2, 4, ..., 1, 3, 5, ...]
+
+          If slice_order=='descending' and interleaved==True, the
+          assumed slice order is:
+
+          [N-1, N-3, N-5, ..., N-2, N-4, N-6]
+
+          Given that there exist other types of interleaved
+          acquisitions depending on scanner settings and
+          manufacturers, it is strongly recommended to input the
+          slice_order as an array unless you are sure what you are
+          doing.
+
+        slice_info : None or tuple, optional
+          None, or a tuple with slice axis as the first element and
+          direction as the second, for instance (2, 1).  If None, then
+          guess the slice axis, and direction, as the closest to the z
+          axis, as estimated from the affine.
+        """
         self._generic_init(images, affine_class, slice_order, interleaved,
                            tr, tr_slices, start, time_interp, slice_info)
