@@ -7,6 +7,7 @@
 #-----------------------------------------------------------------------------
 
 # Stdlib
+import sys
 import unittest
 from compiler.consts import CO_GENERATOR
 
@@ -26,6 +27,13 @@ class ParametricTestCase(unittest.TestCase):
     Limitations: the last iteration misses printing out a newline when running
     in verbose mode.
     """
+
+    if sys.version_info[:2] >= (2, 7):
+        # Python 2.7 unittest doesn't provide _exc_info
+        # see http://www.gossamer-threads.com/lists/python/python/732128
+        def _exc_info(self):
+            return sys.exc_info()
+
     def run_parametric(self, result, testMethod):
         # But if we have a test generator, we iterate it ourselves
         testgen = testMethod()
