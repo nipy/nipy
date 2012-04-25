@@ -731,7 +731,7 @@ class Realign4d(object):
 
 class FmriRealign4d(Realign4d):
 
-    def __init__(self, images, slice_order, interleaved,
+    def __init__(self, images, slice_order, interleaved=False,
                  tr=None, tr_slices=None, start=0.0, time_interp=True,
                  affine_class=Rigid, slice_info=None):
 
@@ -764,6 +764,8 @@ class FmriRealign4d(Realign4d):
           slice_order = [0, 1, 2, ...]
 
         interleaved : bool
+          Deprecated.
+
           Whether slice acquisition order is interleaved. Ignored if
           `slice_order` is array-like.
 
@@ -789,5 +791,7 @@ class FmriRealign4d(Realign4d):
           guess the slice axis, and direction, as the closest to the z
           axis, as estimated from the affine.
         """
+        if not interleaved == False:
+            warnings.warn('interleaved keyword is deprecated. Please input explicit slice order instead.')
         self._generic_init(images, affine_class, slice_order, interleaved,
                            tr, tr_slices, start, time_interp, slice_info)
