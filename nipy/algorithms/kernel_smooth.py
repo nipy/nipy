@@ -61,7 +61,7 @@ class LinearFilter(object):
         voxels.shape = (voxels.shape[0], np.product(voxels.shape[1:]))
         # physical coordinates relative to center
         X = (self.coordmap(voxels.T) - phys_center).T
-        X.shape = (self.coordmap.ndims[0],) + tuple(self.bshape)
+        X.shape = (self.coordmap.ndims[1],) + tuple(self.bshape)
         # compute kernel from these positions
         kernel = self(X, axis=0)
         kernel = _crop(kernel)
