@@ -4,21 +4,54 @@
 import numpy as np
 from numpy.random import random_integers as randint
 
-from nipy import load_image
-from nipy.algorithms.kernel_smooth import LinearFilter
-from nipy.core.api import Image
-from nipy.core.reference.coordinate_map import AffineTransform
+from ... import load_image
+from ..kernel_smooth import LinearFilter, sigma2fwhm, fwhm2sigma
+from ...externals.transforms3d.taitbryan import euler2mat
+from ...core.api import Image, compose, AffineTransform, drop_io_dim
 
-from nipy.algorithms.kernel_smooth import sigma2fwhm, fwhm2sigma
+from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
 
-from nipy.testing import (assert_true, assert_equal, assert_raises,
-                          anatfile, funcfile)
+from numpy.testing import assert_array_equal, assert_array_almost_equal
 
-# No test here?
+from ...testing import (anatfile, funcfile)
+
+
 def test_anat_smooth():
     anat = load_image(anatfile)
     smoother = LinearFilter(anat.coordmap, anat.shape)
     sanat = smoother.smooth(anat)
+    assert_equal(sanat.shape, anat.shape)
+    assert_equal(sanat.coordmap, anat.coordmap)
+    assert_false(np.allclose(sanat.get_data(), anat.get_data()))
+
+
+def test_funny_coordmap():
+    # 5x4 affine should also work, and give same answer as 4x4
+    func = load_image(funcfile)
+    cmap = func.coordmap
+    # Give the affine a rotation
+    aff = np.eye(5)
+    aff[:3,:3] = euler2mat(0.3, 0.2, 0.1)
+    cmap_rot = AffineTransform(cmap.function_range,
+                               cmap.function_range,
+                               aff)
+    func_rot = Image(func.get_data(), compose(cmap_rot, cmap))
+    func1 = func_rot[...,1] # 5x4 affine
+    smoother = LinearFilter(func1.coordmap, func1.shape)
+    sfunc1 = smoother.smooth(func1) # OK
+    # And same as for 4x4 affine
+    cmap3d = drop_io_dim(cmap, 't')
+    func3d = Image(func1.get_data(), cmap3d)
+    smoother = LinearFilter(func3d.coordmap, func3d.shape)
+    sfunc3d = smoother.smooth(func3d)
+    assert_equal(sfunc1.shape, sfunc3d.shape)
+    assert_array_almost_equal(sfunc1.get_data(), sfunc3d.get_data())
+    # And same with no rotation
+    func_fresh = func[...,1] # 5x4 affine, no rotation
+    smoother = LinearFilter(func_fresh.coordmap, func_fresh.shape)
+    sfunc_fresh = smoother.smooth(func_fresh)
+    assert_equal(sfunc1.shape, sfunc_fresh.shape)
+    assert_array_almost_equal(sfunc1.get_data(), sfunc_fresh.get_data())
 
 
 def test_func_smooth():
