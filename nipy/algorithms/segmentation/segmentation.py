@@ -1,6 +1,5 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import gc
 import numpy as np
 from ._segmentation import _ve_step, _interaction_energy
 
@@ -13,12 +12,35 @@ BETA = 0.5
 
 class Segmentation(object):
 
-    def __init__(self, data, mu=None, sigma=None,
+    def __init__(self, data, mask=None, mu=None, sigma=None,
                  ppm=None, prior=None, U=None,
-                 ngb_size=NGB_SIZE, beta=BETA,
-                 bottom_corner=(0, 0, 0), top_corner=(0, 0, 0),
-                 mask=None):
+                 ngb_size=NGB_SIZE, beta=BETA):
+        """
+        Class for multichannel Markov random field image segmentation
+        using the variational EM algorithm. For details regarding the
+        underlying algorithm, see:
 
+        Roche et al, 2011. On the convergence of EM-like algorithms
+        for image segmentation using Markov random fields. Medical
+        Image Analysis (DOI: 10.1016/j.media.2011.05.002).
+
+        Parameters
+        ----------
+        data : array-like
+          Input image array
+
+        mask : array-like or tuple of array
+          Input mask to restrict the segmentation
+
+        beta : float
+          Markov regularization parameter
+
+        mu : array-like
+          Initial class-specific means
+
+        sigma : array-like
+          Initial class-specific variances
+        """
         data = data.squeeze()
         if not len(data.shape) in (3, 4):
             raise ValueError('Invalid input image')
@@ -37,10 +59,7 @@ class Segmentation(object):
         # the image borders are further rejected to avoid segmentation
         # faults.
         if mask == None:
-            mask = [slice(max(bc, 0), s - max(tc, 0))\
-                        for s, bc, tc in zip(space_shape,
-                                             bottom_corner,
-                                             top_corner)]
+            mask = [slice(0, s) for s in space_shape]
             XYZ = np.mgrid[mask]
             XYZ = np.reshape(XYZ, (XYZ.shape[0], np.prod(XYZ.shape[1::]))).T
             self.XYZ = np.asarray(XYZ, dtype='uint', order='C')
@@ -117,9 +136,6 @@ class Segmentation(object):
             self.mu[i] = mu
             self.sigma[i] = sigma
 
-        gc.enable()
-        gc.collect()
-
     def ext_field(self):
         """
         Compute external field (no voxel interactions), namely the
@@ -161,9 +177,6 @@ class Segmentation(object):
             self.ppm = _ve_step(self.ppm, field, self.XYZ,
                                 self.U, self.ngb_size, self.beta)
 
-        gc.enable()
-        gc.collect()
-
     def run(self, niters=NITERS, freeze=()):
 
         if self.is_ppm:
@@ -177,9 +190,7 @@ class Segmentation(object):
         """
         Return the maximum a posterior label map
         """
-        x = np.zeros(self.ppm.shape[0:-1], dtype='uint8')
-        x[self.mask] = self.ppm[self.mask].argmax(-1) + 1
-        return x
+        return map_from_ppm(self.ppm, self.mask)
 
     def free_energy(self, ppm=None):
         """
@@ -203,6 +214,53 @@ class Segmentation(object):
         else:
             f2 = 0.0
         return f1, f2
+
+
+def moment_matching(dat, mu, sigma, glob_mu, glob_sigma):
+    """
+    Moment matching strategy for parameter initialization to feed a
+    segmentation algorithm.
+
+    Parameters
+    ----------
+    data: array
+      Image data.
+
+    mu : array
+      Template class-specific intensity means
+
+    sigma : array
+      Template class-specific intensity variances
+
+    glob_mu : float
+      Template global intensity mean
+
+    glob_sigma : float
+      Template global intensity variance
+
+    Returns
+    -------
+    dat_mu: array
+      Guess of class-specific intensity means
+
+    dat_sigma: array
+      Guess of class-specific intensity variances
+    """
+    dat_glob_mu = float(np.mean(dat))
+    dat_glob_sigma = float(np.var(dat))
+    a = np.sqrt(dat_glob_sigma / glob_sigma)
+    b = dat_glob_mu - a * glob_mu
+    dat_mu = a * mu + b
+    dat_sigma = (a ** 2) * sigma
+    return dat_mu, dat_sigma
+
+
+def map_from_ppm(ppm, mask=None):
+    x = np.zeros(ppm.shape[0:-1], dtype='uint8')
+    if mask == None:
+        mask = ppm == 0
+    x[mask] = ppm[mask].argmax(-1) + 1
+    return x
 
 
 def binarize_ppm(q):
