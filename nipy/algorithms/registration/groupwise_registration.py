@@ -1,7 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
-import gc
 import warnings
 import numpy as np
 from nibabel import io_orientation
@@ -19,7 +18,7 @@ from ._registration import (_cspline_transform,
 # Module globals
 VERBOSE = True  # enables online print statements
 SLICE_ORDER = 'ascending'
-INTERLEAVED = False
+INTERLEAVED = None
 OPTIMIZER = 'ncg'
 XTOL = 1e-5
 FTOL = 1e-5
@@ -28,13 +27,20 @@ STEPSIZE = 1e-6
 SMALL = 1e-20
 MAXITER = 64
 MAXFUN = None
-LOOPS = 5, 1  # loops within each run
-BETWEEN_LOOPS = 5, 1  # loops used to realign different runs
-SPEEDUP = 5, 2
 BORDERS = 1, 1, 1
 REFSCAN = 0
 EXTRAPOLATE_SPACE = 'reflect'
 EXTRAPOLATE_TIME = 'reflect'
+
+LOOPS = 5  # loops within each run
+BETWEEN_LOOPS = 5  # loops used to realign different runs
+SPEEDUP = 5  # image sub-sampling factor for speeding up
+"""
+# How to tune those parameters for a multi-resolution implementation
+LOOPS = 5, 1
+BETWEEN_LOOPS = 5, 1
+SPEEDUP = 5, 2
+"""
 
 
 def interp_slice_order(Z, slice_order):
@@ -74,30 +80,13 @@ class Image4d(object):
 
     Parameters
     ----------
-    data : nd array or proxy (function that actually gets the array)
+      data : nd array or proxy (function that actually gets the array)
     """
     def __init__(self, data, affine, tr, tr_slices=None, start=0.0,
                  slice_order=SLICE_ORDER, interleaved=INTERLEAVED,
                  slice_info=None):
         """
         Configure fMRI acquisition time parameters.
-
-        tr  : inter-scan repetition time, i.e. the time elapsed
-              between two consecutive scans
-        tr_slices : inter-slice repetition time, same as tr for slices
-        start   : starting acquisition time respective to the implicit
-                  time origin
-        slice_order : str or array-like, optional
-            If str, one of {'ascending', 'descending'}.  If array-like, then the
-            order in which the slices were collected in time.
-        interleaved : bool, optional
-            Whether slice acquisition order is interleaved.  Ignored if
-            `slice_order` is array-like.
-        slice_info : None or tuple, optional
-            None, or a tuple with slice axis as the first element and direction
-            as the second, for instance (2, 1).  If None, then guess the slice
-            axis, and direction, as the closest to the z axis, as estimated from
-            the affine.
         """
         self.affine = np.asarray(affine)
         self.tr = float(tr)
@@ -145,12 +134,7 @@ class Image4d(object):
             if not self.interleaved:
                 aux = range(nslices)
             else:
-                p = nslices / 2
-                aux = []
-                for i in range(p):
-                    aux.extend([i, p + i])
-                if nslices % 2:
-                    aux.append(nslices - 1)
+                aux = range(nslices)[0::2] + range(nslices)[1::2]
             if self._slice_order == 'descending':
                 aux.reverse()
             self.slice_order = np.array(aux)
@@ -180,8 +164,6 @@ class Image4d(object):
     def free_data(self):
         if not self._get_data == None:
             self._data = None
-        gc.enable()
-        gc.collect()
 
 
 class Realign4dAlgorithm(object):
@@ -638,8 +620,7 @@ def realign4d(runs,
         corr_run = resample4d(runs[i], transforms=transforms[i],
                               time_interp=time_interp)
         mean_img_data[..., i] = corr_run.mean(3)
-        gc.enable()
-        gc.collect()
+    del corr_run
 
     mean_img = Image4d(mean_img_data, affine=runs[0].affine,
                        tr=1.0, tr_slices=0.0)
@@ -746,8 +727,67 @@ class Realign4d(object):
 
 class FmriRealign4d(Realign4d):
 
-    def __init__(self, images, slice_order, interleaved,
+    def __init__(self, images, slice_order, interleaved=None,
                  tr=None, tr_slices=None, start=0.0, time_interp=True,
                  affine_class=Rigid, slice_info=None):
+
+        """
+        Spatiotemporal realignment class for fMRI series.
+
+        Parameters
+        ----------
+        images : image or list of images
+          Single or multiple input 4d images representing one or
+          several fMRI runs
+
+        tr : float
+          Inter-scan repetition time, i.e. the time elapsed between
+          two consecutive scans
+
+        tr_slices : float
+          Inter-slice repetition time, same as tr for slices
+
+        start : float
+          Starting acquisition time respective to the implicit time
+          origin
+
+        slice_order : str or array-like
+          If str, one of {'ascending', 'descending'}. If array-like,
+          then the order in which the slices were collected in
+          time. For instance, the following represents an ascending
+          contiguous sequence:
+
+          slice_order = [0, 1, 2, ...]
+
+        interleaved : bool
+          Deprecated.
+
+          Whether slice acquisition order is interleaved. Ignored if
+          `slice_order` is array-like.
+
+          If slice_order=='ascending' and interleaved==True, the
+          assumed slice order is:
+
+          [0, 2, 4, ..., 1, 3, 5, ...]
+
+          If slice_order=='descending' and interleaved==True, the
+          assumed slice order is:
+
+          [N-1, N-3, N-5, ..., N-2, N-4, N-6]
+
+          Given that there exist other types of interleaved
+          acquisitions depending on scanner settings and
+          manufacturers, it is strongly recommended to input the
+          slice_order as an array unless you are sure what you are
+          doing.
+
+        slice_info : None or tuple, optional
+          None, or a tuple with slice axis as the first element and
+          direction as the second, for instance (2, 1).  If None, then
+          guess the slice axis, and direction, as the closest to the z
+          axis, as estimated from the affine.
+        """
+        if not interleaved == None:
+            warnings.warn('interleaved keyword is deprecated. Please input explicit slice order instead.')
         self._generic_init(images, affine_class, slice_order, interleaved,
                            tr, tr_slices, start, time_interp, slice_info)

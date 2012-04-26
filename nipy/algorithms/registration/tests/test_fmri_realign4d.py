@@ -30,8 +30,7 @@ def test_slice_info():
     assert_equal(im4d.slice_direction, -1)
 
 
-def test_image4d_init():
-    nslices = 5
+def _test_image4d_init(nslices):
     data = np.zeros((3, 4, nslices, 6))
     aff = np.eye(4)
     tr = 2.0
@@ -41,12 +40,27 @@ def test_image4d_init():
     assert_array_equal(img4d.slice_order, range(nslices))
     img4d = Image4d(data, aff, tr, slice_order='descending')
     assert_array_equal(img4d.slice_order, range(nslices)[::-1])
+    # test interleaved slice order
+    slice_order = range(nslices)[::2] + range(nslices)[1::2]
+    img4d = Image4d(data, aff, tr, slice_order='ascending', interleaved=True)
+    assert_array_equal(img4d.slice_order, slice_order)
+    slice_order.reverse()
+    img4d = Image4d(data, aff, tr, slice_order='descending', interleaved=True)
+    assert_array_equal(img4d.slice_order, slice_order)
     # can pass array
     img4d = Image4d(data, aff, tr, slice_order=np.arange(nslices))
     assert_array_equal(img4d.slice_order, range(nslices))
     # or list
     img4d = Image4d(data, aff, tr, slice_order=range(nslices))
     assert_array_equal(img4d.slice_order, range(nslices))
+
+
+def test_image4d_init_5slices():
+    _test_image4d_init(5)
+
+
+def test_image4d_init_6slices():
+    _test_image4d_init(6)
 
 
 def test_slice_timing():
