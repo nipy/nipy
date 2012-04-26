@@ -7,7 +7,7 @@ Make a standard 4D xyzt image in MNI space.
 First the data and affine:
 
 >>> data = np.arange(24).reshape((1,2,3,4))
->>> affine = np.diag([2,3,4,1])
+>>> affine = np.diag([2,3,4,1]).astype(float)
 
 We can add the TR (==2.0) to make the full 5x5 affine we need
 
@@ -50,10 +50,10 @@ It also works with nibabel images, which can only have xyz_affines:
 >>> import nibabel as nib
 >>> nimg = nib.Nifti1Image(data, affine)
 >>> xyz_affine(nimg)
-array([[2, 0, 0, 0],
-       [0, 3, 0, 0],
-       [0, 0, 4, 0],
-       [0, 0, 0, 1]])
+array([[ 2.,  0.,  0.,  0.],
+       [ 0.,  3.,  0.,  0.],
+       [ 0.,  0.,  4.,  0.],
+       [ 0.,  0.,  0.,  1.]])
 """
 
 import numpy as np
@@ -90,7 +90,7 @@ def xyz_affine(img, name2xyz=None):
     Examples
     --------
     >>> from nipy.core.api import vox2mni, Image
-    >>> arr = np.arange(24).reshape((2,3,4,1))
+    >>> arr = np.arange(24).reshape((2,3,4,1)).astype(float)
     >>> img = Image(arr, vox2mni(np.diag([2,3,4,5,1])))
     >>> img.coordmap
     AffineTransform(
@@ -113,10 +113,10 @@ def xyz_affine(img, name2xyz=None):
     >>> import nibabel as nib
     >>> nimg = nib.Nifti1Image(arr, np.diag([2,3,4,1]))
     >>> xyz_affine(nimg)
-    array([[2, 0, 0, 0],
-           [0, 3, 0, 0],
-           [0, 0, 4, 0],
-           [0, 0, 0, 1]])
+    array([[ 2.,  0.,  0.,  0.],
+           [ 0.,  3.,  0.,  0.],
+           [ 0.,  0.,  4.,  0.],
+           [ 0.,  0.,  0.,  1.]])
     """
     try:
         return img.get_affine()
