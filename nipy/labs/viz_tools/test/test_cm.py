@@ -30,6 +30,8 @@ def test_replace_inside():
     pl.switch_backend('svg')
     replace_inside(pl.cm.jet, pl.cm.hsv, .2, .8)
     # We also test with gnuplot, which is defined using function
-    replace_inside(pl.cm.gnuplot, pl.cm.gnuplot2, .2, .8)
+    if hasattr(pl.cm, 'gnuplot'):
+        # gnuplot is only in recent version of MPL
+        replace_inside(pl.cm.gnuplot, pl.cm.gnuplot2, .2, .8)
 
 
