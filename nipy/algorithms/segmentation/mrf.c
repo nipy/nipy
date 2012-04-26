@@ -292,6 +292,9 @@ PyArrayObject* make_edges(const PyArrayObject* idx,
   dim[0] = n_edges;
   edges = (PyArrayObject*) PyArray_SimpleNewFromData(2, dim, NPY_UINT, (void*)edges_data);
 
+  /* Transfer ownership to python (to avoid memory leaks!) */
+  edges->flags = (edges->flags) | NPY_OWNDATA;
+
   /* Free memory */
   Py_XDECREF(iter);
 
