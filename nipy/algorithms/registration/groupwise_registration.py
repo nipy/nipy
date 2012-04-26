@@ -1,7 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
-import gc
 import warnings
 import numpy as np
 from nibabel import io_orientation
@@ -165,8 +164,6 @@ class Image4d(object):
     def free_data(self):
         if not self._get_data == None:
             self._data = None
-        gc.enable()
-        gc.collect()
 
 
 class Realign4dAlgorithm(object):
@@ -623,8 +620,7 @@ def realign4d(runs,
         corr_run = resample4d(runs[i], transforms=transforms[i],
                               time_interp=time_interp)
         mean_img_data[..., i] = corr_run.mean(3)
-        gc.enable()
-        gc.collect()
+    del corr_run
 
     mean_img = Image4d(mean_img_data, affine=runs[0].affine,
                        tr=1.0, tr_slices=0.0)
