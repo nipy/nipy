@@ -19,7 +19,7 @@ from ._registration import (_cspline_transform,
 # Module globals
 VERBOSE = True  # enables online print statements
 SLICE_ORDER = 'ascending'
-INTERLEAVED = False
+INTERLEAVED = None
 OPTIMIZER = 'ncg'
 XTOL = 1e-5
 FTOL = 1e-5
@@ -731,7 +731,7 @@ class Realign4d(object):
 
 class FmriRealign4d(Realign4d):
 
-    def __init__(self, images, slice_order, interleaved=False,
+    def __init__(self, images, slice_order, interleaved=None,
                  tr=None, tr_slices=None, start=0.0, time_interp=True,
                  affine_class=Rigid, slice_info=None):
 
@@ -791,7 +791,7 @@ class FmriRealign4d(Realign4d):
           guess the slice axis, and direction, as the closest to the z
           axis, as estimated from the affine.
         """
-        if not interleaved == False:
+        if not interleaved == None:
             warnings.warn('interleaved keyword is deprecated. Please input explicit slice order instead.')
         self._generic_init(images, affine_class, slice_order, interleaved,
                            tr, tr_slices, start, time_interp, slice_info)
