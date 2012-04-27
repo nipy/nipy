@@ -318,7 +318,7 @@ class HistogramRegistration(object):
         return simis, params
 
 
-def _clamp(x, y, bins=BINS, mask=None):
+def _clamp(x, y, bins=BINS):
 
     # Threshold
     dmaxmax = 2 ** (8 * y.dtype.itemsize - 1) - 1
