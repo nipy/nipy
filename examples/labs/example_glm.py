@@ -38,7 +38,7 @@ tr = 2.4
 frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
 conditions = np.arange(20) % 2
 onsets = np.linspace(5, (n_scans - 1) * tr - 10, 20) # in seconds
-hrf_model = 'Canonical'
+hrf_model = 'canonical'
 motion = np.cumsum(np.random.randn(n_scans, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
@@ -50,7 +50,7 @@ swd = tempfile.mkdtemp()
 ########################################
 
 paradigm = EventRelatedParadigm(conditions, onsets)
-X, names = dm.dmtx_light(frametimes, paradigm, drift_model='Cosine', hfcut=128,
+X, names = dm.dmtx_light(frametimes, paradigm, drift_model='cosine', hfcut=128,
                          hrf_model=hrf_model, add_regs=motion,
                          add_reg_names=add_reg_names)
 

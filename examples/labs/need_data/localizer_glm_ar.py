@@ -56,8 +56,8 @@ conditions = ['damier_H', 'damier_V', 'clicDaudio', 'clicGaudio', 'clicDvideo',
               'phraseaudio']
 
 # confounds
-hrf_model = 'Canonical With Derivative'
-drift_model = "Cosine"
+hrf_model = 'canonical with derivative'
+drift_model = "cosine"
 hfcut = 128
 
 # write directory

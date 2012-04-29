@@ -48,7 +48,7 @@ tr = 2.4
 frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
 conditions = np.arange(20) % 2
 onsets = np.linspace(5, (n_scans - 1) * tr - 10, 20) # in seconds
-hrf_model = 'Canonical'
+hrf_model = 'canonical'
 motion = np.cumsum(np.random.randn(n_scans, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
@@ -61,7 +61,7 @@ swd = '/tmp'
 
 paradigm = np.vstack(([conditions, onsets])).T
 paradigm = EventRelatedParadigm(conditions, onsets)
-X, names = dmtx_light(frametimes, paradigm, drift_model='Cosine', hfcut=128,
+X, names = dmtx_light(frametimes, paradigm, drift_model='cosine', hfcut=128,
                       hrf_model=hrf_model, add_regs=motion,
                       add_reg_names=add_reg_names)
 
@@ -182,7 +182,7 @@ for k in range(my_roi.k):
 
 fir_order = 6
 X_fir, name_dir = dmtx_light(
-    frametimes, paradigm, hrf_model='FIR', drift_model='Cosine', drift_order=3,
+    frametimes, paradigm, hrf_model='fir', drift_model='cosine', drift_order=3,
     fir_delays=tr * np.arange(fir_order), add_regs=motion,
     add_reg_names=add_reg_names)
 glm.fit(ROI_tc.T, X_fir, method=method, model=model)

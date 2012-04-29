@@ -137,8 +137,8 @@ def test_names():
     assert _regressor_names(name, 'spm_time') == ['con', 'con_derivative']
     assert _regressor_names(name, 'spm_time_dispersion') == \
         ['con', 'con_derivative', 'con_dispersion']
-    assert _regressor_names(name, 'Canonical') == ['con']
-    assert _regressor_names(name, 'Canonical With Derivative') == \
+    assert _regressor_names(name, 'canonical') == ['con']
+    assert _regressor_names(name, 'canonical with derivative') == \
         ['con', 'con_derivative']
 
 def test_hkernel():
@@ -154,14 +154,14 @@ def test_hkernel():
     h = _hrf_kernel('spm_time_dispersion', tr)
     assert_almost_equal(h[2], spm_dispersion_derivative(tr))
     assert len(h) == 3
-    h = _hrf_kernel('Canonical', tr)
+    h = _hrf_kernel('canonical', tr)
     assert_almost_equal(h[0], glover_hrf(tr))
     assert len(h) == 1
-    h = _hrf_kernel('Canonical With Derivative', tr)
+    h = _hrf_kernel('canonical with derivative', tr)
     assert_almost_equal(h[1], glover_time_derivative(tr))
     assert_almost_equal(h[0], glover_hrf(tr))
     assert len(h) == 2
-    h = _hrf_kernel('FIR', tr, fir_delays = np.arange(4))
+    h = _hrf_kernel('fir', tr, fir_delays = np.arange(4))
     assert len(h) == 4
     for dh in h:
         assert dh.sum() == 16.
@@ -192,7 +192,7 @@ def test_make_regressor_3():
     """
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frametimes = np.linspace(0, 138, 70)
-    hrf_model = 'FIR'
+    hrf_model = 'fir'
     reg, reg_names = compute_regressor(condition, hrf_model, frametimes, 
                                        fir_delays=np.arange(4))
     assert (np.unique(reg) == np.array([0, 1])).all()

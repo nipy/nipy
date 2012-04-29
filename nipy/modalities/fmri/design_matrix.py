@@ -92,7 +92,7 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
     Parameters
     ----------
     DriftModel: string,
-                to be chosen among 'Polynomial', 'Cosine', 'Blank'
+                to be chosen among 'polynomial', 'cosine', 'blank'
                 that specifies the desired drift model
     frametimes: array of shape(n_scans),
                 list of values representing the desired TRs
@@ -106,11 +106,11 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
     drift: array of shape(n_scans, n_drifts), the drift matrix
     names: list of length(ndrifts), the associated names
     """
-    if drift_model == 'Polynomial':
+    if drift_model == 'polynomial':
         drift = _poly_drift(order, frametimes)
-    elif drift_model == 'Cosine':
+    elif drift_model == 'cosine':
         drift = _cosine_drift(hfcut, frametimes)
-    elif drift_model == 'Blank':
+    elif drift_model == 'blank':
         drift = _blank_drift(frametimes)
     else:
         raise NotImplementedError("unknown drift model")
@@ -128,8 +128,8 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
     Parameters
     ----------
     paradigm: paradigm instance
-    hrf_model: string that can be 'Canonical',
-               'Canonical With Derivative' or 'FIR'
+    hrf_model: string that can be 'canonical',
+               'canonical with derivative' or 'fir'
                that specifies the hemodynamic response function
     frametimes: array of shape(n_scans)
                 the targeted timing for the design matrix
@@ -144,13 +144,13 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
              associated with the experimental condition
     names: list of strings,
            the condition names, that depend on the hrf model used
-           if 'Canonical' then this is identical to the input names
-           if 'Canonical With Derivative', then two names are produced for
+           if 'canonical' then this is identical to the input names
+           if 'canonical with derivative', then two names are produced for
              input name 'name': 'name' and 'name_derivative'
     """
     hnames = []
     rmatrix = None
-    if hrf_model == 'FIR':
+    if hrf_model == 'fir':
         oversampling = 1
     else:
         oversampling = 16
@@ -293,8 +293,8 @@ class DesignMatrix():
         return ax
 
 
-def make_dmtx(frametimes, paradigm=None, hrf_model='Canonical',
-              drift_model='Cosine', hfcut=128, drift_order=1,
+def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
+              drift_model='cosine', hfcut=128, drift_order=1,
               fir_delays=[0], add_regs=None, add_reg_names=None):
     """ Generate a design matrix from the input parameters
 
@@ -305,10 +305,10 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='Canonical',
               description of the experimental paradigm
     hrf_model: string, optional,
                that specifies the hemodynamic response function
-               it can be 'Canonical', 'Canonical With Derivative' or 'FIR'
+               it can be 'canonical', 'canonical with derivative' or 'fir'
     drift_model: string, optional
                  specifies the desired drift model,
-                 to be chosen among 'Polynomial', 'Cosine', 'Blank'
+                 to be chosen among 'polynomial', 'cosine', 'blank'
     hfcut: float, optional
            cut frequency of the low-pass filter
     drift_order: int, optional
@@ -356,7 +356,7 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='Canonical',
     if paradigm is not None:
         # create the condition-related regressors
         matrix, names = _convolve_regressors(
-            paradigm, hrf_model, frametimes, fir_delays)
+            paradigm, hrf_model.lower(), frametimes, fir_delays)
 
     # step 2: additional regressors
     if add_regs is not None:
@@ -365,7 +365,8 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='Canonical',
         names += add_reg_names
 
     # setp 3: drifts
-    drift, dnames = _make_drift(drift_model, frametimes, drift_order, hfcut)
+    drift, dnames = _make_drift(drift_model.lower(), frametimes, drift_order, 
+                                hfcut)
     matrix = np.hstack((matrix, drift))
     names += dnames
 
@@ -405,8 +406,8 @@ def dmtx_from_csv(path, frametimes=None):
     return(DesignMatrix(x, names, frametimes))
 
 
-def dmtx_light(frametimes, paradigm=None, hrf_model='Canonical',
-               drift_model='Cosine', hfcut=128, drift_order=1, fir_delays=[0],
+def dmtx_light(frametimes, paradigm=None, hrf_model='canonical',
+               drift_model='cosine', hfcut=128, drift_order=1, fir_delays=[0],
                add_regs=None, add_reg_names=None, path=None):
     """Make a design matrix while avoiding framework
 
