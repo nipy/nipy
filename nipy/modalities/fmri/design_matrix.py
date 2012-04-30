@@ -2,24 +2,29 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module implements fMRI Design Matrix creation.
+
 The DesignMatrix object is just a container that represents the design matrix.
 Computations of the different parts of the design matrix are confined
 to the make_dmtx() function, that instantiates the DesignMatrix object.
 All the remainder are just ancillary functions.
 
 Design matrices contain three different types of regressors:
+
 1. Task-related regressors, that result from the convolution
-of the experimental paradigm regressors with hemodynamic models
-2. User-specified regressors, that represent information available on the data,
-e.g. motion parameters, physiological data resampled at the acquisition rate,
-or sinusoidal regressors that model the signal at a frequency of interest.
-3. Drift regressors, that represent low_frequency phenomena of no interest
-in the data; they need to be included to reduce variance estimates.
+   of the experimental paradigm regressors with hemodynamic models
+2. User-specified regressors, that represent information available on
+   the data, e.g. motion parameters, physiological data resampled at
+   the acquisition rate, or sinusoidal regressors that model the
+   signal at a frequency of interest.
+3. Drift regressors, that represent low_frequency phenomena of no
+   interest in the data; they need to be included to reduce variance
+   estimates.
 
 Author: Bertrand Thirion, 2009-2011
 """
-
 import numpy as np
+
+from warnings import warn
 
 from hemodynamic_models import compute_regressor, _orthogonalize
 
@@ -79,6 +84,7 @@ def _cosine_drift(hfcut, frametimes):
 
 def _blank_drift(frametimes):
     """ Create the blank drift matrix
+
     Returns
     -------
     np.ones_like(frametimes)
@@ -91,7 +97,7 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
 
     Parameters
     ----------
-    DriftModel: string,
+    drift_model: string,
                 to be chosen among 'polynomial', 'cosine', 'blank'
                 that specifies the desired drift model
     frametimes: array of shape(n_scans),
@@ -106,6 +112,7 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
     drift: array of shape(n_scans, n_drifts), the drift matrix
     names: list of length(ndrifts), the associated names
     """
+    drift_model = drift_model.lower()   # for robust comparisons
     if drift_model == 'polynomial':
         drift = _poly_drift(order, frametimes)
     elif drift_model == 'cosine':
@@ -113,7 +120,7 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
     elif drift_model == 'blank':
         drift = _blank_drift(frametimes)
     else:
-        raise NotImplementedError("unknown drift model")
+        raise NotImplementedError("Unknown drift model %r" % (drift_model))
     names = []
     for k in range(drift.shape[1] - 1):
         names.append('drift_%d' % (k + 1))
@@ -200,7 +207,7 @@ def _full_rank(X, cmax=1e15):
     c = smax / smin
     if c < cmax:
         return X, c
-    print 'Warning: matrix is singular at working precision, regularizing...'
+    warn('Matrix is singular at working precision, regularizing...')
     lda = (smax - cmax * smin) / (cmax - 1)
     s = s + lda
     X = np.dot(U, np.dot(np.diag(s), V))
