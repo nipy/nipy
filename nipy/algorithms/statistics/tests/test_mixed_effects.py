@@ -1,14 +1,18 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Testing the glm module
 """
 
 import numpy as np
-from numpy.testing import assert_almost_equal
+from numpy.testing import (assert_almost_equal,
+                           assert_array_almost_equal)
 from nose.tools import assert_true
 import numpy.random as nr
 
 from ..mixed_effects_stat import (
     one_sample_ttest, one_sample_ftest, two_sample_ttest, two_sample_ftest, 
     generate_data, t_stat, mfx_stat)
+from ..mixed_effects import two_level_glm
 
 
 def test_mfx():
@@ -131,7 +135,22 @@ def test_mfx_ftest():
     assert f.var() > .2
      
 
+def test_two_level_glm():
+    nsub = 10
+    npts = 100
+    reg1 = np.ones(nsub)
+    reg2 = np.random.random(nsub)
+    X = np.array((reg1, reg2)).T
+    y = np.repeat(np.reshape(reg1 + reg2, (nsub, 1)), npts, axis=1)
+    vy = np.zeros((nsub, npts))
+    beta, s2, dof = two_level_glm(y, vy, X)
+    assert_array_almost_equal(beta, np.ones((2, npts)))
+    assert_array_almost_equal(s2, np.zeros(npts))
+
+
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])
+
+
 
