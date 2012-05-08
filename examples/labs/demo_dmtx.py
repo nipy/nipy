@@ -22,7 +22,7 @@ frametimes = np.linspace(0, (nscans - 1) * tr, nscans)
 # experimental paradigm
 conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c3', 'c3', 'c3']
 onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-hrf_model = 'Canonical'
+hrf_model = 'canonical'
 motion = np.cumsum(np.random.randn(128, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
@@ -30,7 +30,7 @@ add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 paradigm = EventRelatedParadigm(conditions, onsets)
 
 X1 = make_dmtx(
-    frametimes, paradigm, drift_model='Polynomial', drift_order=3,
+    frametimes, paradigm, drift_model='polynomial', drift_order=3,
     add_regs=motion, add_reg_names=add_reg_names)
 
 # block design matrix
@@ -38,14 +38,14 @@ duration = 7 * np.ones(9)
 paradigm = BlockParadigm(con_id=conditions, onset=onsets,
                              duration=duration)
 
-X2 = make_dmtx(frametimes, paradigm, drift_model='Polynomial',
+X2 = make_dmtx(frametimes, paradigm, drift_model='polynomial',
                          drift_order=3)
 
 # FIR model
 paradigm = EventRelatedParadigm(conditions, onsets)
 hrf_model = 'FIR'
-X3 = make_dmtx(frametimes, paradigm, hrf_model='FIR',
-               drift_model='Polynomial', drift_order=3,
+X3 = make_dmtx(frametimes, paradigm, hrf_model='fir',
+               drift_model='polynomial', drift_order=3,
                fir_delays=range(1, 6))
 
 # plot the results

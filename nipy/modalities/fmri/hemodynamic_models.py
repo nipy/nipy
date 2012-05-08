@@ -1,6 +1,6 @@
 """
 This module is for canonical hrf specification.
-Here we provide for SPM, Glover hrfs and FIR models.
+Here we provide for SPM, Glover hrfs and finite timpulse response (FIR) models.
 This module closely follows SPM implementation
 
 Author: Bertrand Thirion, 2011
@@ -156,8 +156,11 @@ def sample_condition(exp_condition, frametimes, oversampling=16):
     """
     # generate the oversampled frame times
     n = frametimes.size
-    hr_frametimes = np.linspace(0, frametimes.max() * (1 + 1. / (n - 1)),
-                                n * oversampling + 1)
+    if oversampling == 1:
+        hr_frametimes = frametimes
+    else:
+        hr_frametimes = np.linspace(0, frametimes.max() * (1 + 1. / (n - 1)),
+                                    n * oversampling + 1)
 
     # get the regressor information
     onsets, duration, values = exp_condition
@@ -243,9 +246,9 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     -------
     names: a list of strings yielding the regressor names
     """
-    if hrf_model == 'Canonical':
+    if hrf_model == 'canonical':
         return [con_name]
-    elif hrf_model == "Canonical With Derivative":
+    elif hrf_model == "canonical with derivative":
         return [con_name, con_name + "_derivative"]
     elif hrf_model == 'spm':
         return [con_name]
@@ -253,7 +256,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
         return [con_name, con_name + "_derivative"]
     elif hrf_model == 'spm_time_dispersion':
         return [con_name, con_name + "_derivative", con_name + "_dispersion"]
-    elif hrf_model == 'FIR':
+    elif hrf_model == 'fir':
         return [con_name + "_delay_%d" % i for i in fir_delays]
 
 
@@ -281,12 +284,12 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
         hkernel = [spm_hrf(tr, oversampling),
                    spm_time_derivative(tr, oversampling),
                    spm_dispersion_derivative(tr, oversampling)]
-    elif hrf_model == 'Canonical':
+    elif hrf_model == 'canonical':
         hkernel = [glover_hrf(tr, oversampling)]
-    elif hrf_model == 'Canonical With Derivative':
+    elif hrf_model == 'canonical with derivative':
         hkernel = [glover_hrf(tr, oversampling),
                    glover_time_derivative(tr, oversampling)]
-    elif hrf_model == 'FIR':
+    elif hrf_model == 'fir':
         hkernel = [np.hstack((np.zeros(f * oversampling),
                               np.ones(oversampling)))
                    for f in fir_delays]
@@ -348,7 +351,8 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
     creg = resample_regressor(conv_reg, hr_frametimes, frametimes)
 
     # 5. ortogonalize the regressors
-    creg = _orthogonalize(creg)
+    if hrf_model != 'fir':
+        creg = _orthogonalize(creg)
 
     # 6 generate regressor names
     reg_names = _regressor_names(con_id, hrf_model, fir_delays=fir_delays)
