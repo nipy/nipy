@@ -275,20 +275,22 @@ class DesignMatrix():
         ----------
         rescale: bool, optional
                  rescale columns magnitude for visualization or not
-        ax: figure handle, optional
+        ax: axis handle, optional
+            Handle to axis onto which we will draw design matrix
 
         Returns
         -------
-        ax, figure handle
+        ax: axis handle
         """
+        import matplotlib.pyplot as plt
+
+        # normalize the values per column for better visualization
         x = self.matrix.copy()
         if rescale:
             x = x / np.sqrt(np.sum(x ** 2, 0))
-
-        import matplotlib.pylab as mp
         if ax is None:
-            mp.figure()
-            ax = mp.subplot(1, 1, 1)
+            plt.figure()
+            ax = plt.subplot(1, 1, 1)
 
         ax.imshow(x, interpolation='Nearest', aspect='auto')
         ax.set_label('conditions')
