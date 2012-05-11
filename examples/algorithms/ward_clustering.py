@@ -10,7 +10,7 @@ import numpy as np
 from numpy.random import randn, rand
 import matplotlib.pylab as mp
 
-from nipy.algorithms.graph import WeightedGraph
+from nipy.algorithms.graph import knn
 from nipy.algorithms.clustering.hierarchical_clustering import ward
 
 # n = number of points, k = number of nearest neighbours
@@ -20,8 +20,7 @@ verbose = 0
 
 X = randn(n, 2)
 X[:np.ceil(n / 3)] += 3		
-G = WeightedGraph(n)
-G.knn(X, 5)
+G = knn(X, 5)
 tree = ward(G, X, verbose)
 
 threshold = .5 * n
