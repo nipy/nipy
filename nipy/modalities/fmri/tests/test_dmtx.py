@@ -17,7 +17,7 @@ from nose.tools import assert_true, assert_equal
 from numpy.testing import assert_almost_equal, dec
 
 try:
-    import matplotlib
+    import matplotlib.pylab
 except ImportError:
     have_mpl = False
 else:
