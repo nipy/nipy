@@ -177,14 +177,15 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
     and returns an array of shape (np,my_gmm.k)
     that represents  the likelihood component-wise
     """
+    import matplotlib.pyplot as plt
+
     if x.shape[1] != my_gmm.dim:
         raise ValueError('Incompatible dimension between data and model')
     if x.shape[1] != 2:
         raise ValueError('this works only for 2D cases')
 
     gd1 = GridDescriptor(2)
-    xmin = x.min(0)
-    xmax = x.max(0)
+    xmin, xmax = x.min(0), x.max(0)
     xm = 1.1 * xmin[0] - 0.1 * xmax[0]
     xs = 1.1 * xmax[0] - 0.1 * xmin[0]
     ym = 1.1 * xmin[1] - 0.1 * xmax[1]
@@ -197,10 +198,9 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
         intl = L.sum() * (xs - xm) * (ys - ym) / 2500
         print 'integral of the density on the domain ', intl
 
-    import matplotlib.pylab as mp
     if mpaxes == None:
-        mp.figure()
-        ax = mp.subplot(1, 1, 1)
+        plt.figure()
+        ax = plt.subplot(1, 1, 1)
     else:
         ax = mpaxes
 
@@ -208,23 +208,22 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
     Pdens = np.reshape(L, (gdx, np.size(L) / gdx))
     extent = [xm, xs, ym, ys]
     if log_scale:
-        mp.imshow(np.log(Pdens.T), alpha=2.0, origin='lower',
+        plt.imshow(np.log(Pdens.T), alpha=2.0, origin='lower',
                   extent=extent)
     else:
-        mp.imshow(Pdens.T, alpha=2.0, origin='lower', extent=extent)
+        plt.imshow(Pdens.T, alpha=2.0, origin='lower', extent=extent)
 
     if with_dots:
         if z == None:
-            mp.plot(x[:, 0], x[:, 1], 'o')
+            plt.plot(x[:, 0], x[:, 1], 'o')
         else:
-            import matplotlib as ml
-            hsv = ml.cm.hsv(range(256))
+            hsv = plt.cm.hsv(range(256))
             col = hsv[range(0, 256, 256 / int(z.max() + 1))]
             for k in range(z.max() + 1):
-                mp.plot(x[z == k, 0], x[z == k, 1], 'o', color=col[k])
+                plt.plot(x[z == k, 0], x[z == k, 1], 'o', color=col[k])
 
-    mp.axis(extent)
-    mp.colorbar()
+    plt.axis(extent)
+    plt.colorbar()
     return gd1, ax
 
 
@@ -818,6 +817,7 @@ class GMM(object):
         mpaxes: axes handle to make the figure, optional,
                 if None, a new figure is created
         """
+        import matplotlib.pyplot as plt
         if density is None:
             density = self.mixture_likelihood(gd.make_grid())
 
@@ -836,10 +836,9 @@ class GMM(object):
         c += offset / 2
         grid = gd.make_grid()
 
-        import matplotlib.pylab as mp
         if mpaxes == None:
-            mp.figure()
-            ax = mp.axes()
+            plt.figure()
+            ax = plt.axes()
         else:
             ax = mpaxes
         ax.plot(c + offset, h, linewidth=2)
@@ -872,15 +871,14 @@ class GMM(object):
                  density of the model one the discrete grid implied by gd
                  by default, this is recomputed
         """
-        import matplotlib.pylab as mp
+        import matplotlib.pyplot as plt
 
         # recompute the density if necessary
         if density is None:
             density = self.mixture_likelihood(gd, x)
 
-        import pylab
         if axes is None:
-            axes = pylab.figure()
+            axes = plt.figure()
 
         if gd.dim == 1:
             from ..statistics.empirical_pvalue import \
@@ -891,16 +889,12 @@ class GMM(object):
 
             h /= h.sum()
             h /= (2 * offset)
-            mp.plot(c[: -1] + offset, h)
-            mp.plot(grid, density)
+            plt.plot(c[: -1] + offset, h)
+            plt.plot(grid, density)
 
         if gd.dim == 2:
-            mp.figure()
-            xm = gd.lim[0]
-            xM = gd.lim[1]
-            ym = gd.lim[2]
-            yM = gd.lim[3]
-
+            plt.figure()
+            xm, xM, ym, yM = gd.lim[0:3]
             gd0 = gd.n_bins[0]
             Pdens = np.reshape(density, (gd0, np.size(density) / gd0))
             axes.imshow(Pdens.T, None, None, None, 'nearest',
