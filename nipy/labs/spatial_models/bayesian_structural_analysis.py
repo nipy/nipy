@@ -275,16 +275,19 @@ def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
                sub, burnin, dom.coord, nis)
 
     if verbose:
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.plot(1 - gf0, q, '.')
-        h1, c1 = mp.histogram((1 - gf0), bins=100)
-        h2, c2 = mp.histogram(q, bins=100)
-        mp.figure()
-        mp.bar(c1[:len(h1)], h1, width=0.005)
-        mp.bar(c2[:len(h2)] + 0.003, h2, width=0.005, color='r')
+        h1, c1 = np.histogram((1 - gf0), bins=100)
+        h2, c2 = np.histogram(q, bins=100)
+        try:
+            import matplotlib.pylab as pl
+            pl.figure()
+            pl.plot(1 - gf0, q, '.')
+            pl.figure()
+            pl.bar(c1[:len(h1)], h1, width=0.005)
+            pl.bar(c2[:len(h2)] + 0.003, h2, width=0.005, color='r')
+        except ImportError:
+            pass
         print 'Number of candidate regions %i, regions found %i' % (
-                    np.size(q), q.sum())
+            np.size(q), q.sum())
 
     Fbeta = field_from_coo_matrix_and_data(dom.topology, p)
     _, label = Fbeta.custom_watershed(0, g0)
