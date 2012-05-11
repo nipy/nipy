@@ -9,15 +9,19 @@ not whether it is exact
 
 import numpy as np
 from os.path import join, dirname
-from ..experimental_paradigm import (EventRelatedParadigm, BlockParadigm, 
-                                     load_protocol_from_csv_file)
-from ..design_matrix import ( 
-    dmtx_light, _convolve_regressors, DesignMatrix, dmtx_from_csv, make_dmtx)
-                             
-from nose.tools import assert_true, assert_equal
-from numpy.testing import assert_almost_equal
-from ....testing import parametric
+from ..experimental_paradigm import (EventRelatedParadigm, BlockParadigm)
+from ..design_matrix import (dmtx_light, _convolve_regressors, dmtx_from_csv,
+                             make_dmtx)
 
+from nose.tools import assert_true, assert_equal
+from numpy.testing import assert_almost_equal, dec
+
+try:
+    import matplotlib.pylab
+except ImportError:
+    have_mpl = False
+else:
+    have_mpl = True
 
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
@@ -51,6 +55,7 @@ def block_paradigm():
     return paradigm
 
 
+@dec.skipif(not have_mpl)
 def test_show_dmtx():
     # test that the show code indeed (formally) runs
     frametimes = np.linspace(0, 127 * 1.,128)

@@ -281,11 +281,12 @@ class DesignMatrix():
         -------
         ax, figure handle
         """
+        import matplotlib.pylab as mp
+
+        # normalize the values per column for better visualization
         x = self.matrix.copy()
         if rescale:
             x = x / np.sqrt(np.sum(x ** 2, 0))
-
-        import matplotlib.pylab as mp
         if ax is None:
             mp.figure()
             ax = mp.subplot(1, 1, 1)
