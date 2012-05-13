@@ -1,0 +1,31 @@
+.. -*- mode: rst -*-
+.. vim:ft=rst
+
+.. _changelog:
+
+NIPY Changelog
+--------------
+
+NIPY is not only a module for neuroimaing analysis but an umbrella for
+other Python neuroimaging-related projects -- see
+https://github.com/nipy and http://www.nipy.org for more information
+about their releases.
+
+'Close gh-' statements refer to GitHub issues that are available at::
+
+  http://github.com/nipy/nipy/issues
+
+The full VCS changelog is available here:
+
+  http://github.com/nipy/nipy/commits/master
+
+Releases
+~~~~~~~~
+
+* 0.2.0 (Sunday 13 May 2012)
+
+  * The first ever official release
+
+    - > 30 contributors
+    - > 6 years in development
+    - 133 issues closed on github
