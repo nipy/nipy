@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Examples of a paradigm .csv file generation: the neurospin/localizer protocol
+Examples of a paradigm .csv file generation: the neurospin/localizer paradigm.
 
 See Pinel et al., BMC neuroscience 2007 for reference
 """
