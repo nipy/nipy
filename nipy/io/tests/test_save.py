@@ -4,7 +4,8 @@ import numpy as np
 
 from nipy.io.api import load_image, save_image
 from nipy.core import api
-from nipy.utils.tmpdirs import InTemporaryDirectory
+
+from nibabel.tmpdirs import InTemporaryDirectory
 
 from nipy.testing import (assert_true, assert_false, assert_equal,
                           assert_array_almost_equal, funcfile)
