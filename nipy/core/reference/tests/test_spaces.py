@@ -3,10 +3,11 @@
 
 import numpy as np
 
+from nibabel.affines import from_matvec
+
 from ...image.image import Image
 from ..coordinate_system import CoordinateSystem as CS
 from ..coordinate_map import AffineTransform, CoordinateMap
-from ...transforms.affines import from_matrix_vector
 from ..spaces import (vox2mni, vox2scanner, vox2talairach, xyz_affine,
                       xyz_order, SpaceTypeError, AxesError, AffineError)
 
@@ -62,7 +63,7 @@ def test_default_makers():
 
 def test_xyz_affine():
     # Getting an xyz affine from coordmaps
-    affine = from_matrix_vector(np.arange(9).reshape((3,3)), [15,16,17])
+    affine = from_matvec(np.arange(9).reshape((3,3)), [15,16,17])
     cmap = AffineTransform(VARS['d_cs_r3'], VARS['r_cs_r3'], affine)
     assert_array_equal(xyz_affine(cmap), affine)
     # Affine always reordered in xyz order
@@ -73,7 +74,7 @@ def test_xyz_affine():
     assert_array_equal(xyz_affine(cmap.reordered_range([0,2,1])), affine)
     # 5x5 affine is shrunk
     rzs = np.c_[np.arange(12).reshape((4,3)), [0,0,0,12]]
-    aff55 = from_matrix_vector(rzs, [15,16,17,18])
+    aff55 = from_matvec(rzs, [15,16,17,18])
     cmap = AffineTransform(VARS['d_cs_r4'], VARS['r_cs_r4'], aff55)
     assert_array_equal(xyz_affine(cmap), affine)
     # Affine always reordered in xyz order
@@ -89,11 +90,11 @@ def test_xyz_affine():
         assert_raises(AffineError, xyz_affine, cmap.reordered_range([2,0,1,3]))
     # Non-square goes to square
     rzs = np.arange(12).reshape((4,3))
-    aff54 = from_matrix_vector(rzs, [15,16,17,18])
+    aff54 = from_matvec(rzs, [15,16,17,18])
     cmap = AffineTransform(VARS['d_cs_r3'], VARS['r_cs_r4'], aff54)
     assert_array_equal(xyz_affine(cmap), affine)
     rzs = np.c_[np.arange(12).reshape((4,3)), np.zeros((4,3))]
-    aff57 = from_matrix_vector(rzs, [15,16,17,18])
+    aff57 = from_matvec(rzs, [15,16,17,18])
     d_cs_r6 = CS('ijklmn', 'array')
     cmap = AffineTransform(d_cs_r6, VARS['r_cs_r4'], aff57)
     assert_array_equal(xyz_affine(cmap), affine)

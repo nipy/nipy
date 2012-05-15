@@ -2,9 +2,10 @@
 
 import numpy as np
 
+from nibabel.affines import from_matvec
+
 from .coordinate_system import CoordSysMaker
 from .coordinate_map import CoordMapMaker
-from ..transforms.affines import from_matrix_vector
 
 scanner_names = ['scanner-' + label for label in 'xyz'] + ['t']
 mni_names = ['mni-' + label for label in 'xyz'] + ['t']
@@ -93,7 +94,7 @@ def xyz_affine(coordmap, name2xyz=None):
     extra_cols = affine[:,3:-1]
     if not np.allclose(extra_cols, 0):
         raise AffineError('Dropped dimensions not orthogonal to xyz')
-    return from_matrix_vector(affine[:3,:3], affine[:3,-1])
+    return from_matvec(affine[:3,:3], affine[:3,-1])
 
 
 def xyz_order(coordsys, name2xyz=None):
