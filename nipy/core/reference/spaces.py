@@ -4,6 +4,8 @@ import numpy as np
 
 from nibabel.affines import from_matvec
 
+from ...fixes.nibabel import io_orientation
+
 from .coordinate_system import CoordSysMaker
 from .coordinate_map import CoordMapMaker
 
