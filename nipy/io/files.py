@@ -143,10 +143,7 @@ def save(img, filename, dtype=None):
     * Analyze file pair : ['.img', 'img.gz']
     """
     # Get header from image
-    try:
-        original_hdr = img.header
-    except AttributeError:
-        original_hdr = None
+    original_hdr = img.metadata.get('header')
     # Make NIFTI compatible affine_transform
     affine_3dorless_transform, pixdim = ni_affine_pixdim_from_affine(img.coordmap)
 
@@ -182,15 +179,15 @@ def save(img, filename, dtype=None):
     # Set zooms
     hdr.set_zooms(zooms)
     # save to disk
-    out_img.to_filespec(filename)
+    out_img.to_filename(filename)
     return img
 
 def _type_from_filename(filename):
     ''' Return image type determined from filename
-    
+
     Filetype is determined by the file extension in 'filename'.
     Currently the following filetypes are supported:
-    
+
     * Nifti single file : ['.nii', '.nii.gz']
     * Nifti file pair : ['.hdr', '.hdr.gz']
     * Analyze file pair : ['.img', '.img.gz']

@@ -186,7 +186,7 @@ def surrogate_3d_dataset(n_subj=1, shape=(20, 20, 20), mask=None,
         import numpy.random as nr
 
     if mask is not None:
-        shape = mask.get_shape()
+        shape = mask.shape
         mask_data = mask.get_data()
     else:
         mask_data = np.ones(shape)
@@ -276,7 +276,7 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
         import numpy.random as nr
 
     if mask is not None:
-        shape = mask.get_shape()
+        shape = mask.shape
         affine = mask.get_affine()
         mask_data = mask.get_data().astype('bool')
     else:

@@ -54,7 +54,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
     This works only with three dimensional data
     """
     # Masking
-    if len(mask.get_shape()) > 3:
+    if len(mask.shape) > 3:
         xyz = np.where((mask.get_data() > 0).squeeze())
         zmap = zimg.get_data().squeeze()[xyz]
     else:
@@ -187,7 +187,7 @@ def get_3d_peaks(image, mask=None, threshold=0., nn=18, order_th=0):
         data = image.get_data().ravel()[bmask > 0]
         xyz = np.array(np.where(bmask > 0)).T
     else:
-        shape = image.get_shape()
+        shape = image.shape
         data = image.get_data().ravel()
         xyz = np.reshape(np.indices(shape), (3, np.prod(shape))).T
     affine = image.get_affine()
