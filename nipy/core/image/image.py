@@ -465,7 +465,7 @@ def subsample(img, slice_object):
     return img.__getitem__(slice_object)
 
 
-def fromarray(data, innames, outnames, coordmap=None):
+def fromarray(data, innames, outnames):
     """Create an image from a numpy array.
 
     Parameters
@@ -476,8 +476,6 @@ def fromarray(data, innames, outnames, coordmap=None):
        a list of input axis names
     innames : sequence
        a list of output axis names
-    coordmap : A `CoordinateMap`
-        If not specified, an identity coordinate map is created.
 
     Returns
     -------
@@ -488,13 +486,24 @@ def fromarray(data, innames, outnames, coordmap=None):
     load : function for loading images
     save : function for saving images
 
+    Examples
+    --------
+    >>> img = fromarray(np.zeros((2,3,4)), 'ijk', 'xyz')
+    >>> img.coordmap
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+       affine=array([[ 1.,  0.,  0.,  0.],
+                     [ 0.,  1.,  0.,  0.],
+                     [ 0.,  0.,  1.,  0.],
+                     [ 0.,  0.,  0.,  1.]])
+    )
     """
     ndim = len(data.shape)
-    if not coordmap:
-        coordmap = AffineTransform.from_start_step(innames,
-                                                   outnames,
-                                                   (0.,)*ndim,
-                                                   (1.,)*ndim)
+    coordmap = AffineTransform.from_start_step(innames,
+                                               outnames,
+                                               (0.,)*ndim,
+                                               (1.,)*ndim)
     return Image(data, coordmap)
 
 

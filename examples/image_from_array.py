@@ -6,12 +6,12 @@ import os
 
 import numpy as np
 
-from nipy.core.api import fromarray, Affine
+from nipy.core.api import Image, AffineTransform
 from nipy.io.api import save_image, load_image
 from nipy.utils import make_datasource
 
 # Make the templates datasource
-templates = make_datasource('nipy', 'templates')
+templates = make_datasource(dict(relpath='nipy/templates'))
 
 # Load an image to get the array and affine
 filename = templates.get_filename('ICBM152', '2mm', 'T1.nii.gz')
@@ -39,13 +39,12 @@ outnames = ('zyx')
 # either way works
 
 # Build a CoordinateMap to create the image with
-affine_coordmap = Affine.from_params(innames, outnames, affine_array)
+affine_coordmap = AffineTransform.from_params(innames, outnames, affine_array)
 
 # 2) Create a nipy image from the array and CoordinateMap
 
 # Create new image
-newimg = fromarray(arr, innames=innames, outnames=outnames, 
-                                         coordmap=affine_coordmap)
+newimg = Image(arr, affine_coordmap)
 
 ################################################################################
 # END HERE, for testing purposes only.
@@ -63,7 +62,6 @@ tmpfile = open(name)
 # Save the nipy image to the specified filename
 save_image(newimg, tmpfile.name)
 
-
 # Reload and verify the affine was saved correctly.
 tmpimg = load_image(tmpfile.name)
 assert_equal(tmpimg.affine, affine_coordmap.affine)
@@ -74,4 +72,3 @@ assert_equal(np.asarray(tmpimg), np.asarray(img))
 # cleanup our tempfile
 tmpfile.close()
 os.unlink(name)
-
