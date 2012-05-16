@@ -97,8 +97,13 @@ class HistogramRegistration(object):
         data, from_bins = clamp(from_img.get_data(), bins=from_bins, mask=mask)
         self._from_img = make_xyz_image(data, xyz_affine(from_img), 'scanner')
         # Set the subsampling.  This also sets the _from_data and _vox_coords
+        # Reduce the `from` image for faster similarity
+        # evaluation. This also sets the _from_data and _vox_coords
         # attributes
-        self.subsample()
+
+        # TODO: find the smallest bounding box that includes the mask
+        # and use it to perform reduction
+        self.reduce_from_image(npoints=NPOINTS)
 
         # Clamping of the `to` image including padding with -1
         mask = None
@@ -126,8 +131,8 @@ class HistogramRegistration(object):
 
     interp = property(_get_interp, _set_interp)
 
-    def subsample(self, spacing=None, corner=[0, 0, 0], size=None,
-                  npoints=NPOINTS):
+    def reduce_from_image(self, spacing=None, corner=[0, 0, 0], size=None,
+                  npoints=None):
         """
         Defines a subset of the `from` image to restrict joint
         histogram computation.
