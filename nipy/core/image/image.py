@@ -466,7 +466,10 @@ def subsample(img, slice_object):
 
 
 def fromarray(data, innames, outnames):
-    """Create an image from a numpy array.
+    """Create an image from array `data`, and input/output coordinate names
+
+    The mapping between the input and output coordinate names is the identity
+    matrix.
 
     Parameters
     ----------
