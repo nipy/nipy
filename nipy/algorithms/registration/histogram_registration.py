@@ -61,9 +61,9 @@ class HistogramRegistration(object):
           Number of histogram bins to represent the `from` image
         to_bins : integer
           Number of histogram bins to represent the `to` image
-        from_mask : nipy image-like
+        from_mask : array-like
           Mask to apply to the `from` image
-        to_mask : nipy image-like
+        to_mask : array-like
           Mask to apply to the `to` image
         similarity : str or callable
           Cost-function for assessing image similarity. If a string,
@@ -91,25 +91,21 @@ class HistogramRegistration(object):
 
         # Clamping of the `from` image. The number of bins may be
         # overriden if unnecessarily large.
-        mask = None
-        if not from_mask is None:
-            mask = from_mask.get_data()
-        data, from_bins = clamp(from_img.get_data(), bins=from_bins, mask=mask)
+        data, from_bins = clamp(from_img.get_data(), bins=from_bins,
+                                mask=from_mask)
         self._from_img = make_xyz_image(data, xyz_affine(from_img), 'scanner')
-        # Set the subsampling.  This also sets the _from_data and _vox_coords
         # Reduce the `from` image for faster similarity
         # evaluation. This also sets the _from_data and _vox_coords
         # attributes
-
-        # TODO: find the smallest bounding box that includes the mask
-        # and use it to perform reduction
-        self.reduce_from_image(npoints=NPOINTS)
+        if from_mask == None:
+            self.reduce_from_image(npoints=NPOINTS)
+        else:
+            corner, size = smallest_bounding_box(from_mask)
+            self.reduce_from_image(corner=corner, size=size, npoints=NPOINTS)
 
         # Clamping of the `to` image including padding with -1
-        mask = None
-        if not to_mask is None:
-            mask = to_mask.get_data()
-        data, to_bins = clamp(to_img.get_data(), bins=to_bins, mask=mask)
+        data, to_bins = clamp(to_img.get_data(), bins=to_bins,
+                              mask=to_mask)
         self._to_data = -np.ones(np.array(to_img.shape) + 2, dtype=CLAMP_DTYPE)
         self._to_data[1:-1, 1:-1, 1:-1] = data
         self._to_inv_affine = inverse_affine(xyz_affine(to_img))
@@ -427,3 +423,13 @@ def ideal_spacing(data, npoints):
         actual_npoints = (subdata >= 0).sum()
 
     return spacing
+
+
+def smallest_bounding_box(msk):
+    """
+    Extract the smallest bounding box from a mask
+    """
+    x, y, z = np.where(msk > 0)
+    corner = [x.min(), y.min(), z.min()]
+    size = [x.max() + 1, y.max() + 1, z.max() + 1]
+    return corner, size
