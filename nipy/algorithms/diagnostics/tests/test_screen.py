@@ -28,11 +28,12 @@ def test_screen():
                  ['max', 'mean', 'min',
                   'pca', 'pca_res',
                   'std', 'ts_res'])
-    data = np.asarray(img)
-    assert_array_equal(np.max(data, axis=-1), res['max'])
-    assert_array_equal(np.mean(data, axis=-1), res['mean'])
-    assert_array_equal(np.min(data, axis=-1), res['min'])
-    assert_array_equal(np.std(data, axis=-1), res['std'])
+    data = img.get_data()
+
+    assert_array_equal(np.max(data, axis=-1), res['max'].get_data())
+    assert_array_equal(np.mean(data, axis=-1), res['mean'].get_data())
+    assert_array_equal(np.min(data, axis=-1), res['min'].get_data())
+    assert_array_equal(np.std(data, axis=-1), res['std'].get_data())
     pca_res = pca(data, axis=-1, standardize=False, ncomp=10)
     # On windows, there seems to be some randomness in the PCA output vector
     # signs; this routine sets the basis vectors to have first value positive,

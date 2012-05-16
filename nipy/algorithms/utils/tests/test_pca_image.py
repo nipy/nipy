@@ -30,11 +30,14 @@ def setup():
     img_data = t0_img.get_data()
     mask_cmap = drop_io_dim(img.coordmap, 't')
     first_frame = img_data[0]
-    mask = Image(np.greater(np.asarray(first_frame), 500).astype(np.float64),
+    mask = Image(np.greater(first_frame, 500).astype(np.float64),
                  mask_cmap)
     data_dict['fmridata'] = img
     data_dict['mask'] = mask
 
+    # print data_dict['mask'].shape, np.sum(data_dict['mask'].get_data())
+    assert_equal(data_dict['mask'].shape, (17, 21, 3))
+    assert_almost_equal(np.sum(data_dict['mask'].get_data()), 1071.0)
 
 def _rank(p):
     return p['basis_vectors'].shape[1]

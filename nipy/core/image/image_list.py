@@ -1,5 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+import warnings
 
 import numpy as np
 
@@ -47,7 +48,7 @@ class ImageList(object):
         False
         >>> np.asarray(sublist).shape
         (3, 17, 21, 3)
-        >>> np.asarray(newimg).shape
+        >>> newimg.get_data().shape
         (17, 21, 3)
         """
         if images is None:
@@ -117,6 +118,25 @@ class ImageList(object):
         # List etc slicing return new instances of self.__class__
         return self.__class__(images=self.list[index])
 
+    def get_data(self):
+        """Return data in ndarray, axis zero has the dimension of the list,
+        other axes the dimension of the images that make the list
+
+        Examples
+        --------
+        >>> from nipy.testing import funcfile
+        >>> from nipy.io.api import load_image
+        >>> funcim = load_image(funcfile)
+        >>> ilist = ImageList.from_image(funcim, axis='t')
+        >>> ilist.getdata().shape
+        (20, 17, 21, 3)
+        """
+        length = len(self.list)
+        v = np.empty((length,) + self.list[0].shape)
+        for i, im in enumerate(self.list):
+            v[i] = im.get_data()
+        return v
+
     def __array__(self):
         """Return data in ndarray.  Called through numpy.array.
 
@@ -129,11 +149,12 @@ class ImageList(object):
         >>> np.asarray(ilist).shape
         (20, 17, 21, 3)
         """
-        length = len(self.list)
-        v = np.empty((length,) + self.list[0].shape)
-        for i, im in enumerate(self.list):
-            v[i] = im.get_data()
-        return v
+        """Return data as a numpy array."""
+        warnings.warn('Please use get_data() instead - will be deprecated',
+                      DeprecationWarning,
+                      stacklevel=2)
+        return self.get_data()
+
 
     def __iter__(self):
         self._iter = iter(self.list)

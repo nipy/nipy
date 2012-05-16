@@ -50,7 +50,7 @@ def screen(img4d, ncomp=10):
     '''
     if img4d.ndim != 4:
         raise ValueError('Expecting a 4d image')
-    data = np.asarray(img4d)
+    data = img4d.get_data()
     cmap = img4d.coordmap
     cmap_3d = drop_io_dim(cmap, 't')
     screen_res = {}
