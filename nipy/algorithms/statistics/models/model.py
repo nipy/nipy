@@ -312,8 +312,10 @@ class LikelihoodModelResults(object):
         F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) *\
             pos_recipr((q * dispersion))
         F = np.squeeze(F)
-        return FContrastResults(F=F, df_den=self.df_resid,
-                                df_num=invcov.shape[0])
+        return FContrastResults(
+            effect=ctheta, covariance=self.vcov(matrix=matrix, 
+                                                dispersion=dispersion), 
+            F=F, df_den=self.df_resid, df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):
         '''
@@ -402,9 +404,11 @@ class FContrastResults(object):
     when np.asarray is called.
     """
 
-    def __init__(self, F, df_num, df_den=None):
+    def __init__(self, effect, covariance, F, df_num, df_den=None):
         if df_den is None:
             df_den = np.inf
+        self.effect = effect
+        self.covariance = covariance
         self.F = F
         self.df_den = df_den
         self.df_num = df_num
