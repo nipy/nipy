@@ -10,7 +10,6 @@ from nipy.algorithms.resample import resample
 
 from nose.tools import assert_raises, assert_true, assert_false, assert_equal
 from numpy.testing import assert_almost_equal, assert_array_equal
-from nipy.testing import parametric
 
 
 lps = xyz_image.lps_output_coordnames
@@ -31,16 +30,13 @@ def generate_im():
     ras_im = xyz_image.XYZImage(data, np.dot(np.diag([-1,-1,1,1]),affine), 'ijk',
                                 metadata={'abc':np.random.standard_normal(4)},
                                 lps=False)
+    return im, xyz_im, ras_im
 
 
-    return im, xyz_im, ras_im 
-
-
-@parametric
 def test_xyz_names():
     im, _, _ = generate_im()
     im = im.renamed_reference(**{'x+LR':'x'})
-    yield assert_raises(ValueError, xyz_image.XYZImage.from_image, im)
+    assert_raises(ValueError, xyz_image.XYZImage.from_image, im)
 
 
 def test__eq__():
@@ -88,23 +84,23 @@ def test_reordered_renamed_etc():
     yield assert_raises, ValueError, xyz_im.resampled_to_img, xyz_im
 
 
-@parametric
 def test_reordered_axes():
     _, xyz_im, ras = generate_im()
 
     xyz_reordered = xyz_im.reordered_axes([2,0,1])
-    yield assert_array_equal(np.array(xyz_reordered), 
-                             np.transpose(np.array(xyz_im), [2,0,1]))
+    assert_array_equal(np.array(xyz_reordered),
+                       np.transpose(np.array(xyz_im), [2,0,1]))
 
     xyz_reordered = xyz_im.reordered_axes('kij')
-    yield assert_array_equal(np.array(xyz_reordered), 
-                             np.transpose(np.array(xyz_im), [2,0,1]))
+    assert_array_equal(np.array(xyz_reordered),
+                       np.transpose(np.array(xyz_im), [2,0,1]))
 
     xyz_reordered = xyz_im.reordered_axes()
-    yield assert_array_equal(np.array(xyz_reordered), 
-                             np.transpose(np.array(xyz_im), [2,1,0]))
+    assert_array_equal(np.array(xyz_reordered),
+                       np.transpose(np.array(xyz_im), [2,1,0]))
 
-    yield assert_equal, xyz_im.metadata, xyz_reordered.metadata
+    assert_equal(xyz_im.metadata, xyz_reordered.metadata)
+
 
 def test_xyz_reference_axes():
 
@@ -115,6 +111,7 @@ def test_xyz_reference_axes():
 
     yield assert_equal, CoordinateSystem(ras, name='world'), ras_im.reference
     yield assert_equal, CoordinateSystem('ijk', name='voxel'), ras_im.axes
+
 
 def test_xyz_image():
 
@@ -160,7 +157,6 @@ def test_xyz_image():
         yield assert_equal,  xyz_im.shape, im.shape
         yield assert_equal,  b.shape, im.shape[::-1]
 
-        
 
 def test_resample():
     im, xyz_im, ras = generate_im()
@@ -228,7 +224,8 @@ def test_subsample():
                                                          shape=subsampled_shape)
     yield assert_almost_equal, np.array(xyz_im_subsampled2), np.array(xyz_im_subsampled)
     yield assert_true, xyz_im_subsampled2 == xyz_im_subsampled
-    
+
+
 def test_values_in_world():
     im, xyz_im, ras_im = generate_im()
 
@@ -244,6 +241,7 @@ def test_values_in_world():
 
     x2 = np.array([3,4,5])
     yield assert_raises, ValueError, xyz_im.values_in_world, x2,y,z
+
 
 def test_xyz_ordered():
     data = np.random.standard_normal((30,40,50))
@@ -292,6 +290,7 @@ def test_xyz_ordered():
     b = [start_x+(n_x-1)*(-step_x), start_y, start_z+(n_z-1)*(-step_z)]
     yield assert_almost_equal, b, im_re_xyz_positive.affine[:3,-1]
 
+
 def test_flip():
 
     _, lps_im, ras_im = generate_im()
@@ -303,18 +302,14 @@ def test_flip():
     yield assert_equal, xyz_image.flip(ras_im), lps_im
     yield assert_equal, xyz_image.flip(lps_im), ras_im
 
-def test_xyz_transform():
 
+def test_xyz_transform():
     T = xyz_image.XYZTransform(np.diag([3,4,5,1]), ['slice', 'frequency', 'phase'])
-   
     yield assert_equal, T.function_domain.coord_names, ('slice', 'frequency', 'phase')
     yield assert_equal, T.function_range.coord_names, lps
-
     Tinv = T.inverse()
-
     # The inverse doesn't map a voxel to 'xyz', it maps
     # 'xyz' to a voxel, so it's not an XYZTransform
-
     yield assert_false, isinstance(Tinv, xyz_image.XYZTransform)
     yield assert_true, Tinv.__class__ == AffineTransform
     yield assert_almost_equal, Tinv.affine, np.diag([1/3., 1/4., 1/5., 1])

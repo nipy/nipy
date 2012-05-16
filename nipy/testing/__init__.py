@@ -45,6 +45,5 @@ from . import decorators as dec
 # Allow failed import of nose if not now running tests
 try:
     from nose.tools import assert_true, assert_false
-    from lightunit import ParametricTestCase, parametric
 except ImportError:
     pass
