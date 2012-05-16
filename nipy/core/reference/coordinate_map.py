@@ -66,8 +66,8 @@ import warnings
 import numpy as np
 
 from nibabel.orientations import io_orientation
+from nibabel.affines import append_diag, to_matvec, from_matvec
 
-from ..transforms.affines import from_matrix_vector, to_matrix_vector
 from .coordinate_system import(CoordinateSystem,
                                safe_dtype,
                                product as coordsys_product
@@ -597,7 +597,7 @@ class AffineTransform(object):
         """
         if type(params) == type(()):
             A, b = params
-            params = from_matrix_vector(A, b)
+            params = from_matvec(A, b)
         ndim = (len(innames) + 1, len(outnames) + 1)
         if params.shape != ndim[::-1]:
             raise ValueError('shape and number of axis names do not agree')
@@ -869,7 +869,7 @@ class AffineTransform(object):
         if x.ndim > 1:
             out_shape = x.shape[:-1] + out_shape
         in_vals = self.function_domain._checked_values(x)
-        A, b = to_matrix_vector(self.affine)
+        A, b = to_matvec(self.affine)
         out_vals = np.dot(in_vals, A.T) + b[np.newaxis,:]
         final_vals = self.function_range._checked_values(out_vals)
         return final_vals.reshape(out_shape)
@@ -1502,7 +1502,7 @@ def _as_coordinate_map(cmap):
         return cmap
     elif isinstance(cmap, AffineTransform):
         affine_transform = cmap
-        A, b = to_matrix_vector(affine_transform.affine)
+        A, b = to_matvec(affine_transform.affine)
 
         def _function(x):
             value = np.dot(x, A.T)
@@ -1511,7 +1511,7 @@ def _as_coordinate_map(cmap):
 
         affine_transform_inv = affine_transform.inverse()
         if affine_transform_inv:
-            Ainv, binv = to_matrix_vector(affine_transform_inv.affine)
+            Ainv, binv = to_matvec(affine_transform_inv.affine)
             def _inverse_function(x):
                 value = np.dot(x, Ainv.T)
                 value += binv
@@ -1623,7 +1623,7 @@ def _product_affines(*affine_mappings):
     j = 0
 
     for l, affine in enumerate(affine_mappings):
-        A, b = to_matrix_vector(affine.affine)
+        A, b = to_matvec(affine.affine)
         M[i:(i+ndimout[l]),j:(j+ndimin[l])] = A
         M[i:(i+ndimout[l]),-1] = b
         product_domain.extend(affine.function_domain.coord_names)
@@ -1803,8 +1803,6 @@ def append_io_dim(cm, in_name, out_name, start=0, step=1):
            [ 0.,  0.,  0.,  5.,  9.],
            [ 0.,  0.,  0.,  0.,  1.]])
     '''
-    # delayed import to avoid circular import errors
-    from ...algorithms.utils.affines import append_diag
     aff = cm.affine
     in_dims = list(cm.function_domain.coord_names)
     out_dims = list(cm.function_range.coord_names)
@@ -1910,8 +1908,6 @@ class CoordMapMaker(object):
                          [ 0.,  0.,  0.,  0.,  1.]])
         )
         """
-        # delayed import to avoid circular import errors
-        from ...algorithms.utils.affines import append_diag
         affine = np.asarray(affine)
         append_zooms = np.atleast_1d(append_zooms)
         append_offsets = np.atleast_1d(append_offsets)

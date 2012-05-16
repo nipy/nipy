@@ -803,8 +803,8 @@ can define affine functions on vector spaces.
 Because it is an affine function, the mathematical image of the domain under
 this function is an affine subspace of its range (which is a vector space). The
 "displacement" vector of this affine subspace is represented by the floats in b
-where A,b = to_matrix_vector(T) (once I have specified a basis for the range of
-this function).
+where A,b = to_matvec(T) (once I have specified a basis for the range of this
+function).
 
 Since my "affine transform" is a function between two vector spaces, it should
 have a domain that is a vector space, as well. For the "affine transform"

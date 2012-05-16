@@ -7,8 +7,9 @@ three dimensions as spatial
 import numpy as np
 from scipy.ndimage import map_coordinates
 
+from nibabel.affines import to_matvec
+
 # Local imports
-from ..transforms.affines import to_matrix_vector
 from ..api import AffineTransform, Image, CoordinateSystem
 from ..reference.coordinate_map import product as cmap_product
 
@@ -538,9 +539,9 @@ class XYZImage(Image):
             tmp_values = np.reshape(tmp_values, shape)
             values[...,i] = tmp_values
       return values
-    
+
    def xyz_ordered(self, positive=False):
-      """ 
+      """
       Returns an image with the affine diagonal, (optionally
       with positive entries),
       in the XYZ coordinate system.
@@ -557,7 +558,7 @@ class XYZImage(Image):
       If positive is True, this may involve creating a new array with
       data ``self.get_data()[::-1,::-1]``
       """
-      A, b = to_matrix_vector(self.affine)
+      A, b = to_matvec(self.affine)
       if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
          raise ValueError(
             'Cannot reorder the axis: the image affine contains rotations'
@@ -585,7 +586,7 @@ class XYZImage(Image):
     #---------------------------------------------------------------------------
     # Private methods
     #---------------------------------------------------------------------------
-    
+
    def __repr__(self):
       options = np.get_printoptions()
       np.set_printoptions(precision=6, threshold=64, edgeitems=2)

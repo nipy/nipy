@@ -3,7 +3,10 @@
 import numpy as np
 import scipy.stats as sp_stats
 
-from ..algorithms.utils.affines import apply_affine
+# Use the nibabel image object
+from nibabel import Nifti1Image as Image
+from nibabel.affines import apply_affine
+
 from ..algorithms.graph.field import field_from_graph_and_data
 from ..algorithms.graph.graph import wgraph_from_3d_grid
 from ..algorithms.statistics import empirical_pvalue
@@ -13,9 +16,6 @@ from .group.permutation_test import \
 
 # FIXME: rename permutation_test_onesample class
 #so that name starts with upper case
-
-# Use the brifti image object
-from nibabel import Nifti1Image as Image
 
 
 ###############################################################################

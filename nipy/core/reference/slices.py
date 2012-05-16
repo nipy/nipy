@@ -5,10 +5,11 @@ A set of methods to get coordinate maps which represent slices in space.
 """
 import numpy as np
 
-from nipy.core.reference.coordinate_system import CoordinateSystem
-from nipy.core.reference.coordinate_map import AffineTransform
-from nipy.core.reference.array_coords import ArrayCoordMap
-from nipy.core.transforms.affines import from_matrix_vector
+from nibabel.affines import from_matvec
+
+from .coordinate_system import CoordinateSystem
+from .coordinate_map import AffineTransform
+from .array_coords import ArrayCoordMap
 
 lps_output_coordnames = ('x+LR', 'y+PA', 'z+SI')
 
@@ -64,7 +65,7 @@ def xslice(x, y_spec, z_spec, output_space=''):
     colvectors = np.asarray([[0, 0],
                              [y_tick, 0],
                              [0, z_tick]])
-    T = from_matrix_vector(colvectors, origin)
+    T = from_matvec(colvectors, origin)
     affine_domain = CoordinateSystem(['i_y', 'i_z'], 'slice')
     affine_range = CoordinateSystem(lps_output_coordnames, output_space)
     return AffineTransform(affine_domain,
@@ -124,7 +125,7 @@ def yslice(y, x_spec, z_spec, output_space=''):
     colvectors = np.asarray([[x_tick, 0],
                              [0, 0],
                              [0, z_tick]])
-    T = from_matrix_vector(colvectors, origin)
+    T = from_matvec(colvectors, origin)
     affine_domain = CoordinateSystem(['i_x', 'i_z'], 'slice')
     affine_range = CoordinateSystem(lps_output_coordnames, output_space)
     return AffineTransform(affine_domain,
@@ -183,7 +184,7 @@ def zslice(z, x_spec, y_spec, output_space=''):
     colvectors = np.asarray([[x_tick, 0],
                              [0, y_tick],
                              [0, 0]])
-    T = from_matrix_vector(colvectors, origin)
+    T = from_matvec(colvectors, origin)
     affine_domain = CoordinateSystem(['i_x', 'i_y'], 'slice')
     affine_range = CoordinateSystem(lps_output_coordnames, output_space)
     return AffineTransform(affine_domain,
