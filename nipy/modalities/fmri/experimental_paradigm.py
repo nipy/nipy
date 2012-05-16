@@ -141,7 +141,7 @@ class BlockParadigm(Paradigm):
             self.duration = np.ravel(np.array(duration))
 
 
-def load_protocol_from_csv_file(path, session=None):
+def load_paradigm_from_csv_file(path, session=None):
     """
     Read a (.csv) paradigm file consisting of values yielding
     (occurrence time, (duration), event ID, modulation)
@@ -178,7 +178,7 @@ def load_protocol_from_csv_file(path, session=None):
     csvfile.seek(0)
     reader = csv.reader(open(path, "rb"), dialect)
 
-    # load the csv as a protocol array
+    # load the csv as a paradigm array
     sess, cid, onset, amplitude, duration = [], [], [], [], []
     for row in reader:
         sess.append(row[0])
@@ -189,36 +189,36 @@ def load_protocol_from_csv_file(path, session=None):
         if len(row) > 4:
             amplitude.append(row[4])
 
-    protocol = [np.array(sess), np.array(cid), np.array(onset),
+    paradigm_info = [np.array(sess), np.array(cid), np.array(onset),
                 np.array(duration), np.array(amplitude)]
-    protocol = protocol[:len(row)]
+    paradigm_info = paradigm_info[:len(row)]
 
-    def read_session(protocol, session):
+    def read_session(paradigm_info, session):
         """ return a paradigm instance corresponding to session
         """
-        ps = (protocol[0] == session)
+        ps = (paradigm_info[0] == session)
         if np.sum(ps) == 0:
             return None
         ampli = np.ones(np.sum(ps))
-        if len(protocol) > 4:
-            _, cid, onset, duration, ampli = [lp[ps] for lp in protocol]
+        if len(paradigm_info) > 4:
+            _, cid, onset, duration, ampli = [lp[ps] for lp in paradigm_info]
             if (duration == 0).all():
                 paradigm = EventRelatedParadigm(cid, onset, ampli)
             else:
                 paradigm = BlockParadigm(cid, onset, duration, ampli)
-        elif len(protocol) > 3:
-            _, cid, onset, duration = [lp[ps] for lp in protocol]
+        elif len(paradigm_info) > 3:
+            _, cid, onset, duration = [lp[ps] for lp in paradigm_info]
             paradigm = BlockParadigm(cid, onset, duration, ampli)
         else:
-            _, cid, onset = [lp[ps] for lp in protocol]
+            _, cid, onset = [lp[ps] for lp in paradigm_info]
             paradigm = EventRelatedParadigm(cid, onset, ampli)
         return paradigm
 
-    sessions = np.unique(protocol[0])
+    sessions = np.unique(paradigm_info[0])
     if session is None:
         paradigm = {}
         for session in sessions:
-            paradigm[session] = read_session(protocol, session)
+            paradigm[session] = read_session(paradigm_info, session)
     else:
-        paradigm = read_session(protocol, session)
+        paradigm = read_session(paradigm_info, session)
     return paradigm
