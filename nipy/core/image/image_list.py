@@ -127,7 +127,7 @@ class ImageList(object):
         # List etc slicing return new instances of self.__class__
         return self.__class__(images=self.list[index])
 
-    def get_data(self):
+    def get_data(self,axis=0):
         """Return data in ndarray, axis zero has the dimension of the list,
         other axes the dimension of the images that make the list
 
@@ -141,9 +141,24 @@ class ImageList(object):
         (20, 17, 21, 3)
         """
         length = len(self.list)
-        v = np.empty((length,) + self.list[0].shape)
+        img_shape = list(self.list[0].shape)
+        if axis > len(img_shape):
+            raise ValueError(' I have only %d axes, but axis %d asked for'
+                             % len(img_shape),axis)
+        new_shape = tuple(img_shape[0:axis] + [length] + img_shape[axis:])
+        v = np.empty(new_shape)
+
+        # first put the data in an array, with list dimension in the first axis
         for i, im in enumerate(self.list):
             v[i] = im.get_data()
+
+        # then roll the axis to have axis in the right place
+        if axis < 0:
+            axis += len(img_shape)
+        v = np.rollaxis(v, 0, axis+1)
+        if any(np.asarray(v.shape)-np.asarray(new_shape)):
+            raise ValueError('array should have the same shape')
+
         return v
 
     def __array__(self):
