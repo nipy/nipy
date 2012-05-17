@@ -1,19 +1,14 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""The image module provides basic functions for working with images in nipy.
-Functions are provided to load, save and create image objects, along with
-iterators to easily slice through volumes.
+""" The io.files module provides basic functions for working with file-based
+images in nipy.
 
-    load : load an image from a file
-
-    save : save an image to a file
-
-    fromarray : create an image from a numpy array
+* load : load an image from a file
+* save : save an image to a file
 
 Examples
 --------
-See documentation for load and save functions for 'working' examples.
-
+See documentation for load and save functions for worked examples.
 """
 
 import os
@@ -42,7 +37,7 @@ def load(filename):
     See Also
     --------
     save_image : function for saving images
-    fromarray : function for creating images from numpy arrays
+    Image : image object
 
     Examples
     --------
@@ -97,7 +92,7 @@ def save(img, filename, dtype=None):
     See Also
     --------
     load_image : function for loading images
-    fromarray : function for creating images from numpy arrays
+    Image : image object
 
     Examples
     --------
@@ -110,10 +105,11 @@ def save(img, filename, dtype=None):
     Make some some files and save them
 
     >>> import numpy as np
-    >>> from nipy.core.api import fromarray
+    >>> from nipy.core.api import Image, AffineTransform
     >>> from nipy.io.api import save_image
     >>> data = np.zeros((91,109,91), dtype=np.uint8)
-    >>> img = fromarray(data, 'kji', 'zxy')
+    >>> cmap = AffineTransform('kji', 'zxy', np.eye(4))
+    >>> img = Image(data, cmap)
     >>> fname1 = os.path.join(tmpdir, 'img1.nii.gz')
     >>> saved_img1 = save_image(img, fname1)
     >>> saved_img1.shape
@@ -146,13 +142,9 @@ def save(img, filename, dtype=None):
     original_hdr = img.metadata.get('header')
     # Make NIFTI compatible affine_transform
     affine_3dorless_transform, pixdim = ni_affine_pixdim_from_affine(img.coordmap)
-
     # what are we going to do with pixdim?
     # LPIImage will all have pixdim[3:] == 1...
-
-    aff = affine_3dorless_transform.affine 
-
-    # rzs = Fimg.affine[:3,:], JT for Matthew, I changed this below is this correct?
+    aff = affine_3dorless_transform.affine
     rzs = img.coordmap.affine[:-1,:-1]
     zooms = np.sqrt(np.sum(rzs * rzs, axis=0))
 
@@ -181,6 +173,7 @@ def save(img, filename, dtype=None):
     # save to disk
     out_img.to_filename(filename)
     return img
+
 
 def _type_from_filename(filename):
     ''' Return image type determined from filename
