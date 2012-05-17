@@ -118,9 +118,10 @@ class ImageList(object):
         # List etc slicing return new instances of self.__class__
         return self.__class__(images=self.list[index])
 
-    def get_data(self):
-        """Return data in ndarray, axis zero has the dimension of the list,
-        other axes the dimension of the images that make the list
+    def get_data(self,axis=None):
+        """Return data in ndarray, axis specifies which axis of the output will
+        take the role of the list dimension. For example, 0 will put the list
+        dimension in the first axis of the result.
 
         Examples
         --------
@@ -128,13 +129,46 @@ class ImageList(object):
         >>> from nipy.io.api import load_image
         >>> funcim = load_image(funcfile)
         >>> ilist = ImageList.from_image(funcim, axis='t')
-        >>> ilist.getdata().shape
+        >>> ilist.getdata(axis=0).shape
         (20, 17, 21, 3)
         """
+        if axis is None:
+            raise ValueError('Must specify which axis of the output will take '
+                             'the role of the list dimension, eg 0 will put the'
+                             'list dimension in the first axis of the result')
         length = len(self.list)
-        v = np.empty((length,) + self.list[0].shape)
+        img_shape = list(self.list[0].shape)
+        out_dim = len(img_shape) + 1
+
+        if axis == 'first':
+            axis = 0
+        if axis == 'last':
+            axis = out_dim - 1
+        if axis < 0:
+            axis += out_dim
+
+        # possible position for axis are:
+        # (-out_dim, -out_dim+1, ..., 0, 1, ..., out_dim-1)
+        if axis not in range(-out_dim,out_dim):
+            raise ValueError('I have only %d axes position, but axis %d asked for'
+                             % (out_dim-1, axis))
+        # target_shape is the shape we hope to have for the returned data
+        target_shape = tuple(img_shape[0:axis] + [length] + img_shape[axis:])
+
+        # tmp_shape is the shape of the output if axis is 0
+        tmp_shape = tuple([length] + img_shape)
+        v = np.empty(tmp_shape)
+
+        # first put the data in an array, with list dimension in the first axis
         for i, im in enumerate(self.list):
-            v[i] = im.get_data()
+            v[i] = im.get_data() # get_data method of an image has no axis
+
+        # then roll (and rock?) the axis to have axis in the right place
+        v = np.rollaxis(v, 0, axis+1)
+
+        if any(np.asarray(v.shape)-np.asarray(target_shape)):
+            raise ValueError(':( was expecting these arrays to have the same shape')
+
         return v
 
     def __array__(self):
