@@ -29,7 +29,6 @@ from nose.tools import assert_equal, raises
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_almost_equal)
 
-from nipy.testing import parametric
 
 t = Term('t')
 
@@ -44,35 +43,33 @@ def test_define():
     assert_almost_equal(np.exp(3*tval), f(tval))
 
 
-@parametric
 def test_events():
     # test events utility function
     h = Function('hrf')
     evs = events([3,6,9])
-    yield assert_equal(DiracDelta(-9 + t) + DiracDelta(-6 + t) +
-                       DiracDelta(-3 + t), evs)
+    assert_equal(DiracDelta(-9 + t) + DiracDelta(-6 + t) +
+                 DiracDelta(-3 + t), evs)
     evs = events([3,6,9], f=h)
-    yield assert_equal(h(-3 + t) + h(-6 + t) + h(-9 + t), evs)
+    assert_equal(h(-3 + t) + h(-6 + t) + h(-9 + t), evs)
     # make some beta symbols
     b = [Symbol('b%d' % i, dummy=True) for i in range(3)]
     a = Symbol('a')
     p = b[0] + b[1]*a + b[2]*a**2
     evs = events([3,6,9], amplitudes=[2,1,-1], g=p)
-    yield assert_equal((2*b[1] + 4*b[2] + b[0])*DiracDelta(-3 + t) +
-                       (-b[1] + b[0] + b[2])*DiracDelta(-9 + t) +
-                       (b[0] + b[1] + b[2])*DiracDelta(-6 + t),
-                       evs)
+    assert_equal((2*b[1] + 4*b[2] + b[0])*DiracDelta(-3 + t) +
+                 (-b[1] + b[0] + b[2])*DiracDelta(-9 + t) +
+                 (b[0] + b[1] + b[2])*DiracDelta(-6 + t),
+                 evs)
     evs = events([3,6,9], amplitudes=[2,1,-1], g=p, f=h)
-    yield assert_equal((2*b[1] + 4*b[2] + b[0])*h(-3 + t) +
-                       (-b[1] + b[0] + b[2])*h(-9 + t) +
-                       (b[0] + b[1] + b[2])*h(-6 + t),
-                       evs)
+    assert_equal((2*b[1] + 4*b[2] + b[0])*h(-3 + t) +
+                 (-b[1] + b[0] + b[2])*h(-9 + t) +
+                 (b[0] + b[1] + b[2])*h(-6 + t),
+                 evs)
     # test no error for numpy int arrays
     onsets = np.array([30, 70, 100], dtype=np.int64)
     evs = events(onsets, f=hrf.glover)
 
 
-@parametric
 def test_interp():
     times = [0,4,5.]
     values = [2.,4,6]
@@ -80,10 +77,9 @@ def test_interp():
         s = int_func(times, values, bounds_error=False)
         tval = np.array([-0.1,0.1,3.9,4.1,5.1])
         res = lambdify(t, s)(tval)
-        yield assert_array_equal(np.isnan(res),
-                                 [True, False, False, False, True])
-        yield assert_array_almost_equal(res[1:-1],
-                                        [2.05, 3.95, 4.2])
+        assert_array_equal(np.isnan(res),
+                           [True, False, False, False, True])
+        assert_array_almost_equal(res[1:-1], [2.05, 3.95, 4.2])
         # specifying kind as linear is OK
         s = linear_interp(times, values, kind='linear')
 
@@ -93,31 +89,27 @@ def test_linear_inter_kind():
     linear_interp([0, 1], [1, 2], kind='cubic')
 
 
-@parametric
 def test_step_function():
     # test step function
     # step function is a function of t
     s = step_function([0,4,5],[2,4,6])
     tval = np.array([-0.1,0,3.9,4,4.1,5.1])
     lam = lambdify(t, s)
-    yield assert_array_equal(lam(tval), [0, 2, 2, 4, 4, 6])
+    assert_array_equal(lam(tval), [0, 2, 2, 4, 4, 6])
     s = step_function([0,4,5],[4,2,1])
     lam = lambdify(t, s)
-    yield assert_array_equal(lam(tval), [0, 4, 4, 2, 2, 1])
+    assert_array_equal(lam(tval), [0, 4, 4, 2, 2, 1])
 
 
-@parametric
 def test_blocks():
     on_off = [[1,2],[3,4]]
     tval = np.array([0.4,1.4,2.4,3.4])
     b = blocks(on_off)
     lam = lambdify(t, b)
-    yield assert_array_equal(lam(tval),
-                             [0, 1, 0, 1])
+    assert_array_equal(lam(tval), [0, 1, 0, 1])
     b = blocks(on_off, amplitudes=[3,5])
     lam = lambdify(t, b)
-    yield assert_array_equal(lam(tval),
-                             [0, 3, 0, 5])
+    assert_array_equal(lam(tval), [0, 3, 0, 5])
 
 
 def numerical_convolve(func1, func2, interval, dt, padding_f=0.1):
@@ -134,7 +126,6 @@ def numerical_convolve(func1, func2, interval, dt, padding_f=0.1):
     return time, value
 
 
-@parametric
 def test_convolve_functions():
     # replicate convolution
     # This is a square wave on [0,1]
@@ -145,25 +136,25 @@ def test_convolve_functions():
     # The convolution of ``f1`` with itself is a triangular wave on
     # [0,2], peaking at 1 with height 1
     tri = convolve_functions(f1, f1, [0,2], 1.0e-3, name='conv')
-    yield assert_equal(str(tri), 'conv(t)')
+    assert_equal(str(tri), 'conv(t)')
     ftri = lambdify(t, tri)
     time, value = numerical_convolve(ff1, ff1, [0, 2], 1.0e-3)
     y = ftri(time)
     # numerical convolve about the same as ours
-    yield assert_array_almost_equal(value, y)
+    assert_array_almost_equal(value, y)
     # peak is at 1
-    yield assert_array_almost_equal(time[np.argmax(y)], 1)
+    assert_array_almost_equal(time[np.argmax(y)], 1)
     # Flip the interval and get the same result
     tri = convolve_functions(f1, f1, [2, 0], 1.0e-3)
     ftri = lambdify(t, tri)
     y = ftri(time)
-    yield assert_array_almost_equal(value, y)
+    assert_array_almost_equal(value, y)
     # offset square wave by 1
     f2 = (t > 1) * (t < 2)
     tri = convolve_functions(f1, f2, [0,3], 1.0e-3)
     ftri = lambdify(t, tri)
     y = ftri(time)
-    yield assert_array_almost_equal(time[np.argmax(y)], 2)
+    assert_array_almost_equal(time[np.argmax(y)], 2)
     # offset both by 1 and start interval at one
     tri = convolve_functions(f2, f2, [1,3], 1.0e-3)
     ftri = lambdify(t, tri)
@@ -173,4 +164,4 @@ def test_convolve_functions():
     time, value = numerical_convolve(ff2, ff2, [1, 3], 1.0e-3)
     # and our version, compare
     y = ftri(time)
-    yield assert_array_almost_equal(y, value)
+    assert_array_almost_equal(y, value)
