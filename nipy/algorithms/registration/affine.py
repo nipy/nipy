@@ -3,9 +3,10 @@
 import numpy as np
 import scipy.linalg as spl
 
+from nibabel.affines import apply_affine
+
 from ...externals.transforms3d.quaternions import mat2quat, quat2axangle
 from .transform import Transform
-from ..utils.affines import apply_affine
 
 # Globals
 RADIUS = 100

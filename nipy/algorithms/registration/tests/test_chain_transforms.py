@@ -24,8 +24,9 @@ parameters::
 import numpy as np
 import numpy.linalg as npl
 
+from nibabel.affines import apply_affine
+
 from ..chain_transform import ChainTransform
-from ...utils.affines import apply_affine
 from ..affine import Affine
 
 from numpy.testing import (assert_array_almost_equal,

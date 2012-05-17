@@ -3,10 +3,11 @@
 
 import warnings
 import numpy as np
+
 from nibabel import io_orientation
+from nibabel.affines import apply_affine
 
 from ...core.image.affine_image import AffineImage
-from ..utils.affines import apply_affine
 from .image_utils import get_affine
 from .optimizer import configure_optimizer, use_derivatives
 from .affine import Rigid

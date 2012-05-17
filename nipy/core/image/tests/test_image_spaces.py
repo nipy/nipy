@@ -4,10 +4,10 @@
 import numpy as np
 
 import nibabel as nib
+from nibabel.affines import from_matvec
 
 from ..image import Image, rollaxis as img_rollaxis
 from ..image_spaces import is_xyz_affable, as_xyz_affable, xyz_affine
-from ...transforms.affines import from_matrix_vector
 from ...reference.coordinate_system import CoordinateSystem as CS
 from ...reference.coordinate_map import AffineTransform
 from ...reference.spaces import (vox2mni, AffineError, AxesError)
@@ -66,7 +66,7 @@ def test_image_as_xyz_affable():
     assert_true(nimg is nimg_r)
     # It's sometimes impossible to make an xyz affable image
     # If the xyz coordinates depend on the time coordinate
-    aff = from_matrix_vector(np.arange(16).reshape((4,4)), [20,21,22,23])
+    aff = from_matvec(np.arange(16).reshape((4,4)), [20,21,22,23])
     img = Image(arr, vox2mni(aff))
     assert_raises(AffineError, as_xyz_affable, img)
     # If any dimensions not spatial, AxesError

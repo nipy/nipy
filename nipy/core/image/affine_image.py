@@ -7,10 +7,12 @@ The base image interface.
 import numpy as np
 from scipy import ndimage
 
+from nibabel.affines import to_matvec
+
 # Local imports
 from .image import Image
-from ..transforms.affines import to_matrix_vector
-from ..reference.coordinate_system import CoordinateSystem
+from ..reference.coordinate_system import (CoordinateSystem,
+                                           CoordinateSystemError)
 from ..reference.coordinate_map import (AffineTransform,
                                         product as cmap_product)
 
@@ -310,7 +312,7 @@ now change the coordinate system of the resampled_image
                                     order=interpolation_order)
         values = np.reshape(values, shape)
         return values
-    
+
     #---------------------------------------------------------------------------
     # AffineImage interface
     #---------------------------------------------------------------------------
@@ -319,9 +321,9 @@ now change the coordinate system of the resampled_image
         """ Returns an image with the affine diagonal and positive
             in its coordinate system.
         """
-        A, b = to_matrix_vector(self.affine)
+        A, b = to_matvec(self.affine)
         if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
-            raise CoordSystemError(
+            raise CoordinateSystemError(
                 'Cannot reorder the axis: the image affine contains rotations'
                 )
         axis_numbers = list(np.argmax(np.abs(A), axis=1))
@@ -331,11 +333,11 @@ now change the coordinate system of the resampled_image
         transposed_data = np.transpose(data, axis_numbers + range(3, self.ndim))
         return AffineImage(transposed_data, reordered_coordmap.affine,
                            reordered_coordmap.function_domain.name)
-    
+
     #---------------------------------------------------------------------------
     # Private methods
     #---------------------------------------------------------------------------
-    
+
     def __repr__(self):
         options = np.get_printoptions()
         np.set_printoptions(precision=6, threshold=64, edgeitems=2)
