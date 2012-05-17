@@ -428,7 +428,7 @@ class XYZImage(Image):
          from nipy.algorithms.resample import resample
          im = resample(self, affine_transform, world_to_world_transform,
                        shape, order=interpolation_order)
-         return XYZImage(np.array(im), affine_transform.affine,
+         return XYZImage(im.get_data(), affine_transform.affine,
                          affine_transform.function_domain.coord_names,
                          metadata=self.metadata)
 
@@ -452,7 +452,7 @@ class XYZImage(Image):
                                                        world_to_world,
                                                        interpolation_order,
                                                        shape)
-            result[...,i] = np.array(tmp_im)
+            result[...,i] = tmp_im.get_data()
          return XYZImage(result, affine_transform.affine,
                          self.axes.coord_names,
                          metadata=self.metadata)

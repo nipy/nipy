@@ -53,11 +53,11 @@ def test_image_list():
     assert_true(isinstance(imglst[0], Image))
     # Verify array interface
     # test __array__
-    assert_true(isinstance(np.asarray(sublist), np.ndarray))
+    assert_true(isinstance(sublist.get_data(), np.ndarray))
     # Test __setitem__
     sublist[2] = sublist[0]
-    assert_equal(np.asarray(sublist[0]).mean(),
-                 np.asarray(sublist[2]).mean())
+    assert_equal(sublist[0].get_data().mean(),
+                 sublist[2].get_data().mean())
     # Test iterator
     for x in sublist:
         assert_true(isinstance(x, Image))

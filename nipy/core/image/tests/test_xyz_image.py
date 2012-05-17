@@ -93,16 +93,16 @@ def test_reordered_axes():
     _, xyz_im, ras = generate_im()
 
     xyz_reordered = xyz_im.reordered_axes([2,0,1])
-    yield assert_array_equal(np.array(xyz_reordered), 
-                             np.transpose(np.array(xyz_im), [2,0,1]))
+    yield assert_array_equal(xyz_reordered.get_data(), 
+                             np.transpose(xyz_im.get_data(), [2,0,1]))
 
     xyz_reordered = xyz_im.reordered_axes('kij')
-    yield assert_array_equal(np.array(xyz_reordered), 
-                             np.transpose(np.array(xyz_im), [2,0,1]))
+    yield assert_array_equal(xyz_reordered.get_data(), 
+                             np.transpose(xyz_im.get_data(), [2,0,1]))
 
     xyz_reordered = xyz_im.reordered_axes()
-    yield assert_array_equal(np.array(xyz_reordered), 
-                             np.transpose(np.array(xyz_im), [2,1,0]))
+    yield assert_array_equal(xyz_reordered.get_data(), 
+                             np.transpose(xyz_im.get_data(), [2,1,0]))
 
     yield assert_equal, xyz_im.metadata, xyz_reordered.metadata
 
@@ -166,11 +166,11 @@ def test_resample():
     im, xyz_im, ras = generate_im()
 
     xyz_im_resampled = xyz_im.resampled_to_affine(xyz_im.xyz_transform)
-    yield assert_almost_equal, np.array(xyz_im_resampled), np.array(xyz_im)
+    yield assert_almost_equal, xyz_im_resampled.get_data(), xyz_im.get_data()
     yield assert_equal, xyz_im.metadata, xyz_im_resampled.metadata
 
     xyz_im_resampled2 = xyz_im.resampled_to_img(xyz_im)
-    yield assert_almost_equal, np.array(xyz_im_resampled2), np.array(xyz_im)
+    yield assert_almost_equal, xyz_im_resampled2.get_data(), xyz_im.get_data()
     yield assert_equal, xyz_im.metadata, xyz_im_resampled2.metadata
     # first call xyz_ordered
 
@@ -178,10 +178,10 @@ def test_resample():
     xyz_im_xyz.xyz_ordered(positive=True)
 
     xyz_im_resampled = xyz_im_xyz.resampled_to_affine(xyz_im_xyz.xyz_transform)
-    yield assert_almost_equal, np.array(xyz_im_resampled), np.array(xyz_im_xyz)
+    yield assert_almost_equal, xyz_im_resampled.get_data(), xyz_im_xyz.get_data()
 
     xyz_im_resampled2 = xyz_im_xyz.resampled_to_img(xyz_im_xyz)
-    yield assert_almost_equal, np.array(xyz_im_resampled2), np.array(xyz_im_xyz)
+    yield assert_almost_equal, xyz_im_resampled2.get_data(), xyz_im_xyz.get_data()
 
     # What we can't do is resample to
     # an array with axes ['k','j','i'], (i.e. transpose the data using resample_*) because we've assumed that
@@ -201,7 +201,8 @@ def test_subsample():
                                  [0,0,4,0],
                                  [0,0,0,1]])
                                 
-    subsampled_shape = np.array(xyz_im)[::2,::3,::4].shape
+    data_xyz_im = xyz_im.get_data()
+    subsampled_shape = data_xyz_im[::2,::3,::4].shape
     subsample_coordmap = AffineTransform(xyz_im.xyz_transform.function_domain,
                                          xyz_im.xyz_transform.function_domain,
                                          subsample_matrix)
@@ -217,16 +218,16 @@ def test_subsample():
     im_subsampled = resample(xyz_im, target_coordmap,
                              world_to_world_coordmap,
                              shape=subsampled_shape)
-    xyz_im_subsampled = xyz_image.XYZImage(np.array(im_subsampled),
+    xyz_im_subsampled = xyz_image.XYZImage(im_subsampled.get_data(),
                                            im_subsampled.affine,
                                            im_subsampled.coordmap.function_domain.coord_names)
 
-    yield assert_almost_equal, np.array(xyz_im_subsampled), np.array(xyz_im)[::2,::3,::4]
+    yield assert_almost_equal, xyz_im_subsampled.get_data(), xyz_im.get_data()[::2,::3,::4]
 
     # We can now do subsampling with these methods.
     xyz_im_subsampled2 = xyz_im.resampled_to_affine(target_coordmap, 
                                                          shape=subsampled_shape)
-    yield assert_almost_equal, np.array(xyz_im_subsampled2), np.array(xyz_im_subsampled)
+    yield assert_almost_equal, xyz_im_subsampled2.get_data(), xyz_im_subsampled.get_data()
     yield assert_true, xyz_im_subsampled2 == xyz_im_subsampled
     
 def test_values_in_world():
@@ -239,8 +240,8 @@ def test_values_in_world():
     z = xyz_vals[:,2]
 
     v1, v2 = xyz_im.values_in_world(x,y,z)
-    yield assert_almost_equal, v1, np.array(xyz_im)[3,4,5]
-    yield assert_almost_equal, v2, np.array(xyz_im)[4,7,8]
+    yield assert_almost_equal, v1, xyz_im.get_data()[3,4,5]
+    yield assert_almost_equal, v2, xyz_im.get_data()[4,7,8]
 
     x2 = np.array([3,4,5])
     yield assert_raises, ValueError, xyz_im.values_in_world, x2,y,z

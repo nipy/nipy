@@ -19,7 +19,7 @@ def test_resample_img2img():
     fimg = load_image(funcfile)
     aimg = load_image(anatfile)
     resimg = resample_img2img(fimg, fimg)
-    yield assert_true, np.allclose(np.asarray(resimg), np.asarray(fimg))
+    yield assert_true, np.allclose(resimg.get_data(), fimg.get_data())
     yield assert_raises, ValueError, resample_img2img, fimg, aimg
 
 
@@ -198,7 +198,7 @@ def test_nonaffine():
         pylab.gca().set_ylim([0,99])
         pylab.gca().set_xlim([0,89])
         pylab.figure(num=4)
-        pylab.plot(np.asarray(ir))
+        pylab.plot(ir.get_data())
 
 
 def test_2d_from_3d():

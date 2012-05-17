@@ -40,12 +40,12 @@ def test_reordered_axes():
     _, xyz_im = generate_im()
 
     xyz_reordered = xyz_im.reordered_axes([2,0,1,3])
-    yield (assert_equal, np.array(xyz_reordered), 
-           np.transpose(np.array(xyz_im), [2,0,1,3]))
+    yield (assert_equal, xyz_reordered.get_data(), 
+           np.transpose(xyz_im.get_data(), [2,0,1,3]))
 
     xyz_reordered = xyz_im.reordered_axes('kijl')
-    yield (assert_equal, np.array(xyz_reordered), 
-           np.transpose(np.array(xyz_im), [2,0,1,3]))
+    yield (assert_equal, xyz_reordered.get_data(), 
+           np.transpose(xyz_im.get_data(), [2,0,1,3]))
 
     yield assert_equal, xyz_im.metadata, xyz_reordered.metadata
     yield assert_equal, xyz_im.metadata, xyz_reordered.metadata
@@ -68,14 +68,14 @@ def test_xyz_image_fmri():
 
     cm = im.coordmap
     cm_reordered = cm.reordered_domain(['j','k','i', 'l'])
-    transposed_data = np.transpose(np.array(im), [1,2,0,3])
+    transposed_data = np.transpose(im.get_data(), [1,2,0,3])
 
     im_reordered = Image(transposed_data, cm_reordered)
     B = np.identity(4)
     B[:3,:3] = im_reordered.affine[:3,:3]
     B[:3,-1] = im_reordered.affine[:3,-1]
 
-    a2=xyz_image.XYZImage(np.array(im_reordered), B,
+    a2=xyz_image.XYZImage(im_reordered.get_data(), B,
                                   im_reordered.coordmap.function_domain.coord_names)
     # Now, reorder it
 
@@ -122,10 +122,10 @@ def test_resample():
     im, xyz_im = generate_im()
 
     xyz_im_resampled = xyz_im.resampled_to_affine(xyz_im.xyz_transform)
-    #yield assert_almost_equal, np.array(xyz_im_resampled), np.array(xyz_im)
+    #yield assert_almost_equal, xyz_im_resampled.get_data(), xyz_im.get_data()
 
     xyz_im_resampled2 = xyz_im.resampled_to_img(xyz_im)
-    #yield assert_almost_equal, np.array(xyz_im_resampled2), np.array(xyz_im)
+    #yield assert_almost_equal, xyz_im_resampled2.get_data(), xyz_im.get_data()
 
 
 def test_values_in_world():
@@ -140,8 +140,8 @@ def test_values_in_world():
     z = xyz_vals[:,2]
 
     v1, v2 = xyz_im.values_in_world(x,y,z)
-    yield assert_almost_equal, v1, np.array(xyz_im)[3,4,5]
+    yield assert_almost_equal, v1, xyz_im.get_data()[3,4,5]
     yield assert_equal, v1.shape, (xyz_im.shape[3],)
-    yield assert_almost_equal, v2, np.array(xyz_im)[4,7,8]
+    yield assert_almost_equal, v2, xyz_im.get_data()[4,7,8]
 
 

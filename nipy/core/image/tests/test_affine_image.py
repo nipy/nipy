@@ -66,19 +66,19 @@ def test_resample():
     im, affine_im = generate_im()
 
     affine_im_resampled = affine_im.resampled_to_affine(affine_im.spatial_coordmap)
-    yield assert_almost_equal, np.array(affine_im_resampled), np.array(affine_im)
+    yield assert_almost_equal, affine_im_resampled.get_data(), affine_im.get_data()
 
     affine_im_resampled2 = affine_im.resampled_to_img(affine_im)
-    yield assert_almost_equal, np.array(affine_im_resampled2), np.array(affine_im)
+    yield assert_almost_equal, affine_im_resampled2.get_data(), affine_im.get_data()
 
     # first call xyz_ordered
 
     affine_im_xyz = affine_im.xyz_ordered()
     affine_im_resampled = affine_im_xyz.resampled_to_affine(affine_im_xyz.spatial_coordmap)
-    yield assert_almost_equal, np.array(affine_im_resampled), np.array(affine_im_xyz)
+    yield assert_almost_equal, affine_im_resampled.get_data(), affine_im_xyz.get_data()
 
     affine_im_resampled2 = affine_im_xyz.resampled_to_img(affine_im_xyz)
-    yield assert_almost_equal, np.array(affine_im_resampled2), np.array(affine_im_xyz)
+    yield assert_almost_equal, affine_im_resampled2.get_data(), affine_im_xyz.get_data()
 
 def test_subsample():
 
@@ -91,12 +91,12 @@ def test_subsample():
                                  [0,3,0,0],
                                  [0,0,4,0],
                                  [0,0,0,1]])
-                                
-    subsampled_shape = np.array(affine_im)[::2,::3,::4].shape
+
+    subsampled_shape = affine_im.get_data()[::2,::3,::4].shape
     subsample_coordmap = AffineTransform(affine_im.spatial_coordmap.function_domain,
                                          affine_im.spatial_coordmap.function_domain,
                                          subsample_matrix)
-    target_coordmap = compose(affine_im.spatial_coordmap, 
+    target_coordmap = compose(affine_im.spatial_coordmap,
                               subsample_coordmap)
 
     # The images have the same output coordinates
@@ -104,22 +104,22 @@ def test_subsample():
     world_to_world_coordmap = AffineTransform(affine_im.spatial_coordmap.function_range,
                                               affine_im.spatial_coordmap.function_range,
                                               np.identity(4))
-                                              
 
     im_subsampled = resample(affine_im, target_coordmap,
                              world_to_world_coordmap,
                              shape=subsampled_shape)
-    affine_im_subsampled = affine_image.AffineImage(np.array(im_subsampled),
+    affine_im_subsampled = affine_image.AffineImage(im_subsampled.get_data(),
                                                     im_subsampled.affine,
                                                     im_subsampled.coordmap.function_domain.coord_names)
 
-    yield assert_almost_equal, np.array(affine_im_subsampled), np.array(affine_im)[::2,::3,::4]
+    yield assert_almost_equal, affine_im_subsampled.get_data(), affine_im.get_data()[::2,::3,::4]
 
     # We can now do subsampling with these methods.
     affine_im_subsampled2 = affine_im.resampled_to_affine(target_coordmap, 
                                                          shape=subsampled_shape)
-    yield assert_almost_equal, np.array(affine_im_subsampled2), np.array(affine_im_subsampled)
-    
+    yield assert_almost_equal, affine_im_subsampled2.get_data(), \
+                               affine_im_subsampled.get_data()
+
 def test_values_in_world():
     im, affine_im = generate_im()
 
@@ -130,8 +130,8 @@ def test_values_in_world():
     z = xyz_vals[:,2]
 
     v1, v2 = affine_im.values_in_world(x,y,z)
-    yield assert_almost_equal, v1, np.array(affine_im)[3,4,5]
-    yield assert_almost_equal, v2, np.array(affine_im)[4,7,8]
+    yield assert_almost_equal, v1, affine_im.get_data()[3,4,5]
+    yield assert_almost_equal, v2, affine_im.get_data()[4,7,8]
 
 
 def test_4d_affine():

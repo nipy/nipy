@@ -15,40 +15,46 @@ from nipy.testing import funcfile
 data_dict = {}
 
 def setup():
+
     tmp_img = load_image(funcfile)
-    # For now, img is an Image
-    # instead of an XYZImage
+
     A = np.identity(4)
     A[:3,:3] = tmp_img.affine[:3,:3]
     A[:3,-1] = tmp_img.affine[:3,-1]
     xyz_data = tmp_img.get_data()
     xyz_img = XYZImage(xyz_data, A,
                        tmp_img.axes.coord_names[:3] + ('t',))
-    # If load_image returns an XYZImage, I'd really be
-    # starting from xyz_img, so from here
 
-    # Here, I'm just doing this so I know that
-    # img.shape[0] is the number of volumes
-    img = image_rollaxis(Image(xyz_img._data, xyz_img.coordmap), 't')
-    data_dict['nimages'] = img.shape[0]
-    # It might be worth to make
-    # data a public attribute of Image/XYZImage
-    # and we might rename get_data-> data_as_array = np.asarray(self.data)
-    # Then, the above would not access a private attribute
-    
-    # Below, I am just making a mask
-    # because I already have img, I 
-    # know I can do this
-    # In principle, though, the pca function
-    # will just take another XYZImage as a mask
-    img_data = img.get_data()
-    first_frame = img_data[0]
-    mask = XYZImage(np.greater(np.asarray(first_frame), 500).astype(np.float64), A, xyz_img.axes.coord_names[:3])
     data_dict['fmridata'] = xyz_img
-    data_dict['mask'] = mask
-    data_dict['img'] = img
-    print data_dict['mask'].shape, np.sum(np.array(data_dict['mask']))
 
+    # If load_image returns an XYZImage, I'd really be starting from xyz_img,
+    # so from here, I'm just doing this so I know that img.shape[0] is the
+    # number of volumes
+
+    # For now, img is an Image instead of an XYZImage
+    img = image_rollaxis(Image(xyz_img._data, xyz_img.coordmap), 't')
+
+    data_dict['nimages'] = img.shape[0]
+    data_dict['img'] = img
+
+    # we could make img.data public with something like img.dataobj, which
+    # would be an object that returned an array from : np.asarray(img.dataobj)
+    # (by dataobj implementing __array_).  Actually, that's where nibabel is
+    # going, probably. That way we can pass around a dataobj proxy object
+    # without needed to read from disk until we need the data.
+
+    # Below, I am just making a mask because I already have img, I know I can
+    # do this. In principle, though, the pca function will just take another
+    # XYZImage as a mask
+
+    img_data = img.get_data()
+    mask = XYZImage(np.greater(img_data[0], 500).astype(np.float64),
+                                    A, xyz_img.axes.coord_names[:3])
+    data_dict['mask'] = mask
+
+    # print data_dict['mask'].shape, np.sum(data_dict['mask'].get_data())
+    assert_equal(data_dict['mask'].shape, (17, 21, 3))
+    assert_almost_equal(np.sum(data_dict['mask'].get_data()), 1071.0)
 
 def _rank(p):
     return p['basis_vectors'].shape[1]

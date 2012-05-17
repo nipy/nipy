@@ -196,7 +196,7 @@ class AffineImage(Image):
         if self.ndim == 3:
             im = resample(self, affine_transform, world_to_world_transform,
                           shape, order=interpolation_order)
-            return AffineImage(np.array(im), affine_transform.affine,
+            return AffineImage(im.get_data(), affine_transform.affine,
                                affine_transform.function_domain.name)
 
         # XXX this below wasn't included in the original AffineImage proposal
