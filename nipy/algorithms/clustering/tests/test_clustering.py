@@ -3,7 +3,7 @@
 # to run only the simple tests:
 # python testClustering.py Test_Clustering
 
-from ..clustering import kmeans
+from ..utils import kmeans
 import nose
 import numpy as np
 import numpy.random as nr

@@ -20,7 +20,7 @@ from scipy.linalg import inv, cholesky, eigvalsh
 from scipy.special import gammaln
 import math
 
-from .clustering import kmeans
+from .utils import kmeans
 from gmm import GMM
 
 ##################################################################

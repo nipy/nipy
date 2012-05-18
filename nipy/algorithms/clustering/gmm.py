@@ -362,7 +362,7 @@ class GMM(object):
         x, array of shape (n_samples,self.dim)
            the data used in the estimation process
         """
-        from .clustering import kmeans
+        from .utils import kmeans
         n = x.shape[0]
 
         #1. set the priors

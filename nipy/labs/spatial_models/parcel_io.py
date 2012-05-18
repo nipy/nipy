@@ -11,7 +11,7 @@ import os.path
 
 from nibabel import load, save, Nifti1Image
 
-from nipy.algorithms.clustering.clustering import kmeans
+from nipy.algorithms.clustering.utils import kmeans
 from .discrete_domain import grid_domain_from_image
 from .mroi import SubDomains
 from ..mask import intersect_masks
