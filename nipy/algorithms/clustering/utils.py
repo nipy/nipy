@@ -38,7 +38,7 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001, verbose=0,
 
     if np.size(X.shape) > 2:
         if verbose:
-            raise ValueError("Please enter a two-diemnsional array \
+            raise ValueError("Please enter a two-dimensional array \
                               for clustering")
 
     if np.size(X.shape) == 1:
@@ -63,7 +63,7 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001, verbose=0,
     if Labels != None:
         if np.size(Labels) == nbitems:
             Labels = Labels.astype(np.int)
-            OK = (Labels.min() > - 1) & (Labels.max() < nbclusters + 1)
+            OK = (Labels.min() > -1) & (Labels.max() < nbclusters + 1)
             if OK:
                 maxiter = int(maxiter)
                 if maxiter > 0:
