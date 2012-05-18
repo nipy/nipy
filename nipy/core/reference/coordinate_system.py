@@ -139,12 +139,9 @@ class CoordinateSystem(object):
         >>> c = CoordinateSystem('ij', name='input')
         >>> c.index('i')
         0
-
         >>> c.index('j')
         1
-
         """
-
         return list(self.coord_names).index(coord_name)
 
     def __ne__(self, other):
@@ -154,7 +151,8 @@ class CoordinateSystem(object):
         """Equality is defined by self.dtype.
 
         XXX If we want to make things
-        XXX trully Affine, we would check "name" as well
+        XXX truly Affine, we would check "name" as well
+
         Parameters
         ----------
         other : :class:`CoordinateSystem`
@@ -163,9 +161,7 @@ class CoordinateSystem(object):
         Returns
         -------
         tf: bool
-
         """
-
         return (self.dtype == other.dtype) and (self.name == other.name)
 
     def __repr__(self):
@@ -174,11 +170,7 @@ class CoordinateSystem(object):
         Returns
         -------
         s : string
-
         """
-        
-        attrs = ('name', 'coord_names', 'coord_dtype')
-        vals = []
         return ("CoordinateSystem(coord_names=%s, name='%s', coord_dtype=%s)" %
                 (self.coord_names, self.name, self.coord_dtype))
 
@@ -188,26 +180,24 @@ class CoordinateSystem(object):
 
         Raise Errors for failed checks.
 
-        The dtype of ``arr`` has to be castable (without loss of
-        precision) to ``self.coord_dtype``.  We use numpy ``can_cast``
-        for this check.
+        The dtype of ``arr`` has to be castable (without loss of precision) to
+        ``self.coord_dtype``.  We use numpy ``can_cast`` for this check.
 
-	The last (or only) axis of ``arr`` should be of length
-	``self.ndim``.
+        The last (or only) axis of ``arr`` should be of length ``self.ndim``.
 
-	Parameters
-	----------
-	arr : array-like
-	   array to check
-	
-	Returns
-	-------
-	checked_arr : array
-           Possibly reshaped array
+        Parameters
+        ----------
+        arr : array-like
+            array to check
 
-	Examples
-	--------
-	>>> cs = CoordinateSystem('ijk', coord_dtype=np.float32)
+        Returns
+        -------
+        checked_arr : array
+            Possibly reshaped array
+
+        Examples
+        --------
+        >>> cs = CoordinateSystem('ijk', coord_dtype=np.float32)
         >>> arr = np.array([1, 2, 3], dtype=np.int16)
         >>> cs._checked_values(arr) # 1D is OK with matching dimensions 
         array([[1, 2, 3]], dtype=int16)
@@ -247,9 +237,8 @@ class CoordinateSystem(object):
         10
 
         For a 1D CoordinateSystem, passing a 1D vector length N could be a
-        mistake (you were expecting an N-dimensional coordinate
-        system), or it could be N points in 1D.  Because it is
-        ambiguous, this is an error.
+        mistake (you were expecting an N-dimensional coordinate system), or it
+        could be N points in 1D.  Because it is ambiguous, this is an error.
 
         >>> cs = CoordinateSystem('x')
         >>> cs._checked_values(1)
@@ -357,7 +346,6 @@ def product(*coord_systems):
        ...
     ValueError: coord_names must have distinct names
     """
-
     coords = []
     for c in coord_systems:
         coords += c.coord_names
