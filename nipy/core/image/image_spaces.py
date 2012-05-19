@@ -1,5 +1,17 @@
 """ Utilities for working with Images and common neuroimaging spaces
 
+Images are very general things, and don't know anything about the kinds of
+spaces they refer to, via their coordinate map.
+
+There are a set of common neuroimaging spaces.  When we create neuroimaging
+Images, we want to place them in neuroimaging spaces, and return information
+about common neuroimaging spaces.
+
+We do this by putting information about neuroimaging spaces in functions and
+variables in the ``nipy.core.reference.spaces`` module, and in this module.
+
+This keeps the specific neuroimaging spaces out of our Image object.
+
 >>> from nipy.core.api import Image, vox2mni, img_rollaxis, xyz_affine, as_xyz_affable
 
 Make a standard 4D xyzt image in MNI space.
@@ -34,7 +46,7 @@ xyz_affine that makes sense in relationship to the voxel data:
 >>> xyz_affine(img_t0)
 Traceback (most recent call last):
     ...
-AffineError: Dropped dimensions not orthogonal to xyz
+AxesError: First 3 output axes must be X, Y, Z
 
 But we can fix this:
 
@@ -56,9 +68,11 @@ array([[ 2.,  0.,  0.,  0.],
        [ 0.,  0.,  0.,  1.]])
 """
 
+import sys
+
 import numpy as np
 
-from nibabel.orientations import io_orientation
+from ...fixes.nibabel import io_orientation
 
 from ..reference import spaces as rsp
 
@@ -216,7 +230,7 @@ def as_xyz_affable(img, name2xyz=None):
     """
     try:
         aff = xyz_affine(img, name2xyz)
-    except rsp.AffineError:
+    except (rsp.AxesError, rsp.AffineError):
         pass
     else:
         return img
@@ -226,11 +240,19 @@ def as_xyz_affable(img, name2xyz=None):
     reo_img = img.reordered_reference(order)
     # Which input axes correspond?
     ornt = io_orientation(reo_img.coordmap.affine)
-    desired_input_order = np.argsort(ornt[:,0])
+    current_in_order = ornt[:,0]
+    # Do we have the first three axes somewhere?
+    if not set((0,1,2)).issubset(current_in_order):
+        raise rsp.AxesError("One of x, y or z outputs missing a "
+                            "corresponding input axis")
+    desired_input_order = np.argsort(current_in_order)
     reo_img = reo_img.reordered_axes(list(desired_input_order))
     try:
         aff = xyz_affine(reo_img, name2xyz)
-    except rsp.AffineError:
-        raise rsp.AffineError("Could not reorder so xyz coordinates did not "
-                              "depend on the other axis coordinates")
+    except rsp.SpaceError:
+        # Python 2.5 / 3 compatibility
+        e = sys.exc_info()[1]
+        raise e.__class__("Could not reorder so xyz coordinates did not "
+                          "depend on the other axis coordinates: " +
+                          str(e))
     return reo_img

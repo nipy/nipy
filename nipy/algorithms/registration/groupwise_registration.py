@@ -4,8 +4,9 @@
 import warnings
 import numpy as np
 
-from nibabel import io_orientation
 from nibabel.affines import apply_affine
+
+from ...fixes.nibabel import io_orientation
 
 from ...core.image.affine_image import AffineImage
 from .image_utils import get_affine

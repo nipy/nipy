@@ -29,7 +29,7 @@ def test_image_xyz_affine():
     assert_true(is_xyz_affable(img4))
     img4_r = img4.reordered_axes([3,2,0,1])
     assert_false(is_xyz_affable(img4_r))
-    assert_raises(AffineError, xyz_affine, img4_r)
+    assert_raises(AxesError, xyz_affine, img4_r)
     nimg = nib.Nifti1Image(arr, aff)
     assert_true(is_xyz_affable(nimg))
     assert_array_equal(xyz_affine(nimg), aff)
@@ -66,7 +66,11 @@ def test_image_as_xyz_affable():
     assert_true(nimg is nimg_r)
     # It's sometimes impossible to make an xyz affable image
     # If the xyz coordinates depend on the time coordinate
-    aff = from_matvec(np.arange(16).reshape((4,4)), [20,21,22,23])
+    aff = np.array([[2, 0, 0, 2, 20],
+                    [0, 3, 0, 0, 21],
+                    [0, 0, 4, 0, 22],
+                    [0, 0, 0, 5, 23],
+                    [0, 0, 0, 0, 1]])
     img = Image(arr, vox2mni(aff))
     assert_raises(AffineError, as_xyz_affable, img)
     # If any dimensions not spatial, AxesError
@@ -84,3 +88,17 @@ def test_image_as_xyz_affable():
     img = Image(arr, cmap)
     assert_raises(AxesError, as_xyz_affable, img)
     assert_true(as_xyz_affable(img, my_valtor) is img)
+
+
+def test_image_xyza_slices():
+    # Jonathan found some nastiness where xyz present in output but there was
+    # not corresponding axis for x in the input
+    arr = np.arange(24).reshape((1,2,3,4))
+    aff = np.diag([2,3,4,5,1])
+    img = Image(arr, vox2mni(aff))
+    img0 = img[0] # slice in X
+    # The result does not have an input axis corresponding to x, and should
+    # raise an error
+    assert_raises(AxesError, as_xyz_affable, img0)
+    img0r = img0.reordered_reference([1,0,2,3]).reordered_axes([2,0,1])
+    assert_raises(AxesError, as_xyz_affable, img0r)

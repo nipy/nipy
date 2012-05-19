@@ -65,8 +65,8 @@ import warnings
 
 import numpy as np
 
-from nibabel.orientations import io_orientation
 from nibabel.affines import append_diag, to_matvec, from_matvec
+from ...fixes.nibabel import io_orientation
 
 from .coordinate_system import(CoordinateSystem,
                                safe_dtype,
