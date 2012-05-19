@@ -191,8 +191,10 @@ class LikelihoodModelResults(object):
             if other is None:
                 other = matrix
             tmp = np.dot(matrix, np.dot(self.cov, np.transpose(other)))
-            return tmp * dispersion
-
+            if np.isscalar(dispersion):
+                return tmp * dispersion
+            else:
+                return tmp[:, :, np.newaxis] * dispersion
         if matrix is None and column is None:
             return self.cov * dispersion
 
@@ -313,8 +315,8 @@ class LikelihoodModelResults(object):
             pos_recipr((q * dispersion))
         F = np.squeeze(F)
         return FContrastResults(
-            effect=ctheta, covariance=self.vcov(matrix=matrix, 
-                                                dispersion=dispersion), 
+            effect=ctheta, covariance=self.vcov(
+                matrix=matrix, dispersion=dispersion[np.newaxis]), 
             F=F, df_den=self.df_resid, df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):

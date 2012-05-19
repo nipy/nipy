@@ -113,7 +113,7 @@ class GLMResults(object):
         # fixme: check that the number of voxels corresponds 
         # to the number of items in glm_results
 
-    def contrast(self, c, contrast_type='t'):
+    def contrast(self, c, contrast_type=None):
         """ Specify and estimate a linear contrast
         
         Parameters
@@ -132,23 +132,28 @@ class GLMResults(object):
             dim = 1
         else:
             dim = c.shape[0]
+        if contrast_type is None:
+            if dim == 1:
+                contrast_type = 't'
+            else:
+                contrast_type = 'F'
         if contrast_type not in ['t', 'F']:
             raise ValueError('Unknown contrast type: %s' % contrast_type)
-
-        effect_ = np.zeros(self.labels.size, dtype=np.float)
-        var_ = np.zeros(self.labels.size, dtype=np.float)
+        
+        effect_ = np.zeros((dim, self.labels.size), dtype=np.float)
+        var_ = np.zeros((dim, dim, self.labels.size), dtype=np.float)
         #stat_ = np.zeros(self.labels.size, dtype=np.float)
         if contrast_type == 't':
             for l in self.results.keys():
                 resl = self.results[l].Tcontrast(c)
-                effect_[self.labels == l] = resl.effect
-                var_[self.labels == l] = resl.sd ** 2
+                effect_[:, self.labels == l] = resl.effect.T
+                var_[:, :, self.labels == l] = (resl.sd ** 2).T
                 #stat_[self.labels == l] = resl.t
         else:
             for l in self.results.keys():
                 resl = self.results[l].Fcontrast(c)
-                effect_[self.labels == l] = resl.effect
-                var_[self.labels == l] = resl.covariance
+                effect_[:, self.labels == l] = resl.effect
+                var_[:, :, self.labels == l] = resl.covariance
                 # fixme: should be able to compute effect and covariance here
                 #stat_[self.labels == l] = resl.F
             
@@ -170,7 +175,8 @@ class Contrast(object):
     (high-dimensional F constrasts may lead to memory breakage)
     """
 
-    def __init__(self, dim=1, type='t', tiny=DEF_TINY, dofmax=DEF_DOFMAX):
+    def __init__(self, dim=1, contrast_type='t', tiny=DEF_TINY, 
+                 dofmax=DEF_DOFMAX):
         """
         Parameters
         ==========
@@ -178,10 +184,10 @@ class Contrast(object):
         """
         self.dim = dim
         self.effect, self.variance, self.dof = None, None, None
-        if dim > 1 and type is 't':
+        if dim > 1 and contrast_type is 't':
             print 'Automatically converted multi-dimensional t to F contrast'
-            type = 'F'
-        self.type = type
+            contrast_type = 'F'
+        self.contrast_type = contrast_type
         self.stat_ = None
         self.p_value_ = None
         self.baseline = 0
@@ -204,15 +210,19 @@ class Contrast(object):
             # avoids division by zero
             stat = (self.effect - baseline) / np.sqrt(
                 np.maximum(self.variance, self.tiny))
-            if self.type == 'F':
+            if self.contrast_type == 'F':
                 stat = stat ** 2
         # Case: F contrast
-        elif self.type == 'F':
+        elif self.contrast_type == 'F':
             # F = |t|^2/q ,  |t|^2 = e^t inv(v) e
+            if self.effect.ndim == 1:
+                self.effect = self.effect[np.newaxis]
+            if self.variance.ndim == 1:
+                self.variance = self.variance[np.newaxis, np.newaxis]
             stat = mahalanobis(self.effect - baseline, np.maximum(
                     self.variance, self.tiny)) / self.dim
         # Case: tmin (conjunctions)
-        elif self.type == 'tmin':
+        elif self.contrast_type == 'tmin':
             vdiag = self.variance.reshape([self.dim ** 2] + list(
                     self.variance.shape[2:]))[:: self.dim + 1]
             stat = (self.effect - baseline) / np.sqrt(
@@ -237,9 +247,9 @@ class Contrast(object):
         if self.stat_ == None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
-        if self.type in ['t', 'tmin']:
+        if self.contrast_type in ['t', 'tmin']:
             p = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
-        elif self.type == 'F':
+        elif self.contrast_type == 'F':
             p = sps.f.sf(self.stat_, self.dim, np.minimum(
                     self.dof, self.dofmax))
         else:
@@ -263,14 +273,14 @@ class Contrast(object):
         return zscore(self.p_value_)
 
     def __add__(self, other):
-        if self.type != other.type:
+        if self.contrast_type != other.contrast_type:
             raise ValueError(
                 'The two contrasts do not have consistant type dimensions')
         if self.dim != other.dim:
             raise ValueError(
                 'The two contrasts do not have compatible dimensions')
         con = Contrast(self.dim)
-        con.type = self.type
+        con.contrast_type = self.contrast_type
         con.effect = self.effect + other.effect
         con.variance = self.variance + other.variance
         con.dof = self.dof + other.dof
@@ -280,9 +290,9 @@ class Contrast(object):
         """Multiplication of the contrast by a scalar"""
         scalar = float(scalar)
         con = Contrast(self.dim)
-        con.type = self.type
-        con.effect = scalar * self.effect
-        con.variance = scalar ** 2 * self.variance
+        con.contrast_type = self.contrast_type
+        con.effect = self.effect * scalar
+        con.variance = self.variance * scalar ** 2 
         con.dof = self.dof
         return con
 

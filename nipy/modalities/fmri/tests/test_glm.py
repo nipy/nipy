@@ -48,6 +48,83 @@ def test_Fcontrast_1d():
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
 
+def test_Fcontrast_nd():
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    result = GLM(X).fit(Y)
+    cval = np.eye(q)[:3]
+    con = result.contrast(cval)
+    assert_true(con.contrast_type == 'F')
+    z_vals = con.z_score()
+    assert_almost_equal(z_vals.mean(), 0, 0)
+    assert_almost_equal(z_vals.std(), 1, 0)
+
+def test_Fcontrast_1d_old():
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    result = GLM(X).fit(Y, 'ols')
+    cval = np.hstack((1, np.ones(9)))
+    con = result.contrast(cval, contrast_type='F')
+    z_vals = con.z_score()
+    assert_almost_equal(z_vals.mean(), 0, 0)
+    assert_almost_equal(z_vals.std(), 1, 0)
+
+def test_Fcontrast_nd_ols():
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    result = GLM(X).fit(Y, 'ols')
+    cval = np.eye(q)[:3]
+    con = result.contrast(cval)
+    assert_true(con.contrast_type == 'F')
+    z_vals = con.z_score()
+    assert_almost_equal(z_vals.mean(), 0, 0)
+    assert_almost_equal(z_vals.std(), 1, 0)
+
+def test_t_contrast_add():
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    result = GLM(X).fit(Y)
+    c1, c2 = np.eye(q)[0], np.eye(q)[1]
+    con = result.contrast(c1) + result.contrast(c2)
+    z_vals = con.z_score()
+    assert_almost_equal(z_vals.mean(), 0, 0)
+    assert_almost_equal(z_vals.std(), 1, 0)
+
+def test_F_contrast_add():
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    result = GLM(X).fit(Y)
+    # first test with independent contrast
+    c1, c2 = np.eye(q)[:2], np.eye(q)[2:4]
+    con = result.contrast(c1) + result.contrast(c2)
+    z_vals = con.z_score()
+    assert_almost_equal(z_vals.mean(), 0, 0)
+    assert_almost_equal(z_vals.std(), 1, 0)
+    # first test with dependent contrast
+    con1 = result.contrast(c1)
+    con2 = result.contrast(c1) + result.contrast(c1)
+    assert_almost_equal(con1.effect * 2, con2.effect)
+    assert_almost_equal(con1.variance * 2, con2.variance)
+    assert_almost_equal(con1.stat() * 2, con2.stat())
+
+def test_t_contrast_mul():
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    result = GLM(X).fit(Y)
+    con1 = result.contrast(np.eye(q)[0])
+    con2 = con1 * 2
+    assert_almost_equal(con1.z_score(), con2.z_score())
+    assert_almost_equal(con1.effect * 2, con2.effect)
+
+def test_F_contrast_mul():
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    result = GLM(X).fit(Y)
+    con1 = result.contrast(np.eye(q)[:4])
+    con2 = con1 * 2
+    assert_almost_equal(con1.z_score(), con2.z_score())
+    assert_almost_equal(con1.effect * 2, con2.effect)
+
 
 
 if __name__ == "__main__":
