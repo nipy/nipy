@@ -63,41 +63,58 @@ def test_default_makers():
 
 def test_xyz_affine():
     # Getting an xyz affine from coordmaps
-    affine = from_matvec(np.arange(9).reshape((3,3)), [15,16,17])
-    cmap = AffineTransform(VARS['d_cs_r3'], VARS['r_cs_r3'], affine)
-    assert_array_equal(xyz_affine(cmap), affine)
-    # Affine always reordered in xyz order
-    assert_array_equal(xyz_affine(cmap.reordered_range([2,0,1])), affine)
-    assert_array_equal(xyz_affine(cmap.reordered_range([2,1,0])), affine)
-    assert_array_equal(xyz_affine(cmap.reordered_range([1,2,0])), affine)
-    assert_array_equal(xyz_affine(cmap.reordered_range([1,0,2])), affine)
-    assert_array_equal(xyz_affine(cmap.reordered_range([0,2,1])), affine)
-    # 5x5 affine is shrunk
+    aff3d = from_matvec(np.arange(9).reshape((3,3)), [15,16,17])
+    cmap3d = AffineTransform(VARS['d_cs_r3'], VARS['r_cs_r3'], aff3d)
     rzs = np.c_[np.arange(12).reshape((4,3)), [0,0,0,12]]
-    aff55 = from_matvec(rzs, [15,16,17,18])
-    cmap = AffineTransform(VARS['d_cs_r4'], VARS['r_cs_r4'], aff55)
-    assert_array_equal(xyz_affine(cmap), affine)
-    # Affine always reordered in xyz order
-    assert_array_equal(xyz_affine(cmap.reordered_range([3,2,1,0])), affine)
-    assert_array_equal(xyz_affine(cmap.reordered_range([2,0,1,3])), affine)
+    aff4d = from_matvec(rzs, [15,16,17,18])
+    cmap4d = AffineTransform(VARS['d_cs_r4'], VARS['r_cs_r4'], aff4d)
+    # Simplest case of 3D affine -> affine unchanged
+    assert_array_equal(xyz_affine(cmap3d), aff3d)
+    # 4D (5, 5) affine -> 3D equivalent
+    assert_array_equal(xyz_affine(cmap4d), aff3d)
+    # Any dimensions not spatial, AxesError
+    r_cs = CS(('mni-x', 'mni-y', 'mni-q'), 'mni')
+    funny_cmap = AffineTransform(VARS['d_cs_r3'],r_cs, aff3d)
+    assert_raises(AxesError, xyz_affine, funny_cmap)
+    r_cs = CS(('mni-x', 'mni-q', 'mni-z'), 'mni')
+    funny_cmap = AffineTransform(VARS['d_cs_r3'],r_cs, aff3d)
+    assert_raises(AxesError, xyz_affine, funny_cmap)
+    # We insist that the coordmap is in output xyz order
+    permutations = (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)
+    for perm in permutations:
+        assert_raises(AxesError, xyz_affine, cmap3d.reordered_range(perm))
+    # The input order doesn't matter, as long as the xyz axes map to the first
+    # three input axes
+    for perm in permutations:
+        assert_array_equal(xyz_affine(
+            cmap3d.reordered_domain(perm)), aff3d[:, perm + (-1,)])
+    # But if the corresponding input axes not in the first three, an axis error
+    wrong_inputs = cmap4d.reordered_domain([0, 1, 3, 2])
+    assert_raises(AxesError, xyz_affine, wrong_inputs)
     # xyzs must be orthogonal to dropped axis
     for i in range(3):
-        aff = aff55.copy()
+        aff = aff4d.copy()
         aff[i,3] = 1
         cmap = AffineTransform(VARS['d_cs_r4'], VARS['r_cs_r4'], aff)
         assert_raises(AffineError, xyz_affine, cmap)
         # And if reordered
-        assert_raises(AffineError, xyz_affine, cmap.reordered_range([2,0,1,3]))
+        assert_raises(AxesError, xyz_affine, cmap.reordered_range([2,0,1,3]))
     # Non-square goes to square
-    rzs = np.arange(12).reshape((4,3))
-    aff54 = from_matvec(rzs, [15,16,17,18])
+    aff54 = np.array([[0, 1, 2, 15],
+                      [3, 4, 5, 16],
+                      [6, 7, 8, 17],
+                      [0, 0, 0, 18],
+                      [0, 0, 0, 1]])
     cmap = AffineTransform(VARS['d_cs_r3'], VARS['r_cs_r4'], aff54)
-    assert_array_equal(xyz_affine(cmap), affine)
-    rzs = np.c_[np.arange(12).reshape((4,3)), np.zeros((4,3))]
-    aff57 = from_matvec(rzs, [15,16,17,18])
+    assert_array_equal(xyz_affine(cmap), aff3d)
+    aff57 = np.array([[0, 1, 2, 0, 0, 0, 15],
+                      [3, 4, 5, 0, 0, 0, 16],
+                      [6, 7, 8, 0, 0, 0, 17],
+                      [0, 0, 0, 0, 0, 0, 18],
+                      [0, 0, 0, 0, 0, 0, 1]])
     d_cs_r6 = CS('ijklmn', 'array')
     cmap = AffineTransform(d_cs_r6, VARS['r_cs_r4'], aff57)
-    assert_array_equal(xyz_affine(cmap), affine)
+    assert_array_equal(xyz_affine(cmap), aff3d)
     # Non-affine raises SpaceTypeError
     cmap_cmap = CoordinateMap(VARS['d_cs_r4'], VARS['r_cs_r4'], lambda x:x*3)
     assert_raises(SpaceTypeError, xyz_affine, cmap_cmap)
@@ -107,16 +124,20 @@ def test_xyz_affine():
     cmap = AffineTransform(d_cs_r2, r_cs_r2,
                            np.array([[2,0,10],[0,3,11],[0,0,1]]))
     assert_raises(AxesError, xyz_affine, cmap)
-    # Any dimensions not spatial, AxesError
-    r_cs = CS(('mni-x', 'mni-y', 'mni-q'), 'mni')
-    cmap = AffineTransform(VARS['d_cs_r3'],r_cs, affine)
-    assert_raises(AxesError, xyz_affine, cmap)
     # Can pass in own validator
     my_valtor = dict(blind='x', leading='y', ditch='z')
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
-    cmap = AffineTransform(VARS['d_cs_r3'],r_cs, affine)
+    cmap = AffineTransform(VARS['d_cs_r3'],r_cs, aff3d)
     assert_raises(AxesError, xyz_affine, cmap)
-    assert_array_equal(xyz_affine(cmap, my_valtor), affine)
+    assert_array_equal(xyz_affine(cmap, my_valtor), aff3d)
+    # Slices in x, y, z coordmaps raise error because of missing spatial
+    # dimensions
+    arr = np.arange(120).reshape((2, 3, 4, 5))
+    aff = np.diag([2, 3, 4, 5, 1])
+    img = Image(arr, vox2mni(aff))
+    assert_raises(AxesError, xyz_affine, img[1].coordmap)
+    assert_raises(AxesError, xyz_affine, img[:,1].coordmap)
+    assert_raises(AxesError, xyz_affine, img[:,:,1].coordmap)
 
 
 def test_xyz_order():

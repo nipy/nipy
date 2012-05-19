@@ -4,6 +4,8 @@ import numpy as np
 
 from nibabel.affines import from_matvec
 
+from ...fixes.nibabel import io_orientation
+
 from .coordinate_system import CoordSysMaker
 from .coordinate_map import CoordMapMaker
 
@@ -42,7 +44,13 @@ class AffineError(SpaceError):
     pass
 
 def xyz_affine(coordmap, name2xyz=None):
-    """ Return voxel to XYZ affine for `coordmap`
+    """ Return (4, 4) affine mapping voxel coordinates to XYZ from `coordmap`
+
+    If no (4, 4) affine "makes sense"(TM) for this `coordmap` then raise errors
+    listed below.  A (4, 4) affine makes sense if the first three output axes
+    are recognizably X, Y, and Z in that order AND they there are corresponding
+    input dimensions, AND the corresponding input dimensions are the first three
+    input dimension (in any order).  Thus the input axes have to be 3D.
 
     Parameters
     ----------
@@ -59,9 +67,20 @@ def xyz_affine(coordmap, name2xyz=None):
     Raises
     ------
     SpaceTypeError : if this is not an affine coordinate map
-    AxesError : if not all of x, y, z recognized in `coordmap` range
+    AxesError : if not all of x, y, z recognized in `coordmap` output, or they
+    are in the wrong order, or the x, y, z axes do not correspond to the first
+    three input axes.
     AffineError : if axes dropped from the affine contribute to x, y, z
-    coordinates
+    coordinates.
+
+    Notes
+    -----
+    We could also try and "make sense" (TM) of a coordmap that had X, Y and Z
+    outputs, but not in that order, nor all in the first three axes.  In that
+    case we could just permute the affine to get the output order we need.  But,
+    that could become confusing if the returned affine has different output
+    coordinates than the passed `coordmap`.  And it's more complicated.  So,
+    let's not do that for now.
 
     Examples
     --------
@@ -89,9 +108,14 @@ def xyz_affine(coordmap, name2xyz=None):
     except AttributeError:
         raise SpaceTypeError('Need affine coordinate map')
     order = xyz_order(coordmap.function_range, name2xyz)
-    affine = affine[order[:3]]
+    if order[:3] != [0, 1, 2]:
+        raise AxesError('First 3 output axes must be X, Y, Z')
+    # Check equivalent input axes
+    ornt = io_orientation(affine)
+    if set(ornt[:3, 0]) != set((0, 1, 2)):
+        raise AxesError('First 3 input axes must correspond to X, Y, Z')
     # Check that dropped dimensions don't provide xyz coordinate info
-    extra_cols = affine[:,3:-1]
+    extra_cols = affine[:3,3:-1]
     if not np.allclose(extra_cols, 0):
         raise AffineError('Dropped dimensions not orthogonal to xyz')
     return from_matvec(affine[:3,:3], affine[:3,-1])
