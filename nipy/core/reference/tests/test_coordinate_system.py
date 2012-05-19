@@ -1,10 +1,12 @@
-
+""" Tests for coordinate_system module
+"""
 import numpy as np
 
 from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,
+                                 is_coordsys,
                                  product, safe_dtype)
 
-from nose.tools import assert_true, assert_equal, assert_raises
+from nose.tools import assert_true, assert_equal, assert_raises, assert_false
 
 
 class empty(object):
@@ -105,6 +107,21 @@ def test___eq__():
 def test___str__():
     s = str(E.cs)
     assert_equal(s, "CoordinateSystem(coord_names=('i', 'j', 'k'), name='test', coord_dtype=float32)")
+
+
+def test_is_coordsys():
+    # Test coordinate system check
+    csys = CoordinateSystem('ijk')
+    assert_true(is_coordsys(csys))
+    class C(object): pass
+    c = C()
+    assert_false(is_coordsys(c))
+    c.coord_names = []
+    assert_false(is_coordsys(c))
+    c.name = ''
+    assert_false(is_coordsys(c))
+    c.coord_dtype = np.float
+    assert_true(is_coordsys(c))
 
 
 def test_checked_values():

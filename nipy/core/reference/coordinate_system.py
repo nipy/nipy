@@ -268,6 +268,34 @@ class CoordinateSystem(object):
         return arr.reshape((-1, self.ndim))
 
 
+def is_coordsys(obj):
+    """ Test if `obj` has the CoordinateSystem API
+
+    Parameters
+    ----------
+    obj : object
+        Object to test
+
+    Returns
+    -------
+    tf : bool
+        True if `obj` has the coordinate system API
+
+    Examples
+    --------
+    >>> csys = CoordinateSystem('xyz')
+    >>> is_coordsys(csys)
+    True
+    """
+    if not hasattr(obj, 'coord_names'):
+        return False
+    if not hasattr(obj, 'name'):
+        return False
+    if not hasattr(obj, 'coord_dtype'):
+        return False
+    return True
+
+
 def safe_dtype(*dtypes):
     """Determine a dtype to safely cast all of the given dtypes to.
 

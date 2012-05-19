@@ -7,7 +7,7 @@ import warnings
 import numpy as np
 
 from nipy.modalities.fmri.api import axis0_generator, FmriImageList
-from nipy.core.api import parcels, fromarray
+from nipy.core.api import parcels, Image, AffineTransform as AfT
 from nipy.io.api import  load_image, save_image
 
 from nose.tools import assert_equal, assert_true
@@ -68,7 +68,7 @@ def test_subcoordmap():
 def test_labels1():
     img = load_image(funcfile)
     data = img.get_data()
-    parcelmap = fromarray(np.asarray(img[0]), 'kji', 'zyx')
+    parcelmap = Image(np.asarray(img[0]), AfT('kji', 'zyx', np.eye(4)))
     parcelmap = (np.asarray(parcelmap) * 100).astype(np.int32)
     v = 0
     for i, d in axis0_generator(data, parcels(parcelmap)):
