@@ -71,7 +71,7 @@ class OLSModel(LikelihoodModel):
     --------
     >>> from nipy.algorithms.statistics.api import Term, Formula
     >>> data = np.rec.fromarrays(([1,3,4,5,2,3,4], range(1,8)),
-    names=('Y', 'X'))
+    ...                          names=('Y', 'X'))
     >>> f = Formula([Term("X"), 1])
     >>> dmtx = f.design(data, return_float=True)
     >>> model = OLSModel(dmtx)
@@ -341,7 +341,7 @@ class ARModel(OLSModel):
     --------
     >>> from nipy.algorithms.statistics.api import Term, Formula
     >>> data = np.rec.fromarrays(([1,3,4,5,8,10,9], range(1,8)),
-                                   names=('Y', 'X'))
+    ...                          names=('Y', 'X'))
     >>> f = Formula([Term("X"), 1])
     >>> dmtx = f.design(data, return_float=True)
     >>> model = ARModel(dmtx, 2)
@@ -662,7 +662,7 @@ class WLSModel(OLSModel):
     --------
     >>> from nipy.algorithms.statistics.api import Term, Formula
     >>> data = np.rec.fromarrays(([1,3,4,5,2,3,4], range(1,8)),
-    names=('Y', 'X'))
+    ...                          names=('Y', 'X'))
     >>> f = Formula([Term("X"), 1])
     >>> dmtx = f.design(data, return_float=True)
     >>> model = WLSModel(dmtx, weights=range(1,8))
