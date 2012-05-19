@@ -58,6 +58,8 @@ class GLM(object):
         Y: array of shape(n_time_points, n_samples), the fMRI data
         fixme: should take into account labels
         """
+        if Y.ndim == 1:
+            Y = Y[:, np.newaxis]
         if Y.shape[0] != self.X.shape[0]:
             raise ValueError('Response and predictors are inconsistent')
         
@@ -78,10 +80,11 @@ class GLM(object):
             for val in np.unique(ar1):
                 m = ARModel(self.X, val)
                 armask = np.equal(ar1, val)
+                #self.results_['%02g' % val] = m.fit(Y.T[armask].T)
                 self.results_[val] = m.fit(Y.T[armask].T)
         else:
             # save the results
-            self.labels_ = np.zeros(Y.shape[0])
+            self.labels_ = np.zeros(Y.shape[1])
             self.results_ = {'0': ols_result}
         return GLMResults(self.results_, self.labels_)
 
@@ -99,9 +102,9 @@ class GLMResults(object):
         Parameters
         ----------
         glm_results: dictionary of  nipy.fixes.scipy.stats.models.regression,
-        describing results of a GLM fit
+                     describing results of a GLM fit
         labels: array of shape(n_voxels), 
-        labels that associate each voxel with a results key
+                labels that associate each voxel with a results key
         """
         if glm_results.keys().sort() != labels.sort():
             raise ValueError('results and labels are inconsistant')
@@ -116,13 +119,13 @@ class GLMResults(object):
         Parameters
         ----------
         c: numpy.ndarray of shape (p) or (q, p),
-        where q = number of contrast vectors and p = number of regressors.
+           where q = number of contrast vectors and p = number of regressors
         contrast_type: string, optional, either 't' or 'F', 
-        type of the contrast
+                       type of the contrast
         
         Returns
         -------
-        A contrast instance
+        con: Contrast instance
         """
         c = np.asarray(c)
         if c.ndim == 1:
@@ -135,14 +138,14 @@ class GLMResults(object):
         effect_ = np.zeros(self.labels.size, dtype=np.float)
         var_ = np.zeros(self.labels.size, dtype=np.float)
         #stat_ = np.zeros(self.labels.size, dtype=np.float)
-        if type == 't':
-            for l in np.unique(self.labels):
+        if contrast_type == 't':
+            for l in self.results.keys():
                 resl = self.results[l].Tcontrast(c)
                 effect_[self.labels == l] = resl.effect
                 var_[self.labels == l] = resl.sd ** 2
                 #stat_[self.labels == l] = resl.t
         else:
-            for l in np.unique(self.labels):
+            for l in self.results.keys():
                 resl = self.results[l].Fcontrast(c)
                 effect_[self.labels == l] = resl.effect
                 var_[self.labels == l] = resl.covariance
