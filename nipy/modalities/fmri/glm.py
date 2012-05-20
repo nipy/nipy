@@ -23,7 +23,6 @@ by computing fixed effects on contrasts
 todo
 ====
 - take a decision on tmin
-- replace the GLM class by a function glm_fit(X, Y, model)
 """
 
 import numpy as np
@@ -36,74 +35,63 @@ DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
 
 
-class GLM(object):
-    """This class is a helper to apply the linear model to fMRI data
+def glm_fit(X, Y, model='ar1'):
+    """ GLM fitting of a dataset using 'ols' regression or the two-pass 
+
+    Parameters
+    ----------
+    X: array of shape(n_time_points, n_regressors),  
+       the design matrix
+    Y: array of shape(n_time_points, n_samples), the fMRI data
+    model: string, to be chosen in ['ar1', 'ols'], optional, 
+           the temporal variance model. Defaults to 'ar1' 
+
+    Returns
+    -------
+    result: a GLMResults instance yielding the result of the GLM 
     """
+    if model not in ['ar1', 'ols']:
+        raise ValueError('Unknown model')
 
-    def __init__(self, X, model='ar1'):
-        """
-        Parameters
-        ----------
-        X: array of shape(n_time_points, n_regressors),  
-        the design matrix
-        model: string, to be chosen in ['ar1', 'ols'], optional, 
-        the temporal variance model 
-        """
-        self.X = X
-        if model in ['ar1', 'ols']:
-            self.model = model
-        else:
-            raise ValueError('Unknown model')
+    if Y.ndim == 1:
+        Y = Y[:, np.newaxis]
 
-    def fit(self, Y, labels=None):
-        """ Fit of the GLM on a given dataset
-
-        Parameters
-        ----------
-        Y: array of shape(n_time_points, n_samples), the fMRI data
-        fixme: should take into account labels
-        """
-        if Y.ndim == 1:
-            Y = Y[:, np.newaxis]
-        if Y.shape[0] != self.X.shape[0]:
-            raise ValueError('Response and predictors are inconsistent')
+    if Y.shape[0] != X.shape[0]:
+        raise ValueError('Response and predictors are inconsistent')
         
-        # fit the OLS model
-        ols_result = OLSModel(self.X).fit(Y)
+    # fit the OLS model
+    ols_result = OLSModel(X).fit(Y)
 
-        # compute and discretize the AR1 coefs
-        ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(0) /
-               (ols_result.resid ** 2).sum(0))
-        ar1 = (ar1 * 100).astype(np.int) / 100.
+    # compute and discretize the AR1 coefs
+    ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(0) /
+           (ols_result.resid ** 2).sum(0))
+    ar1 = (ar1 * 100).astype(np.int) / 100.
 
-        # Fit the AR model acccording to current AR(1) estimates
-        if self.model == 'ar1':
-            self.results_ = {}
-            self.labels_ = ar1
+    # Fit the AR model acccording to current AR(1) estimates
+    if model == 'ar1':
+        results_ = {}
+        labels_ = ar1
 
-            # fit the model
-            for val in np.unique(ar1):
-                m = ARModel(self.X, val)
-                armask = np.equal(ar1, val)
-                #self.results_['%02g' % val] = m.fit(Y.T[armask].T)
-                self.results_[val] = m.fit(Y.T[armask].T)
-        else:
-            # save the results
-            self.labels_ = np.zeros(Y.shape[1])
-            self.results_ = {'0': ols_result}
-        return GLMResults(self.results_, self.labels_)
+        # fit the model
+        for val in np.unique(ar1):
+            m = ARModel(X, val)
+            armask = np.equal(ar1, val)
+            results_[val] = m.fit(Y.T[armask].T)
+    else:
+        # save the results
+        labels_ = np.zeros(Y.shape[1])
+        results_ = {0.0: ols_result}
+    return GLMResults(results_, labels_)
 
 
 class GLMResults(object):
     """ This class contains the dump of a GLM, in an efficient way
     It is meant to spit out a set of student or Fisher when given a contrast.
     In practice this hide loops over set of voxels
-    
-    FIXME: add dumper/loader
     """
 
     def __init__(self, glm_results, labels):
-        """ 
+        """
         Parameters
         ----------
         glm_results: dictionary of  nipy.fixes.scipy.stats.models.regression,
