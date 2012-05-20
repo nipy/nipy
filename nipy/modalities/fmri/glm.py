@@ -19,6 +19,11 @@ by computing fixed effects on contrasts
 >>> cval = np.hstack((1, np.ones(9)))
 >>> z_vals = GLMResult.contrast(cval).z_score()
 >>> print z_vals.mean(), z_vals.std()
+
+todo
+====
+- take a decision on tmin
+- replace the GLM class by a function glm_fit(X, Y, model)
 """
 
 import numpy as np
