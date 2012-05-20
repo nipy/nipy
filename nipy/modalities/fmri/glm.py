@@ -20,9 +20,9 @@ by computing fixed effects on contrasts
 >>> z_vals = GLMResult.contrast(cval).z_score()
 >>> print z_vals.mean(), z_vals.std()
 
-todo
-====
-- take a decision on tmin
+fixme
+-----
+a bug in mahalanobis
 """
 
 import numpy as np
