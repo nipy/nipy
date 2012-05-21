@@ -35,7 +35,7 @@ DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
 
 
-def glm_fit(X, Y, model='ar1'):
+def glm_fit(X, Y, model='ar1', steps=100):
     """ GLM fitting of a dataset using 'ols' regression or the two-pass 
 
     Parameters
@@ -45,6 +45,8 @@ def glm_fit(X, Y, model='ar1'):
     Y: array of shape(n_time_points, n_samples), the fMRI data
     model: string, to be chosen in ['ar1', 'ols'], optional, 
            the temporal variance model. Defaults to 'ar1' 
+    steps: int, optional,
+           Maximum number of discrete steps for the AR(1) coef histogram
 
     Returns
     -------
@@ -65,7 +67,7 @@ def glm_fit(X, Y, model='ar1'):
     # compute and discretize the AR1 coefs
     ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(0) /
            (ols_result.resid ** 2).sum(0))
-    ar1 = (ar1 * 100).astype(np.int) / 100.
+    ar1 = (ar1 * steps).astype(np.int) * 1. / steps
 
     # Fit the AR model acccording to current AR(1) estimates
     if model == 'ar1':
@@ -73,10 +75,9 @@ def glm_fit(X, Y, model='ar1'):
         labels_ = ar1
 
         # fit the model
-        for val in np.unique(ar1):
+        for val in np.unique(labels_):
             m = ARModel(X, val)
-            armask = np.equal(ar1, val)
-            results_[val] = m.fit(Y.T[armask].T)
+            results_[val] = m.fit(Y[:, labels_ == val])
     else:
         # save the results
         labels_ = np.zeros(Y.shape[1])
@@ -99,7 +100,7 @@ class GLMResults(object):
         labels: array of shape(n_voxels), 
                 labels that associate each voxel with a results key
         """
-        if glm_results.keys().sort() != labels.sort():
+        if glm_results.keys().sort() != labels.copy().sort():
             raise ValueError('results and labels are inconsistant')
         self.results = glm_results
         self.labels = labels
@@ -147,9 +148,6 @@ class GLMResults(object):
                 resl = self.results[l].Fcontrast(c)
                 effect_[:, self.labels == l] = resl.effect
                 var_[:, :, self.labels == l] = resl.covariance
-                # fixme: should be able to compute effect and covariance here
-                #stat_[self.labels == l] = resl.F
-            
         con = Contrast(dim, contrast_type)
         con.effect = effect_
         con.variance = var_
@@ -194,7 +192,7 @@ class Contrast(object):
         Parameters
         ==========
         baseline: float, optional,
-        Baseline value for the test statistic
+                  Baseline value for the test statistic
         """
         self.baseline = baseline
 
@@ -226,7 +224,7 @@ class Contrast(object):
         else:
             raise ValueError('Unknown statistic type')
         self.stat_ = stat
-        return stat
+        return stat.ravel()
 
     def p_value(self, baseline=0.0):
         """Return a parametric estimate of the p-value associated

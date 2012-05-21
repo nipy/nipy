@@ -21,16 +21,14 @@ import numpy as np
 import os.path as op
 import pylab
 import tempfile
-import scipy.stats as st
 
-from nipy.labs import compute_mask_files
 from nibabel import load, save, Nifti1Image
-
+from nipy.modalities.fmri.glm import glm_fit
 from nipy.modalities.fmri.design_matrix import make_dmtx
 from nipy.modalities.fmri.experimental_paradigm import \
     load_paradigm_from_csv_file
 from nipy.labs.viz import plot_map, cm
-from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
+from nipy.labs import compute_mask_files
 
 import get_data_light
 
@@ -61,8 +59,8 @@ drift_model = "cosine"
 hfcut = 128
 
 # write directory
-swd = tempfile.mkdtemp()
-print 'Computation will be performed in temporary directory: %s' % swd
+write_dir = tempfile.mkdtemp()
+print 'Computation will be performed in temporary directory: %s' % write_dir
 
 ########################################
 # Design matrix
@@ -79,7 +77,7 @@ ax = design_matrix.show()
 ax.set_position([.05, .25, .9, .65])
 ax.set_title('Design matrix')
 
-pylab.savefig(op.join(swd, 'design_matrix.png'))
+pylab.savefig(op.join(write_dir, 'design_matrix.png'))
 # design_matrix.write_csv(...)
 
 ########################################
@@ -87,7 +85,7 @@ pylab.savefig(op.join(swd, 'design_matrix.png'))
 ########################################
 
 print 'Computing a brain mask...'
-mask_path = op.join(swd, 'mask.nii')
+mask_path = op.join(write_dir, 'mask.nii')
 mask_array = compute_mask_files(data_path, mask_path, False, 0.4, 0.9)
 
 #########################################
@@ -119,14 +117,7 @@ contrasts["computation-sentences"] = contrasts["computation"] -  \
                                      contrasts["sentences"]
 contrasts["reading-visual"] = contrasts["sentences"] * 2 - \
                               contrasts["damier_H"] - contrasts["damier_V"]
-
-output = {}
-for contrast_id in contrasts.keys():
-    tempdict = {}
-    for v in ['sd', 't', 'effect']:
-        tempdict[v] = np.zeros(mask_array.sum())
-    output[contrast_id] = tempdict
-
+contrasts['effects_of_interest'] = np.eye(25)[::2]
 
 ########################################
 # Perform a GLM analysis
@@ -136,44 +127,22 @@ print 'Fitting a GLM (this takes time)...'
 fmri_image = load(data_path)
 Y = fmri_image.get_data()[mask_array]
 X = design_matrix.matrix
-
-m = OLSModel(X)
-# Fit the model, storing an estimate of an AR(1) parameter at each voxel
-result = m.fit(Y.T)
-ar1 = ((result.resid[1:] * result.resid[:-1]).sum(0) /
-          (result.resid ** 2).sum(0))
-ar1 *= 100
-ar1 = ar1.astype(np.int) / 100.
-
-
-for val in np.unique(ar1):
-    armask = np.equal(ar1, val)
-    m = ARModel(X, val)
-    d = Y[armask]
-    results = m.fit(d.T)
-
-    # Output the results for each contrast
-    for (contrast_id, contrast_val) in contrasts.items():
-        resT = results.Tcontrast(contrast_val)
-        output[contrast_id]['sd'][armask] = resT.sd
-        output[contrast_id]['t'][armask] = resT.t
-        output[contrast_id]['effect'][armask] = resT.effect
+results = glm_fit(X, Y.T, steps=2)
+affine = fmri_image.get_affine()
 
 #########################################
 # Estimate the contrasts
 #########################################
 
 print 'Computing contrasts...'
-for index, contrast_id in enumerate(contrasts):
+for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print '  Contrast % 2i out of %i: %s' % (
         index + 1, len(contrasts), contrast_id)
-    contrast_path = op.join(swd, '%s_z_map.nii' % contrast_id)
+    contrast_path = op.join(write_dir, '%s_z_map.nii' % contrast_id)
     write_array = mask_array.astype(np.float)
-    z_values = st.norm.isf(st.t.sf(output[contrast_id]['t'], result.df_resid))
-    write_array[mask_array] = z_values
-    contrast_image = Nifti1Image(write_array, fmri_image.get_affine())
+    write_array[mask_array] = results.contrast(contrast_val).z_score()
+    contrast_image = Nifti1Image(write_array, affine)
     save(contrast_image, contrast_path)
-    affine = fmri_image.get_affine()
 
     vmax = max(- write_array.min(), write_array.max())
     plot_map(write_array, affine,
@@ -181,9 +150,9 @@ for index, contrast_id in enumerate(contrasts):
              vmin=- vmax,
              vmax=vmax,
              anat=None,
-             figure=10,
+             figure=1,
              threshold=2.5)
-    pylab.savefig(op.join(swd, '%s_z_map.png' % contrast_id))
+    pylab.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
     pylab.clf()
 
 
@@ -191,7 +160,7 @@ for index, contrast_id in enumerate(contrasts):
 # End
 #########################################
 
-print "All the  results were witten in %s" % swd
+print "All the  results were witten in %s" % write_dir
 
 plot_map(write_array, affine,
                 cmap=cm.cold_hot,
