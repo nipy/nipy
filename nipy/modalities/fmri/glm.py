@@ -10,15 +10,17 @@ It is important to note that the GLM is meant as a one-session
 General Linear Model. But inference can be performed on multiple sessions
 by computing fixed effects on contrasts
 
-
->>> from nipy.modalities.fmri.glm import GLM
+>>> from nipy.modalities.fmri.glm import glm_fit
 >>> import numpy as np
 >>> n, p, q = 100, 80, 10
 >>> X, Y = np.random.randn(p, q), np.random.randn(p, n)
->>> GLMResult = GLM(X).fit(Y)
->>> cval = np.hstack((1, np.ones(9)))
->>> z_vals = GLMResult.contrast(cval).z_score()
->>> print z_vals.mean(), z_vals.std()
+>>> GLMResult = glm_fit(X, Y)
+>>> cval = np.hstack((1, np.zeros(9)))
+>>> z_vals = GLMResult.contrast(cval).z_score() # z-transformed statistics
+>>> # fixed effects statistics across two contrasts
+>>> cval_ = cval.copy()
+>>> np.random.shuffle(cval_)
+>>> z_ffx = (GLMResult.contrast(cval) + GLMResult.contrast(cval_)).z_score()
 """
 
 import numpy as np
