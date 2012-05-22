@@ -19,10 +19,6 @@ by computing fixed effects on contrasts
 >>> cval = np.hstack((1, np.ones(9)))
 >>> z_vals = GLMResult.contrast(cval).z_score()
 >>> print z_vals.mean(), z_vals.std()
-
-fixme
------
-a bug in mahalanobis
 """
 
 import numpy as np
@@ -148,11 +144,9 @@ class GLMResults(object):
                 resl = self.results[l].Fcontrast(c)
                 effect_[:, self.labels == l] = resl.effect
                 var_[:, :, self.labels == l] = resl.covariance
-        con = Contrast(dim, contrast_type)
-        con.effect = effect_
-        con.variance = var_
-        con.dof = self.results[l].df_resid
-        return con
+        dof_ = self.results[l].df_resid
+        return Contrast(effect=effect_, variance=var_, dof=dof_, 
+                        contrast_type=contrast_type)
 
 
 class Contrast(object):
@@ -166,16 +160,32 @@ class Contrast(object):
     (high-dimensional F constrasts may lead to memory breakage)
     """
 
-    def __init__(self, dim=1, contrast_type='t', tiny=DEF_TINY, 
-                 dofmax=DEF_DOFMAX):
+    def __init__(self, effect, variance, dof=DEF_DOFMAX, contrast_type='t', 
+                 tiny=DEF_TINY, dofmax=DEF_DOFMAX):
         """
         Parameters
         ==========
+        effect: array of shape (dim, n_voxels)
+                the effects related to the contrast
+        variance: array of shape (dim, dim, n_voxels)
+                  the associated variance estimate
+        dof: scalar, the degrees of freedom
         dim: int, the dimension of the contrast
         """
-        self.dim = dim
-        self.effect, self.variance, self.dof = None, None, None
-        if dim > 1 and contrast_type is 't':
+        if variance.ndim != 3:
+            raise ValueError('Variance array should have 3 dimensions')
+        if effect.ndim != 2:
+            raise ValueError('Variance array should have 2 dimensions')
+        if variance.shape[0] != variance.shape[1]:
+            raise ValueError('Inconsistant shape for the variance estimate')
+        if ((variance.shape[1] != effect.shape[0]) or 
+            (variance.shape[2] != effect.shape[1])):
+            raise ValueError('Effect and variance have inconsistant shape')
+        self.effect = effect
+        self.variance = variance
+        self.dof = float(dof)
+        self.dim = effect.shape[0]
+        if self.dim > 1 and contrast_type is 't':
             print 'Automatically converted multi-dimensional t to F contrast'
             contrast_type = 'F'
         self.contrast_type = contrast_type
@@ -210,8 +220,7 @@ class Contrast(object):
                 self.effect = self.effect[np.newaxis]
             if self.variance.ndim == 1:
                 self.variance = self.variance[np.newaxis, np.newaxis]
-            stat = mahalanobis(self.effect - baseline, np.maximum(
-                    self.variance, self.tiny)) / self.dim
+            stat = mahalanobis(self.effect - baseline, self.variance) / self.dim
         # Case: tmin (conjunctions)
         elif self.contrast_type == 'tmin':
             vdiag = self.variance.reshape([self.dim ** 2] + list(
@@ -270,22 +279,21 @@ class Contrast(object):
         if self.dim != other.dim:
             raise ValueError(
                 'The two contrasts do not have compatible dimensions')
-        con = Contrast(self.dim)
-        con.contrast_type = self.contrast_type
-        con.effect = self.effect + other.effect
-        con.variance = self.variance + other.variance
-        con.dof = self.dof + other.dof
-        return con
+        effect_ = self.effect + other.effect
+        variance_ = self.variance + other.variance
+        dof_ = self.dof + other.dof
+        return Contrast(effect=effect_, variance=variance_, dof=dof_, 
+                        contrast_type=self.contrast_type)
+
 
     def __rmul__(self, scalar):
         """Multiplication of the contrast by a scalar"""
         scalar = float(scalar)
-        con = Contrast(self.dim)
-        con.contrast_type = self.contrast_type
-        con.effect = self.effect * scalar
-        con.variance = self.variance * scalar ** 2 
-        con.dof = self.dof
-        return con
+        effect_ = self.effect * scalar
+        variance_ = self.variance * scalar ** 2 
+        dof_ = self.dof
+        return Contrast(effect=effect_, variance=variance_, dof=dof_, 
+                        contrast_type=self.contrast_type)
 
     __mul__ = __rmul__
 

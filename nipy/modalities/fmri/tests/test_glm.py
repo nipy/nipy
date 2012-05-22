@@ -126,7 +126,7 @@ def test_F_contrast_calues():
     F_ref = result.results.values()[0].Fcontrast(cval).F
     # Note that the values are not strictly equal, 
     # this seems to be related to a bug in Mahalanobis
-    assert_almost_equal(np.ravel(con.stat()), F_ref, 1)
+    assert_almost_equal(np.ravel(con.stat()), F_ref, 3)
 
 def test_tmin():
     result, n, p, q = ar1_glm(n=1)
