@@ -6,8 +6,8 @@ nipy.algorithms.statistics.models.regression
 It contains the GLM and contrast classes that are meant to be the main objects
 of fMRI data analyses.
 
-It is important to note that the GLM is meant as a one-session 
-General Linear Model. But inference can be performed on multiple sessions 
+It is important to note that the GLM is meant as a one-session
+General Linear Model. But inference can be performed on multiple sessions
 by computing fixed effects on contrasts
 
 
@@ -32,21 +32,21 @@ DEF_DOFMAX = 1e10
 
 
 def glm_fit(X, Y, model='ar1', steps=100):
-    """ GLM fitting of a dataset using 'ols' regression or the two-pass 
+    """ GLM fitting of a dataset using 'ols' regression or the two-pass
 
     Parameters
     ----------
-    X: array of shape(n_time_points, n_regressors),  
+    X: array of shape(n_time_points, n_regressors),
        the design matrix
     Y: array of shape(n_time_points, n_samples), the fMRI data
-    model: string, to be chosen in ['ar1', 'ols'], optional, 
-           the temporal variance model. Defaults to 'ar1' 
+    model: string, to be chosen in ['ar1', 'ols'], optional,
+           the temporal variance model. Defaults to 'ar1'
     steps: int, optional,
            Maximum number of discrete steps for the AR(1) coef histogram
 
     Returns
     -------
-    result: a GLMResults instance yielding the result of the GLM 
+    result: a GLMResults instance yielding the result of the GLM
     """
     if model not in ['ar1', 'ols']:
         raise ValueError('Unknown model')
@@ -56,7 +56,7 @@ def glm_fit(X, Y, model='ar1', steps=100):
 
     if Y.shape[0] != X.shape[0]:
         raise ValueError('Response and predictors are inconsistent')
-        
+
     # fit the OLS model
     ols_result = OLSModel(X).fit(Y)
 
@@ -93,35 +93,46 @@ class GLMResults(object):
         ----------
         glm_results: dictionary of  nipy.fixes.scipy.stats.models.regression,
                      describing results of a GLM fit
-        labels: array of shape(n_voxels), 
+        labels: array of shape(n_voxels),
                 labels that associate each voxel with a results key
         """
         if glm_results.keys().sort() != labels.copy().sort():
             raise ValueError('results and labels are inconsistant')
+
+        n_voxels = sum([grv.theta.shape[1] for grv in glm_results.values()])
+        if labels.size != n_voxels:
+            raise ValueError('The results do not match the labels size')
+
+        dim = glm_results.values()[0].theta.shape[0]
+        if np.array([grv.theta.shape[0] != dim
+                     for grv in glm_results.values()]).any():
+            raise ValueError('The models do not have consistant dimension')
+
         self.results = glm_results
         self.labels = labels
         # fixme: check that the number of voxels corresponds 
         # to the number of items in glm_results
 
-    def contrast(self, c, contrast_type=None):
+    def contrast(self, con_val, contrast_type=None):
         """ Specify and estimate a linear contrast
-        
+
         Parameters
         ----------
-        c: numpy.ndarray of shape (p) or (q, p),
-           where q = number of contrast vectors and p = number of regressors
-        contrast_type: string, optional, either 't' or 'F', 
+        con_val: numpy.ndarray of shape (p) or (q, p),
+                 where q = number of contrast vectors
+                 and p = number of regressors
+        contrast_type: string, optional, either 't' or 'F',
                        type of the contrast
-        
+
         Returns
         -------
         con: Contrast instance
         """
-        c = np.asarray(c)
-        if c.ndim == 1:
+        con_val = np.asarray(con_val)
+        if con_val.ndim == 1:
             dim = 1
         else:
-            dim = c.shape[0]
+            dim = con_val.shape[0]
         if contrast_type is None:
             if dim == 1:
                 contrast_type = 't'
@@ -129,38 +140,38 @@ class GLMResults(object):
                 contrast_type = 'F'
         if contrast_type not in ['t', 'F']:
             raise ValueError('Unknown contrast type: %s' % contrast_type)
-        
+
         effect_ = np.zeros((dim, self.labels.size), dtype=np.float)
         var_ = np.zeros((dim, dim, self.labels.size), dtype=np.float)
         #stat_ = np.zeros(self.labels.size, dtype=np.float)
         if contrast_type == 't':
             for l in self.results.keys():
-                resl = self.results[l].Tcontrast(c)
+                resl = self.results[l].Tcontrast(con_val)
                 effect_[:, self.labels == l] = resl.effect.T
                 var_[:, :, self.labels == l] = (resl.sd ** 2).T
                 #stat_[self.labels == l] = resl.t
         else:
             for l in self.results.keys():
-                resl = self.results[l].Fcontrast(c)
+                resl = self.results[l].Fcontrast(con_val)
                 effect_[:, self.labels == l] = resl.effect
                 var_[:, :, self.labels == l] = resl.covariance
         dof_ = self.results[l].df_resid
-        return Contrast(effect=effect_, variance=var_, dof=dof_, 
+        return Contrast(effect=effect_, variance=var_, dof=dof_,
                         contrast_type=contrast_type)
 
 
 class Contrast(object):
     """ The contrast class handles the estimation of statistical contrasts
     After application of the GLM.
-    The important feature is that it supports addition, 
+    The important feature is that it supports addition,
     thus opening the possibility of fixed-effects models.
-    
-    The current implementation is meant to be simple, 
-    and could be enhanced in the future on the computational side 
+
+    The current implementation is meant to be simple,
+    and could be enhanced in the future on the computational side
     (high-dimensional F constrasts may lead to memory breakage)
     """
 
-    def __init__(self, effect, variance, dof=DEF_DOFMAX, contrast_type='t', 
+    def __init__(self, effect, variance, dof=DEF_DOFMAX, contrast_type='t',
                  tiny=DEF_TINY, dofmax=DEF_DOFMAX):
         """
         Parameters
@@ -178,7 +189,7 @@ class Contrast(object):
             raise ValueError('Variance array should have 2 dimensions')
         if variance.shape[0] != variance.shape[1]:
             raise ValueError('Inconsistant shape for the variance estimate')
-        if ((variance.shape[1] != effect.shape[0]) or 
+        if ((variance.shape[1] != effect.shape[0]) or
             (variance.shape[2] != effect.shape[1])):
             raise ValueError('Effect and variance have inconsistant shape')
         self.effect = effect
@@ -198,7 +209,7 @@ class Contrast(object):
     def stat(self, baseline=0.0):
         """ Return the decision statistic associated with the test of the
         null hypothesis: (H0) 'contrast equals baseline'
-        
+
         Parameters
         ==========
         baseline: float, optional,
@@ -220,7 +231,8 @@ class Contrast(object):
                 self.effect = self.effect[np.newaxis]
             if self.variance.ndim == 1:
                 self.variance = self.variance[np.newaxis, np.newaxis]
-            stat = mahalanobis(self.effect - baseline, self.variance) / self.dim
+            stat = (mahalanobis(self.effect - baseline, self.variance)
+                    / self.dim)
         # Case: tmin (conjunctions)
         elif self.contrast_type == 'tmin':
             vdiag = self.variance.reshape([self.dim ** 2] + list(
@@ -260,7 +272,7 @@ class Contrast(object):
     def z_score(self, baseline=0.0):
         """Return a parametric estimation of the z-score associated
         with the null hypothesis: (H0) 'contrast equals baseline'
-        
+
         Parameters
         ==========
         baseline: float, optional,
@@ -273,6 +285,7 @@ class Contrast(object):
         return zscore(self.p_value_)
 
     def __add__(self, other):
+        """Addition of selfwith others, Yields an new Contrast instance"""
         if self.contrast_type != other.contrast_type:
             raise ValueError(
                 'The two contrasts do not have consistant type dimensions')
@@ -282,17 +295,16 @@ class Contrast(object):
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
         dof_ = self.dof + other.dof
-        return Contrast(effect=effect_, variance=variance_, dof=dof_, 
+        return Contrast(effect=effect_, variance=variance_, dof=dof_,
                         contrast_type=self.contrast_type)
-
 
     def __rmul__(self, scalar):
         """Multiplication of the contrast by a scalar"""
         scalar = float(scalar)
         effect_ = self.effect * scalar
-        variance_ = self.variance * scalar ** 2 
+        variance_ = self.variance * scalar ** 2
         dof_ = self.dof
-        return Contrast(effect=effect_, variance=variance_, dof=dof_, 
+        return Contrast(effect=effect_, variance=variance_, dof=dof_,
                         contrast_type=self.contrast_type)
 
     __mul__ = __rmul__

@@ -175,7 +175,7 @@ class LikelihoodModelResults(object):
                     value(s) for the dispersion parameters
         other:array of shape (dim, self.theta.shape[0]), optional
               alternative contrast specification (?)
-        
+
         Returns
         =======
         cov: array of shape(dim, dim) or (n_voxels, dim, dim),
@@ -257,7 +257,6 @@ class LikelihoodModelResults(object):
         return TContrastResults(effect=st_effect, t=st_t, sd=st_sd,
                                 df_den=self.df_resid)
 
-
     def Fcontrast(self, matrix, dispersion=None, invcov=None):
         """
         Compute an Fcontrast for a contrast matrix.
@@ -288,7 +287,7 @@ class LikelihoodModelResults(object):
         -------
         f_res : ``FContrastResults`` instance
             with attributes F, df_den, df_num
-        
+
         Note
         ----
         For F contrasts, we now specify an effect and covariance
@@ -314,7 +313,7 @@ class LikelihoodModelResults(object):
         F = np.squeeze(F)
         return FContrastResults(
             effect=ctheta, covariance=self.vcov(
-                matrix=matrix, dispersion=dispersion[np.newaxis]), 
+                matrix=matrix, dispersion=dispersion[np.newaxis]),
             F=F, df_den=self.df_resid, df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):
@@ -418,4 +417,4 @@ class FContrastResults(object):
 
     def __str__(self):
         return '<F contrast: F=%s, df_den=%d, df_num=%d>' % \
-            (`self.F`, self.df_den, self.df_num)
+            (repr(self.F), self.df_den, self.df_num)

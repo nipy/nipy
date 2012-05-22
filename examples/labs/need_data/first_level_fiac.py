@@ -20,18 +20,18 @@ from nipy.labs.viz import plot_map, cm
 # --------- Get the data -----------------------------------
 #-----------------------------------------------------------
 
-fmri_files = [example_data.get_filename('fiac', 'fiac0', run) 
+fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
               for run in ['run1.nii.gz', 'run2.nii.gz']]
-design_files = [example_data.get_filename('fiac', 'fiac0', run) 
+design_files = [example_data.get_filename('fiac', 'fiac0', run)
                 for run in ['run1_design.npz', 'run2_design.npz']]
-mask_file = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz') 
+mask_file = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
 affine = load(mask_file).get_affine()
 
 # Get design matrix as numpy array
 print('Loading design matrices...')
 X = [np.load(f)['X'] for f in design_files]
 
-# Get multi-session fMRI data 
+# Get multi-session fMRI data
 print('Loading fmri data...')
 Y = [load(f) for f in fmri_files]
 
@@ -40,28 +40,31 @@ print('Loading mask...')
 mask = load(mask_file)
 mask_array = mask.get_data() > 0
 
-# GLM fitting 
+# GLM fitting
 print('Starting fit...')
 results = []
 for x, y in zip(X, Y):
     data = y.get_data()[mask_array].T
     mean = data.mean(0)
-    data = 100 * (data / mean  - 1)
+    data = 100 * (data / mean - 1)
     results.append(glm_fit(x, data))
 
 # make a mean volume for display
 wmean = mask_array.astype(np.int16)
 wmean[mask_array] = mean
 
+
 def make_fiac_contrasts():
     """Specify some constrasts for the FIAC experiment"""
     con = {}
     # the design matrices of bothe sessions comprise 13 columns
-    # the first 5 columns of the design matrices correpond to the following 
+    # the first 5 columns of the design matrices correpond to the following
     # conditions: ["SSt-SSp", "SSt-DSp", "DSt-SSp", "DSt-DSp", "FirstSt"]
     p = 13
+
     def length_p_vector(con, p):
         return np.hstack((con, np.zeros(p - len(con))))
+
     con["SStSSp_minus_DStDSp"] = length_p_vector([1, 0, 0, - 1], p)
     con["DStDSp_minus_SStSSp"] = length_p_vector([- 1, 0, 0, 1], p)
     con["DSt_minus_SSt"] = length_p_vector([- 1, - 1, 1, 1], p)
@@ -82,7 +85,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         index + 1, len(contrasts), contrast_id)
     contrast_path = op.join(write_dir, '%s_z_map.nii' % contrast_id)
     write_array = mask_array.astype(np.float)
-    ffx_z_map = (results[0].contrast(contrast_val) + 
+    ffx_z_map = (results[0].contrast(contrast_val) +
                  results[1].contrast(contrast_val)).z_score()
     write_array[mask_array] = ffx_z_map
     contrast_image = Nifti1Image(write_array, affine)
@@ -95,7 +98,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
              vmin=- vmax,
              vmax=vmax,
              figure=1,
-             threshold=2.5, 
+             threshold=2.5,
              black_bg=True)
     pylab.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
     pylab.clf()
