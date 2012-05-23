@@ -65,7 +65,14 @@ def randimg_in2out(rng, in_dtype, out_dtype, name):
     if in_dtype.kind in 'iu':
         info = np.iinfo(in_dtype)
         dmin, dmax = info.min, info.max
-        data = rng.randint(dmin, dmax, size=shape)
+        # Numpy bug for np < 1.6.0 allows overflow for range that does not fit
+        # into C long int (int32 on 32-bit, int64 on 64-bit)
+        try:
+            data = rng.randint(dmin, dmax, size=shape)
+        except ValueError:
+            from random import randint
+            vals = [randint(dmin, dmax) for v in range(np.prod(shape))]
+            data = np.array(vals).astype(in_dtype).reshape(shape)
     elif in_dtype.kind == 'f':
         info = np.finfo(in_dtype)
         dmin, dmax = info.min, info.max
