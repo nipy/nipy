@@ -60,8 +60,8 @@ class FDR(object):
         ----------
         pv: array of p-values
         """
-        if pv is not None:
-            self.pv = self.check_pv(pv)
+        self.pv = self.check_pv(pv)
+
 
     def all_fdr(self, pv=None, verbose=0):
         """ Returns the fdr associated with each the values
@@ -82,13 +82,13 @@ class FDR(object):
         if pv == None:
             return None
         n = np.size(pv)
-        isx = np.argsort(pv)
+        isx = np.argsort(pv)            # sorting indices to populate q later on
         q = np.zeros(n)
-        for ip in range(n):
-            q[isx[ip]] = np.minimum(1, np.maximum(n * pv[isx[ip]] / (ip + 1),
-                                                  q[isx[ip]]))
+        for ip, ips in enumerate(isx):
+            q_new = n * pv[ips] / (ip + 1)
+            q[ips] = np.minimum(1, np.maximum(q_new, q[ips]))
             if (ip < n - 1):
-                q[isx[ip + 1]] = q[isx[ip]]
+                q[isx[ip + 1]] = q[ips]
 
         if verbose:
             import matplotlib.pylab as mp
@@ -112,16 +112,16 @@ class FDR(object):
         """
         if pv is None:
             return None
-        pv = np.squeeze(pv)
+        # Take all elements unfolded and assure having at least 1d
+        pv = np.atleast_1d(np.ravel(pv))
+        if np.any(np.isnan(pv)):
+            raise ValueError("%d values are NaN" % (sum(np.isnan(pv))))
         if pv.min() < 0:
-            print pv.min()
-            raise ValueError("Negative p-values")
+            raise ValueError("Negative p-values. Min=%g" % (pv.min(),))
         if pv.max() > 1:
-            print pv.max()
-            raise ValueError("P-values greater than 1!")
-        if np.isscalar(pv):
-            pv = np.array([pv])
+            raise ValueError("P-values greater than 1! Max=%g" % (pv.max(),))
         return pv
+
 
     def pth_from_pvals(self, pv=None, alpha=0.05):
         """ Returns the critical p-value associated with an FDR alpha
@@ -132,7 +132,7 @@ class FDR(object):
             The samples p-value
         alpha : float, optional
             The desired FDR significance
-        
+
         Returns
         -------
         pth: float
@@ -146,13 +146,13 @@ class FDR(object):
         npv = np.size(pv)
         pcorr = alpha / npv
         spv = np.sort(pv)
-        ip = 0
         pth = 0.
-        while (spv[ip] < pcorr * (ip + 1)) & (ip < npv):
-            pth = spv[ip]
-            ip += 1
+        for ip, sp in enumerate(spv):
+            if sp > pcorr * (ip + 1):
+                break
+            pth = sp
         return pth
-    
+
 
 class NormalEmpiricalNull(object):
     """Class to compute the empirical null normal fit to the data.
