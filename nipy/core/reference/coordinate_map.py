@@ -1692,14 +1692,13 @@ def drop_io_dim(cm, axis_id, fix0=True):
         Affine coordinate map instance
     axis_id : int or str
         If int, gives index of *input* axis to drop.  If str, gives name of
-        input *or* output dimension to drop. When specifying an input axis: if
-        given input axis does not affect any output axes, just drop input axis.
-        If input axis affects more than out output axis, raise an AxisError.  If
+        input *or* output axis to drop. When specifying an input axis: if given
+        input axis does not affect any output axes, just drop input axis.  If
         input axis affects only one output axis, drop both input and
-        corresponding output.  Mutatis mutandis when specifying an output axis.
-        If `axis_id` is a str, it must be unambiguous - if the named axis exists
-        in both input and output, and they do not correspond, raises a
-        AxisError.
+        corresponding output.  Similarly when specifying an output axis.  If
+        `axis_id` is a str, it must be unambiguous - if the named axis exists in
+        both input and output, and they do not correspond, raises a AxisError.
+        See Raises section for checks
     fix0: bool, optional
         Whether to fix potential 0 TR in affine
 
@@ -1707,6 +1706,15 @@ def drop_io_dim(cm, axis_id, fix0=True):
     -------
     cm_redux : Affine
         Affine coordinate map with orthogonal input + output dimension dropped
+
+    Raises
+    ------
+    AxisError: if `axis_id` is a str and does not match any no input or output
+        coordinate names.
+    AxisError: if specified `axis_id` affects more than a single input / output
+        axis.
+    AxisError: if the named `axis_id` exists in both input and output, and they
+        do not correspond.
 
     Examples
     --------
