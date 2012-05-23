@@ -1646,30 +1646,40 @@ def _product_affines(*affine_mappings):
         M)
 
 
-def drop_io_dim(cm, name):
-    ''' Drop dimension from coordinate map, if orthogonal to others
+class AxisError(Exception):
+    """ Error for incorrect axis selection """
 
-    Drops both input and corresponding output dimension.  Thus there
-    should be a corresponding input dimension for a selected output
-    dimension, or a corresponding output dimension for an input
-    dimension.
+
+def drop_io_dim(cm, axis_id, fix0=True):
+    ''' Drop dimensions `axis_id` from coordinate map, if orthogonal to others
+
+    If you specify an input dimension, drop that dimension and any corresponding
+    output dimension, as long as all other outputs are orthogonal to dropped
+    input.  If you specify an output dimension, drop that dimension and any
+    corresponding input dimension, as long as all other inputs are orthogonal
+    to dropped output.
 
     Parameters
     ----------
     cm : Affine
-       Affine coordinate map instance
-    name : str
-       Name of input or output dimension to drop.  If this is an input
-       dimension, there must be a corresponding output dimension with
-       the same index, and vica versa.  The check for orthogonality
-       ensures that the input and output dimensions are only related to
-       each other, and not to the other dimensions.
+        Affine coordinate map instance
+    axis_id : int or str
+        If int, gives index of *input* axis to drop.  If str, gives name of
+        input *or* output dimension to drop. When specifying an input axis: if
+        given input axis does not affect any output axes, just drop input axis.
+        If input axis affects more than out output axis, raise an AxisError.  If
+        input axis affects only one output axis, drop both input and
+        corresponding output.  Mutatis mutandis when specifying an output axis.
+        If `axis_id` is a str, it must be unambiguous - if the named axis exists
+        in both input and output, and they do not correspond, raises a
+        AxisError.
+    fix0: bool, optional
+        Whether to fix potential 0 TR in affine
 
     Returns
     -------
     cm_redux : Affine
-       Affine coordinate map with orthogonal input + output dimension
-       dropped
+        Affine coordinate map with orthogonal input + output dimension dropped
 
     Examples
     --------
@@ -1683,30 +1693,41 @@ def drop_io_dim(cm, name):
            [ 0.,  0.,  3.,  0.],
            [ 0.,  0.,  0.,  1.]])
     '''
+    # Implicit check for affine-type coordinate map
     aff = cm.affine.copy()
     in_dims = list(cm.function_domain.coord_names)
     out_dims = list(cm.function_range.coord_names)
-    try:
-        in_dim = in_dims.index(name)
-    except ValueError:
-        try:
+    in_dim, out_dim, name = None, None, None
+    if isinstance(axis_id, int): # Integer axis, always input axis
+        # Integers are always input indices
+        in_dim = axis_id if axis_id >=0 else len(in_dims) + axis_id
+    elif isinstance(axis_id, basestring):
+        name = axis_id
+        if name in in_dims:
+            in_dim = in_dims.index(name)
+        elif name in out_dims:
             out_dim = out_dims.index(name)
-        except ValueError:
-            raise ValueError('No input or output dimension '
-                             'with name (%s)' % name)
-        else: # found out dimension, get in dimension
-            in_dim, msg  = _matching_orth_dim(out_dim, aff)
-    else: # found in dimension, get out dimension
-        out_dim, msg = _matching_orth_dim(in_dim, aff.T)
-    if None in (in_dim, out_dim):
-        raise ValueError(msg)
-    in_dims.pop(in_dim)
-    out_dims.pop(out_dim)
+        else:
+            raise AxisError('No input or output dimension with name (%s)' %
+                            name)
+    # Apply zero scaling fix if required
+    test_aff = _fix0(aff) if fix0 else aff
+    if out_dim is None:
+        out_dim = _matching_orth_dim(in_dim, test_aff.T)
+        if name and name in out_dims and out_dims[out_dim] != name:
+            raise AxisError("Axis name %s present in input and output, "
+                            "but the axes do not correspond" % name)
+    else: # found out dimension, get in dimension
+        in_dim  = _matching_orth_dim(out_dim, test_aff)
     M, N = aff.shape
     rows = range(M)
     cols = range(N)
-    rows.pop(out_dim)
-    cols.pop(in_dim)
+    if not in_dim is None:
+        in_dims.pop(in_dim)
+        cols.pop(in_dim)
+    if not out_dim is None:
+        out_dims.pop(out_dim)
+        rows.pop(out_dim)
     aff = aff[rows]
     aff = aff[:,cols]
     return AffineTransform.from_params(in_dims, out_dims, aff)
@@ -1715,67 +1736,91 @@ def drop_io_dim(cm, name):
 def _matching_orth_dim(out_i, aff):
     ''' Find matching more or less orthogonal direction in affine
 
-    If the corresponding affine row is all 0, and it is the only row
-    that is all 0, then assume this is a 0 scaling rather than a dropped
-    input coordinate, and work out which input coordinate (if any)
-    remains to be claimed.
+    If no input rows will affect the `out_i` dimension of the output, then
+    return None, because `out_i` is orthogonal to all the inputs.  If only one
+    input row affects the output, return the index of this row.  If more than
+    one input row affects the output, raise an AxisError.
 
     Parameters
     ----------
     out_i : int
-       Output (range) dimension
+        Output (range) dimension
     aff : (M, N) array
-       homogenous affine
+        homogenous affine.  We only use the ``aff[:M-1, :N-1]``
 
     Returns
     -------
     in_i : None or int
        Matching orthogonal input (domain) dimension.  None if none
        matching.
-    msg : str
-       If `in_i` is None, `msg` returns informative message as to reason
-       for failure to find matching index.
 
     Examples
     --------
     >>> aff = np.diag([1, 2, 3, 4, 1])
     >>> _matching_orth_dim(1, aff)
-    (1, '')
+    1
     >>> aff = np.array([[0, 0, 0, 1, 10],
     ...                 [0, 0, 2, 0, 11],
     ...                 [0, 3, 0, 0, 12],
     ...                 [4, 0, 0, 0, 13],
     ...                 [0, 0, 0, 0, 1]])
     >>> _matching_orth_dim(1, aff)
-    (2, '')
+    2
     '''
     rzs = aff[:-1,:-1]
     M, N = rzs.shape
-    if out_i >= M:
-        raise ValueError('%d row number is too high' % out_i)
     out_row = rzs[out_i]
-    if np.allclose(out_row, 0):
-        # zeros - is this zero scaling?
-        msg = 'zeros in corresponding affine entries'
-        # check for other zero rows - return failure if so
-        out_rows = range(M)
-        out_rows.pop(out_i)
-        for i in out_rows:
-            if np.allclose(rzs[i], 0):
-                # another near zero row
-                return None, msg + ' and other zero rows/cols'
-        # what rows have been claimed already?
-        ornt = io_orientation(aff[out_rows + [M]].T)
-        candidates = set(range(N)) - set(ornt[:,0])
-        if len(candidates) == 1:
-            return candidates.pop(), ''
-        return None, ' and corresponding index is ambiguous'
+    if np.all(out_row == 0): # No input dimensions affect this output
+        return None
     in_i = np.argmax(np.abs(out_row))
-    sel = range(N)
-    sel.pop(in_i)
-    if not np.allclose(out_row[sel], 0):
-        return None, 'no corresponding orthogonal dimension'
-    return in_i, ''
+    val = out_row[in_i]
+    # Rest of this row and column close to zero - OK
+    if np.allclose([np.sum(out_row), np.sum(rzs[:,in_i])], val):
+        return in_i
+    raise AxisError('More than one corresponding dimension')
+
+
+def _fix0(aff):
+    """ Fix possible 0 time scaling from 0 TR
+
+    Look in matrix part of affine (3, 3) in a (4, 4) affine).  If there is
+    exactly one row and exactly one column in this part of the affine that are
+    all exactly zero, assume this is a 0 scaling from a 0 TR in the header, and
+    fix corresponding row, column index to 1.
+
+    Parameters
+    ----------
+    aff : (M, N) array-like
+        affine
+
+    Returns
+    -------
+    fixed_aff : (M, N) affine
+        which will be `aff` if no fix, and a new affine if fixed, with a 1
+        instead of the zero in the offending row and column
+
+    Examples
+    --------
+    >>> _fix0(np.diag([1, 2, 3, 0]))
+    array([[1, 0, 0, 0],
+           [0, 2, 0, 0],
+           [0, 0, 3, 0],
+           [0, 0, 0, 0]])
+    >>> _fix0(np.diag([1, 0, 3, 0]))
+    array([[1, 0, 0, 0],
+           [0, 1, 0, 0],
+           [0, 0, 3, 0],
+           [0, 0, 0, 0]])
+    """
+    aff = np.asarray(aff)
+    zeros = aff[:-1, :-1] == 0
+    zrs = np.where(np.all(zeros, axis=1))[0]
+    zcs = np.where(np.all(zeros, axis=0))[0]
+    if len(zrs) != 1 or len(zcs) != 1:
+        return aff
+    fixed_aff = aff.copy()
+    fixed_aff[zrs[0], zcs[0]] = 1
+    return fixed_aff
 
 
 def append_io_dim(cm, in_name, out_name, start=0, step=1):
