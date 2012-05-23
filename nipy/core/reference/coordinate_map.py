@@ -450,6 +450,18 @@ class CoordinateMap(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def similar_to(self, other):
+        """ Does `other` have similar coordinate systems and same mappings?
+
+        A "similar" coordinate system is one with the same coordinate names and
+        data dtype, but ignoring the coordinate system name.
+        """
+        return (isinstance(other, self.__class__)
+                and (self.function == other.function)
+                and (self.function_domain.similar_to(other.function_domain))
+                and (self.function_range.similar_to(other.function_range))
+                and (self.inverse_function == other.inverse_function))
+
 
 class AffineTransform(object):
     """ Class for affine transformation from domain to a range
@@ -916,9 +928,13 @@ class AffineTransform(object):
                                self.affine.copy())
 
     def __repr__(self):
-        return "AffineTransform(\n   function_domain=%s,\n   function_range=%s,\n   affine=%s\n)" % (self.function_domain,
-                                                                                                     self.function_range,
-                                                                                                     '\n          '.join(repr(self.affine).split('\n')))
+        return ("AffineTransform(\n"
+                "   function_domain=%s,\n"
+                "   function_range=%s,\n"
+                "   affine=%s\n)" %
+                (self.function_domain,
+                 self.function_range,
+                 '\n          '.join(repr(self.affine).split('\n'))))
 
     def __eq__(self, other):
         test1, test2, test3, test4 =(isinstance(other, self.__class__),
@@ -932,6 +948,17 @@ class AffineTransform(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def similar_to(self, other):
+        """ Does `other` have similar coordinate systems and same mappings?
+
+        A "similar" coordinate system is one with the same coordinate names and
+        data dtype, but ignoring the coordinate system name.
+        """
+        return (isinstance(other, self.__class__)
+                and (self.function_domain.similar_to(other.function_domain))
+                and (self.function_range.similar_to(other.function_range))
+                and np.allclose(self.affine, other.affine))
 
 ####################################################################################
 #

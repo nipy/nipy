@@ -6,7 +6,8 @@ from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,
                                  is_coordsys,
                                  product, safe_dtype)
 
-from nose.tools import assert_true, assert_equal, assert_raises, assert_false
+from nose.tools import (assert_true, assert_false, assert_equal, assert_raises,
+                        assert_not_equal)
 
 
 class empty(object):
@@ -100,8 +101,27 @@ def test__ne__():
 
 
 def test___eq__():
-    c1 = CoordinateSystem(E.cs.coord_names, E.cs.name, E.coord_dtype)
-    assert_equal(c1, E.cs)
+    c0 = CoordinateSystem('ijk', 'my name', np.float32)
+    c1 = CoordinateSystem('ijk', 'my name', np.float32)
+    assert_equal(c0, c1)
+    c2 = CoordinateSystem('ijk', 'another name', np.float32)
+    assert_not_equal(c0, c2)
+    c3 = CoordinateSystem('ijq', 'my name', np.float32)
+    assert_not_equal(c0, c3)
+    c4 = CoordinateSystem('ijk', 'my name', np.float64)
+    assert_not_equal(c0, c4)
+
+
+def test_similar_to():
+    c0 = CoordinateSystem('ijk', 'my name', np.float32)
+    c1 = CoordinateSystem('ijk', 'my name', np.float32)
+    assert_true(c0.similar_to(c1))
+    c2 = CoordinateSystem('ijk', 'another name', np.float32)
+    assert_true(c0.similar_to(c2))
+    c3 = CoordinateSystem('ijq', 'my name', np.float32)
+    assert_false(c0.similar_to(c3))
+    c4 = CoordinateSystem('ijk', 'my name', np.float64)
+    assert_false(c0.similar_to(c4))
 
 
 def test___str__():

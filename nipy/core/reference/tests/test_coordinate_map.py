@@ -212,6 +212,26 @@ def test__eq__():
     yield assert_false, A != B
 
 
+def test_similar_to():
+    in_cs = CoordinateSystem('ijk', 'in', np.float32)
+    in_cs2 = CoordinateSystem('ijk', 'another name', np.float32)
+    out_cs = CoordinateSystem('xyz', 'out', np.float32)
+    out_cs2 = CoordinateSystem('xyz', 'again another', np.float32)
+    for klass, arg0, arg1 in ((CoordinateMap,
+                               lambda x : x + 1, lambda x : x + 2),
+                             (AffineTransform,
+                              np.eye(4), np.diag([1, 2, 3, 1]))):
+        c0 = klass(in_cs, out_cs, arg0)
+        c1 = klass(in_cs, out_cs, arg0)
+        assert_true(c0.similar_to(c1))
+        c1b = klass(in_cs, out_cs, arg1)
+        assert_false(c0.similar_to(c1b))
+        c2 = klass(in_cs2, out_cs, arg0)
+        assert_true(c0.similar_to(c2))
+        c3 = klass(in_cs, out_cs2, arg0)
+        assert_true(c0.similar_to(c3))
+
+
 def test_isinvertible():
     yield assert_false, E.a.inverse()
     yield assert_true, E.b.inverse()
