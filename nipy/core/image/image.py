@@ -6,7 +6,7 @@ create Image instances and work on them:
 * fromarray : create an Image instance from an ndarray
 * subsample : slice an Image instance
 * rollaxis : roll an image axis backwards
-* synchonized_order : match coordinate systems between images
+* synchronized_order : match coordinate systems between images
 * is_image : test for an object obeying the Image API
 """
 import warnings
@@ -143,7 +143,7 @@ class Image(object):
         coordmap : `AffineTransform` object
             coordmap mapping the domain (input) voxel axes of the image to the
             range (reference, output) axes - usually mm in real world space
-        metadata : dict
+        metadata : dict, optional
             Freeform metadata for image.  Most common contents is ``header``
             from nifti etc loaded images.
 
@@ -182,19 +182,19 @@ class Image(object):
         Parameters
         ----------
         order : None, sequence, optional
-          sequence of int (giving indices) or str (giving names) -
-          expressing new order of coordmap output coordinates.  None
-          (the default) results in reversed ordering.
+            sequence of int (giving indices) or str (giving names) - expressing
+            new order of coordmap output coordinates.  None (the default)
+            results in reversed ordering.
 
         Returns
         -------
         r_img : object
-           Image of same class as `self`, with reordered output
-           coordinates.
+            Image of same class as `self`, with reordered output coordinates.
 
         Examples
         --------
-        >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6], 'domain', 'range')
+        >>> cmap = AffineTransform.from_start_step(
+        ...             'ijk', 'xyz', [1, 2, 3], [4, 5, 6], 'domain', 'range')
         >>> im = Image(np.empty((30,40,50)), cmap)
         >>> im_reordered = im.reordered_reference([2,0,1])
         >>> im_reordered.shape
@@ -224,19 +224,19 @@ class Image(object):
         Parameters
         ----------
         order : None, sequence, optional
-          sequence of int (giving indices) or str (giving names) -
-          expressing new order of coordmap output coordinates.  None
-          (the default) results in reversed ordering.
+            Sequence of int (giving indices) or str (giving names) - expressing
+            new order of coordmap output coordinates.  None (the default)
+            results in reversed ordering.
 
         Returns
         -------
         r_img : object
-           Image of same class as `self`, with reordered output
-           coordinates.
+            Image of same class as `self`, with reordered output coordinates.
 
         Examples
         --------
-        >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6], 'domain', 'range')
+        >>> cmap = AffineTransform.from_start_step(
+        ...             'ijk', 'xyz', [1, 2, 3], [4, 5, 6], 'domain', 'range')
         >>> cmap
         AffineTransform(
            function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=float64),
@@ -281,13 +281,13 @@ class Image(object):
 
         Parameters
         ----------
-        **names_dict : dict
-           with keys being old names, and values being new names
+        \*\*names_dict : dict
+            with keys being old names, and values being new names
 
         Returns
         -------
         newimg : Image
-           An Image with the same data, having its axes renamed.
+            An Image with the same data, having its axes renamed.
 
         Examples
         --------
@@ -307,14 +307,13 @@ class Image(object):
 
         Parameters
         ----------
-        **names_dict : dict
-           with keys being old names, and values being new names
+        \*\*names_dict : dict
+            with keys being old names, and values being new names
 
         Returns
         -------
         newimg : Image
-           An Image with the same data, having its output coordinates
-           renamed.
+            An Image with the same data, having its output coordinates renamed.
 
         Examples
         --------
@@ -664,9 +663,9 @@ def synchronized_order(img, target_img,
     Returns
     -------
     newimg : Image
-       An Image satisfying newimg.axes == target.axes (if axes == True), 
-       newimg.reference == target.reference (if reference == True).
-    
+        An Image satisfying newimg.axes == target.axes (if axes == True),
+        newimg.reference == target.reference (if reference == True).
+
     Examples
     --------
     >>> data = np.random.standard_normal((3,4,7,5))
@@ -682,10 +681,8 @@ def synchronized_order(img, target_img,
 
     >>> data2 = np.random.standard_normal((3,11,9,4))
     >>> im2 = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
-    >>> 
     >>> im_scrambled2 = im2.reordered_axes('iljk').reordered_reference('xtyz')
     >>> im_unscrambled2 = synchronized_order(im_scrambled2, im)
-    >>> 
     >>> im_unscrambled2.coordmap == im.coordmap
     True
 
@@ -693,7 +690,6 @@ def synchronized_order(img, target_img,
 
     >>> data3 = np.random.standard_normal((3,11,9,4))
     >>> im3 = Image(data3, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,9,3,-2,1])))
-    >>> 
     >>> im_scrambled3 = im3.reordered_axes('iljk').reordered_reference('xtyz')
     >>> im_unscrambled3 = synchronized_order(im_scrambled3, im)
     >>> im_unscrambled3.axes == im.axes
