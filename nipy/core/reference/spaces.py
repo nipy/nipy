@@ -83,6 +83,9 @@ class XYZSpace(object):
     def register_to(self, mapping):
         """ Update `mapping` with key=self.x, value='x' etc pairs
 
+        The mapping will then have keys that are names we (``self``) identify as
+        being x, or y, or z, values are 'x' or 'y' or 'z'.
+
         Note that this is the opposite way round for keys, values, compared to
         the ``as_map`` method.
 
@@ -129,16 +132,18 @@ class XYZSpace(object):
     def __contains__(self, obj):
         """ True if `obj` can be thought of as being 'in' this space
 
-        We define `obj` as being in our space, if the first 3 coordinate system
-        names are the same as ours.  A coordinate system can be in our space, as
-        can a coordinate map (we test the function_range), or an image (we test
-        the coordmap of the image).
+        `obj` is an object that is in some kind of space - it can be a
+        coordinate system, a coordinate map, or an object with a ``coordmap``
+        attribute.  We test the output coordinate system of `obj` against our
+        own space definition.
+
+        A coordinate system is in our space if it has all the axes of our space.
 
         Parameters
         ----------
         obj : object
             Usually a coordinate system, a coordinate map, or an Image (with a
-            ``coordmap`` attribute
+            ``coordmap`` attribute)
 
         Returns
         -------
@@ -172,10 +177,7 @@ class XYZSpace(object):
         except AttributeError:
             pass
         my_names = self.as_tuple()
-        ndim = len(my_names)
-        if obj.ndim < ndim:
-            return False
-        return obj.coord_names[:ndim] == my_names
+        return set(my_names).issubset(obj.coord_names)
 
 
 # Generic coordinate map maker for voxels (function_domain)
@@ -225,12 +227,17 @@ def known_space(obj, spaces=None):
 
     >>> cs = sp0.to_coordsys_maker()(3)
 
-    Test
+    Test whether this coordinate system is in either of ``(sp0, sp1)``
 
     >>> known_space(cs, (sp0, sp1))
     XYZSpace('hijo')
+
+    So, yes, it's in ``sp0``. How about another generic CoordinateSystem?
+
     >>> known_space(CoordinateSystem('xyz'), (sp0, sp1)) is None
     True
+
+    So, no, that is not in either of ``(sp0, sp1)``
     """
     if spaces is None:
         # use module level global

@@ -68,14 +68,14 @@ def test_xyz_space():
     assert_equal(cs, CS(exp_labels + list('tuv'), 'hijo'))
     # These are also in the space, because they contain xyz
     assert_true(cs in sp)
-    # But, to be in the space, x,y,z have to be first and in the right order
+    # The axes can be in any order as long as they are a subset
     cs = CS(exp_labels, 'hijo')
     assert_true(cs in sp)
     cs = CS(exp_labels[::-1], 'hijo')
-    assert_false(cs in sp)
+    assert_true(cs in sp)
     cs = CS(['t'] + exp_labels, 'hijo')
-    assert_false(cs in sp)
-    # The coordinate system name doesn't matter though
+    assert_true(cs in sp)
+    # The coordinate system name doesn't matter
     cs = CS(exp_labels, 'hija')
     assert_true(cs in sp)
     # Images, and coordinate maps, also work
