@@ -11,7 +11,7 @@ from ..coordinate_map import AffineTransform, CoordinateMap
 from ..spaces import (vox2mni, vox2scanner, vox2talairach, vox2unknown,
                       vox2aligned, xyz_affine, xyz_order, SpaceTypeError,
                       AxesError, AffineError, XYZSpace, known_space,
-                      known_spaces)
+                      known_spaces, is_xyz_space)
 
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal)
@@ -86,6 +86,15 @@ def test_xyz_space():
     # equality
     assert_equal(XYZSpace('hijo'), XYZSpace('hijo'))
     assert_not_equal(XYZSpace('hijo'), XYZSpace('hija'))
+
+
+def test_is_xyz_space():
+    # test test for xyz space
+    assert_true(is_xyz_space(XYZSpace('hijo')))
+    for sp in known_spaces:
+        assert_true(is_xyz_space(sp))
+    for obj in ([], {}, object(), CS('xyz')):
+        assert_false(is_xyz_space(obj))
 
 
 def test_known_space():

@@ -388,6 +388,14 @@ def xyz_order(coordsys, name2xyz=None):
     return list(np.argsort(axvals))
 
 
+def is_xyz_space(obj):
+    """ True if `obj` appears to be an XYZ space definition """
+    return (hasattr(obj, 'x') and
+            hasattr(obj, 'y') and
+            hasattr(obj, 'z') and
+            hasattr(obj, 'to_coordsys_maker'))
+
+
 def is_xyz_affable(coordmap, name2xyz=None):
     """ Return True if the coordap has an xyz affine
 
