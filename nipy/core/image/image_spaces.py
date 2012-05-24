@@ -74,7 +74,9 @@ import numpy as np
 
 from ...fixes.nibabel import io_orientation
 
+from ..image.image import Image
 from ..reference import spaces as rsp
+from ..reference.coordinate_map import CoordMapMaker
 
 
 def xyz_affine(img, name2xyz=None):
@@ -109,7 +111,7 @@ def xyz_affine(img, name2xyz=None):
     >>> img.coordmap
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('mni-x', 'mni-y', 'mni-z', 't'), name='mni', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 2.,  0.,  0.,  0.,  0.],
                      [ 0.,  3.,  0.,  0.,  0.],
                      [ 0.,  0.,  4.,  0.,  0.],
@@ -163,7 +165,7 @@ def is_xyz_affable(img, name2xyz=None):
     >>> img.coordmap
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('mni-x', 'mni-y', 'mni-z', 't'), name='mni', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 2.,  0.,  0.,  0.,  0.],
                      [ 0.,  3.,  0.,  0.,  0.],
                      [ 0.,  0.,  4.,  0.,  0.],
@@ -176,7 +178,7 @@ def is_xyz_affable(img, name2xyz=None):
     >>> time0_img.coordmap
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='array', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('t', 'mni-x', 'mni-y', 'mni-z'), name='mni', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('t', 'mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S'), name='mni', coord_dtype=float64),
        affine=array([[ 5.,  0.,  0.,  0.,  0.],
                      [ 0.,  2.,  0.,  0.,  0.],
                      [ 0.,  0.,  3.,  0.,  0.],
@@ -256,3 +258,117 @@ def as_xyz_affable(img, name2xyz=None):
                           "depend on the other axis coordinates: " +
                           str(e))
     return reo_img
+
+
+def neuro_image(data, xyz_affine, world, metadata=None):
+    """ Create 3D+ image embedded in space named in `world`
+
+    Parameters
+    ----------
+    data : object
+        Object returning array from ``np.asarray(obj)``, and having ``shape``
+        attribute.  Should have at least 3 dimensions (``len(shape) >= 3``), and
+        these three first 3 dimensions should be spatial
+    xyz_affine : (4, 4) array-like or tuple
+        if (4, 4) array-like (the usual case), then an affine relating spatial
+        dimensions in data (dimensions 0:3) to mm in XYZ space given in `world`.
+        If a tuple, then contains two values: the (4, 4) array-like, and a
+        sequence of scalings for the dimensions greater than 3.  See examples.
+    world : str or XYZSpace
+        World 3D space to which affine refers
+    metadata : None or mapping, optional
+        metadata for created image.  Defaults to None, giving empty metadata.
+
+    Returns
+    -------
+    img : Image
+        image containing `data`, with coordmap constructed from `affine` and
+        `world`, and with default voxel input coordinates.  If the data has more
+        than 3 dimensions, and you didn't specify the added zooms with a tuple
+        `xyz_affine` parameter, the coordmap affine gets filled out with extra
+        ones on the diagonal to give an (N+1, N+1) affine, with ``N =
+        len(data.shape)``
+
+    Examples
+    --------
+    >>> data = np.arange(24).reshape((2, 3, 4))
+    >>> aff = np.diag([4, 5, 6, 1])
+    >>> img = neuro_image(data, aff, 'mni')
+    >>> img
+    Image(
+      data=array([[[ 0,  1,  2,  3],
+                   [ 4,  5,  6,  7],
+                   [ 8,  9, 10, 11]],
+    <BLANKLINE>
+                  [[12, 13, 14, 15],
+                   [16, 17, 18, 19],
+                   [20, 21, 22, 23]]]),
+      coordmap=AffineTransform(
+                function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='array', coord_dtype=float64),
+                function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S'), name='mni', coord_dtype=float64),
+                affine=array([[ 4.,  0.,  0.,  0.],
+                              [ 0.,  5.,  0.,  0.],
+                              [ 0.,  0.,  6.,  0.],
+                              [ 0.,  0.,  0.,  1.]])
+             ))
+
+    Now make data 4D; we just add 1. to the diagonal for the new dimension
+
+    >>> data4 = data[..., None]
+    >>> img = neuro_image(data4, aff, 'mni')
+    >>> img.coordmap
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
+       affine=array([[ 4.,  0.,  0.,  0.,  0.],
+                     [ 0.,  5.,  0.,  0.,  0.],
+                     [ 0.,  0.,  6.,  0.,  0.],
+                     [ 0.,  0.,  0.,  1.,  0.],
+                     [ 0.,  0.,  0.,  0.,  1.]])
+    )
+
+    We can pass in a scalar or tuple to specify scaling for the extra dimension
+
+    >>> img = neuro_image(data4, (aff, 2.0), 'mni')
+    >>> img.coordmap.affine
+    array([[ 4.,  0.,  0.,  0.,  0.],
+           [ 0.,  5.,  0.,  0.,  0.],
+           [ 0.,  0.,  6.,  0.,  0.],
+           [ 0.,  0.,  0.,  2.,  0.],
+           [ 0.,  0.,  0.,  0.,  1.]])
+    >>> data5 = data4[..., None]
+    >>> img = neuro_image(data5, (aff, (2.0, 3.0)), 'mni')
+    >>> img.coordmap.affine
+    array([[ 4.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  5.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  6.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  2.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  3.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  1.]])
+    """
+    N = len(data.shape)
+    if N < 3:
+        raise ValueError('Need data with at least 3 dimensions')
+    if type(xyz_affine) is tuple:
+        xyz_affine, added_zooms = xyz_affine
+        # Could be scalar added zooms
+        try:
+            len(added_zooms)
+        except TypeError:
+            added_zooms = (added_zooms,)
+        if len(added_zooms) != (N - 3):
+            raise ValueError('Wrong number of added zooms')
+    else:
+        added_zooms = (1,) * (N - 3)
+    xyz_affine = np.asarray(xyz_affine)
+    if not xyz_affine.shape == (4, 4):
+        raise ValueError("Expecting 4 x 4 affine")
+    if not rsp.is_xyz_space(world):
+        space_names = [s.name for s in rsp.known_spaces]
+        if world not in space_names:
+            raise rsp.SpaceError('Unkown space "%s"; known spaces are %s'
+                                 % (world, ', '.join(space_names)))
+        world = rsp.known_spaces[space_names.index(world)]
+    cmap_maker = CoordMapMaker(rsp.voxel_csm, world.to_coordsys_maker('tuvw'))
+    cmap = cmap_maker(xyz_affine, added_zooms)
+    return Image(data, cmap, metadata)

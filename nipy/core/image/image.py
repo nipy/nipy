@@ -1,12 +1,13 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-""" This module defines the Image class, as well as functions that
-create Image instances and work on them:
+""" Define the Image class and functions to work with Image instances
 
-* fromarray : create an Image instance from an ndarray
-* subsample : slice an Image instance
+* fromarray : create an Image instance from an ndarray (deprecated in favor of
+  using the Image constructor)
+* subsample : slice an Image instance (deprecated in favor of image slicing)
 * rollaxis : roll an image axis backwards
 * synchronized_order : match coordinate systems between images
+* iter_axis : make iterator to iterate over an image axis
 * is_image : test for an object obeying the Image API
 """
 import warnings
@@ -19,8 +20,6 @@ from nibabel.onetime import setattr_on_read
 # Image
 from ..reference.coordinate_map import (AffineTransform, CoordinateSystem)
 from ..reference.array_coords import ArrayCoordMap
-
-__all__ = ['fromarray', 'subsample']
 
 
 class Image(object):
@@ -37,13 +36,18 @@ class Image(object):
 
     Examples
     --------
-    >>> from nipy.core.image import image
+    Load an image from disk
+
     >>> from nipy.testing import anatfile
     >>> from nipy.io.api import load_image
     >>> img = load_image(anatfile)
 
-    >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'),
-    ...                       'kji', 'zxy')
+    Make an image from an array.  We need to make a meaningful coordinate map
+    for the image.
+
+    >>> arr = np.zeros((21,64,64), dtype=np.int16)
+    >>> cmap = AffineTransform('kji', 'zxy', np.eye(4))
+    >>> img = Image(arr, cmap)
     """
     _doc = {}
 
@@ -132,8 +136,8 @@ class Image(object):
     def __init__(self, data, coordmap, metadata=None):
         """Create an `Image` object from array and `CoordinateMap` object.
 
-        Images are most often created through the module functions load and
-        fromarray.
+        Images are often created through the ``load_image`` function in the nipy
+        base namespace.
 
         Parameters
         ----------
@@ -149,9 +153,8 @@ class Image(object):
 
         See Also
         --------
-        load : load ``Image`` from a file
-        save : save ``Image`` to a file
-        fromarray : create an `Image` from a numpy array
+        load_image : load ``Image`` from a file
+        save_image : save ``Image`` to a file
         """
         if metadata is None:
             metadata = {}
@@ -470,6 +473,13 @@ def fromarray(data, innames, outnames):
     The mapping between the input and output coordinate names is the identity
     matrix.
 
+    Please don't use this routine, but instead prefer::
+
+        from nipy.core.api import Image, AffineTransform
+        img = Image(data, AffineTransform(innames, outnames, np.eye(4)))
+
+    where ``4`` is ``len(innames) + 1``.
+
     Parameters
     ----------
     data : numpy array
@@ -501,6 +511,10 @@ def fromarray(data, innames, outnames):
                      [ 0.,  0.,  0.,  1.]])
     )
     """
+    warnings.warn('fromarray is deprecated, please use the Image '
+                  'constructor instead',
+                  DeprecationWarning,
+                  stacklevel=2)
     ndim = len(data.shape)
     coordmap = AffineTransform.from_start_step(innames,
                                                outnames,
@@ -627,7 +641,7 @@ def iter_axis(img, axis, asarray=False):
     Examples
     --------
     >>> data = np.arange(24).reshape((4,3,2))
-    >>> img = fromarray(data, 'ijk', 'xyz')
+    >>> img = Image(data, AffineTransform('ijk', 'xyz', np.eye(4)))
     >>> slices = list(iter_axis(img, 'j'))
     >>> len(slices)
     3
@@ -638,7 +652,6 @@ def iter_axis(img, axis, asarray=False):
     True
     """
     rimg = rollaxis(img, axis)
-    n = rimg.shape[0]
     for i in range(rimg.shape[0]):
         if asarray:
             yield rimg[i].get_data()
