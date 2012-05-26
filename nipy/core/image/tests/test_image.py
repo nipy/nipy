@@ -344,4 +344,6 @@ def test_is_image():
     c = C()
     assert_false(is_image(c))
     c.coordmap = None
+    assert_false(is_image(c))
+    c.metadata = None
     assert_true(is_image(c))

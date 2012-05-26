@@ -809,6 +809,6 @@ def is_image(obj):
     >>> is_image(c)
     False
     '''
-    if not hasattr(obj, 'coordmap'):
+    if not hasattr(obj, 'coordmap') or not hasattr(obj, 'metadata'):
         return False
     return callable(getattr(obj, 'get_data'))
