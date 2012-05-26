@@ -6,7 +6,7 @@ from nibabel.affines import from_matvec
 
 from ...fixes.nibabel import io_orientation
 
-from .coordinate_system import CoordSysMaker
+from .coordinate_system import CoordSysMaker, is_coordsys, is_coordsys_maker
 from .coordinate_map import CoordMapMaker
 
 
@@ -246,6 +246,59 @@ def known_space(obj, spaces=None):
         if obj in sp:
             return sp
     return None
+
+
+def get_world_cs(world_id, ndim=3, extras='tuvw', spaces=None):
+    """ Get world coordinate system from `world_id`
+
+    Parameters
+    ----------
+    world_id : str, XYZSPace, CoordSysMaker or CoordinateSystem
+        Object defining a world output system.  If str, then should be a name of
+        an XYZSpace in the list `spaces`.
+    ndim : int, optional
+        Number of dimensions in this world.  Default is 3
+    extras : sequence, optional
+        Coordinate (axis) names for axes > 3 that are not named by `world_id`
+    spaces : None or sequence, optional
+        List of known (named) spaces to compare a str `world_id` to.  If None,
+        use the module level ``known_spaces``
+
+    Returns
+    -------
+    world_cs : CoordinateSystem
+        A world coordinate system
+
+    Examples
+    --------
+    >>> get_world_cs('mni')
+    CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S'), name='mni', coord_dtype=float64)
+
+    >>> get_world_cs(mni_space, 4)
+    CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64)
+
+    >>> from nipy.core.api import CoordinateSystem
+    >>> get_world_cs(CoordinateSystem('xyz'))
+    CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64)
+    """
+    if is_coordsys(world_id):
+        if world_id.ndim != ndim:
+            raise SpaceError("Need %d-dimensional CoordinateSystem" % ndim)
+        return world_id
+    if spaces is None:
+        spaces = known_spaces
+    if isinstance(world_id, basestring):
+        space_names = [s.name for s in spaces]
+        if world_id not in space_names:
+            raise SpaceError('Unkown space "%s"; known spaces are %s'
+                                    % (world_id, ', '.join(space_names)))
+        world_id = spaces[space_names.index(world_id)]
+    if is_xyz_space(world_id):
+        world_id = world_id.to_coordsys_maker(extras)
+    if is_coordsys_maker(world_id):
+        return world_id(ndim)
+    raise ValueError('Expecting CoordinateSystem, CoordSysMaker, '
+                     'XYZSpace, or str, got %s' % world_id)
 
 
 class SpaceError(Exception):

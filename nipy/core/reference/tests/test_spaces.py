@@ -147,6 +147,22 @@ def test_default_makers():
             assert_equal(csm(aff), AffineTransform(dom_cs, ran_cs, aff))
 
 
+def test_get_world_cs():
+    # Utility to get world from a variety of inputs
+    assert_equal(get_world_cs('mni'), mni_csm(3))
+    mnit = mni_space.to_coordsys_maker('t')(4)
+    assert_equal(get_world_cs(mni_space, 4), mnit)
+    assert_equal(get_world_cs(mni_csm, 4), mni_csm(4))
+    assert_equal(get_world_cs(CS('xyz')), CS('xyz'))
+    hija = XYZSpace('hija')
+    maker = hija.to_coordsys_maker('qrs')
+    assert_equal(get_world_cs('hija', ndim = 5, extras='qrs', spaces=[hija]),
+                 maker(5))
+    assert_raises(SpaceError, get_world_cs, 'hijo')
+    assert_raises(SpaceError, get_world_cs, 'hijo', spaces=[hija])
+    assert_raises(ValueError, get_world_cs, 0)
+
+
 def test_xyz_affine():
     # Getting an xyz affine from coordmaps
     aff3d = from_matvec(np.arange(9).reshape((3,3)), [15,16,17])
