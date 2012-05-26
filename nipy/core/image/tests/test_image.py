@@ -31,9 +31,12 @@ gimg = fromarray(_data, 'ijk', 'xyz')
 
 
 def test_init():
-    new = Image(gimg.get_data(), gimg.coordmap)
+    data = gimg.get_data()
+    new = Image(data, gimg.coordmap)
     assert_array_almost_equal(gimg.get_data(), new.get_data())
+    assert_equal(new.coordmap, gimg.coordmap)
     assert_raises(TypeError, Image)
+    assert_raises(TypeError, Image, data)
 
 
 def test_maxmin_values():
@@ -215,6 +218,28 @@ def test_from_image():
     assert_equal(img.coordmap, img2.coordmap)
     assert_equal(img.metadata, img2.metadata)
     assert_false(img.metadata is img2.metadata)
+    # optional inputs - data
+    arr2 = arr + 10
+    new = Image.from_image(img, arr2)
+    assert_array_almost_equal(arr2, new.get_data())
+    assert_equal(new.coordmap, coordmap)
+    new = Image.from_image(img, data=arr2)
+    assert_array_almost_equal(arr2, new.get_data())
+    assert_equal(new.coordmap, coordmap)
+    # optional inputs - coordmap
+    coordmap2 = AffineTransform.from_params('pqr', 'ijk', np.eye(4))
+    new = Image.from_image(img, arr2, coordmap2)
+    assert_array_almost_equal(arr2, new.get_data())
+    assert_equal(new.coordmap, coordmap2)
+    new = Image.from_image(img, coordmap=coordmap2)
+    assert_array_almost_equal(arr, new.get_data())
+    assert_equal(new.coordmap, coordmap2)
+    # Optional inputs - metadata
+    assert_equal(new.metadata, img.metadata)
+    another_meta = {'interesting': 'information'}
+    new = Image.from_image(img, arr2, coordmap2, another_meta)
+    assert_array_almost_equal(arr2, new.get_data())
+    assert_equal(another_meta, new.metadata)
 
 
 def test_synchronized_order():
