@@ -294,9 +294,10 @@ def is_coordsys(obj):
 
     Examples
     --------
-    >>> csys = CoordinateSystem('xyz')
-    >>> is_coordsys(csys)
+    >>> is_coordsys(CoordinateSystem('xyz'))
     True
+    >>> is_coordsys(CoordSysMaker('ikj'))
+    False
     """
     if not hasattr(obj, 'coord_names'):
         return False
@@ -304,7 +305,8 @@ def is_coordsys(obj):
         return False
     if not hasattr(obj, 'coord_dtype'):
         return False
-    return True
+    # Distinguish from CoordSysMaker
+    return not callable(obj)
 
 
 def safe_dtype(*dtypes):
@@ -455,3 +457,33 @@ class CoordSysMaker(object):
                                      'you asked for %d)' %
                                      (len(self.coord_names), N))
         return self.coord_sys_klass(self.coord_names[:N], name, coord_dtype)
+
+
+def is_coordsys_maker(obj):
+    """ Test if `obj` has the CoordSysMaker API
+
+    Parameters
+    ----------
+    obj : object
+        Object to test
+
+    Returns
+    -------
+    tf : bool
+        True if `obj` has the coordinate system API
+
+    Examples
+    --------
+    >>> is_coordsys_maker(CoordSysMaker('ikj'))
+    True
+    >>> is_coordsys_maker(CoordinateSystem('xyz'))
+    False
+    """
+    if not hasattr(obj, 'coord_names'):
+        return False
+    if not hasattr(obj, 'name'):
+        return False
+    if not hasattr(obj, 'coord_dtype'):
+        return False
+    # Distinguish from CoordinateSystem
+    return callable(obj)
