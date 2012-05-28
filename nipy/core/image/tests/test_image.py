@@ -30,9 +30,12 @@ gimg = Image(_data, AffineTransform('ijk', 'xyz', np.eye(4)))
 
 
 def test_init():
-    new = Image(gimg.get_data(), gimg.coordmap)
+    data = gimg.get_data()
+    new = Image(data, gimg.coordmap)
     assert_array_almost_equal(gimg.get_data(), new.get_data())
+    assert_equal(new.coordmap, gimg.coordmap)
     assert_raises(TypeError, Image)
+    assert_raises(TypeError, Image, data)
 
 
 def test_maxmin_values():
@@ -172,11 +175,6 @@ def test_ArrayLikeObj():
     assert_array_equal(img.get_data(), 4)
 
 
-array2D_shape = (2,3)
-array3D_shape = (2,3,4)
-array4D_shape = (2,3,4,5)
-
-
 def test_defaults_ND():
     for arr_shape, in_names, out_names in (
         ((2,3), 'kj', 'yz'),
@@ -208,6 +206,40 @@ def test_header():
     assert_not_equal(img.header, hdr2)
     img.header = hdr2
     assert_equal(img.header, hdr2)
+
+
+def test_from_image():
+    # from_image classmethod copies
+    arr = np.arange(24).reshape((2,3,4))
+    coordmap = AffineTransform.from_params('xyz', 'ijk', np.eye(4))
+    img = Image(arr, coordmap, metadata={'field': 'value'})
+    img2 = Image.from_image(img)
+    assert_array_equal(img.get_data(), img2.get_data())
+    assert_equal(img.coordmap, img2.coordmap)
+    assert_equal(img.metadata, img2.metadata)
+    assert_false(img.metadata is img2.metadata)
+    # optional inputs - data
+    arr2 = arr + 10
+    new = Image.from_image(img, arr2)
+    assert_array_almost_equal(arr2, new.get_data())
+    assert_equal(new.coordmap, coordmap)
+    new = Image.from_image(img, data=arr2)
+    assert_array_almost_equal(arr2, new.get_data())
+    assert_equal(new.coordmap, coordmap)
+    # optional inputs - coordmap
+    coordmap2 = AffineTransform.from_params('pqr', 'ijk', np.eye(4))
+    new = Image.from_image(img, arr2, coordmap2)
+    assert_array_almost_equal(arr2, new.get_data())
+    assert_equal(new.coordmap, coordmap2)
+    new = Image.from_image(img, coordmap=coordmap2)
+    assert_array_almost_equal(arr, new.get_data())
+    assert_equal(new.coordmap, coordmap2)
+    # Optional inputs - metadata
+    assert_equal(new.metadata, img.metadata)
+    another_meta = {'interesting': 'information'}
+    new = Image.from_image(img, arr2, coordmap2, another_meta)
+    assert_array_almost_equal(arr2, new.get_data())
+    assert_equal(another_meta, new.metadata)
 
 
 def test_synchronized_order():
