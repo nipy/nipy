@@ -30,11 +30,10 @@ import warnings
 
 import numpy as np
 
-from nipy.core.api import CoordinateSystem as CS, AffineTransform as AT
-
-from nipy.core.reference.coordinate_map import (product as mapping_product,
-                                                compose)
-from nipy.core.api import (lps_output_coordnames, ras_output_coordnames)
+from ..core.reference.coordinate_system import CoordinateSystem as CS
+from ..core.reference.coordinate_map import AffineTransform as AT, compose
+from ..core.reference import spaces as ncrs
+from ..core.api import (lps_output_coordnames, ras_output_coordnames)
 
 
 valid_input_axisnames = tuple('ijktuvw')
@@ -42,6 +41,7 @@ valid_output_axisnames = tuple('xyztuvw')
 fps = ('frequency', 'phase', 'slice')
 valid_spatial_axisnames = valid_input_axisnames[:3] + fps
 valid_nonspatial_axisnames = valid_input_axisnames[3:]
+
 
 def ni_affine_pixdim_from_affine(affine_transform, strict=False):
     """
@@ -168,91 +168,99 @@ def ni_affine_pixdim_from_affine(affine_transform, strict=False):
     return nifti_3dorless_transform, pixdim
 
 
-def affine_transform_from_array(affine, ijk, pixdim):
-    """Generate a AffineTransform from an affine transform.
+def get_input_cs(hdr):
+    """ Get input (function_domain) coordinate system from `hdr`
 
-    This is a convenience function to create a AffineTransform from image
-    attributes.  It assumes that the first three axes in the image (and
-    therefore affine) are spatial (in 'ijk' in input and equal to 'xyz'
-    in output), and appends the standard names for further dimensions
-    (e.g. 'l' as the 4th in input, 't' as the 4th in output).
+    Look at the header `hdr` to see if we have information about the image axis
+    names.  So far this is ony true of the nifti header, which can use the
+    ``dim_info`` field for this.  If we can't find any information, use the
+    default names from 'ijklmnop'
 
     Parameters
     ----------
-    affine : array
-       affine for affine_transform
-    ijk : sequence
-       sequence, some permutation of 'ijk', giving spatial axis
-       ordering.  These are the spatial input axis names
-    pixdim : sequence of floats
-       Pixdims for dimensions beyond 3.
+    hdr : object
+        header object, having at least a ``get_data_shape`` method
 
     Returns
     -------
-    3daffine_transform : ``AffineTransform``
-       affine transform corresponding to `affine` and `ijk` domain names
-       with LPS range names
-    full_transform: ``AffineTransform``
-       affine transform corresponding to `affine` and `ijk` domain names
-       for first 3 coordinates, diagonal with pixdim values beyond
+    cs : ``CoordinateSystem``
+        Input (function_domain) Coordinate system
 
-    Examples
-    --------
-    >>> af_tr3d, af_tr = affine_transform_from_array(np.diag([2,3,4,1]), 'ijk', [])
-    >>> af_tr.function_domain.coord_names
-    ('i', 'j', 'k')
-    >>> af_tr3d.function_domain.coord_names
-    ('i', 'j', 'k')
-    >>> af_tr.function_range.coord_names
-    ('x+LR', 'y+PA', 'z+SI')
-    >>> af_tr3d.function_range.coord_names
-    ('x+LR', 'y+PA', 'z+SI')
-    >>> af_tr3d, af_tr = affine_transform_from_array(np.diag([2,3,4,1]), 'kij', [3.5])
-    >>> af_tr.function_domain.coord_names
-    ('k', 'i', 'j', 't')
-    >>> af_tr.function_range.coord_names
-    ('x+LR', 'y+PA', 'z+SI', 't')
-    >>> af_tr3d.function_domain.coord_names
-    ('k', 'i', 'j')
-    >>> af_tr3d.function_range.coord_names
-    ('x+LR', 'y+PA', 'z+SI')
-    >>> print af_tr3d
-    AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='', coord_dtype=float64),
-       affine=array([[ 2.,  0.,  0.,  0.],
-                     [ 0.,  3.,  0.,  0.],
-                     [ 0.,  0.,  4.,  0.],
-                     [ 0.,  0.,  0.,  1.]])
-    )
-
-    >>> print af_tr
-    AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('k', 'i', 'j', 't'), name='product', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI', 't'), name='product', coord_dtype=float64),
-       affine=array([[ 2. ,  0. ,  0. ,  0. ,  0. ],
-                     [ 0. ,  3. ,  0. ,  0. ,  0. ],
-                     [ 0. ,  0. ,  4. ,  0. ,  0. ],
-                     [ 0. ,  0. ,  0. ,  3.5,  0. ],
-                     [ 0. ,  0. ,  0. ,  0. ,  1. ]])
-    )
-
-    FIXME: This is an internal function and should be revisited when
-    the AffineTransform is refactored.
+    Example
+    -------
+    >>> class C(object):
+    ...     def get_data_shape(self):
+    ...         return (2,3)
+    ...
+    >>> hdr = C()
+    >>> get_input_cs(hdr)
+    CoordinateSystem(coord_names=('i', 'j'), name='voxel', coord_dtype=float64)
     """
-    if affine.shape != (4, 4) or len(ijk) != 3:
-        raise ValueError('affine must be square, 4x4, ijk of length 3')
-    innames = tuple(ijk) + tuple('tuvw'[:len(pixdim)])
-    incoords = CS(innames, 'voxel')
-    outnames = lps_output_coordnames + tuple('tuvw'[:len(pixdim)])
-    outcoords = CS(outnames, 'world')
-    transform3d = AT(CS(incoords.coord_names[:3]), 
-                     CS(outcoords.coord_names[:3]), affine)
-    if pixdim:
-        nonspatial = AT.from_params(incoords.coord_names[3:], 
-                                    outcoords.coord_names[3:],
-                                    np.diag(list(pixdim) + [1]))
-        transform_full = mapping_product(transform3d, nonspatial)
-    else:
-        transform_full = transform3d
-    return transform3d, transform_full
+    ndim = len(hdr.get_data_shape())
+    all_names = list('ijklmno')
+    try:
+        freq, phase, slice = hdr.get_dim_info()
+    except AttributeError:
+        pass
+    else: # Nifti - maybe we have named axes
+        if not freq is None:
+            all_names[freq] = 'freq'
+        if not phase is None:
+            all_names[phase] = 'phase'
+        if not slice is None:
+            all_names[slice] = 'slice'
+    return CS(all_names[:ndim], 'voxel')
+
+
+_xform2csm = {'scanner': ncrs.scanner_csm,
+              'aligned': ncrs.aligned_csm,
+              'talairach': ncrs.talairach_csm,
+              'mni': ncrs.mni_csm}
+
+
+def get_output_cs(hdr):
+    """ Calculate output (function range) coordinate system from `hdr`
+
+    With our current use of nibabel for image loading, there is always an xyz
+    output, because nibabel images always have 4x4 xyz affines.  So, the output
+    coordinate system has a least 3 coordinates (those for x, y, z), regardless
+    of the array shape implied by `hdr`.  If `hdr` implies a larger array shape
+    N (where N>3), then the output coordinate system will be length N.
+
+    Nifti also allows us to specify one of 4 named output spaces (scanner,
+    aligned, talairach and mni).
+
+    Parameters
+    ----------
+    hdr : object
+        header object, having at least a ``get_data_shape`` method
+
+    Returns
+    -------
+    cs : ``CoordinateSystem``
+        Input (function_domain) Coordinate system
+
+    Example
+    -------
+    >>> class C(object):
+    ...     def get_data_shape(self):
+    ...         return (2,3)
+    ...
+    >>> hdr = C()
+    >>> get_output_cs(hdr)
+    CoordinateSystem(coord_names=('unknown-x=L->R', 'unknown-y=P->A', 'unknown-z=I->S'), name='unknown', coord_dtype=float64)
+    """
+    # Affines from nibabel always have 3 dimensions of output
+    ndim = max((len(hdr.get_data_shape()), 3))
+    try:
+        label = hdr.get_value_label('sform_code')
+    except AttributeError: # not nifti
+        return ncrs.unknown_csm(ndim)
+    csm = _xform2csm.get(label, None)
+    if not csm is None:
+        return csm(ndim)
+    label = hdr.get_value_label('qform_code')
+    csm = _xform2csm.get(label, None)
+    if not csm is None:
+        return csm(ndim)
+    return ncrs.unknown_csm(ndim)

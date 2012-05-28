@@ -265,6 +265,22 @@ def test_comap_init():
     yield assert_raises, ValueError, CoordinateMap, incs, outcs, map, 'bar'
 
 
+def test_comap_cosys():
+    # Check we can pass in coordinate names instead of coordinate systems
+    d_sys = CoordinateSystem('ijk')
+    r_sys = CoordinateSystem('xyz')
+    fn = lambda x : x+1
+    cm = CoordinateMap(d_sys, r_sys, fn)
+    assert_equal(CoordinateMap('ijk', 'xyz', fn), cm)
+    assert_equal(CoordinateMap(d_sys, 'xyz', fn), cm)
+    assert_equal(CoordinateMap('ijk', r_sys, fn), cm)
+    aff = np.diag([2,3,4,1])
+    cm = AffineTransform(d_sys, r_sys, aff)
+    assert_equal(AffineTransform('ijk', 'xyz', aff), cm)
+    assert_equal(AffineTransform(d_sys, 'xyz', aff), cm)
+    assert_equal(AffineTransform('ijk', r_sys, aff), cm)
+
+
 def test_comap_copy():
     import copy
     incs, outcs, map, inv = voxel_to_world()

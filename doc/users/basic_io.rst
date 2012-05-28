@@ -46,25 +46,25 @@ Save image to a File
 
    from nipy.io.api import load_image,save_image
    import numpy as np
-   myimg = load_file('myfile.nii')	
+   myimg = load_file('myfile.nii')
    newimg = save_image(myimg,'newmyfile.nii')
-   
+
 
 Create Image from an Array
 ===========================
 
-This will have a generic CoordinateMap with Unit step sizes
+This will have a generic affine-type CoordinateMap with Unit step sizes
 
 .. sourcecode::  ipython
 
-   from nipy.core.api import fromarray
+   from nipy.core.api import Image, AffineTransform
    from nipy.io.api import save_image
    import numpy as np
    rawarray = np.zeros(43,128,128)
    innames='ijk'
    outnames='xyz'
-   newimg = fromarray(rawarray, innames, outnames)
-
+   mapping = np.eye(4)
+   newimg = Image(rawarray, AffineTransform(innames, outnames, mapping))
 
 Images have a Coordinate Map.
 
@@ -73,7 +73,6 @@ Coordinate Systems of the image, and the mapping between the two
 Coordinate systems.
 
 :ref:`coordinate_map`
-
 
 
 .. include:: ../links_names.txt

@@ -70,6 +70,7 @@ from ...fixes.nibabel import io_orientation
 
 from .coordinate_system import(CoordinateSystem,
                                safe_dtype,
+                               is_coordsys,
                                product as coordsys_product
                                )
 
@@ -178,7 +179,11 @@ class CoordinateMap(object):
         coordmap : CoordinateMap
         """
         # These attrs define the structure of the coordmap.
+        if not is_coordsys(function_domain):
+            function_domain = CoordinateSystem(function_domain)
         self.function_domain = function_domain
+        if not is_coordsys(function_range):
+            function_range = CoordinateSystem(function_range)
         self.function_range = function_range
         self.function = function
         self.inverse_function = inverse_function
@@ -502,18 +507,22 @@ class AffineTransform(object):
 
         Parameters
         ----------
-        affine : array-like
-           affine homogenous coordinate matrix
         function_domain : :class:`CoordinateSystem`
            input coordinates
         function_range : :class:`CoordinateSystem`
            output coordinates
+        affine : array-like
+           affine homogenous coordinate matrix
 
         Notes
         -----
         The dtype of the resulting matrix is determined by finding a
         safe typecast for the function_domain, function_range and affine.
         """
+        if not is_coordsys(function_domain):
+            function_domain = CoordinateSystem(function_domain)
+        if not is_coordsys(function_range):
+            function_range = CoordinateSystem(function_range)
         affine = np.asarray(affine)
         dtype = safe_dtype(affine.dtype,
                            function_domain.coord_dtype,
