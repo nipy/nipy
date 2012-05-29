@@ -19,7 +19,8 @@ from nibabel.onetime import setattr_on_read
 
 # These imports are used in the fromarray and subsample functions only, not in
 # Image
-from ..reference.coordinate_map import (AffineTransform, CoordinateSystem)
+from ..reference.coordinate_map import (AffineTransform, CoordinateSystem,
+                                       axid2inax)
 from ..reference.array_coords import ArrayCoordMap
 
 
@@ -669,6 +670,68 @@ def rollaxis(img, axis, inverse=False):
         order.remove(0)
         order.insert(axis, 0)
     return img.reordered_axes(order).reordered_reference(order)
+
+
+def rollimg(img, axis, start=0, fix0=False):
+    """ Roll `axis` backwards in the inputs, until it lies before `start`
+
+    Parameters
+    ----------
+    img : Image
+        Image whose axes and reference coordinates are to be reordered by
+        rollimg.
+    axis : str or int
+        Axis to be rolled, can be specified by name or as an integer.  If an
+        integer, axis is an input axis.  If a name, can be name of input or
+        output axis.  If an output axis, we search for the closest matching
+        input axis, and raise an AxisError if this fails.
+    start : str or int, optional
+        position before which to roll axis `axis`.  Default to 0.  Can again be
+        an integer (input axis) or name of input or output axis.
+    fix0 : bool, optional
+        Whether to allow for zero scaling when searching for an input axis
+        matching an output axis.  Useful for images where time scaling is 0.
+
+    Returns
+    -------
+    newimg : Image
+       Image with reordered input axes and corresponding data.
+
+    Examples
+    --------
+    >>> data = np.zeros((30,40,50,5))
+    >>> affine_transform = AffineTransform('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
+    >>> im = Image(data, affine_transform)
+    >>> im.coordmap
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='', coord_dtype=float64),
+       affine=array([[ 1.,  0.,  0.,  0.,  0.],
+                     [ 0.,  2.,  0.,  0.,  0.],
+                     [ 0.,  0.,  3.,  0.,  0.],
+                     [ 0.,  0.,  0.,  4.,  0.],
+                     [ 0.,  0.,  0.,  0.,  1.]])
+    )
+    >>> im_t_first = rollimg(im, 't')
+    >>> im_t_first.shape
+    (5, 30, 40, 50)
+    >>> im_t_first.coordmap
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='', coord_dtype=float64),
+       affine=array([[ 0.,  1.,  0.,  0.,  0.],
+                     [ 0.,  0.,  2.,  0.,  0.],
+                     [ 0.,  0.,  0.,  3.,  0.],
+                     [ 4.,  0.,  0.,  0.,  0.],
+                     [ 0.,  0.,  0.,  0.,  1.]])
+    )
+    """
+    axis = axid2inax(img.coordmap, axis, fix0)
+    start = axid2inax(img.coordmap, start, fix0)
+    order = range(img.ndim)
+    order.remove(axis)
+    order.insert(start, axis)
+    return img.reordered_axes(order)
 
 
 def iter_axis(img, axis, asarray=False):
