@@ -46,25 +46,23 @@ def test_save2():
 
 def test_save2b():
     # A test to ensure that when a file is saved, the affine and the
-    # data agree. This image comes from a NIFTI file This example has
-    # a non-diagonal affine matrix for the spatial part, but is
-    # 'diagonal' for the space part.  this should raise a warnings
-    # about 'non-diagonal' affine matrix
-
-    # make a 5x5 transformation
-    step = np.array([3.45,2.3,4.5,6.9])
-    A = np.random.standard_normal((4,4))
+    # data agree. This image comes from a NIFTI file.  This example has a
+    # non-diagonal affine matrix for the spatial part, but is 'diagonal' for the
+    # space part.
+    #
+    # make a 5x5 transformation (for 4d image)
+    step = np.array([3.45, 2.3, 4.5, 6.9])
+    A = np.random.standard_normal((3,3))
     B = np.diag(list(step)+[1])
-    B[:4,:4] = A
+    B[:3, :3] = A
     shape = (13,5,7,3)
-    cmap = api.AffineTransform.from_params('ijkt', 'xyzt', B)
+    cmap = api.vox2mni(B)
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
     with InTemporaryDirectory():
         save_image(img, TMP_FNAME)
         img2 = load_image(TMP_FNAME)
-        assert_false(np.allclose(img.affine, img2.affine))
-        assert_array_almost_equal(img.affine[:3,:3], img2.affine[:3,:3])
+        assert_array_almost_equal(img.affine, img2.affine)
         assert_equal(img.shape, img2.shape)
         assert_array_almost_equal(img2.get_data(), img.get_data())
         del img2

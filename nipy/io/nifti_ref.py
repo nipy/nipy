@@ -132,7 +132,8 @@ input axes first, and get the corresponding XYZ affine.
 We check if the XYZ output fits with the the NIFTI named spaces of scanner,
 aligned, Talairach, MNI.  If not we raise an error.
 
-If the non-spatial dimensions are not orthogonal to each other, raise an error.
+If the non-spatial dimensions are not orthogonal to each other, raise a
+NiftiError.
 
 If any of the first three input axes are named ('slice', 'freq', 'phase') set
 the ``dim_info`` field accordingly.
@@ -158,16 +159,16 @@ On loading a NIPY image from NIFTI
 Lacking any other information, we take the input coordinate names for
 axes 0:7 to be  ('i', 'j', 'k', 't', 'u', 'v', 'w').
 
+If ``dim_info`` is set coherently, set input axis names to 'slice', 'freq',
+'phase' from ``dim_info``.
+
 If there is a time-like axis, name the input and corresponding output axis for
 the type of axis ('t', 'hz', 'ppm', 'rads').
 
-Otherwise remove the 't' axis from both input and output, and squeeze the length
-1 dimension from the nifti.
+Otherwise remove the 't' axis from both input and output names, and squeeze the
+length 1 dimension from the nifti.
 
 If there's a 't' axis get ``toffset`` and put into affine at position [3, -1].
-
-If ``dim_info`` is set coherently, set input axis names to 'slice', 'freq',
-'phase' from ``dim_info``.
 
 Get the output spatial coordinate names from the 'scanner', 'aligned',
 'talairach', 'mni' XYZ spaces (see :mod:`nipy.core.reference.spaces`).
@@ -175,245 +176,362 @@ Get the output spatial coordinate names from the 'scanner', 'aligned',
 We construct the N-D affine by taking the XYZ affine and adding scaling diagonal
 elements from ``pixdim``.
 
+If the space units in Nifti's ``xyxt_units`` are 'micron' or 'meter', scale the
+affine by 0.001 and 1000 respectively, but warn.
+
 Ignore the intent-related fields for now.
 
 """
 
+import sys
+
 import warnings
+from copy import copy
 
 import numpy as np
 
+import nibabel as nib
+from nibabel.affines import to_matvec, from_matvec
+
 from ..core.reference.coordinate_system import CoordinateSystem as CS
-from ..core.reference.coordinate_map import AffineTransform as AT, compose
+from ..core.reference.coordinate_map import (AffineTransform as AT,
+                                             axid2axes,
+                                             product as cm_product)
 from ..core.reference import spaces as ncrs
-from ..core.api import (lps_output_coordnames, ras_output_coordnames)
+from ..core.image.image import Image
+from ..core.image.image_spaces import as_xyz_affable
 
 
-valid_input_axisnames = tuple('ijktuvw')
-valid_output_axisnames = tuple('xyztuvw')
-fps = ('frequency', 'phase', 'slice')
-valid_spatial_axisnames = valid_input_axisnames[:3] + fps
-valid_nonspatial_axisnames = valid_input_axisnames[3:]
+XFORM2SPACE = {'scanner': ncrs.scanner_space,
+               'aligned': ncrs.aligned_space,
+               'talairach': ncrs.talairach_space,
+               'mni': ncrs.mni_space}
+
+TIME_LIKE_AXES = ( # name, matcher, units
+    ('t', lambda n : n == 't' or n == 'time', 'sec'),
+    ('hz', lambda n : n == 'hz' or n == 'frequency-hz', 'hz'),
+    ('ppm', lambda n : n == 'ppm' or n == 'concentration-ppm', 'ppm'),
+    ('rads', lambda n : n == 'rads' or n == 'radians/s', 'rads'),
+)
+
+# Threshold for near-zero affine values
+TINY = 1e-5
 
 
-def ni_affine_pixdim_from_affine(affine_transform, strict=False):
-    """
+class NiftiError(Exception):
+    pass
 
-    Given a square affine_transform, return a new 3-dimensional AffineTransform
-    and the pixel dimensions in dimensions greater than 3.
 
-    If strict is True, then an exception is raised if the affine matrix is not
-    diagonal with positive entries in dimensions greater than 3.
-
-    If strict is True, then the names of the range coordinates must be
-    LPS:('x+LR','y+PA','z+SI') or RAS:('x+RL','y+AP','z+SI'). If strict is
-    False, and the names are not either of these, LPS:('x+LR','y+PA','z+SI') are
-    used.
-
-    If the names are RAS:('x+RL','y+AA','z+SI'), then the affine is flipped so
-    the result is in LPS:('x+LR','y+PA','z+SI').
-
-    NIFTI images have the first 3 dimensions as spatial, and the remaining as
-    non-spatial, with the 4th typically being time.
+def nipy2nifti(img, strict=None, fix0=False):
+    """ Return nifti image from nipy image `img`
 
     Parameters
     ----------
-    affine_transform : `AffineTransform`
+    img : object
+         An object, usually a NIPY ``Image``,  having attributes `coordmap` and
+         `shape`
+    strict : bool, optional
+        Whether to use strict checking of input image for creating nifti
+    fix0: bool, optional
+        Whether to fix potential 0 column / row in affine. This option only used
+        when trying to find time etc axes in the coordmap output names.  In
+        order to find matching input names, we need to use the corresponding
+        rows and columns in the affine.  Sometimes time, in particular, has 0
+        scaling, and thus all 0 in the corresponding row / column.  In that case
+        it's hard to work out which input corresponds. If `fix0` is True, and
+        there is only one all zero (matrix part of the) affine row, and only one
+        all zero (matrix part of the) affine column, fix scaling for that
+        combination to zero, assuming this a zero scaling for time.
 
     Returns
     -------
-    nifti_transform: `AffineTransform`
-       A 3-dimensional or less AffineTransform
-    pixdim : ndarray(np.float)
-       The pixel dimensions greater than 3.
+    ni_img : ``nibabel.Nifti1Image``
+        Nifti image
 
-    Examples
-    --------
-    >>> from nipy.core.api import CoordinateSystem as CS
-    >>> from nipy.core.api import AffineTransform as AT
-    >>> outnames = CS(('x+LR','y+PA','z+SI') + ('t',))
-    >>> innames = CS(['phase', 'j', 'frequency', 't'])
-    >>> af_tr = AT(outnames, innames, np.diag([2,-2,3,3.5,1]))
-    >>> print af_tr
-    AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI', 't'), name='', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('phase', 'j', 'frequency', 't'), name='', coord_dtype=float64),
-       affine=array([[ 2. ,  0. ,  0. ,  0. ,  0. ],
-                     [ 0. , -2. ,  0. ,  0. ,  0. ],
-                     [ 0. ,  0. ,  3. ,  0. ,  0. ],
-                     [ 0. ,  0. ,  0. ,  3.5,  0. ],
-                     [ 0. ,  0. ,  0. ,  0. ,  1. ]])
-    )
+    Notes
+    -----
+    First, we need to create a valid XYZ Affine.  We check if this can be done
+    by checking if there are recognizable X, Y, Z output axes and corresponding
+    input (voxel) axes.  This requires the input image to be at least 3D. If we
+    find these requirements, we reorder the image axes to have XYZ output axes
+    and 3 spatial input axes first, and get the corresponding XYZ affine.
 
-    >>> af_tr3dorless, p = ni_affine_pixdim_from_affine(af_tr)
-    >>> print af_tr3dorless
-    AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='', coord_dtype=float64),
-       affine=array([[ 2.,  0.,  0.,  0.],
-                     [ 0., -2.,  0.,  0.],
-                     [ 0.,  0.,  3.,  0.],
-                     [ 0.,  0.,  0.,  1.]])
-    )
-    >>> print p
-    [ 3.5]
+    If the non-spatial dimensions are not orthogonal to each other, raise an
+    error.
+
+    We check if the XYZ output fits with the the NIFTI named spaces of scanner,
+    aligned, Talairach, MNI.  If not we raise an error.
+
+    If any of the first three input axes are named ('slice', 'freq', 'phase')
+    set the ``dim_info`` field accordingly.
+
+    Set the ``xyzt_units`` field to indicate millimeters and seconds, if there
+    is a 't' axis, otherwise millimeters and 0 (unknown).
+
+    We look to see if we have an output axis named 't'. If we do, roll that axis
+    to be the 4th axis. Take the ``affine[3, -1]`` and put into the ``toffset``
+    field.  If there's no 't' axis, but there are other non-spatial axes, make a
+    length 1 input axis to indicate this.
+
+    If there is an axis named any of frequency-hz', 'concentration-ppm' or
+    'radians/s' and there is no 't' axis, move the axis to the 4th position and
+    set ``xyz_units``.
+
+    Set ``pixdim`` for axes >= 3 using vector length of corresponding affine
+    columns.
+
+    We don't set the intent-related fields for now.
     """
-    if ((not isinstance(affine_transform, AT)) or
-        (affine_transform.ndims[0] != affine_transform.ndims[1])):
-        raise ValueError('affine_transform must be a square AffineTransform' + 
-                         ' to save as a NIFTI file')
-    ndim = affine_transform.ndims[0]
-    ndim3 = min(ndim, 3)
-    range_names = affine_transform.function_range.coord_names
-    if range_names[:ndim3] not in [lps_output_coordnames[:ndim3],
-                                   ras_output_coordnames[:ndim3]]:
-        if strict:
-            raise ValueError('strict is true and the range is not LPS or RAS')
-        warnings.warn('range is not LPS or RAS, assuming LPS')
-        range_names = list(range_names)
-        range_names[:ndim3] = lps_output_coordnames[:ndim3]
-        range_names = tuple(range_names)
-
-    ndim = affine_transform.ndims[0]
-    nifti_indim = 'ijk'[:ndim] + 'tuvw'[ndim3:ndim]
-    nifti_outdim = range_names[:ndim3] + ('t', 'u', 'v', 'w' )[ndim3:ndim]
-
-    nifti_transform = AT(CS(nifti_indim),
-                         CS(nifti_outdim),
-                         affine_transform.affine)
-
-    domain_names = affine_transform.function_domain.coord_names[:ndim3]
-    nifti_transform = nifti_transform.renamed_domain(dict(zip('ijk'[:ndim3],
-                                                         domain_names)))
-
-
-    # now find the pixdims
-    A = nifti_transform.affine[3:,3:]
-    if (not np.allclose(np.diag(np.diag(A)), A)
-        or not np.all(np.diag(A) > 0)):
-        msg = "affine transformation matrix is not diagonal " + \
-              " with positive entries on diagonal, some information lost"
-        if strict:
-            raise ValueError('strict is true and %s' % msg)
-        warnings.warn(msg)
-    pixdim = np.fabs(np.diag(A)[:-1])
-
-    # find the 4x4 (or smaller)
-    A3d = np.identity(ndim3+1)
-    A3d[:ndim3,:ndim3] = nifti_transform.affine[:ndim3, :ndim3]
-    A3d[:ndim3,-1] = nifti_transform.affine[:ndim3, -1]
-
-    range_names = nifti_transform.function_range.coord_names[:ndim3]
-    nifti_3dorless_transform = AT(CS(domain_names),
-                                  CS(range_names),
-                                  A3d)
-    # if RAS, we flip, with a warning
-    if range_names[:ndim3] == ras_output_coordnames[:ndim3]:
-        signs = [-1,-1,1,1][:(ndim3+1)]
-        # silly, but 1d case is handled for consistency
-        if signs == [-1,-1]:
-            signs = [-1,1]
-        ras_to_lps = AT(CS(ras_output_coordnames[:ndim3]),
-                        CS(lps_output_coordnames[:ndim3]),
-                        np.diag(signs))
-        warnings.warn('affine_transform has RAS output_range, flipping to LPS')
-        nifti_3dorless_transform = compose(ras_to_lps, nifti_3dorless_transform)
-    return nifti_3dorless_transform, pixdim
-
-
-def get_input_cs(hdr):
-    """ Get input (function_domain) coordinate system from `hdr`
-
-    Look at the header `hdr` to see if we have information about the image axis
-    names.  So far this is ony true of the nifti header, which can use the
-    ``dim_info`` field for this.  If we can't find any information, use the
-    default names from 'ijklmnop'
-
-    Parameters
-    ----------
-    hdr : object
-        header object, having at least a ``get_data_shape`` method
-
-    Returns
-    -------
-    cs : ``CoordinateSystem``
-        Input (function_domain) Coordinate system
-
-    Example
-    -------
-    >>> class C(object):
-    ...     def get_data_shape(self):
-    ...         return (2,3)
-    ...
-    >>> hdr = C()
-    >>> get_input_cs(hdr)
-    CoordinateSystem(coord_names=('i', 'j'), name='voxel', coord_dtype=float64)
-    """
-    ndim = len(hdr.get_data_shape())
-    all_names = list('ijklmno')
+    strict_none = strict is None
+    if strict_none:
+        warnings.warn('Default `strict` currently False; this will change to '
+                      'True in a future version of nipy',
+                      FutureWarning,
+                      stacklevel = 2)
+        strict = False
+    known_names = ncrs.known_names
+    if not strict: # add simple 'xyz' to acceptable spatial names
+        known_names = copy(known_names) # copy module global dict
+        for c in 'xyz':
+            known_names[c] = c
     try:
-        freq, phase, slice = hdr.get_dim_info()
-    except AttributeError:
-        pass
-    else: # Nifti - maybe we have named axes
-        if not freq is None:
-            all_names[freq] = 'freq'
-        if not phase is None:
-            all_names[phase] = 'phase'
-        if not slice is None:
-            all_names[slice] = 'slice'
-    return CS(all_names[:ndim], 'voxel')
+        img = as_xyz_affable(img, known_names)
+    except (ncrs.AxesError, ncrs.AffineError):
+        # Python 2.5 / 3 compatibility
+        e = sys.exc_info()[1]
+        raise NiftiError('Image cannot be reordered to XYZ because: "%s"'
+                         % e)
+    coordmap = img.coordmap
+    # Get useful information from old header
+    in_hdr = img.metadata.get('header', None)
+    hdr = nib.Nifti1Header.from_header(in_hdr)
+    # Default behavior is to take datatype from old header, unless there was no
+    # header, in which case we try to use the data dtype.  If that fails, we
+    # fall back to np.float32
+    data = None
+    if in_hdr is None:
+        data = img.get_data()
+        try:
+            hdr.set_data_dtype(data.dtype)
+        except nib.HeaderDataError:
+            hdr.set_data_dtype(np.float32)
+    # Remaining axes orthogonal?
+    rzs, trans = to_matvec(coordmap.affine)
+    if (not np.allclose(rzs[3:, :3], 0) or
+        not np.allclose(rzs[:3, 3:], 0)):
+        raise NiftiError('Non space axes not orthogonal to space')
+    # And to each other?
+    nsp_affine = rzs[3:,3:]
+    nsp_nzs = np.abs(nsp_affine) > TINY
+    n_in_col = np.sum(nsp_nzs, axis=0)
+    n_in_row = np.sum(nsp_nzs, axis=1)
+    if np.any(n_in_col > 1) or np.any(n_in_row > 1):
+        raise NiftiError('Non space axes not orthogonal to each other')
+    # Affine seems OK, check for space
+    xyz_affine = ncrs.xyz_affine(coordmap, known_names)
+    spatial_output_names = coordmap.function_range.coord_names[:3]
+    out_space = CS(spatial_output_names)
+    for name, space in XFORM2SPACE.items():
+        if out_space in space:
+            hdr.set_sform(xyz_affine, name)
+            hdr.set_qform(xyz_affine, name)
+            break
+    else:
+        if not strict and spatial_output_names == ('x', 'y', 'z'):
+            warnings.warn('Default `strict` currently False; '
+                          'this will change to True in a future version of '
+                          'nipy; output names of "x", "y", "z" will raise '
+                          'an error.  Please use canonical output names from '
+                          'nipy.core.reference.spaces',
+                          FutureWarning,
+                          stacklevel = 2)
+            hdr.set_sform(xyz_affine, 'scanner')
+            hdr.set_qform(xyz_affine, 'scanner')
+        else:
+            raise NiftiError('Image world not a Nifti world')
+    # Set dim_info
+    # Use list() to get .index method for python < 2.6
+    input_names = list(coordmap.function_domain.coord_names)
+    spatial_names = input_names[:3]
+    dim_infos = []
+    for fps in 'freq', 'phase', 'slice':
+        dim_infos.append(
+            spatial_names.index(fps) if fps in spatial_names else None)
+    hdr.set_dim_info(*dim_infos)
+    # Set units without knowing time
+    hdr.set_xyzt_units(xyz='mm')
+    # Done if we only have 3 input dimensions
+    non_space_inames = input_names[3:]
+    non_space_onames = coordmap.function_range.coord_names[3:]
+    n_ns = len(non_space_inames)
+    if n_ns == 0: # No non-spatial dimensions
+        return nib.Nifti1Image(img.get_data(), xyz_affine, hdr)
+    # Go now to data, pixdims
+    if data is None:
+        data = img.get_data()
+    rzs, trans = to_matvec(img.coordmap.affine)
+    ns_pixdims = np.sqrt(np.sum(rzs[3:, 3:] ** 2, axis=0))
+    # Look for time and time-related axes in input and then maybe output names
+    out_no = None
+    for name, matcher, units in TIME_LIKE_AXES:
+        for in_ns_no, in_ax_name in enumerate(non_space_inames):
+            if matcher(in_ax_name):
+                in_no = in_ns_no + 3
+                break
+        else: # This axis not found inputs, look in outputs
+            for out_ns_no, out_ax_name in enumerate(non_space_onames):
+                if matcher(out_ax_name):
+                    break
+            else: # Go check for the next time-like
+                continue
+            # Find matching input axis
+            in_no, out_no = axid2axes(coordmap, out_ax_name)
+            if in_no is None: # No matching input, keep trying
+                continue
+            in_ns_no = in_no - 3
+        # xyzt_units
+        hdr.set_xyzt_units(xyz='mm', t=units)
+        # If this is time, set toffset
+        if name == 't':
+            # Which output axis corresponds?
+            if out_no is None:
+                _, out_no = axid2axes(coordmap, in_no)
+            if out_no is None:
+                raise NiftiError('Time input and output do not match')
+            hdr['toffset'] = trans[out_no]
+        # Make sure this time-like axis is first non-space axis
+        if in_ns_no != 0:
+            data = np.rollaxis(data, 3 + in_ns_no, 3)
+            order = range(n_ns)
+            order.pop(in_ns_no)
+            order.insert(0, in_ns_no)
+            ns_pixdims = [ns_pixdims[i] for i in order]
+        break # once we've found a time-like, stop
+    else: # no time-like axis
+        # add new 1-length axis
+        data = img.get_data()[:, :, :, None, ...]
+    hdr['pixdim'][4:(4 + n_ns)] = ns_pixdims
+    return nib.Nifti1Image(data, xyz_affine, hdr)
 
 
-_xform2csm = {'scanner': ncrs.scanner_csm,
-              'aligned': ncrs.aligned_csm,
-              'talairach': ncrs.talairach_csm,
-              'mni': ncrs.mni_csm}
+TIME_LIKE_UNITS = dict(
+    sec = dict(name='t', scaling = 1),
+    msec = dict(name='t', scaling = 1 / 1000.),
+    usec = dict(name='t', scaling = 1 / 1000000.),
+    hz = dict(name='hz', scaling = 1),
+    ppm = dict(name='ppm', scaling = 1),
+    rads = dict(name='rads', scaling = 1))
 
 
-def get_output_cs(hdr):
-    """ Calculate output (function range) coordinate system from `hdr`
-
-    With our current use of nibabel for image loading, there is always an xyz
-    output, because nibabel images always have 4x4 xyz affines.  So, the output
-    coordinate system has a least 3 coordinates (those for x, y, z), regardless
-    of the array shape implied by `hdr`.  If `hdr` implies a larger array shape
-    N (where N>3), then the output coordinate system will be length N.
-
-    Nifti also allows us to specify one of 4 named output spaces (scanner,
-    aligned, talairach and mni).
+def nifti2nipy(ni_img):
+    """ Return NIPY image from nifti image `ni_image`
 
     Parameters
     ----------
-    hdr : object
-        header object, having at least a ``get_data_shape`` method
+    ni_img : nibabel.Nifti1Image
+        Nifti image
 
     Returns
     -------
-    cs : ``CoordinateSystem``
-        Input (function_domain) Coordinate system
+    img : :class:`Image`
+        nipy image
 
-    Example
-    -------
-    >>> class C(object):
-    ...     def get_data_shape(self):
-    ...         return (2,3)
-    ...
-    >>> hdr = C()
-    >>> get_output_cs(hdr)
-    CoordinateSystem(coord_names=('unknown-x=L->R', 'unknown-y=P->A', 'unknown-z=I->S'), name='unknown', coord_dtype=float64)
+    Notes
+    -----
+    Lacking any other information, we take the input coordinate names for
+    axes 0:7 to be  ('i', 'j', 'k', 't', 'u', 'v', 'w').
+
+    If there is a time-like axis, name the input and corresponding output axis for
+    the type of axis ('t', 'hz', 'ppm', 'rads').
+
+    Otherwise remove the 't' axis from both input and output, and squeeze the length
+    1 dimension from the nifti.
+
+    If there's a 't' axis get ``toffset`` and put into affine at position [3, -1].
+
+    If ``dim_info`` is set coherently, set input axis names to 'slice', 'freq',
+    'phase' from ``dim_info``.
+
+    Get the output spatial coordinate names from the 'scanner', 'aligned',
+    'talairach', 'mni' XYZ spaces (see :mod:`nipy.core.reference.spaces`).
+
+    We construct the N-D affine by taking the XYZ affine and adding scaling diagonal
+    elements from ``pixdim``.
+
+    Ignore the intent-related fields for now.
     """
-    # Affines from nibabel always have 3 dimensions of output
-    ndim = max((len(hdr.get_data_shape()), 3))
-    try:
-        label = hdr.get_value_label('sform_code')
-    except AttributeError: # not nifti
-        return ncrs.unknown_csm(ndim)
-    csm = _xform2csm.get(label, None)
-    if not csm is None:
-        return csm(ndim)
-    label = hdr.get_value_label('qform_code')
-    csm = _xform2csm.get(label, None)
-    if not csm is None:
-        return csm(ndim)
-    return ncrs.unknown_csm(ndim)
+    hdr = ni_img.get_header()
+    affine = ni_img.get_affine()
+    data = ni_img.get_data()
+    shape = list(ni_img.shape)
+    ndim = len(shape)
+    # Which space?
+    world_label = hdr.get_value_label('sform_code')
+    if world_label == 'unknown':
+        world_label = hdr.get_value_label('qform_code')
+    world_space = XFORM2SPACE.get(world_label, ncrs.unknown_space)
+    # Promote 1 and 2D
+    if ndim <= 3:
+        if ndim == 1:
+            data = data[:, None, None]
+        elif ndim == 2:
+            data = data[:, :, None]
+        ndim = 3
+    # Get information from dim_info
+    input_names3 = list('ijk')
+    freq, phase, slice = hdr.get_dim_info()
+    if not freq is None:
+        input_names3[freq] = 'freq'
+    if not phase is None:
+        input_names3[phase] = 'phase'
+    if not slice is None:
+        input_names3[slice] = 'slice'
+    # Add to mm scaling, with warning
+    space_units, time_like_units = hdr.get_xyzt_units()
+    if space_units in ('micron', 'meter'):
+        warnings.warn('"%s" space scaling in Nifti ``xyt_units field; '
+                      'applying scaling to affine, but this may not be what '
+                      'you want' % space_units, UserWarning)
+        if space_units == 'micron':
+            affine[:3] /= 1000.
+        elif space_units == 'meter':
+            affine[:3] *= 1000.
+    input_cs3 = CS(input_names3, name='voxels')
+    output_cs3 = world_space.to_coordsys_maker()(3)
+    cmap3 = AT(input_cs3, output_cs3, affine)
+    if ndim == 3:
+        return Image(data, cmap3, {'header': hdr})
+    space_units, time_like_units = hdr.get_xyzt_units()
+    units_info = TIME_LIKE_UNITS.get(time_like_units, None)
+    n_ns = ndim - 3
+    ns_zooms = list(hdr.get_zooms()[3:])
+    ns_trans = [0] * n_ns
+    # Have we got a time axis?
+    if (shape[3] == 1 and ndim > 4 and units_info is None):
+        # Squeeze length 1 no-time axis
+        shape.pop(3)
+        ns_zooms.pop(0)
+        ns_trans.pop(0)
+        data = data.reshape(shape)
+        ndim -= 1
+        time_name = None
+    else: # have time-like
+        if units_info is None:
+            units_info = TIME_LIKE_UNITS['sec']
+        time_name = units_info['name']
+        if units_info['scaling'] != 1:
+            ns_zooms[0] *= units_info['scaling']
+        if time_name == 't':
+            # Get time offset
+            ns_trans[0] = hdr['toffset']
+    ns_names = tuple('uvw')
+    if not time_name is None:
+        ns_names = (time_name,) + ns_names
+    output_cs = CS(ns_names[:n_ns])
+    input_cs = CS(ns_names[:n_ns])
+    aff = from_matvec(np.diag(ns_zooms), ns_trans)
+    ns_cmap = AT(input_cs, output_cs, aff)
+    cmap = cm_product(cmap3, ns_cmap,
+                      input_name=cmap3.function_domain.name,
+                      output_name=cmap3.function_range.name)
+    return Image(data, cmap, {'header': hdr})
