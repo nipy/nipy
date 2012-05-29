@@ -574,6 +574,7 @@ def fromarray(data, innames, outnames):
     return Image(data, coordmap)
 
 
+@np.deprecate_with_doc('Please use rollimg instead')
 def rollaxis(img, axis, inverse=False):
     """ Roll `axis` backwards, until it lies in the first position.
 
@@ -583,17 +584,19 @@ def rollaxis(img, axis, inverse=False):
     an axis to roll along in terms of either a reference name (i.e. 'z')
     or an axis name (i.e. 'slice').
 
+    This function is deprecated; please use ``rollimg`` instead.
+
     Parameters
     ----------
     img : Image
        Image whose axes and reference coordinates are to be reordered
        by rolling.
     axis : str or int
-       Axis to be rolled, can be specified by name or 
-       as an integer.
+       Axis to be rolled, can be specified by name or as an integer.
     inverse : bool, optional
-       If inverse is True, then axis must be an integer and the first
-       axis is returned to the position axis.
+       If inverse is True, then axis must be an integer and the first axis is
+       returned to the position axis.  This keyword is deprecated and we'll
+       remove it in a future version of nipy.
 
     Returns
     -------
@@ -631,16 +634,25 @@ def rollaxis(img, axis, inverse=False):
                      [ 0.,  0.,  0.,  0.,  1.]])
     )
     """
-    if axis not in ([-1] +
-                    range(img.axes.ndim) +
+    if inverse not in (True, False):
+        raise ValueError('Inverse should be True or False; did you mean to '
+                         'use the ``rollimg` function instead?')
+    if isinstance(axis, int) and axis < 0:
+        axis = img.ndim + axis
+    if inverse:
+        if type(axis) != type(0):
+            raise ValueError('If carrying out inverse rolling, '
+                             'axis must be an integer')
+        order = range(img.ndim)
+        order.remove(0)
+        order.insert(axis, 0)
+        return img.reordered_axes(order).reordered_reference(order)
+    if axis not in (range(img.axes.ndim) +
                     list(img.axes.coord_names) +
                     list(img.reference.coord_names)):
-        raise ValueError('axis must be an axis number, -1, '
+        raise ValueError('axis must be an axis number,'
                          'an axis name or a reference name')
     # Find out which index axis corresonds to
-    if inverse and type(axis) != type(0):
-        raise ValueError('if carrying out inverse rolling, '
-                         'axis must be an integer')
     in_index = out_index = -1
     if type(axis) == type(''):
         try:
@@ -661,14 +673,9 @@ def rollaxis(img, axis, inverse=False):
             axis = out_index
     if axis == -1:
         axis += img.axes.ndim
-    if not inverse:
-        order = range(img.ndim)
-        order.remove(axis)
-        order.insert(0, axis)
-    else:
-        order = range(img.ndim)
-        order.remove(0)
-        order.insert(axis, 0)
+    order = range(img.ndim)
+    order.remove(axis)
+    order.insert(0, axis)
     return img.reordered_axes(order).reordered_reference(order)
 
 
