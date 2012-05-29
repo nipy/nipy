@@ -8,7 +8,7 @@ from ..coordinate_map import (CoordinateMap, AffineTransform, compose, product,
                               shifted_domain_origin, shifted_range_origin,
                               CoordMapMaker, CoordMapMakerError,
                               _as_coordinate_map, AxisError, _fix0,
-                              _matching_orth_dim)
+                              axmap, orth_axes, axid2inax, axid2axes)
 
 from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,
                                  CoordSysMaker, CoordSysMakerError)
@@ -590,39 +590,6 @@ def test_append_io_dim():
     assert_equal(cm2.function_domain.coord_names, tuple('ijq'))
 
 
-def test_mod():
-    # Diagnonal affine, all easy
-    aff = np.diag([1,2,3,1])
-    for i in range(3):
-        assert_equal(_matching_orth_dim(i, aff), i)
-    # Negative values don't confuse the argmax search
-    aff = np.diag([-1,-2,-3,1])
-    for i in range(3):
-        assert_equal(_matching_orth_dim(i, aff), i)
-    # Non-orthogonal affine
-    aff = np.ones((4,4))
-    for i in range(3):
-        assert_raises(AxisError, _matching_orth_dim, i, aff)
-    # No matching inputs for any output
-    aff = np.zeros((3,3))
-    for i in range(2):
-        assert_equal(_matching_orth_dim(i, aff), None)
-    # Permuting rows is OK
-    aff = np.array([[1, 0, 0, 1],
-                    [0, 0, 2, 1],
-                    [0, 3, 0, 1],
-                    [0, 0, 0, 1]])
-    assert_equal(_matching_orth_dim(0, aff), 0)
-    assert_equal(_matching_orth_dim(1, aff), 2)
-    assert_equal(_matching_orth_dim(2, aff), 1)
-    # Check axes fully orthogonal
-    aff = np.array([[1, 0, 0, 1],
-                    [0, 0.1, 2, 1],
-                    [0, 3, 0, 1],
-                    [0, 0, 0, 1]])
-    assert_raises(AxisError, _matching_orth_dim, 1, aff)
-
-
 def test__fix0():
     # Test routine to fix possible zero TR in affine
     assert_array_equal(_fix0(np.diag([1, 2, 3, 1])), np.diag([1, 2, 3, 1]))
@@ -718,6 +685,156 @@ def test_drop_io_dim():
     assert_array_equal(cm2d.affine, [[1, .1, 0, 10],
                                      [ 0, 3, .1, 12],
                                      [ 0, 0, 0, 1]])
+
+
+def test_axmap():
+    # Test mapping between axes
+    cmap = AffineTransform('ijk', 'xyz', np.eye(4))
+    assert_equal(axmap(cmap), {0: 0, 1:1, 2:2,
+                               'i': 0, 'j': 1, 'k': 2})
+    assert_equal(axmap(cmap, 'out2in'), {0: 0, 1:1, 2:2,
+                                         'x': 0, 'y': 1, 'z': 2})
+    assert_equal(axmap(cmap, 'both'), ({0: 0, 1:1, 2:2,
+                                        'i': 0, 'j': 1, 'k': 2},
+                                       {0: 0, 1:1, 2:2,
+                                        'x': 0, 'y': 1, 'z': 2}))
+    cmap = AffineTransform('ijk', 'xyz', [[0, 1, 0, 0],
+                                          [0, 0, 1, 0],
+                                          [1, 0, 0, 0],
+                                          [0, 0, 0, 1]])
+    assert_equal(axmap(cmap), {0: 2, 1: 0, 2: 1,
+                               'i': 2, 'j': 0, 'k': 1})
+    assert_equal(axmap(cmap, 'out2in'), {2: 0, 0: 1, 1: 2,
+                                         'z': 0, 'x': 1, 'y': 2})
+    cmap = AffineTransform('ijk', 'xyz', np.diag([2, 3, 0, 1]))
+    assert_equal(axmap(cmap), {0: 0, 1: 1, 2: None,
+                               'i': 0, 'j': 1, 'k': None})
+    assert_equal(axmap(cmap, 'out2in'), {0: 0, 1: 1, 2: None,
+                                         'x': 0, 'y': 1, 'z': None})
+    assert_equal(axmap(cmap, fix0=True), {0: 0, 1: 1, 2: 2,
+                                          'i': 0, 'j': 1, 'k': 2})
+    assert_raises(ValueError, axmap, cmap, 'do what exactly?')
+    # Non-square
+    cmap = AffineTransform('ij', 'xyz', [[0, 1, 0],
+                                         [0, 0, 0],
+                                         [1, 0, 0],
+                                         [0, 0, 1]])
+    assert_equal(axmap(cmap), {0: 2, 1: 0,
+                               'i': 2, 'j': 0})
+    assert_equal(axmap(cmap, 'out2in'), {0: 1, 1: None, 2: 0,
+                                         'x': 1, 'y': None, 'z': 0})
+    cmap = AffineTransform('ijk', 'xy', [[0, 1, 0, 0],
+                                         [0, 0, 1, 0],
+                                         [0, 0, 0, 1]])
+    assert_equal(axmap(cmap), {0: None, 1: 0, 2: 1,
+                               'i': None, 'j': 0, 'k': 1})
+    assert_equal(axmap(cmap, 'out2in'), {0: 1, 1: 2,
+                                         'x': 1, 'y': 2})
+    # What happens if there are ties?
+    cmap = AffineTransform('ijk', 'xyz', [[0, 1, 0, 0],
+                                          [0, 1, 0, 0],
+                                          [1, 0, 0, 0],
+                                          [0, 0, 0, 1]])
+    assert_equal(axmap(cmap), {0: 2, 1: 0, 2: None,
+                               'i': 2, 'j': 0, 'k': None})
+    assert_equal(axmap(cmap, 'out2in'), {0: 1, 1: None, 2: 0,
+                                         'x': 1, 'y': None, 'z': 0})
+
+
+def test_orth_axes():
+    # Test for test of orthogality of in, out axis to rest of affine
+    # Check 3,3, 2, 3, and that negative values don't confuse
+    for aff in (np.eye(4), np.diag([2, 3, 1]), np.eye(4) * -1):
+        for i in range(aff.shape[0]-1):
+            assert_true(orth_axes(i, i, aff))
+    assert_true(orth_axes(2, 2, np.diag([2, 3, 0, 1])))
+    assert_false(orth_axes(2, 2, np.diag([2, 3, 0, 1]), False))
+    aff = np.eye(4)
+    assert_true(orth_axes(0, 0, aff))
+    aff[0, 1] = 1e-4
+    assert_false(orth_axes(0, 0, aff))
+    assert_true(orth_axes(0, 0, aff, tol=2e-4))
+    aff[1, 0] = 3e-4
+    assert_false(orth_axes(0, 0, aff))
+
+
+def test_axid2inax():
+    # Test routine to map name to input axis
+    cmap = AffineTransform('ijk', 'xyz', np.eye(4))
+    for i, in_name, out_name in zip(range(3), 'ijk', 'xyz'):
+        assert_equal(axid2inax(cmap, in_name), i)
+        assert_equal(axid2inax(cmap, out_name), i)
+    flipped = [[0, 0, 1, 1], [0, 1, 0, 2], [1, 0, 0, 3], [0, 0, 0, 1]]
+    cmap_f = AffineTransform('ijk', 'xyz', flipped)
+    for i, in_name, out_name in zip(range(3), 'ijk', 'zyx'):
+        assert_equal(axid2inax(cmap_f, in_name), i)
+        assert_equal(axid2inax(cmap_f, out_name), i)
+    # Names can be same in input and output but they must match
+    cmap_m = AffineTransform('ijk', 'kji', flipped)
+    for i, in_name, out_name in zip(range(3), 'ijk', 'ijk'):
+        assert_equal(axid2inax(cmap_m, in_name), i)
+        assert_equal(axid2inax(cmap_m, out_name), i)
+    # If they don't match, AxisError
+    cmap_b = AffineTransform('ijk', 'xiz', np.eye(4))
+    assert_equal(axid2inax(cmap_m, 'j'), 1)
+    assert_raises(AxisError, axid2inax, cmap_b, 'i')
+    # Name not found, AxisError
+    assert_raises(AxisError, axid2inax, cmap_b, 'q')
+    # 0 usually leads to no match
+    cmap_z = AffineTransform('ijk', 'xyz', np.diag([2, 3, 0, 1]))
+    assert_equal(axid2inax(cmap_z, 'y'), 1)
+    assert_raises(AxisError, axid2inax, cmap_z, 'z')
+    # Unless fix0 in place
+    assert_equal(axid2inax(cmap_z, 'z', fix0=True), 2)
+
+
+def test_axid2axes():
+    # Test routine to get input and output axis indices
+    cmap = AffineTransform('ijk', 'xyz', np.eye(4))
+    for i, in_name, out_name in zip(range(3), 'ijk', 'xyz'):
+        assert_equal(axid2axes(cmap, i), (i, i))
+        assert_equal(axid2axes(cmap, in_name), (i, i))
+        assert_equal(axid2axes(cmap, out_name), (i, i))
+    flipped = [[0, 0, 1, 1], [0, 1, 0, 2], [1, 0, 0, 3], [0, 0, 0, 1]]
+    cmap_f = AffineTransform('ijk', 'xyz', flipped)
+    for i, in_name, out_name in zip(range(3), 'ijk', 'xyz'):
+        assert_equal(axid2axes(cmap_f, i), (i, 2-i))
+        assert_equal(axid2axes(cmap_f, in_name), (i, 2-i))
+        assert_equal(axid2axes(cmap_f, out_name), (2-i, i))
+    # Names can be same in input and output but they must match
+    cmap_m = AffineTransform('ijk', 'kji', flipped)
+    for i, in_name, out_name in zip(range(3), 'ijk', 'kji'):
+        assert_equal(axid2axes(cmap_m, i), (i, 2-i))
+        assert_equal(axid2axes(cmap_m, in_name), (i, 2-i))
+        assert_equal(axid2axes(cmap_m, out_name), (2-i, i))
+    # If they don't match, AxisError
+    cmap_b = AffineTransform('ijk', 'xiz', np.eye(4))
+    assert_equal(axid2axes(cmap_m, 'j'), (1, 1))
+    assert_raises(AxisError, axid2axes, cmap_b, 'i')
+    # Name not found, AxisError
+    assert_raises(AxisError, axid2axes, cmap_b, 'q')
+    # 0 usually leads to no match
+    cmap_z = AffineTransform('ijk', 'xyz', np.diag([2, 3, 0, 1]))
+    assert_equal(axid2axes(cmap_z, 'y'), (1, 1))
+    assert_equal(axid2axes(cmap_z, 'z'), (None, 2))
+    # For either input or output
+    assert_equal(axid2axes(cmap_z, 'k'), (2, None))
+    # Unless fix0 in place
+    assert_equal(axid2axes(cmap_z, 'z', fix0=True), (2, 2))
+    # Non-square is OK
+    cmap = AffineTransform('ij', 'xyz', [[0, 1, 0],
+                                         [0, 0, 0],
+                                         [1, 0, 0],
+                                         [0, 0, 1]])
+    assert_equal(axid2axes(cmap, 'j'), (1, 0))
+    assert_equal(axid2axes(cmap, 'y'), (None, 1))
+    assert_equal(axid2axes(cmap, 'z'), (0, 2))
+    cmap = AffineTransform('ijk', 'xy', [[0, 1, 0, 0],
+                                         [0, 0, 1, 0],
+                                         [0, 0, 0, 1]])
+    assert_equal(axid2axes(cmap, 'i'), (0, None))
+    assert_equal(axid2axes(cmap, 'j'), (1, 0))
+    assert_equal(axid2axes(cmap, 'y'), (2, 1))
 
 
 def test_make_cmap():

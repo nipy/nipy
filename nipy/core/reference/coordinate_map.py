@@ -77,6 +77,9 @@ from .coordinate_system import(CoordinateSystem,
 # shorthand
 CS = CoordinateSystem
 
+# Tolerance for small values in affine
+TINY = 1e-5
+
 
 class CoordinateMap(object):
     """A set of domain and range CoordinateSystems and a function between them.
@@ -1688,7 +1691,7 @@ def drop_io_dim(cm, axis_id, fix0=True):
 
     Parameters
     ----------
-    cm : Affine
+    cm : class:`AffineTransform`
         Affine coordinate map instance
     axis_id : int or str
         If int, gives index of *input* axis to drop.  If str, gives name of
@@ -1730,33 +1733,17 @@ def drop_io_dim(cm, axis_id, fix0=True):
     '''
     # Implicit check for affine-type coordinate map
     aff = cm.affine.copy()
-    in_dims = list(cm.function_domain.coord_names)
-    out_dims = list(cm.function_range.coord_names)
-    in_dim, out_dim, name = None, None, None
-    if isinstance(axis_id, int): # Integer axis, always input axis
-        # Integers are always input indices
-        in_dim = axis_id if axis_id >=0 else len(in_dims) + axis_id
-    elif isinstance(axis_id, basestring):
-        name = axis_id
-        if name in in_dims:
-            in_dim = in_dims.index(name)
-        elif name in out_dims:
-            out_dim = out_dims.index(name)
-        else:
-            raise AxisError('No input or output dimension with name (%s)' %
-                            name)
-    # Apply zero scaling fix if required
-    test_aff = _fix0(aff) if fix0 else aff
-    if out_dim is None:
-        out_dim = _matching_orth_dim(in_dim, test_aff.T)
-        if name and name in out_dims and out_dims[out_dim] != name:
-            raise AxisError("Axis name %s present in input and output, "
-                            "but the axes do not correspond" % name)
-    else: # found out dimension, get in dimension
-        in_dim  = _matching_orth_dim(out_dim, test_aff)
+    # What dimensions did you ask for?
+    in_dim, out_dim = axid2axes(cm, axis_id, fix0)
+    if not None in (in_dim, out_dim):
+        if not orth_axes(in_dim, out_dim, aff, allow_zero=fix0):
+            raise AxisError('Input and output dimensions not orthogonal to '
+                            'rest of affine')
     M, N = aff.shape
     rows = range(M)
     cols = range(N)
+    in_dims = list(cm.function_domain.coord_names)
+    out_dims = list(cm.function_range.coord_names)
     if not in_dim is None:
         in_dims.pop(in_dim)
         cols.pop(in_dim)
@@ -1766,53 +1753,6 @@ def drop_io_dim(cm, axis_id, fix0=True):
     aff = aff[rows]
     aff = aff[:,cols]
     return AffineTransform.from_params(in_dims, out_dims, aff)
-
-
-def _matching_orth_dim(out_i, aff):
-    ''' Find matching more or less orthogonal direction in affine
-
-    If no input rows will affect the `out_i` dimension of the output, then
-    return None, because `out_i` is orthogonal to all the inputs.  If only one
-    input row affects the output, return the index of this row.  If more than
-    one input row affects the output, raise an AxisError.
-
-    Parameters
-    ----------
-    out_i : int
-        Output (range) dimension
-    aff : (M, N) array
-        homogenous affine.  We only use the ``aff[:M-1, :N-1]``
-
-    Returns
-    -------
-    in_i : None or int
-       Matching orthogonal input (domain) dimension.  None if none
-       matching.
-
-    Examples
-    --------
-    >>> aff = np.diag([1, 2, 3, 4, 1])
-    >>> _matching_orth_dim(1, aff)
-    1
-    >>> aff = np.array([[0, 0, 0, 1, 10],
-    ...                 [0, 0, 2, 0, 11],
-    ...                 [0, 3, 0, 0, 12],
-    ...                 [4, 0, 0, 0, 13],
-    ...                 [0, 0, 0, 0, 1]])
-    >>> _matching_orth_dim(1, aff)
-    2
-    '''
-    rzs = aff[:-1,:-1]
-    M, N = rzs.shape
-    out_row = rzs[out_i]
-    if np.all(out_row == 0): # No input dimensions affect this output
-        return None
-    in_i = np.argmax(np.abs(out_row))
-    val = out_row[in_i]
-    # Rest of this row and column close to zero - OK
-    if np.allclose([np.sum(out_row), np.sum(rzs[:,in_i])], val):
-        return in_i
-    raise AxisError('More than one corresponding dimension')
 
 
 def _fix0(aff):
@@ -1895,6 +1835,230 @@ def append_io_dim(cm, in_name, out_name, start=0, step=1):
     extra_aff = np.array([[step, start], [0, 1]])
     extra_cmap = AffineTransform.from_params([in_name], [out_name], extra_aff)
     return product(cm, extra_cmap)
+
+
+def axmap(coordmap, direction='in2out', fix0=False):
+    """ Return mapping between input and output axes
+
+    Parameters
+    ----------
+    coordmap : Affine
+        Affine coordinate map instance for which to get axis mappings
+    direction : {'in2out', 'out2in', 'both'}
+        direction to find mapping.  If 'in2out', returned mapping will have keys
+        from the input axis (names and indices) and values of corresponding
+        output axes.  If 'out2in' the keys will be output axis names, indices
+        and the values will be input axis indices.  If both, return both
+        mappings.
+    fix0: bool, optional
+        Whether to fix potential 0 TR in affine
+
+    Returns
+    -------
+    map : dict or tuple
+        * if `direction` == 'in2out' - mapping with keys of input names and
+          input indices, values of output indices. Mapping is to closest
+          matching axis.  None means there appears to be no matching axis
+        * if `direction` == 'out2in' - mapping with keys of output names and
+          input indices, values of input indices, as above.
+        * if `direction` == 'both' - tuple of (input to output mapping, output
+          to input mapping)
+    """
+    in2out = direction in ('in2out', 'both')
+    out2in = direction in ('out2in', 'both')
+    if not True in (in2out, out2in):
+        raise ValueError('Direction must be one of "in2out", "out2in", "both"')
+    affine = coordmap.affine
+    affine = _fix0(affine) if fix0 else affine
+    ornts = io_orientation(affine)
+    ornts = [None if np.isnan(R) else int(R) for R in ornts[:, 0]]
+    if in2out:
+        in2out_map = {}
+        for i, name in enumerate(coordmap.function_domain.coord_names):
+            in2out_map[i] = ornts[i]
+            in2out_map[name] = ornts[i]
+        if not out2in:
+            return in2out_map
+    if out2in:
+        out2in_map = {}
+        for i, name in enumerate(coordmap.function_range.coord_names):
+            in_i = ornts.index(i) if i in ornts else None
+            out2in_map[i] = in_i
+            out2in_map[name] = in_i
+        if not in2out:
+            return out2in_map
+    return in2out_map, out2in_map
+
+
+def axid2inax(coordmap, axis_id, fix0=False):
+    """ Return input axis index for `axis_id`
+
+    `axis_id` can be integer, or a name of an input axis, or it can be the name
+    of an output axis which maps to an input axis.
+
+    Parameters
+    ----------
+    coordmap : AffineTransform
+    axis_id : int or str
+        If int, then an index of an input axis.  Can be negative, so that -2
+        refers to the second to last input axis.  If a str can be the name of an
+        input axis, or the name of an output axis that should have a
+        corresponding input axis (see Raises section).
+    fix0: bool, optional
+        Whether to fix potential 0 TR in affine
+
+    Returns
+    -------
+    inax : int
+        index of matching input axis. If `axis_id` is the name of an output
+        axis, then `inax` will be the input axis that had a 'best' match with
+        this output axis.  The 'best' match algorithm ensures that there can
+        only be one input axis paired with one output axis.
+
+    Raises
+    ------
+    AxisError: if no matching name found
+    AxisError : if name exists in both input and output and they do not map to
+        each other
+    AxisError : if name present in output but no matching input
+    """
+    # Lists for .index in python < 2.6
+    in_names = list(coordmap.function_domain.coord_names)
+    out_names = list(coordmap.function_range.coord_names)
+    if isinstance(axis_id, int):
+        if axis_id < 0:
+            axis_id = len(out_names) + axis_id
+        return axis_id
+    in_in = axis_id in in_names
+    in_out = axis_id in out_names
+    if not in_in and not in_out:
+        raise AxisError('Name "%s" not in input or output names' % axis_id)
+    if in_in:
+        in_no = in_names.index(axis_id)
+        if not in_out:
+            return in_no
+        out2in = axmap(coordmap, 'out2in', fix0=fix0)
+        if not out2in[axis_id] == in_no:
+            raise AxisError('Name "%s" present in input and output but '
+                            'they do not appear to match' % axis_id)
+        return in_no
+    in_no = axmap(coordmap, 'out2in', fix0=fix0)[axis_id]
+    if in_no is None:
+        raise AxisError('Name "%s" present in output but this output axis '
+                        'does not have the best match with any input axis'
+                        % axis_id)
+    return in_no
+
+
+def axid2axes(coordmap, axis_id, fix0=False):
+    """ Return input and output axis index for id `axis_id` in `coordmap`
+
+    Parameters
+    ----------
+    cm : class:`AffineTransform`
+        Affine coordinate map instance
+    axis_id : int or str
+        If int, gives index of *input* axis.  Can be negative, so that -2 refers
+        to the second from last input axis. If str, gives name of input *or*
+        output axis.   If `axis_id` is a str, it must be unambiguous - if the
+        named axis exists in both input and output, and they do not correspond,
+        raises a AxisError.  See Raises section for checks
+    fix0: bool, optional
+        Whether to fix potential 0 column / row in affine
+
+    Returns
+    -------
+    in_index : None or int
+        index of input axis that corresponds to `axis_id`
+    out_index : None or int
+        index of output axis that corresponds to `axis_id`
+
+    Raises
+    ------
+    AxisError: if `axis_id` is a str and does not match any no input or output
+        coordinate names.
+    AxisError: if the named `axis_id` exists in both input and output, and they
+        do not correspond.
+
+    Examples
+    --------
+    >>> aff = [[0, 1, 0, 10], [1, 0, 0, 11], [0, 0, 1, 12], [0, 0, 0, 1]]
+    >>> cmap = AffineTransform('ijk', 'xyz', aff)
+    >>> axid2axes(cmap, 0)
+    (0, 1)
+    >>> axid2axes(cmap, 1)
+    (1, 0)
+    >>> axid2axes(cmap, -1)
+    (2, 2)
+    >>> axid2axes(cmap, 'j')
+    (1, 0)
+    >>> axid2axes(cmap, 'y')
+    (0, 1)
+    """
+    in_dims = list(coordmap.function_domain.coord_names)
+    out_dims = list(coordmap.function_range.coord_names)
+    in_dim, out_dim, is_str = None, None, False
+    if isinstance(axis_id, int): # Integer axis, always input axis
+        # Integers are always input indices
+        in_dim = axis_id if axis_id >=0 else len(in_dims) + axis_id
+    else: # Let's hope they are strings
+        if axis_id in in_dims:
+            in_dim = in_dims.index(axis_id)
+        elif axis_id in out_dims:
+            out_dim = out_dims.index(axis_id)
+        else:
+            raise AxisError('No input or output dimension with name (%s)' %
+                            axis_id)
+        is_str = True
+    if out_dim is None:
+        out_dim = axmap(coordmap, 'in2out', fix0=fix0)[in_dim]
+        if (is_str and
+            axis_id in out_dims and
+            out_dim != out_dims.index(axis_id)):
+            raise AxisError('Input and output axes with the same name but '
+                            'the axes do not appear to correspond')
+    elif in_dim is None:
+        in_dim = axmap(coordmap, 'out2in', fix0=fix0)[out_dim]
+    return in_dim, out_dim
+
+
+def orth_axes(in_ax, out_ax, affine, allow_zero=True, tol=TINY):
+    """ True if `in_ax` related only to `out_ax` in `affine` and vice versa
+
+    Parameters
+    ----------
+    in_ax : int
+        Input axis index
+    out_ax : int
+        Output axis index
+    affine :  array-like
+        Affine transformation matrix
+    allow_zero : bool, optional
+        Whether to allow zero in ``affine[out_ax, in_ax]``.  This means that the
+        two axes are not related, but nor is this pair related to any other
+        part of the affine.
+
+    Returns
+    -------
+    tf : bool
+        True if in_ax, out_ax pair are orthogonal to the rest of `affine`,
+        unless `allow_zero` is False, in which case require in addition that
+        ``affine[out_ax, in_ax] != 0``.
+
+    Examples
+    --------
+    >>> aff = np.eye(4)
+    >>> orth_axes(1, 1, aff)
+    True
+    >>> orth_axes(1, 2, aff)
+    False
+    """
+    rzs, trans = to_matvec(affine)
+    nzs = np.abs(rzs) > tol
+    if not allow_zero and not nzs[out_ax, in_ax]:
+        return False
+    nzs[out_ax, in_ax] = 0
+    return np.all(nzs[out_ax] == 0) and np.all(nzs[:, in_ax] == 0)
 
 
 class CoordMapMakerError(Exception):
