@@ -5,25 +5,178 @@ An implementation of the dimension info as desribed in:
 
 http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1.h
 
-In particular, it allows one to take a (possibly 4 or higher-dimensional)
-AffineTransform instance and return a valid NIFTI 3-dimensional NIFTI
-AffineTransform instance.
+A version of the same file is in the nibabel repisitory at
+``doc/source/external/nifti1.h``.
 
-Axes:
------
+Background
+==========
 
-NIFTI files can have up to seven dimensions. We take the convention that
-the output coordinate names are ('x+LR','y+PA','z+SI','t','u','v','w')
-and the input coordinate names are ('i','j','k','t','u','v','w').
+We (nipystas) make an explicit distinction between
+
+* an input coordinate system of an image (the array == voxel coordinates)
+* output coordinate system (usually millimeters in some world)
+* the mapping between the two.
+
+The collection of these three is the ``coordmap`` attribute of a NIPY image.
+
+There is no constraint that the number of input and output coordinates should be
+the same.
+
+We don't specify the units of our output coordinate system, but assume spatial
+units are millimeters and time units are seconds.
+
+NIFTI is mostly less explicit, but more constrained.
+
+NIFTI input coordinate system
+-----------------------------
+
+NIFTI files can have up to seven voxel dimensions (7 axes in the input
+coordinate system).
+
+The first 3 voxel dimensions of a NIFTI file must be spatial but can be in any
+order in relationship to directions in mm space (the output coordinate system)
+
+The 4th voxel dimension is assumed to be time.  In particular, if you have some
+other meaning for a non-spatial dimension, the NIFTI standard suggests you set
+the length of the 4th dimension to be 1, and use the 5th dimension of the image
+instead, and set the NIFTI "intent" fields to state the meaning. If the
+``intent`` field is set correctly then it should be possible to set meaningful
+input coordinate axis names for dimensions > (0, 1, 2).
+
+There's a wrinkle to the 4th axis is time story; the ``xyxt_units`` field in the
+NIFTI header can specify the 4th dimension units as Hz (frequency), PPM
+(concentration) or Radians / second.
+
+NIFTI also has a 'dim_info' header attribute that optionally specifies that 0 or
+more of the first three voxel axes are 'frequency', 'phase' or 'slice'.  These
+terms refer to 2D MRI acquisition encoding, where 'slice's are collected
+sequentially, and the two remaining dimensions arose from frequency and phase
+encoding.  The ``dim_info`` fields are often not set.  3D acquisitions don't have
+a 'slice' dimension.
+
+NIFTI output coordinate system
+------------------------------
 
 In the NIFTI specification, the order of the output coordinates (at least the
-first 3) are fixed to be LPS:('x+LR','y+PA','z+SI') and their order is not
-allowed to change. If the output coordinates are RAS:('x+RL','y+AP','z+SI'),
-then the function ni_affine_pixdim_from_affine flips them to maintain NIFTI's
-standard of LPS:('x+LR','y+PA','z+SI') coordinates.
+first 3) are fixed to be what might be called RAS+, that is ('x=L->R', 'y=P->A',
+'z=I->S'). This RAS+ output order is not allowed to change and there is no way of
+specifying such a change in the nifti header.
 
-NIFTI has a 'diminfo' header attribute that optionally specifies that
-some of 'i', 'j', 'k' are renamed 'frequency', 'phase' or 'axis'.
+The world in which these RAS+ X, Y, Z axes exist can be one of the recognized
+spaces, which are: scanner, aligned (to another file's world space), Talairach,
+MNI 152 (aligned to the MNI 152 atlas).
+
+By implication, the 4th output dimension is likely to be seconds (given the 4th
+input dimension is likley time), but there's a field ``xyzt_units`` (see above)
+that can be used to imply the 4th output dimension is actually frequency,
+concentration or angular velocity.
+
+NIFTI input / output mapping
+----------------------------
+
+NIFTI stores the relationship between the first 3 (spatial) voxel axes and the
+RAS+ coordinates in an *XYZ affine*.  This is a homogenous coordinate affine,
+hence 4 by 4 for 3 (spatial) dimensions.
+
+NIFTI also stores "pixel dimensions" in a ``pixdim`` field. This can give you
+scaling for individual axes.  We ignore the values of ``pixdim`` for the first 3
+axes if we have a full ("sform") affine stored in the header, otherwise they
+form part of the affine above.  ``pixdim``[3:] provide voxel to output calings
+for later axes.  The units for the 4th dimension can come from ``xyzt_units`` as
+above.
+
+We take the convention that the output coordinate names are ('x=L->R', 'y=P->A',
+'z=I->S','t','u','v','w') unless there is no time axis (see below) in which case
+we just omit 't'.  The first 3 axes are also named after the output space
+('scanner-x=L->R', 'mni-x=L-R' etc).
+
+The input axes are 'ijktuvw' unless there is no time axis (see below), in which case they are 'ijkuvw' (remember, nifti only allows 7 dimensions,
+and one is used up by the time length 1 axis).
+
+Time-like axes
+--------------
+
+A time-like axis is an axis that is any of time, Hz, PPM or radians / second.
+
+We recognize time in a NIPY coordinate map by an input or an output axis named
+'t' or 'time'.  If it's an output axis we work out the corresponding input axis.
+
+A Hz axis can be called 'hz' or 'frequency-hz'.
+
+A PPM axis can be called 'ppm' or 'concentration-ppm'.
+
+A radians / second axis can be called 'rads' or 'radians/s'.
+
+Does this nifti image have a time-like axis?
+--------------------------------------------
+
+We take there to be no time axis if there are only three nifti dimensions, or
+if:
+
+* the length of the fourth nifti dimension is 1 AND
+* There are more than four dimensions AND
+* The ``xyzt_units`` field does not indicate time or time-like units.
+
+What we do about all this
+=========================
+
+On saving a NIPY image to NIFTI
+-------------------------------
+
+First, we need to create a valid XYZ Affine.  We check if this can be done by
+checking if there are recognizable X, Y, Z output axes and corresponding input
+(voxel) axes.  This requires the input image to be at least 3D. If we find these
+requirements, we reorder the image axes to have XYZ output axes and 3 spatial
+input axes first, and get the corresponding XYZ affine.
+
+We check if the XYZ output fits with the the NIFTI named spaces of scanner,
+aligned, Talairach, MNI.  If not we raise an error.
+
+If the non-spatial dimensions are not orthogonal to each other, raise an error.
+
+If any of the first three input axes are named ('slice', 'freq', 'phase') set
+the ``dim_info`` field accordingly.
+
+Set the ``xyzt_units`` field to indicate millimeters and seconds, if there is a
+'t' axis, otherwise millimeters and (Hz, PPM, rads) if there's are other time-like
+axes), otherwise millimeters and zero (unknown).
+
+We look to see if we have a time-like axis in the inputs or the outputs. If we
+do, roll that axis to be the 4th axis.  If this axis is actually time, take the
+``affine[3, -1]`` and put into the ``toffset`` field.  If there's no time-like
+axis, but there are other non-spatial axes, make a length 1 input axis to
+indicate this.
+
+Set ``pixdim`` for axes >= 3 using vector length of corresponding affine
+columns.
+
+We don't set the intent-related fields for now.
+
+On loading a NIPY image from NIFTI
+----------------------------------
+
+Lacking any other information, we take the input coordinate names for
+axes 0:7 to be  ('i', 'j', 'k', 't', 'u', 'v', 'w').
+
+If there is a time-like axis, name the input and corresponding output axis for
+the type of axis ('t', 'hz', 'ppm', 'rads').
+
+Otherwise remove the 't' axis from both input and output, and squeeze the length
+1 dimension from the nifti.
+
+If there's a 't' axis get ``toffset`` and put into affine at position [3, -1].
+
+If ``dim_info`` is set coherently, set input axis names to 'slice', 'freq',
+'phase' from ``dim_info``.
+
+Get the output spatial coordinate names from the 'scanner', 'aligned',
+'talairach', 'mni' XYZ spaces (see :mod:`nipy.core.reference.spaces`).
+
+We construct the N-D affine by taking the XYZ affine and adding scaling diagonal
+elements from ``pixdim``.
+
+Ignore the intent-related fields for now.
+
 """
 
 import warnings
