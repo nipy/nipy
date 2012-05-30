@@ -20,7 +20,7 @@ from nipy.modalities.fmri import design, hrf
 from nipy.io.api import load_image, save_image
 from nipy.core import api
 from nipy.core.api import Image
-from nipy.core.image.image import rollaxis as image_rollaxis
+from nipy.core.image.image import rollimg
 
 from nipy.algorithms.statistics import onesample
 
@@ -169,7 +169,7 @@ def run_model(subj, run):
 
     fmri_lpi = futil.get_fmri(path_info) # an Image
     fmri_im = Image(fmri_lpi._data, fmri_lpi.coordmap)
-    fmri_im = image_rollaxis(fmri_im, 't')
+    fmri_im = rollimg(fmri_im, 't')
 
     fmri = fmri_im.get_data() # now, it's an ndarray
 

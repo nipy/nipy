@@ -12,7 +12,7 @@ variables in the ``nipy.core.reference.spaces`` module, and in this module.
 
 This keeps the specific neuroimaging spaces out of our Image object.
 
->>> from nipy.core.api import Image, vox2mni, img_rollaxis, xyz_affine, as_xyz_affable
+>>> from nipy.core.api import Image, vox2mni, rollimg, xyz_affine, as_xyz_affable
 
 Make a standard 4D xyzt image in MNI space.
 
@@ -42,11 +42,11 @@ array([[ 2.,  0.,  0.,  0.],
 However, if we roll time first in the image array, we can't any longer get an
 xyz_affine that makes sense in relationship to the voxel data:
 
->>> img_t0 = img_rollaxis(img, 't')
+>>> img_t0 = rollimg(img, 't')
 >>> xyz_affine(img_t0)
 Traceback (most recent call last):
     ...
-AxesError: First 3 output axes must be X, Y, Z
+AxesError: First 3 input axes must correspond to X, Y, Z
 
 But we can fix this:
 
@@ -159,7 +159,7 @@ def is_xyz_affable(img, name2xyz=None):
 
     Examples
     --------
-    >>> from nipy.core.api import vox2mni, Image, img_rollaxis
+    >>> from nipy.core.api import vox2mni, Image, rollimg
     >>> arr = np.arange(24).reshape((2,3,4,1))
     >>> img = Image(arr, vox2mni(np.diag([2,3,4,5,1])))
     >>> img.coordmap
@@ -174,15 +174,15 @@ def is_xyz_affable(img, name2xyz=None):
     )
     >>> is_xyz_affable(img)
     True
-    >>> time0_img = img_rollaxis(img, 't')
+    >>> time0_img = rollimg(img, 't')
     >>> time0_img.coordmap
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='array', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('t', 'mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S'), name='mni', coord_dtype=float64),
-       affine=array([[ 5.,  0.,  0.,  0.,  0.],
-                     [ 0.,  2.,  0.,  0.,  0.],
+       function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
+       affine=array([[ 0.,  2.,  0.,  0.,  0.],
                      [ 0.,  0.,  3.,  0.,  0.],
                      [ 0.,  0.,  0.,  4.,  0.],
+                     [ 5.,  0.,  0.,  0.,  0.],
                      [ 0.,  0.,  0.,  0.,  1.]])
     )
     >>> is_xyz_affable(time0_img)

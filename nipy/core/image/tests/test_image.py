@@ -269,8 +269,8 @@ def test_synchronized_order():
 
 
 def test_iter_axis():
-    # axis iteration helper function.  This function also tests rollaxis,
-    # because iter_axis uses rollaxis
+    # axis iteration helper function.  This function also tests rollimg,
+    # because iter_axis uses rollimg
     iter_axis = image.iter_axis
     data = np.arange(24).reshape((4,3,2))
     img = Image(data, AffineTransform('ijk', 'xyz', np.eye(4)))

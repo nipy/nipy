@@ -4,7 +4,7 @@
 import numpy as np
 
 from nipy.io.api import load_image
-from nipy.core.image.image import rollaxis as img_rollaxis
+from nipy.core.image.image import rollimg
 
 from  .. import model
 from ..model import ModelOutputImage, estimateAR
@@ -57,7 +57,7 @@ def test_run():
     desmtx, cmatrices = f.design(time_vector, contrasts=con_defs)
 
     # Run with Image and ImageList
-    for inp_img in (img_rollaxis(funcim, 't'), fmriims):
+    for inp_img in (rollimg(funcim, 't'), fmriims):
         with InTemporaryDirectory():
             # Run OLS model
             outputs = []

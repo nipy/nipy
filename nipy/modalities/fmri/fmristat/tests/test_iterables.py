@@ -5,7 +5,7 @@ import numpy as np
 from numpy.random import standard_normal as noise
 
 from nipy.io.api import load_image
-from nipy.core.image.image import rollaxis as img_rollaxis
+from nipy.core.image.image import rollimg
 from nipy.modalities.fmri.api import FmriImageList, axis0_generator
 from nipy.core.utils.generators import (write_data, parcels,
                                         f_generator)
@@ -29,7 +29,7 @@ def teardown():
 # Module globals
 FIMG = load_image(funcfile)
 # Put time on first axis
-FIMG = img_rollaxis(FIMG, 't')
+FIMG = rollimg(FIMG, 't')
 FDATA = FIMG.get_data()
 FIL = FmriImageList.from_image(FIMG)
 

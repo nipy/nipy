@@ -771,7 +771,7 @@ def iter_axis(img, axis, asarray=False):
     >>> slices[1].sum() == data[:,:,1].sum()
     True
     """
-    rimg = rollaxis(img, axis)
+    rimg = rollimg(img, axis)
     for i in range(rimg.shape[0]):
         if asarray:
             yield rimg[i].get_data()

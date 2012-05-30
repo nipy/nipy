@@ -8,7 +8,7 @@ from ..pca import pca_image, pca as pca_array
 from ....core.api import Image, AffineTransform, CoordinateSystem as CS
 from ....core.reference.coordinate_map import (product as cm_product,
                                                drop_io_dim, AxisError)
-from ....core.image.image import rollaxis as image_rollaxis
+from ....core.image.image import rollimg
 from ....io.api import  load_image
 
 from nose.tools import assert_raises
@@ -22,7 +22,7 @@ def setup():
     img = load_image(funcfile)
     # Here, I'm just doing this so I know that img.shape[0] is the number of
     # volumes
-    t0_img = image_rollaxis(img, 't')
+    t0_img = rollimg(img, 't')
     data_dict['nimages'] = t0_img.shape[0]
     # Below, I am just making a mask because I already have img, I know I can do
     # this. In principle, though, the pca function will just take another Image
