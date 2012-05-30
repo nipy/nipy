@@ -65,7 +65,7 @@ import warnings
 
 import numpy as np
 
-from nibabel.affines import append_diag, to_matvec, from_matvec
+from nibabel.affines import to_matvec, from_matvec
 from ...fixes.nibabel import io_orientation
 
 from .coordinate_system import(CoordinateSystem,
@@ -87,9 +87,9 @@ class CoordinateMap(object):
 
     Attributes
     ----------
-    function_domain : :class:`CoordinateSystem`
+    function_domain : :class:`CoordinateSystem` instance
        The input coordinate system.
-    function_range : :class:`CoordinateSystem`
+    function_range : :class:`CoordinateSystem` instance
        The output coordinate system.
     function : callable
        A callable that maps the function_domain to the function_range.
@@ -1812,13 +1812,9 @@ def append_io_dim(cm, in_name, out_name, start=0, step=1):
            [ 0.,  0.,  0.,  5.,  9.],
            [ 0.,  0.,  0.,  0.,  1.]])
     '''
-    aff = cm.affine
-    in_dims = list(cm.function_domain.coord_names)
-    out_dims = list(cm.function_range.coord_names)
-    in_dims.append(in_name)
-    out_dims.append(out_name)
-    aff_plus = append_diag(aff, [step], [start])
-    return AffineTransform.from_params(in_dims, out_dims, aff_plus)
+    extra_aff = np.array([[step, start], [0, 1]])
+    extra_cmap = AffineTransform.from_params([in_name], [out_name], extra_aff)
+    return product(cm, extra_cmap)
 
 
 class CoordMapMakerError(Exception):
@@ -1925,11 +1921,23 @@ class CoordMapMaker(object):
             append_offsets = np.zeros(extra_N, dtype=append_zooms.dtype)
         elif len(append_offsets) != extra_N:
             raise CoordMapMakerError('Need same number of offsets as zooms')
-        if extra_N != 0:
-            affine = append_diag(affine, append_zooms, append_offsets)
-        return self.affine_maker(self.domain_maker(affine.shape[1] - 1),
-                                 self.range_maker(affine.shape[0] -1),
-                                 affine)
+        o_n_domain = affine.shape[1] - 1
+        o_n_range = affine.shape[0] - 1
+        domain = self.domain_maker(o_n_domain + extra_N)
+        range = self.range_maker(o_n_range + extra_N)
+        if extra_N == 0:
+            return self.affine_maker(domain, range, affine)
+        # Combine original and added affine using product
+        cmap0 = self.affine_maker(CS(domain.coord_names[:o_n_domain]),
+                                  CS(range.coord_names[:o_n_range]),
+                                  affine)
+        affine1 = from_matvec(np.diag(append_zooms), append_offsets)
+        cmap1 = self.affine_maker(CS(domain.coord_names[o_n_domain:]),
+                                  CS(range.coord_names[o_n_range:]),
+                                  affine1)
+        cmap = product(cmap0, cmap1)
+        # Return with original coordinate system names
+        return self.affine_maker(domain, range, cmap.affine)
 
     def make_cmap(self, domain_N, xform, inv_xform=None):
         """ Coordinate map with transform function `xform`
