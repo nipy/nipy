@@ -11,6 +11,7 @@
 * is_image : test for an object obeying the Image API
 """
 import warnings
+from copy import copy
 
 import numpy as np
 
@@ -158,6 +159,8 @@ class Image(object):
         """
         if metadata is None:
             metadata = {}
+        else: # Shallow copy
+            metadata = copy(metadata)
         ndim = len(data.shape)
         if not isinstance(coordmap, AffineTransform):
             raise ValueError('coordmap must be an AffineTransform')
@@ -217,7 +220,7 @@ class Image(object):
         elif type(order[0]) == type(''):
             order = [self.reference.index(s) for s in order]
         new_cmap = self.coordmap.reordered_range(order)
-        return self.__class__(self._data, new_cmap, metadata=self.metadata)
+        return self.__class__.from_image(self, coordmap=new_cmap)
 
     def reordered_axes(self, order=None):
         """ Return a new Image with reordered input coordinates.
@@ -274,8 +277,9 @@ class Image(object):
             new_data = np.transpose(self.get_data(), order)
         else:
             new_data = self._data
-        return self.__class__(new_data, new_cmap,
-                     metadata=self.metadata)
+        return self.__class__.from_image(self,
+                                         data=new_data,
+                                         coordmap=new_cmap)
 
     def renamed_axes(self, **names_dict):
         """ Return a new image with input (domain) axes renamed
@@ -300,8 +304,8 @@ class Image(object):
         >>> print im_renamed.axes
         CoordinateSystem(coord_names=('slice', 'j', 'k'), name='domain', coord_dtype=float64)
         """
-        newcmap = self.coordmap.renamed_domain(names_dict)
-        return self.__class__(self._data, newcmap)
+        new_cmap = self.coordmap.renamed_domain(names_dict)
+        return self.__class__.from_image(self, coordmap=new_cmap)
 
     def renamed_reference(self, **names_dict):
         """ Return new image with renamed output (range) coordinates
@@ -326,8 +330,8 @@ class Image(object):
         >>> print im_renamed_reference.reference
         CoordinateSystem(coord_names=('newx', 'newy', 'z'), name='range', coord_dtype=float64)
         """
-        newcmap = self.coordmap.renamed_range(names_dict)
-        return self.__class__(self._data, newcmap)
+        new_cmap = self.coordmap.renamed_range(names_dict)
+        return self.__class__.from_image(self, coordmap=new_cmap)
 
     def __setitem__(self, index, value):
         """Setting values of an image, set values in the data array."""
@@ -375,7 +379,9 @@ class Image(object):
         g = ArrayCoordMap(self.coordmap, self.shape)[slice_object]
         coordmap = g.coordmap
         if coordmap.function_domain.ndim > 0:
-            return self.__class__(data, coordmap, metadata=self.metadata)
+            return self.__class__.from_image(self,
+                                             data=data,
+                                             coordmap=coordmap)
         else:
             return data
 
@@ -407,6 +413,50 @@ class Image(object):
             '\n         '.join(repr(self.coordmap).split('\n')))
         np.set_printoptions(**options)
         return representation
+
+    @classmethod
+    def from_image(klass, img, data=None, coordmap=None, metadata=None):
+        """ Classmethod makes new instance of this `klass` from instance `img`
+
+        Parameters
+        ----------
+        data : array-like
+            object that as attribute ``shape`` and returns an array from
+            ``np.asarray(data)``
+        coordmap : `AffineTransform` object
+            coordmap mapping the domain (input) voxel axes of the image to the
+            range (reference, output) axes - usually mm in real world space
+        metadata : dict, optional
+            Freeform metadata for image.  Most common contents is ``header``
+            from nifti etc loaded images.
+
+        Returns
+        -------
+        img : `klass` instance
+            New image with data from `data`, coordmap from `coordmap` maybe
+            metadata from `metadata`
+
+        Notes
+        -----
+        Subclasses of ``Image`` with different semantics for ``__init__`` will
+        need to override this classmethod.
+
+        Examples
+        --------
+        >>> from nipy import load_image
+        >>> from nipy.core.api import Image
+        >>> from nipy.testing import anatfile
+        >>> aimg = load_image(anatfile)
+        >>> arr = np.arange(24).reshape((2,3,4))
+        >>> img = Image.from_image(aimg, data=arr)
+        """
+        if data is None:
+            data = img._data
+        if coordmap is None:
+            coordmap = copy(img.coordmap)
+        if metadata is None:
+            metadata = copy(img.metadata)
+        return klass(data, coordmap, metadata)
 
 
 class SliceMaker(object):
