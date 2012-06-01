@@ -28,4 +28,5 @@ from .utils.generators import (parcels, data_generator, write_data,
                                slice_generator, f_generator,
                                matrix_generator)
 
-from .image.xyz_image import lps_output_coordnames, ras_output_coordnames
+lps_output_coordnames = ('x+LR', 'y+PA', 'z+SI')
+ras_output_coordnames = ('x+RL', 'y+AP', 'z+SI')

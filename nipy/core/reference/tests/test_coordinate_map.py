@@ -7,7 +7,8 @@ from ..coordinate_map import (CoordinateMap, AffineTransform, compose, product,
                               append_io_dim, drop_io_dim, equivalent,
                               shifted_domain_origin, shifted_range_origin,
                               CoordMapMaker, CoordMapMakerError,
-                              _as_coordinate_map)
+                              _as_coordinate_map, AxisError, _fix0,
+                              _matching_orth_dim)
 
 from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,
                                  CoordSysMaker, CoordSysMakerError)
@@ -18,7 +19,7 @@ CS = CoordinateSystem
 from nose.tools import (assert_true, assert_equal, assert_raises,
                         assert_false)
 
-from numpy.testing import (assert_array_equal, assert_almost_equal)
+from numpy.testing import (assert_array_equal, assert_almost_equal, dec)
 
 
 class empty(object):
@@ -209,6 +210,26 @@ def test__eq__():
 
     yield assert_true, A == B
     yield assert_false, A != B
+
+
+def test_similar_to():
+    in_cs = CoordinateSystem('ijk', 'in', np.float32)
+    in_cs2 = CoordinateSystem('ijk', 'another name', np.float32)
+    out_cs = CoordinateSystem('xyz', 'out', np.float32)
+    out_cs2 = CoordinateSystem('xyz', 'again another', np.float32)
+    for klass, arg0, arg1 in ((CoordinateMap,
+                               lambda x : x + 1, lambda x : x + 2),
+                             (AffineTransform,
+                              np.eye(4), np.diag([1, 2, 3, 1]))):
+        c0 = klass(in_cs, out_cs, arg0)
+        c1 = klass(in_cs, out_cs, arg0)
+        assert_true(c0.similar_to(c1))
+        c1b = klass(in_cs, out_cs, arg1)
+        assert_false(c0.similar_to(c1b))
+        c2 = klass(in_cs2, out_cs, arg0)
+        assert_true(c0.similar_to(c2))
+        c3 = klass(in_cs, out_cs2, arg0)
+        assert_true(c0.similar_to(c3))
 
 
 def test_isinvertible():
@@ -570,38 +591,72 @@ def test_append_io_dim():
 
 
 def test_mod():
-    from nipy.core.reference.coordinate_map import _matching_orth_dim
+    # Diagnonal affine, all easy
     aff = np.diag([1,2,3,1])
     for i in range(3):
-        assert_equal(_matching_orth_dim(i, aff), (i, ''))
+        assert_equal(_matching_orth_dim(i, aff), i)
+    # Negative values don't confuse the argmax search
     aff = np.diag([-1,-2,-3,1])
     for i in range(3):
-        assert_equal(_matching_orth_dim(i, aff), (i, ''))
+        assert_equal(_matching_orth_dim(i, aff), i)
+    # Non-orthogonal affine
     aff = np.ones((4,4))
     for i in range(3):
-        val, msg = _matching_orth_dim(i, aff)
-        assert_equal(val, None)
+        assert_raises(AxisError, _matching_orth_dim, i, aff)
+    # No matching inputs for any output
     aff = np.zeros((3,3))
     for i in range(2):
-        val, msg = _matching_orth_dim(i, aff)
-        assert_equal(val, None)
+        assert_equal(_matching_orth_dim(i, aff), None)
+    # Permuting rows is OK
     aff = np.array([[1, 0, 0, 1],
                     [0, 0, 2, 1],
                     [0, 3, 0, 1],
                     [0, 0, 0, 1]])
-    val, msg = _matching_orth_dim(1, aff)
-    assert_equal(_matching_orth_dim(0, aff), (0, ''))
-    assert_equal(_matching_orth_dim(1, aff), (2, ''))
-    assert_equal(_matching_orth_dim(2, aff), (1, ''))
-    aff = np.diag([1, 2, 0, 1])
-    aff[:,3] = 1
-    assert_equal(_matching_orth_dim(2, aff), (2, ''))
+    assert_equal(_matching_orth_dim(0, aff), 0)
+    assert_equal(_matching_orth_dim(1, aff), 2)
+    assert_equal(_matching_orth_dim(2, aff), 1)
+    # Check axes fully orthogonal
+    aff = np.array([[1, 0, 0, 1],
+                    [0, 0.1, 2, 1],
+                    [0, 3, 0, 1],
+                    [0, 0, 0, 1]])
+    assert_raises(AxisError, _matching_orth_dim, 1, aff)
+
+
+def test__fix0():
+    # Test routine to fix possible zero TR in affine
+    assert_array_equal(_fix0(np.diag([1, 2, 3, 1])), np.diag([1, 2, 3, 1]))
+    assert_array_equal(_fix0(np.diag([0, 2, 3, 1])), np.diag([1, 2, 3, 1]))
+    assert_array_equal(_fix0(np.diag([1, 0, 3, 1])), np.diag([1, 1, 3, 1]))
+    assert_array_equal(_fix0(np.diag([1, 2, 0, 1])), np.diag([1, 2, 1, 1]))
+    aff = [[1, 0, 0, 10],
+           [0, 0, 0, 11],
+           [0, 0, 0, 1]]
+    assert_array_equal(_fix0(aff), aff)
+    aff = [[1, 0, 0, 10],
+           [0, 2, 0, 11],
+           [0, 0, 0, 12],
+           [0, 0, 0, 1]]
+    assert_array_equal(_fix0(aff),
+                       [[1, 0, 0, 10],
+                        [0, 2, 0, 11],
+                        [0, 0, 1, 12],
+                        [0, 0, 0, 1]])
+    eps = np.finfo(np.float64).eps
+    aff[2][2] = eps
+    assert_array_equal(_fix0(aff), aff)
 
 
 def test_drop_io_dim():
     # test ordinary case of 4d to 3d
     cm4d = AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
     cm3d = drop_io_dim(cm4d, 't')
+    assert_array_equal(cm3d.affine, np.diag([1, 2, 3, 1]))
+    cm3d = drop_io_dim(cm4d, 'l')
+    assert_array_equal(cm3d.affine, np.diag([1, 2, 3, 1]))
+    cm3d = drop_io_dim(cm4d, 3)
+    assert_array_equal(cm3d.affine, np.diag([1, 2, 3, 1]))
+    cm3d = drop_io_dim(cm4d, -1)
     assert_array_equal(cm3d.affine, np.diag([1, 2, 3, 1]))
     # 3d to 2d
     cm3d = AffineTransform.from_params('ijk', 'xyz', np.diag([1,2,3,1]))
@@ -621,11 +676,48 @@ def test_drop_io_dim():
     assert_array_equal(cm2d.affine, np.diag([1, 2, 1]))
     cm2d = drop_io_dim(cm3d, 'k')
     assert_array_equal(cm2d.affine, np.diag([1, 3, 1]))
-    # and with zeros scaling for orthogonal dropped dimension
+    # and with zeros scaling fix for orthogonal dropped dimension
     aff[2] = 0
     cm3d = AffineTransform.from_params('ijk', 'xyz', aff)
     cm2d = drop_io_dim(cm3d, 'z')
     assert_array_equal(cm2d.affine, np.diag([1, 2, 1]))
+    # Unless told otherwise
+    cm2d = drop_io_dim(cm3d, 'z', fix0=False)
+    # In this case we drop z because it has no matching input
+    assert_array_equal(cm2d.affine, [[1, 0, 0, 0],
+                                     [0, 0, 2, 0],
+                                     [0, 0, 0, 1]])
+    # Don't zero-fix untested dimensions
+    cm2d = drop_io_dim(cm3d, 'y', fix0=True)
+    assert_array_equal(cm2d.affine, np.diag([1, 0, 1]))
+    # Test test for ambiguous coordinate names
+    # This one is OK because they match
+    cm3d = AffineTransform.from_params('ijk', 'iyz', np.diag([1, 2, 3, 1]))
+    cm2d = drop_io_dim(cm3d, 'i')
+    assert_array_equal(cm2d.affine, np.diag([2, 3, 1]))
+    # Here they don't match and this raises an error
+    cm3d = AffineTransform.from_params('ijk', 'xiz', np.diag([1, 2, 3, 1]))
+    assert_raises(AxisError, drop_io_dim, cm3d, 'i')
+    # Dropping input or outputs that have no matching dimensions is also OK
+    aff = np.array([[1, .1, 0, 10],
+                    [.1, 0, 0, 11],
+                    [ 0, 3, 0, 12],
+                    [ 0, 0, 0, 1]])
+    cm3d = AffineTransform.from_params('ijk', 'xyz', aff)
+    cm2d = drop_io_dim(cm3d, 'k')
+    assert_array_equal(cm2d.affine, [[1, .1, 10],
+                                     [.1, 0, 11],
+                                     [ 0, 3, 12],
+                                     [ 0, 0, 1]])
+    aff = np.array([[1, .1, 0, 10],
+                    [0, 0, 0, 11],
+                    [0, 3, .1, 12],
+                    [0, 0, 0, 1]])
+    cm3d = AffineTransform.from_params('ijk', 'xyz', aff)
+    cm2d = drop_io_dim(cm3d, 'y')
+    assert_array_equal(cm2d.affine, [[1, .1, 0, 10],
+                                     [ 0, 3, .1, 12],
+                                     [ 0, 0, 0, 1]])
 
 
 def test_make_cmap():
