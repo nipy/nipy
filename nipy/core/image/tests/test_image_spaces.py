@@ -16,8 +16,7 @@ from ...reference.spaces import (vox2mni, vox2talairach, voxel_csm,
                                  AffineError, AxesError,
                                  XYZSpace, SpaceError)
 
-from numpy.testing import (assert_array_almost_equal,
-                           assert_array_equal)
+from numpy.testing import (assert_array_almost_equal, assert_array_equal)
 
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
@@ -38,7 +37,7 @@ def test_image_xyz_affine():
     assert_true(is_xyz_affable(nimg))
     assert_array_equal(xyz_affine(nimg), aff)
     # Any dimensions not spatial, AxesError
-    d_cs = CS('ijk', 'array')
+    d_cs = CS('ijk', 'voxels')
     r_cs = CS(('mni-x=L->R', 'mni-y=P->A', 'mni-q'), 'mni')
     cmap = AffineTransform(d_cs,r_cs, aff)
     img = Image(arr, cmap)
@@ -92,7 +91,7 @@ def test_image_as_xyz_affable():
     # If any dimensions not spatial, AxesError
     arr = np.arange(24).reshape((2,3,4))
     aff = np.diag([2,3,4,1])
-    d_cs = CS('ijk', 'array')
+    d_cs = CS('ijk', 'voxels')
     r_cs = CS(('mni-x=L->R', 'mni-y=P->A', 'mni-q'), 'mni')
     cmap = AffineTransform(d_cs, r_cs, aff)
     img = Image(arr, cmap)
@@ -137,7 +136,7 @@ def test_neuro_image():
     funky_space = XYZSpace('hija')
     img = neuro_image(arr, aff, funky_space)
     csm = funky_space.to_coordsys_maker('t')
-    in_cs = CS('ijkl', 'array')
+    in_cs = CS('ijkl', 'voxels')
     exp_cmap = AffineTransform(in_cs, csm(4), np.diag([2, 3, 4, 1, 1]))
     assert_equal(img.coordmap, exp_cmap)
     # Affine must be 4, 4

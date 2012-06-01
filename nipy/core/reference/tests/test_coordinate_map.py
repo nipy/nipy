@@ -853,7 +853,7 @@ def test_make_cmap():
     # Routine to put the guessing back into making coordinate maps
     d_names = list('ijklm')
     r_names = list('xyztu')
-    domain_maker = CoordSysMaker(d_names, 'array')
+    domain_maker = CoordSysMaker(d_names, 'voxels')
     range_maker = CoordSysMaker(r_names, 'world')
     cmm = CoordMapMaker(domain_maker, range_maker)
     # Making with generic functions and with affines
@@ -861,7 +861,7 @@ def test_make_cmap():
     inv_xform = lambda x : x-1
     diag_vals = range(2,8)
     for i in range(1, 6):
-        dcs = CS(d_names[:i], 'array')
+        dcs = CS(d_names[:i], 'voxels')
         rcs = CS(r_names[:i], 'world')
         # Generic
         assert_equal(cmm.make_cmap(i, xform, inv_xform),
@@ -877,21 +877,21 @@ def test_make_cmap():
         assert_equal(cmm(aff), AffineTransform(dcs, rcs, aff))
     # For affines, we can append dimensions by adding on the diagonal
     aff = np.diag([2,3,4,1])
-    dcs = CS(d_names[:4], 'array')
+    dcs = CS(d_names[:4], 'voxels')
     rcs = CS(r_names[:4], 'world')
     assert_equal(cmm.make_affine(aff, 5),
-                 AffineTransform(CS(d_names[:4], 'array'),
+                 AffineTransform(CS(d_names[:4], 'voxels'),
                                  CS(r_names[:4], 'world'),
                                  np.diag([2,3,4,5,1])))
     assert_equal(cmm.make_affine(aff, [5,6]),
-                 AffineTransform(CS(d_names[:5], 'array'),
+                 AffineTransform(CS(d_names[:5], 'voxels'),
                                  CS(r_names[:5], 'world'),
                                  np.diag([2,3,4,5,6,1])))
     # we can add offsets too
     exp_aff = np.diag([2,3,4,5,6,1])
     exp_aff[3:5,-1] = [7,8]
     assert_equal(cmm.make_affine(aff, [5,6],[7,8]),
-                 AffineTransform(CS(d_names[:5], 'array'),
+                 AffineTransform(CS(d_names[:5], 'voxels'),
                                  CS(r_names[:5], 'world'),
                                  exp_aff))
     # The zooms (diagonal elements) and offsets must match in length
@@ -901,10 +901,10 @@ def test_make_cmap():
                     [0,3,0],
                     [0,0,1],
                     [0,0,1]])
-    dcs = CS(d_names[:2], 'array')
+    dcs = CS(d_names[:2], 'voxels')
     rcs = CS(r_names[:3], 'world')
     assert_equal(cmm.make_affine(aff), AffineTransform(dcs, rcs, aff))
-    dcs = CS(d_names[:3], 'array')
+    dcs = CS(d_names[:3], 'voxels')
     rcs = CS(r_names[:4], 'world')
     exp_aff = np.array([[2,0,0,0],
                         [0,3,0,0],
