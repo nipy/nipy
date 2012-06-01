@@ -486,6 +486,18 @@ def test_product():
     assert_equal(affine.function_domain.coord_names, ('i', 'j'))
     assert_equal(affine.function_range.coord_names, ('x', 'y'))
     assert_array_equal(affine.affine, np.diag([2, 3, 1]))
+    # Test name argument
+    for m1, m2 in ((affine1, affine2), (cm1, cm2), (affine1, cm2)):
+        cm = product(m1, m2)
+        assert_equal(cm.function_domain.name, 'product')
+        assert_equal(cm.function_range.name, 'product')
+        cm = product(m1, m2, input_name='name0')
+        assert_equal(cm.function_domain.name, 'name0')
+        assert_equal(cm.function_range.name, 'product')
+        cm = product(m1, m2, output_name='name1')
+        assert_equal(cm.function_domain.name, 'product')
+        assert_equal(cm.function_range.name, 'name1')
+        assert_raises(TypeError, product, m1, m2, whatgains='name0')
 
 
 def test_equivalent():
