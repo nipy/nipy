@@ -23,7 +23,6 @@ from matplotlib.mlab import csv2rec, rec2csv
 
 # From NIPY
 from nipy.io.api import load_image, save_image
-from nipy.core.image.xyz_image import XYZImage
 
 #-----------------------------------------------------------------------------
 # Globals
@@ -139,17 +138,14 @@ def get_fmri(path_dict):
     Returns
     -------
     fmri : ndarray
-    
     anat : NIPY image
     """
     fmri_im = load_image(
-        pjoin("%(rootdir)s/swafunctional_%(run)02d.nii") % path_dict) 
-
+        pjoin("%(rootdir)s/swafunctional_%(run)02d.nii") % path_dict)
     # Make sure we know the order of the coordinates
-
     fmri_im = fmri_im.reordered_world('xyzt').reordered_axes('ijkl')
+    return fmri_im
 
-    return LPIImage.from_image(fmri_im)
 
 def ensure_dir(*path):
     """Ensure a directory exists, making it if necessary.
@@ -159,6 +155,7 @@ def ensure_dir(*path):
     if not isdir(dirpath):
         makedirs(dirpath)
     return dirpath
+
 
 def output_dir(path_dict,tcons,fcons):
     """Get (and make if necessary) directory to write output into.
@@ -173,7 +170,6 @@ def output_dir(path_dict,tcons,fcons):
 
     return odir
 
-                   
 
 def test_sanity():
     from nipy.modalities.fmri.fmristat.tests import FIACdesigns

@@ -167,7 +167,7 @@ def run_model(subj, run):
     # It is transposed to have time as the first dimension,
     # i.e. fmri[t] gives the t-th volume.
 
-    fmri_lpi = futil.get_fmri(path_info) # an LPIImage
+    fmri_lpi = futil.get_fmri(path_info) # an Image
     fmri_im = Image(fmri_lpi._data, fmri_lpi.coordmap)
     fmri_im = image_rollaxis(fmri_im, 't')
 

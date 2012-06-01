@@ -148,10 +148,7 @@ class CoordinateSystem(object):
         return not self.__eq__(other)
 
     def __eq__(self, other):
-        """Equality is defined by self.dtype.
-
-        XXX If we want to make things
-        XXX truly Affine, we would check "name" as well
+        """Equality is defined by self.dtype and self.name
 
         Parameters
         ----------
@@ -163,6 +160,20 @@ class CoordinateSystem(object):
         tf: bool
         """
         return (self.dtype == other.dtype) and (self.name == other.name)
+
+    def similar_to(self, other):
+        """Similarity is defined by self.dtype, ignoring name
+
+        Parameters
+        ----------
+        other : :class:`CoordinateSystem`
+           The object to be compared with
+
+        Returns
+        -------
+        tf: bool
+        """
+        return (self.dtype == other.dtype)
 
     def __repr__(self):
         """Create a string representation of the coordinate system

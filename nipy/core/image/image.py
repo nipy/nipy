@@ -767,10 +767,11 @@ def synchronized_order(img, target_img,
     >>> im_unscrambled4.reference == im.reference
     True
     """
-    # Caution, we can't just use target_img.reference because it's
-    # always 3-dimensional if isinstance(target_img, LPIImage)
+    # Caution, we can't just use target_img.reference because other subclasses
+    # of Image may not have all axes in the .reference attribute.
     target_axes = target_img.axes # = target_img.coordmap.function_domain
-    target_reference = target_img.coordmap.function_range # not always = target_image.reference
+    # the below not necessarily == target_image.reference
+    target_reference = target_img.coordmap.function_range
     if axes:
         img = img.reordered_axes(target_axes.coord_names)
     if reference:
