@@ -465,6 +465,11 @@ def nifti2nipy(ni_img):
     data = ni_img.get_data()
     shape = list(ni_img.shape)
     ndim = len(shape)
+    # For now we only warn if intent is set to an unexpected value
+    intent, _, _ = hdr.get_intent()
+    if intent != 'none':
+        warnings.warn('Ignoring intent field meaning "%s"' % intent,
+                        UserWarning)
     # Which space?
     world_label = hdr.get_value_label('sform_code')
     if world_label == 'unknown':
@@ -500,6 +505,7 @@ def nifti2nipy(ni_img):
     output_cs3 = world_space.to_coordsys_maker()(3)
     cmap3 = AT(input_cs3, output_cs3, affine)
     if ndim == 3:
+        # Warn for ignoring intent
         return Image(data, cmap3, {'header': hdr})
     space_units, time_like_units = hdr.get_xyzt_units()
     units_info = TIME_LIKE_UNITS.get(time_like_units, None)
