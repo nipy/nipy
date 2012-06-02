@@ -413,6 +413,39 @@ def test_load_spaces():
 
 def test_mm_scaling():
     # Test the micron and meter scale the affine right
+    data = np.random.normal(size=range(4))
+    xyz_aff = from_matvec(np.diag([2, 3, 4]), [11, 12, 13])
+    exp_aff = from_matvec(np.diag([2, 3, 4, 1]), [11, 12, 13, 0])
+    in_cs = CS('ijkt', name='voxels')
+    out_cs = aligned_csm(4)
+    # No space scaling
+    ni_img = nib.Nifti1Image(data, xyz_aff)
+    hdr = ni_img.get_header()
+    assert_equal(hdr.get_xyzt_units(), ('unknown', 'unknown'))
+    assert_equal(nifti2nipy(ni_img).coordmap, AT(in_cs, out_cs, exp_aff))
+    # mm is assumed
+    hdr.set_xyzt_units('mm')
+    assert_equal(nifti2nipy(ni_img).coordmap, AT(in_cs, out_cs, exp_aff))
+    # microns !
+    hdr.set_xyzt_units('micron')
+    ni_img = nib.Nifti1Image(data, xyz_aff, hdr)
+    scaler = np.diag([1 / 1000., 1 / 1000., 1 / 1000., 1, 1])
+    assert_equal(nifti2nipy(ni_img).coordmap,
+                 AT(in_cs, out_cs, np.dot(scaler, exp_aff)))
+    # mm again
+    hdr.set_xyzt_units('mm')
+    ni_img = nib.Nifti1Image(data, xyz_aff, hdr)
+    assert_equal(nifti2nipy(ni_img).coordmap, AT(in_cs, out_cs, exp_aff))
+    # meters !
+    hdr.set_xyzt_units('meter')
+    ni_img = nib.Nifti1Image(data, xyz_aff, hdr)
+    scaler = np.diag([1000., 1000., 1000., 1, 1])
+    assert_equal(nifti2nipy(ni_img).coordmap,
+                 AT(in_cs, out_cs, np.dot(scaler, exp_aff)))
+
+
+def test_load_dim_info():
+    # Test freq, phase, slice get set correctly on load
     pass
 
 
