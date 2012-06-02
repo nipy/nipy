@@ -120,66 +120,8 @@ if:
 What we do about all this
 =========================
 
-On saving a NIPY image to NIFTI
--------------------------------
-
-First, we need to create a valid XYZ Affine.  We check if this can be done by
-checking if there are recognizable X, Y, Z output axes and corresponding input
-(voxel) axes.  This requires the input image to be at least 3D. If we find these
-requirements, we reorder the image axes to have XYZ output axes and 3 spatial
-input axes first, and get the corresponding XYZ affine.
-
-We check if the XYZ output fits with the the NIFTI named spaces of scanner,
-aligned, Talairach, MNI.  If not we raise an error.
-
-If the non-spatial dimensions are not orthogonal to each other, raise a
-NiftiError.
-
-If any of the first three input axes are named ('slice', 'freq', 'phase') set
-the ``dim_info`` field accordingly.
-
-Set the ``xyzt_units`` field to indicate millimeters and seconds, if there is a
-'t' axis, otherwise millimeters and (Hz, PPM, rads) if there's are other time-like
-axes), otherwise millimeters and zero (unknown).
-
-We look to see if we have a time-like axis in the inputs or the outputs. If we
-do, roll that axis to be the 4th axis.  If this axis is actually time, take the
-``affine[3, -1]`` and put into the ``toffset`` field.  If there's no time-like
-axis, but there are other non-spatial axes, make a length 1 input axis to
-indicate this.
-
-Set ``pixdim`` for axes >= 3 using vector length of corresponding affine
-columns.
-
-We don't set the intent-related fields for now.
-
-On loading a NIPY image from NIFTI
-----------------------------------
-
-Lacking any other information, we take the input coordinate names for
-axes 0:7 to be  ('i', 'j', 'k', 't', 'u', 'v', 'w').
-
-If ``dim_info`` is set coherently, set input axis names to 'slice', 'freq',
-'phase' from ``dim_info``.
-
-If there is a time-like axis, name the input and corresponding output axis for
-the type of axis ('t', 'hz', 'ppm', 'rads').
-
-Otherwise remove the 't' axis from both input and output names, and squeeze the
-length 1 dimension from the nifti.
-
-If there's a 't' axis get ``toffset`` and put into affine at position [3, -1].
-
-Get the output spatial coordinate names from the 'scanner', 'aligned',
-'talairach', 'mni' XYZ spaces (see :mod:`nipy.core.reference.spaces`).
-
-We construct the N-D affine by taking the XYZ affine and adding scaling diagonal
-elements from ``pixdim``.
-
-If the space units in Nifti's ``xyxt_units`` are 'micron' or 'meter', scale the
-affine by 0.001 and 1000 respectively, but warn.
-
-Ignore the intent-related fields for now.
+For saving a NIPY image to NIFTI, see the docstring for :func:`nipy2nifti`.
+For loading a NIFTI image to NIPY, see the docstring for :func:`nifti2nipy`.
 
 """
 
@@ -248,6 +190,14 @@ def nipy2nifti(img, strict=None, fix0=False):
     ni_img : ``nibabel.Nifti1Image``
         Nifti image
 
+    Raises
+    ------
+    NiftiError: if space axes not orthogonal to non-space axes
+    NiftiError: if non-space axes not orthogonal to each other
+    NiftiError: if `img` ouput space does not match named spaces in Nifti
+    NiftiError: if we find a time-like output axis but we can't find a
+        corresponding input axis.
+
     Notes
     -----
     First, we need to create a valid XYZ Affine.  We check if this can be done
@@ -256,11 +206,16 @@ def nipy2nifti(img, strict=None, fix0=False):
     find these requirements, we reorder the image axes to have XYZ output axes
     and 3 spatial input axes first, and get the corresponding XYZ affine.
 
-    If the non-spatial dimensions are not orthogonal to each other, raise an
-    error.
+    If the spatial dimensions are not orthogonal to the non-spatial dimensions,
+    raise a NiftiError.
+
+    If the non-spatial dimensions are not orthogonal to each other, raise a
+    NiftiError.
 
     We check if the XYZ output fits with the the NIFTI named spaces of scanner,
-    aligned, Talairach, MNI.  If not we raise an error.
+    aligned, Talairach, MNI.  If not we raise an error.  Note that 'unknown' is
+    not a known space for Nifti, because it cannot be set without also deleting
+    the affine.
 
     If any of the first three input axes are named ('slice', 'freq', 'phase')
     set the ``dim_info`` field accordingly.
@@ -268,14 +223,12 @@ def nipy2nifti(img, strict=None, fix0=False):
     Set the ``xyzt_units`` field to indicate millimeters and seconds, if there
     is a 't' axis, otherwise millimeters and 0 (unknown).
 
-    We look to see if we have an output axis named 't'. If we do, roll that axis
-    to be the 4th axis. Take the ``affine[3, -1]`` and put into the ``toffset``
-    field.  If there's no 't' axis, but there are other non-spatial axes, make a
-    length 1 input axis to indicate this.
-
-    If there is an axis named any of frequency-hz', 'concentration-ppm' or
-    'radians/s' and there is no 't' axis, move the axis to the 4th position and
-    set ``xyz_units``.
+    We look to see if we have a time-like axis in the inputs or the outputs. A
+    time-like axis has labels 't', 'hz', 'ppm', 'rads'.  If we do have a
+    time-like axis, roll that axis to be the 4th axis.  If this axis is actually
+    time, take the ``affine[3, -1]`` and put into the ``toffset`` field.  If
+    there's no time-like axis, but there are other non-spatial axes, make a
+    length 1 4th array axis to indicate this.
 
     Set ``pixdim`` for axes >= 3 using vector length of corresponding affine
     columns.
@@ -453,13 +406,14 @@ def nifti2nipy(ni_img):
     In the presence of ambiguity, resist the temptation to guess - raise a
     NiftiError.
 
-    If there is a time-like axis, name the input and corresponding output axis for
-    the type of axis ('t', 'hz', 'ppm', 'rads').
+    If there is a time-like axis, name the input and corresponding output axis
+    for the type of axis ('t', 'hz', 'ppm', 'rads').
 
-    Otherwise remove the 't' axis from both input and output, and squeeze the length
-    1 dimension from the nifti.
+    Otherwise remove the 't' axis from both input and output names, and squeeze
+    the length 1 dimension from the input data.
 
-    If there's a 't' axis get ``toffset`` and put into affine at position [3, -1].
+    If there's a 't' axis get ``toffset`` and put into affine at position [3,
+    -1].
 
     If ``dim_info`` is set coherently, set input axis names to 'slice', 'freq',
     'phase' from ``dim_info``.
@@ -467,13 +421,17 @@ def nifti2nipy(ni_img):
     Get the output spatial coordinate names from the 'scanner', 'aligned',
     'talairach', 'mni' XYZ spaces (see :mod:`nipy.core.reference.spaces`).
 
-    We construct the N-D affine by taking the XYZ affine and adding scaling diagonal
-    elements from ``pixdim``.
+    We construct the N-D affine by taking the XYZ affine and adding scaling
+    diagonal elements from ``pixdim``.
 
-    If the space units are microns or meters we adjust the affine to mm units,
-    but warn because this might be a mistake.
+    If the space units in NIFTI ``xyzt_units`` are 'microns' or 'meters' we
+    adjust the affine to mm units, but warn because this might be a mistake.
 
-    Ignore the intent-related fields for now.
+    If the time units in NIFTI `xyzt_units` are 'msec' or 'usec', scale the time
+    axis pixdim accordingly.
+
+    Ignore the intent-related fields for now, but warn that we are doing so if
+    there appears to be specific information in there.
     """
     hdr = ni_img.get_header()
     affine = ni_img.get_affine()
