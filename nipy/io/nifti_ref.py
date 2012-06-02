@@ -436,10 +436,22 @@ def nifti2nipy(ni_img):
     img : :class:`Image`
         nipy image
 
+    Raises
+    ------
+    NiftiError : if image is < 3D
+
     Notes
     -----
     Lacking any other information, we take the input coordinate names for
     axes 0:7 to be  ('i', 'j', 'k', 't', 'u', 'v', 'w').
+
+    If the image is 1D or 2D then we have a problem.  If there's a defined
+    (sform, qform) affine, this has 3 input dimensions, and we have to guess
+    what the extra input dimensions are.  If we don't have a defined affine, we
+    don't know what the output dimensions are.  For example, if the image is 2D,
+    and we don't have an affine, are these X and Y or X and Z or Y and Z?
+    In the presence of ambiguity, resist the temptation to guess - raise a
+    NiftiError.
 
     If there is a time-like axis, name the input and corresponding output axis for
     the type of axis ('t', 'hz', 'ppm', 'rads').
@@ -458,13 +470,24 @@ def nifti2nipy(ni_img):
     We construct the N-D affine by taking the XYZ affine and adding scaling diagonal
     elements from ``pixdim``.
 
+    If the space units are microns or meters we adjust the affine to mm units,
+    but warn because this might be a mistake.
+
     Ignore the intent-related fields for now.
     """
     hdr = ni_img.get_header()
     affine = ni_img.get_affine()
+    # Affine will not be None from a loaded image, but just in case
+    if affine is None:
+        affine = hdr.get_best_affine()
     data = ni_img.get_data()
     shape = list(ni_img.shape)
     ndim = len(shape)
+    if ndim < 3:
+        raise NiftiError("With less than 3 dimensions we cannot be sure "
+                         "which input and output dimensions you intend for "
+                         "the coordinate map.  Please fix this image with "
+                         "nibabel or some other tool")
     # For now we only warn if intent is set to an unexpected value
     intent, _, _ = hdr.get_intent()
     if intent != 'none':
@@ -475,13 +498,6 @@ def nifti2nipy(ni_img):
     if world_label == 'unknown':
         world_label = hdr.get_value_label('qform_code')
     world_space = XFORM2SPACE.get(world_label, ncrs.unknown_space)
-    # Promote 1 and 2D
-    if ndim <= 3:
-        if ndim == 1:
-            data = data[:, None, None]
-        elif ndim == 2:
-            data = data[:, :, None]
-        ndim = 3
     # Get information from dim_info
     input_names3 = list('ijk')
     freq, phase, slice = hdr.get_dim_info()
@@ -512,6 +528,7 @@ def nifti2nipy(ni_img):
     n_ns = ndim - 3
     ns_zooms = list(hdr.get_zooms()[3:])
     ns_trans = [0] * n_ns
+    ns_names = tuple('uvw')
     # Have we got a time axis?
     if (shape[3] == 1 and ndim > 4 and units_info is None):
         # Squeeze length 1 no-time axis
@@ -520,7 +537,6 @@ def nifti2nipy(ni_img):
         ns_trans.pop(0)
         data = data.reshape(shape)
         ndim -= 1
-        time_name = None
     else: # have time-like
         if units_info is None:
             units_info = TIME_LIKE_UNITS['sec']
@@ -530,8 +546,6 @@ def nifti2nipy(ni_img):
         if time_name == 't':
             # Get time offset
             ns_trans[0] = hdr['toffset']
-    ns_names = tuple('uvw')
-    if not time_name is None:
         ns_names = (time_name,) + ns_names
     output_cs = CS(ns_names[:n_ns])
     input_cs = CS(ns_names[:n_ns])

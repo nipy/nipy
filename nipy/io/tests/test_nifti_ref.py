@@ -218,7 +218,7 @@ def test_time_axes_4th():
         assert_array_equal(ni_img.get_header().get_zooms(), (2, 3, 4, 7, 5, 6))
 
 
-def test_toffset():
+def test_save_toffset():
     # Check toffset only gets set for time
     data = np.random.normal(size=(2, 3, 4, 5, 6, 7))
     aff = from_matvec(np.diag([2., 3, 4, 5, 6, 7]),
@@ -253,7 +253,7 @@ def test_no_time():
         assert_array_equal(ni_img.get_data(), data[:, :, :, None, :, :])
 
 
-def test_spaces():
+def test_save_spaces():
     # Test that intended output spaces get set into nifti
     data = np.random.normal(size=(2, 3, 4))
     aff = np.diag([2., 3, 4, 1])
@@ -268,7 +268,7 @@ def test_spaces():
                      label)
 
 
-def test_basic_nifti2nipy():
+def test_basic_load():
     # Just basic load
     data = np.random.normal(size=(2, 3, 4, 5))
     aff = np.diag([2., 3, 4, 1])
@@ -277,7 +277,30 @@ def test_basic_nifti2nipy():
     assert_array_equal(img.get_data(), data)
 
 
-def test_ni2np_cmaps():
+def test_expand_to_3d():
+    # Test 1D and 2D niftis
+    # 1D and 2D with full sform or qform affines raise a NiftiError, because we
+    # can't be sure which axes the affine refers to.  Should the image have 1
+    # length axes prepended?  Or appended?
+    xyz_aff = np.diag([2, 3, 4, 1])
+    for size in (10,), (10, 2):
+        data = np.random.normal(size=size)
+        ni_img = nib.Nifti1Image(data, xyz_aff)
+        # Default is aligned
+        assert_raises(NiftiError, nifti2nipy, ni_img)
+        hdr = ni_img.get_header()
+        # The pixdim affine
+        for label in 'scanner', 'aligned', 'talairach', 'mni':
+            hdr.set_sform(xyz_aff, label)
+            assert_raises(NiftiError, nifti2nipy, ni_img)
+            hdr.set_sform(None)
+            assert_raises(NiftiError, nifti2nipy, ni_img)
+            hdr.set_sform(xyz_aff, label)
+            assert_raises(NiftiError, nifti2nipy, ni_img)
+            hdr.set_qform(None)
+
+
+def test_load_cmaps():
     data = np.random.normal(size=range(7))
     xyz_aff = np.diag([2, 3, 4, 1])
     # Default with time-like
@@ -333,6 +356,64 @@ def test_ni2np_cmaps():
                    np.diag([2, 3, 4, 1, 1]))
     img = nifti2nipy(ni_img_41)
     assert_equal(img.coordmap, cmap_41)
+
+
+def test_load_toffset():
+    # Test toffset gets set into affine only for time
+    data = np.random.normal(size=range(5))
+    xyz_aff = np.diag([2, 3, 4, 1])
+    # Default with time-like and no toffset
+    ni_img = nib.Nifti1Image(data, xyz_aff)
+    hdr = ni_img.get_header()
+    img = nifti2nipy(ni_img)
+    exp_aff = np.diag([2., 3, 4, 1, 1, 1])
+    in_cs = CS('ijktu', name='voxels')
+    xyz_names = aligned_csm(3).coord_names
+    out_cs = CS(xyz_names + tuple('tu'), name='aligned')
+    assert_equal(hdr['toffset'], 0)
+    assert_equal(img.coordmap, AT(in_cs, out_cs, exp_aff))
+    # Set toffset and expect in affine
+    hdr['toffset'] = 42
+    exp_aff[3, -1] = 42
+    assert_equal(nifti2nipy(ni_img).coordmap, AT(in_cs, out_cs, exp_aff))
+    # Make time axis into hz and expect not to see toffset
+    hdr.set_xyzt_units('mm', 'hz')
+    in_cs_hz = CS(('i', 'j', 'k', 'hz', 'u'), name='voxels')
+    out_cs_hz = CS(xyz_names + ('hz', 'u'), name='aligned')
+    exp_aff[3, -1] = 0
+    assert_equal(nifti2nipy(ni_img).coordmap, AT(in_cs_hz, out_cs_hz, exp_aff))
+
+
+def test_load_spaces():
+    # Test spaces get read correctly
+    shape = np.array((6, 5, 4, 3, 2))
+    zooms = np.array((2, 3, 4, 5, 6))
+    data = np.random.normal(size=shape)
+    # Default with no affine in header, or in image
+    ni_img = nib.Nifti1Image(data, None)
+    hdr = ni_img.get_header()
+    hdr.set_zooms(zooms)
+    # Expected affine is from the pixdims and the center of the image.  Default
+    # is also flipped X.
+    offsets = (1 - shape[:3]) / 2. * zooms[:3] * (-1, 1, 1)
+    exp_aff = from_matvec(np.diag([-2, 3, 4, 5, 6]),
+                          list(offsets) + [0, 0])
+    in_cs = CS('ijktu', name='voxels')
+    exp_cmap = AT(in_cs, unknown_csm(5), exp_aff)
+    assert_equal(nifti2nipy(ni_img).coordmap, exp_cmap)
+    an_aff = from_matvec(np.diag([1.1, 2.2, 3.3]), [10, 11, 12])
+    exp_aff = from_matvec(np.diag([1.1, 2.2, 3.3, 5, 6]), [10, 11, 12, 0, 0])
+    for label, csm in (('scanner', scanner_csm),
+                       ('aligned', aligned_csm),
+                       ('talairach', talairach_csm),
+                       ('mni', mni_csm)):
+        hdr.set_sform(an_aff, label)
+        assert_equal(nifti2nipy(ni_img).coordmap, AT(in_cs, csm(5), exp_aff))
+
+
+def test_mm_scaling():
+    # Test the micron and meter scale the affine right
+    pass
 
 
 def _test_input_cs():
