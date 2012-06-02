@@ -446,7 +446,31 @@ def test_mm_scaling():
 
 def test_load_dim_info():
     # Test freq, phase, slice get set correctly on load
-    pass
+    data = np.random.normal(size=range(3))
+    xyz_aff = from_matvec(np.diag([2, 3, 4]), [11, 12, 13])
+    in_cs = CS('ijk', name='voxels')
+    out_cs = aligned_csm(3)
+    # Just confirm that the default leads to no axis renaming
+    ni_img = nib.Nifti1Image(data, xyz_aff)
+    hdr = ni_img.get_header()
+    assert_equal(hdr.get_dim_info(), (None, None, None))
+    assert_equal(nifti2nipy(ni_img).coordmap, AT(in_cs, out_cs, xyz_aff))
+    # But now...
+    hdr.set_dim_info(freq=1)
+    assert_equal(nifti2nipy(ni_img).coordmap,
+                 AT(CS(('i', 'freq', 'k'), "voxels"), out_cs, xyz_aff))
+    hdr.set_dim_info(freq=2)
+    assert_equal(nifti2nipy(ni_img).coordmap,
+                 AT(CS(('i', 'j', 'freq'), "voxels"), out_cs, xyz_aff))
+    hdr.set_dim_info(phase=1)
+    assert_equal(nifti2nipy(ni_img).coordmap,
+                 AT(CS(('i', 'phase', 'k'), "voxels"), out_cs, xyz_aff))
+    hdr.set_dim_info(slice=0)
+    assert_equal(nifti2nipy(ni_img).coordmap,
+                 AT(CS(('slice', 'j', 'k'), "voxels"), out_cs, xyz_aff))
+    hdr.set_dim_info(freq=1, phase=0, slice=2)
+    assert_equal(nifti2nipy(ni_img).coordmap,
+                 AT(CS(('phase', 'freq', 'slice'), "voxels"), out_cs, xyz_aff))
 
 
 def _test_input_cs():
