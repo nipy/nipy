@@ -402,10 +402,9 @@ def output_resid(outfile, fmri_image, clobber=False):
         T[0,0] = (fmri_image.volume_start_times[1:] -
                   fmri_image.volume_start_times[:-1]).mean()
         # FIXME: NIFTI specific naming here
-        innames = ["l"] + list(g.function_range.coord_names)
-        outnames = ["t"] + list(g.function_domain.coord_names)
-        cmap = AffineTransform.from_params(innames,
-                                  outnames, T)
+        innames = ["t"] + list(g.function_domain.coord_names)
+        outnames = ["t"] + list(g.function_range.coord_names)
+        cmap = AffineTransform.from_params(innames, outnames, T)
         shape = (n,) + fmri_image[0].shape
     elif isinstance(fmri_image, Image):
         cmap = fmri_image.coordmap
