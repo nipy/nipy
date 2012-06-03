@@ -177,7 +177,7 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
             duration = paradigm.duration[paradigm.con_id == nc]
         exp_condition = (onsets, duration, values)
         reg, names = compute_regressor(exp_condition, hrf_model, frametimes,
-                                       con_id=nc, fir_delays=fir_delays, 
+                                       con_id=nc, fir_delays=fir_delays,
                                        oversampling=oversampling)
         hnames += names
         if rmatrix == None:
@@ -374,7 +374,7 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
         names += add_reg_names
 
     # setp 3: drifts
-    drift, dnames = _make_drift(drift_model.lower(), frametimes, drift_order, 
+    drift, dnames = _make_drift(drift_model.lower(), frametimes, drift_order,
                                 hfcut)
     matrix = np.hstack((matrix, drift))
     names += dnames

@@ -23,7 +23,7 @@ import pylab as pl
 import tempfile
 
 from nibabel import load, save, Nifti1Image
-from nipy.modalities.fmri.glm import glm_fit
+from nipy.modalities.fmri.glm import GeneralLinearModel
 from nipy.modalities.fmri.design_matrix import make_dmtx
 from nipy.modalities.fmri.experimental_paradigm import \
     load_paradigm_from_csv_file
@@ -127,7 +127,8 @@ print 'Fitting a GLM (this takes time)...'
 fmri_image = load(data_path)
 Y = fmri_image.get_data()[mask_array]
 X = design_matrix.matrix
-results = glm_fit(X, Y.T, steps=2)
+results = GeneralLinearModel(X)
+results.fit(Y.T, steps=100)
 affine = fmri_image.get_affine()
 
 #########################################

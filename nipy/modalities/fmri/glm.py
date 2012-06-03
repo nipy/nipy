@@ -10,17 +10,18 @@ It is important to note that the GLM is meant as a one-session
 General Linear Model. But inference can be performed on multiple sessions
 by computing fixed effects on contrasts
 
->>> from nipy.modalities.fmri.glm import glm_fit
+>>> from nipy.modalities.fmri.glm import GeneralLinearModel
 >>> import numpy as np
 >>> n, p, q = 100, 80, 10
 >>> X, Y = np.random.randn(p, q), np.random.randn(p, n)
->>> glm_result = glm_fit(X, Y)
 >>> cval = np.hstack((1, np.zeros(9)))
->>> z_vals = glm_result.contrast(cval).z_score() # z-transformed statistics
->>> # fixed effects statistics across two contrasts
+>>> mulm = GeneralLinearModel(X)
+>>> mulm.fit(Y)
+>>> z_vals = mulm.contrast(cval).z_score() # z-transformed statistics
+>>> # example of fixed effects statistics across two contrasts
 >>> cval_ = cval.copy()
 >>> np.random.shuffle(cval_)
->>> z_ffx = (glm_result.contrast(cval) + glm_result.contrast(cval_)).z_score()
+>>> z_ffx = (mulm.contrast(cval) + mulm.contrast(cval_)).z_score()
 """
 
 import numpy as np
@@ -32,88 +33,71 @@ from nipy.labs.utils.zscore import zscore
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
 
-def glm_fit(X, Y, model='ar1', steps=100):
-    """ GLM fitting of a dataset using 'ols' regression or the two-pass
 
-    Parameters
-    ----------
-    X: array of shape(n_time_points, n_regressors),
-       the design matrix
-    Y: array of shape(n_time_points, n_samples), the fMRI data
-    model: string, to be chosen in ['ar1', 'ols'], optional,
-           the temporal variance model. Defaults to 'ar1'
-    steps: int, optional,
-           Maximum number of discrete steps for the AR(1) coef histogram
+class GeneralLinearModel(object):
+    """ This class handles the so-called on General Linear Model
 
-    Returns
-    -------
-    result: a GLMResults instance yielding the result of the GLM
-    """
-    if model not in ['ar1', 'ols']:
-        raise ValueError('Unknown model')
-
-    if Y.ndim == 1:
-        Y = Y[:, np.newaxis]
-
-    if Y.shape[0] != X.shape[0]:
-        raise ValueError('Response and predictors are inconsistent')
-
-    # fit the OLS model
-    ols_result = OLSModel(X).fit(Y)
-
-    # compute and discretize the AR1 coefs
-    ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(0) /
-           (ols_result.resid ** 2).sum(0))
-    ar1 = (ar1 * steps).astype(np.int) * 1. / steps
-
-    # Fit the AR model acccording to current AR(1) estimates
-    if model == 'ar1':
-        results_ = {}
-        labels_ = ar1
-
-        # fit the model
-        for val in np.unique(labels_):
-            m = ARModel(X, val)
-            results_[val] = m.fit(Y[:, labels_ == val])
-    else:
-        # save the results
-        labels_ = np.zeros(Y.shape[1])
-        results_ = {0.0: ols_result}
-    return GLMResults(results_, labels_)
-
-
-class GLMResults(object):
-    """ This class contains the dump of a GLM, in an efficient way
-    It is meant to spit out a set of student or Fisher when given a contrast.
-    In practice this hide loops over set of voxels
+    Most of what it does in the fit() and contrast() methods
+    fit() performs the standard two-step ('ols' then 'ar1') GLM fitting
+    contrast() returns a contrast instance, yileding statistics and p-values.
+    The link between fit() and constrast is done vis the two class members:
+    glm_results: dictionary of nipy.algorithms.statistics.models.\
+                 regression.RegressionResults instances,
+                 describing results of a GLM fit
+    labels: array of shape(n_voxels),
+            labels that associate each voxel with a results key
     """
 
-    def __init__(self, glm_results, labels):
+    def __init__(self, X):
         """
         Parameters
         ----------
-        glm_results: dictionary of nipy.algorithms.statistics.models.\
-                     regression.RegressionResults instances,
-                     describing results of a GLM fit
-        labels: array of shape(n_voxels),
-                labels that associate each voxel with a results key
+        X: array of shape(n_time_points, n_regressors),
+           the design matrix
         """
-        if glm_results.keys().sort() != labels.copy().sort():
-            raise ValueError('results and labels are inconsistent')
+        self.X = X
+        self.labels_ = None
+        self.results_ = None
 
-        n_voxels = sum([grv.theta.shape[1] for grv in glm_results.values()])
-        if labels.size != n_voxels:
-            raise ValueError('The results do not match the labels size')
+    def fit(self, Y, model='ar1', steps=100):
+        """GLM fitting of a dataset using 'ols' regression or the two-pass
 
-        dim = glm_results.values()[0].theta.shape[0]
-        if np.array([grv.theta.shape[0] != dim
-                     for grv in glm_results.values()]).any():
-            raise ValueError('The models do not have consistant dimension')
+        Parameters
+        ----------
+        Y: array of shape(n_time_points, n_samples), the fMRI data
+        model: string, to be chosen in ['ar1', 'ols'], optional,
+               the temporal variance model. Defaults to 'ar1'
+        steps: int, optional,
+               Maximum number of discrete steps for the AR(1) coef histogram
+        """
+        if model not in ['ar1', 'ols']:
+            raise ValueError('Unknown model')
 
-        self.results = glm_results
-        self.labels = labels
-        # fixme: check that the number of voxels corresponds 
-        # to the number of items in glm_results
+        if Y.ndim == 1:
+            Y = Y[:, np.newaxis]
+
+        if Y.shape[0] != self.X.shape[0]:
+            raise ValueError('Response and predictors are inconsistent')
+
+        # fit the OLS model
+        ols_result = OLSModel(self.X).fit(Y)
+
+        # compute and discretize the AR1 coefs
+        ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(0) /
+               (ols_result.resid ** 2).sum(0))
+        ar1 = (ar1 * steps).astype(np.int) * 1. / steps
+
+        # Fit the AR model acccording to current AR(1) estimates
+        if model == 'ar1':
+            self.results_ = {}
+            self.labels_ = ar1
+            # fit the model
+            for val in np.unique(self.labels_):
+                m = ARModel(self.X, val)
+                self.results_[val] = m.fit(Y[:, self.labels_ == val])
+        else:
+            self.labels_ = np.zeros(Y.shape[1])
+            self.results_ = {0.0: ols_result}
 
     def contrast(self, con_val, contrast_type=None):
         """ Specify and estimate a linear contrast
@@ -130,6 +114,8 @@ class GLMResults(object):
         -------
         con: Contrast instance
         """
+        if self.labels_ == None or self.results_ == None:
+            raise ValueError('The model has not been estimated yet')
         con_val = np.asarray(con_val)
         if con_val.ndim == 1:
             dim = 1
@@ -143,21 +129,19 @@ class GLMResults(object):
         if contrast_type not in ['t', 'F']:
             raise ValueError('Unknown contrast type: %s' % contrast_type)
 
-        effect_ = np.zeros((dim, self.labels.size), dtype=np.float)
-        var_ = np.zeros((dim, dim, self.labels.size), dtype=np.float)
-        #stat_ = np.zeros(self.labels.size, dtype=np.float)
+        effect_ = np.zeros((dim, self.labels_.size), dtype=np.float)
+        var_ = np.zeros((dim, dim, self.labels_.size), dtype=np.float)
         if contrast_type == 't':
-            for l in self.results.keys():
-                resl = self.results[l].Tcontrast(con_val)
-                effect_[:, self.labels == l] = resl.effect.T
-                var_[:, :, self.labels == l] = (resl.sd ** 2).T
-                #stat_[self.labels == l] = resl.t
+            for l in self.results_.keys():
+                resl = self.results_[l].Tcontrast(con_val)
+                effect_[:, self.labels_ == l] = resl.effect.T
+                var_[:, :, self.labels_ == l] = (resl.sd ** 2).T
         else:
-            for l in self.results.keys():
-                resl = self.results[l].Fcontrast(con_val)
-                effect_[:, self.labels == l] = resl.effect
-                var_[:, :, self.labels == l] = resl.covariance
-        dof_ = self.results[l].df_resid
+            for l in self.results_.keys():
+                resl = self.results_[l].Fcontrast(con_val)
+                effect_[:, self.labels_ == l] = resl.effect
+                var_[:, :, self.labels_ == l] = resl.covariance
+        dof_ = self.results_[l].df_resid
         return Contrast(effect=effect_, variance=var_, dof=dof_,
                         contrast_type=contrast_type)
 

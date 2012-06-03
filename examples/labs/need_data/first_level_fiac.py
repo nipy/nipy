@@ -12,7 +12,7 @@ import pylab as pl
 import tempfile
 from nibabel import load, save, Nifti1Image
 
-from nipy.modalities.fmri.glm import glm_fit
+from nipy.modalities.fmri.glm import GeneralLinearModel
 from nipy.utils import example_data
 from nipy.labs.viz import plot_map, cm
 
@@ -48,7 +48,10 @@ for x, y in zip(X, Y):
     data = y.get_data()[mask_array].T
     mean = data.mean(0)
     data = 100 * (data / mean - 1)
-    results.append(glm_fit(x, data, 'ar1'))
+    # fit the glm or 'mass univariate linear model' (mulm)
+    mulm = GeneralLinearModel(x)
+    mulm.fit(data, 'ar1')
+    results.append(mulm)
 
 # make a mean volume for display
 wmean = mask_array.astype(np.int16)
