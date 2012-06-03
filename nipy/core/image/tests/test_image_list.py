@@ -5,7 +5,8 @@ import numpy as np
 from ..image_list import ImageList, iter_axis
 from ..image import Image
 from ....io.api import load_image
-from ....core.reference.coordinate_map import AxisError
+from ....core.reference.coordinate_map import (AxisError, CoordinateSystem,
+                                               AffineTransform)
 
 from ....testing import (funcfile, assert_true, assert_equal, assert_raises,
                         assert_almost_equal)
@@ -58,7 +59,13 @@ def test_il_from_image():
     assert_almost_equal(imglst.list[0].affine, A)
     # Check other ways of naming axis
     assert_equal(len(ImageList.from_image(FIMG, axis='t')), 20)
-    assert_equal(len(ImageList.from_image(FIMG, axis='l')), 20)
+    # Input and output axis names work
+    new_cmap = AffineTransform(CoordinateSystem('ijkl'),
+                               FIMG.coordmap.function_range,
+                               FIMG.coordmap.affine)
+    fimg2 = Image(FIMG.get_data(), new_cmap)
+    assert_equal(len(ImageList.from_image(fimg2, axis='t')), 20)
+    assert_equal(len(ImageList.from_image(fimg2, axis='l')), 20)
     assert_raises(AxisError, ImageList.from_image, FIMG, 'q')
     # Check non-dropping case
     ndlist = ImageList.from_image(FIMG, axis='t', dropout=False)
