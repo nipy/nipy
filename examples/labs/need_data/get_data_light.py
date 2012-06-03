@@ -82,7 +82,7 @@ def get_first_level_dataset():
 
     # download mask_image if necessary
     if not os.path.exists(paradigm):
-        print 'Downloading mask image, this make take time'
+        print 'Downloading mask image, this may take time'
         datafile = os.path.join(url, 'localizer_paradigm.csv')
         fp = urllib2.urlopen(datafile)
         local_file = open(paradigm, 'w')
@@ -92,7 +92,7 @@ def get_first_level_dataset():
 
     # download raw_fmri if necessary
     if not os.path.exists(raw_fmri):
-        print 'Downloading fmri image, this make take time'
+        print 'Downloading fmri image, this may take time'
         filename = 's12069_swaloc1_corr.nii.gz'
         datafile = os.path.join(url, filename)
         fp = urllib2.urlopen(datafile)

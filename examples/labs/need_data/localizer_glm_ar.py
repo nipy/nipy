@@ -11,7 +11,7 @@ More specifically,
 4. A GLM is applied to the dataset (effect/covariance,
    then contrast estimation)
 
-Note that this corresponds to a single session
+Note that this corresponds to a single run.
 
 Author : Bertrand Thirion, 2010
 """
@@ -19,7 +19,7 @@ print __doc__
 
 import numpy as np
 import os.path as op
-import pylab
+import pylab as pl
 import tempfile
 
 from nibabel import load, save, Nifti1Image
@@ -77,7 +77,7 @@ ax = design_matrix.show()
 ax.set_position([.05, .25, .9, .65])
 ax.set_title('Design matrix')
 
-pylab.savefig(op.join(write_dir, 'design_matrix.png'))
+pl.savefig(op.join(write_dir, 'design_matrix.png'))
 # design_matrix.write_csv(...)
 
 ########################################
@@ -135,7 +135,7 @@ affine = fmri_image.get_affine()
 #########################################
 
 print 'Computing contrasts...'
-for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
+for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
     print '  Contrast % 2i out of %i: %s' % (
         index + 1, len(contrasts), contrast_id)
     contrast_path = op.join(write_dir, '%s_z_map.nii' % contrast_id)
@@ -150,10 +150,10 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
              vmin=- vmax,
              vmax=vmax,
              anat=None,
-             figure=1,
+             figure=10,
              threshold=2.5)
-    pylab.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
-    pylab.clf()
+    pl.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
+    pl.clf()
 
 
 #########################################
@@ -163,12 +163,12 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 print "All the  results were witten in %s" % write_dir
 
 plot_map(write_array, affine,
-                cmap=cm.cold_hot,
-                vmin=- vmax,
-                vmax=vmax,
-                anat=None,
-                figure=10,
-                threshold=3)
+         cmap=cm.cold_hot,
+         vmin=- vmax,
+         vmax=vmax,
+         anat=None,
+         figure=10,
+         threshold=3)
 
 """
 plot_map(write_array, affine,
@@ -187,4 +187,4 @@ viz3d.plot_map_3d(write_array, affine,
                 anat=None,
                 threshold=3)
 """
-pylab.show()
+pl.show()

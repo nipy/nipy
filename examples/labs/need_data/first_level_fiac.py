@@ -8,7 +8,7 @@ Author: Alexis Roche, Bertrand Thirion, 2009--2012
 
 import os.path as op
 import numpy as np
-import pylab
+import pylab as pl
 import tempfile
 from nibabel import load, save, Nifti1Image
 
@@ -31,7 +31,7 @@ affine = load(mask_file).get_affine()
 print('Loading design matrices...')
 X = [np.load(f)['X'] for f in design_files]
 
-# Get multi-session fMRI data
+# Get multi-run fMRI data
 print('Loading fmri data...')
 Y = [load(f) for f in fmri_files]
 
@@ -44,10 +44,11 @@ mask_array = mask.get_data() > 0
 print('Starting fit...')
 results = []
 for x, y in zip(X, Y):
+    # normalize the data to report effects in percent of the baseline
     data = y.get_data()[mask_array].T
     mean = data.mean(0)
     data = 100 * (data / mean - 1)
-    results.append(glm_fit(x, data))
+    results.append(glm_fit(x, data, 'ar1'))
 
 # make a mean volume for display
 wmean = mask_array.astype(np.int16)
@@ -57,7 +58,7 @@ wmean[mask_array] = mean
 def make_fiac_contrasts():
     """Specify some constrasts for the FIAC experiment"""
     con = {}
-    # the design matrices of bothe sessions comprise 13 columns
+    # the design matrices of both runs comprise 13 columns
     # the first 5 columns of the design matrices correpond to the following
     # conditions: ["SSt-SSp", "SSt-DSp", "DSt-SSp", "DSt-DSp", "FirstSt"]
     p = 13
@@ -76,7 +77,7 @@ def make_fiac_contrasts():
     return con
 
 
-# compute fixed effects of the two sessions and compute related images
+# compute fixed effects of the two runs and compute related images
 contrasts = make_fiac_contrasts()
 write_dir = tempfile.mkdtemp()
 print 'Computing contrasts...'
@@ -92,15 +93,16 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     save(contrast_image, contrast_path)
 
     vmax = max(- write_array.min(), write_array.max())
+    vmin = - vmax
     plot_map(write_array, affine,
              anat=wmean, anat_affine=affine,
              cmap=cm.cold_hot,
-             vmin=- vmax,
+             vmin=vmin,
              vmax=vmax,
-             figure=1,
+             figure=10,
              threshold=2.5,
              black_bg=True)
-    pylab.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
-    pylab.clf()
+    pl.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
+    pl.clf()
 
 print "All the  results were witten in %s" % write_dir
