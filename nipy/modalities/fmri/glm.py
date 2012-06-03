@@ -14,13 +14,13 @@ by computing fixed effects on contrasts
 >>> import numpy as np
 >>> n, p, q = 100, 80, 10
 >>> X, Y = np.random.randn(p, q), np.random.randn(p, n)
->>> GLMResult = glm_fit(X, Y)
+>>> glm_result = glm_fit(X, Y)
 >>> cval = np.hstack((1, np.zeros(9)))
->>> z_vals = GLMResult.contrast(cval).z_score() # z-transformed statistics
+>>> z_vals = glm_result.contrast(cval).z_score() # z-transformed statistics
 >>> # fixed effects statistics across two contrasts
 >>> cval_ = cval.copy()
 >>> np.random.shuffle(cval_)
->>> z_ffx = (GLMResult.contrast(cval) + GLMResult.contrast(cval_)).z_score()
+>>> z_ffx = (glm_result.contrast(cval) + glm_result.contrast(cval_)).z_score()
 """
 
 import numpy as np
@@ -31,7 +31,6 @@ from nipy.labs.utils.zscore import zscore
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
-
 
 def glm_fit(X, Y, model='ar1', steps=100):
     """ GLM fitting of a dataset using 'ols' regression or the two-pass
@@ -93,13 +92,14 @@ class GLMResults(object):
         """
         Parameters
         ----------
-        glm_results: dictionary of  nipy.fixes.scipy.stats.models.regression,
+        glm_results: dictionary of nipy.algorithms.statistics.models.\
+                     regression.RegressionResults instances,
                      describing results of a GLM fit
         labels: array of shape(n_voxels),
                 labels that associate each voxel with a results key
         """
         if glm_results.keys().sort() != labels.copy().sort():
-            raise ValueError('results and labels are inconsistant')
+            raise ValueError('results and labels are inconsistent')
 
         n_voxels = sum([grv.theta.shape[1] for grv in glm_results.values()])
         if labels.size != n_voxels:
@@ -178,22 +178,22 @@ class Contrast(object):
         """
         Parameters
         ==========
-        effect: array of shape (dim, n_voxels)
+        effect: array of shape (contrast_dim, n_voxels)
                 the effects related to the contrast
-        variance: array of shape (dim, dim, n_voxels)
+        variance: array of shape (contrast_dim, contrast_dim, n_voxels)
                   the associated variance estimate
         dof: scalar, the degrees of freedom
-        dim: int, the dimension of the contrast
+        contrast_type: string to be chosen among 't' and 'F'
         """
         if variance.ndim != 3:
             raise ValueError('Variance array should have 3 dimensions')
         if effect.ndim != 2:
             raise ValueError('Variance array should have 2 dimensions')
         if variance.shape[0] != variance.shape[1]:
-            raise ValueError('Inconsistant shape for the variance estimate')
+            raise ValueError('Inconsistent shape for the variance estimate')
         if ((variance.shape[1] != effect.shape[0]) or
             (variance.shape[2] != effect.shape[1])):
-            raise ValueError('Effect and variance have inconsistant shape')
+            raise ValueError('Effect and variance have inconsistent shape')
         self.effect = effect
         self.variance = variance
         self.dof = float(dof)
@@ -287,7 +287,8 @@ class Contrast(object):
         return zscore(self.p_value_)
 
     def __add__(self, other):
-        """Addition of selfwith others, Yields an new Contrast instance"""
+        """Addition of selfwith others, Yields an new Contrast instance
+        This should be used only on indepndent contrasts"""
         if self.contrast_type != other.contrast_type:
             raise ValueError(
                 'The two contrasts do not have consistant type dimensions')

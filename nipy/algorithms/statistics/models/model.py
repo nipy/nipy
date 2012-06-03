@@ -168,9 +168,11 @@ class LikelihoodModelResults(object):
         Parameters
         ==========
         matrix: array of shape (dim, self.theta.shape[0]), optional
-                contrast specification
+                numerical contrast specification, 
+                where dim refers to the 'dimension' of the contrast
+                i.e. 1 for t contrasts, 1 or more for F contrasts. 
         column: int, optional,
-                alternative way of specifying ccontrasts (column index)
+                alternative way of specifying contrasts (column index)
         dispersion: float or array of shape (n_voxels), optional,
                     value(s) for the dispersion parameters
         other:array of shape (dim, self.theta.shape[0]), optional
