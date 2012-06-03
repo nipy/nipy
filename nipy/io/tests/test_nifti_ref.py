@@ -1,5 +1,8 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+""" Test conversion between NIFTI and NIPY conventions.  The algorithms are
+mostly written out in the :mod:`nipy.io.nifti_ref` docstrings.
+"""
 import warnings
 
 from copy import copy
@@ -146,6 +149,99 @@ def test_dim_info():
     assert_equal(ni_img.get_header().get_dim_info(), (2, 0, 1))
 
 
+def test_time_like_matching():
+    # Check checks for matching time-like axes
+    shape = (2, 3, 4, 5, 6)
+    shape_shifted = (2, 3, 4, 6, 5)
+    data = np.random.normal(size=shape)
+    aff = np.diag([3, 4, 5, 6, 7, 1])
+    mni_names = mni_csm(3).coord_names
+    time_cans = ('t', 'hz', 'ppm', 'rads')
+    aliases = dict(t='time',
+                   hz='frequency-hz',
+                   ppm='concentration-ppm',
+                   rads='radians/s')
+    all_names = set(time_cans + tuple(v for v in aliases.values()))
+    for time_like in time_cans:
+        alias = aliases[time_like]
+        for name in (time_like, alias):
+            # Names match
+            cmap = AT(CS(('i', 'j', 'k', name, 'u')),
+                    CS(mni_names + (name, 'u')), aff)
+            assert_equal(nipy2nifti(Image(data, cmap)).shape, shape)
+            cmap = AT(CS(('i', 'j', 'k', 'u', name)),
+                    CS(mni_names + ('u', name)), aff)
+            assert_equal(nipy2nifti(Image(data, cmap)).shape, shape_shifted)
+            # No time-like in output is OK
+            cmap = AT(CS(('i', 'j', 'k', 'u', name)),
+                    CS(mni_names + ('u', 'v')), aff)
+            assert_equal(nipy2nifti(Image(data, cmap)).shape, shape_shifted)
+            # No time-like in input is OK
+            cmap = AT(CS(('i', 'j', 'k', 'u', 'v')),
+                    CS(mni_names + ('u', name)), aff)
+            assert_equal(nipy2nifti(Image(data, cmap)).shape, shape_shifted)
+            # Time-like in both, but not matching, not OK
+            cmap = AT(CS(('i', 'j', 'k', 'u', name)),
+                    CS(mni_names + (name, 'u')), aff)
+            assert_raises(NiftiError, nipy2nifti, Image(data, cmap))
+            # Time like in both with no match between but no match elsewhere
+            # Actually this does cause a problem for non-zero time offset and
+            # time axes, but we test that elsewhere.
+            cmap = AT(CS(('i', 'j', 'k', 'u', name)),
+                    CS(mni_names + ('u', name)),
+                    np.diag([3, 4, 5, 6, 0, 1]))
+            assert_equal(nipy2nifti(Image(data, cmap)).shape, shape_shifted)
+            cmap = AT(CS(('i', 'j', 'k', 'u', name)),
+                    CS(mni_names + (name, 'u')),
+                    np.diag([3, 4, 5, 0, 0, 1]))
+            assert_equal(nipy2nifti(Image(data, cmap)).shape, shape_shifted)
+        # Matching to own alias is OK
+        cmap = AT(CS(('i', 'j', 'k', time_like, 'u')),
+                CS(mni_names + (alias, 'u')), aff)
+        assert_equal(nipy2nifti(Image(data, cmap)).shape, shape)
+        cmap = AT(CS(('i', 'j', 'k', alias, 'u')),
+                CS(mni_names + (time_like, 'u')), aff)
+        assert_equal(nipy2nifti(Image(data, cmap)).shape, shape)
+        # But not to another time-like name
+        others = all_names.difference((time_like, alias))
+        for name in others:
+            cmap = AT(CS(('i', 'j', 'k', time_like, 'u')),
+                    CS(mni_names + (name, 'u')), aff)
+            assert_raises(NiftiError, nipy2nifti, Image(data, cmap))
+            cmap = AT(CS(('i', 'j', 'k', name, 'u')),
+                    CS(mni_names + (time_like, 'u')), aff)
+            assert_raises(NiftiError, nipy2nifti, Image(data, cmap))
+        # It's OK to have more than one time-like, but the order of recognition
+        # is 't', 'hz', 'ppm', 'rads'
+        for i, better in enumerate(time_cans[:-1]):
+            for worse in time_cans[i+1:]:
+                cmap = AT(CS(('i', 'j', 'k', better, worse)),
+                        CS(mni_names + (better, worse)), aff)
+                assert_equal(nipy2nifti(Image(data, cmap)).shape, shape)
+                cmap = AT(CS(('i', 'j', 'k', worse, better)),
+                        CS(mni_names + (worse, better)), aff)
+                assert_equal(nipy2nifti(Image(data, cmap)).shape, shape_shifted)
+                # Even if better is only in output
+                cmap = AT(CS(('i', 'j', 'k', worse, 'u')),
+                        CS(mni_names + (worse, better)), aff)
+                assert_equal(nipy2nifti(Image(data, cmap)).shape, shape_shifted)
+
+
+def test_time_pixdims():
+    # Pixdims get moved across when a no-time extra axis is added
+    shape = (2, 3, 4, 5, 6, 7)
+    data = np.random.normal(size=shape)
+    aff = np.diag([3, 4, 5, 6, 7, 8, 1])
+    mni_names = mni_csm(3).coord_names
+    in_cs = CS('ikjlmn')
+    cmap = AT(in_cs, CS(mni_names + tuple('tuv')), aff)
+    hdr = nipy2nifti(Image(data, cmap)).get_header()
+    assert_equal(hdr.get_zooms(), (3, 4, 5, 6, 7, 8))
+    cmap = AT(in_cs, CS(mni_names + tuple('quv')), aff)
+    hdr = nipy2nifti(Image(data, cmap)).get_header()
+    assert_equal(hdr.get_zooms(), (3, 4, 5, 0, 6, 7, 8))
+
+
 def test_xyzt_units():
     # Whether xyzt_unit field gets set correctly
     fimg_orig = copy_of(funcfile)
@@ -220,7 +316,8 @@ def test_time_axes_4th():
 
 def test_save_toffset():
     # Check toffset only gets set for time
-    data = np.random.normal(size=(2, 3, 4, 5, 6, 7))
+    shape = (2, 3, 4, 5, 6, 7)
+    data = np.random.normal(size = shape)
     aff = from_matvec(np.diag([2., 3, 4, 5, 6, 7]),
                               [11, 12, 13, 14, 15, 16])
     xyz_names = talairach_csm(3).coord_names
@@ -233,6 +330,52 @@ def test_save_toffset():
         cmap = AT(in_cs, CS(xyz_names + (time_like, 'q', 'r')), aff)
         ni_img = nipy2nifti(Image(data, cmap))
         assert_equal(ni_img.get_header()['toffset'], 0)
+    # Check that non-matching time causes a nifti error when toffset !=0
+    shape_shifted = (2, 3, 4, 6, 5, 7)
+    for t_name in 't', 'time':
+        # No toffset, this is OK
+        cmap = AT(CS(('i', 'j', 'k', 'u', t_name, 'v')),
+                  CS(xyz_names + ('u', t_name, 'v')),
+                  np.diag([3, 4, 5, 6, 0, 7, 1]))
+        assert_equal(nipy2nifti(Image(data, cmap)).shape, shape_shifted)
+        # toffset, non-matching error
+        aff_z1 = from_matvec(np.diag([2., 3, 4, 5, 0, 7]),
+                             [11, 12, 13, 14, 15, 16])
+        cmap = AT(CS(('i', 'j', 'k', 'u', t_name, 'v')),
+                  CS(xyz_names + ('u', t_name, 'v')),
+                  aff_z1)
+        assert_raises(NiftiError, nipy2nifti, Image(data, cmap))
+        # Unless fix0 set
+        assert_equal(nipy2nifti(Image(data, cmap), fix0=True).shape,
+                     shape_shifted)
+        # Even this doesn't work if there is more than one zero row and column
+        aff_z2 = from_matvec(np.diag([2., 3, 4, 0, 0, 7]),
+                             [11, 12, 13, 14, 15, 16])
+        cmap = AT(CS(('i', 'j', 'k', 'u', t_name, 'v')),
+                  CS(xyz_names + ('u', t_name, 'v')),
+                  aff_z2)
+        assert_raises(NiftiError, nipy2nifti, Image(data, cmap), fix0=True)
+    # No problem for non-time
+    for t_name in 'hz', 'ppm', 'rads':
+        cmap = AT(CS(('i', 'j', 'k', 'u', t_name, 'v')),
+                  CS(xyz_names + ('u', t_name, 'v')),
+                  aff)
+        assert_equal(nipy2nifti(Image(data, cmap), fix0=True).shape,
+                     shape_shifted)
+
+
+def test_too_many_dims():
+    data0 = np.zeros(range(2, 9))
+    xyz_names = talairach_csm(3).coord_names
+    cmap = AT(CS('ijktuvw'), CS(xyz_names + tuple('tuvw')), np.eye(8))
+    assert_equal(nipy2nifti(Image(data0, cmap)).shape, tuple(range(2, 9)))
+    # Too many dimensions
+    data1 = np.zeros(range(2, 10))
+    cmap = AT(CS('ijktuvwq'), CS(xyz_names + tuple('tuvwq')), np.eye(9))
+    assert_raises(NiftiError, nipy2nifti, Image(data1, cmap))
+    # No time adds a dimension
+    cmap = AT(CS('ijkpuvw'), CS(xyz_names + tuple('puvw')), np.eye(8))
+    assert_raises(NiftiError, nipy2nifti, Image(data0, cmap))
 
 
 def test_no_time():
@@ -439,17 +582,16 @@ def test_mm_scaling():
     assert_equal(nifti2nipy(ni_img).coordmap, AT(in_cs, out_cs, exp_aff))
     # microns !
     hdr.set_xyzt_units('micron')
-    ni_img = nib.Nifti1Image(data, xyz_aff, hdr)
     scaler = np.diag([1 / 1000., 1 / 1000., 1 / 1000., 1, 1])
     assert_equal(nifti2nipy(ni_img).coordmap,
                  AT(in_cs, out_cs, np.dot(scaler, exp_aff)))
-    # mm again
+    # mm again !  This test implicitly asserts that the nifti image affine is
+    # not being changed by the conversion routine, otherwise we'd pick up the
+    # microns scaling above.
     hdr.set_xyzt_units('mm')
-    ni_img = nib.Nifti1Image(data, xyz_aff, hdr)
     assert_equal(nifti2nipy(ni_img).coordmap, AT(in_cs, out_cs, exp_aff))
     # meters !
     hdr.set_xyzt_units('meter')
-    ni_img = nib.Nifti1Image(data, xyz_aff, hdr)
     scaler = np.diag([1000., 1000., 1000., 1, 1])
     assert_equal(nifti2nipy(ni_img).coordmap,
                  AT(in_cs, out_cs, np.dot(scaler, exp_aff)))

@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-An implementation of the dimension info as desribed in:
+An implementation of some of the NIFTI conventions as desribed in:
 
 http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1.h
 
@@ -11,10 +11,11 @@ A version of the same file is in the nibabel repisitory at
 Background
 ==========
 
-We (nipystas) make an explicit distinction between
+We (nipystas) make an explicit distinction between:
 
 * an input coordinate system of an image (the array == voxel coordinates)
-* output coordinate system (usually millimeters in some world)
+* output coordinate system (usually millimeters in some world for space, seconds
+  for time)
 * the mapping between the two.
 
 The collection of these three is the ``coordmap`` attribute of a NIPY image.
@@ -60,14 +61,14 @@ NIFTI output coordinate system
 In the NIFTI specification, the order of the output coordinates (at least the
 first 3) are fixed to be what might be called RAS+, that is ('x=L->R', 'y=P->A',
 'z=I->S'). This RAS+ output order is not allowed to change and there is no way of
-specifying such a change in the nifti header.
+specifying such a change in the NIFTI header.
 
 The world in which these RAS+ X, Y, Z axes exist can be one of the recognized
 spaces, which are: scanner, aligned (to another file's world space), Talairach,
 MNI 152 (aligned to the MNI 152 atlas).
 
 By implication, the 4th output dimension is likely to be seconds (given the 4th
-input dimension is likley time), but there's a field ``xyzt_units`` (see above)
+input dimension is likely time), but there's a field ``xyzt_units`` (see above)
 that can be used to imply the 4th output dimension is actually frequency,
 concentration or angular velocity.
 
@@ -81,7 +82,7 @@ hence 4 by 4 for 3 (spatial) dimensions.
 NIFTI also stores "pixel dimensions" in a ``pixdim`` field. This can give you
 scaling for individual axes.  We ignore the values of ``pixdim`` for the first 3
 axes if we have a full ("sform") affine stored in the header, otherwise they
-form part of the affine above.  ``pixdim``[3:] provide voxel to output calings
+form part of the affine above.  ``pixdim``[3:] provide voxel to output scalings
 for later axes.  The units for the 4th dimension can come from ``xyzt_units`` as
 above.
 
@@ -90,8 +91,9 @@ We take the convention that the output coordinate names are ('x=L->R', 'y=P->A',
 we just omit 't'.  The first 3 axes are also named after the output space
 ('scanner-x=L->R', 'mni-x=L-R' etc).
 
-The input axes are 'ijktuvw' unless there is no time axis (see below), in which case they are 'ijkuvw' (remember, nifti only allows 7 dimensions,
-and one is used up by the time length 1 axis).
+The input axes are 'ijktuvw' unless there is no time axis (see below), in which
+case they are 'ijkuvw' (remember, NIFTI only allows 7 dimensions, and one is
+used up by the time length 1 axis).
 
 Time-like axes
 --------------
@@ -107,13 +109,13 @@ A PPM axis can be called 'ppm' or 'concentration-ppm'.
 
 A radians / second axis can be called 'rads' or 'radians/s'.
 
-Does this nifti image have a time-like axis?
+Does this NIFTI image have a time-like axis?
 --------------------------------------------
 
-We take there to be no time axis if there are only three nifti dimensions, or
+We take there to be no time axis if there are only three NIFTI dimensions, or
 if:
 
-* the length of the fourth nifti dimension is 1 AND
+* the length of the fourth NIFTI dimension is 1 AND
 * There are more than four dimensions AND
 * The ``xyzt_units`` field does not indicate time or time-like units.
 
@@ -137,7 +139,7 @@ from nibabel.affines import to_matvec, from_matvec
 
 from ..core.reference.coordinate_system import CoordinateSystem as CS
 from ..core.reference.coordinate_map import (AffineTransform as AT,
-                                             axid2axes,
+                                             axmap,
                                              product as cm_product)
 from ..core.reference import spaces as ncrs
 from ..core.image.image import Image
@@ -149,12 +151,22 @@ XFORM2SPACE = {'scanner': ncrs.scanner_space,
                'talairach': ncrs.talairach_space,
                'mni': ncrs.mni_space}
 
-TIME_LIKE_AXES = ( # name, matcher, units
-    ('t', lambda n : n == 't' or n == 'time', 'sec'),
-    ('hz', lambda n : n == 'hz' or n == 'frequency-hz', 'hz'),
-    ('ppm', lambda n : n == 'ppm' or n == 'concentration-ppm', 'ppm'),
-    ('rads', lambda n : n == 'rads' or n == 'radians/s', 'rads'),
-)
+TIME_LIKE_AXES = dict(
+    t = dict(aliases=('time',),
+             units='sec'),
+    hz = dict(aliases=('frequency-hz',),
+              units='hz'),
+    ppm = dict(aliases=('concentration-ppm',),
+               units='ppm'),
+    rads = dict(aliases=('radians/s',),
+                units='rads'))
+
+TIME_LIKE_MAP = {}
+for _name, _info in TIME_LIKE_AXES.items():
+    for _alias in (_name,) + _info['aliases']:
+        TIME_LIKE_MAP[_alias] = _name
+
+TIME_LIKE_ORDERED = ('t', 'hz', 'ppm', 'rads')
 
 # Threshold for near-zero affine values
 TINY = 1e-5
@@ -165,7 +177,7 @@ class NiftiError(Exception):
 
 
 def nipy2nifti(img, strict=None, fix0=False):
-    """ Return nifti image from nipy image `img`
+    """ Return NIFTI image from nipy image `img`
 
     Parameters
     ----------
@@ -173,7 +185,7 @@ def nipy2nifti(img, strict=None, fix0=False):
          An object, usually a NIPY ``Image``,  having attributes `coordmap` and
          `shape`
     strict : bool, optional
-        Whether to use strict checking of input image for creating nifti
+        Whether to use strict checking of input image for creating NIFTI
     fix0: bool, optional
         Whether to fix potential 0 column / row in affine. This option only used
         when trying to find time etc axes in the coordmap output names.  In
@@ -188,15 +200,22 @@ def nipy2nifti(img, strict=None, fix0=False):
     Returns
     -------
     ni_img : ``nibabel.Nifti1Image``
-        Nifti image
+        NIFTI image
 
     Raises
     ------
     NiftiError: if space axes not orthogonal to non-space axes
     NiftiError: if non-space axes not orthogonal to each other
-    NiftiError: if `img` ouput space does not match named spaces in Nifti
-    NiftiError: if we find a time-like output axis but we can't find a
-        corresponding input axis.
+    NiftiError: if `img` output space does not match named spaces in NIFTI
+    NiftiError: if input image has more than 7 dimensions
+    NiftiError: if input image has 7 dimensions, but no time dimension, because
+        we need to add an extra 1 length axis at position 3
+    NiftiError: if we find a time-like input axis but the matching output axis
+        is a different time-like.
+    NiftiError: if we find a time-like output axis but the matching input axis
+        is a different time-like.
+    NiftiError: if we find a time output axis and there are non-zero non-spatial
+        offsets in the affine, but we can't find a corresponding input axis.
 
     Notes
     -----
@@ -212,9 +231,9 @@ def nipy2nifti(img, strict=None, fix0=False):
     If the non-spatial dimensions are not orthogonal to each other, raise a
     NiftiError.
 
-    We check if the XYZ output fits with the the NIFTI named spaces of scanner,
+    We check if the XYZ output fits with the NIFTI named spaces of scanner,
     aligned, Talairach, MNI.  If not we raise an error.  Note that 'unknown' is
-    not a known space for Nifti, because it cannot be set without also deleting
+    not a known space for NIFTI, because it cannot be set without also deleting
     the affine.
 
     If any of the first three input axes are named ('slice', 'freq', 'phase')
@@ -224,11 +243,17 @@ def nipy2nifti(img, strict=None, fix0=False):
     is a 't' axis, otherwise millimeters and 0 (unknown).
 
     We look to see if we have a time-like axis in the inputs or the outputs. A
-    time-like axis has labels 't', 'hz', 'ppm', 'rads'.  If we do have a
-    time-like axis, roll that axis to be the 4th axis.  If this axis is actually
-    time, take the ``affine[3, -1]`` and put into the ``toffset`` field.  If
-    there's no time-like axis, but there are other non-spatial axes, make a
-    length 1 4th array axis to indicate this.
+    time-like axis has labels 't', 'hz', 'ppm', 'rads'.  If we have an axis 't'
+    in the inputs *and* the outputs, check they either correspond, or both
+    inputs and output correspond with no other axis, otherwise raise NiftiError.
+    Do the same check for 'hz', then 'ppm', then 'rads'.
+
+    If we do have a time-like axis, roll that axis to be the 4th axis.  If this
+    axis is actually time, take the ``affine[3, -1]`` and put into the
+    ``toffset`` field.  If there's no time-like axis, but there are other
+    non-spatial axes, make a length 1 4th array axis to indicate this.
+
+    If the resulting NIFTI image has more than 7 dimensions, raise a NiftiError.
 
     Set ``pixdim`` for axes >= 3 using vector length of corresponding affine
     columns.
@@ -301,7 +326,7 @@ def nipy2nifti(img, strict=None, fix0=False):
             hdr.set_sform(xyz_affine, 'scanner')
             hdr.set_qform(xyz_affine, 'scanner')
         else:
-            raise NiftiError('Image world not a Nifti world')
+            raise NiftiError('Image world not a NIFTI world')
     # Set dim_info
     # Use list() to get .index method for python < 2.6
     input_names = list(coordmap.function_domain.coord_names)
@@ -314,57 +339,115 @@ def nipy2nifti(img, strict=None, fix0=False):
     # Set units without knowing time
     hdr.set_xyzt_units(xyz='mm')
     # Done if we only have 3 input dimensions
-    non_space_inames = input_names[3:]
-    non_space_onames = coordmap.function_range.coord_names[3:]
-    n_ns = len(non_space_inames)
+    n_ns = coordmap.ndims[0] - 3
     if n_ns == 0: # No non-spatial dimensions
         return nib.Nifti1Image(img.get_data(), xyz_affine, hdr)
+    elif n_ns > 4:
+        raise NiftiError("Too many dimensions to convert")
     # Go now to data, pixdims
     if data is None:
         data = img.get_data()
     rzs, trans = to_matvec(img.coordmap.affine)
-    ns_pixdims = np.sqrt(np.sum(rzs[3:, 3:] ** 2, axis=0))
-    # Look for time and time-related axes in input and then maybe output names
-    out_no = None
-    for name, matcher, units in TIME_LIKE_AXES:
-        for in_ns_no, in_ax_name in enumerate(non_space_inames):
-            if matcher(in_ax_name):
-                in_no = in_ns_no + 3
-                break
-        else: # This axis not found inputs, look in outputs
-            for out_ns_no, out_ax_name in enumerate(non_space_onames):
-                if matcher(out_ax_name):
-                    break
-            else: # Go check for the next time-like
-                continue
-            # Find matching input axis
-            in_no, out_no = axid2axes(coordmap, out_ax_name)
-            if in_no is None: # No matching input, keep trying
-                continue
-            in_ns_no = in_no - 3
-        # xyzt_units
-        hdr.set_xyzt_units(xyz='mm', t=units)
-        # If this is time, set toffset
-        if name == 't':
-            # Which output axis corresponds?
-            if out_no is None:
-                _, out_no = axid2axes(coordmap, in_no)
-            if out_no is None:
-                raise NiftiError('Time input and output do not match')
-            hdr['toffset'] = trans[out_no]
-        # Make sure this time-like axis is first non-space axis
-        if in_ns_no != 0:
-            data = np.rollaxis(data, 3 + in_ns_no, 3)
-            order = range(n_ns)
-            order.pop(in_ns_no)
-            order.insert(0, in_ns_no)
-            ns_pixdims = [ns_pixdims[i] for i in order]
-        break # once we've found a time-like, stop
-    else: # no time-like axis
+    ns_pixdims = list(np.sqrt(np.sum(rzs[3:, 3:] ** 2, axis=0)))
+    in_ax, out_ax, tl_name = _find_time_like(coordmap, fix0)
+    if in_ax is None: # No time-like axes
         # add new 1-length axis
-        data = img.get_data()[:, :, :, None, ...]
+        if n_ns == 4:
+            raise NiftiError("Too many dimensions to convert")
+        n_ns += 1
+        data = data[:, :, :, None, ...]
+        # xyzt_units
+        hdr.set_xyzt_units(xyz='mm')
+        # shift pixdims
+        ns_pixdims.insert(0, 0)
+    else: # Time-like
+        hdr.set_xyzt_units(xyz='mm', t=TIME_LIKE_AXES[tl_name]['units'])
+        # If this is really time, set toffset
+        if tl_name == 't' and np.any(trans[3:]):
+            # Which output axis corresponds to time?
+            if out_ax is None:
+                raise NiftiError('Time input and output do not match')
+            hdr['toffset'] = trans[out_ax]
+        # Make sure this time-like axis is first non-space axis
+        if in_ax != 3:
+            data = np.rollaxis(data, in_ax, 3)
+            order = range(n_ns)
+            order.pop(in_ax - 3)
+            order.insert(0, in_ax - 3)
+            ns_pixdims = [ns_pixdims[i] for i in order]
     hdr['pixdim'][4:(4 + n_ns)] = ns_pixdims
     return nib.Nifti1Image(data, xyz_affine, hdr)
+
+
+def _find_time_like(coordmap, fix0):
+    """ Return input axis corresponding to best time-like axis
+
+    Parameters
+    ----------
+    coordmap : AffineTransform
+    fix0 : bool
+        True if we use zero column, zero row heuristic to match time input and
+        output axes.
+
+    Returns
+    -------
+    in_ax : int or None
+        None if there was no time-like axis that could be mapped to an input,
+        otherwise the input axis index.
+    out_ax : int or None
+        None if there was no time-like axis that could be mapped to an input,
+        otherwise the input axis index.
+    tl_name: str or None:
+        None if there was no time-like axis that could be mapped to an input,
+        otherwise the canonical name of this time-like.
+    """
+    non_space_inames = list(coordmap.function_domain.coord_names[3:])
+    non_space_onames = list(coordmap.function_range.coord_names[3:])
+    # Make time-like names canonical, set to None elsewhere
+    for ax_names in [non_space_inames, non_space_onames]:
+        for ax_no, ax_name in enumerate(ax_names):
+            ax_names[ax_no] = TIME_LIKE_MAP.get(ax_name)
+    # Find best time in axis, check correspondence
+    in2out, out2in = axmap(coordmap, 'both', fix0)
+    in_ax, out_ax = None, None
+    for name in TIME_LIKE_ORDERED:
+        if name in non_space_inames:
+            in_ax = non_space_inames.index(name) + 3
+            corr_out = in2out[in_ax]
+            if name in non_space_onames: # in both - matching?
+                same_time_out = non_space_onames.index(name) + 3
+                corr_in = out2in[same_time_out]
+                if corr_out is None:
+                    if not corr_in is None:
+                        raise NiftiError("Axis type '%s' found in input and "
+                                         "output but they do not appear to "
+                                         "match" % name)
+                    return (in_ax, None, name)
+                if corr_out != same_time_out:
+                    raise NiftiError("Axis type '%s' found in input and "
+                                     "output but they do not appear to "
+                                     "match" % name)
+                return (in_ax, corr_out, name)
+            # Name not in output, but is there another time-like name at this
+            # output position?
+            matching = non_space_onames[corr_out - 3]
+            if matching is None:
+                return (in_ax, corr_out, name)
+            raise NiftiError("Axis type '%s' in input matches axis type '%s' "
+                             "in output" % (name, matching))
+        # Now check in output names
+        elif name in non_space_onames:
+            # Found name in output axes, corresponding input?
+            out_ax = non_space_onames.index(name) + 3
+            in_ax = out2in[out_ax]
+            if in_ax is None: # no corresponding axis
+                continue
+            matching = non_space_inames[in_ax - 3]
+            if matching is None:
+                return (in_ax, out_ax, name)
+            raise NiftiError("Axis type '%s' in output matches axis type "
+                             "'%s' in input" % (name, matching))
+    return None, None, None
 
 
 TIME_LIKE_UNITS = dict(
@@ -377,12 +460,12 @@ TIME_LIKE_UNITS = dict(
 
 
 def nifti2nipy(ni_img):
-    """ Return NIPY image from nifti image `ni_image`
+    """ Return NIPY image from NIFTI image `ni_image`
 
     Parameters
     ----------
     ni_img : nibabel.Nifti1Image
-        Nifti image
+        NIFTI image
 
     Returns
     -------
@@ -428,7 +511,7 @@ def nifti2nipy(ni_img):
     adjust the affine to mm units, but warn because this might be a mistake.
 
     If the time units in NIFTI `xyzt_units` are 'msec' or 'usec', scale the time
-    axis pixdim accordingly.
+    axis ``pixdim`` values accordingly.
 
     Ignore the intent-related fields for now, but warn that we are doing so if
     there appears to be specific information in there.
@@ -438,6 +521,8 @@ def nifti2nipy(ni_img):
     # Affine will not be None from a loaded image, but just in case
     if affine is None:
         affine = hdr.get_best_affine()
+    else:
+        affine = affine.copy()
     data = ni_img.get_data()
     shape = list(ni_img.shape)
     ndim = len(shape)
@@ -468,7 +553,7 @@ def nifti2nipy(ni_img):
     # Add to mm scaling, with warning
     space_units, time_like_units = hdr.get_xyzt_units()
     if space_units in ('micron', 'meter'):
-        warnings.warn('"%s" space scaling in Nifti ``xyt_units field; '
+        warnings.warn('"%s" space scaling in NIFTI ``xyt_units field; '
                       'applying scaling to affine, but this may not be what '
                       'you want' % space_units, UserWarning)
         if space_units == 'micron':
