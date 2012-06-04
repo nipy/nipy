@@ -521,7 +521,6 @@ def nifti2nipy(ni_img):
     output_cs3 = world_space.to_coordsys_maker()(3)
     cmap3 = AT(input_cs3, output_cs3, affine)
     if ndim == 3:
-        # Warn for ignoring intent
         return Image(data, cmap3, {'header': hdr})
     space_units, time_like_units = hdr.get_xyzt_units()
     units_info = TIME_LIKE_UNITS.get(time_like_units, None)
@@ -536,7 +535,7 @@ def nifti2nipy(ni_img):
         ns_zooms.pop(0)
         ns_trans.pop(0)
         data = data.reshape(shape)
-        ndim -= 1
+        n_ns -= 1
     else: # have time-like
         if units_info is None:
             units_info = TIME_LIKE_UNITS['sec']

@@ -341,14 +341,25 @@ def test_load_cmaps():
         img = nifti2nipy(ni_img_t)
         assert_equal(img.coordmap, exp_cmap)
         assert_array_equal(img.get_data(), reduced_data)
+
+
+def test_load_no_time():
     # Without setting anything else, length 1 at position 3 makes time go away
-    ni_img_no_t = nib.Nifti1Image(reduced_data, xyz_aff)
-    cmap_no_t = AT(CS('ijkuvw', name='voxels'),
-                   CS(xyz_names + tuple('uvw'), name='aligned'),
-                   np.diag([2, 3, 4, 1, 1, 1, 1]))
-    img = nifti2nipy(ni_img_no_t)
-    assert_equal(img.coordmap, cmap_no_t)
-    # We add time if 4th axis of length 1 is the last axis
+    ns_dims = (5, 6, 7)
+    xyz_aff = np.diag([2, 3, 4, 1])
+    xyz_names = aligned_csm(3).coord_names[:3]
+    in_names = tuple('ijkuvw')
+    out_names = xyz_names + tuple('uvw')
+    for n_ns in 1, 2, 3:
+        ndim = 3 + n_ns
+        data = np.random.normal(size=(2, 3, 4, 1) + ns_dims[:n_ns])
+        ni_img_no_t = nib.Nifti1Image(data, xyz_aff)
+        cmap_no_t = AT(CS(in_names[:ndim], name='voxels'),
+                       CS(out_names[:ndim], name='aligned'),
+                       np.diag([2, 3, 4] + [1] * n_ns + [1]))
+        img = nifti2nipy(ni_img_no_t)
+        assert_equal(img.coordmap, cmap_no_t)
+    # We add do time if 4th axis of length 1 is the last axis
     data41 = np.zeros((3, 4, 5, 1))
     ni_img_41 = nib.Nifti1Image(data41, xyz_aff)
     cmap_41 = AT(CS('ijkt', name='voxels'),
