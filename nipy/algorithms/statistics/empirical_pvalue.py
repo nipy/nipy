@@ -161,8 +161,12 @@ class FDR(object):
         n_samples = np.size(p_values)
         p_corr = alpha / n_samples
         sp_values = np.sort(p_values)
-        critical_p_value = sp_values[
-            sp_values < p_corr * np.arange(1, n_samples + 1)].max()
+        critical_set = sp_values[
+            sp_values < p_corr * np.arange(1, n_samples + 1)]
+        if len(critical_set) > 0:
+            critical_p_value = critical_set.max()
+        else:
+            critical_p_value = p_corr
         return critical_p_value
 
 
