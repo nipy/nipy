@@ -149,7 +149,6 @@ class LikelihoodModelResults(object):
         Return the (Wald) t-statistic for a given parameter estimate.
 
         Use Tcontrast for more complicated (Wald) t-statistics.
-
         """
 
         if column is None:
@@ -166,10 +165,27 @@ class LikelihoodModelResults(object):
     def vcov(self, matrix=None, column=None, dispersion=None, other=None):
         """ Variance/covariance matrix of linear contrast
 
+        Parameters
+        ==========
+        matrix: array of shape (dim, self.theta.shape[0]), optional
+                numerical contrast specification, 
+                where dim refers to the 'dimension' of the contrast
+                i.e. 1 for t contrasts, 1 or more for F contrasts. 
+        column: int, optional,
+                alternative way of specifying contrasts (column index)
+        dispersion: float or array of shape (n_voxels), optional,
+                    value(s) for the dispersion parameters
+        other:array of shape (dim, self.theta.shape[0]), optional
+              alternative contrast specification (?)
+
+        Returns
+        =======
+        cov: array of shape(dim, dim) or (n_voxels, dim, dim),
+             the estimated covariance matrix/matrices
+
         Returns the variance/covariance matrix of a linear contrast of the
         estimates of theta, multiplied by `dispersion` which will often be an
         estimate of `dispersion`, like, sigma^2.
-
         The covariance of interest is either specified as a (set of) column(s)
         or a matrix.
         """
@@ -191,23 +207,12 @@ class LikelihoodModelResults(object):
             if other is None:
                 other = matrix
             tmp = np.dot(matrix, np.dot(self.cov, np.transpose(other)))
-            return tmp * dispersion
-
+            if np.isscalar(dispersion):
+                return tmp * dispersion
+            else:
+                return tmp[:, :, np.newaxis] * dispersion
         if matrix is None and column is None:
             return self.cov * dispersion
-
-# need to generalize for the case when dispersion is not a scalar
-# and we have robust estimates of \Omega the error covariance matrix
-#
-# Jonathan: here, dispersion's shape has NOTHING to do with
-# resid.shape. In the nipy applications, the same model is fit
-# at 1000s of voxels at once, each one having a separate dispersion estimate.
-# The fix below seems to assume heteroscedastic errors.
-# this is what the class WLSModel is for...
-#
-#     if dispersion.size == 1:
-#         dispersion = np.eye(len(self.resid)) * dispersion
-#     return np.dot(np.dot(self.calc_theta, dispersion), self.calc_theta.T)
 
     def Tcontrast(self, matrix, store=('t', 'effect', 'sd'), dispersion=None):
         """ Compute a Tcontrast for a row vector `matrix`
@@ -254,14 +259,6 @@ class LikelihoodModelResults(object):
         return TContrastResults(effect=st_effect, t=st_t, sd=st_sd,
                                 df_den=self.df_resid)
 
-# Jonathan: for an F-statistic, the options 't', 'sd' do not make sense.
-#    The 'effect' option
-# does make sense, but is rarely looked at in practice.
-# Usually, you just want the F-statistic.
-#    def Fcontrast(self, matrix, eff=True, t=True, sd=True,
-#    dispersion=None, invcov=None):
-# Bertrand: when we want to re-use this, we need the effect and covariance
-
     def Fcontrast(self, matrix, dispersion=None, invcov=None):
         """
         Compute an Fcontrast for a contrast matrix.
@@ -292,6 +289,10 @@ class LikelihoodModelResults(object):
         -------
         f_res : ``FContrastResults`` instance
             with attributes F, df_den, df_num
+
+        Note
+        ----
+        For F contrasts, we now specify an effect and covariance
         """
         matrix = np.asarray(matrix)
         # 1D vectors assumed to be row vector
@@ -312,8 +313,10 @@ class LikelihoodModelResults(object):
         F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) *\
             pos_recipr((q * dispersion))
         F = np.squeeze(F)
-        return FContrastResults(F=F, df_den=self.df_resid,
-                                df_num=invcov.shape[0])
+        return FContrastResults(
+            effect=ctheta, covariance=self.vcov(
+                matrix=matrix, dispersion=dispersion[np.newaxis]),
+            F=F, df_den=self.df_resid, df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):
         '''
@@ -355,19 +358,19 @@ class LikelihoodModelResults(object):
         '''
         if cols is None:
             lower = self.theta - inv_t_cdf(1 - alpha / 2, self.df_resid) *\
-                    np.diag(np.sqrt(self.vcov(dispersion=dispersion)))
+                    np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
             upper = self.theta + inv_t_cdf(1 - alpha / 2, self.df_resid) *\
-                    np.diag(np.sqrt(self.vcov(dispersion=dispersion)))
+                    np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
         else:
             lower, upper = [], []
             for i in cols:
                 lower.append(
                     self.theta[i] - inv_t_cdf(1 - alpha / 2, self.df_resid) *
-                    np.diag(np.sqrt(self.vcov(dispersion=dispersion)))[i])
+                    np.sqrt(np.diag(self.vcov(dispersion=dispersion)))[i])
                 upper.append(
                     self.theta[i] + inv_t_cdf(1 - alpha / 2, self.df_resid) *
-                    np.diag(np.sqrt(self.vcov(dispersion=dispersion)))[i])
-            return np.asarray(zip(lower, upper))
+                    np.sqrt(np.diag(self.vcov(dispersion=dispersion)))[i])
+        return np.asarray(zip(lower, upper))
 
 
 class TContrastResults(object):
@@ -402,9 +405,11 @@ class FContrastResults(object):
     when np.asarray is called.
     """
 
-    def __init__(self, F, df_num, df_den=None):
+    def __init__(self, effect, covariance, F, df_num, df_den=None):
         if df_den is None:
             df_den = np.inf
+        self.effect = effect
+        self.covariance = covariance
         self.F = F
         self.df_den = df_den
         self.df_num = df_num
@@ -414,4 +419,4 @@ class FContrastResults(object):
 
     def __str__(self):
         return '<F contrast: F=%s, df_den=%d, df_num=%d>' % \
-            (`self.F`, self.df_den, self.df_num)
+            (repr(self.F), self.df_den, self.df_num)

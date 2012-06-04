@@ -125,3 +125,16 @@ def test_f_output():
     assert_raises(ValueError, RESULTS.Fcontrast, [1, 0, 0])
     # And shape
     assert_raises(ValueError, RESULTS.Fcontrast, np.array([1, 0])[:,None])
+
+def test_f_output_new_api():
+    res = RESULTS.Fcontrast([1, 0])
+    assert_array_almost_equal(res.effect, RESULTS.theta[0])
+    assert_array_almost_equal(res.covariance, RESULTS.vcov()[0][0])
+
+def test_conf_int():
+    lower_, upper_ = RESULTS.conf_int()
+    assert_true((lower_ < upper_).all())
+    assert_true((lower_ > upper_ - 10).all())
+    lower_, upper_ = RESULTS.conf_int(cols=[1]).T
+    assert_true(lower_ < upper_)
+    assert_true(lower_ > upper_ - 10)
