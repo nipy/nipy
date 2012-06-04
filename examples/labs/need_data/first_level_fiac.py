@@ -45,12 +45,12 @@ print('Starting fit...')
 results = []
 for x, y in zip(X, Y):
     # normalize the data to report effects in percent of the baseline
-    data = y.get_data()[mask_array]
+    data = y.get_data()[mask_array].T
     data, mean = data_scaling(data)
-    # fit the glm or 'mass univariate linear model' (mulm)
-    mulm = GeneralLinearModel(x)
-    mulm.fit(data.T, 'ar1')
-    results.append(mulm)
+    # fit the glm 
+    model = GeneralLinearModel(x)
+    model.fit(data, 'ar1')
+    results.append(model)
 
 # make a mean volume for display
 wmean = mask_array.astype(np.int16)

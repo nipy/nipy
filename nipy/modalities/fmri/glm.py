@@ -15,13 +15,13 @@ by computing fixed effects on contrasts
 >>> n, p, q = 100, 80, 10
 >>> X, Y = np.random.randn(p, q), np.random.randn(p, n)
 >>> cval = np.hstack((1, np.zeros(9)))
->>> mulm = GeneralLinearModel(X)
->>> mulm.fit(Y)
->>> z_vals = mulm.contrast(cval).z_score() # z-transformed statistics
+>>> model = GeneralLinearModel(X)
+>>> model.fit(Y)
+>>> z_vals = model.contrast(cval).z_score() # z-transformed statistics
 >>> # example of fixed effects statistics across two contrasts
 >>> cval_ = cval.copy()
 >>> np.random.shuffle(cval_)
->>> z_ffx = (mulm.contrast(cval) + mulm.contrast(cval_)).z_score()
+>>> z_ffx = (model.contrast(cval) + model.contrast(cval_)).z_score()
 """
 
 import numpy as np
