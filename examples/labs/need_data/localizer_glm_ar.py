@@ -23,7 +23,7 @@ import pylab as pl
 import tempfile
 
 from nibabel import load, save, Nifti1Image
-from nipy.modalities.fmri.glm import GeneralLinearModel
+from nipy.modalities.fmri.glm import GeneralLinearModel, data_scaling
 from nipy.modalities.fmri.design_matrix import make_dmtx
 from nipy.modalities.fmri.experimental_paradigm import \
     load_paradigm_from_csv_file
@@ -125,7 +125,7 @@ contrasts['effects_of_interest'] = np.eye(25)[::2]
 
 print 'Fitting a GLM (this takes time)...'
 fmri_image = load(data_path)
-Y = fmri_image.get_data()[mask_array]
+Y, _ = data_scaling(fmri_image.get_data()[mask_array])
 X = design_matrix.matrix
 results = GeneralLinearModel(X)
 results.fit(Y.T, steps=100)
@@ -163,6 +163,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
 
 print "All the  results were witten in %s" % write_dir
 
+# make a simple 2D plot
 plot_map(write_array, affine,
          cmap=cm.cold_hot,
          vmin=- vmax,
@@ -171,21 +172,22 @@ plot_map(write_array, affine,
          figure=10,
          threshold=3)
 
-"""
-plot_map(write_array, affine,
-                cmap=cm.cold_hot,
-                vmin=-vmax,
-                vmax=vmax,
-                anat=None,
-                figure=10,
-                threshold=3, do3d=True)
+# More plots using 3D
+if True: # replace with False to skip this
+    plot_map(write_array, affine,
+             cmap=cm.cold_hot,
+             vmin=-vmax,
+             vmax=vmax,
+             anat=None,
+             figure=11,
+             threshold=3, do3d=True)
 
-from nipy.labs import viz3d
-viz3d.plot_map_3d(write_array, affine,
-                cmap=cm.cold_hot,
-                vmin=-vmax,
-                vmax=vmax,
-                anat=None,
-                threshold=3)
-"""
+    from nipy.labs import viz3d
+    viz3d.plot_map_3d(write_array, affine,
+                      cmap=cm.cold_hot,
+                      vmin=-vmax,
+                      vmax=vmax,
+                      anat=None,
+                      threshold=4) 
+
 pl.show()

@@ -7,7 +7,7 @@ Test the glm utilities.
 import numpy as np
 from nose.tools import assert_true
 from numpy.testing import assert_almost_equal
-from ..glm import GeneralLinearModel, Contrast
+from ..glm import GeneralLinearModel, data_scaling
 
 
 def ols_glm(n=100, p=80, q=10):
@@ -159,6 +159,18 @@ def test_tmin():
     con.contrast_type = 'tmin'
     assert_true(con.stat() == tmin)
 
+
+def test_scaling():
+    """Test the scaling function"""
+    shape = (400, 10)
+    u = np.random.randn(*shape)
+    mean = 100 * np.random.rand(shape[1])
+    Y = u + mean
+    Y, mean_ = data_scaling(Y)
+    assert_almost_equal(Y.mean(0), 0)
+    assert_almost_equal(mean_, mean, 0)
+    assert_true(Y.std() > 1)
+    
 
 if __name__ == "__main__":
     import nose

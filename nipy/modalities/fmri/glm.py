@@ -34,6 +34,25 @@ DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
 
 
+def data_scaling(Y):
+    """Scaling of the data to have pourcent of baseline change columnwise
+
+    Parameters
+    ----------
+    Y: array of shape(n_time_points, n_voxels)
+       the input data
+    
+    Returns
+    -------
+    Y: array of shape(n_time_points, n_voxels),
+       the data after mean-scaling, de-meaning and multiplication by 100
+    mean: array of shape(n_voxels), the data mean
+    """
+    mean = Y.mean(0)
+    Y = 100 * (Y / mean - 1)
+    return Y, mean
+
+
 class GeneralLinearModel(object):
     """ This class handles the so-called on General Linear Model
 

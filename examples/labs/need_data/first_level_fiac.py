@@ -12,7 +12,7 @@ import pylab as pl
 import tempfile
 from nibabel import load, save, Nifti1Image
 
-from nipy.modalities.fmri.glm import GeneralLinearModel
+from nipy.modalities.fmri.glm import GeneralLinearModel, data_scaling
 from nipy.utils import example_data
 from nipy.labs.viz import plot_map, cm
 
@@ -45,12 +45,11 @@ print('Starting fit...')
 results = []
 for x, y in zip(X, Y):
     # normalize the data to report effects in percent of the baseline
-    data = y.get_data()[mask_array].T
-    mean = data.mean(0)
-    data = 100 * (data / mean - 1)
+    data = y.get_data()[mask_array]
+    data, mean = data_scaling(data)
     # fit the glm or 'mass univariate linear model' (mulm)
     mulm = GeneralLinearModel(x)
-    mulm.fit(data, 'ar1')
+    mulm.fit(data.T, 'ar1')
     results.append(mulm)
 
 # make a mean volume for display
