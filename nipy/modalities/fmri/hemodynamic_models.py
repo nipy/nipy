@@ -327,10 +327,10 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
     'spm_time_dispersion': idem, plus dispersion derivative (3 regressors)
     'canonical': this one corresponds to the Glover hrf
     'canonical_derivative': the Glover hrf + time derivative (2 regressors)
-    'fir': finite impulse response basis, a set of delayed dirac models 
-           with arbitrary length. This one currently assumes regularly spaced 
+    'fir': finite impulse response basis, a set of delayed dirac models
+           with arbitrary length. This one currently assumes regularly spaced
            frametimes (i.e. fixed time of repetition).
-    It is expected that spm standard and Glover model would not yield 
+    It is expected that spm standard and Glover model would not yield
     large differences in most cases.
     """
     # this is the average tr in this session, not necessarily the true tr
