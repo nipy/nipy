@@ -450,7 +450,7 @@ class GGGM(object):
                 pvals = st.norm.sf(x)
             else:
                 pvals = st.t.sf(x, dof)
-            q = FDR().all_fdr(pvals)
+            q = FDR().fit(pvals)
             z = 1 - q[i]
             self.mixt[2] = np.maximum(0.5, z.sum()) / np.size(x)
             self.shape_p, self.scale_p = _gam_param(x[i], z)
@@ -464,7 +464,7 @@ class GGGM(object):
                 pvals = st.norm.cdf(x)
             else:
                 pvals = st.t.cdf(x, dof)
-            q = FDR().all_fdr(pvals)
+            q = FDR().fit(pvals)
             z = 1 - q[i]
             self.shape_n, self.scale_n = _gam_param( - x[i], z)
             self.mixt[0] = np.maximum(0.5, z.sum()) / np.size(x)

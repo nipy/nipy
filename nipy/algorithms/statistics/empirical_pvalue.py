@@ -1,14 +1,18 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This module contains several routines to get corrected p-values estimates, 
+This module contains several routines to get corrected p-values estimates,
 based on the observation of data/p-values. It yields 3 main approaches:
-- benjamini-Hochberg fdr
-- a class that fits a gaussian model to the central
-part of an histogram, following schwartzman et al, 2009. This is
-typically necessary to estimate a fdr when one is not certain that the
+- Benjamini-Hochberg fdr
+http://en.wikipedia.org/wiki/False_discovery_rate
+- a class that fits a Gaussian model to the central
+part of an histogram, following [1]
+[1] Schwartzman A, Dougherty RF, Lee J, Ghahremani D, Taylor JE. Empirical null
+and false discovery rate analysis in neuroimaging. Neuroimage. 2009 Jan
+1;44(1):71-82. Epub 2008 Apr 24. PubMed PMID: 18547821.
+This is typically necessary to estimate a fdr when one is not certain that the
 data behaves as a standard normal under H_0.
-- a model based on gaussian mixture modelling
+- a model based on Gaussian mixture modelling 'a la Oxford'
 
 Author : Bertrand Thirion, 2008-2011
 """
@@ -22,7 +26,8 @@ def all_fdr_gaussian(x):
     """Return the fdr of all values assuming a Gaussian distribution
     """
     pvals = st.norm.sf(np.squeeze(x))
-    return(FDR(pvals).all_fdr())
+    return(FDR(pvals).fit())
+
 
 def gaussian_fdr_threshold(x, alpha=0.05):
         """
@@ -30,7 +35,7 @@ def gaussian_fdr_threshold(x, alpha=0.05):
         critical p-value associated with alpha.
         x is explicitly assumed to be normal distributed under H_0
 
-        Parameters
+         Parameters
         -----------
         x: ndarray, the input data
         alpha: float, optional, the desired significance
@@ -38,37 +43,40 @@ def gaussian_fdr_threshold(x, alpha=0.05):
         Returns
         -------
         th: float,
-            The threshold in variate value
+            The threshold, given as a Gaussian critical value
         """
         pvals = st.norm.sf(x)
-        pth = FDR(pvals).pth_from_pvals(pvals, alpha)
-        print pth, pvals.min(), alpha, x
+        pth = FDR().p_value_threshold(pvals, alpha)
         return st.norm.isf(pth)
 
 
 class FDR(object):
     """ Basic class to handle false discovery rate computation
-    Members:
-    x the samples from which the fdr is derived, assumed to be a normal variate
+    It can return the fdr associated with each observation (fit method)
+    or the critical p-values (among inputs) at a given fdr
+
+    Members
+    -------
+    p_values: array of shape (n_samples)
+        the sample p-values from which the fdr is derived
 
     The Benjamini-Horchberg procedure is used
     """
 
-    def __init__(self, pv=None):
+    def __init__(self, p_values=None):
         """
         Parameters
         ----------
-        pv: array of p-values
+        p_values: array of p-values
         """
-        self.pv = self.check_pv(pv)
+        self.p_values = self.check_p_values(p_values)
 
-
-    def all_fdr(self, pv=None, verbose=0):
-        """ Returns the fdr associated with each the values
+    def fit(self, p_values=None, verbose=0):
+        """ Returns the fdr associated with each value
 
         Parameters
         -----------
-        pv : ndarray of shape (n)
+        p_values : ndarray of shape (n)
             The samples p-value
 
         Returns
@@ -76,82 +84,86 @@ class FDR(object):
         q : array of shape(n)
             The corresponding fdrs
         """
-        pv = self.check_pv(pv)
-        if pv == None:
-            pv = self.pv
-        if pv == None:
+        p_values = self.check_p_values(p_values)
+        if p_values == None:
+            p_values = self.p_values
+        if p_values == None:
             return None
-        n = np.size(pv)
-        isx = np.argsort(pv)            # sorting indices to populate q later on
-        q = np.zeros(n)
-        for ip, ips in enumerate(isx):
-            q_new = n * pv[ips] / (ip + 1)
-            q[ips] = np.minimum(1, np.maximum(q_new, q[ips]))
-            if (ip < n - 1):
-                q[isx[ip + 1]] = q[ips]
+        n_samples = p_values.size
+        order = p_values.argsort()
+        sp_values = p_values[order]
+
+        # compute q while in ascending order
+        q = np.minimum(1, n_samples * sp_values / np.arange(1, n_samples + 1))
+        for i in range(n_samples - 1, 0, - 1):
+            q[i - 1] = min(q[i], q[i - 1])
+
+        # reorder the results
+        inverse_order = np.arange(n_samples)
+        inverse_order[order] = np.arange(n_samples)
+        q = q[inverse_order]
 
         if verbose:
             import matplotlib.pylab as mp
             mp.figure()
-            mp.plot(pv, q, '.')
+            mp.xlabel('Input p-value')
+            mp.plot(p_values, q, '.')
+            mp.ylabel('Associated fdr')
         return q
 
-    def check_pv(self, pv):
-        """
-        Do some basic checks on the pv array: each value should be within [0,1]
+    def check_p_values(self, p_values):
+        """Basic checks on the p_values array: values should be within [0,1]
 
         Parameters
         ----------
-        pv : array of shape (n)
+        p_values : array of shape (n)
             The sample p-values
 
         Returns
         --------
-        pv : array of shape (n)
-            The sample p-values
+        p_values : array of shape (n)
+             The sample p-values
         """
-        if pv is None:
+        if p_values is None:
             return None
         # Take all elements unfolded and assure having at least 1d
-        pv = np.atleast_1d(np.ravel(pv))
-        if np.any(np.isnan(pv)):
-            raise ValueError("%d values are NaN" % (sum(np.isnan(pv))))
-        if pv.min() < 0:
-            raise ValueError("Negative p-values. Min=%g" % (pv.min(),))
-        if pv.max() > 1:
-            raise ValueError("P-values greater than 1! Max=%g" % (pv.max(),))
-        return pv
+        p_values = np.atleast_1d(np.ravel(p_values))
+        if np.any(np.isnan(p_values)):
+            raise ValueError("%d values are NaN" % (sum(np.isnan(p_values))))
+        if p_values.min() < 0:
+            raise ValueError("Negative p-values. Min=%g" % (p_values.min(),))
+        if p_values.max() > 1:
+            raise ValueError("P-values greater than 1! Max=%g" % (
+                    p_values.max(),))
+        return p_values
 
 
-    def pth_from_pvals(self, pv=None, alpha=0.05):
+    def p_value_threshold(self, p_values=None, alpha=0.05):
         """ Returns the critical p-value associated with an FDR alpha
 
         Parameters
         -----------
-        pv : array of shape (n), optional
+        p_values : array of shape (n), optional
             The samples p-value
         alpha : float, optional
             The desired FDR significance
 
         Returns
         -------
-        pth: float
-            The p value corresponding to the FDR alpha
+        critical_p_value: float
+             The p value corresponding to the FDR alpha
         """
-        pv = self.check_pv(pv)
-        if pv == None:
-            pv = self.pv
-        if pv == None:
+        p_values = self.check_p_values(p_values)
+        if p_values == None:
+            p_values = self.p_values
+        if p_values == None:
             return None
-        npv = np.size(pv)
-        pcorr = alpha / npv
-        spv = np.sort(pv)
-        pth = 0.
-        for ip, sp in enumerate(spv):
-            if sp > pcorr * (ip + 1):
-                break
-            pth = sp
-        return pth
+        n_samples = np.size(p_values)
+        p_corr = alpha / n_samples
+        sp_values = np.sort(p_values)
+        critical_p_value = sp_values[
+            sp_values < p_corr * np.arange(1, n_samples + 1)].max()
+        return critical_p_value
 
 
 class NormalEmpiricalNull(object):
@@ -169,7 +181,7 @@ class NormalEmpiricalNull(object):
         x : 1D ndarray
             The data used to estimate the empirical null.
         """
-        x = np.reshape(x, ( - 1))
+        x = np.reshape(x, (- 1))
         self.x = np.sort(x)
         self.n = np.size(x)
         self.learned = 0
