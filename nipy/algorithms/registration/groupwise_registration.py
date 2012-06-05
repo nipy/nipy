@@ -662,7 +662,7 @@ class Realign4d(object):
         self.affine_class = affine_class
         for im in images:
             xyz_img = as_xyz_affable(im)
-            self._runs.append(Image4d(xyz_img.get_data(),
+            self._runs.append(Image4d(xyz_img.get_data,
                                       xyz_affine(xyz_img),
                                       tr=tr, tr_slices=tr_slices,
                                       start=start, slice_order=slice_order,
