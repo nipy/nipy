@@ -76,7 +76,7 @@ from ...fixes.nibabel import io_orientation
 
 from ..image.image import Image
 from ..reference import spaces as rsp
-from ..reference.coordinate_map import CoordMapMaker
+from ..reference.coordinate_map import AffineTransform
 
 
 def xyz_affine(img, name2xyz=None):
@@ -274,8 +274,8 @@ def neuro_image(data, xyz_affine, world, metadata=None):
         dimensions in data (dimensions 0:3) to mm in XYZ space given in `world`.
         If a tuple, then contains two values: the (4, 4) array-like, and a
         sequence of scalings for the dimensions greater than 3.  See examples.
-    world : str or XYZSpace
-        World 3D space to which affine refers
+    world : str or XYZSpace or CoordSysMaker or CoordinateSystem
+        World 3D space to which affine refers.  See ``spaces.get_world_cs()``
     metadata : None or mapping, optional
         metadata for created image.  Defaults to None, giving empty metadata.
 
@@ -363,12 +363,14 @@ def neuro_image(data, xyz_affine, world, metadata=None):
     xyz_affine = np.asarray(xyz_affine)
     if not xyz_affine.shape == (4, 4):
         raise ValueError("Expecting 4 x 4 affine")
-    if not rsp.is_xyz_space(world):
-        space_names = [s.name for s in rsp.known_spaces]
-        if world not in space_names:
-            raise rsp.SpaceError('Unkown space "%s"; known spaces are %s'
-                                 % (world, ', '.join(space_names)))
-        world = rsp.known_spaces[space_names.index(world)]
-    cmap_maker = CoordMapMaker(rsp.voxel_csm, world.to_coordsys_maker('tuvw'))
-    cmap = cmap_maker(xyz_affine, added_zooms)
+    # Make coordinate map
+    world_cm = rsp.get_world_cs(world, N)
+    voxel_cm = rsp.voxel_csm(N)
+    if N > 3:
+        affine = np.diag((1, 1, 1) + added_zooms + (1,))
+        affine[:3, :3] = xyz_affine[:3, :3]
+        affine[:3, -1] = xyz_affine[:3, 3]
+    else:
+        affine = xyz_affine
+    cmap = AffineTransform(voxel_cm, world_cm, affine)
     return Image(data, cmap, metadata)

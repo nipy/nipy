@@ -3,7 +3,7 @@
 import numpy as np
 
 from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,
-                                 is_coordsys,
+                                 is_coordsys, is_coordsys_maker,
                                  product, safe_dtype)
 
 from nose.tools import (assert_true, assert_false, assert_equal, assert_raises,
@@ -142,6 +142,15 @@ def test_is_coordsys():
     assert_false(is_coordsys(c))
     c.coord_dtype = np.float
     assert_true(is_coordsys(c))
+    # Distinguish from CoordSysMaker
+    class C(object):
+        coord_names = []
+        name = ''
+        coord_dtype=np.float
+        def __call__(self):
+            pass
+    assert_false(is_coordsys(C()))
+    assert_false(is_coordsys(CoordSysMaker('xyz')))
 
 
 def test_checked_values():
@@ -233,3 +242,26 @@ def test_coordsys_maker():
     assert_equal(cs_maker(i, coord_dtype=np.int32),
                  CoordinateSystem(ax_names[:i+1], 'myname', np.int32))
 
+
+def test_is_coordsys_maker():
+    # Test coordinate system check
+    cm = CoordSysMaker('xyz')
+    assert_true(is_coordsys_maker(cm))
+    class C(object): pass
+    c = C()
+    assert_false(is_coordsys_maker(c))
+    c.coord_names = []
+    assert_false(is_coordsys_maker(c))
+    c.name = ''
+    assert_false(is_coordsys_maker(c))
+    c.coord_dtype = np.float
+    assert_false(is_coordsys_maker(c))
+    # Distinguish from CoordinateSystem
+    class C(object):
+        coord_names = []
+        name = ''
+        coord_dtype=np.float
+        def __call__(self):
+            pass
+    assert_true(is_coordsys_maker(C()))
+    assert_false(is_coordsys_maker(CoordinateSystem('ijk')))
