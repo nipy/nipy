@@ -1,12 +1,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from copy import copy
 
 import numpy as np
 
-from .image import Image, rollaxis as img_rollaxis
-from ..reference.coordinate_map import (CoordinateSystem,
-                                       AffineTransform, compose)
+from .image import Image, iter_axis, is_image
+from ..reference.coordinate_map import (drop_io_dim, axid2axes, AxisError)
+
 
 class ImageList(object):
     ''' Class to contain ND image as list of (N-1)D images '''
@@ -55,15 +54,13 @@ class ImageList(object):
             self.list = []
             return
         images = list(images)
-        for im in images:
-            if not (hasattr(im, "coordmap") and hasattr(im, "get_data")):
-                raise ValueError("Expecting each element of images "
-                                 "to have a ``coordmap`` attribute "
-                                 "and a ``get_data`` method")
+        if not all(is_image(im) for im in images):
+                raise ValueError("Expecting each element of images to have "
+                                 "the Image API")
         self.list = images
 
     @classmethod
-    def from_image(klass, image, axis=None):
+    def from_image(klass, image, axis=None, dropout=True):
         """ Create an image list from an `image` by slicing over `axis`
 
         Parameters
@@ -73,6 +70,10 @@ class ImageList(object):
         axis : str or int
             axis of `image` that should become the axis indexed by the image
             list.
+        dropout : bool, optional
+            When taking slices from an image, we will leave an output dimension
+            to the coordmap that has no corresponding input dimension.  If
+            `dropout` is True, drop this output dimension.
 
         Returns
         -------
@@ -80,35 +81,19 @@ class ImageList(object):
         """
         if axis is None:
             raise ValueError('Must specify image axis')
-        # Now, reorder the axes and reference
-        image = img_rollaxis(image, axis)
-
+        # Get corresponding input, output dimension indices
+        in_ax, out_ax = axid2axes(image.coordmap, axis)
+        if in_ax is None:
+            raise AxisError('No correspnding input dimension for %s' % axis)
+        dropout = dropout and not out_ax is None
+        if dropout:
+            out_ax_name = image.reference.coord_names[out_ax]
         imlist = []
-        coordmap = image.coordmap
-
-        # We drop the first output coordinate of image's coordmap
-        drop1st = np.identity(coordmap.ndims[1]+1)[1:]
-        drop1st_domain = image.reference
-        drop1st_range = CoordinateSystem(image.reference.coord_names[1:],
-                                 name=image.reference.name,
-                                 coord_dtype=image.reference.coord_dtype)
-        drop1st_coordmap = AffineTransform(drop1st_domain, drop1st_range,
-                                           drop1st)
-        # And arbitrarily add a 0 for the first axis
-        add0 = np.vstack([np.zeros(image.axes.ndim),
-                          np.identity(image.axes.ndim)])
-        add0_domain = CoordinateSystem(image.axes.coord_names[1:],
-                                 name=image.axes.name,
-                                 coord_dtype=image.axes.coord_dtype)
-        add0_range = image.axes
-        add0_coordmap = AffineTransform(add0_domain, add0_range,
-                                        add0)
-
-        coordmap = compose(drop1st_coordmap, image.coordmap, add0_coordmap)
-
-        data = np.asarray(image)
-        imlist = [Image(dataslice, copy(coordmap))
-                  for dataslice in data]
+        for img in iter_axis(image, in_ax):
+            if dropout:
+                cmap = drop_io_dim(img.coordmap, out_ax_name)
+                img = Image(img.get_data(), cmap, img.metadata)
+            imlist.append(img)
         return klass(imlist)
 
     def __setitem__(self, index, value):
@@ -116,6 +101,11 @@ class ImageList(object):
         self.list[index] = value
         """
         self.list[index] = value
+
+    def __len__(self):
+        """ Length of image list
+        """
+        return len(self.list)
 
     def __getitem__(self, index):
         """

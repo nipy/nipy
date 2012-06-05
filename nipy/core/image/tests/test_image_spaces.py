@@ -6,7 +6,7 @@ import numpy as np
 import nibabel as nib
 from nibabel.affines import from_matvec
 
-from ..image import Image, rollaxis as img_rollaxis
+from ..image import Image, rollimg
 from ..image_spaces import (is_xyz_affable, as_xyz_affable, xyz_affine,
                             neuro_image)
 from ...reference.coordinate_system import CoordinateSystem as CS
@@ -70,6 +70,12 @@ def test_image_as_xyz_affable():
             assert_false(tmap is img_r)
             assert_equal(img, img_r)
             assert_array_equal(img.get_data(), img_r.get_data())
+    img_t0 = rollimg(img, 't')
+    assert_false(is_xyz_affable(img_t0))
+    img_t0_r = as_xyz_affable(img_t0)
+    assert_false(img_t0 is img_t0_r)
+    assert_array_equal(img.get_data(), img_t0_r.get_data())
+    assert_equal(img.coordmap, img_t0_r.coordmap)
     # Test against nibabel image
     nimg = nib.Nifti1Image(arr, np.diag([2,3,4,1]))
     nimg_r = as_xyz_affable(nimg)

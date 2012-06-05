@@ -7,11 +7,10 @@ import numpy as np
 import nibabel as nib
 
 from .. import image
-from ..image import iter_axis, is_image
-from ...api import Image, fromarray
+from ..image import Image, iter_axis, is_image, rollimg
 from ...api import parcels, data_generator, write_data
 from ...reference.coordinate_system import CoordinateSystem
-from ...reference.coordinate_map import AffineTransform
+from ...reference.coordinate_map import AffineTransform, AxisError
 
 from nose.tools import (assert_true, assert_false, assert_equal,
                         assert_not_equal, assert_raises)
@@ -249,29 +248,29 @@ def test_synchronized_order():
     im = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
     im_scrambled = im.reordered_axes('iljk').reordered_reference('xtyz')
     im_unscrambled = image.synchronized_order(im_scrambled, im)
-    yield assert_equal, im_unscrambled.coordmap, im.coordmap
-    yield assert_almost_equal, im_unscrambled.get_data(), im.get_data()
-    yield assert_equal, im_unscrambled, im
-    yield assert_true, im_unscrambled == im
-    yield assert_false, im_unscrambled != im
+    assert_equal(im_unscrambled.coordmap, im.coordmap)
+    assert_almost_equal(im_unscrambled.get_data(), im.get_data())
+    assert_equal(im_unscrambled, im)
+    assert_true(im_unscrambled == im)
+    assert_false(im_unscrambled != im)
     # the images don't have to be the same shape
     data2 = np.random.standard_normal((3,11,9,4))
     im2 = Image(data2, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
     im_scrambled2 = im2.reordered_axes('iljk').reordered_reference('xtyz')
     im_unscrambled2 = image.synchronized_order(im_scrambled2, im)
-    yield assert_equal, im_unscrambled2.coordmap, im.coordmap
+    assert_equal(im_unscrambled2.coordmap, im.coordmap)
     # or the same coordmap
     data3 = np.random.standard_normal((3,11,9,4))
     im3 = Image(data3, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,9,3,-2,1])))
     im_scrambled3 = im3.reordered_axes('iljk').reordered_reference('xtyz')
     im_unscrambled3 = image.synchronized_order(im_scrambled3, im)
-    yield assert_equal, im_unscrambled3.axes, im.axes
-    yield assert_equal, im_unscrambled3.reference, im.reference
+    assert_equal(im_unscrambled3.axes, im.axes)
+    assert_equal(im_unscrambled3.reference, im.reference)
 
 
 def test_iter_axis():
-    # axis iteration helper function.  This function also tests rollaxis,
-    # because iter_axis uses rollaxis
+    # axis iteration helper function.  This function also tests rollimg,
+    # because iter_axis uses rollimg
     iter_axis = image.iter_axis
     data = np.arange(24).reshape((4,3,2))
     img = Image(data, AffineTransform('ijk', 'xyz', np.eye(4)))
@@ -291,43 +290,37 @@ def test_iter_axis():
             slicer[ax_no] = i
             assert_array_equal(s, data[slicer])
 
-
 def test_rollaxis():
     data = np.random.standard_normal((3,4,7,5))
     im = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
     # for the inverse we must specify an integer
-    yield assert_raises, ValueError, image.rollaxis, im, 'i', True
+    assert_raises(ValueError, image.rollaxis, im, 'i', True)
     # Check that rollaxis preserves diagonal affines, as claimed
-    yield assert_almost_equal, image.rollaxis(im, 1).affine, np.diag([2,1,3,4,1])
-    yield assert_almost_equal, image.rollaxis(im, 2).affine, np.diag([3,1,2,4,1])
-    yield assert_almost_equal, image.rollaxis(im, 3).affine, np.diag([4,1,2,3,1])
+    assert_almost_equal(image.rollaxis(im, 1).affine, np.diag([2,1,3,4,1]))
+    assert_almost_equal(image.rollaxis(im, 2).affine, np.diag([3,1,2,4,1]))
+    assert_almost_equal(image.rollaxis(im, 3).affine, np.diag([4,1,2,3,1]))
     # Check that ambiguous axes raise an exception
     # 'l' appears both as an axis and a reference coord name
     # and in different places
     im_amb = Image(data, AffineTransform.from_params('ijkl', 'xylt', np.diag([1,2,3,4,1])))
-    yield assert_raises, ValueError, image.rollaxis, im_amb, 'l'
+    assert_raises(ValueError, image.rollaxis, im_amb, 'l')
     # But if it's unambiguous, then
     # 'l' can appear both as an axis and a reference coord name
     im_unamb = Image(data, AffineTransform.from_params('ijkl', 'xyzl', np.diag([1,2,3,4,1])))
     im_rolled = image.rollaxis(im_unamb, 'l')
-    yield assert_almost_equal, im_rolled.get_data(), \
-        im_unamb.get_data().transpose([3,0,1,2])
+    assert_almost_equal(im_rolled.get_data(),
+                        im_unamb.get_data().transpose([3,0,1,2]))
     for i, o, n in zip('ijkl', 'xyzt', range(4)):
         im_i = image.rollaxis(im, i)
         im_o = image.rollaxis(im, o)
         im_n = image.rollaxis(im, n)
-        yield assert_almost_equal, im_i.get_data(), \
-                                  im_o.get_data()
-        yield assert_almost_equal, im_i.affine, \
-            im_o.affine
-        yield assert_almost_equal, im_n.get_data(), \
-            im_o.get_data()
+        assert_almost_equal(im_i.get_data(), im_o.get_data())
+        assert_almost_equal(im_i.affine, im_o.affine)
+        assert_almost_equal(im_n.get_data(), im_o.get_data())
         for _im in [im_n, im_o, im_i]:
             im_n_inv = image.rollaxis(_im, n, inverse=True)
-            yield assert_almost_equal, im_n_inv.affine, \
-                im.affine
-            yield assert_almost_equal, im_n_inv.get_data(), \
-                im.get_data()
+            assert_almost_equal(im_n_inv.affine, im.affine)
+            assert_almost_equal(im_n_inv.get_data(), im.get_data())
 
 
 def test_is_image():
@@ -347,3 +340,85 @@ def test_is_image():
     assert_false(is_image(c))
     c.metadata = None
     assert_true(is_image(c))
+
+
+def test_rollimg():
+    AT = AffineTransform
+    data = np.random.standard_normal((3,4,7,5))
+    aff = np.diag([1,2,3,4,1])
+    im = Image(data, AT('ijkl', 'xyzt', aff))
+    # No attempt to preserve the diagonal
+    im1 = rollimg(im, 1)
+    assert_equal(im1.coordmap, rollimg(im, 'j').coordmap)
+    assert_equal(im1.coordmap, rollimg(im, 'y').coordmap)
+    assert_equal(im1.coordmap, rollimg(im, -3).coordmap)
+    assert_equal(im1.coordmap,
+                 AT('jikl', 'xyzt', aff[:, (1, 0, 2, 3, 4)]))
+    assert_array_equal(im1.get_data(), np.rollaxis(data, 1))
+    im2 = rollimg(im, 2)
+    assert_equal(im2.coordmap, rollimg(im, 'k').coordmap)
+    assert_equal(im2.coordmap, rollimg(im, 'z').coordmap)
+    assert_equal(im2.coordmap, rollimg(im, -2).coordmap)
+    assert_equal(im2.coordmap,
+                 AT('kijl', 'xyzt', aff[:, (2, 0, 1, 3, 4)]))
+    assert_array_equal(im2.get_data(), np.rollaxis(data, 2))
+    im3 = rollimg(im, 3)
+    assert_equal(im3.coordmap, rollimg(im, 'l').coordmap)
+    assert_equal(im3.coordmap, rollimg(im, 't').coordmap)
+    assert_equal(im3.coordmap, rollimg(im, -1).coordmap)
+    assert_equal(im3.coordmap,
+                        AT('lijk', 'xyzt', aff[:, (3, 0, 1, 2, 4)]))
+    assert_array_equal(im3.get_data(), np.rollaxis(data, 3))
+    # We can roll to before a specified axis
+    im31 = rollimg(im, 3, 1)
+    assert_equal(im31.coordmap, rollimg(im, 'l', 'j').coordmap)
+    assert_equal(im31.coordmap, rollimg(im, 't', 'y').coordmap)
+    assert_equal(im31.coordmap, rollimg(im, 't', 'j').coordmap)
+    assert_equal(im31.coordmap, rollimg(im, 'l', 'y').coordmap)
+    assert_equal(im31.coordmap, rollimg(im, -1, 'y').coordmap)
+    assert_equal(im31.coordmap, rollimg(im, -1, -3).coordmap)
+    assert_equal(im31.coordmap,
+                 AT('iljk', 'xyzt', aff[:, (0, 3, 1, 2, 4)]))
+    assert_array_equal(im31.get_data(), np.rollaxis(data, 3, 1))
+    # Check that ambiguous axes raise an exception; 'l' appears both as an axis
+    # and a reference coord name and in different places
+    im_amb = Image(data, AT('ijkl', 'xylt', np.diag([1,2,3,4,1])))
+    assert_raises(AxisError, rollimg, im_amb, 'l')
+    # But if it's unambiguous, then 'l' can appear both as an axis and a
+    # reference coord name
+    im_unamb = Image(data, AT('ijkl', 'xyzl', np.diag([1,2,3,4,1])))
+    im_rolled = rollimg(im_unamb, 'l')
+    assert_array_equal(im_rolled.get_data(),
+                       im_unamb.get_data().transpose([3,0,1,2]))
+    # Zero row / col means we can't find an axis mapping, by default
+    aff_z = np.diag([1, 2, 3, 0, 1])
+    im_z = Image(data, AT('ijkl', 'xyzt', aff_z))
+    assert_raises(AxisError, rollimg, im_z, 't')
+    # Unless we turn on our zero detector
+    assert_equal(rollimg(im_z, 't', fix0=True).coordmap,
+                 AT('lijk', 'xyzt', aff_z[:, (3, 0, 1, 2, 4)]))
+    # Non square is OK
+    aff_r = np.array([[1, 0, 0, 10],
+                      [0, 2, 0, 11],
+                      [0, 0, 2, 12],
+                      [0, 0, 0, 13],
+                      [0, 0, 0, 1]])
+    im_r = Image(data[:,:,:,0], AT('ijk', 'xyzt', aff_r))
+    assert_equal(rollimg(im_r, 'k').coordmap,
+                 AT('kij', 'xyzt', aff_r[:, (2, 0, 1, 3)]))
+    # Unless you're tring to get at the dropped input dimension of course
+    assert_raises(AxisError, rollimg, im_r, 't')
+    # Another check for integers, input names, output names, reversing
+    for i, o, n in zip('ijkl', 'xyzt', range(4)):
+        im_i = rollimg(im, i)
+        im_o = rollimg(im, o)
+        im_n = rollimg(im, n)
+        assert_array_equal(im_i.get_data(), im_o.get_data())
+        assert_array_equal(im_i.affine, im_o.affine)
+        assert_array_equal(im_n.get_data(), im_o.get_data())
+        for _im in [im_n, im_o, im_i]:
+            # We're rollimg back.  We want to roll the new axis 0 back to where
+            # it started, which was position n
+            im_n_inv = rollimg(_im, 0, n)
+            assert_array_equal(im_n_inv.affine, im.affine)
+            assert_array_equal(im_n_inv.get_data(), im.get_data())
