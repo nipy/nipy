@@ -14,13 +14,12 @@ More specifically, the data is projected onto the eigenvectors of the
 covariance matrix.
 """
 
-import sys
-
 import numpy as np
 import scipy.linalg as spl
 
-from ...core.image.image import rollaxis as image_rollaxis
-from ...core.reference.coordinate_map import drop_io_dim, AxisError
+from ...core.image.image import rollimg
+from ...core.reference.coordinate_map import (axid2axes, orth_axes,
+                                              drop_io_dim, AxisError)
 
 
 def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
@@ -270,25 +269,18 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
        * ``axis``: axis over which PCA has been performed.
     """
     img_klass = img.__class__
-    # Coordmap after dropping the axis over which we are going to PCA.  This has
-    # the side effect of testing if the output axes are going to make sense if
-    # we drop the intended axis
-    try:
-        dropped_cmap = drop_io_dim(img.coordmap, axis)
-    except AxisError:
-        err = sys.exc_info()[1]
-        raise AxisError('Cannot do image PCA over axis %s because: %s' %
-                        (axis, err))
-    # Which axes did we drop? (the input `axis` could be an input or an output
-    # axis name, or an input axis index)
-    in_name = set(img.axes.coord_names).difference(
-        dropped_cmap.function_domain.coord_names).pop()
-    out_name = set(img.reference.coord_names).difference(
-        dropped_cmap.function_range.coord_names).pop()
+    # Which axes are we operating over?
+    in_ax, out_ax = axid2axes(img.coordmap, axis)
+    if None in (in_ax, out_ax):
+        raise AxisError('Cannot identify matching input output axes with "%s"'
+                        % axis)
+    if not orth_axes(in_ax, out_ax, img.coordmap.affine):
+        raise AxisError('Input and output axes found from "%s" not othogonal '
+                        'to rest of affine' % axis)
     # Roll the chosen axis to input position zero
-    work_img = image_rollaxis(img, axis)
+    work_img = rollimg(img, axis)
     if mask is not None:
-        if not mask.coordmap.similar_to(dropped_cmap):
+        if not mask.coordmap.similar_to(drop_io_dim(img.coordmap, axis)):
             raise ValueError("Mask should have matching coordmap to `img` "
                              "coordmap with dropped axis %s" % axis)
     data = work_img.get_data()
@@ -300,16 +292,15 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
     res = pca(data, 0, mask_data, ncomp, standardize,
               design_keep, design_resid, tol_ratio)
     # Clean up images after PCA
-    # Rename the axis we dropped
+    # Rename the axis we dropped, at position 0 after rollimg
     output_coordmap = work_img.coordmap.renamed_domain(
-        {in_name: 'PCA components'})
-    # And the matching output axis
+        {0: 'PCA components'})
+    # And the matching output axis - which has not moved position
     output_coordmap = output_coordmap.renamed_range(
-        {out_name: 'PCA components'})
+        {out_ax: 'PCA components'})
     output_img = img_klass(res['basis_projections'], output_coordmap)
     # We have to roll the axis back to the original position
-    roll_index = img.axes.index(in_name)
-    output_img = image_rollaxis(output_img, roll_index, inverse=True)
+    output_img = rollimg(output_img, 0, in_ax)
     key = 'basis_vectors over %s' % axis
     res[key] = res['basis_vectors']
     res['basis_projections'] = output_img
