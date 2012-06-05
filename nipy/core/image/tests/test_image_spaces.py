@@ -59,12 +59,18 @@ def test_image_as_xyz_affable():
     img = Image(arr, vox2mni(aff))
     img_r = as_xyz_affable(img)
     assert_true(img is img_r)
-    img_t0 = img_rollaxis(img, 't')
-    assert_false(is_xyz_affable(img_t0))
-    img_t0_r = as_xyz_affable(img_t0)
-    assert_false(img_t0 is img_t0_r)
-    assert_array_equal(img.get_data(), img_t0_r.get_data())
-    assert_equal(img.coordmap, img_t0_r.coordmap)
+    # Reorder, reverse reordering, test != and ==
+    for order in ((3, 0, 1, 2), (0, 3, 1, 2)):
+        img_ro_out = img.reordered_reference(order)
+        img_ro_in = img.reordered_axes(order)
+        img_ro_both = img_ro_out.reordered_axes(order)
+        for tmap in (img_ro_out, img_ro_in, img_ro_both):
+            assert_false(is_xyz_affable(tmap))
+            img_r = as_xyz_affable(tmap)
+            assert_false(tmap is img_r)
+            assert_equal(img, img_r)
+            assert_array_equal(img.get_data(), img_r.get_data())
+    # Test against nibabel image
     nimg = nib.Nifti1Image(arr, np.diag([2,3,4,1]))
     nimg_r = as_xyz_affable(nimg)
     assert_true(nimg is nimg_r)

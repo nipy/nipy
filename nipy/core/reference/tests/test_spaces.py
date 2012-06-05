@@ -11,7 +11,9 @@ from ..coordinate_map import AffineTransform, CoordinateMap
 from ..spaces import (vox2mni, vox2scanner, vox2talairach, vox2unknown,
                       vox2aligned, xyz_affine, xyz_order, SpaceTypeError,
                       AxesError, AffineError, XYZSpace, known_space,
-                      known_spaces, is_xyz_space)
+                      known_spaces, is_xyz_space, SpaceError,
+                      is_xyz_affable,
+                      get_world_cs, mni_csm, mni_space)
 
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal)
@@ -239,17 +241,18 @@ def test_xyz_order():
     assert_array_equal(xyz_order(r_cs, my_valtor), [2,1,0])
 
 
-def is_xyz_affable():
+def test_is_xyz_affable():
     # Whether there exists an xyz affine for this coordmap
     affine = np.diag([2,4,5,6,1])
     cmap = AffineTransform(VARS['d_cs_r4'], VARS['r_cs_r4'], affine)
     assert_true(is_xyz_affable(cmap))
-    assert_true(is_xyz_affable(cmap.reordered_range([3,0,1,2])))
+    assert_false(is_xyz_affable(cmap.reordered_range([3,0,1,2])))
     assert_false(is_xyz_affable(cmap.reordered_domain([3,0,1,2])))
     # Can pass in own validator
     my_valtor = dict(blind='x', leading='y', ditch='z')
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
-    cmap = AffineTransform(VARS['d_cs_r3'],r_cs, affine)
+    affine = from_matvec(np.arange(9).reshape((3, 3)), [11, 12, 13])
+    cmap = AffineTransform(VARS['d_cs_r3'], r_cs, affine)
     # No xyz affine if we don't use our custom dictionary
     assert_false(is_xyz_affable(cmap))
     # Is if we do
