@@ -7,8 +7,10 @@ import numpy as np
 import nibabel as nib
 
 from .. import image
-from ..image import Image, iter_axis, is_image
+from ..image import iter_axis, is_image
+from ...api import Image, fromarray
 from ...api import parcels, data_generator, write_data
+from ...reference.coordinate_system import CoordinateSystem
 from ...reference.coordinate_map import AffineTransform
 
 from nose.tools import (assert_true, assert_false, assert_equal,
@@ -326,3 +328,22 @@ def test_rollaxis():
                 im.affine
             yield assert_almost_equal, im_n_inv.get_data(), \
                 im.get_data()
+
+
+def test_is_image():
+    # Test is_image check
+    arr = np.arange(24).reshape((2,3,4))
+    cmap = AffineTransform(CoordinateSystem('ijk'),
+                           CoordinateSystem('xyz'),
+                           np.eye(4))
+    img = Image(arr, cmap)
+    assert_true(is_image(img))
+    assert_false(is_image(object()))
+    class C(object):
+        def get_data(self): pass
+    c = C()
+    assert_false(is_image(c))
+    c.coordmap = None
+    assert_false(is_image(c))
+    c.metadata = None
+    assert_true(is_image(c))

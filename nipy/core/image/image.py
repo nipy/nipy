@@ -785,7 +785,7 @@ def is_image(obj):
     This allows us to test for something that is duck-typing an image.
 
     For now an array must have a 'coordmap' attribute, and a callable
-    '__array__' attribute. 
+    'get_data' attribute.
 
     Parameters
     ----------
@@ -809,7 +809,6 @@ def is_image(obj):
     >>> is_image(c)
     False
     '''
-    if not hasattr(obj, 'coordmap'):
+    if not hasattr(obj, 'coordmap') or not hasattr(obj, 'metadata'):
         return False
-    return callable(getattr(obj, '__array__'))
-
+    return callable(getattr(obj, 'get_data'))
