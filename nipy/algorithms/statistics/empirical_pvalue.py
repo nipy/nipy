@@ -22,8 +22,38 @@ from numpy.linalg import pinv
 import scipy.stats as st
 
 
+def check_p_values(p_values):
+    """Basic checks on the p_values array: values should be within [0,1]
+
+    Assures also that p_values are at least in 1d array.  None of the
+    checks is performed if p_values is None.
+
+    Parameters
+    ----------
+    p_values : array of shape (n)
+        The sample p-values
+
+    Returns
+    --------
+    p_values : array of shape (n)
+         The sample p-values
+    """
+    if p_values is None:
+        return None
+    # Take all elements unfolded and assure having at least 1d
+    p_values = np.atleast_1d(np.ravel(p_values))
+    if np.any(np.isnan(p_values)):
+        raise ValueError("%d values are NaN" % (sum(np.isnan(p_values))))
+    if p_values.min() < 0:
+        raise ValueError("Negative p-values. Min=%g" % (p_values.min(),))
+    if p_values.max() > 1:
+        raise ValueError("P-values greater than 1! Max=%g" % (
+                p_values.max(),))
+    return p_values
+
+
 def all_fdr_gaussian(x):
-    """Return the fdr of all values assuming a Gaussian distribution
+    """Return the FDR of all values assuming a Gaussian distribution
     """
     pvals = st.norm.sf(np.squeeze(x))
     return(FDR(pvals).fit())
@@ -35,15 +65,17 @@ def gaussian_fdr_threshold(x, alpha=0.05):
         critical p-value associated with alpha.
         x is explicitly assumed to be normal distributed under H_0
 
-         Parameters
+        Parameters
         -----------
-        x: ndarray, the input data
-        alpha: float, optional, the desired significance
+        x: ndarray
+          input data
+        alpha: float, optional
+          desired significance
 
         Returns
         -------
-        th: float,
-            The threshold, given as a Gaussian critical value
+        threshold: float
+            threshold, given as a Gaussian critical value
         """
         pvals = st.norm.sf(x)
         pth = FDR().p_value_threshold(pvals, alpha)
@@ -51,9 +83,10 @@ def gaussian_fdr_threshold(x, alpha=0.05):
 
 
 class FDR(object):
-    """ Basic class to handle false discovery rate computation
-    It can return the fdr associated with each observation (fit method)
-    or the critical p-values (among inputs) at a given fdr
+    """Basic class to handle false discovery rate (FDR) computation
+
+    It can return the FDR associated with each observation (fit method)
+    or the critical p-values (among inputs) at a given FDR
 
     Members
     -------
@@ -69,7 +102,8 @@ class FDR(object):
         ----------
         p_values: array of p-values
         """
-        self.p_values = self.check_p_values(p_values)
+        self.p_values = check_p_values(p_values)
+
 
     def fit(self, p_values=None, verbose=0):
         """ Returns the fdr associated with each value
@@ -84,7 +118,7 @@ class FDR(object):
         q : array of shape(n)
             The corresponding fdrs
         """
-        p_values = self.check_p_values(p_values)
+        p_values = check_p_values(p_values)
         if p_values == None:
             p_values = self.p_values
         if p_values == None:
@@ -111,35 +145,9 @@ class FDR(object):
             mp.ylabel('Associated fdr')
         return q
 
-    def check_p_values(self, p_values):
-        """Basic checks on the p_values array: values should be within [0,1]
-
-        Parameters
-        ----------
-        p_values : array of shape (n)
-            The sample p-values
-
-        Returns
-        --------
-        p_values : array of shape (n)
-             The sample p-values
-        """
-        if p_values is None:
-            return None
-        # Take all elements unfolded and assure having at least 1d
-        p_values = np.atleast_1d(np.ravel(p_values))
-        if np.any(np.isnan(p_values)):
-            raise ValueError("%d values are NaN" % (sum(np.isnan(p_values))))
-        if p_values.min() < 0:
-            raise ValueError("Negative p-values. Min=%g" % (p_values.min(),))
-        if p_values.max() > 1:
-            raise ValueError("P-values greater than 1! Max=%g" % (
-                    p_values.max(),))
-        return p_values
-
 
     def p_value_threshold(self, p_values=None, alpha=0.05):
-        """ Returns the critical p-value associated with an FDR alpha
+        """Return the critical p-value associated with an FDR alpha
 
         Parameters
         -----------
@@ -153,7 +161,7 @@ class FDR(object):
         critical_p_value: float
              The p value corresponding to the FDR alpha
         """
-        p_values = self.check_p_values(p_values)
+        p_values = check_p_values(p_values)
         if p_values == None:
             p_values = self.p_values
         if p_values == None:
@@ -406,27 +414,33 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
 
     Parameters
     ----------
-    x array of shape (nvox,1): the map to be analysed
-    test=None array of shape(nbitems,1):
+    x: array of shape (nvox,1)
+      The map to be analysed
+    test: array of shape(nbitems,1), optional
       the test values for which the p-value needs to be computed
-      by default, test=x
-    alpha = 0.01 the prior weights of the positive and negative classes
-    prior_strength = 100 the confidence on the prior
-                   (should be compared to size(x))
-    verbose=0 : verbosity mode
-    fixed_scale = False, boolean, variance parameterization
-                if True, the variance is locked to 1
-                otherwise, it is estimated from the data
-    mpaxes=None: axes handle used to plot the figure in verbose mode
-                 if None, new axes are created
-    bias = 0: allows a recaling of the posterior probability
-         that takes into account the thershold theta. Not rigorous.
-    theta = 0 the threshold used to correct the posterior p-values
-          when bias=1; normally, it is such that test>theta
-          note that if theta = -np.inf, the method has a standard behaviour
+      by default (if None), test=x
+    alpha: float, optional
+      the prior weights of the positive and negative classes
+    prior_strength: float, optional
+      the confidence on the prior (should be compared to size(x))
+    verbose: int
+      verbosity mode
+    fixed_scale: bool, optional
+      boolean, variance parameterization. if True, the variance is locked to 1
+      otherwise, it is estimated from the data
+    mpaxes:
+      axes handle used to plot the figure in verbose mode
+      if None, new axes are created
+    bias:  bool
+      allows a recaling of the posterior probability
+      that takes into account the thershold theta. Not rigorous.
+    theta: float
+      the threshold used to correct the posterior p-values
+      when bias=1; normally, it is such that test>theta
+      note that if theta = -np.inf, the method has a standard behaviour
     return_estimator: boolean, optional
-            If return_estimator is true, the estimator object is
-            returned.
+      If return_estimator is true, the estimator object is
+      returned.
 
     Results
     -------
@@ -524,19 +538,19 @@ def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
         axes handle used to plot the figure in verbose mode
         if None, new axes are created
     bias: float, optional
-            lower bound on the gaussian variance (to avoid shrinkage)
+        lower bound on the gaussian variance (to avoid shrinkage)
     gaussian_mix: float, optional
-            if nonzero, lower bound on the gaussian mixing weight
-            (to avoid shrinkage)
+        if nonzero, lower bound on the gaussian mixing weight
+        (to avoid shrinkage)
     return_estimator: boolean, optional
-            If return_estimator is true, the estimator object is
-            returned.
+        if return_estimator is true, the estimator object is
+        returned.
 
     Returns
     -------
     bfp: array of shape (nbitems,3)
-            The probability of each component in the mixture model for each
-            test value
+        The probability of each component in the mixture model for each
+        test value
     estimator: nipy.labs.clustering.ggmixture.GGGM object
         The estimator object, returned only if return_estimator is true.
     """
@@ -561,7 +575,7 @@ def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
 
 
 def smoothed_histogram_from_samples(x, bins=None, nbins=256, normalized=False):
-    """ Returns the smooth histogram corresponding to the  density
+    """Returns the smooth histogram corresponding to the  density
     underlying the samples in x
 
     Parameters
@@ -571,16 +585,16 @@ def smoothed_histogram_from_samples(x, bins=None, nbins=256, normalized=False):
     bins: array of shape(nbins+1), optional,
        the bins location
     nbins: int, optional,
-           the number of bins of the resulting histogram
-    Normalized: bool, optional
-                if True, the result is returned as a density value
+       the number of bins of the resulting histogram
+    normalized: bool, optional
+       if True, the result is returned as a density value
 
     Returns
     -------
     h: array of shape (nbins)
        the histogram
     bins: array of shape(nbins+1),
-          the bins location
+       the bins location
     """
     from scipy.ndimage import gaussian_filter1d
 
