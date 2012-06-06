@@ -47,7 +47,7 @@ a3 = mp.subplot(1, 3, 3)
 
 # fit beta's histogram with a Gamma-Gaussian mixture
 bfm = np.array([2.5, 3.0, 3.5, 4.0, 4.5])
-bfp = en.Gamma_Gaussian_fit(beta, bfm, verbose=1, mpaxes=a1)
+bfp = en.gamma_gaussian_fit(beta, bfm, verbose=1, mpaxes=a1)
 
 # fit beta's histogram with a mixture of Gaussians
 alpha = 0.01
