@@ -1,17 +1,22 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
-This module contains several routines to get corrected p-values estimates,
-based on the observation of data/p-values. It yields 3 main approaches:
-- Benjamini-Hochberg fdr
-http://en.wikipedia.org/wiki/False_discovery_rate
-- a class that fits a Gaussian model to the central
-part of an histogram, following [1]
-[1] Schwartzman A, Dougherty RF, Lee J, Ghahremani D, Taylor JE. Empirical null
-and false discovery rate analysis in neuroimaging. Neuroimage. 2009 Jan
-1;44(1):71-82. Epub 2008 Apr 24. PubMed PMID: 18547821.
-This is typically necessary to estimate a fdr when one is not certain that the
-data behaves as a standard normal under H_0.
+"""Routines to get corrected p-values estimates, based on the observations.
+
+It implements 3 approaches:
+
+- Benjamini-Hochberg FDR: http://en.wikipedia.org/wiki/False_discovery_rate
+
+- a class that fits a Gaussian model to the central part of an
+  histogram, following [1]
+
+  [1] Schwartzman A, Dougherty RF, Lee J, Ghahremani D, Taylor
+  JE. Empirical null and false discovery rate analysis in
+  neuroimaging. Neuroimage. 2009 Jan 1;44(1):71-82.  PubMed PMID:
+  18547821. DOI: 10.1016/j.neuroimage.2008.04.182
+
+  This is typically necessary to estimate a FDR when one is not
+  certain that the data behaves as a standard normal under H_0.
+
 - a model based on Gaussian mixture modelling 'a la Oxford'
 
 Author : Bertrand Thirion, Yaroslav Halchenko, 2008-2012
@@ -36,7 +41,7 @@ def check_p_values(p_values):
     Returns
     --------
     p_values : array of shape (n)
-         The sample p-values
+        The sample p-values
     """
     if p_values is None:
         return None
@@ -53,13 +58,14 @@ def check_p_values(p_values):
 
 
 def gaussian_fdr(x):
-    """Return the FDR of all values assuming a Gaussian distribution
+    """Return the FDR associated with each value assuming a Gaussian distribution
     """
     return fdr(st.norm.sf(np.squeeze(x)))
 
 
 def gaussian_fdr_threshold(x, alpha=0.05):
-    """
+    """Return FDR threshold given normal variates
+
     Given an array x of normal variates, this function returns the
     critical p-value associated with alpha.
     x is explicitly assumed to be normal distributed under H_0
@@ -67,9 +73,9 @@ def gaussian_fdr_threshold(x, alpha=0.05):
     Parameters
     -----------
     x: ndarray
-       input data
+        input data
     alpha: float, optional
-           desired significance
+        desired significance
 
     Returns
     -------
@@ -81,20 +87,20 @@ def gaussian_fdr_threshold(x, alpha=0.05):
     return st.norm.isf(pth)
 
 
-def fdr_threshold(p_values, alpha=0.05): 
+def fdr_threshold(p_values, alpha=0.05):
     """Return FDR threshold given p values
 
     Parameters
     -----------
     p_values : array of shape (n), optional
-               The samples p-value
+        The samples p-value
     alpha : float, optional
-            The desired FDR significance
+        The desired FDR significance
 
     Returns
     -------
     critical_p_value: float
-                      The p value corresponding to the FDR alpha
+        The p value corresponding to the FDR alpha
     """
     p_values = check_p_values(p_values)
     n_samples = np.size(p_values)
@@ -110,12 +116,12 @@ def fdr_threshold(p_values, alpha=0.05):
 
 
 def fdr(p_values=None, verbose=0):
-    """ Returns the fdr associated with each value
+    """Returns the FDR associated with each p value
 
     Parameters
     -----------
     p_values : ndarray of shape (n)
-               The samples p-value
+        The samples p-value
 
     Returns
     --------
@@ -149,7 +155,7 @@ def fdr(p_values=None, verbose=0):
 class NormalEmpiricalNull(object):
     """Class to compute the empirical null normal fit to the data.
 
-    The data which is used to estimate the FDR, assuming a gaussian null
+    The data which is used to estimate the FDR, assuming a Gaussian null
     from Schwartzmann et al., NeuroImage 44 (2009) 71--82
     """
 
@@ -168,15 +174,15 @@ class NormalEmpiricalNull(object):
 
     def learn(self, left=0.2, right=0.8):
         """
-        Estimate the proportion, mean and variance of a gaussian distribution
+        Estimate the proportion, mean and variance of a Gaussian distribution
         for a fraction of the data
 
         Parameters
         ----------
         left: float, optional
-              Left cut parameter to prevent fitting non-gaussian data
+            Left cut parameter to prevent fitting non-gaussian data
         right: float, optional
-               Right cut parameter to prevent fitting non-gaussian data
+            Right cut parameter to prevent fitting non-gaussian data
 
         Note
         ----
@@ -220,7 +226,7 @@ class NormalEmpiricalNull(object):
 
     def fdrcurve(self):
         """
-        Returns the fdr associated with any point of self.x
+        Returns the FDR associated with any point of self.x
         """
         import scipy.stats as st
         if self.learned == 0:
@@ -237,7 +243,7 @@ class NormalEmpiricalNull(object):
 
     def threshold(self, alpha=0.05, verbose=0):
         """
-        Compute the threshold correponding to an alpha-level fdr for x
+        Compute the threshold corresponding to an alpha-level FDR for x
 
         Parameters
         -----------
@@ -249,7 +255,7 @@ class NormalEmpiricalNull(object):
         Results
         --------
         theta: float
-            the critical value associated with the provided fdr
+            the critical value associated with the provided FDR
         """
         efp = self.fdrcurve()
 
@@ -257,19 +263,19 @@ class NormalEmpiricalNull(object):
             self.plot(efp, alpha)
 
         if efp[-1] > alpha:
-            print "the maximal value is %f , the corresponding fdr is %f " \
+            print "the maximal value is %f , the corresponding FDR is %f " \
                     % (self.x[ - 1], efp[ - 1])
             return np.inf
         j = np.argmin(efp[:: - 1] < alpha) + 1
         return 0.5 * (self.x[ - j] + self.x[ - j + 1])
 
     def uncorrected_threshold(self, alpha=0.001, verbose=0):
-        """ Compute the threshold correponding to a specificity alpha for x
+        """Compute the threshold corresponding to a specificity alpha for x
 
         Parameters
         -----------
         alpha : float, optional
-            the chosen false discovery rate threshold.
+            the chosen false discovery rate (FDR) threshold.
         verbose : boolean, optional
             the verbosity level, if True a plot is generated.
 
@@ -288,12 +294,12 @@ class NormalEmpiricalNull(object):
         return threshold
 
     def fdr(self, theta):
-        """Given a threshold theta, find the estimated fdr
+        """Given a threshold theta, find the estimated FDR
 
         Parameter
         ---------
         theta: float or array of shape (n_samples)
-               values to test
+            values to test
 
         Returns
         -------
@@ -323,16 +329,16 @@ class NormalEmpiricalNull(object):
         return efp
 
     def plot(self, efp=None, alpha=0.05, bar=1, mpaxes=None):
-        """plot the  histogram of x
+        """Plot the  histogram of x
 
         Parameters
         ------------
         efp : float, optional
-            The empirical fdr (corresponding to x)
-            if efp==None, the false positive rate threshod plot is not
+            The empirical FDR (corresponding to x)
+            if efp==None, the false positive rate threshold plot is not
             drawn.
         alpha : float, optional
-            The chosen fdr threshold
+            The chosen FDR threshold
         bar=1 : bool, optional
         mpaxes=None: if not None, handle to an axes where the fig
         will be drawn. Avoids creating unnecessarily new figures
@@ -356,14 +362,14 @@ class NormalEmpiricalNull(object):
         else:
             ax = mpaxes
         if bar:
-            # We need to cut ledge to len(hist) to accomodate for pre and
+            # We need to cut ledge to len(hist) to accommodate for pre and
             # post numpy 1.3 hist semantic change.
             ax.bar(ledge[:len(hist)], hist, step)
         else:
             ax.plot(medge[:len(hist)], hist, linewidth=2)
         ax.plot(medge, g, 'r', linewidth=2)
         ax.set_title('Robust fit of the histogram', fontsize=12)
-        l = ax.legend(('empiricall null', 'data'), loc=0)
+        l = ax.legend(('empirical null', 'data'), loc=0)
         for t in l.get_texts():
             t.set_fontsize(12)
         ax.set_xticklabels(ax.get_xticks(), fontsize=12)
@@ -376,8 +382,8 @@ class NormalEmpiricalNull(object):
 def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
                           verbose=0, fixed_scale=False, mpaxes=None, bias=0,
                           theta=0, return_estimator=False):
-    """ Fit the data with a 3-classes Gaussian Mixture Model,
-    i.e. computing some probability that the voxels of a certain map
+    """Fit the data with a 3-classes Gaussian Mixture Model,
+    i.e. compute some probability that the voxels of a certain map
     are in class disactivated, null or active
 
     Parameters
@@ -400,8 +406,8 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
       axes handle used to plot the figure in verbose mode
       if None, new axes are created
     bias:  bool
-      allows a recaling of the posterior probability
-      that takes into account the thershold theta. Not rigorous.
+      allows a rescaling of the posterior probability
+      that takes into account the threshold theta. Not rigorous.
     theta: float
       the threshold used to correct the posterior p-values
       when bias=1; normally, it is such that test>theta
@@ -423,8 +429,8 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
     ----
     Our convention is that
     - class 1 represents the negative class
-    - class 2 represenst the null class
-    - class 3 represents the positsive class
+    - class 2 represents the null class
+    - class 3 represents the positive class
     """
     from ..clustering.bgmm import VBGMM
     from ..clustering.gmm import GridDescriptor
@@ -490,7 +496,7 @@ def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
                        bias=1, gaussian_mix=0, return_estimator=False):
     """
     Computing some prior probabilities that the voxels of a certain map
-    are in class disactivated, null or active uning a gamma-Gaussian mixture
+    are in class disactivated, null or active using a gamma-Gaussian mixture
 
     Parameters
     ------------
@@ -506,9 +512,9 @@ def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
         axes handle used to plot the figure in verbose mode
         if None, new axes are created
     bias: float, optional
-        lower bound on the gaussian variance (to avoid shrinkage)
+        lower bound on the Gaussian variance (to avoid shrinkage)
     gaussian_mix: float, optional
-        if nonzero, lower bound on the gaussian mixing weight
+        if nonzero, lower bound on the Gaussian mixing weight
         (to avoid shrinkage)
     return_estimator: boolean, optional
         if return_estimator is true, the estimator object is
