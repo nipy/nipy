@@ -52,7 +52,11 @@ def parcels(data, labels=None, exclude=[]):
     [[False False]
      [ True False]]
     """
-    data = np.asarray(data)
+    try:
+        data = data.get_data()
+    except AttributeError:
+        data = np.asarray(data)
+
     if labels is None:
         labels = np.unique(data)
     if exclude:

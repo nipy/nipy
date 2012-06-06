@@ -344,7 +344,7 @@ class Image(object):
 
     def __array__(self):
         """Return data as a numpy array."""
-        warnings.warn('Please use get_data instead',
+        warnings.warn('Please use get_data instead - will be deprecated',
                       DeprecationWarning,
                       stacklevel=2)
         return self.get_data()

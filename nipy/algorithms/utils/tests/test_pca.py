@@ -14,7 +14,7 @@ data = {}
 
 def setup():
     img = load_image(funcfile)
-    arr = np.array(img)
+    arr = img.get_data()
     #arr = np.rollaxis(arr, 3)
     data['nimages'] = arr.shape[3]
     data['fmridata'] = arr

@@ -68,7 +68,7 @@ def test_time_slice_diffs():
 
 def test_against_matlab_results():
     fimg = load_image(funcfile)
-    results = tsd.time_slice_diffs(fimg)
+    results = tsd.time_slice_diffs(fimg.get_data())
     # struct as record only to avoid deprecation warning
     tsd_results = sio.loadmat(pjoin(TEST_DATA_PATH, 'tsdiff_results.mat'),
                               struct_as_record=True, squeeze_me=True)

@@ -1,5 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+import warnings
 
 import numpy as np
 
@@ -47,7 +48,7 @@ class ImageList(object):
         False
         >>> np.asarray(sublist).shape
         (3, 17, 21, 3)
-        >>> np.asarray(newimg).shape
+        >>> newimg.get_data().shape
         (17, 21, 3)
         """
         if images is None:
@@ -117,6 +118,58 @@ class ImageList(object):
         # List etc slicing return new instances of self.__class__
         return self.__class__(images=self.list[index])
 
+    def get_list_data(self, axis=None):
+        """Return data in ndarray with list dimension at position `axis`
+
+        Parameters
+        ----------
+        axis : int
+            `axis` specifies which axis of the output will take the role of the
+            list dimension. For example, 0 will put the list dimension in the
+            first axis of the result.
+
+        Returns
+        -------
+        data : ndarray
+            data in image list as array, with data across elements of the list
+            concetenated at dimension `axis` of the array.
+
+        Examples
+        --------
+        >>> from nipy.testing import funcfile
+        >>> from nipy.io.api import load_image
+        >>> funcim = load_image(funcfile)
+        >>> ilist = ImageList.from_image(funcim, axis='t')
+        >>> ilist.get_list_data(axis=0).shape
+        (20, 17, 21, 3)
+        """
+        if axis is None:
+            raise ValueError('Must specify which axis of the output will take '
+                             'the role of the list dimension, eg 0 will put '
+                             'the list dimension in the first axis of the '
+                             'result')
+        img_shape = self.list[0].shape
+        ilen = len(self.list)
+        out_dim = len(img_shape) + 1
+        if axis >= out_dim or axis < -out_dim:
+            raise ValueError('I have only %d axes position, but axis %d asked '
+                             'for' % (out_dim -1, axis))
+        # tmp_shape is the shape of the output if axis is 0
+        tmp_shape = (ilen,) + img_shape
+        v = np.empty(tmp_shape)
+        # first put the data in an array, with list dimension in the first axis
+        for i, im in enumerate(self.list):
+            v[i] = im.get_data() # get_data method of an image has no axis
+        # then roll (and rock?) the axis to have axis in the right place
+        if axis < 0:
+            axis += out_dim
+        res = np.rollaxis(v, 0, axis + 1)
+        # Check we got the expected shape
+        target_shape = img_shape[0:axis] + (ilen,) + img_shape[axis:]
+        if target_shape != res.shape:
+            raise ValueError('We were not expecting this shape')
+        return res
+
     def __array__(self):
         """Return data in ndarray.  Called through numpy.array.
 
@@ -129,11 +182,12 @@ class ImageList(object):
         >>> np.asarray(ilist).shape
         (20, 17, 21, 3)
         """
-        length = len(self.list)
-        v = np.empty((length,) + self.list[0].shape)
-        for i, im in enumerate(self.list):
-            v[i] = im.get_data()
-        return v
+        """Return data as a numpy array."""
+        warnings.warn('Please use get_list_data() instead - default '
+                      'conversion to array will be deprecated',
+                      DeprecationWarning,
+                      stacklevel=2)
+        return self.get_list_data(axis=0)
 
     def __iter__(self):
         self._iter = iter(self.list)

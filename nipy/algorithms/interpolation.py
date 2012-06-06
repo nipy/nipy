@@ -33,10 +33,10 @@ class ImageInterpolator(object):
     def _buildknots(self):
         if self.order > 1:
             data = ndimage.spline_filter(
-                np.nan_to_num(np.asarray(self.image)),
+                np.nan_to_num(self.image.get_data()),
                 self.order)
         else:
-            data = np.nan_to_num(np.asarray(self.image))
+            data = np.nan_to_num(self.image.get_data())
         if self._datafile is None:
             _, fname = tempfile.mkstemp()
             self._datafile = file(fname, mode='wb')

@@ -45,9 +45,9 @@ class FmriImageList(ImageList):
         >>> funcim = load_image(funcfile)
         >>> iterable_img = iter_axis(funcim, 't')
         >>> fmrilist = FmriImageList(iterable_img)
-        >>> print np.asarray(fmrilist).shape
+        >>> print fmrilist.get_list_data(axis=0).shape
         (20, 17, 21, 3)
-        >>> print np.asarray(fmrilist[4]).shape
+        >>> print fmrilist[4].shape
         (17, 21, 3)
         """
         ImageList.__init__(self, images=images)

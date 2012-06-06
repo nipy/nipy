@@ -127,10 +127,13 @@ class OLS(object):
     volume_start_times :
     """
 
-    def __init__(self, fmri_image, formula, outputs=[], 
+    def __init__(self, fmri_image, formula, outputs=[],
                  volume_start_times=None):
         self.fmri_image = fmri_image
-        self.data = np.asarray(fmri_image)
+        try:
+            self.data = fmri_image.get_data()
+        except AttributeError:
+            self.data = fmri_image.get_list_data(axis=0)
         self.formula = formula
         self.outputs = outputs
         if volume_start_times is None:
@@ -193,7 +196,7 @@ class AR1(object):
     formula :  :class:`nipy.algorithms.statistics.formula.Formula`
     rho : ``Image``
        image of AR(1) coefficients.  Returning data from
-       ``np.asarray(rho)``, and having attribute ``coordmap``
+       ``rho.get_data()``, and having attribute ``coordmap``
     outputs :
     volume_start_times : 
     """
@@ -201,12 +204,15 @@ class AR1(object):
     def __init__(self, fmri_image, formula, rho, outputs=[],
                  volume_start_times=None):
         self.fmri_image = fmri_image
-        self.data = np.asarray(fmri_image)
+        try:
+            self.data = fmri_image.get_data()
+        except AttributeError:
+            self.data = fmri_image.get_list_data(axis=0)
         self.formula = formula
         self.outputs = outputs
         # Cleanup rho values, truncate them to a scale of 0.01
         g = copy.copy(rho.coordmap)
-        rho = np.asarray(rho)
+        rho = rho.get_data()
         m = np.isnan(rho)
         r = (np.clip(rho,-1,1) * 100).astype(np.int) / 100.
         r[m] = np.inf
@@ -220,7 +226,7 @@ class AR1(object):
 
         iterable = parcels(self.rho, exclude=[np.inf])
         def model_params(i):
-            return (np.asarray(self.rho)[i].mean(),)
+            return (self.rho.get_data()[i].mean(),)
         # Generates indexer, data, model
         m = model_generator(self.formula, self.data,
                             self.volume_start_times,

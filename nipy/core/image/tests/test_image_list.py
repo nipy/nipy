@@ -75,12 +75,44 @@ def test_il_slicing_dicing():
     assert_true(isinstance(imglst[0], Image))
     # Verify array interface
     # test __array__
-    assert_true(isinstance(np.asarray(sublist), np.ndarray))
+    assert_true(isinstance(sublist.get_list_data(axis=0), np.ndarray))
     # Test __setitem__
     sublist[2] = sublist[0]
-    assert_equal(np.asarray(sublist[0]).mean(),
-                 np.asarray(sublist[2]).mean())
+    assert_equal(sublist[0].get_data().mean(),
+                 sublist[2].get_data().mean())
     # Test iterator
     for x in sublist:
         assert_true(isinstance(x, Image))
         assert_equal(x.shape, FIMG.shape[:3])
+
+    # Test image_list.get_list_data(axis = an_axis)
+    funcim = load_image(funcfile)
+    ilist = ImageList.from_image(funcim, axis='t')
+
+    # make sure that we pass an axis
+    assert_raises(ValueError, ImageList.get_list_data, ilist, None)
+    assert_raises(ValueError, ImageList.get_list_data, ilist)
+
+    # make sure that axis that don't exist makes the function fail
+    assert_raises(ValueError, ImageList.get_list_data, ilist, 4)
+    assert_raises(ValueError, ImageList.get_list_data, ilist, -5)
+
+    # make sure that axis is put in the right place in the result array
+    # image of ilist have dimension (17,21,3), lenght(ilist) = 20.
+    data = ilist.get_list_data(axis=0)
+    assert_equal(data.shape, (20, 17, 21, 3))
+
+    data = ilist.get_list_data(axis=1)
+    assert_equal(data.shape, (17, 20, 21, 3))
+
+    data = ilist.get_list_data(axis=2)
+    assert_equal(data.shape, (17, 21, 20, 3))
+
+    data = ilist.get_list_data(axis=3)
+    assert_equal(data.shape, (17, 21, 3, 20))
+
+    data = ilist.get_list_data(axis=-1)
+    assert_equal(data.shape, (17, 21, 3, 20))
+
+    data = ilist.get_list_data(axis=-2)
+    assert_equal(data.shape, (17, 21, 20, 3))
