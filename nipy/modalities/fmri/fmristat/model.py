@@ -130,11 +130,10 @@ class OLS(object):
     def __init__(self, fmri_image, formula, outputs=[],
                  volume_start_times=None):
         self.fmri_image = fmri_image
-        if type(fmri_image) == FmriImageList:    # say where the list dim. is going
-            self.data = fmri_image.get_data(axis=0)
-        else:
+        try:
             self.data = fmri_image.get_data()
-
+        except AttributeError:
+            self.data = fmri_image.get_list_data(axis=0)
         self.formula = formula
         self.outputs = outputs
         if volume_start_times is None:
@@ -205,10 +204,10 @@ class AR1(object):
     def __init__(self, fmri_image, formula, rho, outputs=[],
                  volume_start_times=None):
         self.fmri_image = fmri_image
-        if type(fmri_image) == FmriImageList:    # say where the list dim. is going
-            self.data = fmri_image.get_data(axis=0)
-        else:
+        try:
             self.data = fmri_image.get_data()
+        except AttributeError:
+            self.data = fmri_image.get_list_data(axis=0)
         self.formula = formula
         self.outputs = outputs
         # Cleanup rho values, truncate them to a scale of 0.01

@@ -118,7 +118,7 @@ class ImageList(object):
         # List etc slicing return new instances of self.__class__
         return self.__class__(images=self.list[index])
 
-    def get_data(self, axis=None):
+    def get_list_data(self, axis=None):
         """Return data in ndarray with list dimension at position `axis`
 
         Parameters
@@ -140,7 +140,7 @@ class ImageList(object):
         >>> from nipy.io.api import load_image
         >>> funcim = load_image(funcfile)
         >>> ilist = ImageList.from_image(funcim, axis='t')
-        >>> ilist.get_data(axis=0).shape
+        >>> ilist.get_list_data(axis=0).shape
         (20, 17, 21, 3)
         """
         if axis is None:
@@ -183,12 +183,11 @@ class ImageList(object):
         (20, 17, 21, 3)
         """
         """Return data as a numpy array."""
-        warnings.warn('Please use get_data() instead - default conversion to '
-                      'array will be deprecated',
+        warnings.warn('Please use get_list_data() instead - default '
+                      'conversion to array will be deprecated',
                       DeprecationWarning,
                       stacklevel=2)
-        return self.get_data(axis=0)
-
+        return self.get_list_data(axis=0)
 
     def __iter__(self):
         self._iter = iter(self.list)
