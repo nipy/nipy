@@ -39,7 +39,7 @@ Beta = dataset.ravel().squeeze()
 
 ###############################################################################
 # fit Beta's histogram with a Gamma-Gaussian mixture
-gam_gaus_pp = en.Gamma_Gaussian_fit(Beta, Beta)
+gam_gaus_pp = en.gamma_gaussian_fit(Beta, Beta)
 gam_gaus_pp = np.reshape(gam_gaus_pp, (shape[0], shape[1], 3))
 
 pl.figure(fig.number)

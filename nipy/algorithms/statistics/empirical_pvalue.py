@@ -492,7 +492,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
         return bfp, BayesianGMM
 
 
-def Gamma_Gaussian_fit(x, test=None, verbose=0, mpaxes=None,
+def gamma_gaussian_fit(x, test=None, verbose=0, mpaxes=None,
                        bias=1, gaussian_mix=0, return_estimator=False):
     """
     Computing some prior probabilities that the voxels of a certain map
