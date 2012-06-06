@@ -14,7 +14,7 @@ This is typically necessary to estimate a fdr when one is not certain that the
 data behaves as a standard normal under H_0.
 - a model based on Gaussian mixture modelling 'a la Oxford'
 
-Author : Bertrand Thirion, 2008-2011
+Author : Bertrand Thirion, Yaroslav Halchenko, 2008-2012
 """
 
 import numpy as np
@@ -52,130 +52,98 @@ def check_p_values(p_values):
     return p_values
 
 
-def all_fdr_gaussian(x):
+def gaussian_fdr(x):
     """Return the FDR of all values assuming a Gaussian distribution
     """
-    pvals = st.norm.sf(np.squeeze(x))
-    return(FDR(pvals).fit())
+    return fdr(st.norm.sf(np.squeeze(x)))
 
 
 def gaussian_fdr_threshold(x, alpha=0.05):
-        """
-        Given an array x of normal variates, this function returns the
-        critical p-value associated with alpha.
-        x is explicitly assumed to be normal distributed under H_0
-
-        Parameters
-        -----------
-        x: ndarray
-          input data
-        alpha: float, optional
-          desired significance
-
-        Returns
-        -------
-        threshold: float
-            threshold, given as a Gaussian critical value
-        """
-        pvals = st.norm.sf(x)
-        pth = FDR().p_value_threshold(pvals, alpha)
-        return st.norm.isf(pth)
-
-
-class FDR(object):
-    """Basic class to handle false discovery rate (FDR) computation
-
-    It can return the FDR associated with each observation (fit method)
-    or the critical p-values (among inputs) at a given FDR
-
-    Members
-    -------
-    p_values: array of shape (n_samples)
-        the sample p-values from which the fdr is derived
-
-    The Benjamini-Horchberg procedure is used
     """
+    Given an array x of normal variates, this function returns the
+    critical p-value associated with alpha.
+    x is explicitly assumed to be normal distributed under H_0
 
-    def __init__(self, p_values=None):
-        """
-        Parameters
-        ----------
-        p_values: array of p-values
-        """
-        self.p_values = check_p_values(p_values)
+    Parameters
+    -----------
+    x: ndarray
+       input data
+    alpha: float, optional
+           desired significance
 
-
-    def fit(self, p_values=None, verbose=0):
-        """ Returns the fdr associated with each value
-
-        Parameters
-        -----------
-        p_values : ndarray of shape (n)
-            The samples p-value
-
-        Returns
-        --------
-        q : array of shape(n)
-            The corresponding fdrs
-        """
-        p_values = check_p_values(p_values)
-        if p_values == None:
-            p_values = self.p_values
-        if p_values == None:
-            return None
-        n_samples = p_values.size
-        order = p_values.argsort()
-        sp_values = p_values[order]
-
-        # compute q while in ascending order
-        q = np.minimum(1, n_samples * sp_values / np.arange(1, n_samples + 1))
-        for i in range(n_samples - 1, 0, - 1):
-            q[i - 1] = min(q[i], q[i - 1])
-
-        # reorder the results
-        inverse_order = np.arange(n_samples)
-        inverse_order[order] = np.arange(n_samples)
-        q = q[inverse_order]
-
-        if verbose:
-            import matplotlib.pylab as mp
-            mp.figure()
-            mp.xlabel('Input p-value')
-            mp.plot(p_values, q, '.')
-            mp.ylabel('Associated fdr')
-        return q
+    Returns
+    -------
+    threshold: float
+               threshold, given as a Gaussian critical value
+    """
+    pvals = st.norm.sf(x)
+    pth = fdr_threshold(pvals, alpha)
+    return st.norm.isf(pth)
 
 
-    def p_value_threshold(self, p_values=None, alpha=0.05):
-        """Return the critical p-value associated with an FDR alpha
+def fdr_threshold(p_values, alpha=0.05): 
+    """Return FDR threshold given p values
 
-        Parameters
-        -----------
-        p_values : array of shape (n), optional
-            The samples p-value
-        alpha : float, optional
+    Parameters
+    -----------
+    p_values : array of shape (n), optional
+               The samples p-value
+    alpha : float, optional
             The desired FDR significance
 
-        Returns
-        -------
-        critical_p_value: float
-             The p value corresponding to the FDR alpha
-        """
-        p_values = check_p_values(p_values)
-        if p_values == None:
-            p_values = self.p_values
-        if p_values == None:
-            return None
-        n_samples = np.size(p_values)
-        p_corr = alpha / n_samples
-        sp_values = np.sort(p_values)
-        critical_set = sp_values[
-            sp_values < p_corr * np.arange(1, n_samples + 1)]
-        if len(critical_set) > 0:
-            critical_p_value = critical_set.max()
-        else:
-            critical_p_value = p_corr
-        return critical_p_value
+    Returns
+    -------
+    critical_p_value: float
+                      The p value corresponding to the FDR alpha
+    """
+    p_values = check_p_values(p_values)
+    n_samples = np.size(p_values)
+    p_corr = alpha / n_samples
+    sp_values = np.sort(p_values)
+    critical_set = sp_values[
+        sp_values < p_corr * np.arange(1, n_samples + 1)]
+    if len(critical_set) > 0:
+        critical_p_value = critical_set.max()
+    else:
+        critical_p_value = p_corr
+    return critical_p_value
+
+
+def fdr(p_values=None, verbose=0):
+    """ Returns the fdr associated with each value
+
+    Parameters
+    -----------
+    p_values : ndarray of shape (n)
+               The samples p-value
+
+    Returns
+    --------
+    q : array of shape(n)
+        The corresponding fdr values
+    """
+    p_values = check_p_values(p_values)
+    n_samples = p_values.size
+    order = p_values.argsort()
+    sp_values = p_values[order]
+
+    # compute q while in ascending order
+    q = np.minimum(1, n_samples * sp_values / np.arange(1, n_samples + 1))
+    for i in range(n_samples - 1, 0, - 1):
+        q[i - 1] = min(q[i], q[i - 1])
+
+    # reorder the results
+    inverse_order = np.arange(n_samples)
+    inverse_order[order] = np.arange(n_samples)
+    q = q[inverse_order]
+
+    if verbose:
+        import matplotlib.pylab as mp
+        mp.figure()
+        mp.xlabel('Input p-value')
+        mp.plot(p_values, q, '.')
+        mp.ylabel('Associated fdr')
+    return q
 
 
 class NormalEmpiricalNull(object):

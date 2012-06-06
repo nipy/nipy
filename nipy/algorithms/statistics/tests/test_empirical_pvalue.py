@@ -9,8 +9,8 @@ from nose.tools import assert_true
 
 
 from ..empirical_pvalue import (
-    NormalEmpiricalNull, smoothed_histogram_from_samples, FDR, 
-    gaussian_fdr_threshold, all_fdr_gaussian)
+    NormalEmpiricalNull, smoothed_histogram_from_samples, fdr, fdr_threshold, 
+    gaussian_fdr_threshold, gaussian_fdr)
 
 def setup():
     # Suppress warnings during tests to reduce noise
@@ -44,27 +44,25 @@ def test_fdr_pos():
     np.random.seed([1])
     x = np.random.rand(100)
     x[:10] *= (.05 / 10)
-    fdr = FDR(x)
-    q = fdr.fit()
+    q = fdr(x)
     assert_true((q[:10] < .05).all())
-    pc = fdr.p_value_threshold()
+    pc = fdr_threshold(x)
     assert_true((pc > .0025) & (pc < .1))
 
 def test_fdr_neg():
     # test without some significant values
     np.random.seed([1])
     x = np.random.rand(100) * .8 + .2
-    fdr = FDR(x)
-    q = fdr.fit()
+    q =fdr(x)
     assert_true((q > .05).all())
-    pc = fdr.p_value_threshold()
+    pc = fdr_threshold(x)
     assert_true(pc == .05 / 100)
 
-def test_all_fdr_gaussian():
+def test_gaussian_fdr():
     # Test that fdr works on Gaussian data
     np.random.seed([2])
     x = np.random.randn(100) * 2
-    fdr = all_fdr_gaussian(x)
+    fdr = gaussian_fdr(x)
     assert_true(fdr.min() < .05)
     assert_true(fdr.max() > .99)
 
