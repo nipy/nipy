@@ -93,15 +93,12 @@ def test_il_slicing_dicing():
     assert_raises(ValueError, ImageList.get_data, ilist, None)
     assert_raises(ValueError, ImageList.get_data, ilist)
 
-    # make sure that axis that dont exist makes the function fails
+    # make sure that axis that don't exist makes the function fail
     assert_raises(ValueError, ImageList.get_data, ilist, 4)
     assert_raises(ValueError, ImageList.get_data, ilist, -5)
 
     # make sure that axis is put in the right place in the result array
     # image of ilist have dimension (17,21,3), lenght(ilist) = 20.
-    data = ilist.get_data(axis='first')
-    assert_equal(data.shape, (20, 17, 21, 3))
-
     data = ilist.get_data(axis=0)
     assert_equal(data.shape, (20, 17, 21, 3))
 
@@ -115,9 +112,6 @@ def test_il_slicing_dicing():
     assert_equal(data.shape, (17, 21, 3, 20))
 
     data = ilist.get_data(axis=-1)
-    assert_equal(data.shape, (17, 21, 3, 20))
-
-    data = ilist.get_data(axis='last')
     assert_equal(data.shape, (17, 21, 3, 20))
 
     data = ilist.get_data(axis=-2)

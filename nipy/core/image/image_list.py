@@ -118,10 +118,21 @@ class ImageList(object):
         # List etc slicing return new instances of self.__class__
         return self.__class__(images=self.list[index])
 
-    def get_data(self,axis=None):
-        """Return data in ndarray, axis specifies which axis of the output will
-        take the role of the list dimension. For example, 0 will put the list
-        dimension in the first axis of the result.
+    def get_data(self, axis=None):
+        """Return data in ndarray with list dimension at position `axis`
+
+        Parameters
+        ----------
+        axis : int
+            `axis` specifies which axis of the output will take the role of the
+            list dimension. For example, 0 will put the list dimension in the
+            first axis of the result.
+
+        Returns
+        -------
+        data : ndarray
+            data in image list as array, with data across elements of the list
+            concetenated at dimension `axis` of the array.
 
         Examples
         --------
@@ -129,47 +140,35 @@ class ImageList(object):
         >>> from nipy.io.api import load_image
         >>> funcim = load_image(funcfile)
         >>> ilist = ImageList.from_image(funcim, axis='t')
-        >>> ilist.getdata(axis=0).shape
+        >>> ilist.get_data(axis=0).shape
         (20, 17, 21, 3)
         """
         if axis is None:
             raise ValueError('Must specify which axis of the output will take '
-                             'the role of the list dimension, eg 0 will put the'
-                             'list dimension in the first axis of the result')
-        length = len(self.list)
-        img_shape = list(self.list[0].shape)
+                             'the role of the list dimension, eg 0 will put '
+                             'the list dimension in the first axis of the '
+                             'result')
+        img_shape = self.list[0].shape
+        ilen = len(self.list)
         out_dim = len(img_shape) + 1
-
-        if axis == 'first':
-            axis = 0
-        if axis == 'last':
-            axis = out_dim - 1
-        if axis < 0:
-            axis += out_dim
-
-        # possible position for axis are:
-        # (-out_dim, -out_dim+1, ..., 0, 1, ..., out_dim-1)
-        if axis not in range(-out_dim,out_dim):
-            raise ValueError('I have only %d axes position, but axis %d asked for'
-                             % (out_dim-1, axis))
-        # target_shape is the shape we hope to have for the returned data
-        target_shape = tuple(img_shape[0:axis] + [length] + img_shape[axis:])
-
+        if axis >= out_dim or axis < -out_dim:
+            raise ValueError('I have only %d axes position, but axis %d asked '
+                             'for' % (out_dim -1, axis))
         # tmp_shape is the shape of the output if axis is 0
-        tmp_shape = tuple([length] + img_shape)
+        tmp_shape = (ilen,) + img_shape
         v = np.empty(tmp_shape)
-
         # first put the data in an array, with list dimension in the first axis
         for i, im in enumerate(self.list):
             v[i] = im.get_data() # get_data method of an image has no axis
-
         # then roll (and rock?) the axis to have axis in the right place
-        v = np.rollaxis(v, 0, axis+1)
-
-        if any(np.asarray(v.shape)-np.asarray(target_shape)):
-            raise ValueError(':( was expecting these arrays to have the same shape')
-
-        return v
+        if axis < 0:
+            axis += out_dim
+        res = np.rollaxis(v, 0, axis + 1)
+        # Check we got the expected shape
+        target_shape = img_shape[0:axis] + (ilen,) + img_shape[axis:]
+        if target_shape != res.shape:
+            raise ValueError('We were not expecting this shape')
+        return res
 
     def __array__(self):
         """Return data in ndarray.  Called through numpy.array.
@@ -184,10 +183,11 @@ class ImageList(object):
         (20, 17, 21, 3)
         """
         """Return data as a numpy array."""
-        warnings.warn('Please use get_data() instead - will be deprecated',
+        warnings.warn('Please use get_data() instead - default conversion to '
+                      'array will be deprecated',
                       DeprecationWarning,
                       stacklevel=2)
-        return self.get_data()
+        return self.get_data(axis=0)
 
 
     def __iter__(self):
