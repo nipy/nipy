@@ -1,39 +1,39 @@
 from os.path import join, exists
-from tempfile import mkdtemp
 import numpy as np
 from nibabel import Nifti1Image, save
 from numpy.testing import assert_equal
 from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
 from ..parcel_io import (mask_parcellation, fixed_parcellation)
+from nibabel.tmpdirs import InTemporaryDirectory
 
-TEMPDIR = mkdtemp()
 
 def test_mask_parcel():
     """ Test that mask parcellation performs correctly
     """
-    nb_parcel = 20
+    n_parcels = 20
     shape = (10, 10, 10)
     mask_image = Nifti1Image(np.ones(shape), np.eye(4))
-    wim = mask_parcellation(mask_image, nb_parcel)
-    assert_equal(np.unique(wim.get_data()), np.arange(nb_parcel))
+    wim = mask_parcellation(mask_image, n_parcels)
+    assert_equal(np.unique(wim.get_data()), np.arange(n_parcels))
 
 
 def test_mask_parcel_multi_subj():
     """ Test that mask parcellation performs correctly
     """
     np.random.seed(0)
-    nb_parcel = 20
+    n_parcels = 20
     shape = (10, 10, 10)
-    nb_subj = 5
+    n_subjects = 5
     mask_images = []
-    for s in range(nb_subj):
-        path = join(TEMPDIR, 'mask%s.nii' % s)
-        save(Nifti1Image((np.random.rand(*shape) > .1).astype('u8'),
-                         np.eye(4)), path)
-        mask_images.append(path)
+    with InTemporaryDirectory():
+        for subject in range(n_subjects):
+            path = 'mask%s.nii' % subject
+            save(Nifti1Image((np.random.rand(*shape) > .1).astype('u8'),
+                             np.eye(4)), path)
+            mask_images.append(path)
 
-    wim = mask_parcellation(mask_images, nb_parcel)
-    assert_equal(np.unique(wim.get_data()), np.arange(nb_parcel))
+        wim = mask_parcellation(mask_images, n_parcels)
+        assert_equal(np.unique(wim.get_data()), np.arange(n_parcels))
 
 
 def test_parcel_intra_from_3d_image():
@@ -41,20 +41,19 @@ def test_parcel_intra_from_3d_image():
     """
     # Generate an image
     shape = (10, 10, 10)
+    n_parcel, nn, mu = 10, 6, 1.
     mask_image = Nifti1Image(np.ones(shape), np.eye(4))
-    data_image = join(TEMPDIR, 'image.nii')
-    surrogate_3d_dataset(mask=mask_image, out_image_file=data_image)
+    temp_dir = InTemporaryDirectory()
+    with temp_dir:
+        surrogate_3d_dataset(mask=mask_image, out_image_file='image.nii')
 
-    #run the algo
-    n_parcel = 10
-    nn = 6
-    mu = 1.
-    for method in ['ward', 'kmeans', 'gkm']:
-        osp = fixed_parcellation(mask_image, [data_image], n_parcel, nn,
-                                    method, TEMPDIR, mu)
-        result = join(TEMPDIR, 'parcel_%s.nii' % method)
-        assert exists(result)
-        assert_equal(osp.k, n_parcel)
+        #run the algo 
+        for method in ['ward', 'kmeans', 'gkm']:
+            osp = fixed_parcellation(mask_image, ['image.nii'], n_parcel, nn,
+                                     method, temp_dir.name, mu)
+            result = 'parcel_%s.nii' % method
+            assert exists(result)
+            assert_equal(osp.k, n_parcel)
 
 
 def test_parcel_intra_from_3d_images_list():
@@ -62,21 +61,21 @@ def test_parcel_intra_from_3d_images_list():
     """
     # Generate an image
     shape = (10, 10, 10)
-    mask_image = Nifti1Image(np.ones(shape), np.eye(4))
-    data_image = [join(TEMPDIR, 'image_%d.nii' % i) for i in range(5)]
-    for datim in data_image:
-        surrogate_3d_dataset(mask=mask_image, out_image_file=datim)
-
-    #run the algo
-    n_parcel = 10
-    nn = 6
-    mu = 1.
+    n_parcel, nn, mu = 10, 6, 1.
     method = 'ward'
-    osp = fixed_parcellation(mask_image, data_image, n_parcel, nn,
-                             method, TEMPDIR, mu)
-    result = join(TEMPDIR, 'parcel_%s.nii' % method)
-    assert exists(result)
-    assert_equal(osp.k, n_parcel)
+    mask_image = Nifti1Image(np.ones(shape), np.eye(4))
+
+    temp_dir = InTemporaryDirectory()
+    with temp_dir:
+        data_image = ['image_%d.nii' % i for i in range(5)]
+        for datim in data_image:
+            surrogate_3d_dataset(mask=mask_image, out_image_file=datim)
+
+        #run the algo
+        osp = fixed_parcellation(mask_image, data_image, n_parcel, nn,
+                                 method, temp_dir.name, mu)
+        assert exists('parcel_%s.nii' % method)
+        assert_equal(osp.k, n_parcel)
 
 
 def test_parcel_intra_from_4d_image():
@@ -84,20 +83,17 @@ def test_parcel_intra_from_4d_image():
     """
     # Generate an image
     shape = (10, 10, 10)
-    mask_image = Nifti1Image(np.ones(shape), np.eye(4))
-    data_image = join(TEMPDIR, 'image.nii')
-    surrogate_3d_dataset(n_subj=10, mask=mask_image, out_image_file=data_image)
-
-    #run the algo
-    n_parcel = 10
-    nn = 6
-    mu = 1.
+    n_parcel, nn, mu = 10, 6, 1.
     method = 'ward'
-    osp = fixed_parcellation(mask_image, [data_image], n_parcel, nn,
-                                method, TEMPDIR, mu)
-    result = join(TEMPDIR, 'parcel_%s.nii' % method)
-    assert exists(result)
-    assert_equal(osp.k, n_parcel)
+    mask_image = Nifti1Image(np.ones(shape), np.eye(4))
+    temp_dir = InTemporaryDirectory()
+    with temp_dir:
+        surrogate_3d_dataset(n_subj=10, mask=mask_image, 
+                             out_image_file='image.nii')    
+        osp = fixed_parcellation(mask_image, ['image.nii'], n_parcel, nn,
+                                 method, temp_dir.name, mu)
+        assert exists('parcel_%s.nii' % method)
+        assert_equal(osp.k, n_parcel)
 
 
 if __name__ == "__main__":
