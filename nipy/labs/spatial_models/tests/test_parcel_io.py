@@ -20,7 +20,7 @@ def test_mask_parcel():
 def test_mask_parcel_multi_subj():
     """ Test that mask parcellation performs correctly
     """
-    np.random.seed(0)
+    rng = np.random.RandomState(0); 
     n_parcels = 20
     shape = (10, 10, 10)
     n_subjects = 5
@@ -28,7 +28,7 @@ def test_mask_parcel_multi_subj():
     with InTemporaryDirectory():
         for subject in range(n_subjects):
             path = 'mask%s.nii' % subject
-            save(Nifti1Image((np.random.rand(*shape) > .1).astype('u8'),
+            save(Nifti1Image((rng.rand(*shape) > .1).astype('u8'),
                              np.eye(4)), path)
             mask_images.append(path)
 
