@@ -77,7 +77,7 @@ def test_GGGM3(verbose=0):
         G.parameters()
     assert(np.absolute(G.mixt[0])<1.e-15)
 
-def test_Gamma_parameters1(verbose=0):
+def test_gamma_parameters1(verbose=0):
     import numpy.random as nr
     n = 1000
     X = nr.gamma(11., 3., n)
@@ -87,7 +87,7 @@ def test_Gamma_parameters1(verbose=0):
         G.parameters()
     assert(np.absolute(G.shape-11)<2.)
 
-def test_Gamma_parameters2(verbose=0):
+def test_gamma_parameters2(verbose=0):
     import numpy.random as nr
     n = 1000
     X = nr.gamma(11., 3., n)

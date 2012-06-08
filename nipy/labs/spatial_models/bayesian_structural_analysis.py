@@ -21,7 +21,7 @@ import scipy.stats as st
 from .structural_bfls import build_LR
 from nipy.algorithms.graph import wgraph_from_coo_matrix
 from ...algorithms.statistics.empirical_pvalue import \
-    NormalEmpiricalNull, three_classes_GMM_fit, Gamma_Gaussian_fit
+    NormalEmpiricalNull, three_classes_GMM_fit, gamma_gaussian_fit
 from .hroi import HROI_as_discrete_domain_blobs
 
 ####################################################################
@@ -77,7 +77,7 @@ def signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
         enn.learn()
         bf0 = np.reshape(enn.fdr(test), np.size(test))
     elif method == 'gam_gauss':
-        bfp = Gamma_Gaussian_fit(learn, test, verbose)
+        bfp = gamma_gaussian_fit(learn, test, verbose)
         bf0 = bfp[:, 1]
     elif method == 'prior':
         y0 = st.norm.pdf(test)

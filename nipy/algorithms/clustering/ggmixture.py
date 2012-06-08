@@ -443,14 +443,14 @@ class GGGM(object):
             x = x.copy()
         # positive gamma
         i = np.ravel(np.nonzero(x > 0))
-        from ..statistics.empirical_pvalue import FDR
+        from ..statistics.empirical_pvalue import fdr
 
         if np.size(i) > 0:
             if dof < 0:
                 pvals = st.norm.sf(x)
             else:
                 pvals = st.t.sf(x, dof)
-            q = FDR().all_fdr(pvals)
+            q = fdr(pvals)
             z = 1 - q[i]
             self.mixt[2] = np.maximum(0.5, z.sum()) / np.size(x)
             self.shape_p, self.scale_p = _gam_param(x[i], z)
@@ -464,7 +464,7 @@ class GGGM(object):
                 pvals = st.norm.cdf(x)
             else:
                 pvals = st.t.cdf(x, dof)
-            q = FDR().all_fdr(pvals)
+            q = fdr(pvals)
             z = 1 - q[i]
             self.shape_n, self.scale_n = _gam_param( - x[i], z)
             self.mixt[0] = np.maximum(0.5, z.sum()) / np.size(x)

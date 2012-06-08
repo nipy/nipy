@@ -104,7 +104,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
     clusters.sort(cmp=smaller)
 
     # FDR-corrected p-values
-    fdr_pvalue = empirical_pvalue.all_fdr_gaussian(zmap)[above_th]
+    fdr_pvalue = empirical_pvalue.gaussian_fdr(zmap)[above_th]
 
     # Default "nulls"
     if not 'zmax' in nulls:
