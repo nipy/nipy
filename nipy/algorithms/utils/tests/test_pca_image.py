@@ -50,6 +50,7 @@ def test_PCAMask():
     p = pca_image(data_dict['fmridata'], 't',
                   data_dict['mask'], ncomp=ncomp)
     assert_equal(_rank(p), ntotal)
+    assert_equal(p['axis'], 3)
     assert_equal(p['basis_vectors over t'].shape, (nimages, ntotal))
     assert_equal(p['basis_projections'].shape, data_dict['mask'].shape +
                  (ncomp,))
