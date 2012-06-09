@@ -304,4 +304,6 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
     key = 'basis_vectors over %s' % axis
     res[key] = res['basis_vectors']
     res['basis_projections'] = output_img
+    # Signal the roll in results
+    res['axis'] = in_ax
     return res
