@@ -15,6 +15,7 @@ from nose.tools import assert_raises
 from numpy.testing import (assert_equal, assert_almost_equal,
                            assert_array_equal)
 from ....testing import funcfile
+from .test_pca import res2pos1
 
 data_dict = {}
 
@@ -261,6 +262,22 @@ def test_5d():
                  data.shape[:3] + (1, ncomp))
 
 
+def img_res2pos1(res, bv_key):
+    # Orient basis vectors in standard direction
+    axis = res['axis']
+    bvs = res[bv_key]
+    bps_img = res['basis_projections']
+    bps = bps_img.get_data()
+    signs = np.sign(bvs[0])
+    res[bv_key] = bvs * signs
+    new_axes = [None] * bps.ndim
+    n_comps = bps.shape[axis]
+    new_axes[axis] = slice(0, n_comps)
+    res['basis_projections'] = Image(bps * signs[new_axes],
+                                     bps_img.coordmap)
+    return res
+
+
 def test_other_axes():
     # With a diagonal affine, we can do PCA on any axis
     ncomp = 5
@@ -274,10 +291,14 @@ def test_other_axes():
         assert_equal(_rank(p), n - 1)
         assert_equal(p[bv_key].shape, (n, n - 1))
         # We get the expected data back
-        img_bps = p['basis_projections']
         dp = pca_array(img_data, axis_no, ncomp=ncomp)
-        assert_array_equal(dp['basis_vectors'], p[bv_key])
-        assert_array_equal(dp['basis_projections'], img_bps.get_data())
+        # We have to make sure the signs are the same; on Windows it seems the
+        # signs can flip even between two runs on the same data
+        pos_p = img_res2pos1(p, bv_key)
+        pos_dp = res2pos1(dp)
+        img_bps = pos_p['basis_projections']
+        assert_almost_equal(pos_dp['basis_vectors'], pos_p[bv_key])
+        assert_almost_equal(pos_dp['basis_projections'], img_bps.get_data())
         # And we've replaced the expected axis
         exp_coords = in_coords[:]
         exp_coords[exp_coords.index(axis_name)] = 'PCA components'
