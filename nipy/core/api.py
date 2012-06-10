@@ -27,6 +27,3 @@ from .image.image_list import ImageList
 from .utils.generators import (parcels, data_generator, write_data,
                                slice_generator, f_generator,
                                matrix_generator)
-
-lps_output_coordnames = ('x+LR', 'y+PA', 'z+SI')
-ras_output_coordnames = ('x+RL', 'y+AP', 'z+SI')
