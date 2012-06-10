@@ -969,7 +969,7 @@ class AffineTransform(object):
 #
 ####################################################################################
 
-def product(*cmaps):
+def product(*cmaps, **kwargs):
     """ "topological" product of two or more mappings
 
     The mappings can be either AffineTransforms or CoordinateMaps.
@@ -1044,11 +1044,12 @@ def product(*cmaps):
     # First, check if they're all Affine
     allaffine = np.all([isinstance(cmap, AffineTransform) for cmap in cmaps])
     if allaffine:
-        return _product_affines(*cmaps)
+        return _product_affines(*cmaps, **kwargs)
     else:
         warnings.warn("product of non-affine CoordinateMaps is less robust than"+
                       "the AffineTransform")
-        return _product_cmaps(*[_as_coordinate_map(cmap) for cmap in cmaps])
+        return _product_cmaps(*[_as_coordinate_map(cmap) for cmap in cmaps],
+                              **kwargs)
 
 
 def compose(*cmaps):
@@ -1621,7 +1622,11 @@ def _compose_cmaps(*cmaps):
     return cur
 
 
-def _product_cmaps(*cmaps):
+def _product_cmaps(*cmaps, **kwargs):
+    input_name = kwargs.pop('input_name', 'product')
+    output_name = kwargs.pop('output_name', 'product')
+    if kwargs:
+        raise TypeError('Unexpected kwargs %s' % kwargs)
     ndimin = [cmap.ndims[0] for cmap in cmaps]
     ndimin.insert(0,0)
     ndimin = tuple(np.cumsum(ndimin))
@@ -1630,23 +1635,29 @@ def _product_cmaps(*cmaps):
         x = np.atleast_2d(x)
         y = []
         for i in range(len(ndimin)-1):
-            cmap = cmaps[i]
             yy = cmaps[i](x[:,ndimin[i]:ndimin[i+1]])
             y.append(yy)
         yy = np.hstack(y)
         return yy
 
-    notaffine = filter(lambda x: not isinstance(x, AffineTransform), cmaps)
-
-    incoords = coordsys_product(*[cmap.function_domain for cmap in cmaps])
-    outcoords = coordsys_product(*[cmap.function_range for cmap in cmaps])
-
+    incoords = coordsys_product(*[cmap.function_domain for cmap in cmaps],
+                                name = input_name)
+    outcoords = coordsys_product(*[cmap.function_range for cmap in cmaps],
+                                 name = output_name)
     return CoordinateMap(incoords, outcoords, function)
 
 
-def _product_affines(*affine_mappings):
+def _product_affines(*affine_mappings, **kwargs):
     """ Product of affine_mappings.
     """
+    input_name = kwargs.pop('input_name', 'product')
+    output_name = kwargs.pop('output_name', 'product')
+    if kwargs:
+        raise TypeError('Unexpected kwargs %s' % kwargs)
+    if input_name is None:
+        input_name = 'product'
+    if output_name is None:
+        output_name = 'product'
     ndimin = [affine.ndims[0] for affine in affine_mappings]
     ndimout = [affine.ndims[1] for affine in affine_mappings]
 
@@ -1671,8 +1682,8 @@ def _product_affines(*affine_mappings):
         j += ndimin[l]
 
     return AffineTransform(
-        CoordinateSystem(product_domain, name='product', coord_dtype=M.dtype),
-        CoordinateSystem(product_range, name='product', coord_dtype=M.dtype),
+        CoordinateSystem(product_domain, name=input_name, coord_dtype=M.dtype),
+        CoordinateSystem(product_range, name=output_name, coord_dtype=M.dtype),
         M)
 
 
@@ -1734,7 +1745,7 @@ def drop_io_dim(cm, axis_id, fix0=True):
     # Implicit check for affine-type coordinate map
     aff = cm.affine.copy()
     # What dimensions did you ask for?
-    in_dim, out_dim = axid2axes(cm, axis_id, fix0)
+    in_dim, out_dim = io_axis_indices(cm, axis_id, fix0)
     if not None in (in_dim, out_dim):
         if not orth_axes(in_dim, out_dim, aff, allow_zero=fix0):
             raise AxisError('Input and output dimensions not orthogonal to '
@@ -1890,7 +1901,7 @@ def axmap(coordmap, direction='in2out', fix0=False):
     return in2out_map, out2in_map
 
 
-def axid2inax(coordmap, axis_id, fix0=False):
+def input_axis_index(coordmap, axis_id, fix0=False):
     """ Return input axis index for `axis_id`
 
     `axis_id` can be integer, or a name of an input axis, or it can be the name
@@ -1950,7 +1961,7 @@ def axid2inax(coordmap, axis_id, fix0=False):
     return in_no
 
 
-def axid2axes(coordmap, axis_id, fix0=False):
+def io_axis_indices(coordmap, axis_id, fix0=False):
     """ Return input and output axis index for id `axis_id` in `coordmap`
 
     Parameters
@@ -1984,15 +1995,15 @@ def axid2axes(coordmap, axis_id, fix0=False):
     --------
     >>> aff = [[0, 1, 0, 10], [1, 0, 0, 11], [0, 0, 1, 12], [0, 0, 0, 1]]
     >>> cmap = AffineTransform('ijk', 'xyz', aff)
-    >>> axid2axes(cmap, 0)
+    >>> io_axis_indices(cmap, 0)
     (0, 1)
-    >>> axid2axes(cmap, 1)
+    >>> io_axis_indices(cmap, 1)
     (1, 0)
-    >>> axid2axes(cmap, -1)
+    >>> io_axis_indices(cmap, -1)
     (2, 2)
-    >>> axid2axes(cmap, 'j')
+    >>> io_axis_indices(cmap, 'j')
     (1, 0)
-    >>> axid2axes(cmap, 'y')
+    >>> io_axis_indices(cmap, 'y')
     (0, 1)
     """
     in_dims = list(coordmap.function_domain.coord_names)

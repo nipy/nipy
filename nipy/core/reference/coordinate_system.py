@@ -360,14 +360,16 @@ def safe_dtype(*dtypes):
     return np.array(arrays).dtype
 
 
-def product(*coord_systems):
+def product(*coord_systems, **kwargs):
     """Create the product of a sequence of CoordinateSystems.
 
     The coord_dtype of the result will be determined by ``safe_dtype``.
 
     Parameters
     ----------
-    coord_systems : sequence of :class:`CoordinateSystem`
+    \*coord_systems : sequence of :class:`CoordinateSystem`
+    name : str
+        Name of ouptut coordinate system
 
     Returns
     -------
@@ -379,19 +381,25 @@ def product(*coord_systems):
     >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex)
     >>> c3 = CoordinateSystem('ik', 'in3')
 
-    >>> print product(c1,c2)
+    >>> print product(c1, c2)
     CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='product', coord_dtype=complex128)
 
-    >>> product(c2,c3)
+    >>> print product(c1, c2, name='another name')
+    CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='another name', coord_dtype=complex128)
+
+    >>> product(c2, c3)
     Traceback (most recent call last):
        ...
     ValueError: coord_names must have distinct names
     """
+    name = kwargs.pop('name', 'product')
+    if kwargs:
+        raise TypeError('Unexpected kwargs %s' % kwargs)
     coords = []
     for c in coord_systems:
         coords += c.coord_names
     dtype = safe_dtype(*[c.coord_dtype for c in coord_systems])
-    return CoordinateSystem(coords, 'product', coord_dtype=dtype)
+    return CoordinateSystem(coords, name, coord_dtype=dtype)
 
 
 class CoordSysMakerError(Exception):

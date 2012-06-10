@@ -81,7 +81,7 @@ def test_run():
             f_data = f_img.get_data()
             assert_true(np.all((f_data>=0) & (f_data<30)))
             resid_img = load_image('resid_AR_out.nii')
-            assert_equal(resid_img.shape, funcim.shape[3:] + one_vol.shape)
+            assert_equal(resid_img.shape, funcim.shape)
             assert_array_almost_equal(np.mean(resid_img.get_data()), 0, 3)
             e_img = load_image('T_out_effect.nii')
             sd_img = load_image('T_out_sd.nii')

@@ -180,8 +180,10 @@ class XYZSpace(object):
         return set(my_names).issubset(obj.coord_names)
 
 
-# Generic coordinate map maker for voxels (function_domain)
-voxel_csm = CoordSysMaker('ijklmnop', 'array')
+# Generic coordinate map maker for voxels (function_domain). Unlike nifti
+# loading, by default the 4th axis is not time (because we don't know what it
+# is).
+voxel_csm = CoordSysMaker('ijklmnop', 'voxels')
 
 # Module level mapping from key=name to values in 'x' or 'y' or 'z'
 known_names = {}
@@ -357,7 +359,7 @@ def xyz_affine(coordmap, name2xyz=None):
     >>> cmap = vox2mni(np.diag([2,3,4,5,1]))
     >>> cmap
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='voxels', coord_dtype=float64),
        function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 2.,  0.,  0.,  0.,  0.],
                      [ 0.,  3.,  0.,  0.,  0.],
@@ -470,7 +472,7 @@ def is_xyz_affable(coordmap, name2xyz=None):
     >>> cmap = vox2mni(np.diag([2,3,4,5,1]))
     >>> cmap
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='voxels', coord_dtype=float64),
        function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 2.,  0.,  0.,  0.,  0.],
                      [ 0.,  3.,  0.,  0.,  0.],
@@ -483,7 +485,7 @@ def is_xyz_affable(coordmap, name2xyz=None):
     >>> time0_cmap = cmap.reordered_domain([3,0,1,2])
     >>> time0_cmap
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='array', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='voxels', coord_dtype=float64),
        function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 0.,  2.,  0.,  0.,  0.],
                      [ 0.,  0.,  3.,  0.,  0.],

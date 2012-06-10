@@ -18,7 +18,7 @@ import numpy as np
 import scipy.linalg as spl
 
 from ...core.image.image import rollimg
-from ...core.reference.coordinate_map import (axid2axes, orth_axes,
+from ...core.reference.coordinate_map import (io_axis_indices, orth_axes,
                                               drop_io_dim, AxisError)
 
 
@@ -270,7 +270,7 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
     """
     img_klass = img.__class__
     # Which axes are we operating over?
-    in_ax, out_ax = axid2axes(img.coordmap, axis)
+    in_ax, out_ax = io_axis_indices(img.coordmap, axis)
     if None in (in_ax, out_ax):
         raise AxisError('Cannot identify matching input output axes with "%s"'
                         % axis)
