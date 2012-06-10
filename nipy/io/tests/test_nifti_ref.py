@@ -88,7 +88,7 @@ def test_xyz_affines():
     aimg = copy_of(anatfile)
     adata = aimg.get_data()
     assert_array_equal(nipy2nifti(aimg).get_data(), adata)
-    # For now, always error on 2D (this depends on as_xyz_affable)
+    # For now, always error on 2D (this depends on as_xyz_image)
     assert_raises(NiftiError, nipy2nifti, aimg[:, :, 1])
     assert_raises(NiftiError, nipy2nifti, aimg[:, 1, :])
     assert_raises(NiftiError, nipy2nifti, aimg[1, :, :])

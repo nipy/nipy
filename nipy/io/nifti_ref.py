@@ -143,7 +143,7 @@ from ..core.reference.coordinate_map import (AffineTransform as AT,
                                              product as cm_product)
 from ..core.reference import spaces as ncrs
 from ..core.image.image import Image
-from ..core.image.image_spaces import as_xyz_affable
+from ..core.image.image_spaces import as_xyz_image
 
 
 XFORM2SPACE = {'scanner': ncrs.scanner_space,
@@ -273,7 +273,7 @@ def nipy2nifti(img, strict=None, fix0=False):
         for c in 'xyz':
             known_names[c] = c
     try:
-        img = as_xyz_affable(img, known_names)
+        img = as_xyz_image(img, known_names)
     except (ncrs.AxesError, ncrs.AffineError):
         # Python 2.5 / 3 compatibility
         e = sys.exc_info()[1]
