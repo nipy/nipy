@@ -243,6 +243,8 @@ def as_xyz_image(img, name2xyz=None):
     # Which input axes correspond?
     ornt = io_orientation(reo_img.coordmap.affine)
     current_in_order = ornt[:,0]
+    # Set nan to inf to make np.argsort work for old numpy versions
+    current_in_order[np.isnan(current_in_order)] = np.inf
     # Do we have the first three axes somewhere?
     if not set((0,1,2)).issubset(current_in_order):
         raise rsp.AxesError("One of x, y or z outputs missing a "
