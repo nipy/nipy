@@ -3,8 +3,10 @@
 
 import numpy as np
 from scipy.ndimage import affine_transform, map_coordinates
-from ...core.image.affine_image import AffineImage
-from .image_utils import get_affine
+
+from ...core.image.image_spaces import (make_xyz_image,
+                                        as_xyz_image,
+                                        xyz_affine)
 from .affine import inverse_affine, Affine
 from ._registration import (_cspline_transform,
                             _cspline_sample3d,
@@ -44,8 +46,14 @@ def resample(moving, transform, reference=None,
     interp_order: number
       Spline interpolation order, defaults to 3.
     """
+    # Function assumes xyx_affine for inputs
+    moving = as_xyz_image(moving)
+    mov_aff = xyz_affine(moving)
     if reference == None:
         reference = moving
+    else:
+        reference = as_xyz_image(reference)
+        ref_aff = xyz_affine(reference)
     data = moving.get_data()
     if dtype == None:
         dtype = data.dtype
@@ -54,9 +62,9 @@ def resample(moving, transform, reference=None,
     if hasattr(transform, 'as_affine'):
         Tv = transform.as_affine()
         if not ref_voxel_coords:
-            Tv = np.dot(Tv, get_affine(reference))
+            Tv = np.dot(Tv, ref_aff)
         if not mov_voxel_coords:
-            Tv = np.dot(inverse_affine(get_affine(moving)), Tv)
+            Tv = np.dot(inverse_affine(mov_aff), Tv)
         if interp_order == 3:
             output = _cspline_resample3d(data, reference.shape,
                                          Tv, dtype=dtype)
@@ -71,9 +79,9 @@ def resample(moving, transform, reference=None,
     else:
         Tv = transform
         if not ref_voxel_coords:
-            Tv = Tv.compose(Affine(get_affine(reference)))
+            Tv = Tv.compose(Affine(ref_aff))
         if not mov_voxel_coords:
-            Tv = Affine(inverse_affine(get_affine(moving))).compose(Tv)
+            Tv = Affine(inverse_affine(mov_aff)).compose(Tv)
         coords = np.indices(reference.shape).transpose((1, 2, 3, 0))
         coords = np.reshape(coords, (np.prod(reference.shape), 3))
         coords = Tv.apply(coords).T
@@ -86,4 +94,4 @@ def resample(moving, transform, reference=None,
             output = map_coordinates(data, coords, order=interp_order,
                                      cval=0, output=dtype)
 
-    return AffineImage(output, get_affine(reference), 'scanner')
+    return make_xyz_image(output, ref_aff, 'scanner')
