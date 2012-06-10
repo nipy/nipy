@@ -4,7 +4,7 @@
 import numpy as np
 
 from .image import Image, iter_axis, is_image
-from ..reference.coordinate_map import (drop_io_dim, axid2axes, AxisError)
+from ..reference.coordinate_map import (drop_io_dim, io_axis_indices, AxisError)
 
 
 class ImageList(object):
@@ -82,7 +82,7 @@ class ImageList(object):
         if axis is None:
             raise ValueError('Must specify image axis')
         # Get corresponding input, output dimension indices
-        in_ax, out_ax = axid2axes(image.coordmap, axis)
+        in_ax, out_ax = io_axis_indices(image.coordmap, axis)
         if in_ax is None:
             raise AxisError('No correspnding input dimension for %s' % axis)
         dropout = dropout and not out_ax is None

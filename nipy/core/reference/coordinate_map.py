@@ -1745,7 +1745,7 @@ def drop_io_dim(cm, axis_id, fix0=True):
     # Implicit check for affine-type coordinate map
     aff = cm.affine.copy()
     # What dimensions did you ask for?
-    in_dim, out_dim = axid2axes(cm, axis_id, fix0)
+    in_dim, out_dim = io_axis_indices(cm, axis_id, fix0)
     if not None in (in_dim, out_dim):
         if not orth_axes(in_dim, out_dim, aff, allow_zero=fix0):
             raise AxisError('Input and output dimensions not orthogonal to '
@@ -1961,7 +1961,7 @@ def input_axis_index(coordmap, axis_id, fix0=False):
     return in_no
 
 
-def axid2axes(coordmap, axis_id, fix0=False):
+def io_axis_indices(coordmap, axis_id, fix0=False):
     """ Return input and output axis index for id `axis_id` in `coordmap`
 
     Parameters
@@ -1995,15 +1995,15 @@ def axid2axes(coordmap, axis_id, fix0=False):
     --------
     >>> aff = [[0, 1, 0, 10], [1, 0, 0, 11], [0, 0, 1, 12], [0, 0, 0, 1]]
     >>> cmap = AffineTransform('ijk', 'xyz', aff)
-    >>> axid2axes(cmap, 0)
+    >>> io_axis_indices(cmap, 0)
     (0, 1)
-    >>> axid2axes(cmap, 1)
+    >>> io_axis_indices(cmap, 1)
     (1, 0)
-    >>> axid2axes(cmap, -1)
+    >>> io_axis_indices(cmap, -1)
     (2, 2)
-    >>> axid2axes(cmap, 'j')
+    >>> io_axis_indices(cmap, 'j')
     (1, 0)
-    >>> axid2axes(cmap, 'y')
+    >>> io_axis_indices(cmap, 'y')
     (0, 1)
     """
     in_dims = list(coordmap.function_domain.coord_names)
