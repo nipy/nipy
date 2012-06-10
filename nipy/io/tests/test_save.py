@@ -96,7 +96,8 @@ def test_save3():
         save_image(img, TMP_FNAME)
         tmp = load_image(TMP_FNAME)
         # Detach image from file so we can delete it
-        img2 = api.Image(tmp.get_data(), tmp.coordmap, tmp.metadata)
+        data = tmp.get_data().copy()
+        img2 = api.Image(data, tmp.coordmap, tmp.metadata)
         del tmp
     assert_equal(tuple([img.shape[l] for l in [3,2,1,0]]), img2.shape)
     a = np.transpose(np.asarray(img), [3,2,1,0])
@@ -122,8 +123,9 @@ def test_save4():
     with InTemporaryDirectory():
         save_image(img, TMP_FNAME)
         tmp = load_image(TMP_FNAME)
+        data = tmp.get_data().copy()
         # Detach image from file so we can delete it
-        img2 = api.Image(tmp.get_data(), tmp.coordmap, tmp.metadata)
+        img2 = api.Image(data, tmp.coordmap, tmp.metadata)
         del tmp
     P = np.array([[0,0,0,1,0],
                   [0,0,1,0,0],
