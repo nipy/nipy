@@ -1,7 +1,7 @@
 import numpy as np
 
-from ...core.image.image_spaces import (neuro_image,
-                                        as_xyz_affable,
+from ...core.image.image_spaces import (make_xyz_image,
+                                        as_xyz_image,
                                         xyz_affine)
 
 from .vem import VEM
@@ -119,7 +119,7 @@ def brain_segmentation(img, mask_img=None, hard=False, niters=NITERS,
       Hard tissue classification image similar to a MAP.
     """
     # Function assumes xyx_affine for inputs
-    img = as_xyz_affable(img)
+    img = as_xyz_image(img)
     # I think it also assumes 3D
     if not img.ndim == 3:
         raise ValueError("We assume a 3D image")
@@ -128,7 +128,7 @@ def brain_segmentation(img, mask_img=None, hard=False, niters=NITERS,
     if mask_img == None:
         mask_img = img
     else:
-        mask_img = as_xyz_affable(mask_img)
+        mask_img = as_xyz_image(mask_img)
         if not mask_img.shape == img.shape:
             raise ValueError("Mask should be same shape as img")
     mask = np.where(mask_img.get_data() > 0)
@@ -158,9 +158,9 @@ def brain_segmentation(img, mask_img=None, hard=False, niters=NITERS,
     del vem
 
     # Create output images
-    ppm_img = neuro_image(ppm, xyz_affine(img), 'scanner')
+    ppm_img = make_xyz_image(ppm, xyz_affine(img), 'scanner')
     pmode = np.zeros(img.shape, dtype='uint8')
     pmode[mask] = ppm[mask].argmax(1) + 1
-    label_img = neuro_image(pmode, xyz_affine(img), 'scanner')
+    label_img = make_xyz_image(pmode, xyz_affine(img), 'scanner')
 
     return ppm_img, label_img

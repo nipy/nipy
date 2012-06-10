@@ -8,8 +8,9 @@ from nibabel.affines import apply_affine
 
 from ...fixes.nibabel import io_orientation
 
-from ...core.image.image_spaces import (neuro_image, xyz_affine,
-                                        as_xyz_affable)
+from ...core.image.image_spaces import (make_xyz_image,
+                                        xyz_affine,
+                                        as_xyz_image)
 from .optimizer import configure_optimizer, use_derivatives
 from .affine import Rigid
 from ._registration import (_cspline_transform,
@@ -661,7 +662,7 @@ class Realign4d(object):
         self._runs = []
         self.affine_class = affine_class
         for im in images:
-            xyz_img = as_xyz_affable(im)
+            xyz_img = as_xyz_image(im)
             self._runs.append(Image4d(xyz_img.get_data,
                                       xyz_affine(xyz_img),
                                       tr=tr, tr_slices=tr_slices,
@@ -721,12 +722,12 @@ class Realign4d(object):
         if r == None:
             data = [resample4d(self._runs[r], transforms=transforms[r],
                                time_interp=self._time_interp) for r in runs]
-            return [neuro_image(data[r], self._runs[r].affine, 'scanner')
+            return [make_xyz_image(data[r], self._runs[r].affine, 'scanner')
                     for r in runs]
         else:
             data = resample4d(self._runs[r], transforms=transforms[r],
                               time_interp=self._time_interp)
-            return neuro_image(data, self._runs[r].affine, 'scanner')
+            return make_xyz_image(data, self._runs[r].affine, 'scanner')
 
 
 class FmriRealign4d(Realign4d):

@@ -8,8 +8,8 @@ from sys import maxint
 
 import numpy as np
 
-from ...core.image.image_spaces import (neuro_image,
-                                        as_xyz_affable,
+from ...core.image.image_spaces import (make_xyz_image,
+                                        as_xyz_image,
                                         xyz_affine)
 
 from .optimizer import configure_optimizer
@@ -78,12 +78,12 @@ class HistogramRegistration(object):
          Trilinear, 'rand': Random interpolation.  See ``joint_histogram.c``
         """
         # Function assumes xyx_affine for inputs
-        from_img = as_xyz_affable(from_img)
-        to_img = as_xyz_affable(to_img)
+        from_img = as_xyz_image(from_img)
+        to_img = as_xyz_image(to_img)
         if not from_mask is None:
-            from_mask = as_xyz_affable(from_mask)
+            from_mask = as_xyz_image(from_mask)
         if not to_mask is None:
-            to_mask = as_xyz_affable(to_mask)
+            to_mask = as_xyz_image(to_mask)
 
         # Binning sizes
         if to_bins == None:
@@ -95,7 +95,7 @@ class HistogramRegistration(object):
         if not from_mask is None:
             mask = from_mask.get_data()
         data, from_bins = clamp(from_img.get_data(), bins=from_bins, mask=mask)
-        self._from_img = neuro_image(data, xyz_affine(from_img), 'scanner')
+        self._from_img = make_xyz_image(data, xyz_affine(from_img), 'scanner')
         # Set the subsampling.  This also sets the _from_data and _vox_coords
         # attributes
         self.subsample()

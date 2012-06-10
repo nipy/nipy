@@ -4,8 +4,8 @@
 import numpy as np
 from scipy.ndimage import affine_transform, map_coordinates
 
-from ...core.image.image_spaces import (neuro_image,
-                                        as_xyz_affable,
+from ...core.image.image_spaces import (make_xyz_image,
+                                        as_xyz_image,
                                         xyz_affine)
 from .affine import inverse_affine, Affine
 from ._registration import (_cspline_transform,
@@ -47,12 +47,12 @@ def resample(moving, transform, reference=None,
       Spline interpolation order, defaults to 3.
     """
     # Function assumes xyx_affine for inputs
-    moving = as_xyz_affable(moving)
+    moving = as_xyz_image(moving)
     mov_aff = xyz_affine(moving)
     if reference == None:
         reference = moving
     else:
-        reference = as_xyz_affable(reference)
+        reference = as_xyz_image(reference)
         ref_aff = xyz_affine(reference)
     data = moving.get_data()
     if dtype == None:
@@ -94,4 +94,4 @@ def resample(moving, transform, reference=None,
             output = map_coordinates(data, coords, order=interp_order,
                                      cval=0, output=dtype)
 
-    return neuro_image(output, ref_aff, 'scanner')
+    return make_xyz_image(output, ref_aff, 'scanner')

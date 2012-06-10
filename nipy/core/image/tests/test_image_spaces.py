@@ -7,8 +7,8 @@ import nibabel as nib
 from nibabel.affines import from_matvec
 
 from ..image import Image, rollimg
-from ..image_spaces import (is_xyz_affable, as_xyz_affable, xyz_affine,
-                            neuro_image)
+from ..image_spaces import (is_xyz_affable, as_xyz_image, xyz_affine,
+                            make_xyz_image)
 from ...reference.coordinate_system import CoordinateSystem as CS
 from ...reference.coordinate_map import AffineTransform
 from ...reference.spaces import (vox2mni, vox2talairach, voxel_csm,
@@ -52,12 +52,12 @@ def test_image_xyz_affine():
     assert_array_equal(xyz_affine(img, my_valtor), aff)
 
 
-def test_image_as_xyz_affable():
+def test_image_as_xyz_image():
     # Test getting xyz affable version of the image
     arr = np.arange(24).reshape((1,2,3,4))
     aff = np.diag([2,3,4,5,1])
     img = Image(arr, vox2mni(aff))
-    img_r = as_xyz_affable(img)
+    img_r = as_xyz_image(img)
     assert_true(img is img_r)
     # Reorder, reverse reordering, test != and ==
     for order in ((3, 0, 1, 2), (0, 3, 1, 2)):
@@ -66,19 +66,19 @@ def test_image_as_xyz_affable():
         img_ro_both = img_ro_out.reordered_axes(order)
         for tmap in (img_ro_out, img_ro_in, img_ro_both):
             assert_false(is_xyz_affable(tmap))
-            img_r = as_xyz_affable(tmap)
+            img_r = as_xyz_image(tmap)
             assert_false(tmap is img_r)
             assert_equal(img, img_r)
             assert_array_equal(img.get_data(), img_r.get_data())
     img_t0 = rollimg(img, 't')
     assert_false(is_xyz_affable(img_t0))
-    img_t0_r = as_xyz_affable(img_t0)
+    img_t0_r = as_xyz_image(img_t0)
     assert_false(img_t0 is img_t0_r)
     assert_array_equal(img.get_data(), img_t0_r.get_data())
     assert_equal(img.coordmap, img_t0_r.coordmap)
     # Test against nibabel image
     nimg = nib.Nifti1Image(arr, np.diag([2,3,4,1]))
-    nimg_r = as_xyz_affable(nimg)
+    nimg_r = as_xyz_image(nimg)
     assert_true(nimg is nimg_r)
     # It's sometimes impossible to make an xyz affable image
     # If the xyz coordinates depend on the time coordinate
@@ -88,7 +88,7 @@ def test_image_as_xyz_affable():
                     [0, 0, 0, 5, 23],
                     [0, 0, 0, 0, 1]])
     img = Image(arr, vox2mni(aff))
-    assert_raises(AffineError, as_xyz_affable, img)
+    assert_raises(AffineError, as_xyz_image, img)
     # If any dimensions not spatial, AxesError
     arr = np.arange(24).reshape((2,3,4))
     aff = np.diag([2,3,4,1])
@@ -96,14 +96,14 @@ def test_image_as_xyz_affable():
     r_cs = CS(('mni-x=L->R', 'mni-y=P->A', 'mni-q'), 'mni')
     cmap = AffineTransform(d_cs, r_cs, aff)
     img = Image(arr, cmap)
-    assert_raises(AxesError, as_xyz_affable, img)
+    assert_raises(AxesError, as_xyz_image, img)
     # Can pass in own validator
     my_valtor = dict(blind='x', leading='y', ditch='z')
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
     cmap = AffineTransform(d_cs, r_cs, aff)
     img = Image(arr, cmap)
-    assert_raises(AxesError, as_xyz_affable, img)
-    assert_true(as_xyz_affable(img, my_valtor) is img)
+    assert_raises(AxesError, as_xyz_image, img)
+    assert_true(as_xyz_image(img, my_valtor) is img)
 
 
 def test_image_xyza_slices():
@@ -115,47 +115,47 @@ def test_image_xyza_slices():
     img0 = img[0] # slice in X
     # The result does not have an input axis corresponding to x, and should
     # raise an error
-    assert_raises(AxesError, as_xyz_affable, img0)
+    assert_raises(AxesError, as_xyz_image, img0)
     img0r = img0.reordered_reference([1,0,2,3]).reordered_axes([2,0,1])
-    assert_raises(AxesError, as_xyz_affable, img0r)
+    assert_raises(AxesError, as_xyz_image, img0r)
 
 
-def test_neuro_image():
+def test_make_xyz_image():
     # Standard neuro image creator
     arr = np.arange(24).reshape((1,2,3,4))
     aff = np.diag([2,3,4,1])
-    img = neuro_image(arr, aff, 'mni')
+    img = make_xyz_image(arr, aff, 'mni')
     assert_equal(img.coordmap, vox2mni(aff, 1.0))
     assert_array_equal(img.get_data(), arr)
-    img = neuro_image(arr, aff, 'talairach')
+    img = make_xyz_image(arr, aff, 'talairach')
     assert_equal(img.coordmap, vox2talairach(aff, 1.0))
     assert_array_equal(img.get_data(), arr)
-    img = neuro_image(arr, aff, talairach_space)
+    img = make_xyz_image(arr, aff, talairach_space)
     assert_equal(img.coordmap, vox2talairach(aff, 1.0))
     # Unknown space as string raises SpaceError
-    assert_raises(SpaceError, neuro_image, arr, aff, 'unlikely space name')
+    assert_raises(SpaceError, make_xyz_image, arr, aff, 'unlikely space name')
     funky_space = XYZSpace('hija')
-    img = neuro_image(arr, aff, funky_space)
+    img = make_xyz_image(arr, aff, funky_space)
     csm = funky_space.to_coordsys_maker('t')
     in_cs = CS('ijkl', 'array')
     exp_cmap = AffineTransform(in_cs, csm(4), np.diag([2, 3, 4, 1, 1]))
     assert_equal(img.coordmap, exp_cmap)
     # Affine must be 4, 4
     bad_aff = np.diag([2,3,4,2,1])
-    assert_raises(ValueError, neuro_image, arr, bad_aff, 'mni')
+    assert_raises(ValueError, make_xyz_image, arr, bad_aff, 'mni')
     # Can pass added zooms
-    img = neuro_image(arr, (aff, (2.,)), 'mni')
+    img = make_xyz_image(arr, (aff, (2.,)), 'mni')
     assert_equal(img.coordmap, vox2mni(aff, 2.0))
     # Also as scalar
-    img = neuro_image(arr, (aff, 2.), 'mni')
+    img = make_xyz_image(arr, (aff, 2.), 'mni')
     assert_equal(img.coordmap, vox2mni(aff, 2.0))
     # Must match length of needed zooms
     arr5 = arr[...,None]
-    assert_raises(ValueError, neuro_image, arr5, (aff, 2.), 'mni')
-    img = neuro_image(arr5, (aff, (2., 3.)), 'mni')
+    assert_raises(ValueError, make_xyz_image, arr5, (aff, 2.), 'mni')
+    img = make_xyz_image(arr5, (aff, (2., 3.)), 'mni')
     assert_equal(img.coordmap, vox2mni(aff, (2.0, 3.0)))
     # Always xyz affable after creation
     assert_array_equal(xyz_affine(img), aff)
     assert_true(is_xyz_affable(img))
     # Need at least 3 dimensions in data
-    assert_raises(ValueError, neuro_image, np.zeros((2,3)), aff, 'mni')
+    assert_raises(ValueError, make_xyz_image, np.zeros((2,3)), aff, 'mni')
