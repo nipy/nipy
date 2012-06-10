@@ -33,8 +33,8 @@ def setup():
     aligned_xyzs = ['aligned-' + suff for suff in xyzs]
     talairach_xyzs = ['talairach-' + suff for suff in xyzs]
     r_names = mni_xyzs + ['t']
-    d_cs_r3 = CS(d_names[:3], 'array')
-    d_cs_r4 = CS(d_names[:4], 'array')
+    d_cs_r3 = CS(d_names[:3], 'voxels')
+    d_cs_r4 = CS(d_names[:4], 'voxels')
     r_cs_r3 = CS(r_names[:3], 'mni')
     r_cs_r4 = CS(r_names[:4], 'mni')
     VARS.update(locals())
@@ -141,7 +141,7 @@ def test_default_makers():
         (vox2mni, VARS['mni_xyzs'] + ['t'], 'mni'),
         (vox2talairach, VARS['talairach_xyzs'] + ['t'], 'talairach')):
         for i in range(1,5):
-            dom_cs = CS('ijkl'[:i], 'array')
+            dom_cs = CS('ijkl'[:i], 'voxels')
             ran_cs = CS(r_names[:i], r_name)
             aff = np.diag(range(i) + [1])
             assert_equal(csm(aff), AffineTransform(dom_cs, ran_cs, aff))
@@ -214,14 +214,14 @@ def test_xyz_affine():
                       [6, 7, 8, 0, 0, 0, 17],
                       [0, 0, 0, 0, 0, 0, 18],
                       [0, 0, 0, 0, 0, 0, 1]])
-    d_cs_r6 = CS('ijklmn', 'array')
+    d_cs_r6 = CS('ijklmn', 'voxels')
     cmap = AffineTransform(d_cs_r6, VARS['r_cs_r4'], aff57)
     assert_array_equal(xyz_affine(cmap), aff3d)
     # Non-affine raises SpaceTypeError
     cmap_cmap = CoordinateMap(VARS['d_cs_r4'], VARS['r_cs_r4'], lambda x:x*3)
     assert_raises(SpaceTypeError, xyz_affine, cmap_cmap)
     # Not enough dimensions - SpaceTypeError
-    d_cs_r2 = CS('ij', 'array')
+    d_cs_r2 = CS('ij', 'voxels')
     r_cs_r2 = CS(VARS['r_names'][:2], 'mni')
     cmap = AffineTransform(d_cs_r2, r_cs_r2,
                            np.array([[2,0,10],[0,3,11],[0,0,1]]))

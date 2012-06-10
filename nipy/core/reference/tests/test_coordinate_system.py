@@ -3,8 +3,8 @@
 import numpy as np
 
 from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,
-                                 is_coordsys, is_coordsys_maker,
-                                 product, safe_dtype)
+                                 is_coordsys, is_coordsys_maker, product,
+                                 safe_dtype, CoordSysMaker, CoordSysMakerError)
 
 from nose.tools import (assert_true, assert_false, assert_equal, assert_raises,
                         assert_not_equal)
@@ -199,32 +199,34 @@ def test_product():
     ax2 = CoordinateSystem('y', coord_dtype=np.int64)
     cs = product(ax1, ax2)
     # assert up-casting of dtype
-    yield assert_equal, cs.coord_dtype, np.dtype(np.int64)
+    assert_equal(cs.coord_dtype, np.dtype(np.int64))
     # assert composed dtype 
-    yield assert_equal, cs.dtype, np.dtype([('x', np.int64), ('y', np.int64)])
+    assert_equal(cs.dtype, np.dtype([('x', np.int64), ('y', np.int64)]))
     # the axes should be typecast in the CoordinateSystem but
     # uneffected themselves
-    yield assert_equal, ax1.dtype, np.dtype([('x', np.int32)])
-    yield assert_equal, ax2.dtype, np.dtype([('y', np.int64)])
+    assert_equal(ax1.dtype, np.dtype([('x', np.int32)]))
+    assert_equal(ax2.dtype, np.dtype([('y', np.int64)]))
 
     # float32 + int64 => float64
     ax1 = CoordinateSystem('x', coord_dtype=np.float32)
     cs = product(ax1, ax2)
-    yield assert_equal, cs.coord_dtype, np.dtype(np.float64)
-    yield assert_equal, cs.dtype, np.dtype([('x', np.float64), 
-                                            ('y', np.float64)])
-
+    assert_equal(cs.coord_dtype, np.dtype(np.float64))
+    assert_equal(cs.dtype, np.dtype([('x', np.float64),
+                                     ('y', np.float64)]))
     # int16 + complex64 => complex64
     ax1 = CoordinateSystem('x', coord_dtype=np.int16)
     ax2 = CoordinateSystem('y', coord_dtype=np.complex64)
     # Order of the params effects order of dtype but not resulting value type
     cs = product(ax2, ax1)
-    yield assert_equal, cs.coord_dtype, np.complex64
-    yield assert_equal, cs.dtype, np.dtype([('y', np.complex64),
-                                            ('x', np.complex64)])
+    assert_equal(cs.coord_dtype, np.complex64)
+    assert_equal(cs.dtype, np.dtype([('y', np.complex64),
+                                     ('x', np.complex64)]))
+    # Passing name as argument
+    cs = product(ax2, ax1, name='a name')
+    assert_equal(cs.name, 'a name')
+    # Anything else as kwarg -> error
+    assert_raises(TypeError, product, ax2, ax1, newarg='a name')
 
-
-from ..coordinate_system import CoordSysMaker, CoordSysMakerError
 
 def test_coordsys_maker():
     # Things that help making coordinate maps

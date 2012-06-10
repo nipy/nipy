@@ -247,7 +247,7 @@ def test_5d():
     mask_data = mask_data.reshape(mask_data.shape + (1,))
     # We need to replicate the time scaling of the image cmap, hence the 2. in
     # the affine
-    xtra_cmap = AffineTransform(CS('l'), CS('t'), np.diag([2., 1]))
+    xtra_cmap = AffineTransform(CS('t'), CS('t'), np.diag([2., 1]))
     cmap_4d = cm_product(mask.coordmap, xtra_cmap)
     mask4d = Image(mask_data, cmap_4d)
     nimages = data_dict['nimages']
@@ -257,7 +257,7 @@ def test_5d():
     p = pca_image(fived, mask=mask4d, ncomp=ncomp, axis='group')
     assert_equal(p['basis_vectors over group'].shape, (nimages, ntotal))
     assert_equal(p['basis_projections'].axes.coord_names,
-                 ['i','j','k','l','PCA components'])
+                 ['i','j','k','t','PCA components'])
     assert_equal(p['basis_projections'].shape,
                  data.shape[:3] + (1, ncomp))
 
@@ -284,7 +284,7 @@ def test_other_axes():
     img = data_dict['fmridata']
     in_coords = list(img.axes.coord_names)
     img_data = img.get_data()
-    for axis_no, axis_name in enumerate('ijkl'):
+    for axis_no, axis_name in enumerate('ijkt'):
         p = pca_image(img, axis_name, ncomp=ncomp)
         n = img.shape[axis_no]
         bv_key = 'basis_vectors over ' + axis_name
@@ -319,7 +319,7 @@ def test_other_axes():
     nd_img = Image(img_data, nd_cmap)
     for axis_name in 'ij':
         assert_raises(AxisError, pca_image, nd_img, axis_name)
-    for axis_name in 'kl':
+    for axis_name in 'kt':
         p = pca_image(img, axis_name, ncomp=ncomp)
         exp_coords = in_coords[:]
         exp_coords[exp_coords.index(axis_name)] = 'PCA components'

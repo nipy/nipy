@@ -110,7 +110,7 @@ def xyz_affine(img, name2xyz=None):
     >>> img = Image(arr, vox2mni(np.diag([2,3,4,5,1])))
     >>> img.coordmap
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='voxels', coord_dtype=float64),
        function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 2.,  0.,  0.,  0.,  0.],
                      [ 0.,  3.,  0.,  0.,  0.],
@@ -164,7 +164,7 @@ def is_xyz_affable(img, name2xyz=None):
     >>> img = Image(arr, vox2mni(np.diag([2,3,4,5,1])))
     >>> img.coordmap
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='voxels', coord_dtype=float64),
        function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 2.,  0.,  0.,  0.,  0.],
                      [ 0.,  3.,  0.,  0.,  0.],
@@ -177,7 +177,7 @@ def is_xyz_affable(img, name2xyz=None):
     >>> time0_img = rollimg(img, 't')
     >>> time0_img.coordmap
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='array', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='voxels', coord_dtype=float64),
        function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 0.,  2.,  0.,  0.,  0.],
                      [ 0.,  0.,  3.,  0.,  0.],
@@ -304,7 +304,7 @@ def make_xyz_image(data, xyz_affine, world, metadata=None):
                    [16, 17, 18, 19],
                    [20, 21, 22, 23]]]),
       coordmap=AffineTransform(
-                function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='array', coord_dtype=float64),
+                function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxels', coord_dtype=float64),
                 function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S'), name='mni', coord_dtype=float64),
                 affine=array([[ 4.,  0.,  0.,  0.],
                               [ 0.,  5.,  0.,  0.],
@@ -318,7 +318,7 @@ def make_xyz_image(data, xyz_affine, world, metadata=None):
     >>> img = make_xyz_image(data4, aff, 'mni')
     >>> img.coordmap
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='voxels', coord_dtype=float64),
        function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S', 't'), name='mni', coord_dtype=float64),
        affine=array([[ 4.,  0.,  0.,  0.,  0.],
                      [ 0.,  5.,  0.,  0.,  0.],
