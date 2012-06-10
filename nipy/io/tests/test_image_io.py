@@ -84,12 +84,12 @@ def randimg_in2out(rng, in_dtype, out_dtype, name):
     data = data.astype(in_dtype)
     img = Image(data, AfT('kji', 'zxy', np.eye(4)))
     # The io_dtype won't be visible until the image is loaded
-    newimg = save_image(img, name, io_dtype=out_dtype)
+    newimg = save_image(img, name, dtype_from=out_dtype)
     return newimg.get_data(), data
 
 
 def test_scaling_io_dtype():
-    # Does io_dtype get set?
+    # Does data dtype get set?
     # Is scaling correctly applied?
     rng = np.random.RandomState(19660520) # VBD
     ulp1_f32 = np.finfo(np.float32).eps
@@ -123,6 +123,11 @@ def test_scaling_io_dtype():
                     (abs_err <= abs_err_thresh) |
                     (rel_err <= rel_err_thresh)))
         del img
+
+
+def test_from_data():
+    # Default data dtype comes from data
+    pass
 
 
 def test_header_roundtrip():
