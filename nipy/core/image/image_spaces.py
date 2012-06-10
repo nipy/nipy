@@ -12,7 +12,7 @@ variables in the ``nipy.core.reference.spaces`` module, and in this module.
 
 This keeps the specific neuroimaging spaces out of our Image object.
 
->>> from nipy.core.api import Image, vox2mni, rollimg, xyz_affine, as_xyz_affable
+>>> from nipy.core.api import Image, vox2mni, rollimg, xyz_affine, as_xyz_image
 
 Make a standard 4D xyzt image in MNI space.
 
@@ -50,7 +50,7 @@ AxesError: First 3 input axes must correspond to X, Y, Z
 
 But we can fix this:
 
->>> img_t0_affable = as_xyz_affable(img_t0)
+>>> img_t0_affable = as_xyz_image(img_t0)
 >>> xyz_affine(img_t0_affable)
 array([[ 2.,  0.,  0.,  0.],
        [ 0.,  3.,  0.,  0.],
@@ -202,7 +202,7 @@ def is_xyz_affable(img, name2xyz=None):
     return True
 
 
-def as_xyz_affable(img, name2xyz=None):
+def as_xyz_image(img, name2xyz=None):
     """ Return version of `img` that has a valid xyz affine, or raise error
 
     Parameters
@@ -260,7 +260,7 @@ def as_xyz_affable(img, name2xyz=None):
     return reo_img
 
 
-def neuro_image(data, xyz_affine, world, metadata=None):
+def make_xyz_image(data, xyz_affine, world, metadata=None):
     """ Create 3D+ image embedded in space named in `world`
 
     Parameters
@@ -293,7 +293,7 @@ def neuro_image(data, xyz_affine, world, metadata=None):
     --------
     >>> data = np.arange(24).reshape((2, 3, 4))
     >>> aff = np.diag([4, 5, 6, 1])
-    >>> img = neuro_image(data, aff, 'mni')
+    >>> img = make_xyz_image(data, aff, 'mni')
     >>> img
     Image(
       data=array([[[ 0,  1,  2,  3],
@@ -315,7 +315,7 @@ def neuro_image(data, xyz_affine, world, metadata=None):
     Now make data 4D; we just add 1. to the diagonal for the new dimension
 
     >>> data4 = data[..., None]
-    >>> img = neuro_image(data4, aff, 'mni')
+    >>> img = make_xyz_image(data4, aff, 'mni')
     >>> img.coordmap
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='array', coord_dtype=float64),
@@ -329,7 +329,7 @@ def neuro_image(data, xyz_affine, world, metadata=None):
 
     We can pass in a scalar or tuple to specify scaling for the extra dimension
 
-    >>> img = neuro_image(data4, (aff, 2.0), 'mni')
+    >>> img = make_xyz_image(data4, (aff, 2.0), 'mni')
     >>> img.coordmap.affine
     array([[ 4.,  0.,  0.,  0.,  0.],
            [ 0.,  5.,  0.,  0.,  0.],
@@ -337,7 +337,7 @@ def neuro_image(data, xyz_affine, world, metadata=None):
            [ 0.,  0.,  0.,  2.,  0.],
            [ 0.,  0.,  0.,  0.,  1.]])
     >>> data5 = data4[..., None]
-    >>> img = neuro_image(data5, (aff, (2.0, 3.0)), 'mni')
+    >>> img = make_xyz_image(data5, (aff, (2.0, 3.0)), 'mni')
     >>> img.coordmap.affine
     array([[ 4.,  0.,  0.,  0.,  0.,  0.],
            [ 0.,  5.,  0.,  0.,  0.,  0.],

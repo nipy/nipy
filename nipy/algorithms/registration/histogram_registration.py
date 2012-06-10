@@ -8,8 +8,10 @@ from sys import maxint
 
 import numpy as np
 
-from ...core.image.affine_image import AffineImage
-from .image_utils import get_affine
+from ...core.image.image_spaces import (make_xyz_image,
+                                        as_xyz_image,
+                                        xyz_affine)
+
 from .optimizer import configure_optimizer
 from .affine import inverse_affine, subgrid_affine, affine_transforms
 from .chain_transform import ChainTransform
@@ -75,6 +77,13 @@ class HistogramRegistration(object):
          Interpolation method.  One of 'pv': Partial volume, 'tri':
          Trilinear, 'rand': Random interpolation.  See ``joint_histogram.c``
         """
+        # Function assumes xyx_affine for inputs
+        from_img = as_xyz_image(from_img)
+        to_img = as_xyz_image(to_img)
+        if not from_mask is None:
+            from_mask = as_xyz_image(from_mask)
+        if not to_mask is None:
+            to_mask = as_xyz_image(to_mask)
 
         # Binning sizes
         if to_bins == None:
@@ -83,22 +92,22 @@ class HistogramRegistration(object):
         # Clamping of the `from` image. The number of bins may be
         # overriden if unnecessarily large.
         mask = None
-        if not from_mask == None:
+        if not from_mask is None:
             mask = from_mask.get_data()
         data, from_bins = clamp(from_img.get_data(), bins=from_bins, mask=mask)
-        self._from_img = AffineImage(data, get_affine(from_img), 'scanner')
+        self._from_img = make_xyz_image(data, xyz_affine(from_img), 'scanner')
         # Set the subsampling.  This also sets the _from_data and _vox_coords
         # attributes
         self.subsample()
 
         # Clamping of the `to` image including padding with -1
         mask = None
-        if not to_mask == None:
+        if not to_mask is None:
             mask = to_mask.get_data()
         data, to_bins = clamp(to_img.get_data(), bins=to_bins, mask=mask)
         self._to_data = -np.ones(np.array(to_img.shape) + 2, dtype=CLAMP_DTYPE)
         self._to_data[1:-1, 1:-1, 1:-1] = data
-        self._to_inv_affine = inverse_affine(get_affine(to_img))
+        self._to_inv_affine = inverse_affine(xyz_affine(to_img))
 
         # Joint histogram: must be double contiguous as it will be
         # passed to C routines which assume so
@@ -153,7 +162,7 @@ class HistogramRegistration(object):
             fov_data = self._from_img.get_data()[slicer()]
         self._from_data = fov_data
         self._from_npoints = (fov_data >= 0).sum()
-        self._from_affine = subgrid_affine(get_affine(self._from_img),
+        self._from_affine = subgrid_affine(xyz_affine(self._from_img),
                                            slicer())
         # We cache the voxel coordinates of the clamped image
         self._vox_coords =\
