@@ -20,7 +20,7 @@ from nibabel.onetime import setattr_on_read
 # These imports are used in the fromarray and subsample functions only, not in
 # Image
 from ..reference.coordinate_map import (AffineTransform, CoordinateSystem,
-                                       axid2inax)
+                                       input_axis_index)
 from ..reference.array_coords import ArrayCoordMap
 
 
@@ -733,8 +733,8 @@ def rollimg(img, axis, start=0, fix0=False):
                      [ 0.,  0.,  0.,  0.,  1.]])
     )
     """
-    axis = axid2inax(img.coordmap, axis, fix0)
-    start = axid2inax(img.coordmap, start, fix0)
+    axis = input_axis_index(img.coordmap, axis, fix0)
+    start = input_axis_index(img.coordmap, start, fix0)
     order = range(img.ndim)
     order.remove(axis)
     order.insert(start, axis)

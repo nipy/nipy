@@ -8,7 +8,7 @@ from ..coordinate_map import (CoordinateMap, AffineTransform, compose, product,
                               shifted_domain_origin, shifted_range_origin,
                               CoordMapMaker, CoordMapMakerError,
                               _as_coordinate_map, AxisError, _fix0,
-                              axmap, orth_axes, axid2inax, axid2axes)
+                              axmap, orth_axes, input_axis_index, axid2axes)
 
 from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,
                                  CoordSysMaker, CoordSysMakerError)
@@ -770,34 +770,34 @@ def test_orth_axes():
     assert_false(orth_axes(0, 0, aff))
 
 
-def test_axid2inax():
+def test_input_axis_index():
     # Test routine to map name to input axis
     cmap = AffineTransform('ijk', 'xyz', np.eye(4))
     for i, in_name, out_name in zip(range(3), 'ijk', 'xyz'):
-        assert_equal(axid2inax(cmap, in_name), i)
-        assert_equal(axid2inax(cmap, out_name), i)
+        assert_equal(input_axis_index(cmap, in_name), i)
+        assert_equal(input_axis_index(cmap, out_name), i)
     flipped = [[0, 0, 1, 1], [0, 1, 0, 2], [1, 0, 0, 3], [0, 0, 0, 1]]
     cmap_f = AffineTransform('ijk', 'xyz', flipped)
     for i, in_name, out_name in zip(range(3), 'ijk', 'zyx'):
-        assert_equal(axid2inax(cmap_f, in_name), i)
-        assert_equal(axid2inax(cmap_f, out_name), i)
+        assert_equal(input_axis_index(cmap_f, in_name), i)
+        assert_equal(input_axis_index(cmap_f, out_name), i)
     # Names can be same in input and output but they must match
     cmap_m = AffineTransform('ijk', 'kji', flipped)
     for i, in_name, out_name in zip(range(3), 'ijk', 'ijk'):
-        assert_equal(axid2inax(cmap_m, in_name), i)
-        assert_equal(axid2inax(cmap_m, out_name), i)
+        assert_equal(input_axis_index(cmap_m, in_name), i)
+        assert_equal(input_axis_index(cmap_m, out_name), i)
     # If they don't match, AxisError
     cmap_b = AffineTransform('ijk', 'xiz', np.eye(4))
-    assert_equal(axid2inax(cmap_m, 'j'), 1)
-    assert_raises(AxisError, axid2inax, cmap_b, 'i')
+    assert_equal(input_axis_index(cmap_m, 'j'), 1)
+    assert_raises(AxisError, input_axis_index, cmap_b, 'i')
     # Name not found, AxisError
-    assert_raises(AxisError, axid2inax, cmap_b, 'q')
+    assert_raises(AxisError, input_axis_index, cmap_b, 'q')
     # 0 usually leads to no match
     cmap_z = AffineTransform('ijk', 'xyz', np.diag([2, 3, 0, 1]))
-    assert_equal(axid2inax(cmap_z, 'y'), 1)
-    assert_raises(AxisError, axid2inax, cmap_z, 'z')
+    assert_equal(input_axis_index(cmap_z, 'y'), 1)
+    assert_raises(AxisError, input_axis_index, cmap_z, 'z')
     # Unless fix0 in place
-    assert_equal(axid2inax(cmap_z, 'z', fix0=True), 2)
+    assert_equal(input_axis_index(cmap_z, 'z', fix0=True), 2)
 
 
 def test_axid2axes():

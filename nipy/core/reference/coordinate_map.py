@@ -1901,7 +1901,7 @@ def axmap(coordmap, direction='in2out', fix0=False):
     return in2out_map, out2in_map
 
 
-def axid2inax(coordmap, axis_id, fix0=False):
+def input_axis_index(coordmap, axis_id, fix0=False):
     """ Return input axis index for `axis_id`
 
     `axis_id` can be integer, or a name of an input axis, or it can be the name
