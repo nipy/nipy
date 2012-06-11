@@ -6,7 +6,7 @@ import numpy as np
 from nibabel.spatialimages import ImageFileError
 
 from ..api import load_image, save_image, as_image
-from nipy.core.api import AffineTransform as AfT, Image
+from nipy.core.api import AffineTransform as AfT, Image, vox2mni
 
 from nipy.testing import (assert_true, assert_equal, assert_raises,
                           assert_array_equal, assert_array_almost_equal,
@@ -82,8 +82,8 @@ def randimg_in2out(rng, in_dtype, out_dtype, name):
     data[0,0,0] = dmin
     data[1,0,0] = dmax
     data = data.astype(in_dtype)
-    img = Image(data, AfT('kji', 'zxy', np.eye(4)))
-    # The io_dtype won't be visible until the image is loaded
+    img = Image(data, vox2mni(np.eye(4)))
+    # The dtype_from dtype won't be visible until the image is loaded
     newimg = save_image(img, name, dtype_from=out_dtype)
     return newimg.get_data(), data
 
