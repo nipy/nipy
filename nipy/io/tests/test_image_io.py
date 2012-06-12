@@ -3,7 +3,8 @@
 
 import numpy as np
 
-from nibabel.spatialimages import ImageFileError
+from nibabel.spatialimages import ImageFileError, HeaderDataError
+from nibabel import Nifti1Header
 
 from ..api import load_image, save_image, as_image
 from nipy.core.api import AffineTransform as AfT, Image, vox2mni
@@ -125,9 +126,65 @@ def test_scaling_io_dtype():
         del img
 
 
-def test_from_data():
-    # Default data dtype comes from data
-    pass
+def assert_dt_no_end_equal(a, b):
+    """ Assert two numpy dtype specifiers are equal apart from byte order
+
+    Avoids failed comparison between int32 / int64 and intp
+    """
+    a = np.dtype(a).newbyteorder('=')
+    b = np.dtype(b).newbyteorder('=')
+    assert_equal(a.str, b.str)
+
+
+def test_output_dtypes():
+    shape = (4, 2, 3)
+    rng = np.random.RandomState(19441217) # IN-S BD
+    data = rng.normal(4, 20, size=shape)
+    aff = np.diag([2.2, 3.3, 4.1, 1])
+    cmap = vox2mni(aff)
+    img = Image(data, cmap)
+    fname_root = 'my_file'
+    with InTemporaryDirectory():
+        for ext in 'img', 'nii':
+            out_fname = fname_root + '.' + ext
+            # Default is for data to come from data dtype
+            save_image(img, out_fname)
+            img_back = load_image(out_fname)
+            hdr = img_back.metadata['header']
+            assert_dt_no_end_equal(hdr.get_data_dtype(), np.float)
+            # All these types are OK for both output formats
+            for out_dt in 'i2', 'i4', np.int16, '<f4', '>f8':
+                # Specified output dtype
+                save_image(img, out_fname, out_dt)
+                img_back = load_image(out_fname)
+                hdr = img_back.metadata['header']
+                assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
+                # Output comes from data by default
+                data_typed = data.astype(out_dt)
+                img_again = Image(data_typed, cmap)
+                save_image(img_again, out_fname)
+                img_back = load_image(out_fname)
+                hdr = img_back.metadata['header']
+                assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
+                # Even if header specifies otherwise
+                in_hdr = Nifti1Header()
+                in_hdr.set_data_dtype(np.dtype('c8'))
+                img_more = Image(data_typed, cmap, metadata={'header': in_hdr})
+                save_image(img_more, out_fname)
+                img_back = load_image(out_fname)
+                hdr = img_back.metadata['header']
+                assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
+                # But can come from header if specified
+                save_image(img_more, out_fname, dtype_from='header')
+                img_back = load_image(out_fname)
+                hdr = img_back.metadata['header']
+                assert_dt_no_end_equal(hdr.get_data_dtype(), 'c8')
+        # u2 only OK for nifti
+        save_image(img, 'my_file.nii', 'u2')
+        img_back = load_image('my_file.nii')
+        hdr = img_back.metadata['header']
+        assert_dt_no_end_equal(hdr.get_data_dtype(), 'u2')
+        assert_raises(HeaderDataError, save_image, img, 'my_file.img', 'u2')
 
 
 def test_header_roundtrip():
