@@ -15,7 +15,7 @@ from nose.tools import assert_equal, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 
-RNG = np.random.RandomState(20110901)
+RNG = np.random.RandomState(20110902)
 X = RNG.standard_normal((40,10))
 Y = RNG.standard_normal((40,))
 
