@@ -369,7 +369,7 @@ def make_xyz_image(data, xyz_affine, world, metadata=None):
     world_cm = rsp.get_world_cs(world, N)
     voxel_cm = rsp.voxel_csm(N)
     if N > 3:
-        affine = np.diag((1, 1, 1) + added_zooms + (1,))
+        affine = np.diag((1., 1, 1) + added_zooms + (1,))
         affine[:3, :3] = xyz_affine[:3, :3]
         affine[:3, -1] = xyz_affine[:3, 3]
     else:

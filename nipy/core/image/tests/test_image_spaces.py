@@ -158,3 +158,9 @@ def test_make_xyz_image():
     assert_true(is_xyz_affable(img))
     # Need at least 3 dimensions in data
     assert_raises(ValueError, make_xyz_image, np.zeros((2,3)), aff, 'mni')
+    # Check affines don't round / floor floating point
+    aff = np.diag([2.1, 3, 4, 1])
+    img = make_xyz_image(np.zeros((2, 3, 4)), aff, 'scanner')
+    assert_array_equal(img.coordmap.affine, aff)
+    img = make_xyz_image(np.zeros((2, 3, 4, 5)), aff, 'scanner')
+    assert_array_equal(img.coordmap.affine, np.diag([2.1, 3, 4, 1, 1]))
