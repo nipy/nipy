@@ -176,7 +176,7 @@ class NiftiError(Exception):
     pass
 
 
-def nipy2nifti(img, strict=None, fix0=False):
+def nipy2nifti(img, data_dtype=None, strict=None, fix0=False):
     """ Return NIFTI image from nipy image `img`
 
     Parameters
@@ -184,6 +184,10 @@ def nipy2nifti(img, strict=None, fix0=False):
     img : object
          An object, usually a NIPY ``Image``,  having attributes `coordmap` and
          `shape`
+    data_dtype : None or dtype specifier
+        None means try and use header dtype, otherwise try and use data dtype,
+        otherwise use np.float32.  A dtype specifier means set the header output
+        data dtype using ``np.dtype(data_dtype)``.
     strict : bool, optional
         Whether to use strict checking of input image for creating NIFTI
     fix0: bool, optional
@@ -284,15 +288,17 @@ def nipy2nifti(img, strict=None, fix0=False):
     in_hdr = img.metadata.get('header', None)
     hdr = nib.Nifti1Header.from_header(in_hdr)
     # Default behavior is to take datatype from old header, unless there was no
-    # header, in which case we try to use the data dtype.  If that fails, we
-    # fall back to np.float32
+    # header, in which case we try to use the data dtype.
     data = None
-    if in_hdr is None:
-        data = img.get_data()
-        try:
-            hdr.set_data_dtype(data.dtype)
-        except nib.HeaderDataError:
-            hdr.set_data_dtype(np.float32)
+    if data_dtype is None:
+        if in_hdr is None:
+            data = img.get_data()
+            data_dtype = data.dtype
+        else:
+            data_dtype = in_hdr.get_data_dtype()
+    else:
+        data_dtype = np.dtype(data_dtype)
+    hdr.set_data_dtype(data_dtype)
     # Remaining axes orthogonal?
     rzs, trans = to_matvec(coordmap.affine)
     if (not np.allclose(rzs[3:, :3], 0) or
