@@ -80,10 +80,6 @@ class HistogramRegistration(object):
         # Function assumes xyx_affine for inputs
         from_img = as_xyz_image(from_img)
         to_img = as_xyz_image(to_img)
-        if not from_mask is None:
-            from_mask = as_xyz_image(from_mask)
-        if not to_mask is None:
-            to_mask = as_xyz_image(to_mask)
 
         # Binning sizes
         if to_bins == None:
@@ -94,14 +90,14 @@ class HistogramRegistration(object):
         data, from_bins = clamp(from_img.get_data(), bins=from_bins,
                                 mask=from_mask)
         self._from_img = make_xyz_image(data, xyz_affine(from_img), 'scanner')
-        # Subsample the `from` image for faster similarity
-        # evaluation. This also sets the _from_data and _vox_coords
-        # attributes
+        # Set field of view in the `from` image with potential
+        # subsampling for faster similarity evaluation. This also sets
+        # the _from_data and _vox_coords attributes
         if from_mask == None:
             self.subsample(npoints=NPOINTS)
         else:
             corner, size = smallest_bounding_box(from_mask)
-            self.subsample(corner=corner, size=size, npoints=NPOINTS)
+            self.set_fov(corner=corner, size=size, npoints=NPOINTS)
 
         # Clamping of the `to` image including padding with -1
         data, to_bins = clamp(to_img.get_data(), bins=to_bins,

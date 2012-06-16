@@ -60,8 +60,7 @@ def test_clamping_int16():
 
 def test_masked_clamping_int16():
     I = make_xyz_image(make_data_int16(), dummy_affine, 'scanner')
-    mask = make_xyz_image(make_data_bool(), dummy_affine, 'scanner')
-    _test_clamping(I, mask=mask)
+    _test_clamping(I, mask=make_data_bool())
 
 
 def test_clamping_int16_nonstd():
@@ -161,8 +160,7 @@ def test_histogram_masked_registration():
     J = make_xyz_image(make_data_int16(dx=100, dy=100, dz=50), dummy_affine, 'scanner')
     mask = (np.zeros((100,100,50)) == 1)
     mask[10:20,10:20,10:20] = True
-    mask_img = make_xyz_image(mask, dummy_affine, 'scanner')
-    R = HistogramRegistration(I, J, to_mask=mask_img, from_mask=mask_img)
+    R = HistogramRegistration(I, J, to_mask=mask, from_mask=mask)
     sim1 = R.eval(Affine())
     I = make_xyz_image(I.get_data()[mask].reshape(10,10,10), dummy_affine, 'scanner')
     J = make_xyz_image(J.get_data()[mask].reshape(10,10,10), dummy_affine, 'scanner')
