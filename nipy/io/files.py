@@ -13,7 +13,10 @@ See documentation for load and save functions for worked examples.
 
 import os
 
+import numpy as np
+
 import nibabel as nib
+from nibabel.spatialimages import HeaderDataError
 
 from ..core.image.image import is_image
 
@@ -51,7 +54,7 @@ def load(filename):
     return nifti2nipy(ni_img)
 
 
-def save(img, filename, dtype=None):
+def save(img, filename, dtype_from='data'):
     """Write the image to a file.
 
     Parameters
@@ -59,10 +62,18 @@ def save(img, filename, dtype=None):
     img : An `Image` object
     filename : string
         Should be a valid filename.
+    dtype_from : {'data', 'header'} or dtype specifier, optional
+        Method of setting dtype to save data to disk. Value of 'data' (default),
+        means use data dtype to save.  'header' means use data dtype specified
+        in header, if available, otherwise use data dtype.  Can also be any
+        valid specifier for a numpy dtype, e.g. 'i4', ``np.float32``.  Not every
+        format supports every dtype, so some values of this parameter or data
+        dtypes will raise errors.
 
     Returns
     -------
     image : An `Image` object
+        Possibly modified by saving.
 
     See Also
     --------
@@ -97,7 +108,7 @@ def save(img, filename, dtype=None):
     >>> saved_image3 = save_image(img, fname)
     Traceback (most recent call last):
        ...
-    ValueError: Cannot save file type "minc"
+    ValueError: Sorry, we cannot yet save as format "minc"
 
     Finally, we clear up our temporary files:
 
@@ -114,16 +125,28 @@ def save(img, filename, dtype=None):
     * SPM Analyze : ['.img', '.img.gz']
     """
     # Try and get nifti
-    ni_img = nipy2nifti(img)
+    dt_from_is_str = isinstance(dtype_from, basestring)
+    if dt_from_is_str and dtype_from == 'header':
+        # All done
+        io_dtype = None
+    elif dt_from_is_str and dtype_from == 'data':
+        io_dtype = img.get_data().dtype
+    else:
+        io_dtype = np.dtype(dtype_from)
+    # make new image
+    ni_img = nipy2nifti(img, data_dtype = io_dtype)
     ftype = _type_from_filename(filename)
     if ftype.startswith('nifti1'):
-        saver = nib.nifti1.save
+        ni_img.to_filename(filename)
     elif ftype == 'analyze':
-        saver = nib.spm2analyze.save
+        try:
+            ana_img = nib.Spm2AnalyzeImage.from_image(ni_img)
+        except HeaderDataError:
+            raise HeaderDataError('SPM analyze does not support datatype %s' %
+                                  ni_img.get_header().get_data_dtype())
+        ana_img.to_filename(filename)
     else:
-        raise ValueError('Cannot save file type "%s"' % ftype)
-    # make new image
-    saver(ni_img, filename)
+        raise ValueError('Sorry, we cannot yet save as format "%s"' % ftype)
     return img
 
 
