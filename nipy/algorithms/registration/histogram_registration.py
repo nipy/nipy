@@ -94,14 +94,14 @@ class HistogramRegistration(object):
         data, from_bins = clamp(from_img.get_data(), bins=from_bins,
                                 mask=from_mask)
         self._from_img = make_xyz_image(data, xyz_affine(from_img), 'scanner')
-        # Reduce the `from` image for faster similarity
+        # Subsample the `from` image for faster similarity
         # evaluation. This also sets the _from_data and _vox_coords
         # attributes
         if from_mask == None:
-            self.reduce_from_image(npoints=NPOINTS)
+            self.subsample(npoints=NPOINTS)
         else:
             corner, size = smallest_bounding_box(from_mask)
-            self.reduce_from_image(corner=corner, size=size, npoints=NPOINTS)
+            self.subsample(corner=corner, size=size, npoints=NPOINTS)
 
         # Clamping of the `to` image including padding with -1
         data, to_bins = clamp(to_img.get_data(), bins=to_bins,
@@ -127,8 +127,8 @@ class HistogramRegistration(object):
 
     interp = property(_get_interp, _set_interp)
 
-    def reduce_from_image(self, spacing=None, corner=[0, 0, 0], size=None,
-                  npoints=None):
+    def set_fov(self, spacing=None, corner=[0, 0, 0], size=None,
+                npoints=None):
         """
         Defines a subset of the `from` image to restrict joint
         histogram computation.
@@ -168,6 +168,9 @@ class HistogramRegistration(object):
         # We cache the voxel coordinates of the clamped image
         self._vox_coords =\
             np.indices(self._from_data.shape).transpose((1, 2, 3, 0))
+
+    def subsample(self, spacing=None, npoints=None):
+        self.set_fov(spacing=spacing, npoints=npoints)
 
     def _set_similarity(self, similarity='cr', **kwargs):
         if similarity in _sms:
