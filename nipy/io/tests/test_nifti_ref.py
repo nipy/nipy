@@ -11,6 +11,7 @@ import numpy as np
 
 import nibabel as nib
 from nibabel.affines import from_matvec
+from nibabel.spatialimages import HeaderDataError
 
 from ...core.api import (Image,
                          AffineTransform as AT,
@@ -409,6 +410,38 @@ def test_save_spaces():
         ni_img = nipy2nifti(img)
         assert_equal(ni_img.get_header().get_value_label('sform_code'),
                      label)
+
+
+def test_save_dtype():
+    # Test we can specify the dtype on conversion
+    data = np.random.normal(size=(2, 3, 4))
+    cmap = vox2mni(np.diag([2., 3, 4, 1]))
+    for dt_code in ('i1', 'u1', 'i2', 'u2', 'i4', 'u4', 'i8', 'u8',
+                    'f4', 'f8', 'c8', 'c16'):
+        dt = np.dtype(dt_code)
+        img = Image(data.astype(dt_code), cmap)
+        ni_img = nipy2nifti(img, data_dtype=dt_code)
+        assert_equal(ni_img.get_header().get_data_dtype(), dt)
+        ni_img = nipy2nifti(img, data_dtype=dt)
+        assert_equal(ni_img.get_header().get_data_dtype(), dt)
+    # None results in trying to get the code from the input header, then from the
+    # data.
+    # From data, when there's nothing in the header
+    img = Image(data.astype(np.int16), cmap)
+    ni_img = nipy2nifti(img, data_dtype=None)
+    assert_equal(ni_img.get_header().get_data_dtype(), np.dtype(np.int16))
+    # From the header
+    hdr = nib.Nifti1Header()
+    hdr.set_data_dtype(np.int32)
+    img = Image(data.astype(np.int16), cmap, metadata={'header': hdr})
+    ni_img = nipy2nifti(img, data_dtype=None)
+    assert_equal(ni_img.get_header().get_data_dtype(), np.dtype(np.int32))
+    # Bad dtype
+    assert_raises(TypeError, nipy2nifti, img, data_dtype='foo')
+    # Fancy dtype
+    data = np.zeros((2, 3, 4), dtype=[('f0', 'i2'), ('f1', 'f4')])
+    img = Image(data, cmap)
+    assert_raises(HeaderDataError, nipy2nifti, img, data_dtype=None)
 
 
 def test_basic_load():
