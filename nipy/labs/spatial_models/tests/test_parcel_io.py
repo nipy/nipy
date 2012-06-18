@@ -43,14 +43,14 @@ def test_parcel_intra_from_3d_image():
     shape = (10, 10, 10)
     n_parcel, nn, mu = 10, 6, 1.
     mask_image = Nifti1Image(np.ones(shape), np.eye(4))
-    temp_dir = InTemporaryDirectory()
-    with temp_dir:
+    dir_context = InTemporaryDirectory()
+    with dir_context:
         surrogate_3d_dataset(mask=mask_image, out_image_file='image.nii')
 
         #run the algo 
         for method in ['ward', 'kmeans', 'gkm']:
             osp = fixed_parcellation(mask_image, ['image.nii'], n_parcel, nn,
-                                     method, temp_dir.name, mu)
+                                     method, dir_context.name, mu)
             result = 'parcel_%s.nii' % method
             assert exists(result)
             assert_equal(osp.k, n_parcel)
@@ -65,15 +65,15 @@ def test_parcel_intra_from_3d_images_list():
     method = 'ward'
     mask_image = Nifti1Image(np.ones(shape), np.eye(4))
 
-    temp_dir = InTemporaryDirectory()
-    with temp_dir:
+    dir_context = InTemporaryDirectory()
+    with dir_context:
         data_image = ['image_%d.nii' % i for i in range(5)]
         for datim in data_image:
             surrogate_3d_dataset(mask=mask_image, out_image_file=datim)
 
         #run the algo
         osp = fixed_parcellation(mask_image, data_image, n_parcel, nn,
-                                 method, temp_dir.name, mu)
+                                 method, dir_context.name, mu)
         assert exists('parcel_%s.nii' % method)
         assert_equal(osp.k, n_parcel)
 
@@ -86,12 +86,12 @@ def test_parcel_intra_from_4d_image():
     n_parcel, nn, mu = 10, 6, 1.
     method = 'ward'
     mask_image = Nifti1Image(np.ones(shape), np.eye(4))
-    temp_dir = InTemporaryDirectory()
-    with temp_dir:
+    dir_context = InTemporaryDirectory()
+    with dir_context:
         surrogate_3d_dataset(n_subj=10, mask=mask_image, 
                              out_image_file='image.nii')    
         osp = fixed_parcellation(mask_image, ['image.nii'], n_parcel, nn,
-                                 method, temp_dir.name, mu)
+                                 method, dir_context.name, mu)
         assert exists('parcel_%s.nii' % method)
         assert_equal(osp.k, n_parcel)
 
