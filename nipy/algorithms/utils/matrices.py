@@ -5,16 +5,20 @@
 import numpy as np
 import scipy.linalg as spl
 
-# This version of matrix rank is identical to the numpy.linalg version except
-# for the use of scipy.linalg.svd istead of numpy.linalg.svd.
-#
-# We added matrix_rank to numpy.linalg in # December 2009, first available in
-# numpy 1.5.0
 def matrix_rank(M, tol=None):
     ''' Return rank of matrix using SVD method
 
     Rank of the array is the number of SVD singular values of the
     array that are greater than `tol`.
+
+    This version of matrix rank is very similar to the numpy.linalg version
+    except for the use of:
+
+    * scipy.linalg.svd istead of numpy.linalg.svd.
+    * the MATLAB algorithm for default tolerance calculation
+
+    ``matrix_rank`` appeared in numpy.linalg in December 2009, first available
+    in numpy 1.5.0.
 
     Parameters
     ----------
@@ -24,7 +28,7 @@ def matrix_rank(M, tol=None):
          threshold below which SVD values are considered zero. If `tol`
          is None, and `S` is an array with singular values for `M`, and
          `eps` is the epsilon value for datatype of `S`, then `tol` set
-         to ``S.max() * eps``.
+         to ``S.max() * eps * max(M.shape)``.
 
     Examples
     --------
@@ -44,23 +48,23 @@ def matrix_rank(M, tol=None):
 
     Notes
     -----
-    Golub and van Loan [1]_ define "numerical rank deficiency" as using
-    tol=eps*S[0] (where S[0] is the maximum singular value and thus the
-    2-norm of the matrix). This is one definition of rank deficiency,
-    and the one we use here.  When floating point roundoff is the main
-    concern, then "numerical rank deficiency" is a reasonable choice. In
-    some cases you may prefer other definitions. The most useful measure
-    of the tolerance depends on the operations you intend to use on your
-    matrix. For example, if your data come from uncertain measurements
-    with uncertainties greater than floating point epsilon, choosing a
-    tolerance near that uncertainty may be preferable.  The tolerance
-    may be absolute if the uncertainties are absolute rather than
-    relative.
+    We check for numerical rank deficiency by using tol=max(M.shape) * eps *
+    S[0] (where S[0] is the maximum singular value and thus the 2-norm of the
+    matrix). This is one tolerance threshold for rank deficiency, and the
+    default algorithm used by MATLAB [2].  When floating point roundoff is the
+    main concern, then "numerical rank deficiency" is a reasonable choice. In
+    some cases you may prefer other definitions. The most useful measure of the
+    tolerance depends on the operations you intend to use on your matrix. For
+    example, if your data come from uncertain measurements with uncertainties
+    greater than floating point epsilon, choosing a tolerance near that
+    uncertainty may be preferable.  The tolerance may be absolute if the
+    uncertainties are absolute rather than relative.
 
     References
     ----------
     .. [1] G. H. Golub and C. F. Van Loan, _Matrix Computations_.
     Baltimore: Johns Hopkins University Press, 1996.
+    .. [2] http://www.mathworks.com/help/techdoc/ref/rank.html
     '''
     M = np.asarray(M)
     if M.ndim > 2:
@@ -69,7 +73,7 @@ def matrix_rank(M, tol=None):
         return int(not np.all(M==0))
     S = spl.svd(M, compute_uv=False)
     if tol is None:
-        tol = S.max() * np.finfo(S.dtype).eps
+        tol = S.max() * np.finfo(S.dtype).eps * max(M.shape)
     return np.sum(S > tol)
 
 
