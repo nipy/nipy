@@ -3,11 +3,14 @@
 # Test numpy bindings
 
 import numpy as np
-from ....testing import *
-from .. import (c_types, fff_type, npy_type, copy_vector, 
-                pass_vector, pass_vector_via_iterator)
+
+from .. import (c_types, fff_type, npy_type, copy_vector, pass_matrix,
+                pass_vector, pass_array, pass_vector_via_iterator,
+                sum_via_iterators, copy_via_iterators)
 
 
+from nose.tools import assert_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 MAX_TEST_SIZE = 30
 def random_shape(size):
@@ -20,7 +23,6 @@ def random_shape(size):
     else:
         return tuple(aux)
 
-    
 
 #
 # Test type conversions
@@ -80,17 +82,20 @@ def test_copy_vector_uint8():
 
 def _test_pass_vector(x):
     y = pass_vector(x)
-    assert_equal(y, x)
+    assert_array_equal(y, x)
+
 
 def test_pass_vector():
     x = np.random.rand(random_shape(1))-.5
     _test_pass_vector(x)
 
-def test_pass_vector_int32(): 
+
+def test_pass_vector_int32():
     x = (1000*(np.random.rand(random_shape(1))-.5)).astype('int32')
     _test_pass_vector(x)
 
-def test_pass_vector_uint8(): 
+
+def test_pass_vector_uint8():
     x = (256*(np.random.rand(random_shape(1)))).astype('uint8')
     _test_pass_vector(x)
 
@@ -101,15 +106,18 @@ def _test_pass_matrix(x):
     y = pass_matrix(x.T)
     yield assert_equal, y, x.T
 
+
 def test_pass_matrix():
     d0, d1 = random_shape(2)
     x = np.random.rand(d0, d1)-.5
     _test_pass_matrix(x)
 
+
 def test_pass_matrix_int32():
     d0, d1 = random_shape(2)
     x = (1000*(np.random.rand(d0, d1)-.5)).astype('int32')
     _test_pass_matrix(x)
+
 
 def test_pass_matrix_uint8():
     d0, d1 = random_shape(2)
@@ -123,22 +131,23 @@ def _test_pass_array(x):
     y = pass_array(x.T)
     yield assert_equal, y, x.T
 
+
 def test_pass_array():
     d0, d1, d2, d3 = random_shape(4)
     x = np.random.rand(d0, d1, d2, d3)-.5
     _test_pass_array(x)
+
 
 def test_pass_array_int32(): 
     d0, d1, d2, d3 = random_shape(4)
     x = (1000*(np.random.rand(d0, d1, d2, d3)-.5)).astype('int32')
     _test_pass_array(x)
 
+
 def test_pass_array_uint8():
     d0, d1, d2, d3 = random_shape(4)
     x = (256*(np.random.rand(d0, d1, d2, d3))).astype('uint8')
     _test_pass_array(x)
-
-
 
 #
 # Multi-iterator testing 
@@ -155,30 +164,36 @@ def _test_pass_vector_via_iterator(X, pos=0):
     x = pass_vector_via_iterator(X, axis=1, niters=pos)
     yield assert_equal, x, X[pos, :]
 
+
 def test_pass_vector_via_iterator():
     d0, d1 = random_shape(2)
     X = np.random.rand(d0, d1)-.5 
     _test_pass_vector_via_iterator(X)
+
 
 def test_pass_vector_via_iterator_int32():
     d0, d1 = random_shape(2)
     X = (1000*(np.random.rand(d0, d1)-.5)).astype('int32')
     _test_pass_vector_via_iterator(X)
 
+
 def test_pass_vector_via_iterator_uint8():
     d0, d1 = random_shape(2)
     X = (100*(np.random.rand(d0, d1))).astype('uint8')
     _test_pass_vector_via_iterator(X)
+
 
 def test_pass_vector_via_iterator_shift():
     d0, d1 = random_shape(2)
     X = np.random.rand(d0, d1)-.5 
     _test_pass_vector_via_iterator(X, pos=1)
 
+
 def test_pass_vector_via_iterator_shift_int32():
     d0, d1 = random_shape(2)
     X = (1000*(np.random.rand(d0, d1)-.5)).astype('int32')
     _test_pass_vector_via_iterator(X, pos=1)
+
 
 def test_pass_vector_via_iterator_shift_uint8():
     d0, d1 = random_shape(2)
@@ -193,20 +208,24 @@ def _test_copy_via_iterators(Y):
         ZT = copy_via_iterators(Y.T, axis)
         yield assert_equal, ZT, Y.T 
 
+
 def test_copy_via_iterators():
     d0, d1, d2, d3 = random_shape(4)
     Y = np.random.rand(d0, d1, d2, d3)
     _test_copy_via_iterators(Y)
+
 
 def test_copy_via_iterators_int32():
     d0, d1, d2, d3 = random_shape(4)
     Y = (1000*(np.random.rand(d0, d1, d2, d3)-.5)).astype('int32')
     _test_copy_via_iterators(Y)
 
+
 def test_copy_via_iterators_uint8():
     d0, d1, d2, d3 = random_shape(4)
     Y = (256*(np.random.rand(d0, d1, d2, d3))).astype('uint8')
     _test_copy_via_iterators(Y)
+
 
 def _test_sum_via_iterators(Y):
     for axis in range(4):
@@ -215,23 +234,25 @@ def _test_sum_via_iterators(Y):
         ZT = sum_via_iterators(Y.T, axis)
         yield assert_almost_equal, ZT, Y.T.sum(axis)
 
+
 def test_sum_via_iterators():
     d0, d1, d2, d3 = random_shape(4)
     Y = np.random.rand(d0, d1, d2, d3)
     _test_sum_via_iterators(Y)
+
 
 def test_sum_via_iterators_int32():
     d0, d1, d2, d3 = random_shape(4)
     Y = (1000*(np.random.rand(d0, d1, d2, d3)-.5)).astype('int32')
     _test_sum_via_iterators(Y)
 
+
 def test_sum_via_iterators_uint8():
     d0, d1, d2, d3 = random_shape(4)
     Y = (256*(np.random.rand(d0, d1, d2, d3))).astype('uint8')
     _test_sum_via_iterators(Y)
-    
+
 
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])
-
