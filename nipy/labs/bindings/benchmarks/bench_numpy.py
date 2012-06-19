@@ -4,7 +4,6 @@ import time
 
 import numpy as np
 
-from ....testing import *
 from .. import copy_vector
 
 

@@ -1641,9 +1641,9 @@ def _product_cmaps(*cmaps, **kwargs):
         return yy
 
     incoords = coordsys_product(*[cmap.function_domain for cmap in cmaps],
-                                name = input_name)
+                                **{'name': input_name})
     outcoords = coordsys_product(*[cmap.function_range for cmap in cmaps],
-                                 name = output_name)
+                                **{'name': output_name})
     return CoordinateMap(incoords, outcoords, function)
 
 

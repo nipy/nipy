@@ -8,9 +8,10 @@ in ~/.nipy/tests/data
 """
 
 import numpy as np
-from numpy.testing import assert_equal
-from ..mroi import *
+from ..mroi import subdomain_from_array, subdomain_from_balls
 from ..discrete_domain import domain_from_binary_array
+
+from numpy.testing import assert_equal
 
 shape = (5, 6, 7)
 
@@ -92,7 +93,6 @@ def test_roi_features():
     """
     """
     mroi = make_subdomain()
-    aux = np.random.randn(np.prod(shape))
     dshape = (8, 3)
     data = np.random.randn(*dshape)
     mroi.set_roi_feature('data_mean', data)
