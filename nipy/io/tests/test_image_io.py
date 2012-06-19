@@ -106,7 +106,8 @@ def test_scaling_io_dtype():
                 # Check the data is within reasonable bounds. The exact bounds
                 # are a little annoying to calculate - see
                 # nibabel/tests/test_round_trip for inspiration
-                data_back = img.get_data()
+                data_back = img.get_data().copy() # copy to detach from file
+                del img
                 top = np.abs(data - data_back)
                 nzs = (top !=0) & (data !=0)
                 abs_err = top[nzs]
@@ -123,7 +124,6 @@ def test_scaling_io_dtype():
                 assert_true(np.all(
                     (abs_err <= abs_err_thresh) |
                     (rel_err <= rel_err_thresh)))
-        del img
 
 
 def assert_dt_no_end_equal(a, b):
@@ -152,6 +152,7 @@ def test_output_dtypes():
             img_back = load_image(out_fname)
             hdr = img_back.metadata['header']
             assert_dt_no_end_equal(hdr.get_data_dtype(), np.float)
+            del img_back # lets window re-use the file
             # All these types are OK for both output formats
             for out_dt in 'i2', 'i4', np.int16, '<f4', '>f8':
                 # Specified output dtype
@@ -159,6 +160,7 @@ def test_output_dtypes():
                 img_back = load_image(out_fname)
                 hdr = img_back.metadata['header']
                 assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
+                del img_back # windows file re-use
                 # Output comes from data by default
                 data_typed = data.astype(out_dt)
                 img_again = Image(data_typed, cmap)
@@ -166,6 +168,7 @@ def test_output_dtypes():
                 img_back = load_image(out_fname)
                 hdr = img_back.metadata['header']
                 assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
+                del img_back
                 # Even if header specifies otherwise
                 in_hdr = Nifti1Header()
                 in_hdr.set_data_dtype(np.dtype('c8'))
@@ -174,17 +177,21 @@ def test_output_dtypes():
                 img_back = load_image(out_fname)
                 hdr = img_back.metadata['header']
                 assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
+                del img_back
                 # But can come from header if specified
                 save_image(img_more, out_fname, dtype_from='header')
                 img_back = load_image(out_fname)
                 hdr = img_back.metadata['header']
                 assert_dt_no_end_equal(hdr.get_data_dtype(), 'c8')
+                del img_back
         # u2 only OK for nifti
         save_image(img, 'my_file.nii', 'u2')
         img_back = load_image('my_file.nii')
         hdr = img_back.metadata['header']
         assert_dt_no_end_equal(hdr.get_data_dtype(), 'u2')
+        # Check analyze can't save u2 datatype
         assert_raises(HeaderDataError, save_image, img, 'my_file.img', 'u2')
+        del img_back
 
 
 def test_header_roundtrip():
