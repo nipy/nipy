@@ -282,7 +282,8 @@ class HistogramRegistration(object):
         # Output
         if VERBOSE:
             print ('Optimizing using %s' % fmin.__name__)
-        Tv.param = fmin(cost, tc0, *args, callback=callback, **kwargs)
+        kwargs['callback'] = callback
+        Tv.param = fmin(cost, tc0, *args, **kwargs)
         return Tv.optimizable
 
     def explore(self, T0, *args):
