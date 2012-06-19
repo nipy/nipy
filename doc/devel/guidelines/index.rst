@@ -20,4 +20,5 @@
    debugging
    optimization
    open_source_devel
+   make_release
    changelog
