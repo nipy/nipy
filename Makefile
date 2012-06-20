@@ -30,7 +30,59 @@ install:
 cythonize:
 	$(PYTHON) tools/nicythize
 
+bdist_rpm:
+	$(PYTHON) setup.py bdist_rpm \
+	  --doc-files "doc" \
+	  --packager "nipy authors <http://mail.scipy.org/mailman/listinfo/nipy-devel>"
+	  --vendor "nipy authors <http://mail.scipy.org/mailman/listinfo/nipy-devel>"
+
+
+# build MacOS installer -- depends on patched bdist_mpkg for Leopard
+bdist_mpkg:
+	$(PYTHON) tools/mpkg_wrapper.py setup.py install
+
+# Check for files not installed
+check-files:
+	$(PYTHON) -c 'from nisext.testers import check_files; check_files("nipy")'
+
 # Print out info for possible install methods
 check-version-info:
 	$(PYTHON) -c 'from nisext.testers import info_from_here; info_from_here("nipy")'
+
+# Run tests from installed code
+installed-tests:
+	$(PYTHON) -c 'from nisext.testers import tests_installed; tests_installed("nipy")'
+
+# Run tests from sdist archive of code
+sdist-tests:
+	$(PYTHON) -c 'from nisext.testers import sdist_tests; sdist_tests("nipy")'
+
+# Run tests from bdist egg of code
+bdist-egg-tests:
+	$(PYTHON) -c 'from nisext.testers import bdist_egg_tests; bdist_egg_tests("nipy")'
+
+source-release: distclean
+	python -m compileall .
+	make distclean
+	python setup.py sdist --formats=gztar,zip
+
+venv-tests:
+	# I use this for python2.5 because the sdist-tests target doesn't work
+	# (the tester routine uses a 2.6 feature)
+	make distclean
+	- rm -rf $(VIRTUAL_ENV)/lib/python$(PYVER)/site-packages/nipy
+	python setup.py install
+	cd .. && nosetests $(VIRTUAL_ENV)/lib/python$(PYVER)/site-packages/nipy
+
+tox-fresh:
+	# tox tests with fresh-installed virtualenvs.  Needs network.  And
+	# pytox, obviously.
+	tox -c tox.ini
+
+tox-stale:
+	# tox tests with MB's already-installed virtualenvs (numpy and nose
+	# installed)
+	tox -e python25,python26,python27,python32,np-1.2.1
+
+.PHONY: orig-src pylint
 
