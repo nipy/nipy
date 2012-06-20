@@ -187,15 +187,83 @@ Release checklist
     username:your.pypi.username
     password:your-password
 
-* When ready::
+* Once everything looks good, upload the source release to PyPi.  See
+  `setuptools intro`_::
 
     python setup.py register
     python setup.py sdist --formats=gztar,zip upload
 
-  From somewhere - maybe a windows machine - upload the windows installer for
-  convenience::
+* Then upload the binary release for the platform you are currently on::
 
-    python setup.py bdist_wininst upload
+    python setup.py bdist_egg upload
+
+* Do binary builds for any virtualenvs you have::
+
+    workon python25
+    python setup.py bdist_egg upload
+    deactivate
+
+  etc.  (``workon`` is a virtualenvwrapper command).
+
+  For OSX and python 2.5 only, the installation didn't recognize it was doing a fat (i386 + PPC)
+  build, and build with name ``dipy-0.5.0-py2.5-macosx-10.3-i386.egg``.  I tried
+  to tell it to use ``fat`` and ``universal`` in the name, but uploading these
+  tp pypi didn't result in in easy_install finding them.  In the end did the
+  standard::
+
+    python setup.py bdist_egg upload
+
+  - which uploaded the 'i386' egg, followed by::
+
+    python setup.py bdist_egg --plat-name macosx-10.3-ppc upload
+
+  which may or may not work to allow easy_install to find the egg for PPC.  It
+  does work for easy_install on my Intel machine.  I found the default platform
+  name with ``python setup.py bdist_egg --help``.
+
+  When trying to upload in python25, after previously saving my ``~/.pypirc``
+  during the initial ``register`` step, I got a configparser error.  I found
+  `this python 2.5 pypirc page
+  <http://docs.python.org/release/2.5.2/dist/pypirc.html>`_ and so hand edited
+  the ``~/.pypirc`` file to have a new section::
+
+    [server-login]
+    username:my-username
+    password:my-password
+
+  after which python25 upload seemed to go smoothly.
+
+* Building OSX dmgs.  This is very unpleasant.
+
+  See `MBs OSX setup
+  <http://matthew-brett.github.com/pydagogue/develop_mac.html>`_).
+
+  The problem here is that we need to run the package build as root, so that the
+  files have root permissions when installed from the installer.  We also can't
+  use virtualenvs, because the installer needs to find the correct system path
+  into which to install - so the python ``sys.prefix`` has to be e.g.
+  ``/Library/Frameworks/Python.framework/Versions/2.6``.  What I ended up doing
+  was to make a script to set paths etc from a handy virtualenv, but run the
+  relevant system python, as root.  See the crude, fragile ``tools/pythonsudo``
+  bash script for details.  The procedure then::
+
+    sudo ./tools/pythonsudo 5
+    make clean
+    python tools/osxbuild.py
+
+  The ``osxbuild.py`` script comes from numpy and uses the ``bdist_mpkg`` script
+  we might have installed above.
+
+* Repeat binary builds for Linux 32, 64 bit and OS X.
+
+* Get to a windows machine and do egg and wininst builds::
+
+    make distclean
+    c:\Python26\python.exe setup.py bdist_egg upload
+    c:\Python26\python.exe setup.py bdist_wininst --target-version=2.6 register upload
+
+  Maybe virtualenvs for the different versions of python?  I haven't explored
+  that yet.
 
 * Tag the release with tag of form ``1.1.0``::
 
