@@ -49,6 +49,7 @@
 
 # Python files #
 ################
+MANIFEST
 build/
 _build
 dist/
