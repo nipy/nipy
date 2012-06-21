@@ -1,5 +1,9 @@
 include AUTHOR COPYING Makefile* MANIFEST.in setup* README.* INSTALL THANKS
 include Changelog TODO
+include *.py
+include site.*
+recursive-include nipy *.c *.h *.pyx
+recursive-include libcstat *.c *.h *.pyx
 recursive-include scripts *
 recursive-include tools *
 # put this stuff back into setup.py (package_data) once I'm enlightened
