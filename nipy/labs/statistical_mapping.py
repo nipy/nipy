@@ -265,7 +265,7 @@ def onesample_test(data_images, vardata_images, mask_images, stat_id,
     zimg = Image(zmap, data_images[0].get_affine())
 
     # Compute mask image
-    maskimg = Image(mask, data_images[0].get_affine())
+    maskimg = Image(mask.astype(np.int8), data_images[0].get_affine())
 
     # Multiple comparisons
     if permutations <= 0:
