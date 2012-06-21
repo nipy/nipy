@@ -73,6 +73,11 @@ Release checklist
 
     make distclean
 
+* Make sure all the ``.c`` generated files are up to date with Cython sources
+  with::
+
+    ./tools/nicythize
+
 * Make sure all tests pass (from the nipy root directory)::
 
     ./tools/nipnost -nipy
