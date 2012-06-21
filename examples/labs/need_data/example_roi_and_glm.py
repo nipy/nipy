@@ -16,10 +16,10 @@ print __doc__
 
 import numpy as np
 import os.path as op
-import matplotlib.pylab as mp
+import matplotlib.pyplot as plt
 from tempfile import mkdtemp
 
-from nibabel import save, load, Nifti1Image
+from nibabel import save, load
 from nipy.modalities.fmri.design_matrix import dmtx_light
 from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
 from nipy.labs.utils.simul_multisubject_fmri_dataset import \
@@ -96,7 +96,6 @@ contrast[:2] = np.array([1, -1])
 zvals = glm.contrast(contrast).z_score()
 zmap = mask_array.astype(np.float)
 zmap[mask_array] = zvals
-#contrast_image = Nifti1Image(zmap, mask.affine)
 
 ########################################
 # Create ROIs
@@ -137,18 +136,18 @@ nreg = len(names)
 ROI_tc = my_roi.get_roi_feature('signal_avg')
 glm.fit(ROI_tc.T)
 
-mp.figure()
-mp.subplot(1, 2, 1)
+plt.figure()
+plt.subplot(1, 2, 1)
 betas = np.hstack([x.theta for x in glm.results_.values()])
-b1 = mp.bar(np.arange(nreg - 1), betas[:-1, 0], width=.4, color='blue',
+b1 = plt.bar(np.arange(nreg - 1), betas[:-1, 0], width=.4, color='blue',
             label='region 1')
-b2 = mp.bar(np.arange(nreg - 1) + 0.3, betas[:- 1, 1], width=.4,
+b2 = plt.bar(np.arange(nreg - 1) + 0.3, betas[:- 1, 1], width=.4,
             color='red', label='region 2')
-mp.xticks(np.arange(nreg - 1), names[:-1], fontsize=10)
-mp.legend()
-mp.title('parameters estimates \n for the roi time courses')
+plt.xticks(np.arange(nreg - 1), names[:-1], fontsize=10)
+plt.legend()
+plt.title('parameters estimates \n for the roi time courses')
 
-bx = mp.subplot(1, 2, 2)
+bx = plt.subplot(1, 2, 2)
 my_roi.plot_feature('contrast', bx)
 
 
@@ -163,13 +162,13 @@ proj[2:] = 0
 fit = np.dot(np.dot(betas.T, proj), X.T)
 
 # plot it
-mp.figure()
+plt.figure()
 for k in range(my_roi.k):
-    mp.subplot(my_roi.k, 1, k + 1)
-    mp.plot(fit[k])
-    mp.plot(fit[k] + res[k], 'r')
-    mp.xlabel('time (scans)')
-    mp.legend(('effects', 'adjusted'))
+    plt.subplot(my_roi.k, 1, k + 1)
+    plt.plot(fit[k])
+    plt.plot(fit[k] + res[k], 'r')
+    plt.xlabel('time (scans)')
+    plt.legend(('effects', 'adjusted'))
 
 
 ###########################################
@@ -184,17 +183,17 @@ X_fir, name_dir = dmtx_light(
 glm_fir = GeneralLinearModel(X_fir)
 glm_fir.fit(ROI_tc.T)
 
-mp.figure()
+plt.figure()
 for k in range(my_roi.k):
     res = glm_fir.results_.values()[k]
-    mp.subplot(my_roi.k, 1, k + 1)
+    plt.subplot(my_roi.k, 1, k + 1)
     conf_int = res.conf_int(cols=range(fir_order)).squeeze()
     yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2 
-    mp.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
+    plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
     conf_int = res.conf_int(cols=range(fir_order, 2 * fir_order)).squeeze()
     yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2     
-    mp.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
-    mp.legend(('condition c0', 'condition c1'))
-    mp.title('estimated hrf shape')
-    mp.xlabel('time(scans)')
-mp.show()
+    plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
+    plt.legend(('condition c0', 'condition c1'))
+    plt.title('estimated hrf shape')
+    plt.xlabel('time(scans)')
+plt.show()
