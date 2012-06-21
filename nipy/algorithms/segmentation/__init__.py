@@ -1,4 +1,4 @@
-from .brain_segmentation import (initialize_parameters, brain_segmentation)
+from .brain_segmentation import BrainT1Segmentation
 from .segmentation import Segmentation
 
 from nipy.testing import Tester
