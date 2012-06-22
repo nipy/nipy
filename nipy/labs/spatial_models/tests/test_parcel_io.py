@@ -4,7 +4,10 @@ import numpy as np
 from nibabel import Nifti1Image, save
 from numpy.testing import assert_equal
 from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
-from ..parcel_io import (mask_parcellation, fixed_parcellation)
+from ..parcel_io import (mask_parcellation, fixed_parcellation,
+                         parcellation_based_analysis)
+from ..hierarchical_parcellation import hparcel
+from ..discrete_domain import grid_domain_from_shape
 from nibabel.tmpdirs import InTemporaryDirectory
 
 
@@ -93,6 +96,25 @@ def test_parcel_intra_from_4d_image():
         assert exists('parcel_%s.nii' % method)
         assert_equal(osp.k, n_parcel)
 
+def test_parcel_based_analysis():
+    # Generate an image
+    shape = (7, 8, 4)
+    n_subj = 5
+    n_parcel, nn, mu = 10, 6, 1.
+
+    with InTemporaryDirectory() as dir_context:
+        data_image = ['image_%d.nii' % i for i in range(5)]
+        for datim in data_image:
+            surrogate_3d_dataset(shape=shape, out_image_file=datim)
+        ldata = np.random.randn(n_subj, np.prod(shape), 1)
+        domain = grid_domain_from_shape(shape)
+        parcels = hparcel(domain, ldata, n_parcel, mu=3.0)
+        prfx = parcellation_based_analysis(
+            parcels, data_image, test_id='one_sample', rfx_path='prfx.nii',
+            condition_id='', swd=dir_context)
+        assert exists('prfx.nii')
+        assert prfx.max() < 10
+        assert prfx.min() > - 10
 
 if __name__ == "__main__":
     import nose

@@ -27,7 +27,7 @@ dataset = simul.surrogate_2d_dataset(n_subj=n_subj, shape=shape, pos=pos,
 # step 2 : prepare all the information for the parcellation
 nbparcel = 10
 ldata = np.reshape(dataset, (n_subj, np.prod(shape), 1))
-domain = dom.grid_domain_from_binary_array(np.ones(shape))
+domain = dom.grid_domain_from_shape(shape)
 
 # step 3 : run the algorithm
 Pa = hp.hparcel(domain, ldata, nbparcel, mu=3.0)
