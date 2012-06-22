@@ -84,24 +84,23 @@ import scipy.stats as st
 aux = st.norm.sf(thresholds)
 
 import matplotlib.pylab as mp
-a = mp.figure()
+a = mp.figure(figsize=(11, 6))
 mp.subplot(1, 3, 1)
 mp.boxplot(kap)
-mp.title('voxel-level reproducibility', fontsize=12)
-mp.xticks(range(1, 1 + len(thresholds)), thresholds)
+mp.title('voxel-level \n reproducibility', fontsize=12)
+mp.xticks(range(1, 1 + len(thresholds)), thresholds, fontsize=9)
 mp.xlabel('threshold')
 mp.subplot(1, 3, 2)
 mp.boxplot(clt)
-mp.title('cluster-level reproducibility', fontsize=12)
-mp.xticks(range(1, 1 + len(thresholds)), thresholds)
+mp.title('cluster-level \n reproducibility', fontsize=12)
+mp.xticks(range(1, 1 + len(thresholds)), thresholds, fontsize=9)
 mp.xlabel('threshold')
 mp.subplot(1, 3, 3)
 mp.boxplot(pk, notch=1)
-mp.title('peak-level reproducibility', fontsize=12)
-mp.xticks(range(1, 1 + len(thresholds)), thresholds)
+mp.title('peak-level \n reproducibility', fontsize=12)
+mp.xticks(range(1, 1 + len(thresholds)), thresholds, fontsize=9)
 mp.xlabel('threshold')
-a.set_figwidth(10.)
-a.set_size_inches(12, 5)
+
 
 mp.figure()
 for q, threshold in enumerate(thresholds):
@@ -111,7 +110,7 @@ for q, threshold in enumerate(thresholds):
                            csize=csize)
     rmap = np.reshape(rmap, shape)
     mp.imshow(rmap, interpolation=None, vmin=0, vmax=ngroups)
-    mp.title('threshold: %f' % threshold, fontsize=10)
+    mp.title('threshold: %g' % threshold, fontsize=10)
     mp.axis('off')
 
 

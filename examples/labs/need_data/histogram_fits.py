@@ -12,7 +12,7 @@ Author : Bertrand Thirion, 2008-2009
 
 import os
 import numpy as np
-import matplotlib.pylab as mp
+import matplotlib.pyplot as plt
 import scipy.stats as st
 
 from nibabel import load
@@ -40,10 +40,10 @@ rbeta = load(input_image)
 beta = rbeta.get_data()
 beta = beta[mask > 0]
 
-mf = mp.figure(figsize=(13, 5))
-a1 = mp.subplot(1, 3, 1)
-a2 = mp.subplot(1, 3, 2)
-a3 = mp.subplot(1, 3, 3)
+mf = plt.figure(figsize=(13, 5))
+a1 = plt.subplot(1, 3, 1)
+a2 = plt.subplot(1, 3, 2)
+a3 = plt.subplot(1, 3, 3)
 
 # fit beta's histogram with a Gamma-Gaussian mixture
 bfm = np.array([2.5, 3.0, 3.5, 4.0, 4.5])
@@ -63,4 +63,4 @@ efdr.plot(bar=0, mpaxes=a3)
 a1.set_title('Fit of the density with \n a Gamma-Gaussian mixture')
 a2.set_title('Fit of the density with \n a mixture of Gaussians')
 a3.set_title('Robust fit of the density \n with a single Gaussian')
-mp.show()
+plt.show()

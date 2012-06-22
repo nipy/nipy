@@ -2,10 +2,14 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 from nipy.labs.group.permutation_test import permutation_test_onesample
+from nipy.utils import example_data
 
 
 # Get group data
-f = np.load('data/offset_002.npz')
+group_data = example_data.get_filename(
+        'neurospin', 'language_babies', 'offset_002.npz')
+
+f = np.load(group_data)
 data, vardata, xyz = f['mat'], f['var'], f['xyz']
 
 # Create one-sample permutation test instance
