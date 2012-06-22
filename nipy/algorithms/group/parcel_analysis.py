@@ -1,0 +1,435 @@
+""" Parcel-based group analysis of multi-subject image data.
+
+Routines implementing Bayesian inference on group-level effects
+assumed to be constant within given brain parcels. The model accounts
+for both estimation errors and localization uncertainty in reference
+space of first-level images.
+
+See:
+
+Keller, Merlin et al (2008). Dealing with Spatial Normalization Errors
+in fMRI Group Inference using Hierarchical Modeling. *Statistica
+Sinica*; 18(4).
+
+Keller, Merlin et al (2009). Anatomically Informed Bayesian Model
+Selection for fMRI Group Data Analysis. *In MICCAI'09, Lecture Notes
+in Computer Science*; 5762:450--457.
+
+Roche, Alexis (2012). OHBM'12 talk, slides at:
+https://sites.google.com/site/alexisroche/slides/Talk_Beijing12.pdf
+"""
+
+
+from os.path import join
+import numpy as np
+import scipy.ndimage as nd
+import scipy.stats as ss
+from ..statistics.mixed_effects import two_level_glm
+from ..statistics.histogram import histogram
+from ..registration import resample
+from ...fixes.nibabel import io_orientation
+from ...core.image.image_spaces import (make_xyz_image,
+                                        xyz_affine)
+from ... import save_image
+
+SIGMA_MIN = 1e-5
+
+
+def fwhm_to_sigma(fwhm, voxsize):
+    """
+    convert fwhm in mm to sigma in voxel units
+    """
+    k = 2 * np.sqrt(2 * np.log(2))
+    sigma_mm = fwhm / k
+    return np.maximum(sigma_mm / voxsize, SIGMA_MIN)
+
+
+def blur(x, msk, sigma):
+    """
+    x padded with zeros in the mask
+    """
+    x[msk] = 0.
+    gx = nd.gaussian_filter(x, sigma)
+    norma = 1 - nd.gaussian_filter(msk.astype('float'), sigma)
+    gx[True - msk] /= norma[True - msk]
+    gx[msk] = 0.
+    return gx
+
+
+def square_gaussian_norm_factor(sigma):
+    sigma = np.asarray(sigma)
+    if sigma.size == 1:
+        sigma = np.repeat(sigma, 3)
+    mask_half_size = np.ceil(5 * sigma).astype(int)
+    mask_size = 2 * mask_half_size + 1
+    x = np.zeros(mask_size)
+    x[tuple(mask_half_size)] = 1
+    y = nd.gaussian_filter(x, sigma)
+    K = np.sum(y ** 2) / np.sum(y)
+    return K
+
+
+def _smooth(con, vcon, msk, sigma):
+    """
+    Integrate spatial uncertainty in standard space.
+
+    sigma corresponds to voxel units.
+    Expected registration error is np.sqrt(3) * sigma
+    """
+    scon = blur(con, msk, sigma)
+    svcon = blur(con ** 2, msk, sigma) - scon ** 2
+    if not vcon == None:
+        svcon += blur(vcon, msk, sigma)
+    return scon, svcon
+
+
+def _smooth_spm(con, vcon, msk, sigma):
+    scon = blur(con, msk, sigma)
+    K = square_gaussian_norm_factor(sigma)
+    if not vcon == None:
+        svcon = K * blur(vcon, msk, sigma / np.sqrt(2))
+    else:
+        svcon = np.zeros(con.shape)
+    return scon, svcon
+
+
+def smooth(con_img, vcon_img, sigma, method='default'):
+    """
+    Smooth an input image and associated variance image.
+    """
+    if method == 'default':
+        smooth_fn = _smooth
+    elif method == 'spm':
+        smooth_fn = _smooth_spm
+    else:
+        raise ValueError('Unknown smoothing method')
+    con = con_img.get_data()
+    if not vcon_img == None:
+        vcon = con_img.get_data()
+    else:
+        vcon = None
+    msk = np.isnan(con)
+    scon, svcon = smooth_fn(con, vcon, msk, sigma)
+    scon_img = make_xyz_image(scon, xyz_affine(con_img),
+                              con_img.reference)
+    svcon_img = make_xyz_image(svcon, xyz_affine(con_img),
+                               con_img.reference)
+    return scon_img, svcon_img
+
+
+def convert_tscore(t, df, z=False):
+    ret = ss.t.cdf(t, df)
+    if z:
+        ret = ss.norm.isf(ret)
+    return ret
+
+
+class ParcelAnalysis(object):
+
+    def __init__(self, con_imgs, parcel_img, parcel_info=None,
+                 msk_img=None, vcon_imgs=None,
+                 design_matrix=None, cvect=None,
+                 fwhm=8, smooth_method='default',
+                 res_path=None):
+        """
+        Bayesian parcel-based group analysis.
+
+        Given a sequence of independent images registered to a common
+        space (for instance, a set of contrast images from a
+        first-level fMRI analysis), perform a second-level analysis
+        assuming constant effects throughout parcels defined from a
+        given label image in reference space. Spcifically, a model of
+        the following form is assumed:
+
+        Y = X * beta + variability,
+
+        where Y denotes the input image sequence, X is a design
+        matrix, and beta are parcel-wise parameter vectors. The
+        algorithm computes the Bayesian posterior probability of beta
+        in each parcel using an expectation propagation scheme.
+
+        Parameters
+        ----------
+        con_imgs: sequence of nipy-like images
+          Images input to the group analysis.
+
+        parcel_img: nipy-like image
+          Label image where each label codes for a parcel.
+
+        parcel_info: sequence of arrays, optional
+          A sequence of two arrays with same length equal to the
+          number of distinct parcels consistently with the
+          `parcel_img` argument. The first array gives parcel names
+          and the second, parcel values. By default, parcel values are
+          taken as `np.unique(parcel_img.get_data())` and parcel names
+          are these values converted to strings.
+
+        msk_img: nipy-like image, optional
+          Binary mask to restrict analysis. By default, analysis is
+          carried out on all parcels with nonzero value.
+
+        vcon_imgs: sequece of nipy-like images, optional
+          First-level variance estimates corresponding to
+          `con_imgs`. This is useful if the input images are
+          "noisy". By default, first-level variances are assumed to be
+          zero.
+
+        design_matrix: array, optional
+          If None, a one-sample analysis model is used. Otherwise, an
+          array with shape (n, p) where `n` matches the number of
+          input scans, and `p` is the number of regressors.
+
+        cvect: array
+          Contrast vector of interest. The method makes an inference
+          on the contrast defined as the dot product cvect'*beta,
+          where beta are the unknown parcel-wise effects. If None,
+          `cvect` is assumed to be np.array((1,)). However, the
+          `cvect` argument is mandatory if `design_matrix` is
+          provided.
+
+        fwhm: float
+          A parameter that represents the localization uncertainty in
+          reference space in terms of the full width at half maximum
+          of an isotropic Gaussian kernel.
+
+        smooth_method: str
+          One of 'default' and 'spm'. Setting `smooth_method=spm`
+          results in simply smoothing the input images using a
+          Gaussian kernel, while the default method involves more
+          complex smoothing in order to propagate spatial uncertainty
+          into the inference process.
+
+        res_path: str, optional
+          An existing path to write output images. If None, no output
+          is written.
+        """
+        self.smooth_method = smooth_method
+        self.con_imgs = con_imgs
+        self.vcon_imgs = vcon_imgs
+        self.nsubj = len(con_imgs)
+        if not self.vcon_imgs == None:
+            if not self.nsubj == len(vcon_imgs):
+                raise ValueError('List of contrasts and variances'
+                                 ' do not have the same length')
+        if msk_img == None:
+            self.msk = None
+        else:
+            self.msk = msk_img.get_data().astype(bool).squeeze()
+        self.res_path = res_path
+
+        # design matrix
+        if design_matrix == None:
+            self.design_matrix = np.ones(self.nsubj)
+            self.cvect = np.ones((1,))
+            if not cvect == None:
+                raise ValueError('No contrast vector expected')
+        else:
+            self.design_matrix = np.asarray(design_matrix)
+            if cvect == None:
+                raise ValueError('`cvect` cannot be None with'
+                                 ' provided design matrix')
+            self.cvect = np.asarray(cvect)
+            if not self.design_matrix.shape[0] == self.nsubj:
+                raise ValueError('Design matrix shape is inconsistent'
+                                 ' with number of input images')
+            if not len(self.cvect) == self.design_matrix.shape[1]:
+                raise ValueError('Design matrix shape is inconsistent'
+                                 ' with provided `cvect`')
+
+        # load the parcellation and resample it at the appropriate
+        # resolution
+        self.reference = parcel_img.reference
+        self.parcel_fullres = parcel_img.get_data().astype('uint').squeeze()
+        self.affine_fullres = xyz_affine(parcel_img)
+        parcel_img = make_xyz_image(self.parcel_fullres,
+                                    self.affine_fullres,
+                                    self.reference)
+        self.affine = xyz_affine(self.con_imgs[0])
+        parcel_img_rsp = resample(parcel_img,
+                                  reference=(self.con_imgs[0].shape,
+                                             self.affine),
+                                  interp_order=0)
+        self.parcel = parcel_img_rsp.get_data().astype('uint').squeeze()
+        if self.msk == None:
+            self.msk = self.parcel > 0
+
+        # get parcel labels and values
+        if parcel_info == None:
+            self._parcel_values = np.unique(self.parcel)
+            self._parcel_labels = self._parcel_values.astype(str)
+        else:
+            self._parcel_labels = np.asarray(parcel_info[0])
+            self._parcel_values = np.asarray(parcel_info[1]).astype('uint')
+
+        # determine smoothing kernel size
+        orient = io_orientation(self.affine)[:, 0].astype('int')
+        voxsize = np.abs(self.affine[(orient, range(3))])
+        self.sigma = fwhm_to_sigma(fwhm, voxsize)
+
+        # run approximate belief propagation
+        self._smooth_images()
+        self._voxel_level_inference()
+        self._parcel_level_inference()
+
+        # write results to a NPZ file
+        self._dump_results()
+
+    def _smooth_images(self, write=False):
+        """
+        Smooth input contrast images to account for localization
+        uncertainty in reference space.
+        """
+        cons, vcons = [], []
+        for i in range(self.nsubj):
+            con = self.con_imgs[i]
+            if not self.vcon_imgs == None:
+                vcon = self.vcon_imgs[i]
+            else:
+                vcon = None
+            scon, svcon = smooth(con, vcon, self.sigma,
+                                 method=self.smooth_method)
+            if write and not self.res_path == None:
+                save_image(scon, join(self.res_path,
+                                      'scon' + str(i) + '.nii.gz'))
+                save_image(svcon, join(self.res_path,
+                                       'svcon' + str(i) + '.nii.gz'))
+            cons += [scon.get_data()[self.msk]]
+            vcons += [svcon.get_data()[self.msk]]
+
+        self.cons = np.array(cons)
+        self.vcons = np.array(vcons)
+
+    def _voxel_level_inference(self, mfx=True):
+        """
+        Estimate voxel-level group parameters using mixed effects
+        variational Bayes algorithm.
+        """
+        beta, s2, dof = two_level_glm(self.cons, self.vcons,
+                                      self.design_matrix)
+
+        self.beta = np.dot(self.cvect, beta)
+        if self.design_matrix.ndim == 1:
+            self.vbeta = s2 * (self.cvect[0] ** 2\
+                                   / np.sum(self.design_matrix ** 2))
+        else:
+            tmp = np.linalg.inv(np.dot(self.design_matrix.T,
+                                       self.design_matrix))
+            self.vbeta = s2 * np.dot(self.cvect.T, np.dot(tmp, self.cvect))
+        self.dof = dof
+
+    def _parcel_level_inference(self):
+        """
+        Estimate parcel-level group parameters using mixed effects
+        variational Bayes algorithm.
+        """
+        parcel_masked = self.parcel[self.msk]
+        values = np.where(histogram(parcel_masked) > 0)[0][1:]
+
+        prob = np.zeros(len(values))
+        mu = np.zeros(len(values))
+        s2 = np.zeros(len(values))
+        dof = np.zeros(len(values))
+        labels = []
+
+        # For each parcel, estimate parcel-level parameters using a
+        # mxf model
+        for i in range(len(values)):
+            mask = parcel_masked == values[i]
+            y = self.beta[mask]
+            vy = self.vbeta[mask]
+            npts = y.size
+            try:
+                mu[i], s2[i], dof[i] = two_level_glm(y, vy, np.ones(npts))
+                prob[i] = convert_tscore(float(mu[i] / np.sqrt(s2[i] / npts)),
+                                          dof[i])
+            except:
+                prob[i] = 0
+            idx = int(np.where(self._parcel_values == values[i])[0])
+            labels += [self._parcel_labels[idx]]
+
+        # Sort labels by ascending order of mean values
+        I = np.argsort(-mu)
+        self.parcel_values = values[I]
+        self.parcel_labels = np.array(labels)[I]
+        self.parcel_prob = prob[I]
+        self.parcel_mu = mu[I]
+        self.parcel_s2 = s2[I]
+        self.parcel_dof = dof[I]
+
+    def _dump_results(self):
+        if not self.res_path == None:
+            np.savez(join(self.res_path, 'parcel_analysis.npz'),
+                     values=self.parcel_values,
+                     labels=self.parcel_labels,
+                     prob=self.parcel_prob,
+                     mu=self.parcel_mu,
+                     s2=self.parcel_s2,
+                     dof=self.parcel_dof)
+
+    def tmap(self):
+        """
+        Compute voxel-wise t-statistic map. This map is different from
+        what you would get from an SPM-style mass univariate analysis
+        because the method accounts for both spatial uncertainty in
+        reference space and possibly errors on first-level inputs (if
+        variance images are provided).
+
+        Returns
+        -------
+        tmap_img: nipy image
+          t-statistic map.
+        """
+        tmap = np.zeros(self.msk.shape)
+        beta = self.beta
+        var = self.vbeta
+        tmap[self.msk] = beta / np.sqrt(var)
+        tmap_img = make_xyz_image(tmap, self.affine, self.reference)
+        if not self.res_path == None:
+            save_image(tmap_img, join(self.res_path, 'tmap.nii.gz'))
+            tmp = np.zeros(self.msk.shape)
+            tmp[self.msk] = beta
+            save_image(make_xyz_image(tmp, self.affine, self.reference),
+                       join(self.res_path, 'beta.nii.gz'))
+            tmp[self.msk] = var
+            save_image(make_xyz_image(tmp, self.affine, self.reference),
+                       join(self.res_path, 'vbeta.nii.gz'))
+        return tmap_img
+
+    def parcel_maps(self, fullres=True):
+        """
+        Compute parcel-based posterior contrast means and positive
+        contrast probabibilities.
+
+        Returns
+        -------
+        pmap_mu_img: nipy image
+          Image of posterior contrast means for each parcel.
+
+        pmap_prob_img: nipy image
+          Corresponding image of posterior probabilities of positive
+          contrast.
+        """
+        if fullres:
+            parcel = self.parcel_fullres
+            affine = self.affine_fullres
+        else:
+            parcel = self.parcel
+            affine = self.affine
+        pmap_prob = np.zeros(parcel.shape)
+        pmap_mu = np.zeros(parcel.shape)
+        for label, prob, mu in zip(self.parcel_values,
+                                    self.parcel_prob,
+                                    self.parcel_mu):
+            pmap_prob[parcel == label] = prob
+            pmap_mu[parcel == label] = mu
+
+        pmap_prob_img = make_xyz_image(pmap_prob, affine, self.reference)
+        pmap_mu_img = make_xyz_image(pmap_mu, affine, self.reference)
+
+        if not self.res_path == None:
+            save_image(pmap_prob_img,
+                       join(self.res_path, 'parcel_prob.nii.gz'))
+            save_image(pmap_mu_img,
+                       join(self.res_path, 'parcel_mu.nii.gz'))
+
+        return pmap_mu_img, pmap_prob_img

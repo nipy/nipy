@@ -133,7 +133,7 @@ def test_mfx_ftest():
     assert (np.abs(f.mean() - 1) < 1)
     assert f.var() < 10
     assert f.var() > .2
-     
+
 
 def test_two_level_glm():
     nsub = 10
@@ -144,8 +144,20 @@ def test_two_level_glm():
     y = np.repeat(np.reshape(reg1 + reg2, (nsub, 1)), npts, axis=1)
     vy = np.zeros((nsub, npts))
     beta, s2, dof = two_level_glm(y, vy, X)
-    assert_array_almost_equal(beta, np.ones((2, npts)))
-    assert_array_almost_equal(s2, np.zeros(npts))
+    assert_array_almost_equal(beta, 1)
+    assert_array_almost_equal(s2, 0)
+
+
+def test_two_level_glm_novar():
+    X = np.random.normal(0, 1, size=(100, 10))
+    y = np.random.normal(0, 1, size=(100, 50))
+    vy = np.zeros((100, 50))
+    beta, s2, dof = two_level_glm(y, vy, X)
+    beta_error = np.mean(beta ** 2)
+    s2_error = np.abs(np.mean(s2) - 1)
+    print('Errors: %f (beta), %f (s2)' % (beta_error, s2_error))
+    assert  beta_error < 0.1
+    assert  s2_error < 0.1
 
 
 if __name__ == "__main__":
