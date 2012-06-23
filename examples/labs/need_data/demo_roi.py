@@ -10,8 +10,8 @@ print __doc__
 
 import numpy as np
 import os
-import matplotlib.pylab as mp
-from nibabel import load, save, Nifti1Image
+import matplotlib.pyplot as plt
+from nibabel import load, save
 
 import nipy.labs.spatial_models.mroi as mroi
 from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
@@ -66,7 +66,6 @@ nroi = hroi.HROI_as_discrete_domain_blobs(domain, values,
                                           threshold=threshold, smin=smin)
 
 # saving the blob image,i. e. a label image 
-
 wim = nroi.to_image('id', roi=True)
 descrip = "blob image extracted from %s" % input_image
 blobPath = os.path.join(swd, "blob.nii")
@@ -106,4 +105,4 @@ save(wim5, roi_path_5)
 print  "Wrote ROI mask images in %s, \n %s \n %s \n and %s" %\
       (roi_path_2, roi_path_3, roi_path_4, roi_path_5)
 
-mp.show()
+plt.show()

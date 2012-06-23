@@ -220,7 +220,8 @@ def parcellation_based_analysis(Pa, test_images, test_id='one_sample',
 
     # Write the stuff
     template = SubDomains(Pa.domain, Pa.template_labels)
-    wim = template.to_image(prfx)
+    template.set_roi_feature('prfx', prfx)
+    wim = template.to_image('prfx', roi=True)
     hdr = wim.get_header()
     hdr['descrip'] = 'parcel-based random effects image (in t-variate)'
     if rfx_path is not None:

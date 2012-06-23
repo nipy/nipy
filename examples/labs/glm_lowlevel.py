@@ -9,7 +9,7 @@ with the baseline coefficient are then computed.
 print __doc__
 
 import numpy as np
-from nipy.labs import glm
+from nipy.modalities.fmri.glm import GeneralLinearModel
 
 dimt = 100
 dimx = 10
@@ -24,7 +24,8 @@ axis = 0
 X = np.array([np.ones(dimt), range(dimt)])
 X = X.T ## the design matrix X must have dimt lines
 
-mod = glm.glm(y, X, axis=axis, model='ar1')
+mod = GeneralLinearModel(X)
+mod.fit(y)
 
 # Define a t contrast
 tcon = mod.contrast([1, 0]) 
@@ -34,16 +35,13 @@ t = tcon.stat()
 ## t = tcon.stat(baseline=1) to test effects > 1 
 
 # Compute the p-value
-p = tcon.pvalue()
+p = tcon.p_value()
 
 # Compute the z-score
-z = tcon.zscore()
+z = tcon.z_score()
 
 # Perform a F test without keeping the F stat
-p = mod.contrast([[1, 0], [1, - 1]]).pvalue()
-
-# Perform a conjunction test similarly 
-##p = mod.contrast([[1,0],[1,-1]], type='tmin').pvalue()
+p = mod.contrast([[1, 0], [1, - 1]]).p_value()
 
 print np.shape(y)
 print np.shape(X)

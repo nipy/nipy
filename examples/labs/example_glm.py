@@ -19,7 +19,7 @@ from nibabel import save, Nifti1Image
 import nipy.modalities.fmri.design_matrix as dm
 from nipy.labs.utils.simul_multisubject_fmri_dataset import \
      surrogate_4d_dataset
-import nipy.labs.glm as GLM
+from nipy.modalities.fmri.glm import GeneralLinearModel 
 from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
 
 #######################################
@@ -70,32 +70,28 @@ save(fmri_data, data_file)
 ########################################
 
 # GLM fit
-Y = fmri_data.get_data()
-model = "ar1"
-method = "kalman"
-glm = GLM.glm()
-glm.fit(Y.T, X, method=method, model=model)
+Y = fmri_data.get_data().reshape(np.prod(shape), n_scans)
+glm = GeneralLinearModel(X)
+glm.fit(Y.T)
 
 # specify the contrast [1 -1 0 ..]
 contrast = np.zeros(X.shape[1])
 contrast[0] = 1
 contrast[1] = - 1
-my_contrast = glm.contrast(contrast)
 
 # compute the constrast image related to it
-zvals = my_contrast.zscore()
+zvals = glm.contrast(contrast).z_score()
 contrast_image = Nifti1Image(np.reshape(zvals, shape), affine)
 
 # if you want to save the contrast as an image
 contrast_path = op.join(swd, 'zmap.nii')
 save(contrast_image, contrast_path)
 
-
 print 'wrote the some of the results as images in directory %s' % swd
 
 h, c = np.histogram(zvals, 100)
 import pylab
 pylab.figure()
-pylab.plot(c[: - 1], h)
+pylab.bar(c[: - 1], h, width=.1)
 pylab.title(' Histogram of the z-values')
 pylab.show()
