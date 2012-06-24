@@ -156,7 +156,9 @@ class Affine(Transform):
         self._precond = preconditioner(radius)
         if array == None:
             self._vec12 = np.zeros(12)
-        elif array.size == 12:
+            return
+        array = np.array(array)
+        if array.size == 12:
             self._vec12 = array.ravel().copy()
         elif array.shape == (4, 4):
             self.from_matrix44(array)
