@@ -147,7 +147,7 @@ def main(**extra_args):
           author=INFO_VARS['AUTHOR'],
           author_email=INFO_VARS['AUTHOR_EMAIL'],
           platforms=INFO_VARS['PLATFORMS'],
-          version=INFO_VARS['VERSION'],
+          # version set by config.get_version() above
           requires=INFO_VARS['REQUIRES'],
           configuration = configuration,
           cmdclass = cmdclass,
