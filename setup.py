@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from os.path import join as pjoin
+import os
+from os.path import join as pjoin, exists
 import sys
 from glob import glob
 from distutils import log
+
+# BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
+# update it when the contents of directories change.
+if exists('MANIFEST'): os.remove('MANIFEST')
 
 # Import build helpers
 try:
