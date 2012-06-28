@@ -86,11 +86,11 @@ def rotation_vec2mat(r):
     return R
 
 
-def matrix44(t, dtype=np.double):
+def to_matrix44(t, dtype=np.double):
     """
-    T = matrix44(t)
+    T = to_matrix44(t)
 
-    t is a vector of of affine transformation parameters with size at
+    t is a vector of affine transformation parameters with size at
     least 6.
 
     size < 6 ==> error
@@ -156,7 +156,9 @@ class Affine(Transform):
         self._precond = preconditioner(radius)
         if array == None:
             self._vec12 = np.zeros(12)
-        elif array.size == 12:
+            return
+        array = np.array(array)
+        if array.size == 12:
             self._vec12 = array.ravel().copy()
         elif array.shape == (4, 4):
             self.from_matrix44(array)
@@ -247,7 +249,7 @@ class Affine(Transform):
     param = property(_get_param, _set_param)
 
     def as_affine(self, dtype='double'):
-        T = matrix44(self._vec12, dtype=dtype)
+        T = to_matrix44(self._vec12, dtype=dtype)
         if not self._direct:
             T[:3, :3] *= -1
         return T
