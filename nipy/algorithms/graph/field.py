@@ -392,11 +392,11 @@ class Field(WeightedGraph):
                 nlabel = np.unique(llabel[rows[i]])
                 if nlabel[0] == -1:
                     nlabel = nlabel[1:]
-                nlabel = np.unique(parent[nlabel])
                 if len(nlabel) == 1:
                     # we are at a regular point
                     llabel[i] = nlabel[0]
                 else:
+                    nlabel = np.unique(parent[nlabel])
                     # we are at a saddle point
                     llabel[i] = q
                     for j in nlabel:
