@@ -18,7 +18,7 @@ except ImportError:
     raise RuntimeError('Need nisext package from nibabel installation'
                        ' - please install nibabel first')
 
-from build_helpers import (generate_a_pyrex_source,
+from setup_helpers import (generate_a_pyrex_source,
                            cmdclass, INFO_VARS)
 # monkey-patch numpy distutils to use Cython instead of Pyrex
 from numpy.distutils.command.build_src import build_src

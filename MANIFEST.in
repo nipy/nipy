@@ -13,4 +13,4 @@ include nipy/COMMIT_INFO.txt
 include LICENSE
 graft examples
 graft doc
-global-exclude *~ *.swp
+global-exclude *~ *.swp *.pyc
