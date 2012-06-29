@@ -3,7 +3,7 @@
 from .resample import resample
 from .histogram_registration import (HistogramRegistration, clamp,
                                     ideal_spacing, interp_methods)
-from .affine import (threshold, rotation_mat2vec, rotation_vec2mat, matrix44,
+from .affine import (threshold, rotation_mat2vec, rotation_vec2mat, to_matrix44,
                      preconditioner, inverse_affine, subgrid_affine, Affine,
                      Affine2D, Rigid, Rigid2D, Similarity, Similarity2D,
                      affine_transforms)
