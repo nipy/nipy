@@ -100,6 +100,11 @@ def test_affine_types():
         assert_array_almost_equal(with_inv.as_affine(), np.eye(4))
         # Just check that str works without error
         s = str(obj)
+        # Check default parameter input
+        obj = klass(np.zeros((12,)))
+        assert_array_equal(obj.param, np.zeros((n_params,)))
+        obj = klass(list(np.zeros((12,))))
+        assert_array_equal(obj.param, np.zeros((n_params,)))
 
 
 def test_indirect_affines(): 

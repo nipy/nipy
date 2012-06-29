@@ -19,13 +19,15 @@ INTERP_ORDER = 3
 def resample(moving, transform, reference=None,
              mov_voxel_coords=False, ref_voxel_coords=False,
              dtype=None, interp_order=INTERP_ORDER):
-    """
-    Apply a transformation to the image considered as 'moving' to
-    bring it into the same grid as a given `reference` image.
+    """ Resample `movimg` into voxel space of `reference` using `transform`
 
-    This function uses scipy.ndimage except for the case
-    `interp_order==3`, where a fast cubic spline implementation is
-    used.
+    Apply a transformation to the image considered as 'moving' to
+    bring it into the same grid as a given `reference` image.  The
+    transformation usually maps world space in `reference` to world space in
+    `movimg`, but can also be a voxel to voxel mapping (see parameters below).
+
+    This function uses scipy.ndimage except for the case `interp_order==3`,
+    where a fast cubic spline implementation is used.
 
     Parameters
     ----------
@@ -35,16 +37,24 @@ def resample(moving, transform, reference=None,
       Represents a transform that goes from the `reference` image to
       the `moving` image. It should have either an `apply` method, or
       an `as_affine` method.
-    mov_voxel_coords : boolean
+    reference : None or nipy-like image, optional
+      Image to which to resample.  The reference image defines the image
+      dimensions and xyz affine to which to resample.  If None, use `movimg` to
+      define these.
+    mov_voxel_coords : boolean, optional
       True if the transform maps to voxel coordinates, False if it
       maps to world coordinates.
-    ref_voxel_coords : boolean
+    ref_voxel_coords : boolean, optional
       True if the transform maps from voxel coordinates, False if it
       maps from world coordinates.
-    reference: nipy-like image
-      Reference image, defaults to input.
-    interp_order: number
+    interp_order: int, optional
       Spline interpolation order, defaults to 3.
+
+    Returns
+    -------
+    aligned_img : Image
+        Image resliced to `reference` with reference-to-movimg transform
+        `transform`
     """
     # Function assumes xyx_affine for inputs
     moving = as_xyz_image(moving)
@@ -53,7 +63,7 @@ def resample(moving, transform, reference=None,
         reference = moving
     else:
         reference = as_xyz_image(reference)
-        ref_aff = xyz_affine(reference)
+    ref_aff = xyz_affine(reference)
     data = moving.get_data()
     if dtype == None:
         dtype = data.dtype
