@@ -112,6 +112,8 @@ To install, simply do::
 Installing useful data files
 -----------------------------
 
+Installing the data files is necessary to run the examples. 
+
 See :ref:`installing-data` for some instructions on installing data
 packages.
 
