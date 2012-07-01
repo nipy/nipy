@@ -5,7 +5,9 @@
 """
 import numpy as np
 
-import nibabel as nb
+from nipy import load_image, save_image
+from nipy.core.image.image_spaces import (make_xyz_image,
+                                          xyz_affine)
 from nipy.externals.argparse import ArgumentParser
 from nipy.algorithms.segmentation import BrainT1Segmentation
 
@@ -57,14 +59,14 @@ def get_argument(dest, default):
         return val
 
 # Input image
-img = nb.load(args.img[0])
+img = load_image(args.img[0])
 
 # Input mask image
 mask_img = get_argument('mask', None)
 if mask_img == None:
     mask_img = img
 else:
-    mask_img = nb.load(mask_img)
+    mask_img = load_image(mask_img)
 
 # Other optional arguments
 niters = int(get_argument('niters', 25))
@@ -72,12 +74,13 @@ beta = float(get_argument('beta', 0.5))
 
 # Perform tissue classification
 mask = mask_img.get_data() > 0
-S = BrainT1Segmentation(img.get_data(), mask=mask, model='4kpv')
+S = BrainT1Segmentation(img.get_data(), mask=mask, model='5k')
 S.run(niters=niters, beta=beta)
 
 # Save label image
 outfile = join(mkdtemp(), 'hard_classif.nii')
-nb.save(nb.Nifti1Image(S.label, img.get_affine()), outfile)
+save_image(make_xyz_image(S.label, xyz_affine(img), 'scanner'),
+           outfile)
 print('Label image saved in: %s' % outfile)
 
 # Compute fuzzy Dice indices if a 3-class fuzzy model is provided
@@ -88,7 +91,7 @@ if not args.probc == None and \
     gold_ppm = np.zeros(S.ppm.shape)
     gold_ppm_img = (args.probc, args.probg, args.probw)
     for k in range(3):
-        img = nb.load(gold_ppm_img[k])
+        img = load_image(gold_ppm_img[k])
         gold_ppm[..., k] = img.get_data()
     d = fuzzy_dice(gold_ppm, S.ppm, np.where(mask_img.get_data() > 0))
     print('Fuzzy Dice indices: %s' % d)
