@@ -288,8 +288,8 @@ class Field(WeightedGraph):
         ----------
         nbiter: int, optional the number of iterations required
 
-        Note
-        ----
+        Notes
+        -----
         The process is run for all the dimensions of the field
         """
         nbiter = int(nbiter)
@@ -553,10 +553,10 @@ class Field(WeightedGraph):
         F: Field instance,
            the desired subfield of self
 
-        Note
-        ----
-        The vertices are renumbered as [1..p] where p = sum(valid>0)
-        when sum(valid) == 0 then None is returned
+        Notes
+        -----
+        The vertices are renumbered as [1..p] where p = sum(valid>0) when
+        sum(valid) == 0 then None is returned
         """
         G = self.subgraph(valid)
         if G == None:

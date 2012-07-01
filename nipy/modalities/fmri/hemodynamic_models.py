@@ -222,8 +222,8 @@ def _orthogonalize(X):
     -------
     X: after orthogonalization
 
-    Note
-    ----
+    Notes
+    -----
     X is changed in place. the columns are not normalized
     """
     if X.size == X.shape[0]:
@@ -319,8 +319,8 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
                                           at frametimes
     reg_names: list of strings, corresponding regressor names
 
-    Note
-    ----
+    Notes
+    -----
     The different hemodynamic models can be understood as follows:
     'spm': this is the hrf model used in spm
     'spm_time': this is the spm model plus its time derivative (2 regressors)

@@ -7,8 +7,8 @@ paradigms: block and event-related paradigms. They correspond to 2
 classes EventRelatedParadigm and BlockParadigm. Both are implemented
 here, together with functions to write paradigms to csv files.
 
-Note
-----
+Notes
+-----
 Although the Paradigm object have no notion of session or acquisitions
 (they are assumed to correspond to a sequential acquisition, called
 'session' in SPM jargon), the .csv file used to represent paradigm may
@@ -161,14 +161,13 @@ def load_paradigm_from_csv_file(path, session=None):
               dictionary of paradigm instances otherwise,
               the resulting session-by-session paradigm
 
-    Note
-    ----
-    It is assumed that the csv file contains the following columns:
-    (session id, condition id, onset),
-    plus possibly (duration) and/or (amplitude)
-    If all the durations are 0, the paradigm will be handled as event-related
+    Notes
+    -----
+    It is assumed that the csv file contains the following columns: (session id,
+    condition id, onset), plus possibly (duration) and/or (amplitude). If all
+    the durations are 0, the paradigm will be handled as event-related.
 
-    fixme
+    Fixme
     -----
     would be much clearer if amplitude was put before duration in the .csv
     """

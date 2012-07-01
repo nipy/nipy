@@ -25,18 +25,18 @@ class SubDomains(object):
 
     Parameters
     ----------
-    `k`: int,
+    k : int
       Number of ROI in the SubDomains object
-    `label`: array of shape (domain.size), dtype=np.int,
+    label : array of shape (domain.size), dtype=np.int
       An array use to define which voxel belongs to which ROI.
       The label values greater than -1 correspond to subregions
       labelling. The labels are recomputed so as to be consecutive
       integers.
       The labels should not be accessed outside this class. One has to
       use the API mapping methods instead.
-    `features`: dict{str: list of object, length=self.k}
+    features : dict {str: list of object, length=self.k}
       Describe the voxels features, grouped by ROI
-    `roi_features`: dict{str: array-like, shape=(self.k, roi_feature_dim)
+    roi_features : dict {str: array-like, shape=(self.k, roi_feature_dim)
       Describe the ROI features. A special feature, `id`, is read-only and
       is used to give an unique identifier for region, which is persistent
       through the MROI objects manipulations. On should access the different
@@ -96,10 +96,9 @@ class SubDomains(object):
         It is an inner object that should not be accessed outside this class.
         The number of nodes is updated appropriately.
 
-        Note
-        ----
+        Notes
+        -----
         This method must be called everytime the MROI structure is modified.
-
         """
         lmap = np.unique(self.label[self.label > - 1])
         for i, k in enumerate(lmap):
@@ -119,18 +118,18 @@ class SubDomains(object):
     def select_id(self, id, roi=True):
         """Convert a ROI id into an index to be used to index features safely.
 
-        Parameter
-        ---------
-        id: any hashable type, must be in self.get_id()
+        Parameters
+        ----------
+        id : any hashable type, must be in self.get_id()
           The id of the region one wants to access.
-        roi: boolean
+        roi : bool
           If True (default), return the ROI index in the ROI list.
           If False, return the indices of the voxels of the ROI with the given
           id. That way, internal access to self.label can be made.
 
-        Return
-        ------
-        index: int or np.array of shape (roi.size, )
+        Returns
+        -------
+        index : int or np.array of shape (roi.size, )
           Either the position of the ROI in the ROI list (if roi == True),
           or the positions of the voxels of the ROI with id `id`
           with respect to the self.label array.
@@ -174,9 +173,9 @@ class SubDomains(object):
           Id of the ROI from which we want the voxels' coordinates.
           Can be None (default) if we want all ROIs's voxels coordinates.
 
-        Return
-        ------
-        coords: array-like, shape=(roi_size, domain_dimension),
+        Returns
+        -------
+        coords: array-like, shape=(roi_size, domain_dimension)
           if an id is provided,
              or list of arrays of shape(roi_size, domain_dimension)
           if no id provided (default)
@@ -198,8 +197,8 @@ class SubDomains(object):
           Id of the ROI from which we want to get the size.
           Can be None (default) if we want all ROIs's sizes.
 
-        Return
-        ------
+        Returns
+        -------
         size: int
           if an id is provided,
              or list of int
@@ -222,8 +221,8 @@ class SubDomains(object):
           Id of the ROI from which we want the voxels' volumes.
           Can be None (default) if we want all ROIs's voxels volumes.
 
-        Return
-        ------
+        Returns
+        -------
         loc_volume: array-like, shape=(roi_size, ),
           if an id is provided,
              or list of arrays of shape(roi_size, )
@@ -247,9 +246,9 @@ class SubDomains(object):
           Id of the ROI from which we want to get the volume.
           Can be None (default) if we want all ROIs's volumes.
 
-        Return
-        ------
-        volume: float
+        Returns
+        -------
+        volume : float
           if an id is provided,
              or list of float
           if no id provided (default)
@@ -275,8 +274,8 @@ class SubDomains(object):
           Id of the ROI from which we want to get the feature.
           Can be None (default) if we want all ROIs's features.
 
-        Return
-        ------
+        Returns
+        -------
         feature: array-like, shape=(roi_size, feature_dim)
           if an id is provided,
              or list of arrays, shape=(roi_size, feature_dim)
@@ -296,16 +295,16 @@ class SubDomains(object):
 
         Parameters
         ----------
-        fid: str,
+        fid : str
           feature identifier
-        data: list of self.k arrays of shape(self.size[k], p) or
-              array of shape(self.size[k])
-          the feature data
-        id: any hashable type
+        data: list or array
+          The feature data. Can be a list of self.k arrays of
+          shape(self.size[k], p) or array of shape(self.size[k])
+        id: any hashable type, optional
           Id of the ROI from which we want to set the feature.
           Can be None (default) if we want to set all ROIs's features.
-        override: bool, optional,
-                  Allow feature overriding
+        override: bool, optional
+          Allow feature overriding
 
         Note that we cannot create a feature having the same name than
         a ROI feature.
@@ -350,26 +349,24 @@ class SubDomains(object):
 
         Parameters
         ----------
-        fid: str,
+        fid : str
           Feature id
-        method: str,
+        method : str, optional
           Method used to compute a representative.
           Chosen among 'mean' (default), 'max', 'median', 'min',
           'weighted mean'.
-        id: any hashable type
+        id : any hashable type, optional
           Id of the ROI from which we want to extract a representative feature.
           Can be None (default) if we want to get all ROIs's representatives.
-        assess_quality: bool
-          If True, a new roi feature is created, which represent the quality
-          of the feature representative (the number of non-nan value for the
-          feature over the ROI size).
-          Default is False.
+        assess_quality: bool, optional
+          If True, a new roi feature is created, which represent the quality of
+          the feature representative (the number of non-nan value for the
+          feature over the ROI size).  Default is False.
 
-        Return
-        ------
+        Returns
+        -------
         summary_feature: np.ndarray, shape=(self.k, feature_dim)
           Representative feature computed according to `method`.
-
         """
         rf = []
         eps = 1.e-15
@@ -411,35 +408,34 @@ class SubDomains(object):
 
         Parameters
         ----------
-        fid: str,
+        fid: str
           Feature id
 
-        Return
-        ------
-        The removed feature.
-
+        Returns
+        -------
+        f : object
+            The removed feature.
         """
         return self.features.pop(fid)
 
     def feature_to_voxel_map(self, fid, roi=False, method="mean"):
         """Convert a feature to a flat voxel-mapping array.
 
-        Paramters
-        ---------
-        fid: str,
+        Parameters
+        ----------
+        fid: str
           Identifier of the feature to be mapped.
-        roi: bool,
-          If true, compute the map from a ROI feature.
-        method: str,
+        roi: bool, optional
+          If True, compute the map from a ROI feature.
+        method: str, optional
           Representative feature computation method if `fid` is a feature
           and `roi` is True.
 
-        Return
-        ------
+        Returns
+        -------
         res: array-like, shape=(domain.size, feature_dim)
           A flat array, giving the correspondence between voxels
           and the feature.
-
         """
         res = np.zeros(self.label.size)
         if not roi:
@@ -586,10 +582,10 @@ class SubDomains(object):
 
         The `id` ROI feature cannot be removed.
 
-        Return
-        ------
-        The removed Roi feature.
-
+        Returns
+        -------
+        f : object
+            The removed Roi feature.
         """
         if fid != 'id':
             feature = self.roi_features.pop(fid)
@@ -617,13 +613,13 @@ class SubDomains(object):
         descrip: str,
           Description of the image, to be written in its header.
 
-        Note
-        ----
-        requires that self.dom is an ddom.NDGridDomain
+        Notes
+        -----
+        Requires that self.dom is an ddom.NDGridDomain
 
-        Return
-        ------
-        nim: nibabel nifti image
+        Returns
+        -------
+        nim : nibabel nifti image
           Nifti image corresponding to the ROI feature to be written.
 
         """
@@ -727,8 +723,8 @@ def subdomain_from_array(labels, affine=None, nn=0):
       Neighboring system considered.
       Unused at the moment.
 
-    Note
-    ----
+    Notes
+    -----
     Only labels > -1 are considered.
 
     """
@@ -751,8 +747,8 @@ def subdomain_from_image(mim, nn=18):
     -------
     The MultipleROI instance
 
-    Note
-    ----
+    Notes
+    -----
     Only labels > -1 are considered
 
     """

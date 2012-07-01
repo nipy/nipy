@@ -160,9 +160,9 @@ class Forest(WeightedGraph):
         -------
         a boolean b=0 iff there are loops, 1  otherwise
 
-        Note
-        ----
-        slow implementation, might be rewritten in C or cython
+        Notes
+        -----
+        Slow implementation, might be rewritten in C or cython
         """
         b = 1
         if self.V == 1:
@@ -216,9 +216,9 @@ class Forest(WeightedGraph):
         -------
         subforest: a new forest instance, with a reduced set of nodes
 
-        Note
-        ----
-        the children of deleted vertices become their own parent
+        Notes
+        -----
+        The children of deleted vertices become their own parent
         """
         if np.size(valid) != self.V:
             raise ValueError("incompatible size for self anf valid")
@@ -260,9 +260,9 @@ class Forest(WeightedGraph):
         -------
         dg: array of shape(nseed, self.V), the resulting distances
 
-        Note
-        ----
-        by convention infinite distances are given the distance np.inf
+        Notes
+        -----
+        By convention infinite distances are given the distance np.inf
         """
         if (hasattr(seed, '__iter__') == False) & (seed is not None):
             seed = [seed]

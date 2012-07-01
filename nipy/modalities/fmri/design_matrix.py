@@ -257,9 +257,9 @@ class DesignMatrix():
         ----------
         path: string, path of the resulting csv file
 
-        Note
-        ----
-        the frametimes are not written
+        Notes
+        -----
+        The frametimes are not written
         """
         import csv
         fid = open(path, "wb")

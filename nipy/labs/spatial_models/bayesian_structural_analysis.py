@@ -37,9 +37,10 @@ def _relabel_(label, nl=None):
     label: array of shape(n)
     nl: array of shape(p), where p<= label.max(), optional
         if None, the output is -1*np.ones(n)
+
     Returns
     -------
-    new_label: array of shape (n)
+    new_label : array of shape (n)
     """
     if label.max() + 1 < np.size(nl):
         raise ValueError('incompatible values for label of nl')
@@ -470,8 +471,8 @@ def compute_BSA_simple(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     p: array of shape (nnodes):
        likelihood of the data under H1 over some sampling grid
 
-    Note
-    ----
+    Notes
+    -----
     In that case, the DPMM is used to derive a spatial density of
     significant local maxima in the volume. Each terminal (leaf)
     region which is a posteriori significant enough is assigned to the
@@ -552,10 +553,12 @@ def compute_BSA_loo(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
             the method used to assess the prior significance of the regions
     verbose=0: verbosity mode
 
-    Results
+    Returns
     -------
-    mll, float, the average cross-validated log-likelihood across subjects
-    ml0, float the log-likelihood of the model under a global null hypothesis
+    mll : float
+        the average cross-validated log-likelihood across subjects
+    ml0 : float
+        the log-likelihood of the model under a global null hypothesis
     """
     n_subj = lbeta.shape[1]
     nvox = dom.size

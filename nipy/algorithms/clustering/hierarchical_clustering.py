@@ -26,8 +26,8 @@ Author : Bertrand Thirion,Pamela Guevara, 2006-2009
 
 import numpy as np
 
-from ..graph.graph import WeightedGraph 
-from ..graph.forest import Forest 
+from ..graph.graph import WeightedGraph
+from ..graph.forest import Forest
 
 
 class WeightedForest(Forest):
@@ -360,16 +360,18 @@ def average_link_graph(G):
     return t
 
 
-def average_link_graph_segment(G, stop=0, qmax=1, verbose=0):
+def average_link_graph_segment(G, stop=0, qmax=1, verbose=False):
     """Agglomerative function based on a (hopefully sparse) similarity graph
 
     Parameters
     ----------
     G the input graph
-    stop: float, the stopping criterion
-    qmax: int, optional,
-          the number of desired clusters
-          (in the limit of the stopping criterion)
+    stop: float
+        the stopping criterion
+    qmax: int, optional
+        the number of desired clusters (in the limit of the stopping criterion)
+    verbose : bool, optional
+        If True, print diagnostic information
 
     Returns
     -------
@@ -594,26 +596,30 @@ def _remap(K, i, j, k, Features, linc, rinc):
     return linc, rinc
 
 
-def ward_quick(G, feature, verbose=0):
+def ward_quick(G, feature, verbose=False):
     """ Agglomerative function based on a topology-defining graph
     and a feature matrix.
 
     Parameters
     ----------
-    G graph instance,
-      topology-defining graph
-    feature: array of shape (G.V,dim_feature):
-            some vectorial information related to the graph vertices
+    G : graph instance
+        topology-defining graph
+    feature: array of shape (G.V,dim_feature)
+        some vectorial information related to the graph vertices
+    verbose : bool, optional
+         If True, print diagnostic information
 
     Returns
     -------
     t: weightForest instance,
        that represents the dendrogram of the data
 
-    Note
+    Notes
     ----
     Hopefully a quicker version
+
     A euclidean distance is used in the feature space
+
     Caveat : only approximate
     """
     # basic check
@@ -694,16 +700,19 @@ def ward_quick(G, feature, verbose=0):
     return t
 
 
-def ward_field_segment(F, stop=-1, qmax=-1, verbose=0):
+def ward_field_segment(F, stop=-1, qmax=-1, verbose=False):
     """Agglomerative function based on a field structure
 
     Parameters
     ----------
     F the input field (graph+feature)
-    stop: float, the stopping crterion
-         if stop==-1, then no stopping criterion is used
-    qmax: int, the maximum number of desired clusters
-            (in the limit of the stopping criterion)
+    stop: float, optional
+        the stopping crterion.  if stop==-1, then no stopping criterion is used
+    qmax: int, optional
+        the maximum number of desired clusters (in the limit of the stopping
+        criterion)
+    verbose : bool, optional
+        If True, print diagnostic information
 
     Returns
     -------
@@ -712,19 +721,18 @@ def ward_field_segment(F, stop=-1, qmax=-1, verbose=0):
     cost array of shape (F.V - 1)
          the cost of each merge step during the clustering procedure
 
-    CAVEAT
-    ------
-    only approximate
 
-    NOTE
-    ----
-    look ward_quick_segment for more information
+    Notes
+    -----
+    See ward_quick_segment for more information
+
+    Caveat : only approximate
     """
     u, cost = ward_quick_segment(F, F.field, stop, qmax, verbose)
     return u, cost
 
 
-def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=0):
+def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=False):
     """
     Agglomerative function based on a topology-defining graph
     and a feature matrix.
@@ -734,11 +742,14 @@ def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=0):
     G: labs.graph.WeightedGraph instance
        the input graph (a topological graph essentially)
     feature array of shape (G.V,dim_feature)
-            vectorial information related to the graph vertices
-    stop = -1: the stopping crterion
-         if stop==-1, then no stopping criterion is used
-    qmax=1: the maximum number of desired clusters
-            (in the limit of the stopping criterion)
+        vectorial information related to the graph vertices
+    stop1 : int or float, optional
+        the stopping crterion if stop==-1, then no stopping criterion is used
+    qmax : int, optional
+        the maximum number of desired clusters (in the limit of the stopping
+        criterion)
+    verbose : bool, optional
+        If True, print diagnostic information
 
     Returns
     -------
@@ -747,14 +758,13 @@ def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=0):
     cost: array of shape (G.V - 1)
           the cost of each merge step during the clustering procedure
 
-    NOTE
-    ----
+    Notes
+    -----
     Hopefully a quicker version
+
     A euclidean distance is used in the feature space
 
-    CAVEAT
-    ------
-    only approximate
+    Caveat : only approximate
     """
     # basic check
     if feature.ndim == 1:
@@ -789,20 +799,24 @@ def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=0):
     return u, cost
 
 
-def ward_segment(G, feature, stop=-1, qmax=1, verbose=0):
+def ward_segment(G, feature, stop=-1, qmax=1, verbose=False):
     """
     Agglomerative function based on a topology-defining graph
     and a feature matrix.
 
     Parameters
     ----------
-    G the input graph (a topological graph essentially)
-    feature array of shape (G.V,dim_feature)
-            some vectorial information related to the graph vertices
-    stop = -1: the stopping crterion
-         if stop==-1, then no stopping criterion is used
-    qmax=1: the maximum number of desired clusters
-            (in the limit of the stopping criterion)
+    G : graph object
+        the input graph (a topological graph essentially)
+    feature : array of shape (G.V,dim_feature)
+        some vectorial information related to the graph vertices
+    stop : int or float, optional
+        the stopping crterion.  if stop==-1, then no stopping criterion is used
+    qmax : int, optional
+        the maximum number of desired clusters (in the limit of the stopping
+        criterion)
+    verbose : bool, optional
+        If True, print diagnostic information
 
     Returns
     -------
@@ -811,11 +825,12 @@ def ward_segment(G, feature, stop=-1, qmax=1, verbose=0):
     cost: array of shape (G.V - 1)
           the cost of each merge step during the clustering procedure
 
-    NOTE
-    ----
+    Notes
+    -----
     A euclidean distance is used in the feature space
-    caveat : when the number of cc in G (nbcc)
-           is greter than qmax, u contains nbcc values, not qmax !
+
+    Caveat : when the number of cc in G (nbcc) is greter than qmax, u contains
+    nbcc values, not qmax !
     """
     # basic check
     if feature.ndim == 1:
@@ -851,25 +866,29 @@ def ward_segment(G, feature, stop=-1, qmax=1, verbose=0):
     return u, cost
 
 
-def ward(G, feature, verbose=0):
+def ward(G, feature, verbose=False):
     """
     Agglomerative function based on a topology-defining graph
     and a feature matrix.
 
-    Parameters:
-    ------------
-    G the input graph (a topological graph essentially)
-    feature array of shape (G.V,dim_feature)
-            vectorial information related to the graph vertices
+    Parameters
+    ----------
+    G : graph
+        the input graph (a topological graph essentially)
+    feature : array of shape (G.V,dim_feature)
+        vectorial information related to the graph vertices
+    verbose : bool, optional
+        If True, print diagnostic information
 
     Returns
     --------
-    t: a WeightedForest structure that represents the dendrogram
+    t : ``WeightedForest`` instance
+        structure that represents the dendrogram
 
-    Note
-    ----
-    When G has more than 1 connected component, t is no longer a tree.
-    This case is handled cleanly now
+    Notes
+    -----
+    When G has more than 1 connected component, t is no longer a tree.  This
+    case is handled cleanly now
     """
     # basic check
     if feature.ndim == 1:

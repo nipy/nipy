@@ -364,10 +364,11 @@ def build_LR(bf, thq=0.95, ths=0, dmax=1., verbose=0):
     dmax: float optional,
           regularizing constant that defines a prior on the region extent
 
-    Results
+    Returns
     -------
-    LR : an structural_bfls.LR instance, describing a cross-subject set of ROIs
-       if inference yields a null results, LR is set to None
+    LR : None or structural_bfls.LR instance
+        describing a cross-subject set of ROIs. If inference yields a null
+        result, LR is set to None
     newlabel: a relabelling of the individual ROIs, similar to u,
               which discards
               labels that do not fulfill the condition (c)

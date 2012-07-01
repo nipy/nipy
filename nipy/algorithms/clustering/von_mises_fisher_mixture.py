@@ -170,18 +170,19 @@ class VonMisesMixture(object):
 
         Parameters
         ----------
-        x: array fo shape(n,3)
+        x: array of shape (n,3)
            should be on the unit sphere
-        maxiter: int, optional,
-                 maximum number of iterations of the algorithms
-        miniter=1: int, optional,
-                 minimum number of iterations
-        bias: array of shape(n), optional
-              prior probability of being in a non-null class
+        maxiter : int, optional
+            maximum number of iterations of the algorithms
+        miniter : int, optional
+            minimum number of iterations
+        bias : array of shape(n), optional
+            prior probability of being in a non-null class
 
-        Return
-        ------
-        ll: float, average (across samples) log-density
+        Returns
+        -------
+        ll : float
+            average (across samples) log-density
         """
         # initialization with random positions and constant weights
         if self.weights is None:

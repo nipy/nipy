@@ -39,7 +39,7 @@ def check_p_values(p_values):
         The sample p-values
 
     Returns
-    --------
+    -------
     p_values : array of shape (n)
         The sample p-values
     """
@@ -79,8 +79,8 @@ def gaussian_fdr_threshold(x, alpha=0.05):
 
     Returns
     -------
-    threshold: float
-               threshold, given as a Gaussian critical value
+    threshold : float
+        threshold, given as a Gaussian critical value
     """
     pvals = st.norm.sf(x)
     pth = fdr_threshold(pvals, alpha)
@@ -124,7 +124,7 @@ def fdr(p_values=None, verbose=0):
         The samples p-value
 
     Returns
-    --------
+    -------
     q : array of shape(n)
         The corresponding fdr values
     """
@@ -184,9 +184,10 @@ class NormalEmpiricalNull(object):
         right: float, optional
             Right cut parameter to prevent fitting non-gaussian data
 
-        Note
-        ----
+        Notes
+        -----
         This method stores the following attributes:
+
         mu = mu
         p0 = min(1, np.exp(lp0))
         sqsigma: standard deviation of the estimated normal
@@ -252,8 +253,8 @@ class NormalEmpiricalNull(object):
         verbose : boolean, optional
             the verbosity level, if True a plot is generated.
 
-        Results
-        --------
+        Returns
+        -------
         theta: float
             the critical value associated with the provided FDR
         """
@@ -279,8 +280,8 @@ class NormalEmpiricalNull(object):
         verbose : boolean, optional
             the verbosity level, if True a plot is generated.
 
-        Results
-        --------
+        Returns
+        -------
         theta: float
             the critical value associated with the provided p-value
         """
@@ -296,14 +297,14 @@ class NormalEmpiricalNull(object):
     def fdr(self, theta):
         """Given a threshold theta, find the estimated FDR
 
-        Parameter
-        ---------
-        theta: float or array of shape (n_samples)
+        Parameters
+        ----------
+        theta : float or array of shape (n_samples)
             values to test
 
         Returns
         -------
-        afp: value of array of shape(n)
+        afp : value of array of shape(n)
         """
         from scipy.stats import norm
         self.fdrcurve()
@@ -416,7 +417,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
       If return_estimator is true, the estimator object is
       returned.
 
-    Results
+    Returns
     -------
     bfp : array of shape (nbitems,3):
         the posterior probability of each test item belonging to each component
@@ -425,12 +426,13 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
     estimator : nipy.labs.clustering.GMM object
         The estimator object, returned only if return_estimator is true.
 
-    Note
-    ----
-    Our convention is that
-    - class 1 represents the negative class
-    - class 2 represents the null class
-    - class 3 represents the positive class
+    Notes
+    -----
+    Our convention is that:
+
+    * class 1 represents the negative class
+    * class 2 represents the null class
+    * class 3 represents the positive class
     """
     from ..clustering.bgmm import VBGMM
     from ..clustering.gmm import GridDescriptor

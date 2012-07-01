@@ -170,12 +170,11 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
         that represents the grid used in the function
     ax, handle to the figure axes
 
-    Note
-    ----
-    my_gmm is assumed to have have a  'nixture_likelihood' method
-    that takes an array of points of shape (np, dim)
-    and returns an array of shape (np,my_gmm.k)
-    that represents  the likelihood component-wise
+    Notes
+    -----
+    ``my_gmm`` is assumed to have have a  'nixture_likelihood' method that takes
+    an array of points of shape (np, dim) and returns an array of shape
+    (np,my_gmm.k) that represents the likelihood component-wise
     """
     import matplotlib.pyplot as plt
 
@@ -466,8 +465,8 @@ class GMM(object):
         like, array of shape(n_samples,self.k)
           unweighted component-wise likelihood
 
-        Note
-        ----
+        Notes
+        -----
         Hopefully faster
         """
         xt = x.T.copy()

@@ -49,8 +49,8 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
     cluster_th: cluster size threshold
     null_s : cluster-level calibration method: None|'rft'|array
 
-    Note
-    ----
+    Notes
+    -----
     This works only with three dimensional data
     """
     # Masking

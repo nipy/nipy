@@ -21,8 +21,8 @@ It has three examples
   axis, and returns an Image with the same axes
 
 
-Note
-----
+Notes
+-----
 
 In these loaded Images, 't' is both an axis name and a world coordinate name so
 it is not ambiguous to say 't' axis. It is slightly ambiguous to say 'x+LR' axis

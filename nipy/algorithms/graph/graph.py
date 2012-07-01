@@ -339,10 +339,10 @@ def knn(X, k=1):
     -------
     the corresponding WeightedGraph instance
 
-    Note
-    ----
-    The knn system is symmeterized: if (ab) is one of the edges
-    then (ba) is also included
+    Notes
+    -----
+    The knn system is symmeterized: if (ab) is one of the edges then (ba) is
+    also included
     """
     from ..utils.fast_distance import euclidean_distance
 
@@ -415,9 +415,9 @@ def lil_cc(lil):
     -------
     label a vector of shape len(lil): connected components labelling
 
-    Note
-    ----
-    dramatically slow for non-sparse graphs
+    Notes
+    -----
+    Dramatically slow for non-sparse graphs
     """
     n = len(lil)
     visited = np.zeros(n).astype(np.int)
@@ -537,10 +537,10 @@ def concatenate_graphs(G1, G2):
     -------
     G, WeightedGraph, the concatenated graph
 
-    Note
-    ----
-    this implies that the vertices of G corresponding to G2
-    are labeled [G1.V .. G1.V+G2.V]
+    Notes
+    -----
+    This implies that the vertices of G corresponding to G2 are labeled [G1.V ..
+    G1.V+G2.V]
     """
     V = G1.V + G2.V
     edges = np.vstack((G1.edges, G1.V + G2.edges))
@@ -658,9 +658,9 @@ x
         dg: array of shape (self.V),
             the graph distance dg from ant vertex to the nearest seed
 
-        Note
-        ----
-        it is mandatory that the graph weights are non-negative
+        Notes
+        -----
+        It is mandatory that the graph weights are non-negative
         """
         import heapq
         if hasattr(seed, '__iter__') == False:
@@ -729,11 +729,11 @@ x
         dg array of shape (nbseed, self.V)
                 the graph distance dg from each seed to any vertex
 
-        Note
-        ----
-        It is mandatory that the graph weights are non-negative
-        The algorithm  proceeds byr epeating dijkstra's algo for each
-            seed. floyd's algo is not used (O(self.V)^3 complexity...)
+        Notes
+        -----
+        It is mandatory that the graph weights are non-negative. The algorithm
+        proceeds by repeating Dijkstra's algo for each seed. Floyd's algo is not
+        used (O(self.V)^3 complexity...)
         """
         if seed == None:
             seed = np.arange(self.V)
@@ -758,8 +758,8 @@ x
             c == 1 => for each vertex b, sum{edge[e, 1]=b} D[e]=1
             c == 2 => symmetric ('l2') normalization
 
-        Note
-        ----
+        Notes
+        -----
         Note that when sum_{edge[e, .] == a } D[e] = 0, nothing is performed
         """
         from scipy.sparse import dia_matrix
@@ -824,10 +824,10 @@ x
           the coordinate matrix of the embedding
         sigma=0, float: the parameter of the gaussian function
 
-        Note
-        ----
-        when sigma = 0, the following value is used:
-        sigma = sqrt(mean(||X[self.edges[:, 0], :]-X[self.edges[:, 1], :]||^2))
+        Notes
+        -----
+        When sigma == 0, the following value is used: ``sigma =
+        sqrt(mean(||X[self.edges[:, 0], :]-X[self.edges[:, 1], :]||^2))``
         """
         sigma = float(sigma)
         if sigma < 0:
@@ -985,10 +985,10 @@ x
         -------
         G, WeightedGraph instance, the desired subgraph of self
 
-        Note
-        ----
-        The vertices are renumbered as [1..p] where p = sum(valid>0)
-        when sum(valid==0) then None is returned
+        Notes
+        -----
+        The vertices are renumbered as [1..p] where p = sum(valid>0) when
+        sum(valid==0) then None is returned
         """
         if np.size(valid) != self.V:
             raise ValueError("incompatible size for self anf valid")
@@ -1016,10 +1016,10 @@ x
         -------
         K, WeightedGraph instance: the resulting MST
 
-        Note
-        ----
-        if self contains several connected components,
-        will have the same number k of connected components
+        Notes
+        -----
+        If self contains several connected components, will have the same number
+        k of connected components
         """
         k = self.cc().max() + 1
         E = 2 * self.V - 2
@@ -1057,10 +1057,10 @@ x
         seeds: array of shape (self.V, dim)
         samples: array of shape (nsamples, dim)
 
-        Note
-        ----
-        by default, the weights are a Gaussian function of the distance
-        The implementation is not optimal
+        Notes
+        -----
+        By default, the weights are a Gaussian function of the distance The
+        implementation is not optimal
         """
         from bipartite_graph import cross_knn
         # checks
@@ -1105,8 +1105,8 @@ x
         -------
         ax: axis handle
 
-        Note
-        ----
+        Notes
+        -----
         This should be used only for small graphs.
         """
         if np.size(self.weights) == 0:

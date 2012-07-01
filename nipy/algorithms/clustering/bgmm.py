@@ -699,10 +699,11 @@ class BGMM(GMM):
                      or (self.k, self.dim)
                      these are the average parameters across samplings
 
-        Note
-        ----
-        All this makes sense only if no label switching as occurred
-        so this is wrong in general (asymptotically)
+        Notes
+        -----
+        All this makes sense only if no label switching as occurred so this is
+        wrong in general (asymptotically).
+
         fix: implement a permutation procedure for components identification
         """
         aprec = np.zeros(np.shape(self.precisions))
@@ -833,8 +834,8 @@ class BGMM(GMM):
         -------
         bf (float) the computed evidence (Bayes factor)
 
-        Note
-        ----
+        Notes
+        -----
         See: Marginal Likelihood from the Gibbs Output
         Journal article by Siddhartha Chib;
         Journal of the American Statistical Association, Vol. 90, 1995

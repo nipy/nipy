@@ -290,8 +290,8 @@ class LikelihoodModelResults(object):
         f_res : ``FContrastResults`` instance
             with attributes F, df_den, df_num
 
-        Note
-        ----
+        Notes
+        -----
         For F contrasts, we now specify an effect and covariance
         """
         matrix = np.asarray(matrix)
@@ -339,8 +339,8 @@ class LikelihoodModelResults(object):
             `cis` is shape ``(len(cols), 2)`` where each row contains [lower,
             upper] for the given entry in `cols`
 
-        Example
-        -------
+        Examples
+        --------
         >>> from numpy.random import standard_normal as stan
         >>> from nipy.algorithms.statistics.models.regression import OLSModel
         >>> x = np.hstack((stan((30,1)),stan((30,1)),stan((30,1))))

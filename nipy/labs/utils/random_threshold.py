@@ -19,7 +19,7 @@ def randthresh_main(Y, K, XYZ=None, p=np.inf, varwind=False, knownull=True,
     """ Wrapper for random threshold functions
 
     Parameters
-    ==========
+    ----------
     Y:  array of shape (n,),Observations
     K: int, Some positive integer
        (lower bound on the number of null hypotheses)
@@ -36,17 +36,18 @@ def randthresh_main(Y, K, XYZ=None, p=np.inf, varwind=False, knownull=True,
     verbose: bool,  'Chatty' mode
 
     Returns
-    =======
-    A dictionary D containing the following fields:
-    "C"  (n-K) array  Lp norm of partial sums fluctuation
-                      about their conditional expectation
-    "thresh" <float> Detection threshold
-    "detect" (k,)    Index of detected activations
+    -------
+    D : dict
+        containing the following fields:
+        * "C"  (n-K) array  Lp norm of partial sums fluctuation
+          about their conditional expectation
+        * "thresh" <float> Detection threshold
+        * "detect" (k,)    Index of detected activations
 
-    Note
-    ====
-    Random thresholding is performed only
-    if null hypothesis of no activations is rejected at level 5%
+    Notes
+    -----
+    Random thresholding is performed only if null hypothesis of no activations
+    is rejected at level 5%
     """
     if XYZ == None:
         return randthresh(Y, K, p, stop, verbose, varwind, knownull)
@@ -60,7 +61,7 @@ def randthresh(Y, K, p=np.inf, stop=False, verbose=False, varwind=False,
     """ Wrapper for random threshold functions (without connexity constraints)
 
     Parameters
-    ==========
+    ----------
     Y: array of shape  (n,) Observations
     K: int,
        Some positive integer (lower bound on the number of null hypotheses)
@@ -72,7 +73,7 @@ def randthresh(Y, K, p=np.inf, stop=False, verbose=False, varwind=False,
                Known null distribution (observations assumed Exp(1) under H0)
                versus unknown (observations assumed Gaussian under H0)
     Returns
-    =======
+    -------
     A dictionary D containing the following fields:
     "C" (n-K)
         Lp norm of partial sums fluctuation about their conditional expectation
@@ -80,10 +81,10 @@ def randthresh(Y, K, p=np.inf, stop=False, verbose=False, varwind=False,
     "detect" (k,)    Index of detected activations
     "v"      <float> Estimated null variance (if knownull is False)
 
-    Note
-    ====
-    Random thresholding is performed only if
-    null hypothesis of no activations is rejected at level 5%
+    Notes
+    -----
+    Random thresholding is performed only if null hypothesis of no activations
+    is rejected at level 5%
     """
     D = {}
     # Test presence of activity
@@ -143,7 +144,7 @@ def randthresh_connex(Y, K, XYZ, p=np.inf, stop=False, verbose=False,
     Wrapper for random threshold functions under connexity constraints
 
     Parameters
-    ==========
+    ----------
     Y  (n,)    Observations
     K  <int>
        Some positive integer (lower bound on the number of null hypotheses)
@@ -157,17 +158,17 @@ def randthresh_connex(Y, K, XYZ, p=np.inf, stop=False, verbose=False,
               versus unknown (observations assumed Gaussian under H0)
 
     Returns
-    =======
+    -------
     A dictionary D containing the following fields:
     "C" (n-K)
         Lp norm of partial sums fluctuation about their conditional expectation
     "thresh"    <float>    Detection threshold
     "detect"    (ncoeffs,) Index of detected voxels
 
-    Note
-    ====
-    Random thresholding is performed only if
-    null hypothesis of no activations is rejected at level 5%
+    Notes
+    -----
+    Random thresholding is performed only if null hypothesis of no activations
+    is rejected at level 5%
     """
     # Test presence of activity
     D = {}

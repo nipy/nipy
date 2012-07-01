@@ -28,7 +28,7 @@ def hroi_agglomeration(input_hroi, criterion='size', smin=0):
 
     Parameters
     ----------
-    input_hroi: HierarchicalROI instance,
+    input_hroi: HierarchicalROI instance
       The input hROI
     criterion: str, optional
       To be chosen among 'size' or 'volume'
@@ -38,7 +38,6 @@ def hroi_agglomeration(input_hroi, criterion='size', smin=0):
     Returns
     -------
     output_hroi:  HierarchicalROI instance
-
     """
     if criterion not in ['size', 'volume']:
         return ValueError('unknown criterion')
@@ -79,15 +78,15 @@ def HROI_as_discrete_domain_blobs(domain, data, threshold=NINF, smin=0,
 
     Parameters
     ----------
-    domain: discrete_domain.StructuredDomain instance,
+    domain : discrete_domain.StructuredDomain instance,
       Definition of the spatial context.
-    data: array of shape (domain.size),
+    data : array of shape (domain.size)
       The corresponding data field.
-    threshold: float optional,
+    threshold : float, optional
       Thresholding level.
-    criterion: string, optional
+    criterion : string, optional
       To be chosen among 'size' or 'volume'.
-    smin: float, optional,
+    smin: float, optional
       A threshold on the criterion.
 
     Returns
@@ -119,17 +118,17 @@ def HROI_from_watershed(domain, data, threshold=NINF):
 
     Parameters
     ----------
-    domain: discrete_domain.StructuredDomain instance,
+    domain: discrete_domain.StructuredDomain instance
       Definition of the spatial context.
-    data: array of shape (domain.size),
+    data: array of shape (domain.size)
       The corresponding data field.
-    threshold: float optional,
+    threshold: float, optional
       Thresholding level.
 
     Returns
     -------
-    The HierachicalROI instance with a `seed` feature.
-
+    nroi : ``HierarchichalROI`` instance
+        The HierachicalROI instance with a ``seed`` feature.
     """
     if threshold > data.max():
         # return an empty HROI structure
@@ -154,27 +153,26 @@ class HierarchicalROI(SubDomains):
 
     Parameters
     ----------
-    `k`: int,
+    k : int
       Number of ROI in the SubDomains object
-    `label`: array of shape (domain.size), dtype=np.int,
+    label : array of shape (domain.size), dtype=np.int
       An array use to define which voxel belongs to which ROI.
       The label values greater than -1 correspond to subregions
       labelling. The labels are recomputed so as to be consecutive
       integers.
       The labels should not be accessed outside this class. One has to
       use the API mapping methods instead.
-    `features`: dict{str: list of object, length=self.k}
+    features : dict {str: list of object, length=self.k}
       Describe the voxels features, grouped by ROI
-    `roi_features`: dict{str: array-like, shape=(self.k, roi_feature_dim)
+    roi_features : dict {str: array-like, shape=(self.k, roi_feature_dim)
       Describe the ROI features. A special feature, `id`, is read-only and
       is used to give an unique identifier for region, which is persistent
       through the MROI objects manipulations. On should access the different
       ROI's features using ids.
-    `parents`: np.ndarray, shape(self.k)
+    parents : np.ndarray, shape(self.k)
       self.parents[i] is the index of the parent of the i-th ROI.
 
     TODO: have the parents as a list of id rather than a list of indices.
-
     """
 
     def __init__(self, domain, label, parents, id=None):
@@ -191,21 +189,20 @@ class HierarchicalROI(SubDomains):
 
         Parameters
         ----------
-        id: any hashable type,
+        id: any hashable type, optional
           Id of the ROI from which we want to get the volume.
           Can be None (default) if we want all ROIs's volumes.
-        ignore_children: bool,
+        ignore_children : bool, optional
           Specify if the volume of the node should include
           (ignore_children = False) or not the one of its children
           (ignore_children = True).
 
-        Return
-        ------
-        volume: float
+        Returns
+        -------
+        volume : float
           if an id is provided,
              or list of float
           if no id provided (default)
-
         """
         if ignore_children:
             # volume of the children is not included
@@ -238,16 +235,16 @@ class HierarchicalROI(SubDomains):
 
         Parameters
         ----------
-        id: any hashable type
+        id: any hashable type, optional
           Id of the ROI from which we want to get the size.
           Can be None (default) if we want all ROIs's sizes.
-        ignore_children: bool,
+        ignore_children: bool, optional
           Specify if the size of the node should include
           (ignore_children = False) or not the one of its children
           (ignore_children = True).
 
-        Return
-        ------
+        Returns
+        -------
         size: int
           if an id is provided,
              or list of int

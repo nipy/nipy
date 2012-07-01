@@ -44,13 +44,14 @@ def _field_gradient_jac(ref, target):
 
     Parameters
     ----------
-    ref: Field instance that yields the topology of the space
-    target array of shape(ref.V,dim)
+    ref: Field instance
+        that yields the topology of the space
+    target : array of shape(ref.V,dim)
 
-    Results
+    Returns
     -------
-    fgj: array of shape (ref.V) that gives the jacobian
-         implied by the ref.field->target transformation.
+    fgj: array of shape (ref.V)
+        that gives the jacobian implied by the ref.field->target transformation.
     """
     import numpy.linalg as nl
     n = ref.V
@@ -84,7 +85,7 @@ def _exclusion_map_dep(i, ref, target, targeti):
     target: array of shape (ref.V,3): current posistion of the parcels
     targeti array of shape (n,3): possible new positions for the ith item
 
-    Results
+    Returns
     -------
     emap: aray of shape (n): a potential that yields the fitness
           of the proposed positions given the current configuration
@@ -116,7 +117,7 @@ def _exclusion_map(i, ref, target, targeti):
     target= array of shape (ref.V,3): current posistion of the parcels
     targeti array of shape (n,3): possible new positions for the ith item
 
-    Results
+    Returns
     -------
     emap: aray of shape (n): a potential that yields the fitness
           of the proposed positions given the current configuration
@@ -377,7 +378,7 @@ def hparcel(domain, ldata, nb_parcel, nb_perm=0, niter=5, mu=10., dmax=10.,
     initial_mask: array of shape (domain.size, nb_subj), optional
                   initial subject-depedent masking of the domain
 
-    Results
+    Returns
     -------
     Pa: the resulting parcellation structure appended with the labelling
     """
