@@ -88,7 +88,7 @@ Then you may want to do make a file ``~/.nipy/config.ini`` with the
 following contents::
 
    [DATA]
-   /home/my-user/some-dir/share/nipy
+   path=/home/my-user/some-dir/share/nipy
 
 On windows
 ~~~~~~~~~~
@@ -107,7 +107,7 @@ new file called ``c:\Documents and Settings\My User\_nipy\config.ini``
 with contents::
 
    [DATA]
-   c:\some\path\share\nipy
+   path=c:\some\path\share\nipy
 
 Guidelines
 ==========
