@@ -8,6 +8,8 @@ USAGE = """
 usage : python %s [1x4-contrast]
 where [1x4-contrast] is optional and is something like 1,0,0,0
 
+If you don't enter a contrast, 1,0,0,0 is the default.
+
 An activation image is displayed.
 
 This script requires the nipy-data package to run. It is an example of using a
