@@ -78,7 +78,8 @@ static int* _select_neighborhood_system(int ngb_size) {
 
 #define TINY 1e-300
 
-
+/* Compute neighborhood 'agreement' term required by the VE-step at a
+particular voxel */
 static void _ngb_integrate(double* res,
 			   const PyArrayObject* ppm,
 			   int x,
