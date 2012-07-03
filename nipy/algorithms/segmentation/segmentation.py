@@ -59,28 +59,16 @@ class Segmentation(object):
         # the image borders are further rejected to avoid segmentation
         # faults.
         if mask == None:
-            mask = [slice(0, s) for s in space_shape]
-            XYZ = np.mgrid[mask]
-            XYZ = np.reshape(XYZ, (XYZ.shape[0], np.prod(XYZ.shape[1::]))).T
-            self.XYZ = np.asarray(XYZ, dtype='uint', order='C')
-        else:
-            data_msk = data[mask]
-            mask_size = mask.sum()
-            X, Y, Z = np.where(mask > 0)
-            XYZ = np.zeros((mask_size, 3), dtype='uint')
-            XYZ[:, 0] = X
-            XYZ[:, 1] = Y
-            XYZ[:, 2] = Z
-            self.XYZ = XYZ
+            mask = np.ones(space_shape, dtype=bool)
+        X, Y, Z = np.where(mask > 0)
+        XYZ = np.zeros((X.shape[0], 3), dtype='uint')
+        XYZ[:, 0], XYZ[:, 1], XYZ[:, 2] = X, Y, Z
+        self.XYZ = XYZ
 
         self.mask = mask
-        data_msk = data[mask]
-
+        self.data = data[mask]
         if nchannels == 1:
-            self.data = data_msk.reshape((np.prod(data_msk.shape), 1))
-        else:
-            self.data = data_msk.reshape((np.prod(data_msk.shape[0:-1]),
-                                          data_msk.shape[-1]))
+            self.data = np.reshape(self.data, (self.data.shape[0], 1))
 
         # By default, the ppm is initialized as a collection of
         # uniform distributions
@@ -213,7 +201,7 @@ class Segmentation(object):
                                                  self.U, self.ngb_size)
         else:
             f2 = 0.0
-        return f1, f2
+        return f1 + f2
 
 
 def moment_matching(dat, mu, sigma, glob_mu, glob_sigma):
