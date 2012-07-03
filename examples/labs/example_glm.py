@@ -19,7 +19,7 @@ from nibabel import save, Nifti1Image
 import nipy.modalities.fmri.design_matrix as dm
 from nipy.labs.utils.simul_multisubject_fmri_dataset import \
      surrogate_4d_dataset
-from nipy.modalities.fmri.glm import GeneralLinearModel 
+from nipy.modalities.fmri.glm import GeneralLinearModel
 from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
 
 #######################################
@@ -30,19 +30,29 @@ from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
 shape = (20, 20, 20)
 affine = np.eye(4)
 
-# timing
+# Acquisition parameters: number of scans (n_scans) and volume repetition time
+# value in seconds
 n_scans = 128
 tr = 2.4
 
-# paradigm
+# input paradigm information
 frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
+
+# conditions are 0 1 0 1 0 1 ...
 conditions = np.arange(20) % 2
-onsets = np.linspace(5, (n_scans - 1) * tr - 10, 20) # in seconds
+
+# 20 onsets (in sec), first event 10 sec after the start of the first scan
+onsets = np.linspace(5, (n_scans - 1) * tr - 10, 20)
+
+# model with canonical HRF (could also be :
+#   'canonical with derivative' or 'fir'
 hrf_model = 'canonical'
+
+# fake motion parameters to be included in the model
 motion = np.cumsum(np.random.randn(n_scans, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
-# write directory
+# temporary directory to write resutls in
 swd = tempfile.mkdtemp()
 
 ########################################
@@ -50,8 +60,8 @@ swd = tempfile.mkdtemp()
 ########################################
 
 paradigm = EventRelatedParadigm(conditions, onsets)
-X, names = dm.dmtx_light(frametimes, paradigm, drift_model='cosine', hfcut=128,
-                         hrf_model=hrf_model, add_regs=motion,
+X, names = dm.dmtx_light(frametimes, paradigm, drift_model='cosine',
+                         hfcut=128, hrf_model=hrf_model, add_regs=motion,
                          add_reg_names=add_reg_names)
 
 
