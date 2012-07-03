@@ -70,14 +70,69 @@ GUI, and then, using the windows shell or similar::
 Non-administrator data package installation
 -------------------------------------------
 
-The commands above assume you are installing into the default system
-directories.  If you want to install into a custom directory, then (in python,
-or ipython, or a text editor) look at the help for
+The simple ugly manual way
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These are instructions for using the command line in Unix.  You can do similar
+things from Windows powershell.
+
+* Locate your nipy user directory from the output of this::
+
+    python -c 'import nibabel.data; print(nibabel.data.get_nipy_user_dir())'
+
+  Call that directory ``<nipy-user>``.  Let's imagine that, for you, this is
+  ``/home/me/.nipy``.
+* If that directory does not exist already, create it, e.g.::
+
+    mkdir /home/me/.nipy
+
+* Make a directory in ``<nipy-user>`` called ``nipy``, e.g.::
+
+    mkdir /home/me/.nipy/nipy
+
+* Go to http://nipy.sourceforge.net/data-packages
+* Download the latest *nipy-templates* and *nipy-data* packages
+* Unpack both these into some directory, e.g.::
+
+    mkdir data
+    cd data
+    tar zxvf ~/Downloads/nipy-data-0.2.tar.gz
+    tar zxvf ~/Downloads/nipy-templates-0.2.tar.gz
+
+* After you have unpacked the templates, you will have a directory called
+  something like ``nipy-templates-0.2``.  In that directory you should see a
+  directory called ``templates``.  Copy / move / link the ``templates``
+  directory into ``<nipy-user>/nipy``, so you now have a directory
+  ``<nipy-user>/nipy/templates``.  For example::
+
+    cd data
+    cp -r nipy-data-0.2/data /home/me/.nipy/nipy
+    cp -r nipy-templates-0.2/templates /home/me/.nipy/nipy
+
+* Check whether that worked.  Run the following command from the shell::
+
+    python -c 'import nipy.utils; print(nipy.utils.example_data, nipy.utils.templates)'
+
+  It should show something like::
+
+    (<nibabel.data.VersionedDatasource object at 0x101f8e410>, <nibabel.data.VersionedDatasource object at 0x10044b110>)
+
+  If it shows ``Bomber`` objects instead, something is wrong.  Go back and check
+  that you have the nipy home directory right, and that you have directories
+  ``<nipy-user>/nipy/data`` and ``<nipy-user>/nipy/templates>``, and that each
+  of these two directories have a file ``config.ini`` in them.
+
+The more general way
+^^^^^^^^^^^^^^^^^^^^
+
+The commands for the sytem install above assume you are installing into the
+default system directories.  If you want to install into a custom directory,
+then (in python, or ipython, or a text editor) look at the help for
 ``nibabel.data.get_data_path()`` . There are instructions there for pointing
 your nipy installation to the installed data.
 
 On unix
-~~~~~~~
++++++++
 
 For example, say you installed with::
 
@@ -91,7 +146,7 @@ following contents::
    path=/home/my-user/some-dir/share/nipy
 
 On windows
-~~~~~~~~~~
+++++++++++
 
 Say you installed with (windows shell)::
 
