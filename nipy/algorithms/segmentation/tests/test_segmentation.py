@@ -26,7 +26,11 @@ def test_brain_seg():
                                             [0., 1., 0.],
                                             [0., 1., 0.],
                                             [0., 0., 1.]]))
-    S.run(niters=3, beta=0.5, convert=False)
+    S.run(niters=3, beta=0.5, ngb_size=6, convert=False)
+    assert_equal(S.ppm.ndim, 4)
+    assert_equal(S.ppm.shape[3], 5)
+    assert_equal(S.label.ndim, 3)
+    S.run(niters=3, beta=0.5, ngb_size=26, convert=False)
     assert_equal(S.ppm.ndim, 4)
     assert_equal(S.ppm.shape[3], 5)
     assert_equal(S.label.ndim, 3)

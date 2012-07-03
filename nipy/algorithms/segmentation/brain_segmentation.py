@@ -77,11 +77,11 @@ class BrainT1Segmentation(object):
                                self.ref_mu, self.ref_sigma,
                                self.glob_mu, self.glob_sigma)
 
-    def run(self, niters=25, beta=0.5, convert=True):
+    def run(self, niters=25, ngb_size=6, beta=0.5, convert=True):
         self.init_mu, self.init_sigma = self.init_parameters()
         S = Segmentation(self.data, mask=self.mask,
                          mu=self.init_mu, sigma=self.init_sigma,
-                         beta=beta)
+                         ngb_size=ngb_size, beta=beta)
         S.run(niters=niters)
         self.mu = S.mu
         self.sigma = S.sigma
