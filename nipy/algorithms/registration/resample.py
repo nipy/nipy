@@ -35,8 +35,13 @@ def resample(moving, transform=None, reference=None,
       Image to be resampled.
     transform: transform object or None
       Represents a transform that goes from the `reference` image to
-      the `moving` image. It should have either an `apply` method, or
-      an `as_affine` method.
+      the `moving` image. None means an identity transform. Otherwise,
+      it should have either an `apply` method, or an `as_affine`
+      method. By default, `transform` maps between the output (world)
+      space of `reference` and the output (world) space of `moving`.
+      If `mov_voxel_coords` is True, maps to the *voxel* space of
+      `moving` and if `ref_vox_coords` is True, maps from the *voxel*
+      space of `reference`.
     reference : None or nipy-like image or tuple, optional
       The reference image defines the image dimensions and xyz affine
       to which to resample. It can be input as a nipy-like image or as
@@ -61,12 +66,15 @@ def resample(moving, transform=None, reference=None,
     mov_aff = xyz_affine(moving)
     if reference == None:
         reference = moving
-    try:
-        reference = as_xyz_image(reference)
-        ref_shape = reference.shape[0:3]
-        ref_aff = xyz_affine(reference)
-    except:
+    if isinstance(reference, (tuple, list)):
         ref_shape, ref_aff = reference
+    else:
+        # Expecting image. Must be an image that can make an xyz_affine
+        reference = as_xyz_image(reference)
+        ref_shape = reference.shape
+        ref_aff = xyz_affine(reference)
+    if not len(ref_shape) == 3 or not ref_aff.shape == (4, 4):
+        raise ValueError('Input image should be 3D')
     data = moving.get_data()
     if dtype == None:
         dtype = data.dtype
