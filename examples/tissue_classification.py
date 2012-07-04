@@ -11,8 +11,6 @@ from nipy.core.image.image_spaces import (make_xyz_image,
 from nipy.externals.argparse import ArgumentParser
 from nipy.algorithms.segmentation import BrainT1Segmentation
 
-LABELS = ('CSF', 'GM', 'WM')
-
 
 def fuzzy_dice(gold_ppm, ppm, mask):
     """
@@ -78,7 +76,7 @@ S = BrainT1Segmentation(img.get_data(), mask=mask, model='5k')
 S.run(niters=niters, beta=beta)
 
 # Save label image
-outfile = join(mkdtemp(), 'hard_classif.nii')
+outfile = 'hard_classif.nii'
 save_image(make_xyz_image(S.label, xyz_affine(img), 'scanner'),
            outfile)
 print('Label image saved in: %s' % outfile)
