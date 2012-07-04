@@ -41,6 +41,8 @@ parser.add_argument('--niters', dest='niters',
     help='number of iterations (default=%d)' % 25)
 parser.add_argument('--beta', dest='beta',
     help='Markov random field beta parameter (default=%f)' % 0.5)
+parser.add_argument('--ngb_size', dest='ngb_size',
+    help='Markov random field neighborhood system (default=%d)' % 6)
 parser.add_argument('--probc', dest='probc', help='csf probability map')
 parser.add_argument('--probg', dest='probg',
     help='gray matter probability map')
@@ -69,11 +71,12 @@ else:
 # Other optional arguments
 niters = int(get_argument('niters', 25))
 beta = float(get_argument('beta', 0.5))
+ngb_size = int(get_argument('ngb_size', 6))
 
 # Perform tissue classification
 mask = mask_img.get_data() > 0
-S = BrainT1Segmentation(img.get_data(), mask=mask, model='5k')
-S.run(niters=niters, beta=beta)
+S = BrainT1Segmentation(img.get_data(), mask=mask, model='5k',
+                        niters=niters, beta=beta, ngb_size=ngb_size)
 
 # Save label image
 outfile = 'hard_classif.nii'

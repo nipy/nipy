@@ -7,9 +7,7 @@ from .segmentation import (Segmentation,
 T1_ref_params = {}
 T1_ref_params['3k'] = {
     'mu': np.array([813.9, 1628.4, 2155.8]),
-    'sigma': np.array([46483.4, 30241.2, 17134.8]),
-    'glob_mu': 1643.1,
-    'glob_sigma': 252807.8}
+    'sigma': np.array([46483.4, 30241.2, 17134.8])}
 T1_ref_params['4k'] = {
     'mu': np.array([788.5, 1544.6, 1734.8, 2159.7]),
     'sigma': np.array([38366.7, 30788.6, 19312.4, 16399.7])}
@@ -22,7 +20,9 @@ T1_ref_params['glob_sigma'] = 252772.3
 
 class BrainT1Segmentation(object):
 
-    def __init__(self, data, mask=None, model='3k'):
+    def __init__(self, data, mask=None, model='3k',
+                 niters=25, ngb_size=6, beta=0.5,
+                 ref_params=None, scaling=1, convert=True):
 
         self.labels = ('CSF', 'GM', 'WM')
         self.data = data
@@ -32,61 +32,76 @@ class BrainT1Segmentation(object):
         if mixmat.ndim == 2:
             nclasses = mixmat.shape[0]
             if nclasses < 3:
-                raise ValueError('brain segmentation requires at least 3 classes')
+                raise ValueError('at least 3 classes required')
             if not mixmat.shape[1] == 3:
                 raise ValueError('mixing matrix should have 3 rows')
             self.mixmat = mixmat
-        elif model in T1_ref_params.keys():
-            if model == '3k':
-                self.mixmat = np.eye(3)
-            elif model == '4k':
-                self.mixmat = np.array([[1., 0., 0.],
-                                        [0., 1., 0.],
-                                        [0., 1., 0.],
+        elif model == '3k':
+            self.mixmat = np.eye(3)
+        elif model == '4k':
+            self.mixmat = np.array([[1., 0., 0.],
+                                    [0., 1., 0.],
+                                    [0., 1., 0.],
+                                    [0., 0., 1.]])
+        elif model == '5k':
+            self.mixmat = np.array([[1., 0., 0.],
+                                    [1., 0., 0.],
+                                    [0., 1., 0.],
+                                    [0., 1., 0.],
                                         [0., 0., 1.]])
-            elif model == '5k':
-                self.mixmat = np.array([[1., 0., 0.],
-                                        [1., 0., 0.],
-                                        [0., 1., 0.],
-                                        [0., 1., 0.],
-                                        [0., 0., 1.]])
-            nclasses = self.mixmat.shape[0]
         else:
             raise ValueError('unknown brain segmentation model')
 
-        if nclasses <= 5:
-            key = str(self.mixmat.shape[0]) + 'k'
-            self.ref_mu = T1_ref_params[key]['mu']
-            self.ref_sigma = T1_ref_params[key]['sigma']
-        else:
-            self.ref_mu = np.linspace(T1_ref_params['3k']['mu'][0],
-                                      T1_ref_params['3k']['mu'][-1],
-                                      num=nclasses)
-            self.ref_sigma = np.linspace(T1_ref_params['3k']['sigma'][0],
-                                         T1_ref_params['3k']['sigma'][-1],
-                                         num=nclasses)
-        self.glob_mu = T1_ref_params['glob_mu']
-        self.glob_sigma = T1_ref_params['glob_sigma']
+        self.niters = int(niters)
+        self.beta = float(beta)
+        self.ngb_size = int(ngb_size)
 
-    def init_parameters(self):
+        if ref_params == None:
+            ref_params = T1_ref_params
+        self.init_mu, self.init_sigma = self._init_parameters(ref_params)
+        if not scaling == 1:
+            self.init_sigma *= scaling ** 2
+
+        self._run()
+        if convert:
+            self.convert()
+        else:
+            self.label = map_from_ppm(self.ppm, self.mask)
+
+    def _init_parameters(self, ref_params):
+
         if not self.mask == None:
             data = self.data[self.mask]
         else:
             data = self.data
-        return moment_matching(data,
-                               self.ref_mu, self.ref_sigma,
-                               self.glob_mu, self.glob_sigma)
 
-    def run(self, niters=25, ngb_size=6, beta=0.5, convert=True):
-        self.init_mu, self.init_sigma = self.init_parameters()
+        nclasses = self.mixmat.shape[0]
+        if nclasses <= 5:
+            key = str(self.mixmat.shape[0]) + 'k'
+            ref_mu = ref_params[key]['mu']
+            ref_sigma = ref_params[key]['sigma']
+        else:
+            ref_mu = np.linspace(ref_params['3k']['mu'][0],
+                                 ref_params['3k']['mu'][-1],
+                                 num=nclasses)
+            ref_sigma = np.linspace(ref_params['3k']['sigma'][0],
+                                    ref_params['3k']['sigma'][-1],
+                                    num=nclasses)
+
+        return moment_matching(data, ref_mu, ref_sigma,
+                               ref_params['glob_mu'],
+                               ref_params['glob_sigma'])
+
+    def _run(self):
         S = Segmentation(self.data, mask=self.mask,
                          mu=self.init_mu, sigma=self.init_sigma,
-                         ngb_size=ngb_size, beta=beta)
-        S.run(niters=niters)
+                         ngb_size=self.ngb_size, beta=self.beta)
+        S.run(niters=self.niters)
         self.mu = S.mu
         self.sigma = S.sigma
-        if convert:
-            self.ppm = np.dot(S.ppm, self.mixmat)
-        else:
-            self.ppm = S.ppm
-        self.label = map_from_ppm(self.ppm, self.mask)
+        self.ppm = S.ppm
+
+    def convert(self):
+        if self.ppm.shape[-1] == self.mixmat.shape[0]:
+            self.ppm = np.dot(self.ppm, self.mixmat)
+            self.label = map_from_ppm(self.ppm, self.mask)
