@@ -101,9 +101,12 @@ things from Windows powershell.
 
 * After you have unpacked the templates, you will have a directory called
   something like ``nipy-templates-0.2``.  In that directory you should see a
-  directory called ``templates``.  Copy / move / link the ``templates``
-  directory into ``<nipy-user>/nipy``, so you now have a directory
-  ``<nipy-user>/nipy/templates``.  For example::
+  subdirectory called ``templates``.  Copy / move / link the ``templates``
+  subdirectory into ``<nipy-user>/nipy``, so you now have a directory
+  ``<nipy-user>/nipy/templates``.  From unpacking the data, you should also have
+  a directory like ``nipy-data-0.2`` with a subdirectory ``data``.  Copy / move
+  / link that ``data`` directory into ``<nipy-user>/nipy`` as well.  For
+  example::
 
     cd data
     cp -r nipy-data-0.2/data /home/me/.nipy/nipy
