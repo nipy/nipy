@@ -83,7 +83,7 @@ def make_bsa_image(
 
     # Read the referential information
     nim = load(mask_images[0])
-    ref_dim = nim.get_shape()[:3]
+    ref_dim = nim.shape[:3]
     affine = nim.get_affine()
 
     # Read the masks and compute the "intersection"
