@@ -57,7 +57,7 @@ smin = 5  # size threshold on bblobs
 # prepare the data
 nim = load(input_image)
 affine = nim.get_affine()
-shape = nim.get_shape()
+shape = nim.shape
 data = nim.get_data()
 values = data[data != 0]
 
