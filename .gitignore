@@ -13,6 +13,7 @@
 .*.sw[nop]
 .sw[nop]
 *.tmp
+*.orig
 
 # Not sure what the next two are for
 *.kpf
