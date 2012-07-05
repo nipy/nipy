@@ -260,7 +260,7 @@ def onesample_test(data_images, vardata_images, mask_images, stat_id,
                                        stat_id=stat_id)
 
     # Compute z-map image
-    zmap = np.zeros(data_images[0].get_shape()).squeeze()
+    zmap = np.zeros(data_images[0].shape).squeeze()
     zmap[list(xyz)] = ptest.zscore()
     zimg = Image(zmap, data_images[0].get_affine())
 
@@ -309,7 +309,7 @@ def twosample_test(data_images, vardata_images, mask_images, labels, stat_id,
             stat_id=stat_id)
 
     # Compute z-map image
-    zmap = np.zeros(data_images[0].get_shape()).squeeze()
+    zmap = np.zeros(data_images[0].shape).squeeze()
     zmap[list(xyz)] = ptest.zscore()
     zimg = Image(zmap, data_images[0].get_affine())
 
@@ -356,7 +356,7 @@ def linear_model_fit(data_images, mask_images, design_matrix, vector):
     c = G.contrast(vector)
 
     # Compute z-map image
-    zmap = np.zeros(data_images[0].get_shape()).squeeze()
+    zmap = np.zeros(data_images[0].shape).squeeze()
     zmap[list(xyz)] = c.zscore()
     zimg = Image(zmap, data_images[0].get_affine())
 
@@ -384,12 +384,12 @@ class LinearModel(object):
         nomask = mask == None
         if nomask:
             self.xyz = None
-            self.axis = len(data[0].get_shape()) - 1
+            self.axis = len(data[0].shape) - 1
         else:
             self.xyz = np.where(mask.get_data() > 0)
             self.axis = 1
 
-        self.spatial_shape = data[0].get_shape()[0: - 1]
+        self.spatial_shape = data[0].shape[0: -1]
         self.affine = data[0].get_affine()
 
         self.glm = []

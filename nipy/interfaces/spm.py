@@ -53,7 +53,7 @@ spm_jobman('run', jobs);
 
 def scans_for_fname(fname):
     img = load(fname)
-    n_scans = img.get_shape()[3]
+    n_scans = img.shape[3]
     scans = np.zeros((n_scans, 1), dtype=object)
     for sno in range(n_scans):
         scans[sno] = '%s,%d' % (fname, sno+1)
