@@ -1,6 +1,9 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """Example analyzing the FIAC dataset with NIPY.
+
+This script needs the pre-processed FIAC data.  See ``README.txt`` and
+``fiac_util.py`` for details.
 """
 #-----------------------------------------------------------------------------
 # Imports
@@ -9,6 +12,7 @@
 # Stdlib
 from tempfile import NamedTemporaryFile
 from os.path import join as pjoin
+from copy import copy
 
 # Third party
 import numpy as np
@@ -52,19 +56,17 @@ def run_model(subj, run):
     # Number of volumes in the fMRI data
     nvol = 191
     # The TR of the experiment
-    TR = 2.5 
+    TR = 2.5
     # The time of the first volume
     Tstart = 0.0
-    # The array of times corresponding to each 
-    # volume in the fMRI data
-    volume_times = np.arange(nvol)*TR + Tstart
-    # This recarray of times has one column named 't'
-    # It is used in the function design.event_design
-    # to create the design matrices.
+    # The array of times corresponding to each volume in the fMRI data
+    volume_times = np.arange(nvol) * TR + Tstart
+    # This recarray of times has one column named 't'.  It is used in the
+    # function design.event_design to create the design matrices.
     volume_times_rec = make_recarray(volume_times, 't')
-    # Get a path description dictionary that contains all the path data
-    # relevant to this subject/run
-    path_info = futil.path_info(subj,run)
+    # Get a path description dictionary that contains all the path data relevant
+    # to this subject/run
+    path_info = futil.path_info_run(subj,run)
 
     #----------------------------------------------------------------------
     # Experimental design
@@ -169,12 +171,12 @@ def run_model(subj, run):
 
     fmri_lpi = futil.get_fmri(path_info) # an Image
     fmri_im = Image(fmri_lpi._data, fmri_lpi.coordmap)
-    fmri_im = rollimg(fmri_im, 't')
+    fmri_im = rollimg(fmri_im, 't', fix0=True)
 
     fmri = fmri_im.get_data() # now, it's an ndarray
 
     nvol, volshape = fmri.shape[0], fmri.shape[1:]
-    nslice, sliceshape = volshape[0], volshape[1:]
+    nx, sliceshape = volshape[0], volshape[1:]
 
     #----------------------------------------------------------------------
     # Model fit
@@ -188,7 +190,7 @@ def run_model(subj, run):
     ar1 = np.zeros(volshape)
 
     # Fit the model, storing an estimate of an AR(1) parameter at each voxel
-    for s in range(nslice):
+    for s in range(nx):
         d = np.array(fmri[:,s])
         flatd = d.reshape((d.shape[0], -1))
         result = m.fit(flatd)
@@ -255,7 +257,7 @@ def run_model(subj, run):
     # Dump output to disk
     odir = futil.output_dir(path_info,tcons,fcons)
     # The coordmap for a single volume in the time series
-    vol0_map = fmri_im[0].coormap
+    vol0_map = fmri_im[0].coordmap
     for n in tcons:
         for v in ['t', 'sd', 'effect']:
             im = Image(output[n][v], vol0_map)
@@ -267,25 +269,30 @@ def run_model(subj, run):
 
 
 def fixed_effects(subj, design):
-    """
-    Fixed effects (within subject) for FIAC model
-    """
+    """ Fixed effects (within subject) for FIAC model
 
+    Finds run by run estimated model results, creates fixed effects results
+    image per subject.
+
+    Parameters
+    ----------
+    subj : int
+        subject number 0..15 inclusive
+    design : {'block', 'event'}
+        design type
+    """
     # First, find all the effect and standard deviation images
     # for the subject and this design type
-
-    path_dict = futil.path_info2(subj, design)
+    path_dict = futil.path_info_design(subj, design)
     rootdir = path_dict['rootdir']
     # The output directory
     fixdir = pjoin(rootdir, "fixed")
-
+    # Fetch results images from run estimations
     results = futil.results_table(path_dict)
-
     # Get our hands on the relevant coordmap to
     # save our results
     coordmap = futil.load_image_fiac("fiac_%02d" % subj,
                                      "wanatomical.nii").coordmap
-
     # Compute the "fixed" effects for each type of contrast
     for con in results:
         fixed_effect = 0
@@ -312,23 +319,30 @@ def fixed_effects(subj, design):
         odir = futil.ensure_dir(fixdir, con)
         for a, n in zip([fixed_effect, fixed_sd, fixed_t],
                         ['effect', 'sd', 't']):
-            im = api.Image(a, coordmap.copy())
+            im = api.Image(a, copy(coordmap))
             save_image(im, pjoin(odir, '%s.nii' % n))
 
+
 def group_analysis(design, contrast):
-    """
-    Compute group analysis effect, sd and t
-    for a given contrast and design type
+    """ Compute group analysis effect, t, sd for `design` and `contrast`
+
+    Saves to disk in 'group' analysis directory
+
+    Parameters
+    ----------
+    design : {'block', 'event'}
+    contrast : str
+        contrast name
     """
     array = np.array # shorthand
     # Directory where output will be written
     odir = futil.ensure_dir(futil.DATADIR, 'group', design, contrast)
 
     # Which subjects have this (contrast, design) pair?
-    subjects = futil.subject_dirs(design, contrast)
+    subj_con_dirs = futil.subj_des_con_dirs(design, contrast)
 
-    sd = array([array(load_image(pjoin(s, "sd.nii"))) for s in subjects])
-    Y = array([array(load_image(pjoin(s, "effect.nii"))) for s in subjects])
+    sd = array([array(load_image(pjoin(s, "sd.nii"))) for s in subj_con_dirs])
+    Y = array([array(load_image(pjoin(s, "effect.nii"))) for s in subj_con_dirs])
 
     # This function estimates the ratio of the
     # fixed effects variance (sum(1/sd**2, 0))
@@ -361,51 +375,44 @@ def group_analysis(design, contrast):
 
     results = onesample.estimate_mean(Y, adjusted_sd) 
     for n in ['effect', 'sd', 't']:
-        im = api.Image(results[n], coordmap.copy())
+        im = api.Image(results[n], copy(coordmap))
         save_image(im, pjoin(odir, "%s.nii" % n))
 
 
 def group_analysis_signs(design, contrast, mask, signs=None):
-    """
-    This function refits the EM model with a vector of signs.
+    """ Refit the EM model with a vector of signs.
+
     Used in the permutation tests.
 
     Returns the maximum of the T-statistic within mask
 
     Parameters
     ----------
-
     design: one of 'block', 'event'
-
     contrast: str
-
     mask: array-like
-
     signs: ndarray, optional
          Defaults to np.ones. Should have shape (*,nsubj)
          where nsubj is the number of effects combined in the group analysis.
 
     Returns
     -------
-
     minT: np.ndarray, minima of T statistic within mask, one for each
          vector of signs
-
     maxT: np.ndarray, maxima of T statistic within mask, one for each
          vector of signs
-    
     """
 
     maska = np.asarray(mask).astype(np.bool)
 
     # Which subjects have this (contrast, design) pair?
 
-    subjects = futil.subject_dirs(design, contrast)
+    subj_con_dirs = futil.subj_des_con_dirs(design, contrast)
 
     sd = np.array([np.array(load_image(pjoin(s, "sd.nii")))[:,maska]
-                   for s in subjects])
+                   for s in subj_con_dirs])
     Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,maska]
-                  for s in subjects])
+                  for s in subj_con_dirs])
 
     if signs is None:
         signs = np.ones((1, Y.shape[0]))
@@ -445,13 +452,47 @@ def permutation_test(design, contrast, mask=GROUP_MASK, nsample=1000):
     max_vals: np.ndarray
     """
     maska = np.asarray(mask).astype(np.bool)
-    subjects = futil.subject_dirs(design, contrast)
+    subj_con_dirs = futil.subj_des_con_dirs(design, contrast)
     Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,maska]
-                  for s in subjects])
+                  for s in subj_con_dirs])
     nsubj = Y.shape[0]
     signs = 2*np.greater(np.random.sample(size=(nsample, nsubj)), 0.5) - 1
     min_vals, max_vals = group_analysis_signs(design, contrast, maska, signs)
     return min_vals, max_vals
+
+SUBJECTS = tuple(range(5) + range(6, 16)) # No data for subject 5
+RUNS = tuple(range(1, 5))
+DESIGNS = ('event', 'block')
+CONTRASTS = ('speaker_0', 'speaker_1',
+             'sentence_0', 'sentence_1',
+             'sentence:speaker_0',
+             'sentence:speaker_1')
+
+def run_run_models(subject_nos=SUBJECTS, run_nos = RUNS):
+    """ Simple serial run of all the within-run models """
+    for subj in subject_nos:
+        for run in run_nos:
+            try:
+                run_model(subj, run)
+            except IOError:
+                print 'Skipping subject %d, run %d' % (subj, run)
+
+
+def run_fixed_models(subject_nos=SUBJECTS, designs=DESIGNS):
+    """ Simple serial run of all the within-subject models """
+    for subj in subject_nos:
+        for design in designs:
+            try:
+                fixed_effects(subj, design)
+            except IOError:
+                print 'Skipping subject %d, design %s' % (subj, design)
+
+
+def run_group_models(designs=DESIGNS, contrasts=CONTRASTS):
+    """ Simple serial run of all the across-subject models """
+    for design in designs:
+        for contrast in contrasts:
+            group_analysis(design, contrast)
 
 
 if __name__ == '__main__':
