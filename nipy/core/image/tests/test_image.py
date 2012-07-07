@@ -290,6 +290,7 @@ def test_iter_axis():
             slicer[ax_no] = i
             assert_array_equal(s, data[slicer])
 
+
 def test_rollaxis():
     data = np.random.standard_normal((3,4,7,5))
     im = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
@@ -419,6 +420,36 @@ def test_rollimg():
         for _im in [im_n, im_o, im_i]:
             # We're rollimg back.  We want to roll the new axis 0 back to where
             # it started, which was position n
-            im_n_inv = rollimg(_im, 0, n)
+            im_n_inv = rollimg(_im, 0, n + 1)
             assert_array_equal(im_n_inv.affine, im.affine)
             assert_array_equal(im_n_inv.get_data(), im.get_data())
+
+
+def test_rollimg_rollaxis():
+    # Check that rollimg and rollaxis do the same
+    AT = AffineTransform
+    data = np.random.standard_normal((3,4,7,5))
+    aff = np.diag([1,2,3,4,1])
+    img = Image(data, AT('ijkl', 'xyzt', aff))
+    for axis in range(4) + range(-3, -1):
+        rdata = np.rollaxis(data, axis)
+        rimg = rollimg(img, axis)
+        assert_array_equal(rdata, rimg.get_data())
+        for start in range(4) + range(-3, -1):
+            rdata = np.rollaxis(data, axis, start)
+            rimg = rollimg(img, axis, start)
+            assert_array_equal(rdata, rimg.get_data())
+
+
+def test_rollaxis_inverse():
+    # Test deprecated image rollaxis with inverse
+    AT = AffineTransform
+    data = np.random.standard_normal((3,4,7,5))
+    aff = np.diag([1,2,3,4,1])
+    img = Image(data, AT('ijkl', 'xyzt', aff))
+    for axis in range(4) + range(-3, -1):
+        rimg = image.rollaxis(img, axis)
+        rdata = np.rollaxis(data, axis)
+        assert_array_equal(rdata, rimg.get_data())
+        rrimg = image.rollaxis(rimg, axis, inverse=True)
+        assert_array_equal(data, rrimg.get_data())
