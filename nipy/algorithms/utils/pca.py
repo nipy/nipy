@@ -300,7 +300,7 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
         {out_ax: 'PCA components'})
     output_img = img_klass(res['basis_projections'], output_coordmap)
     # We have to roll the axis back to the original position
-    output_img = rollimg(output_img, 0, in_ax)
+    output_img = rollimg(output_img, 0, in_ax + 1)
     key = 'basis_vectors over %s' % axis
     res[key] = res['basis_vectors']
     res['basis_projections'] = output_img
