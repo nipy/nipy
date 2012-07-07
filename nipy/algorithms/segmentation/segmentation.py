@@ -9,6 +9,8 @@ NITERS = 10
 NGB_SIZE = 6
 BETA = 0.5
 
+safe_log = lambda x: np.log(np.maximum(x, TINY))
+
 
 class Segmentation(object):
 
@@ -124,13 +126,13 @@ class Segmentation(object):
             self.mu[i] = mu
             self.sigma[i] = sigma
 
-    def ext_field(self):
+    def log_external_field(self):
         """
-        Compute external field (no voxel interactions), namely the
-        likelihood times the first-order component of the prior if
-        non-uniform
+        Compute the logarithm of the external field, where the
+        external field is defined as the likelihood times the
+        first-order component of the prior.
         """
-        field = np.zeros([self.data.shape[0], self.nclasses])
+        lef = np.zeros([self.data.shape[0], self.nclasses])
 
         for i in range(self.nclasses):
             centered_data = self.data - self.mu[i]
@@ -141,32 +143,33 @@ class Segmentation(object):
                 inv_sigma = np.linalg.inv(self.sigma[i])
                 norm_factor = 1. / np.sqrt(\
                     np.maximum(TINY, np.linalg.det(self.sigma[i])))
-            maha = np.sum(centered_data * np.dot(inv_sigma,
-                                                 centered_data.T).T, 1)
-            field[:, i] = np.exp(-.5 * maha)
-            field[:, i] *= norm_factor
+            maha_dist = np.sum(centered_data * np.dot(inv_sigma,
+                                                      centered_data.T).T, 1)
+            lef[:, i] = -.5 * maha_dist
+            lef[:, i] += safe_log(norm_factor)
 
         if not self.prior == None:
-            field *= self.prior
-        field.clip(TINY, HUGE, out=field)
+            lef += safe_log(self.prior)
 
-        return field
+        return lef
+
+    def normalized_external_field(self):
+        f = self.log_external_field().T
+        f -= np.max(f, 0)
+        np.exp(f, out=f)
+        f /= f.sum(0)
+        return f.T
 
     def ve_step(self):
-
-        field = self.ext_field()
-
+        nef = self.normalized_external_field()
         if self.beta == 0:
-            tmp = field.T
-            tmp /= tmp.sum(0)
-            self.ppm[self.mask] = field.reshape(\
-                self.ppm[self.mask].shape)
+            self.ppm[self.mask] = np.reshape(\
+                nef, self.ppm[self.mask].shape)
         else:
-            self.ppm = _ve_step(self.ppm, field, self.XYZ,
+            self.ppm = _ve_step(self.ppm, nef, self.XYZ,
                                 self.U, self.ngb_size, self.beta)
 
     def run(self, niters=NITERS, freeze=()):
-
         if self.is_ppm:
             self.vm_step(freeze=freeze)
         for i in range(niters):
@@ -193,8 +196,8 @@ class Segmentation(object):
             ppm = self.ppm
         q = ppm[self.mask]
         # Entropy term
-        field = self.ext_field()
-        f1 = np.sum(q * np.log(np.maximum(q / field, TINY)))
+        lef = self.log_external_field()
+        f1 = np.sum(q * (safe_log(q) - lef))
         # Interaction term
         if self.beta > 0.0:
             f2 = self.beta * _interaction_energy(ppm, self.XYZ,

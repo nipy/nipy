@@ -4,6 +4,7 @@
 import numpy as np
 
 from nose.tools import assert_equal
+from numpy.testing import assert_array_almost_equal
 
 from ..segmentation import Segmentation
 from ..brain_segmentation import BrainT1Segmentation
@@ -77,6 +78,8 @@ def test_brain_seg7():
 
 def _test_segmentation(S, nchannels=1):
     assert_equal(S.nchannels, nchannels)
+    nef = S.normalized_external_field()
+    assert_array_almost_equal(nef.sum(-1), np.ones(nef.shape[0]))
     S.run(niters=5)
     label = S.map()
     assert_equal(label.ndim, 3)
