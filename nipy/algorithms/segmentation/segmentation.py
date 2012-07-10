@@ -173,6 +173,9 @@ class Segmentation(object):
         if self.is_ppm:
             self.vm_step(freeze=freeze)
         for i in range(niters):
+            print('DEBUG message...')
+            print self.mu
+            print self.sigma
             self.ve_step()
             self.vm_step(freeze=freeze)
         self.is_ppm = True

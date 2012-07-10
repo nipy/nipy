@@ -5,17 +5,18 @@ from .segmentation import (Segmentation,
                            map_from_ppm)
 
 T1_ref_params = {}
-T1_ref_params['3k'] = {
-    'mu': np.array([813.9, 1628.4, 2155.8]),
-    'sigma': np.array([46483.4, 30241.2, 17134.8])}
-T1_ref_params['4k'] = {
-    'mu': np.array([788.5, 1544.6, 1734.8, 2159.7]),
-    'sigma': np.array([38366.7, 30788.6, 19312.4, 16399.7])}
-T1_ref_params['5k'] = {
-    'mu': np.array([722.8, 1152.6, 1556.4, 1728.8, 2165.0]),
-    'sigma': np.array([22570.7, 22844.6, 18808.2, 20793.6, 15554.7])}
 T1_ref_params['glob_mu'] = 1643.2
 T1_ref_params['glob_sigma'] = 252772.3
+T1_ref_params['3k'] = {
+    'mu': np.array([813.9, 1628.3, 2155.8]),
+    'sigma': np.array([46499.0, 30233.4, 17130.0])}
+T1_ref_params['4k'] = {
+    'mu': np.array([816.1, 1613.7, 1912.3, 2169.3]),
+    'sigma': np.array([47117.6, 27053.8, 8302.2, 14970.8])}
+T1_ref_params['5k'] = {
+    'mu': np.array([724.2, 1169.3, 1631.5, 1917.0, 2169.2]),
+    'sigma': np.array([22554.8, 21368.9, 20560.1, 7302.6, 14962.1])}
+
 
 
 class BrainT1Segmentation(object):
@@ -48,7 +49,7 @@ class BrainT1Segmentation(object):
                                     [1., 0., 0.],
                                     [0., 1., 0.],
                                     [0., 1., 0.],
-                                        [0., 0., 1.]])
+                                    [0., 0., 1.]])
         else:
             raise ValueError('unknown brain segmentation model')
 
