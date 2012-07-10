@@ -3,13 +3,12 @@
 import numpy as np
 from ._segmentation import _ve_step, _interaction_energy
 
-TINY = 1e-50
-HUGE = 1e50
 NITERS = 10
-NGB_SIZE = 6
-BETA = 0.5
+NGB_SIZE = 26
+BETA = 0.1
 
-safe_log = lambda x: np.log(np.maximum(x, TINY))
+nonzero = lambda x: np.maximum(x, 1e-50)
+log = lambda x: np.log(nonzero(x))
 
 
 class Segmentation(object):
@@ -118,7 +117,7 @@ class Segmentation(object):
 
         for i in classes:
             P = self.ppm[..., i][self.mask].ravel()
-            Z = np.maximum(TINY, P.sum())
+            Z = nonzero(P.sum())
             tmp = self.data.T * P.T
             mu = tmp.sum(1) / Z
             mu_ = mu.reshape((len(mu), 1))
@@ -137,19 +136,19 @@ class Segmentation(object):
         for i in range(self.nclasses):
             centered_data = self.data - self.mu[i]
             if self.nchannels == 1:
-                inv_sigma = 1. / np.maximum(TINY, self.sigma[i])
+                inv_sigma = 1. / nonzero(self.sigma[i])
                 norm_factor = np.sqrt(inv_sigma.squeeze())
             else:
                 inv_sigma = np.linalg.inv(self.sigma[i])
                 norm_factor = 1. / np.sqrt(\
-                    np.maximum(TINY, np.linalg.det(self.sigma[i])))
+                    nonzero(np.linalg.det(self.sigma[i])))
             maha_dist = np.sum(centered_data * np.dot(inv_sigma,
                                                       centered_data.T).T, 1)
             lef[:, i] = -.5 * maha_dist
-            lef[:, i] += safe_log(norm_factor)
+            lef[:, i] += log(norm_factor)
 
         if not self.prior == None:
-            lef += safe_log(self.prior)
+            lef += log(self.prior)
 
         return lef
 
@@ -173,9 +172,6 @@ class Segmentation(object):
         if self.is_ppm:
             self.vm_step(freeze=freeze)
         for i in range(niters):
-            print('DEBUG message...')
-            print self.mu
-            print self.sigma
             self.ve_step()
             self.vm_step(freeze=freeze)
         self.is_ppm = True
@@ -200,7 +196,7 @@ class Segmentation(object):
         q = ppm[self.mask]
         # Entropy term
         lef = self.log_external_field()
-        f1 = np.sum(q * (safe_log(q) - lef))
+        f1 = np.sum(q * (log(q) - lef))
         # Interaction term
         if self.beta > 0.0:
             f2 = self.beta * _interaction_energy(ppm, self.XYZ,
