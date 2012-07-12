@@ -61,8 +61,8 @@ class Segmentation(object):
         # faults.
         if mask == None:
             mask = np.ones(space_shape, dtype=bool)
-        X, Y, Z = np.where(mask > 0)
-        XYZ = np.zeros((X.shape[0], 3), dtype='uint')
+        X, Y, Z = np.where(mask)
+        XYZ = np.zeros((X.shape[0], 3), dtype='intp')
         XYZ[:, 0], XYZ[:, 1], XYZ[:, 2] = X, Y, Z
         self.XYZ = XYZ
 
