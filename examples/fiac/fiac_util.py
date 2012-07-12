@@ -1,3 +1,4 @@
+
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """Support utilities for FIAC example, mostly path management.
@@ -15,7 +16,7 @@ Requires matplotlib
 # Stdlib
 import os
 from os import makedirs, listdir
-from os.path import exists, abspath, isdir, join as pjoin
+from os.path import exists, abspath, isdir, join as pjoin, splitext
 import csv
 from StringIO import StringIO
 
@@ -351,3 +352,54 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
     initial = csv2rec(fname)
 
     return d, b
+
+
+def compare_results(subj, run, other_root, mask_fname):
+    """ Find and compare calculated results images from a previous run
+
+    This scipt checks that another directory containing results of this same
+    analysis are similar in the sense of numpy ``allclose`` within a brain mask.
+
+    Parameters
+    ----------
+    subj : int
+        subject number (0..4, 6..15)
+    run : int
+        run number (1..4)
+    other_root : str
+        path to previous run estimation
+    mask_fname:
+        path to a mask image defining area in which to compare differences
+    """
+    # Get information for this subject and run
+    path_dict = path_info_run(subj, run)
+    # Get mask
+    msk = load_image(mask_fname).get_data().copy().astype(bool)
+    # Get results directories for this run
+    rootdir = path_dict['rootdir']
+    res_dir = pjoin(rootdir, 'results_%02d' % run)
+    if not isdir(res_dir):
+        return
+    for dirpath, dirnames, filenames in os.walk(res_dir):
+        for fname in filenames:
+            froot, ext = splitext(fname)
+            if froot in ('effect', 'sd', 'F', 't'):
+                this_fname = pjoin(dirpath, fname)
+                other_fname = this_fname.replace(DATADIR, other_root)
+                if not exists(other_fname):
+                    print this_fname, 'present but ', other_fname, 'missing'
+                    continue
+                this_arr = load_image(this_fname).get_data()
+                other_arr = load_image(other_fname).get_data()
+                ok = np.allclose(this_arr[msk], other_arr[msk])
+                if not ok and froot in ('effect', 'sd', 't'): # Maybe a sign flip
+                    ok = np.allclose(this_arr[msk], -other_arr[msk])
+                if not ok:
+                    print 'Difference between', this_fname, other_fname
+
+
+def compare_all(other_root, mask_fname):
+    """ Run results comparison for all subjects and runs """
+    for subj in range(5) + range(6, 16):
+        for run in range(1, 5):
+            compare_results(subj, run, other_root, mask_fname)
