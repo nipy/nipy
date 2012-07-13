@@ -18,12 +18,12 @@ T1_ref_params['5k'] = {
     'sigma': np.array([22554.8, 21368.9, 20560.1, 7302.6, 14962.1])}
 
 
-
 class BrainT1Segmentation(object):
 
     def __init__(self, data, mask=None, model='3k',
                  niters=25, ngb_size=6, beta=0.5,
-                 ref_params=None, scaling=1, convert=True):
+                 ref_params=None, init_params=None,
+                 convert=True):
 
         self.labels = ('CSF', 'GM', 'WM')
         self.data = data
@@ -57,11 +57,17 @@ class BrainT1Segmentation(object):
         self.beta = float(beta)
         self.ngb_size = int(ngb_size)
 
-        if ref_params == None:
-            ref_params = T1_ref_params
-        self.init_mu, self.init_sigma = self._init_parameters(ref_params)
-        if not scaling == 1:
-            self.init_sigma *= scaling ** 2
+        # Class parameter initialization
+        if init_params == None:
+            if ref_params == None:
+                ref_params = T1_ref_params
+            self.init_mu, self.init_sigma = self._init_parameters(ref_params)
+        else:
+            self.init_mu = np.array(init_params[0], dtype='double')
+            self.init_sigma = np.array(init_params[1], dtype='double')
+            if not len(self.init_mu) == self.mixmat.shape[0]\
+                    or not len(self.init_sigma) == self.mixmat.shape[0]:
+                raise ValueError('Inconsistent initial parameter estimates')
 
         self._run()
         if convert:

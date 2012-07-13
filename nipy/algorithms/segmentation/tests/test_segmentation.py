@@ -17,6 +17,7 @@ anat_mask = anat_img.get_data() > 0
 
 DIMS = (30, 30, 20)
 
+
 def _check_dims(x, ndim, shape):
     if isinstance(shape, int):
         shape = (shape, )
@@ -28,7 +29,8 @@ def _test_brain_seg(model, niters=3, beta=0, ngb_size=6, init_params=None,
                     convert=True):
     S = BrainT1Segmentation(anat_img.get_data(), mask=anat_mask,
                             model=model, niters=niters, beta=beta,
-                            ngb_size=ngb_size, convert=convert)
+                            ngb_size=ngb_size, init_params=init_params,
+                            convert=convert)
     shape = anat_img.shape
     if convert:
         nclasses = 3
@@ -47,7 +49,7 @@ def _test_brain_seg(model, niters=3, beta=0, ngb_size=6, init_params=None,
     # mask
     assert_almost_equal(S.label[True - S.mask].max(), 0)
     assert_almost_equal(S.label[S.mask].min(), 1)
-    
+
 
 def test_brain_seg1():
     _test_brain_seg('3k', niters=3, beta=0.0, ngb_size=6)
