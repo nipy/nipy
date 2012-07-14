@@ -13,12 +13,14 @@ This script needs the pre-processed FIAC data.  See ``README.txt`` and
 from tempfile import NamedTemporaryFile
 from os.path import join as pjoin
 from copy import copy
+import warnings
 
 # Third party
 import numpy as np
 
 # From NIPY
-from nipy.algorithms.statistics.api import (OLSModel, ARModel, make_recarray)
+from nipy.algorithms.statistics.api import (OLSModel, ARModel, make_recarray,
+                                            isestimable)
 from nipy.modalities.fmri.fmristat import hrf as delay
 from nipy.modalities.fmri import design, hrf
 from nipy.io.api import load_image, save_image
@@ -146,11 +148,10 @@ def run_model(subj, run):
                                    (drift, {}))
 
     # Sanity check: delete any non-estimable contrasts
-    # XXX - this seems to be broken right now, it's producing bogus warnings.
-    ## for k in cons.keys():
-    ##     if not isestimable(X, cons[k]):
-    ##         del(cons[k])
-    ##         warnings.warn("contrast %s not estimable for this run" % k)
+    for k in cons.keys():
+        if not isestimable(cons[k], X):
+            del(cons[k])
+            warnings.warn("contrast %s not estimable for this run" % k)
 
     # The default contrasts are all t-statistics.  We may want to output
     # F-statistics for 'speaker', 'sentence', 'speaker:sentence' based on the
