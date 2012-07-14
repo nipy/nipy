@@ -4,6 +4,8 @@
 This script generates a noisy multi-subject activation image dataset
 and applies the bayesian structural analysis on it
 
+Requires matplotlib
+
 Author : Bertrand Thirion, 2009-2011
 """
 #autoindent
@@ -11,15 +13,19 @@ print __doc__
 
 import numpy as np
 import scipy.stats as st
-import matplotlib.pylab as mp
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 import nipy.labs.spatial_models.bayesian_structural_analysis as bsa
 from nipy.labs.spatial_models.discrete_domain import domain_from_binary_array
 
 
-def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0, 
-                       method='simple', verbose=0):
+def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
+                method='simple', verbose=0):
     """
     Function for performing bayesian structural analysis
     on a set of images.
@@ -41,7 +47,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     method= 'simple', string,
             estimation method used ; to be chosen among 
             'simple', 'quick', 'loo', 'ipmi'
-    verbose=0, verbosity mode     
+    verbose=0, verbosity mode
 
     Returns
     -------
@@ -51,19 +57,19 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     ref_dim = np.shape(betas[0])
     nsubj = betas.shape[0]
     xyz = np.array(np.where(betas[:1])).T.astype(np.int)
-    
+
     # Get  coordinates in mm
     xyz = xyz[:, 1:] # switch to dimension 2
     coord = xyz.astype(np.float)
 
     # get the functional information
     lbeta = np.array([np.ravel(betas[k]) for k in range(nsubj)]).T
-    
+
     lmax = 0
     bdensity = 1
     dom = domain_from_binary_array(np.ones(ref_dim))
-    
-    if method == 'simple':    
+
+    if method == 'simple':
         group_map, AF, BF, likelihood = \
                    bsa.compute_BSA_simple(dom, lbeta, dmax, thq, smin, ths,
                                           theta)
@@ -76,47 +82,47 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
         mll, ll0 = bsa.compute_BSA_loo(dom, lbeta, dmax, thq, smin, ths,
                                           theta, bdensity)
         return mll, ll0
-        
+
     if method not in['loo', 'simple', 'quick']:
         raise ValueError('method is not correctly defined')
-    
+
     if verbose == 0:
         return AF, BF
-    
+
     if AF != None:
         lmax = AF.k + 2
         AF.show()
 
     group_map.shape = ref_dim
-    mp.figure(figsize=(8, 3))
-    ax = mp.subplot(1, 3, 1)
-    mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
-    mp.title('Blob separation map', fontsize=10)
-    mp.axis('off')
-    mp.colorbar(shrink=.8)
+    plt.figure(figsize=(8, 3))
+    ax = plt.subplot(1, 3, 1)
+    plt.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
+    plt.title('Blob separation map', fontsize=10)
+    plt.axis('off')
+    plt.colorbar(shrink=.8)
 
     if AF != None:
         group_map = AF.map_label(coord, 0.95, dmax)
         group_map.shape = ref_dim
-    
-    mp.subplot(1, 3, 2)
-    mp.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
-    mp.title('group-level position 95% \n confidence regions', fontsize=10)
-    mp.axis('off')
-    mp.colorbar(shrink=.8)
 
-    mp.subplot(1, 3, 3)
+    plt.subplot(1, 3, 2)
+    plt.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
+    plt.title('group-level position 95% \n confidence regions', fontsize=10)
+    plt.axis('off')
+    plt.colorbar(shrink=.8)
+
+    plt.subplot(1, 3, 3)
     likelihood.shape = ref_dim
-    mp.imshow(likelihood, interpolation='nearest')
-    mp.title('Spatial density under h1', fontsize=10)
-    mp.axis('off')
-    mp.colorbar(shrink=.8)
+    plt.imshow(likelihood, interpolation='nearest')
+    plt.title('Spatial density under h1', fontsize=10)
+    plt.axis('off')
+    plt.colorbar(shrink=.8)
 
-    
-    fig_output = mp.figure(figsize=(8, 3.5))
+
+    fig_output = plt.figure(figsize=(8, 3.5))
     fig_output.text(.5, .9, "Individual landmark regions", ha="center")
     for s in range(nsubj):
-        ax = mp.subplot(nsubj / 5, 5, s + 1)
+        ax = plt.subplot(nsubj / 5, 5, s + 1)
         #ax.set_position([.02, .02, .96, .96])
         lw = - np.ones(ref_dim)
         if BF[s] is not None:
@@ -125,21 +131,21 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
             for k in range(BF[s].k):
                 np.ravel(lw)[BF[s].label == k] = nls[k]
 
-        mp.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
-        mp.axis('off')
+        plt.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
+        plt.axis('off')
 
-    fig_input = mp.figure(figsize=(8, 3.5))
+    fig_input = plt.figure(figsize=(8, 3.5))
     fig_input.text(.5,.9, "Input activation maps", ha='center')
     for s in range(nsubj):
-        mp.subplot(nsubj / 5, 5, s + 1)
-        mp.imshow(betas[s], interpolation='nearest', vmin=betas.min(),
+        plt.subplot(nsubj / 5, 5, s + 1)
+        plt.imshow(betas[s], interpolation='nearest', vmin=betas.min(),
                   vmax=betas.max())
-        mp.axis('off')
+        plt.axis('off')
     return AF, BF
 
 
 ###############################################################################
-# Main script 
+# Main script
 ###############################################################################
 
 # generate the data
@@ -150,8 +156,8 @@ pos = np.array([[12, 14],
                 [30, 20]])
 ampli = np.array([5, 7, 6])
 sjitter = 1.0
-betas = simul.surrogate_2d_dataset(n_subj=n_subj, shape=shape, pos=pos, 
-                                     ampli=ampli, width=5.0)
+betas = simul.surrogate_2d_dataset(n_subj=n_subj, shape=shape, pos=pos,
+                                   ampli=ampli, width=5.0)
 
 # set various parameters
 theta = float(st.t.isf(0.01, 100))
@@ -165,4 +171,4 @@ method = 'simple' # 'quick' #  'loo' #
 # run the algo
 AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method,
                      verbose=verbose)
-#mp.show()
+plt.show()

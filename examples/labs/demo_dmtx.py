@@ -1,15 +1,22 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Examples of design matrices specification and and computation
-(event-related design, FIR design, etc)
+Examples of design matrices specification and and computation (event-related
+design, FIR design, etc)
+
+Requires matplotlib
 
 Author : Bertrand Thirion: 2009-2010
 """
 print __doc__
 
 import numpy as np
-import pylab as mp
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
 from nipy.modalities.fmri.design_matrix import make_dmtx
 from nipy.modalities.fmri.experimental_paradigm import \
     EventRelatedParadigm, BlockParadigm
@@ -49,15 +56,15 @@ X3 = make_dmtx(frametimes, paradigm, hrf_model='fir',
                fir_delays=range(1, 6))
 
 # plot the results
-fig = mp.figure(figsize=(10, 6))
-ax = mp.subplot(1, 3, 1)
+fig = plt.figure(figsize=(10, 6))
+ax = plt.subplot(1, 3, 1)
 X1.show(ax=ax)
 ax.set_title('Event-related design matrix', fontsize=12)
-ax = mp.subplot(1, 3, 2)
+ax = plt.subplot(1, 3, 2)
 X2.show(ax=ax)
 ax.set_title('Block design matrix', fontsize=12)
-ax = mp.subplot(1, 3, 3)
+ax = plt.subplot(1, 3, 3)
 X3.show(ax=ax)
 ax.set_title('FIR design matrix', fontsize=12)
-mp.subplots_adjust(top=0.9, bottom=0.25)
-mp.show()
+plt.subplots_adjust(top=0.9, bottom=0.25)
+plt.show()

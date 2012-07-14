@@ -2,15 +2,21 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 __doc__ = \
 """
-Example of a script that crates a 'hierarchical roi' structure
-from the blob model of an image
+Example of a script that crates a 'hierarchical roi' structure from the blob
+model of an image
+
+Needs matplotlib
 
 Author: Bertrand Thirion, 2008-2009
 """
 print __doc__
 
-
 import numpy as np
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 import nipy.labs.spatial_models.hroi as hroi
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
@@ -47,14 +53,13 @@ nroi.set_feature('activation', activation)
 label = np.reshape(n1.feature_to_voxel_map('id', roi=True), shape)
 
 # make a figure
-import matplotlib.pylab as mp
-mp.figure()
-mp.subplot(1, 2, 1)
-mp.imshow(np.squeeze(dataset))
-mp.title('Input map')
-mp.axis('off')
-mp.subplot(1, 2, 2)
-mp.title('Nested Rois')
-mp.imshow(label, interpolation='Nearest')
-mp.axis('off')
-mp.show()
+plt.figure()
+plt.subplot(1, 2, 1)
+plt.imshow(np.squeeze(dataset))
+plt.title('Input map')
+plt.axis('off')
+plt.subplot(1, 2, 2)
+plt.title('Nested Rois')
+plt.imshow(label, interpolation='Nearest')
+plt.axis('off')
+plt.show()

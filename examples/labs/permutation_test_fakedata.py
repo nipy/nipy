@@ -1,6 +1,9 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+""" Example script for group permutation testing """
+
 import numpy as np
+
 from nipy.labs.group import permutation_test as PT
 
 
@@ -30,7 +33,7 @@ data, vardata, XYZ = make_data()
 P = PT.permutation_test_onesample(data, XYZ)
 
 # clusters definition (height threshold, max diameter)
-c = [(P.random_Tvalues[P.ndraws * (0.95)], None), 
+c = [(P.random_Tvalues[P.ndraws * (0.95)], None),
      (P.random_Tvalues[P.ndraws * (0.5)], 10)]
 
 # regions definition (label vector)
@@ -48,27 +51,29 @@ voxel_results, cluster_results, region_results = \
 ###############################################################################
 # Example for using permutation_test_twosample class
 data, vardata, XYZ = make_data(n=20)
-data1, vardata1, data2, vardata2 = data[:10], vardata[:10], data[10:], \
-    vardata[10:]
+data1, vardata1, data2, vardata2 = (data[:10], vardata[:10], data[10:],
+                                    vardata[10:])
 
 # rfx calibration
 P = PT.permutation_test_twosample(data1, data2, XYZ)
 
 # clusters definition (height threshold / max diameter)
-c = [(P.random_Tvalues[P.ndraws * (0.95)], None), 
+c = [(P.random_Tvalues[P.ndraws * (0.95)], None),
      (P.random_Tvalues[P.ndraws * (0.5)], 10)]
 
 # regions definition (label vector)
 r = [np.zeros(data.shape[1])]
 r[data.shape[1]/2:] *= 10
-voxel_results, cluster_results, region_results = \
-            P.calibrate(nperms=100, clusters=c, regions=r)
+voxel_results, cluster_results, region_results = P.calibrate(nperms=100,
+                                                             clusters=c,
+                                                             regions=r)
 
 # mfx calibration
-P = PT.permutation_test_twosample(data1, data2, XYZ, vardata1=vardata1, 
-            vardata2=vardata2, stat_id="student_mfx")
-voxel_results, cluster_results, region_results = \
-            P.calibrate(nperms=100, clusters=c, regions=r)
+P = PT.permutation_test_twosample(data1, data2, XYZ, vardata1=vardata1,
+                                  vardata2=vardata2, stat_id="student_mfx")
+voxel_results, cluster_results, region_results = P.calibrate(nperms=100,
+                                                             clusters=c,
+                                                             regions=r)
 
 ###############################################################################
 # Print cluster statistics
@@ -85,8 +90,8 @@ for results in cluster_results:
         Tmax[j] = P.Tvalues[I].max()
         Tmax_P[j] = voxel_results["Corr_p_values"][I].min()
         Diam[j]= PT.max_dist(XYZ, I, I)
-    J = np.where(1 - (results["size_Corr_p_values"] > level) * \
-                     (results["Fisher_Corr_p_values"] > level) * \
+    J = np.where(1 - (results["size_Corr_p_values"] > level) *
+                     (results["Fisher_Corr_p_values"] > level) *
                      (Tmax_P > level))[0]
     print "\nDETECTED CLUSTERS STATISTICS:\n"
     print "Cluster detection threshold:", round(results["thresh"], 2)
@@ -96,4 +101,4 @@ for results in cluster_results:
     for j in J:
             X, Y, Z = results["peak_XYZ"][:, j]
             strXYZ = str(X).zfill(2) + " " + str(Y).zfill(2) + " " + \
-                str(Z).zfill(2)
+                    str(Z).zfill(2)
