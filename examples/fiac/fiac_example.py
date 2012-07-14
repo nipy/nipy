@@ -38,6 +38,14 @@ reload(futil)  # while developing interactively
 # Globals
 #-----------------------------------------------------------------------------
 
+SUBJECTS = tuple(range(5) + range(6, 16)) # No data for subject 5
+RUNS = tuple(range(1, 5))
+DESIGNS = ('event', 'block')
+CONTRASTS = ('speaker_0', 'speaker_1',
+             'sentence_0', 'sentence_1',
+             'sentence:speaker_0',
+             'sentence:speaker_1')
+
 GROUP_MASK = futil.load_image_fiac('group', 'mask.nii')
 TINY_MASK = np.zeros(GROUP_MASK.shape, np.bool)
 TINY_MASK[30:32,40:42,30:32] = 1
@@ -81,49 +89,42 @@ def run_model(subj, run):
     # newly-formatted design description files (.csv) into record arrays.
     experiment, initial = futil.get_experiment_initial(path_info)
 
-    # Create design matrices for the "initial" and "experiment" factors,
-    # saving the default contrasts. 
+    # Create design matrices for the "initial" and "experiment" factors, saving
+    # the default contrasts.
 
-    # The function event_design will create
-    # design matrices, which in the case of "experiment"
-    # will have num_columns =
-    # (# levels of speaker) * (# levels of sentence) * len(delay.spectral) =
-    #      2 * 2 * 2 = 8
-    # For "initial", there will be
-    # (# levels of initial) * len([hrf.glover]) = 1 * 1 = 1
+    # The function event_design will create design matrices, which in the case
+    # of "experiment" will have num_columns = (# levels of speaker) * (# levels
+    # of sentence) * len(delay.spectral) = 2 * 2 * 2 = 8. For "initial", there
+    # will be (# levels of initial) * len([hrf.glover]) = 1 * 1 = 1.
 
-    # Here, delay.spectral is a sequence of 2 symbolic HRFs that 
-    # are described in 
-    # 
+    # Here, delay.spectral is a sequence of 2 symbolic HRFs that are described
+    # in:
+    #
     # Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H.,
     #    Evans, A.C. (2002). \'Estimating the delay of the response in fMRI
     #    data.\' NeuroImage, 16:593-606.
 
-    # The contrasts, cons_exper,
-    # is a dictionary with keys: ['constant_0', 'constant_1', 'speaker_0', 
-    # 'speaker_1',
-    # 'sentence_0', 'sentence_1', 'sentence:speaker_0', 'sentence:speaker_1']
-    # representing the four default contrasts: constant, main effects + 
-    # interactions,
-    # each convolved with 2 HRFs in delay.spectral. Its values
-    # are matrices with 8 columns.
+    # The contrast definitions in ``cons_exper`` are a dictionary with keys
+    # ['constant_0', 'constant_1', 'speaker_0', 'speaker_1', 'sentence_0',
+    # 'sentence_1', 'sentence:speaker_0', 'sentence:speaker_1'] representing the
+    # four default contrasts: constant, main effects + interactions, each
+    # convolved with 2 HRFs in delay.spectral. For example, sentence:speaker_0
+    # is the interaction of sentence and speaker convolved with the first (=0)
+    # of the two HRF basis functions, and sentence:speaker_1 is the interaction
+    # convolved with the second (=1) of the basis functions.
 
     # XXX use the hrf __repr__ for naming contrasts
-
     X_exper, cons_exper = design.event_design(experiment, volume_times_rec,
                                               hrfs=delay.spectral)
 
-    # The contrasts for 'initial' are ignored 
-    # as they are "uninteresting" and are included
-    # in the model as confounds.
-
+    # The contrasts for 'initial' are ignored as they are "uninteresting" and
+    # are included in the model as confounds.
     X_initial, _ = design.event_design(initial, volume_times_rec,
                                        hrfs=[hrf.glover])
 
-    # In addition to factors, there is typically a "drift" term
-    # In this case, the drift is a natural cubic spline with
-    # a not at the midpoint (volume_times.mean())
-
+    # In addition to factors, there is typically a "drift" term. In this case,
+    # the drift is a natural cubic spline with a not at the midpoint
+    # (volume_times.mean())
     vt = volume_times # shorthand
     drift = np.array( [vt**i for i in range(4)] +
                       [(vt-vt.mean())**3 * (np.greater(vt, vt.mean()))] )
@@ -166,14 +167,10 @@ def run_model(subj, run):
     # Data loading
     #----------------------------------------------------------------------
 
-    # Load in the fMRI data, saving it as an array
-    # It is transposed to have time as the first dimension,
-    # i.e. fmri[t] gives the t-th volume.
-
-    fmri_lpi = futil.get_fmri(path_info) # an Image
-    fmri_im = Image(fmri_lpi._data, fmri_lpi.coordmap)
+    # Load in the fMRI data, saving it as an array.  It is transposed to have
+    # time as the first dimension, i.e. fmri[t] gives the t-th volume.
+    fmri_im = futil.get_fmri(path_info) # an Image
     fmri_im = rollimg(fmri_im, 't', fix0=True)
-
     fmri = fmri_im.get_data() # now, it's an ndarray
 
     nvol, volshape = fmri.shape[0], fmri.shape[1:]
@@ -186,7 +183,6 @@ def run_model(subj, run):
     # The model is a two-stage model, the first stage being an OLS (ordinary
     # least squares) fit, whose residuals are used to estimate an AR(1)
     # parameter for each voxel.
-
     m = OLSModel(X)
     ar1 = np.zeros(volshape)
 
@@ -198,19 +194,16 @@ def run_model(subj, run):
         ar1[s] = ((result.resid[1:] * result.resid[:-1]).sum(0) /
                   (result.resid**2).sum(0)).reshape(sliceshape)
 
-    # We round ar1 to nearest one-hundredth
-    # and group voxels by their rounded ar1 value,
-    # fitting an AR(1) model to each batch of voxels.
+    # We round ar1 to nearest one-hundredth and group voxels by their rounded
+    # ar1 value, fitting an AR(1) model to each batch of voxels.
 
     # XXX smooth here?
     # ar1 = smooth(ar1, 8.0)
-
     ar1 *= 100
     ar1 = ar1.astype(np.int) / 100.
 
     # We split the contrasts into F-tests and t-tests.
     # XXX helper function should do this
-
     fcons = {}; tcons = {}
     for n, v in cons.items():
         v = np.squeeze(v)
@@ -221,23 +214,21 @@ def run_model(subj, run):
 
     # Setup a dictionary to hold all the output
     # XXX ideally these would be memmap'ed Image instances
-
     output = {}
     for n in tcons:
         tempdict = {}
         for v in ['sd', 't', 'effect']:
-            tempdict[v] = np.memmap(NamedTemporaryFile(prefix='%s%s.nii' \
+            tempdict[v] = np.memmap(NamedTemporaryFile(prefix='%s%s.nii'
                                     % (n,v)), dtype=np.float,
                                     shape=volshape, mode='w+')
         output[n] = tempdict
 
     for n in fcons:
-        output[n] = np.memmap(NamedTemporaryFile(prefix='%s%s.nii' \
+        output[n] = np.memmap(NamedTemporaryFile(prefix='%s%s.nii'
                                     % (n,v)), dtype=np.float,
                                     shape=volshape, mode='w+')
 
     # Loop over the unique values of ar1
-
     for val in np.unique(ar1):
         armask = np.equal(ar1, val)
         m = ARModel(X, val)
@@ -245,13 +236,11 @@ def run_model(subj, run):
         results = m.fit(d)
 
         # Output the results for each contrast
-
         for n in tcons:
             resT = results.Tcontrast(tcons[n])
             output[n]['sd'][armask] = resT.sd
             output[n]['t'][armask] = resT.t
             output[n]['effect'][armask] = resT.effect
-
         for n in fcons:
             output[n][armask] = results.Fcontrast(fcons[n]).F
 
@@ -263,7 +252,6 @@ def run_model(subj, run):
         for v in ['t', 'sd', 'effect']:
             im = Image(output[n][v], vol0_map)
             save_image(im, pjoin(odir, n, '%s.nii' % v))
-
     for n in fcons:
         im = Image(output[n], vol0_map)
         save_image(im, pjoin(odir, n, "F.nii"))
@@ -345,28 +333,24 @@ def group_analysis(design, contrast):
     sd = array([array(load_image(pjoin(s, "sd.nii"))) for s in subj_con_dirs])
     Y = array([array(load_image(pjoin(s, "effect.nii"))) for s in subj_con_dirs])
 
-    # This function estimates the ratio of the
-    # fixed effects variance (sum(1/sd**2, 0))
-    # to the estimated random effects variance
-    # (sum(1/(sd+rvar)**2, 0)) where
-    # rvar is the random effects variance.
+    # This function estimates the ratio of the fixed effects variance
+    # (sum(1/sd**2, 0)) to the estimated random effects variance
+    # (sum(1/(sd+rvar)**2, 0)) where rvar is the random effects variance.
 
-    # The EM algorithm used is described in 
+    # The EM algorithm used is described in:
     #
-    # Worsley, K.J., Liao, C., Aston, J., Petre, V., Duncan, G.H., 
-    #    Morales, F., Evans, A.C. (2002). \'A general statistical 
+    # Worsley, K.J., Liao, C., Aston, J., Petre, V., Duncan, G.H.,
+    #    Morales, F., Evans, A.C. (2002). \'A general statistical
     #    analysis for fMRI data\'. NeuroImage, 15:1-15
-
     varest = onesample.estimate_varatio(Y, sd)
     random_var = varest['random']
 
     # XXX - if we have a smoother, use
     # random_var = varest['fixed'] * smooth(varest['ratio'])
 
-    # Having estimated the random effects variance (and
-    # possibly smoothed it), the corresponding
-    # estimate of the effect and its variance is
-    # computed and saved.
+    # Having estimated the random effects variance (and possibly smoothed it),
+    # the corresponding estimate of the effect and its variance is computed and
+    # saved.
 
     # This is the coordmap we will use
     coordmap = futil.load_image_fiac("fiac_00","wanatomical.nii").coordmap
@@ -403,11 +387,9 @@ def group_analysis_signs(design, contrast, mask, signs=None):
     maxT: np.ndarray, maxima of T statistic within mask, one for each
          vector of signs
     """
-
     maska = np.asarray(mask).astype(np.bool)
 
     # Which subjects have this (contrast, design) pair?
-
     subj_con_dirs = futil.subj_des_con_dirs(design, contrast)
 
     sd = np.array([np.array(load_image(pjoin(s, "sd.nii")))[:,maska]
@@ -461,13 +443,6 @@ def permutation_test(design, contrast, mask=GROUP_MASK, nsample=1000):
     min_vals, max_vals = group_analysis_signs(design, contrast, maska, signs)
     return min_vals, max_vals
 
-SUBJECTS = tuple(range(5) + range(6, 16)) # No data for subject 5
-RUNS = tuple(range(1, 5))
-DESIGNS = ('event', 'block')
-CONTRASTS = ('speaker_0', 'speaker_1',
-             'sentence_0', 'sentence_1',
-             'sentence:speaker_0',
-             'sentence:speaker_1')
 
 def run_run_models(subject_nos=SUBJECTS, run_nos = RUNS):
     """ Simple serial run of all the within-run models """
