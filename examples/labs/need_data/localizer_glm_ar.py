@@ -1,10 +1,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Full step-by-step example of fitting a GLM to experimental data and
-visualizing the results.
+Full step-by-step example of fitting a GLM to experimental data and visualizing
+the results.
 
-More specifically,
+More specifically:
+
 1. A sequence of fMRI volumes are loaded
 2. A design matrix describing all the effects related to the data is computed
 3. a mask of the useful brain volume is computed
@@ -13,16 +14,24 @@ More specifically,
 
 Note that this corresponds to a single run.
 
+Needs matplotlib
+
 Author : Bertrand Thirion, 2010
 """
 print __doc__
 
-import numpy as np
+import os
 import os.path as op
-import pylab as pl
-import tempfile
+
+import numpy as np
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 from nibabel import load, save, Nifti1Image
+
 from nipy.modalities.fmri.glm import GeneralLinearModel, data_scaling
 from nipy.modalities.fmri.design_matrix import make_dmtx
 from nipy.modalities.fmri.experimental_paradigm import \
@@ -30,18 +39,18 @@ from nipy.modalities.fmri.experimental_paradigm import \
 from nipy.labs.viz import plot_map, cm
 from nipy.labs import compute_mask_files
 
-import get_data_light
+# Local import
+from get_data_light import DATA_DIR, get_first_level_dataset
 
 #######################################
 # Data and analysis parameters
 #######################################
 
 # volume mask
-get_data_light.get_first_level_dataset()
-data_path = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
-                                 's12069_swaloc1_corr.nii.gz'))
-paradigm_file = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
-                                      'localizer_paradigm.csv'))
+# This dataset is large
+get_first_level_dataset()
+data_path = op.join(DATA_DIR, 's12069_swaloc1_corr.nii.gz')
+paradigm_file = op.join(DATA_DIR, 'localizer_paradigm.csv')
 
 # timing
 n_scans = 128
@@ -59,8 +68,8 @@ drift_model = "cosine"
 hfcut = 128
 
 # write directory
-write_dir = tempfile.mkdtemp()
-print 'Computation will be performed in temporary directory: %s' % write_dir
+write_dir = os.getcwd()
+print 'Computation will be performed in directory: %s' % write_dir
 
 ########################################
 # Design matrix
@@ -77,7 +86,7 @@ ax = design_matrix.show()
 ax.set_position([.05, .25, .9, .65])
 ax.set_title('Design matrix')
 
-pl.savefig(op.join(write_dir, 'design_matrix.png'))
+plt.savefig(op.join(write_dir, 'design_matrix.png'))
 # design_matrix.write_csv(...)
 
 ########################################
@@ -153,8 +162,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
              anat=None,
              figure=10,
              threshold=2.5)
-    pl.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
-    pl.clf()
+    plt.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
+    plt.clf()
 
 
 #########################################
@@ -183,11 +192,14 @@ if True: # replace with False to skip this
              threshold=3, do3d=True)
 
     from nipy.labs import viz3d
-    viz3d.plot_map_3d(write_array, affine,
-                      cmap=cm.cold_hot,
-                      vmin=-vmax,
-                      vmax=vmax,
-                      anat=None,
-                      threshold=4) 
+    try:
+        viz3d.plot_map_3d(write_array, affine,
+                        cmap=cm.cold_hot,
+                        vmin=-vmax,
+                        vmax=vmax,
+                        anat=None,
+                        threshold=4)
+    except ImportError:
+        print "Need mayavi for 3D visualization"
 
-pl.show()
+plt.show()

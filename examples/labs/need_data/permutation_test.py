@@ -1,13 +1,19 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+""" Example of onesample permutation test
+
+Needs *example data* package
+"""
+
 import numpy as np
+
 from nipy.labs.group.permutation_test import permutation_test_onesample
+
 from nipy.utils import example_data
 
-
 # Get group data
-group_data = example_data.get_filename(
-        'neurospin', 'language_babies', 'offset_002.npz')
+group_data = example_data.get_filename('neurospin', 'language_babies',
+                                       'offset_002.npz')
 
 f = np.load(group_data)
 data, vardata, xyz = f['mat'], f['var'], f['xyz']
@@ -23,8 +29,8 @@ print cluster_def
 # Multiple calibration
 # To get accurate pvalues, don't pass nperms (default is 1e4)
 # Yet it will take longer to run
-voxel_res, cluster_res, region_res = ptest.calibrate(
-    nperms=100, clusters=[cluster_def])
+voxel_res, cluster_res, region_res = ptest.calibrate(nperms=100,
+                                                     clusters=[cluster_def])
 
 # Simulated Zmax values for FWER correction
 simu_zmax = ptest.zscore(voxel_res['perm_maxT_values'])

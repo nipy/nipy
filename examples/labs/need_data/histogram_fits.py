@@ -2,22 +2,32 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Example of a script that perfoms histogram analysis of an activation image.
-This is based on a real fMRI image
+This is based on a real fMRI image.
 
-Simply modify the input image path to make it work on your preferred
-image
+Simply modify the input image path to make it work on your preferred image.
+
+Needs matplotlib
 
 Author : Bertrand Thirion, 2008-2009
 """
 
 import os
+
 import numpy as np
-import matplotlib.pyplot as plt
+
 import scipy.stats as st
 
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
 from nibabel import load
+
 import nipy.algorithms.statistics.empirical_pvalue as en
-import get_data_light
+
+# Local import
+from get_data_light import DATA_DIR, get_second_level_dataset
 
 
 # parameters
@@ -25,11 +35,10 @@ verbose = 1
 theta = float(st.t.isf(0.01, 100))
 
 # paths
-data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
-mask_image = os.path.join(data_dir, 'mask.nii.gz')
-input_image = os.path.join(data_dir, 'spmT_0029.nii.gz')
+mask_image = os.path.join(DATA_DIR, 'mask.nii.gz')
+input_image = os.path.join(DATA_DIR, 'spmT_0029.nii.gz')
 if (not os.path.exists(mask_image)) or (not os.path.exists(input_image)):
-    get_data_light.get_second_level_dataset()
+    get_second_level_dataset()
 
 # Read the mask
 nim = load(mask_image)
