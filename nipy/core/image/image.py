@@ -678,7 +678,7 @@ def rollaxis(img, axis, inverse=False):
     return img.reordered_axes(order).reordered_reference(order)
 
 
-def rollimg(img, axis, start=0, fix0=False):
+def rollimg(img, axis, start=0, fix0=True):
     """ Roll `axis` backwards in the inputs, until it lies before `start`
 
     Parameters
