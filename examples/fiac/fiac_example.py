@@ -4,6 +4,9 @@
 
 This script needs the pre-processed FIAC data.  See ``README.txt`` and
 ``fiac_util.py`` for details.
+
+See ``examples/labs/need_data/first_level_fiac.py`` for an alternative approach
+to this analysis.
 """
 #-----------------------------------------------------------------------------
 # Imports
