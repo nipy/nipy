@@ -24,7 +24,6 @@ d1 = utils.fourier_basis([0.3,0.5,0.7]); d1 = d1.subs(t, t1)
 tval1 = np.linspace(0,20,101)
 
 f1 = Formula([c11,c21,c31]) + d1
-f1 = f1.subs('hrf1', hrf.glover)
 
 # Session 2
 
@@ -36,7 +35,6 @@ d2 = utils.fourier_basis([0.3,0.5,0.7]); d2 = d2.subs(t, t2)
 tval2 = np.linspace(0,10,51)
 
 f2 = Formula([c12,c22,c32]) + d2
-f2 = f2.subs('hrf2', hrf.dglover)
 
 sess_factor = Factor('sess', [1,2])
 
@@ -51,8 +49,8 @@ ttval1 = np.hstack([tval1, np.zeros(tval2.shape)])
 ttval2 = np.hstack([np.zeros(tval1.shape), tval2])
 session = np.array([1]*tval1.shape[0] + [2]*tval2.shape[0])
 
-f.subs('hrf1', hrf.glover)
-f.subs('hrf2', hrf.dglover)
+f = f.subs(h1, hrf.glover)
+f = f.subs(h2, hrf.glover)
 
 # Create the recarray that will be used to create the design matrix
 
@@ -67,16 +65,21 @@ rec = np.array([(t1,t2, s) for t1, t2, s in zip(ttval1, ttval2, session)],
 # the contrast from the Formula, "f" above,
 # applying all of f's aliases to it....
 
-# contrast = Formula([c11-c12])
-# contrast.aliases['hrf1'] = hrf.glover
-# contrast.aliases['hrf2'] = hrf.dglover
+sess_1 = sess_factor.get_term(1)
+sess_2 = sess_factor.get_term(2)
+contrast = Formula([sess_1*c11-sess_2*c12])
+contrast = contrast.subs(h1, hrf.glover)
+contrast = contrast.subs(h2, hrf.glover)
 
 # # Create the design matrix
 
-# X = d(rec, return_float=True)
+X = f.design(rec, return_float=True)
 
-# d2 = Design(contrast, return_float=True)
-# preC = d2(rec)
+preC = contrast.design(rec, return_float=True)
 
-# C = np.dot(np.linalg.pinv(X), preC)
-# print C
+C = np.dot(np.linalg.pinv(X), preC)
+print C
+
+nonzero = np.nonzero(np.fabs(C) >= 0.1)[0]
+print (f.dtype.names[nonzero[0]], f.dtype.names[nonzero[1]])
+print ((sess_2*c12).subs(h2, hrf.glover), (sess_1*c11).subs(h1, hrf.glover))
