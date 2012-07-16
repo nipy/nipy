@@ -1,35 +1,41 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This is a little demo that simply shows ROI manipulation within
-the nipy framework
+This is a little demo that simply shows ROI manipulation within the nipy
+framework.
+
+Needs matplotlib
 
 Author: Bertrand Thirion, 2009-2010
 """
 print __doc__
 
-import numpy as np
 import os
-import matplotlib.pyplot as plt
+
+import numpy as np
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
 from nibabel import load, save
 
 import nipy.labs.spatial_models.mroi as mroi
 from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
 import nipy.labs.spatial_models.hroi as hroi
 
-import get_data_light
-import tempfile
-
+# Local import
+from get_data_light import DATA_DIR, get_second_level_dataset
 
 # paths
-data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
-input_image = os.path.join(data_dir, 'spmT_0029.nii.gz')
-mask_image = os.path.join(data_dir, 'mask.nii.gz')
+input_image = os.path.join(DATA_DIR, 'spmT_0029.nii.gz')
+mask_image = os.path.join(DATA_DIR, 'mask.nii.gz')
 if (not os.path.exists(input_image)) or (not os.path.exists(mask_image)):
-    get_data_light.get_second_level_dataset()
+    get_second_level_dataset()
 
 # write dir
-swd = tempfile.mkdtemp()
+swd = os.getcwd()
 
 # -----------------------------------------------------
 # example 1: create the ROI froma a given position
@@ -61,11 +67,11 @@ shape = nim.shape
 data = nim.get_data()
 values = data[data != 0]
 
-# compute the  nested roi object
+# compute the nested roi object
 nroi = hroi.HROI_as_discrete_domain_blobs(domain, values,
                                           threshold=threshold, smin=smin)
 
-# saving the blob image,i. e. a label image 
+# saving the blob image, i.e. a label image
 wim = nroi.to_image('id', roi=True)
 descrip = "blob image extracted from %s" % input_image
 blobPath = os.path.join(swd, "blob.nii")

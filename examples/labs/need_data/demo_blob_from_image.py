@@ -3,6 +3,7 @@
 """
 This scipt generates a noisy activation image image
 and extracts the blob from it.
+
 This creaste as output
 - a label image representing the nested blobs,
 - an image of the averge signal per blob and
@@ -12,23 +13,23 @@ Author : Bertrand Thirion, 2009
 """
 #autoindent
 
+import os
 import os.path as op
-import numpy as np
-import tempfile
 
 from nibabel import load, save, Nifti1Image
+
 import nipy.labs.spatial_models.hroi as hroi
 from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
 
-import get_data_light
+# Local import
+from get_data_light import DATA_DIR, get_second_level_dataset
 
 
 # data paths
-data_dir = op.expanduser(op.join('~', '.nipy', 'tests', 'data'))
-input_image = op.join(data_dir, 'spmT_0029.nii.gz')
+input_image = op.join(DATA_DIR, 'spmT_0029.nii.gz')
 if not op.exists(input_image):
-    get_data_light.get_second_level_dataset()
-swd = tempfile.mkdtemp()
+    get_second_level_dataset()
+swd = os.getcwd()
 
 # parameters
 threshold = 3.0 # blob-forming threshold
@@ -43,8 +44,8 @@ data = nim.get_data()
 values = data[data != 0]
 
 # compute the  nested roi object
-nroi = hroi.HROI_as_discrete_domain_blobs(domain, values,
-                                          threshold=threshold, smin=smin)
+nroi = hroi.HROI_as_discrete_domain_blobs(domain, values, threshold=threshold,
+                                          smin=smin)
 
 # compute region-level activation averages
 activation = [values[nroi.select_id(id, roi=False)] for id in nroi.get_id()]

@@ -1,15 +1,27 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Script that perform the first-level analysis of the FIAC dataset.
+Script that performs a first-level analysis of the FIAC dataset.
+
+See ``examples/fiac/fiac_example.py`` for another approach to this analysis.
+
+Needs the *example data* package.
+
+Also needs matplotlib
 
 Author: Alexis Roche, Bertrand Thirion, 2009--2012
 """
 
+import os
 import os.path as op
+
 import numpy as np
-import pylab as pl
-import tempfile
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
 from nibabel import load, save, Nifti1Image
 
 from nipy.modalities.fmri.glm import GeneralLinearModel, data_scaling
@@ -81,7 +93,7 @@ def make_fiac_contrasts():
 
 # compute fixed effects of the two runs and compute related images
 contrasts = make_fiac_contrasts()
-write_dir = tempfile.mkdtemp()
+write_dir = os.getcwd()
 print 'Computing contrasts...'
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print '  Contrast % 2i out of %i: %s' % (
@@ -104,7 +116,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
              figure=10,
              threshold=2.5,
              black_bg=True)
-    pl.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
-    pl.clf()
+    plt.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
+    plt.clf()
 
 print "All the  results were witten in %s" % write_dir

@@ -1,21 +1,31 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This is an example where
+This is an example where:
+
 1. An sequence of fMRI volumes are simulated
 2. A design matrix describing all the effects related to the data is computed
 3. A GLM is applied to all voxels
 4. A contrast image is created
 
+Requires matplotlib
+
 Author : Bertrand Thirion, 2010
 """
 print __doc__
 
-import numpy as np
+import os
 import os.path as op
-import tempfile
+
+import numpy as np
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 from nibabel import save, Nifti1Image
+
 import nipy.modalities.fmri.design_matrix as dm
 from nipy.labs.utils.simul_multisubject_fmri_dataset import \
      surrogate_4d_dataset
@@ -52,9 +62,6 @@ hrf_model = 'canonical'
 motion = np.cumsum(np.random.randn(n_scans, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
-# temporary directory to write resutls in
-swd = tempfile.mkdtemp()
-
 ########################################
 # Design matrix
 ########################################
@@ -72,7 +79,7 @@ X, names = dm.dmtx_light(frametimes, paradigm, drift_model='cosine',
 fmri_data = surrogate_4d_dataset(shape=shape, n_scans=n_scans)[0]
 
 # if you want to save it as an image
-data_file = op.join(swd, 'fmri_data.nii')
+data_file = 'fmri_data.nii'
 save(fmri_data, data_file)
 
 ########################################
@@ -94,14 +101,16 @@ zvals = glm.contrast(contrast).z_score()
 contrast_image = Nifti1Image(np.reshape(zvals, shape), affine)
 
 # if you want to save the contrast as an image
-contrast_path = op.join(swd, 'zmap.nii')
+contrast_path = 'zmap.nii'
 save(contrast_image, contrast_path)
 
-print 'wrote the some of the results as images in directory %s' % swd
+print ('Wrote the some of the results as images in directory %s' %
+       op.abspath(os.getcwd()))
 
 h, c = np.histogram(zvals, 100)
-import pylab
-pylab.figure()
-pylab.bar(c[: - 1], h, width=.1)
-pylab.title(' Histogram of the z-values')
-pylab.show()
+
+# Show the histogram
+plt.figure()
+plt.bar(c[: - 1], h, width=.1)
+plt.title(' Histogram of the z-values')
+plt.show()
