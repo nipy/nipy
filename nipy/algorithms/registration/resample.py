@@ -16,7 +16,7 @@ from ._registration import (_cspline_transform,
 INTERP_ORDER = 3
 
 
-def resample(moving, transform, reference=None,
+def resample(moving, transform=None, reference=None,
              mov_voxel_coords=False, ref_voxel_coords=False,
              dtype=None, interp_order=INTERP_ORDER):
     """ Resample `movimg` into voxel space of `reference` using `transform`
@@ -33,14 +33,19 @@ def resample(moving, transform, reference=None,
     ----------
     moving: nipy-like image
       Image to be resampled.
-    transform: transform object
+    transform: transform object or None
       Represents a transform that goes from the `reference` image to
-      the `moving` image. It should have either an `apply` method, or
-      an `as_affine` method.
-    reference : None or nipy-like image, optional
-      Image to which to resample.  The reference image defines the image
-      dimensions and xyz affine to which to resample.  If None, use `movimg` to
-      define these.
+      the `moving` image. None means an identity transform. Otherwise,
+      it should have either an `apply` method, or an `as_affine`
+      method. By default, `transform` maps between the output (world)
+      space of `reference` and the output (world) space of `moving`.
+      If `mov_voxel_coords` is True, maps to the *voxel* space of
+      `moving` and if `ref_vox_coords` is True, maps from the *voxel*
+      space of `reference`.
+    reference : None or nipy-like image or tuple, optional
+      The reference image defines the image dimensions and xyz affine
+      to which to resample. It can be input as a nipy-like image or as
+      a tuple (shape, affine). If None, use `movimg` to define these.
     mov_voxel_coords : boolean, optional
       True if the transform maps to voxel coordinates, False if it
       maps to world coordinates.
@@ -56,17 +61,27 @@ def resample(moving, transform, reference=None,
         Image resliced to `reference` with reference-to-movimg transform
         `transform`
     """
-    # Function assumes xyx_affine for inputs
+    # Function assumes xyz_affine for inputs
     moving = as_xyz_image(moving)
     mov_aff = xyz_affine(moving)
     if reference == None:
         reference = moving
+    if isinstance(reference, (tuple, list)):
+        ref_shape, ref_aff = reference
     else:
+        # Expecting image. Must be an image that can make an xyz_affine
         reference = as_xyz_image(reference)
-    ref_aff = xyz_affine(reference)
+        ref_shape = reference.shape
+        ref_aff = xyz_affine(reference)
+    if not len(ref_shape) == 3 or not ref_aff.shape == (4, 4):
+        raise ValueError('Input image should be 3D')
     data = moving.get_data()
     if dtype == None:
         dtype = data.dtype
+
+    # Assume identity transform by default
+    if transform == None:
+        transform = Affine()
 
     # Case: affine transform
     if hasattr(transform, 'as_affine'):
@@ -76,14 +91,14 @@ def resample(moving, transform, reference=None,
         if not mov_voxel_coords:
             Tv = np.dot(inverse_affine(mov_aff), Tv)
         if interp_order == 3:
-            output = _cspline_resample3d(data, reference.shape,
+            output = _cspline_resample3d(data, ref_shape,
                                          Tv, dtype=dtype)
             output = output.astype(dtype)
         else:
-            output = np.zeros(reference.shape, dtype=dtype)
+            output = np.zeros(ref_shape, dtype=dtype)
             affine_transform(data, Tv[0:3, 0:3], offset=Tv[0:3, 3],
                              order=interp_order, cval=0,
-                             output_shape=reference.shape, output=output)
+                             output_shape=ref_shape, output=output)
 
     # Case: non-affine transform
     else:
@@ -92,12 +107,12 @@ def resample(moving, transform, reference=None,
             Tv = Tv.compose(Affine(ref_aff))
         if not mov_voxel_coords:
             Tv = Affine(inverse_affine(mov_aff)).compose(Tv)
-        coords = np.indices(reference.shape).transpose((1, 2, 3, 0))
-        coords = np.reshape(coords, (np.prod(reference.shape), 3))
+        coords = np.indices(ref_shape).transpose((1, 2, 3, 0))
+        coords = np.reshape(coords, (np.prod(ref_shape), 3))
         coords = Tv.apply(coords).T
         if interp_order == 3:
             cbspline = _cspline_transform(data)
-            output = np.zeros(reference.shape, dtype='double')
+            output = np.zeros(ref_shape, dtype='double')
             output = _cspline_sample3d(output, cbspline, *coords)
             output = output.astype(dtype)
         else:
