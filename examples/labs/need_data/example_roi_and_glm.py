@@ -1,7 +1,8 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This is an example where
+This is an example where:
+
 1. An sequence of fMRI volumes are loaded
 2. An ROI mask is loaded
 3. A design matrix describing all the effects related to the data is computed
@@ -10,16 +11,24 @@ This is an example where
 6. A plot of the hrf is provided for the mean reponse in the hrf
 7. Fitted/adjusted response plots are provided
 
+Needs matplotlib
+
 Author : Bertrand Thirion, 2010
 """
 print __doc__
 
-import numpy as np
+import os
 import os.path as op
-import matplotlib.pyplot as plt
-from tempfile import mkdtemp
+
+import numpy as np
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 from nibabel import save, load
+
 from nipy.modalities.fmri.design_matrix import dmtx_light
 from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
 from nipy.labs.utils.simul_multisubject_fmri_dataset import \
@@ -28,17 +37,17 @@ from nipy.modalities.fmri.glm import GeneralLinearModel
 import nipy.labs.spatial_models.mroi as mroi
 from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
 
-import get_data_light
+# Local import
+from get_data_light import DATA_DIR, get_second_level_dataset
 
 #######################################
 # Simulation parameters
 #######################################
 
 # volume mask
-mask_path = op.expanduser(op.join('~', '.nipy', 'tests', 'data',
-                                 'mask.nii.gz'))
+mask_path = op.join(DATA_DIR, 'mask.nii.gz')
 if not op.exists(mask_path):
-    get_data_light.get_second_level_dataset()
+    get_second_level_dataset()
 
 mask = load(mask_path)
 mask_array, affine = mask.get_data() > 0, mask.get_affine()
@@ -56,7 +65,7 @@ motion = np.cumsum(np.random.randn(n_scans, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
 # write directory
-write_dir = mkdtemp()
+write_dir = os.getcwd()
 
 ########################################
 # Design matrix
@@ -145,11 +154,10 @@ b2 = plt.bar(np.arange(nreg - 1) + 0.3, betas[:- 1, 1], width=.4,
             color='red', label='region 2')
 plt.xticks(np.arange(nreg - 1), names[:-1], fontsize=10)
 plt.legend()
-plt.title('parameters estimates \n for the roi time courses')
+plt.title('Parameter estimates \n for the roi time courses')
 
 bx = plt.subplot(1, 2, 2)
 my_roi.plot_feature('contrast', bx)
-
 
 ########################################
 # fitted and adjusted response
@@ -169,7 +177,6 @@ for k in range(my_roi.k):
     plt.plot(fit[k] + res[k], 'r')
     plt.xlabel('time (scans)')
     plt.legend(('effects', 'adjusted'))
-
 
 ###########################################
 # hrf for condition 1

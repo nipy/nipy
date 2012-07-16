@@ -1,24 +1,34 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Example of script to analyse the reproducibility in group studies
-using a bootstrap procedure
+Example of script to analyse the reproducibility in group studies using a
+bootstrap procedure.
 
-This reproduces approximately the work described in
-'Analysis of a large fMRI cohort:
-Statistical and methodological issues for group analyses'
-Thirion B, Pinel P, Meriaux S, Roche A, Dehaene S, Poline JB.
-Neuroimage. 2007 Mar;35(1):105-20.
+This reproduces approximately the work described in 'Analysis of a large fMRI
+cohort: Statistical and methodological issues for group analyses' Thirion B,
+Pinel P, Meriaux S, Roche A, Dehaene S, Poline JB.  Neuroimage. 2007
+Mar;35(1):105-20.
 
-author: Bertrand Thirion, 2005-2009
+Needs matplotlib
+
+Author: Bertrand Thirion, 2005-2009
 """
+
+import os
 import os.path as op
+
 from numpy import array
-import tempfile
-import get_data_light
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 from nipy.labs.utils.reproducibility_measures import \
      group_reproducibility_metrics
+
+# Local import
+from get_data_light import DATA_DIR, get_second_level_dataset
 
 print 'This analysis takes a long while, please be patient'
 
@@ -30,8 +40,7 @@ nsubj = 12
 subj_id = range(nsubj)
 nbeta = 29
 
-data_dir = op.expanduser(
-    op.join('~', '.nipy', 'tests', 'data', 'group_t_images'))
+data_dir = op.join(DATA_DIR, 'group_t_images')
 
 mask_images = [op.join(data_dir, 'mask_subj%02d.nii' % n)
                for n in range(nsubj)]
@@ -43,9 +52,9 @@ all_images = mask_images + stat_images + contrast_images
 missing_file = array([not op.exists(m) for m in all_images]).any()
 
 if missing_file:
-    get_data_light.get_second_level_dataset()
+    get_second_level_dataset()
 
-swd = tempfile.mkdtemp('image')
+swd = os.getcwd()
 
 ##############################################################################
 # main script
@@ -73,23 +82,22 @@ pk = [k for k in peak_results[ngroups[0]].values()]
 # plot
 ##############################################################################
 
-import pylab
-pylab.figure()
-pylab.subplot(1, 3, 1)
-pylab.boxplot(kap)
-pylab.title('voxel-level reproducibility')
-pylab.xticks(range(1, 1 + len(thresholds)), thresholds)
-pylab.xlabel('threshold')
-pylab.subplot(1, 3, 2)
-pylab.boxplot(clt)
-pylab.title('cluster-level reproducibility')
-pylab.xticks(range(1, 1 + len(thresholds)), thresholds)
-pylab.xlabel('threshold')
-pylab.subplot(1, 3, 3)
-pylab.boxplot(clt)
-pylab.title('cluster-level reproducibility')
-pylab.xticks(range(1, 1 + len(thresholds)), thresholds)
-pylab.xlabel('threshold')
+plt.figure()
+plt.subplot(1, 3, 1)
+plt.boxplot(kap)
+plt.title('voxel-level reproducibility')
+plt.xticks(range(1, 1 + len(thresholds)), thresholds)
+plt.xlabel('threshold')
+plt.subplot(1, 3, 2)
+plt.boxplot(clt)
+plt.title('cluster-level reproducibility')
+plt.xticks(range(1, 1 + len(thresholds)), thresholds)
+plt.xlabel('threshold')
+plt.subplot(1, 3, 3)
+plt.boxplot(clt)
+plt.title('cluster-level reproducibility')
+plt.xticks(range(1, 1 + len(thresholds)), thresholds)
+plt.xlabel('threshold')
 
 
 ##############################################################################

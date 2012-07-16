@@ -7,23 +7,24 @@ Author: Bertrand Thirion, 2010
 """
 print __doc__
 
-import numpy as np
 import os
-import tempfile
+
+import numpy as np
 
 from nibabel import load, save, Nifti1Image
-from nipy.algorithms.graph.field import Field
-import get_data_light
 
+from nipy.algorithms.graph.field import Field
+
+# Local import
+from get_data_light import DATA_DIR, get_second_level_dataset
 
 # paths
-swd = tempfile.mkdtemp()
-data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
-input_image = os.path.join(data_dir, 'spmT_0029.nii.gz')
-mask_image = os.path.join(data_dir, 'mask.nii.gz')
+swd = os.getcwd()
+input_image = os.path.join(DATA_DIR, 'spmT_0029.nii.gz')
+mask_image = os.path.join(DATA_DIR, 'mask.nii.gz')
 
 if (not os.path.exists(mask_image)) or (not os.path.exists(input_image)):
-    get_data_light.get_second_level_dataset()
+    get_second_level_dataset()
 
 # read the data
 mask = load(mask_image).get_data() > 0
