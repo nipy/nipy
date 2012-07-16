@@ -391,12 +391,15 @@ def test_rollimg():
     im_rolled = rollimg(im_unamb, 'l')
     assert_array_equal(im_rolled.get_data(),
                        im_unamb.get_data().transpose([3,0,1,2]))
-    # Zero row / col means we can't find an axis mapping, by default
+    # Zero row / col means we can't find an axis mapping, when fix0 is false
     aff_z = np.diag([1, 2, 3, 0, 1])
     im_z = Image(data, AT('ijkl', 'xyzt', aff_z))
-    assert_raises(AxisError, rollimg, im_z, 't')
-    # Unless we turn on our zero detector
+    assert_raises(AxisError, rollimg, im_z, 't', fix0=False)
+    # But we can work it out if we turn on our zero detector
     assert_equal(rollimg(im_z, 't', fix0=True).coordmap,
+                 AT('lijk', 'xyzt', aff_z[:, (3, 0, 1, 2, 4)]))
+    # That's the default
+    assert_equal(rollimg(im_z, 't').coordmap,
                  AT('lijk', 'xyzt', aff_z[:, (3, 0, 1, 2, 4)]))
     # Non square is OK
     aff_r = np.array([[1, 0, 0, 10],
