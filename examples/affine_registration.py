@@ -95,7 +95,7 @@ toc = time.time()
 print('  Resampling time: %f sec' % (toc - tic))
 
 # Save resampled source
-outfile = join(mkdtemp(), source + '_TO_' + target + '.nii')
+outfile = join(mkdtemp(), source + '_TO_' + target + '.nii.gz')
 print ('Saving resampled source in: %s' % outfile)
 save_image(It, outfile)
 

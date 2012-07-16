@@ -61,9 +61,9 @@ class HistogramRegistration(object):
           Number of histogram bins to represent the `from` image
         to_bins : integer
           Number of histogram bins to represent the `to` image
-        from_mask : nipy image-like
+        from_mask : array-like
           Mask to apply to the `from` image
-        to_mask : nipy image-like
+        to_mask : array-like
           Mask to apply to the `to` image
         similarity : str or callable
           Cost-function for assessing image similarity. If a string,
@@ -80,10 +80,6 @@ class HistogramRegistration(object):
         # Function assumes xyx_affine for inputs
         from_img = as_xyz_image(from_img)
         to_img = as_xyz_image(to_img)
-        if not from_mask is None:
-            from_mask = as_xyz_image(from_mask)
-        if not to_mask is None:
-            to_mask = as_xyz_image(to_mask)
 
         # Binning sizes
         if to_bins == None:
@@ -91,20 +87,21 @@ class HistogramRegistration(object):
 
         # Clamping of the `from` image. The number of bins may be
         # overriden if unnecessarily large.
-        mask = None
-        if not from_mask is None:
-            mask = from_mask.get_data()
-        data, from_bins = clamp(from_img.get_data(), bins=from_bins, mask=mask)
+        data, from_bins = clamp(from_img.get_data(), bins=from_bins,
+                                mask=from_mask)
         self._from_img = make_xyz_image(data, xyz_affine(from_img), 'scanner')
-        # Set the subsampling.  This also sets the _from_data and _vox_coords
-        # attributes
-        self.subsample()
+        # Set field of view in the `from` image with potential
+        # subsampling for faster similarity evaluation. This also sets
+        # the _from_data and _vox_coords attributes
+        if from_mask == None:
+            self.subsample(npoints=NPOINTS)
+        else:
+            corner, size = smallest_bounding_box(from_mask)
+            self.set_fov(corner=corner, size=size, npoints=NPOINTS)
 
         # Clamping of the `to` image including padding with -1
-        mask = None
-        if not to_mask is None:
-            mask = to_mask.get_data()
-        data, to_bins = clamp(to_img.get_data(), bins=to_bins, mask=mask)
+        data, to_bins = clamp(to_img.get_data(), bins=to_bins,
+                              mask=to_mask)
         self._to_data = -np.ones(np.array(to_img.shape) + 2, dtype=CLAMP_DTYPE)
         self._to_data[1:-1, 1:-1, 1:-1] = data
         self._to_inv_affine = inverse_affine(xyz_affine(to_img))
@@ -126,8 +123,8 @@ class HistogramRegistration(object):
 
     interp = property(_get_interp, _set_interp)
 
-    def subsample(self, spacing=None, corner=[0, 0, 0], size=None,
-                  npoints=NPOINTS):
+    def set_fov(self, spacing=None, corner=[0, 0, 0], size=None,
+                npoints=None):
         """
         Defines a subset of the `from` image to restrict joint
         histogram computation.
@@ -167,6 +164,9 @@ class HistogramRegistration(object):
         # We cache the voxel coordinates of the clamped image
         self._vox_coords =\
             np.indices(self._from_data.shape).transpose((1, 2, 3, 0))
+
+    def subsample(self, spacing=None, npoints=None):
+        self.set_fov(spacing=spacing, npoints=npoints)
 
     def _set_similarity(self, similarity='cr', **kwargs):
         if similarity in _sms:
@@ -318,7 +318,7 @@ class HistogramRegistration(object):
         return simis, params
 
 
-def _clamp(x, y, bins=BINS, mask=None):
+def _clamp(x, y, bins=BINS):
 
     # Threshold
     dmaxmax = 2 ** (8 * y.dtype.itemsize - 1) - 1
@@ -422,3 +422,13 @@ def ideal_spacing(data, npoints):
         actual_npoints = (subdata >= 0).sum()
 
     return spacing
+
+
+def smallest_bounding_box(msk):
+    """
+    Extract the smallest bounding box from a mask
+    """
+    x, y, z = np.where(msk > 0)
+    corner = [x.min(), y.min(), z.min()]
+    size = [x.max() + 1, y.max() + 1, z.max() + 1]
+    return corner, size
