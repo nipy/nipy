@@ -38,8 +38,13 @@ runnames = [example_data.get_filename('fiac', 'fiac0', run + '.nii.gz')\
                 for run in ('run1', 'run2')]
 runs = [load(run) for run in runnames]
 
+# Declare interleaved ascending slice order
+nslices = runs[0].shape[2]
+slice_order = range(0, nslices, 2) + range(1, nslices, 2)
+print('Slice order: %s' % slice_order)
+
 # Spatio-temporal realigner
-R = FmriRealign4d(runs, tr=2.5, slice_order='ascending', interleaved=True)
+R = FmriRealign4d(runs, tr=2.5, slice_order=slice_order)
 
 # Estimate motion within- and between-sessions
 R.estimate(refscan=None)
