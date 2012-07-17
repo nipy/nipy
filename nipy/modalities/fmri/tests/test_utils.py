@@ -3,6 +3,7 @@
 """ Testing fmri utils
 
 """
+import re
 
 import numpy as np
 
@@ -24,7 +25,7 @@ from ..utils import (
     )
 from .. import hrf
 
-from nose.tools import assert_equal, raises
+from nose.tools import assert_equal, raises, assert_false
 
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_almost_equal)
@@ -99,6 +100,11 @@ def test_step_function():
     s = step_function([0,4,5],[4,2,1])
     lam = lambdify(t, s)
     assert_array_equal(lam(tval), [0, 4, 4, 2, 2, 1])
+    # Name default
+    assert_false(re.match(r'step\d+\(t\)$', str(s)) is None)
+    # Name reloaded
+    s = step_function([0,4,5],[4,2,1], name='goodie_goodie_yum_yum')
+    assert_equal(str(s), 'goodie_goodie_yum_yum(t)')
 
 
 def test_blocks():
@@ -110,6 +116,15 @@ def test_blocks():
     b = blocks(on_off, amplitudes=[3,5])
     lam = lambdify(t, b)
     assert_array_equal(lam(tval), [0, 3, 0, 5])
+    # Check what happens with names
+    # Default is from step function
+    assert_false(re.match(r'step\d+\(t\)$', str(b)) is None)
+    # Can pass in another
+    b = blocks(on_off, name='funky_chicken')
+    assert_equal(str(b), 'funky_chicken(t)')
+
+
+
 
 
 def numerical_convolve(func1, func2, interval, dt, padding_f=0.1):
