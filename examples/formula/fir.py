@@ -1,15 +1,28 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+""" Example of FIR model using formula framework
+
+Shows how to use B splines as basis functions for the FIR instead of simple
+boxcars.
+
+Requires matplotlib
+"""
+
 import numpy as np
-import matplotlib.pyplot as plt
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 from nipy.fixes.sympy.utilities.lambdify import implemented_function
 from nipy.algorithms.statistics.api import Formula
 from nipy.modalities.fmri import utils
 
 def linBspline(knots):
-    """ Create a linear B spline that is zero outside [knots[0],
-    knots[-1]] (knots is assumed to be sorted).
+    """ Create linear B spline that is zero outside [knots[0], knots[-1]]
+
+    (knots is assumed to be sorted).
     """
     fns = []
     knots = np.array(knots)
@@ -33,15 +46,23 @@ tvals= tt.view(np.dtype([('t', np.float)]))
 
 # Some interstimulus intervals
 isis = np.random.uniform(low=0, high=3, size=(4,)) + 10.
+
 # Made into event onset times
 e = np.cumsum(isis)
 
-f = Formula([utils.events(e, f=fn) for fn in bsp_fns])
+# Make event onsets into functions of time convolved with the spline functions.
+event_funcs = [utils.events(e, f=fn) for fn in bsp_fns]
+
+# Put into a formula.
+f = Formula(event_funcs)
 
 # The design matrix
 X = f.design(tvals, return_float=True)
 
+# Show the design matrix as line plots
 plt.plot(X[:,0])
 plt.plot(X[:,1])
 plt.plot(X[:,2])
+plt.xlabel('time (s)')
+plt.title('B spline used as bases for an FIR response model')
 plt.show()

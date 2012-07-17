@@ -1,8 +1,10 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Simple demo that partitions a smooth field into 10 clusters
-In most cases, Ward's clustering behaves best.
+Simple demo that partitions a smooth field into 10 clusters.  In most cases,
+Ward's clustering behaves best.
+
+Requires matplotlib
 
 Author: Bertrand Thirion, 2009
 """
@@ -10,8 +12,15 @@ print __doc__
 
 import numpy as np
 import numpy.random as nr
-from nipy.algorithms.graph.field import Field
+
 from scipy.ndimage import gaussian_filter
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
+from nipy.algorithms.graph.field import Field
 
 dx = 50
 dy = 50
@@ -28,18 +37,17 @@ seeds, label, J0 = F.geodesic_kmeans(seeds)
 wlabel, J1 = F.ward(nbseeds)
 seeds, label, J2 = F.geodesic_kmeans(seeds, label=wlabel.copy(), eps=1.e-7)
 
-print 'inertia values for the 3 algorithms: '
-print 'geodesic k-means: ', J0, 'wards: ', J1, 'wards + gkm: ', J2
+print 'Inertia values for the 3 algorithms: '
+print 'Geodesic k-means: ', J0, 'Wards: ', J1, 'Wards + gkm: ', J2
 
-import matplotlib.pylab as mp
-mp.figure(figsize=(8, 4))
-mp.subplot(1, 3, 1)
-mp.imshow(np.reshape(data, (dx, dy)), interpolation='nearest')
-mp.title('Input data')
-mp.subplot(1, 3, 2)
-mp.imshow(np.reshape(wlabel, (dx, dy)), interpolation='nearest')
-mp.title('Ward clustering \n into 10 components')
-mp.subplot(1, 3, 3)
-mp.imshow(np.reshape(label, (dx, dy)), interpolation='nearest')
-mp.title('geodesic kmeans clust. \n into 10 components')
-mp.show()
+plt.figure(figsize=(8, 4))
+plt.subplot(1, 3, 1)
+plt.imshow(np.reshape(data, (dx, dy)), interpolation='nearest')
+plt.title('Input data')
+plt.subplot(1, 3, 2)
+plt.imshow(np.reshape(wlabel, (dx, dy)), interpolation='nearest')
+plt.title('Ward clustering \n into 10 components')
+plt.subplot(1, 3, 3)
+plt.imshow(np.reshape(label, (dx, dy)), interpolation='nearest')
+plt.title('geodesic kmeans clust. \n into 10 components')
+plt.show()

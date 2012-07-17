@@ -12,10 +12,12 @@ import sympy
 from nipy.algorithms.statistics.api import Formula, make_recarray
 from nipy.modalities.fmri import utils, hrf
 
+# Interstimulus intervals (time between events)
 dt = np.random.uniform(low=0, high=2.5, size=(50,))
+# Onset times from the ISIs
 t = np.cumsum(dt)
 
-
+# We're going to model the amplitudes ('a') by dt (the time between events)
 a = sympy.Symbol('a')
 linear = utils.define('linear', utils.events(t, dt, f=hrf.glover))
 quadratic = utils.define('quad', utils.events(t, dt, f=hrf.glover, g=a**2))
@@ -23,22 +25,21 @@ cubic = utils.define('cubic', utils.events(t, dt, f=hrf.glover, g=a**3))
 
 f1 = Formula([linear, quadratic, cubic])
 
-# Evaluate them
-
+# Evaluate this time-based formula at specific times to make the design matrix
 tval = make_recarray(np.linspace(0,100, 1001), 't')
 X1 = f1.design(tval, return_float=True)
 
-# Let's make it exponential with a time constant tau
-
+# Now we make a model where the relationship of time between events and signal
+# is an exponential with a time constant tau
 l = sympy.Symbol('l')
 exponential = utils.events(t, dt, f=hrf.glover, g=sympy.exp(-l*a))
 f3 = Formula([exponential])
 
-params = make_recarray([(4.5,3.5)], ('l', '_b0'))
+# Make a design matrix by passing in time and required parameters
+params = make_recarray([(4.5, 3.5)], ('l', '_b0'))
 X3 = f3.design(tval, params, return_float=True)
 
 # the columns or d/d_b0 and d/dl
-
 tt = tval.view(np.float)
 v1 = np.sum([hrf.glovert(tt - s)*np.exp(-4.5*a) for s,a  in zip(t, dt)], 0)
 v2 = np.sum([-3.5*a*hrf.glovert(tt - s)*np.exp(-4.5*a) for s,a  in zip(t, dt)], 0)
@@ -46,4 +47,3 @@ v2 = np.sum([-3.5*a*hrf.glovert(tt - s)*np.exp(-4.5*a) for s,a  in zip(t, dt)], 
 V = np.array([v1,v2]).T
 W = V - np.dot(X3, np.dot(np.linalg.pinv(X3), V))
 np.testing.assert_almost_equal((W**2).sum() / (V**2).sum(), 0)
-

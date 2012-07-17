@@ -1,3 +1,4 @@
+
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """Support utilities for FIAC example, mostly path management.
@@ -5,6 +6,8 @@
 The purpose of separating these is to keep the main example code as readable as
 possible and focused on the experimental modeling and analysis, rather than on
 local file management issues.
+
+Requires matplotlib
 """
 
 #-----------------------------------------------------------------------------
@@ -12,17 +15,17 @@ local file management issues.
 #-----------------------------------------------------------------------------
 # Stdlib
 import os
-
-from StringIO import StringIO
 from os import makedirs, listdir
-from os.path import exists, abspath, isdir, join as pjoin
+from os.path import exists, abspath, isdir, join as pjoin, splitext
+import csv
+from StringIO import StringIO
 
 # Third party
 import numpy as np
 from matplotlib.mlab import csv2rec, rec2csv
 
 # From NIPY
-from nipy.io.api import load_image, save_image
+from nipy.io.api import load_image
 
 #-----------------------------------------------------------------------------
 # Globals
@@ -49,25 +52,49 @@ def load_image_fiac(*path):
     return load_image(pjoin(DATADIR, *path))
 
 
-def subject_dirs(design, contrast, nsub=16):
-    """Return a list of subject directories.
-    """
-    rootdir = DATADIR
-    subjects = [ f for f in  [pjoin(rootdir, "fiac_%02d" % s, design, "fixed",
-                                    contrast) for s in range(nsub)]
-                 if isdir(f) ]
-    return subjects
+def subj_des_con_dirs(design, contrast, nsub=16):
+    """Return a list of subject directories with this `design` and `contrast`
 
-    
-def path_info(subj,run):
-    """Construct path ifnormation dict for current subject/run.
+    Parameters
+    ----------
+    design : {'event', 'block'}
+    contrast : str
+    nsub : int, optional
+        total number of subjects
 
     Returns
     -------
-    path_dict : a dict with all the necessary path-related keys, including
-    'rootdir'.
+    con_dirs : list
+        list of directories matching `design` and `contrast`
     """
-    path_dict = {'subj':subj, 'run':run}
+    rootdir = DATADIR
+    con_dirs = []
+    for s in range(nsub):
+        f = pjoin(rootdir, "fiac_%02d" % s, design, "fixed", contrast)
+        if isdir(f):
+            con_dirs.append(f)
+    return con_dirs
+
+
+def path_info_run(subj, run):
+    """Construct path information dict for current subject/run.
+
+    Parameters
+    ----------
+    subj : int
+        subject number (0..15 inclusive)
+    run : int
+        run number (1..4 inclusive).
+
+    Returns
+    -------
+    path_dict : dict
+        a dict with all the necessary path-related keys, including 'rootdir',
+        and 'design', where 'design' can have values 'event' or 'block'
+        depending on which type of run this was for subject no `subj` and run no
+        `run`
+    """
+    path_dict = {'subj': subj, 'run': run}
     if exists(pjoin(DATADIR, "fiac_%(subj)02d",
                     "block", "initial_%(run)02d.csv") % path_dict):
         path_dict['design'] = 'block'
@@ -78,14 +105,41 @@ def path_info(subj,run):
     return path_dict
 
 
-def path_info2(subj,design):
-    path_dict = {'subj':subj, 'design':design}
+def path_info_design(subj, design):
+    """Construct path information dict for subject and design.
+
+    Parameters
+    ----------
+    subj : int
+        subject number (0..15 inclusive)
+    design : {'event', 'block'}
+        type of design
+
+    Returns
+    -------
+    path_dict : dict
+        having keys 'rootdir', 'subj', 'design'
+    """
+    path_dict = {'subj': subj, 'design': design}
     rootdir = pjoin(DATADIR, "fiac_%(subj)02d", "%(design)s") % path_dict
     path_dict['rootdir'] = rootdir
     return path_dict
-    
+
 
 def results_table(path_dict):
+    """ Return precalculated results images for subject info in `path_dict`
+
+    Parameters
+    ----------
+    path_dict : dict
+        containing key 'rootdir'
+
+    Returns
+    -------
+    rtab : dict
+        dict with keys given by run directories for this subject, values being a
+        list with filenames of effect and sd images.
+    """
     # Which runs correspond to this design type?
     rootdir = path_dict['rootdir']
     runs = filter(lambda f: isdir(pjoin(rootdir, f)),
@@ -111,6 +165,11 @@ def results_table(path_dict):
 def get_experiment_initial(path_dict):
     """Get the record arrays for the experimental/initial designs.
 
+    Parameters
+    ----------
+    path_dict : dict
+        containing key 'rootdir', 'run', 'subj'
+
     Returns
     -------
     experiment, initial : Two record arrays.
@@ -135,6 +194,11 @@ def get_experiment_initial(path_dict):
 def get_fmri(path_dict):
     """Get the images for a given subject/run.
 
+    Parameters
+    ----------
+    path_dict : dict
+        containing key 'rootdir', 'run'
+
     Returns
     -------
     fmri : ndarray
@@ -142,8 +206,6 @@ def get_fmri(path_dict):
     """
     fmri_im = load_image(
         pjoin("%(rootdir)s/swafunctional_%(run)02d.nii") % path_dict)
-    # Make sure we know the order of the coordinates
-    fmri_im = fmri_im.reordered_world('xyzt').reordered_axes('ijkl')
     return fmri_im
 
 
@@ -157,8 +219,17 @@ def ensure_dir(*path):
     return dirpath
 
 
-def output_dir(path_dict,tcons,fcons):
+def output_dir(path_dict, tcons, fcons):
     """Get (and make if necessary) directory to write output into.
+
+    Parameters
+    ----------
+    path_dict : dict
+        containing key 'rootdir', 'run'
+    tcons : sequence of str
+        t contrasts
+    fcons : sequence of str
+        F contrasts
     """
     rootdir = path_dict['rootdir']
     odir = pjoin(rootdir, "results_%(run)02d" % path_dict)
@@ -167,12 +238,16 @@ def output_dir(path_dict,tcons,fcons):
         ensure_dir(odir,n)
     for n in fcons:
         ensure_dir(odir,n)
-
     return odir
 
 
 def test_sanity():
+    from nipy.modalities.fmri import design, hrf
+    import nipy.modalities.fmri.fmristat.hrf as fshrf
     from nipy.modalities.fmri.fmristat.tests import FIACdesigns
+    from nipy.modalities.fmri.fmristat.tests.test_FIAC import matchcol
+    from nipy.algorithms.statistics import formula
+    from nose.tools import assert_true
 
     """
     Single subject fitting of FIAC model
@@ -182,10 +257,9 @@ def test_sanity():
     # subj3_evt_fonc1.txt
     # subj3_bloc_fonc3.txt
 
-    for subj, run, dtype in [(3,1,'event'),
-                             (3,3,'block')]:
+    for subj, run, design_type in [(3, 1, 'event'), (3, 3, 'block')]:
         nvol = 191
-        TR = 2.5 
+        TR = 2.5
         Tstart = 1.25
 
         volume_times = np.arange(nvol)*TR + Tstart
@@ -203,27 +277,20 @@ def test_sanity():
         initial = csv2rec(pjoin(DATADIR, "fiac_%(subj)02d", "%(design)s", "initial_%(run)02d.csv")
                                 % path_dict)
 
-        X_exper, cons_exper = design.event_design(experiment, volume_times_rec, hrfs=delay.spectral)
-        X_initial, _ = design.event_design(initial, volume_times_rec, hrfs=[hrf.glover]) 
-        X, cons = design.stack_designs((X_exper, cons_exper),
-                                       (X_initial, {}))
+        X_exper, cons_exper = design.event_design(experiment,
+                                                  volume_times_rec,
+                                                  hrfs=fshrf.spectral)
+        X_initial, _ = design.event_design(initial,
+                                           volume_times_rec,
+                                           hrfs=[hrf.glover])
+        X, cons = design.stack_designs((X_exper, cons_exper), (X_initial, {}))
 
-        Xf = np.loadtxt(StringIO(FIACdesigns.designs[dtype]))
+        # Get original fmristat design
+        Xf = FIACdesigns.fmristat[design_type]
+        # Check our new design can be closely matched to the original
         for i in range(X.shape[1]):
-            yield nitest.assert_true, (matchcol(X[:,i], Xf.T)[1] > 0.999)
-
-
-def matchcol(col, X):
-    """
-    Find the column in X with the highest correlation with col.
-
-    Used to find matching columns in fMRIstat's design with
-    the design created by Protocol. Not meant as a generic
-    helper function.
-    """
-    c = np.array([np.corrcoef(col, X[i])[0,1] for i in range(X.shape[0])])
-    c = np.nan_to_num(c)
-    return np.argmax(c), c.max()
+            # Columns can be very well correlated negatively or positively
+            assert_true(abs(matchcol(X[:,i], Xf)[1]) > 0.999)
 
 
 def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
@@ -285,3 +352,54 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
     initial = csv2rec(fname)
 
     return d, b
+
+
+def compare_results(subj, run, other_root, mask_fname):
+    """ Find and compare calculated results images from a previous run
+
+    This scipt checks that another directory containing results of this same
+    analysis are similar in the sense of numpy ``allclose`` within a brain mask.
+
+    Parameters
+    ----------
+    subj : int
+        subject number (0..4, 6..15)
+    run : int
+        run number (1..4)
+    other_root : str
+        path to previous run estimation
+    mask_fname:
+        path to a mask image defining area in which to compare differences
+    """
+    # Get information for this subject and run
+    path_dict = path_info_run(subj, run)
+    # Get mask
+    msk = load_image(mask_fname).get_data().copy().astype(bool)
+    # Get results directories for this run
+    rootdir = path_dict['rootdir']
+    res_dir = pjoin(rootdir, 'results_%02d' % run)
+    if not isdir(res_dir):
+        return
+    for dirpath, dirnames, filenames in os.walk(res_dir):
+        for fname in filenames:
+            froot, ext = splitext(fname)
+            if froot in ('effect', 'sd', 'F', 't'):
+                this_fname = pjoin(dirpath, fname)
+                other_fname = this_fname.replace(DATADIR, other_root)
+                if not exists(other_fname):
+                    print this_fname, 'present but ', other_fname, 'missing'
+                    continue
+                this_arr = load_image(this_fname).get_data()
+                other_arr = load_image(other_fname).get_data()
+                ok = np.allclose(this_arr[msk], other_arr[msk])
+                if not ok and froot in ('effect', 'sd', 't'): # Maybe a sign flip
+                    ok = np.allclose(this_arr[msk], -other_arr[msk])
+                if not ok:
+                    print 'Difference between', this_fname, other_fname
+
+
+def compare_all(other_root, mask_fname):
+    """ Run results comparison for all subjects and runs """
+    for subj in range(5) + range(6, 16):
+        for run in range(1, 5):
+            compare_results(subj, run, other_root, mask_fname)

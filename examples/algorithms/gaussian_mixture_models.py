@@ -1,9 +1,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Example of a demo that fits a Gaussian Mixture Model (GMM) to  a dataset
-The possible number of clusters is in the [1,10] range
-The proposed algorithm correctly selects a solution with 2 or 3 classes
+Example of a demo that fits a Gaussian Mixture Model (GMM) to  a dataset The
+possible number of clusters is in the [1,10] range The proposed algorithm
+correctly selects a solution with 2 or 3 classes
+
+Requires matplotlib
 
 Author : Bertrand Thirion, 2008-2009
 """
@@ -11,8 +13,12 @@ print __doc__
 
 import numpy as np
 
-import nipy.algorithms.clustering.gmm as gmm
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
+import nipy.algorithms.clustering.gmm as gmm
 
 dim = 2
 # 1. generate a 3-components mixture
@@ -30,5 +36,4 @@ lgmm = gmm.best_fitting_GMM(x, krange, prec_type='diag', niter=100,
 # 3, plot the result
 z = lgmm.map_label(x)
 gmm.plot2D(x, lgmm, z, verbose=0)
-import pylab
-pylab.show()
+plt.show()

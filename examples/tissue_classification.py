@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-
-from os.path import join
-from tempfile import mkdtemp
+""" Script example of tissue classification
+"""
 
 import numpy as np
 
@@ -117,7 +116,7 @@ ppm_img, label_img = brain_segmentation(img,
                                         labels=labels, mixmat=mixmat,
                                         noise=noise, freeze_prop=freeze_prop,
                                         scheme=SCHEME)
-outfile = join(mkdtemp(), 'hard_classif.nii')
+outfile = 'hard_classif.nii'
 save_image(label_img, outfile)
 print('Label image saved in: %s' % outfile)
 

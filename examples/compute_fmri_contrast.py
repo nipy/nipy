@@ -16,14 +16,21 @@ This script requires the nipy-data package to run. It is an example of using a
 general linear model in single-subject fMRI data analysis context. Two sessions
 of the same subject are taken from the FIAC'05 dataset.
 
+The script also needs matplotlib installed.
+
 Author: Alexis Roche, Bertrand Thirion, 2009--2012.
 """ % sys.argv[0]
 
 __doc__ = USAGE
 
 import numpy as np
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
 from nibabel import load as load_image
-import pylab as plt
 
 from nipy.labs.viz import plot_map, cm
 from nipy.modalities.fmri.glm import GeneralLinearModel, data_scaling
