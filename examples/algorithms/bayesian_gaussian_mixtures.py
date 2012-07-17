@@ -2,11 +2,12 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Example of a demo that fits a Bayesian Gaussian Mixture Model (GMM) 
-to  a dataset.
+to a dataset.
 
 Variational bayes and Gibbs estimation are sucessively run on the same
-dataset
+dataset.
 
+Requires matplotlib
 
 Author : Bertrand Thirion, 2008-2010
 """
@@ -14,11 +15,14 @@ print __doc__
 
 import numpy as np
 import numpy.random as nr
-import pylab as pl
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
 
 import nipy.algorithms.clustering.bgmm as bgmm
 from nipy.algorithms.clustering.gmm import plot2D
-
 
 dim = 2
 
@@ -42,14 +46,13 @@ for  k in krange:
     if ek > be:
         be = ek
         bestb = b
-        
     print k, 'classes, free energy:', ek
 
 ###############################################################################
 # 3. plot the result
 z = bestb.map_label(x)
 plot2D(x, bestb, z, verbose=0)
-pl.title('Variational Bayes')
+plt.title('Variational Bayes')
 
 ###############################################################################
 # 4. the same, with the Gibbs GMM algo
@@ -73,5 +76,5 @@ for k in krange:
 
 z = bbgmm.map_label(x)
 plot2D(x, bbgmm, z, verbose=0)
-pl.title('Gibbs sampling')
-pl.show()
+plt.title('Gibbs sampling')
+plt.show()

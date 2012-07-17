@@ -8,13 +8,13 @@ The array is filled with zeros.
 import numpy as np
 
 from nipy import load_image, save_image
-from nipy.core.api import Image, AffineTransform
+from nipy.core.api import Image, vox2mni
 
 # create an array of zeros, the shape of your data array
 zero_array = np.zeros((91,109,91))
 
-# create an image from our array
-img = Image(zero_array, AffineTransform('ijk', 'xyz', np.eye(4)))
+# create an image from our array.  The image will be in MNI space
+img = Image(zero_array, vox2mni(np.diag([2, 2, 2, 1])))
 
 # save the image to a file
 newimg = save_image(img, 'tempimage.nii.gz')

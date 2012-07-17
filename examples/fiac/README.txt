@@ -8,8 +8,12 @@ part of the 11th Annual Meeting of the Organization for Human Brain Mapping
 (Toronto, 2005).  For more information on the dataset, see [1].
 
 In order to run the examples in this directory, you will need a copy of the
-curated data, available here_.
+curated data.
 
+We haven't yet succeeded in licensing this data for full release.  Please see
+the latest version of this file on github for the current link to the data:
+
+https://github.com/nipy/nipy/blob/master/examples/fiac/README.txt
 
 ToDo
 ====
@@ -19,8 +23,6 @@ ToDo
 - Separate input from output directories.
 - Change ':' in contrast directory names to - or something else, as ':' is not
   a valid character in directory names under Windows and OSX.
-
-
 
 .. _here: http://FIXME/MISSING/DATA/ACCESS
 
