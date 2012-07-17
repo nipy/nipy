@@ -3,15 +3,14 @@
 """ Example of more than one run in the same model
 """
 import numpy as np
-import sympy
 
 from nipy.algorithms.statistics.api import Term, Formula, Factor
 from nipy.modalities.fmri import utils, hrf
 
-# hrf models.  These are just symbols, placeholders for the hrfs for the two
-# runs
-h1 = sympy.Function('hrf1')
-h2 = sympy.Function('hrf2')
+# hrf models we will use for each run.  Just to show it can be done, use a
+# different hrf model for each run
+h1 = hrf.glover
+h2 = hrf.afni
 
 # Symbol for time in general.  The 'events' function below will return models in
 # terms of 't', but we'll want models in terms of 't1' and 't2'.  We need 't'
@@ -40,7 +39,7 @@ c22 = utils.events([1, 3.2, 9], f=h2); c22 = c22.subs(t, t2)
 c32 = utils.events([2, 4.2, 8], f=h2); c32 = c32.subs(t, t2)
 d2 = utils.fourier_basis([0.3, 0.5, 0.7]); d2 = d2.subs(t, t2)
 
-# Formrla for run 2 signal in terms of time in run 2 (t2)
+# Formula for run 2 signal in terms of time in run 2 (t2)
 f2 = Formula([c12, c22, c32]) + d2
 
 # Factor giving constant for run. The [1, 2] means that there are two levels to
@@ -77,10 +76,6 @@ ttval2 = np.hstack([np.zeros(tval1.shape), tval2])
 # Vector of run numbers for each time point (with values 1 or 2)
 run_no = np.array([1]*tval1.shape[0] + [2]*tval2.shape[0])
 
-# Put actual hrfs into the formulae
-f = f.subs(h1, hrf.glover)
-f = f.subs(h2, hrf.glover)
-
 # Create the recarray that will be used to create the design matrix. The
 # recarray gives the actual values for the symbolic terms in the formulae.  In
 # our case the terms are t1, t2, and the (indicator coding) terms from the run
@@ -91,13 +86,7 @@ rec = np.array([(tv1, tv2, s) for tv1, tv2, s in zip(ttval1, ttval2, run_no)],
                          ('run', np.int)]))
 
 # The contrast we care about
-
-# Note to selves: it would be a good idea to be able to create the contrast from
-# the Formula, "f" above, applying all of f's aliases to it...  But we haven't
-# implemented that yet.
 contrast = Formula([run_1_coder * c11 - run_2_coder * c12])
-contrast = contrast.subs(h1, hrf.glover)
-contrast = contrast.subs(h2, hrf.glover)
 
 # # Create the design matrix
 X = f.design(rec, return_float=True)
@@ -116,5 +105,4 @@ assert np.allclose(C, c['C'])
 # Show the names of the non-trivial elements of the contrast
 nonzero = np.nonzero(np.fabs(C) >= 1e-5)[0]
 print (f.dtype.names[nonzero[0]], f.dtype.names[nonzero[1]])
-print ((run_2_coder * c12).subs(h2, hrf.glover),
-       (run_1_coder * c11).subs(h1, hrf.glover))
+print ((run_1_coder * c11), (run_2_coder * c12))
