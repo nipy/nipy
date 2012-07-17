@@ -10,6 +10,6 @@ def test_histogram():
                   2, 2, 2,
                   3, 3, 3, 3,
                   4, 4, 4, 4, 4],
-                 dtype='uint')
+                 dtype='uintp')
     h = histogram(x)
     assert_array_equal(h, [1, 2, 3, 4, 5])
