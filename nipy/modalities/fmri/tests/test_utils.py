@@ -25,7 +25,7 @@ from ..utils import (
     )
 from .. import hrf
 
-from nose.tools import assert_equal, raises, assert_false
+from nose.tools import (assert_equal, assert_false, raises, assert_raises)
 
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_almost_equal)
@@ -75,14 +75,41 @@ def test_interp():
     times = [0,4,5.]
     values = [2.,4,6]
     for int_func in (interp, linear_interp):
-        s = int_func(times, values, bounds_error=False)
+        s = int_func(times, values, np.nan)
         tval = np.array([-0.1,0.1,3.9,4.1,5.1])
         res = lambdify(t, s)(tval)
         assert_array_equal(np.isnan(res),
                            [True, False, False, False, True])
         assert_array_almost_equal(res[1:-1], [2.05, 3.95, 4.2])
+        # default is zero fill
+        s = int_func(times, values)
+        res = lambdify(t, s)(tval)
+        assert_array_almost_equal(res, [0, 2.05, 3.95, 4.2, 0])
+        # Can be some other value
+        s = int_func(times, values, fill=10)
+        res = lambdify(t, s)(tval)
+        assert_array_almost_equal(res, [10, 2.05, 3.95, 4.2, 10])
+        # If fill is None, raises error on interpolation outside bounds
+        s = int_func(times, values, fill=None)
+        f = lambdify(t, s)
+        assert_array_almost_equal(f(tval[1:-1]), [2.05, 3.95, 4.2])
+        assert_raises(ValueError, f, tval[:-1])
         # specifying kind as linear is OK
         s = linear_interp(times, values, kind='linear')
+        # bounds_check should match fill
+        int_func(times, values, bounds_error=False)
+        int_func(times, values, fill=None, bounds_error=True)
+        assert_raises(ValueError, int_func, times, values, bounds_error=True)
+        # fill should match fill value
+        int_func(times, values, fill=10, fill_value=10)
+        int_func(times, values, fill_value=0)
+        assert_raises(ValueError,
+                      int_func, times, values, fill=10, fill_value=9)
+        int_func(times, values, fill=np.nan, fill_value=np.nan)
+        assert_raises(ValueError,
+                      int_func, times, values, fill=10, fill_value=np.nan)
+        assert_raises(ValueError,
+                      int_func, times, values, fill=np.nan, fill_value=0)
 
 
 @raises(ValueError)

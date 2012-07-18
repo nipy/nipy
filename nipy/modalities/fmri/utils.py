@@ -126,13 +126,13 @@ def interp(times, values, fill=0, name=None, **kw):
 
     f(times[i]) = values[i]
 
-    if t < times[0]:
+    if t < times[0] or t > times[-1]:
         f(t) = fill
 
     See ``scipy.interpolate.interp1d`` for details of interpolation
     types and other keyword arguments.  Default is 'kind' is linear,
     making this function, by default, have the same behavior as
-    ``linear_interp``. 
+    ``linear_interp``.
 
     Parameters
     ----------
@@ -140,30 +140,38 @@ def interp(times, values, fill=0, name=None, **kw):
         Increasing sequence of times
     values : array-like
         Values at the specified times
-    fill : float, optional
-        Value on the interval (-np.inf, times[0]). Default 0.
+    fill : None or float, optional
+        Value on the interval (-np.inf, times[0]). Default 0. If None, raises
+        error outside bounds
     name : None or str, optional
         Name of symbolic expression to use. If None, a default is used.
-    **kw : keyword args, optional
+    \*\*kw : keyword args, optional
         passed to ``interp1d``
 
     Returns
     -------
-    f : sympy expression 
+    f : sympy expression
         A Function of t.
 
     Examples
     --------
-    >>> s = interp([0,4,5.],[2.,4,6], bounds_error=False)
+    >>> s = interp([0,4,5.],[2.,4,6])
     >>> tval = np.array([-0.1,0.1,3.9,4.1,5.1])
     >>> res = lambdify_t(s)(tval)
-    >>> # nans outside bounds
-    >>> np.isnan(res)
-    array([ True, False, False, False,  True], dtype=bool)
-    >>> # interpolated values otherwise
-    >>> np.allclose(res[1:-1], [2.05, 3.95, 4.2])
+
+    0 outside bounds by default
+
+    >>> np.allclose(res, [0, 2.05, 3.95, 4.2, 0])
     True
     """
+    if not fill is None:
+        if kw.get('bounds_error') is True:
+            raise ValueError('fill conflicts with bounds error')
+        fv = kw.get('fill_value')
+        if not (fv is None or fv is fill or fv == fill): # allow for fill=np.nan
+            raise ValueError('fill conflicts with fill_value')
+        kw['bounds_error'] = False
+        kw['fill_value'] = fill
     interpolator = interp1d(times, values, **kw)
     # make a new name if none provided
     if name is None:
@@ -182,11 +190,11 @@ def linear_interp(times, values, fill=0, name=None, **kw):
 
     f(times[i]) = values[i]
 
-    if t < times[0]:
+    if t < times[0] or t > times[-1]:
         f(t) = fill
 
-    This version of the function enforces the 'linear' kind of
-    interpolation (argument to ``scipy.interpolate.interp1d``). 
+    This version of the function enforces the 'linear' kind of interpolation
+    (argument to ``scipy.interpolate.interp1d``).
 
     Parameters
     ----------
@@ -194,11 +202,12 @@ def linear_interp(times, values, fill=0, name=None, **kw):
         Increasing sequence of times
     values : array-like
         Values at the specified times
-    fill : float, optional
-        Value on the interval (-np.inf, times[0]). Default 0.
+    fill : None or float, optional
+        Value on the interval (-np.inf, times[0]). Default 0. If None, raises
+        error outside bounds
     name : None or str, optional
         Name of symbolic expression to use. If None, a default is used.
-    **kw : keyword args, optional
+    \*\*kw : keyword args, optional
         passed to ``interp1d``
 
     Returns
@@ -208,14 +217,13 @@ def linear_interp(times, values, fill=0, name=None, **kw):
 
     Examples
     --------
-    >>> s = linear_interp([0,4,5.],[2.,4,6], bounds_error=False)
+    >>> s = linear_interp([0,4,5.],[2.,4,6])
     >>> tval = np.array([-0.1,0.1,3.9,4.1,5.1])
     >>> res = lambdify_t(s)(tval)
-    >>> # nans outside bounds
-    >>> np.isnan(res)
-    array([ True, False, False, False,  True], dtype=bool)
-    >>> # interpolated values otherwise
-    >>> np.allclose(res[1:-1], [2.05, 3.95, 4.2])
+
+    0 outside bounds by default
+
+    >>> np.allclose(res, [0, 2.05, 3.95, 4.2, 0])
     True
     """
     kind = kw.get('kind')
