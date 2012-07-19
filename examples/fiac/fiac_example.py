@@ -2,11 +2,19 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """Example analyzing the FIAC dataset with NIPY.
 
+* Single run models with per-voxel AR(1).
+* Cross-run, within-subject models with optimal effect estimates.
+* Cross-subject models using fixed / random effects variance ratios.
+* Permutation testing for inference on cross-subject result.
+
+See ``parallel_run.py`` for a rig to run these analysis in parallel using the
+IPython parallel machinery.
+
 This script needs the pre-processed FIAC data.  See ``README.txt`` and
 ``fiac_util.py`` for details.
 
 See ``examples/labs/need_data/first_level_fiac.py`` for an alternative approach
-to this analysis.
+to some of these analyses.
 """
 #-----------------------------------------------------------------------------
 # Imports
@@ -281,8 +289,7 @@ def fixed_effects(subj, design):
     fixdir = pjoin(rootdir, "fixed")
     # Fetch results images from run estimations
     results = futil.results_table(path_dict)
-    # Get our hands on the relevant coordmap to
-    # save our results
+    # Get our hands on the relevant coordmap to save our results
     coordmap = futil.load_image_fiac("fiac_%02d" % subj,
                                      "wanatomical.nii").coordmap
     # Compute the "fixed" effects for each type of contrast
@@ -290,8 +297,9 @@ def fixed_effects(subj, design):
         fixed_effect = 0
         fixed_var = 0
         for effect, sd in results[con]:
-            effect = load_image(effect); sd = load_image(sd)
-            var = np.array(sd)**2
+            effect = load_image(effect).get_data()
+            sd = load_image(sd).get_data()
+            var = sd ** 2
 
             # The optimal, in terms of minimum variance, combination of the
             # effects has weights 1 / var
@@ -332,9 +340,19 @@ def group_analysis(design, contrast):
 
     # Which subjects have this (contrast, design) pair?
     subj_con_dirs = futil.subj_des_con_dirs(design, contrast)
+    if len(subj_con_dirs) == 0:
+        raise ValueError('No subjects for %s, %s' % (design, contrast))
 
-    sd = array([array(load_image(pjoin(s, "sd.nii"))) for s in subj_con_dirs])
-    Y = array([array(load_image(pjoin(s, "effect.nii"))) for s in subj_con_dirs])
+    # Assemble effects and sds into 4D arrays
+    sds = []
+    Ys = []
+    for s in subj_con_dirs:
+        sd_img = load_image(pjoin(s, "sd.nii"))
+        effect_img = load_image(pjoin(s, "effect.nii"))
+        sds.append(sd_img.get_data())
+        Ys.append(effect_img.get_data())
+    sd = array(sds)
+    Y = array(Ys)
 
     # This function estimates the ratio of the fixed effects variance
     # (sum(1/sd**2, 0)) to the estimated random effects variance
@@ -378,7 +396,9 @@ def group_analysis_signs(design, contrast, mask, signs=None):
     ----------
     design: one of 'block', 'event'
     contrast: str
-    mask: array-like
+        name of contrast to estimate
+    mask : ``Image`` instance or array-like
+        image containing mask, or array-like
     signs: ndarray, optional
          Defaults to np.ones. Should have shape (*,nsubj)
          where nsubj is the number of effects combined in the group analysis.
@@ -390,15 +410,25 @@ def group_analysis_signs(design, contrast, mask, signs=None):
     maxT: np.ndarray, maxima of T statistic within mask, one for each
          vector of signs
     """
-    maska = np.asarray(mask).astype(np.bool)
+    if api.is_image(mask):
+        maska = mask.get_data()
+    else:
+        maska = np.asarray(mask)
+    maska = maska.astype(np.bool)
 
     # Which subjects have this (contrast, design) pair?
     subj_con_dirs = futil.subj_des_con_dirs(design, contrast)
 
-    sd = np.array([np.array(load_image(pjoin(s, "sd.nii")))[:,maska]
-                   for s in subj_con_dirs])
-    Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,maska]
-                  for s in subj_con_dirs])
+    # Assemble effects and sds into 4D arrays
+    sds = []
+    Ys = []
+    for s in subj_con_dirs:
+        sd_img = load_image(pjoin(s, "sd.nii"))
+        effect_img = load_image(pjoin(s, "effect.nii"))
+        sds.append(sd_img.get_data()[maska])
+        Ys.append(effect_img.get_data()[maska])
+    sd = np.array(sds)
+    Y = np.array(Ys)
 
     if signs is None:
         signs = np.ones((1, Y.shape[0]))
@@ -428,22 +458,26 @@ def permutation_test(design, contrast, mask=GROUP_MASK, nsample=1000):
 
     Parameters
     ----------
-    design: one of ['block', 'event']
-    contrast: str
-    nsample: int
+    design: str
+        one of ['block', 'event']
+    contrast : str
+        name of contrast to estimate
+    mask : ``Image`` instance or array-like, optional
+        image containing mask, or array-like
+    nsample: int, optional
+        number of permutations
 
     Returns
     -------
     min_vals: np.ndarray
     max_vals: np.ndarray
     """
-    maska = np.asarray(mask).astype(np.bool)
     subj_con_dirs = futil.subj_des_con_dirs(design, contrast)
-    Y = np.array([np.array(load_image(pjoin(s, "effect.nii")))[:,maska]
-                  for s in subj_con_dirs])
-    nsubj = Y.shape[0]
+    nsubj = len(subj_con_dirs)
+    if nsubj == 0:
+        raise ValueError('No subjects have %s, %s' % (design, contrast))
     signs = 2*np.greater(np.random.sample(size=(nsample, nsubj)), 0.5) - 1
-    min_vals, max_vals = group_analysis_signs(design, contrast, maska, signs)
+    min_vals, max_vals = group_analysis_signs(design, contrast, mask, signs)
     return min_vals, max_vals
 
 
