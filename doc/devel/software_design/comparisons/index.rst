@@ -4,7 +4,7 @@
  Software Design
 =================
 
-.. htmlonly::
+.. only:: html
 
    :Release: |version|
    :Date: |today|

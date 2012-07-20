@@ -4,7 +4,7 @@
  Developer Tools
 =================
 
-.. htmlonly::
+.. only:: html
 
    :Release: |version|
    :Date: |today|

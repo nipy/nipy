@@ -6,8 +6,8 @@
 ============
  User Guide
 ============
-	
-.. htmlonly::
+
+.. only:: html
 
    :Release: |version|
    :Date: |today|
@@ -20,7 +20,7 @@
    tutorial.rst
    ../glossary
 
-.. htmlonly::
+.. only:: html
 
   * :ref:`genindex`
   * :ref:`modindex`
