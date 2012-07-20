@@ -448,6 +448,9 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
     # - so he peak value is 1-dt - rather than 1 - but we get the same
     # result from using np.convolve - see tests.
     mn_i, mx_i = sorted(interval)
+    # XXX interval is not being used correctly
+    # BUG: if mn_i != 0, there is an incorrect shift
+    # Relevant edits in 83ff27dae4c9cbcedebed3d7b3b7c2958a8af34a
     pad_t = (mx_i - mn_i) * padding_f
     time = np.arange(mn_i, mx_i + pad_t, dt)
     # get values at times from expressions
