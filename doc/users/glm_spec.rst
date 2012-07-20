@@ -192,7 +192,7 @@ which is virtually identical to our description of the *Face*
 vs. *Object* experiment in :ref:`face-object` though the values :math:`a_j`
 are floats rather than labels. Graphically, this experiment might be represented as in this figure below.
 
-.. plot :: users/plots/amplitudes.py
+.. plot:: users/plots/amplitudes.py
 
 Events with random amplitudes
 -----------------------------
@@ -204,7 +204,7 @@ event times.
 
 We might represent this graphically as in the following figure.
 
-.. plot :: users/plots/random_amplitudes.py
+.. plot:: users/plots/random_amplitudes.py
 
 
 Of course, the stimuli need not be randomly distributed over some interval,
@@ -227,7 +227,7 @@ intensity to be
 
    E([t_1, t_2], A) = \sum_j \int_{\max(u_j,t_1)}^{\min(v_j, t_2)}  \int_A \; P_j(da) \; dt
 
-.. plot :: users/plots/random_amplitudes_times.py
+.. plot:: users/plots/random_amplitudes_times.py
 
 
 ================
@@ -485,7 +485,7 @@ a hemodynamic model
    amp = b*([-1,1]*3)
    d = events(b, amplitudes=amp, g=a+0.5*a**2, f=glover_sympy)
 
-.. plots:: users/plots/event_amplitude.py
+.. plot:: users/plots/event_amplitude.py
 
 Derivative information
 ======================
