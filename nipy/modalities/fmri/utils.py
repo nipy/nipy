@@ -386,55 +386,65 @@ def blocks(intervals, amplitudes=None, name=None):
     return step_function(t, v, name=name)
 
 
-def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
+def convolve_functions(f, g, f_interval, g_interval, dt,
+                       fill=0, name=None, **kwargs):
     """ Expression containing numerical convolution of `fn1` with `fn2`
 
     Parameters
     ----------
-    fn1 : sympy expr
+    f : sympy expr
        An expression that is a function of t only.
-    fn2 : sympy expr
+    g : sympy expr
        An expression that is a function of t only.
-    interval : (2,) sequence of float
-       The start and end of the interval over which to convolve the two
-       functions.
+    f_interval : (2,) sequence of float
+       The start and end of the interval of t over which to convolve values of f
+    g_interval : (2,) sequence of floats
+       Start and end of the interval of t over to convolve g
     dt : float
        Time step for discretization.  We use this for creating the
        interpolator to form the numerical implementation
-    padding_f : float, optional
-       Padding fraction added to the left and right in the convolution.
-       Padding value is fraction of the length given by `interval`
+    fill : None or float
+       Value to return from sampling output `fg` function outside range.
     name : None or str, optional
-       Name of the convolved function in the resulting expression. 
+       Name of the convolved function in the resulting expression.
        Defaults to one created by ``utils.interp``.
-            
+    \*\*kwargs : keyword args, optional
+       Any other arguments to pass to the ``interp1d`` function in creating the
+       numerical funtion for `fg`.
+
     Returns
     -------
-    f : sympy expr
-       An expression that is a function of t only.
+    fg : sympy expr
+       An symbolic expression that is a function of t only, and that can be
+       lambdified to produce a function returning the convolved series from an
+       input array.
 
     Examples
     --------
     >>> import sympy
     >>> t = sympy.Symbol('t')
-    >>> # This is a square wave on [0,1]
+
+    This is a square wave on [0,1]
+
     >>> f1 = (t > 0) * (t < 1)
 
-    The convolution of ``f1`` with itself is a triangular wave on [0,2],
+    The convolution of ``f1`` with itself is a triangular wave on [0, 2],
     peaking at 1 with height 1
-    
-    >>> tri = convolve_functions(f1, f1, [0,2], 1.0e-3, name='conv')
+
+    >>> tri = convolve_functions(f1, f1, [0, 2], [0, 2], 1.0e-3, name='conv')
+
+    The result is a symbolic function
+
     >>> print tri
     conv(t)
 
     Get the numerical values for a time vector
 
     >>> ftri = lambdify(t, tri)
-    >>> x = np.linspace(0,2,11)
+    >>> x = np.arange(0, 2, 0.2)
     >>> y = ftri(x)
 
     The peak is at 1
-
     >>> x[np.argmax(y)]
     1.0
     """
@@ -445,27 +455,20 @@ def convolve_functions(fn1, fn2, interval, dt, padding_f=0.1, name=None):
            7.99000000e-01,   5.99000000e-01,   3.99000000e-01,
            1.99000000e-01,   6.74679706e-16])
     """
-    # - so he peak value is 1-dt - rather than 1 - but we get the same
+    # - so the peak value is 1-dt - rather than 1 - but we get the same
     # result from using np.convolve - see tests.
-    mn_i, mx_i = sorted(interval)
-    # XXX interval is not being used correctly
-    # BUG: if mn_i != 0, there is an incorrect shift
-    # Relevant edits in 83ff27dae4c9cbcedebed3d7b3b7c2958a8af34a
-    pad_t = (mx_i - mn_i) * padding_f
-    time = np.arange(mn_i, mx_i + pad_t, dt)
-    # get values at times from expressions
-    f1 = lambdify_t(fn1)
-    f2 = lambdify_t(fn2)
-    _fn1 = np.atleast_1d(f1(time))
-    _fn2 = np.atleast_1d(f2(time))
-    # do convolution
-    _fft1 = FFT.rfft(_fn1)
-    _fft2 = FFT.rfft(_fn2)
-    value = FFT.irfft(_fft1 * _fft2) * dt
-    assert value.ndim == 1
-    _minshape = min(time.shape[0], value.shape[0])
-    time = time[0:_minshape]
-    value = value[0:_minshape]
-    return interp(time, value, bounds_error=False, name=name)
-
-
+    real_f = lambdify_t(f)
+    real_g = lambdify_t(g)
+    dt = float(dt)
+    f_mn, f_mx = sorted(f_interval)
+    f_time = np.arange(f_mn, f_mx, dt) # time values with support for f
+    f_vals = real_f(f_time).astype(float)
+    g_mn, g_mx = sorted(g_interval)
+    g_time = np.arange(g_mn, g_mx, dt) # time values with support for g
+    g_vals = real_g(g_time).astype(float)
+    # f and g have been implicitly translated by -f_mn and -g_mn respectively,
+    # because in terms of array indices, they both now start at 0
+    value = np.convolve(f_vals, g_vals) * dt # Full by default
+    # Translate by f and g offsets
+    fg_time = np.arange(len(value)) * dt + f_mn + g_mn
+    return interp(fg_time, value, fill=fill, name=name, **kwargs)
