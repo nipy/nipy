@@ -106,7 +106,7 @@ class Segmentation(object):
             self.U = np.asarray(U).copy()
         else:  # Potts model
             U = np.ones((self.nclasses, self.nclasses))
-            U[np.diag_indices(self.nclasses)] = 0
+            U[_diag_indices(self.nclasses)] = 0
             self.U = U
         self.beta = float(beta)
 
@@ -204,6 +204,13 @@ class Segmentation(object):
         else:
             f2 = 0.0
         return f1 + f2
+
+
+def _diag_indices(n, ndim=2):
+    # diag_indices function present in numpy 1.4 and later.  This for
+    # compatibility with numpy < 1.4
+    idx = np.arange(n)
+    return (idx,) * ndim
 
 
 def moment_matching(dat, mu, sigma, glob_mu, glob_sigma):
