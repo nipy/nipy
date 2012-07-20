@@ -33,9 +33,9 @@ from nipy.fixes.sympy.utilities.lambdify import implemented_function, lambdify
 T = Term('t')
 
 def lambdify_t(expr):
-    ''' Return sympy function `expr` lambdified as function of t
+    ''' Return sympy function of t `expr` lambdified as function of t
 
-    Parametric
+    Parameters
     ----------
     expr : sympy expr
 
