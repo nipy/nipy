@@ -1,166 +1,114 @@
 import numpy as np
 
-from ...core.image.image_spaces import (make_xyz_image,
-                                        as_xyz_image,
-                                        xyz_affine)
+from .segmentation import (Segmentation,
+                           moment_matching,
+                           map_from_ppm)
 
-from .vem import VEM
-
-NITERS = 25
-BETA = 0.2
-SCHEME = 'mf'
-NOISE = 'gauss'
-FREEZE_PROP = True
-SYNCHRONOUS = False
-LABELS = ('CSF', 'GM', 'WM')
-VERBOSE = True
-BRAINWEB_MEANS = [813.9, 1628.4, 2155.8]
-BRAINWEB_STDEVS = [215.6, 173.9, 130.9]
-BRAINWEB_GLOBAL_MEAN = 1643.1
-BRAINWEB_GLOBAL_STDEV = 502.8
-BRAINWEB_PROPS = [.20, .47, .33]
+T1_ref_params = {}
+T1_ref_params['glob_mu'] = 1643.2
+T1_ref_params['glob_sigma'] = 252772.3
+T1_ref_params['3k'] = {
+    'mu': np.array([813.9, 1628.3, 2155.8]),
+    'sigma': np.array([46499.0, 30233.4, 17130.0])}
+T1_ref_params['4k'] = {
+    'mu': np.array([816.1, 1613.7, 1912.3, 2169.3]),
+    'sigma': np.array([47117.6, 27053.8, 8302.2, 14970.8])}
+T1_ref_params['5k'] = {
+    'mu': np.array([724.2, 1169.3, 1631.5, 1917.0, 2169.2]),
+    'sigma': np.array([22554.8, 21368.9, 20560.1, 7302.6, 14962.1])}
 
 
-def initialize_parameters(data, klasses):
-    """
-    Rough parameter initialization by moment matching with a brainweb
-    image for which accurate parameters are known.
+class BrainT1Segmentation(object):
 
-    Parameters
-    ----------
-    data: array
-      Image data.
-    klasses: int
-      Number of desired classes.
+    def __init__(self, data, mask=None, model='3k',
+                 niters=25, ngb_size=6, beta=0.5,
+                 ref_params=None, init_params=None,
+                 convert=True):
 
-    Returns
-    -------
-    means: array
-      Initial class-specific intensity means
-    stdevs: array
-      Initial class-specific intensity standard deviations
-    props: array
-      Initial class-specific volume proportions
-    """
-    # Brainweb reference mean and standard devs
-    ref_mu = np.array(BRAINWEB_MEANS)
-    ref_sigma = np.array(BRAINWEB_STDEVS)
-    # Moment matching
-    x = np.linspace(0, 2, num=klasses)
-    prop = np.ones(len(x)) / len(x)
-    mu = np.zeros(len(x))
-    sigma = np.zeros(len(x))
+        self.labels = ('CSF', 'GM', 'WM')
+        self.data = data
+        self.mask = mask
 
-    I = x <= 1
-    J = True - I
-    mu[I] = ref_mu[0] + x[I] * (ref_mu[1] - ref_mu[0])
-    sigma[I] = ref_sigma[0] + x[I] * (ref_sigma[1] - ref_sigma[0])
-    mu[J] = ref_mu[1] + (x[J] - 1) * (ref_mu[2] - ref_mu[1])
-    sigma[J] = ref_sigma[1] + (x[J] - 1) * (ref_sigma[2] - ref_sigma[1])
+        mixmat = np.asarray(model)
+        if mixmat.ndim == 2:
+            nclasses = mixmat.shape[0]
+            if nclasses < 3:
+                raise ValueError('at least 3 classes required')
+            if not mixmat.shape[1] == 3:
+                raise ValueError('mixing matrix should have 3 rows')
+            self.mixmat = mixmat
+        elif model == '3k':
+            self.mixmat = np.eye(3)
+        elif model == '4k':
+            self.mixmat = np.array([[1., 0., 0.],
+                                    [0., 1., 0.],
+                                    [0., 1., 0.],
+                                    [0., 0., 1.]])
+        elif model == '5k':
+            self.mixmat = np.array([[1., 0., 0.],
+                                    [1., 0., 0.],
+                                    [0., 1., 0.],
+                                    [0., 1., 0.],
+                                    [0., 0., 1.]])
+        else:
+            raise ValueError('unknown brain segmentation model')
 
-    # Alexis, Sep 9 2011: have to explicitly convert the result of
-    # np.std to a float, otherwise we get a memmap object and the
-    # ensuing division crashes!
-    a = float(np.std(data)) / BRAINWEB_GLOBAL_STDEV
-    b = np.mean(data) - a * BRAINWEB_GLOBAL_MEAN
+        self.niters = int(niters)
+        self.beta = float(beta)
+        self.ngb_size = int(ngb_size)
 
-    return a * mu + b, a * sigma, prop
+        # Class parameter initialization
+        if init_params == None:
+            if ref_params == None:
+                ref_params = T1_ref_params
+            self.init_mu, self.init_sigma = self._init_parameters(ref_params)
+        else:
+            self.init_mu = np.array(init_params[0], dtype='double')
+            self.init_sigma = np.array(init_params[1], dtype='double')
+            if not len(self.init_mu) == self.mixmat.shape[0]\
+                    or not len(self.init_sigma) == self.mixmat.shape[0]:
+                raise ValueError('Inconsistent initial parameter estimates')
 
+        self._run()
+        if convert:
+            self.convert()
+        else:
+            self.label = map_from_ppm(self.ppm, self.mask)
 
-def brain_segmentation(img, mask_img=None, hard=False, niters=NITERS,
-                       labels=LABELS, mixmat=None,
-                       noise=NOISE, beta=BETA, freeze_prop=FREEZE_PROP,
-                       scheme=SCHEME, synchronous=SYNCHRONOUS):
-    """
-    Perform tissue classification of a brain MR image into gray
-    matter, white matter and CSF. The image needs be skull-stripped
-    beforehand for the method to work. Currently, it is implicitly
-    assumed that the input image is T1-weighted, but it will be easy
-    to relax this restriction in the future.
+    def _init_parameters(self, ref_params):
 
-    For details regarding the underlying method, see:
+        if not self.mask == None:
+            data = self.data[self.mask]
+        else:
+            data = self.data
 
-    Roche et al, 2011. On the convergence of EM-like algorithms for
-    image segmentation using Markov random fields. Medical Image
-    Analysis (DOI: 10.1016/j.media.2011.05.002).
+        nclasses = self.mixmat.shape[0]
+        if nclasses <= 5:
+            key = str(self.mixmat.shape[0]) + 'k'
+            ref_mu = ref_params[key]['mu']
+            ref_sigma = ref_params[key]['sigma']
+        else:
+            ref_mu = np.linspace(ref_params['3k']['mu'][0],
+                                 ref_params['3k']['mu'][-1],
+                                 num=nclasses)
+            ref_sigma = np.linspace(ref_params['3k']['sigma'][0],
+                                    ref_params['3k']['sigma'][-1],
+                                    num=nclasses)
 
-    Parameters
-    ----------
-    img : nipy-like image
-      MR-T1 image to segment.
-    mask_img : nipy-like image
-      Brain mask. If None, the mask will be defined by thresholding
-      the input image above zero (strictly).
-    beta: float
-      Markov random field damping parameter.
-    noise: string
-      One of 'gauss': Gaussian noise assumption or 'laplace': Laplace
-      noise assumption.
-    freeze_prop: boolean
-      If False, consider relative tissue volume proportions as free
-      parameters. Otherwise, use equal proportions.
-    hard: boolean
-      If True, use FSL-FAST hard classification scheme rather than the
-      standard mean-field iteration (not advised).
-   synchronous: boolean
-      Determines whether voxel are updated sequentially or all at
-      once.
-    scheme: string
-      One of 'mf': mean-field or 'bp': (cheap) belief propagation.
-    labels: sequence of strings
-      Label names.
+        return moment_matching(data, ref_mu, ref_sigma,
+                               ref_params['glob_mu'],
+                               ref_params['glob_sigma'])
 
-    Returns
-    -------
-    ppm_img: nipy-like image
-      A 4D image representing the posterior probability map of each
-      tissue.
-    label_img: nipy-like image
-      Hard tissue classification image similar to a MAP.
-    """
-    # Function assumes xyx_affine for inputs
-    img = as_xyz_image(img)
-    # I think it also assumes 3D
-    if not img.ndim == 3:
-        raise ValueError("We assume a 3D image")
+    def _run(self):
+        S = Segmentation(self.data, mask=self.mask,
+                         mu=self.init_mu, sigma=self.init_sigma,
+                         ngb_size=self.ngb_size, beta=self.beta)
+        S.run(niters=self.niters)
+        self.mu = S.mu
+        self.sigma = S.sigma
+        self.ppm = S.ppm
 
-    # Get an array out of the mask image
-    if mask_img == None:
-        mask_img = img
-    else:
-        mask_img = as_xyz_image(mask_img)
-        if not mask_img.shape == img.shape:
-            raise ValueError("Mask should be same shape as img")
-    mask = np.where(mask_img.get_data() > 0)
-
-    # Perform tissue classification
-    mu, sigma, prop = initialize_parameters(img.get_data()[mask], len(labels))
-    vem = VEM(img.get_data(), labels, mask=mask, scheme=scheme, noise=noise)
-    mu, sigma, prop = vem.run(mu=mu, sigma=sigma, prop=prop,
-                              freeze_prop=freeze_prop, beta=beta,
-                              niters=niters)
-
-    # Display information
-    if VERBOSE:
-        print('Estimated tissue means: %s' % mu)
-        print('Estimated tissue std deviates: %s' % sigma)
-        if not freeze_prop:
-            print('Estimated tissue proportions: %s' % prop)
-
-    # Sort and merge equivalent classes mixmat should be a matrix with
-    # shape (K, 3), each row describing the probability of tissues
-    # given the corresponding label.
-    if mixmat == None:
-        ppm = vem.ppm
-    else:
-        ppm = np.zeros(list(img.shape) + [mixmat.shape[1]])
-        ppm[mask] = np.dot(vem.ppm[mask], mixmat)
-    del vem
-
-    # Create output images
-    ppm_img = make_xyz_image(ppm, xyz_affine(img), 'scanner')
-    pmode = np.zeros(img.shape, dtype='uint8')
-    pmode[mask] = ppm[mask].argmax(1) + 1
-    label_img = make_xyz_image(pmode, xyz_affine(img), 'scanner')
-
-    return ppm_img, label_img
+    def convert(self):
+        if self.ppm.shape[-1] == self.mixmat.shape[0]:
+            self.ppm = np.dot(self.ppm, self.mixmat)
+            self.label = map_from_ppm(self.ppm, self.mask)
