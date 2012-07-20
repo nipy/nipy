@@ -155,7 +155,7 @@ class Segmentation(object):
     def normalized_external_field(self):
         f = self.log_external_field().T
         f -= np.max(f, 0)
-        np.exp(f, out=f)
+        np.exp(f, f)
         f /= f.sum(0)
         return f.T
 
