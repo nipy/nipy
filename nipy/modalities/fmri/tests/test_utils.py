@@ -25,7 +25,7 @@ from ..utils import (
     )
 from .. import hrf
 
-from nose.tools import assert_equal, raises, assert_false
+from nose.tools import (assert_equal, assert_false, raises, assert_raises)
 
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_almost_equal)
@@ -75,14 +75,41 @@ def test_interp():
     times = [0,4,5.]
     values = [2.,4,6]
     for int_func in (interp, linear_interp):
-        s = int_func(times, values, bounds_error=False)
+        s = int_func(times, values, np.nan)
         tval = np.array([-0.1,0.1,3.9,4.1,5.1])
         res = lambdify(t, s)(tval)
         assert_array_equal(np.isnan(res),
                            [True, False, False, False, True])
         assert_array_almost_equal(res[1:-1], [2.05, 3.95, 4.2])
+        # default is zero fill
+        s = int_func(times, values)
+        res = lambdify(t, s)(tval)
+        assert_array_almost_equal(res, [0, 2.05, 3.95, 4.2, 0])
+        # Can be some other value
+        s = int_func(times, values, fill=10)
+        res = lambdify(t, s)(tval)
+        assert_array_almost_equal(res, [10, 2.05, 3.95, 4.2, 10])
+        # If fill is None, raises error on interpolation outside bounds
+        s = int_func(times, values, fill=None)
+        f = lambdify(t, s)
+        assert_array_almost_equal(f(tval[1:-1]), [2.05, 3.95, 4.2])
+        assert_raises(ValueError, f, tval[:-1])
         # specifying kind as linear is OK
         s = linear_interp(times, values, kind='linear')
+        # bounds_check should match fill
+        int_func(times, values, bounds_error=False)
+        int_func(times, values, fill=None, bounds_error=True)
+        assert_raises(ValueError, int_func, times, values, bounds_error=True)
+        # fill should match fill value
+        int_func(times, values, fill=10, fill_value=10)
+        int_func(times, values, fill_value=0)
+        assert_raises(ValueError,
+                      int_func, times, values, fill=10, fill_value=9)
+        int_func(times, values, fill=np.nan, fill_value=np.nan)
+        assert_raises(ValueError,
+                      int_func, times, values, fill=10, fill_value=np.nan)
+        assert_raises(ValueError,
+                      int_func, times, values, fill=np.nan, fill_value=0)
 
 
 @raises(ValueError)
@@ -127,13 +154,11 @@ def test_blocks():
 
 
 
-def numerical_convolve(func1, func2, interval, dt, padding_f=0.1):
+def numerical_convolve(func1, func2, interval, dt):
     mni, mxi = interval
-    diff = mxi - mni
-    pad_t = diff * padding_f
-    time = np.arange(mni, mxi+pad_t, dt)
-    vec1 = func1(time)
-    vec2 = func2(time)
+    time = np.arange(mni, mxi, dt)
+    vec1 = func1(time).astype(float)
+    vec2 = func2(time).astype(float)
     value = np.convolve(vec1, vec2) * dt
     min_s = min(time.size, value.size)
     time = time[:min_s]
@@ -146,37 +171,60 @@ def test_convolve_functions():
     # This is a square wave on [0,1]
     f1 = (t > 0) * (t < 1)
     # ff1 is the numerical implementation of same
-    lam_f1 = lambdify(t, f1)
-    ff1 = lambda x : lam_f1(x).astype(np.int)
+    ff1 = lambdify(t, f1)
+    # Time delta
+    dt = 1e-3
     # The convolution of ``f1`` with itself is a triangular wave on
-    # [0,2], peaking at 1 with height 1
-    tri = convolve_functions(f1, f1, [0,2], 1.0e-3, name='conv')
+    # [0, 2], peaking at 1 with height 1
+    tri = convolve_functions(f1, f1, [0, 2], [0, 2], dt, name='conv')
     assert_equal(str(tri), 'conv(t)')
     ftri = lambdify(t, tri)
-    time, value = numerical_convolve(ff1, ff1, [0, 2], 1.0e-3)
+    time, value = numerical_convolve(ff1, ff1, [0, 2], dt)
     y = ftri(time)
     # numerical convolve about the same as ours
     assert_array_almost_equal(value, y)
     # peak is at 1
     assert_array_almost_equal(time[np.argmax(y)], 1)
     # Flip the interval and get the same result
-    tri = convolve_functions(f1, f1, [2, 0], 1.0e-3)
-    ftri = lambdify(t, tri)
-    y = ftri(time)
-    assert_array_almost_equal(value, y)
-    # offset square wave by 1
+    for seq1, seq2 in (((0, 2), (2, 0)),
+                       ((2, 0), (0, 2)),
+                       ((2, 0), (2, 0))):
+        tri = convolve_functions(f1, f1, seq1, seq2, dt)
+        ftri = lambdify(t, tri)
+        y = ftri(time)
+        assert_array_almost_equal(value, y)
+    # offset square wave by 1 - offset triangle by 1
     f2 = (t > 1) * (t < 2)
-    tri = convolve_functions(f1, f2, [0,3], 1.0e-3)
+    tri = convolve_functions(f1, f2, [0, 3], [0, 3], dt)
     ftri = lambdify(t, tri)
-    y = ftri(time)
-    assert_array_almost_equal(time[np.argmax(y)], 2)
-    # offset both by 1 and start interval at one
-    tri = convolve_functions(f2, f2, [1,3], 1.0e-3)
+    o1_time = np.arange(0, 3, dt)
+    z1s = np.zeros((np.round(1./dt)))
+    assert_array_almost_equal(ftri(o1_time), np.r_[z1s, value])
+    # Same for input function
+    tri = convolve_functions(f2, f1, [0, 3], [0, 3], dt)
     ftri = lambdify(t, tri)
-    # get numerical version
-    lam_f2 = lambdify(t, f2)
-    ff2 = lambda x : lam_f2(x).astype(np.int)
-    time, value = numerical_convolve(ff2, ff2, [1, 3], 1.0e-3)
-    # and our version, compare
-    y = ftri(time)
-    assert_array_almost_equal(y, value)
+    assert_array_almost_equal(ftri(o1_time), np.r_[z1s, value])
+    # 2 seconds for both
+    tri = convolve_functions(f2, f2, [0, 4], [0, 4], dt)
+    ftri = lambdify(t, tri)
+    o2_time = np.arange(0, 4, dt)
+    assert_array_almost_equal(ftri(o2_time), np.r_[z1s, z1s, value])
+    # offset by -0.5 - offset triangle by -0.5
+    f3 = (t > -0.5) * (t < 0.5)
+    tri = convolve_functions(f1, f3, [0, 2], [-0.5, 1.5], dt)
+    ftri = lambdify(t, tri)
+    o1_time = np.arange(-0.5, 1.5, dt)
+    assert_array_almost_equal(ftri(o1_time), value)
+    # Same for input function
+    tri = convolve_functions(f3, f1, [-0.5, 1.5], [0, 2], dt)
+    ftri = lambdify(t, tri)
+    assert_array_almost_equal(ftri(o1_time), value)
+    # -1 second for both
+    tri = convolve_functions(f3, f3, [-0.5, 1.5], [-0.5, 1.5], dt)
+    ftri = lambdify(t, tri)
+    o2_time = np.arange(-1, 1, dt)
+    assert_array_almost_equal(ftri(o2_time), value)
+    # Check it's OK to be off the dt grid
+    tri = convolve_functions(f1, f1, [dt/2, 2 + dt/2], [0, 2], dt, name='conv')
+    ftri = lambdify(t, tri)
+    assert_array_almost_equal(ftri(time), value, 3)
