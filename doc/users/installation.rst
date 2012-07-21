@@ -103,15 +103,7 @@ To install, simply do::
 
         python setup.py install --prefix=$HOME/local
 
-.. _install-data:
-
 Installing useful data files
 -----------------------------
 
-Installing the data files is necessary to run the examples. 
-
-See :ref:`installing-data` for some instructions on installing data
-packages.
-
-See :ref:`data-files` for details on how to customize the installation
-paths.
+See :ref:`data-files` for some instructions on installing data packages.

@@ -41,7 +41,7 @@ Temporary files
 If you need to create a temporary file during your testing, you should
 use either of these two methods:
 
-#. `StringIO <http://docs.python.org/library/stringio.html>`_ 
+#. `StringIO <http://docs.python.org/library/stringio.html>`_
 
    StringIO creates an in memory file-like object. The memory buffer
    is freed when the file is closed.  This is the preferred method for
@@ -54,7 +54,7 @@ use either of these two methods:
    *suffix*.
 
    .. Note::
-      
+
         The tempfile module includes a convenience function
         *NamedTemporaryFile* which deletes the file automatically when
         it is closed.  However, whether the files can be opened a
@@ -109,7 +109,7 @@ setup and teardown functions::
       ...
 
       def setup():
-      	  # Suppress warnings during tests to reduce noise
+          # Suppress warnings during tests to reduce noise
           warnings.simplefilter("ignore")
 
       def teardown():
@@ -126,7 +126,7 @@ Running the full test suite
 For our tests, we have collected a set of fmri imaging data which are
 required for the tests to run.  To do this, download the latest example
 data and template package files from `NIPY data packages`_. See
-:ref:`install-data`.
+:ref:`data-files`.
 
 Running individual tests
 ^^^^^^^^^^^^^^^^^^^^^^^^

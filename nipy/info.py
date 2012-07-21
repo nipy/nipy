@@ -100,8 +100,8 @@ NIPY_INSTALL_HINT = \
 
 %s
 
-Check the instructions in the INSTALL file in the nipy source tree, or online at
-http://nipy.org/nipy/stable/devel/development_quickstart.html#optional-data-packages
+Check the instructions in the ``doc/users/install_data.rst`` file in the nipy
+source tree, or online at http://nipy.org/nipy/stable/users/install_data.html
 
 If you have the package, have you set the path to the package correctly?"""
 
