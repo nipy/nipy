@@ -15,6 +15,22 @@ clean: clean-pyc
 
 clean-dev: clean dev
 
+distclean: clean
+	-rm MANIFEST
+	-rm $(COVERAGE_REPORT)
+	@find . -name '*.py[co]' \
+		 -o -name '*.a' \
+		 -o -name '*,cover' \
+		 -o -name '.coverage' \
+		 -o -iname '*~' \
+		 -o -iname '*.kcache' \
+		 -o -iname '*.pstats' \
+		 -o -iname '*.prof' \
+		 -o -iname '#*#' | xargs -L10 rm -f
+	-rm -r dist
+	-rm build-stamp
+	-rm -r .tox
+
 dev: cythonize
 	$(PYTHON) setup.py build_ext --inplace
 

@@ -69,18 +69,22 @@ Release checklist
     git co -b pre-release-test
     git push origin pre-release-test
 
-* Clean::
-
-    make distclean
-
 * Make sure all the ``.c`` generated files are up to date with Cython sources
   with::
 
     ./tools/nicythize
 
+* Compile up the code for testing::
+
+    python setup.py build_ext -i
+
 * Make sure all tests pass (from the nipy root directory)::
 
-    ./tools/nipnost -nipy
+    ./tools/nipnost nipy
+
+* Clean::
+
+    make distclean
 
 * Make sure all tests pass from sdist::
 
@@ -116,7 +120,7 @@ Release checklist
 
 * You probably have virtualenvs for different python versions.  Check the tests
   pass for different configurations.  If you have pytox_ and a network
-  connnection, and lots of pythons installed, you might be able to do::
+  connection, and lots of pythons installed, you might be able to do::
 
     tox
 
@@ -151,9 +155,9 @@ Release checklist
     make sdist-tests
 
   For the PPC I have to log into an old Mac G5 in Berkeley at
-  ``jerry.bic.berkeley.edu``.  Here's an example session::
+  ``alexis.bic.berkeley.edu``.  Here's an example session::
 
-    ssh jerry.bic.berkeley.edu
+    ssh alexis.bic.berkeley.edu
     cd dev_trees/nipy
     git co main-master
     git pull
