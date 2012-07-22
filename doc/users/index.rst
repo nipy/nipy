@@ -6,8 +6,8 @@
 ============
  User Guide
 ============
-	
-.. htmlonly::
+
+.. only:: html
 
    :Release: |version|
    :Date: |today|
@@ -17,10 +17,11 @@
 
    introduction
    installation
+   scipy_orientation
    tutorial.rst
    ../glossary
 
-.. htmlonly::
+.. only:: html
 
   * :ref:`genindex`
   * :ref:`modindex`

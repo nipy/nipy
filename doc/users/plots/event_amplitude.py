@@ -3,18 +3,32 @@
 import numpy as np
 import pylab
 
-from nipy.modalities.fmri.utils import events, Symbol, Vectorize
-from nipy.modalities.fmri.hrf import glover_sympy
+from nipy.modalities.fmri.utils import events, Symbol, lambdify_t
+from nipy.modalities.fmri.hrf import glover
 
+# Symbol for amplitude
 a = Symbol('a')
-b = np.linspace(0,50,6)
-ba = b*([-1,1]*3)
-d = events(b, amplitudes=ba, g=a+0.5*a**2, f=glover_sympy)
-dt = Vectorize(d)
-tt = np.linspace(0,60,601)
 
-pylab.plot(tt, dt(tt), c='r')
-for bb, aa in zip(b,ba):
-    pylab.plot([bb,bb],[0,25*aa], c='b')
+# Some event onsets regularly spaced
+onsets = np.linspace(0,50,6)
+
+# Make amplitudes from onset times (greater as function of time)
+amplitudes = onsets[:]
+
+# Flip even numbered amplitudes
+amplitudes = amplitudes * ([-1, 1] * 3)
+
+# Make event functions
+evs = events(onsets, amplitudes=amplitudes, g=a + 0.5 * a**2, f=glover)
+
+# Real valued function for symbolic events
+real_evs = lambdify_t(evs)
+
+# Time points at which to sample
+t_samples = np.linspace(0,60,601)
+
+pylab.plot(t_samples, real_evs(t_samples), c='r')
+for onset, amplitude in zip(onsets, amplitudes):
+    pylab.plot([onset, onset],[0, 25 * amplitude], c='b')
 
 pylab.show()

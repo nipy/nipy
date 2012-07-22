@@ -4,7 +4,7 @@
  FAQ
 =====
 
-.. htmlonly::
+.. only:: html
 
    :Release: |version|
    :Date: |today|
@@ -15,5 +15,5 @@
    :maxdepth: 2
 
    why
-   licensing   
-   documentation_faq   
+   licensing
+   documentation_faq
