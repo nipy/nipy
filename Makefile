@@ -30,6 +30,7 @@ distclean: clean
 	-rm -r dist
 	-rm build-stamp
 	-rm -r .tox
+	-git clean -fxd
 
 dev: cythonize
 	$(PYTHON) setup.py build_ext --inplace
