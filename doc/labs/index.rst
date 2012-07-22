@@ -1,14 +1,14 @@
 
 
 NeuroSpin tools
-==========================
+===============
 
-The package `nipy.labs` hosts tools that where originally developped
+The package `nipy.labs` hosts tools that where originally developed
 at NeuroSpin, France.
 
 
 .. toctree::
-    
+
     mask.rst
     enn.rst
     viz.rst
