@@ -1,29 +1,31 @@
 .. -*- rest -*-
 .. vim:syntax=rest
 
-===============================
- Neuroimaging in Python (NIPY)
-===============================
+====
+NIPY
+====
 
-A package for processing of functional imaging data. Among the functions
-included are:
+Neuroimaging tools for Python.
 
-* Combined motion correction and slice timing
-* Flexible affine image registration
-* Brain image segmentation
-* Smoothing
-* Resampling
-* Statistical analysis
-* Multiple comparison correction
+The aim of NIPY is to produce a platform-independent Python environment for the
+analysis of functional brain imaging data using an open development model.
 
-Jonathan Taylor began NIPY as a port and rewrite of `fmristat`_ by `Keith
-Worlsey`_.  Later we joined coding efforts with Bertrand Thirion, Alexis Roche
-and others at `Neurospin` near Paris, France.  Current NIPY is the work of many
-authors and maintainers.  We list the main authors in the file ``AUTHOR`` in the
-NIPY distribution.
+In NIPY we aim to:
 
-.. _fmristat: http://www.math.mcgill.ca/keith/fmristat
-.. _Keith Worsley: http://www.math.mcgill.ca/keith
+1. Provide an open source, mixed language scientific programming
+    environment suitable for rapid development.
+
+2. Create sofware components in this environment to make it easy
+    to develop tools for MRI, EEG, PET and other modalities.
+
+3. Create and maintain a wide base of developers to contribute to
+    this platform.
+
+4. To maintain and develop this framework as a single, easily
+    installable bundle.
+
+NIPY is the work of many people. We list the main authors in the file ``AUTHOR``
+in the NIPY distribution, and other contributions in ``THANKS``.
 
 Website
 =======
