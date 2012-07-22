@@ -107,3 +107,5 @@ Installing useful data files
 -----------------------------
 
 See :ref:`data-files` for some instructions on installing data packages.
+
+.. include:: ../links_names.txt
