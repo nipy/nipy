@@ -1,8 +1,10 @@
-.. _software_design:
+.. _code-discussions:
 
-=================
- Software Design
-=================
+================
+Code discussions
+================
+
+These are some developer discussions about design of code in NIPY.
 
 .. only:: html
 
