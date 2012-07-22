@@ -17,6 +17,7 @@
 
    introduction
    installation
+   scipy_orientation
    tutorial.rst
    ../glossary
 
