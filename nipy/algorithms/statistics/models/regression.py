@@ -128,11 +128,7 @@ class OLSModel(LikelihoodModel):
         nuisance : dict, optional
             A dict with key 'sigma', which is an optional estimate of sigma. If
             None, defaults to its maximum likelihood estimate (with beta fixed)
-            as:
-
-                sum((Y - X*beta)**2) / n
-
-            where n=Y.shape[0], X=self.design.
+            as ``sum((Y - X*beta)**2) / n``, where n=Y.shape[0], X=self.design.
 
         Returns
         -------
@@ -194,11 +190,7 @@ class OLSModel(LikelihoodModel):
         nuisance : dict, optional
             A dict with key 'sigma', which is an optional estimate of sigma. If
             None, defaults to its maximum likelihood estimate (with beta fixed)
-            as::
-
-                sum((Y - X*beta)**2) / n
-
-            where n=Y.shape[0], X=self.design.
+            as ``sum((Y - X*beta)**2) / n``, where n=Y.shape[0], X=self.design.
 
         Returns
         -------
@@ -227,11 +219,8 @@ class OLSModel(LikelihoodModel):
             The parameter estimates.  Must be of length df_model.
         nuisance : dict
             A dict with key 'sigma', which is an estimate of sigma. If None,
-            defaults to its maximum likelihood estimate (with beta fixed) as::
-
-                sum((Y - X*beta)**2) / n
-
-            where n=Y.shape[0], X=self.design.
+            defaults to its maximum likelihood estimate (with beta fixed) as
+            ``sum((Y - X*beta)**2) / n`` where n=Y.shape[0], X=self.design.
 
         Returns
         -------
