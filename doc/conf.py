@@ -34,44 +34,15 @@ import ipython_console_highlighting
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.doctest',
+              'sphinx.ext.pngmath',
               'sphinx.ext.autosummary',
-              'ipython_console_highlighting', 
-              'inheritance_diagram', 
+              'inheritance_diagram',
+              'numpy_ext.numpydoc',
+              'matplotlib.sphinxext.plot_directive',
               ]
 
-# Current version (as of 11/2010) of numpydoc is only compatible with sphinx >
-# 1.0.  We keep copies of this version in 'numpy_ext'.  For a while we will also
-# keep a copy of the older numpydoc version to allow compatibility with sphinx
-# 0.6
-try:
-    # With older versions of sphinx, this causes a crash
-    import numpy_ext.numpydoc
-except ImportError:
-    # Older version of sphinx
-    extensions.append('numpy_ext_old.numpydoc')
-else: # probably sphinx >= 1.0
-    extensions.append('numpy_ext.numpydoc')
-    autosummary_generate=True
-
-# Matplotlib sphinx extensions
-# ----------------------------
-
-# Currently we depend on some matplotlib extentions that are only in
-# the trunk, so we've added copies of these files to fall back on,
-# since most people install releases.  Once theses extensions have
-# been released for a while we should remove this hack.  I'm assuming
-# any modifications to these extensions will be done upstream in
-# matplotlib!  The matplotlib trunk will have more bug fixes and
-# feature updates so we'll try to use that one first.
-try:
-    import matplotlib.sphinxext
-    extensions.append('matplotlib.sphinxext.mathmpl')
-    extensions.append('matplotlib.sphinxext.only_directives')
-    extensions.append('matplotlib.sphinxext.plot_directive')
-except ImportError:
-    extensions.append('mathmpl')
-    extensions.append('only_directives')
-    extensions.append('plot_directive')
+# Autosummary on
+autosummary_generate=True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -84,8 +55,9 @@ master_doc = 'index'
 
 # General substitutions.
 project = 'nipy'
-#copyright = ':ref:`2005-2010, Neuroimaging in Python team. <nipy-software-license>`' 
-copyright = '2005-2010, Neuroimaging in Python team' 
+
+#copyright = ':ref:`2005-2010, Neuroimaging in Python team. <nipy-software-license>`'
+copyright = '2005-2012, Neuroimaging in Python team'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.

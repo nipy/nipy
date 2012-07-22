@@ -4,7 +4,7 @@
  NIPY documentation
 ====================
 
-.. htmlonly::
+.. only:: html
 
    :Release: |version|
    :Date: |today|
@@ -24,7 +24,7 @@
    publications
    license
 
-.. htmlonly::
+.. only:: html
 
   * :ref:`genindex`
   * :ref:`modindex`

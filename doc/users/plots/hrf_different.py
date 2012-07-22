@@ -6,33 +6,34 @@ This example uses a different HRF for different event types
 
 import numpy as np
 
-import pylab
-
-from sympy import lambdify
+import matplotlib.pyplot as plt
 
 from nipy.modalities.fmri import hrf
+from nipy.modalities.fmri.utils import T, lambdify_t
 
-glover = hrf.glover_sympy
-afni = hrf.afni_sympy
+
+# HRFs as functions of (symbolic) time
+glover = hrf.glover(T)
+afni = hrf.afni(T)
 
 ta = [0,4,8,12,16]; tb = [2,6,10,14,18]
 ba = 1; bb = -2
-na = ba * sum([glover.subs(hrf.t, hrf.t - t) for t in ta])
-nb = bb * sum([afni.subs(hrf.t, hrf.t - t) for t in tb])
+na = ba * sum([glover.subs(T, T - t) for t in ta])
+nb = bb * sum([afni.subs(T, T - t) for t in tb])
 
-nav = lambdify(hrf.vector_t, na.subs(hrf.t, hrf.vector_t), 'numpy')
-nbv = lambdify(hrf.vector_t, nb.subs(hrf.t, hrf.vector_t), 'numpy')
+nav = lambdify_t(na)
+nbv = lambdify_t(nb)
 
 t = np.linspace(0,30,200)
-pylab.plot(t, nav(t), c='r', label='Face')
-pylab.plot(t, nbv(t), c='b', label='Object')
-pylab.plot(t, nbv(t)+nav(t), c='g', label='Neuronal')
+plt.plot(t, nav(t), c='r', label='Face')
+plt.plot(t, nbv(t), c='b', label='Object')
+plt.plot(t, nbv(t)+nav(t), c='g', label='Combined')
 
 for t in ta:
-    pylab.plot([t,t],[0,ba*0.5],c='r')
+    plt.plot([t,t],[0,ba*0.5],c='r')
 for t in tb:
-    pylab.plot([t,t],[0,bb*0.5],c='b')
-pylab.plot([0,30], [0,0],c='#000000')
-pylab.legend()
+    plt.plot([t,t],[0,bb*0.5],c='b')
+plt.plot([0,30], [0,0],c='#000000')
+plt.legend()
 
-pylab.show()
+plt.show()

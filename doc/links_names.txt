@@ -28,10 +28,13 @@
 .. _MIT License: http://www.opensource.org/licenses/mit-license.php
 
 .. Operating systems and distributions
-
 .. _Debian: http://www.debian.org
 .. _NeuroDebian: http://neuro.debian.net
 .. _Ubuntu: http://www.ubuntu.com
+.. _MacPorts: http://www.macports.org/
+
+.. Installation
+.. _pypi: http://pypi.python.org/pypi
 
 .. Working process
 .. _pynifti: http://niftilib.sourceforge.net/pynifti/
@@ -66,17 +69,18 @@
 .. _`python coverage tester`: http://nedbatchelder.com/code/modules/coverage.html
 
 .. Other python projects
-.. _numpy: http://www.scipy.org/NumPy
+.. _numpy: http://numpy.scipy.org
 .. _scipy: http://www.scipy.org
 .. _cython: http://www.cython.org/
-.. _ipython: http://ipython.scipy.org
-.. _`ipython manual`: http://ipython.scipy.org/doc/manual/html
+.. _ipython: http://ipython.org
+.. _`ipython manual`: http://ipython.org/ipython-doc/stable/index.html
 .. _matplotlib: http://matplotlib.sourceforge.net
 .. _ETS: http://code.enthought.com/projects/tool-suite.php
 .. _`Enthought Tool Suite`: http://code.enthought.com/projects/tool-suite.php
 .. _python: http://www.python.org
-.. _mayavi: http://mayavi.sourceforge.net/
-.. _sympy: http://code.google.com/p/sympy/
+.. _mayavi: http://code.enthought.com/projects/mayavi/
+.. _sympy: http://sympy.org
+.. _nibabel: http://nipy.org/nibabel
 .. _networkx: http://networkx.lanl.gov/
 .. _pythonxy: http://www.pythonxy.com/
 .. _EPD: http://www.enthought.com/products/epd.php
@@ -94,6 +98,7 @@
 .. _FSL: http://www.fmrib.ox.ac.uk/fsl
 .. _FreeSurfer: http://surfer.nmr.mgh.harvard.edu
 .. _voxbo: http://www.voxbo.org
+.. _fmristat: http://www.math.mcgill.ca/keith/fmristat
 
 .. Visualization
 .. _vtk: http://www.vtk.org/
@@ -124,8 +129,9 @@
 .. _`wikipedia PCA`: http://en.wikipedia.org/wiki/Principal_component_analysis
 
 .. People
-.. _Matthew Brett: https://cirl.berkeley.edu/mb312/
+.. _Matthew Brett: https://matthew.dynevor.org
 .. _Yaroslav O. Halchenko: http://www.onerussian.com
 .. _Michael Hanke: http://apsy.gse.uni-magdeburg.de/hanke
 .. _Gaël Varoquaux: http://gael-varoquaux.info/
+.. _Keith Worsley: http://www.math.mcgill.ca/keith
 

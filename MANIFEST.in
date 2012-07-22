@@ -1,4 +1,4 @@
-include AUTHOR COPYING Makefile* MANIFEST.in setup* README.* INSTALL THANKS
+include AUTHOR COPYING Makefile* MANIFEST.in setup* README.* THANKS
 include Changelog TODO
 include *.py
 include site.*

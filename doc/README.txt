@@ -4,8 +4,19 @@
 
 This is the top level build directory for the nipy documentation.  All
 of the documentation is written using Sphinx_, a python documentation
-system built on top of reST_.  In order to build the documentation,
-you must have Sphinx v0.5 or greater installed.
+system built on top of reST_.
+
+Dependencies
+============
+
+In order to build the documentation,
+you must have:
+
+* Sphinx 1.0 or greater
+* nipy and all its dependencies so that nipy can import
+* matplotlib
+* latex (for the PNG mathematics graphics)
+* graphviz (for the inheritance diagrams)
 
 This directory contains:
 
@@ -52,3 +63,5 @@ Instructions for building the documentation are in the file:
 .. _Sphinx: http://sphinx.pocoo.org/
 .. _reST: http://docutils.sourceforge.net/rst.html
 .. _numpy: http://www.scipy.org/NumPy
+
+.. vim: ft=rst

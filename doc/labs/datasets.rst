@@ -1,6 +1,6 @@
 
 =============================
-Volumetrique data structures
+Volumetric data structures
 =============================
 
 Volumetric data structures expose numerical values embedded in a world
@@ -56,7 +56,7 @@ smoothing:
 
 .. autosummary::
     :toctree: generated
-     
+
     VolumeField.as_volume_img
 
 Finally, different structures can embed the data differently in the same
@@ -65,7 +65,7 @@ structure on another using:
 
 .. autosummary::
     :toctree: generated
-     
+
     VolumeField.resampled_to_img
 
 **FIXME:** Examples would be good here, but first we need io and template
@@ -80,7 +80,7 @@ More general data structures
 The :class:`VolumeImg` is the most commonly found volume structure, and
 the simplest to understand, however, volumetric data can be described in
 more generic terms, and for performance reason it might be interesting to
-use other objects. 
+use other objects.
 
 Here, we give a list of the nipy volumetric data structures, from most
 specific, to most general. When you deal with volume structures in your
@@ -145,5 +145,4 @@ set of methods and attributes (the `interface`).
   This is also an abstract base class: it defines the core nipy
   volumetric data structure interface: you can rely on all the methods
   documented for this class in any nipy data structure.
-
 
