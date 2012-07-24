@@ -49,14 +49,14 @@ things from Windows powershell.
     python -c 'import nibabel.data; print(nibabel.data.get_nipy_user_dir())'
 
   Call that directory ``<nipy-user>``.  Let's imagine that, for you, this is
-  ``/home/me/.nipy``.
+  ``~/.nipy``.
 * If that directory does not exist already, create it, e.g.::
 
-    mkdir /home/me/.nipy
+    mkdir ~/.nipy
 
 * Make a directory in ``<nipy-user>`` called ``nipy``, e.g.::
 
-    mkdir /home/me/.nipy/nipy
+    mkdir ~/.nipy/nipy
 
 * Go to http://nipy.sourceforge.net/data-packages
 * Download the latest *nipy-templates* and *nipy-data* packages
@@ -77,8 +77,8 @@ things from Windows powershell.
   example::
 
     cd data
-    cp -r nipy-data-0.2/data /home/me/.nipy/nipy
-    cp -r nipy-templates-0.2/templates /home/me/.nipy/nipy
+    cp -r nipy-data-0.2/data ~/.nipy/nipy
+    cp -r nipy-templates-0.2/templates ~/.nipy/nipy
 
 * Check whether that worked.  Run the following command from the shell::
 
