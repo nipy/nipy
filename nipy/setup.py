@@ -1,6 +1,10 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import ConfigParser
+try: # python 2
+    from ConfigParser import ConfigParser
+except ImportError: # python 3
+    from configparser import ConfigParser
+
 import os
 
 NIPY_DEFAULTS = dict()
@@ -12,12 +16,12 @@ def get_nipy_info():
     """
     from numpy.distutils.system_info import get_standard_file
     files = get_standard_file('site.cfg')
-    cp = ConfigParser.ConfigParser(NIPY_DEFAULTS)
+    cp = ConfigParser(NIPY_DEFAULTS)
     cp.read(files)
     if not cp.has_section('nipy'):
         cp.add_section('nipy')
     info = dict(cp.items('nipy'))
-    for key, value in info.iteritems():
+    for key, value in info.items():
         if value.startswith('~'):
             info[key] = os.path.expanduser(value)
     # Ugly fix for bug 409269
@@ -66,6 +70,7 @@ def configuration(parent_package='',top_path=None):
     config.make_config_py()
 
     return config
+
 
 if __name__ == '__main__':
     from numpy.distutils.core import setup

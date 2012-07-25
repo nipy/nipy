@@ -24,9 +24,7 @@ def configuration(parent_package='',top_path=None):
     #            extra_info=lapack_info,
     #            )
     return config
-    
+
 
 if __name__ == '__main__':
-    print 'This is the wrong setup.py file to run'
-
-
+    print('This is the wrong setup.py file to run')

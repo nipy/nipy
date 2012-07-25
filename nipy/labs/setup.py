@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import os
-from distutils import log 
+from distutils import log
 
 # Global variables
 LIBS = os.path.realpath('libcstat')
@@ -52,11 +52,11 @@ def configuration(parent_package='',top_path=None):
         libraries = []
 
     # Best-case scenario: lapack found 
-    else: 
+    else:
         library_dirs = lapack_info['library_dirs']
         libraries = lapack_info['libraries']
         if 'include_dirs' in lapack_info:
-            config.add_include_dirs(lapack_info['include_dirs'])    
+            config.add_include_dirs(lapack_info['include_dirs'])
 
     # Information message
     print('LAPACK build options:')
@@ -79,10 +79,10 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('viz_tools')
     config.add_subpackage('datasets')
     config.add_subpackage('tests')
-    
+
     config.make_config_py() # installs __config__.py
 
     return config
 
 if __name__ == '__main__':
-    print 'This is the wrong setup.py file to run'
+    print('This is the wrong setup.py file to run')
