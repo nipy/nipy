@@ -39,13 +39,14 @@ Useful methods on volume structures
 ====================================
 
 .. currentmodule:: nipy.labs.datasets.volumes.volume_field
+
 Any general volume structures will implement methods for querying the
 values and changing world space (see the :class:`VolumeField`
 documentation for more details):
 
 .. autosummary::
     :toctree: generated
-     
+
     VolumeField.values_in_world
     VolumeField.composed_with_transform
 

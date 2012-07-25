@@ -53,19 +53,18 @@ class OLSModel(LikelihoodModel):
     design : ndarray
         This is the design, or X, matrix.
     wdesign : ndarray
-        This is the whitened design matrix.
-        design = wdesign by default for the OLSModel, though models that
-        inherit from the OLSModel will whiten the design.
+        This is the whitened design matrix.  `design` == `wdesign` by default
+        for the OLSModel, though models that inherit from the OLSModel will
+        whiten the design.
     calc_beta : ndarray
         This is the Moore-Penrose pseudoinverse of the whitened design matrix.
     normalized_cov_beta : ndarray
-        np.dot(calc_beta, calc_beta.T)
-    df_resid : integer
-        Degrees of freedom of the residuals.
-        Number of observations less the rank of the design.
-    df_model : integer
-        Degrees of freedome of the model.
-        The rank of the design.
+        ``np.dot(calc_beta, calc_beta.T)``
+    df_resid : scalar
+        Degrees of freedom of the residuals.  Number of observations less the
+        rank of the design.
+    df_model : scalar
+        Degrees of freedome of the model.  The rank of the design.
 
     Examples
     --------
