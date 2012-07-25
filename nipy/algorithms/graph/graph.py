@@ -26,15 +26,15 @@ from scipy.sparse import coo_matrix
 class Graph(object):
     """ Basic topological (non-weighted) directed Graph class
 
-    Member variables
-    ----------------
-    - V (int > 0): the number of vertices
-    - E (int >= 0): the number of edges
+    Member variables:
 
-    Properties
-    ----------
-    - vertices (list, type=int, shape=(V,))  vertices id
-    - edges (list, type=int, shape=(E,2)): edges as vertices id tuples
+    * V (int > 0): the number of vertices
+    * E (int >= 0): the number of edges
+
+    Properties:
+
+    * vertices (list, type=int, shape=(V,))  vertices id
+    * edges (list, type=int, shape=(E,2)): edges as vertices id tuples
     """
 
     ### Constructor
@@ -44,8 +44,12 @@ class Graph(object):
 
         Parameters
         ----------
-        - V (int): the number of vertices
-        - E (int): the number of edges
+        V : int
+            the number of vertices
+        E : int, optional
+            the number of edges
+        edges : None or shape (E, 2) array, optional
+            edges of graph
         """
         # deal with vertices
         self.__set_V(V)
@@ -552,17 +556,17 @@ def concatenate_graphs(G1, G2):
 class WeightedGraph(Graph):
     """Basic weighted, directed graph class
 
-    Member variables
-    ----------------
-    - V (int): the number of vertices
-    - E (int): the number of edges
+    Member variables:
+
+    * V (int): the number of vertices
+    * E (int): the number of edges
 
     Methods
-    -------
-    - vertices (list, type=int, shape=(V,)): vertices id
-    - edges (list, type=int, shape=(E,2)): edges as vertices id tuples
-    - weights (list, type=int, shape=(E,)): weights/lenghts
-        of the graph's edges
+
+    * vertices (list, type=int, shape=(V,)): vertices id
+    * edges (list, type=int, shape=(E,2)): edges as vertices id tuples
+    * weights (list, type=int, shape=(E,)): weights / lengths
+      of the graph's edges
     """
 
     ### Constructor
@@ -572,9 +576,12 @@ class WeightedGraph(Graph):
 
         Parameters
         ----------
-        - V (int > 0): the number of vertices
-        - edges (array, type=int, shape=(E,2)): edges of the graph
-        - weights (array, type=int, shape=(E,)): weights/lenghts of the edges
+        V : int
+            (int > 0) the number of vertices
+        edges : (E, 2) array, type int
+            edges of the graph
+        weights : (E, 2) array, type=int
+            weights/lenghts of the edges
         """
         Graph.__init__(self, V, edges=edges)
 
@@ -1090,16 +1097,16 @@ x
         self.set_gaussian(seeds)
 
     def show(self, X=None, ax=None):
-        """plots the current graph in 2D
+        """ Plots the current graph in 2D
 
         Parameters
         ----------
-        X=None, array of shape (self.V, 2)
-                a set of coordinates that can be used
-                to embed the vertices in 2D.
-                if X.shape[1]>2, a svd reduces X for display
-                By default, the graph is presented on a circle
-        ax: ax handle, optional
+        X : None or array of shape (self.V, 2)
+            a set of coordinates that can be used to embed the vertices in 2D.
+            If X.shape[1]>2, a svd reduces X for display. By default, the graph
+            is presented on a circle
+        ax: None or int, optional
+            ax handle
 
         Returns
         -------
@@ -1181,7 +1188,7 @@ x
 
         Parameters
         ----------
-        valid, an array of shape (self.E)
+        valid : (self.E,) array
         """
         if np.size(valid) != self.E:
             raise ValueError("the input vector does not have the correct size")
