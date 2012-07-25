@@ -17,7 +17,7 @@ categories:
   * *TEST* : for adding or changing tests
   * *STY* : PEP8 conformance, whitespace changes etc that do not affect
     function.
-  # *WIP* : Work in progress; please try and avoid using this one, and rebase
+  * *WIP* : Work in progress; please try and avoid using this one, and rebase
     incomplete changes into functional units using e.g. ``git rebase -i``
 
 So your commit message might look something like this::
@@ -39,3 +39,6 @@ your code is not ready to merge, but you want to get feedback, please consider
 using ``WIP - me working on image design`` or similar for the title of your pull
 request. That way we will all know that it's not yet ready to merge and that
 you may be interested in more fundamental comments about design.
+
+When you think the pull request is ready to merge, change the title (using the
+*Edit* button) to something like ``MRG - my work on image design``.
