@@ -14,25 +14,25 @@ inv_t_cdf = t_distribution.ppf
 
 
 class Model(object):
-    """
-    A (predictive) statistical model. The class Model itself does nothing
-    but lays out the methods expected of any subclass.
+    """ A (predictive) statistical model.
+
+    The class Model itself does nothing but lays out the methods expected of any
+    subclass.
     """
 
     def __init__(self):
         pass
 
     def initialize(self):
-        """
-        Initialize (possibly re-initialize) a Model instance. For
-        instance, the design matrix of a linear model may change
-        and some things must be recomputed.
+        """ Initialize (possibly re-initialize) a Model instance.
+
+        For instance, the design matrix of a linear model may change and some
+        things must be recomputed.
         """
         raise NotImplementedError
 
     def fit(self):
-        """
-        Fit a model to data.
+        """ Fit a model to data.
         """
         raise NotImplementedError
 
@@ -41,37 +41,37 @@ class Model(object):
         After a model has been fit, results are (assumed to be) stored
         in self.results, which itself should have a predict method.
         """
+        # XXX method is from an earlier API and needs to be rethought
         self.results.predict(design)
 
 
 class LikelihoodModel(Model):
 
     def logL(self, theta, Y, nuisance=None):
-        """
-        Log-likelihood of model.
+        """ Log-likelihood of model.
         """
         raise NotImplementedError
 
     def score(self, theta, Y, nuisance=None):
-        """
-        Score function of model = gradient of logL with respect to
-        theta.
+        """ Gradient of logL with respect to theta.
+
+        This is the score function of the model
         """
         raise NotImplementedError
 
     def information(self, theta, nuisance=None):
-        """
-        Fisher information matrix: the inverse of the expected value of
-        - d^2 logL / dtheta^2.
+        """ Fisher information matrix
+
+        The inverse of the expected value of ``- d^2 logL / dtheta^2.``
         """
         raise NotImplementedError
 
 
 class LikelihoodModelResults(object):
-# Jonathan: This is the class in which
-# things like AIC, BIC, llf would be implemented as methods,
-# not computed in, say, the fit method of OLSModel
     ''' Class to contain results from likelihood models '''
+
+    # This is the class in which things like AIC, BIC, llf can be implemented as
+    # methods, not computed in, say, the fit method of OLSModel
 
     def __init__(self, theta, Y, model, cov=None, dispersion=1., nuisance=None,
                  rank=None):
@@ -166,26 +166,27 @@ class LikelihoodModelResults(object):
         """ Variance/covariance matrix of linear contrast
 
         Parameters
-        ==========
-        matrix: array of shape (dim, self.theta.shape[0]), optional
-                numerical contrast specification, 
-                where dim refers to the 'dimension' of the contrast
-                i.e. 1 for t contrasts, 1 or more for F contrasts. 
-        column: int, optional,
-                alternative way of specifying contrasts (column index)
-        dispersion: float or array of shape (n_voxels), optional,
-                    value(s) for the dispersion parameters
-        other:array of shape (dim, self.theta.shape[0]), optional
-              alternative contrast specification (?)
+        ----------
+        matrix: (dim, self.theta.shape[0]) array, optional
+            numerical contrast specification, where ``dim`` refers to the
+            'dimension' of the contrast i.e. 1 for t contrasts, 1 or more
+            for F contrasts.
+        column: int, optional
+            alternative way of specifying contrasts (column index)
+        dispersion: float or (n_voxels,) array, optional
+            value(s) for the dispersion parameters
+        other: (dim, self.theta.shape[0]) array, optional
+            alternative contrast specification (?)
 
         Returns
-        =======
-        cov: array of shape(dim, dim) or (n_voxels, dim, dim),
-             the estimated covariance matrix/matrices
+        -------
+        cov: (dim, dim) or (n_voxels, dim, dim) array
+            the estimated covariance matrix/matrices
 
         Returns the variance/covariance matrix of a linear contrast of the
         estimates of theta, multiplied by `dispersion` which will often be an
         estimate of `dispersion`, like, sigma^2.
+
         The covariance of interest is either specified as a (set of) column(s)
         or a matrix.
         """
@@ -223,10 +224,10 @@ class LikelihoodModelResults(object):
         ----------
         matrix : 1D array-like
             contrast matrix
-        store : sequence
+        store : sequence, optional
             components of t to store in results output object.  Defaults to all
             components ('t', 'effect', 'sd').
-        dispersion : float
+        dispersion : None or float, optional
 
         Returns
         -------
@@ -260,28 +261,29 @@ class LikelihoodModelResults(object):
                                 df_den=self.df_resid)
 
     def Fcontrast(self, matrix, dispersion=None, invcov=None):
-        """
-        Compute an Fcontrast for a contrast matrix.
+        """ Compute an Fcontrast for a contrast matrix `matrix`.
 
-        Here, matrix M is assumed to be non-singular. More precisely::
+        Here, `matrix` M is assumed to be non-singular. More precisely
+
+        .. math::
 
             M pX pX' M'
 
-        is assumed invertible. Here, pX is the generalized inverse of the
-        design matrix of the model. There can be problems in non-OLS models
+        is assumed invertible. Here, :math:`pX` is the generalized inverse of
+        the design matrix of the model. There can be problems in non-OLS models
         where the rank of the covariance of the noise is not full.
 
-        See the contrast module to see how to specify contrasts.
-        In particular, the matrices from these contrasts will always be
-        non-singular in the sense above.
+        See the contrast module to see how to specify contrasts.  In particular,
+        the matrices from these contrasts will always be non-singular in the
+        sense above.
 
         Parameters
         ----------
         matrix : 1D array-like
             contrast matrix
-        dispersion : None or float
+        dispersion : None or float, optional
             If None, use ``self.dispersion``
-        invcov : None or array
+        invcov : None or array, optional
             Known inverse of variance covariance matrix.
             If None, calculate this matrix.
 
@@ -319,8 +321,7 @@ class LikelihoodModelResults(object):
             F=F, df_den=self.df_resid, df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):
-        '''
-        Returns the confidence interval of the specified theta estimates.
+        ''' The confidence interval of the specified theta estimates.
 
         Parameters
         ----------
@@ -374,11 +375,10 @@ class LikelihoodModelResults(object):
 
 
 class TContrastResults(object):
-    """
-    Results from looking at a particular contrast of coefficients in
-    a parametric model. The class does nothing, it is a container
-    for the results from T contrasts, and returns the T-statistics
-    when np.asarray is called.
+    """ Results from a t contrast of coefficients in a parametric model.
+
+    The class does nothing, it is a container for the results from T contrasts,
+    and returns the T-statistics when np.asarray is called.
     """
 
     def __init__(self, t, sd, effect, df_den=None):
@@ -398,11 +398,10 @@ class TContrastResults(object):
 
 
 class FContrastResults(object):
-    """
-    Results from looking at a particular contrast of coefficients in
-    a parametric model. The class does nothing, it is a container
-    for the results from F contrasts, and returns the F-statistics
-    when np.asarray is called.
+    """ Results from an F contrast of coefficients in a parametric model.
+
+    The class does nothing, it is a container for the results from F contrasts,
+    and returns the F-statistics when np.asarray is called.
     """
 
     def __init__(self, effect, covariance, F, df_num, df_den=None):
