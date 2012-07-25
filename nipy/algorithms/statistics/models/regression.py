@@ -53,19 +53,18 @@ class OLSModel(LikelihoodModel):
     design : ndarray
         This is the design, or X, matrix.
     wdesign : ndarray
-        This is the whitened design matrix.
-        design = wdesign by default for the OLSModel, though models that
-        inherit from the OLSModel will whiten the design.
+        This is the whitened design matrix.  `design` == `wdesign` by default
+        for the OLSModel, though models that inherit from the OLSModel will
+        whiten the design.
     calc_beta : ndarray
         This is the Moore-Penrose pseudoinverse of the whitened design matrix.
     normalized_cov_beta : ndarray
-        np.dot(calc_beta, calc_beta.T)
-    df_resid : integer
-        Degrees of freedom of the residuals.
-        Number of observations less the rank of the design.
-    df_model : integer
-        Degrees of freedome of the model.
-        The rank of the design.
+        ``np.dot(calc_beta, calc_beta.T)``
+    df_resid : scalar
+        Degrees of freedom of the residuals.  Number of observations less the
+        rank of the design.
+    df_model : scalar
+        Degrees of freedome of the model.  The rank of the design.
 
     Examples
     --------
@@ -100,7 +99,7 @@ class OLSModel(LikelihoodModel):
         self.initialize(design)
 
     def initialize(self, design):
-        # Jonathan: PLEASE don't assume we have a constant...
+        # PLEASE don't assume we have a constant...
         # TODO: handle case for noconstant regression
         self.design = design
         self.wdesign = self.whiten(self.design)
@@ -112,7 +111,6 @@ class OLSModel(LikelihoodModel):
         self.df_resid = self.df_total - self.df_model
 
     def logL(self, beta, Y, nuisance=None):
-        # Jonathan: this is overwriting an abstract method of LikelihoodModel
         r''' Returns the value of the loglikelihood function at beta.
 
         Given the whitened design matrix, the loglikelihood is evaluated
@@ -128,11 +126,7 @@ class OLSModel(LikelihoodModel):
         nuisance : dict, optional
             A dict with key 'sigma', which is an optional estimate of sigma. If
             None, defaults to its maximum likelihood estimate (with beta fixed)
-            as:
-
-                sum((Y - X*beta)**2) / n
-
-            where n=Y.shape[0], X=self.design.
+            as ``sum((Y - X*beta)**2) / n``, where n=Y.shape[0], X=self.design.
 
         Returns
         -------
@@ -142,18 +136,18 @@ class OLSModel(LikelihoodModel):
         Notes
         -----
         The log-Likelihood Function is defined as
+
         .. math::
 
             \ell(\beta,\sigma,Y)=
             -\frac{n}{2}\log(2\pi\sigma^2) - \|Y-X\beta\|^2/(2\sigma^2)
 
-        The parameter :math:`\sigma` above is what is sometimes referred to
-        as a nuisance parameter. That is, the likelihood is considered
-        as a function of :math:`\beta`, but to evaluate it,
-        a value of :math:`\sigma` is xneeded.
+        The parameter :math:`\sigma` above is what is sometimes referred to as a
+        nuisance parameter. That is, the likelihood is considered as a function
+        of :math:`\beta`, but to evaluate it, a value of :math:`\sigma` is
+        needed.
 
-        If :math:`\sigma` is not provided, then its maximum likelihood
-        estimate:
+        If :math:`\sigma` is not provided, then its maximum likelihood estimate:
 
         .. math::
 
@@ -166,6 +160,7 @@ class OLSModel(LikelihoodModel):
         ----------
         .. [1] W. Green.  "Econometric Analysis," 5th ed., Pearson, 2003.
         '''
+        # This is overwriting an abstract method of LikelihoodModel
         X = self.wdesign
         wY = self.whiten(Y)
         r = wY - np.dot(X, beta)
@@ -179,11 +174,12 @@ class OLSModel(LikelihoodModel):
         return loglf
 
     def score(self, beta, Y, nuisance=None):
-        # Jonathan: this is overwriting an abstract method of LikelihoodModel
-        ''' Returns the score function, the gradient of the loglikelihood
-        function at (beta, Y, nuisance).
+        ''' Gradient of the loglikelihood function at (beta, Y, nuisance).
 
-        See logL for details.
+        The graient of the loglikelihood function at (beta, Y, nuisance) is the
+        score function.
+
+        See :meth:`logL` for details.
 
         Parameters
         ----------
@@ -194,16 +190,13 @@ class OLSModel(LikelihoodModel):
         nuisance : dict, optional
             A dict with key 'sigma', which is an optional estimate of sigma. If
             None, defaults to its maximum likelihood estimate (with beta fixed)
-            as::
-
-                sum((Y - X*beta)**2) / n
-
-            where n=Y.shape[0], X=self.design.
+            as ``sum((Y - X*beta)**2) / n``, where n=Y.shape[0], X=self.design.
 
         Returns
         -------
         The gradient of the loglikelihood function.
         '''
+        # This is overwriting an abstract method of LikelihoodModel
         X = self.wdesign
         wY = self.whiten(Y)
         r = wY - np.dot(X, beta)
@@ -216,7 +209,6 @@ class OLSModel(LikelihoodModel):
         return np.dot(X, r) / sigmasq
 
     def information(self, beta, nuisance=None):
-        # Jonathan: this is overwriting an abstract method of LikelihoodModel
         ''' Returns the information matrix at (beta, Y, nuisance).
 
         See logL for details.
@@ -227,11 +219,8 @@ class OLSModel(LikelihoodModel):
             The parameter estimates.  Must be of length df_model.
         nuisance : dict
             A dict with key 'sigma', which is an estimate of sigma. If None,
-            defaults to its maximum likelihood estimate (with beta fixed) as::
-
-                sum((Y - X*beta)**2) / n
-
-            where n=Y.shape[0], X=self.design.
+            defaults to its maximum likelihood estimate (with beta fixed) as
+            ``sum((Y - X*beta)**2) / n`` where n=Y.shape[0], X=self.design.
 
         Returns
         -------
@@ -240,19 +229,14 @@ class OLSModel(LikelihoodModel):
             of the of the log-likelihood function evaluated at (theta, Y,
             nuisance).
         '''
+        # This is overwriting an abstract method of LikelihoodModel
+        # The subclasses WLSModel, ARModel and GLSModel all overwrite this
+        # method. The point of these subclasses is such that not much of
+        # OLSModel has to be changed.
         X = self.design
         sigmasq = nuisance['sigma']
         C = sigmasq * np.dot(X.T, X)
         return C
-
-#   Note: why have a function that doesn't do anything?
-#    does it have to be here to be overwritten?
-#   Could this be replaced with the sandwich estimators
-#   without writing a subclass?
-#
-#   Jonathan: the subclasses WLSModel, ARModel and GLSModel all
-#   overwrite this method. The point of these subclasses
-#   is such that not much of OLSModel has to be changed
 
     def whiten(self, X):
         """ Whiten design matrix
@@ -286,22 +270,13 @@ class OLSModel(LikelihoodModel):
 
     @setattr_on_read
     def rank(self):
-        """
-        Compute rank of design matrix
+        """ Compute rank of design matrix
         """
         return matrix_rank(self.wdesign)
 
     def fit(self, Y):
-#    def fit(self, Y, robust=None):
-# Jonathan: it seems the robust method are different estimates
-# of the covariance matrix for a heteroscedastic regression model.
-# This functionality is in WLSmodel. (Weighted least squares models assume
-# covariance is diagonal, i.e. heteroscedastic).
+        """ Fit model to data `Y`
 
-# Some of the quantities, like AIC and BIC are defined for
-# any model with a likelihood and they should be properties
-# of the LikelihoodModel
-        """
         Full fit of the model including estimate of covariance matrix,
         (whitened) residuals and scale.
 
@@ -314,6 +289,9 @@ class OLSModel(LikelihoodModel):
         -------
         fit : RegressionResults
         """
+        # Other estimates of the covariance matrix for a heteroscedastic
+        # regression model can be implemented in WLSmodel. (Weighted least
+        # squares models assume covariance is diagonal, i.e. heteroscedastic).
         wY = self.whiten(Y)
         beta = np.dot(self.calc_beta, wY)
         wresid = wY - np.dot(self.wdesign, beta)
@@ -326,8 +304,7 @@ class OLSModel(LikelihoodModel):
 
 
 class ARModel(OLSModel):
-    """
-    A regression model with an AR(p) covariance structure.
+    """ A regression model with an AR(p) covariance structure.
 
     In terms of a LikelihoodModel, the parameters
     are beta, the usual regression parameters,
@@ -447,8 +424,7 @@ class ARModel(OLSModel):
 
 
 def yule_walker(X, order=1, method="unbiased", df=None, inv=False):
-    """
-    Estimate AR(p) parameters from a sequence X using Yule-Walker equation.
+    """ Estimate AR(p) parameters from a sequence X using Yule-Walker equation.
 
     unbiased or maximum-likelihood estimator (mle)
 
@@ -509,13 +485,14 @@ def yule_walker(X, order=1, method="unbiased", df=None, inv=False):
 
 
 def ar_bias_corrector(design, calc_beta, order=1):
-    """ Return bias correcting matrix for design and AR order `order`
+    """ Return bias correcting matrix for `design` and AR order `order`
 
     There is a slight bias in the rho estimates on residuals due to the
-    correlations induced in the residuals by fitting a linear model.  See [1]
+    correlations induced in the residuals by fitting a linear model.  See
+    [Worsley2002]_.
 
     This routine implements the bias correction described in appendix A.1 of
-    [1]
+    [Worsley2002]_.
 
     Parameters
     ----------
@@ -536,9 +513,9 @@ def ar_bias_corrector(design, calc_beta, order=1):
 
     References
     ----------
-    [1] K.J. Worsley, C.H. Liao, J. Aston, V. Petre, G.H. Duncan, F. Morales,
-    A.C. Evans (2002) A General Statistical Analysis for fMRI Data.  Neuroimage
-    15:1:15
+    .. [Worsley2002] K.J. Worsley, C.H. Liao, J. Aston, V. Petre, G.H. Duncan,
+       F. Morales, A.C. Evans (2002) A General Statistical Analysis for fMRI
+       Data.  Neuroimage 15:1:15
     """
     R = np.eye(design.shape[0]) - np.dot(design, calc_beta)
     M = np.zeros((order + 1,) * 2)
@@ -555,10 +532,11 @@ def ar_bias_correct(results, order, invM=None):
     """ Apply bias correction in calculating AR(p) coefficients from `results`
 
     There is a slight bias in the rho estimates on residuals due to the
-    correlations induced in the residuals by fitting a linear model.  See [1]
+    correlations induced in the residuals by fitting a linear model.  See
+    [Worsley2002]_.
 
     This routine implements the bias correction described in appendix A.1 of
-    [1]
+    [Worsley2002]_.
 
     Parameters
     ----------
@@ -584,6 +562,12 @@ def ar_bias_correct(results, order, invM=None):
     the sum of squared residuals.  In this case we also need
     ``results.df_resid``.  Otherwise we assume this is a simple Gaussian model,
     like OLS, and take the simple sum of squares of the residuals.
+
+    References
+    ----------
+    .. [Worsley2002] K.J. Worsley, C.H. Liao, J. Aston, V. Petre, G.H. Duncan,
+       F. Morales, A.C. Evans (2002) A General Statistical Analysis for fMRI
+       Data.  Neuroimage 15:1:15
     """
     if invM is None:
         # We need a model from ``results`` if invM is not specified
@@ -751,10 +735,6 @@ class RegressionResults(LikelihoodModelResults):
              Davidson and MacKinnon 15.2 p 662
         """
         return self.resid * pos_recipr(np.sqrt(self.dispersion))
-
-# predict is a verb
-# do the predicted values need to be done automatically, then?
-# or should you give a predict method similar to STATA
 
     @setattr_on_read
     def predicted(self):

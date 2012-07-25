@@ -553,16 +553,19 @@ physicist, :)
 We can call the images RASImages, or at least let's call their AffineTransform
 RASTransforms, or we could have NeuroImages that can only have RASTransforms or
 LPSTransforms, NeuroTransform that have a property and NeuroImage raises an
-exception like this:
+exception like this::
 
-@property
-def world(self):
-   return self.affine_transform.function_range
+    @property
+    def world(self):
+    return self.affine_transform.function_range
 
-if self.world.name not in ['world-RAS', 'world-LPS'] or self.world.coord_names != ('x', 'y', 'z'):
-    raise ValueError("the output space must be named one of ['world-RAS','world-LPS'] and the axes must be ('x', 'y', 'z')")
+    if (self.world.name not in ['world-RAS', 'world-LPS'] or
+        self.world.coord_names != ('x', 'y', 'z')):
+        raise ValueError("the output space must be named one of "
+                         "['world-RAS','world-LPS'] and "
+                         "the axes must be ('x', 'y', 'z')")
 
-_doc['world'] = "World space, one of ['world-RAS', 'world-LPS']. If it is 'world-LPS', then x increases from patient's left to right, y increases posterior to anterior, z increases superior to inferior. If it is 'world-RAS' then x increases patient's right to left, y increases posterior to anterior, z increases superior to inferior."
+    _doc['world'] = "World space, one of ['world-RAS', 'world-LPS']. If it is 'world-LPS', then x increases from patient's left to right, y increases posterior to anterior, z increases superior to inferior. If it is 'world-RAS' then x increases patient's right to left, y increases posterior to anterior, z increases superior to inferior."
 
 I completely advocate any responsibility for deciding which acronym to choose,
 someone who can use rope can just change every lpi/LPI to ras/RAS I just want it
@@ -589,16 +592,15 @@ ask Matthew.
 
     http://teem.sourceforge.net/nrrd/format.html#space
 
-    Or, if that's too flexible for you, you could adopt a standard space. 
+    Or, if that's too flexible for you, you could adopt a standard space.
 
-
-    ITK chose LPS to match DICOM. 
+    ITK chose LPS to match DICOM.
 
     For slicer, like nifti, we chose RAS
 
 It may be that there is well-established convention for this, but then why does
 ITK say DICOM=LPS and AFNI say DICOM=RAI?  At least MINC is explicit. I favor
-making it as precise as MINC does. 
+making it as precise as MINC does.
 
 That AFNI discussion I pointed to uses the pairing RAI/DICOM and LPI/SPM.  This
 discrepancy suggests there's some disagreement between using the letters to name

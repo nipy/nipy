@@ -139,19 +139,17 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
                  opacity=None,
                  skull_percentile=78, wm_percentile=79,
                  outline_color=None):
-    """
-        Parameters
-        ==========
-        skull_percentile : float, optional
-            The percentile of the values in the image that delimit the 
-            skull from the outside of the brain. The smaller the fraction
-            of you field of view is occupied by the brain, the larger
-            this value should be.
-        wm_percentile : float, optional
-            The percentile of the values in the image that delimit the
-            white matter from the grey matter. Typical this is 
-            skull_percentile + 1
+    """ 3D anatomical display
 
+    Parameters
+    ----------
+    skull_percentile : float, optional
+        The percentile of the values in the image that delimit the skull from
+        the outside of the brain. The smaller the fraction of you field of view
+        is occupied by the brain, the larger this value should be.
+    wm_percentile : float, optional
+        The percentile of the values in the image that delimit the white matter
+        from the grey matter. Typical this is skull_percentile + 1
     """
     # Late import to avoid triggering wx imports before needed.
     try:
