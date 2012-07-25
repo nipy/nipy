@@ -1,8 +1,8 @@
 # Makefile for Sphinx documentation
 #
 
-SOURCEFORGE_USER ?= matthewbrett
-WWW=$(SOURCEFORGE_USER),nipy@web.sourceforge.net:htdocs/nipy
+SF_USER ?= matthewbrett
+DIST_DIR = dist
 
 # You can set these variables from the command line.
 SPHINXOPTS    = #-q # suppress all output but warnings
@@ -29,9 +29,11 @@ help:
 	@echo "  linkcheck 	check all external links for integrity"
 	@echo "  doctest   	run doctests in reST files"
 	@echo "  pdf		make <latex> and run the PDF generation"
-	@echo "  dist		make <all> and put results in dist/"
+	@echo "  dist		make <all> and put results in $DIST_DIR/"
 	@echo "  public_html	make <dist> and rsync with public website"
-	@echo "  gitwash-update update git workflow from source repo"
+	@echo "  upload-stable-web	make <dist> and rsync with public stable website"
+	@echo "  upload-devel-web	make <dist> and rsync with public devel website"
+	@echo "  gitwash-update	update git workflow from source repo"
 
 # Commented these out, wasn't clear if we'd use these targets or not.
 # @echo "  pickle    to make pickle files (usable by e.g. sphinx-web)"
@@ -39,7 +41,7 @@ help:
 # @echo "  changes   to make an overview over all changed/added/deprecated items"
 
 clean:
-	-rm -rf build/* dist/* *~ api/generated labs/generated
+	-rm -rf build/* $(DIST_DIR)/* *~ api/generated labs/generated
 	-rm -f manual
 
 pdf: latex
@@ -48,13 +50,28 @@ pdf: latex
 all: html pdf
 
 dist: clean all
-	mkdir -p dist
-	ln build/latex/nipy*.pdf dist/
-	cp -al build/html/* dist/
-	@echo "Build finished.  Final docs are in dist/"
+	mkdir -p $(DIST_DIR)
+	ln build/latex/nipy*.pdf $(DIST_DIR)
+	cp -a build/html/* $(DIST_DIR)
+	@echo "Build finished.  Final docs are in $(DIST_DIR)"
 
-public_html: dist
-	rsync -avH --delete dist/* $(WWW)
+# This one udates for the specific user named at the top of the makefile
+upload-stable-web: upload-stable-web-$(SF_USER)
+
+# This one updates according to passed user e.g
+# make upload-stable-web-my_own_sf_user
+upload-stable-web-%: dist
+	rsync -rzhvp --delete --chmod=Dg+s,g+rw $(DIST_DIR)/* \
+		$*,nipy@web.sourceforge.net:/home/groups/n/ni/nipy/htdocs/nipy/stable
+
+# This one udates for the specific user named at the top of the makefile
+upload-devel-web: upload-devel-web-$(SF_USER)
+
+# This one updates according to passed user e.g
+# make upload-devel-web-my_own_sf_user
+upload-devel-web-%: dist
+	rsync -rzhvp --delete --chmod=Dg+s,g+rw $(DIST_DIR)/* \
+		$*,nipy@web.sourceforge.net:/home/groups/n/ni/nipy/htdocs/nipy/devel
 
 htmlonly:
 	mkdir -p build/html build/doctrees
@@ -71,7 +88,10 @@ html: api htmlonly
 	@echo "Build HTML and API finished."
 
 gitwash-update:
-	python ../tools/gitwash_dumper.py devel/guidelines nipy
+	python ../tools/gitwash_dumper.py devel/guidelines nipy \
+		--github-user=nipy \
+		--project-url=http://nipy.org/nipy \
+		--project-ml-url=http://mail.scipy.org/mailman/listinfo/nipy-devel
 
 pickle:
 	mkdir -p build/pickle build/doctrees

@@ -222,7 +222,7 @@ Release checklist
 
     python setup.py bdist_egg upload
 
-  - which uploaded the 'i386' egg, followed by::
+  which uploaded the 'i386' egg, followed by::
 
     python setup.py bdist_egg --plat-name macosx-10.3-ppc upload
 
@@ -280,7 +280,8 @@ Release checklist
 
 * Now the version number is OK, push the docs to sourceforge with::
 
-    make upload-htmldoc-mysfusername
+    cd doc
+    make upload-stable-web-mysfusername
 
   where ``mysfusername`` is obviously your own sourceforge username.
 
