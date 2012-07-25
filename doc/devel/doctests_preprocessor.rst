@@ -140,4 +140,6 @@ IPython doctest machinery
 This looks very similar to the numpy machinery.  Again, it's a nose plugin that
 inherits from the nose ``Doctest`` class.
 
+.. include:: ../links_names.txt
+
 
