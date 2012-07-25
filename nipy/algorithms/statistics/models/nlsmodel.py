@@ -12,7 +12,6 @@ from .model import Model
 
 
 class NLSModel(Model):
-
     """
     Class representing a simple nonlinear least squares model.
     """
@@ -42,6 +41,8 @@ class NLSModel(Model):
 
             is the nonlinear response function for the i-th instance in
             the model.
+        theta : array
+            parameters
         niter : int
             number of iterations
         """
@@ -89,9 +90,9 @@ class NLSModel(Model):
 
         Parameters
         ----------
-        design : None or array
-            design at which to predict data.
-            If None (the default) then use the initial ``self.design``
+        design : None or array, optional
+            design at which to predict data.  If None (the default) then use the
+            initial ``self.design``
 
         Returns
         -------
