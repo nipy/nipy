@@ -50,7 +50,7 @@ def _poly_drift(order, frametimes):
     """
     order = int(order)
     pol = np.zeros((np.size(frametimes), order + 1))
-    tmax = frametimes.max()
+    tmax = float(frametimes.max())
     for k in range(order + 1):
         pol[:, k] = (frametimes / tmax) ** k
     pol = _orthogonalize(pol)
@@ -71,7 +71,7 @@ def _cosine_drift(hfcut, frametimes):
     cdrift:  array of shape(n_scans, n_drifts)
              polynomial drifts plus a constant regressor
     """
-    tmax = frametimes.max()
+    tmax = float(frametimes.max())
     tsteps = len(frametimes)
     order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
     cdrift = np.zeros((tsteps, order))
