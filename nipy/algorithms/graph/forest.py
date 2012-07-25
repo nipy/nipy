@@ -1,44 +1,52 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
-This module implements the Forest class, a Forest being understood as
-a graph with a hierarchical structure.  Each connected component of a
-forest is a tree.  The main characteristic is that each node has a
-single parent, so that a Forest is fully characterized by a "parent"
-array, that defines the unique parent of each node.  The directed
-relationships are encoded by the weight sign.
+""" Module implements the Forest class
 
-Note that some methods of WeightedGraph class (e.g. dijkstra's
-algorithm) require positive weights, so that they cannot work on
-forests in the current implementation. Specific methods
-(e.g. all_sidtance()) have been set instead.
+A Forest is a graph with a hierarchical structure.  Each connected component of
+a forest is a tree.  The main characteristic is that each node has a single
+parent, so that a Forest is fully characterized by a "parent" array, that
+defines the unique parent of each node.  The directed relationships are encoded
+by the weight sign.
+
+Note that some methods of WeightedGraph class (e.g. dijkstra's algorithm)
+require positive weights, so that they cannot work on forests in the current
+implementation. Specific methods (e.g. all_sidtance()) have been set instead.
 
 Main author: Bertrand thirion, 2007-2011
 """
 
 import numpy as np
-from graph import WeightedGraph
+
+from .graph import WeightedGraph
 
 
 class Forest(WeightedGraph):
-    """
-    This is a Forest structure, i.e. a set of trees
-    The nodes can be segmented into trees
+    """ Forest structure, i.e. a set of trees
+
+    The nodes can be segmented into trees.
+
     Within each tree a node has one parent and children
     that describe the associated hierarchical structure.
     Some of the nodes can be viewed as leaves, other as roots
     The edges within a tree are associated with a weight:
-    +1 from child to parent
-    -1 from parent to child
 
-    Class Members
-    -------------
-    V : (int,>0) the number of vertices
-    E : (int) the number of edges
-    parents: array of shape (self.V) the parent array
-    edges: array of shape (self.E,2) representing pairwise neighbors
-    weights, array of shape (self.E), +1/-1 for ascending/descending links
-    children: list of arrays that represents the childs of any node
+    * +1 from child to parent
+    * -1 from parent to child
+
+    Attributes
+    ----------
+    V : int
+        int > 0, the number of vertices
+    E : int
+        the number of edges
+    parents : (self.V,) array
+        the parent array
+    edges : (self.E, 2) array
+        representing pairwise neighbors
+    weights : (self.E,) array
+        +1/-1 for ascending/descending links
+    children: list
+        list of arrays that represents the children any node
     """
 
     def __init__(self, V, parents=None):
@@ -46,11 +54,12 @@ class Forest(WeightedGraph):
 
         Parameters
         ----------
-        V (int), the number of edges of the graph
-        parents = None: array of shape (V)
-                the parents of zach vertex
-                if Parents==None , the parents are set to range(V), i.e. each
-                node is its own parent, and each node is a tree
+        V : int
+            the number of edges of the graph
+        parents : None or (V,) array
+            the parents of zach vertex.  If `parents`==None , the parents are
+            set to range(V), i.e. each node is its own parent, and each node is
+            a tree
         """
         V = int(V)
         if V < 1:
@@ -104,7 +113,8 @@ class Forest(WeightedGraph):
 
         Parameters
         ----------
-        v: int, optional, a node index
+        v: int, optional
+            a node index
 
         Returns
         -------
