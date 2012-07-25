@@ -19,13 +19,14 @@ except ImportError:
                        ' - please install nibabel first')
 
 from setup_helpers import (generate_a_pyrex_source,
-                           cmdclass, INFO_VARS)
+                           cmdclass, INFO_VARS,
+                           build_py) # build_py will do 2to3 for Python3
+
 # monkey-patch numpy distutils to use Cython instead of Pyrex
 from numpy.distutils.command.build_src import build_src
 build_src.generate_a_pyrex_source = generate_a_pyrex_source
 
 # Add custom commit-recording build command
-from numpy.distutils.command.build_py import build_py
 cmdclass['build_py'] = get_comrec_build('nipy', build_py)
 
 def configuration(parent_package='',top_path=None):
