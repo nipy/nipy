@@ -110,7 +110,7 @@ array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
       dtype=[('x1', '<f8'), ('x3', '<f8'), ('x1*x3', '<f8'), ('1', '<f8')])
 '''
 
-from string import lowercase, uppercase
+from string import ascii_letters, digits
 
 import numpy as np
 from scipy.linalg import pinv
@@ -1021,8 +1021,7 @@ class Factor(Formula):
         >>> sf.mean
         _theta0*a_x + _theta1*a_y
         """
-        if not set(str(variable)).issubset(lowercase +
-                                           uppercase + '0123456789'):
+        if not set(str(variable)).issubset(ascii_letters + digits):
             raise ValueError('variable should be interpretable as a '
                              'name and not have anything but digits '
                              'and numbers')
