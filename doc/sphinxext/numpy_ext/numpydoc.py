@@ -47,7 +47,7 @@ def mangle_docstrings(app, what, name, obj, options, lines,
             v = dict(full_name=u"%s.%s" % (obj.__module__, obj.__name__))
         else:
             v = dict(full_name=obj.__name__)
-        lines += [u'', u'.. htmlonly::', '']
+        lines += [u'', u'.. only:: html', '']
         lines += [u'    %s' % x for x in
                   (app.config.numpydoc_edit_link % v).split("\n")]
 
