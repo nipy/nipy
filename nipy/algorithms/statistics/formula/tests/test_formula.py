@@ -210,31 +210,31 @@ def test_design():
     t2 = F.Term('y')
 
     n = F.make_recarray([2,4,5], 'x')
-    yield assert_almost_equal, t1.formula.design(n)['x'], n['x']
+    assert_almost_equal(t1.formula.design(n)['x'], n['x'])
 
     f = t1.formula + t2.formula
     n = F.make_recarray([(2,3),(4,5),(5,6)], 'xy')
 
-    yield assert_almost_equal, f.design(n)['x'], n['x']
-    yield assert_almost_equal, f.design(n)['y'], n['y']
+    assert_almost_equal(f.design(n)['x'], n['x'])
+    assert_almost_equal(f.design(n)['y'], n['y'])
 
     f = t1.formula + t2.formula + F.I + t1.formula * t2.formula
-    yield assert_almost_equal, f.design(n)['x'], n['x']
-    yield assert_almost_equal, f.design(n)['y'], n['y']
-    yield assert_almost_equal, f.design(n)['1'], 1
-    yield assert_almost_equal, f.design(n)['x*y'], n['x']*n['y']
+    assert_almost_equal(f.design(n)['x'], n['x'])
+    assert_almost_equal(f.design(n)['y'], n['y'])
+    assert_almost_equal(f.design(n)['1'], 1)
+    assert_almost_equal(f.design(n)['x*y'], n['x']*n['y'])
     # drop x field, check that design raises error
     ny = np.recarray(n.shape, dtype=[('x', n.dtype['x'])])
     ny['x'] = n['x']
-    yield assert_raises, ValueError, f.design, ny
+    assert_raises(ValueError, f.design, ny)
     n = np.array([(2,3,'a'),(4,5,'b'),(5,6,'a')], np.dtype([('x', np.float),
                                                             ('y', np.float),
                                                             ('f', 'S1')]))
     f = F.Factor('f', ['a','b'])
     ff = t1.formula * f + F.I
-    yield assert_almost_equal, ff.design(n)['f_a*x'], n['x']*[1,0,1]
-    yield assert_almost_equal, ff.design(n)['f_b*x'], n['x']*[0,1,0]
-    yield assert_almost_equal, ff.design(n)['1'], 1
+    assert_almost_equal(ff.design(n)['f_a*x'], n['x']*[1,0,1])
+    assert_almost_equal(ff.design(n)['f_b*x'], n['x']*[0,1,0])
+    assert_almost_equal(ff.design(n)['1'], 1)
 
 
 def test_alias():
