@@ -12,7 +12,7 @@ data.\' NeuroImage, 16:593-606.
 
 __docformat__ = 'restructuredtext'
 
-import os, fpformat
+import os
 
 import numpy as np
 import numpy.linalg as L
