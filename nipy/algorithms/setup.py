@@ -6,8 +6,7 @@ def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
     config = Configuration('algorithms', parent_package, top_path)
 
-    config.add_data_dir('tests')
-
+    config.add_subpackage('tests')
     config.add_subpackage('registration')
     config.add_subpackage('segmentation')
     config.add_subpackage('statistics')

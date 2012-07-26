@@ -5,8 +5,8 @@ import os, sys
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
     config = Configuration('bindings', parent_package, top_path)
-    config.add_data_dir('tests')
-    config.add_data_dir('benchmarks')
+    config.add_subpackage('tests')
+    config.add_subpackage('benchmarks')
     # We need this because libcstat.a is linked to lapack, which can
     # be a fortran library, and the linker needs this information.
     from numpy.distutils.system_info import get_info

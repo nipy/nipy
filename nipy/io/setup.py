@@ -5,7 +5,7 @@ def configuration(parent_package='',top_path=None):
 
     config = Configuration('io', parent_package, top_path)
 
-    config.add_data_dir('tests')
+    config.add_subpackage('tests')
     config.add_subpackage('imageformats')
 
     return config
