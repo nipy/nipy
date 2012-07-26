@@ -17,7 +17,10 @@ files are modules, and therefore which module URIs will be passed to
 
 NOTE: this is a modified version of a script originally shipped with the
 PyMVPA project, which we've adapted for NIPY use.  PyMVPA is an MIT-licensed
-project."""
+project.
+
+NOTE2: this script should run in Python 2 and Python 3
+"""
 
 # Stdlib imports
 import os
@@ -208,13 +211,13 @@ class ApiDocWriter(object):
         # get the names of all classes and functions
         functions, classes = self._parse_module(uri)
         if not len(functions) and not len(classes):
-            print 'WARNING: Empty -',uri  # dbg
+            print('WARNING: Empty - ' + uri)  # dbg
             return ''
 
         # Make a shorter version of the uri that omits the package name for
-        # titles 
+        # titles
         uri_short = re.sub(r'^%s\.' % self.package_name,'',uri)
-        
+
         ad = '.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n'
 
         chap_title = uri_short
