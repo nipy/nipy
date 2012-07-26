@@ -103,7 +103,11 @@ from numpy.distutils.command.install_data import install_data
 from numpy.distutils.command.build_ext import build_ext
 
 def data_install_msgs():
-    from nipy.utils import templates, example_data
+    # Check whether we have data packages
+    from nibabel.data import datasource_or_bomber
+    DATA_PKGS = INFO_VARS['DATA_PKGS']
+    templates = datasource_or_bomber(DATA_PKGS['nipy-templates'])
+    example_data = datasource_or_bomber(DATA_PKGS['nipy-data'])
     for dpkg in (templates, example_data):
         if hasattr(dpkg, 'msg'): # a bomber object, warn
             log.warn('%s\n%s' % ('_'*80, dpkg.msg))
