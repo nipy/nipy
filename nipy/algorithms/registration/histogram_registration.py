@@ -4,8 +4,6 @@
 Intensity-based image registration
 """
 
-from sys import maxint
-
 import numpy as np
 
 from ...core.image.image_spaces import (make_xyz_image,
@@ -18,6 +16,7 @@ from .chain_transform import ChainTransform
 from .similarity_measures import similarity_measures as _sms
 from ._registration import _joint_histogram
 
+MAX_INT = np.iinfo(np.intp).max
 
 # Module globals
 VERBOSE = True  # enables online print statements
@@ -210,7 +209,7 @@ class HistogramRegistration(object):
         trans_vox_coords = Tv.apply(self._vox_coords)
         interp = self._interp
         if self._interp < 0:
-            interp = - np.random.randint(maxint)
+            interp = - np.random.randint(MAX_INT)
         _joint_histogram(self._joint_hist,
                          self._from_data.flat,  # array iterator
                          self._to_data,
