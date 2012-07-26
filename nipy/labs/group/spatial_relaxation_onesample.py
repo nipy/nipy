@@ -7,8 +7,8 @@
 import numpy as np
 import scipy.special as sp
 
-from routines import add_lines
-from displacement_field import displacement_field
+from .routines import add_lines
+from .displacement_field import displacement_field
 
 #####################################################################################
 # some useful functions

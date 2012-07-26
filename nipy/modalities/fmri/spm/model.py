@@ -10,7 +10,8 @@ from nipy.algorithms.statistics.models.regression import OLSModel, GLSModel
 from nipy.core.api import Image
 from nipy.modalities.fmri.fmristat import model as fmristat
 from nipy.modalities.fmri.fmristat.model import OLS
-import correlation, reml
+
+from . import correlation, reml
 
 
 def Fmask(Fimg, dfnum, dfdenom, pvalue=1.0e-04):
