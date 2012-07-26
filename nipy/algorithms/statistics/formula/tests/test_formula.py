@@ -129,8 +129,12 @@ def test_formula_from_recarray():
                             ('x5', 'i8'),
                             ('x6', '|S5')])
     f = F.Formula.fromrec(D, drop='y')
-    yield assert_equal, set([str(t) for t in f.terms]),  set(['x1', 'x2', 'x3', 'x4', 'x5', 'x6_green', 'x6_blue', 'x6_red'])
-    yield assert_equal, set([str(t) for t in f.design_expr]),  set(['x1', 'x2', 'x3', 'x4', 'x5', 'x6_green', 'x6_blue', 'x6_red'])
+    assert_equal(set([str(t) for t in f.terms]),
+                 set(['x1', 'x2', 'x3', 'x4', 'x5',
+                      'x6_green', 'x6_blue', 'x6_red']))
+    assert_equal(set([str(t) for t in f.design_expr]),
+                 set(['x1', 'x2', 'x3', 'x4', 'x5',
+                      'x6_green', 'x6_blue', 'x6_red']))
 
 
 def test_random_effects():
@@ -366,3 +370,15 @@ def test_natural_spline():
     yield assert_almost_equal, dd[:,4], (xx-2)**3*np.greater_equal(xx,2)
     yield assert_almost_equal, dd[:,5], (xx-9)**3*np.greater_equal(xx,9)
     yield assert_almost_equal, dd[:,6], (xx-6)**3*np.greater_equal(xx,6)
+
+
+def test_factor_term():
+    # Test that byte strings, unicode strings and objects convert correctly
+    for nt in 'S3', 'U3', 'O':
+        ndt = np.dtype(nt)
+        for lt in 'S3', 'U3', 'O':
+            ldt = np.dtype(lt)
+            name = np.asscalar(np.array('foo', ndt))
+            level = np.asscalar(np.array('bar', ldt))
+            ft = F.FactorTerm(name, level)
+            assert_equal(str(ft), 'foo_bar')

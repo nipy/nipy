@@ -120,6 +120,8 @@ import sympy
 from distutils.version import LooseVersion
 SYMPY_0p6 = LooseVersion(sympy.__version__) < LooseVersion('0.7.0')
 
+from nipy.utils.compat3 import to_str
+
 from nipy.fixes.sympy.utilities.lambdify import (implemented_function,
                                                  lambdify)
 
@@ -251,7 +253,8 @@ class FactorTerm(Term):
     _factor_term_flag = True
 
     def __new__(cls, name, level):
-        new = Term.__new__(cls, "%s_%s" % (name, level))
+        # Names or levels can be byte strings
+        new = Term.__new__(cls, "%s_%s" % (to_str(name), to_str(level)))
         new.level = level
         new.factor_name = name
         return new
@@ -523,7 +526,7 @@ class Formula(object):
         """
         f = {}
         for n in rec.dtype.names:
-            if rec[n].dtype.kind == 'S':
+            if rec[n].dtype.kind in 'SOU':
                 f[n] = Factor.fromcol(rec[n], n)
             else:
                 f[n] = Term(n).formula
@@ -968,10 +971,10 @@ class Factor(Formula):
         # Check whether they can all be cast to strings or ints without
         # loss.
         levelsarr = np.asarray(levels)
-        if levelsarr.ndim == 0 and levelsarr.dtype.kind == 'S':
+        if levelsarr.ndim == 0 and levelsarr.dtype.kind in 'SOU':
             levelsarr = np.asarray(list(levels))
 
-        if levelsarr.dtype.kind != 'S': # the levels are not strings
+        if levelsarr.dtype.kind not in 'SOU': # the levels are not strings
             if not np.alltrue(np.equal(levelsarr, np.round(levelsarr))):
                 raise ValueError('levels must be strings or ints')
             levelsarr = levelsarr.astype(np.int)
