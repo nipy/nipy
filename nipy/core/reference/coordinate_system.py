@@ -113,11 +113,11 @@ class CoordinateSystem(object):
         if len(set(coord_names)) != len(coord_names):
             raise ValueError('coord_names must have distinct names')
         # verify that the dtype is coord_dtype for sanity
-        sctypes = (np.sctypes['int'] + np.sctypes['float'] + 
+        sctypes = (np.sctypes['int'] + np.sctypes['float'] +
                    np.sctypes['complex'] + np.sctypes['uint'])
         coord_dtype = np.dtype(coord_dtype)
         if coord_dtype not in sctypes:
-            raise ValueError('Coordinate dtype should be one of %s' % `sctypes`)
+            raise ValueError('Coordinate dtype should be one of %s' % sctypes)
         # Set all the attributes
         self.name = name
         self.coord_names = coord_names

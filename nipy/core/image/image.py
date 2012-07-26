@@ -97,7 +97,7 @@ class Image(object):
     def affine(self):
         if hasattr(self.coordmap, "affine"):
             return self.coordmap.affine
-        raise AttributeError, 'Nonlinear transform does not have an affine.'
+        raise AttributeError('Nonlinear transform does not have an affine.')
     _doc['affine'] = "Affine transformation if one exists."
 
     ###################################################################
