@@ -9,7 +9,7 @@ import numpy as np
 from .. import family
 from ..glm import Model as GLM
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_true, assert_false
 
 VARS = {}
 
@@ -26,6 +26,16 @@ def test_Logistic():
     cmodel = GLM(design=X, family=family.Binomial())
     results = cmodel.fit(Y)
     assert_equal(results.df_resid, 30)
+
+
+def test_cont():
+    # Test continue function works as expected
+    X = VARS['X']
+    Y = VARS['Y']
+    cmodel = GLM(design=X, family=family.Binomial())
+    cmodel.fit(Y)
+    assert_true(cmodel.cont(0))
+    assert_false(cmodel.cont(np.inf))
 
 
 def test_Logisticdegenerate():
