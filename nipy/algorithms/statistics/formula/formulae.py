@@ -979,14 +979,14 @@ class Factor(Formula):
         levelsarr = np.asarray(levels)
         if levelsarr.ndim == 0 and levelsarr.dtype.kind in 'SOU':
             levelsarr = np.asarray(list(levels))
-
         if levelsarr.dtype.kind not in 'SOU': # the levels are not strings
             if not np.alltrue(np.equal(levelsarr, np.round(levelsarr))):
                 raise ValueError('levels must be strings or ints')
             levelsarr = levelsarr.astype(np.int)
-
-        Formula.__init__(self, [FactorTerm(name, l) for l in levelsarr], 
-                        char=char)
+        elif levelsarr.dtype.kind == 'S': # Byte strings, convert
+            levelsarr = levelsarr.astype('U')
+        Formula.__init__(self, [FactorTerm(name, l) for l in levelsarr],
+                         char=char)
         self.levels = list(levelsarr)
         self.name = name
 

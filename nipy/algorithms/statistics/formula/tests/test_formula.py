@@ -12,6 +12,8 @@ from nipy.fixes.sympy.utilities.lambdify import implemented_function
 from .. import formulae as F
 from ..formulae import terms, Term
 
+from nibabel.py3k import asbytes
+
 from nose.tools import (assert_true, assert_equal, assert_false,
                         assert_raises)
 
@@ -238,7 +240,7 @@ def test_design():
 
 
 def test_design_inputs():
-    # Check we can send in fields of type 'S', 'U', 'O' for factors
+    # Check we can send in fields of type 'S', 'U', 'O' for design
     regf = F.Formula(F.terms('x, y'))
     f = F.Factor('f', ['a', 'b'])
     ff = regf + f
@@ -253,6 +255,19 @@ def test_design_inputs():
                            [[2, 3, 1, 0],
                             [4, 5, 0, 1],
                             [5, 6, 1, 0]])
+
+
+def test_formula_inputs():
+    # Check we can send in fields of type 'S', 'U', 'O' for factor levels
+    level_names = ['red', 'green', 'blue']
+    for field_type in ('S', 'U', 'O'):
+        levels = np.array(level_names, dtype=field_type)
+        f = F.Factor('myname', levels)
+        assert_equal(f.levels, level_names)
+    # Sending in byte objects
+    levels = [asbytes(L) for L in level_names]
+    f = F.Factor('myname', levels)
+    assert_equal(f.levels, level_names)
 
 
 def test_alias():
