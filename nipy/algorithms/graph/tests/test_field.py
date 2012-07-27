@@ -237,11 +237,11 @@ class test_Field(TestCase):
         # Test the geodisc k-means algorithm
         xyz, x = np.zeros((30, 3)), np.arange(30)
         xyz[:, 0] = x
-        y = np.array((x / 10), np.float)
+        y = np.array((x // 10), np.float)
         F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 6),  y)
         seeds = np.array([1, 18, 25])
         label = F.constrained_voronoi(seeds)
-        assert_true((label == (x / 10)).all())
+        assert_array_equal(label, x // 10)
 
     def test_subfield(self):
         import numpy.random as nr
