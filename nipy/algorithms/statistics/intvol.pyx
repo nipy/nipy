@@ -701,9 +701,9 @@ def _convert_stride3(v, stride1, stride2):
     Take a voxel, expressed as in index in stride1 and
     re-express it as an index in stride2
     """
-    v0 = v / stride1[0]
+    v0 = v // stride1[0]
     v -= v0 * stride1[0]
-    v1 = v / stride1[1]
+    v1 = v // stride1[1]
     v2 = v - v1 * stride1[1]
     return v0*stride2[0] + v1*stride2[1] + v2*stride2[2]
 
@@ -713,7 +713,7 @@ def _convert_stride2(v, stride1, stride2):
     Take a voxel, expressed as in index in stride1 and
     re-express it as an index in stride2
     """
-    v0 = v / stride1[0]
+    v0 = v // stride1[0]
     v1 = v - v0 * stride1[0]
     return v0*stride2[0] + v1*stride2[1]
 
@@ -723,7 +723,7 @@ def _convert_stride1(v, stride1, stride2):
     Take a voxel, expressed as in index in stride1 and
     re-express it as an index in stride2
     """
-    v0 = v / stride1[0]
+    v0 = v // stride1[0]
     return v0 * stride2[0]
 
 
