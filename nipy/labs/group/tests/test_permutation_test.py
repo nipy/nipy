@@ -22,7 +22,7 @@ def make_data(n=10,mask_shape=(10,10,10),axis=0):
     return data, vardata, XYZ
 
 class test_permutation_test(unittest.TestCase):
-    
+
     def test_onesample(self):
         data, vardata, XYZ = make_data()
         # rfx calibration
@@ -37,7 +37,7 @@ class test_permutation_test(unittest.TestCase):
             data, XYZ, vardata=vardata, stat_id="student_mfx", ndraws=ndraws)
         p_values, cluster_results, region_results = P.calibrate(
             nperms=nperms, clusters=c, regions=[r])
-        
+
     def test_onesample_graph(self):
         data, vardata, XYZ = make_data()
         G = wgraph_from_3d_grid(XYZ.T)
@@ -52,7 +52,7 @@ class test_permutation_test(unittest.TestCase):
             data, G, vardata=vardata, stat_id="student_mfx", ndraws=ndraws)
         p_values, cluster_results, region_results = P.calibrate(
             nperms=nperms, clusters=c, regions=[r])
-        
+
     def test_twosample(self):
         data, vardata, XYZ = make_data(n=20)
         data1, vardata1, data2, vardata2 = (
@@ -61,11 +61,13 @@ class test_permutation_test(unittest.TestCase):
         P = pt.permutation_test_twosample(data1, data2, XYZ, ndraws=ndraws)
         c = [(P.random_Tvalues[P.ndraws*(0.95)],None),(P.random_Tvalues[P.ndraws*(0.5)],10)]
         r = [np.zeros(data.shape[1])]
-        r[data.shape[1]/2:] *= 10
+        # Assuming our data.shape[1] is divisible by 2
+        r[data.shape[1]//2:] *= 10
         #p_values, cluster_results, region_results=P.calibrate(nperms=100, clusters=c, regions=r)
         # mfx calibration
         P = pt.permutation_test_twosample(data1, data2, XYZ, vardata1=vardata1, vardata2=vardata2, stat_id="student_mfx", ndraws=ndraws)
         p_values, cluster_results, region_results = P.calibrate(nperms=nperms, clusters=c, regions=r)
+
 
 if __name__ == "__main__":
     unittest.main()
