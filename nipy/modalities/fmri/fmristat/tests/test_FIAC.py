@@ -17,6 +17,8 @@ from .. import hrf as delay
 from nipy.algorithms.statistics.models.regression import OLSModel
 from nipy.algorithms.statistics.formula import formulae
 
+from nipy.utils.compat3 import to_str
+
 # testing imports
 from nipy.testing import (dec, assert_true, assert_almost_equal)
 
@@ -74,16 +76,16 @@ def protocol(recarr, design_type, *hrfs):
     times = recarr['time'][keep]
     events = recarr['event'][keep]
 
-    # Now, specify the experimental conditions
-    # This creates expressions
-    # named SSt_SSp0, SSt_SSp1, etc.
-    # with one expression for each (eventtype, hrf) pair
+    # Now, specify the experimental conditions.  This creates expressions named
+    # SSt_SSp0, SSt_SSp1, etc.  with one expression for each (eventtype, hrf)
+    # pair
     for v in event_types:
+        k = np.array([events[i] == v for i in range(times.shape[0])])
         for l, h in enumerate(hrfs):
-            k = np.array([events[i] == v for i in 
-                          range(times.shape[0])])
-            termdict['%s%d' % (v,l)] = utils.define("%s%d" % (v, l), 
-                                                      utils.events(times[k], f=h))
+            # Make sure event type is a string (not byte string)
+            term_name = '%s%d' % (to_str(v), l)
+            termdict[term_name] = utils.define(term_name,
+                                               utils.events(times[k], f=h))
     f = formulae.Formula(termdict.values())
     Tcontrasts = {}
     Tcontrasts['average'] = (termdict['SSt_SSp0'] + termdict['SSt_DSp0'] +
