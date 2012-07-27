@@ -262,7 +262,7 @@ class DesignMatrix():
         The frametimes are not written
         """
         import csv
-        fid = open(path, "wb")
+        fid = open(path, "wt")
         writer = csv.writer(fid)
         writer.writerow(self.names)
         writer.writerows(self.matrix)
@@ -401,7 +401,7 @@ def dmtx_from_csv(path, frametimes=None):
     csvfile = open(path)
     dialect = csv.Sniffer().sniff(csvfile.read())
     csvfile.seek(0)
-    reader = csv.reader(open(path, "rb"), dialect)
+    reader = csv.reader(open(path, "rt"), dialect)
     boolfirst = True
     design = []
     for row in reader:
