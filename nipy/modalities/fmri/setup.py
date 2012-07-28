@@ -5,10 +5,9 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('fmri', parent_package, top_path)
 
     config.add_subpackage('tests')
-
+    config.add_data_files('tests/*.npz')
     config.add_subpackage('fmristat')
     config.add_subpackage('spm')
-
 
     return config
 

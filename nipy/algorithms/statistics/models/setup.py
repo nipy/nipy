@@ -6,6 +6,7 @@ def configuration(parent_package='', top_path=None):
 
     config.add_subpackage('family')
     config.add_subpackage('tests')
+    config.add_data_files('tests/*.bin')
 
 #     config.add_extension('_hbspline',
 #                          sources=['src/bspline_ext.c',

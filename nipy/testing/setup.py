@@ -6,6 +6,7 @@ def configuration(parent_package='',top_path=None):
     config = Configuration('testing', parent_package, top_path)
 
     config.add_subpackage('tests')
+    config.add_data_files('*.nii.gz')
 
     return config
 
