@@ -7,11 +7,15 @@ Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
 
+from __future__ import with_statement
+
 import numpy as np
 from os.path import join, dirname
 from ..experimental_paradigm import (EventRelatedParadigm, BlockParadigm)
 from ..design_matrix import (dmtx_light, _convolve_regressors, dmtx_from_csv,
                              make_dmtx)
+
+from nibabel.tmpdirs import InTemporaryDirectory
 
 from nose.tools import assert_true, assert_equal
 from numpy.testing import assert_almost_equal, dec
@@ -22,6 +26,10 @@ except ImportError:
     have_mpl = False
 else:
     have_mpl = True
+
+
+DMTX = np.load(join(dirname(__file__), 'spm_dmtx.npz'))
+
 
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
@@ -380,6 +388,7 @@ def test_dmtx20():
     # check that the drifts are not constant
     assert_true(np.all(np.diff(X[:, -2]) != 0))
 
+
 def test_fir_block():
     # tets FIR models on block designs
     bp = block_paradigm()
@@ -394,19 +403,20 @@ def test_fir_block():
     assert_true((X[idx + 2, 6] == 1).all())
     assert_true((X[idx + 3, 7] == 1).all())
 
+
 def test_csv_io():
     # test the csv io on design matrices
-    from tempfile import mkdtemp
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = modulated_event_paradigm()
-    DM = make_dmtx(frametimes, paradigm, hrf_model='Canonical', 
-              drift_model='polynomial', drift_order=3)
-    path = join(mkdtemp(), 'dmtx.csv')
-    DM.write_csv(path)
-    DM2 = dmtx_from_csv( path)
-    assert_almost_equal (DM.matrix, DM2.matrix)
-    assert_true (DM.names == DM2.names)
+    DM = make_dmtx(frametimes, paradigm, hrf_model='Canonical',
+                   drift_model='polynomial', drift_order=3)
+    path = 'dmtx.csv'
+    with InTemporaryDirectory():
+        DM.write_csv(path)
+        DM2 = dmtx_from_csv(path)
+    assert_almost_equal(DM.matrix, DM2.matrix)
+    assert_equal(DM.names, DM2.names)
 
 
 def test_spm_1():
@@ -419,14 +429,13 @@ def test_spm_1():
     hrf_model = 'Canonical'
     paradigm =  EventRelatedParadigm(conditions, onsets)
     X1 = make_dmtx(frametimes, paradigm, drift_model='blank')
-    spm_dmtx = np.load(join(dirname(__file__),'spm_dmtx.npz'))['arr_0']
+    spm_dmtx = DMTX['arr_0']
     assert ((spm_dmtx - X1.matrix) ** 2).sum() / (spm_dmtx ** 2).sum() < .1
 
 
 def test_spm_2():
     # Check that the nipy design matrix is close enough to the SPM one
     # (it cannot be identical, because the hrf shape is different)
-    import os
     tr = 1.0
     frametimes = np.linspace(0, 99, 100)
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
@@ -435,9 +444,9 @@ def test_spm_2():
     hrf_model = 'Canonical'
     paradigm =  BlockParadigm(conditions, onsets, duration)
     X1 = make_dmtx(frametimes, paradigm, drift_model='blank')
-    spm_dmtx = np.load(join(dirname(__file__),'spm_dmtx.npz'))['arr_1']
+    spm_dmtx = DMTX['arr_1']
     assert ((spm_dmtx - X1.matrix) ** 2).sum() / (spm_dmtx ** 2).sum() < .1
-    
+
 
 if __name__ == "__main__":
     import nose
