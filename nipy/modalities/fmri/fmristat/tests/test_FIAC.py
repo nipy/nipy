@@ -24,6 +24,9 @@ from nipy.testing import (dec, assert_true, assert_almost_equal)
 from .FIACdesigns import (descriptions, fmristat, altdescr,
                           N_ROWS, time_vector)
 
+t = formulae.make_recarray(time_vector, 't')
+
+
 def protocol(recarr, design_type, *hrfs):
     """ Create an object that can evaluate the FIAC
 
@@ -193,20 +196,21 @@ def altprotocol(d, design_type, *hrfs):
     return f, Tcontrasts, Fcontrasts
 
 
-# block and event protocols
-block, bTcons, bFcons = protocol(descriptions['block'], 'block', *delay.spectral)
-event, eTcons, eFcons = protocol(descriptions['event'], 'event', *delay.spectral)
+def create_protocols():
+    # block and event protocols
+    block, bTcons, bFcons = protocol(descriptions['block'], 'block', *delay.spectral)
+    event, eTcons, eFcons = protocol(descriptions['event'], 'event', *delay.spectral)
 
-# Now create the design matrices and contrasts
-# The 0 indicates that it will be these columns
-# convolved with the first HRF
-t = formulae.make_recarray(time_vector, 't')
-X = {}
-c = {}
-D = {}
-for f, cons, design_type in [(block, bTcons, 'block'), (event, eTcons, 'event')]:
-    X[design_type], c[design_type] = f.design(t, contrasts=cons)
-    D[design_type] = f.design(t, return_float=False)
+    # Now create the design matrices and contrasts
+    # The 0 indicates that it will be these columns
+    # convolved with the first HRF
+    X = {}
+    c = {}
+    D = {}
+    for f, cons, design_type in [(block, bTcons, 'block'), (event, eTcons, 'event')]:
+        X[design_type], c[design_type] = f.design(t, contrasts=cons)
+        D[design_type] = f.design(t, return_float=False)
+    return X, c, D
 
 
 def test_altprotocol():
@@ -267,6 +271,7 @@ def matchcol(col, X):
 
 def test_agreement():
     # The test: does Protocol manage to recreate the design of fMRIstat?
+    X, c, D = create_protocols()
     for design_type in ['event', 'block']:
         dd = D[design_type]
         for i in range(X[design_type].shape[1]):
