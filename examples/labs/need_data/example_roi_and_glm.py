@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
@@ -8,7 +9,7 @@ This is an example where:
 3. A design matrix describing all the effects related to the data is computed
 4. A GLM is applied to all voxels in the ROI
 5. A summary of the results is provided for certain contrasts
-6. A plot of the hrf is provided for the mean reponse in the hrf
+6. A plot of the HRF is provided for the mean response in the HRF
 7. Fitted/adjusted response plots are provided
 
 Needs matplotlib
@@ -195,10 +196,10 @@ for k in range(my_roi.k):
     res = glm_fir.results_.values()[k]
     plt.subplot(my_roi.k, 1, k + 1)
     conf_int = res.conf_int(cols=range(fir_order)).squeeze()
-    yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2 
+    yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2
     plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
     conf_int = res.conf_int(cols=range(fir_order, 2 * fir_order)).squeeze()
-    yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2     
+    yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2
     plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
     plt.legend(('condition c0', 'condition c1'))
     plt.title('estimated hrf shape')

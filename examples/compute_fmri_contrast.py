@@ -47,7 +47,7 @@ if nargs == 1: # default no-argument case
 else:
     if nargs == 2: # contrast as one string
         args = sys.argv[1].split(',')
-    elif nargs == 5: # contrast as seqence of strings
+    elif nargs == 5: # contrast as sequence of strings
         args = [arg.replace(',', '') for arg in sys.argv[1:]]
     if len(args) != 4:
         print USAGE

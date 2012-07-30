@@ -1,12 +1,13 @@
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This scipt generates a noisy activation image image
-and extracts the blob from it.
+This script generates a noisy activation image and extracts the blob
+from it.
 
-This creaste as output
+This creates as output
 - a label image representing the nested blobs,
-- an image of the averge signal per blob and
+- an image of the average signal per blob and
 - an image with the terminal blob only
 
 Author : Bertrand Thirion, 2009
@@ -33,7 +34,7 @@ swd = os.getcwd()
 
 # parameters
 threshold = 3.0 # blob-forming threshold
-smin = 5 # size threshold on bblobs
+smin = 5 # size threshold on blobs
 
 # prepare the data
 nim = load(input_image)

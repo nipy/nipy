@@ -174,7 +174,7 @@ def get_3d_peaks(image, mask=None, threshold=0., nn=18, order_th=0):
 
     Returns
     -------
-    peaks, a list of dictionray, where each dic has the fields:
+    peaks, a list of dictionaries, where each dict has the fields:
     vals, map value at the peak
     order, topological order of the peak
     ijk, array of shape (1,3) grid coordinate of the peak
