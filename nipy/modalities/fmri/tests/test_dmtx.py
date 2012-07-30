@@ -369,6 +369,17 @@ def test_dmtx19():
     idx = paradigm.onset[paradigm.con_id == 0].astype(np.int)
     assert_true((X[idx + 1, 0] == X[idx + 2, 1]).all())
 
+
+def test_dmtx20():
+    # Test for commit 10662f7
+    frametimes = np.arange(0, 127) # integers
+    paradigm = modulated_event_paradigm()
+    X, names = dmtx_light(frametimes, paradigm, hrf_model='canonical',
+        drift_model='cosine')
+
+    # check that the drifts are not constant
+    assert_true(np.all(np.diff(X[:, -2]) != 0))
+
 def test_fir_block():
     # tets FIR models on block designs
     bp = block_paradigm()
