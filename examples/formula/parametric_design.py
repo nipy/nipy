@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
@@ -12,7 +13,7 @@ import sympy
 from nipy.algorithms.statistics.api import Formula, make_recarray
 from nipy.modalities.fmri import utils, hrf
 
-# Interstimulus intervals (time between events)
+# Inter-stimulus intervals (time between events)
 dt = np.random.uniform(low=0, high=2.5, size=(50,))
 # Onset times from the ISIs
 t = np.cumsum(dt)

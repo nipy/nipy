@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Example of FIR model using formula framework
@@ -44,7 +45,7 @@ bsp_fns = linBspline(np.arange(0,10,2))
 tt = np.linspace(0,50,101)
 tvals= tt.view(np.dtype([('t', np.float)]))
 
-# Some interstimulus intervals
+# Some inter-stimulus intervals
 isis = np.random.uniform(low=0, high=3, size=(4,)) + 10.
 
 # Made into event onset times

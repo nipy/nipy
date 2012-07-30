@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
@@ -38,7 +39,7 @@ if (not os.path.exists(input_image)) or (not os.path.exists(mask_image)):
 swd = os.getcwd()
 
 # -----------------------------------------------------
-# example 1: create the ROI froma a given position
+# example 1: create the ROI from a given position
 # -----------------------------------------------------
 
 position = np.array([[0, 0, 0]])
@@ -58,7 +59,7 @@ print 'Wrote an ROI mask image in %s' % os.path.join(swd, "myroi.nii")
 # --- 2.a create the  blob image
 # parameters
 threshold = 3.0  # blob-forming threshold
-smin = 5  # size threshold on bblobs
+smin = 5  # size threshold on blobs
 
 # prepare the data
 nim = load(input_image)
