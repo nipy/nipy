@@ -145,6 +145,7 @@ def test_vbgmm():
 def test_vbgmm_select(kmax=6):
     """ perform the estimation of a variational gmm + model selection
     """
+    nr.seed([0])
     n_samples, dim, offset=100, 3, 2
     x = nr.randn(n_samples, dim)
     x[:30] += offset
