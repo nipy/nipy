@@ -58,9 +58,6 @@ tr = 2.4
 
 # paradigm
 frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
-conditions = ['damier_H', 'damier_V', 'clicDaudio', 'clicGaudio', 'clicDvideo',
-              'clicGvideo', 'calculaudio', 'calculvideo', 'phrasevideo',
-              'phraseaudio']
 
 # confounds
 hrf_model = 'canonical with derivative'
@@ -103,9 +100,9 @@ mask_array = compute_mask_files(data_path, mask_path, False, 0.4, 0.9)
 
 # simplest ones
 contrasts = {}
-contrast_id = conditions
-for i in range(len(conditions)):
-    contrasts['%s' % conditions[i]] = np.eye(len(design_matrix.names))[2 * i]
+n_columns = len(design_matrix.names)
+for i in range(paradigm.n_conditions):
+    contrasts['%s' % design_matrix.names[2 * i]] = np.eye(n_columns)[2 * i]
 
 # and more complex/ interesting ones
 contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\
