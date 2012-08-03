@@ -125,7 +125,7 @@ contrasts["computation-sentences"] = contrasts["computation"] -  \
                                      contrasts["sentences"]
 contrasts["reading-visual"] = contrasts["sentences"] * 2 - \
                               contrasts["damier_H"] - contrasts["damier_V"]
-contrasts['effects_of_interest'] = np.eye(25)[::2]
+contrasts['effects_of_interest'] = np.eye(25)[:20:2]
 
 ########################################
 # Perform a GLM analysis
@@ -181,7 +181,7 @@ plot_map(write_array, affine,
          threshold=3)
 
 # More plots using 3D
-if True: # replace with False to skip this
+if True:  # replace with False to skip this
     plot_map(write_array, affine,
              cmap=cm.cold_hot,
              vmin=-vmax,
