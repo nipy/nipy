@@ -20,8 +20,7 @@ Author : Bertrand Thirion, 2010
 """
 print __doc__
 
-import os
-import os.path as op
+from os import mkdir, getcwd, path as op
 
 import numpy as np
 
@@ -65,7 +64,10 @@ drift_model = "cosine"
 hfcut = 128
 
 # write directory
-write_dir = os.getcwd()
+write_dir = op.join(getcwd(), 'results')
+if not op.exists(write_dir):
+    mkdir(write_dir)
+
 print 'Computation will be performed in directory: %s' % write_dir
 
 ########################################
