@@ -14,8 +14,7 @@ Needs matplotlib
 Author: Bertrand Thirion, 2005-2009
 """
 
-import os
-import os.path as op
+from os import getcwd, mkdir, path as op
 
 from numpy import array
 
@@ -25,7 +24,7 @@ except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
 from nipy.labs.utils.reproducibility_measures import \
-     group_reproducibility_metrics
+     group_reproducibility_metrics, map_reproducibility
 
 # Local import
 from get_data_light import DATA_DIR, get_second_level_dataset
@@ -54,7 +53,10 @@ missing_file = array([not op.exists(m) for m in all_images]).any()
 if missing_file:
     get_second_level_dataset()
 
-swd = os.getcwd()
+# write directory
+write_dir = op.join(getcwd(), 'results')
+if not op.exists(write_dir):
+    mkdir(write_dir)
 
 ##############################################################################
 # main script
@@ -103,6 +105,7 @@ plt.xlabel('threshold')
 ##############################################################################
 # create an image
 ##############################################################################
+
 """
 # this is commented until a new version of the code allows it
 # with the adequate level of abstraction
@@ -116,9 +119,8 @@ wmap[mask] = rmap
 wim = Nifti1Image(wmap, affine)
 wim.get_header()['descrip']= 'reproducibility map at threshold %f, \
                              cluster size %d'%(th,csize)
-wname = op.join(swd,'repro.nii')
+wname = op.join(write_dir,'repro.nii')
 save(wim, wname)
 
 print('Wrote a reproducibility image in %s'%wname)
-
 """

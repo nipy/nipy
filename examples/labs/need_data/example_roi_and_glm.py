@@ -17,8 +17,7 @@ Author : Bertrand Thirion, 2010
 """
 print __doc__
 
-import os
-import os.path as op
+from os import mkdir, getcwd, path as op
 
 import numpy as np
 
@@ -65,7 +64,9 @@ motion = np.cumsum(np.random.randn(n_scans, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
 # write directory
-write_dir = os.getcwd()
+write_dir = op.join(getcwd(), 'results')
+if not op.exists(write_dir):
+    mkdir(write_dir)
 
 ########################################
 # Design matrix
@@ -83,10 +84,6 @@ X, names = dmtx_light(frametimes, paradigm, drift_model='cosine', hfcut=128,
 #######################################
 
 fmri_data = surrogate_4d_dataset(mask=mask, dmtx=X, seed=1)[0]
-
-# if you want to save it as an image
-# data_file = op.join(write_dir,'fmri_data.nii')
-# save(fmri_data, data_file)
 
 ########################################
 # Perform a GLM analysis

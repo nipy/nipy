@@ -9,8 +9,7 @@ Author : Bertrand Thirion, 2008-2010
 print __doc__
 
 #autoindent
-import os
-import os.path as op
+from os import mkdir, getcwd, path as op
 import pickle
 
 from numpy import array
@@ -44,18 +43,21 @@ ths = 0
 thq = 0.95
 verbose = 1
 smin = 5
-swd = os.getcwd()
+write_dir = op.join(getcwd(), 'results')
+if not op.exists(write_dir):
+    mkdir(write_dir)
 method = 'quick'
 print 'method used:', method
 
 # call the function
-AF, BF = make_bsa_image(mask_images, betas, theta, dmax, ths, thq, smin, swd,
-                        method, subj_id, '%04d' % nbeta, reshuffle=False)
+AF, BF = make_bsa_image(mask_images, betas, theta, dmax, ths, thq, smin, 
+                        write_dir, method, subj_id, '%04d' % nbeta, 
+                        reshuffle=False)
 
 # Write the result. OK, this is only a temporary solution
-picname = op.join(swd, "AF_%04d.pic" % nbeta)
+picname = op.join(write_dir, "AF_%04d.pic" % nbeta)
 pickle.dump(AF, open(picname, 'w'), 2)
-picname = op.join(swd, "BF_%04d.pic" % nbeta)
+picname = op.join(write_dir, "BF_%04d.pic" % nbeta)
 pickle.dump(BF, open(picname, 'w'), 2)
 
-print "Wrote all the results in directory %s" % swd
+print "Wrote all the results in directory %s" % write_dir

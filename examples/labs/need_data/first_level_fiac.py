@@ -12,8 +12,7 @@ Also needs matplotlib
 Author: Alexis Roche, Bertrand Thirion, 2009--2012
 """
 
-import os
-import os.path as op
+from os import mkdir, getcwd, path as op
 
 import numpy as np
 
@@ -93,7 +92,12 @@ def make_fiac_contrasts():
 
 # compute fixed effects of the two runs and compute related images
 contrasts = make_fiac_contrasts()
-write_dir = os.getcwd()
+# write directory
+write_dir = op.join(getcwd(), 'results')
+if not op.exists(write_dir):
+    mkdir(write_dir)
+
+
 print 'Computing contrasts...'
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print '  Contrast % 2i out of %i: %s' % (
@@ -117,6 +121,6 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
              threshold=2.5,
              black_bg=True)
     plt.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
-    plt.clf()
 
 print "All the  results were witten in %s" % write_dir
+plt.show()
