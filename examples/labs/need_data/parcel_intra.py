@@ -10,8 +10,7 @@ author: Bertrand Thirion, 2005-2009
 """
 print __doc__
 
-import os
-import os.path as op
+from os import mkdir, getcwd, path as op
 
 from numpy import array
 
@@ -36,8 +35,12 @@ if missing_file:
 n_parcels = 500
 mu = 10
 nn = 6
-write_dir = os.getcwd()
 verbose = 1
+# write directory
+write_dir = op.join(getcwd(), 'results')
+if not op.exists(write_dir):
+    mkdir(write_dir)
+
 
 lpa = fixed_parcellation(mask_image, betas, n_parcels, nn, 'gkm',
                          write_dir, mu, verbose)
