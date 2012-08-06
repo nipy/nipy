@@ -33,8 +33,8 @@ if not op.exists(write_dir):
     mkdir(write_dir)
 
 # parameters
-threshold = 3.0 # blob-forming threshold
-smin = 5 # size threshold on bblobs
+threshold = 3.0  # blob-forming threshold
+smin = 5  # size threshold on blobs
 
 # prepare the data
 nim = load(input_image)
@@ -72,6 +72,6 @@ wim = lroi.to_image('id', roi=True, descrip=descrip)
 save(wim, op.join(write_dir, "leaves.nii"))
 
 print "Wrote the blob image in %s" % op.join(write_dir, "blob.nii")
-print "Wrote the blob-average signal image in %s" % op.join(write_dir, 
+print "Wrote the blob-average signal image in %s" % op.join(write_dir,
                                                             "bmap.nii")
 print "Wrote the end-blob image in %s" % op.join(write_dir, "leaves.nii")

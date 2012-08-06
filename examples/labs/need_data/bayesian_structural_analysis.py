@@ -50,8 +50,8 @@ method = 'quick'
 print 'method used:', method
 
 # call the function
-AF, BF = make_bsa_image(mask_images, betas, theta, dmax, ths, thq, smin, 
-                        write_dir, method, subj_id, '%04d' % nbeta, 
+AF, BF = make_bsa_image(mask_images, betas, theta, dmax, ths, thq, smin,
+                        write_dir, method, subj_id, '%04d' % nbeta,
                         reshuffle=False)
 
 # Write the result. OK, this is only a temporary solution

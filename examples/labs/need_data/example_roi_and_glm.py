@@ -58,7 +58,7 @@ tr = 2.4
 # paradigm
 frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
 conditions = np.arange(20) % 2
-onsets = np.linspace(5, (n_scans - 1) * tr - 10, 20) # in seconds
+onsets = np.linspace(5, (n_scans - 1) * tr - 10, 20)  # in seconds
 hrf_model = 'canonical'
 motion = np.cumsum(np.random.randn(n_scans, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
@@ -160,7 +160,7 @@ my_roi.plot_feature('contrast', bx)
 # fitted and adjusted response
 ########################################
 
-res =  np.hstack([x.resid for x in glm.results_.values()]).T
+res = np.hstack([x.resid for x in glm.results_.values()]).T
 betas = np.hstack([x.theta for x in glm.results_.values()])
 proj = np.eye(nreg)
 proj[2:] = 0
@@ -192,10 +192,10 @@ for k in range(my_roi.k):
     res = glm_fir.results_.values()[k]
     plt.subplot(my_roi.k, 1, k + 1)
     conf_int = res.conf_int(cols=range(fir_order)).squeeze()
-    yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2 
+    yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2
     plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
     conf_int = res.conf_int(cols=range(fir_order, 2 * fir_order)).squeeze()
-    yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2     
+    yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2
     plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
     plt.legend(('condition c0', 'condition c1'))
     plt.title('estimated hrf shape')

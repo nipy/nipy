@@ -58,7 +58,7 @@ for x, y in zip(X, Y):
     # normalize the data to report effects in percent of the baseline
     data = y.get_data()[mask_array].T
     data, mean = data_scaling(data)
-    # fit the glm 
+    # fit the glm
     model = GeneralLinearModel(x)
     model.fit(data, 'ar1')
     results.append(model)
