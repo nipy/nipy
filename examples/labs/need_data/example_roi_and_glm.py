@@ -17,8 +17,7 @@ Author : Bertrand Thirion, 2010
 """
 print __doc__
 
-import os
-import os.path as op
+from os import mkdir, getcwd, path
 
 import numpy as np
 
@@ -45,8 +44,8 @@ from get_data_light import DATA_DIR, get_second_level_dataset
 #######################################
 
 # volume mask
-mask_path = op.join(DATA_DIR, 'mask.nii.gz')
-if not op.exists(mask_path):
+mask_path = path.join(DATA_DIR, 'mask.nii.gz')
+if not path.exists(mask_path):
     get_second_level_dataset()
 
 mask = load(mask_path)
@@ -59,13 +58,15 @@ tr = 2.4
 # paradigm
 frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
 conditions = np.arange(20) % 2
-onsets = np.linspace(5, (n_scans - 1) * tr - 10, 20) # in seconds
+onsets = np.linspace(5, (n_scans - 1) * tr - 10, 20)  # in seconds
 hrf_model = 'canonical'
 motion = np.cumsum(np.random.randn(n_scans, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
 # write directory
-write_dir = os.getcwd()
+write_dir = path.join(getcwd(), 'results')
+if not path.exists(write_dir):
+    mkdir(write_dir)
 
 ########################################
 # Design matrix
@@ -83,10 +84,6 @@ X, names = dmtx_light(frametimes, paradigm, drift_model='cosine', hfcut=128,
 #######################################
 
 fmri_data = surrogate_4d_dataset(mask=mask, dmtx=X, seed=1)[0]
-
-# if you want to save it as an image
-# data_file = op.join(write_dir,'fmri_data.nii')
-# save(fmri_data, data_file)
 
 ########################################
 # Perform a GLM analysis
@@ -118,7 +115,7 @@ domain = grid_domain_from_image(mask)
 my_roi = mroi.subdomain_from_balls(domain, positions, radii)
 
 # to save an image of the ROIs
-save(my_roi.to_image(), op.join(write_dir, "roi.nii"))
+save(my_roi.to_image(), path.join(write_dir, "roi.nii"))
 
 # exact the time courses with ROIs
 thresholded_fmri = fmri_data.get_data()[mask_array]
@@ -163,7 +160,7 @@ my_roi.plot_feature('contrast', bx)
 # fitted and adjusted response
 ########################################
 
-res =  np.hstack([x.resid for x in glm.results_.values()]).T
+res = np.hstack([x.resid for x in glm.results_.values()]).T
 betas = np.hstack([x.theta for x in glm.results_.values()])
 proj = np.eye(nreg)
 proj[2:] = 0
@@ -195,10 +192,10 @@ for k in range(my_roi.k):
     res = glm_fir.results_.values()[k]
     plt.subplot(my_roi.k, 1, k + 1)
     conf_int = res.conf_int(cols=range(fir_order)).squeeze()
-    yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2 
+    yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2
     plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
     conf_int = res.conf_int(cols=range(fir_order, 2 * fir_order)).squeeze()
-    yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2     
+    yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2
     plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
     plt.legend(('condition c0', 'condition c1'))
     plt.title('estimated hrf shape')

@@ -20,8 +20,7 @@ Author : Bertrand Thirion, 2010
 """
 print __doc__
 
-import os
-import os.path as op
+from os import mkdir, getcwd, path
 
 import numpy as np
 
@@ -49,8 +48,8 @@ from get_data_light import DATA_DIR, get_first_level_dataset
 # volume mask
 # This dataset is large
 get_first_level_dataset()
-data_path = op.join(DATA_DIR, 's12069_swaloc1_corr.nii.gz')
-paradigm_file = op.join(DATA_DIR, 'localizer_paradigm.csv')
+data_path = path.join(DATA_DIR, 's12069_swaloc1_corr.nii.gz')
+paradigm_file = path.join(DATA_DIR, 'localizer_paradigm.csv')
 
 # timing
 n_scans = 128
@@ -58,9 +57,6 @@ tr = 2.4
 
 # paradigm
 frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
-conditions = ['damier_H', 'damier_V', 'clicDaudio', 'clicGaudio', 'clicDvideo',
-              'clicGvideo', 'calculaudio', 'calculvideo', 'phrasevideo',
-              'phraseaudio']
 
 # confounds
 hrf_model = 'canonical with derivative'
@@ -68,7 +64,10 @@ drift_model = "cosine"
 hfcut = 128
 
 # write directory
-write_dir = os.getcwd()
+write_dir = path.join(getcwd(), 'results')
+if not path.exists(write_dir):
+    mkdir(write_dir)
+
 print 'Computation will be performed in directory: %s' % write_dir
 
 ########################################
@@ -86,7 +85,7 @@ ax = design_matrix.show()
 ax.set_position([.05, .25, .9, .65])
 ax.set_title('Design matrix')
 
-plt.savefig(op.join(write_dir, 'design_matrix.png'))
+plt.savefig(path.join(write_dir, 'design_matrix.png'))
 # design_matrix.write_csv(...)
 
 ########################################
@@ -94,7 +93,7 @@ plt.savefig(op.join(write_dir, 'design_matrix.png'))
 ########################################
 
 print 'Computing a brain mask...'
-mask_path = op.join(write_dir, 'mask.nii')
+mask_path = path.join(write_dir, 'mask.nii')
 mask_array = compute_mask_files(data_path, mask_path, False, 0.4, 0.9)
 
 #########################################
@@ -103,9 +102,9 @@ mask_array = compute_mask_files(data_path, mask_path, False, 0.4, 0.9)
 
 # simplest ones
 contrasts = {}
-contrast_id = conditions
-for i in range(len(conditions)):
-    contrasts['%s' % conditions[i]] = np.eye(len(design_matrix.names))[2 * i]
+n_columns = len(design_matrix.names)
+for i in range(paradigm.n_conditions):
+    contrasts['%s' % design_matrix.names[2 * i]] = np.eye(n_columns)[2 * i]
 
 # and more complex/ interesting ones
 contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\
@@ -126,7 +125,7 @@ contrasts["computation-sentences"] = contrasts["computation"] -  \
                                      contrasts["sentences"]
 contrasts["reading-visual"] = contrasts["sentences"] * 2 - \
                               contrasts["damier_H"] - contrasts["damier_V"]
-contrasts['effects_of_interest'] = np.eye(25)[::2]
+contrasts['effects_of_interest'] = np.eye(25)[:20:2]
 
 ########################################
 # Perform a GLM analysis
@@ -148,7 +147,7 @@ print 'Computing contrasts...'
 for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
     print '  Contrast % 2i out of %i: %s' % (
         index + 1, len(contrasts), contrast_id)
-    contrast_path = op.join(write_dir, '%s_z_map.nii' % contrast_id)
+    contrast_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
     write_array = mask_array.astype(np.float)
     write_array[mask_array] = results.contrast(contrast_val).z_score()
     contrast_image = Nifti1Image(write_array, affine)
@@ -162,7 +161,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
              anat=None,
              figure=10,
              threshold=2.5)
-    plt.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
+    plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
     plt.clf()
 
 
@@ -182,7 +181,7 @@ plot_map(write_array, affine,
          threshold=3)
 
 # More plots using 3D
-if True: # replace with False to skip this
+if True:  # replace with False to skip this
     plot_map(write_array, affine,
              cmap=cm.cold_hot,
              vmin=-vmax,
