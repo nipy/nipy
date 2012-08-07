@@ -10,7 +10,7 @@ author: Bertrand Thirion, 2005-2009
 """
 print __doc__
 
-from os import mkdir, getcwd, path as op
+from os import mkdir, getcwd, path
 
 from numpy import array
 
@@ -25,9 +25,9 @@ from get_data_light import DATA_DIR, get_second_level_dataset
 # time courses could be used instead
 
 n_beta = [29]
-mask_image = op.join(DATA_DIR, 'mask.nii.gz')
-betas = [op.join(DATA_DIR, 'spmT_%04d.nii.gz' % n) for n in n_beta]
-missing_file = array([not op.exists(m) for m in [mask_image] + betas]).any()
+mask_image = path.join(DATA_DIR, 'mask.nii.gz')
+betas = [path.join(DATA_DIR, 'spmT_%04d.nii.gz' % n) for n in n_beta]
+missing_file = array([not path.exists(m) for m in [mask_image] + betas]).any()
 if missing_file:
     get_second_level_dataset()
 
@@ -37,8 +37,8 @@ mu = 10
 nn = 6
 verbose = 1
 # write directory
-write_dir = op.join(getcwd(), 'results')
-if not op.exists(write_dir):
+write_dir = path.join(getcwd(), 'results')
+if not path.exists(write_dir):
     mkdir(write_dir)
 
 

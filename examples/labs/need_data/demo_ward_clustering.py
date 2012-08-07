@@ -7,7 +7,7 @@ Author: Bertrand Thirion, 2010
 """
 print __doc__
 
-from os import mkdir, getcwd, path as op
+from os import mkdir, getcwd, path
 
 import numpy as np
 
@@ -19,14 +19,14 @@ from nipy.algorithms.graph.field import Field
 from get_data_light import DATA_DIR, get_second_level_dataset
 
 # paths
-input_image = op.join(DATA_DIR, 'spmT_0029.nii.gz')
-mask_image = op.join(DATA_DIR, 'mask.nii.gz')
-if (not op.exists(mask_image)) or (not op.exists(input_image)):
+input_image = path.join(DATA_DIR, 'spmT_0029.nii.gz')
+mask_image = path.join(DATA_DIR, 'mask.nii.gz')
+if (not path.exists(mask_image)) or (not path.exists(input_image)):
     get_second_level_dataset()
 
 # write directory
-write_dir = op.join(getcwd(), 'results')
-if not op.exists(write_dir):
+write_dir = path.join(getcwd(), 'results')
+if not path.exists(write_dir):
     mkdir(write_dir)
 
 
@@ -41,7 +41,7 @@ image_field.set_field(data)
 u, _ = image_field.ward(100)
 
 # write the results
-label_image = op.join(write_dir, 'label.nii')
+label_image = path.join(write_dir, 'label.nii')
 wdata = mask - 1
 wdata[mask] = u
 save(Nifti1Image(wdata, load(mask_image).get_affine()), label_image)

@@ -13,7 +13,7 @@ Author : Bertrand Thirion, 2009
 """
 #autoindent
 
-from os import mkdir, getcwd, path as op
+from os import mkdir, getcwd, path
 
 from nibabel import load, save, Nifti1Image
 
@@ -25,11 +25,11 @@ from get_data_light import DATA_DIR, get_second_level_dataset
 
 
 # data paths
-input_image = op.join(DATA_DIR, 'spmT_0029.nii.gz')
-if not op.exists(input_image):
+input_image = path.join(DATA_DIR, 'spmT_0029.nii.gz')
+if not path.exists(input_image):
     get_second_level_dataset()
-write_dir = op.join(getcwd(), 'results')
-if not op.exists(write_dir):
+write_dir = path.join(getcwd(), 'results')
+if not path.exists(write_dir):
     mkdir(write_dir)
 
 # parameters
@@ -56,12 +56,12 @@ average_activation = nroi.representative_feature('activation')
 # saving the blob image,i. e. a label image
 descrip = "blob image extracted from %s" % input_image
 wim = nroi.to_image('id', roi=True, descrip=descrip)
-save(wim, op.join(write_dir, "blob.nii"))
+save(wim, path.join(write_dir, "blob.nii"))
 
 # saving the image of the average-signal-per-blob
 descrip = "blob average signal extracted from %s" % input_image
 wim = nroi.to_image('activation', roi=True, descrip=descrip)
-save(wim, op.join(write_dir, "bmap.nii"))
+save(wim, path.join(write_dir, "bmap.nii"))
 
 # saving the image of the end blobs or leaves
 lroi = nroi.copy()
@@ -69,9 +69,9 @@ lroi.reduce_to_leaves()
 
 descrip = "blob image extracted from %s" % input_image
 wim = lroi.to_image('id', roi=True, descrip=descrip)
-save(wim, op.join(write_dir, "leaves.nii"))
+save(wim, path.join(write_dir, "leaves.nii"))
 
-print "Wrote the blob image in %s" % op.join(write_dir, "blob.nii")
-print "Wrote the blob-average signal image in %s" % op.join(write_dir,
+print "Wrote the blob image in %s" % path.join(write_dir, "blob.nii")
+print "Wrote the blob-average signal image in %s" % path.join(write_dir,
                                                             "bmap.nii")
-print "Wrote the end-blob image in %s" % op.join(write_dir, "leaves.nii")
+print "Wrote the end-blob image in %s" % path.join(write_dir, "leaves.nii")

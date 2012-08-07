@@ -12,7 +12,7 @@ Also needs matplotlib
 Author: Alexis Roche, Bertrand Thirion, 2009--2012
 """
 
-from os import mkdir, getcwd, path as op
+from os import mkdir, getcwd, path
 
 import numpy as np
 
@@ -72,7 +72,7 @@ def make_fiac_contrasts():
     """Specify some constrasts for the FIAC experiment"""
     con = {}
     # the design matrices of both runs comprise 13 columns
-    # the first 5 columns of the design matrices correpond to the following
+    # the first 5 columns of the design matrices correspond to the following
     # conditions: ["SSt-SSp", "SSt-DSp", "DSt-SSp", "DSt-DSp", "FirstSt"]
     p = 13
 
@@ -93,8 +93,8 @@ def make_fiac_contrasts():
 # compute fixed effects of the two runs and compute related images
 contrasts = make_fiac_contrasts()
 # write directory
-write_dir = op.join(getcwd(), 'results')
-if not op.exists(write_dir):
+write_dir = path.join(getcwd(), 'results')
+if not path.exists(write_dir):
     mkdir(write_dir)
 
 
@@ -102,7 +102,7 @@ print 'Computing contrasts...'
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print '  Contrast % 2i out of %i: %s' % (
         index + 1, len(contrasts), contrast_id)
-    contrast_path = op.join(write_dir, '%s_z_map.nii' % contrast_id)
+    contrast_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
     write_array = mask_array.astype(np.float)
     ffx_z_map = (results[0].contrast(contrast_val) +
                  results[1].contrast(contrast_val)).z_score()
@@ -120,7 +120,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
              figure=10,
              threshold=2.5,
              black_bg=True)
-    plt.savefig(op.join(write_dir, '%s_z_map.png' % contrast_id))
+    plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
 print "All the  results were witten in %s" % write_dir
 plt.show()

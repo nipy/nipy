@@ -8,7 +8,7 @@ May take some time to complete.
 Author: Bertrand Thirion, 2005-2009
 """
 
-from os import mkdir, getcwd, path as op
+from os import mkdir, getcwd, path
 
 from numpy import array
 
@@ -23,14 +23,14 @@ from get_data_light import DATA_DIR, get_second_level_dataset
 nb_subj = 12
 subj_id = ['subj_%02d' % s for s in range(nb_subj)]
 nbeta = '0029'
-data_dir = op.join(DATA_DIR, 'group_t_images')
-mask_images = [op.join(data_dir, 'mask_subj%02d.nii' % n)
+data_dir = path.join(DATA_DIR, 'group_t_images')
+mask_images = [path.join(data_dir, 'mask_subj%02d.nii' % n)
                for n in range(nb_subj)]
 
-learn_images = [op.join(data_dir, 'spmT_%s_subj_%02d.nii' % (nbeta, n))
+learn_images = [path.join(data_dir, 'spmT_%s_subj_%02d.nii' % (nbeta, n))
                 for n in range(nb_subj)]
 missing_file = array(
-    [not op.exists(m) for m in mask_images + learn_images]).any()
+    [not path.exists(m) for m in mask_images + learn_images]).any()
 learn_images = [[m] for m in learn_images]
 
 if missing_file:
@@ -43,8 +43,8 @@ ths = .5
 nbparcel = 200
 
 # write directory
-write_dir = op.join(getcwd(), 'results')
-if not op.exists(write_dir):
+write_dir = path.join(getcwd(), 'results')
+if not path.exists(write_dir):
     mkdir(write_dir)
 
 # prepare the parcel structure
@@ -58,10 +58,10 @@ write_parcellation_images(fpa, subject_id=subj_id, swd=write_dir)
 
 # do some parcellation-based analysis:
 # take some test images whose parcel-based signal needs to be assessed
-test_images = [op.join(data_dir, 'spmT_%s_subj_%02d.nii' % (nbeta, n))
+test_images = [path.join(data_dir, 'spmT_%s_subj_%02d.nii' % (nbeta, n))
                for n in range(nb_subj)]
 
 # compute and write the parcel-based statistics
-rfx_path = op.join(write_dir, 'prfx_%s.nii' % nbeta)
+rfx_path = path.join(write_dir, 'prfx_%s.nii' % nbeta)
 parcellation_based_analysis(fpa, test_images, 'one_sample', rfx_path=rfx_path)
 print "Wrote everything in %s" % write_dir

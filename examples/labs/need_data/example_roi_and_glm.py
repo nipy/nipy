@@ -17,7 +17,7 @@ Author : Bertrand Thirion, 2010
 """
 print __doc__
 
-from os import mkdir, getcwd, path as op
+from os import mkdir, getcwd, path
 
 import numpy as np
 
@@ -44,8 +44,8 @@ from get_data_light import DATA_DIR, get_second_level_dataset
 #######################################
 
 # volume mask
-mask_path = op.join(DATA_DIR, 'mask.nii.gz')
-if not op.exists(mask_path):
+mask_path = path.join(DATA_DIR, 'mask.nii.gz')
+if not path.exists(mask_path):
     get_second_level_dataset()
 
 mask = load(mask_path)
@@ -64,8 +64,8 @@ motion = np.cumsum(np.random.randn(n_scans, 6), 0)
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
 # write directory
-write_dir = op.join(getcwd(), 'results')
-if not op.exists(write_dir):
+write_dir = path.join(getcwd(), 'results')
+if not path.exists(write_dir):
     mkdir(write_dir)
 
 ########################################
@@ -115,7 +115,7 @@ domain = grid_domain_from_image(mask)
 my_roi = mroi.subdomain_from_balls(domain, positions, radii)
 
 # to save an image of the ROIs
-save(my_roi.to_image(), op.join(write_dir, "roi.nii"))
+save(my_roi.to_image(), path.join(write_dir, "roi.nii"))
 
 # exact the time courses with ROIs
 thresholded_fmri = fmri_data.get_data()[mask_array]
