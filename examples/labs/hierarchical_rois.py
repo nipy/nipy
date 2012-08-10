@@ -35,7 +35,7 @@ dataset = simul.surrogate_2d_dataset(n_subj=1, shape=shape, pos=pos,
 domain = domain_from_binary_array(dataset ** 2 > 0)
 
 nroi = hroi.HROI_as_discrete_domain_blobs(domain, dataset.ravel(),
-                                          threshold=2.0, smin=3)
+                                          threshold=2.0, smin=5)
 
 n1 = nroi.copy()
 n2 = nroi.reduce_to_leaves()
@@ -51,15 +51,19 @@ activation = [flat_data[nroi.select_id(id, roi=False)]
 nroi.set_feature('activation', activation)
 
 label = np.reshape(n1.feature_to_voxel_map('id', roi=True), shape)
+label_leaves = np.reshape(nroi.feature_to_voxel_map('id', roi=True), shape)
 
 # make a figure
-plt.figure()
-plt.subplot(1, 2, 1)
+plt.figure(figsize=(10, 4))
+plt.subplot(1, 3, 1)
 plt.imshow(np.squeeze(dataset))
 plt.title('Input map')
 plt.axis('off')
-plt.subplot(1, 2, 2)
+plt.subplot(1, 3, 2)
 plt.title('Nested Rois')
 plt.imshow(label, interpolation='Nearest')
 plt.axis('off')
-plt.show()
+plt.subplot(1, 3, 3)
+plt.title('Leave Rois')
+plt.imshow(label_leaves, interpolation='Nearest')
+plt.axis('off')
