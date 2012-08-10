@@ -8,7 +8,7 @@ from ..graph import wgraph_from_3d_grid
 
 def basic_field(nx=10, ny=10, nz=10):
     xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
-    data = np.sum(xyz, 1).astype('d')
+    data = np.sum(xyz, 1).astype(np.float)
     F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
 
@@ -16,7 +16,7 @@ def basic_field(nx=10, ny=10, nz=10):
 def basic_field_random(nx=10, ny=10, nz=1):
     import numpy.random as nr
     xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
-    data = 0.5 * nr.randn(nx * ny * nz, 1) + np.sum(xyz, 1).astype('d')
+    data = 0.5 * nr.randn(nx * ny * nz, 1) + np.sum(xyz, 1).astype(np.float)
     F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
 
@@ -39,6 +39,7 @@ def basic_graph(nx=10, ny=10, nz=10):
     data = np.zeros(xyz.shape[0])
     F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)    
     return F 
+
 
 
 class test_Field(TestCase):
@@ -272,6 +273,17 @@ class test_Field(TestCase):
         fi = field_from_coo_matrix_and_data(sps.coo_matrix(a), a)
         print fi.E , a.sum()
         self.assert_(fi.E==a.sum())
+
+def test_bifurcation_parents():
+    # test that the parents inferred in bifurcation are right
+    from numpy.testing import assert_array_equal
+    shape = (5, 5, 1)
+    xyz = np.reshape(np.indices(shape), (3, np.prod(shape))).T
+    toto = xyz - np.array([2, 2, 0])
+    data = np.abs(np.sum(toto ** 2, 1) - 2 )
+    F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
+    idx, parent, label = F.threshold_bifurcations()
+    assert_array_equal(parent, np.array([4, 5, 4, 5, 6, 6, 8, 8, 8]))
 
 if __name__ == '__main__':
     import nose
