@@ -35,10 +35,10 @@ dataset = simul.surrogate_2d_dataset(n_subj=1, shape=shape, pos=pos,
 domain = domain_from_binary_array(dataset ** 2 > 0)
 
 nroi = hroi.HROI_as_discrete_domain_blobs(domain, dataset.ravel(),
-                                          threshold=2.0, smin=5)
+                                          threshold=2., smin=5)
 
 n1 = nroi.copy()
-n2 = nroi.reduce_to_leaves()
+nroi.reduce_to_leaves()
 
 td = n1.make_forest().depth_from_leaves()
 root = np.argmax(td)
@@ -50,8 +50,8 @@ activation = [flat_data[nroi.select_id(id, roi=False)]
               for id in nroi.get_id()]
 nroi.set_feature('activation', activation)
 
-label = np.reshape(n1.feature_to_voxel_map('id', roi=True), shape)
-label_leaves = np.reshape(nroi.feature_to_voxel_map('id', roi=True), shape)
+label = np.reshape(n1.label, shape)
+label_leaves= np.reshape(nroi.label, shape)
 
 # make a figure
 plt.figure(figsize=(10, 4))
