@@ -6,25 +6,25 @@ Test the Bayesian GMM.
 fixme : some of these tests take too much time at the moment
 to be real unit tests
 
-Author : Bertrand Thirion, 2009 
+Author : Bertrand Thirion, 2009
 """
 
 import numpy as np
 import numpy.random as nr
+
 from ..bgmm import BGMM, VBGMM, dirichlet_eval, multinomial, dkl_gaussian 
 
+from nose.tools import assert_true
 
 def test_dirichlet_eval():
-    """
-    check that the Dirichlet evaluation functiona sums to one
-    on a simple example
-    """
+    # check that the Dirichlet evaluation function sums to one on a simple
+    # example
     alpha = np.array([0.5, 0.5])
     sd = 0
     for i in range(10000):
         e = i * 0.0001 + 0.00005
         sd += dirichlet_eval(np.array([e, 1 - e]), alpha)
-    assert(np.absolute(sd.sum() * 0.0001 - 1) < 0.01)
+    assert_true(np.absolute(sd.sum() * 0.0001 - 1) < 0.01)
 
 
 def test_multinomial():
@@ -40,7 +40,7 @@ def test_multinomial():
     z = multinomial(likelihood)
     res = np.array([np.sum(z == k) for k in range(n_classes)])
     res = res * 1.0 / n_samples
-    assert np.sum((aux-res) ** 2) < 1.e-4
+    assert_true(np.sum((aux-res) ** 2) < 1.e-4)
 
 
 def test_dkln1():
@@ -49,7 +49,7 @@ def test_dkln1():
     P1 = np.eye(dim)
     m2 = m1
     P2 = P1
-    assert dkl_gaussian(m1, P1, m2, P2) == 0
+    assert_true(dkl_gaussian(m1, P1, m2, P2) == 0)
 
 
 def test_dkln2():
@@ -58,7 +58,7 @@ def test_dkln2():
     P1 = np.eye(dim)
     m2 = offset * np.ones(dim)
     P2 = np.eye(dim)
-    assert dkl_gaussian(m1, P1, m2, P2) == .5 * dim * offset ** 2
+    assert_true(dkl_gaussian(m1, P1, m2, P2) == .5 * dim * offset ** 2)
 
 
 def test_dkln3():
@@ -66,17 +66,16 @@ def test_dkln3():
     m1, m2 = np.zeros(dim), np.zeros(dim)
     P1, P2 = np.eye(dim), scale * np.eye(dim)
     test1 = .5 * (dim * np.log(scale) + dim * (1. / scale - 1))
-    test2 = .5 * (-dim * np.log(scale) + dim * (scale - 1)) 
-    assert dkl_gaussian(m1, P1, m2, P2) == test2
-  
+    test2 = .5 * (-dim * np.log(scale) + dim * (scale - 1))
+    assert_true(dkl_gaussian(m1, P1, m2, P2) == test2)
+
 
 def test_bgmm_gibbs():
-    """ Perform the estimation of a gmm using Gibbs sampling
-    """
+    # Perform the estimation of a gmm using Gibbs sampling
     n_samples, k, dim, niter, offset = 100, 2, 2, 1000, 2.
     x = nr.randn(n_samples,dim)
     x[:30] += offset
-    
+
     b = BGMM(k,dim)
     b.guess_priors(x)
     b.initialize(x)
@@ -84,13 +83,13 @@ def test_bgmm_gibbs():
     w, cent, prec, pz = b.sample(x, niter, mem=1)
     b.plugin(cent, prec, w)
     z = pz[:, 0]
-    
+
     # fixme : find a less trivial test
-    assert(z.max() + 1 == b.k)
+    assert_true(z.max() + 1 == b.k)
 
 
 def test_gmm_bf(kmax=4, seed=1):
-    """ Perform a model selection procedure on a  gmm
+    """ Perform a model selection procedure on a gmm
     with Bayes factor estimations
 
     Parameters
@@ -99,7 +98,7 @@ def test_gmm_bf(kmax=4, seed=1):
     seed=False:  int, optionnal
         If seed is not False, the random number generator is initialized
         at a certain value
-        
+
     fixme : this one often fails. I don't really see why
     """
     n_samples, dim, niter = 30, 2, 1000
@@ -124,8 +123,8 @@ def test_gmm_bf(kmax=4, seed=1):
         if bfk > bbf:
             bestk = k
             bbf = bfk
-    assert(bestk < 3)
-    
+    assert_true(bestk < 3)
+
 
 def test_vbgmm():
     """perform the estimation of a variational gmm
@@ -138,14 +137,15 @@ def test_vbgmm():
     b.initialize(x)
     b.estimate(x)
     z = b.map_label(x)
-    
+
     # fixme : find a less trivial test
-    assert(z.max() + 1 == b.k)
+    assert_true(z.max() + 1 == b.k)
 
 
 def test_vbgmm_select(kmax=6):
     """ perform the estimation of a variational gmm + model selection
     """
+    nr.seed([0])
     n_samples, dim, offset=100, 3, 2
     x = nr.randn(n_samples, dim)
     x[:30] += offset
@@ -159,7 +159,8 @@ def test_vbgmm_select(kmax=6):
         if ek > be:
             be = ek
             bestk = k
-    assert(bestk < 3)
+    assert_true(bestk < 3)
+
 
 def test_evidence(k=1):
     """
@@ -171,7 +172,7 @@ def test_evidence(k=1):
     n_samples, dim, offset = 50, 2, 3
     x = nr.randn(n_samples, dim)
     x[:15] += offset
-    
+
     b = VBGMM(k, dim)
     b.guess_priors(x)
     b.initialize(x)
@@ -188,12 +189,9 @@ def test_evidence(k=1):
     bplugin.guess_priors(x)
     bfchib = bplugin.bayes_factor(x, pz.astype(np.int), 1)
 
-    assert(bfchib > vbe)
+    assert_true(bfchib > vbe)
 
 
 if __name__ == '__main__':
     import nose
     nose.run(argv=['', __file__])
-
-
-
