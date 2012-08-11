@@ -28,9 +28,9 @@ from get_data_light import get_second_level_dataset
 data_dir = get_second_level_dataset()
 
 # First example, with a anatomical template
-img     = load(os.path.join(data_dir, 'spmT_0029.nii.gz'))
-data    = img.get_data()
-affine  = img.get_affine()
+img = load(os.path.join(data_dir, 'spmT_0029.nii.gz'))
+data = img.get_data()
+affine = img.get_affine()
 
 viz.plot_map(data, affine, cut_coords=(-52, 10, 22),
                         threshold=2.0, cmap=viz.cm.cold_hot)
