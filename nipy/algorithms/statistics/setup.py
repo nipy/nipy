@@ -9,7 +9,7 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('models')
     config.add_subpackage('formula')
     config.add_subpackage('bench')
-    config.add_data_dir('tests')
+    config.add_subpackage('tests')
     config.add_extension('intvol', 'intvol.pyx',
                          include_dirs=[np.get_include()])
     config.add_extension('histogram', 'histogram.pyx',

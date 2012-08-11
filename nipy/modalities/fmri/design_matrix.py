@@ -262,7 +262,7 @@ class DesignMatrix():
         The frametimes are not written
         """
         import csv
-        fid = open(path, "wb")
+        fid = open(path, "wt")
         writer = csv.writer(fid)
         writer.writerow(self.names)
         writer.writerows(self.matrix)
@@ -398,10 +398,10 @@ def dmtx_from_csv(path, frametimes=None):
     A DesignMatrix instance
     """
     import csv
-    csvfile = open(path)
+    csvfile = open(path, 'rt')
     dialect = csv.Sniffer().sniff(csvfile.read())
     csvfile.seek(0)
-    reader = csv.reader(open(path, "rb"), dialect)
+    reader = csv.reader(csvfile, dialect)
     boolfirst = True
     design = []
     for row in reader:
@@ -412,6 +412,7 @@ def dmtx_from_csv(path, frametimes=None):
             design.append([row[j] for j in range(len(row))])
 
     x = np.array([[float(t) for t in xr] for xr in design])
+    csvfile.close()
     return(DesignMatrix(x, names, frametimes))
 
 

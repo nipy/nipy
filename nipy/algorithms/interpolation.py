@@ -39,16 +39,16 @@ class ImageInterpolator(object):
             data = np.nan_to_num(self.image.get_data())
         if self._datafile is None:
             _, fname = tempfile.mkstemp()
-            self._datafile = file(fname, mode='wb')
+            self._datafile = open(fname, mode='wb')
         else:
-            self._datafile = file(self._datafile.name, 'wb')
+            self._datafile = open(self._datafile.name, 'wb')
         data = np.nan_to_num(data.astype(np.float64))
         data.tofile(self._datafile)
         datashape = data.shape
         dtype = data.dtype
         del(data)
         self._datafile.close()
-        self._datafile = file(self._datafile.name)
+        self._datafile = open(self._datafile.name)
         self.data = np.memmap(self._datafile.name, dtype=dtype,
                               mode='r+', shape=datashape)
 

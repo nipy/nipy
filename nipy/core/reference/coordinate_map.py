@@ -1617,7 +1617,7 @@ def _compose_cmaps(*cmaps):
             raise ValueError(
                 'domain and range coordinates do not match: '
                 'domain=%s, range=%s' %
-                (`cmap.function_domain.dtype`, `cur.function_range.dtype`))
+                (cmap.function_domain.dtype, cur.function_range.dtype))
 
     return cur
 

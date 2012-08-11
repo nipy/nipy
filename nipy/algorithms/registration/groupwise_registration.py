@@ -505,7 +505,8 @@ def single_run_realign4d(im4d,
     repeats = len(loops)
 
     def format_arg(x):
-        if not hasattr(x, '__iter__'):
+        if isinstance(x, basestring) or not hasattr(x, '__iter__'):
+            # str has __iter__ in Python 3
             x = [x for i in range(repeats)]
         else:
             if not len(x) == repeats:

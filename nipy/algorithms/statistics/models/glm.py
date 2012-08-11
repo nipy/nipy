@@ -45,7 +45,7 @@ class Model(WLSModel):
         self.initialize(self.design)
         Z = results.predicted + self.family.link.deriv(results.mu) *\
             (Y - results.mu)
-        newresults = super(Model, self).fit(self, Z)
+        newresults = super(Model, self).fit(Z)
         newresults.Y = Y
         newresults.mu = self.family.link.inverse(newresults.predicted)
         self.iter += 1
@@ -87,7 +87,7 @@ class Model(WLSModel):
         self.results.mu = self.family.link.inverse(self.results.predicted)
         self.scale = self.results.scale = self.estimate_scale()
 
-        while self.cont(self.results):
+        while self.cont():
             self.results = self.next()
             self.scale = self.results.scale = self.estimate_scale()
 

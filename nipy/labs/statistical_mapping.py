@@ -99,9 +99,7 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
                              'depth': d[sorted]})
 
     ## Sort clusters by descending size order
-    def smaller(c1, c2):
-        return int(np.sign(c2['size'] - c1['size']))
-    clusters.sort(cmp=smaller)
+    clusters.sort(key=lambda c : c['size'], reverse=True)
 
     # FDR-corrected p-values
     fdr_pvalue = empirical_pvalue.gaussian_fdr(zmap)[above_th]

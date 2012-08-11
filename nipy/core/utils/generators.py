@@ -116,10 +116,6 @@ def write_data(output, iterable):
            [ 3.,  4.]])
     """
     for index, data in iterable:
-        try:
-            print index.shape, 'index', data.shape
-        except:
-            pass
         output[index] = data
 
 

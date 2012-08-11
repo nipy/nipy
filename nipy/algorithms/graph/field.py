@@ -14,7 +14,7 @@ Author:Bertrand Thirion, 2006--2011
 """
 import numpy as np
 
-from graph import WeightedGraph
+from .graph import WeightedGraph
 
 NEGINF = -np.inf
 
@@ -161,7 +161,7 @@ class Field(WeightedGraph):
         """
         nbiter = int(nbiter)
         if fast:
-            from _graph import dilation
+            from ._graph import dilation
             if self.E > 0:
                 if (self.field.size == self.V):
                     self.field = self.field.reshape((self.V, 1))

@@ -75,7 +75,7 @@ class Paradigm(object):
         session: string, optional, session identifier
         """
         import csv
-        fid = open(csv_file, "wb")
+        fid = open(csv_file, "wt")
         writer = csv.writer(fid, delimiter=' ')
         n_pres = np.size(self.con_id)
         sess = np.repeat(session, n_pres)
@@ -172,10 +172,10 @@ def load_paradigm_from_csv_file(path, session=None):
     would be much clearer if amplitude was put before duration in the .csv
     """
     import csv
-    csvfile = open(path)
+    csvfile = open(path, 'rt')
     dialect = csv.Sniffer().sniff(csvfile.read())
     csvfile.seek(0)
-    reader = csv.reader(open(path, "rb"), dialect)
+    reader = csv.reader(csvfile, dialect)
 
     # load the csv as a paradigm array
     sess, cid, onset, amplitude, duration = [], [], [], [], []
@@ -220,4 +220,5 @@ def load_paradigm_from_csv_file(path, session=None):
             paradigm[session] = read_session(paradigm_info, session)
     else:
         paradigm = read_session(paradigm_info, session)
+    csvfile.close()
     return paradigm

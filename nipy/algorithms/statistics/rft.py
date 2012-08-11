@@ -55,30 +55,43 @@ def binomial(n, k):
 def Q(dim, dfd=np.inf):
     """ Q polynomial
 
-    If dfd == inf (the default), then
-    Q(dim) is the (dim-1)-st Hermite polynomial 
+    If `dfd` == inf (the default), then Q(dim) is the (dim-1)-st Hermite
+    polynomial:
 
-    H_j(x) = (-1)^j * e^{x^2/2} * (d^j/dx^j e^{-x^2/2})
+    .. math::
 
-    If dfd != inf, then it is the polynomial Q defined in
+        H_j(x) = (-1)^j * e^{x^2/2} * (d^j/dx^j e^{-x^2/2})
 
-    Worsley, K.J. (1994). 'Local maxima and the expected Euler
-    characteristic of excursion sets of \chi^2, F and t fields.'
-    Advances in Applied Probability, 26:13-42.
+    If `dfd` != inf, then it is the polynomial Q defined in [Worsley1994]_
+
+    Parameters
+    ----------
+    dim : int
+        dimension of polynomial
+    dfd : scalar
+
+    Returns
+    -------
+    q_poly : np.poly1d instance
+
+    References
+    ----------
+    .. [Worsley1994] Worsley, K.J. (1994). 'Local maxima and the expected Euler
+       characteristic of excursion sets of \chi^2, F and t fields.' Advances in
+       Applied Probability, 26:13-42.
     """
     m = dfd
     j = dim
-    if j > 0:
-        poly = hermitenorm(j-1)
-        poly = np.poly1d(np.around(poly.c))
-        if np.isfinite(m):
-            for l in range((j-1)/2+1):
-                f = np.exp(gammaln((m+1)/2.) - gammaln((m+2-j+2*l)/2.)
-                                   - 0.5*(j-1-2*l)*(np.log(m/2.)))
-                poly.c[2*l] *= f
-        return np.poly1d(poly.c)
-    else:
-        raise ValueError, 'Q defined only for dim > 0'
+    if j <= 0:
+        raise ValueError('Q defined only for dim > 0')
+    poly = hermitenorm(j-1)
+    poly = np.poly1d(np.around(poly.c))
+    if np.isfinite(m):
+        for l in range((j-1)//2+1):
+            f = np.exp(gammaln((m+1)/2.) - gammaln((m+2-j+2*l)/2.)
+                                - 0.5*(j-1-2*l)*(np.log(m/2.)))
+            poly.c[2*l] *= f
+    return np.poly1d(poly.c)
 
 
 class ECquasi(np.poly1d):

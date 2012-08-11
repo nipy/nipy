@@ -19,9 +19,11 @@ import sys, os
 # absolute, like shown here.
 sys.path.append(os.path.abspath('sphinxext'))
 
-# We load the nipy release info into a dict by explicit execution
+# Get project related strings.  Please do not change this line to use
+# execfile because execfile is not available in Python 3
+_info_fname = os.path.join('..', 'nipy', 'info.py')
 rel = {}
-execfile('../nipy/info.py', rel)
+exec(open(_info_fname, 'rt').read(), {}, rel)
 
 # Import support for ipython console session syntax highlighting (lives
 # in the sphinxext directory defined above)
