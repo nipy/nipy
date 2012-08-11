@@ -24,7 +24,7 @@ def run_matlab(cmd):
 
 def run_matlab_script(script_lines, script_name='pyscript'):
     ''' Put multiline matlab script into script file and run '''
-    mfile = file(script_name + '.m', 'wt')
+    mfile = open(script_name + '.m', 'wt')
     mfile.write(script_lines)
     mfile.close()
     return run_matlab(script_name)

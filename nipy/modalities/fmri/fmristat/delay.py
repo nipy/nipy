@@ -12,7 +12,7 @@ data.\' NeuroImage, 16:593-606.
 
 __docformat__ = 'restructuredtext'
 
-import os, fpformat
+import os
 
 import numpy as np
 import numpy.linalg as L
@@ -381,12 +381,12 @@ class Contrast(object):
 #             matrix = np.squeeze(np.dot(l, self.contrast.matrix))
 
 #             outname = os.path.join(outdir, 'matrix%s.csv' % rowname)
-#             outfile = file(outname, 'w')
+#             outfile = open(outname, 'w')
 #             outfile.write(','.join(fpformat.fix(x,4) for x in matrix) + '\n')
 #             outfile.close()
 
 #             outname = os.path.join(outdir, 'matrix%s.bin' % rowname)
-#             outfile = file(outname, 'w')
+#             outfile = open(outname, 'w')
 #             matrix = matrix.astype('<f8')
 #             matrix.tofile(outfile)
 #             outfile.close()

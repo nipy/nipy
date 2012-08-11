@@ -113,11 +113,11 @@ class CoordinateSystem(object):
         if len(set(coord_names)) != len(coord_names):
             raise ValueError('coord_names must have distinct names')
         # verify that the dtype is coord_dtype for sanity
-        sctypes = (np.sctypes['int'] + np.sctypes['float'] + 
+        sctypes = (np.sctypes['int'] + np.sctypes['float'] +
                    np.sctypes['complex'] + np.sctypes['uint'])
         coord_dtype = np.dtype(coord_dtype)
         if coord_dtype not in sctypes:
-            raise ValueError('Coordinate dtype should be one of %s' % `sctypes`)
+            raise ValueError('Coordinate dtype should be one of %s' % sctypes)
         # Set all the attributes
         self.name = name
         self.coord_names = coord_names
@@ -214,12 +214,18 @@ class CoordinateSystem(object):
         array([[1, 2, 3]], dtype=int16)
         >>> cs._checked_values(arr.reshape(1,3)) # as is 1 by N
         array([[1, 2, 3]], dtype=int16)
-        >>> cs._checked_values(arr.reshape(3,1)) # wrong shape
+
+        This next is the wrong shape:
+
+        >>> cs._checked_values(arr.reshape(3,1)) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
            ...
         CoordinateSystemError: Array shape[-1] (1) must match CoordinateSystem ndim (3).
           CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
-        >>> cs._checked_values(arr[0:2]) # wrong length
+
+        Wrong length:
+
+        >>> cs._checked_values(arr[0:2]) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
            ...
         CoordinateSystemError: Array shape[-1] (2) must match CoordinateSystem ndim (3).
@@ -227,7 +233,7 @@ class CoordinateSystem(object):
 
         The dtype has to be castable:
 
-        >>> cs._checked_values(np.array([1, 2, 3], dtype=np.float64))
+        >>> cs._checked_values(np.array([1, 2, 3], dtype=np.float64)) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
            ...
         CoordinateSystemError: Cannot cast array dtype float64 to CoordinateSystem coord_dtype float32.
@@ -254,7 +260,7 @@ class CoordinateSystem(object):
         >>> cs = CoordinateSystem('x')
         >>> cs._checked_values(1)
         array([[1]])
-        >>> cs._checked_values([1, 2])
+        >>> cs._checked_values([1, 2]) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
            ...
         CoordinateSystemError: Array shape[-1] (2) must match CoordinateSystem ndim (1).

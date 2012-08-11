@@ -37,7 +37,7 @@ operates on the Cython .pyx files.
 import os
 import sys
 import hashlib
-import cPickle
+import pickle
 from subprocess import Popen, PIPE
 from distutils.version import LooseVersion
 
@@ -65,12 +65,12 @@ def process_pyx(fromfile, tofile):
 
 def process_tempita_pyx(fromfile, tofile):
     import tempita
-    with file(fromfile) as f:
+    with open(fromfile) as f:
         tmpl = f.read()
     pyxcontent = tempita.sub(tmpl)
     assert fromfile.endswith('.pyx.in')
     pyxfile = fromfile[:-len('.pyx.in')] + '.pyx'
-    with file(pyxfile, 'w') as f:
+    with open(pyxfile, 'w') as f:
         f.write(pyxcontent)
     process_pyx(pyxfile, tofile)
 
@@ -85,19 +85,19 @@ rules = {
 def load_hashes(filename):
     # Return { filename : (sha1 of input, sha1 of output) }
     if os.path.isfile(filename):
-        with file(filename) as f:
-            hashes = cPickle.load(f)
+        with open(filename) as f:
+            hashes = pickle.load(f)
     else:
         hashes = {}
     return hashes
 
 def save_hashes(hash_db, filename):
-    with file(filename, 'w') as f:
-        cPickle.dump(hash_db, f)
+    with open(filename, 'w') as f:
+        pickle.dump(hash_db, f)
 
 def sha1_of_file(filename):
     h = hashlib.sha1()
-    with file(filename) as f:
+    with open(filename) as f:
         h.update(f.read())
     return h.hexdigest()    
 
@@ -149,7 +149,7 @@ def process(path, fromfile, tofile, processor_function, hash_db):
     fulltopath = os.path.join(path, tofile)
     current_hash = get_hash(fullfrompath, fulltopath)
     if current_hash == hash_db.get(fullfrompath, None):
-        print '%s has not changed' % fullfrompath
+        print('%s has not changed' % fullfrompath)
         return
 
     from_sha = git_last_commit_to(fullfrompath)
@@ -161,13 +161,13 @@ def process(path, fromfile, tofile, processor_function, hash_db):
         # update
         if git_is_child(from_sha, to_sha):
             hash_db[fullfrompath] = current_hash
-            print '%s is up to date (according to git)' % fullfrompath
+            print('%s is up to date (according to git)' % fullfrompath)
             return
 
     orig_cwd = os.getcwd()
     try:
         os.chdir(path)
-        print 'Processing %s' % fullfrompath
+        print('Processing %s' % fullfrompath)
         processor_function(fromfile, tofile)
     finally:
         os.chdir(orig_cwd)

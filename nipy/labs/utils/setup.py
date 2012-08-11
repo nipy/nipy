@@ -13,7 +13,7 @@ def configuration(parent_package='', top_path=None):
         lapack_info = get_info('lapack', 0)
 
     config = Configuration('utils', parent_package, top_path)
-    config.add_data_dir('tests')
+    config.add_subpackage('tests')
     config.add_extension(
                 'routines',
                 sources=['routines.pyx'],
@@ -25,4 +25,4 @@ def configuration(parent_package='', top_path=None):
 
 
 if __name__ == '__main__':
-    print 'This is the wrong setup.py file to run'
+    print('This is the wrong setup.py file to run')

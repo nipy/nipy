@@ -17,12 +17,17 @@ from .. import hrf as delay
 from nipy.algorithms.statistics.models.regression import OLSModel
 from nipy.algorithms.statistics.formula import formulae
 
+from nipy.utils.compat3 import to_str
+
 # testing imports
 from nipy.testing import (dec, assert_true, assert_almost_equal)
 
 # Local imports
 from .FIACdesigns import (descriptions, fmristat, altdescr,
                           N_ROWS, time_vector)
+
+t = formulae.make_recarray(time_vector, 't')
+
 
 def protocol(recarr, design_type, *hrfs):
     """ Create an object that can evaluate the FIAC
@@ -71,16 +76,16 @@ def protocol(recarr, design_type, *hrfs):
     times = recarr['time'][keep]
     events = recarr['event'][keep]
 
-    # Now, specify the experimental conditions
-    # This creates expressions
-    # named SSt_SSp0, SSt_SSp1, etc.
-    # with one expression for each (eventtype, hrf) pair
+    # Now, specify the experimental conditions.  This creates expressions named
+    # SSt_SSp0, SSt_SSp1, etc.  with one expression for each (eventtype, hrf)
+    # pair
     for v in event_types:
+        k = np.array([events[i] == v for i in range(times.shape[0])])
         for l, h in enumerate(hrfs):
-            k = np.array([events[i] == v for i in 
-                          range(times.shape[0])])
-            termdict['%s%d' % (v,l)] = utils.define("%s%d" % (v, l), 
-                                                      utils.events(times[k], f=h))
+            # Make sure event type is a string (not byte string)
+            term_name = '%s%d' % (to_str(v), l)
+            termdict[term_name] = utils.define(term_name,
+                                               utils.events(times[k], f=h))
     f = formulae.Formula(termdict.values())
     Tcontrasts = {}
     Tcontrasts['average'] = (termdict['SSt_SSp0'] + termdict['SSt_DSp0'] +
@@ -193,20 +198,21 @@ def altprotocol(d, design_type, *hrfs):
     return f, Tcontrasts, Fcontrasts
 
 
-# block and event protocols
-block, bTcons, bFcons = protocol(descriptions['block'], 'block', *delay.spectral)
-event, eTcons, eFcons = protocol(descriptions['event'], 'event', *delay.spectral)
+def create_protocols():
+    # block and event protocols
+    block, bTcons, bFcons = protocol(descriptions['block'], 'block', *delay.spectral)
+    event, eTcons, eFcons = protocol(descriptions['event'], 'event', *delay.spectral)
 
-# Now create the design matrices and contrasts
-# The 0 indicates that it will be these columns
-# convolved with the first HRF
-t = formulae.make_recarray(time_vector, 't')
-X = {}
-c = {}
-D = {}
-for f, cons, design_type in [(block, bTcons, 'block'), (event, eTcons, 'event')]:
-    X[design_type], c[design_type] = f.design(t, contrasts=cons)
-    D[design_type] = f.design(t, return_float=False)
+    # Now create the design matrices and contrasts
+    # The 0 indicates that it will be these columns
+    # convolved with the first HRF
+    X = {}
+    c = {}
+    D = {}
+    for f, cons, design_type in [(block, bTcons, 'block'), (event, eTcons, 'event')]:
+        X[design_type], c[design_type] = f.design(t, contrasts=cons)
+        D[design_type] = f.design(t, return_float=False)
+    return X, c, D
 
 
 def test_altprotocol():
@@ -267,6 +273,7 @@ def matchcol(col, X):
 
 def test_agreement():
     # The test: does Protocol manage to recreate the design of fMRIstat?
+    X, c, D = create_protocols()
     for design_type in ['event', 'block']:
         dd = D[design_type]
         for i in range(X[design_type].shape[1]):

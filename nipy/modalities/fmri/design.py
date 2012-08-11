@@ -3,7 +3,6 @@
 """
 Convenience functions for specifying a design in the GLM
 """
-from string import join as sjoin
 
 import numpy as np
 
@@ -127,7 +126,7 @@ def event_design(event_spec, t, order=2, hrfs=[glover]):
             for comb in combinations(zip(fields, e_factors), i):
                 names = [c[0] for c in comb]
                 fs = [c[1].main_effect for c in comb]
-                e_contrasts[sjoin(names, ':')] = np.product(fs).design(event_spec)
+                e_contrasts[":".join(names)] = np.product(fs).design(event_spec)
 
     e_contrasts['constant'] = formulae.I.design(event_spec)
 

@@ -1,13 +1,16 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
+
 from scipy.special import gammaln, hermitenorm
 import scipy.stats
 from scipy.misc import factorial
 
 from .. import rft
 
-from nipy.testing import assert_almost_equal, dec
+from nose.tools import assert_raises
+
+from numpy.testing import assert_almost_equal, dec
 
 #def rho(x, dim, df=np.inf):
 #    """
@@ -32,6 +35,15 @@ from nipy.testing import assert_almost_equal, dec
 #            return scipy.stats.t.sf(x, df)
 #        else:
 #            return scipy.stats.norm.sf(x)
+
+def test_Q():
+    assert_raises(ValueError, rft.Q, -1)
+    assert_raises(ValueError, rft.Q, 0)
+    x = np.arange(-9, 10)
+    for dim in range(1, 4):
+        res = rft.Q(dim)
+        assert_almost_equal(res(x), hermitenorm(dim - 1)(x))
+
 
 def K(dim=4, dfn=7, dfd=np.inf):
     """

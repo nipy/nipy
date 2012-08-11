@@ -26,7 +26,7 @@ fid = fopen('spm_path.txt', 'wt');
 fprintf(fid, '%s', spm_path);
 fclose(fid);
 """)
-            spm_path = file('spm_path.txt', 'rt').read()
+            spm_path = open('spm_path.txt', 'rt').read()
         return spm_path
 
 spm_info = SpmInfo()

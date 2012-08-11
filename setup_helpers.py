@@ -8,7 +8,8 @@ Includes package dependency checks, and code to build the documentation
 To build the docs, run::
 
     python setup.py build_sphinx
-    
+
+This module has to work for python 2 and python 3.
 """
 
 # Standard library imports
@@ -26,6 +27,10 @@ from distutils.errors import DistutilsError
 
 from numpy.distutils.misc_util import appendpath
 from numpy.distutils import log
+from numpy.distutils.misc_util import is_string
+
+# Python 3 builder
+from nisext.py3builder import build_py as old_build_py
 
 # Sphinx import
 try:
@@ -127,10 +132,10 @@ class Clean(clean):
         clean.run(self)
         api_path = os.path.join('doc', 'api', 'generated')
         if os.path.exists(api_path):
-            print "Removing %s" % api_path
+            print("Removing %s" % api_path)
             shutil.rmtree(api_path)
         if os.path.exists(DOC_BUILD_DIR):
-            print "Removing %s" % DOC_BUILD_DIR 
+            print("Removing %s" % DOC_BUILD_DIR)
             shutil.rmtree(DOC_BUILD_DIR)
 
 
@@ -155,7 +160,7 @@ if have_sphinx:
 
         def zip_docs(self):
             if not os.path.exists(DOC_BUILD_DIR):
-                raise OSError, 'Doc directory does not exist.'
+                raise OSError('Doc directory does not exist.')
             target_file = os.path.join('doc', 'documentation.zip')
             # ZIP_DEFLATED actually compresses the archive. However, there
             # will be a RuntimeError if zlib is not installed, so we check
@@ -197,6 +202,47 @@ else: # failed Sphinx import
         def finalize_options(self):
             pass
 
+# Start of numpy.distutils.command.build_py.py copy
+
+class build_py(old_build_py):
+    """ Copied verbatim from numpy.distutils.command.build_py.py
+
+    If we are on python 2, this code merely replicates numpy distutils, and we
+    could get the same effect by importing build_py from numpy.distutils.  If we
+    are on python 3, then `old_build_py` will have python 2to3 routines
+    contained, and we also need the methods below to work with numpy distutils.
+
+    If you know a better way to do this, please, send a patch and make me glad.
+    """
+
+    def run(self):
+        build_src = self.get_finalized_command('build_src')
+        if build_src.py_modules_dict and self.packages is None:
+            self.packages = build_src.py_modules_dict.keys ()
+        old_build_py.run(self)
+
+    def find_package_modules(self, package, package_dir):
+        modules = old_build_py.find_package_modules(self, package, package_dir)
+
+        # Find build_src generated *.py files.
+        build_src = self.get_finalized_command('build_src')
+        modules += build_src.py_modules_dict.get(package,[])
+
+        return modules
+
+    def find_modules(self):
+        old_py_modules = self.py_modules[:]
+        new_py_modules = filter(is_string, self.py_modules)
+        self.py_modules[:] = new_py_modules
+        modules = old_build_py.find_modules(self)
+        self.py_modules[:] = old_py_modules
+
+        return modules
+
+    # XXX: Fix find_source_files for item in py_modules such that item is 3-tuple
+    # and item[2] is source file.
+
+# End of numpy.distutils.command.build_py.py copy
 
 # The command classes for distutils, used by setup.py
 cmdclass = {'api_docs': APIDocs,

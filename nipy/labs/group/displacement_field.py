@@ -27,7 +27,7 @@ def square_gaussian_filter1d(input, sigma, axis = -1, output = None, mode = "ref
         sum += 2.0 * tmp
     for ii in range(2 * lw + 1):
         weights[ii] /= sum
-	weights[ii] = weights[ii]**2
+    weights[ii] = weights[ii]**2
     return correlate1d(input, weights, axis, output, mode, cval, 0)
 
 
@@ -59,8 +59,6 @@ def square_gaussian_filter(input, sigma, output = None, mode = "reflect", cval =
     else:
         output[...] = input[...]
     return return_value
-
-
 
 
 class displacement_field(object):
@@ -110,7 +108,7 @@ class displacement_field(object):
         self.init_displacement_blocks()
         self.compute_inner_blocks()
         self.U = np.zeros((3, n, len(self.block)), float)
-    
+
     def init_displacement_blocks(self):
         """
         Called by class constructor
@@ -148,7 +146,7 @@ class displacement_field(object):
                         #print i,j,k
                         self.block.append(block_vol[XYZ_block[0], XYZ_block[1], XYZ_block[2]])
                         self.weights.append(kernel[XYZ_block[0], XYZ_block[1], XYZ_block[2]])
-    
+
     def compute_inner_blocks(self):
         """
         Generate self.inner_blocks, index of blocks which are "far from" the borders of the lattice.
@@ -165,7 +163,7 @@ class displacement_field(object):
             if inner_mask[self.block[i]].min() == 1:
                 inner_blocks.append(i)
         self.inner_blocks = np.array(inner_blocks)
-    
+
     def sample(self, i, b, proposal='prior', proposal_std=None, proposal_mean=None):
         """
         Generates U, V, L, W, I, where U, V, W, I are proposals for
@@ -200,7 +198,7 @@ class displacement_field(object):
             elif min(I) > -1:
                 valid_proposal = True
         return U, V, block[L], W[:, L], I
-    
+
     def sample_all_blocks(self, proposal_std=None, proposal_mean=None):
         """
         Generates U, V, W, I, proposals for self.U[:, i], self.V[:, i], self.W[:, i], self.I[i].
@@ -251,7 +249,7 @@ class gaussian_random_field(object):
         self.I = np.arange(p).reshape(1, p) * np.ones((n, 1), int)
         self.XYZ_min = self.XYZ.min(axis=1).reshape(3, 1) - 1
         self.XYZ_max = self.XYZ.max(axis=1).reshape(3, 1) + 1
-    
+
     def sample(self, i, std):
         mask = self.mask
         q = len(mask)

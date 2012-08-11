@@ -43,7 +43,7 @@ However, if we roll time first in the image array, we can't any longer get an
 xyz_affine that makes sense in relationship to the voxel data:
 
 >>> img_t0 = rollimg(img, 't')
->>> xyz_affine(img_t0)
+>>> xyz_affine(img_t0) #doctest: +IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
     ...
 AxesError: First 3 input axes must correspond to X, Y, Z

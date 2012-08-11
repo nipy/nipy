@@ -12,8 +12,8 @@ def configuration(parent_package='', top_path=None):
         # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
         lapack_info = get_info('lapack', 0)
     config = Configuration('glm', parent_package, top_path)
-    config.add_data_dir('tests')
-    config.add_data_dir('benchmarks')
+    config.add_subpackage('tests')
+    config.add_subpackage('benchmarks')
     config.add_extension(
                 'kalman',
                 sources=['kalman.pyx'],
@@ -24,4 +24,4 @@ def configuration(parent_package='', top_path=None):
 
 
 if __name__ == '__main__':
-    print 'This is the wrong setup.py file to run'
+    print('This is the wrong setup.py file to run')

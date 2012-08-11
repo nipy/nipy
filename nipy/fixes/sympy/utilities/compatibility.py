@@ -28,7 +28,11 @@ def iterable(i, exclude=(basestring, dict)):
     Examples:
 
     >>> things = [[1], (1,), set([1]), (j for j in [1, 2]), {1:2}, '1', 1]
-    >>> for i in things:
+
+    In the test below, Python 2 prints output including e.g ``<type 'list'``
+    where Python 3 prints e.g. ``<class 'list'>``.
+
+    >>> for i in things:                    #doctest: +IGNORE_OUTPUT
     ...     print iterable(i), type(i)
     True <type 'list'>
     True <type 'tuple'>
