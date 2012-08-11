@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
@@ -8,7 +9,7 @@ This is an example where:
 3. A design matrix describing all the effects related to the data is computed
 4. A GLM is applied to all voxels in the ROI
 5. A summary of the results is provided for certain contrasts
-6. A plot of the hrf is provided for the mean reponse in the hrf
+6. A plot of the HRF is provided for the mean response in the HRF
 7. Fitted/adjusted response plots are provided
 
 Needs matplotlib

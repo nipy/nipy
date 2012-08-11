@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Example script for group permutation testing """
@@ -10,7 +11,7 @@ from nipy.labs.group import permutation_test as PT
 def make_data(n=10, mask_shape=(10, 10, 10), axis=0, r=3, signal=5):
     """
     Generate Gaussian noise in a cubic volume
-    + cubic actviations
+    + cubic activations
     """
     mask = np.zeros(mask_shape, int)
     XYZ = np.array(np.where(mask==0))

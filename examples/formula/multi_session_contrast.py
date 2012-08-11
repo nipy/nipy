@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Example of more than one run in the same model
@@ -7,8 +8,8 @@ import numpy as np
 from nipy.algorithms.statistics.api import Term, Formula, Factor
 from nipy.modalities.fmri import utils, hrf
 
-# hrf models we will use for each run.  Just to show it can be done, use a
-# different hrf model for each run
+# HRF models we will use for each run.  Just to show it can be done, use a
+# different HRF model for each run
 h1 = hrf.glover
 h2 = hrf.afni
 
@@ -25,7 +26,7 @@ c11 = c11.subs(t, t1) # Now make it in terms of time in run 1
 # Same for conditions 2 and 3
 c21 = utils.events([1, 3, 9], f=h1); c21 = c21.subs(t, t1)
 c31 = utils.events([2, 4, 8], f=h1); c31 = c31.subs(t, t1)
-# Add also a fourier basis set for drift with frequencies 0.3, 0.5, 0.7
+# Add also a Fourier basis set for drift with frequencies 0.3, 0.5, 0.7
 d1 = utils.fourier_basis([0.3, 0.5, 0.7]); d1 = d1.subs(t, t1)
 
 # Here's our formula for run 1 signal terms of time in run 1 (t1)
