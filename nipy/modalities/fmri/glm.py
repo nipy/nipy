@@ -118,6 +118,61 @@ class GeneralLinearModel(object):
             self.labels_ = np.zeros(Y.shape[1])
             self.results_ = {0.0: ols_result}
 
+    def get_beta(self, column_index=None):
+        """Acessor for the best linear unbiased estimated of model parameters
+
+        Parameters
+        ==========
+        column_index: int or array-like of int, optional
+                      The indexed of the columns to be returned.
+                      By default, the whole vector is returned
+        
+        Returns
+        =======
+        beta_: array of shape (n_voxels, n_columns)
+              the estimated beta
+        """
+        # make colum_index a list if it an int
+        if column_index == None:
+            column_index = np.arange(self.X.shape[1])
+        if not hasattr(column_index, '__iter__'):
+            column_index = [int(column_index)]
+        n_beta = len(column_index)
+        
+        # build the beta array
+        beta_ = np.zeros((n_beta, self.labels_.size), dtype=np.float)
+        for l in self.results_.keys():
+            beta_[:, self.labels_ == l] = self.results_[l].theta[column_index]
+        return beta_
+
+    def get_mse(self):
+        """Acessor for the mean squared error of the model
+
+        Returns
+        =======
+        mse: array of shape (n_voxels)
+              the sum of square error per voxel
+        """
+        # build the beta array
+        mse = np.zeros(self.labels_.size, dtype=np.float)
+        for l in self.results_.keys():
+            mse[self.labels_ == l] = self.results_[l].MSE
+        return mse
+
+    def get_logL(self):
+        """Acessor for the log-likelihood of the model
+
+        Returns
+        =======
+        logL: array of shape (n_voxels)
+              the sum of square error per voxel
+        """
+        # build the beta array
+        logL = np.zeros(self.labels_.size, dtype=np.float)
+        for l in self.results_.keys():
+            logL[self.labels_ == l] = self.results_[l].logL
+        return logL
+
     def contrast(self, con_val, contrast_type=None):
         """ Specify and estimate a linear contrast
 

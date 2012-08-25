@@ -5,8 +5,8 @@ Test the glm utilities.
 """
 
 import numpy as np
-from nose.tools import assert_true
-from numpy.testing import assert_almost_equal
+from nose.tools import assert_true, assert_equal
+from numpy.testing import assert_array_almost_equal, assert_almost_equal
 from ..glm import GeneralLinearModel, data_scaling
 
 
@@ -32,6 +32,21 @@ def test_glm_ols():
     assert_almost_equal(mulm.results_[0.0].theta.mean(), 0, 1)
     assert_almost_equal(mulm.results_[0.0].theta.var(), 1. / p, 1)
 
+def test_glm_beta():
+    mulm, n, p, q = ols_glm()
+    assert_equal(mulm.get_beta().shape, (q, n)) 
+    assert_equal(mulm.get_beta([0, -1]).shape, (2, n))
+    assert_equal(mulm.get_beta(6).shape, (1, n))
+    
+def test_glm_mse():
+    mulm, n, p, q = ols_glm()
+    mse = mulm.get_mse()
+    assert_array_almost_equal(mse, np.ones(n), 0) 
+
+def test_glm_logL():
+    mulm, n, p, q = ols_glm()
+    logL = mulm.get_logL()
+    assert_array_almost_equal(logL / n, - p * 1.41 * np.ones(n) / n, 0) 
 
 def test_glm_ar():
     mulm, n, p, q = ar1_glm()
