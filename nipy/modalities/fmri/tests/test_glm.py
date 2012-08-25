@@ -6,7 +6,8 @@ Test the glm utilities.
 
 import numpy as np
 from nose.tools import assert_true, assert_equal
-from numpy.testing import assert_array_almost_equal, assert_almost_equal
+from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
+                           assert_array_equal)
 from ..glm import GeneralLinearModel, data_scaling
 
 
@@ -23,12 +24,11 @@ def ar1_glm(n=100, p=80, q=10):
     glm.fit(Y, 'ar1')
     return glm, n, p, q
 
-
 def test_glm_ols():
     mulm, n, p, q = ols_glm()
-    assert_true((mulm.labels_ == np.zeros(n)).all())
-    assert_true(mulm.results_.keys() == [0.0])
-    assert_true(mulm.results_[0.0].theta.shape == (q, n))
+    assert_array_equal(mulm.labels_, np.zeros(n))
+    assert_equal(mulm.results_.keys(), [0.0])
+    assert_equal(mulm.results_[0.0].theta.shape, (q, n))
     assert_almost_equal(mulm.results_[0.0].theta.mean(), 0, 1)
     assert_almost_equal(mulm.results_[0.0].theta.var(), 1. / p, 1)
 
@@ -50,11 +50,11 @@ def test_glm_logL():
 
 def test_glm_ar():
     mulm, n, p, q = ar1_glm()
-    assert_true(len(mulm.labels_) == n)
+    assert_equal(len(mulm.labels_), n)
     assert_true(len(mulm.results_.keys()) > 1)
     tmp = sum([mulm.results_[key].theta.shape[1]
                for key in mulm.results_.keys()])
-    assert_true(tmp == n)
+    assert_equal(tmp, n)
 
 
 def test_Tcontrast():
@@ -78,7 +78,7 @@ def test_Fcontrast_nd():
     mulm, n, p, q = ar1_glm()
     cval = np.eye(q)[:3]
     con = mulm.contrast(cval)
-    assert_true(con.contrast_type == 'F')
+    assert_equal(con.contrast_type, 'F')
     z_vals = con.z_score()
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
@@ -97,7 +97,7 @@ def test_Fcontrast_nd_ols():
     mulm, n, p, q = ols_glm()
     cval = np.eye(q)[:3]
     con = mulm.contrast(cval)
-    assert_true(con.contrast_type == 'F')
+    assert_equal(con.contrast_type, 'F')
     z_vals = con.z_score()
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
@@ -164,15 +164,13 @@ def test_F_contrast_calues():
 
 def test_tmin():
     mulm, n, p, q = ar1_glm(n=1)
-    #c1, c2 = np.eye(q)[0], np.eye(q)[1]
-    #con1, con2 = mulm.contrast(c1), mulm.contrast(c2)
     c1, c2, c3 = np.eye(q)[0], np.eye(q)[1], np.eye(q)[2]
     t1, t2, t3 = mulm.contrast(c1).stat(), mulm.contrast(c2).stat(), \
         mulm.contrast(c3).stat()
     tmin = min(t1, t2, t3)
     con = mulm.contrast(np.eye(q)[:3])
     con.contrast_type = 'tmin'
-    assert_true(con.stat() == tmin)
+    assert_equal(con.stat(), tmin)
 
 
 def test_scaling():
