@@ -8,7 +8,67 @@ import numpy as np
 from nose.tools import assert_true, assert_equal
 from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
                            assert_array_equal)
-from ..glm import GeneralLinearModel, data_scaling
+from ..glm import GeneralLinearModel, data_scaling, FMRILinearModel
+from nibabel import load, Nifti1Image, save
+from nibabel.tmpdirs import InTemporaryDirectory
+
+
+
+def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
+    mask_file, fmri_files, design_files = 'mask.nii', [], []
+    for i, shape in enumerate(shapes):
+        fmri_files.append('fmri_run%d.nii' %i)
+        save(Nifti1Image(100 + np.random.randn(*shape), affine), fmri_files[-1])
+        design_files.append('dmtx_%d.npz' %i)
+        np.savez(design_files[-1], np.random.randn(shape[3], rk))
+    save(Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8), 
+                     affine), mask_file)
+    return mask_file, fmri_files, design_files 
+
+
+def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
+    fmri_data, design_matrices= []
+    for i, shape in enumerate(shapes):
+        fmri_data.append(Nifti1Image(100 + np.random.randn(*shape), 
+                                     affine))
+        design_matrices.append(np.random.randn(shape[3], rk))
+    mask = Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8), 
+                       affine)
+    return mask, fmri_data, design_matrices 
+
+
+def test_high_level_glm_with_paths():
+    shapes, rk = ((5, 6, 4, 20), (5, 6, 4, 19)), 3
+    with InTemporaryDirectory():
+        mask_file, fmri_files, design_files = write_fake_fmri_data(shapes, rk)
+        multi_session_model = FMRILinearModel(fmri_files, design_files, 
+                                              mask_file)
+        multi_session_model.fit()
+        z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
+        assert_array_equal(z_image.get_affine(), load(mask_file).get_affine())
+        z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
+        assert_array_equal(z_image.get_affine(), load(mask_file).get_affine())
+        ### add other tests !
+
+def test_high_level_glm_with_data():
+    shapes, rk = ((5, 6, 7, 20), (5, 6, 7, 19)), 3
+    mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
+    # without mask
+    multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask=None)
+    multi_session_model.fit()
+    z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
+    assert_equal(np.sum(z_image.get_data() == 0), 0)
+    # compute the mask
+    multi_session_model = FMRILinearModel(fmri_data, design_matrices, 
+                                          m=0, M=.01, threshold=0.)
+    multi_session_model.fit()
+    z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
+    # with mask
+    multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask)
+    multi_session_model.fit()
+    z_image, effect_image, variance_image= multi_session_model.contrast(
+        [np.eye(rk)[:2]] * 2, output_effects=True, output_variance=True)
+    assert_array_equal(z_image.get_affine(), load(mask).get_affine())
 
 
 def ols_glm(n=100, p=80, q=10):

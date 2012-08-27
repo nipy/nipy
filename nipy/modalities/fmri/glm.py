@@ -130,7 +130,7 @@ class GeneralLinearModel(object):
         Returns
         =======
         beta_: array of shape (n_voxels, n_columns)
-              the estimated beta
+              the beta
         """
         # make colum_index a list if it an int
         if column_index == None:
@@ -342,7 +342,8 @@ class Contrast(object):
             self.p_value_ = self.p_value(baseline)
 
         # Avoid inf values kindly supplied by scipy.
-        return zscore(self.p_value_)
+        self.z_score_ = zscore(self.p_value_)
+        return self.z_score_
 
     def __add__(self, other):
         """Addition of selfwith others, Yields an new Contrast instance
@@ -372,3 +373,183 @@ class Contrast(object):
 
     def __div__(self, scalar):
         return self.__rmul__(1 / float(scalar))
+
+
+class FMRILinearModel(object):
+    """ This class is meant to handle GLMs from a higher-level perspective
+    i.e. by taking images as input and output
+    
+    >>> from nipy.utils import example_data
+    >>> import numpy as np
+    >>> from nipy.modalities.fmri.glm import FMRILinearModel
+    >>> fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
+              for run in ['run1.nii.gz', 'run2.nii.gz']]
+    >>> design_files = [example_data.get_filename('fiac', 'fiac0', run)
+                for run in ['run1_design.npz', 'run2_design.npz']]
+    >>> mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
+    >>> multi_session_model = FMRILinearModel(fmri_files, design_files, mask)
+    >>> multi_session_model.fit()
+    >>> z_image = multi_session_model.contrast([np.eye(13)[1]] * 2)
+    """
+
+    def __init__(self, fmri_data, design_matrices, mask='compute', 
+                 m=0.2, M=0.9, threshold=.5):
+        """Load the data
+
+        Parameters
+        ==========
+        fmri_data: (list of) image(s) or string(s), 
+                    fmri images / paths of the (4D) fmri images 
+        design_matrices: (list of) array(s) or string(s)
+                         design matrix arrays / paths of .npz files 
+        mask: string or image or None,
+              string can be 'compute' or a path to an image
+              image is an input (assumed binary) mask image(s), 
+              if 'compute', the mask is computed
+              if None, no masking will be applied
+        m, M, threshold: float, optional
+                         parameters of the masking procedure. 
+                         should be within [0, 1]
+        Note
+        ====
+        The only computation done here is mask computation (if required)
+        """
+        from nipy.labs.mask import compute_mask_sessions
+        from nibabel import load, Nifti1Image
+        # manipulate the arguments
+        if not hasattr(fmri_data, '__iter__'):
+            fmri_data = [fmri_data]
+        if not hasattr(design_matrices, '__iter__'):
+            design_matrices = [design_matrices]
+        if len(fmri_data) != len(design_matrices):
+            raise ValueError('Incompatible number of fmri runs and'
+                             'design matrices were provided')
+        self.fmri_data, self.design_matrices = [], []
+        self.glms, self.means = [], []
+
+        # load the fmri data
+        for fmri_run in fmri_data:
+            if isinstance(fmri_run, basestring):
+                self.fmri_data.append(load(fmri_run))
+            else:
+                self.fmri_data.append(fmri_run)
+        # set self.affine as the affine of the first image
+        self.affine = self.fmri_data[0].get_affine()
+
+        # load the designs
+        for design_matrix in design_matrices:
+            if isinstance(design_matrix, basestring):
+                self.design_matrices.append(
+                    np.load(design_matrix).items()[0][1])
+            else:
+                self.design_matrices.append(design_matrix)
+
+        # load the mask
+        if mask == 'compute':
+            mask = compute_mask_sessions(
+                fmri_data, m=m, M=M, cc=1, threshold=threshold)
+            self.mask = Nifti1Image(mask.astype(np.int8), self.affine)
+        elif mask == None:
+            mask = np.ones(self.fmri_data[0].shape[:3]).astype(np.int8)
+            self.mask = Nifti1Image(mask, self.affine)
+        else:
+            if isinstance(mask, basestring):
+                self.mask = load(mask)
+            else:
+                self.mask = mask
+
+
+    def fit(self, do_scaling=True, model='ar1', steps=100):
+        """Perform the analysis: load the data, mask the data, scale the data,\
+        fit the GLM
+        
+        Parameters
+        ==========
+        do_scaling: bool, optional
+                    if yes, the data should be scaled as pourcent of voxel mean
+        model: string, optional,
+               the kind of glm ('ols' or 'ar1') you want to fit to the data
+        steps: int, optional
+               in case of an ar1, discrteization of the ar1 parameter
+        """
+        # mask the data
+        mask = self.mask.get_data().astype(np.bool)
+        
+        for fmri, design_matrix in zip(self.fmri_data, self.design_matrices):
+            if do_scaling:
+                # scale the data
+                data, mean = data_scaling(fmri.get_data()[mask].T)
+                self.means.append(mean)
+            # fit the GLM
+            glm = GeneralLinearModel(design_matrix)
+            glm.fit(data, model, steps)
+            self.glms.append(glm)
+
+
+    def contrast(self, contrasts, con_id='', output_z=True, output_stat=False, 
+                 output_effects=False, output_variance=False):
+        """ Estimation of a contrast on all sessions 
+
+        Parameters
+        ==========
+        contrasts: list of arrays,
+                   numerical deifnition of the contrast (one array per run)
+        con_id: string, optional
+                name of the contrast 
+        output_z: bool, optional,
+                  Return or not the corresponding z-stat image
+        output_stat: bool, optional,
+                     Return or not the base (t/F) stat image
+        output_effects: bool, optional,
+                        Return or not the corresponding effect image
+        output_variance: bool, optional,
+                         Return or not the corresponding variance image
+        
+        Returns
+        =======
+        output_images: list of nibabel images 
+                       The desired output images
+        """
+        from nibabel import Nifti1Image
+        if self.glms == []:
+            raise ValueError('first run fit() to estimate the model')
+        if len(contrasts) != len(self.glms):
+            raise ValueError(
+                'contrasts must be a sequence of %d session contrasts' %
+                len(self.glms))
+
+        for i, (glm, con) in enumerate(zip(self.glms, contrasts)):
+            if i == 0:
+                contrast_ = glm.contrast(con)
+            else:
+                contrast_ = contrast_ + glm.contrast(con)
+        if output_z or output_stat:
+            # compute the contrast and stat
+            contrast_.z_score()
+
+        # Prepare the returned images
+        mask = self.mask.get_data().astype(np.bool)
+        do_outputs = [output_z, output_stat, output_effects, output_variance]
+        estimates = ['z_score_', 'stat_', 'effect', 'variance']
+        descrips = ['z statistic', 'Statistical value', 'Estimated effect',
+                    'Estimated variance']
+        dims = [1, 1, contrast_.dim, contrast_.dim ** 2]
+        n_vox = contrast_.z_score_.size 
+        output_images = []
+        for (do_output, estimate, descrip, dim) in zip(
+            do_outputs, estimates, descrips, dims):
+            if do_output:
+                if dim > 1:
+                    result_map = np.tile(
+                        mask.astype(np.float)[:, :, :, np.newaxis], dim)
+                    result_map[mask] = np.reshape(
+                        contrast_.__getattribute__(estimate), (n_vox, dim))
+                else:
+                    result_map = mask.astype(np.float)
+                    result_map[mask] = np.squeeze(
+                        contrast_.__getattribute__(estimate))
+                output = Nifti1Image(result_map, self.affine)
+                output.get_header()['descrip'] = (
+                    '%s associated with contrast %s' % (descrip, con_id))
+                output_images.append(output)
+        return output_images
