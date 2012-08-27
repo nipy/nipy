@@ -230,10 +230,11 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     threshold = 0.5 * (sorted_input[ia + limiteinf]
                         + sorted_input[ia + limiteinf  +1])
 
-    mask = (reference_volume >= threshold)
-
+    mask = (mean_volume >= threshold)
+    
     if cc:
         mask = largest_cc(mask)
+    
     if opening:
         mask = ndimage.binary_opening(mask.astype(np.int),
                                         iterations=2)
@@ -305,8 +306,8 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
 
     # Take the "half-intersection", i.e. all the voxels that fall within
     # 50% of the individual masks.
-    mask = (mask > threshold*len(list(session_files)))
-
+    mask = (mask > threshold * len(list(session_files)))
+      
     if cc:
         # Select the largest connected component (each mask is
         # connect, but the half-interesection may not be):
