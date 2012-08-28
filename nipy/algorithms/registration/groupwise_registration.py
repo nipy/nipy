@@ -142,6 +142,14 @@ class Image4d(object):
                 aux.reverse()
             self.slice_order = np.array(aux)
         else:
+            # Verify correctness of provided slice indexes
+            provided_slices = np.array(sorted(self._slice_order))
+            if np.any(provided_slices != np.arange(self.nslices)):
+                raise ValueError(
+                    "Incorrect slice indexes were provided. There are %d "
+                    "slices in the volume, indexes should start from 0 and "
+                    "list all slices. "
+                    "Provided slice_order: %s" % (nslices, self._slice_order))
             self.slice_order = np.asarray(self._slice_order)
 
     def z_to_slice(self, z):
