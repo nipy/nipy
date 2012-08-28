@@ -125,7 +125,7 @@ contrasts['effects_of_interest'] = np.eye(25)[:20:2]
 print 'Fitting a GLM (this takes time)...'
 fmri_glm = FMRILinearModel(data_path, design_matrix.matrix, 
                            mask='compute')
-fmri_glm.fit()
+fmri_glm.fit(do_scaling=True, model='ar1')
 
 #########################################
 # Estimate the contrasts

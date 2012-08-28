@@ -67,7 +67,7 @@ mask_file = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
 multi_session_model = FMRILinearModel(fmri_files, design_files, mask_file)
 
 # GLM fitting
-multi_session_model.fit()
+multi_session_model.fit(do_scaling=True, model='ar1')
 
 # Compute the required contrast
 print('Computing test contrast image...')

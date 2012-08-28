@@ -475,16 +475,17 @@ class FMRILinearModel(object):
                in case of an ar1, discrteization of the ar1 parameter
         """
         from nibabel import Nifti1Image
-        # mask the data
+        # get the mask as an array
         mask = self.mask.get_data().astype(np.bool)
         
+        self.glms, self.means = [], []
         for fmri, design_matrix in zip(self.fmri_data, self.design_matrices):
             if do_scaling:
                 # scale the data
                 data, mean = data_scaling(fmri.get_data()[mask].T)
             else:
                 data, mean = (fmri.get_data()[mask].T, 
-                              fmri.get_data()[mask].T.mean[0])
+                              fmri.get_data()[mask].T.mean(0))
             mean_data = mask.astype(np.int16)
             mean_data[mask] = mean
             self.means.append(Nifti1Image(mean_data, self.affine))

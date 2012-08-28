@@ -95,7 +95,7 @@ contrasts['right'] = contrasts['clicDaudio'] + contrasts['clicDvideo']
 print 'Fitting a General Linear Model'
 fmri_glm = FMRILinearModel(data_path, design_matrix.matrix, 
                            mask='compute')
-fmri_glm.fit()
+fmri_glm.fit(do_scaling=True, model='ar1')
 
 #########################################
 # Estimate the contrasts
