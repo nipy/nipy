@@ -17,7 +17,7 @@ Note that this corresponds to a single run.
 
 Needs matplotlib
 
-Author : Bertrand Thirion, 2010
+Author : Bertrand Thirion, 2010--2012
 """
 print __doc__
 
@@ -30,14 +30,13 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nibabel import load, save, Nifti1Image
+from nibabel import save
 
-from nipy.modalities.fmri.glm import GeneralLinearModel, data_scaling
+from nipy.modalities.fmri.glm import FMRILinearModel
 from nipy.modalities.fmri.design_matrix import make_dmtx
 from nipy.modalities.fmri.experimental_paradigm import \
     load_paradigm_from_csv_file
 from nipy.labs.viz import plot_map, cm
-from nipy.labs import compute_mask_files
 
 # Local import
 from get_data_light import DATA_DIR, get_first_level_dataset
@@ -87,15 +86,6 @@ ax.set_position([.05, .25, .9, .65])
 ax.set_title('Design matrix')
 
 plt.savefig(path.join(write_dir, 'design_matrix.png'))
-# design_matrix.write_csv(...)
-
-########################################
-# Mask the data
-########################################
-
-print 'Computing a brain mask...'
-mask_path = path.join(write_dir, 'mask.nii')
-mask_array = compute_mask_files(data_path, mask_path, False, 0.4, 0.9)
 
 #########################################
 # Specify the contrasts
@@ -133,12 +123,9 @@ contrasts['effects_of_interest'] = np.eye(25)[:20:2]
 ########################################
 
 print 'Fitting a GLM (this takes time)...'
-fmri_image = load(data_path)
-Y, _ = data_scaling(fmri_image.get_data()[mask_array])
-X = design_matrix.matrix
-results = GeneralLinearModel(X)
-results.fit(Y.T, steps=100)
-affine = fmri_image.get_affine()
+fmri_glm = FMRILinearModel(data_path, design_matrix.matrix, 
+                           mask='compute')
+fmri_glm.fit()
 
 #########################################
 # Estimate the contrasts
@@ -148,14 +135,14 @@ print 'Computing contrasts...'
 for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
     print '  Contrast % 2i out of %i: %s' % (
         index + 1, len(contrasts), contrast_id)
-    contrast_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
-    write_array = mask_array.astype(np.float)
-    write_array[mask_array] = results.contrast(contrast_val).z_score()
-    contrast_image = Nifti1Image(write_array, affine)
-    save(contrast_image, contrast_path)
+    # save the z_image
+    image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
+    z_map, = fmri_glm.contrast(contrast_val, con_id=contrast_id, output_z=True)
+    save(z_map, image_path)
 
-    vmax = max(- write_array.min(), write_array.max())
-    plot_map(write_array, affine,
+    # Create snapshots of the contrasts
+    vmax = max(- z_map.get_data().min(), z_map.get_data().max())
+    plot_map(z_map.get_data(), z_map.get_affine(),
              cmap=cm.cold_hot,
              vmin=- vmax,
              vmax=vmax,
@@ -165,15 +152,14 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
     plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
     plt.clf()
 
-
 #########################################
-# End
+# End : various visualizations 
 #########################################
 
 print "All the  results were witten in %s" % write_dir
 
 # make a simple 2D plot
-plot_map(write_array, affine,
+plot_map(z_map.get_data(), z_map.get_affine(),
          cmap=cm.cold_hot,
          vmin=- vmax,
          vmax=vmax,
@@ -183,7 +169,7 @@ plot_map(write_array, affine,
 
 # More plots using 3D
 if True:  # replace with False to skip this
-    plot_map(write_array, affine,
+    plot_map(z_map.get_data(), z_map.get_affine(),
              cmap=cm.cold_hot,
              vmin=-vmax,
              vmax=vmax,
@@ -193,7 +179,7 @@ if True:  # replace with False to skip this
 
     from nipy.labs import viz3d
     try:
-        viz3d.plot_map_3d(write_array, affine,
+        viz3d.plot_map_3d(z_map.get_data(), z_map.get_affine(),
                         cmap=cm.cold_hot,
                         vmin=-vmax,
                         vmax=vmax,

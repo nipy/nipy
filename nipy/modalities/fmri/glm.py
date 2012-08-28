@@ -419,7 +419,8 @@ class FMRILinearModel(object):
         # manipulate the arguments
         if not hasattr(fmri_data, '__iter__'):
             fmri_data = [fmri_data]
-        if not hasattr(design_matrices, '__iter__'):
+        if (not hasattr(design_matrices, '__iter__') or 
+            type(design_matrices) == np.ndarray) :
             design_matrices = [design_matrices]
         if len(fmri_data) != len(design_matrices):
             raise ValueError('Incompatible number of fmri runs and'
@@ -472,6 +473,7 @@ class FMRILinearModel(object):
         steps: int, optional
                in case of an ar1, discrteization of the ar1 parameter
         """
+        from nibabel import Nifti1Image
         # mask the data
         mask = self.mask.get_data().astype(np.bool)
         
@@ -479,7 +481,12 @@ class FMRILinearModel(object):
             if do_scaling:
                 # scale the data
                 data, mean = data_scaling(fmri.get_data()[mask].T)
-                self.means.append(mean)
+            else:
+                data, mean = (fmri.get_data()[mask].T, 
+                              fmri.get_data()[mask].T.mean[0])
+            mean_data = mask.astype(np.int16)
+            mean_data[mask] = mean
+            self.means.append(Nifti1Image(mean_data, self.affine))
             # fit the GLM
             glm = GeneralLinearModel(design_matrix)
             glm.fit(data, model, steps)
@@ -492,7 +499,7 @@ class FMRILinearModel(object):
 
         Parameters
         ==========
-        contrasts: list of arrays,
+        contrasts: (list of) array(s),
                    numerical deifnition of the contrast (one array per run)
         con_id: string, optional
                 name of the contrast 
@@ -513,6 +520,8 @@ class FMRILinearModel(object):
         from nibabel import Nifti1Image
         if self.glms == []:
             raise ValueError('first run fit() to estimate the model')
+        if type(contrasts) == np.ndarray:
+            contrasts = [contrasts]
         if len(contrasts) != len(self.glms):
             raise ValueError(
                 'contrasts must be a sequence of %d session contrasts' %

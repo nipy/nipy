@@ -30,10 +30,8 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nibabel import load as load_image
-
 from nipy.labs.viz import plot_map, cm
-from nipy.modalities.fmri.glm import GeneralLinearModel, data_scaling
+from nipy.modalities.fmri.glm import FMRILinearModel
 from nipy.utils import example_data
 
 
@@ -65,46 +63,25 @@ design_files = [example_data.get_filename('fiac', 'fiac0', run)
                 for run in ['run1_design.npz', 'run2_design.npz']]
 mask_file = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
 
-# Get design matrix as numpy array
-print('Loading design matrices...')
-X = [np.load(f)['X'] for f in design_files]
-
-# Get multi-session fMRI data
-print('Loading fmri data...')
-Y = [load_image(f) for f in fmri_files]
-
-# Get mask image
-print('Loading mask...')
-mask = load_image(mask_file)
-mask_array, affine = mask.get_data() > 0, mask.get_affine()
+# Load all the data
+multi_session_model = FMRILinearModel(fmri_files, design_files, mask_file)
 
 # GLM fitting
-print('Starting fit...')
-glms = []
-for x, y in zip(X, Y):
-    glm = GeneralLinearModel(x)
-    data, mean = data_scaling(y.get_data()[mask_array].T)
-    glm.fit(data, 'ar1')
-    glms.append(glm)
+multi_session_model.fit()
 
 # Compute the required contrast
 print('Computing test contrast image...')
-nregressors = X[0].shape[1]
-## should check that all design matrices have the same
-c = np.zeros(nregressors)
-c[0:4] = cvect
-z_vals = (glms[0].contrast(c) + glms[1].contrast(c)).z_score()
+n_regressors = [np.load(f)['X'].shape[1] for f in design_files]
+con = [np.hstack((cvect, np.zeros(nr - len(cvect)))) for nr in n_regressors]
+z_map, = multi_session_model.contrast(con)
 
-# Show Zmap image
-z_map = mask_array.astype(np.float)
-z_map[mask_array] = z_vals
-mean_map = mask_array.astype(np.float)
-mean_map[mask_array] = mean
-plot_map(z_map,
-         affine,
-         anat=mean_map,
-         anat_affine=affine,
-         cmap=cm.cold_hot,
-         threshold=2.5,
+# Show Z-map image
+mean_map = multi_session_model.means[0]
+plot_map(z_map.get_data(), 
+         z_map.get_affine(), 
+         anat=mean_map.get_data(), 
+         anat_affine=mean_map.get_affine(), 
+         cmap=cm.cold_hot, 
+         threshold=2.5, 
          black_bg=True)
 plt.show()
