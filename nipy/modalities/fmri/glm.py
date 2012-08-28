@@ -181,7 +181,7 @@ class GeneralLinearModel(object):
         con_val: numpy.ndarray of shape (p) or (q, p),
                  where q = number of contrast vectors
                  and p = number of regressors
-        contrast_type: string, optional, either 't' or 'F',
+        contrast_type: string, optional, either 't', 'F' or 'tmin',
                        type of the contrast
 
         Returns
@@ -200,7 +200,7 @@ class GeneralLinearModel(object):
                 contrast_type = 't'
             else:
                 contrast_type = 'F'
-        if contrast_type not in ['t', 'F']:
+        if contrast_type not in ['t', 'F', 'tmin']:
             raise ValueError('Unknown contrast type: %s' % contrast_type)
 
         effect_ = np.zeros((dim, self.labels_.size), dtype=np.float)
@@ -215,6 +215,7 @@ class GeneralLinearModel(object):
                 resl = self.results_[l].Fcontrast(con_val)
                 effect_[:, self.labels_ == l] = resl.effect
                 var_[:, :, self.labels_ == l] = resl.covariance
+
         dof_ = self.results_[l].df_resid
         return Contrast(effect=effect_, variance=var_, dof=dof_,
                         contrast_type=contrast_type)
@@ -493,9 +494,10 @@ class FMRILinearModel(object):
             self.glms.append(glm)
 
 
-    def contrast(self, contrasts, con_id='', output_z=True, output_stat=False, 
-                 output_effects=False, output_variance=False):
-        """ Estimation of a contrast on all sessions 
+    def contrast(self, contrasts, con_id='', contrast_type=None, output_z=True, 
+                 output_stat=False, output_effects=False, 
+                 output_variance=False):
+        """ Estimation of a contrast as fixed effects on all sessions 
 
         Parameters
         ==========
@@ -503,6 +505,8 @@ class FMRILinearModel(object):
                    numerical deifnition of the contrast (one array per run)
         con_id: string, optional
                 name of the contrast 
+        contrast_type: string, either 't', 'F' or 'tmin', optional, 
+                       type of the contrast
         output_z: bool, optional,
                   Return or not the corresponding z-stat image
         output_stat: bool, optional,
@@ -529,9 +533,9 @@ class FMRILinearModel(object):
 
         for i, (glm, con) in enumerate(zip(self.glms, contrasts)):
             if i == 0:
-                contrast_ = glm.contrast(con)
+                contrast_ = glm.contrast(con, contrast_type)
             else:
-                contrast_ = contrast_ + glm.contrast(con)
+                contrast_ = contrast_ + glm.contrast(con, contrast_type)
         if output_z or output_stat:
             # compute the contrast and stat
             contrast_.z_score()
@@ -552,7 +556,7 @@ class FMRILinearModel(object):
                     result_map = np.tile(
                         mask.astype(np.float)[:, :, :, np.newaxis], dim)
                     result_map[mask] = np.reshape(
-                        contrast_.__getattribute__(estimate), (n_vox, dim))
+                        contrast_.__getattribute__(estimate).T, (n_vox, dim))
                 else:
                     result_map = mask.astype(np.float)
                     result_map[mask] = np.squeeze(

@@ -46,9 +46,7 @@ def test_high_level_glm_with_paths():
         multi_session_model.fit()
         z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
         assert_array_equal(z_image.get_affine(), load(mask_file).get_affine())
-        z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
-        assert_array_equal(z_image.get_affine(), load(mask_file).get_affine())
-        ### add other tests !
+        assert_true(z_image.get_data().std() < 3.)
 
 def test_high_level_glm_with_data():
     shapes, rk = ((5, 6, 7, 20), (5, 6, 7, 19)), 3
@@ -63,12 +61,28 @@ def test_high_level_glm_with_data():
                                           m=0, M=.01, threshold=0.)
     multi_session_model.fit()
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
+    assert_true(z_image.get_data().std() < 3. )
     # with mask
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask)
     multi_session_model.fit()
     z_image, effect_image, variance_image= multi_session_model.contrast(
         [np.eye(rk)[:2]] * 2, output_effects=True, output_variance=True)
-    assert_array_equal(z_image.get_affine(), load(mask).get_affine())
+    assert_array_equal(z_image.get_data() == 0., load(mask).get_data() == 0.)
+    assert_true(
+        (variance_image.get_data()[load(mask).get_data() > 0, 0] > .001).all())
+
+    
+def test_high_level_glm_contrasts():
+    shapes, rk = ((5, 6, 7, 20), (5, 6, 7, 19)), 3
+    mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
+    multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask=None)
+    multi_session_model.fit()
+    z_image, = multi_session_model.contrast([np.eye(rk)[:2]] * 2, 
+                                            contrast_type='tmin')
+    z1, = multi_session_model.contrast([np.eye(rk)[:1]] * 2) 
+    z2, = multi_session_model.contrast([np.eye(rk)[1:2]] * 2) 
+    assert_true((z_image.get_data() < np.maximum(
+                z1.get_data(), z2.get_data())).all())
 
 
 def ols_glm(n=100, p=80, q=10):
@@ -228,8 +242,7 @@ def test_tmin():
     t1, t2, t3 = mulm.contrast(c1).stat(), mulm.contrast(c2).stat(), \
         mulm.contrast(c3).stat()
     tmin = min(t1, t2, t3)
-    con = mulm.contrast(np.eye(q)[:3])
-    con.contrast_type = 'tmin'
+    con = mulm.contrast(np.eye(q)[:3], 'tmin')
     assert_equal(con.stat(), tmin)
 
 
