@@ -142,6 +142,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
 
     # Create snapshots of the contrasts
     vmax = max(- z_map.get_data().min(), z_map.get_data().max())
+    if index > 0:
+        plt.clf()
     plot_map(z_map.get_data(), z_map.get_affine(),
              cmap=cm.cold_hot,
              vmin=- vmax,
@@ -150,42 +152,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
              figure=10,
              threshold=2.5)
     plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
-    plt.clf()
-
-#########################################
-# End : various visualizations
-#########################################
 
 print "All the  results were witten in %s" % write_dir
-
-# make a simple 2D plot
-plot_map(z_map.get_data(), z_map.get_affine(),
-         cmap=cm.cold_hot,
-         vmin=- vmax,
-         vmax=vmax,
-         anat=None,
-         figure=10,
-         threshold=3)
-
-# More plots using 3D
-if True:  # replace with False to skip this
-    plot_map(z_map.get_data(), z_map.get_affine(),
-             cmap=cm.cold_hot,
-             vmin=-vmax,
-             vmax=vmax,
-             anat=None,
-             figure=11,
-             threshold=3, do3d=True)
-
-    from nipy.labs import viz3d
-    try:
-        viz3d.plot_map_3d(z_map.get_data(), z_map.get_affine(),
-                        cmap=cm.cold_hot,
-                        vmin=-vmax,
-                        vmax=vmax,
-                        anat=None,
-                        threshold=4)
-    except ImportError:
-        print "Need mayavi for 3D visualization"
 
 plt.show()
