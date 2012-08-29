@@ -383,9 +383,9 @@ class FMRILinearModel(object):
     >>> from nipy.utils import example_data
     >>> import numpy as np
     >>> from nipy.modalities.fmri.glm import FMRILinearModel
-    >>> fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
+    >>> fmri_files = [example_data.get_filename('fiac', 'fiac0', run)\
               for run in ['run1.nii.gz', 'run2.nii.gz']]
-    >>> design_files = [example_data.get_filename('fiac', 'fiac0', run)
+    >>> design_files = [example_data.get_filename('fiac', 'fiac0', run)\
                 for run in ['run1_design.npz', 'run2_design.npz']]
     >>> mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
     >>> multi_session_model = FMRILinearModel(fmri_files, design_files, mask)
