@@ -41,7 +41,7 @@ def data_scaling(Y):
     ----------
     Y: array of shape(n_time_points, n_voxels)
        the input data
-    
+
     Returns
     -------
     Y: array of shape(n_time_points, n_voxels),
@@ -126,7 +126,7 @@ class GeneralLinearModel(object):
         column_index: int or array-like of int, optional
                       The indexed of the columns to be returned.
                       By default, the whole vector is returned
-        
+
         Returns
         =======
         beta_: array of shape (n_voxels, n_columns)
@@ -138,7 +138,7 @@ class GeneralLinearModel(object):
         if not hasattr(column_index, '__iter__'):
             column_index = [int(column_index)]
         n_beta = len(column_index)
-        
+
         # build the beta array
         beta_ = np.zeros((n_beta, self.labels_.size), dtype=np.float)
         for l in self.results_.keys():
@@ -379,7 +379,7 @@ class Contrast(object):
 class FMRILinearModel(object):
     """ This class is meant to handle GLMs from a higher-level perspective
     i.e. by taking images as input and output
-    
+
     >>> from nipy.utils import example_data
     >>> import numpy as np
     >>> from nipy.modalities.fmri.glm import FMRILinearModel
@@ -393,23 +393,23 @@ class FMRILinearModel(object):
     >>> z_image = multi_session_model.contrast([np.eye(13)[1]] * 2)
     """
 
-    def __init__(self, fmri_data, design_matrices, mask='compute', 
+    def __init__(self, fmri_data, design_matrices, mask='compute',
                  m=0.2, M=0.9, threshold=.5):
         """Load the data
 
         Parameters
         ==========
-        fmri_data: (list of) image(s) or string(s), 
-                    fmri images / paths of the (4D) fmri images 
+        fmri_data: (list of) image(s) or string(s),
+                    fmri images / paths of the (4D) fmri images
         design_matrices: (list of) array(s) or string(s)
-                         design matrix arrays / paths of .npz files 
+                         design matrix arrays / paths of .npz files
         mask: string or image or None,
               string can be 'compute' or a path to an image
-              image is an input (assumed binary) mask image(s), 
+              image is an input (assumed binary) mask image(s),
               if 'compute', the mask is computed
               if None, no masking will be applied
         m, M, threshold: float, optional
-                         parameters of the masking procedure. 
+                         parameters of the masking procedure.
                          should be within [0, 1]
         Note
         ====
@@ -420,8 +420,8 @@ class FMRILinearModel(object):
         # manipulate the arguments
         if not hasattr(fmri_data, '__iter__'):
             fmri_data = [fmri_data]
-        if (not hasattr(design_matrices, '__iter__') or 
-            type(design_matrices) == np.ndarray) :
+        if (not hasattr(design_matrices, '__iter__') or
+            type(design_matrices) == np.ndarray):
             design_matrices = [design_matrices]
         if len(fmri_data) != len(design_matrices):
             raise ValueError('Incompatible number of fmri runs and'
@@ -460,11 +460,10 @@ class FMRILinearModel(object):
             else:
                 self.mask = mask
 
-
     def fit(self, do_scaling=True, model='ar1', steps=100):
         """Perform the analysis: load the data, mask the data, scale the data,\
         fit the GLM
-        
+
         Parameters
         ==========
         do_scaling: bool, optional
@@ -477,14 +476,14 @@ class FMRILinearModel(object):
         from nibabel import Nifti1Image
         # get the mask as an array
         mask = self.mask.get_data().astype(np.bool)
-        
+
         self.glms, self.means = [], []
         for fmri, design_matrix in zip(self.fmri_data, self.design_matrices):
             if do_scaling:
                 # scale the data
                 data, mean = data_scaling(fmri.get_data()[mask].T)
             else:
-                data, mean = (fmri.get_data()[mask].T, 
+                data, mean = (fmri.get_data()[mask].T,
                               fmri.get_data()[mask].T.mean(0))
             mean_data = mask.astype(np.int16)
             mean_data[mask] = mean
@@ -494,19 +493,18 @@ class FMRILinearModel(object):
             glm.fit(data, model, steps)
             self.glms.append(glm)
 
-
-    def contrast(self, contrasts, con_id='', contrast_type=None, output_z=True, 
-                 output_stat=False, output_effects=False, 
+    def contrast(self, contrasts, con_id='', contrast_type=None, output_z=True,
+                 output_stat=False, output_effects=False,
                  output_variance=False):
-        """ Estimation of a contrast as fixed effects on all sessions 
+        """ Estimation of a contrast as fixed effects on all sessions
 
         Parameters
         ==========
         contrasts: (list of) array(s),
                    numerical deifnition of the contrast (one array per run)
         con_id: string, optional
-                name of the contrast 
-        contrast_type: string, either 't', 'F' or 'tmin', optional, 
+                name of the contrast
+        contrast_type: string, either 't', 'F' or 'tmin', optional,
                        type of the contrast
         output_z: bool, optional,
                   Return or not the corresponding z-stat image
@@ -516,10 +514,10 @@ class FMRILinearModel(object):
                         Return or not the corresponding effect image
         output_variance: bool, optional,
                          Return or not the corresponding variance image
-        
+
         Returns
         =======
-        output_images: list of nibabel images 
+        output_images: list of nibabel images
                        The desired output images
         """
         from nibabel import Nifti1Image
@@ -548,7 +546,7 @@ class FMRILinearModel(object):
         descrips = ['z statistic', 'Statistical value', 'Estimated effect',
                     'Estimated variance']
         dims = [1, 1, contrast_.dim, contrast_.dim ** 2]
-        n_vox = contrast_.z_score_.size 
+        n_vox = contrast_.z_score_.size
         output_images = []
         for (do_output, estimate, descrip, dim) in zip(
             do_outputs, estimates, descrips, dims):

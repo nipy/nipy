@@ -2,10 +2,10 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Example where the result of a conjunction of two contrasts 
+Example where the result of a conjunction of two contrasts
 is computed and displayed.
-This is based on the Localizer dataset, 
-in which we want to find the regions activated 
+This is based on the Localizer dataset,
+in which we want to find the regions activated
 both in left and right finger tapping.
 
 Needs matplotlib
@@ -93,7 +93,7 @@ contrasts['right'] = contrasts['clicDaudio'] + contrasts['clicDvideo']
 ########################################
 
 print 'Fitting a General Linear Model'
-fmri_glm = FMRILinearModel(data_path, design_matrix.matrix, 
+fmri_glm = FMRILinearModel(data_path, design_matrix.matrix,
                            mask='compute')
 fmri_glm.fit(do_scaling=True, model='ar1')
 
@@ -123,5 +123,5 @@ plt.savefig(path.join(write_dir, '%s_z_map.png' % 'motor_conjunction'))
 plt.show()
 
 print 'All the  results were witten in %s' % write_dir
-# Note: fancier visualization of the results are shown 
+# Note: fancier visualization of the results are shown
 # in the localizer_glm_ar example

@@ -14,9 +14,9 @@ from nibabel import load, nifti1, save
 from nibabel.loadsave import read_img_data
 
 
-################################################################################
+###############################################################################
 # Operating on connect component
-################################################################################
+###############################################################################
 
 def largest_cc(mask):
     """ Return the largest connected component of a 3D mask array.
@@ -25,11 +25,11 @@ def largest_cc(mask):
         -----------
         mask: 3D boolean array
             3D array indicating a mask.
-        
+
         Returns
         --------
-        mask: 3D boolean array 
-            3D array indicating a mask, with only one connected component.    
+        mask: 3D boolean array
+            3D array indicating a mask, with only one connected component.
     """
     # We use asarray to be able to work with masked arrays.
     mask = np.asarray(mask)
@@ -41,7 +41,7 @@ def largest_cc(mask):
     label_count = np.bincount(labels.ravel())
     # discard 0 the 0 label
     label_count[0] = 0
-    return labels ==  label_count.argmax() 
+    return labels == label_count.argmax()
 
 
 def threshold_connect_components(map, threshold, copy=True):
@@ -70,9 +70,9 @@ def threshold_connect_components(map, threshold, copy=True):
     return map
 
 
-################################################################################
+###############################################################################
 # Utilities to calculate masks
-################################################################################
+###############################################################################
 
 def compute_mask_files(input_filename, output_filename=None,
                         return_mean=False, m=0.2, M=0.9, cc=1,
@@ -129,7 +129,7 @@ def compute_mask_files(input_filename, output_filename=None,
                 mean_volume = vol_arr.mean(axis=-1)
             # Make a copy, to avoid holding a reference on the full array,
             # and thus polluting the memory.
-            first_volume = vol_arr[:,:,:,0].copy()
+            first_volume = vol_arr[:, :, :, 0].copy()
         elif vol_arr.ndim == 3:
             mean_volume = first_volume = vol_arr
         else:
@@ -140,7 +140,7 @@ def compute_mask_files(input_filename, output_filename=None,
         if len(list(input_filename)) == 0:
             raise ValueError('input_filename should be a non-empty '
                 'list of file names')
-        # We have several images, we do mean on the fly, 
+        # We have several images, we do mean on the fly,
         # to avoid loading all the data in the memory
         # We do not use the unscaled data here?:
         # if the scalefactor is being used to record real
@@ -228,18 +228,17 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
             - sorted_input[limiteinf:limitesup]
     ia = delta.argmax()
     threshold = 0.5 * (sorted_input[ia + limiteinf]
-                        + sorted_input[ia + limiteinf  +1])
+                        + sorted_input[ia + limiteinf + 1])
 
     mask = (mean_volume >= threshold)
-    
+
     if cc:
         mask = largest_cc(mask)
-    
+
     if opening:
         mask = ndimage.binary_opening(mask.astype(np.int),
                                         iterations=2)
     return mask.astype(bool)
-
 
 
 def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
@@ -307,7 +306,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
     # Take the "half-intersection", i.e. all the voxels that fall within
     # 50% of the individual masks.
     mask = (mask > threshold * len(list(session_files)))
-      
+
     if cc:
         # Select the largest connected component (each mask is
         # connect, but the half-interesection may not be):
@@ -325,7 +324,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
 def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
     """
     Given a list of input mask images, generate the output image which
-    is the the threshold-level intersection of the inputs 
+    is the the threshold-level intersection of the inputs
 
     Parameters
     ----------
@@ -340,15 +339,15 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
         masks, whereas threshold=0 is the union of all masks.
     cc: bool, optional
         If true, extract the main connected component
-        
+
     Returns
     -------
     grp_mask, boolean array of shape the image shape
-    """  
+    """
     grp_mask = None
     if threshold > 1:
         raise ValueError('The threshold should be < 1')
-    if threshold <0:
+    if threshold < 0:
         raise ValueError('The threshold should be > 0')
     threshold = min(threshold, 1 - 1.e-7)
 
@@ -360,18 +359,19 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
             grp_mask = this_mask.copy().astype(np.int)
         else:
             # If this_mask is floating point and grp_mask is integer, numpy 2
-            # casting rules raise an error for in-place addition. Hence we do it
-            # long-hand. XXX should the masks be coerced to int before addition?
+            # casting rules raise an error for in-place addition.
+            # Hence we do it long-hand.
+            # XXX should the masks be coerced to int before addition?
             grp_mask = grp_mask + this_mask
-    
+
     grp_mask = grp_mask > (threshold * len(list(input_masks)))
-    
+
     if np.any(grp_mask > 0) and cc:
         grp_mask = largest_cc(grp_mask)
-    
+
     if output_filename is not None:
         if isinstance(input_masks[0], basestring):
-            nim = load(input_masks[0]) 
+            nim = load(input_masks[0])
             header = nim.get_header()
             affine = nim.get_affine()
         else:
@@ -387,9 +387,9 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
     return grp_mask > 0
 
 
-################################################################################
+###############################################################################
 # Time series extraction
-################################################################################
+###############################################################################
 
 def series_from_mask(filenames, mask, dtype=np.float32,
                      smooth=False, ensure_finite=True):
@@ -441,7 +441,7 @@ def series_from_mask(filenames, mask, dtype=np.float32,
         if isinstance(series, np.memmap):
             series = np.asarray(series).copy()
         if smooth:
-            vox_size = np.sqrt(np.sum(affine **2, axis=0))
+            vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
             smooth_sigma = smooth / vox_size
             for this_volume in np.rollaxis(series, -1):
                 this_volume[...] = ndimage.gaussian_filter(this_volume,
@@ -459,7 +459,7 @@ def series_from_mask(filenames, mask, dtype=np.float32,
             data = data.astype(dtype)
             if smooth is not False:
                 affine = data_file.get_affine()[:3, :3]
-                vox_size = np.sqrt(np.sum(affine **2, axis=0))
+                vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
                 smooth_sigma = smooth / vox_size
                 data = ndimage.gaussian_filter(data, smooth_sigma)
 
@@ -470,5 +470,3 @@ def series_from_mask(filenames, mask, dtype=np.float32,
                 header = data_file.get_header()
 
     return series, header
-
-

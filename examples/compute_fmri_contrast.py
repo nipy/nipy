@@ -40,12 +40,12 @@ nargs = len(sys.argv)
 if nargs not in (1, 2, 5):
     print USAGE
     exit(1)
-if nargs == 1: # default no-argument case
+if nargs == 1:  # default no-argument case
     cvect = [1, 0, 0, 0]
 else:
-    if nargs == 2: # contrast as one string
+    if nargs == 2:  # contrast as one string
         args = sys.argv[1].split(',')
-    elif nargs == 5: # contrast as sequence of strings
+    elif nargs == 5:  # contrast as sequence of strings
         args = [arg.replace(',', '') for arg in sys.argv[1:]]
     if len(args) != 4:
         print USAGE
@@ -77,11 +77,11 @@ z_map, = multi_session_model.contrast(con)
 
 # Show Z-map image
 mean_map = multi_session_model.means[0]
-plot_map(z_map.get_data(), 
-         z_map.get_affine(), 
-         anat=mean_map.get_data(), 
-         anat_affine=mean_map.get_affine(), 
-         cmap=cm.cold_hot, 
-         threshold=2.5, 
+plot_map(z_map.get_data(),
+         z_map.get_affine(),
+         anat=mean_map.get_data(),
+         anat_affine=mean_map.get_affine(),
+         cmap=cm.cold_hot,
+         threshold=2.5,
          black_bg=True)
 plt.show()

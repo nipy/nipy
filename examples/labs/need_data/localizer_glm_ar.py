@@ -123,7 +123,7 @@ contrasts['effects_of_interest'] = np.eye(25)[:20:2]
 ########################################
 
 print 'Fitting a GLM (this takes time)...'
-fmri_glm = FMRILinearModel(data_path, design_matrix.matrix, 
+fmri_glm = FMRILinearModel(data_path, design_matrix.matrix,
                            mask='compute')
 fmri_glm.fit(do_scaling=True, model='ar1')
 
@@ -153,7 +153,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
     plt.clf()
 
 #########################################
-# End : various visualizations 
+# End : various visualizations
 #########################################
 
 print "All the  results were witten in %s" % write_dir
