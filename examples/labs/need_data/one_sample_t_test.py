@@ -4,7 +4,7 @@
 """
 Example of a one-sample t-test using the GLM formalism.
 This script takes individual contrast images and masks and runs a simple GLM.
-This can be readily generalized to any kind of design matrices.
+This can be readily generalized to any design matrix.
 
 This particular example shows the statical map of a contrast
 related to a computation task
@@ -36,14 +36,14 @@ from nipy.labs.viz import plot_map, cm
 from get_data_light import DATA_DIR, get_second_level_dataset
 
 # Get the data
-nbsubj = 12
-nbeta = 29
+n_subjects = 12
+n_beta = 29
 data_dir = path.join(DATA_DIR, 'group_t_images')
 mask_images = [path.join(data_dir, 'mask_subj%02d.nii' % n)
-               for n in range(nbsubj)]
+               for n in range(n_subjects)]
 
-betas = [path.join(data_dir, 'spmT_%04d_subj_%02d.nii' % (nbeta, n))
-         for n in range(nbsubj)]
+betas = [path.join(data_dir, 'spmT_%04d_subj_%02d.nii' % (n_beta, n))
+         for n in range(n_subjects)]
 
 missing_files = np.array([not path.exists(m) for m in mask_images + betas])
 if missing_files.any():
@@ -62,16 +62,14 @@ first_level_image = concat_images(betas)
 
 # set the model
 design_matrix = np.ones(len(betas))[:, np.newaxis]  # only the intercept
-grp_model = FMRILinearModel(first_level_image, design_matrix,
-                            grp_mask)
+grp_model = FMRILinearModel(first_level_image, design_matrix, grp_mask)
 
 # GLM fitting using ordinary least_squares
 grp_model.fit(do_scaling=False, model='ols')
 
 # specify and estimate the contrast
 contrast_val = np.array(([[1]]))  # the only possible contrast !
-z_map, = grp_model.contrast(contrast_val, con_id='one_sample',
-                            output_z=True)
+z_map, = grp_model.contrast(contrast_val, con_id='one_sample', output_z=True)
 
 # write the results
 save(z_map, path.join(write_dir, 'one_sample_z_map.nii'))

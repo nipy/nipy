@@ -50,7 +50,7 @@ def make_fiac_contrasts(p):
 
     Parameters
     ==========
-    p: int, the bumber of columns of the design matrix (for all sessions)
+    p: int, the number of columns of the design matrix (for all sessions)
     """
     con = {}
     # the design matrices of both runs comprise 13 columns
