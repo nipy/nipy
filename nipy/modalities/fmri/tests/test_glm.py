@@ -18,7 +18,9 @@ def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
     mask_file, fmri_files, design_files = 'mask.nii', [], []
     for i, shape in enumerate(shapes):
         fmri_files.append('fmri_run%d.nii' %i)
-        save(Nifti1Image(100 + np.random.randn(*shape), affine), fmri_files[-1])
+        data = 100 + np.random.randn(*shape)
+        data[0] -= 10
+        save(Nifti1Image(data, affine), fmri_files[-1])
         design_files.append('dmtx_%d.npz' %i)
         np.savez(design_files[-1], np.random.randn(shape[3], rk))
     save(Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8), 
@@ -29,8 +31,9 @@ def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
 def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
     fmri_data, design_matrices= []
     for i, shape in enumerate(shapes):
-        fmri_data.append(Nifti1Image(100 + np.random.randn(*shape), 
-                                     affine))
+        data = 100 + np.random.randn(*shape)
+        data[0] -= 10
+        fmri_data.append(Nifti1Image(data, affine))
         design_matrices.append(np.random.randn(shape[3], rk))
     mask = Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8), 
                        affine)
@@ -50,7 +53,7 @@ def test_high_level_glm_with_paths():
 
 
 def test_high_level_glm_with_data():
-    shapes, rk = ((5, 6, 7, 20), (5, 6, 7, 19)), 3
+    shapes, rk = ((7, 6, 5, 20), (7, 6, 5, 19)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
     
     # without mask

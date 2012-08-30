@@ -129,7 +129,7 @@ def compute_mask_files(input_filename, output_filename=None,
                 mean_volume = vol_arr.mean(axis=-1)
             # Make a copy, to avoid holding a reference on the full array,
             # and thus polluting the memory.
-            first_volume = vol_arr[:, :, :, 0].copy()
+            first_volume = vol_arr[..., 0].copy()
         elif vol_arr.ndim == 3:
             mean_volume = first_volume = vol_arr
         else:
@@ -230,7 +230,7 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     threshold = 0.5 * (sorted_input[ia + limiteinf]
                         + sorted_input[ia + limiteinf + 1])
 
-    mask = (mean_volume >= threshold)
+    mask = (reference_volume >= threshold)
 
     if cc:
         mask = largest_cc(mask)
