@@ -123,13 +123,13 @@ class GeneralLinearModel(object):
 
         Parameters
         ==========
-        column_index: int or array-like of int, optional
+        column_index: int or array-like of int or None, optional,
                       The indexed of the columns to be returned.
-                      By default, the whole vector is returned
+                      if None (default behaviour), the whole vector is returned
 
         Returns
         =======
-        beta_: array of shape (n_voxels, n_columns)
+        beta: array of shape (n_voxels, n_columns)
               the beta
         """
         # make colum_index a list if it an int
@@ -140,10 +140,10 @@ class GeneralLinearModel(object):
         n_beta = len(column_index)
 
         # build the beta array
-        beta_ = np.zeros((n_beta, self.labels_.size), dtype=np.float)
+        beta = np.zeros((n_beta, self.labels_.size), dtype=np.float)
         for l in self.results_.keys():
-            beta_[:, self.labels_ == l] = self.results_[l].theta[column_index]
-        return beta_
+            beta[:, self.labels_ == l] = self.results_[l].theta[column_index]
+        return beta
 
     def get_mse(self):
         """Acessor for the mean squared error of the model
@@ -379,9 +379,10 @@ class Contrast(object):
 class FMRILinearModel(object):
     """ This class is meant to handle GLMs from a higher-level perspective
     i.e. by taking images as input and output
-
+    
+    Examples
+    --------
     >>> from nipy.utils import example_data
-    >>> import numpy as np
     >>> from nipy.modalities.fmri.glm import FMRILinearModel
     >>> fmri_files = [example_data.get_filename('fiac', 'fiac0', run)\
               for run in ['run1.nii.gz', 'run2.nii.gz']]
@@ -399,9 +400,9 @@ class FMRILinearModel(object):
 
         Parameters
         ==========
-        fmri_data: (list of) image(s) or string(s),
+        fmri_data: image or list of images or string or list of strings,
                     fmri images / paths of the (4D) fmri images
-        design_matrices: (list of) array(s) or string(s)
+        design_matrices: arrays or list of arrays or string or list of strings,
                          design matrix arrays / paths of .npz files
         mask: string or image or None,
               string can be 'compute' or a path to an image
@@ -411,8 +412,8 @@ class FMRILinearModel(object):
         m, M, threshold: float, optional
                          parameters of the masking procedure.
                          should be within [0, 1]
-        Note
-        ====
+        Notes
+        =====
         The only computation done here is mask computation (if required)
         """
         from nipy.labs.mask import compute_mask_sessions
@@ -471,7 +472,7 @@ class FMRILinearModel(object):
         model: string, optional,
                the kind of glm ('ols' or 'ar1') you want to fit to the data
         steps: int, optional
-               in case of an ar1, discrteization of the ar1 parameter
+               in case of an ar1, discrtization of the ar1 parameter
         """
         from nibabel import Nifti1Image
         # get the mask as an array
@@ -500,11 +501,12 @@ class FMRILinearModel(object):
 
         Parameters
         ==========
-        contrasts: (list of) array(s),
+        contrasts: array or list of arrays of shape (n_col) or (n_dim, n_col),
+                   where n_col is the number of columns of the design matrix, 
                    numerical deifnition of the contrast (one array per run)
         con_id: string, optional
                 name of the contrast
-        contrast_type: string, either 't', 'F' or 'tmin', optional,
+        contrast_type: string, one in {'t', 'F', 'tmin}, optional,
                        type of the contrast
         output_z: bool, optional,
                   Return or not the corresponding z-stat image
@@ -523,7 +525,7 @@ class FMRILinearModel(object):
         from nibabel import Nifti1Image
         if self.glms == []:
             raise ValueError('first run fit() to estimate the model')
-        if type(contrasts) == np.ndarray:
+        if isinstance(contrasts, np.ndarray):
             contrasts = [contrasts]
         if len(contrasts) != len(self.glms):
             raise ValueError(
@@ -555,11 +557,11 @@ class FMRILinearModel(object):
                     result_map = np.tile(
                         mask.astype(np.float)[:, :, :, np.newaxis], dim)
                     result_map[mask] = np.reshape(
-                        contrast_.__getattribute__(estimate).T, (n_vox, dim))
+                        getattr(contrast_, estimate).T, (n_vox, dim))
                 else:
                     result_map = mask.astype(np.float)
                     result_map[mask] = np.squeeze(
-                        contrast_.__getattribute__(estimate))
+                        getattr(contrast_, estimate))
                 output = Nifti1Image(result_map, self.affine)
                 output.get_header()['descrip'] = (
                     '%s associated with contrast %s' % (descrip, con_id))
