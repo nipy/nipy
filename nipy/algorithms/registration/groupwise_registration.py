@@ -144,7 +144,7 @@ class Image4d(object):
         else:
             # Verify correctness of provided slice indexes
             provided_slices = np.array(sorted(self._slice_order))
-            if np.any(provided_slices != np.arange(self.nslices)):
+            if np.any(provided_slices != np.arange(nslices)):
                 raise ValueError(
                     "Incorrect slice indexes were provided. There are %d "
                     "slices in the volume, indexes should start from 0 and "
