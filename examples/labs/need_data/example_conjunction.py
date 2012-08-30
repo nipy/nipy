@@ -2,7 +2,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Example where the result of a conjunction of two contrasts
+Example where the result of the min of two contrasts
 is computed and displayed.
 This is based on the Localizer dataset,
 in which we want to find the regions activated
@@ -23,7 +23,7 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nibabel import save, Nifti1Image
+from nibabel import save
 
 from nipy.modalities.fmri.glm import FMRILinearModel
 from nipy.modalities.fmri.design_matrix import make_dmtx
@@ -101,27 +101,30 @@ fmri_glm.fit(do_scaling=True, model='ar1')
 # Estimate the contrasts
 #########################################
 
+contrast_id = 'left_right_motor_min'
+z_map, effects_map = fmri_glm.contrast(
+    np.vstack((contrasts['left'], contrasts['right'])), 
+    contrast_type='tmin', output_z=True, output_effects=True)
+z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
+save(z_map, z_image_path)
 
-con = fmri_glm.glms[0].contrast(
-    np.vstack((contrasts['left'], contrasts['right'])), contrast_type='tmin')
-z_values = con.z_score()
-z_map = fmri_glm.mask.get_data().astype(np.float)
-z_map[z_map > 0] = z_values
-image_path = path.join(write_dir, '%s_z_map.nii' % 'motor_conjunction')
-save(Nifti1Image(z_map, fmri_glm.affine), image_path)
+contrast_path = path.join(write_dir, '%s_con.nii' % contrast_id)
+save(effects_map, contrast_path)
+# note that the effects_map is two-dimensional: 
+# these dimensions correspond to 'left' and 'right'
 
 # Create snapshots of the contrasts
-vmax = max(- z_map.min(), z_map.max())
-plot_map(z_map, fmri_glm.affine,
+vmax = max(- z_map.get_data().min(), z_map.get_data().max())
+plot_map(z_map.get_data(), fmri_glm.affine,
          cmap=cm.cold_hot,
          vmin=- vmax,
          vmax=vmax,
          anat=None,
          figure=10,
          threshold=2.5)
-plt.savefig(path.join(write_dir, '%s_z_map.png' % 'motor_conjunction'))
+plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 plt.show()
 
 print 'All the  results were witten in %s' % write_dir
 # Note: fancier visualization of the results are shown
-# in the localizer_glm_ar example
+# in the viz3d example
