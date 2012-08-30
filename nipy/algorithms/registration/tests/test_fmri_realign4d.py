@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_raises
 
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import numpy as np
@@ -53,6 +53,14 @@ def _test_image4d_init(nslices):
     # or list
     img4d = Image4d(data, aff, tr, slice_order=range(nslices))
     assert_array_equal(img4d.slice_order, range(nslices))
+    # but raises exception in case of the incorrect slice indexes
+    for bad_slice_order in (
+        [0],                     # insufficient
+        np.arange(nslices)-1,    # negative etc
+        np.arange(nslices) + 0.1, # floats
+        range(nslices//2)*2,     # twice the same (would match in length for even nslices)
+        ):
+        assert_raises(ValueError, Image4d, data, aff, tr, slice_order=bad_slice_order)
 
 
 def test_image4d_init_5slices():
