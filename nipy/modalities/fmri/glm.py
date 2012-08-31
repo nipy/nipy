@@ -181,7 +181,7 @@ class GeneralLinearModel(object):
         con_val: numpy.ndarray of shape (p) or (q, p),
                  where q = number of contrast vectors
                  and p = number of regressors
-        contrast_type: string, optional, either 't', 'F' or 'tmin',
+        contrast_type: string, optional, either 't', 'F' or 'tmin-conjunction',
                        type of the contrast
 
         Returns
@@ -200,7 +200,7 @@ class GeneralLinearModel(object):
                 contrast_type = 't'
             else:
                 contrast_type = 'F'
-        if contrast_type not in ['t', 'F', 'tmin']:
+        if contrast_type not in ['t', 'F', 'tmin-conjunction']:
             raise ValueError('Unknown contrast type: %s' % contrast_type)
 
         effect_ = np.zeros((dim, self.labels_.size), dtype=np.float)
@@ -295,7 +295,7 @@ class Contrast(object):
             stat = (mahalanobis(self.effect - baseline, self.variance)
                     / self.dim)
         # Case: tmin (conjunctions)
-        elif self.contrast_type == 'tmin':
+        elif self.contrast_type == 'tmin-conjunction':
             vdiag = self.variance.reshape([self.dim ** 2] + list(
                     self.variance.shape[2:]))[:: self.dim + 1]
             stat = (self.effect - baseline) / np.sqrt(
@@ -320,7 +320,7 @@ class Contrast(object):
         if self.stat_ == None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
-        if self.contrast_type in ['t', 'tmin']:
+        if self.contrast_type in ['t', 'tmin-conjunction']:
             p = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
         elif self.contrast_type == 'F':
             p = sps.f.sf(self.stat_, self.dim, np.minimum(
@@ -506,7 +506,7 @@ class FMRILinearModel(object):
                    numerical deifnition of the contrast (one array per run)
         con_id: string, optional
                 name of the contrast
-        contrast_type: string, one in {'t', 'F', 'tmin}, optional,
+        contrast_type: string, one in {'t', 'F', 'tmin-conjunction'}, optional,
                        type of the contrast
         output_z: bool, optional,
                   Return or not the corresponding z-stat image

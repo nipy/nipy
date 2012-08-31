@@ -8,6 +8,12 @@ This is based on the Localizer dataset,
 in which we want to find the regions activated
 both in left and right finger tapping.
 
+Notes
+----- 
+This is the valid conjunction test discussed in:
+Nichols T, Brett M, Andersson J, Wager T, Poline JB. Valid conjunction
+inference with the minimum statistic. Neuroimage. 2005 Apr 15;25(3):653-60.
+
 Needs matplotlib
 
 Author : Bertrand Thirion, 2012
@@ -104,7 +110,7 @@ fmri_glm.fit(do_scaling=True, model='ar1')
 contrast_id = 'left_right_motor_min'
 z_map, effects_map = fmri_glm.contrast(
     np.vstack((contrasts['left'], contrasts['right'])), 
-    contrast_type='tmin', output_z=True, output_effects=True)
+    contrast_type='tmin-conjunction', output_z=True, output_effects=True)
 z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
 save(z_map, z_image_path)
 

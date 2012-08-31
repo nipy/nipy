@@ -90,7 +90,7 @@ def test_high_level_glm_contrasts():
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask=None)
     multi_session_model.fit()
     z_image, = multi_session_model.contrast([np.eye(rk)[:2]] * 2, 
-                                            contrast_type='tmin')
+                                            contrast_type='tmin-conjunction')
     z1, = multi_session_model.contrast([np.eye(rk)[:1]] * 2) 
     z2, = multi_session_model.contrast([np.eye(rk)[1:2]] * 2) 
     assert_true((z_image.get_data() < np.maximum(
@@ -254,7 +254,7 @@ def test_tmin():
     t1, t2, t3 = mulm.contrast(c1).stat(), mulm.contrast(c2).stat(), \
         mulm.contrast(c3).stat()
     tmin = min(t1, t2, t3)
-    con = mulm.contrast(np.eye(q)[:3], 'tmin')
+    con = mulm.contrast(np.eye(q)[:3], 'tmin-conjunction')
     assert_equal(con.stat(), tmin)
 
 
