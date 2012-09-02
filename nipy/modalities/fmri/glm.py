@@ -223,13 +223,21 @@ class GeneralLinearModel(object):
 
 class Contrast(object):
     """ The contrast class handles the estimation of statistical contrasts
-    After application of the GLM.
+    on a given model: student (t), Fisher (F), conjunction (tmin-conjunction).
     The important feature is that it supports addition,
     thus opening the possibility of fixed-effects models.
 
     The current implementation is meant to be simple,
     and could be enhanced in the future on the computational side
-    (high-dimensional F constrasts may lead to memory breakage)
+    (high-dimensional F constrasts may lead to memory breakage).
+
+    Notes
+    -----
+    The 'tmin-conjunction' test is the valid conjunction test discussed in:
+    Nichols T, Brett M, Andersson J, Wager T, Poline JB. Valid conjunction
+    inference with the minimum statistic. Neuroimage. 2005 Apr 15;25(3):653-60.
+    This test gives the p-value of the z-values under the conjunction null,
+    i.e. the union of the null hypotheses for all terms.
     """
 
     def __init__(self, effect, variance, dof=DEF_DOFMAX, contrast_type='t',
