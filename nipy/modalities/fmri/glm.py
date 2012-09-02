@@ -399,7 +399,9 @@ class FMRILinearModel(object):
     >>> mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
     >>> multi_session_model = FMRILinearModel(fmri_files, design_files, mask)
     >>> multi_session_model.fit()
-    >>> z_image = multi_session_model.contrast([np.eye(13)[1]] * 2)
+    >>> z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
+    >>> np.sum(z_image.get_data() > 3.09)  # number of voxels with p < 0.001
+    671
     """
 
     def __init__(self, fmri_data, design_matrices, mask='compute',
