@@ -102,7 +102,7 @@ def test_save3():
         img2 = api.Image(data, tmp.coordmap, tmp.metadata)
         del tmp
     assert_equal(tuple([img.shape[l] for l in [3,2,1,0]]), img2.shape)
-    a = np.transpose(np.asarray(img), [3,2,1,0])
+    a = np.transpose(img.get_data(), [3,2,1,0])
     assert_false(np.allclose(img.affine, img2.affine))
     assert_true(np.allclose(a, img2.get_data()))
 
@@ -147,8 +147,8 @@ def test_save4():
     assert_equal(img.shape[::-1], img2.shape)
     # data should be transposed because coordinates are reversed
     assert_array_almost_equal(
-           np.transpose(np.asarray(img2),[3,2,1,0]),
-           np.asarray(img))
+        np.transpose(img2.get_data(),[3,2,1,0]),
+        img.get_data())
     # coordinate names should be reversed as well
     assert_equal(img2.coordmap.function_domain.coord_names,
                  img.coordmap.function_domain.coord_names[::-1])
