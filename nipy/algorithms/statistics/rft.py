@@ -1,6 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
+""" Random field theory routines
+
 The theoretical results for  the EC densities appearing in this module
 were partially supported by NSF grant DMS-0405970.
 
@@ -26,7 +27,7 @@ def binomial(n, k):
                n!
     c =    ---------
            (n-k)! k!
-           
+
     Parameters
     ----------
     n : float
@@ -41,7 +42,7 @@ def binomial(n, k):
     Examples
     --------
     First 3 values of 4 th row of Pascal triangle
-    
+
     >>> [binomial(4, k) for k in range(3)]
     [1.0, 4.0, 6.0]
     """
@@ -153,7 +154,7 @@ class ECquasi(np.poly1d):
 
     def change_exponent(self, _pow):
         """ Change exponent
-        
+
         Multiply top and bottom by an integer multiple of the
         self.denom_poly.
 
@@ -194,7 +195,7 @@ class ECquasi(np.poly1d):
 
     def compatible(self, other):
         """ Check compatibility of degrees of freedom
-        
+
         Check whether the degrees of freedom of two instances are equal
         so that they can be multiplied together.
 
@@ -246,7 +247,7 @@ class ECquasi(np.poly1d):
                                m=self.m)
 
     def __mul__(self, other):
-        """  Multiply two compatible ECquasi instances together.
+        """ Multiply two compatible ECquasi instances together.
 
         Examples
         --------
@@ -287,7 +288,7 @@ class ECquasi(np.poly1d):
 
     def __div__(self, other):
         raise NotImplementedError
-    
+
     def __eq__(self, other):
         return (np.poly1d.__eq__(self, other) and
                 self.m == other.m and
@@ -387,8 +388,10 @@ class fnsum(object):
             v += q(x)
         return v
 
+
 class IntrinsicVolumes(object):
-    """
+    """ Compute intrinsic volumes of products of sets
+
     A simple class that exists only to compute the intrinsic volumes of
     products of sets (that themselves have intrinsic volumes, of course).
     """
@@ -403,7 +406,7 @@ class IntrinsicVolumes(object):
 
     def __mul__(self, other):
         if not isinstance(other, IntrinsicVolumes):
-            raise ValueError, 'expecting an IntrinsicVolumes instance'
+            raise ValueError('expecting an IntrinsicVolumes instance')
         order = self.order + other.order + 1
         mu = np.zeros(order)
 
@@ -417,18 +420,18 @@ class IntrinsicVolumes(object):
 
 
 class ECcone(IntrinsicVolumes):
-    """
-    A class that takes the intrinsic volumes of a set and gives the
-    EC approximation to the supremum distribution of a unit variance Gaussian
+    """ EC approximation to supremum distribution of var==1 Gaussian process
+
+    A class that takes the intrinsic volumes of a set and gives the EC
+    approximation to the supremum distribution of a unit variance Gaussian
     process with these intrinsic volumes. This is the basic building block of
     all of the EC densities.
-    
-    If product is not None, then this product (an instance
-    of IntrinsicVolumes) will effectively
-    be prepended to the search region in any call, but it will
-    also affect the (quasi-)polynomial part of the EC density. For
-    instance, Hotelling's T^2 random field has a sphere as product,
-    as does Roy's maximum root.
+
+    If product is not None, then this product (an instance of IntrinsicVolumes)
+    will effectively be prepended to the search region in any call, but it will
+    also affect the (quasi-)polynomial part of the EC density. For instance,
+    Hotelling's T^2 random field has a sphere as product, as does Roy's maximum
+    root.
     """
     def __init__(self, mu=[1], dfd=np.inf, search=[1], product=[1]):
         self.dfd = dfd
@@ -472,7 +475,7 @@ class ECcone(IntrinsicVolumes):
             _rho *= np.power(1 + x**2/self.dfd, -(self.dfd-1)/2.)
         else:
             _rho *= np.exp(-x**2/2.)
-            
+
         if search.mu[0] * self.mu[0] != 0.:
             # tail probability is not "quasi-polynomial"
             if not np.isfinite(self.dfd):
@@ -493,7 +496,6 @@ class ECcone(IntrinsicVolumes):
         """ The EC density in dimension `dim`.
         """
         return self(x, search=[0]*dim+[1])
-
 
     def _quasi_polynomials(self, dim):
         """ list of quasi-polynomials for EC density calculation.
@@ -539,7 +541,7 @@ Gaussian = ECcone
 
 def mu_sphere(n, j, r=1):
     """ `j`th curvature for `n` dimensional sphere radius `r`
-    
+
     Return mu_j(S_r(R^n)), the j-th Lipschitz Killing
     curvature of the sphere of radius r in R^n.
 
@@ -550,9 +552,9 @@ def mu_sphere(n, j, r=1):
     if j < n:
         if n-1 == j:
             return 2 * np.power(np.pi, n/2.) * np.power(r, n-1) / gamma(n/2.) 
-    
+
         if (n-1-j)%2 == 0:
-            
+
             return 2 * binomial(n-1, j) * mu_sphere(n,n-1) * np.power(r, j) / mu_sphere(n-j,n-j-1)
         else:
             return 0
@@ -562,7 +564,7 @@ def mu_sphere(n, j, r=1):
 
 def mu_ball(n, j, r=1):
     """ `j`th curvature of `n`-dimensional ball radius `r`
-    
+
     Return mu_j(B_n(r)), the j-th Lipschitz Killing curvature of the
     ball of radius r in R^n.
     """
@@ -586,11 +588,12 @@ def ball_search(n, r=1):
     """
     return IntrinsicVolumes([mu_ball(n,j,r=r) for j in range(n+1)])
 
+
 def volume2ball(vol, d=3):
     """ Approximate volume with ball
-    
-    Approximate intrinsic volumes of a set with a given volume by those
-    of a ball with a given dimension and equal volume.
+
+    Approximate intrinsic volumes of a set with a given volume by those of a
+    ball with a given dimension and equal volume.
     """
     if d > 0:
         r = np.power(vol * 1. / mu_ball(d, d), 1./d)
@@ -713,7 +716,7 @@ class ChiBarSquared(ChiSquared):
         g = Gaussian()
         for i in range(1, self.dfn+1):
             sf += binomial(self.dfn, i) * stats.chi.sf(x, i) / np.power(2., self.dfn) 
-        
+
         d = np.array([g.density(np.sqrt(x), j) for j in range(self.dfn)])
         c = np.dot(pinv(d.T), sf)
         sf += 1. / np.power(2, self.dfn)
@@ -733,7 +736,7 @@ class ChiBarSquared(ChiSquared):
 
 def scale_space(region, interval, kappa=1.):
     """ scale space intrinsic volumes of region x interval
-    
+
     See:
 
     Siegmund, D.O and Worsley, K.J. (1995). 'Testing for a signal
