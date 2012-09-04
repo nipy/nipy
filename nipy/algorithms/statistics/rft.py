@@ -96,7 +96,7 @@ def Q(dim, dfd=np.inf):
 
 class ECquasi(np.poly1d):
     """ Polynomials with premultiplier
-    
+
     A subclass of poly1d consisting of polynomials with a premultiplier of the
     form:
 
@@ -115,14 +115,13 @@ class ECquasi(np.poly1d):
 
     >>> a = ECquasi([3,4,5])
     >>> a
-    ECquasi([3, 4, 5],m=inf, exponent=0.000000)
+    ECquasi(array([3, 4, 5]), m=inf, exponent=0.000000)
     >>> a(3) == 3*3**2 + 4*3 + 5
     True
 
     >>> b = ECquasi(a.coeffs, m=30, exponent=4)
     >>> numpy.allclose(b(x), a(x) * numpy.power(1+x**2/30, -4))
     True
-    >>>
     """
     def __init__(self, c_or_r, r=0, exponent=None, m=None):
         np.poly1d.__init__(self, c_or_r, r=r, variable='x')
@@ -165,9 +164,9 @@ class ECquasi(np.poly1d):
         >>> x = numpy.linspace(0,1,101)
         >>> c = b.change_exponent(3)
         >>> c
-        ECquasi([  1.11111111e-04,   1.48148148e-04,   1.07407407e-02,
+        ECquasi(array([  1.11111111e-04,   1.48148148e-04,   1.07407407e-02,
                  1.33333333e-02,   3.66666667e-01,   4.00000000e-01,
-                 5.00000000e+00,   4.00000000e+00,   2.00000000e+01],m=30.000000, exponent=7.000000)
+                 5.00000000e+00,   4.00000000e+00,   2.00000000e+01]), m=30.000000, exponent=7.000000)
         >>> numpy.allclose(c(x), b(x))
         True
         """
@@ -225,11 +224,11 @@ class ECquasi(np.poly1d):
         >>> b = ECquasi([3,4,20], m=30, exponent=4)
         >>> c = ECquasi([1], m=30, exponent=4)
         >>> b+c
-        ECquasi([ 3,  4, 21],m=30.000000, exponent=4.000000)
+        ECquasi(array([ 3,  4, 21]), m=30.000000, exponent=4.000000)
 
         >>> d = ECquasi([1], m=30, exponent=3)
         >>> b+d
-        ECquasi([  3.03333333,   4.        ,  21.        ],m=30.000000, exponent=4.000000)
+        ECquasi(array([  3.03333333,   4.        ,  21.        ]), m=30.000000, exponent=4.000000)
         """
         if self.compatible(other):
             if np.isfinite(self.m):
@@ -254,7 +253,7 @@ class ECquasi(np.poly1d):
         >>> b=ECquasi([3,4,20], m=30, exponent=4)
         >>> c=ECquasi([1,2], m=30, exponent=4.5)
         >>> b*c
-        ECquasi([ 3, 10, 28, 40],m=30.000000, exponent=8.500000)
+        ECquasi(array([ 3, 10, 28, 40]), m=30.000000, exponent=8.500000)
         """
         if np.isscalar(other):
             return ECquasi(self.coeffs * other,
@@ -265,7 +264,7 @@ class ECquasi(np.poly1d):
             return ECquasi(p.coeffs,
                            exponent=self.exponent+other.exponent,
                            m=self.m)
-            
+
     def __call__(self, val):
         """Evaluate the ECquasi instance.
 
@@ -275,7 +274,7 @@ class ECquasi(np.poly1d):
         >>> x = numpy.linspace(0,1,101)
         >>> a = ECquasi([3,4,5])
         >>> a
-        ECquasi([3, 4, 5],m=inf, exponent=0.000000)
+        ECquasi(array([3, 4, 5]), m=inf, exponent=0.000000)
         >>> a(3) == 3*3**2 + 4*3 + 5
         True
         >>> b = ECquasi(a.coeffs, m=30, exponent=4)
@@ -304,7 +303,7 @@ class ECquasi(np.poly1d):
         --------
         >>> b = ECquasi([3,4,5],m=10, exponent=3)
         >>> b**2
-        ECquasi([ 9, 24, 46, 40, 25],m=10.000000, exponent=6.000000)
+        ECquasi(array([ 9, 24, 46, 40, 25]), m=10.000000, exponent=6.000000)
         """
         p = np.poly1d.__pow__(self, int(_pow))
         q = ECquasi(p, m=self.m, exponent=_pow*self.exponent)
@@ -326,23 +325,23 @@ class ECquasi(np.poly1d):
         >>> b = ECquasi([3,4,20], m=30, exponent=4)
         >>> c = ECquasi([1,2], m=30, exponent=4)
         >>> print b-c
-        ECquasi([ 3,  3, 18],m=30.000000, exponent=4.000000)
+        ECquasi(array([ 3,  3, 18]), m=30.000000, exponent=4.000000)
         """
         return self + (other * -1)
 
     def __repr__(self):
-        vals = repr(self.coeffs)
-        vals = vals[6:-1]
-        if np.isfinite(self.m):
-            return "ECquasi(%s,m=%f, exponent=%f)" % (vals, self.m, self.exponent)
+        if not np.isfinite(self.m):
+            m = repr(self.m)
         else:
-            return "ECquasi(%s,m=%s, exponent=%f)" % (vals, `self.m`, self.exponent)
+            m = '%f' % self.m
+        return "ECquasi(%s, m=%s, exponent=%f)" % (
+            repr(self.coeffs), m, self.exponent)
 
     __str__ = __repr__
     __rsub__ = __sub__
     __rmul__ = __mul__
     __rdiv__ = __div__
-    
+
     def deriv(self, m=1):
         """ Evaluate derivative of ECquasi
 
@@ -354,11 +353,11 @@ class ECquasi(np.poly1d):
         --------
         >>> a = ECquasi([3,4,5])
         >>> a.deriv(m=2)
-        ECquasi([6],m=inf, exponent=0.000000)
+        ECquasi(array([6]), m=inf, exponent=0.000000)
 
-        >>> b = ECquasi([3,4,5],m=10, exponent=3)
+        >>> b = ECquasi([3,4,5], m=10, exponent=3)
         >>> b.deriv()
-        ECquasi([-1.2, -2. ,  3. ,  4. ],m=10.000000, exponent=4.000000)
+        ECquasi(array([-1.2, -2. ,  3. ,  4. ]), m=10.000000, exponent=4.000000)
         """
         if m == 1:
             if np.isfinite(self.m):
@@ -514,7 +513,7 @@ class ECcone(IntrinsicVolumes):
 
     def quasi(self, dim):
         """ (Quasi-)polynomial parts of EC density in dimension `dim`
-        
+
         - ignoring a factor of (2\pi)^{-(dim+1)/2} in front.
         """
         q_even = ECquasi([0], m=self.dfd, exponent=0)
