@@ -27,8 +27,7 @@ by computing fixed effects on contrasts
 import numpy as np
 import scipy.stats as sps
 from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
-from nipy.labs.utils import mahalanobis
-from nipy.labs.utils.zscore import zscore
+from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
@@ -300,8 +299,8 @@ class Contrast(object):
                 self.effect = self.effect[np.newaxis]
             if self.variance.ndim == 1:
                 self.variance = self.variance[np.newaxis, np.newaxis]
-            stat = (mahalanobis(self.effect - baseline, self.variance)
-                    / self.dim)
+            stat = (multiple_mahalanobis(self.effect - baseline, 
+                                          self.variance) / self.dim)
         # Case: tmin (conjunctions)
         elif self.contrast_type == 'tmin-conjunction':
             vdiag = self.variance.reshape([self.dim ** 2] + list(
@@ -351,7 +350,7 @@ class Contrast(object):
             self.p_value_ = self.p_value(baseline)
 
         # Avoid inf values kindly supplied by scipy.
-        self.z_score_ = zscore(self.p_value_)
+        self.z_score_ = z_score(self.p_value_)
         return self.z_score_
 
     def __add__(self, other):
