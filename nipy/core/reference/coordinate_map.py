@@ -390,7 +390,7 @@ class CoordinateMap(object):
         >>> function = lambda x:x+1
         >>> inverse = lambda x:x-1
         >>> cm = CoordinateMap(input_cs, output_cs, function, inverse)
-        >>> cm([2.,3.,4.])
+        >>> cm([2., 3., 4.])
         array([ 3.,  4.,  5.])
         >>> cmi = cm.inverse()
         >>> cmi([2., 6. ,12.])
