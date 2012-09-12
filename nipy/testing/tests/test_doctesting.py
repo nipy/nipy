@@ -115,6 +115,24 @@ def check_array_repr():
     array([0, 1, 2, 3, 4], dtype=int16)
     """
 
+
+def check_ignore_dtype():
+    """ Stripping of dtype from array repr
+
+    >>> arr = np.arange(5, dtype='i2')
+
+    The test should match with and without the array repr
+
+    >>> arr #doctest: +IGNORE_DTYPE
+    array([0, 1, 2, 3, 4])
+    >>> arr #doctest: +IGNORE_DTYPE
+    array([0, 1, 2, 3, 4], dtype=int16)
+    >>> arr #doctest: +IGNORE_DTYPE
+    array([0, 1, 2, 3, 4], dtype=int32)
+    >>> 1, arr, 3 #doctest: +IGNORE_DTYPE
+    (1, array([0, 1, 2, 3, 4], dtype=int32), 3)
+    """
+
 def check_combinations():
     """ Check the processing combines as expected
 

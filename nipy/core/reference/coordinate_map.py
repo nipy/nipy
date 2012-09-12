@@ -390,11 +390,11 @@ class CoordinateMap(object):
         >>> function = lambda x:x+1
         >>> inverse = lambda x:x-1
         >>> cm = CoordinateMap(input_cs, output_cs, function, inverse)
-        >>> cm([2,3,4])
-        array([3, 4, 5])
+        >>> cm([2., 3., 4.])
+        array([ 3.,  4.,  5.])
         >>> cmi = cm.inverse()
-        >>> cmi([2,6,12])
-        array([ 1,  5, 11])
+        >>> cmi([2., 6. ,12.])
+        array([ 1.,  5., 11.])
         """
         x = np.asanyarray(x)
         out_shape = (self.function_range.ndim,)
@@ -880,7 +880,7 @@ class AffineTransform(object):
         ...                    [0,0,1,1],
         ...                    [0,0,0,1]])
         >>> affine_transform = AffineTransform(input_cs, output_cs, affine)
-        >>> affine_transform([2,3,4])
+        >>> affine_transform([2,3,4]) #doctest: +IGNORE_DTYPE
         array([3, 4, 5])
         >>> affine_transform_inv = affine_transform.inverse()
         >>> # Its inverse has a matrix of np.float
