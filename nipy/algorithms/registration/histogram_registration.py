@@ -148,18 +148,17 @@ class HistogramRegistration(object):
             npoints = None
         if size == None:
             size = self._from_img.shape
-        slicer = lambda: tuple([slice(corner[i],
-                                      size[i] + corner[i],
-                                      spacing[i]) for i in range(3)])
-        fov_data = self._from_img.get_data()[slicer()]
+        slicer = lambda c, s, sp:\
+            tuple([slice(c[i], s[i] + c[i], sp[i]) for i in range(3)])
+        fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
         # Adjust spacing to match desired field of view size
         if npoints:
             spacing = ideal_spacing(fov_data, npoints=npoints)
-            fov_data = self._from_img.get_data()[slicer()]
+            fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
         self._from_data = fov_data
         self._from_npoints = (fov_data >= 0).sum()
         self._from_affine = subgrid_affine(xyz_affine(self._from_img),
-                                           slicer())
+                                           slicer(corner, size, spacing))
         # We cache the voxel coordinates of the clamped image
         self._vox_coords =\
             np.indices(self._from_data.shape).transpose((1, 2, 3, 0))
