@@ -81,7 +81,7 @@ class HistogramRegistration(object):
         to_img = as_xyz_image(to_img)
 
         # Binning sizes
-        if to_bins == None:
+        if to_bins is None:
             to_bins = from_bins
 
         # Clamping of the `from` image. The number of bins may be
@@ -92,7 +92,7 @@ class HistogramRegistration(object):
         # Set field of view in the `from` image with potential
         # subsampling for faster similarity evaluation. This also sets
         # the _from_data and _vox_coords attributes
-        if from_mask == None:
+        if from_mask is None:
             self.subsample(npoints=NPOINTS)
         else:
             corner, size = smallest_bounding_box(from_mask)
@@ -142,17 +142,17 @@ class HistogramRegistration(object):
           Desired number of voxels in the bounding box. If a `spacing`
           argument is provided, then `npoints` is ignored.
         """
-        if spacing == None:
+        if spacing is None and npoints is None:
             spacing = [1, 1, 1]
-        else:
-            npoints = None
-        if size == None:
+        if size is None:
             size = self._from_img.shape
         slicer = lambda c, s, sp:\
             tuple([slice(c[i], s[i] + c[i], sp[i]) for i in range(3)])
-        fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
         # Adjust spacing to match desired field of view size
-        if npoints:
+        if not spacing is None:
+            fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
+        else:
+            fov_data = self._from_img.get_data()[slicer(corner, size, [1, 1, 1])]
             spacing = ideal_spacing(fov_data, npoints=npoints)
             fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
         self._from_data = fov_data
@@ -253,7 +253,7 @@ class HistogramRegistration(object):
             return -self._eval(Tv)
 
         # Callback during optimization
-        if callback == None and VERBOSE:
+        if callback is None and VERBOSE:
 
             def callback(tc):
                 Tv.param = tc
@@ -372,7 +372,7 @@ def clamp(x, bins=BINS, mask=None):
     if bins > np.iinfo(np.short).max:
         raise ValueError('Too large a bin size')
     y = -np.ones(x.shape, dtype=CLAMP_DTYPE)
-    if mask == None:
+    if mask is None:
         y, bins = _clamp(x, y, bins)
     else:
         ym = y[mask]
