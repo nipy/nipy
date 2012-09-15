@@ -94,7 +94,7 @@ def extract_clusters_from_diam(T,XYZ,th,diam,k=18):
     # catches an exception if maximum recursion depth is reached
     try:
         labels = _extract_clusters_from_diam(T, XYZ, th, diam, k, labels)
-    except:
+    except RuntimeError:
         warnings.warn('_extract_clusters_from_diam did not converge')
     return labels
 
