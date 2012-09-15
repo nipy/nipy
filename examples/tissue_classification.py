@@ -3,6 +3,8 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Script example of tissue classification
 """
+from __future__ import print_function # Python 2/3 compatibility
+
 import numpy as np
 
 from nipy import load_image, save_image

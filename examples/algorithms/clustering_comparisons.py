@@ -9,7 +9,9 @@ Requires matplotlib
 
 Author: Bertrand Thirion, 2009
 """
-print __doc__
+from __future__ import print_function # Python 2/3 compatibility
+
+print(__doc__)
 
 import numpy as np
 import numpy.random as nr
@@ -38,8 +40,8 @@ seeds, label, J0 = F.geodesic_kmeans(seeds)
 wlabel, J1 = F.ward(nbseeds)
 seeds, label, J2 = F.geodesic_kmeans(seeds, label=wlabel.copy(), eps=1.e-7)
 
-print 'Inertia values for the 3 algorithms: '
-print 'Geodesic k-means: ', J0, 'Wards: ', J1, 'Wards + gkm: ', J2
+print('Inertia values for the 3 algorithms: ')
+print('Geodesic k-means: ', J0, 'Wards: ', J1, 'Wards + gkm: ', J2)
 
 plt.figure(figsize=(8, 4))
 plt.subplot(1, 3, 1)

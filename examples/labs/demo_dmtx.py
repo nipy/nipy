@@ -9,7 +9,9 @@ Requires matplotlib
 
 Author : Bertrand Thirion: 2009-2010
 """
-print __doc__
+from __future__ import print_function # Python 2/3 compatibility
+
+print(__doc__)
 
 import numpy as np
 
@@ -19,8 +21,8 @@ except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
 from nipy.modalities.fmri.design_matrix import make_dmtx
-from nipy.modalities.fmri.experimental_paradigm import \
-    EventRelatedParadigm, BlockParadigm
+from nipy.modalities.fmri.experimental_paradigm import (EventRelatedParadigm,
+                                                        BlockParadigm)
 
 # frame times
 tr = 1.0
@@ -47,14 +49,14 @@ paradigm = BlockParadigm(con_id=conditions, onset=onsets,
                              duration=duration)
 
 X2 = make_dmtx(frametimes, paradigm, drift_model='polynomial',
-                         drift_order=3)
+               drift_order=3)
 
 # FIR model
 paradigm = EventRelatedParadigm(conditions, onsets)
 hrf_model = 'FIR'
 X3 = make_dmtx(frametimes, paradigm, hrf_model='fir',
                drift_model='polynomial', drift_order=3,
-               fir_delays=range(1, 6))
+               fir_delays=np.arange(1, 6))
 
 # plot the results
 fig = plt.figure(figsize=(10, 6))

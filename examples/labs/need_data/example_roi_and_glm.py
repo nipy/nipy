@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function # Python 2/3 compatibility
 """
 This is an example where:
 
@@ -16,7 +17,7 @@ Needs matplotlib
 
 Author : Bertrand Thirion, 2010
 """
-print __doc__
+print(__doc__)
 
 from os import mkdir, getcwd, path
 
@@ -197,12 +198,12 @@ for k in range(my_roi.k):
     plt.subplot(1, my_roi.k, k + 1)
 
     # get the confidence intervals for the effects and plot them -condition 0
-    conf_int = res.conf_int(cols=range(fir_order)).squeeze()
+    conf_int = res.conf_int(cols=np.arange(fir_order)).squeeze()
     yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2
     plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
 
     # get the confidence intervals for the effects and plot them -condition 1
-    conf_int = res.conf_int(cols=range(fir_order, 2 * fir_order)).squeeze()
+    conf_int = res.conf_int(cols=np.arange(fir_order, 2 * fir_order)).squeeze()
     yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2
     plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
     plt.legend(('condition c0', 'condition c1'))

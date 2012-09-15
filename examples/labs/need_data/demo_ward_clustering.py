@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function # Python 2/3 compatibility
 """
 This shows the effect of ward clustering on a real fMRI dataset
 
 Author: Bertrand Thirion, 2010
 """
-print __doc__
+print(__doc__)
 
 from os import mkdir, getcwd, path
 
@@ -30,7 +31,6 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-
 # read the data
 mask = load(mask_image).get_data() > 0
 ijk = np.array(np.where(mask)).T
@@ -46,4 +46,4 @@ label_image = path.join(write_dir, 'label.nii')
 wdata = mask - 1
 wdata[mask] = u
 save(Nifti1Image(wdata, load(mask_image).get_affine()), label_image)
-print "Label image written in %s" % label_image
+print("Label image written in %s" % label_image)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function # Python 2/3 compatibility
 """ Example of onesample permutation test
 
 Needs *example data* package
@@ -25,7 +26,7 @@ ptest = permutation_test_onesample(data, xyz, stat_id='wilcoxon')
 # Cluster definition: (threshold, diameter)
 # Note that a list of definitions can be passed to ptest.calibrate
 cluster_def = (ptest.height_threshold(0.01), None)
-print cluster_def
+print(cluster_def)
 
 # Multiple calibration
 # To get accurate pvalues, don't pass nperms (default is 1e4)

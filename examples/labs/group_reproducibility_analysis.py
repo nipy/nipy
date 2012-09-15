@@ -9,7 +9,9 @@ Needs matplotlib
 
 Author: Bertrand Thirion, 2005-2009
 """
-print __doc__
+from __future__ import print_function # Python 2/3 compatibility
+
+print(__doc__)
 
 import numpy as np
 

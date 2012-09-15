@@ -2,6 +2,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ A simple contrast for an FMRI HRF model """
+from __future__ import print_function # Python 2/3 compatibility
 
 import numpy as np
 
@@ -54,4 +55,4 @@ C = np.dot(np.linalg.pinv(X), preC).T
 np.testing.assert_almost_equal(C, c['C'])
 
 # The contrast matrix (approx equal to c['C'])
-print C
+print(C)

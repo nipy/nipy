@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function # Python 2/3 compatibility
 """
 Example of a script that uses the BSA (Bayesian Structural Analysis) i.e.
 nipy.labs.spatial_models.bayesian_structural_analysis module.
 
 Author : Bertrand Thirion, 2008-2010
 """
-print __doc__
+print(__doc__)
 
 #autoindent
 from os import mkdir, getcwd, path
@@ -48,7 +49,7 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 method = 'quick'
-print 'method used:', method
+print('method used:', method)
 
 # call the function
 AF, BF = make_bsa_image(mask_images, betas, theta, dmax, ths, thq, smin,
@@ -57,8 +58,8 @@ AF, BF = make_bsa_image(mask_images, betas, theta, dmax, ths, thq, smin,
 
 # Write the result. OK, this is only a temporary solution
 picname = path.join(write_dir, "AF_%04d.pic" % nbeta)
-pickle.dump(AF, open(picname, 'w'), 2)
+pickle.dump(AF, open(picname, 'wb'), 2)
 picname = path.join(write_dir, "BF_%04d.pic" % nbeta)
-pickle.dump(BF, open(picname, 'w'), 2)
+pickle.dump(BF, open(picname, 'wb'), 2)
 
-print "Wrote all the results in directory %s" % write_dir
+print("Wrote all the results in directory %s" % write_dir)

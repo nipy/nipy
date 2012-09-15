@@ -9,7 +9,9 @@ Requires matplotlib
 Author : Bertrand Thirion, 2009--2012
 """
 #autoindent
-print __doc__
+from __future__ import print_function # Python 2/3 compatibility
+
+print(__doc__)
 
 import numpy as np
 

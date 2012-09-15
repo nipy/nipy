@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function # Python 2/3 compatibility
 """
 This is a little demo that simply shows ROI manipulation within the nipy
 framework.
@@ -9,7 +10,7 @@ Needs matplotlib
 
 Author: Bertrand Thirion, 2009-2010
 """
-print __doc__
+print(__doc__)
 
 from os import mkdir, getcwd, path
 
@@ -52,7 +53,7 @@ roi = mroi.subdomain_from_balls(domain, position, np.array([5.0]))
 roi_domain = domain.mask(roi.label > -1)
 dom_img = roi_domain.to_image()
 save(dom_img, path.join(write_dir, "myroi.nii"))
-print 'Wrote an ROI mask image in %s' % path.join(write_dir, "myroi.nii")
+print('Wrote an ROI mask image in %s' % path.join(write_dir, "myroi.nii"))
 
 # ----------------------------------------------------
 # ---- example 2: create ROIs from a blob image ------
@@ -111,7 +112,7 @@ wim5 = roi.to_image()
 roi_path_5 = path.join(write_dir, "roi_some_blobs.nii")
 save(wim5, roi_path_5)
 
-print  "Wrote ROI mask images in %s, \n %s \n %s \n and %s" %\
-      (roi_path_2, roi_path_3, roi_path_4, roi_path_5)
+print("Wrote ROI mask images in %s, \n %s \n %s \n and %s" %
+      (roi_path_2, roi_path_3, roi_path_4, roi_path_5))
 
 plt.show()

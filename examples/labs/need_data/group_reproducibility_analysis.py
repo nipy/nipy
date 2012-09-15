@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function # Python 2/3 compatibility
 """
 Example of script to analyse the reproducibility in group studies using a
 bootstrap procedure.
@@ -24,20 +25,19 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nipy.labs.utils.reproducibility_measures import \
-     group_reproducibility_metrics, map_reproducibility
+from nipy.labs.utils.reproducibility_measures import (
+    group_reproducibility_metrics)
 
 # Local import
 from get_data_light import DATA_DIR, get_second_level_dataset
 
-print 'This analysis takes a long while, please be patient'
+print('This analysis takes a long while, please be patient')
 
 ##############################################################################
 # Set the paths, data, etc.
 ##############################################################################
 
 nsubj = 12
-subj_id = range(nsubj)
 nbeta = 29
 
 data_dir = path.join(DATA_DIR, 'group_t_images')

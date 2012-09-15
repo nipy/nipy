@@ -13,7 +13,9 @@ Requires matplotlib
 
 Author : Bertrand Thirion, 2010
 """
-print __doc__
+from __future__ import print_function # Python 2/3 compatibility
+
+print(__doc__)
 
 import os
 import os.path as op
@@ -105,8 +107,8 @@ contrast_image = Nifti1Image(np.reshape(zvals, shape), affine)
 contrast_path = 'zmap.nii'
 save(contrast_image, contrast_path)
 
-print ('Wrote the some of the results as images in directory %s' %
-       op.abspath(os.getcwd()))
+print('Wrote the some of the results as images in directory %s' %
+      op.abspath(os.getcwd()))
 
 h, c = np.histogram(zvals, 100)
 

@@ -12,7 +12,9 @@ Requires matplotlib
 
 Author : Bertrand Thirion, 2008-2010
 """
-print __doc__
+from __future__ import print_function # Python 2/3 compatibility
+
+print(__doc__)
 
 import numpy as np
 import numpy.random as nr
@@ -47,7 +49,7 @@ for  k in krange:
     if ek > be:
         be = ek
         bestb = b
-    print k, 'classes, free energy:', ek
+    print(k, 'classes, free energy:', ek)
 
 ###############################################################################
 # 3. plot the result
@@ -69,7 +71,7 @@ for k in krange:
     bplugin = bgmm.BGMM(k, dim, cent, prec, w)
     bplugin.guess_priors(x)
     bfk = bplugin.bayes_factor(x, pz.astype(np.int), nperm=120)
-    print k, 'classes, evidence:', bfk
+    print(k, 'classes, evidence:', bfk)
     if bfk > bbf:
         bestk = k
         bbf = bfk

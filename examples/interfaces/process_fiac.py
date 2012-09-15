@@ -7,8 +7,9 @@ from os.path import join as pjoin
 from glob import glob
 import numpy as np
 
-from nipy.interfaces.spm import spm_info, make_job, scans_for_fnames, \
-    run_jobdef, fnames_presuffix, fname_presuffix, fltcols
+from nipy.interfaces.spm import (spm_info, make_job, scans_for_fnames,
+                                 run_jobdef, fnames_presuffix, fname_presuffix,
+                                 fltcols)
 
 
 def get_data(data_path, subj_id):

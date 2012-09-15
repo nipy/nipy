@@ -6,7 +6,9 @@ Demo ward clustering on a graph: various ways of forming clusters and dendrogram
 
 Requires matplotlib
 """
-print __doc__
+from __future__ import print_function # Python 2/3 compatibility
+
+print(__doc__)
 
 import numpy as np
 from numpy.random import randn, rand
@@ -75,5 +77,5 @@ ax.set_visible(True)
 plt.show()
 
 if verbose:
-    print 'List of sub trees'
-    print tree.list_of_subtrees()
+    print('List of sub trees')
+    print(tree.list_of_subtrees())

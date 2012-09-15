@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function # Python 2/3 compatibility
 
 import sys
 
@@ -38,7 +39,7 @@ from nipy.utils import example_data
 # Optional argument - default value 1, 0, 0, 0
 nargs = len(sys.argv)
 if nargs not in (1, 2, 5):
-    print USAGE
+    print(USAGE)
     exit(1)
 if nargs == 1:  # default no-argument case
     cvect = [1, 0, 0, 0]
@@ -48,12 +49,12 @@ else:
     elif nargs == 5:  # contrast as sequence of strings
         args = [arg.replace(',', '') for arg in sys.argv[1:]]
     if len(args) != 4:
-        print USAGE
+        print(USAGE)
         exit(1)
     try:
         cvect = [float(arg) for arg in args]
     except ValueError:
-        print USAGE
+        print(USAGE)
         exit(1)
 
 # Input files
