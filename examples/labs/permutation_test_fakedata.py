@@ -34,8 +34,7 @@ data, vardata, XYZ = make_data()
 P = PT.permutation_test_onesample(data, XYZ)
 
 # clusters definition (height threshold, max diameter)
-c = [(P.random_Tvalues[P.ndraws * (0.95)], None),
-     (P.random_Tvalues[P.ndraws * (0.5)], 10)]
+c = [(P.random_Tvalues[P.ndraws * (0.95)], None)]
 
 # regions definition (label vector)
 r = np.ones(data.shape[1], int)
@@ -59,8 +58,7 @@ data1, vardata1, data2, vardata2 = (data[:10], vardata[:10], data[10:],
 P = PT.permutation_test_twosample(data1, data2, XYZ)
 
 # clusters definition (height threshold / max diameter)
-c = [(P.random_Tvalues[P.ndraws * (0.95)], None),
-     (P.random_Tvalues[P.ndraws * (0.5)], 10)]
+c = [(P.random_Tvalues[P.ndraws * (0.95)], None)]
 
 # regions definition (label vector)
 r = [np.zeros(data.shape[1])]
