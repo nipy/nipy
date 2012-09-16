@@ -93,13 +93,15 @@ def extract_clusters_from_diam(T,XYZ,th,diam,k=18):
     # Calls _extract_clusters_from_diam, a recursive function, and
     # catches an exception if maximum recursion depth is reached
     try:
-        labels = _extract_clusters_from_diam(T, XYZ, th, diam, k, labels)
+        labels = _extract_clusters_from_diam(labels, T, XYZ, th, diam, k,
+                                             nCC, CClabels)
     except RuntimeError:
         warnings.warn('_extract_clusters_from_diam did not converge')
     return labels
 
 
-def _extract_clusters_from_diam(T, XYZ, th, diam, k, labels):
+def _extract_clusters_from_diam(labels, T, XYZ, th, diam, k,
+                                nCC, CClabels):
     """ 
     This recursive function modifies the `labels` input array.
     """
