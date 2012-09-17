@@ -62,7 +62,6 @@ c = [(P.random_Tvalues[P.ndraws * (0.95)], None)]
 
 # regions definition (label vector)
 r = [np.zeros(data.shape[1])]
-r[data.shape[1]/2:] *= 10
 voxel_results, cluster_results, region_results = P.calibrate(nperms=100,
                                                              clusters=c,
                                                              regions=r)
