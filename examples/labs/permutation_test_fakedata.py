@@ -56,22 +56,15 @@ data1, vardata1, data2, vardata2 = (data[:10], vardata[:10], data[10:],
 
 # rfx calibration
 P = PT.permutation_test_twosample(data1, data2, XYZ)
-
-# clusters definition (height threshold / max diameter)
 c = [(P.random_Tvalues[P.ndraws * (0.95)], None)]
-
-# regions definition (label vector)
-r = [np.zeros(data.shape[1])]
 voxel_results, cluster_results, region_results = P.calibrate(nperms=100,
-                                                             clusters=c,
-                                                             regions=r)
+                                                             clusters=c)
 
 # mfx calibration
 P = PT.permutation_test_twosample(data1, data2, XYZ, vardata1=vardata1,
                                   vardata2=vardata2, stat_id="student_mfx")
 voxel_results, cluster_results, region_results = P.calibrate(nperms=100,
-                                                             clusters=c,
-                                                             regions=r)
+                                                             clusters=c)
 
 ###############################################################################
 # Print cluster statistics
