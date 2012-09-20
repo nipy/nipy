@@ -73,18 +73,18 @@ def multiple_fast_inv(a):
 
 
 def multiple_mahalanobis(effect, covariance):
-    """Returns the squared mahalanobis distance for a given set of samples
+    """Returns the squared Mahalanobis distance for a given set of samples
     
     Parameters
     ----------
     effect: array of shape (n_features, n_samples),
-            Each column represent a vector to be evaluated
+            Each column represents a vector to be evaluated
     covariance: array of shape (n_features, n_features, n_samples),
-                Corresponding caovariance models stacked along the last axis
+                Corresponding covariance models stacked along the last axis
 
     Returns
     -------
-    sqd: array of shape (n_samples,),
+    sqd: array of shape (n_samples,)
          the squared distances (one per sample)
     """ 
     # check size
