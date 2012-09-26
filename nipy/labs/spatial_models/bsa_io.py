@@ -170,7 +170,7 @@ def make_bsa_image(
             labels = - 2 * np.ones(ref_dim)
             labels[mask > 0] = -1
             if BF[s] is not None:
-                nls = BF[s].get_roi_feature('label')
+                nls = BF[s].get_roi_feature('label').astype(np.int)
                 nls[nls == - 1] = default_idx
                 lab = BF[s].label
                 lab[lab > - 1] = nls[lab[lab > - 1]]
