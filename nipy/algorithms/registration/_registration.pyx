@@ -188,7 +188,12 @@ def _cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
     tvox = <double*>Tvox.data
 
     # Actual resampling 
-    cast_integer = np.issubdtype(dtype, np.integer)
+    if dtype.kind == 'i':
+        cast_integer = 1
+    elif dtype.kind == 'u':
+        cast_integer = 2
+    else:
+        cast_integer = 0
     cubic_spline_resample3d(im_resampled, im, tvox, cast_integer,
                             modes[mx], modes[my], modes[mz])
 
