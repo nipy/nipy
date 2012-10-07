@@ -35,13 +35,13 @@ def test_children():
     assert ch[4] == [2, 3]
     
 def test_descendants():
-    """ test the get_descendents() method
+    """ test the get_descendants() method
     """
     sf = simple_forest()
-    assert sf.get_descendents(0) == [0]
-    assert sf.get_descendents(1) == [1]
-    assert sf.get_descendents(2) == [0, 1, 2]
-    assert sf.get_descendents(4) == [0, 1, 2, 3, 4]
+    assert sf.get_descendants(0) == [0]
+    assert sf.get_descendants(1) == [1]
+    assert sf.get_descendants(2) == [0, 1, 2]
+    assert sf.get_descendants(4) == [0, 1, 2, 3, 4]
     
 def test_root():
     """ test the isroot() method
