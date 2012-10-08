@@ -166,16 +166,17 @@ class HistogramRegistration(object):
     def _set_similarity(self, arg):
         normalize = True
         dist = None
-        if not hasattr(arg, '__iter__'):
+        if not isinstance(arg, (tuple, list)):
             similarity = arg
-        elif len(arg) == 1:
-            similarity = arg[0]
-        elif len(arg) == 2:
-            similarity, normalize = arg
-        elif len(arg) == 3:
-            similarity, normalize, dist = arg
         else:
-            raise ValueError('cannot understand input argument')
+            if len(arg) == 1:
+                similarity = arg[0]
+            elif len(arg) == 2:
+                similarity, normalize = arg
+            elif len(arg) == 3:
+                similarity, normalize, dist = arg
+            else:
+                raise ValueError('cannot understand input argument')
         if similarity in _sms:
             self._similarity = similarity
             self._similarity_call =\
