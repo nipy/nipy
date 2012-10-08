@@ -5,7 +5,7 @@
 
 import numpy as np
 
-from nipy.labs.group import permutation_test as PT
+from nipy.labs.group import permutation_test as pt
 
 
 def make_data(n=10, mask_shape=(10, 10, 10), axis=0, r=3, signal=5):
@@ -31,11 +31,11 @@ def make_data(n=10, mask_shape=(10, 10, 10), axis=0, r=3, signal=5):
 data, vardata, XYZ = make_data()
 
 # rfx calibration
-P = PT.permutation_test_onesample(data, XYZ)
+P = pt.permutation_test_onesample(data, XYZ)
 
 # clusters definition (height threshold, max diameter)
 c = [(P.random_Tvalues[P.ndraws * (0.95)], None),
-     (P.random_Tvalues[P.ndraws * (0.5)], 10)]
+     (P.random_Tvalues[P.ndraws * (0.5)], 20)]
 
 # regions definition (label vector)
 r = np.ones(data.shape[1], int)
@@ -44,7 +44,7 @@ voxel_results, cluster_results, region_results = \
                 P.calibrate(nperms=100, clusters=c, regions=[r])
 
 # mfx calibration
-P = PT.permutation_test_onesample(data, XYZ, vardata=vardata,
+P = pt.permutation_test_onesample(data, XYZ, vardata=vardata,
                                   stat_id="student_mfx")
 voxel_results, cluster_results, region_results = \
                 P.calibrate(nperms=100, clusters=c, regions=[r])
@@ -56,7 +56,7 @@ data1, vardata1, data2, vardata2 = (data[:10], vardata[:10], data[10:],
                                     vardata[10:])
 
 # rfx calibration
-P = PT.permutation_test_twosample(data1, data2, XYZ)
+P = pt.permutation_test_twosample(data1, data2, XYZ)
 
 # clusters definition (height threshold / max diameter)
 c = [(P.random_Tvalues[P.ndraws * (0.95)], None),
@@ -70,7 +70,7 @@ voxel_results, cluster_results, region_results = P.calibrate(nperms=100,
                                                              regions=r)
 
 # mfx calibration
-P = PT.permutation_test_twosample(data1, data2, XYZ, vardata1=vardata1,
+P = pt.permutation_test_twosample(data1, data2, XYZ, vardata1=vardata1,
                                   vardata2=vardata2, stat_id="student_mfx")
 voxel_results, cluster_results, region_results = P.calibrate(nperms=100,
                                                              clusters=c,
@@ -90,7 +90,7 @@ for results in cluster_results:
         I = np.where(results["labels"]==j)[0]
         Tmax[j] = P.Tvalues[I].max()
         Tmax_P[j] = voxel_results["Corr_p_values"][I].min()
-        Diam[j]= PT.max_dist(XYZ, I, I)
+        Diam[j]= pt.max_dist(XYZ, I, I)
     J = np.where(1 - (results["size_Corr_p_values"] > level) *
                      (results["Fisher_Corr_p_values"] > level) *
                      (Tmax_P > level))[0]
