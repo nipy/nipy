@@ -153,6 +153,21 @@ def test_histogram_registration():
     assert_raises(ValueError, R.subsample, spacing=[0, 1, 3])
 
 
+def test_set_fov():
+    I = make_xyz_image(make_data_int16(), dummy_affine, 'scanner')
+    J = make_xyz_image(I.get_data().copy(), dummy_affine, 'scanner')
+    R = HistogramRegistration(I, J)
+    R.set_fov(npoints=np.prod(I.shape))
+    assert_equal(R._from_data.shape, I.shape)
+    half_shape = tuple([I.shape[i] / 2 for i in range(3)])
+    R.set_fov(spacing=(2, 2, 2))
+    assert_equal(R._from_data.shape, half_shape)
+    R.set_fov(corner=half_shape)
+    assert_equal(R._from_data.shape, half_shape)
+    R.set_fov(size=half_shape)
+    assert_equal(R._from_data.shape, half_shape)
+
+
 def test_histogram_masked_registration():
     """ Test the histogram registration class.
     """
