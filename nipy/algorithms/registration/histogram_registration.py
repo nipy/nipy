@@ -27,9 +27,6 @@ GTOL = 1e-3
 MAXITER = 25
 MAXFUN = None
 CLAMP_DTYPE = 'short'  # do not edit
-BINS = 256
-SIMILARITY = 'crl1'
-INTERP = 'pv'
 NPOINTS = 64 ** 3
 
 # Dictionary of interpolation methods (partial volume, trilinear,
@@ -43,10 +40,10 @@ class HistogramRegistration(object):
     algorithm.
     """
     def __init__(self, from_img, to_img,
-                 from_bins=BINS, to_bins=None,
+                 from_bins=256, to_bins=None,
                  from_mask=None, to_mask=None,
-                 similarity=SIMILARITY, interp=INTERP,
-                 **kwargs):
+                 similarity='crl1', interp='pv',
+                 normalize=True, dist=None):
         """
         Creates a new histogram registration object.
 
@@ -86,7 +83,7 @@ class HistogramRegistration(object):
 
         # Clamping of the `from` image. The number of bins may be
         # overriden if unnecessarily large.
-        data, from_bins = clamp(from_img.get_data(), bins=from_bins,
+        data, from_bins = clamp(from_img.get_data(), from_bins,
                                 mask=from_mask)
         self._from_img = make_xyz_image(data, xyz_affine(from_img), 'scanner')
         # Set field of view in the `from` image with potential
@@ -99,7 +96,7 @@ class HistogramRegistration(object):
             self.set_fov(corner=corner, size=size, npoints=NPOINTS)
 
         # Clamping of the `to` image including padding with -1
-        data, to_bins = clamp(to_img.get_data(), bins=to_bins,
+        data, to_bins = clamp(to_img.get_data(), to_bins,
                               mask=to_mask)
         self._to_data = -np.ones(np.array(to_img.shape) + 2, dtype=CLAMP_DTYPE)
         self._to_data[1:-1, 1:-1, 1:-1] = data
@@ -111,7 +108,7 @@ class HistogramRegistration(object):
 
         # Set default registration parameters
         self._set_interp(interp)
-        self._set_similarity(similarity, **kwargs)
+        self._set_similarity((similarity, normalize, dist))
 
     def _get_interp(self):
         return interp_methods.keys()\
@@ -166,11 +163,23 @@ class HistogramRegistration(object):
     def subsample(self, spacing=None, npoints=None):
         self.set_fov(spacing=spacing, npoints=npoints)
 
-    def _set_similarity(self, similarity='cr', **kwargs):
+    def _set_similarity(self, arg):
+        normalize = True
+        dist = None
+        if not hasattr(arg, '__iter__'):
+            similarity = arg
+        elif len(arg) == 1:
+            similarity = arg[0]
+        elif len(arg) == 2:
+            similarity, normalize = arg
+        elif len(arg) == 3:
+            similarity, normalize, dist = arg
+        else:
+            raise ValueError('cannot understand input argument')
         if similarity in _sms:
             self._similarity = similarity
             self._similarity_call =\
-                _sms[similarity](self._joint_hist.shape, **kwargs)
+                _sms[similarity](self._joint_hist.shape, normalize, dist)
         else:
             if not hasattr(similarity, '__call__'):
                 raise ValueError('similarity should be callable')
@@ -316,7 +325,7 @@ class HistogramRegistration(object):
         return simis, params
 
 
-def _clamp(x, y, bins=BINS):
+def _clamp(x, y, bins):
 
     # Threshold
     dmaxmax = 2 ** (8 * y.dtype.itemsize - 1) - 1
@@ -344,7 +353,7 @@ def _clamp(x, y, bins=BINS):
     return y, bins
 
 
-def clamp(x, bins=BINS, mask=None):
+def clamp(x, bins, mask=None):
     """
     Clamp array values that fall within a given mask in the range
     [0..bins-1] and reset masked values to -1.
