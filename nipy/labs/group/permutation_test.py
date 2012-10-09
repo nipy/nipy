@@ -5,6 +5,7 @@
 # Third-party imports
 import numpy as np
 import scipy.misc as sm
+import warnings
 
 # Our own imports
 from nipy.algorithms.graph import wgraph_from_3d_grid
@@ -66,7 +67,6 @@ def max_dist(XYZ,I,J):
         return np.sqrt((D).max())
 
 
-
 def extract_clusters_from_diam(T,XYZ,th,diam,k=18):
     """
     Extract clusters from a statistical map
@@ -78,10 +78,33 @@ def extract_clusters_from_diam(T,XYZ,th,diam,k=18):
          diam   <int>   maximal diameter (in voxels)
          k      <int>   the number of neighbours considered. (6,18 or 26)
     Out: labels (p)     cluster labels
+
+    Comment by alexis-roche, September 15th 2012: this function was
+    originally developed by Merlin Keller in an attempt to generalize
+    classical cluster-level analysis by subdividing clusters in blobs
+    with limited diameter (at least, this is my understanding). This
+    piece of code seems to have remained very experimental and its
+    usefulness in real-world neuroimaging image studies is still to be
+    demonstrated.
     """
     CClabels = extract_clusters_from_thresh(T,XYZ,th,k)
     nCC = CClabels.max() + 1
     labels = -np.ones(len(CClabels),int)
+    # Calls _extract_clusters_from_diam, a recursive function, and
+    # catches an exception if maximum recursion depth is reached
+    try:
+        labels = _extract_clusters_from_diam(labels, T, XYZ, th, diam, k,
+                                             nCC, CClabels)
+    except RuntimeError:
+        warnings.warn('_extract_clusters_from_diam did not converge')
+    return labels
+
+
+def _extract_clusters_from_diam(labels, T, XYZ, th, diam, k,
+                                nCC, CClabels):
+    """ 
+    This recursive function modifies the `labels` input array.
+    """
     clust_label = 0
     for i in xrange(nCC):
         #print "Searching connected component ", i, " out of ", nCC
