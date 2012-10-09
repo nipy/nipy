@@ -132,7 +132,7 @@ class Forest(WeightedGraph):
         else:
             return self.children[v]
 
-    def get_descendents(self, v, exclude_self=False):
+    def get_descendants(self, v, exclude_self=False):
         """returns the nodes that are children of v as a list
 
         Parameters
@@ -155,7 +155,7 @@ class Forest(WeightedGraph):
         else:
             desc = [v]
             for w in self.children[v]:
-                temp = self.get_descendents(w)
+                temp = self.get_descendants(w)
                 for q in temp:
                     desc.append(q)
         desc.sort()
@@ -348,10 +348,10 @@ class Forest(WeightedGraph):
         com_ancestor = ids[0]
         for i in ids:
             ca = i
-            dca = self.get_descendents(ca)
+            dca = self.get_descendants(ca)
             while com_ancestor not in dca:
                 ca = self.parents[ca]
-                dca = self.get_descendents(ca)
+                dca = self.get_descendants(ca)
                 if (ca == self.parents[ca]) & (com_ancestor not in dca):
                     ca = -1
                     break
@@ -359,7 +359,7 @@ class Forest(WeightedGraph):
 
         #2. check whether all the children of this ancestor are within ids
         if com_ancestor > -1:
-            st = self.get_descendents(com_ancestor)
+            st = self.get_descendants(com_ancestor)
             valid = [i in ids for i in st if leaves[i]]
             bresult = (np.sum(valid) == np.size(valid))
             if custom == False:
@@ -371,7 +371,7 @@ class Forest(WeightedGraph):
             if np.size(kids) > 2:
                 bresult = True
                 for v in kids:
-                    st = np.array(self.get_descendents(v))
+                    st = np.array(self.get_descendants(v))
                     st = st[leaves[st]]
                     if np.size(st) > 1:
                         valid = [i in ids for i in st]
