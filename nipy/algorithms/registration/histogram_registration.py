@@ -122,7 +122,7 @@ class HistogramRegistration(object):
 
     interp = property(_get_interp, _set_interp)
 
-    def set_fov(self, spacing=None, corner=[0, 0, 0], size=None,
+    def set_fov(self, spacing=None, corner=(0, 0, 0), size=None,
                 npoints=None):
         """
         Defines a subset of the `from` image to restrict joint
