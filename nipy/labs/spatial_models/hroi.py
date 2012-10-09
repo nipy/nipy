@@ -211,7 +211,7 @@ class HierarchicalROI(SubDomains):
             # volume of the children is included
             if id is not None:
                 volume = SubDomains.get_volume(self, id)
-                desc = self.make_forest().get_descendents(
+                desc = self.make_forest().get_descendants(
                     self.select_id(id), exclude_self=True)
                 # get children volume
                 for k in desc:
@@ -221,7 +221,7 @@ class HierarchicalROI(SubDomains):
                 volume = []
                 for id in self.get_id():
                     roi_volume = SubDomains.get_volume(self, id)
-                    desc = self.make_forest().get_descendents(
+                    desc = self.make_forest().get_descendants(
                         self.select_id(id), exclude_self=True)
                     # get children volume
                     for k in desc:
@@ -258,7 +258,7 @@ class HierarchicalROI(SubDomains):
             # size of the children is included
             if id is not None:
                 size = SubDomains.get_size(self, id)
-                desc = self.make_forest().get_descendents(
+                desc = self.make_forest().get_descendants(
                     self.select_id(id), exclude_self=True)
                 # get children size
                 for k in desc:
@@ -267,7 +267,7 @@ class HierarchicalROI(SubDomains):
                 size = []
                 for id in self.get_id():
                     roi_size = SubDomains.get_size(self, id)
-                    desc = self.make_forest().get_descendents(
+                    desc = self.make_forest().get_descendants(
                         self.select_id(id), exclude_self=True)
                     # get children size
                     for k in desc:
