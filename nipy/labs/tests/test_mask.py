@@ -111,7 +111,6 @@ def test_series_from_mask():
         assert_true(np.all(np.isfinite(series)))
 
 
-
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])

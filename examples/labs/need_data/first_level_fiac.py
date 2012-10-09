@@ -22,9 +22,9 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nibabel import load, save, Nifti1Image
+from nibabel import save
 
-from nipy.modalities.fmri.glm import GeneralLinearModel, data_scaling
+from nipy.modalities.fmri.glm import FMRILinearModel
 from nipy.utils import example_data
 from nipy.labs.viz import plot_map, cm
 
@@ -37,45 +37,25 @@ fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
 design_files = [example_data.get_filename('fiac', 'fiac0', run)
                 for run in ['run1_design.npz', 'run2_design.npz']]
 mask_file = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
-affine = load(mask_file).get_affine()
 
-# Get design matrix as numpy array
-print('Loading design matrices...')
-X = [np.load(f)['X'] for f in design_files]
-
-# Get multi-run fMRI data
-print('Loading fmri data...')
-Y = [load(f) for f in fmri_files]
-
-# Get mask image
-print('Loading mask...')
-mask = load(mask_file)
-mask_array = mask.get_data() > 0
+# Load all the data
+multi_session_model = FMRILinearModel(fmri_files, design_files, mask_file)
 
 # GLM fitting
-print('Starting fit...')
-results = []
-for x, y in zip(X, Y):
-    # normalize the data to report effects in percent of the baseline
-    data = y.get_data()[mask_array].T
-    data, mean = data_scaling(data)
-    # fit the glm
-    model = GeneralLinearModel(x)
-    model.fit(data, 'ar1')
-    results.append(model)
-
-# make a mean volume for display
-wmean = mask_array.astype(np.int16)
-wmean[mask_array] = mean
+multi_session_model.fit(do_scaling=True, model='ar1')
 
 
-def make_fiac_contrasts():
-    """Specify some contrasts for the FIAC experiment"""
+def make_fiac_contrasts(p):
+    """Specify some contrasts for the FIAC experiment
+
+    Parameters
+    ==========
+    p: int, the number of columns of the design matrix (for all sessions)
+    """
     con = {}
     # the design matrices of both runs comprise 13 columns
     # the first 5 columns of the design matrices correspond to the following
     # conditions: ["SSt-SSp", "SSt-DSp", "DSt-SSp", "DSt-DSp", "FirstSt"]
-    p = 13
 
     def length_p_vector(con, p):
         return np.hstack((con, np.zeros(p - len(con))))
@@ -92,36 +72,38 @@ def make_fiac_contrasts():
 
 
 # compute fixed effects of the two runs and compute related images
-contrasts = make_fiac_contrasts()
+n_regressors = np.load(design_files[0])['X'].shape[1]
+# note: implictly assume the same shape for all sessions !
+contrasts = make_fiac_contrasts(n_regressors)
+
 # write directory
 write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-
 print 'Computing contrasts...'
+mean_map = multi_session_model.means[0]  # for display
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print '  Contrast % 2i out of %i: %s' % (
         index + 1, len(contrasts), contrast_id)
-    contrast_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
-    write_array = mask_array.astype(np.float)
-    ffx_z_map = (results[0].contrast(contrast_val) +
-                 results[1].contrast(contrast_val)).z_score()
-    write_array[mask_array] = ffx_z_map
-    contrast_image = Nifti1Image(write_array, affine)
-    save(contrast_image, contrast_path)
+    z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
+    z_map, = multi_session_model.contrast(
+        [contrast_val] * 2, con_id=contrast_id, output_z=True)
+    save(z_map, z_image_path)
 
-    vmax = max(- write_array.min(), write_array.max())
-    vmin = - vmax
-    plot_map(write_array, affine,
-             anat=wmean, anat_affine=affine,
-             cmap=cm.cold_hot,
-             vmin=vmin,
-             vmax=vmax,
-             figure=10,
-             threshold=2.5,
-             black_bg=True)
-    plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
+    # make a snapshot of the contrast activation
+    if contrast_id == 'Effects_of_interest':
+        vmax = max(- z_map.get_data().min(), z_map.get_data().max())
+        vmin = - vmax
+        plot_map(z_map.get_data(), z_map.get_affine(),
+                 anat=mean_map.get_data(), anat_affine=mean_map.get_affine(),
+                 cmap=cm.cold_hot,
+                 vmin=vmin,
+                 vmax=vmax,
+                 figure=10,
+                 threshold=2.5,
+                 black_bg=True)
+        plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
 print "All the  results were witten in %s" % write_dir
 plt.show()

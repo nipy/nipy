@@ -27,8 +27,7 @@ by computing fixed effects on contrasts
 import numpy as np
 import scipy.stats as sps
 from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
-from nipy.labs.utils import mahalanobis
-from nipy.labs.utils.zscore import zscore
+from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
@@ -41,7 +40,7 @@ def data_scaling(Y):
     ----------
     Y: array of shape(n_time_points, n_voxels)
        the input data
-    
+
     Returns
     -------
     Y: array of shape(n_time_points, n_voxels),
@@ -118,6 +117,61 @@ class GeneralLinearModel(object):
             self.labels_ = np.zeros(Y.shape[1])
             self.results_ = {0.0: ols_result}
 
+    def get_beta(self, column_index=None):
+        """Acessor for the best linear unbiased estimated of model parameters
+
+        Parameters
+        ==========
+        column_index: int or array-like of int or None, optional,
+                      The indexed of the columns to be returned.
+                      if None (default behaviour), the whole vector is returned
+
+        Returns
+        =======
+        beta: array of shape (n_voxels, n_columns)
+              the beta
+        """
+        # make colum_index a list if it an int
+        if column_index == None:
+            column_index = np.arange(self.X.shape[1])
+        if not hasattr(column_index, '__iter__'):
+            column_index = [int(column_index)]
+        n_beta = len(column_index)
+
+        # build the beta array
+        beta = np.zeros((n_beta, self.labels_.size), dtype=np.float)
+        for l in self.results_.keys():
+            beta[:, self.labels_ == l] = self.results_[l].theta[column_index]
+        return beta
+
+    def get_mse(self):
+        """Acessor for the mean squared error of the model
+
+        Returns
+        =======
+        mse: array of shape (n_voxels)
+              the sum of square error per voxel
+        """
+        # build the beta array
+        mse = np.zeros(self.labels_.size, dtype=np.float)
+        for l in self.results_.keys():
+            mse[self.labels_ == l] = self.results_[l].MSE
+        return mse
+
+    def get_logL(self):
+        """Acessor for the log-likelihood of the model
+
+        Returns
+        =======
+        logL: array of shape (n_voxels)
+              the sum of square error per voxel
+        """
+        # build the beta array
+        logL = np.zeros(self.labels_.size, dtype=np.float)
+        for l in self.results_.keys():
+            logL[self.labels_ == l] = self.results_[l].logL
+        return logL
+
     def contrast(self, con_val, contrast_type=None):
         """ Specify and estimate a linear contrast
 
@@ -126,7 +180,7 @@ class GeneralLinearModel(object):
         con_val: numpy.ndarray of shape (p) or (q, p),
                  where q = number of contrast vectors
                  and p = number of regressors
-        contrast_type: string, optional, either 't' or 'F',
+        contrast_type: string, optional, either 't', 'F' or 'tmin-conjunction',
                        type of the contrast
 
         Returns
@@ -145,7 +199,7 @@ class GeneralLinearModel(object):
                 contrast_type = 't'
             else:
                 contrast_type = 'F'
-        if contrast_type not in ['t', 'F']:
+        if contrast_type not in ['t', 'F', 'tmin-conjunction']:
             raise ValueError('Unknown contrast type: %s' % contrast_type)
 
         effect_ = np.zeros((dim, self.labels_.size), dtype=np.float)
@@ -160,6 +214,7 @@ class GeneralLinearModel(object):
                 resl = self.results_[l].Fcontrast(con_val)
                 effect_[:, self.labels_ == l] = resl.effect
                 var_[:, :, self.labels_ == l] = resl.covariance
+
         dof_ = self.results_[l].df_resid
         return Contrast(effect=effect_, variance=var_, dof=dof_,
                         contrast_type=contrast_type)
@@ -167,13 +222,21 @@ class GeneralLinearModel(object):
 
 class Contrast(object):
     """ The contrast class handles the estimation of statistical contrasts
-    After application of the GLM.
+    on a given model: student (t), Fisher (F), conjunction (tmin-conjunction).
     The important feature is that it supports addition,
     thus opening the possibility of fixed-effects models.
 
     The current implementation is meant to be simple,
     and could be enhanced in the future on the computational side
-    (high-dimensional F constrasts may lead to memory breakage)
+    (high-dimensional F constrasts may lead to memory breakage).
+
+    Notes
+    -----
+    The 'tmin-conjunction' test is the valid conjunction test discussed in:
+    Nichols T, Brett M, Andersson J, Wager T, Poline JB. Valid conjunction
+    inference with the minimum statistic. Neuroimage. 2005 Apr 15;25(3):653-60.
+    This test gives the p-value of the z-values under the conjunction null,
+    i.e. the union of the null hypotheses for all terms.
     """
 
     def __init__(self, effect, variance, dof=DEF_DOFMAX, contrast_type='t',
@@ -236,10 +299,10 @@ class Contrast(object):
                 self.effect = self.effect[np.newaxis]
             if self.variance.ndim == 1:
                 self.variance = self.variance[np.newaxis, np.newaxis]
-            stat = (mahalanobis(self.effect - baseline, self.variance)
-                    / self.dim)
+            stat = (multiple_mahalanobis(self.effect - baseline, 
+                                          self.variance) / self.dim)
         # Case: tmin (conjunctions)
-        elif self.contrast_type == 'tmin':
+        elif self.contrast_type == 'tmin-conjunction':
             vdiag = self.variance.reshape([self.dim ** 2] + list(
                     self.variance.shape[2:]))[:: self.dim + 1]
             stat = (self.effect - baseline) / np.sqrt(
@@ -264,7 +327,7 @@ class Contrast(object):
         if self.stat_ == None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
-        if self.contrast_type in ['t', 'tmin']:
+        if self.contrast_type in ['t', 'tmin-conjunction']:
             p = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
         elif self.contrast_type == 'F':
             p = sps.f.sf(self.stat_, self.dim, np.minimum(
@@ -287,7 +350,8 @@ class Contrast(object):
             self.p_value_ = self.p_value(baseline)
 
         # Avoid inf values kindly supplied by scipy.
-        return zscore(self.p_value_)
+        self.z_score_ = z_score(self.p_value_)
+        return self.z_score_
 
     def __add__(self, other):
         """Addition of selfwith others, Yields an new Contrast instance
@@ -317,3 +381,198 @@ class Contrast(object):
 
     def __div__(self, scalar):
         return self.__rmul__(1 / float(scalar))
+
+
+class FMRILinearModel(object):
+    """ This class is meant to handle GLMs from a higher-level perspective
+    i.e. by taking images as input and output
+    
+    Examples
+    --------
+    >>> from nipy.utils import example_data
+    >>> from nipy.modalities.fmri.glm import FMRILinearModel
+    >>> fmri_files = [example_data.get_filename('fiac', 'fiac0', run)\
+              for run in ['run1.nii.gz', 'run2.nii.gz']]
+    >>> design_files = [example_data.get_filename('fiac', 'fiac0', run)\
+                for run in ['run1_design.npz', 'run2_design.npz']]
+    >>> mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
+    >>> multi_session_model = FMRILinearModel(fmri_files, design_files, mask)
+    >>> multi_session_model.fit()
+    >>> z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
+    >>> np.sum(z_image.get_data() > 3.09)  # number of voxels with p < 0.001
+    671
+    """
+
+    def __init__(self, fmri_data, design_matrices, mask='compute',
+                 m=0.2, M=0.9, threshold=.5):
+        """Load the data
+
+        Parameters
+        ==========
+        fmri_data: image or list of images or string or list of strings,
+                    fmri images / paths of the (4D) fmri images
+        design_matrices: arrays or list of arrays or string or list of strings,
+                         design matrix arrays / paths of .npz files
+        mask: string or image or None,
+              string can be 'compute' or a path to an image
+              image is an input (assumed binary) mask image(s),
+              if 'compute', the mask is computed
+              if None, no masking will be applied
+        m, M, threshold: float, optional
+                         parameters of the masking procedure.
+                         should be within [0, 1]
+        Notes
+        =====
+        The only computation done here is mask computation (if required)
+        """
+        from nipy.labs.mask import compute_mask_sessions
+        from nibabel import load, Nifti1Image
+        # manipulate the arguments
+        if not hasattr(fmri_data, '__iter__'):
+            fmri_data = [fmri_data]
+        if (not hasattr(design_matrices, '__iter__') or
+            type(design_matrices) == np.ndarray):
+            design_matrices = [design_matrices]
+        if len(fmri_data) != len(design_matrices):
+            raise ValueError('Incompatible number of fmri runs and'
+                             'design matrices were provided')
+        self.fmri_data, self.design_matrices = [], []
+        self.glms, self.means = [], []
+
+        # load the fmri data
+        for fmri_run in fmri_data:
+            if isinstance(fmri_run, basestring):
+                self.fmri_data.append(load(fmri_run))
+            else:
+                self.fmri_data.append(fmri_run)
+        # set self.affine as the affine of the first image
+        self.affine = self.fmri_data[0].get_affine()
+
+        # load the designs
+        for design_matrix in design_matrices:
+            if isinstance(design_matrix, basestring):
+                self.design_matrices.append(
+                    np.load(design_matrix).items()[0][1])
+            else:
+                self.design_matrices.append(design_matrix)
+
+        # load the mask
+        if mask == 'compute':
+            mask = compute_mask_sessions(
+                fmri_data, m=m, M=M, cc=1, threshold=threshold)
+            self.mask = Nifti1Image(mask.astype(np.int8), self.affine)
+        elif mask == None:
+            mask = np.ones(self.fmri_data[0].shape[:3]).astype(np.int8)
+            self.mask = Nifti1Image(mask, self.affine)
+        else:
+            if isinstance(mask, basestring):
+                self.mask = load(mask)
+            else:
+                self.mask = mask
+
+    def fit(self, do_scaling=True, model='ar1', steps=100):
+        """Perform the analysis: load the data, mask the data, scale the data,\
+        fit the GLM
+
+        Parameters
+        ==========
+        do_scaling: bool, optional
+                    if yes, the data should be scaled as pourcent of voxel mean
+        model: string, optional,
+               the kind of glm ('ols' or 'ar1') you want to fit to the data
+        steps: int, optional
+               in case of an ar1, discrtization of the ar1 parameter
+        """
+        from nibabel import Nifti1Image
+        # get the mask as an array
+        mask = self.mask.get_data().astype(np.bool)
+
+        self.glms, self.means = [], []
+        for fmri, design_matrix in zip(self.fmri_data, self.design_matrices):
+            if do_scaling:
+                # scale the data
+                data, mean = data_scaling(fmri.get_data()[mask].T)
+            else:
+                data, mean = (fmri.get_data()[mask].T,
+                              fmri.get_data()[mask].T.mean(0))
+            mean_data = mask.astype(np.int16)
+            mean_data[mask] = mean
+            self.means.append(Nifti1Image(mean_data, self.affine))
+            # fit the GLM
+            glm = GeneralLinearModel(design_matrix)
+            glm.fit(data, model, steps)
+            self.glms.append(glm)
+
+    def contrast(self, contrasts, con_id='', contrast_type=None, output_z=True,
+                 output_stat=False, output_effects=False,
+                 output_variance=False):
+        """ Estimation of a contrast as fixed effects on all sessions
+
+        Parameters
+        ==========
+        contrasts: array or list of arrays of shape (n_col) or (n_dim, n_col),
+                   where n_col is the number of columns of the design matrix, 
+                   numerical deifnition of the contrast (one array per run)
+        con_id: string, optional
+                name of the contrast
+        contrast_type: string, one in {'t', 'F', 'tmin-conjunction'}, optional,
+                       type of the contrast
+        output_z: bool, optional,
+                  Return or not the corresponding z-stat image
+        output_stat: bool, optional,
+                     Return or not the base (t/F) stat image
+        output_effects: bool, optional,
+                        Return or not the corresponding effect image
+        output_variance: bool, optional,
+                         Return or not the corresponding variance image
+
+        Returns
+        =======
+        output_images: list of nibabel images
+                       The desired output images
+        """
+        from nibabel import Nifti1Image
+        if self.glms == []:
+            raise ValueError('first run fit() to estimate the model')
+        if isinstance(contrasts, np.ndarray):
+            contrasts = [contrasts]
+        if len(contrasts) != len(self.glms):
+            raise ValueError(
+                'contrasts must be a sequence of %d session contrasts' %
+                len(self.glms))
+
+        for i, (glm, con) in enumerate(zip(self.glms, contrasts)):
+            if i == 0:
+                contrast_ = glm.contrast(con, contrast_type)
+            else:
+                contrast_ = contrast_ + glm.contrast(con, contrast_type)
+        if output_z or output_stat:
+            # compute the contrast and stat
+            contrast_.z_score()
+
+        # Prepare the returned images
+        mask = self.mask.get_data().astype(np.bool)
+        do_outputs = [output_z, output_stat, output_effects, output_variance]
+        estimates = ['z_score_', 'stat_', 'effect', 'variance']
+        descrips = ['z statistic', 'Statistical value', 'Estimated effect',
+                    'Estimated variance']
+        dims = [1, 1, contrast_.dim, contrast_.dim ** 2]
+        n_vox = contrast_.z_score_.size
+        output_images = []
+        for (do_output, estimate, descrip, dim) in zip(
+            do_outputs, estimates, descrips, dims):
+            if do_output:
+                if dim > 1:
+                    result_map = np.tile(
+                        mask.astype(np.float)[:, :, :, np.newaxis], dim)
+                    result_map[mask] = np.reshape(
+                        getattr(contrast_, estimate).T, (n_vox, dim))
+                else:
+                    result_map = mask.astype(np.float)
+                    result_map[mask] = np.squeeze(
+                        getattr(contrast_, estimate))
+                output = Nifti1Image(result_map, self.affine)
+                output.get_header()['descrip'] = (
+                    '%s associated with contrast %s' % (descrip, con_id))
+                output_images.append(output)
+        return output_images
