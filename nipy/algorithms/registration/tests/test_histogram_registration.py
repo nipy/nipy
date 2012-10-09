@@ -16,6 +16,7 @@ def make_data_bool(dx=100, dy=100, dz=50):
     return (np.random.rand(dx, dy, dz)
                    - np.random.rand()) > 0
 
+
 def make_data_uint8(dx=100, dy=100, dz=50):
     return (256 * (np.random.rand(dx, dy, dz)
                    - np.random.rand())).astype('uint8')
@@ -131,7 +132,7 @@ def test_joint_hist_raw():
     data2[:] = -1
     data2[1:-1, 1:-1, 1:-1] = data.copy()
     vox_coords = np.indices(data_shape).transpose((1, 2, 3, 0))
-    vox_coords = vox_coords.astype(np.double)
+    vox_coords = np.ascontiguousarray(vox_coords.astype(np.double))
     _joint_histogram(jh_arr, data.flat, data2, vox_coords, 0)
     assert_almost_equal(np.diag(np.diag(jh_arr)), jh_arr)
 

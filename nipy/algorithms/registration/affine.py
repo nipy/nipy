@@ -140,12 +140,65 @@ def inverse_affine(affine):
     return spl.inv(affine)
 
 
+def slices2aff(slices):
+    """ Return affine from start, step of sequence `slices` of slice objects
+
+    Parameters
+    ----------
+    slices : sequence of slice objects
+
+    Returns
+    -------
+    aff : ndarray
+        If ``N = len(slices)`` then affine is shape (N+1, N+1) with diagonal
+        given by the ``step`` attribute of the slice objects (where None
+        corresponds to 1), and the `:N` elements in the last column are given by
+        the ``start`` attribute of the slice objects
+
+    Examples
+    --------
+    >>> slices2aff([slice(None), slice(None)])
+    array([[ 1.,  0.,  0.],
+           [ 0.,  1.,  0.],
+           [ 0.,  0.,  1.]])
+    >>> slices2aff([slice(2, 3, 4), slice(3, 4, 5), slice(4, 5, 6)])
+    array([[ 4.,  0.,  0.,  2.],
+           [ 0.,  5.,  0.,  3.],
+           [ 0.,  0.,  6.,  4.],
+           [ 0.,  0.,  0.,  1.]])
+    """
+    starts = [s.start if not s.start is None else 0 for s in slices]
+    steps = [s.step if not s.step is None else 1 for s in slices]
+    aff = np.diag(steps + [1.])
+    aff[:-1, -1] = starts
+    return aff
+
+
 def subgrid_affine(affine, slices):
-    steps = map(lambda x: max(x, 1), [s.step for s in slices])
-    starts = map(lambda x: max(x, 0), [s.start for s in slices])
-    t = np.diag(np.concatenate((steps, [1]), 1))
-    t[0:3, 3] = starts
-    return np.dot(affine, t)
+    """ Return dot prodoct of `affine` and affine resulting from `slices`
+
+    Parameters
+    ----------
+    affine : array-like
+        Affine to apply on right of affine resulting from `slices`
+    slices : sequence of slice objects
+        Slices generating (N+1, N+1) affine from ``slices2aff``, where ``N =
+        len(slices)``
+
+    Returns
+    -------
+    aff : ndarray
+        result of ``np.dot(affine, slice_affine)`` where ``slice_affine`` is
+        affine resulting from ``slices2aff(slices)``.
+
+    Raises
+    ------
+    ValueError : if the ``slice_affine`` contains non-integer values
+    """
+    slices_aff = slices2aff(slices)
+    if not np.all(slices_aff == np.round(slices_aff)):
+           raise ValueError("Need integer slice start, step")
+    return np.dot(affine, slices_aff)
 
 
 class Affine(Transform):

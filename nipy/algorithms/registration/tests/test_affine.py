@@ -4,9 +4,9 @@ import numpy as np
 
 from ..affine import (Affine, Affine2D, Rigid, Rigid2D,
                       Similarity, Similarity2D,
-                      rotation_mat2vec)
+                      rotation_mat2vec, subgrid_affine, slices2aff)
 
-from nose.tools import assert_true, assert_false
+from nose.tools import assert_true, assert_false, assert_raises
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 from ....testing import assert_almost_equal
 
@@ -116,4 +116,50 @@ def test_indirect_affines():
     obj = Affine(T) 
     assert_false(obj.is_direct)
     assert_array_almost_equal(T, obj.as_affine())
-    
+
+
+def test_slices2aff():
+    # Take a series of slices, return equivalent affine
+    for N in range(1, 5):
+        slices = [slice(None) for n in range(N)]
+        aff = np.eye(N+1)
+        assert_array_equal(slices2aff(slices), aff)
+        slices = [slice(2) for n in range(N)]
+        assert_array_equal(slices2aff(slices), aff)
+        slices = [slice(2, 4) for n in range(N)]
+        aff2 = aff.copy()
+        aff2[:-1,-1] = [2] * N
+        assert_array_equal(slices2aff(slices), aff2)
+        slices = [slice(2, 4, 5) for n in range(N)]
+        aff3 = np.diag([5] * N + [1])
+        aff3[:-1,-1] = [2] * N
+        assert_array_equal(slices2aff(slices), aff3)
+    slices = [slice(2.1, 11, 4.9),
+              slice(3.2, 11, 5.8),
+              slice(4.3, 11, 6.7)]
+    assert_array_equal(slices2aff(slices),
+                       [[4.9, 0, 0, 2.1],
+                        [0, 5.8, 0, 3.2],
+                        [0, 0, 6.7, 4.3],
+                        [0, 0, 0, 1]])
+
+
+def test_subgrid_affine():
+    # Takes an affine and a series of slices, creates affine from slices,
+    # returns dot(affine, affine_from_slices)
+    slices = [slice(2, 11, 4),
+              slice(3, 11, 5),
+              slice(4, 11, 6)]
+    assert_array_equal(subgrid_affine(np.eye(4), slices),
+                       [[4, 0, 0, 2],
+                        [0, 5, 0, 3],
+                        [0, 0, 6, 4],
+                        [0, 0, 0, 1]])
+    assert_array_equal(subgrid_affine(np.diag([2, 3, 4, 1]), slices),
+                       [[8, 0, 0, 4],
+                        [0, 15, 0, 9],
+                        [0, 0, 24, 16],
+                        [0, 0, 0, 1]])
+    # Raises error for non-integer slice arguments
+    slices[0] = slice(2.1, 11, 4)
+    assert_raises(ValueError, subgrid_affine, np.eye(4), slices)
