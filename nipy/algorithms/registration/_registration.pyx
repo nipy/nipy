@@ -171,8 +171,18 @@ def _cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0,
 def _cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
                         mx='zero', my='zero', mz='zero'):
     """
-    Note that the input transformation Tvox will be re-ordered in C
-    convention if needed.
+    Perform cubic spline resampling of a 3d input image `im` into a
+    grid with shape `dims` according to an affine transform
+    represented by a 4x4 matrix `Tvox` that assumes voxel
+    coordinates. Boundary conditions on each axis are determined by
+    the keyword arguments `mx`, `my` and `mz`, respectively. Possible
+    choices are:
+
+    'zero': assume zero intensity outside the target grid
+    'nearest': extrapolate intensity by the closest grid point along the axis
+    'reflect': extrapolate intensity by mirroring the input image along the axis
+
+    Note that `Tvox` will be re-ordered in C convention if needed.
     """
     cdef double *tvox
     cdef int cast_integer
