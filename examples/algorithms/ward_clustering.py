@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
+from __future__ import print_function # Python 2/3 compatibility
+__doc__ = """
 Demo ward clustering on a graph: various ways of forming clusters and dendrogram
 
 Requires matplotlib
 """
-from __future__ import print_function # Python 2/3 compatibility
-
 print(__doc__)
 
 import numpy as np
