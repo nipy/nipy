@@ -76,7 +76,7 @@ print('Computation will be performed in directory: %s' % write_dir)
 print('Loading design matrix...')
 
 # the example example.labs.write_paradigm_file shows how to create this file
-paradigm = list(load_paradigm_from_csv_file(paradigm_file).values())[0]
+paradigm = load_paradigm_from_csv_file(paradigm_file)['0']
 
 design_matrix = make_dmtx(frametimes, paradigm, hrf_model=hrf_model,
                           drift_model=drift_model, hfcut=hfcut)
