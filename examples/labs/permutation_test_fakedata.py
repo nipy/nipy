@@ -77,7 +77,7 @@ for results in cluster_results:
     Tmax = np.zeros(nclust, float)
     Tmax_P = np.zeros(nclust, float)
     Diam = np.zeros(nclust, int)
-    for j in xrange(nclust):
+    for j in range(nclust):
         I = np.where(results["labels"]==j)[0]
         Tmax[j] = P.Tvalues[I].max()
         Tmax_P[j] = voxel_results["Corr_p_values"][I].min()
