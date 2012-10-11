@@ -34,9 +34,10 @@ def test_resample_int_data():
     _test_resample(arr, (3,))
 
 def test_resample_uint_data():
-    arr = np.random.randint(100, size=(10, 11, 12)).astype('uint')
+    arr = np.random.randint(100, size=(10, 11, 12)).astype('uint8')
     img = Image(arr, vox2mni(np.eye(4)))
     T = Affine((.5, .5, .5, .1, .1, .1, 0, 0, 0, 0, 0, 0))
     img2 = resample(img, T)
     assert(np.min(img2.get_data()) >= 0)
+    assert(np.max(img2.get_data()) < 255)
 
