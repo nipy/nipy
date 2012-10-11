@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function
+__doc__ = \
 """
 This example shows how to get variance and beta estimated from a nipy GLM.
 
@@ -16,7 +18,7 @@ Needs matplotlib
 
 Author : Bertrand Thirion, 2010--2012
 """
-print __doc__
+print(__doc__)
 
 from os import mkdir, getcwd, path
 
@@ -65,16 +67,16 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-print 'Computation will be performed in directory: %s' % write_dir
+print('Computation will be performed in directory: %s' % write_dir)
 
 ########################################
 # Design matrix
 ########################################
 
-print 'Loading design matrix...'
+print('Loading design matrix...')
 
 # the example example.labs.write_paradigm_file shows how to create this file
-paradigm = load_paradigm_from_csv_file(paradigm_file).values()[0]
+paradigm = list(load_paradigm_from_csv_file(paradigm_file).values())[0]
 
 design_matrix = make_dmtx(frametimes, paradigm, hrf_model=hrf_model,
                           drift_model=drift_model, hfcut=hfcut)
@@ -90,7 +92,7 @@ dim = design_matrix.matrix.shape[1]
 # Perform a GLM analysis
 ########################################
 
-print 'Fitting a GLM (this takes time)...'
+print('Fitting a GLM (this takes time)...')
 fmri_glm = FMRILinearModel(data_path, design_matrix.matrix,
                            mask='compute')
 fmri_glm.fit(do_scaling=True, model='ar1')
@@ -109,14 +111,14 @@ beta_image = Nifti1Image(beta_map, fmri_glm.affine)
 beta_image.get_header()['descrip'] = (
     'Parameter estimates of the localizer dataset')
 save(beta_image, path.join(write_dir, 'beta.nii'))
-print "Beta image witten in %s" % write_dir
+print("Beta image witten in %s" % write_dir)
 
 variance_map = mask.astype(np.float)
 variance_map[mask] = variance_hat
 
 # Create a snapshots of the variance image contrasts
 vmax = np.log(variance_hat.max())
-plot_map(np.log(variance_map + .1), 
+plot_map(np.log(variance_map + .1),
          fmri_glm.affine,
          cmap=cm.hot_black_bone,
          vmin=np.log(0.1),
