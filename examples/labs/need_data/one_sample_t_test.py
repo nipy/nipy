@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
+from __future__ import print_function
+__doc__ = """
 Example of a one-sample t-test using the GLM formalism.
 This script takes individual contrast images and masks and runs a simple GLM.
 This can be readily generalized to any design matrix.
@@ -14,7 +15,7 @@ Needs matplotlib.
 
 Author : Bertrand Thirion, 2012
 """
-print __doc__
+print(__doc__)
 
 #autoindent
 from os import mkdir, getcwd, path
@@ -85,4 +86,4 @@ plot_map(z_map.get_data(), z_map.get_affine(),
          black_bg=True)
 plt.savefig(path.join(write_dir, '%s_z_map.png' % 'one_sample'))
 plt.show()
-print "Wrote all the results in directory %s" % write_dir
+print("Wrote all the results in directory %s" % write_dir)

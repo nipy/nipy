@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
-Example where the result of the min of two contrasts
-is computed and displayed.
-This is based on the Localizer dataset,
-in which we want to find the regions activated
-both in left and right finger tapping.
+from __future__ import print_function
+__doc__ = """
+Example where the result of the min of two contrasts is computed and displayed.
+This is based on the Localizer dataset, in which we want to find the regions
+activated both in left and right finger tapping.
 
 Notes
------ 
+-----
 This is the valid conjunction test discussed in:
 Nichols T, Brett M, Andersson J, Wager T, Poline JB. Valid conjunction
 inference with the minimum statistic. Neuroimage. 2005 Apr 15;25(3):653-60.
@@ -18,7 +17,7 @@ Needs matplotlib
 
 Author : Bertrand Thirion, 2012
 """
-print __doc__
+print(__doc__)
 
 from os import mkdir, getcwd, path
 
@@ -67,13 +66,13 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-print 'Computation will be performed in directory: %s' % write_dir
+print('Computation will be performed in directory: %s' % write_dir)
 
 ########################################
 # Design matrix
 ########################################
 
-print 'Loading design matrix...'
+print('Loading design matrix...')
 
 paradigm = load_paradigm_from_csv_file(paradigm_file).values()[0]
 
@@ -98,7 +97,7 @@ contrasts['right'] = contrasts['clicDaudio'] + contrasts['clicDvideo']
 # Perform a GLM analysis
 ########################################
 
-print 'Fitting a General Linear Model'
+print('Fitting a General Linear Model')
 fmri_glm = FMRILinearModel(data_path, design_matrix.matrix,
                            mask='compute')
 fmri_glm.fit(do_scaling=True, model='ar1')
@@ -131,6 +130,6 @@ plot_map(z_map.get_data(), fmri_glm.affine,
 plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 plt.show()
 
-print 'All the  results were witten in %s' % write_dir
+print('All the  results were witten in %s' % write_dir)
 # Note: fancier visualization of the results are shown
 # in the viz3d example
