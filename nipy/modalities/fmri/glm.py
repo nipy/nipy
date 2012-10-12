@@ -2,32 +2,46 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module presents an interface to use the glm implemented in
-nipy.algorithms.statistics.models.regression
+nipy.algorithms.statistics.models.regression.
+
 It contains the GLM and contrast classes that are meant to be the main objects
 of fMRI data analyses.
 
-It is important to note that the GLM is meant as a one-session
-General Linear Model. But inference can be performed on multiple sessions
-by computing fixed effects on contrasts
+It is important to note that the GLM is meant as a one-session General Linear
+Model. But inference can be performed on multiple sessions by computing fixed
+effects on contrasts
 
->>> from nipy.modalities.fmri.glm import GeneralLinearModel
+Examples
+--------
+
 >>> import numpy as np
+>>> from nipy.modalities.fmri.glm import GeneralLinearModel
 >>> n, p, q = 100, 80, 10
 >>> X, Y = np.random.randn(p, q), np.random.randn(p, n)
 >>> cval = np.hstack((1, np.zeros(9)))
 >>> model = GeneralLinearModel(X)
 >>> model.fit(Y)
 >>> z_vals = model.contrast(cval).z_score() # z-transformed statistics
->>> # example of fixed effects statistics across two contrasts
+
+Example of fixed effects statistics across two contrasts
+
 >>> cval_ = cval.copy()
 >>> np.random.shuffle(cval_)
 >>> z_ffx = (model.contrast(cval) + model.contrast(cval_)).z_score()
 """
 
 import numpy as np
+
 import scipy.stats as sps
+
+from nibabel import load, Nifti1Image
+
+from nipy.labs.mask import compute_mask_sessions
 from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
 from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
+
+from nipy.testing.decorators import skip_doctest_if
+from nipy.utils import HAVE_EXAMPLE_DATA
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
@@ -43,9 +57,10 @@ def data_scaling(Y):
 
     Returns
     -------
-    Y: array of shape(n_time_points, n_voxels),
+    Y: array of shape (n_time_points, n_voxels),
        the data after mean-scaling, de-meaning and multiplication by 100
-    mean: array of shape(n_voxels), the data mean
+    mean : array of shape (n_voxels,)
+        the data mean
     """
     mean = Y.mean(0)
     Y = 100 * (Y / mean - 1)
@@ -59,10 +74,12 @@ class GeneralLinearModel(object):
     fit() performs the standard two-step ('ols' then 'ar1') GLM fitting
     contrast() returns a contrast instance, yileding statistics and p-values.
     The link between fit() and constrast is done vis the two class members:
-    glm_results: dictionary of nipy.algorithms.statistics.models.\
+
+    glm_results : dictionary of nipy.algorithms.statistics.models.
                  regression.RegressionResults instances,
                  describing results of a GLM fit
-    labels: array of shape(n_voxels),
+
+    labels : array of shape(n_voxels),
             labels that associate each voxel with a results key
     """
 
@@ -70,7 +87,7 @@ class GeneralLinearModel(object):
         """
         Parameters
         ----------
-        X: array of shape(n_time_points, n_regressors),
+        X : array of shape (n_time_points, n_regressors)
            the design matrix
         """
         self.X = X
@@ -82,11 +99,12 @@ class GeneralLinearModel(object):
 
         Parameters
         ----------
-        Y: array of shape(n_time_points, n_samples), the fMRI data
-        model: string, to be chosen in ['ar1', 'ols'], optional,
-               the temporal variance model. Defaults to 'ar1'
-        steps: int, optional,
-               Maximum number of discrete steps for the AR(1) coef histogram
+        Y : array of shape(n_time_points, n_samples)
+            the fMRI data
+        model : {'ar1', 'ols'}, optional
+            the temporal variance model. Defaults to 'ar1'
+        steps : int, optional
+            Maximum number of discrete steps for the AR(1) coef histogram
         """
         if model not in ['ar1', 'ols']:
             raise ValueError('Unknown model')
@@ -121,15 +139,15 @@ class GeneralLinearModel(object):
         """Acessor for the best linear unbiased estimated of model parameters
 
         Parameters
-        ==========
-        column_index: int or array-like of int or None, optional,
-                      The indexed of the columns to be returned.
-                      if None (default behaviour), the whole vector is returned
+        ----------
+        column_index: int or array-like of int or None, optional
+            The indexed of the columns to be returned.  if None (default
+            behaviour), the whole vector is returned
 
         Returns
-        =======
+        -------
         beta: array of shape (n_voxels, n_columns)
-              the beta
+            the beta
         """
         # make colum_index a list if it an int
         if column_index == None:
@@ -148,9 +166,9 @@ class GeneralLinearModel(object):
         """Acessor for the mean squared error of the model
 
         Returns
-        =======
+        -------
         mse: array of shape (n_voxels)
-              the sum of square error per voxel
+            the sum of square error per voxel
         """
         # build the beta array
         mse = np.zeros(self.labels_.size, dtype=np.float)
@@ -162,9 +180,9 @@ class GeneralLinearModel(object):
         """Acessor for the log-likelihood of the model
 
         Returns
-        =======
-        logL: array of shape (n_voxels)
-              the sum of square error per voxel
+        -------
+        logL: array of shape (n_voxels,)
+            the sum of square error per voxel
         """
         # build the beta array
         logL = np.zeros(self.labels_.size, dtype=np.float)
@@ -177,11 +195,11 @@ class GeneralLinearModel(object):
 
         Parameters
         ----------
-        con_val: numpy.ndarray of shape (p) or (q, p),
-                 where q = number of contrast vectors
-                 and p = number of regressors
-        contrast_type: string, optional, either 't', 'F' or 'tmin-conjunction',
-                       type of the contrast
+        con_val : numpy.ndarray of shape (p) or (q, p)
+            where q = number of contrast vectors and p = number of regressors
+        contrast_type : {None, 't', 'F' or 'tmin-conjunction'}, optional
+            type of the contrast.  If None, then defaults to 't' for 1D
+            `con_val` and 'F' for 2D `con_val`
 
         Returns
         -------
@@ -386,47 +404,51 @@ class Contrast(object):
 class FMRILinearModel(object):
     """ This class is meant to handle GLMs from a higher-level perspective
     i.e. by taking images as input and output
-    
-    Examples
-    --------
-    >>> from nipy.utils import example_data
-    >>> from nipy.modalities.fmri.glm import FMRILinearModel
-    >>> fmri_files = [example_data.get_filename('fiac', 'fiac0', run)\
-              for run in ['run1.nii.gz', 'run2.nii.gz']]
-    >>> design_files = [example_data.get_filename('fiac', 'fiac0', run)\
-                for run in ['run1_design.npz', 'run2_design.npz']]
-    >>> mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
-    >>> multi_session_model = FMRILinearModel(fmri_files, design_files, mask)
-    >>> multi_session_model.fit()
-    >>> z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
-    >>> np.sum(z_image.get_data() > 3.09)  # number of voxels with p < 0.001
-    671
     """
 
+    @skip_doctest_if(not HAVE_EXAMPLE_DATA)
     def __init__(self, fmri_data, design_matrices, mask='compute',
                  m=0.2, M=0.9, threshold=.5):
         """Load the data
 
         Parameters
-        ==========
-        fmri_data: image or list of images or string or list of strings,
-                    fmri images / paths of the (4D) fmri images
-        design_matrices: arrays or list of arrays or string or list of strings,
-                         design matrix arrays / paths of .npz files
-        mask: string or image or None,
-              string can be 'compute' or a path to an image
-              image is an input (assumed binary) mask image(s),
-              if 'compute', the mask is computed
-              if None, no masking will be applied
+        ----------
+        fmri_data : Image or str or sequence of Images / str
+            fmri images / paths of the (4D) fmri images
+        design_matricesi : arrays or str or sequence of arrays / str
+            design matrix arrays / paths of .npz files
+        mask : str or Image or None
+            string can be 'compute' or a path to an image
+            image is an input (assumed binary) mask image(s),
+            if 'compute', the mask is computed
+            if None, no masking will be applied
         m, M, threshold: float, optional
-                         parameters of the masking procedure.
-                         should be within [0, 1]
+            parameters of the masking procedure.  Should be within [0, 1]
+
         Notes
-        =====
+        -----
         The only computation done here is mask computation (if required)
+
+        Examples
+        --------
+        We need the example data package for this example
+
+        >>> from nipy.utils import example_data
+        >>> from nipy.modalities.fmri.glm import FMRILinearModel
+        >>> fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
+        ...     for run in ['run1.nii.gz', 'run2.nii.gz']]
+        >>> design_files = [example_data.get_filename('fiac', 'fiac0', run)
+        ...     for run in ['run1_design.npz', 'run2_design.npz']]
+        >>> mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
+        >>> multi_session_model = FMRILinearModel(fmri_files, design_files, mask)
+        >>> multi_session_model.fit()
+        >>> z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
+
+        The number of voxels with p < 0.001
+
+        >>> np.sum(z_image.get_data() > 3.09)
+        671
         """
-        from nipy.labs.mask import compute_mask_sessions
-        from nibabel import load, Nifti1Image
         # manipulate the arguments
         if not hasattr(fmri_data, '__iter__'):
             fmri_data = [fmri_data]
@@ -471,17 +493,16 @@ class FMRILinearModel(object):
                 self.mask = mask
 
     def fit(self, do_scaling=True, model='ar1', steps=100):
-        """Perform the analysis: load the data, mask the data, scale the data,\
-        fit the GLM
+        """ Load the data, mask the data, scale the data, fit the GLM
 
         Parameters
-        ==========
-        do_scaling: bool, optional
-                    if yes, the data should be scaled as pourcent of voxel mean
-        model: string, optional,
-               the kind of glm ('ols' or 'ar1') you want to fit to the data
-        steps: int, optional
-               in case of an ar1, discrtization of the ar1 parameter
+        ----------
+        do_scaling : bool, optional
+            if True, the data should be scaled as pourcent of voxel mean
+        model : string, optional,
+            the kind of glm ('ols' or 'ar1') you want to fit to the data
+        steps : int, optional
+            in case of an ar1, discretization of the ar1 parameter
         """
         from nibabel import Nifti1Image
         # get the mask as an array
@@ -509,29 +530,28 @@ class FMRILinearModel(object):
         """ Estimation of a contrast as fixed effects on all sessions
 
         Parameters
-        ==========
-        contrasts: array or list of arrays of shape (n_col) or (n_dim, n_col),
-                   where n_col is the number of columns of the design matrix, 
-                   numerical deifnition of the contrast (one array per run)
-        con_id: string, optional
-                name of the contrast
-        contrast_type: string, one in {'t', 'F', 'tmin-conjunction'}, optional,
-                       type of the contrast
-        output_z: bool, optional,
-                  Return or not the corresponding z-stat image
-        output_stat: bool, optional,
-                     Return or not the base (t/F) stat image
-        output_effects: bool, optional,
-                        Return or not the corresponding effect image
-        output_variance: bool, optional,
-                         Return or not the corresponding variance image
+        ----------
+        contrasts : array or list of arrays of shape (n_col) or (n_dim, n_col)
+            where ``n_col`` is the number of columns of the design matrix,
+            numerical definition of the contrast (one array per run)
+        con_id : str, optional
+            name of the contrast
+        contrast_type : {'t', 'F', 'tmin-conjunction'}, optional
+            type of the contrast
+        output_z : bool, optional
+            Return or not the corresponding z-stat image
+        output_stat : bool, optional
+            Return or not the base (t/F) stat image
+        output_effects : bool, optional
+            Return or not the corresponding effect image
+        output_variance : bool, optional
+            Return or not the corresponding variance image
 
         Returns
-        =======
-        output_images: list of nibabel images
-                       The desired output images
+        -------
+        output_images : list of nibabel images
+            The desired output images
         """
-        from nibabel import Nifti1Image
         if self.glms == []:
             raise ValueError('first run fit() to estimate the model')
         if isinstance(contrasts, np.ndarray):
