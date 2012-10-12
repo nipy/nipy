@@ -14,6 +14,20 @@ from ..info import DATA_PKGS
 templates = datasource_or_bomber(DATA_PKGS['nipy-templates'])
 example_data = datasource_or_bomber(DATA_PKGS['nipy-data'])
 
+try:
+    example_data.get_filename()
+except DataError:
+    HAVE_EXAMPLE_DATA = False
+else:
+    HAVE_EXAMPLE_DATA = True
+
+try:
+    templates.get_filename()
+except DataError:
+    HAVE_TEMPLATES = False
+else:
+    HAVE_TEMPLATES = True
+
 from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench
