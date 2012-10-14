@@ -82,6 +82,7 @@ X, names = dmtx_light(frametimes, paradigm, drift_model='cosine', hfcut=128,
 ########################################
 # Create ROIs
 ########################################
+
 positions = np.array([[60, -30, 5], [50, 27, 5]])
 # in mm (here in the MNI space)
 radii = np.array([8, 6])
@@ -112,7 +113,7 @@ glm = GeneralLinearModel(X)
 glm.fit(Y.T)
 
 # specifiy the contrast [1 -1 0 ..]
-contrast = np.hstack(( 1, -1, np.zeros(X.shape[1] - 2)))
+contrast = np.hstack((1, -1, np.zeros(X.shape[1] - 2)))
 
 # compute the constrast image related to it
 zvals = glm.contrast(contrast).z_score()
@@ -129,8 +130,7 @@ my_roi.set_feature('signal', signal_feature)
 my_roi.set_roi_feature('signal_avg', my_roi.representative_feature('signal'))
 
 # roi-level contrast average
-thresholded_contrast = zvals
-contrast_feature = [thresholded_contrast[my_roi.select_id(id, roi=False)]
+contrast_feature = [zvals[my_roi.select_id(id, roi=False)]
                     for id in my_roi.get_id()]
 my_roi.set_feature('contrast', contrast_feature)
 my_roi.set_roi_feature('contrast_avg',
@@ -183,7 +183,7 @@ for k in range(my_roi.k):
 
 fir_order = 6
 X_fir, _ = dmtx_light(
-    frametimes, paradigm, hrf_model='fir', drift_model='cosine', 
+    frametimes, paradigm, hrf_model='fir', drift_model='cosine',
     drift_order=3, fir_delays=np.arange(fir_order), add_regs=motion,
     add_reg_names=add_reg_names)
 glm_fir = GeneralLinearModel(X_fir)
@@ -192,7 +192,7 @@ plt.figure()
 for k in range(my_roi.k):
     glm_fir.fit(roi_tc[k])
     res = glm_fir.results_.values()[0]
-    plt.subplot(my_roi.k, 1, k + 1)
+    plt.subplot(1, my_roi.k, k + 1)
     conf_int = res.conf_int(cols=range(fir_order)).squeeze()
     yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2
     plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
