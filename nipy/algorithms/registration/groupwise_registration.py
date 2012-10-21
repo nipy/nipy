@@ -666,6 +666,8 @@ class Realign4d(object):
     def _generic_init(self, images, affine_class,
                       slice_order, interleaved, tr, tr_slices,
                       start, time_interp, slice_info):
+        if slice_order == None:
+            slice_order = SLICE_ORDER
         if not hasattr(images, '__iter__'):
             images = [images]
         self._runs = []
@@ -742,7 +744,7 @@ class Realign4d(object):
 class FmriRealign4d(Realign4d):
 
     def __init__(self, images, slice_order, interleaved=None,
-                 tr=None, tr_slices=None, start=0.0, time_interp=True,
+                 tr=1.0, tr_slices=None, start=0.0, time_interp=True,
                  affine_class=Rigid, slice_info=None):
 
         """
