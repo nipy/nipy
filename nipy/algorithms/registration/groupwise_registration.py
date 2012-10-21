@@ -667,6 +667,7 @@ class Realign4d(object):
                       slice_order, interleaved, tr, tr_slices,
                       start, time_interp, slice_info):
         if slice_order == None:
+            time_interp = False
             slice_order = SLICE_ORDER
         if not hasattr(images, '__iter__'):
             images = [images]
