@@ -14,7 +14,7 @@ data = {}
 
 def setup():
     img = load_image(funcfile)
-    arr = np.array(img)
+    arr = img.get_data()
     #arr = np.rollaxis(arr, 3)
     data['nimages'] = arr.shape[3]
     data['fmridata'] = arr
@@ -232,7 +232,7 @@ def test_resid():
     rarr = reconstruct(p['basis_vectors'], p['basis_projections'], -1)
     # add back the sqrt MSE, because we standardized
     rmse = root_mse(data['fmridata'], axis=-1)[...,None]
-    assert_array_almost_equal(rarr * rmse, data['fmridata'])
+    assert_true(np.allclose(rarr * rmse, data['fmridata']))
 
 
 def test_both():

@@ -3,7 +3,10 @@
 import numpy as np
 import scipy.stats as sp_stats
 
-from ..algorithms.utils.affines import apply_affine
+# Use the nibabel image object
+from nibabel import Nifti1Image as Image
+from nibabel.affines import apply_affine
+
 from ..algorithms.graph.field import field_from_graph_and_data
 from ..algorithms.graph.graph import wgraph_from_3d_grid
 from ..algorithms.statistics import empirical_pvalue
@@ -13,9 +16,6 @@ from .group.permutation_test import \
 
 # FIXME: rename permutation_test_onesample class
 #so that name starts with upper case
-
-# Use the brifti image object
-from nibabel import Nifti1Image as Image
 
 
 ###############################################################################
@@ -49,12 +49,12 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
     cluster_th: cluster size threshold
     null_s : cluster-level calibration method: None|'rft'|array
 
-    Note
-    ----
+    Notes
+    -----
     This works only with three dimensional data
     """
     # Masking
-    if len(mask.get_shape()) > 3:
+    if len(mask.shape) > 3:
         xyz = np.where((mask.get_data() > 0).squeeze())
         zmap = zimg.get_data().squeeze()[xyz]
     else:
@@ -99,12 +99,10 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
                              'depth': d[sorted]})
 
     ## Sort clusters by descending size order
-    def smaller(c1, c2):
-        return int(np.sign(c2['size'] - c1['size']))
-    clusters.sort(cmp=smaller)
+    clusters.sort(key=lambda c : c['size'], reverse=True)
 
     # FDR-corrected p-values
-    fdr_pvalue = empirical_pvalue.all_fdr_gaussian(zmap)[above_th]
+    fdr_pvalue = empirical_pvalue.gaussian_fdr(zmap)[above_th]
 
     # Default "nulls"
     if not 'zmax' in nulls:
@@ -174,7 +172,7 @@ def get_3d_peaks(image, mask=None, threshold=0., nn=18, order_th=0):
 
     Returns
     -------
-    peaks, a list of dictionray, where each dic has the fields:
+    peaks, a list of dictionaries, where each dict has the fields:
     vals, map value at the peak
     order, topological order of the peak
     ijk, array of shape (1,3) grid coordinate of the peak
@@ -187,7 +185,7 @@ def get_3d_peaks(image, mask=None, threshold=0., nn=18, order_th=0):
         data = image.get_data().ravel()[bmask > 0]
         xyz = np.array(np.where(bmask > 0)).T
     else:
-        shape = image.get_shape()
+        shape = image.shape
         data = image.get_data().ravel()
         xyz = np.reshape(np.indices(shape), (3, np.prod(shape))).T
     affine = image.get_affine()
@@ -260,12 +258,12 @@ def onesample_test(data_images, vardata_images, mask_images, stat_id,
                                        stat_id=stat_id)
 
     # Compute z-map image
-    zmap = np.zeros(data_images[0].get_shape()).squeeze()
+    zmap = np.zeros(data_images[0].shape).squeeze()
     zmap[list(xyz)] = ptest.zscore()
     zimg = Image(zmap, data_images[0].get_affine())
 
     # Compute mask image
-    maskimg = Image(mask, data_images[0].get_affine())
+    maskimg = Image(mask.astype(np.int8), data_images[0].get_affine())
 
     # Multiple comparisons
     if permutations <= 0:
@@ -309,7 +307,7 @@ def twosample_test(data_images, vardata_images, mask_images, labels, stat_id,
             stat_id=stat_id)
 
     # Compute z-map image
-    zmap = np.zeros(data_images[0].get_shape()).squeeze()
+    zmap = np.zeros(data_images[0].shape).squeeze()
     zmap[list(xyz)] = ptest.zscore()
     zimg = Image(zmap, data_images[0].get_affine())
 
@@ -356,7 +354,7 @@ def linear_model_fit(data_images, mask_images, design_matrix, vector):
     c = G.contrast(vector)
 
     # Compute z-map image
-    zmap = np.zeros(data_images[0].get_shape()).squeeze()
+    zmap = np.zeros(data_images[0].shape).squeeze()
     zmap[list(xyz)] = c.zscore()
     zimg = Image(zmap, data_images[0].get_affine())
 
@@ -384,12 +382,12 @@ class LinearModel(object):
         nomask = mask == None
         if nomask:
             self.xyz = None
-            self.axis = len(data[0].get_shape()) - 1
+            self.axis = len(data[0].shape) - 1
         else:
             self.xyz = np.where(mask.get_data() > 0)
             self.axis = 1
 
-        self.spatial_shape = data[0].get_shape()[0: - 1]
+        self.spatial_shape = data[0].shape[0: -1]
         self.affine = data[0].get_affine()
 
         self.glm = []

@@ -2,15 +2,18 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-def configuration(parent_package='',top_path=None):
+
+def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
     config = Configuration('statistics', parent_package, top_path)
     config.add_subpackage('models')
     config.add_subpackage('formula')
     config.add_subpackage('bench')
-    config.add_data_dir('tests')
+    config.add_subpackage('tests')
     config.add_extension('intvol', 'intvol.pyx',
-                         include_dirs = [np.get_include()])
+                         include_dirs=[np.get_include()])
+    config.add_extension('histogram', 'histogram.pyx',
+                         include_dirs=[np.get_include()])
     return config
 
 

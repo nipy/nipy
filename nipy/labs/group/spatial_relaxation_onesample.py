@@ -7,8 +7,8 @@
 import numpy as np
 import scipy.special as sp
 
-from routines import add_lines
-from displacement_field import displacement_field
+from .routines import add_lines
+from .displacement_field import displacement_field
 
 #####################################################################################
 # some useful functions
@@ -577,8 +577,9 @@ class multivariate_stat(object):
         L = 0.0
         i,b = n-1, B-1
         n_ib = n * B - i * B - b
-        nsimu_ib = nsimu / n_ib
-        burnin_ib = burnin / n_ib
+        # Note integer division
+        nsimu_ib = nsimu // n_ib
+        burnin_ib = burnin // n_ib
         A_values = np.zeros(nsimu_ib, float)
         A2_values = np.zeros(nsimu_ib, float)
         SS_values = np.zeros(nsimu_ib, float)
@@ -587,9 +588,9 @@ class multivariate_stat(object):
             print 'Burn-in'
         if verbose:
             print 'Sample acceptance rate values'
-        for s in xrange(nsimu / (n * B - i * B - b)):
+        for s in xrange(nsimu_ib):
             if verbose:
-                print "SA iteration", s, "out of", nsimu / (n * B - i * B - b)
+                print "SA iteration", s, "out of", nsimu_ib
             A_values[s] = self.update_block_SA(\
                 i, b, 1.0, proposal_std,
                 verbose=False, reject_override=True)
@@ -598,15 +599,16 @@ class multivariate_stat(object):
         for i in range(n)[::-1]:
             for b in range(B)[::-1]:
                 n_ib = n * B - i * B - b
-                nsimu_ib = nsimu / n_ib
-                burnin_ib = burnin / n_ib
+                # Note integer division
+                nsimu_ib = nsimu // n_ib
+                burnin_ib = burnin // n_ib
                 A_values = np.zeros(nsimu_ib, float)
                 A2_values = np.zeros(nsimu_ib, float)
                 SS_values = np.zeros(nsimu_ib, float)
                 if verbose:
                     print 'Compute log conditional posterior for block', i, b
                     print 'Burn-in'
-                for s in xrange(burnin / n_ib):
+                for s in xrange(burnin_ib):
                     if verbose:
                         print "SA iteration", s, "out of", burnin_ib
                     for bb in xrange(b, B):

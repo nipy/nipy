@@ -9,10 +9,11 @@ import numpy as np
 
 from scipy.ndimage import affine_transform
 
+from nibabel.affines import from_matvec, to_matvec
+
 from .interpolation import ImageInterpolator
 from ..core.api import (Image, CoordinateMap, AffineTransform,
                         ArrayCoordMap, compose)
-from ..core.transforms import affines
 
 def resample_img2img(source, target, order=3):
     """  Resample `source` image to space of `target` image
@@ -90,7 +91,7 @@ def resample(image, target, mapping, shape, order=3):
     """
     if not callable(mapping):
         if type(mapping) is type(()):
-            mapping = affines.from_matrix_vector(*mapping)
+            mapping = from_matvec(*mapping)
         # image world to target world mapping
         TW2IW = AffineTransform(target.function_range,
                                 image.coordmap.function_range,
@@ -116,8 +117,8 @@ def resample(image, target, mapping, shape, order=3):
     else: # it is an affine transform, but, what if we compose?
         TV2IV = compose(image.coordmap.inverse(), TV2IW)
         if isinstance(TV2IV, AffineTransform): # still affine
-            A, b = affines.to_matrix_vector(TV2IV.affine)
-            idata = affine_transform(np.asarray(image), A,
+            A, b = to_matvec(TV2IV.affine)
+            idata = affine_transform(image.get_data(), A,
                                      offset=b,
                                      output_shape=shape,
                                      order=order)

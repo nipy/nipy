@@ -17,8 +17,9 @@ covariance matrix.
 import numpy as np
 import scipy.linalg as spl
 
-from nipy.core.image.image import Image, rollaxis as image_rollaxis
-from nipy.core.image.xyz_image import XYZImage
+from ...core.image.image import rollimg
+from ...core.reference.coordinate_map import (io_axis_indices, orth_axes,
+                                              drop_io_dim, AxisError)
 
 
 def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
@@ -207,20 +208,22 @@ def _get_basis_projections(data, subVX, rmse_scales_func):
     return out
 
 
-def pca_image(xyz_image, axis='t', mask=None, ncomp=None, standardize=True,
+def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
               design_keep=None, design_resid='mean', tol_ratio=0.01):
     """ Compute the PCA of an image over a specified axis
 
     Parameters
     ----------
-    data : XYZImage
-        The image on which to perform PCA over its first axis.
+    img : Image
+        The image on which to perform PCA over the given `axis`
     axis : str or int
-        Axis over which to perform PCA. Cannot be a spatial axis because
-        the results have to be XYZImages.  Default is 't'
-    mask : XYZImage
-        An optional mask, should have shape == image.shape[:3]
-        and the same XYZTransform.
+        Axis over which to perform PCA. Default is 't'. If `axis` is an integer,
+        gives the index of the input (domain) axis of `img`. If `axis` is a str, can be
+        an input (domain) name, or an output (range) name, that maps to an input
+        (domain) name.
+    mask : Image, optional
+        An optional mask, should have shape == image.shape[:3] and the same
+        coordinate map as `img` but with `axis` dropped
     ncomp : {None, int}, optional
        How many component basis projections to return. If ncomp is None
        (the default) then the number of components is given by the
@@ -256,7 +259,6 @@ def pca_image(xyz_image, axis='t', mask=None, ncomp=None, standardize=True,
        `design_resid`.
 
        `results` has keys:
-
        * ``basis_vectors``: series over `axis`, shape (data.shape[axis], L) -
           the eigenvectors of the PCA
        * ``pcnt_var``: percent variance explained by component, shape
@@ -266,22 +268,22 @@ def pca_image(xyz_image, axis='t', mask=None, ncomp=None, standardize=True,
           s[axis] = ncomp``
        * ``axis``: axis over which PCA has been performed.
     """
-    if axis in xyz_image.reference.coord_names + \
-            xyz_image.axes.coord_names[:3] + tuple(range(3)):
-        raise ValueError('cannot perform PCA over a spatial axis' +
-                         'or we will not be able to output XYZImages')
-    xyz_data = xyz_image.get_data()
-    image = Image(xyz_data, xyz_image.coordmap)
-    image = image_rollaxis(image, axis)
+    img_klass = img.__class__
+    # Which axes are we operating over?
+    in_ax, out_ax = io_axis_indices(img.coordmap, axis)
+    if None in (in_ax, out_ax):
+        raise AxisError('Cannot identify matching input output axes with "%s"'
+                        % axis)
+    if not orth_axes(in_ax, out_ax, img.coordmap.affine):
+        raise AxisError('Input and output axes found from "%s" not othogonal '
+                        'to rest of affine' % axis)
+    # Roll the chosen axis to input position zero
+    work_img = rollimg(img, axis)
     if mask is not None:
-        if mask.xyz_transform != xyz_image.xyz_transform:
-            raise ValueError('mask and xyz_image have different coordinate systems')
-        if mask.ndim != image.ndim - 1:
-            raise ValueError('mask should have one less dimension than xyz_image')
-        if mask.axes.coord_names != image.axes.coord_names[1:]:
-            raise ValueError('mask should have axes %s'
-                             % str(image.axes.coord_names[1:]))
-    data = image.get_data()
+        if not mask.coordmap.similar_to(drop_io_dim(img.coordmap, axis)):
+            raise ValueError("Mask should have matching coordmap to `img` "
+                             "coordmap with dropped axis %s" % axis)
+    data = work_img.get_data()
     if mask is not None:
         mask_data = mask.get_data()
     else:
@@ -289,26 +291,19 @@ def pca_image(xyz_image, axis='t', mask=None, ncomp=None, standardize=True,
     # do the PCA
     res = pca(data, 0, mask_data, ncomp, standardize,
               design_keep, design_resid, tol_ratio)
-    # Clean up images after PCA 
-    img_first_axis = image.axes.coord_names[0]
-    # Rename the axis.
-    #
-    # Because we started with XYZImage, all non-spatial
-    # coordinates agree in the range and the domain
-    # so this will work and the renamed_range
-    # call is not even necessary because when we call
-    # XYZImage, we only use the axisnames
-    output_coordmap = image.coordmap.renamed_domain(
-        {img_first_axis:'PCA components'}).renamed_range({img_first_axis:'PCA components'})
-    output_img = Image(res['basis_projections'], output_coordmap)
-    # We have to roll the axis back
-    roll_index = xyz_image.axes.index(img_first_axis)
-    output_img = image_rollaxis(output_img, roll_index, inverse=True)
-    output_xyz = XYZImage(output_img.get_data(),
-                          xyz_image.affine,
-                          output_img.axes.coord_names)
-    key = 'basis_vectors over %s' % img_first_axis
+    # Clean up images after PCA
+    # Rename the axis we dropped, at position 0 after rollimg
+    output_coordmap = work_img.coordmap.renamed_domain(
+        {0: 'PCA components'})
+    # And the matching output axis - which has not moved position
+    output_coordmap = output_coordmap.renamed_range(
+        {out_ax: 'PCA components'})
+    output_img = img_klass(res['basis_projections'], output_coordmap)
+    # We have to roll the axis back to the original position
+    output_img = rollimg(output_img, 0, in_ax + 1)
+    key = 'basis_vectors over %s' % axis
     res[key] = res['basis_vectors']
-    res['basis_projections'] = output_xyz
+    res['basis_projections'] = output_img
+    # Signal the roll in results
+    res['axis'] = in_ax
     return res
-

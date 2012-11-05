@@ -5,14 +5,15 @@ A set of methods to get coordinate maps which represent slices in space.
 """
 import numpy as np
 
-from nipy.core.reference.coordinate_system import CoordinateSystem
-from nipy.core.reference.coordinate_map import AffineTransform
-from nipy.core.reference.array_coords import ArrayCoordMap
-from nipy.core.transforms.affines import from_matrix_vector
+from nibabel.affines import from_matvec
 
-lps_output_coordnames = ('x+LR', 'y+PA', 'z+SI')
+from .coordinate_system import CoordinateSystem
+from .coordinate_map import AffineTransform
+from .array_coords import ArrayCoordMap
+from .spaces import get_world_cs
 
-def xslice(x, y_spec, z_spec, output_space=''):
+
+def xslice(x, y_spec, z_spec, world):
     """
     Return an LPS slice through a 3d box with x fixed.
 
@@ -26,8 +27,8 @@ def xslice(x, y_spec, z_spec, output_space=''):
        is the number of points.
     z_spec : sequence
        As for `y_spec` but for z
-    output_space : str, optional
-       Origin of the range CoordinateSystem.
+    world : str or CoordinateSystem CoordSysMaker or XYZSpace
+        World 3D space to which resulting coordmap refers
 
     Returns
     -------
@@ -39,7 +40,7 @@ def xslice(x, y_spec, z_spec, output_space=''):
     --------
     >>> y_spec = ([-114,114], 115) # voxels of size 2 in y, starting at -114, ending at 114
     >>> z_spec = ([-70,100], 86) # voxels of size 2 in z, starting at -70, ending at 100
-    >>> x30 = xslice(30, y_spec, z_spec)
+    >>> x30 = xslice(30, y_spec, z_spec, 'scanner')
     >>> x30([0,0])
     array([  30., -114.,  -70.])
     >>> x30([114,85])
@@ -47,7 +48,7 @@ def xslice(x, y_spec, z_spec, output_space=''):
     >>> x30
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i_y', 'i_z'), name='slice', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('scanner-x=L->R', 'scanner-y=P->A', 'scanner-z=I->S'), name='scanner', coord_dtype=float64),
        affine=array([[   0.,    0.,   30.],
                      [   2.,    0., -114.],
                      [   0.,    2.,  -70.],
@@ -56,6 +57,7 @@ def xslice(x, y_spec, z_spec, output_space=''):
     >>> bounding_box(x30, (y_spec[1], z_spec[1]))
     ((30.0, 30.0), (-114.0, 114.0), (-70.0, 100.0))
     """
+    affine_range = get_world_cs(world)
     (ymin, ymax), yno = y_spec
     y_tick = (ymax-ymin) / (yno - 1.0)
     (zmin, zmax), zno = z_spec
@@ -64,15 +66,14 @@ def xslice(x, y_spec, z_spec, output_space=''):
     colvectors = np.asarray([[0, 0],
                              [y_tick, 0],
                              [0, z_tick]])
-    T = from_matrix_vector(colvectors, origin)
+    T = from_matvec(colvectors, origin)
     affine_domain = CoordinateSystem(['i_y', 'i_z'], 'slice')
-    affine_range = CoordinateSystem(lps_output_coordnames, output_space)
     return AffineTransform(affine_domain,
                            affine_range,
                            T)
 
 
-def yslice(y, x_spec, z_spec, output_space=''):
+def yslice(y, x_spec, z_spec, world):
     """ Return a slice through a 3d box with y fixed.
 
     Parameters
@@ -85,8 +86,8 @@ def yslice(y, x_spec, z_spec, output_space=''):
        is the number of points.
     z_spec : sequence
        As for `x_spec` but for z
-    output_space : str, optional
-       Origin of the range CoordinateSystem.
+    world : str or CoordinateSystem CoordSysMaker or XYZSpace
+        World 3D space to which resulting coordmap refers
 
     Returns
     -------
@@ -98,11 +99,11 @@ def yslice(y, x_spec, z_spec, output_space=''):
     --------
     >>> x_spec = ([-92,92], 93) # voxels of size 2 in x, starting at -92, ending at 92
     >>> z_spec = ([-70,100], 86) # voxels of size 2 in z, starting at -70, ending at 100
-    >>> y70 = yslice(70, x_spec, z_spec)
+    >>> y70 = yslice(70, x_spec, z_spec, 'mni')
     >>> y70
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i_x', 'i_z'), name='slice', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S'), name='mni', coord_dtype=float64),
        affine=array([[  2.,   0., -92.],
                      [  0.,   0.,  70.],
                      [  0.,   2., -70.],
@@ -112,10 +113,10 @@ def yslice(y, x_spec, z_spec, output_space=''):
     array([-92.,  70., -70.])
     >>> y70([92,85])
     array([  92.,   70.,  100.])
-    >>> 
     >>> bounding_box(y70, (x_spec[1], z_spec[1]))
     ((-92.0, 92.0), (70.0, 70.0), (-70.0, 100.0))
     """
+    affine_range = get_world_cs(world)
     (xmin, xmax), xno = x_spec
     x_tick = (xmax-xmin) / (xno - 1.0)
     (zmin, zmax), zno = z_spec
@@ -124,15 +125,14 @@ def yslice(y, x_spec, z_spec, output_space=''):
     colvectors = np.asarray([[x_tick, 0],
                              [0, 0],
                              [0, z_tick]])
-    T = from_matrix_vector(colvectors, origin)
+    T = from_matvec(colvectors, origin)
     affine_domain = CoordinateSystem(['i_x', 'i_z'], 'slice')
-    affine_range = CoordinateSystem(lps_output_coordnames, output_space)
     return AffineTransform(affine_domain,
                            affine_range,
                            T)
 
 
-def zslice(z, x_spec, y_spec, output_space=''):
+def zslice(z, x_spec, y_spec, world):
     """ Return a slice through a 3d box with z fixed.
 
     Parameters
@@ -145,8 +145,8 @@ def zslice(z, x_spec, y_spec, output_space=''):
        is the number of points.
     y_spec : sequence
        As for `x_spec` but for y
-    output_space : str, optional
-       Origin of the range CoordinateSystem.
+    world : str or CoordinateSystem CoordSysMaker or XYZSpace
+        World 3D space to which resulting coordmap refers
 
     Returns
     -------
@@ -158,11 +158,11 @@ def zslice(z, x_spec, y_spec, output_space=''):
     --------
     >>> x_spec = ([-92,92], 93) # voxels of size 2 in x, starting at -92, ending at 92
     >>> y_spec = ([-114,114], 115) # voxels of size 2 in y, starting at -114, ending at 114
-    >>> z40 = zslice(40, x_spec, y_spec)
+    >>> z40 = zslice(40, x_spec, y_spec, 'unknown')
     >>> z40
     AffineTransform(
        function_domain=CoordinateSystem(coord_names=('i_x', 'i_y'), name='slice', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x+LR', 'y+PA', 'z+SI'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('unknown-x=L->R', 'unknown-y=P->A', 'unknown-z=I->S'), name='unknown', coord_dtype=float64),
        affine=array([[   2.,    0.,  -92.],
                      [   0.,    2., -114.],
                      [   0.,    0.,   40.],
@@ -175,6 +175,7 @@ def zslice(z, x_spec, y_spec, output_space=''):
     >>> bounding_box(z40, (x_spec[1], y_spec[1]))
     ((-92.0, 92.0), (-114.0, 114.0), (40.0, 40.0))
     """
+    affine_range = get_world_cs(world)
     (xmin, xmax), xno = x_spec
     x_tick = (xmax-xmin) / (xno - 1.0)
     (ymin, ymax), yno = y_spec
@@ -183,9 +184,8 @@ def zslice(z, x_spec, y_spec, output_space=''):
     colvectors = np.asarray([[x_tick, 0],
                              [0, y_tick],
                              [0, 0]])
-    T = from_matrix_vector(colvectors, origin)
+    T = from_matvec(colvectors, origin)
     affine_domain = CoordinateSystem(['i_x', 'i_y'], 'slice')
-    affine_range = CoordinateSystem(lps_output_coordnames, output_space)
     return AffineTransform(affine_domain,
                            affine_range,
                            T)
@@ -212,10 +212,16 @@ def bounding_box(coordmap, shape):
 
     Examples
     --------
-    >>> A = AffineTransform.from_start_step('ijk', lps_output_coordnames, [2,4,6], [1,3,5])
+    Make a 3D voxel to mni coordmap
+
+    >>> from nipy.core.api import vox2mni
+    >>> affine = np.array([[1, 0, 0, 2],
+    ...                    [0, 3, 0, 4],
+    ...                    [0, 0, 5, 6],
+    ...                    [0, 0, 0, 1]], dtype=np.float64)
+    >>> A = vox2mni(affine)
     >>> bounding_box(A, (30,40,20))
     ((2.0, 31.0), (4.0, 121.0), (6.0, 101.0))
     """
     e = ArrayCoordMap.from_shape(coordmap, shape)
     return tuple([(r.min(), r.max()) for r in e.transposed_values])
-

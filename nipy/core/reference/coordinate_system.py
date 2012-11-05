@@ -113,11 +113,11 @@ class CoordinateSystem(object):
         if len(set(coord_names)) != len(coord_names):
             raise ValueError('coord_names must have distinct names')
         # verify that the dtype is coord_dtype for sanity
-        sctypes = (np.sctypes['int'] + np.sctypes['float'] + 
+        sctypes = (np.sctypes['int'] + np.sctypes['float'] +
                    np.sctypes['complex'] + np.sctypes['uint'])
         coord_dtype = np.dtype(coord_dtype)
         if coord_dtype not in sctypes:
-            raise ValueError('Coordinate dtype should be one of %s' % `sctypes`)
+            raise ValueError('Coordinate dtype should be one of %s' % sctypes)
         # Set all the attributes
         self.name = name
         self.coord_names = coord_names
@@ -139,22 +139,17 @@ class CoordinateSystem(object):
         >>> c = CoordinateSystem('ij', name='input')
         >>> c.index('i')
         0
-
         >>> c.index('j')
         1
-
         """
-
         return list(self.coord_names).index(coord_name)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __eq__(self, other):
-        """Equality is defined by self.dtype.
+        """Equality is defined by self.dtype and self.name
 
-        XXX If we want to make things
-        XXX trully Affine, we would check "name" as well
         Parameters
         ----------
         other : :class:`CoordinateSystem`
@@ -163,10 +158,22 @@ class CoordinateSystem(object):
         Returns
         -------
         tf: bool
-
         """
-
         return (self.dtype == other.dtype) and (self.name == other.name)
+
+    def similar_to(self, other):
+        """Similarity is defined by self.dtype, ignoring name
+
+        Parameters
+        ----------
+        other : :class:`CoordinateSystem`
+           The object to be compared with
+
+        Returns
+        -------
+        tf: bool
+        """
+        return (self.dtype == other.dtype)
 
     def __repr__(self):
         """Create a string representation of the coordinate system
@@ -174,11 +181,7 @@ class CoordinateSystem(object):
         Returns
         -------
         s : string
-
         """
-        
-        attrs = ('name', 'coord_names', 'coord_dtype')
-        vals = []
         return ("CoordinateSystem(coord_names=%s, name='%s', coord_dtype=%s)" %
                 (self.coord_names, self.name, self.coord_dtype))
 
@@ -188,37 +191,41 @@ class CoordinateSystem(object):
 
         Raise Errors for failed checks.
 
-        The dtype of ``arr`` has to be castable (without loss of
-        precision) to ``self.coord_dtype``.  We use numpy ``can_cast``
-        for this check.
+        The dtype of ``arr`` has to be castable (without loss of precision) to
+        ``self.coord_dtype``.  We use numpy ``can_cast`` for this check.
 
-	The last (or only) axis of ``arr`` should be of length
-	``self.ndim``.
+        The last (or only) axis of ``arr`` should be of length ``self.ndim``.
 
-	Parameters
-	----------
-	arr : array-like
-	   array to check
-	
-	Returns
-	-------
-	checked_arr : array
-           Possibly reshaped array
+        Parameters
+        ----------
+        arr : array-like
+            array to check
 
-	Examples
-	--------
-	>>> cs = CoordinateSystem('ijk', coord_dtype=np.float32)
+        Returns
+        -------
+        checked_arr : array
+            Possibly reshaped array
+
+        Examples
+        --------
+        >>> cs = CoordinateSystem('ijk', coord_dtype=np.float32)
         >>> arr = np.array([1, 2, 3], dtype=np.int16)
         >>> cs._checked_values(arr) # 1D is OK with matching dimensions 
         array([[1, 2, 3]], dtype=int16)
         >>> cs._checked_values(arr.reshape(1,3)) # as is 1 by N
         array([[1, 2, 3]], dtype=int16)
-        >>> cs._checked_values(arr.reshape(3,1)) # wrong shape
+
+        This next is the wrong shape:
+
+        >>> cs._checked_values(arr.reshape(3,1)) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
            ...
         CoordinateSystemError: Array shape[-1] (1) must match CoordinateSystem ndim (3).
           CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
-        >>> cs._checked_values(arr[0:2]) # wrong length
+
+        Wrong length:
+
+        >>> cs._checked_values(arr[0:2]) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
            ...
         CoordinateSystemError: Array shape[-1] (2) must match CoordinateSystem ndim (3).
@@ -226,7 +233,7 @@ class CoordinateSystem(object):
 
         The dtype has to be castable:
 
-        >>> cs._checked_values(np.array([1, 2, 3], dtype=np.float64))
+        >>> cs._checked_values(np.array([1, 2, 3], dtype=np.float64)) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
            ...
         CoordinateSystemError: Cannot cast array dtype float64 to CoordinateSystem coord_dtype float32.
@@ -247,14 +254,13 @@ class CoordinateSystem(object):
         10
 
         For a 1D CoordinateSystem, passing a 1D vector length N could be a
-        mistake (you were expecting an N-dimensional coordinate
-        system), or it could be N points in 1D.  Because it is
-        ambiguous, this is an error.
+        mistake (you were expecting an N-dimensional coordinate system), or it
+        could be N points in 1D.  Because it is ambiguous, this is an error.
 
         >>> cs = CoordinateSystem('x')
         >>> cs._checked_values(1)
         array([[1]])
-        >>> cs._checked_values([1, 2])
+        >>> cs._checked_values([1, 2]) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
            ...
         CoordinateSystemError: Array shape[-1] (2) must match CoordinateSystem ndim (1).
@@ -277,6 +283,36 @@ class CoordinateSystem(object):
                                         'CoordinateSystem coord_dtype %s.\n  %s' %
                                         (arr.dtype, self.coord_dtype, str(self)))
         return arr.reshape((-1, self.ndim))
+
+
+def is_coordsys(obj):
+    """ Test if `obj` has the CoordinateSystem API
+
+    Parameters
+    ----------
+    obj : object
+        Object to test
+
+    Returns
+    -------
+    tf : bool
+        True if `obj` has the coordinate system API
+
+    Examples
+    --------
+    >>> is_coordsys(CoordinateSystem('xyz'))
+    True
+    >>> is_coordsys(CoordSysMaker('ikj'))
+    False
+    """
+    if not hasattr(obj, 'coord_names'):
+        return False
+    if not hasattr(obj, 'name'):
+        return False
+    if not hasattr(obj, 'coord_dtype'):
+        return False
+    # Distinguish from CoordSysMaker
+    return not callable(obj)
 
 
 def safe_dtype(*dtypes):
@@ -330,14 +366,16 @@ def safe_dtype(*dtypes):
     return np.array(arrays).dtype
 
 
-def product(*coord_systems):
+def product(*coord_systems, **kwargs):
     """Create the product of a sequence of CoordinateSystems.
 
     The coord_dtype of the result will be determined by ``safe_dtype``.
 
     Parameters
     ----------
-    coord_systems : sequence of :class:`CoordinateSystem`
+    \*coord_systems : sequence of :class:`CoordinateSystem`
+    name : str
+        Name of ouptut coordinate system
 
     Returns
     -------
@@ -349,20 +387,25 @@ def product(*coord_systems):
     >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex)
     >>> c3 = CoordinateSystem('ik', 'in3')
 
-    >>> print product(c1,c2)
+    >>> print product(c1, c2)
     CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='product', coord_dtype=complex128)
 
-    >>> product(c2,c3)
+    >>> print product(c1, c2, name='another name')
+    CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='another name', coord_dtype=complex128)
+
+    >>> product(c2, c3)
     Traceback (most recent call last):
        ...
     ValueError: coord_names must have distinct names
     """
-
+    name = kwargs.pop('name', 'product')
+    if kwargs:
+        raise TypeError('Unexpected kwargs %s' % kwargs)
     coords = []
     for c in coord_systems:
         coords += c.coord_names
     dtype = safe_dtype(*[c.coord_dtype for c in coord_systems])
-    return CoordinateSystem(coords, 'product', coord_dtype=dtype)
+    return CoordinateSystem(coords, name, coord_dtype=dtype)
 
 
 class CoordSysMakerError(Exception):
@@ -428,3 +471,33 @@ class CoordSysMaker(object):
                                      'you asked for %d)' %
                                      (len(self.coord_names), N))
         return self.coord_sys_klass(self.coord_names[:N], name, coord_dtype)
+
+
+def is_coordsys_maker(obj):
+    """ Test if `obj` has the CoordSysMaker API
+
+    Parameters
+    ----------
+    obj : object
+        Object to test
+
+    Returns
+    -------
+    tf : bool
+        True if `obj` has the coordinate system API
+
+    Examples
+    --------
+    >>> is_coordsys_maker(CoordSysMaker('ikj'))
+    True
+    >>> is_coordsys_maker(CoordinateSystem('xyz'))
+    False
+    """
+    if not hasattr(obj, 'coord_names'):
+        return False
+    if not hasattr(obj, 'name'):
+        return False
+    if not hasattr(obj, 'coord_dtype'):
+        return False
+    # Distinguish from CoordinateSystem
+    return callable(obj)

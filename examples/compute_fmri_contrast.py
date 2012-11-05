@@ -1,69 +1,87 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
-This script requires the nipy-data package to run. It is an example of
-using a general linear model in single-subject fMRI data analysis
-context. Two sessions of the same subject are taken from the FIAC'05
-dataset.
 
-Usage: 
-  python compute_fmri_contrast [contrast_vector]
-
-Example: 
-  python compute_fmri_contrast [1,-1,1,-1]
-
-  An image file called zmap.nii.gz will be created in the working
-  directory.
-
-Author: Alexis Roche, 2009. 
-"""
-import numpy as np
 import sys
-from nibabel import load as load_image, save as save_image
 
-from nipy.labs.statistical_mapping import LinearModel
+USAGE = """
+usage : python %s [1x4-contrast]
+where [1x4-contrast] is optional and is something like 1,0,0,0
+
+If you don't enter a contrast, 1,0,0,0 is the default.
+
+An activation image is displayed.
+
+This script requires the nipy-data package to run. It is an example of using a
+general linear model in single-subject fMRI data analysis context. Two sessions
+of the same subject are taken from the FIAC'05 dataset.
+
+The script also needs matplotlib installed.
+
+Author: Alexis Roche, Bertrand Thirion, 2009--2012.
+""" % sys.argv[0]
+
+__doc__ = USAGE
+
+import numpy as np
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    raise RuntimeError("This script needs the matplotlib library")
+
+from nipy.labs.viz import plot_map, cm
+from nipy.modalities.fmri.glm import FMRILinearModel
 from nipy.utils import example_data
 
-# Optional argument
-cvect = [1,0,0,0]
-if len(sys.argv)>1: 
-    tmp = list(sys.argv[1])
-    tmp.remove('[')
-    tmp.remove(']')
-    for i in range(tmp.count(',')):
-        tmp.remove(',')
-    cvect = map(float, tmp)
 
+# Optional argument - default value 1, 0, 0, 0
+nargs = len(sys.argv)
+if nargs not in (1, 2, 5):
+    print USAGE
+    exit(1)
+if nargs == 1:  # default no-argument case
+    cvect = [1, 0, 0, 0]
+else:
+    if nargs == 2:  # contrast as one string
+        args = sys.argv[1].split(',')
+    elif nargs == 5:  # contrast as sequence of strings
+        args = [arg.replace(',', '') for arg in sys.argv[1:]]
+    if len(args) != 4:
+        print USAGE
+        exit(1)
+    try:
+        cvect = [float(arg) for arg in args]
+    except ValueError:
+        print USAGE
+        exit(1)
 
 # Input files
-fmri_files = [example_data.get_filename('fiac','fiac0',run) for run in ['run1.nii.gz','run2.nii.gz']]
-design_files = [example_data.get_filename('fiac','fiac0',run) for run in ['run1_design.npz','run2_design.npz']]
-mask_file = example_data.get_filename('fiac','fiac0','mask.nii.gz') 
+fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
+              for run in ['run1.nii.gz', 'run2.nii.gz']]
+design_files = [example_data.get_filename('fiac', 'fiac0', run)
+                for run in ['run1_design.npz', 'run2_design.npz']]
+mask_file = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
 
-# Get design matrix as numpy array
-print('Loading design matrices...')
-X = [np.load(f)['X'] for f in design_files]
+# Load all the data
+multi_session_model = FMRILinearModel(fmri_files, design_files, mask_file)
 
-# Get multi-session fMRI data 
-print('Loading fmri data...')
-Y = [load_image(f) for f in fmri_files]
-
-# Get mask image
-print('Loading mask...')
-mask = load_image(mask_file)
-
-# GLM fitting 
-print('Starting fit...')
-##glm = LinearModel(Y, X, mask=mask, model='ar1')
-glm = LinearModel(Y, X, mask=mask)
+# GLM fitting
+multi_session_model.fit(do_scaling=True, model='ar1')
 
 # Compute the required contrast
 print('Computing test contrast image...')
-nregressors = X[0].shape[1] ## should check that all design matrices have the same 
-c = np.zeros(nregressors)
-c[0:4] = cvect
-con, vcon, zmap, dof = glm.contrast(c)
+n_regressors = [np.load(f)['X'].shape[1] for f in design_files]
+con = [np.hstack((cvect, np.zeros(nr - len(cvect)))) for nr in n_regressors]
+z_map, = multi_session_model.contrast(con)
 
-# Save Zmap image 
-save_image(zmap, 'zmap.nii.gz')
+# Show Z-map image
+mean_map = multi_session_model.means[0]
+plot_map(z_map.get_data(),
+         z_map.get_affine(),
+         anat=mean_map.get_data(),
+         anat_affine=mean_map.get_affine(),
+         cmap=cm.cold_hot,
+         threshold=2.5,
+         black_bg=True)
+plt.show()

@@ -1,19 +1,14 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""The image module provides basic functions for working with images in nipy.
-Functions are provided to load, save and create image objects, along with
-iterators to easily slice through volumes.
+""" The io.files module provides basic functions for working with file-based
+images in nipy.
 
-    load : load an image from a file
-
-    save : save an image to a file
-
-    fromarray : create an image from a numpy array
+* load : load an image from a file
+* save : save an image to a file
 
 Examples
 --------
-See documentation for load and save functions for 'working' examples.
-
+See documentation for load and save functions for worked examples.
 """
 
 import os
@@ -21,9 +16,11 @@ import os
 import numpy as np
 
 import nibabel as nib
+from nibabel.spatialimages import HeaderDataError
 
-from nipy.core.api import Image, is_image
-from .nifti_ref import (ni_affine_pixdim_from_affine, affine_transform_from_array)
+from ..core.image.image import is_image
+
+from .nifti_ref import (nipy2nifti, nifti2nipy)
 
 
 def load(filename):
@@ -42,7 +39,7 @@ def load(filename):
     See Also
     --------
     save_image : function for saving images
-    fromarray : function for creating images from numpy arrays
+    Image : image object
 
     Examples
     --------
@@ -53,35 +50,11 @@ def load(filename):
     (33, 41, 25)
     """
     img = nib.load(filename)
-    aff = img.get_affine()
-    hdr = img.get_header()
-    # If the header implements it, get a list of names, one per axis,
-    # and put this into the coordinate map.  In fact, no image format
-    # implements this at the moment, so in practice, the following code
-    # is not currently called.
-    axis_renames = {}
-    try:
-        axis_names = hdr.axis_names
-    except AttributeError:
-        pass
-    else:
-        # axis_renames is a dictionary: dict([(int, str)]) that has keys
-        # in range(3). The axes of the Image are renamed from 'ijk' using
-        # these names
-        for i in range(min([len(axis_names), 3])):
-            name = axis_names[i]
-            if not (name is None or name == ''):
-                axis_renames[i] = name
-    zooms = hdr.get_zooms()
-    # affine_transform is a 3-d transform
-    affine_transform3d, affine_transform = \
-        affine_transform_from_array(aff, 'ijk', pixdim=zooms[3:])
-    img = Image(img.get_data(), affine_transform.renamed_domain(axis_renames),
-                metadata={'header': hdr})
-    return img
+    ni_img = nib.Nifti1Image(img._data, img.get_affine(), img.get_header())
+    return nifti2nipy(ni_img)
 
 
-def save(img, filename, dtype=None):
+def save(img, filename, dtype_from='data'):
     """Write the image to a file.
 
     Parameters
@@ -89,15 +62,23 @@ def save(img, filename, dtype=None):
     img : An `Image` object
     filename : string
         Should be a valid filename.
+    dtype_from : {'data', 'header'} or dtype specifier, optional
+        Method of setting dtype to save data to disk. Value of 'data' (default),
+        means use data dtype to save.  'header' means use data dtype specified
+        in header, if available, otherwise use data dtype.  Can also be any
+        valid specifier for a numpy dtype, e.g. 'i4', ``np.float32``.  Not every
+        format supports every dtype, so some values of this parameter or data
+        dtypes will raise errors.
 
     Returns
     -------
     image : An `Image` object
+        Possibly modified by saving.
 
     See Also
     --------
     load_image : function for loading images
-    fromarray : function for creating images from numpy arrays
+    Image : image object
 
     Examples
     --------
@@ -110,10 +91,11 @@ def save(img, filename, dtype=None):
     Make some some files and save them
 
     >>> import numpy as np
-    >>> from nipy.core.api import fromarray
+    >>> from nipy.core.api import Image, AffineTransform
     >>> from nipy.io.api import save_image
     >>> data = np.zeros((91,109,91), dtype=np.uint8)
-    >>> img = fromarray(data, 'kji', 'zxy')
+    >>> cmap = AffineTransform('kji', 'zxy', np.eye(4))
+    >>> img = Image(data, cmap)
     >>> fname1 = os.path.join(tmpdir, 'img1.nii.gz')
     >>> saved_img1 = save_image(img, fname1)
     >>> saved_img1.shape
@@ -126,7 +108,7 @@ def save(img, filename, dtype=None):
     >>> saved_image3 = save_image(img, fname)
     Traceback (most recent call last):
        ...
-    ValueError: Cannot save file type "minc"
+    ValueError: Sorry, we cannot yet save as format "minc"
 
     Finally, we clear up our temporary files:
 
@@ -140,57 +122,40 @@ def save(img, filename, dtype=None):
 
     * Nifti single file : ['.nii', '.nii.gz']
     * Nifti file pair : ['.hdr', '.hdr.gz']
-    * Analyze file pair : ['.img', 'img.gz']
+    * SPM Analyze : ['.img', '.img.gz']
     """
-    # Get header from image
-    try:
-        original_hdr = img.header
-    except AttributeError:
-        original_hdr = None
-    # Make NIFTI compatible affine_transform
-    affine_3dorless_transform, pixdim = ni_affine_pixdim_from_affine(img.coordmap)
-
-    # what are we going to do with pixdim?
-    # LPIImage will all have pixdim[3:] == 1...
-
-    aff = affine_3dorless_transform.affine 
-
-    # rzs = Fimg.affine[:3,:], JT for Matthew, I changed this below is this correct?
-    rzs = img.coordmap.affine[:-1,:-1]
-    zooms = np.sqrt(np.sum(rzs * rzs, axis=0))
-
+    # Try and get nifti
+    dt_from_is_str = isinstance(dtype_from, basestring)
+    if dt_from_is_str and dtype_from == 'header':
+        # All done
+        io_dtype = None
+    elif dt_from_is_str and dtype_from == 'data':
+        io_dtype = img.get_data().dtype
+    else:
+        io_dtype = np.dtype(dtype_from)
+    # make new image
+    ni_img = nipy2nifti(img, data_dtype = io_dtype)
     ftype = _type_from_filename(filename)
     if ftype.startswith('nifti1'):
-        klass = nib.Nifti1Image
+        ni_img.to_filename(filename)
     elif ftype == 'analyze':
-        klass = nib.Spm2AnalyzeImage
+        try:
+            ana_img = nib.Spm2AnalyzeImage.from_image(ni_img)
+        except HeaderDataError:
+            raise HeaderDataError('SPM analyze does not support datatype %s' %
+                                  ni_img.get_header().get_data_dtype())
+        ana_img.to_filename(filename)
     else:
-        raise ValueError('Cannot save file type "%s"' % ftype)
-    # make new image
-    out_img = klass(data=img.get_data(),
-                    affine=aff,
-                    header=original_hdr)
-    hdr = out_img.get_header()
-    # work out phase, freqency, slice from coordmap names
-    axisnames = affine_3dorless_transform.function_domain.coord_names
-
-    # let the hdr do what it wants from the axisnames
-    try:
-        hdr.set_dim_info_from_names(axisnames)
-    except AttributeError:
-        pass
-    # Set zooms
-    hdr.set_zooms(zooms)
-    # save to disk
-    out_img.to_filespec(filename)
+        raise ValueError('Sorry, we cannot yet save as format "%s"' % ftype)
     return img
+
 
 def _type_from_filename(filename):
     ''' Return image type determined from filename
-    
+
     Filetype is determined by the file extension in 'filename'.
     Currently the following filetypes are supported:
-    
+
     * Nifti single file : ['.nii', '.nii.gz']
     * Nifti file pair : ['.hdr', '.hdr.gz']
     * Analyze file pair : ['.img', '.img.gz']
@@ -257,4 +222,3 @@ def as_image(image_input):
     if isinstance(image_input, basestring):
         return load(image_input)
     raise TypeError('Expecting an image-like object or filename string')
-    

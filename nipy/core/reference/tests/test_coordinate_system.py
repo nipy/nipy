@@ -1,10 +1,13 @@
-
+""" Tests for coordinate_system module
+"""
 import numpy as np
 
 from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,
-                                 product, safe_dtype)
+                                 is_coordsys, is_coordsys_maker, product,
+                                 safe_dtype, CoordSysMaker, CoordSysMakerError)
 
-from nose.tools import assert_true, assert_equal, assert_raises
+from nose.tools import (assert_true, assert_false, assert_equal, assert_raises,
+                        assert_not_equal)
 
 
 class empty(object):
@@ -98,13 +101,56 @@ def test__ne__():
 
 
 def test___eq__():
-    c1 = CoordinateSystem(E.cs.coord_names, E.cs.name, E.coord_dtype)
-    assert_equal(c1, E.cs)
+    c0 = CoordinateSystem('ijk', 'my name', np.float32)
+    c1 = CoordinateSystem('ijk', 'my name', np.float32)
+    assert_equal(c0, c1)
+    c2 = CoordinateSystem('ijk', 'another name', np.float32)
+    assert_not_equal(c0, c2)
+    c3 = CoordinateSystem('ijq', 'my name', np.float32)
+    assert_not_equal(c0, c3)
+    c4 = CoordinateSystem('ijk', 'my name', np.float64)
+    assert_not_equal(c0, c4)
+
+
+def test_similar_to():
+    c0 = CoordinateSystem('ijk', 'my name', np.float32)
+    c1 = CoordinateSystem('ijk', 'my name', np.float32)
+    assert_true(c0.similar_to(c1))
+    c2 = CoordinateSystem('ijk', 'another name', np.float32)
+    assert_true(c0.similar_to(c2))
+    c3 = CoordinateSystem('ijq', 'my name', np.float32)
+    assert_false(c0.similar_to(c3))
+    c4 = CoordinateSystem('ijk', 'my name', np.float64)
+    assert_false(c0.similar_to(c4))
 
 
 def test___str__():
     s = str(E.cs)
     assert_equal(s, "CoordinateSystem(coord_names=('i', 'j', 'k'), name='test', coord_dtype=float32)")
+
+
+def test_is_coordsys():
+    # Test coordinate system check
+    csys = CoordinateSystem('ijk')
+    assert_true(is_coordsys(csys))
+    class C(object): pass
+    c = C()
+    assert_false(is_coordsys(c))
+    c.coord_names = []
+    assert_false(is_coordsys(c))
+    c.name = ''
+    assert_false(is_coordsys(c))
+    c.coord_dtype = np.float
+    assert_true(is_coordsys(c))
+    # Distinguish from CoordSysMaker
+    class C(object):
+        coord_names = []
+        name = ''
+        coord_dtype=np.float
+        def __call__(self):
+            pass
+    assert_false(is_coordsys(C()))
+    assert_false(is_coordsys(CoordSysMaker('xyz')))
 
 
 def test_checked_values():
@@ -153,32 +199,34 @@ def test_product():
     ax2 = CoordinateSystem('y', coord_dtype=np.int64)
     cs = product(ax1, ax2)
     # assert up-casting of dtype
-    yield assert_equal, cs.coord_dtype, np.dtype(np.int64)
+    assert_equal(cs.coord_dtype, np.dtype(np.int64))
     # assert composed dtype 
-    yield assert_equal, cs.dtype, np.dtype([('x', np.int64), ('y', np.int64)])
+    assert_equal(cs.dtype, np.dtype([('x', np.int64), ('y', np.int64)]))
     # the axes should be typecast in the CoordinateSystem but
     # uneffected themselves
-    yield assert_equal, ax1.dtype, np.dtype([('x', np.int32)])
-    yield assert_equal, ax2.dtype, np.dtype([('y', np.int64)])
+    assert_equal(ax1.dtype, np.dtype([('x', np.int32)]))
+    assert_equal(ax2.dtype, np.dtype([('y', np.int64)]))
 
     # float32 + int64 => float64
     ax1 = CoordinateSystem('x', coord_dtype=np.float32)
     cs = product(ax1, ax2)
-    yield assert_equal, cs.coord_dtype, np.dtype(np.float64)
-    yield assert_equal, cs.dtype, np.dtype([('x', np.float64), 
-                                            ('y', np.float64)])
-
+    assert_equal(cs.coord_dtype, np.dtype(np.float64))
+    assert_equal(cs.dtype, np.dtype([('x', np.float64),
+                                     ('y', np.float64)]))
     # int16 + complex64 => complex64
     ax1 = CoordinateSystem('x', coord_dtype=np.int16)
     ax2 = CoordinateSystem('y', coord_dtype=np.complex64)
     # Order of the params effects order of dtype but not resulting value type
     cs = product(ax2, ax1)
-    yield assert_equal, cs.coord_dtype, np.complex64
-    yield assert_equal, cs.dtype, np.dtype([('y', np.complex64),
-                                            ('x', np.complex64)])
+    assert_equal(cs.coord_dtype, np.complex64)
+    assert_equal(cs.dtype, np.dtype([('y', np.complex64),
+                                     ('x', np.complex64)]))
+    # Passing name as argument
+    cs = product(ax2, ax1, name='a name')
+    assert_equal(cs.name, 'a name')
+    # Anything else as kwarg -> error
+    assert_raises(TypeError, product, ax2, ax1, newarg='a name')
 
-
-from ..coordinate_system import CoordSysMaker, CoordSysMakerError
 
 def test_coordsys_maker():
     # Things that help making coordinate maps
@@ -196,3 +244,26 @@ def test_coordsys_maker():
     assert_equal(cs_maker(i, coord_dtype=np.int32),
                  CoordinateSystem(ax_names[:i+1], 'myname', np.int32))
 
+
+def test_is_coordsys_maker():
+    # Test coordinate system check
+    cm = CoordSysMaker('xyz')
+    assert_true(is_coordsys_maker(cm))
+    class C(object): pass
+    c = C()
+    assert_false(is_coordsys_maker(c))
+    c.coord_names = []
+    assert_false(is_coordsys_maker(c))
+    c.name = ''
+    assert_false(is_coordsys_maker(c))
+    c.coord_dtype = np.float
+    assert_false(is_coordsys_maker(c))
+    # Distinguish from CoordinateSystem
+    class C(object):
+        coord_names = []
+        name = ''
+        coord_dtype=np.float
+        def __call__(self):
+            pass
+    assert_true(is_coordsys_maker(C()))
+    assert_false(is_coordsys_maker(CoordinateSystem('ijk')))

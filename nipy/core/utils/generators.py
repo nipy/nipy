@@ -52,7 +52,11 @@ def parcels(data, labels=None, exclude=[]):
     [[False False]
      [ True False]]
     """
-    data = np.asarray(data)
+    try:
+        data = data.get_data()
+    except AttributeError:
+        data = np.asarray(data)
+
     if labels is None:
         labels = np.unique(data)
     if exclude:
@@ -112,10 +116,6 @@ def write_data(output, iterable):
            [ 3.,  4.]])
     """
     for index, data in iterable:
-        try:
-            print index.shape, 'index', data.shape
-        except:
-            pass
         output[index] = data
 
 

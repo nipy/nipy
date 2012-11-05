@@ -26,7 +26,7 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=-2):
     If, in addition, `slice_axis` == 1, then for the volume ``v``
     (above) ``s = v[0]`` would be a "slice", with ``s.size``
     voxels. These are obviously terms from neuroimaging.
-    
+
     Parameters
     ----------
     arr : array_like
@@ -35,7 +35,7 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=-2):
     time_axis : int
        axis of `arr` that varies over time.
     slice_axis : int
-       axis of `arr` that varies over image slice.  
+       axis of `arr` that varies over image slice.
 
     Returns
     -------

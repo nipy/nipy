@@ -4,7 +4,7 @@
  Developer installs for different distributions
 ================================================
 
-.. htmlonly::
+.. only:: html
 
    :Release: |version|
    :Date: |today|

@@ -77,7 +77,7 @@ def test_surrogate_array_4d_shape():
     shape = (5, 6, 7)
     out_shape = shape + (1,)
     imgs = surrogate_4d_dataset(shape)
-    assert_true(imgs[0].shape == out_shape)
+    assert_true(not np.any(np.asarray(imgs[0].shape) - np.asarray(out_shape)))
     n_sess = 3
     imgs = surrogate_4d_dataset(shape, n_sess=n_sess)
     assert_true(imgs[0].shape == out_shape)
@@ -124,9 +124,7 @@ def test_surrogate_array_4d_dmtx():
     out_shape = shape + (n_scans,)
     dmtx = np.random.randn(n_scans, 3)
     imgs = surrogate_4d_dataset(shape, dmtx=dmtx)
-    assert_true(imgs[0].shape == out_shape)
- 
-
+    assert_true(not np.any(np.asarray(imgs[0].shape) - np.asarray(out_shape)))
 
 
 if __name__ == "__main__":

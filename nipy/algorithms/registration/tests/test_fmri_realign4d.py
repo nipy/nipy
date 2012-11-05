@@ -1,9 +1,9 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_raises
 
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 import numpy as np
 
 from .... import load_image
@@ -28,6 +28,47 @@ def test_slice_info():
                    slice_info=(1, -1))
     assert_equal(im4d.slice_axis, 1)
     assert_equal(im4d.slice_direction, -1)
+
+
+def _test_image4d_init(nslices):
+    data = np.zeros((3, 4, nslices, 6))
+    aff = np.eye(4)
+    tr = 2.0
+    img4d = Image4d(data, aff, tr)
+    assert_array_equal(img4d.slice_order, range(nslices))
+    img4d = Image4d(data, aff, tr, slice_order='ascending')
+    assert_array_equal(img4d.slice_order, range(nslices))
+    img4d = Image4d(data, aff, tr, slice_order='descending')
+    assert_array_equal(img4d.slice_order, range(nslices)[::-1])
+    # test interleaved slice order
+    slice_order = range(nslices)[::2] + range(nslices)[1::2]
+    img4d = Image4d(data, aff, tr, slice_order='ascending', interleaved=True)
+    assert_array_equal(img4d.slice_order, slice_order)
+    slice_order.reverse()
+    img4d = Image4d(data, aff, tr, slice_order='descending', interleaved=True)
+    assert_array_equal(img4d.slice_order, slice_order)
+    # can pass array
+    img4d = Image4d(data, aff, tr, slice_order=np.arange(nslices))
+    assert_array_equal(img4d.slice_order, range(nslices))
+    # or list
+    img4d = Image4d(data, aff, tr, slice_order=range(nslices))
+    assert_array_equal(img4d.slice_order, range(nslices))
+    # but raises exception in case of the incorrect slice indexes
+    for bad_slice_order in (
+        [0],                     # insufficient
+        np.arange(nslices)-1,    # negative etc
+        np.arange(nslices) + 0.1, # floats
+        range(nslices//2)*2,     # twice the same (would match in length for even nslices)
+        ):
+        assert_raises(ValueError, Image4d, data, aff, tr, slice_order=bad_slice_order)
+
+
+def test_image4d_init_5slices():
+    _test_image4d_init(5)
+
+
+def test_image4d_init_6slices():
+    _test_image4d_init(6)
 
 
 def test_slice_timing():

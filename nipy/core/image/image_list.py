@@ -1,12 +1,12 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from copy import copy
+import warnings
 
 import numpy as np
 
-from .image import Image, rollaxis as img_rollaxis
-from ..reference.coordinate_map import (CoordinateSystem,
-                                       AffineTransform, compose)
+from .image import Image, iter_axis, is_image
+from ..reference.coordinate_map import (drop_io_dim, io_axis_indices, AxisError)
+
 
 class ImageList(object):
     ''' Class to contain ND image as list of (N-1)D images '''
@@ -48,22 +48,20 @@ class ImageList(object):
         False
         >>> np.asarray(sublist).shape
         (3, 17, 21, 3)
-        >>> np.asarray(newimg).shape
+        >>> newimg.get_data().shape
         (17, 21, 3)
         """
         if images is None:
             self.list = []
             return
         images = list(images)
-        for im in images:
-            if not (hasattr(im, "coordmap") and hasattr(im, "get_data")):
-                raise ValueError("Expecting each element of images "
-                                 "to have a ``coordmap`` attribute "
-                                 "and a ``get_data`` method")
+        if not all(is_image(im) for im in images):
+                raise ValueError("Expecting each element of images to have "
+                                 "the Image API")
         self.list = images
 
     @classmethod
-    def from_image(klass, image, axis=None):
+    def from_image(klass, image, axis=None, dropout=True):
         """ Create an image list from an `image` by slicing over `axis`
 
         Parameters
@@ -73,6 +71,10 @@ class ImageList(object):
         axis : str or int
             axis of `image` that should become the axis indexed by the image
             list.
+        dropout : bool, optional
+            When taking slices from an image, we will leave an output dimension
+            to the coordmap that has no corresponding input dimension.  If
+            `dropout` is True, drop this output dimension.
 
         Returns
         -------
@@ -80,35 +82,19 @@ class ImageList(object):
         """
         if axis is None:
             raise ValueError('Must specify image axis')
-        # Now, reorder the axes and reference
-        image = img_rollaxis(image, axis)
-
+        # Get corresponding input, output dimension indices
+        in_ax, out_ax = io_axis_indices(image.coordmap, axis)
+        if in_ax is None:
+            raise AxisError('No correspnding input dimension for %s' % axis)
+        dropout = dropout and not out_ax is None
+        if dropout:
+            out_ax_name = image.reference.coord_names[out_ax]
         imlist = []
-        coordmap = image.coordmap
-
-        # We drop the first output coordinate of image's coordmap
-        drop1st = np.identity(coordmap.ndims[1]+1)[1:]
-        drop1st_domain = image.reference
-        drop1st_range = CoordinateSystem(image.reference.coord_names[1:],
-                                 name=image.reference.name,
-                                 coord_dtype=image.reference.coord_dtype)
-        drop1st_coordmap = AffineTransform(drop1st_domain, drop1st_range,
-                                           drop1st)
-        # And arbitrarily add a 0 for the first axis
-        add0 = np.vstack([np.zeros(image.axes.ndim),
-                          np.identity(image.axes.ndim)])
-        add0_domain = CoordinateSystem(image.axes.coord_names[1:],
-                                 name=image.axes.name,
-                                 coord_dtype=image.axes.coord_dtype)
-        add0_range = image.axes
-        add0_coordmap = AffineTransform(add0_domain, add0_range,
-                                        add0)
-
-        coordmap = compose(drop1st_coordmap, image.coordmap, add0_coordmap)
-
-        data = np.asarray(image)
-        imlist = [Image(dataslice, copy(coordmap))
-                  for dataslice in data]
+        for img in iter_axis(image, in_ax):
+            if dropout:
+                cmap = drop_io_dim(img.coordmap, out_ax_name)
+                img = Image(img.get_data(), cmap, img.metadata)
+            imlist.append(img)
         return klass(imlist)
 
     def __setitem__(self, index, value):
@@ -116,6 +102,11 @@ class ImageList(object):
         self.list[index] = value
         """
         self.list[index] = value
+
+    def __len__(self):
+        """ Length of image list
+        """
+        return len(self.list)
 
     def __getitem__(self, index):
         """
@@ -126,6 +117,58 @@ class ImageList(object):
             return self.list[index]
         # List etc slicing return new instances of self.__class__
         return self.__class__(images=self.list[index])
+
+    def get_list_data(self, axis=None):
+        """Return data in ndarray with list dimension at position `axis`
+
+        Parameters
+        ----------
+        axis : int
+            `axis` specifies which axis of the output will take the role of the
+            list dimension. For example, 0 will put the list dimension in the
+            first axis of the result.
+
+        Returns
+        -------
+        data : ndarray
+            data in image list as array, with data across elements of the list
+            concetenated at dimension `axis` of the array.
+
+        Examples
+        --------
+        >>> from nipy.testing import funcfile
+        >>> from nipy.io.api import load_image
+        >>> funcim = load_image(funcfile)
+        >>> ilist = ImageList.from_image(funcim, axis='t')
+        >>> ilist.get_list_data(axis=0).shape
+        (20, 17, 21, 3)
+        """
+        if axis is None:
+            raise ValueError('Must specify which axis of the output will take '
+                             'the role of the list dimension, eg 0 will put '
+                             'the list dimension in the first axis of the '
+                             'result')
+        img_shape = self.list[0].shape
+        ilen = len(self.list)
+        out_dim = len(img_shape) + 1
+        if axis >= out_dim or axis < -out_dim:
+            raise ValueError('I have only %d axes position, but axis %d asked '
+                             'for' % (out_dim -1, axis))
+        # tmp_shape is the shape of the output if axis is 0
+        tmp_shape = (ilen,) + img_shape
+        v = np.empty(tmp_shape)
+        # first put the data in an array, with list dimension in the first axis
+        for i, im in enumerate(self.list):
+            v[i] = im.get_data() # get_data method of an image has no axis
+        # then roll (and rock?) the axis to have axis in the right place
+        if axis < 0:
+            axis += out_dim
+        res = np.rollaxis(v, 0, axis + 1)
+        # Check we got the expected shape
+        target_shape = img_shape[0:axis] + (ilen,) + img_shape[axis:]
+        if target_shape != res.shape:
+            raise ValueError('We were not expecting this shape')
+        return res
 
     def __array__(self):
         """Return data in ndarray.  Called through numpy.array.
@@ -139,11 +182,12 @@ class ImageList(object):
         >>> np.asarray(ilist).shape
         (20, 17, 21, 3)
         """
-        length = len(self.list)
-        v = np.empty((length,) + self.list[0].shape)
-        for i, im in enumerate(self.list):
-            v[i] = im.get_data()
-        return v
+        """Return data as a numpy array."""
+        warnings.warn('Please use get_list_data() instead - default '
+                      'conversion to array will be deprecated',
+                      DeprecationWarning,
+                      stacklevel=2)
+        return self.get_list_data(axis=0)
 
     def __iter__(self):
         self._iter = iter(self.list)

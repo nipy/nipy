@@ -65,8 +65,8 @@ def cluster_threshold(stat_map, domain, th, csize):
     -------
     binary array of shape (nvox): the binarized thresholded map
 
-    Note
-    ----
+    Notes
+    -----
     Should be replaced by a more standard function in the future
     """
     if stat_map.shape[0] != domain.size:

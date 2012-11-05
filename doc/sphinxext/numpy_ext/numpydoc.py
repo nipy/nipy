@@ -12,9 +12,14 @@ It will:
 - Renumber references.
 - Extract the signature from the docstring, if it can't be determined otherwise.
 
-.. [1] http://projects.scipy.org/numpy/wiki/CodingStyleGuidelines#docstring-standard
+.. [1] https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt
 
 """
+
+import sphinx
+
+if sphinx.__version__ < '1.0.1':
+    raise RuntimeError("Sphinx 1.0.1 or newer is required")
 
 import os, re, pydoc
 from docscrape_sphinx import get_doc_object, SphinxDocString
@@ -42,7 +47,7 @@ def mangle_docstrings(app, what, name, obj, options, lines,
             v = dict(full_name=u"%s.%s" % (obj.__module__, obj.__name__))
         else:
             v = dict(full_name=obj.__name__)
-        lines += [u'', u'.. htmlonly::', '']
+        lines += [u'', u'.. only:: html', '']
         lines += [u'    %s' % x for x in
                   (app.config.numpydoc_edit_link % v).split("\n")]
 

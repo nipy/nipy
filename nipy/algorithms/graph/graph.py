@@ -21,20 +21,20 @@ instantiate WeightedGraphs from data:
 Author: Bertrand Thirion, 2006--2011
 """
 import numpy as np
-
+from scipy.sparse import coo_matrix
 
 class Graph(object):
     """ Basic topological (non-weighted) directed Graph class
 
-    Member variables
-    ----------------
-    - V (int > 0): the number of vertices
-    - E (int >= 0): the number of edges
+    Member variables:
 
-    Properties
-    ----------
-    - vertices (list, type=int, shape=(V,))  vertices id
-    - edges (list, type=int, shape=(E,2)): edges as vertices id tuples
+    * V (int > 0): the number of vertices
+    * E (int >= 0): the number of edges
+
+    Properties:
+
+    * vertices (list, type=int, shape=(V,))  vertices id
+    * edges (list, type=int, shape=(E,2)): edges as vertices id tuples
     """
 
     ### Constructor
@@ -44,8 +44,12 @@ class Graph(object):
 
         Parameters
         ----------
-        - V (int): the number of vertices
-        - E (int): the number of edges
+        V : int
+            the number of vertices
+        E : int, optional
+            the number of edges
+        edges : None or shape (E, 2) array, optional
+            edges of graph
         """
         # deal with vertices
         self.__set_V(V)
@@ -131,14 +135,13 @@ class Graph(object):
         adj: scipy.sparse matrix instance,
             that encodes the adjacency matrix of self
         """
-        import scipy.sparse as sps
         if self.E > 0:
             i = self.edges[:, 0]
             j = self.edges[:, 1]
-            adj = sps.coo_matrix((np.ones(self.E), (i, j)),
+            adj = coo_matrix((np.ones(self.E), (i, j)),
                                 shape=(self.V, self.V))
         else:
-            adj = sps.coo_matrix((self.V, self.V))
+            adj = coo_matrix((self.V, self.V))
         return adj
 
     def cc(self):
@@ -194,14 +197,12 @@ class Graph(object):
         sp: scipy.sparse matrix instance,
             that encodes the adjacency matrix of self
         """
-        import scipy.sparse as sps
         if self.E > 0:
-            i = self.edges[:, 0]
-            j = self.edges[:, 1]
-            sm = sps.coo_matrix((np.ones(self.E), (i, j)),
+            i, j = self.edges.T
+            sm = coo_matrix((np.ones(self.E), (i, j)),
                                 shape=(self.V, self.V))
         else:
-            sm = sps.coo_matrix((self.V, self.V))
+            sm = coo_matrix((self.V, self.V))
         return sm
 
     def show(self, ax=None):
@@ -266,7 +267,6 @@ def wgraph_from_adjacency(x):
     -------
     wg: WeightedGraph instance
     """
-    from scipy.sparse import coo_matrix
     a = coo_matrix(x)
     return wgraph_from_coo_matrix(a)
 
@@ -343,10 +343,10 @@ def knn(X, k=1):
     -------
     the corresponding WeightedGraph instance
 
-    Note
-    ----
-    The knn system is symmeterized: if (ab) is one of the edges
-    then (ba) is also included
+    Notes
+    -----
+    The knn system is symmeterized: if (ab) is one of the edges then (ba) is
+    also included
     """
     from ..utils.fast_distance import euclidean_distance
 
@@ -419,9 +419,9 @@ def lil_cc(lil):
     -------
     label a vector of shape len(lil): connected components labelling
 
-    Note
-    ----
-    dramatically slow for non-sparse graphs
+    Notes
+    -----
+    Dramatically slow for non-sparse graphs
     """
     n = len(lil)
     visited = np.zeros(n).astype(np.int)
@@ -459,11 +459,11 @@ def graph_3d_grid(xyz, k=18):
     m = 3 * lxyz.max(0).sum() + 2
 
     # six neighbours
-    N6 = [np.array([1, m, m ** 2]), np.array([m ** 2, 1, m]),
+    n6 = [np.array([1, m, m ** 2]), np.array([m ** 2, 1, m]),
          np.array([m, m ** 2, 1])]
 
     # eighteen neighbours
-    N18 = [np.array([1 + m, 1 - m, m ** 2]),
+    n18 = [np.array([1 + m, 1 - m, m ** 2]),
            np.array([1 + m, m - 1, m ** 2]),
            np.array([m ** 2, 1 + m, 1 - m]),
            np.array([m ** 2, 1 + m, m - 1]),
@@ -471,33 +471,35 @@ def graph_3d_grid(xyz, k=18):
            np.array([m - 1, m ** 2, 1 + m])]
 
     # twenty-six neighbours
-    N26 = [np.array([1 + m + m ** 2, 1 - m, 1 - m ** 2]),
+    n26 = [np.array([1 + m + m ** 2, 1 - m, 1 - m ** 2]),
            np.array([1 + m + m ** 2, m - 1, 1 - m ** 2]),
            np.array([1 + m + m ** 2, 1 - m, m ** 2 - 1]),
            np.array([1 + m + m ** 2, m - 1, m ** 2 - 1])]
 
     # compute the edges in each possible direction
-    def create_edges(lxyz, NN, l1dist=1, eA=np.array([]), eB=np.array([]),
+    def create_edges(lxyz, nn, l1dist=1, left=np.array([]), right=np.array([]),
                      weights=np.array([])):
         q = 0
-        for a in NN:
-            v1 = np.dot(lxyz, a)
+        for nn_row in nn:
+            v1 = np.dot(lxyz, nn_row)
             o1 = np.argsort(v1)
             sv1 = v1[o1]
             nz = np.squeeze(np.nonzero(sv1[: - 1] - sv1[1:] == - l1dist))
             o1z, o1z1 = o1[nz], o1[nz + 1]
-            eA = np.hstack((eA, o1z, o1z1))
-            eB = np.hstack((eB, o1z1, o1z))
+            left = np.hstack((left, o1z, o1z1))
+            right = np.hstack((right, o1z1, o1z))
             q += 2 * np.size(nz)
         weights = np.hstack((weights, np.sqrt(l1dist) * np.ones(q)))
-        return eA, eB, weights
+        return left, right, weights
 
-    i, j, d = create_edges(lxyz, N6, 1.)
+    i, j, d = create_edges(lxyz, n6, 1.)
     if k >= 18:
-        i, j, d = create_edges(lxyz, N18, 2, i, j, d)
+        i, j, d = create_edges(lxyz, n18, 2, i, j, d)
     if k == 26:
-        i, j, d = create_edges(lxyz, N26, 3, i, j, d)
+        i, j, d = create_edges(lxyz, n26, 3, i, j, d)
     i, j = i.astype(np.int), j.astype(np.int)
+
+    # reorder the edges to have a more standard order
     order = np.argsort(i + j * (len(i) + 1))
     i, j, d = i[order], j[order], d[order]
     return i, j, d
@@ -539,10 +541,10 @@ def concatenate_graphs(G1, G2):
     -------
     G, WeightedGraph, the concatenated graph
 
-    Note
-    ----
-    this implies that the vertices of G corresponding to G2
-    are labeled [G1.V .. G1.V+G2.V]
+    Notes
+    -----
+    This implies that the vertices of G corresponding to G2 are labeled [G1.V ..
+    G1.V+G2.V]
     """
     V = G1.V + G2.V
     edges = np.vstack((G1.edges, G1.V + G2.edges))
@@ -554,17 +556,17 @@ def concatenate_graphs(G1, G2):
 class WeightedGraph(Graph):
     """Basic weighted, directed graph class
 
-    Member variables
-    ----------------
-    - V (int): the number of vertices
-    - E (int): the number of edges
+    Member variables:
 
-    Properties
-    ----------
-    - vertices (list, type=int, shape=(V,)): vertices id
-    - edges (list, type=int, shape=(E,2)): edges as vertices id tuples
-    - weights (list, type=int, shape=(E,)): weights/lenghts
-        of the graph's edges
+    * V (int): the number of vertices
+    * E (int): the number of edges
+
+    Methods
+
+    * vertices (list, type=int, shape=(V,)): vertices id
+    * edges (list, type=int, shape=(E,2)): edges as vertices id tuples
+    * weights (list, type=int, shape=(E,)): weights / lengths
+      of the graph's edges
     """
 
     ### Constructor
@@ -574,9 +576,12 @@ class WeightedGraph(Graph):
 
         Parameters
         ----------
-        - V (int > 0): the number of vertices
-        - edges (array, type=int, shape=(E,2)): edges of the graph
-        - weights (array, type=int, shape=(E,)): weights/lenghts of the edges
+        V : int
+            (int > 0) the number of vertices
+        edges : (E, 2) array, type int
+            edges of the graph
+        weights : (E, 2) array, type=int
+            weights/lenghts of the edges
         """
         Graph.__init__(self, V, edges=edges)
 
@@ -660,9 +665,9 @@ x
         dg: array of shape (self.V),
             the graph distance dg from ant vertex to the nearest seed
 
-        Note
-        ----
-        it is mandatory that the graph weights are non-negative
+        Notes
+        -----
+        It is mandatory that the graph weights are non-negative
         """
         import heapq
         if hasattr(seed, '__iter__') == False:
@@ -672,7 +677,7 @@ x
                 raise ValueError('some weights are non-positive')
         except:
             raise ValueError('undefined weights')
-        dist, active = np.infty * np.ones(self.V), np.ones(self.V)
+        dist, active = np.inf * np.ones(self.V), np.ones(self.V)
         idx, neighb, weight = self.compact_neighb()
         dist[seed] = 0
         dg = zip(np.zeros_like(seed), seed)
@@ -731,11 +736,11 @@ x
         dg array of shape (nbseed, self.V)
                 the graph distance dg from each seed to any vertex
 
-        Note
-        ----
-        It is mandatory that the graph weights are non-negative
-        The algorithm  proceeds byr epeating dijkstra's algo for each
-            seed. floyd's algo is not used (O(self.V)^3 complexity...)
+        Notes
+        -----
+        It is mandatory that the graph weights are non-negative. The algorithm
+        proceeds by repeating Dijkstra's algo for each seed. Floyd's algo is not
+        used (O(self.V)^3 complexity...)
         """
         if seed == None:
             seed = np.arange(self.V)
@@ -760,8 +765,8 @@ x
             c == 1 => for each vertex b, sum{edge[e, 1]=b} D[e]=1
             c == 2 => symmetric ('l2') normalization
 
-        Note
-        ----
+        Notes
+        -----
         Note that when sum_{edge[e, .] == a } D[e] = 0, nothing is performed
         """
         from scipy.sparse import dia_matrix
@@ -779,12 +784,12 @@ x
         s2 = adj.sum(1)
         if c == 1:
             s = dia_matrix((1. / s1, 0), shape=(self.V, self.V))
-            adj = s * adj
+            adj = adj * s
             self.weights = wgraph_from_adjacency(adj).get_weights()
             return np.asarray(s1)
         if c == 0:
             s = dia_matrix((1. / s2.T, 0), shape=(self.V, self.V))
-            adj = adj * s
+            adj = s * adj
             self.weights = wgraph_from_adjacency(adj).get_weights()
             return np.asarray(s2)
         if c == 2:
@@ -826,10 +831,10 @@ x
           the coordinate matrix of the embedding
         sigma=0, float: the parameter of the gaussian function
 
-        Note
-        ----
-        when sigma = 0, the following value is used:
-        sigma = sqrt(mean(||X[self.edges[:, 0], :]-X[self.edges[:, 1], :]||^2))
+        Notes
+        -----
+        When sigma == 0, the following value is used: ``sigma =
+        sqrt(mean(||X[self.edges[:, 0], :]-X[self.edges[:, 1], :]||^2))``
         """
         sigma = float(sigma)
         if sigma < 0:
@@ -887,7 +892,7 @@ x
                 raise ValueError('some weights are non-positive')
         except:
             raise ValueError('undefined weights')
-        dist, active = np.infty * np.ones(self.V), np.ones(self.V)
+        dist, active = np.inf * np.ones(self.V), np.ones(self.V)
         label = - np.ones(self.V, np.int)
         idx, neighb, weight = self.compact_neighb()
         dist[seed] = 0
@@ -987,10 +992,10 @@ x
         -------
         G, WeightedGraph instance, the desired subgraph of self
 
-        Note
-        ----
-        The vertices are renumbered as [1..p] where p = sum(valid>0)
-        when sum(valid==0) then None is returned
+        Notes
+        -----
+        The vertices are renumbered as [1..p] where p = sum(valid>0) when
+        sum(valid==0) then None is returned
         """
         if np.size(valid) != self.V:
             raise ValueError("incompatible size for self anf valid")
@@ -1018,10 +1023,10 @@ x
         -------
         K, WeightedGraph instance: the resulting MST
 
-        Note
-        ----
-        if self contains several connected components,
-        will have the same number k of connected components
+        Notes
+        -----
+        If self contains several connected components, will have the same number
+        k of connected components
         """
         k = self.cc().max() + 1
         E = 2 * self.V - 2
@@ -1059,10 +1064,10 @@ x
         seeds: array of shape (self.V, dim)
         samples: array of shape (nsamples, dim)
 
-        Note
-        ----
-        by default, the weights are a Gaussian function of the distance
-        The implementation is not optimal
+        Notes
+        -----
+        By default, the weights are a Gaussian function of the distance The
+        implementation is not optimal
         """
         from bipartite_graph import cross_knn
         # checks
@@ -1092,23 +1097,23 @@ x
         self.set_gaussian(seeds)
 
     def show(self, X=None, ax=None):
-        """plots the current graph in 2D
+        """ Plots the current graph in 2D
 
         Parameters
         ----------
-        X=None, array of shape (self.V, 2)
-                a set of coordinates that can be used
-                to embed the vertices in 2D.
-                if X.shape[1]>2, a svd reduces X for display
-                By default, the graph is presented on a circle
-        ax: ax handle, optional
+        X : None or array of shape (self.V, 2)
+            a set of coordinates that can be used to embed the vertices in 2D.
+            If X.shape[1]>2, a svd reduces X for display. By default, the graph
+            is presented on a circle
+        ax: None or int, optional
+            ax handle
 
         Returns
         -------
         ax: axis handle
 
-        Note
-        ----
+        Notes
+        -----
         This should be used only for small graphs.
         """
         if np.size(self.weights) == 0:
@@ -1183,7 +1188,7 @@ x
 
         Parameters
         ----------
-        valid, an array of shape (self.E)
+        valid : (self.E,) array
         """
         if np.size(valid) != self.E:
             raise ValueError("the input vector does not have the correct size")
@@ -1261,11 +1266,9 @@ x
         sp: scipy.sparse matrix instance
             that encodes the adjacency matrix of self
         """
-        import scipy.sparse as sps
         if self.E > 0:
-            i = self.edges[:, 0]
-            j = self.edges[:, 1]
-            sm = sps.coo_matrix((self.weights, (i, j)), shape=(self.V, self.V))
+            i, j = self.edges.T
+            sm = coo_matrix((self.weights, (i, j)), shape=(self.V, self.V))
         else:
-            sm = sps.coo_matrix((self.V, self.V))
+            sm = coo_matrix((self.V, self.V))
         return sm

@@ -38,14 +38,31 @@ All tests go in a test subdirectory for each package.
 Temporary files
 ^^^^^^^^^^^^^^^
 
-If you need to create a temporary file during your testing, you should
-use either of these two methods:
+If you need to create a temporary file during your testing, you could
+use one of these three methods, in order of convenience:
 
-#. `StringIO <http://docs.python.org/library/stringio.html>`_ 
+#. `StringIO <http://docs.python.org/library/stringio.html>`_
 
    StringIO creates an in memory file-like object. The memory buffer
    is freed when the file is closed.  This is the preferred method for
    temporary files in tests.
+
+#. `nibabel.tmpdirs.InTemporaryDirectory` context manager.
+
+   This is a convenient way of putting you into a temporary directory so you can
+   save anything you like into the current directory, and feel fine about it
+   after.  Like this::
+
+       from ..tmpdirs import InTemporaryDirectory
+
+       with InTemporaryDirectory():
+           f = open('myfile', 'wt')
+           f.write('Anything at all')
+           f.close()
+
+   One thing to be careful of is that you may need to delete objects holding
+   onto the file before you exit the ``with`` statement, otherwise Windows may
+   refuse to delete the file.
 
 #. `tempfile.mkstemp <http://docs.python.org/library/tempfile.html>`_
 
@@ -54,27 +71,27 @@ use either of these two methods:
    *suffix*.
 
    .. Note::
-      
+
         The tempfile module includes a convenience function
         *NamedTemporaryFile* which deletes the file automatically when
         it is closed.  However, whether the files can be opened a
         second time varies across platforms and there are problems
-        using this function *Windows*.
+        using this function on *Windows*.
 
-Both of the above libraries are preferred over creating a file in the
-test directory and then removing them with a call to ``os.remove``.
-For various reasons, sometimes ``os.remove`` doesn't get called and
-temp files get left around.
+   Example::
 
-mkstemp example::
+    from tempfile import mkstemp
+    try:
+        fd, name = mkstemp(suffix='.nii.gz')
+        tmpfile = open(name)
+        save_image(fake_image, tmpfile.name)
+        tmpfile.close()
+    finally:
+        os.unlink(name)  # This deletes the temp file
 
-  from tempfile import mkstemp
-  fd, name = mkstemp(suffix='.nii.gz')
-  tmpfile = open(name)
-  save_image(fake_image, tmpfile.name)
-  tmpfile.close()
-  os.unlink(name)  # This deletes the temp file
-
+Please don't just create a file in the test directory and then remove it with a
+call to ``os.remove``.  For various reasons, sometimes ``os.remove`` doesn't get
+called and temp files get left around.
 
 Many tests in one test function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -109,7 +126,7 @@ setup and teardown functions::
       ...
 
       def setup():
-      	  # Suppress warnings during tests to reduce noise
+          # Suppress warnings during tests to reduce noise
           warnings.simplefilter("ignore")
 
       def teardown():
@@ -126,7 +143,7 @@ Running the full test suite
 For our tests, we have collected a set of fmri imaging data which are
 required for the tests to run.  To do this, download the latest example
 data and template package files from `NIPY data packages`_. See
-:ref:`install-data`.
+:ref:`data-files`.
 
 Running individual tests
 ^^^^^^^^^^^^^^^^^^^^^^^^

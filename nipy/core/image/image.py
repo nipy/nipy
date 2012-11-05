@@ -1,15 +1,17 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-""" This module defines the Image class, as well as functions that
-create Image instances and work on them:
+""" Define the Image class and functions to work with Image instances
 
-* fromarray : create an Image instance from an ndarray
-* subsample : slice an Image instance
+* fromarray : create an Image instance from an ndarray (deprecated in favor of
+  using the Image constructor)
+* subsample : slice an Image instance (deprecated in favor of image slicing)
 * rollaxis : roll an image axis backwards
-* synchonized_order : match coordinate systems between images
+* synchronized_order : match coordinate systems between images
+* iter_axis : make iterator to iterate over an image axis
 * is_image : test for an object obeying the Image API
 """
 import warnings
+from copy import copy
 
 import numpy as np
 
@@ -17,10 +19,9 @@ from nibabel.onetime import setattr_on_read
 
 # These imports are used in the fromarray and subsample functions only, not in
 # Image
-from ..reference.coordinate_map import (AffineTransform, CoordinateSystem)
+from ..reference.coordinate_map import (AffineTransform, CoordinateSystem,
+                                       input_axis_index)
 from ..reference.array_coords import ArrayCoordMap
-
-__all__ = ['fromarray', 'subsample']
 
 
 class Image(object):
@@ -37,13 +38,18 @@ class Image(object):
 
     Examples
     --------
-    >>> from nipy.core.image import image
+    Load an image from disk
+
     >>> from nipy.testing import anatfile
     >>> from nipy.io.api import load_image
     >>> img = load_image(anatfile)
 
-    >>> img = image.fromarray(np.zeros((21, 64, 64), dtype='int16'),
-    ...                       'kji', 'zxy')
+    Make an image from an array.  We need to make a meaningful coordinate map
+    for the image.
+
+    >>> arr = np.zeros((21,64,64), dtype=np.int16)
+    >>> cmap = AffineTransform('kji', 'zxy', np.eye(4))
+    >>> img = Image(arr, cmap)
     """
     _doc = {}
 
@@ -91,7 +97,7 @@ class Image(object):
     def affine(self):
         if hasattr(self.coordmap, "affine"):
             return self.coordmap.affine
-        raise AttributeError, 'Nonlinear transform does not have an affine.'
+        raise AttributeError('Nonlinear transform does not have an affine.')
     _doc['affine'] = "Affine transformation if one exists."
 
     ###################################################################
@@ -132,8 +138,8 @@ class Image(object):
     def __init__(self, data, coordmap, metadata=None):
         """Create an `Image` object from array and `CoordinateMap` object.
 
-        Images are most often created through the module functions load and
-        fromarray.
+        Images are often created through the ``load_image`` function in the nipy
+        base namespace.
 
         Parameters
         ----------
@@ -143,18 +149,19 @@ class Image(object):
         coordmap : `AffineTransform` object
             coordmap mapping the domain (input) voxel axes of the image to the
             range (reference, output) axes - usually mm in real world space
-        metadata : dict
+        metadata : dict, optional
             Freeform metadata for image.  Most common contents is ``header``
             from nifti etc loaded images.
 
         See Also
         --------
-        load : load ``Image`` from a file
-        save : save ``Image`` to a file
-        fromarray : create an `Image` from a numpy array
+        load_image : load ``Image`` from a file
+        save_image : save ``Image`` to a file
         """
         if metadata is None:
             metadata = {}
+        else: # Shallow copy
+            metadata = copy(metadata)
         ndim = len(data.shape)
         if not isinstance(coordmap, AffineTransform):
             raise ValueError('coordmap must be an AffineTransform')
@@ -182,19 +189,19 @@ class Image(object):
         Parameters
         ----------
         order : None, sequence, optional
-          sequence of int (giving indices) or str (giving names) -
-          expressing new order of coordmap output coordinates.  None
-          (the default) results in reversed ordering.
+            sequence of int (giving indices) or str (giving names) - expressing
+            new order of coordmap output coordinates.  None (the default)
+            results in reversed ordering.
 
         Returns
         -------
         r_img : object
-           Image of same class as `self`, with reordered output
-           coordinates.
+            Image of same class as `self`, with reordered output coordinates.
 
         Examples
         --------
-        >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6], 'domain', 'range')
+        >>> cmap = AffineTransform.from_start_step(
+        ...             'ijk', 'xyz', [1, 2, 3], [4, 5, 6], 'domain', 'range')
         >>> im = Image(np.empty((30,40,50)), cmap)
         >>> im_reordered = im.reordered_reference([2,0,1])
         >>> im_reordered.shape
@@ -214,7 +221,7 @@ class Image(object):
         elif type(order[0]) == type(''):
             order = [self.reference.index(s) for s in order]
         new_cmap = self.coordmap.reordered_range(order)
-        return self.__class__(self._data, new_cmap, metadata=self.metadata)
+        return self.__class__.from_image(self, coordmap=new_cmap)
 
     def reordered_axes(self, order=None):
         """ Return a new Image with reordered input coordinates.
@@ -224,19 +231,19 @@ class Image(object):
         Parameters
         ----------
         order : None, sequence, optional
-          sequence of int (giving indices) or str (giving names) -
-          expressing new order of coordmap output coordinates.  None
-          (the default) results in reversed ordering.
+            Sequence of int (giving indices) or str (giving names) - expressing
+            new order of coordmap output coordinates.  None (the default)
+            results in reversed ordering.
 
         Returns
         -------
         r_img : object
-           Image of same class as `self`, with reordered output
-           coordinates.
+            Image of same class as `self`, with reordered output coordinates.
 
         Examples
         --------
-        >>> cmap = AffineTransform.from_start_step('ijk', 'xyz', [1,2,3],[4,5,6], 'domain', 'range')
+        >>> cmap = AffineTransform.from_start_step(
+        ...             'ijk', 'xyz', [1, 2, 3], [4, 5, 6], 'domain', 'range')
         >>> cmap
         AffineTransform(
            function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=float64),
@@ -271,8 +278,9 @@ class Image(object):
             new_data = np.transpose(self.get_data(), order)
         else:
             new_data = self._data
-        return self.__class__(new_data, new_cmap,
-                     metadata=self.metadata)
+        return self.__class__.from_image(self,
+                                         data=new_data,
+                                         coordmap=new_cmap)
 
     def renamed_axes(self, **names_dict):
         """ Return a new image with input (domain) axes renamed
@@ -281,13 +289,13 @@ class Image(object):
 
         Parameters
         ----------
-        **names_dict : dict
-           with keys being old names, and values being new names
+        \*\*names_dict : dict
+            with keys being old names, and values being new names
 
         Returns
         -------
         newimg : Image
-           An Image with the same data, having its axes renamed.
+            An Image with the same data, having its axes renamed.
 
         Examples
         --------
@@ -297,8 +305,8 @@ class Image(object):
         >>> print im_renamed.axes
         CoordinateSystem(coord_names=('slice', 'j', 'k'), name='domain', coord_dtype=float64)
         """
-        newcmap = self.coordmap.renamed_domain(names_dict)
-        return self.__class__(self._data, newcmap)
+        new_cmap = self.coordmap.renamed_domain(names_dict)
+        return self.__class__.from_image(self, coordmap=new_cmap)
 
     def renamed_reference(self, **names_dict):
         """ Return new image with renamed output (range) coordinates
@@ -307,14 +315,13 @@ class Image(object):
 
         Parameters
         ----------
-        **names_dict : dict
-           with keys being old names, and values being new names
+        \*\*names_dict : dict
+            with keys being old names, and values being new names
 
         Returns
         -------
         newimg : Image
-           An Image with the same data, having its output coordinates
-           renamed.
+            An Image with the same data, having its output coordinates renamed.
 
         Examples
         --------
@@ -324,8 +331,8 @@ class Image(object):
         >>> print im_renamed_reference.reference
         CoordinateSystem(coord_names=('newx', 'newy', 'z'), name='range', coord_dtype=float64)
         """
-        newcmap = self.coordmap.renamed_range(names_dict)
-        return self.__class__(self._data, newcmap)
+        new_cmap = self.coordmap.renamed_range(names_dict)
+        return self.__class__.from_image(self, coordmap=new_cmap)
 
     def __setitem__(self, index, value):
         """Setting values of an image, set values in the data array."""
@@ -337,7 +344,7 @@ class Image(object):
 
     def __array__(self):
         """Return data as a numpy array."""
-        warnings.warn('Please use get_data instead',
+        warnings.warn('Please use get_data instead - will be deprecated',
                       DeprecationWarning,
                       stacklevel=2)
         return self.get_data()
@@ -373,7 +380,9 @@ class Image(object):
         g = ArrayCoordMap(self.coordmap, self.shape)[slice_object]
         coordmap = g.coordmap
         if coordmap.function_domain.ndim > 0:
-            return self.__class__(data, coordmap, metadata=self.metadata)
+            return self.__class__.from_image(self,
+                                             data=data,
+                                             coordmap=coordmap)
         else:
             return data
 
@@ -405,6 +414,50 @@ class Image(object):
             '\n         '.join(repr(self.coordmap).split('\n')))
         np.set_printoptions(**options)
         return representation
+
+    @classmethod
+    def from_image(klass, img, data=None, coordmap=None, metadata=None):
+        """ Classmethod makes new instance of this `klass` from instance `img`
+
+        Parameters
+        ----------
+        data : array-like
+            object that as attribute ``shape`` and returns an array from
+            ``np.asarray(data)``
+        coordmap : `AffineTransform` object
+            coordmap mapping the domain (input) voxel axes of the image to the
+            range (reference, output) axes - usually mm in real world space
+        metadata : dict, optional
+            Freeform metadata for image.  Most common contents is ``header``
+            from nifti etc loaded images.
+
+        Returns
+        -------
+        img : `klass` instance
+            New image with data from `data`, coordmap from `coordmap` maybe
+            metadata from `metadata`
+
+        Notes
+        -----
+        Subclasses of ``Image`` with different semantics for ``__init__`` will
+        need to override this classmethod.
+
+        Examples
+        --------
+        >>> from nipy import load_image
+        >>> from nipy.core.api import Image
+        >>> from nipy.testing import anatfile
+        >>> aimg = load_image(anatfile)
+        >>> arr = np.arange(24).reshape((2,3,4))
+        >>> img = Image.from_image(aimg, data=arr)
+        """
+        if data is None:
+            data = img._data
+        if coordmap is None:
+            coordmap = copy(img.coordmap)
+        if metadata is None:
+            metadata = copy(img.metadata)
+        return klass(data, coordmap, metadata)
 
 
 class SliceMaker(object):
@@ -465,8 +518,18 @@ def subsample(img, slice_object):
     return img.__getitem__(slice_object)
 
 
-def fromarray(data, innames, outnames, coordmap=None):
-    """Create an image from a numpy array.
+def fromarray(data, innames, outnames):
+    """Create an image from array `data`, and input/output coordinate names
+
+    The mapping between the input and output coordinate names is the identity
+    matrix.
+
+    Please don't use this routine, but instead prefer::
+
+        from nipy.core.api import Image, AffineTransform
+        img = Image(data, AffineTransform(innames, outnames, np.eye(4)))
+
+    where ``4`` is ``len(innames) + 1``.
 
     Parameters
     ----------
@@ -476,8 +539,6 @@ def fromarray(data, innames, outnames, coordmap=None):
        a list of input axis names
     innames : sequence
        a list of output axis names
-    coordmap : A `CoordinateMap`
-        If not specified, an identity coordinate map is created.
 
     Returns
     -------
@@ -488,16 +549,32 @@ def fromarray(data, innames, outnames, coordmap=None):
     load : function for loading images
     save : function for saving images
 
+    Examples
+    --------
+    >>> img = fromarray(np.zeros((2,3,4)), 'ijk', 'xyz')
+    >>> img.coordmap
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+       affine=array([[ 1.,  0.,  0.,  0.],
+                     [ 0.,  1.,  0.,  0.],
+                     [ 0.,  0.,  1.,  0.],
+                     [ 0.,  0.,  0.,  1.]])
+    )
     """
+    warnings.warn('fromarray is deprecated, please use the Image '
+                  'constructor instead',
+                  DeprecationWarning,
+                  stacklevel=2)
     ndim = len(data.shape)
-    if not coordmap:
-        coordmap = AffineTransform.from_start_step(innames,
-                                                   outnames,
-                                                   (0.,)*ndim,
-                                                   (1.,)*ndim)
+    coordmap = AffineTransform.from_start_step(innames,
+                                               outnames,
+                                               (0.,)*ndim,
+                                               (1.,)*ndim)
     return Image(data, coordmap)
 
 
+@np.deprecate_with_doc('Please use rollimg instead')
 def rollaxis(img, axis, inverse=False):
     """ Roll `axis` backwards, until it lies in the first position.
 
@@ -507,17 +584,19 @@ def rollaxis(img, axis, inverse=False):
     an axis to roll along in terms of either a reference name (i.e. 'z')
     or an axis name (i.e. 'slice').
 
+    This function is deprecated; please use ``rollimg`` instead.
+
     Parameters
     ----------
     img : Image
        Image whose axes and reference coordinates are to be reordered
        by rolling.
     axis : str or int
-       Axis to be rolled, can be specified by name or 
-       as an integer.
+       Axis to be rolled, can be specified by name or as an integer.
     inverse : bool, optional
-       If inverse is True, then axis must be an integer and the first
-       axis is returned to the position axis.
+       If inverse is True, then axis must be an integer and the first axis is
+       returned to the position axis.  This keyword is deprecated and we'll
+       remove it in a future version of nipy.
 
     Returns
     -------
@@ -555,16 +634,24 @@ def rollaxis(img, axis, inverse=False):
                      [ 0.,  0.,  0.,  0.,  1.]])
     )
     """
-    if axis not in ([-1] +
-                    range(img.axes.ndim) +
+    if inverse not in (True, False):
+        raise ValueError('Inverse should be True or False; did you mean to '
+                         'use the ``rollimg` function instead?')
+    if isinstance(axis, int) and axis < 0:
+        axis = img.ndim + axis
+    if inverse:
+        if type(axis) != type(0):
+            raise ValueError('If carrying out inverse rolling, '
+                             'axis must be an integer')
+        order = range(1, img.ndim)
+        order.insert(axis, 0)
+        return img.reordered_axes(order).reordered_reference(order)
+    if axis not in (range(img.axes.ndim) +
                     list(img.axes.coord_names) +
                     list(img.reference.coord_names)):
-        raise ValueError('axis must be an axis number, -1, '
+        raise ValueError('axis must be an axis number,'
                          'an axis name or a reference name')
     # Find out which index axis corresonds to
-    if inverse and type(axis) != type(0):
-        raise ValueError('if carrying out inverse rolling, '
-                         'axis must be an integer')
     in_index = out_index = -1
     if type(axis) == type(''):
         try:
@@ -585,15 +672,74 @@ def rollaxis(img, axis, inverse=False):
             axis = out_index
     if axis == -1:
         axis += img.axes.ndim
-    if not inverse:
-        order = range(img.ndim)
-        order.remove(axis)
-        order.insert(0, axis)
-    else:
-        order = range(img.ndim)
-        order.remove(0)
-        order.insert(axis, 0)
+    order = range(img.ndim)
+    order.remove(axis)
+    order.insert(0, axis)
     return img.reordered_axes(order).reordered_reference(order)
+
+
+def rollimg(img, axis, start=0, fix0=True):
+    """ Roll `axis` backwards in the inputs, until it lies before `start`
+
+    Parameters
+    ----------
+    img : Image
+        Image whose axes and reference coordinates are to be reordered by
+        rollimg.
+    axis : str or int
+        Axis to be rolled, can be specified by name or as an integer.  If an
+        integer, axis is an input axis.  If a name, can be name of input or
+        output axis.  If an output axis, we search for the closest matching
+        input axis, and raise an AxisError if this fails.
+    start : str or int, optional
+        position before which to roll axis `axis`.  Default to 0.  Can again be
+        an integer (input axis) or name of input or output axis.
+    fix0 : bool, optional
+        Whether to allow for zero scaling when searching for an input axis
+        matching an output axis.  Useful for images where time scaling is 0.
+
+    Returns
+    -------
+    newimg : Image
+       Image with reordered input axes and corresponding data.
+
+    Examples
+    --------
+    >>> data = np.zeros((30,40,50,5))
+    >>> affine_transform = AffineTransform('ijkl', 'xyzt', np.diag([1,2,3,4,1]))
+    >>> im = Image(data, affine_transform)
+    >>> im.coordmap
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='', coord_dtype=float64),
+       affine=array([[ 1.,  0.,  0.,  0.,  0.],
+                     [ 0.,  2.,  0.,  0.,  0.],
+                     [ 0.,  0.,  3.,  0.,  0.],
+                     [ 0.,  0.,  0.,  4.,  0.],
+                     [ 0.,  0.,  0.,  0.,  1.]])
+    )
+    >>> im_t_first = rollimg(im, 't')
+    >>> im_t_first.shape
+    (5, 30, 40, 50)
+    >>> im_t_first.coordmap
+    AffineTransform(
+       function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='', coord_dtype=float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='', coord_dtype=float64),
+       affine=array([[ 0.,  1.,  0.,  0.,  0.],
+                     [ 0.,  0.,  2.,  0.,  0.],
+                     [ 0.,  0.,  0.,  3.,  0.],
+                     [ 4.,  0.,  0.,  0.,  0.],
+                     [ 0.,  0.,  0.,  0.,  1.]])
+    )
+    """
+    axis = input_axis_index(img.coordmap, axis, fix0)
+    start = input_axis_index(img.coordmap, start, fix0)
+    order = range(img.ndim)
+    order.remove(axis)
+    if axis < start:
+        start -= 1
+    order.insert(start, axis)
+    return img.reordered_axes(order)
 
 
 def iter_axis(img, axis, asarray=False):
@@ -616,7 +762,7 @@ def iter_axis(img, axis, asarray=False):
     Examples
     --------
     >>> data = np.arange(24).reshape((4,3,2))
-    >>> img = fromarray(data, 'ijk', 'xyz')
+    >>> img = Image(data, AffineTransform('ijk', 'xyz', np.eye(4)))
     >>> slices = list(iter_axis(img, 'j'))
     >>> len(slices)
     3
@@ -626,8 +772,7 @@ def iter_axis(img, axis, asarray=False):
     >>> slices[1].sum() == data[:,:,1].sum()
     True
     """
-    rimg = rollaxis(img, axis)
-    n = rimg.shape[0]
+    rimg = rollimg(img, axis)
     for i in range(rimg.shape[0]):
         if asarray:
             yield rimg[i].get_data()
@@ -652,9 +797,9 @@ def synchronized_order(img, target_img,
     Returns
     -------
     newimg : Image
-       An Image satisfying newimg.axes == target.axes (if axes == True), 
-       newimg.reference == target.reference (if reference == True).
-    
+        An Image satisfying newimg.axes == target.axes (if axes == True),
+        newimg.reference == target.reference (if reference == True).
+
     Examples
     --------
     >>> data = np.random.standard_normal((3,4,7,5))
@@ -670,10 +815,8 @@ def synchronized_order(img, target_img,
 
     >>> data2 = np.random.standard_normal((3,11,9,4))
     >>> im2 = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
-    >>> 
     >>> im_scrambled2 = im2.reordered_axes('iljk').reordered_reference('xtyz')
     >>> im_unscrambled2 = synchronized_order(im_scrambled2, im)
-    >>> 
     >>> im_unscrambled2.coordmap == im.coordmap
     True
 
@@ -681,7 +824,6 @@ def synchronized_order(img, target_img,
 
     >>> data3 = np.random.standard_normal((3,11,9,4))
     >>> im3 = Image(data3, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,9,3,-2,1])))
-    >>> 
     >>> im_scrambled3 = im3.reordered_axes('iljk').reordered_reference('xtyz')
     >>> im_unscrambled3 = synchronized_order(im_scrambled3, im)
     >>> im_unscrambled3.axes == im.axes
@@ -696,10 +838,11 @@ def synchronized_order(img, target_img,
     >>> im_unscrambled4.reference == im.reference
     True
     """
-    # Caution, we can't just use target_img.reference because it's
-    # always 3-dimensional if isinstance(target_img, LPIImage)
+    # Caution, we can't just use target_img.reference because other subclasses
+    # of Image may not have all axes in the .reference attribute.
     target_axes = target_img.axes # = target_img.coordmap.function_domain
-    target_reference = target_img.coordmap.function_range # not always = target_image.reference
+    # the below not necessarily == target_image.reference
+    target_reference = target_img.coordmap.function_range
     if axes:
         img = img.reordered_axes(target_axes.coord_names)
     if reference:
@@ -713,7 +856,7 @@ def is_image(obj):
     This allows us to test for something that is duck-typing an image.
 
     For now an array must have a 'coordmap' attribute, and a callable
-    '__array__' attribute. 
+    'get_data' attribute.
 
     Parameters
     ----------
@@ -737,7 +880,6 @@ def is_image(obj):
     >>> is_image(c)
     False
     '''
-    if not hasattr(obj, 'coordmap'):
+    if not hasattr(obj, 'coordmap') or not hasattr(obj, 'metadata'):
         return False
-    return callable(getattr(obj, '__array__'))
-
+    return callable(getattr(obj, 'get_data'))

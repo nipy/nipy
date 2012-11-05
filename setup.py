@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from os.path import join as pjoin
+import os
+from os.path import join as pjoin, exists
 import sys
 from glob import glob
 from distutils import log
+
+# BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
+# update it when the contents of directories change.
+if exists('MANIFEST'): os.remove('MANIFEST')
 
 # Import build helpers
 try:
@@ -13,14 +18,16 @@ except ImportError:
     raise RuntimeError('Need nisext package from nibabel installation'
                        ' - please install nibabel first')
 
-from build_helpers import (generate_a_pyrex_source,
-                           cmdclass, INFO_VARS)
+from setup_helpers import (generate_a_pyrex_source,
+                           cmdclass, INFO_VARS,
+                           build_py) # build_py will do 2to3 for Python3
+
 # monkey-patch numpy distutils to use Cython instead of Pyrex
 from numpy.distutils.command.build_src import build_src
 build_src.generate_a_pyrex_source = generate_a_pyrex_source
 
 # Add custom commit-recording build command
-cmdclass['build_py'] = get_comrec_build('nipy')
+cmdclass['build_py'] = get_comrec_build('nipy', build_py)
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
@@ -96,7 +103,11 @@ from numpy.distutils.command.install_data import install_data
 from numpy.distutils.command.build_ext import build_ext
 
 def data_install_msgs():
-    from nipy.utils import templates, example_data
+    # Check whether we have data packages
+    from nibabel.data import datasource_or_bomber
+    DATA_PKGS = INFO_VARS['DATA_PKGS']
+    templates = datasource_or_bomber(DATA_PKGS['nipy-templates'])
+    example_data = datasource_or_bomber(DATA_PKGS['nipy-data'])
     for dpkg in (templates, example_data):
         if hasattr(dpkg, 'msg'): # a bomber object, warn
             log.warn('%s\n%s' % ('_'*80, dpkg.msg))
@@ -141,7 +152,7 @@ def main(**extra_args):
           author=INFO_VARS['AUTHOR'],
           author_email=INFO_VARS['AUTHOR_EMAIL'],
           platforms=INFO_VARS['PLATFORMS'],
-          version=INFO_VARS['VERSION'],
+          # version set by config.get_version() above
           requires=INFO_VARS['REQUIRES'],
           configuration = configuration,
           cmdclass = cmdclass,

@@ -169,7 +169,7 @@ class LandmarkRegions(object):
             if alpha > 1:
                 raise ValueError("no solution for alpha>1")
             if alpha > 1 - 1.e-15:
-                return np.infty
+                return np.inf
             if alpha < 0:
                 raise ValueError("no solution for alpha<0")
             if alpha < 1.e-15:
@@ -364,10 +364,11 @@ def build_LR(bf, thq=0.95, ths=0, dmax=1., verbose=0):
     dmax: float optional,
           regularizing constant that defines a prior on the region extent
 
-    Results
+    Returns
     -------
-    LR : an structural_bfls.LR instance, describing a cross-subject set of ROIs
-       if inference yields a null results, LR is set to None
+    LR : None or structural_bfls.LR instance
+        describing a cross-subject set of ROIs. If inference yields a null
+        result, LR is set to None
     newlabel: a relabelling of the individual ROIs, similar to u,
               which discards
               labels that do not fulfill the condition (c)

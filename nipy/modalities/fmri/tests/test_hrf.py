@@ -5,7 +5,7 @@ import numpy as np
 
 from scipy.stats import gamma
 
-from nipy.modalities.fmri.hrf import (
+from ..hrf import (
     gamma_params,
     gamma_expr,
     lambdify_t,
@@ -13,10 +13,7 @@ from nipy.modalities.fmri.hrf import (
 
 from numpy.testing import assert_array_almost_equal
 
-from nipy.testing import parametric
 
-
-@parametric
 def test_gamma():
     t = np.linspace(0, 30, 5000)
     # make up some numbers
@@ -34,5 +31,4 @@ def test_gamma():
     # they are the same bar a scaling factor
     nz = np.abs(L1t) > 1e-15
     sf = np.mean(L1t[nz] / L2t[nz])
-    yield assert_array_almost_equal(L1t , L2t*sf)
-        
+    assert_array_almost_equal(L1t , L2t*sf)

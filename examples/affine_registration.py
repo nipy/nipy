@@ -6,19 +6,17 @@ This script requires the nipy-data package to run. It is an example of
 inter-subject affine registration using two MR-T1 images from the
 sulcal 2000 database acquired at CEA, SHFJ, Orsay, France. The source
 is 'ammon' and the target is 'anubis'. Running it will result in a
-resampled ammon image being created in a temp directory.
+resampled ammon image being created in the current directory.
 """
+
+from optparse import OptionParser
+import time
+
+import numpy as np
 
 from nipy.algorithms.registration import HistogramRegistration, resample
 from nipy.utils import example_data
 from nipy import load_image, save_image
-from nipy.algorithms.resample import resample as resample2
-
-from os.path import join
-from optparse import OptionParser
-from tempfile import mkdtemp
-import time
-import numpy as np
 
 print('Scanning data directory...')
 
@@ -95,9 +93,11 @@ toc = time.time()
 print('  Resampling time: %f sec' % (toc - tic))
 
 # Save resampled source
-outfile = join(mkdtemp(), source + '_TO_' + target + '.nii')
-print ('Saving resampled source in: %s' % outfile)
-save_image(It, outfile)
+outroot = source + '_TO_' + target
+outimg = outroot + '.nii.gz'
+print ('Saving resampled source in: %s' % outimg)
+save_image(It, outimg)
 
 # Save transformation matrix
-np.save(outfile, np.asarray(T))
+outparams = outroot + '.npy'
+np.save(outparams, np.asarray(T))

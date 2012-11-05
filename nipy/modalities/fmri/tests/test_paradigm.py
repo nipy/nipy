@@ -3,17 +3,14 @@
 """
 Test the design_matrix utilities.
 
-Note that the tests just looks whether the data produces has correct dimension,
-not whether it is exact
+Note that the tests just look whether the data produced has correct dimension,
+not whether it is exact.
 """
 
 import numpy as np
-from os.path import join, dirname
+
 from ..experimental_paradigm import (EventRelatedParadigm, BlockParadigm,
-                                     load_protocol_from_csv_file)
-from nose.tools import assert_true, assert_equal
-from numpy.testing import assert_almost_equal
-from ....testing import parametric
+                                     load_paradigm_from_csv_file)
 
 
 def basic_paradigm():
@@ -61,24 +58,24 @@ def test_read_paradigm():
     session = 'sess'
     paradigm = block_paradigm()
     csvfile = write_paradigm(paradigm, session)
-    read_paradigm = load_protocol_from_csv_file(csvfile)[session]
+    read_paradigm = load_paradigm_from_csv_file(csvfile)[session]
     assert (read_paradigm.onset == paradigm.onset).all()
 
     paradigm = modulated_event_paradigm()
     csvfile = write_paradigm(paradigm, session)
-    read_paradigm = load_protocol_from_csv_file(csvfile)[session]
+    read_paradigm = load_paradigm_from_csv_file(csvfile)[session]
     assert (read_paradigm.onset == paradigm.onset).all()
 
     paradigm = modulated_block_paradigm()
     csvfile = write_paradigm(paradigm, session)
-    read_paradigm = load_protocol_from_csv_file(csvfile)[session]
+    read_paradigm = load_paradigm_from_csv_file(csvfile)[session]
     assert (read_paradigm.onset == paradigm.onset).all()
 
     paradigm = basic_paradigm()
     csvfile = write_paradigm(paradigm, session)
-    read_paradigm = load_protocol_from_csv_file(csvfile)[session]
+    read_paradigm = load_paradigm_from_csv_file(csvfile)[session]
     assert (read_paradigm.onset == paradigm.onset).all()
-    
+
 
 if __name__ == "__main__":
     import nose

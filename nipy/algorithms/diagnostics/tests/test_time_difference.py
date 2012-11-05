@@ -1,6 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-""" Testing tsdiffana 
+""" Testing tsdiffana
 
 """
 
@@ -10,7 +10,7 @@ import numpy as np
 
 import scipy.io as sio
 
-import nipy.algorithms.diagnostics.timediff as tsd
+from .. import timediff as tsd
 
 from nose.tools import assert_true, assert_false, \
      assert_equal, assert_raises
@@ -18,12 +18,11 @@ from nose.tools import assert_true, assert_false, \
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 from nipy import load_image
-from nipy.testing import parametric, funcfile
+from nipy.testing import funcfile
 
 TEST_DATA_PATH = pjoin(dirname(__file__), 'data')
 
 
-@parametric
 def test_time_slice_diffs():
     n_tps = 10
     n_slices = 4
@@ -50,13 +49,13 @@ def test_time_slice_diffs():
     expected['slice_diff2_max_vol'] = sdmv
     results = tsd.time_slice_diffs(ts)
     for key in expected:
-        yield assert_array_almost_equal(results[key], expected[key])
+        assert_array_almost_equal(results[key], expected[key])
     # tranposes, reset axes, get the same result
     results = tsd.time_slice_diffs(ts.T, 0, 1)
     results['diff2_mean_vol'] = results['diff2_mean_vol'].T
     results['slice_diff2_max_vol'] = results['slice_diff2_max_vol'].T
     for key in expected:
-        yield assert_array_almost_equal(results[key], expected[key])
+        assert_array_almost_equal(results[key], expected[key])
     ts_t = ts.transpose((1, 3, 0, 2))
     results = tsd.time_slice_diffs(ts_t, 1, -1)
     results['diff2_mean_vol'] = results['diff2_mean_vol'].transpose(
@@ -64,34 +63,26 @@ def test_time_slice_diffs():
     results['slice_diff2_max_vol'] = results['slice_diff2_max_vol'].transpose(
         ((1,0,2)))
     for key in expected:
-        yield assert_array_almost_equal(results[key], expected[key])
-    
+        assert_array_almost_equal(results[key], expected[key])
 
-@parametric
+
 def test_against_matlab_results():
     fimg = load_image(funcfile)
-    results = tsd.time_slice_diffs(fimg)
+    results = tsd.time_slice_diffs(fimg.get_data())
     # struct as record only to avoid deprecation warning
     tsd_results = sio.loadmat(pjoin(TEST_DATA_PATH, 'tsdiff_results.mat'),
                               struct_as_record=True, squeeze_me=True)
-    yield assert_array_almost_equal(
-        results['volume_means'],
-        tsd_results['g'])
-    yield assert_array_almost_equal(
-        results['volume_mean_diff2'],
-        tsd_results['imgdiff'])
-    yield assert_array_almost_equal(
-        results['slice_mean_diff2'],
-        tsd_results['slicediff'])
+    assert_array_almost_equal(results['volume_means'], tsd_results['g'])
+    assert_array_almost_equal(results['volume_mean_diff2'],
+                              tsd_results['imgdiff'])
+    assert_array_almost_equal(results['slice_mean_diff2'],
+                              tsd_results['slicediff'])
     # next tests are from saved, reloaded volumes at 16 bit integer
     # precision, so are not exact, but very close, given that the mean
     # of this array is around 3200
-    yield assert_array_almost_equal(
-        results['diff2_mean_vol'],
-        tsd_results['diff2_mean_vol'],
-        decimal=1)
-    yield assert_array_almost_equal(
-        results['slice_diff2_max_vol'],
-        tsd_results['slice_diff2_max_vol'],
-        decimal=1)
-    
+    assert_array_almost_equal(results['diff2_mean_vol'],
+                              tsd_results['diff2_mean_vol'],
+                              decimal=1)
+    assert_array_almost_equal(results['slice_diff2_max_vol'],
+                              tsd_results['slice_diff2_max_vol'],
+                              decimal=1)

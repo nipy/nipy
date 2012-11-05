@@ -3,9 +3,10 @@
 import numpy as np
 from scipy import special
 
-from numpy.testing import assert_almost_equal, assert_equal, TestCase
-
 from ..routines import median, mahalanobis, gamln, psi
+
+from nose.tools import assert_true
+from numpy.testing import assert_almost_equal, assert_equal, TestCase
 
 
 class TestAll(TestCase):
@@ -28,7 +29,7 @@ class TestAll(TestCase):
         A = np.dot(A.transpose(), A) + np.eye(100)
         mah = np.dot(x, np.dot(np.linalg.inv(A), x))
         assert_almost_equal(mah, mahalanobis(x, A), decimal=1) 
-        
+
     def test_mahalanobis2(self):
         x = np.random.rand(100,3,4)
         Aa = np.zeros([100,100,3,4])
@@ -40,9 +41,9 @@ class TestAll(TestCase):
         i = np.random.randint(3)
         j = np.random.randint(4)
         mah = np.dot(x[:,i,j], np.dot(np.linalg.inv(Aa[:,:,i,j]), x[:,i,j]))
-        f_mah = (mahalanobis(x, Aa))[i,j]        
-        assert_almost_equal(mah, f_mah, decimal=3)
-       
+        f_mah = (mahalanobis(x, Aa))[i,j]
+        assert_true(np.allclose(mah, f_mah))
+
     def test_gamln(self):
         for x in (0.01+100*np.random.random(50)):
             scipy_gamln = special.gammaln(x)

@@ -65,16 +65,20 @@ import warnings
 
 import numpy as np
 
-from nibabel.orientations import io_orientation
+from nibabel.affines import to_matvec, from_matvec
+from ...fixes.nibabel import io_orientation
 
-from ..transforms.affines import from_matrix_vector, to_matrix_vector
 from .coordinate_system import(CoordinateSystem,
                                safe_dtype,
+                               is_coordsys,
                                product as coordsys_product
                                )
 
 # shorthand
 CS = CoordinateSystem
+
+# Tolerance for small values in affine
+TINY = 1e-5
 
 
 class CoordinateMap(object):
@@ -86,9 +90,9 @@ class CoordinateMap(object):
 
     Attributes
     ----------
-    function_domain : :class:`CoordinateSystem`
+    function_domain : :class:`CoordinateSystem` instance
        The input coordinate system.
-    function_range : :class:`CoordinateSystem`
+    function_range : :class:`CoordinateSystem` instance
        The output coordinate system.
     function : callable
        A callable that maps the function_domain to the function_range.
@@ -178,7 +182,11 @@ class CoordinateMap(object):
         coordmap : CoordinateMap
         """
         # These attrs define the structure of the coordmap.
+        if not is_coordsys(function_domain):
+            function_domain = CoordinateSystem(function_domain)
         self.function_domain = function_domain
+        if not is_coordsys(function_range):
+            function_range = CoordinateSystem(function_range)
         self.function_range = function_range
         self.function = function
         self.inverse_function = inverse_function
@@ -382,11 +390,11 @@ class CoordinateMap(object):
         >>> function = lambda x:x+1
         >>> inverse = lambda x:x-1
         >>> cm = CoordinateMap(input_cs, output_cs, function, inverse)
-        >>> cm([2,3,4])
-        array([3, 4, 5])
+        >>> cm([2., 3., 4.])
+        array([ 3.,  4.,  5.])
         >>> cmi = cm.inverse()
-        >>> cmi([2,6,12])
-        array([ 1,  5, 11])
+        >>> cmi([2., 6. ,12.])
+        array([ 1.,  5., 11.])
         """
         x = np.asanyarray(x)
         out_shape = (self.function_range.ndim,)
@@ -445,6 +453,18 @@ class CoordinateMap(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def similar_to(self, other):
+        """ Does `other` have similar coordinate systems and same mappings?
+
+        A "similar" coordinate system is one with the same coordinate names and
+        data dtype, but ignoring the coordinate system name.
+        """
+        return (isinstance(other, self.__class__)
+                and (self.function == other.function)
+                and (self.function_domain.similar_to(other.function_domain))
+                and (self.function_range.similar_to(other.function_range))
+                and (self.inverse_function == other.inverse_function))
+
 
 class AffineTransform(object):
     """ Class for affine transformation from domain to a range
@@ -502,18 +522,22 @@ class AffineTransform(object):
 
         Parameters
         ----------
-        affine : array-like
-           affine homogenous coordinate matrix
         function_domain : :class:`CoordinateSystem`
            input coordinates
         function_range : :class:`CoordinateSystem`
            output coordinates
+        affine : array-like
+           affine homogenous coordinate matrix
 
         Notes
         -----
         The dtype of the resulting matrix is determined by finding a
         safe typecast for the function_domain, function_range and affine.
         """
+        if not is_coordsys(function_domain):
+            function_domain = CoordinateSystem(function_domain)
+        if not is_coordsys(function_range):
+            function_range = CoordinateSystem(function_range)
         affine = np.asarray(affine)
         dtype = safe_dtype(affine.dtype,
                            function_domain.coord_dtype,
@@ -597,7 +621,7 @@ class AffineTransform(object):
         """
         if type(params) == type(()):
             A, b = params
-            params = from_matrix_vector(A, b)
+            params = from_matvec(A, b)
         ndim = (len(innames) + 1, len(outnames) + 1)
         if params.shape != ndim[::-1]:
             raise ValueError('shape and number of axis names do not agree')
@@ -856,7 +880,7 @@ class AffineTransform(object):
         ...                    [0,0,1,1],
         ...                    [0,0,0,1]])
         >>> affine_transform = AffineTransform(input_cs, output_cs, affine)
-        >>> affine_transform([2,3,4])
+        >>> affine_transform([2,3,4]) #doctest: +IGNORE_DTYPE
         array([3, 4, 5])
         >>> affine_transform_inv = affine_transform.inverse()
         >>> # Its inverse has a matrix of np.float
@@ -869,7 +893,7 @@ class AffineTransform(object):
         if x.ndim > 1:
             out_shape = x.shape[:-1] + out_shape
         in_vals = self.function_domain._checked_values(x)
-        A, b = to_matrix_vector(self.affine)
+        A, b = to_matvec(self.affine)
         out_vals = np.dot(in_vals, A.T) + b[np.newaxis,:]
         final_vals = self.function_range._checked_values(out_vals)
         return final_vals.reshape(out_shape)
@@ -907,9 +931,13 @@ class AffineTransform(object):
                                self.affine.copy())
 
     def __repr__(self):
-        return "AffineTransform(\n   function_domain=%s,\n   function_range=%s,\n   affine=%s\n)" % (self.function_domain,
-                                                                                                     self.function_range,
-                                                                                                     '\n          '.join(repr(self.affine).split('\n')))
+        return ("AffineTransform(\n"
+                "   function_domain=%s,\n"
+                "   function_range=%s,\n"
+                "   affine=%s\n)" %
+                (self.function_domain,
+                 self.function_range,
+                 '\n          '.join(repr(self.affine).split('\n'))))
 
     def __eq__(self, other):
         test1, test2, test3, test4 =(isinstance(other, self.__class__),
@@ -924,13 +952,24 @@ class AffineTransform(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def similar_to(self, other):
+        """ Does `other` have similar coordinate systems and same mappings?
+
+        A "similar" coordinate system is one with the same coordinate names and
+        data dtype, but ignoring the coordinate system name.
+        """
+        return (isinstance(other, self.__class__)
+                and (self.function_domain.similar_to(other.function_domain))
+                and (self.function_range.similar_to(other.function_range))
+                and np.allclose(self.affine, other.affine))
+
 ####################################################################################
 #
 # Module level functions
 #
 ####################################################################################
 
-def product(*cmaps):
+def product(*cmaps, **kwargs):
     """ "topological" product of two or more mappings
 
     The mappings can be either AffineTransforms or CoordinateMaps.
@@ -1005,11 +1044,12 @@ def product(*cmaps):
     # First, check if they're all Affine
     allaffine = np.all([isinstance(cmap, AffineTransform) for cmap in cmaps])
     if allaffine:
-        return _product_affines(*cmaps)
+        return _product_affines(*cmaps, **kwargs)
     else:
         warnings.warn("product of non-affine CoordinateMaps is less robust than"+
                       "the AffineTransform")
-        return _product_cmaps(*[_as_coordinate_map(cmap) for cmap in cmaps])
+        return _product_cmaps(*[_as_coordinate_map(cmap) for cmap in cmaps],
+                              **kwargs)
 
 
 def compose(*cmaps):
@@ -1502,7 +1542,7 @@ def _as_coordinate_map(cmap):
         return cmap
     elif isinstance(cmap, AffineTransform):
         affine_transform = cmap
-        A, b = to_matrix_vector(affine_transform.affine)
+        A, b = to_matvec(affine_transform.affine)
 
         def _function(x):
             value = np.dot(x, A.T)
@@ -1511,7 +1551,7 @@ def _as_coordinate_map(cmap):
 
         affine_transform_inv = affine_transform.inverse()
         if affine_transform_inv:
-            Ainv, binv = to_matrix_vector(affine_transform_inv.affine)
+            Ainv, binv = to_matvec(affine_transform_inv.affine)
             def _inverse_function(x):
                 value = np.dot(x, Ainv.T)
                 value += binv
@@ -1577,12 +1617,16 @@ def _compose_cmaps(*cmaps):
             raise ValueError(
                 'domain and range coordinates do not match: '
                 'domain=%s, range=%s' %
-                (`cmap.function_domain.dtype`, `cur.function_range.dtype`))
+                (cmap.function_domain.dtype, cur.function_range.dtype))
 
     return cur
 
 
-def _product_cmaps(*cmaps):
+def _product_cmaps(*cmaps, **kwargs):
+    input_name = kwargs.pop('input_name', 'product')
+    output_name = kwargs.pop('output_name', 'product')
+    if kwargs:
+        raise TypeError('Unexpected kwargs %s' % kwargs)
     ndimin = [cmap.ndims[0] for cmap in cmaps]
     ndimin.insert(0,0)
     ndimin = tuple(np.cumsum(ndimin))
@@ -1591,23 +1635,29 @@ def _product_cmaps(*cmaps):
         x = np.atleast_2d(x)
         y = []
         for i in range(len(ndimin)-1):
-            cmap = cmaps[i]
             yy = cmaps[i](x[:,ndimin[i]:ndimin[i+1]])
             y.append(yy)
         yy = np.hstack(y)
         return yy
 
-    notaffine = filter(lambda x: not isinstance(x, AffineTransform), cmaps)
-
-    incoords = coordsys_product(*[cmap.function_domain for cmap in cmaps])
-    outcoords = coordsys_product(*[cmap.function_range for cmap in cmaps])
-
+    incoords = coordsys_product(*[cmap.function_domain for cmap in cmaps],
+                                **{'name': input_name})
+    outcoords = coordsys_product(*[cmap.function_range for cmap in cmaps],
+                                **{'name': output_name})
     return CoordinateMap(incoords, outcoords, function)
 
 
-def _product_affines(*affine_mappings):
+def _product_affines(*affine_mappings, **kwargs):
     """ Product of affine_mappings.
     """
+    input_name = kwargs.pop('input_name', 'product')
+    output_name = kwargs.pop('output_name', 'product')
+    if kwargs:
+        raise TypeError('Unexpected kwargs %s' % kwargs)
+    if input_name is None:
+        input_name = 'product'
+    if output_name is None:
+        output_name = 'product'
     ndimin = [affine.ndims[0] for affine in affine_mappings]
     ndimout = [affine.ndims[1] for affine in affine_mappings]
 
@@ -1623,7 +1673,7 @@ def _product_affines(*affine_mappings):
     j = 0
 
     for l, affine in enumerate(affine_mappings):
-        A, b = to_matrix_vector(affine.affine)
+        A, b = to_matvec(affine.affine)
         M[i:(i+ndimout[l]),j:(j+ndimin[l])] = A
         M[i:(i+ndimout[l]),-1] = b
         product_domain.extend(affine.function_domain.coord_names)
@@ -1632,35 +1682,53 @@ def _product_affines(*affine_mappings):
         j += ndimin[l]
 
     return AffineTransform(
-        CoordinateSystem(product_domain, name='product', coord_dtype=M.dtype),
-        CoordinateSystem(product_range, name='product', coord_dtype=M.dtype),
+        CoordinateSystem(product_domain, name=input_name, coord_dtype=M.dtype),
+        CoordinateSystem(product_range, name=output_name, coord_dtype=M.dtype),
         M)
 
 
-def drop_io_dim(cm, name):
-    ''' Drop dimension from coordinate map, if orthogonal to others
+class AxisError(Exception):
+    """ Error for incorrect axis selection """
 
-    Drops both input and corresponding output dimension.  Thus there
-    should be a corresponding input dimension for a selected output
-    dimension, or a corresponding output dimension for an input
-    dimension.
+
+def drop_io_dim(cm, axis_id, fix0=True):
+    ''' Drop dimensions `axis_id` from coordinate map, if orthogonal to others
+
+    If you specify an input dimension, drop that dimension and any corresponding
+    output dimension, as long as all other outputs are orthogonal to dropped
+    input.  If you specify an output dimension, drop that dimension and any
+    corresponding input dimension, as long as all other inputs are orthogonal
+    to dropped output.
 
     Parameters
     ----------
-    cm : Affine
-       Affine coordinate map instance
-    name : str
-       Name of input or output dimension to drop.  If this is an input
-       dimension, there must be a corresponding output dimension with
-       the same index, and vica versa.  The check for orthogonality
-       ensures that the input and output dimensions are only related to
-       each other, and not to the other dimensions.
+    cm : class:`AffineTransform`
+        Affine coordinate map instance
+    axis_id : int or str
+        If int, gives index of *input* axis to drop.  If str, gives name of
+        input *or* output axis to drop. When specifying an input axis: if given
+        input axis does not affect any output axes, just drop input axis.  If
+        input axis affects only one output axis, drop both input and
+        corresponding output.  Similarly when specifying an output axis.  If
+        `axis_id` is a str, it must be unambiguous - if the named axis exists in
+        both input and output, and they do not correspond, raises a AxisError.
+        See Raises section for checks
+    fix0: bool, optional
+        Whether to fix potential 0 TR in affine
 
     Returns
     -------
     cm_redux : Affine
-       Affine coordinate map with orthogonal input + output dimension
-       dropped
+        Affine coordinate map with orthogonal input + output dimension dropped
+
+    Raises
+    ------
+    AxisError: if `axis_id` is a str and does not match any no input or output
+        coordinate names.
+    AxisError: if specified `axis_id` affects more than a single input / output
+        axis.
+    AxisError: if the named `axis_id` exists in both input and output, and they
+        do not correspond.
 
     Examples
     --------
@@ -1674,99 +1742,71 @@ def drop_io_dim(cm, name):
            [ 0.,  0.,  3.,  0.],
            [ 0.,  0.,  0.,  1.]])
     '''
+    # Implicit check for affine-type coordinate map
     aff = cm.affine.copy()
-    in_dims = list(cm.function_domain.coord_names)
-    out_dims = list(cm.function_range.coord_names)
-    try:
-        in_dim = in_dims.index(name)
-    except ValueError:
-        try:
-            out_dim = out_dims.index(name)
-        except ValueError:
-            raise ValueError('No input or output dimension '
-                             'with name (%s)' % name)
-        else: # found out dimension, get in dimension
-            in_dim, msg  = _matching_orth_dim(out_dim, aff)
-    else: # found in dimension, get out dimension
-        out_dim, msg = _matching_orth_dim(in_dim, aff.T)
-    if None in (in_dim, out_dim):
-        raise ValueError(msg)
-    in_dims.pop(in_dim)
-    out_dims.pop(out_dim)
+    # What dimensions did you ask for?
+    in_dim, out_dim = io_axis_indices(cm, axis_id, fix0)
+    if not None in (in_dim, out_dim):
+        if not orth_axes(in_dim, out_dim, aff, allow_zero=fix0):
+            raise AxisError('Input and output dimensions not orthogonal to '
+                            'rest of affine')
     M, N = aff.shape
     rows = range(M)
     cols = range(N)
-    rows.pop(out_dim)
-    cols.pop(in_dim)
+    in_dims = list(cm.function_domain.coord_names)
+    out_dims = list(cm.function_range.coord_names)
+    if not in_dim is None:
+        in_dims.pop(in_dim)
+        cols.pop(in_dim)
+    if not out_dim is None:
+        out_dims.pop(out_dim)
+        rows.pop(out_dim)
     aff = aff[rows]
     aff = aff[:,cols]
     return AffineTransform.from_params(in_dims, out_dims, aff)
 
 
-def _matching_orth_dim(out_i, aff):
-    ''' Find matching more or less orthogonal direction in affine
+def _fix0(aff):
+    """ Fix possible 0 time scaling from 0 TR
 
-    If the corresponding affine row is all 0, and it is the only row
-    that is all 0, then assume this is a 0 scaling rather than a dropped
-    input coordinate, and work out which input coordinate (if any)
-    remains to be claimed.
+    Look in matrix part of affine (3, 3) in a (4, 4) affine).  If there is
+    exactly one row and exactly one column in this part of the affine that are
+    all exactly zero, assume this is a 0 scaling from a 0 TR in the header, and
+    fix corresponding row, column index to 1.
 
     Parameters
     ----------
-    out_i : int
-       Output (range) dimension
-    aff : (M, N) array
-       homogenous affine
+    aff : (M, N) array-like
+        affine
 
     Returns
     -------
-    in_i : None or int
-       Matching orthogonal input (domain) dimension.  None if none
-       matching.
-    msg : str
-       If `in_i` is None, `msg` returns informative message as to reason
-       for failure to find matching index.
+    fixed_aff : (M, N) affine
+        which will be `aff` if no fix, and a new affine if fixed, with a 1
+        instead of the zero in the offending row and column
 
     Examples
     --------
-    >>> aff = np.diag([1, 2, 3, 4, 1])
-    >>> _matching_orth_dim(1, aff)
-    (1, '')
-    >>> aff = np.array([[0, 0, 0, 1, 10],
-    ...                 [0, 0, 2, 0, 11],
-    ...                 [0, 3, 0, 0, 12],
-    ...                 [4, 0, 0, 0, 13],
-    ...                 [0, 0, 0, 0, 1]])
-    >>> _matching_orth_dim(1, aff)
-    (2, '')
-    '''
-    rzs = aff[:-1,:-1]
-    M, N = rzs.shape
-    if out_i >= M:
-        raise ValueError('%d row number is too high' % out_i)
-    out_row = rzs[out_i]
-    if np.allclose(out_row, 0):
-        # zeros - is this zero scaling?
-        msg = 'zeros in corresponding affine entries'
-        # check for other zero rows - return failure if so
-        out_rows = range(M)
-        out_rows.pop(out_i)
-        for i in out_rows:
-            if np.allclose(rzs[i], 0):
-                # another near zero row
-                return None, msg + ' and other zero rows/cols'
-        # what rows have been claimed already?
-        ornt = io_orientation(aff[out_rows + [M]].T)
-        candidates = set(range(N)) - set(ornt[:,0])
-        if len(candidates) == 1:
-            return candidates.pop(), ''
-        return None, ' and corresponding index is ambiguous'
-    in_i = np.argmax(np.abs(out_row))
-    sel = range(N)
-    sel.pop(in_i)
-    if not np.allclose(out_row[sel], 0):
-        return None, 'no corresponding orthogonal dimension'
-    return in_i, ''
+    >>> _fix0(np.diag([1, 2, 3, 0]))
+    array([[1, 0, 0, 0],
+           [0, 2, 0, 0],
+           [0, 0, 3, 0],
+           [0, 0, 0, 0]])
+    >>> _fix0(np.diag([1, 0, 3, 0]))
+    array([[1, 0, 0, 0],
+           [0, 1, 0, 0],
+           [0, 0, 3, 0],
+           [0, 0, 0, 0]])
+    """
+    aff = np.asarray(aff)
+    zeros = aff[:-1, :-1] == 0
+    zrs = np.where(np.all(zeros, axis=1))[0]
+    zcs = np.where(np.all(zeros, axis=0))[0]
+    if len(zrs) != 1 or len(zcs) != 1:
+        return aff
+    fixed_aff = aff.copy()
+    fixed_aff[zrs[0], zcs[0]] = 1
+    return fixed_aff
 
 
 def append_io_dim(cm, in_name, out_name, start=0, step=1):
@@ -1803,15 +1843,233 @@ def append_io_dim(cm, in_name, out_name, start=0, step=1):
            [ 0.,  0.,  0.,  5.,  9.],
            [ 0.,  0.,  0.,  0.,  1.]])
     '''
-    # delayed import to avoid circular import errors
-    from ...algorithms.utils.affines import append_diag
-    aff = cm.affine
-    in_dims = list(cm.function_domain.coord_names)
-    out_dims = list(cm.function_range.coord_names)
-    in_dims.append(in_name)
-    out_dims.append(out_name)
-    aff_plus = append_diag(aff, [step], [start])
-    return AffineTransform.from_params(in_dims, out_dims, aff_plus)
+    extra_aff = np.array([[step, start], [0, 1]])
+    extra_cmap = AffineTransform.from_params([in_name], [out_name], extra_aff)
+    return product(cm, extra_cmap)
+
+
+def axmap(coordmap, direction='in2out', fix0=False):
+    """ Return mapping between input and output axes
+
+    Parameters
+    ----------
+    coordmap : Affine
+        Affine coordinate map instance for which to get axis mappings
+    direction : {'in2out', 'out2in', 'both'}
+        direction to find mapping.  If 'in2out', returned mapping will have keys
+        from the input axis (names and indices) and values of corresponding
+        output axes.  If 'out2in' the keys will be output axis names, indices
+        and the values will be input axis indices.  If both, return both
+        mappings.
+    fix0: bool, optional
+        Whether to fix potential 0 TR in affine
+
+    Returns
+    -------
+    map : dict or tuple
+        * if `direction` == 'in2out' - mapping with keys of input names and
+          input indices, values of output indices. Mapping is to closest
+          matching axis.  None means there appears to be no matching axis
+        * if `direction` == 'out2in' - mapping with keys of output names and
+          input indices, values of input indices, as above.
+        * if `direction` == 'both' - tuple of (input to output mapping, output
+          to input mapping)
+    """
+    in2out = direction in ('in2out', 'both')
+    out2in = direction in ('out2in', 'both')
+    if not True in (in2out, out2in):
+        raise ValueError('Direction must be one of "in2out", "out2in", "both"')
+    affine = coordmap.affine
+    affine = _fix0(affine) if fix0 else affine
+    ornts = io_orientation(affine)
+    ornts = [None if np.isnan(R) else int(R) for R in ornts[:, 0]]
+    if in2out:
+        in2out_map = {}
+        for i, name in enumerate(coordmap.function_domain.coord_names):
+            in2out_map[i] = ornts[i]
+            in2out_map[name] = ornts[i]
+        if not out2in:
+            return in2out_map
+    if out2in:
+        out2in_map = {}
+        for i, name in enumerate(coordmap.function_range.coord_names):
+            in_i = ornts.index(i) if i in ornts else None
+            out2in_map[i] = in_i
+            out2in_map[name] = in_i
+        if not in2out:
+            return out2in_map
+    return in2out_map, out2in_map
+
+
+def input_axis_index(coordmap, axis_id, fix0=False):
+    """ Return input axis index for `axis_id`
+
+    `axis_id` can be integer, or a name of an input axis, or it can be the name
+    of an output axis which maps to an input axis.
+
+    Parameters
+    ----------
+    coordmap : AffineTransform
+    axis_id : int or str
+        If int, then an index of an input axis.  Can be negative, so that -2
+        refers to the second to last input axis.  If a str can be the name of an
+        input axis, or the name of an output axis that should have a
+        corresponding input axis (see Raises section).
+    fix0: bool, optional
+        Whether to fix potential 0 TR in affine
+
+    Returns
+    -------
+    inax : int
+        index of matching input axis. If `axis_id` is the name of an output
+        axis, then `inax` will be the input axis that had a 'best' match with
+        this output axis.  The 'best' match algorithm ensures that there can
+        only be one input axis paired with one output axis.
+
+    Raises
+    ------
+    AxisError: if no matching name found
+    AxisError : if name exists in both input and output and they do not map to
+        each other
+    AxisError : if name present in output but no matching input
+    """
+    # Lists for .index in python < 2.6
+    in_names = list(coordmap.function_domain.coord_names)
+    out_names = list(coordmap.function_range.coord_names)
+    if isinstance(axis_id, int):
+        if axis_id < 0:
+            axis_id = len(out_names) + axis_id
+        return axis_id
+    in_in = axis_id in in_names
+    in_out = axis_id in out_names
+    if not in_in and not in_out:
+        raise AxisError('Name "%s" not in input or output names' % axis_id)
+    if in_in:
+        in_no = in_names.index(axis_id)
+        if not in_out:
+            return in_no
+        out2in = axmap(coordmap, 'out2in', fix0=fix0)
+        if not out2in[axis_id] == in_no:
+            raise AxisError('Name "%s" present in input and output but '
+                            'they do not appear to match' % axis_id)
+        return in_no
+    in_no = axmap(coordmap, 'out2in', fix0=fix0)[axis_id]
+    if in_no is None:
+        raise AxisError('Name "%s" present in output but this output axis '
+                        'does not have the best match with any input axis'
+                        % axis_id)
+    return in_no
+
+
+def io_axis_indices(coordmap, axis_id, fix0=False):
+    """ Return input and output axis index for id `axis_id` in `coordmap`
+
+    Parameters
+    ----------
+    cm : class:`AffineTransform`
+        Affine coordinate map instance
+    axis_id : int or str
+        If int, gives index of *input* axis.  Can be negative, so that -2 refers
+        to the second from last input axis. If str, gives name of input *or*
+        output axis.   If `axis_id` is a str, it must be unambiguous - if the
+        named axis exists in both input and output, and they do not correspond,
+        raises a AxisError.  See Raises section for checks
+    fix0: bool, optional
+        Whether to fix potential 0 column / row in affine
+
+    Returns
+    -------
+    in_index : None or int
+        index of input axis that corresponds to `axis_id`
+    out_index : None or int
+        index of output axis that corresponds to `axis_id`
+
+    Raises
+    ------
+    AxisError: if `axis_id` is a str and does not match any no input or output
+        coordinate names.
+    AxisError: if the named `axis_id` exists in both input and output, and they
+        do not correspond.
+
+    Examples
+    --------
+    >>> aff = [[0, 1, 0, 10], [1, 0, 0, 11], [0, 0, 1, 12], [0, 0, 0, 1]]
+    >>> cmap = AffineTransform('ijk', 'xyz', aff)
+    >>> io_axis_indices(cmap, 0)
+    (0, 1)
+    >>> io_axis_indices(cmap, 1)
+    (1, 0)
+    >>> io_axis_indices(cmap, -1)
+    (2, 2)
+    >>> io_axis_indices(cmap, 'j')
+    (1, 0)
+    >>> io_axis_indices(cmap, 'y')
+    (0, 1)
+    """
+    in_dims = list(coordmap.function_domain.coord_names)
+    out_dims = list(coordmap.function_range.coord_names)
+    in_dim, out_dim, is_str = None, None, False
+    if isinstance(axis_id, int): # Integer axis, always input axis
+        # Integers are always input indices
+        in_dim = axis_id if axis_id >=0 else len(in_dims) + axis_id
+    else: # Let's hope they are strings
+        if axis_id in in_dims:
+            in_dim = in_dims.index(axis_id)
+        elif axis_id in out_dims:
+            out_dim = out_dims.index(axis_id)
+        else:
+            raise AxisError('No input or output dimension with name (%s)' %
+                            axis_id)
+        is_str = True
+    if out_dim is None:
+        out_dim = axmap(coordmap, 'in2out', fix0=fix0)[in_dim]
+        if (is_str and
+            axis_id in out_dims and
+            out_dim != out_dims.index(axis_id)):
+            raise AxisError('Input and output axes with the same name but '
+                            'the axes do not appear to correspond')
+    elif in_dim is None:
+        in_dim = axmap(coordmap, 'out2in', fix0=fix0)[out_dim]
+    return in_dim, out_dim
+
+
+def orth_axes(in_ax, out_ax, affine, allow_zero=True, tol=TINY):
+    """ True if `in_ax` related only to `out_ax` in `affine` and vice versa
+
+    Parameters
+    ----------
+    in_ax : int
+        Input axis index
+    out_ax : int
+        Output axis index
+    affine :  array-like
+        Affine transformation matrix
+    allow_zero : bool, optional
+        Whether to allow zero in ``affine[out_ax, in_ax]``.  This means that the
+        two axes are not related, but nor is this pair related to any other
+        part of the affine.
+
+    Returns
+    -------
+    tf : bool
+        True if in_ax, out_ax pair are orthogonal to the rest of `affine`,
+        unless `allow_zero` is False, in which case require in addition that
+        ``affine[out_ax, in_ax] != 0``.
+
+    Examples
+    --------
+    >>> aff = np.eye(4)
+    >>> orth_axes(1, 1, aff)
+    True
+    >>> orth_axes(1, 2, aff)
+    False
+    """
+    rzs, trans = to_matvec(affine)
+    nzs = np.abs(rzs) > tol
+    if not allow_zero and not nzs[out_ax, in_ax]:
+        return False
+    nzs[out_ax, in_ax] = 0
+    return np.all(nzs[out_ax] == 0) and np.all(nzs[:, in_ax] == 0)
 
 
 class CoordMapMakerError(Exception):
@@ -1910,8 +2168,6 @@ class CoordMapMaker(object):
                          [ 0.,  0.,  0.,  0.,  1.]])
         )
         """
-        # delayed import to avoid circular import errors
-        from ...algorithms.utils.affines import append_diag
         affine = np.asarray(affine)
         append_zooms = np.atleast_1d(append_zooms)
         append_offsets = np.atleast_1d(append_offsets)
@@ -1920,11 +2176,23 @@ class CoordMapMaker(object):
             append_offsets = np.zeros(extra_N, dtype=append_zooms.dtype)
         elif len(append_offsets) != extra_N:
             raise CoordMapMakerError('Need same number of offsets as zooms')
-        if extra_N != 0:
-            affine = append_diag(affine, append_zooms, append_offsets)
-        return self.affine_maker(self.domain_maker(affine.shape[1] - 1),
-                                 self.range_maker(affine.shape[0] -1),
-                                 affine)
+        o_n_domain = affine.shape[1] - 1
+        o_n_range = affine.shape[0] - 1
+        domain = self.domain_maker(o_n_domain + extra_N)
+        range = self.range_maker(o_n_range + extra_N)
+        if extra_N == 0:
+            return self.affine_maker(domain, range, affine)
+        # Combine original and added affine using product
+        cmap0 = self.affine_maker(CS(domain.coord_names[:o_n_domain]),
+                                  CS(range.coord_names[:o_n_range]),
+                                  affine)
+        affine1 = from_matvec(np.diag(append_zooms), append_offsets)
+        cmap1 = self.affine_maker(CS(domain.coord_names[o_n_domain:]),
+                                  CS(range.coord_names[o_n_range:]),
+                                  affine1)
+        cmap = product(cmap0, cmap1)
+        # Return with original coordinate system names
+        return self.affine_maker(domain, range, cmap.affine)
 
     def make_cmap(self, domain_N, xform, inv_xform=None):
         """ Coordinate map with transform function `xform`

@@ -1,29 +1,35 @@
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This shows the effect of ward clustering on a simulated fMRI dataset
+This shows the effect of ward clustering on a real fMRI dataset
 
 Author: Bertrand Thirion, 2010
 """
 print __doc__
 
+from os import mkdir, getcwd, path
+
 import numpy as np
-import os
-import tempfile
 
 from nibabel import load, save, Nifti1Image
-from nipy.algorithms.graph.field import Field
-import get_data_light
 
+from nipy.algorithms.graph.field import Field
+
+# Local import
+from get_data_light import DATA_DIR, get_second_level_dataset
 
 # paths
-swd = tempfile.mkdtemp()
-data_dir = os.path.expanduser(os.path.join('~', '.nipy', 'tests', 'data'))
-input_image = os.path.join(data_dir, 'spmT_0029.nii.gz')
-mask_image = os.path.join(data_dir, 'mask.nii.gz')
+input_image = path.join(DATA_DIR, 'spmT_0029.nii.gz')
+mask_image = path.join(DATA_DIR, 'mask.nii.gz')
+if (not path.exists(mask_image)) or (not path.exists(input_image)):
+    get_second_level_dataset()
 
-if (not os.path.exists(mask_image)) or (not os.path.exists(input_image)):
-    get_data_light.get_second_level_dataset()
+# write directory
+write_dir = path.join(getcwd(), 'results')
+if not path.exists(write_dir):
+    mkdir(write_dir)
+
 
 # read the data
 mask = load(mask_image).get_data() > 0
@@ -36,7 +42,7 @@ image_field.set_field(data)
 u, _ = image_field.ward(100)
 
 # write the results
-label_image = os.path.join(swd, 'label.nii')
+label_image = path.join(write_dir, 'label.nii')
 wdata = mask - 1
 wdata[mask] = u
 save(Nifti1Image(wdata, load(mask_image).get_affine()), label_image)

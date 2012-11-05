@@ -1,6 +1,7 @@
 """ Nipy nosetester
 
 Sets doctests to run by default
+
 Use our own doctest plugin (based on that of numpy)
 """
 from ..fixes.numpy.testing.nosetester import NoseTester, import_nose
@@ -54,6 +55,7 @@ class NipyNoseTester(NoseTester):
     * Removes some numpy-specific excludes
     * Disables numpy's fierce clearout of module import context for doctests
     * Run doctests by default
+
     """
     excludes = []
 
@@ -74,14 +76,15 @@ class NipyNoseTester(NoseTester):
         ----------
         label : {'fast', 'full', '', attribute identifier}, optional
             Identifies the tests to run. This can be a string to pass to
-            the nosetests executable with the '-A' option, or one of several
-            special values.  Special values are:
+            directly the nosetests executable with the '-A' option (an attribute
+            identifier), or one of several special values.  Special values are:
+
             * 'fast' - the default - which corresponds to the ``nosetests -A``
               option of 'not slow'.
             * 'full' - fast (as above) and slow tests as in the
               'no -A' option to nosetests - this is the same as ''.
             * None or '' - run all tests.
-            attribute_identifier - string passed directly to nosetests as '-A'.
+
         verbose : int, optional
             Verbosity value for test outputs, in the range 1-10. Default is 1.
         extra_argv : list, optional

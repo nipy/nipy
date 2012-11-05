@@ -15,7 +15,7 @@ def mad(a, c=0.6745, axis=0):
     median(abs(a - median(a))) / c
     """
     _shape = a.shape
-    a.shape = np.product(a.shape,axis=0)
+    a.shape = np.product(a.shape, axis=0)
     m = np.median(np.fabs(a - np.median(a))) / c
     a.shape = _shape
     return m
@@ -46,11 +46,12 @@ class StepFunction(object):
         _y = np.asarray(y)
 
         if _x.shape != _y.shape:
-            raise ValueError, 'in StepFunction: x and y do not have the same shape'
+            raise ValueError(
+                'in StepFunction: x and y do not have the same shape')
         if len(_x.shape) != 1:
-            raise ValueError, 'in StepFunction: x and y must be 1-dimensional'
+            raise ValueError('in StepFunction: x and y must be 1-dimensional')
 
-        self.x = np.hstack([[-np.inf], _x])
+        self.x = np.hstack([[- np.inf], _x])
         self.y = np.hstack([[ival], _y])
 
         if not sorted:
@@ -60,9 +61,7 @@ class StepFunction(object):
         self.n = self.x.shape[0]
 
     def __call__(self, time):
-
         tind = np.searchsorted(self.x, time) - 1
-        _shape = tind.shape
         return self.y[tind]
 
 
@@ -72,7 +71,7 @@ def ECDF(values):
     """
     x = np.array(values, copy=True)
     x.sort()
-    x.shape = np.product(x.shape,axis=0)
+    x.shape = np.product(x.shape, axis=0)
     n = x.shape[0]
     y = (np.arange(n) + 1.) / n
     return StepFunction(x, y)

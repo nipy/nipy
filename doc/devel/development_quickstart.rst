@@ -33,81 +33,10 @@ Then you can either:
 With either method, all of the modifications made to your source tree
 will be picked up when nipy is imported.
 
-.. _installing-data:
+Getting data files
+==================
 
-Optional data packages
-======================
-
-The source code has some very small data files to run the tests with,
-but it doesn't include larger example data files, or the all-important
-brain templates we all use.  You can find packages for the optional data
-and template files at http://nipy.sourceforge.net/data-packages.
-
-If you don't have these packages, then, when you run nipy installation,
-you will probably see messages pointing you to the packages you need.
-
-Data package installation as an administrator
----------------------------------------------
-
-The installation procedure, for now, is very basic.  For example, let us
-say that you need the 'nipy-templates' package at
-http://nipy.sourceforge.net/data-packages/nipy-templates-0.2.tar.gz
-. You simply download this archive, unpack it, and then run the standard
-``python setup.py install`` on it.  On a unix system this might look
-like::
-
-   curl -O http://nipy.sourceforge.net/data-packages/nipy-templates-0.2.tar.gz
-   tar zxvf nipy-templates-0.2.tar.gz
-   cd nipy-templates-0.2
-   sudo python setup.py install
-
-On windows, download the file, extract the archive to a folder using the
-GUI, and then, using the windows shell or similar::
-
-   cd c:\path\to\extracted\files
-   python setup.py install
-
-Non-administrator data package installation
--------------------------------------------
-
-The commands above assume you are installing into the default system
-directories.  If you want to install into a custom directory, then (in python,
-or ipython, or a text editor) look at the help for
-``nibabel.data.get_data_path()`` . There are instructions there for pointing
-your nipy installation to the installed data.
-
-On unix
-~~~~~~~
-
-For example, say you installed with::
-
-   cd nipy-templates-0.2
-   python setup.py install --prefix=/home/my-user/some-dir
-
-Then you may want to do make a file ``~/.nipy/config.ini`` with the
-following contents::
-
-   [DATA]
-   /home/my-user/some-dir/share/nipy
-
-On windows
-~~~~~~~~~~
-
-Say you installed with (windows shell)::
-
-   cd nipy-templates-0.2
-   python setup.py install --prefix=c:\some\path
-
-Then first, find out your home directory::
-
-   python -c "import os; print os.path.expanduser('~')"
-
-Let's say that was ``c:\Documents and Settings\My User``.  Then, make a
-new file called ``c:\Documents and Settings\My User\_nipy\config.ini``
-with contents::
-
-   [DATA]
-   c:\some\path\share\nipy
+See :ref:`data_files`.
 
 Guidelines
 ==========

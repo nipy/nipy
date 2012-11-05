@@ -37,9 +37,9 @@ a single slice through a larger coordinate_map.
 """
 __docformat__ = 'restructuredtext'
 
-import coordinate_system
-import coordinate_map
-import slices
+from . import coordinate_system
+from . import coordinate_map
+from . import slices
 
 __all__ = ["coordinate_system", "coordinate_map", 
            "slices"]

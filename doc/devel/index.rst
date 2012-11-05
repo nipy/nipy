@@ -4,7 +4,7 @@
  Developer Guide
 =================
 
-.. htmlonly::
+.. only:: html
 
    :Release: |version|
    :Date: |today|
@@ -16,6 +16,5 @@
    install/index
    guidelines/index
    planning/index
-   software_design/index
-   software_design/usecases/index
+   code_discussions/index
    tools/index

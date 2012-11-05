@@ -10,8 +10,8 @@ import scipy.linalg as spl
 
 from .model import Model
 
-class NLSModel(Model):
 
+class NLSModel(Model):
     """
     Class representing a simple nonlinear least squares model.
     """
@@ -41,6 +41,8 @@ class NLSModel(Model):
 
             is the nonlinear response function for the i-th instance in
             the model.
+        theta : array
+            parameters
         niter : int
             number of iterations
         """
@@ -53,17 +55,17 @@ class NLSModel(Model):
         self.niter = niter
         if self.design is not None and self.Y != None:
             if self.Y.shape[0] != self.design.shape[0]:
-                raise ValueError, 'Y should be same shape as design'
+                raise ValueError('Y should be same shape as design')
 
     def _Y_changed(self):
         if self.design is not None:
             if self.Y.shape[0] != self.design.shape[0]:
-                raise ValueError, 'Y should be same shape as design'
+                raise ValueError('Y should be same shape as design')
 
     def _design_changed(self):
         if self.Y is not None:
             if self.Y.shape[0] != self.design.shape[0]:
-                raise ValueError, 'Y should be same shape as design'
+                raise ValueError('Y should be same shape as design')
 
     def getZ(self):
         """ Set Z into `self`
@@ -88,9 +90,9 @@ class NLSModel(Model):
 
         Parameters
         ----------
-        design : None or array
+        design : None or array, optional
             design at which to predict data.  If None (the default) then use the
-            initial design in ``self.design``
+            initial ``self.design``
 
         Returns
         -------
@@ -109,7 +111,7 @@ class NLSModel(Model):
         sse: float
             sum of squared residuals
         """
-        return sum((self.Y - self.predict())**2)
+        return sum((self.Y - self.predict()) ** 2)
 
     def __iter__(self):
         """ Get iterator from model instance
@@ -124,7 +126,7 @@ class NLSModel(Model):
         elif self.initial is not None:
             self.theta = self.initial
         else:
-            raise ValueError, 'need an initial estimate for theta'
+            raise ValueError('need an initial estimate for theta')
 
         self._iter = 0
         self.theta = self.initial
@@ -145,4 +147,3 @@ class NLSModel(Model):
         else:
             raise StopIteration
         self._iter += 1
-

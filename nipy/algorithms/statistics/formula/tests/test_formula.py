@@ -12,10 +12,12 @@ from nipy.fixes.sympy.utilities.lambdify import implemented_function
 from .. import formulae as F
 from ..formulae import terms, Term
 
+from nibabel.py3k import asbytes
+
 from nose.tools import (assert_true, assert_equal, assert_false,
                         assert_raises)
 
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 def test_terms():
     t = terms('a')
@@ -129,8 +131,12 @@ def test_formula_from_recarray():
                             ('x5', 'i8'),
                             ('x6', '|S5')])
     f = F.Formula.fromrec(D, drop='y')
-    yield assert_equal, set([str(t) for t in f.terms]),  set(['x1', 'x2', 'x3', 'x4', 'x5', 'x6_green', 'x6_blue', 'x6_red'])
-    yield assert_equal, set([str(t) for t in f.design_expr]),  set(['x1', 'x2', 'x3', 'x4', 'x5', 'x6_green', 'x6_blue', 'x6_red'])
+    assert_equal(set([str(t) for t in f.terms]),
+                 set(['x1', 'x2', 'x3', 'x4', 'x5',
+                      'x6_green', 'x6_blue', 'x6_red']))
+    assert_equal(set([str(t) for t in f.design_expr]),
+                 set(['x1', 'x2', 'x3', 'x4', 'x5',
+                      'x6_green', 'x6_blue', 'x6_red']))
 
 
 def test_random_effects():
@@ -206,31 +212,62 @@ def test_design():
     t2 = F.Term('y')
 
     n = F.make_recarray([2,4,5], 'x')
-    yield assert_almost_equal, t1.formula.design(n)['x'], n['x']
+    assert_almost_equal(t1.formula.design(n)['x'], n['x'])
 
     f = t1.formula + t2.formula
     n = F.make_recarray([(2,3),(4,5),(5,6)], 'xy')
 
-    yield assert_almost_equal, f.design(n)['x'], n['x']
-    yield assert_almost_equal, f.design(n)['y'], n['y']
+    assert_almost_equal(f.design(n)['x'], n['x'])
+    assert_almost_equal(f.design(n)['y'], n['y'])
 
     f = t1.formula + t2.formula + F.I + t1.formula * t2.formula
-    yield assert_almost_equal, f.design(n)['x'], n['x']
-    yield assert_almost_equal, f.design(n)['y'], n['y']
-    yield assert_almost_equal, f.design(n)['1'], 1
-    yield assert_almost_equal, f.design(n)['x*y'], n['x']*n['y']
+    assert_almost_equal(f.design(n)['x'], n['x'])
+    assert_almost_equal(f.design(n)['y'], n['y'])
+    assert_almost_equal(f.design(n)['1'], 1)
+    assert_almost_equal(f.design(n)['x*y'], n['x']*n['y'])
     # drop x field, check that design raises error
     ny = np.recarray(n.shape, dtype=[('x', n.dtype['x'])])
     ny['x'] = n['x']
-    yield assert_raises, ValueError, f.design, ny
+    assert_raises(ValueError, f.design, ny)
     n = np.array([(2,3,'a'),(4,5,'b'),(5,6,'a')], np.dtype([('x', np.float),
                                                             ('y', np.float),
                                                             ('f', 'S1')]))
     f = F.Factor('f', ['a','b'])
     ff = t1.formula * f + F.I
-    yield assert_almost_equal, ff.design(n)['f_a*x'], n['x']*[1,0,1]
-    yield assert_almost_equal, ff.design(n)['f_b*x'], n['x']*[0,1,0]
-    yield assert_almost_equal, ff.design(n)['1'], 1
+    assert_almost_equal(ff.design(n)['f_a*x'], n['x']*[1,0,1])
+    assert_almost_equal(ff.design(n)['f_b*x'], n['x']*[0,1,0])
+    assert_almost_equal(ff.design(n)['1'], 1)
+
+
+def test_design_inputs():
+    # Check we can send in fields of type 'S', 'U', 'O' for design
+    regf = F.Formula(F.terms('x, y'))
+    f = F.Factor('f', ['a', 'b'])
+    ff = regf + f
+    for field_type in ('S1', 'U1', 'O'):
+        data = np.array([(2, 3, 'a'),
+                         (4, 5, 'b'),
+                         (5, 6, 'a')],
+                        dtype = [('x', np.float),
+                                 ('y', np.float),
+                                 ('f', field_type)])
+        assert_array_equal(ff.design(data, return_float=True),
+                           [[2, 3, 1, 0],
+                            [4, 5, 0, 1],
+                            [5, 6, 1, 0]])
+
+
+def test_formula_inputs():
+    # Check we can send in fields of type 'S', 'U', 'O' for factor levels
+    level_names = ['red', 'green', 'blue']
+    for field_type in ('S', 'U', 'O'):
+        levels = np.array(level_names, dtype=field_type)
+        f = F.Factor('myname', levels)
+        assert_equal(f.levels, level_names)
+    # Sending in byte objects
+    levels = [asbytes(L) for L in level_names]
+    f = F.Factor('myname', levels)
+    assert_equal(f.levels, level_names)
 
 
 def test_alias():
@@ -366,3 +403,15 @@ def test_natural_spline():
     yield assert_almost_equal, dd[:,4], (xx-2)**3*np.greater_equal(xx,2)
     yield assert_almost_equal, dd[:,5], (xx-9)**3*np.greater_equal(xx,9)
     yield assert_almost_equal, dd[:,6], (xx-6)**3*np.greater_equal(xx,6)
+
+
+def test_factor_term():
+    # Test that byte strings, unicode strings and objects convert correctly
+    for nt in 'S3', 'U3', 'O':
+        ndt = np.dtype(nt)
+        for lt in 'S3', 'U3', 'O':
+            ldt = np.dtype(lt)
+            name = np.asscalar(np.array('foo', ndt))
+            level = np.asscalar(np.array('bar', ldt))
+            ft = F.FactorTerm(name, level)
+            assert_equal(str(ft), 'foo_bar')

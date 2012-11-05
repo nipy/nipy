@@ -21,7 +21,7 @@ import scipy.stats as st
 from .structural_bfls import build_LR
 from nipy.algorithms.graph import wgraph_from_coo_matrix
 from ...algorithms.statistics.empirical_pvalue import \
-    NormalEmpiricalNull, three_classes_GMM_fit, Gamma_Gaussian_fit
+    NormalEmpiricalNull, three_classes_GMM_fit, gamma_gaussian_fit
 from .hroi import HROI_as_discrete_domain_blobs
 
 ####################################################################
@@ -37,9 +37,10 @@ def _relabel_(label, nl=None):
     label: array of shape(n)
     nl: array of shape(p), where p<= label.max(), optional
         if None, the output is -1*np.ones(n)
+
     Returns
     -------
-    new_label: array of shape (n)
+    new_label : array of shape (n)
     """
     if label.max() + 1 < np.size(nl):
         raise ValueError('incompatible values for label of nl')
@@ -77,7 +78,7 @@ def signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
         enn.learn()
         bf0 = np.reshape(enn.fdr(test), np.size(test))
     elif method == 'gam_gauss':
-        bfp = Gamma_Gaussian_fit(learn, test, verbose)
+        bfp = gamma_gaussian_fit(learn, test, verbose)
         bf0 = bfp[:, 1]
     elif method == 'prior':
         y0 = st.norm.pdf(test)
@@ -275,16 +276,19 @@ def bsa_dpmm(bf, gf0, sub, gfc, dmax, thq, ths, verbose=0):
                sub, burnin, dom.coord, nis)
 
     if verbose:
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.plot(1 - gf0, q, '.')
-        h1, c1 = mp.histogram((1 - gf0), bins=100)
-        h2, c2 = mp.histogram(q, bins=100)
-        mp.figure()
-        mp.bar(c1[:len(h1)], h1, width=0.005)
-        mp.bar(c2[:len(h2)] + 0.003, h2, width=0.005, color='r')
+        h1, c1 = np.histogram((1 - gf0), bins=100)
+        h2, c2 = np.histogram(q, bins=100)
+        try:
+            import matplotlib.pylab as pl
+            pl.figure()
+            pl.plot(1 - gf0, q, '.')
+            pl.figure()
+            pl.bar(c1[:len(h1)], h1, width=0.005)
+            pl.bar(c2[:len(h2)] + 0.003, h2, width=0.005, color='r')
+        except ImportError:
+            pass
         print 'Number of candidate regions %i, regions found %i' % (
-                    np.size(q), q.sum())
+            np.size(q), q.sum())
 
     Fbeta = field_from_coo_matrix_and_data(dom.topology, p)
     _, label = Fbeta.custom_watershed(0, g0)
@@ -467,8 +471,8 @@ def compute_BSA_simple(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
     p: array of shape (nnodes):
        likelihood of the data under H1 over some sampling grid
 
-    Note
-    ----
+    Notes
+    -----
     In that case, the DPMM is used to derive a spatial density of
     significant local maxima in the volume. Each terminal (leaf)
     region which is a posteriori significant enough is assigned to the
@@ -549,10 +553,12 @@ def compute_BSA_loo(dom, lbeta, dmax, thq=0.5, smin=5, ths=0, theta=3.0,
             the method used to assess the prior significance of the regions
     verbose=0: verbosity mode
 
-    Results
+    Returns
     -------
-    mll, float, the average cross-validated log-likelihood across subjects
-    ml0, float the log-likelihood of the model under a global null hypothesis
+    mll : float
+        the average cross-validated log-likelihood across subjects
+    ml0 : float
+        the log-likelihood of the model under a global null hypothesis
     """
     n_subj = lbeta.shape[1]
     nvox = dom.size

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """A quick and dirty example of using Mayavi to overlay anatomy and activation.
@@ -8,7 +9,13 @@
 
 import numpy as np
 
-from enthought.mayavi import mlab
+try:
+    from mayavi import mlab
+except ImportError:
+    try:
+        from enthought.mayavi import mlab
+    except ImportError:
+        raise RuntimeError('Need mayavi for this module')
 
 from fiac_util import load_image_fiac
 
@@ -29,17 +36,11 @@ def view_thresholdedT(design, contrast, threshold, inequality=np.greater):
 
     Parameters
     ----------
-
-    design: one of ['block', 'event']
-
-    contrast: str
-    
-    threshold: float
-
-    inequality: one of [np.greater, np.less]
-
+    design : {'block', 'event'}
+    contrast : str
+    threshold : float
+    inequality : {np.greater, np.less}, optional
     """
-
     maska = np.asarray(MASK)
     tmap = np.array(load_image_fiac('group', design, contrast, 't.nii'))
     test = inequality(tmap, threshold)

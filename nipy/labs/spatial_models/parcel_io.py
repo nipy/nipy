@@ -11,7 +11,7 @@ import os.path
 
 from nibabel import load, save, Nifti1Image
 
-from nipy.algorithms.clustering.clustering import kmeans
+from nipy.algorithms.clustering.utils import kmeans
 from .discrete_domain import grid_domain_from_image
 from .mroi import SubDomains
 from ..mask import intersect_masks
@@ -71,12 +71,12 @@ def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
           a PCA is perfomed to reduce the information in the data
           Byd efault, no reduction is performed
 
-    Results
+    Returns
     -------
-    domain: discrete_domain.DiscreteDomain instance
-            that stores the spatial information on the parcelled domain
+    domain : discrete_domain.DiscreteDomain instance
+        that stores the spatial information on the parcelled domain
     feature: (nb_subect-) list of arrays of shape (domain.size, fdim)
-             feature information available to parcellate the data
+        feature information available to parcellate the data
     """
     nb_subj = len(learning_images)
 
@@ -220,7 +220,8 @@ def parcellation_based_analysis(Pa, test_images, test_id='one_sample',
 
     # Write the stuff
     template = SubDomains(Pa.domain, Pa.template_labels)
-    wim = template.to_image(prfx)
+    template.set_roi_feature('prfx', prfx)
+    wim = template.to_image('prfx', roi=True)
     hdr = wim.get_header()
     hdr['descrip'] = 'parcel-based random effects image (in t-variate)'
     if rfx_path is not None:
@@ -255,11 +256,14 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
                    If only fullpath is None then it is the write dir + a name
                    depending on the method.
 
-    Note
-    ----
+    Notes
+    -----
     Ward's method takes time (about 6 minutes for a 60K voxels dataset)
+
     Geodesic k-means is 'quick and dirty'
+
     Ward's + GKM is expensive but quite good
+
     To reduce CPU time, rather use nn=6 (especially with Ward)
     """
     from nipy.algorithms.graph.field import field_from_coo_matrix_and_data

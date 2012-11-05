@@ -20,7 +20,7 @@ from scipy.linalg import inv, cholesky, eigvalsh
 from scipy.special import gammaln
 import math
 
-from .clustering import kmeans
+from .utils import kmeans
 from gmm import GMM
 
 ##################################################################
@@ -652,8 +652,8 @@ class BGMM(GMM):
         if mem:
             possibleZ = - np.ones((x.shape[0], niter)).astype(np.int)
 
-        score = - np.infty
-        bpz = - np.infty
+        score = - np.inf
+        bpz = - np.inf
 
         for i in range(niter):
             like = self.likelihood(x)
@@ -699,10 +699,11 @@ class BGMM(GMM):
                      or (self.k, self.dim)
                      these are the average parameters across samplings
 
-        Note
-        ----
-        All this makes sense only if no label switching as occurred
-        so this is wrong in general (asymptotically)
+        Notes
+        -----
+        All this makes sense only if no label switching as occurred so this is
+        wrong in general (asymptotically).
+
         fix: implement a permutation procedure for components identification
         """
         aprec = np.zeros(np.shape(self.precisions))
@@ -833,8 +834,8 @@ class BGMM(GMM):
         -------
         bf (float) the computed evidence (Bayes factor)
 
-        Note
-        ----
+        Notes
+        -----
         See: Marginal Likelihood from the Gibbs Output
         Journal article by Siddhartha Chib;
         Journal of the American Statistical Association, Vol. 90, 1995
@@ -1086,7 +1087,7 @@ class VBGMM(BGMM):
         """
         # alternation of E/M step until convergence
         tiny = 1.e-15
-        av_ll_old = - np.infty
+        av_ll_old = - np.inf
         for i in range(niter):
             like = self._Estep(x)
             av_ll = np.mean(np.log(np.maximum(np.sum(like, 1), tiny)))

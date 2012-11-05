@@ -146,6 +146,9 @@ class CutAxes(object):
     def get_object_bounds(self):
         """ Return the bounds of the objects on this axes.
         """
+        if len(self._object_bounds) == 0:
+            # Nothing plotted yet
+            return -.01, .01, -.01, .01
         xmins, xmaxs, ymins, ymaxs = np.array(self._object_bounds).T
         xmax = max(xmaxs.max(), xmins.max())
         xmin = min(xmins.min(), xmaxs.min())
@@ -625,7 +628,7 @@ class BaseStackedSlicer(BaseSlicer):
                 xmin, xmax, ymin, ymax, zmin, zmax = \
                                 get_mask_bounds(mask, affine)
                 bounds = (xmin, xmax), (ymin, ymax), (zmin, zmax)
-            lower, upper = bounds['yxz'.index(cls._direction)]
+            lower, upper = bounds['xyz'.index(cls._direction)]
             cut_coords = np.linspace(lower, upper, 10).tolist()
         return cut_coords
 

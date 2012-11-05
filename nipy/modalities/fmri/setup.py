@@ -4,11 +4,10 @@ def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
     config = Configuration('fmri', parent_package, top_path)
 
-    config.add_data_dir('tests')
-
+    config.add_subpackage('tests')
+    config.add_data_files('tests/*.npz')
     config.add_subpackage('fmristat')
     config.add_subpackage('spm')
-
 
     return config
 

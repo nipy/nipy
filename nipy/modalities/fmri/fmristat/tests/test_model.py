@@ -1,10 +1,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import with_statement
 
 import numpy as np
 
 from nipy.io.api import load_image
-from nipy.core.image.image import rollaxis as img_rollaxis
+from nipy.core.image.image import rollimg
 
 from  .. import model
 from ..model import ModelOutputImage, estimateAR
@@ -57,7 +58,7 @@ def test_run():
     desmtx, cmatrices = f.design(time_vector, contrasts=con_defs)
 
     # Run with Image and ImageList
-    for inp_img in (img_rollaxis(funcim, 't'), fmriims):
+    for inp_img in (rollimg(funcim, 't'), fmriims):
         with InTemporaryDirectory():
             # Run OLS model
             outputs = []
@@ -81,7 +82,7 @@ def test_run():
             f_data = f_img.get_data()
             assert_true(np.all((f_data>=0) & (f_data<30)))
             resid_img = load_image('resid_AR_out.nii')
-            assert_equal(resid_img.shape, funcim.shape[3:] + one_vol.shape)
+            assert_equal(resid_img.shape, funcim.shape)
             assert_array_almost_equal(np.mean(resid_img.get_data()), 0, 3)
             e_img = load_image('T_out_effect.nii')
             sd_img = load_image('T_out_sd.nii')

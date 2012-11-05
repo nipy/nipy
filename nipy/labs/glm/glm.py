@@ -3,9 +3,9 @@
 import numpy as np
 import scipy.stats as sps
 
-import kalman
+from . import kalman
 from ..utils import mahalanobis
-from ..utils.zscore import zscore
+from nipy.algorithms.statistics.utils import z_score as zscore
 
 
 DEF_TINY = 1e-50

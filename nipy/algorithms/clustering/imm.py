@@ -332,10 +332,10 @@ class IMM(BGMM):
         -------
         z: array of shape(nbitem): a draw of the membership variable
 
-        Note
-        ----
-        The behaviour is different from standard bgmm
-        in that z can take arbitrary values
+        Notes
+        -----
+        The behaviour is different from standard bgmm in that z can take
+        arbitrary values
         """
         z = BGMM.sample_indicator(self, like)
         z[z == self.k] = self.k + np.arange(np.sum(z == self.k))
@@ -584,10 +584,10 @@ class MixedIMM(IMM):
         z: array of shape(n_samples),
               the associated membership variables
 
-        Note
-        ----
-        when kfold is an array, there is an internal reshuffling
-        to randomize the order of updates
+        Notes
+        -----
+        When kfold is an array, there is an internal reshuffling to randomize
+        the order of updates
         """
         n_samples = x.shape[0]
         slike = np.zeros(n_samples)
@@ -646,8 +646,8 @@ class MixedIMM(IMM):
         -------
         z: array of shape(nbitem): a draw of the membership variable
 
-        Note
-        ----
+        Notes
+        -----
         Here z=-1 encodes for the null class
         """
         n = like.shape[0]

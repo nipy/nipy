@@ -1,4 +1,7 @@
 """ Custom doctester based on Numpy doctester
+
+To run doctests via nose, you'll need ``nosetests nipy/testing/doctester.py
+--doctest-test``, because this file will be identified as containing tests.
 """
 import re
 from doctest import register_optionflag
@@ -9,6 +12,7 @@ from ..fixes.numpy.testing.noseclasses import NumpyDoctest, NumpyOutputChecker
 IGNORE_OUTPUT = register_optionflag('IGNORE_OUTPUT')
 SYMPY_EQUAL = register_optionflag('SYMPY_EQUAL')
 STRIP_ARRAY_REPR = register_optionflag('STRIP_ARRAY_REPR')
+IGNORE_DTYPE = register_optionflag('IGNORE_DTYPE')
 NOT_EQUAL = register_optionflag('NOT_EQUAL')
 FP_4DP =  register_optionflag('FP_4DP')
 FP_6DP =  register_optionflag('FP_6DP')
@@ -66,6 +70,11 @@ DTYPE_REG = re.compile('\s*,\s+dtype=.*', re.DOTALL)
 def strip_array_repr(in_str):
     """ Removes array-specific part of repr from string `in_str`
 
+    This parser only works on lines that contain *only* an array repr (and
+    therefore start with ``array``, and end with a close parenthesis.  To remove
+    dtypes in array reprs that may be somewhere within the line, use the
+    ``IGNORE_DTYPE`` doctest option.
+
     Parameters
     ----------
     in_str : str
@@ -97,6 +106,49 @@ def strip_array_repr(in_str):
     out_str = arr_match.groups()[0]
     return DTYPE_REG.sub('', out_str)
 
+IGNORE_DTYPE_REG = re.compile(',\s+dtype=.*?(?=\))', re.DOTALL)
+
+def ignore_dtype(in_str):
+    """ Removes dtype=[dtype] from string `in_str`
+
+    Parameters
+    ----------
+    in_str : str
+        String maybe containing dtype specifier
+
+    Returns
+    -------
+    out_str : str
+        String from which the dtype specifier has been removed.
+
+    Examples
+    --------
+    >>> arr = np.arange(5, dtype='i2')
+
+    Here's the normal repr:
+
+    >>> arr
+    array([0, 1, 2, 3, 4], dtype=int16)
+
+    The repr with the dtype bits removed
+
+    >>> ignore_dtype(repr(arr))
+    'array([0, 1, 2, 3, 4])'
+    >>> ignore_dtype('something(again, dtype=something)')
+    'something(again)'
+
+    Even if there are more closed brackets after the dtype
+
+    >>> ignore_dtype('something(again, dtype=something) (1, 2)')
+    'something(again) (1, 2)'
+
+    We need the close brackets to match
+
+    >>> ignore_dtype('again, dtype=something')
+    'again, dtype=something'
+    """
+    return IGNORE_DTYPE_REG.sub('', in_str)
+
 
 class NipyOutputChecker(NumpyOutputChecker):
     def check_output(self, want, got, optionflags):
@@ -105,8 +157,15 @@ class NipyOutputChecker(NumpyOutputChecker):
         # When writing tests we sometimes want to assure ourselves that the
         # results are _not_ equal
         wanted_tf = not (NOT_EQUAL & optionflags)
+        # Strip dtype
+        if IGNORE_DTYPE & optionflags:
+            want = ignore_dtype(want)
+            got = ignore_dtype(got)
         # Strip array repr from got and want if requested
         if STRIP_ARRAY_REPR & optionflags:
+            # STRIP_ARRAY_REPR only matches for a line containing *only* an
+            # array repr.  Use IGNORE_DTYPE to ignore a dtype specifier embedded
+            # within a more complex line.
             want = strip_array_repr(want)
             got = strip_array_repr(got)
         # If testing floating point, round to required number of digits

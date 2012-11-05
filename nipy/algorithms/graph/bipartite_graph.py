@@ -76,10 +76,10 @@ def cross_eps(X, Y, eps=1.):
     -------
     the resulting bipartite graph instance
 
-    Note
-    ----
-    for the sake of speed it is advisable to give PCA-preprocessed
-    matrices X and Y.
+    Notes
+    -----
+    for the sake of speed it is advisable to give PCA-preprocessed matrices X
+    and Y.
     """
     from scipy.sparse import coo_matrix
     check_feature_matrices(X, Y)
@@ -118,10 +118,10 @@ def cross_knn(X, Y, k=1):
     -------
     BipartiteGraph instance
 
-    Note
-    ----
-    for the sake of speed it is advised to give
-    PCA-transformed matrices X and Y.
+    Notes
+    -----
+    For the sake of speed it is advised to give PCA-transformed matrices X and
+    Y.
     """
     from scipy.sparse import coo_matrix
     check_feature_matrices(X, Y)
@@ -244,10 +244,11 @@ class BipartiteGraph(object):
         valid, boolean array of shape self.V
         renumb, boolean: renumbering of the (left) edges
 
-        Return
-        ------
-        A new BipartiteGraph instance with only the left vertices that are True
-        if sum(valid)==0, None is returned
+        Returns
+        -------
+        G : None or ``BipartiteGraph`` instance
+            A new BipartiteGraph instance with only the left vertices that are
+            True.  If sum(valid)==0, None is returned
         """
         if np.size(valid) != self.V:
             raise ValueError('valid does not have the correct size')
@@ -277,14 +278,15 @@ class BipartiteGraph(object):
 
         Parameters
         ----------
-        valid, boolean array of shape self.V
-        renumb, boolean: renumbering of the (right) edges
+        valid : bool array of shape self.V
+        renumb : bool, optional
+            renumbering of the (right) edges
 
-        Return
-        ------
-        A new BipartiteGraph instance with only the right vertices
-        that are True
-        if sum(valid)==0, None is returned
+        Returns
+        -------
+        G : None or ``BipartiteGraph`` instance.
+            A new BipartiteGraph instance with only the right vertices that are
+            True.  If sum(valid)==0, None is returned
         """
         if np.size(valid) != self.V:
             raise ValueError('valid does not have the correct size')
