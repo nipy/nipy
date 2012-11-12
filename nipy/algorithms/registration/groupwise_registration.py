@@ -669,6 +669,8 @@ class Realign4d(object):
         if slice_order == None:
             time_interp = False
             slice_order = SLICE_ORDER
+            warnings.warn('No slice order provided, '
+                          + 'switching off time interpolation')
         if not hasattr(images, '__iter__'):
             images = [images]
         self._runs = []
