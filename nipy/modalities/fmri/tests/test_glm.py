@@ -3,6 +3,7 @@
 """
 Test the glm utilities.
 """
+from __future__ import with_statement
 
 import numpy as np
 from nose.tools import assert_true, assert_equal
@@ -50,6 +51,7 @@ def test_high_level_glm_with_paths():
         z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
         assert_array_equal(z_image.get_affine(), load(mask_file).get_affine())
         assert_true(z_image.get_data().std() < 3.)
+        del z_image, fmri_files
 
 
 def test_high_level_glm_with_data():
