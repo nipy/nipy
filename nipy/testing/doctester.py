@@ -7,7 +7,9 @@ import re
 from doctest import register_optionflag
 import numpy as np
 
-from ..fixes.numpy.testing.noseclasses import NumpyDoctest, NumpyOutputChecker
+from ..fixes.numpy.testing.noseclasses import (NumpyDoctest,
+                                               NumpyOutputChecker,
+                                               NumpyDocTestFinder)
 
 IGNORE_OUTPUT = register_optionflag('IGNORE_OUTPUT')
 SYMPY_EQUAL = register_optionflag('SYMPY_EQUAL')
@@ -188,9 +190,37 @@ class NipyOutputChecker(NumpyOutputChecker):
         return res == wanted_tf
 
 
+class DocTestSkip(object):
+    """Object wrapper for doctests to be skipped."""
+
+    def __init__(self,obj):
+        self.obj = obj
+
+    def __getattribute__(self,key):
+        if key == '__doc__':
+            return None
+        return getattr(object.__getattribute__(self, 'obj'), key)
+
+
+class NipyDocTestFinder(NumpyDocTestFinder):
+
+    def _find(self, tests, obj, name, module, source_lines, globs, seen):
+        """
+        Find tests for the given object and any contained objects, and
+        add them to `tests`.
+
+        Add ability to skip doctest
+        """
+        if hasattr(obj, "skip_doctest") and obj.skip_doctest:
+            obj = DocTestSkip(obj)
+        NumpyDocTestFinder._find(self,tests, obj, name, module,
+                                 source_lines, globs, seen)
+
+
 class NipyDoctest(NumpyDoctest):
     name = 'nipydoctest'   # call nosetests with --with-nipydoctest
     out_check_class = NipyOutputChecker
+    test_finder_class = NipyDocTestFinder
 
     def set_test_context(self, test):
         # set namespace for tests

@@ -44,7 +44,7 @@ def test_high_level_glm_with_paths():
     shapes, rk = ((5, 6, 4, 20), (5, 6, 4, 19)), 3
     with InTemporaryDirectory():
         mask_file, fmri_files, design_files = write_fake_fmri_data(shapes, rk)
-        multi_session_model = FMRILinearModel(fmri_files, design_files, 
+        multi_session_model = FMRILinearModel(fmri_files, design_files,
                                               mask_file)
         multi_session_model.fit()
         z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
@@ -55,20 +55,20 @@ def test_high_level_glm_with_paths():
 def test_high_level_glm_with_data():
     shapes, rk = ((7, 6, 5, 20), (7, 6, 5, 19)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
-    
+
     # without mask
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask=None)
     multi_session_model.fit()
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
     assert_equal(np.sum(z_image.get_data() == 0), 0)
-    
+
     # compute the mask
-    multi_session_model = FMRILinearModel(fmri_data, design_matrices, 
+    multi_session_model = FMRILinearModel(fmri_data, design_matrices,
                                           m=0, M=.01, threshold=0.)
     multi_session_model.fit()
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
     assert_true(z_image.get_data().std() < 3. )
-    
+
     # with mask
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask)
     multi_session_model.fit()
@@ -77,24 +77,24 @@ def test_high_level_glm_with_data():
     assert_array_equal(z_image.get_data() == 0., load(mask).get_data() == 0.)
     assert_true(
         (variance_image.get_data()[load(mask).get_data() > 0, 0] > .001).all())
-    
+
     # without scaling
     multi_session_model.fit(do_scaling=False)
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
     assert_true(z_image.get_data().std() < 3. )
 
-    
+
 def test_high_level_glm_contrasts():
     shapes, rk = ((5, 6, 7, 20), (5, 6, 7, 19)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask=None)
     multi_session_model.fit()
-    z_image, = multi_session_model.contrast([np.eye(rk)[:2]] * 2, 
+    z_image, = multi_session_model.contrast([np.eye(rk)[:2]] * 2,
                                             contrast_type='tmin-conjunction')
-    z1, = multi_session_model.contrast([np.eye(rk)[:1]] * 2) 
-    z2, = multi_session_model.contrast([np.eye(rk)[1:2]] * 2) 
+    z1, = multi_session_model.contrast([np.eye(rk)[:1]] * 2)
+    z2, = multi_session_model.contrast([np.eye(rk)[1:2]] * 2)
     assert_true((z_image.get_data() < np.maximum(
-                z1.get_data(), z2.get_data())).all())
+        z1.get_data(), z2.get_data())).all())
 
 
 def ols_glm(n=100, p=80, q=10):
