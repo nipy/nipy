@@ -51,7 +51,9 @@ def test_high_level_glm_with_paths():
         z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
         assert_array_equal(z_image.get_affine(), load(mask_file).get_affine())
         assert_true(z_image.get_data().std() < 3.)
-        del z_image, fmri_files
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory
+        del z_image, fmri_files, multi_session_model
 
 
 def test_high_level_glm_with_data():
