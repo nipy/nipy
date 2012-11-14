@@ -23,12 +23,15 @@ np.import_array()
 # sorting
 def _quantile(X, double ratio, int interp=False, int axis=0):
     """
-    Fast quantile computation using partial sorting.
+    Fast quantile computation using partial sorting. This function has
+    similar behavior to `scipy.percentile` but runs significantly
+    faster for large arrays.
 
     Parameters
     ----------
     X : array
-      Input array.
+      Input array. Will be internally converted into an array of
+      doubles if needed.
 
     ratio : float
       A value in range [0, 1] defining the desired quantiles (the
@@ -84,12 +87,15 @@ def _quantile(X, double ratio, int interp=False, int axis=0):
 # partial sorting as opposed to full sorting.
 def _median(X, axis=0):
     """
-    Fast median computation using partial sorting.
+    Fast median computation using partial sorting. This function is
+    similar to `numpy.median` but runs significantly faster for large
+    arrays.
 
     Parameters
     ----------
     X : array
-      Input array.
+      Input array. Will be internally converted into an array of
+      doubles if needed.
 
     axis : int
       Axis along which medians are computed.
