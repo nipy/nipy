@@ -7,15 +7,15 @@ Author: Alexis Roche.
 
 __version__ = '0.1'
 
-cdef extern from "quantile.h":
-    double quantile(double* data,
-                    unsigned long size,
-                    unsigned long stride,
-                    double r,
-                    int interp)
-
 import numpy as np
 cimport numpy as np
+
+cdef extern from "quantile.h":
+    double quantile(double* data,
+                    np.npy_intp size,
+                    np.npy_intp stride,
+                    double r,
+                    int interp)
 
 np.import_array()
 

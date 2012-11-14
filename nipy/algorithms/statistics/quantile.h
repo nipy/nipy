@@ -5,9 +5,12 @@
 extern "C" {
 #endif
 
+#include <Python.h>
+#include <numpy/arrayobject.h>
+
   extern double quantile(double* data,
-			 unsigned long size,
-			 unsigned long stride,
+			 npy_intp size,
+			 npy_intp stride,
 			 double r,
 			 int interp);
 

@@ -16,15 +16,15 @@
 
 /* Declaration of static functions */ 
 static double _pth_element(double* x,
-			   unsigned long p, 
-			   unsigned long stride,
-			   unsigned long size); 
+			   npy_intp p, 
+			   npy_intp stride,
+			   npy_intp size); 
 static void _pth_interval(double* am,
 			  double* aM,
 			  double* x,
-			  unsigned long p,
-			  unsigned long stride,
-			  unsigned long size); 
+			  npy_intp p,
+			  npy_intp stride,
+			  npy_intp size); 
 
 /* 
    Quantile. 
@@ -34,13 +34,13 @@ static void _pth_interval(double* am,
    or equal to (1-r) * sample size. 
 */ 
 double quantile(double* data,
-		unsigned long size,
-		unsigned long stride,
+		npy_intp size,
+		npy_intp stride,
 		double r,
 		int interp)
 {
   double m, pp; 
-  unsigned long p;
+  npy_intp p;
 
   if ((r<0) || (r>1)){
     fprintf(stderr, "Ratio must be in [0,1], returning zero"); 
@@ -88,13 +88,13 @@ double quantile(double* data,
 
 
 static double _pth_element(double* x,
-			   unsigned long p,
-			   unsigned long stride,
-			   unsigned long n)
+			   npy_intp p,
+			   npy_intp stride,
+			   npy_intp n)
 {
   double a, tmp;  
   double *bufl, *bufr;
-  unsigned long i, j, il, jr, stop1, stop2;
+  npy_intp i, j, il, jr, stop1, stop2;
   int same_extremities;
    
   stop1 = 0; 
@@ -170,14 +170,14 @@ static double _pth_element(double* x,
 static void _pth_interval(double* am,
 			  double* aM, 
 			  double* x,
-			  unsigned long p,
-			  unsigned long stride,
-			  unsigned long n)
+			  npy_intp p,
+			  npy_intp stride,
+			  npy_intp n)
 {
   double a, tmp;
   double *bufl, *bufr; 
-  unsigned long i, j, il, jr, stop1, stop2, stop3;
-  unsigned long pp = p+1; 
+  npy_intp i, j, il, jr, stop1, stop2, stop3;
+  npy_intp pp = p+1; 
   int same_extremities = 0; 
 
   *am = 0.0; 
