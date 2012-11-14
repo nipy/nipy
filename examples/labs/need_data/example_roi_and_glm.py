@@ -190,12 +190,18 @@ glm_fir = GeneralLinearModel(X_fir)
 plt.figure()
 
 for k in range(my_roi.k):
+    # fit a glm on the ROI's time course
     glm_fir.fit(roi_tc[k])
+    # access to the corresponding result structure
     res = glm_fir.results_.values()[0]
     plt.subplot(1, my_roi.k, k + 1)
+
+    # get the confidence intervals for the effects and plot them -condition 0
     conf_int = res.conf_int(cols=range(fir_order)).squeeze()
     yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2
     plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
+
+    # get the confidence intervals for the effects and plot them -condition 1
     conf_int = res.conf_int(cols=range(fir_order, 2 * fir_order)).squeeze()
     yerr = (conf_int[:, 1] - conf_int[:, 0]) / 2
     plt.errorbar(np.arange(fir_order), conf_int.mean(1), yerr=yerr)
