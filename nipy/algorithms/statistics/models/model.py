@@ -367,10 +367,10 @@ class LikelihoodModelResults(object):
             for i in cols:
                 lower.append(
                     self.theta[i] - inv_t_cdf(1 - alpha / 2, self.df_resid) *
-                    np.sqrt(np.diag(self.vcov(dispersion=dispersion)))[i])
+                    np.sqrt(self.vcov(column=i, dispersion=dispersion)))
                 upper.append(
                     self.theta[i] + inv_t_cdf(1 - alpha / 2, self.df_resid) *
-                    np.sqrt(np.diag(self.vcov(dispersion=dispersion)))[i])
+                    np.sqrt(self.vcov(column=i, dispersion=dispersion)))
         return np.asarray(zip(lower, upper))
 
 
