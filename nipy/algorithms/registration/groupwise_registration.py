@@ -666,6 +666,14 @@ class Realign4d(object):
     def _generic_init(self, images, affine_class,
                       slice_order, interleaved, tr, tr_slices,
                       start, time_interp, slice_info):
+        if slice_order == None:
+            slice_order = SLICE_ORDER
+            if time_interp:
+                raise ValueError('Slice order is requested'
+                          + ' with time interpolation switched on')
+            time_interp = False
+        if tr == None:
+            raise ValueError('Repetition time cannot be None')
         if not hasattr(images, '__iter__'):
             images = [images]
         self._runs = []
@@ -742,7 +750,7 @@ class Realign4d(object):
 class FmriRealign4d(Realign4d):
 
     def __init__(self, images, slice_order, interleaved=None,
-                 tr=None, tr_slices=None, start=0.0, time_interp=True,
+                 tr=1.0, tr_slices=None, start=0.0, time_interp=True,
                  affine_class=Rigid, slice_info=None):
 
         """
@@ -752,18 +760,22 @@ class FmriRealign4d(Realign4d):
         ----------
         images : image or list of images
           Single or multiple input 4d images representing one or
-          several fMRI runs
+          several fMRI runs.
 
         tr : float
           Inter-scan repetition time, i.e. the time elapsed between
-          two consecutive scans
+          two consecutive scans. The unit in which `tr` is given is
+          arbitrary although it needs to be consistent with the
+          `tr_slices` and `start` arguments.
 
         tr_slices : float
-          Inter-slice repetition time, same as tr for slices
+          Inter-slice repetition time, same as tr for slices. If None,
+          acquisition is assumed continuous and `tr_slices` is set to
+          `tr` divided by the number of slices.
 
         start : float
           Starting acquisition time respective to the implicit time
-          origin
+          origin.
 
         slice_order : str or array-like
           If str, one of {'ascending', 'descending'}. If array-like,
