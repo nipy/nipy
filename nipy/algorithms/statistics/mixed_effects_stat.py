@@ -17,8 +17,7 @@ Author: Bertrand Thirion, 2012.
 >>> T1 = one_sample_ttest(Y, V1, n_iter=5)
 >>> T1 = [T1[effects == x] for x  in np.unique(effects)]
 >>> T2 = [t_stat(Y)[effects == x] for x  in np.unique(effects)]
->>> print "Standard deviation of the mfx statistic:", [t1.std() for t1 in T1]
->>> print "Standard deviation of student t test:", [t2.std() for t2 in T2]
+>>> assert np.array([t1.std() < t2.std() for t1, t2 in zip(T1, T2)]).all()
 """
 
 import numpy as np
