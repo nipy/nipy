@@ -8,15 +8,15 @@ import os
 from os.path import join as pjoin
 
 import nipy.externals.argparse as argparse
-import nipy.io.imageformats as nii
+import nibabel as nib
 
 
 def do_3d_to_4d(filenames, check_affines=True):
     imgs = []
     for fname in filenames:
-        img = nii.load(fname)
+        img = nib.load(fname)
         imgs.append(img)
-    return nii.concat_images(imgs, check_affines=check_affines)
+    return nib.concat_images(imgs, check_affines=check_affines)
 
 
 def main():
@@ -52,8 +52,8 @@ def main():
             gz = ''
         out_fname = pjoin(pth, froot + '_4d' + ext + gz)
     img4d = do_3d_to_4d(filenames, check_affines=check_affines)
-    nii.save(img4d, out_fname)
-    
+    nib.save(img4d, out_fname)
+
 
 if __name__ == '__main__':
     main()
