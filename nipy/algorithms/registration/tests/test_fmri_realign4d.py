@@ -8,6 +8,7 @@ import numpy as np
 
 from .... import load_image
 from ....testing import funcfile
+from ....fixes.nibabel import io_orientation
 
 from ..groupwise_registration import Image4d, resample4d, FmriRealign4d
 from ..affine import Rigid
@@ -86,13 +87,15 @@ def test_realign4d_no_time_interp():
 
 def test_realign4d():
     runs = [im, im]
-    R1 = FmriRealign4d(runs, tr=2., slice_order='ascending', interleaved=False)
+    orient = io_orientation(im.affine)
+    slice_axis = int(np.where(orient[:, 0] == 2)[0])
+    R1 = FmriRealign4d(runs, tr=2., slice_order='ascending')
     R1.estimate(refscan=None, loops=(1, 0), between_loops=(1, 0))
-    R2 = FmriRealign4d(runs, tr=2., slice_order=range(im.shape[2]), interleaved=False)
+    R2 = FmriRealign4d(runs, tr=2., slice_order=range(im.shape[slice_axis]))
     R2.estimate(refscan=None, loops=(1, 0), between_loops=(1, 0))
     for r in range(2):
         for i in range(im.shape[3]):
-            assert_array_equal(R1._transforms[r][i].as_affine(),
-                               R2._transforms[r][i].as_affine())
-        assert_array_equal(R1._mean_transforms[r].as_affine(),
-                           R2._mean_transforms[r].as_affine())
+            assert_array_almost_equal(R1._transforms[r][i].as_affine(),
+                                      R2._transforms[r][i].as_affine())
+        assert_array_almost_equal(R1._mean_transforms[r].as_affine(),
+                                  R2._mean_transforms[r].as_affine())
