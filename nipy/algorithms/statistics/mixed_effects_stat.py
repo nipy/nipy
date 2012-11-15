@@ -17,15 +17,8 @@ Author: Bertrand Thirion, 2012.
 >>> T1 = one_sample_ttest(Y, V1, n_iter=5)
 >>> T1 = [T1[effects == x] for x  in np.unique(effects)]
 >>> T2 = [t_stat(Y)[effects == x] for x  in np.unique(effects)]
->>> import matplotlib.pyplot as plt
->>> AX = plt.figure().add_subplot(111)
->>> AX.boxplot(T1, positions=[-0.1, .9])
->>> AX.boxplot(T2, positions=[0.1, 1.1])
->>> AX.set_xticks([0, 1])
->>> AX.set_xlabel('simulated effects')
->>> AX.set_ylabel('decision statistic')
->>> AX.set_title('left: mixed effects model, right: standard t test')
->>> plt.show()
+>>> print "Standard deviation of the mfx statistic:", [t1.std() for t1 in T1]
+>>> print "Standard deviation of student t test:", [t2.std() for t2 in T2]
 """
 
 import numpy as np
