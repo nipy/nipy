@@ -90,12 +90,18 @@ def test_realign4d():
     orient = io_orientation(im.affine)
     slice_axis = int(np.where(orient[:, 0] == 2)[0])
     R1 = FmriRealign4d(runs, tr=2., slice_order='ascending')
-    R1.estimate(refscan=None, loops=(1, 0), between_loops=(1, 0))
+    R1.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
     R2 = FmriRealign4d(runs, tr=2., slice_order=range(im.shape[slice_axis]))
-    R2.estimate(refscan=None, loops=(1, 0), between_loops=(1, 0))
+    R2.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
     for r in range(2):
         for i in range(im.shape[3]):
-            assert_array_almost_equal(R1._transforms[r][i].as_affine(),
-                                      R2._transforms[r][i].as_affine())
-        assert_array_almost_equal(R1._mean_transforms[r].as_affine(),
-                                  R2._mean_transforms[r].as_affine())
+            assert_array_almost_equal(R1._transforms[r][i].translation,
+                                      R2._transforms[r][i].translation)
+            assert_array_almost_equal(R1._transforms[r][i].rotation,
+                                      R2._transforms[r][i].rotation)
+    for i in range(im.shape[3]):
+            assert_array_almost_equal(R1._mean_transforms[r].translation,
+                                      R2._mean_transforms[r].translation)
+            assert_array_almost_equal(R1._mean_transforms[r].rotation,
+                                      R2._mean_transforms[r].rotation)
+    

@@ -29,8 +29,8 @@ def _wrap(function, args):
 
 
 def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4, 
-                  step=_STEP,
-                  maxiter=None, callback=None): 
+                  step=_STEP, maxiter=None, callback=None,
+                  disp=True): 
 
     x = np.asarray(x0).flatten()
     fval = np.squeeze(f(x))
@@ -46,18 +46,21 @@ def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4,
         it = it + 1
         x0 = x 
         fval0 = fval
-        print('Computing gradient...')
+        if disp:
+            print('Computing gradient...')
         direc = myfprime(x)
         direc = direc / np.sqrt(np.sum(direc**2))
-        print('Performing line search...')
+        if disp:
+            print('Performing line search...')
         fval, x = _linesearch_brent(f, x, direc, tol=xtol*100)
         if not callback == None:
             callback(x)
         if (2.0*(fval0-fval) <= ftol*(abs(fval0)+abs(fval))+1e-20): 
             break
         
-    print('Number of iterations: %d' % it)
-    print('Minimum criterion value: %f' % fval)
+        if disp:
+            print('Number of iterations: %d' % it)
+            print('Minimum criterion value: %f' % fval)
 
     return x 
 

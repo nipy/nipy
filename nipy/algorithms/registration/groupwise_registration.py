@@ -111,21 +111,32 @@ class Image4d(object):
 
         if isinstance(data, np.ndarray):
             self._data = data
+            self._shape = data.shape
             self._get_data = None
             self._init_timing_parameters()
         else:
             self._data = None
+            self._shape = None
             self._get_data = data
+
+    def _load_data(self):
+        self._data = self._get_data()
+        self._shape = self._data.shape
+        self._init_timing_parameters()
 
     def get_data(self):
         if self._data == None:
-            self._data = self._get_data()
-            self._init_timing_parameters()
+            self._load_data()
         return self._data
+    
+    def get_shape(self):
+        if self._shape == None:
+            self._load_data()
+        return self._shape
 
     def _init_timing_parameters(self):
         # Number of slices
-        nslices = self.get_data().shape[self.slice_axis]
+        nslices = self.get_shape()[self.slice_axis]
         self.nslices = nslices
         # Default slice repetition time (no silence)
         if self._tr_slices == None:
@@ -196,7 +207,7 @@ class Realign4dAlgorithm(object):
                  maxfun=MAXFUN,
                  refscan=REFSCAN):
 
-        self.dims = im4d.get_data().shape
+        self.dims = im4d.get_shape()
         self.nscans = self.dims[3]
         self.xyz = make_grid(self.dims[0:3], subsampling, borders)
         masksize = self.xyz.shape[0]
@@ -422,7 +433,7 @@ class Realign4dAlgorithm(object):
         # multiscale pyramid. To avoid crashes, we insert a try/catch
         # instruction.
         try:
-            pc = fmin(f, self.transforms[t].param, *args, **kwargs)
+            pc = fmin(f, self.transforms[t].param, disp=False, *args, **kwargs)
             self.set_transform(t, pc)
         except:
             warnings.warn('Minimization failed')
@@ -508,13 +519,12 @@ def single_run_realign4d(im4d,
       If a sequence, implement a multi-scale
 
     """
-    if not hasattr(loops, '__iter__'):
+    if not type(loops) in (list, tuple, np.array):
         loops = [loops]
     repeats = len(loops)
 
     def format_arg(x):
-        if isinstance(x, basestring) or not hasattr(x, '__iter__'):
-            # str has __iter__ in Python 3
+        if not type(x) in (list, tuple, np.array):
             x = [x for i in range(repeats)]
         else:
             if not len(x) == repeats:
@@ -537,7 +547,8 @@ def single_run_realign4d(im4d,
 
     for loops_, speedup_, optimizer_, xtol_, ftol_, gtol_,\
             stepsize_, maxiter_, maxfun_ in opt_params:
-        subsampling = adjust_subsampling(speedup_, im4d.get_data().shape[0:3])
+        subsampling = adjust_subsampling(speedup_, im4d.get_shape()[0:3])
+
         r = Realign4dAlgorithm(im4d,
                                transforms=transforms,
                                affine_class=affine_class,
@@ -597,7 +608,7 @@ def realign4d(runs,
     """
 
     # Single-session case
-    if not hasattr(runs, '__iter__'):
+    if not type(runs) in (list, tuple, np.array):
         runs = [runs]
     nruns = len(runs)
     if nruns == 1:
@@ -625,7 +636,7 @@ def realign4d(runs,
     # corrected run, and creating a fake time series with no temporal
     # smoothness
     ## FIXME: check that all runs have the same to-world transform
-    mean_img_shape = list(runs[0].get_data().shape[0:3]) + [nruns]
+    mean_img_shape = list(runs[0].get_shape()[0:3]) + [nruns]
     mean_img_data = np.zeros(mean_img_shape)
 
     for i in range(nruns):
@@ -674,7 +685,7 @@ class Realign4d(object):
             time_interp = False
         if tr == None:
             raise ValueError('Repetition time cannot be None')
-        if not hasattr(images, '__iter__'):
+        if not type(images) in (list, tuple, np.array):
             images = [images]
         self._runs = []
         self.affine_class = affine_class
