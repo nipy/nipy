@@ -1,75 +1,38 @@
 #!/usr/bin/env python
 
 import numpy as np
-
-from .._quantile import _quantile, _median
-from numpy.testing import (assert_array_equal,
-                           assert_array_almost_equal)
 from numpy import median as np_median
+
 from scipy import percentile as sp_percentile
 
+from .._quantile import _quantile, _median
 
-def _test_median(dtype, shape):
-    X = (100 * (np.random.random(shape) - .5)).astype(dtype)
-    for a in range(X.ndim):
-        assert_array_equal(_median(X, axis=a).squeeze(),
-                           np_median(X, axis=a))
-    
-
-def _test_quantile(dtype, shape):
-    X = (100 * (np.random.random(shape) - .5)).astype(dtype)
-    for a in range(X.ndim):
-        assert_array_almost_equal(\
-            _quantile(X, .75, axis=a, interp=True).squeeze(),
-            sp_percentile(X, 75, axis=a))
+from numpy.testing import (assert_array_equal,
+                           assert_array_almost_equal)
 
 
-def test_median_2d_int32():
-    _test_median('int32', (10, 11))
+NUMERIC_TYPES = sum([np.sctypes[t]
+                     for t in ('int', 'uint', 'float', 'complex')],
+                    [])
 
 
-def test_median_3d_int32():
-    _test_median('int32', (10, 11, 12))
+def test_median():
+    for dtype in NUMERIC_TYPES:
+        for shape in ((10,), (10, 11), (10, 11, 12)):
+            X = (100 * (np.random.random(shape) - .5)).astype(dtype)
+            for a in range(X.ndim):
+                assert_array_equal(_median(X, axis=a).squeeze(),
+                                   np_median(X.astype(np.float64), axis=a))
 
 
-def test_median_2d_uint8():
-    _test_median('uint8', (10, 11))
-
-
-def test_median_3d_uint8():
-    _test_median('uint8', (10, 11, 12))
-
-
-def test_median_2d_double():
-    _test_median('double', (10, 11))
-
-
-def test_median_3d_double():
-    _test_median('double', (10, 11, 12))
-
-
-def test_quantile_2d_int32():
-    _test_quantile('int32', (10, 11))
-
-
-def test_quantile_3d_int32():
-    _test_quantile('int32', (10, 11, 12))
-
-
-def test_quantile_2d_uint8():
-    _test_quantile('uint8', (10, 11))
-
-
-def test_quantile_3d_uint8():
-    _test_quantile('uint8', (10, 11, 12))
-
-
-def test_quantile_2d_double():
-    _test_quantile('double', (10, 11))
-
-
-def test_quantile_3d_double():
-    _test_quantile('double', (10, 11, 12))
+def test_quantile():
+    for dtype in NUMERIC_TYPES:
+        for shape in ((10,), (10, 11), (10, 11, 12)):
+            X = (100 * (np.random.random(shape) - .5)).astype(dtype)
+            for a in range(X.ndim):
+                assert_array_almost_equal(
+                    _quantile(X, .75, axis=a, interp=True).squeeze(),
+                    sp_percentile(X, 75, axis=a))
 
 
 if __name__ == "__main__":
