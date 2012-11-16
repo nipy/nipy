@@ -86,6 +86,18 @@ def test_realign4d_no_time_interp():
 
 
 def test_realign4d():
+    """
+    This tests whether realign4d yields the same results depending on
+    whether the slice order is input explicitely or as
+    slice_order='ascending'.
+    
+    Due to the very small size of the image used for testing (only 3
+    slices), optimization is numerically unstable. It seems to make
+    the default optimizer, namely scipy.fmin.fmin_ncg, adopt a random
+    behavior. To work around the resulting inconsistency in results,
+    we use nipy.optimize.fmin_steepest as the optimizer, although it's
+    generally not recommended in practice.
+    """
     runs = [im, im]
     orient = io_orientation(im.affine)
     slice_axis = int(np.where(orient[:, 0] == 2)[0])
