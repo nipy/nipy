@@ -433,7 +433,7 @@ class Realign4dAlgorithm(object):
         # multiscale pyramid. To avoid crashes, we insert a try/catch
         # instruction.
         try:
-            pc = fmin(f, self.transforms[t].param, disp=False, *args, **kwargs)
+            pc = fmin(f, self.transforms[t].param, disp=VERBOSE, *args, **kwargs)
             self.set_transform(t, pc)
         except:
             warnings.warn('Minimization failed')
