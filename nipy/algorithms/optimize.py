@@ -5,7 +5,6 @@
 import numpy as np 
 from scipy.optimize import brent, approx_fprime
 
-_STEP = np.sqrt(np.finfo(float).eps)
 
 
 def _linesearch_brent(func, p, xi, tol=1e-3):
@@ -29,9 +28,39 @@ def _wrap(function, args):
 
 
 def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4, 
-                  step=_STEP,
-                  maxiter=None, callback=None): 
+                  maxiter=None, callback=None, disp=True):
+    """
+    Minimize a function using a steepest gradient descent
+    algorithm. This complements the collection of minimization
+    routines provided in scipy.optimize. Steepest gradient iterations
+    are cheaper than in the conjugate gradient or Newton methods,
+    hence convergence may sometimes turn out faster algthough more
+    iterations are typically needed.
 
+    Parameters
+    ----------
+    f : callable
+      Function to be minimized
+    x0 : array
+      Starting point
+    fprime : callable
+      Function that computes the gradient of f
+    xtol : float
+      Relative tolerance on step sizes in line searches
+    ftol : float
+      Relative tolerance on function variations
+    maxiter : int
+      Maximum number of iterations
+    callback : callable
+      Optional function called after each iteration is complete
+    disp : bool
+      Print convergence message if True
+
+    Returns
+    -------
+    x : array
+      Gradient descent fix point, local minimizer of f
+    """
     x = np.asarray(x0).flatten()
     fval = np.squeeze(f(x))
     it = 0 
@@ -46,18 +75,21 @@ def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4,
         it = it + 1
         x0 = x 
         fval0 = fval
-        print('Computing gradient...')
+        if disp:
+            print('Computing gradient...')
         direc = myfprime(x)
         direc = direc / np.sqrt(np.sum(direc**2))
-        print('Performing line search...')
-        fval, x = _linesearch_brent(f, x, direc, tol=xtol*100)
+        if disp:
+            print('Performing line search...')
+        fval, x = _linesearch_brent(f, x, direc, tol=xtol)
         if not callback == None:
             callback(x)
         if (2.0*(fval0-fval) <= ftol*(abs(fval0)+abs(fval))+1e-20): 
             break
         
-    print('Number of iterations: %d' % it)
-    print('Minimum criterion value: %f' % fval)
+        if disp:
+            print('Number of iterations: %d' % it)
+            print('Minimum criterion value: %f' % fval)
 
     return x 
 
