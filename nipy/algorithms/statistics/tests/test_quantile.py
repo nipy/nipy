@@ -3,7 +3,7 @@
 import numpy as np
 from numpy import median as np_median
 
-from scipy import percentile as sp_percentile
+from scipy.stats import scoreatpercentile as sp_percentile
 
 from .._quantile import _quantile, _median
 
@@ -17,6 +17,7 @@ NUMERIC_TYPES = sum([np.sctypes[t]
 
 
 def another_percentile(arr, pct, axis):
+    # numpy.percentile not available until after numpy 1.4.1
     return np.apply_along_axis(sp_percentile, axis, arr.astype(float), pct)
 
 
@@ -36,7 +37,7 @@ def test_quantile():
             for a in range(X.ndim):
                 assert_array_almost_equal(
                     _quantile(X, .75, axis=a, interp=True).squeeze(),
-                    sp_percentile(X, 75, axis=a))
+                    another_percentile(X, 75, axis=a))
 
 
 if __name__ == "__main__":
