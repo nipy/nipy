@@ -16,6 +16,10 @@ NUMERIC_TYPES = sum([np.sctypes[t]
                     [])
 
 
+def another_percentile(arr, pct, axis):
+    return np.apply_along_axis(sp_percentile, axis, arr.astype(float), pct)
+
+
 def test_median():
     for dtype in NUMERIC_TYPES:
         for shape in ((10,), (10, 11), (10, 11, 12)):
