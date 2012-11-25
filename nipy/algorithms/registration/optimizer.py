@@ -48,7 +48,7 @@ def configure_optimizer(optimizer, fprime=None, fhess=None, **kwargs):
 
 
 def use_derivatives(optimizer):
-    if optimizer in ('fmin_simplex', 'fmin_powell'):
+    if optimizer in ('simplex', 'powell'):
         return False
     else:
         return True
