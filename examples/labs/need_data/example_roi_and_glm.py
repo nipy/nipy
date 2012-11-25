@@ -194,7 +194,7 @@ for k in range(my_roi.k):
     # fit a glm on the ROI's time course
     glm_fir.fit(roi_tc[k])
     # access to the corresponding result structure
-    res = glm_fir.results_.values()[0]
+    res = list(glm_fir.results_.values())[0] # only one value in this case
     plt.subplot(1, my_roi.k, k + 1)
 
     # get the confidence intervals for the effects and plot them -condition 0
