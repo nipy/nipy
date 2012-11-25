@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function # Python 2/3 compatibility
 """
 Get two images from the web (one mask image and one spmT image) and put them in
 the nipy user dir - usually therefore at ``~/.nipy/tests/data``.
@@ -9,7 +10,10 @@ Author : Bertrand Thirion, 2009
 """
 
 import os
-import urllib2
+try:
+    from urllib2 import urlopen # Python 2
+except ImportError:
+    from urllib.request import urlopen # Python 3
 import tarfile
 
 from nibabel.data import get_nipy_user_dir
@@ -36,8 +40,8 @@ def get_second_level_dataset():
     if not os.path.exists(mask_image):
         filename = 'mask.nii.gz'
         datafile = os.path.join(url, filename)
-        fp = urllib2.urlopen(datafile)
-        local_file = open(mask_image, 'w')
+        fp = urlopen(datafile)
+        local_file = open(mask_image, 'wb')
         local_file.write(fp.read())
         local_file.flush()
         local_file.close()
@@ -46,8 +50,8 @@ def get_second_level_dataset():
     if not os.path.exists(input_image):
         filename = 'spmT_0029.nii.gz'
         datafile = os.path.join(url, filename)
-        fp = urllib2.urlopen(datafile)
-        local_file = open(input_image, 'w')
+        fp = urlopen(datafile)
+        local_file = open(input_image, 'wb')
         local_file.write(fp.read())
         local_file.flush()
         local_file.close()
@@ -56,8 +60,8 @@ def get_second_level_dataset():
     if not os.path.exists(group_data):
         filename = 'group_t_images.tar.gz'
         datafile = os.path.join(url, filename)
-        fp = urllib2.urlopen(datafile)
-        local_file = open(group_data, 'w')
+        fp = urlopen(datafile)
+        local_file = open(group_data, 'wb')
         local_file.write(fp.read())
         local_file.flush()
         local_file.close()
@@ -85,21 +89,21 @@ def get_first_level_dataset():
 
     # download mask_image if necessary
     if not os.path.exists(paradigm):
-        print 'Downloading mask image, this may take time'
+        print('Downloading mask image, this may take time')
         datafile = os.path.join(url, 'localizer_paradigm.csv')
-        fp = urllib2.urlopen(datafile)
-        local_file = open(paradigm, 'w')
+        fp = urlopen(datafile)
+        local_file = open(paradigm, 'wb')
         local_file.write(fp.read())
         local_file.flush()
         local_file.close()
 
     # download raw_fmri if necessary
     if not os.path.exists(raw_fmri):
-        print 'Downloading fmri image, this may take time'
+        print('Downloading fmri image, this may take time')
         filename = 's12069_swaloc1_corr.nii.gz'
         datafile = os.path.join(url, filename)
-        fp = urllib2.urlopen(datafile)
-        local_file = open(raw_fmri, 'w')
+        fp = urlopen(datafile)
+        local_file = open(raw_fmri, 'wb')
         local_file.write(fp.read())
         local_file.flush()
         local_file.close()

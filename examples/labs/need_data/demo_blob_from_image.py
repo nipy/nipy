@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function # Python 2/3 compatibility
 """
 This script generates a noisy activation image and extracts the blob
 from it.
@@ -72,7 +73,7 @@ descrip = "blob image extracted from %s" % input_image
 wim = lroi.to_image('id', roi=True, descrip=descrip)
 save(wim, path.join(write_dir, "leaves.nii"))
 
-print "Wrote the blob image in %s" % path.join(write_dir, "blob.nii")
-print "Wrote the blob-average signal image in %s" % path.join(write_dir,
-                                                            "bmap.nii")
-print "Wrote the end-blob image in %s" % path.join(write_dir, "leaves.nii")
+print("Wrote the blob image in %s" % path.join(write_dir, "blob.nii"))
+print("Wrote the blob-average signal image in %s"
+      % path.join(write_dir, "bmap.nii"))
+print("Wrote the end-blob image in %s" % path.join(write_dir, "leaves.nii"))

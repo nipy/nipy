@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function # Python 2/3 compatibility
 """
 Script that performs a first-level analysis of the FIAC dataset.
 
@@ -81,11 +82,11 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-print 'Computing contrasts...'
+print('Computing contrasts...')
 mean_map = multi_session_model.means[0]  # for display
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
-    print '  Contrast % 2i out of %i: %s' % (
-        index + 1, len(contrasts), contrast_id)
+    print('  Contrast % 2i out of %i: %s' % (
+        index + 1, len(contrasts), contrast_id))
     z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
     z_map, = multi_session_model.contrast(
         [contrast_val] * 2, con_id=contrast_id, output_z=True)
@@ -105,5 +106,5 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
                  black_bg=True)
         plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
-print "All the  results were witten in %s" % write_dir
+print("All the  results were witten in %s" % write_dir)
 plt.show()
