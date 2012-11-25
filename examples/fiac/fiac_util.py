@@ -12,12 +12,17 @@ Requires matplotlib
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+from __future__ import print_function # Python 2/3 compatibility
+
 # Stdlib
 import os
 from os import makedirs, listdir
 from os.path import exists, abspath, isdir, join as pjoin, splitext
 import csv
-from StringIO import StringIO
+try:
+    from StringIO import StringIO # Python 2
+except ImportError:
+    from io import StringIO # Python 3
 
 # Third party
 import numpy as np
@@ -386,7 +391,7 @@ def compare_results(subj, run, other_root, mask_fname):
                 this_fname = pjoin(dirpath, fname)
                 other_fname = this_fname.replace(DATADIR, other_root)
                 if not exists(other_fname):
-                    print this_fname, 'present but ', other_fname, 'missing'
+                    print(this_fname, 'present but ', other_fname, 'missing')
                     continue
                 this_arr = load_image(this_fname).get_data()
                 other_arr = load_image(other_fname).get_data()
@@ -394,7 +399,7 @@ def compare_results(subj, run, other_root, mask_fname):
                 if not ok and froot in ('effect', 'sd', 't'): # Maybe a sign flip
                     ok = np.allclose(this_arr[msk], -other_arr[msk])
                 if not ok:
-                    print 'Difference between', this_fname, other_fname
+                    print('Difference between', this_fname, other_fname)
 
 
 def compare_all(other_root, mask_fname):

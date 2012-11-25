@@ -17,6 +17,8 @@ Two images will be created in the working directory for the realigned series::
 
 Author: Alexis Roche, 2009.
 """
+from __future__ import print_function # Python 2/3 compatibility
+
 import os
 from os.path import split as psplit, abspath
 
@@ -32,7 +34,7 @@ runs = [load_image(run) for run in runnames]
 
 # Declare interleaved ascending slice order
 nslices = runs[0].shape[2]
-slice_order = range(0, nslices, 2) + range(1, nslices, 2)
+slice_order = list(range(0, nslices, 2)) + list(range(1, nslices, 2))
 print('Slice order: %s' % slice_order)
 
 # Spatio-temporal realigner

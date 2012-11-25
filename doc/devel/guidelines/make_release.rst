@@ -57,6 +57,16 @@ Release checklist
 * Use the opportunity to update the ``.mailmap`` file if there are any duplicate
   authors listed from ``git shortlog``.
 
+* Check the examples in python 2 and python 3, by running something like::
+
+    cd ..
+    ./nipy/tools/run_log_examples.py nipy/examples --log-path=~/tmp/eg_logs
+
+  in a python 2 and python 3 virtualenv.  Review the output in (e.g.)
+  ``~/tmp/eg_logs``. The output file ``summary.txt`` will have the pass file
+  printout that the ``run_log_examples.py`` script puts onto stdout while
+  running.
+
 * Check the ``long_description`` in ``nipy/info.py``.  Check it matches the
   ``README`` in the root directory.
 

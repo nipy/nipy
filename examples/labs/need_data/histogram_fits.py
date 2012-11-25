@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function # Python 2/3 compatibility
 """
 Example of a script that perfoms histogram analysis of an activation image.
 This is based on a real fMRI image.

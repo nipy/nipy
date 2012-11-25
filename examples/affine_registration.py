@@ -8,6 +8,7 @@ sulcal 2000 database acquired at CEA, SHFJ, Orsay, France. The source
 is 'ammon' and the target is 'anubis'. Running it will result in a
 resampled ammon image being created in the current directory.
 """
+from __future__ import print_function # Python 2/3 compatibility
 
 from optparse import OptionParser
 import time
@@ -64,10 +65,10 @@ if not opts.optimizer == None:
     optimizer = opts.optimizer
 
 # Print messages
-print ('Source brain: %s' % source)
-print ('Target brain: %s' % target)
-print ('Similarity measure: %s' % similarity)
-print ('Optimizer: %s' % optimizer)
+print('Source brain: %s' % source)
+print('Target brain: %s' % target)
+print('Similarity measure: %s' % similarity)
+print('Optimizer: %s' % optimizer)
 
 # Get data
 print('Fetching image data...')

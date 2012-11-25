@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
+from __future__ import print_function
+__doc__ = """
 This examples performs sifferent kinds of (2D and 3D) plots
 of a given activation map.
 
@@ -9,7 +10,7 @@ Needs matplotlib.
 
 Author : Bertrand Thirion, 2012
 """
-print __doc__
+print(__doc__)
 
 from os import path
 
@@ -64,6 +65,6 @@ if True:  # replace with False to skip this
                         anat=None,
                         threshold=4)
     except ImportError:
-        print "Need mayavi for 3D visualization"
+        print("Need mayavi for 3D visualization")
 
 plt.show()

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
+from __future__ import print_function # Python 2/3 compatibility
+__doc__ = """
 Full step-by-step example of fitting a GLM to experimental data and visualizing
 the results.
 
@@ -19,7 +20,7 @@ Needs matplotlib
 
 Author : Bertrand Thirion, 2010--2012
 """
-print __doc__
+print(__doc__)
 
 from os import mkdir, getcwd, path
 
@@ -68,15 +69,15 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-print 'Computation will be performed in directory: %s' % write_dir
+print('Computation will be performed in directory: %s' % write_dir)
 
 ########################################
 # Design matrix
 ########################################
 
-print 'Loading design matrix...'
+print('Loading design matrix...')
 
-paradigm = load_paradigm_from_csv_file(paradigm_file).values()[0]
+paradigm = load_paradigm_from_csv_file(paradigm_file)['0']
 
 design_matrix = make_dmtx(frametimes, paradigm, hrf_model=hrf_model,
                           drift_model=drift_model, hfcut=hfcut)
@@ -122,7 +123,7 @@ contrasts['effects_of_interest'] = np.eye(25)[:20:2]
 # Perform a GLM analysis
 ########################################
 
-print 'Fitting a GLM (this takes time)...'
+print('Fitting a GLM (this takes time)...')
 fmri_glm = FMRILinearModel(data_path, design_matrix.matrix,
                            mask='compute')
 fmri_glm.fit(do_scaling=True, model='ar1')
@@ -131,10 +132,10 @@ fmri_glm.fit(do_scaling=True, model='ar1')
 # Estimate the contrasts
 #########################################
 
-print 'Computing contrasts...'
+print('Computing contrasts...')
 for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
-    print '  Contrast % 2i out of %i: %s' % (
-        index + 1, len(contrasts), contrast_id)
+    print('  Contrast % 2i out of %i: %s' %
+          (index + 1, len(contrasts), contrast_id))
     # save the z_image
     image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
     z_map, = fmri_glm.contrast(contrast_val, con_id=contrast_id, output_z=True)
@@ -153,6 +154,6 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
              threshold=2.5)
     plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
-print "All the  results were witten in %s" % write_dir
+print("All the  results were witten in %s" % write_dir)
 
 plt.show()

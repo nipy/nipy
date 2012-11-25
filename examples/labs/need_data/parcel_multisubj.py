@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function # Python 2/3 compatibility
 """
 Example of script to parcellate mutli-subject data.
 
@@ -65,4 +66,4 @@ test_images = [path.join(data_dir, 'spmT_%s_subj_%02d.nii' % (nbeta, n))
 # compute and write the parcel-based statistics
 rfx_path = path.join(write_dir, 'prfx_%s.nii' % nbeta)
 parcellation_based_analysis(fpa, test_images, 'one_sample', rfx_path=rfx_path)
-print "Wrote everything in %s" % write_dir
+print("Wrote everything in %s" % write_dir)

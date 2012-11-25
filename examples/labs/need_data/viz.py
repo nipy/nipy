@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
+from __future__ import print_function # Python 2/3 compatibility
+__doc__ = """
 Example of activation image vizualization with nipy.labs vizualization tools
 
 Needs *example data* package.
 
 Needs matplotlib
 """
-print __doc__
+print(__doc__)
 
 import os.path
 
@@ -43,9 +44,9 @@ try:
                                               'nobias_anubis.nii.gz'))
     anat = anat_img.get_data()
     anat_affine = anat_img.get_affine()
-except OSError, e:
+except OSError as e:
     # File does not exist: the data package is not installed
-    print e
+    print(e)
     anat = None
     anat_affine = None
 
