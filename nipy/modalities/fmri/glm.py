@@ -39,6 +39,7 @@ from nibabel import load, Nifti1Image
 from nipy.labs.mask import compute_mask_sessions
 from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
 from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
+from nipy.core.api import is_image
 
 from nipy.testing.decorators import skip_doctest_if
 from nipy.utils import HAVE_EXAMPLE_DATA
@@ -415,9 +416,9 @@ class FMRILinearModel(object):
         ----------
         fmri_data : Image or str or sequence of Images / str
             fmri images / paths of the (4D) fmri images
-        design_matricesi : arrays or str or sequence of arrays / str
+        design_matrices : arrays or str or sequence of arrays / str
             design matrix arrays / paths of .npz files
-        mask : str or Image or None
+        mask : str or Image or None, optional
             string can be 'compute' or a path to an image
             image is an input (assumed binary) mask image(s),
             if 'compute', the mask is computed
@@ -450,13 +451,12 @@ class FMRILinearModel(object):
         671
         """
         # manipulate the arguments
-        if not hasattr(fmri_data, '__iter__'):
+        if isinstance(fmri_data, basestring) or hasattr(fmri_data, 'get_data'):
             fmri_data = [fmri_data]
-        if (not hasattr(design_matrices, '__iter__') or
-            type(design_matrices) == np.ndarray):
+        if isinstance(design_matrices, (basestring, np.ndarray)):
             design_matrices = [design_matrices]
         if len(fmri_data) != len(design_matrices):
-            raise ValueError('Incompatible number of fmri runs and'
+            raise ValueError('Incompatible number of fmri runs and '
                              'design matrices were provided')
         self.fmri_data, self.design_matrices = [], []
         self.glms, self.means = [], []

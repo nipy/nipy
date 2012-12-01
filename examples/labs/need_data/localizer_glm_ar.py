@@ -133,7 +133,7 @@ fmri_glm.fit(do_scaling=True, model='ar1')
 #########################################
 
 print('Computing contrasts...')
-for index, (contrast_id, contrast_val) in enumerate(contrasts.iteritems()):
+for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' %
           (index + 1, len(contrasts), contrast_id))
     # save the z_image
