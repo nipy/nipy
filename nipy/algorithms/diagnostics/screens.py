@@ -76,7 +76,7 @@ def write_screen_res(res, out_path, out_root,
                      out_img_ext='.nii',
                      pcnt_var_thresh=0.1):
     ''' Write results from ``screen`` to disk as images
-    
+
     Parameters
     ----------
     res : dict
@@ -108,6 +108,10 @@ def write_screen_res(res, out_path, out_root,
     # plot, save component time courses
     ncomp = res['pca'].shape[-1]
     vectors = res['pca_res']['basis_vectors']
+    pcnt_var = res['pca_res']['pcnt_var']
+    np.savez('vectors_components_%s.npz' % out_root,
+             basis_vectors=vectors,
+             pcnt_var=pcnt_var)
     plt.figure()
     for c in range(ncomp):
         plt.subplot(ncomp, 1, c+1)
@@ -117,7 +121,6 @@ def write_screen_res(res, out_path, out_root,
     plt.savefig(pjoin(out_path, 'components_%s.png' % out_root))
     # plot percent variance
     plt.figure()
-    pcnt_var = res['pca_res']['pcnt_var']
     plt.plot(pcnt_var[pcnt_var >= pcnt_var_thresh])
     plt.axis('tight')
     plt.suptitle(out_root + ': PCA percent variance')
