@@ -31,17 +31,15 @@ generate filenames of the form ``/some/path/components_fname.png,
 
 import os
 
-import numpy as np
-
-import nipy
-from nipy.externals.argparse import ArgumentParser, \
-    RawDescriptionHelpFormatter
-import nipy.algorithms.diagnostics.screens as nads
-from nibabel.filename_parser import splitext_addext
-
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+
+from nibabel.filename_parser import splitext_addext
+
+import nipy
+from nipy.externals.argparse import (ArgumentParser,
+                                     RawDescriptionHelpFormatter)
+import nipy.algorithms.diagnostics.screens as nads
 
 
 def main():
@@ -73,7 +71,7 @@ def main():
     img = nipy.load_image(filename)
     res = nads.screen(img, ncomps)
     nads.write_screen_res(res, out_path, out_root, ext + gz)
-    
+
 
 if __name__ == '__main__':
     main()
