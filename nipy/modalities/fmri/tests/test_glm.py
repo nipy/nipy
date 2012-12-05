@@ -293,7 +293,7 @@ def test_fmri_inputs():
         np.savez(des_fname, des)
         for fi in func_img, funcfile:
             for d in des, des_fname:
-                fmodel = FMRILinearModel(fi, d, mask=None)
+                fmodel = FMRILinearModel(fi, d, mask='compute')
                 fmodel = FMRILinearModel([fi], d, mask=None)
                 fmodel = FMRILinearModel(fi, [d], mask=None)
                 fmodel = FMRILinearModel([fi], [d], mask=None)
