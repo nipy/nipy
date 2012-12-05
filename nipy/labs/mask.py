@@ -76,7 +76,7 @@ def threshold_connect_components(map, threshold, copy=True):
 
 def compute_mask_files(input_filename, output_filename=None,
                         return_mean=False, m=0.2, M=0.9, cc=1,
-                        exclude_zeros=False):
+                        exclude_zeros=False, opening=2):
     """
     Compute a mask file from fMRI nifti file(s)
 
@@ -106,6 +106,8 @@ def compute_mask_files(input_filename, output_filename=None,
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
+    opening: int, optional
+        Size of the morphological opening performed as post-processing
 
     Returns
     -------
@@ -116,8 +118,8 @@ def compute_mask_files(input_filename, output_filename=None,
         provided if `return_mean` is True.
     """
     if isinstance(input_filename, basestring):
-        # One single filename
-        nim = load(input_filename)
+        # One single filename or image
+        nim = load(input_filename) # load the image from the path
         vol_arr = read_img_data(nim, prefer='unscaled')
         header = nim.get_header()
         affine = nim.get_affine()
@@ -155,7 +157,6 @@ def compute_mask_files(input_filename, output_filename=None,
             else:
                 mean_volume += nim.get_data().squeeze()
         mean_volume /= float(len(list(input_filename)))
-
     del nim
     if np.isnan(mean_volume).any():
         tmp = mean_volume.copy()
@@ -163,7 +164,7 @@ def compute_mask_files(input_filename, output_filename=None,
         mean_volume = tmp
 
     mask = compute_mask(mean_volume, first_volume, m, M, cc,
-                        exclude_zeros=exclude_zeros)
+                        opening=opening, exclude_zeros=exclude_zeros)
 
     if output_filename is not None:
         header['descrip'] = 'mask'
@@ -202,9 +203,9 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
         upper fraction of the histogram to be discarded.
     cc: boolean, optional
         if cc is True, only the largest connect component is kept.
-    opening: boolean, optional
-        if opening is True, an morphological opening is performed, to keep
-        only large structures. This step is useful to remove parts of
+    opening: int, optional
+        if opening is larger than 0, an morphological opening is performed, 
+        to keep only large structures. This step is useful to remove parts of
         the skull that might have been included.
     exclude_zeros: boolean, optional
         Consider zeros as missing values for the computation of the
@@ -235,14 +236,14 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     if cc:
         mask = largest_cc(mask)
 
-    if opening:
+    if opening > 0:
         mask = ndimage.binary_opening(mask.astype(np.int),
-                                        iterations=2)
+                                        iterations=opening)
     return mask.astype(bool)
 
 
-def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
-                    threshold=0.5, exclude_zeros=False, return_mean=False):
+def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5,
+                          exclude_zeros=False, return_mean=False, opening=2):
     """ Compute a common mask for several sessions of fMRI data.
 
         Uses the mask-finding algorithmes to extract masks for each
@@ -274,6 +275,8 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
     return_mean: boolean, optional
         if return_mean is True, the mean image accross subjects is
         returned.
+    opening: int, optional,
+             size of  the morphological opening
 
     Returns
     -------
@@ -285,10 +288,20 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1,
     mask = None
     mean = None
     for index, session in enumerate(session_files):
-        this_mask = compute_mask_files(session,
-                                       m=m, M=M, cc=cc,
-                                       exclude_zeros=exclude_zeros,
-                                       return_mean=return_mean)
+        if hasattr(session, 'get_data'):
+            mean = session.get_data()
+            if mean.ndim > 3:
+                mean = mean.mean(-1)
+            this_mask = compute_mask(mean, None, m=m, M=M, cc=cc,
+                        opening=opening, exclude_zeros=exclude_zeros)
+            if return_mean:
+                this_mask = this_mask, mean
+        else:
+            this_mask = compute_mask_files(session,
+                                           m=m, M=M, cc=cc,
+                                           exclude_zeros=exclude_zeros,
+                                           return_mean=return_mean, 
+                                           opening=opening)            
         if return_mean:
             this_mask, this_mean = this_mask
             if mean is None:
