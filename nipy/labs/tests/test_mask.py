@@ -60,7 +60,7 @@ def test_mask():
     yield assert_false, np.allclose(mask1, mask3[:9, :9])
     # check that  opening is 2 by default
     mask4 = nnm.compute_mask(mean_image, exclude_zeros=True, opening=2)
-    assert_array_equal(mask1, mask4)
+    yield assert_array_equal, mask1, mask4
     # check that opening has an effect
     mask5 = nnm.compute_mask(mean_image, exclude_zeros=True, opening=0)
     yield assert_true, mask5.sum() > mask4.sum()
@@ -116,6 +116,31 @@ def test_series_from_mask():
         series, header = series_from_mask('testing.nii', mask, smooth=9)
         assert_true(np.all(np.isfinite(series)))
 
+def test_compute_mask_sessions():
+    """Test that the mask computes well on multiple sessions
+    """
+    with InTemporaryDirectory():
+        # Make a 4D file from the anatomical example
+        img = nib.load(anatfile)
+        arr = img.get_data()
+        a2 = np.zeros(arr.shape + (2, ))
+        a2[:, :, :, 0] = arr
+        a2[:, :, :, 1] = arr
+        img = nib.Nifti1Image(a2, np.eye(4))
+        a_fname = 'fourd_anat.nii'
+        nib.save(img, a_fname)
+        a3 = a2.copy()
+        a3[:10, :10, :10] = 0
+        img2 = nib.Nifti1Image(a3, np.eye(4))
+        # check 4D mask
+        msk1 = nnm.compute_mask_sessions([img2, img2])
+        msk2 = nnm.compute_mask_sessions([img2, a_fname])
+        assert_array_equal(msk1, msk2)
+        msk3 = nnm.compute_mask_sessions([img2, a_fname], threshold=.9)
+        msk4 = nnm.compute_mask_sessions([img2, a_fname], threshold=0)
+        msk5 = nnm.compute_mask_sessions([a_fname, a_fname])
+        assert_array_equal(msk1, msk3)
+        assert_array_equal(msk4, msk5)
 
 if __name__ == "__main__":
     import nose
