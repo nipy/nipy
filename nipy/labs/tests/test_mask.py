@@ -58,7 +58,13 @@ def test_mask():
     # However, without exclude_zeros, it does
     mask3 = nnm.compute_mask(mean_image2)
     yield assert_false, np.allclose(mask1, mask3[:9, :9])
-
+    # check that  opening is 2 by default
+    mask4 = nnm.compute_mask(mean_image, exclude_zeros=True, opening=2)
+    assert_array_equal(mask1, mask4)
+    # check that opening has an effect
+    mask5 = nnm.compute_mask(mean_image, exclude_zeros=True, opening=0)
+    yield assert_true, mask5.sum() > mask4.sum()
+    
 
 def test_mask_files():
     with InTemporaryDirectory():

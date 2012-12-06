@@ -179,7 +179,7 @@ def compute_mask_files(input_filename, output_filename=None,
 
 
 def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
-                        cc=True, opening=True, exclude_zeros=False):
+                        cc=True, opening=2, exclude_zeros=False):
     """
     Compute a mask file from fMRI data in 3D or 4D ndarrays.
 
