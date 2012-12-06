@@ -105,13 +105,16 @@ def write_screen_res(res, out_path, out_root,
                                              out_root,
                                              out_img_ext))
         save_image(res[key], fname)
-    # plot, save component time courses
+    # plot, save component time courses and some tsdiffana stuff
     ncomp = res['pca'].shape[-1]
     vectors = res['pca_res']['basis_vectors']
     pcnt_var = res['pca_res']['pcnt_var']
-    np.savez('vectors_components_%s.npz' % out_root,
+    np.savez(pjoin(out_path, 'vectors_components_%s.npz' % out_root),
              basis_vectors=vectors,
-             pcnt_var=pcnt_var)
+             pcnt_var=pcnt_var,
+             volume_means=res['ts_res']['volume_means'],
+             slice_mean_diff2=res['ts_res']['slice_mean_diff2'],
+            )
     plt.figure()
     for c in range(ncomp):
         plt.subplot(ncomp, 1, c+1)
