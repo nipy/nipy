@@ -247,7 +247,7 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     return mask.astype(bool)
 
 
-def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5,
+def compute_mask_sessions(session_images, m=0.2, M=0.9, cc=1, threshold=0.5,
                           exclude_zeros=False, return_mean=False, opening=2):
     """ Compute a common mask for several sessions of fMRI data.
 
@@ -258,7 +258,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5,
 
     Parameters
     ----------
-    session_files : list of (list of strings) or nipy image objects
+    session_images : list of (list of strings) or nipy image objects
         A list of images/list of nifti filenames. Each inner list/image
         represents a session.
     m : float, optional
@@ -291,7 +291,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5,
         The mean image
     """
     mask, mean = None, None
-    for index, session in enumerate(session_files):
+    for index, session in enumerate(session_images):
         if hasattr(session, 'get_data'):
             mean = session.get_data()
             if mean.ndim > 3:
@@ -320,7 +320,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5,
 
     # Take the "half-intersection", i.e. all the voxels that fall within
     # 50% of the individual masks.
-    mask = (mask > threshold * len(list(session_files)))
+    mask = (mask > threshold * len(list(session_images)))
 
     if cc:
         # Select the largest connected component (each mask is
@@ -330,7 +330,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5,
 
     if return_mean:
         # Divide by the number of sessions
-        mean /= len(session_files)
+        mean /= len(session_images)
         return mask, mean
 
     return mask
