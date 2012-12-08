@@ -21,15 +21,15 @@ from nibabel.loadsave import read_img_data
 def largest_cc(mask):
     """ Return the largest connected component of a 3D mask array.
 
-        Parameters
-        -----------
-        mask: 3D boolean array
-            3D array indicating a mask.
+    Parameters
+    -----------
+    mask: 3D boolean array
+          3D array indicating a mask.
 
-        Returns
-        --------
-        mask: 3D boolean array
-            3D array indicating a mask, with only one connected component.
+    Returns
+    --------
+    mask: 3D boolean array
+          3D array indicating a mask, with only one connected component.
     """
     # We use asarray to be able to work with masked arrays.
     mask = np.asarray(mask)
@@ -49,14 +49,19 @@ def threshold_connect_components(map, threshold, copy=True):
         connect components with number of voxels smaller than the
         threshold and set them to 0.
 
-        Parameters
-        ----------
-        map: ndarray
-            The map to segment
-        threshold:
-            The minimum number of voxels to keep a cluster.
-        copy: bool, optional
-            If copy is false, the input array is modified inplace
+    Parameters
+    ----------
+    map: ndarray,
+         The spatial map to segment
+    threshold: scalar,
+               The minimum number of voxels to keep a cluster.
+    copy: bool, optional
+          If copy is false, the input array is modified inplace
+
+    Returns
+    -------
+    map: ndarray,
+         the map with connected components removed
     """
     labels, _ = ndimage.label(map)
     weights = np.bincount(labels.ravel())
@@ -119,7 +124,7 @@ def compute_mask_files(input_filename, output_filename=None,
     """
     if isinstance(input_filename, basestring):
         # One single filename or image
-        nim = load(input_filename) # load the image from the path
+        nim = load(input_filename)  # load the image from the path
         vol_arr = read_img_data(nim, prefer='unscaled')
         header = nim.get_header()
         affine = nim.get_affine()
@@ -204,7 +209,7 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     cc: boolean, optional
         if cc is True, only the largest connect component is kept.
     opening: int, optional
-        if opening is larger than 0, an morphological opening is performed, 
+        if opening is larger than 0, an morphological opening is performed,
         to keep only large structures. This step is useful to remove parts of
         the skull that might have been included.
     exclude_zeros: boolean, optional
@@ -253,21 +258,21 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5,
 
     Parameters
     ----------
-    session_files : list of list of strings
-        A list of list of nifti filenames. Each inner list
+    session_files : list of (list of strings) or nipy image objects
+        A list of images/list of nifti filenames. Each inner list/image
         represents a session.
-    threshold : float, optional
-        the inter-session threshold: the fraction of the
-        total number of session in for which a voxel must be in the
-        mask to be kept in the common mask.
-        threshold=1 corresponds to keeping the intersection of all
-        masks, whereas threshold=0 is the union of all masks.
     m : float, optional
         lower fraction of the histogram to be discarded.
     M: float, optional
         upper fraction of the histogram to be discarded.
     cc: boolean, optional
         if cc is True, only the largest connect component is kept.
+    threshold : float, optional
+        the inter-session threshold: the fraction of the
+        total number of session in for which a voxel must be in the
+        mask to be kept in the common mask.
+        threshold=1 corresponds to keeping the intersection of all
+        masks, whereas threshold=0 is the union of all masks.
     exclude_zeros: boolean, optional
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
@@ -285,8 +290,7 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5,
     mean : 3D float array
         The mean image
     """
-    mask = None
-    mean = None
+    mask, mean = None, None
     for index, session in enumerate(session_files):
         if hasattr(session, 'get_data'):
             mean = session.get_data()
@@ -297,11 +301,9 @@ def compute_mask_sessions(session_files, m=0.2, M=0.9, cc=1, threshold=0.5,
             if return_mean:
                 this_mask = this_mask, mean
         else:
-            this_mask = compute_mask_files(session,
-                                           m=m, M=M, cc=cc,
-                                           exclude_zeros=exclude_zeros,
-                                           return_mean=return_mean, 
-                                           opening=opening)            
+            this_mask = compute_mask_files(
+                session, m=m, M=M, cc=cc, exclude_zeros=exclude_zeros,
+                return_mean=return_mean, opening=opening)
         if return_mean:
             this_mask, this_mean = this_mask
             if mean is None:
@@ -408,30 +410,30 @@ def series_from_mask(filenames, mask, dtype=np.float32,
                      smooth=False, ensure_finite=True):
     """ Read the time series from the given sessions filenames, using the mask.
 
-        Parameters
-        -----------
-        filenames: list of 3D nifti file names, or 4D nifti filename.
-            Files are grouped by session.
-        mask: 3d ndarray
-            3D mask array: true where a voxel should be used.
-        smooth: False or float, optional
+    Parameters
+    -----------
+    filenames: list of 3D nifti file names, or 4D nifti filename.
+               Files are grouped by session.
+    mask: 3d ndarray
+          3D mask array: true where a voxel should be used.
+    smooth: False or float, optional
             If smooth is not False, it gives the size, in voxel of the
             spatial smoothing to apply to the signal.
-        ensure_finite: boolean
+    ensure_finite: boolean, optional
             If ensure_finite is True, the non-finite values (NaNs and infs)
             found in the images will be replaced by zeros
 
-        Returns
-        --------
-        session_series: ndarray
+    Returns
+    --------
+    session_series: ndarray
             3D array of time course: (session, voxel, time)
-        header: header object
+    header: header object
             The header of the first file.
 
-        Notes
-        -----
-        When using smoothing, ensure_finite should be True: as elsewhere non
-        finite values will spread accross the image.
+    Notes
+    -----
+    When using smoothing, ensure_finite should be True: as elsewhere non
+    finite values will spread accross the image.
     """
     assert len(filenames) != 0, (
         'filenames should be a file name or a list of file names, '
