@@ -162,7 +162,7 @@ def main():
                         else:
                             fails += 1
                             _record('FAIL', fname, f)
-    exit(fails if fails < 255 else 255)
+    sys.exit(fails if fails < 255 else 255)
 
 
 if __name__ == '__main__':
