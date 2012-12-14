@@ -98,7 +98,7 @@ class CutAxes(object):
         """
         coords = [0, 0, 0]
         coords['xyz'.index(self.direction)] = self.coord
-        x_map, y_map, z_map = [int(round(c)) for c in
+        x_map, y_map, z_map = [int(np.round(c)) for c in
                                coord_transform(coords[0],
                                                coords[1],
                                                coords[2],

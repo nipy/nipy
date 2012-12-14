@@ -6,6 +6,7 @@ TODO
 __docformat__ = 'restructuredtext'
 
 from . import intvol, rft, onesample, formula
+from ._quantile import _quantile as quantile, _median as median
 
 from nipy.testing import Tester
 test = Tester().test

@@ -8,6 +8,7 @@ import numpy as np
 
 from .... import load_image
 from ....testing import funcfile
+from ....fixes.nibabel import io_orientation
 
 from ..groupwise_registration import Image4d, resample4d, FmriRealign4d
 from ..affine import Rigid
@@ -79,7 +80,40 @@ def test_slice_timing():
     assert_array_almost_equal(im4d.get_data(), x)
 
 
-def test_realign4d():
+def test_realign4d_no_time_interp():
     runs = [im, im]
-    R = FmriRealign4d(runs, tr=2., slice_order='ascending', interleaved=False)
-    R.estimate(refscan=None, loops=(1, 0), between_loops=(1, 0))
+    R = FmriRealign4d(runs, slice_order=None, time_interp=False)
+
+
+def test_realign4d():
+    """
+    This tests whether realign4d yields the same results depending on
+    whether the slice order is input explicitely or as
+    slice_order='ascending'.
+    
+    Due to the very small size of the image used for testing (only 3
+    slices), optimization is numerically unstable. It seems to make
+    the default optimizer, namely scipy.fmin.fmin_ncg, adopt a random
+    behavior. To work around the resulting inconsistency in results,
+    we use nipy.optimize.fmin_steepest as the optimizer, although it's
+    generally not recommended in practice.
+    """
+    runs = [im, im]
+    orient = io_orientation(im.affine)
+    slice_axis = int(np.where(orient[:, 0] == 2)[0])
+    R1 = FmriRealign4d(runs, tr=2., slice_order='ascending')
+    R1.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
+    R2 = FmriRealign4d(runs, tr=2., slice_order=range(im.shape[slice_axis]))
+    R2.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
+    for r in range(2):
+        for i in range(im.shape[3]):
+            assert_array_almost_equal(R1._transforms[r][i].translation,
+                                      R2._transforms[r][i].translation)
+            assert_array_almost_equal(R1._transforms[r][i].rotation,
+                                      R2._transforms[r][i].rotation)
+    for i in range(im.shape[3]):
+            assert_array_almost_equal(R1._mean_transforms[r].translation,
+                                      R2._mean_transforms[r].translation)
+            assert_array_almost_equal(R1._mean_transforms[r].rotation,
+                                      R2._mean_transforms[r].rotation)
+    

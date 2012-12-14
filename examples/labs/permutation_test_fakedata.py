@@ -2,6 +2,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Example script for group permutation testing """
+from __future__ import print_function # Python 2/3 compatibility
 
 import numpy as np
 
@@ -76,7 +77,7 @@ for results in cluster_results:
     Tmax = np.zeros(nclust, float)
     Tmax_P = np.zeros(nclust, float)
     Diam = np.zeros(nclust, int)
-    for j in xrange(nclust):
+    for j in range(nclust):
         I = np.where(results["labels"]==j)[0]
         Tmax[j] = P.Tvalues[I].max()
         Tmax_P[j] = voxel_results["Corr_p_values"][I].min()
@@ -84,11 +85,11 @@ for results in cluster_results:
     J = np.where(1 - (results["size_Corr_p_values"] > level) *
                      (results["Fisher_Corr_p_values"] > level) *
                      (Tmax_P > level))[0]
-    print "\nDETECTED CLUSTERS STATISTICS:\n"
-    print "Cluster detection threshold:", round(results["thresh"], 2)
+    print("\nDETECTED CLUSTERS STATISTICS:\n")
+    print("Cluster detection threshold:", round(results["thresh"], 2))
     if results["diam"] != None:
-        print "minimum cluster diameter", results["diam"]
-    print "Cluster level FWER controled at", level
+        print("minimum cluster diameter", results["diam"])
+    print("Cluster level FWER controled at", level)
     for j in J:
             X, Y, Z = results["peak_XYZ"][:, j]
             strXYZ = str(X).zfill(2) + " " + str(Y).zfill(2) + " " + \

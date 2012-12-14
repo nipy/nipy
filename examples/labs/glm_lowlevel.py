@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
+from __future__ import print_function # Python 2/3 compatibility
+__doc__ = """
 This example simulates a number of pure Gaussian white noise signals, then fits
 each one in terms of two regressors: a constant baseline, and a linear function
 of time. The voxelwise t statistics associated with the baseline coefficient are
 then computed.
 """
-print __doc__
+print(__doc__)
 
 import numpy as np
 
@@ -44,6 +45,6 @@ z = tcon.z_score()
 # Perform a F test without keeping the F stat
 p = mod.contrast([[1, 0], [1, - 1]]).p_value()
 
-print np.shape(y)
-print np.shape(X)
-print np.shape(z)
+print(np.shape(y))
+print(np.shape(X))
+print(np.shape(z))

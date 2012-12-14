@@ -3,6 +3,8 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Example of more than one run in the same model
 """
+from __future__ import print_function # Python 2/3 compatibility
+
 import numpy as np
 
 from nipy.algorithms.statistics.api import Term, Formula, Factor
@@ -97,7 +99,7 @@ X = f.design(rec, return_float=True)
 preC = contrast.design(rec, return_float=True)
 # C is the matrix such that preC = X.dot(C.T)
 C = np.dot(np.linalg.pinv(X), preC)
-print C
+print(C)
 
 # We can also get this by passing the contrast into the design creation.
 X, c = f.design(rec, return_float=True, contrasts=dict(C=contrast))
@@ -105,5 +107,5 @@ assert np.allclose(C, c['C'])
 
 # Show the names of the non-trivial elements of the contrast
 nonzero = np.nonzero(np.fabs(C) >= 1e-5)[0]
-print (f.dtype.names[nonzero[0]], f.dtype.names[nonzero[1]])
-print ((run_1_coder * c11), (run_2_coder * c12))
+print((f.dtype.names[nonzero[0]], f.dtype.names[nonzero[1]]))
+print(((run_1_coder * c11), (run_2_coder * c12)))

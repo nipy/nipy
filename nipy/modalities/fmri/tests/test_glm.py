@@ -3,15 +3,20 @@
 """
 Test the glm utilities.
 """
+from __future__ import with_statement
 
 import numpy as np
-from nose.tools import assert_true, assert_equal
+
+from nibabel import load, Nifti1Image, save
+
+from ..glm import GeneralLinearModel, data_scaling, FMRILinearModel
+
+from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
                            assert_array_equal)
-from ..glm import GeneralLinearModel, data_scaling, FMRILinearModel
-from nibabel import load, Nifti1Image, save
 from nibabel.tmpdirs import InTemporaryDirectory
 
+from nipy.testing import funcfile
 
 
 def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
@@ -44,31 +49,34 @@ def test_high_level_glm_with_paths():
     shapes, rk = ((5, 6, 4, 20), (5, 6, 4, 19)), 3
     with InTemporaryDirectory():
         mask_file, fmri_files, design_files = write_fake_fmri_data(shapes, rk)
-        multi_session_model = FMRILinearModel(fmri_files, design_files, 
+        multi_session_model = FMRILinearModel(fmri_files, design_files,
                                               mask_file)
         multi_session_model.fit()
         z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
         assert_array_equal(z_image.get_affine(), load(mask_file).get_affine())
         assert_true(z_image.get_data().std() < 3.)
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory
+        del z_image, fmri_files, multi_session_model
 
 
 def test_high_level_glm_with_data():
     shapes, rk = ((7, 6, 5, 20), (7, 6, 5, 19)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
-    
+
     # without mask
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask=None)
     multi_session_model.fit()
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
     assert_equal(np.sum(z_image.get_data() == 0), 0)
-    
+
     # compute the mask
-    multi_session_model = FMRILinearModel(fmri_data, design_matrices, 
+    multi_session_model = FMRILinearModel(fmri_data, design_matrices,
                                           m=0, M=.01, threshold=0.)
     multi_session_model.fit()
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
     assert_true(z_image.get_data().std() < 3. )
-    
+
     # with mask
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask)
     multi_session_model.fit()
@@ -77,24 +85,24 @@ def test_high_level_glm_with_data():
     assert_array_equal(z_image.get_data() == 0., load(mask).get_data() == 0.)
     assert_true(
         (variance_image.get_data()[load(mask).get_data() > 0, 0] > .001).all())
-    
+
     # without scaling
     multi_session_model.fit(do_scaling=False)
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
     assert_true(z_image.get_data().std() < 3. )
 
-    
+
 def test_high_level_glm_contrasts():
     shapes, rk = ((5, 6, 7, 20), (5, 6, 7, 19)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask=None)
     multi_session_model.fit()
-    z_image, = multi_session_model.contrast([np.eye(rk)[:2]] * 2, 
+    z_image, = multi_session_model.contrast([np.eye(rk)[:2]] * 2,
                                             contrast_type='tmin-conjunction')
-    z1, = multi_session_model.contrast([np.eye(rk)[:1]] * 2) 
-    z2, = multi_session_model.contrast([np.eye(rk)[1:2]] * 2) 
+    z1, = multi_session_model.contrast([np.eye(rk)[:1]] * 2)
+    z2, = multi_session_model.contrast([np.eye(rk)[1:2]] * 2)
     assert_true((z_image.get_data() < np.maximum(
-                z1.get_data(), z2.get_data())).all())
+        z1.get_data(), z2.get_data())).all())
 
 
 def ols_glm(n=100, p=80, q=10):
@@ -110,6 +118,7 @@ def ar1_glm(n=100, p=80, q=10):
     glm.fit(Y, 'ar1')
     return glm, n, p, q
 
+
 def test_glm_ols():
     mulm, n, p, q = ols_glm()
     assert_array_equal(mulm.labels_, np.zeros(n))
@@ -118,21 +127,25 @@ def test_glm_ols():
     assert_almost_equal(mulm.results_[0.0].theta.mean(), 0, 1)
     assert_almost_equal(mulm.results_[0.0].theta.var(), 1. / p, 1)
 
+
 def test_glm_beta():
     mulm, n, p, q = ols_glm()
     assert_equal(mulm.get_beta().shape, (q, n)) 
     assert_equal(mulm.get_beta([0, -1]).shape, (2, n))
     assert_equal(mulm.get_beta(6).shape, (1, n))
-    
+
+
 def test_glm_mse():
     mulm, n, p, q = ols_glm()
     mse = mulm.get_mse()
     assert_array_almost_equal(mse, np.ones(n), 0) 
 
+
 def test_glm_logL():
     mulm, n, p, q = ols_glm()
     logL = mulm.get_logL()
     assert_array_almost_equal(logL / n, - p * 1.41 * np.ones(n) / n, 0) 
+
 
 def test_glm_ar():
     mulm, n, p, q = ar1_glm()
@@ -268,7 +281,29 @@ def test_scaling():
     assert_almost_equal(Y.mean(0), 0)
     assert_almost_equal(mean_, mean, 0)
     assert_true(Y.std() > 1)
-    
+
+
+def test_fmri_inputs():
+    # Test processing of FMRI inputs
+    func_img = load(funcfile)
+    T = func_img.shape[-1]
+    des = np.ones((T, 1))
+    des_fname = 'design.npz'
+    with InTemporaryDirectory():
+        np.savez(des_fname, des)
+        for fi in func_img, funcfile:
+            for d in des, des_fname:
+                fmodel = FMRILinearModel(fi, d, mask=None)
+                fmodel = FMRILinearModel([fi], d, mask=None)
+                fmodel = FMRILinearModel(fi, [d], mask=None)
+                fmodel = FMRILinearModel([fi], [d], mask=None)
+                fmodel = FMRILinearModel([fi, fi], [d, d], mask=None)
+                fmodel = FMRILinearModel((fi, fi), (d, d), mask=None)
+                assert_raises(ValueError, FMRILinearModel, [fi, fi], d,
+                              mask=None)
+                assert_raises(ValueError, FMRILinearModel, fi, [d, d],
+                              mask=None)
+
 
 if __name__ == "__main__":
     import nose

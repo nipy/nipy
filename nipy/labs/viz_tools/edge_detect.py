@@ -10,7 +10,7 @@ from scipy import ndimage, signal
 
 try:
     # Protect this import as it is compiled code
-    from nipy.labs.utils.routines import quantile
+    from nipy.algorithms.statistics import quantile
 except ImportError, e:
     warnings.warn('Could not import fast quantile function: %s' % e)
     quantile = None
