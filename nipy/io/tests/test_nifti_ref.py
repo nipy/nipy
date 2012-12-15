@@ -17,7 +17,8 @@ from ...core.api import (Image,
                          AffineTransform as AT,
                          CoordinateSystem as CS)
 from ...core.reference.spaces import (unknown_csm, scanner_csm, aligned_csm,
-                                      talairach_csm, mni_csm, vox2mni)
+                                      talairach_csm, mni_csm, unknown_space,
+                                      vox2mni)
 
 from ..files import load
 from ..nifti_ref import (nipy2nifti, nifti2nipy, NiftiError)
@@ -94,10 +95,32 @@ def test_xyz_affines():
     assert_raises(NiftiError, nipy2nifti, aimg[:, 1, :])
     assert_raises(NiftiError, nipy2nifti, aimg[1, :, :])
     # Do not allow spaces not in the NIFTI canon
+    for i in range(3):
+        displaced_img = fimg.renamed_reference(**{out_coords[i]: 'obscure'})
+        assert_raises(NiftiError, nipy2nifti, displaced_img)
+
+
+def test_unknown():
+    # The 'unknown' coordinate space results from loading an image with no
+    # affine set; allow setting into nifti iff the affine corresponds to the
+    # default that would be created when there is no affine
+    aimg = copy_of(anatfile)
+    bare_affine = aimg.metadata['header'].get_base_affine()
+    # The affine does not match the header-only affine
+    assert_false(np.allclose(bare_affine, aimg.coordmap.affine))
     unknown_cs = unknown_csm(3)
-    displaced_img = fimg.renamed_reference(
+    out_coords = aimg.reference.coord_names
+    # So nipy2nifti raises an error
+    displaced_img = aimg.renamed_reference(
         **dict(zip(out_coords[:3], unknown_cs.coord_names)))
     assert_raises(NiftiError, nipy2nifti, displaced_img)
+    # If the affine is the same, no error
+    displaced_img.coordmap.affine[:] = bare_affine
+    assert_true(np.allclose(bare_affine, displaced_img.coordmap.affine))
+    nimg = nipy2nifti(displaced_img)
+    assert_array_equal(nimg.get_affine(), bare_affine)
+    inimg = nifti2nipy(nimg)
+    assert_true(inimg.coordmap.function_range in unknown_space)
 
 
 def test_orthogonal_dims():
