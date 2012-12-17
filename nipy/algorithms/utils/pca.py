@@ -98,6 +98,9 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     data = np.rollaxis(data, axis)
     if mask is not None:
         mask = np.asarray(mask)
+        if not data.shape[1:] == mask.shape:
+            raise ValueError('Mask should match dimensions of data other than '
+                             'the axis over which to do the PCA')
     if design_resid == 'mean':
         # equivalent to: design_resid = np.ones((data.shape[0], 1))
         def project_resid(Y):
@@ -173,6 +176,10 @@ def _get_covariance(data, UX, rmse_scales_func, mask):
     # number of points in PCA dimension
     rank, n_pts = UX.shape
     C = np.zeros((rank, rank))
+    # nan_to_num only for floating point masks
+    if not mask is None:
+        nan_to_num = mask.dtype.type in (np.sctypes['float'] +
+                                         np.sctypes['complex'])
     # loop over next dimension to save memory
     if data.ndim == 2:
         # If we have 2D data, just do the covariance all in one shot, by using
@@ -190,7 +197,10 @@ def _get_covariance(data, UX, rmse_scales_func, mask):
             YX *= rmse_scales_func(Y)
         if mask is not None:
             # weight data with mask.  Usually the weights will be 0,1
-            YX = YX * np.nan_to_num(mask[s_slice].reshape(Y.shape[1]))
+            msk_slice = mask[s_slice].reshape(Y.shape[1])
+            if nan_to_num: # but if floats, check for NaNs too.
+                msk_slice = np.nan_to_num(msk_slice)
+            YX = YX * msk_slice
         C += np.dot(YX, YX.T)
     return C
 
