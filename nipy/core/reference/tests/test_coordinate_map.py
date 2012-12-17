@@ -819,10 +819,15 @@ def test_io_axis_indices():
         assert_equal(io_axis_indices(cmap_m, i), (i, 2-i))
         assert_equal(io_axis_indices(cmap_m, in_name), (i, 2-i))
         assert_equal(io_axis_indices(cmap_m, out_name), (2-i, i))
-    # If they don't match, AxisError
+    # If they don't match, AxisError, if selecting by name
     cmap_b = AffineTransform('ijk', 'xiz', np.eye(4))
-    assert_equal(io_axis_indices(cmap_m, 'j'), (1, 1))
     assert_raises(AxisError, io_axis_indices, cmap_b, 'i')
+    # ... but not if name corresponds
+    assert_equal(io_axis_indices(cmap_b, 'k'), (2, 2))
+    # ... or if input name not found in output
+    assert_equal(io_axis_indices(cmap_b, 'j'), (1, 1))
+    # ... or if selecting by number
+    assert_equal(io_axis_indices(cmap_b, 0), (0, 0))
     # Name not found, AxisError
     assert_raises(AxisError, io_axis_indices, cmap_b, 'q')
     # 0 usually leads to no match

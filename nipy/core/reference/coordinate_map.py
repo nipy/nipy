@@ -1986,7 +1986,7 @@ def io_axis_indices(coordmap, axis_id, fix0=False):
 
     Raises
     ------
-    AxisError: if `axis_id` is a str and does not match any no input or output
+    AxisError: if `axis_id` is a str and does not match any input or output
         coordinate names.
     AxisError: if the named `axis_id` exists in both input and output, and they
         do not correspond.
