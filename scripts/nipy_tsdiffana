@@ -4,7 +4,6 @@
 ''' Analyze, plot time series difference metrics'''
 
 import nipy.externals.argparse as argparse
-import nipy.algorithms.diagnostics as nad
 
 
 def main():
@@ -19,6 +18,11 @@ def main():
     # parse the command line
     args = parser.parse_args()
     show = args.out_file is None
+    if not show:
+        import matplotlib
+        matplotlib.use('Agg')
+    # Import late to allow setting Agg backend
+    import nipy.algorithms.diagnostics as nad
     axes = nad.plot_tsdiffs_image(args.filename, show=show)
     if args.out_file:
         axes[0].figure.savefig(args.out_file)
