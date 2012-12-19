@@ -7,7 +7,7 @@ analyze, MINC, at the moment, as nifti 3D files '''
 import os
 
 import nipy.externals.argparse as argparse
-import nibael as nib
+import nibabel as nib
 
 
 def main():
