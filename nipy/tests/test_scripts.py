@@ -10,7 +10,7 @@ from __future__ import with_statement
 
 import sys
 import os
-from os.path import dirname, join as pjoin, isfile, isdir, abspath
+from os.path import dirname, join as pjoin, isfile, isdir, abspath, realpath
 
 from subprocess import Popen, PIPE
 
@@ -31,8 +31,10 @@ needs_mpl = decorators.skipif(not HAVE_MPL, "Test needs matplotlib")
 USE_SHELL = os.name != 'nt'
 
 def local_script_dir():
-    # Check for presence of scripts in development directory
-    below_nipy_dir = abspath(pjoin(dirname(__file__), '..', '..'))
+    # Check for presence of scripts in development directory.  ``realpath``
+    # checks for the situation where the development directory has been linked
+    # into the path.
+    below_nipy_dir = realpath(pjoin(dirname(__file__), '..', '..'))
     devel_script_dir = pjoin(below_nipy_dir, 'scripts')
     if isfile(pjoin(below_nipy_dir, 'setup.py')) and isdir(devel_script_dir):
         return devel_script_dir
