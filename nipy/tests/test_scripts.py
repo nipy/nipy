@@ -64,7 +64,8 @@ def test_nipy_diagnose():
     fimg = load_image(funcfile)
     ncomps = 12
     with InTemporaryDirectory() as tmpdir:
-        cmd = "nipy_diagnose %s --ncomponents=%d --out-path=%s" % (
+        # Need to quote out path in case it has spaces
+        cmd = 'nipy_diagnose "%s" --ncomponents=%d --out-path="%s"' % (
             funcfile, ncomps, tmpdir)
         run_command(cmd)
         for out_fname in ('components_functional.png',
@@ -89,7 +90,8 @@ def test_nipy_tsdiffana():
     # Test nipy_tsdiffana script
     out_png = 'ts_out.png'
     with InTemporaryDirectory():
-        cmd = "nipy_tsdiffana %s --out-file=%s" % (funcfile, out_png)
+        # Quotes in case of space in arguments
+        cmd = 'nipy_tsdiffana "%s" --out-file="%s"' % (funcfile, out_png)
         run_command(cmd)
         assert_true(isfile(out_png))
 
@@ -100,12 +102,13 @@ def test_nipy_3_4d():
     N = fimg.shape[-1]
     out_4d = 'func4d.nii'
     with InTemporaryDirectory() as tmpdir:
-        cmd = "nipy_4dto3d %s --out-path=%s" % (funcfile, tmpdir)
+        # Quotes in case of space in arguments
+        cmd = 'nipy_4dto3d "%s" --out-path="%s"' % (funcfile, tmpdir)
         run_command(cmd)
         imgs_3d = ['functional_%04d.nii' % i for i in range(N)]
         for iname in imgs_3d:
             assert_true(isfile(iname))
-        cmd = "nipy_3dto4d %s --out-4d=%s" % (" ".join(imgs_3d), out_4d)
+        cmd = 'nipy_3dto4d "%s" --out-4d="%s"' % ('" "'.join(imgs_3d), out_4d)
         run_command(cmd)
         fimg_back = load_image(out_4d)
         assert_almost_equal(fimg.get_data(), fimg_back.get_data())
