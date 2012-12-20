@@ -268,6 +268,14 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
         if draw_cross:
             slicer.draw_cross()
 
+    if black_bg:
+        # To have a black background in PDF, we need to create a
+        # patch in black for the background
+        for ax in slicer.axes.values():
+            ax.ax.imshow(np.zeros((2, 2, 3)),
+                         extent=[-5000, 5000, -5000, 5000],
+                         zorder=-500)
+
     if title is not None and not title == '':
         slicer.title(title)
     return slicer

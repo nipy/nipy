@@ -25,6 +25,8 @@ def test_demo_plot_map():
     import pylab as pl
     pl.switch_backend('svg')
     demo_plot_map()
+    # Test the black background code path
+    demo_plot_map(black_bg=True)
 
 
 def test_plot_anat():
