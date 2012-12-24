@@ -241,6 +241,8 @@ class BaseSlicer(object):
                          black_bg=False, leave_space=False):
         cut_coords = cls.find_cut_coords(data, affine, threshold,
                                          cut_coords)
+        if isinstance(axes, pl.Axes) and figure is None:
+            figure = axes.figure
 
         if not isinstance(figure, pl.Figure):
             # Make sure that we have a figure
@@ -264,7 +266,9 @@ class BaseSlicer(object):
                 axes = [0.3, 0, .7, 1.]
         if operator.isSequenceType(axes):
             axes = figure.add_axes(axes)
-            axes.axis('off')
+        # People forget to turn their axis off, or to set the zorder, and
+        # then they cannot see their slicer
+        axes.axis('off')
         return cls(cut_coords, axes, black_bg)
 
 
