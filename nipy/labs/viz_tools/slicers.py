@@ -671,7 +671,6 @@ class BaseStackedSlicer(BaseSlicer):
             left_dict[cut_ax.ax] = left
             this_width = width_dict[cut_ax.ax]
             left += this_width
-        print len(width_dict), left_dict[axes] + width_dict[axes]
         return transforms.Bbox([[left_dict[axes], y0],
                                 [left_dict[axes] + width_dict[axes], y1]])
 
