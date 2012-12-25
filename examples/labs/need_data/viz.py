@@ -39,15 +39,15 @@ except OSError, e:
     anat_affine = None
 
 viz.plot_map(data, affine, anat=anat, anat_affine=anat_affine,
-             slicer='z', threshold=2, cmap=viz.cm.cold_hot)
+             slicer='z', threshold=2, cmap=viz.cm.cold_hot, black_bg=True)
 pl.savefig('z_view.png')
 
 viz.plot_map(data, affine, anat=anat, anat_affine=anat_affine,
-             slicer='x', threshold=2, cmap=viz.cm.cold_hot)
+             slicer='x', threshold=2, cmap=viz.cm.cold_hot, black_bg=True)
 pl.savefig('x_view.png')
 
 viz.plot_map(data, affine, anat=anat, anat_affine=anat_affine,
-             slicer='y', threshold=2, cmap=viz.cm.cold_hot)
+             slicer='y', threshold=2, cmap=viz.cm.cold_hot, black_bg=True)
 pl.savefig('y_view.png')
 
 pl.show()
