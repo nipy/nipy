@@ -90,6 +90,28 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     See: http://en.wikipedia.org/wiki/Principal_component_analysis for
     some inspiration for naming - particularly 'basis_vectors' and
     'basis_projections'
+
+    Examples
+    --------
+    >>> arr = np.random.normal(size=(17, 10, 12, 14))
+    >>> msk = np.all(arr > -2, axis=0)
+    >>> res = pca(arr, mask=msk, ncomp=9)
+
+    Basis vectors are columns.  There is one column for each component.  The
+    number of components is the calculated rank of the data matrix after
+    applying the various projections listed in the parameters.  In this case we
+    are only removing the mean, so the number of components is one less than the
+    axis over which we do the PCA (here axis=0 by default).
+
+    >>> res['basis_vectors'].shape
+    (17, 16)
+
+    Basis projections are arrays with components in the dimension over which we
+    have done the PCA (axis=0 by default).  Because we set `ncomp` above, we
+    only retain `ncomp` components.
+
+    >>> res['basis_projections'].shape
+    (9, 10, 12, 14)
     """
     data = np.asarray(data)
     # We roll the PCA axis to be first, for convenience
@@ -277,6 +299,30 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
           over axis `axis`; thus shape given by: ``s = list(data.shape);
           s[axis] = ncomp``
        * ``axis``: axis over which PCA has been performed.
+
+    Examples
+    --------
+    >>> from nipy.testing import funcfile
+    >>> from nipy import load_image
+    >>> func_img = load_image(funcfile)
+
+    Time is the fourth axis
+
+    >>> func_img.coordmap.function_range
+    CoordinateSystem(coord_names=('aligned-x=L->R', 'aligned-y=P->A', 'aligned-z=I->S', 't'), name='aligned', coord_dtype=float64)
+    >>> func_img.shape
+    (17, 21, 3, 20)
+
+    Calculate the PCA over time, by default
+
+    >>> res = pca_image(func_img)
+    >>> res['basis_projections'].coordmap.function_range
+    CoordinateSystem(coord_names=('aligned-x=L->R', 'aligned-y=P->A', 'aligned-z=I->S', 'PCA components'), name='aligned', coord_dtype=float64)
+
+    The number of components is one less than the number of time points
+
+    >>> res['basis_projections'].shape
+    (17, 21, 3, 19)
     """
     img_klass = img.__class__
     # Which axes are we operating over?
