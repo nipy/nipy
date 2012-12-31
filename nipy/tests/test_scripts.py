@@ -30,6 +30,8 @@ needs_mpl = decorators.skipif(not HAVE_MPL, "Test needs matplotlib")
 
 USE_SHELL = os.name != 'nt'
 
+DEBUG_PRINT = True
+
 def local_script_dir():
     # Check for presence of scripts in development directory.  ``realpath``
     # checks for the situation where the development directory has been linked
@@ -50,6 +52,8 @@ def run_command(cmd):
         # in the hash bang first line in the source file.  So, either way, run
         # the script through the Python interpreter
         cmd = "%s %s" % (sys.executable, pjoin(LOCAL_SCRIPT_DIR, cmd))
+    if DEBUG_PRINT:
+        print("Running command '%s'" % cmd)
     proc = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=USE_SHELL)
     stdout, stderr = proc.communicate()
     if proc.poll() == None:
