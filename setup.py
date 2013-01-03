@@ -49,8 +49,9 @@ def configuration(parent_package='',top_path=None):
 ################################################################################
 # For some commands, use setuptools
 
-if len(set(('develop', 'bdist_egg', 'bdist_rpm', 'bdist', 'bdist_dumb', 
+if len(set(('develop', 'bdist_egg', 'bdist_rpm', 'bdist', 'bdist_dumb',
             'bdist_wininst', 'install_egg_info', 'egg_info', 'easy_install',
+            'bdist_mpkg',
             )).intersection(sys.argv)) > 0:
     from setup_egg import extra_setuptools_args
 
