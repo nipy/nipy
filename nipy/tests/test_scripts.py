@@ -30,7 +30,7 @@ needs_mpl = decorators.skipif(not HAVE_MPL, "Test needs matplotlib")
 
 USE_SHELL = os.name != 'nt'
 
-DEBUG_PRINT = True
+DEBUG_PRINT = os.environ.get('NIPY_DEBUG_PRINT', False)
 
 def local_script_dir():
     # Check for presence of scripts in development directory.  ``realpath``
