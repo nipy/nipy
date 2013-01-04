@@ -11,16 +11,19 @@ To build the docs, run::
 
 This module has to work for python 2 and python 3.
 """
+from __future__ import with_statement
 
 # Standard library imports
 import sys
 import os
-from os.path import join as pjoin, dirname
+from os.path import join as pjoin, dirname, isfile
 import zipfile
 import warnings
 import shutil
+import re
 from distutils.cmd import Command
 from distutils.command.clean import clean
+from distutils.command.install_scripts import install_scripts
 from distutils.version import LooseVersion
 from distutils.dep_util import newer_group
 from distutils.errors import DistutilsError
@@ -244,12 +247,6 @@ class build_py(old_build_py):
 
 # End of numpy.distutils.command.build_py.py copy
 
-# The command classes for distutils, used by setup.py
-cmdclass = {'api_docs': APIDocs,
-            'clean': Clean,
-            'build_sphinx': MyBuildDoc}
-
-
 def have_good_cython():
     try:
         from Cython.Compiler.Version import version
@@ -301,3 +298,74 @@ def generate_a_pyrex_source(self, base, ext_name, source, extension):
                                  " but not available" %
                                  (CYTHON_MIN_VERSION, source))
     return target_file
+
+EXE_MATCH_RE = re.compile('^#!.*python[0-9.]*', re.IGNORECASE)
+
+class install_scripts_nipy(install_scripts):
+    """ Make scripts executable on Windows
+
+    Scripts are bare file names without extension on Unix, fitting (for example)
+    Debian rules. They identify as python scripts with the usual ``#!`` first
+    line.  This doesn't work on Windows.  So, on Windows only we:
+
+    * Add a ``.py`` extension to the ``bare_script_name`` to select interpeter
+      by extension
+    * Add a ``.bat`` wrapper of name ``bare_script_name.bat`` to call
+      ``bare_script_name.py`` using the python interpreter.
+
+    Notes
+    -----
+    The idea for this routine came from an idea in Twisted, re-used in IPython
+
+    An alternative to this method would be to use the ``distribute`` /
+    ``setuptools`` ``cli.exe`` method, where we copy a pre-compiled Windows
+    executable ``cli.exe`` as ``bare_script_name.exe``, and the script as
+    ``bare_script_name-script.py``.  The executable file ``cli.exe`` (copied as
+    ``bare_script_name.exe``) analyzes its own name, and then calls
+    ``bare_script_name-script.py`` with the Python interpreter named in the top
+    line of the script file.  But, ``.bat`` wrappers as here seem to work on all
+    current versions of Windows, are simpler to understand, and don't require
+    putting pre-compiled code into the repository.
+    """
+    def run(self):
+        install_scripts.run(self)
+        if not os.name == "nt":
+            return
+        for file in self.get_outputs():
+            # rename script to .py so it can be executed on windows
+            if file.endswith(".py"):
+                # Only do this processing on the bare scripts, not .py scripts.
+                continue
+            log.info("Adding .py extension to %s", file)
+            py_file = file + '.py'
+            if self.dry_run:
+                continue
+            if isfile(py_file):
+                os.unlink(py_file)
+            os.rename(file, py_file)
+            # If we can find an executable name in the #! top line of the script
+            # file, make .bat wrapper for .py script, using this executable
+            # name.  The original name has been replaced by one specific to the
+            # platform during the build_script distutils step.
+            with open(py_file, 'rt') as fobj:
+                first_line = fobj.readline()
+            exe_match = EXE_MATCH_RE.match(first_line)
+            if exe_match is None:
+                log.info("No #!python executable found, skipping .bat "
+                            "wrapper")
+                continue
+            exe_stuff = first_line[2:].strip()
+            log.info("Making .bat wrapper for %s with executable %s",
+                        py_file, exe_stuff)
+            bat_file = file + '.bat'
+            if isfile(bat_file):
+                os.unlink(bat_file)
+            with open(bat_file, 'wt') as fobj:
+                fobj.write('@"%s" "%s"' % (exe_stuff, py_file) + " %*\n")
+
+
+# The command classes for distutils, used by setup.py
+cmdclass = {'api_docs': APIDocs,
+            'clean': Clean,
+            'build_sphinx': MyBuildDoc,
+            'install_scripts': install_scripts_nipy}
