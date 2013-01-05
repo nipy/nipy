@@ -1848,7 +1848,7 @@ def append_io_dim(cm, in_name, out_name, start=0, step=1):
     return product(cm, extra_cmap)
 
 
-def axmap(coordmap, direction='in2out', fix0=False):
+def axmap(coordmap, direction='in2out', fix0=True):
     """ Return mapping between input and output axes
 
     Parameters
@@ -1901,7 +1901,7 @@ def axmap(coordmap, direction='in2out', fix0=False):
     return in2out_map, out2in_map
 
 
-def input_axis_index(coordmap, axis_id, fix0=False):
+def input_axis_index(coordmap, axis_id, fix0=True):
     """ Return input axis index for `axis_id`
 
     `axis_id` can be integer, or a name of an input axis, or it can be the name
@@ -1916,7 +1916,8 @@ def input_axis_index(coordmap, axis_id, fix0=False):
         input axis, or the name of an output axis that should have a
         corresponding input axis (see Raises section).
     fix0: bool, optional
-        Whether to fix potential 0 TR in affine
+        Whether to fix potential single 0 on diagonal of affine.  This often
+        happens when loading nifti images with TR set to 0.
 
     Returns
     -------
@@ -1961,7 +1962,7 @@ def input_axis_index(coordmap, axis_id, fix0=False):
     return in_no
 
 
-def io_axis_indices(coordmap, axis_id, fix0=False):
+def io_axis_indices(coordmap, axis_id, fix0=True):
     """ Return input and output axis index for id `axis_id` in `coordmap`
 
     Parameters
@@ -1986,7 +1987,7 @@ def io_axis_indices(coordmap, axis_id, fix0=False):
 
     Raises
     ------
-    AxisError: if `axis_id` is a str and does not match any no input or output
+    AxisError: if `axis_id` is a str and does not match any input or output
         coordinate names.
     AxisError: if the named `axis_id` exists in both input and output, and they
         do not correspond.

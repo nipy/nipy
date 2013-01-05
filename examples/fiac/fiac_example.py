@@ -182,7 +182,7 @@ def run_model(subj, run):
     # Load in the fMRI data, saving it as an array.  It is transposed to have
     # time as the first dimension, i.e. fmri[t] gives the t-th volume.
     fmri_im = futil.get_fmri(path_info) # an Image
-    fmri_im = rollimg(fmri_im, 't', fix0=True)
+    fmri_im = rollimg(fmri_im, 't')
     fmri = fmri_im.get_data() # now, it's an ndarray
 
     nvol, volshape = fmri.shape[0], fmri.shape[1:]

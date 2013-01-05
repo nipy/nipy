@@ -176,7 +176,7 @@ class NiftiError(Exception):
     pass
 
 
-def nipy2nifti(img, data_dtype=None, strict=None, fix0=False):
+def nipy2nifti(img, data_dtype=None, strict=None, fix0=True):
     """ Return NIFTI image from nipy image `img`
 
     Parameters
