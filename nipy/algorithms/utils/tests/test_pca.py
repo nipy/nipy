@@ -163,7 +163,19 @@ def test_PCAMask():
         assert_equal(p['basis_vectors'].shape, (data['nimages'], ntotal))
         assert_equal(p['basis_projections'].shape, mask.shape + (ncomp,))
         assert_equal(p['pcnt_var'].shape, (ntotal,))
-        assert_almost_equal(p['pcnt_var'].sum(), 100.) 
+        assert_almost_equal(p['pcnt_var'].sum(), 100.)
+    # Any reasonable datatype for mask
+    for dt in ([np.bool_] +
+               np.sctypes['int'] +
+               np.sctypes['uint'] +
+               np.sctypes['float']):
+        p = pca(arr4d, -1, mask3d.astype(dt), ncomp=ncomp)
+        assert_equal(p['basis_vectors'].shape, (data['nimages'], ntotal))
+        assert_equal(p['basis_projections'].shape, mask3d.shape + (ncomp,))
+        assert_equal(p['pcnt_var'].shape, (ntotal,))
+        assert_almost_equal(p['pcnt_var'].sum(), 100.)
+    # Mask data shape must match
+    assert_raises(ValueError, pca, arr4d, -1, mask1d)
 
 
 def test_PCAMask_nostandardize():
