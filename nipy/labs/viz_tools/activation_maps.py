@@ -75,7 +75,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, xmax, ymin, ymin), optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
@@ -185,7 +185,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             from enthought.mayavi import mlab
         if threshold_3d is None:
             threshold_3d = threshold
-        plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords, 
+        plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords,
                     anat=anat, anat_affine=anat_affine, 
                     offscreen=offscreen, cmap=cmap,
                     threshold=threshold_3d,
@@ -268,6 +268,14 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
         if draw_cross:
             slicer.draw_cross()
 
+    if black_bg:
+        # To have a black background in PDF, we need to create a
+        # patch in black for the background
+        for ax in slicer.axes.values():
+            ax.ax.imshow(np.zeros((2, 2, 3)),
+                         extent=[-5000, 5000, -5000, 5000],
+                         zorder=-500)
+
     if title is not None and not title == '':
         slicer.title(title)
     return slicer
@@ -304,7 +312,7 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes : matplotlib axes or 4 tuple of float: (xmin, xmax, ymin, ymin), optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
