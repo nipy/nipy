@@ -164,7 +164,7 @@ class CutAxes(object):
                 verticalalignment='top',
                 size=size,
                 bbox=dict(boxstyle="square,pad=0",
-                            ec=bg_color, fc=bg_color, alpha=.8),
+                            ec=bg_color, fc=bg_color, alpha=1),
                 **kwargs)
 
         ax.text(.9, .95, 'R',
@@ -173,7 +173,7 @@ class CutAxes(object):
                 verticalalignment='top',
                 size=size,
                 bbox=dict(boxstyle="square,pad=0",
-                            ec=bg_color, fc=bg_color, alpha=.8),
+                            ec=bg_color, fc=bg_color, alpha=1),
                 **kwargs)
 
 
@@ -185,7 +185,7 @@ class CutAxes(object):
                 verticalalignment='bottom',
                 size=size,
                 bbox=dict(boxstyle="square,pad=0",
-                            ec=bg_color, fc=bg_color, alpha=.9),
+                            ec=bg_color, fc=bg_color, alpha=1),
                 **kwargs)
 
 
@@ -273,7 +273,7 @@ class BaseSlicer(object):
 
 
     def title(self, text, x=0.01, y=0.99, size=15, color=None,
-                bgcolor=None, alpha=.9, **kwargs):
+                bgcolor=None, alpha=1, **kwargs):
         """ Write a title to the view.
 
             Parameters
