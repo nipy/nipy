@@ -3,7 +3,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
-Example of activation image vizualization with nipy.labs vizualization tools
+Example of activation image visualization with nipy.labs visualization tools
 
 Needs *example data* package.
 

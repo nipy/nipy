@@ -278,7 +278,7 @@ class GGM(object):
         return L
 
     def show(self, x):
-        """ vizualisation of the mm based on the empirical histogram of x
+        """ Visualization of the mm based on the empirical histogram of x
 
         Parameters
         ----------
@@ -631,9 +631,7 @@ class GGGM(object):
         return ng, y, pg
 
     def show(self, x, mpaxes=None):
-        """
-        Vizualization of the mixture, superimposed on the empirical
-        histogram of x
+        """ Visualization of mixture shown on the empirical histogram of x
 
         Parameters
         ----------
