@@ -1,6 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
+
 import pylab as pl
 
 from nipy.labs.utils.simul_multisubject_fmri_dataset import \
@@ -13,7 +14,7 @@ ampli = np.array([4, 5, 2])
 
 # First generate some noiseless data
 noiseless_data = surrogate_2d_dataset(n_subj=1, noise_level=0, spatial_jitter=0,
-                                signal_jitter=0, pos=pos, ampli=ampli)
+                                      signal_jitter=0, pos=pos, ampli=ampli)
 
 pl.figure(figsize=(10, 3))
 pl.subplot(1, 4, 1)

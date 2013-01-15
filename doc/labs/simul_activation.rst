@@ -2,15 +2,15 @@
 Generating simulated activation maps
 =====================================
 
-.. currentmodule:: nipy.labs.utils.simul_2d_multisubject_fmri_dataset
+.. currentmodule:: nipy.labs.utils.simul_multisubject_fmri_dataset
 
-The module :mod:`nipy.labs.utils.simul_2d_multisubject_fmri_dataset`
-contains a function to create simulated 2D activation maps:
-:func:`make_surrogate_array`. The function can position various
-activations and add noise, both as background noise and jitter in the
-activation positions and amplitude.
+The module :mod:`nipy.labs.utils.simul_multisubject_fmri_dataset`
+contains a various functions to create simulated activation maps in two, three
+and four dimensions.  A 2D example is :func:`surrogate_2d_dataset`.  The
+functions can position various activations and add noise, both as background
+noise and jitter in the activation positions and amplitude.
 
-This function is useful to test methods.
+These functions can be useful to test methods.
 
 Example
 --------
@@ -22,5 +22,8 @@ Example
 Function documentation
 -------------------------
 
-.. autofunction:: make_surrogate_array
+.. autofunction:: surrogate_2d_dataset
 
+.. autofunction:: surrogate_3d_dataset
+
+.. autofunction:: surrogate_4d_dataset
