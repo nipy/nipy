@@ -23,10 +23,13 @@ from nose.tools import assert_true, assert_false, assert_equal
 from ..testing import funcfile
 from numpy.testing import decorators, assert_almost_equal
 
+from nipy.testing.decorators import make_label_dec
+
 from nibabel.optpkg import optional_package
 
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
 needs_mpl = decorators.skipif(not HAVE_MPL, "Test needs matplotlib")
+script_test = make_label_dec('script_test')
 
 USE_SHELL = os.name != 'nt'
 
@@ -65,6 +68,7 @@ def run_command(cmd):
 
 
 @needs_mpl
+@script_test
 def test_nipy_diagnose():
     # Test nipy diagnose script
     fimg = load_image(funcfile)
@@ -92,6 +96,7 @@ def test_nipy_diagnose():
 
 
 @needs_mpl
+@script_test
 def test_nipy_tsdiffana():
     # Test nipy_tsdiffana script
     out_png = 'ts_out.png'
@@ -102,6 +107,7 @@ def test_nipy_tsdiffana():
         assert_true(isfile(out_png))
 
 
+@script_test
 def test_nipy_3_4d():
     # Test nipy_3dto4d and nipy_4dto3d
     fimg = load_image(funcfile)
