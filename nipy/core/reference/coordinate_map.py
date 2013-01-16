@@ -442,7 +442,8 @@ class CoordinateMap(object):
         out = self(inp)
 
     def __eq__(self, other):
-        return (isinstance(other, self.__class__)
+        return ((isinstance(other, self.__class__) or
+                 isinstance(self, other.__class__))
                 and (self.function == other.function)
                 and (self.function_domain ==
                      other.function_domain)
@@ -956,7 +957,8 @@ class AffineTransform(object):
 
     def __eq__(self, other):
         # Must be subclasses
-        if not isinstance(other, self.__class__):
+        if not (isinstance(other, self.__class__) or
+                isinstance(self, other.__class__)):
             return False
         if np.any(self.affine - other.affine): # for objects
             if not np.allclose(self.affine, other.affine): # for numerical
