@@ -114,7 +114,7 @@ class CoordinateSystem(object):
             raise ValueError('coord_names must have distinct names')
         # verify that the dtype is coord_dtype for sanity
         sctypes = (np.sctypes['int'] + np.sctypes['float'] +
-                   np.sctypes['complex'] + np.sctypes['uint'])
+                   np.sctypes['complex'] + np.sctypes['uint'] + [np.object])
         coord_dtype = np.dtype(coord_dtype)
         if coord_dtype not in sctypes:
             raise ValueError('Coordinate dtype should be one of %s' % sctypes)
@@ -123,7 +123,7 @@ class CoordinateSystem(object):
         self.coord_names = coord_names
         self.coord_dtype = coord_dtype
         self.ndim = len(coord_names)
-        self.dtype = np.dtype([(name, self.coord_dtype) 
+        self.dtype = np.dtype([(name, self.coord_dtype)
                                for name in self.coord_names])
 
     # All attributes are read only
@@ -341,7 +341,7 @@ def safe_dtype(*dtypes):
     >>> safe_dtype(type('foo'))
     Traceback (most recent call last):
     ...
-    TypeError: dtype must be valid numpy dtype bool, int, uint, float or complex
+    TypeError: dtype must be valid numpy dtype int, uint, float, complex or object
 
     >>> # Check for a valid dtype
     >>> myarr = np.zeros(2, np.float32)
@@ -356,13 +356,13 @@ def safe_dtype(*dtypes):
     >>> safe_dtype(mydtype)
     Traceback (most recent call last):
     ...
-    TypeError: dtype must be valid numpy dtype bool, int, uint, float or complex
+    TypeError: dtype must be valid numpy dtype int, uint, float, complex or object
     """
     arrays = [np.zeros(2, dtype) for dtype in dtypes]
     kinds = [a.dtype.kind for a in arrays]
-    if not set(kinds).issubset('iubfc'):
-        raise TypeError('dtype must be valid numpy dtype bool, '
-                        'int, uint, float or complex')
+    if not set(kinds).issubset('iubfcO'):
+        raise TypeError('dtype must be valid numpy dtype '
+                        'int, uint, float, complex or object')
     return np.array(arrays).dtype
 
 

@@ -55,18 +55,24 @@ def test_unique_coord_names():
 def test_dtypes():
     # invalid dtypes
     dtypes = np.sctypes['others']
+    dtypes.remove(np.object)
     for dt in dtypes:
         assert_raises(ValueError, CoordinateSystem, 'ijk', 'test', dt)
     # compound dtype
     dtype = np.dtype([('field1', '<f8'), ('field2', '<i4')])
     assert_raises(ValueError, CoordinateSystem, 'ijk', 'test', dtype)
-    # valid dtype
-    dtypes = np.sctypes['int']
+    # valid dtypes
+    dtypes = (np.sctypes['int'] + np.sctypes['float'] + np.sctypes['complex'] +
+              [np.object])
     for dt in dtypes:
-        cs = CoordinateSystem('ijk', coord_dtype=dt)
+        cs = CoordinateSystem('ij', coord_dtype=dt)
         assert_equal(cs.coord_dtype, dt)
-        cs_dt = [(f, dt) for f in 'ijk']
+        cs_dt = [(f, dt) for f in 'ij']
         assert_equal(cs.dtype, np.dtype(cs_dt))
+        # Check product too
+        cs2 = CoordinateSystem('xy', coord_dtype=dt)
+        assert_equal(product(cs, cs2),
+                     CoordinateSystem('ijxy', name='product', coord_dtype=dt))
     # verify assignment fails
     assert_raises(AttributeError, setattr, cs, 'dtype', np.dtype(cs_dt))
     assert_raises(AttributeError, setattr, cs, 'coord_dtype', np.float)
