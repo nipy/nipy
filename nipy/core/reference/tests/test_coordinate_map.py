@@ -956,6 +956,23 @@ def test_dtype_cmap_inverses():
         assert_array_equal(rcm_cmap(coord), out_arr)
 
 
+def test_subtype_equalities():
+    # Check cmap compare equal if subtypes, on either side
+    in_cs = CoordinateSystem('ijk')
+    out_cs = CoordinateSystem('xyz')
+    f = lambda x : x + 1
+    cmap = CoordinateMap(in_cs, out_cs, f)
+    class CM2(CoordinateMap): pass
+    cmap2 = CM2(in_cs, out_cs, f)
+    assert_equal(cmap, cmap2)
+    assert_equal(cmap2, cmap)
+    cmap = AffineTransform(in_cs, out_cs, np.eye(4))
+    class AT2(AffineTransform): pass
+    cmap2 = AT2(in_cs, out_cs, np.eye(4))
+    assert_equal(cmap, cmap2)
+    assert_equal(cmap2, cmap)
+
+
 def test_cmap_coord_types():
     # Check that we can use full range of coordinate system types.  The inverse
     # of an AffineTransform should generate coordinates in the input coordinate
