@@ -70,7 +70,7 @@ def surrogate_2d_dataset(n_subj=10, shape=(30, 30), sk=1.0,
         in pixel.
     signal_jitter: float, optionnal
         Random amplitude fluctuation for each activation, added to the
-        amplitude specified by ampli
+        amplitude specified by `ampli`
     width: float or ndarray, optionnal
         Width of the activations
     width_jitter: float
@@ -88,7 +88,7 @@ def surrogate_2d_dataset(n_subj=10, shape=(30, 30), sk=1.0,
     Returns
     -------
     dataset: 3D ndarray
-        The surrogate activation map, with dimensions (n_subj, *shape)
+        The surrogate activation map, with dimensions ``(n_subj,) + shape``
     """
     if seed:
         nr = np.random.RandomState([seed])
@@ -177,8 +177,7 @@ def surrogate_3d_dataset(n_subj=1, shape=(20, 20, 20), mask=None,
     Returns
     -------
     dataset: 3D ndarray
-        The surrogate activation map, with dimensions
-        (n_subj, *shape)
+        The surrogate activation map, with dimensions ``(n_subj,) + shape``
     """
     if seed:
         nr = np.random.RandomState([seed])

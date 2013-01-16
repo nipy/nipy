@@ -481,7 +481,7 @@ class FMRILinearModel(object):
         # load the mask
         if mask == 'compute':
             mask = compute_mask_sessions(
-                fmri_data, m=m, M=M, cc=1, threshold=threshold)
+                fmri_data, m=m, M=M, cc=1, threshold=threshold, opening=0)
             self.mask = Nifti1Image(mask.astype(np.int8), self.affine)
         elif mask == None:
             mask = np.ones(self.fmri_data[0].shape[:3]).astype(np.int8)

@@ -1,28 +1,37 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-''' Tiny script to write 4D files in any format that we read (nifti,
-analyze, MINC, at the moment, as nifti 3D files '''
+DESCRIP = 'Read 4D image file and write 3D nifti file for each volume'
+EPILOG = \
+'''nipy_4dto3d will generate a series of 3D nifti images for each volume a 4D
+image series in any format readable by `nibabel`.
+'''
+from os.path import splitext, join as pjoin, split as psplit
 
-import os
+import nibabel as nib
 
-import nipy.externals.argparse as argparse
-import nibael as nib
+from nipy.externals.argparse import (ArgumentParser,
+                                     RawDescriptionHelpFormatter)
 
 
 def main():
-    # create the parser
-    parser = argparse.ArgumentParser()
-    # add the arguments
+    parser = ArgumentParser(description=DESCRIP,
+                            epilog=EPILOG,
+                            formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('filename', type=str,
                         help='4D image filename')
-    # parse the command line
+    parser.add_argument('--out-path', type=str,
+                        help='path for output image files')
     args = parser.parse_args()
+    out_path = args.out_path
     img = nib.load(args.filename)
     imgs = nib.four_to_three(img)
-    froot, ext = os.path.splitext(args.filename)
+    froot, ext = splitext(args.filename)
     if ext in ('.gz', '.bz2'):
-        froot, ext = os.path.splitext(froot)
+        froot, ext = splitext(froot)
+    if not out_path is None:
+        pth, fname = psplit(froot)
+        froot = pjoin(out_path, fname)
     for i, img3d in enumerate(imgs):
         fname3d = '%s_%04d.nii' % (froot, i)
         nib.save(img3d, fname3d)
@@ -30,5 +39,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-        

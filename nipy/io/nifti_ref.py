@@ -176,7 +176,7 @@ class NiftiError(Exception):
     pass
 
 
-def nipy2nifti(img, data_dtype=None, strict=None, fix0=False):
+def nipy2nifti(img, data_dtype=None, strict=None, fix0=True):
     """ Return NIFTI image from nipy image `img`
 
     Parameters
@@ -236,9 +236,11 @@ def nipy2nifti(img, data_dtype=None, strict=None, fix0=False):
     NiftiError.
 
     We check if the XYZ output fits with the NIFTI named spaces of scanner,
-    aligned, Talairach, MNI.  If not we raise an error.  Note that 'unknown' is
-    not a known space for NIFTI, because it cannot be set without also deleting
-    the affine.
+    aligned, Talairach, MNI.  If so, set the NIFTI code and qform, sform
+    accordingly.  If the space corresponds to 'unknown' then we must set the
+    NIFTI transform codes to 0, and the affine must match the affine we will get
+    from loading the NIFTI with no qform, sform.  If not, we're going to lose
+    information in the affine, and raise an error.
 
     If any of the first three input axes are named ('slice', 'freq', 'phase')
     set the ``dim_info`` field accordingly.
@@ -331,9 +333,15 @@ def nipy2nifti(img, data_dtype=None, strict=None, fix0=False):
                           stacklevel = 2)
             hdr.set_sform(xyz_affine, 'scanner')
             hdr.set_qform(xyz_affine, 'scanner')
-        else:
+        elif not out_space in ncrs.unknown_space: # no space we recognize
             raise NiftiError('Image world not a NIFTI world')
-    # Set dim_info
+        else: # unknown space requires affine that matches
+            if not np.allclose(xyz_affine, hdr.get_base_affine()):
+                raise NiftiError("Image world is 'unknown' but affine not "
+                                 "compatible; please reset image world or "
+                                 "affine")
+            hdr.set_qform(None)
+            hdr.set_sform(None)
     # Use list() to get .index method for python < 2.6
     input_names = list(coordmap.function_domain.coord_names)
     spatial_names = input_names[:3]

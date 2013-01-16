@@ -76,6 +76,7 @@ AffineTransform(
                  [  0.,   2.,   0., -40.],
                  [  0.,   0.,   2., -16.],
                  [  0.,   0.,   0.,   1.]])
+)
 
 See :ref:`coordinate_map` for more detail.
 

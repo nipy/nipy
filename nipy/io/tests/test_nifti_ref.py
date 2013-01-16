@@ -17,7 +17,8 @@ from ...core.api import (Image,
                          AffineTransform as AT,
                          CoordinateSystem as CS)
 from ...core.reference.spaces import (unknown_csm, scanner_csm, aligned_csm,
-                                      talairach_csm, mni_csm, vox2mni)
+                                      talairach_csm, mni_csm, unknown_space,
+                                      vox2mni)
 
 from ..files import load
 from ..nifti_ref import (nipy2nifti, nifti2nipy, NiftiError)
@@ -94,10 +95,32 @@ def test_xyz_affines():
     assert_raises(NiftiError, nipy2nifti, aimg[:, 1, :])
     assert_raises(NiftiError, nipy2nifti, aimg[1, :, :])
     # Do not allow spaces not in the NIFTI canon
+    for i in range(3):
+        displaced_img = fimg.renamed_reference(**{out_coords[i]: 'obscure'})
+        assert_raises(NiftiError, nipy2nifti, displaced_img)
+
+
+def test_unknown():
+    # The 'unknown' coordinate space results from loading an image with no
+    # affine set; allow setting into nifti iff the affine corresponds to the
+    # default that would be created when there is no affine
+    aimg = copy_of(anatfile)
+    bare_affine = aimg.metadata['header'].get_base_affine()
+    # The affine does not match the header-only affine
+    assert_false(np.allclose(bare_affine, aimg.coordmap.affine))
     unknown_cs = unknown_csm(3)
-    displaced_img = fimg.renamed_reference(
+    out_coords = aimg.reference.coord_names
+    # So nipy2nifti raises an error
+    displaced_img = aimg.renamed_reference(
         **dict(zip(out_coords[:3], unknown_cs.coord_names)))
     assert_raises(NiftiError, nipy2nifti, displaced_img)
+    # If the affine is the same, no error
+    displaced_img.coordmap.affine[:] = bare_affine
+    assert_true(np.allclose(bare_affine, displaced_img.coordmap.affine))
+    nimg = nipy2nifti(displaced_img)
+    assert_array_equal(nimg.get_affine(), bare_affine)
+    inimg = nifti2nipy(nimg)
+    assert_true(inimg.coordmap.function_range in unknown_space)
 
 
 def test_orthogonal_dims():
@@ -339,29 +362,39 @@ def test_save_toffset():
                   CS(xyz_names + ('u', t_name, 'v')),
                   np.diag([3, 4, 5, 6, 0, 7, 1]))
         assert_equal(nipy2nifti(Image(data, cmap)).shape, shape_shifted)
-        # toffset, non-matching error
+        # toffset with 0 on TR (time) diagonal
         aff_z1 = from_matvec(np.diag([2., 3, 4, 5, 0, 7]),
                              [11, 12, 13, 14, 15, 16])
         cmap = AT(CS(('i', 'j', 'k', 'u', t_name, 'v')),
                   CS(xyz_names + ('u', t_name, 'v')),
                   aff_z1)
-        assert_raises(NiftiError, nipy2nifti, Image(data, cmap))
-        # Unless fix0 set
+        # Default is to fix the zero
+        assert_equal(nipy2nifti(Image(data, cmap)).shape,
+                     shape_shifted)
         assert_equal(nipy2nifti(Image(data, cmap), fix0=True).shape,
                      shape_shifted)
-        # Even this doesn't work if there is more than one zero row and column
+        # Unless fix0 is False
+        assert_raises(NiftiError, nipy2nifti, Image(data, cmap), fix0=False)
+        # Fix doesn't work if there is more than one zero row and column
         aff_z2 = from_matvec(np.diag([2., 3, 4, 0, 0, 7]),
                              [11, 12, 13, 14, 15, 16])
         cmap = AT(CS(('i', 'j', 'k', 'u', t_name, 'v')),
                   CS(xyz_names + ('u', t_name, 'v')),
                   aff_z2)
         assert_raises(NiftiError, nipy2nifti, Image(data, cmap), fix0=True)
-    # No problem for non-time
+    # zeros on the diagonal are not a problem for non-time, with toffset,
+    # because we don't need to set the 'time' part of the translation vector,
+    # and therefore we don't need to know which *output axis* is time-like
     for t_name in 'hz', 'ppm', 'rads':
         cmap = AT(CS(('i', 'j', 'k', 'u', t_name, 'v')),
                   CS(xyz_names + ('u', t_name, 'v')),
-                  aff)
-        assert_equal(nipy2nifti(Image(data, cmap), fix0=True).shape,
+                  aff_z1)
+        assert_equal(nipy2nifti(Image(data, cmap), fix0=False).shape,
+                     shape_shifted)
+        cmap = AT(CS(('i', 'j', 'k', 'u', t_name, 'v')),
+                  CS(xyz_names + ('u', t_name, 'v')),
+                  aff_z2)
+        assert_equal(nipy2nifti(Image(data, cmap), fix0=False).shape,
                      shape_shifted)
 
 

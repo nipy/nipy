@@ -3,7 +3,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
-Example of activation image vizualization with nipy.labs vizualization tools
+Example of activation image visualization with nipy.labs visualization tools
 
 Needs *example data* package.
 
@@ -51,15 +51,15 @@ except OSError as e:
     anat_affine = None
 
 viz.plot_map(data, affine, anat=anat, anat_affine=anat_affine,
-             slicer='z', threshold=2, cmap=viz.cm.cold_hot)
+             slicer='z', threshold=2, cmap=viz.cm.cold_hot, black_bg=True)
 plt.savefig('z_view.png')
 
 viz.plot_map(data, affine, anat=anat, anat_affine=anat_affine,
-             slicer='x', threshold=2, cmap=viz.cm.cold_hot)
+             slicer='x', threshold=2, cmap=viz.cm.cold_hot, black_bg=True)
 plt.savefig('x_view.png')
 
 viz.plot_map(data, affine, anat=anat, anat_affine=anat_affine,
-             slicer='y', threshold=2, cmap=viz.cm.cold_hot)
+             slicer='y', threshold=2, cmap=viz.cm.cold_hot, black_bg=True)
 plt.savefig('y_view.png')
 
 plt.show()

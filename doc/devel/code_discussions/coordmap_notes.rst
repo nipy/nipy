@@ -19,6 +19,8 @@ reordering of images that needed known axis ordering.
 
 .. some working notes
 
+::
+
     import sympy
     i, j, k = sympy.symbols('i, j, k')
     np.dot(np.array([[0,0,1],[1,0,0],[0,1,0]]), np.array([i,j,k]))
@@ -276,7 +278,8 @@ the acquisition parameters, these coordinates might have names like "phase",
 Now, I can encode all this information in a tuple: (T=a 4x4 matrix of floats
 with bottom row [0,0,0,1], ('phase', 'freq', "slice"), ('x','y','z'))
 
->>> from nipy.core.api import CoordinateSystem
+>>> import numpy as np
+>>> from nipy.core.api import CoordinateSystem, AffineTransform
 >>> acquisition = ('phase', 'freq', 'slice')
 >>> xyz_world = ('x','y','z')
 >>> T = np.array([[2,0,0,-91.095],[0,2,0,-129.51],[0,0,2,-73.25],[0,0,0,1]])
@@ -421,35 +424,13 @@ AffineTransform(
                  [   0.   ,    0.   ,    0.   ,    1.   ]])
 )
 
-Or, working with an LPIImage rather than an AffineTransform
-
->>> from nipy.core.api import LPIImage
->>> data = np.random.standard_normal((92,114,84))
->>> im = LPIImage(data, A.affine, unknown_acquisition)
->>> im_slice_3rd = im.renamed_axes(k='slice')
->>> im_slice_3rd.lpi_transform
-LPITransform(
-   function_domain=CoordinateSystem(coord_names=('i', 'j', 'slice'), name='voxel', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64),
-   affine=array([[   2.   ,    0.   ,    0.   ,  -91.095],
-                 [   0.   ,    2.   ,    0.   , -129.51 ],
-                 [   0.   ,    0.   ,    2.   ,  -73.25 ],
-                 [   0.   ,    0.   ,    0.   ,    1.   ]])
-)
-
-Note that A does not have 'voxel' or 'world-LPI' in it, but the lpi_transform
-attribute of im does. The ('x','y','z') paired with ('world-LPI') is interpreted
-to mean: "x is left-> right", "y is posterior-> anterior", "z is inferior to
-superior", and the first number output from the python function
-transform_function above is "x", the second is "y", the third is "z".
-
 Another question one might ask is: why bother allowing non-4x4 affine matrices
 like:
 
 >>> AffineTransform.from_params('ij', 'xyz', np.array([[2,3,1,0],[3,4,5,0],[7,9,3,1]]).T)
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('i', 'j'), name='domain', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='range', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('i', 'j'), name='', coord_dtype=float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
    affine=array([[ 2.,  3.,  7.],
                  [ 3.,  4.,  9.],
                  [ 1.,  5.,  3.],
@@ -461,7 +442,8 @@ For one, it allows very clear specification of a 2-dimensional plane (i.e. a
 "coordinate system". Let's say we want the plane in LPI-world corresponding to
 "j=30" for im above. (I guess that's coronal?)
 
->>> # make an affine transform that maps (i,k) -> (i,30,k)
+Make an affine transform that maps (i,k) -> (i,30,k):
+
 >>> j30 = AffineTransform(CoordinateSystem('ik'), CoordinateSystem('ijk'), np.array([[1,0,0],[0,0,30],[0,1,0],[0,0,1]]))
 >>> j30
 AffineTransform(
@@ -472,32 +454,41 @@ AffineTransform(
                  [  0.,   1.,   0.],
                  [  0.,   0.,   1.]])
 )
->>> # it's dtype is np.float since we didn't specify np.int in constructing the CoordinateSystems
 
->>> j30_to_LPI = compose(im.lpi_transform, j30)
->>> j30_to_LPI
+Its dtype is np.float since we didn't specify np.int in constructing the
+CoordinateSystems:
+
+>>> from nipy.core.api import compose
+>>> j30_to_XYZ = compose(A, j30)
+>>> j30_to_XYZ
 AffineTransform(
    function_domain=CoordinateSystem(coord_names=('i', 'k'), name='', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
    affine=array([[  2.   ,   0.   , -91.095],
                  [  0.   ,   0.   , -69.51 ],
                  [  0.   ,   2.   , -73.25 ],
                  [  0.   ,   0.   ,   1.   ]])
 )
 
-This could be used to resample any LPIImage on the coronal plane y=-69.51 with
-voxels of size 2mmx2mm starting at x=-91.095 and z=-73.25. Of course, this
+This could be used to resample any RAS Image on the coronal plane y=-69.51 with
+voxels of size 2mm x 2mm starting at x=-91.095 and z=-73.25. Of course, this
 doesn't seem like a very natural slice. The module
 :mod:`nipy.core.reference.slices` has some convenience functions for specifying
-slices
+slices.
 
+>>> from nipy.core.reference.slices import yslice, bounding_box
 >>> x_spec = ([-92,92], 93) # voxels of size 2 in x, starting at -92, ending at 92
 >>> z_spec = ([-70,100], 86) # voxels of size 2 in z, starting at -70, ending at 100
->>> y70 = yslice(70, x_spec, z_spec, 'world-LPI')
+
+When specifying a *y* slice - we have to know what "y" means.  In order for "y"
+to have meaning, we need to specify the name of an output (range) space that has
+a defined "y".  In this case we use MNI space:
+
+>>> y70 = yslice(70, x_spec, z_spec, 'mni')
 >>> y70
 AffineTransform(
    function_domain=CoordinateSystem(coord_names=('i_x', 'i_z'), name='slice', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPI', coord_dtype=float64),
+   function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S'), name='mni', coord_dtype=float64),
    affine=array([[  2.,   0., -92.],
                  [  0.,   0.,  70.],
                  [  0.,   2., -70.],
@@ -505,7 +496,7 @@ AffineTransform(
 )
 
 >>> bounding_box(y70, (x_spec[1], z_spec[1]))
-    ([-92.0, 92.0], [70.0, 70.0], [-70.0, 100.0])
+((-92.0, 92.0), (70.0, 70.0), (-70.0, 100.0))
 
 Maybe these aren't things that "normal human beings" (to steal a quote from
 Gael) can use, but they're explicit and they are tied to precise mathematical
@@ -619,7 +610,6 @@ left to right or the technician looking at him, :) For this, I'm sure there's a
 standard answer, and it's likely the patient, but heck, I'm just a statistician
 so I don't know the answer.
 
-
     (every volume has an ijkToRAS affine transform).  We convert to/from LPS
     when calling ITK code, e.g., for I/O.
 
@@ -632,8 +622,8 @@ something like this:
 >>> ijk_to_RAS = AffineTransform(ijk, RAS, T)
 >>> ijk_to_RAS
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('R', 'A', 'S'), name='', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-RAS', coord_dtype=float64),
    affine=array([[   2.   ,    0.   ,    0.   ,  -91.095],
                  [   0.   ,    2.   ,    0.   , -129.51 ],
                  [   0.   ,    0.   ,    2.   ,  -73.25 ],
@@ -641,7 +631,7 @@ AffineTransform(
 )
 
 >>> LPS = CoordinateSystem('xyz', 'world-LPS')
->>> RAS_to_LPS = AffineTransform(RAS, LPS, np.diag([-1,-1,1,1])) 
+>>> RAS_to_LPS = AffineTransform(RAS, LPS, np.diag([-1,-1,1,1]))
 >>> ijk_to_LPS = compose(RAS_to_LPS, ijk_to_RAS)
 >>> RAS_to_LPS
 AffineTransform(
@@ -677,37 +667,38 @@ acknowledge there are two coordinate systems :))
 
 Once you've transposed the array, say
 
+>>> data = np.random.normal(size=(10, 12, 14)) # original array
 >>> newdata = data.transpose([2,0,1])
 
 You shouldn't use something called "ijk_to_RAS" or "ijk_to_LPS" transform.
 Rather, you should use a "kij_to_RAS" or "kij_to_LPS" transform.
 
->>> kji = CoordinateSystem('kji')
+>>> ijk = CoordinateSystem('ijk', 'voxel')
+>>> kij = CoordinateSystem('kij', 'voxel')
 >>> ijk_to_kij = AffineTransform(ijk, kij, np.array([[0,0,1,0],[1,0,0,0],[0,1,0,0],[0,0,0,1]]))
->>> import sympy
->>> # Check that it does the right permutation
->>> i, j, k = [sympy.Symbol(s) for s in 'ijk']
->>> ijk_to_kij([i,j,k])
-array([k, i, j], dtype=object)
->>> # Yup, now let's try to make a kij_to_RAS transform
->>> # At first guess, we might try
->>> kij_to_RAS = compose(ijk_to_RAS,ijk_to_kij)
-------------------------------------------------------------
+
+Check that it does the right permutation
+
+>>> i, j, k = 10., 20., 40
+>>> ijk_to_kij([i, j, k])
+array([ 40.,  10.,  20.])
+
+Yup, now let's try to make a kij_to_RAS transform
+
+At first guess, we might try
+
+>>> kij_to_RAS = compose(ijk_to_RAS, ijk_to_kij)
 Traceback (most recent call last):
-  File "<ipython console>", line 1, in <module>
-  File "reference/coordinate_map.py", line 1090, in compose
-    return _compose_affines(*cmaps)
-  File "reference/coordinate_map.py", line 1417, in _compose_affines
-    raise ValueError("domains and ranges don't match up correctly")
+    ...
 ValueError: domains and ranges don't match up correctly
 
->>> # but we have a problem, we've asked for a composition that doesn't make sense
+We have a problem, we've asked for a composition that doesn't make sense.
 
 If you're good with permutation matrices, you wouldn't have to call "compose"
 above and you can just do matrix multiplication.  But here the name of the
 function tells you that yes, you should do the inverse: "ijk_to_kij" says that
 the range are "kij" values, but to get a "transform" for your data in "kij" it
-should have a domain that is "kij" so it should be
+should have a domain that is "kij".
 
 The call to compose raised an exception because it saw you were trying to
 compose a function with domain="ijk" and range="kji" with a function (on its
@@ -715,10 +706,10 @@ left) having domain="ijk" and range "kji". This composition just doesn't make
 sense so it raises an exception.
 
 >>> kij_to_ijk = ijk_to_kij.inverse()
->>> kij_to_RAS = compose(ijk_to_RAS,kij_to_ijk)
+>>> kij_to_RAS = compose(ijk_to_RAS, kij_to_ijk)
 >>> kij_to_RAS
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='voxel', coord_dtype=float64),
    function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-RAS', coord_dtype=float64),
    affine=array([[   0.   ,    2.   ,    0.   ,  -91.095],
                  [   0.   ,    0.   ,    2.   , -129.51 ],
@@ -728,20 +719,16 @@ AffineTransform(
 
 
 >>> ijk_to_RAS([i,j,k])
-array([-91.095 + 2.0*i, -129.51 + 2.0*j, -73.25 + 2.0*k], dtype=object)
+array([-71.095, -89.51 ,   6.75 ])
 >>> kij_to_RAS([k,i,j])
-array([-91.095 + 2.0*i, -129.51 + 2.0*j, -73.25 + 2.0*k], dtype=object)
->>>
->>> another_kij_to_RAS([k,i,j])
-array([-91.095 + 2.0*i, -129.51 + 2.0*j, -73.25 + 2.0*k], dtype=object)
+array([-71.095, -89.51 ,   6.75 ])
 
 We also shouldn't have to rely on the names of the AffineTransforms, i.e.
 ijk_to_RAS,  to remember what's what (in typing this example, I mixed up kij and
-kji many times). The three objects ijk_to_RAS, kij_to_RAS and another_kij_to_RAS
-all represent the same "affine transform", as evidenced by their output above.
-There are lots of representations of the same "affine transform":
-(6=permutations of i,j,k)*(6=permutations of x,y,z)=36 matrices for one "affine
-transform".
+kji many times). The objects ijk_to_RAS, kij_to_RAS represent the same "affine
+transform", as evidenced by their output above.  There are lots of
+representations of the same "affine transform": (6=permutations of
+i,j,k)*(6=permutations of x,y,z)=36 matrices for one "affine transform".
 
 If we throw in ambiguity about the sign in front of the output, there are
 36*(8=2^3 possible flips of the x,y,z)=288 matrices possible but there are only
@@ -757,74 +744,78 @@ as you reorder the 'ijk' and the 'RAS'. (Note that this code won't work in
 general because I had temporarily disabled a check in CoordinateSystem that
 enforced the dtype of the array to be a builtin scalar dtype for sanity's sake).
 To me, each of A, A_kij and A_kij_yzx below represent the same "transform"
-because if I substitue i=30, j=40, k=50 and I know the order of the 'xyz' in the
+because if I substitute i=30, j=40, k=50 and I know the order of the 'xyz' in the
 output then they will all give me the same answer.
 
-    >>> ijk = CoordinateSystem('ijk', coord_dtype=np.array(sympy.Symbol('x')).dtype)
-    >>> xyz = CoordinateSystem('xyz', coord_dtype=np.array(sympy.Symbol('x')).dtype)
-    >>> x_start, y_start, z_start = [sympy.Symbol(s) for s in ['x_start', 'y_start', 'z_start']]
-    >>> x_step, y_step, z_step = [sympy.Symbol(s) for s in ['x_step', 'y_step', 'z_step']]
-    >>> i, j, k = [sympy.Symbol(s) for s in 'ijk']
-    >>> T = np.array([[x_step,0,0,x_start],[0,y_step,0,y_start],[0,0,z_step,z_start],[0,0,0,1]])
-    >>> T
-    array([[x_step, 0, 0, x_start],
-           [0, y_step, 0, y_start],
-           [0, 0, z_step, z_start],
-           [0, 0, 0, 1]], dtype=object)
-    >>> A = AffineTransform(ijk, xyz, T)
-    >>> A
-    AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=object),
-       function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=object),
-       affine=array([[x_step, 0, 0, x_start],
-                     [0, y_step, 0, y_start],
-                     [0, 0, z_step, z_start],
-                     [0, 0, 0, 1]], dtype=object)
-    )
-    >>> A([i,j,k])
-    array([x_start + i*x_step, y_start + j*y_step, z_start + k*z_step], dtype=object)
-    >>> # this is another
-    >>> A_kij = A.reordered_domain('kij')
+>>> import sympy
+>>> ijk = CoordinateSystem('ijk', coord_dtype=np.array(sympy.Symbol('x')).dtype)
+>>> xyz = CoordinateSystem('xyz', coord_dtype=np.array(sympy.Symbol('x')).dtype)
+>>> x_start, y_start, z_start = [sympy.Symbol(s) for s in ['x_start', 'y_start', 'z_start']]
+>>> x_step, y_step, z_step = [sympy.Symbol(s) for s in ['x_step', 'y_step', 'z_step']]
+>>> i, j, k = [sympy.Symbol(s) for s in 'ijk']
+>>> T = np.array([[x_step,0,0,x_start],[0,y_step,0,y_start],[0,0,z_step,z_start],[0,0,0,1]])
+>>> T
+array([[x_step, 0, 0, x_start],
+       [0, y_step, 0, y_start],
+       [0, 0, z_step, z_start],
+       [0, 0, 0, 1]], dtype=object)
+>>> A = AffineTransform(ijk, xyz, T)
+>>> A
+AffineTransform(
+   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=object),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=object),
+   affine=array([[x_step, 0, 0, x_start],
+                 [0, y_step, 0, y_start],
+                 [0, 0, z_step, z_start],
+                 [0, 0, 0, 1]], dtype=object)
+)
+>>> A([i,j,k]) == [x_start + i*x_step, y_start + j*y_step, z_start + k*z_step]
+array([ True,  True,  True], dtype=bool)
 
-    >>> A_kij
-    AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='', coord_dtype=object),
-       function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=object),
-       affine=array([[0, x_step, 0, x_start],
-                     [0, 0, y_step, y_start],
-                     [z_step, 0, 0, z_start],
-                     [0.0, 0.0, 0.0, 1.0]], dtype=object)
-    )
-    >>>
-    >>> A_kij([k,i,j])
-    array([x_start + i*x_step, y_start + j*y_step, z_start + k*z_step], dtype=object)
-                                                                                    >>> # let's look at another reordering
-    >>> A_kij_yzx = A_kij.reordered_range('yzx')
-    >>> A_kij_yzx
-    AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='', coord_dtype=object),
-       function_range=CoordinateSystem(coord_names=('y', 'z', 'x'), name='', coord_dtype=object),
-       affine=array([[0, 0, y_step, y_start],
-                     [z_step, 0, 0, z_start],
-                     [0, x_step, 0, x_start],
-                     [0, 0, 0, 1.00000000000000]], dtype=object)
-    )
-    >>> A_kij_yzx([k,i,j])
-    array([y_start + j*y_step, z_start + k*z_step, x_start + i*x_step], dtype=object)
-    >>>
+This is another
+
+>>> A_kij = A.reordered_domain('kij')
+>>> A_kij
+AffineTransform(
+   function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='', coord_dtype=object),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=object),
+   affine=array([[0, 1.0*x_step, 0, 1.0*x_start],
+                 [0, 0, 1.0*y_step, 1.0*y_start],
+                 [1.0*z_step, 0, 0, 1.0*z_start],
+                 [0.0, 0.0, 0.0, 1.0]], dtype=object)
+)
+>>> A_kij([k,i,j])
+array([1.0*i*x_step + 1.0*x_start, 1.0*j*y_step + 1.0*y_start,
+       1.0*k*z_step + 1.0*z_start], dtype=object)
+
+Let's look at another reordering:
+
+>>> A_kij_yzx = A_kij.reordered_range('yzx')
+>>> A_kij_yzx
+AffineTransform(
+   function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='', coord_dtype=object),
+   function_range=CoordinateSystem(coord_names=('y', 'z', 'x'), name='', coord_dtype=object),
+   affine=array([[0, 0, 1.0*y_step, 1.0*y_start],
+                 [1.0*z_step, 0, 0, 1.0*z_start],
+                 [0, 1.0*x_step, 0, 1.0*x_start],
+                 [0, 0, 0, 1.00000000000000]], dtype=object)
+)
+>>> A_kij_yzx([k,i,j])
+array([1.0*j*y_step + 1.0*y_start, 1.0*k*z_step + 1.0*z_start,
+       1.0*i*x_step + 1.0*x_start], dtype=object)
 
 >>> A_kij
 AffineTransform(
    function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='', coord_dtype=object),
    function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=object),
-   affine=array([[0, x_step, 0, x_start],
-                 [0, 0, y_step, y_start],
-                 [z_step, 0, 0, z_start],
+   affine=array([[0, 1.0*x_step, 0, 1.0*x_start],
+                 [0, 0, 1.0*y_step, 1.0*y_start],
+                 [1.0*z_step, 0, 0, 1.0*z_start],
                  [0.0, 0.0, 0.0, 1.0]], dtype=object)
 )
 
+>>> from nipy.core.reference.coordinate_map import equivalent
 >>> equivalent(A_kij, A)
 True
 >>> equivalent(A_kij, A_kij_yzx)
 True
-

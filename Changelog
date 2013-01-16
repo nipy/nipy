@@ -22,6 +22,39 @@ The full VCS changelog is available here:
 Releases
 ~~~~~~~~
 
+Abbreviated authors are:
+
+* MB - Matthew Brett
+* BT - Bertrand Thirion
+* AR - Alexis Roche
+* GV - Gaël Varoquaux
+* YH - Yarik Halchenko
+
+* 0.3.0 (Monday 14 January 2013)
+
+  * Bugfix, refactoring and compatibility release
+  * Addition of EM algorithm for mixed effects analysis (BT)
+  * New high-level GLM class interface (BT)
+  * nipy diagnostic scripts save PCA and tsdifana vectors to npz file
+  * Python 3 compatibility through 3.3 (MB)
+  * Fixes for compatibility with upcoming Numpy 1.7
+  * Fixes to background and axis specification in visualization tools (GV, BT)
+  * Fixes and tests for installed nipy scripts (MB)
+  * Fix to optimization parameters for Realign4D - thanks to `bpinsard`
+  * Fix 0 in affine diagonal for TR=0 in affines by default (MB)
+  * Allow saving of nipy images loaded from nifti files that lack explicit
+    affine (MB)
+  * Allow `slice_order=None` to `FmriRealign4D` when not doing time
+    interpolation (AR); check for valid slice order specification (YR)
+  * Refactoring of quantile routine to move code out of C library (AR)
+  * Fix bug in resampling of unsigned int images (AR)
+  * Custom doctest machinery to work round differences of dtype repr on
+    different platforms, and to skip doctests with optional dependencies (MB)
+  * Script to run examples for testing (MB)
+  * Fix for accidental integer division of frametimes in design matrix
+    generation (Fabian Pedregosa)
+  * Various other fixes and refactorings with thanks from (AR, BT, MB, YR)
+
 * 0.2.0 (Sunday 22 July 2012)
 
   * The first ever official release

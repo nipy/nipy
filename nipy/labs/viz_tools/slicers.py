@@ -167,7 +167,7 @@ class CutAxes(object):
                 verticalalignment='top',
                 size=size,
                 bbox=dict(boxstyle="square,pad=0",
-                            ec=bg_color, fc=bg_color, alpha=.8),
+                            ec=bg_color, fc=bg_color, alpha=1),
                 **kwargs)
 
         ax.text(.9, .95, 'R',
@@ -176,7 +176,7 @@ class CutAxes(object):
                 verticalalignment='top',
                 size=size,
                 bbox=dict(boxstyle="square,pad=0",
-                            ec=bg_color, fc=bg_color, alpha=.8),
+                            ec=bg_color, fc=bg_color, alpha=1),
                 **kwargs)
 
 
@@ -188,7 +188,7 @@ class CutAxes(object):
                 verticalalignment='bottom',
                 size=size,
                 bbox=dict(boxstyle="square,pad=0",
-                            ec=bg_color, fc=bg_color, alpha=.9),
+                            ec=bg_color, fc=bg_color, alpha=1),
                 **kwargs)
 
 
@@ -244,6 +244,8 @@ class BaseSlicer(object):
                          black_bg=False, leave_space=False):
         cut_coords = cls.find_cut_coords(data, affine, threshold,
                                          cut_coords)
+        if isinstance(axes, pl.Axes) and figure is None:
+            figure = axes.figure
 
         if not isinstance(figure, pl.Figure):
             # Make sure that we have a figure
@@ -267,12 +269,14 @@ class BaseSlicer(object):
                 axes = [0.3, 0, .7, 1.]
         if operator.isSequenceType(axes):
             axes = figure.add_axes(axes)
-            axes.axis('off')
+        # People forget to turn their axis off, or to set the zorder, and
+        # then they cannot see their slicer
+        axes.axis('off')
         return cls(cut_coords, axes, black_bg)
 
 
     def title(self, text, x=0.01, y=0.99, size=15, color=None,
-                bgcolor=None, alpha=.9, **kwargs):
+                bgcolor=None, alpha=1, **kwargs):
         """ Write a title to the view.
 
             Parameters
@@ -674,7 +678,6 @@ class BaseStackedSlicer(BaseSlicer):
             left_dict[cut_ax.ax] = left
             this_width = width_dict[cut_ax.ax]
             left += this_width
-        print len(width_dict), left_dict[axes] + width_dict[axes]
         return transforms.Bbox([[left_dict[axes], y0],
                                 [left_dict[axes] + width_dict[axes], y1]])
 

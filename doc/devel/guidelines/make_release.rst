@@ -68,7 +68,7 @@ Release checklist
   running.
 
 * Check the ``long_description`` in ``nipy/info.py``.  Check it matches the
-  ``README`` in the root directory.
+  ``README`` in the root directory, maybe with ``vim`` ``diffthis`` command.
 
 * Do a final check on the `nipy buildbot`_
 
@@ -104,7 +104,17 @@ Release checklist
 
     make bdist-egg-tests
 
-  and the three ways of installing (from tarball, repo, local in repo)::
+  This one may well fail because of a problem with the script tests; if you have
+  a recent (>= Jan 15 2013) nibabel ``nisext`` package, you could try instead
+  doing::
+
+    python -c 'from nisext.testers import bdist_egg_tests; bdist_egg_tests("nipy", label="not slow and not script_test")'
+
+  Eventually we should update the ``bdist-egg-tests`` makefile target.
+
+* Check the installation commit hash storage.
+
+  This checks the three ways of installing (from tarball, repo, local in repo)::
 
     make check-version-info
 
@@ -164,7 +174,7 @@ Release checklist
     # in wine bash
     make sdist-tests
 
-  For the PPC I have to log into an old Mac G5 in Berkeley at
+  For the PPC I have to log into a MacPro in Berkeley at
   ``alexis.bic.berkeley.edu``.  Here's an example session::
 
     ssh alexis.bic.berkeley.edu
@@ -179,8 +189,12 @@ Release checklist
     make doctest
     cd ..
 
+  You will need an importable version of NIPY on the python path to do this
+  check.
+
 * Check everything compiles without syntax errors::
 
+    make distclean
     python -m compileall .
 
 * The release should now be ready.

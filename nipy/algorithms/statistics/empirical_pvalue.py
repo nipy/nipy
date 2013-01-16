@@ -188,12 +188,12 @@ class NormalEmpiricalNull(object):
         -----
         This method stores the following attributes:
 
-        mu = mu
-        p0 = min(1, np.exp(lp0))
-        sqsigma: standard deviation of the estimated normal
-                 distribution
-        sigma: np.sqrt(sqsigma) : variance of the estimated
-               normal distribution
+        * mu = mu
+        * p0 = min(1, np.exp(lp0))
+        * sqsigma: standard deviation of the estimated normal
+          distribution
+        * sigma: np.sqrt(sqsigma) : variance of the estimated
+          normal distribution
         """
         # take a central subsample of x
         x = self.x[int(self.n * left): int(self.n * right)]

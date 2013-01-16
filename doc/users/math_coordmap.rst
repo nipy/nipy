@@ -373,9 +373,14 @@ Going from this mathematical description to code is fairly straightforward.
    course, the function :math:`f` can be recovered as :math:`f` = I_R^{-1} \circ
    \tilde{f} I_D`. In code, :math:`f` is roughly equivalent to:
 
+   >>> from nipy.core.api import CoordinateMap, CoordinateSystem
+   >>> in_cs = CoordinateSystem('ijk', 'voxels')
+   >>> out_cs = CoordinateSystem('xyz', 'mm')
+   >>> map = lambda x : x + 1
+   >>> coordmap = CoordinateMap(in_cs, out_cs, map)
    >>> domain = coordmap.function_domain
    >>> range = coordmap.function_range
-   >>> f_tilde = coordmap.mapping
+   >>> f_tilde = coordmap.function
    >>> in_dtype = domain.coord_dtype
    >>> out_dtype = range.dtype
 
