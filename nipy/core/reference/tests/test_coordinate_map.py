@@ -1,5 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from copy import copy
+
 import numpy as np
 
 # this import line is a little ridiculous...
@@ -931,3 +933,59 @@ def test_make_cmap():
                         [0,0,4,0],
                         [0,0,0,1]])
     assert_equal(cmm.make_affine(aff, 4), AffineTransform(dcs, rcs, exp_aff))
+
+
+def test_dtype_cmap_inverses():
+    # Check that we can make functional inverses of AffineTransforms, and
+    # CoordinateMap versions of AffineTransforms
+    dtypes = (np.sctypes['int'] + np.sctypes['float'] + np.sctypes['complex'] +
+              [np.object])
+    arr_p1 = np.eye(4)[:, [0, 2, 1, 3]]
+    in_arr = [0, 1, 2]
+    out_arr = [0, 2, 1]
+    for dt in dtypes:
+        in_cs = CoordinateSystem('ijk', coord_dtype=dt)
+        out_cs = CoordinateSystem('xyz', coord_dtype=dt)
+        cmap = AffineTransform(in_cs, out_cs, arr_p1.astype(dt))
+        r_cmap = cmap.inverse()
+        assert_array_equal(r_cmap.affine, arr_p1)
+        cm_cmap = _as_coordinate_map(cmap)
+        coord = np.array(in_arr, dtype=dt)
+        assert_array_equal(cm_cmap(coord), out_arr)
+        rcm_cmap = cm_cmap.inverse()
+        assert_array_equal(rcm_cmap(coord), out_arr)
+
+
+def test_cmap_coord_types():
+    # Check that we can use full range of coordinate system types.  The inverse
+    # of an AffineTransform should generate coordinates in the input coordinate
+    # system dtype
+    dtypes = (np.sctypes['int'] + np.sctypes['float'] + np.sctypes['complex'] +
+              [np.object])
+    arr_p1 = np.eye(4)
+    arr_p1[:3, 3] = 1
+    for dt in dtypes:
+        in_cs = CoordinateSystem('ijk', coord_dtype=dt)
+        out_cs = CoordinateSystem('xyz', coord_dtype=dt)
+        # CoordinateMap
+        cmap = CoordinateMap(in_cs, out_cs, lambda x : x + 1)
+        assert_equal(cmap, copy(cmap))
+        res = cmap(np.array([0, 1, 2], dtype=dt))
+        assert_array_equal(res, [1, 2, 3])
+        assert_equal(res.dtype, in_cs.coord_dtype)
+        # Check reordering works
+        rcmap = cmap.reordered_domain('ikj').reordered_range('yxz')
+        res = rcmap(np.array([0, 1, 2], dtype=dt))
+        assert_array_equal(res, [3, 1, 2])
+        assert_equal(res.dtype, in_cs.coord_dtype)
+        # AffineTransform
+        cmap = AffineTransform(in_cs, out_cs, arr_p1.astype(dt))
+        res = cmap(np.array([0, 1, 2], dtype=dt))
+        assert_array_equal(res, [1, 2, 3])
+        assert_equal(res.dtype, in_cs.coord_dtype)
+        assert_equal(cmap, copy(cmap))
+        # Check reordering works
+        rcmap = cmap.reordered_domain('ikj').reordered_range('yxz')
+        res = rcmap(np.array([0, 1, 2], dtype=dt))
+        assert_array_equal(res, [3, 1, 2])
+        assert_equal(res.dtype, in_cs.coord_dtype)

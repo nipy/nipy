@@ -64,6 +64,7 @@ Operations on mappings (module level functions)
 import warnings
 
 import numpy as np
+import numpy.linalg as npl
 
 from nibabel.affines import to_matvec, from_matvec
 from ...fixes.nibabel import io_orientation
@@ -572,14 +573,30 @@ class AffineTransform(object):
     ###################################################################
 
     def inverse(self):
-        """ Return inverse affine transform or None if not invertible
+        """ Return coordinate map with inverse affine transform or None
+
+        Try to invert our ``affine``, and see if it can be cast to the needed
+        data type, which is ``self.function_domain.coord_dtype``.  We need this
+        dtype in order for the inverse to preserve the coordinate system dtypes.
         """
+        aff_dt = self.function_range.coord_dtype
         try:
-            return AffineTransform(self.function_range,
-                                   self.function_domain,
-                                   np.linalg.inv(self.affine))
-        except np.linalg.linalg.LinAlgError:
+            m_inv_in = npl.inv(self.affine)
+        except npl.LinAlgError:
             return None
+        except TypeError:
+            # Try using sympy for the inverse.  This might be needed for sympy
+            # symbols in the affine, or Float128
+            from sympy import Matrix, matrix2numpy
+            sym_inv = Matrix(self.affine).inv()
+            m_inv = matrix2numpy(sym_inv).astype(aff_dt)
+        else: # linalg inverse succeeded - can we cast back?
+            m_inv = m_inv_in.astype(aff_dt)
+            if (aff_dt != np.object) and not np.allclose(m_inv_in, m_inv):
+                return None
+        return AffineTransform(self.function_range,
+                               self.function_domain,
+                               m_inv)
 
     ###################################################################
     #
@@ -883,10 +900,8 @@ class AffineTransform(object):
         >>> affine_transform([2,3,4]) #doctest: +IGNORE_DTYPE
         array([3, 4, 5])
         >>> affine_transform_inv = affine_transform.inverse()
-        >>> # Its inverse has a matrix of np.float
-        >>> # because np.linalg.inv was called.
-        >>> affine_transform_inv([2,6,12])
-        array([  1.,   5.,  11.])
+        >>> affine_transform_inv([2, 6, 12])
+        array([ 1,  5, 11])
         """
         x = np.asanyarray(x)
         out_shape = (self.function_range.ndim,)
@@ -940,14 +955,15 @@ class AffineTransform(object):
                  '\n          '.join(repr(self.affine).split('\n'))))
 
     def __eq__(self, other):
-        test1, test2, test3, test4 =(isinstance(other, self.__class__),
-                                     np.allclose(self.affine, other.affine),
-                                     (self.function_domain ==
-                                      other.function_domain),
-                                     (self.function_range ==
-                                      other.function_range))
-        value = test1 and test2 and test3 and test4
-        return value
+        # Must be subclasses
+        if not isinstance(other, self.__class__):
+            return False
+        if np.any(self.affine - other.affine): # for objects
+            if not np.allclose(self.affine, other.affine): # for numerical
+                return False
+        if not self.function_domain == other.function_domain:
+            return False
+        return self.function_range == other.function_range
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -1138,12 +1154,12 @@ def reordered_domain(mapping, order=None):
     for i, j in enumerate(order):
         perm[j,i] = 1.
 
-    perm = perm.astype(mapping.function_domain.coord_dtype)
-
     # If there is no reordering, return mapping
     if np.allclose(perm, np.identity(perm.shape[0])):
         import copy
         return copy.copy(mapping)
+
+    perm = perm.astype(mapping.function_domain.coord_dtype)
 
     A = AffineTransform(newincoords, mapping.function_domain, perm)
     if isinstance(mapping, AffineTransform):
@@ -1444,11 +1460,11 @@ def reordered_range(mapping, order=None):
     for i, j in enumerate(order):
         perm[j,i] = 1.
 
-    perm = perm.astype(mapping.function_range.coord_dtype)
     if np.allclose(perm, np.identity(perm.shape[0])):
         import copy
         return copy.copy(mapping)
 
+    perm = perm.astype(mapping.function_range.coord_dtype)
 
     A = AffineTransform(mapping.function_range, newoutcoords, perm.T)
 
