@@ -573,16 +573,69 @@ class AffineTransform(object):
     #
     ###################################################################
 
-    def inverse(self):
+    def inverse(self, preserve_dtype=False):
         """ Return coordinate map with inverse affine transform or None
 
-        Try to invert our ``affine``, and see if it can be cast to the needed
-        data type, which is ``self.function_domain.coord_dtype``.  We need this
-        dtype in order for the inverse to preserve the coordinate system dtypes.
+        Parameters
+        ----------
+        preserve_dtype : bool
+            If False, return affine mapping from inverting the ``affine``.  The
+            domain / range dtypes for the inverse may then change as a function
+            of the dtype of the inverted ``affine``.  If True, try to invert our
+            ``affine``, and see if it can be cast to the needed data type, which
+            is ``self.function_domain.coord_dtype``.  We need this dtype in
+            order for the inverse to preserve the coordinate system dtypes.
+
+        Returns
+        -------
+        aff_cm_inv : ``AffineTransform`` instance or None
+            ``AffineTransform`` mapping from the *range* of input `self` to the
+            *domain* of input `self` - the inverse of `self`.  If
+            ``self.affine`` was not invertible return None.  If `preserve_dtype`
+            is True, and the inverse of ``self.affine`` cannot be cast to
+            ``self.function_domain.coord_dtype``, then return None.  Otherwise
+            return ``AffineTransform`` inverse mapping.  If `preserve_dtype` is
+            False, the domain / range dtypes of the return inverse may well be
+            different from those of the input `self`.
+
+        Examples
+        --------
+        >>> input_cs = CoordinateSystem('ijk', coord_dtype=np.int)
+        >>> output_cs = CoordinateSystem('xyz', coord_dtype=np.int)
+        >>> affine = np.array([[1,0,0,1],
+        ...                    [0,1,0,1],
+        ...                    [0,0,1,1],
+        ...                    [0,0,0,1]])
+        >>> affine_transform = AffineTransform(input_cs, output_cs, affine)
+        >>> affine_transform([2,3,4]) #doctest: +IGNORE_DTYPE
+        array([3, 4, 5])
+
+        The inverse transform, by default, generates a floating point inverse
+        matrix and therefore floating point output:
+
+        >>> affine_transform_inv = affine_transform.inverse()
+        >>> affine_transform_inv([2, 6, 12])
+        array([  1.,   5.,  11.])
+
+        You can force it to preserve the coordinate system dtype with the
+        `preserve_dtype` flag:
+
+        >>> at_inv_preserved = affine_transform.inverse(preserve_dtype=True)
+        >>> at_inv_preserved([2, 6, 12]) #doctest: +IGNORE_DTYPE
+        array([  1,   5,  11])
+
+        If you `preserve_dtype`, and there is no inverse affine preserving the
+        dtype, the inverse is None:
+
+        >>> affine2 = affine.copy()
+        >>> affine2[0, 0] = 2 # now inverse can't be integer
+        >>> aff_t = AffineTransform(input_cs, output_cs, affine2)
+        >>> aff_t.inverse(preserve_dtype=True) is None
+        True
         """
         aff_dt = self.function_range.coord_dtype
         try:
-            m_inv_in = npl.inv(self.affine)
+            m_inv = npl.inv(self.affine)
         except npl.LinAlgError:
             return None
         except TypeError:
@@ -591,10 +644,12 @@ class AffineTransform(object):
             from sympy import Matrix, matrix2numpy
             sym_inv = Matrix(self.affine).inv()
             m_inv = matrix2numpy(sym_inv).astype(aff_dt)
-        else: # linalg inverse succeeded - can we cast back?
-            m_inv = m_inv_in.astype(aff_dt)
-            if (aff_dt != np.object) and not np.allclose(m_inv_in, m_inv):
-                return None
+        else: # linalg inverse succeeded
+            if preserve_dtype and aff_dt != np.object: # can we cast back?
+                m_inv_orig = m_inv
+                m_inv = m_inv.astype(aff_dt)
+                if not np.allclose(m_inv_orig, m_inv):
+                    return None
         return AffineTransform(self.function_range,
                                self.function_domain,
                                m_inv)
@@ -900,9 +955,6 @@ class AffineTransform(object):
         >>> affine_transform = AffineTransform(input_cs, output_cs, affine)
         >>> affine_transform([2,3,4]) #doctest: +IGNORE_DTYPE
         array([3, 4, 5])
-        >>> affine_transform_inv = affine_transform.inverse()
-        >>> affine_transform_inv([2, 6, 12])
-        array([ 1,  5, 11])
         """
         x = np.asanyarray(x)
         out_shape = (self.function_range.ndim,)
@@ -1567,7 +1619,9 @@ def _as_coordinate_map(cmap):
             value += b
             return value
 
-        affine_transform_inv = affine_transform.inverse()
+        # Preserve dtype check because the CoordinateMap expects to generate the
+        # expected dtype and checks this on object creation
+        affine_transform_inv = affine_transform.inverse(preserve_dtype=True)
         if affine_transform_inv:
             Ainv, binv = to_matvec(affine_transform_inv.affine)
             def _inverse_function(x):
