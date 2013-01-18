@@ -938,22 +938,69 @@ def test_make_cmap():
 def test_dtype_cmap_inverses():
     # Check that we can make functional inverses of AffineTransforms, and
     # CoordinateMap versions of AffineTransforms
-    dtypes = (np.sctypes['int'] + np.sctypes['float'] + np.sctypes['complex'] +
-              [np.object])
+    dtypes = (np.sctypes['int'] + np.sctypes['uint'] + np.sctypes['float']
+              + np.sctypes['complex'] + [np.object])
     arr_p1 = np.eye(4)[:, [0, 2, 1, 3]]
-    in_arr = [0, 1, 2]
-    out_arr = [0, 2, 1]
+    in_list = [0, 1, 2]
+    out_list = [0, 2, 1]
     for dt in dtypes:
         in_cs = CoordinateSystem('ijk', coord_dtype=dt)
         out_cs = CoordinateSystem('xyz', coord_dtype=dt)
         cmap = AffineTransform(in_cs, out_cs, arr_p1.astype(dt))
+        coord = np.array(in_list, dtype=dt)
+        out_coord = np.array(out_list, dtype=dt)
+        # Expected output type of inverse, not preserving
+        if dt in np.sctypes['int'] + np.sctypes['uint']:
+            exp_i_dt = np.float64
+        else:
+            exp_i_dt = dt
+        # Default inverse cmap may alter coordinate types
         r_cmap = cmap.inverse()
-        assert_array_equal(r_cmap.affine, arr_p1)
+        res = r_cmap(out_coord)
+        assert_array_equal(res, coord)
+        assert_equal(res.dtype, exp_i_dt)
+        # Default behavior is preserve_type=False
+        r_cmap = cmap.inverse(preserve_dtype=False)
+        res = r_cmap(out_coord)
+        assert_array_equal(res, coord)
+        assert_equal(res.dtype, exp_i_dt)
+        # Preserve_dtype=True - preserves dtype
+        r_cmap = cmap.inverse(preserve_dtype=True)
+        res = r_cmap(out_coord)
+        assert_array_equal(res, coord)
+        assert_equal(res.dtype, dt)
+        # Preserve_dtype=True is default for conversion to CoordinateMap
         cm_cmap = _as_coordinate_map(cmap)
-        coord = np.array(in_arr, dtype=dt)
-        assert_array_equal(cm_cmap(coord), out_arr)
+        assert_array_equal(cm_cmap(coord), out_list)
         rcm_cmap = cm_cmap.inverse()
-        assert_array_equal(rcm_cmap(coord), out_arr)
+        assert_array_equal(rcm_cmap(coord), out_list)
+        res = rcm_cmap(out_coord)
+        assert_array_equal(res, coord)
+        assert_equal(res.dtype, dt)
+    # For integer types, where there is no integer inverse, return floatey
+    # inverse by default, and None for inverse when preserve_dtype=True
+    arr_p2 = arr_p1 * 2
+    arr_p2[-1, -1] = 1
+    out_list = [0, 4, 2]
+    for dt in np.sctypes['int'] + np.sctypes['uint']:
+        in_cs = CoordinateSystem('ijk', coord_dtype=dt)
+        out_cs = CoordinateSystem('xyz', coord_dtype=dt)
+        cmap = AffineTransform(in_cs, out_cs, arr_p2.astype(dt))
+        coord = np.array(in_list, dtype=dt)
+        out_coord = np.array(out_list, dtype=dt)
+        # Default
+        r_cmap = cmap.inverse()
+        res = r_cmap(out_coord)
+        assert_array_equal(res, coord)
+        assert_equal(res.dtype, np.float64)
+        # Default is preserve_type=False
+        r_cmap = cmap.inverse(preserve_dtype=False)
+        res = r_cmap(out_coord)
+        assert_array_equal(res, coord)
+        assert_equal(res.dtype, np.float64)
+        # preserve_dtype=True means there is no valid inverse for non integer
+        # affine inverses, as here
+        assert_equal(cmap.inverse(preserve_dtype=True), None)
 
 
 def test_subtype_equalities():
@@ -977,8 +1024,8 @@ def test_cmap_coord_types():
     # Check that we can use full range of coordinate system types.  The inverse
     # of an AffineTransform should generate coordinates in the input coordinate
     # system dtype
-    dtypes = (np.sctypes['int'] + np.sctypes['float'] + np.sctypes['complex'] +
-              [np.object])
+    dtypes = (np.sctypes['int'] + np.sctypes['uint'] + np.sctypes['float']
+              + np.sctypes['complex'] + [np.object])
     arr_p1 = np.eye(4)
     arr_p1[:3, 3] = 1
     for dt in dtypes:
