@@ -23,7 +23,7 @@ install:
     - if [ "${PYSUF}" == "3" ]; then
         git clone git://github.com/sympy/sympy.git _sympy ;
         cd _sympy ;
-        git checkout -b 0.7.2 origin/0.7.2 ;
+        git checkout -b 0.7.2 sympy-0.7.2 ;
         python3 ./bin/use2to3 ;
         cd py3k-sympy ;
         sudo python3 setup.py install ;
@@ -38,4 +38,4 @@ script:
     # Change into an innocuous directory and find tests from installation
     - mkdir for_test
     - cd for_test
-    - $PYTHON ../tools/nipnost `$PYTHON -c "import os; import nipy; print(os.path.dirname(nipy.__file__))"`
+    - $PYTHON ../tools/nipnost -A "not slow" `$PYTHON -c "import os; import nipy; print(os.path.dirname(nipy.__file__))"`
