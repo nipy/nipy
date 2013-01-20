@@ -39,9 +39,9 @@ def test_iterator_coordinate():
 
 def test_ndim():
     cs = CoordinateSystem('xy')
-    yield assert_equal, cs.ndim, 2
+    assert_equal(cs.ndim, 2)
     cs = CoordinateSystem('ijk')
-    yield assert_equal, cs.ndim, 3
+    assert_equal(cs.ndim, 3)
 
 
 def test_unique_coord_names():
@@ -55,49 +55,55 @@ def test_unique_coord_names():
 def test_dtypes():
     # invalid dtypes
     dtypes = np.sctypes['others']
+    dtypes.remove(np.object)
     for dt in dtypes:
-        yield assert_raises, ValueError, CoordinateSystem, 'ijk', 'test', dt
+        assert_raises(ValueError, CoordinateSystem, 'ijk', 'test', dt)
     # compound dtype
     dtype = np.dtype([('field1', '<f8'), ('field2', '<i4')])
-    yield assert_raises, ValueError, CoordinateSystem, 'ijk', 'test', dtype
-    # valid dtype
-    dtypes = np.sctypes['int']
+    assert_raises(ValueError, CoordinateSystem, 'ijk', 'test', dtype)
+    # valid dtypes
+    dtypes = (np.sctypes['int'] + np.sctypes['float'] + np.sctypes['complex'] +
+              [np.object])
     for dt in dtypes:
-        cs = CoordinateSystem('ijk', coord_dtype=dt)
-        yield assert_equal, cs.coord_dtype, dt
-        cs_dt = [(f, dt) for f in 'ijk']
-        yield assert_equal, cs.dtype, np.dtype(cs_dt)
+        cs = CoordinateSystem('ij', coord_dtype=dt)
+        assert_equal(cs.coord_dtype, dt)
+        cs_dt = [(f, dt) for f in 'ij']
+        assert_equal(cs.dtype, np.dtype(cs_dt))
+        # Check product too
+        cs2 = CoordinateSystem('xy', coord_dtype=dt)
+        assert_equal(product(cs, cs2),
+                     CoordinateSystem('ijxy', name='product', coord_dtype=dt))
     # verify assignment fails
-    yield assert_raises, AttributeError, setattr, cs, 'dtype', np.dtype(cs_dt)
-    yield assert_raises, AttributeError, setattr, cs, 'coord_dtype', np.float
+    assert_raises(AttributeError, setattr, cs, 'dtype', np.dtype(cs_dt))
+    assert_raises(AttributeError, setattr, cs, 'coord_dtype', np.float)
 
 
 def test_readonly_attrs():
     cs = E.cs
-    yield (assert_raises, AttributeError, setattr, cs, 'coord_dtype', 
-           np.dtype(np.int32))
-    yield (assert_raises, AttributeError, setattr, cs, 'coord_names',
-           ['a','b','c'])
-    yield (assert_raises, AttributeError, setattr, cs, 'dtype',
-           np.dtype([('i', '<f4'), ('j', '<f4'), ('k', '<f4')]))
-    yield assert_raises, AttributeError, setattr, cs, 'ndim', 4
+    assert_raises(AttributeError, setattr, cs, 'coord_dtype',
+                  np.dtype(np.int32))
+    assert_raises(AttributeError, setattr, cs, 'coord_names',
+                  ['a','b','c'])
+    assert_raises(AttributeError, setattr, cs, 'dtype',
+                  np.dtype([('i', '<f4'), ('j', '<f4'), ('k', '<f4')]))
+    assert_raises(AttributeError, setattr, cs, 'ndim', 4)
 
 
 def test_index():
     cs = CoordinateSystem('ijk')
-    yield assert_equal, cs.index('i'), 0
-    yield assert_equal, cs.index('j'), 1
-    yield assert_equal, cs.index('k'), 2
-    yield assert_raises, ValueError, cs.index, 'x'
+    assert_equal(cs.index('i'), 0)
+    assert_equal(cs.index('j'), 1)
+    assert_equal(cs.index('k'), 2)
+    assert_raises(ValueError, cs.index, 'x')
 
 
 def test__ne__():
     cs1 = CoordinateSystem('ijk')
     cs2 = CoordinateSystem('xyz')
-    yield assert_true, cs1 != cs2
+    assert_true(cs1 != cs2)
     cs1 = CoordinateSystem('ijk', coord_dtype='float')
     cs2 = CoordinateSystem('ijk', coord_dtype='int')
-    yield assert_true, cs1 != cs2
+    assert_true(cs1 != cs2)
 
 
 def test___eq__():
@@ -168,9 +174,9 @@ def test_checked_values():
 
 
 def test_safe_dtype():
-    yield assert_raises, TypeError, safe_dtype, type('foo')
-    yield assert_raises, TypeError, safe_dtype, type('foo'), np.float64
-    yield assert_raises, TypeError, safe_dtype, [('x', 'f8')]
+    assert_raises(TypeError, safe_dtype, type('foo'))
+    assert_raises(TypeError, safe_dtype, type('foo'), np.float64)
+    assert_raises(TypeError, safe_dtype, [('x', 'f8')])
     valid_dtypes = []
     valid_dtypes.extend(np.sctypes['complex'])
     valid_dtypes.extend(np.sctypes['float'])
@@ -178,19 +184,19 @@ def test_safe_dtype():
     valid_dtypes.extend(np.sctypes['uint'])
     for dt in valid_dtypes:
         sdt = safe_dtype(dt)
-        yield assert_equal, sdt, dt
+        assert_equal(sdt, dt)
     # test a few upcastings
     dt = safe_dtype(np.float32, np.int16, np.bool)
-    yield assert_equal, dt, np.float32
+    assert_equal(dt, np.float32)
     dt = safe_dtype(np.float32, np.int64, np.uint32)
-    yield assert_equal, dt, np.float64
+    assert_equal(dt, np.float64)
     # test byteswapped types - isbuiltin will be false
     orig_dt = np.dtype('f')
     dt = safe_dtype(orig_dt, np.int64, np.uint32)
-    yield assert_equal, dt, np.float64
+    assert_equal(dt, np.float64)
     swapped_dt = orig_dt.newbyteorder()
     dt = safe_dtype(swapped_dt, np.int64, np.uint32)
-    yield assert_equal, dt, np.float64
+    assert_equal(dt, np.float64)
 
 
 def test_product():

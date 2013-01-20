@@ -64,6 +64,7 @@ Operations on mappings (module level functions)
 import warnings
 
 import numpy as np
+import numpy.linalg as npl
 
 from nibabel.affines import to_matvec, from_matvec
 from ...fixes.nibabel import io_orientation
@@ -441,7 +442,8 @@ class CoordinateMap(object):
         out = self(inp)
 
     def __eq__(self, other):
-        return (isinstance(other, self.__class__)
+        return ((isinstance(other, self.__class__) or
+                 isinstance(self, other.__class__))
                 and (self.function == other.function)
                 and (self.function_domain ==
                      other.function_domain)
@@ -571,15 +573,86 @@ class AffineTransform(object):
     #
     ###################################################################
 
-    def inverse(self):
-        """ Return inverse affine transform or None if not invertible
+    def inverse(self, preserve_dtype=False):
+        """ Return coordinate map with inverse affine transform or None
+
+        Parameters
+        ----------
+        preserve_dtype : bool
+            If False, return affine mapping from inverting the ``affine``.  The
+            domain / range dtypes for the inverse may then change as a function
+            of the dtype of the inverted ``affine``.  If True, try to invert our
+            ``affine``, and see if it can be cast to the needed data type, which
+            is ``self.function_domain.coord_dtype``.  We need this dtype in
+            order for the inverse to preserve the coordinate system dtypes.
+
+        Returns
+        -------
+        aff_cm_inv : ``AffineTransform`` instance or None
+            ``AffineTransform`` mapping from the *range* of input `self` to the
+            *domain* of input `self` - the inverse of `self`.  If
+            ``self.affine`` was not invertible return None.  If `preserve_dtype`
+            is True, and the inverse of ``self.affine`` cannot be cast to
+            ``self.function_domain.coord_dtype``, then return None.  Otherwise
+            return ``AffineTransform`` inverse mapping.  If `preserve_dtype` is
+            False, the domain / range dtypes of the return inverse may well be
+            different from those of the input `self`.
+
+        Examples
+        --------
+        >>> input_cs = CoordinateSystem('ijk', coord_dtype=np.int)
+        >>> output_cs = CoordinateSystem('xyz', coord_dtype=np.int)
+        >>> affine = np.array([[1,0,0,1],
+        ...                    [0,1,0,1],
+        ...                    [0,0,1,1],
+        ...                    [0,0,0,1]])
+        >>> affine_transform = AffineTransform(input_cs, output_cs, affine)
+        >>> affine_transform([2,3,4]) #doctest: +IGNORE_DTYPE
+        array([3, 4, 5])
+
+        The inverse transform, by default, generates a floating point inverse
+        matrix and therefore floating point output:
+
+        >>> affine_transform_inv = affine_transform.inverse()
+        >>> affine_transform_inv([2, 6, 12])
+        array([  1.,   5.,  11.])
+
+        You can force it to preserve the coordinate system dtype with the
+        `preserve_dtype` flag:
+
+        >>> at_inv_preserved = affine_transform.inverse(preserve_dtype=True)
+        >>> at_inv_preserved([2, 6, 12]) #doctest: +IGNORE_DTYPE
+        array([  1,   5,  11])
+
+        If you `preserve_dtype`, and there is no inverse affine preserving the
+        dtype, the inverse is None:
+
+        >>> affine2 = affine.copy()
+        >>> affine2[0, 0] = 2 # now inverse can't be integer
+        >>> aff_t = AffineTransform(input_cs, output_cs, affine2)
+        >>> aff_t.inverse(preserve_dtype=True) is None
+        True
         """
+        aff_dt = self.function_range.coord_dtype
         try:
-            return AffineTransform(self.function_range,
-                                   self.function_domain,
-                                   np.linalg.inv(self.affine))
-        except np.linalg.linalg.LinAlgError:
+            m_inv = npl.inv(self.affine)
+        except npl.LinAlgError:
             return None
+        except TypeError:
+            # Try using sympy for the inverse.  This might be needed for sympy
+            # symbols in the affine, or Float128
+            from sympy import Matrix, matrix2numpy
+            sym_inv = Matrix(self.affine).inv()
+            m_inv = matrix2numpy(sym_inv).astype(aff_dt)
+        else: # linalg inverse succeeded
+            if preserve_dtype and aff_dt != np.object: # can we cast back?
+                m_inv_orig = m_inv
+                m_inv = m_inv.astype(aff_dt)
+                if not np.allclose(m_inv_orig, m_inv):
+                    return None
+        return AffineTransform(self.function_range,
+                               self.function_domain,
+                               m_inv)
 
     ###################################################################
     #
@@ -882,11 +955,6 @@ class AffineTransform(object):
         >>> affine_transform = AffineTransform(input_cs, output_cs, affine)
         >>> affine_transform([2,3,4]) #doctest: +IGNORE_DTYPE
         array([3, 4, 5])
-        >>> affine_transform_inv = affine_transform.inverse()
-        >>> # Its inverse has a matrix of np.float
-        >>> # because np.linalg.inv was called.
-        >>> affine_transform_inv([2,6,12])
-        array([  1.,   5.,  11.])
         """
         x = np.asanyarray(x)
         out_shape = (self.function_range.ndim,)
@@ -940,14 +1008,16 @@ class AffineTransform(object):
                  '\n          '.join(repr(self.affine).split('\n'))))
 
     def __eq__(self, other):
-        test1, test2, test3, test4 =(isinstance(other, self.__class__),
-                                     np.allclose(self.affine, other.affine),
-                                     (self.function_domain ==
-                                      other.function_domain),
-                                     (self.function_range ==
-                                      other.function_range))
-        value = test1 and test2 and test3 and test4
-        return value
+        # Must be subclasses
+        if not (isinstance(other, self.__class__) or
+                isinstance(self, other.__class__)):
+            return False
+        if np.any(self.affine - other.affine): # for objects
+            if not np.allclose(self.affine, other.affine): # for numerical
+                return False
+        if not self.function_domain == other.function_domain:
+            return False
+        return self.function_range == other.function_range
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -1138,12 +1208,12 @@ def reordered_domain(mapping, order=None):
     for i, j in enumerate(order):
         perm[j,i] = 1.
 
-    perm = perm.astype(mapping.function_domain.coord_dtype)
-
     # If there is no reordering, return mapping
     if np.allclose(perm, np.identity(perm.shape[0])):
         import copy
         return copy.copy(mapping)
+
+    perm = perm.astype(mapping.function_domain.coord_dtype)
 
     A = AffineTransform(newincoords, mapping.function_domain, perm)
     if isinstance(mapping, AffineTransform):
@@ -1444,11 +1514,11 @@ def reordered_range(mapping, order=None):
     for i, j in enumerate(order):
         perm[j,i] = 1.
 
-    perm = perm.astype(mapping.function_range.coord_dtype)
     if np.allclose(perm, np.identity(perm.shape[0])):
         import copy
         return copy.copy(mapping)
 
+    perm = perm.astype(mapping.function_range.coord_dtype)
 
     A = AffineTransform(mapping.function_range, newoutcoords, perm.T)
 
@@ -1549,7 +1619,9 @@ def _as_coordinate_map(cmap):
             value += b
             return value
 
-        affine_transform_inv = affine_transform.inverse()
+        # Preserve dtype check because the CoordinateMap expects to generate the
+        # expected dtype and checks this on object creation
+        affine_transform_inv = affine_transform.inverse(preserve_dtype=True)
         if affine_transform_inv:
             Ainv, binv = to_matvec(affine_transform_inv.affine)
             def _inverse_function(x):
