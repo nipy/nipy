@@ -34,15 +34,16 @@ def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
 
 
 def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
-    fmri_data, design_matrices= []
+    fmri_data = []
+    design_matrices = []
     for i, shape in enumerate(shapes):
         data = 100 + np.random.randn(*shape)
         data[0] -= 10
         fmri_data.append(Nifti1Image(data, affine))
         design_matrices.append(np.random.randn(shape[3], rk))
-    mask = Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8), 
+    mask = Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
                        affine)
-    return mask, fmri_data, design_matrices 
+    return mask, fmri_data, design_matrices
 
 
 def test_high_level_glm_with_paths():
@@ -103,6 +104,22 @@ def test_high_level_glm_contrasts():
     z2, = multi_session_model.contrast([np.eye(rk)[1:2]] * 2)
     assert_true((z_image.get_data() < np.maximum(
         z1.get_data(), z2.get_data())).all())
+
+
+def test_high_level_glm_null_contrasts():
+    shapes, rk = ((5, 6, 7, 20), (5, 6, 7, 19)), 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data(shapes, rk)
+
+    multi_session_model = FMRILinearModel(
+        fmri_data, design_matrices, mask=None)
+    multi_session_model.fit()
+    single_session_model = FMRILinearModel(
+        fmri_data[:1], design_matrices[:1], mask=None)
+    single_session_model.fit()
+    z1, = multi_session_model.contrast([np.eye(rk)[:1]] * 2)
+    z2, = multi_session_model.contrast([np.eye(rk)[:1], np.zeros((1, rk))])
+    z3, = single_session_model.contrast([np.eye(rk)[:1]])
+    np.testing.assert_almost_equal(z2.get_data(), z3.get_data())
 
 
 def ols_glm(n=100, p=80, q=10):
