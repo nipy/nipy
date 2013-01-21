@@ -567,7 +567,7 @@ class FMRILinearModel(object):
         for i, (glm, con) in enumerate(zip(self.glms, contrasts)):
             if np.all(con == 0):
                 warn('Contrast for session %d is null' % i)
-            elif not contrast_:
+            elif contrast_ is None:
                 contrast_ = glm.contrast(con, contrast_type)
             else:
                 contrast_ = contrast_ + glm.contrast(con, contrast_type)
