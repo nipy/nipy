@@ -3,7 +3,7 @@
 import numpy as np
 from scipy.stats import norm
 
-from ..utils import multiple_mahalanobis, z_score
+from ..utils import multiple_mahalanobis, z_score, multiple_fast_inv
 from nose.tools import assert_true
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 
@@ -30,6 +30,16 @@ def test_mahalanobis2():
     mah = np.dot(x[:, i], np.dot(np.linalg.inv(Aa[:, :, i]), x[:, i]))
     f_mah = (multiple_mahalanobis(x, Aa))[i]
     assert_true(np.allclose(mah, f_mah))
+
+def test_multiple_fast_inv():
+    shape = (10, 20, 20)
+    X = np.random.randn(shape[0], shape[1], shape[2])
+    X_inv_ref = np.zeros(shape)
+    for i in range(shape[0]):
+        X[i] = np.dot(X[i], X[i].T)
+        X_inv_ref[i] = np.linalg.inv(X[i])
+    X_inv = multiple_fast_inv(X)
+    assert_almost_equal(X_inv_ref, X_inv)
 
 
 if __name__ == "__main__":
