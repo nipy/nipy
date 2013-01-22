@@ -45,7 +45,8 @@ def multiple_fast_inv(a):
     a1, n = a[0], a.shape[0]
     getrf, getri = get_lapack_funcs(('getrf', 'getri'), (a1,))
     for i in range(n):
-        if getrf.module_name[:7] == 'clapack' != getri.module_name[:7]:
+        if (getrf.module_name[:7] == 'clapack'
+            and getri.module_name[:7] != 'clapack'):
             # ATLAS 3.2.1 has getrf but not getri.
             lu, piv, info = getrf(np.transpose(a[i]), rowmajor=0,
                                   overwrite_a=True)
