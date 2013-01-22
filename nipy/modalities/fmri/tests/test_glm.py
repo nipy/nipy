@@ -116,10 +116,9 @@ def test_high_level_glm_null_contrasts():
     single_session_model = FMRILinearModel(
         fmri_data[:1], design_matrices[:1], mask=None)
     single_session_model.fit()
-    z1, = multi_session_model.contrast([np.eye(rk)[:1]] * 2)
-    z2, = multi_session_model.contrast([np.eye(rk)[:1], np.zeros((1, rk))])
-    z3, = single_session_model.contrast([np.eye(rk)[:1]])
-    np.testing.assert_almost_equal(z2.get_data(), z3.get_data())
+    z1, = multi_session_model.contrast([np.eye(rk)[:1], np.zeros((1, rk))])
+    z2, = single_session_model.contrast([np.eye(rk)[:1]])
+    np.testing.assert_almost_equal(z1.get_data(), z2.get_data())
 
 
 def ols_glm(n=100, p=80, q=10):
