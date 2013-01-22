@@ -32,6 +32,8 @@ Example of fixed effects statistics across two contrasts
 
 import numpy as np
 
+from warnings import warn
+
 import scipy.stats as sps
 
 from nibabel import load, Nifti1Image
@@ -561,8 +563,11 @@ class FMRILinearModel(object):
                 'contrasts must be a sequence of %d session contrasts' %
                 len(self.glms))
 
+        contrast_ = None
         for i, (glm, con) in enumerate(zip(self.glms, contrasts)):
-            if i == 0:
+            if np.all(con == 0):
+                warn('Contrast for session %d is null' % i)
+            elif contrast_ is None:
                 contrast_ = glm.contrast(con, contrast_type)
             else:
                 contrast_ = contrast_ + glm.contrast(con, contrast_type)
