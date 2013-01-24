@@ -750,12 +750,12 @@ class Realign4d(object):
         if r == None:
             data = [resample4d(self._runs[r], transforms=transforms[r],
                                time_interp=self._time_interp) for r in runs]
-            return [make_xyz_image(data[r], self._runs[r].affine, 'scanner')
+            return [make_xyz_image(data[r], self._runs[0].affine, 'scanner')
                     for r in runs]
         else:
             data = resample4d(self._runs[r], transforms=transforms[r],
                               time_interp=self._time_interp)
-            return make_xyz_image(data, self._runs[r].affine, 'scanner')
+            return make_xyz_image(data, self._runs[0].affine, 'scanner')
 
 
 class FmriRealign4d(Realign4d):
