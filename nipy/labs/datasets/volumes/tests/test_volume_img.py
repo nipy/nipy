@@ -14,6 +14,8 @@ from ...transforms.affine_transform import AffineTransform
 from ...transforms.transform import Transform
 from ..volume_img import VolumeImg, CompositionError
 
+from nose.tools import assert_true
+
 ################################################################################
 # Helper function
 def rotation(theta, phi):
@@ -170,7 +172,7 @@ def test_eq():
     copy_im.world_space = 'other'
     yield nose.tools.assert_not_equal, ref_im, copy_im
     # Test repr
-    yield np.testing.assert_, isinstance(repr(ref_im), str)
+    yield assert_true, isinstance(repr(ref_im), str)
     # Test init: should raise exception is not passing in right affine
     yield nose.tools.assert_raises, Exception, VolumeImg, data, \
                 np.eye(3, 3), 'mine'

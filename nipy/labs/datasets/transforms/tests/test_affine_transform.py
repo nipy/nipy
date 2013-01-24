@@ -8,7 +8,7 @@ import numpy as np
 import copy
 # Don't import from nipy.testing not to have a hard dependence on nipy,
 # use np.testing or nose
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_true
 
 from ..affine_transform import AffineTransform
 
@@ -41,7 +41,7 @@ def test_misc():
     transform = AffineTransform('in', 'out', np.random.random((3, 3)))
 
     # Check that the repr does not raise an error:
-    yield np.testing.assert_, isinstance(repr(transform), str)
+    yield assert_true, isinstance(repr(transform), str)
     # Check that copy and eq work
     yield assert_equal, transform, copy.copy(transform)
     yield assert_equal, transform, copy.deepcopy(transform)
