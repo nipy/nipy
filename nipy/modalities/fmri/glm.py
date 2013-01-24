@@ -475,8 +475,8 @@ class FMRILinearModel(object):
         # load the designs
         for design_matrix in design_matrices:
             if isinstance(design_matrix, basestring):
-                self.design_matrices.append(
-                    np.load(design_matrix).items()[0][1])
+                loaded = np.load(design_matrix)
+                self.design_matrices.append(loaded[loaded.files[0]])
             else:
                 self.design_matrices.append(design_matrix)
 
