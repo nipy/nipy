@@ -9,7 +9,7 @@ import numpy as np
 import copy
 # Don't import from nipy.testing not to have a hard dependence on nipy,
 # use np.testing or nose
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal, assert_raises, assert_true
 
 from ..transform import Transform, CompositionError
 
@@ -56,7 +56,7 @@ def test_misc():
     transform = Transform('in', 'out', mapping=mapping)
 
     # Check that the repr does not raise an error:
-    yield np.testing.assert_, isinstance(repr(transform), str)
+    yield assert_true, isinstance(repr(transform), str)
     # Check that copy and eq work
     yield assert_equal, transform, copy.copy(transform)
 

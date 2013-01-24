@@ -5,8 +5,8 @@ import numpy as np
 from .. import intvol
 
 from ..tests.test_intrinsic_volumes import nonintersecting_boxes, randorth
-from numpy.testing import measure
 
+import numpy.testing as npt
 
 def bench_lips3d():
     np.random.seed(20111001)
@@ -19,16 +19,16 @@ def bench_lips3d():
     sys.stdout.flush()
     print "\nIntrinsic volumes 3D"
     print "--------------------"
-    print 'Box1 %6.2f\n' % measure('phi(c,box1)', repeat),
-    print 'Box2 %6.2f\n' % measure('phi(c, box2)', repeat),
-    print 'Box1+2 %6.2f\n' % measure('phi(c, box1 + box2)', repeat),
+    print 'Box1 %6.2f\n' % npt.measure('phi(c,box1)', repeat),
+    print 'Box2 %6.2f\n' % npt.measure('phi(c, box2)', repeat),
+    print 'Box1+2 %6.2f\n' % npt.measure('phi(c, box1 + box2)', repeat),
     d = np.random.standard_normal((10,) + (bx_sz,) * 3)
-    print 'Box1+2 d %6.2f\n' % measure('phi(d, box1 + box2)', repeat),
+    print 'Box1+2 d %6.2f\n' % npt.measure('phi(d, box1 + box2)', repeat),
     U = randorth(p=6)[0:3]
     e = np.dot(U.T, c.reshape((c.shape[0], -1)))
     e.shape = (e.shape[0],) + c.shape[1:]
-    print 'Box1+2 e %6.2f\n' % measure('phi(e, box1 + box2)', repeat),
-    print 'Box1+2 EC %6.2f\n' % measure('EC3d(box1 + box2)', repeat),
+    print 'Box1+2 e %6.2f\n' % npt.measure('phi(e, box1 + box2)', repeat),
+    print 'Box1+2 EC %6.2f\n' % npt.measure('EC3d(box1 + box2)', repeat),
     sys.stdout.flush()
 
 
@@ -43,16 +43,16 @@ def bench_lips2d():
     sys.stdout.flush()
     print "\nIntrinsic volumes 2D"
     print "--------------------"
-    print 'Box1 %6.2f\n' % measure('phi(c,box1)', repeat),
-    print 'Box2 %6.2f\n' % measure('phi(c, box2)', repeat),
-    print 'Box1+2 %6.2f\n' % measure('phi(c, box1 + box2)', repeat),
+    print 'Box1 %6.2f\n' % npt.measure('phi(c,box1)', repeat),
+    print 'Box2 %6.2f\n' % npt.measure('phi(c, box2)', repeat),
+    print 'Box1+2 %6.2f\n' % npt.measure('phi(c, box1 + box2)', repeat),
     d = np.random.standard_normal((10,) + (bx_sz,) * 2)
-    print 'Box1+2 d %6.2f\n' % measure('phi(d, box1 + box2)', repeat),
+    print 'Box1+2 d %6.2f\n' % npt.measure('phi(d, box1 + box2)', repeat),
     U = randorth(p=6)[0:2]
     e = np.dot(U.T, c.reshape((c.shape[0], -1)))
     e.shape = (e.shape[0],) + c.shape[1:]
-    print 'Box1+2 e %6.2f\n' % measure('phi(e, box1 + box2)', repeat),
-    print 'Box1+2 EC %6.2f\n' % measure('EC2d(box1 + box2)', repeat),
+    print 'Box1+2 e %6.2f\n' % npt.measure('phi(e, box1 + box2)', repeat),
+    print 'Box1+2 EC %6.2f\n' % npt.measure('EC2d(box1 + box2)', repeat),
     sys.stdout.flush()
 
 
@@ -67,14 +67,14 @@ def bench_lips1d():
     sys.stdout.flush()
     print "\nIntrinsic volumes 1D"
     print "--------------------"
-    print 'Box1 %6.2f\n' % measure('phi(c,box1)', repeat),
-    print 'Box2 %6.2f\n' % measure('phi(c, box2)', repeat),
-    print 'Box1+2 %6.2f\n' % measure('phi(c, box1 + box2)', repeat),
+    print 'Box1 %6.2f\n' % npt.measure('phi(c,box1)', repeat),
+    print 'Box2 %6.2f\n' % npt.measure('phi(c, box2)', repeat),
+    print 'Box1+2 %6.2f\n' % npt.measure('phi(c, box1 + box2)', repeat),
     d = np.random.standard_normal((10, bx_sz))
-    print 'Box1+2 d %6.2f\n' % measure('phi(d, box1 + box2)', repeat),
+    print 'Box1+2 d %6.2f\n' % npt.measure('phi(d, box1 + box2)', repeat),
     U = randorth(p=6)[0:1]
     e = np.dot(U.T, c.reshape((c.shape[0], -1)))
     e.shape = (e.shape[0],) + c.shape[1:]
-    print 'Box1+2 e %6.2f\n' % measure('phi(e, box1 + box2)', repeat),
-    print 'Box1+2 EC %6.2f\n' % measure('EC1d(box1 + box2)', repeat),
+    print 'Box1+2 e %6.2f\n' % npt.measure('phi(e, box1 + box2)', repeat),
+    print 'Box1+2 EC %6.2f\n' % npt.measure('EC1d(box1 + box2)', repeat),
     sys.stdout.flush()
