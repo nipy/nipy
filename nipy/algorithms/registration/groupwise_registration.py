@@ -634,8 +634,8 @@ def realign4d(runs,
 
     # Correct between-session motion using the mean image of each
     # corrected run, and creating a fake time series with no temporal
-    # smoothness
-    ## FIXME: check that all runs have the same to-world transform
+    # smoothness. It is assumed here that all runs have the same
+    # affine.
     mean_img_shape = list(runs[0].get_shape()[0:3]) + [nruns]
     mean_img_data = np.zeros(mean_img_shape)
 
@@ -689,10 +689,14 @@ class Realign4d(object):
             images = [images]
         self._runs = []
         self.affine_class = affine_class
+        # For multiple runs, redefine the affine of each run as the
+        # affine corresponding to the first run. This way, all
+        # corrected runs will have the same affine.
+        affine = xyz_affine(as_xyz_image(images[0]))
         for im in images:
             xyz_img = as_xyz_image(im)
             self._runs.append(Image4d(xyz_img.get_data,
-                                      xyz_affine(xyz_img),
+                                      affine,
                                       tr=tr, tr_slices=tr_slices,
                                       start=start, slice_order=slice_order,
                                       interleaved=interleaved,
