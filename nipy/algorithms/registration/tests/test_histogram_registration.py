@@ -79,10 +79,10 @@ def test_clamping_float64_nonstd():
     _test_clamping(I, 10, 165)
 
 
-def _test_similarity_measure(simi, val):
+def _test_similarity_measure(simi, val, normalize=True):
     I = make_xyz_image(make_data_int16(), dummy_affine, 'scanner')
     J = make_xyz_image(I.get_data().copy(), dummy_affine, 'scanner')
-    R = HistogramRegistration(I, J)
+    R = HistogramRegistration(I, J, normalize=normalize)
     R.subsample(spacing=[2, 1, 3])
     R.similarity = simi
     assert_almost_equal(R.eval(Affine()), val)
@@ -102,6 +102,18 @@ def test_correlation_ratio_L1():
 
 def test_normalized_mutual_information():
     _test_similarity_measure('nmi', 1.0)
+
+
+def test_correlation_coefficient_unnormalized():
+    _test_similarity_measure('cc', np.inf, normalize=False)
+
+
+def test_correlation_ratio_unnormalized():
+    _test_similarity_measure('cr', np.inf, normalize=False)
+
+
+def test_correlation_ratio_L1_unnormalized():
+    _test_similarity_measure('crl1', np.inf, normalize=False)
 
 
 def test_joint_hist_eval():

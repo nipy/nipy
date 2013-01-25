@@ -10,10 +10,12 @@ SIGMA_FACTOR = 0.05
 nonzero = lambda x: np.maximum(x, TINY)
 
 
-def unnormalize_correlation(rho2, npts):
+def correlation2loglikelihood(rho2, npts):
     """
     Convert a squared normalized correlation to a proper
-    log-likelihood associated with a registration problem.
+    log-likelihood associated with a registration problem. The result
+    is a function of both the input correlation and the number of
+    points in the image overlap.
 
     See: Roche, medical image registration through statistical
     inference, 2001.
@@ -46,7 +48,7 @@ class SimilarityMeasure(object):
     """
     Template class
     """
-    def __init__(self, shape, normalize=False, dist=None):
+    def __init__(self, shape, normalize=True, dist=None):
         self.shape = shape
         self.J, self.I = np.indices(shape)
         self.normalize = normalize
@@ -147,7 +149,7 @@ class CorrelationCoefficient(SimilarityMeasure):
         cIJ = np.sum(H * self.J * self.I) / npts - mI * mJ
         rho2 = (cIJ / nonzero(np.sqrt(vI * vJ))) ** 2
         if not self.normalize:
-            rho2 = unnormalize_correlation(rho2, npts)
+            rho2 = correlation2loglikelihood(rho2, npts)
         return rho2
 
 
@@ -170,7 +172,7 @@ class CorrelationRatio(SimilarityMeasure):
         mean_vI_J = np.sum(hJ * vI_J) / tmp
         eta2 = 1. - mean_vI_J / nonzero(vI)
         if not self.normalize:
-            eta2 = unnormalize_correlation(eta2, npts)
+            eta2 = correlation2loglikelihood(eta2, npts)
         return eta2
 
 
@@ -188,7 +190,7 @@ class CorrelationRatioL1(SimilarityMeasure):
         mean_sI_J = np.sum(hJ * sI_J) / nonzero(npts)
         eta2 = 1. - mean_sI_J / nonzero(sI)
         if not self.normalize:
-            eta2 = unnormalize_correlation(eta2, npts)
+            eta2 = correlation2loglikelihood(eta2, npts)
         return eta2
 
 
