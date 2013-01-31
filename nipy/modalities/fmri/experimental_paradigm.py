@@ -20,6 +20,8 @@ Author: Bertrand Thirion, 2009-2011
 
 import numpy as np
 
+from ...utils.compat3 import open4csv
+
 ##########################################################
 # Paradigm handling
 ##########################################################
@@ -75,28 +77,27 @@ class Paradigm(object):
         session: string, optional, session identifier
         """
         import csv
-        fid = open(csv_file, "wt")
-        writer = csv.writer(fid, delimiter=' ')
-        n_pres = np.size(self.con_id)
-        sess = np.repeat(session, n_pres)
-        pdata = np.vstack((sess, self.con_id, self.onset)).T
+        with open4csv(csv_file, "w") as fid:
+            writer = csv.writer(fid, delimiter=' ')
+            n_pres = np.size(self.con_id)
+            sess = np.repeat(session, n_pres)
+            pdata = np.vstack((sess, self.con_id, self.onset)).T
 
-        # add the duration information
-        if self.type == 'event':
-            duration = np.zeros(np.size(self.con_id))
-        else:
-            duration = self.duration
-        pdata = np.hstack((pdata, np.reshape(duration, (n_pres, 1))))
+            # add the duration information
+            if self.type == 'event':
+                duration = np.zeros(np.size(self.con_id))
+            else:
+                duration = self.duration
+            pdata = np.hstack((pdata, np.reshape(duration, (n_pres, 1))))
 
-        # add the amplitude information
-        if self.amplitude is not None:
-            amplitude = np.reshape(self.amplitude, (n_pres, 1))
-            pdata = np.hstack((pdata, amplitude))
+            # add the amplitude information
+            if self.amplitude is not None:
+                amplitude = np.reshape(self.amplitude, (n_pres, 1))
+                pdata = np.hstack((pdata, amplitude))
 
-        # write pdata
-        for row in pdata:
-            writer.writerow(row)
-        fid.close()
+            # write pdata
+            for row in pdata:
+                writer.writerow(row)
 
 
 class EventRelatedParadigm(Paradigm):
@@ -172,25 +173,25 @@ def load_paradigm_from_csv_file(path, session=None):
     would be much clearer if amplitude was put before duration in the .csv
     """
     import csv
-    csvfile = open(path, 'rt')
-    dialect = csv.Sniffer().sniff(csvfile.read())
-    csvfile.seek(0)
-    reader = csv.reader(csvfile, dialect)
+    with open4csv(path, 'r') as csvfile:
+        dialect = csv.Sniffer().sniff(csvfile.read())
+        csvfile.seek(0)
+        reader = csv.reader(csvfile, dialect)
 
-    # load the csv as a paradigm array
-    sess, cid, onset, amplitude, duration = [], [], [], [], []
-    for row in reader:
-        sess.append(row[0])
-        cid.append(row[1])
-        onset.append(float(row[2]))
-        if len(row) > 3:
-            duration.append(float(row[3]))
-        if len(row) > 4:
-            amplitude.append(row[4])
+        # load the csv as a paradigm array
+        sess, cid, onset, amplitude, duration = [], [], [], [], []
+        for row in reader:
+            sess.append(row[0])
+            cid.append(row[1])
+            onset.append(float(row[2]))
+            if len(row) > 3:
+                duration.append(float(row[3]))
+            if len(row) > 4:
+                amplitude.append(row[4])
 
-    paradigm_info = [np.array(sess), np.array(cid), np.array(onset),
-                np.array(duration), np.array(amplitude)]
-    paradigm_info = paradigm_info[:len(row)]
+        paradigm_info = [np.array(sess), np.array(cid), np.array(onset),
+                    np.array(duration), np.array(amplitude)]
+        paradigm_info = paradigm_info[:len(row)]
 
     def read_session(paradigm_info, session):
         """ return a paradigm instance corresponding to session
@@ -220,5 +221,4 @@ def load_paradigm_from_csv_file(path, session=None):
             paradigm[session] = read_session(paradigm_info, session)
     else:
         paradigm = read_session(paradigm_info, session)
-    csvfile.close()
     return paradigm
