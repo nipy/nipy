@@ -31,7 +31,8 @@ matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
 needs_mpl = decorators.skipif(not HAVE_MPL, "Test needs matplotlib")
 script_test = make_label_dec('script_test')
 
-USE_SHELL = os.name != 'nt'
+# Need shell to get path to correct executables
+USE_SHELL = True
 
 DEBUG_PRINT = os.environ.get('NIPY_DEBUG_PRINT', False)
 
