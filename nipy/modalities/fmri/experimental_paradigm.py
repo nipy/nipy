@@ -1,5 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import with_statement
 """
 This module implements an object to deal with experimental paradigms.
 In fMRI data analysis, there are two main types of experimental
