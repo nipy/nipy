@@ -300,6 +300,7 @@ def generate_a_pyrex_source(self, base, ext_name, source, extension):
 
 BAT_TEMPLATE = \
 r"""@echo off
+REM wrapper to use shebang first line of {FNAME}
 set mypath=%~dp0
 set pyscript="%mypath%{FNAME}"
 set /p line1=<%pyscript%
@@ -316,27 +317,17 @@ class install_scripts_nipy(install_scripts):
 
     Scripts are bare file names without extension on Unix, fitting (for example)
     Debian rules. They identify as python scripts with the usual ``#!`` first
-    line.  This doesn't work on Windows.  So, on Windows only we ad a ``.bat``
-    wrapper of name ``bare_script_name.bat`` to call ``bare_script_name``
-    using the python interpreter from the #! first line of the script.
+    line. Unix recognizes and uses this first "shebang" line, but Windows does
+    not. So, on Windows only we add a ``.bat`` wrapper of name
+    ``bare_script_name.bat`` to call ``bare_script_name`` using the python
+    interpreter from the #! first line of the script.
 
     Notes
     -----
-    The idea for this routine came from an idea in Twisted, re-used in IPython
-
-    An alternative to this method would be to use the ``distribute`` /
-    ``setuptools`` ``cli.exe`` method.  We could do this by defining console
-    entry points for the scripts, and moving the script code into the libary.
-    setuptools then copies a pre-compiled Windows executable ``cli.exe`` as
-    ``bare_script_name.exe``, and the script as ``bare_script_name-script.py``.
-    The executable file ``cli.exe`` (copied as ``bare_script_name.exe``)
-    analyzes its own name, and then calls ``bare_script_name-script.py`` with
-    the Python interpreter named in the top line of the script file.  Doing this
-    induces a run-time dependency on setuptools because the generated python
-    script files import ``pkg_resources``.
-
-    See git://github.com/matthew-brett/myscripter.git for some experiments to
-    show what setuptools and distutils are doing.
+    See discussion at
+    http://matthew-brett.github.com/pydagogue/installing_scripts.html and
+    example at git://github.com/matthew-brett/myscripter.git for more
+    background.
     """
     def run(self):
         install_scripts.run(self)
