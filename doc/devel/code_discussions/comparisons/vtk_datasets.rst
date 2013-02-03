@@ -5,7 +5,7 @@
 Here we describe the VTK dataset model, because of some parallels with
 our own idea of an image object.  The document is from the VTK book - [VTK4]_
 
-See also: 
+See also:
 
 * http://code.enthought.com/projects/mayavi/docs/development/html/mayavi/data.html#vtk-data-structures 
 * http://code.enthought.com/projects/mayavi/docs/development/html/mayavi/auto/example_datasets.html
@@ -45,14 +45,13 @@ refers to, you can identify the element.
 
 >>> pts = vtk.vtkPoints()
 >>> id = pts.InsertNextPoint(0, 0, 0)
->>> id
-0
+>>> id == 0
+True
 >>> id = pts.InsertNextPoint(0, 1, 0)
->>> id
-1
->>> pts.GetPoint(1)
-(0.0, 1.0, 0.0)
-
+>>> id == 1
+True
+>>> pts.GetPoint(1) == (0.0, 1.0, 0.0)
+True
 
 A dataset has one or more points
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -91,8 +90,8 @@ True
 >>> triangle.GetCellType() == VTK_TRIANGLE
 True
 >>> pt_ids = triangle.GetPointIds() # these are default (zeros) at the moment
->>> [pt_ids.GetId(i) for i in range(pt_ids.GetNumberOfIds())]
-[0, 0, 0]
+>>> [pt_ids.GetId(i) for i in range(pt_ids.GetNumberOfIds())] == [0, 0, 0]
+True
 
 Here we set the ids.  The ids refer to the points above.  The system
 does not know this yet, but it will because, later, we are going to
