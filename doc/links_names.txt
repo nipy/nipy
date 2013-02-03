@@ -52,9 +52,6 @@
 .. _Ubuntu: http://www.ubuntu.com
 .. _MacPorts: http://www.macports.org/
 
-.. Installation
-.. _pypi: http://pypi.python.org/pypi
-
 .. Working process
 .. _pynifti: http://niftilib.sourceforge.net/pynifti/
 .. _nifticlibs: http://nifti.nimh.nih.gov
@@ -62,6 +59,15 @@
 .. _sourceforge: http://nipy.sourceforge.net/
 .. _github: http://github.com
 .. _launchpad: https://launchpad.net/
+
+.. Python packaging
+.. _distutils: http://docs.python.org/2/library/distutils.html
+.. _setuptools: http://pypi.python.org/pypi/setuptools
+.. _distribute: http://pypi.python.org/pypi/distribute
+.. _pip: http://pypi.python.org/pypi/pip
+.. _old and new python versions: https://launchpad.net/%7Efkrull/+archive/deadsnakes
+.. _pypi: http://pypi.python.org
+.. _example pypi: http://packages.python.org/an_example_pypi_project/setuptools.html#intermezzo-pypirc-file-and-gpg
 
 .. Code support stuff
 .. _pychecker: http://pychecker.sourceforge.net/
@@ -96,7 +102,11 @@
 .. _nibabel: http://nipy.org/nibabel
 .. _networkx: http://networkx.lanl.gov/
 .. _pythonxy: http://www.pythonxy.com/
+.. _python (x, y): http://www.pythonxy.com/
 .. _EPD: http://www.enthought.com/products/epd.php
+.. _EPD free: http://www.enthought.com/products/epd_free.php
+.. _Anaconda CE: https://store.continuum.io/
+.. _Unofficial Windows binaries: http://www.lfd.uci.edu/~gohlke/pythonlibs
 
 .. Python imaging projects
 .. _PyMVPA: http://www.pymvpa.org
