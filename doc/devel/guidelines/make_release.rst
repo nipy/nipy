@@ -57,6 +57,9 @@ Release checklist
 * Use the opportunity to update the ``.mailmap`` file if there are any duplicate
   authors listed from ``git shortlog``.
 
+* Add any new authors to the ``AUTHORS`` file.  Add any new entries to the
+  ``THANKS`` file.
+
 * Check the copyright years in ``doc/conf.py`` and ``LICENSE``
 
 * Check the examples in python 2 and python 3, by running something like::
