@@ -246,6 +246,13 @@ Doing the release
     Thus the development series ('trunk') will have a version number here of
     '0.3.0.dev' and the next full release will be '0.3.0'.
 
+  * Merge ``-s ours`` the version number changes from the maint release, e.g::
+
+      git merge -s ours maint/0.3.x
+
+    This marks the version number changes commit as merged, so we can merge any
+    changes we need from the maintenance branch without merge conflicts.
+
   If this is just a maintenance release from ``maint/0.2.x`` or similar, just
   tag and set the version number to - say - ``0.2.1.dev``.
 
