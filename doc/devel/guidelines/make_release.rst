@@ -72,7 +72,7 @@ Release checklist
 
 * Do a final check on the `nipy buildbot`_
 
-* If you have travis-ci_ building set up you might want to push the code in it's
+* If you have travis-ci_ building set up you might want to push the code in its
   current state to a branch that will build, e.g::
 
     git branch -D pre-release-test # in case branch already exists
@@ -84,42 +84,33 @@ Release checklist
 
     ./tools/nicythize
 
-* Compile up the code for testing::
+Release checking - buildbots
+============================
 
-    python setup.py build_ext -i
+* Check all the buildbots pass
+* Run the builder and review the possibly green output from
+  http://nipy.bic.berkeley.edu/builders/nipy-release-checks
 
-* Make sure all tests pass (from the nipy root directory)::
-
-    ./tools/nipnost nipy
-
-* Clean::
+  This runs all of::
 
     make distclean
-
-* Make sure all tests pass from sdist::
-
+    python -m compileall .
     make sdist-tests
-
-  and bdist_egg::
-
     make bdist-egg-tests
+    make check-version-info
+    make check-files
 
-  This one may well fail because of a problem with the script tests; if you have
-  a recent (>= Jan 15 2013) nibabel ``nisext`` package, you could try instead
-  doing::
+* You need to review the outputs for errors; at the moment this buildbot builder
+  does not check whether these tests passed or failed.
+* ``make bdist-egg-tests`` may well fail because of a problem with the script
+  tests; if you have a recent (>= Jan 15 2013) nibabel ``nisext`` package, you
+  could try instead doing::
 
     python -c 'from nisext.testers import bdist_egg_tests; bdist_egg_tests("nipy", label="not slow and not script_test")'
 
   Eventually we should update the ``bdist-egg-tests`` makefile target.
-
-* Check the installation commit hash storage.
-
-  This checks the three ways of installing (from tarball, repo, local in repo)::
-
-    make check-version-info
-
-  The last may not raise any errors, but you should detect in the output
-  lines of this form::
+* ``make check-version-info`` checks how the commit hash is stored in the
+  installed files.  You should see something like this::
 
     {'sys_version': '2.6.6 (r266:84374, Aug 31 2010, 11:00:51) \n[GCC 4.0.1 (Apple Inc. build 5493)]', 'commit_source': 'archive substitution', 'np_version': '1.5.0', 'commit_hash': '25b4125', 'pkg_path': '/var/folders/jg/jgfZ12ZXHwGSFKD85xLpLk+++TI/-Tmp-/tmpGPiD3E/pylib/nipy', 'sys_executable': '/Library/Frameworks/Python.framework/Versions/2.6/Resources/Python.app/Contents/MacOS/Python', 'sys_platform': 'darwin'}
     /var/folders/jg/jgfZ12ZXHwGSFKD85xLpLk+++TI/-Tmp-/tmpGPiD3E/pylib/nipy/__init__.pyc
@@ -127,18 +118,16 @@ Release checklist
     /Users/mb312/dev_trees/nipy/nipy/__init__.pyc
     {'sys_version': '2.6.6 (r266:84374, Aug 31 2010, 11:00:51) \n[GCC 4.0.1 (Apple Inc. build 5493)]', 'commit_source': 'repository', 'np_version': '1.5.0', 'commit_hash': '25b4125', 'pkg_path': '/Users/mb312/dev_trees/nipy/nipy', 'sys_executable': '/Library/Frameworks/Python.framework/Versions/2.6/Resources/Python.app/Contents/MacOS/Python', 'sys_platform': 'darwin'}
 
-* Check the ``setup.py`` file is picking up all the library code and scripts,
-  with::
-
-    make check-files
-
-  Look for output at the end about missed files, such as::
+* ``make check-files`` checks if the source distribution is picking up all the
+  library and script files.  Look for output at the end about missed files, such
+  as::
 
     Missed script files:  /Users/mb312/dev_trees/nipy/bin/nib-dicomfs, /Users/mb312/dev_trees/nipy/bin/nifti1_diagnose.py
 
   Fix ``setup.py`` to carry across any files that should be in the distribution.
-
-* You probably have virtualenvs for different python versions.  Check the tests
+* Check the documentation doctests pass from
+  http://nipy.bic.berkeley.edu/builders/nipy-doc-builder
+* You may have virtualenvs for different python versions.  Check the tests
   pass for different configurations.  If you have pytox_ and a network
   connection, and lots of pythons installed, you might be able to do::
 
@@ -166,36 +155,8 @@ Release checklist
 
   etc for the different virtualenvs.
 
-* Check on different platforms, particularly windows and PPC.  I have wine
-  installed on my Mac, and git bash installed under wine.  I run bash and the
-  tests like this::
-
-    wineconsole bash
-    # in wine bash
-    make sdist-tests
-
-  For the PPC I have to log into a MacPro in Berkeley at
-  ``alexis.bic.berkeley.edu``.  Here's an example session::
-
-    ssh alexis.bic.berkeley.edu
-    cd dev_trees/nipy
-    git co main-master
-    git pull
-    make sdist-tests
-
-* Check the documentation doctests::
-
-    cd doc
-    make doctest
-    cd ..
-
-  You will need an importable version of NIPY on the python path to do this
-  check.
-
-* Check everything compiles without syntax errors::
-
-    make distclean
-    python -m compileall .
+Doing the release
+=================
 
 * The release should now be ready.
 
@@ -226,81 +187,32 @@ Release checklist
     python setup.py register
     python setup.py sdist --formats=gztar,zip upload
 
-* Then upload the binary release for the platform you are currently on::
+* Trigger binary builds for Windows from the buildbots. See builders
+  ``nipy-bdist32-26``, ``nipy-bdist32-27``, ``nipy-bdist32-32``.  The ``exe``
+  builds will appear in http://nipy.bic.berkeley.edu/nipy-dist . Download the
+  builds and upload to pypi.
 
-    python setup.py bdist_egg upload
+* Trigger binary builds for OSX from the buildbots ``nipy-bdist-mpkg-2.6``,
+  ``nipy-bdist-mpkg-2.7``, ``nipy-bdist-mpkg-3.3``. ``egg`` and ``mpkg`` builds
+  will appear in http://nipy.bic.berkeley.edu/nipy-dist .  Download the eggs and
+  upload to pypi.
 
-* Do binary builds for any virtualenvs you have::
+* Download the ``mpkg`` builds, maybe with::
 
-    workon python25
-    python setup.py bdist_egg upload
-    deactivate
+    scp -r buildbot@nipy.bic.berkeley.edu:nibotmi/public_html/nipy-dist/*.mpkg .
 
-  etc.  (``workon`` is a virtualenvwrapper command).
+  Make sure you have `github bdist_mpkg`_ installed, for the root user.  For
+  each ``mpkg`` directory, run::
 
-  For OSX and python 2.5 only, the installation didn't recognize it was doing a fat (i386 + PPC)
-  build, and build with name ``dipy-0.5.0-py2.5-macosx-10.3-i386.egg``.  I tried
-  to tell it to use ``fat`` and ``universal`` in the name, but uploading these
-  tp pypi didn't result in in easy_install finding them.  In the end did the
-  standard::
+    sudo reown_mpkg nipy-0.3.0.dev-py2.6-macosx10.6.mpkg root admin
+    zip -r nipy-0.3.0.dev-py2.6-macosx10.6.mpkg.zip nipy-0.3.0.dev-py2.6-macosx10.6.mpkg
 
-    python setup.py bdist_egg upload
+  Upload the ``mpkg.zip`` files. (At the moment, these don't seem to store the
+  scripts - needs more work)
 
-  which uploaded the 'i386' egg, followed by::
+* Tag the release with tag of form ``0.3.0``::
 
-    python setup.py bdist_egg --plat-name macosx-10.3-ppc upload
-
-  which may or may not work to allow easy_install to find the egg for PPC.  It
-  does work for easy_install on my Intel machine.  I found the default platform
-  name with ``python setup.py bdist_egg --help``.
-
-  When trying to upload in python25, after previously saving my ``~/.pypirc``
-  during the initial ``register`` step, I got a configparser error.  I found
-  `this python 2.5 pypirc page
-  <http://docs.python.org/release/2.5.2/dist/pypirc.html>`_ and so hand edited
-  the ``~/.pypirc`` file to have a new section::
-
-    [server-login]
-    username:my-username
-    password:my-password
-
-  after which python25 upload seemed to go smoothly.
-
-* Building OSX dmgs.  This is very unpleasant.
-
-  See `MBs OSX setup
-  <http://matthew-brett.github.com/pydagogue/develop_mac.html>`_).
-
-  The problem here is that we need to run the package build as root, so that the
-  files have root permissions when installed from the installer.  We also can't
-  use virtualenvs, because the installer needs to find the correct system path
-  into which to install - so the python ``sys.prefix`` has to be e.g.
-  ``/Library/Frameworks/Python.framework/Versions/2.6``.  What I ended up doing
-  was to make a script to set paths etc from a handy virtualenv, but run the
-  relevant system python, as root.  See the crude, fragile ``tools/pythonsudo``
-  bash script for details.  The procedure then::
-
-    sudo ./tools/pythonsudo 5
-    make clean
-    python tools/osxbuild.py
-
-  The ``osxbuild.py`` script comes from numpy and uses the ``bdist_mpkg`` script
-  we might have installed above.
-
-* Repeat binary builds for Linux 32, 64 bit and OS X.
-
-* Get to a windows machine and do egg and wininst builds::
-
-    make distclean
-    c:\Python26\python.exe setup.py bdist_egg upload
-    c:\Python26\python.exe setup.py bdist_wininst --target-version=2.6 register upload
-
-  Maybe virtualenvs for the different versions of python?  I haven't explored
-  that yet.
-
-* Tag the release with tag of form ``1.1.0``::
-
-    git tag -am 'Second main release' 1.1.0
+    git tag -am 'Second main release' 0.3.0
 
 * Now the version number is OK, push the docs to sourceforge with::
 
@@ -340,22 +252,6 @@ Release checklist
 * Push tags::
 
     git push --tags
-
-* Make next development release tag
-
-    After each release the master branch should be tagged
-    with an annotated (or/and signed) tag, naming the intended
-    next version, plus an 'upstream/' prefix and 'dev' suffix.
-    For example 'upstream/1.0.0.dev' means "development start
-    for upcoming version 1.0.0.
-
-    This tag is used in the Makefile rules to create development snapshot
-    releases to create proper versions for those. The version derives its name
-    from the last available annotated tag, the number of commits since that, and
-    an abbreviated SHA1. See the docs of ``git describe`` for more info.
-
-    Please take a look at the Makefile rules ``devel-src``,
-    ``devel-dsc`` and ``orig-src``.
 
 * Announce to the mailing lists.
 

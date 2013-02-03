@@ -68,6 +68,7 @@
 .. _old and new python versions: https://launchpad.net/%7Efkrull/+archive/deadsnakes
 .. _pypi: http://pypi.python.org
 .. _example pypi: http://packages.python.org/an_example_pypi_project/setuptools.html#intermezzo-pypirc-file-and-gpg
+.. _github bdist_mpkg: https://github.com/matthew-brett/bdist_mpkg
 
 .. Code support stuff
 .. _pychecker: http://pychecker.sourceforge.net/
