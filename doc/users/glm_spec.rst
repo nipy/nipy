@@ -275,17 +275,13 @@ the same :math:`f` above), but the different experimental model :math:`E` yields
 
 .. testcode::
 
-   from sympy import Symbol, Heaviside, Piecewise
+   from sympy import Symbol, Piecewise
    ta = [0,4,8,12,16]; tb = [2,6,10,14,18]
-   ba = Symbol('ba'); bb = Symbol('bb')
+   ba = Symbol('ba')
+   bb = Symbol('bb')
    fa = sum([Piecewise((0, (t<_t)), ((t-_t)/0.5, (t<_t+0.5)), (1, (t >= _t+0.5))) for _t in ta])*ba
    fb = sum([Piecewise((0, (t<_t)), ((t-_t)/0.5, (t<_t+0.5)), (1, (t >= _t+0.5))) for _t in tb])*bb
    N = fa+fb
-   print(N)
-
-.. testoutput::
-
-    ba*(Piecewise((0, t < 0), (2.0*t, t < 0.5), (1, t >= 0.5)) + Piecewise((0, t < 4), (2.0*t - 8.0, t < 4.5), (1, t >= 4.5)) + Piecewise((0, t < 8), (2.0*t - 16.0, t < 8.5), (1, t >= 8.5)) + Piecewise((0, t < 12), (2.0*t - 24.0, t < 12.5), (1, t >= 12.5)) + Piecewise((0, t < 16), (2.0*t - 32.0, t < 16.5), (1, t >= 16.5))) + bb*(Piecewise((0, t < 2), (2.0*t - 4.0, t < 2.5), (1, t >= 2.5)) + Piecewise((0, t < 6), (2.0*t - 12.0, t < 6.5), (1, t >= 6.5)) + Piecewise((0, t < 10), (2.0*t - 20.0, t < 10.5), (1, t >= 10.5)) + Piecewise((0, t < 14), (2.0*t - 28.0, t < 14.5), (1, t >= 14.5)) + Piecewise((0, t < 18), (2.0*t - 36.0, t < 18.5), (1, t >= 18.5)))
 
 Or, graphically, if we set :math:`\beta_a=1` and :math:`\beta_b=-2`, as
 
