@@ -30,7 +30,7 @@ Abbreviated authors are:
 * GV - Gaël Varoquaux
 * YH - Yarik Halchenko
 
-* 0.3.0 (Monday 14 January 2013)
+* 0.3.0 (Saturday 2 February 2013)
 
   * Bugfix, refactoring and compatibility release
   * Addition of EM algorithm for mixed effects analysis (BT)
@@ -53,7 +53,8 @@ Abbreviated authors are:
   * Script to run examples for testing (MB)
   * Fix for accidental integer division of frametimes in design matrix
     generation (Fabian Pedregosa)
-  * Various other fixes and refactorings with thanks from (AR, BT, MB, YR)
+  * Various other fixes and refactorings with thanks from (AR, BT, MB, YR,
+    Yannick Schwartz, Virgile Fritsch)
 
 * 0.2.0 (Sunday 22 July 2012)
 
