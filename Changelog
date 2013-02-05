@@ -45,7 +45,7 @@ Abbreviated authors are:
   * Allow saving of nipy images loaded from nifti files that lack explicit
     affine (MB)
   * Allow `slice_order=None` to `FmriRealign4D` when not doing time
-    interpolation (AR); check for valid slice order specification (YR)
+    interpolation (AR); check for valid slice order specification (YH)
   * Refactoring of quantile routine to move code out of C library (AR)
   * Fix bug in resampling of unsigned int images (AR)
   * Custom doctest machinery to work round differences of dtype repr on
@@ -53,7 +53,7 @@ Abbreviated authors are:
   * Script to run examples for testing (MB)
   * Fix for accidental integer division of frametimes in design matrix
     generation (Fabian Pedregosa)
-  * Various other fixes and refactorings with thanks from (AR, BT, MB, YR,
+  * Various other fixes and refactorings with thanks from (AR, BT, MB, YH,
     Yannick Schwartz, Virgile Fritsch)
 
 * 0.2.0 (Sunday 22 July 2012)
