@@ -22,7 +22,7 @@ The best known and perhaps most widely used license is the
 :term:`GPL`, which in addition to granting you full rights to the
 source code including redistribution, carries with it an extra
 obligation.  If you use GPL code in your own code, or link with it,
-your product must be released under a GPL compatible license.  Ie you
+your product must be released under a GPL compatible license.  I.e., you
 are required to give the source code to other people and give them the
 right to redistribute it as well.  Many of the most famous and widely
 used open source projects are released under the GPL, including linux,
@@ -33,7 +33,7 @@ The second major class are the :term:`BSD` and BSD-style licenses
 allow you to do whatever you want with the code: ignore it, include it
 in your own open source project, include it in your proprietary
 product, sell it, whatever.  python itself is released under a BSD
-compatible license, in the sense that, now quoting form the PSF
+compatible license, in the sense that, quoting from the PSF
 license page
 
   There is no GPL-like "copyleft" restriction. Distributing
@@ -43,7 +43,8 @@ license page
   form.
 
 Famous projects released under a BSD-style license in the permissive
-sense of the last paragraph are the BSD operating system, python and !TeX.h
+sense of the last paragraph are the BSD operating system, python, and
+TeX.
 
 I believe the choice of license is an important one, and I advocate a
 BSD-style license.  In my experience, the most important commodity an
@@ -58,16 +59,16 @@ especially if they have some skills and find a feature they need
 implemented, or if they have a thesis to write.  Once you have a lot
 of users and a number of developers, a network effect kicks in,
 exponentially increasing your users and developers.  In open source
-parlance, this is called competing for mind share.
+parlance, this is sometimes called competing for mind share.
 
 So I believe the number one (or at least number two) commodity an open
-source project can possess is mind share, and mind share means you
+source project can possess is mind share, which means you
 want as many damned users using your software as you can get.  Even
 though you are giving it away for free, you have to market your
 software, promote it, and support it as if you were getting paid for
-it.  Now, how does this relate to licensing, you are asking? 
+it.  Now, how does this relate to licensing, you are asking?
 
-Most software companies will not use GPL'd code in their own software,
+Most software companies will not use GPL code in their own software,
 even those that are highly committed to open source development, such
 as enthought_, out of legitimate concern that use of the GPL will
 "infect" their code base by its viral nature.  In effect, they want to
@@ -83,14 +84,14 @@ are real, whereas the fear that some private company will "steal" your
 product and sell it in a proprietary application leaving you with
 nothing is not.
 
-There is a lot of GPLd code in the world, and it is a constant reality
+There is a lot of GPL code in the world, and it is a constant reality
 in the development of matplotlib that when we want to reuse some
-algorithm, we have to go on a hunt for a non-GPLd version.  Most
+algorithm, we have to go on a hunt for a non-GPL version.  Most
 recently this occurred in a search for a good contouring algorithm.  I
 worry that the "license wars", the effect of which are starting to be
 felt on many projects, have a potential to do real harm to open source
 software development.  There are two unpalatable options.  1) Go with
-GPL and lose the mind-share of the private sector 2) Forgo GPLd code
+GPL and lose the mind-share of the private sector 2) Forgo GPL code
 and retain the contribution of the private sector.  This is a very
 tough decision because their is a lot of very high quality software
 that is GPLd and we need to use it; they don't call the license `viral
@@ -106,15 +107,15 @@ consider issues such as those raised here when choosing a license.
 When asked, these developers will often be amenable to re-releasing
 their code under a more permissive license.  Fernando Perez did this
 with ipython, which was released under the :term:`LGPL` and then
-re-released under a BSD license to ease integration with scipy and
-other enthought products.  The LGPL is more permissive than the GPL,
+re-released under a BSD license to ease integration with matplotlib, 
+scipy and enthought code.   The LGPL is more permissive than the GPL,
 allowing you to link with it non-virally, but many companies are still
 loath to use it out of legal concerns, and you cannot reuse LGPL code
 in a proprietary product.
 
 So I encourage you to release your code under a BSD compatible
 license, and when you encounter an open source developer whose code
-you want to use, to do the same.  Feel free to forward this document
-on them.
+you want to use, encourage them to do the same.  Feel free to forward
+this document to them.
 
 .. include:: ../links_names.txt
