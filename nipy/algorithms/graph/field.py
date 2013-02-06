@@ -12,6 +12,7 @@ WeightedGraph and feature data.
 
 Author:Bertrand Thirion, 2006--2011
 """
+from warnings import warn
 import numpy as np
 
 from .graph import WeightedGraph
@@ -155,13 +156,16 @@ class Field(WeightedGraph):
         ----------
         nbiter: int, optional, the number of iterations required
 
-        fixme
-        -----
-        cython
+        Caveat
+        ------
+        A conversion to np.float64 is performed automatically
         """
         nbiter = int(nbiter)
         if fast:
             from ._graph import dilation
+            if self.field.dtype != np.float64:
+                warn('A conversion to float64 has been performed')
+                self.field = self.field.astype(np.float64)
             if self.E > 0:
                 if (self.field.size == self.V):
                     self.field = self.field.reshape((self.V, 1))
@@ -262,7 +266,7 @@ class Field(WeightedGraph):
 
         # create a subfield(thresholding)
         sf = self.subfield(self.field.T[refdim] >= th)
-        initial_field = sf.field.T[refdim]
+        initial_field = sf.field.T[refdim].astype(np.float64)
         sf.field = initial_field.copy()
 
         # compute the depth in the subgraph

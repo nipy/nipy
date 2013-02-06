@@ -47,6 +47,12 @@ def basic_graph(nx=10, ny=10, nz=10):
     F = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return F
 
+def test_type_local_max():
+    f = basic_field()
+    f.field = f.field.astype(np.float32)
+    idx, depth = f.get_local_maxima(th=0)
+    assert_array_equal(idx, np.array([999]))
+
 
 class test_Field(TestCase):
 
