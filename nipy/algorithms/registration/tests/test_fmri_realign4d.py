@@ -9,6 +9,8 @@ import numpy as np
 from .... import load_image
 from ....testing import funcfile
 from ....fixes.nibabel import io_orientation
+from ....core.image.image_spaces import (make_xyz_image,
+                                        xyz_affine)
 
 from ..groupwise_registration import Image4d, resample4d, FmriRealign4d
 from ..affine import Rigid
@@ -117,3 +119,17 @@ def test_realign4d():
             assert_array_almost_equal(R1._mean_transforms[r].rotation,
                                       R2._mean_transforms[r].rotation)
     
+
+
+def test_realign4d_runs_with_different_affines():
+    orient = io_orientation(im.affine)
+    slice_axis = int(np.where(orient[:, 0] == 2)[0])
+    aff = xyz_affine(im)
+    aff2 = aff.copy()
+    aff2[0:3, 3] += 5
+    im2 = make_xyz_image(im.get_data(), aff2, 'scanner')
+    runs = [im, im2]
+    R = FmriRealign4d(runs, tr=2., slice_order='ascending')
+    R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
+    cor_im, cor_im2 = R.resample()
+    assert_array_equal(xyz_affine(cor_im2), aff)
