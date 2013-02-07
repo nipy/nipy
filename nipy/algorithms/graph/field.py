@@ -149,8 +149,7 @@ class Field(WeightedGraph):
         self.dilation(nbiter)
 
     def dilation(self, nbiter=1, fast=True):
-        """
-        Morphological dimlation of the field data. self.field is changed
+        """Morphological dilation of the field data, changed in place
 
         Parameters
         ----------
@@ -161,11 +160,11 @@ class Field(WeightedGraph):
         A conversion to np.float64 is performed automatically
         """
         nbiter = int(nbiter)
+        if self.field.dtype != np.float64:
+            warn('data type is not float64; a slower version is used')
+            fast = False
         if fast:
             from ._graph import dilation
-            if self.field.dtype != np.float64:
-                warn('A conversion to float64 has been performed')
-                self.field = self.field.astype(np.float64)
             if self.E > 0:
                 if (self.field.size == self.V):
                     self.field = self.field.reshape((self.V, 1))
@@ -181,16 +180,17 @@ class Field(WeightedGraph):
                 self.field = np.array([self.field[row].max(0) for row in rows])
 
     def highest_neighbor(self, refdim=0):
-        """ Computes the neighbor with highest field value along refdim
+        """Computes the neighbor with highest field value along refdim
 
         Parameters
         ----------
-        refdim: int optiontal, the dimension to consider
+        refdim: int, optional,
+                the dimension of the field under consideration
 
         Returns
         -------
-        hneighb: array of shape(self.V), index of the neighbor with highest
-                 value
+        hneighb: array of shape(self.V), 
+                 index of the neighbor with highest value
         """
         from scipy.sparse import dia_matrix
         refdim = int(refdim)
