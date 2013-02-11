@@ -155,9 +155,9 @@ class Field(WeightedGraph):
         ----------
         nbiter: int, optional, the number of iterations required
 
-        Caveat
-        ------
-        A conversion to np.float64 is performed automatically
+        Note
+        ----
+        When data dtype is not float64, a slow version of the code is used
         """
         nbiter = int(nbiter)
         if self.field.dtype != np.float64:
@@ -266,8 +266,8 @@ class Field(WeightedGraph):
 
         # create a subfield(thresholding)
         sf = self.subfield(self.field.T[refdim] >= th)
-        initial_field = sf.field.T[refdim].astype(np.float64)
-        sf.field = initial_field.copy()
+        initial_field = sf.field.T[refdim]
+        sf.field = initial_field.astype(np.float64)
 
         # compute the depth in the subgraph
         ldepth = sf.V * np.ones(sf.V, np.int)
