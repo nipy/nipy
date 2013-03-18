@@ -122,5 +122,7 @@ if __name__ == '__main__':
         ax[1].plot(all_params['r1'])
         ax[1].plot(all_params['r2'])
         ax[1].plot(all_params['r3'])
+        ax[0].set_xlabel('Time (TR)')
+        ax[0].set_ylabel('Rotation (radians)')
         figure.savefig(os.path.join(os.path.split(fnames[0])[0],
                                     'mc_params.png'))
