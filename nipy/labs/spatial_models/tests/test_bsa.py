@@ -14,7 +14,7 @@ from nose.tools import assert_true
 from nipy.testing import dec
 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
-from ..bayesian_structural_analysis import compute_BSA_simple
+from ..bayesian_structural_analysis import compute_landmarks
 from ..discrete_domain import domain_from_binary_array
 
 
@@ -40,8 +40,7 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 
     if method == 'simple':
         group_map, AF, BF, likelihood = \
-                   compute_BSA_simple(dom, lbeta, dmax, thq, smin, ths,
-                                      theta, g0, bdensity)
+                   compute_landmarks(dom, lbeta, dmax, thq, ths, theta, smin)
     return AF, BF
 
 

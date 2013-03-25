@@ -10,8 +10,7 @@ import os.path as op
 from nibabel import load, save, Nifti1Image
 
 from ..mask import intersect_masks
-from .bayesian_structural_analysis import (compute_BSA_simple,
-                                           compute_BSA_quick, compute_BSA_loo)
+from .bayesian_structural_analysis import compute_landmarks
 from .discrete_domain import domain_from_image
 
 
@@ -41,7 +40,7 @@ def make_bsa_image(
     swd: string, optional
         if not None, output directory
     method='simple': applied region detection method; to be chose among
-                     'simple', 'quick', 'loo'
+                     'simple', 'quick'
     subj_id=None: list of strings, identifiers of the subjects.
                   by default it is range(nsubj)
     nbeta='default', string, identifier of the contrast
@@ -63,11 +62,6 @@ def make_bsa_image(
          at the group level
     BF : a list of nipy.labs.spatial_models.hroi.Nroi instances
        (one per subject) that describe the individual coounterpart of AF
-
-    if method=='loo', the output is different:
-        mll, float, the average likelihood of the data under the model
-        after cross validation
-        ll0, float the log-likelihood of the data under the global null
 
     fixme
     =====
@@ -112,20 +106,17 @@ def make_bsa_image(
     BF = [None for s in range(nsubj)]
 
     if method == 'simple':
-        crmap, AF, BF, p = compute_BSA_simple(
-            dom, lbeta, dmax, thq, smin, ths, theta, verbose=verbose)
+        crmap, AF, BF, p = compute_landmarks(
+            dom, lbeta, dmax, thq, ths, theta, smin, algorithm='standard', 
+            verbose=verbose)
 
     if method == 'quick':
-        crmap, AF, BF, co_clust = compute_BSA_quick(
-            dom, lbeta, dmax, thq, smin, ths, theta, verbose=verbose)
+        crmap, AF, BF, co_clust = compute_landmarks(
+            dom, lbeta, dmax, thq, ths, theta, smin, algorithm='quick',
+            verbose=verbose)
 
         density = np.zeros(nvox)
         crmap = AF.map_label(dom.coord, 0.95, dmax)
-
-    if method == 'loo':
-        mll, ll0 = compute_BSA_loo(
-            dom, lbeta, dmax, thq, smin, ths, theta, verbose=verbose)
-        return mll, ll0
 
     # Write the results as images
     # the spatial density image
