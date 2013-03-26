@@ -18,7 +18,7 @@ Author : Bertrand Thirion, 2006-2013
 import numpy as np
 import scipy.stats as st
 
-from .structural_bfls import build_LR
+from .structural_bfls import build_landmarks
 from nipy.algorithms.graph import wgraph_from_coo_matrix
 from ...algorithms.statistics.empirical_pvalue import \
     NormalEmpiricalNull, three_classes_GMM_fit, gamma_gaussian_fit
@@ -305,7 +305,7 @@ def bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one
-    landmarks, new_values = build_LR(
+    landmarks, new_values = build_landmarks(
         hrois, prevalence_pval, prevalence_threshold, sigma, verbose=verbose)
 
     # make a group-level map of the landmark position
@@ -406,7 +406,7 @@ def bsa_dpmm2(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one
-    landmarks, _ = build_LR(
+    landmarks, _ = build_landmarks(
         hrois, prevalence_pval, prevalence_threshold, sigma, verbose=verbose)
 
     # make a group-level map of the landmark position

@@ -26,7 +26,7 @@ class LandmarkRegions(object):
     not implemented yet.
     """
 
-    def __init__(self, domain, k, indiv_coord, subj, id=''):
+    def __init__(self, domain, k, indiv_coord, subjects, id=''):
         """ Building the landmark_region
 
         Parameters
@@ -36,7 +36,7 @@ class LandmarkRegions(object):
         k: int, the number of regions considered
         indiv_coord:  k-length list of arrays, optional,
                       coordinates of the nodes in some embedding space.
-        subj: k-length list of integers
+        subjects: k-length list of integers
               these correspond to and ROI feature:
               the subject index of individual regions
 
@@ -47,7 +47,7 @@ class LandmarkRegions(object):
         self.id = id
         self.features = {}
         self.set_feature('position', indiv_coord)
-        self.set_feature('subjects', subj)
+        self.set_feature('subjects', subjects)
 
     def set_feature(self, fid, data):
         """
@@ -233,25 +233,25 @@ class LandmarkRegions(object):
         """function to print basic information on self
         """
         centers = self.centers()
-        subj = self.get_feature('subjects')
+        subjects = self.get_feature('subjects')
         prevalence = self.roi_prevalence()
         print "index", "prevalence", "mean_position", "individuals"
         for i in range(self.k):
-            print i, prevalence[i], centers[i], np.unique(subj[i])
+            print i, prevalence[i], centers[i], np.unique(subjects[i])
 
-    def roi_confidence(self, ths=0, fid='confidence'):
+    def roi_confidence(self, prevalence_threshold=0, fid='confidence'):
         """
         assuming that a certain feature fid field has been set
         as a discrete feature,
         this creates an approximate p-value that states
         how confident one might
-        that the LR is defined in at least ths individuals
+        that the LR is defined in at least prevalence_threshold individuals
         if conficence is not defined as a discrete_feature,
         it is assumed to be 1.
 
         Parameters
         ----------
-        ths: integer that yields the representativity threshold
+        prevalence_threshold: integer that yields the representativity threshold
 
         Returns
         -------
@@ -259,16 +259,17 @@ class LandmarkRegions(object):
                the p-values corresponding to the ROIs
         """
         pvals = np.zeros(self.k)
-        subj = self.get_feature('subjects')
+        subjects = self.get_feature('subjects')
         if fid not in self.features:
             # the feature has not been defined
             print 'using per ROI subject counts'
             for j in range(self.k):
-                pvals[j] = np.size(np.unique(subj[j]))
-            pvals = pvals > ths + 0.5 * (pvals == ths)
+                pvals[j] = np.size(np.unique(subjects[j]))
+            pvals = pvals > prevalence_threshold +\
+                0.5 * (pvals == prevalence_threshold)
         else:
             for j in range(self.k):
-                subjj = subj[j]
+                subjj = subjects[j]
                 conf = self.get_feature(fid)[j]
                 mp = 0.
                 vp = 0.
@@ -280,7 +281,7 @@ class LandmarkRegions(object):
                     # If noise is too low the variance is 0: ill-defined:
                     vp = max(vp, 1e-14)
 
-                pvals[j] = stats.norm.sf(ths, mp, np.sqrt(vp))
+                pvals[j] = stats.norm.sf(prevalence_threshold, mp, np.sqrt(vp))
         return pvals
 
     def roi_prevalence(self, fid='confidence'):
@@ -296,14 +297,14 @@ class LandmarkRegions(object):
                the population_prevalence
         """
         confid = np.zeros(self.k)
-        subj = self.get_feature('subjects')
+        subjects = self.get_feature('subjects')
         if fid not in self.features:
             for j in range(self.k):
-                subjj = subj[j]
+                subjj = subjects[j]
                 confid[j] = np.size(np.unique(subjj))
         else:
             for j in range(self.k):
-                subjj = subj[j]
+                subjj = subjects[j]
                 conf = self.get_feature(fid)[j]
                 for ls in np.unique(subjj):
                     lmj = 1 - np.prod(1 - conf[subjj == ls])
@@ -346,20 +347,21 @@ class LandmarkRegions(object):
         return self.weighted_feature_density(self.roi_prevalence())
 
 
-def build_LR(bf, thq=0.95, ths=0, dmax=1., verbose=0):
+def build_landmarks(hrois, prevalence_pval=0.95, prevalence_threshold=0, 
+                    dmax=1., verbose=0):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
 
     Parameters
     ----------
-    bf : list of nipy.labs.spatial_models.hroi.Nroi instances
+    hrois : list of nipy.labs.spatial_models.hroi.Nroi instances
        it is assumd that each list corresponds to one subject
        each HierarchicalROI is assumed to have the roi_features
        'position', 'label' and 'posterior_proba' defined
-    thq=0.95, ths=0 defines the condition (c):
-                   (c) A label should be present in ths subjects
-                   with a probability>thq
+    prevalence_pval=0.95, prevalence_threshold=0 defines the condition (c):
+                   (c) A label should be present in prevalence_threshold subjects
+                   with a probability>prevalence_pval
                    in order to be valid
     dmax: float optional,
           regularizing constant that defines a prior on the region extent
@@ -373,36 +375,36 @@ def build_LR(bf, thq=0.95, ths=0, dmax=1., verbose=0):
               which discards
               labels that do not fulfill the condition (c)
     """
-    dim = bf[0].domain.em_dim
+    dim = hrois[0].domain.em_dim
 
     # prepare various variables to ease information manipulation
-    nbsubj = np.size(bf)
-    subj = np.concatenate([s * np.ones(bf[s].k, np.int)
-                           for s in range(nbsubj)])
-    u = np.concatenate([bf[s].get_roi_feature('label')
-                        for s in range(nbsubj)if bf[s].k > 0])
-    u = np.squeeze(u)
-    if 'prior_proba' in bf[0].roi_features:
-        conf = np.concatenate([bf[s].get_roi_feature('prior_proba')
-                                for s in range(nbsubj)if bf[s].k > 0])
+    n_subjects = np.size(hrois)
+    subjects = np.concatenate([s * np.ones(hrois[s].k, np.int)
+                           for s in range(n_subjects)])
+    labels = np.concatenate([hrois[s].get_roi_feature('label')
+                        for s in range(n_subjects)if hrois[s].k > 0])
+    labels = np.squeeze(labels)
+    if 'prior_proba' in hrois[0].roi_features:
+        conf = np.concatenate([hrois[s].get_roi_feature('prior_proba')
+                                for s in range(n_subjects)if hrois[s].k > 0])
     else:
-        conf = np.ones(u.size)
-    intrasubj = np.concatenate([np.arange(bf[s].k)
-                                for s in range(nbsubj)])
+        conf = np.ones(labels.size)
+    intrasubj = np.concatenate([np.arange(hrois[s].k)
+                                for s in range(n_subjects)])
 
     coords = []
     subjs = []
     pps = []
-    n_labels = int(u.max() + 1)
+    n_labels = int(labels.max() + 1)
     valid = np.zeros(n_labels).astype(np.int)
 
     # do some computation to find which regions are worth reporting
-    for i in np.unique(u[u > - 1]):
+    for i in np.unique(labels[labels > - 1]):
         mp = 0.
         vp = 0.
-        subjj = subj[u == i]
+        subjj = subjects[labels == i]
         for ls in np.unique(subjj):
-            lmj = 1 - np.prod(1 - conf[(u == i) * (subj == ls)])
+            lmj = 1 - np.prod(1 - conf[(labels == i) * (subjects == ls)])
             lvj = lmj * (1 - lmj)
             mp = mp + lmj
             vp = vp + lvj
@@ -411,31 +413,30 @@ def build_LR(bf, thq=0.95, ths=0, dmax=1., verbose=0):
         vp = max(vp, 1e-14)
 
         # if above threshold, get some information to create the LR
-        if verbose:
-            print 'lr', i, valid.sum(), ths, mp, thq
-
-        if stats.norm.sf(ths, mp, np.sqrt(vp)) > thq:
+        if (stats.norm.sf(prevalence_threshold, mp, np.sqrt(vp)) >
+            prevalence_pval):
             sj = np.size(subjj)
             coord = np.zeros((sj, dim))
-            for (k, s, a) in zip(intrasubj[u == i], subj[u == i], range(sj)):
-                coord[a] = bf[s].get_roi_feature('position')[k]
+            for (k, s, a) in zip(intrasubj[labels == i], subjects[labels == i],
+                                 range(sj)):
+                coord[a] = hrois[s].get_roi_feature('position')[k]
 
             valid[i] = 1
             coords.append(coord)
             subjs.append(subjj)
-            pps.append(conf[u == i])
+            pps.append(conf[labels == i])
 
     # relabel the ROIs
     maplabel = - np.ones(n_labels).astype(np.int)
     maplabel[valid > 0] = np.cumsum(valid[valid > 0]) - 1
-    for s in range(nbsubj):
-        if bf[s].k > 0:
-            us = bf[s].get_roi_feature('label')
+    for subject in range(n_subjects):
+        if hrois[subject].k > 0:
+            us = hrois[s].get_roi_feature('label')
             us[us > - 1] = maplabel[us[us > - 1]]
-            bf[s].set_roi_feature('label', us)
+            hrois[subject].set_roi_feature('label', us)
 
     # create the landmark regions structure
     k = np.sum(valid)
-    LR = LandmarkRegions(bf[0].domain, k, indiv_coord=coords, subj=subjs)
+    LR = LandmarkRegions(hrois[0].domain, k, indiv_coord=coords, subjects=subjs)
     LR.set_feature('confidence', pps)
     return LR, maplabel
