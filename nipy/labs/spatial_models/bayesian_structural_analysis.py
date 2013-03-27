@@ -173,8 +173,12 @@ def _compute_individual_regions(domain, stats, threshold=3.0, smin=5,
             learning_set = np.squeeze(stats_[stats_ != 0])
             prior_h0.append(_signal_to_pproba(mean_val, learning_set, method))
             subjects.append(subject * np.ones(mean_val.size).astype(np.int))
-            
+        else:
+            subjects.append([])
+            prior_h0.append([])
+            coords.append(np.empty((0, domain.dim)))
         hrois.append(hroi)
+        
     prior_h0 = np.concatenate(prior_h0)
     subjects = np.concatenate(subjects)
     coords = np.concatenate(coords)

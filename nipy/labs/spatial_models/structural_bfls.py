@@ -383,7 +383,7 @@ def build_landmarks(hrois, prevalence_pval=0.95, prevalence_threshold=0,
                            for s in range(n_subjects)])
     labels = np.concatenate([hrois[s].get_roi_feature('label')
                         for s in range(n_subjects)if hrois[s].k > 0])
-    labels = np.squeeze(labels)
+    # labels = np.squeeze(labels)
     if 'prior_proba' in hrois[0].roi_features:
         conf = np.concatenate([hrois[s].get_roi_feature('prior_proba')
                                 for s in range(n_subjects)if hrois[s].k > 0])
