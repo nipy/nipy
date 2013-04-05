@@ -21,9 +21,8 @@ from __future__ import print_function # Python 2/3 compatibility
 
 import os
 from os.path import split as psplit, abspath
-
+import numpy as np
 from nipy.algorithms.registration import FmriRealign4d
-
 from nipy import load_image, save_image
 from nipy.utils import example_data
 
@@ -34,11 +33,12 @@ runs = [load_image(run) for run in runnames]
 
 # Declare interleaved ascending slice order
 nslices = runs[0].shape[2]
-slice_order = list(range(0, nslices, 2)) + list(range(1, nslices, 2))
-print('Slice order: %s' % slice_order)
+tr = 2.5  # repetition time in whatever time unit you like
+slice_times = (tr / float(nslices)) * np.argsort(range(0, nslices, 2) + range(1, nslices, 2))
+print('Slice times: %s' % slice_times)
 
 # Spatio-temporal realigner
-R = FmriRealign4d(runs, tr=2.5, slice_order=slice_order)
+R = FmriRealign4d(runs, tr=tr, slice_times=slice_times)
 
 # Estimate motion within- and between-sessions
 R.estimate(refscan=None)

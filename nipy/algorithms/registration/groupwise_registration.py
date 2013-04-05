@@ -20,7 +20,6 @@ from ._registration import (_cspline_transform,
 
 # Module globals
 VERBOSE = True  # enables online print statements
-SLICE_ORDER = 'ascending'
 INTERLEAVED = None
 OPTIMIZER = 'ncg'
 XTOL = 1e-5
@@ -46,10 +45,10 @@ SPEEDUP = 5, 2
 """
 
 
-def interp_slice_order(Z, slice_order):
+def interp_slice_times(Z, slice_times, tr):
     Z = np.asarray(Z)
-    nslices = len(slice_order)
-    aux = np.asarray(list(slice_order) + [slice_order[0] + nslices])
+    nslices = len(slice_times)
+    aux = np.asarray(list(slice_times) + [slice_times[0] + tr])
     Zf = np.floor(Z).astype('int')
     w = Z - Zf
     Zal = Zf % nslices
@@ -85,15 +84,13 @@ class Image4d(object):
     ----------
       data : nd array or proxy (function that actually gets the array)
     """
-    def __init__(self, data, affine, tr, tr_slices=None, start=0.0,
-                 slice_order=SLICE_ORDER, interleaved=INTERLEAVED,
-                 slice_info=None):
+    def __init__(self, data, affine, tr, slice_times='ascending', 
+                 interleaved=False, slice_info=None):
         """
         Configure fMRI acquisition time parameters.
         """
         self.affine = np.asarray(affine)
         self.tr = float(tr)
-        self.start = float(start)
         self.interleaved = bool(interleaved)
 
         # guess the slice axis and direction (z-axis)
@@ -106,8 +103,7 @@ class Image4d(object):
             self.slice_direction = int(slice_info[1])
 
         # unformatted parameters
-        self._tr_slices = tr_slices
-        self._slice_order = slice_order
+        self._slice_times = slice_times
 
         if isinstance(data, np.ndarray):
             self._data = data
@@ -138,30 +134,34 @@ class Image4d(object):
         # Number of slices
         nslices = self.get_shape()[self.slice_axis]
         self.nslices = nslices
-        # Default slice repetition time (no silence)
-        if self._tr_slices == None:
-            self.tr_slices = self.tr / float(nslices)
-        else:
-            self.tr_slices = float(self._tr_slices)
-        # Set slice order
-        if isinstance(self._slice_order, str):
+        # Set slice times
+        if isinstance(self._slice_times, str):
+            # If a string argument is provided, assume a standard
+            # slice acquisition scheme with constant between-slice
+            # repetition time
             if not self.interleaved:
-                aux = range(nslices)
+                aux = np.arange(nslices)
             else:
-                aux = range(nslices)[0::2] + range(nslices)[1::2]
-            if self._slice_order == 'descending':
-                aux.reverse()
-            self.slice_order = np.array(aux)
+                aux = np.argsort(range(0, nslices, 2) + range(1, nslices, 2))
+            if self._slice_times == 'descending':
+                aux = aux[::-1]
+            self.slice_times = (self.tr / float(nslices)) * np.array(aux)
+        elif isinstance(self._slice_times, (int, float)):
+            # If a single value is provided, assume synchronous slices
+            self.slice_times = np.zeros(nslices)
+            self.slice_times.fill(self._slice_times)
         else:
-            # Verify correctness of provided slice indexes
-            provided_slices = np.array(sorted(self._slice_order))
-            if np.any(provided_slices != np.arange(nslices)):
+            # Verify correctness of provided slice times
+            if not len(self._slice_times) == nslices:
                 raise ValueError(
-                    "Incorrect slice indexes were provided. There are %d "
-                    "slices in the volume, indexes should start from 0 and "
-                    "list all slices. "
-                    "Provided slice_order: %s" % (nslices, self._slice_order))
-            self.slice_order = np.asarray(self._slice_order)
+                    "Incorrect slice times were provided. There are %d "
+                    "slices in the volume, `slice_times` argument has length %d"
+                    % (nslices, len(self._slice_times)))
+            self.slice_times = np.asarray(self._slice_times)
+        # Check that slice times are smaller than repetition time
+        if np.max(self.slice_times) > self.tr:
+            raise ValueError("slice times should be smaller than repetition time")
+
 
     def z_to_slice(self, z):
         """
@@ -179,9 +179,10 @@ class Image4d(object):
         tv = scanner_time(zv, t)
         zv, tv are grid coordinates; t is an actual time value.
         """
-        corr = self.tr_slices * interp_slice_order(self.z_to_slice(zv),
-                                                   self.slice_order)
-        return (t - self.start - corr) / self.tr
+        corr = interp_slice_times(self.z_to_slice(zv),
+                                  self.slice_times,
+                                  self.tr)
+        return (t - corr) / self.tr
 
     def free_data(self):
         if not self._get_data == None:
@@ -653,8 +654,7 @@ def realign4d(runs,
         mean_img_data[..., i] = corr_run.mean(3)
     del corr_run
 
-    mean_img = Image4d(mean_img_data, affine=runs[0].affine,
-                       tr=1.0, tr_slices=0.0)
+    mean_img = Image4d(mean_img_data, affine=runs[0].affine, tr=1.0, slice_times=0)
     transfo_mean = single_run_realign4d(mean_img,
                                         affine_class=affine_class,
                                         time_interp=False,
@@ -679,21 +679,17 @@ def realign4d(runs,
 class Realign4d(object):
 
     def __init__(self, images, affine_class=Rigid):
-        self._generic_init(images, affine_class, SLICE_ORDER, INTERLEAVED,
-                           1.0, 0.0, 0.0, False, None)
+        self._generic_init(images, affine_class, False, 
+                           1.0, 0.0, False, None)
 
-    def _generic_init(self, images, affine_class,
-                      slice_order, interleaved, tr, tr_slices,
-                      start, time_interp, slice_info):
-        if slice_order == None:
-            slice_order = SLICE_ORDER
-            if time_interp:
-                raise ValueError('Slice order is requested'
-                          + ' with time interpolation switched on')
+    def _generic_init(self, images, affine_class, time_interp,
+                      tr, slice_times, interleaved, slice_info):
+        if slice_times == None:
+            slice_times = 0.0
             time_interp = False
         if tr == None:
             raise ValueError('Repetition time cannot be None')
-        if not type(images) in (list, tuple, np.array):
+        if not isinstance(images, (list, tuple, np.array)):
             images = [images]
         self._runs = []
         self.affine_class = affine_class
@@ -704,8 +700,8 @@ class Realign4d(object):
             xyz_img = as_xyz_image(im)
             self._runs.append(Image4d(xyz_img.get_data,
                                       xyz_affine(xyz_img),
-                                      tr=tr, tr_slices=tr_slices,
-                                      start=start, slice_order=slice_order,
+                                      tr,
+                                      slice_times=slice_times,
                                       interleaved=interleaved,
                                       slice_info=slice_info))
         self._transforms = [None for run in self._runs]
@@ -771,10 +767,9 @@ class Realign4d(object):
 
 class FmriRealign4d(Realign4d):
 
-    def __init__(self, images, slice_order, interleaved=None,
-                 tr=1.0, tr_slices=None, start=0.0, time_interp=True,
-                 affine_class=Rigid, slice_info=None):
-
+    def __init__(self, images, tr, slice_times=None, slice_info=None,
+                 affine_class=Rigid,
+                 slice_order=None, interleaved=None, tr_slices=None, start=None):
         """
         Spatiotemporal realignment class for fMRI series.
 
@@ -799,34 +794,24 @@ class FmriRealign4d(Realign4d):
           Starting acquisition time respective to the implicit time
           origin.
 
-        slice_order : str or array-like
+        slice_times : str or array-like
           If str, one of {'ascending', 'descending'}. If array-like,
-          then the order in which the slices were collected in
-          time. For instance, the following represents an ascending
+          then the slice acquisition times (from bottom to top of the
+          head). For instance, the following represents an ascending
           contiguous sequence:
 
-          slice_order = [0, 1, 2, ...]
+          slice_times = (tr/nslices) * np.array([0, 1, 2, ...])
 
-        interleaved : bool
-          Deprecated.
+          where `nslices` is the number of slices per volume. 
 
-          Whether slice acquisition order is interleaved. Ignored if
-          `slice_order` is array-like.
+          A typical interleaved sequence may be represented by:
 
-          If slice_order=='ascending' and interleaved==True, the
-          assumed slice order is:
-
-          [0, 2, 4, ..., 1, 3, 5, ...]
-
-          If slice_order=='descending' and interleaved==True, the
-          assumed slice order is:
-
-          [N-1, N-3, N-5, ..., N-2, N-4, N-6]
+          slice_times = (tr/nslices) * np.array([0, (nslices+1)/2, 1, 1+(nslices+1)/2, 2, ...])
 
           Given that there exist other types of interleaved
           acquisitions depending on scanner settings and
-          manufacturers, it is strongly recommended to input the
-          slice_order as an array unless you are sure what you are
+          manufacturers, it is strongly recommended to input
+          `slice_times` as an array unless you are sure what you are
           doing.
 
         slice_info : None or tuple, optional
@@ -835,7 +820,26 @@ class FmriRealign4d(Realign4d):
           guess the slice axis, and direction, as the closest to the z
           axis, as estimated from the affine.
         """
+        if not slice_order == None:
+            warnings.warn('slice_order keyword is deprecated. Please input explicit slice times instead.')
         if not interleaved == None:
-            warnings.warn('interleaved keyword is deprecated. Please input explicit slice order instead.')
-        self._generic_init(images, affine_class, slice_order, interleaved,
-                           tr, tr_slices, start, time_interp, slice_info)
+            warnings.warn('interleaved keyword is deprecated. Please input explicit slice times instead.')
+        if not tr_slices == None:
+            warnings.warn('tr_slices keyword is deprecated. Please input explicit slice times instead.')
+        if not start == None:
+            warnings.warn('start keyword is deprecated. Please input explicit slice times instead.')
+
+        # Backward compatibility fix if no explicit slice_times are provided
+        if slice_times == None:
+            warnings.warn('slice_times keyword argument was not specified but will become mandatory in future versions.')
+            if isinstance(slice_order, str):
+                slice_times = slice_order
+            elif not slice_order == None:
+                if tr_slices == None:
+                    tr_slices = float(tr) / float(len(slice_order))
+                if start == None:
+                    start = 0.0
+                slice_times = start + tr_slices * np.asarray(slice_order)
+
+        self._generic_init(images, affine_class, True, tr, slice_times, interleaved, slice_info)
+
