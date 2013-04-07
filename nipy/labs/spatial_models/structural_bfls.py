@@ -375,10 +375,10 @@ def build_landmarks(hrois, prevalence_pval=0.95, prevalence_threshold=0,
               which discards
               labels that do not fulfill the condition (c)
     """
-    dim = hrois[0].domain.em_dim
-
+    # dim = hrois[0].domain.em_dim
+        
     # prepare various variables to ease information manipulation
-    n_subjects = np.size(hrois)
+    n_subjects = len(hrois)
     subjects = np.concatenate([s * np.ones(hrois[s].k, np.int)
                            for s in range(n_subjects)])
     labels = np.concatenate([hrois[s].get_roi_feature('label')
@@ -416,11 +416,14 @@ def build_landmarks(hrois, prevalence_pval=0.95, prevalence_threshold=0,
         if (stats.norm.sf(prevalence_threshold, mp, np.sqrt(vp)) >
             prevalence_pval):
             sj = np.size(subjj)
-            coord = np.zeros((sj, dim))
-            for (k, s, a) in zip(intrasubj[labels == i], subjects[labels == i],
-                                 range(sj)):
-                coord[a] = hrois[s].get_roi_feature('position')[k]
-
+            # coord = np.zeros((sj, dim))
+            #for (k, s, a) in zip(intrasubj[labels == i], subjects[labels == i],
+            #                     range(sj)):
+            #    coord[a] = hrois[s].get_roi_feature('position')[k]
+            coord = np.vstack([
+                    hrois[s].get_roi_feature('position')[k] 
+                    for (k, s, a) in zip(intrasubj[labels == i], 
+                                         subjects[labels == i], range(sj))])
             valid[i] = 1
             coords.append(coord)
             subjs.append(subjj)

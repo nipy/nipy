@@ -40,7 +40,7 @@ if missing_file:
 subj_id = ['%04d' % i for i in range(12)]
 threshold = float(stats.t.isf(0.01, 100))
 sigma = 4.
-prevalence_threshold = 0
+prevalence_threshold = 2
 prevalence_pval = 0.95
 smin = 5
 write_dir = path.join(getcwd(), 'results')
