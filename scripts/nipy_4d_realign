@@ -20,26 +20,24 @@ import matplotlib.pyplot as plt
 import nipy.algorithms.registration as reg
 import nipy.externals.argparse as argparse
 
+parser = argparse.ArgumentParser()
 
-# Create an argument parser with the help documentation:
-parser = argparse.ArgumentParser("""4D realignment of fMRI data, including joint slice-time correction.""")
+parser.add_argument('TR', type=float, metavar='Float', help="""The TR of the measurement""")
 
-parser.add_argument('TR', type=float, help="""The TR of the measurement""")
-
-parser.add_argument('--input', type=str,
+parser.add_argument('--input', type=str, metavar='File',
                 help="""Path to a nifti file, or to a folder containing nifti files (Default: '.'). If a path to a folder is provided, the order of motion correction will be np.sort(list_of_files). The outputs will be '*_mc.par' (containing 3 translation and three rotation parameters) and '*_mc.nii.gz' containing the motion corrected data (unless 'apply' is set to False)""", default='.')
 
-parser.add_argument('--slice_order', type=str,
+parser.add_argument('--slice_order', type=str, metavar='String',
                     help="""The order of slice aquisition {'ascending', 'descending'}. Default: 'descending'. If array-like, then the order in which the slices were collected in time. For instance, the following represents an ascending contiguous sequence:
 
                     slice_order = [0, 1, 2, ...]
                     """,
                    default='descending')
 
-parser.add_argument('--apply', type=bool,
+parser.add_argument('--apply', type=bool, metavar='Bool',
                 help="""Whether to apply the realignment and save output files (default), or just estimate the realignment parameters and save those in '.par' files. {True, False}. Default: True""", default=True)
 
-parser.add_argument('--make_figure', type=bool,
+parser.add_argument('--make_figure', type=bool, metavar='Bool',
                 help="""Whether to generate a '.png' figure with the motion parameters across runs. {True, False}. Default: False """, default=False)
 
 # parse the command line
@@ -60,7 +58,8 @@ if __name__ == '__main__':
                   if (f.endswith('.nii') or f.endswith('.nii.gz')) ]
         input = [nib.load(x) for x in fnames]
 
-    print("Input to motion correction: %s"%fnames)
+    #dbg:
+    #print("Input to motion correction: %s"%fnames)
 
     reggy = reg.FmriRealign4d(input,
                               slice_order=args.slice_order,
@@ -70,13 +69,14 @@ if __name__ == '__main__':
     # This will be the dtype for the recarray of params in all runs:
     dt = [('t1',float), ('t2', float), ('t3', float),
           ('r1',float), ('r2', float), ('r3', float)]
+
     # We now have the transformation parameters in here:
     transforms = reggy._within_run_transforms
 
     # We'll keep the last transformation in each run, so that we can
     # concatenate the transformations between runs:
-    rot_last = [0,0,0]
-    trans_last = [0,0,0]
+    rot_last = [0, 0, 0]
+    trans_last = [0, 0, 0]
 
     params_arr = []
 
@@ -85,13 +85,13 @@ if __name__ == '__main__':
         this_rot = np.array([t.rotation for t in this_trans])
         this_trans = np.array([t.translation for t in this_trans])
         # To create a recarray, we need to first make a list of tuples:
-        prep_arr = [(this_rot[i,0] + rot_last[0],
-                       this_rot[i,1] + rot_last[1],
-                       this_rot[i,2] + rot_last[2],
-                       this_trans[i,0] + trans_last[0],
-                       this_trans[i,1] + trans_last[1],
-                       this_trans[i,2] + trans_last[2])
-                       for i in range(this_rot.shape[0])]
+        prep_arr = [(this_trans[i, 0] + trans_last[0],
+                     this_trans[i, 1] + trans_last[1],
+                     this_trans[i, 2] + trans_last[2],
+                     this_rot[i, 0] + rot_last[0],
+                     this_rot[i, 1] + rot_last[1],
+                     this_rot[i, 2] + rot_last[2])
+                     for i in range(this_rot.shape[0])]
 
         params_arr.append(np.array(prep_arr, dtype=dt))
         mlab.rec2csv(params_arr[-1], fnames[run_idx].split('.')[0] + '_mc.par')
@@ -100,8 +100,10 @@ if __name__ == '__main__':
         trans_last = [prep_arr[-1][3], prep_arr[-1][4], prep_arr[-1][5]]
 
     if args.apply:
-        print("Applying motion correction")
+        # dbg
+        # print("Applying motion correction")
         new_reggy = reggy.resample(align_runs=True)
+        # dbg
         for run_idx, new_im in enumerate(new_reggy):
             new_data = new_im.get_data()
             # We use the top 4 by 4 as the affine for the new file we will
@@ -114,6 +116,7 @@ if __name__ == '__main__':
     if args.make_figure:
         all_params = np.concatenate(params_arr)
         figure, ax = plt.subplots(2)
+        figure.set_size_inches([8, 6])
         ax[0].plot(all_params['t1'])
         ax[0].plot(all_params['t2'])
         ax[0].plot(all_params['t3'])
@@ -122,7 +125,8 @@ if __name__ == '__main__':
         ax[1].plot(all_params['r1'])
         ax[1].plot(all_params['r2'])
         ax[1].plot(all_params['r3'])
-        ax[0].set_xlabel('Time (TR)')
-        ax[0].set_ylabel('Rotation (radians)')
+        ax[1].set_xlabel('Time (TR)')
+        ax[1].set_ylabel('Rotation (radians)')
         figure.savefig(os.path.join(os.path.split(fnames[0])[0],
                                     'mc_params.png'))
+

@@ -169,3 +169,14 @@ def test_nipy_3_4d():
         fimg_back = load_image(out_4d)
         assert_almost_equal(fimg.get_data(), fimg_back.get_data())
         del fimg_back
+
+
+@needs_mpl
+@script_test
+def test_nipy_4d_realign():
+    # Test nipy_4d_realign script
+    with InTemporaryDirectory():
+        # Quotes in case of space in arguments
+        cmd = 'nipy_4d_realign --input %s --apply True --make_figure True 2.0' % (funcfile)
+        run_command(cmd)
+        assert_true(isfile(funcfile.split('.')[0] + '_mc.nii.gz'))
