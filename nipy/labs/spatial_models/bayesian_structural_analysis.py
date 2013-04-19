@@ -277,6 +277,7 @@ def bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
     _, label = Fbeta.custom_watershed(0, null_density)
 
     # append some information to the hroi in each subject
+    components = []
     for subject in range(n_subjects):
         bfs = hrois[subject]
         if bfs.k > 0:
@@ -300,18 +301,27 @@ def bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
             roi_label = - np.ones(bfs.k).astype(np.int)
             j = label[midx]
             roi_label[leaves_pos] = j[leaves_pos]
-            
+            components.append(j[leaves_pos])
+
             # when parent regions has similarly labelled children,
             # include it also
             roi_label = bfs.make_forest().propagate_upward(roi_label)
             bfs.set_roi_feature('label', roi_label)
-
+            
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one
     landmarks, new_values = build_landmarks(
-        hrois, prevalence_pval, prevalence_threshold, sigma, verbose=verbose)
+        domain, coords, subjects, np.array(components), 1 - prior_h0,
+        prevalence_pval, prevalence_threshold, sigma, verbose=verbose)
 
+    # relabel the regions
+    for subject in range(n_subjects):
+        if hrois[subject].k > 0:
+            us = hrois[subject].get_roi_feature('label')
+            us[us > - 1] = new_values[us[us > - 1]]
+            hrois[subject].set_roi_feature('label', us)
+    
     # make a group-level map of the landmark position
     label_map = _relabel(label, new_values)
     return label_map, landmarks, hrois, density
@@ -410,8 +420,16 @@ def bsa_dpmm2(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one
-    landmarks, _ = build_landmarks(
-        hrois, prevalence_pval, prevalence_threshold, sigma, verbose=verbose)
+    landmarks, new_values = build_landmarks(
+        domain, coords, subjects, components, 1 - prior_h0,
+        prevalence_pval, prevalence_threshold, sigma, verbose=verbose)
+    
+    # relabel the regions
+    for subject in range(n_subjects):
+        if hrois[subject].k > 0:
+            us = hrois[subject].get_roi_feature('label')
+            us[us > - 1] = new_values[us[us > - 1]]
+            hrois[subject].set_roi_feature('label', us)
 
     # make a group-level map of the landmark position
     label_map = - np.ones(domain.size)

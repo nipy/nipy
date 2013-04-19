@@ -71,21 +71,20 @@ def make_bsa_image(
 
     # encode it as a domain
     domain = domain_from_image(Nifti1Image(mask, affine), nn=18)
-    nvox = domain.size
+    n_voxels = domain.size
 
     # read the functional images
     stats = []
-    for subject in range(n_subjects):
-        rbeta = load(stat_images[subject])
-        beta = np.reshape(rbeta.get_data(), ref_dim)
+    for stat_image in stat_images:
+        beta = np.reshape(load(stat_image).get_data(), ref_dim)
         stats.append(beta[mask > 0])
     stats = np.array(stats).T
 
     # launch the method
-    crmap = np.zeros(nvox)
-    density = np.zeros(nvox)
+    crmap = np.zeros(n_voxels).astype(np.int16)
+    density = np.zeros(n_voxels)
     landmarks = None
-    hrois = [None for s in range(n_subjects)]
+    hrois = [None for _ in range(n_subjects)]
 
     if method == 'simple':
         crmap, landmarks, hrois, density = compute_landmarks(
@@ -96,8 +95,6 @@ def make_bsa_image(
         crmap, landmarks, hrois, co_clust = compute_landmarks(
             domain, stats, sigma, prevalence_pval, prevalence_threshold,
             threshold, smin, algorithm='quick', verbose=verbose)
-
-        density = np.zeros(nvox)
         crmap = landmarks.map_label(domain.coord, 0.95, sigma)
 
     if write_dir == False:
@@ -124,8 +121,11 @@ def make_bsa_image(
     save(wim, op.join(write_dir, "CR_%s.nii" % contrast_id))
     
     # write a prevalence image
-    prevalence_map = np.zeros(ref_dim)
-    prevalence_map[mask > 0] = landmarks.prevalence_density()
+    prev_ = np.zeros_like(crmap)
+    prev_[crmap > -1] = landmarks.roi_prevalence()[(crmap[crmap > -1]).\
+                                                       astype(np.int)]
+    prevalence_map = - np.ones(ref_dim)
+    prevalence_map[mask > 0] = prev_
     wim = Nifti1Image(prevalence_map, affine)
     wim.get_header()['descrip'] = 'Weighted prevalence image'
     save(wim, op.join(write_dir, "prevalence_%s.nii" % contrast_id))
@@ -135,7 +135,7 @@ def make_bsa_image(
     labels = - 2 * np.ones(wdim, 'int16')
     for subject in range(n_subjects):
         labels[mask > 0, subject] = - 1
-        if hrois[s] is not None:
+        if hrois[subject] is not None:
             nls = hrois[subject].get_roi_feature('label')
             nls[nls == - 1] = default_idx
             lab = hrois[subject].label
