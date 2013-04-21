@@ -10,7 +10,7 @@ Thirion et al. Structural Analysis of fMRI
 Data Revisited: Improving the Sensitivity and Reliability of fMRI
 Group Studies.  IEEE TMI 2007
 
-Author : Bertrand Thirion, 2006-2010
+Author : Bertrand Thirion, 2006-2013
 """
 
 #autoindent
@@ -18,6 +18,18 @@ Author : Bertrand Thirion, 2006-2010
 import numpy as np
 from scipy import stats
 
+
+def _threshold_weight_map(x, fraction):
+    """threshold a positive map in order to retain a certain fraction of the
+    total value"""
+    sorted_x = - np.sort(- x)
+    if fraction < sorted_x[0] / x.sum():
+        return np.zeros_like(x)
+
+    idx = np.where(np.cumsum(sorted_x) < fraction * x.sum())[0][-1]
+    x[x < sorted_x[idx]] = 0
+    return x
+                
 
 class LandmarkRegions(object):
     """
@@ -66,124 +78,41 @@ class LandmarkRegions(object):
         centers = np.array([np.mean(pos[k], 0) for k in range(self.k)])
         return centers
 
-    def density(self, k, coord=None, dmax=1., dof=10):
-        """Posterior density of component k
-
+    def kernel_density(self, k=None, coord=None, sigma=1.):
+        """ Compute the density of a component as a kde
+        
         Parameters
         ----------
-        k: int, less or equal to self.k
-           reference component
+        k: int (<= self.k) or None
+           component upon which the density is computed
+           if None, the sum is taken over k
         coord: array of shape(n, self.dom.em_dim), optional
             a set of input coordinates
-        dmax: float, optional
-              regularizaing constant for the variance estimation
-        dof: float, optional,
-             strength of the regularization
-
+        sigma: float, optional
+               kernel size
+        
         Returns
         -------
-        pd: array of shape(n)
-            the posterior density that has been computed
-        delta: array of shape(n)
-               the quadratic term in the gaussian model
-
-        Fixme
-        -----
-        instead of dof/dmax, use Raftery's regularization
+        kde: array of shape(n)
+             the density sampled at the coords
         """
-        from scipy.linalg import svd
-
-        if k > self.k:
-            raise ValueError('wrong region index')
-
-        pos = self.get_feature('position')[k]
-        center = pos.mean(0)
-        dim = self.domain.em_dim
-
+        from nipy.algorithms.utils.fast_distance import euclidean_distance
         if coord == None:
             coord = self.domain.coord
+        if k == None:
+            kde = np.zeros(coord.shape[0])
+            for k in range(self.k):
+                pos = self.get_feature('position')[k]
+                dist = euclidean_distance(pos, coord)
+                kde += np.exp( - dist ** 2 / (2 * sigma ** 2)).sum(0)
+        else:
+            k = int(k)
+            pos = self.get_feature('position')[k]
+            dist = euclidean_distance(pos, coord)
+            kde = np.exp( - dist ** 2 / (2 * sigma ** 2)).sum(0)
+        return kde / (2 * np.pi * sigma ** 2) ** (pos.shape[1] / 2)
 
-        if coord.shape[1] != dim:
-            raise ValueError("incompatible dimensions")
-
-        n_points = pos.shape[0]
-        dx = pos - center
-        covariance = np.dot(dx.T, dx) / n_points
-        U, S, V = svd(covariance, 0)
-        S = (n_points * S + dmax ** 2 * np.ones(dim) * dof) / (n_points + dof)
-        sqrts = 1. / np.sqrt(S)
-        dx = coord - center
-        dx = np.dot(dx, U)
-        dx = np.dot(dx, np.diag(sqrts))
-        delta = np.sum(dx ** 2, 1)
-        lcst = - np.log(2 * np.pi) * dim / 2 + (np.log(sqrts)).sum()
-        pd = np.exp(lcst - delta / 2)
-        return pd, delta
-
-    def hpd(self, k, coord=None, pval=0.95, dmax=1.0):
-        """Sample the posterior probability of being in k
-        on a grid defined by cs, assuming that the roi is an ellipsoid
-
-        Parameters
-        ----------
-        k: int, less or equal to self.k
-           reference component
-        coord: array of shape(n,dim), optional
-               a set of input coordinates
-        pval: float<1, optional,
-              cutoff for the CR
-        dmax=1.0: an upper bound for the spatial variance
-                  to avoid degenerate variance
-
-        Returns
-        -------
-        hpd array of shape(n) that yields the value
-        """
-        hpd, delta = self.density(k, coord, dmax)
-
-        import scipy.special as sp
-        gamma = 2 * sp.erfinv(pval) ** 2
-        #
-        #--- all the following is to solve the equation
-        #--- erf(x/sqrt(2))-x*exp(-x**2/2)/sqrt(pi/2) = alpha
-        #--- should better be put elsewhere
-
-        def dicho_solve_lfunc(alpha, eps=1.e-7):
-            if alpha > 1:
-                raise ValueError("no solution for alpha>1")
-            if alpha > 1 - 1.e-15:
-                return np.inf
-            if alpha < 0:
-                raise ValueError("no solution for alpha<0")
-            if alpha < 1.e-15:
-                return 0
-
-            xmin = sp.erfinv(alpha) * np.sqrt(2)
-            xmax = 2 * xmin
-            while lfunc(xmax) < alpha:
-                xmax *= 2
-                xmin *= 2
-            return (dichomain_lfunc(xmin, xmax, eps, alpha))
-
-        def dichomain_lfunc(xmin, xmax, eps, alpha):
-            x = (xmin + xmax) / 2
-            if xmax < xmin + eps:
-                return x
-            else:
-                if lfunc(x) > alpha:
-                    return dichomain_lfunc(xmin, x, eps, alpha)
-                else:
-                    return dichomain_lfunc(x, xmax, eps, alpha)
-
-        def lfunc(x):
-            return sp.erf(x / np.sqrt(2)) - x * np.exp(-x ** 2 / 2) / \
-                np.sqrt(np.pi / 2)
-
-        gamma = dicho_solve_lfunc(pval) ** 2
-        hpd[delta > gamma] = 0
-        return hpd
-
-    def map_label(self, coord=None, pval=0.95, dmax=1.):
+    def map_label(self, coord=None, pval=1., dmax=1.):
         """Sample the set of landmark regions
         on the proposed coordiante set cs, assuming a Gaussian shape
 
@@ -203,11 +132,14 @@ class LandmarkRegions(object):
         if coord == None:
             coord = self.domain.coord
         label = - np.ones(coord.shape[0])
+        null_density = 1. / self.domain.local_volume.sum()
         if self.k > 0:
-            aux = - np.ones((coord.shape[0], self.k))
+            aux = - np.zeros((coord.shape[0], self.k))
             for k in range(self.k):
-                aux[:, k] = self.hpd(k, coord, pval, dmax)
-
+                kde = self.kernel_density(k, coord, dmax)
+                aux[:, k] = _threshold_weight_map(kde, pval)
+                
+            aux[aux < null_density] = 0
             maux = np.max(aux, 1)
             label[maux > 0] = np.argmax(aux, 1)[maux > 0]
         return label

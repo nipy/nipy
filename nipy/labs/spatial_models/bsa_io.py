@@ -87,16 +87,15 @@ def make_bsa_image(
     hrois = [None for _ in range(n_subjects)]
 
     if method == 'simple':
-        crmap, landmarks, hrois, density = compute_landmarks(
-            domain, stats, sigma, prevalence_pval, prevalence_threshold,
-            threshold, smin, algorithm='standard', verbose=verbose)
+        algorithm = 'standard'
+    else:
+        algorithm = 'quick'
 
-    if method == 'quick':
-        crmap, landmarks, hrois, co_clust = compute_landmarks(
-            domain, stats, sigma, prevalence_pval, prevalence_threshold,
-            threshold, smin, algorithm='quick', verbose=verbose)
-        crmap = landmarks.map_label(domain.coord, 0.95, sigma)
-
+    landmarks, hrois = compute_landmarks(
+        domain, stats, sigma, prevalence_pval, prevalence_threshold,
+        threshold, smin, algorithm=algorithm, verbose=verbose)
+    crmap = landmarks.map_label(domain.coord, 0.95, sigma)
+    density = landmarks.kernel_density(k=None, coord=domain.coord, sigma=sigma)
     if write_dir == False:
         return landmarks, hrois
 

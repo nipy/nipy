@@ -27,20 +27,15 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     """
     ref_dim = np.shape(betas[0])
     n_subj = betas.shape[0]
-    xyz = np.array(np.where(betas[:1])).T
-    nvox = np.size(xyz, 0)
 
     # get the functional information
     lbeta = np.array([np.ravel(betas[k]) for k in range(n_subj)]).T
 
     # the voxel volume is 1.0
-    g0 = 1.0 / (1.0 * nvox)
-    bdensity = 1
     dom = domain_from_binary_array(np.ones(ref_dim))
 
     if method == 'simple':
-        group_map, AF, BF, likelihood = \
-                   compute_landmarks(dom, lbeta, dmax, thq, ths, theta, smin)
+        AF, BF = compute_landmarks(dom, lbeta, dmax, thq, ths, theta, smin)
     return AF, BF
 
 

@@ -58,11 +58,6 @@ def make_bsa_2d(betas, threshold=3., sigma=5., prevalence_threshold=0,
     """
     ref_dim = np.shape(betas[0])
     n_subjects = betas.shape[0]
-    xyz = np.array(np.where(betas[:1])).T.astype(np.int)
-
-    # Get  coordinates in mm
-    xyz = xyz[:, 1:] # switch to dimension 2
-    coord = xyz.astype(np.float)
 
     # get the functional information
     stats = np.array([np.ravel(betas[k]) for k in range(n_subjects)]).T
@@ -71,18 +66,23 @@ def make_bsa_2d(betas, threshold=3., sigma=5., prevalence_threshold=0,
     domain = domain_from_binary_array(np.ones(ref_dim))
 
     if method == 'simple':
-        group_map, landmarks, hrois, likelihood = compute_landmarks(
-            domain, stats, sigma, prevalence_pval, prevalence_threshold, 
-            threshold, smin, method='prior',
-            algorithm='standard')
+        algorithm = 'standard'
     elif method == 'quick':
-        likelihood = np.zeros(ref_dim)
-        group_map, landmarks, hrois, coclustering = compute_landmarks(
-            domain, stats, sigma, prevalence_pval, prevalence_threshold, 
-            threshold, smin, method='prior',
-            algorithm='quick')
+        algorithm = 'quick'
     else:
         raise ValueError('method is not correctly defined')
+    
+    landmarks, hrois = compute_landmarks(
+        domain, stats, sigma, prevalence_pval, prevalence_threshold, 
+        threshold, smin, method='prior', algorithm=algorithm)
+    
+    if landmarks != None:
+        grp_map = landmarks.map_label(domain.coord, .8, sigma)
+        grp_map.shape = ref_dim
+        group_map = landmarks.map_label(domain.coord, 0.95,  sigma)
+        density = landmarks.kernel_density(k=None, coord=domain.coord,
+                                           sigma=sigma)
+        group_map.shape = ref_dim
 
     if verbose == 0:
         return landmarks, hrois
@@ -91,36 +91,10 @@ def make_bsa_2d(betas, threshold=3., sigma=5., prevalence_threshold=0,
         lmax = landmarks.k + 2
         landmarks.show()
 
-    group_map.shape = ref_dim
-    plt.figure(figsize=(8, 3))
-    ax = plt.subplot(1, 3, 1)
-    plt.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
-    plt.title('Blob separation map', fontsize=10)
-    plt.axis('off')
-    plt.colorbar(shrink=.8)
-
-    if landmarks != None:
-        group_map = landmarks.map_label(coord, 0.95, sigma)
-        group_map.shape = ref_dim
-
-    plt.subplot(1, 3, 2)
-    plt.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
-    plt.title('group-level position 95% \n confidence regions', fontsize=10)
-    plt.axis('off')
-    plt.colorbar(shrink=.8)
-
-    plt.subplot(1, 3, 3)
-    likelihood.shape = ref_dim
-    plt.imshow(likelihood, interpolation='nearest')
-    plt.title('Spatial density under h1', fontsize=10)
-    plt.axis('off')
-    plt.colorbar(shrink=.8)
-
-
     fig_output = plt.figure(figsize=(8, 3.5))
     fig_output.text(.5, .9, "Individual landmark regions", ha="center")
     for s in range(n_subjects):
-        ax = plt.subplot(n_subjects / 5, 5, s + 1)
+        plt.subplot(n_subjects / 5, 5, s + 1)
         #ax.set_position([.02, .02, .96, .96])
         lw = - np.ones(ref_dim)
         if hrois[s] is not None:
@@ -139,6 +113,30 @@ def make_bsa_2d(betas, threshold=3., sigma=5., prevalence_threshold=0,
         plt.imshow(betas[s], interpolation='nearest', vmin=betas.min(),
                   vmax=betas.max())
         plt.axis('off')
+        
+    if landmarks is None:
+        return landmarks, hrois
+    plt.figure(figsize=(8, 3))
+
+    plt.subplot(1, 3, 1)
+    plt.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
+    plt.title('Blob separation map', fontsize=10)
+    plt.axis('off')
+    plt.colorbar(shrink=.8)
+
+    plt.subplot(1, 3, 2)
+    plt.imshow(grp_map, interpolation='nearest', vmin=-1, vmax=lmax)
+    plt.title('group-level position 80% \n confidence regions', fontsize=10)
+    plt.axis('off')
+    plt.colorbar(shrink=.8)
+
+    plt.subplot(1, 3, 3)
+    density.shape = ref_dim
+    plt.imshow(density, interpolation='nearest')
+    plt.title('Spatial density under h1', fontsize=10)
+    plt.axis('off')
+    plt.colorbar(shrink=.8)
+
     return landmarks, hrois
 
 

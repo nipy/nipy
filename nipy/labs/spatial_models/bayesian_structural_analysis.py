@@ -311,20 +311,25 @@ def bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one
-    landmarks, new_values = build_landmarks(
+    landmarks, new_labels = build_landmarks(
         domain, coords, subjects, np.array(components), 1 - prior_h0,
         prevalence_pval, prevalence_threshold, sigma, verbose=verbose)
 
     # relabel the regions
-    for subject in range(n_subjects):
-        if hrois[subject].k > 0:
-            us = hrois[subject].get_roi_feature('label')
-            us[us > - 1] = new_values[us[us > - 1]]
-            hrois[subject].set_roi_feature('label', us)
+    _update_hroi_labels(hrois, new_labels)
     
     # make a group-level map of the landmark position
-    label_map = _relabel(label, new_values)
+    label_map = _relabel(label, new_labels)
     return label_map, landmarks, hrois, density
+
+
+def _update_hroi_labels(hrois, new_labels):
+    """Update the labels of the hroisusing new_labels"""
+    for subject in range(len(hrois)):
+        if hrois[subject].k > 0:
+            us = hrois[subject].get_roi_feature('label')
+            us[us > - 1] = new_labels[us[us > - 1]]
+            hrois[subject].set_roi_feature('label', us)
 
 
 def bsa_dpmm2(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
@@ -420,16 +425,12 @@ def bsa_dpmm2(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one
-    landmarks, new_values = build_landmarks(
+    landmarks, new_labels = build_landmarks(
         domain, coords, subjects, components, 1 - prior_h0,
         prevalence_pval, prevalence_threshold, sigma, verbose=verbose)
     
     # relabel the regions
-    for subject in range(n_subjects):
-        if hrois[subject].k > 0:
-            us = hrois[subject].get_roi_feature('label')
-            us[us > - 1] = new_values[us[us > - 1]]
-            hrois[subject].set_roi_feature('label', us)
+    _update_hroi_labels(hrois, new_labels)
 
     # make a group-level map of the landmark position
     label_map = - np.ones(domain.size)
@@ -469,22 +470,11 @@ def compute_landmarks(
 
     Returns
     -------
-    label_map: array of shape (nnodes):
-           the resulting group-level labelling of the space
     landmarks: a instance of sbf.LandmarkRegions that describes the ROIs found
         in inter-subject inference
         If no such thing can be defined landmarks is set to None
     hrois: List of  nipy.labs.spatial_models.hroi.Nroi instances
         representing individual ROIs
-    density: array of shape (nnodes):
-       likelihood of the data under H1 over some sampling grid
-
-    Notes
-    -----
-    In that case, the DPMM is used to derive a spatial density of
-    significant local maxima in the volume. Each terminal (leaf)
-    region which is a posteriori significant enough is assigned to the
-    nearest mode of this distribution
     """
     hrois, prior_h0, subjects, coords = _compute_individual_regions(
         domain, stats, threshold, smin, method, verbose)
@@ -493,11 +483,10 @@ def compute_landmarks(
         label_map, landmarks, hrois, density = bsa_dpmm(
             hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
             prevalence_threshold, verbose=verbose)
-        return label_map, landmarks, hrois, density
     elif algorithm == 'quick':  
         label_map, landmarks, hrois, co_clust = bsa_dpmm2(
             hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
             prevalence_threshold, verbose=verbose)
-        return label_map, landmarks, hrois, co_clust
     else:
         raise ValueError('Unknown method')
+    return landmarks, hrois
