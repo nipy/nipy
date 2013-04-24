@@ -27,7 +27,7 @@ is working and information parameters are set correctly.
 The second (``sdist-tests``) makes an sdist source distribution archive,
 installs it to a temporary directory, and runs the tests of that install.
 
-If you have a version of nipy trunk past February 11th 2011, there will also
+If you have a version of nibabel trunk past February 11th 2011, there will also
 be a functional make target::
 
     make bdist-egg-tests
@@ -55,7 +55,7 @@ Release checklist
   are as complete as possible and that every contributor was recognized.
 
 * Use the opportunity to update the ``.mailmap`` file if there are any duplicate
-  authors listed from ``git shortlog``.
+  authors listed from ``git shortlog -ns``.
 
 * Add any new authors to the ``AUTHORS`` file.  Add any new entries to the
   ``THANKS`` file.
