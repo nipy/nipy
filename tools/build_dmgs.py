@@ -3,15 +3,13 @@
 
 Example
 -------
-%(prog)s "dipy-dist/dipy*-0.6.0-py*mpkg"
+%(prog)s "nipy-dist/nipy*-0.4.0-py*mpkg"
 
 Note quotes around the globber first argument to protect it from shell
 globbing.
-
 """
 import os
 from os.path import join as pjoin, isfile, isdir
-import sys
 import shutil
 from glob import glob
 from functools import partial
@@ -29,7 +27,7 @@ def main():
     parser = ArgumentParser(description=__doc__,
                             formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('globber', type=str,
-                        help='glob to serch for build mpkgs')
+                        help='glob to search for build mpkgs')
     parser.add_argument('--out-path', type=str, default='mpkg-dist',
                         help='path for output files (default="mpkg-dist")',
                         metavar='OUTPATH')

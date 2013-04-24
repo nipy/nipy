@@ -7,7 +7,7 @@ Run doctests in each extension module
 
 Example:
 
-    %prog dipy
+    %prog nipy
 """
 
 import sys
