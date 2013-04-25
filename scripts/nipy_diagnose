@@ -54,6 +54,10 @@ def main():
                         help='mid part of output image filenames')
     parser.add_argument('--ncomponents', type=int, default=10,
                         help='number of PCA components to write')
+    parser.add_argument('--time-axis', type=str, default=-1,
+                        help='Image axis for time')
+    parser.add_argument('--slice-axis', type=str, default=None,
+                        help='Image axis for slice')
     # parse the command line
     args = parser.parse_args()
     # process inputs
@@ -69,7 +73,17 @@ def main():
     if out_root is None:
         out_root = fname
     img = nipy.load_image(filename)
-    res = nads.screen(img, ncomps)
+    # Unpack axis arguments
+    try:
+        args.time_axis = int(args.time_axis)
+    except ValueError:
+        pass
+    if not args.slice_axis is None:
+        try:
+            args.slice_axis = int(args.slice_axis)
+        except ValueError:
+            pass
+    res = nads.screen(img, ncomps, args.time_axis, args.slice_axis)
     nads.write_screen_res(res, out_path, out_root, ext + gz)
 
 
