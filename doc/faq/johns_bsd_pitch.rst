@@ -93,7 +93,7 @@ felt on many projects, have a potential to do real harm to open source
 software development.  There are two unpalatable options.  1) Go with
 GPL and lose the mind-share of the private sector 2) Forgo GPL code
 and retain the contribution of the private sector.  This is a very
-tough decision because their is a lot of very high quality software
+tough decision because there is a lot of very high quality software
 that is GPLd and we need to use it; they don't call the license `viral
 <http://www.linuxinsider.com/story/33968.html>`_ for nothing.
 
