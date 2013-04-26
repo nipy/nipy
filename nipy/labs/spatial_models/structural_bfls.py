@@ -29,7 +29,7 @@ def _threshold_weight_map(x, fraction):
     idx = np.where(np.cumsum(sorted_x) < fraction * x.sum())[0][-1]
     x[x < sorted_x[idx]] = 0
     return x
-                
+
 
 class LandmarkRegions(object):
     """
@@ -80,7 +80,7 @@ class LandmarkRegions(object):
 
     def kernel_density(self, k=None, coord=None, sigma=1.):
         """ Compute the density of a component as a kde
-        
+
         Parameters
         ----------
         k: int (<= self.k) or None
@@ -90,7 +90,7 @@ class LandmarkRegions(object):
             a set of input coordinates
         sigma: float, optional
                kernel size
-        
+
         Returns
         -------
         kde: array of shape(n)
@@ -104,15 +104,15 @@ class LandmarkRegions(object):
             for k in range(self.k):
                 pos = self.get_feature('position')[k]
                 dist = euclidean_distance(pos, coord)
-                kde += np.exp( - dist ** 2 / (2 * sigma ** 2)).sum(0)
+                kde += np.exp(- dist ** 2 / (2 * sigma ** 2)).sum(0)
         else:
             k = int(k)
             pos = self.get_feature('position')[k]
             dist = euclidean_distance(pos, coord)
-            kde = np.exp( - dist ** 2 / (2 * sigma ** 2)).sum(0)
+            kde = np.exp(- dist ** 2 / (2 * sigma ** 2)).sum(0)
         return kde / (2 * np.pi * sigma ** 2) ** (pos.shape[1] / 2)
 
-    def map_label(self, coord=None, pval=1., dmax=1.):
+    def map_label(self, coord=None, pval=1., sigma=1.):
         """Sample the set of landmark regions
         on the proposed coordiante set cs, assuming a Gaussian shape
 
@@ -122,8 +122,8 @@ class LandmarkRegions(object):
                a set of input coordinates
         pval: float in [0,1]), optional
               cutoff for the CR, i.e.  highest posterior density threshold
-        dmax: an upper bound for the spatial variance
-                to avoid degenerate variance
+        sigma: float, positive, optional
+               spatial scale of the spatial model
 
         Returns
         -------
@@ -136,9 +136,9 @@ class LandmarkRegions(object):
         if self.k > 0:
             aux = - np.zeros((coord.shape[0], self.k))
             for k in range(self.k):
-                kde = self.kernel_density(k, coord, dmax)
+                kde = self.kernel_density(k, coord, sigma)
                 aux[:, k] = _threshold_weight_map(kde, pval)
-                
+
             aux[aux < null_density] = 0
             maux = np.max(aux, 1)
             label[maux > 0] = np.argmax(aux, 1)[maux > 0]
@@ -183,7 +183,7 @@ class LandmarkRegions(object):
 
 
 def build_landmarks(domain, coords, subjects, labels, confidence=None,
-                    prevalence_pval=0.95, prevalence_threshold=0, dmax=1.,
+                    prevalence_pval=0.95, prevalence_threshold=0, sigma=1.,
                     verbose=0):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
@@ -200,11 +200,11 @@ def build_landmarks(domain, coords, subjects, labels, confidence=None,
     labels: array of shape (n), dtype = np.int
             index of the landmark the object is associated with
     prevalence_pval: float, optional
-    prevalence_threshold: float, optional, 
-                   (c) A label should be present in prevalence_threshold 
+    prevalence_threshold: float, optional,
+                   (c) A label should be present in prevalence_threshold
                    subjects with a probability>prevalence_pval
                    in order to be valid
-    dmax: float optional,
+    sigma: float optional,
           regularizing constant that defines a prior on the region extent
 
     Returns
@@ -232,7 +232,7 @@ def build_landmarks(domain, coords, subjects, labels, confidence=None,
         mean_c, var_c = 0., 0.
         subjects_i = subjects[labels == i]
         for subject_i in np.unique(subjects_i):
-            confidence_i = 1 - np.prod(1 - confidence[(labels == i) * 
+            confidence_i = 1 - np.prod(1 - confidence[(labels == i) *
                                                       (subjects == subject_i)])
             mean_c += confidence_i
             var_c += confidence_i * (1 - confidence_i)
@@ -245,7 +245,7 @@ def build_landmarks(domain, coords, subjects, labels, confidence=None,
             prevalence_pval):
             coord = np.vstack([
                     coords[subjects == s][k] for (k, s) in zip(
-                        intrasubj[labels == i], 
+                        intrasubj[labels == i],
                         subjects[labels == i])])
             valid[i] = 1
             coordinates.append(coord)

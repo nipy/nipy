@@ -27,10 +27,8 @@ from nipy.labs.spatial_models.discrete_domain import domain_from_binary_array
 
 
 def make_bsa_2d(betas, threshold=3., sigma=5., prevalence_threshold=0, 
-                prevalence_pval=0.5, smin=0, method='simple', verbose=0):
-    """
-    Function for performing bayesian structural analysis
-    on a set of images.
+                prevalence_pval=0.5, smin=0, algorithm='density', verbose=0):
+    """ Performing Bayesian structural analysis on a set of 2D images
 
     Parameters
     ----------
@@ -58,20 +56,13 @@ def make_bsa_2d(betas, threshold=3., sigma=5., prevalence_threshold=0,
     """
     ref_dim = np.shape(betas[0])
     n_subjects = betas.shape[0]
-
+    domain = domain_from_binary_array(np.ones(ref_dim))
+    
     # get the functional information
     stats = np.array([np.ravel(betas[k]) for k in range(n_subjects)]).T
-
     lmax = 0
-    domain = domain_from_binary_array(np.ones(ref_dim))
-
-    if method == 'simple':
-        algorithm = 'standard'
-    elif method == 'quick':
-        algorithm = 'quick'
-    else:
-        raise ValueError('method is not correctly defined')
     
+    # main call
     landmarks, hrois = compute_landmarks(
         domain, stats, sigma, prevalence_pval, prevalence_threshold, 
         threshold, smin, method='prior', algorithm=algorithm)
@@ -95,9 +86,8 @@ def make_bsa_2d(betas, threshold=3., sigma=5., prevalence_threshold=0,
     fig_output.text(.5, .9, "Individual landmark regions", ha="center")
     for s in range(n_subjects):
         plt.subplot(n_subjects / 5, 5, s + 1)
-        #ax.set_position([.02, .02, .96, .96])
         lw = - np.ones(ref_dim)
-        if hrois[s] is not None:
+        if hrois[s].k > 0:
             nls = hrois[s].get_roi_feature('label')
             nls[nls == - 1] = np.size(landmarks) + 2
             for k in range(hrois[s].k):
@@ -162,9 +152,10 @@ prevalence_threshold = n_subjects * .25
 prevalence_pval = 0.9
 verbose = 1
 smin = 5
-method = 'quick'  # 'simple' #
+algorithm = 'co-occurrence' #  'density'
 
 # run the algo
-landmarks, hrois = make_bsa_2d(betas, threshold, sigma, prevalence_threshold, 
-                               prevalence_pval, smin, method, verbose=verbose)
+landmarks, hrois = make_bsa_2d(
+    betas, threshold, sigma, prevalence_threshold, prevalence_pval, smin, 
+    algorithm=algorithm, verbose=verbose)
 plt.show()

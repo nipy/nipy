@@ -15,9 +15,9 @@ from .discrete_domain import domain_from_image
 
 
 def make_bsa_image(
-    mask_images, stat_images, threshold=3., smin=0, sigma=5., 
-    prevalence_threshold=0, prevalence_pval=0.5, write_dir=None, 
-    method='simple', contrast_id='default', verbose=0):
+    mask_images, stat_images, threshold=3., smin=0, sigma=5.,
+    prevalence_threshold=0, prevalence_pval=0.5, write_dir=None,
+    algorithm='density', contrast_id='default', verbose=0):
     """ Main function for  performing bsa on a set of images.
     It creates the some output images in the given directory
 
@@ -29,11 +29,11 @@ def make_bsa_image(
            one for each subject
     threshold: float, optional,
                threshold used to ignore all the image data that si below
-    sigma: float, optional 
+    sigma: float, optional
            variance of the spatial model, i.e. cross-subject uncertainty
     prevalence_threshold: float, optional
                           threshold on the representativity measure
-    prevalence_pval: float, optional 
+    prevalence_pval: float, optional
                      p-value of the representativity test:
              test = p(representativity>prevalence_threshold) > prevalence_pval
     smin: float, optional
@@ -41,7 +41,7 @@ def make_bsa_image(
           smaller blobs are merged into larger ones
     write_dir: string, optional
                if not None, output directory
-    method: string, one of ['simple', 'quick'], optional, 
+    method: string, one of ['density', 'co-occurrence'], optional,
             applied region detection method; to be chose among
     contrast_id: string, optional,
                  identifier of the contrast
@@ -81,21 +81,24 @@ def make_bsa_image(
     stats = np.array(stats).T
 
     # launch the method
-    crmap = np.zeros(n_voxels).astype(np.int16)
+    crmap = - np.ones(n_voxels).astype(np.int16)
     density = np.zeros(n_voxels)
     landmarks = None
     hrois = [None for _ in range(n_subjects)]
-
-    if method == 'simple':
-        algorithm = 'standard'
-    else:
-        algorithm = 'quick'
+    default_idx = 0
+    prevalence = np.array([])
 
     landmarks, hrois = compute_landmarks(
         domain, stats, sigma, prevalence_pval, prevalence_threshold,
         threshold, smin, algorithm=algorithm, verbose=verbose)
-    crmap = landmarks.map_label(domain.coord, 0.95, sigma)
-    density = landmarks.kernel_density(k=None, coord=domain.coord, sigma=sigma)
+
+    if landmarks is not None:
+        crmap = landmarks.map_label(domain.coord, 0.95, sigma)
+        density = landmarks.kernel_density(
+            k=None, coord=domain.coord, sigma=sigma)
+        default_idx = landmarks.k + 2
+        prevalence = landmarks.roi_prevalence()
+
     if write_dir == False:
         return landmarks, hrois
 
@@ -110,19 +113,16 @@ def make_bsa_image(
     dens_path = op.join(write_dir, "density_%s.nii" % contrast_id)
     save(wim, dens_path)
 
-    default_idx = landmarks.k + 2
-
     # write a 3D image for group-level labels
     labels = - 2 * np.ones(ref_dim)
     labels[mask > 0] = crmap
     wim = Nifti1Image(labels.astype('int16'), affine)
     wim.get_header()['descrip'] = 'group Level labels from bsa procedure'
     save(wim, op.join(write_dir, "CR_%s.nii" % contrast_id))
-    
+
     # write a prevalence image
-    prev_ = np.zeros_like(crmap)
-    prev_[crmap > -1] = landmarks.roi_prevalence()[(crmap[crmap > -1]).\
-                                                       astype(np.int)]
+    prev_ = np.zeros(crmap.size).astype(np.float)
+    prev_[crmap > -1] = prevalence[crmap[crmap > -1]]
     prevalence_map = - np.ones(ref_dim)
     prevalence_map[mask > 0] = prev_
     wim = Nifti1Image(prevalence_map, affine)
@@ -134,7 +134,7 @@ def make_bsa_image(
     labels = - 2 * np.ones(wdim, 'int16')
     for subject in range(n_subjects):
         labels[mask > 0, subject] = - 1
-        if hrois[subject] is not None:
+        if hrois[subject].k > 0:
             nls = hrois[subject].get_roi_feature('label')
             nls[nls == - 1] = default_idx
             lab = hrois[subject].label

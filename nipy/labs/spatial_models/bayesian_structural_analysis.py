@@ -29,32 +29,6 @@ from .hroi import HROI_as_discrete_domain_blobs
 ####################################################################
 
 
-def _relabel(label, new_values=None):
-    """ Utility to relabel a pre-existing label vector 
-    to the values provided in new_values.
-
-    Parameters
-    ----------
-    label: array of shape(n),
-           the inut labels
-    new_values: array of shape(p), where p<= label.max(), optional
-        if None, the output is -1 * np.ones(n)
-        the new values to be given to the labels
-
-    Returns
-    -------
-    new_label: array of shape (n)
-    """
-    if label.max() + 1 < np.size(new_values):
-        raise ValueError('incompatible values for label of new_values')
-    new_label = - np.ones_like(label)
-    if new_values is not None:
-        aux = np.arange(label.max() + 1)
-        aux[0: np.size(new_values)] = new_values
-        new_label[label > - 1] = aux[label[label > - 1]]
-    return new_label
-
-
 def _signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
     """Convert a set of statistics to posterior probabilities of  being
     generated under H0
@@ -76,10 +50,10 @@ def _signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
            parameter that yields the prior probability that a region is active
            should be chosen close to 0
 
-    Returns 
+    Returns
     -------
     posterior_null: array of shape(n_samples)
-                    an estimation of the probability that the observation 
+                    an estimation of the probability that the observation
                     is generated under the null
     """
     if method == 'gauss_mixture':
@@ -154,7 +128,7 @@ def _compute_individual_regions(domain, stats, threshold=3.0, smin=5,
         stats_ = np.reshape(stats[:, subject], (nvox, 1))
         hroi = HROI_as_discrete_domain_blobs(
             domain, stats_, threshold=threshold, smin=smin)
-        
+
         if hroi is not None and hroi.k > 0:
             # get the leave regions (i.e. the local maxima)
             leaves = [hroi.select_id(id) for id in hroi.get_leaves_id()]
@@ -178,15 +152,15 @@ def _compute_individual_regions(domain, stats, threshold=3.0, smin=5,
             prior_h0.append([])
             coords.append(np.empty((0, domain.dim)))
         hrois.append(hroi)
-        
+
     prior_h0 = np.concatenate(prior_h0)
     subjects = np.concatenate(subjects)
     coords = np.concatenate(coords)
     return hrois, prior_h0, subjects, coords
 
 
-def _dpmm(coords, alpha, null_density, dof, prior_precision, prior_h0, 
-          subjects, sampling_coords=None, n_iter=1000, burnin=100, 
+def _dpmm(coords, alpha, null_density, dof, prior_precision, prior_h0,
+          subjects, sampling_coords=None, n_iter=1000, burnin=100,
           co_clust=False, verbose=False):
     """Apply the dpmm analysis to compute clusters from regions coordinates
     """
@@ -205,7 +179,7 @@ def _dpmm(coords, alpha, null_density, dof, prior_precision, prior_h0,
 
     # sampling
     like, pproba, co_clustering = migmm.sample(
-        coords, null_class_proba=prior_h0, niter=n_iter, kfold=subjects, 
+        coords, null_class_proba=prior_h0, niter=n_iter, kfold=subjects,
         sampling_points=sampling_coords, co_clustering=True)
 
     if co_clust:
@@ -214,9 +188,18 @@ def _dpmm(coords, alpha, null_density, dof, prior_precision, prior_h0,
         return like, 1 - pproba
 
 
-def bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval, 
+def _update_hroi_labels(hrois, new_labels):
+    """Update the labels of the hroisusing new_labels"""
+    for subject in range(len(hrois)):
+        if hrois[subject].k > 0:
+            us = hrois[subject].get_roi_feature('label')
+            us[us > - 1] = new_labels[us[us > - 1]]
+            hrois[subject].set_roi_feature('label', us)
+
+
+def bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
              prevalence_threshold, dof=10, alpha=.5, n_iter=1000, burnin=100,
-             verbose=0):
+             algorithm='density', verbose=0):
     """ Estimation of the population level model of activation density using
     dpmm and inference
 
@@ -238,29 +221,25 @@ def bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
                      p-value of the prevalence test
     prevalence_threshold: float in the rannge [0,nsubj]
                           null hypothesis on region prevalence
+    algorithm, string, one of ['density', 'co_occurrence'], optional,
     verbose=0, verbosity mode
 
     Returns
     -------
-    label_map: array of shape (nnodes):
-               the resulting group-level labelling of the space
     landmarks: a instance of sbf.LandmarkRegions that describes the ROIs found
                in inter-subject inference
                If no such thing can be defined landmarks is set to None
     hrois: List of  nipy.labs.spatial_models.hroi.HierarchicalROI instances
            representing individual ROIs
-    density: array of shape (nnodes):
-             likelihood of the data under H1 over some sampling grid
     """
     from nipy.algorithms.graph.field import field_from_coo_matrix_and_data
     domain = hrois[0].domain
     n_subjects = len(hrois)
 
-    label_map = - np.ones(domain.size, np.int)
     landmarks = None
     density = np.zeros(domain.size)
     if len(subjects) < 1:
-        return label_map, landmarks, hrois, density
+        return landmarks, hrois
 
     null_density = 1. / domain.local_volume.sum()
 
@@ -269,45 +248,58 @@ def bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
     prior_precision = 1. / (sigma ** 2) * np.ones((1, dim))
 
     # n_iter = number of iterations to estimate density
-    density, post_proba = _dpmm(
-        coords, alpha, null_density, dof, prior_precision, prior_h0,
-        subjects, domain.coord, n_iter=n_iter, burnin=burnin)
+    if algorithm == 'density':
+        density, post_proba = _dpmm(
+            coords, alpha, null_density, dof, prior_precision, prior_h0,
+            subjects, domain.coord, n_iter=n_iter, burnin=burnin)
+            # associate labels with coords
+        Fbeta = field_from_coo_matrix_and_data(domain.topology, density)
+        _, label = Fbeta.custom_watershed(0, null_density)
+        midx = np.array([np.argmin(np.sum((domain.coord - coord_) ** 2, 1))
+                         for coord_ in coords])
+        components = label[midx]
+    elif algorithm == 'co-occurrence':
+        post_proba, density, co_clustering = _dpmm(
+            coords, alpha, null_density, dof, prior_precision, prior_h0,
+            subjects,  n_iter=n_iter, burnin=burnin, co_clust=True)
+        contingency_graph = wgraph_from_coo_matrix(co_clustering)
+        if contingency_graph.E > 0:
+            contingency_graph.remove_edges(contingency_graph.weights > .5)
 
-    Fbeta = field_from_coo_matrix_and_data(domain.topology, density)
-    _, label = Fbeta.custom_watershed(0, null_density)
+        components = contingency_graph.cc()
+        components[density < null_density] = components.max() + 1 +\
+            np.arange(np.sum(density < null_density))
+    else:
+        raise ValueError('Unknown algorithm')
 
     # append some information to the hroi in each subject
-    components = []
     for subject in range(n_subjects):
         bfs = hrois[subject]
-        if bfs.k > 0:
-            leaves_pos = [bfs.select_id(k) for k in bfs.get_leaves_id()]
+        if bfs is None:
+            continue
+        if bfs.k == 0:
+            bfs.set_roi_feature('label', np.array([]))
+            continue
 
-            # set posterior proba
-            post_proba_ = np.zeros(bfs.k)
-            post_proba_[leaves_pos] = post_proba[subjects == subject]
-            bfs.set_roi_feature('posterior_proba', post_proba_)
+        leaves_pos = [bfs.select_id(k) for k in bfs.get_leaves_id()]
+        # save posterior proba
+        post_proba_ = np.zeros(bfs.k)
+        post_proba_[leaves_pos] = post_proba[subjects == subject]
+        bfs.set_roi_feature('posterior_proba', post_proba_)
 
-            # set prior proba
-            prior_proba = np.zeros(bfs.k)
-            prior_proba[leaves_pos] = 1 - prior_h0[subjects == subject]
-            bfs.set_roi_feature('prior_proba', prior_proba)
-            
-            # assign labels to ROIs 
-            pos = np.asarray(
-                [np.mean(coords, 0) for coords in bfs.get_coord()])
-            midx = np.array([np.argmin(np.sum((domain.coord - pos[k]) ** 2, 1))
-                             for k in range(bfs.k)])
-            roi_label = - np.ones(bfs.k).astype(np.int)
-            j = label[midx]
-            roi_label[leaves_pos] = j[leaves_pos]
-            components.append(j[leaves_pos])
+        # save prior proba
+        prior_proba = np.zeros(bfs.k)
+        prior_proba[leaves_pos] = 1 - prior_h0[subjects == subject]
+        bfs.set_roi_feature('prior_proba', prior_proba)
 
-            # when parent regions has similarly labelled children,
-            # include it also
-            roi_label = bfs.make_forest().propagate_upward(roi_label)
-            bfs.set_roi_feature('label', roi_label)
-            
+        # assign labels to ROIs
+        roi_label = - np.ones(bfs.k).astype(np.int)
+        roi_label[leaves_pos] = components[subjects == subject]
+        # when parent regions has similarly labelled children,
+        # include it also
+        roi_label = bfs.make_forest().propagate_upward(roi_label)
+        bfs.set_roi_feature('label', roi_label)
+
     # derive the group-level landmarks
     # with a threshold on the number of subjects
     # that are represented in each one
@@ -317,126 +309,9 @@ def bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
 
     # relabel the regions
     _update_hroi_labels(hrois, new_labels)
-    
-    # make a group-level map of the landmark position
-    label_map = _relabel(label, new_labels)
-    return label_map, landmarks, hrois, density
 
+    return landmarks, hrois
 
-def _update_hroi_labels(hrois, new_labels):
-    """Update the labels of the hroisusing new_labels"""
-    for subject in range(len(hrois)):
-        if hrois[subject].k > 0:
-            us = hrois[subject].get_roi_feature('label')
-            us[us > - 1] = new_labels[us[us > - 1]]
-            hrois[subject].set_roi_feature('label', us)
-
-
-def bsa_dpmm2(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
-              prevalence_threshold, dof=10, alpha=.5, n_iter=1000, burnin=100,
-              verbose=False):
-    """ Estimation of the population level model of activation density using
-    dpmm and inference
-
-    Parameters
-    ----------
-    hrois list of nipy.labs.spatial_models.hroi.HierarchicalROI instances
-       representing individual ROIs
-       let nr be the number of terminal regions across subjects
-    prior_h0, array of shape (nr)
-         the mixture-based prior probability
-         that the terminal regions are false positives
-    subjects, array of shape (nr)
-         the subject index associated with the terminal regions
-    coords, array of shape (nr, coord.shape[1])
-         the coordinates of the of the terminal regions
-    sigma float>0:
-         expected cluster std in the common space in units of coord
-    prevalence_pval = 0.5 (float in the [0,1] interval)
-        p-value of the prevalence test
-    prevalence_threshold=0, float in the rannge [0,nsubj]
-        null hypothesis on region prevalence that is rejected during inference
-    verbose=0, verbosity mode
-
-    Returns
-    -------
-    label_map: array of shape (nnodes):
-           the resulting group-level labelling of the space
-    landmarks: a instance of sbf.LandmarkRegions that describes the ROIs found
-        in inter-subject inference
-        If no such thing can be defined landmarks is set to None
-    hrois: List of  nipy.labs.spatial_models.hroi.Nroi instances
-        representing individual ROIs
-    Coclust: array of shape (nr,nr):
-             co-labelling matrix that gives for each pair of inputs
-             how likely they are in the same class according to the model
-    """
-    domain = hrois[0].domain
-    n_subjects = len(hrois)
-    label_map = - np.ones(domain.size, np.int)
-    landmarks = None
-    density = np.zeros(domain.size)
-    if len(subjects) < 1:
-        return label_map, landmarks, hrois, density
-
-    # prepare the DPMM
-    null_density = 1. / (np.sum(domain.local_volume))
-    prior_precision = 1. / (sigma ** 2) * np.ones((1, domain.em_dim), np.float)
-
-    post_proba, density, co_clustering = _dpmm(
-        coords, alpha, null_density, dof, prior_precision, prior_h0,
-        subjects,  n_iter=n_iter, burnin=burnin, co_clust=True)
-
-    contingency_graph = wgraph_from_coo_matrix(co_clustering)
-    if contingency_graph.E > 0:
-        contingency_graph.remove_edges(contingency_graph.weights > .5)
-    
-    components = contingency_graph.cc()
-    components[density < null_density] = components.max() + 1 +\
-        np.arange(np.sum(density < null_density))
-
-    # append some information to the hroi in each subject
-    for subject in range(n_subjects):
-        bfs = hrois[subject]
-        if bfs is not None:
-            if bfs.k > 0:
-                leaves = np.asarray(
-                    [bfs.select_id(id) for id in bfs.get_leaves_id()])
-                roi_label = - np.ones(bfs.k).astype(np.int)
-
-                # posterior proba of activation
-                post_proba_ = np.zeros(bfs.k)
-                post_proba_[leaves] = post_proba[subjects == subject]
-                bfs.set_roi_feature('posterior_proba', post_proba_)
-
-                # prior_proba of activation
-                prior_proba = np.zeros(bfs.k)
-                prior_proba[leaves] = 1 - prior_h0[subjects == subject]
-                bfs.set_roi_feature('prior_proba', prior_proba)
-                roi_label[leaves] = components[subjects == subject]
-
-                # when parent regions has similarly labelled children,
-                # include it also
-                roi_label = bfs.make_forest().propagate_upward(roi_label)
-                bfs.set_roi_feature('label', roi_label)
-            else:
-                 bfs.set_roi_feature('label', np.array([]))
-
-    # derive the group-level landmarks
-    # with a threshold on the number of subjects
-    # that are represented in each one
-    landmarks, new_labels = build_landmarks(
-        domain, coords, subjects, components, 1 - prior_h0,
-        prevalence_pval, prevalence_threshold, sigma, verbose=verbose)
-    
-    # relabel the regions
-    _update_hroi_labels(hrois, new_labels)
-
-    # make a group-level map of the landmark position
-    label_map = - np.ones(domain.size)
-    # not implemented at the moment
-
-    return label_map, landmarks, hrois, co_clustering
 
 ###########################################################################
 # Main function
@@ -444,8 +319,8 @@ def bsa_dpmm2(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
 
 
 def compute_landmarks(
-    domain, stats, sigma, prevalence_pval=0.5, prevalence_threshold=0, 
-    threshold=3.0, smin=5, method='prior', algorithm='quick', verbose=0):
+    domain, stats, sigma, prevalence_pval=0.5, prevalence_threshold=0,
+    threshold=3.0, smin=5, method='prior', algorithm='density', verbose=0):
     """ Compute the  Bayesian Structural Activation paterns
     simplified version
 
@@ -464,7 +339,7 @@ def compute_landmarks(
     threshold = 3.0 (float): first level threshold
     method: string, optional,
             the method used to assess the prior significance of the regions
-    algorithm: string, one of ['quick', 'standard'],
+    algorithm: string, one of ['density', 'co-occurrence'], optional
                method used to compute the landmarks
     verbose=0: verbosity mode
 
@@ -478,15 +353,9 @@ def compute_landmarks(
     """
     hrois, prior_h0, subjects, coords = _compute_individual_regions(
         domain, stats, threshold, smin, method, verbose)
-    
-    if algorithm == 'standard':
-        label_map, landmarks, hrois, density = bsa_dpmm(
-            hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
-            prevalence_threshold, verbose=verbose)
-    elif algorithm == 'quick':  
-        label_map, landmarks, hrois, co_clust = bsa_dpmm2(
-            hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
-            prevalence_threshold, verbose=verbose)
-    else:
-        raise ValueError('Unknown method')
+
+    landmarks, hrois = bsa_dpmm(
+        hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
+        prevalence_threshold, algorithm=algorithm, verbose=verbose)
+
     return landmarks, hrois

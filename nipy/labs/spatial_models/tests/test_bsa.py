@@ -18,12 +18,10 @@ from ..bayesian_structural_analysis import compute_landmarks
 from ..discrete_domain import domain_from_binary_array
 
 
-def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
-                        nbeta=[0], method='simple'):
+def make_bsa_2d(betas, theta=3., sigma=5., ths=0, thq=0.5, smin=0,
+                        nbeta=[0], algorithm='density'):
     """
     Function for performing bayesian structural analysis on a set of images.
-
-    Fixme: 'quick' is not tested
     """
     ref_dim = np.shape(betas[0])
     n_subj = betas.shape[0]
@@ -34,8 +32,8 @@ def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     # the voxel volume is 1.0
     dom = domain_from_binary_array(np.ones(ref_dim))
 
-    if method == 'simple':
-        AF, BF = compute_landmarks(dom, lbeta, dmax, thq, ths, theta, smin)
+    AF, BF = compute_landmarks(dom, lbeta, sigma, thq, ths, theta, smin,
+                               algorithm=algorithm)
     return AF, BF
 
 
@@ -67,7 +65,7 @@ def test_bsa_methods():
     #pos_betas = np.reshape(pos_dataset, (n_subj, shape[0], shape[1]))
     # set various parameters
     theta = float(st.t.isf(0.01, 100))
-    dmax = 5. / 1.5
+    sigma = 5. / 1.5
     half_subjs = n_subj / 2
     thq = 0.9
     smin = 5
@@ -75,12 +73,13 @@ def test_bsa_methods():
     # tuple of tuples with each tuple being
     # (name_of_method, ths_value, data_set, test_function)
     algs_tests = (
-        ('simple', half_subjs, null_betas, lambda AF, BF: AF.k == 0),
-        ('simple', 1, pos_betas, lambda AF, BF: AF.k > 1))
+        ('density', half_subjs, null_betas, lambda AF, BF: AF.k == 0),
+        ('density', 1, pos_betas, lambda AF, BF: AF.k > 1))
 
     for name, ths, betas, test_func in algs_tests:
         # run the algo
-        AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method=name)
+        AF, BF = make_bsa_2d(betas, theta, sigma, ths, thq, smin,
+                             algorithm=name)
         yield assert_true, test_func(AF, BF)
 
 

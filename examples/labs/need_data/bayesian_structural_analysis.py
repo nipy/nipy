@@ -6,7 +6,7 @@ __doc__ = """
 Example of a script that uses the BSA (Bayesian Structural Analysis) i.e.
 nipy.labs.spatial_models.bayesian_structural_analysis module.
 
-Author : Bertrand Thirion, 2008-2010
+Author : Bertrand Thirion, 2008-2013
 """
 print(__doc__)
 
@@ -38,7 +38,7 @@ if missing_file:
 
 # set various parameters
 subj_id = ['%04d' % i for i in range(12)]
-threshold = float(stats.t.isf(0.01, 100))
+threshold = 100 # float(stats.t.isf(0.01, 100))
 sigma = 4.
 prevalence_threshold = 2
 prevalence_pval = 0.95
@@ -47,12 +47,13 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-method = 'quick'
-print('method used:', method)
+algorithm = 'density'
+print('algorithm used:', algorithm)
 
 # call the function
 landmarks, individual_rois = make_bsa_image(
     mask_images, betas, threshold, smin, sigma, prevalence_threshold, 
-    prevalence_pval, write_dir, method, '%04d' % nbeta)
+    prevalence_pval, write_dir,  algorithm=algorithm,
+    contrast_id='%04d' % nbeta)
 
 print("Wrote all the results in directory %s" % write_dir)
