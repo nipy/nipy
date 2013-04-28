@@ -5,7 +5,7 @@ import numpy as np
 from ...api import write_data, slice_generator
 from .. import generators as gen
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_raises
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 shape = (10,20,30)
@@ -68,6 +68,23 @@ def test_parcel():
     for i, pair in enumerate(iterator):
         s, d = pair
         assert_equal((expected[i],), d.shape)
+
+
+def test_parcel_exclude():
+    # Test excluding from parcels
+    data = np.arange(5)
+    ps = gen.parcels(data, (1, 3))
+    assert_array_equal(next(ps), [False, True, False, False, False])
+    assert_array_equal(next(ps), [False, False, False, True, False])
+    assert_raises(StopIteration, next, ps)
+    ps = gen.parcels(data, (1, 3), exclude=(1,))
+    assert_array_equal(next(ps), [False, False, False, True, False])
+    assert_raises(StopIteration, next, ps)
+    ps = gen.parcels(data, (1, 3), exclude=(3,))
+    assert_array_equal(next(ps), [False, True, False, False, False])
+    assert_raises(StopIteration, next, ps)
+    ps = gen.parcels(data, (1, 3), exclude=(3, 1))
+    assert_raises(StopIteration, next, ps)
 
 
 def test_parcel_write():
