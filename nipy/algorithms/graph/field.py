@@ -12,6 +12,7 @@ WeightedGraph and feature data.
 
 Author:Bertrand Thirion, 2006--2011
 """
+from warnings import warn
 import numpy as np
 
 from .graph import WeightedGraph
@@ -148,18 +149,20 @@ class Field(WeightedGraph):
         self.dilation(nbiter)
 
     def dilation(self, nbiter=1, fast=True):
-        """
-        Morphological dimlation of the field data. self.field is changed
+        """Morphological dilation of the field data, changed in place
 
         Parameters
         ----------
         nbiter: int, optional, the number of iterations required
 
-        fixme
-        -----
-        cython
+        Note
+        ----
+        When data dtype is not float64, a slow version of the code is used
         """
         nbiter = int(nbiter)
+        if self.field.dtype != np.float64:
+            warn('data type is not float64; a slower version is used')
+            fast = False
         if fast:
             from ._graph import dilation
             if self.E > 0:
@@ -177,16 +180,17 @@ class Field(WeightedGraph):
                 self.field = np.array([self.field[row].max(0) for row in rows])
 
     def highest_neighbor(self, refdim=0):
-        """ Computes the neighbor with highest field value along refdim
+        """Computes the neighbor with highest field value along refdim
 
         Parameters
         ----------
-        refdim: int optiontal, the dimension to consider
+        refdim: int, optional,
+                the dimension of the field under consideration
 
         Returns
         -------
-        hneighb: array of shape(self.V), index of the neighbor with highest
-                 value
+        hneighb: array of shape(self.V), 
+                 index of the neighbor with highest value
         """
         from scipy.sparse import dia_matrix
         refdim = int(refdim)
@@ -263,7 +267,7 @@ class Field(WeightedGraph):
         # create a subfield(thresholding)
         sf = self.subfield(self.field.T[refdim] >= th)
         initial_field = sf.field.T[refdim]
-        sf.field = initial_field.copy()
+        sf.field = initial_field.astype(np.float64)
 
         # compute the depth in the subgraph
         ldepth = sf.V * np.ones(sf.V, np.int)
