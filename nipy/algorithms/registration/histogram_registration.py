@@ -304,6 +304,7 @@ class HistogramRegistration(object):
         explore(T0, (0, [-1,0,1]), (4, [-2.,2]))
         """
         nparams = T0.param.size
+        T0 = T0.copy()
         deltas = [[0] for i in range(nparams)]
         for a in args:
             deltas[a[0]] = a[1]
