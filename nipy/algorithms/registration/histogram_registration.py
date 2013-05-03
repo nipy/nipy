@@ -5,6 +5,7 @@ Intensity-based image registration
 """
 
 import numpy as np
+import scipy.ndimage as nd
 
 from ...core.image.image_spaces import (make_xyz_image,
                                         as_xyz_image,
@@ -43,7 +44,7 @@ class HistogramRegistration(object):
                  from_bins=256, to_bins=None,
                  from_mask=None, to_mask=None,
                  similarity='crl1', interp='pv',
-                 normalize=True, dist=None):
+                 smooth=0, normalize=True, dist=None):
         """
         Creates a new histogram registration object.
 
@@ -72,6 +73,10 @@ class HistogramRegistration(object):
        interp : str
          Interpolation method.  One of 'pv': Partial volume, 'tri':
          Trilinear, 'rand': Random interpolation.  See ``joint_histogram.c``
+       smooth : float
+         Standard deviation in millimeters of an isotropic Gaussian
+         kernel used to smooth the `To` image. If 0, no smoothing is
+         applied.
         """
         # Function assumes xyx_affine for inputs
         from_img = as_xyz_image(from_img)
@@ -96,8 +101,12 @@ class HistogramRegistration(object):
             self.set_fov(corner=corner, size=size, npoints=NPOINTS)
 
         # Clamping of the `to` image including padding with -1
-        data, to_bins = clamp(to_img.get_data(), to_bins,
-                              mask=to_mask)
+        self._smooth = float(smooth)
+        if self._smooth > 0:
+            data = smooth_image(to_img.get_data(), xyz_affine(to_img), self._smooth)
+        else:
+            data = to_img.get_data()
+        data, to_bins = clamp(data, to_bins, mask=to_mask)
         self._to_data = -np.ones(np.array(to_img.shape) + 2, dtype=CLAMP_DTYPE)
         self._to_data[1:-1, 1:-1, 1:-1] = data
         self._to_inv_affine = inverse_affine(xyz_affine(to_img))
@@ -204,6 +213,66 @@ class HistogramRegistration(object):
         Tv = ChainTransform(T, pre=self._from_affine, post=self._to_inv_affine)
         return self._eval(Tv)
 
+    def eval_gradient(self, T, epsilon=1e-1):
+        """
+        Evaluate the gradient of the similarity function wrt
+        transformation parameters using central finite differences at
+        the transformation specified by `T`.
+
+        Parameters
+        ----------
+        T : Transform
+            Transform object implementing ``apply`` method
+        epsilon : float
+            Step size for finite diffrences. Choosing a fairly large
+            value is recommended as intensity-based similarity
+            functions tend to exhibit rapid changes in local
+            convexity.
+
+        The input transformation object `T` is modified in place
+        unless it has a ``copy`` method.
+        """
+        param0 = T.param.copy()
+        if hasattr(T, 'copy'):
+            T = T.copy()
+        def simi(param):
+            T.param = param
+            return self.eval(T)
+        return approx_gradient(simi, param0, epsilon)
+
+    def eval_hessian(self, T, epsilon=1e-1, diag=False):
+        """
+        Evaluate the Hessian of the similarity function wrt
+        transformation parameters at the transformation specified by
+        `T`. This method uses central finite differences and can thus
+        be fairly slow.
+
+        Parameters
+        ----------
+        T : Transform
+            Transform object implementing ``apply`` method
+        epsilon : float
+            Step size for finite differences. Choosing a fairly large
+            value is recommended as intensity-based similarity
+            functions tend to exhibit rapid changes in local
+            convexity.
+        diag : bool
+            If True, approximate the Hessian by a diagonal matrix.
+
+        The input transformation object `T` is modified in place
+        unless it has a ``copy`` method.
+        """
+        param0 = T.param.copy()
+        if hasattr(T, 'copy'):
+            T = T.copy()
+        def simi(param):
+            T.param = param
+            return self.eval(T)
+        if diag:
+            return np.diag(approx_hessian_diag(simi, param0, epsilon))
+        else:
+            return approx_hessian(simi, param0, epsilon)
+
     def _eval(self, Tv):
         """
         Evaluate similarity function given a voxel-to-voxel transform.
@@ -294,17 +363,21 @@ class HistogramRegistration(object):
         Tv.param = fmin(cost, tc0, *args, **kwargs)
         return Tv.optimizable
 
-    def explore(self, T0, *args):
+    def explore(self, T, *args):
         """
         Evaluate the similarity at the transformations specified by
         sequences of parameter values.
 
         For instance:
 
-        explore(T0, (0, [-1,0,1]), (4, [-2.,2]))
+        explore(T, (0, [-1,0,1]), (4, [-2.,2]))
+
+        The input transformation object `T` is modified in place
+        unless it has a ``copy`` method.
         """
-        nparams = T0.param.size
-        T0 = T0.copy()
+        nparams = T.param.size
+        if hasattr(T, 'copy'):
+            T = T.copy()
         deltas = [[0] for i in range(nparams)]
         for a in args:
             deltas[a[0]] = a[1]
@@ -315,7 +388,7 @@ class HistogramRegistration(object):
         simis = np.zeros(ntrials)
         params = np.zeros([nparams, ntrials])
 
-        Tv = ChainTransform(T0, pre=self._from_affine,
+        Tv = ChainTransform(T, pre=self._from_affine,
                             post=self._to_inv_affine)
         param0 = Tv.param
         for i in range(ntrials):
@@ -441,3 +514,44 @@ def smallest_bounding_box(msk):
     corner = [x.min(), y.min(), z.min()]
     size = [x.max() + 1, y.max() + 1, z.max() + 1]
     return corner, size
+
+
+def approx_gradient(f, x, epsilon):
+    n = len(x)
+    g = np.zeros(n)
+    ei = np.zeros(n)
+    for i in range(n):
+        ei[i] = .5 * epsilon
+        g[i] = (f(x + ei) - f(x - ei)) / epsilon
+        ei[i] = 0
+    return g
+
+
+def approx_hessian_diag(f, x, epsilon):
+    n = len(x)
+    h = np.zeros(n)
+    ei = np.zeros(n)
+    fx = f(x)
+    for i in range(n):
+        ei[i] = epsilon
+        h[i] = (f(x + ei) + f(x - ei) - 2 * fx) / (epsilon ** 2)
+        ei[i] = 0
+    return h
+
+
+def approx_hessian(f, x, epsilon):
+    n = len(x)
+    H = np.zeros((n, n))
+    ei = np.zeros(n)
+    for i in range(n):
+        ei[i] = .5 * epsilon
+        g1 = approx_gradient(f, x + ei, epsilon)
+        g2 = approx_gradient(f, x - ei, epsilon)
+        H[i, :] = (g1 - g2) / epsilon
+        ei[i] = 0
+    return H
+
+
+def smooth_image(data, affine, sigma):
+    sigma_vox = sigma / np.sqrt(np.sum(affine[0:3,0:3] ** 2, 0))
+    return nd.gaussian_filter(data, sigma)
