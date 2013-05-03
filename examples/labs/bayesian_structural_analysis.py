@@ -34,25 +34,28 @@ def make_bsa_2d(betas, threshold=3., sigma=5., prevalence_threshold=0,
     ----------
     betas, array of shape (n_subjects, dimx, dimy) the data used
            Note that it is assumed to be a t- or z-variate
-    threshold=3., float,
+    threshold: float, optional
               first level threshold of betas
-    sigma=5., float, expected between subject variability
-    prevalence_threshold=0, float,
+    sigma: float, optional,
+           kernel size in mm
+    prevalence_threshold: float, optional
            null hypothesis for the prevalence statistic
-    prevalence_pval=0.5, float,
+    prevalence_pval: float, optional
              p-value of the null rejection
-    smin=0, int,
-            threshold on the nu_mber of contiguous voxels
-            to make regions meaningful structures
-    method= 'simple', string,
-            estimation method used ; to be chosen among
-            'simple', 'quick', 'loo', 'ipmi'
-    verbose=0, verbosity mode
+    smin: int, optional
+          threshold on the number of contiguous voxels
+          in individual regions
+    method: string,
+            estimation method used
+    verbose: int,
+             verbosity mode
 
     Returns
     -------
-    landmarks the landmark_regions instance describing the result
-    hrois: list of hroi instances describing the individual data
+    landmarks: object,
+               the landmark_regions instance describing the population regions
+    hrois: list,
+           set of hroi instances describing the individual regions
     """
     ref_dim = np.shape(betas[0])
     n_subjects = betas.shape[0]
