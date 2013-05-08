@@ -23,114 +23,61 @@ except ImportError:
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 from nipy.labs.spatial_models.bayesian_structural_analysis import\
     compute_landmarks
-from nipy.labs.spatial_models.discrete_domain import domain_from_binary_array
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_shape
 
-
-def make_bsa_2d(betas, threshold=3., sigma=5., prevalence_threshold=0, 
-                prevalence_pval=0.5, smin=0, algorithm='density', verbose=0):
-    """ Performing Bayesian structural analysis on a set of 2D images
-
-    Parameters
-    ----------
-    betas, array of shape (n_subjects, dimx, dimy) the data used
-           Note that it is assumed to be a t- or z-variate
-    threshold: float, optional
-              first level threshold of betas
-    sigma: float, optional,
-           kernel size in mm
-    prevalence_threshold: float, optional
-           null hypothesis for the prevalence statistic
-    prevalence_pval: float, optional
-             p-value of the null rejection
-    smin: int, optional
-          threshold on the number of contiguous voxels
-          in individual regions
-    method: string,
-            estimation method used
-    verbose: int,
-             verbosity mode
-
-    Returns
-    -------
-    landmarks: object,
-               the landmark_regions instance describing the population regions
-    hrois: list,
-           set of hroi instances describing the individual regions
-    """
-    ref_dim = np.shape(betas[0])
-    n_subjects = betas.shape[0]
-    domain = domain_from_binary_array(np.ones(ref_dim))
     
-    # get the functional information
-    stats = np.array([np.ravel(betas[k]) for k in range(n_subjects)]).T
+def display_landmarks_2d(landmarks, hrois, stats):
+    """ Plots the landmarks and associated rois as images"""
+    shape = stats[0].shape
+    n_subjects = len(stats)
     lmax = 0
-    
-    # main call
-    landmarks, hrois = compute_landmarks(
-        domain, stats, sigma, prevalence_pval, prevalence_threshold, 
-        threshold, smin, method='prior', algorithm=algorithm)
-    
+    grp_map, density = np.zeros(shape), np.zeros(shape)
     if landmarks != None:
-        grp_map = landmarks.map_label(domain.coord, .8, sigma)
-        grp_map.shape = ref_dim
-        group_map = landmarks.map_label(domain.coord, 0.95,  sigma)
+        domain = landmarks.domain
+        grp_map = landmarks.map_label(domain.coord, .8, sigma).reshape(shape)
         density = landmarks.kernel_density(k=None, coord=domain.coord,
-                                           sigma=sigma)
-        group_map.shape = ref_dim
-
-    if verbose == 0:
-        return landmarks, hrois
-
-    if landmarks != None:
+                                           sigma=sigma).reshape(shape)
         lmax = landmarks.k + 2
-        landmarks.show()
+        
+    # Figure 1: input data    
+    fig_input = plt.figure(figsize=(8, 3.5))
+    fig_input.text(.5,.9, "Input activation maps", ha='center')
+    vmin, vmax = stats.min(), stats.max()
+    for subject in range(n_subjects):
+        plt.subplot(n_subjects / 5, 5, subject + 1)
+        plt.imshow(stats[subject], interpolation='nearest',
+                   vmin=vmin, vmax=vmax)
+        plt.axis('off')
 
+    # Figure 2: individual hrois
     fig_output = plt.figure(figsize=(8, 3.5))
     fig_output.text(.5, .9, "Individual landmark regions", ha="center")
-    for s in range(n_subjects):
-        plt.subplot(n_subjects / 5, 5, s + 1)
-        lw = - np.ones(ref_dim)
-        if hrois[s].k > 0:
-            nls = hrois[s].get_roi_feature('label')
+    for subject in range(n_subjects):
+        plt.subplot(n_subjects / 5, 5, subject + 1)
+        lw = - np.ones(shape)
+        if hrois[subject].k > 0:
+            nls = hrois[subject].get_roi_feature('label')
             nls[nls == - 1] = np.size(landmarks) + 2
-            for k in range(hrois[s].k):
-                np.ravel(lw)[hrois[s].label == k] = nls[k]
+            for k in range(hrois[subject].k):
+                np.ravel(lw)[hrois[subject].label == k] = nls[k]
 
         plt.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
         plt.axis('off')
-
-    fig_input = plt.figure(figsize=(8, 3.5))
-    fig_input.text(.5,.9, "Input activation maps", ha='center')
-    for s in range(n_subjects):
-        plt.subplot(n_subjects / 5, 5, s + 1)
-        plt.imshow(betas[s], interpolation='nearest', vmin=betas.min(),
-                  vmax=betas.max())
-        plt.axis('off')
         
-    if landmarks is None:
-        return landmarks, hrois
-    plt.figure(figsize=(8, 3))
+    # Figure 3: Group-level results
+    plt.figure(figsize=(6, 3))
 
-    plt.subplot(1, 3, 1)
-    plt.imshow(group_map, interpolation='nearest', vmin=-1, vmax=lmax)
-    plt.title('Blob separation map', fontsize=10)
-    plt.axis('off')
-    plt.colorbar(shrink=.8)
-
-    plt.subplot(1, 3, 2)
+    plt.subplot(1, 2, 1)
     plt.imshow(grp_map, interpolation='nearest', vmin=-1, vmax=lmax)
     plt.title('group-level position 80% \n confidence regions', fontsize=10)
     plt.axis('off')
     plt.colorbar(shrink=.8)
 
-    plt.subplot(1, 3, 3)
-    density.shape = ref_dim
+    plt.subplot(1, 2, 2)
     plt.imshow(density, interpolation='nearest')
     plt.title('Spatial density under h1', fontsize=10)
     plt.axis('off')
     plt.colorbar(shrink=.8)
-
-    return landmarks, hrois
 
 
 ###############################################################################
@@ -145,7 +92,7 @@ pos = np.array([[12, 14],
                 [30, 20]])
 ampli = np.array([5, 7, 6])
 sjitter = 1.0
-betas = simul.surrogate_2d_dataset(n_subj=n_subjects, shape=shape, pos=pos,
+stats = simul.surrogate_2d_dataset(n_subj=n_subjects, shape=shape, pos=pos,
                                    ampli=ampli, width=5.0)
 
 # set various parameters
@@ -153,12 +100,22 @@ threshold = float(st.t.isf(0.01, 100))
 sigma = 4. / 1.5
 prevalence_threshold = n_subjects * .25
 prevalence_pval = 0.9
-verbose = 1
 smin = 5
 algorithm = 'co-occurrence' #  'density'
 
+domain = grid_domain_from_shape(shape) 
+
+# get the functional information
+stats_ = np.array([np.ravel(stats[k]) for k in range(n_subjects)]).T
+    
 # run the algo
-landmarks, hrois = make_bsa_2d(
-    betas, threshold, sigma, prevalence_threshold, prevalence_pval, smin, 
-    algorithm=algorithm, verbose=verbose)
+landmarks, hrois = compute_landmarks(
+    domain, stats_, sigma, prevalence_pval, prevalence_threshold, 
+    threshold, smin, method='prior', algorithm=algorithm)
+
+display_landmarks_2d(landmarks, hrois, stats)
+if landmarks is not None:
+    landmarks.show()
+
 plt.show()
+
