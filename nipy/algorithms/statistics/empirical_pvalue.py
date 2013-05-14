@@ -492,7 +492,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
         return bfp, BayesianGMM
 
 
-def gamma_gaussian_fit(x, test=None, verbose=0, mpaxes=None,
+def gamma_gaussian_fit(x, test=None, verbose=0, mpaxes=False,
                        bias=1, gaussian_mix=0, return_estimator=False):
     """
     Computing some prior probabilities that the voxels of a certain map
@@ -508,9 +508,10 @@ def gamma_gaussian_fit(x, test=None, verbose=0, mpaxes=None,
     verbose: 0, 1 or 2, optional
         verbosity mode, 0 is quiet, and 2 calls matplotlib to display
         graphs.
-    mpaxes: matplotlib axes, option.
+    mpaxes: matplotlib axes, optional
         axes handle used to plot the figure in verbose mode
         if None, new axes are created
+        if false, nothing is done
     bias: float, optional
         lower bound on the Gaussian variance (to avoid shrinkage)
     gaussian_mix: float, optional
@@ -532,7 +533,7 @@ def gamma_gaussian_fit(x, test=None, verbose=0, mpaxes=None,
     Ggg = ggmixture.GGGM()
     Ggg.init_fdr(x)
     Ggg.estimate(x, niter=100, delta=1.e-8, bias=bias, verbose=0,
-                    gaussian_mix=gaussian_mix)
+                 gaussian_mix=gaussian_mix)
     if mpaxes is not False:
         # hyper-verbose mode
         Ggg.show(x, mpaxes=mpaxes)
