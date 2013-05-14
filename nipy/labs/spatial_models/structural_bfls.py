@@ -183,8 +183,7 @@ class LandmarkRegions(object):
 
 
 def build_landmarks(domain, coords, subjects, labels, confidence=None,
-                    prevalence_pval=0.95, prevalence_threshold=0, sigma=1.,
-                    verbose=0):
+                    prevalence_pval=0.95, prevalence_threshold=0, sigma=1.):
     """
     Given a list of hierarchical ROIs, and an associated labelling, this
     creates an Amer structure wuch groups ROIs with the same label.
@@ -199,6 +198,8 @@ def build_landmarks(domain, coords, subjects, labels, confidence=None,
               indicators of the dataset the objects come from
     labels: array of shape (n), dtype = np.int
             index of the landmark the object is associated with
+    confidence: array of shape (n),
+                measure of the significance of the regions 
     prevalence_pval: float, optional
     prevalence_threshold: float, optional,
                    (c) A label should be present in prevalence_threshold
@@ -210,11 +211,11 @@ def build_landmarks(domain, coords, subjects, labels, confidence=None,
     Returns
     -------
     LR : None or structural_bfls.LR instance
-        describing a cross-subject set of ROIs. If inference yields a null
-        result, LR is set to None
-    newlabel: a relabelling of the individual ROIs, similar to u,
-              which discards
-              labels that do not fulfill the condition (c)
+         describing a cross-subject set of ROIs. If inference yields a null
+         result, LR is set to None
+    newlabel: array of shape (n)
+              a relabelling of the individual ROIs, similar to u,
+              that discards labels that do not fulfill the condition (c)
     """
     if confidence is None:
         confidence = np.ones(labels.size)

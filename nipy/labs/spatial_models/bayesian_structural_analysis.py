@@ -35,13 +35,12 @@ def _signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
 
     Parameters
     ----------
-    test: array pf shape(n_samples),
+    test: array of shape(n_samples),
            data that is assessed
-    learn: array pf shape(n_samples), optional
+    learn: array of shape(n_samples), optional,
            data to learn a mixture model
            defaults to learn
-    method: string, one of ['gauss_mixture', 'emp_null', 'gam_gauss', 'prior']
-            optional
+    method: {'gauss_mixture', 'emp_null', 'gam_gauss', 'prior'}, optional,
            'gauss_mixture' A Gaussian Mixture Model is used
            'emp_null' a null mode is fitted to test
            'gam_gauss' a Gamma-Gaussian mixture is used
@@ -49,6 +48,8 @@ def _signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
     alpha: float in the [0,1] range, optional,
            parameter that yields the prior probability that a region is active
            should be chosen close to 0
+    verbose: int, optional,
+             verbosity mode
 
     Returns
     -------
@@ -81,7 +82,7 @@ def _signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
 
 
 def _compute_individual_regions(domain, stats, threshold=3.0, smin=5,
-                               method='gauss_mixture', verbose=0):
+                               method='gauss_mixture'):
     """ Compute the individual regions that are real activation candidates
 
     Parameters
@@ -94,23 +95,24 @@ def _compute_individual_regions(domain, stats, threshold=3.0, smin=5,
            first level threshold
     smin: int, optional
           minimal size of the regions to validate them
-    method: string, one of ['prior', 'gauss_mixture', 'gam_gauss', 'emp_null']
-            optional,
-            method that is used to estimate prior significance
-    verbose: verbosity mode, optional
+    method: {'gauss_mixture', 'emp_null', 'gam_gauss', 'prior'}, optional,
+           'gauss_mixture' A Gaussian Mixture Model is used
+           'emp_null' a null mode is fitted to test
+           'gam_gauss' a Gamma-Gaussian mixture is used
+           'prior' a hard-coded function is used
 
     Returns
     -------
     hrois: list of nipy.labs.spatial_models.hroi.HierrachicalROI instances
-            that represent individual ROIs
-            let nr be the number of terminal regions across subjects
-    prior_h0, array of shape (nr)
-         the mixture-based prior probability
-         that the terminal regions are false positives
-    subjects, array of shape (nr)
-         the subject index associated with the terminal regions
-    coords, array of shape (nr, coord.shape[1])
-         the coordinates of the of the terminal regions
+           that represent individual ROIs
+           let nr be the number of terminal regions across subjects
+    prior_h0: array of shape (nr),
+              the mixture-based prior probability
+              that the terminal regions are false positives
+    subjects: array of shape (nr),
+              the subject index associated with the terminal regions
+    coords: array of shape (nr, coord.shape[1]),
+            the coordinates of the of the terminal regions
 
     Fixme
     -----
@@ -161,7 +163,7 @@ def _compute_individual_regions(domain, stats, threshold=3.0, smin=5,
 
 def _dpmm(coords, alpha, null_density, dof, prior_precision, prior_h0,
           subjects, sampling_coords=None, n_iter=1000, burnin=100,
-          co_clust=False, verbose=False):
+          co_clust=False):
     """Apply the dpmm analysis to compute clusters from regions coordinates
     """
     from nipy.algorithms.clustering.imm import MixedIMM
@@ -197,39 +199,47 @@ def _update_hroi_labels(hrois, new_labels):
             hrois[subject].set_roi_feature('label', us)
 
 
-def bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
+def _bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
              prevalence_threshold, dof=10, alpha=.5, n_iter=1000, burnin=100,
-             algorithm='density', verbose=0):
+             algorithm='density'):
     """ Estimation of the population level model of activation density using
     dpmm and inference
 
     Parameters
     ----------
     hrois: list of nipy.labs.spatial_models.hroi.HierarchicalROI instances
-       representing individual ROIs
-    Let nr be the number of terminal regions across subjects
+           representing individual ROIs
+           Let nr be the number of terminal regions across subjects
     prior_h0: array of shape (nr)
-         the mixture-based prior probability
-         that the terminal regions are true positives
+              mixture-based prior probability
+              that the terminal regions are true positives
     subjects: array of shape (nr)
-         the subject index associated with the terminal regions
+              subject index associated with the terminal regions
     coords: array of shape (nr, coord.shape[1])
-         the coordinates of the of the terminal regions
-    sigma: float>0,
-         expected cluster scatter in the common space in units of coord
+            coordinates of the of the terminal regions
+    sigma: float > 0,
+           expected cluster scatter in the common space in units of coord
     prevalence_pval: float in the [0,1] interval, optional
                      p-value of the prevalence test
     prevalence_threshold: float in the rannge [0,nsubj]
-                          null hypothesis on region prevalence
-    algorithm, string, one of ['density', 'co_occurrence'], optional,
-    verbose=0, verbosity mode
+                         null hypothesis on region prevalence
+    dof: float > 0, optional,
+         degrees of freedom of the prior
+    alpha: float > 0, optional,
+           creation parameter of the DPMM
+    niter: int, optional,
+           number of iterations of the DPMM
+    burnin: int, optional,
+            number of iterations of the DPMM
+    algorithm: {'density', 'co_occurrence'}, optional,
+               algorithm used in the DPMM inference
 
     Returns
     -------
-    landmarks: a instance of sbf.LandmarkRegions that describes the ROIs found
-               in inter-subject inference
+    landmarks: instance of sbf.LandmarkRegions 
+               that describes the ROIs found in inter-subject inference
                If no such thing can be defined landmarks is set to None
-    hrois: List of  nipy.labs.spatial_models.hroi.HierarchicalROI instances
+    hrois: List of nipy.labs.spatial_models.hroi.HierarchicalROI instances
            representing individual ROIs
     """
     from nipy.algorithms.graph.field import field_from_coo_matrix_and_data
@@ -305,7 +315,7 @@ def bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
     # that are represented in each one
     landmarks, new_labels = build_landmarks(
         domain, coords, subjects, np.array(components), 1 - prior_h0,
-        prevalence_pval, prevalence_threshold, sigma, verbose=verbose)
+        prevalence_pval, prevalence_threshold, sigma)
 
     # relabel the regions
     _update_hroi_labels(hrois, new_labels)
@@ -320,42 +330,46 @@ def bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
 
 def compute_landmarks(
     domain, stats, sigma, prevalence_pval=0.5, prevalence_threshold=0,
-    threshold=3.0, smin=5, method='prior', algorithm='density', verbose=0):
-    """ Compute the  Bayesian Structural Activation paterns
-    simplified version
+    threshold=3.0, smin=5, method='prior', algorithm='density'):
+    """ Compute the  Bayesian Structural Activation patterns
 
     Parameters
     ----------
-    domain : StructuredDomain instance,
-          Description of the spatial context of the data
-    stats: an array of shape (nbnodes, subjects):
+    domain: StructuredDomain instance,
+            Description of the spatial context of the data
+    stats: array of shape (nbnodes, subjects):
            the multi-subject statistical maps
-    sigma float>0:
-         expected cluster std in the common space in units of coord
-    prevalence_pval = 0.5 (float):
-        posterior significance threshold
-        should be in the [0,1] interval
-    smin = 5 (int): minimal size of the regions to validate them
-    threshold = 3.0 (float): first level threshold
-    method: string, optional,
-            the method used to assess the prior significance of the regions
+    sigma: float > 0:
+           expected cluster std in the common space in units of coord
+    prevalence_pval: float in the [0,1] interval, optional
+                     posterior significance threshold
+    prevalence_threshold: float, optional,
+                          reference threshold for the prevalence value
+    threshold: float, optional,
+               first level threshold
+    smin: int, optional, 
+          minimal size of the regions to validate them
+    method: {'gauss_mixture', 'emp_null', 'gam_gauss', 'prior'}, optional,
+           'gauss_mixture' A Gaussian Mixture Model is used
+           'emp_null' a null mode is fitted to test
+           'gam_gauss' a Gamma-Gaussian mixture is used
+           'prior' a hard-coded function is used
     algorithm: string, one of ['density', 'co-occurrence'], optional
                method used to compute the landmarks
-    verbose=0: verbosity mode
 
     Returns
     -------
-    landmarks: a instance of sbf.LandmarkRegions that describes the ROIs found
-        in inter-subject inference
-        If no such thing can be defined landmarks is set to None
-    hrois: List of  nipy.labs.spatial_models.hroi.Nroi instances
-        representing individual ROIs
+    landmarks: Instance of sbf.LandmarkRegions or None,
+               Describes the ROIs found in inter-subject inference
+               None if nothing can be defined
+    hrois: list of  nipy.labs.spatial_models.hroi.Nroi instances
+           representing individual ROIs
     """
     hrois, prior_h0, subjects, coords = _compute_individual_regions(
-        domain, stats, threshold, smin, method, verbose)
+        domain, stats, threshold, smin, method)
 
-    landmarks, hrois = bsa_dpmm(
+    landmarks, hrois = _bsa_dpmm(
         hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
-        prevalence_threshold, algorithm=algorithm, verbose=verbose)
+        prevalence_threshold, algorithm=algorithm)
 
     return landmarks, hrois

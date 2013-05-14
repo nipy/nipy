@@ -23,37 +23,37 @@ def make_bsa_image(
 
     Parameters
     ----------
-    mask_images: A list of image paths that yield binary images,
-                 one for each subject
-    stat_images: A list of image paths that yields the activation images,
-           one for each subject
+    mask_images: list of str,
+                 image paths that yield mask images, one for each subject
+    stat_images: list of str,
+                 image paths of the activation images, one for each subject
     threshold: float, optional,
-               threshold used to ignore all the image data that si below
-    sigma: float, optional
+               threshold used to ignore all the image data that is below
+    smin: float, optional,
+          minimal size (in voxels) of the extracted blobs
+          smaller blobs are merged into larger ones
+    sigma: float, optional,
            variance of the spatial model, i.e. cross-subject uncertainty
     prevalence_threshold: float, optional
                           threshold on the representativity measure
-    prevalence_pval: float, optional
+    prevalence_pval: float, optional,
                      p-value of the representativity test:
              test = p(representativity>prevalence_threshold) > prevalence_pval
-    smin: float, optional
-          minimal size (in voxels) of the extracted blobs
-          smaller blobs are merged into larger ones
-    write_dir: string, optional
+    write_dir: string, optional,
                if not None, output directory
-    method: string, one of ['density', 'co-occurrence'], optional,
-            applied region detection method; to be chose among
+    method: {'density', 'co-occurrence'}, optional,
+            Inference method used in the landmark definition
     contrast_id: string, optional,
                  identifier of the contrast
 
     Returns
     -------
-    landmarks: an nipy.labs.spatial_models.structural_bfls.landmark_regions
-        instance that describes the structures found at the group level
+    landmarks: nipy.labs.spatial_models.structural_bfls.landmark_regions
+         instance that describes the structures found at the group level
          None is returned if nothing has been found significant
          at the group level
-    hrois : a list of nipy.labs.spatial_models.hroi.Nroi instances
-       (one per subject) that describe the individual coounterpart of landmarks
+    hrois : list of nipy.labs.spatial_models.hroi.Nroi instances,
+       (one per subject), describe the individual counterpart of landmarks
 
     fixme
     =====
