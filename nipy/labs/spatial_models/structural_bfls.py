@@ -38,45 +38,41 @@ class LandmarkRegions(object):
     not implemented yet.
     """
 
-    def __init__(self, domain, k, indiv_coord, subjects, id=''):
+    def __init__(self, domain, k, indiv_coord, subjects, confidence):
         """ Building the landmark_region
 
         Parameters
         ----------
         domain: ROI instance
                 defines the spatial context of the SubDomains
-        k: int, the number of regions considered
-        indiv_coord:  k-length list of arrays, optional,
+        k: int, 
+           the number of landmark regions considered
+        indiv_coord:  k-length list of arrays,
                       coordinates of the nodes in some embedding space.
         subjects: k-length list of integers
-              these correspond to and ROI feature:
+              these correspond to an ROI feature:
               the subject index of individual regions
-
-        id: string, optional, identifier
+        confidence: k-length list of arrays,
+                    confidence values for the regions (0 is low, 1 is high)
         """
         self.domain = domain
         self.k = int(k)
-        self.id = id
-        self.features = {}
-        self.set_feature('position', indiv_coord)
-        self.set_feature('subjects', subjects)
-
-    def set_feature(self, fid, data):
-        """
-        """
-        if len(data) != self.k:
-            raise ValueError('data should have length k')
-        self.features.update({fid: data})
-
-    def get_feature(self, fid):
-        return self.features[fid]
+        if len(indiv_coord) != k:
+            raise ValueError('len(indiv_coord) should be equal to %d' % k)
+        if len(subjects) != k:
+            raise ValueError('len(subjects) should be equal to %d' % k)
+        if len(confidence) != k:
+            raise ValueError('len(confidence) should be equal to %d' % k)
+        self.position = indiv_coord
+        self.subjects = subjects
+        self.confidence = confidence
 
     def centers(self):
         """returns the average of the coordinates for each region
         """
-        pos = self.get_feature('position')
-        centers = np.array([np.mean(pos[k], 0) for k in range(self.k)])
-        return centers
+        pos = self.position
+        centers_ = np.array([np.mean(pos[k], 0) for k in range(self.k)])
+        return centers_
 
     def kernel_density(self, k=None, coord=None, sigma=1.):
         """ Compute the density of a component as a kde
@@ -102,12 +98,12 @@ class LandmarkRegions(object):
         if k == None:
             kde = np.zeros(coord.shape[0])
             for k in range(self.k):
-                pos = self.get_feature('position')[k]
+                pos = self.position[k]
                 dist = euclidean_distance(pos, coord)
                 kde += np.exp(- dist ** 2 / (2 * sigma ** 2)).sum(0)
         else:
             k = int(k)
-            pos = self.get_feature('position')[k]
+            pos = self.position[k]
             dist = euclidean_distance(pos, coord)
             kde = np.exp(- dist ** 2 / (2 * sigma ** 2)).sum(0)
         return kde / (2 * np.pi * sigma ** 2) ** (pos.shape[1] / 2)
@@ -148,13 +144,13 @@ class LandmarkRegions(object):
         """function to print basic information on self
         """
         centers = self.centers()
-        subjects = self.get_feature('subjects')
+        subjects = self.subjects
         prevalence = self.roi_prevalence()
         print "index", "prevalence", "mean_position", "individuals"
         for i in range(self.k):
             print i, prevalence[i], centers[i], np.unique(subjects[i])
 
-    def roi_prevalence(self, fid='confidence'):
+    def roi_prevalence(self):
         """ Return a confidence index over the different rois
 
         Returns
@@ -162,20 +158,15 @@ class LandmarkRegions(object):
         confid: array of shape self.k
                the population_prevalence
         """
-        confid = np.zeros(self.k)
-        subjects = self.get_feature('subjects')
-        if fid not in self.features:
-            for j in range(self.k):
-                subjj = subjects[j]
-                confid[j] = np.size(np.unique(subjj))
-        else:
-            for j in range(self.k):
-                subjj = subjects[j]
-                conf = self.get_feature(fid)[j]
-                for ls in np.unique(subjj):
-                    lmj = 1 - np.prod(1 - conf[subjj == ls])
-                    confid[j] += lmj
-        return confid
+        prevalence_ = np.zeros(self.k)
+        subjects = self.subjects
+        for j in range(self.k):
+            subjj = subjects[j]
+            conf = self.confidence[j]
+            for ls in np.unique(subjj):
+                lmj = 1 - np.prod(1 - conf[subjj == ls])
+                prevalence_[j] += lmj
+        return prevalence_
 
 
 def build_landmarks(domain, coords, subjects, labels, confidence=None,
@@ -255,6 +246,5 @@ def build_landmarks(domain, coords, subjects, labels, confidence=None,
 
     # create the landmark regions structure
     LR = LandmarkRegions(domain, np.sum(valid), indiv_coord=coordinates,
-                         subjects=subjs)
-    LR.set_feature('confidence', pps)
+                         subjects=subjs, confidence=pps)
     return LR, maplabel

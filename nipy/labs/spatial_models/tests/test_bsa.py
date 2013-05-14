@@ -14,7 +14,7 @@ from nose.tools import assert_true
 from nipy.testing import dec, assert_array_equal
 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
-from ..bayesian_structural_analysis import compute_landmarks, _signal_to_pproba
+from ..bayesian_structural_analysis import compute_landmarks, _stat_to_proba
 from ..discrete_domain import domain_from_binary_array
 
 
@@ -85,6 +85,7 @@ def test_bsa_methods():
     
     assert_true(AF.map_label().shape == (np.prod(shape),))
     assert_true(AF.kernel_density().shape == (np.prod(shape),))
+    assert_true((AF.roi_prevalence() > ths).all())
 
 
 def test_pproba():
@@ -93,19 +94,19 @@ def test_pproba():
     learn = np.random.rand(100)
     learn[:20] += 3
     # 
-    pval = _signal_to_pproba(test)
+    pval = _stat_to_proba(test)
     # check that pvals are between 0 and 1, and that its is monotonous
     assert_true((pval >= 0).all())
     assert_true((pval <= 1).all())
     assert_array_equal(pval[order], np.sort(pval))
     #
-    pval = _signal_to_pproba(test, learn)
+    pval = _stat_to_proba(test, learn)
     assert_true((pval >= 0).all())
     assert_true((pval <= 1).all())
     assert_array_equal(pval[order], np.sort(pval))
     #
     for method in ['gauss_mixture', 'emp_null', 'gam_gauss']:
-        pval = _signal_to_pproba(test, learn, method=method)
+        pval = _stat_to_proba(test, learn, method=method)
         assert_true((pval >= 0).all())
         assert_true((pval <= 1).all())
         # assert_array_equal(pval[order], np.sort(pval), 6)

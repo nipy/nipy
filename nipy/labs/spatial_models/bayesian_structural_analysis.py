@@ -29,7 +29,7 @@ from .hroi import HROI_as_discrete_domain_blobs
 ####################################################################
 
 
-def _signal_to_pproba(test, learn=None, method='prior', alpha=0.01, verbose=0):
+def _stat_to_proba(test, learn=None, method='prior', alpha=0.01, verbose=0):
     """Convert a set of statistics to posterior probabilities of  being
     generated under H0
 
@@ -147,7 +147,7 @@ def _compute_individual_regions(domain, stats, threshold=3.0, smin=5,
 
             # compute the prior proba of being null
             learning_set = np.squeeze(stats_[stats_ != 0])
-            prior_h0.append(_signal_to_pproba(mean_val, learning_set, method))
+            prior_h0.append(_stat_to_proba(mean_val, learning_set, method))
             subjects.append(subject * np.ones(mean_val.size).astype(np.int))
         else:
             subjects.append([])

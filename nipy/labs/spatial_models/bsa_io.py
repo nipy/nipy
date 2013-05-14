@@ -17,7 +17,7 @@ from .discrete_domain import domain_from_image
 def make_bsa_image(
     mask_images, stat_images, threshold=3., smin=0, sigma=5.,
     prevalence_threshold=0, prevalence_pval=0.5, write_dir=None,
-    algorithm='density', contrast_id='default', verbose=0):
+    algorithm='density', contrast_id='default'):
     """ Main function for  performing bsa on a set of images.
     It creates the some output images in the given directory
 
@@ -54,20 +54,23 @@ def make_bsa_image(
          at the group level
     hrois : list of nipy.labs.spatial_models.hroi.Nroi instances,
        (one per subject), describe the individual counterpart of landmarks
-
-    fixme
-    =====
-    unique mask should be allowed
     """
     n_subjects = len(stat_images)
 
     # Read the referential information
-    nim = load(mask_images[0])
+    nim = load(stat_images[0])
     ref_dim = nim.shape[:3]
     affine = nim.get_affine()
 
     # Read the masks and compute the "intersection"
-    mask = np.reshape(intersect_masks(mask_images), ref_dim).astype('u8')
+    # mask = np.reshape(intersect_masks(mask_images), ref_dim).astype('u8')
+    if isinstance(mask_images, basestring):
+        mask = load(mask_images).get_data()
+    elif isinstance(mask_images, Nifti1Image):
+        mask = mask_images.get_data()
+    else:
+        # mask_images should be a list of strings or images
+        mask = intersect_masks(mask_images).astype('u8')
 
     # encode it as a domain
     domain = domain_from_image(Nifti1Image(mask, affine), nn=18)
@@ -90,7 +93,7 @@ def make_bsa_image(
 
     landmarks, hrois = compute_landmarks(
         domain, stats, sigma, prevalence_pval, prevalence_threshold,
-        threshold, smin, algorithm=algorithm, verbose=verbose)
+        threshold, smin, algorithm=algorithm)
 
     if landmarks is not None:
         crmap = landmarks.map_label(domain.coord, 0.95, sigma)
