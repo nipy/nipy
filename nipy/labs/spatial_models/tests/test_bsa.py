@@ -11,15 +11,15 @@ import numpy as np
 import scipy.stats as st
 from nose.tools import assert_true
 
-from nipy.testing import dec
+from nipy.testing import dec, assert_array_equal
 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
-from ..bayesian_structural_analysis import compute_landmarks
+from ..bayesian_structural_analysis import compute_landmarks, _signal_to_pproba
 from ..discrete_domain import domain_from_binary_array
 
 
-def make_bsa_2d(betas, theta=3., sigma=5., ths=0, thq=0.5, smin=0,
-                        nbeta=[0], algorithm='density'):
+def make_bsa_2d(betas, theta=3., sigma=5., ths=0, thq=0.5, smin=3,
+                algorithm='density'):
     """
     Function for performing bayesian structural analysis on a set of images.
     """
@@ -33,7 +33,7 @@ def make_bsa_2d(betas, theta=3., sigma=5., ths=0, thq=0.5, smin=0,
     dom = domain_from_binary_array(np.ones(ref_dim))
 
     AF, BF = compute_landmarks(dom, lbeta, sigma, thq, ths, theta, smin,
-                               algorithm=algorithm)
+                               algorithm=algorithm, n_iter=100, burnin=10)
     return AF, BF
 
 
@@ -74,6 +74,7 @@ def test_bsa_methods():
     # (name_of_method, ths_value, data_set, test_function)
     algs_tests = (
         ('density', half_subjs, null_betas, lambda AF, BF: AF.k == 0),
+        ('co-occurrence', half_subjs, null_betas, lambda AF, BF: AF.k == 0),
         ('density', 1, pos_betas, lambda AF, BF: AF.k > 1))
 
     for name, ths, betas, test_func in algs_tests:
@@ -81,6 +82,34 @@ def test_bsa_methods():
         AF, BF = make_bsa_2d(betas, theta, sigma, ths, thq, smin,
                              algorithm=name)
         yield assert_true, test_func(AF, BF)
+    
+    assert_true(AF.map_label().shape == (np.prod(shape),))
+    assert_true(AF.kernel_density().shape == (np.prod(shape),))
+
+
+def test_pproba():
+    test = 5 * np.random.rand(10)
+    order = np.argsort(-test)
+    learn = np.random.rand(100)
+    learn[:20] += 3
+    # 
+    pval = _signal_to_pproba(test)
+    # check that pvals are between 0 and 1, and that its is monotonous
+    assert_true((pval >= 0).all())
+    assert_true((pval <= 1).all())
+    assert_array_equal(pval[order], np.sort(pval))
+    #
+    pval = _signal_to_pproba(test, learn)
+    assert_true((pval >= 0).all())
+    assert_true((pval <= 1).all())
+    assert_array_equal(pval[order], np.sort(pval))
+    #
+    for method in ['gauss_mixture', 'emp_null', 'gam_gauss']:
+        pval = _signal_to_pproba(test, learn, method=method)
+        assert_true((pval >= 0).all())
+        assert_true((pval <= 1).all())
+        # assert_array_equal(pval[order], np.sort(pval), 6)
+    
 
 
 if __name__ == '__main__':

@@ -155,11 +155,7 @@ class LandmarkRegions(object):
             print i, prevalence[i], centers[i], np.unique(subjects[i])
 
     def roi_prevalence(self, fid='confidence'):
-        """
-        assuming that fid='confidence' field has been set
-        as a discrete feature,
-        this creates the expectancy of the confidence measure
-        i.e. expected numberof  detection of the roi in the observed group
+        """ Return a confidence index over the different rois
 
         Returns
         -------

@@ -330,7 +330,8 @@ def _bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
 
 def compute_landmarks(
     domain, stats, sigma, prevalence_pval=0.5, prevalence_threshold=0,
-    threshold=3.0, smin=5, method='prior', algorithm='density'):
+    threshold=3.0, smin=5, method='prior', algorithm='density', n_iter=1000, 
+    burnin=100):
     """ Compute the  Bayesian Structural Activation patterns
 
     Parameters
@@ -356,7 +357,11 @@ def compute_landmarks(
            'prior' a hard-coded function is used
     algorithm: string, one of ['density', 'co-occurrence'], optional
                method used to compute the landmarks
-
+    niter: int, optional,
+           number of iterations of the DPMM
+    burnin: int, optional,
+            number of iterations of the DPMM
+               
     Returns
     -------
     landmarks: Instance of sbf.LandmarkRegions or None,
@@ -370,6 +375,7 @@ def compute_landmarks(
 
     landmarks, hrois = _bsa_dpmm(
         hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
-        prevalence_threshold, algorithm=algorithm)
+        prevalence_threshold, algorithm=algorithm, n_iter=n_iter, 
+        burnin=burnin)
 
     return landmarks, hrois
