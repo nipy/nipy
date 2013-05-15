@@ -45,7 +45,7 @@ class LandmarkRegions(object):
         ----------
         domain: ROI instance
                 defines the spatial context of the SubDomains
-        k: int, 
+        k: int,
            the number of landmark regions considered
         indiv_coord:  k-length list of arrays,
                       coordinates of the nodes in some embedding space.
@@ -186,7 +186,7 @@ def build_landmarks(domain, coords, subjects, labels, confidence=None,
     labels: array of shape (n), dtype = np.int
             index of the landmark the object is associated with
     confidence: array of shape (n),
-                measure of the significance of the regions 
+                measure of the significance of the regions
     prevalence_pval: float, optional
     prevalence_threshold: float, optional,
                    (c) A label should be present in prevalence_threshold

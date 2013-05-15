@@ -96,7 +96,7 @@ def make_bsa_image(
         threshold, smin, algorithm=algorithm)
 
     if landmarks is not None:
-        crmap = landmarks.map_label(domain.coord, 0.95, sigma)
+        crmap = landmarks.map_label(domain.coord, 0.95, sigma).astype(np.int16)
         density = landmarks.kernel_density(
             k=None, coord=domain.coord, sigma=sigma)
         default_idx = landmarks.k + 2

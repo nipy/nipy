@@ -236,7 +236,7 @@ def _bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
 
     Returns
     -------
-    landmarks: instance of sbf.LandmarkRegions 
+    landmarks: instance of sbf.LandmarkRegions
                that describes the ROIs found in inter-subject inference
                If no such thing can be defined landmarks is set to None
     hrois: List of nipy.labs.spatial_models.hroi.HierarchicalROI instances
@@ -330,7 +330,7 @@ def _bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
 
 def compute_landmarks(
     domain, stats, sigma, prevalence_pval=0.5, prevalence_threshold=0,
-    threshold=3.0, smin=5, method='prior', algorithm='density', n_iter=1000, 
+    threshold=3.0, smin=5, method='prior', algorithm='density', n_iter=1000,
     burnin=100):
     """ Compute the  Bayesian Structural Activation patterns
 
@@ -348,7 +348,7 @@ def compute_landmarks(
                           reference threshold for the prevalence value
     threshold: float, optional,
                first level threshold
-    smin: int, optional, 
+    smin: int, optional,
           minimal size of the regions to validate them
     method: {'gauss_mixture', 'emp_null', 'gam_gauss', 'prior'}, optional,
            'gauss_mixture' A Gaussian Mixture Model is used
@@ -361,7 +361,7 @@ def compute_landmarks(
            number of iterations of the DPMM
     burnin: int, optional,
             number of iterations of the DPMM
-               
+
     Returns
     -------
     landmarks: Instance of sbf.LandmarkRegions or None,
@@ -375,7 +375,7 @@ def compute_landmarks(
 
     landmarks, hrois = _bsa_dpmm(
         hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
-        prevalence_threshold, algorithm=algorithm, n_iter=n_iter, 
+        prevalence_threshold, algorithm=algorithm, n_iter=n_iter,
         burnin=burnin)
 
     return landmarks, hrois
