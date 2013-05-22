@@ -7,7 +7,7 @@ Optional data packages
 The source code has some very small data files to run the tests with,
 but it doesn't include larger example data files, or the all-important
 brain templates we all use.  You can find packages for the optional data
-and template files at http://nipy.sourceforge.net/data-packages.
+and template files at http://nipy.org/data-packages.
 
 If you don't have these packages, then, when you run nipy installation,
 you will probably see messages pointing you to the packages you need.
@@ -18,12 +18,12 @@ Data package installation as an administrator
 
 The installation procedure, for now, is very basic.  For example, let us
 say that you need the 'nipy-templates' package at
-http://nipy.sourceforge.net/data-packages/nipy-templates-0.2.tar.gz
+http://nipy.org/data-packages/nipy-templates-0.2.tar.gz
 . You simply download this archive, unpack it, and then run the standard
 ``python setup.py install`` on it.  On a unix system this might look
 like::
 
-   curl -O http://nipy.sourceforge.net/data-packages/nipy-templates-0.2.tar.gz
+   curl -O http://nipy.org/data-packages/nipy-templates-0.2.tar.gz
    tar zxvf nipy-templates-0.2.tar.gz
    cd nipy-templates-0.2
    sudo python setup.py install
@@ -58,7 +58,7 @@ things from Windows powershell.
 
     mkdir ~/.nipy/nipy
 
-* Go to http://nipy.sourceforge.net/data-packages
+* Go to http://nipy.org/data-packages
 * Download the latest *nipy-templates* and *nipy-data* packages
 * Unpack both these into some directory, e.g.::
 

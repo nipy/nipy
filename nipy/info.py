@@ -150,7 +150,7 @@ MAYAVI_MIN_VERSION = '3.0'
 CYTHON_MIN_VERSION = '0.12.1'
 
 # Versions and locations of optional data packages
-NIPY_DATA_URL= 'http://nipy.sourceforge.net/data-packages/'
+NIPY_DATA_URL= 'http://nipy.org/data-packages/'
 DATA_PKGS = {'nipy-data': {'min version':'0.2',
                            'relpath':'nipy/data'},
              'nipy-templates': {'min version':'0.2',
