@@ -5,37 +5,37 @@
 These started life as ``tsdiffana.m`` - see
 http://imaging.mrc-cbu.cam.ac.uk/imaging/DataDiagnostics
 
-Oliver Josephs (FIL) gave me the idea of time-point to time-point
+Oliver Josephs (FIL) gave me (MB) the idea of time-point to time-point
 subtraction as a diagnostic for motion and other sudden image changes.
 '''
 
 import numpy as np
 
 
-def time_slice_diffs(arr, time_axis=-1, slice_axis=-2):
+def time_slice_diffs(arr, time_axis=-1, slice_axis=None):
     ''' Time-point to time-point differences over volumes and slices
 
     We think of the passed array as an image.  The image has a "time"
     dimension given by `time_axis` and a "slice" dimension, given by
-    `slice_axis`, and one or other dimensions.  In the case of imaging
-    there will usually be two more dimensions (the dimensions defining
-    the size of an image slice). A single slice in the time dimension we
-    call a "volume".  A single entry in `arr` is a "voxel".  For
-    example, if `time_axis` == 0, then ``v = arr[0]`` would be the first
-    volume in the series.  The volume ``v`` above has ``v.size`` voxels.
-    If, in addition, `slice_axis` == 1, then for the volume ``v``
-    (above) ``s = v[0]`` would be a "slice", with ``s.size``
-    voxels. These are obviously terms from neuroimaging.
+    `slice_axis`, and one or more other dimensions.  In the case of imaging
+    there will usually be two more dimensions (the dimensions defining the size
+    of an image slice). A single slice in the time dimension we call a "volume".
+    A single entry in `arr` is a "voxel".  For example, if `time_axis` == 0,
+    then ``v = arr[0]`` would be the first volume in the series.  The volume
+    ``v`` above has ``v.size`` voxels.  If, in addition, `slice_axis` == 1, then
+    for the volume ``v`` (above) ``s = v[0]`` would be a "slice", with
+    ``s.size`` voxels. These are obviously terms from neuroimaging.
 
     Parameters
     ----------
     arr : array_like
        Array over which to calculate time and slice differences.  We'll
        call this array an 'image' in this doc.
-    time_axis : int
-       axis of `arr` that varies over time.
-    slice_axis : int
-       axis of `arr` that varies over image slice.
+    time_axis : int optional
+       axis of `arr` that varies over time. Default is last
+    slice_axis : None or int, optional
+       axis of `arr` that varies over image slice.  None gives last non-time
+       axis.
 
     Returns
     -------
@@ -48,7 +48,7 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=-2):
         time point ``t`` and time point ``t+1``
 
         `results` has keys:
-        
+
         * 'volume_mean_diff2' : (T-1,) array
            array containing the mean (over voxels in volume) of the
            squared difference from one time point to the next
@@ -71,7 +71,9 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=-2):
     # roll time axis to 0, slice axis to 1 for convenience
     if time_axis < 0:
         time_axis += ndim
-    if slice_axis < 0:
+    if slice_axis is None:
+        slice_axis = ndim-2 if time_axis == ndim-1 else ndim-1
+    elif slice_axis < 0:
         slice_axis += ndim
     arr = np.rollaxis(arr, time_axis)
     # we may have changed the position of slice_axis
@@ -114,4 +116,3 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=-2):
             'volume_means': means,
             'diff2_mean_vol': diff_mean_vol,
             'slice_diff2_max_vol': slice_diff_max_vol}
-
