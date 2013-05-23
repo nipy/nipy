@@ -11,37 +11,29 @@ import numpy as np
 import scipy.stats as st
 from nose.tools import assert_true
 
-from nipy.testing import dec
+from nipy.testing import dec, assert_array_equal
 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
-from ..bayesian_structural_analysis import compute_BSA_simple
+from ..bayesian_structural_analysis import compute_landmarks, _stat_to_proba
 from ..discrete_domain import domain_from_binary_array
 
 
-def make_bsa_2d(betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
-                        nbeta=[0], method='simple'):
+def make_bsa_2d(betas, theta=3., sigma=5., ths=0, thq=0.5, smin=3,
+                algorithm='density'):
     """
     Function for performing bayesian structural analysis on a set of images.
-
-    Fixme: 'quick' is not tested
     """
     ref_dim = np.shape(betas[0])
     n_subj = betas.shape[0]
-    xyz = np.array(np.where(betas[:1])).T
-    nvox = np.size(xyz, 0)
 
     # get the functional information
     lbeta = np.array([np.ravel(betas[k]) for k in range(n_subj)]).T
 
     # the voxel volume is 1.0
-    g0 = 1.0 / (1.0 * nvox)
-    bdensity = 1
     dom = domain_from_binary_array(np.ones(ref_dim))
 
-    if method == 'simple':
-        group_map, AF, BF, likelihood = \
-                   compute_BSA_simple(dom, lbeta, dmax, thq, smin, ths,
-                                      theta, g0, bdensity)
+    AF, BF = compute_landmarks(dom, lbeta, sigma, thq, ths, theta, smin,
+                               algorithm=algorithm, n_iter=100, burnin=10)
     return AF, BF
 
 
@@ -73,7 +65,7 @@ def test_bsa_methods():
     #pos_betas = np.reshape(pos_dataset, (n_subj, shape[0], shape[1]))
     # set various parameters
     theta = float(st.t.isf(0.01, 100))
-    dmax = 5. / 1.5
+    sigma = 5. / 1.5
     half_subjs = n_subj / 2
     thq = 0.9
     smin = 5
@@ -81,13 +73,44 @@ def test_bsa_methods():
     # tuple of tuples with each tuple being
     # (name_of_method, ths_value, data_set, test_function)
     algs_tests = (
-        ('simple', half_subjs, null_betas, lambda AF, BF: AF.k == 0),
-        ('simple', 1, pos_betas, lambda AF, BF: AF.k > 1))
+        ('density', half_subjs, null_betas, lambda AF, BF: AF.k == 0),
+        ('co-occurrence', half_subjs, null_betas, lambda AF, BF: AF.k == 0),
+        ('density', 1, pos_betas, lambda AF, BF: AF.k > 1))
 
     for name, ths, betas, test_func in algs_tests:
         # run the algo
-        AF, BF = make_bsa_2d(betas, theta, dmax, ths, thq, smin, method=name)
+        AF, BF = make_bsa_2d(betas, theta, sigma, ths, thq, smin,
+                             algorithm=name)
         yield assert_true, test_func(AF, BF)
+    
+    assert_true(AF.map_label().shape == (np.prod(shape),))
+    assert_true(AF.kernel_density().shape == (np.prod(shape),))
+    assert_true((AF.roi_prevalence() > ths).all())
+
+
+def test_pproba():
+    test = 5 * np.random.rand(10)
+    order = np.argsort(-test)
+    learn = np.random.rand(100)
+    learn[:20] += 3
+    # 
+    pval = _stat_to_proba(test)
+    # check that pvals are between 0 and 1, and that its is monotonous
+    assert_true((pval >= 0).all())
+    assert_true((pval <= 1).all())
+    assert_array_equal(pval[order], np.sort(pval))
+    #
+    pval = _stat_to_proba(test, learn)
+    assert_true((pval >= 0).all())
+    assert_true((pval <= 1).all())
+    assert_array_equal(pval[order], np.sort(pval))
+    #
+    for method in ['gauss_mixture', 'emp_null', 'gam_gauss']:
+        pval = _stat_to_proba(test, learn, method=method)
+        assert_true((pval >= 0).all())
+        assert_true((pval <= 1).all())
+        # assert_array_equal(pval[order], np.sort(pval), 6)
+    
 
 
 if __name__ == '__main__':

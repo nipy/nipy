@@ -640,10 +640,12 @@ class GGGM(object):
         mpaxes: matplotlib axes, optional
             axes handle used for the plot if None, new axes are created.
         """
+        import matplotlib.pylab as mp
+
         step = 3.5 * np.std(x) / np.exp(np.log(np.size(x)) / 3)
         bins = max(10, int((x.max() - x.min()) / step))
         h, c = np.histogram(x, bins)
-        h = h.astype('d') / np.size(x)
+        h = h.astype(np.float) / np.size(x)
         dc = c[1] - c[0]
 
         ng = self.mixt[0] * _gam_dens(self.shape_n, self.scale_n, - c)
@@ -651,12 +653,12 @@ class GGGM(object):
         pg = self.mixt[2] * _gam_dens(self.shape_p, self.scale_p, c)
         z = y + pg + ng
 
-        import matplotlib.pylab as mp
         if mpaxes == None:
             mp.figure()
             ax = mp.subplot(1, 1, 1)
         else:
             ax = mpaxes
+
         ax.plot(0.5 * (c[1:] + c[:-1]), h / dc, linewidth=2, label='data')
         ax.plot(c, ng, 'c', linewidth=2, label='negative gamma component')
         ax.plot(c, y, 'r', linewidth=2, label='Gaussian component')
