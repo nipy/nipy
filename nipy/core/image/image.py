@@ -5,7 +5,7 @@
 * fromarray : create an Image instance from an ndarray (deprecated in favor of
   using the Image constructor)
 * subsample : slice an Image instance (deprecated in favor of image slicing)
-* rollaxis : roll an image axis backwards
+* rollimg : roll an image axis to given location
 * synchronized_order : match coordinate systems between images
 * iter_axis : make iterator to iterate over an image axis
 * is_image : test for an object obeying the Image API

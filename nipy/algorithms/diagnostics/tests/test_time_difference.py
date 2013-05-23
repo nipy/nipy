@@ -10,10 +10,11 @@ import numpy as np
 
 import scipy.io as sio
 
+from nipy.core.api import rollimg
 from .. import timediff as tsd
 
-from nose.tools import assert_true, assert_false, \
-     assert_equal, assert_raises
+from nose.tools import (assert_true, assert_false, assert_equal,
+                        assert_not_equal, assert_raises)
 
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
@@ -64,6 +65,25 @@ def test_time_slice_diffs():
         ((1,0,2)))
     for key in expected:
         assert_array_almost_equal(results[key], expected[key])
+
+
+def test_time_slice_axes():
+    # Test time and slice axes work as expected
+    fimg = load_image(funcfile)
+    data = fimg.get_data()
+    orig_results = tsd.time_slice_diffs(data)
+    t0_data = np.rollaxis(data, 3)
+    t0_results = tsd.time_slice_diffs(t0_data, 0)
+    for key in ('volume_means', 'slice_mean_diff2'):
+        assert_array_almost_equal(orig_results[key], t0_results[key])
+    s0_data = np.rollaxis(data, 2)
+    s0_results = tsd.time_slice_diffs(s0_data, slice_axis=0)
+    for key in ('volume_means', 'slice_mean_diff2'):
+        assert_array_almost_equal(orig_results[key], s0_results[key])
+    # Incorrect slice axis
+    bad_s0_results = tsd.time_slice_diffs(s0_data)
+    assert_not_equal(orig_results['slice_mean_diff2'].shape,
+                     bad_s0_results['slice_mean_diff2'].shape)
 
 
 def test_against_matlab_results():

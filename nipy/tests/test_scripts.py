@@ -14,9 +14,12 @@ from os.path import dirname, join as pjoin, isfile, isdir, abspath, realpath
 
 from subprocess import Popen, PIPE
 
+import numpy as np
+
 from nibabel.tmpdirs import InTemporaryDirectory
 
-from nipy import load_image
+from nipy import load_image, save_image
+from nipy.core.api import rollimg
 
 from nose.tools import assert_true, assert_false, assert_equal
 
@@ -93,7 +96,22 @@ def test_nipy_diagnose():
             del img
         pca_img = load_image('pca_functional.nii.gz')
         assert_equal(pca_img.shape, fimg.shape[:-1] + (ncomps,))
-        del pca_img
+        vecs_comps = np.load('vectors_components_functional.npz')
+        vec_diff = vecs_comps['slice_mean_diff2'].copy()# just in case
+        assert_equal(vec_diff.shape, (fimg.shape[-1]-1, fimg.shape[2]))
+        del pca_img, vecs_comps
+    with InTemporaryDirectory() as tmpdir:
+        # Check we can pass in slice and time flags
+        s0_img = rollimg(fimg, 'k')
+        save_image(s0_img, 'slice0.nii')
+        cmd = ('nipy_diagnose slice0.nii --ncomponents=%d --out-path="%s" '
+               '--time-axis=t --slice-axis=0' % (ncomps, tmpdir))
+        run_command(cmd)
+        pca_img = load_image('pca_slice0.nii')
+        assert_equal(pca_img.shape, s0_img.shape[:-1] + (ncomps,))
+        vecs_comps = np.load('vectors_components_slice0.npz')
+        assert_almost_equal(vecs_comps['slice_mean_diff2'], vec_diff)
+        del pca_img, vecs_comps
 
 
 @needs_mpl
