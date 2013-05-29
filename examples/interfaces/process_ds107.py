@@ -33,9 +33,9 @@ def get_data(data_path, subj_id):
     data_def = {}
     subject_path = pjoin(data_path, 'sub%03d' % subj_id)
     functionals = sorted(
-        glob(pjoin(subject_path, 'BOLD', 'task*', 'bold*.nii.gz')))
+        glob(pjoin(subject_path, 'BOLD', 'task*', 'bold*.nii*')))
     anatomicals = sorted(
-        glob(pjoin(subject_path, 'anatomy', 'highres001.nii.gz')))
+        glob(pjoin(subject_path, 'anatomy', 'highres001.nii*')))
     assert len(functionals) == 2
     assert len(anatomicals) == 1
     for flist in (anatomicals, functionals):
