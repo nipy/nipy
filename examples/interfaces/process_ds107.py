@@ -40,14 +40,13 @@ def get_data(data_path, subj_id):
     assert len(anatomicals) == 1
     for flist in (anatomicals, functionals):
         for i, fname in enumerate(flist):
-            nogz, _ = splitext(fname)
-            if not isfile(nogz):
-                contents = gzip.open(fname, 'rb').read()
-                with open(nogz, 'wb') as fobj:
-                    fobj.write(contents)
+            nogz, gz_ext = splitext(fname)
+            if gz_ext == '.gz':
                 if not isfile(nogz):
-                    raise RuntimeError('No nii for ' + fname)
-            flist[i] = nogz
+                    contents = gzip.open(fname, 'rb').read()
+                    with open(nogz, 'wb') as fobj:
+                        fobj.write(contents)
+                flist[i] = nogz
     data_def['anatomical'] = anatomicals[0]
     data_def['functionals'] = functionals
     return data_def
