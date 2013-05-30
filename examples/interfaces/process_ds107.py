@@ -28,16 +28,28 @@ STUDY_DEF = dict(
 )
 
 
+def _sorted_prefer_nii(file_list):
+    """ Strip any filanames ending nii.gz if matching .nii filename in list
+    """
+    preferred = []
+    for fname in file_list:
+        if not fname.endswith('.gz'):
+            preferred.append(fname)
+        else:
+            nogz, ext = splitext(fname)
+            if not nogz in file_list:
+                preferred.append(fname)
+    return sorted(preferred)
+
+
 def get_data(data_path, subj_id):
     data_path = abspath(data_path)
     data_def = {}
     subject_path = pjoin(data_path, 'sub%03d' % subj_id)
-    functionals = sorted(
+    functionals = _sorted_prefer_nii(
         glob(pjoin(subject_path, 'BOLD', 'task*', 'bold*.nii*')))
-    anatomicals = sorted(
+    anatomicals = _sorted_prefer_nii(
         glob(pjoin(subject_path, 'anatomy', 'highres001.nii*')))
-    assert len(functionals) == 2
-    assert len(anatomicals) == 1
     for flist in (anatomicals, functionals):
         for i, fname in enumerate(flist):
             nogz, gz_ext = splitext(fname)
@@ -243,17 +255,17 @@ def process_subject(ddef, study_def, ana_def):
     ana = SPMSubjectAnalysis(ddef, study_def, ana_def)
     st_prefix = ana.slicetime('')
     ana.realign(st_prefix)
-    # ana.reslice(prefix)
     ana.coregister(st_prefix)
     ana.segnorm()
     n_st_prefix = ana.norm_write(st_prefix)
     ana.smooth(n_st_prefix)
 
 
-def process_subjects(data_path, subj_ids, study_def, ana_def):
+def get_subjects(data_path, subj_ids, study_def, ana_def):
+    ddefs = []
     for subj_id in subj_ids:
-        ddef = get_data(data_path, subj_id)
-        process_subject(ddef, study_def, ana_def)
+        ddefs.append(get_data(data_path, subj_id))
+    return ddefs
 
 
 if __name__ == '__main__':
@@ -265,4 +277,8 @@ if __name__ == '__main__':
         subj_ids = [int(id) for id in sys.argv[2:]]
     else:
         subj_ids = range(1, 16)
-    process_subjects(data_path, subj_ids, STUDY_DEF, {})
+    for subj_id in subj_ids:
+        ddef = get_data(data_path, subj_id)
+        assert len(ddef['functionals']) == 2
+        assert len(ddef['anatomicals']) == 1
+        process_subject(ddef, STUDY_DEF, {})
