@@ -78,7 +78,7 @@ class SPMSubjectAnalysis(object):
             full_ana_def['fwhm'] = 8.0
         return full_ana_def
 
-    def slicetime(self):
+    def slicetime(self, prefix=''):
         sess_scans = scans_for_fnames(self.data_def['functionals'])
         sdef = self.study_def
         stinfo = make_job('temporal', 'st', {
@@ -90,9 +90,10 @@ class SPMSubjectAnalysis(object):
                 'refslice':1
                 })
         run_jobdef(stinfo)
+        return 'a' + prefix
 
 
-    def realign(self):
+    def realign(self, prefix=''):
         sess_scans = scans_for_fnames(
             fnames_presuffix(self.data_def['functionals'], 'a'))
         rinfo = make_job('spatial', 'realign', [{
@@ -110,10 +111,11 @@ class SPMSubjectAnalysis(object):
                     }
                 }])
         run_jobdef(rinfo)
+        return prefix
 
-    def reslice(self):
+    def reslice(self, prefix=''):
         sess_scans = scans_for_fnames(
-            fnames_presuffix(self.data_def['functionals'], 'a'))
+            fnames_presuffix(self.data_def['functionals'], prefix))
         rsinfo = make_job('spatial', 'realign', [{
                 'write':{
                     'data': np.vstack(sess_scans.flat),
@@ -126,10 +128,11 @@ class SPMSubjectAnalysis(object):
                     }
                 }])
         run_jobdef(rsinfo)
+        return 'r' + prefix
 
-    def coregister(self):
+    def coregister(self, prefix=''):
         func1 = self.data_def['functionals'][0]
-        mean_fname = fname_presuffix(func1, 'meana')
+        mean_fname = fname_presuffix(func1, 'mean' + prefix)
         crinfo = make_job('spatial', 'coreg', [{
                 'estimate':{
                     'ref': [mean_fname],
@@ -148,8 +151,9 @@ class SPMSubjectAnalysis(object):
                     }
                 }])
         run_jobdef(crinfo)
+        return prefix
 
-    def segnorm(self):
+    def segnorm(self, prefix=''):
         def_tpms = np.zeros((3,1), dtype=np.object)
         spm_path = spm_info.spm_path
         def_tpms[0] = pjoin(spm_path, 'tpm', 'grey.nii'),
@@ -179,10 +183,11 @@ class SPMSubjectAnalysis(object):
                     }
                 })
         run_jobdef(sninfo)
+        return prefix
 
-    def norm_write(self):
+    def norm_write(self, prefix=''):
         sess_scans = scans_for_fnames(
-            fnames_presuffix(self.data_def['functionals'], 'a'))
+            fnames_presuffix(self.data_def['functionals'], prefix))
         matname = fname_presuffix(self.data_def['anatomical'],
                                 suffix='_seg_sn.mat',
                                 use_ext=False)
@@ -210,8 +215,9 @@ class SPMSubjectAnalysis(object):
         subj['resample'][0] = self.data_def['anatomical']
         roptions['interp'] = 4.0
         run_jobdef(nwinfo)
+        return 'w' + prefix
 
-    def smooth(self):
+    def smooth(self, prefix=''):
         fwhm = self.ana_def['fwhm']
         try:
             len(fwhm)
@@ -219,12 +225,13 @@ class SPMSubjectAnalysis(object):
             fwhm = [fwhm] * 3
         fwhm = np.asarray(fwhm, dtype=np.float).reshape(1,3)
         sess_scans = scans_for_fnames(
-            fnames_presuffix(self.data_def['functionals'], 'wa'))
+            fnames_presuffix(self.data_def['functionals'], prefix))
         sinfo = make_job('spatial', 'smooth',
                         {'data':np.vstack(sess_scans.flat),
                         'fwhm':fwhm,
                         'dtype':0})
         run_jobdef(sinfo)
+        return 's' + prefix
 
 
 def process_subject(ddef, study_def, ana_def):
@@ -234,13 +241,13 @@ def process_subject(ddef, study_def, ana_def):
         warn("No anatomical, aborting processing")
         return
     ana = SPMSubjectAnalysis(ddef, study_def, ana_def)
-    ana.slicetime()
-    ana.realign()
-    ana.reslice()
-    ana.coregister()
+    st_prefix = ana.slicetime('')
+    ana.realign(st_prefix)
+    # ana.reslice(prefix)
+    ana.coregister(st_prefix)
     ana.segnorm()
-    ana.norm_def()
-    ana.smooth()
+    n_st_prefix = ana.norm_write(st_prefix)
+    ana.smooth(n_st_prefix)
 
 
 def process_subjects(data_path, subj_ids, study_def, ana_def):
