@@ -59,7 +59,10 @@ def get_data(data_path, subj_id):
                     with open(nogz, 'wb') as fobj:
                         fobj.write(contents)
                 flist[i] = nogz
-    data_def['anatomical'] = anatomicals[0]
+    if len(anatomicals) == 0:
+        data_def['anatomical'] = None
+    else:
+        data_def['anatomical'] = anatomicals[0]
     data_def['functionals'] = functionals
     return data_def
 
@@ -280,5 +283,4 @@ if __name__ == '__main__':
     for subj_id in subj_ids:
         ddef = get_data(data_path, subj_id)
         assert len(ddef['functionals']) == 2
-        assert len(ddef['anatomicals']) == 1
         process_subject(ddef, STUDY_DEF, {})
