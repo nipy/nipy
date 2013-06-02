@@ -103,7 +103,8 @@ class HistogramRegistration(object):
         # Clamping of the `to` image including padding with -1
         self._smooth = float(smooth)
         if self._smooth > 0:
-            data = smooth_image(to_img.get_data(), xyz_affine(to_img), self._smooth)
+            data = smooth_image(to_img.get_data(), xyz_affine(to_img),
+                                self._smooth)
         else:
             data = to_img.get_data()
         data, to_bins = clamp(data, to_bins, mask=to_mask)
@@ -120,8 +121,8 @@ class HistogramRegistration(object):
         self._set_similarity((similarity, normalize, dist))
 
     def _get_interp(self):
-        return interp_methods.keys()\
-            [interp_methods.values().index(self._interp)]
+        return interp_methods.keys()[\
+            interp_methods.values().index(self._interp)]
 
     def _set_interp(self, interp):
         self._interp = interp_methods[interp]
@@ -158,7 +159,8 @@ class HistogramRegistration(object):
         if not spacing is None:
             fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
         else:
-            fov_data = self._from_img.get_data()[slicer(corner, size, [1, 1, 1])]
+            fov_data = self._from_img.get_data()[\
+                slicer(corner, size, [1, 1, 1])]
             spacing = ideal_spacing(fov_data, npoints=npoints)
             fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
         self._from_data = fov_data
@@ -235,9 +237,11 @@ class HistogramRegistration(object):
         param0 = T.param.copy()
         if hasattr(T, 'copy'):
             T = T.copy()
+
         def simi(param):
             T.param = param
             return self.eval(T)
+
         return approx_gradient(simi, param0, epsilon)
 
     def eval_hessian(self, T, epsilon=1e-1, diag=False):
@@ -265,9 +269,11 @@ class HistogramRegistration(object):
         param0 = T.param.copy()
         if hasattr(T, 'copy'):
             T = T.copy()
+
         def simi(param):
             T.param = param
             return self.eval(T)
+
         if diag:
             return np.diag(approx_hessian_diag(simi, param0, epsilon))
         else:
@@ -553,5 +559,5 @@ def approx_hessian(f, x, epsilon):
 
 
 def smooth_image(data, affine, sigma):
-    sigma_vox = sigma / np.sqrt(np.sum(affine[0:3,0:3] ** 2, 0))
-    return nd.gaussian_filter(data, sigma)
+    sigma_vox = sigma / np.sqrt(np.sum(affine[0:3, 0:3] ** 2, 0))
+    return nd.gaussian_filter(data, sigma_vox)

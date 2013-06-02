@@ -87,7 +87,7 @@ class MutualInformation(SimilarityMeasure):
 
 class ParzenMutualInformation(SimilarityMeasure):
     """
-    Use Parzen windowing to estimate the distribution model 
+    Use Parzen windowing to estimate the distribution model
     """
     def loss(self, H):
         if not hasattr(self, 'sigma'):
@@ -176,14 +176,14 @@ class CorrelationRatio(SimilarityMeasure):
         return eta2
 
 
-class CorrelationRatioL1(SimilarityMeasure):     
+class CorrelationRatioL1(SimilarityMeasure):
     """
     Use a nonlinear regression model with Laplace distributed errors
     as a distribution model
     """
     def __call__(self, H):
-        tmp = np.array([_L1_moments(H[j, :]) for j in range(H.shape[0])])
-        npts_J, mI_J, sI_J = tmp[:, 0], tmp[:, 1], tmp[:, 2]
+        moments = np.array([_L1_moments(H[j, :]) for j in range(H.shape[0])])
+        npts_J, mI_J, sI_J = moments[:, 0], moments[:, 1], moments[:, 2]
         hI = np.sum(H, 0)
         hJ = np.sum(H, 1)
         npts, mI, sI = _L1_moments(hI)
