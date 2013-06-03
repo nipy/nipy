@@ -3,7 +3,7 @@
 import numpy as np
 
 from ....core.image.image_spaces import make_xyz_image
-from ..affine import Affine
+from ..affine import Affine, Rigid
 from ..histogram_registration import HistogramRegistration
 from .._registration import _joint_histogram
 
@@ -210,6 +210,24 @@ def test_histogram_masked_registration():
     R = HistogramRegistration(I, J)
     sim2 = R.eval(Affine())
     assert_equal(sim1, sim2)
+
+
+def test_similarity_derivatives():
+    """ Test gradient and Hessian computation of the registration
+    objective function.
+    """
+    I = make_xyz_image(make_data_int16(dx=100, dy=100, dz=50),
+                       dummy_affine, 'scanner')
+    J = make_xyz_image(make_data_int16(dx=100, dy=100, dz=50),
+                       dummy_affine, 'scanner')
+    R = HistogramRegistration(I, J)
+    T = Rigid()
+    g = R.eval_gradient(T)
+    assert_equal(g.shape, (6,))
+    assert_equal(g.dtype, float)
+    H = R.eval_hessian(T)
+    assert_equal(H.shape, (6, 6))
+    assert_equal(H.dtype, float)
 
 
 if __name__ == "__main__":
