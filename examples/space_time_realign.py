@@ -3,9 +3,9 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This script requires the nipy-data package to run. It is an example of
-simultaneous motion correction and slice timing correction in multi-session fMRI
-data from the FIAC 2005 dataset. Specifically, it uses the first two sessions of
-subject 'fiac0'.
+simultaneous motion correction and slice timing correction in
+multi-session fMRI data from the FIAC 2005 dataset. Specifically, it
+uses the first two sessions of subject 'fiac0'.
 
 Usage:
   python space_time_realign.py
@@ -17,7 +17,7 @@ Two images will be created in the working directory for the realigned series::
 
 Author: Alexis Roche, 2009.
 """
-from __future__ import print_function # Python 2/3 compatibility
+from __future__ import print_function  # Python 2/3 compatibility
 
 import os
 from os.path import split as psplit, abspath
@@ -34,7 +34,8 @@ runs = [load_image(run) for run in runnames]
 # Declare interleaved ascending slice order
 nslices = runs[0].shape[2]
 tr = 2.5  # repetition time in whatever time unit you like
-slice_times = (tr / float(nslices)) * np.argsort(range(0, nslices, 2) + range(1, nslices, 2))
+slice_times = (tr / float(nslices)) *\
+    np.argsort(range(0, nslices, 2) + range(1, nslices, 2))
 print('Slice times: %s' % slice_times)
 
 # Spatio-temporal realigner

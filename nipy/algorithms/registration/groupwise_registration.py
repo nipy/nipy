@@ -84,7 +84,7 @@ class Image4d(object):
     ----------
       data : nd array or proxy (function that actually gets the array)
     """
-    def __init__(self, data, affine, tr, slice_times='ascending', 
+    def __init__(self, data, affine, tr, slice_times='ascending',
                  interleaved=False, slice_info=None):
         """
         Configure fMRI acquisition time parameters.
@@ -124,7 +124,7 @@ class Image4d(object):
         if self._data == None:
             self._load_data()
         return self._data
-    
+
     def get_shape(self):
         if self._shape == None:
             self._load_data()
@@ -161,7 +161,6 @@ class Image4d(object):
         # Check that slice times are smaller than repetition time
         if np.max(self.slice_times) > self.tr:
             raise ValueError("slice times should be smaller than repetition time")
-
 
     def z_to_slice(self, z):
         """
@@ -434,7 +433,8 @@ class Realign4dAlgorithm(object):
         # multiscale pyramid. To avoid crashes, we insert a try/catch
         # instruction.
         try:
-            pc = fmin(f, self.transforms[t].param, disp=VERBOSE, *args, **kwargs)
+            pc = fmin(f, self.transforms[t].param, disp=VERBOSE,
+                      *args, **kwargs)
             self.set_transform(t, pc)
         except:
             warnings.warn('Minimization failed')
@@ -679,7 +679,7 @@ def realign4d(runs,
 class Realign4d(object):
 
     def __init__(self, images, affine_class=Rigid):
-        self._generic_init(images, affine_class, False, 
+        self._generic_init(images, affine_class, False,
                            1.0, 0.0, False, None)
 
     def _generic_init(self, images, affine_class, time_interp,
@@ -767,9 +767,10 @@ class Realign4d(object):
 
 class FmriRealign4d(Realign4d):
 
-    def __init__(self, images, tr, slice_times=None, slice_info=None,
-                 affine_class=Rigid,
-                 slice_order=None, interleaved=None, tr_slices=None, start=None):
+    def __init__(self, images, tr, slice_times='ascending', slice_info=None,
+                 affine_class=Rigid, slice_order=None,
+                 interleaved=None,
+                 tr_slices=None, start=None):
         """
         Spatiotemporal realignment class for fMRI series.
 
@@ -783,7 +784,7 @@ class FmriRealign4d(Realign4d):
           Inter-scan repetition time, i.e. the time elapsed between
           two consecutive scans. The unit in which `tr` is given is
           arbitrary although it needs to be consistent with the
-          `tr_slices` and `start` arguments.
+          `slice_times` argument.
 
         tr_slices : float
           Inter-slice repetition time, same as tr for slices. If None,
@@ -802,7 +803,7 @@ class FmriRealign4d(Realign4d):
 
           slice_times = (tr/nslices) * np.array([0, 1, 2, ...])
 
-          where `nslices` is the number of slices per volume. 
+          where `nslices` is the number of slices per volume.
 
           A typical interleaved sequence may be represented by:
 
@@ -814,32 +815,38 @@ class FmriRealign4d(Realign4d):
           `slice_times` as an array unless you are sure what you are
           doing.
 
+          Note that `slice_times` supersedes the previous and now
+          obsolete `slice_order` argument where the values represented
+          the spatial position of the scans along the slice axis, and
+          the element number in the array [0, 1, ...] represented the
+          order in time. For example, for an interleaved sequence with
+          10 slices, where we acquired slice 0 (in space) first, then
+          slice 2 (in space) etc, the `slice_order` array would be [0,
+          5, 1, 6, 2, 7, 3, 8, 4, 9]
+
         slice_info : None or tuple, optional
           None, or a tuple with slice axis as the first element and
           direction as the second, for instance (2, 1).  If None, then
           guess the slice axis, and direction, as the closest to the z
           axis, as estimated from the affine.
         """
+        # Backward compatibility fixes
         if not slice_order == None:
-            warnings.warn('slice_order keyword is deprecated. Please input explicit slice times instead.')
+            raise ValueError('slice_order keyword is deprecated.'\
+                              'Please input explicit slice times instead.')
         if not interleaved == None:
-            warnings.warn('interleaved keyword is deprecated. Please input explicit slice times instead.')
+            raise ValueError('interleaved keyword is deprecated.'\
+                                 'Please input explicit slice times instead.')
         if not tr_slices == None:
-            warnings.warn('tr_slices keyword is deprecated. Please input explicit slice times instead.')
+            raise ValueError('tr_slices keyword is deprecated.'\
+                              'Please input explicit slice times instead.')
         if not start == None:
-            warnings.warn('start keyword is deprecated. Please input explicit slice times instead.')
+            raise ValueError('start keyword is deprecated.'\
+                              'Please input explicit slice times instead.')
+        if hasattr(tr, '__iter__'):
+            raise ValueError('tr argument cannot be a sequence.'\
+                                 'If you mean to input the slice order,'\
+                                 'please use slice_times keyword argument.')
 
-        # Backward compatibility fix if no explicit slice_times are provided
-        if slice_times == None:
-            warnings.warn('slice_times keyword argument was not specified but will become mandatory in future versions.')
-            if isinstance(slice_order, str):
-                slice_times = slice_order
-            elif not slice_order == None:
-                if tr_slices == None:
-                    tr_slices = float(tr) / float(len(slice_order))
-                if start == None:
-                    start = 0.0
-                slice_times = start + tr_slices * np.asarray(slice_order)
-
-        self._generic_init(images, affine_class, True, tr, slice_times, interleaved, slice_info)
-
+        self._generic_init(images, affine_class, True, tr, slice_times,
+                           interleaved, slice_info)
