@@ -12,6 +12,7 @@ from ....testing import assert_equal, assert_almost_equal, assert_raises
 
 dummy_affine = np.eye(4)
 
+
 def make_data_bool(dx=100, dy=100, dz=50):
     return (np.random.rand(dx, dy, dz)
                    - np.random.rand()) > 0
@@ -33,7 +34,8 @@ def make_data_float64(dx=100, dy=100, dz=50):
 
 
 def _test_clamping(I, thI=0.0, clI=256, mask=None):
-    R = HistogramRegistration(I, I, from_bins=clI, from_mask=mask, to_mask=mask)
+    R = HistogramRegistration(I, I, from_bins=clI,
+                              from_mask=mask, to_mask=mask)
     R.subsample(spacing=[1, 1, 1])
     Ic = R._from_data
     Ic2 = R._to_data[1:-1, 1:-1, 1:-1]
@@ -93,7 +95,7 @@ def _test_unnormalized_similarity_measure(simi):
     J = make_xyz_image(I.get_data().copy(), dummy_affine, 'scanner')
     R = HistogramRegistration(I, J)
     R.subsample(spacing=[2, 1, 3])
-    R.similarity = simi, False
+    R._set_similarity(simi, normalize=False)
     assert R.eval(Affine()) > 1e5
 
 
@@ -121,7 +123,7 @@ def test_unnormalized_correlation_ratio():
     _test_unnormalized_similarity_measure('cr')
 
 
-def test_unnormalized_correlation_ratio():
+def test_unnormalized_correlation_ratio_l1():
     _test_unnormalized_similarity_measure('crl1')
 
 
@@ -193,14 +195,18 @@ def test_set_fov():
 def test_histogram_masked_registration():
     """ Test the histogram registration class.
     """
-    I = make_xyz_image(make_data_int16(dx=100, dy=100, dz=50), dummy_affine, 'scanner')
-    J = make_xyz_image(make_data_int16(dx=100, dy=100, dz=50), dummy_affine, 'scanner')
-    mask = (np.zeros((100,100,50)) == 1)
-    mask[10:20,10:20,10:20] = True
+    I = make_xyz_image(make_data_int16(dx=100, dy=100, dz=50),
+                       dummy_affine, 'scanner')
+    J = make_xyz_image(make_data_int16(dx=100, dy=100, dz=50),
+                       dummy_affine, 'scanner')
+    mask = (np.zeros((100, 100, 50)) == 1)
+    mask[10:20, 10:20, 10:20] = True
     R = HistogramRegistration(I, J, to_mask=mask, from_mask=mask)
     sim1 = R.eval(Affine())
-    I = make_xyz_image(I.get_data()[mask].reshape(10,10,10), dummy_affine, 'scanner')
-    J = make_xyz_image(J.get_data()[mask].reshape(10,10,10), dummy_affine, 'scanner')
+    I = make_xyz_image(I.get_data()[mask].reshape(10, 10, 10),
+                       dummy_affine, 'scanner')
+    J = make_xyz_image(J.get_data()[mask].reshape(10, 10, 10),
+                       dummy_affine, 'scanner')
     R = HistogramRegistration(I, J)
     sim2 = R.eval(Affine())
     assert_equal(sim1, sim2)

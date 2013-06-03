@@ -12,6 +12,8 @@ nonzero = lambda x: np.maximum(x, TINY)
 
 def correlation2loglikelihood(rho2, npts):
     """
+    Re-normalize correlation.
+
     Convert a squared normalized correlation to a proper
     log-likelihood associated with a registration problem. The result
     is a function of both the input correlation and the number of
@@ -19,6 +21,19 @@ def correlation2loglikelihood(rho2, npts):
 
     See: Roche, medical image registration through statistical
     inference, 2001.
+
+    Parameters
+    ----------
+    rho2: float
+      Squared correlation measure
+
+    npts: int
+      Number of points involved in computing `rho2`
+
+    Returns
+    -------
+    ll: float
+      Log-likelihood re-normalized `rho2`
     """
     return -.5 * npts * np.log(nonzero(1 - rho2))
 

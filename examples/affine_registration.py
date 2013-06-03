@@ -8,7 +8,7 @@ sulcal 2000 database acquired at CEA, SHFJ, Orsay, France. The source
 is 'ammon' and the target is 'anubis'. Running it will result in a
 resampled ammon image being created in the current directory.
 """
-from __future__ import print_function # Python 2/3 compatibility
+from __future__ import print_function  # Python 2/3 compatibility
 
 from optparse import OptionParser
 import time
@@ -87,7 +87,8 @@ J = load_image(target_file)
 # np.asarray(T) is a customary 4x4 matrix
 print('Setting up registration...')
 tic = time.time()
-R = HistogramRegistration(I, J, similarity=similarity, interp=interp, normalize=normalize)
+R = HistogramRegistration(I, J, similarity=similarity, interp=interp,
+                          normalize=normalize)
 T = R.optimize('affine', optimizer=optimizer)
 toc = time.time()
 print('  Registration time: %f sec' % (toc - tic))

@@ -118,7 +118,7 @@ class HistogramRegistration(object):
 
         # Set default registration parameters
         self._set_interp(interp)
-        self._set_similarity((similarity, normalize, dist))
+        self._set_similarity(similarity, normalize=normalize, dist=dist)
 
     def _get_interp(self):
         return interp_methods.keys()[\
@@ -174,20 +174,7 @@ class HistogramRegistration(object):
     def subsample(self, spacing=None, npoints=None):
         self.set_fov(spacing=spacing, npoints=npoints)
 
-    def _set_similarity(self, arg):
-        normalize = True
-        dist = None
-        if not isinstance(arg, (tuple, list)):
-            similarity = arg
-        else:
-            if len(arg) == 1:
-                similarity = arg[0]
-            elif len(arg) == 2:
-                similarity, normalize = arg
-            elif len(arg) == 3:
-                similarity, normalize, dist = arg
-            else:
-                raise ValueError('cannot understand input argument')
+    def _set_similarity(self, similarity, normalize=True, dist=None):
         if similarity in _sms:
             self._similarity = similarity
             self._similarity_call =\
@@ -231,6 +218,11 @@ class HistogramRegistration(object):
             functions tend to exhibit rapid changes in local
             convexity.
 
+        Returns
+        -------
+        g : ndarray
+            Similarity gradient estimate
+
         The input transformation object `T` is modified in place
         unless it has a ``copy`` method.
         """
@@ -262,6 +254,11 @@ class HistogramRegistration(object):
             convexity.
         diag : bool
             If True, approximate the Hessian by a diagonal matrix.
+
+        Returns
+        -------
+        H : ndarray
+            Similarity Hessian matrix estimate
 
         The input transformation object `T` is modified in place
         unless it has a ``copy`` method.
@@ -319,6 +316,11 @@ class HistogramRegistration(object):
           'cg', 'bfgs', 'simplex')
         **kwargs : dict
           keyword arguments to pass to optimizer
+
+        Returns
+        -------
+        T : object
+          Locally optimal transformation
         """
         # Replace T if a string is passed
         if T in affine_transforms:
@@ -515,14 +517,47 @@ def ideal_spacing(data, npoints):
 def smallest_bounding_box(msk):
     """
     Extract the smallest bounding box from a mask
+
+    Parameters
+    ----------
+    msk : ndarray
+      Array of boolean
+
+    Returns
+    -------
+    corner: ndarray
+      3-dimensional coordinates of bounding box corner
+
+    size: ndarray
+      3-dimensional size of bounding box
     """
     x, y, z = np.where(msk > 0)
-    corner = [x.min(), y.min(), z.min()]
-    size = [x.max() + 1, y.max() + 1, z.max() + 1]
+    corner = np.array([x.min(), y.min(), z.min()])
+    size = np.array([x.max() + 1, y.max() + 1, z.max() + 1])
     return corner, size
 
 
 def approx_gradient(f, x, epsilon):
+    """
+    Approximate the gradient of a function using central finite
+    differences
+
+    Parameters
+    ----------
+    f: callable
+      The function to differentiate
+
+    x: ndarray
+      Point where the function gradient is to be evaluated
+
+    epsilon: float
+      Stepsize for finite differences
+
+    Returns
+    -------
+    g: ndarray
+      Function gradient at `x`
+    """
     n = len(x)
     g = np.zeros(n)
     ei = np.zeros(n)
@@ -534,6 +569,26 @@ def approx_gradient(f, x, epsilon):
 
 
 def approx_hessian_diag(f, x, epsilon):
+    """
+    Approximate the Hessian diagonal of a function using central
+    finite differences
+
+    Parameters
+    ----------
+    f: callable
+      The function to differentiate
+
+    x: ndarray
+      Point where the Hessian is to be evaluated
+
+    epsilon: float
+      Stepsize for finite differences
+
+    Returns
+    -------
+    h: ndarray
+      Diagonal of the Hessian at `x`
+    """
     n = len(x)
     h = np.zeros(n)
     ei = np.zeros(n)
@@ -546,6 +601,26 @@ def approx_hessian_diag(f, x, epsilon):
 
 
 def approx_hessian(f, x, epsilon):
+    """
+    Approximate the full Hessian matrix of a function using central
+    finite differences
+
+    Parameters
+    ----------
+    f: callable
+      The function to differentiate
+
+    x: ndarray
+      Point where the Hessian is to be evaluated
+
+    epsilon: float
+      Stepsize for finite differences
+
+    Returns
+    -------
+    H: ndarray
+      Hessian matrix at `x`
+    """
     n = len(x)
     H = np.zeros((n, n))
     ei = np.zeros(n)
@@ -559,5 +634,24 @@ def approx_hessian(f, x, epsilon):
 
 
 def smooth_image(data, affine, sigma):
+    """
+    Smooth an image by an isotropic Gaussian filter
+
+    Parameters
+    ----------
+    data: ndarray
+      Image data array
+
+    affine: ndarray
+      Image affine transform
+
+    sigma: float
+      Filter standard deviation in mm
+
+    Returns
+    -------
+    sdata: ndarray
+      Smoothed data array
+    """
     sigma_vox = sigma / np.sqrt(np.sum(affine[0:3, 0:3] ** 2, 0))
     return nd.gaussian_filter(data, sigma_vox)
