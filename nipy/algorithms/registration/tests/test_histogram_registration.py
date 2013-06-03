@@ -90,12 +90,12 @@ def _test_similarity_measure(simi, val):
     assert_almost_equal(R.eval(Affine()), val)
 
 
-def _test_unnormalized_similarity_measure(simi):
+def _test_renormalized_similarity_measure(simi):
     I = make_xyz_image(make_data_int16(), dummy_affine, 'scanner')
     J = make_xyz_image(I.get_data().copy(), dummy_affine, 'scanner')
     R = HistogramRegistration(I, J)
     R.subsample(spacing=[2, 1, 3])
-    R._set_similarity(simi, normalize=False)
+    R._set_similarity(simi, renormalize=True)
     assert R.eval(Affine()) > 1e5
 
 
@@ -115,16 +115,16 @@ def test_normalized_mutual_information():
     _test_similarity_measure('nmi', 1.0)
 
 
-def test_unnormalized_correlation_coefficient():
-    _test_unnormalized_similarity_measure('cc')
+def test_renormalized_correlation_coefficient():
+    _test_renormalized_similarity_measure('cc')
 
 
-def test_unnormalized_correlation_ratio():
-    _test_unnormalized_similarity_measure('cr')
+def test_renormalized_correlation_ratio():
+    _test_renormalized_similarity_measure('cr')
 
 
-def test_unnormalized_correlation_ratio_l1():
-    _test_unnormalized_similarity_measure('crl1')
+def test_renormalized_correlation_ratio_l1():
+    _test_renormalized_similarity_measure('crl1')
 
 
 def test_joint_hist_eval():

@@ -44,7 +44,7 @@ class HistogramRegistration(object):
                  from_bins=256, to_bins=None,
                  from_mask=None, to_mask=None,
                  similarity='crl1', interp='pv',
-                 smooth=0, normalize=True, dist=None):
+                 smooth=0, renormalize=False, dist=None):
         """
         Creates a new histogram registration object.
 
@@ -118,7 +118,7 @@ class HistogramRegistration(object):
 
         # Set default registration parameters
         self._set_interp(interp)
-        self._set_similarity(similarity, normalize=normalize, dist=dist)
+        self._set_similarity(similarity, renormalize=renormalize, dist=dist)
 
     def _get_interp(self):
         return interp_methods.keys()[\
@@ -174,11 +174,11 @@ class HistogramRegistration(object):
     def subsample(self, spacing=None, npoints=None):
         self.set_fov(spacing=spacing, npoints=npoints)
 
-    def _set_similarity(self, similarity, normalize=True, dist=None):
+    def _set_similarity(self, similarity, renormalize=False, dist=None):
         if similarity in _sms:
             self._similarity = similarity
             self._similarity_call =\
-                _sms[similarity](self._joint_hist.shape, normalize, dist)
+                _sms[similarity](self._joint_hist.shape, renormalize, dist)
         else:
             if not hasattr(similarity, '__call__'):
                 raise ValueError('similarity should be callable')

@@ -63,10 +63,10 @@ class SimilarityMeasure(object):
     """
     Template class
     """
-    def __init__(self, shape, normalize=True, dist=None):
+    def __init__(self, shape, renormalize=False, dist=None):
         self.shape = shape
         self.J, self.I = np.indices(shape)
-        self.normalize = normalize
+        self.renormalize = renormalize
         self.dist = dist
 
     def loss(self, H):
@@ -77,7 +77,7 @@ class SimilarityMeasure(object):
 
     def __call__(self, H):
         total_loss = np.sum(H * self.loss(H))
-        if self.normalize:
+        if not self.renormalize:
             total_loss /= nonzero(self.npoints(H))
         return -total_loss
 
@@ -163,7 +163,7 @@ class CorrelationCoefficient(SimilarityMeasure):
         vJ = np.sum(H * (self.J) ** 2) / npts - mJ ** 2
         cIJ = np.sum(H * self.J * self.I) / npts - mI * mJ
         rho2 = (cIJ / nonzero(np.sqrt(vI * vJ))) ** 2
-        if not self.normalize:
+        if self.renormalize:
             rho2 = correlation2loglikelihood(rho2, npts)
         return rho2
 
@@ -186,7 +186,7 @@ class CorrelationRatio(SimilarityMeasure):
         vI = np.sum(hI * self.I[0, :] ** 2) / tmp - mI ** 2
         mean_vI_J = np.sum(hJ * vI_J) / tmp
         eta2 = 1. - mean_vI_J / nonzero(vI)
-        if not self.normalize:
+        if self.renormalize:
             eta2 = correlation2loglikelihood(eta2, npts)
         return eta2
 
@@ -204,7 +204,7 @@ class CorrelationRatioL1(SimilarityMeasure):
         npts, mI, sI = _L1_moments(hI)
         mean_sI_J = np.sum(hJ * sI_J) / nonzero(npts)
         eta2 = 1. - mean_sI_J / nonzero(sI)
-        if not self.normalize:
+        if self.renormalize:
             eta2 = correlation2loglikelihood(eta2, npts)
         return eta2
 
