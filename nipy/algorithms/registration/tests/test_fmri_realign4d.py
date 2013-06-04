@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal
 
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import numpy as np
@@ -12,7 +12,7 @@ from ....fixes.nibabel import io_orientation
 from ....core.image.image_spaces import (make_xyz_image,
                                         xyz_affine)
 
-from ..groupwise_registration import Image4d, resample4d, FmriRealign4d
+from ..groupwise_registration import Image4d, resample4d, SpaceTimeRealign
 from ..affine import Rigid
 
 im = load_image(funcfile)
@@ -44,7 +44,8 @@ def _test_image4d_init(nslices):
     img4d = Image4d(data, aff, tr, slice_times='descending')
     assert_array_equal(img4d.slice_times, slice_times[::-1])
     # test interleaved slice order
-    interleaved_slice_times = (tr / float(nslices)) * np.argsort(range(0, nslices, 2) + range(1, nslices, 2))
+    interleaved_slice_times = (tr / float(nslices)) *\
+        np.argsort(range(0, nslices, 2) + range(1, nslices, 2))
     img4d = Image4d(data, aff, tr, slice_times='ascending', interleaved=True)
     assert_array_equal(img4d.slice_times, interleaved_slice_times)
     img4d = Image4d(data, aff, tr, slice_times='descending', interleaved=True)
@@ -72,7 +73,7 @@ def test_slice_timing():
 
 def test_realign4d_no_time_interp():
     runs = [im, im]
-    R = FmriRealign4d(runs, 1.0, slice_times=None)
+    R = SpaceTimeRealign(runs, 1.0, slice_times=None)
 
 
 def test_realign4d():
@@ -80,7 +81,7 @@ def test_realign4d():
     This tests whether realign4d yields the same results depending on
     whether the slice order is input explicitely or as
     slice_times='ascending'.
-    
+
     Due to the very small size of the image used for testing (only 3
     slices), optimization is numerically unstable. It seems to make
     the default optimizer, namely scipy.fmin.fmin_ncg, adopt a random
@@ -91,11 +92,11 @@ def test_realign4d():
     runs = [im, im]
     orient = io_orientation(im.affine)
     slice_axis = int(np.where(orient[:, 0] == 2)[0])
-    R1 = FmriRealign4d(runs, tr=2., slice_times='ascending')
+    R1 = SpaceTimeRealign(runs, tr=2., slice_times='ascending')
     R1.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
     nslices = im.shape[slice_axis]
     slice_times = (2. / float(nslices)) * np.arange(nslices)
-    R2 = FmriRealign4d(runs, tr=2., slice_times=slice_times)
+    R2 = SpaceTimeRealign(runs, tr=2., slice_times=slice_times)
     R2.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
     for r in range(2):
         for i in range(im.shape[3]):
@@ -108,18 +109,15 @@ def test_realign4d():
                                       R2._mean_transforms[r].translation)
             assert_array_almost_equal(R1._mean_transforms[r].rotation,
                                       R2._mean_transforms[r].rotation)
-    
 
 
 def test_realign4d_runs_with_different_affines():
-    orient = io_orientation(im.affine)
-    slice_axis = int(np.where(orient[:, 0] == 2)[0])
     aff = xyz_affine(im)
     aff2 = aff.copy()
     aff2[0:3, 3] += 5
     im2 = make_xyz_image(im.get_data(), aff2, 'scanner')
     runs = [im, im2]
-    R = FmriRealign4d(runs, tr=2., slice_times='ascending')
+    R = SpaceTimeRealign(runs, tr=2., slice_times='ascending')
     R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
     cor_im, cor_im2 = R.resample()
     assert_array_equal(xyz_affine(cor_im2), aff)

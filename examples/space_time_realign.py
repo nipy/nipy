@@ -22,7 +22,7 @@ from __future__ import print_function  # Python 2/3 compatibility
 import os
 from os.path import split as psplit, abspath
 import numpy as np
-from nipy.algorithms.registration import FmriRealign4d
+from nipy.algorithms.registration import SpaceTimeRealign
 from nipy import load_image, save_image
 from nipy.utils import example_data
 
@@ -39,7 +39,7 @@ slice_times = (tr / float(nslices)) *\
 print('Slice times: %s' % slice_times)
 
 # Spatio-temporal realigner
-R = FmriRealign4d(runs, tr=tr, slice_times=slice_times)
+R = SpaceTimeRealign(runs, tr=tr, slice_times=slice_times)
 
 # Estimate motion within- and between-sessions
 R.estimate(refscan=None)

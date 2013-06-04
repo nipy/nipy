@@ -10,8 +10,8 @@ from .affine import (threshold, rotation_mat2vec, rotation_vec2mat, to_matrix44,
 from .groupwise_registration import (interp_slice_times, scanner_coords,
                                      make_grid, Image4d, Realign4dAlgorithm,
                                      resample4d, adjust_subsampling,
-                                     single_run_realign4d, realign4d, Realign4d,
-                                     FmriRealign4d)
+                                     single_run_realign4d, realign4d,
+                                     SpaceTimeRealign, FmriRealign4d)
 
 from nipy.testing import Tester
 test = Tester().test
