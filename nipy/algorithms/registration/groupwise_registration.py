@@ -12,7 +12,7 @@ from ...core.image.image_spaces import (make_xyz_image,
                                         xyz_affine,
                                         as_xyz_image)
 from .optimizer import configure_optimizer, use_derivatives
-from .affine import Rigid
+from .affine import Rigid, Affine
 from ._registration import (_cspline_transform,
                             _cspline_sample3d,
                             _cspline_sample4d)
@@ -629,19 +629,27 @@ def realign4d(runs,
                                        maxiter=maxiter,
                                        maxfun=maxfun,
                                        refscan=refscan) for run in runs]
+
     if not align_runs:
         return transforms, transforms, None
 
     # Correct between-session motion using the mean image of each
     # corrected run, and creating a fake time series with no temporal
-    # smoothness
-    ## FIXME: check that all runs have the same to-world transform
+    # smoothness. If the runs have different affines, a correction is
+    # applied to the transforms associated with each run (except for
+    # the first run) so that all images included in the fake series
+    # have the same affine, namely that of the first run.
+    is_same_affine = lambda a1, a2: np.max(np.abs(a1 - a2)) < 1e-5
     mean_img_shape = list(runs[0].get_shape()[0:3]) + [nruns]
     mean_img_data = np.zeros(mean_img_shape)
-
     for i in range(nruns):
-        corr_run = resample4d(runs[i], transforms=transforms[i],
-                              time_interp=time_interp)
+        if is_same_affine(runs[0].affine, runs[i].affine):
+            transforms_i = transforms[i]
+        else:
+            runs[i].affine = runs[0].affine
+            aff_corr = Affine(np.dot(runs[0].affine, np.linalg.inv(runs[i].affine)))
+            transforms_i = [aff_corr.compose(Affine(t.as_affine())) for t in transforms[i]]
+        corr_run = resample4d(runs[i], transforms=transforms_i, time_interp=time_interp)
         mean_img_data[..., i] = corr_run.mean(3)
     del corr_run
 
@@ -689,6 +697,9 @@ class Realign4d(object):
             images = [images]
         self._runs = []
         self.affine_class = affine_class
+        # Note that, the affine of each run may be different. This is
+        # the case, for instance, if the subject exits the scanner
+        # inbetween sessions.
         for im in images:
             xyz_img = as_xyz_image(im)
             self._runs.append(Image4d(xyz_img.get_data,
