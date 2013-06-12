@@ -102,7 +102,9 @@ class HistogramRegistration(object):
 
         # Clamping of the `to` image including padding with -1
         self._smooth = float(smooth)
-        if self._smooth > 0:
+        if self._smooth < 0:
+            raise ValueError('smoothing kernel cannot have negative scale')
+        elif self._smooth > 0:
             data = smooth_image(to_img.get_data(), xyz_affine(to_img),
                                 self._smooth)
         else:
@@ -159,7 +161,7 @@ class HistogramRegistration(object):
         if not spacing is None:
             fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
         else:
-            fov_data = self._from_img.get_data()[\
+            fov_data = self._from_img.get_data()[
                 slicer(corner, size, [1, 1, 1])]
             spacing = ideal_spacing(fov_data, npoints=npoints)
             fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
@@ -205,26 +207,25 @@ class HistogramRegistration(object):
     def eval_gradient(self, T, epsilon=1e-1):
         """
         Evaluate the gradient of the similarity function wrt
-        transformation parameters using central finite differences at
-        the transformation specified by `T`.
+        transformation parameters.
+
+        The gradient is approximated using central finite differences
+        at the transformation specified by `T`. The input
+        transformation object `T` is modified in place unless it has a
+        ``copy`` method.
 
         Parameters
         ----------
         T : Transform
             Transform object implementing ``apply`` method
         epsilon : float
-            Step size for finite diffrences. Choosing a fairly large
-            value is recommended as intensity-based similarity
-            functions tend to exhibit rapid changes in local
-            convexity.
+            Step size for finite differences in units of the
+            transformation parameters
 
         Returns
         -------
         g : ndarray
             Similarity gradient estimate
-
-        The input transformation object `T` is modified in place
-        unless it has a ``copy`` method.
         """
         param0 = T.param.copy()
         if hasattr(T, 'copy'):
@@ -239,19 +240,20 @@ class HistogramRegistration(object):
     def eval_hessian(self, T, epsilon=1e-1, diag=False):
         """
         Evaluate the Hessian of the similarity function wrt
-        transformation parameters at the transformation specified by
-        `T`. This method uses central finite differences and can thus
-        be fairly slow.
+        transformation parameters.
+
+        The Hessian or its diagonal is approximated at the
+        transformation specified by `T` using central finite
+        differences. The input transformation object `T` is modified
+        in place unless it has a ``copy`` method.
 
         Parameters
         ----------
         T : Transform
             Transform object implementing ``apply`` method
         epsilon : float
-            Step size for finite differences. Choosing a fairly large
-            value is recommended as intensity-based similarity
-            functions tend to exhibit rapid changes in local
-            convexity.
+            Step size for finite differences in units of the
+            transformation parameters
         diag : bool
             If True, approximate the Hessian by a diagonal matrix.
 
@@ -259,9 +261,6 @@ class HistogramRegistration(object):
         -------
         H : ndarray
             Similarity Hessian matrix estimate
-
-        The input transformation object `T` is modified in place
-        unless it has a ``copy`` method.
         """
         param0 = T.param.copy()
         if hasattr(T, 'copy'):
@@ -378,10 +377,26 @@ class HistogramRegistration(object):
 
         For instance:
 
-        explore(T, (0, [-1,0,1]), (4, [-2.,2]))
+        s, p = explore(T, (0, [-1,0,1]), (4, [-2.,2]))
 
-        The input transformation object `T` is modified in place
-        unless it has a ``copy`` method.
+        Parameters
+        ----------
+        T : object
+          Transformation around which the similarity function is to be
+          evaluated. It is modified in place unless it has a ``copy``
+          method.
+        args : tuple
+          Each element of `args` is a sequence of two elements, where
+          the first element specifies a transformation parameter axis
+          and the second element gives the successive parameter values
+          to evaluate along that axis.
+
+        Returns
+        -------
+        s : ndarray
+          Array of similarity values
+        p : ndarray
+          Corresponding array of evaluated transformation parameters
         """
         nparams = T.param.size
         if hasattr(T, 'copy'):
@@ -445,10 +460,8 @@ def clamp(x, bins, mask=None):
     ----------
     x : ndarray
       The input array
-
     bins : number
       Desired number of bins
-
     mask : ndarray, tuple or slice
       Anything such that x[mask] is an array.
 
@@ -456,10 +469,8 @@ def clamp(x, bins, mask=None):
     -------
     y : ndarray
       Clamped array, masked items are assigned -1
-
     bins : number
       Adjusted number of bins
-
     """
     if bins > np.iinfo(np.short).max:
         raise ValueError('Too large a bin size')
@@ -483,7 +494,6 @@ def ideal_spacing(data, npoints):
     ----------
     data : ndarray or sequence
       Data image to subsample
-
     npoints : number
       Target number of voxels (negative values will be ignored)
 
@@ -491,7 +501,6 @@ def ideal_spacing(data, npoints):
     -------
     spacing: ndarray
       Spacing factors
-
     """
     dims = data.shape
     actual_npoints = (data >= 0).sum()
@@ -527,7 +536,6 @@ def smallest_bounding_box(msk):
     -------
     corner: ndarray
       3-dimensional coordinates of bounding box corner
-
     size: ndarray
       3-dimensional size of bounding box
     """
@@ -546,10 +554,8 @@ def approx_gradient(f, x, epsilon):
     ----------
     f: callable
       The function to differentiate
-
     x: ndarray
       Point where the function gradient is to be evaluated
-
     epsilon: float
       Stepsize for finite differences
 
@@ -577,10 +583,8 @@ def approx_hessian_diag(f, x, epsilon):
     ----------
     f: callable
       The function to differentiate
-
     x: ndarray
       Point where the Hessian is to be evaluated
-
     epsilon: float
       Stepsize for finite differences
 
@@ -609,10 +613,8 @@ def approx_hessian(f, x, epsilon):
     ----------
     f: callable
       The function to differentiate
-
     x: ndarray
       Point where the Hessian is to be evaluated
-
     epsilon: float
       Stepsize for finite differences
 
@@ -641,10 +643,8 @@ def smooth_image(data, affine, sigma):
     ----------
     data: ndarray
       Image data array
-
     affine: ndarray
       Image affine transform
-
     sigma: float
       Filter standard deviation in mm
 

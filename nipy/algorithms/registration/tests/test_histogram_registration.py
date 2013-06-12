@@ -90,13 +90,22 @@ def _test_similarity_measure(simi, val):
     assert_almost_equal(R.eval(Affine()), val)
 
 
-def _test_renormalized_similarity_measure(simi):
+def _test_renormalization1(simi):
     I = make_xyz_image(make_data_int16(), dummy_affine, 'scanner')
-    J = make_xyz_image(I.get_data().copy(), dummy_affine, 'scanner')
-    R = HistogramRegistration(I, J)
+    R = HistogramRegistration(I, I)
     R.subsample(spacing=[2, 1, 3])
     R._set_similarity(simi, renormalize=True)
     assert R.eval(Affine()) > 1e5
+
+
+def _test_renormalization2(simi):
+    I = make_xyz_image(make_data_int16(), dummy_affine, 'scanner')
+    I0 = make_xyz_image(np.zeros(I.shape, dtype='int16'),
+                        dummy_affine, 'scanner')
+    R = HistogramRegistration(I0, I)
+    R.subsample(spacing=[2, 1, 3])
+    R._set_similarity(simi, renormalize=True)
+    assert_almost_equal(R.eval(Affine()), 0)
 
 
 def test_correlation_coefficient():
@@ -116,15 +125,18 @@ def test_normalized_mutual_information():
 
 
 def test_renormalized_correlation_coefficient():
-    _test_renormalized_similarity_measure('cc')
+    _test_renormalization1('cc')
+    _test_renormalization2('cc')
 
 
 def test_renormalized_correlation_ratio():
-    _test_renormalized_similarity_measure('cr')
+    _test_renormalization1('cr')
+    _test_renormalization2('cr')
 
 
 def test_renormalized_correlation_ratio_l1():
-    _test_renormalized_similarity_measure('crl1')
+    _test_renormalization1('crl1')
+    _test_renormalization2('crl1')
 
 
 def test_joint_hist_eval():
@@ -218,16 +230,36 @@ def test_similarity_derivatives():
     """
     I = make_xyz_image(make_data_int16(dx=100, dy=100, dz=50),
                        dummy_affine, 'scanner')
-    J = make_xyz_image(make_data_int16(dx=100, dy=100, dz=50),
+    J = make_xyz_image(np.ones((100, 100, 50), dtype='int16'),
                        dummy_affine, 'scanner')
     R = HistogramRegistration(I, J)
     T = Rigid()
     g = R.eval_gradient(T)
-    assert_equal(g.shape, (6,))
     assert_equal(g.dtype, float)
+    assert_equal(g, np.zeros(6))
     H = R.eval_hessian(T)
-    assert_equal(H.shape, (6, 6))
     assert_equal(H.dtype, float)
+    assert_equal(H, np.zeros((6, 6)))
+
+
+def test_smoothing():
+    """ Test smoothing the `to` image.
+    """
+    I = make_xyz_image(make_data_int16(dx=100, dy=100, dz=50),
+                       dummy_affine, 'scanner')
+    T = Rigid()
+    R = HistogramRegistration(I, I)
+    R1 = HistogramRegistration(I, I, smooth=1)
+    s = R.eval(T)
+    s1 = R1.eval(T)
+    try:
+        R2 = HistogramRegistration(I, I, smooth=-1)
+        s2 = R2.eval(T)
+    except:
+        s2 = None
+    assert_almost_equal(s, 1)
+    assert s1 < s
+    assert s2 == None
 
 
 if __name__ == "__main__":

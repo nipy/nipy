@@ -38,7 +38,7 @@ mi (mutual information), nmi (normalized mutual information), \
 pmi (Parzen mutual information), dpmi (discrete Parzen mutual \
 information). Default is crl1.'
 
-doc_normalize = 'similarity normalization: 0 or 1. Default is 1.'
+doc_renormalize = 'similarity renormalization: 0 or 1. Default is 0.'
 
 doc_interp = 'interpolation method: tri (trilinear), pv (partial volume), \
 rand (random). Default is pv.'
@@ -48,8 +48,8 @@ Default is powell.'
 
 parser.add_option('-s', '--similarity', dest='similarity',
                   help=doc_similarity)
-parser.add_option('-n', '--normalize', dest='normalize',
-                  help=doc_normalize)
+parser.add_option('-r', '--renormalize', dest='renormalize',
+                  help=doc_renormalize)
 parser.add_option('-i', '--interp', dest='interp',
                   help=doc_interp)
 parser.add_option('-o', '--optimizer', dest='optimizer',
@@ -59,13 +59,13 @@ opts, args = parser.parse_args()
 
 # Optional arguments
 similarity = 'crl1'
-normalize = True
+renormalize = False
 interp = 'pv'
 optimizer = 'powell'
 if not opts.similarity == None:
     similarity = opts.similarity
-if not opts.normalize == None:
-    normalize = bool(int(opts.normalize))
+if not opts.renormalize == None:
+    renormalize = bool(int(opts.renormalize))
 if not opts.interp == None:
     interp = opts.interp
 if not opts.optimizer == None:
@@ -88,7 +88,7 @@ J = load_image(target_file)
 print('Setting up registration...')
 tic = time.time()
 R = HistogramRegistration(I, J, similarity=similarity, interp=interp,
-                          normalize=normalize)
+                          renormalize=renormalize)
 T = R.optimize('affine', optimizer=optimizer)
 toc = time.time()
 print('  Registration time: %f sec' % (toc - tic))
