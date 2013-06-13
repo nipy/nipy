@@ -252,14 +252,9 @@ def test_smoothing():
     R1 = HistogramRegistration(I, I, smooth=1)
     s = R.eval(T)
     s1 = R1.eval(T)
-    try:
-        R2 = HistogramRegistration(I, I, smooth=-1)
-        s2 = R2.eval(T)
-    except:
-        s2 = None
     assert_almost_equal(s, 1)
     assert s1 < s
-    assert s2 == None
+    assert_raises(ValueError, HistogramRegistration, I, I, smooth=-1)
 
 
 if __name__ == "__main__":
