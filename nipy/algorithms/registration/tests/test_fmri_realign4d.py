@@ -12,55 +12,26 @@ from ....fixes.nibabel import io_orientation
 from ....core.image.image_spaces import (make_xyz_image,
                                         xyz_affine)
 
-from ..groupwise_registration import Image4d, resample4d, SpaceTimeRealign
+from ..groupwise_registration import Image4d, resample4d, FmriRealign4d
 from ..affine import Rigid
 
 im = load_image(funcfile)
+print('**********************')
+print im.shape
 
 
 def test_scanner_time():
-    im4d = Image4d(im.get_data(), im.affine, tr=2.,
-                   slice_times='ascending', interleaved=False)
+    im4d = Image4d(im.get_data(), im.affine, tr=3.,
+                   slice_times=(0, 1, 2))
     assert_equal(im4d.scanner_time(0, 0), 0.)
     assert_equal(im4d.scanner_time(0, im4d.tr), 1.)
 
 
 def test_slice_info():
-    im4d = Image4d(im.get_data(), im.affine, tr=2.,
-                   slice_info=(1, -1))
-    assert_equal(im4d.slice_axis, 1)
+    im4d = Image4d(im.get_data(), im.affine, tr=3.,
+                   slice_times=(0, 1, 2), slice_info=(2, -1))
+    assert_equal(im4d.slice_axis, 2)
     assert_equal(im4d.slice_direction, -1)
-
-
-def _test_image4d_init(nslices):
-    data = np.zeros((3, 4, nslices, 6))
-    aff = np.eye(4)
-    tr = 2.0
-    slice_times = (tr / float(nslices)) * np.arange(nslices)
-    img4d = Image4d(data, aff, tr)
-    assert_array_equal(img4d.slice_times, slice_times)
-    img4d = Image4d(data, aff, tr, slice_times='ascending')
-    assert_array_equal(img4d.slice_times, slice_times)
-    img4d = Image4d(data, aff, tr, slice_times='descending')
-    assert_array_equal(img4d.slice_times, slice_times[::-1])
-    # test interleaved slice order
-    interleaved_slice_times = (tr / float(nslices)) *\
-        np.argsort(range(0, nslices, 2) + range(1, nslices, 2))
-    img4d = Image4d(data, aff, tr, slice_times='ascending', interleaved=True)
-    assert_array_equal(img4d.slice_times, interleaved_slice_times)
-    img4d = Image4d(data, aff, tr, slice_times='descending', interleaved=True)
-    assert_array_equal(img4d.slice_times, interleaved_slice_times[::-1])
-    # can pass list
-    img4d = Image4d(data, aff, tr, slice_times=list(slice_times))
-    assert_array_equal(img4d.slice_times, slice_times)
-
-
-def test_image4d_init_5slices():
-    _test_image4d_init(5)
-
-
-def test_image4d_init_6slices():
-    _test_image4d_init(6)
 
 
 def test_slice_timing():
@@ -73,7 +44,36 @@ def test_slice_timing():
 
 def test_realign4d_no_time_interp():
     runs = [im, im]
-    R = SpaceTimeRealign(runs, 1.0, slice_times=None)
+    R = FmriRealign4d(runs, time_interp=False)
+    assert R.slice_times == 0
+
+
+def test_realign4d_ascending():
+    runs = [im, im]
+    R = FmriRealign4d(runs, tr=3, slice_order='ascending')
+    assert_array_equal(R.slice_times, (0, 1, 2))
+    assert R.tr == 3
+
+
+def test_realign4d_descending():
+    runs = [im, im]
+    R = FmriRealign4d(runs, tr=3, slice_order='descending')
+    assert_array_equal(R.slice_times, (2, 1, 0))
+    assert R.tr == 3
+
+
+def test_realign4d_ascending_interleaved():
+    runs = [im, im]
+    R = FmriRealign4d(runs, tr=3, slice_order='ascending', interleaved=True)
+    assert_array_equal(R.slice_times, (0, 2, 1))
+    assert R.tr == 3
+
+
+def test_realign4d_descending_interleaved():
+    runs = [im, im]
+    R = FmriRealign4d(runs, tr=3, slice_order='descending', interleaved=True)
+    assert_array_equal(R.slice_times, (1, 2, 0))
+    assert R.tr == 3
 
 
 def test_realign4d():
@@ -92,11 +92,11 @@ def test_realign4d():
     runs = [im, im]
     orient = io_orientation(im.affine)
     slice_axis = int(np.where(orient[:, 0] == 2)[0])
-    R1 = SpaceTimeRealign(runs, tr=2., slice_times='ascending')
+    R1 = FmriRealign4d(runs, tr=2., slice_order='ascending')
     R1.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
     nslices = im.shape[slice_axis]
     slice_times = (2. / float(nslices)) * np.arange(nslices)
-    R2 = SpaceTimeRealign(runs, tr=2., slice_times=slice_times)
+    R2 = FmriRealign4d(runs, tr=2., slice_times=slice_times)
     R2.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
     for r in range(2):
         for i in range(im.shape[3]):
@@ -117,7 +117,7 @@ def test_realign4d_runs_with_different_affines():
     aff2[0:3, 3] += 5
     im2 = make_xyz_image(im.get_data(), aff2, 'scanner')
     runs = [im, im2]
-    R = SpaceTimeRealign(runs, tr=2., slice_times='ascending')
+    R = FmriRealign4d(runs, tr=2., slice_order='ascending')
     R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
     cor_im, cor_im2 = R.resample()
     assert_array_equal(xyz_affine(cor_im2), aff)
