@@ -6,9 +6,9 @@
 # and it is impractical to build them
 language: erlang
 env:
-    # Enable python 2 and python 3 builds. Python3 available in Ubuntu 12.04.
+    # Enable python 2 and python 3 builds. Python3.2 available in Ubuntu 12.04.
     - PYTHON=python PYSUF=''
-    - PYTHON=python3 PYSUF=3
+    - PYTHON=python3 PYSUF=3 PYVER=3.2
 install:
     - sudo apt-get update
     - sudo apt-get install $PYTHON-dev
@@ -16,18 +16,13 @@ install:
     - sudo apt-get install $PYTHON-scipy
     - sudo apt-get install $PYTHON-setuptools
     - sudo apt-get install $PYTHON-nose
-    # Installing sympy for python3 currently an unpleasant task.
+    # Installing sympy for python3 needs pip
     # The following is an extended virtual line; will be made into one line by
     # Travis processing.  Avoid `-` at the beginning of the line, remember to
     # add `;` at the end of continuation lines.
     - if [ "${PYSUF}" == "3" ]; then
-        git clone git://github.com/sympy/sympy.git _sympy ;
-        cd _sympy ;
-        git checkout -b 0.7.2 sympy-0.7.2 ;
-        python3 ./bin/use2to3 ;
-        cd py3k-sympy ;
-        sudo python3 setup.py install ;
-        cd ../.. ;
+        sudo easy_install$PYSUF pip;
+        sudo pip-$PYVER install sympy;
       else
         sudo apt-get install $PYTHON-sympy ;
       fi
