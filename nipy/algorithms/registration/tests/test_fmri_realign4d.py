@@ -3,21 +3,20 @@
 
 from nose.tools import assert_equal
 
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import (assert_array_almost_equal,
+                           assert_array_equal,
+                           assert_raises)
 import numpy as np
 
 from .... import load_image
 from ....testing import funcfile
 from ....fixes.nibabel import io_orientation
-from ....core.image.image_spaces import (make_xyz_image,
-                                        xyz_affine)
+from ....core.image.image_spaces import (make_xyz_image, xyz_affine)
 
-from ..groupwise_registration import Image4d, resample4d, FmriRealign4d
+from ..groupwise_registration import (Image4d, resample4d, FmriRealign4d)
 from ..affine import Rigid
 
 im = load_image(funcfile)
-print('**********************')
-print im.shape
 
 
 def test_scanner_time():
@@ -74,6 +73,32 @@ def test_realign4d_descending_interleaved():
     R = FmriRealign4d(runs, tr=3, slice_order='descending', interleaved=True)
     assert_array_equal(R.slice_times, (1, 2, 0))
     assert R.tr == 3
+
+
+def wrong_call(slice_times=None, slice_order=None, tr_slices=None,
+               interleaved=None, time_interp=None):
+    runs = [im, im]
+    return FmriRealign4d(runs, tr=3, slice_times=slice_times,
+                         slice_order=slice_order,
+                         tr_slices=tr_slices,
+                         interleaved=interleaved,
+                         time_interp=time_interp)
+
+
+def test_realign4d_incompatible_args():
+    assert_raises(ValueError, wrong_call, slice_order=(0, 1, 2),
+                  interleaved=False)
+    assert_raises(ValueError, wrong_call, slice_times=(0, 1, 2),
+                  slice_order='ascending')
+    assert_raises(ValueError, wrong_call, slice_times=(0, 1, 2),
+                  slice_order=(0, 1, 2))
+    assert_raises(ValueError, wrong_call, slice_times=(0, 1, 2),
+                  time_interp=True)
+    assert_raises(ValueError, wrong_call, slice_times=(0, 1, 2),
+                  time_interp=False)
+    assert_raises(ValueError, wrong_call, time_interp=True)
+    assert_raises(ValueError, wrong_call, slice_times=(0, 1, 2),
+                  tr_slices=1)
 
 
 def test_realign4d():

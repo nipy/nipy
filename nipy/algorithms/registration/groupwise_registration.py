@@ -708,17 +708,7 @@ class Realign4d(object):
         slice_times : None or array-like
           If None, slices are assumed to be acquired simultaneously
           hence no slice timing correction is performed. If
-          array-like, then the slice acquisition times (from bottom to
-          top of the head). For instance, the following represents an
-          ascending contiguous sequence:
-
-          slice_times = (tr/nslices) * np.array([0, 1, 2, ...])
-
-          where `nslices` is the number of slices per volume.
-
-          A typical interleaved sequence may be represented by:
-
-          slice_times = (tr/nslices) * np.array([0, (nslices+1)/2, 1, 1+(nslices+1)/2, 2, ...])
+          array-like, then the slice acquisition times.
 
         slice_info : None or tuple, optional
           None, or a tuple with slice axis as the first element and
@@ -844,6 +834,20 @@ class FmriRealign4d(Realign4d):
 
           slice_order = [0, 1, 2, ...]
 
+          Note that `slice_order` differs from the argument used
+          e.g. in the SPM slice timing routine in that it maps spatial
+          slice positions to slice times. It is a mapping from space
+          to time, while SPM conventionally uses the reverse mapping
+          from time to space. For example, for an interleaved sequence
+          with 10 slices, where we acquired slice 0 (in space) first,
+          then slice 2 (in space) etc, `slice_order` would be [0, 5,
+          1, 6, 2, 7, 3, 8, 4, 9]
+
+          Using `slice_order` assumes that the inter-slice acquisition
+          time is constant throughout acquisition. If this is not the
+          case, use the `slice_times` argument instead and leave
+          `slice_order` to None.
+
         tr : float
           Inter-scan repetition time, i.e. the time elapsed between
           two consecutive scans. The unit in which `tr` is given is
@@ -873,24 +877,27 @@ class FmriRealign4d(Realign4d):
           correction will be performed.
 
         interleaved : bool
-          Tells whether slice acquisition order is
-          interleaved. Ignored if `slice_order` is array-like.
+          Tells whether slice acquisition order is interleaved in a
+          common sense. Setting `interleaved` to True or False will
+          trigger an error unless `slice_order` is 'ascending' or
+          'descending' and `slice_times` is None.
 
           If slice_order=='ascending' and interleaved==True, the
-          assumed slice order is:
+          assumed slice order is (assuming 10 slices):
 
-          [0, 2, 4, ..., 1, 3, 5, ...]
+          [0, 5, 1, 6, 2, 7, 3, 8, 4, 9]
 
           If slice_order=='descending' and interleaved==True, the
           assumed slice order is:
 
-          [N-1, N-3, N-5, ..., N-2, N-4, N-6]
+          [9, 4, 8, 3, 7, 2, 6, 1, 5, 0]
 
-          Given that there exist other types of interleaved
+          WARNING: given that there exist other types of interleaved
           acquisitions depending on scanner settings and
-          manufacturers, it is strongly recommended to input the
-          slice_order as an array unless you are sure what you are
-          doing.
+          manufacturers, you should refrain from using the
+          `interleaved` keyword argument unless you are sure what you
+          are doing. It is generally safer to explicitely input
+          `slice_order` or `slice_times`.
 
         slice_times : None, str or array-like
 
@@ -898,37 +905,28 @@ class FmriRealign4d(Realign4d):
           `tr_slices`, `start` and `time_interp` altogether.
 
           If None, slices are assumed to be acquired simultaneously
-          hence no slice timing correction is performed. If array-like,
-          then the slice acquisition times (from bottom to top of the
-          head). For instance, the following represents an ascending
-          contiguous sequence:
+          hence no slice timing correction is performed. If
+          array-like, then `slice_times` gives the slice acquisition
+          times along the slice axis in units that are consistent with
+          the provided `tr`.
 
-          slice_times = (tr/nslices) * np.array([0, 1, 2, ...])
+          Generally speaking, the following holds for sequences with
+          constant inter-slice repetition time `tr_slices`:
 
-          where `nslices` is the number of slices per volume.
+          `slice_times` = `start` + `tr_slices` * `slice_order`
 
-          A typical interleaved sequence may be represented by:
-
-          slice_times = (tr/nslices) * np.array([0, (nslices+1)/2, 1, 1+(nslices+1)/2, 2, ...])
-
-          Given that there exist other types of interleaved
-          acquisitions depending on scanner settings and
-          manufacturers, make sure you have `slice_times` correct.
-
-          Note that `slice_times` supersedes the previous and now
-          obsolete `slice_order` argument where the values represented
-          the spatial position of the scans along the slice axis, and
-          the element number in the array [0, 1, ...] represented the
-          order in time. For example, for an interleaved sequence with
-          10 slices, where we acquired slice 0 (in space) first, then
-          slice 2 (in space) etc, the `slice_order` array would be [0,
-          5, 1, 6, 2, 7, 3, 8, 4, 9]
+          For other sequences such as, e.g., sequences with
+          simultaneously acquired slices, it is necessary to input
+          `slice_times` explicitely along with `tr`.
 
         slice_info : None or tuple, optional
           None, or a tuple with slice axis as the first element and
-          direction as the second, for instance (2, 1).  If None, then
-          guess the slice axis, and direction, as the closest to the z
-          axis, as estimated from the affine.
+          direction as the second, for instance (2, 1). If None, then
+          the slice axis and direction are guessed from the first
+          run's affine assuming that slices are collected along the
+          closest axis to the z-axis. This means that we assume by
+          default an axial acquisition with slice axis pointing from
+          bottom to top of the head.
         """
         # if slice_times not None, make sure that parameters redundant
         # with slice times all have their default value
@@ -958,9 +956,9 @@ class FmriRealign4d(Realign4d):
                     raise ValueError('Slice order is requested '\
                                          'with time interpolation switched on')
                 slice_times = 0.0
-            # if slice_order is a key word, replace it with the
-            # appropriate array of slice indices
             else:
+                # if slice_order is a key word, replace it with the
+                # appropriate array of slice indices
                 if slice_order in ('ascending', 'descending'):
                     if isinstance(images, (list, tuple, np.array)):
                         xyz_img = as_xyz_image(images[0])
@@ -971,6 +969,7 @@ class FmriRealign4d(Realign4d):
                         slice_info, xyz_affine(xyz_img))
                     nslices = xyz_img.shape[slice_axis]
                     if interleaved:
+                        warnings.warn('`interleaved` keyword argument is deprecated')
                         aux = np.argsort(range(0, nslices, 2) +\
                                              range(1, nslices, 2))
                     else:
@@ -978,7 +977,15 @@ class FmriRealign4d(Realign4d):
                     if slice_order == 'descending':
                         aux = aux[::-1]
                     slice_order = aux
-                slice_order = np.asarray(slice_order)
+                # if slice_order is provided explicitely, issue a
+                # warning and make sure interleaved is set to None
+                else:
+                    warnings.warn('Please make sure you are NOT using '\
+                                      'SPM-style slice order declaration')
+                    if not interleaved == None:
+                        raise ValueError('`interleaved` should be None when'\
+                                             'providing explicit slice order')
+                    slice_order = np.asarray(slice_order)
                 if tr_slices == None:
                     tr_slices = float(tr) / float(len(slice_order))
                 if start == None:

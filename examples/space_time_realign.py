@@ -37,11 +37,12 @@ R = FmriRealign4d(runs, tr=2.5, slice_order='ascending', interleaved=True)
 # If you are not sure what the above is doing, you can alternatively
 # declare slice times explicitely using the following equivalent code
 """
+tr = 2.5
 nslices = runs[0].shape[2]
 slice_times = (tr / float(nslices)) *\
     np.argsort(range(0, nslices, 2) + range(1, nslices, 2))
 print('Slice times: %s' % slice_times)
-R = FmriRealign4d(runs, tr=2.5, slice_times=slice_times)
+R = FmriRealign4d(runs, tr=tr, slice_times=slice_times)
 """
 
 # Estimate motion within- and between-sessions
