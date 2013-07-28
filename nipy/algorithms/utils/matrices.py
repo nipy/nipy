@@ -48,10 +48,10 @@ def matrix_rank(M, tol=None):
 
     Notes
     -----
-    We check for numerical rank deficiency by using tol=max(M.shape) * eps *
-    S[0] (where S[0] is the maximum singular value and thus the 2-norm of the
-    matrix). This is one tolerance threshold for rank deficiency, and the
-    default algorithm used by MATLAB [2].  When floating point roundoff is the
+    We check for numerical rank deficiency by using ``tol=max(M.shape) * eps *
+    S[0]`` (where ``S[0]`` is the maximum singular value and thus the 2-norm of
+    the matrix). This is one tolerance threshold for rank deficiency, and the
+    default algorithm used by MATLAB [#2]_.  When floating point roundoff is the
     main concern, then "numerical rank deficiency" is a reasonable choice. In
     some cases you may prefer other definitions. The most useful measure of the
     tolerance depends on the operations you intend to use on your matrix. For
@@ -62,9 +62,9 @@ def matrix_rank(M, tol=None):
 
     References
     ----------
-    .. [1] G. H. Golub and C. F. Van Loan, _Matrix Computations_.
+    .. [#1] G. H. Golub and C. F. Van Loan, _Matrix Computations_.
     Baltimore: Johns Hopkins University Press, 1996.
-    .. [2] http://www.mathworks.com/help/techdoc/ref/rank.html
+    .. [#2] http://www.mathworks.com/help/techdoc/ref/rank.html
     '''
     M = np.asarray(M)
     if M.ndim > 2:
@@ -147,5 +147,3 @@ def recipr0(X):
     """
     X = np.asarray(X)
     return np.where(X==0, 0, 1. / X)
-
-
