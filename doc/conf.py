@@ -38,7 +38,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.doctest',
               'sphinx.ext.pngmath',
               'sphinx.ext.autosummary',
-              'inheritance_diagram',
+              'sphinx.ext.inheritance_diagram',
               'numpy_ext.numpydoc',
               'matplotlib.sphinxext.plot_directive',
               'matplotlib.sphinxext.only_directives', # needed for above
