@@ -877,8 +877,10 @@ class FmriRealign4d(Realign4d):
           correction will be performed.
 
         interleaved : bool
+          Deprecated argument.
+
           Tells whether slice acquisition order is interleaved in a
-          common sense. Setting `interleaved` to True or False will
+          certain sense. Setting `interleaved` to True or False will
           trigger an error unless `slice_order` is 'ascending' or
           'descending' and `slice_times` is None.
 
