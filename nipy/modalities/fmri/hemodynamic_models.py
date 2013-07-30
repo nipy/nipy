@@ -140,21 +140,29 @@ def spm_dispersion_derivative(tr, oversampling=16, time_length=32., onset=0.):
 
 
 def sample_condition(exp_condition, frametimes, oversampling=16):
-    """ this function samples the experimental condition at frametimes
+    """Make a possibly oversampled event regressor from condition information.
 
     Parameters
     ----------
-    exp_condition: a tuple of 3 arrays of shape n, corresponding
-                   to  (onsets, duration, value),
-                   describing the experimental condition
-    frametimes: array of shape(n)
-    over_sampling: int, over_sampling factor
+    exp_condition: 3 x n_event arraylike
+        (onsets, durations, amplitudes) of events for this condition
+    frametimes: array of shape(n) starting at 0
+        timepoints corresponding to sampled data
+    over_sampling: int, default 16
+        factor for oversampling event regressor
 
     Returns
     -------
     regressor: array of shape(n)
+        possibly oversampled event regressor
+    hr_frametimes : array of shape(n)
+        frametimes corresponding to regressor
+
     """
-    # generate the oversampled frame times
+    if frametimes[0] != 0:
+        raise ValueError("Frametimes must start at 0")
+
+    # Find the high-resolution frametimes
     n = frametimes.size
     if oversampling == 1:
         hr_frametimes = frametimes
@@ -162,29 +170,27 @@ def sample_condition(exp_condition, frametimes, oversampling=16):
         hr_frametimes = np.linspace(0, frametimes.max() * (1 + 1. / (n - 1)),
                                     n * oversampling + 1)
 
-    # get the regressor information
-    onsets, duration, values = exp_condition
-    onsets, duration, values = np.asanyarray(onsets), np.asanyarray(duration),\
-        np.asanyarray(values)
+    # Get the condition information
+    onsets, durations, values = tuple(map(np.asanyarray, exp_condition))
+    if np.any(onsets < 0):
+        raise ValueError("Onset times cannot be negative")
 
-    # generate the regressor time course
+    # Set up the regressor timecourse
     tmax = len(hr_frametimes)
     regressor = np.zeros_like(hr_frametimes).astype(np.float)
     t_onset = np.minimum(np.searchsorted(hr_frametimes, onsets), tmax - 1)
     regressor[t_onset] += values
-    t_offset = np.minimum(np.searchsorted(hr_frametimes, onsets + duration),
+    t_offset = np.minimum(np.searchsorted(hr_frametimes, onsets + durations),
                           tmax - 1)
-    # for event related, shift the offset by 1
+
+    # Handle the case where duration is 0 by offsetting at t + 1
     for i, to in enumerate(t_offset):
-        if to > 0 and to < tmax - 1 and to == t_onset[i]:
+        if to < (tmax - 1) and to == t_onset[i]:
             t_offset[i] += 1
 
     regressor[t_offset] -= values
     regressor = np.cumsum(regressor)
 
-    # normalize the regressor in case of  block design
-    #if (duration > 0).any():
-    #    regressor /= oversampling
     return regressor, hr_frametimes
 
 
