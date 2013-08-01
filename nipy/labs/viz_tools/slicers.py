@@ -374,11 +374,17 @@ class BaseSlicer(object):
                             get_mask_bounds(not_mask, affine)
             if kwargs.get('vmin') is None and kwargs.get('vmax') is None:
                 # Avoid dealing with masked arrays: they are slow
-                masked_map = np.asarray(map)[not_mask]
+                if not np.any(not_mask):
+                    # Everything is masked
+                    vmin = vmax = 0
+                else:
+                    masked_map = np.asarray(map)[not_mask]
+                    vmin = masked_map.min()
+                    vmax = masked_map.max()
                 if kwargs.get('vmin') is None:
-                    kwargs['vmin'] = masked_map.min()
+                    kwargs['vmin'] = vmin
                 if kwargs.get('max') is None:
-                    kwargs['vmax'] = masked_map.max()
+                    kwargs['vmax'] = vmax
         else:
             if not 'vmin' in kwargs:
                 kwargs['vmin'] = map.min()
