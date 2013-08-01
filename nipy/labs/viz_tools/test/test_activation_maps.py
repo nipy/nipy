@@ -62,3 +62,15 @@ def test_anat_cache():
         pass
 
 
+def test_plot_map_empty():
+    # Test that things don't crash when we give a map with nothing above
+    # threshold
+    # This is only a smoke test
+    mp.use('svg', warn=False)
+    import pylab as pl
+    pl.switch_backend('svg')
+    data = np.zeros((20, 20, 20))
+    plot_anat(data, mni_sform)
+    plot_map(data, mni_sform, slicer='y', threshold=1)
+    pl.close('all')
+
