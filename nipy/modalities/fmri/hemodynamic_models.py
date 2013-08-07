@@ -139,7 +139,7 @@ def spm_dispersion_derivative(tr, oversampling=16, time_length=32., onset=0.):
     return dhrf
 
 
-def sample_condition(exp_condition, frametimes, oversampling=16):
+def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
     """Make a possibly oversampled event regressor from condition information.
 
     Parameters
@@ -150,6 +150,9 @@ def sample_condition(exp_condition, frametimes, oversampling=16):
         timepoints corresponding to sampled data
     over_sampling: int, default 16
         factor for oversampling event regressor
+    min_onset: float, default -20
+        minimal onset considered in the time course (in seconds)
+        events that start before this will not be considered
 
     Returns
     -------
@@ -159,22 +162,23 @@ def sample_condition(exp_condition, frametimes, oversampling=16):
         frametimes corresponding to regressor
 
     """
-    if frametimes[0] != 0:
-        raise ValueError("Frametimes must start at 0")
+    if frametimes[0] < 0:
+        raise ValueError("Frametimes must start at non-negative time")
 
     # Find the high-resolution frametimes
     n = frametimes.size
-    if oversampling == 1:
-        hr_frametimes = frametimes
-    else:
-        hr_frametimes = np.linspace(0, frametimes.max() * (1 + 1. / (n - 1)),
-                                    n * oversampling + 1)
+    min_onset = min(float(min_onset), frametimes.min())
+    n_hr = ((n - 1) * 1. / (frametimes.max() - frametimes.min()) *
+            (frametimes.max() * (1 + 1. / (n - 1)) - min_onset)
+            * oversampling) + 1
+
+    hr_frametimes = np.linspace(min_onset, 
+                                frametimes.max() * (1 + 1. / (n - 1)),
+                                n_hr)
 
     # Get the condition information
     onsets, durations, values = tuple(map(np.asanyarray, exp_condition))
-    if np.any(onsets < 0):
-        raise ValueError("Onset times cannot be negative")
-
+    
     # Set up the regressor timecourse
     tmax = len(hr_frametimes)
     regressor = np.zeros_like(hr_frametimes).astype(np.float)
