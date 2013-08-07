@@ -696,15 +696,6 @@ class Realign4d(object):
           arbitrary although it needs to be consistent with the
           `slice_times` argument.
 
-        tr_slices : float
-          Inter-slice repetition time, same as tr for slices. If None,
-          acquisition is assumed continuous and `tr_slices` is set to
-          `tr` divided by the number of slices.
-
-        start : float
-          Starting acquisition time respective to the implicit time
-          origin.
-
         slice_times : None or array-like
           If None, slices are assumed to be acquired simultaneously
           hence no slice timing correction is performed. If
@@ -941,12 +932,13 @@ class FmriRealign4d(Realign4d):
                 raise ValueError('Attempting to set both `slice_times` '\
                                      'and other arguments redundant with it')
             if tr == None:
-                warnings.warn('No `tr` entered, assuming regular acquisition')
                 if len(slice_times) > 1:
                     tr = slice_times[-1] + slice_times[1] - 2 * slice_times[0]
                 else:
                     tr = 2 * slice_times[0]
-                warnings.warn('No `tr` entered. Assuming regular acquisition with tr=%f' % tr)
+                warnings.warn('No `tr` entered. Assuming regular acquisition'\
+                                  ' with tr=%f' % tr)
+        # case where slice_time == None
         else:
             # assume regular slice acquisition, therefore tr is
             # arbitrary
@@ -971,7 +963,8 @@ class FmriRealign4d(Realign4d):
                         slice_info, xyz_affine(xyz_img))
                     nslices = xyz_img.shape[slice_axis]
                     if interleaved:
-                        warnings.warn('`interleaved` keyword argument is deprecated')
+                        warnings.warn('`interleaved` keyword argument is'\
+                                          'deprecated')
                         aux = np.argsort(range(0, nslices, 2) +\
                                              range(1, nslices, 2))
                     else:
