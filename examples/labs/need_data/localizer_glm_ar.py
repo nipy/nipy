@@ -150,7 +150,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
              vmin=- vmax,
              vmax=vmax,
              anat=None,
-             cut_coords='auto',
+             cut_coords=None,
              slicer='z',
              black_bg=True,  # looks much better thus
              figure=10,

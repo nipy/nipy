@@ -56,14 +56,14 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             The activation map, as a 3D image.
         affine : 4x4 ndarray
             The affine matrix going from image voxel space to MNI space.
-        cut_coords: None, string "auto", or a tuple of floats
+        cut_coords: None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
             If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
             For slicer == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
-            If None is given, the cuts is calculated automaticaly.
-            If "auto" is given and slicer= == 'z' (in future, this should work
+            If None is given, the cuts is calculated automaticaly. Further, if
+            slicer= == 'z' (in future, this should work
             for "x", and "y" too), then we'll use a heuristic to automatically
             compute a series of cut_coords.
         anat : 3D ndarray or False, optional
@@ -155,7 +155,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
             do3d = False
 
-    if cut_coords == "auto" and slicer in 'xyz':
+    if cut_coords is None and slicer in 'xyz':
         cut_coords = get_cut_coords(map)
 
     slicer = SLICERS[slicer].init_with_figure(data=map, affine=affine,
