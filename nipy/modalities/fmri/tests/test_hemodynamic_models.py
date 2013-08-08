@@ -1,6 +1,6 @@
 import numpy as np
 from nose.tools import raises
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import assert_almost_equal, assert_equal, assert_array_equal
 
 from ..hemodynamic_models import (
     spm_hrf, spm_time_derivative, spm_dispersion_derivative,
@@ -14,31 +14,31 @@ def test_spm_hrf():
     """
     h = spm_hrf(2.0)
     assert_almost_equal(h.sum(), 1)
-    assert len(h) == 256
+    assert_equal(len(h), 256)
 
 def test_spm_hrf_derivative():
     """ test that the spm_hrf is correctly normalized and has correct length
     """
     h = spm_time_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
-    assert len(h) == 256
+    assert_equal(len(h), 256)
     h = spm_dispersion_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
-    assert len(h) == 256
+    assert_equal(len(h), 256)
 
 def test_glover_hrf():
     """ test that the spm_hrf is correctly normalized and has correct length
     """
     h = glover_hrf(2.0)
     assert_almost_equal(h.sum(), 1)
-    assert len(h) == 256
+    assert_equal(len(h), 256)
 
 def test_glover_time_derivative():
     """ test that the spm_hrf is correctly normalized and has correct length
     """
     h = glover_time_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
-    assert len(h) == 256
+    assert_equal(len(h), 256)
     
 def test_resample_regressor():
     """ test regressor resampling on a linear function
@@ -63,7 +63,7 @@ def test_orthogonalize():
     X = _orthogonalize(X)
     K = np.dot(X.T, X)
     K -= np.diag(np.diag(K))
-    assert (K ** 2).sum() < 1.e-16
+    assert_almost_equal((K ** 2).sum(), 0, 15)
 
 def test_orthogonalize_trivial():
     """ test that the orthogonalization is OK 
@@ -71,7 +71,7 @@ def test_orthogonalize_trivial():
     X = np.random.randn(100)
     Y = X.copy()
     X = _orthogonalize(X)
-    assert (Y == X).all()
+    assert_array_equal(Y, X)
 
 def test_sample_condition_1():
     """ Test that the experimental condition is correctly sampled
@@ -132,13 +132,13 @@ def test_names():
     """ Test the regressor naming function
     """
     name = 'con'
-    assert _regressor_names(name, 'spm') == ['con']
-    assert _regressor_names(name, 'spm_time') == ['con', 'con_derivative']
-    assert _regressor_names(name, 'spm_time_dispersion') == \
-        ['con', 'con_derivative', 'con_dispersion']
-    assert _regressor_names(name, 'canonical') == ['con']
-    assert _regressor_names(name, 'canonical with derivative') == \
-        ['con', 'con_derivative']
+    assert_equal(_regressor_names(name, 'spm'), ['con'])
+    assert_equal(_regressor_names(name, 'spm_time'), ['con', 'con_derivative'])
+    assert_equal(_regressor_names(name, 'spm_time_dispersion'),
+        ['con', 'con_derivative', 'con_dispersion'])
+    assert_equal(_regressor_names(name, 'canonical'), ['con'])
+    assert_equal(_regressor_names(name, 'canonical with derivative'),
+        ['con', 'con_derivative'])
 
 def test_hkernel():
     """ test the hrf computation
@@ -146,24 +146,24 @@ def test_hkernel():
     tr = 2.0
     h = _hrf_kernel('spm', tr)
     assert_almost_equal(h[0], spm_hrf(tr))
-    assert len(h) == 1
+    assert_equal(len(h), 1)
     h = _hrf_kernel('spm_time', tr)
     assert_almost_equal(h[1], spm_time_derivative(tr))
-    assert len(h) == 2
+    assert_equal(len(h), 2)
     h = _hrf_kernel('spm_time_dispersion', tr)
     assert_almost_equal(h[2], spm_dispersion_derivative(tr))
-    assert len(h) == 3
+    assert_equal(len(h), 3)
     h = _hrf_kernel('canonical', tr)
     assert_almost_equal(h[0], glover_hrf(tr))
-    assert len(h) == 1
+    assert_equal(len(h), 1)
     h = _hrf_kernel('canonical with derivative', tr)
     assert_almost_equal(h[1], glover_time_derivative(tr))
     assert_almost_equal(h[0], glover_hrf(tr))
-    assert len(h) == 2
+    assert_equal(len(h), 2)
     h = _hrf_kernel('fir', tr, fir_delays = np.arange(4))
-    assert len(h) == 4
+    assert_equal(len(h), 4)
     for dh in h:
-        assert dh.sum() == 16.
+        assert_equal(dh.sum(), 16.)
     
 def test_make_regressor_1():
     """ test the generated regressor
@@ -173,7 +173,7 @@ def test_make_regressor_1():
     hrf_model = 'spm'
     reg, reg_names = compute_regressor(condition, hrf_model, frametimes)
     assert_almost_equal(reg.sum(), 6, 1)
-    assert reg_names[0] == 'cond'
+    assert_equal(reg_names[0], 'cond')
 
 def test_make_regressor_2():
     """ test the generated regressor
@@ -183,7 +183,7 @@ def test_make_regressor_2():
     hrf_model = 'spm'
     reg, reg_names = compute_regressor(condition, hrf_model, frametimes)
     assert_almost_equal(reg.sum() * 16, 3, 1)
-    assert reg_names[0] == 'cond'
+    assert_equal(reg_names[0], 'cond')
 
 
 def test_make_regressor_3():
@@ -194,9 +194,9 @@ def test_make_regressor_3():
     hrf_model = 'fir'
     reg, reg_names = compute_regressor(condition, hrf_model, frametimes, 
                                        fir_delays=np.arange(4))
-    assert (np.unique(reg) == np.array([0, 1])).all()
-    assert (np.sum(reg, 0) == np.array([3, 3, 3, 3])).all()
-    assert len(reg_names) == 4
+    assert_array_equal(np.unique(reg), np.array([0, 1]))
+    assert_array_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
+    assert_equal(len(reg_names), 4)
 
 if __name__ == "__main__":
     import nose
