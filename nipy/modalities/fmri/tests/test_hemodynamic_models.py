@@ -1,6 +1,6 @@
 import numpy as np
 from nose.tools import raises
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_equal
 
 from ..hemodynamic_models import (
     spm_hrf, spm_time_derivative, spm_dispersion_derivative,
@@ -78,34 +78,44 @@ def test_sample_condition_1():
     """
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frametimes = np.linspace(0, 49, 50)
+    reg, rf = sample_condition(condition, frametimes, oversampling=1, 
+                               min_onset=0)
+    assert_equal(reg.sum(), 3)
+    assert_equal(reg[1], 1)
+    assert_equal(reg[20], 1)
+    assert_equal(reg[37], 1)
+
     reg, rf = sample_condition(condition, frametimes, oversampling=1)
-    assert reg.sum() == 3
-    assert reg[1] == 1
-    assert reg[37] == 1
-    assert reg[20] ==1
+    assert_equal(reg.sum(), 3)
+    assert_equal(reg[21], 1)
+    assert_equal(reg[40], 1)
+    assert_equal(reg[57], 1)
+
 
 def test_sample_condition_2():
     """ Test that the experimental condition is correctly sampled
     """
     condition = ([0, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frametimes = np.linspace(0, 49, 50)
-    reg, rf = sample_condition(condition, frametimes, oversampling=1)
-    assert reg.sum() == 6
-    assert reg[0] == 1
-    assert reg[38] == 1
-    assert reg[21] ==1
+    reg, rf = sample_condition(condition, frametimes, oversampling=1,
+                               min_onset=- 10)
+    assert_equal(reg.sum(), 6)
+    assert_equal(reg[10], 1)
+    assert_equal(reg[48], 1)
+    assert_equal(reg[31], 1)
 
 def test_sample_condition_3():
     """ Test that the experimental condition is correctly sampled
     """
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frametimes = np.linspace(0, 49, 50)
-    reg, rf = sample_condition(condition, frametimes, oversampling=10)
+    reg, rf = sample_condition(condition, frametimes, oversampling=10,
+                               min_onset=0)
     assert_almost_equal(reg.sum(), 60.)
-    assert reg[10] == 1
-    assert reg[380] == 1
-    assert reg[210] == 1
-    assert np.sum(reg > 0) == 60
+    assert_equal(reg[10], 1)
+    assert_equal(reg[380], 1)
+    assert_equal(reg[210], 1)
+    assert_equal(np.sum(reg > 0), 60)
 
 def test_sample_condition_4():
     """ Test that the experimental condition is correctly sampled
@@ -113,18 +123,10 @@ def test_sample_condition_4():
     condition = ([1, 20, 36.5], [2, 2, 2], [1., -1., 5.])
     frametimes = np.linspace(0, 49, 50)
     reg, rf = sample_condition(condition, frametimes, oversampling=1)
-    assert reg.sum() == 10
-    assert reg[1] == 1.
-    assert reg[20] == -1.
-    assert reg[37] == 5.
-
-@raises(ValueError)
-def test_sample_condition_5():
-    """ Test the checks on sample_condition inputs
-    """
-    condition = ([-3, 1, 20, 36.5, 51], [0, 0, 0, 0, 0], [1, 1, 1, 1, 1])
-    frametimes = np.linspace(0, 49, 50)
-    sample_condition(condition, frametimes)
+    assert_equal(reg.sum(),10)
+    assert_equal(reg[21], 1.)
+    assert_equal(reg[40], -1.)
+    assert_equal(reg[57], 5.)
 
 @raises(ValueError)
 def test_sample_condition_6():

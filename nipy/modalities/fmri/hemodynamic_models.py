@@ -167,12 +167,12 @@ def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
 
     # Find the high-resolution frametimes
     n = frametimes.size
-    min_onset = min(float(min_onset), frametimes.min())
+    min_onset = float(min_onset)
     n_hr = ((n - 1) * 1. / (frametimes.max() - frametimes.min()) *
-            (frametimes.max() * (1 + 1. / (n - 1)) - min_onset)
-            * oversampling) + 1
+            (frametimes.max() * (1 + 1. / (n - 1)) - frametimes.min() - 
+             min_onset) * oversampling) + 1
 
-    hr_frametimes = np.linspace(min_onset, 
+    hr_frametimes = np.linspace(frametimes.min() + min_onset, 
                                 frametimes.max() * (1 + 1. / (n - 1)),
                                 n_hr)
 

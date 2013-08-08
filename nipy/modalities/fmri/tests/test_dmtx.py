@@ -314,7 +314,7 @@ def test_dmtx14():
                          drift_model='polynomial', drift_order=3,
                          fir_delays=range(1, 5))
     onset = paradigm.onset[paradigm.con_id == 'c0'].astype(np.int)
-    assert_true(np.all(X[onset + 1, 0] == 1))
+    assert_true(np.all(X[onset + 1, 0] > .9))
 
 
 def test_dmtx15():
