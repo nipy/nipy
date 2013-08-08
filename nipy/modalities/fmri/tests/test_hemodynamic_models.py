@@ -128,14 +128,6 @@ def test_sample_condition_4():
     assert_equal(reg[40], -1.)
     assert_equal(reg[57], 5.)
 
-@raises(ValueError)
-def test_sample_condition_6():
-    """ Test the checks on sample_condition inputs
-    """
-    condition = ([0, 1, 20, 36.5, 51], [0, 0, 0, 0, 0], [1, 1, 1, 1, 1])
-    frametimes = np.linspace(-2, 49, 50)
-    sample_condition(condition, frametimes)
-
 def test_names():
     """ Test the regressor naming function
     """

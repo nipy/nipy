@@ -146,13 +146,14 @@ def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
     ----------
     exp_condition: 3 x n_event arraylike
         (onsets, durations, amplitudes) of events for this condition
-    frametimes: array of shape(n) starting at 0
+    frametimes: array of shape(n)
         timepoints corresponding to sampled data
     over_sampling: int, default 16
         factor for oversampling event regressor
     min_onset: float, default -20
-        minimal onset considered in the time course (in seconds)
-        events that start before this will not be considered
+        minimal onset considered in the time course relative to frametimes[0]
+        (in seconds)
+        events that start before frametimes[0] + min_onset are not considered
 
     Returns
     -------
@@ -162,9 +163,6 @@ def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
         frametimes corresponding to regressor
 
     """
-    if frametimes[0] < 0:
-        raise ValueError("Frametimes must start at non-negative time")
-
     # Find the high-resolution frametimes
     n = frametimes.size
     min_onset = float(min_onset)
