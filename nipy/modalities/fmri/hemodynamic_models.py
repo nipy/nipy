@@ -144,7 +144,7 @@ def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
 
     Parameters
     ----------
-    exp_condition: 3 x n_event arraylike
+    exp_condition: 3 x n_events arraylike
         (onsets, durations, amplitudes) of events for this condition
     frametimes: array of shape(n)
         timepoints corresponding to sampled data

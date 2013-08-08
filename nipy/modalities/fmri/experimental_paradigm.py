@@ -46,7 +46,6 @@ class Paradigm(object):
         self.con_id = con_id
         self.onset = onset
         self.amplitude = amplitude
-        self.n_event = 0
         if con_id is not None:
             self.n_events = len(con_id)
             try:
