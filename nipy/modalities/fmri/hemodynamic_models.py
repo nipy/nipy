@@ -152,8 +152,7 @@ def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
     over_sampling: int, default 16
         factor for oversampling event regressor
     min_onset: float, default -20
-        minimal onset considered in the time course relative to frametimes[0]
-        (in seconds)
+        minimal onset relative to frametimes[0] (in seconds)
         events that start before frametimes[0] + min_onset are not considered
 
     Returns
@@ -311,7 +310,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
 
 
 def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
-                      oversampling=16, fir_delays=None):
+                      oversampling=16, fir_delays=None, min_onset=-20):
     """ This is the main function to convolve regressors with hrf model
 
     Parameters
@@ -324,6 +323,9 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
     con_id: string, optional identifier of the condition
     oversampling: int, optional, oversampling factor to perform the convolution
     fir_delays: array-like of int, onsets corresponding to the fir basis
+    min_onset: float, default -20
+        minimal onset relative to frametimes[0] (in seconds)
+        events that start before frametimes[0] + min_onset are not considered
 
     Returns
     -------
@@ -350,7 +352,7 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
 
     # 1. create the high temporal resolution regressor
     hr_regressor, hr_frametimes = sample_condition(
-        exp_condition, frametimes, oversampling)
+        exp_condition, frametimes, oversampling, min_onset)
 
     # 2. create the  hrf model(s)
     hkernel = _hrf_kernel(hrf_model, tr, oversampling, fir_delays)
