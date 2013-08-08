@@ -57,7 +57,7 @@ n_scans = 128
 tr = 2.4
 
 # paradigm
-frametimes = np.linspace(0.5, (n_scans - .5) * tr, n_scans)
+frametimes = np.linspace(0.5 * tr, (n_scans - .5) * tr, n_scans)
 
 # confounds
 hrf_model = 'canonical with derivative'
