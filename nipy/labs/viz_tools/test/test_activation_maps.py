@@ -79,7 +79,6 @@ def test_plot_map_with_auto_cut_coords():
     import pylab as pl
     pl.switch_backend('svg')
     data = np.zeros((20, 20, 20))
-    data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
 
     for slicer in 'xyz':
