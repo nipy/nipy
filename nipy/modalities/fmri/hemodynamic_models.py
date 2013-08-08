@@ -6,6 +6,7 @@ This module closely follows SPM implementation
 Author: Bertrand Thirion, 2011
 """
 
+import warnings
 import numpy as np
 from scipy.stats import gamma
 
@@ -175,10 +176,10 @@ def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
 
     # Get the condition information
     onsets, durations, values = tuple(map(np.asanyarray, exp_condition))
-    if (onsets < frametimes.min() + min_onset).any():
-        Warning('Some stimulus onsets are earlier than %d' +
-                ' in the experiment and are thus not considered in the model'
-                % frametimes.min() + min_onset)
+    if (onsets < frametimes[0] + min_onset).any():
+        warnings.warn(('Some stimulus onsets are earlier than %d in the' +
+                       ' experiment and are thus not considered in the model'
+                % (frametimes[0] + min_onset)), UserWarning)
     
     # Set up the regressor timecourse
     tmax = len(hr_frametimes)
@@ -187,10 +188,6 @@ def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
     regressor[t_onset] += values
     t_offset = np.minimum(np.searchsorted(hr_frametimes, onsets + durations),
                           tmax - 1)
-    
-    if len(t_onset) < len(onsets):
-        Warning('Some events were ignored or lumped together.' + 
-                'Check the resulting design matrix')
 
     # Handle the case where duration is 0 by offsetting at t + 1
     for i, to in enumerate(t_offset):
@@ -199,7 +196,7 @@ def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
 
     regressor[t_offset] -= values
     regressor = np.cumsum(regressor)
-
+    
     return regressor, hr_frametimes
 
 

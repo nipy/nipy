@@ -1,6 +1,8 @@
 import numpy as np
 from nose.tools import raises
-from numpy.testing import assert_almost_equal, assert_equal, assert_array_equal
+from numpy.testing import (
+    assert_almost_equal, assert_equal, assert_array_equal, assert_warns)
+import warnings
 
 from ..hemodynamic_models import (
     spm_hrf, spm_time_derivative, spm_dispersion_derivative,
@@ -197,6 +199,22 @@ def test_make_regressor_3():
     assert_array_equal(np.unique(reg), np.array([0, 1]))
     assert_array_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
     assert_equal(len(reg_names), 4)
+
+def test_design_warnings():
+    """ test that warnings are correctly raised upon weird design specification
+    """
+    condition = ([-21, 20, 36.5], [0, 0, 0], [1, 1, 1])
+    frametimes = np.linspace(0, 69, 70)
+    hrf_model = 'spm'
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter("always")
+        assert_warns(UserWarning, compute_regressor, condition, hrf_model, 
+                     frametimes)
+    condition = ([-21, -21, 36.5], [0, 0, 0], [1, 1, 1])
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter("always")
+        assert_warns(UserWarning, compute_regressor, condition, hrf_model, 
+                     frametimes)
 
 if __name__ == "__main__":
     import nose
