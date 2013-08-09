@@ -149,3 +149,45 @@ def get_mask_bounds(mask, affine):
     return xmin, xmax, ymin, ymax, zmin, zmax
 
 
+def get_cut_coords(map3d, slicer='z', n_cuts=12, delta_axis=3):
+    """
+    Heuristically computes 'good' cross-section cut_coords for plot_map(...)
+    call.
+
+    Parameters
+    ----------
+    map3d: 3D array
+        the data under consideration
+    slicer: string, optional (default "z")
+        sectional slicer; possible values are "x", "y", or "z"
+    n_cuts: int, optional (default 12)
+        number of cuts in the plot
+    delta_axis: int, optional (default 3)
+        spacing between cuts
+
+    Returns
+    -------
+    cut_coords: 1D array of length n_cuts
+        the computed cut_coords
+
+    Raises
+    ------
+    AssertionError
+
+    """
+
+    assert slicer in 'xyz'
+
+    axis = 'xyz'.index(slicer)
+
+    axis_axis_max = np.unravel_index(
+        np.abs(map3d).argmax(), map3d.shape)[axis]
+    axis_axis_min = np.unravel_index(
+        (-np.abs(map3d)).argmin(), map3d.shape)[axis]
+    axis_axis_min, axis_axis_max = (min(axis_axis_min, axis_axis_max),
+                              max(axis_axis_max, axis_axis_min))
+    axis_axis_min = min(axis_axis_min, axis_axis_max - delta_axis * n_cuts)
+
+    cut_coords = np.linspace(axis_axis_min, axis_axis_max, n_cuts)
+
+    return cut_coords
