@@ -62,10 +62,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
             For slicer == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
-            If None is given, the cuts is calculated automaticaly. Further, if
-            slicer= == 'z' (in future, this should work
-            for "x", and "y" too), then we'll use a heuristic to automatically
-            compute a series of cut_coords.
+            If None is given, the cuts is calculated automaticaly.
         anat : 3D ndarray or False, optional
             The anatomical image to be used as a background. If None, the
             MNI152 T1 1mm template is used. If False, no anat is displayed.
