@@ -83,9 +83,19 @@ def resample(moving, transform=None, reference=None,
     if transform == None:
         transform = Affine()
 
-    # Case: affine transform
+    # Detect what kind of input transform
+    affine = False
     if hasattr(transform, 'as_affine'):
         Tv = transform.as_affine()
+        affine = True
+    else:
+        Tv = transform
+    if hasattr(Tv, 'shape'):
+        if Tv.shape == (4, 4):
+            affine = True
+
+    # Case: affine transform
+    if affine:
         if not ref_voxel_coords:
             Tv = np.dot(Tv, ref_aff)
         if not mov_voxel_coords:
@@ -102,7 +112,6 @@ def resample(moving, transform=None, reference=None,
 
     # Case: non-affine transform
     else:
-        Tv = transform
         if not ref_voxel_coords:
             Tv = Tv.compose(Affine(ref_aff))
         if not mov_voxel_coords:
