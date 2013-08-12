@@ -6,33 +6,68 @@ from scipy.ndimage import gaussian_filter
 TINY = float(np.finfo(np.double).tiny)
 SIGMA_FACTOR = 0.05
 
+# A lambda function to force positive values
+nonzero = lambda x: np.maximum(x, TINY)
 
-def nonzero(x):
+
+def correlation2loglikelihood(rho2, npts):
     """
-    Force strictly positive values.
+    Re-normalize correlation.
+
+    Convert a squared normalized correlation to a proper
+    log-likelihood associated with a registration problem. The result
+    is a function of both the input correlation and the number of
+    points in the image overlap.
+
+    See: Roche, medical image registration through statistical
+    inference, 2001.
+
+    Parameters
+    ----------
+    rho2: float
+      Squared correlation measure
+
+    npts: int
+      Number of points involved in computing `rho2`
+
+    Returns
+    -------
+    ll: float
+      Log-likelihood re-normalized `rho2`
     """
-    return np.maximum(x, TINY)
+    return -.5 * npts * np.log(nonzero(1 - rho2))
 
 
-def dist2loss(dist, margI=None, margJ=None):
-    L = dist
-    LT = L.T
-    if margI == None:
-        margI = L.sum(0)
-    if margJ == None:
-        margJ = L.sum(1)
-    L /= nonzero(margI)
-    LT /= nonzero(margJ)
-    return -np.log(nonzero(L))
+def dist2loss(q, qI=None, qJ=None):
+    """
+    Convert a joint distribution model q(i,j) into a pointwise loss:
+
+    L(i,j) = - log q(i,j)/(q(i)q(j))
+
+    where q(i) = sum_j q(i,j) and q(j) = sum_i q(i,j)
+
+    See: Roche, medical image registration through statistical
+    inference, 2001.
+    """
+    qT = q.T
+    if qI == None:
+        qI = q.sum(0)
+    if qJ == None:
+        qJ = q.sum(1)
+    q /= nonzero(qI)
+    qT /= nonzero(qJ)
+    return -np.log(nonzero(q))
 
 
 class SimilarityMeasure(object):
-
-    def __init__(self, shape, **kwargs):
+    """
+    Template class
+    """
+    def __init__(self, shape, renormalize=False, dist=None):
         self.shape = shape
         self.J, self.I = np.indices(shape)
-        for key in kwargs.keys():
-            self.__setattr__(key, kwargs[key])
+        self.renormalize = renormalize
+        self.dist = dist
 
     def loss(self, H):
         return np.zeros(H.shape)
@@ -40,18 +75,17 @@ class SimilarityMeasure(object):
     def npoints(self, H):
         return H.sum()
 
-    def overall_loss(self, H):
-        return np.sum(H * self.loss(H))
-
-    def averaged_loss(self, H):
-        return np.sum(H * self.loss(H)) / nonzero(self.npoints(H))
-
     def __call__(self, H):
-        return -self.averaged_loss(H)
+        total_loss = np.sum(H * self.loss(H))
+        if not self.renormalize:
+            total_loss /= nonzero(self.npoints(H))
+        return -total_loss
 
 
 class SupervisedLikelihoodRatio(SimilarityMeasure):
-
+    """
+    Assume a joint intensity distribution model is given by self.dist
+    """
     def loss(self, H):
         if not hasattr(self, 'L'):
             self.L = dist2loss(self.dist)
@@ -59,13 +93,17 @@ class SupervisedLikelihoodRatio(SimilarityMeasure):
 
 
 class MutualInformation(SimilarityMeasure):
-
+    """
+    Use the normalized joint histogram as a distribution model
+    """
     def loss(self, H):
         return dist2loss(H / nonzero(self.npoints(H)))
 
 
 class ParzenMutualInformation(SimilarityMeasure):
-
+    """
+    Use Parzen windowing to estimate the distribution model
+    """
     def loss(self, H):
         if not hasattr(self, 'sigma'):
             self.sigma = SIGMA_FACTOR * np.array(H.shape)
@@ -76,7 +114,10 @@ class ParzenMutualInformation(SimilarityMeasure):
 
 
 class DiscreteParzenMutualInformation(SimilarityMeasure):
-
+    """
+    Use Parzen windowing in the discrete case to estimate the
+    distribution model
+    """
     def loss(self, H):
         if not hasattr(self, 'sigma'):
             self.sigma = SIGMA_FACTOR * np.array(H.shape)
@@ -90,23 +131,20 @@ class NormalizedMutualInformation(SimilarityMeasure):
     NMI = 2*(1 - H(I,J)/[H(I)+H(J)])
         = 2*MI/[H(I)+H(J)])
     """
-    def loss(self, H):
-        L = H / nonzero(self.npoints(H))
-        lI = L.sum(0)
-        lJ = L.sum(1)
-        self.hI = lI
-        self.hJ = lJ
-        return -np.log(nonzero(L))
-
     def __call__(self, H):
-        HIJ = self.averaged_loss(H)
-        HI = -np.sum(self.hI * np.log(nonzero(self.hI)))
-        HJ = -np.sum(self.hJ * np.log(nonzero(self.hJ)))
-        return 2 * (1 - HIJ / nonzero(HI + HJ))
+        H = H / nonzero(self.npoints(H))
+        hI = H.sum(0)
+        hJ = H.sum(1)
+        entIJ = -np.sum(H * np.log(nonzero(H)))
+        entI = -np.sum(hI * np.log(nonzero(hI)))
+        entJ = -np.sum(hJ * np.log(nonzero(hJ)))
+        return 2 * (1 - entIJ / nonzero(entI + entJ))
 
 
 class CorrelationCoefficient(SimilarityMeasure):
-
+    """
+    Use a bivariate Gaussian as a distribution model
+    """
     def loss(self, H):
         rho2 = self(H)
         I = (self.I - self.mI) / np.sqrt(nonzero(self.vI))
@@ -117,61 +155,58 @@ class CorrelationCoefficient(SimilarityMeasure):
         L += .5 * np.log(tmp)
         return L
 
-    def averaged_loss(self, H):
-        return .5 * np.log(nonzero(1 - self(H)))
-
     def __call__(self, H):
         npts = nonzero(self.npoints(H))
-        self.mI = np.sum(H * self.I) / npts
-        self.mJ = np.sum(H * self.J) / npts
-        self.vI = np.sum(H * (self.I) ** 2) / npts - self.mI ** 2
-        self.vJ = np.sum(H * (self.J) ** 2) / npts - self.mJ ** 2
-        self.cIJ = np.sum(H * self.J * self.I) / npts - self.mI * self.mJ
-        self.rho = self.cIJ / nonzero(np.sqrt(self.vI * self.vJ))
-        return self.rho ** 2
+        mI = np.sum(H * self.I) / npts
+        mJ = np.sum(H * self.J) / npts
+        vI = np.sum(H * (self.I) ** 2) / npts - mI ** 2
+        vJ = np.sum(H * (self.J) ** 2) / npts - mJ ** 2
+        cIJ = np.sum(H * self.J * self.I) / npts - mI * mJ
+        rho2 = (cIJ / nonzero(np.sqrt(vI * vJ))) ** 2
+        if self.renormalize:
+            rho2 = correlation2loglikelihood(rho2, npts)
+        return rho2
 
 
 class CorrelationRatio(SimilarityMeasure):
-
-    def loss(self, H):
-        print('Sorry, not implemented yet...')
-        return
-
-    def averaged_loss(self, H):
-        return .5 * np.log(nonzero(1. - self(H)))
-
+    """
+    Use a nonlinear regression model with Gaussian errors as a
+    distribution model
+    """
     def __call__(self, H):
-        self.npts_J = np.sum(H, 1)
-        tmp = nonzero(self.npts_J)
-        self.mI_J = np.sum(H * self.I, 1) / tmp
-        self.vI_J = np.sum(H * (self.I) ** 2, 1) / tmp - self.mI_J ** 2
-        self.npts = np.sum(self.npts_J)
-        tmp = nonzero(self.npts)
+        npts_J = np.sum(H, 1)
+        tmp = nonzero(npts_J)
+        mI_J = np.sum(H * self.I, 1) / tmp
+        vI_J = np.sum(H * (self.I) ** 2, 1) / tmp - mI_J ** 2
+        npts = np.sum(npts_J)
+        tmp = nonzero(npts)
         hI = np.sum(H, 0)
         hJ = np.sum(H, 1)
-        self.mI = np.sum(hI * self.I[0, :]) / tmp
-        self.vI = np.sum(hI * self.I[0, :] ** 2) / tmp - self.mI ** 2
-        mean_vI_J = np.sum(hJ * self.vI_J) / tmp
-        return 1. - mean_vI_J / nonzero(self.vI)
+        mI = np.sum(hI * self.I[0, :]) / tmp
+        vI = np.sum(hI * self.I[0, :] ** 2) / tmp - mI ** 2
+        mean_vI_J = np.sum(hJ * vI_J) / tmp
+        eta2 = 1. - mean_vI_J / nonzero(vI)
+        if self.renormalize:
+            eta2 = correlation2loglikelihood(eta2, npts)
+        return eta2
 
 
-class CorrelationRatioL1(SimilarityMeasure):     
-
-    def loss(self, H):
-        print('Sorry, not implemented yet...')
-        return
-
-    def averaged_loss(self, H):
-        return np.log(nonzero(1. - self(H)))
-
+class CorrelationRatioL1(SimilarityMeasure):
+    """
+    Use a nonlinear regression model with Laplace distributed errors
+    as a distribution model
+    """
     def __call__(self, H):
-        tmp = np.array([_L1_moments(H[j, :]) for j in range(H.shape[0])])
-        self.npts_J, self.mI_J, self.sI_J = tmp[:, 0], tmp[:, 1], tmp[:, 2]
+        moments = np.array([_L1_moments(H[j, :]) for j in range(H.shape[0])])
+        npts_J, mI_J, sI_J = moments[:, 0], moments[:, 1], moments[:, 2]
         hI = np.sum(H, 0)
         hJ = np.sum(H, 1)
-        self.npts, self.mI, self.sI = _L1_moments(hI)
-        mean_sI_J = np.sum(hJ * self.sI_J) / nonzero(self.npts)
-        return 1. - mean_sI_J / nonzero(self.sI)
+        npts, mI, sI = _L1_moments(hI)
+        mean_sI_J = np.sum(hJ * sI_J) / nonzero(npts)
+        eta2 = 1. - mean_sI_J / nonzero(sI)
+        if self.renormalize:
+            eta2 = correlation2loglikelihood(eta2, npts)
+        return eta2
 
 
 similarity_measures = {

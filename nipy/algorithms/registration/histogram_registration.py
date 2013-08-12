@@ -5,6 +5,7 @@ Intensity-based image registration
 """
 
 import numpy as np
+import scipy.ndimage as nd
 
 from ...core.image.image_spaces import (make_xyz_image,
                                         as_xyz_image,
@@ -27,9 +28,6 @@ GTOL = 1e-3
 MAXITER = 25
 MAXFUN = None
 CLAMP_DTYPE = 'short'  # do not edit
-BINS = 256
-SIMILARITY = 'crl1'
-INTERP = 'pv'
 NPOINTS = 64 ** 3
 
 # Dictionary of interpolation methods (partial volume, trilinear,
@@ -43,10 +41,10 @@ class HistogramRegistration(object):
     algorithm.
     """
     def __init__(self, from_img, to_img,
-                 from_bins=BINS, to_bins=None,
+                 from_bins=256, to_bins=None,
                  from_mask=None, to_mask=None,
-                 similarity=SIMILARITY, interp=INTERP,
-                 **kwargs):
+                 similarity='crl1', interp='pv',
+                 smooth=0, renormalize=False, dist=None):
         """
         Creates a new histogram registration object.
 
@@ -75,6 +73,10 @@ class HistogramRegistration(object):
        interp : str
          Interpolation method.  One of 'pv': Partial volume, 'tri':
          Trilinear, 'rand': Random interpolation.  See ``joint_histogram.c``
+       smooth : float
+         Standard deviation in millimeters of an isotropic Gaussian
+         kernel used to smooth the `To` image. If 0, no smoothing is
+         applied.
         """
         # Function assumes xyx_affine for inputs
         from_img = as_xyz_image(from_img)
@@ -86,7 +88,7 @@ class HistogramRegistration(object):
 
         # Clamping of the `from` image. The number of bins may be
         # overriden if unnecessarily large.
-        data, from_bins = clamp(from_img.get_data(), bins=from_bins,
+        data, from_bins = clamp(from_img.get_data(), from_bins,
                                 mask=from_mask)
         self._from_img = make_xyz_image(data, xyz_affine(from_img), 'scanner')
         # Set field of view in the `from` image with potential
@@ -99,8 +101,15 @@ class HistogramRegistration(object):
             self.set_fov(corner=corner, size=size, npoints=NPOINTS)
 
         # Clamping of the `to` image including padding with -1
-        data, to_bins = clamp(to_img.get_data(), bins=to_bins,
-                              mask=to_mask)
+        self._smooth = float(smooth)
+        if self._smooth < 0:
+            raise ValueError('smoothing kernel cannot have negative scale')
+        elif self._smooth > 0:
+            data = smooth_image(to_img.get_data(), xyz_affine(to_img),
+                                self._smooth)
+        else:
+            data = to_img.get_data()
+        data, to_bins = clamp(data, to_bins, mask=to_mask)
         self._to_data = -np.ones(np.array(to_img.shape) + 2, dtype=CLAMP_DTYPE)
         self._to_data[1:-1, 1:-1, 1:-1] = data
         self._to_inv_affine = inverse_affine(xyz_affine(to_img))
@@ -111,11 +120,11 @@ class HistogramRegistration(object):
 
         # Set default registration parameters
         self._set_interp(interp)
-        self._set_similarity(similarity, **kwargs)
+        self._set_similarity(similarity, renormalize=renormalize, dist=dist)
 
     def _get_interp(self):
-        return interp_methods.keys()\
-            [interp_methods.values().index(self._interp)]
+        return interp_methods.keys()[\
+            interp_methods.values().index(self._interp)]
 
     def _set_interp(self, interp):
         self._interp = interp_methods[interp]
@@ -152,7 +161,8 @@ class HistogramRegistration(object):
         if not spacing is None:
             fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
         else:
-            fov_data = self._from_img.get_data()[slicer(corner, size, [1, 1, 1])]
+            fov_data = self._from_img.get_data()[
+                slicer(corner, size, [1, 1, 1])]
             spacing = ideal_spacing(fov_data, npoints=npoints)
             fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
         self._from_data = fov_data
@@ -166,11 +176,11 @@ class HistogramRegistration(object):
     def subsample(self, spacing=None, npoints=None):
         self.set_fov(spacing=spacing, npoints=npoints)
 
-    def _set_similarity(self, similarity='cr', **kwargs):
+    def _set_similarity(self, similarity, renormalize=False, dist=None):
         if similarity in _sms:
             self._similarity = similarity
             self._similarity_call =\
-                _sms[similarity](self._joint_hist.shape, **kwargs)
+                _sms[similarity](self._joint_hist.shape, renormalize, dist)
         else:
             if not hasattr(similarity, '__call__'):
                 raise ValueError('similarity should be callable')
@@ -193,6 +203,77 @@ class HistogramRegistration(object):
         """
         Tv = ChainTransform(T, pre=self._from_affine, post=self._to_inv_affine)
         return self._eval(Tv)
+
+    def eval_gradient(self, T, epsilon=1e-1):
+        """
+        Evaluate the gradient of the similarity function wrt
+        transformation parameters.
+
+        The gradient is approximated using central finite differences
+        at the transformation specified by `T`. The input
+        transformation object `T` is modified in place unless it has a
+        ``copy`` method.
+
+        Parameters
+        ----------
+        T : Transform
+            Transform object implementing ``apply`` method
+        epsilon : float
+            Step size for finite differences in units of the
+            transformation parameters
+
+        Returns
+        -------
+        g : ndarray
+            Similarity gradient estimate
+        """
+        param0 = T.param.copy()
+        if hasattr(T, 'copy'):
+            T = T.copy()
+
+        def simi(param):
+            T.param = param
+            return self.eval(T)
+
+        return approx_gradient(simi, param0, epsilon)
+
+    def eval_hessian(self, T, epsilon=1e-1, diag=False):
+        """
+        Evaluate the Hessian of the similarity function wrt
+        transformation parameters.
+
+        The Hessian or its diagonal is approximated at the
+        transformation specified by `T` using central finite
+        differences. The input transformation object `T` is modified
+        in place unless it has a ``copy`` method.
+
+        Parameters
+        ----------
+        T : Transform
+            Transform object implementing ``apply`` method
+        epsilon : float
+            Step size for finite differences in units of the
+            transformation parameters
+        diag : bool
+            If True, approximate the Hessian by a diagonal matrix.
+
+        Returns
+        -------
+        H : ndarray
+            Similarity Hessian matrix estimate
+        """
+        param0 = T.param.copy()
+        if hasattr(T, 'copy'):
+            T = T.copy()
+
+        def simi(param):
+            T.param = param
+            return self.eval(T)
+
+        if diag:
+            return np.diag(approx_hessian_diag(simi, param0, epsilon))
+        else:
+            return approx_hessian(simi, param0, epsilon)
 
     def _eval(self, Tv):
         """
@@ -234,6 +315,11 @@ class HistogramRegistration(object):
           'cg', 'bfgs', 'simplex')
         **kwargs : dict
           keyword arguments to pass to optimizer
+
+        Returns
+        -------
+        T : object
+          Locally optimal transformation
         """
         # Replace T if a string is passed
         if T in affine_transforms:
@@ -284,16 +370,37 @@ class HistogramRegistration(object):
         Tv.param = fmin(cost, tc0, *args, **kwargs)
         return Tv.optimizable
 
-    def explore(self, T0, *args):
+    def explore(self, T, *args):
         """
         Evaluate the similarity at the transformations specified by
         sequences of parameter values.
 
         For instance:
 
-        explore(T0, (0, [-1,0,1]), (4, [-2.,2]))
+        s, p = explore(T, (0, [-1,0,1]), (4, [-2.,2]))
+
+        Parameters
+        ----------
+        T : object
+          Transformation around which the similarity function is to be
+          evaluated. It is modified in place unless it has a ``copy``
+          method.
+        args : tuple
+          Each element of `args` is a sequence of two elements, where
+          the first element specifies a transformation parameter axis
+          and the second element gives the successive parameter values
+          to evaluate along that axis.
+
+        Returns
+        -------
+        s : ndarray
+          Array of similarity values
+        p : ndarray
+          Corresponding array of evaluated transformation parameters
         """
-        nparams = T0.param.size
+        nparams = T.param.size
+        if hasattr(T, 'copy'):
+            T = T.copy()
         deltas = [[0] for i in range(nparams)]
         for a in args:
             deltas[a[0]] = a[1]
@@ -304,7 +411,7 @@ class HistogramRegistration(object):
         simis = np.zeros(ntrials)
         params = np.zeros([nparams, ntrials])
 
-        Tv = ChainTransform(T0, pre=self._from_affine,
+        Tv = ChainTransform(T, pre=self._from_affine,
                             post=self._to_inv_affine)
         param0 = Tv.param
         for i in range(ntrials):
@@ -316,7 +423,7 @@ class HistogramRegistration(object):
         return simis, params
 
 
-def _clamp(x, y, bins=BINS):
+def _clamp(x, y, bins):
 
     # Threshold
     dmaxmax = 2 ** (8 * y.dtype.itemsize - 1) - 1
@@ -344,7 +451,7 @@ def _clamp(x, y, bins=BINS):
     return y, bins
 
 
-def clamp(x, bins=BINS, mask=None):
+def clamp(x, bins, mask=None):
     """
     Clamp array values that fall within a given mask in the range
     [0..bins-1] and reset masked values to -1.
@@ -353,10 +460,8 @@ def clamp(x, bins=BINS, mask=None):
     ----------
     x : ndarray
       The input array
-
     bins : number
       Desired number of bins
-
     mask : ndarray, tuple or slice
       Anything such that x[mask] is an array.
 
@@ -364,10 +469,8 @@ def clamp(x, bins=BINS, mask=None):
     -------
     y : ndarray
       Clamped array, masked items are assigned -1
-
     bins : number
       Adjusted number of bins
-
     """
     if bins > np.iinfo(np.short).max:
         raise ValueError('Too large a bin size')
@@ -391,7 +494,6 @@ def ideal_spacing(data, npoints):
     ----------
     data : ndarray or sequence
       Data image to subsample
-
     npoints : number
       Target number of voxels (negative values will be ignored)
 
@@ -399,7 +501,6 @@ def ideal_spacing(data, npoints):
     -------
     spacing: ndarray
       Spacing factors
-
     """
     dims = data.shape
     actual_npoints = (data >= 0).sum()
@@ -425,8 +526,132 @@ def ideal_spacing(data, npoints):
 def smallest_bounding_box(msk):
     """
     Extract the smallest bounding box from a mask
+
+    Parameters
+    ----------
+    msk : ndarray
+      Array of boolean
+
+    Returns
+    -------
+    corner: ndarray
+      3-dimensional coordinates of bounding box corner
+    size: ndarray
+      3-dimensional size of bounding box
     """
     x, y, z = np.where(msk > 0)
-    corner = [x.min(), y.min(), z.min()]
-    size = [x.max() + 1, y.max() + 1, z.max() + 1]
+    corner = np.array([x.min(), y.min(), z.min()])
+    size = np.array([x.max() + 1, y.max() + 1, z.max() + 1])
     return corner, size
+
+
+def approx_gradient(f, x, epsilon):
+    """
+    Approximate the gradient of a function using central finite
+    differences
+
+    Parameters
+    ----------
+    f: callable
+      The function to differentiate
+    x: ndarray
+      Point where the function gradient is to be evaluated
+    epsilon: float
+      Stepsize for finite differences
+
+    Returns
+    -------
+    g: ndarray
+      Function gradient at `x`
+    """
+    n = len(x)
+    g = np.zeros(n)
+    ei = np.zeros(n)
+    for i in range(n):
+        ei[i] = .5 * epsilon
+        g[i] = (f(x + ei) - f(x - ei)) / epsilon
+        ei[i] = 0
+    return g
+
+
+def approx_hessian_diag(f, x, epsilon):
+    """
+    Approximate the Hessian diagonal of a function using central
+    finite differences
+
+    Parameters
+    ----------
+    f: callable
+      The function to differentiate
+    x: ndarray
+      Point where the Hessian is to be evaluated
+    epsilon: float
+      Stepsize for finite differences
+
+    Returns
+    -------
+    h: ndarray
+      Diagonal of the Hessian at `x`
+    """
+    n = len(x)
+    h = np.zeros(n)
+    ei = np.zeros(n)
+    fx = f(x)
+    for i in range(n):
+        ei[i] = epsilon
+        h[i] = (f(x + ei) + f(x - ei) - 2 * fx) / (epsilon ** 2)
+        ei[i] = 0
+    return h
+
+
+def approx_hessian(f, x, epsilon):
+    """
+    Approximate the full Hessian matrix of a function using central
+    finite differences
+
+    Parameters
+    ----------
+    f: callable
+      The function to differentiate
+    x: ndarray
+      Point where the Hessian is to be evaluated
+    epsilon: float
+      Stepsize for finite differences
+
+    Returns
+    -------
+    H: ndarray
+      Hessian matrix at `x`
+    """
+    n = len(x)
+    H = np.zeros((n, n))
+    ei = np.zeros(n)
+    for i in range(n):
+        ei[i] = .5 * epsilon
+        g1 = approx_gradient(f, x + ei, epsilon)
+        g2 = approx_gradient(f, x - ei, epsilon)
+        H[i, :] = (g1 - g2) / epsilon
+        ei[i] = 0
+    return H
+
+
+def smooth_image(data, affine, sigma):
+    """
+    Smooth an image by an isotropic Gaussian filter
+
+    Parameters
+    ----------
+    data: ndarray
+      Image data array
+    affine: ndarray
+      Image affine transform
+    sigma: float
+      Filter standard deviation in mm
+
+    Returns
+    -------
+    sdata: ndarray
+      Smoothed data array
+    """
+    sigma_vox = sigma / np.sqrt(np.sum(affine[0:3, 0:3] ** 2, 0))
+    return nd.gaussian_filter(data, sigma_vox)

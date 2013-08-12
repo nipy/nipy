@@ -8,7 +8,7 @@ sulcal 2000 database acquired at CEA, SHFJ, Orsay, France. The source
 is 'ammon' and the target is 'anubis'. Running it will result in a
 resampled ammon image being created in the current directory.
 """
-from __future__ import print_function # Python 2/3 compatibility
+from __future__ import print_function  # Python 2/3 compatibility
 
 from optparse import OptionParser
 import time
@@ -38,6 +38,8 @@ mi (mutual information), nmi (normalized mutual information), \
 pmi (Parzen mutual information), dpmi (discrete Parzen mutual \
 information). Default is crl1.'
 
+doc_renormalize = 'similarity renormalization: 0 or 1. Default is 0.'
+
 doc_interp = 'interpolation method: tri (trilinear), pv (partial volume), \
 rand (random). Default is pv.'
 
@@ -46,6 +48,8 @@ Default is powell.'
 
 parser.add_option('-s', '--similarity', dest='similarity',
                   help=doc_similarity)
+parser.add_option('-r', '--renormalize', dest='renormalize',
+                  help=doc_renormalize)
 parser.add_option('-i', '--interp', dest='interp',
                   help=doc_interp)
 parser.add_option('-o', '--optimizer', dest='optimizer',
@@ -55,10 +59,13 @@ opts, args = parser.parse_args()
 
 # Optional arguments
 similarity = 'crl1'
+renormalize = False
 interp = 'pv'
 optimizer = 'powell'
 if not opts.similarity == None:
     similarity = opts.similarity
+if not opts.renormalize == None:
+    renormalize = bool(int(opts.renormalize))
 if not opts.interp == None:
     interp = opts.interp
 if not opts.optimizer == None:
@@ -80,7 +87,8 @@ J = load_image(target_file)
 # np.asarray(T) is a customary 4x4 matrix
 print('Setting up registration...')
 tic = time.time()
-R = HistogramRegistration(I, J, similarity=similarity, interp=interp)
+R = HistogramRegistration(I, J, similarity=similarity, interp=interp,
+                          renormalize=renormalize)
 T = R.optimize('affine', optimizer=optimizer)
 toc = time.time()
 print('  Registration time: %f sec' % (toc - tic))
