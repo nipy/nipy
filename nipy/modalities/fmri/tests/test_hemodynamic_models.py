@@ -1,5 +1,6 @@
 import numpy as np
-from numpy.testing import assert_almost_equal, assert_equal, TestCase
+from nose.tools import raises
+from numpy.testing import assert_almost_equal
 
 from ..hemodynamic_models import (
     spm_hrf, spm_time_derivative, spm_dispersion_derivative,
@@ -86,11 +87,11 @@ def test_sample_condition_1():
 def test_sample_condition_2():
     """ Test that the experimental condition is correctly sampled
     """
-    condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
+    condition = ([0, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frametimes = np.linspace(0, 49, 50)
     reg, rf = sample_condition(condition, frametimes, oversampling=1)
     assert reg.sum() == 6
-    assert reg[1] == 1
+    assert reg[0] == 1
     assert reg[38] == 1
     assert reg[21] ==1
 
@@ -105,20 +106,8 @@ def test_sample_condition_3():
     assert reg[380] == 1
     assert reg[210] == 1
     assert np.sum(reg > 0) == 60
-    
-def test_sample_condition_4():
-    """ Test that the experimental condition is correctly sampled
-    with wrongly placed trials
-    """
-    condition = ([-3, 1, 20, 36.5, 51], [0, 0, 0, 0, 0], [1, 1, 1, 1, 1])
-    frametimes = np.linspace(0, 49, 50)
-    reg, rf = sample_condition(condition, frametimes, oversampling=1)
-    assert reg.sum() == 3
-    assert reg[1] == 1
-    assert reg[37] == 1
-    assert reg[20] ==1
 
-def test_sample_condition_5():
+def test_sample_condition_4():
     """ Test that the experimental condition is correctly sampled
     """
     condition = ([1, 20, 36.5], [2, 2, 2], [1., -1., 5.])
@@ -128,6 +117,22 @@ def test_sample_condition_5():
     assert reg[1] == 1.
     assert reg[20] == -1.
     assert reg[37] == 5.
+
+@raises(ValueError)
+def test_sample_condition_5():
+    """ Test the checks on sample_condition inputs
+    """
+    condition = ([-3, 1, 20, 36.5, 51], [0, 0, 0, 0, 0], [1, 1, 1, 1, 1])
+    frametimes = np.linspace(0, 49, 50)
+    sample_condition(condition, frametimes)
+
+@raises(ValueError)
+def test_sample_condition_6():
+    """ Test the checks on sample_condition inputs
+    """
+    condition = ([0, 1, 20, 36.5, 51], [0, 0, 0, 0, 0], [1, 1, 1, 1, 1])
+    frametimes = np.linspace(-2, 49, 50)
+    sample_condition(condition, frametimes)
 
 def test_names():
     """ Test the regressor naming function
