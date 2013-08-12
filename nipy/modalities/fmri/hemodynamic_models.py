@@ -212,7 +212,7 @@ def resample_regressor(hr_regressor, hr_frametimes, frametimes, kind='linear'):
 
 def _orthogonalize(X):
     """ This function orthogonalizes the columns of the design matrix wrt
-    to the first column
+    to the preceding columns
 
     Parameters
     ----------

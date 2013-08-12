@@ -19,13 +19,13 @@ The Glover HRF is based on:
   publisher={Orlando, FL: Academic Press, c1992-}
 }
 
-This paramaterization is from fmristat:
+This parametrization is from fmristat:
 
 http://www.math.mcgill.ca/keith/fmristat/
 
 fmristat models the HRF as the difference of two gamma functions, ``g1``
 and ``g2``, each defined by the timing of the gamma function peaks
-(``pk1, pk2``) and the fwhms (``width1, width2``):
+(``pk1, pk2``) and the FWHMs (``width1, width2``):
 
    raw_hrf = g1(pk1, width1) - a2 * g2(pk2, width2)
 
@@ -66,10 +66,10 @@ from .utils import lambdify_t, T
 
 def gamma_params(peak_location, peak_fwhm):
     """ Parameters for gamma density given peak and width
-    
+
     TODO: where does the coef come from again.... check fmristat code
 
-    From a peak location and peak fwhm, determine the parameters (shape,
+    From a peak location and peak FWHM, determine the parameters (shape,
     scale) of a Gamma density:
 
     f(x) = coef * x**(shape-1) * exp(-x/scale)
@@ -114,7 +114,7 @@ def _getint(f, dt=0.02, t=50):
     # numerical integral of function
     lf = lambdify_t(f)
     tt = np.arange(dt,t+dt,dt)
-    return lf(tt).sum() * dt 
+    return lf(tt).sum() * dt
 
 
 _gexpr = gamma_expr(5.4, 5.2) - 0.35 * gamma_expr(10.8, 7.35)
