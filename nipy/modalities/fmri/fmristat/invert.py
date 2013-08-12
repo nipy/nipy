@@ -1,3 +1,5 @@
+# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
+# vi: set ft=python sts=4 ts=4 sw=4 et:
 
 __docformat__ = 'restructuredtext'
 
@@ -53,7 +55,7 @@ def invertR(delta, IRF, niter=20):
         return a * np.arctan(b * r) + c
 
     def _ddeltahat(r):
-        return a * b / (1 + (b * r)**2) 
+        return a * b / (1 + (b * r)**2)
 
     def _deltahatinv(d):
         return np.tan((d - c) / a) / b
