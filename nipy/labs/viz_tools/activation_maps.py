@@ -30,7 +30,9 @@ except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
-from .coord_tools import coord_transform
+from .coord_tools import (coord_transform,
+                          get_cut_coords
+                          )
 
 from .slicers import SLICERS, _xyz_order
 from edge_detect import _fast_abs_percentile
@@ -149,6 +151,9 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         except ImportError:
             warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
             do3d = False
+
+    if cut_coords is None and slicer in 'xyz':
+        cut_coords = get_cut_coords(map)
 
     slicer = SLICERS[slicer].init_with_figure(data=map, affine=affine,
                                           threshold=threshold,

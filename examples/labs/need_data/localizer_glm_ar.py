@@ -150,6 +150,9 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
              vmin=- vmax,
              vmax=vmax,
              anat=None,
+             cut_coords=None,
+             slicer='z',
+             black_bg=True,  # looks much better thus
              figure=10,
              threshold=2.5)
     plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
