@@ -11,7 +11,8 @@ from nipy.algorithms.statistics.formula import formulae
 from nipy.algorithms.statistics.formula.formulae import (
     Formula, Factor, Term, make_recarray)
 
-from .utils import events, fourier_basis as fourier_basis_sym
+from .utils import (events, blocks, fourier_basis as fourier_basis_sym,
+                    convolve_functions, T)
 
 from .hrf import glover
 
@@ -79,7 +80,8 @@ def natural_spline(tvals, knots=None, order=3, intercept=True):
     return f.design(tvals, return_float=True)
 
 
-def event_design(event_spec, t, order=2, hrfs=[glover]):
+def event_design(event_spec, t, order=2, hrfs=[glover],
+                 level_contrasts=False):
     """
     Create a design matrix for a GLM analysis based
     on an event specification, evaluating
@@ -102,6 +104,9 @@ def event_design(event_spec, t, order=2, hrfs=[glover]):
     hrfs : seq
        A sequence of (symbolic) HRF that will be convolved with each
        event. If empty, glover is used.
+    level_contrasts : bool
+       If true, generate contrasts for each individual level
+       of each factor.
 
     Returns 
     -------
@@ -121,6 +126,7 @@ def event_design(event_spec, t, order=2, hrfs=[glover]):
     e_factors = [Factor(n, np.unique(event_spec[n])) for n in fields]
     e_formula = np.product(e_factors)
     e_contrasts = {}
+
     if len(e_factors) > 1:
         for i in range(1, order+1):
             for comb in combinations(zip(fields, e_factors), i):
@@ -142,14 +148,130 @@ def event_design(event_spec, t, order=2, hrfs=[glover]):
     t_terms = []
     t_contrasts = {}
     for l, h in enumerate(hrfs):
-        t_terms += [events(event_spec['time'], \
-            amplitudes=e_X[n], f=h) for i, n in enumerate(e_dtype.names)]
+        for n in e_dtype.names:
+            term = events(event_spec['time'], amplitudes=e_X[n], f=h)
+            t_terms  += [term]
+            if level_contrasts:
+                t_contrasts['%s_%d' % (n, l)] = Formula([term])
         for n, c in e_contrasts.items():
             t_contrasts["%s_%d" % (n, l)] = Formula([ \
                  events(event_spec['time'], amplitudes=c[nn], f=h)
                  for i, nn in enumerate(c.dtype.names)])
     t_formula = Formula(t_terms)
     
+    tval = make_recarray(t, ['t'])
+    X_t, c_t = t_formula.design(tval, contrasts=t_contrasts)
+    return X_t, c_t
+
+
+def block_design(block_spec, t, order=2, hrfs=[glover],
+                 convolution_padding=5.,
+                 convolution_dt=0.02,
+                 hrf_interval=[0.,30.],
+                 level_contrasts=False):
+    """
+    Create a design matrix for a GLM analysis based
+    on a block specification, evaluating
+    it a sequence of time values. Each column
+    in the design matrix will be convolved with each HRF in hrfs.
+
+    Parameters
+    ----------
+    block_spec : np.recarray
+       A recarray having at least a field named 'start' 
+       and a field named 'end' signifying the
+       block time, and all other fields will be treated as factors in an
+       ANOVA-type model.
+    t : np.ndarray
+       An array of np.float values at which to evaluate the
+       design. Common examples would be the acquisition times of an fMRI
+       image.
+    order : int
+       The highest order interaction to be considered in constructing
+       the contrast matrices.
+    hrfs : seq
+       A sequence of (symbolic) HRF that will be convolved with each
+       block. If empty, glover is used.
+    convolution_padding : float
+       A padding for the convolution with the HRF. The intervals
+       used for the convolution are the smallest 'start' minus this
+       padding to the largest 'end' plus this padding.
+    convolution_padding : dt
+       Time step for use in convolving the blocks with each 
+       HRF.
+    hrf_interval: sequence of floats
+       Interval over which the HRF is assumed supported, used in the 
+       convolution. 
+    level_contrasts : bool
+       If true, generate contrasts for each individual level
+       of each factor.
+
+    Returns 
+    -------
+    X : np.ndarray
+       The design matrix with X.shape[0] == t.shape[0]. The number of
+       columns will depend on the other fields of block_spec.
+    contrasts : dict
+       Dictionary of contrasts that is expected to be of interest from
+       the block specification. For each interaction / effect up to a
+       given order will be returned. Also, a contrast is generated for
+       each interaction / effect for each HRF specified in hrfs.
+    """
+    fields = list(block_spec.dtype.names)
+    if 'start' not in fields or 'end' not in fields:
+        raise ValueError('expecting fields called "start" and "end"')
+    fields.pop(fields.index('start'))
+    fields.pop(fields.index('end'))
+    e_factors = [Factor(n, np.unique(block_spec[n])) for n in fields]
+    e_formula = np.product(e_factors)
+    e_contrasts = {}
+    if len(e_factors) > 1:
+        for i in range(1, order+1):
+            for comb in combinations(zip(fields, e_factors), i):
+                names = [c[0] for c in comb]
+                fs = [c[1].main_effect for c in comb]
+                e_contrasts[":".join(names)] = np.product(fs).design(block_spec)
+
+    e_contrasts['constant'] = formulae.I.design(block_spec)
+
+    # Design and contrasts in block space
+    # TODO: make it so I don't have to call design twice here
+    # to get both the contrasts and the e_X matrix as a recarray
+
+    e_X = e_formula.design(block_spec)
+    e_dtype = e_formula.dtype
+
+    # Now construct the design in time space
+
+    block_times = np.array([(s,e) for s, e in zip(block_spec['start'], 
+                                                  block_spec['end'])])
+    convolution_interval = (block_times.min() - convolution_padding, 
+                            block_times.max() + convolution_padding)
+
+    t_terms = []
+    t_names = []
+    t_contrasts = {}
+    for l, h in enumerate(hrfs):
+        for n in e_dtype.names:
+            B = blocks(block_times, amplitudes=e_X[n])
+            term = convolve_functions(B, h(T), 
+                                      convolution_interval,
+                                      hrf_interval,
+                                      convolution_dt)
+            t_terms += [term]
+            if level_contrasts:
+                t_contrasts['%s_%d' % (n, l)] = Formula([term])
+        for n, c in e_contrasts.items():
+            F = []
+            for i, nn in enumerate(c.dtype.names):
+                B = blocks(block_times, amplitudes=c[nn])
+                F.append(convolve_functions(B, h(T),
+                                            convolution_interval,
+                                            hrf_interval,
+                                            convolution_dt))
+            t_contrasts["%s_%d" % (n, l)] = Formula(F)
+    t_formula = Formula(t_terms)
+
     tval = make_recarray(t, ['t'])
     X_t, c_t = t_formula.design(tval, contrasts=t_contrasts)
     return X_t, c_t
