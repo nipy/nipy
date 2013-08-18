@@ -164,9 +164,10 @@ def load_paradigm_from_csv_file(path, session=None):
 
     Notes
     -----
-    It is assumed that the csv file contains the following columns: (session id,
-    condition id, onset), plus possibly (duration) and/or (amplitude). If all
-    the durations are 0, the paradigm will be handled as event-related.
+    It is assumed that the csv file contains the following columns:
+    (session id, condition id, onset),
+    plus possibly (duration) and/or (amplitude).
+    If all the durations are 0, the paradigm will be handled as event-related.
 
     Fixme
     -----

@@ -3,7 +3,7 @@ This module is for canonical hrf specification.
 Here we provide for SPM, Glover hrfs and finite timpulse response (FIR) models.
 This module closely follows SPM implementation
 
-Author: Bertrand Thirion, 2011
+Author: Bertrand Thirion, 2011--2013
 """
 
 import warnings
@@ -140,7 +140,8 @@ def spm_dispersion_derivative(tr, oversampling=16, time_length=32., onset=0.):
     return dhrf
 
 
-def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
+def sample_condition(exp_condition, frametimes, oversampling=16,
+                     min_onset=-24):
     """Make a possibly oversampled event regressor from condition information.
 
     Parameters
@@ -149,9 +150,9 @@ def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
         (onsets, durations, amplitudes) of events for this condition
     frametimes: array of shape(n)
         timepoints corresponding to sampled data
-    over_sampling: int, default 16
+    over_sampling: int, optional
         factor for oversampling event regressor
-    min_onset: float, default -20
+    min_onset: float, optional
         minimal onset relative to frametimes[0] (in seconds)
         events that start before frametimes[0] + min_onset are not considered
 
@@ -166,10 +167,10 @@ def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
     n = frametimes.size
     min_onset = float(min_onset)
     n_hr = ((n - 1) * 1. / (frametimes.max() - frametimes.min()) *
-            (frametimes.max() * (1 + 1. / (n - 1)) - frametimes.min() - 
+            (frametimes.max() * (1 + 1. / (n - 1)) - frametimes.min() -
              min_onset) * oversampling) + 1
 
-    hr_frametimes = np.linspace(frametimes.min() + min_onset, 
+    hr_frametimes = np.linspace(frametimes.min() + min_onset,
                                 frametimes.max() * (1 + 1. / (n - 1)),
                                 n_hr)
 
@@ -179,7 +180,7 @@ def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
         warnings.warn(('Some stimulus onsets are earlier than %d in the' +
                        ' experiment and are thus not considered in the model'
                 % (frametimes[0] + min_onset)), UserWarning)
-    
+
     # Set up the regressor timecourse
     tmax = len(hr_frametimes)
     regressor = np.zeros_like(hr_frametimes).astype(np.float)
@@ -195,7 +196,7 @@ def sample_condition(exp_condition, frametimes, oversampling=16, min_onset=-20):
 
     regressor[t_offset] -= values
     regressor = np.cumsum(regressor)
-    
+
     return regressor, hr_frametimes
 
 
@@ -310,7 +311,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
 
 
 def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
-                      oversampling=16, fir_delays=None, min_onset=-20):
+                      oversampling=16, fir_delays=None, min_onset=-24):
     """ This is the main function to convolve regressors with hrf model
 
     Parameters
@@ -323,7 +324,7 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
     con_id: string, optional identifier of the condition
     oversampling: int, optional, oversampling factor to perform the convolution
     fir_delays: array-like of int, onsets corresponding to the fir basis
-    min_onset: float, default -20
+    min_onset: float, optional
         minimal onset relative to frametimes[0] (in seconds)
         events that start before frametimes[0] + min_onset are not considered
 

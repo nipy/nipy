@@ -89,13 +89,13 @@ def test_sample_condition_1():
 
     reg, rf = sample_condition(condition, frametimes, oversampling=1)
     assert_equal(reg.sum(), 3)
-    assert_equal(reg[21], 1)
-    assert_equal(reg[40], 1)
-    assert_equal(reg[57], 1)
+    assert_equal(reg[25], 1)
+    assert_equal(reg[44], 1)
+    assert_equal(reg[61], 1)
 
 
 def test_sample_condition_2():
-    """ Test that the experimental condition is correctly sampled
+    """ Test the experimental condition sampling -- onset = 0
     """
     condition = ([0, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frametimes = np.linspace(0, 49, 50)
@@ -107,7 +107,7 @@ def test_sample_condition_2():
     assert_equal(reg[31], 1)
 
 def test_sample_condition_3():
-    """ Test that the experimental condition is correctly sampled
+    """ Test the experimental condition sampling -- oversampling=10
     """
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frametimes = np.linspace(0, 49, 50)
@@ -120,15 +120,26 @@ def test_sample_condition_3():
     assert_equal(np.sum(reg > 0), 60)
 
 def test_sample_condition_4():
-    """ Test that the experimental condition is correctly sampled
+    """ Test the experimental condition sampling -- negative amplitude
     """
     condition = ([1, 20, 36.5], [2, 2, 2], [1., -1., 5.])
     frametimes = np.linspace(0, 49, 50)
     reg, rf = sample_condition(condition, frametimes, oversampling=1)
     assert_equal(reg.sum(),10)
-    assert_equal(reg[21], 1.)
-    assert_equal(reg[40], -1.)
-    assert_equal(reg[57], 5.)
+    assert_equal(reg[25], 1.)
+    assert_equal(reg[44], -1.)
+    assert_equal(reg[61], 5.)
+
+def test_sample_condition_5():
+    """ Test the experimental condition sampling -- negative onset
+    """
+    condition = ([-10, 0, 36.5], [2, 2, 2], [1., -1., 5.])
+    frametimes = np.linspace(0, 49, 50)
+    reg, rf = sample_condition(condition, frametimes, oversampling=1)
+    assert_equal(reg.sum(),10)
+    assert_equal(reg[14], 1.)
+    assert_equal(reg[24], -1.)
+    assert_equal(reg[61], 5.)
 
 def test_names():
     """ Test the regressor naming function
@@ -203,14 +214,14 @@ def test_make_regressor_3():
 def test_design_warnings():
     """ test that warnings are correctly raised upon weird design specification
     """
-    condition = ([-21, 20, 36.5], [0, 0, 0], [1, 1, 1])
+    condition = ([-25, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frametimes = np.linspace(0, 69, 70)
     hrf_model = 'spm'
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
         assert_warns(UserWarning, compute_regressor, condition, hrf_model, 
                      frametimes)
-    condition = ([-21, -21, 36.5], [0, 0, 0], [1, 1, 1])
+    condition = ([-25, -25, 36.5], [0, 0, 0], [1, 1, 1])
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
         assert_warns(UserWarning, compute_regressor, condition, hrf_model, 
