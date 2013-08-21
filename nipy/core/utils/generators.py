@@ -33,11 +33,13 @@ def parcels(data, labels=None, exclude=()):
     data : image or array-like
         Either an image (with ``get_data`` method returning ndarray) or an
         array-like
-    labels : iterable
+    labels : iterable, optional
         A sequence of labels for which to return indices within `data`. The
         elements in `labels` can themselves be lists, tuples, in which case the
         indices returned are for all values in `data` matching any of the items
         in the list, tuple.
+    exclude : iterable, optional
+        Values in `labels` for which you do not want to return a parcel.
 
     Returns
     -------
@@ -78,10 +80,8 @@ def parcels(data, labels=None, exclude=()):
     if labels is None:
         labels = np.unique(data)
     if exclude:
-        labels = set(labels)
         for e in exclude:
-            if e in labels:
-                labels.remove(e)
+            labels = [L for L in labels if L != e]
     for label in labels:
         if type(label) not in [type(()), type([])]:
             yield np.equal(data, label)
