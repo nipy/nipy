@@ -20,13 +20,32 @@ The above three generators return 2-tuples.
 import numpy as np
 
 
-def parcels(data, labels=None, exclude=[]):
+def parcels(data, labels=None, exclude=()):
     """ Return a generator for ``[data == label for label in labels]``
 
     If labels is None, labels = numpy.unique(data).  Each label in labels can be
     a sequence, in which case the value returned for that label union::
 
         [numpy.equal(data, l) for l in label]
+
+    Parameters
+    ----------
+    data : image or array-like
+        Either an image (with ``get_data`` method returning ndarray) or an
+        array-like
+    labels : iterable, optional
+        A sequence of labels for which to return indices within `data`. The
+        elements in `labels` can themselves be lists, tuples, in which case the
+        indices returned are for all values in `data` matching any of the items
+        in the list, tuple.
+    exclude : iterable, optional
+        Values in `labels` for which you do not want to return a parcel.
+
+    Returns
+    -------
+    gen : generator
+        generator yielding a array of boolean indices into `data` for which ``data
+        == label``, for each element in `label`.
 
     Examples
     --------
@@ -52,19 +71,16 @@ def parcels(data, labels=None, exclude=[]):
     [[False False]
      [ True False]]
     """
+    # Get image data or make array from array-like
     try:
         data = data.get_data()
     except AttributeError:
         data = np.asarray(data)
-
     if labels is None:
         labels = np.unique(data)
-    if exclude:
-        labels = set(labels)
-        for e in exclude:
-            if e in labels:
-                labels.remove(e)
     for label in labels:
+        if label in exclude:
+            continue
         if type(label) not in [type(()), type([])]:
             yield np.equal(data, label)
         else:

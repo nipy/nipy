@@ -5,7 +5,7 @@ import numpy as np
 from ...api import write_data, slice_generator
 from .. import generators as gen
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_raises
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 shape = (10,20,30)
@@ -68,6 +68,38 @@ def test_parcel():
     for i, pair in enumerate(iterator):
         s, d = pair
         assert_equal((expected[i],), d.shape)
+
+
+def test_parcel_exclude():
+    # Test excluding from parcels
+    data = np.arange(5)
+    ps = gen.parcels(data, (1, 3))
+    assert_array_equal(next(ps), [False, True, False, False, False])
+    assert_array_equal(next(ps), [False, False, False, True, False])
+    assert_raises(StopIteration, next, ps)
+    ps = gen.parcels(data, (1, 3), exclude=(1,))
+    assert_array_equal(next(ps), [False, False, False, True, False])
+    assert_raises(StopIteration, next, ps)
+    ps = gen.parcels(data, (1, 3), exclude=(3,))
+    assert_array_equal(next(ps), [False, True, False, False, False])
+    assert_raises(StopIteration, next, ps)
+    ps = gen.parcels(data, (1, 3), exclude=(3, 1))
+    assert_raises(StopIteration, next, ps)
+    # Test that two element exclude works
+    ps = gen.parcels(data, (1, 3, 4), exclude=(1, 4))
+    assert_array_equal(next(ps), [False, False, False, True, False])
+    assert_raises(StopIteration, next, ps)
+    # Also as np.array
+    ps = gen.parcels(data, (1, 3, 4), exclude=np.array((1, 4)))
+    assert_array_equal(next(ps), [False, False, False, True, False])
+    assert_raises(StopIteration, next, ps)
+    # Test that parcels continue to be returned in sorted order
+    rng = np.random.RandomState(42)
+    data = rng.normal(size=(10,))
+    uni = np.sort(np.unique(data)) # Should already be sorted in fact
+    values = [np.mean(data[p]) # should be scalar anyway
+              for p in gen.parcels(data, exclude=uni[0:2])]
+    assert_array_equal(values, uni[2:])
 
 
 def test_parcel_write():
