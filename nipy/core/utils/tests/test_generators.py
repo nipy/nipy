@@ -85,14 +85,21 @@ def test_parcel_exclude():
     assert_raises(StopIteration, next, ps)
     ps = gen.parcels(data, (1, 3), exclude=(3, 1))
     assert_raises(StopIteration, next, ps)
+    # Test that two element exclude works
+    ps = gen.parcels(data, (1, 3, 4), exclude=(1, 4))
+    assert_array_equal(next(ps), [False, False, False, True, False])
+    assert_raises(StopIteration, next, ps)
+    # Also as np.array
+    ps = gen.parcels(data, (1, 3, 4), exclude=np.array((1, 4)))
+    assert_array_equal(next(ps), [False, False, False, True, False])
+    assert_raises(StopIteration, next, ps)
     # Test that parcels continue to be returned in sorted order
     rng = np.random.RandomState(42)
     data = rng.normal(size=(10,))
     uni = np.sort(np.unique(data)) # Should already be sorted in fact
-    # Iterating over parcels should also be sorted
     values = [np.mean(data[p]) # should be scalar anyway
-              for p in gen.parcels(data, exclude=(uni[0],))]
-    assert_array_equal(values, uni[1:])
+              for p in gen.parcels(data, exclude=uni[0:2])]
+    assert_array_equal(values, uni[2:])
 
 
 def test_parcel_write():

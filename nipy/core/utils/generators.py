@@ -79,9 +79,8 @@ def parcels(data, labels=None, exclude=()):
 
     if labels is None:
         labels = np.unique(data)
-    if exclude:
-        for e in exclude:
-            labels = [L for L in labels if L != e]
+    for e in exclude:
+        labels = [L for L in labels if L != e]
     for label in labels:
         if type(label) not in [type(()), type([])]:
             yield np.equal(data, label)
