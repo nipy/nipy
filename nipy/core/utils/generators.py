@@ -76,12 +76,11 @@ def parcels(data, labels=None, exclude=()):
         data = data.get_data()
     except AttributeError:
         data = np.asarray(data)
-
     if labels is None:
         labels = np.unique(data)
-    for e in exclude:
-        labels = [L for L in labels if L != e]
     for label in labels:
+        if label in exclude:
+            continue
         if type(label) not in [type(()), type([])]:
             yield np.equal(data, label)
         else:
