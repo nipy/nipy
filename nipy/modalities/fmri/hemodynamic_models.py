@@ -3,14 +3,15 @@ This module is for canonical hrf specification.
 Here we provide for SPM, Glover hrfs and finite timpulse response (FIR) models.
 This module closely follows SPM implementation
 
-Author: Bertrand Thirion, 2011
+Author: Bertrand Thirion, 2011--2013
 """
 
+import warnings
 import numpy as np
 from scipy.stats import gamma
 
 
-def gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,
+def _gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,
                          delay=6, undershoot=16., dispersion=1.,
                          u_dispersion=1., ratio=0.167):
     """ Compute an hrf as the difference of two gamma functions
@@ -52,7 +53,7 @@ def spm_hrf(tr, oversampling=16, time_length=32., onset=0.):
     hrf: array of shape(length / tr * oversampling, float),
          hrf sampling on the oversampled time grid
     """
-    return gamma_difference_hrf(tr, oversampling, time_length, onset)
+    return _gamma_difference_hrf(tr, oversampling, time_length, onset)
 
 
 def glover_hrf(tr, oversampling=16, time_length=32., onset=0.):
@@ -70,7 +71,7 @@ def glover_hrf(tr, oversampling=16, time_length=32., onset=0.):
     hrf: array of shape(length / tr * oversampling, float),
          hrf sampling on the oversampled time grid
     """
-    return gamma_difference_hrf(tr, oversampling, time_length, onset,
+    return _gamma_difference_hrf(tr, oversampling, time_length, onset,
                                 delay=6, undershoot=12., dispersion=.9,
                                 u_dispersion=.9, ratio=.35)
 
@@ -133,62 +134,73 @@ def spm_dispersion_derivative(tr, oversampling=16, time_length=32., onset=0.):
           dhrf sampling on the oversampled time grid
     """
     dd = .01
-    dhrf = 1. / dd * (gamma_difference_hrf(tr, oversampling, time_length,
+    dhrf = 1. / dd * (_gamma_difference_hrf(tr, oversampling, time_length,
                                            onset, dispersion=1. + dd) -
                       spm_hrf(tr, oversampling, time_length, onset))
     return dhrf
 
 
-def sample_condition(exp_condition, frametimes, oversampling=16):
-    """ this function samples the experimental condition at frametimes
+def _sample_condition(exp_condition, frametimes, oversampling=16,
+                     min_onset=-24):
+    """Make a possibly oversampled event regressor from condition information.
 
     Parameters
     ----------
-    exp_condition: a tuple of 3 arrays of shape n, corresponding
-                   to  (onsets, duration, value),
-                   describing the experimental condition
+    exp_condition: 3 x n_events arraylike
+        (onsets, durations, amplitudes) of events for this condition
     frametimes: array of shape(n)
-    over_sampling: int, over_sampling factor
+        timepoints corresponding to sampled data
+    over_sampling: int, optional
+        factor for oversampling event regressor
+    min_onset: float, optional
+        minimal onset relative to frametimes[0] (in seconds)
+        events that start before frametimes[0] + min_onset are not considered
 
     Returns
     -------
     regressor: array of shape(n)
+        possibly oversampled event regressor
+    hr_frametimes : array of shape(n)
+        frametimes corresponding to regressor
     """
-    # generate the oversampled frame times
+    # Find the high-resolution frametimes
     n = frametimes.size
-    if oversampling == 1:
-        hr_frametimes = frametimes
-    else:
-        hr_frametimes = np.linspace(0, frametimes.max() * (1 + 1. / (n - 1)),
-                                    n * oversampling + 1)
+    min_onset = float(min_onset)
+    n_hr = ((n - 1) * 1. / (frametimes.max() - frametimes.min()) *
+            (frametimes.max() * (1 + 1. / (n - 1)) - frametimes.min() -
+             min_onset) * oversampling) + 1
 
-    # get the regressor information
-    onsets, duration, values = exp_condition
-    onsets, duration, values = np.asanyarray(onsets), np.asanyarray(duration),\
-        np.asanyarray(values)
+    hr_frametimes = np.linspace(frametimes.min() + min_onset,
+                                frametimes.max() * (1 + 1. / (n - 1)),
+                                n_hr)
 
-    # generate the regressor time course
+    # Get the condition information
+    onsets, durations, values = tuple(map(np.asanyarray, exp_condition))
+    if (onsets < frametimes[0] + min_onset).any():
+        warnings.warn(('Some stimulus onsets are earlier than %d in the' +
+                       ' experiment and are thus not considered in the model'
+                % (frametimes[0] + min_onset)), UserWarning)
+
+    # Set up the regressor timecourse
     tmax = len(hr_frametimes)
     regressor = np.zeros_like(hr_frametimes).astype(np.float)
     t_onset = np.minimum(np.searchsorted(hr_frametimes, onsets), tmax - 1)
     regressor[t_onset] += values
-    t_offset = np.minimum(np.searchsorted(hr_frametimes, onsets + duration),
+    t_offset = np.minimum(np.searchsorted(hr_frametimes, onsets + durations),
                           tmax - 1)
-    # for event related, shift the offset by 1
+
+    # Handle the case where duration is 0 by offsetting at t + 1
     for i, to in enumerate(t_offset):
-        if to > 0 and to < tmax - 1 and to == t_onset[i]:
+        if to < (tmax - 1) and to == t_onset[i]:
             t_offset[i] += 1
 
     regressor[t_offset] -= values
     regressor = np.cumsum(regressor)
 
-    # normalize the regressor in case of  block design
-    #if (duration > 0).any():
-    #    regressor /= oversampling
     return regressor, hr_frametimes
 
 
-def resample_regressor(hr_regressor, hr_frametimes, frametimes, kind='linear'):
+def _resample_regressor(hr_regressor, hr_frametimes, frametimes, kind='linear'):
     """ this function samples the regressors at frametimes
 
     Parameters
@@ -298,7 +310,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
 
 
 def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
-                      oversampling=16, fir_delays=None):
+                      oversampling=16, fir_delays=None, min_onset=-24):
     """ This is the main function to convolve regressors with hrf model
 
     Parameters
@@ -311,6 +323,9 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
     con_id: string, optional identifier of the condition
     oversampling: int, optional, oversampling factor to perform the convolution
     fir_delays: array-like of int, onsets corresponding to the fir basis
+    min_onset: float, optional
+        minimal onset relative to frametimes[0] (in seconds)
+        events that start before frametimes[0] + min_onset are not considered
 
     Returns
     -------
@@ -336,8 +351,8 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
     tr = float(frametimes.max()) / (np.size(frametimes) - 1)
 
     # 1. create the high temporal resolution regressor
-    hr_regressor, hr_frametimes = sample_condition(
-        exp_condition, frametimes, oversampling)
+    hr_regressor, hr_frametimes = _sample_condition(
+        exp_condition, frametimes, oversampling, min_onset)
 
     # 2. create the  hrf model(s)
     hkernel = _hrf_kernel(hrf_model, tr, oversampling, fir_delays)
@@ -347,7 +362,7 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
                          for h in hkernel])
 
     # 4. temporally resample the regressors
-    creg = resample_regressor(conv_reg, hr_frametimes, frametimes)
+    creg = _resample_regressor(conv_reg, hr_frametimes, frametimes)
 
     # 5. ortogonalize the regressors
     if hrf_model != 'fir':
