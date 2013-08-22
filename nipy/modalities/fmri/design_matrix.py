@@ -131,7 +131,8 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
     return drift, names
 
 
-def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
+def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0],
+                         min_onset=-24):
     """ Creation of  a matrix that comprises
     the convolution of the conditions onset with a certain hrf model
 
@@ -146,6 +147,9 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
     fir_delays=[0], optional, array of shape(nb_onsets) or list
                     in case of FIR design, yields the array of delays
                     used in the FIR model
+    min_onset: float, optional
+        minimal onset relative to frametimes[0] (in seconds)
+        events that start before frametimes[0] + min_onset are not considered
 
     Returns
     -------
@@ -179,9 +183,10 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0]):
         else:
             duration = paradigm.duration[paradigm.con_id == nc]
         exp_condition = (onsets, duration, values)
-        reg, names = compute_regressor(exp_condition, hrf_model, frametimes,
-                                       con_id=nc, fir_delays=fir_delays,
-                                       oversampling=oversampling)
+        reg, names = compute_regressor(
+            exp_condition, hrf_model, frametimes, con_id=nc,
+            fir_delays=fir_delays, oversampling=oversampling,
+            min_onset=min_onset)
         hnames += names
         if rmatrix == None:
             rmatrix = reg
@@ -305,8 +310,8 @@ class DesignMatrix():
 
 
 def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
-              drift_model='cosine', hfcut=128, drift_order=1,
-              fir_delays=[0], add_regs=None, add_reg_names=None):
+              drift_model='cosine', hfcut=128, drift_order=1, fir_delays=[0],
+              add_regs=None, add_reg_names=None, min_onset=-24):
     """ Generate a design matrix from the input parameters
 
     Parameters
@@ -332,6 +337,9 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
     add_reg_names: list of (naddreg) regressor names, optional
                    if None, while naddreg>0, these will be termed
                    'reg_%i',i=0..naddreg-1
+    min_onset: float, optional
+        minimal onset relative to frametimes[0] (in seconds)
+        events that start before frametimes[0] + min_onset are not considered
 
     Returns
     -------
@@ -367,7 +375,7 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
     if paradigm is not None:
         # create the condition-related regressors
         matrix, names = _convolve_regressors(
-            paradigm, hrf_model.lower(), frametimes, fir_delays)
+            paradigm, hrf_model.lower(), frametimes, fir_delays, min_onset)
 
     # step 2: additional regressors
     if add_regs is not None:
@@ -418,7 +426,7 @@ def dmtx_from_csv(path, frametimes=None):
 
 def dmtx_light(frametimes, paradigm=None, hrf_model='canonical',
                drift_model='cosine', hfcut=128, drift_order=1, fir_delays=[0],
-               add_regs=None, add_reg_names=None, path=None):
+               add_regs=None, add_reg_names=None, min_onset=-24, path=None):
     """Make a design matrix while avoiding framework
 
     Parameters
@@ -434,7 +442,8 @@ def dmtx_light(frametimes, paradigm=None, hrf_model='canonical',
         the names of the columns of the design matrix
     """
     dmtx_ = make_dmtx(frametimes, paradigm, hrf_model, drift_model, hfcut,
-                      drift_order, fir_delays, add_regs, add_reg_names)
+                      drift_order, fir_delays, add_regs, add_reg_names,
+                      min_onset)
     if path is not None:
         dmtx_.write_csv(path)
     return dmtx_.matrix, dmtx_.names

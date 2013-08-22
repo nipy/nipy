@@ -46,7 +46,6 @@ class Paradigm(object):
         self.con_id = con_id
         self.onset = onset
         self.amplitude = amplitude
-        self.n_event = 0
         if con_id is not None:
             self.n_events = len(con_id)
             try:
@@ -165,9 +164,10 @@ def load_paradigm_from_csv_file(path, session=None):
 
     Notes
     -----
-    It is assumed that the csv file contains the following columns: (session id,
-    condition id, onset), plus possibly (duration) and/or (amplitude). If all
-    the durations are 0, the paradigm will be handled as event-related.
+    It is assumed that the csv file contains the following columns:
+    (session id, condition id, onset),
+    plus possibly (duration) and/or (amplitude).
+    If all the durations are 0, the paradigm will be handled as event-related.
 
     Fixme
     -----
