@@ -6,7 +6,7 @@ import warnings
 
 from ..hemodynamic_models import (
     spm_hrf, spm_time_derivative, spm_dispersion_derivative,
-    resample_regressor, _orthogonalize, sample_condition,
+    _resample_regressor, _orthogonalize, _sample_condition,
     _regressor_names, _hrf_kernel, glover_hrf, 
     glover_time_derivative, compute_regressor)
 
@@ -47,7 +47,7 @@ def test_resample_regressor():
     """
     x = np.linspace(0, 1, 200)
     y = np.linspace(0, 1, 30)
-    z = resample_regressor(x, x, y)
+    z = _resample_regressor(x, x, y)
     assert_almost_equal(z, y)
 
 def test_resample_regressor_nl():
@@ -55,7 +55,7 @@ def test_resample_regressor_nl():
     """
     x = np.linspace(0, 10, 1000)
     y = np.linspace(0, 10, 30)
-    z = resample_regressor(np.cos(x), x, y)
+    z = _resample_regressor(np.cos(x), x, y)
     assert_almost_equal(z, np.cos(y), decimal=2)
 
 def test_orthogonalize():
@@ -80,14 +80,14 @@ def test_sample_condition_1():
     """
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frametimes = np.linspace(0, 49, 50)
-    reg, rf = sample_condition(condition, frametimes, oversampling=1, 
+    reg, rf = _sample_condition(condition, frametimes, oversampling=1, 
                                min_onset=0)
     assert_equal(reg.sum(), 3)
     assert_equal(reg[1], 1)
     assert_equal(reg[20], 1)
     assert_equal(reg[37], 1)
 
-    reg, rf = sample_condition(condition, frametimes, oversampling=1)
+    reg, rf = _sample_condition(condition, frametimes, oversampling=1)
     assert_equal(reg.sum(), 3)
     assert_equal(reg[25], 1)
     assert_equal(reg[44], 1)
@@ -99,7 +99,7 @@ def test_sample_condition_2():
     """
     condition = ([0, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frametimes = np.linspace(0, 49, 50)
-    reg, rf = sample_condition(condition, frametimes, oversampling=1,
+    reg, rf = _sample_condition(condition, frametimes, oversampling=1,
                                min_onset=- 10)
     assert_equal(reg.sum(), 6)
     assert_equal(reg[10], 1)
@@ -111,7 +111,7 @@ def test_sample_condition_3():
     """
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frametimes = np.linspace(0, 49, 50)
-    reg, rf = sample_condition(condition, frametimes, oversampling=10,
+    reg, rf = _sample_condition(condition, frametimes, oversampling=10,
                                min_onset=0)
     assert_almost_equal(reg.sum(), 60.)
     assert_equal(reg[10], 1)
@@ -124,7 +124,7 @@ def test_sample_condition_4():
     """
     condition = ([1, 20, 36.5], [2, 2, 2], [1., -1., 5.])
     frametimes = np.linspace(0, 49, 50)
-    reg, rf = sample_condition(condition, frametimes, oversampling=1)
+    reg, rf = _sample_condition(condition, frametimes, oversampling=1)
     assert_equal(reg.sum(),10)
     assert_equal(reg[25], 1.)
     assert_equal(reg[44], -1.)
@@ -135,7 +135,7 @@ def test_sample_condition_5():
     """
     condition = ([-10, 0, 36.5], [2, 2, 2], [1., -1., 5.])
     frametimes = np.linspace(0, 49, 50)
-    reg, rf = sample_condition(condition, frametimes, oversampling=1)
+    reg, rf = _sample_condition(condition, frametimes, oversampling=1)
     assert_equal(reg.sum(),10)
     assert_equal(reg[14], 1.)
     assert_equal(reg[24], -1.)

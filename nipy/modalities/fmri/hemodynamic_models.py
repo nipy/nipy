@@ -11,7 +11,7 @@ import numpy as np
 from scipy.stats import gamma
 
 
-def gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,
+def _gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,
                          delay=6, undershoot=16., dispersion=1.,
                          u_dispersion=1., ratio=0.167):
     """ Compute an hrf as the difference of two gamma functions
@@ -53,7 +53,7 @@ def spm_hrf(tr, oversampling=16, time_length=32., onset=0.):
     hrf: array of shape(length / tr * oversampling, float),
          hrf sampling on the oversampled time grid
     """
-    return gamma_difference_hrf(tr, oversampling, time_length, onset)
+    return _gamma_difference_hrf(tr, oversampling, time_length, onset)
 
 
 def glover_hrf(tr, oversampling=16, time_length=32., onset=0.):
@@ -71,7 +71,7 @@ def glover_hrf(tr, oversampling=16, time_length=32., onset=0.):
     hrf: array of shape(length / tr * oversampling, float),
          hrf sampling on the oversampled time grid
     """
-    return gamma_difference_hrf(tr, oversampling, time_length, onset,
+    return _gamma_difference_hrf(tr, oversampling, time_length, onset,
                                 delay=6, undershoot=12., dispersion=.9,
                                 u_dispersion=.9, ratio=.35)
 
@@ -134,13 +134,13 @@ def spm_dispersion_derivative(tr, oversampling=16, time_length=32., onset=0.):
           dhrf sampling on the oversampled time grid
     """
     dd = .01
-    dhrf = 1. / dd * (gamma_difference_hrf(tr, oversampling, time_length,
+    dhrf = 1. / dd * (_gamma_difference_hrf(tr, oversampling, time_length,
                                            onset, dispersion=1. + dd) -
                       spm_hrf(tr, oversampling, time_length, onset))
     return dhrf
 
 
-def sample_condition(exp_condition, frametimes, oversampling=16,
+def _sample_condition(exp_condition, frametimes, oversampling=16,
                      min_onset=-24):
     """Make a possibly oversampled event regressor from condition information.
 
@@ -200,7 +200,7 @@ def sample_condition(exp_condition, frametimes, oversampling=16,
     return regressor, hr_frametimes
 
 
-def resample_regressor(hr_regressor, hr_frametimes, frametimes, kind='linear'):
+def _resample_regressor(hr_regressor, hr_frametimes, frametimes, kind='linear'):
     """ this function samples the regressors at frametimes
 
     Parameters
@@ -352,7 +352,7 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
     tr = float(frametimes.max()) / (np.size(frametimes) - 1)
 
     # 1. create the high temporal resolution regressor
-    hr_regressor, hr_frametimes = sample_condition(
+    hr_regressor, hr_frametimes = _sample_condition(
         exp_condition, frametimes, oversampling, min_onset)
 
     # 2. create the  hrf model(s)
@@ -363,7 +363,7 @@ def compute_regressor(exp_condition, hrf_model, frametimes, con_id='cond',
                          for h in hkernel])
 
     # 4. temporally resample the regressors
-    creg = resample_regressor(conv_reg, hr_frametimes, frametimes)
+    creg = _resample_regressor(conv_reg, hr_frametimes, frametimes)
 
     # 5. ortogonalize the regressors
     if hrf_model != 'fir':
