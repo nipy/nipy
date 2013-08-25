@@ -15,14 +15,6 @@ from nose.tools import (assert_true, assert_false, assert_raises,
 from .. import timefuncs as tf
 
 
-def keys_for_stf(func):
-    keys = []
-    for key, value in tf.SLICETIME_FUNCTIONS.items():
-        if value == func:
-            keys.append(key)
-    return sorted(keys)
-
-
 def test_ascending():
     tr = 2.
     for func in (tf.st_01234, tf.ascending):
