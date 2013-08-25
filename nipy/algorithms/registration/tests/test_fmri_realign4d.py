@@ -13,7 +13,9 @@ from ....testing import funcfile
 from ....fixes.nibabel import io_orientation
 from ....core.image.image_spaces import (make_xyz_image, xyz_affine)
 
-from ..groupwise_registration import (Image4d, resample4d, FmriRealign4d)
+from ..groupwise_registration import (Image4d, resample4d, FmriRealign4d,
+                                      SpaceTimeRealign, SpaceRealign)
+from ...slicetiming.timefuncs import st_43210, st_02413, st_42031
 from ..affine import Rigid
 
 im = load_image(funcfile)
@@ -146,3 +148,41 @@ def test_realign4d_runs_with_different_affines():
     R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
     cor_im, cor_im2 = R.resample()
     assert_array_equal(xyz_affine(cor_im2), aff)
+
+
+def test_spacetimerealign_params():
+    runs = [im, im]
+    for slice_times in ('descending', '43210', st_43210, [2, 1, 0]):
+        R = SpaceTimeRealign(runs, tr=3, slice_times=slice_times, slice_info=2)
+        assert_array_equal(R.slice_times, (2, 1, 0))
+        assert_equal(R.tr, 3)
+    for slice_times in ('asc_alt_2', '02413', st_02413, [0, 2, 1]):
+        R = SpaceTimeRealign(runs, tr=3, slice_times=slice_times, slice_info=2)
+        assert_array_equal(R.slice_times, (0, 2, 1))
+        assert_equal(R.tr, 3)
+    for slice_times in ('desc_alt_2', '42031', st_42031, [1, 2, 0]):
+        R = SpaceTimeRealign(runs, tr=3, slice_times=slice_times, slice_info=2)
+        assert_array_equal(R.slice_times, (1, 2, 0))
+        assert_equal(R.tr, 3)
+    # Check changing axis
+    R = SpaceTimeRealign(runs, tr=21, slice_times='ascending', slice_info=1)
+    assert_array_equal(R.slice_times, np.arange(21))
+    # Check slice_times and slice_info required
+    R = SpaceTimeRealign(runs, 3, 'ascending', 2) # OK
+    assert_raises(ValueError, SpaceTimeRealign, runs, 3, None, 2)
+    assert_raises(ValueError, SpaceTimeRealign, runs, 3, 'ascending', None)
+    # Test when TR and nslices are not the same
+    R1 = SpaceTimeRealign(runs, tr=2., slice_times='ascending', slice_info=2)
+    assert_array_equal(R1.slice_times, np.arange(3) / 3. * 2.)
+    # Smoke test run
+    R1.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
+
+
+def test_spacerealign():
+    # Check space-only realigner
+    runs = [im, im]
+    R = SpaceRealign(runs)
+    assert_equal(R.tr, 1)
+    assert_equal(R.slice_times, 0.)
+    # Smoke test run
+    R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')

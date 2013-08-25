@@ -4,6 +4,8 @@
 import warnings
 import numpy as np
 
+from ...externals.six import string_types
+
 from nibabel.affines import apply_affine
 
 from ...fixes.nibabel import io_orientation
@@ -11,6 +13,7 @@ from ...fixes.nibabel import io_orientation
 from ...core.image.image_spaces import (make_xyz_image,
                                         xyz_affine,
                                         as_xyz_image)
+from ..slicetiming import timefuncs
 from .optimizer import configure_optimizer, use_derivatives
 from .affine import Rigid, Affine
 from ._registration import (_cspline_transform,
@@ -798,6 +801,84 @@ class Realign4d(object):
             return make_xyz_image(data, self._runs[r].affine, 'scanner')
 
 
+class SpaceTimeRealign(Realign4d):
+    def __init__(self, images, tr, slice_times, slice_info,
+                 affine_class=Rigid):
+        """ Spatiotemporal realignment class for fMRI series.
+
+        This class gives a high-level interface to :class:`Realign4d`
+
+        Parameters
+        ----------
+        images : image or list of images
+            Single or multiple input 4d images representing one or several fMRI
+            runs.
+        tr : float
+            Inter-scan repetition time in seconds, i.e. the time elapsed between
+            two consecutive scans.
+        slice_times : str or callable or array-like
+            If str, one of the function names in ``SLICETIME_FUNCTIONS`` in
+            :mod:`nipy.algorithms.slicetiming.timefuncs`.  If callable, a
+            function taking two parameters: ``n_slices`` and ``tr`` (number of
+            slices in the images, inter-scan repetition time in seconds). This
+            function returns a vector of times of slice acquition $t_i$ for each
+            slice $i$ in the volumes.  See
+            :mod:`nipy.algorithms.slicetiming.timefuncs` for a collection of
+            functions for common slice aqusition schemes. If array-like, then
+            should be a slice time vector as above.
+        slice_info : int or length 2 sequence
+            If int, the axis in `images` that is the slice axis.  In a 4D image,
+            this will often be axis = 2.  If a 2 sequence, then elements are
+            ``(slice_axis, slice_direction)``, where ``slice_axis`` is the slice
+            axis in the image as above, and ``slice_direction`` is 1 if the
+            slices were acquired slice 0 first, slice -1 last, or -1 if acquired
+            slice -1 first, slice 0 last.  If `slice_info` is an int, assume
+            ``slice_direction`` == 1.
+        affine_class : ``Affine`` class, optional
+            transformation class to use to calculate transformations between
+            the volumes. Default is :class:``Rigid``
+        """
+        if slice_times is None:
+            raise ValueError("slice_times must be set for space/time "
+                             "registration; use SpaceRealign instead?")
+        if slice_info is None:
+            raise ValueError("slice_info cannot be None")
+        try:
+            len(slice_info)
+        except TypeError:
+            # Presumably an int
+            slice_axis = slice_info
+            slice_info = (slice_axis, 1)
+        else: # sequence
+            slice_axis, slice_direction = slice_info
+        if type(images) in (list, tuple):
+            n_slices = images[0].shape[slice_axis]
+        else:
+            n_slices = images.shape[slice_axis]
+        if isinstance(slice_times, string_types):
+            slice_times = timefuncs.SLICETIME_FUNCTIONS[slice_times]
+        if hasattr(slice_times, '__call__'):
+            slice_times = slice_times(n_slices, tr)
+        self._init(images, tr, slice_times, slice_info, affine_class)
+
+
+class SpaceRealign(Realign4d):
+    def __init__(self, images, affine_class=Rigid):
+        """ Spatial registration of time series with no time interpolation
+
+        Parameters
+        ----------
+        images : image or list of images
+            Single or multiple input 4d images representing one or several fMRI
+            runs.
+        affine_class : ``Affine`` class, optional
+            transformation class to use to calculate transformations between
+            the volumes. Default is :class:``Rigid``
+        """
+        self._init(images, 1., None, None, affine_class)
+
+
+@np.deprecate_with_doc('Please use SpaceTimeRealign instead')
 class FmriRealign4d(Realign4d):
 
     def __init__(self, images, slice_order=None,
@@ -810,6 +891,9 @@ class FmriRealign4d(Realign4d):
         is similar to `Realign4d` but provides a more flexible API for
         initialization in order to make it easier to declare slice
         acquisition times for standard sequences.
+
+        Warning: this class is deprecated; please use :class:`SpaceTimeRealign`
+        instead.
 
         Parameters
         ----------
