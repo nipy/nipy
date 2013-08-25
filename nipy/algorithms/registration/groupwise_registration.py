@@ -216,12 +216,12 @@ class Realign4dAlgorithm(object):
             self.transforms = [affine_class() for scan in range(self.nscans)]
         else:
             self.transforms = transforms
-        self.scanner_time = im4d.scanner_time
-        self.timestamps = im4d.tr * np.arange(self.nscans)
 
         # Compute the 4d cubic spline transform
         self.time_interp = time_interp
         if time_interp:
+            self.timestamps = im4d.tr * np.arange(self.nscans)
+            self.scanner_time = im4d.scanner_time
             self.cbspline = _cspline_transform(im4d.get_data())
         else:
             self.cbspline = np.zeros(self.dims, dtype='double')
