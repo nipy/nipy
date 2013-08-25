@@ -126,8 +126,7 @@ def st_02413(n_slices, TR):
     """Ascend alternate every second slice, starting at first slice
 
     Collect slice 0 first, slice 2 second up to top.  Then return to collect
-    slice 1, slice 3 etc.  This order is rare except on Siemens acquisitions
-    with an even number of slices.  See :func:`siemens_odd_even` for this logic.
+    slice 1, slice 3 etc.
 
     For example, for 5 slices and a TR of 1:
 
@@ -151,7 +150,7 @@ def st_13024(n_slices, TR):
     Collect slice 1 first, slice 3 second up to top (highest numbered slice).
     Then return to collect slice 0, slice 2 etc.  This order is rare except on
     Siemens acquisitions with an even number of slices.  See
-    :func:`siemens_odd_even` for this logic.
+    :func:`st_odd0_even1` for this logic.
 
     For example, for 5 slices and a TR of 1:
 
@@ -170,7 +169,7 @@ asc_alt_2_1 = _derived_func('asc_alt_2_1', st_13024)
 
 @_dec_stfunc
 def st_42031(n_slices, TR):
-    """Descend alternate every second slice, starting at first slice
+    """Descend alternate every second slice, starting at last slice
 
     Collect slice (`n_slices` - 1) first, slice (`nslices` - 3) second down to
     bottom (lowest numbered slice).  Then return to collect slice (`n_slices`
@@ -192,11 +191,11 @@ desc_alt_2 = _derived_func('desc_alt_2', st_42031)
 def st_odd0_even1(n_slices, TR):
     """Ascend alternate starting at slice 0 for odd, slice 1 for even `n_slices`
 
-    Aquisitions with alternating ascending slices in Siemans often seem to have
-    this behavior as default - see:
+    Acquisitions with alternating ascending slices from Siemens scanners often
+    seem to have this behavior as default - see:
         https://mri.radiology.uiowa.edu/fmri_images.html
 
-    This means we use the :func:`st_02413` algorithm of `n_slices` is odd,
+    This means we use the :func:`st_02413` algorithm if `n_slices` is odd,
     and the :func:`st_13024` algorithm if `n_slices is even.
 
     For example, for 4 slices and a TR of 1:
