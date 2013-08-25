@@ -1,6 +1,8 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
+import warnings
+
 from nose.tools import assert_equal
 
 from numpy.testing import (assert_array_almost_equal,
@@ -19,6 +21,13 @@ from ...slicetiming.timefuncs import st_43210, st_02413, st_42031
 from ..affine import Rigid
 
 im = load_image(funcfile)
+
+def test_futurewarning():
+    with warnings.catch_warnings(record=True) as warns:
+        warnings.simplefilter('always')
+        FmriRealign4d([im], tr=2., slice_order='ascending')
+        assert_equal(warns.pop(0).category, DeprecationWarning)
+        assert_equal(warns.pop(0).category, FutureWarning)
 
 
 def test_scanner_time():

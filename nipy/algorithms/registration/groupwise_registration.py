@@ -1005,6 +1005,10 @@ class FmriRealign4d(Realign4d):
           default an axial acquisition with slice axis pointing from
           bottom to top of the head.
         """
+        warnings.warn('Please use SpaceTimeRealign instead of this class; '
+                      'We will soon remove this class',
+                      FutureWarning,
+                      stacklevel=2)
         # if slice_times not None, make sure that parameters redundant
         # with slice times all have their default value
         if slice_times != None:
