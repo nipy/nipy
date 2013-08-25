@@ -128,11 +128,13 @@ def test_realign4d():
     runs = [im, im]
     orient = io_orientation(im.affine)
     slice_axis = int(np.where(orient[:, 0] == 2)[0])
-    R1 = FmriRealign4d(runs, tr=2., slice_order='ascending')
+    R1 = SpaceTimeRealign(runs, tr=2., slice_times='ascending',
+                          slice_info=slice_axis)
     R1.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
     nslices = im.shape[slice_axis]
     slice_times = (2. / float(nslices)) * np.arange(nslices)
-    R2 = FmriRealign4d(runs, tr=2., slice_times=slice_times)
+    R2 = SpaceTimeRealign(runs, tr=2., slice_times=slice_times,
+                          slice_info=slice_axis)
     R2.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
     for r in range(2):
         for i in range(im.shape[3]):
@@ -153,7 +155,7 @@ def test_realign4d_runs_with_different_affines():
     aff2[0:3, 3] += 5
     im2 = make_xyz_image(im.get_data(), aff2, 'scanner')
     runs = [im, im2]
-    R = FmriRealign4d(runs, tr=2., slice_order='ascending')
+    R = SpaceTimeRealign(runs, tr=2., slice_times='ascending', slice_info=2)
     R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
     cor_im, cor_im2 = R.resample()
     assert_array_equal(xyz_affine(cor_im2), aff)
