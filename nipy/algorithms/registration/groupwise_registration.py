@@ -1,5 +1,16 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+""" Motion correction / motion correction with slice timing
+
+Routines implementing motion correction and motion correction combined with
+slice-timing.
+
+See:
+
+Roche, Alexis (2011) A four-dimensional registration algorithm with application
+to joint correction of motion and slice timing in fMRI. *Medical Imaging, IEEE
+Transactions on*;  30:1546--1554
+"""
 
 import warnings
 import numpy as np
@@ -817,14 +828,14 @@ class SpaceTimeRealign(Realign4d):
             Inter-scan repetition time in seconds, i.e. the time elapsed between
             two consecutive scans.
         slice_times : str or callable or array-like
-            If str, one of the function names in ``SLICETIME_FUNCTIONS`` in
-            :mod:`nipy.algorithms.slicetiming.timefuncs`.  If callable, a
-            function taking two parameters: ``n_slices`` and ``tr`` (number of
-            slices in the images, inter-scan repetition time in seconds). This
-            function returns a vector of times of slice acquition $t_i$ for each
-            slice $i$ in the volumes.  See
+            If str, one of the function names in ``SLICETIME_FUNCTIONS``
+            dictionary from :mod:`nipy.algorithms.slicetiming.timefuncs`.  If
+            callable, a function taking two parameters: ``n_slices`` and ``tr``
+            (number of slices in the images, inter-scan repetition time in
+            seconds). This function returns a vector of times of slice
+            acquisition $t_i$ for each slice $i$ in the volumes.  See
             :mod:`nipy.algorithms.slicetiming.timefuncs` for a collection of
-            functions for common slice aqusition schemes. If array-like, then
+            functions for common slice acquisition schemes. If array-like, then
             should be a slice time vector as above.
         slice_info : int or length 2 sequence
             If int, the axis in `images` that is the slice axis.  In a 4D image,
@@ -840,7 +851,8 @@ class SpaceTimeRealign(Realign4d):
         """
         if slice_times is None:
             raise ValueError("slice_times must be set for space/time "
-                             "registration; use SpaceRealign instead?")
+                             "registration; use SpaceRealign for space-only "
+                             "registration")
         if slice_info is None:
             raise ValueError("slice_info cannot be None")
         try:
@@ -973,7 +985,7 @@ class FmriRealign4d(Realign4d):
           acquisitions depending on scanner settings and
           manufacturers, you should refrain from using the
           `interleaved` keyword argument unless you are sure what you
-          are doing. It is generally safer to explicitely input
+          are doing. It is generally safer to explicitly input
           `slice_order` or `slice_times`.
 
         slice_times : None, str or array-like
@@ -994,7 +1006,7 @@ class FmriRealign4d(Realign4d):
 
           For other sequences such as, e.g., sequences with
           simultaneously acquired slices, it is necessary to input
-          `slice_times` explicitely along with `tr`.
+          `slice_times` explicitly along with `tr`.
 
         slice_info : None or tuple, optional
           None, or a tuple with slice axis as the first element and
@@ -1017,15 +1029,15 @@ class FmriRealign4d(Realign4d):
                     or start != 0.0 \
                     or time_interp != None\
                     or interleaved != None:
-                raise ValueError('Attempting to set both `slice_times` '\
-                                     'and other arguments redundant with it')
+                raise ValueError('Attempting to set both `slice_times` '
+                                 'and other arguments redundant with it')
             if tr == None:
                 if len(slice_times) > 1:
                     tr = slice_times[-1] + slice_times[1] - 2 * slice_times[0]
                 else:
                     tr = 2 * slice_times[0]
-                warnings.warn('No `tr` entered. Assuming regular acquisition'\
-                                  ' with tr=%f' % tr)
+                warnings.warn('No `tr` entered. Assuming regular acquisition'
+                              ' with tr=%f' % tr)
         # case where slice_time == None
         else:
             # assume regular slice acquisition, therefore tr is
@@ -1035,8 +1047,8 @@ class FmriRealign4d(Realign4d):
             # if no slice order provided, assume synchronous slices
             if slice_order == None:
                 if not time_interp == False:
-                    raise ValueError('Slice order is requested '\
-                                         'with time interpolation switched on')
+                    raise ValueError('Slice order is requested '
+                                     'with time interpolation switched on')
                 slice_times = 0.0
             else:
                 # if slice_order is a key word, replace it with the
@@ -1047,12 +1059,14 @@ class FmriRealign4d(Realign4d):
                     else:
                         xyz_img = as_xyz_image(images)
 
-                    slice_axis, _ = guess_slice_axis_and_direction(\
+                    slice_axis, _ = guess_slice_axis_and_direction(
                         slice_info, xyz_affine(xyz_img))
                     nslices = xyz_img.shape[slice_axis]
                     if interleaved:
-                        warnings.warn('`interleaved` keyword argument is'\
-                                          'deprecated')
+                        warnings.warn('`interleaved` keyword argument is '
+                                      'deprecated',
+                                      FutureWarning,
+                                      stacklevel=2)
                         aux = np.argsort(range(0, nslices, 2) +\
                                              range(1, nslices, 2))
                     else:
@@ -1060,14 +1074,14 @@ class FmriRealign4d(Realign4d):
                     if slice_order == 'descending':
                         aux = aux[::-1]
                     slice_order = aux
-                # if slice_order is provided explicitely, issue a
+                # if slice_order is provided explicitly, issue a
                 # warning and make sure interleaved is set to None
                 else:
-                    warnings.warn('Please make sure you are NOT using '\
-                                      'SPM-style slice order declaration')
+                    warnings.warn('Please make sure you are NOT using '
+                                  'SPM-style slice order declaration')
                     if not interleaved == None:
-                        raise ValueError('`interleaved` should be None when'\
-                                             'providing explicit slice order')
+                        raise ValueError('`interleaved` should be None when '
+                                         'providing explicit slice order')
                     slice_order = np.asarray(slice_order)
                 if tr_slices == None:
                     tr_slices = float(tr) / float(len(slice_order))

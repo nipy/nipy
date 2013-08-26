@@ -35,7 +35,7 @@ runs = [load_image(run) for run in runnames]
 R = SpaceTimeRealign(runs, tr=2.5, slice_times='asc_alt_2', slice_info=2)
 
 # If you are not sure what the above is doing, you can alternatively
-# declare slice times explicitely using the following equivalent code
+# declare slice times explicitly using the following equivalent code
 """
 tr = 2.5
 nslices = runs[0].shape[2]
