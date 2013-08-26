@@ -16,7 +16,7 @@ from ....fixes.nibabel import io_orientation
 from ....core.image.image_spaces import (make_xyz_image, xyz_affine)
 
 from ..groupwise_registration import (Image4d, resample4d, FmriRealign4d,
-                                      SpaceTimeRealign, SpaceRealign)
+                                      SpaceTimeRealign, SpaceRealign, Realign4d)
 from ...slicetiming.timefuncs import st_43210, st_02413, st_42031
 from ..affine import Rigid
 
@@ -196,4 +196,14 @@ def test_spacerealign():
     assert_equal(R.tr, 1)
     assert_equal(R.slice_times, 0.)
     # Smoke test run
+    R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
+
+
+def test_single_image():
+    # Check we can use a single image as argument
+    R = SpaceTimeRealign(im, tr=3, slice_times='ascending', slice_info=2)
+    R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
+    R = SpaceRealign(im)
+    R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
+    R = Realign4d(im, 3, [0, 1, 2], (2, 1))
     R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')

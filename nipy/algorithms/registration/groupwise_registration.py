@@ -737,7 +737,7 @@ class Realign4d(object):
         self.tr = tr
         if tr == None:
             raise ValueError('Repetition time cannot be None')
-        if not isinstance(images, (list, tuple, np.array)):
+        if not isinstance(images, (list, tuple, np.ndarray)):
             images = [images]
         self._runs = []
         self.affine_class = affine_class
