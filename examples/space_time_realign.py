@@ -3,9 +3,9 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This script requires the nipy-data package to run. It is an example of
-simultaneous motion correction and slice timing correction in multi-session fMRI
-data from the FIAC 2005 dataset. Specifically, it uses the first two sessions of
-subject 'fiac0'.
+simultaneous motion correction and slice timing correction in
+multi-session fMRI data from the FIAC 2005 dataset. Specifically, it
+uses the first two sessions of subject 'fiac0'.
 
 Usage:
   python space_time_realign.py
@@ -17,13 +17,12 @@ Two images will be created in the working directory for the realigned series::
 
 Author: Alexis Roche, 2009.
 """
-from __future__ import print_function # Python 2/3 compatibility
+from __future__ import print_function  # Python 2/3 compatibility
 
 import os
 from os.path import split as psplit, abspath
-
-from nipy.algorithms.registration import FmriRealign4d
-
+import numpy as np
+from nipy.algorithms.registration import SpaceTimeRealign
 from nipy import load_image, save_image
 from nipy.utils import example_data
 
@@ -32,13 +31,19 @@ runnames = [example_data.get_filename('fiac', 'fiac0', run + '.nii.gz')
             for run in ('run1', 'run2')]
 runs = [load_image(run) for run in runnames]
 
-# Declare interleaved ascending slice order
-nslices = runs[0].shape[2]
-slice_order = list(range(0, nslices, 2)) + list(range(1, nslices, 2))
-print('Slice order: %s' % slice_order)
+# Spatio-temporal realigner assuming interleaved ascending slice order
+R = SpaceTimeRealign(runs, tr=2.5, slice_times='asc_alt_2', slice_info=2)
 
-# Spatio-temporal realigner
-R = FmriRealign4d(runs, tr=2.5, slice_order=slice_order)
+# If you are not sure what the above is doing, you can alternatively
+# declare slice times explicitly using the following equivalent code
+"""
+tr = 2.5
+nslices = runs[0].shape[2]
+slice_times = (tr / float(nslices)) *\
+    np.argsort(range(0, nslices, 2) + range(1, nslices, 2))
+print('Slice times: %s' % slice_times)
+R = SpaceTimeRealign(runs, tr=tr, slice_times=slice_times, slice_info=2)
+"""
 
 # Estimate motion within- and between-sessions
 R.estimate(refscan=None)
