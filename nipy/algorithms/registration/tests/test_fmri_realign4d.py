@@ -161,6 +161,17 @@ def test_realign4d_runs_with_different_affines():
     assert_array_equal(xyz_affine(cor_im2), aff)
 
 
+def test_realign4d_params():
+    # Some tests for input parameters to realign4d
+    R = Realign4d(im, 3, [0, 1, 2], None) # No slice_info - OK
+    assert_equal(R.tr, 3)
+    # TR cannot be None for set slice times
+    assert_raises(ValueError, Realign4d, im, None, [0, 1, 2], None)
+    # TR can be None if slice times are None
+    R = Realign4d(im, None, None)
+    assert_equal(R.tr, 1)
+
+
 def test_spacetimerealign_params():
     runs = [im, im]
     for slice_times in ('descending', '43210', st_43210, [2, 1, 0]):
@@ -178,10 +189,11 @@ def test_spacetimerealign_params():
     # Check changing axis
     R = SpaceTimeRealign(runs, tr=21, slice_times='ascending', slice_info=1)
     assert_array_equal(R.slice_times, np.arange(21))
-    # Check slice_times and slice_info required
+    # Check slice_times and slice_info and TR required
     R = SpaceTimeRealign(runs, 3, 'ascending', 2) # OK
     assert_raises(ValueError, SpaceTimeRealign, runs, 3, None, 2)
     assert_raises(ValueError, SpaceTimeRealign, runs, 3, 'ascending', None)
+    assert_raises(ValueError, SpaceTimeRealign, runs, None, [0, 1, 2], 2)
     # Test when TR and nslices are not the same
     R1 = SpaceTimeRealign(runs, tr=2., slice_times='ascending', slice_info=2)
     assert_array_equal(R1.slice_times, np.arange(3) / 3. * 2.)
