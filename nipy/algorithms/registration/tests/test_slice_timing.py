@@ -57,10 +57,14 @@ def test_slice_time_correction():
     for name, time_to_slice in (
         ('ascending', list(range(n_slices))),
         ('descending', list(range(n_slices)[::-1])),
-        ('asc_alt_2', list(range(0, n_slices, 2)) + list(range(1, n_slices, 2)))
+        ('asc_alt_2', (list(range(0, n_slices, 2)) +
+                       list(range(1, n_slices, 2)))),
+        ('desc_alt_2', (list(range(0, n_slices, 2)) +
+                        list(range(1, n_slices, 2)))[::-1])
     ):
+        slice_to_time = np.argsort(time_to_slice)
         acquired_signal = np.zeros_like(first_signal)
-        for space_sno, time_sno in enumerate(time_to_slice):
+        for space_sno, time_sno in enumerate(slice_to_time):
             acquired_signal[..., space_sno, :] = \
                 big_data[..., space_sno, time_sno:n_vol_slices:n_slices]
         # do STC - minimizer will fail
@@ -71,8 +75,7 @@ def test_slice_time_correction():
         assert_array_equal([t.param for t in stc._transforms[0]], 0)
         corrected = stc.resample()[0].get_data()
         # check we approximate first time slice with correction
-        slice0 = np.where(time_to_slice == 0)[0]
-        assert_false(np.allclose(acquired_signal, corrected, rtol=1e-3, atol=0.1))
-        print(name)
-        check_stc(first_signal, corrected, ref_slice=slice0,
-                  rtol=1e-3, atol=1e-6)
+        assert_false(np.allclose(acquired_signal, corrected, rtol=1e-3,
+                                 atol=0.1))
+        check_stc(first_signal, corrected, ref_slice=slice_to_time[0],
+                  rtol=5e-4, atol=1e-6)
