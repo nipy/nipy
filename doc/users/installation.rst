@@ -14,12 +14,14 @@ Dependencies for install
 Must Have
 =========
 
-* Python_ 2.5 or later
+* Python_ 2.6 or later
 * NumPy_ 1.2 or later:  Numpy is an array library for Python
 * SciPy_ 0.7 or later:  Scipy contains scientific computing libraries based on
   numpy
 * Sympy_ 0.6.6 or later: Sympy is a symbolic mathematics library for Python.  We
   use it for statistical formulae.
+* Nibabel_ 1.2.0 or later.  Nibabel loads and saves images in neuroimaging
+  formats.
 
 Strong Recommendations
 ======================
@@ -44,10 +46,14 @@ For Fedora, CentOS
 
 ::
 
-    sudo yum install numpy scipy sympy python-setuptools
+    sudo yum install numpy scipy sympy python-pip
     sudo yum install python-devel gcc
-    sudo easy_install nibabel
-    sudo easy_install nipy
+    sudo pip install nibabel
+    sudo pip install nipy
+
+Recommended::
+
+    sudo yum install ipython
 
 For OSX
 ^^^^^^^
