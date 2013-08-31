@@ -276,7 +276,7 @@ class Beta(sympy.symbol.Dummy):
 
 
 def getparams(expression):
-    """ Return the parameters of an expression that are not Term 
+    """ Return the parameters of an expression that are not Term
     instances but are instances of sympy.Symbol.
 
     Examples
@@ -293,7 +293,7 @@ def getparams(expression):
     >>> f.mean*sympy.exp(th)
     (_b0*x + _b1*y + _b2*z)*exp(theta)
     >>> getparams(f.mean*sympy.exp(th))
-    [theta, _b0, _b1, _b2]
+    [_b0, _b1, _b2, theta]
     """
     atoms = set([])
     expression = np.array(expression)
@@ -307,7 +307,7 @@ def getparams(expression):
     for atom in atoms:
         if isinstance(atom, sympy.Symbol) and not is_term(atom):
             params.append(atom)
-    params.sort()
+    params.sort(key=lambda p : p.name)
     return params
 
 
@@ -335,7 +335,7 @@ def getterms(expression):
     for atom in atoms:
         if is_term(atom):
             terms.append(atom)
-    terms.sort()
+    terms.sort(key=lambda t : t.name)
     return terms
 
 
@@ -477,7 +477,8 @@ class Formula(object):
                     "variables in front.")
 
     def _getdiff(self):
-        params = sorted(list(set(getparams(self.mean))))
+        params = list(set(getparams(self.mean)))
+        params.sort(key=lambda p : p.name)
         return [sympy.diff(self.mean, p).doit() for p in params]
     design_expr = property(_getdiff)
 
@@ -631,12 +632,14 @@ class Formula(object):
         for sterm in self.terms:
             for oterm in other.terms:
                 if is_term(sterm):
-                    v.append(Term.__mul__(sterm, oterm))
+                    t = Term.__mul__(sterm, oterm)
                 elif is_term(oterm):
-                    v.append(Term.__mul__(oterm, sterm))
+                    t = Term.__mul__(oterm, sterm)
                 else:
-                    v.append(sterm*oterm)
-        return Formula(tuple(np.unique(v)))
+                    t = sterm*oterm
+                if not t in v:
+                    v.append(t)
+        return Formula(tuple(v))
 
     def __eq__(self, other):
         s = np.array(self)
