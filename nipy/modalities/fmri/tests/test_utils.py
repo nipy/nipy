@@ -3,7 +3,7 @@
 """ Testing fmri utils
 
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import re
 
@@ -248,3 +248,25 @@ def test_convolve_functions():
         # The original fill value was 0
         assert_array_equal(ftri(np.arange(-2, 0)), 0)
         assert_array_equal(ftri(np.arange(4, 6)), 0)
+
+
+def test_convolve_hrf():
+    # Check that using an HRF convolution on two events is the same as doing the
+    # same convolution on each of them and summing
+    t = Term('t')
+    glover_t = hrf.glover(t)
+    # dt is exactly representable in floating point here
+    glover_conv = TimeConvolver(glover_t, [0, 26], 1./32)
+    event0 = blocks(((1, 2),), (2.,))
+    event1 = blocks(((15, 20),), (1.,))
+    conved0 = glover_conv.convolve(event0, [0, 3])
+    conved1 = glover_conv.convolve(event1, [14, 21])
+    times = np.arange(0, 50, 0.1)
+    e0_e1 = lambdify_t(conved0)(times) + lambdify_t(conved1)(times)
+    # Same thing in one shot
+    events = blocks(((1, 2), (15, 20)), (2., 1))
+    conved = glover_conv.convolve(events, [0, 21])
+    assert_almost_equal(lambdify_t(conved)(times), e0_e1)
+    # Same thing with convolve_functions
+    conved_cf = convolve_functions(events, glover_t, [0, 21], [0, 26], 1/32.)
+    assert_almost_equal(lambdify_t(conved_cf)(times), e0_e1)
