@@ -23,7 +23,6 @@ from __future__ import absolute_import
 import itertools
 
 import numpy as np
-import numpy.fft as FFT
 from scipy.interpolate import interp1d
 
 import sympy
@@ -388,6 +387,84 @@ def blocks(intervals, amplitudes=None, name=None):
     return step_function(t, v, name=name)
 
 
+def _eval_for(f, interval, dt):
+    """ Return x and y for function `f` over `interval` and delta `dt`
+    """
+    real_f = lambdify_t(f)
+    f_mn, f_mx = sorted(interval)
+    time = np.arange(f_mn, f_mx, float(dt)) # time values with support for g
+    vals = real_f(time).astype(float)
+    return vals
+
+
+def _conv_fx_gx(f_vals, g_vals, dt, min_f, min_g):
+    """ Numerical convolution given f(x), min(x) for two functions
+    """
+    vals = np.convolve(f_vals, g_vals) * dt # Full by default
+    # f and g have been implicitly translated by -f_mn and -g_mn respectively,
+    # because in terms of array indices, they both now start at 0.
+    # Translate by f and g offsets
+    time = np.arange(len(vals)) * dt + min_f + min_g
+    return time, vals
+
+
+class TimeConvolver(object):
+    """ Make a convolution kernel from a symbolic function of t
+
+    A convolution kernel is a function with extra attributes to allow it to
+    function as a kernel for numerical convolution (see
+    :func:`convolve_functions`).
+
+    Parameters
+    ----------
+    expr : sympy expression
+        An expression that is a function of t only.
+    support : 2 sequence
+        Sequence is ``(low, high)`` where expression is defined between ``low``
+        and ``high``, and can be assumed to be `fill` otherwise
+    delta : float
+        smallest change in domain of `expr` to use for numerical evaluation of
+        `expr`
+    """
+    def __init__(self, expr, support, delta, fill=0):
+        self.expr = expr
+        self.support = support
+        self.delta = delta
+        self.fill = fill
+        self._vals = _eval_for(expr, self.support, self.delta)
+
+    def convolve(self, g, g_interval, name=None, **kwargs):
+        """ Convolve sympy expression `g` with this kernel
+
+        Parameters
+        ----------
+        g : sympy expr
+            An expression that is a function of t only.
+        g_interval : (2,) sequence of floats
+            Start and end of the interval of t over which to convolve g
+        name : None or str, optional
+            Name of the convolved function in the resulting expression.
+            Defaults to one created by ``utils.interp``.
+        \*\*kwargs : keyword args, optional
+            Any other arguments to pass to the ``interp1d`` function in creating
+            the numerical function for `fg`.
+
+        Returns
+        -------
+        fg : sympy expr
+            An symbolic expression that is a function of t only, and that can be
+            lambdified to produce a function returning the convolved series from
+            an input array.
+        """
+        g_vals = _eval_for(g, g_interval, self.delta)
+        fg_time, fg_vals = _conv_fx_gx(self._vals,
+                                       g_vals,
+                                       self.delta,
+                                       min(self.support),
+                                       min(g_interval))
+        return interp(fg_time, fg_vals, fill=self.fill, name=name, **kwargs)
+
+
 def convolve_functions(f, g, f_interval, g_interval, dt,
                        fill=0, name=None, **kwargs):
     """ Expression containing numerical convolution of `fn1` with `fn2`
@@ -401,7 +478,7 @@ def convolve_functions(f, g, f_interval, g_interval, dt,
     f_interval : (2,) sequence of float
        The start and end of the interval of t over which to convolve values of f
     g_interval : (2,) sequence of floats
-       Start and end of the interval of t over to convolve g
+       Start and end of the interval of t over which to convolve g
     dt : float
        Time step for discretization.  We use this for creating the
        interpolator to form the numerical implementation
@@ -412,7 +489,7 @@ def convolve_functions(f, g, f_interval, g_interval, dt,
        Defaults to one created by ``utils.interp``.
     \*\*kwargs : keyword args, optional
        Any other arguments to pass to the ``interp1d`` function in creating the
-       numerical funtion for `fg`.
+       numerical function for `fg`.
 
     Returns
     -------
@@ -459,18 +536,11 @@ def convolve_functions(f, g, f_interval, g_interval, dt,
     """
     # - so the peak value is 1-dt - rather than 1 - but we get the same
     # result from using np.convolve - see tests.
-    real_f = lambdify_t(f)
-    real_g = lambdify_t(g)
-    dt = float(dt)
-    f_mn, f_mx = sorted(f_interval)
-    f_time = np.arange(f_mn, f_mx, dt) # time values with support for f
-    f_vals = real_f(f_time).astype(float)
-    g_mn, g_mx = sorted(g_interval)
-    g_time = np.arange(g_mn, g_mx, dt) # time values with support for g
-    g_vals = real_g(g_time).astype(float)
-    # f and g have been implicitly translated by -f_mn and -g_mn respectively,
-    # because in terms of array indices, they both now start at 0
-    value = np.convolve(f_vals, g_vals) * dt # Full by default
-    # Translate by f and g offsets
-    fg_time = np.arange(len(value)) * dt + f_mn + g_mn
-    return interp(fg_time, value, fill=fill, name=name, **kwargs)
+    f_vals = _eval_for(f, f_interval, dt)
+    g_vals = _eval_for(g, g_interval, dt)
+    fg_time, fg_vals = _conv_fx_gx(f_vals,
+                                   g_vals,
+                                   dt,
+                                   min(f_interval),
+                                   min(g_interval))
+    return interp(fg_time, fg_vals, fill=fill, name=name, **kwargs)
