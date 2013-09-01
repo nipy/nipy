@@ -1,6 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""Example analyzing the FIAC dataset with NIPY.
+"""Example analyzing the OpenfMRI ds105 dataset with NIPY.
 
 * Single run models with per-voxel AR(1).
 * Cross-run, within-subject models with optimal effect estimates.
@@ -10,8 +10,8 @@
 See ``parallel_run.py`` for a rig to run these analysis in parallel using the
 IPython parallel machinery.
 
-This script needs the pre-processed FIAC data.  See ``README.txt`` and
-``fiac_util.py`` for details.
+This script needs the pre-processed OpenfMRI ds105 data.  See ``README.txt`` and
+``ds105_util.py`` for details.
 
 See ``examples/labs/need_data/first_level_fiac.py`` for an alternative approach
 to some of these analyses.
@@ -60,7 +60,7 @@ CONTRASTS = ('speaker_0', 'speaker_1',
 
 # XXX: this mask was copied by hand from one of the subjects
 # we should have a function to create this mask from the ds105 data
-GROUP_MASK = futil.load_image_ds105('group', 'mask.nii.gz') 
+GROUP_MASK = futil.load_image_ds105('group', 'mask.nii.gz')
 TINY_MASK = np.zeros(GROUP_MASK.shape, np.bool)
 TINY_MASK[30:32,40:42,30:32] = 1
 
@@ -72,10 +72,10 @@ TINY_MASK[30:32,40:42,30:32] = 1
 
 def run_model(subj, run):
     """
-    Single subject fitting of FIAC model
+    Single subject fitting of OpenfMRI ds105 model
     """
     #----------------------------------------------------------------------
-    # Set initial parameters of the FIAC dataset
+    # Set initial parameters of the OpenfMRI ds105 dataset
     #----------------------------------------------------------------------
     # Number of volumes in the fMRI data
     nvol = 121
@@ -97,9 +97,9 @@ def run_model(subj, run):
     #----------------------------------------------------------------------
 
     # Load the experimental description from disk.  We have utilities in futil
-    # that reformat the original FIAC-supplied format into something where the
-    # factorial structure of the design is more explicit.  This has already
-    # been run once, and get_experiment_initial() will simply load the
+    # that reformat the original OpenfMRI ds105-supplied format into something
+    # where the factorial structure of the design is more explicit.  This has
+    # already been run once, and get_experiment_initial() will simply load the
     # newly-formatted design description files (.csv) into record arrays.
     experiment = futil.get_experiment(path_info)
 
@@ -280,7 +280,7 @@ def run_model(subj, run):
 
 
 def fixed_effects(subj, design):
-    """ Fixed effects (within subject) for FIAC model
+    """ Fixed effects (within subject) for OpenfMRI ds105 model
 
     Finds run by run estimated model results, creates fixed effects results
     image per subject.
@@ -301,7 +301,7 @@ def fixed_effects(subj, design):
     # Fetch results images from run estimations
     results = futil.results_table(path_dict)
     # Get our hands on the relevant coordmap to save our results
-    coordmap = futil.load_image_fiac("_%02d" % subj,
+    coordmap = futil.load_image_ds105("_%02d" % subj,
                                      "wanatomical.nii").coordmap
     # Compute the "fixed" effects for each type of contrast
     for con in results:
@@ -385,7 +385,7 @@ def group_analysis(design, contrast):
     # saved.
 
     # This is the coordmap we will use
-    coordmap = futil.load_image_fiac("fiac_00","wanatomical.nii").coordmap
+    coordmap = futil.load_image_ds105("fiac_00","wanatomical.nii").coordmap
 
     adjusted_var = sd**2 + random_var
     adjusted_sd = np.sqrt(adjusted_var)

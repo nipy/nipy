@@ -18,15 +18,10 @@ from __future__ import print_function # Python 2/3 compatibility
 import os
 from os import makedirs, listdir
 from os.path import exists, abspath, isdir, join as pjoin, splitext
-import csv
-try:
-    from StringIO import StringIO # Python 2
-except ImportError:
-    from io import StringIO # Python 3
 
 # Third party
 import numpy as np
-from matplotlib.mlab import csv2rec, rec2csv
+from matplotlib.mlab import csv2rec
 
 # From NIPY
 from nipy.io.api import load_image
