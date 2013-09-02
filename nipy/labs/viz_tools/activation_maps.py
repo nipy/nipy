@@ -152,8 +152,8 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
             do3d = False
 
-    if cut_coords is None and slicer in 'xyz':
-        cut_coords = get_cut_coords(map)
+    if cut_coords is None and slicer in ['x', 'y', 'z']:
+        cut_coords = get_cut_coords(map, slicer=slicer)
 
     slicer = SLICERS[slicer].init_with_figure(data=map, affine=affine,
                                           threshold=threshold,

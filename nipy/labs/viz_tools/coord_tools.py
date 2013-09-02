@@ -176,7 +176,7 @@ def get_cut_coords(map3d, slicer='z', n_cuts=12, delta_axis=3):
 
     """
 
-    assert slicer in 'xyz'
+    assert slicer in ['x', 'y', 'z']
 
     axis = 'xyz'.index(slicer)
 
