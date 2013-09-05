@@ -12,7 +12,7 @@ from scipy import ndimage
 # Neuroimaging libraries imports
 from nibabel import load, nifti1, save
 from nibabel.loadsave import read_img_data
-
+import nibabel
 
 ###############################################################################
 # Operating on connect component
@@ -75,6 +75,24 @@ def threshold_connect_components(map, threshold, copy=True):
     return map
 
 
+def is_niimg(img):
+    """
+    Checks whether given img is nibabel image object.
+
+    """
+
+    if isinstance(img, (nibabel.Nifti1Image,
+                        nibabel.Nifti1Pair,
+                        nibabel.Spm2AnalyzeImage,
+                        nibabel.Spm99AnalyzeImage
+                        # add other supported image types below (e.g
+                        # AnalyseImage, etc.)
+                        )):
+        return type(img)
+    else:
+        return False
+
+
 ###############################################################################
 # Utilities to calculate masks
 ###############################################################################
@@ -122,10 +140,18 @@ def compute_mask_files(input_filename, output_filename=None,
         The main of all the images used to estimate the mask. Only
         provided if `return_mean` is True.
     """
-    if isinstance(input_filename, basestring):
+    if isinstance(input_filename, basestring) or is_niimg(input_filename):
         # One single filename or image
-        nim = load(input_filename)  # load the image from the path
-        vol_arr = read_img_data(nim, prefer='unscaled')
+        if isinstance(input_filename, basestring):
+            nim = load(input_filename)  # load the image from the path
+        else:
+            nim = input_filename
+
+        try:
+            vol_arr = read_img_data(nim, prefer='unscaled')
+        except nibabel.spatialimages.ImageFileError:
+            vol_arr = nim.get_data()
+
         header = nim.get_header()
         affine = nim.get_affine()
         if vol_arr.ndim == 4:
