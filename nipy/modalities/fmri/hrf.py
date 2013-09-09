@@ -107,9 +107,6 @@ def gamma_expr(peak_location, peak_fwhm):
         )
 
 
-# Glover canonical HRF models
-# they are both Sympy objects
-
 def _getint(f, dt=0.02, t=50):
     # numerical integral of function
     lf = lambdify_t(f)
@@ -117,28 +114,32 @@ def _getint(f, dt=0.02, t=50):
     return lf(tt).sum() * dt
 
 
+# Glover HRF
 _gexpr = gamma_expr(5.4, 5.2) - 0.35 * gamma_expr(10.8, 7.35)
 _gexpr = _gexpr / _getint(_gexpr)
-_glover = lambdify_t(_gexpr)
-glover = implemented_function('glover', _glover)
-glovert = lambdify_t(glover(T))
+# The numerical function (pass times to get values)
+glovert = lambdify_t(_gexpr)
+# The symbolic function
+glover = implemented_function('glover', glovert)
 
 # Derivative of Glover HRF
-
 _dgexpr = _gexpr.diff(T)
-dpos = sympy.Derivative((T >= 0), T)
-_dgexpr = _dgexpr.subs(dpos, 0)
+_dpos = sympy.Derivative((T >= 0), T)
+_dgexpr = _dgexpr.subs(_dpos, 0)
 _dgexpr = _dgexpr / _getint(sympy_abs(_dgexpr))
-_dglover = lambdify_t(_dgexpr)
-dglover = implemented_function('dglover', _dglover)
-dglovert = lambdify_t(dglover(T))
+# Numerical function
+dglovert = lambdify_t(_dgexpr)
+# Symbolic function
+dglover = implemented_function('dglover', dglovert)
 
-del(_glover); del(_gexpr); del(dpos); del(_dgexpr); del(_dglover)
+del(_gexpr); del(_dpos); del(_dgexpr)
 
 # AFNI's HRF
-
 _aexpr = ((T >= 0) * T)**8.6 * sympy.exp(-T/0.547)
 _aexpr = _aexpr / _getint(_aexpr)
-_afni = lambdify_t(_aexpr)
-afni = implemented_function('afni', _afni)
-afnit = lambdify_t(afni(T))
+# Numerical function
+afnit = lambdify_t(_aexpr)
+# Symbolic function
+afni = implemented_function('afni', afnit)
+
+del _aexpr
