@@ -51,6 +51,9 @@ True
 >>> np.allclose((n2-1, t2), (12.0, 0.9), rtol=0.02)
 True
 """
+from __future__ import division
+
+from functools import partial
 
 import numpy as np
 import sympy
@@ -59,6 +62,8 @@ try:
     sympy_abs = sympy.Abs # 0.7.0
 except AttributeError:
     sympy_abs = sympy.abs
+
+import scipy.stats as sps
 
 from nipy.fixes.sympy.utilities.lambdify import implemented_function
 
@@ -107,16 +112,20 @@ def gamma_expr(peak_location, peak_fwhm):
         )
 
 
-def _getint(f, dt=0.02, t=50):
-    # numerical integral of function
-    lf = lambdify_t(f)
+def _get_sym_int(f, dt=0.02, t=50):
+    # numerical integral of symbolic function
+    return _get_num_int(lambdify_t(f), dt, t)
+
+
+def _get_num_int(lf, dt=0.02, t=50):
+    # numerical integral of numerical function
     tt = np.arange(dt,t+dt,dt)
     return lf(tt).sum() * dt
 
 
 # Glover HRF
 _gexpr = gamma_expr(5.4, 5.2) - 0.35 * gamma_expr(10.8, 7.35)
-_gexpr = _gexpr / _getint(_gexpr)
+_gexpr = _gexpr / _get_sym_int(_gexpr)
 # The numerical function (pass times to get values)
 glovert = lambdify_t(_gexpr)
 # The symbolic function
@@ -126,7 +135,7 @@ glover = implemented_function('glover', glovert)
 _dgexpr = _gexpr.diff(T)
 _dpos = sympy.Derivative((T >= 0), T)
 _dgexpr = _dgexpr.subs(_dpos, 0)
-_dgexpr = _dgexpr / _getint(sympy_abs(_dgexpr))
+_dgexpr = _dgexpr / _get_sym_int(sympy_abs(_dgexpr))
 # Numerical function
 dglovert = lambdify_t(_dgexpr)
 # Symbolic function
@@ -136,10 +145,103 @@ del(_gexpr); del(_dpos); del(_dgexpr)
 
 # AFNI's HRF
 _aexpr = ((T >= 0) * T)**8.6 * sympy.exp(-T/0.547)
-_aexpr = _aexpr / _getint(_aexpr)
+_aexpr = _aexpr / _get_sym_int(_aexpr)
 # Numerical function
 afnit = lambdify_t(_aexpr)
 # Symbolic function
 afni = implemented_function('afni', afnit)
 
-del _aexpr
+del(_aexpr)
+
+# SPMs HRF
+def spm_hrf_compat(t,
+                   peak_delay=6,
+                   under_delay=16,
+                   peak_disp=1,
+                   under_disp=1,
+                   p_u_ratio = 6,
+                   normalize=True,
+                  ):
+    """ SPM HRF function from sum of two gamma PDFs
+
+    This function is designed to be partially compatible with SPMs `spm_hrf.m`
+    function.
+
+    The SPN HRF is a *peak* gamma PDF (with location `peak_delay` and dispersion
+    `peak_disp`), minus an *undershoot* gamma PDF (with location `under_delay`
+    and dispersion `under_disp`, and divided by the `p_u_ratio`).
+
+    Parameters
+    ----------
+    t : array-like
+        vector of times at which to sample HRF
+    peak_delay : float, optional
+        delay of peak
+    peak_disp : float, optional
+        width (dispersion) of peak
+    under_delay : float, optional
+        delay of undershoot
+    under_disp : float, optional
+        width (dispersion) of undershoot
+    p_u_ratio : float, optional
+        peak to undershoot ratio.  Undershoot divided by this value before
+        subtracting from peak.
+    normalize : {True, False}, optional
+        If True, divide HRF values by their sum before returning.  SPM does this
+        by default.
+
+    Returns
+    -------
+    hrf : array
+        vector length ``len(t)`` of samples from HRF at times `t`
+
+    Notes
+    -----
+    See ``spm_hrf.m`` in the SPM distribution.
+    """
+    if len([v for v in [peak_delay, peak_disp, under_delay, under_disp]
+            if v <= 0]):
+        raise ValueError("delays and dispersions must be > 0")
+    # gamma.pdf only defined for t > 0
+    hrf = np.zeros_like(t, dtype=np.float)
+    pos_t = t[t > 0]
+    peak = sps.gamma.pdf(pos_t,
+                         peak_delay / peak_disp,
+                         loc=0,
+                         scale = peak_disp)
+    undershoot = sps.gamma.pdf(pos_t,
+                               under_delay / under_disp,
+                               loc=0,
+                               scale = under_disp)
+    hrf[t > 0] = peak - undershoot / p_u_ratio
+    if not normalize:
+        return hrf
+    return hrf / np.sum(hrf)
+
+
+_spm_hrf_no_norm = partial(spm_hrf_compat, normalize=False)
+_spm_can_int = _get_num_int(_spm_hrf_no_norm)
+_spm_hrf_ddisp = partial(spm_hrf_compat, normalize=False, peak_disp=1.01)
+_spm_ddisp_int = _get_num_int(_spm_hrf_ddisp)
+
+
+def spmt(t):
+    """ SPM canonical HRF """
+    return _spm_hrf_no_norm(t) / _spm_can_int
+
+
+def dspmt(t):
+    """ SPM time derivative """
+    t = np.asarray(t)
+    return (_spm_hrf_no_norm(t) - _spm_hrf_no_norm(t - 1)) / _spm_can_int
+
+
+def ddspmt(t):
+    """ SPM dispersion derivative """
+    return (_spm_hrf_no_norm(t) / _spm_can_int -
+            _spm_hrf_ddisp(t) / _spm_ddisp_int) / 0.01
+
+
+spm = implemented_function('spm', spmt)
+dspm = implemented_function('dspm', dspmt)
+ddspm = implemented_function('ddspm', ddspmt)
