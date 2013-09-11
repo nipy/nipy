@@ -21,8 +21,6 @@ from ..hrf import (
 from nose.tools import assert_raises
 from numpy.testing import assert_almost_equal
 
-MY_PATH = dirname(__file__)
-
 
 def test_gamma():
     t = np.linspace(0, 30, 5000)
@@ -46,6 +44,8 @@ def test_gamma():
 
 def test_spm_hrf():
     # Regression tests for spm hrf, time derivative and dispersion derivative
+    # Check that absolute values don't change (much) with different dt, and that
+    # max values are roughly the same and in the same place in time
     for dt in 0.1, 0.01, 0.001:
         t_vec = np.arange(0, 32, dt)
         hrf = spmt(t_vec)
@@ -57,11 +57,18 @@ def test_spm_hrf():
         dhrf = ddspmt(t_vec)
         assert_almost_equal(np.max(dhrf), 0.10, 2)
         assert_almost_equal(t_vec[np.argmax(dhrf)], 5.7, 1)
+    # Test reversed time vector to check that order of time values does not
+    # affect result
+    rt_vec = np.arange(0, 32, 0.01)
+    rhrf = spmt(rt_vec)
+    assert_almost_equal(np.max(rhrf), 0.21053, 5)
+    assert_almost_equal(t_vec[np.argmax(hrf)], 5, 2)
 
 
 def test_spm_hrf_octave():
     # Test SPM hrf against output from SPM code running in Octave
-    hrfs_path = pjoin(MY_PATH, 'hrfs.mat')
+    my_path = dirname(__file__)
+    hrfs_path = pjoin(my_path, 'hrfs.mat')
     # mat file resulting from make_hrfs.m
     hrfs_mat = sio.loadmat(hrfs_path, squeeze_me=True)
     params = hrfs_mat['params']
@@ -77,6 +84,16 @@ def test_spm_hrf_octave():
                                  p_u_ratio=rat)
         # Normalize integral to match SPM
         assert_almost_equal(our_hrf, hrfs[i])
+    # Test basis functions
+    # mat file resulting from get_td_dd.m
+    bases_path = pjoin(my_path, 'spm_bases.mat')
+    bases_mat = sio.loadmat(bases_path, squeeze_me=True)
+    dt = bases_mat['dt']
+    t_vec = np.arange(0, 32 + dt, dt)
+    # SPM function divides by sum of values - revert with dt
+    assert_almost_equal(spmt(t_vec), bases_mat['hrf'] / dt, 4)
+    assert_almost_equal(dspmt(t_vec), bases_mat['dhrf'] / dt, 4)
+    assert_almost_equal(ddspmt(t_vec), bases_mat['ddhrf'] / dt, 4)
 
 
 def test_spm_hrf_errors():

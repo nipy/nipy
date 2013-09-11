@@ -1,3 +1,6 @@
+% Use SPM spm_hrf function to create HRF time courses
+% Try different dt values, and values for peak, undershoot parameters
+
 hrfs = {};
 params = {};
 
