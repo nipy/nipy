@@ -37,7 +37,9 @@ def two_level_glm(y, vy, X, niter=10):
       may be computed by s2[:, i] * inv(X.T * X)
 
     dof : float
-      Degrees of freedom
+      Degrees of freedom as per the variational Bayes approximation
+      (simply, the number of observations minus the number of
+      independent regressors)
     """
     # Number of observations, regressors and points
     nobs = X.shape[0]

@@ -29,9 +29,9 @@ def make_fake_data():
 def test_parcel_analysis():
     con_imgs, parcel_img = make_fake_data()
     g = ParcelAnalysis(con_imgs, parcel_img)
-    tmap_img = g.tmap()
-    assert_array_equal(tmap_img.shape, SIZE)
-    assert_array_equal(xyz_affine(tmap_img), AFFINE)
+    t_map_img = g.t_map()
+    assert_array_equal(t_map_img.shape, SIZE)
+    assert_array_equal(xyz_affine(t_map_img), AFFINE)
     parcel_mu_img, parcel_prob_img = g.parcel_maps()
     assert_array_equal(parcel_mu_img.shape, SIZE)
     assert_array_equal(xyz_affine(parcel_mu_img), AFFINE)
@@ -40,7 +40,7 @@ def test_parcel_analysis():
     assert parcel_prob_img.get_data().max() <= 1
     assert parcel_prob_img.get_data().min() >= 0
     outside = parcel_img.get_data() == 0
-    assert_array_equal(tmap_img.get_data()[outside], 0)
+    assert_array_equal(t_map_img.get_data()[outside], 0)
     assert_array_equal(parcel_mu_img.get_data()[outside], 0)
     assert_array_equal(parcel_prob_img.get_data()[outside], 0)
 
@@ -56,9 +56,9 @@ def test_parcel_analysis_nosmooth():
                        design_matrix=X,
                        cvect=c,
                        fwhm=0)
-    tmap = g.tmap().get_data()
-    m_error = np.abs(np.mean(tmap))
-    v_error = np.abs(np.var(tmap) - (NSUBJ - 5) / float(NSUBJ - 7))
+    t_map = g.t_map().get_data()
+    m_error = np.abs(np.mean(t_map))
+    v_error = np.abs(np.var(t_map) - (NSUBJ - 5) / float(NSUBJ - 7))
     print('Errors: %f (mean), %f (var)' % (m_error, v_error))
     assert m_error < .1
     assert v_error < .1

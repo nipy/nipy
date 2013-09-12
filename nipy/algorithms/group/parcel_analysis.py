@@ -18,13 +18,11 @@ in Computer Science*; 5762:450--457.
 Roche, Alexis (2012). OHBM'12 talk, slides at:
 https://sites.google.com/site/alexisroche/slides/Talk_Beijing12.pdf
 """
-
-
 from os.path import join
 import numpy as np
 import scipy.ndimage as nd
 import scipy.stats as ss
-from ..statistics.mixed_effects import two_level_glm
+from ..statistics.bayesian_mixed_effects import two_level_glm
 from ..statistics.histogram import histogram
 from ..registration import resample
 from ...fixes.nibabel import io_orientation
@@ -33,33 +31,41 @@ from ...core.image.image_spaces import (make_xyz_image,
 from ... import save_image
 
 SIGMA_MIN = 1e-5
+NDIM = 3  # This will work for 3D images
 
 
-def fwhm_to_sigma(fwhm, voxsize):
+def _fwhm_to_sigma(fwhm, voxsize):
     """
-    convert fwhm in mm to sigma in voxel units
+    Convert full-width-at-half-maximum Gaussian kernel parameter given
+    in mm to standard deviation in voxel units.
     """
     k = 2 * np.sqrt(2 * np.log(2))
     sigma_mm = fwhm / k
     return np.maximum(sigma_mm / voxsize, SIGMA_MIN)
 
 
-def blur(x, msk, sigma):
+def _gaussian_filter(x, msk, sigma):
     """
-    x padded with zeros in the mask
+    Smooth a multidimensional array `x` using a Gaussian filter with
+    axis-wise standard deviations given by `sigma`, after padding `x`
+    with zeros within a mask `msk`.
     """
     x[msk] = 0.
     gx = nd.gaussian_filter(x, sigma)
-    norma = 1 - nd.gaussian_filter(msk.astype('float'), sigma)
+    norma = 1 - nd.gaussian_filter(msk.astype(float), sigma)
     gx[True - msk] /= norma[True - msk]
     gx[msk] = 0.
     return gx
 
 
-def square_gaussian_norm_factor(sigma):
+def _gaussian_energy(sigma):
+    """
+    Compute the integral of a squared three-dimensional Gaussian
+    kernel with axis-wise standard deviations `sigma`.
+    """
     sigma = np.asarray(sigma)
     if sigma.size == 1:
-        sigma = np.repeat(sigma, 3)
+        sigma = np.repeat(sigma, NDIM)
     mask_half_size = np.ceil(5 * sigma).astype(int)
     mask_size = 2 * mask_half_size + 1
     x = np.zeros(mask_size)
@@ -71,31 +77,39 @@ def square_gaussian_norm_factor(sigma):
 
 def _smooth(con, vcon, msk, sigma):
     """
-    Integrate spatial uncertainty in standard space.
-
-    sigma corresponds to voxel units.
-    Expected registration error is np.sqrt(3) * sigma
+    Integrate spatial uncertainty in standard space assuming that
+    localization errors follow a zero-mean Gaussian distribution with
+    axis-wise standard deviations `sigma` in voxel units. The expected
+    Euclidean norm of registration errors is sqrt(NDIM) * sigma.
     """
-    scon = blur(con, msk, sigma)
-    svcon = blur(con ** 2, msk, sigma) - scon ** 2
+    scon = _gaussian_filter(con, msk, sigma)
+    svcon = _gaussian_filter(con ** 2, msk, sigma) - scon ** 2
     if not vcon == None:
-        svcon += blur(vcon, msk, sigma)
+        svcon += _gaussian_filter(vcon, msk, sigma)
     return scon, svcon
 
 
 def _smooth_spm(con, vcon, msk, sigma):
-    scon = blur(con, msk, sigma)
-    K = square_gaussian_norm_factor(sigma)
+    """
+    Given a contrast image `con` and the corresponding variance image
+    `vcon`, both assumed to be estimated from non-smoothed first-level
+    data, compute what `con` and `vcon` would have been had the data
+    been smoothed with a Gaussian kernel.
+    """
+    scon = _gaussian_filter(con, msk, sigma)
+    K = _gaussian_energy(sigma)
     if not vcon == None:
-        svcon = K * blur(vcon, msk, sigma / np.sqrt(2))
+        svcon = K * _gaussian_filter(vcon, msk, sigma / np.sqrt(2))
     else:
         svcon = np.zeros(con.shape)
     return scon, svcon
 
 
-def smooth(con_img, vcon_img, sigma, method='default'):
+def _smooth_image_pair(con_img, vcon_img, sigma, method='default'):
     """
-    Smooth an input image and associated variance image.
+    Smooth an input image and associated variance image using either
+    the spatial uncertainty accounting method consistent with Keller
+    et al's model, or the SPM approach.
     """
     if method == 'default':
         smooth_fn = _smooth
@@ -132,13 +146,13 @@ class ParcelAnalysis(object):
                  fwhm=8, smooth_method='default',
                  res_path=None):
         """
-        Bayesian parcel-based group analysis.
+        Bayesian parcel-based analysis.
 
         Given a sequence of independent images registered to a common
         space (for instance, a set of contrast images from a
         first-level fMRI analysis), perform a second-level analysis
         assuming constant effects throughout parcels defined from a
-        given label image in reference space. Spcifically, a model of
+        given label image in reference space. Specifically, a model of
         the following form is assumed:
 
         Y = X * beta + variability,
@@ -160,9 +174,11 @@ class ParcelAnalysis(object):
           A sequence of two arrays with same length equal to the
           number of distinct parcels consistently with the
           `parcel_img` argument. The first array gives parcel names
-          and the second, parcel values. By default, parcel values are
-          taken as `np.unique(parcel_img.get_data())` and parcel names
-          are these values converted to strings.
+          and the second, parcel values, i.e., corresponding
+          intensities in the associated parcel image. By default,
+          parcel values are taken as
+          `np.unique(parcel_img.get_data())` and parcel names are
+          these values converted to strings.
 
         msk_img: nipy-like image, optional
           Binary mask to restrict analysis. By default, analysis is
@@ -179,7 +195,7 @@ class ParcelAnalysis(object):
           array with shape (n, p) where `n` matches the number of
           input scans, and `p` is the number of regressors.
 
-        cvect: array
+        cvect: array, optional
           Contrast vector of interest. The method makes an inference
           on the contrast defined as the dot product cvect'*beta,
           where beta are the unknown parcel-wise effects. If None,
@@ -187,12 +203,12 @@ class ParcelAnalysis(object):
           `cvect` argument is mandatory if `design_matrix` is
           provided.
 
-        fwhm: float
+        fwhm: float, optional
           A parameter that represents the localization uncertainty in
           reference space in terms of the full width at half maximum
           of an isotropic Gaussian kernel.
 
-        smooth_method: str
+        smooth_method: str, optional
           One of 'default' and 'spm'. Setting `smooth_method=spm`
           results in simply smoothing the input images using a
           Gaussian kernel, while the default method involves more
@@ -206,9 +222,9 @@ class ParcelAnalysis(object):
         self.smooth_method = smooth_method
         self.con_imgs = con_imgs
         self.vcon_imgs = vcon_imgs
-        self.nsubj = len(con_imgs)
+        self.n_subjects = len(con_imgs)
         if not self.vcon_imgs == None:
-            if not self.nsubj == len(vcon_imgs):
+            if not self.n_subjects == len(vcon_imgs):
                 raise ValueError('List of contrasts and variances'
                                  ' do not have the same length')
         if msk_img == None:
@@ -219,7 +235,7 @@ class ParcelAnalysis(object):
 
         # design matrix
         if design_matrix == None:
-            self.design_matrix = np.ones(self.nsubj)
+            self.design_matrix = np.ones(self.n_subjects)
             self.cvect = np.ones((1,))
             if not cvect == None:
                 raise ValueError('No contrast vector expected')
@@ -229,7 +245,7 @@ class ParcelAnalysis(object):
                 raise ValueError('`cvect` cannot be None with'
                                  ' provided design matrix')
             self.cvect = np.asarray(cvect)
-            if not self.design_matrix.shape[0] == self.nsubj:
+            if not self.design_matrix.shape[0] == self.n_subjects:
                 raise ValueError('Design matrix shape is inconsistent'
                                  ' with number of input images')
             if not len(self.cvect) == self.design_matrix.shape[1]:
@@ -239,10 +255,10 @@ class ParcelAnalysis(object):
         # load the parcellation and resample it at the appropriate
         # resolution
         self.reference = parcel_img.reference
-        self.parcel_fullres = parcel_img.get_data().astype('uint').squeeze()
-        self.affine_fullres = xyz_affine(parcel_img)
-        parcel_img = make_xyz_image(self.parcel_fullres,
-                                    self.affine_fullres,
+        self.parcel_full_res = parcel_img.get_data().astype('uint').squeeze()
+        self.affine_full_res = xyz_affine(parcel_img)
+        parcel_img = make_xyz_image(self.parcel_full_res,
+                                    self.affine_full_res,
                                     self.reference)
         self.affine = xyz_affine(self.con_imgs[0])
         parcel_img_rsp = resample(parcel_img,
@@ -264,15 +280,12 @@ class ParcelAnalysis(object):
         # determine smoothing kernel size
         orient = io_orientation(self.affine)[:, 0].astype('int')
         voxsize = np.abs(self.affine[(orient, range(3))])
-        self.sigma = fwhm_to_sigma(fwhm, voxsize)
+        self.sigma = _fwhm_to_sigma(fwhm, voxsize)
 
         # run approximate belief propagation
         self._smooth_images()
         self._voxel_level_inference()
         self._parcel_level_inference()
-
-        # write results to a NPZ file
-        self._dump_results()
 
     def _smooth_images(self, write=False):
         """
@@ -280,14 +293,14 @@ class ParcelAnalysis(object):
         uncertainty in reference space.
         """
         cons, vcons = [], []
-        for i in range(self.nsubj):
+        for i in range(self.n_subjects):
             con = self.con_imgs[i]
             if not self.vcon_imgs == None:
                 vcon = self.vcon_imgs[i]
             else:
                 vcon = None
-            scon, svcon = smooth(con, vcon, self.sigma,
-                                 method=self.smooth_method)
+            scon, svcon = _smooth_image_pair(con, vcon, self.sigma,
+                                             method=self.smooth_method)
             if write and not self.res_path == None:
                 save_image(scon, join(self.res_path,
                                       'scon' + str(i) + '.nii.gz'))
@@ -356,17 +369,23 @@ class ParcelAnalysis(object):
         self.parcel_s2 = s2[I]
         self.parcel_dof = dof[I]
 
-    def _dump_results(self):
-        if not self.res_path == None:
-            np.savez(join(self.res_path, 'parcel_analysis.npz'),
-                     values=self.parcel_values,
-                     labels=self.parcel_labels,
-                     prob=self.parcel_prob,
-                     mu=self.parcel_mu,
-                     s2=self.parcel_s2,
-                     dof=self.parcel_dof)
+    def dump_results(self, path=None):
+        """
+        Save parcel analysis information in NPZ file.
+        """
+        if path == None and not self.res_path == None:
+            path = self.res_path
+        else:
+            path = '.'
+        np.savez(join(path, 'parcel_analysis.npz'),
+                 values=self.parcel_values,
+                 labels=self.parcel_labels,
+                 prob=self.parcel_prob,
+                 mu=self.parcel_mu,
+                 s2=self.parcel_s2,
+                 dof=self.parcel_dof)
 
-    def tmap(self):
+    def t_map(self):
         """
         Compute voxel-wise t-statistic map. This map is different from
         what you would get from an SPM-style mass univariate analysis
@@ -395,10 +414,17 @@ class ParcelAnalysis(object):
                        join(self.res_path, 'vbeta.nii.gz'))
         return tmap_img
 
-    def parcel_maps(self, fullres=True):
+    def parcel_maps(self, full_res=True):
         """
         Compute parcel-based posterior contrast means and positive
-        contrast probabibilities.
+        contrast probabilities.
+
+        Parameters
+        ----------
+        full_res: boolean
+         If True, the output images will be at the same resolution as
+         the parcel image. Otherwise, resolution will match the
+         first-level images.
 
         Returns
         -------
@@ -409,9 +435,9 @@ class ParcelAnalysis(object):
           Corresponding image of posterior probabilities of positive
           contrast.
         """
-        if fullres:
-            parcel = self.parcel_fullres
-            affine = self.affine_fullres
+        if full_res:
+            parcel = self.parcel_full_res
+            affine = self.affine_full_res
         else:
             parcel = self.parcel
             affine = self.affine
@@ -433,3 +459,89 @@ class ParcelAnalysis(object):
                        join(self.res_path, 'parcel_mu.nii.gz'))
 
         return pmap_mu_img, pmap_prob_img
+
+
+def parcel_analysis(con_imgs, parcel_img,
+                    msk_img=None, vcon_imgs=None,
+                    design_matrix=None, cvect=None,
+                    fwhm=8, smooth_method='default',
+                    res_path=None):
+    """
+    Helper function for Bayesian parcel-based analysis.
+
+    Given a sequence of independent images registered to a common
+    space (for instance, a set of contrast images from a first-level
+    fMRI analysis), perform a second-level analysis assuming constant
+    effects throughout parcels defined from a given label image in
+    reference space. Specifically, a model of the following form is
+    assumed:
+
+    Y = X * beta + variability,
+
+    where Y denotes the input image sequence, X is a design matrix,
+    and beta are parcel-wise parameter vectors. The algorithm computes
+    the Bayesian posterior probability of cvect'*beta, where cvect is
+    a given contrast vector, in each parcel using an expectation
+    propagation scheme.
+
+    Parameters
+    ----------
+    con_imgs: sequence of nipy-like images
+      Images input to the group analysis.
+
+    parcel_img: nipy-like image
+      Label image where each label codes for a parcel.
+
+    msk_img: nipy-like image, optional
+      Binary mask to restrict analysis. By default, analysis is
+      carried out on all parcels with nonzero value.
+
+    vcon_imgs: sequece of nipy-like images, optional
+      First-level variance estimates corresponding to `con_imgs`. This
+      is useful if the input images are "noisy". By default,
+      first-level variances are assumed to be zero.
+
+    design_matrix: array, optional
+      If None, a one-sample analysis model is used. Otherwise, an
+      array with shape (n, p) where `n` matches the number of input
+      scans, and `p` is the number of regressors.
+
+    cvect: array, optional
+      Contrast vector of interest. The method makes an inference on
+      the contrast defined as the dot product cvect'*beta, where beta
+      are the unknown parcel-wise effects. If None, `cvect` is assumed
+      to be np.array((1,)). However, the `cvect` argument is mandatory
+      if `design_matrix` is provided.
+
+    fwhm: float, optional
+      A parameter that represents the localization uncertainty in
+      reference space in terms of the full width at half maximum of an
+      isotropic Gaussian kernel.
+
+    smooth_method: str, optional
+      One of 'default' and 'spm'. Setting `smooth_method=spm` results
+      in simply smoothing the input images using a Gaussian kernel,
+      while the default method involves more complex smoothing in
+      order to propagate spatial uncertainty into the inference
+      process.
+
+    res_path: str, optional
+      An existing path to write output images. If None, no output is
+      written.
+
+
+    Returns
+    -------
+    pmap_mu_img: nipy image
+      Image of posterior contrast means for each parcel.
+
+    pmap_prob_img: nipy image
+      Corresponding image of posterior probabilities of positive
+      contrast.
+    """
+    p = ParcelAnalysis(con_imgs, parcel_img, parcel_info=None,
+                       msk_img=msk_img, vcon_imgs=vcon_imgs,
+                       design_matrix=design_matrix, cvect=cvect,
+                       fwhm=fwhm, smooth_method=smooth_method,
+                       res_path=res_path)
+    return p.parcel_maps()

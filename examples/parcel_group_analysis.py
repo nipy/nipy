@@ -9,7 +9,7 @@ parcellation image (such as the AAL atlas, 'ROI_MNI_V4.nii', see
 http://www.gin.cnrs.fr/spip.php?article217). All images are assumed to
 be in a common reference space, e.g. the MNI/Talairach space.
 
-It outpus three images:
+It outputs three images:
 
 * tmap.nii.gz, a `t-statistic` image similar to a SPM-like second-level
   t-map, except it is derived under an assumption of localization
@@ -28,7 +28,7 @@ usage information.
 from os.path import join
 from glob import glob
 from nipy import load_image
-from nipy.algorithms.group import ParcelAnalysis
+from nipy.algorithms.group import parcel_analysis
 from nipy.externals.argparse import ArgumentParser
 
 # Parse command line
@@ -55,8 +55,6 @@ msk_img = load_image(args.msk_file)
 parcel_img = load_image(args.parcel_file)
 
 # Run parcel analysis and write output images in the current directory
-g = ParcelAnalysis(con_imgs, parcel_img,
-                   msk_img=msk_img, fwhm=8,
-                   res_path='.')
-tmap_img = g.tmap()
-parcel_mu_img, parcel_proba_img = g.parcel_maps()
+effect_img, proba_img = parcel_analysis(con_imgs, parcel_img,
+                                        msk_img=msk_img, fwhm=8,
+                                        res_path='.')

@@ -12,7 +12,7 @@ import numpy.random as nr
 from ..mixed_effects_stat import (
     one_sample_ttest, one_sample_ftest, two_sample_ttest, two_sample_ftest, 
     generate_data, t_stat, mfx_stat)
-from ..mixed_effects import two_level_glm
+from ..bayesian_mixed_effects import two_level_glm
 
 
 def test_mfx():
