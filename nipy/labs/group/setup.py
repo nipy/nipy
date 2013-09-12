@@ -26,12 +26,6 @@ def configuration(parent_package='',top_path=None):
         extra_info=lapack_info,
         )
     config.add_extension(
-        'routines',
-        sources=['routines.pyx'],
-        libraries=['cstat'],
-        extra_info=lapack_info,
-        )
-    config.add_extension(
         'glm_twolevel',
         sources=['glm_twolevel.pyx'],
         libraries=['cstat'],

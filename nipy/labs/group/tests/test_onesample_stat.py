@@ -3,38 +3,7 @@
 from numpy.testing import assert_equal, assert_almost_equal
 import numpy as np
 
-from .. import routines, onesample, twosample
-
-def slow_add_lines(A, B, I):
-    for i in xrange(len(I)):
-        B[I[i]] += A[i]
-
-
-def test_add_lines():
-    nlines = 100000
-    ncols = 1
-    A = np.random.rand(nlines, ncols)
-    B = np.random.rand(nlines, ncols)
-    I = np.asarray(np.random.randint(nlines, size=nlines)
-            ).astype(np.int)
-    C1 = B.copy()
-    C2 = B.copy()
-    routines.add_lines(A, C1, I)
-    slow_add_lines(A, C2, I)
-    assert_almost_equal(C1, C2)         
-
-def test_add_lines2():
-    nlines = 1e5
-    ncols = 1
-    A = np.random.rand(nlines, ncols)
-    B = np.random.rand(nlines, ncols)
-    I = np.asarray(np.random.randint(nlines, size=nlines)
-            ).astype(np.int)
-    C1 = B.copy()
-    C2 = B.copy()
-    routines.add_lines(A, C1, I)
-    slow_add_lines(A, C2, I)
-    assert_almost_equal(C1, C2)
+from .. import onesample
 
 
 def test_onesample_stat():

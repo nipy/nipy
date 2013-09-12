@@ -4,7 +4,6 @@ from . import onesample
 from . import twosample
 from . import glm_twolevel
 from . import permutation_test
-from . import spatial_relaxation_onesample
 
 from nipy.testing import Tester
 test = Tester().test
