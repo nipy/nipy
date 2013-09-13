@@ -25,6 +25,7 @@ import scipy.stats as ss
 from ..statistics.bayesian_mixed_effects import two_level_glm
 from ..statistics.histogram import histogram
 from ..registration import resample
+from ..kernel_smooth import fwhm2sigma
 from ...fixes.nibabel import io_orientation
 from ...core.image.image_spaces import (make_xyz_image,
                                         xyz_affine)
@@ -32,16 +33,6 @@ from ... import save_image
 
 SIGMA_MIN = 1e-5
 NDIM = 3  # This will work for 3D images
-
-
-def _fwhm_to_sigma(fwhm, voxsize):
-    """
-    Convert full-width-at-half-maximum Gaussian kernel parameter given
-    in mm to standard deviation in voxel units.
-    """
-    k = 2 * np.sqrt(2 * np.log(2))
-    sigma_mm = fwhm / k
-    return np.maximum(sigma_mm / voxsize, SIGMA_MIN)
 
 
 def _gaussian_filter(x, msk, sigma):
@@ -166,10 +157,8 @@ class ParcelAnalysis(object):
         ----------
         con_imgs: sequence of nipy-like images
           Images input to the group analysis.
-
         parcel_img: nipy-like image
           Label image where each label codes for a parcel.
-
         parcel_info: sequence of arrays, optional
           A sequence of two arrays with same length equal to the
           number of distinct parcels consistently with the
@@ -179,22 +168,18 @@ class ParcelAnalysis(object):
           parcel values are taken as
           `np.unique(parcel_img.get_data())` and parcel names are
           these values converted to strings.
-
         msk_img: nipy-like image, optional
           Binary mask to restrict analysis. By default, analysis is
           carried out on all parcels with nonzero value.
-
         vcon_imgs: sequece of nipy-like images, optional
           First-level variance estimates corresponding to
           `con_imgs`. This is useful if the input images are
           "noisy". By default, first-level variances are assumed to be
           zero.
-
         design_matrix: array, optional
           If None, a one-sample analysis model is used. Otherwise, an
           array with shape (n, p) where `n` matches the number of
           input scans, and `p` is the number of regressors.
-
         cvect: array, optional
           Contrast vector of interest. The method makes an inference
           on the contrast defined as the dot product cvect'*beta,
@@ -202,19 +187,16 @@ class ParcelAnalysis(object):
           `cvect` is assumed to be np.array((1,)). However, the
           `cvect` argument is mandatory if `design_matrix` is
           provided.
-
         fwhm: float, optional
           A parameter that represents the localization uncertainty in
           reference space in terms of the full width at half maximum
           of an isotropic Gaussian kernel.
-
         smooth_method: str, optional
           One of 'default' and 'spm'. Setting `smooth_method=spm`
           results in simply smoothing the input images using a
           Gaussian kernel, while the default method involves more
           complex smoothing in order to propagate spatial uncertainty
           into the inference process.
-
         res_path: str, optional
           An existing path to write output images. If None, no output
           is written.
@@ -277,10 +259,12 @@ class ParcelAnalysis(object):
             self._parcel_labels = np.asarray(parcel_info[0])
             self._parcel_values = np.asarray(parcel_info[1]).astype('uint')
 
-        # determine smoothing kernel size
+        # determine smoothing kernel size, which involves converting
+        # the input full-width-at-half-maximum parameter given in mm
+        # to standard deviation in voxel units.
         orient = io_orientation(self.affine)[:, 0].astype('int')
         voxsize = np.abs(self.affine[(orient, range(3))])
-        self.sigma = _fwhm_to_sigma(fwhm, voxsize)
+        self.sigma = np.maximum(fwhm2sigma(fwhm) / voxsize, SIGMA_MIN)
 
         # run approximate belief propagation
         self._smooth_images()
@@ -430,7 +414,6 @@ class ParcelAnalysis(object):
         -------
         pmap_mu_img: nipy image
           Image of posterior contrast means for each parcel.
-
         pmap_prob_img: nipy image
           Corresponding image of posterior probabilities of positive
           contrast.
@@ -488,53 +471,43 @@ def parcel_analysis(con_imgs, parcel_img,
     ----------
     con_imgs: sequence of nipy-like images
       Images input to the group analysis.
-
     parcel_img: nipy-like image
       Label image where each label codes for a parcel.
-
     msk_img: nipy-like image, optional
       Binary mask to restrict analysis. By default, analysis is
       carried out on all parcels with nonzero value.
-
     vcon_imgs: sequece of nipy-like images, optional
       First-level variance estimates corresponding to `con_imgs`. This
       is useful if the input images are "noisy". By default,
       first-level variances are assumed to be zero.
-
     design_matrix: array, optional
       If None, a one-sample analysis model is used. Otherwise, an
       array with shape (n, p) where `n` matches the number of input
       scans, and `p` is the number of regressors.
-
     cvect: array, optional
       Contrast vector of interest. The method makes an inference on
       the contrast defined as the dot product cvect'*beta, where beta
       are the unknown parcel-wise effects. If None, `cvect` is assumed
       to be np.array((1,)). However, the `cvect` argument is mandatory
       if `design_matrix` is provided.
-
     fwhm: float, optional
       A parameter that represents the localization uncertainty in
       reference space in terms of the full width at half maximum of an
       isotropic Gaussian kernel.
-
     smooth_method: str, optional
       One of 'default' and 'spm'. Setting `smooth_method=spm` results
       in simply smoothing the input images using a Gaussian kernel,
       while the default method involves more complex smoothing in
       order to propagate spatial uncertainty into the inference
       process.
-
     res_path: str, optional
       An existing path to write output images. If None, no output is
       written.
-
 
     Returns
     -------
     pmap_mu_img: nipy image
       Image of posterior contrast means for each parcel.
-
     pmap_prob_img: nipy image
       Corresponding image of posterior probabilities of positive
       contrast.
