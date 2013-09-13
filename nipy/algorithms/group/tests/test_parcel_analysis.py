@@ -1,10 +1,7 @@
+
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-
-import warnings
-
 from nose.tools import assert_equal
-
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal,
                            assert_raises)
@@ -14,6 +11,7 @@ from ....core.image.image_spaces import (make_xyz_image,
 from ..parcel_analysis import ParcelAnalysis
 
 NSUBJ = 10
+NLABELS = 10
 SIZE = (50, 50, 50)
 AFFINE = np.diag(np.concatenate((np.random.rand(3), np.ones((1,)))))
 
@@ -21,14 +19,16 @@ AFFINE = np.diag(np.concatenate((np.random.rand(3), np.ones((1,)))))
 def make_fake_data():
     con_imgs = [make_xyz_image(np.random.normal(0, 1, size=SIZE),
                                AFFINE, 'talairach') for i in range(NSUBJ)]
-    parcel_img = make_xyz_image(np.random.randint(10, size=SIZE),
+    parcel_img = make_xyz_image(np.random.randint(NLABELS, size=SIZE),
                                 AFFINE, 'talairach')
     return con_imgs, parcel_img
 
 
-def test_parcel_analysis():
+def _test_parcel_analysis(smooth_method, parcel_info):
     con_imgs, parcel_img = make_fake_data()
-    g = ParcelAnalysis(con_imgs, parcel_img)
+    g = ParcelAnalysis(con_imgs, parcel_img,
+                       smooth_method=smooth_method,
+                       parcel_info=parcel_info)
     t_map_img = g.t_map()
     assert_array_equal(t_map_img.shape, SIZE)
     assert_array_equal(xyz_affine(t_map_img), AFFINE)
@@ -43,6 +43,15 @@ def test_parcel_analysis():
     assert_array_equal(t_map_img.get_data()[outside], 0)
     assert_array_equal(parcel_mu_img.get_data()[outside], 0)
     assert_array_equal(parcel_prob_img.get_data()[outside], 0)
+
+
+def test_parcel_analysis():
+    parcel_info = (range(NLABELS), range(NLABELS))
+    _test_parcel_analysis('default', parcel_info)
+
+
+def test_parcel_analysis_spm():
+    _test_parcel_analysis('spm', None)
 
 
 def test_parcel_analysis_nosmooth():

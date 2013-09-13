@@ -256,13 +256,13 @@ class ParcelAnalysis(object):
             self._parcel_values = np.unique(self.parcel)
             self._parcel_labels = self._parcel_values.astype(str)
         else:
-            self._parcel_labels = np.asarray(parcel_info[0])
-            self._parcel_values = np.asarray(parcel_info[1]).astype('uint')
+            self._parcel_labels = np.asarray(parcel_info[0]).astype(str)
+            self._parcel_values = np.asarray(parcel_info[1])
 
         # determine smoothing kernel size, which involves converting
         # the input full-width-at-half-maximum parameter given in mm
         # to standard deviation in voxel units.
-        orient = io_orientation(self.affine)[:, 0].astype('int')
+        orient = io_orientation(self.affine)[:, 0].astype(int)
         voxsize = np.abs(self.affine[(orient, range(3))])
         self.sigma = np.maximum(fwhm2sigma(fwhm) / voxsize, SIGMA_MIN)
 
