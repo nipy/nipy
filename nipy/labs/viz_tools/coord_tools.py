@@ -149,21 +149,27 @@ def get_mask_bounds(mask, affine):
     return xmin, xmax, ymin, ymax, zmin, zmax
 
 
-def get_cut_coords(map3d, slicer='z', n_cuts=12, delta_axis=3):
+def find_tubo_cut_coords(map3d, affine, slicer='z',
+                         max_cuts=12, cut_sampling=1,
+                         threshold=None):
     """
-    Heuristically computes 'good' cross-section cut_coords for plot_map(...)
-    call.
+    Heuristic function to find cut_coords for which the total activation
+    contained in the corresponding plane is optimal.
 
-    Parameters
-    ----------
     map3d: 3D array
         the data under consideration
+
     slicer: string, optional (default "z")
         sectional slicer; possible values are "x", "y", or "z"
-    n_cuts: int, optional (default 12)
+
+    max_cuts: int, optional (default 12)
         number of cuts in the plot
-    delta_axis: int, optional (default 3)
+
+    cut_sampling: int, optional (default 1)
         spacing between cuts
+
+    threshold: float, optional (default None)
+        thresholding to be applied to the map
 
     Returns
     -------
@@ -176,18 +182,33 @@ def get_cut_coords(map3d, slicer='z', n_cuts=12, delta_axis=3):
 
     """
 
-    assert slicer in ['x', 'y', 'z']
+    # sanitize slicer
+    assert slicer in ['x', 'y', 'z'], "slice must be one of 'x', 'y', and 'z'"
+    slicer = "xyz".index(slicer)
 
-    axis = 'xyz'.index(slicer)
+    # load data
+    assert map3d.ndim == 3
 
-    axis_axis_max = np.unravel_index(
-        np.abs(map3d).argmax(), map3d.shape)[axis]
-    axis_axis_min = np.unravel_index(
-        (-np.abs(map3d)).argmin(), map3d.shape)[axis]
-    axis_axis_min, axis_axis_max = (min(axis_axis_min, axis_axis_max),
-                              max(axis_axis_max, axis_axis_min))
-    axis_axis_min = min(axis_axis_min, axis_axis_max - delta_axis * n_cuts)
+    # slicer becomes last axis
+    perm = np.arange(3)
+    perm[-1], perm[slicer] = perm[slicer], perm[-1]
+    map3d = np.transpose(map3d, axes=perm)
 
-    cut_coords = np.linspace(axis_axis_min, axis_axis_max, n_cuts)
+    # integrate over activated voxels in each slice
+    total_activation_per_plane = [(map3d[..., ..., z] > threshold).sum()
+                                  for z in xrange(map3d.shape[-1])]
 
-    return cut_coords
+    # order slices in descending order of the total activation contained
+    # in the corresponding plane
+    ordered_slices = np.argsort(total_activation_per_plane)[::-1]
+    ordered_slices = np.array([
+
+            # map cut coord into native space
+            np.dot(affine,
+                   np.array([0, 0, 0, 1]  # origin
+                            ) + coord * np.eye(4)[slicer]
+                   )[slicer]
+
+            for coord in ordered_slices])
+
+    return np.array(ordered_slices[:max_cuts:cut_sampling])

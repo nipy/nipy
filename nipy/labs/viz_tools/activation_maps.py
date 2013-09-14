@@ -31,7 +31,7 @@ except ImportError:
 
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import (coord_transform,
-                          get_cut_coords
+                          find_tubo_cut_coords
                           )
 
 from .slicers import SLICERS, _xyz_order
@@ -43,11 +43,12 @@ from edge_detect import _fast_abs_percentile
 
 
 def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
-                    slicer='ortho', figure=None, axes=None, title=None,
-                    threshold=None, annotate=True, draw_cross=True,
-                    do3d=False, threshold_3d=None,
-                    view_3d=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
-                    black_bg=False, **kwargs):
+             slicer='ortho', max_cuts=12, cut_sampling=1,
+             figure=None, axes=None, title=None,
+             threshold=None, annotate=True, draw_cross=True,
+             do3d=False, threshold_3d=None,
+             view_3d=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
+             black_bg=False, **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
 
         Parameters
@@ -153,7 +154,10 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             do3d = False
 
     if cut_coords is None and slicer in ['x', 'y', 'z']:
-        cut_coords = get_cut_coords(map, slicer=slicer)
+        cut_coords = find_tubo_cut_coords(map, affine, slicer=slicer,
+                                          max_cuts=max_cuts,
+                                          cut_sampling=cut_sampling,
+                                          threshold=threshold)
 
     slicer = SLICERS[slicer].init_with_figure(data=map, affine=affine,
                                           threshold=threshold,
