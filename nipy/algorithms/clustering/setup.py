@@ -15,6 +15,9 @@ def configuration(parent_package='',top_path=None):
         # But on OSX that may not give us what we need, so try with 'lapack'
         # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
         lapack_info = get_info('lapack',0)
+    if 'libraries' in lapack_info:
+        if 'mkl_lapack95_lp64' in lapack_info['libraries']:
+            lapack_info['libraries'].remove('mkl_lapack95_lp64')
 
     #config.add_extension(
     #            '_clustering',

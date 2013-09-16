@@ -55,8 +55,13 @@ def configuration(parent_package='',top_path=None):
     else:
         library_dirs = lapack_info['library_dirs']
         libraries = lapack_info['libraries']
+        if 'mkl_lapack95_lp64' in libraries:
+            libraries.remove('mkl_lapack95_lp64')
         if 'include_dirs' in lapack_info:
             config.add_include_dirs(lapack_info['include_dirs'])
+    if 'libraries' in lapack_info:
+        if 'mkl_lapack95_lp64' in lapack_info['libraries']:
+            lapack_info['libraries'].remove('mkl_lapack95_lp64')
 
     # Information message
     print('LAPACK build options:')
