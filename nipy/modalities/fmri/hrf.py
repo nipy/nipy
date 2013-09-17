@@ -219,27 +219,42 @@ def spm_hrf_compat(t,
     return hrf / np.sum(hrf)
 
 
-_spm_hrf_no_norm = partial(spm_hrf_compat, normalize=False)
-_spm_can_int = _get_num_int(_spm_hrf_no_norm)
-_spm_hrf_ddisp = partial(spm_hrf_compat, normalize=False, peak_disp=1.01)
-_spm_ddisp_int = _get_num_int(_spm_hrf_ddisp)
+_spm_can_int = _get_num_int(partial(spm_hrf_compat, normalize=False))
 
 
 def spmt(t):
-    """ SPM canonical HRF """
-    return _spm_hrf_no_norm(t) / _spm_can_int
+    """ SPM canonical HRF, HRF values for time values `t`
+
+    This is the canonical HRF function as used in SPM
+    """
+    return spm_hrf_compat(t, normalize=False) / _spm_can_int
 
 
 def dspmt(t):
-    """ SPM time derivative """
-    t = np.asarray(t)
-    return (_spm_hrf_no_norm(t) - _spm_hrf_no_norm(t - 1)) / _spm_can_int
+    """ SPM canonical HRF derivative, HRF derivative values for time values `t`
 
+    This is the canonical HRF derivative function as used in SPM.
+
+    It is the numerical difference of the HRF sampled at time `t` minus the
+    values sampled at time `t` -1
+    """
+    t = np.asarray(t)
+    return spmt(t) - spmt(t - 1)
+
+
+_spm_dd_func = partial(spm_hrf_compat, normalize=False, peak_disp=1.01)
+_spm_dd_func_int = _get_num_int(_spm_dd_func)
 
 def ddspmt(t):
-    """ SPM dispersion derivative """
-    return (_spm_hrf_no_norm(t) / _spm_can_int -
-            _spm_hrf_ddisp(t) / _spm_ddisp_int) / 0.01
+    """ SPM canonical HRF dispersion derivative, values for time values `t`
+
+    This is the canonical HRF dispersion derivative function as used in SPM.
+
+    It is the numerical difference between the HRF sampled at time `t`, and
+    values at `t` for another HRF shape with a small change in the peak
+    dispersion parameter (``peak_disp`` in func:`spm_hrf_compat`).
+    """
+    return (spmt(t) - _spm_dd_func(t) / _spm_dd_func_int) / 0.01
 
 
 spm = implemented_function('spm', spmt)
