@@ -119,6 +119,14 @@ def test_unknown():
     assert_true(np.allclose(bare_affine, displaced_img.coordmap.affine))
     nimg = nipy2nifti(displaced_img)
     assert_array_equal(nimg.get_affine(), bare_affine)
+    # Get and check coordinate map
+    inimg = nifti2nipy(nimg)
+    assert_true(inimg.coordmap.function_range in unknown_space)
+    # This also so if there is no header
+    displaced_img.metadata.pop('header')
+    nimg = nipy2nifti(displaced_img)
+    assert_array_equal(nimg.get_affine(), bare_affine)
+    # Get and check coordinate map
     inimg = nifti2nipy(nimg)
     assert_true(inimg.coordmap.function_range in unknown_space)
 
