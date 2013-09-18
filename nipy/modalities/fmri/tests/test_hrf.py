@@ -68,7 +68,7 @@ def test_spm_hrf():
 def test_spm_hrf_octave():
     # Test SPM hrf against output from SPM code running in Octave
     my_path = dirname(__file__)
-    hrfs_path = pjoin(my_path, 'hrfs.mat')
+    hrfs_path = pjoin(my_path, 'spm_hrfs.mat')
     # mat file resulting from make_hrfs.m
     hrfs_mat = sio.loadmat(hrfs_path, squeeze_me=True)
     params = hrfs_mat['params']
