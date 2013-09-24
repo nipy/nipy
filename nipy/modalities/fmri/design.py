@@ -85,7 +85,7 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
     """ Create design matrix from event specification `event_spec`
 
     Create a design matrix for linear model based on an event specification
-    `event_sepc`, evaluating the design rowns at a sequence of time values `t`.
+    `event_spec`, evaluating the design rows at a sequence of time values `t`.
     Each column in the design matrix will be convolved with each HRF in `hrfs`.
 
     Parameters
@@ -101,8 +101,8 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
        The highest order interaction to be considered in constructing
        the contrast matrices.
     hrfs : sequence, optional
-       A sequence of (symbolic) HRFs that will be convolved with each event. If
-       empty, glover is used.
+       A sequence of (symbolic) HRFs that will be convolved with each event.
+       Default is ``(glover,)``.
     level_contrasts : bool, optional
        If True, generate contrasts for each individual level
        of each factor.
@@ -110,8 +110,8 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
     Returns
     -------
     X : np.ndarray
-       The design matrix with X.shape[0] == t.shape[0]. The number of columns
-       will depend on the other fields of event_spec.
+       The design matrix with ``X.shape[0] == t.shape[0]``. The number of
+       columns will depend on the other fields of `event_spec`.
     contrasts : dict
        Dictionary of contrasts that is expected to be of interest from the event
        specification. Each interaction / effect up to a given order will be
@@ -186,8 +186,8 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
        The highest order interaction to be considered in constructing the
        contrast matrices.
     hrfs : sequence, optional
-       A sequence of (symbolic) HRFs that will be convolved with each block. If
-       empty, glover is used.
+       A sequence of (symbolic) HRFs that will be convolved with each block.
+       Default is ``(glover,)``.
     convolution_padding : float, optional
        A padding for the convolution with the HRF. The intervals
        used for the convolution are the smallest 'start' minus this
