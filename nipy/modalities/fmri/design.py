@@ -80,44 +80,43 @@ def natural_spline(tvals, knots=None, order=3, intercept=True):
     return f.design(tvals, return_float=True)
 
 
-def event_design(event_spec, t, order=2, hrfs=[glover],
+def event_design(event_spec, t, order=2, hrfs=(glover,),
                  level_contrasts=False):
-    """
-    Create a design matrix for a GLM analysis based
-    on an event specification, evaluating
-    it a sequence of time values. Each column
-    in the design matrix will be convolved with each HRF in hrfs.
+    """ Create design matrix from event specification `event_spec`
+
+    Create a design matrix for linear model based on an event specification
+    `event_spec`, evaluating the design rows at a sequence of time values `t`.
+    Each column in the design matrix will be convolved with each HRF in `hrfs`.
 
     Parameters
     ----------
     event_spec : np.recarray
-       A recarray having at least a field named 'time' signifying the
-       event time, and all other fields will be treated as factors in an
-       ANOVA-type model.
+       A recarray having at least a field named 'time' signifying the event
+       time, and all other fields will be treated as factors in an ANOVA-type
+       model.
     t : np.ndarray
-       An array of np.float values at which to evaluate the
-       design. Common examples would be the acquisition times of an fMRI
-       image.
-    order : int
+       An array of np.float values at which to evaluate the design. Common
+       examples would be the acquisition times of an fMRI image.
+    order : int, optional
        The highest order interaction to be considered in constructing
        the contrast matrices.
-    hrfs : seq
-       A sequence of (symbolic) HRF that will be convolved with each
-       event. If empty, glover is used.
-    level_contrasts : bool
-       If true, generate contrasts for each individual level
+    hrfs : sequence, optional
+       A sequence of (symbolic) HRFs that will be convolved with each event.
+       Default is ``(glover,)``.
+    level_contrasts : bool, optional
+       If True, generate contrasts for each individual level
        of each factor.
 
-    Returns 
+    Returns
     -------
     X : np.ndarray
-       The design matrix with X.shape[0] == t.shape[0]. The number of
-       columns will depend on the other fields of event_spec.
+       The design matrix with ``X.shape[0] == t.shape[0]``. The number of
+       columns will depend on the other fields of `event_spec`.
     contrasts : dict
-       Dictionary of contrasts that is expected to be of interest from
-       the event specification. For each interaction / effect up to a
-       given order will be returned. Also, a contrast is generated for
-       each interaction / effect for each HRF specified in hrfs.
+       Dictionary of contrasts that is expected to be of interest from the event
+       specification. Each interaction / effect up to a given order will be
+       returned. Also, a contrast is generated for each interaction / effect for
+       each HRF specified in hrfs.
     """
     fields = list(event_spec.dtype.names)
     if 'time' not in fields:
@@ -144,7 +143,6 @@ def event_design(event_spec, t, order=2, hrfs=[glover],
     e_dtype = e_formula.dtype
 
     # Now construct the design in time space
-
     t_terms = []
     t_contrasts = {}
     for l, h in enumerate(hrfs):
@@ -158,55 +156,53 @@ def event_design(event_spec, t, order=2, hrfs=[glover],
                  events(event_spec['time'], amplitudes=c[nn], f=h)
                  for i, nn in enumerate(c.dtype.names)])
     t_formula = Formula(t_terms)
-    
+
     tval = make_recarray(t, ['t'])
     X_t, c_t = t_formula.design(tval, contrasts=t_contrasts)
     return X_t, c_t
 
 
-def block_design(block_spec, t, order=2, hrfs=[glover],
+def block_design(block_spec, t, order=2, hrfs=(glover,),
                  convolution_padding=5.,
                  convolution_dt=0.02,
-                 hrf_interval=[0.,30.],
+                 hrf_interval=(0.,30.),
                  level_contrasts=False):
-    """
-    Create a design matrix for a GLM analysis based
-    on a block specification, evaluating
-    it a sequence of time values. Each column
-    in the design matrix will be convolved with each HRF in hrfs.
+    """ Create a design matrix from specification of blocks `block_spec`
+
+    Create design matrix for linear model from a block specification
+    `block_spec`,  evaluating design rows at a sequence of time values `t`.
+    Each column in the design matrix will be convolved with each HRF in `hrfs`.
 
     Parameters
     ----------
     block_spec : np.recarray
-       A recarray having at least a field named 'start' 
-       and a field named 'end' signifying the
-       block time, and all other fields will be treated as factors in an
-       ANOVA-type model.
+       A recarray having at least a field named 'start' and a field named 'end'
+       signifying the block time, and all other fields will be treated as
+       factors in an ANOVA-type model.
     t : np.ndarray
-       An array of np.float values at which to evaluate the
-       design. Common examples would be the acquisition times of an fMRI
-       image.
-    order : int
-       The highest order interaction to be considered in constructing
-       the contrast matrices.
-    hrfs : seq
-       A sequence of (symbolic) HRF that will be convolved with each
-       block. If empty, glover is used.
-    convolution_padding : float
+       An array of np.float values at which to evaluate the design. Common
+       examples would be the acquisition times of an fMRI image.
+    order : int, optional
+       The highest order interaction to be considered in constructing the
+       contrast matrices.
+    hrfs : sequence, optional
+       A sequence of (symbolic) HRFs that will be convolved with each block.
+       Default is ``(glover,)``.
+    convolution_padding : float, optional
        A padding for the convolution with the HRF. The intervals
        used for the convolution are the smallest 'start' minus this
        padding to the largest 'end' plus this padding.
-    convolution_padding : dt
-       Time step for use in convolving the blocks with each 
-       HRF.
-    hrf_interval: sequence of floats
-       Interval over which the HRF is assumed supported, used in the 
-       convolution. 
-    level_contrasts : bool
+    convolution_dt : float, optional
+       Time step for high-resolution time course for use in convolving the
+       blocks with each HRF.
+    hrf_interval: length 2 sequence of floats, optional
+       Interval over which the HRF is assumed supported, used in the
+       convolution.
+    level_contrasts : bool, optional
        If true, generate contrasts for each individual level
        of each factor.
 
-    Returns 
+    Returns
     -------
     X : np.ndarray
        The design matrix with X.shape[0] == t.shape[0]. The number of
@@ -284,7 +280,7 @@ def stack2designs(old_X, new_X, old_contrasts={}, new_contrasts={}):
 
     This basically performs an np.hstack of old_X, new_X
     and makes sure the contrast matrices are dealt with accordingly.
-    
+
     If two contrasts have the same name, an exception is raised.
 
     Parameters
@@ -297,7 +293,7 @@ def stack2designs(old_X, new_X, old_contrasts={}, new_contrasts={}):
        Dictionary of contrasts in the old_X column space
     new_contrasts : dict
        Dictionary of contrasts in the new_X column space
-    
+
     Returns
     -------
     X : np.ndarray
