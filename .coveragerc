@@ -1,0 +1,10 @@
+[run]
+branch = True
+source = nipy
+include = */nipy/*
+omit =
+    */nipy/fixes/*
+    */nipy/externals/*
+    */benchmarks/*
+    */bench/*
+    */setup.py
