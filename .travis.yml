@@ -38,6 +38,6 @@ script:
     - mkdir for_test
     - cd for_test
     - if [ "${COVERAGE}" == "--with-coverage" ]; then cp ../.coveragerc .; fi
-    - $PYTHON ../tools/nipnost $COVERAGE -A "not slow" `$PYTHON -c "import os; import nipy; print(os.path.dirname(nipy.__file__))"`
+    - $PYTHON ../tools/nipnost $COVERAGE `$PYTHON -c "import os; import nipy; print(os.path.dirname(nipy.__file__))"`
 after_success:
     - if [ "${COVERAGE}" == "--with-coverage" ]; then coveralls; fi
