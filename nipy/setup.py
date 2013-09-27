@@ -44,16 +44,12 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('fixes')
     config.add_subpackage('io')
     config.add_subpackage('modalities')
+    config.add_subpackage('viz')
+    config.add_subpackage('datasets')
     config.add_subpackage('utils')
     config.add_subpackage('tests')
     config.add_subpackage('externals')
     config.add_subpackage('testing')
-
-    # Note: this is a special subpackage containing that will later be
-    # migrated to whichever parts of the main package they logically
-    # belong in. But initially we are putting everythin under this
-    # subpackage to make the management and migration easier.
-    config.add_subpackage('labs')
 
     #####################################################################
     # Store the setup information, including the nipy-specific

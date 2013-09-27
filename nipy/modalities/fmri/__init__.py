@@ -8,6 +8,6 @@ __docformat__ = 'restructuredtext'
 
 from . import fmristat
 
-from nipy.testing import Tester
+from ...testing import Tester
 test = Tester().test
 bench = Tester().bench

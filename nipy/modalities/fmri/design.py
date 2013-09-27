@@ -6,15 +6,15 @@ Convenience functions for specifying a design in the GLM
 
 import numpy as np
 
-from nipy.algorithms.statistics.utils import combinations
-from nipy.algorithms.statistics.formula import formulae
-from nipy.algorithms.statistics.formula.formulae import (
+from ...algorithms.statistics.utils import combinations
+from ...algorithms.statistics.formula import formulae
+from ...algorithms.statistics.formula.formulae import (
     Formula, Factor, Term, make_recarray)
 
 from .utils import (events, blocks, fourier_basis as fourier_basis_sym,
                     convolve_functions, T)
-
 from .hrf import glover
+
 
 def fourier_basis(t, freq):
     """

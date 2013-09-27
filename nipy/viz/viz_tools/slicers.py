@@ -25,7 +25,7 @@ from .coord_tools import coord_transform, get_bounds, get_mask_bounds, \
         find_cut_coords
 from .edge_detect import _edge_map
 from . import cm
-from ..datasets import VolumeImg
+from ...datasets import VolumeImg
 
 ################################################################################
 # Bugware to have transparency work OK with MPL < .99.1

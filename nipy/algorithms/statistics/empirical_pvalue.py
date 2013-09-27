@@ -421,7 +421,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
         the posterior probability of each test item belonging to each component
         in the GMM (sum to 1 across the 3 classes)
         if np.size(test)==0, i.e. nbitem==0, None is returned
-    estimator : nipy.labs.clustering.GMM object
+    estimator : nipy.algorithms.clustering.GMM object
         The estimator object, returned only if return_estimator is true.
 
     Notes

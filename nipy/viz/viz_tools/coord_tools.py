@@ -15,8 +15,8 @@ import numpy as np
 from scipy import stats, ndimage
 
 # Local imports
-from ..mask import largest_cc
-from ..datasets.transforms.affine_utils import get_bounds
+from ...algorithms.mask import largest_cc
+from ...datasets.transforms.affine_utils import get_bounds
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
