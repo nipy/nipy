@@ -890,7 +890,6 @@ class SpaceRealign(Realign4d):
         self._init(images, 1., None, None, affine_class)
 
 
-@np.deprecate_with_doc('Please use SpaceTimeRealign instead')
 class FmriRealign4d(Realign4d):
 
     def __init__(self, images, slice_order=None,
