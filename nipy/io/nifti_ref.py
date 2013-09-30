@@ -336,12 +336,15 @@ def nipy2nifti(img, data_dtype=None, strict=None, fix0=True):
         elif not out_space in ncrs.unknown_space: # no space we recognize
             raise NiftiError('Image world not a NIFTI world')
         else: # unknown space requires affine that matches
+            # Set guessed shape to set zooms correctly
+            hdr.set_data_shape(img.shape)
+            # Use qform set to set the zooms, but with 'unknown' code
+            hdr.set_qform(xyz_affine, 'unknown')
+            hdr.set_sform(None)
             if not np.allclose(xyz_affine, hdr.get_base_affine()):
                 raise NiftiError("Image world is 'unknown' but affine not "
                                  "compatible; please reset image world or "
                                  "affine")
-            hdr.set_qform(None)
-            hdr.set_sform(None)
     # Use list() to get .index method for python < 2.6
     input_names = list(coordmap.function_domain.coord_names)
     spatial_names = input_names[:3]
