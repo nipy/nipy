@@ -31,7 +31,7 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nipy.labs.viz import plot_map, cm
+from nipy.viz.viz import plot_map, cm
 from nipy.modalities.fmri.glm import FMRILinearModel
 from nipy.utils import example_data
 
