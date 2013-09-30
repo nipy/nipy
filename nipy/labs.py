@@ -1,0 +1,13 @@
+print('nipy.labs module is now available from a separate package `nipy-labs`' 
+      'which is hosted by github at https://github.com/nipy/nipy-labs\n\n'
+      'Note, however, that several modules previously found in nipy.labs\n'
+      'have migrated to other namespaces within the main nipy project.\n'
+      'Here is the list of modules that have moved:\n\n'
+      'nipy.labs.viz --> nipy.algorithms.viz\n'
+      'nipy.labs.datasets --> nipy.algorithms.viz.datasets\n'
+      'nipy.labs.mask --> nipy.algorithms.mask\n'
+      'nipy.labs.spatial_models --> nipy.algorithms.spatial_models\n'
+      'nipy.labs.statistical_mapping --> nipy.algorithms.statistics.spatial_stat\n'
+      'nipy.labs.utils.simul_multisubject_fmri_dataset --> nipy.algorithms.utils.simul_multisubject_fmri_dataset\n'
+      'nipy.labs.utils.reproducibility_measure --> nipy.algorithms.utils.reproducibility_measure\n'
+      ' ')
