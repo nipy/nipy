@@ -122,13 +122,6 @@ def _smooth_image_pair(con_img, vcon_img, sigma, method='default'):
     return scon_img, svcon_img
 
 
-def convert_tscore(t, df, z=False):
-    ret = ss.t.cdf(t, df)
-    if z:
-        ret = ss.norm.isf(ret)
-    return ret
-
-
 class ParcelAnalysis(object):
 
     def __init__(self, con_imgs, parcel_img, parcel_info=None,
@@ -337,8 +330,8 @@ class ParcelAnalysis(object):
             npts = y.size
             try:
                 mu[i], s2[i], dof[i] = two_level_glm(y, vy, np.ones(npts))
-                prob[i] = convert_tscore(float(mu[i] / np.sqrt(s2[i] / npts)),
-                                          dof[i])
+                prob[i] = ss.t.cdf(float(mu[i] / np.sqrt(s2[i] / npts)),
+                                   dof[i])
             except:
                 prob[i] = 0
             idx = int(np.where(self._parcel_values == values[i])[0])
