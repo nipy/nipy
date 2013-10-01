@@ -5,7 +5,8 @@
 
 import numpy as np
 from numpy.testing import (assert_almost_equal,
-                           assert_array_almost_equal)
+                           assert_array_almost_equal,
+                           assert_raises)
 from nose.tools import assert_true
 import numpy.random as nr
 
@@ -158,6 +159,16 @@ def test_two_level_glm_novar():
     print('Errors: %f (beta), %f (s2)' % (beta_error, s2_error))
     assert  beta_error < 0.1
     assert  s2_error < 0.1
+
+
+def test_two_level_glm_error():
+    # this tests whether two_level_glm raises a value error if the
+    # design matrix has more regressors than the number of
+    # observations
+    X = np.random.normal(0, 1, size=(10, 11))
+    y = np.random.normal(0, 1, size=(10, 5))
+    vy = np.zeros((10, 5))
+    assert_raises(ValueError, two_level_glm, y, vy, X)
 
 
 if __name__ == "__main__":

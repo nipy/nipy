@@ -1,11 +1,12 @@
 
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+import numpy as np
+import os
 from nose.tools import assert_equal
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal,
                            assert_raises)
-import numpy as np
 from ....core.image.image_spaces import (make_xyz_image,
                                          xyz_affine)
 from ..parcel_analysis import (ParcelAnalysis, parcel_analysis,
@@ -39,7 +40,8 @@ def make_fake_data():
     return con_imgs, parcel_img
 
 
-def _test_parcel_analysis(smooth_method, parcel_info, vcon=False, full_res=True):
+def _test_parcel_analysis(smooth_method, parcel_info, vcon=False,
+                          full_res=True):
     con_imgs, parcel_img = make_fake_data()
     if vcon:
         vcon_imgs = con_imgs
@@ -115,6 +117,22 @@ def test_parcel_analysis_error():
     assert_raises(ValueError, _test_parcel_analysis_error,
                   design_matrix=np.random.rand(NSUBJ, 2),
                   cvect=np.ones(3))
+
+
+def test_parcel_analysis_write_mode():
+    # find a subdirectory name that doesn't exist to check that
+    # attempts to write in a non-existing directory do not raise
+    # errors
+    con_imgs, parcel_img = make_fake_data()
+    subdirs = [o for o in os.listdir('.') if os.path.isdir(o)]
+    res_path = 'a'
+    while res_path in subdirs:
+        res_path += 'a'
+    p = ParcelAnalysis(con_imgs, parcel_img, res_path=res_path,
+                       write_smoothed_images=True)
+    assert_raises(IOError, p.dump_results)
+    _ = p.t_map()
+    _ = p.parcel_maps()
 
 
 def test_parcel_analysis_function():

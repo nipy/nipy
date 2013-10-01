@@ -19,6 +19,7 @@ Roche, Alexis (2012). OHBM'12 talk, slides at:
 https://sites.google.com/site/alexisroche/slides/Talk_Beijing12.pdf
 """
 from os.path import join
+import warnings
 import numpy as np
 import scipy.ndimage as nd
 import scipy.stats as ss
@@ -122,13 +123,20 @@ def _smooth_image_pair(con_img, vcon_img, sigma, method='default'):
     return scon_img, svcon_img
 
 
+def _save_image(img, path):
+    try:
+        save_image(img, path)
+    except:
+        warnings.warn('Could not write image: %s' % path, UserWarning)
+
+
 class ParcelAnalysis(object):
 
     def __init__(self, con_imgs, parcel_img, parcel_info=None,
                  msk_img=None, vcon_imgs=None,
                  design_matrix=None, cvect=None,
                  fwhm=8, smooth_method='default',
-                 res_path=None):
+                 res_path=None, write_smoothed_images=False):
         """
         Bayesian parcel-based analysis.
 
@@ -193,6 +201,9 @@ class ParcelAnalysis(object):
         res_path: str, optional
           An existing path to write output images. If None, no output
           is written.
+        write_smoothed_images: bool, optional
+          Specify whether smoothed images computed throughout the
+          inference process are to be written on disk in `res_path`.
         """
         self.smooth_method = smooth_method
         self.con_imgs = con_imgs
@@ -260,11 +271,11 @@ class ParcelAnalysis(object):
         self.sigma = np.maximum(fwhm2sigma(fwhm) / voxsize, SIGMA_MIN)
 
         # run approximate belief propagation
-        self._smooth_images()
+        self._smooth_images(write_smoothed_images)
         self._voxel_level_inference()
         self._parcel_level_inference()
 
-    def _smooth_images(self, write=False):
+    def _smooth_images(self, write):
         """
         Smooth input contrast images to account for localization
         uncertainty in reference space.
@@ -279,10 +290,10 @@ class ParcelAnalysis(object):
             scon, svcon = _smooth_image_pair(con, vcon, self.sigma,
                                              method=self.smooth_method)
             if write and not self.res_path == None:
-                save_image(scon, join(self.res_path,
-                                      'scon' + str(i) + '.nii.gz'))
-                save_image(svcon, join(self.res_path,
-                                       'svcon' + str(i) + '.nii.gz'))
+                _save_image(scon, join(self.res_path,
+                                       'scon' + str(i) + '.nii.gz'))
+                _save_image(svcon, join(self.res_path,
+                                        'svcon' + str(i) + '.nii.gz'))
             cons += [scon.get_data()[self.msk]]
             vcons += [svcon.get_data()[self.msk]]
 
@@ -381,14 +392,14 @@ class ParcelAnalysis(object):
         tmap[self.msk] = beta / np.sqrt(var)
         tmap_img = make_xyz_image(tmap, self.affine, self.reference)
         if not self.res_path == None:
-            save_image(tmap_img, join(self.res_path, 'tmap.nii.gz'))
+            _save_image(tmap_img, join(self.res_path, 'tmap.nii.gz'))
             tmp = np.zeros(self.msk.shape)
             tmp[self.msk] = beta
-            save_image(make_xyz_image(tmp, self.affine, self.reference),
-                       join(self.res_path, 'beta.nii.gz'))
+            _save_image(make_xyz_image(tmp, self.affine, self.reference),
+                        join(self.res_path, 'beta.nii.gz'))
             tmp[self.msk] = var
-            save_image(make_xyz_image(tmp, self.affine, self.reference),
-                       join(self.res_path, 'vbeta.nii.gz'))
+            _save_image(make_xyz_image(tmp, self.affine, self.reference),
+                        join(self.res_path, 'vbeta.nii.gz'))
         return tmap_img
 
     def parcel_maps(self, full_res=True):
@@ -429,10 +440,10 @@ class ParcelAnalysis(object):
         pmap_mu_img = make_xyz_image(pmap_mu, affine, self.reference)
 
         if not self.res_path == None:
-            save_image(pmap_prob_img,
-                       join(self.res_path, 'parcel_prob.nii.gz'))
-            save_image(pmap_mu_img,
-                       join(self.res_path, 'parcel_mu.nii.gz'))
+            _save_image(pmap_prob_img,
+                        join(self.res_path, 'parcel_prob.nii.gz'))
+            _save_image(pmap_mu_img,
+                        join(self.res_path, 'parcel_mu.nii.gz'))
 
         return pmap_mu_img, pmap_prob_img
 
