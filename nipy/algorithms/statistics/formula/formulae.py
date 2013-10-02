@@ -284,7 +284,7 @@ def getparams(expression):
     >>> f.mean*sympy.exp(th)
     (_b0*x + _b1*y + _b2*z)*exp(theta)
     >>> getparams(f.mean*sympy.exp(th))
-    [theta, _b0, _b1, _b2]
+    [_b0, _b1, _b2, theta]
     """
     atoms = set([])
     expression = np.array(expression)
