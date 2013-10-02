@@ -8,8 +8,8 @@ import re
 import numpy as np
 
 import sympy
-from sympy import Symbol, Function, DiracDelta
-from nipy.fixes.sympy.utilities.lambdify import lambdify
+from sympy import Symbol, Dummy, Function, DiracDelta
+from sympy.utilities.lambdify import lambdify
 
 from nipy.algorithms.statistics.formula import Term
 
@@ -53,7 +53,7 @@ def test_events():
     evs = events([3,6,9], f=h)
     assert_equal(h(-3 + t) + h(-6 + t) + h(-9 + t), evs)
     # make some beta symbols
-    b = [Symbol('b%d' % i, dummy=True) for i in range(3)]
+    b = [Dummy('b%d' % i) for i in range(3)]
     a = Symbol('a')
     p = b[0] + b[1]*a + b[2]*a**2
     evs = events([3,6,9], amplitudes=[2,1,-1], g=p)

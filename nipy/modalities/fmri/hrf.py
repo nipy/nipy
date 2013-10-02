@@ -57,15 +57,10 @@ from functools import partial
 
 import numpy as np
 import sympy
-# backwards compatibility with sympy 0.6.x
-try:
-    sympy_abs = sympy.Abs # 0.7.0
-except AttributeError:
-    sympy_abs = sympy.abs
 
 import scipy.stats as sps
 
-from nipy.fixes.sympy.utilities.lambdify import implemented_function
+from sympy.utilities.lambdify import implemented_function
 
 from .utils import lambdify_t, T
 
@@ -135,7 +130,7 @@ glover = implemented_function('glover', glovert)
 _dgexpr = _gexpr.diff(T)
 _dpos = sympy.Derivative((T >= 0), T)
 _dgexpr = _dgexpr.subs(_dpos, 0)
-_dgexpr = _dgexpr / _get_sym_int(sympy_abs(_dgexpr))
+_dgexpr = _dgexpr / _get_sym_int(sympy.Abs(_dgexpr))
 # Numerical function
 dglovert = lambdify_t(_dgexpr)
 # Symbolic function

@@ -7,7 +7,7 @@ Test functions for formulae
 import numpy as np
 import sympy
 
-from nipy.fixes.sympy.utilities.lambdify import implemented_function
+from sympy.utilities.lambdify import implemented_function
 
 from .. import formulae as F
 from ..formulae import terms, Term

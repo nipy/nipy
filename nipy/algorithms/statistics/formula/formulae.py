@@ -116,18 +116,14 @@ import numpy as np
 from scipy.linalg import pinv
 
 import sympy
-
-from distutils.version import LooseVersion
-SYMPY_0p6 = LooseVersion(sympy.__version__) < LooseVersion('0.7.0')
+from sympy import Dummy
+from sympy.utilities.lambdify import (implemented_function, lambdify)
 
 from nipy.utils.compat3 import to_str
 
-from nipy.fixes.sympy.utilities.lambdify import (implemented_function,
-                                                 lambdify)
-
 from nipy.algorithms.utils.matrices import matrix_rank, full_rank
 
-
+@np.deprecate(message = "Please use sympy.Dummy instead of this function")
 def make_dummy(name):
     """ Make dummy variable of given name
 
@@ -142,11 +138,11 @@ def make_dummy(name):
 
     Notes
     -----
-    The interface to Dummy changed between 0.6.7 and 0.7.0
+    The interface to Dummy changed between 0.6.7 and 0.7.0, and we used this
+    function to keep compatibility. Now we depend on sympy 0.7.0 and this
+    function is obsolete.
     """
-    if SYMPY_0p6:
-        return sympy.Symbol(name, dummy=True)
-    return sympy.Dummy(name)
+    return Dummy(name)
 
 
 def define(*args, **kwargs):
@@ -228,13 +224,6 @@ def terms(names, **kwargs):
     >>> terms('abc')
     abc
     '''
-    if (SYMPY_0p6
-        and isinstance(names, basestring)
-        and not set(', ').intersection(names)):
-        if not kwargs.get('each_char', False):
-            # remove each_char (or no-op if absent)
-            kwargs.pop('each_char', None)
-            names = (names,)
     syms = sympy.symbols(names, **kwargs)
     try:
         len(syms)
@@ -692,7 +681,7 @@ class Formula(object):
         params = getparams(self.design_expr)
         newparams = []
         for i, p in enumerate(params):
-            newp = make_dummy("__p%d__" % (i + random_offset))
+            newp = Dummy("__p%d__" % (i + random_offset))
             for j, _ in enumerate(d):
                 d[j] = d[j].subs(p, newp)
             newparams.append(newp)
@@ -1197,7 +1186,7 @@ class RandomEffects(Formula):
 
         self._counter = 0
         if sigma is None:
-            self.sigma = np.diag([make_dummy('s2_%d' % i) for i in range(q)])
+            self.sigma = np.diag([Dummy('s2_%d' % i) for i in range(q)])
         else:
             self.sigma = sigma
         if self.sigma.shape != (q,q):
