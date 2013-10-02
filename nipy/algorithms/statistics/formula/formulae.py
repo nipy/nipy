@@ -224,6 +224,8 @@ def terms(names, **kwargs):
     >>> terms('abc')
     abc
     '''
+    if 'each_char' in kwargs:
+        raise TypeError('deprecated "each_char" kwarg removed in sympy>0.7.3')
     syms = sympy.symbols(names, **kwargs)
     try:
         len(syms)
