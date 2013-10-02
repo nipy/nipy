@@ -116,7 +116,7 @@ import numpy as np
 from scipy.linalg import pinv
 
 import sympy
-from sympy import Dummy
+from sympy import Dummy, default_sort_key
 from sympy.utilities.lambdify import (implemented_function, lambdify)
 
 from nipy.utils.compat3 import to_str
@@ -298,7 +298,7 @@ def getparams(expression):
     for atom in atoms:
         if isinstance(atom, sympy.Symbol) and not is_term(atom):
             params.append(atom)
-    params.sort()
+    params.sort(key=default_sort_key)
     return params
 
 
@@ -326,7 +326,7 @@ def getterms(expression):
     for atom in atoms:
         if is_term(atom):
             terms.append(atom)
-    terms.sort()
+    terms.sort(key=default_sort_key)
     return terms
 
 
@@ -468,7 +468,7 @@ class Formula(object):
                     "variables in front.")
 
     def _getdiff(self):
-        params = sorted(list(set(getparams(self.mean))))
+        params = sorted(list(set(getparams(self.mean))), key=default_sort_key)
         return [sympy.diff(self.mean, p).doit() for p in params]
     design_expr = property(_getdiff)
 
@@ -566,11 +566,11 @@ class Formula(object):
         >>> f1 = Formula([x,y,z])
         >>> f2 = Formula([y])+I
         >>> f3=f1+f2
-        >>> sorted(f1.terms)
+        >>> sorted(f1.terms, key=default_sort_key)
         [x, y, z]
-        >>> sorted(f2.terms)
+        >>> sorted(f2.terms, key=default_sort_key)
         [1, y]
-        >>> sorted(f3.terms)
+        >>> sorted(f3.terms, key=default_sort_key)
         [1, x, y, y, z]
         """
         if not is_formula(other):
@@ -627,7 +627,8 @@ class Formula(object):
                     v.append(Term.__mul__(oterm, sterm))
                 else:
                     v.append(sterm*oterm)
-        return Formula(tuple(np.unique(v)))
+        terms = sorted(set(v), key=default_sort_key)
+        return Formula(tuple(terms))
 
     def __eq__(self, other):
         s = np.array(self)
