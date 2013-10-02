@@ -6,6 +6,7 @@ def configuration(parent_package='',top_path=None):
 
     config.add_subpackage('tests')
     config.add_data_files('tests/*.npz')
+    config.add_data_files('tests/*.mat')
     config.add_subpackage('fmristat')
     config.add_subpackage('spm')
 
