@@ -2,13 +2,13 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 from scipy.stats import norm
-TINY = 1e-15
+TINY = 1e-16
 
 
 def z_score(pvalue):
     """ Return the z-score corresponding to a given p-value.
     """
-    pvalue = np.minimum(np.maximum(pvalue, TINY), 1. - TINY)
+    pvalue = np.minimum(np.maximum(pvalue, 1.e-300), 1. - TINY)
     z = norm.isf(pvalue)
     return z
 
