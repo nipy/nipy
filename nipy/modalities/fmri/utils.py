@@ -26,9 +26,9 @@ from scipy.interpolate import interp1d
 
 import sympy
 from sympy import DiracDelta, Symbol
+from sympy.utilities.lambdify import implemented_function, lambdify
 
 from nipy.algorithms.statistics.formula.formulae import Term, Formula
-from nipy.fixes.sympy.utilities.lambdify import implemented_function, lambdify
 
 T = Term('t')
 
@@ -421,8 +421,8 @@ def convolve_functions(f, g, f_interval, g_interval, dt,
 
     Examples
     --------
-    >>> import sympy
-    >>> t = sympy.Symbol('t')
+    >>> from nipy.algorithms.statistics.formula.formulae import Term
+    >>> t = Term('t')
 
     This is a square wave on [0,1]
 
