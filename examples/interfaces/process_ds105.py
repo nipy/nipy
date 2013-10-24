@@ -1,7 +1,18 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-''' Single subject analysis script for SPM / Open FMRI ds107 '''
+''' Single subject analysis script for SPM / Open FMRI ds105 
+
+https://openfmri.org/dataset/ds000105
+
+Download and extract the ds105 archive to some directory.
+
+Run this script with::
+
+    process_ds105.py ~/data/ds105
+
+where ``~/data/ds105`` is the directory containing the ds105 data.
+'''
 import sys
 from copy import deepcopy
 from os.path import join as pjoin, abspath, splitext, isfile
@@ -20,9 +31,12 @@ from nipy.interfaces.spm import (spm_info, make_job, scans_for_fnames,
 # The batch scripts currently need SPM5
 nimat.matlab_cmd = 'matlab-2007a-spm5 -nodesktop -nosplash'
 
-N_SLICES = 37
+# This definition is partly for slice timing. We can't do slice timing for this
+# dataset because the slice dimension is the first, and SPM assumes it is the
+# last.
+N_SLICES = 40 # X slices
 STUDY_DEF = dict(
-    TR = 3.0,
+    TR = 2.5,
     n_slices = N_SLICES,
     time_to_space = range(1, N_SLICES, 2) + range(2, N_SLICES, 2)
 )
@@ -110,7 +124,7 @@ class SPMSubjectAnalysis(object):
 
     def realign(self, prefix=''):
         sess_scans = scans_for_fnames(
-            fnames_presuffix(self.data_def['functionals'], 'a'))
+            fnames_presuffix(self.data_def['functionals'], prefix))
         rinfo = make_job('spatial', 'realign', [{
                 'estimate':{
                     'data':sess_scans,
@@ -128,14 +142,21 @@ class SPMSubjectAnalysis(object):
         run_jobdef(rinfo)
         return prefix
 
-    def reslice(self, prefix=''):
+    def reslice(self, prefix='', out=('1..n', 'mean')):
+        which = [0, 0]
+        if 'mean' in out:
+            which[1] = 1
+        if '1..n' in out or 'all' in out:
+            which[0] = 2
+        elif '2..n' in out:
+            which[0] = 1
         sess_scans = scans_for_fnames(
             fnames_presuffix(self.data_def['functionals'], prefix))
         rsinfo = make_job('spatial', 'realign', [{
                 'write':{
                     'data': np.vstack(sess_scans.flat),
                     'roptions':{
-                        'which':[2, 1],
+                        'which': which,
                         'interp':4.0,
                         'wrap':[0.0,0.0,0.0],
                         'mask':True,
@@ -168,7 +189,7 @@ class SPMSubjectAnalysis(object):
         run_jobdef(crinfo)
         return prefix
 
-    def segnorm(self, prefix=''):
+    def seg_norm(self, prefix=''):
         def_tpms = np.zeros((3,1), dtype=np.object)
         spm_path = spm_info.spm_path
         def_tpms[0] = pjoin(spm_path, 'tpm', 'grey.nii'),
@@ -256,10 +277,12 @@ def process_subject(ddef, study_def, ana_def):
         warn("No anatomical, aborting processing")
         return
     ana = SPMSubjectAnalysis(ddef, study_def, ana_def)
-    st_prefix = ana.slicetime('')
+    # st_prefix = ana.slicetime('') # We can't run slice timing
+    st_prefix = ''
     ana.realign(st_prefix)
+    ana.reslice(st_prefix, out=('mean',))
     ana.coregister(st_prefix)
-    ana.segnorm()
+    ana.seg_norm()
     n_st_prefix = ana.norm_write(st_prefix)
     ana.smooth(n_st_prefix)
 
@@ -271,16 +294,20 @@ def get_subjects(data_path, subj_ids, study_def, ana_def):
     return ddefs
 
 
-if __name__ == '__main__':
+def main():
     try:
         data_path = sys.argv[1]
     except IndexError:
-        raise OSError('Need ds107 data path as input')
+        raise OSError('Need ds105 data path as input')
     if len(sys.argv) > 2:
         subj_ids = [int(id) for id in sys.argv[2:]]
     else:
-        subj_ids = range(1, 16)
+        subj_ids = range(1, 6)
     for subj_id in subj_ids:
         ddef = get_data(data_path, subj_id)
-        assert len(ddef['functionals']) == 2
+        assert len(ddef['functionals']) in (11, 12)
         process_subject(ddef, STUDY_DEF, {})
+
+
+if __name__ == '__main__':
+    main()
