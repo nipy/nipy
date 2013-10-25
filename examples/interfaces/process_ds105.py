@@ -29,7 +29,7 @@ from nipy.interfaces.spm import (spm_info, make_job, scans_for_fnames,
 
 
 # The batch scripts currently need SPM5
-nimat.matlab_cmd = 'matlab-2007a-spm5 -nodesktop -nosplash'
+nimat.matlab_cmd = 'matlab-spm8 -nodesktop -nosplash'
 
 # This definition is partly for slice timing. We can't do slice timing for this
 # dataset because the slice dimension is the first, and SPM assumes it is the
@@ -107,8 +107,9 @@ class SPMSubjectAnalysis(object):
             full_ana_def['fwhm'] = 8.0
         return full_ana_def
 
-    def slicetime(self, prefix=''):
-        sess_scans = scans_for_fnames(self.data_def['functionals'])
+    def slicetime(self, in_prefix='', out_prefix='a'):
+        sess_scans = scans_for_fnames(
+            fnames_presuffix(self.data_def['functionals'], in_prefix))
         sdef = self.study_def
         stinfo = make_job('temporal', 'st', {
                 'scans': sess_scans,
@@ -116,15 +117,16 @@ class SPMSubjectAnalysis(object):
                 'tr': sdef['TR'],
                 'ta': sdef['TA'],
                 'nslices': float(sdef['n_slices']),
-                'refslice':1
+                'refslice':1,
+                'prefix': out_prefix,
                 })
         run_jobdef(stinfo)
-        return 'a' + prefix
+        return out_prefix + in_prefix
 
 
-    def realign(self, prefix=''):
+    def realign(self, in_prefix=''):
         sess_scans = scans_for_fnames(
-            fnames_presuffix(self.data_def['functionals'], prefix))
+            fnames_presuffix(self.data_def['functionals'], in_prefix))
         rinfo = make_job('spatial', 'realign', [{
                 'estimate':{
                     'data':sess_scans,
@@ -140,9 +142,9 @@ class SPMSubjectAnalysis(object):
                     }
                 }])
         run_jobdef(rinfo)
-        return prefix
+        return in_prefix
 
-    def reslice(self, prefix='', out=('1..n', 'mean')):
+    def reslice(self, in_prefix='', out_prefix='r', out=('1..n', 'mean')):
         which = [0, 0]
         if 'mean' in out:
             which[1] = 1
@@ -151,7 +153,7 @@ class SPMSubjectAnalysis(object):
         elif '2..n' in out:
             which[0] = 1
         sess_scans = scans_for_fnames(
-            fnames_presuffix(self.data_def['functionals'], prefix))
+            fnames_presuffix(self.data_def['functionals'], in_prefix))
         rsinfo = make_job('spatial', 'realign', [{
                 'write':{
                     'data': np.vstack(sess_scans.flat),
@@ -160,20 +162,22 @@ class SPMSubjectAnalysis(object):
                         'interp':4.0,
                         'wrap':[0.0,0.0,0.0],
                         'mask':True,
+                        'prefix': out_prefix
                         }
                     }
                 }])
         run_jobdef(rsinfo)
-        return 'r' + prefix
+        return out_prefix + in_prefix
 
-    def coregister(self, prefix=''):
+    def coregister(self, in_prefix=''):
         func1 = self.data_def['functionals'][0]
-        mean_fname = fname_presuffix(func1, 'mean' + prefix)
+        mean_fname = fname_presuffix(func1, 'mean' + in_prefix)
         crinfo = make_job('spatial', 'coreg', [{
                 'estimate':{
-                    'ref': [mean_fname],
-                    'source': [self.data_def['anatomical']],
-                    'other': [[]],
+                    'ref': np.asarray(mean_fname, dtype=object),
+                    'source': np.asarray(self.data_def['anatomical'],
+                                         dtype=object),
+                    'other': [''],
                     'eoptions':{
                         'cost_fun':'nmi',
                         'sep':[4.0, 2.0],
@@ -187,9 +191,9 @@ class SPMSubjectAnalysis(object):
                     }
                 }])
         run_jobdef(crinfo)
-        return prefix
+        return in_prefix
 
-    def seg_norm(self, prefix=''):
+    def seg_norm(self, in_prefix=''):
         def_tpms = np.zeros((3,1), dtype=np.object)
         spm_path = spm_info.spm_path
         def_tpms[0] = pjoin(spm_path, 'tpm', 'grey.nii'),
@@ -219,11 +223,11 @@ class SPMSubjectAnalysis(object):
                     }
                 })
         run_jobdef(sninfo)
-        return prefix
+        return in_prefix
 
-    def norm_write(self, prefix=''):
+    def norm_write(self, in_prefix='', out_prefix='w'):
         sess_scans = scans_for_fnames(
-            fnames_presuffix(self.data_def['functionals'], prefix))
+            fnames_presuffix(self.data_def['functionals'], in_prefix))
         matname = fname_presuffix(self.data_def['anatomical'],
                                 suffix='_seg_sn.mat',
                                 use_ext=False)
@@ -238,6 +242,7 @@ class SPMSubjectAnalysis(object):
             'vox':fltcols([2.0,2.0,2.0]),
             'interp':1.0,
             'wrap':[0.0,0.0,0.0],
+            'prefix': out_prefix,
             }
         nwinfo = make_job('spatial', 'normalise', [{
                 'write':{
@@ -251,9 +256,9 @@ class SPMSubjectAnalysis(object):
         subj['resample'][0] = self.data_def['anatomical']
         roptions['interp'] = 4.0
         run_jobdef(nwinfo)
-        return 'w' + prefix
+        return out_prefix + in_prefix
 
-    def smooth(self, prefix=''):
+    def smooth(self, in_prefix='', out_prefix='s'):
         fwhm = self.ana_def['fwhm']
         try:
             len(fwhm)
@@ -261,13 +266,13 @@ class SPMSubjectAnalysis(object):
             fwhm = [fwhm] * 3
         fwhm = np.asarray(fwhm, dtype=np.float).reshape(1,3)
         sess_scans = scans_for_fnames(
-            fnames_presuffix(self.data_def['functionals'], prefix))
+            fnames_presuffix(self.data_def['functionals'], in_prefix))
         sinfo = make_job('spatial', 'smooth',
                         {'data':np.vstack(sess_scans.flat),
                         'fwhm':fwhm,
                         'dtype':0})
         run_jobdef(sinfo)
-        return 's' + prefix
+        return out_prefix + in_prefix
 
 
 def process_subject(ddef, study_def, ana_def):
@@ -279,9 +284,9 @@ def process_subject(ddef, study_def, ana_def):
     ana = SPMSubjectAnalysis(ddef, study_def, ana_def)
     # st_prefix = ana.slicetime('') # We can't run slice timing
     st_prefix = ''
-    ana.realign(st_prefix)
-    ana.reslice(st_prefix, out=('mean',))
-    ana.coregister(st_prefix)
+    ana.realign(in_prefix=st_prefix)
+    ana.reslice(in_prefix=st_prefix, out=('mean',))
+    ana.coregister(in_prefix=st_prefix)
     ana.seg_norm()
     n_st_prefix = ana.norm_write(st_prefix)
     ana.smooth(n_st_prefix)
@@ -302,7 +307,7 @@ def main():
     if len(sys.argv) > 2:
         subj_ids = [int(id) for id in sys.argv[2:]]
     else:
-        subj_ids = range(1, 6)
+        subj_ids = range(1, 7)
     for subj_id in subj_ids:
         ddef = get_data(data_path, subj_id)
         assert len(ddef['functionals']) in (11, 12)
