@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-''' Single subject analysis script for SPM / Open FMRI ds105 
+''' Single subject analysis script for SPM / Open FMRI ds105
 
 https://openfmri.org/dataset/ds000105
 
@@ -12,6 +12,13 @@ Run this script with::
     process_ds105.py ~/data/ds105
 
 where ``~/data/ds105`` is the directory containing the ds105 data.
+
+The example uses the very basic MATLAB / SPM interface routines in NIPY.
+
+If you need more than very basic use, please consider using nipype.  nipype has
+extended capabilities to interface with external tools and for dataflow
+management. nipype can handle vanilla SPM in MATLAB or SPM run through the
+MATLAB common runtime (free from MATLAB Licensing).
 '''
 import sys
 from copy import deepcopy
