@@ -135,7 +135,7 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
         # only one factor, produce the main effect
         field = fields[0]
         factor = e_factors[0]
-        e_contrasts[field + '_effect'] = factor.main_effect.design(event_spec)
+        e_contrasts[field] = factor.main_effect.design(event_spec)
 
     e_contrasts['constant'] = formulae.I.design(event_spec)
 

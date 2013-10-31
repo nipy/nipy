@@ -275,15 +275,17 @@ class DesignMatrix():
             writer.writerow(self.names)
             writer.writerows(self.matrix)
 
-    def show(self, rescale=True, ax=None):
+    def show(self, rescale=True, ax=None, cmap=None):
         """Visualization of a design matrix
 
         Parameters
         ----------
         rescale: bool, optional
-                 rescale columns magnitude for visualization or not
+                 rescale columns magnitude for visualization or not.
         ax: axis handle, optional
-            Handle to axis onto which we will draw design matrix
+            Handle to axis onto which we will draw design matrix.
+        cmap: colormap, optional
+            Matplotlib colormap to use, passed to `imshow`.
 
         Returns
         -------
@@ -299,9 +301,46 @@ class DesignMatrix():
             plt.figure()
             ax = plt.subplot(1, 1, 1)
 
-        ax.imshow(x, interpolation='Nearest', aspect='auto')
+        ax.imshow(x, interpolation='Nearest', aspect='auto',
+                  cmap=cmap)
         ax.set_label('conditions')
         ax.set_ylabel('scan number')
+
+        if self.names is not None:
+            ax.set_xticks(range(len(self.names)))
+            ax.set_xticklabels(self.names, rotation=60, ha='right')
+        return ax
+
+    def show_contrast(self, contrast, ax=None, cmap=None):
+        """
+        Plot a contrast for a design matrix.
+
+        Parameters
+        ----------
+        contrast : np.float
+            Array forming contrast with respect to the design matrix.
+        ax: axis handle, optional
+            Handle to axis onto which we will draw design matrix.
+        cmap: colormap, optional
+            Matplotlib colormap to use, passed to `imshow`.
+
+        Returns
+        -------
+        ax: axis handle
+        """
+        import matplotlib.pyplot as plt
+
+        # normalize the values per column for better visualization
+        if ax is None:
+            plt.figure()
+            ax = plt.subplot(1, 1, 1)
+
+        ax.imshow(contrast, interpolation='Nearest', 
+                  aspect='auto',
+                  cmap=cmap)
+        ax.set_label('conditions')
+        ax.set_yticks(range(contrast.shape[0]))
+        ax.set_yticklabels([])
 
         if self.names is not None:
             ax.set_xticks(range(len(self.names)))
