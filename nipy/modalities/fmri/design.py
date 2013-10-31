@@ -79,7 +79,6 @@ def natural_spline(tvals, knots=None, order=3, intercept=True):
     f = formulae.natural_spline(t, knots=knots, order=order, intercept=intercept)
     return f.design(tvals, return_float=True)
 
-
 def event_design(event_spec, t, order=2, hrfs=(glover,),
                  level_contrasts=False):
     """ Create design matrix from event specification `event_spec`
@@ -132,6 +131,11 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
                 names = [c[0] for c in comb]
                 fs = [c[1].main_effect for c in comb]
                 e_contrasts[":".join(names)] = np.product(fs).design(event_spec)
+    else:
+        # only one factor, produce the main effect
+        field = fields[0]
+        factor = e_factors[0]
+        e_contrasts[field + '_effect'] = factor.main_effect.design(event_spec)
 
     e_contrasts['constant'] = formulae.I.design(event_spec)
 
@@ -160,7 +164,6 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
     tval = make_recarray(t, ['t'])
     X_t, c_t = t_formula.design(tval, contrasts=t_contrasts)
     return X_t, c_t
-
 
 def block_design(block_spec, t, order=2, hrfs=(glover,),
                  convolution_padding=5.,
@@ -221,12 +224,18 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
     e_factors = [Factor(n, np.unique(block_spec[n])) for n in fields]
     e_formula = np.product(e_factors)
     e_contrasts = {}
+
     if len(e_factors) > 1:
         for i in range(1, order+1):
             for comb in combinations(zip(fields, e_factors), i):
                 names = [c[0] for c in comb]
                 fs = [c[1].main_effect for c in comb]
                 e_contrasts[":".join(names)] = np.product(fs).design(block_spec)
+    else:
+        # only one factor, produce the main effect
+        field = fields[0]
+        factor = e_factors[0]
+        e_contrasts[field + '_effect'] = factor.main_effect.design(event_spec)
 
     e_contrasts['constant'] = formulae.I.design(block_spec)
 
@@ -271,7 +280,6 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
     tval = make_recarray(t, ['t'])
     X_t, c_t = t_formula.design(tval, contrasts=t_contrasts)
     return X_t, c_t
-
 
 def stack2designs(old_X, new_X, old_contrasts={}, new_contrasts={}):
     """
