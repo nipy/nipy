@@ -70,7 +70,7 @@ spm_jobman('run', jobs);
     if spm_info.spm_ver != 'SPM5':
         script = "spm_jobman('initcfg');\n" + script
     with InTemporaryDirectory():
-        savemat('pyjobs.mat', jobdef)
+        savemat('pyjobs.mat', jobdef, oned_as='row')
         run_matlab_script(script)
 
 
