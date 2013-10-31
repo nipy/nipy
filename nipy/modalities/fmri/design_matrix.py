@@ -341,6 +341,8 @@ class DesignMatrix():
         """
         import matplotlib.pyplot as plt
 
+        contrast = np.atleast_2d(contrast)
+
         # normalize the values per column for better visualization
         if ax is None:
             plt.figure()
