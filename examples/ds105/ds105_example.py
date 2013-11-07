@@ -13,8 +13,8 @@ IPython parallel machinery.
 This script needs the pre-processed OpenfMRI ds105 data.  See ``README.txt`` and
 ``ds105_util.py`` for details.
 
-See ``examples/labs/need_data/first_level_fiac.py`` for an alternative approach
-to some of these analyses.
+See ``examples/need_data/first_level_fiac.py`` in nipy-labs package
+for an alternative approach to some of these analyses.
 """
 #-----------------------------------------------------------------------------
 # Imports

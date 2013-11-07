@@ -739,7 +739,7 @@ def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=False):
 
     Parameters
     ----------
-    G: labs.graph.WeightedGraph instance
+    G: graph.WeightedGraph instance
        the input graph (a topological graph essentially)
     feature array of shape (G.V,dim_feature)
         vectorial information related to the graph vertices

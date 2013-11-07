@@ -38,13 +38,11 @@ import scipy.stats as sps
 
 from nibabel import load, Nifti1Image
 
-from nipy.labs.mask import compute_mask_sessions
-from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
-from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
-from nipy.core.api import is_image
-
-from nipy.testing.decorators import skip_doctest_if
-from nipy.utils import HAVE_EXAMPLE_DATA
+from ...algorithms.mask import compute_mask_sessions
+from ...algorithms.statistics.models.regression import OLSModel, ARModel
+from ...algorithms.statistics.utils import multiple_mahalanobis, z_score
+from ...testing.decorators import skip_doctest_if
+from ...utils import HAVE_EXAMPLE_DATA
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
