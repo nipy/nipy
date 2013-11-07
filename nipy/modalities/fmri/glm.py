@@ -344,6 +344,10 @@ class Contrast(object):
         ==========
         baseline: float, optional,
         Baseline value for the test statistic
+
+        Note
+        ====
+        the value of 0.5 is used where the stat is not defined
         """
         if self.stat_ == None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
@@ -355,6 +359,8 @@ class Contrast(object):
                     self.dof, self.dofmax))
         else:
             raise ValueError('Unknown statistic type')
+
+        p[np.isnan(self.stat_)] = .5
         self.p_value_ = p
         return p
 
@@ -366,12 +372,17 @@ class Contrast(object):
         ==========
         baseline: float, optional,
                   Baseline value for the test statistic
+
+        Note
+        ====
+        the value of 0 is used where the stat is not defined
         """
         if self.p_value_ == None or not self.baseline == baseline:
             self.p_value_ = self.p_value(baseline)
 
         # Avoid inf values kindly supplied by scipy.
         self.z_score_ = z_score(self.p_value_)
+        self.z_score_[np.isnan(self.stat_)] =  0
         return self.z_score_
 
     def __add__(self, other):
