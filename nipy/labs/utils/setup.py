@@ -14,12 +14,6 @@ def configuration(parent_package='', top_path=None):
 
     config = Configuration('utils', parent_package, top_path)
     config.add_subpackage('tests')
-    config.add_extension(
-                'routines',
-                sources=['routines.pyx'],
-                libraries=['cstat'],
-                extra_info=lapack_info,
-                )
 
     return config
 

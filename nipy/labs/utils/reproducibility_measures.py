@@ -138,6 +138,76 @@ def get_cluster_position_from_thresholded_map(stat_map, domain, thr=3.0,
     baryc = np.vstack(baryc)
     return baryc
 
+# the following function is copied from former module
+# labs/statistical_mapping.py
+def get_3d_peaks(image, mask=None, threshold=0., nn=18, order_th=0):
+    """
+    returns all the peaks of image that are with the mask
+    and above the provided threshold
+
+    Parameters
+    ----------
+    image, (3d) test image
+    mask=None, (3d) mask image
+        By default no masking is performed
+    threshold=0., float, threshold value above which peaks are considered
+    nn=18, int, number of neighbours of the topological spatial model
+    order_th=0, int, threshold on topological order to validate the peaks
+
+    Returns
+    -------
+    peaks, a list of dictionaries, where each dict has the fields:
+    vals, map value at the peak
+    order, topological order of the peak
+    ijk, array of shape (1,3) grid coordinate of the peak
+    pos, array of shape (n_maxima,3) mm coordinates (mapped by affine)
+        of the peaks
+    """
+    from nipy.algorithms.graph.graph import wgraph_from_3d_grid
+    from nipy.algorithms.graph.field import field_from_graph_and_data
+
+    # Masking
+    if mask is not None:
+        bmask = mask.get_data().ravel()
+        data = image.get_data().ravel()[bmask > 0]
+        xyz = np.array(np.where(bmask > 0)).T
+    else:
+        shape = image.shape
+        data = image.get_data().ravel()
+        xyz = np.reshape(np.indices(shape), (3, np.prod(shape))).T
+    affine = image.get_affine()
+
+    if not (data > threshold).any():
+        return None
+
+    # Extract local maxima and connex components above some threshold
+    ff = field_from_graph_and_data(wgraph_from_3d_grid(xyz, k=18), data)
+    maxima, order = ff.get_local_maxima(th=threshold)
+
+    # retain only the maxima greater than the specified order
+    maxima = maxima[order > order_th]
+    order = order[order > order_th]
+
+    n_maxima = len(maxima)
+    if n_maxima == 0:
+        # should not occur ?
+        return None
+
+    # reorder the maxima to have decreasing peak value
+    vals = data[maxima]
+    idx = np.argsort(- vals)
+    maxima = maxima[idx]
+    order = order[idx]
+
+    vals = data[maxima]
+    ijk = xyz[maxima]
+    pos = np.dot(np.hstack((ijk, np.ones((n_maxima, 1)))), affine.T)[:, :3]
+    peaks = [{'val': vals[k], 'order': order[k], 'ijk': ijk[k], 'pos': pos[k]}
+             for k in range(n_maxima)]
+
+    return peaks
+
+
 
 def get_peak_position_from_thresholded_map(stat_map, domain, threshold):
     """The peaks above thr in 18-connectivity are computed
@@ -155,8 +225,6 @@ def get_peak_position_from_thresholded_map(stat_map, domain, threshold):
               where k= number of clusters
               if no such cluster exists, None is returned
     """
-    from ..statistical_mapping import get_3d_peaks
-
     # create an image to represent stat_map
     simage = domain.to_image(data=stat_map)
     
@@ -242,8 +310,8 @@ def conjunction(x, vx, k):
 def ttest(x):
     """Returns the t-test for each row of the data x
     """
-    from ..group.onesample import stat
-    t = stat(x.T, id='student', axis=0)
+    stat = lambda u: np.sqrt(u.shape[0] - 1) * np.mean(u, 0) / np.std(u, 0)
+    t = stat(x.T)
     return np.squeeze(t)
 
 
@@ -280,8 +348,8 @@ def mfx_ttest(x, vx):
     -------
     t array of shape(nrows): mixed effect statistics array
     """
-    from ..group.onesample import stat_mfx
-    t = stat_mfx(x.T, vx.T, id='student_mfx', axis=0)
+    from nipy.algorithms.statistics.mixed_effects_stat import one_sample_ttest
+    t = one_sample_ttest(x.T, vx.T)
     return np.squeeze(t)
 
 
