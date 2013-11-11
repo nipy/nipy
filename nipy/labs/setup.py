@@ -4,22 +4,22 @@ import os
 from distutils import log
 
 # Global variables
-LIBS = os.path.realpath('libcstat')
+LIBS = os.path.realpath('lib')
 
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
-    from numpy.distutils.system_info import get_info
+    from numpy.distutils.system_info import get_info, system_info
 
     config = Configuration('labs', parent_package, top_path)
 
-    # cstat library
+    # fff library
     config.add_include_dirs(os.path.join(LIBS,'fff'))
-    config.add_include_dirs(os.path.join(LIBS,'wrapper'))
+    config.add_include_dirs(os.path.join(LIBS,'fff_python_wrapper'))
     config.add_include_dirs(get_numpy_include_dirs())
 
     sources = [os.path.join(LIBS,'fff','*.c')]
-    sources.append(os.path.join(LIBS,'wrapper','*.c'))
+    sources.append(os.path.join(LIBS,'fff_python_wrapper','*.c'))
 
     # Link with lapack if found on the system
 
