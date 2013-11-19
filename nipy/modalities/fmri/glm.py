@@ -563,7 +563,8 @@ class FMRILinearModel(object):
         Returns
         -------
         output_images : list of nibabel images
-            The desired output images
+            The required output images, in the following order:
+            z image, stat(t/F) image, effects image, variance image
         """
         if self.glms == []:
             raise ValueError('first run fit() to estimate the model')
@@ -593,7 +594,7 @@ class FMRILinearModel(object):
         descrips = ['z statistic', 'Statistical value', 'Estimated effect',
                     'Estimated variance']
         dims = [1, 1, contrast_.dim, contrast_.dim ** 2]
-        n_vox = contrast_.z_score_.size
+        n_vox = mask.sum()
         output_images = []
         for (do_output, estimate, descrip, dim) in zip(
             do_outputs, estimates, descrips, dims):
