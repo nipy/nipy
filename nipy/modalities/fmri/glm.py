@@ -97,7 +97,7 @@ class GeneralLinearModel(object):
         self.labels_ = None
         self.results_ = None
 
-    def fit(self, Y, model='ar1', steps=100):
+    def fit(self, Y, model='ols', steps=100):
         """GLM fitting of a dataset using 'ols' regression or the two-pass
 
         Parameters
@@ -105,7 +105,7 @@ class GeneralLinearModel(object):
         Y : array of shape(n_time_points, n_samples)
             the fMRI data
         model : {'ar1', 'ols'}, optional
-            the temporal variance model. Defaults to 'ar1'
+            the temporal variance model. Defaults to 'ols'
         steps : int, optional
             Maximum number of discrete steps for the AR(1) coef histogram
         """
