@@ -11,6 +11,10 @@ __version__ = '0.1'
 # Includes
 from fff cimport *
 cimport numpy as cnp
+from warnings import warn
+
+warn('This module (nipy.labs.utiles.routines) is deprecated and will be '
+     'removed from future versions of nipy')
 
 # Exports from fff_gen_stats.h
 cdef extern from "fff_gen_stats.h":
