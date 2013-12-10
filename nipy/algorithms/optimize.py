@@ -6,7 +6,6 @@ import numpy as np
 from scipy.optimize import brent, approx_fprime
 
 
-
 def _linesearch_brent(func, p, xi, tol=1e-3):
     """Line-search algorithm using Brent's method.
 
@@ -27,8 +26,9 @@ def _wrap(function, args):
     return ncalls, wrapper
 
 
-def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4, 
-                  maxiter=None, callback=None, disp=True):
+def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4,
+                  maxiter=None, epsilon=1.4901161193847656e-08,
+                  callback=None, disp=True):
     """
     Minimize a function using a steepest gradient descent
     algorithm. This complements the collection of minimization
@@ -51,6 +51,9 @@ def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4,
       Relative tolerance on function variations
     maxiter : int
       Maximum number of iterations
+    epsilon : float or ndarray
+      If fprime is approximated, use this value for the step
+    size (can be scalar or vector).
     callback : callable
       Optional function called after each iteration is complete
     disp : bool
@@ -67,7 +70,7 @@ def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4,
     if maxiter == None: 
         maxiter = x.size*1000
     if fprime == None:
-        grad_calls, myfprime = _wrap(approx_fprime, (f, step))
+        grad_calls, myfprime = _wrap(approx_fprime, (f, epsilon))
     else:
         grad_calls, myfprime = _wrap(fprime, args)
 
