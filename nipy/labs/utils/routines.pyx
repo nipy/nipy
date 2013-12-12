@@ -13,8 +13,9 @@ from fff cimport *
 cimport numpy as cnp
 from warnings import warn
 
-warn('This module (nipy.labs.utiles.routines) is deprecated and will be '
-     'removed from future versions of nipy')
+warn('Module nipy.labs.utils.routines deprecated, will be removed',
+     FutureWarning,
+     stacklevel=2)
 
 # Exports from fff_gen_stats.h
 cdef extern from "fff_gen_stats.h":

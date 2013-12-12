@@ -13,9 +13,9 @@ from .wrapper import (c_types, fff_type, npy_type, copy_vector, pass_matrix,
 
 from warnings import warn
 
-warn('This module (nipy.labs.bindings) is deprecated and will be removed '
-     'from future versions of nipy')
-
+warn('Module nipy.labs.bindings deprecated, will be removed',
+     FutureWarning,
+     stacklevel=2)
 
 from nipy.testing import Tester
 test = Tester().test
