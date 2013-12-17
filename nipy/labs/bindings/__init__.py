@@ -11,6 +11,12 @@ from .wrapper import (c_types, fff_type, npy_type, copy_vector, pass_matrix,
                       pass_vector, pass_array, pass_vector_via_iterator,
                       sum_via_iterators, copy_via_iterators)
 
+from warnings import warn
+
+warn('Module nipy.labs.bindings deprecated, will be removed',
+     FutureWarning,
+     stacklevel=2)
+
 from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench

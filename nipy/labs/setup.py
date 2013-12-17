@@ -6,6 +6,11 @@ from distutils import log
 # Global variables
 LIBS = os.path.realpath('lib')
 
+# The following variable disables linking with Lapack by default. So
+# far, the only way to attempt at linking with Lapack is to edit this
+# file and set WANT_LAPACK_LINKING=True. We might later want to pass
+# in this variable as an optional argument of `python setup.py build`.
+WANT_LAPACK_LINKING = False
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
@@ -42,17 +47,20 @@ def configuration(parent_package='',top_path=None):
         # instead.  NOTE: scipy.linalg uses lapack_opt, not 'lapack'...
         lapack_info = get_info('lapack', 0)
 
-    # If no lapack install is found, we use the rescue lapack lite
-    # distribution included in the package (sources have been
-    # translated to C using f2c)
-    if not lapack_info:
-        log.warn('No lapack installation found, using lapack lite distribution')
+    # If lapack linking not required or no lapack install is found, we
+    # use the rescue lapack lite distribution included in the package
+    # (sources have been translated to C using f2c)
+    if not WANT_LAPACK_LINKING or not lapack_info:
+        if WANT_LAPACK_LINKING:
+            log.warn('Lapack not found')
+        log.warn('Building Lapack lite distribution')
         sources.append(os.path.join(LIBS,'lapack_lite','*.c'))
         library_dirs = []
         libraries = []
 
     # Best-case scenario: lapack found 
     else:
+        log.warn('Linking with system Lapack')
         library_dirs = lapack_info['library_dirs']
         libraries = lapack_info['libraries']
         if 'include_dirs' in lapack_info:
