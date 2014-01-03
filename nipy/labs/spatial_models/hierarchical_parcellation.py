@@ -14,6 +14,13 @@ from .parcellation import MultiSubjectParcellation
 from nipy.algorithms.graph.field import Field
 from nipy.algorithms.graph.graph import wgraph_from_coo_matrix
 
+from warnings import warn
+
+warn('Module nipy.labs.spatial_models.hierarchical_parcellation' + 
+     'deprecated, will be removed',
+     FutureWarning,
+     stacklevel=2)
+
 
 def _jointly_reduce_data(data1, data2, chunksize):
     lnvox = data1.shape[0]

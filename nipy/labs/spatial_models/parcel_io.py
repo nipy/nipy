@@ -16,6 +16,13 @@ from .discrete_domain import grid_domain_from_image
 from .mroi import SubDomains
 from ..mask import intersect_masks
 
+from warnings import warn
+
+warn('Module nipy.labs.spatial_models.parcel_io' + 
+     'deprecated, will be removed',
+     FutureWarning,
+     stacklevel=2)
+
 
 def mask_parcellation(mask_images, nb_parcel, threshold=0, output_image=None):
     """ Performs the parcellation of a certain mask
