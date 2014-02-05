@@ -31,7 +31,7 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=None):
     arr : array_like
        Array over which to calculate time and slice differences.  We'll
        call this array an 'image' in this doc.
-    time_axis : int optional
+    time_axis : int, optional
        axis of `arr` that varies over time. Default is last
     slice_axis : None or int, optional
        axis of `arr` that varies over image slice.  None gives last non-time
@@ -57,12 +57,12 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=None):
            one time point to the next, one value per slice, per
            timepoint
         * 'volume_means' : (T,) array
-           mean over voxels for each volume ``vol[t] for t in 0:T
+           mean over voxels for each volume ``vol[t] for t in 0:T``
         * 'slice_diff2_max_vol' : v[:] array
-           volume, of same shape as input volumes, where each slice is
-           is the slice from ``d2[t]`` for t in 0:T-1, that has the
-           largest variance across ``t``.  Thus each slice in the volume
-           may well result from a different difference time point.
+           volume, of same shape as input time point volumes, where each slice
+           is is the slice from ``d2[t]`` for t in 0:T-1, that has the largest
+           variance across ``t``.  Thus each slice in the volume may well result
+           from a different difference time point.
         * 'diff2_mean_vol`` : v[:] array
            volume with the mean of ``d2[t]`` across t for t in 0:T-1.
     '''
