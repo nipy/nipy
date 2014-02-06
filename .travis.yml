@@ -8,7 +8,7 @@ language: erlang
 env:
     # Enable python 2 and python 3 builds. Python3.2 available in Ubuntu 12.04.
     - PYTHON=python EASY_INSTALL=easy_install PIP=pip COVERAGE=--with-coverage
-    - PYTHON=python3 EASY_INSTALL=easy_install3 PIP=pip-3.2
+    - PYTHON=python3 EASY_INSTALL=easy_install3 PIP=pip3.2
 install:
     - sudo apt-get update
     - sudo apt-get install $PYTHON-dev
