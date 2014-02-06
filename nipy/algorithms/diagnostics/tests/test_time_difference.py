@@ -70,6 +70,7 @@ def test_time_slice_diffs():
 def test_time_slice_axes():
     # Test time and slice axes work as expected
     fimg = load_image(funcfile)
+    # Put into array
     data = fimg.get_data()
     orig_results = tsd.time_slice_diffs(data)
     t0_data = np.rollaxis(data, 3)
@@ -84,6 +85,11 @@ def test_time_slice_axes():
     bad_s0_results = tsd.time_slice_diffs(s0_data)
     assert_not_equal(orig_results['slice_mean_diff2'].shape,
                      bad_s0_results['slice_mean_diff2'].shape)
+    # Slice axis equal to time axis - ValueError
+    assert_raises(ValueError, tsd.time_slice_diffs, data, -1, -1)
+    assert_raises(ValueError, tsd.time_slice_diffs, data, -1, 3)
+    assert_raises(ValueError, tsd.time_slice_diffs, data, 1, 1)
+    assert_raises(ValueError, tsd.time_slice_diffs, data, 1, -3)
 
 
 def test_against_matlab_results():

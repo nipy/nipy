@@ -65,6 +65,10 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=None):
            from a different difference time point.
         * 'diff2_mean_vol`` : v[:] array
            volume with the mean of ``d2[t]`` across t for t in 0:T-1.
+
+    Raises
+    ------
+    ValueError : if `time_axis` refers to same axis as `slice_axis`
     '''
     arr = np.asarray(arr)
     ndim = arr.ndim
@@ -75,6 +79,8 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=None):
         slice_axis = ndim-2 if time_axis == ndim-1 else ndim-1
     elif slice_axis < 0:
         slice_axis += ndim
+    if time_axis == slice_axis:
+        raise ValueError('Time axis refers to same axis as slice axis')
     arr = np.rollaxis(arr, time_axis)
     # we may have changed the position of slice_axis
     if time_axis > slice_axis:
