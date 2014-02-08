@@ -25,14 +25,12 @@ def main():
     if not show:
         import matplotlib
         matplotlib.use('Agg')
-    # Import late to allow setting Agg backend
-    from nipy.algorithms.diagnostics.tsdiffplot import tsdiffana_cmd
-    axes = tsdiffana_cmd(args.filename, args.time_axis, args.slice_axis)
-    if not args.out_file is None:
-        axes[0].set_title(args.filename)
-        axes[0].figure.savefig(args.out_file)
+    else:
+        import matplotlib.pylab as plt
+    # Import late to give set of mpl backend best chance of working
+    from nipy.algorithms.diagnostics.commands import tsdiffana
+    tsdiffana(args)
     if show:
-        import matplotlib.pyplot as plt
         plt.show()
 
 

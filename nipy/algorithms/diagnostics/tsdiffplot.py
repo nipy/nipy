@@ -4,10 +4,8 @@
 
 import numpy as np
 
-from nibabel import AnalyzeHeader
-
 import nipy
-from .timediff import time_slice_diffs, time_slice_diffs_image
+from .timediff import time_slice_diffs
 
 
 def plot_tsdiffs(results, axes=None):
@@ -122,62 +120,3 @@ def plot_tsdiffs_image(img, axes=None, show=True):
     return axes
 
 
-def tsdiffana_cmd(fname, time_axis=None, slice_axis=None):
-    """ Generate tsdiffana plots for image file `fname`
-
-    Parameters
-    ----------
-    fname : str
-       filename of image on which to do diagnostics
-    time_axis : None or str or int, optional
-        Axis indexing time-points. None is default, will be replaced by a value
-        of 't'. If `time_axis` is an integer, gives the index of the input
-        (domain) axis of `img`. If `time_axis` is a str, can be an input
-        (domain) name, or an output (range) name, that maps to an input
-        (domain) name.
-    slice_axis : None or str or int, optional
-        Axis indexing MRI slices. If `slice_axis` is an integer, gives the
-        index of the input (domain) axis of `img`. If `slice_axis` is a str,
-        can be an input (domain) name, or an output (range) name, that maps to
-        an input (domain) name.  If None (the default) then 1) try the name
-        'slice' to select the axis - if this fails, and `fname` refers to an
-        Analyze type image (such as Nifti), then 2) default to the third image
-        axis, otherwise 3) raise a ValueError
-
-    Returns
-    -------
-    axes : Matplotlib axes
-       Axes on which we have done the plots.
-    """
-    # Check whether this is an Analyze-type image
-    img = nipy.load_image(fname)
-    # Check for axes
-    if not time_axis is None:
-        # Try converting to an integer in case that was what was passed
-        try:
-            time_axis = int(time_axis)
-        except ValueError:
-            # Maybe a string
-            pass
-    else: # was None
-        time_axis = 't'
-    if not slice_axis is None:
-        # Try converting to an integer in case that was what was passed
-        try:
-            slice_axis = int(slice_axis)
-        except ValueError:
-            # Maybe a string
-            pass
-    else: # slice axis was None - search for default
-        input_names = img.coordmap.function_domain.coord_names
-        is_analyze = ('header' in img.metadata and
-                      isinstance(img.metadata['header'], AnalyzeHeader))
-        if 'slice' in input_names:
-            slice_axis = 'slice'
-        elif is_analyze and img.ndim == 4:
-            slice_axis = 2
-        else:
-            raise ValueError('No slice axis specified, not analyze type '
-                             'image; refusing to guess')
-    results = time_slice_diffs_image(img, time_axis, slice_axis)
-    return plot_tsdiffs(results)
