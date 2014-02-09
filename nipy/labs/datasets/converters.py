@@ -11,6 +11,7 @@ import numpy as np
 import nibabel as nib
 from nibabel.spatialimages import SpatialImage
 
+from nipy.io.nibcompat import get_header, get_affine
 from .volumes.volume_img import VolumeImg
 
 def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
@@ -58,11 +59,11 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
             raise ValueError("The file '%s' cannot be found" % obj)
         obj = nib.load(obj)
         copy = False
-    
+
     if isinstance(obj, SpatialImage):
         data   = obj.get_data()
-        affine = obj.get_affine()
-        header = dict(obj.get_header())
+        affine = get_affine(obj)
+        header = dict(get_header(obj))
         fname = obj.file_map['image'].filename
         if fname:
             header['filename'] = fname

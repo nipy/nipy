@@ -145,6 +145,8 @@ from ..core.reference import spaces as ncrs
 from ..core.image.image import Image
 from ..core.image.image_spaces import as_xyz_image
 
+from .nibcompat import get_header, get_affine
+
 
 XFORM2SPACE = {'scanner': ncrs.scanner_space,
                'aligned': ncrs.aligned_space,
@@ -533,8 +535,8 @@ def nifti2nipy(ni_img):
     Ignore the intent-related fields for now, but warn that we are doing so if
     there appears to be specific information in there.
     """
-    hdr = ni_img.get_header()
-    affine = ni_img.get_affine()
+    hdr = get_header(ni_img)
+    affine = get_affine(ni_img)
     # Affine will not be None from a loaded image, but just in case
     if affine is None:
         affine = hdr.get_best_affine()

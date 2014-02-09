@@ -12,6 +12,7 @@ from nibabel import load, save, Nifti1Image
 from ..mask import intersect_masks
 from .bayesian_structural_analysis import compute_landmarks
 from .discrete_domain import domain_from_image
+from ...io.nibcompat import get_header, get_affine
 
 
 def make_bsa_image(
@@ -60,7 +61,7 @@ def make_bsa_image(
     # Read the referential information
     nim = load(stat_images[0])
     ref_dim = nim.shape[:3]
-    affine = nim.get_affine()
+    affine = get_affine(nim)
 
     # Read the masks and compute the "intersection"
     # mask = np.reshape(intersect_masks(mask_images), ref_dim).astype('u8')
@@ -111,8 +112,8 @@ def make_bsa_image(
     density_map = np.zeros(ref_dim)
     density_map[mask > 0] = density
     wim = Nifti1Image(density_map, affine)
-    wim.get_header()['descrip'] = 'group-level spatial density\
-                                   of active regions'
+    get_header(wim)['descrip'] = ('group-level spatial density '
+                                  'of active regions')
     dens_path = op.join(write_dir, "density_%s.nii" % contrast_id)
     save(wim, dens_path)
 
@@ -120,7 +121,7 @@ def make_bsa_image(
     labels = - 2 * np.ones(ref_dim)
     labels[mask > 0] = crmap
     wim = Nifti1Image(labels.astype('int16'), affine)
-    wim.get_header()['descrip'] = 'group Level labels from bsa procedure'
+    get_header(wim)['descrip'] = 'group Level labels from bsa procedure'
     save(wim, op.join(write_dir, "CR_%s.nii" % contrast_id))
 
     # write a prevalence image
@@ -129,7 +130,7 @@ def make_bsa_image(
     prevalence_map = - np.ones(ref_dim)
     prevalence_map[mask > 0] = prev_
     wim = Nifti1Image(prevalence_map, affine)
-    wim.get_header()['descrip'] = 'Weighted prevalence image'
+    get_header(wim)['descrip'] = 'Weighted prevalence image'
     save(wim, op.join(write_dir, "prevalence_%s.nii" % contrast_id))
 
     # write a 4d images with all subjects results
@@ -144,6 +145,6 @@ def make_bsa_image(
             lab[lab > - 1] = nls[lab[lab > - 1]]
             labels[mask > 0, subject] = lab
     wim = Nifti1Image(labels, affine)
-    wim.get_header()['descrip'] = 'Individual labels from bsa procedure'
+    get_header(wim)['descrip'] = 'Individual labels from bsa procedure'
     save(wim, op.join(write_dir, "AR_%s.nii" % contrast_id))
     return landmarks, hrois
