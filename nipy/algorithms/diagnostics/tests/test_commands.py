@@ -9,7 +9,8 @@ import nibabel as nib
 from nibabel import AnalyzeImage, Spm2AnalyzeImage, Nifti1Pair, Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory
 
-from ..commands import parse_fname_axes
+from nipy import load_image
+from ..commands import parse_fname_axes, tsdiffana
 
 from numpy.testing import (assert_almost_equal,
                            assert_array_equal)
@@ -18,6 +19,7 @@ from nose import SkipTest
 from nose.tools import (assert_true, assert_false, assert_raises,
                         assert_equal, assert_not_equal)
 
+from nipy.testing import funcfile
 
 def test_parse_fname_axes():
     # Test logic for setting time and slice axis defaults
@@ -90,3 +92,42 @@ def test_parse_fname_axes():
         # But you can still set slice axis (if we can load them)
         assert_equal(time_axis, 't')
         assert_equal(slice_axis, 'j')
+
+
+class Args(object): pass
+
+
+def check_axes(axes, img_shape, time_axis, slice_axis):
+    # Check axes as expected for plot
+    assert_equal(len(axes), 4)
+    # First x axis is time point differences
+    assert_array_equal(axes[0].xaxis.get_data_interval(),
+                        [0, img_shape[time_axis]-2])
+    # Last x axis is over slices
+    assert_array_equal(axes[-1].xaxis.get_data_interval(),
+                        [0, img_shape[slice_axis]-1])
+
+
+def test_tsdiffana():
+    # Test tsdiffana command
+    args = Args()
+    img = load_image(funcfile)
+    with InTemporaryDirectory():
+        args.filename = funcfile
+        args.time_axis = None
+        args.slice_axis = None
+        args.out_file = 'test.png'
+        check_axes(tsdiffana(args), img.shape, -1, -2)
+        assert_true(isfile('test.png'))
+        args.time_axis = 't'
+        check_axes(tsdiffana(args), img.shape, -1, -2)
+        args.time_axis = '3'
+        check_axes(tsdiffana(args), img.shape, -1, -2)
+        args.slice_axis = 'k'
+        check_axes(tsdiffana(args), img.shape, -1, -2)
+        args.slice_axis = '2'
+        check_axes(tsdiffana(args), img.shape, -1, -2)
+        args.time_axis = '0'
+        check_axes(tsdiffana(args), img.shape, 0, -2)
+        args.slice_axis = 't'
+        check_axes(tsdiffana(args), img.shape, 0, -1)

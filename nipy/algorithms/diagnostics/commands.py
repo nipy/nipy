@@ -90,7 +90,13 @@ def tsdiffana(args):
     Parameters
     ----------
     args : object
-        object with attributes `
+        object with (None or ``str``) attributes:
+
+        * filename : 4D image filename
+        * out_file: graphics file to write to instead of leaving graphics on
+          screen
+        * time_axis : name or number of time axis in `filename`
+        * slice_axis : name or number of slice axis in `filename`
 
     Returns
     -------
@@ -104,3 +110,4 @@ def tsdiffana(args):
     axes = plot_tsdiffs(results)
     if not args.out_file is None:
         axes[0].figure.savefig(args.out_file)
+    return axes
