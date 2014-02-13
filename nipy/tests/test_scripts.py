@@ -119,11 +119,17 @@ def test_nipy_diagnose():
 def test_nipy_tsdiffana():
     # Test nipy_tsdiffana script
     out_png = 'ts_out.png'
+    # Quotes in case of space in arguments
+    cmd_template = 'nipy_tsdiffana "{0}" --out-file="{1}"'
     with InTemporaryDirectory():
-        # Quotes in case of space in arguments
-        cmd = 'nipy_tsdiffana "%s" --out-file="%s"' % (funcfile, out_png)
-        run_command(cmd)
-        assert_true(isfile(out_png))
+        for i, cmd in enumerate((cmd_template,
+                                 cmd_template + ' --time=axis=0',
+                                 cmd_template + ' --slice=axis=0',
+                                 cmd_template + ' --slice=axis=0 ' +
+                                 '--time-axis=1')):
+            out_png = 'ts_out{0}.png'.format(i)
+            run_command(cmd_template.format(funcfile, out_png))
+            assert_true(isfile(out_png))
 
 
 @script_test
