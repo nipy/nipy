@@ -5,7 +5,7 @@ from os.path import join as pjoin
 
 import numpy as np
 
-from ...core.api import Image, drop_io_dim, append_io_dim
+from ...core.api import Image, drop_io_dim
 from ...core.reference.coordinate_map import input_axis_index, AxisError
 from ...io.api import save_image
 from ..utils import pca
@@ -78,13 +78,11 @@ def screen(img4d, ncomp=10, time_axis='t', slice_axis=None):
     screen_res['max'] = Image(np.max(data, axis=time_axis), cmap_3d)
     screen_res['min'] = Image(np.min(data, axis=time_axis), cmap_3d)
     # PCA
-    screen_res['pca_res'] = pca.pca(data,
-                                    axis=time_axis,
-                                    standardize=False,
-                                    ncomp=ncomp)
-    cmap_4d = append_io_dim(cmap_3d, 'l' , 't')
-    screen_res['pca'] = Image(screen_res['pca_res']['basis_projections'],
-                              cmap_4d)
+    screen_res['pca_res'] = pca.pca_image(img4d,
+                                          axis=time_axis,
+                                          standardize=False,
+                                          ncomp=ncomp)
+    screen_res['pca'] = screen_res['pca_res']['basis_projections']
     # tsdiffana
     screen_res['ts_res'] = time_slice_diffs(data,
                                             time_axis=time_axis,
@@ -126,7 +124,7 @@ def write_screen_res(res, out_path, out_root,
                                              out_img_ext))
         save_image(res[key], fname)
     # plot, save component time courses and some tsdiffana stuff
-    ncomp = res['pca'].shape[-1]
+    ncomp = res['pca_res']['axis']
     vectors = res['pca_res']['basis_vectors']
     pcnt_var = res['pca_res']['pcnt_var']
     np.savez(pjoin(out_path, 'vectors_components_%s.npz' % out_root),
