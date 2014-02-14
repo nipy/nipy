@@ -11,13 +11,17 @@ The command script files deal with argument parsing and any custom imports.
 The implementation here accepts the ``args`` object from ``argparse`` and does
 the work.
 """
+from os.path import split as psplit, join as pjoin
+
+import numpy as np
 
 from nibabel import AnalyzeHeader
+from nibabel.filename_parser import splitext_addext
 
 import nipy
 
 from .tsdiffplot import plot_tsdiffs
-from .timediff import time_slice_diffs, time_slice_diffs_image
+from .timediff import time_slice_diffs_image
 
 
 def parse_fname_axes(img_fname, time_axis, slice_axis):
@@ -90,24 +94,51 @@ def tsdiffana(args):
     Parameters
     ----------
     args : object
-        object with (None or ``str``) attributes:
+        object with attributes
 
-        * filename : 4D image filename
-        * out_file: graphics file to write to instead of leaving graphics on
-          screen
-        * time_axis : name or number of time axis in `filename`
-        * slice_axis : name or number of slice axis in `filename`
+        * filename : str - 4D image filename
+        * out_file : str - graphics file to write to instead of leaving
+          graphics on screen
+        * time_axis : str - name or number of time axis in `filename`
+        * slice_axis : str - name or number of slice axis in `filename`
+        * write_results : bool - if True, write images and plots to files
+        * out_path : None or str - path to which to write results
+        * out_fname_label : None or filename - suffix of output results files
 
     Returns
     -------
     axes : Matplotlib axes
        Axes on which we have done the plots.
     """
+    if not args.out_file is None and args.write_results:
+        raise ValueError("Cannot have OUT_FILE and WRITE_RESULTS options "
+                         "together")
     img, time_axis, slice_axis = parse_fname_axes(args.filename,
                                                   args.time_axis,
                                                   args.slice_axis)
     results = time_slice_diffs_image(img, time_axis, slice_axis)
     axes = plot_tsdiffs(results)
+    if args.out_file is None and not args.write_results:
+        # interactive mode
+        return axes
     if not args.out_file is None:
+        # plot only mode
         axes[0].figure.savefig(args.out_file)
+        return axes
+    # plot and images mode
+    froot, ext, addext = splitext_addext(args.filename)
+    fpath, fbase = psplit(froot)
+    fpath = fpath if args.out_path is None else args.out_path
+    fbase = fbase if args.out_fname_label is None else args.out_fname_label
+    axes[0].figure.savefig(pjoin(fpath, 'tsdiff_' + fbase + '.png'))
+    # Save image volumes
+    for key, prefix in (('slice_diff2_max_vol', 'dv2_max_'),
+                        ('diff2_mean_vol', 'dv2_mean_')):
+        fname = pjoin(fpath, prefix + fbase + ext + addext)
+        nipy.save_image(results[key], fname)
+    # Save time courses into npz
+    np.savez(pjoin(fpath, 'tsdiff_' + fbase + '.npz'),
+             volume_means=results['volume_means'],
+             slice_mean_diff2=results['slice_mean_diff2'],
+            )
     return axes

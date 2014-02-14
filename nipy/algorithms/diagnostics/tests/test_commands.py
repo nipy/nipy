@@ -1,7 +1,9 @@
 """ Testing diagnostics.command module
 """
 
+import os
 from os.path import dirname, join as pjoin, isfile
+import shutil
 
 import numpy as np
 
@@ -11,9 +13,14 @@ from nibabel.tmpdirs import InTemporaryDirectory
 
 from nipy import load_image
 from ..commands import parse_fname_axes, tsdiffana
+from ..timediff import time_slice_diffs_image
 
-from numpy.testing import (assert_almost_equal,
-                           assert_array_equal)
+from numpy.testing import (assert_almost_equal, assert_array_equal, decorators)
+
+from nibabel.optpkg import optional_package
+
+matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
+needs_mpl = decorators.skipif(not HAVE_MPL, "Test needs matplotlib")
 
 from nose import SkipTest
 from nose.tools import (assert_true, assert_false, assert_raises,
@@ -102,20 +109,24 @@ def check_axes(axes, img_shape, time_axis, slice_axis):
     assert_equal(len(axes), 4)
     # First x axis is time point differences
     assert_array_equal(axes[0].xaxis.get_data_interval(),
-                        [0, img_shape[time_axis]-2])
+                       [0, img_shape[time_axis]-2])
     # Last x axis is over slices
     assert_array_equal(axes[-1].xaxis.get_data_interval(),
-                        [0, img_shape[slice_axis]-1])
+                       [0, img_shape[slice_axis]-1])
 
 
+@needs_mpl
 def test_tsdiffana():
     # Test tsdiffana command
     args = Args()
     img = load_image(funcfile)
-    with InTemporaryDirectory():
+    with InTemporaryDirectory() as tmpdir:
         args.filename = funcfile
         args.time_axis = None
         args.slice_axis = None
+        args.write_results = False
+        args.out_path = None
+        args.out_fname_label = None
         args.out_file = 'test.png'
         check_axes(tsdiffana(args), img.shape, -1, -2)
         assert_true(isfile('test.png'))
@@ -131,3 +142,42 @@ def test_tsdiffana():
         check_axes(tsdiffana(args), img.shape, 0, -2)
         args.slice_axis = 't'
         check_axes(tsdiffana(args), img.shape, 0, -1)
+        # Check absolute path works
+        args.slice_axis = 'j'
+        args.time_axis = 't'
+        args.out_file = pjoin(tmpdir, 'test_again.png')
+        check_axes(tsdiffana(args), img.shape, -1, -3)
+        # Check that --out-images incompatible with --out-file
+        args.write_results=True
+        assert_raises(ValueError, tsdiffana, args)
+        args.out_file=None
+        # Copy the functional file to a temporary writeable directory
+        os.mkdir('mydata')
+        tmp_funcfile = pjoin(tmpdir, 'mydata', 'myfunc.nii.gz')
+        shutil.copy(funcfile, tmp_funcfile)
+        args.filename = tmp_funcfile
+        # Check write-results generates expected images
+        check_axes(tsdiffana(args), img.shape, -1, -3)
+        assert_true(isfile(pjoin('mydata', 'tsdiff_myfunc.png')))
+        max_img = load_image(pjoin('mydata', 'dv2_max_myfunc.nii.gz'))
+        assert_equal(max_img.shape, img.shape[:-1])
+        mean_img = load_image(pjoin('mydata', 'dv2_max_myfunc.nii.gz'))
+        assert_equal(mean_img.shape, img.shape[:-1])
+        exp_results = time_slice_diffs_image(img, 't', 'j')
+        saved_results = np.load(pjoin('mydata', 'tsdiff_myfunc.npz'))
+        for key in ('volume_means', 'slice_mean_diff2'):
+            assert_array_equal(exp_results[key], saved_results[key])
+        # That we can change out-path
+        os.mkdir('myresults')
+        args.out_path = 'myresults'
+        check_axes(tsdiffana(args), img.shape, -1, -3)
+        assert_true(isfile(pjoin('myresults', 'tsdiff_myfunc.png')))
+        max_img = load_image(pjoin('myresults', 'dv2_max_myfunc.nii.gz'))
+        assert_equal(max_img.shape, img.shape[:-1])
+        # And out-fname-label
+        args.out_fname_label = 'vr2'
+        check_axes(tsdiffana(args), img.shape, -1, -3)
+        assert_true(isfile(pjoin('myresults', 'tsdiff_vr2.png')))
+        max_img = load_image(pjoin('myresults', 'dv2_max_vr2.nii.gz'))
+        assert_equal(max_img.shape, img.shape[:-1])
+        del max_img, mean_img
