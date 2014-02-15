@@ -6,6 +6,8 @@
 import os
 from os.path import join as pjoin
 
+from warnings import catch_warnings, simplefilter
+
 import numpy as np
 
 import nipy as ni
@@ -45,6 +47,10 @@ def _check_ts(res, data, time_axis, slice_axis):
 
 def test_screen():
     img = ni.load_image(funcfile)
+    # rename third axis to slice to match default of screen
+    # This avoids warnings about future change in default; see the tests for
+    # slice axis below
+    img = img.renamed_axes(k='slice')
     res = screen(img)
     assert_equal(res['mean'].ndim, 3)
     assert_equal(res['pca'].ndim, 4)
@@ -98,10 +104,32 @@ def test_screen():
     _check_ts(res, data, 3, 2)
     assert_raises(AssertionError, _check_ts, res, data, 3, 0)
     # Then specify, get non-default
-    slicey_img = img.renamed_axes(i='slice')
+    slicey_img = img.renamed_axes(slice='k', i='slice')
     res = screen(slicey_img)
     _check_ts(res, data, 3, 0)
     assert_raises(AssertionError, _check_ts, res, data, 3, 2)
+
+
+def test_screen_slice_axis():
+    img = ni.load_image(funcfile)
+    # Default screen raises a FutureWarning because of the default slice_axis
+    exp_res = screen(img, slice_axis='k')
+    with catch_warnings():
+        simplefilter('error')
+        assert_raises(FutureWarning, screen, img)
+        assert_raises(FutureWarning, screen, img, slice_axis=None)
+        explicit_img = img.renamed_axes(k='slice')
+        # Now the analysis works without warning
+        res = screen(explicit_img)
+        # And is the expected analysis
+        assert_array_equal(res['pca'].get_data(), exp_res['pca'].get_data())
+        assert_array_equal(res['ts_res']['slice_mean_diff2'],
+                           exp_res['ts_res']['slice_mean_diff2'])
+        # Turn off warnings, also get expected analysis
+        simplefilter('ignore')
+        res = screen(img)
+        assert_array_equal(res['ts_res']['slice_mean_diff2'],
+                           exp_res['ts_res']['slice_mean_diff2'])
 
 
 @needs_mpl

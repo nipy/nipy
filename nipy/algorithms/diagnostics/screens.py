@@ -3,6 +3,8 @@
 ''' Diagnostic 4d image screen '''
 from os.path import join as pjoin
 
+import warnings
+
 import numpy as np
 
 from ...core.api import Image, drop_io_dim
@@ -28,8 +30,10 @@ def screen(img4d, ncomp=10, time_axis='t', slice_axis=None):
         Axis over which to do PCA, time difference analysis. Defaults to `t`
     slice_axis : None or str or int, optional
         Name or index of input axis over which to do slice analysis for time
-        difference analysis.  If None, look for input axis ``slice``, otherwise,
-        assume slice is the last non-time axis.
+        difference analysis.  If None, look for input axis ``slice``.  At the
+        moment we then assume slice is the last non-time axis, but this last
+        guess we will remove in future versions of nipy. The default will then
+        be 'slice' and you'll get an error if there is no axis named 'slice'.
 
     Returns
     -------
@@ -66,6 +70,13 @@ def screen(img4d, ncomp=10, time_axis='t', slice_axis=None):
         try:
             slice_axis = input_axis_index(cmap, 'slice')
         except AxisError:
+            warnings.warn(
+                'Future versions of nipy will not guess the slice axis '
+                'from position, but only from axis name == "slice"; '
+                'Please specify the slice axis by name or index to avoid '
+                'this warning',
+                FutureWarning,
+                stacklevel=2)
             slice_axis = 2 if time_axis == 3 else 3
     else:
         slice_axis = input_axis_index(cmap, slice_axis)
