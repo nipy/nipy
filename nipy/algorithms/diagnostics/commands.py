@@ -22,6 +22,7 @@ import nipy
 
 from .tsdiffplot import plot_tsdiffs
 from .timediff import time_slice_diffs_image
+from .screens import screen, write_screen_res
 
 
 def parse_fname_axes(img_fname, time_axis, slice_axis):
@@ -142,3 +143,35 @@ def tsdiffana(args):
              slice_mean_diff2=results['slice_mean_diff2'],
             )
     return axes
+
+
+def diagnose(args):
+    """ Calculate, write results from diagnostic screen
+
+    Parameters
+    ----------
+    args : object
+        object with attributes:
+
+        * filename : str - 4D image filename
+        * time_axis : str - name or number of time axis in `filename`
+        * slice_axis : str - name or number of slice axis in `filename`
+        * out_path : None or str - path to which to write results
+        * out_fname_label : None or filename - suffix of output results files
+        * ncomponents : int - number of PCA components to write images for
+
+    Returns
+    -------
+    res : dict
+        Results of running :func:`screen` on `filename`
+    """
+    img, time_axis, slice_axis = parse_fname_axes(args.filename,
+                                                  args.time_axis,
+                                                  args.slice_axis)
+    res = screen(img, args.ncomponents, time_axis, slice_axis)
+    froot, ext, addext = splitext_addext(args.filename)
+    fpath, fbase = psplit(froot)
+    fpath = fpath if args.out_path is None else args.out_path
+    fbase = fbase if args.out_fname_label is None else args.out_fname_label
+    write_screen_res(res, fpath, fbase, ext + addext)
+    return res

@@ -29,17 +29,12 @@ generate filenames of the form ``/some/path/components_fname.png,
 /some/path/max_fname.img`` etc.
 '''
 
-import os
-
 import matplotlib
 matplotlib.use('Agg')
 
-from nibabel.filename_parser import splitext_addext
-
-import nipy
 from nipy.externals.argparse import (ArgumentParser,
                                      RawDescriptionHelpFormatter)
-import nipy.algorithms.diagnostics.screens as nads
+import nipy.algorithms.diagnostics.commands as nadc
 
 
 def main():
@@ -60,31 +55,7 @@ def main():
                         help='Image axis for slice')
     # parse the command line
     args = parser.parse_args()
-    # process inputs
-    filename = args.filename
-    out_path = args.out_path
-    out_root = args.out_fname_label
-    ncomps = args.ncomponents
-    # collect extension for output images
-    froot, ext, gz = splitext_addext(filename)
-    pth, fname = os.path.split(froot)
-    if out_path is None:
-        out_path = pth
-    if out_root is None:
-        out_root = fname
-    img = nipy.load_image(filename)
-    # Unpack axis arguments
-    try:
-        args.time_axis = int(args.time_axis)
-    except ValueError:
-        pass
-    if not args.slice_axis is None:
-        try:
-            args.slice_axis = int(args.slice_axis)
-        except ValueError:
-            pass
-    res = nads.screen(img, ncomps, args.time_axis, args.slice_axis)
-    nads.write_screen_res(res, out_path, out_root, ext + gz)
+    nadc.diagnose(args)
 
 
 if __name__ == '__main__':
