@@ -9,7 +9,7 @@ from ....core.api import Image, vox2mni
 from ..resample import resample
 from ..affine import Affine
 
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 
 def _test_resample(arr, interp_orders):
@@ -41,3 +41,22 @@ def test_resample_uint_data():
     assert(np.min(img2.get_data()) >= 0)
     assert(np.max(img2.get_data()) < 255)
 
+def test_resample_outvalue():
+    arr = np.arange(3*3*3).reshape(3,3,3)
+
+    img = Image(arr, vox2mni(np.eye(4)))
+    aff = np.eye(4)
+    aff[0,3] = 1.
+    img2 = resample(img, aff)
+    arr2 = img2.get_data()
+    exp_arr = np.zeros_like(arr)
+    exp_arr[:-1,:,:] = arr[1:,:,:]
+    assert_array_equal(arr2, exp_arr)
+
+    param = {'cval':1}
+    img2 = resample(img, aff, interp_param=param)
+    arr2 = img2.get_data()
+    exp_arr = np.zeros_like(arr) + 1.
+    exp_arr[:-1,:,:] = arr[1:,:,:]
+
+    assert_array_equal(arr2, exp_arr)
