@@ -15,7 +15,7 @@ class ImageInterpolator(object):
     
     The resampling is done with scipy.ndimage.
     """
-    def __init__(self, image, order=3):
+    def __init__(self, image, order=3, mode='constant', cval=0.0):
         """
         Parameters
         ----------
@@ -24,11 +24,22 @@ class ImageInterpolator(object):
         order : int, optional
            order of spline interpolation as used in scipy.ndimage.
            Default is 3.
+        mode : str, optional
+           Points outside the boundaries of the input are filled according to the
+           given mode ('constant', 'nearest', 'reflect' or 'wrap'). Default is
+           'constant'.
+        cval : scalar, optional
+           Value used for points outside the boundaries of the input if
+           mode='constant'. Default is 0.0
+
         """
         self.image = image
         self.order = order
+        self.mode = mode 
+        self.cval = cval 
         self._datafile = None
         self._buildknots()
+    
 
     def _buildknots(self):
         if self.order > 1:
@@ -82,6 +93,8 @@ class ImageInterpolator(object):
         V = ndimage.map_coordinates(self.data, 
                                      voxels,
                                      order=self.order,
+                                     mode=self.mode,
+                                     cval=self.cval,
                                      prefilter=False)
         # ndimage.map_coordinates returns a flat array,
         # it needs to be reshaped to the original shape
