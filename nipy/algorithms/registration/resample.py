@@ -18,7 +18,7 @@ INTERP_ORDER = 3
 
 def resample(moving, transform=None, reference=None,
              mov_voxel_coords=False, ref_voxel_coords=False,
-             dtype=None, interp_order=INTERP_ORDER):
+             dtype=None, interp_order=INTERP_ORDER, interp_param=None):
     """ Resample `movimg` into voxel space of `reference` using `transform`
 
     Apply a transformation to the image considered as 'moving' to
@@ -54,6 +54,11 @@ def resample(moving, transform=None, reference=None,
       maps from world coordinates.
     interp_order: int, optional
       Spline interpolation order, defaults to 3.
+    interp_param: None or dict, optional
+      Other parameters to pass to the affine_transform or map_coordinate
+      images
+      example of param = ``{'mode':'constant', 'cval':0., 'prefilter':True}``
+      None corresponds to the empty dictionary
 
     Returns
     -------
@@ -61,6 +66,11 @@ def resample(moving, transform=None, reference=None,
         Image resliced to `reference` with reference-to-movimg transform
         `transform`
     """
+
+    # scipy.ndimage parameters
+    # example of param = {'mode':'constant', 'cval':0., 'prefilter':True}
+    if interp_param == None: interp_param = {}
+
     # Function assumes xyz_affine for inputs
     moving = as_xyz_image(moving)
     mov_aff = xyz_affine(moving)
@@ -100,15 +110,16 @@ def resample(moving, transform=None, reference=None,
             Tv = np.dot(Tv, ref_aff)
         if not mov_voxel_coords:
             Tv = np.dot(inverse_affine(mov_aff), Tv)
-        if interp_order == 3:
+        if interp_order == 3 and len(interp_param) == 0:
+            # we can use short cut
             output = _cspline_resample3d(data, ref_shape,
                                          Tv, dtype=dtype)
             output = output.astype(dtype)
         else:
             output = np.zeros(ref_shape, dtype=dtype)
             affine_transform(data, Tv[0:3, 0:3], offset=Tv[0:3, 3],
-                             order=interp_order, cval=0,
-                             output_shape=ref_shape, output=output)
+                             order=interp_order, 
+                             output_shape=ref_shape, output=output, **interp_param)
 
     # Case: non-affine transform
     else:
@@ -119,13 +130,14 @@ def resample(moving, transform=None, reference=None,
         coords = np.indices(ref_shape).transpose((1, 2, 3, 0))
         coords = np.reshape(coords, (np.prod(ref_shape), 3))
         coords = Tv.apply(coords).T
-        if interp_order == 3:
+        if interp_order == 3 and len(interp_param) == 0:
+            # we can use short cut
             cbspline = _cspline_transform(data)
             output = np.zeros(ref_shape, dtype='double')
             output = _cspline_sample3d(output, cbspline, *coords)
             output = output.astype(dtype)
         else:
             output = map_coordinates(data, coords, order=interp_order,
-                                     cval=0, output=dtype)
+                                     output=dtype, **interp_param)
 
     return make_xyz_image(output, ref_aff, 'scanner')
