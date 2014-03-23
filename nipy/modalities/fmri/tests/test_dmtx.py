@@ -445,6 +445,15 @@ def test_spm_2():
                 < .1)
 
 
+def test_frametimes_as_a_list():
+    # design matrix should work with frametimes provided as a list
+    paradigm = basic_paradigm()
+    frametimes = range(0, 99)
+    X1 = make_dmtx(frametimes, paradigm, drift_model='blank')
+    frametimes = np.arange(0, 99)
+    X2 = make_dmtx(frametimes, paradigm, drift_model='blank')
+    assert_array_equal(X1.matrix, X2.matrix)
+
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])
