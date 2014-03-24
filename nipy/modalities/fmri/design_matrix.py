@@ -254,7 +254,7 @@ class DesignMatrix():
                     'The number %d of frametimes is different from the' + \
                     'number %d of rows' % (frametimes.size, matrix.shape[0]))
 
-        self.frametimes = frametimes
+        self.frametimes = np.asarray(frametimes, dtype=np.float)
         self.matrix = matrix_
         self.names = names
 
@@ -346,6 +346,8 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
     DesignMatrix instance
     """
     # check arguments
+    frametimes = np.asarray(frametimes, dtype=np.float)
+
     # check that additional regressor specification is correct
     n_add_regs = 0
     if add_regs is not None:
