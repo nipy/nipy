@@ -177,6 +177,6 @@ def test_nipy_4d_realign():
     # Test nipy_4d_realign script
     with InTemporaryDirectory():
         # Quotes in case of space in arguments
-        cmd = 'nipy_4d_realign --input %s --apply True --make_figure True 2.0' % (funcfile)
+        cmd = 'nipy_4d_realign --input %s --apply True --make_figure True --slice_dim 2 --slice_dir -1 2.0 ' % (funcfile)
         run_command(cmd)
         assert_true(isfile(funcfile.split('.')[0] + '_mc.nii.gz'))

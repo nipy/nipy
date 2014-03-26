@@ -2,7 +2,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
-"""This is a wrapper of FmriRealign4d
+"""This is a wrapper of SpaceTimeRealign
 
 Based on:
 
@@ -19,6 +19,8 @@ import matplotlib.pyplot as plt
 
 import nipy.algorithms.registration as reg
 import nipy.externals.argparse as argparse
+import nipy.algorithms.slicetiming as st
+timefuncs = st.timefuncs.SLICETIME_FUNCTIONS
 
 parser = argparse.ArgumentParser()
 
@@ -28,11 +30,14 @@ parser.add_argument('--input', type=str, metavar='File',
                 help="""Path to a nifti file, or to a folder containing nifti files (Default: '.'). If a path to a folder is provided, the order of motion correction will be np.sort(list_of_files). The outputs will be '*_mc.par' (containing 3 translation and three rotation parameters) and '*_mc.nii.gz' containing the motion corrected data (unless 'apply' is set to False)""", default='.')
 
 parser.add_argument('--slice_order', type=str, metavar='String',
-                    help="""The order of slice aquisition {'ascending', 'descending'}. Default: 'descending'. If array-like, then the order in which the slices were collected in time. For instance, the following represents an ascending contiguous sequence:
+                    help="""The order of slice aquisition {'ascending', 'descending' (default), or the name of a function from `nipy.algorithms.slicetiming.timefuncs`}""", default='descending')
 
-                    slice_order = [0, 1, 2, ...]
-                    """,
-                   default='descending')
+parser.add_argument('--slice_dim', type=int, metavar='Int', help="""Integer
+denoting the axis in `images` that is the slice axis.  In a 4D image, this will
+often be axis = 2 (default).""", default=2)
+
+parser.add_argument('--slice_dir', type=int, metavar='Int', help=""" 1 if the
+slices were acquired slice 0 first (default), slice -1 last, or -1 if acquire slice -1 first, slice 0 last.""", default=1)
 
 parser.add_argument('--apply', type=bool, metavar='Bool',
                 help="""Whether to apply the realignment and save output files (default), or just estimate the realignment parameters and save those in '.par' files. {True, False}. Default: True""", default=True)
@@ -58,12 +63,14 @@ if __name__ == '__main__':
                   if (f.endswith('.nii') or f.endswith('.nii.gz')) ]
         input = [nib.load(x) for x in fnames]
 
-    #dbg:
-    #print("Input to motion correction: %s"%fnames)
+    slice_times = timefuncs[args.slice_order]
+    slice_info = [int(args.slice_dim),
+                  int(args.slice_dir)]
 
-    reggy = reg.FmriRealign4d(input,
-                              slice_order=args.slice_order,
-                              tr=args.TR)
+    reggy = reg.SpaceTimeRealign(input,
+                                 float(args.TR),
+                                 slice_times,
+                                 slice_info)
 
     reggy.estimate(align_runs=True)
     # This will be the dtype for the recarray of params in all runs:
