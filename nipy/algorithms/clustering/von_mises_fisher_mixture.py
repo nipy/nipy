@@ -5,7 +5,12 @@ i.e. the equaivalent of mixture of Gaussian on the sphere.
 Author: Bertrand Thirion, 2010-2011
 """
 import numpy as np
+from warnings import warn
 
+warn('Module nipy.algorithms.clustering.von_mises_fisher_mixture' + 
+     'deprecated, will be removed',
+     FutureWarning,
+     stacklevel=2)
 
 class VonMisesMixture(object):
     """
