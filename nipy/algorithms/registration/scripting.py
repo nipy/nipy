@@ -13,24 +13,49 @@ import numpy as np
 import nibabel as nib
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
+from .groupwise_registration import SpaceTimeRealign
 
-import nipy.algorithms.registration as reg
 import nipy.externals.argparse as argparse
 import nipy.algorithms.slicetiming as st
 timefuncs = st.timefuncs.SLICETIME_FUNCTIONS
 
-def space_time_realign(input, tr, slice_order=timefuncs['descending'],
+__all__ = ["space_time_realign"]
+
+def space_time_realign(input, tr, slice_order='descending',
                        slice_dim=2, slice_dir=1, apply=False, make_figure=False):
     """
-    Scripting interface to ``
+    This is a scripting interface to `nipy.algorithms.registration.SpaceTimeRealign`
+
+    Parameters
+    ----------
+    input : str or list
+        A file-name, or list of file names to be registered.
+    tr : float
+        The repetition time
+    slice_order : str (optional)
+        This is the order of slice-times in the acquisition. This is used as a
+        key into the ``SLICETIME_FUNCTIONS`` dictionary from
+        :mod:`nipy.algorithms.slicetiming.timefuncs`. Default: 'descending'.
+    slice_dim : int (optional)
+        Denotes the axis in `images` that is the slice axis.  In a 4D image,
+        this will often be axis = 2 (default).
+    slice_dir : int (optional)
+        1 if the slices were acquired slice 0 first (default), slice -1 last,
+        or -1 if acquire slice -1 first, slice 0 last.
+    apply : bool (optional)
+        Whether to apply the transformation and produce an output. Default:
+        False.
+    make_figure : bool (optional)
+        Whether to generate a .png figure with the parameters across scans.
+
     """
     # If we got only a single file, we motion correct that one:
     if os.path.isfile(input):
         if not (input.endswith('.nii') or input.endswith('.nii.gz')):
             e_s = "Input needs to be a nifti file ('.nii' or '.nii.gz'"
             raise ValueError(e_s)
-        input = nib.load(input)
         fnames = [input]
+        input = nib.load(input)
     else:
         list_of_files = os.listdir(input)
         fnames = [os.path.join(input, f) for f in np.sort(list_of_files)
@@ -41,10 +66,10 @@ def space_time_realign(input, tr, slice_order=timefuncs['descending'],
     slice_info = [slice_dim,
                   slice_dir]
 
-    reggy = reg.SpaceTimeRealign(input,
-                                 TR,
-                                 slice_times,
-                                 slice_info)
+    reggy = SpaceTimeRealign(input,
+                             tr,
+                             slice_times,
+                             slice_info)
 
     reggy.estimate(align_runs=True)
     # This will be the dtype for the recarray of params in all runs:

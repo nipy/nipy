@@ -14,7 +14,7 @@ from .groupwise_registration import (interp_slice_times, scanner_coords,
                                      SpaceTimeRealign,
                                      Realign4d, FmriRealign4d)
 
-import .scripting
+from .scripting import space_time_realign
 
 from nipy.testing import Tester
 test = Tester().test
