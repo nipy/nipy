@@ -11,8 +11,11 @@ import os
 import numpy as np
 
 import nibabel as nib
-import matplotlib.mlab as mlab
-import matplotlib.pyplot as plt
+from nibabel.optpkg import optional_package
+matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
+if HAVE_MPL:
+    import matplotlib.mlab as mlab
+    import matplotlib.pyplot as plt
 from .groupwise_registration import SpaceTimeRealign
 
 import nipy.externals.argparse as argparse
@@ -49,6 +52,11 @@ def space_time_realign(input, tr, slice_order='descending',
         Whether to generate a .png figure with the parameters across scans.
 
     """
+    if not HAVE_MPL and make_figure:
+        e_s = "You need to have matplotlib installed to run this function with"
+        e_s += "`make_figure` set to `True`"
+        raise RunTimeError(e_s)
+
     # If we got only a single file, we motion correct that one:
     if os.path.isfile(input):
         if not (input.endswith('.nii') or input.endswith('.nii.gz')):
