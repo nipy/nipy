@@ -4,7 +4,6 @@
 
 """
 A scripting wrapper around 4D registration (SpaceTimeRealign)
-
 """
 
 import os
@@ -54,7 +53,7 @@ def space_time_realign(input, tr, slice_order='descending',
     """
     if not HAVE_MPL and make_figure:
         e_s = "You need to have matplotlib installed to run this function with"
-        e_s += "`make_figure` set to `True`"
+        e_s += " `make_figure` set to `True`"
         raise RunTimeError(e_s)
 
     # If we got only a single file, we motion correct that one:
@@ -114,10 +113,7 @@ def space_time_realign(input, tr, slice_order='descending',
         trans_last = [prep_arr[-1][3], prep_arr[-1][4], prep_arr[-1][5]]
 
     if apply:
-        # dbg
-        # print("Applying motion correction")
         new_reggy = reggy.resample(align_runs=True)
-        # dbg
         for run_idx, new_im in enumerate(new_reggy):
             new_data = new_im.get_data()
             # We use the top 4 by 4 as the affine for the new file we will
