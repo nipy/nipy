@@ -39,9 +39,9 @@ parser.add_argument('--make_figure', type=bool, metavar='Bool',
 args = parser.parse_args()
 
 if __name__ == '__main__':
-
-    reg.space_time_realign(args.input, float(args.TR),
-                           slice_order=args.slice_order,
-                           slice_dim=int(args.slice_dim),
-                           slice_dir=int(args.slice_dir),
-                           apply=args.apply, make_figure=args.make_figure)
+    # The function has a return value, but we dump it:
+    _ = reg.space_time_realign(args.input, float(args.TR),
+                               slice_order=args.slice_order,
+                               slice_dim=int(args.slice_dim),
+                               slice_dir=int(args.slice_dir),
+                               apply=args.apply, make_figure=args.make_figure)
