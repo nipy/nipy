@@ -37,7 +37,7 @@ parser.add_argument('--make_figure', type=bool, metavar='Bool',
                 help="""Whether to generate a '.png' figure with the motion parameters across runs. {True, False}. Default: False """, default=False)
 
 parser.add_argument('--save_params', type=bool, metavar='Bool',
-                help="""Whether to save the motion corrections parameters (3 rotations, 3 translations). {True, False}. Default: False """, default=False)
+                help="""Whether to save the motion corrections parameters (3 rotations, 3 translations). {True, False}. Default: False. NOTE: The rotations are not Euler angles, but a rotation vector. Use `nipy.algorithms.registration.to_matrix44` to convert to a 4-by-4 affine matrix""", default=False)
 
 
 # parse the command line
