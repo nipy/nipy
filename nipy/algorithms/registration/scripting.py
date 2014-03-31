@@ -10,6 +10,7 @@ import os
 import numpy as np
 
 import nibabel as nib
+
 from nibabel.optpkg import optional_package
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
 if HAVE_MPL:

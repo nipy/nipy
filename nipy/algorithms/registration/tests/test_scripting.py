@@ -4,10 +4,10 @@
 
 from nipy.testing import funcfile
 import nipy.algorithms.registration as reg
+from nibabel.tmpdirs import InTemporaryDirectory
 
 
 def test_space_time_realign():
-    trans = reg.space_time_realign(funcfile, 2.0)
+    with InTemporaryDirectory() as tmpdir:
+        trans = reg.space_time_realign(funcfile, 2.0)
 
-if __name__=="__main__":
-    test_space_time_realign()
