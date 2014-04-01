@@ -1,9 +1,10 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import with_statement
+from os.path import dirname, join as pjoin
 
 import numpy as np
 
+import nibabel as nib
 from nibabel.spatialimages import ImageFileError, HeaderDataError
 from nibabel import Nifti1Header
 
@@ -260,3 +261,10 @@ def test_as_image():
     assert_equal(img.affine, img1.affine)
     assert_array_equal(img.get_data(), img1.get_data())
     assert_true(img is img2)
+
+
+def test_no_minc():
+    # We can't yet get good axis names for MINC files. Check we reject these
+    assert_raises(ValueError, load_image, 'nofile.mnc')
+    data_path = pjoin(dirname(nib.__file__), 'tests', 'data')
+    assert_raises(ValueError, load_image, pjoin(data_path, 'tiny.mnc'))

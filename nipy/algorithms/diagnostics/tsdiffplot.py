@@ -77,8 +77,16 @@ def plot_tsdiffs(results, axes=None):
     return axes
 
 
+@np.deprecate_with_doc('Please see docstring for alternative code')
 def plot_tsdiffs_image(img, axes=None, show=True):
     ''' Plot time series diagnostics for image
+
+    This function is deprecated; please use something like::
+
+        results = time_slice_diff_image(img, slice_axis=2)
+        plot_tsdiffs(results)
+
+    instead.
 
     Parameters
     ----------
@@ -110,3 +118,5 @@ def plot_tsdiffs_image(img, axes=None, show=True):
         import matplotlib.pyplot as plt
         plt.show()
     return axes
+
+

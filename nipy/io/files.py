@@ -49,6 +49,8 @@ def load(filename):
     >>> img.shape
     (33, 41, 25)
     """
+    if filename.endswith('.mnc'):
+        raise ValueError("Sorry, we can't get the MINC axis names right yet")
     img = nib.load(filename)
     ni_img = nib.Nifti1Image(img._data, img.get_affine(), img.get_header())
     return nifti2nipy(ni_img)
