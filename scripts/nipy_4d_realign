@@ -36,6 +36,10 @@ parser.add_argument('--apply', type=bool, metavar='Bool',
 parser.add_argument('--make_figure', type=bool, metavar='Bool',
                 help="""Whether to generate a '.png' figure with the motion parameters across runs. {True, False}. Default: False """, default=False)
 
+parser.add_argument('--save_path', type=str, metavar='String',
+                    help="""Full path to a file-system location for the output files. Defaults to the same location as the input files""",
+                    default='none')
+
 parser.add_argument('--save_params', type=bool, metavar='Bool',
                 help="""Whether to save the motion corrections parameters (3 rotations, 3 translations). {True, False}. Default: False. NOTE: The rotations are not Euler angles, but a rotation vector. Use `nipy.algorithms.registration.to_matrix44` to convert to a 4-by-4 affine matrix""", default=False)
 
@@ -44,16 +48,24 @@ parser.add_argument('--save_params', type=bool, metavar='Bool',
 args = parser.parse_args()
 
 if __name__ == '__main__':
+    if args.save_path == 'none':
+        save_path = args.input
+    else:
+        save_path = args.save_path
+        
     xform = reg.space_time_realign(args.input, float(args.TR),
                                slice_order=args.slice_order,
                                slice_dim=int(args.slice_dim),
                                slice_dir=int(args.slice_dir),
-                               apply=args.apply, make_figure=args.make_figure)
+                               apply=args.apply, make_figure=args.make_figure,
+                               out_name=save_path)
 
     if args.save_params:
-        f = file(os.path.join(os.path.split(input)[0], 'mc.par'), 'w')
+        
+        f = file(op.join(save_path, 'mc.par'), 'w')
         for x in xform:
-            for r in x.rotation:
+            euler_rot = reg.aff2euler(x.as_affine())
+            for r in euler_rot:
                 f.write('%s\t'%r)
             for t in x.translation[:-1]:
                 f.write('%s\t'%t)

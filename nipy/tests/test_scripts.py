@@ -10,7 +10,7 @@ from __future__ import with_statement
 
 import sys
 import os
-from os.path import dirname, join as pjoin, isfile, isdir, abspath, realpath
+from os.path import dirname, join as pjoin, isfile, isdir, abspath, realpath, split
 
 from subprocess import Popen, PIPE
 
@@ -171,12 +171,10 @@ def test_nipy_3_4d():
         del fimg_back
 
 
-@needs_mpl
 @script_test
 def test_nipy_4d_realign():
     # Test nipy_4d_realign script
-    with InTemporaryDirectory():
+    with InTemporaryDirectory() as tmpdir:
         # Quotes in case of space in arguments
-        cmd = 'nipy_4d_realign --input %s --apply True --make_figure True --slice_dim 2 --slice_dir -1 2.0 ' % (funcfile)
+        cmd = 'nipy_4d_realign --input %s --apply False --make_figure False --slice_dim 2 --slice_dir -1 2.0' % funcfile
         run_command(cmd)
-        assert_true(isfile(funcfile.split('.')[0] + '_mc.nii.gz'))
