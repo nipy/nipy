@@ -77,6 +77,13 @@ def test_read_paradigm():
     assert (read_paradigm.onset == paradigm.onset).all()
 
 
+def test_paradigm_with_int_condition_ids():
+    paradigm1 = basic_paradigm()
+    conditions = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+    paradigm2 =  EventRelatedParadigm(conditions, paradigm1.onset)
+    assert (paradigm2.con_id == np.array(conditions).astype('str')).all()
+
+
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])
