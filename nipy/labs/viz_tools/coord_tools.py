@@ -164,8 +164,9 @@ def _maximally_separated_subset(x, k):
 
     """
 
-    # k < 2 is senseless
-    k = max(k, 2)
+    if k < 2:
+        warnings.warn("k = %i < 2 is senseless; forcing to k = 2")
+        k = 2
 
     # would-be maximally separated subset of k (not showing the terminal nodes)
     msss = range(1, len(x) - 1)
@@ -186,8 +187,7 @@ def _maximally_separated_subset(x, k):
     return x[[0] + list(msss) + [len(x) - 1]]
 
 
-def find_maxsep_cut_coords(map3d, affine, slicer='z',
-                           n_cuts=None,
+def find_maxsep_cut_coords(map3d, affine, slicer='z', n_cuts=None,
                            threshold=None
                            ):
     """
@@ -214,18 +214,23 @@ def find_maxsep_cut_coords(map3d, affine, slicer='z',
 
     Raises
     ------
-    AssertionError
+    ValueError
 
     """
 
     if n_cuts is None: n_cuts = 5
 
     # sanitize slicer
-    assert slicer in ['x', 'y', 'z'], "slice must be one of 'x', 'y', and 'z'"
+    if not slicer in ['x', 'y', 'z']:
+        raise ValueError(
+            "slicer must be one of 'x', 'y', and 'z', got '%s'." % slicer)
     slicer = "xyz".index(slicer)
 
     # load data
-    assert map3d.ndim == 3
+    if map3d.ndim != 3:
+        raise TypeError(
+            "map3d must be 3D array, got shape %iD" % map3d.ndim)
+
     _map3d = np.rollaxis(map3d.copy(), slicer, start=3)
     _map3d = np.abs(_map3d)
     _map3d[_map3d < threshold] = 0
