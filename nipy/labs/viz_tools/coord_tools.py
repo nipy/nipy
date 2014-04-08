@@ -188,8 +188,7 @@ def _maximally_separated_subset(x, k):
 
 
 def find_maxsep_cut_coords(map3d, affine, slicer='z', n_cuts=None,
-                           threshold=None
-                           ):
+                           threshold=None):
     """
     Heuristic function to find n_cuts along a given axis, which
     are maximally separated in space.
@@ -247,7 +246,7 @@ def find_maxsep_cut_coords(map3d, affine, slicer='z', n_cuts=None,
     good_planes = np.array([
             # map cut coord into native space
             np.dot(affine,
-                   +np.array([0, 0, 0, 1]  # origin
+                   np.array([0, 0, 0, 1]  # origin
                             ) + coord * np.eye(4)[slicer])[slicer]
             for coord in good_planes])
 
