@@ -247,9 +247,8 @@ def find_maxsep_cut_coords(map3d, affine, slicer='z', n_cuts=None,
     good_planes = np.array([
             # map cut coord into native space
             np.dot(affine,
-                   np.array([0, 0, 0, 1]  # origin
+                   +np.array([0, 0, 0, 1]  # origin
                             ) + coord * np.eye(4)[slicer])[slicer]
-
             for coord in good_planes])
 
     # compute cut_coords maximally-separated planes
