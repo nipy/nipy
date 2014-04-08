@@ -52,12 +52,14 @@ if __name__ == '__main__':
         save_path = args.input
     else:
         save_path = args.save_path
-        
+
+    
     xform = reg.space_time_realign(args.input, float(args.TR),
                                slice_order=args.slice_order,
                                slice_dim=int(args.slice_dim),
                                slice_dir=int(args.slice_dir),
-                               apply=args.apply, make_figure=args.make_figure,
+                               apply=args.apply,
+                               make_figure=args.make_figure,
                                out_name=save_path)
 
     if args.save_params:

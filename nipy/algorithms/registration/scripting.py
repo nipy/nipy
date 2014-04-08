@@ -115,10 +115,10 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
         point in the time-series. These can be used as affine transforms by
         referring to their `.as_affine` attribute.
     """
-    if not HAVE_MPL and make_figure:
+    if make_figure and ~HAVE_MPL:
         e_s = "You need to have matplotlib installed to run this function with"
         e_s += " `make_figure` set to `True`"
-        raise RunTimeError(e_s)
+        raise RuntimeError(e_s)
         
     # If we got only a single file, we motion correct that one:
     if op.isfile(input):
