@@ -164,9 +164,9 @@ def _maximally_separated_subset(x, k):
 
     """
 
-    if k < 2:
-        warnings.warn("k = %i < 2 is senseless; forcing to k = 2")
-        k = 2
+    # base cases
+    if k < 1: raise ValueError("k = %i < 1 is senseless." % k)
+    if k == 1: return [x[len(x) // 2]]
 
     # would-be maximally separated subset of k (not showing the terminal nodes)
     msss = range(1, len(x) - 1)
@@ -218,6 +218,7 @@ def find_maxsep_cut_coords(map3d, affine, slicer='z', n_cuts=None,
     """
 
     if n_cuts is None: n_cuts = 5
+    if n_cuts < 1: raise ValueError("n_cuts = %i < 1 is senseless." % n_cuts)
 
     # sanitize slicer
     if not slicer in ['x', 'y', 'z']:
@@ -240,7 +241,7 @@ def find_maxsep_cut_coords(map3d, affine, slicer='z', n_cuts=None,
     perm = np.argsort(n_activated_voxels_per_plane)
     n_activated_voxels_per_plane = n_activated_voxels_per_plane[perm]
     good_planes = np.nonzero(n_activated_voxels_per_plane > 0)[0]
-    good_planes = perm[::-1][:n_cuts * 4]
+    good_planes = perm[::-1][:n_cuts * 4 if n_cuts > 1 else 1]
 
     # cast into coord space
     good_planes = np.array([
