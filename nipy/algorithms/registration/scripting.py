@@ -15,6 +15,7 @@ import nibabel as nib
 import nibabel.eulerangles as euler
 from nibabel.optpkg import optional_package
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
+
 if HAVE_MPL:
     import matplotlib.pyplot as plt
 
@@ -116,10 +117,11 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
         point in the time-series. These can be used as affine transforms by
         referring to their `.as_affine` attribute.
     """
-    if make_figure and ~HAVE_MPL:
-        e_s = "You need to have matplotlib installed to run this function with"
-        e_s += " `make_figure` set to `True`"
-        raise RuntimeError(e_s)
+    if make_figure:
+        if not HAVE_MPL:
+            e_s ="You need to have matplotlib installed to run this function"
+            e_s += " with `make_figure` set to `True`"
+            raise RuntimeError(e_s)
         
     # If we got only a single file, we motion correct that one:
     if op.isfile(input):
