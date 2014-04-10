@@ -56,7 +56,8 @@ def aff2rot_zooms(affine):
     R: 3 by 3 array
        A rotation matrix in 3D
 
-    zooms: XXX 
+    zooms: length 3 1-d array
+         Vector with voxel sizes.
     """
     RZS = affine[:3, :3]
     zooms = np.sqrt(np.sum(RZS * RZS, axis=0))
