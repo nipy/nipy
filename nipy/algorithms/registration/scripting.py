@@ -166,7 +166,7 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
             new_aff = new_im.affine[:4, :4]
             new_ni = nib.Nifti1Image(new_data, new_aff)
             # Save it out to a '.nii.gz' file:
-            old_fname_split = op.split(fnames[run_idx][0])
+            old_fname_split = op.split(fnames[run_idx])
             # We retain the file-name adding '_mc' regardless of where it's saved
             new_fname = old_fname_split[1].split('.')[0] + '_mc.nii.gz'
             if out_name is None:

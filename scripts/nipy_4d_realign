@@ -10,6 +10,7 @@ Alexis Roche (2011) A Four-Dimensional Registration Algorithm With Application t
 
 """
 import os
+import os.path as op
 import nipy.algorithms.registration as reg
 import nipy.externals.argparse as argparse
 
@@ -49,7 +50,7 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
     if args.save_path == 'none':
-        save_path = args.input
+        save_path = op.split(args.input)[0]
     else:
         save_path = args.save_path
 
