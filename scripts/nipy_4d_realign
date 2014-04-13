@@ -53,7 +53,7 @@ if __name__ == '__main__':
         save_path = op.split(args.input)[0]
     else:
         save_path = args.save_path
-
+        
     xform = reg.space_time_realign(args.input, float(args.TR),
                                slice_order=args.slice_order,
                                slice_dim=int(args.slice_dim),
