@@ -176,5 +176,5 @@ def test_nipy_4d_realign():
     # Test nipy_4d_realign script
     with InTemporaryDirectory() as tmpdir:
         # Quotes in case of space in arguments
-        cmd = 'nipy_4d_realign 2.0 %s --slice_dim 2 --slice_dir -1' % funcfile
+        cmd = 'nipy_4d_realign 2.0 %s --slice_dim 2 --slice_dir -1 --save_path .' % funcfile
         run_command(cmd)
