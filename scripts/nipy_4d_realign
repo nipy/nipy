@@ -18,8 +18,8 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('TR', type=float, metavar='Float', help="""The TR of the measurement""")
 
-parser.add_argument('--input', type=str, metavar='File',
-                help="""Path to a nifti file, or to a folder containing nifti files (Default: '.'). If a path to a folder is provided, the order of motion correction will be np.sort(list_of_files). The outputs will be '*_mc.par' (containing 3 translation and three rotation parameters) and '*_mc.nii.gz' containing the motion corrected data (unless 'apply' is set to False)""", default='.')
+parser.add_argument('input', type=str, metavar='File',
+                help="""Path to a nifti file, or to a folder containing nifti files. If a path to a folder is provided, the order of motion correction will be np.sort(list_of_files). The outputs will be '*_mc.par' (containing 3 translation and three rotation parameters) and '*_mc.nii.gz' containing the motion corrected data (unless 'apply' is set to False)""")
 
 parser.add_argument('--slice_order', type=str, metavar='String',
                     help="""The order of slice aquisition {'ascending', 'descending' (default), or the name of a function from `nipy.algorithms.slicetiming.timefuncs`}""", default='descending')
@@ -30,9 +30,6 @@ often be axis = 2 (default).""", default=2)
 
 parser.add_argument('--slice_dir', type=int, metavar='Int', help=""" 1 if the
 slices were acquired slice 0 first (default), slice -1 last, or -1 if acquire slice -1 first, slice 0 last.""", default=1)
-
-parser.add_argument('--apply', type=bool, metavar='Bool',
-                help="""Whether to apply the realignment and save output files (default), or just estimate the realignment parameters and save those in '.par' files. {True, False}. Default: True""", default=True)
 
 parser.add_argument('--make_figure', type=bool, metavar='Bool',
                 help="""Whether to generate a '.png' figure with the motion parameters across runs. {True, False}. Default: False """, default=False)
@@ -58,7 +55,7 @@ if __name__ == '__main__':
                                slice_order=args.slice_order,
                                slice_dim=int(args.slice_dim),
                                slice_dir=int(args.slice_dir),
-                               apply=args.apply,
+                               apply=True, # We always apply the xform in the cli
                                make_figure=args.make_figure,
                                out_name=save_path)
 
