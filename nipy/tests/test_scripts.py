@@ -10,7 +10,7 @@ from __future__ import with_statement
 
 import sys
 import os
-from os.path import dirname, join as pjoin, isfile, isdir, abspath, realpath
+from os.path import dirname, join as pjoin, isfile, isdir, abspath, realpath, split
 
 from subprocess import Popen, PIPE
 
@@ -169,3 +169,12 @@ def test_nipy_3_4d():
         fimg_back = load_image(out_4d)
         assert_almost_equal(fimg.get_data(), fimg_back.get_data())
         del fimg_back
+
+
+@script_test
+def test_nipy_4d_realign():
+    # Test nipy_4d_realign script
+    with InTemporaryDirectory() as tmpdir:
+        # Quotes in case of space in arguments
+        cmd = 'nipy_4d_realign 2.0 %s --slice_dim 2 --slice_dir -1 --save_path .' % funcfile
+        run_command(cmd)
