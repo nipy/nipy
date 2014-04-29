@@ -5,6 +5,8 @@ import numpy as np
 
 from nibabel import load, Nifti1Image
 
+from nipy.io.nibcompat import get_header, get_affine
+
 from . import discrete_domain as ddom
 
 
@@ -661,10 +663,10 @@ class SubDomains(object):
             # MROI object was defined on a masked image: we square it back.
             wdata = -np.ones(mask.shape, data.dtype)
             wdata[mask] = data
-            nim = Nifti1Image(wdata, tmp_image.get_affine())
+            nim = Nifti1Image(wdata, get_affine(tmp_image))
         # set description of the image
         if descrip is not None:
-            nim.get_header()['descrip'] = descrip
+            get_header(nim)['descrip'] = descrip
         return nim
 
     ###
@@ -757,7 +759,7 @@ def subdomain_from_image(mim, nn=18):
     else:
         iim = mim
 
-    return subdomain_from_array(iim.get_data(), iim.get_affine(), nn)
+    return subdomain_from_array(iim.get_data(), get_affine(iim), nn)
 
 
 def subdomain_from_position_and_image(nim, pos):
@@ -776,7 +778,7 @@ def subdomain_from_position_and_image(nim, pos):
     coord = np.array([tmp.domain.coord[tmp.label == k].mean(0)
                       for k in range(tmp.k)])
     idx = ((coord - pos) ** 2).sum(1).argmin()
-    return subdomain_from_array(nim.get_data() == idx, nim.get_affine())
+    return subdomain_from_array(nim.get_data() == idx, get_affine(nim))
 
 
 def subdomain_from_balls(domain, positions, radii):

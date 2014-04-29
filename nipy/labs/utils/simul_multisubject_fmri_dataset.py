@@ -10,7 +10,10 @@ Author : Bertrand Thirion, 2008-2010
 
 import numpy as np
 import scipy.ndimage as nd
+
 from nibabel import save, Nifti1Image
+
+from nipy.io.nibcompat import get_affine
 
 # definition of the maxima at the group level
 pos = np.array([[6, 7],
@@ -276,7 +279,7 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
 
     if mask is not None:
         shape = mask.shape
-        affine = mask.get_affine()
+        affine = get_affine(mask)
         mask_data = mask.get_data().astype('bool')
     else:
         affine = np.eye(4)

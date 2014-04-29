@@ -38,6 +38,7 @@ import scipy.stats as sps
 
 from nibabel import load, Nifti1Image
 
+from nipy.io.nibcompat import get_header, get_affine
 from nipy.labs.mask import compute_mask_sessions
 from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
 from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
@@ -481,7 +482,7 @@ class FMRILinearModel(object):
             else:
                 self.fmri_data.append(fmri_run)
         # set self.affine as the affine of the first image
-        self.affine = self.fmri_data[0].get_affine()
+        self.affine = get_affine(self.fmri_data[0])
 
         # load the designs
         for design_matrix in design_matrices:
@@ -609,7 +610,7 @@ class FMRILinearModel(object):
                     result_map[mask] = np.squeeze(
                         getattr(contrast_, estimate))
                 output = Nifti1Image(result_map, self.affine)
-                output.get_header()['descrip'] = (
+                get_header(output)['descrip'] = (
                     '%s associated with contrast %s' % (descrip, con_id))
                 output_images.append(output)
         return output_images

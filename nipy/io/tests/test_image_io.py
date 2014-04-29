@@ -117,8 +117,10 @@ def test_scaling_io_dtype():
                     continue
                 rel_err = abs_err / data[nzs]
                 if np.dtype(out_type).kind in 'iu':
-                    slope, inter = hdr.get_slope_inter()
-                    abs_err_thresh = slope / 2.0
+                    # Read slope from input header
+                    with open('img.nii', 'rb') as fobj:
+                        orig_hdr = hdr.from_fileobj(fobj)
+                    abs_err_thresh = orig_hdr['scl_slope'] / 2.0
                     rel_err_thresh = ulp1_f32
                 elif np.dtype(out_type).kind == 'f':
                     abs_err_thresh = big_bad_ulp(data.astype(out_type))[nzs]
