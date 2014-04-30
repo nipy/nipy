@@ -46,7 +46,7 @@ def prepare_imports():
     except ImportError:
         pass
     else:
-        mpl.use('svg')
+        mpl.use('agg')
 
 
 class NipyNoseTester(NoseTester):
