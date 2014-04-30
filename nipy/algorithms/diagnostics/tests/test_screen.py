@@ -128,8 +128,10 @@ def test_screen_slice_axis():
         # Now the analysis works without warning
         res = screen(explicit_img)
         # And is the expected analysis
-        assert_array_equal(pca_pos(res['pca'].get_data()),
-                           pca_pos(exp_res['pca'].get_data()))
+        # Very oddly on scipy 0.9 32 bit - at least - results differ between
+        # runs, so we need assert_almost_equal
+        assert_almost_equal(pca_pos(res['pca'].get_data()),
+                            pca_pos(exp_res['pca'].get_data()))
         assert_array_equal(res['ts_res']['slice_mean_diff2'],
                            exp_res['ts_res']['slice_mean_diff2'])
         # Turn off warnings, also get expected analysis
