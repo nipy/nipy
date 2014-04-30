@@ -106,6 +106,16 @@ def test_screen():
     assert_raises(AssertionError, _check_ts, res, data, 3, 2)
 
 
+def pca_pos(data4d):
+    """ Flips signs equal over volume for PCA
+
+    Needed because Windows appears to generate random signs for PCA components
+    across PCA runs on the same data.
+    """
+    signs = np.sign(data4d[0, 0, 0, :])
+    return data4d * signs
+
+
 def test_screen_slice_axis():
     img = ni.load_image(funcfile)
     # Default screen raises a FutureWarning because of the default slice_axis
@@ -118,7 +128,8 @@ def test_screen_slice_axis():
         # Now the analysis works without warning
         res = screen(explicit_img)
         # And is the expected analysis
-        assert_array_equal(res['pca'].get_data(), exp_res['pca'].get_data())
+        assert_array_equal(pca_pos(res['pca'].get_data()),
+                           pca_pos(exp_res['pca'].get_data()))
         assert_array_equal(res['ts_res']['slice_mean_diff2'],
                            exp_res['ts_res']['slice_mean_diff2'])
         # Turn off warnings, also get expected analysis
