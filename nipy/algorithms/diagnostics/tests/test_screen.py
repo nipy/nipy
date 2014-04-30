@@ -24,12 +24,8 @@ from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_almost_equal, decorators)
 
-from nibabel.optpkg import optional_package
-
-matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
-needs_mpl = decorators.skipif(not HAVE_MPL, "Test needs matplotlib")
-
 from nipy.testing import funcfile
+from nipy.testing.decorators import needs_mpl_agg
 
 
 def _check_pca(res, pca_res):
@@ -132,7 +128,7 @@ def test_screen_slice_axis():
                            exp_res['ts_res']['slice_mean_diff2'])
 
 
-@needs_mpl
+@needs_mpl_agg
 def test_write_screen_res():
     img = ni.load_image(funcfile)
     with InTemporaryDirectory():

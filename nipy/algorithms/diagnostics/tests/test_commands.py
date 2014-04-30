@@ -16,18 +16,15 @@ from nipy.io.nifti_ref import NiftiError
 from ..commands import parse_fname_axes, tsdiffana, diagnose
 from ..timediff import time_slice_diffs_image
 
-from numpy.testing import (assert_almost_equal, assert_array_equal, decorators)
-
-from nibabel.optpkg import optional_package
-
-matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
-needs_mpl = decorators.skipif(not HAVE_MPL, "Test needs matplotlib")
+from numpy.testing import (assert_almost_equal, assert_array_equal)
 
 from nose import SkipTest
 from nose.tools import (assert_true, assert_false, assert_raises,
                         assert_equal, assert_not_equal)
 
 from nipy.testing import funcfile
+from nipy.testing.decorators import needs_mpl_agg
+
 
 def test_parse_fname_axes():
     # Test logic for setting time and slice axis defaults
@@ -116,7 +113,7 @@ def check_axes(axes, img_shape, time_axis, slice_axis):
                        [0, img_shape[slice_axis]-1])
 
 
-@needs_mpl
+@needs_mpl_agg
 def test_tsdiffana():
     # Test tsdiffana command
     args = Args()
@@ -215,7 +212,7 @@ def check_diag_results(results, img_shape,
     assert_equal(vars['slice_mean_diff2'].shape, (T-1, S))
 
 
-@needs_mpl
+@needs_mpl_agg
 def test_diagnose():
     args = Args()
     img = load_image(funcfile)
