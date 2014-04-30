@@ -16,6 +16,7 @@ For a demo, see the 'demo_plot_map' function.
 # Standard library imports
 import warnings
 import operator
+import numbers
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
@@ -31,7 +32,7 @@ except ImportError:
 
 from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
 from .coord_tools import (coord_transform,
-                          get_cut_coords
+                          find_maxsep_cut_coords
                           )
 
 from .slicers import SLICERS, _xyz_order
@@ -43,11 +44,12 @@ from edge_detect import _fast_abs_percentile
 
 
 def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
-                    slicer='ortho', figure=None, axes=None, title=None,
-                    threshold=None, annotate=True, draw_cross=True,
-                    do3d=False, threshold_3d=None,
-                    view_3d=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
-                    black_bg=False, **kwargs):
+             slicer='ortho',
+             figure=None, axes=None, title=None,
+             threshold=None, annotate=True, draw_cross=True,
+             do3d=False, threshold_3d=None,
+             view_3d=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
+             black_bg=False, **kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
 
         Parameters
@@ -56,19 +58,21 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             The activation map, as a 3D image.
         affine : 4x4 ndarray
             The affine matrix going from image voxel space to MNI space.
-        cut_coords: None, or a tuple of floats
+        cut_coords: None, int, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
             If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
             For slicer == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
-            If None is given, the cuts is calculated automaticaly.
+            If None or an int is given, then a maximally separated sequence (
+            with exactly cut_coords elements if cut_coords is not None) of
+            cut coordinates along the slicer axis is computed automatically
         anat : 3D ndarray or False, optional
             The anatomical image to be used as a background. If None, the
             MNI152 T1 1mm template is used. If False, no anat is displayed.
         anat_affine : 4x4 ndarray, optional
-            The affine matrix going from the anatomical image voxel space to 
-            MNI space. This parameter is not used when the default 
+            The affine matrix going from the anatomical image voxel space to
+            MNI space. This parameter is not used when the default
             anatomical is used, but it is compulsory when using an
             explicite anatomical image.
         slicer: {'ortho', 'x', 'y', 'z'}
@@ -152,15 +156,18 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             warnings.warn('Mayavi > 3.x not installed, plotting only 2D')
             do3d = False
 
-    if cut_coords is None and slicer in 'xyz':
-        cut_coords = get_cut_coords(map)
+    if (cut_coords is None or isinstance(cut_coords, numbers.Number)
+        ) and slicer in ['x', 'y', 'z']:
+        cut_coords = find_maxsep_cut_coords(map, affine, slicer=slicer,
+                                            threshold=threshold,
+                                            n_cuts=cut_coords)
 
     slicer = SLICERS[slicer].init_with_figure(data=map, affine=affine,
-                                          threshold=threshold,
-                                          cut_coords=cut_coords,
-                                          figure=figure, axes=axes,
-                                          black_bg=black_bg,
-                                          leave_space=do3d)
+                                              threshold=threshold,
+                                              cut_coords=cut_coords,
+                                              figure=figure, axes=axes,
+                                              black_bg=black_bg,
+                                              leave_space=do3d)
 
     # Use Mayavi for the 3D plotting
     if do3d:
@@ -368,5 +375,3 @@ def demo_plot_map(do3d=False, **kwargs):
     return plot_map(map, mni_sform, threshold='auto',
                         title="Broca's area", do3d=do3d,
                         **kwargs)
-
-

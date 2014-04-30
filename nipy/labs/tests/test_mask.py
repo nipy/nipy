@@ -12,11 +12,10 @@ import nibabel as nib
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from .. import mask as nnm
-from ..mask import largest_cc, threshold_connect_components, \
-        series_from_mask
+from ..mask import (largest_cc, threshold_connect_components, series_from_mask)
 
-from nipy.testing import assert_equal, assert_true, \
-    assert_array_equal, anatfile, assert_false
+from nipy.testing import (assert_equal, assert_true, assert_array_equal,
+                          anatfile, assert_false)
 
 
 def test_largest_cc():
@@ -24,10 +23,10 @@ def test_largest_cc():
     """
     a = np.zeros((6, 6, 6))
     a[1:3, 1:3, 1:3] = 1
-    yield assert_equal, a, largest_cc(a)
+    assert_equal(a, largest_cc(a))
     b = a.copy()
     b[5, 5, 5] = 1
-    yield assert_equal, a, largest_cc(b)
+    assert_equal(a, largest_cc(b))
 
 
 def test_threshold_connect_components():
@@ -35,10 +34,10 @@ def test_threshold_connect_components():
     a[0, 0] = 1
     a[3, 4] = 1
     a = threshold_connect_components(a, 2)
-    yield assert_true, np.all(a == 0)
+    assert_true(np.all(a == 0))
     a[0, 0:3] = 1
     b = threshold_connect_components(a, 2)
-    yield assert_true, np.all(a == b)
+    assert_true(np.all(a == b))
 
 
 def test_mask():
@@ -49,22 +48,22 @@ def test_mask():
     mask2 = nnm.compute_mask(mean_image, exclude_zeros=True)
     # With an array with no zeros, exclude_zeros should not make
     # any difference
-    yield assert_array_equal, mask1, mask2
+    assert_array_equal(mask1, mask2)
     # Check that padding with zeros does not change the extracted mask
     mean_image2 = np.zeros((30, 30))
     mean_image2[:9, :9] = mean_image
     mask3 = nnm.compute_mask(mean_image2, exclude_zeros=True)
-    yield assert_array_equal, mask1, mask3[:9, :9]
+    assert_array_equal(mask1, mask3[:9, :9])
     # However, without exclude_zeros, it does
     mask3 = nnm.compute_mask(mean_image2)
-    yield assert_false, np.allclose(mask1, mask3[:9, :9])
+    assert_false(np.allclose(mask1, mask3[:9, :9]))
     # check that  opening is 2 by default
     mask4 = nnm.compute_mask(mean_image, exclude_zeros=True, opening=2)
-    yield assert_array_equal, mask1, mask4
+    assert_array_equal(mask1, mask4)
     # check that opening has an effect
     mask5 = nnm.compute_mask(mean_image, exclude_zeros=True, opening=0)
-    yield assert_true, mask5.sum() > mask4.sum()
-    
+    assert_true(mask5.sum() > mask4.sum())
+
 
 def test_mask_files():
     with InTemporaryDirectory():
@@ -82,8 +81,8 @@ def test_mask_files():
         # and mask from identical list of 3D files
         msk2, mean2 = nnm.compute_mask_files([anatfile, anatfile],
                                              return_mean=True)
-        yield assert_array_equal, msk1, msk2
-        yield assert_array_equal, mean1, mean2
+        assert_array_equal(msk1, msk2)
+        assert_array_equal(mean1, mean2)
 
 
 def test_series_from_mask():

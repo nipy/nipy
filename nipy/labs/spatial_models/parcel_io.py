@@ -11,10 +11,18 @@ import os.path
 
 from nibabel import load, save, Nifti1Image
 
+from nipy.io.nibcompat import get_header, get_affine
 from nipy.algorithms.clustering.utils import kmeans
 from .discrete_domain import grid_domain_from_image
 from .mroi import SubDomains
 from ..mask import intersect_masks
+
+from warnings import warn
+
+warn('Module nipy.labs.spatial_models.parcel_io' + 
+     'deprecated, will be removed',
+     FutureWarning,
+     stacklevel=2)
 
 
 def mask_parcellation(mask_images, nb_parcel, threshold=0, output_image=None):
@@ -43,7 +51,7 @@ def mask_parcellation(mask_images, nb_parcel, threshold=0, output_image=None):
         # mask_images should be a list
         mask_data = intersect_masks(mask_images, threshold=0) > 0
         mask = Nifti1Image(mask_data.astype('u8'),
-                           load(mask_images[0]).get_affine())
+                           get_affine(load(mask_images[0])))
 
     domain = grid_domain_from_image(mask)
     cent, labels, J = kmeans(domain.coord, nb_parcel)
@@ -89,7 +97,7 @@ def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
         # mask_images should be a list
         grp_mask = intersect_masks(mask_images, threshold=ths) > 0
         mask = Nifti1Image(grp_mask.astype('u8'),
-                           load(mask_images[0]).get_affine())
+                           get_affine(load(mask_images[0])))
 
     # build the domain
     domain = grid_domain_from_image(mask, nn=6)
@@ -222,7 +230,7 @@ def parcellation_based_analysis(Pa, test_images, test_id='one_sample',
     template = SubDomains(Pa.domain, Pa.template_labels)
     template.set_roi_feature('prfx', prfx)
     wim = template.to_image('prfx', roi=True)
-    hdr = wim.get_header()
+    hdr = get_header(wim)
     hdr['descrip'] = 'parcel-based random effects image (in t-variate)'
     if rfx_path is not None:
         save(wim, rfx_path)

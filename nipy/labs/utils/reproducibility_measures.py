@@ -19,6 +19,8 @@ Bertrand Thirion, 2009-2010
 """
 
 import numpy as np
+
+from nipy.io.nibcompat import get_affine
 from nipy.labs.spatial_models.discrete_domain import \
     grid_domain_from_binary_array
 
@@ -669,7 +671,7 @@ def group_reproducibility_metrics(
     nsubj = len(contrast_images)
 
     # compute the group mask
-    affine = load(mask_images[0]).get_affine()
+    affine = get_affine(load(mask_images[0]))
     mask = intersect_masks(mask_images, threshold=0) > 0
     domain = grid_domain_from_binary_array(mask, affine)
 

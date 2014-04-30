@@ -1,9 +1,10 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import with_statement
+from os.path import dirname, join as pjoin
 
 import numpy as np
 
+import nibabel as nib
 from nibabel.spatialimages import ImageFileError, HeaderDataError
 from nibabel import Nifti1Header
 
@@ -116,8 +117,10 @@ def test_scaling_io_dtype():
                     continue
                 rel_err = abs_err / data[nzs]
                 if np.dtype(out_type).kind in 'iu':
-                    slope, inter = hdr.get_slope_inter()
-                    abs_err_thresh = slope / 2.0
+                    # Read slope from input header
+                    with open('img.nii', 'rb') as fobj:
+                        orig_hdr = hdr.from_fileobj(fobj)
+                    abs_err_thresh = orig_hdr['scl_slope'] / 2.0
                     rel_err_thresh = ulp1_f32
                 elif np.dtype(out_type).kind == 'f':
                     abs_err_thresh = big_bad_ulp(data.astype(out_type))[nzs]
@@ -260,3 +263,10 @@ def test_as_image():
     assert_equal(img.affine, img1.affine)
     assert_array_equal(img.get_data(), img1.get_data())
     assert_true(img is img2)
+
+
+def test_no_minc():
+    # We can't yet get good axis names for MINC files. Check we reject these
+    assert_raises(ValueError, load_image, 'nofile.mnc')
+    data_path = pjoin(dirname(nib.__file__), 'tests', 'data')
+    assert_raises(ValueError, load_image, pjoin(data_path, 'tiny.mnc'))

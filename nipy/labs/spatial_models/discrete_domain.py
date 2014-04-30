@@ -11,8 +11,9 @@ import scipy.sparse as sp
 
 from nibabel import load, Nifti1Image, save
 
-from nipy.algorithms.graph import WeightedGraph, wgraph_from_coo_matrix, \
-    wgraph_from_3d_grid
+from nipy.io.nibcompat import get_header, get_affine
+from nipy.algorithms.graph import (WeightedGraph, wgraph_from_coo_matrix,
+                                   wgraph_from_3d_grid)
 
 ##############################################################
 # Ancillary functions
@@ -236,7 +237,7 @@ def domain_from_image(mim, nn=18):
         iim = load(mim)
     else:
         iim = mim
-    return domain_from_binary_array(iim.get_data(), iim.get_affine(), nn)
+    return domain_from_binary_array(iim.get_data(), get_affine(iim), nn)
 
 
 def grid_domain_from_binary_array(mask, affine=None, nn=0):
@@ -286,7 +287,7 @@ def grid_domain_from_image(mim, nn=18):
         iim = load(mim)
     else:
         iim = mim
-    return grid_domain_from_binary_array(iim.get_data(), iim.get_affine(), nn)
+    return grid_domain_from_binary_array(iim.get_data(), get_affine(iim), nn)
 
 
 def grid_domain_from_shape(shape, affine=None):
@@ -753,8 +754,8 @@ class NDGridDomain(StructuredDomain):
             wdata[wdata > 0] = data
 
         nim = Nifti1Image(wdata, self.affine)
-        nim.get_header()['descrip'] = 'mask image representing domain %s' \
-            % self.id
+        get_header(nim)['descrip'] = ('mask image representing domain %s'
+                                      % self.id)
         if path is not None:
             save(nim, path)
         return nim
@@ -780,7 +781,7 @@ class NDGridDomain(StructuredDomain):
         else:
             nim = path
 
-        if (nim.get_affine() != self.affine).any():
+        if (get_affine(nim) != self.affine).any():
             raise ValueError('nim and self do not have the same referential')
 
         data = nim.get_data()

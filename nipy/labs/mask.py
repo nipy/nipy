@@ -11,8 +11,8 @@ from scipy import ndimage
 
 # Neuroimaging libraries imports
 from nibabel import load, nifti1, save
-from nibabel.loadsave import read_img_data
 
+from ..io.nibcompat import get_header, get_affine, get_unscaled_data
 
 ###############################################################################
 # Operating on connect component
@@ -38,7 +38,7 @@ def largest_cc(mask):
         raise ValueError('No non-zero values: no connected components')
     if label_nb == 1:
         return mask.astype(np.bool)
-    label_count = np.bincount(labels.ravel())
+    label_count = np.bincount(labels.ravel().astype(np.int))
     # discard 0 the 0 label
     label_count[0] = 0
     return labels == label_count.argmax()
@@ -125,9 +125,9 @@ def compute_mask_files(input_filename, output_filename=None,
     if isinstance(input_filename, basestring):
         # One single filename or image
         nim = load(input_filename)  # load the image from the path
-        vol_arr = read_img_data(nim, prefer='unscaled')
-        header = nim.get_header()
-        affine = nim.get_affine()
+        vol_arr = get_unscaled_data(nim)
+        header = get_header(nim)
+        affine = get_affine(nim)
         if vol_arr.ndim == 4:
             if isinstance(vol_arr, np.memmap):
                 # Get rid of memmapping: it is faster.
@@ -157,8 +157,8 @@ def compute_mask_files(input_filename, output_filename=None,
             if index == 0:
                 first_volume = nim.get_data().squeeze()
                 mean_volume = first_volume.copy().astype(np.float32)
-                header = nim.get_header()
-                affine = nim.get_affine()
+                header = get_header(nim)
+                affine = get_affine(nim)
             else:
                 mean_volume += nim.get_data().squeeze()
         mean_volume /= float(len(list(input_filename)))
@@ -387,8 +387,8 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
     if output_filename is not None:
         if isinstance(input_masks[0], basestring):
             nim = load(input_masks[0])
-            header = nim.get_header()
-            affine = nim.get_affine()
+            header = get_header(nim)
+            affine = get_affine(nim)
         else:
             header = dict()
             affine = np.eye(4)
@@ -445,13 +445,13 @@ def series_from_mask(filenames, mask, dtype=np.float32,
     if isinstance(filenames, basestring):
         # We have a 4D nifti file
         data_file = load(filenames)
-        header = data_file.get_header()
+        header = get_header(data_file)
         series = data_file.get_data()
         if ensure_finite:
             # SPM tends to put NaNs in the data outside the brain
             series[np.logical_not(np.isfinite(series))] = 0
         series = series.astype(dtype)
-        affine = data_file.get_affine()[:3, :3]
+        affine = get_affine(data_file)[:3, :3]
         del data_file
         if isinstance(series, np.memmap):
             series = np.asarray(series).copy()
@@ -473,7 +473,7 @@ def series_from_mask(filenames, mask, dtype=np.float32,
                 data[np.logical_not(np.isfinite(data))] = 0
             data = data.astype(dtype)
             if smooth is not False:
-                affine = data_file.get_affine()[:3, :3]
+                affine = get_affine(data_file)[:3, :3]
                 vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
                 smooth_sigma = smooth / vox_size
                 data = ndimage.gaussian_filter(data, smooth_sigma)
@@ -482,6 +482,6 @@ def series_from_mask(filenames, mask, dtype=np.float32,
             # Free memory early
             del data
             if index == 0:
-                header = data_file.get_header()
+                header = get_header(data_file)
 
     return series, header
