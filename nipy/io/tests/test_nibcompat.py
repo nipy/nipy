@@ -61,5 +61,6 @@ def test_unscaled_data():
                 raw_back = header_copy.raw_data_from_fileobj(fobj)
             unscaled = get_unscaled_data(img_back)
             assert_array_equal(unscaled, raw_back)
-            assert_true(np.allclose(unscaled * slope + inter,
-                                    data_back))
+            assert_true(np.allclose(unscaled * slope + inter, data_back))
+            # delete objects to allow file deletion on Windows
+            del raw_back, unscaled
