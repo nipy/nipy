@@ -108,7 +108,7 @@ class CutAxes(object):
         elif self.direction == 'x':
             cut = np.rot90(map[x_map, :, :])
         elif self.direction == 'z':
-            cut = np.rot90(map[:, :, z_map])
+            cut = np.rot90(map[::-1, :, z_map])
         else:
             raise ValueError('Invalid value for direction %s' %
                              self.direction)
@@ -161,7 +161,7 @@ class CutAxes(object):
         if self.direction == 'x':
             return
         ax = self.ax
-        ax.text(.1, .95, 'L',
+        ax.text(.1, .95, 'R',
                 transform=ax.transAxes,
                 horizontalalignment='left',
                 verticalalignment='top',
@@ -170,7 +170,7 @@ class CutAxes(object):
                             ec=bg_color, fc=bg_color, alpha=1),
                 **kwargs)
 
-        ax.text(.9, .95, 'R',
+        ax.text(.9, .95, 'L',
                 transform=ax.transAxes,
                 horizontalalignment='right',
                 verticalalignment='top',
