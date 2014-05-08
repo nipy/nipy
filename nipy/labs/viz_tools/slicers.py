@@ -137,10 +137,10 @@ class CutAxes(object):
             raise ValueError('Invalid value for direction %s' %
                              self.direction)
         ax = self.ax
-        if self.direction == 'z':
-            getattr(ax, type)(cut, extent=(xmax, xmin, zmin, zmax), **kwargs)
-        else:
+        if self.direction == 'x':
             getattr(ax, type)(cut, extent=(xmin, xmax, zmin, zmax), **kwargs)
+        else:
+            getattr(ax, type)(cut, extent=(xmax, xmin, zmin, zmax), **kwargs)
 
         self._object_bounds.append((xmin_, xmax_, zmin_, zmax_))
         ax.axis(self.get_object_bounds())
