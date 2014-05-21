@@ -22,6 +22,7 @@ Author: Bertrand Thirion, 2009-2011
 import numpy as np
 
 from ...utils.compat3 import open4csv
+import warnings
 
 ##########################################################
 # Paradigm handling
@@ -51,11 +52,16 @@ class Paradigm(object):
             try:
                 # this is only for backward compatibility:
                 #if con_id were integers, they become a string
+                warnings.warn(
+                    'The behavior will change,' +
+                    'prepending by a c will disappear in the future')
                 self.con_id = np.array(['c' + str(int(float(c)))
-                                        for c in con_id])
+                                         for c in con_id])
             except:
                 self.con_id = np.ravel(np.array(con_id)).astype('str')
-
+            # the following line should replace the try.. except statement
+            # self.con_id = np.ravel(np.array(con_id)).astype('str')
+            
         if onset is not None:
             if len(onset) != self.n_events:
                 raise ValueError(
