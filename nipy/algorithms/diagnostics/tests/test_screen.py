@@ -24,12 +24,8 @@ from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_almost_equal, decorators)
 
-from nibabel.optpkg import optional_package
-
-matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
-needs_mpl = decorators.skipif(not HAVE_MPL, "Test needs matplotlib")
-
 from nipy.testing import funcfile
+from nipy.testing.decorators import needs_mpl_agg
 
 
 def _check_pca(res, pca_res):
@@ -110,6 +106,16 @@ def test_screen():
     assert_raises(AssertionError, _check_ts, res, data, 3, 2)
 
 
+def pca_pos(data4d):
+    """ Flips signs equal over volume for PCA
+
+    Needed because Windows appears to generate random signs for PCA components
+    across PCA runs on the same data.
+    """
+    signs = np.sign(data4d[0, 0, 0, :])
+    return data4d * signs
+
+
 def test_screen_slice_axis():
     img = ni.load_image(funcfile)
     # Default screen raises a FutureWarning because of the default slice_axis
@@ -122,7 +128,10 @@ def test_screen_slice_axis():
         # Now the analysis works without warning
         res = screen(explicit_img)
         # And is the expected analysis
-        assert_array_equal(res['pca'].get_data(), exp_res['pca'].get_data())
+        # Very oddly on scipy 0.9 32 bit - at least - results differ between
+        # runs, so we need assert_almost_equal
+        assert_almost_equal(pca_pos(res['pca'].get_data()),
+                            pca_pos(exp_res['pca'].get_data()))
         assert_array_equal(res['ts_res']['slice_mean_diff2'],
                            exp_res['ts_res']['slice_mean_diff2'])
         # Turn off warnings, also get expected analysis
@@ -132,7 +141,7 @@ def test_screen_slice_axis():
                            exp_res['ts_res']['slice_mean_diff2'])
 
 
-@needs_mpl
+@needs_mpl_agg
 def test_write_screen_res():
     img = ni.load_image(funcfile)
     with InTemporaryDirectory():
