@@ -189,6 +189,7 @@ class Realign4dAlgorithm(object):
                  transforms=None,
                  time_interp=True,
                  subsampling=(1, 1, 1),
+                 borders=(1, 1, 1),
                  optimizer='ncg',
                  optimize_template=True,
                  xtol=XTOL,
@@ -201,7 +202,7 @@ class Realign4dAlgorithm(object):
 
         self.dims = im4d.get_shape()
         self.nscans = self.dims[3]
-        self.xyz = make_grid(self.dims[0:3], subsampling, (1, 1, 1))
+        self.xyz = make_grid(self.dims[0:3], subsampling, borders)
         masksize = self.xyz.shape[0]
         self.data = np.zeros([masksize, self.nscans], dtype='double')
 
@@ -492,6 +493,7 @@ def single_run_realign4d(im4d,
                          time_interp=True,
                          loops=5,
                          speedup=5,
+                         borders=(1, 1, 1),
                          optimizer='ncg',
                          xtol=XTOL,
                          ftol=FTOL,
@@ -545,6 +547,7 @@ def single_run_realign4d(im4d,
                                affine_class=affine_class,
                                time_interp=time_interp,
                                subsampling=subsampling,
+                               borders=borders,
                                refscan=refscan,
                                optimizer=optimizer_,
                                xtol=xtol_,
@@ -571,6 +574,7 @@ def realign4d(runs,
               loops=5,
               between_loops=5,
               speedup=5,
+              borders=(1, 1, 1),
               optimizer='ncg',
               xtol=XTOL,
               ftol=FTOL,
@@ -608,6 +612,7 @@ def realign4d(runs,
                                        time_interp=time_interp,
                                        loops=loops,
                                        speedup=speedup,
+                                       borders=borders,
                                        optimizer=optimizer,
                                        xtol=xtol,
                                        ftol=ftol,
@@ -650,6 +655,7 @@ def realign4d(runs,
                                         time_interp=False,
                                         loops=between_loops,
                                         speedup=speedup,
+                                        borders=borders,
                                         optimizer=optimizer,
                                         xtol=xtol,
                                         ftol=ftol,
@@ -739,6 +745,7 @@ class Realign4d(object):
                  between_loops=None,
                  align_runs=True,
                  speedup=5,
+                 borders=(1, 1, 1),
                  optimizer='ncg',
                  xtol=XTOL,
                  ftol=FTOL,
@@ -787,6 +794,17 @@ class Realign4d(object):
             correspond to any particular scan. Note that the
             coordinate system associated with the first run is always
             used for between-run motion estimation.
+        borders : sequence of ints
+            Should be of length 3. Determines the field of view for
+            motion estimation in terms of the number of slices at each
+            extremity of the reference grid that are ignored for
+            motion parameter estimation. For instance,
+            ``borders``==(1,1,1) means that the realignment cost
+            function will not take into account voxels located in the
+            first and last axial/sagittal/coronal slices in the
+            reference grid. Please note that this choice only affects
+            parameter estimation but does not affect image resampling
+            in any way, see ``resample`` method.
         """
         if between_loops == None:
             between_loops = loops
