@@ -116,18 +116,14 @@ import numpy as np
 from scipy.linalg import pinv
 
 import sympy
-
-from distutils.version import LooseVersion
-SYMPY_0p6 = LooseVersion(sympy.__version__) < LooseVersion('0.7.0')
+from sympy import Dummy, default_sort_key
+from sympy.utilities.lambdify import (implemented_function, lambdify)
 
 from nipy.utils.compat3 import to_str
 
-from nipy.fixes.sympy.utilities.lambdify import (implemented_function,
-                                                 lambdify)
-
 from nipy.algorithms.utils.matrices import matrix_rank, full_rank
 
-
+@np.deprecate(message = "Please use sympy.Dummy instead of this function")
 def make_dummy(name):
     """ Make dummy variable of given name
 
@@ -142,11 +138,11 @@ def make_dummy(name):
 
     Notes
     -----
-    The interface to Dummy changed between 0.6.7 and 0.7.0
+    The interface to Dummy changed between 0.6.7 and 0.7.0, and we used this
+    function to keep compatibility. Now we depend on sympy 0.7.0 and this
+    function is obsolete.
     """
-    if SYMPY_0p6:
-        return sympy.Symbol(name, dummy=True)
-    return sympy.Dummy(name)
+    return Dummy(name)
 
 
 def define(*args, **kwargs):
@@ -228,13 +224,8 @@ def terms(names, **kwargs):
     >>> terms('abc')
     abc
     '''
-    if (SYMPY_0p6
-        and isinstance(names, basestring)
-        and not set(', ').intersection(names)):
-        if not kwargs.get('each_char', False):
-            # remove each_char (or no-op if absent)
-            kwargs.pop('each_char', None)
-            names = (names,)
+    if 'each_char' in kwargs:
+        raise TypeError('deprecated "each_char" kwarg removed in sympy>0.7.3')
     syms = sympy.symbols(names, **kwargs)
     try:
         len(syms)
@@ -293,7 +284,7 @@ def getparams(expression):
     >>> f.mean*sympy.exp(th)
     (_b0*x + _b1*y + _b2*z)*exp(theta)
     >>> getparams(f.mean*sympy.exp(th))
-    [theta, _b0, _b1, _b2]
+    [_b0, _b1, _b2, theta]
     """
     atoms = set([])
     expression = np.array(expression)
@@ -307,7 +298,7 @@ def getparams(expression):
     for atom in atoms:
         if isinstance(atom, sympy.Symbol) and not is_term(atom):
             params.append(atom)
-    params.sort()
+    params.sort(key=default_sort_key)
     return params
 
 
@@ -335,7 +326,7 @@ def getterms(expression):
     for atom in atoms:
         if is_term(atom):
             terms.append(atom)
-    terms.sort()
+    terms.sort(key=default_sort_key)
     return terms
 
 
@@ -477,7 +468,7 @@ class Formula(object):
                     "variables in front.")
 
     def _getdiff(self):
-        params = sorted(list(set(getparams(self.mean))))
+        params = sorted(list(set(getparams(self.mean))), key=default_sort_key)
         return [sympy.diff(self.mean, p).doit() for p in params]
     design_expr = property(_getdiff)
 
@@ -575,11 +566,11 @@ class Formula(object):
         >>> f1 = Formula([x,y,z])
         >>> f2 = Formula([y])+I
         >>> f3=f1+f2
-        >>> sorted(f1.terms)
+        >>> sorted(f1.terms, key=default_sort_key)
         [x, y, z]
-        >>> sorted(f2.terms)
+        >>> sorted(f2.terms, key=default_sort_key)
         [1, y]
-        >>> sorted(f3.terms)
+        >>> sorted(f3.terms, key=default_sort_key)
         [1, x, y, y, z]
         """
         if not is_formula(other):
@@ -636,7 +627,8 @@ class Formula(object):
                     v.append(Term.__mul__(oterm, sterm))
                 else:
                     v.append(sterm*oterm)
-        return Formula(tuple(np.unique(v)))
+        terms = sorted(set(v), key=default_sort_key)
+        return Formula(tuple(terms))
 
     def __eq__(self, other):
         s = np.array(self)
@@ -692,7 +684,7 @@ class Formula(object):
         params = getparams(self.design_expr)
         newparams = []
         for i, p in enumerate(params):
-            newp = make_dummy("__p%d__" % (i + random_offset))
+            newp = Dummy("__p%d__" % (i + random_offset))
             for j, _ in enumerate(d):
                 d[j] = d[j].subs(p, newp)
             newparams.append(newp)
@@ -1197,7 +1189,7 @@ class RandomEffects(Formula):
 
         self._counter = 0
         if sigma is None:
-            self.sigma = np.diag([make_dummy('s2_%d' % i) for i in range(q)])
+            self.sigma = np.diag([Dummy('s2_%d' % i) for i in range(q)])
         else:
             self.sigma = sigma
         if self.sigma.shape != (q,q):

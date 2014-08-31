@@ -22,6 +22,7 @@ from ...core.reference.spaces import (unknown_csm, scanner_csm, aligned_csm,
 
 from ..files import load
 from ..nifti_ref import (nipy2nifti, nifti2nipy, NiftiError)
+from ..nibcompat import get_header, get_affine
 
 from nose.tools import assert_equal, assert_true, assert_false, assert_raises
 from numpy.testing import assert_almost_equal, assert_array_equal
@@ -56,7 +57,7 @@ def test_basic_nipy2nifti():
     # Put in some information to check header is preserved
     hdr['slice_duration'] = 0.25
     ni_img = nipy2nifti(fimg)
-    new_hdr = ni_img.get_header()
+    new_hdr = get_header(ni_img)
     # header copied on the way through
     assert_false(hdr is new_hdr)
     # Check information preserved
@@ -118,7 +119,15 @@ def test_unknown():
     displaced_img.coordmap.affine[:] = bare_affine
     assert_true(np.allclose(bare_affine, displaced_img.coordmap.affine))
     nimg = nipy2nifti(displaced_img)
-    assert_array_equal(nimg.get_affine(), bare_affine)
+    assert_array_equal(get_affine(nimg), bare_affine)
+    # Get and check coordinate map
+    inimg = nifti2nipy(nimg)
+    assert_true(inimg.coordmap.function_range in unknown_space)
+    # This also so if there is no header
+    displaced_img.metadata.pop('header')
+    nimg = nipy2nifti(displaced_img)
+    assert_array_equal(get_affine(nimg), bare_affine)
+    # Get and check coordinate map
     inimg = nifti2nipy(nimg)
     assert_true(inimg.coordmap.function_range in unknown_space)
 
@@ -132,20 +141,20 @@ def test_orthogonal_dims():
     img = Image(data, vox2mni(aff))
     def as3d(aff):
         return from_matvec(aff[:3, :3], aff[:3, -1])
-    assert_array_equal(nipy2nifti(img).get_affine(), as3d(aff))
+    assert_array_equal(get_affine(nipy2nifti(img)), as3d(aff))
     # Non-orthogonal spatial dimensions OK
     aff[:3, :3] = np.random.normal(size=(3, 3))
     img = Image(data, vox2mni(aff))
-    assert_array_equal(nipy2nifti(img).get_affine(), as3d(aff))
+    assert_array_equal(get_affine(nipy2nifti(img)), as3d(aff))
     # Space must be orthogonal to time etc
     aff[0, 3] = 0.1
     assert_raises(NiftiError, nipy2nifti, img)
     aff[0, 3] = 0
-    assert_array_equal(nipy2nifti(img).get_affine(), as3d(aff))
+    assert_array_equal(get_affine(nipy2nifti(img)), as3d(aff))
     aff[3, 0] = 0.1
     assert_raises(NiftiError, nipy2nifti, img)
     aff[3, 0] = 0
-    assert_array_equal(nipy2nifti(img).get_affine(), as3d(aff))
+    assert_array_equal(get_affine(nipy2nifti(img)), as3d(aff))
     aff[4, 0] = 0.1
     assert_raises(NiftiError, nipy2nifti, img)
 
@@ -156,7 +165,7 @@ def test_dim_info():
     hdr = fimg.metadata['header']
     assert_equal(hdr.get_dim_info(), (None, None, None))
     ni_img = nipy2nifti(fimg)
-    assert_equal(ni_img.get_header().get_dim_info(), (None, None, None))
+    assert_equal(get_header(ni_img).get_dim_info(), (None, None, None))
     data = fimg.get_data()
     cmap = fimg.coordmap
     for i in range(3):
@@ -165,12 +174,12 @@ def test_dim_info():
             ni_img = nipy2nifti(Image(data, ncmap, {'header': hdr}))
             exp_info = [None, None, None]
             exp_info[order] = i
-            assert_equal(ni_img.get_header().get_dim_info(),
+            assert_equal(get_header(ni_img).get_dim_info(),
                          tuple(exp_info))
     ncmap = cmap.renamed_domain(
         dict(zip(range(3), ('phase', 'slice', 'freq'))))
     ni_img = nipy2nifti(Image(data, ncmap, {'header': hdr}))
-    assert_equal(ni_img.get_header().get_dim_info(), (2, 0, 1))
+    assert_equal(get_header(ni_img).get_dim_info(), (2, 0, 1))
 
 
 def test_time_like_matching():
@@ -259,10 +268,10 @@ def test_time_pixdims():
     mni_names = mni_csm(3).coord_names
     in_cs = CS('ikjlmn')
     cmap = AT(in_cs, CS(mni_names + tuple('tuv')), aff)
-    hdr = nipy2nifti(Image(data, cmap)).get_header()
+    hdr = get_header(nipy2nifti(Image(data, cmap)))
     assert_equal(hdr.get_zooms(), (3, 4, 5, 6, 7, 8))
     cmap = AT(in_cs, CS(mni_names + tuple('quv')), aff)
-    hdr = nipy2nifti(Image(data, cmap)).get_header()
+    hdr = get_header(nipy2nifti(Image(data, cmap)))
     assert_equal(hdr.get_zooms(), (3, 4, 5, 0, 6, 7, 8))
 
 
@@ -291,11 +300,11 @@ def test_xyzt_units():
     # That default survives nifti conversion
     for img in (img_t_in, img_t_out, img_t_b):
         ni_img = nipy2nifti(img)
-        assert_equal(ni_img.get_header().get_xyzt_units(), ('mm', 'sec'))
+        assert_equal(get_header(ni_img).get_xyzt_units(), ('mm', 'sec'))
     # Now with no time
     for img in (img_t_no, img_t_b[...,0]):
         ni_img = nipy2nifti(img)
-        assert_equal(ni_img.get_header().get_xyzt_units(), ('mm', 'unknown'))
+        assert_equal(get_header(ni_img).get_xyzt_units(), ('mm', 'unknown'))
     # Change to other time-like
     for units, name0, name1 in (('sec', 't', 'time'),
                                 ('hz', 'hz', 'frequency-hz'),
@@ -304,13 +313,13 @@ def test_xyzt_units():
         for name in (name0, name1):
             new_img = img_t_out.renamed_reference(t=name)
             ni_img = nipy2nifti(new_img)
-            assert_equal(ni_img.get_header().get_xyzt_units(), ('mm', units))
+            assert_equal(get_header(ni_img).get_xyzt_units(), ('mm', units))
             new_img = img_t_in.renamed_axes(t=name)
             ni_img = nipy2nifti(new_img)
-            assert_equal(ni_img.get_header().get_xyzt_units(), ('mm', units))
+            assert_equal(get_header(ni_img).get_xyzt_units(), ('mm', units))
             new_img = img_t_b.renamed_axes(t=name).renamed_reference(t=name)
             ni_img = nipy2nifti(new_img)
-            assert_equal(ni_img.get_header().get_xyzt_units(), ('mm', units))
+            assert_equal(get_header(ni_img).get_xyzt_units(), ('mm', units))
 
 
 def test_time_axes_4th():
@@ -325,17 +334,17 @@ def test_time_axes_4th():
         # Time-like in correct position
         ni_img = nipy2nifti(img)
         assert_array_equal(ni_img.get_data(), data)
-        assert_array_equal(ni_img.get_header().get_zooms(), (2, 3, 4, 5, 6, 7))
+        assert_array_equal(get_header(ni_img).get_zooms(), (2, 3, 4, 5, 6, 7))
         # Time-like needs reordering
         cmap = AT(in_cs, CS(xyz_names + ('q', time_like, 'r')), aff)
         ni_img = nipy2nifti(Image(data, cmap))
         assert_array_equal(ni_img.get_data(), np.rollaxis(data, 4, 3))
-        assert_array_equal(ni_img.get_header().get_zooms(), (2, 3, 4, 6, 5, 7))
+        assert_array_equal(get_header(ni_img).get_zooms(), (2, 3, 4, 6, 5, 7))
         # And again
         cmap = AT(in_cs, CS(xyz_names + ('q', 'r', time_like)), aff)
         ni_img = nipy2nifti(Image(data, cmap))
         assert_array_equal(ni_img.get_data(), np.rollaxis(data, 5, 3))
-        assert_array_equal(ni_img.get_header().get_zooms(), (2, 3, 4, 7, 5, 6))
+        assert_array_equal(get_header(ni_img).get_zooms(), (2, 3, 4, 7, 5, 6))
 
 
 def test_save_toffset():
@@ -349,11 +358,11 @@ def test_save_toffset():
     for t_name in 't', 'time':
         cmap = AT(in_cs, CS(xyz_names + (t_name, 'q', 'r')), aff)
         ni_img = nipy2nifti(Image(data, cmap))
-        assert_equal(ni_img.get_header()['toffset'], 14)
+        assert_equal(get_header(ni_img)['toffset'], 14)
     for time_like in ('hz', 'ppm', 'rads'):
         cmap = AT(in_cs, CS(xyz_names + (time_like, 'q', 'r')), aff)
         ni_img = nipy2nifti(Image(data, cmap))
-        assert_equal(ni_img.get_header()['toffset'], 0)
+        assert_equal(get_header(ni_img)['toffset'], 0)
     # Check that non-matching time causes a nifti error when toffset !=0
     shape_shifted = (2, 3, 4, 6, 5, 7)
     for t_name in 't', 'time':
@@ -441,7 +450,7 @@ def test_save_spaces():
                        ('mni', mni_csm)):
         img = Image(data, AT(in_cs, csm(3), aff))
         ni_img = nipy2nifti(img)
-        assert_equal(ni_img.get_header().get_value_label('sform_code'),
+        assert_equal(get_header(ni_img).get_value_label('sform_code'),
                      label)
 
 
@@ -454,21 +463,21 @@ def test_save_dtype():
         dt = np.dtype(dt_code)
         img = Image(data.astype(dt_code), cmap)
         ni_img = nipy2nifti(img, data_dtype=dt_code)
-        assert_equal(ni_img.get_header().get_data_dtype(), dt)
+        assert_equal(get_header(ni_img).get_data_dtype(), dt)
         ni_img = nipy2nifti(img, data_dtype=dt)
-        assert_equal(ni_img.get_header().get_data_dtype(), dt)
+        assert_equal(get_header(ni_img).get_data_dtype(), dt)
     # None results in trying to get the code from the input header, then from the
     # data.
     # From data, when there's nothing in the header
     img = Image(data.astype(np.int16), cmap)
     ni_img = nipy2nifti(img, data_dtype=None)
-    assert_equal(ni_img.get_header().get_data_dtype(), np.dtype(np.int16))
+    assert_equal(get_header(ni_img).get_data_dtype(), np.dtype(np.int16))
     # From the header
     hdr = nib.Nifti1Header()
     hdr.set_data_dtype(np.int32)
     img = Image(data.astype(np.int16), cmap, metadata={'header': hdr})
     ni_img = nipy2nifti(img, data_dtype=None)
-    assert_equal(ni_img.get_header().get_data_dtype(), np.dtype(np.int32))
+    assert_equal(get_header(ni_img).get_data_dtype(), np.dtype(np.int32))
     # Bad dtype
     assert_raises(TypeError, nipy2nifti, img, data_dtype='foo')
     # Fancy dtype
@@ -497,7 +506,7 @@ def test_expand_to_3d():
         ni_img = nib.Nifti1Image(data, xyz_aff)
         # Default is aligned
         assert_raises(NiftiError, nifti2nipy, ni_img)
-        hdr = ni_img.get_header()
+        hdr = get_header(ni_img)
         # The pixdim affine
         for label in 'scanner', 'aligned', 'talairach', 'mni':
             hdr.set_sform(xyz_aff, label)
@@ -520,7 +529,7 @@ def test_load_cmaps():
                   np.diag([2, 3, 4, 1, 1, 1, 1, 1]))
     assert_equal(img.coordmap, exp_cmap)
     # xyzt_units sets time axis name
-    hdr = ni_img.get_header()
+    hdr = get_header(ni_img)
     xyz_names = aligned_csm(3).coord_names
     full_aff = exp_cmap.affine
     reduced_data = data[:, :, :, 1:2, ...]
@@ -584,7 +593,7 @@ def test_load_toffset():
     xyz_aff = np.diag([2, 3, 4, 1])
     # Default with time-like and no toffset
     ni_img = nib.Nifti1Image(data, xyz_aff)
-    hdr = ni_img.get_header()
+    hdr = get_header(ni_img)
     img = nifti2nipy(ni_img)
     exp_aff = np.diag([2., 3, 4, 1, 1, 1])
     in_cs = CS('ijktu', name='voxels')
@@ -611,7 +620,7 @@ def test_load_spaces():
     data = np.random.normal(size=shape)
     # Default with no affine in header, or in image
     ni_img = nib.Nifti1Image(data, None)
-    hdr = ni_img.get_header()
+    hdr = get_header(ni_img)
     hdr.set_zooms(zooms)
     # Expected affine is from the pixdims and the center of the image.  Default
     # is also flipped X.
@@ -640,7 +649,7 @@ def test_mm_scaling():
     out_cs = aligned_csm(4)
     # No space scaling
     ni_img = nib.Nifti1Image(data, xyz_aff)
-    hdr = ni_img.get_header()
+    hdr = get_header(ni_img)
     assert_equal(hdr.get_xyzt_units(), ('unknown', 'unknown'))
     assert_equal(nifti2nipy(ni_img).coordmap, AT(in_cs, out_cs, exp_aff))
     # mm is assumed
@@ -671,7 +680,7 @@ def test_load_dim_info():
     out_cs = aligned_csm(3)
     # Just confirm that the default leads to no axis renaming
     ni_img = nib.Nifti1Image(data, xyz_aff)
-    hdr = ni_img.get_header()
+    hdr = get_header(ni_img)
     assert_equal(hdr.get_dim_info(), (None, None, None))
     assert_equal(nifti2nipy(ni_img).coordmap, AT(in_cs, out_cs, xyz_aff))
     # But now...

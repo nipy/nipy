@@ -21,6 +21,7 @@ from nibabel.spatialimages import HeaderDataError
 from ..core.image.image import is_image
 
 from .nifti_ref import (nipy2nifti, nifti2nipy)
+from .nibcompat import get_dataobj, get_affine, get_header
 
 
 def load(filename):
@@ -49,8 +50,13 @@ def load(filename):
     >>> img.shape
     (33, 41, 25)
     """
+    if filename.endswith('.mnc'):
+        raise ValueError("Sorry, we can't get the MINC axis names right yet")
     img = nib.load(filename)
-    ni_img = nib.Nifti1Image(img._data, img.get_affine(), img.get_header())
+    # Deal with older nibabel
+    ni_img = nib.Nifti1Image(get_dataobj(img),
+                             get_affine(img),
+                             get_header(img))
     return nifti2nipy(ni_img)
 
 
@@ -143,7 +149,7 @@ def save(img, filename, dtype_from='data'):
             ana_img = nib.Spm2AnalyzeImage.from_image(ni_img)
         except HeaderDataError:
             raise HeaderDataError('SPM analyze does not support datatype %s' %
-                                  ni_img.get_header().get_data_dtype())
+                                  ni_img.get_data_dtype())
         ana_img.to_filename(filename)
     else:
         raise ValueError('Sorry, we cannot yet save as format "%s"' % ftype)

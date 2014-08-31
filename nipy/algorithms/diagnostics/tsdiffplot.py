@@ -12,13 +12,12 @@ def plot_tsdiffs(results, axes=None):
     ''' Plotting routine for time series difference metrics
 
     Requires matplotlib
-    
+
     Parameters
     ----------
     results : dict
        Results of format returned from
        :func:`nipy.algorithms.diagnostics.time_slice_diff`
-    
     '''
     import matplotlib.pyplot as plt
     T = len(results['volume_means'])
@@ -31,18 +30,18 @@ def plot_tsdiffs(results, axes=None):
         fig = plt.figure()
         fig.set_size_inches([10,10])
         axes = [plt.subplot(n_plots, 1, i+1) for i in range(n_plots)]
-        
+
     def xmax_labels(ax, val, xlabel, ylabel):
         xlims = ax.axis()
         ax.axis((0, val) + xlims[2:])
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
-        
+
     # plot of mean volume variance
     ax = axes[0]
     ax.plot(results['volume_mean_diff2'] / mean_means)
     xmax_labels(ax, T-1, 'Difference image number', 'Scaled variance')
-    
+
     # plot of diff by slice
     ax = axes[1]
     #Set up the color map for the different slices:
@@ -57,14 +56,14 @@ def plot_tsdiffs(results, axes=None):
     xmax_labels(ax, T-1,
                 'Difference image number',
                 'Slice by slice variance')
-    
+
     # mean intensity
     ax = axes[2]
     ax.plot(results['volume_means'] / mean_means)
     xmax_labels(ax, T,
                 'Image number',
                 'Scaled mean \n voxel intensity')
-    
+
     # slice plots min max mean
     ax = axes[3]
     ax.hold(True)
@@ -78,25 +77,33 @@ def plot_tsdiffs(results, axes=None):
     return axes
 
 
+@np.deprecate_with_doc('Please see docstring for alternative code')
 def plot_tsdiffs_image(img, axes=None, show=True):
     ''' Plot time series diagnostics for image
+
+    This function is deprecated; please use something like::
+
+        results = time_slice_diff_image(img, slice_axis=2)
+        plot_tsdiffs(results)
+
+    instead.
 
     Parameters
     ----------
     img : image-like or filename str
        image on which to do diagnostics
     axes : None or sequence, optional
-       Axes on which to plot the diagnostics.  If None, then we create a
-       figure and subplots for the plots.  Sequence should have length
-       >=4. 
-    show : bool, optional
+       Axes on which to plot the diagnostics.  If None, then we create a figure
+       and subplots for the plots.  Sequence should have length
+       >=4.
+    show : {True, False}, optional
        If True, show the figure after plotting it
 
     Returns
     -------
     axes : Matplotlib axes
-       Axes on which we have done the plots.   Will be same as `axes`
-       input if not None
+       Axes on which we have done the plots.   Will be same as `axes` input if
+       `axes` input was not None
     '''
     if isinstance(img, basestring):
         title = img
@@ -111,3 +118,5 @@ def plot_tsdiffs_image(img, axes=None, show=True):
         import matplotlib.pyplot as plt
         plt.show()
     return axes
+
+

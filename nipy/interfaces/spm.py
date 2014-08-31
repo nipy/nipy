@@ -10,28 +10,47 @@ import numpy as np
 from scipy.io import savemat
 
 from nibabel import load
-from nibabel.onetime import setattr_on_read
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from .matlab import run_matlab_script
 
 
 class SpmInfo(object):
-    @setattr_on_read
-    def spm_path(self):
-        with InTemporaryDirectory() as tmpdir:
-            run_matlab_script("""
+    def __init__(self):
+        self._spm_path = None
+        self._spm_ver = None
+
+    def _set_properties(self):
+        with InTemporaryDirectory():
+            run_matlab_script(r"""
 spm_path = spm('dir');
-fid = fopen('spm_path.txt', 'wt');
-fprintf(fid, '%s', spm_path);
+spm_ver = spm('ver');
+fid = fopen('spm_stuff.txt', 'wt');
+fprintf(fid, '%s\n', spm_path);
+fprintf(fid, '%s\n', spm_ver);
 fclose(fid);
 """)
-            spm_path = open('spm_path.txt', 'rt').read()
-        return spm_path
+            with open('spm_stuff.txt', 'rt') as fobj:
+                lines = fobj.readlines()
+        self._spm_path = lines[0].strip()
+        self._spm_ver = lines[1].strip()
+
+    @property
+    def spm_path(self):
+        if self._spm_path is None:
+            self._set_properties()
+        return self._spm_path
+
+    @property
+    def spm_ver(self):
+        if self._spm_ver is None:
+            self._set_properties()
+        return self._spm_ver
+
 
 spm_info = SpmInfo()
 
-                
+
 def make_job(jobtype, jobname, contents):
     return {'jobs':[{jobtype:[{jobname:contents}]}]}
 
@@ -43,12 +62,16 @@ def fltcols(vals):
 
 
 def run_jobdef(jobdef):
-    with InTemporaryDirectory():
-        savemat('pyjobs.mat', jobdef)
-        run_matlab_script("""
+    script = """
 load pyjobs;
 spm_jobman('run', jobs);
-""")
+"""
+    # Need initcfg for SPM8
+    if spm_info.spm_ver != 'SPM5':
+        script = "spm_jobman('initcfg');\n" + script
+    with InTemporaryDirectory():
+        savemat('pyjobs.mat', jobdef, oned_as='row')
+        run_matlab_script(script)
 
 
 def scans_for_fname(fname):

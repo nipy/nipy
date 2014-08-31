@@ -15,7 +15,7 @@ import numpy as np
 import numpy.linalg as npl
 from scipy.interpolate import interp1d
 
-from nipy.fixes.sympy.utilities.lambdify import implemented_function
+from sympy.utilities.lambdify import implemented_function
 
 from ..utils import T, lambdify_t
 from .. import hrf

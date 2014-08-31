@@ -12,7 +12,9 @@ to joint correction of motion and slice timing in fMRI. *Medical Imaging, IEEE
 Transactions on*;  30:1546--1554
 """
 
+import os
 import warnings
+
 import numpy as np
 
 from ...externals.six import string_types
@@ -32,8 +34,7 @@ from ._registration import (_cspline_transform,
                             _cspline_sample4d)
 
 
-# Module globals
-VERBOSE = True  # enables online print statements
+VERBOSE = os.environ.get('NIPY_DEBUG_PRINT', False)
 INTERLEAVED = None
 OPTIMIZER = 'ncg'
 XTOL = 1e-5
@@ -890,7 +891,6 @@ class SpaceRealign(Realign4d):
         self._init(images, 1., None, None, affine_class)
 
 
-@np.deprecate_with_doc('Please use SpaceTimeRealign instead')
 class FmriRealign4d(Realign4d):
 
     def __init__(self, images, slice_order=None,

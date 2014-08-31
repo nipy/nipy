@@ -18,8 +18,7 @@ import scipy.interpolate
 
 import sympy
 
-from nipy.fixes.sympy.utilities.lambdify import (implemented_function,
-                                                 lambdify)
+from sympy.utilities.lambdify import (implemented_function, lambdify)
 
 from nose.tools import assert_true, assert_false, assert_raises
 

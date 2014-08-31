@@ -4,7 +4,12 @@ from . import onesample
 from . import twosample
 from . import glm_twolevel
 from . import permutation_test
-from . import spatial_relaxation_onesample
+
+from warnings import warn
+
+warn('Module nipy.labs.group deprecated, will be removed',
+     FutureWarning,
+     stacklevel=2)
 
 from nipy.testing import Tester
 test = Tester().test

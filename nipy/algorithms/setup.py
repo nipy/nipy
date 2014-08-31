@@ -15,6 +15,7 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('clustering')
     config.add_subpackage('utils')
     config.add_subpackage('graph')
+    config.add_subpackage('group')
 
     return config
 

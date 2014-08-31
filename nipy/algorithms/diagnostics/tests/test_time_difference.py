@@ -10,7 +10,9 @@ import numpy as np
 
 import scipy.io as sio
 
-from nipy.core.api import rollimg
+from ....core.api import rollimg
+from ....core.reference.coordinate_map import AxisError
+
 from .. import timediff as tsd
 
 from nose.tools import (assert_true, assert_false, assert_equal,
@@ -70,6 +72,7 @@ def test_time_slice_diffs():
 def test_time_slice_axes():
     # Test time and slice axes work as expected
     fimg = load_image(funcfile)
+    # Put into array
     data = fimg.get_data()
     orig_results = tsd.time_slice_diffs(data)
     t0_data = np.rollaxis(data, 3)
@@ -84,6 +87,11 @@ def test_time_slice_axes():
     bad_s0_results = tsd.time_slice_diffs(s0_data)
     assert_not_equal(orig_results['slice_mean_diff2'].shape,
                      bad_s0_results['slice_mean_diff2'].shape)
+    # Slice axis equal to time axis - ValueError
+    assert_raises(ValueError, tsd.time_slice_diffs, data, -1, -1)
+    assert_raises(ValueError, tsd.time_slice_diffs, data, -1, 3)
+    assert_raises(ValueError, tsd.time_slice_diffs, data, 1, 1)
+    assert_raises(ValueError, tsd.time_slice_diffs, data, 1, -3)
 
 
 def test_against_matlab_results():
@@ -106,3 +114,62 @@ def test_against_matlab_results():
     assert_array_almost_equal(results['slice_diff2_max_vol'],
                               tsd_results['slice_diff2_max_vol'],
                               decimal=1)
+
+
+def assert_arr_img_res(arr_res, img_res):
+    for key in ('volume_mean_diff2',
+                'slice_mean_diff2',
+                'volume_means'):
+        assert_array_equal(arr_res[key], img_res[key])
+    for key in ('slice_diff2_max_vol', 'diff2_mean_vol'):
+        assert_array_almost_equal(arr_res[key], img_res[key].get_data())
+
+
+def test_tsd_image():
+    # Test image version of time slice diff
+    fimg = load_image(funcfile)
+    data = fimg.get_data()
+    tsda = tsd.time_slice_diffs
+    tsdi = tsd.time_slice_diffs_image
+    arr_results = tsda(data)
+    # image routine insists on named slice axis, no default
+    assert_raises(AxisError, tsdi, fimg)
+    # Works when specifying slice axis as keyword argument
+    img_results = tsdi(fimg, slice_axis='k')
+    assert_arr_img_res(arr_results, img_results)
+    ax_names = fimg.coordmap.function_domain.coord_names
+    # Test against array version
+    for time_ax in range(4):
+        time_name = ax_names[time_ax]
+        for slice_ax in range(4):
+            slice_name = ax_names[slice_ax]
+            if time_ax == slice_ax:
+                assert_raises(ValueError, tsda, data, time_ax, slice_ax)
+                assert_raises(ValueError, tsdi, fimg, time_ax, slice_ax)
+                assert_raises(ValueError, tsdi, fimg, time_name, slice_ax)
+                assert_raises(ValueError, tsdi, fimg, time_ax, slice_name)
+                assert_raises(ValueError, tsdi, fimg, time_name, slice_name)
+                continue
+            arr_res = tsda(data, time_ax, slice_ax)
+            assert_arr_img_res(arr_res, tsdi(fimg, time_ax, slice_ax))
+            assert_arr_img_res(arr_res, tsdi(fimg, time_name, slice_ax))
+            assert_arr_img_res(arr_res, tsdi(fimg, time_ax, slice_name))
+            img_results = tsdi(fimg, time_name, slice_name)
+            assert_arr_img_res(arr_res, img_results)
+            exp_ax_names = tuple(n for n in ax_names if n != time_name)
+            for key in ('slice_diff2_max_vol', 'diff2_mean_vol'):
+                img = img_results[key]
+                assert_equal(img.coordmap.function_domain.coord_names,
+                             exp_ax_names)
+    # Test defaults on rolled image
+    fimg_rolled = rollimg(fimg, 't')
+    # Still don't have a slice axis specified
+    assert_raises(AxisError, tsdi, fimg_rolled)
+    # Test default time axis
+    assert_arr_img_res(arr_results, tsdi(fimg_rolled, slice_axis='k'))
+    # Test axis named slice overrides default guess
+    time_ax = -1
+    for sa_no, sa_name in ((0, 'i'), (1, 'j'), (2, 'k')):
+        fimg_renamed = fimg.renamed_axes(**{sa_name: 'slice'})
+        arr_res = tsda(data, time_ax, sa_no)
+        assert_arr_img_res(arr_res, tsdi(fimg_renamed, time_ax))

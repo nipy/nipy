@@ -145,6 +145,8 @@ from ..core.reference import spaces as ncrs
 from ..core.image.image import Image
 from ..core.image.image_spaces import as_xyz_image
 
+from .nibcompat import get_header, get_affine
+
 
 XFORM2SPACE = {'scanner': ncrs.scanner_space,
                'aligned': ncrs.aligned_space,
@@ -336,12 +338,15 @@ def nipy2nifti(img, data_dtype=None, strict=None, fix0=True):
         elif not out_space in ncrs.unknown_space: # no space we recognize
             raise NiftiError('Image world not a NIFTI world')
         else: # unknown space requires affine that matches
+            # Set guessed shape to set zooms correctly
+            hdr.set_data_shape(img.shape)
+            # Use qform set to set the zooms, but with 'unknown' code
+            hdr.set_qform(xyz_affine, 'unknown')
+            hdr.set_sform(None)
             if not np.allclose(xyz_affine, hdr.get_base_affine()):
                 raise NiftiError("Image world is 'unknown' but affine not "
                                  "compatible; please reset image world or "
                                  "affine")
-            hdr.set_qform(None)
-            hdr.set_sform(None)
     # Use list() to get .index method for python < 2.6
     input_names = list(coordmap.function_domain.coord_names)
     spatial_names = input_names[:3]
@@ -530,8 +535,8 @@ def nifti2nipy(ni_img):
     Ignore the intent-related fields for now, but warn that we are doing so if
     there appears to be specific information in there.
     """
-    hdr = ni_img.get_header()
-    affine = ni_img.get_affine()
+    hdr = get_header(ni_img)
+    affine = get_affine(ni_img)
     # Affine will not be None from a loaded image, but just in case
     if affine is None:
         affine = hdr.get_best_affine()

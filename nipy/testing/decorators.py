@@ -1,12 +1,20 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+""" Extend numpy's decorators to use nipy's gui and data labels.
+
+This module should not import nose at the top level to avoid a run-time
+dependency on nose.
 """
-Extend numpy's decorators to use nipy's gui and data labels.
-"""
+from __future__ import print_function
 
 from numpy.testing.decorators import *
 
 from nipy.utils import templates, example_data, DataError
+
+from nibabel.optpkg import optional_package
+
+matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
+needs_mpl = skipif(not HAVE_MPL, "Test needs matplotlib")
 
 
 def make_label_dec(label, ds=None):
@@ -30,7 +38,7 @@ def make_label_dec(label, ds=None):
     Examples
     --------
     >>> slow = make_label_dec('slow')
-    >>> print slow.__doc__
+    >>> print(slow.__doc__)
     Labels a test as 'slow'
 
     >>> rare = make_label_dec(['slow','hard'],
@@ -114,3 +122,17 @@ def skip_doctest_if(condition):
     if not condition:
         return lambda f : f
     return make_label_dec('skip_doctest')
+
+
+def needs_mpl_agg(func):
+    """ Decorator requiring matplotlib with agg backend
+    """
+    if not HAVE_MPL:
+        return needs_mpl(func)
+    import matplotlib.pyplot as plt
+    from nose.tools import make_decorator
+    def agg_func(*args, **kwargs):
+        matplotlib.use('agg', warn=False)
+        plt.switch_backend('agg')
+        return func(*args, **kwargs)
+    return make_decorator(func)(agg_func)

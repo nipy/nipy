@@ -73,6 +73,7 @@ import sys
 import numpy as np
 
 from ...fixes.nibabel import io_orientation
+from ...io import nibcompat
 
 from ..image.image import Image
 from ..reference import spaces as rsp
@@ -85,7 +86,7 @@ def xyz_affine(img, name2xyz=None):
     Parameters
     ----------
     img : ``Image`` instance or nibabel image
-        It has a ``coordmap`` or method ``get_affine``
+        It has a ``coordmap`` or attribute ``affine`` or method ``get_affine``
     name2xyz : None or mapping
         Object such that ``name2xyz[ax_name]`` returns 'x', or 'y' or 'z' or
         raises a KeyError for a str ``ax_name``.  None means use module default.
@@ -134,10 +135,9 @@ def xyz_affine(img, name2xyz=None):
            [ 0.,  0.,  4.,  0.],
            [ 0.,  0.,  0.,  1.]])
     """
-    try:
-        return img.get_affine()
-    except AttributeError:
+    if hasattr(img, 'coordmap'): # nipy image
         return rsp.xyz_affine(img.coordmap, name2xyz)
+    return nibcompat.get_affine(img)
 
 
 def is_xyz_affable(img, name2xyz=None):

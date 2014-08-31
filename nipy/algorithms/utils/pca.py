@@ -248,7 +248,7 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
     ----------
     img : Image
         The image on which to perform PCA over the given `axis`
-    axis : str or int
+    axis : str or int, optional
         Axis over which to perform PCA. Default is 't'. If `axis` is an integer,
         gives the index of the input (domain) axis of `img`. If `axis` is a str, can be
         an input (domain) name, or an output (range) name, that maps to an input

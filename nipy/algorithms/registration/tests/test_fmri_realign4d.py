@@ -26,7 +26,6 @@ def test_futurewarning():
     with warnings.catch_warnings(record=True) as warns:
         warnings.simplefilter('always')
         FmriRealign4d([im], tr=2., slice_order='ascending')
-        assert_equal(warns.pop(0).category, DeprecationWarning)
         assert_equal(warns.pop(0).category, FutureWarning)
 
 

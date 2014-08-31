@@ -277,7 +277,7 @@ class VolumeImg(VolumeGrid):
             axis_numbers = np.argmax(np.abs(A), axis=0)
 
         # Now make sure the affine is positive
-        pixdim = np.diag(A)
+        pixdim = np.diag(A).copy()
         data = img.get_data()
         if pixdim[0] < 0:
             b[0] = b[0] + pixdim[0]*(data.shape[0] - 1)

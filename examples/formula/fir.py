@@ -16,7 +16,8 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nipy.fixes.sympy.utilities.lambdify import implemented_function
+from sympy.utilities.lambdify import implemented_function
+
 from nipy.algorithms.statistics.api import Formula
 from nipy.modalities.fmri import utils
 

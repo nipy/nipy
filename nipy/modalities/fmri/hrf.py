@@ -51,16 +51,16 @@ True
 >>> np.allclose((n2-1, t2), (12.0, 0.9), rtol=0.02)
 True
 """
+from __future__ import division
+
+from functools import partial
 
 import numpy as np
 import sympy
-# backwards compatibility with sympy 0.6.x
-try:
-    sympy_abs = sympy.Abs # 0.7.0
-except AttributeError:
-    sympy_abs = sympy.abs
 
-from nipy.fixes.sympy.utilities.lambdify import implemented_function
+import scipy.stats as sps
+
+from sympy.utilities.lambdify import implemented_function
 
 from .utils import lambdify_t, T
 
@@ -107,38 +107,151 @@ def gamma_expr(peak_location, peak_fwhm):
         )
 
 
-# Glover canonical HRF models
-# they are both Sympy objects
+def _get_sym_int(f, dt=0.02, t=50):
+    # numerical integral of symbolic function
+    return _get_num_int(lambdify_t(f), dt, t)
 
-def _getint(f, dt=0.02, t=50):
-    # numerical integral of function
-    lf = lambdify_t(f)
+
+def _get_num_int(lf, dt=0.02, t=50):
+    # numerical integral of numerical function
     tt = np.arange(dt,t+dt,dt)
     return lf(tt).sum() * dt
 
 
+# Glover HRF
 _gexpr = gamma_expr(5.4, 5.2) - 0.35 * gamma_expr(10.8, 7.35)
-_gexpr = _gexpr / _getint(_gexpr)
-_glover = lambdify_t(_gexpr)
-glover = implemented_function('glover', _glover)
-glovert = lambdify_t(glover(T))
+_gexpr = _gexpr / _get_sym_int(_gexpr)
+# The numerical function (pass times to get values)
+glovert = lambdify_t(_gexpr)
+# The symbolic function
+glover = implemented_function('glover', glovert)
 
 # Derivative of Glover HRF
-
 _dgexpr = _gexpr.diff(T)
-dpos = sympy.Derivative((T >= 0), T)
-_dgexpr = _dgexpr.subs(dpos, 0)
-_dgexpr = _dgexpr / _getint(sympy_abs(_dgexpr))
-_dglover = lambdify_t(_dgexpr)
-dglover = implemented_function('dglover', _dglover)
-dglovert = lambdify_t(dglover(T))
+_dpos = sympy.Derivative((T >= 0), T)
+_dgexpr = _dgexpr.subs(_dpos, 0)
+_dgexpr = _dgexpr / _get_sym_int(sympy.Abs(_dgexpr))
+# Numerical function
+dglovert = lambdify_t(_dgexpr)
+# Symbolic function
+dglover = implemented_function('dglover', dglovert)
 
-del(_glover); del(_gexpr); del(dpos); del(_dgexpr); del(_dglover)
+del(_gexpr); del(_dpos); del(_dgexpr)
 
 # AFNI's HRF
-
 _aexpr = ((T >= 0) * T)**8.6 * sympy.exp(-T/0.547)
-_aexpr = _aexpr / _getint(_aexpr)
-_afni = lambdify_t(_aexpr)
-afni = implemented_function('afni', _afni)
-afnit = lambdify_t(afni(T))
+_aexpr = _aexpr / _get_sym_int(_aexpr)
+# Numerical function
+afnit = lambdify_t(_aexpr)
+# Symbolic function
+afni = implemented_function('afni', afnit)
+
+del(_aexpr)
+
+# SPMs HRF
+def spm_hrf_compat(t,
+                   peak_delay=6,
+                   under_delay=16,
+                   peak_disp=1,
+                   under_disp=1,
+                   p_u_ratio = 6,
+                   normalize=True,
+                  ):
+    """ SPM HRF function from sum of two gamma PDFs
+
+    This function is designed to be partially compatible with SPMs `spm_hrf.m`
+    function.
+
+    The SPN HRF is a *peak* gamma PDF (with location `peak_delay` and dispersion
+    `peak_disp`), minus an *undershoot* gamma PDF (with location `under_delay`
+    and dispersion `under_disp`, and divided by the `p_u_ratio`).
+
+    Parameters
+    ----------
+    t : array-like
+        vector of times at which to sample HRF
+    peak_delay : float, optional
+        delay of peak
+    peak_disp : float, optional
+        width (dispersion) of peak
+    under_delay : float, optional
+        delay of undershoot
+    under_disp : float, optional
+        width (dispersion) of undershoot
+    p_u_ratio : float, optional
+        peak to undershoot ratio.  Undershoot divided by this value before
+        subtracting from peak.
+    normalize : {True, False}, optional
+        If True, divide HRF values by their sum before returning.  SPM does this
+        by default.
+
+    Returns
+    -------
+    hrf : array
+        vector length ``len(t)`` of samples from HRF at times `t`
+
+    Notes
+    -----
+    See ``spm_hrf.m`` in the SPM distribution.
+    """
+    if len([v for v in [peak_delay, peak_disp, under_delay, under_disp]
+            if v <= 0]):
+        raise ValueError("delays and dispersions must be > 0")
+    # gamma.pdf only defined for t > 0
+    hrf = np.zeros(t.shape, dtype=np.float)
+    pos_t = t[t > 0]
+    peak = sps.gamma.pdf(pos_t,
+                         peak_delay / peak_disp,
+                         loc=0,
+                         scale = peak_disp)
+    undershoot = sps.gamma.pdf(pos_t,
+                               under_delay / under_disp,
+                               loc=0,
+                               scale = under_disp)
+    hrf[t > 0] = peak - undershoot / p_u_ratio
+    if not normalize:
+        return hrf
+    return hrf / np.sum(hrf)
+
+
+_spm_can_int = _get_num_int(partial(spm_hrf_compat, normalize=False))
+
+
+def spmt(t):
+    """ SPM canonical HRF, HRF values for time values `t`
+
+    This is the canonical HRF function as used in SPM
+    """
+    return spm_hrf_compat(t, normalize=False) / _spm_can_int
+
+
+def dspmt(t):
+    """ SPM canonical HRF derivative, HRF derivative values for time values `t`
+
+    This is the canonical HRF derivative function as used in SPM.
+
+    It is the numerical difference of the HRF sampled at time `t` minus the
+    values sampled at time `t` -1
+    """
+    t = np.asarray(t)
+    return spmt(t) - spmt(t - 1)
+
+
+_spm_dd_func = partial(spm_hrf_compat, normalize=False, peak_disp=1.01)
+_spm_dd_func_int = _get_num_int(_spm_dd_func)
+
+def ddspmt(t):
+    """ SPM canonical HRF dispersion derivative, values for time values `t`
+
+    This is the canonical HRF dispersion derivative function as used in SPM.
+
+    It is the numerical difference between the HRF sampled at time `t`, and
+    values at `t` for another HRF shape with a small change in the peak
+    dispersion parameter (``peak_disp`` in func:`spm_hrf_compat`).
+    """
+    return (spmt(t) - _spm_dd_func(t) / _spm_dd_func_int) / 0.01
+
+
+spm = implemented_function('spm', spmt)
+dspm = implemented_function('dspm', dspmt)
+ddspm = implemented_function('ddspm', ddspmt)

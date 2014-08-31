@@ -51,7 +51,7 @@ def configuration(parent_package='',top_path=None):
 
 if len(set(('develop', 'bdist_egg', 'bdist_rpm', 'bdist', 'bdist_dumb',
             'install_egg_info', 'egg_info', 'easy_install', 'bdist_mpkg',
-            )).intersection(sys.argv)) > 0:
+            'bdist_wheel')).intersection(sys.argv)) > 0:
     from setup_egg import extra_setuptools_args
 
 # extra_setuptools_args can be defined from the line above, but it can

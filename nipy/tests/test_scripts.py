@@ -10,7 +10,7 @@ from __future__ import with_statement
 
 import sys
 import os
-from os.path import dirname, join as pjoin, isfile, isdir, abspath, realpath
+from os.path import dirname, join as pjoin, isfile, isdir, abspath, realpath, split
 
 from subprocess import Popen, PIPE
 
@@ -21,7 +21,7 @@ from nibabel.tmpdirs import InTemporaryDirectory
 from nipy import load_image, save_image
 from nipy.core.api import rollimg
 
-from nose.tools import assert_true, assert_false, assert_equal
+from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 from ..testing import funcfile
 from numpy.testing import decorators, assert_almost_equal
@@ -119,11 +119,36 @@ def test_nipy_diagnose():
 def test_nipy_tsdiffana():
     # Test nipy_tsdiffana script
     out_png = 'ts_out.png'
+    # Quotes in case of space in arguments
+    cmd_template = 'nipy_tsdiffana "{0}" --out-file="{1}"'
     with InTemporaryDirectory():
-        # Quotes in case of space in arguments
-        cmd = 'nipy_tsdiffana "%s" --out-file="%s"' % (funcfile, out_png)
-        run_command(cmd)
-        assert_true(isfile(out_png))
+        for i, cmd in enumerate((cmd_template,
+                                 cmd_template + ' --time-axis=0',
+                                 cmd_template + ' --slice-axis=0',
+                                 cmd_template + ' --slice-axis=0 ' +
+                                 '--time-axis=1')):
+            out_png = 'ts_out{0}.png'.format(i)
+            run_command(cmd.format(funcfile, out_png))
+            assert_true(isfile(out_png))
+    # Out-file and write-results incompatible
+    assert_raises(RuntimeError,
+                  run_command,
+                  cmd_template.format(funcfile, out_png) + '--write-results')
+    # Can save images
+    cmd_root = 'nipy_tsdiffana "{0}" '.format(funcfile)
+    with InTemporaryDirectory():
+        os.mkdir('myresults')
+        run_command(cmd_root + '--out-path=myresults --write-results')
+        assert_true(isfile(pjoin('myresults', 'tsdiff_functional.png')))
+        assert_true(isfile(pjoin('myresults', 'tsdiff_functional.npz')))
+        assert_true(isfile(pjoin('myresults', 'dv2_max_functional.nii.gz')))
+        assert_true(isfile(pjoin('myresults', 'dv2_mean_functional.nii.gz')))
+        run_command(cmd_root + '--out-path=myresults --write-results '
+                    '--out-fname-label=vr2')
+        assert_true(isfile(pjoin('myresults', 'tsdiff_vr2.png')))
+        assert_true(isfile(pjoin('myresults', 'tsdiff_vr2.npz')))
+        assert_true(isfile(pjoin('myresults', 'dv2_max_vr2.nii.gz')))
+        assert_true(isfile(pjoin('myresults', 'dv2_mean_vr2.nii.gz')))
 
 
 @script_test
@@ -144,3 +169,16 @@ def test_nipy_3_4d():
         fimg_back = load_image(out_4d)
         assert_almost_equal(fimg.get_data(), fimg_back.get_data())
         del fimg_back
+
+
+@script_test
+def test_nipy_4d_realign():
+    # Test nipy_4d_realign script
+    with InTemporaryDirectory() as tmpdir:
+        # Set matplotib agg backend
+        with open("matplotlibrc", "wt") as fobj:
+            fobj.write("backend : agg")
+        # Quotes in case of space in input filename
+        cmd = ('nipy_4d_realign 2.0 "{0}" --slice_dim 2 --slice_dir -1 '
+               '--save_path .'.format(funcfile))
+        run_command(cmd)

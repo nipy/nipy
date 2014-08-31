@@ -3,13 +3,13 @@
 """
 Test the glm utilities.
 """
-from __future__ import with_statement
 
 import numpy as np
 
 from nibabel import load, Nifti1Image, save
 
 from ..glm import GeneralLinearModel, data_scaling, FMRILinearModel
+from nipy.io.nibcompat import get_affine
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
@@ -54,7 +54,7 @@ def test_high_level_glm_with_paths():
                                               mask_file)
         multi_session_model.fit()
         z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
-        assert_array_equal(z_image.get_affine(), load(mask_file).get_affine())
+        assert_array_equal(get_affine(z_image), get_affine(load(mask_file)))
         assert_true(z_image.get_data().std() < 3.)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory

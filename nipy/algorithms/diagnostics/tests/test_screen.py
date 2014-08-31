@@ -3,21 +3,29 @@
 """ Testing diagnostic screen
 """
 
+import os
+from os.path import join as pjoin
+
+from warnings import catch_warnings, simplefilter
+
 import numpy as np
 
 import nipy as ni
 from nipy.core.api import rollimg
-from ..screens import screen
+from ..screens import screen, write_screen_res
 from ..timediff import time_slice_diffs
 from ...utils.pca import pca
 from ...utils.tests.test_pca import res2pos1
 
+from nibabel.tmpdirs import InTemporaryDirectory
+
 from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
 
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
-                           assert_almost_equal)
+                           assert_almost_equal, decorators)
 
-from nipy.testing import funcfile, anatfile
+from nipy.testing import funcfile
+from nipy.testing.decorators import needs_mpl_agg
 
 
 def _check_pca(res, pca_res):
@@ -35,6 +43,10 @@ def _check_ts(res, data, time_axis, slice_axis):
 
 def test_screen():
     img = ni.load_image(funcfile)
+    # rename third axis to slice to match default of screen
+    # This avoids warnings about future change in default; see the tests for
+    # slice axis below
+    img = img.renamed_axes(k='slice')
     res = screen(img)
     assert_equal(res['mean'].ndim, 3)
     assert_equal(res['pca'].ndim, 4)
@@ -88,7 +100,68 @@ def test_screen():
     _check_ts(res, data, 3, 2)
     assert_raises(AssertionError, _check_ts, res, data, 3, 0)
     # Then specify, get non-default
-    slicey_img = img.renamed_axes(i='slice')
+    slicey_img = img.renamed_axes(slice='k', i='slice')
     res = screen(slicey_img)
     _check_ts(res, data, 3, 0)
     assert_raises(AssertionError, _check_ts, res, data, 3, 2)
+
+
+def pca_pos(data4d):
+    """ Flips signs equal over volume for PCA
+
+    Needed because Windows appears to generate random signs for PCA components
+    across PCA runs on the same data.
+    """
+    signs = np.sign(data4d[0, 0, 0, :])
+    return data4d * signs
+
+
+def test_screen_slice_axis():
+    img = ni.load_image(funcfile)
+    # Default screen raises a FutureWarning because of the default slice_axis
+    exp_res = screen(img, slice_axis='k')
+    with catch_warnings():
+        simplefilter('error')
+        assert_raises(FutureWarning, screen, img)
+        assert_raises(FutureWarning, screen, img, slice_axis=None)
+        explicit_img = img.renamed_axes(k='slice')
+        # Now the analysis works without warning
+        res = screen(explicit_img)
+        # And is the expected analysis
+        # Very oddly on scipy 0.9 32 bit - at least - results differ between
+        # runs, so we need assert_almost_equal
+        assert_almost_equal(pca_pos(res['pca'].get_data()),
+                            pca_pos(exp_res['pca'].get_data()))
+        assert_array_equal(res['ts_res']['slice_mean_diff2'],
+                           exp_res['ts_res']['slice_mean_diff2'])
+        # Turn off warnings, also get expected analysis
+        simplefilter('ignore')
+        res = screen(img)
+        assert_array_equal(res['ts_res']['slice_mean_diff2'],
+                           exp_res['ts_res']['slice_mean_diff2'])
+
+
+@needs_mpl_agg
+def test_write_screen_res():
+    img = ni.load_image(funcfile)
+    with InTemporaryDirectory():
+        res = screen(img)
+        os.mkdir('myresults')
+        write_screen_res(res, 'myresults', 'myana')
+        pca_img = ni.load_image(pjoin('myresults', 'pca_myana.nii'))
+        assert_equal(pca_img.shape, img.shape[:-1] + (10,))
+        # Make sure we get the same output image even from rolled image
+        # Do fancy roll to put time axis first, and slice axis last. This does
+        # a stress test on the axis ordering, but also makes sure that we are
+        # getting the number of components from the right place.  If we were
+        # getting the number of components from the length of the last axis,
+        # instead of the length of the 't' axis in the returned pca image, this
+        # would be wrong (=21) which would also be more than the number of
+        # basis vectors (19) so raise an error
+        rimg = img.reordered_axes([3, 2, 0, 1])
+        os.mkdir('rmyresults')
+        rres = screen(rimg)
+        write_screen_res(rres, 'rmyresults', 'myana')
+        rpca_img = ni.load_image(pjoin('rmyresults', 'pca_myana.nii'))
+        assert_equal(rpca_img.shape, img.shape[:-1] + (10,))
+        del pca_img, rpca_img
