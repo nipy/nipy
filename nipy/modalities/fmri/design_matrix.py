@@ -320,8 +320,9 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
     paradigm: Paradigm instance, optional
               description of the experimental paradigm
     hrf_model: string, optional,
-               that specifies the hemodynamic response function
-               it can be 'canonical', 'canonical with derivative' or 'fir'
+               that specifies the hemodynamic response function.
+               Can be one of {'canonical', 'canonical with derivative',
+               'fir', 'spm', 'spm_time', 'spm_time_dispersion'}.
     drift_model: string, optional
                  specifies the desired drift model,
                  to be chosen among 'polynomial', 'cosine', 'blank'
