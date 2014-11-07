@@ -198,6 +198,8 @@ def test_spacetimerealign_params():
     assert_array_equal(R1.slice_times, np.arange(3) / 3. * 2.)
     # Smoke test run
     R1.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
+    # Test tighter borders for motion estimation
+    R1.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest', borders=(5,5,5))
 
 
 def test_spacerealign():
