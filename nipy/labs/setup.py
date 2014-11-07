@@ -55,28 +55,25 @@ def configuration(parent_package='',top_path=None):
             log.warn('Lapack not found')
         log.warn('Building Lapack lite distribution')
         sources.append(os.path.join(LIBS,'lapack_lite','*.c'))
-        library_dirs = []
-        libraries = []
+        config.add_library('cstat', sources=sources)
 
-    # Best-case scenario: lapack found 
+    # If lapack found and lapack linking required, then use numpy's
+    # mechanism to do that
     else:
         log.warn('Linking with system Lapack')
         library_dirs = lapack_info['library_dirs']
         libraries = lapack_info['libraries']
         if 'include_dirs' in lapack_info:
             config.add_include_dirs(lapack_info['include_dirs'])
-
-    # Information message
-    print('LAPACK build options:')
-    print('library_dirs: %s ' % library_dirs)
-    print('libraries: %s ' % libraries)
-    print('lapack_info: %s ' % lapack_info)
-
-    config.add_library('cstat',
-                       sources=sources,
-                       library_dirs=library_dirs,
-                       libraries=libraries,
-                       extra_info=lapack_info)
+            log.warn('Trying to link system Lapack... good luck!')
+            log.warn(' library_dirs: %s ' % library_dirs)
+            log.warn(' libraries: %s ' % libraries)
+            log.warn(' lapack_info: %s ' % lapack_info)
+            config.add_library('cstat',
+                               sources=sources,
+                               library_dirs=library_dirs,
+                               libraries=libraries,
+                               extra_info=lapack_info)
 
     # Subpackages
     config.add_subpackage('bindings')
