@@ -39,8 +39,8 @@ add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 paradigm = EventRelatedParadigm(conditions, onsets)
 
 X1 = make_dmtx(
-    frametimes, paradigm, drift_model='polynomial', drift_order=3,
-    add_regs=motion, add_reg_names=add_reg_names)
+    frametimes, paradigm, hrf_model=hrf_model, drift_model='polynomial', 
+    drift_order=3, add_regs=motion, add_reg_names=add_reg_names)
 
 # block design matrix
 duration = 7 * np.ones(9)
@@ -52,8 +52,8 @@ X2 = make_dmtx(frametimes, paradigm, drift_model='polynomial',
 
 # FIR model
 paradigm = EventRelatedParadigm(conditions, onsets)
-hrf_model = 'FIR'
-X3 = make_dmtx(frametimes, paradigm, hrf_model='fir',
+hrf_model = 'fir'
+X3 = make_dmtx(frametimes, paradigm, hrf_model=hrf_model,
                drift_model='polynomial', drift_order=3,
                fir_delays=np.arange(1, 6))
 
