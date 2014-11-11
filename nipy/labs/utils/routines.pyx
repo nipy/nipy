@@ -12,6 +12,7 @@ __version__ = '0.1'
 from fff cimport *
 cimport numpy as cnp
 from warnings import warn
+include "fffpy_import_lapack.pxi"
 
 warn('Module nipy.labs.utils.routines deprecated, will be removed',
      FutureWarning,
@@ -20,7 +21,7 @@ warn('Module nipy.labs.utils.routines deprecated, will be removed',
 # Exports from fff_gen_stats.h
 cdef extern from "fff_gen_stats.h":
 
-    double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_matrix* Saux)
+    double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_vector* xaux, fff_vector* Saux)
     void fff_permutation(unsigned int* x, unsigned int n,
                          unsigned long int magic)
     void fff_combination(unsigned int* x, unsigned int k, unsigned int n,
@@ -44,6 +45,7 @@ cdef extern from "fff_lapack.h":
 fffpy_import_array()
 cnp.import_array()
 import numpy as np
+fffpy_import_lapack()
 
 # This is faster than scipy.stats.scoreatpercentile due to partial
 # sorting
@@ -98,7 +100,11 @@ def mahalanobis(X, VX):
     axis == 0 assumed. If X is shaped (d,K), VX must be shaped
     (d,d,K).
     """
-    cdef fff_vector *x, *vx, *x_tmp, *vx_tmp, *d2
+    cdef fff_vector *x
+    cdef fff_vector *vx
+    cdef fff_vector *x_tmp
+    cdef fff_vector *vx_tmp
+    cdef fff_vector *d2
     cdef fff_matrix Sx 
     cdef fff_matrix *Sx_tmp
     cdef fffpy_multi_iterator* multi
@@ -129,10 +135,9 @@ def mahalanobis(X, VX):
 
     # Loop 
     while(multi.index < multi.size):
-        fff_vector_memcpy(x_tmp, x)
         fff_vector_memcpy(vx_tmp, vx) 
         Sx = fff_matrix_view(vx_tmp.data, n, n, n) # OK because vx_tmp is contiguous  
-        d2.data[0] = fff_mahalanobis(x_tmp, &Sx, Sx_tmp)
+        d2.data[0] = fff_mahalanobis(x, &Sx, x_tmp, Sx_tmp)
         fffpy_multi_iterator_update(multi)
 
     # Delete local structs and views
@@ -248,7 +253,7 @@ def permutations(unsigned int n, unsigned int m=1, unsigned long magic=0):
 
     P = fff_array_toPyArray(p)
     return P 
-
+                        
 
 def combinations(unsigned int k, unsigned int n, unsigned int m=1, unsigned long magic=0):
     """

@@ -9,6 +9,7 @@ __version__ = '0.1'
 
 # Includes
 from fff cimport *
+include "fffpy_import_lapack.pxi"
 
 # Exports from fff_glm_twolevel.h 
 cdef extern from "fff_glm_twolevel.h":
@@ -39,6 +40,7 @@ cdef extern from "fff_glm_twolevel.h":
 fffpy_import_array()
 import_array()
 import numpy as np
+fffpy_import_lapack()
 
 # Constants
 DEF_NITER = 2

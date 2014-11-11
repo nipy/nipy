@@ -23,12 +23,20 @@ class TestAll(TestCase):
         x = np.random.rand(10, 30, 11)
         assert_almost_equal(np.squeeze(median(x,axis=1)), np.median(x,axis=1))
 
-    def test_mahalanobis(self):
-        x = np.random.rand(100) / 100
-        A = np.random.rand(100, 100) / 100
+    def test_mahalanobis0(self):
+        x = np.ones(100)
+        A = np.eye(100)
+        mah = 100.
+        f_mah = mahalanobis(x, A)
+        assert_almost_equal(mah, f_mah, decimal=1) 
+
+    def test_mahalanobis1(self):
+        x = np.random.rand(100)
+        A = np.random.rand(100, 100)
         A = np.dot(A.transpose(), A) + np.eye(100)
         mah = np.dot(x, np.dot(np.linalg.inv(A), x))
-        assert_almost_equal(mah, mahalanobis(x, A), decimal=1) 
+        f_mah = mahalanobis(x, A)
+        assert_almost_equal(mah, f_mah, decimal=1) 
 
     def test_mahalanobis2(self):
         x = np.random.rand(100,3,4)
@@ -43,7 +51,7 @@ class TestAll(TestCase):
         mah = np.dot(x[:,i,j], np.dot(np.linalg.inv(Aa[:,:,i,j]), x[:,i,j]))
         f_mah = (mahalanobis(x, Aa))[i,j]
         assert_true(np.allclose(mah, f_mah))
-
+ 
     def test_gamln(self):
         for x in (0.01+100*np.random.random(50)):
             scipy_gamln = special.gammaln(x)

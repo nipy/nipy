@@ -103,19 +103,18 @@ extern void fff_combination(unsigned int* x, unsigned int k, unsigned int n, uns
    Squared mahalanobis distance: d2 = x' S^-1 x 
    Beware: x is not const
 */ 
-extern double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_matrix* Saux)
+extern double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_vector* xaux, fff_vector* Saux)
 {
   double d2; 
-  double m = 0.0; 
 
-  /* Cholesky decomposition: S = L L^t, L lower triangular */
-  fff_lapack_dpotrf(CblasLower, S, Saux); 
+  /* Copy x into xaux */
+  fff_vector_memcpy(xaux, x);
 
-  /* Compute S^-1 x */ 		 
-  fff_blas_dtrsv(CblasLower, CblasNoTrans, CblasNonUnit, S, x); /* L^-1 x */ 
-  
+  /* Compute: xaux = S^-1 x using Cholesky decomposition */
+  fff_lapack_solve_chol(S, xaux, Saux); 
+ 
   /* Compute x' S^-1 x */ 
-  d2 = (double) fff_vector_ssd(x, &m, 1);
+  d2 = fff_blas_ddot (x, xaux);
 
   return d2; 
 }

@@ -3,14 +3,6 @@
 
 #include <errno.h>
 
-#define FNAME FFF_FNAME
-
-/*
-dgetrf : LU decomp
-dpotrf: Cholesky decomp
-dgesdd: SVD decomp
-dgeqrf: QR decomp
-*/
 
 #define CHECK_SQUARE(A)							\
   if ( (A->size1) != (A->size2) )					\
@@ -18,12 +10,6 @@ dgeqrf: QR decomp
 
 #define LAPACK_UPLO(Uplo) ( (Uplo)==(CblasUpper) ? "U" : "L" )
 
-
-extern int FNAME(dgetrf)(int* m, int* n, double* a, int* lda, int* ipiv, int* info);
-extern int FNAME(dpotrf)(char *uplo, int* n, double* a, int* lda, int* info); 
-extern int FNAME(dgesdd)(char *jobz, int* m, int* n, double* a, int* lda, double* s, double* u, int* ldu,
-			 double* vt, int* ldvt, double* work, int* lwork, int* iwork, int* info);
-extern int FNAME(dgeqrf)(int* m, int* n, double* a, int* lda, double* tau, double* work, int* lwork, int* info);
 
 
 /* Cholesky decomposition */ 
@@ -34,11 +20,12 @@ int fff_lapack_dpotrf( CBLAS_UPLO_t Uplo, fff_matrix* A, fff_matrix* Aux )
   int info; 
   int n = (int)A->size1; /* Assumed squared */ 
   int lda = (int)Aux->tda; 
+  int (*dpotrf)(char *uplo, int* n, double* a, int* lda, int* info); 
   
   CHECK_SQUARE(A); 
   
   fff_matrix_transpose( Aux, A ); 
-  FNAME(dpotrf)(uplo, &n, Aux->data, &lda, &info); 
+  (*dpotrf)(uplo, &n, Aux->data, &lda, &info); 
   fff_matrix_transpose( A, Aux ); 
   
   return info; 
@@ -53,7 +40,10 @@ int fff_lapack_dgetrf( fff_matrix* A, fff_array* ipiv, fff_matrix* Aux )
   int m = (int)A->size1; 
   int n = (int)A->size2; 
   int lda = (int)Aux->tda; 
+  int (*dgetrf)(int* m, int* n, double* a, int* lda, int* ipiv, int* info);
   
+  dgetrf = FFF_EXTERNAL_FUNC[FFF_LAPACK_DGETRF];
+
   if ( (ipiv->ndims != 1) || 
        (ipiv->datatype != FFF_INT) ||
        (ipiv->dimX != FFF_MIN(m,n)) ||
@@ -61,11 +51,12 @@ int fff_lapack_dgetrf( fff_matrix* A, fff_array* ipiv, fff_matrix* Aux )
     FFF_ERROR("Invalid array: Ipiv", EDOM); 
 
   fff_matrix_transpose( Aux, A );
-  FNAME(dgetrf)(&m, &n, Aux->data, &lda, (int*)ipiv->data, &info);
+  (*dgetrf)(&m, &n, Aux->data, &lda, (int*)ipiv->data, &info);
   fff_matrix_transpose( A, Aux ); 
   
   return info; 
 }
+
 
 /* QR decomposition */ 
 /*** Aux needs be m x n with m=A->size2 and n=A->size1 ***/
@@ -78,6 +69,9 @@ int fff_lapack_dgeqrf( fff_matrix* A, fff_vector* tau, fff_vector* work, fff_mat
   int n = (int)A->size2;
   int lda = (int)Aux->tda; 
   int lwork = (int)work->size; 
+  int (*dgeqrf)(int* m, int* n, double* a, int* lda, double* tau, double* work, int* lwork, int* info);
+
+  dgeqrf = FFF_EXTERNAL_FUNC[FFF_LAPACK_DGEQRF];
 
   if ( (tau->size != FFF_MIN(m,n)) ||
        (tau->stride != 1) )
@@ -92,7 +86,7 @@ int fff_lapack_dgeqrf( fff_matrix* A, fff_vector* tau, fff_vector* work, fff_mat
       FFF_ERROR("Invalid vector: work", EDOM); 
 
   fff_matrix_transpose( Aux, A );
-  FNAME(dgeqrf)(&m, &n, Aux->data, &lda, tau->data, work->data, &lwork, &info); 
+  (*dgeqrf)(&m, &n, Aux->data, &lda, tau->data, work->data, &lwork, &info); 
   fff_matrix_transpose( A, Aux ); 
   
   return info; 
@@ -127,6 +121,10 @@ int fff_lapack_dgesdd( fff_matrix* A, fff_vector* s, fff_matrix* U, fff_matrix* 
   int ldu = (int)U->tda; 
   int ldvt = (int)Vt->tda;
   int lwork = work->size;  
+  int (*dgesdd)(char *jobz, int* m, int* n, double* a, int* lda, double* s, double* u, int* ldu,
+		double* vt, int* ldvt, double* work, int* lwork, int* iwork, int* info);
+
+  dgesdd = FFF_EXTERNAL_FUNC[FFF_LAPACK_DGESDD];
 
   fff_matrix Aux_mm, Aux_nn; 
   
@@ -163,10 +161,10 @@ int fff_lapack_dgesdd( fff_matrix* A, fff_vector* s, fff_matrix* U, fff_matrix* 
      => U = V*, V = U*, s = s* 
      so we just need to swap m <-> n, and U <-> Vt in the input line
   */
-  FNAME(dgesdd)("A", &n, &m, A->data, &lda, 
-		s->data, Vt->data, &ldvt, U->data, &ldu, 
-		work->data, &lwork, (int*)iwork->data, &info);
-
+  (*dgesdd)("A", &n, &m, A->data, &lda, 
+	    s->data, Vt->data, &ldvt, U->data, &ldu, 
+	    work->data, &lwork, (int*)iwork->data, &info);
+  
   /* At this point, both U and V are in Fortran order, so we need to
      transpose */
   Aux_mm = fff_matrix_block( Aux, 0, m, 0, m );
@@ -252,4 +250,29 @@ extern int fff_lapack_inv_sym(fff_matrix* iA, fff_matrix *A)
 
   return info;
   
+}
+
+/* Solve linear system: Ax = y using Cholesky decomposition */
+/*** y needs be contiguous ***/
+int fff_lapack_solve_chol( const fff_matrix* A, fff_vector* y, fff_matrix* Aux )
+{
+  char* uplo = LAPACK_UPLO(CblasLower);
+  int info; 
+  int nrhs = 1;
+  int n = (int)A->size1; /* Assumed squared */ 
+  int lda = (int)Aux->tda; 
+  int ldb = (int)y->size;
+  int (*dpotrf)(char *uplo, int* n, double* a, int* lda, int* info); 
+  int (*dpotrs)(char *uplo, int* n, int* nrhs, double* a, int* lda, double* b, int* ldb, int* info);
+
+  dpotrf = FFF_EXTERNAL_FUNC[FFF_LAPACK_DPOTRF];
+  dpotrs = FFF_EXTERNAL_FUNC[FFF_LAPACK_DPOTRS];
+
+  CHECK_SQUARE(A);
+  
+  fff_matrix_transpose( Aux, A ); 
+  (*dpotrf)(uplo, &n, Aux->data, &lda, &info);
+  (*dpotrs)(uplo, &n, &nrhs, Aux->data, &lda, y->data, &ldb, &info); 
+  
+  return info; 
 }

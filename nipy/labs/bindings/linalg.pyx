@@ -11,6 +11,7 @@ __version__ = '0.1'
 
 # Include fff
 from fff cimport *
+include "fffpy_import_lapack.pxi"
 
 # Exports from fff_blas.h
 cdef extern from "fff_blas.h":
@@ -48,15 +49,10 @@ cdef extern from "fff_blas.h":
                        fff_matrix * A,  fff_vector * x, double beta, fff_vector * y) 
     int fff_blas_dtrmv(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag, 
                        fff_matrix * A, fff_vector * x) 
-    int fff_blas_dtrsv(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag,
-                       fff_matrix * A, fff_vector * x) 
     int fff_blas_dsymv(CBLAS_UPLO_t Uplo, 
                        double alpha,  fff_matrix * A, 
                        fff_vector * x, double beta, fff_vector * y) 
     int fff_blas_dger(double alpha,  fff_vector * x,  fff_vector * y, fff_matrix * A)
-    int fff_blas_dsyr(CBLAS_UPLO_t Uplo, double alpha,  fff_vector * x, fff_matrix * A) 
-    int fff_blas_dsyr2(CBLAS_UPLO_t Uplo, double alpha, 
-                       fff_vector * x,  fff_vector * y, fff_matrix * A) 
 
     ## BLAS level 3
     int fff_blas_dgemm(CBLAS_TRANSPOSE_t TransA, CBLAS_TRANSPOSE_t TransB, 
@@ -67,12 +63,6 @@ cdef extern from "fff_blas.h":
                        double alpha,  fff_matrix * A, 
                        fff_matrix * B, double beta,
                        fff_matrix * C)
-    int fff_blas_dtrmm(CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo, 
-                       CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag, 
-                       double alpha,  fff_matrix * A, fff_matrix * B)
-    int fff_blas_dtrsm(CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo, 
-                       CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag, 
-                       double alpha,  fff_matrix * A, fff_matrix * B) 
     int fff_blas_dsyrk(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans, 
                        double alpha,  fff_matrix * A, double beta, fff_matrix * C) 
     int fff_blas_dsyr2k(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans, 
@@ -84,6 +74,9 @@ cdef extern from "fff_blas.h":
 fffpy_import_array()
 import_array()
 import numpy as np
+
+# Import blas/lapack routines on the fly
+fffpy_import_lapack()
 
 # Binded routines
 
@@ -441,59 +434,6 @@ def blas_dsymm(int Side, int Uplo, double alpha, A, B, beta, C):
     D = fff_matrix_toPyArray(d)
     return D
 
-def blas_dtrmm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B):
-    """
-    C = blas_dtrmm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B).
-    
-    Compute the matrix-matrix product B = \alpha op(A) B for Side
-    is CblasLeft and B = \alpha B op(A) for Side is CblasRight. The
-    matrix A is triangular and op(A) = A, A^T, A^H for TransA =
-    CblasNoTrans, CblasTrans, CblasConjTrans. When Uplo is CblasUpper
-    then the upper triangle of A is used, and when Uplo is CblasLower
-    then the lower triangle of A is used. If Diag is CblasNonUnit then
-    the diagonal of A is used, but if Diag is CblasUnit then the
-    diagonal elements of the matrix A are taken as unity and are not
-    referenced.
-    """
-    cdef fff_matrix *a, *b, *c
-    a = fff_matrix_fromPyArray(A)
-    b = fff_matrix_fromPyArray(B)
-    c = fff_matrix_new(a.size1, a.size2)
-    fff_matrix_memcpy(c, b)
-    fff_blas_dtrmm(flag_side(Side), flag_uplo(Uplo), flag_transpose(TransA), flag_diag(Diag),
-                   alpha, a, c)
-    fff_matrix_delete(a)
-    fff_matrix_delete(b)
-    C = fff_matrix_toPyArray(c)
-    return C
-
-
-def blas_dtrsm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B):
-    """
-    blas_dtrsm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B).
-    
-    Compute the inverse-matrix matrix product B = \alpha
-    op(inv(A))B for Side is CblasLeft and B = \alpha B op(inv(A)) for
-    Side is CblasRight. The matrix A is triangular and op(A) = A, A^T,
-    A^H for TransA = CblasNoTrans, CblasTrans, CblasConjTrans. When
-    Uplo is CblasUpper then the upper triangle of A is used, and when
-    Uplo is CblasLower then the lower triangle of A is used. If Diag
-    is CblasNonUnit then the diagonal of A is used, but if Diag is
-    CblasUnit then the diagonal elements of the matrix A are taken as
-    unity and are not referenced.
-    """
-    cdef fff_matrix *a, *b, *c
-    a = fff_matrix_fromPyArray(A)
-    b = fff_matrix_fromPyArray(B)
-    c = fff_matrix_new(a.size1, a.size2)
-    fff_matrix_memcpy(c, b)
-    fff_blas_dtrsm(flag_side(Side), flag_uplo(Uplo), flag_transpose(TransA), flag_diag(Diag),
-                   alpha, a, c)
-    fff_matrix_delete(a)
-    fff_matrix_delete(b)
-    C = fff_matrix_toPyArray(c)
-    return C
-
 
 def blas_dsyrk(int Uplo, int Trans, double alpha, A, double beta, C):
     """
@@ -541,6 +481,3 @@ def blas_dsyr2k(int Uplo, int Trans, double alpha, A, B, double beta, C):
     fff_matrix_delete(c)
     D = fff_matrix_toPyArray(d)
     return D
-
-
-

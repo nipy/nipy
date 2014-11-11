@@ -25,7 +25,10 @@ extern "C" {
   typedef enum {CblasUpper=121, CblasLower=122} CBLAS_UPLO_t;
   typedef enum {CblasNonUnit=131, CblasUnit=132} CBLAS_DIAG_t;
   typedef enum {CblasLeft=141, CblasRight=142} CBLAS_SIDE_t;
-  
+
+  /* Import function */
+  extern void fff_blas_import_func(void* func_ptr, int k);
+
   /* BLAS 1 */
   extern double fff_blas_ddot (const fff_vector * x, const fff_vector * y); 
   extern double fff_blas_dnrm2 (const fff_vector * x); 

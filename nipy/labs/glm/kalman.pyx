@@ -11,6 +11,7 @@ __version__ = '0.1'
 
 # Includes
 from fff cimport *
+include "fffpy_import_lapack.pxi"
 
 # Exports from fff_glm_kalman.h
 cdef extern from "fff_glm_kalman.h":
@@ -62,9 +63,10 @@ cdef extern from "fff_glm_kalman.h":
 fffpy_import_array()
 import_array()
 import numpy as np
+fffpy_import_lapack()
+
 
 # Standard Kalman filter
-
 def ols(ndarray Y, ndarray X, int axis=0): 
     """
     (beta, norm_var_beta, s2, dof) = ols(Y, X, axis=0).

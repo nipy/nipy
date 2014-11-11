@@ -23,6 +23,7 @@ extern "C" {
     \brief Squared Mahalanobis distance
     \param x input data vector (beware: gets modified)
     \param S associated variance matrix
+    \param xaux auxiliary vector, same size as \a x, must be contiguous
     \param Saux auxiliary matrix, same size as \a S
     
     Compute the squared Mahalanobis distance \f$ d^2 = x^t S^{-1} x
@@ -30,7 +31,7 @@ extern "C" {
     \f$ where \a L is lower triangular, and then exploits the fact
     that \f$ d^2 = \| L^{-1}x \|^2 \f$.
   */  
-  extern double fff_mahalanobis( fff_vector* x, fff_matrix* S, fff_matrix* Saux );
+  extern double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_vector* xaux, fff_vector* Saux);
 
   /*
 	\brief Generate a permutation from \a [0..n-1]

@@ -12,6 +12,7 @@ __version__ = '0.1'
 
 # Includes
 from fff cimport *
+include "fffpy_import_lapack.pxi"
 
 # Exports from fff_onesample_stat.h
 cdef extern from "fff_onesample_stat.h":
@@ -63,7 +64,7 @@ cdef extern from "fff_onesample_stat.h":
 fffpy_import_array()
 import_array()
 import numpy as np
-
+fffpy_import_lapack()
 
 # Stat dictionary
 stats = {'mean': FFF_ONESAMPLE_EMPIRICAL_MEAN,

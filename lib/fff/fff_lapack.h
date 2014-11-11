@@ -32,6 +32,10 @@ extern "C" {
 #include "fff_blas.h"
 #include "fff_array.h"
 
+
+  /* Import function */
+  extern void fff_lapack_import_func(void* func_ptr, int k);
+
   /*!
     \brief Cholesky decomposition 
     \param Uplo flag
@@ -55,7 +59,6 @@ extern "C" {
     factorization.
   */ 
   extern int fff_lapack_dpotrf( CBLAS_UPLO_t Uplo, fff_matrix* A, fff_matrix* Aux ); 
-
 
   /*!
     \brief LU decomposition 
@@ -159,7 +162,11 @@ extern "C" {
 	Caveat : no check is performed -- untested version
   */
 
-	extern int fff_lapack_inv_sym(fff_matrix* iA, fff_matrix *A);
+  extern int fff_lapack_inv_sym(fff_matrix* iA, fff_matrix *A);
+
+  /* Solve linear system: Ax = y using Cholesky decomposition */
+  extern int fff_lapack_solve_chol( const fff_matrix* A, fff_vector* y, fff_matrix* Aux );
+
 
 #ifdef __cplusplus
 }

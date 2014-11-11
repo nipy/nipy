@@ -1,5 +1,6 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
+#include <fff_base.h>
 #include <fff_vector.h>
 #include <fff_matrix.h>
 #include <fff_array.h>
@@ -33,6 +34,11 @@
 */
 extern void fffpy_import_array(void);
 
+/*
+  Function to import a C-function on the fly from a Python C-object
+  representing the function pointer.
+ */
+extern void fffpy_import_external_func(const PyObject* ptr, int key);
 
 /*!
   \brief Convert \c PyArrayObject to \c fff_vector 

@@ -11,6 +11,7 @@ __version__ = '0.1'
 
 # Includes
 from fff cimport *
+include "fffpy_import_lapack.pxi"
 
 # Exports from fff_twosample_stat.h
 cdef extern from "fff_twosample_stat.h":
@@ -49,7 +50,7 @@ cdef extern from "fff_twosample_stat.h":
 fffpy_import_array()
 import_array()
 import numpy as np
-
+fffpy_import_lapack()
 
 # Stat dictionary
 stats = {'student': FFF_TWOSAMPLE_STUDENT,
