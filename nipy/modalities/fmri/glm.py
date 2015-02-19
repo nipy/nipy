@@ -52,7 +52,7 @@ DEF_DOFMAX = 1e10
 
 
 def data_scaling(Y):
-    """Scaling of the data to have pourcent of baseline change columnwise
+    """Scaling of the data to have percent of baseline change columnwise
 
     Parameters
     ----------
@@ -140,7 +140,7 @@ class GeneralLinearModel(object):
             self.results_ = {0.0: ols_result}
 
     def get_beta(self, column_index=None):
-        """Acessor for the best linear unbiased estimated of model parameters
+        """Accessor for the best linear unbiased estimated of model parameters
 
         Parameters
         ----------
@@ -167,7 +167,7 @@ class GeneralLinearModel(object):
         return beta
 
     def get_mse(self):
-        """Acessor for the mean squared error of the model
+        """Accessor for the mean squared error of the model
 
         Returns
         -------
@@ -181,7 +181,7 @@ class GeneralLinearModel(object):
         return mse
 
     def get_logL(self):
-        """Acessor for the log-likelihood of the model
+        """Accessor for the log-likelihood of the model
 
         Returns
         -------
@@ -512,7 +512,7 @@ class FMRILinearModel(object):
         Parameters
         ----------
         do_scaling : bool, optional
-            if True, the data should be scaled as pourcent of voxel mean
+            if True, the data should be scaled as percent of voxel mean
         model : string, optional,
             the kind of glm ('ols' or 'ar1') you want to fit to the data
         steps : int, optional
