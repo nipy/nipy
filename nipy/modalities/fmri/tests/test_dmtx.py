@@ -13,7 +13,7 @@ import numpy as np
 from os.path import join, dirname
 from ..experimental_paradigm import (EventRelatedParadigm, BlockParadigm)
 from ..design_matrix import (dmtx_light, _convolve_regressors, dmtx_from_csv,
-                             make_dmtx)
+                             make_dmtx, _cosine_drift)
 
 from nibabel.tmpdirs import InTemporaryDirectory
 
@@ -71,6 +71,13 @@ def test_show_dmtx():
     ax = DM.show()
     assert (ax is not None)
 
+def test_cosine_drift():
+    spm_drifts = np.loadtxt('dctmtx_N_20_order_4.txt')
+    tim = np.arange(20)
+    P = 10 # period is half the time, gives us an order 4
+    nipy_drifts = _cosine_drift(P, tim) #
+    assert_almost_equal(spm_drifts[:,1:], nipy_drifts[:,:-1])
+        # nipy_drifts is placing the constant at the end [:,:-1]
 
 def test_dmtx0():
     # Test design matrix creation when no paradigm is provided
@@ -174,7 +181,7 @@ def test_dmtx2():
     hrf_model = 'Canonical'
     X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                         drift_model='cosine', hfcut=63)
-    assert_equal(len(names), 8)
+    assert_equal(len(names), 7) # was 8 with old cosine
 
 def test_dmtx3():
     # idem test_dmtx1 with a different drift term
@@ -379,7 +386,7 @@ def test_dmtx19():
 
 def test_dmtx20():
     # Test for commit 10662f7
-    frametimes = np.arange(0, 127) # integers
+    frametimes = np.arange(0, 128) # was 127 in old version of _cosine_drift 
     paradigm = modulated_event_paradigm()
     X, names = dmtx_light(frametimes, paradigm, hrf_model='canonical',
         drift_model='cosine')
