@@ -61,28 +61,63 @@ def _poly_drift(order, frametimes):
     return pol
 
 
-def _cosine_drift(hfcut, frametimes):
+# def _cosine_drift(hfcut, frametimes):
+#     """Create a cosine drift matrix
+# 
+#     Parameters
+#     ----------
+#     hfcut, float , cut frequency of the low-pass filter
+#     frametimes: array of shape(nscans): the sampling time
+# 
+#     Returns
+#     -------
+#     cdrift:  array of shape(n_scans, n_drifts)
+#              polynomial drifts plus a constant regressor
+#     """
+#     tmax = float(frametimes.max())
+#     tsteps = len(frametimes)
+#     order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
+#     cdrift = np.zeros((tsteps, order))
+#     for k in range(1, order):
+#         cdrift[:, k - 1] = np.sqrt(2.0 / tmax) * np.cos(
+#             np.pi * (frametimes / tmax + 0.5 / tsteps) * k)
+#     cdrift[:, order - 1] = np.ones_like(frametimes)
+#     return cdrift
+# 
+
+def _cosine_drift(hfcut, tim):
     """Create a cosine drift matrix
 
     Parameters
     ----------
-    hfcut, float , cut frequency of the low-pass filter
-    frametimes: array of shape(nscans): the sampling time
+    hfcut, float 
+      Cut frequency of the low-pass filter (in Hz)
+    tim: array of shape(nscans)
+      The sampling times (in sec)
 
     Returns
     -------
     cdrift:  array of shape(n_scans, n_drifts)
-             polynomial drifts plus a constant regressor
+             cosin drifts plus a constant regressor at cdrift[:,0]
+
+    Ref: http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
     """
-    tmax = float(frametimes.max())
-    tsteps = len(frametimes)
-    order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
-    cdrift = np.zeros((tsteps, order))
-    for k in range(1, order):
-        cdrift[:, k - 1] = np.sqrt(2.0 / tmax) * np.cos(
-            np.pi * (frametimes / tmax + 0.5 / tsteps) * k)
-    cdrift[:, order - 1] = np.ones_like(frametimes)
+    N = len(tim)
+    n_tim = np.arange(N)
+
+    dt,T = tim[1]-tim[0], tim.max() # == (N-1)*dt    
+    order = int(np.floor(2*N*hfcut*dt)) # s.t. hfcut = 1/(2*dt) yields N
+    # print order
+    cdrift = np.zeros((N, order))
+    cdrift[:,0] = 1. # or 1./sqrt(N) to normalize
+    nfct = np.sqrt(2.0/N)
+    
+    for k in range(1,order):
+        #  nfct * cos(pi*k*(2n+1)/(2*N))  n:[0,N-1], k:[0,N-1]
+        cdrift[:,k] = nfct * np.cos((np.pi/N)*(n_tim + .5)*k)
+    
     return cdrift
+
 
 
 def _blank_drift(frametimes):
