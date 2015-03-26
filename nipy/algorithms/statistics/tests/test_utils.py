@@ -39,7 +39,7 @@ def test_multiple_fast_inv():
         X[i] = np.dot(X[i], X[i].T)
         X_inv_ref[i] = np.linalg.inv(X[i])
     X_inv = multiple_fast_inv(X)
-    assert_almost_equal(X_inv_ref, X_inv)
+    assert_almost_equal(X_inv_ref, X_inv, 5)
 
 
 if __name__ == "__main__":
