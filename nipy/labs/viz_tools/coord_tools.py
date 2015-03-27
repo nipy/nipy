@@ -233,7 +233,8 @@ def find_maxsep_cut_coords(map3d, affine, slicer='z', n_cuts=None,
 
     _map3d = np.rollaxis(map3d.copy(), slicer, start=3)
     _map3d = np.abs(_map3d)
-    _map3d[_map3d < threshold] = 0
+    if threshold is not None:
+        _map3d[_map3d < threshold] = 0
 
     # count activated voxels per plane
     n_activated_voxels_per_plane = np.array([(_map3d[..., z] > 0).sum()
