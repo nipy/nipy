@@ -153,53 +153,6 @@ extern "C" {
   } fff_datatype;
 
 
-  /* Global array of external function pointers  */
-  void* FFF_EXTERNAL_FUNC[29];
-  typedef enum {
-    FFF_BLAS_DDOT=0,
-    FFF_BLAS_DNRM2=1,
-    FFF_BLAS_DASUM=2,
-    FFF_BLAS_IDAMAX=3,
-    FFF_BLAS_DSWAP=4,
-    FFF_BLAS_DCOPY=5,
-    FFF_BLAS_DAXPY=6,
-    FFF_BLAS_DSCAL=7,
-    FFF_BLAS_DROT=8,
-    FFF_BLAS_DROTG=9,
-    FFF_BLAS_DROTMG=10,
-    FFF_BLAS_DROTM=11,
-    FFF_BLAS_DGEMV=12,
-    FFF_BLAS_DTRMV=13,
-    FFF_BLAS_DTRSV=14,
-    FFF_BLAS_DSYMV=15,
-    FFF_BLAS_DGER=16,
-    FFF_BLAS_DSYR=17,
-    FFF_BLAS_DSYR2=18,
-    FFF_BLAS_DGEMM=19,
-    FFF_BLAS_DSYMM=20,
-    FFF_BLAS_DTRMM=21, 
-    FFF_BLAS_DTRSM=22, 
-    FFF_BLAS_DSYRK=23,
-    FFF_BLAS_DSYR2K=24,
-    FFF_LAPACK_DGETRF=25,
-    FFF_LAPACK_DPOTRF=26,
-    FFF_LAPACK_DPOTRS=27,
-    FFF_LAPACK_DGESDD=28,
-    FFF_LAPACK_DGEQRF=29
-  } fff_external_func_key;
-
-  /*
-    Lapack functions:
-    dgetrf : LU decomp
-    dpotrf: Cholesky decomp
-    dpotrs: solve linear system using Cholesky decomp
-    dgesdd: SVD decomp
-    dgeqrf: QR decomp
-  */
-
-  /* Import function */
-  extern void fff_import_external_func(void* func_ptr, int k);
-
   /*!
     \brief Return the byte length of a given data type
     \param type input data type

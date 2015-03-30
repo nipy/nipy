@@ -11,6 +11,16 @@
 #define LAPACK_UPLO(Uplo) ( (Uplo)==(CblasUpper) ? "U" : "L" )
 
 
+/* Global array of external function pointers  */
+void* fff_lapack_func[5];
+
+/* Import function */
+void fff_import_lapack_func(void* func_ptr, int k)
+{
+  fff_lapack_func[k] = func_ptr;
+  return;
+}
+
 
 /* Cholesky decomposition */ 
 /*** Aux needs be square with the same size as A ***/
@@ -42,7 +52,7 @@ int fff_lapack_dgetrf( fff_matrix* A, fff_array* ipiv, fff_matrix* Aux )
   int lda = (int)Aux->tda; 
   int (*dgetrf)(int* m, int* n, double* a, int* lda, int* ipiv, int* info);
   
-  dgetrf = FFF_EXTERNAL_FUNC[FFF_LAPACK_DGETRF];
+  dgetrf = fff_lapack_func[FFF_LAPACK_DGETRF];
 
   if ( (ipiv->ndims != 1) || 
        (ipiv->datatype != FFF_INT) ||
@@ -71,7 +81,7 @@ int fff_lapack_dgeqrf( fff_matrix* A, fff_vector* tau, fff_vector* work, fff_mat
   int lwork = (int)work->size; 
   int (*dgeqrf)(int* m, int* n, double* a, int* lda, double* tau, double* work, int* lwork, int* info);
 
-  dgeqrf = FFF_EXTERNAL_FUNC[FFF_LAPACK_DGEQRF];
+  dgeqrf = fff_lapack_func[FFF_LAPACK_DGEQRF];
 
   if ( (tau->size != FFF_MIN(m,n)) ||
        (tau->stride != 1) )
@@ -124,7 +134,7 @@ int fff_lapack_dgesdd( fff_matrix* A, fff_vector* s, fff_matrix* U, fff_matrix* 
   int (*dgesdd)(char *jobz, int* m, int* n, double* a, int* lda, double* s, double* u, int* ldu,
 		double* vt, int* ldvt, double* work, int* lwork, int* iwork, int* info);
 
-  dgesdd = FFF_EXTERNAL_FUNC[FFF_LAPACK_DGESDD];
+  dgesdd = fff_lapack_func[FFF_LAPACK_DGESDD];
 
   fff_matrix Aux_mm, Aux_nn; 
   
@@ -265,8 +275,8 @@ int fff_lapack_solve_chol( const fff_matrix* A, fff_vector* y, fff_matrix* Aux )
   int (*dpotrf)(char *uplo, int* n, double* a, int* lda, int* info); 
   int (*dpotrs)(char *uplo, int* n, int* nrhs, double* a, int* lda, double* b, int* ldb, int* info);
 
-  dpotrf = FFF_EXTERNAL_FUNC[FFF_LAPACK_DPOTRF];
-  dpotrs = FFF_EXTERNAL_FUNC[FFF_LAPACK_DPOTRS];
+  dpotrf = fff_lapack_func[FFF_LAPACK_DPOTRF];
+  dpotrs = fff_lapack_func[FFF_LAPACK_DPOTRS];
 
   CHECK_SQUARE(A);
   

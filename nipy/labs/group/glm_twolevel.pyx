@@ -63,8 +63,12 @@ def em(ndarray Y, ndarray VY, ndarray X, ndarray C=None, int axis=0, int niter=D
     Keller and Roche, ISBI 2008.
     """
     cdef size_t n, p
-    cdef fff_vector *y, *vy, *b, *s2
-    cdef fff_matrix *x, *ppx
+    cdef fff_vector *y
+    cdef fff_vector *vy
+    cdef fff_vector *b
+    cdef fff_vector *s2
+    cdef fff_matrix *x
+    cdef fff_matrix *ppx
     cdef fff_glm_twolevel_EM *em
     cdef fffpy_multi_iterator* multi
 
@@ -133,7 +137,12 @@ def log_likelihood(Y, VY, X, B, S2, int axis=0):
     REFERENCE:
     Keller and Roche, ISBI 2008.
     """
-    cdef fff_vector *y, *vy, *b, *s2, *ll, *tmp
+    cdef fff_vector *y
+    cdef fff_vector *vy
+    cdef fff_vector *b
+    cdef fff_vector *s2
+    cdef fff_vector *ll
+    cdef fff_vector *tmp
     cdef fff_matrix *x
     cdef fffpy_multi_iterator* multi
     

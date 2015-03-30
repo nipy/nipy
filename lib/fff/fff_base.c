@@ -44,12 +44,6 @@ unsigned int fff_nbytes(fff_datatype type)
 }
 
 
-void fff_import_external_func(void* func_ptr, int k)
-{
-  FFF_EXTERNAL_FUNC[k] = func_ptr;
-  return;
-}
-
 int fff_is_integer(fff_datatype type)
 {
   int ok = 0; 

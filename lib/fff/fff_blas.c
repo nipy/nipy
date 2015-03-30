@@ -3,7 +3,6 @@
 
 #include <math.h>
 
-#define FNAME FFF_FNAME
 
 /* TODO : add tests for dimension compatibility */ 
 
@@ -19,6 +18,16 @@
 #define SWAP_SIDE(Side) ( (Side)==(CblasRight) ? "L" : "R" )
 
 
+/* Global array of external function pointers  */
+void* fff_blas_func[25];
+
+/* Import function */
+void fff_import_blas_func(void* func_ptr, int k)
+{
+  fff_blas_func[k] = func_ptr;
+  return;
+}
+
 
 /****** BLAS 1 ******/ 
 
@@ -30,7 +39,7 @@ double fff_blas_ddot (const fff_vector * x, const fff_vector * y)
   int incy = (int) y->stride; 
   double (*ddot)(int* n, double* dx, int* incx, double* dy, int* incy); 
 
-  ddot = FFF_EXTERNAL_FUNC[FFF_BLAS_DDOT];
+  ddot = fff_blas_func[FFF_BLAS_DDOT];
 
   if ( n != y->size )
     return 1;  
@@ -45,7 +54,7 @@ double fff_blas_dnrm2 (const fff_vector * x)
   int incx = (int) x->stride; 
   double (*dnrm2)(int* n, double* x, int* incx);
 
-  dnrm2 = FFF_EXTERNAL_FUNC[FFF_BLAS_DNRM2];
+  dnrm2 = fff_blas_func[FFF_BLAS_DNRM2];
 
   return( (*dnrm2)(&n, x->data, &incx) ); 
 }
@@ -57,7 +66,7 @@ double fff_blas_dasum (const fff_vector * x)
   int incx = (int) x->stride; 
   double (*dasum)(int* n, double* dx, int* incx); 
 
-  dasum = FFF_EXTERNAL_FUNC[FFF_BLAS_DASUM];
+  dasum = fff_blas_func[FFF_BLAS_DASUM];
 
   return( (*dasum)(&n, x->data, &incx) ); 
 }
@@ -74,7 +83,7 @@ CBLAS_INDEX_t fff_blas_idamax (const fff_vector * x)
   int incx = (int) x->stride; 
   int (*idamax)(int* n, double* dx, int* incx); 
 
-  idamax = FFF_EXTERNAL_FUNC[FFF_BLAS_IDAMAX];
+  idamax = fff_blas_func[FFF_BLAS_IDAMAX];
 
   return( (CBLAS_INDEX_t)((*idamax)(&n, x->data, &incx) - 1) ); 
 }
@@ -88,7 +97,7 @@ int fff_blas_dswap (fff_vector * x, fff_vector * y)
   int (*dswap)(int* n, double* dx, int* incx,
 	       double* dy, int* incy); 
 
-  dswap = FFF_EXTERNAL_FUNC[FFF_BLAS_DSWAP];
+  dswap = fff_blas_func[FFF_BLAS_DSWAP];
   
   if ( n != y->size )
     return 1;  
@@ -105,7 +114,7 @@ int fff_blas_dcopy (const fff_vector * x, fff_vector * y)
   int (*dcopy)(int* n, double* dx, int* incx,
 	       double* dy, int* incy); 
 
-  dcopy = FFF_EXTERNAL_FUNC[FFF_BLAS_DCOPY];
+  dcopy = fff_blas_func[FFF_BLAS_DCOPY];
 
   if ( n != y->size )
     return 1;  
@@ -125,7 +134,7 @@ int fff_blas_daxpy (double alpha, const fff_vector * x, fff_vector * y)
   if ( n != y->size )
     return 1;  
 
-  daxpy = FFF_EXTERNAL_FUNC[FFF_BLAS_DAXPY];
+  daxpy = fff_blas_func[FFF_BLAS_DAXPY];
   
   return( (*daxpy)(&n, &alpha, x->data, &incx, y->data, &incy) ); 
 }
@@ -138,7 +147,7 @@ int fff_blas_dscal (double alpha, fff_vector * x)
   int (*dscal)(int* n, double* da, double* dx,
 	       int* incx); 
   
-  dscal = FFF_EXTERNAL_FUNC[FFF_BLAS_DSCAL];
+  dscal = fff_blas_func[FFF_BLAS_DSCAL];
 
   return( (*dscal)(&n, &alpha, x->data, &incx) ); 
 }
@@ -156,7 +165,7 @@ int fff_blas_drotg (double a[], double b[], double c[], double s[])
   int (*drotg)(double* da, double* db, double* c__,
 	       double* s);
 
-  drotg = FFF_EXTERNAL_FUNC[FFF_BLAS_DROTG];
+  drotg = fff_blas_func[FFF_BLAS_DROTG];
 
   return( (*drotg)(a, b, c, s) );
 } 
@@ -170,7 +179,7 @@ int fff_blas_drot (fff_vector * x, fff_vector * y, double c, double s)
   int (*drot)(int* n, double* dx, int* incx,
 	      double* dy, int* incy, double* c__, double* s); 
 
-  drot = FFF_EXTERNAL_FUNC[FFF_BLAS_DROT];
+  drot = fff_blas_func[FFF_BLAS_DROT];
   
   if ( n != y->size )
     return 1;  
@@ -186,7 +195,7 @@ int fff_blas_drotmg (double d1[], double d2[], double b1[], double b2, double P[
   int (*drotmg)(double* dd1, double* dd2, double* 
 		dx1, double* dy1, double* dparam);
 
-  drotmg = FFF_EXTERNAL_FUNC[FFF_BLAS_DROTMG];
+  drotmg = fff_blas_func[FFF_BLAS_DROTMG];
 
   return( (*drotmg)(d1, d2, b1, &b2, P) ); 
 }
@@ -201,7 +210,7 @@ int fff_blas_drotm (fff_vector * x, fff_vector * y, const double P[])
   int (*drotm)(int* n, double* dx, int* incx,
 	       double* dy, int* incy, double* dparam); 
 
-  drotm = FFF_EXTERNAL_FUNC[FFF_BLAS_DROTM];
+  drotm = fff_blas_func[FFF_BLAS_DROTM];
   
   if ( n != y->size )
     return 1;  
@@ -230,7 +239,7 @@ int fff_blas_dgemv (CBLAS_TRANSPOSE_t TransA, double alpha,
 	       alpha, double* a, int* lda, double* x, int* incx,
 	       double* beta, double* y, int* incy);
 
-  dgemv = FFF_EXTERNAL_FUNC[FFF_BLAS_DGEMV];
+  dgemv = fff_blas_func[FFF_BLAS_DGEMV];
 
   return( (*dgemv)(trans, &m, &n, 
 		   &alpha, 
@@ -261,7 +270,7 @@ int fff_blas_dtrmv (CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Di
   int (*dtrmv)(char *uplo, char *trans, char *diag, int* n,
 	       double* a, int* lda, double* x, int* incx); 
 
-  dtrmv = FFF_EXTERNAL_FUNC[FFF_BLAS_DTRMV];
+  dtrmv = fff_blas_func[FFF_BLAS_DTRMV];
 
   return( (*dtrmv)(uplo, trans, diag, &n, 
 		   A->data, &lda,
@@ -289,7 +298,7 @@ int fff_blas_dtrsv (CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Di
   int (*dtrsv)(char *uplo, char *trans, char *diag, int* n,
 	       double* a, int* lda, double* x, int* incx); 
 
-  dtrsv = FFF_EXTERNAL_FUNC[FFF_BLAS_DTRSV];
+  dtrsv = fff_blas_func[FFF_BLAS_DTRSV];
 
   return( (*dtrsv)(uplo, trans, diag, &n, 
 		   A->data, &lda, 
@@ -316,7 +325,7 @@ int fff_blas_dsymv (CBLAS_UPLO_t Uplo,
 	       double* a, int* lda, double* x, int* incx, double
 	       *beta, double* y, int* incy);
 
-  dsymv = FFF_EXTERNAL_FUNC[FFF_BLAS_DSYMV];
+  dsymv = fff_blas_func[FFF_BLAS_DSYMV];
   
   return( (*dsymv)(uplo, &n, 
 		   &alpha, 
@@ -339,7 +348,7 @@ int fff_blas_dger (double alpha, const fff_vector * x, const fff_vector * y, fff
 	      double* x, int* incx, double* y, int* incy,
 	      double* a, int* lda);
  
-  dger = FFF_EXTERNAL_FUNC[FFF_BLAS_DGER];
+  dger = fff_blas_func[FFF_BLAS_DGER];
 
   return( (*dger)(&m, &n, 
 		  &alpha, 
@@ -364,7 +373,7 @@ int fff_blas_dsyr (CBLAS_UPLO_t Uplo, double alpha, const fff_vector * x, fff_ma
   int (*dsyr)(char *uplo, int* n, double* alpha,
 	      double* x, int* incx, double* a, int* lda); 
 
-  dsyr = FFF_EXTERNAL_FUNC[FFF_BLAS_DSYR];
+  dsyr = fff_blas_func[FFF_BLAS_DSYR];
 
   return( (*dsyr)(uplo, &n, 
 		  &alpha, 
@@ -392,7 +401,7 @@ int fff_blas_dsyr2 (CBLAS_UPLO_t Uplo, double alpha,
 	       double* x, int* incx, double* y, int* incy,
 	       double* a, int* lda); 
 
-  dsyr2 = FFF_EXTERNAL_FUNC[FFF_BLAS_DSYR2];
+  dsyr2 = fff_blas_func[FFF_BLAS_DSYR2];
 
   return( (*dsyr2)(uplo, &n, 
 		   &alpha, 
@@ -435,7 +444,7 @@ int fff_blas_dgemm (CBLAS_TRANSPOSE_t TransA, CBLAS_TRANSPOSE_t TransB,
 	       double* b, int* ldb, double* beta, double* c__,
 	       int* ldc); 
 
-  dgemm = FFF_EXTERNAL_FUNC[FFF_BLAS_DGEMM];
+  dgemm = fff_blas_func[FFF_BLAS_DGEMM];
 
   return( (*dgemm)(transb, transa, &m, &n, &k, &alpha, 
 		       B->data, &ldb, 
@@ -465,7 +474,7 @@ int fff_blas_dsymm (CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo,
 	       double* alpha, double* a, int* lda, double* b,
 	       int* ldb, double* beta, double* c__, int* ldc); 
   
-  dsymm = FFF_EXTERNAL_FUNC[FFF_BLAS_DSYMM];
+  dsymm = fff_blas_func[FFF_BLAS_DSYMM];
 
   return ( (*dsymm)(side, uplo, &m, &n,
 		    &alpha, 
@@ -500,7 +509,7 @@ int fff_blas_dtrmm (CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Tran
 	       int* m, int* n, double* alpha, double* a, int* 
 	       lda, double* b, int* ldb); 
   
-  dtrmm = FFF_EXTERNAL_FUNC[FFF_BLAS_DTRMM];
+  dtrmm = fff_blas_func[FFF_BLAS_DTRMM];
   
   return( (*dtrmm)(side, uplo, transa, diag, &m, &n,
 		   &alpha, 
@@ -535,7 +544,7 @@ int fff_blas_dtrsm (CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Tran
 	       int* m, int* n, double* alpha, double* a, int* 
 	       lda, double* b, int* ldb); 
   
-  dtrsm = FFF_EXTERNAL_FUNC[FFF_BLAS_DTRSM];
+  dtrsm = fff_blas_func[FFF_BLAS_DTRSM];
 
   return( (*dtrsm)(side, uplo, transa, diag, &m, &n, 
 		   &alpha, 
@@ -565,7 +574,7 @@ int fff_blas_dsyrk (CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans,
 	       double* alpha, double* a, int* lda, double* beta,
 	       double* c__, int* ldc); 
   
-  dsyrk = FFF_EXTERNAL_FUNC[FFF_BLAS_DSYRK];
+  dsyrk = fff_blas_func[FFF_BLAS_DSYRK];
 
   return( (*dsyrk)(uplo, trans, &n, &k,
 		   &alpha, 
@@ -597,7 +606,7 @@ int fff_blas_dsyr2k (CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans,
 		double* alpha, double* a, int* lda, double* b,
 		int* ldb, double* beta, double* c__, int* ldc); 
 
-  dsyr2k = FFF_EXTERNAL_FUNC[FFF_BLAS_DSYR2K];
+  dsyr2k = fff_blas_func[FFF_BLAS_DSYR2K];
   
   return( (*dsyr2k)(uplo, trans, &n, &k, 
 			&alpha, 
@@ -606,3 +615,5 @@ int fff_blas_dsyr2k (CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans,
 			&beta, 
 			C->data, &ldc) ); 
 }
+
+

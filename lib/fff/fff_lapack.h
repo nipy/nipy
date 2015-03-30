@@ -32,6 +32,21 @@ extern "C" {
 #include "fff_blas.h"
 #include "fff_array.h"
 
+  typedef enum {
+    FFF_LAPACK_DGETRF=0,
+    FFF_LAPACK_DPOTRF=1,
+    FFF_LAPACK_DPOTRS=2,
+    FFF_LAPACK_DGESDD=3,
+    FFF_LAPACK_DGEQRF=4
+  } fff_lapack_func_key;
+
+  /*
+    dgetrf : LU decomp
+    dpotrf: Cholesky decomp
+    dpotrs: solve linear system using Cholesky decomp
+    dgesdd: SVD decomp
+    dgeqrf: QR decomp
+  */
 
   /* Import function */
   extern void fff_lapack_import_func(void* func_ptr, int k);

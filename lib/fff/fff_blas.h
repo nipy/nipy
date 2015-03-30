@@ -26,6 +26,35 @@ extern "C" {
   typedef enum {CblasNonUnit=131, CblasUnit=132} CBLAS_DIAG_t;
   typedef enum {CblasLeft=141, CblasRight=142} CBLAS_SIDE_t;
 
+  typedef enum {
+    FFF_BLAS_DDOT=0,
+    FFF_BLAS_DNRM2=1,
+    FFF_BLAS_DASUM=2,
+    FFF_BLAS_IDAMAX=3,
+    FFF_BLAS_DSWAP=4,
+    FFF_BLAS_DCOPY=5,
+    FFF_BLAS_DAXPY=6,
+    FFF_BLAS_DSCAL=7,
+    FFF_BLAS_DROT=8,
+    FFF_BLAS_DROTG=9,
+    FFF_BLAS_DROTMG=10,
+    FFF_BLAS_DROTM=11,
+    FFF_BLAS_DGEMV=12,
+    FFF_BLAS_DTRMV=13,
+    FFF_BLAS_DTRSV=14,
+    FFF_BLAS_DSYMV=15,
+    FFF_BLAS_DGER=16,
+    FFF_BLAS_DSYR=17,
+    FFF_BLAS_DSYR2=18,
+    FFF_BLAS_DGEMM=19,
+    FFF_BLAS_DSYMM=20,
+    FFF_BLAS_DTRMM=21, 
+    FFF_BLAS_DTRSM=22, 
+    FFF_BLAS_DSYRK=23,
+    FFF_BLAS_DSYR2K=24
+  } fff_blas_func_key;
+
+
   /* Import function */
   extern void fff_blas_import_func(void* func_ptr, int k);
 

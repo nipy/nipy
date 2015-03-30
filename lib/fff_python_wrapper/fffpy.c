@@ -16,11 +16,17 @@ void fffpy_import_array(void) {
 
 
 /* 
-   Function to import required blas/lapack functions on the fly.
+   Functions to import required blas/lapack functions on the fly.
 */
-void fffpy_import_external_func(const PyObject* ptr, int key)
+void fffpy_import_blas_func(const PyObject* ptr, int key)
 {    
-  fff_import_external_func((void*)PyCObject_AsVoidPtr((PyObject*)ptr), key);
+  fff_import_blas_func((void*)PyCObject_AsVoidPtr((PyObject*)ptr), key);
+  return;
+}
+
+void fffpy_import_lapack_func(const PyObject* ptr, int key)
+{    
+  fff_import_lapack_func((void*)PyCObject_AsVoidPtr((PyObject*)ptr), key);
   return;
 }
 

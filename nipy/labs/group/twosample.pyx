@@ -71,8 +71,13 @@ def stat(ndarray Y1, ndarray Y2, id='student', int axis=0, ndarray Magics=None):
   Compute a two-sample test statistic (Y1>Y2) over a number of
   deterministic or random permutations.
   """
-  cdef fff_vector *y1, *y2, *t, *yp, *magics
-  cdef fff_array *idx1, *idx2
+  cdef fff_vector *y1
+  cdef fff_vector *y2
+  cdef fff_vector *t
+  cdef fff_vector *yp
+  cdef fff_vector *magics
+  cdef fff_array *idx1
+  cdef fff_array *idx2
   cdef unsigned int n, n1, n2, nex
   cdef unsigned long int simu, nsimu, idx
   cdef fff_twosample_stat* stat
@@ -156,8 +161,16 @@ def stat_mfx(ndarray Y1, ndarray V1, ndarray Y2, ndarray V2,
   Compute a two-sample test statistic (Y1>Y2) over a number of
   deterministic or random permutations.
   """
-  cdef fff_vector *y1, *y2, *v1, *v2, *t, *yp, *vp, *magics
-  cdef fff_array *idx1, *idx2
+  cdef fff_vector *y1
+  cdef fff_vector *y2
+  cdef fff_vector *v1
+  cdef fff_vector *v2
+  cdef fff_vector *t 
+  cdef fff_vector *yp
+  cdef fff_vector *vp
+  cdef fff_vector *magics
+  cdef fff_array *idx1
+  cdef fff_array *idx2
   cdef unsigned int n, n1, n2, nex
   cdef unsigned long int simu, nsimu, idx
   cdef fff_twosample_stat_mfx* stat
