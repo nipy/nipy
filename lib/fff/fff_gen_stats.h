@@ -31,7 +31,7 @@ extern "C" {
     \f$ where \a L is lower triangular, and then exploits the fact
     that \f$ d^2 = \| L^{-1}x \|^2 \f$.
   */  
-  extern double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_vector* xaux, fff_vector* Saux);
+  extern double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_vector* xaux, fff_matrix* Saux);
 
   /*
 	\brief Generate a permutation from \a [0..n-1]

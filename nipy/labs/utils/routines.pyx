@@ -21,7 +21,7 @@ warn('Module nipy.labs.utils.routines deprecated, will be removed',
 # Exports from fff_gen_stats.h
 cdef extern from "fff_gen_stats.h":
 
-    double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_vector* xaux, fff_vector* Saux)
+    double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_vector* xaux, fff_matrix* Saux)
     void fff_permutation(unsigned int* x, unsigned int n,
                          unsigned long int magic)
     void fff_combination(unsigned int* x, unsigned int k, unsigned int n,
@@ -55,7 +55,8 @@ def quantile(X, double ratio, int interp=False, int axis=0):
 
     Partial sorting algorithm, very fast!!!
     """
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     cdef fffpy_multi_iterator* multi
 
     # Allocate output array Y
@@ -168,10 +169,16 @@ def svd(X):
     """
     cdef int axis=0
     cdef int m, n, dmin, dmax, lwork, liwork, info
-    cdef fff_vector *work, *x_flat, *x_flat_tmp, *s, *s_tmp
+    cdef fff_vector *work
+    cdef fff_vector *x_flat
+    cdef fff_vector *x_flat_tmp
+    cdef fff_vector *s
+    cdef fff_vector *s_tmp
     cdef fff_matrix x
     cdef fff_array *iwork
-    cdef fff_matrix *Aux, *U, *Vt 
+    cdef fff_matrix *Aux
+    cdef fff_matrix *U
+    cdef fff_matrix *Vt 
     cdef fffpy_multi_iterator* multi
 
     # Shape of matrices
@@ -240,7 +247,8 @@ def permutations(unsigned int n, unsigned int m=1, unsigned long magic=0):
     P = permutations(n, m=1, magic=0).
     Generate m permutations from [0..n[.
     """
-    cdef fff_array *p, *pi
+    cdef fff_array *p
+    cdef fff_array *pi
     cdef fff_array pi_view
     cdef unsigned int i
     p = fff_array_new2d(FFF_UINT, n, m)
@@ -260,7 +268,8 @@ def combinations(unsigned int k, unsigned int n, unsigned int m=1, unsigned long
     P = combinations(k, n, m=1, magic=0).
     Generate m combinations of k elements  from [0..n[.
     """
-    cdef fff_array *p, *pi
+    cdef fff_array *p
+    cdef fff_array *pi
     cdef fff_array pi_view
     cdef unsigned int i
     p = fff_array_new2d(FFF_UINT, k, m)

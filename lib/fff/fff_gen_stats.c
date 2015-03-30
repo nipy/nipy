@@ -103,7 +103,7 @@ extern void fff_combination(unsigned int* x, unsigned int k, unsigned int n, uns
    Squared mahalanobis distance: d2 = x' S^-1 x 
    Beware: x is not const
 */ 
-extern double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_vector* xaux, fff_vector* Saux)
+extern double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_vector* xaux, fff_matrix* Saux)
 {
   double d2; 
 
