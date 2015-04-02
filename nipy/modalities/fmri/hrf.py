@@ -169,15 +169,15 @@ def spm_hrf_compat(t,
     Parameters
     ----------
     t : array-like
-        vector of times at which to sample HRF
+        vector of times at which to sample HRF.
     peak_delay : float, optional
-        delay of peak
-    peak_disp : float, optional
-        width (dispersion) of peak
+        delay of peak.
     under_delay : float, optional
-        delay of undershoot
+        delay of undershoot.
+    peak_disp : float, optional
+        width (dispersion) of peak.
     under_disp : float, optional
-        width (dispersion) of undershoot
+        width (dispersion) of undershoot.
     p_u_ratio : float, optional
         peak to undershoot ratio.  Undershoot divided by this value before
         subtracting from peak.
@@ -188,7 +188,7 @@ def spm_hrf_compat(t,
     Returns
     -------
     hrf : array
-        vector length ``len(t)`` of samples from HRF at times `t`
+        vector length ``len(t)`` of samples from HRF at times `t`.
 
     Notes
     -----
