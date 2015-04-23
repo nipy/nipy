@@ -61,30 +61,6 @@ def _poly_drift(order, frametimes):
     return pol
 
 
-def _cosine_drift_(hfcut, frametimes):
-    """Create a cosine drift matrix
-
-    Parameters
-    ----------
-    hfcut, float , cut frequency of the low-pass filter
-    frametimes: array of shape(nscans): the sampling time
-
-    Returns
-    -------
-    cdrift:  array of shape(n_scans, n_drifts)
-             polynomial drifts plus a constant regressor
-    """
-    tmax = float(frametimes.max())
-    tsteps = len(frametimes)
-    order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
-    cdrift = np.zeros((tsteps, order))
-    for k in range(1, order):
-        cdrift[:, k - 1] = np.sqrt(2.0 / tmax) * np.cos(
-            np.pi * (frametimes / tmax + 0.5 / tsteps) * k)
-    cdrift[:, order - 1] = np.ones_like(frametimes)
-    return cdrift
-
-
 def _cosine_drift(hfcut, tim):
     """Create a cosine drift matrix
 

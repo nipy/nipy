@@ -72,6 +72,9 @@ def test_show_dmtx():
     assert (ax is not None)
 
 def test_cosine_drift():
+    # add something so that when the tests are launched from a different directory
+    # we still find the file ' 'dctmtx_N_20_order_4.txt' ? 
+
     spm_drifts = np.loadtxt('dctmtx_N_20_order_4.txt')
     tim = np.arange(20)
     P = 10 # period is half the time, gives us an order 4
