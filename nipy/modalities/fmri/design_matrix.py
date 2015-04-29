@@ -61,12 +61,12 @@ def _poly_drift(order, frametimes):
     return pol
 
 
-def _cosine_drift(hfcut, tim):
-    """Create a cosine drift matrix
+def _cosine_drift(period_cut, tim):
+    """Create a cosine drift matrix with periods greater or equals to period_cut
 
     Parameters
     ----------
-    hfcut, float 
+    period_cut: float 
          Cut period of the low-pass filter (in sec)
     tim: array of shape(nscans)
          The sampling times (in sec)
@@ -78,21 +78,21 @@ def _cosine_drift(hfcut, tim):
 
     Ref: http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
     """
-    N = len(tim)
-    n_tim = np.arange(N)
-    hfcut = 1./hfcut # input parameter is the period - originally the freq.
+    len_tim = len(tim)
+    n_times = np.arange(len_tim)
+    hfcut = 1./ period_cut # input parameter is the period  
 
-    dt,T = tim[1]-tim[0], tim.max() # == (N-1)*dt    
-    order = int(np.floor(2*N*hfcut*dt)) # s.t. hfcut = 1/(2*dt) yields N
+    dt,T = tim[1]-tim[0], tim.max() # == (len_tim-1)*dt    
+    order = int(np.floor(2*len_tim*hfcut*dt)) # s.t. hfcut = 1/(2*dt) yields len_tim
     # print order
-    cdrift = np.zeros((N, order))
-    nfct = np.sqrt(2.0/N)
+    cdrift = np.zeros((len_tim, order))
+    nfct = np.sqrt(2.0/len_tim)
     
-    for k in range(1,order):
-        #  nfct * cos(pi*k*(2n+1)/(2*N))  n:[0,N-1], k:[0,N-1]
-        cdrift[:,k-1] = nfct * np.cos((np.pi/N)*(n_tim + .5)*k)
+    for k in range(1, order):
+        #  nfct * cos(pi*k*(2n+1)/(2*len_tim))  n:[0,len_tim-1], k:[0,len_tim-1]
+        cdrift[:,k-1] = nfct * np.cos((np.pi/len_tim)*(n_times + .5)*k)
     
-    cdrift[:,order-1] = 1. # or 1./sqrt(N) to normalize
+    cdrift[:,order-1] = 1. # or 1./sqrt(len_tim) to normalize
     return cdrift
 
 

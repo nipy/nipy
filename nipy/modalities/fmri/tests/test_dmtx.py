@@ -10,7 +10,8 @@ not whether it is exact
 from __future__ import with_statement
 
 import numpy as np
-from os.path import join, dirname
+import os.path as osp
+#from os.path import join, dirname, walk
 from ..experimental_paradigm import (EventRelatedParadigm, BlockParadigm)
 from ..design_matrix import (dmtx_light, _convolve_regressors, dmtx_from_csv,
                              make_dmtx, _cosine_drift)
@@ -27,16 +28,16 @@ except ImportError:
 else:
     have_mpl = True
 
-
-DMTX = np.load(join(dirname(__file__), 'spm_dmtx.npz'))
-
+# load the spm file to test cosine basis
+my_path = osp.dirname(osp.abspath(__file__))
+full_path_dmtx_file = osp.join(my_path, 'spm_dmtx.npz')
+DMTX = np.load(full_path_dmtx_file)
 
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     paradigm =  EventRelatedParadigm(conditions, onsets)
     return paradigm
-
 
 def modulated_block_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
@@ -75,7 +76,7 @@ def test_cosine_drift():
     # add something so that when the tests are launched from a different directory
     # we still find the file ' 'dctmtx_N_20_order_4.txt' ? 
 
-    spm_drifts = np.loadtxt('dctmtx_N_20_order_4.txt')
+    spm_drifts = DMTX['cosbf_dt_1_nt_20_hcut_0p1'] # np.loadtxt('dctmtx_N_20_order_4.txt')
     tim = np.arange(20)
     P = 10 # period is half the time, gives us an order 4
     nipy_drifts = _cosine_drift(P, tim) #
