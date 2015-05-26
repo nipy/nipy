@@ -11,6 +11,7 @@ __version__ = '0.1'
 
 # Include fff
 from fff cimport *
+include "fffpy_import_lapack.pxi"
 
 # Exports from fff_blas.h
 cdef extern from "fff_blas.h":
@@ -48,15 +49,10 @@ cdef extern from "fff_blas.h":
                        fff_matrix * A,  fff_vector * x, double beta, fff_vector * y) 
     int fff_blas_dtrmv(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag, 
                        fff_matrix * A, fff_vector * x) 
-    int fff_blas_dtrsv(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag,
-                       fff_matrix * A, fff_vector * x) 
     int fff_blas_dsymv(CBLAS_UPLO_t Uplo, 
                        double alpha,  fff_matrix * A, 
                        fff_vector * x, double beta, fff_vector * y) 
     int fff_blas_dger(double alpha,  fff_vector * x,  fff_vector * y, fff_matrix * A)
-    int fff_blas_dsyr(CBLAS_UPLO_t Uplo, double alpha,  fff_vector * x, fff_matrix * A) 
-    int fff_blas_dsyr2(CBLAS_UPLO_t Uplo, double alpha, 
-                       fff_vector * x,  fff_vector * y, fff_matrix * A) 
 
     ## BLAS level 3
     int fff_blas_dgemm(CBLAS_TRANSPOSE_t TransA, CBLAS_TRANSPOSE_t TransB, 
@@ -67,12 +63,6 @@ cdef extern from "fff_blas.h":
                        double alpha,  fff_matrix * A, 
                        fff_matrix * B, double beta,
                        fff_matrix * C)
-    int fff_blas_dtrmm(CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo, 
-                       CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag, 
-                       double alpha,  fff_matrix * A, fff_matrix * B)
-    int fff_blas_dtrsm(CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo, 
-                       CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag, 
-                       double alpha,  fff_matrix * A, fff_matrix * B) 
     int fff_blas_dsyrk(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans, 
                        double alpha,  fff_matrix * A, double beta, fff_matrix * C) 
     int fff_blas_dsyr2k(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans, 
@@ -84,6 +74,9 @@ cdef extern from "fff_blas.h":
 fffpy_import_array()
 import_array()
 import numpy as np
+
+# Import blas/lapack routines on the fly
+fffpy_import_lapack()
 
 # Binded routines
 
@@ -105,7 +98,8 @@ def vector_set(X, size_t i, double a):
     Set i-th element.
     vector_set(x, i, a)
     """
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_new(x.size)
     fff_vector_memcpy(y, x)
@@ -119,7 +113,8 @@ def vector_set_all(X, double a):
     Set to a constant value.
     vector_set_all(x, a)
     """
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_new(x.size)
     fff_vector_memcpy(y, x)
@@ -133,7 +128,8 @@ def vector_scale(X, double a):
     Multiply by a constant value.
     y = vector_scale(x, a)
     """
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_new(x.size)
     fff_vector_memcpy(y, x)
@@ -147,7 +143,8 @@ def vector_add_constant(X, double a):
     Add a constant value.
     y = vector_add_constant(x, a)
     """
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_new(x.size)
     fff_vector_memcpy(y, x)
@@ -161,7 +158,9 @@ def vector_add(X, Y):
     Add two vectors.
     z = vector_add(x, y)
     """
-    cdef fff_vector *x, *y, *z
+    cdef fff_vector *x
+    cdef fff_vector *y
+    cdef fff_vector *z
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     z = fff_vector_new(x.size)
@@ -177,7 +176,9 @@ def vector_sub(X, Y):
     Substract two vectors: x - y
     z = vector_sub(x, y)
     """
-    cdef fff_vector *x, *y, *z
+    cdef fff_vector *x
+    cdef fff_vector *y
+    cdef fff_vector *z
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     z = fff_vector_new(x.size)
@@ -193,7 +194,9 @@ def vector_mul(X, Y):
     Element-wise multiplication.
     z = vector_mul(x, y)
     """
-    cdef fff_vector *x, *y, *z
+    cdef fff_vector *x
+    cdef fff_vector *y
+    cdef fff_vector *z
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     z = fff_vector_new(x.size)
@@ -209,7 +212,9 @@ def vector_div(X, Y):
     Element-wise division.
     z = vector_div(x, y)
     """
-    cdef fff_vector *x, *y, *z
+    cdef fff_vector *x
+    cdef fff_vector *y
+    cdef fff_vector *z
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     z = fff_vector_new(x.size)
@@ -300,7 +305,8 @@ def matrix_transpose(A):
     Transpose a matrix.
     B = matrix_transpose(A)
     """
-    cdef fff_matrix *a, *b
+    cdef fff_matrix *a
+    cdef fff_matrix *b
     a = fff_matrix_fromPyArray(A)
     b = fff_matrix_new(a.size2, a.size1)
     fff_matrix_transpose(b, a)
@@ -312,7 +318,9 @@ def matrix_add(A, B):
     """
     C = matrix_add(A, B)
     """
-    cdef fff_matrix *a, *b, *c
+    cdef fff_matrix *a
+    cdef fff_matrix *b
+    cdef fff_matrix *c
     a = fff_matrix_fromPyArray(A)
     b = fff_matrix_fromPyArray(B)
     c = fff_matrix_new(a.size1, a.size2)
@@ -368,13 +376,16 @@ def blas_dasum(X):
     return fff_blas_dasum(x)
 
 def blas_ddot(X, Y):
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     return fff_blas_ddot(x, y)
 
 def blas_daxpy(double alpha, X, Y): 
-    cdef fff_vector *x, *y, *z
+    cdef fff_vector *x
+    cdef fff_vector *y
+    cdef fff_vector *z
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     z = fff_vector_new(y.size)
@@ -384,7 +395,8 @@ def blas_daxpy(double alpha, X, Y):
     return Z
 
 def blas_dscal(double alpha, X):
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_new(x.size)
     fff_vector_memcpy(y, x)
@@ -403,7 +415,10 @@ def blas_dgemm(int TransA, int TransB, double alpha, A, B, double beta, C):
     beta C where op(A) = A, A^T, A^H for TransA = CblasNoTrans,
     CblasTrans, CblasConjTrans and similarly for the parameter TransB.
     """
-    cdef fff_matrix *a, *b, *c, *d
+    cdef fff_matrix *a
+    cdef fff_matrix *b
+    cdef fff_matrix *c
+    cdef fff_matrix *d
     a = fff_matrix_fromPyArray(A)
     b = fff_matrix_fromPyArray(B)
     c = fff_matrix_fromPyArray(C)
@@ -428,7 +443,10 @@ def blas_dsymm(int Side, int Uplo, double alpha, A, B, beta, C):
     when Uplo is CblasLower then the lower triangle and diagonal of A
     are used.
     """
-    cdef fff_matrix *a, *b, *c, *d
+    cdef fff_matrix *a
+    cdef fff_matrix *b
+    cdef fff_matrix *c
+    cdef fff_matrix *d
     a = fff_matrix_fromPyArray(A)
     b = fff_matrix_fromPyArray(B)
     c = fff_matrix_fromPyArray(C)
@@ -440,59 +458,6 @@ def blas_dsymm(int Side, int Uplo, double alpha, A, B, beta, C):
     fff_matrix_delete(c)
     D = fff_matrix_toPyArray(d)
     return D
-
-def blas_dtrmm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B):
-    """
-    C = blas_dtrmm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B).
-    
-    Compute the matrix-matrix product B = \alpha op(A) B for Side
-    is CblasLeft and B = \alpha B op(A) for Side is CblasRight. The
-    matrix A is triangular and op(A) = A, A^T, A^H for TransA =
-    CblasNoTrans, CblasTrans, CblasConjTrans. When Uplo is CblasUpper
-    then the upper triangle of A is used, and when Uplo is CblasLower
-    then the lower triangle of A is used. If Diag is CblasNonUnit then
-    the diagonal of A is used, but if Diag is CblasUnit then the
-    diagonal elements of the matrix A are taken as unity and are not
-    referenced.
-    """
-    cdef fff_matrix *a, *b, *c
-    a = fff_matrix_fromPyArray(A)
-    b = fff_matrix_fromPyArray(B)
-    c = fff_matrix_new(a.size1, a.size2)
-    fff_matrix_memcpy(c, b)
-    fff_blas_dtrmm(flag_side(Side), flag_uplo(Uplo), flag_transpose(TransA), flag_diag(Diag),
-                   alpha, a, c)
-    fff_matrix_delete(a)
-    fff_matrix_delete(b)
-    C = fff_matrix_toPyArray(c)
-    return C
-
-
-def blas_dtrsm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B):
-    """
-    blas_dtrsm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B).
-    
-    Compute the inverse-matrix matrix product B = \alpha
-    op(inv(A))B for Side is CblasLeft and B = \alpha B op(inv(A)) for
-    Side is CblasRight. The matrix A is triangular and op(A) = A, A^T,
-    A^H for TransA = CblasNoTrans, CblasTrans, CblasConjTrans. When
-    Uplo is CblasUpper then the upper triangle of A is used, and when
-    Uplo is CblasLower then the lower triangle of A is used. If Diag
-    is CblasNonUnit then the diagonal of A is used, but if Diag is
-    CblasUnit then the diagonal elements of the matrix A are taken as
-    unity and are not referenced.
-    """
-    cdef fff_matrix *a, *b, *c
-    a = fff_matrix_fromPyArray(A)
-    b = fff_matrix_fromPyArray(B)
-    c = fff_matrix_new(a.size1, a.size2)
-    fff_matrix_memcpy(c, b)
-    fff_blas_dtrsm(flag_side(Side), flag_uplo(Uplo), flag_transpose(TransA), flag_diag(Diag),
-                   alpha, a, c)
-    fff_matrix_delete(a)
-    fff_matrix_delete(b)
-    C = fff_matrix_toPyArray(c)
-    return C
 
 
 def blas_dsyrk(int Uplo, int Trans, double alpha, A, double beta, C):
@@ -507,7 +472,9 @@ def blas_dsyrk(int Uplo, int Trans, double alpha, A, double beta, C):
     when Uplo is CblasLower then the lower triangle and diagonal of C
     are used.
     """
-    cdef fff_matrix *a, *c, *d
+    cdef fff_matrix *a
+    cdef fff_matrix *c
+    cdef fff_matrix *d
     a = fff_matrix_fromPyArray(A)
     c = fff_matrix_fromPyArray(C)
     d = fff_matrix_new(a.size1, a.size2)
@@ -529,7 +496,10 @@ def blas_dsyr2k(int Uplo, int Trans, double alpha, A, B, double beta, C):
     and when Uplo is CblasLower then the lower triangle and diagonal of C
     are used.
     """
-    cdef fff_matrix *a, *b, *c, *d
+    cdef fff_matrix *a
+    cdef fff_matrix *b
+    cdef fff_matrix *c
+    cdef fff_matrix *d
     a = fff_matrix_fromPyArray(A)
     b = fff_matrix_fromPyArray(B)
     c = fff_matrix_fromPyArray(C)
@@ -541,6 +511,3 @@ def blas_dsyr2k(int Uplo, int Trans, double alpha, A, B, double beta, C):
     fff_matrix_delete(c)
     D = fff_matrix_toPyArray(d)
     return D
-
-
-

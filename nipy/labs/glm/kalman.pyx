@@ -11,6 +11,7 @@ __version__ = '0.1'
 
 # Includes
 from fff cimport *
+include "fffpy_import_lapack.pxi"
 
 # Exports from fff_glm_kalman.h
 cdef extern from "fff_glm_kalman.h":
@@ -62,9 +63,10 @@ cdef extern from "fff_glm_kalman.h":
 fffpy_import_array()
 import_array()
 import numpy as np
+fffpy_import_lapack()
+
 
 # Standard Kalman filter
-
 def ols(ndarray Y, ndarray X, int axis=0): 
     """
     (beta, norm_var_beta, s2, dof) = ols(Y, X, axis=0).
@@ -84,7 +86,9 @@ def ols(ndarray Y, ndarray X, int axis=0):
 
     REFERENCE:  Roche et al, ISBI 2004.
     """
-    cdef fff_vector *y, *b, *s2
+    cdef fff_vector *y
+    cdef fff_vector *b
+    cdef fff_vector *s2
     cdef fff_matrix *x
     cdef fff_glm_KF *kfilt
     cdef size_t p
@@ -161,7 +165,11 @@ def ar1(ndarray Y, ndarray X, int niter=2, int axis=0):
     REFERENCE:
     Roche et al, MICCAI 2004.
     """
-    cdef fff_vector *y, *b, *vb, *s2, *a
+    cdef fff_vector *y
+    cdef fff_vector *b
+    cdef fff_vector *vb
+    cdef fff_vector *s2
+    cdef fff_vector *a
     cdef fff_vector Vb_flat
     cdef fff_matrix *x
     cdef fff_glm_RKF *rkfilt
