@@ -9,8 +9,6 @@
    :Release: |version|
    :Date: |today|
 
-   Download `PDF <nipy.pdf>`_
-
    Contents:
 
 .. toctree::
