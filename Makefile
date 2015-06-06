@@ -1,6 +1,11 @@
 # Automating common tasks for NIPY development
 
 PYTHON = python
+HTML_DIR = doc/build/html
+LATEX_DIR = doc/build/latex
+WWW_DIR = doc/dist
+DOCSRC_DIR = doc
+PROJECT = nipy
 
 clean-pyc:
 	find . -regex ".*\.pyc" -exec rm -rf "{}" \;
@@ -105,5 +110,33 @@ recythonize:
 	# Recythonize all pyx files
 	find . -name "*.pyx" -exec cython -I libcstat/wrapper {} \;
 
-.PHONY: orig-src pylint
+# Website stuff
+$(WWW_DIR):
+	if [ ! -d $(WWW_DIR) ]; then mkdir -p $(WWW_DIR); fi
 
+htmldoc: build
+	cd $(DOCSRC_DIR) && PYTHONPATH=$(CURDIR):$(PYTHONPATH) $(MAKE) html
+
+pdfdoc: build
+	cd $(DOCSRC_DIR) && PYTHONPATH=$(CURDIR):$(PYTHONPATH) $(MAKE) latex
+	cd $(LATEX_DIR) && $(MAKE) all-pdf
+
+html: html-stamp
+html-stamp: $(WWW_DIR) htmldoc
+	cp -r $(HTML_DIR)/* $(WWW_DIR)
+	touch $@
+
+pdf: pdf-stamp
+pdf-stamp: $(WWW_DIR) pdfdoc
+	cp $(LATEX_DIR)/*.pdf $(WWW_DIR)
+	touch $@
+
+website: website-stamp
+website-stamp: $(WWW_DIR) html-stamp pdf-stamp
+	cp -r $(HTML_DIR)/* $(WWW_DIR)
+	touch $@
+
+upload-html: html-stamp
+	./tools/upload-gh-pages.sh $(WWW_DIR) $(PROJECT)
+
+.PHONY: orig-src pylint

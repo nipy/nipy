@@ -14,7 +14,7 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean pdf all dist public_html web web_public htmlonly api html pickle htmlhelp latex changes linkcheck doctest
+.PHONY: help clean pdf all dist htmlonly api html pickle htmlhelp latex changes linkcheck doctest
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -30,9 +30,6 @@ help:
 	@echo "  doctest   	run doctests in reST files"
 	@echo "  pdf		make <latex> and run the PDF generation"
 	@echo "  dist		make <all> and put results in $DIST_DIR/"
-	@echo "  public_html	make <dist> and rsync with public website"
-	@echo "  upload-stable-web	make <dist> and rsync with public stable website"
-	@echo "  upload-devel-web	make <dist> and rsync with public devel website"
 	@echo "  gitwash-update	update git workflow from source repo"
 
 # Commented these out, wasn't clear if we'd use these targets or not.
@@ -56,19 +53,23 @@ dist: clean all
 	@echo "Build finished.  Final docs are in $(DIST_DIR)"
 
 # This one udates for the specific user named at the top of the makefile
+# Please don't use this - we use github pages now
 upload-stable-web: upload-stable-web-$(SF_USER)
 
 # This one updates according to passed user e.g
 # make upload-stable-web-my_own_sf_user
+# Please don't use this - we use github pages now
 upload-stable-web-%: dist
 	rsync -rzhvp --delete --chmod=Dg+s,g+rw $(DIST_DIR)/* \
 		$*,nipy@web.sourceforge.net:/home/groups/n/ni/nipy/htdocs/nipy/stable
 
 # This one udates for the specific user named at the top of the makefile
+# Please don't use this - we use github pages now
 upload-devel-web: upload-devel-web-$(SF_USER)
 
 # This one updates according to passed user e.g
 # make upload-devel-web-my_own_sf_user
+# Please don't use this - we use github pages now
 upload-devel-web-%: dist
 	rsync -rzhvp --delete --chmod=Dg+s,g+rw $(DIST_DIR)/* \
 		$*,nipy@web.sourceforge.net:/home/groups/n/ni/nipy/htdocs/nipy/devel
@@ -136,4 +137,3 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) build/doctest
 	@echo
 	@echo "The overview file is in build/doctest."
-
