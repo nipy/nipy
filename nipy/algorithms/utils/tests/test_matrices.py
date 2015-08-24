@@ -31,7 +31,7 @@ def test_matrix_rank():
     eps = np.finfo(X.dtype).eps
     assert_equal(matrix_rank(X, tol=0), 10)
     assert_equal(matrix_rank(X, tol=S.min() - eps), 10)
-    assert_equal(matrix_rank(X, tol=S.min() + eps), 9)
+    assert_equal(matrix_rank(X, tol=S.min() + eps), 10)
 
 
 def test_full_rank():
