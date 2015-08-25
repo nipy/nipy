@@ -37,9 +37,17 @@ Current information can always be found at the NIPY website::
 Mailing Lists
 =============
 
-Please see the developer's list::
+For questions on how to use nipy or on making code contributions, please see the ``neuroimaging`` mailing list:
 
-    http://projects.scipy.org/mailman/listinfo/nipy-devel
+    https://mail.python.org/mailman/listinfo/neuroimaging
+
+Please report bugs at github issues:
+
+    https://github.com/nipy/nipy/issues
+
+You can see the list of current proposed changes at:
+
+    https://github.com/nipy/nipy/pulls
 
 Code
 ====
