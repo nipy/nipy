@@ -4,21 +4,34 @@
 # It's okay for it to be on multiple physical lines, so long as you remember:
 # - There can't be any leading "-"s - All newlines will be removed, so use
 # ";"s
+sudo: false  # To use travis container infrastructure
 language: python
+cache:
+  directories:
+    - $HOME/.cache/pip
+env:
+    global:
+        - DEPENDS="numpy scipy sympy matplotlib nibabel"
 python:
     - 2.6
+    - 3.2
+    - 3.3
+    - 3.4
 
 matrix:
   include:
     - python: 2.7
       env:
-        - COVERAGE=--with-coverage
+        - COVERAGE=1
 before_install:
-    - sudo apt-get install -qq libatlas-dev libatlas-base-dev gfortran libpng-dev
-    - pip install --no-index -f http://wheels2.astropy.org -f https://nipy.bic.berkeley.edu/scipy_installers/travis scipy matplotlib;
-    - pip install sympy
-    - pip install nibabel
-    - if [ "${COVERAGE}" == "--with-coverage" ]; then
+    - source tools/travis_tools.sh
+    - virtualenv --python=python venv
+    - source venv/bin/activate
+    - python --version # just to check
+    - retry pip install nose # always
+    - wheelhouse_pip_install $DEPENDS
+    # - sudo apt-get install -qq libatlas-dev libatlas-base-dev gfortran libpng-dev
+    - if [ "${COVERAGE}" == "1" ]; then
       pip install coverage;
       pip install coveralls;
       fi
@@ -31,7 +44,10 @@ script:
     # Change into an innocuous directory and find tests from installation
     - mkdir for_testing
     - cd for_testing
-    - if [ "${COVERAGE}" == "--with-coverage" ]; then cp ../.coveragerc .; fi
-    - $PYTHON ../tools/nipnost $COVERAGE `python -c "import os; import nipy; print(os.path.dirname(nipy.__file__))"`
+    - if [ "${COVERAGE}" == "1" ]; then
+      cp ../.coveragerc .;
+      COVER_ARGS="--with-coverage --cover-package dipy";
+      fi
+    - $PYTHON ../tools/nipnost $COVER_ARGS nipy
 after_success:
-    - if [ "${COVERAGE}" == "--with-coverage" ]; then coveralls; fi
+    - if [ "${COVERAGE}" == "1" ]; then coveralls; fi
