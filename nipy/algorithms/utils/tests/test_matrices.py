@@ -1,7 +1,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Test functions for utils.matrices """
+from __future__ import print_function
+
 import numpy as np
+
+import scipy.linalg as spl
 
 from ..matrices import (matrix_rank, full_rank, pos_recipr, recipr0)
 
@@ -27,11 +31,11 @@ def test_matrix_rank():
     rng = np.random.RandomState(20120613)
     X = rng.normal(size=(40, 10))
     X[:, 0] = X[:, 1] + X[:, 2]
-    S = np.linalg.svd(X, compute_uv=False)
+    S = spl.svd(X, compute_uv=False)
     eps = np.finfo(X.dtype).eps
     assert_equal(matrix_rank(X, tol=0), 10)
     assert_equal(matrix_rank(X, tol=S.min() - eps), 10)
-    assert_equal(matrix_rank(X, tol=S.min() + eps), 10)
+    assert_equal(matrix_rank(X, tol=S.min() + eps), 9)
 
 
 def test_full_rank():
