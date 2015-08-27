@@ -3,6 +3,7 @@
 
 #include <math.h>
 
+#define FNAME FFF_FNAME
 
 /* TODO : add tests for dimension compatibility */ 
 
@@ -18,15 +19,70 @@
 #define SWAP_SIDE(Side) ( (Side)==(CblasRight) ? "L" : "R" )
 
 
-/* Global array of external function pointers  */
-void* fff_blas_func[25];
 
-/* Import function */
-void fff_import_blas_func(void* func_ptr, int k)
-{
-  fff_blas_func[k] = func_ptr;
-  return;
-}
+/* BLAS 1 */
+extern double FNAME(ddot)(int* n, double* dx, int* incx, double* dy,
+			  int* incy); 
+extern double FNAME(dnrm2)(int* n, double* x, int* incx); 
+extern double FNAME(dasum)(int* n, double* dx, int* incx); 
+extern int FNAME(idamax)(int* n, double* dx, int* incx); 
+extern int FNAME(dswap)(int* n, double* dx, int* incx,
+			double* dy, int* incy); 
+extern int FNAME(dcopy)(int* n, double* dx, int* incx,
+			double* dy, int* incy); 
+extern int FNAME(daxpy)(int* n, double* da, double* dx,
+			int* incx, double* dy, int* incy);
+extern int FNAME(dscal)(int* n, double* da, double* dx,
+			int* incx); 
+extern int FNAME(drotg)(double* da, double* db, double* c__,
+			double* s);
+extern int FNAME(drot)(int* n, double* dx, int* incx,
+		       double* dy, int* incy, double* c__, double* s); 
+extern int FNAME(drotmg)(double* dd1, double* dd2, double* 
+			 dx1, double* dy1, double* dparam);
+extern int FNAME(drotm)(int* n, double* dx, int* incx,
+			double* dy, int* incy, double* dparam); 
+
+/* BLAS 2 */
+extern int FNAME(dgemv)(char *trans, int* m, int* n, double* 
+			alpha, double* a, int* lda, double* x, int* incx,
+			double* beta, double* y, int* incy);
+extern int FNAME(dtrmv)(char *uplo, char *trans, char *diag, int* n,
+			double* a, int* lda, double* x, int* incx); 
+extern int FNAME(dtrsv)(char *uplo, char *trans, char *diag, int* n,
+			double* a, int* lda, double* x, int* incx); 
+extern int FNAME(dsymv)(char *uplo, int* n, double* alpha,
+			double* a, int* lda, double* x, int* incx, double
+			*beta, double* y, int* incy);
+extern int FNAME(dger)(int* m, int* n, double* alpha,
+		       double* x, int* incx, double* y, int* incy,
+		       double* a, int* lda);
+extern int FNAME(dsyr)(char *uplo, int* n, double* alpha,
+		       double* x, int* incx, double* a, int* lda); 
+extern int FNAME(dsyr2)(char *uplo, int* n, double* alpha,
+			double* x, int* incx, double* y, int* incy,
+			double* a, int* lda); 
+
+/* BLAS 3 */ 
+extern int FNAME(dgemm)(char *transa, char *transb, int* m, int* 
+			n, int* k, double* alpha, double* a, int* lda,
+			double* b, int* ldb, double* beta, double* c__,
+			int* ldc); 
+extern int FNAME(dsymm)(char *side, char *uplo, int* m, int* n,
+			double* alpha, double* a, int* lda, double* b,
+			int* ldb, double* beta, double* c__, int* ldc); 
+extern int FNAME(dtrmm)(char *side, char *uplo, char *transa, char *diag,
+			int* m, int* n, double* alpha, double* a, int* 
+			lda, double* b, int* ldb); 
+extern int FNAME(dtrsm)(char *side, char *uplo, char *transa, char *diag,
+			int* m, int* n, double* alpha, double* a, int* 
+			lda, double* b, int* ldb); 
+extern int FNAME(dsyrk)(char *uplo, char *trans, int* n, int* k,
+			double* alpha, double* a, int* lda, double* beta,
+			double* c__, int* ldc); 
+extern int FNAME(dsyr2k)(char *uplo, char *trans, int* n, int* k,
+			 double* alpha, double* a, int* lda, double* b,
+			 int* ldb, double* beta, double* c__, int* ldc); 
 
 
 /****** BLAS 1 ******/ 
@@ -37,14 +93,11 @@ double fff_blas_ddot (const fff_vector * x, const fff_vector * y)
   int n = (int) x->size;
   int incx = (int) x->stride; 
   int incy = (int) y->stride; 
-  double (*ddot)(int* n, double* dx, int* incx, double* dy, int* incy); 
-
-  ddot = fff_blas_func[FFF_BLAS_DDOT];
 
   if ( n != y->size )
     return 1;  
  
-  return( (*ddot)(&n, x->data, &incx, y->data, &incy) ); 
+  return( FNAME(ddot)(&n, x->data, &incx, y->data, &incy) ); 
 }
 
 /* Compute the Euclidean norm ||x||_2 = \sqrt {\sum x_i^2} of the vector x. */ 
@@ -52,11 +105,8 @@ double fff_blas_dnrm2 (const fff_vector * x)
 {
   int n = (int) x->size; 
   int incx = (int) x->stride; 
-  double (*dnrm2)(int* n, double* x, int* incx);
 
-  dnrm2 = fff_blas_func[FFF_BLAS_DNRM2];
-
-  return( (*dnrm2)(&n, x->data, &incx) ); 
+  return( FNAME(dnrm2)(&n, x->data, &incx) ); 
 }
 
 /* Compute the absolute sum \sum |x_i| of the elements of the vector x.*/
@@ -64,11 +114,8 @@ double fff_blas_dasum (const fff_vector * x)
 {
   int n = (int) x->size; 
   int incx = (int) x->stride; 
-  double (*dasum)(int* n, double* dx, int* incx); 
 
-  dasum = fff_blas_func[FFF_BLAS_DASUM];
-
-  return( (*dasum)(&n, x->data, &incx) ); 
+  return( FNAME(dasum)(&n, x->data, &incx) ); 
 }
 
 /* 
@@ -81,11 +128,8 @@ CBLAS_INDEX_t fff_blas_idamax (const fff_vector * x)
 {
   int n = (int) x->size; 
   int incx = (int) x->stride; 
-  int (*idamax)(int* n, double* dx, int* incx); 
 
-  idamax = fff_blas_func[FFF_BLAS_IDAMAX];
-
-  return( (CBLAS_INDEX_t)((*idamax)(&n, x->data, &incx) - 1) ); 
+  return( (CBLAS_INDEX_t)(FNAME(idamax)(&n, x->data, &incx) - 1) ); 
 }
 
 /* Exchange the elements of the vectors x and y.*/
@@ -94,15 +138,11 @@ int fff_blas_dswap (fff_vector * x, fff_vector * y)
   int n = (int) x->size; 
   int incx = (int) x->stride; 
   int incy = (int) y->stride; 
-  int (*dswap)(int* n, double* dx, int* incx,
-	       double* dy, int* incy); 
-
-  dswap = fff_blas_func[FFF_BLAS_DSWAP];
   
   if ( n != y->size )
     return 1;  
   
-  return( (*dswap)(&n, x->data, &incx, y->data, &incy) ); 
+  return( FNAME(dswap)(&n, x->data, &incx, y->data, &incy) ); 
 }
 
 /* Copy the elements of the vector x into the vector y */ 
@@ -111,15 +151,11 @@ int fff_blas_dcopy (const fff_vector * x, fff_vector * y)
   int n = (int) x->size; 
   int incx = (int) x->stride; 
   int incy = (int) y->stride; 
-  int (*dcopy)(int* n, double* dx, int* incx,
-	       double* dy, int* incy); 
-
-  dcopy = fff_blas_func[FFF_BLAS_DCOPY];
-
+  
   if ( n != y->size )
     return 1;  
   
-  return( (*dcopy)(&n, x->data, &incx, y->data, &incy) ); 
+  return( FNAME(dcopy)(&n, x->data, &incx, y->data, &incy) ); 
 }
 
 /* Compute the sum y = \alpha x + y for the vectors x and y */ 
@@ -128,15 +164,11 @@ int fff_blas_daxpy (double alpha, const fff_vector * x, fff_vector * y)
   int n = (int) x->size; 
   int incx = (int) x->stride; 
   int incy = (int) y->stride; 
-  int (*daxpy)(int* n, double* da, double* dx,
-	       int* incx, double* dy, int* incy);
-
+  
   if ( n != y->size )
     return 1;  
-
-  daxpy = fff_blas_func[FFF_BLAS_DAXPY];
   
-  return( (*daxpy)(&n, &alpha, x->data, &incx, y->data, &incy) ); 
+  return( FNAME(daxpy)(&n, &alpha, x->data, &incx, y->data, &incy) ); 
 }
 
 /* Rescale the vector x by the multiplicative factor alpha. */ 
@@ -144,12 +176,8 @@ int fff_blas_dscal (double alpha, fff_vector * x)
 {
   int n = (int) x->size; 
   int incx = (int) x->stride; 
-  int (*dscal)(int* n, double* da, double* dx,
-	       int* incx); 
   
-  dscal = fff_blas_func[FFF_BLAS_DSCAL];
-
-  return( (*dscal)(&n, &alpha, x->data, &incx) ); 
+  return( FNAME(dscal)(&n, &alpha, x->data, &incx) ); 
 }
 
 
@@ -159,15 +187,9 @@ int fff_blas_dscal (double alpha, fff_vector * x)
           [ -s  c ] [ b ]   [ 0 ]
 
 	  The variables a and b are overwritten by the routine. */
-
 int fff_blas_drotg (double a[], double b[], double c[], double s[])
 {
-  int (*drotg)(double* da, double* db, double* c__,
-	       double* s);
-
-  drotg = fff_blas_func[FFF_BLAS_DROTG];
-
-  return( (*drotg)(a, b, c, s) );
+  return( FNAME(drotg)(a, b, c, s) );
 } 
 
 /* Apply a Givens rotation (x', y') = (c x + s y, -s x + c y) to the vectors x, y.*/
@@ -176,15 +198,11 @@ int fff_blas_drot (fff_vector * x, fff_vector * y, double c, double s)
   int n = (int) x->size; 
   int incx = (int) x->stride; 
   int incy = (int) y->stride; 
-  int (*drot)(int* n, double* dx, int* incx,
-	      double* dy, int* incy, double* c__, double* s); 
-
-  drot = fff_blas_func[FFF_BLAS_DROT];
   
   if ( n != y->size )
     return 1;  
   
-  return( (*drot)(&n, x->data, &incx, y->data, &incy, &c, &s) ); 
+  return( FNAME(drot)(&n, x->data, &incx, y->data, &incy, &c, &s) ); 
 }
 
 /* Compute a modified Givens transformation. The modified Givens
@@ -192,12 +210,7 @@ int fff_blas_drot (fff_vector * x, fff_vector * y, double c, double s)
    specification. */
 int fff_blas_drotmg (double d1[], double d2[], double b1[], double b2, double P[])
 {
-  int (*drotmg)(double* dd1, double* dd2, double* 
-		dx1, double* dy1, double* dparam);
-
-  drotmg = fff_blas_func[FFF_BLAS_DROTMG];
-
-  return( (*drotmg)(d1, d2, b1, &b2, P) ); 
+  return( FNAME(drotmg)(d1, d2, b1, &b2, P) ); 
 }
 
     
@@ -207,21 +220,16 @@ int fff_blas_drotm (fff_vector * x, fff_vector * y, const double P[])
   int n = (int) x->size; 
   int incx = (int) x->stride; 
   int incy = (int) y->stride; 
-  int (*drotm)(int* n, double* dx, int* incx,
-	       double* dy, int* incy, double* dparam); 
-
-  drotm = fff_blas_func[FFF_BLAS_DROTM];
   
   if ( n != y->size )
     return 1;  
   
-  return( (*drotm)(&n, x->data, &incx, y->data, &incy, (double*)P) ); 
+  return( FNAME(drotm)(&n, x->data, &incx, y->data, &incy, (double*)P) ); 
 }
 
 
 
 /****** BLAS 2 ******/ 
-
 
 /* Compute the matrix-vector product and sum y = \alpha op(A) x +
    \beta y, where op(A) = A, A^T, A^H for TransA = CblasNoTrans,
@@ -235,18 +243,13 @@ int fff_blas_dgemv (CBLAS_TRANSPOSE_t TransA, double alpha,
   int m = (int) A->size2; 
   int n = (int) A->size1; 
   int lda = (int) A->tda; 
-  int (*dgemv)(char *trans, int* m, int* n, double* 
-	       alpha, double* a, int* lda, double* x, int* incx,
-	       double* beta, double* y, int* incy);
 
-  dgemv = fff_blas_func[FFF_BLAS_DGEMV];
-
-  return( (*dgemv)(trans, &m, &n, 
-		   &alpha, 
-		   A->data, &lda, 
-		   x->data, &incx, 
-		   &beta, 
-		   y->data, &incy) ); 
+  return( FNAME(dgemv)(trans, &m, &n, 
+		       &alpha, 
+		       A->data, &lda, 
+		       x->data, &incx, 
+		       &beta, 
+		       y->data, &incy) ); 
 }
 
 
@@ -267,14 +270,10 @@ int fff_blas_dtrmv (CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Di
   int incx = (int) x->stride; 
   int n = (int) A->size1; 
   int lda = (int) A->tda; 
-  int (*dtrmv)(char *uplo, char *trans, char *diag, int* n,
-	       double* a, int* lda, double* x, int* incx); 
 
-  dtrmv = fff_blas_func[FFF_BLAS_DTRMV];
-
-  return( (*dtrmv)(uplo, trans, diag, &n, 
-		   A->data, &lda,
-		   x->data, &incx) ); 
+  return( FNAME(dtrmv)(uplo, trans, diag, &n, 
+		       A->data, &lda,
+		       x->data, &incx) ); 
 
 }
 
@@ -295,14 +294,10 @@ int fff_blas_dtrsv (CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Di
   int incx = (int) x->stride; 
   int n = (int) A->size1; 
   int lda = (int) A->tda; 
-  int (*dtrsv)(char *uplo, char *trans, char *diag, int* n,
-	       double* a, int* lda, double* x, int* incx); 
 
-  dtrsv = fff_blas_func[FFF_BLAS_DTRSV];
-
-  return( (*dtrsv)(uplo, trans, diag, &n, 
-		   A->data, &lda, 
-		   x->data, &incx) ); 
+  return( FNAME(dtrsv)(uplo, trans, diag, &n, 
+		       A->data, &lda, 
+		       x->data, &incx) ); 
 }
 
 /* 
@@ -312,6 +307,7 @@ half or lower half need to be stored. When Uplo is CblasUpper then the
 upper triangle and diagonal of A are used, and when Uplo is CblasLower
 then the lower triangle and diagonal of A are used.
 */
+
 int fff_blas_dsymv (CBLAS_UPLO_t Uplo, 
 		    double alpha, const fff_matrix * A, 
 		    const fff_vector * x, double beta, fff_vector * y)
@@ -321,20 +317,14 @@ int fff_blas_dsymv (CBLAS_UPLO_t Uplo,
   int incy = (int) y->stride;
   int n = (int) A->size1; 
   int lda = (int) A->tda; 
-  int (*dsymv)(char *uplo, int* n, double* alpha,
-	       double* a, int* lda, double* x, int* incx, double
-	       *beta, double* y, int* incy);
 
-  dsymv = fff_blas_func[FFF_BLAS_DSYMV];
-  
-  return( (*dsymv)(uplo, &n, 
-		   &alpha, 
-		   A->data, &lda, 
-		   x->data, &incx, 
-		   &beta, 
-		   y->data, &incy) ); 
+  return( FNAME(dsymv)(uplo, &n, 
+		       &alpha, 
+		       A->data, &lda, 
+		       x->data, &incx, 
+		       &beta, 
+		       y->data, &incy) ); 
 }
-
 
 /* Compute the rank-1 update A = \alpha x y^T + A of the matrix A.*/
 int fff_blas_dger (double alpha, const fff_vector * x, const fff_vector * y, fff_matrix * A)
@@ -344,17 +334,12 @@ int fff_blas_dger (double alpha, const fff_vector * x, const fff_vector * y, fff
   int m = (int) A->size2; 
   int n = (int) A->size1; 
   int lda = (int) A->tda; 
-  int (*dger)(int* m, int* n, double* alpha,
-	      double* x, int* incx, double* y, int* incy,
-	      double* a, int* lda);
  
-  dger = fff_blas_func[FFF_BLAS_DGER];
-
-  return( (*dger)(&m, &n, 
-		  &alpha, 
-		  y->data, &incy, 
-		  x->data, &incx, 
-		  A->data, &lda) ); 
+  return( FNAME(dger)(&m, &n, 
+		      &alpha, 
+		      y->data, &incy, 
+		      x->data, &incx, 
+		      A->data, &lda) ); 
 }
 
 /* 
@@ -370,15 +355,11 @@ int fff_blas_dsyr (CBLAS_UPLO_t Uplo, double alpha, const fff_vector * x, fff_ma
   int incx = (int) x->stride; 
   int n = (int) A->size1; 
   int lda = (int) A->tda; 
-  int (*dsyr)(char *uplo, int* n, double* alpha,
-	      double* x, int* incx, double* a, int* lda); 
 
-  dsyr = fff_blas_func[FFF_BLAS_DSYR];
-
-  return( (*dsyr)(uplo, &n, 
-		  &alpha, 
-		  x->data, &incx, 
-		  A->data, &lda ) ); 
+  return( FNAME(dsyr)(uplo, &n, 
+		      &alpha, 
+		      x->data, &incx, 
+		      A->data, &lda ) ); 
 }
 
 /* 
@@ -397,17 +378,12 @@ int fff_blas_dsyr2 (CBLAS_UPLO_t Uplo, double alpha,
   int incy = (int) y->stride; 
   int n = (int) A->size1; 
   int lda = (int) A->tda; 
-  int (*dsyr2)(char *uplo, int* n, double* alpha,
-	       double* x, int* incx, double* y, int* incy,
-	       double* a, int* lda); 
 
-  dsyr2 = fff_blas_func[FFF_BLAS_DSYR2];
-
-  return( (*dsyr2)(uplo, &n, 
-		   &alpha, 
-		   y->data, &incy, 
-		   x->data, &incx, 
-		   A->data, &lda) ); 
+  return( FNAME(dsyr2)(uplo, &n, 
+		       &alpha, 
+		       y->data, &incy, 
+		       x->data, &incx, 
+		       A->data, &lda) ); 
 }
 
 
@@ -439,14 +415,8 @@ int fff_blas_dgemm (CBLAS_TRANSPOSE_t TransA, CBLAS_TRANSPOSE_t TransB,
   int ldb = (int) B->tda; 
   int ldc = (int) C->tda;
   int k = (TransB == CblasNoTrans) ? (int)B->size1 : (int)B->size2;
-  int (*dgemm)(char *transa, char *transb, int* m, int* 
-	       n, int* k, double* alpha, double* a, int* lda,
-	       double* b, int* ldb, double* beta, double* c__,
-	       int* ldc); 
 
-  dgemm = fff_blas_func[FFF_BLAS_DGEMM];
-
-  return( (*dgemm)(transb, transa, &m, &n, &k, &alpha, 
+  return( FNAME(dgemm)(transb, transa, &m, &n, &k, &alpha, 
 		       B->data, &ldb, 
 		       A->data, &lda, 
 		       &beta, 
@@ -470,18 +440,13 @@ int fff_blas_dsymm (CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo,
   int lda = (int) A->tda; 
   int ldb = (int) B->tda; 
   int ldc = (int) C->tda; 
-  int (*dsymm)(char *side, char *uplo, int* m, int* n,
-	       double* alpha, double* a, int* lda, double* b,
-	       int* ldb, double* beta, double* c__, int* ldc); 
-  
-  dsymm = fff_blas_func[FFF_BLAS_DSYMM];
 
-  return ( (*dsymm)(side, uplo, &m, &n,
-		    &alpha, 
-		    A->data, &lda, 
-		    B->data, &ldb,
-		    &beta, 
-		    C->data, &ldc) ); 
+  return ( FNAME(dsymm)(side, uplo, &m, &n,
+			&alpha, 
+			A->data, &lda, 
+			B->data, &ldb,
+			&beta, 
+			C->data, &ldc) ); 
 }
 
 /*
@@ -505,16 +470,12 @@ int fff_blas_dtrmm (CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Tran
   int n = B->size1;
   int lda = (int) A->tda; 
   int ldb = (int) B->tda; 
-  int (*dtrmm)(char *side, char *uplo, char *transa, char *diag,
-	       int* m, int* n, double* alpha, double* a, int* 
-	       lda, double* b, int* ldb); 
+
   
-  dtrmm = fff_blas_func[FFF_BLAS_DTRMM];
-  
-  return( (*dtrmm)(side, uplo, transa, diag, &m, &n,
-		   &alpha, 
-		   A->data, &lda, 
-		   B->data, &ldb) ); 
+  return( FNAME(dtrmm)(side, uplo, transa, diag, &m, &n,
+		       &alpha, 
+		       A->data, &lda, 
+		       B->data, &ldb) ); 
   
 }
 
@@ -540,16 +501,11 @@ int fff_blas_dtrsm (CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Tran
   int n = B->size1;
   int lda = (int) A->tda; 
   int ldb = (int) B->tda; 
-  int (*dtrsm)(char *side, char *uplo, char *transa, char *diag,
-	       int* m, int* n, double* alpha, double* a, int* 
-	       lda, double* b, int* ldb); 
-  
-  dtrsm = fff_blas_func[FFF_BLAS_DTRSM];
 
-  return( (*dtrsm)(side, uplo, transa, diag, &m, &n, 
-		   &alpha, 
-		   A->data, &lda, 
-		   B->data, &ldb) ); 
+  return( FNAME(dtrsm)(side, uplo, transa, diag, &m, &n, 
+		       &alpha, 
+		       A->data, &lda, 
+		       B->data, &ldb) ); 
   
 }
 
@@ -570,17 +526,12 @@ int fff_blas_dsyrk (CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans,
   int k = (Trans == CblasNoTrans) ? (int)A->size1 : (int)A->size2;
   int lda = (int) A->tda; 
   int ldc = (int) C->tda; 
-  int (*dsyrk)(char *uplo, char *trans, int* n, int* k,
-	       double* alpha, double* a, int* lda, double* beta,
-	       double* c__, int* ldc); 
   
-  dsyrk = fff_blas_func[FFF_BLAS_DSYRK];
-
-  return( (*dsyrk)(uplo, trans, &n, &k,
-		   &alpha, 
-		   A->data, &lda, 
-		   &beta,
-		   C->data, &ldc) ); 
+  return( FNAME(dsyrk)(uplo, trans, &n, &k,
+		       &alpha, 
+		       A->data, &lda, 
+		       &beta,
+		       C->data, &ldc) ); 
 }
 
 /* 
@@ -602,18 +553,11 @@ int fff_blas_dsyr2k (CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans,
   int lda = (int) A->tda; 
   int ldb = (int) B->tda; 
   int ldc = (int) C->tda; 
-  int (*dsyr2k)(char *uplo, char *trans, int* n, int* k,
-		double* alpha, double* a, int* lda, double* b,
-		int* ldb, double* beta, double* c__, int* ldc); 
-
-  dsyr2k = fff_blas_func[FFF_BLAS_DSYR2K];
-  
-  return( (*dsyr2k)(uplo, trans, &n, &k, 
+ 
+  return( FNAME(dsyr2k)(uplo, trans, &n, &k, 
 			&alpha, 
 			B->data, &ldb, 
 			A->data, &lda, 
 			&beta, 
 			C->data, &ldc) ); 
 }
-
-

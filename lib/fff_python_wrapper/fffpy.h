@@ -1,11 +1,8 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
-#include <fff_base.h>
 #include <fff_vector.h>
 #include <fff_matrix.h>
 #include <fff_array.h>
-#include <fff_blas.h>
-#include <fff_lapack.h>
 
 
 /*!
@@ -36,12 +33,6 @@
 */
 extern void fffpy_import_array(void);
 
-/*
-  Functions to import blas and lapack C-functions on the fly from a
-  Python C-object representing the function pointer.
- */
-extern void fffpy_import_blas_func(const PyObject* ptr, int key);
-extern void fffpy_import_lapack_func(const PyObject* ptr, int key);
 
 /*!
   \brief Convert \c PyArrayObject to \c fff_vector 
@@ -121,6 +112,7 @@ extern PyArrayObject* fff_matrix_toPyArray(fff_matrix* y);
   belongs to a local structure having its own destruction method.
 */ 
 extern PyArrayObject* fff_matrix_const_toPyArray(const fff_matrix* y); 
+
 
 
 /*!

@@ -62,8 +62,7 @@ def pass_vector(ndarray X):
     """
     Y = pass_vector(X)
     """
-    cdef fff_vector *x
-    cdef fff_vector *y
+    cdef fff_vector *x, *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_new(x.size)
     fff_vector_memcpy(y, x)
@@ -106,8 +105,7 @@ def pass_matrix(ndarray X):
     """
     Y = pass_matrix(X)
     """
-    cdef fff_matrix *x
-    cdef fff_matrix *y 
+    cdef fff_matrix *x, *y 
     x = fff_matrix_fromPyArray(X)
     y = fff_matrix_new(x.size1, x.size2)
     fff_matrix_memcpy(y, x)
@@ -119,8 +117,7 @@ def pass_array(ndarray X):
     """
     Y = pass_array(X)
     """
-    cdef fff_array *x
-    cdef fff_array *y
+    cdef fff_array *x, *y
     x = fff_array_fromPyArray(X)
     y = fff_array_new(x.datatype, x.dimX, x.dimY, x.dimZ, x.dimT)
     fff_array_copy(y, x)
@@ -132,9 +129,7 @@ def pass_vector_via_iterator(ndarray X, int axis=0, int niters=0):
     """
     Y = pass_vector_via_iterator(X, axis=0, niters=0)
     """
-    cdef fff_vector *x
-    cdef fff_vector *y
-    cdef fff_vector *z
+    cdef fff_vector *x, *y, *z
     cdef fffpy_multi_iterator* multi
 
     Xdum = X.copy() ## at least two arrays needed for multi iterator
@@ -157,8 +152,7 @@ def copy_via_iterators(ndarray Y, int axis=0):
     Copy array Y into Z via fff's PyArray_MultiIterAllButAxis C function.
     Behavior should be equivalent to Z = Y.copy(). 
     """
-    cdef fff_vector *y
-    cdef fff_vector *z
+    cdef fff_vector *y, *z
     cdef fffpy_multi_iterator* multi
    
     # Allocate output array
@@ -190,8 +184,7 @@ def sum_via_iterators(ndarray Y, int axis=0):
     Return the sum of input elements along the dimension specified by axis.
     Behavior should be equivalent to Z = Y.sum(axis). 
     """
-    cdef fff_vector *y
-    cdef fff_vector *z
+    cdef fff_vector *y, *z
     cdef fffpy_multi_iterator* multi
    
     # Allocate output array

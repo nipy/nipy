@@ -15,22 +15,6 @@ void fffpy_import_array(void) {
 }
 
 
-/* 
-   Functions to import required blas/lapack functions on the fly.
-*/
-void fffpy_import_blas_func(const PyObject* ptr, int key)
-{    
-  fff_import_blas_func((void*)PyCObject_AsVoidPtr((PyObject*)ptr), key);
-  return;
-}
-
-void fffpy_import_lapack_func(const PyObject* ptr, int key)
-{    
-  fff_import_lapack_func((void*)PyCObject_AsVoidPtr((PyObject*)ptr), key);
-  return;
-}
-
-
 /* Static functions */
 static npy_intp _PyArray_main_axis(const PyArrayObject* x, int* ok); 
 static fff_vector* _fff_vector_new_from_buffer(const char* data, npy_intp dim, npy_intp stride, int type, int itemsize);

@@ -44,6 +44,8 @@ unsigned int fff_nbytes(fff_datatype type)
 }
 
 
+
+
 int fff_is_integer(fff_datatype type)
 {
   int ok = 0; 

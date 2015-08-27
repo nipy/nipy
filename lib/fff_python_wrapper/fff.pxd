@@ -2,12 +2,12 @@
 
 # :Author: 	Alexis Roche
 
-
 # Include numpy defines via Cython
 from numpy cimport ndarray, import_array, npy_intp
 
 # Redefine size_t
 ctypedef unsigned long int size_t
+
 
 # Exports from fff_base.h
 cdef extern from "fff_base.h":
@@ -171,3 +171,4 @@ cdef extern from "fffpy.h":
     void fffpy_multi_iterator_update(fffpy_multi_iterator* thisone)
     void fffpy_multi_iterator_reset(fffpy_multi_iterator* thisone)
 
+    
