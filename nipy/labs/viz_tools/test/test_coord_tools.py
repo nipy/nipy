@@ -2,7 +2,10 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-from ..coord_tools import coord_transform, find_cut_coords
+from ..coord_tools import (coord_transform, find_cut_coords,
+                           find_maxsep_cut_coords)
+
+from numpy.testing import assert_array_equal
 
 def test_coord_transform_trivial():
     sform = np.eye(4)
@@ -32,3 +35,21 @@ def test_find_cut_coords():
                                 (x_map, y_map, z_map))
 
 
+def test_find_maxsep_cut_coords():
+    # Test find_maxsep_cut_coords function
+    assert_array_equal(
+        find_maxsep_cut_coords(np.ones((2, 3, 5)), np.eye(4)), range(5))
+    assert_array_equal(
+        find_maxsep_cut_coords(np.ones((2, 3, 5)), np.eye(4), threshold=1),
+        range(5))
+    assert_array_equal(
+        find_maxsep_cut_coords(np.ones((2, 3, 4)), np.eye(4), n_cuts=4),
+        range(4))
+    map_3d = np.ones((2, 3, 5))
+    map_3d[:, :, 1] = 0
+    assert_array_equal(
+        find_maxsep_cut_coords(map_3d, np.eye(4), n_cuts=4), [0, 2, 3, 4])
+    map_3d[:, :, 1] = 0.5
+    assert_array_equal(
+        find_maxsep_cut_coords(map_3d, np.eye(4), n_cuts=4, threshold=0.6),
+        [0, 2, 3, 4])
