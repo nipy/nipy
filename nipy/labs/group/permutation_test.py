@@ -433,28 +433,35 @@ class permutation_test(object):
         for j in xrange(nmagic):
             m = magic_numbers[j]
             if verbose:
-                print "Permutation", j+1, "out of", nmagic
+                print "Permutation", j + 1, "out of", nmagic
             # T values under permutation
             if self.nsamples == 1:
-                #perm_Tvalues = onesample_stat(self.data, self.vardata, self.stat_id, self.base, self.axis, np.array([m]), self.niter).squeeze()
-                rand_sign = (np.random.randint(2,size=n)*2-1).reshape(n,1)
-                rand_data = rand_sign*self.data
+                rand_sign = (np.random.randint(2, size=n) * 2 - 1).\
+                    reshape(n, 1)
+                rand_data = rand_sign * self.data
                 if self.vardata is None:
                     rand_vardata = None
                 else:
-                    rand_vardata = rand_sign*self.vardata
-                perm_Tvalues = onesample_stat(rand_data, rand_vardata, self.stat_id, self.base, self.axis, None, self.niter).squeeze()
+                    rand_vardata = rand_sign * self.vardata
+
+                perm_Tvalues = onesample_stat(
+                    rand_data, rand_vardata, self.stat_id, self.base,
+                    self.axis, None, self.niter).squeeze()
             elif self.nsamples == 2:
-                perm_Tvalues = twosample_stat(self.data1, self.vardata1, self.data2, self.vardata2, self.stat_id, self.axis, np.array([m]), self.niter).squeeze()
-                rand_perm = np.random.permutation(np.arange(n1+n2))
-                rand_data1 = data[:n1]
-                rand_data2 = data[n1:]
+                rand_perm = np.random.permutation(np.arange(n1 + n2))
+                rand_data1 = data[rand_perm[:n1]]
+                rand_data2 = data[rand_perm[n1:]]
                 if self.vardata1 is None:
                     rand_vardata1 = None
                     rand_vardata2 = None
                 else:
-                    rand_vardata1 = vardata[:n1]
-                    rand_vardata2 = vardata[n1:]
+                    rand_vardata1 = vardata[rand_perm[:n1]]
+                    rand_vardata2 = vardata[rand_perm[n1:]]
+
+                perm_Tvalues = np.squeeze(twosample_stat(
+                        rand_data1, rand_vardata1, rand_data2, rand_vardata2,
+                        self.stat_id, self.axis, np.array([m]), self.niter))
+
             # update p values
             p_values += perm_Tvalues >= self.Tvalues
             Corr_p_values += max(perm_Tvalues) >= self.Tvalues
