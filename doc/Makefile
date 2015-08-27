@@ -1,7 +1,6 @@
 # Makefile for Sphinx documentation
 #
 
-SF_USER ?= matthewbrett
 DIST_DIR = dist
 
 # You can set these variables from the command line.
@@ -51,28 +50,6 @@ dist: clean all
 	ln build/latex/nipy*.pdf $(DIST_DIR)
 	cp -a build/html/* $(DIST_DIR)
 	@echo "Build finished.  Final docs are in $(DIST_DIR)"
-
-# This one udates for the specific user named at the top of the makefile
-# Please don't use this - we use github pages now
-upload-stable-web: upload-stable-web-$(SF_USER)
-
-# This one updates according to passed user e.g
-# make upload-stable-web-my_own_sf_user
-# Please don't use this - we use github pages now
-upload-stable-web-%: dist
-	rsync -rzhvp --delete --chmod=Dg+s,g+rw $(DIST_DIR)/* \
-		$*,nipy@web.sourceforge.net:/home/groups/n/ni/nipy/htdocs/nipy/stable
-
-# This one udates for the specific user named at the top of the makefile
-# Please don't use this - we use github pages now
-upload-devel-web: upload-devel-web-$(SF_USER)
-
-# This one updates according to passed user e.g
-# make upload-devel-web-my_own_sf_user
-# Please don't use this - we use github pages now
-upload-devel-web-%: dist
-	rsync -rzhvp --delete --chmod=Dg+s,g+rw $(DIST_DIR)/* \
-		$*,nipy@web.sourceforge.net:/home/groups/n/ni/nipy/htdocs/nipy/devel
 
 htmlonly:
 	mkdir -p build/html build/doctrees
