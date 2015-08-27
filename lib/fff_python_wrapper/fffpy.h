@@ -31,8 +31,17 @@
    static, in order not to share that symbol within the
    dso. (import_array() asks the pointer value to the python process)
 */
-extern void fffpy_import_array(void);
+/*
+ * deal with differences in macro return result between Python 2 and 3
+ * http://mail.scipy.org/pipermail/numpy-discussion/2010-December/054350.html
+ */
+#if PY_MAJOR_VERSION >= 3
+typedef int IMP_OUT;
+#else
+typedef void IMP_OUT;
+#endif
 
+extern IMP_OUT fffpy_import_array(void);
 
 /*!
   \brief Convert \c PyArrayObject to \c fff_vector 

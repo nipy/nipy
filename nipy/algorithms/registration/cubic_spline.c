@@ -54,13 +54,6 @@ static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz,
 					   size_t x, size_t y, size_t z); 
 
 
-/* Numpy import */
-void cubic_spline_import_array(void) { 
-  import_array(); 
-  return;
-}
-
-
 /* Returns the value of the cubic B-spline function at x */
 double cubic_spline_basis (double x)
 {

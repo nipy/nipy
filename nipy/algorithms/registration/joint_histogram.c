@@ -34,14 +34,6 @@ static inline void _rand_interpolation(unsigned int i,
 				       int nn, 
 				       void* params); 
 
-
-/* Numpy import */
-void joint_histogram_import_array(void) {
-  import_array(); 
-  return;
-}
-
-
 /* 
    
 JOINT HISTOGRAM COMPUTATION. 

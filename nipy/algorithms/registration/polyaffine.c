@@ -6,13 +6,6 @@
 #define TINY 1e-200
 
 
-/* Numpy import */
-void polyaffine_import_array(void) { 
-  import_array(); 
-  return;
-}
-
-
 static double _gaussian(double* xyz, double* center, double* sigma)
 {
   double aux, d2 = 0.0; 

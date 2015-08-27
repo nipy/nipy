@@ -25,10 +25,14 @@ extern "C" {
 #endif
 
 #include <Python.h>
-#include <numpy/arrayobject.h>
 
-  /* Numpy import */
-  extern void cubic_spline_import_array(void);
+/*
+ * Use extension numpy symbol table
+ */
+#define NO_IMPORT_ARRAY
+#include "_registration.h"
+
+#include <numpy/arrayobject.h>
 
   /*! 
     \brief Cubic spline basis function
