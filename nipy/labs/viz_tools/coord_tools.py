@@ -25,31 +25,29 @@ import scipy.stats
 ################################################################################
 
 def coord_transform(x, y, z, affine):
-    """ Convert the x, y, z coordinates from one image space to another
-        space. 
+    """ Convert x, y, z coordinates from one image space to another space.
 
-        Parameters
-        ----------
-        x : number or ndarray
-            The x coordinates in the input space
-        y : number or ndarray
-            The y coordinates in the input space
-        z : number or ndarray
-            The z coordinates in the input space
-        affine : 2D 4x4 ndarray
-            affine that maps from input to output space.
+    Warning: x, y and z have Talairach ordering, not 3D numpy image ordering.
 
-        Returns
-        -------
-        x : number or ndarray
-            The x coordinates in the output space
-        y : number or ndarray
-            The y coordinates in the output space
-        z : number or ndarray
-            The z coordinates in the output space
+    Parameters
+    ----------
+    x : number or ndarray
+        The x coordinates in the input space
+    y : number or ndarray
+        The y coordinates in the input space
+    z : number or ndarray
+        The z coordinates in the input space
+    affine : 2D 4x4 ndarray
+        affine that maps from input to output space.
 
-        Warning: The x, y and z have their Talairach ordering, not 3D
-        numy image ordering.
+    Returns
+    -------
+    x : number or ndarray
+        The x coordinates in the output space
+    y : number or ndarray
+        The y coordinates in the output space
+    z : number or ndarray
+        The z coordinates in the output space
     """
     coords = np.c_[np.atleast_1d(x).flat, 
                    np.atleast_1d(y).flat, 
@@ -189,39 +187,42 @@ def _maximally_separated_subset(x, k):
 
 def find_maxsep_cut_coords(map3d, affine, slicer='z', n_cuts=None,
                            threshold=None):
-    """
-    Heuristic function to find n_cuts along a given axis, which
-    are maximally separated in space.
+    """ Heuristic finds `n_cuts` with max separation along a given axis
 
-    map3d: 3D array
+    Parameters
+    ----------
+    map3d : 3D array
         the data under consideration
-
-    slicer: string, optional (default "z")
+    affine : array shape (4, 4)
+        Affine mapping between array coordinates of `map3d` and real-world
+        coordinates.
+    slicer : string, optional
         sectional slicer; possible values are "x", "y", or "z"
-
-    n_cuts: int > 1, optional (default None)
-        number of cuts in the plot; if no value is specified, then a default
-        value of 5 is forced
-
-    threshold: float, optional (default None)
-        thresholding to be applied to the map
+    n_cuts : None or int >= 1, optional
+        Number of cuts in the plot; if None, then a default value of 5 is
+        forced.
+    threshold : None or float, optional
+        Thresholding to be applied to the map.  Values less than `threshold`
+        set to 0.  If None, no thresholding applied.
 
     Returns
     -------
-    n_cuts: 1D array of length n_cuts
-        the computed n_cuts
+    cuts : 1D array of length `n_cuts`
+        the computed cuts
 
     Raises
     ------
+    ValueError:
+        If `slicer` not in 'xyz'
     ValueError
-
+        If `ncuts` < 1
     """
-
-    if n_cuts is None: n_cuts = 5
-    if n_cuts < 1: raise ValueError("n_cuts = %i < 1 is senseless." % n_cuts)
-
+    if n_cuts is None:
+        n_cuts = 5
+    if n_cuts < 1:
+        raise ValueError("n_cuts = %i < 1 is senseless." % n_cuts)
     # sanitize slicer
-    if not slicer in ['x', 'y', 'z']:
+    if slicer not in 'xyz':
         raise ValueError(
             "slicer must be one of 'x', 'y', and 'z', got '%s'." % slicer)
     slicer = "xyz".index(slicer)
