@@ -108,7 +108,7 @@ tox-stale:
 
 recythonize:
 	# Recythonize all pyx files
-	find . -name "*.pyx" -exec cython -I libcstat/wrapper {} \;
+	find . -name "*.pyx" -exec cython -I libcstat/wrapper -I lib/fff_python_wrapper {} \;
 
 # Website stuff
 $(WWW_DIR):
