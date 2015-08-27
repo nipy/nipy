@@ -94,7 +94,7 @@ Dependencies
 To run NIPY, you will need:
 
 * python_ >= 2.6 (tested with 2.6, 2.7, 3.2, 3.3, 3.4)
-* numpy_ >= 1.5.1
+* numpy_ >= 1.6.0
 * scipy_ >= 0.7.0
 * sympy_ >= 0.7.0
 * nibabel_ >= 1.2
@@ -142,7 +142,8 @@ REQUIRES            = ["numpy", "scipy", "sympy", "nibabel"]
 STATUS              = 'beta'
 
 # versions
-NUMPY_MIN_VERSION='1.5.1'
+# Update in readme text above
+NUMPY_MIN_VERSION='1.6.0'
 SCIPY_MIN_VERSION = '0.7.0'
 NIBABEL_MIN_VERSION = '1.2'
 SYMPY_MIN_VERSION = '0.7.0'
