@@ -589,7 +589,10 @@ class Formula(object):
         return f
 
     def __sub__(self, other):
-        """ Formula from deleting terms in `other` from those in `self`
+        """ New Formula by deleting terms in `other` from those in `self`
+
+        Create and return a new Formula by deleting terms in `other` from those
+        in `self`.
 
         No exceptions are raised for terms in `other` that do not appear in
         `self`.
