@@ -180,13 +180,13 @@ class Term(sympy.Symbol):
 
     def _getformula(self):
         return Formula([self])
-    formula = property(_getformula, doc="Return a Formula with only terms=[self].")
+    formula = property(_getformula,
+                       doc="Return a Formula with only terms=[self].")
 
     def __add__(self, other):
         if self == other:
             return self
-        else:
-            return sympy.Symbol.__add__(self, other)
+        return sympy.Symbol.__add__(self, other)
 
 
 # time symbol
@@ -416,10 +416,10 @@ class Formula(object):
     model being the sum of each term multiplied by a linear regression
     coefficient.
 
-    The expressions may depend on additional Symbol instances,
-    giving a non-linear regression model.
+    The expressions may depend on additional Symbol instances, giving a
+    non-linear regression model.
     """
-    # This flag is defined to avoid using isinstance
+    # This flag is defined for test isformula(obj) instead of isinstance
     _formula_flag = True
 
     def __init__(self, seq, char = 'b'):
@@ -558,10 +558,20 @@ class Formula(object):
         return self.__class__([term.subs(old, new) for term in self.terms])
 
     def __add__(self, other):
-        """
-        Create a new Formula by combining terms
-        of other with those of self.
+        """ New Formula combining terms of `self` with those of `other`.
 
+        Parameters
+        ----------
+        other : Formula instance
+            Object for which ``is_formula(other)`` is True
+
+        Returns
+        -------
+        added : Formula instance
+            Formula combining terms of `self` with terms of `other`
+
+        Examples
+        --------
         >>> x, y, z = [Term(l) for l in 'xyz']
         >>> f1 = Formula([x,y,z])
         >>> f2 = Formula([y])+I
@@ -579,11 +589,23 @@ class Formula(object):
         return f
 
     def __sub__(self, other):
-        """
-        Create a new Formula by deleting terms in other
-        from self. No exceptions are raised for terms in other that do not appear in
-        self.
+        """ Formula from deleting terms in `other` from those in `self`
 
+        No exceptions are raised for terms in `other` that do not appear in
+        `self`.
+
+        Parameters
+        ----------
+        other : Formula instance
+            Object for which ``is_formula(other)`` is True
+
+        Returns
+        -------
+        subbed : Formula instance
+            Formula with terms of `other` removed from terms of `self`
+
+        Examples
+        --------
         >>> x, y, z = [Term(l) for l in 'xyz']
         >>> f1 = Formula([x,y,z])
         >>> f2 = Formula([y])+I
@@ -599,7 +621,8 @@ class Formula(object):
         _b0*x + _b1*z
         """
         if not is_formula(other):
-            raise ValueError('only Formula objects can be subtracted from a Formula')
+            raise ValueError(
+                'only Formula objects can be subtracted from a Formula')
         d = list(set(self.terms).difference(other.terms))
         return self.__class__(d)
 
@@ -638,11 +661,11 @@ class Formula(object):
         return np.alltrue(np.equal(np.array(self), np.array(other)))
 
     def _setup_design(self):
-        """
-        Create a callable object to evaluate the design matrix
-        at a given set of parameter values to be specified by
-        a recarray and observed Term values, also specified
-        by a recarray.
+        """ Initialize design
+
+        Create a callable object to evaluate the design matrix at a given set
+        of parameter values to be specified by a recarray and observed Term
+        values, also specified by a recarray.
         """
         # the design expression is the differentiation of the expression
         # for the mean.  It is a list
@@ -955,16 +978,15 @@ class Factor(Formula):
     _factor_flag = True
 
     def __init__(self, name, levels, char='b'):
-        """
+        """ Initialize Factor
+
         Parameters
         ----------
         name : str
         levels : [str or int]
             A sequence of strings or ints.
-        char : str
-
-        Returns
-        -------
+        char : str, optional
+            prefix character for regression coefficients
         """
         # Check whether they can all be cast to strings or ints without
         # loss.
@@ -1005,9 +1027,9 @@ class Factor(Formula):
 
         Parameters
         ----------
-        variable : str or a simple sympy expression whose string representation
-            are all lower or upper case letters, i.e. it can be interpreted
-            as a name
+        variable : str or simple sympy expression
+            If sympy expression, then string representation must be all lower
+            or upper case letters, i.e. it can be interpreted as a name.
 
         Returns
         -------
@@ -1039,13 +1061,11 @@ class Factor(Formula):
         ----------
         col : ndarray
             an array with ndim==1
-
         name : str
             name of the Factor
 
         Returns
         -------
-
         factor : Factor
 
         Examples
