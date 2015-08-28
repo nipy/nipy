@@ -43,24 +43,24 @@ def test_terms():
 def test_getparams_terms():
     t = F.Term('t')
     x, y, z = [sympy.Symbol(l) for l in 'xyz']
-    yield assert_equal, set(F.getparams(x*y*t)), set([x,y])
-    yield assert_equal, set(F.getterms(x*y*t)), set([t])
+    assert_equal(set(F.getparams(x*y*t)), set([x,y]))
+    assert_equal(set(F.getterms(x*y*t)), set([t]))
 
     matrix_expr = np.array([[x,y*t],[y,z]])
-    yield assert_equal, set(F.getparams(matrix_expr)), set([x,y,z])
-    yield assert_equal, set(F.getterms(matrix_expr)), set([t])
+    assert_equal(set(F.getparams(matrix_expr)), set([x,y,z]))
+    assert_equal(set(F.getterms(matrix_expr)), set([t]))
 
 
 def test_formula_params():
     t = F.Term('t')
     x, y = [sympy.Symbol(l) for l in 'xy']
     f = F.Formula([t*x,y])
-    yield assert_equal, set(f.params), set([x,y] + list(f.coefs.values()))
+    assert_equal(set(f.params), set([x,y] + list(f.coefs.values())))
 
 
 def test_contrast1():
     x = F.Term('x')
-    yield assert_equal, x, x+x
+    assert_equal(x, x+x)
     y = F.Term('y')
     z = F.Term('z')
     f = F.Formula([x,y])
@@ -69,10 +69,10 @@ def test_contrast1():
                                     'diff':F.Formula([x-y]),
                                     'sum':F.Formula([x+y]),
                                     'both':F.Formula([x-y,x+y])})
-    yield assert_almost_equal, C['x'], np.array([1,0])
-    yield assert_almost_equal, C['diff'], np.array([1,-1])
-    yield assert_almost_equal, C['sum'], np.array([1,1])
-    yield assert_almost_equal, C['both'], np.array([[1,-1],[1,1]])
+    assert_almost_equal(C['x'], np.array([1,0]))
+    assert_almost_equal(C['diff'], np.array([1,-1]))
+    assert_almost_equal(C['sum'], np.array([1,1]))
+    assert_almost_equal(C['both'], np.array([[1,-1],[1,1]]))
 
     f = F.Formula([x,y,z])
     arr = F.make_recarray([[3,5,4],[8,21,-1],[4,6,-2]], 'xyz')
@@ -80,10 +80,10 @@ def test_contrast1():
                                     'diff':F.Formula([x-y]),
                                     'sum':F.Formula([x+y]),
                                     'both':F.Formula([x-y,x+y])})
-    yield assert_almost_equal, C['x'], np.array([1,0,0])
-    yield assert_almost_equal, C['diff'], np.array([1,-1,0])
-    yield assert_almost_equal, C['sum'], np.array([1,1,0])
-    yield assert_almost_equal, C['both'], np.array([[1,-1,0],[1,1,0]])
+    assert_almost_equal(C['x'], np.array([1,0,0]))
+    assert_almost_equal(C['diff'], np.array([1,-1,0]))
+    assert_almost_equal(C['sum'], np.array([1,1,0]))
+    assert_almost_equal(C['both'], np.array([[1,-1,0],[1,1,0]]))
 
 
 def test_formula_from_recarray():
@@ -181,10 +181,10 @@ def test_mul():
     f2 = F.Factor('t', [2,3,4])
     t2 = f['t_2']
     x = F.Term('x')
-    yield assert_equal, t2, t2*t2
-    yield assert_equal, f, f*f
-    yield assert_false, f == f2
-    yield assert_equal, set((t2*x).atoms()), set([t2,x])
+    assert_equal(t2, t2*t2)
+    assert_equal(f, f*f)
+    assert_false(f == f2)
+    assert_equal(set((t2*x).atoms()), set([t2,x]))
 
 
 def test_make_recarray():
@@ -198,7 +198,7 @@ def test_str_formula():
     t1 = F.Term('x')
     t2 = F.Term('y')
     f = F.Formula([t1, t2])
-    yield assert_equal, str(f), "Formula([x, y])"
+    assert_equal(str(f), "Formula([x, y])")
 
 
 def test_design():
@@ -277,13 +277,13 @@ def test_alias():
 
 def test_factor_getterm():
     fac = F.Factor('f', 'ab')
-    yield assert_equal, fac['f_a'], fac.get_term('a')
+    assert_equal(fac['f_a'], fac.get_term('a'))
     fac = F.Factor('f', [1,2])
-    yield assert_equal, fac['f_1'], fac.get_term(1)
+    assert_equal(fac['f_1'], fac.get_term(1))
     fac = F.Factor('f', [1,2])
-    yield assert_raises, ValueError, fac.get_term, '1'
+    assert_raises(ValueError, fac.get_term, '1')
     m = fac.main_effect
-    yield assert_equal, set(m.terms), set([fac['f_1']-fac['f_2']])
+    assert_equal(set(m.terms), set([fac['f_1']-fac['f_2']]))
 
 
 def test_stratify():
@@ -291,7 +291,7 @@ def test_stratify():
 
     y = sympy.Symbol('y')
     f = sympy.Function('f')
-    yield assert_raises, ValueError, fac.stratify, f(y)
+    assert_raises(ValueError, fac.stratify, f(y))
 
 
 def test_nonlin1():
@@ -331,7 +331,7 @@ def test_nonlin2():
     t = sympy.Symbol('th')
     p = F.make_recarray([3], ['tt'])
     f = F.Formula([sympy.exp(t*z)])
-    yield assert_raises, ValueError, f.design, dz, p
+    assert_raises(ValueError, f.design, dz, p)
 
 
 def test_Rintercept():
@@ -348,9 +348,9 @@ def test_return_float():
     f = F.Formula([x,x**2])
     xx= F.make_recarray(np.linspace(0,10,11), 'x')
     dtype = f.design(xx).dtype
-    yield assert_equal, set(dtype.names), set(['x', 'x**2'])
+    assert_equal(set(dtype.names), set(['x', 'x**2']))
     dtype = f.design(xx, return_float=True).dtype
-    yield assert_equal, dtype, np.float
+    assert_equal(dtype, np.float)
 
 
 def test_subtract():
@@ -358,10 +358,10 @@ def test_subtract():
     f1 = F.Formula([x,y])
     f2 = F.Formula([x,y,z])
     f3 = f2 - f1
-    yield assert_equal, set(f3.terms), set([z])
+    assert_equal(set(f3.terms), set([z]))
     f4 = F.Formula([y,z])
     f5 = f1 - f4
-    yield assert_equal, set(f5.terms), set([x])
+    assert_equal(set(f5.terms), set([x]))
 
 
 def test_subs():
@@ -370,7 +370,7 @@ def test_subs():
     z = F.Term('z')
     f = F.Formula([t1, t2])
     g = f.subs(t1, z)
-    yield assert_equal, list(g.terms), [z, t2]
+    assert_equal(list(g.terms), [z, t2])
 
 
 def test_natural_spline():
@@ -380,24 +380,24 @@ def test_natural_spline():
     xx= F.make_recarray(np.linspace(0,10,101), 'x')
     dd=ns.design(xx, return_float=True)
     xx = xx['x']
-    yield assert_almost_equal, dd[:,0], xx
-    yield assert_almost_equal, dd[:,1], xx**2
-    yield assert_almost_equal, dd[:,2], xx**3
-    yield assert_almost_equal, dd[:,3], (xx-2)**3*np.greater_equal(xx,2)
-    yield assert_almost_equal, dd[:,4], (xx-6)**3*np.greater_equal(xx,6)
-    yield assert_almost_equal, dd[:,5], (xx-9)**3*np.greater_equal(xx,9)
+    assert_almost_equal(dd[:,0], xx)
+    assert_almost_equal(dd[:,1], xx**2)
+    assert_almost_equal(dd[:,2], xx**3)
+    assert_almost_equal(dd[:,3], (xx-2)**3*np.greater_equal(xx,2))
+    assert_almost_equal(dd[:,4], (xx-6)**3*np.greater_equal(xx,6))
+    assert_almost_equal(dd[:,5], (xx-9)**3*np.greater_equal(xx,9))
 
     ns=F.natural_spline(xt, knots=[2,9,6], intercept=True)
     xx= F.make_recarray(np.linspace(0,10,101), 'x')
     dd=ns.design(xx, return_float=True)
     xx = xx['x']
-    yield assert_almost_equal, dd[:,0], 1
-    yield assert_almost_equal, dd[:,1], xx
-    yield assert_almost_equal, dd[:,2], xx**2
-    yield assert_almost_equal, dd[:,3], xx**3
-    yield assert_almost_equal, dd[:,4], (xx-2)**3*np.greater_equal(xx,2)
-    yield assert_almost_equal, dd[:,5], (xx-9)**3*np.greater_equal(xx,9)
-    yield assert_almost_equal, dd[:,6], (xx-6)**3*np.greater_equal(xx,6)
+    assert_almost_equal(dd[:,0], 1)
+    assert_almost_equal(dd[:,1], xx)
+    assert_almost_equal(dd[:,2], xx**2)
+    assert_almost_equal(dd[:,3], xx**3)
+    assert_almost_equal(dd[:,4], (xx-2)**3*np.greater_equal(xx,2))
+    assert_almost_equal(dd[:,5], (xx-9)**3*np.greater_equal(xx,9))
+    assert_almost_equal(dd[:,6], (xx-6)**3*np.greater_equal(xx,6))
 
 
 def test_factor_term():
