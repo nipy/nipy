@@ -199,6 +199,14 @@ def test_factor_add_sub():
     assert_equal(f1 - f3, f1)
 
 
+def test_term_order_sub():
+    # Test preservation of term order in subtraction
+    f1 = F.Formula(terms('z, y, x, w'))
+    f2 = F.Formula(terms('x, y, a'))
+    assert_array_equal((f1 - f2).terms, terms('z, w'))
+    assert_array_equal((f2 - f1).terms, terms('a'))
+
+
 def test_make_recarray():
     m = F.make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int])
     assert_equal(m.dtype.names, ('w', 'v'))

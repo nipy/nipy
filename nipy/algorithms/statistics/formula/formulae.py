@@ -623,7 +623,8 @@ class Formula(object):
         if not is_formula(other):
             raise ValueError(
                 'only Formula objects can be subtracted from a Formula')
-        d = list(set(self.terms).difference(other.terms))
+        # Preserve order of terms in subtraction
+        d = [term for term in self.terms if term not in other.terms]
         return Formula(d)
 
     def __array__(self):
