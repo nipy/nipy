@@ -236,7 +236,7 @@ def prepare_arrays(data_images, vardata_images, mask_images):
     # Prepare data & vardata arrays
     data = np.array([(d.get_data()[xyz[0], xyz[1], xyz[2]]).squeeze()
                     for d in data_images]).squeeze()
-    if vardata_images == None:
+    if vardata_images is None:
         vardata = None
     else:
         vardata = np.array([(d.get_data()[xyz[0], xyz[1], xyz[2]]).squeeze()
@@ -298,7 +298,7 @@ def twosample_test(data_images, vardata_images, mask_images, labels, stat_id,
                                               mask_images)
 
     # Create two-sample permutation test instance
-    if vardata_images == None:
+    if vardata_images is None:
         ptest = permutation_test_twosample(
             data[labels == 1], data[labels == 2], xyz, stat_id=stat_id)
     else:
@@ -380,7 +380,7 @@ class LinearModel(object):
         # the 'sampling' direction is assumed to be the last
         # TODO: check that all input images have the same shape and
         # that it's consistent with the mask
-        nomask = mask == None
+        nomask = mask is None
         if nomask:
             self.xyz = None
             self.axis = len(data[0].shape) - 1
@@ -424,7 +424,7 @@ class LinearModel(object):
             c += g.contrast(vector)
 
         def affect_inmask(dest, src, xyz):
-            if xyz == None:
+            if xyz is None:
                 dest = src
             else:
                 dest[xyz] = src

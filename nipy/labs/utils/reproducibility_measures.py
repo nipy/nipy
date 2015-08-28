@@ -164,7 +164,7 @@ def get_peak_position_from_thresholded_map(stat_map, domain, threshold):
     
     # extract the peaks
     peaks = get_3d_peaks(simage, threshold=threshold, order_th=2)
-    if peaks == None:
+    if peaks is None:
         return None
 
     pos = np.array([p['pos'] for p in peaks])
@@ -315,12 +315,12 @@ def statistics_from_position(target, data, sigma=1.0):
                 0 is bad
     """
     from ...algorithms.utils.fast_distance import euclidean_distance as ed
-    if data == None:
-        if target == None:
+    if data is None:
+        if target is None:
             return 0.# could be 1.0 ?
         else:
             return 0.
-    if target == None:
+    if target is None:
         return 0.
 
     dmatrix = ed(data, target) / sigma
@@ -770,7 +770,7 @@ def coord_bsa(domain, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
 
     crmap, AF, BF, p = compute_BSA_quick(
         domain, betas, dmax, thq, smin, ths, theta, verbose=0)
-    if AF == None:
+    if AF is None:
         return None
     if afname is not None:
         import pickle

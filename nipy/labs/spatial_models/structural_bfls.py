@@ -93,9 +93,9 @@ class LandmarkRegions(object):
              the density sampled at the coords
         """
         from nipy.algorithms.utils.fast_distance import euclidean_distance
-        if coord == None:
+        if coord is None:
             coord = self.domain.coord
-        if k == None:
+        if k is None:
             kde = np.zeros(coord.shape[0])
             for k in range(self.k):
                 pos = self.position[k]
@@ -125,7 +125,7 @@ class LandmarkRegions(object):
         -------
         label: array of shape (n): the posterior labelling
         """
-        if coord == None:
+        if coord is None:
             coord = self.domain.coord
         label = - np.ones(coord.shape[0])
         null_density = 1. / self.domain.local_volume.sum()

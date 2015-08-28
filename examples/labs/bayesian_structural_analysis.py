@@ -32,7 +32,7 @@ def display_landmarks_2d(landmarks, hrois, stats):
     n_subjects = len(stats)
     lmax = 0
     grp_map, density = np.zeros(shape), np.zeros(shape)
-    if landmarks != None:
+    if landmarks is not None:
         domain = landmarks.domain
         grp_map = landmarks.map_label(domain.coord, .8, sigma).reshape(shape)
         density = landmarks.kernel_density(k=None, coord=domain.coord,

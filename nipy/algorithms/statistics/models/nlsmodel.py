@@ -53,7 +53,7 @@ class NLSModel(Model):
         self.grad = grad
         self.theta = theta
         self.niter = niter
-        if self.design is not None and self.Y != None:
+        if self.design is not None and self.Y is not None:
             if self.Y.shape[0] != self.design.shape[0]:
                 raise ValueError('Y should be same shape as design')
 

@@ -67,7 +67,7 @@ class Forest(WeightedGraph):
         self.V = int(V)
 
         # define the parents
-        if parents == None:
+        if parents is None:
             self.parents = np.arange(self.V).astype(np.int)
         else:
             if np.size(parents) != V:

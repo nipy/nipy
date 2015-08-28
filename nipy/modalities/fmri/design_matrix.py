@@ -188,7 +188,7 @@ def _convolve_regressors(paradigm, hrf_model, frametimes, fir_delays=[0],
             fir_delays=fir_delays, oversampling=oversampling,
             min_onset=min_onset)
         hnames += names
-        if rmatrix == None:
+        if rmatrix is None:
             rmatrix = reg
         else:
             rmatrix = np.hstack((rmatrix, reg))
@@ -362,7 +362,7 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
             'time-frames: %s' % (add_regs.shape[0], np.size(frametimes)))
 
     # check that additional regressor names are well specified
-    if  add_reg_names == None:
+    if  add_reg_names is None:
         add_reg_names = ['reg%d' % k for k in range(n_add_regs)]
     elif len(add_reg_names) != n_add_regs:
         raise ValueError(

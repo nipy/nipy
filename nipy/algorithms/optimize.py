@@ -67,9 +67,9 @@ def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4,
     x = np.asarray(x0).flatten()
     fval = np.squeeze(f(x))
     it = 0 
-    if maxiter == None: 
+    if maxiter is None: 
         maxiter = x.size*1000
-    if fprime == None:
+    if fprime is None:
         grad_calls, myfprime = _wrap(approx_fprime, (f, epsilon))
     else:
         grad_calls, myfprime = _wrap(fprime, args)
@@ -85,7 +85,7 @@ def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4,
         if disp:
             print('Performing line search...')
         fval, x = _linesearch_brent(f, x, direc, tol=xtol)
-        if not callback == None:
+        if not callback is None:
             callback(x)
         if (2.0*(fval0-fval) <= ftol*(abs(fval0)+abs(fval))+1e-20): 
             break

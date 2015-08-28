@@ -91,7 +91,7 @@ def stat(ndarray Y1, ndarray Y2, id='student', int axis=0, ndarray Magics=None):
   n = n1 + n2
 
   # Read out magic numbers
-  if Magics == None:
+  if Magics is None:
     magics = fff_vector_new(1)
     magics.data[0] = 0 ## Just to make sure
   else:
@@ -184,7 +184,7 @@ def stat_mfx(ndarray Y1, ndarray V1, ndarray Y2, ndarray V2,
   n = n1 + n2
 
   # Read out magic numbers
-  if Magics == None:
+  if Magics is None:
     magics = fff_vector_new(1)
     magics.data[0] = 0 ## Just to make sure
   else:

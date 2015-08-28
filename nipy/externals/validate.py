@@ -1415,7 +1415,7 @@ def _test(value, *args, **keywargs):
     
     >>> v = Validator()
     >>> default = v.get_default_value('string(default=None)')
-    >>> default == None
+    >>> default is None
     1
     """
     return (value, args, keywargs)

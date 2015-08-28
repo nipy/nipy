@@ -197,7 +197,7 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
         intl = L.sum() * (xs - xm) * (ys - ym) / 2500
         print 'integral of the density on the domain ', intl
 
-    if mpaxes == None:
+    if mpaxes is None:
         plt.figure()
         ax = plt.subplot(1, 1, 1)
     else:
@@ -213,7 +213,7 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
         plt.imshow(Pdens.T, alpha=2.0, origin='lower', extent=extent)
 
     if with_dots:
-        if z == None:
+        if z is None:
             plt.plot(x[:, 0], x[:, 1], 'o')
         else:
             hsv = plt.cm.hsv(range(256))
@@ -275,17 +275,17 @@ class GMM(object):
         self.precisions = precisions
         self.weights = weights
 
-        if self.means == None:
+        if self.means is None:
             self.means = np.zeros((self.k, self.dim))
 
-        if self.precisions == None:
+        if self.precisions is None:
             if prec_type == 'full':
                 prec = np.reshape(np.eye(self.dim), (1, self.dim, self.dim))
                 self.precisions = np.repeat(prec, self.k, 0)
             else:
                 self.precisions = np.ones((self.k, self.dim))
 
-        if self.weights == None:
+        if self.weights is None:
             self.weights = np.ones(self.k) * 1.0 / self.k
 
     def plugin(self, means, precisions, weights):
@@ -702,7 +702,7 @@ class GMM(object):
         z: array of shape(n_samples): the resulting MAP labelling
            of the rows of x
         """
-        if like == None:
+        if like is None:
             like = self.likelihood(x)
         z = np.argmax(like, 1)
         return z
@@ -835,7 +835,7 @@ class GMM(object):
         c += offset / 2
         grid = gd.make_grid()
 
-        if mpaxes == None:
+        if mpaxes is None:
             plt.figure()
             ax = plt.axes()
         else:

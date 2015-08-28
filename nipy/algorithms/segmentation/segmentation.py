@@ -59,7 +59,7 @@ class Segmentation(object):
         # contiguous int array and raise an error otherwise. Voxels on
         # the image borders are further rejected to avoid segmentation
         # faults.
-        if mask == None:
+        if mask is None:
             mask = np.ones(space_shape, dtype=bool)
         X, Y, Z = np.where(mask)
         XYZ = np.zeros((X.shape[0], 3), dtype='intp')
@@ -73,7 +73,7 @@ class Segmentation(object):
 
         # By default, the ppm is initialized as a collection of
         # uniform distributions
-        if ppm == None:
+        if ppm is None:
             nclasses = len(mu)
             self.ppm = np.zeros(list(space_shape) + [nclasses])
             self.ppm[mask] = 1. / nclasses
@@ -82,7 +82,7 @@ class Segmentation(object):
                 (nclasses, nchannels))
             self.sigma = np.array(sigma, dtype='double').reshape(\
                 (nclasses, nchannels, nchannels))
-        elif mu == None:
+        elif mu is None:
             nclasses = ppm.shape[-1]
             self.ppm = np.asarray(ppm)
             self.is_ppm = True
@@ -92,7 +92,7 @@ class Segmentation(object):
             raise ValueError('missing information')
         self.nclasses = nclasses
 
-        if not prior == None:
+        if not prior is None:
             self.prior = np.asarray(prior)[self.mask].reshape(\
                 [self.data.shape[0], nclasses])
         else:
@@ -102,7 +102,7 @@ class Segmentation(object):
         self.set_markov_prior(beta, U=U)
 
     def set_markov_prior(self, beta, U=None):
-        if not U == None:  # make sure it's C-contiguous
+        if not U is None:  # make sure it's C-contiguous
             self.U = np.asarray(U).copy()
         else:  # Potts model
             U = np.ones((self.nclasses, self.nclasses))
@@ -147,7 +147,7 @@ class Segmentation(object):
             lef[:, i] = -.5 * maha_dist
             lef[:, i] += log(norm_factor)
 
-        if not self.prior == None:
+        if not self.prior is None:
             lef += log(self.prior)
 
         return lef
@@ -191,7 +191,7 @@ class Segmentation(object):
         associated with input parameters mu,
         sigma and beta (up to an ignored constant).
         """
-        if ppm == None:
+        if ppm is None:
             ppm = self.ppm
         q = ppm[self.mask]
         # Entropy term
@@ -254,7 +254,7 @@ def moment_matching(dat, mu, sigma, glob_mu, glob_sigma):
 
 def map_from_ppm(ppm, mask=None):
     x = np.zeros(ppm.shape[0:-1], dtype='uint8')
-    if mask == None:
+    if mask is None:
         mask = ppm == 0
     x[mask] = ppm[mask].argmax(-1) + 1
     return x

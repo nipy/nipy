@@ -80,7 +80,7 @@ def em(ndarray Y, ndarray VY, ndarray X, ndarray C=None, int axis=0, int niter=D
     p = x.size2
 
     # Compute the projected pseudo-inverse matrix
-    if C == None:
+    if C is None:
         PpX =  np.linalg.pinv(X)
     else:
         A = np.linalg.inv(np.dot(X.transpose(), X)) # (p,p)

@@ -475,7 +475,7 @@ class SubDomains(object):
           The results
 
         """
-        if fid == None:
+        if fid is None:
             # integrate the 1 function if no feature id provided
             if id is not None:
                 lsum = self.get_volume(id)

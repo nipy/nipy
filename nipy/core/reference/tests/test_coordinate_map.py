@@ -546,7 +546,7 @@ def test_as_coordinate_map():
     aff = AffineTransform(ijk, xyz, A)
     _cmapA = _as_coordinate_map(aff)
     yield assert_true, isinstance(_cmapA, CoordinateMap)
-    yield assert_true, _cmapA.inverse_function != None
+    yield assert_true, _cmapA.inverse_function is not None
 
     # a non-invertible one
 
@@ -556,7 +556,7 @@ def test_as_coordinate_map():
     _cmapB = _as_coordinate_map(affB)
 
     yield assert_true, isinstance(_cmapB, CoordinateMap)
-    yield assert_true, _cmapB.inverse_function == None
+    yield assert_true, _cmapB.inverse_function is None
 
 
 def test_cm__setattr__raise_error():

@@ -396,7 +396,7 @@ class GGGM(object):
         mixt : None or array of shape(3), optional
            prior mixing proportions. If None, the classes have equal weight
         """
-        if mixt != None:
+        if mixt is not None:
             if np.size(mixt) == 3:
                 self.mixt = np.ravel(mixt)
             else:
@@ -653,7 +653,7 @@ class GGGM(object):
         pg = self.mixt[2] * _gam_dens(self.shape_p, self.scale_p, c)
         z = y + pg + ng
 
-        if mpaxes == None:
+        if mpaxes is None:
             mp.figure()
             ax = mp.subplot(1, 1, 1)
         else:

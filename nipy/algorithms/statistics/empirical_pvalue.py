@@ -355,7 +355,7 @@ class NormalEmpiricalNull(object):
         hist /= step
 
         import matplotlib.pylab as mp
-        if mpaxes == None:
+        if mpaxes is None:
             mp.figure()
             ax = mp.subplot(1, 1, 1)
         else:
@@ -374,7 +374,7 @@ class NormalEmpiricalNull(object):
         ax.set_xticklabels(ax.get_xticks(), fontsize=12)
         ax.set_yticklabels(ax.get_yticks(), fontsize=12)
 
-        if efp != None:
+        if efp is not None:
             ax.plot(self.x, np.minimum(alpha, efp), 'k')
 
 
@@ -437,7 +437,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
 
     nvox = np.size(x)
     x = np.reshape(x, (nvox, 1))
-    if test == None:
+    if test is None:
         test = x
     if np.size(test) == 0:
         return None

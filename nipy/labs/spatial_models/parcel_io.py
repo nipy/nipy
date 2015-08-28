@@ -147,11 +147,11 @@ def write_parcellation_images(Pa, template_path=None, indiv_path=None,
          output directory used to infer the paths when these are not available
     """
     # argument check
-    if swd == None:
+    if swd is None:
         from tempfile import mkdtemp
         swd = mkdtemp()
 
-    if subject_id == None:
+    if subject_id is None:
         subject_id = ['subj_%04d' % s for s in range(Pa.nb_subj)]
 
     if len(subject_id) != Pa.nb_subj:

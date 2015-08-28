@@ -188,7 +188,7 @@ def _cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
     cdef int cast_integer
 
     # Create output array
-    if dtype == None:
+    if dtype is None:
         dtype = im.dtype
     im_resampled = np.zeros(tuple(dims), dtype=dtype)
 

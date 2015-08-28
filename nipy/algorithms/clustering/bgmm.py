@@ -133,11 +133,11 @@ def wishart_eval(n, V, W, dV=None, dW=None, piV=None):
     """
     # check that shape(V)==shape(W)
     p = V.shape[0]
-    if dV == None:
+    if dV is None:
         dV = detsh(V)
-    if dW == None:
+    if dW is None:
         dW = detsh(W)
-    if piV == None:
+    if piV is None:
         piV = inv(V)
     ldW = math.log(dW) * (n - p - 1) / 2
     ltr = - np.trace(np.dot(piV, W)) / 2
@@ -165,7 +165,7 @@ def normal_eval(mu, P, x, dP=None):
     (float) the density
     """
     dim = P.shape[0]
-    if dP == None:
+    if dP is None:
         dP = detsh(P)
 
     w0 = math.log(dP) - dim * math.log(2 * math.pi)
@@ -391,13 +391,13 @@ class BGMM(GMM):
         self.shrinkage = shrinkage
         self.dof = dof
 
-        if self.shrinkage == None:
+        if self.shrinkage is None:
             self.shrinkage = np.ones(self.k)
 
-        if self.dof == None:
+        if self.dof is None:
             self.dof = np.ones(self.k)
 
-        if self.precisions != None:
+        if self.precisions is not None:
             self._detp = [detsh(self.precisions[k]) for k in range(self.k)]
 
     def check(self):
@@ -760,7 +760,7 @@ class BGMM(GMM):
         weights = pop + self.prior_weights
 
         # initialize the porsterior proba
-        if perm == None:
+        if perm is None:
             pp = dirichlet_eval(self.weights, weights)
         else:
             pp = np.array([dirichlet_eval(self.weights[pj], weights)
@@ -786,7 +786,7 @@ class BGMM(GMM):
             means /= shrinkage[k]
 
             #4. update the posteriors
-            if perm == None:
+            if perm is None:
                 pp *= wishart_eval(
                     dof[k], scale, self.precisions[k],
                     dV=_dets, dW=self._detp[k], piV=covariance)
@@ -798,7 +798,7 @@ class BGMM(GMM):
 
             mp = scale * shrinkage[k]
             _dP = _dets * shrinkage[k] ** self.dim
-            if perm == None:
+            if perm is None:
                 pp *= normal_eval(means, mp, self.means[k], dP=_dP)
             else:
                 for j, pj in enumerate(perm):
@@ -938,7 +938,7 @@ class VBGMM(BGMM):
         from scipy.special import psi
         from numpy.linalg import inv
         tiny = 1.e-15
-        if like == None:
+        if like is None:
             like = self._Estep(x)
             like = (like.T / np.maximum(like.sum(1), tiny)).T
 
@@ -1065,7 +1065,7 @@ class VBGMM(BGMM):
         z: array of shape(nb_samples): the resulting MAP labelling
            of the rows of x
         """
-        if like == None:
+        if like is None:
             like = self.likelihood(x)
         z = np.argmax(like, 1)
         return z

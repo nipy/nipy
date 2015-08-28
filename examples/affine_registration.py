@@ -62,13 +62,13 @@ similarity = 'crl1'
 renormalize = False
 interp = 'pv'
 optimizer = 'powell'
-if not opts.similarity == None:
+if not opts.similarity is None:
     similarity = opts.similarity
-if not opts.renormalize == None:
+if not opts.renormalize is None:
     renormalize = bool(int(opts.renormalize))
-if not opts.interp == None:
+if not opts.interp is None:
     interp = opts.interp
-if not opts.optimizer == None:
+if not opts.optimizer is None:
     optimizer = opts.optimizer
 
 # Print messages

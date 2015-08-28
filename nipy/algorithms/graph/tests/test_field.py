@@ -270,7 +270,7 @@ def test_subfield2():
     myfield = basic_field_random()
     valid = np.zeros(myfield.V)
     sf = myfield.subfield(valid)
-    assert_true(sf == None)
+    assert_true(sf is None)
 
 
 def test_ward1():

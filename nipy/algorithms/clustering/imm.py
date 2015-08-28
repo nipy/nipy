@@ -28,10 +28,10 @@ def co_labelling(z, kmax=None, kmin=None):
     n = z.size
     colabel = coo_matrix((n, n))
 
-    if kmax == None:
+    if kmax is None:
         kmax = z.max() + 1
 
-    if kmin == None:
+    if kmin is None:
         kmin = z.min() - 1
 
     for  k in np.unique(z):
@@ -142,7 +142,7 @@ class IMM(BGMM):
                     total likelihood of the model
         """
         self.check_x(x)
-        if sampling_points == None:
+        if sampling_points is None:
             average_like = np.zeros(x.shape[0])
         else:
             average_like = np.zeros(sampling_points.shape[0])
@@ -159,12 +159,12 @@ class IMM(BGMM):
         z = self.sample_indicator(like)
 
         for i in range(niter):
-            if  kfold == None:
+            if  kfold is None:
                 like = self.simple_update(x, z, plike)
             else:
                 like = self.cross_validated_update(x, z, plike, kfold)
 
-            if sampling_points == None:
+            if sampling_points is None:
                 average_like += like
             else:
                 average_like += np.sum(
@@ -393,7 +393,7 @@ class IMM(BGMM):
         like, array of shape(nbitem,self.k)
         component-wise likelihood
         """
-        if plike == None:
+        if plike is None:
             plike = self.likelihood_under_the_prior(x)
 
         plike = np.reshape(plike, (x.shape[0], 1))
@@ -481,7 +481,7 @@ class MixedIMM(IMM):
         self.check_x(x)
         pproba = np.zeros(x.shape[0])
 
-        if sampling_points == None:
+        if sampling_points is None:
             average_like = np.zeros(x.shape[0])
         else:
             average_like = np.zeros(sampling_points.shape[0])
@@ -502,7 +502,7 @@ class MixedIMM(IMM):
             coclust = coo_matrix((x.shape[0], x.shape[0]))
 
         for i in range(niter):
-            if  kfold == None:
+            if  kfold is None:
                 like = self.simple_update(x, z, plike, null_class_proba)
             else:
                 like, z = self.cross_validated_update(x, z, plike,
@@ -515,7 +515,7 @@ class MixedIMM(IMM):
             if co_clustering:
                 coclust = coclust + co_labelling(z, self.k, -1)
 
-            if sampling_points == None:
+            if sampling_points is None:
                 average_like += like
             else:
                 average_like += np.sum(

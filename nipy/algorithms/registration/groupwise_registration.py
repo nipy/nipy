@@ -89,7 +89,7 @@ def make_grid(dims, subsampling=(1, 1, 1), borders=(0, 0, 0)):
 
 
 def guess_slice_axis_and_direction(slice_info, affine):
-    if slice_info == None:
+    if slice_info is None:
         orient = io_orientation(affine)
         slice_axis = int(np.where(orient[:, 0] == 2)[0])
         slice_direction = int(orient[slice_axis, 1])
@@ -140,12 +140,12 @@ class Image4d(object):
         self._init_timing_parameters()
 
     def get_data(self):
-        if self._data == None:
+        if self._data is None:
             self._load_data()
         return self._data
 
     def get_shape(self):
-        if self._shape == None:
+        if self._shape is None:
             self._load_data()
         return self._shape
 
@@ -192,7 +192,7 @@ class Image4d(object):
         return (t - corr) / self.tr
 
     def free_data(self):
-        if not self._get_data == None:
+        if not self._get_data is None:
             self._data = None
 
 
@@ -224,7 +224,7 @@ class Realign4dAlgorithm(object):
         # Initialize space/time transformation parameters
         self.affine = im4d.affine
         self.inv_affine = np.linalg.inv(self.affine)
-        if transforms == None:
+        if transforms is None:
             self.transforms = [affine_class() for scan in range(self.nscans)]
         else:
             self.transforms = transforms
@@ -244,7 +244,7 @@ class Realign4dAlgorithm(object):
         # The reference scan conventionally defines the head
         # coordinate system
         self.optimize_template = optimize_template
-        if not optimize_template and refscan == None:
+        if not optimize_template and refscan is None:
             self.refscan = REFSCAN
         else:
             self.refscan = refscan
@@ -477,7 +477,7 @@ class Realign4dAlgorithm(object):
         to right compose each head_average-to-scanner transform with
         the refscan's 'to head_average' transform.
         """
-        if self.refscan == None:
+        if self.refscan is None:
             return
         Tref_inv = self.transforms[self.refscan].inv()
         for t in range(self.nscans):
@@ -728,7 +728,7 @@ class Realign4d(object):
         """
         Generic initialization method.
         """
-        if slice_times == None:
+        if slice_times is None:
             tr = 1.0
             slice_times = 0.0
             time_interp = False
@@ -736,7 +736,7 @@ class Realign4d(object):
             time_interp = True
         self.slice_times = slice_times
         self.tr = tr
-        if tr == None:
+        if tr is None:
             raise ValueError('Repetition time cannot be None')
         if not isinstance(images, (list, tuple, np.ndarray)):
             images = [images]
@@ -771,7 +771,7 @@ class Realign4d(object):
                  maxiter=MAXITER,
                  maxfun=MAXFUN,
                  refscan=REFSCAN):
-        if between_loops == None:
+        if between_loops is None:
             between_loops = loops
         t = realign4d(self._runs,
                       affine_class=self.affine_class,
@@ -795,14 +795,14 @@ class Realign4d(object):
     def resample(self, r=None, align_runs=True):
         """
         Return the resampled run number r as a 4d nipy-like
-        image. Returns all runs as a list of images if r == None.
+        image. Returns all runs as a list of images if r is None.
         """
         if align_runs:
             transforms = self._transforms
         else:
             transforms = self._within_run_transforms
         runs = range(len(self._runs))
-        if r == None:
+        if r is None:
             data = [resample4d(self._runs[r], transforms=transforms[r],
                                time_interp=self._time_interp) for r in runs]
             return [make_xyz_image(data[r], self._runs[r].affine, 'scanner')
@@ -1023,29 +1023,29 @@ class FmriRealign4d(Realign4d):
                       stacklevel=2)
         # if slice_times not None, make sure that parameters redundant
         # with slice times all have their default value
-        if slice_times != None:
-            if slice_order != None \
-                    or tr_slices != None\
+        if slice_times is not None:
+            if slice_order is not None \
+                    or tr_slices is not None\
                     or start != 0.0 \
-                    or time_interp != None\
-                    or interleaved != None:
+                    or time_interp is not None\
+                    or interleaved is not None:
                 raise ValueError('Attempting to set both `slice_times` '
                                  'and other arguments redundant with it')
-            if tr == None:
+            if tr is None:
                 if len(slice_times) > 1:
                     tr = slice_times[-1] + slice_times[1] - 2 * slice_times[0]
                 else:
                     tr = 2 * slice_times[0]
                 warnings.warn('No `tr` entered. Assuming regular acquisition'
                               ' with tr=%f' % tr)
-        # case where slice_time == None
+        # case where slice_time is None
         else:
             # assume regular slice acquisition, therefore tr is
             # arbitrary
-            if tr == None:
+            if tr is None:
                 tr = 1.0
             # if no slice order provided, assume synchronous slices
-            if slice_order == None:
+            if slice_order is None:
                 if not time_interp == False:
                     raise ValueError('Slice order is requested '
                                      'with time interpolation switched on')
@@ -1079,13 +1079,13 @@ class FmriRealign4d(Realign4d):
                 else:
                     warnings.warn('Please make sure you are NOT using '
                                   'SPM-style slice order declaration')
-                    if not interleaved == None:
+                    if not interleaved is None:
                         raise ValueError('`interleaved` should be None when '
                                          'providing explicit slice order')
                     slice_order = np.asarray(slice_order)
-                if tr_slices == None:
+                if tr_slices is None:
                     tr_slices = float(tr) / float(len(slice_order))
-                if start == None:
+                if start is None:
                     start = 0.0
                 slice_times = start + tr_slices * slice_order
 

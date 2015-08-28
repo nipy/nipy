@@ -109,7 +109,7 @@ def stat(ndarray Y, id='student', double base=0.0,
   n = <unsigned int>Y.shape[axis]
 
   # Read out magic numbers
-  if Magics == None:
+  if Magics is None:
     magics = fff_vector_new(1)
     magics.data[0] = 0 ## Just to make sure
   else:
@@ -182,7 +182,7 @@ def stat_mfx(ndarray Y, ndarray V, id='student_mfx', double base=0.0,
   n = <int>Y.shape[axis]
 
   # Read out magic numbers
-  if Magics == None:
+  if Magics is None:
     magics = fff_vector_new(1)
     magics.data[0] = 0 ## Just to make sure
   else:
