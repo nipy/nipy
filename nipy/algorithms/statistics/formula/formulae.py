@@ -607,16 +607,16 @@ class Formula(object):
         Examples
         --------
         >>> x, y, z = [Term(l) for l in 'xyz']
-        >>> f1 = Formula([x,y,z])
-        >>> f2 = Formula([y])+I
+        >>> f1 = Formula([x, y, z])
+        >>> f2 = Formula([y]) + I
         >>> f1.mean
         _b0*x + _b1*y + _b2*z
         >>> f2.mean
         _b0*y + _b1
-        >>> f3=f2-f1
+        >>> f3 = f2 - f1
         >>> f3.mean
         _b0
-        >>> f4=f1-f2
+        >>> f4 = f1 - f2
         >>> f4.mean
         _b0*x + _b1*z
         """
