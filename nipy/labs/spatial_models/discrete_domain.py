@@ -595,7 +595,7 @@ class DiscreteDomain(object):
                the result
 
         """
-        if fid == None:
+        if fid is None:
             return np.sum(self.local_volume)
         ffid = self.features[fid]
         if np.size(ffid) == ffid.shape[0]:

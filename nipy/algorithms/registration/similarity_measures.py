@@ -50,9 +50,9 @@ def dist2loss(q, qI=None, qJ=None):
     inference, 2001.
     """
     qT = q.T
-    if qI == None:
+    if qI is None:
         qI = q.sum(0)
-    if qJ == None:
+    if qJ is None:
         qJ = q.sum(1)
     q /= nonzero(qI)
     qT /= nonzero(qJ)

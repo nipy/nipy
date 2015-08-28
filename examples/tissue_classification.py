@@ -19,7 +19,7 @@ def fuzzy_dice(gold_ppm, ppm, mask):
     Fuzzy dice index.
     """
     dices = np.zeros(3)
-    if gold_ppm == None:
+    if gold_ppm is None:
         return dices
     for k in range(3):
         pk = gold_ppm[mask][:, k]
@@ -55,7 +55,7 @@ args = parser.parse_args()
 
 def get_argument(dest, default):
     val = args.__getattribute__(dest)
-    if val == None:
+    if val is None:
         return default
     else:
         return val
@@ -65,7 +65,7 @@ img = load_image(args.img[0])
 
 # Input mask image
 mask_img = get_argument('mask', None)
-if mask_img == None:
+if mask_img is None:
     mask_img = img
 else:
     mask_img = load_image(mask_img)
@@ -87,9 +87,9 @@ save_image(make_xyz_image(S.label, xyz_affine(img), 'scanner'),
 print('Label image saved in: %s' % outfile)
 
 # Compute fuzzy Dice indices if a 3-class fuzzy model is provided
-if not args.probc == None and \
-        not args.probg == None and \
-        not args.probw == None:
+if args.probc is not None and \
+        args.probg is not None and \
+        args.probw is not None:
     print('Computing Dice index')
     gold_ppm = np.zeros(S.ppm.shape)
     gold_ppm_img = (args.probc, args.probg, args.probw)

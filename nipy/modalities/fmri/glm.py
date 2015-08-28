@@ -154,7 +154,7 @@ class GeneralLinearModel(object):
             the beta
         """
         # make colum_index a list if it an int
-        if column_index == None:
+        if column_index is None:
             column_index = np.arange(self.X.shape[1])
         if not hasattr(column_index, '__iter__'):
             column_index = [int(column_index)]
@@ -209,7 +209,7 @@ class GeneralLinearModel(object):
         -------
         con: Contrast instance
         """
-        if self.labels_ == None or self.results_ == None:
+        if self.labels_ is None or self.results_ is None:
             raise ValueError('The model has not been estimated yet')
         con_val = np.asarray(con_val)
         if con_val.ndim == 1:
@@ -350,7 +350,7 @@ class Contrast(object):
         ====
         the value of 0.5 is used where the stat is not defined
         """
-        if self.stat_ == None or not self.baseline == baseline:
+        if self.stat_ is None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type in ['t', 'tmin-conjunction']:
@@ -378,7 +378,7 @@ class Contrast(object):
         ====
         the value of 0 is used where the stat is not defined
         """
-        if self.p_value_ == None or not self.baseline == baseline:
+        if self.p_value_ is None or not self.baseline == baseline:
             self.p_value_ = self.p_value(baseline)
 
         # Avoid inf values kindly supplied by scipy.
@@ -497,7 +497,7 @@ class FMRILinearModel(object):
             mask = compute_mask_sessions(
                 fmri_data, m=m, M=M, cc=1, threshold=threshold, opening=0)
             self.mask = Nifti1Image(mask.astype(np.int8), self.affine)
-        elif mask == None:
+        elif mask is None:
             mask = np.ones(self.fmri_data[0].shape[:3]).astype(np.int8)
             self.mask = Nifti1Image(mask, self.affine)
         else:

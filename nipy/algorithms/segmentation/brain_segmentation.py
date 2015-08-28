@@ -58,8 +58,8 @@ class BrainT1Segmentation(object):
         self.ngb_size = int(ngb_size)
 
         # Class parameter initialization
-        if init_params == None:
-            if ref_params == None:
+        if init_params is None:
+            if ref_params is None:
                 ref_params = T1_ref_params
             self.init_mu, self.init_sigma = self._init_parameters(ref_params)
         else:
@@ -77,7 +77,7 @@ class BrainT1Segmentation(object):
 
     def _init_parameters(self, ref_params):
 
-        if not self.mask == None:
+        if self.mask is not None:
             data = self.data[self.mask]
         else:
             data = self.data

@@ -1827,10 +1827,10 @@ def drop_io_dim(cm, axis_id, fix0=True):
     cols = range(N)
     in_dims = list(cm.function_domain.coord_names)
     out_dims = list(cm.function_range.coord_names)
-    if not in_dim is None:
+    if in_dim is not None:
         in_dims.pop(in_dim)
         cols.pop(in_dim)
-    if not out_dim is None:
+    if out_dim is not None:
         out_dims.pop(out_dim)
         rows.pop(out_dim)
     aff = aff[rows]

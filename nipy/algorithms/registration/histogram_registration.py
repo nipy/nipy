@@ -158,7 +158,7 @@ class HistogramRegistration(object):
         slicer = lambda c, s, sp:\
             tuple([slice(c[i], s[i] + c[i], sp[i]) for i in range(3)])
         # Adjust spacing to match desired field of view size
-        if not spacing is None:
+        if spacing is not None:
             fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
         else:
             fov_data = self._from_img.get_data()[

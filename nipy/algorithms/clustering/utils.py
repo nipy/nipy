@@ -60,7 +60,7 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001, verbose=0,
         print "making at least one iteration"
         ninit = np.maximum(int(ninit), 1)
 
-    if Labels != None:
+    if Labels is not None:
         if np.size(Labels) == nbitems:
             Labels = Labels.astype(np.int)
             OK = (Labels.min() > -1) & (Labels.max() < nbclusters + 1)
@@ -192,7 +192,7 @@ def _kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=1.e-4,
     bJ = np.inf
     for it in range(ninit):
         # init
-        if Labels == None:
+        if Labels is None:
             seeds = np.argsort(np.random.rand(nbitem))[:nbclusters]
             centers = X[seeds]
         else:

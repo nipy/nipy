@@ -374,9 +374,9 @@ class permutation_test(object):
             n2 = self.data2.shape[self.axis]
             max_nperms = sm.comb(n1+n2,n1,exact=1)
             data = np.concatenate((self.data1,self.data2), self.axis)
-            if self.vardata1 != None:
+            if self.vardata1 is not None:
                 vardata = np.concatenate((self.vardata1,self.vardata2), self.axis)
-        if nperms == None or nperms >= max_nperms:
+        if nperms is None or nperms >= max_nperms:
             magic_numbers = np.arange(max_nperms)
         else:
             #magic_numbers = np.random.randint(max_nperms,size=nperms)
@@ -385,10 +385,10 @@ class permutation_test(object):
             magic_numbers = np.random.uniform(max_nperms,size=nperms)
         # Initialize cluster_results
         cluster_results = []
-        if clusters != None:
+        if clusters is not None:
             for (thresh,diam) in clusters:
-                if diam == None:
-                    if self.XYZ == None:
+                if diam is None:
+                    if self.XYZ is None:
                         labels = extract_clusters_from_graph(self.Tvalues,self.G,thresh)
                     else:
                         labels = extract_clusters_from_thresh(self.Tvalues,self.XYZ,thresh)
@@ -399,7 +399,7 @@ class permutation_test(object):
                 nclust = labels.max() + 1
                 results["expected_voxels_per_thresh"] = 0.0
                 results["expected_number_of_clusters"] = 0.0
-                if self.XYZ != None:
+                if self.XYZ is not None:
                     results["peak_XYZ"] = peak_XYZ(self.XYZ, self.Tvalues, labels, np.arange(nclust))
                 if "size" in cluster_stats:
                     results["size_values"] = size_values
@@ -412,12 +412,12 @@ class permutation_test(object):
                 cluster_results.append( results )
         # Initialize region_results
         region_results = []
-        if regions != None:
+        if regions is not None:
             for labels in regions:
                 label_values = sorted_values(labels)
                 nregions = len(label_values)
                 results = { "label_values" : label_values }
-                if self.XYZ != None:
+                if self.XYZ is not None:
                     results["peak_XYZ"] = peak_XYZ(self.XYZ, self.Tvalues, labels, label_values)
                 if "Fisher" in region_stats:
                     results["Fisher_values"] = compute_region_stat(self.Tvalues, labels, label_values, self.random_Tvalues)
@@ -439,7 +439,7 @@ class permutation_test(object):
                 #perm_Tvalues = onesample_stat(self.data, self.vardata, self.stat_id, self.base, self.axis, np.array([m]), self.niter).squeeze()
                 rand_sign = (np.random.randint(2,size=n)*2-1).reshape(n,1)
                 rand_data = rand_sign*self.data
-                if self.vardata == None:
+                if self.vardata is None:
                     rand_vardata = None
                 else:
                     rand_vardata = rand_sign*self.vardata
@@ -449,7 +449,7 @@ class permutation_test(object):
                 rand_perm = np.random.permutation(np.arange(n1+n2))
                 rand_data1 = data[:n1]
                 rand_data2 = data[n1:]
-                if self.vardata1 == None:
+                if self.vardata1 is None:
                     rand_vardata1 = None
                     rand_vardata2 = None
                 else:
@@ -460,11 +460,11 @@ class permutation_test(object):
             Corr_p_values += max(perm_Tvalues) >= self.Tvalues
             perm_maxT_values[j] = max(perm_Tvalues)
             # Update cluster_results
-            if clusters != None:
+            if clusters is not None:
                 for i in xrange(len(clusters)):
                     thresh, diam = clusters[i]
-                    if diam == None:
-                        if self.XYZ == None:
+                    if diam is None:
+                        if self.XYZ is None:
                             perm_labels = extract_clusters_from_graph(perm_Tvalues,self.G,thresh)
                         else:
                             perm_labels = extract_clusters_from_thresh(perm_Tvalues,self.XYZ,thresh)
@@ -481,7 +481,7 @@ class permutation_test(object):
                         cluster_results[i]["perm_Fisher_values"][:0] = perm_Fisher_values
                         cluster_results[i]["perm_maxFisher_values"][j] = max(perm_Fisher_values)
             # Update region_results
-            if regions != None:
+            if regions is not None:
                 for i in xrange(len(regions)):
                     labels = regions[i]
                     label_values = region_results[i]["label_values"]
@@ -490,7 +490,7 @@ class permutation_test(object):
                         perm_Fisher_values = compute_region_stat(perm_Tvalues, labels, label_values, self.random_Tvalues)
                         region_results[i]["perm_Fisher_values"][:,j] = perm_Fisher_values
         # Compute p-values for clusters summary statistics
-        if clusters != None:
+        if clusters is not None:
             for i in xrange(len(clusters)):
                 if "size" in cluster_stats:
                     cluster_results[i]["perm_size_values"] = np.array(cluster_results[i]["perm_size_values"])
@@ -507,7 +507,7 @@ class permutation_test(object):
                 cluster_results[i]["expected_voxels_per_thresh"] /= float(nmagic)
                 cluster_results[i]["expected_number_of_clusters"] /= float(nmagic)
         # Compute p-values for regions summary statistics
-        if regions != None:
+        if regions is not None:
             for i in xrange(len(regions)):
                 if "Fisher" in region_stats:
                     sorted_perm_Fisher_values = np.sort(region_results[i]["perm_Fisher_values"],axis=1)
@@ -553,7 +553,7 @@ class permutation_test(object):
         """
         Return uncorrected voxel-level pseudo p-values.
         """
-        if Tvalues == None:
+        if Tvalues is None:
             Tvalues = self.Tvalues
         return 1 - np.searchsorted(self.random_Tvalues, Tvalues)/float(self.ndraws)
 
@@ -563,7 +563,7 @@ class permutation_test(object):
         Return z score corresponding to the uncorrected
         voxel-level pseudo p-value.
         """
-        if Tvalues == None:
+        if Tvalues is None:
             Tvalues = self.Tvalues
         return zscore(self.pvalue(Tvalues))
 
@@ -622,13 +622,13 @@ class permutation_test_onesample(permutation_test):
         I = np.random.randint(0,p,size=ndraws)
         if axis == 0:
             rand_data = data[:,I]
-            if vardata == None:
+            if vardata is None:
                 rand_vardata = None
             else:
                 rand_vardata = vardata[:,I]
         else:
             rand_data = data[I]
-            if vardata == None:
+            if vardata is None:
                 rand_vardata = None
             else:
                 rand_vardata = vardata[I]
@@ -695,13 +695,13 @@ class permutation_test_onesample_graph(permutation_test):
         I = np.random.randint(0,p,size=ndraws)
         if axis == 0:
             rand_data = data[:,I]
-            if vardata == None:
+            if vardata is None:
                 rand_vardata = None
             else:
                 rand_vardata = vardata[:,I]
         else:
             rand_data = data[I]
-            if vardata == None:
+            if vardata is None:
                 rand_vardata = None
             else:
                 rand_vardata = vardata[I]
@@ -770,7 +770,7 @@ class permutation_test_twosample(permutation_test):
             perm_data = np.zeros((n1+n2,ndraws),float)
             perm_data[:n1] = data1[:,I]
             perm_data[n1:] = data2[:,I]
-            if vardata1 != None:
+            if vardata1 is not None:
                 perm_vardata = np.zeros((n1+n2,ndraws),float)
                 perm_vardata[:n1] = vardata1[:,I]
                 perm_vardata[n1:] = vardata2[:,I]
@@ -778,7 +778,7 @@ class permutation_test_twosample(permutation_test):
             perm_data = np.zeros((ndraws,n1+n2),float)
             perm_data[:,:n1] = data1[I]
             perm_data[:,n1:] = data2[I]
-            if vardata1 != None:
+            if vardata1 is not None:
                 perm_vardata = np.zeros((ndraws, n1+n2),float)
                 perm_vardata[:,:n1] = vardata1[I]
                 perm_vardata[:,n1:] = vardata2[I]
@@ -786,15 +786,15 @@ class permutation_test_twosample(permutation_test):
         ravel_rand_perm = rand_perm*ndraws + np.arange(ndraws).reshape(1,ndraws)
         if axis == 0:
             perm_data = perm_data.ravel()[ravel_rand_perm.ravel()].reshape(n1+n2,ndraws)
-            if vardata1 != None:
+            if vardata1 is not None:
                 perm_vardata = perm_vardata.ravel()[ravel_rand_perm.ravel()].reshape(n1+n2,ndraws)
         else:
             perm_data = (perm_data.transpose().ravel()[ravel_rand_perm.ravel()].reshape(n1+n2,ndraws)).transpose()
-            if vardata1 != None:
+            if vardata1 is not None:
                 perm_vardata = (perm_vardata.transpose().ravel()[ravel_rand_perm.ravel()].reshape(n1+n2,ndraws)).transpose()
         perm_data1 = perm_data[:n1]
         perm_data2 = perm_data[n1:]
-        if vardata1 == None:
+        if vardata1 is None:
             perm_vardata1 = None
             perm_vardata2 = None
         else:

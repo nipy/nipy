@@ -103,7 +103,7 @@ class Field(WeightedGraph):
             self.edges = edges
             self.weights = weights
         self.field = []
-        if field == None:
+        if field is None:
             pass
         else:
             if np.size(field) == self.V:
@@ -477,11 +477,11 @@ class Field(WeightedGraph):
         if np.size(self.field) == 0:
             raise ValueError('No field has been defined so far')
 
-        if (seeds == None) and (label == None):
+        if (seeds is None) and (label is None):
             raise ValueError('No initialization has been provided')
         k = np.size(seeds)
         inertia_old = NEGINF
-        if seeds == None:
+        if seeds is None:
             k = label.max() + 1
             if np.size(np.unique(label)) != k:
                 raise ValueError('missing values, cannot proceed')
@@ -566,7 +566,7 @@ class Field(WeightedGraph):
         sum(valid) == 0 then None is returned
         """
         G = self.subgraph(valid)
-        if G == None:
+        if G is None:
             return None
         field = self.field[valid]
         if len(G.edges) == 0:

@@ -72,7 +72,7 @@ class WeightedForest(Forest):
         self.V = int(V)
 
         # define the parents
-        if parents == None:
+        if parents is None:
             self.parents = np.arange(self.V)
         else:
             if np.size(parents) != V:
@@ -87,7 +87,7 @@ class WeightedForest(Forest):
             raise ValueError('The proposed structure is not a forest')
         self.children = []
 
-        if height == None:
+        if height is None:
             height = np.zeros(self.V)
         else:
             if np.size(height) != V:
@@ -97,7 +97,7 @@ class WeightedForest(Forest):
     def set_height(self, height=None):
         """Set the height array
         """
-        if height == None:
+        if height is None:
             height = np.zeros(self.V)
 
         if np.size(height) != self.V:
@@ -155,7 +155,7 @@ class WeightedForest(Forest):
             idx[i] = np.mean(idx[j])
 
         # 3. plot
-        if ax == None:
+        if ax is None:
             mp.figure()
             ax = mp.subplot(1, 1, 1)
 
@@ -454,7 +454,7 @@ def _initial_inertia(K, Features, seeds=None):
     if seeds if provided (seeds!=None)
     this is done only for vertices adjacent to the seeds
     """
-    if seeds == None:
+    if seeds is None:
         for e in range(K.E):
             i = K.edges[e, 0]
             j = K.edges[e, 1]

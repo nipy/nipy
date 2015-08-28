@@ -58,7 +58,7 @@ class PolyAffine(Transform):
         """
         # txyz should be double C-contiguous for the the cython
         # routine _apply_polyaffine
-        if self.glob_affine == None:
+        if self.glob_affine is None:
             txyz = np.array(xyz, copy=True, dtype='double', order='C')
         else:
             txyz = apply_affine(self.glob_affine, xyz)
@@ -85,7 +85,7 @@ class PolyAffine(Transform):
 
         # Affine case: the result is a polyaffine transform with same
         # local affines
-        if self.glob_affine == None:
+        if self.glob_affine is None:
             glob_affine = other.as_affine()
         else:
             glob_affine = np.dot(self.glob_affine, other.as_affine())

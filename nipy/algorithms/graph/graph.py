@@ -218,7 +218,7 @@ class Graph(object):
         """
         import matplotlib.pylab as plt
 
-        if ax == None:
+        if ax is None:
             plt.figure()
             ax = plt.subplot(1, 1, 1)
 
@@ -742,11 +742,11 @@ x
         proceeds by repeating Dijkstra's algo for each seed. Floyd's algo is not
         used (O(self.V)^3 complexity...)
         """
-        if seed == None:
+        if seed is None:
             seed = np.arange(self.V)
         dg = None
         for s in seed:
-            if dg == None:
+            if dg is None:
                 dg = self.dijkstra(s)
             else:
                 dg = np.vstack((dg, self.dijkstra(s)))
@@ -1121,12 +1121,12 @@ x
 
         wm = self.weights.max()
         import matplotlib.pylab as mp
-        if ax == None:
+        if ax is None:
             mp.figure()
             ax = mp.subplot(1, 1, 1)
 
         ml = 5.
-        if (X == None):
+        if (X is None):
             for e in range(self.E):
                 A = (self.edges[e, 0] * 2 * np.pi) / self.V
                 B = (self.edges[e, 1] * 2 * np.pi) / self.V
