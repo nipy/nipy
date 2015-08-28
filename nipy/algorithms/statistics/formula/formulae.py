@@ -585,7 +585,7 @@ class Formula(object):
         """
         if not is_formula(other):
             raise ValueError('only Formula objects can be added to a Formula')
-        f = self.__class__(np.hstack([self.terms, other.terms]))
+        f = Formula(np.hstack([self.terms, other.terms]))
         return f
 
     def __sub__(self, other):
@@ -624,7 +624,7 @@ class Formula(object):
             raise ValueError(
                 'only Formula objects can be subtracted from a Formula')
         d = list(set(self.terms).difference(other.terms))
-        return self.__class__(d)
+        return Formula(d)
 
     def __array__(self):
         return self.terms

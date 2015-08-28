@@ -187,6 +187,18 @@ def test_mul():
     assert_equal(set((t2*x).atoms()), set([t2,x]))
 
 
+def test_factor_add_sub():
+    # Test adding and subtracting Factors
+    f1 = F.Factor('t', [2, 3, 4])
+    f2 = F.Factor('t', [2, 3])
+    # Terms do not cancel in addition
+    assert_equal(f1 + f2, F.Formula(np.hstack((f1.terms, f2.terms))))
+    assert_equal(f1 - f2, F.Factor('t', [4]))
+    f3 = F.Factor('p', [0, 1])
+    assert_equal(f1 + f3, F.Formula(np.hstack((f1.terms, f3.terms))))
+    assert_equal(f1 - f3, f1)
+
+
 def test_make_recarray():
     m = F.make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int])
     assert_equal(m.dtype.names, ('w', 'v'))
