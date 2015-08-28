@@ -627,7 +627,8 @@ class Formula(object):
             raise ValueError(
                 'only Formula objects can be subtracted from a Formula')
         # Preserve order of terms in subtraction
-        d = [term for term in self.terms if term not in other.terms]
+        unwanted = set(other.terms)
+        d = [term for term in self.terms if term not in unwanted]
         return Formula(d)
 
     def __array__(self):
