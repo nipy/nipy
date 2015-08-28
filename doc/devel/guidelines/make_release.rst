@@ -219,12 +219,9 @@ Doing the release
 
     git tag -am 'Second main release' 0.3.0
 
-* Now the version number is OK, push the docs to sourceforge with::
+* Now the version number is OK, push the docs to github pages with::
 
-    cd doc
-    make upload-stable-web-mysfusername
-
-  where ``mysfusername`` is obviously your own sourceforge username.
+    make upload-html
 
 * Set up maintenance / development branches
 

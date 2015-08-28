@@ -36,7 +36,7 @@ import ipython_console_highlighting
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.doctest',
-              'sphinx.ext.pngmath',
+              'sphinx.ext.mathjax',
               'sphinx.ext.autosummary',
               'sphinx.ext.inheritance_diagram',
               'numpy_ext.numpydoc',
