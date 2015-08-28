@@ -167,8 +167,8 @@ def slices2aff(slices):
            [ 0.,  0.,  6.,  4.],
            [ 0.,  0.,  0.,  1.]])
     """
-    starts = [s.start if not s.start is None else 0 for s in slices]
-    steps = [s.step if not s.step is None else 1 for s in slices]
+    starts = [s.start if s.start is not None else 0 for s in slices]
+    steps = [s.step if s.step is not None else 1 for s in slices]
     aff = np.diag(steps + [1.])
     aff[:-1, -1] = starts
     return aff

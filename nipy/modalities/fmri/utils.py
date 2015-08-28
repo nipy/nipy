@@ -164,7 +164,7 @@ def interp(times, values, fill=0, name=None, **kw):
     >>> np.allclose(res, [0, 2.05, 3.95, 4.2, 0])
     True
     """
-    if not fill is None:
+    if fill is not None:
         if kw.get('bounds_error') is True:
             raise ValueError('fill conflicts with bounds error')
         fv = kw.get('fill_value')

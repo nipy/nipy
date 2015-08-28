@@ -76,7 +76,7 @@ def _smooth(con, vcon, msk, sigma):
     """
     scon = _gaussian_filter(con, msk, sigma)
     svcon = _gaussian_filter(con ** 2, msk, sigma) - scon ** 2
-    if not vcon is None:
+    if vcon is not None:
         svcon += _gaussian_filter(vcon, msk, sigma)
     return scon, svcon
 
@@ -90,7 +90,7 @@ def _smooth_spm(con, vcon, msk, sigma):
     """
     scon = _gaussian_filter(con, msk, sigma)
     K = _gaussian_energy(sigma)
-    if not vcon is None:
+    if vcon is not None:
         svcon = K * _gaussian_filter(vcon, msk, sigma / np.sqrt(2))
     else:
         svcon = np.zeros(con.shape)
@@ -110,7 +110,7 @@ def _smooth_image_pair(con_img, vcon_img, sigma, method='default'):
     else:
         raise ValueError('Unknown smoothing method')
     con = con_img.get_data()
-    if not vcon_img is None:
+    if vcon_img is not None:
         vcon = con_img.get_data()
     else:
         vcon = None
@@ -209,7 +209,7 @@ class ParcelAnalysis(object):
         self.con_imgs = con_imgs
         self.vcon_imgs = vcon_imgs
         self.n_subjects = len(con_imgs)
-        if not self.vcon_imgs is None:
+        if self.vcon_imgs is not None:
             if not self.n_subjects == len(vcon_imgs):
                 raise ValueError('List of contrasts and variances'
                                  ' do not have the same length')
@@ -223,7 +223,7 @@ class ParcelAnalysis(object):
         if design_matrix is None:
             self.design_matrix = np.ones(self.n_subjects)
             self.cvect = np.ones((1,))
-            if not cvect is None:
+            if cvect is not None:
                 raise ValueError('No contrast vector expected')
         else:
             self.design_matrix = np.asarray(design_matrix)
@@ -283,13 +283,13 @@ class ParcelAnalysis(object):
         cons, vcons = [], []
         for i in range(self.n_subjects):
             con = self.con_imgs[i]
-            if not self.vcon_imgs is None:
+            if self.vcon_imgs is not None:
                 vcon = self.vcon_imgs[i]
             else:
                 vcon = None
             scon, svcon = _smooth_image_pair(con, vcon, self.sigma,
                                              method=self.smooth_method)
-            if write and not self.res_path is None:
+            if write and self.res_path is not None:
                 _save_image(scon, join(self.res_path,
                                        'scon' + str(i) + '.nii.gz'))
                 _save_image(svcon, join(self.res_path,
@@ -361,7 +361,7 @@ class ParcelAnalysis(object):
         """
         Save parcel analysis information in NPZ file.
         """
-        if path is None and not self.res_path is None:
+        if path is None and self.res_path is not None:
             path = self.res_path
         else:
             path = '.'
@@ -391,7 +391,7 @@ class ParcelAnalysis(object):
         var = self.vbeta
         tmap[self.msk] = beta / np.sqrt(var)
         tmap_img = make_xyz_image(tmap, self.affine, self.reference)
-        if not self.res_path is None:
+        if self.res_path is not None:
             _save_image(tmap_img, join(self.res_path, 'tmap.nii.gz'))
             tmp = np.zeros(self.msk.shape)
             tmp[self.msk] = beta
@@ -439,7 +439,7 @@ class ParcelAnalysis(object):
         pmap_prob_img = make_xyz_image(pmap_prob, affine, self.reference)
         pmap_mu_img = make_xyz_image(pmap_mu, affine, self.reference)
 
-        if not self.res_path is None:
+        if self.res_path is not None:
             _save_image(pmap_prob_img,
                         join(self.res_path, 'parcel_prob.nii.gz'))
             _save_image(pmap_mu_img,

@@ -192,7 +192,7 @@ class Image4d(object):
         return (t - corr) / self.tr
 
     def free_data(self):
-        if not self._get_data is None:
+        if self._get_data is not None:
             self._data = None
 
 
@@ -1079,7 +1079,7 @@ class FmriRealign4d(Realign4d):
                 else:
                     warnings.warn('Please make sure you are NOT using '
                                   'SPM-style slice order declaration')
-                    if not interleaved is None:
+                    if interleaved is not None:
                         raise ValueError('`interleaved` should be None when '
                                          'providing explicit slice order')
                     slice_order = np.asarray(slice_order)

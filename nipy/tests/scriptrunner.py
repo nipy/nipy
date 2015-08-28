@@ -27,7 +27,7 @@ except NameError: # Python 3
 def _get_package():
     """ Workaround for missing ``__package__`` in Python 3.2
     """
-    if '__package__' in globals() and not __package__ is None:
+    if '__package__' in globals() and __package__ is not None:
         return __package__
     return __name__.split('.', 1)[0]
 
@@ -120,7 +120,7 @@ class ScriptRunner(object):
             cmd = [cmd]
         else:
             cmd = list(cmd)
-        if not self.local_script_dir is None:
+        if self.local_script_dir is not None:
             # Windows can't run script files without extensions natively so we need
             # to run local scripts (no extensions) via the Python interpreter.  On
             # Unix, we might have the wrong incantation for the Python interpreter
@@ -139,7 +139,7 @@ class ScriptRunner(object):
         if self.debug_print:
             print("Running command '%s'" % cmd)
         env = os.environ
-        if not self.local_module_dir is None:
+        if self.local_module_dir is not None:
             # module likely comes from the current working directory. We might need
             # that directory on the path if we're running the scripts from a
             # temporary directory

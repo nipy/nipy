@@ -77,7 +77,7 @@ class BrainT1Segmentation(object):
 
     def _init_parameters(self, ref_params):
 
-        if not self.mask is None:
+        if self.mask is not None:
             data = self.data[self.mask]
         else:
             data = self.data

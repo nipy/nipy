@@ -273,7 +273,7 @@ def generate_a_pyrex_source(self, base, ext_name, source, extension):
             # to pick up needed .pxd files for cython compilation
             incl_dirs = extension.include_dirs[:]
             dist_incl_dirs = self.distribution.include_dirs
-            if not dist_incl_dirs is None:
+            if dist_incl_dirs is not None:
                 incl_dirs += dist_incl_dirs
             import Cython.Compiler.Main
             log.info("cythonc:> %s" % (target_file))

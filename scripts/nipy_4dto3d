@@ -29,7 +29,7 @@ def main():
     froot, ext = splitext(args.filename)
     if ext in ('.gz', '.bz2'):
         froot, ext = splitext(froot)
-    if not out_path is None:
+    if out_path is not None:
         pth, fname = psplit(froot)
         froot = pjoin(out_path, fname)
     for i, img3d in enumerate(imgs):

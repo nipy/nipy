@@ -59,7 +59,7 @@ def parse_fname_axes(img_fname, time_axis, slice_axis):
     # Check whether this is an Analyze-type image
     img = nipy.load_image(img_fname)
     # Check for axes
-    if not time_axis is None:
+    if time_axis is not None:
         # Try converting to an integer in case that was what was passed
         try:
             time_axis = int(time_axis)
@@ -68,7 +68,7 @@ def parse_fname_axes(img_fname, time_axis, slice_axis):
             pass
     else: # was None
         time_axis = 't'
-    if not slice_axis is None:
+    if slice_axis is not None:
         # Try converting to an integer in case that was what was passed
         try:
             slice_axis = int(slice_axis)
@@ -111,7 +111,7 @@ def tsdiffana(args):
     axes : Matplotlib axes
        Axes on which we have done the plots.
     """
-    if not args.out_file is None and args.write_results:
+    if args.out_file is not None and args.write_results:
         raise ValueError("Cannot have OUT_FILE and WRITE_RESULTS options "
                          "together")
     img, time_axis, slice_axis = parse_fname_axes(args.filename,
@@ -122,7 +122,7 @@ def tsdiffana(args):
     if args.out_file is None and not args.write_results:
         # interactive mode
         return axes
-    if not args.out_file is None:
+    if args.out_file is not None:
         # plot only mode
         axes[0].figure.savefig(args.out_file)
         return axes

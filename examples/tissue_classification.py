@@ -87,9 +87,9 @@ save_image(make_xyz_image(S.label, xyz_affine(img), 'scanner'),
 print('Label image saved in: %s' % outfile)
 
 # Compute fuzzy Dice indices if a 3-class fuzzy model is provided
-if not args.probc is None and \
-        not args.probg is None and \
-        not args.probw is None:
+if args.probc is not None and \
+        args.probg is not None and \
+        args.probw is not None:
     print('Computing Dice index')
     gold_ppm = np.zeros(S.ppm.shape)
     gold_ppm_img = (args.probc, args.probg, args.probw)

@@ -86,7 +86,7 @@ class ImageList(object):
         in_ax, out_ax = io_axis_indices(image.coordmap, axis)
         if in_ax is None:
             raise AxisError('No correspnding input dimension for %s' % axis)
-        dropout = dropout and not out_ax is None
+        dropout = dropout and out_ax is not None
         if dropout:
             out_ax_name = image.reference.coord_names[out_ax]
         imlist = []

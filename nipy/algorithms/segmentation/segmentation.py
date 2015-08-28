@@ -92,7 +92,7 @@ class Segmentation(object):
             raise ValueError('missing information')
         self.nclasses = nclasses
 
-        if not prior is None:
+        if prior is not None:
             self.prior = np.asarray(prior)[self.mask].reshape(\
                 [self.data.shape[0], nclasses])
         else:
@@ -102,7 +102,7 @@ class Segmentation(object):
         self.set_markov_prior(beta, U=U)
 
     def set_markov_prior(self, beta, U=None):
-        if not U is None:  # make sure it's C-contiguous
+        if U is not None:  # make sure it's C-contiguous
             self.U = np.asarray(U).copy()
         else:  # Potts model
             U = np.ones((self.nclasses, self.nclasses))
@@ -147,7 +147,7 @@ class Segmentation(object):
             lef[:, i] = -.5 * maha_dist
             lef[:, i] += log(norm_factor)
 
-        if not self.prior is None:
+        if self.prior is not None:
             lef += log(self.prior)
 
         return lef
