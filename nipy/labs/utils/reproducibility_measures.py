@@ -1,16 +1,16 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-These are several functions for computing reproducibility measures.
-A use script should be appended soon on the repository.
+Functions for computing reproducibility measures.
 
-In general thuis proceeds as follows:
-The dataset is subject to jacknife subampling ('splitting'),
-each subsample being analysed independently.
-A reproducibility measure is then derived;
+General procedure is:
+ - dataset is subject to jacknife subampling ('splitting'),
+ - each subsample being analysed independently,
+ - a reproducibility measure is then derived;
 
-All is used to produce the work described in
-Analysis of a large fMRI cohort:
+It is used to produce the work described in Analysis of a large fMRI
+cohort:
+
 Statistical and methodological issues for group analyses.
 Thirion B, Pinel P, Meriaux S, Roche A, Dehaene S, Poline JB.
 Neuroimage. 2007 Mar;35(1):105-20.
@@ -61,7 +61,7 @@ def cluster_threshold(stat_map, domain, th, csize):
     domain: Nifti1Image instance,
           referential- and domain-defining image
     th (float): cluster-forming threshold
-    cisze (int>0): cluster size threshold
+    csize (int>0): cluster size threshold
 
     Returns
     -------
@@ -479,7 +479,7 @@ def peak_reproducibility(data, vardata, domain, ngroups, sigma, method='crfx',
           the input data from which everything is computed
     vardata: array of shape (nvox,nsubj)
              the variance of the data that is also available
-    domain: refenrtial- and domain-defining image
+    domain: referential- and domain-defining image
     ngroups (int),
              Number of subbgroups to be drawn
     sigma: float, parameter that encodes how far far is
@@ -656,7 +656,7 @@ def group_reproducibility_metrics(
     Returns
     -------
     cluster_rep_results: dictionary,
-                         results of cluster-level reproducibility analysi
+                         results of cluster-level reproducibility analysis
     voxel_rep_results: dictionary,
                        results of voxel-level reproducibility analysis
     peak_rep_results: dictionary,
@@ -759,7 +759,7 @@ def coord_bsa(domain, betas, theta=3., dmax=5., ths=0, thq=0.5, smin=0,
     smin: int, optional,
           minimal size of the regions to validate them
     afname: string, optional
-            path where intermediate resullts cam be pickelized
+            path where intermediate results cam be pickled
 
     Returns
     -------
