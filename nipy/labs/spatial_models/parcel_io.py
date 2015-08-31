@@ -8,6 +8,7 @@ in parcel definition processes
 
 import numpy as np
 import os.path
+from warnings import warn
 
 from nibabel import load, save, Nifti1Image
 
@@ -17,7 +18,7 @@ from .discrete_domain import grid_domain_from_image
 from .mroi import SubDomains
 from ..mask import intersect_masks
 
-from warnings import warn
+from nipy.externals.six import string_types
 
 warn('Module nipy.labs.spatial_models.parcel_io' + 
      'deprecated, will be removed',
@@ -43,7 +44,7 @@ def mask_parcellation(mask_images, nb_parcel, threshold=0, output_image=None):
     -------
     wim: Nifti1Imagine instance,  representing the resulting parcellation
     """
-    if isinstance(mask_images, basestring):
+    if isinstance(mask_images, string_types):
         mask = mask_images
     elif isinstance(mask_images, Nifti1Image):
         mask = mask_images
@@ -89,7 +90,7 @@ def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
     nb_subj = len(learning_images)
 
     # get a group-level mask
-    if isinstance(mask_images, basestring):
+    if isinstance(mask_images, string_types):
         mask = mask_images
     elif isinstance(mask_images, Nifti1Image):
         mask = mask_images

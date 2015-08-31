@@ -13,6 +13,8 @@ from nipy.utils import templates, example_data, DataError
 
 from nibabel.optpkg import optional_package
 
+from nipy.externals.six import string_types
+
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
 needs_mpl = skipif(not HAVE_MPL, "Test needs matplotlib")
 
@@ -52,7 +54,7 @@ def make_label_dec(label, ds=None):
     >>> f.hard
     True
     """
-    if isinstance(label,basestring):
+    if isinstance(label, string_types):
         labels = [label]
     else:
         labels = label

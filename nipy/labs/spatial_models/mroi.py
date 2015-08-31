@@ -9,6 +9,7 @@ from nipy.io.nibcompat import get_header, get_affine
 
 from . import discrete_domain as ddom
 
+from nipy.externals.six import string_types
 
 ##############################################################################
 # class SubDomains
@@ -754,7 +755,7 @@ def subdomain_from_image(mim, nn=18):
     Only labels > -1 are considered
 
     """
-    if isinstance(mim, basestring):
+    if isinstance(mim, string_types):
         iim = load(mim)
     else:
         iim = mim

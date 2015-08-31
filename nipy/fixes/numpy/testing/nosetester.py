@@ -8,6 +8,8 @@ from __future__ import print_function
 import os
 import sys
 
+from nipy.externals.six import string_types
+
 def get_package_name(filepath):
     """
     Given a path where a package is installed, determine its name.
@@ -167,7 +169,7 @@ class NoseTester(object):
         '''
         argv = [__file__, self.package_path, '-s']
         if label and label != 'full':
-            if not isinstance(label, basestring):
+            if not isinstance(label, string_types):
                 raise TypeError('Selection label should be a string')
             if label == 'fast':
                 label = 'not slow'

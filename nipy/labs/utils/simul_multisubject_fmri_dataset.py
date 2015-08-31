@@ -15,6 +15,8 @@ from nibabel import save, Nifti1Image
 
 from nipy.io.nibcompat import get_affine
 
+from nipy.externals.six import string_types
+
 # definition of the maxima at the group level
 pos = np.array([[6, 7],
                 [10, 10],
@@ -288,7 +290,8 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
     if dmtx is not None:
         n_scans = dmtx.shape[0]
 
-    if (out_image_file is not None) and isinstance(out_image_file, basestring):
+    if (out_image_file is not None) and isinstance(out_image_file,
+                                                   string_types):
         out_image_file = [out_image_file]
 
     shape_4d = shape + (n_scans,)

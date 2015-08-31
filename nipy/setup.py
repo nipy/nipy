@@ -1,11 +1,10 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-try: # python 2
-    from ConfigParser import ConfigParser
-except ImportError: # python 3
-    from configparser import ConfigParser
 
 import os
+
+from nipy.externals.six import string_types
+from nipy.externals.six.moves.configparser import ConfigParser
 
 NIPY_DEFAULTS = dict()
 
@@ -25,7 +24,7 @@ def get_nipy_info():
         if value.startswith('~'):
             info[key] = os.path.expanduser(value)
     # Ugly fix for bug 409269
-    if 'libraries' in info and isinstance(info['libraries'], basestring):
+    if 'libraries' in info and isinstance(info['libraries'], string_types):
         info['libraries'] = [info['libraries']]
     # End of ugly fix
     return info

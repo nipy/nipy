@@ -47,6 +47,8 @@ from nipy.core.api import is_image
 from nipy.testing.decorators import skip_doctest_if
 from nipy.utils import HAVE_EXAMPLE_DATA
 
+from nipy.externals.six import string_types
+
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
 
@@ -465,9 +467,9 @@ class FMRILinearModel(object):
         671
         """
         # manipulate the arguments
-        if isinstance(fmri_data, basestring) or hasattr(fmri_data, 'get_data'):
+        if isinstance(fmri_data, string_types) or hasattr(fmri_data, 'get_data'):
             fmri_data = [fmri_data]
-        if isinstance(design_matrices, (basestring, np.ndarray)):
+        if isinstance(design_matrices, (string_types, np.ndarray)):
             design_matrices = [design_matrices]
         if len(fmri_data) != len(design_matrices):
             raise ValueError('Incompatible number of fmri runs and '
@@ -477,7 +479,7 @@ class FMRILinearModel(object):
 
         # load the fmri data
         for fmri_run in fmri_data:
-            if isinstance(fmri_run, basestring):
+            if isinstance(fmri_run, string_types):
                 self.fmri_data.append(load(fmri_run))
             else:
                 self.fmri_data.append(fmri_run)
@@ -486,7 +488,7 @@ class FMRILinearModel(object):
 
         # load the designs
         for design_matrix in design_matrices:
-            if isinstance(design_matrix, basestring):
+            if isinstance(design_matrix, string_types):
                 loaded = np.load(design_matrix)
                 self.design_matrices.append(loaded[loaded.files[0]])
             else:
@@ -501,7 +503,7 @@ class FMRILinearModel(object):
             mask = np.ones(self.fmri_data[0].shape[:3]).astype(np.int8)
             self.mask = Nifti1Image(mask, self.affine)
         else:
-            if isinstance(mask, basestring):
+            if isinstance(mask, string_types):
                 self.mask = load(mask)
             else:
                 self.mask = mask

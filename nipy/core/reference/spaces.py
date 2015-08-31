@@ -9,6 +9,7 @@ from ...fixes.nibabel import io_orientation
 from .coordinate_system import CoordSysMaker, is_coordsys, is_coordsys_maker
 from .coordinate_map import CoordMapMaker
 
+from ...externals.six import string_types
 
 class XYZSpace(object):
     """ Class contains logic for spaces with XYZ coordinate systems
@@ -289,7 +290,7 @@ def get_world_cs(world_id, ndim=3, extras='tuvw', spaces=None):
         return world_id
     if spaces is None:
         spaces = known_spaces
-    if isinstance(world_id, basestring):
+    if isinstance(world_id, string_types):
         space_names = [s.name for s in spaces]
         if world_id not in space_names:
             raise SpaceError('Unkown space "%s"; known spaces are %s'

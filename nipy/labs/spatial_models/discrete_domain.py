@@ -15,6 +15,8 @@ from nipy.io.nibcompat import get_header, get_affine
 from nipy.algorithms.graph import (WeightedGraph, wgraph_from_coo_matrix,
                                    wgraph_from_3d_grid)
 
+from nipy.externals.six import string_types
+
 ##############################################################
 # Ancillary functions
 ##############################################################
@@ -233,7 +235,7 @@ def domain_from_image(mim, nn=18):
     The corresponding StructuredDomain instance
 
     """
-    if isinstance(mim, basestring):
+    if isinstance(mim, string_types):
         iim = load(mim)
     else:
         iim = mim
@@ -283,7 +285,7 @@ def grid_domain_from_image(mim, nn=18):
     The corresponding NDGridDomain instance
 
     """
-    if isinstance(mim, basestring):
+    if isinstance(mim, string_types):
         iim = load(mim)
     else:
         iim = mim
@@ -408,7 +410,7 @@ def domain_from_mesh(mesh):
     mesh: nibabel gifti mesh instance, or path to such a mesh
 
     """
-    if isinstance(mesh, basestring):
+    if isinstance(mesh, string_types):
         from nibabel.gifti import read
         mesh_ = read(mesh)
     else:
@@ -776,7 +778,7 @@ class NDGridDomain(StructuredDomain):
         the correponding set of values
 
         """
-        if isinstance(path, basestring):
+        if isinstance(path, string_types):
             nim = load(path)
         else:
             nim = path
