@@ -7,6 +7,7 @@ import numpy as np
 from .. import permutation_test as pt
 from nipy.algorithms.graph import wgraph_from_3d_grid
 from numpy.testing import assert_array_equal
+from nose.tools import assert_true
 
 nperms = 2
 ndraws = 10
@@ -84,7 +85,7 @@ class test_permutation_test(unittest.TestCase):
         p_values, cluster_results, region_results = P.calibrate(
             nperms=nperms)
         cpval = p_values['Corr_p_values']
-        assert_array_equal(cpval, np.ones_like(cpval))
+        assert_true(np.sum(cpval > .5 * np.ones_like(cpval)) > .9 * len(cpval))
 
     def test_twosample_non_null(self):
         data1, vardata1, XYZ = make_data(n=20)
