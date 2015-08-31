@@ -29,10 +29,6 @@ from distutils.errors import DistutilsError
 
 from numpy.distutils.misc_util import appendpath
 from numpy.distutils import log
-from numpy.distutils.misc_util import is_string
-
-# Python 3 builder
-from nisext.py3builder import build_py as old_build_py
 
 # Sphinx import
 try:
@@ -204,47 +200,6 @@ else: # failed Sphinx import
         def finalize_options(self):
             pass
 
-# Start of numpy.distutils.command.build_py.py copy
-
-class build_py(old_build_py):
-    """ Copied verbatim from numpy.distutils.command.build_py.py
-
-    If we are on python 2, this code merely replicates numpy distutils, and we
-    could get the same effect by importing build_py from numpy.distutils.  If we
-    are on python 3, then `old_build_py` will have python 2to3 routines
-    contained, and we also need the methods below to work with numpy distutils.
-
-    If you know a better way to do this, please, send a patch and make me glad.
-    """
-
-    def run(self):
-        build_src = self.get_finalized_command('build_src')
-        if build_src.py_modules_dict and self.packages is None:
-            self.packages = build_src.py_modules_dict.keys ()
-        old_build_py.run(self)
-
-    def find_package_modules(self, package, package_dir):
-        modules = old_build_py.find_package_modules(self, package, package_dir)
-
-        # Find build_src generated *.py files.
-        build_src = self.get_finalized_command('build_src')
-        modules += build_src.py_modules_dict.get(package,[])
-
-        return modules
-
-    def find_modules(self):
-        old_py_modules = self.py_modules[:]
-        new_py_modules = filter(is_string, self.py_modules)
-        self.py_modules[:] = new_py_modules
-        modules = old_build_py.find_modules(self)
-        self.py_modules[:] = old_py_modules
-
-        return modules
-
-    # XXX: Fix find_source_files for item in py_modules such that item is 3-tuple
-    # and item[2] is source file.
-
-# End of numpy.distutils.command.build_py.py copy
 
 def have_good_cython():
     try:
