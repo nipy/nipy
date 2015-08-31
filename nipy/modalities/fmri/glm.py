@@ -29,6 +29,7 @@ Example of fixed effects statistics across two contrasts
 >>> np.random.shuffle(cval_)
 >>> z_ffx = (model.contrast(cval) + model.contrast(cval_)).z_score()
 """
+from __future__ import print_function
 
 import numpy as np
 
@@ -289,7 +290,7 @@ class Contrast(object):
         self.dof = float(dof)
         self.dim = effect.shape[0]
         if self.dim > 1 and contrast_type is 't':
-            print 'Automatically converted multi-dimensional t to F contrast'
+            print('Automatically converted multi-dimensional t to F contrast')
             contrast_type = 'F'
         self.contrast_type = contrast_type
         self.stat_ = None

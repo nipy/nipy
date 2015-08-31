@@ -5,6 +5,7 @@ Utility functions for mutli-subjectParcellation:
 this basically uses nipy io lib to perform IO opermation
 in parcel definition processes
 """
+from __future__ import print_function
 
 import numpy as np
 import os.path
@@ -333,7 +334,7 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
         size = lpa.get_size()
         vf = np.dot(var_beta, size) / size.sum()
         va = np.dot(var_coord, size) / size.sum()
-        print nbparcel, "functional variance", vf, "anatomical variance", va
+        print(nbparcel, "functional variance", vf, "anatomical variance", va)
 
     # step3:  write the resulting label image
     if fullpath is not None:
@@ -348,6 +349,6 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
             fid='id', roi=True, descrip='Intra-subject parcellation image')
         save(lpa_img, label_image)
         if verbose:
-            print "Wrote the parcellation images as %s" % label_image
+            print("Wrote the parcellation images as %s" % label_image)
 
     return lpa

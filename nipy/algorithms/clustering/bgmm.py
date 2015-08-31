@@ -14,6 +14,8 @@ but it is limited to diagonal covariance models
 
 Author : Bertrand Thirion, 2008-2011
 """
+from __future__ import print_function
+
 import numpy as np
 import numpy.random as nr
 from scipy.linalg import inv, cholesky, eigvalsh
@@ -862,7 +864,7 @@ class BGMM(GMM):
         bf = np.log(p0) + np.sum(np.log(np.sum(like, 1))) - np.log(mp)
 
         if verbose:
-            print np.log(p0), np.sum(np.log(np.sum(like, 1))), np.log(mp)
+            print(np.log(p0), np.sum(np.log(np.sum(like, 1))), np.log(mp))
         return bf
 
 
@@ -981,7 +983,7 @@ class VBGMM(BGMM):
             Dklg += dkl_gaussian(self.means[k], nc, self.prior_means[k], nc0)
         Dkl = Dkld + Dklg + Dklw
         if verbose:
-            print 'Lav', F, 'Dkl', Dkld, Dklg, Dklw
+            print('Lav', F, 'Dkl', Dkld, Dklg, Dklw)
         F -= Dkl
         return F
 
@@ -1093,13 +1095,13 @@ class VBGMM(BGMM):
             av_ll = np.mean(np.log(np.maximum(np.sum(like, 1), tiny)))
             if av_ll < av_ll_old + delta:
                 if verbose:
-                    print 'iteration:', i, 'log-likelihood:', av_ll,\
-                          'old value:', av_ll_old
+                    print('iteration:', i, 'log-likelihood:', av_ll,
+                          'old value:', av_ll_old)
                 break
             else:
                 av_ll_old = av_ll
             if verbose:
-                print i, av_ll, self.bic(like)
+                print(i, av_ll, self.bic(like))
             like = (like.T / np.maximum(like.sum(1), tiny)).T
             self._Mstep(x, like)
 

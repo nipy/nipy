@@ -17,6 +17,7 @@ convolve_functions : numerically convolve two functions of time
 
 fourier_basis : a convenience function to generate a Fourier basis
 """
+from __future__ import print_function
 
 import itertools
 
@@ -69,10 +70,10 @@ def define(name, expr):
     --------
     >>> t = Term('t')
     >>> expr = t**2 + 3*t
-    >>> print expr #doctest: +SYMPY_EQUAL
+    >>> print(expr)  #doctest: +SYMPY_EQUAL
     3*t + t**2
     >>> newexpr = define('f', expr)
-    >>> print newexpr
+    >>> print(newexpr)
     f(t)
     >>> f = lambdify_t(newexpr)
     >>> f(4)
@@ -435,7 +436,7 @@ def convolve_functions(f, g, f_interval, g_interval, dt,
 
     The result is a symbolic function
 
-    >>> print tri
+    >>> print(tri)
     conv(t)
 
     Get the numerical values for a time vector

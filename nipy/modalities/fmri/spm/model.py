@@ -1,5 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function
 
 import numpy as np
 import numpy.linalg as L
@@ -21,7 +22,7 @@ def Fmask(Fimg, dfnum, dfdenom, pvalue=1.0e-04):
 
     ## TODO check nipy.algorithms.statistics.models.contrast to see if rank is
     ## correctly set -- I don't think it is right now.
-    print dfnum, dfdenom
+    print(dfnum, dfdenom)
     thresh = FDbn.ppf(pvalue, dfnum, dfdenom)
     return Image(np.greater(np.asarray(Fimg), thresh), Fimg.grid.copy())
 

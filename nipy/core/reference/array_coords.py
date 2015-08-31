@@ -14,6 +14,8 @@ CoordinateMap at np.indices(shape).
 The class Grid is meant to take a CoordinateMap and an np.mgrid-like
 notation to create an ArrayCoordMap.
 """
+from __future__ import print_function
+
 import numpy as np
 
 from .coordinate_map import CoordinateMap, AffineTransform, compose
@@ -277,16 +279,16 @@ class Grid(object):
            [ 0. ,  0.2, -2. ],
            [ 0. ,  0. ,  1. ]])
 
-    >>> print points.coordmap.function_domain
+    >>> print(points.coordmap.function_domain)
     CoordinateSystem(coord_names=('i0', 'i1'), name='product', coord_dtype=float64)
-    >>> print points.coordmap.function_range
+    >>> print(points.coordmap.function_range)
     CoordinateSystem(coord_names=('x', 'y'), name='input', coord_dtype=float64)
 
     >>> points.shape
     (21, 31)
-    >>> print points.transposed_values.shape
+    >>> print(points.transposed_values.shape)
     (2, 21, 31)
-    >>> print points.values.shape
+    >>> print(points.values.shape)
     (651, 2)
     """
 

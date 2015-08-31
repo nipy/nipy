@@ -3,6 +3,7 @@ Test the Infinite GMM.
 
 Author : Bertrand Thirion, 2010
 """
+from __future__ import print_function
 
 import numpy as np
 
@@ -139,7 +140,7 @@ def test_imm_loglike_2D_a0_1():
     like =  igmm.sample(x, niter=300)
     theoretical_ll = -dim*.5*(1+np.log(2*np.pi))
     empirical_ll = np.log(like).mean()
-    print theoretical_ll, empirical_ll
+    print(theoretical_ll, empirical_ll)
     assert_true(np.absolute(theoretical_ll-empirical_ll)<0.2*dim)
 
 

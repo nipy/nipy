@@ -1,5 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function
+
 import numpy as np
 
 from nibabel import Nifti1Image
@@ -52,7 +54,7 @@ def test_6():
     img = make_surrogate_data()
     clusters, info = cluster_stats(img, img, height_th=.05, 
                                    height_control='fdr', cluster_th=0, nulls={})
-    print len(clusters), sum([c['size'] for c in clusters])
+    print(len(clusters), sum([c['size'] for c in clusters]))
     assert len(clusters)==4
 
 def test7():

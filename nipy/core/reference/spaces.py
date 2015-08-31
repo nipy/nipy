@@ -1,4 +1,5 @@
 """ Useful neuroimaging coordinate map makers and utilities """
+from __future__ import print_function
 
 import numpy as np
 
@@ -15,7 +16,7 @@ class XYZSpace(object):
     """ Class contains logic for spaces with XYZ coordinate systems
 
     >>> sp = XYZSpace('hijo')
-    >>> print sp
+    >>> print(sp)
     hijo: [('x', 'hijo-x=L->R'), ('y', 'hijo-y=P->A'), ('z', 'hijo-z=I->S')]
     >>> csm = sp.to_coordsys_maker()
     >>> cs = csm(3)

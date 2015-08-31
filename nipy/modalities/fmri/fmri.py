@@ -1,5 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function
+
 import warnings
 
 import numpy as np
@@ -45,9 +47,9 @@ class FmriImageList(ImageList):
         >>> funcim = load_image(funcfile)
         >>> iterable_img = iter_axis(funcim, 't')
         >>> fmrilist = FmriImageList(iterable_img)
-        >>> print fmrilist.get_list_data(axis=0).shape
+        >>> print(fmrilist.get_list_data(axis=0).shape)
         (20, 17, 21, 3)
-        >>> print fmrilist[4].shape
+        >>> print(fmrilist[4].shape)
         (17, 21, 3)
         """
         ImageList.__init__(self, images=images)

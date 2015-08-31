@@ -1,5 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function
+
 import numpy as np
 import numpy.linalg as npl
 
@@ -158,4 +160,4 @@ if __name__ == "__main__":
     Q = np.array([np.identity(3), np.array([[0,1,0],[1,0,0],[0,0,1]]),
                  np.array([[1,0,0],[0,1,1],[0,1,1]])], np.float)
     
-    print reml(np.dot(X.T,X), Q), 
+    print(reml(np.dot(X.T,X), Q))

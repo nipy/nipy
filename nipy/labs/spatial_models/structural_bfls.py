@@ -12,6 +12,7 @@ Group Studies.  IEEE TMI 2007
 
 Author : Bertrand Thirion, 2006-2013
 """
+from __future__ import print_function
 
 #autoindent
 
@@ -146,9 +147,9 @@ class LandmarkRegions(object):
         centers = self.centers()
         subjects = self.subjects
         prevalence = self.roi_prevalence()
-        print "index", "prevalence", "mean_position", "individuals"
+        print("index", "prevalence", "mean_position", "individuals")
         for i in range(self.k):
-            print i, prevalence[i], centers[i], np.unique(subjects[i])
+            print(i, prevalence[i], centers[i], np.unique(subjects[i]))
 
     def roi_prevalence(self):
         """ Return a confidence index over the different rois

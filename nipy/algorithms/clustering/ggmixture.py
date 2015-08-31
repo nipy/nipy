@@ -7,6 +7,7 @@ of the mixture distribution using an EM algorithm.
 
 Author: Bertrand Thirion and Merlin Keller 2005-2008
 """
+from __future__ import print_function
 
 import numpy as np
 import scipy.stats as st
@@ -37,7 +38,7 @@ def _psi_solve(y, eps=0.00001):
     """ Solve psi(c)-log(c)=y by dichotomy
     """
     if y > 0:
-        print "y", y
+        print("y", y)
         raise ValueError("y>0, the problem cannot be solved")
     u = 1.
     if y > sp.psi(u) - np.log(u):
@@ -135,7 +136,7 @@ class Gamma(object):
         self.scale = scale
 
     def parameters(self):
-        print "shape: ", self.shape, "scale: ", self.scale
+        print("shape: ", self.shape, "scale: ", self.scale)
 
     def check(self, x):
         if (x.min() < 0):
@@ -185,9 +186,9 @@ class GGM(object):
     def parameters(self):
         """ print the paramteres of self
         """
-        print "Gaussian: mean: ", self.mean, "variance: ", self.var
-        print "Gamma: shape: ", self.shape, "scale: ", self.scale
-        print "Mixture gamma: ", self.mixt, "Gaussian: ", 1 - self.mixt
+        print("Gaussian: mean: ", self.mean, "variance: ", self.var)
+        print("Gamma: shape: ", self.shape, "scale: ", self.scale)
+        print("Mixture gamma: ", self.mixt, "Gaussian: ", 1 - self.mixt)
 
     def Mstep(self, x, z):
         """
@@ -271,7 +272,7 @@ class GGM(object):
             self.Mstep(x, z)
             z, L = self.Estep(x)
             if verbose:
-                print i, L
+                print(i, L)
             if (L < L0 + delta):
                 break
             L0 = L
@@ -376,14 +377,13 @@ class GGGM(object):
     def parameters(self):
         """ Print the parameters
         """
-        print "Negative Gamma: shape: ", self.shape_n,\
-        "scale: ", self.scale_n
-        print "Gaussian: mean: ", self.mean, "variance: ", self.var
-        print "Poitive Gamma: shape: ", self.shape_p, "scale: ",\
-        self.scale_p
+        print("Negative Gamma: shape: ", self.shape_n,
+              "scale: ", self.scale_n)
+        print("Gaussian: mean: ", self.mean, "variance: ", self.var)
+        print("Poitive Gamma: shape: ", self.shape_p, "scale: ", self.scale_p)
         mixt = self.mixt
-        print "Mixture neg. gamma: ", mixt[0], "Gaussian: ", mixt[1],\
-        "pos. gamma: ", mixt[2]
+        print("Mixture neg. gamma: ", mixt[0], "Gaussian: ", mixt[1],
+              "pos. gamma: ", mixt[2])
 
     def init(self, x, mixt=None):
         """
@@ -578,7 +578,7 @@ class GGGM(object):
 
             z, L = self.Estep(x)
             if verbose:
-                print i, L
+                print(i, L)
             if (L < L0 + delta):
                 break
             L0 = L

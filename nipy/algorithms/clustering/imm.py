@@ -2,6 +2,8 @@
 Infinite mixture model : A generalization of Bayesian mixture models
 with an unspecified number of classes
 """
+from __future__ import print_function
+
 import numpy as np
 
 from scipy.special import gammaln
@@ -674,10 +676,10 @@ def main():
 
     # warming
     igmm.sample(x, niter=100, kfold=10)
-    print 'number of components: ', igmm.k
+    print('number of components: ', igmm.k)
 
     #
-    print 'number of components: ', igmm.k
+    print('number of components: ', igmm.k)
 
     if dim < 3:
         from gmm import plot2D

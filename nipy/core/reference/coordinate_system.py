@@ -10,6 +10,8 @@ space.  This allows one to compare two CoordinateSystems to determine
 if they are equal.
 
 """
+from __future__ import print_function
+
 __docformat__ = 'restructuredtext'
 
 import numpy as np
@@ -102,7 +104,7 @@ class CoordinateSystem(object):
         Examples
         --------
         >>> c = CoordinateSystem('ij', name='input')
-        >>> print c
+        >>> print(c)
         CoordinateSystem(coord_names=('i', 'j'), name='input', coord_dtype=float64)
         >>> c.coord_dtype
         dtype('float64')
@@ -387,10 +389,10 @@ def product(*coord_systems, **kwargs):
     >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex)
     >>> c3 = CoordinateSystem('ik', 'in3')
 
-    >>> print product(c1, c2)
+    >>> print(product(c1, c2))
     CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='product', coord_dtype=complex128)
 
-    >>> print product(c1, c2, name='another name')
+    >>> print(product(c1, c2, name='another name'))
     CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='another name', coord_dtype=complex128)
 
     >>> product(c2, c3)
@@ -436,9 +438,9 @@ class CoordSysMaker(object):
         Examples
         --------
         >>> cmkr = CoordSysMaker('ijk', 'a name')
-        >>> print cmkr(2)
+        >>> print(cmkr(2))
         CoordinateSystem(coord_names=('i', 'j'), name='a name', coord_dtype=float64)
-        >>> print cmkr(3)
+        >>> print(cmkr(3))
         CoordinateSystem(coord_names=('i', 'j', 'k'), name='a name', coord_dtype=float64)
         """
         self.coord_names = tuple(coord_names)

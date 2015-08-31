@@ -48,6 +48,7 @@ Remove all occurences of importing make_doctest_suite::
     perlpie 'from\snipy\.utils\.testutils.*make_doctest_suite'
 
 """
+from __future__ import print_function
 
 # notes on perl-dash-pie
 # perl -p -i -e 's/oldstring/newstring/g' *
@@ -62,9 +63,9 @@ def check_deps():
     try:
         import grin
     except ImportError:
-        print 'perlpie requires grin to operate.'
-        print 'You can find grin in the python package index:'
-        print '  http://pypi.python.org/pypi/grin/'
+        print('perlpie requires grin to operate.')
+        print('You can find grin in the python package index:')
+        print('  http://pypi.python.org/pypi/grin/')
         return False
     # assume they have perl for now
     return True
@@ -87,7 +88,7 @@ def perl_dash_pie(oldstr, newstr, dry_run=None):
         cmd = "grind | xargs perl -p -e 's/%s/%s/g'" % (oldstr, newstr)
     else:
         cmd = "grind | xargs perl -pi -e 's/%s/%s/g'" % (oldstr, newstr)
-    print cmd
+    print(cmd)
 
     try:
         subprocess.check_call(cmd, shell=True)
@@ -101,7 +102,7 @@ def perl_dash_pie(oldstr, newstr, dry_run=None):
         raise Exception(msg)
 
 def print_extended_help(option, opt_str, value, parser, *args, **kwargs):
-    print __doc__
+    print(__doc__)
 
 def main():
     description = __doc__.splitlines()[0]

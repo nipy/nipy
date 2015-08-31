@@ -13,6 +13,7 @@ Taylor, J.E. & Worsley, K.J. (2007). "Random fields of multivariate
    test statistics, with applications to shape analysis."
    Annals of Statistics, accepted.
 """
+from __future__ import print_function
 
 import numpy as np
 from numpy.linalg import pinv    
@@ -327,7 +328,7 @@ class ECquasi(np.poly1d):
         --------
         >>> b = ECquasi([3,4,20], m=30, exponent=4)
         >>> c = ECquasi([1,2], m=30, exponent=4)
-        >>> print b-c #doctest: +IGNORE_DTYPE
+        >>> print(b-c)  #doctest: +IGNORE_DTYPE
         ECquasi(array([ 3,  3, 18]), m=30.000000, exponent=4.000000)
         """
         return self + (other * -1)

@@ -10,6 +10,8 @@
 * iter_axis : make iterator to iterate over an image axis
 * is_image : test for an object obeying the Image API
 """
+from __future__ import print_function
+
 import warnings
 from copy import copy
 from itertools import chain
@@ -303,7 +305,7 @@ class Image(object):
         >>> data = np.random.standard_normal((11,9,4))
         >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4), 'domain', 'range'))
         >>> im_renamed = im.renamed_axes(i='slice')
-        >>> print im_renamed.axes
+        >>> print(im_renamed.axes)
         CoordinateSystem(coord_names=('slice', 'j', 'k'), name='domain', coord_dtype=float64)
         """
         new_cmap = self.coordmap.renamed_domain(names_dict)
@@ -329,7 +331,7 @@ class Image(object):
         >>> data = np.random.standard_normal((11,9,4))
         >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4), 'domain', 'range'))
         >>> im_renamed_reference = im.renamed_reference(x='newx', y='newy')
-        >>> print im_renamed_reference.reference
+        >>> print(im_renamed_reference.reference)
         CoordinateSystem(coord_names=('newx', 'newy', 'z'), name='range', coord_dtype=float64)
         """
         new_cmap = self.coordmap.renamed_range(names_dict)

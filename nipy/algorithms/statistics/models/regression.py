@@ -17,6 +17,7 @@ General reference for regression models:
     Elizabeth A. Peck, G. Geoffrey Vining. Wiley, 2006.
 
 """
+from __future__ import print_function
 
 __docformat__ = 'restructuredtext en'
 
@@ -79,10 +80,10 @@ class OLSModel(LikelihoodModel):
     array([ 0.25      ,  2.14285714])
     >>> results.t()
     array([ 0.98019606,  1.87867287])
-    >>> print results.Tcontrast([0,1]) #doctest: +FP_6DP
+    >>> print(results.Tcontrast([0,1]))  #doctest: +FP_6DP
     <T contrast: effect=2.14285714286, sd=1.14062281591, t=1.87867287326,
     df_den=5>
-    >>> print results.Fcontrast(np.eye(2)) #doctest: +FP_6DP
+    >>> print(results.Fcontrast(np.eye(2)))  #doctest: +FP_6DP
     <F contrast: F=19.4607843137, df_den=5, df_num=2>
     """
 
@@ -327,7 +328,7 @@ class ARModel(OLSModel):
 
     >>> for i in range(6):
     ...     results = model.fit(data['Y'])
-    ...     print "AR coefficients:", model.rho
+    ...     print("AR coefficients:", model.rho)
     ...     rho, sigma = yule_walker(data["Y"] - results.predicted,
     ...                              order=2,
     ...                              df=model.df_resid)
@@ -343,17 +344,17 @@ class ARModel(OLSModel):
     array([ 1.59564228, -0.58562172])
     >>> results.t() #doctest: +FP_6DP
     array([ 38.0890515 ,  -3.45429252])
-    >>> print results.Tcontrast([0,1]) #doctest: +FP_6DP
+    >>> print(results.Tcontrast([0,1]))  #doctest: +FP_6DP
     <T contrast: effect=-0.58562172384377043, sd=0.16953449108110835,
     t=-3.4542925165805847, df_den=5>
-    >>> print results.Fcontrast(np.identity(2)) #doctest: +FP_6DP
+    >>> print(results.Fcontrast(np.identity(2)))  #doctest: +FP_6DP
     <F contrast: F=4216.810299725842, df_den=5, df_num=2>
 
     Reinitialize the model, and do the automated iterative fit
 
     >>> model.rho = np.array([0,0])
     >>> model.iterative_fit(data['Y'], niter=3)
-    >>> print model.rho #doctest: +FP_6DP
+    >>> print(model.rho)  #doctest: +FP_6DP
     [-0.7220361  -1.05365352]
     """
 
@@ -655,10 +656,10 @@ class WLSModel(OLSModel):
     array([ 0.0952381 ,  2.91666667])
     >>> results.t()
     array([ 0.35684428,  2.0652652 ])
-    >>> print results.Tcontrast([0,1]) #doctest: +FP_6DP
+    >>> print(results.Tcontrast([0,1]))  #doctest: +FP_6DP
     <T contrast: effect=2.91666666667, sd=1.41224801095, t=2.06526519708,
     df_den=5>
-    >>> print results.Fcontrast(np.identity(2)) #doctest: +FP_6DP
+    >>> print(results.Fcontrast(np.identity(2)))  #doctest: +FP_6DP
     <F contrast: F=26.9986072423, df_den=5, df_num=2>
     """
 

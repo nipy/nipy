@@ -12,6 +12,8 @@ WeightedGraph and feature data.
 
 Author:Bertrand Thirion, 2006--2011
 """
+from __future__ import print_function
+
 from warnings import warn
 import numpy as np
 
@@ -508,7 +510,7 @@ class Field(WeightedGraph):
                 seeds[j] = lj[tj]
                 inertia += np.sum((cent - self.field[lj]) ** 2)
             if verbose:
-                print i, inertia
+                print(i, inertia)
             if np.absolute(inertia_old - inertia) < eps:
                 break
             inertia_old = inertia

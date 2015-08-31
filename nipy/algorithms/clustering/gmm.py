@@ -8,6 +8,7 @@ computationally and memory efficient.
 
 Author : Bertrand Thirion, 2006-2009
 """
+from __future__ import print_function
 
 import numpy as np
 from scipy.linalg import eigvalsh
@@ -138,7 +139,7 @@ def best_fitting_GMM(x, krange, prec_type='full', niter=100, delta=1.e-4,
             bestbic = bic
             bgmm = gmmk
         if verbose:
-            print 'k', k, 'bic', bic
+            print('k', k, 'bic', bic)
     return bgmm
 
 
@@ -195,7 +196,7 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
     L = my_gmm.mixture_likelihood(grid)
     if verbose:
         intl = L.sum() * (xs - xm) * (ys - ym) / 2500
-        print 'integral of the density on the domain ', intl
+        print('integral of the density on the domain ', intl)
 
     if mpaxes is None:
         plt.figure()
@@ -734,13 +735,13 @@ class GMM(object):
             av_ll = np.mean(np.log(np.maximum(np.sum(l, 1), tiny)))
             if av_ll < av_ll_old + delta:
                 if verbose:
-                    print 'iteration:', i, 'log-likelihood:', av_ll,\
-                          'old value:', av_ll_old
+                    print('iteration:', i, 'log-likelihood:', av_ll,
+                          'old value:', av_ll_old)
                 break
             else:
                 av_ll_old = av_ll
             if verbose:
-                print i, av_ll, self.bic(l)
+                print(i, av_ll, self.bic(l))
             self._Mstep(x, l)
 
         return self.bic(l)

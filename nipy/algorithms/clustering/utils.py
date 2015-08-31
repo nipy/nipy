@@ -2,6 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 #from _clustering import *
 #from _clustering import __doc__
+from __future__ import print_function
 
 import numpy as np
 
@@ -48,16 +49,16 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001, verbose=0,
     nbclusters = int(nbclusters)
     if nbclusters < 1:
         if verbose:
-            print " cannot compute less than 1 cluster"
+            print(" cannot compute less than 1 cluster")
         nbclusters = 1
 
     if nbclusters > nbitems:
         if verbose:
-            print " cannot find more clusters than items"
+            print(" cannot find more clusters than items")
         nbclusters = nbitems
 
     if (ninit < 1) & verbose:
-        print "making at least one iteration"
+        print("making at least one iteration")
         ninit = np.maximum(int(ninit), 1)
 
     if Labels is not None:
@@ -70,20 +71,20 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001, verbose=0,
                     delta = float(delta)
                     if delta < 0:
                         if verbose:
-                            print "incorrect stopping criterion - ignored"
+                            print("incorrect stopping criterion - ignored")
                         delta = 0.0001
                     else:
                         pass
                 else:
                     if verbose:
-                        print "incorrect number of iterations - ignored"
+                        print("incorrect number of iterations - ignored")
                     maxiter = 300
             else:
                 if verbose:
-                    print "incorrect labelling - ignored"
+                    print("incorrect labelling - ignored")
         else:
             if verbose:
-                print "incompatible number of labels provided - ignored"
+                print("incompatible number of labels provided - ignored")
     Centers, labels, J = _kmeans(X, nbclusters, Labels, maxiter, delta, ninit)
     return Centers, labels, J
 
@@ -204,10 +205,10 @@ def _kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=1.e-4,
             z, J = _EStep(X, centers)
             centers = _MStep(X, z, nbclusters)
             if verbose:
-                print i, J
+                print(i, J)
             if np.sum((centers_old - centers) ** 2) < delta * vdata:
                 if verbose:
-                    print i
+                    print(i)
                 break
             centers_old = centers.copy()
 

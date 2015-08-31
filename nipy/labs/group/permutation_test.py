@@ -2,6 +2,8 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """One and two sample permutation tests.
 """
+from __future__ import print_function
+
 # Third-party imports
 import numpy as np
 import scipy.misc as sm
@@ -433,7 +435,7 @@ class permutation_test(object):
         for j in range(nmagic):
             m = magic_numbers[j]
             if verbose:
-                print "Permutation", j+1, "out of", nmagic
+                print("Permutation", j+1, "out of", nmagic)
             # T values under permutation
             if self.nsamples == 1:
                 #perm_Tvalues = onesample_stat(self.data, self.vardata, self.stat_id, self.base, self.axis, np.array([m]), self.niter).squeeze()
