@@ -254,7 +254,7 @@ def product_homomorphism(*elements):
     """
     notsame = filter(lambda x: type(x) != type(elements[0]), elements)
     if notsame:
-        raise ValueError, 'all elements should be members of the same group'
+        raise ValueError('all elements should be members of the same group')
 
     newcmap = cmap_product(*elements)
     matrix = newcmap.affine[:-1,:-1]

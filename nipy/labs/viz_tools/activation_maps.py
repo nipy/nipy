@@ -242,7 +242,7 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
         try:
             anat, anat_affine, vmax_anat = _AnatCache.get_anat()
             canonical_anat = True
-        except OSError, e:
+        except OSError as e:
             anat = False
             warnings.warn(repr(e))
 

@@ -164,7 +164,7 @@ class ReselImage(Resels):
             Passed as keywords arguments to `core.api.Image`
         """
         if not resels and not fwhm:
-            raise ValueError, 'need either a resels image or an FWHM image'
+            raise ValueError('need either a resels image or an FWHM image')
 
         if fwhm is not None:
             fwhm = Image(fwhm, **keywords)

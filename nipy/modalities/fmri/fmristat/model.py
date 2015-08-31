@@ -416,7 +416,7 @@ def output_resid(outfile, fmri_image, clobber=False):
         cmap = fmri_image.coordmap
         shape = fmri_image.shape
     else:
-        raise ValueError, "expecting FmriImageList or 4d Image"
+        raise ValueError("expecting FmriImageList or 4d Image")
 
     outim = ModelOutputImage(outfile, cmap, shape, clobber=clobber)
     return outputters.RegressionOutput(outim, outputters.output_resid)

@@ -15,7 +15,7 @@ def check_mlab_tempfile(dir):
 
     try:
         f = mlab_tempfile(dir)
-    except OSError,msg:
+    except OSError as msg:
         if not os.path.isdir(dir) and 'No such file or directory' in msg:
             # This is OK, it's the expected error
             return True

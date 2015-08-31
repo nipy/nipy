@@ -11,7 +11,7 @@ from scipy import ndimage, signal
 try:
     # Protect this import as it is compiled code
     from nipy.algorithms.statistics import quantile
-except ImportError, e:
+except ImportError as e:
     warnings.warn('Could not import fast quantile function: %s' % e)
     quantile = None
 

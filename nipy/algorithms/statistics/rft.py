@@ -174,7 +174,7 @@ class ECquasi(np.poly1d):
         if np.isfinite(self.m):
             _denom_poly = self.denom_poly()
             if int(_pow) != _pow or _pow < 0:
-                raise ValueError, 'expecting a non-negative integer'
+                raise ValueError('expecting a non-negative integer')
             p = _denom_poly**int(_pow)
             exponent = self.exponent + _pow
             coeffs = np.polymul(self, p).coeffs
@@ -186,11 +186,13 @@ class ECquasi(np.poly1d):
         if key == 'exponent':
             if 2*float(val) % 1 == 0: 
                 self.__dict__[key] = float(val)
-            else: raise ValueError, 'expecting multiple of a half, got %f' % val
+            else:
+                raise ValueError('expecting multiple of a half, got %f' % val)
         elif key == 'm':
             if float(val) > 0 or val == np.inf:
                 self.__dict__[key] = val
-            else: raise ValueError, 'expecting positive float or inf'
+            else:
+                raise ValueError('expecting positive float or inf')
         else: np.poly1d.__setattr__(self, key, val)
 
     def compatible(self, other):

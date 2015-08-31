@@ -91,7 +91,7 @@ def perl_dash_pie(oldstr, newstr, dry_run=None):
 
     try:
         subprocess.check_call(cmd, shell=True)
-    except subprocess.CalledProcessError, err:
+    except subprocess.CalledProcessError as err:
         msg = """
         Error while executing perl_dash_pie command:
         %s
