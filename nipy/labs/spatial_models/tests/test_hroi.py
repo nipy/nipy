@@ -67,7 +67,7 @@ def test_hroi_isleaf():
     """ Test basic construction of a tree of isolated leaves
     """
     hroi = make_hroi()
-    hroi.select_roi([0] + range(2, 9))
+    hroi.select_roi([0] + list(range(2, 9)))
     assert_equal(hroi.k, 8)
 
 

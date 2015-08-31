@@ -153,7 +153,7 @@ if hasattr(_cm, 'afmhot'): # or afmhot
 # Build colormaps and their reverse.
 _cmap_d = dict()
 
-for _cmapname in _cmaps_data.keys():
+for _cmapname in list(_cmaps_data):
     _cmapname_r = _cmapname + '_r'
     _cmapspec = _cmaps_data[_cmapname]
     if 'red' in _cmapspec:

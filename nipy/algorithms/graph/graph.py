@@ -680,7 +680,7 @@ x
         dist, active = np.inf * np.ones(self.V), np.ones(self.V)
         idx, neighb, weight = self.compact_neighb()
         dist[seed] = 0
-        dg = zip(np.zeros_like(seed), seed)
+        dg = list(zip(np.zeros_like(seed), seed))
         heapq.heapify(dg)
         for j in range(self.V):
             end = False
@@ -897,7 +897,7 @@ x
         idx, neighb, weight = self.compact_neighb()
         dist[seed] = 0
         label[seed] = np.arange(len(seed))
-        dg = zip(np.zeros_like(seed), seed)
+        dg = list(zip(np.zeros_like(seed), seed))
         heapq.heapify(dg)
         for j in range(self.V):
             end = False

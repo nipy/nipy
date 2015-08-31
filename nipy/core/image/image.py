@@ -12,6 +12,7 @@
 """
 import warnings
 from copy import copy
+from itertools import chain
 
 import numpy as np
 
@@ -643,12 +644,12 @@ def rollaxis(img, axis, inverse=False):
         if type(axis) != type(0):
             raise ValueError('If carrying out inverse rolling, '
                              'axis must be an integer')
-        order = range(1, img.ndim)
+        order = list(range(1, img.ndim))
         order.insert(axis, 0)
         return img.reordered_axes(order).reordered_reference(order)
-    if axis not in (range(img.axes.ndim) +
-                    list(img.axes.coord_names) +
-                    list(img.reference.coord_names)):
+    if axis not in chain(range(img.axes.ndim),
+                         img.axes.coord_names,
+                         img.reference.coord_names):
         raise ValueError('axis must be an axis number,'
                          'an axis name or a reference name')
     # Find out which index axis corresonds to
@@ -672,7 +673,7 @@ def rollaxis(img, axis, inverse=False):
             axis = out_index
     if axis == -1:
         axis += img.axes.ndim
-    order = range(img.ndim)
+    order = list(range(img.ndim))
     order.remove(axis)
     order.insert(0, axis)
     return img.reordered_axes(order).reordered_reference(order)
@@ -734,7 +735,7 @@ def rollimg(img, axis, start=0, fix0=True):
     """
     axis = input_axis_index(img.coordmap, axis, fix0)
     start = input_axis_index(img.coordmap, start, fix0)
-    order = range(img.ndim)
+    order = list(range(img.ndim))
     order.remove(axis)
     if axis < start:
         start -= 1

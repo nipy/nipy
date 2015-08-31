@@ -143,7 +143,7 @@ def test_default_makers():
         for i in range(1,5):
             dom_cs = CS('ijkl'[:i], 'voxels')
             ran_cs = CS(r_names[:i], r_name)
-            aff = np.diag(range(i) + [1])
+            aff = np.diag(list(range(i)) + [1])
             assert_equal(csm(aff), AffineTransform(dom_cs, ran_cs, aff))
 
 

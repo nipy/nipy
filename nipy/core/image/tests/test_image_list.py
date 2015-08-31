@@ -42,7 +42,7 @@ def test_il_from_image():
     assert_raises(ValueError, ImageList.from_image, FIMG, None)
     # check all the axes
     for i in range(4):
-        order = range(4)
+        order = list(range(4))
         order.remove(i)
         order.insert(0,i)
         img_re_i = FIMG.reordered_reference(order).reordered_axes(order)

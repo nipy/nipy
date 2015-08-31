@@ -526,7 +526,7 @@ class Formula(object):
         if keep:
             return np.sum([t for n, t in f.items() if n in keep])
         else:
-            return np.sum(f.values())
+            return np.sum(list(f.values()))
 
     def subs(self, old, new):
         """ Perform a sympy substitution on all terms in the Formula

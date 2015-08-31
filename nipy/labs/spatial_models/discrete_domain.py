@@ -502,7 +502,7 @@ class DiscreteDomain(object):
         new_dom = DiscreteDomain(self.dim, self.coord.copy(),
                                   self.local_volume.copy(), self.id,
                                   self.referential)
-        for fid in self.features.keys():
+        for fid in list(self.features.keys()):
             new_dom.set_feature(fid, self.get_feature(fid).copy())
         return new_dom
 
@@ -534,7 +534,7 @@ class DiscreteDomain(object):
         scoord = self.coord[bmask]
         DD = DiscreteDomain(self.dim, scoord, svol, id, self.referential)
 
-        for fid in self.features.keys():
+        for fid in list(self.features.keys()):
             f = self.features.pop(fid)
             DD.set_feature(fid, f[bmask])
         return DD
@@ -649,7 +649,7 @@ class StructuredDomain(DiscreteDomain):
         dd = StructuredDomain(self.dim, td.coord, td.local_volume,
                             stopo, did, self.referential)
 
-        for fid in td.features.keys():
+        for fid in list(td.features.keys()):
             dd.set_feature(fid, td.features.pop(fid))
         return dd
 
@@ -730,7 +730,7 @@ class NDGridDomain(StructuredDomain):
         DD = NDGridDomain(self.dim, sijk, self.shape, self.affine, svol,
                           stopo, self.referential)
 
-        for fid in self.features.keys():
+        for fid in list(self.features.keys()):
             f = self.features.pop(fid)
             DD.set_feature(fid, f[bmask])
         return DD
