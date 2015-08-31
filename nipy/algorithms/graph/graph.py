@@ -1069,7 +1069,7 @@ x
         By default, the weights are a Gaussian function of the distance The
         implementation is not optimal
         """
-        from bipartite_graph import cross_knn
+        from .bipartite_graph import cross_knn
         # checks
         if seeds.shape[0] != self.V:
             raise ValueError("The numberof seeds is not as expected")

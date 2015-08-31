@@ -15,7 +15,7 @@ Author:Bertrand Thirion, 2006--2011
 from warnings import warn
 import numpy as np
 
-from .graph import WeightedGraph
+from .graph import WeightedGraph, Graph
 
 NEGINF = -np.inf
 
@@ -319,7 +319,6 @@ class Field(WeightedGraph):
               labelling of the vertices according to their bassin
         """
         import numpy.ma as ma
-        from graph import Graph
 
         if (np.size(self.field) == 0):
             raise ValueError('No field has been defined so far')

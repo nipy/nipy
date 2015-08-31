@@ -3,9 +3,10 @@ Infinite mixture model : A generalization of Bayesian mixture models
 with an unspecified number of classes
 """
 import numpy as np
-from bgmm import BGMM, detsh
+
 from scipy.special import gammaln
 
+from .bgmm import BGMM, detsh
 
 def co_labelling(z, kmax=None, kmin=None):
     """

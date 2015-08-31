@@ -398,7 +398,7 @@ class NoseTester(object):
         nose = import_nose()
 
         # get plugin to disable doctests
-        from noseclasses import Unplugger
+        from .noseclasses import Unplugger
         add_plugins = [Unplugger('doctest')]
 
         return nose.run(argv=argv, addplugins=add_plugins)

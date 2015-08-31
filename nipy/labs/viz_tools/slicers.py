@@ -588,7 +588,7 @@ def demo_ortho_slicer():
     """
     pl.clf()
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
-    from anat_cache import _AnatCache
+    from .anat_cache import _AnatCache
     map, affine, _ = _AnatCache.get_anat()
     oslicer.plot_map(map, affine, cmap=pl.cm.gray)
     return oslicer

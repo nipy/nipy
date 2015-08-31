@@ -21,7 +21,7 @@ from scipy.special import gammaln
 import math
 
 from .utils import kmeans
-from gmm import GMM
+from .gmm import GMM
 
 ##################################################################
 # ancillary functions ############################################

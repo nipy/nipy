@@ -36,7 +36,7 @@ from .coord_tools import (coord_transform,
                           )
 
 from .slicers import SLICERS, _xyz_order
-from edge_detect import _fast_abs_percentile
+from .edge_detect import _fast_abs_percentile
 
 ################################################################################
 # Helper functions for 2D plotting of activation maps
