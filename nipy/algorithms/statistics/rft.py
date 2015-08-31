@@ -660,11 +660,7 @@ class MultilinearForm(ECcone):
     """
     def __init__(self, *dims, **keywords):
         product = IntrinsicVolumes([1])
-
-        if keywords.has_key('search'):
-            search = keywords['search']
-        else:
-            search = [1]
+        search = keywords.pop('search', [1])
 
         for d in dims:
             product *= spherical_search(d)

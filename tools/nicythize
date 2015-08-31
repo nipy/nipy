@@ -181,7 +181,7 @@ def find_process_files(root_dir):
     hash_db = load_hashes(HASH_FILE)
     for cur_dir, dirs, files in os.walk(root_dir):
         for filename in files:
-            for fromext, rule in rules.iteritems():
+            for fromext, rule in rules.items():
                 if filename.endswith(fromext):
                     toext, function = rule
                     fromfile = filename

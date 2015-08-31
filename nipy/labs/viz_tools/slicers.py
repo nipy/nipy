@@ -394,7 +394,7 @@ class BaseSlicer(object):
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
 
         # For each ax, cut the data and plot it
-        for cut_ax in self.axes.itervalues():
+        for cut_ax in self.axes.values():
             try:
                 cut = cut_ax.do_cut(map, affine)
             except IndexError:
@@ -423,7 +423,7 @@ class BaseSlicer(object):
         data_bounds = get_bounds(map.shape, affine)
 
         # For each ax, cut the data and plot it
-        for cut_ax in self.axes.itervalues():
+        for cut_ax in self.axes.values():
             try:
                 cut = cut_ax.do_cut(map, affine)
                 edge_mask = _edge_map(cut)
@@ -527,7 +527,7 @@ class OrthoSlicer(BaseSlicer):
         x_ax = cut_ax_dict['x']
         y_ax = cut_ax_dict['y']
         z_ax = cut_ax_dict['z']
-        for cut_ax in cut_ax_dict.itervalues():
+        for cut_ax in cut_ax_dict.values():
             bounds = cut_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
@@ -538,7 +538,7 @@ class OrthoSlicer(BaseSlicer):
             xmin, xmax, ymin, ymax = bounds
             width_dict[cut_ax.ax] = (xmax - xmin)
         total_width = float(sum(width_dict.values()))
-        for ax, width in width_dict.iteritems():
+        for ax, width in width_dict.items():
             width_dict[ax] = width/total_width*(x1 -x0)
         left_dict = dict()
         left_dict[y_ax.ax] = x0
@@ -665,7 +665,7 @@ class BaseStackedSlicer(BaseSlicer):
         x0, y0, x1, y1 = self.rect
         width_dict = dict()
         cut_ax_dict = self.axes
-        for cut_ax in cut_ax_dict.itervalues():
+        for cut_ax in cut_ax_dict.values():
             bounds = cut_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
@@ -676,7 +676,7 @@ class BaseStackedSlicer(BaseSlicer):
             xmin, xmax, ymin, ymax = bounds
             width_dict[cut_ax.ax] = (xmax - xmin)
         total_width = float(sum(width_dict.values()))
-        for ax, width in width_dict.iteritems():
+        for ax, width in width_dict.items():
             width_dict[ax] = width/total_width*(x1 -x0)
         left_dict = dict()
         left = float(x0)

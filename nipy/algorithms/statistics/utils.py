@@ -224,7 +224,7 @@ def join_complexes(*complexes):
         faces[i+1] = set([])
     for c in complexes:
         for i in range(nmax):
-            if c.has_key(i+1):
+            if i+1 in c:
                 faces[i+1] = faces[i+1].union(c[i+1])
     return faces
 
@@ -253,7 +253,7 @@ def decompose3d(shape, dim=4):
     for i in range(4):
         unique[i+1] = c[i+1].difference(union[i+1])
 
-    if unique.has_key(dim) and dim > 1:
+    if dim in unique and dim > 1:
         d = unique[dim]
 
         for i in range(shape[0]-1):
@@ -281,7 +281,7 @@ def decompose3d(shape, dim=4):
         for i in range(3):
             unique[i+1] = c[i+1].difference(union[i+1])
         
-        if unique.has_key(dim) and dim > 1:
+        if dim in unique and dim > 1:
             d = unique[dim]
 
             for i in range(_shape[0]-1):
@@ -300,7 +300,7 @@ def decompose3d(shape, dim=4):
         for i in range(2):
             unique[i+1] = c[i+1].difference(union[i+1])
 
-        if unique.has_key(dim) and dim > 1:
+        if dim in unique and dim > 1:
             d = unique[dim]
 
             for i in range(_shape-1):
@@ -332,7 +332,7 @@ def decompose2d(shape, dim=3):
     for i in range(3):
         unique[i+1] = c[i+1].difference(union[i+1])
 
-    if unique.has_key(dim) and dim > 1:
+    if dim in unique and dim > 1:
         d = unique[dim]
 
         for i in range(shape[0]-1):
@@ -351,7 +351,7 @@ def decompose2d(shape, dim=3):
         for i in range(2):
             unique[i+1] = c[i+1].difference(union[i+1])
 
-        if unique.has_key(dim) and dim > 1:
+        if dim in unique and dim > 1:
             d = unique[dim]
 
             for i in range(_shape-1):

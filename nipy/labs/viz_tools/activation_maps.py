@@ -216,7 +216,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                 from mayavi.core.registry import registry
             except:
                 from enthought.mayavi.core.registry import registry
-            for key, value in registry.engines.iteritems():
+            for key, value in registry.engines.items():
                 if value is engine:
                     registry.engines.pop(key)
                     break

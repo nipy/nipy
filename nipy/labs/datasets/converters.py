@@ -105,7 +105,7 @@ def save(filename, obj):
     """
     obj = as_volume_img(obj, copy=False)
     hdr = nib.Nifti1Header()
-    for key, value in obj.metadata.iteritems():
+    for key, value in obj.metadata.items():
         if key in hdr:
             hdr[key] = value
     img = nib.Nifti1Image(obj.get_data(), 
