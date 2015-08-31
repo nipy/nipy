@@ -478,7 +478,7 @@ class Formula(object):
     dtype = property(_getdtype, doc='The dtype of the design matrix of the Formula.')
 
     def __repr__(self):
-        return """Formula(%s)""" % `list(self.terms)`
+        return "Formula(%r)" % (list(self.terms),)
 
     def __getitem__(self, key):
         """ Return the term such that str(term) == key.
@@ -798,14 +798,14 @@ class Formula(object):
         # The input to design should have field names for all fields in self._dtypes['preterm']
         if not set(preterm_recarray.dtype.names).issuperset(self._dtypes['preterm'].names):
             raise ValueError("for term, expecting a recarray with "
-                             "dtype having the following names: %s"
-                             % `self._dtypes['preterm'].names`)
+                             "dtype having the following names: %r"
+                             % (self._dtypes['preterm'].names,))
         # The parameters should have field names for all fields in self._dtypes['param']
         if param_recarray is not None:
             if not set(param_recarray.dtype.names).issuperset(self._dtypes['param'].names):
                 raise ValueError("for param, expecting a recarray with "
-                                 "dtype having the following names: %s"
-                                 % `self._dtypes['param'].names`)
+                                 "dtype having the following names: %r"
+                                 % (self._dtypes['param'].names,))
         # If the only term is an intercept,
         # the return value is a matrix of 1's.
         if list(self.terms) == [sympy.Number(1)]:
@@ -1220,7 +1220,7 @@ class RandomEffects(Formula):
         if self.sigma.shape != (q,q):
             raise ValueError('incorrect shape for covariance '
                              'of random effects, '
-                             'should have shape %s' % repr(q,q))
+                             'should have shape %r' % ((q,q)))
         self.char = char
 
     def cov(self, term, param=None):
