@@ -8,7 +8,8 @@
 
 from numpy.testing import assert_almost_equal
 import numpy as np
-from .. import (blas_dgemm, blas_dsymm, blas_dsyrk, blas_dsyr2k)
+from .. import (blas_dgemm, blas_dsymm, blas_dtrmm, 
+                blas_dtrsm, blas_dsyrk, blas_dsyr2k)
 
 n1 = 10
 n2 = 13
@@ -118,7 +119,22 @@ def _test_dtrXm(A, U, L, B, alpha, blasfn):
     D = blasfn(1, 1, 1, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
 
-  
+def test_dtrmm():
+    A = np.random.rand(n1,n1)
+    U = np.triu(A)
+    L = np.tril(A)
+    B = np.random.rand(n1,n1)
+    alpha = np.double(np.random.rand(1))
+    _test_dtrXm(A, U, L, B, alpha, blas_dtrmm)
+
+def test_dtrsm():
+    A = np.random.rand(n1,n1)
+    U = np.linalg.inv(np.triu(A))
+    L = np.linalg.inv(np.tril(A))
+    B = np.random.rand(n1,n1)
+    alpha = np.double(np.random.rand(1))
+    _test_dtrXm(A, U, L, B, alpha, blas_dtrsm)
+    
 def test_dsyrk(): 
     A = np.random.rand(n1,n1)
     C = np.random.rand(n1,n1)

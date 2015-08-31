@@ -12,7 +12,6 @@ __version__ = '0.1'
 from fff cimport *
 cimport numpy as cnp
 from warnings import warn
-include "fffpy_import_lapack.pxi"
 
 warn('Module nipy.labs.utils.routines deprecated, will be removed',
      FutureWarning,
@@ -21,7 +20,7 @@ warn('Module nipy.labs.utils.routines deprecated, will be removed',
 # Exports from fff_gen_stats.h
 cdef extern from "fff_gen_stats.h":
 
-    double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_vector* xaux, fff_matrix* Saux)
+    double fff_mahalanobis(fff_vector* x, fff_matrix* S, fff_matrix* Saux)
     void fff_permutation(unsigned int* x, unsigned int n,
                          unsigned long int magic)
     void fff_combination(unsigned int* x, unsigned int k, unsigned int n,
@@ -45,7 +44,6 @@ cdef extern from "fff_lapack.h":
 fffpy_import_array()
 cnp.import_array()
 import numpy as np
-fffpy_import_lapack()
 
 # This is faster than scipy.stats.scoreatpercentile due to partial
 # sorting
@@ -55,8 +53,7 @@ def quantile(X, double ratio, int interp=False, int axis=0):
 
     Partial sorting algorithm, very fast!!!
     """
-    cdef fff_vector *x
-    cdef fff_vector *y
+    cdef fff_vector *x, *y
     cdef fffpy_multi_iterator* multi
 
     # Allocate output array Y
@@ -101,11 +98,7 @@ def mahalanobis(X, VX):
     axis == 0 assumed. If X is shaped (d,K), VX must be shaped
     (d,d,K).
     """
-    cdef fff_vector *x
-    cdef fff_vector *vx
-    cdef fff_vector *x_tmp
-    cdef fff_vector *vx_tmp
-    cdef fff_vector *d2
+    cdef fff_vector *x, *vx, *x_tmp, *vx_tmp, *d2
     cdef fff_matrix Sx 
     cdef fff_matrix *Sx_tmp
     cdef fffpy_multi_iterator* multi
@@ -136,9 +129,10 @@ def mahalanobis(X, VX):
 
     # Loop 
     while(multi.index < multi.size):
+        fff_vector_memcpy(x_tmp, x)
         fff_vector_memcpy(vx_tmp, vx) 
         Sx = fff_matrix_view(vx_tmp.data, n, n, n) # OK because vx_tmp is contiguous  
-        d2.data[0] = fff_mahalanobis(x, &Sx, x_tmp, Sx_tmp)
+        d2.data[0] = fff_mahalanobis(x_tmp, &Sx, Sx_tmp)
         fffpy_multi_iterator_update(multi)
 
     # Delete local structs and views
@@ -169,16 +163,10 @@ def svd(X):
     """
     cdef int axis=0
     cdef int m, n, dmin, dmax, lwork, liwork, info
-    cdef fff_vector *work
-    cdef fff_vector *x_flat
-    cdef fff_vector *x_flat_tmp
-    cdef fff_vector *s
-    cdef fff_vector *s_tmp
+    cdef fff_vector *work, *x_flat, *x_flat_tmp, *s, *s_tmp
     cdef fff_matrix x
     cdef fff_array *iwork
-    cdef fff_matrix *Aux
-    cdef fff_matrix *U
-    cdef fff_matrix *Vt 
+    cdef fff_matrix *Aux, *U, *Vt 
     cdef fffpy_multi_iterator* multi
 
     # Shape of matrices
@@ -247,8 +235,7 @@ def permutations(unsigned int n, unsigned int m=1, unsigned long magic=0):
     P = permutations(n, m=1, magic=0).
     Generate m permutations from [0..n[.
     """
-    cdef fff_array *p
-    cdef fff_array *pi
+    cdef fff_array *p, *pi
     cdef fff_array pi_view
     cdef unsigned int i
     p = fff_array_new2d(FFF_UINT, n, m)
@@ -261,15 +248,14 @@ def permutations(unsigned int n, unsigned int m=1, unsigned long magic=0):
 
     P = fff_array_toPyArray(p)
     return P 
-                        
+
 
 def combinations(unsigned int k, unsigned int n, unsigned int m=1, unsigned long magic=0):
     """
     P = combinations(k, n, m=1, magic=0).
     Generate m combinations of k elements  from [0..n[.
     """
-    cdef fff_array *p
-    cdef fff_array *pi
+    cdef fff_array *p, *pi
     cdef fff_array pi_view
     cdef unsigned int i
     p = fff_array_new2d(FFF_UINT, k, m)

@@ -12,7 +12,6 @@ __version__ = '0.1'
 
 # Includes
 from fff cimport *
-include "fffpy_import_lapack.pxi"
 
 # Exports from fff_onesample_stat.h
 cdef extern from "fff_onesample_stat.h":
@@ -64,7 +63,7 @@ cdef extern from "fff_onesample_stat.h":
 fffpy_import_array()
 import_array()
 import numpy as np
-fffpy_import_lapack()
+
 
 # Stat dictionary
 stats = {'mean': FFF_ONESAMPLE_EMPIRICAL_MEAN,
@@ -94,10 +93,7 @@ def stat(ndarray Y, id='student', double base=0.0,
   Compute a one-sample test statistic over a number of deterministic
   or random permutations. 
   """
-  cdef fff_vector *y
-  cdef fff_vector *t
-  cdef fff_vector *magics
-  cdef fff_vector *yp
+  cdef fff_vector *y, *t, *magics, *yp
   cdef fff_onesample_stat* stat
   cdef fff_onesample_stat_flag flag_stat = stats[id]
   cdef unsigned int n
@@ -166,11 +162,7 @@ def stat_mfx(ndarray Y, ndarray V, id='student_mfx', double base=0.0,
   Compute a one-sample test statistic, with mixed-effect correction,
   over a number of deterministic or random permutations.
   """
-  cdef fff_vector *y
-  cdef fff_vector *v
-  cdef fff_vector *t
-  cdef fff_vector *magics
-  cdef fff_vector *yp
+  cdef fff_vector *y, *v, *t, *magics, *yp
   cdef fff_onesample_stat_mfx* stat
   cdef fff_onesample_stat_flag flag_stat = stats[id]
   cdef int n
@@ -241,10 +233,7 @@ def pdf_fit_mfx(ndarray Y, ndarray V, int axis=0, int niter=5, int constraint=0,
   
   Comments to follow.
   """
-  cdef fff_vector *y
-  cdef fff_vector *v
-  cdef fff_vector *w
-  cdef fff_vector *z
+  cdef fff_vector *y, *v, *w, *z
   cdef fff_onesample_stat_mfx* stat
   cdef fffpy_multi_iterator* multi
   cdef int n = Y.shape[axis]
@@ -288,10 +277,7 @@ def pdf_fit_gmfx(ndarray Y, ndarray V, int axis=0, int niter=5, int constraint=0
   
   Comments to follow.
   """
-  cdef fff_vector *y
-  cdef fff_vector *v
-  cdef fff_vector *mu
-  cdef fff_vector *s2
+  cdef fff_vector *y, *v, *mu, *s2
   cdef fff_onesample_stat_mfx* stat
   cdef fffpy_multi_iterator* multi
   cdef int n = Y.shape[axis]

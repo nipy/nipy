@@ -1,0 +1,1 @@
+#define PY_ARRAY_UNIQUE_SYMBOL _segmentation_ARRAY_API

@@ -8,12 +8,6 @@
 #endif
 
 
-/* Numpy import */
-void mrf_import_array(void) { 
-  import_array(); 
-  return;
-}
-
 /* Encode neighborhood systems using static arrays */
 int ngb6 [] = {1,0,0,
 	       -1,0,0,

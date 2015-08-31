@@ -6,9 +6,15 @@ extern "C" {
 #endif
 
 #include <Python.h>
+
+/*
+ * Use extension numpy symbol table
+ */
+#define NO_IMPORT_ARRAY
+#include "_segmentation.h"
+
 #include <numpy/arrayobject.h>
 
-  extern void mrf_import_array(void);
 
   extern void ve_step(PyArrayObject* ppm, 
 		      const PyArrayObject* ref,

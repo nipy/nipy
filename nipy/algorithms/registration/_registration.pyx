@@ -8,6 +8,10 @@ transformations.
 
 __version__ = '0.3'
 
+# Set symbol for array_import; must come before cimport numpy
+cdef extern from "_registration.h":
+    int PY_ARRAY_UNIQUE_SYMBOL
+
 
 # Includes
 from numpy cimport (import_array, ndarray, flatiter, broadcast, 
@@ -15,16 +19,13 @@ from numpy cimport (import_array, ndarray, flatiter, broadcast,
                     PyArray_MultiIter_NEXT)
 
 
-# Externals
 cdef extern from "joint_histogram.h":
-    void joint_histogram_import_array()
     int joint_histogram(ndarray H, unsigned int clampI, unsigned int clampJ,  
                         flatiter iterI, ndarray imJ_padded, 
                         ndarray Tvox, int interp)
     int L1_moments(double* n, double* median, double* dev, ndarray H)
 
 cdef extern from "cubic_spline.h":
-    void cubic_spline_import_array()
     void cubic_spline_transform(ndarray res, ndarray src)
     double cubic_spline_sample1d(double x, ndarray coef, 
                                  int mode) 
@@ -39,14 +40,10 @@ cdef extern from "cubic_spline.h":
                                  int mode_x, int mode_y, int mode_z)
 
 cdef extern from "polyaffine.h": 
-    void polyaffine_import_array()
     void apply_polyaffine(ndarray XYZ, ndarray Centers, ndarray Affines, ndarray Sigma)
 
 
 # Initialize numpy
-joint_histogram_import_array()
-cubic_spline_import_array()
-polyaffine_import_array()
 import_array()
 import numpy as np
 

@@ -9,27 +9,13 @@
    because PyArray_API is defined static, in order not to share that symbol
    within the dso. (import_array() asks the pointer value to the python process)
 */
-void fffpy_import_array(void) { 
-  import_array(); 
-  return;
+/*
+ * deal with differences in macro return result between Python 2 and 3
+ * http://mail.scipy.org/pipermail/numpy-discussion/2010-December/054350.html
+ */
+IMP_OUT fffpy_import_array(void) {
+  import_array();
 }
-
-
-/* 
-   Functions to import required blas/lapack functions on the fly.
-*/
-void fffpy_import_blas_func(const PyObject* ptr, int key)
-{    
-  fff_import_blas_func((void*)PyCObject_AsVoidPtr((PyObject*)ptr), key);
-  return;
-}
-
-void fffpy_import_lapack_func(const PyObject* ptr, int key)
-{    
-  fff_import_lapack_func((void*)PyCObject_AsVoidPtr((PyObject*)ptr), key);
-  return;
-}
-
 
 /* Static functions */
 static npy_intp _PyArray_main_axis(const PyArrayObject* x, int* ok); 

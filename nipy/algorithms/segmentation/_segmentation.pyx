@@ -8,12 +8,15 @@ Author: Alexis Roche, 2010.
 
 __version__ = '0.2'
 
+# Set symbol for array_import; must come before cimport numpy
+cdef extern from "_segmentation.h":
+    int PY_ARRAY_UNIQUE_SYMBOL
+
 # Includes
 from numpy cimport import_array, ndarray
 
 # Externals
 cdef extern from "mrf.h":
-    void mrf_import_array()
     void ve_step(ndarray ppm, 
                  ndarray ref,
                  ndarray XYZ, 
@@ -30,7 +33,6 @@ cdef extern from "mrf.h":
 
 
 # Initialize numpy
-mrf_import_array()
 import_array()
 import numpy as np
 

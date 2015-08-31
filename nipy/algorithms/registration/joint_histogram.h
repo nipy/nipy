@@ -17,12 +17,14 @@ extern "C" {
 #endif
 
 #include <Python.h>
+
+/*
+ * Use extension numpy symbol table
+ */
+#define NO_IMPORT_ARRAY
+#include "_registration.h"
+
 #include <numpy/arrayobject.h>
-
-
-  /* Numpy import */
-  extern void joint_histogram_import_array(void);
-
 
   /* 
      Update a pre-allocated joint histogram. Important notice: in all
