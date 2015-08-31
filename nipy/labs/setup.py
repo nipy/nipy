@@ -23,20 +23,22 @@ def get_link_external():
     If True, attempt to link to system BLAS / LAPACK.  Otherwise, compile
     lapack_lite, and link to that.
 
-    First check environment variable NIPY_EXTERNAL_LAPACK for value other than
-    'false' or '0'.
+    First check ``setup.cfg`` file for section ``[lapack]`` key ``external``.
 
-    If this variable is undefined, read ``setup.cfg`` file for section
-    ``[lapack]`` key ``external``
+    If this value undefined, then get string from environment variable
+    NIPY_EXTERNAL_LAPACK.
+
+    If value from ``setup.cfg`` or environment variable is not 'False' or '0',
+    then return True.
     """
-    external_link = os.environ.get(EXTERNAL_LAPACK_VAR)
+    config = ConfigParser()
+    try:
+        config.read(SETUP_FILE)
+        external_link = config.get(SECTION, KEY)
+    except (IOError, KeyError, NoOptionError, NoSectionError):
+        external_link = os.environ.get(EXTERNAL_LAPACK_VAR)
     if external_link is None:
-        config = ConfigParser()
-        try:
-            config.read(SETUP_FILE)
-            external_link = config.get(SECTION, KEY)
-        except (IOError, KeyError, NoOptionError, NoSectionError):
-            return False
+        return False
     return external_link.lower() not in ('0', 'false')
 
 
