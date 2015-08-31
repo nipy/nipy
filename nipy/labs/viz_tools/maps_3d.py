@@ -56,13 +56,13 @@ def affine_img_src(data, affine, scale=1, name='AffineImage',
         # Try out old install of Mayavi, with namespace packages
         from enthought.mayavi.sources.api import ArraySource
     center = np.r_[0, 0, 0, 1]
-    spacing = np.diag(affine)[:3]
+    spacing = np.diag(affine)[:3].copy()
     origin = np.dot(affine, center)[:3]
     if reverse_x:
         # Radiologic convention
         spacing[0] *= -1
         origin[0] *= -1
-    src = ArraySource(scalar_data=np.asarray(data, dtype=np.float), 
+    src = ArraySource(scalar_data=np.asarray(data, dtype=np.float),
                            name=name,
                            spacing=scale*spacing,
                            origin=scale*origin)
