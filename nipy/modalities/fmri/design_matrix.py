@@ -61,28 +61,38 @@ def _poly_drift(order, frametimes):
     return pol
 
 
-def _cosine_drift(hfcut, frametimes):
-    """Create a cosine drift matrix
+def _cosine_drift(period_cut, frametimes):
+    """Create a cosine drift matrix with periods greater or equals to period_cut
 
     Parameters
     ----------
-    hfcut, float , cut frequency of the low-pass filter
-    frametimes: array of shape(nscans): the sampling time
+    period_cut: float 
+         Cut period of the low-pass filter (in sec)
+    frametimes: array of shape(nscans)
+         The sampling times (in sec)
 
     Returns
     -------
     cdrift:  array of shape(n_scans, n_drifts)
-             polynomial drifts plus a constant regressor
+             cosin drifts plus a constant regressor at cdrift[:,0]
+
+    Ref: http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
     """
-    tmax = float(frametimes.max())
-    tsteps = len(frametimes)
-    order = int(np.floor(2 * float(tmax) / float(hfcut)) + 1)
-    cdrift = np.zeros((tsteps, order))
+    len_tim = len(frametimes)
+    n_times = np.arange(len_tim)
+    hfcut = 1./ period_cut # input parameter is the period  
+
+    dt = frametimes[1] - frametimes[0] # frametimes.max() should be (len_tim-1)*dt    
+    order = int(np.floor(2*len_tim*hfcut*dt)) # s.t. hfcut = 1/(2*dt) yields len_tim
+    cdrift = np.zeros((len_tim, order))
+    nfct = np.sqrt(2.0/len_tim)
+    
     for k in range(1, order):
-        cdrift[:, k - 1] = np.sqrt(2.0 / tmax) * np.cos(
-            np.pi * (frametimes / tmax + 0.5 / tsteps) * k)
-    cdrift[:, order - 1] = np.ones_like(frametimes)
+        cdrift[:,k-1] = nfct * np.cos((np.pi/len_tim)*(n_times + .5)*k)
+    
+    cdrift[:,order-1] = 1. # or 1./sqrt(len_tim) to normalize
     return cdrift
+
 
 
 def _blank_drift(frametimes):
@@ -327,7 +337,7 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
                  specifies the desired drift model,
                  to be chosen among 'polynomial', 'cosine', 'blank'
     hfcut: float, optional
-           cut frequency of the low-pass filter
+           cut period of the low-pass filter
     drift_order: int, optional
                  order of the drift model (in case it is polynomial)
     fir_delays: array of shape(nb_onsets) or list, optional,
