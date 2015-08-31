@@ -4,6 +4,7 @@
 # Because this module imports nose directly, it should not
 # be used except by nosetester.py to avoid a general NumPy
 # dependency on nose.
+from __future__ import division, absolute_import, print_function
 
 import os
 import doctest
@@ -14,7 +15,7 @@ from nose.plugins.errorclass import ErrorClass, ErrorClassPlugin
 from nose.plugins.base import Plugin
 from nose.util import src
 import numpy
-from nosetester import get_package_name
+from .nosetester import get_package_name
 import inspect
 
 # Some of the classes in this module begin with 'Numpy' to clearly distinguish
@@ -35,7 +36,7 @@ class NumpyDocTestFinder(doctest.DocTestFinder):
             return True
         elif inspect.isfunction(object):
             #print '_fm C2'  # dbg
-            return module.__dict__ is object.func_globals
+            return module.__dict__ is object.__globals__
         elif inspect.isbuiltin(object):
             #print '_fm C2-1'  # dbg
             return module.__name__ == object.__module__
@@ -48,7 +49,7 @@ class NumpyDocTestFinder(doctest.DocTestFinder):
             # to make by extension code writers, having this safety in place
             # isn't such a bad idea
             #print '_fm C3-1'  # dbg
-            return module.__name__ == object.im_class.__module__
+            return module.__name__ == object.__self__.__class__.__module__
         elif inspect.getmodule(object) is not None:
             #print '_fm C4'  # dbg
             #print 'C4 mod',module,'obj',object # dbg
@@ -68,7 +69,7 @@ class NumpyDocTestFinder(doctest.DocTestFinder):
         add them to `tests`.
         """
 
-        doctest.DocTestFinder._find(self,tests, obj, name, module,
+        doctest.DocTestFinder._find(self, tests, obj, name, module,
                                     source_lines, globs, seen)
 
         # Below we re-run pieces of the above method with manual modifications,
@@ -100,7 +101,7 @@ class NumpyDocTestFinder(doctest.DocTestFinder):
                 if isinstance(val, staticmethod):
                     val = getattr(obj, valname)
                 if isinstance(val, classmethod):
-                    val = getattr(obj, valname).im_func
+                    val = getattr(obj, valname).__func__
 
                 # Recurse to methods, properties, and nested classes.
                 if ((isfunction(val) or isclass(val) or
@@ -121,18 +122,18 @@ class NumpyOutputChecker(doctest.OutputChecker):
         if not ret:
             if "#random" in want:
                 return True
-            
+
             # it would be useful to normalize endianness so that
             # bigendian machines don't fail all the tests (and there are
             # actually some bigendian examples in the doctests). Let's try
             # making them all little endian
-            got = got.replace("'>","'<")
-            want= want.replace("'>","'<")
+            got = got.replace("'>", "'<")
+            want= want.replace("'>", "'<")
 
             # try to normalize out 32 and 64 bit default int sizes
-            for sz in [4,8]:
-                got = got.replace("'<i%d'"%sz,"int")
-                want= want.replace("'<i%d'"%sz,"int")
+            for sz in [4, 8]:
+                got = got.replace("'<i%d'"%sz, "int")
+                want= want.replace("'<i%d'"%sz, "int")
 
             ret = doctest.OutputChecker.check_output(self, want,
                     got, optionflags)
@@ -165,8 +166,6 @@ class NumpyDoctest(npd.Doctest):
 
     # files that should be ignored for doctests
     doctest_ignore = ['generate_numpy_api.py',
-                      'scons_support.py',
-                      'setupscons.py',
                       'setup.py']
 
     # Custom classes; class variables to allow subclassing
