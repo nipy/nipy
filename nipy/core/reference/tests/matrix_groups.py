@@ -174,7 +174,8 @@ def product(*elements):
     """
     Compute the group product of a set of elements
     """
-    notsame = filter(lambda x: type(x) != type(elements[0]), elements)
+    type_e0 = type(elements[0])
+    notsame = [e for e in elements if not type(e) == type_e0]
     if notsame:
         raise ValueError('all elements should be members of the same group')
     composed_mapping = compose(*elements)
@@ -252,7 +253,8 @@ def product_homomorphism(*elements):
 
     This function is that homomorphism.
     """
-    notsame = filter(lambda x: type(x) != type(elements[0]), elements)
+    type_e0 = type(elements[0])
+    notsame = [e for e in elements if not type(e) == type_e0]
     if notsame:
         raise ValueError('all elements should be members of the same group')
 

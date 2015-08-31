@@ -91,7 +91,7 @@ data = """0.0      1      1      1
 
 D = []
 for row in StringIO(six.u(data)):
-    D.append(map(float, row.split()))
+    D.append([float(val) for val in row.split()])
 D = make_recarray(D, ['Days', 'Duration', 'Weight', 'ID'])
 
 # Create the categorical regressors, known as Factors
