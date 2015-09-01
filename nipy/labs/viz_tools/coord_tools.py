@@ -239,7 +239,7 @@ def find_maxsep_cut_coords(map3d, affine, slicer='z', n_cuts=None,
 
     # count activated voxels per plane
     n_activated_voxels_per_plane = np.array([(_map3d[..., z] > 0).sum()
-                                    for z in xrange(_map3d.shape[-1])])
+                                    for z in range(_map3d.shape[-1])])
     perm = np.argsort(n_activated_voxels_per_plane)
     n_activated_voxels_per_plane = n_activated_voxels_per_plane[perm]
     good_planes = np.nonzero(n_activated_voxels_per_plane > 0)[0]
