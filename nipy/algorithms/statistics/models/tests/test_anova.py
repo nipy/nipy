@@ -10,6 +10,8 @@ from ...formula.formulae import Factor, make_recarray
 from ....utils.matrices import matrix_rank
 from ..regression import OLSModel
 
+from nipy.externals import six
+
 from nipy.testing import (assert_equal, assert_almost_equal)
 
 
@@ -88,7 +90,7 @@ data = """0.0      1      1      1
 # http://www-stat.stanford.edu/~jtaylo/courses/stats191/data/kidney.table
 
 D = []
-for row in StringIO(data):
+for row in StringIO(six.u(data)):
     D.append(map(float, row.split()))
 D = make_recarray(D, ['Days', 'Duration', 'Weight', 'ID'])
 

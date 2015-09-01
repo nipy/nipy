@@ -19,6 +19,7 @@ from nibabel.tmpdirs import InTemporaryDirectory
 
 from nipy.testing.decorators import if_templates
 from nipy.utils import templates, DataError
+from nipy.externals import six
 from nibabel.tests.test_round_trip import big_bad_ulp
 
 gimg = None
@@ -258,7 +259,7 @@ def test_roundtrip_from_array():
 def test_as_image():
     # test image creation / pass through function
     img = as_image(funcfile) # string filename
-    img1 = as_image(unicode(funcfile))
+    img1 = as_image(six.u(funcfile))
     img2 = as_image(img)
     assert_equal(img.affine, img1.affine)
     assert_array_equal(img.get_data(), img1.get_data())
