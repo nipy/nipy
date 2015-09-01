@@ -115,17 +115,6 @@ def if_example_data(f):
     return if_datasource(example_data, 'Cannot find example data')(f)
 
 
-def skip_doctest_if(condition):
-    """Decorator - mark a function or method for skipping its doctest.
-
-    This decorator allows you to mark a function whose docstring you wish to
-    omit from testing, while preserving the docstring for introspection, help,
-    etc."""
-    if not condition:
-        return lambda f : f
-    return make_label_dec('skip_doctest')
-
-
 def needs_mpl_agg(func):
     """ Decorator requiring matplotlib with agg backend
     """
