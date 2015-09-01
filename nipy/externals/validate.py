@@ -125,6 +125,7 @@
     
     A badly formatted set of arguments will raise a ``VdtParamError``.
 """
+__test__ = False  # Turn off doctests
 
 __version__ = '1.0.1'
 

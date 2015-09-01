@@ -12,6 +12,7 @@
 
 # ConfigObj 5 - main repository for documentation and issue tracking:
 # https://github.com/DiffSK/configobj
+__test__ = False  # Turn off doctests
 
 import os
 import re
