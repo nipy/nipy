@@ -43,10 +43,6 @@ from nipy.io.nibcompat import get_header, get_affine
 from nipy.labs.mask import compute_mask_sessions
 from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
 from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
-from nipy.core.api import is_image
-
-from nipy.testing.decorators import skip_doctest_if
-from nipy.utils import HAVE_EXAMPLE_DATA
 
 from nipy.externals.six import string_types
 
@@ -424,7 +420,6 @@ class FMRILinearModel(object):
     i.e. by taking images as input and output
     """
 
-    @skip_doctest_if(not HAVE_EXAMPLE_DATA)
     def __init__(self, fmri_data, design_matrices, mask='compute',
                  m=0.2, M=0.9, threshold=.5):
         """Load the data
@@ -449,23 +444,23 @@ class FMRILinearModel(object):
 
         Examples
         --------
-        We need the example data package for this example
+        We need the example data package for this example::
 
-        >>> from nipy.utils import example_data
-        >>> from nipy.modalities.fmri.glm import FMRILinearModel
-        >>> fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
-        ...     for run in ['run1.nii.gz', 'run2.nii.gz']]
-        >>> design_files = [example_data.get_filename('fiac', 'fiac0', run)
-        ...     for run in ['run1_design.npz', 'run2_design.npz']]
-        >>> mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
-        >>> multi_session_model = FMRILinearModel(fmri_files, design_files, mask)
-        >>> multi_session_model.fit()
-        >>> z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
+            from nipy.utils import example_data
+            from nipy.modalities.fmri.glm import FMRILinearModel
+            fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
+                for run in ['run1.nii.gz', 'run2.nii.gz']]
+            design_files = [example_data.get_filename('fiac', 'fiac0', run)
+                for run in ['run1_design.npz', 'run2_design.npz']]
+            mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
+            multi_session_model = FMRILinearModel(fmri_files,
+                                                  design_files,
+                                                  mask)
+            multi_session_model.fit()
+            z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
 
-        The number of voxels with p < 0.001
-
-        >>> np.sum(z_image.get_data() > 3.09)
-        671
+            # The number of voxels with p < 0.001 given by ...
+            print(np.sum(z_image.get_data() > 3.09))
         """
         # manipulate the arguments
         if isinstance(fmri_data, string_types) or hasattr(fmri_data, 'get_data'):

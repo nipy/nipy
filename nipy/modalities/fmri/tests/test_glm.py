@@ -17,6 +17,7 @@ from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nipy.testing import funcfile
+from nipy.testing.decorators import if_example_data
 
 
 def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
@@ -319,6 +320,22 @@ def test_fmri_inputs():
                               mask=None)
                 assert_raises(ValueError, FMRILinearModel, fi, [d, d],
                               mask=None)
+
+
+@if_example_data
+def test_fmri_example():
+    # Run FMRI analysis using example data
+    from nipy.utils import example_data
+    fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
+        for run in ['run1.nii.gz', 'run2.nii.gz']]
+    design_files = [example_data.get_filename('fiac', 'fiac0', run)
+        for run in ['run1_design.npz', 'run2_design.npz']]
+    mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
+    multi_session_model = FMRILinearModel(fmri_files, design_files, mask)
+    multi_session_model.fit()
+    z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
+    # Check number of voxels with p < 0.001
+    assert_equal(np.sum(z_image.get_data() > 3.09), 671)
 
 
 if __name__ == "__main__":
