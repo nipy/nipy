@@ -15,16 +15,16 @@ For a demo, see the 'demo_plot_map' function.
 
 # Standard library imports
 import warnings
-import operator
 import numbers
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
 
-# Import pylab
 from nipy.utils.skip_test import skip_if_running_nose
+from nipy.utils import is_numlike
 
+# Import pylab
 try:
     import pylab as pl
 except ImportError:
@@ -266,7 +266,7 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
         if dim:
             vmean = .5*(vmin + vmax)
             ptp = .5*(vmax - vmin)
-            if not operator.isNumberType(dim):
+            if not is_numlike(dim):
                 dim = .6
             if black_bg:
                 vmax = vmean + (1+dim)*ptp

@@ -7,9 +7,10 @@ The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
 
-import operator
-
 import numpy as np
+
+from nipy.utils import is_iterable
+
 from nipy.utils.skip_test import skip_if_running_nose
 
 try:
@@ -267,7 +268,7 @@ class BaseSlicer(object):
             axes = [0., 0., 1., 1.]
             if leave_space:
                 axes = [0.3, 0, .7, 1.]
-        if operator.isSequenceType(axes):
+        if is_iterable(axes):
             axes = figure.add_axes(axes)
         # People forget to turn their axis off, or to set the zorder, and
         # then they cannot see their slicer
