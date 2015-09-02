@@ -19,7 +19,7 @@ def multiple_fast_inv(a):
     Parameters
     ----------
     a: array_like of shape (n_samples, n_dim, n_dim)
-        Set of square matrices to be inverted. A is changed in place.
+        Set of square matrices to be inverted. a is changed in place.
 
     Returns
     -------
@@ -38,37 +38,22 @@ def multiple_fast_inv(a):
     This function is borrowed from scipy.linalg.inv, 
     but with some customizations for speed-up.
     """
+    # from scipy.linalg.decomp import _asarray_validated
+    from scipy.linalg.lapack import get_lapack_funcs
+    from scipy.linalg.misc import LinAlgError
     if a.shape[1] != a.shape[2]:
         raise ValueError('a must have shape(n_samples, n_dim, n_dim)')
-    from scipy.linalg import calc_lwork
-    from scipy.linalg.lapack import  get_lapack_funcs
-    a1, n = a[0], a.shape[0]
-    getrf, getri = get_lapack_funcs(('getrf', 'getri'), (a1,))
-    for i in range(n):
-        if (getrf.module_name[:7] == 'clapack'
-            and getri.module_name[:7] != 'clapack'):
-            # ATLAS 3.2.1 has getrf but not getri.
-            lu, piv, info = getrf(np.transpose(a[i]), rowmajor=0,
-                                  overwrite_a=True)
-            a[i] = np.transpose(lu)
-        else:
-            a[i], piv, info = getrf(a[i], overwrite_a=True)
+    a = np.asarray_chkfinite(a)
+    getrf, getri = get_lapack_funcs(('getrf', 'getri'), (a[0],))
+    for i in range(a.shape[0]):
+        lu, piv, info = getrf(a[i], overwrite_a=True)
         if info == 0:
-            if getri.module_name[:7] == 'flapack':
-                lwork = calc_lwork.getri(getri.prefix, a1.shape[0])
-                lwork = lwork[1]
-                # XXX: the following line fixes curious SEGFAULT when
-                # benchmarking 500x500 matrix inverse. This seems to
-                # be a bug in LAPACK ?getri routine because if lwork is
-                # minimal (when using lwork[0] instead of lwork[1]) then
-                # all tests pass. Further investigation is required if
-                # more such SEGFAULTs occur.
-                lwork = int(1.01 * lwork)
-                a[i], _ = getri(a[i], piv, lwork=lwork, overwrite_lu=1)
-            else:  # clapack
-                a[i], _ = getri(a[i], piv, overwrite_lu=1)
-        else:
-            raise ValueError('Matrix LU decomposition failed')
+            a[i], info = getri(lu, piv, overwrite_lu=1)
+        if info > 0:
+            raise LinAlgError("singular matrix")
+        if info < 0:
+            raise ValueError('illegal value in %d-th argument of internal '
+                             'getrf|getri' % -info)
     return a
 
 
