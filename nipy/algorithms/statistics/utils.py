@@ -40,7 +40,6 @@ def multiple_fast_inv(a):
     """
     # from scipy.linalg.decomp import _asarray_validated
     from scipy.linalg.lapack import get_lapack_funcs
-    from scipy.linalg.misc import LinAlgError
     if a.shape[1] != a.shape[2]:
         raise ValueError('a must have shape(n_samples, n_dim, n_dim)')
     a = np.asarray_chkfinite(a)
@@ -50,7 +49,7 @@ def multiple_fast_inv(a):
         if info == 0:
             a[i], info = getri(lu, piv, overwrite_lu=1)
         if info > 0:
-            raise LinAlgError("singular matrix")
+            raise ValueError("singular matrix")
         if info < 0:
             raise ValueError('illegal value in %d-th argument of internal '
                              'getrf|getri' % -info)
