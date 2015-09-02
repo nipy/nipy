@@ -38,7 +38,6 @@ def multiple_fast_inv(a):
     This function is borrowed from scipy.linalg.inv, 
     but with some customizations for speed-up.
     """
-    # from scipy.linalg.decomp import _asarray_validated
     from scipy.linalg.lapack import get_lapack_funcs
     if a.shape[1] != a.shape[2]:
         raise ValueError('a must have shape(n_samples, n_dim, n_dim)')
