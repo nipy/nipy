@@ -3,15 +3,15 @@
 import numpy as np
 
 
-from nipy.core.api import (AffineTransform, Image,  
-                           ArrayCoordMap, compose)
+from nipy.core.api import (CoordinateMap, AffineTransform, Image,
+        ArrayCoordMap, vox2mni)
 from nipy.core.reference import slices
 from nipy.algorithms.resample import resample, resample_img2img
 from nipy.io.api import load_image
 
 from nose.tools import assert_true, assert_raises
 
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 from nipy.testing import funcfile, anatfile
 
 
@@ -169,6 +169,50 @@ def test_resample3d():
     a[:3,-1] = [3,4,5]
     ir = resample(i, i.coordmap, a, (100,90,80))
     assert_array_almost_equal(ir.get_data()[44:49,32:47,20:23], 3.)
+
+
+def test_resample_outvalue():
+
+    def func(xyz):
+        return xyz + np.asarray([1,0,0])
+    def func2(xyz):
+        return xyz
+    coordmap =  vox2mni(np.eye(4))
+    na_cmap = CoordinateMap(coordmap.function_domain, 
+                            coordmap.function_range, func2, func2)
+
+
+    arr = np.arange(3*3*3).reshape(3,3,3)
+
+    aff = np.eye(4)
+    aff[0,3] = 1.
+    for mapping in [aff, func]:
+
+        img = Image(arr, coordmap) 
+        img2 = resample(img, coordmap, mapping, img.shape, 
+                        order=3, mode='constant', cval=0.0)
+    
+        arr2 = img2.get_data()
+        exp_arr = np.zeros_like(arr)
+        exp_arr[:-1,:,:] = arr[1:,:,:]
+        assert_array_almost_equal(arr2, exp_arr)
+    
+        img2 = resample(img, img.coordmap, mapping, img.shape, 
+                        order=3, mode='constant', cval=1.)
+        arr2 = img2.get_data()
+        exp_arr = np.zeros_like(arr) + 1.
+        exp_arr[:-1,:,:] = arr[1:,:,:]
+    
+ #       assert_array_almost_equal(arr2, exp_arr)
+
+ #       img = Image(arr, na_cmap) 
+
+ #       img2 = resample(img, img.coordmap, mapping, img.shape, 
+ #                       order=3, mode='constant', cval=1.)
+ #       arr2 = img2.get_data()
+ #       exp_arr = np.zeros_like(arr) + 1.
+ #       exp_arr[:-1,:,:] = arr[1:,:,:]
+    
 
 
 def test_nonaffine():

@@ -15,7 +15,7 @@ from .interpolation import ImageInterpolator
 from ..core.api import (Image, CoordinateMap, AffineTransform,
                         ArrayCoordMap, compose)
 
-def resample_img2img(source, target, order=3):
+def resample_img2img(source, target, order=3, mode='constant', cval=0.0):
     """  Resample `source` image to space of `target` image
 
     This wraps the resample function to resample one image onto another.
@@ -31,6 +31,13 @@ def resample_img2img(source, target, order=3):
        have the same shape as the target, and the same coordmap
     order : ``int``, optional
        What order of interpolation to use in `scipy.ndimage`
+    mode : str, optional
+        Points outside the boundaries of the input are filled according to the
+        given mode ('constant', 'nearest', 'reflect' or 'wrap'). Default is
+        'constant'.
+    cval : scalar, optional
+        Value used for points outside the boundaries of the input if
+        mode='constant'. Default is 0.0
 
     Returns
     -------
@@ -57,7 +64,7 @@ def resample_img2img(source, target, order=3):
     return resimg
 
 
-def resample(image, target, mapping, shape, order=3):
+def resample(image, target, mapping, shape, order=3, mode='constant', cval=0.0):
     """ Resample `image` to `target` CoordinateMap
 
     Use a "world-to-world" mapping `mapping` and spline interpolation of a 
@@ -83,12 +90,20 @@ def resample(image, target, mapping, shape, order=3):
        shape of output array, in target.function_domain
     order : int, optional
        what order of interpolation to use in `scipy.ndimage`
+    mode : str, optional
+        Points outside the boundaries of the input are filled according to the
+        given mode ('constant', 'nearest', 'reflect' or 'wrap'). Default is
+        'constant'.
+    cval : scalar, optional
+        Value used for points outside the boundaries of the input if
+        mode='constant'. Default is 0.0
 
     Returns
     -------
     output : Image instance
        with interpolated data and output.coordmap == target
     """
+
     if not callable(mapping):
         if type(mapping) is type(()):
             mapping = from_matvec(*mapping)
@@ -111,7 +126,7 @@ def resample(image, target, mapping, shape, order=3):
         # interpolator evaluates image at values image.coordmap.function_range,
         # i.e. physical coordinates rather than voxel coordinates
         grid = ArrayCoordMap.from_shape(TV2IW, shape)
-        interp = ImageInterpolator(image, order=order)
+        interp = ImageInterpolator(image, order=order, mode=mode, cval=cval)
         idata = interp.evaluate(grid.transposed_values)
         del(interp)
     else: # it is an affine transform, but, what if we compose?
@@ -121,9 +136,11 @@ def resample(image, target, mapping, shape, order=3):
             idata = affine_transform(image.get_data(), A,
                                      offset=b,
                                      output_shape=shape,
-                                     order=order)
+                                     order=order,
+                                     mode=mode,
+                                     cval=cval)
         else: # not affine anymore
-            interp = ImageInterpolator(image, order=order)
+            interp = ImageInterpolator(image, order=order, mode=mode, cval=cval)
             grid = ArrayCoordMap.from_shape(TV2IV, shape)
             idata = interp.evaluate(grid.values)
             del(interp)
