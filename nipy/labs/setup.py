@@ -3,18 +3,48 @@
 import os
 from distutils import log
 
+try:
+    from configparser import ConfigParser, NoSectionError, NoOptionError
+except ImportError:
+    from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+
 # Global variables
 LIBS = os.path.realpath('lib')
 
-# The following variable disables linking with Lapack by default. So
-# far, the only way to attempt at linking with Lapack is to edit this
-# file and set WANT_LAPACK_LINKING=True. We might later want to pass
-# in this variable as an optional argument of `python setup.py build`.
-WANT_LAPACK_LINKING = False
+# Stuff for reading setup file
+SETUP_FILE = 'setup.cfg'
+SECTION = 'lapack'
+KEY = 'external'
+EXTERNAL_LAPACK_VAR = 'NIPY_EXTERNAL_LAPACK'
+
+def get_link_external():
+    """ Return True if we should link to system BLAS / LAPACK
+
+    If True, attempt to link to system BLAS / LAPACK.  Otherwise, compile
+    lapack_lite, and link to that.
+
+    First check ``setup.cfg`` file for section ``[lapack]`` key ``external``.
+
+    If this value undefined, then get string from environment variable
+    NIPY_EXTERNAL_LAPACK.
+
+    If value from ``setup.cfg`` or environment variable is not 'False' or '0',
+    then return True.
+    """
+    config = ConfigParser()
+    try:
+        config.read(SETUP_FILE)
+        external_link = config.get(SECTION, KEY)
+    except (IOError, KeyError, NoOptionError, NoSectionError):
+        external_link = os.environ.get(EXTERNAL_LAPACK_VAR)
+    if external_link is None:
+        return False
+    return external_link.lower() not in ('0', 'false')
+
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
-    from numpy.distutils.system_info import get_info, system_info
+    from numpy.distutils.system_info import get_info
 
     config = Configuration('labs', parent_package, top_path)
 
@@ -50,16 +80,20 @@ def configuration(parent_package='',top_path=None):
     # If lapack linking not required or no lapack install is found, we
     # use the rescue lapack lite distribution included in the package
     # (sources have been translated to C using f2c)
-    if not WANT_LAPACK_LINKING or not lapack_info:
-        if WANT_LAPACK_LINKING:
-            log.warn('Lapack not found')
-        log.warn('Building Lapack lite distribution')
+    want_lapack_link = get_link_external()
+    if not want_lapack_link:
+        log.warn('Building with (slow) Lapack lite distribution: '
+                 'set {0} environment variable or use setup.cfg '
+                 'to enable link to optimized BLAS / LAPACK'.format(
+                        EXTERNAL_LAPACK_VAR)
+                 )
         sources.append(os.path.join(LIBS,'lapack_lite','*.c'))
         library_dirs = []
         libraries = []
-
-    # Best-case scenario: lapack found 
-    else:
+    else: # Best-case scenario: external lapack found
+        if not lapack_info:
+            raise RuntimeError('Specified external lapack linking but '
+                               'numpy does not report external lapack')
         log.warn('Linking with system Lapack')
         library_dirs = lapack_info['library_dirs']
         libraries = lapack_info['libraries']

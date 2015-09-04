@@ -5,6 +5,11 @@
 # - There can't be any leading "-"s - All newlines will be removed, so use
 # ";"s
 sudo: false  # To use travis container infrastructure
+addons:
+  apt:
+    packages:
+        - libblas-dev
+        - liblapack-dev
 language: python
 cache:
   directories:
@@ -27,6 +32,10 @@ matrix:
     - python: 2.7
       env:
         - DEPENDS="numpy==1.6.0 scipy==0.7.0 sympy==0.7.0 nibabel==1.2.0"
+    # Test compiling against external lapack
+    - python: 3.4
+      env:
+        - NIPY_EXTERNAL_LAPACK=1
 before_install:
     - source tools/travis_tools.sh
     - virtualenv --python=python venv
@@ -34,7 +43,6 @@ before_install:
     - python --version # just to check
     - retry pip install nose # always
     - wheelhouse_pip_install $DEPENDS
-    # - sudo apt-get install -qq libatlas-dev libatlas-base-dev gfortran libpng-dev
     - if [ "${COVERAGE}" == "1" ]; then
       pip install coverage;
       pip install coveralls;
