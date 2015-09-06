@@ -2,7 +2,6 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-
 from nipy.core.api import (CoordinateMap, AffineTransform, Image,
         ArrayCoordMap, vox2mni)
 from nipy.core.reference import slices
