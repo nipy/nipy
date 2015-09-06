@@ -60,7 +60,8 @@ def resample_img2img(source, target, order=3, mode='constant', cval=0.0):
         raise ValueError("source coordmap output dimension not equal "
                          "to target coordmap output dimension")
     mapping = np.eye(sop+1) # this would usually be 3+1
-    resimg = resample(source, target.coordmap, mapping, target.shape, order=order)
+    resimg = resample(source, target.coordmap, mapping, target.shape,
+                      order=order, mode=mode, cval=cval)
     return resimg
 
 
