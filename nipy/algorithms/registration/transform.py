@@ -26,8 +26,8 @@ class Transform(object):
         return self.func(pts)
 
     def compose(self, other):
-        return self.__class__(
-            lambda pts : self.func(other.apply(pts)))
+        return Transform(
+            lambda pts : self.apply(other.apply(pts)))
 
     @property
     def param(self):
