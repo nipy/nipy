@@ -202,6 +202,9 @@ class Realign4dAlgorithm(object):
 
         self.dims = im4d.get_shape()
         self.nscans = self.dims[3]
+        # Reduce borders if spatial image dimension too small to avoid
+        # getting an empty volume of interest
+        borders = [min(b, d/2 - (not d%2)) for (b, d) in zip(borders, self.dims[0:3])]
         self.xyz = make_grid(self.dims[0:3], subsampling, borders)
         masksize = self.xyz.shape[0]
         self.data = np.zeros([masksize, self.nscans], dtype='double')
