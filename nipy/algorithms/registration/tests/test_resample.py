@@ -53,20 +53,30 @@ def test_resample_uint_data():
 
 def test_resample_outvalue():
     arr = np.arange(3*3*3).reshape(3,3,3)
-
     img = Image(arr, vox2mni(np.eye(4)))
     aff = np.eye(4)
     aff[0,3] = 1.
-    img2 = resample(img, aff)
-    arr2 = img2.get_data()
-    exp_arr = np.zeros_like(arr)
-    exp_arr[:-1,:,:] = arr[1:,:,:]
-    assert_array_equal(arr2, exp_arr)
-
-    param = {'cval':1}
-    img2 = resample(img, aff, interp_param=param)
-    arr2 = img2.get_data()
-    exp_arr = np.zeros_like(arr) + 1.
-    exp_arr[:-1,:,:] = arr[1:,:,:]
-
-    assert_array_equal(arr2, exp_arr)
+    for transform in (aff, ApplyAffine(aff)):
+        for order in (1, 3):
+            # Default interpolation outside is constant == 0
+            img2 = resample(img, transform, interp_order=order)
+            arr2 = img2.get_data()
+            exp_arr = np.zeros_like(arr)
+            exp_arr[:-1,:,:] = arr[1:,:,:]
+            assert_array_equal(arr2, exp_arr)
+            # Test explicit constant value of 0
+            img2 = resample(img, transform, interp_order=order,
+                            mode='constant', cval=0.)
+            exp_arr = np.zeros(arr.shape)
+            exp_arr[:-1, :, :] = arr[1:, :, :]
+            assert_array_almost_equal(img2.get_data(), exp_arr)
+            # Test constant value of 1
+            img2 = resample(img, transform, interp_order=order,
+                            mode='constant', cval=1.)
+            exp_arr[-1, :, :] = 1
+            assert_array_almost_equal(img2.get_data(), exp_arr)
+            # Test nearest neighbor
+            img2 = resample(img, transform, interp_order=order,
+                            mode='nearest')
+            exp_arr[-1, :, :] = arr[-1, :, :]
+            assert_array_almost_equal(img2.get_data(), exp_arr)
