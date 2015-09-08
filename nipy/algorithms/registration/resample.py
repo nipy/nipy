@@ -135,9 +135,15 @@ def resample(moving, transform=None, reference=None,
             cbspline = _cspline_transform(data)
             output = np.zeros(ref_shape, dtype='double')
             output = _cspline_sample3d(output, cbspline, *coords)
+            # Replicate resampling casting
+            if dtype.kind in 'iu':
+                output = np.round(output)
+            if dtype.kind == 'u':
+                output[output < 0] = 0
             output = output.astype(dtype)
-        else:
+        else:  # No short-cut, use map_coordinates
             output = map_coordinates(data, coords, order=interp_order,
                                      output=dtype, **interp_param)
+            output.shape = ref_shape
 
     return make_xyz_image(output, ref_aff, 'scanner')
