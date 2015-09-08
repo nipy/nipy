@@ -36,7 +36,7 @@ cdef extern from "cubic_spline.h":
     double cubic_spline_sample4d(double x, double y, double z, double t, ndarray coef, 
                                  int mode_x, int mode_y, int mode_z, int mode_t)
     void cubic_spline_resample3d(ndarray im_resampled, ndarray im, 
-                                 double* Tvox, int cast_integer,
+                                 double* Tvox, 
                                  int mode_x, int mode_y, int mode_z)
 
 cdef extern from "polyaffine.h": 
@@ -165,7 +165,7 @@ def _cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0,
     return R
 
 
-def _cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
+def _cspline_resample3d(ndarray im_resampled, ndarray im, dims, ndarray Tvox,
                         mx='zero', my='zero', mz='zero'):
     """
     Perform cubic spline resampling of a 3d input image `im` into a
@@ -184,24 +184,13 @@ def _cspline_resample3d(ndarray im, dims, ndarray Tvox, dtype=None,
     cdef double *tvox
     cdef int cast_integer
 
-    # Create output array
-    if dtype is None:
-        dtype = im.dtype
-    im_resampled = np.zeros(tuple(dims), dtype=dtype)
-
     # Ensure that the Tvox array is C-contiguous (required by the
     # underlying C routine)
     Tvox = np.asarray(Tvox, dtype='double', order='C')
     tvox = <double*>Tvox.data
 
     # Actual resampling 
-    if dtype.kind == 'i':
-        cast_integer = 1
-    elif dtype.kind == 'u':
-        cast_integer = 2
-    else:
-        cast_integer = 0
-    cubic_spline_resample3d(im_resampled, im, tvox, cast_integer,
+    cubic_spline_resample3d(im_resampled, im, tvox,
                             modes[mx], modes[my], modes[mz])
 
     return im_resampled

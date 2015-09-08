@@ -16,6 +16,21 @@ from ._registration import (_cspline_transform,
 INTERP_ORDER = 3
 
 
+def cast_array(arr, dtype):
+    """
+    arr : array
+      Input array
+
+    dtype : dtype
+      Desired dtype
+    """
+    if dtype.kind in 'iu':
+        arr = np.round(arr)
+    if dtype.kind == 'u':
+        arr[arr < 0] = 0
+    return arr.astype(dtype)
+
+
 def resample(moving, transform=None, reference=None,
              mov_voxel_coords=False, ref_voxel_coords=False,
              dtype=None, interp_order=INTERP_ORDER, mode='constant', cval=0.):
@@ -109,9 +124,8 @@ def resample(moving, transform=None, reference=None,
             Tv = np.dot(inverse_affine(mov_aff), Tv)
         if (interp_order, mode, cval) == (3, 'constant', 0):
             # we can use short cut
-            output = _cspline_resample3d(data, ref_shape,
-                                         Tv, dtype=dtype)
-            output = output.astype(dtype)
+            output = np.zeros(ref_shape, dtype='double')
+            output = cast_array(_cspline_resample3d(output, data, ref_shape, Tv), dtype)
         else:
             output = np.zeros(ref_shape, dtype=dtype)
             affine_transform(data, Tv[0:3, 0:3], offset=Tv[0:3, 3],
@@ -132,13 +146,8 @@ def resample(moving, transform=None, reference=None,
             # we can use short cut
             cbspline = _cspline_transform(data)
             output = np.zeros(ref_shape, dtype='double')
-            output = _cspline_sample3d(output, cbspline, *coords)
-            # Replicate resampling casting
-            if dtype.kind in 'iu':
-                output = np.round(output)
-            if dtype.kind == 'u':
-                output[output < 0] = 0
-            output = output.astype(dtype)
+            output = cast_array(_cspline_sample3d(output, cbspline, *coords),
+                                dtype)
         else:  # No short-cut, use map_coordinates
             output = map_coordinates(data, coords, order=interp_order,
                                      output=dtype, mode=mode, cval=cval)
