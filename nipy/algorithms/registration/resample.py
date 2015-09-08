@@ -3,6 +3,7 @@
 
 import numpy as np
 from scipy.ndimage import affine_transform, map_coordinates
+from nibabel.casting import shared_range
 
 from ...core.image.image_spaces import (make_xyz_image,
                                         as_xyz_image,
@@ -25,11 +26,10 @@ def cast_array(arr, dtype):
       Desired dtype
     """
     if dtype.kind in 'iu':
-        arr = np.round(arr)
-    if dtype.kind == 'u':
-        arr[arr < 0] = 0
-    return arr.astype(dtype)
-
+        mn, mx = shared_range(arr.dtype, dtype)
+        return np.clip(np.round(arr), mn, mx).astype(dtype)
+    else:
+        return arr.astype(dtype)
 
 def resample(moving, transform=None, reference=None,
              mov_voxel_coords=False, ref_voxel_coords=False,
