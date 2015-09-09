@@ -56,8 +56,10 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, long 
     Compute the joint histogram given a transformation trial. 
     """
     cdef:
-        double *h, *tvox
-        unsigned int clampI, clampJ
+        double *h
+        double *tvox
+        unsigned int clampI
+        unsigned int clampJ
         int ret
 
     # Views
@@ -78,7 +80,9 @@ def _L1_moments(ndarray H):
     histogram.
     """
     cdef:
-        double n[1], median[1], dev[1]
+        double n[1]
+        double median[1]
+        double dev[1]
         int ret
 
     ret = L1_moments(n, median, dev, H)
@@ -98,8 +102,10 @@ cdef ndarray _reshaped_double(object in_arr, ndarray sh_arr):
     return np.reshape(in_arr, shape).astype(np.double)
 
 def _cspline_sample1d(ndarray R, ndarray C, X=0, mode='zero'):
-    cdef double *r, *x
-    cdef broadcast multi
+    cdef: 
+        double *r
+        double *x
+        broadcast multi
     Xa = _reshaped_double(X, R) 
     multi = PyArray_MultiIterNew(2, <void*>R, <void*>Xa)
     while(multi.index < multi.size):
@@ -111,8 +117,11 @@ def _cspline_sample1d(ndarray R, ndarray C, X=0, mode='zero'):
 
 def _cspline_sample2d(ndarray R, ndarray C, X=0, Y=0, 
                       mx='zero', my='zero'):
-    cdef double *r, *x, *y
-    cdef broadcast multi
+    cdef:
+        double *r
+        double *x
+        double *y
+        broadcast multi
     Xa = _reshaped_double(X, R)
     Ya = _reshaped_double(Y, R)
     multi = PyArray_MultiIterNew(3, <void*>R, <void*>Xa, <void*>Ya)
@@ -126,8 +135,12 @@ def _cspline_sample2d(ndarray R, ndarray C, X=0, Y=0,
 
 def _cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0, 
                       mx='zero', my='zero', mz='zero'):
-    cdef double *r, *x, *y, *z
-    cdef broadcast multi
+    cdef:
+        double *r
+        double *x
+        double *y
+        double *z
+        broadcast multi
     Xa = _reshaped_double(X, R)
     Ya = _reshaped_double(Y, R)
     Za = _reshaped_double(Z, R)
@@ -147,8 +160,13 @@ def _cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0,
     """
     In-place cubic spline sampling. R.dtype must be 'double'. 
     """
-    cdef double *r, *x, *y, *z, *t
-    cdef broadcast multi
+    cdef:
+        double *r
+        double *x
+        double *y
+        double *z
+        double *t
+        broadcast multi
     Xa = _reshaped_double(X, R)
     Ya = _reshaped_double(Y, R)
     Za = _reshaped_double(Z, R)
@@ -182,7 +200,6 @@ def _cspline_resample3d(ndarray im_resampled, ndarray im, dims, ndarray Tvox,
     Note that `Tvox` will be re-ordered in C convention if needed.
     """
     cdef double *tvox
-    cdef int cast_integer
 
     # Ensure that the Tvox array is C-contiguous (required by the
     # underlying C routine)
