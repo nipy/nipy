@@ -1,5 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function
+
 import numpy as np
 from numpy.linalg import inv
 
@@ -56,4 +58,4 @@ def ARcomponents(rho, n, drho=0.05, cor=False, sigma=1):
 
 if __name__ == "__main__":
     #print np.diag(ARcovariance([0.3], 100, cor=True), k=0)
-    print len(ARcomponents([0.321],8, drho=0.02))
+    print(len(ARcomponents([0.321],8, drho=0.02)))

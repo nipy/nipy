@@ -256,7 +256,7 @@ converters = float, str, str
 for key, value in altdescr.items():
     lines = value.split('\n')
     names = lines.pop(0).strip().split(',')
-    dtype = np.dtype(zip(names, ('f8', 'S3', 'S3')))
+    dtype = np.dtype(list(zip(names, ('f8', 'S3', 'S3'))))
     rec = np.recarray(shape=(len(lines),), dtype=dtype)
     for i, line in enumerate(lines):
         vals = line.strip().split(',')

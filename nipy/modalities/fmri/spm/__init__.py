@@ -8,4 +8,4 @@ of a covariance matrix constructed from a series expansion of an
 AR1 model, expanded in terms of rho.
 """
 
-import model
+from . import model

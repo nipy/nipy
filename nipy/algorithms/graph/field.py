@@ -12,10 +12,12 @@ WeightedGraph and feature data.
 
 Author:Bertrand Thirion, 2006--2011
 """
+from __future__ import print_function
+
 from warnings import warn
 import numpy as np
 
-from .graph import WeightedGraph
+from .graph import WeightedGraph, Graph
 
 NEGINF = -np.inf
 
@@ -319,7 +321,6 @@ class Field(WeightedGraph):
               labelling of the vertices according to their bassin
         """
         import numpy.ma as ma
-        from graph import Graph
 
         if (np.size(self.field) == 0):
             raise ValueError('No field has been defined so far')
@@ -509,7 +510,7 @@ class Field(WeightedGraph):
                 seeds[j] = lj[tj]
                 inertia += np.sum((cent - self.field[lj]) ** 2)
             if verbose:
-                print i, inertia
+                print(i, inertia)
             if np.absolute(inertia_old - inertia) < eps:
                 break
             inertia_old = inertia

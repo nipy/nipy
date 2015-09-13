@@ -1,6 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 ''' General matrix and other utilities for statistics '''
+from __future__ import print_function
 
 import numpy as np
 import scipy.interpolate
@@ -33,9 +34,9 @@ class StepFunction(object):
     >>> y = np.arange(20)
     >>> f = StepFunction(x, y)
     >>>
-    >>> print f(3.2)
+    >>> print(f(3.2))
     3.0
-    >>> print f([[3.2,4.5],[24,-3.1]])
+    >>> print(f([[3.2,4.5],[24,-3.1]]))
     [[  3.   4.]
      [ 19.   0.]]
     """

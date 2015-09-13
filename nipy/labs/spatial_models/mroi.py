@@ -1,5 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function
 
 import numpy as np
 
@@ -9,6 +10,7 @@ from nipy.io.nibcompat import get_header, get_affine
 
 from . import discrete_domain as ddom
 
+from nipy.externals.six import string_types
 
 ##############################################################################
 # class SubDomains
@@ -626,7 +628,7 @@ class SubDomains(object):
 
         """
         if not isinstance(self.domain, ddom.NDGridDomain):
-            print 'self.domain is not an NDGridDomain; nothing was written.'
+            print('self.domain is not an NDGridDomain; nothing was written.')
             return None
 
         if fid is None:
@@ -754,7 +756,7 @@ def subdomain_from_image(mim, nn=18):
     Only labels > -1 are considered
 
     """
-    if isinstance(mim, basestring):
+    if isinstance(mim, string_types):
         iim = load(mim)
     else:
         iim = mim

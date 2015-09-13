@@ -880,7 +880,7 @@ def test_make_cmap():
     # Making with generic functions and with affines
     xform = lambda x : x+1
     inv_xform = lambda x : x-1
-    diag_vals = range(2,8)
+    diag_vals = list(range(2,8))
     for i in range(1, 6):
         dcs = CS(d_names[:i], 'voxels')
         rcs = CS(r_names[:i], 'world')

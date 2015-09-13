@@ -11,8 +11,10 @@ import numpy as np
 from . import family
 from .regression import WLSModel
 
+from nipy.externals.six import Iterator
 
-class Model(WLSModel):
+
+class Model(WLSModel, Iterator):
 
     niter = 10
 
@@ -38,7 +40,7 @@ class Model(WLSModel):
             Y = self.Y
         return self.family.deviance(Y, results.mu) / scale
 
-    def next(self):
+    def __next__(self):
         results = self.results
         Y = self.Y
         self.weights = self.family.weights(results.mu)
@@ -88,7 +90,7 @@ class Model(WLSModel):
         self.scale = self.results.scale = self.estimate_scale()
 
         while self.cont():
-            self.results = self.next()
+            self.results = next(self)
             self.scale = self.results.scale = self.estimate_scale()
 
         return self.results

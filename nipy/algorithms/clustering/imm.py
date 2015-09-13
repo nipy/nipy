@@ -2,10 +2,13 @@
 Infinite mixture model : A generalization of Bayesian mixture models
 with an unspecified number of classes
 """
+from __future__ import print_function
+
 import numpy as np
-from bgmm import BGMM, detsh
+
 from scipy.special import gammaln
 
+from .bgmm import BGMM, detsh
 
 def co_labelling(z, kmax=None, kmin=None):
     """
@@ -673,10 +676,10 @@ def main():
 
     # warming
     igmm.sample(x, niter=100, kfold=10)
-    print 'number of components: ', igmm.k
+    print('number of components: ', igmm.k)
 
     #
-    print 'number of components: ', igmm.k
+    print('number of components: ', igmm.k)
 
     if dim < 3:
         from gmm import plot2D

@@ -29,6 +29,7 @@ Example of fixed effects statistics across two contrasts
 >>> np.random.shuffle(cval_)
 >>> z_ffx = (model.contrast(cval) + model.contrast(cval_)).z_score()
 """
+from __future__ import print_function
 
 import numpy as np
 
@@ -42,10 +43,8 @@ from nipy.io.nibcompat import get_header, get_affine
 from nipy.labs.mask import compute_mask_sessions
 from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
 from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
-from nipy.core.api import is_image
 
-from nipy.testing.decorators import skip_doctest_if
-from nipy.utils import HAVE_EXAMPLE_DATA
+from nipy.externals.six import string_types
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
@@ -287,7 +286,7 @@ class Contrast(object):
         self.dof = float(dof)
         self.dim = effect.shape[0]
         if self.dim > 1 and contrast_type is 't':
-            print 'Automatically converted multi-dimensional t to F contrast'
+            print('Automatically converted multi-dimensional t to F contrast')
             contrast_type = 'F'
         self.contrast_type = contrast_type
         self.stat_ = None
@@ -421,7 +420,6 @@ class FMRILinearModel(object):
     i.e. by taking images as input and output
     """
 
-    @skip_doctest_if(not HAVE_EXAMPLE_DATA)
     def __init__(self, fmri_data, design_matrices, mask='compute',
                  m=0.2, M=0.9, threshold=.5):
         """Load the data
@@ -446,28 +444,28 @@ class FMRILinearModel(object):
 
         Examples
         --------
-        We need the example data package for this example
+        We need the example data package for this example::
 
-        >>> from nipy.utils import example_data
-        >>> from nipy.modalities.fmri.glm import FMRILinearModel
-        >>> fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
-        ...     for run in ['run1.nii.gz', 'run2.nii.gz']]
-        >>> design_files = [example_data.get_filename('fiac', 'fiac0', run)
-        ...     for run in ['run1_design.npz', 'run2_design.npz']]
-        >>> mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
-        >>> multi_session_model = FMRILinearModel(fmri_files, design_files, mask)
-        >>> multi_session_model.fit()
-        >>> z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
+            from nipy.utils import example_data
+            from nipy.modalities.fmri.glm import FMRILinearModel
+            fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
+                for run in ['run1.nii.gz', 'run2.nii.gz']]
+            design_files = [example_data.get_filename('fiac', 'fiac0', run)
+                for run in ['run1_design.npz', 'run2_design.npz']]
+            mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
+            multi_session_model = FMRILinearModel(fmri_files,
+                                                  design_files,
+                                                  mask)
+            multi_session_model.fit()
+            z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
 
-        The number of voxels with p < 0.001
-
-        >>> np.sum(z_image.get_data() > 3.09)
-        671
+            # The number of voxels with p < 0.001 given by ...
+            print(np.sum(z_image.get_data() > 3.09))
         """
         # manipulate the arguments
-        if isinstance(fmri_data, basestring) or hasattr(fmri_data, 'get_data'):
+        if isinstance(fmri_data, string_types) or hasattr(fmri_data, 'get_data'):
             fmri_data = [fmri_data]
-        if isinstance(design_matrices, (basestring, np.ndarray)):
+        if isinstance(design_matrices, (string_types, np.ndarray)):
             design_matrices = [design_matrices]
         if len(fmri_data) != len(design_matrices):
             raise ValueError('Incompatible number of fmri runs and '
@@ -477,7 +475,7 @@ class FMRILinearModel(object):
 
         # load the fmri data
         for fmri_run in fmri_data:
-            if isinstance(fmri_run, basestring):
+            if isinstance(fmri_run, string_types):
                 self.fmri_data.append(load(fmri_run))
             else:
                 self.fmri_data.append(fmri_run)
@@ -486,7 +484,7 @@ class FMRILinearModel(object):
 
         # load the designs
         for design_matrix in design_matrices:
-            if isinstance(design_matrix, basestring):
+            if isinstance(design_matrix, string_types):
                 loaded = np.load(design_matrix)
                 self.design_matrices.append(loaded[loaded.files[0]])
             else:
@@ -501,7 +499,7 @@ class FMRILinearModel(object):
             mask = np.ones(self.fmri_data[0].shape[:3]).astype(np.int8)
             self.mask = Nifti1Image(mask, self.affine)
         else:
-            if isinstance(mask, basestring):
+            if isinstance(mask, string_types):
                 self.mask = load(mask)
             else:
                 self.mask = mask

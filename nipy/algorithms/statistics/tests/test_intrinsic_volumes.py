@@ -119,7 +119,7 @@ def pts2mu3_tet(d, a, b, c):
 
 def wiki_tet_vol(d, a, b, c):
     # Wikipedia formula for generalized tetrahedron volume
-    d, a, b, c = [np.array(e) for e in d, a, b, c]
+    d, a, b, c = [np.array(e) for e in (d, a, b, c)]
     cp = np.cross((b-d),(c-d))
     v2t6 = np.dot((a-d), cp)
     return np.sqrt(v2t6) / 6.

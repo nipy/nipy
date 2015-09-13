@@ -680,7 +680,7 @@ x
         dist, active = np.inf * np.ones(self.V), np.ones(self.V)
         idx, neighb, weight = self.compact_neighb()
         dist[seed] = 0
-        dg = zip(np.zeros_like(seed), seed)
+        dg = list(zip(np.zeros_like(seed), seed))
         heapq.heapify(dg)
         for j in range(self.V):
             end = False
@@ -897,7 +897,7 @@ x
         idx, neighb, weight = self.compact_neighb()
         dist[seed] = 0
         label[seed] = np.arange(len(seed))
-        dg = zip(np.zeros_like(seed), seed)
+        dg = list(zip(np.zeros_like(seed), seed))
         heapq.heapify(dg)
         for j in range(self.V):
             end = False
@@ -1069,7 +1069,7 @@ x
         By default, the weights are a Gaussian function of the distance The
         implementation is not optimal
         """
-        from bipartite_graph import cross_knn
+        from .bipartite_graph import cross_knn
         # checks
         if seeds.shape[0] != self.V:
             raise ValueError("The numberof seeds is not as expected")

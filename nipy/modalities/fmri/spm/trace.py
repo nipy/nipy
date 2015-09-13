@@ -1,9 +1,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import print_function
+
 import numpy as np
 from numpy.linalg import svd
 
-from reml import orth
+from .reml import orth
 
 def _trace(x):
     """
@@ -46,7 +48,7 @@ def trRV(X=None, V=None):
     >>>
     >>> u = orth(X)
     >>> V = np.dot(u, u.T)
-    >>> print np.allclose(trRV(X, V), 0)
+    >>> print(np.allclose(trRV(X, V), 0))
     True
     """
     n, p = X.shape
@@ -77,15 +79,14 @@ if __name__ == "__main__":
     from numpy.random import standard_normal
 
     X = standard_normal((100, 4))
-    print trRV(X) # should be (96,96)
+    print(trRV(X))  # should be (96,96)
 
     V = np.identity(100)
-    print trRV(X, V) # should be (96,96)
+    print(trRV(X, V))  # should be (96,96)
 
     X[:,3] = X[:,1] + X[:,2]
-    print trRV(X, V) # should be (97,97)
+    print(trRV(X, V)) # should be (97,97)
 
     u = orth(X)
     V = np.dot(u, u.T)
-    print trRV(X, V) # should be (0,0)
-            
+    print(trRV(X, V))  # should be (0,0)

@@ -2,6 +2,8 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """One and two sample permutation tests.
 """
+from __future__ import print_function
+
 # Third-party imports
 import numpy as np
 import scipy.misc as sm
@@ -106,7 +108,7 @@ def _extract_clusters_from_diam(labels, T, XYZ, th, diam, k,
     This recursive function modifies the `labels` input array.
     """
     clust_label = 0
-    for i in xrange(nCC):
+    for i in range(nCC):
         #print "Searching connected component ", i, " out of ", nCC
         I = np.where(CClabels==i)[0]
         extCC = len(I)
@@ -261,7 +263,7 @@ def compute_cluster_stats(Tvalues, labels, random_Tvalues,
             pseudo_p_values = 1 - np.searchsorted(random_Tvalues,Tvalues)/float(ndraws)
         else:
             Fisher_values = None
-    for i in xrange(nclust):
+    for i in range(nclust):
         I = np.where(labels==i)[0]
         if "size" in cluster_stats:
             size_values[i] = len(I)
@@ -280,7 +282,7 @@ def compute_region_stat(Tvalues, labels, label_values, random_Tvalues):
     """
     Fisher_values = np.zeros(len(label_values),float)
     pseudo_p_values = 1 - np.searchsorted(random_Tvalues,Tvalues)/float(len(random_Tvalues))
-    for i in xrange(len(label_values)):
+    for i in range(len(label_values)):
         I = np.where(labels==label_values[i])[0]
         Fisher_values[i] = -np.sum(np.log(pseudo_p_values[I]))
     return Fisher_values
@@ -290,7 +292,7 @@ def peak_XYZ(XYZ, Tvalues, labels, label_values):
     Returns (3, n_labels) array of maximum T values coordinates for each label value
     """
     C = np.zeros((3, len(label_values)), int)
-    for i in xrange(len(label_values)):
+    for i in range(len(label_values)):
         I = np.where(labels == label_values[i])[0]
         C[:, i] = XYZ[:, I[np.argmax(Tvalues[I])]]
     return C
@@ -430,10 +432,10 @@ class permutation_test(object):
         Corr_p_values = np.zeros(p,float)
         nmagic = len(magic_numbers)
         perm_maxT_values = np.zeros(nmagic, float)
-        for j in xrange(nmagic):
+        for j in range(nmagic):
             m = magic_numbers[j]
             if verbose:
-                print "Permutation", j+1, "out of", nmagic
+                print("Permutation", j+1, "out of", nmagic)
             # T values under permutation
             if self.nsamples == 1:
                 #perm_Tvalues = onesample_stat(self.data, self.vardata, self.stat_id, self.base, self.axis, np.array([m]), self.niter).squeeze()
@@ -461,7 +463,7 @@ class permutation_test(object):
             perm_maxT_values[j] = max(perm_Tvalues)
             # Update cluster_results
             if clusters is not None:
-                for i in xrange(len(clusters)):
+                for i in range(len(clusters)):
                     thresh, diam = clusters[i]
                     if diam is None:
                         if self.XYZ is None:
@@ -482,7 +484,7 @@ class permutation_test(object):
                         cluster_results[i]["perm_maxFisher_values"][j] = max(perm_Fisher_values)
             # Update region_results
             if regions is not None:
-                for i in xrange(len(regions)):
+                for i in range(len(regions)):
                     labels = regions[i]
                     label_values = region_results[i]["label_values"]
                     nregions = len(label_values)
@@ -491,7 +493,7 @@ class permutation_test(object):
                         region_results[i]["perm_Fisher_values"][:,j] = perm_Fisher_values
         # Compute p-values for clusters summary statistics
         if clusters is not None:
-            for i in xrange(len(clusters)):
+            for i in range(len(clusters)):
                 if "size" in cluster_stats:
                     cluster_results[i]["perm_size_values"] = np.array(cluster_results[i]["perm_size_values"])
                     cluster_results[i]["perm_size_values"].sort()
@@ -508,17 +510,17 @@ class permutation_test(object):
                 cluster_results[i]["expected_number_of_clusters"] /= float(nmagic)
         # Compute p-values for regions summary statistics
         if regions is not None:
-            for i in xrange(len(regions)):
+            for i in range(len(regions)):
                 if "Fisher" in region_stats:
                     sorted_perm_Fisher_values = np.sort(region_results[i]["perm_Fisher_values"],axis=1)
                     label_values = region_results[i]["label_values"]
                     nregions = len(label_values)
                     # Compute uncorrected p-values
-                    for j in xrange(nregions):
+                    for j in range(nregions):
                         region_results[i]["Fisher_p_values"][j] = 1 - np.searchsorted(sorted_perm_Fisher_values[j],region_results[i]["Fisher_values"][j])/float(nmagic)
                     #Compute corrected p-values
                     perm_Fisher_p_values = np.zeros((nregions,nmagic),float)
-                    for j in xrange(nregions):
+                    for j in range(nregions):
                         I = np.argsort(region_results[i]["perm_Fisher_values"][j])
                         perm_Fisher_p_values[j][I] = 1 - np.arange(1,nmagic+1)/float(nmagic)
                     perm_min_Fisher_p_values = np.sort(perm_Fisher_p_values.min(axis=0))
@@ -782,7 +784,7 @@ class permutation_test_twosample(permutation_test):
                 perm_vardata = np.zeros((ndraws, n1+n2),float)
                 perm_vardata[:,:n1] = vardata1[I]
                 perm_vardata[:,n1:] = vardata2[I]
-        rand_perm = np.array([np.random.permutation(np.arange(n1+n2)) for i in xrange(ndraws)]).transpose()
+        rand_perm = np.array([np.random.permutation(np.arange(n1+n2)) for i in range(ndraws)]).transpose()
         ravel_rand_perm = rand_perm*ndraws + np.arange(ndraws).reshape(1,ndraws)
         if axis == 0:
             perm_data = perm_data.ravel()[ravel_rand_perm.ravel()].reshape(n1+n2,ndraws)

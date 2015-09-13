@@ -1,7 +1,10 @@
+from __future__ import division, print_function, absolute_import
+
 import os
 import sys
 import subprocess
-from ConfigParser import ConfigParser
+
+from .externals.six.moves import configparser
 
 COMMIT_INFO_FNAME = 'COMMIT_INFO.txt'
 
@@ -24,12 +27,12 @@ def pkg_commit_hash(pkg_path):
     If all these fail, we return a not-found placeholder tuple
 
     Parameters
-    ----------
+    -------------
     pkg_path : str
        directory containing package
 
     Returns
-    -------
+    ---------
     hash_from : str
        Where we got the hash from - description
     hash_str : str
@@ -39,7 +42,7 @@ def pkg_commit_hash(pkg_path):
     pth = os.path.join(pkg_path, COMMIT_INFO_FNAME)
     if not os.path.isfile(pth):
         raise IOError('Missing commit info file %s' % pth)
-    cfg_parser = ConfigParser()
+    cfg_parser = configparser.RawConfigParser()
     cfg_parser.read(pth)
     archive_subst = cfg_parser.get('commit hash', 'archive_subst_hash')
     if not archive_subst.startswith('$Format'): # it has been substituted
@@ -62,17 +65,18 @@ def get_pkg_info(pkg_path):
     ''' Return dict describing the context of this package
 
     Parameters
-    ----------
+    ------------
     pkg_path : str
        path containing __init__.py for package
 
     Returns
-    -------
+    ----------
     context : dict
        with named parameters of interest
     '''
     src, hsh = pkg_commit_hash(pkg_path)
     import numpy
+    import nipy
     return dict(
         pkg_path=pkg_path,
         commit_source=src,
@@ -80,4 +84,5 @@ def get_pkg_info(pkg_path):
         sys_version=sys.version,
         sys_executable=sys.executable,
         sys_platform=sys.platform,
-        np_version=numpy.__version__)
+        np_version=numpy.__version__,
+        nipy_version=nipy.__version__)

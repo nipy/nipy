@@ -44,7 +44,7 @@ def test_xyz_space():
     # Space objects
     sp = XYZSpace('hijo')
     assert_equal(sp.name, 'hijo')
-    exp_labels = ['hijo-' + L for L in 'x=L->R', 'y=P->A', 'z=I->S']
+    exp_labels = ['hijo-' + L for L in ('x=L->R', 'y=P->A', 'z=I->S')]
     exp_map = dict(zip('xyz', exp_labels))
     assert_equal([sp.x, sp.y, sp.z], exp_labels)
     assert_equal(sp.as_tuple(), tuple(exp_labels))
@@ -143,7 +143,7 @@ def test_default_makers():
         for i in range(1,5):
             dom_cs = CS('ijkl'[:i], 'voxels')
             ran_cs = CS(r_names[:i], r_name)
-            aff = np.diag(range(i) + [1])
+            aff = np.diag(list(range(i)) + [1])
             assert_equal(csm(aff), AffineTransform(dom_cs, ran_cs, aff))
 
 

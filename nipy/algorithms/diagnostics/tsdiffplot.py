@@ -7,6 +7,7 @@ import numpy as np
 import nipy
 from .timediff import time_slice_diffs
 
+from nipy.externals.six import string_types
 
 def plot_tsdiffs(results, axes=None):
     ''' Plotting routine for time series difference metrics
@@ -105,7 +106,7 @@ def plot_tsdiffs_image(img, axes=None, show=True):
        Axes on which we have done the plots.   Will be same as `axes` input if
        `axes` input was not None
     '''
-    if isinstance(img, basestring):
+    if isinstance(img, string_types):
         title = img
     else:
         title = 'Difference plots'

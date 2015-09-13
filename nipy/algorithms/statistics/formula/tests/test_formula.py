@@ -3,6 +3,7 @@
 """
 Test functions for formulae
 """
+from __future__ import print_function
 
 import numpy as np
 import sympy
@@ -336,7 +337,7 @@ def test_nonlin1():
     n = F.make_recarray([(2,3,'a'),(4,5,'b'),(5,6,'a')], 'xyf', ['d','d','S1'])
     p = F.make_recarray([1,2,3,4], ['_x0', '_x1', '_b0', '_b1'])
     A = f.design(n, p)
-    print A, A.dtype
+    print(A, A.dtype)
 
 
 def test_intercept():

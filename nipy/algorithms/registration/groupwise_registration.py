@@ -346,7 +346,7 @@ class Realign4dAlgorithm(object):
 
         V/V0 = [nV* + (x-m*)^2] / [nV0* + (x-m0*)^2]
         """
-        fixed = range(self.nscans)
+        fixed = list(range(self.nscans))
         fixed.remove(t)
         aux = self.data[:, fixed]
         if self.optimize_template:
@@ -1067,8 +1067,8 @@ class FmriRealign4d(Realign4d):
                                       'deprecated',
                                       FutureWarning,
                                       stacklevel=2)
-                        aux = np.argsort(range(0, nslices, 2) +\
-                                             range(1, nslices, 2))
+                        aux = np.argsort(list(range(0, nslices, 2)) +
+                                         list(range(1, nslices, 2)))
                     else:
                         aux = np.arange(nslices)
                     if slice_order == 'descending':

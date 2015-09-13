@@ -7,8 +7,10 @@ import numpy as np
 from .image import Image, iter_axis, is_image
 from ..reference.coordinate_map import (drop_io_dim, io_axis_indices, AxisError)
 
+from ...externals.six import Iterator
 
-class ImageList(object):
+
+class ImageList(Iterator):
     ''' Class to contain ND image as list of (N-1)D images '''
 
     def __init__(self, images=None):
@@ -193,5 +195,5 @@ class ImageList(object):
         self._iter = iter(self.list)
         return self
 
-    def next(self):
-        return self._iter.next()
+    def __next__(self):
+        return next(self._iter)

@@ -25,7 +25,9 @@ from nipy.core.api import Image
 
 from .utils.matrices import pos_recipr
 
-class Resels(object):
+from ..externals.six import Iterator
+
+class Resels(Iterator):
     """The Resels class.
     """
     def __init__(self, coordmap, normalized=False, fwhm=None, resels=None,
@@ -164,7 +166,7 @@ class ReselImage(Resels):
             Passed as keywords arguments to `core.api.Image`
         """
         if not resels and not fwhm:
-            raise ValueError, 'need either a resels image or an FWHM image'
+            raise ValueError('need either a resels image or an FWHM image')
 
         if fwhm is not None:
             fwhm = Image(fwhm, **keywords)

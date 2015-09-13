@@ -21,6 +21,7 @@ It implements 3 approaches:
 
 Author : Bertrand Thirion, Yaroslav Halchenko, 2008-2012
 """
+from __future__ import print_function
 
 import numpy as np
 from numpy.linalg import pinv
@@ -262,8 +263,8 @@ class NormalEmpiricalNull(object):
             self.plot(efp, alpha)
 
         if efp[-1] > alpha:
-            print "the maximal value is %f , the corresponding FDR is %f " \
-                    % (self.x[ - 1], efp[ - 1])
+            print("the maximal value is %f , the corresponding FDR is %f "
+                  % (self.x[ - 1], efp[ - 1]))
             return np.inf
         j = np.argmin(efp[:: - 1] < alpha) + 1
         return 0.5 * (self.x[ - j] + self.x[ - j + 1])

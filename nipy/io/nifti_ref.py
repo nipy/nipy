@@ -390,7 +390,7 @@ def nipy2nifti(img, data_dtype=None, strict=None, fix0=True):
         # Make sure this time-like axis is first non-space axis
         if in_ax != 3:
             data = np.rollaxis(data, in_ax, 3)
-            order = range(n_ns)
+            order = list(range(n_ns))
             order.pop(in_ax - 3)
             order.insert(0, in_ax - 3)
             ns_pixdims = [ns_pixdims[i] for i in order]

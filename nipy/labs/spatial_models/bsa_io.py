@@ -14,6 +14,7 @@ from .bayesian_structural_analysis import compute_landmarks
 from .discrete_domain import domain_from_image
 from ...io.nibcompat import get_header, get_affine
 
+from ...externals.six import string_types
 
 def make_bsa_image(
     mask_images, stat_images, threshold=3., smin=0, sigma=5.,
@@ -65,7 +66,7 @@ def make_bsa_image(
 
     # Read the masks and compute the "intersection"
     # mask = np.reshape(intersect_masks(mask_images), ref_dim).astype('u8')
-    if isinstance(mask_images, basestring):
+    if isinstance(mask_images, string_types):
         mask = load(mask_images).get_data()
     elif isinstance(mask_images, Nifti1Image):
         mask = mask_images.get_data()

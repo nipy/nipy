@@ -16,6 +16,7 @@ The above three generators return 2-tuples.
 * write_data: write the output of a generator to an ndarray
 * parcels: return binary array of the unique components of data
 """
+from __future__ import print_function
 
 import numpy as np
 
@@ -50,21 +51,21 @@ def parcels(data, labels=None, exclude=()):
     Examples
     --------
     >>> for p in parcels([[1,1],[2,1]]):
-    ...     print p
+    ...     print(p)
     ...
     [[ True  True]
      [False  True]]
     [[False False]
      [ True False]]
     >>> for p in parcels([[1,1],[2,3]], labels=[2,3]):
-    ...     print p
+    ...     print(p)
     ...
     [[False False]
      [ True False]]
     [[False False]
      [False  True]]
     >>> for p in parcels([[1,1],[2,3]], labels=[(2,3),2]):
-    ...     print p
+    ...     print(p)
     ...
     [[False False]
      [ True  True]]
@@ -101,7 +102,7 @@ def data_generator(data, iterable=None):
     >>> b = np.asarray([[False,False],[True,False]])
 
     >>> for i, d in data_generator(np.asarray([[1,2],[3,4]]), [a,b]):
-    ...     print d
+    ...     print(d)
     ...
     [1 4]
     [3]
@@ -141,12 +142,12 @@ def slice_generator(data, axis=0):
     Examples
     --------
     >>> for i,d in slice_generator([[1,2],[3,4]]):
-    ...     print i, d
+    ...     print(i, d)
     ...
     (0,) [1 2]
     (1,) [3 4]
     >>> for i,d in slice_generator([[1,2],[3,4]], axis=1):
-    ...     print i, d
+    ...     print(i, d)
     ...
     (slice(None, None, None), 0) [1 3]
     (slice(None, None, None), 1) [2 4]
@@ -189,7 +190,7 @@ def f_generator(f, iterable):
     Examples
     --------
     >>> for i, d in f_generator(lambda x: x**2, data_generator([[1,2],[3,4]])):
-    ...     print i, d
+    ...     print(i, d)
     ...
     0 [1 4]
     1 [ 9 16]
@@ -206,7 +207,7 @@ def slice_parcels(data, labels=None, axis=0):
 
     >>> x=np.array([[0,0,0,1],[0,1,0,1],[2,2,0,1]])
     >>> for a in slice_parcels(x):
-    ...     print a, x[a]
+    ...     print(a, x[a])
     ...
     ((0,), array([ True,  True,  True, False], dtype=bool)) [0 0 0]
     ((0,), array([False, False, False,  True], dtype=bool)) [1]
@@ -217,7 +218,7 @@ def slice_parcels(data, labels=None, axis=0):
     ((2,), array([ True,  True, False, False], dtype=bool)) [2 2]
     >>> for a in slice_parcels(x, axis=1):
     ...     b, c = a
-    ...     print a, x[b][c]
+    ...     print(a, x[b][c])
     ...
     ((slice(None, None, None), 0), array([ True,  True, False], dtype=bool)) [0 0]
     ((slice(None, None, None), 0), array([False, False,  True], dtype=bool)) [2]

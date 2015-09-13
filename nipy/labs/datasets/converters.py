@@ -14,6 +14,8 @@ from nibabel.spatialimages import SpatialImage
 from nipy.io.nibcompat import get_header, get_affine
 from .volumes.volume_img import VolumeImg
 
+from nipy.externals.six import string_types
+
 def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
     """ Convert the input to a VolumeImg.
 
@@ -54,7 +56,7 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
             obj = obj.__copy__()
         return obj
 
-    elif isinstance(obj, basestring):
+    elif isinstance(obj, string_types):
         if not os.path.exists(obj):
             raise ValueError("The file '%s' cannot be found" % obj)
         obj = nib.load(obj)
@@ -103,7 +105,7 @@ def save(filename, obj):
     """
     obj = as_volume_img(obj, copy=False)
     hdr = nib.Nifti1Header()
-    for key, value in obj.metadata.iteritems():
+    for key, value in obj.metadata.items():
         if key in hdr:
             hdr[key] = value
     img = nib.Nifti1Image(obj.get_data(), 

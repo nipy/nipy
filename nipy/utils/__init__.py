@@ -28,6 +28,8 @@ except DataError:
 else:
     HAVE_TEMPLATES = True
 
+from .utilities import is_iterable, is_numlike
+
 from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench

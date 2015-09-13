@@ -15,6 +15,8 @@ from nipy.io.nibcompat import get_header, get_affine
 from nipy.algorithms.graph import (WeightedGraph, wgraph_from_coo_matrix,
                                    wgraph_from_3d_grid)
 
+from nipy.externals.six import string_types
+
 ##############################################################
 # Ancillary functions
 ##############################################################
@@ -233,7 +235,7 @@ def domain_from_image(mim, nn=18):
     The corresponding StructuredDomain instance
 
     """
-    if isinstance(mim, basestring):
+    if isinstance(mim, string_types):
         iim = load(mim)
     else:
         iim = mim
@@ -283,7 +285,7 @@ def grid_domain_from_image(mim, nn=18):
     The corresponding NDGridDomain instance
 
     """
-    if isinstance(mim, basestring):
+    if isinstance(mim, string_types):
         iim = load(mim)
     else:
         iim = mim
@@ -408,7 +410,7 @@ def domain_from_mesh(mesh):
     mesh: nibabel gifti mesh instance, or path to such a mesh
 
     """
-    if isinstance(mesh, basestring):
+    if isinstance(mesh, string_types):
         from nibabel.gifti import read
         mesh_ = read(mesh)
     else:
@@ -500,7 +502,7 @@ class DiscreteDomain(object):
         new_dom = DiscreteDomain(self.dim, self.coord.copy(),
                                   self.local_volume.copy(), self.id,
                                   self.referential)
-        for fid in self.features.keys():
+        for fid in list(self.features.keys()):
             new_dom.set_feature(fid, self.get_feature(fid).copy())
         return new_dom
 
@@ -532,7 +534,7 @@ class DiscreteDomain(object):
         scoord = self.coord[bmask]
         DD = DiscreteDomain(self.dim, scoord, svol, id, self.referential)
 
-        for fid in self.features.keys():
+        for fid in list(self.features.keys()):
             f = self.features.pop(fid)
             DD.set_feature(fid, f[bmask])
         return DD
@@ -647,7 +649,7 @@ class StructuredDomain(DiscreteDomain):
         dd = StructuredDomain(self.dim, td.coord, td.local_volume,
                             stopo, did, self.referential)
 
-        for fid in td.features.keys():
+        for fid in list(td.features.keys()):
             dd.set_feature(fid, td.features.pop(fid))
         return dd
 
@@ -728,7 +730,7 @@ class NDGridDomain(StructuredDomain):
         DD = NDGridDomain(self.dim, sijk, self.shape, self.affine, svol,
                           stopo, self.referential)
 
-        for fid in self.features.keys():
+        for fid in list(self.features.keys()):
             f = self.features.pop(fid)
             DD.set_feature(fid, f[bmask])
         return DD
@@ -776,7 +778,7 @@ class NDGridDomain(StructuredDomain):
         the correponding set of values
 
         """
-        if isinstance(path, basestring):
+        if isinstance(path, string_types):
             nim = load(path)
         else:
             nim = path

@@ -47,7 +47,7 @@ def invertR(delta, IRF, niter=20):
                      niter=niter)
 
     for iteration in model:
-        model.next()
+        next(model)
 
     a, b, c = model.theta
 

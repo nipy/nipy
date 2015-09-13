@@ -1,6 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import warnings
+from itertools import chain
 
 import numpy as np
 
@@ -434,11 +435,11 @@ def test_rollimg_rollaxis():
     data = np.random.standard_normal((3,4,7,5))
     aff = np.diag([1,2,3,4,1])
     img = Image(data, AT('ijkl', 'xyzt', aff))
-    for axis in range(4) + range(-3, -1):
+    for axis in chain(range(4), range(-3, -1)):
         rdata = np.rollaxis(data, axis)
         rimg = rollimg(img, axis)
         assert_array_equal(rdata, rimg.get_data())
-        for start in range(4) + range(-3, -1):
+        for start in chain(range(4), range(-3, -1)):
             rdata = np.rollaxis(data, axis, start)
             rimg = rollimg(img, axis, start)
             assert_array_equal(rdata, rimg.get_data())
@@ -450,7 +451,7 @@ def test_rollaxis_inverse():
     data = np.random.standard_normal((3,4,7,5))
     aff = np.diag([1,2,3,4,1])
     img = Image(data, AT('ijkl', 'xyzt', aff))
-    for axis in range(4) + range(-3, -1):
+    for axis in chain(range(4), range(-3, -1)):
         rimg = image.rollaxis(img, axis)
         rdata = np.rollaxis(data, axis)
         assert_array_equal(rdata, rimg.get_data())

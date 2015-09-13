@@ -10,8 +10,11 @@
 * iter_axis : make iterator to iterate over an image axis
 * is_image : test for an object obeying the Image API
 """
+from __future__ import print_function
+
 import warnings
 from copy import copy
+from itertools import chain
 
 import numpy as np
 
@@ -302,7 +305,7 @@ class Image(object):
         >>> data = np.random.standard_normal((11,9,4))
         >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4), 'domain', 'range'))
         >>> im_renamed = im.renamed_axes(i='slice')
-        >>> print im_renamed.axes
+        >>> print(im_renamed.axes)
         CoordinateSystem(coord_names=('slice', 'j', 'k'), name='domain', coord_dtype=float64)
         """
         new_cmap = self.coordmap.renamed_domain(names_dict)
@@ -328,7 +331,7 @@ class Image(object):
         >>> data = np.random.standard_normal((11,9,4))
         >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4), 'domain', 'range'))
         >>> im_renamed_reference = im.renamed_reference(x='newx', y='newy')
-        >>> print im_renamed_reference.reference
+        >>> print(im_renamed_reference.reference)
         CoordinateSystem(coord_names=('newx', 'newy', 'z'), name='range', coord_dtype=float64)
         """
         new_cmap = self.coordmap.renamed_range(names_dict)
@@ -643,12 +646,12 @@ def rollaxis(img, axis, inverse=False):
         if type(axis) != type(0):
             raise ValueError('If carrying out inverse rolling, '
                              'axis must be an integer')
-        order = range(1, img.ndim)
+        order = list(range(1, img.ndim))
         order.insert(axis, 0)
         return img.reordered_axes(order).reordered_reference(order)
-    if axis not in (range(img.axes.ndim) +
-                    list(img.axes.coord_names) +
-                    list(img.reference.coord_names)):
+    if axis not in chain(range(img.axes.ndim),
+                         img.axes.coord_names,
+                         img.reference.coord_names):
         raise ValueError('axis must be an axis number,'
                          'an axis name or a reference name')
     # Find out which index axis corresonds to
@@ -672,7 +675,7 @@ def rollaxis(img, axis, inverse=False):
             axis = out_index
     if axis == -1:
         axis += img.axes.ndim
-    order = range(img.ndim)
+    order = list(range(img.ndim))
     order.remove(axis)
     order.insert(0, axis)
     return img.reordered_axes(order).reordered_reference(order)
@@ -734,7 +737,7 @@ def rollimg(img, axis, start=0, fix0=True):
     """
     axis = input_axis_index(img.coordmap, axis, fix0)
     start = input_axis_index(img.coordmap, start, fix0)
-    order = range(img.ndim)
+    order = list(range(img.ndim))
     order.remove(axis)
     if axis < start:
         start -= 1

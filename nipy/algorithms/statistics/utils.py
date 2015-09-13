@@ -1,5 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from itertools import combinations
+
 import numpy as np
 from scipy.stats import norm
 TINY = 1e-16
@@ -106,28 +108,6 @@ def multiple_mahalanobis(effect, covariance):
     # derive the squared Mahalanobis distances
     sqd = np.sum(np.sum(Xt[:, :, np.newaxis] * Xt[:, np.newaxis] * Kt, 1), 1)
     return sqd
-
-
-# Taken from python doc site, exists in python2.6
-def combinations(iterable, r):
-    # combinations('ABCD', 2) --> AB AC AD BC BD CD
-    # combinations(range(4), 3) --> 012 013 023 123
-    pool = tuple(iterable)
-    n = len(pool)
-    if r > n:
-        return
-    indices = range(r)
-    yield tuple(pool[i] for i in indices)
-    while True:
-        for i in reversed(range(r)):
-            if indices[i] != i + n - r:
-                break
-        else:
-            return
-        indices[i] += 1
-        for j in range(i+1, r):
-            indices[j] = indices[j-1] + 1
-        yield tuple(pool[i] for i in indices)
 
 
 def complex(maximal=[(0, 3, 2, 7),
@@ -244,7 +224,7 @@ def join_complexes(*complexes):
         faces[i+1] = set([])
     for c in complexes:
         for i in range(nmax):
-            if c.has_key(i+1):
+            if i+1 in c:
                 faces[i+1] = faces[i+1].union(c[i+1])
     return faces
 
@@ -273,7 +253,7 @@ def decompose3d(shape, dim=4):
     for i in range(4):
         unique[i+1] = c[i+1].difference(union[i+1])
 
-    if unique.has_key(dim) and dim > 1:
+    if dim in unique and dim > 1:
         d = unique[dim]
 
         for i in range(shape[0]-1):
@@ -301,7 +281,7 @@ def decompose3d(shape, dim=4):
         for i in range(3):
             unique[i+1] = c[i+1].difference(union[i+1])
         
-        if unique.has_key(dim) and dim > 1:
+        if dim in unique and dim > 1:
             d = unique[dim]
 
             for i in range(_shape[0]-1):
@@ -320,7 +300,7 @@ def decompose3d(shape, dim=4):
         for i in range(2):
             unique[i+1] = c[i+1].difference(union[i+1])
 
-        if unique.has_key(dim) and dim > 1:
+        if dim in unique and dim > 1:
             d = unique[dim]
 
             for i in range(_shape-1):
@@ -352,7 +332,7 @@ def decompose2d(shape, dim=3):
     for i in range(3):
         unique[i+1] = c[i+1].difference(union[i+1])
 
-    if unique.has_key(dim) and dim > 1:
+    if dim in unique and dim > 1:
         d = unique[dim]
 
         for i in range(shape[0]-1):
@@ -371,7 +351,7 @@ def decompose2d(shape, dim=3):
         for i in range(2):
             unique[i+1] = c[i+1].difference(union[i+1])
 
-        if unique.has_key(dim) and dim > 1:
+        if dim in unique and dim > 1:
             d = unique[dim]
 
             for i in range(_shape-1):

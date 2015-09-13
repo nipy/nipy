@@ -17,6 +17,7 @@ from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nipy.testing import funcfile
+from nipy.testing.decorators import if_example_data
 
 
 def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
@@ -138,7 +139,7 @@ def ar1_glm(n=100, p=80, q=10):
 def test_glm_ols():
     mulm, n, p, q = ols_glm()
     assert_array_equal(mulm.labels_, np.zeros(n))
-    assert_equal(mulm.results_.keys(), [0.0])
+    assert_equal(list(mulm.results_), [0.0])
     assert_equal(mulm.results_[0.0].theta.shape, (q, n))
     assert_almost_equal(mulm.results_[0.0].theta.mean(), 0, 1)
     assert_almost_equal(mulm.results_[0.0].theta.var(), 1. / p, 1)
@@ -166,7 +167,7 @@ def test_glm_logL():
 def test_glm_ar():
     mulm, n, p, q = ar1_glm()
     assert_equal(len(mulm.labels_), n)
-    assert_true(len(mulm.results_.keys()) > 1)
+    assert_true(len(mulm.results_) > 1)
     tmp = sum([mulm.results_[key].theta.shape[1]
                for key in mulm.results_.keys()])
     assert_equal(tmp, n)
@@ -263,7 +264,7 @@ def test_t_contrast_values():
     mulm, n, p, q = ar1_glm(n=1)
     cval = np.eye(q)[0]
     con = mulm.contrast(cval)
-    t_ref = mulm.results_.values()[0].Tcontrast(cval).t
+    t_ref = list(mulm.results_.values()).pop().Tcontrast(cval).t
     assert_almost_equal(np.ravel(con.stat()), t_ref)
 
 
@@ -271,7 +272,7 @@ def test_F_contrast_calues():
     mulm, n, p, q = ar1_glm(n=1)
     cval = np.eye(q)[:3]
     con = mulm.contrast(cval)
-    F_ref = mulm.results_.values()[0].Fcontrast(cval).F
+    F_ref = list(mulm.results_.values()).pop().Fcontrast(cval).F
     # Note that the values are not strictly equal,
     # this seems to be related to a bug in Mahalanobis
     assert_almost_equal(np.ravel(con.stat()), F_ref, 3)
@@ -319,6 +320,22 @@ def test_fmri_inputs():
                               mask=None)
                 assert_raises(ValueError, FMRILinearModel, fi, [d, d],
                               mask=None)
+
+
+@if_example_data
+def test_fmri_example():
+    # Run FMRI analysis using example data
+    from nipy.utils import example_data
+    fmri_files = [example_data.get_filename('fiac', 'fiac0', run)
+        for run in ['run1.nii.gz', 'run2.nii.gz']]
+    design_files = [example_data.get_filename('fiac', 'fiac0', run)
+        for run in ['run1_design.npz', 'run2_design.npz']]
+    mask = example_data.get_filename('fiac', 'fiac0', 'mask.nii.gz')
+    multi_session_model = FMRILinearModel(fmri_files, design_files, mask)
+    multi_session_model.fit()
+    z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
+    # Check number of voxels with p < 0.001
+    assert_equal(np.sum(z_image.get_data() > 3.09), 671)
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ Taylor, J.E. & Worsley, K.J. (2007). "Random fields of multivariate
    test statistics, with applications to shape analysis."
    Annals of Statistics, accepted.
 """
+from __future__ import print_function
 
 import numpy as np
 from numpy.linalg import pinv    
@@ -174,7 +175,7 @@ class ECquasi(np.poly1d):
         if np.isfinite(self.m):
             _denom_poly = self.denom_poly()
             if int(_pow) != _pow or _pow < 0:
-                raise ValueError, 'expecting a non-negative integer'
+                raise ValueError('expecting a non-negative integer')
             p = _denom_poly**int(_pow)
             exponent = self.exponent + _pow
             coeffs = np.polymul(self, p).coeffs
@@ -186,11 +187,13 @@ class ECquasi(np.poly1d):
         if key == 'exponent':
             if 2*float(val) % 1 == 0: 
                 self.__dict__[key] = float(val)
-            else: raise ValueError, 'expecting multiple of a half, got %f' % val
+            else:
+                raise ValueError('expecting multiple of a half, got %f' % val)
         elif key == 'm':
             if float(val) > 0 or val == np.inf:
                 self.__dict__[key] = val
-            else: raise ValueError, 'expecting positive float or inf'
+            else:
+                raise ValueError('expecting positive float or inf')
         else: np.poly1d.__setattr__(self, key, val)
 
     def compatible(self, other):
@@ -325,7 +328,7 @@ class ECquasi(np.poly1d):
         --------
         >>> b = ECquasi([3,4,20], m=30, exponent=4)
         >>> c = ECquasi([1,2], m=30, exponent=4)
-        >>> print b-c #doctest: +IGNORE_DTYPE
+        >>> print(b-c)  #doctest: +IGNORE_DTYPE
         ECquasi(array([ 3,  3, 18]), m=30.000000, exponent=4.000000)
         """
         return self + (other * -1)
@@ -658,11 +661,7 @@ class MultilinearForm(ECcone):
     """
     def __init__(self, *dims, **keywords):
         product = IntrinsicVolumes([1])
-
-        if keywords.has_key('search'):
-            search = keywords['search']
-        else:
-            search = [1]
+        search = keywords.pop('search', [1])
 
         for d in dims:
             product *= spherical_search(d)

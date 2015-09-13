@@ -109,7 +109,7 @@ def test_parcel_feature_multi_subj():
     assert msp.get_feature('data').shape == (nb_parcel, nb_subj, dim)
 
     # msp.features['data'] has been overriden
-    assert msp.features.keys() == ['data']
+    assert list(msp.features.keys()) == ['data']
 
 
 def test_parcel_hierarchical():

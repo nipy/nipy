@@ -46,8 +46,8 @@ class MatrixGroup(Linear):
             coords = CoordinateSystem(coords.coord_names, 'space', dtype)
         Linear.__init__(self, coords, coords, matrix.astype(dtype))
         if not self.validate():
-            raise ValueError('this matrix is not an element of %s'
-                             % `self.__class__`)
+            raise ValueError('this matrix is not an element of %r'
+                             % self.__class__)
         if not self.coords.coord_dtype == self.dtype:
             raise ValueError('the input coordinates builtin '
                              'dtype should agree with self.dtype')
@@ -174,7 +174,8 @@ def product(*elements):
     """
     Compute the group product of a set of elements
     """
-    notsame = filter(lambda x: type(x) != type(elements[0]), elements)
+    type_e0 = type(elements[0])
+    notsame = [e for e in elements if not type(e) == type_e0]
     if notsame:
         raise ValueError('all elements should be members of the same group')
     composed_mapping = compose(*elements)
@@ -252,9 +253,10 @@ def product_homomorphism(*elements):
 
     This function is that homomorphism.
     """
-    notsame = filter(lambda x: type(x) != type(elements[0]), elements)
+    type_e0 = type(elements[0])
+    notsame = [e for e in elements if not type(e) == type_e0]
     if notsame:
-        raise ValueError, 'all elements should be members of the same group'
+        raise ValueError('all elements should be members of the same group')
 
     newcmap = cmap_product(*elements)
     matrix = newcmap.affine[:-1,:-1]

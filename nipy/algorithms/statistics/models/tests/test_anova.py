@@ -1,6 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -9,6 +9,8 @@ import scipy.stats
 from ...formula.formulae import Factor, make_recarray
 from ....utils.matrices import matrix_rank
 from ..regression import OLSModel
+
+from nipy.externals import six
 
 from nipy.testing import (assert_equal, assert_almost_equal)
 
@@ -88,8 +90,8 @@ data = """0.0      1      1      1
 # http://www-stat.stanford.edu/~jtaylo/courses/stats191/data/kidney.table
 
 D = []
-for row in StringIO(data):
-    D.append(map(float, row.split()))
+for row in StringIO(six.u(data)):
+    D.append([float(val) for val in row.split()])
 D = make_recarray(D, ['Days', 'Duration', 'Weight', 'ID'])
 
 # Create the categorical regressors, known as Factors

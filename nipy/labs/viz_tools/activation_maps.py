@@ -15,16 +15,16 @@ For a demo, see the 'demo_plot_map' function.
 
 # Standard library imports
 import warnings
-import operator
 import numbers
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
 
-# Import pylab
 from nipy.utils.skip_test import skip_if_running_nose
+from nipy.utils import is_numlike
 
+# Import pylab
 try:
     import pylab as pl
 except ImportError:
@@ -36,7 +36,7 @@ from .coord_tools import (coord_transform,
                           )
 
 from .slicers import SLICERS, _xyz_order
-from edge_detect import _fast_abs_percentile
+from .edge_detect import _fast_abs_percentile
 
 ################################################################################
 # Helper functions for 2D plotting of activation maps
@@ -216,7 +216,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                 from mayavi.core.registry import registry
             except:
                 from enthought.mayavi.core.registry import registry
-            for key, value in registry.engines.iteritems():
+            for key, value in registry.engines.items():
                 if value is engine:
                     registry.engines.pop(key)
                     break
@@ -242,7 +242,7 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
         try:
             anat, anat_affine, vmax_anat = _AnatCache.get_anat()
             canonical_anat = True
-        except OSError, e:
+        except OSError as e:
             anat = False
             warnings.warn(repr(e))
 
@@ -266,7 +266,7 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
         if dim:
             vmean = .5*(vmin + vmax)
             ptp = .5*(vmax - vmin)
-            if not operator.isNumberType(dim):
+            if not is_numlike(dim):
                 dim = .6
             if black_bg:
                 vmax = vmean + (1+dim)*ptp

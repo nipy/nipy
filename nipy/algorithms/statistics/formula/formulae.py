@@ -109,6 +109,7 @@ array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
        (85.0, 71.0, 6035.0, 1.0), (82.0, 59.0, 4838.0, 1.0)], 
       dtype=[('x1', '<f8'), ('x3', '<f8'), ('x1*x3', '<f8'), ('1', '<f8')])
 '''
+from __future__ import print_function
 
 from string import ascii_letters, digits
 
@@ -169,7 +170,7 @@ class Term(sympy.Symbol):
     >>> xval = np.array([(3,),(4,),(5,)], np.dtype([('x', np.float)]))
     >>> f = t.formula
     >>> d = f.design(xval)
-    >>> print d.dtype.descr
+    >>> print(d.dtype.descr)
     [('x', '<f8')]
     >>> f.design(xval, return_float=True)
     array([ 3.,  4.,  5.])
@@ -478,7 +479,7 @@ class Formula(object):
     dtype = property(_getdtype, doc='The dtype of the design matrix of the Formula.')
 
     def __repr__(self):
-        return """Formula(%s)""" % `list(self.terms)`
+        return "Formula(%r)" % (list(self.terms),)
 
     def __getitem__(self, key):
         """ Return the term such that str(term) == key.
@@ -526,7 +527,7 @@ class Formula(object):
         if keep:
             return np.sum([t for n, t in f.items() if n in keep])
         else:
-            return np.sum(f.values())
+            return np.sum(list(f.values()))
 
     def subs(self, old, new):
         """ Perform a sympy substitution on all terms in the Formula
@@ -798,14 +799,14 @@ class Formula(object):
         # The input to design should have field names for all fields in self._dtypes['preterm']
         if not set(preterm_recarray.dtype.names).issuperset(self._dtypes['preterm'].names):
             raise ValueError("for term, expecting a recarray with "
-                             "dtype having the following names: %s"
-                             % `self._dtypes['preterm'].names`)
+                             "dtype having the following names: %r"
+                             % (self._dtypes['preterm'].names,))
         # The parameters should have field names for all fields in self._dtypes['param']
         if param_recarray is not None:
             if not set(param_recarray.dtype.names).issuperset(self._dtypes['param'].names):
                 raise ValueError("for param, expecting a recarray with "
-                                 "dtype having the following names: %s"
-                                 % `self._dtypes['param'].names`)
+                                 "dtype having the following names: %r"
+                                 % (self._dtypes['param'].names,))
         # If the only term is an intercept,
         # the return value is a matrix of 1's.
         if list(self.terms) == [sympy.Number(1)]:
@@ -941,7 +942,7 @@ def natural_spline(t, knots=None, order=3, intercept=False):
            [   5.,   25.,  125.,   64.,    8.,    1.],
            [   7.,   49.,  343.,  216.,   64.,   27.]])
     >>> d = n.design(xval)
-    >>> print d.dtype.descr
+    >>> print(d.dtype.descr)
     [('ns_1(x)', '<f8'), ('ns_2(x)', '<f8'), ('ns_3(x)', '<f8'), ('ns_4(x)', '<f8'), ('ns_5(x)', '<f8'), ('ns_6(x)', '<f8')]
     """
     if knots is None:
@@ -1079,10 +1080,10 @@ class Factor(Formula):
         >>> f1 = Factor.fromcol(data['y'], 'y')
         >>> f2 = Factor.fromcol(data['x'], 'x')
         >>> d = f1.design(data)
-        >>> print d.dtype.descr
+        >>> print(d.dtype.descr)
         [('y_a', '<f8'), ('y_b', '<f8')]
         >>> d = f2.design(data)
-        >>> print d.dtype.descr
+        >>> print(d.dtype.descr)
         [('x_3', '<f8'), ('x_4', '<f8'), ('x_5', '<f8')]
         """
         col = np.asarray(col)
@@ -1220,7 +1221,7 @@ class RandomEffects(Formula):
         if self.sigma.shape != (q,q):
             raise ValueError('incorrect shape for covariance '
                              'of random effects, '
-                             'should have shape %s' % repr(q,q))
+                             'should have shape %r' % ((q,q)))
         self.char = char
 
     def cov(self, term, param=None):

@@ -1823,8 +1823,8 @@ def drop_io_dim(cm, axis_id, fix0=True):
             raise AxisError('Input and output dimensions not orthogonal to '
                             'rest of affine')
     M, N = aff.shape
-    rows = range(M)
-    cols = range(N)
+    rows = list(range(M))
+    cols = list(range(N))
     in_dims = list(cm.function_domain.coord_names)
     out_dims = list(cm.function_range.coord_names)
     if in_dim is not None:
