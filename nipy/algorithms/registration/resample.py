@@ -31,6 +31,7 @@ def cast_array(arr, dtype):
     else:
         return arr.astype(dtype)
 
+
 def resample(moving, transform=None, reference=None,
              mov_voxel_coords=False, ref_voxel_coords=False,
              dtype=None, interp_order=INTERP_ORDER, mode='constant', cval=0.):

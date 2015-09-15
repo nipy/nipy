@@ -8,11 +8,48 @@ from nibabel.affines import apply_affine
 from ....core.image.image_spaces import (as_xyz_image,
                                          xyz_affine)
 from ....core.api import Image, vox2mni
-from ..resample import resample
+from ..resample import resample, cast_array
 from ..transform import Transform
 from ..affine import Affine
 
 from numpy.testing import assert_array_almost_equal, assert_array_equal
+
+
+AUX = np.array([-1.9, -1.2, -1, 2.3, 2.9, 19, 100, 258, 258.2, 258.8, 1e5])
+
+
+def test_cast_array_float():
+    assert_array_equal(cast_array(AUX, np.dtype(float)), AUX)
+
+
+def test_cast_array_int8():
+    assert_array_equal(cast_array(AUX, np.dtype('int8')),
+                       [-2, -1, -1, 2, 3, 19, 100, 127, 127, 127, 127])
+
+
+def test_cast_array_uint8():
+    assert_array_equal(cast_array(AUX, np.dtype('uint8')),
+                       [0, 0, 0, 2, 3, 19, 100, 255, 255, 255, 255])
+
+
+def test_cast_array_int16():
+    assert_array_equal(cast_array(AUX, np.dtype('int16')),
+                       [-2, -1, -1, 2, 3, 19, 100, 258, 258, 259, 2**15 - 1])
+
+
+def test_cast_array_uint16():
+    assert_array_equal(cast_array(AUX, np.dtype('uint16')),
+                       [0, 0, 0, 2, 3, 19, 100, 258, 258, 259, 2**16 - 1])
+
+
+def test_cast_array_int32():
+    assert_array_equal(cast_array(AUX, np.dtype('int32')),
+                       np.round(AUX))
+
+
+def test_cast_array_uint32():
+    assert_array_equal(cast_array(AUX, np.dtype('uint32')),
+                       np.maximum(np.round(AUX), 0))
 
 
 def _test_resample(arr, T, interp_orders):
