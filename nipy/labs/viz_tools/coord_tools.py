@@ -167,7 +167,7 @@ def _maximally_separated_subset(x, k):
     if k == 1: return [x[len(x) // 2]]
 
     # would-be maximally separated subset of k (not showing the terminal nodes)
-    msss = range(1, len(x) - 1)
+    msss = list(range(1, len(x) - 1))
 
     # sorting is necessary for the heuristic to work
     x = np.sort(x)
