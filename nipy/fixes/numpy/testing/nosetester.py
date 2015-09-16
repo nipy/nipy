@@ -3,7 +3,7 @@ Nose test running.
 
 This module implements ``test()`` and ``bench()`` functions for NumPy modules.
 """
-from __future__ import print_function, absolute_import
+from __future__ import print_function, absolute_import, absolute_import
 
 import os
 import sys
@@ -204,7 +204,7 @@ class NoseTester(object):
 
         A return value of None means use the nose builtin doctest plugin
         """
-        from noseclasses import NumpyDoctest
+        from .noseclasses import NumpyDoctest
         return NumpyDoctest()
 
     def prepare_test_args(self, label='fast', verbose=1, extra_argv=None,
@@ -233,7 +233,7 @@ class NoseTester(object):
                    '--cover-tests', '--cover-inclusive', '--cover-erase']
         # construct list of plugins
         import nose.plugins.builtin
-        from noseclasses import KnownFailure, Unplugger
+        from .noseclasses import KnownFailure, Unplugger
         plugins = [KnownFailure()]
         plugins += [p() for p in nose.plugins.builtin.plugins]
         # add doctesting if required
