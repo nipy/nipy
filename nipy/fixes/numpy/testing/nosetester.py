@@ -3,7 +3,7 @@ Nose test running.
 
 This module implements ``test()`` and ``bench()`` functions for NumPy modules.
 """
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 import os
 import sys
@@ -312,7 +312,7 @@ class NoseTester(object):
         # cap verbosity at 3 because nose becomes *very* verbose beyond that
         verbose = min(verbose, 3)
 
-        import utils
+        from . import utils
         utils.verbose = verbose
 
         if doctests:
@@ -328,7 +328,7 @@ class NoseTester(object):
 
         argv, plugins = self.prepare_test_args(label, verbose, extra_argv,
                                                doctests, coverage)
-        from noseclasses import NumpyTestProgram
+        from .noseclasses import NumpyTestProgram
         t = NumpyTestProgram(argv=argv, exit=False, plugins=plugins)
         return t.result
 
