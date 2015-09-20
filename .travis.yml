@@ -58,7 +58,7 @@ script:
     - cd for_testing
     - if [ "${COVERAGE}" == "1" ]; then
       cp ../.coveragerc .;
-      COVER_ARGS="--with-coverage --cover-package dipy";
+      COVER_ARGS="--with-coverage --cover-package nipy";
       fi
     - $PYTHON ../tools/nipnost $COVER_ARGS nipy
 after_success:
