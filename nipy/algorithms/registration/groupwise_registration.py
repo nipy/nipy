@@ -11,6 +11,8 @@ Roche, Alexis (2011) A four-dimensional registration algorithm with application
 to joint correction of motion and slice timing in fMRI. *Medical Imaging, IEEE
 Transactions on*;  30:1546--1554
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import os
 import warnings
@@ -550,9 +552,9 @@ def single_run_realign4d(im4d,
     maxfun = format_arg(maxfun)
 
     transforms = None
-    opt_params = zip(loops, speedup, optimizer,
+    opt_params = list(zip(loops, speedup, optimizer,
                      xtol, ftol, gtol,
-                     stepsize, maxiter, maxfun)
+                     stepsize, maxiter, maxfun))
 
     for loops_, speedup_, optimizer_, xtol_, ftol_, gtol_,\
             stepsize_, maxiter_, maxfun_ in opt_params:
@@ -801,7 +803,7 @@ class Realign4d(object):
             transforms = self._transforms
         else:
             transforms = self._within_run_transforms
-        runs = range(len(self._runs))
+        runs = list(range(len(self._runs)))
         if r is None:
             data = [resample4d(self._runs[r], transforms=transforms[r],
                                time_interp=self._time_interp) for r in runs]

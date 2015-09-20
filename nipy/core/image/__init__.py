@@ -6,6 +6,7 @@ by users at the application level. The image provides a coordinate map,
 and the data itself.
 
 """
+from __future__ import absolute_import
 __docformat__ = 'restructuredtext'
 
 # You'd usually use nipy.core.api for these

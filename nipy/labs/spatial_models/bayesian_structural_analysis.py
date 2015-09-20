@@ -14,6 +14,7 @@ Functional Landmark Approach, MICCAI 2010
 
 Author : Bertrand Thirion, 2006-2013
 """
+from __future__ import absolute_import
 
 import numpy as np
 import scipy.stats as st

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #!/usr/bin/env python
 
 import numpy as np
@@ -9,7 +10,6 @@ from nose.tools import assert_true, assert_equal
 from ..graph import (WeightedGraph, complete_graph, mst, knn, eps_nn, 
                      wgraph_from_adjacency, wgraph_from_coo_matrix, 
                      concatenate_graphs, wgraph_from_3d_grid)
-
 
 
 def basicdata():

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from ..histogram import histogram
 
 import numpy as np

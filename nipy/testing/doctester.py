@@ -3,6 +3,7 @@
 To run doctests via nose, you'll need ``nosetests nipy/testing/doctester.py
 --doctest-test``, because this file will be identified as containing tests.
 """
+from __future__ import absolute_import
 import re
 from doctest import register_optionflag
 

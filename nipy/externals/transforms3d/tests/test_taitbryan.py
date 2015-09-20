@@ -1,4 +1,5 @@
 ''' Tests for Euler angles '''
+from __future__ import absolute_import
 
 import math
 import numpy as np

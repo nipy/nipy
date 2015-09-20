@@ -6,6 +6,7 @@ This is meant to provide a unified API to deal with n-d imaged and meshes.
 
 Author: Bertrand Thirion, 2010
 """
+from __future__ import absolute_import
 import numpy as np
 import scipy.sparse as sp
 

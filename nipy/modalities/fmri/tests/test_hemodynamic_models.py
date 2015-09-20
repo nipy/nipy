@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import numpy as np
 from nose.tools import raises
 from numpy.testing import (

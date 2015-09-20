@@ -9,6 +9,7 @@ computationally and memory efficient.
 Author : Bertrand Thirion, 2006-2009
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 from scipy.linalg import eigvalsh
@@ -217,8 +218,8 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
         if z is None:
             plt.plot(x[:, 0], x[:, 1], 'o')
         else:
-            hsv = plt.cm.hsv(range(256))
-            col = hsv[range(0, 256, 256 // int(z.max() + 1))]
+            hsv = plt.cm.hsv(list(range(256)))
+            col = hsv[list(range(0, 256, 256 // int(z.max() + 1)))]
             for k in range(z.max() + 1):
                 plt.plot(x[z == k, 0], x[z == k, 1], 'o', color=col[k])
 

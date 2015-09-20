@@ -6,6 +6,7 @@ The volume grid class.
 This class represents data lying on a (non rigid, non regular) grid embedded 
 in a 3D world represented as a 3+D array.
 """
+from __future__ import absolute_import
 
 import copy as copy
 

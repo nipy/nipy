@@ -19,6 +19,8 @@ Author: Bertrand Thirion, 2012.
 >>> T2 = [t_stat(Y)[effects == x] for x  in np.unique(effects)]
 >>> assert np.array([t1.std() < t2.std() for t1, t2 in zip(T1, T2)]).all()
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import numpy as np
 
@@ -205,7 +207,7 @@ class MixedEffectsModel(object):
                 if (log_like_ < (log_like_init - EPS)).any():
                     raise ValueError('The log-likelihood cannot decrease')
                 log_like_init = log_like_
-                print ('Iteration %d, average log-likelihood: %f' % (
+                print('Iteration %d, average log-likelihood: %f' % (
                         i, log_like_.mean()))
         return self
 

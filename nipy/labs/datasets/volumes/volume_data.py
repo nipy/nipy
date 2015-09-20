@@ -5,6 +5,7 @@ The volume data class
 
 This class represents indexable data embedded in a 3D space 
 """
+from __future__ import absolute_import
 
 import copy as copy
 

@@ -15,6 +15,7 @@ based on a 4d Image:
     iterFWHM: used when 4d Image is being filled in by slices of residuals
     
 """
+from __future__ import absolute_import
 
 __docformat__ = 'restructuredtext'
 

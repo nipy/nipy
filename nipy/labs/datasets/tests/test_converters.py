@@ -3,6 +3,7 @@
 """
 Test for the converters.
 """
+from __future__ import absolute_import
 import os
 import tempfile
 import nose

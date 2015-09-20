@@ -8,6 +8,7 @@ of the mixture distribution using an EM algorithm.
 Author: Bertrand Thirion and Merlin Keller 2005-2008
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 import scipy.stats as st

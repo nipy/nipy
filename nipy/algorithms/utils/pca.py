@@ -13,6 +13,7 @@ This technique can be used to reduce the dimensionality of the data.
 More specifically, the data is projected onto the eigenvectors of the
 covariance matrix.
 """
+from __future__ import absolute_import
 
 import numpy as np
 import scipy.linalg as spl

@@ -1,5 +1,6 @@
 # We import numpy fixes during init of the testing package.  We need to delay
 # import of the testing package until after it has initialized
+from __future__ import absolute_import
 
 from os.path import dirname
 

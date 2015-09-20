@@ -9,6 +9,7 @@ For 3D visualization, Mayavi, version 3.0 or greater, is required.
 For a demo, see the 'demo_plot_map' function.
 
 """
+from __future__ import absolute_import
 
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD
@@ -204,7 +205,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
                     view=view_3d,
                     vmin=vmin, vmax=vmax)
 
-        ax = slicer.axes.values()[0].ax.figure.add_axes((0.001, 0, 0.29, 1))
+        ax = list(slicer.axes.values())[0].ax.figure.add_axes((0.001, 0, 0.29, 1))
         ax.axis('off')
         m2screenshot(mpl_axes=ax)
         if offscreen:

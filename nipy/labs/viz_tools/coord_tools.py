@@ -3,6 +3,7 @@
 """
 Misc tools to find activations and cut on maps
 """
+from __future__ import absolute_import
 
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD
@@ -17,7 +18,6 @@ from scipy import stats, ndimage
 # Local imports
 from ..mask import largest_cc
 from ..datasets.transforms.affine_utils import get_bounds
-import scipy.stats
 
 
 ################################################################################

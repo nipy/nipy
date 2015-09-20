@@ -1,5 +1,7 @@
 # emacs: -*- coding: utf-8; mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set fileencoding=utf-8 ft=python sts=4 ts=4 sw=4 et:
+from __future__ import absolute_import
+
 import os
 
 from .info import (LONG_DESCRIPTION as __doc__,

@@ -8,6 +8,7 @@ Taylor, J.E. & Worsley, K.J. (2005). \'Inference for
     magnitudes and delays of responses in the FIAC data using 
     BRAINSTAT/FMRISTAT\'. Human Brain Mapping, 27,434-441
 """
+from __future__ import absolute_import
 
 import numpy as np
 

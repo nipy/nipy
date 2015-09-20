@@ -1,5 +1,6 @@
 """ Testing round numbers utility
 """
+from __future__ import absolute_import
 
 import numpy as np
 

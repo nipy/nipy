@@ -12,6 +12,7 @@ functions for fMRI
 
 This module contains several objects and functions for fMRI processing.
 """
+from __future__ import absolute_import
 
 from nipy.testing import Tester
 

@@ -22,6 +22,7 @@ It implements 3 approaches:
 Author : Bertrand Thirion, Yaroslav Halchenko, 2008-2012
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 from numpy.linalg import pinv

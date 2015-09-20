@@ -18,6 +18,7 @@ in Computer Science*; 5762:450--457.
 Roche, Alexis (2012). OHBM'12 talk, slides at:
 https://sites.google.com/site/alexisroche/slides/Talk_Beijing12.pdf
 """
+from __future__ import absolute_import
 from os.path import join
 import warnings
 import numpy as np
@@ -267,7 +268,7 @@ class ParcelAnalysis(object):
         # the input full-width-at-half-maximum parameter given in mm
         # to standard deviation in voxel units.
         orient = io_orientation(self.affine)[:, 0].astype(int)
-        voxsize = np.abs(self.affine[(orient, range(3))])
+        voxsize = np.abs(self.affine[(orient, list(range(3)))])
         self.sigma = np.maximum(fwhm2sigma(fwhm) / voxsize, SIGMA_MIN)
 
         # run approximate belief propagation

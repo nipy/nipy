@@ -1,6 +1,5 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import with_statement
 """
 This module implements fMRI Design Matrix creation.
 
@@ -23,6 +22,8 @@ Design matrices contain three different types of regressors:
 
 Author: Bertrand Thirion, 2009-2011
 """
+from __future__ import absolute_import
+
 import numpy as np
 
 from warnings import warn
@@ -314,7 +315,7 @@ class DesignMatrix():
         ax.set_ylabel('scan number')
 
         if self.names is not None:
-            ax.set_xticks(range(len(self.names)))
+            ax.set_xticks(list(range(len(self.names))))
             ax.set_xticklabels(self.names, rotation=60, ha='right')
         return ax
 

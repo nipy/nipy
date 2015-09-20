@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from scipy.optimize import (fmin as fmin_simplex,
                             fmin_powell,
                             fmin_cg,

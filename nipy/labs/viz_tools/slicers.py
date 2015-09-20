@@ -6,6 +6,7 @@ The Slicer classes.
 The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
+from __future__ import absolute_import
 
 import numpy as np
 

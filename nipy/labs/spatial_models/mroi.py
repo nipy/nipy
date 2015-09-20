@@ -1,6 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 
@@ -447,7 +448,7 @@ class SubDomains(object):
             for id in self.get_id():
                 res[self.select_id(id, roi=False)] = f[self.select_id(id)]
         else:
-            if fid in self.roi_features.keys():
+            if fid in self.roi_features:
                 f = self.get_roi_feature(fid)
                 for id in self.get_id():
                     res[self.select_id(id, roi=False)] = f[self.select_id(id)]
@@ -555,7 +556,7 @@ class SubDomains(object):
 
         """
         # check we do not modify the `id` feature
-        if 'id' in self.roi_features.keys() and fid == 'id':
+        if 'id' in self.roi_features and fid == 'id':
             return
         # check we will not override anything
         if fid in self.roi_features and not override:
@@ -699,14 +700,14 @@ class SubDomains(object):
         # set new features
         # (it's ok to do that after labels and id modification since we are
         # poping out the former features and use the former id indices)
-        for fid in self.features.keys():
+        for fid in self.features:
             f = self.remove_feature(fid)
             sf = [f[id] for id in id_list_pos]
             self.set_feature(fid, sf)
         # set new ROI features
         # (it's ok to do that after labels and id modification since we are
         # poping out the former features and use the former id indices)
-        for fid in self.roi_features.keys():
+        for fid in self.roi_features:
             if fid != 'id':
                 f = self.remove_roi_feature(fid)
                 sf = np.ravel(f[id_list_pos])

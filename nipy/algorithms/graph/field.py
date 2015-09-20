@@ -13,6 +13,7 @@ WeightedGraph and feature data.
 Author:Bertrand Thirion, 2006--2011
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 from warnings import warn
 import numpy as np

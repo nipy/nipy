@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
@@ -38,13 +39,13 @@ def test_find_cut_coords():
 def test_find_maxsep_cut_coords():
     # Test find_maxsep_cut_coords function
     assert_array_equal(
-        find_maxsep_cut_coords(np.ones((2, 3, 5)), np.eye(4)), range(5))
+        find_maxsep_cut_coords(np.ones((2, 3, 5)), np.eye(4)), list(range(5)))
     assert_array_equal(
         find_maxsep_cut_coords(np.ones((2, 3, 5)), np.eye(4), threshold=1),
-        range(5))
+        list(range(5)))
     assert_array_equal(
         find_maxsep_cut_coords(np.ones((2, 3, 4)), np.eye(4), n_cuts=4),
-        range(4))
+        list(range(4)))
     map_3d = np.ones((2, 3, 5))
     map_3d[:, :, 1] = 0
     assert_array_equal(

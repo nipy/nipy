@@ -17,6 +17,7 @@ The above three generators return 2-tuples.
 * parcels: return binary array of the unique components of data
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 

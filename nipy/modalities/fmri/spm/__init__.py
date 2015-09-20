@@ -7,5 +7,6 @@ Consists of an OLS pass through the data, followed by a pooled estimate
 of a covariance matrix constructed from a series expansion of an
 AR1 model, expanded in terms of rho.
 """
+from __future__ import absolute_import
 
 from . import model

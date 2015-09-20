@@ -12,6 +12,7 @@ They've been part of sympy as of 0.7.0
 In these tests, the callable's are scipy.interpolate.interp1d instances
 representing approximations to Brownian Motions.
 """
+from __future__ import absolute_import
 import numpy as np
 
 import scipy.interpolate

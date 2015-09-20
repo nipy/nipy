@@ -10,6 +10,7 @@ Examples
 --------
 See documentation for load and save functions for worked examples.
 """
+from __future__ import absolute_import
 
 import os
 

@@ -15,6 +15,7 @@ The class Grid is meant to take a CoordinateMap and an np.mgrid-like
 notation to create an ArrayCoordMap.
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 

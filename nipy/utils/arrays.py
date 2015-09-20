@@ -1,5 +1,6 @@
 """ Array utilities
 """
+from __future__ import absolute_import
 import numpy as np
 
 def strides_from(shape, dtype, order='C'):

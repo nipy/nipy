@@ -17,6 +17,7 @@ Neuroimage. 2007 Mar;35(1):105-20.
 
 Bertrand Thirion, 2009-2010
 """
+from __future__ import absolute_import
 
 import numpy as np
 

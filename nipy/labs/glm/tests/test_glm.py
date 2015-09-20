@@ -1,8 +1,11 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
+
+import numpy as np
+
+from ..glm import glm
 
 from numpy.testing import assert_almost_equal, TestCase
-import numpy as np
-from ..glm import glm
 
 class TestFitting(TestCase):
 
@@ -12,7 +15,7 @@ class TestFitting(TestCase):
         dimy = 11
         dimz = 12 
         self.y = np.random.randn(dimt, dimx, dimy, dimz)
-        X = np.array([np.ones(dimt), range(dimt)])
+        X = np.array([np.ones(dimt), list(range(dimt))])
         self.X = X.transpose() ## the design matrix X must have dimt lines
 
     def ols(self, axis):
@@ -45,8 +48,8 @@ class TestFitting(TestCase):
     def test_ols_axis3(self):
         self.make_data()
         self.ols(3)
-    
-    
+
+
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])

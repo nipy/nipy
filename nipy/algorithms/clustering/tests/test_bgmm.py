@@ -8,6 +8,7 @@ to be real unit tests
 
 Author : Bertrand Thirion, 2009
 """
+from __future__ import absolute_import
 
 import numpy as np
 import numpy.random as nr

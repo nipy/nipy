@@ -1,5 +1,6 @@
 """ Testing diagnostics.command module
 """
+from __future__ import absolute_import
 
 import os
 from os.path import dirname, join as pjoin, isfile

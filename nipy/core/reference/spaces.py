@@ -1,5 +1,6 @@
 """ Useful neuroimaging coordinate map makers and utilities """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 
@@ -440,7 +441,7 @@ def xyz_order(coordsys, name2xyz=None):
             axvals[i] = N+i
         else:
             axvals[i] = 'xyz'.index(xyz_char)
-    if not set(axvals).issuperset(range(3)):
+    if not set(axvals).issuperset(list(range(3))):
         raise AxesError("Not all of x, y, z recognized in coordinate map")
     return list(np.argsort(axvals))
 

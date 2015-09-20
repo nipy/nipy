@@ -4,7 +4,7 @@
 
 Run scripts and test output
 """
-from __future__ import with_statement
+from __future__ import absolute_import
 
 import os
 from os.path import join as pjoin, isfile

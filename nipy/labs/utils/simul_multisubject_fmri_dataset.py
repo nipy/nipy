@@ -7,6 +7,7 @@ a collection of 2D images This dataset is saved as a 3D image
 
 Author : Bertrand Thirion, 2008-2010
 """
+from __future__ import absolute_import
 
 import numpy as np
 import scipy.ndimage as nd

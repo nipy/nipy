@@ -110,6 +110,7 @@ array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
       dtype=[('x1', '<f8'), ('x3', '<f8'), ('x1*x3', '<f8'), ('1', '<f8')])
 '''
 from __future__ import print_function
+from __future__ import absolute_import
 
 from string import ascii_letters, digits
 

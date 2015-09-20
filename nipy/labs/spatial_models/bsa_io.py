@@ -4,6 +4,7 @@
 This module is the interface to the bayesian_structural_analysis (bsa) module
 It handles the images provided as input and produces result images.
 """
+from __future__ import absolute_import
 
 import numpy as np
 import os.path as op

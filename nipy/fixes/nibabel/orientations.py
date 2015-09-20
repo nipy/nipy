@@ -14,6 +14,7 @@ See https://github.com/nipy/nibabel/pull/128
 
 Remove when we depend on nibabel > 1.2.0
 """
+from __future__ import absolute_import
 
 import numpy as np
 import numpy.linalg as npl

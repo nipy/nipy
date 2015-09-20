@@ -1,6 +1,7 @@
 """
 Test the test skip utilities.
 """
+from __future__ import absolute_import
 
 import nose
 from nipy.utils.skip_test import skip_if_running_nose

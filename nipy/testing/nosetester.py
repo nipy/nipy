@@ -4,6 +4,7 @@ Sets doctests to run by default
 
 Use our own doctest plugin (based on that of numpy)
 """
+from __future__ import absolute_import
 from ..fixes.numpy.testing.nosetester import NoseTester, import_nose
 
 def fpw_opt_str():

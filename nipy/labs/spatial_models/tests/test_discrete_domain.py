@@ -6,7 +6,7 @@ Test the discrete_domain utilities.
 Caveat assumes that the MNI template image is available at
 in ~/.nipy/tests/data
 """
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal

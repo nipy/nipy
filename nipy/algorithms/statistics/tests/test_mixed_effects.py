@@ -2,6 +2,8 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Testing the glm module
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import numpy as np
 from numpy.testing import (assert_almost_equal,

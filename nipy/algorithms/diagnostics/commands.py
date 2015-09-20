@@ -11,6 +11,7 @@ The command script files deal with argument parsing and any custom imports.
 The implementation here accepts the ``args`` object from ``argparse`` and does
 the work.
 """
+from __future__ import absolute_import
 from os.path import split as psplit, join as pjoin
 
 import numpy as np

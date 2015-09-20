@@ -22,6 +22,7 @@ Examples
 (17, 21, 3, 20)
 
 """
+from __future__ import absolute_import
 
 import os
 

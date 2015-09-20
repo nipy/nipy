@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
@@ -152,7 +153,7 @@ class LikelihoodModelResults(object):
         """
 
         if column is None:
-            column = range(self.theta.shape[0])
+            column = list(range(self.theta.shape[0]))
 
         column = np.asarray(column)
         _theta = self.theta[column]

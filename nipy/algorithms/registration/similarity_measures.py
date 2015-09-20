@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from ._registration import _L1_moments
 
 import numpy as np

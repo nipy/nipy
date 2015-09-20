@@ -17,6 +17,7 @@ then passing them to these here ``RegressionOutput`` containers via call, to get
 useful arrays, and then putting the results back into the ``RegressionOutput``
 containers via slicing (__setitem__).
 """
+from __future__ import absolute_import
 
 __docformat__ = 'restructuredtext'
 

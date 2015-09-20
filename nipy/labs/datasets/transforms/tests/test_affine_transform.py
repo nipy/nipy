@@ -3,6 +3,7 @@
 This test can only be run from the directory above, as it uses relative
 imports.
 """
+from __future__ import absolute_import
 
 import numpy as np
 import copy

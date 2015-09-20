@@ -1,6 +1,5 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import with_statement
 """
 This module implements an object to deal with experimental paradigms.
 In fMRI data analysis, there are two main types of experimental
@@ -18,6 +17,7 @@ yielding a paradigm is in fact a session index
 
 Author: Bertrand Thirion, 2009-2011
 """
+from __future__ import absolute_import
 
 import numpy as np
 

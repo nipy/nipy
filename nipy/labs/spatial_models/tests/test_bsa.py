@@ -5,6 +5,7 @@ Tests for bayesian_structural_analysis
 
 Author : Bertrand Thirion, 2009
 """
+from __future__ import absolute_import
 #autoindent
 
 import numpy as np

@@ -3,6 +3,7 @@
 """
 Linear filter(s).  For the moment, only a Gaussian smoothing filter
 """
+from __future__ import absolute_import
 
 import gc
 

@@ -18,6 +18,7 @@ convolve_functions : numerically convolve two functions of time
 fourier_basis : a convenience function to generate a Fourier basis
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import itertools
 

@@ -3,6 +3,7 @@
 """
 A set of methods to get coordinate maps which represent slices in space.
 """
+from __future__ import absolute_import
 import numpy as np
 
 from nibabel.affines import from_matvec
