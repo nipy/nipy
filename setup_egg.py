@@ -9,7 +9,7 @@ from setuptools import setup
 # Call the setup.py script, injecting the setuptools-specific arguments.
 
 extra_setuptools_args = dict(
-                            tests_require=['nose'],
+                            tests_require=['nose>=1.0'],
                             test_suite='nose.collector',
                             zip_safe=False,
                             )
