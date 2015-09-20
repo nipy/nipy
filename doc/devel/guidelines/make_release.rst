@@ -62,6 +62,20 @@ Release checklist
 
 * Check the copyright years in ``doc/conf.py`` and ``LICENSE``
 
+* Refresh the ``REAMDE.rst`` text from the ``LONG_DESCRIPTION`` in ``info.py``
+  by running ``make refresh-readme``.
+
+  Check the output of::
+
+    rst2html.py README.rst > ~/tmp/readme.html
+
+  because this will be the output used by pypi_
+
+* Check the dependencies listed in ``nipy/info.py`` (e.g.
+  ``NUMPY_MIN_VERSION``) and in ``doc/installation.rst``.  They should
+  at least match. Do they still hold?  Make sure ``.travis.yml`` is testing
+  these minimum dependencies specifically.
+
 * Check the examples in python 2 and python 3, by running something like::
 
     cd ..
@@ -71,9 +85,6 @@ Release checklist
   ``~/tmp/eg_logs``. The output file ``summary.txt`` will have the pass file
   printout that the ``run_log_examples.py`` script puts onto stdout while
   running.
-
-* Check the ``long_description`` in ``nipy/info.py``.  Check it matches the
-  ``README`` in the root directory, maybe with ``vim`` ``diffthis`` command.
 
 * Do a final check on the `nipy buildbot`_
 

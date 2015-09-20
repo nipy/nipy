@@ -1,5 +1,11 @@
 .. -*- rest -*-
-.. vim:syntax=rest
+.. vim:syntax=rst
+
+.. image:: https://coveralls.io/repos/nipy/nipy/badge.png?branch=master
+    :target: https://coveralls.io/r/nipy/nipy?branch=master
+
+.. Following contents should be from LONG_DESCRIPTION in nipy/info.py
+
 
 ====
 NIPY
@@ -7,37 +13,37 @@ NIPY
 
 Neuroimaging tools for Python.
 
-The aim of NIPY is to produce a platform-independent Python environment for the
-analysis of functional brain imaging data using an open development model.
+The aim of NIPY is to produce a platform-independent Python environment for
+the analysis of functional brain imaging data using an open development model.
 
 In NIPY we aim to:
 
-1. Provide an open source, mixed language scientific programming
-    environment suitable for rapid development.
+1. Provide an open source, mixed language scientific programming environment
+   suitable for rapid development.
 
-2. Create sofware components in this environment to make it easy
-    to develop tools for MRI, EEG, PET and other modalities.
+2. Create software components in this environment to make it easy to develop
+   tools for MRI, EEG, PET and other modalities.
 
-3. Create and maintain a wide base of developers to contribute to
-    this platform.
+3. Create and maintain a wide base of developers to contribute to this
+   platform.
 
-4. To maintain and develop this framework as a single, easily
-    installable bundle.
+4. To maintain and develop this framework as a single, easily installable
+   bundle.
 
-NIPY is the work of many people. We list the main authors in the file ``AUTHOR``
-in the NIPY distribution, and other contributions in ``THANKS``.
+NIPY is the work of many people. We list the main authors in the file
+``AUTHOR`` in the NIPY distribution, and other contributions in ``THANKS``.
 
 Website
 =======
 
-Current information can always be found at the NIPY website::
-
-    http://nipy.org/nipy
+Current information can always be found at the `NIPY project website
+<http://nipy.org/nipy>`_.
 
 Mailing Lists
 =============
 
-For questions on how to use nipy or on making code contributions, please see the ``neuroimaging`` mailing list:
+For questions on how to use nipy or on making code contributions, please see
+the ``neuroimaging`` mailing list:
 
     https://mail.python.org/mailman/listinfo/neuroimaging
 
@@ -54,14 +60,14 @@ Code
 
 You can find our sources and single-click downloads:
 
-* `Main repository`_ on Github.
-* Documentation_ for all releases and current development tree.
-* Download as a tar/zip file the `current trunk`_.
+* `Main repository`_ on Github;
+* Documentation_ for all releases and current development tree;
+* Download the `current development version`_ as a tar/zip file;
 * Downloads of all `available releases`_.
 
 .. _main repository: http://github.com/nipy/nipy
 .. _Documentation: http://nipy.org/nipy
-.. _current trunk: http://github.com/nipy/nipy/archives/master
+.. _current development version: https://github.com/nipy/nipy/archive/master.zip
 .. _available releases: http://pypi.python.org/pypi/nipy
 
 Dependencies
@@ -69,10 +75,10 @@ Dependencies
 
 To run NIPY, you will need:
 
-* python_ >= 2.5 (tested with 2.5, 2.6, 2.7, 3.2, 3.3)
-* numpy_ >= 1.2
+* python_ >= 2.6 (tested with 2.6, 2.7, 3.2, 3.3, 3.4)
+* numpy_ >= 1.6.0
 * scipy_ >= 0.7.0
-* sympy_ >= 0.6.6
+* sympy_ >= 0.7.0
 * nibabel_ >= 1.2
 
 You will probably also like to have:
@@ -86,12 +92,12 @@ You will probably also like to have:
 .. _scipy: http://www.scipy.org
 .. _sympy: http://sympy.org
 .. _nibabel: http://nipy.org/nibabel
-.. _ipython: http://ipython.scipy.org
-.. _matplotlib: http://matplotlib.sourceforge.net
+.. _ipython: http://ipython.org
+.. _matplotlib: http://matplotlib.org
 .. _mayavi: http://code.enthought.com/projects/mayavi/
 
 License
 =======
 
-We use the 3-clause BSD license; the full license is in the file ``LICENSE`` in
-the nipy distribution.
+We use the 3-clause BSD license; the full license is in the file ``LICENSE``
+in the nipy distribution.
