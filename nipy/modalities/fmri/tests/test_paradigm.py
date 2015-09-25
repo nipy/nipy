@@ -11,6 +11,7 @@ import numpy as np
 
 from ..experimental_paradigm import (EventRelatedParadigm, BlockParadigm,
                                      load_paradigm_from_csv_file)
+from nose.tools import assert_true
 
 
 def basic_paradigm():
@@ -75,6 +76,13 @@ def test_read_paradigm():
     csvfile = write_paradigm(paradigm, session)
     read_paradigm = load_paradigm_from_csv_file(csvfile)[session]
     assert (read_paradigm.onset == paradigm.onset).all()
+
+
+def test_paradigm_with_int_condition_ids():
+    paradigm1 = basic_paradigm()
+    conditions = [0, 0, 0, 1, 1, 1, 2, 2, 2]
+    paradigm2 = EventRelatedParadigm(conditions, paradigm1.onset)
+    assert_true((paradigm2.con_id == np.array(conditions).astype('str')).all())
 
 
 if __name__ == "__main__":

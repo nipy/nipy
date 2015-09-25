@@ -22,6 +22,7 @@ Author: Bertrand Thirion, 2009-2011
 import numpy as np
 
 from ...utils.compat3 import open4csv
+import warnings
 
 ##########################################################
 # Paradigm handling
@@ -48,14 +49,7 @@ class Paradigm(object):
         self.amplitude = amplitude
         if con_id is not None:
             self.n_events = len(con_id)
-            try:
-                # this is only for backward compatibility:
-                #if con_id were integers, they become a string
-                self.con_id = np.array(['c' + str(int(float(c)))
-                                        for c in con_id])
-            except:
-                self.con_id = np.ravel(np.array(con_id)).astype('str')
-
+            self.con_id = np.ravel(np.array(con_id)).astype('str')
         if onset is not None:
             if len(onset) != self.n_events:
                 raise ValueError(
