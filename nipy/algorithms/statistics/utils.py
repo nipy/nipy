@@ -1,7 +1,9 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
+
 from scipy.stats import norm
+
 TINY = 1e-16
 
 
@@ -14,17 +16,19 @@ def z_score(pvalue):
 
 
 def multiple_fast_inv(a):
-    """Compute the inverse of a set of arrays.
+    """ Compute the inverse of a set of arrays in-place
 
     Parameters
     ----------
-    a: array_like of shape (n_samples, n_dim, n_dim)
-        Set of square matrices to be inverted. a is changed in place.
+    a: array_like of shape (n_samples, M, M)
+        Set of square matrices to be inverted. `a` is changed in place.
 
     Returns
     -------
-    a: ndarray
-       yielding the inverse of the inputs
+    a: ndarray shape (n_samples, M, M)
+       The input array `a`, overwritten with the inverses of the original 2D
+       arrays in ``a[0], a[1], ...``.  Thus ``a[0]`` replaced with
+       ``inv(a[0])`` etc.
 
     Raises
     ------
@@ -35,20 +39,44 @@ def multiple_fast_inv(a):
 
     Notes
     -----
-    This function is borrowed from scipy.linalg.inv, 
-    but with some customizations for speed-up.
+    This function is copied from scipy.linalg.inv, but with some customizations
+    for speed-up from operating on multiple arrays.  It also has some
+    conditionals to work with different scipy versions.
     """
+    # Consider errors for sparse, masked, object arrays, as for
+    # _asarray_validated?
     from scipy.linalg.lapack import get_lapack_funcs
-    if a.shape[1] != a.shape[2]:
-        raise ValueError('a must have shape(n_samples, n_dim, n_dim)')
+    S, M, N = a.shape
+    if M != N:
+        raise ValueError('a must have shape(n_samples, M, M)')
     a = np.asarray_chkfinite(a)
-    getrf, getri = get_lapack_funcs(('getrf', 'getri'), (a[0],))
-    for i in range(a.shape[0]):
-        lu, piv, info = getrf(a[i], overwrite_a=True)
+    getrf, getri = get_lapack_funcs(('getrf','getri'), (a[0],))
+    # Calculate lwork on different scipy versions
+    try:
+        getri_lwork, = get_lapack_funcs(('getri_lwork',), (a[0],))
+    except (ValueError, AttributeError):  # scipy < 0.15
+        # scipy 0.10, 0.11 -> AttributeError
+        # scipy 0.12, 0.13, 0.14 -> ValueError
+        from scipy.linalg import calc_lwork
+        lwork = calc_lwork.getri(getri.prefix, M)[1]
+    else:  # scipies >= 0.15 have getri_lwork function
+        lwork, info = getri_lwork(M)
+        if info != 0:
+            raise ValueError('internal getri work space query failed: %d' % (info,))
+        lwork = int(lwork.real)
+    # XXX: the following line fixes curious SEGFAULT when
+    # benchmarking 500x500 matrix inverse. This seems to
+    # be a bug in LAPACK ?getri routine because if lwork is
+    # minimal (when using lwork[0] instead of lwork[1]) then
+    # all tests pass. Further investigation is required if
+    # more such SEGFAULTs occur.
+    lwork = int(1.01 * lwork)
+    for i, ai in enumerate(a):
+        lu, piv, info = getrf(ai, overwrite_a=True)
         if info == 0:
-            a[i], info = getri(lu, piv, overwrite_lu=1)
+            a[i], info = getri(lu, piv, lwork=lwork, overwrite_lu=1)
         if info > 0:
-            raise ValueError("singular matrix")
+            raise np.linalg.LinAlgError("singular matrix")
         if info < 0:
             raise ValueError('illegal value in %d-th argument of internal '
                              'getrf|getri' % -info)

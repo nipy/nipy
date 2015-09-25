@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 import numpy as np
+
 from scipy.stats import norm
+import scipy.linalg as spl
+
 
 from ..utils import multiple_mahalanobis, z_score, multiple_fast_inv
 from nose.tools import assert_true
@@ -37,7 +40,7 @@ def test_multiple_fast_inv():
     X_inv_ref = np.zeros(shape)
     for i in range(shape[0]):
         X[i] = np.dot(X[i], X[i].T)
-        X_inv_ref[i] = np.linalg.inv(X[i])
+        X_inv_ref[i] = spl.inv(X[i])
     X_inv = multiple_fast_inv(X)
     assert_array_almost_equal(X_inv_ref, X_inv)
 
