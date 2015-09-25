@@ -552,9 +552,9 @@ def single_run_realign4d(im4d,
     maxfun = format_arg(maxfun)
 
     transforms = None
-    opt_params = list(zip(loops, speedup, optimizer,
+    opt_params = zip(loops, speedup, optimizer,
                      xtol, ftol, gtol,
-                     stepsize, maxiter, maxfun))
+                     stepsize, maxiter, maxfun)
 
     for loops_, speedup_, optimizer_, xtol_, ftol_, gtol_,\
             stepsize_, maxiter_, maxfun_ in opt_params:
@@ -803,7 +803,7 @@ class Realign4d(object):
             transforms = self._transforms
         else:
             transforms = self._within_run_transforms
-        runs = list(range(len(self._runs)))
+        runs = range(len(self._runs))
         if r is None:
             data = [resample4d(self._runs[r], transforms=transforms[r],
                                time_interp=self._time_interp) for r in runs]
