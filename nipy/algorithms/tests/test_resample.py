@@ -2,16 +2,15 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-
-from nipy.core.api import (AffineTransform, Image,  
-                           ArrayCoordMap, compose)
+from nipy.core.api import (CoordinateMap, AffineTransform, Image,
+        ArrayCoordMap, vox2mni)
 from nipy.core.reference import slices
 from nipy.algorithms.resample import resample, resample_img2img
 from nipy.io.api import load_image
 
 from nose.tools import assert_true, assert_raises
 
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 from nipy.testing import funcfile, anatfile
 
 
@@ -169,6 +168,44 @@ def test_resample3d():
     a[:3,-1] = [3,4,5]
     ir = resample(i, i.coordmap, a, (100,90,80))
     assert_array_almost_equal(ir.get_data()[44:49,32:47,20:23], 3.)
+
+
+def test_resample_outvalue():
+    # Test resampling with different modes, constant values
+
+    def func(xyz):
+        return xyz + np.asarray([1,0,0])
+
+    coordmap =  vox2mni(np.eye(4))
+    arr = np.arange(3 * 3 * 3).reshape(3, 3, 3)
+    aff = np.eye(4)
+    aff[0, 3] = 1.  # x translation
+    for mapping in [aff, func]:
+        img = Image(arr, coordmap)
+        # Test constant value of 0
+        img2 = resample(img, coordmap, mapping, img.shape,
+                        order=3, mode='constant', cval=0.)
+        exp_arr = np.zeros(arr.shape)
+        exp_arr[:-1, :, :] = arr[1:, :, :]
+        assert_array_almost_equal(img2.get_data(), exp_arr)
+        # Test constant value of 1
+        img2 = resample(img, coordmap, mapping, img.shape,
+                        order=3, mode='constant', cval=1.)
+        exp_arr[-1, :, :] = 1
+        assert_array_almost_equal(img2.get_data(), exp_arr)
+        # Test nearest neighbor
+        img2 = resample(img, coordmap, mapping, img.shape,
+                        order=3, mode='nearest')
+        exp_arr[-1, :, :] = arr[-1, :, :]
+        assert_array_almost_equal(img2.get_data(), exp_arr)
+    # Test img2img
+    target_coordmap = vox2mni(aff)
+    target = Image(arr, target_coordmap)
+    img2 = resample_img2img(img, target, 3, 'nearest')
+    assert_array_almost_equal(img2.get_data(), exp_arr)
+    img2 = resample_img2img(img, target, 3, 'constant', cval=1.)
+    exp_arr[-1, :, :] = 1
+    assert_array_almost_equal(img2.get_data(), exp_arr)
 
 
 def test_nonaffine():

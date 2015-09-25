@@ -553,7 +553,7 @@ double cubic_spline_sample4d (double x, double y, double z, double t, const PyAr
    Tvox is the voxel transformation from the image to the destination grid.  
 */
 void cubic_spline_resample3d(PyArrayObject* im_resampled, const PyArrayObject* im,   
-			     const double* Tvox, int cast_integer, 
+			     const double* Tvox, 
 			     int mode_x, int mode_y, int mode_z)
 {
   double i1;
@@ -581,13 +581,7 @@ void cubic_spline_resample3d(PyArrayObject* im_resampled, const PyArrayObject* i
     z = imIter->coordinates[2]; 
     _apply_affine_transform(&Tx, &Ty, &Tz, Tvox, x, y, z); 
     i1 = cubic_spline_sample3d(Tx, Ty, Tz, im_spline_coeff, mode_x, mode_y, mode_z); 
-    if (cast_integer) {
-      i1 = ROUND(i1);
-      if (cast_integer == 2)
-	if (i1 < 0)
-	  i1 = 0;
-     }
-
+    
     /* Copy interpolated value into numpy array */
     py_i1 = PyFloat_FromDouble(i1); 
     PyArray_SETITEM(im_resampled, PyArray_ITER_DATA(imIter), py_i1); 
