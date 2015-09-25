@@ -8,6 +8,8 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('numpy')
     config.add_subpackage('numpy.testing')
     config.add_subpackage('nibabel')
+    config.add_subpackage('scipy')
+    config.add_subpackage('scipy.ndimage')
     return config
 
 

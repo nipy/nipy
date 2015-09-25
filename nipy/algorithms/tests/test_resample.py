@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from itertools import product
+
 import numpy as np
 
 from nipy.core.api import (CoordinateMap, AffineTransform, Image,
@@ -172,7 +174,7 @@ def test_resample3d():
 
 
 def test_resample_outvalue():
-    # Test resampling with different modes, constant values
+    # Test resampling with different modes, constant values, datatypes, orders
 
     def func(xyz):
         return xyz + np.asarray([1,0,0])
@@ -181,22 +183,25 @@ def test_resample_outvalue():
     arr = np.arange(3 * 3 * 3).reshape(3, 3, 3)
     aff = np.eye(4)
     aff[0, 3] = 1.  # x translation
-    for mapping in [aff, func]:
-        img = Image(arr, coordmap)
+    for mapping, dt, order in product(
+        [aff, func],
+        [np.int8, np.intp, np.int32, np.int64, np.float32, np.float64],
+        [0, 1, 3]):
+        img = Image(arr.astype(dt), coordmap)
         # Test constant value of 0
         img2 = resample(img, coordmap, mapping, img.shape,
-                        order=3, mode='constant', cval=0.)
+                        order=order, mode='constant', cval=0.)
         exp_arr = np.zeros(arr.shape)
         exp_arr[:-1, :, :] = arr[1:, :, :]
         assert_array_almost_equal(img2.get_data(), exp_arr)
         # Test constant value of 1
         img2 = resample(img, coordmap, mapping, img.shape,
-                        order=3, mode='constant', cval=1.)
+                        order=order, mode='constant', cval=1.)
         exp_arr[-1, :, :] = 1
         assert_array_almost_equal(img2.get_data(), exp_arr)
         # Test nearest neighbor
         img2 = resample(img, coordmap, mapping, img.shape,
-                        order=3, mode='nearest')
+                        order=order, mode='nearest')
         exp_arr[-1, :, :] = arr[-1, :, :]
         assert_array_almost_equal(img2.get_data(), exp_arr)
     # Test img2img
