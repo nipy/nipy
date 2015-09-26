@@ -58,8 +58,8 @@ def estimate_mean(Y, sd):
     value['scale'] = np.sqrt(scale)
 
     if squeeze:
-        for key in list(value):
-            value[key] = np.squeeze(value[key])
+        for key, val in value.items():
+            value[key] = np.squeeze(val)
     return value
 
 def estimate_varatio(Y, sd, df=None, niter=10):
