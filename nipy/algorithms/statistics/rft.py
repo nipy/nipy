@@ -5,13 +5,13 @@
 The theoretical results for  the EC densities appearing in this module
 were partially supported by NSF grant DMS-0405970.
 
-Taylor, J.E. & Worsley, K.J. (2007).  "Detecting sparse cone alternatives
-   for Gaussian random fields, with an application to fMRI".
-   Annals of Statistics, submitted.
+Taylor, J.E. & Worsley, K.J. (2012).  "Detecting sparse cone alternatives
+   for Gaussian random fields, with an application to fMRI". arXiv:1207.3840
+   [math.ST] and Statistica Sinica 23 (2013): 1629-1656.
 
-Taylor, J.E. & Worsley, K.J. (2007). "Random fields of multivariate
-   test statistics, with applications to shape analysis."
-   Annals of Statistics, accepted.
+Taylor, J.E. & Worsley, K.J. (2008). "Random fields of multivariate
+   test statistics, with applications to shape analysis." arXiv:0803.1708
+   [math.ST] and Annals of Statistics 36( 2008): 1-27
 """
 from __future__ import print_function
 
