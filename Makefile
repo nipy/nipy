@@ -139,4 +139,7 @@ website-stamp: $(WWW_DIR) html-stamp pdf-stamp
 upload-html: html-stamp
 	./tools/upload-gh-pages.sh $(WWW_DIR) $(PROJECT)
 
+refresh-readme:
+	$(PYTHON) tools/refresh_readme.py nipy
+
 .PHONY: orig-src pylint
