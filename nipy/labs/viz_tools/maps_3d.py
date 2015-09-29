@@ -4,6 +4,7 @@
 3D visualization of activation maps using Mayavi
 
 """
+from __future__ import absolute_import
 
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD

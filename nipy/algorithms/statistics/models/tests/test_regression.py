@@ -3,6 +3,7 @@
 """
 Test functions for models.regression
 """
+from __future__ import absolute_import
 
 import numpy as np
 

@@ -13,6 +13,7 @@ Group Studies.  IEEE TMI 2007
 Author : Bertrand Thirion, 2006-2013
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 #autoindent
 

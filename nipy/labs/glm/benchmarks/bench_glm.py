@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 from ..glm import glm
@@ -9,7 +10,7 @@ def make_data():
     dimy = 11
     dimz = 12 
     y = np.random.randn(dimt, dimx, dimy, dimz)
-    X = np.array([np.ones(dimt), range(dimt)])
+    X = np.array([np.ones(dimt), list(range(dimt))])
     X = X.transpose() ## the design matrix X must have dimt lines
     return y, X
 

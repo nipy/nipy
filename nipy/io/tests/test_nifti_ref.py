@@ -3,6 +3,7 @@
 """ Test conversion between NIFTI and NIPY conventions.  The algorithms are
 mostly written out in the :mod:`nipy.io.nifti_ref` docstrings.
 """
+from __future__ import absolute_import
 import warnings
 
 from copy import copy
@@ -408,12 +409,12 @@ def test_save_toffset():
 
 
 def test_too_many_dims():
-    data0 = np.zeros(range(2, 9))
+    data0 = np.zeros(list(range(2, 9)))
     xyz_names = talairach_csm(3).coord_names
     cmap = AT(CS('ijktuvw'), CS(xyz_names + tuple('tuvw')), np.eye(8))
     assert_equal(nipy2nifti(Image(data0, cmap)).shape, tuple(range(2, 9)))
     # Too many dimensions
-    data1 = np.zeros(range(2, 10))
+    data1 = np.zeros(list(range(2, 10)))
     cmap = AT(CS('ijktuvwq'), CS(xyz_names + tuple('tuvwq')), np.eye(9))
     assert_raises(NiftiError, nipy2nifti, Image(data1, cmap))
     # No time adds a dimension
@@ -519,7 +520,7 @@ def test_expand_to_3d():
 
 
 def test_load_cmaps():
-    data = np.random.normal(size=range(7))
+    data = np.random.normal(size=list(range(7)))
     xyz_aff = np.diag([2, 3, 4, 1])
     # Default with time-like
     ni_img = nib.Nifti1Image(data, xyz_aff)
@@ -589,7 +590,7 @@ def test_load_no_time():
 
 def test_load_toffset():
     # Test toffset gets set into affine only for time
-    data = np.random.normal(size=range(5))
+    data = np.random.normal(size=list(range(5)))
     xyz_aff = np.diag([2, 3, 4, 1])
     # Default with time-like and no toffset
     ni_img = nib.Nifti1Image(data, xyz_aff)
@@ -642,7 +643,7 @@ def test_load_spaces():
 
 def test_mm_scaling():
     # Test the micron and meter scale the affine right
-    data = np.random.normal(size=range(4))
+    data = np.random.normal(size=list(range(4)))
     xyz_aff = from_matvec(np.diag([2, 3, 4]), [11, 12, 13])
     exp_aff = from_matvec(np.diag([2, 3, 4, 1]), [11, 12, 13, 0])
     in_cs = CS('ijkt', name='voxels')
@@ -674,7 +675,7 @@ def test_mm_scaling():
 
 def test_load_dim_info():
     # Test freq, phase, slice get set correctly on load
-    data = np.random.normal(size=range(3))
+    data = np.random.normal(size=list(range(3)))
     xyz_aff = from_matvec(np.diag([2, 3, 4]), [11, 12, 13])
     in_cs = CS('ijk', name='voxels')
     out_cs = aligned_csm(3)

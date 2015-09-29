@@ -3,6 +3,7 @@
 """
 Matplotlib colormaps useful for neuroimaging.
 """
+from __future__ import absolute_import
 import numpy as _np
 
 from nipy.utils.skip_test import skip_if_running_nose

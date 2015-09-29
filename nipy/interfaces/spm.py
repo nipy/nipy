@@ -2,6 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 ''' Interfaces to SPM '''
 from __future__ import with_statement
+from __future__ import absolute_import
 
 import os
 

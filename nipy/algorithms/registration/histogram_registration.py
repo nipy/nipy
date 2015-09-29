@@ -3,6 +3,8 @@
 """
 Intensity-based image registration
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import numpy as np
 import scipy.ndimage as nd
@@ -123,8 +125,8 @@ class HistogramRegistration(object):
         self._set_similarity(similarity, renormalize=renormalize, dist=dist)
 
     def _get_interp(self):
-        return interp_methods.keys()[\
-            interp_methods.values().index(self._interp)]
+        return list(interp_methods.keys())[\
+            list(interp_methods.values()).index(self._interp)]
 
     def _set_interp(self, interp):
         self._interp = interp_methods[interp]
@@ -365,7 +367,7 @@ class HistogramRegistration(object):
 
         # Output
         if VERBOSE:
-            print ('Optimizing using %s' % fmin.__name__)
+            print('Optimizing using %s' % fmin.__name__)
         kwargs['callback'] = callback
         Tv.param = fmin(cost, tc0, *args, **kwargs)
         return Tv.optimizable

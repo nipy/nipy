@@ -35,6 +35,7 @@ slices.py functions are presented which will return a `CoordinateMap` representi
 a single slice through a larger coordinate_map.
 
 """
+from __future__ import absolute_import
 __docformat__ = 'restructuredtext'
 
 from . import coordinate_system

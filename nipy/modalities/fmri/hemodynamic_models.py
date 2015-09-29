@@ -5,10 +5,15 @@ This module closely follows SPM implementation
 
 Author: Bertrand Thirion, 2011--2013
 """
+from __future__ import absolute_import
 
 import warnings
+
 import numpy as np
+
 from scipy.stats import gamma
+
+from nipy.externals.six.moves import map
 
 
 def _gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,

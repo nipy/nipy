@@ -74,6 +74,7 @@ The convention of rotation around ``z``, followed by rotation around
 ``y``, followed by rotation around ``x``, is known (confusingly) as
 "xyz", pitch-roll-yaw, Cardan angles, or Tait-Bryan angles.
 '''
+from __future__ import absolute_import
 
 import math
 from functools import reduce

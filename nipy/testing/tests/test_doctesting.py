@@ -1,5 +1,6 @@
 """ Doctests for Nipy / NumPy-specific nose/doctest modifications
 """
+from __future__ import absolute_import
 # try the #random directive on the output line
 def check_random_directive():
     '''

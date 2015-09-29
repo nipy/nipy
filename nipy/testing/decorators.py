@@ -6,6 +6,7 @@ This module should not import nose at the top level to avoid a run-time
 dependency on nose.
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 from numpy.testing.decorators import *
 

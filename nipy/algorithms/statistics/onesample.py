@@ -3,9 +3,12 @@
 """
 Utilities for one sample t-tests
 """
+from __future__ import absolute_import
+
 __docformat__ = 'restructuredtext'
 
 import numpy as np
+
 from ..utils.matrices import pos_recipr
 
 def estimate_mean(Y, sd):
@@ -55,8 +58,8 @@ def estimate_mean(Y, sd):
     value['scale'] = np.sqrt(scale)
 
     if squeeze:
-        for key in value.keys():
-            value[key] = np.squeeze(value[key])
+        for key, val in value.items():
+            value[key] = np.squeeze(val)
     return value
 
 def estimate_varatio(Y, sd, df=None, niter=10):
@@ -132,6 +135,6 @@ def estimate_varatio(Y, sd, df=None, niter=10):
     value['random'] = sigma2
 
     if squeeze:
-        for key in value.keys():
+        for key in list(value):
             value[key] = np.squeeze(value[key])
     return value

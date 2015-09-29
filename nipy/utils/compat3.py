@@ -2,6 +2,7 @@
 
 These are in addition to the nibabel.py3k routines.
 """
+from __future__ import absolute_import
 
 import sys
 py3 = sys.version_info[0] >= 3

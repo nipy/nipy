@@ -1,5 +1,6 @@
 """ Testing models module
 """
+from __future__ import absolute_import
 
 import numpy as np
 
@@ -15,7 +16,7 @@ from numpy.testing import (assert_array_almost_equal,
 
 N = 10
 X = np.c_[np.linspace(-1,1,N), np.ones((N,))]
-Y = np.r_[range(5), range(1,6)]
+Y = np.r_[:5, 1:6]
 MODEL = OLSModel(X)
 RESULTS = MODEL.fit(Y)
 

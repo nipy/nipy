@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #!/usr/bin/env python
 
 # to run only the simple tests:
@@ -110,7 +111,7 @@ def test_em_selection():
     dim = 2
     x = np.concatenate((nr.randn(100, dim), 3 + 2 * nr.randn(100, dim)))
 
-    krange = range(1, 10)
+    krange = list(range(1, 10))
     lgmm = best_fitting_GMM(x, krange, prec_type='full',
                             niter=100, delta = 1.e-4, ninit=1)
     assert_true(lgmm.k < 4)

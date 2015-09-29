@@ -29,6 +29,7 @@ it is not ambiguous to say 't' axis. It is slightly ambiguous to say 'x+LR' axis
 if the axisnames are ['slice', 'frequency', 'phase'] but image.rollimg
 identifies 'x+LR' == 'slice' == 0.
 """
+from __future__ import absolute_import
 
 import numpy as np
 

@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Test functions for utils.matrices """
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 import numpy as np
 

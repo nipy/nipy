@@ -67,6 +67,7 @@ array([[ 2.,  0.,  0.,  0.],
        [ 0.,  0.,  4.,  0.],
        [ 0.,  0.,  0.,  1.]])
 """
+from __future__ import absolute_import
 
 import sys
 

@@ -8,6 +8,7 @@ http://imaging.mrc-cbu.cam.ac.uk/imaging/DataDiagnostics
 Oliver Josephs (FIL) gave me (MB) the idea of time-point to time-point
 subtraction as a diagnostic for motion and other sudden image changes.
 '''
+from __future__ import absolute_import
 
 import numpy as np
 

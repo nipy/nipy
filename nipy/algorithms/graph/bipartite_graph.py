@@ -9,6 +9,7 @@ labeled [1..V] and [1..W] respectively.
 
 Author: Bertrand Thirion, 2006--2011
 """
+from __future__ import absolute_import
 
 import numpy as np
 

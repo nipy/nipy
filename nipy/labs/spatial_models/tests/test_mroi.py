@@ -6,6 +6,7 @@ Test the discrete_domain utilities.
 Caveat assumes that the MNI template image is available at
 in ~/.nipy/tests/data
 """
+from __future__ import absolute_import
 
 import numpy as np
 from ..mroi import subdomain_from_array, subdomain_from_balls
@@ -84,7 +85,7 @@ def test_select_roi():
     aux = np.random.randn(np.prod(shape))
     data = [aux[mroi.label == k] for k in range(8)]
     mroi.set_feature('data', data)
-    mroi.set_roi_feature('data_mean', range(8))
+    mroi.set_roi_feature('data_mean', list(range(8)))
     mroi.select_roi([0])
     assert(mroi.k == 1)
     assert_equal(mroi.get_roi_feature('data_mean', 0), 0)

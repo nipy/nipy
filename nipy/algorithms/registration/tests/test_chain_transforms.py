@@ -20,6 +20,7 @@ parameters::
     new_transformed_pts = obj.apply(pts)
 
 """
+from __future__ import absolute_import
 
 import numpy as np
 import numpy.linalg as npl

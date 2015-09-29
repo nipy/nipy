@@ -15,6 +15,7 @@ gets a bit more complicated when taking arbitrary shaped samples from the image,
 as we do for estimating the AR coefficients, where we take all the voxels with
 similar AR coefficients at once.
 """
+from __future__ import absolute_import
 
 import copy
 

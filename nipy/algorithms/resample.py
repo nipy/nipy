@@ -2,6 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Some simple examples and utility functions for resampling.
 """
+from __future__ import absolute_import
 
 import copy
 

@@ -3,6 +3,7 @@
 """
 Non-linear least squares model
 """
+from __future__ import absolute_import
 __docformat__ = 'restructuredtext'
 
 import numpy as np

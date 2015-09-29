@@ -6,6 +6,7 @@ this basically uses nipy io lib to perform IO opermation
 in parcel definition processes
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 import os.path

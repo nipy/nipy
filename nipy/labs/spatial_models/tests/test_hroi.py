@@ -10,6 +10,7 @@ In those tests, we often access some ROI directly by a fixed index
 instead of using the utility functions such as get_id() or select_id().
 
 """
+from __future__ import absolute_import
 
 import numpy as np
 from numpy.testing import assert_equal
@@ -76,7 +77,7 @@ def test_hroi_isleaf_2():
     """
     hroi = make_hroi()
     #import pdb; pdb.set_trace()
-    hroi.select_roi(range(1, 9))
+    hroi.select_roi(list(range(1, 9)))
     assert_equal(hroi.parents, np.arange(8).astype(np.int))
 
 
@@ -119,8 +120,8 @@ def test_asc_merge_4():
 
     """
     hroi = make_hroi()
-    hroi.set_roi_feature('labels', range(9))
-    hroi.set_roi_feature('labels2', range(9))
+    hroi.set_roi_feature('labels', list(range(9)))
+    hroi.set_roi_feature('labels2', list(range(9)))
     parents = np.arange(9) - 1
     parents[0] = 0
     hroi.parents = parents

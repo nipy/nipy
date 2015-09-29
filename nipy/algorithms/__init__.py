@@ -2,6 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Generic algorithms such as registration, statistics, simulation, etc.
 """
+from __future__ import absolute_import
 __docformat__ = 'restructuredtext'
 
 from . import statistics

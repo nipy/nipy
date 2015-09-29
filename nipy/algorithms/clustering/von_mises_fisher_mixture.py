@@ -5,6 +5,7 @@ i.e. the equaivalent of mixture of Gaussian on the sphere.
 Author: Bertrand Thirion, 2010-2011
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 from warnings import warn
@@ -415,7 +416,7 @@ def example_noisy():
     x = (x.T / np.sqrt(np.sum(x ** 2, 1))).T
 
     precision = 100.
-    vmm = select_vmm(range(2, 7), precision, True, x)
+    vmm = select_vmm(list(range(2, 7)), precision, True, x)
     vmm.show(x)
 
     # check that it sums to 1
@@ -435,7 +436,7 @@ def example_cv_nonoise():
 
     precision = 50.
     sub = np.repeat(np.arange(10), 3)
-    vmm = select_vmm_cv(range(1, 8), precision, x, cv_index=sub,
+    vmm = select_vmm_cv(list(range(1, 8)), precision, x, cv_index=sub,
                         null_class=False, ninit=20)
     vmm.show(x)
 

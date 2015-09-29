@@ -6,6 +6,7 @@ Test the design_matrix utilities.
 Note that the tests just look whether the data produced has correct dimension,
 not whether it is exact.
 """
+from __future__ import absolute_import
 
 import numpy as np
 

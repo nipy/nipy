@@ -1,9 +1,13 @@
+from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+
+from itertools import combinations
+
 import numpy as np
 import numpy.linalg as npl
 
-from .. import intvol, utils
+from .. import intvol
 
 from nose.tools import assert_equal, assert_raises
 from numpy.testing import assert_array_equal, assert_almost_equal
@@ -53,7 +57,7 @@ def elsym(edgelen, order=1):
     if order == 0:
         return 1
     r = 0
-    for v in utils.combinations(range(l), order):
+    for v in combinations(range(l), order):
         r += np.product([edgelen[vv] for vv in v])
     return r
 

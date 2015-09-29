@@ -2,7 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 #from _clustering import *
 #from _clustering import __doc__
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 import numpy as np
 

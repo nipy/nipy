@@ -30,6 +30,7 @@ Example of fixed effects statistics across two contrasts
 >>> z_ffx = (model.contrast(cval) + model.contrast(cval_)).z_score()
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 

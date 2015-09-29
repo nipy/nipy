@@ -11,6 +11,7 @@ Author : Bertrand Thirion, 2009-2011
          Virgile Fritsch <virgile.fritsch@inria.fr>
 
 """
+from __future__ import absolute_import
 
 import numpy as np
 
@@ -365,7 +366,7 @@ class HierarchicalROI(SubDomains):
                 relabel[relabel == c_id] = p_id
 
                 # compute new features
-                for fid in self.features.keys():
+                for fid in list(self.features):
                     # replace feature
                     # (without the API since self is in an inconsistent state)
                     dj = self.get_feature(fid)
@@ -375,7 +376,7 @@ class HierarchicalROI(SubDomains):
                     self.features[fid] = dj
 
                 # compute new roi features
-                for fid in self.roi_features.keys():
+                for fid in list(self.roi_features):
                     dj = self.get_roi_feature(fid)
                     if fid in pull_features:
                         # modify only if `pull` requested
@@ -436,7 +437,7 @@ class HierarchicalROI(SubDomains):
                 self.k -= 1
                 
                 # compute new features
-                for fid in self.features.keys():
+                for fid in list(self.features):
                     # replace feature
                     # (without the API since self is in an inconsistent state)
                     dj = self.get_feature(fid)
@@ -446,7 +447,7 @@ class HierarchicalROI(SubDomains):
                     self.features[fid] = dj
 
                 # compute new roi features
-                for fid in self.roi_features.keys():
+                for fid in list(self.roi_features):
                     dj = self.get_roi_feature(fid)
                     if fid in pull_features:
                         # modify only if `pull` requested
@@ -507,10 +508,10 @@ class HierarchicalROI(SubDomains):
         cp = HierarchicalROI(
             self.domain, self.label.copy(), self.parents.copy(), self.get_id())
         # copy features
-        for fid in self.features.keys():
+        for fid in self.features:
             cp.set_feature(fid, self.get_feature(fid))
         # copy ROI features
-        for fid in self.roi_features.keys():
+        for fid in self.roi_features:
             cp.set_roi_feature(fid, self.get_roi_feature(fid))
         return cp
 
@@ -597,9 +598,9 @@ def make_hroi_from_subdomain(sub_domain, parents):
     """
     hroi = HierarchicalROI(sub_domain.domain, sub_domain.label, parents)
     # set features
-    for fid in sub_domain.features.keys():
+    for fid in sub_domain.features:
         hroi.set_feature(fid, sub_domain.get_feature(fid))
     # set ROI features
-    for fid in sub_domain.roi_features.keys():
+    for fid in sub_domain.roi_features:
         hroi.set_roi_feature(fid, sub_domain.get_roi_feature(fid))
     return hroi

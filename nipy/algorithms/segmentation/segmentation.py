@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
@@ -111,7 +112,7 @@ class Segmentation(object):
         self.beta = float(beta)
 
     def vm_step(self, freeze=()):
-        classes = range(self.nclasses)
+        classes = list(range(self.nclasses))
         for i in freeze:
             classes.remove(i)
 
@@ -265,5 +266,5 @@ def binarize_ppm(q):
     Assume input ppm is masked (ndim==2)
     """
     bin_q = np.zeros(q.shape)
-    bin_q[(range(q.shape[0]), np.argmax(q, axis=1))] = 1.
+    bin_q[:q.shape[0], np.argmax(q, axis=1)] = 1
     return bin_q

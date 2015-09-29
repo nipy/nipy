@@ -49,6 +49,7 @@ Remove all occurences of importing make_doctest_suite::
 
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 # notes on perl-dash-pie
 # perl -p -i -e 's/oldstring/newstring/g' *

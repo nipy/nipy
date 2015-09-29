@@ -5,6 +5,7 @@ This sub-package contains functions for clustering.
 It might be removed in the future, and replaced 
 by an optional dependence on scikit learn. 
 """
+from __future__ import absolute_import
 
 from nipy.testing import Tester
 

@@ -4,6 +4,7 @@
 An image that stores the data as an (x, y, z, ...) array, with an
 affine mapping to the world space
 """
+from __future__ import absolute_import
 import copy
 
 import numpy as np

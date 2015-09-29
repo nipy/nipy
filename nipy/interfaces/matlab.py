@@ -7,6 +7,7 @@ use NiPype instead:
 
 http://nipy.org/nipype
 """
+from __future__ import absolute_import
 
 # Stdlib imports
 import os

@@ -14,6 +14,7 @@ Taylor, J.E. & Worsley, K.J. (2008). "Random fields of multivariate
    [math.ST] and Annals of Statistics 36( 2008): 1-27
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 from numpy.linalg import pinv    

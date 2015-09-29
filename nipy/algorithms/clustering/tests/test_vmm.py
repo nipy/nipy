@@ -3,6 +3,7 @@ Test the Von-Mises-Fisher mixture model
 
 Author : Bertrand Thirion, 2010
 """
+from __future__ import absolute_import
 
 import numpy as np
 
@@ -49,7 +50,7 @@ def test_dimension_selection_bic():
     x = (x.T / np.sqrt(np.sum(x**2, 1))).T
 
     precision = 100.
-    my_vmm = select_vmm(range(1,8), precision, False, x)
+    my_vmm = select_vmm(list(range(1,8)), precision, False, x)
     assert_equal(my_vmm.k, 3)
 
 
@@ -64,7 +65,7 @@ def test_dimension_selection_cv():
 
     precision = 50.
     sub = np.repeat(np.arange(10), 2)
-    my_vmm = select_vmm_cv(range(1,8), precision, x, cv_index=sub,
+    my_vmm = select_vmm_cv(list(range(1,8)), precision, x, cv_index=sub,
                            null_class=False, ninit=5)
     z = np.argmax(my_vmm.responsibilities(x), 1)
     assert_true(len(np.unique(z))>1)

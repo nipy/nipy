@@ -2,6 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 from __future__ import print_function
+from __future__ import absolute_import
 
 from numpy.testing import assert_array_equal
 

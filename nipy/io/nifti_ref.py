@@ -126,6 +126,7 @@ For saving a NIPY image to NIFTI, see the docstring for :func:`nipy2nifti`.
 For loading a NIFTI image to NIPY, see the docstring for :func:`nifti2nipy`.
 
 """
+from __future__ import absolute_import
 
 import sys
 

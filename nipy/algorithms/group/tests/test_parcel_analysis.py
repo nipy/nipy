@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
@@ -68,7 +70,7 @@ def _test_parcel_analysis(smooth_method, parcel_info, vcon=False,
 
 
 def test_parcel_analysis():
-    parcel_info = (range(NLABELS), range(NLABELS))
+    parcel_info = (list(range(NLABELS)), list(range(NLABELS)))
     _test_parcel_analysis('default', parcel_info)
 
 
@@ -106,7 +108,7 @@ def _test_parcel_analysis_error(**kw):
 
 def test_parcel_analysis_error():
     assert_raises(ValueError, _test_parcel_analysis_error,
-                  vcon_imgs=range(NSUBJ + 1))
+                  vcon_imgs=list(range(NSUBJ + 1)))
     assert_raises(ValueError, _test_parcel_analysis_error,
                   cvect=np.ones(1))
     assert_raises(ValueError, _test_parcel_analysis_error,

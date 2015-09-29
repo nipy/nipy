@@ -3,6 +3,7 @@
 """
 Test the empirical null estimator.
 """
+from __future__ import absolute_import
 import warnings
 import numpy as np
 from nose.tools import assert_true

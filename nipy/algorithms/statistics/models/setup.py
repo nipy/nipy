@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 
 def configuration(parent_package='', top_path=None):

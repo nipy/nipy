@@ -2,6 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """Functions working with affine transformation matrices.
 """
+from __future__ import absolute_import
 
 import numpy as np
 

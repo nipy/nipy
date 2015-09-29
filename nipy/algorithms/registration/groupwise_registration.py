@@ -11,6 +11,8 @@ Roche, Alexis (2011) A four-dimensional registration algorithm with application
 to joint correction of motion and slice timing in fMRI. *Medical Imaging, IEEE
 Transactions on*;  30:1546--1554
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import os
 import warnings

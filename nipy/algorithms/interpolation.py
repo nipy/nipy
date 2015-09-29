@@ -2,6 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Image interpolators using ndimage.
 """
+from __future__ import absolute_import
 
 import os
 import tempfile

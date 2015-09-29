@@ -3,6 +3,7 @@
 """
 Convenience functions for specifying a design in the GLM
 """
+from __future__ import absolute_import
 
 import numpy as np
 

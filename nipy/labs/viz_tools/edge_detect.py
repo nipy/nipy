@@ -3,6 +3,7 @@
 """
 Edget detection routines
 """
+from __future__ import absolute_import
 import warnings
 
 import numpy as np

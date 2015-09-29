@@ -10,6 +10,7 @@ Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H.,
     Evans, A.C. (2002). \'Estimating the delay of the response in fMRI
     data.\' NeuroImage, 16:593-606.
 """
+from __future__ import absolute_import
 
 import numpy as np
 import numpy.linalg as npl

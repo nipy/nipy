@@ -14,6 +14,7 @@ implementation. Specific methods (e.g. all_sidtance()) have been set instead.
 
 Main author: Bertrand thirion, 2007-2011
 """
+from __future__ import absolute_import
 
 import numpy as np
 

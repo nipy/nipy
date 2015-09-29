@@ -4,6 +4,7 @@
 This module is essentially a test of the AffineTransform object to 
 see if it can succinctly describe an object like a matrix group.
 """
+from __future__ import absolute_import
 
 import numpy as np
 

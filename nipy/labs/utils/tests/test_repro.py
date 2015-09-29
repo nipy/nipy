@@ -6,6 +6,7 @@ Test the design_matrix utilities.
 Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
+from __future__ import absolute_import
 
 import numpy as np
 from ..simul_multisubject_fmri_dataset import surrogate_2d_dataset

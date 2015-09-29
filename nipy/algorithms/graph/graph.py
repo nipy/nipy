@@ -20,7 +20,10 @@ instantiate WeightedGraphs from data:
 
 Author: Bertrand Thirion, 2006--2011
 """
+from __future__ import absolute_import
+
 import numpy as np
+
 from scipy.sparse import coo_matrix
 
 class Graph(object):

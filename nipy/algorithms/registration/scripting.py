@@ -5,6 +5,7 @@
 """
 A scripting wrapper around 4D registration (SpaceTimeRealign)
 """
+from __future__ import absolute_import
 
 import os
 import os.path as op

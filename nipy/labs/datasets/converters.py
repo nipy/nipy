@@ -4,6 +4,7 @@
 Conversion mechansims for IO and interaction between volumetric datasets 
 and other type of neuroimaging data.
 """
+from __future__ import absolute_import
 import os
 
 import numpy as np
@@ -108,8 +109,8 @@ def save(filename, obj):
     for key, value in obj.metadata.items():
         if key in hdr:
             hdr[key] = value
-    img = nib.Nifti1Image(obj.get_data(), 
-                                   obj.affine,
-                                   header=hdr)
+    img = nib.Nifti1Image(obj.get_data(),
+                          obj.affine,
+                          header=hdr)
     nib.save(img, filename)
 

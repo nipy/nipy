@@ -8,6 +8,7 @@ not whether it is exact
 """
 
 from __future__ import with_statement
+from __future__ import absolute_import
 
 import numpy as np
 import os.path as osp
@@ -258,7 +259,7 @@ def test_dmtx9():
     hrf_model = 'FIR'
     X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                             drift_model='polynomial', drift_order=3,
-                            fir_delays=range(1, 5))
+                            fir_delays=list(range(1, 5)))
     assert_equal(len(names), 16)
 
 def test_dmtx10():
@@ -269,7 +270,7 @@ def test_dmtx10():
     hrf_model = 'FIR'
     X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3,
-                         fir_delays=range(1, 5))
+                         fir_delays=list(range(1, 5)))
     onset = paradigm.onset[paradigm.con_id == 'c0'].astype(np.int)
     assert_true(np.all((X[onset + 1, 0] == 1)))
 
@@ -282,7 +283,7 @@ def test_dmtx11():
     hrf_model = 'FIR'
     X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3,
-                         fir_delays=range(1, 5))
+                         fir_delays=list(range(1, 5)))
     onset = paradigm.onset[paradigm.con_id == 'c0'].astype(np.int)
     assert_true(np.all(X[onset + 3, 2] == 1))
 
@@ -295,7 +296,7 @@ def test_dmtx12():
     hrf_model = 'FIR'
     X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3,
-                         fir_delays=range(1, 5))
+                         fir_delays=list(range(1, 5)))
     onset = paradigm.onset[paradigm.con_id == 'c2'].astype(np.int)
     assert_true(np.all(X[onset + 4, 11] == 1))
 
@@ -308,7 +309,7 @@ def test_dmtx13():
     hrf_model = 'FIR'
     X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                           drift_model='polynomial', drift_order=3,
-                          fir_delays=range(1, 5))
+                          fir_delays=list(range(1, 5)))
     onset = paradigm.onset[paradigm.con_id == 'c0'].astype(np.int)
     assert_true(np.all(X[onset + 1, 0] == 1))
 
@@ -322,7 +323,7 @@ def test_dmtx14():
     hrf_model = 'FIR'
     X, names = dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3,
-                         fir_delays=range(1, 5))
+                         fir_delays=list(range(1, 5)))
     onset = paradigm.onset[paradigm.con_id == 'c0'].astype(np.int)
     assert_true(np.all(X[onset + 1, 0] > .9))
 
@@ -383,7 +384,7 @@ def test_dmtx19():
     hrf_model = 'FIR'
     X, names = dmtx_light(frametimes, paradigm, hrf_model=hrf_model, 
                             drift_model='polynomial', drift_order=3,
-                            fir_delays=range(1, 5))
+                            fir_delays=list(range(1, 5)))
     idx = paradigm.onset[paradigm.con_id == 0].astype(np.int)
     assert_array_equal(X[idx + 1, 0], X[idx + 2, 1])
 
@@ -405,7 +406,7 @@ def test_fir_block():
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
     X, names = dmtx_light(frametimes, bp, hrf_model='fir', drift_model='blank',
-                          fir_delays=range(0, 4))
+                          fir_delays=list(range(0, 4)))
     idx = bp.onset[bp.con_id == 1].astype(np.int)
     assert_equal(X.shape, (128, 13))
     assert_true((X[idx, 4] == 1).all())
@@ -459,7 +460,7 @@ def test_spm_2():
 def test_frametimes_as_a_list():
     # design matrix should work with frametimes provided as a list
     paradigm = basic_paradigm()
-    frametimes = range(0, 99)
+    frametimes = list(range(0, 99))
     X1 = make_dmtx(frametimes, paradigm, drift_model='blank')
     frametimes = np.arange(0, 99)
     X2 = make_dmtx(frametimes, paradigm, drift_model='blank')

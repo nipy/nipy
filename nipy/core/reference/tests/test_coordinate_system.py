@@ -1,5 +1,6 @@
 """ Tests for coordinate_system module
 """
+from __future__ import absolute_import
 import numpy as np
 
 from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,

@@ -1,4 +1,5 @@
 ''' Test quaternion calculations '''
+from __future__ import absolute_import
 
 import math
 
@@ -30,7 +31,7 @@ eg_pairs = list(zip(euler_mats, euler_quats))
 
 # Set of arbitrary unit quaternions
 unit_quats = set()
-params = range(-2,3)
+params = list(range(-2,3))
 for w in params:
     for x in params:
         for y in params:

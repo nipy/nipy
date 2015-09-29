@@ -3,6 +3,7 @@ Infinite mixture model : A generalization of Bayesian mixture models
 with an unspecified number of classes
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 
@@ -682,7 +683,7 @@ def main():
     print('number of components: ', igmm.k)
 
     if dim < 3:
-        from gmm import plot2D
+        from .gmm import plot2D
         plot2D(x, igmm, verbose=1)
     return igmm
 

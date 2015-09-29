@@ -11,6 +11,7 @@
 * is_image : test for an object obeying the Image API
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import warnings
 from copy import copy
@@ -220,7 +221,7 @@ class Image(object):
         )
         """
         if order is None:
-            order = range(self.ndim)[::-1]
+            order = list(range(self.ndim))[::-1]
         elif type(order[0]) == type(''):
             order = [self.reference.index(s) for s in order]
         new_cmap = self.coordmap.reordered_range(order)
@@ -271,13 +272,13 @@ class Image(object):
         )
         """
         if order is None:
-            order = range(self.ndim)[::-1]
+            order = list(range(self.ndim))[::-1]
         elif type(order[0]) == type(''):
             order = [self.axes.index(s) for s in order]
         new_cmap = self.coordmap.reordered_domain(order)
         # Only transpose if we have to so as to avoid calling
         # self.get_data
-        if order != range(self.ndim):
+        if order != list(range(self.ndim)):
             new_data = np.transpose(self.get_data(), order)
         else:
             new_data = self._data

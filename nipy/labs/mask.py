@@ -4,6 +4,7 @@
 Utilities for extracting masks from EPI images and applying them to time
 series.
 """
+from __future__ import absolute_import
 
 # Major scientific libraries imports
 import numpy as np
