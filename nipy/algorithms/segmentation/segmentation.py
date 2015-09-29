@@ -266,5 +266,5 @@ def binarize_ppm(q):
     Assume input ppm is masked (ndim==2)
     """
     bin_q = np.zeros(q.shape)
-    bin_q[(list(range(q.shape[0])), np.argmax(q, axis=1))] = 1.
+    bin_q[:q.shape[0], np.argmax(q, axis=1)] = 1
     return bin_q
