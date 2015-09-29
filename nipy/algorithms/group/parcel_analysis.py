@@ -268,7 +268,8 @@ class ParcelAnalysis(object):
         # the input full-width-at-half-maximum parameter given in mm
         # to standard deviation in voxel units.
         orient = io_orientation(self.affine)[:, 0].astype(int)
-        voxsize = np.abs(self.affine[orient, :3])
+        # `orient` is an array, so this slicing leads to advanced indexing.
+        voxsize = np.abs(self.affine[orient, list(range(3))])
         self.sigma = np.maximum(fwhm2sigma(fwhm) / voxsize, SIGMA_MIN)
 
         # run approximate belief propagation
