@@ -8,7 +8,7 @@ import copy
 
 import numpy as np
 
-from scipy.ndimage import affine_transform
+from ..fixes.scipy.ndimage import affine_transform
 
 from nibabel.affines import from_matvec, to_matvec
 

@@ -3,7 +3,9 @@ from __future__ import absolute_import
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import numpy as np
-from scipy.ndimage import affine_transform, map_coordinates
+
+from ...fixes.scipy.ndimage import affine_transform, map_coordinates
+
 from nibabel.casting import shared_range
 
 from ...core.image.image_spaces import (make_xyz_image,
