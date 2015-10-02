@@ -13,6 +13,7 @@ import numpy as np
 import numpy.linalg as npl
 
 import nibabel as nib
+from nibabel.filename_parser import splitext_addext
 import nibabel.eulerangles as euler
 from nibabel.optpkg import optional_package
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
@@ -21,8 +22,9 @@ if HAVE_MPL:
     import matplotlib.pyplot as plt
 
 from .groupwise_registration import SpaceTimeRealign
-import nipy.externals.argparse as argparse
 import nipy.algorithms.slicetiming as st
+from nipy.io.api import save_image
+
 timefuncs = st.timefuncs.SLICETIME_FUNCTIONS
 
 __all__ = ["space_time_realign", "aff2euler"]
@@ -161,20 +163,16 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
     if apply:
         new_reggy = reggy.resample(align_runs=True)
         for run_idx, new_im in enumerate(new_reggy):
-            new_data = new_im.get_data()
-            # We use the top 4 by 4 as the affine for the new file we will
-            # create:
-            new_aff = new_im.affine[:4, :4]
-            new_ni = nib.Nifti1Image(new_data, new_aff)
+            # Fix output TR - it was probably lost in the image realign step
+            assert new_im.affine.shape == (5, 5)
+            new_im.affine[:] = new_im.affine.dot(np.diag([1, 1, 1, tr, 1]))
             # Save it out to a '.nii.gz' file:
-            old_fname_split = op.split(fnames[run_idx])
-            # We retain the file-name adding '_mc' regardless of where it's saved
-            new_fname = old_fname_split[1].split('.')[0] + '_mc.nii.gz'
-            if out_name is None:
-                new_path = old_fname_split[0]                               
-            else:
-                new_path = out_name
-            new_ni.to_filename(op.join(new_path, new_fname))
+            froot, ext, trail_ext = splitext_addext(fnames[run_idx])
+            path, fname = op.split(froot)
+            # We retain the file-name adding '_mc' regardless of where it's
+            # saved
+            new_path = path if out_name is None else out_name
+            save_image(new_im, op.join(new_path, fname + '_mc.nii.gz'))
 
     if make_figure:
         figure, ax = plt.subplots(2)
