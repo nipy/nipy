@@ -27,12 +27,13 @@ from ...core.image.image_spaces import (make_xyz_image,
                                         xyz_affine,
                                         as_xyz_image)
 from ..slicetiming import timefuncs
+from .type_check import (check_type, check_type_and_shape)
 from .optimizer import configure_optimizer, use_derivatives
 from .affine import Rigid, Affine
 from ._registration import (_cspline_transform,
                             _cspline_sample3d,
                             _cspline_sample4d)
-
+from .type_check import (check_type, check_type_and_shape)
 
 VERBOSE = os.environ.get('NIPY_DEBUG_PRINT', False)
 INTERLEAVED = None
@@ -181,6 +182,7 @@ class Image4d(object):
             self._data = None
 
 
+
 class Realign4dAlgorithm(object):
 
     def __init__(self,
@@ -189,6 +191,7 @@ class Realign4dAlgorithm(object):
                  transforms=None,
                  time_interp=True,
                  subsampling=(1, 1, 1),
+                 refscan=0,
                  borders=(1, 1, 1),
                  optimizer='ncg',
                  optimize_template=True,
@@ -197,9 +200,23 @@ class Realign4dAlgorithm(object):
                  gtol=GTOL,
                  stepsize=STEPSIZE,
                  maxiter=MAXITER,
-                 maxfun=MAXFUN,
-                 refscan=0):
+                 maxfun=MAXFUN):
 
+        # Check arguments
+        check_type(time_interp, bool)
+        check_type_and_shape(subsampling, int, 3)
+        check_type(refscan, int, accept_none=True)
+        check_type_and_shape(borders, int, 3)
+        check_type(optimizer, str)
+        check_type(optimize_template, bool)
+        check_type(xtol, float)
+        check_type(ftol, float)
+        check_type(gtol, float)
+        check_type(stepsize, float)
+        check_type(maxiter, int)
+        check_type(maxfun, int, accept_none=True)
+
+        # Get dimensional parameters
         self.dims = im4d.get_shape()
         self.nscans = self.dims[3]
         # Reduce borders if spatial image dimension too small to avoid
