@@ -203,12 +203,9 @@ class Realign4dAlgorithm(object):
                  maxfun=MAXFUN):
 
         # Check arguments
-        check_type(time_interp, bool)
         check_type_and_shape(subsampling, int, 3)
         check_type(refscan, int, accept_none=True)
         check_type_and_shape(borders, int, 3)
-        check_type(optimizer, str)
-        check_type(optimize_template, bool)
         check_type(xtol, float)
         check_type(ftol, float)
         check_type(gtol, float)
