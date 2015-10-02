@@ -165,6 +165,7 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
             # We use the top 4 by 4 as the affine for the new file we will
             # create:
             new_aff = new_im.affine[:4, :4]
+            new_aff[:, 3] = new_im.affine[:4, 4]
             new_ni = nib.Nifti1Image(new_data, new_aff)
             # Save it out to a '.nii.gz' file:
             old_fname_split = op.split(fnames[run_idx])
