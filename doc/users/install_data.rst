@@ -23,7 +23,8 @@ http://nipy.org/data-packages/nipy-templates-0.2.tar.gz
 ``python setup.py install`` on it.  On a unix system this might look
 like::
 
-   curl -O http://nipy.org/data-packages/nipy-templates-0.2.tar.gz
+   # curl -L flag to follow redirect; can also use wget
+   curl -OL http://nipy.org/data-packages/nipy-templates-0.2.tar.gz
    tar zxvf nipy-templates-0.2.tar.gz
    cd nipy-templates-0.2
    sudo python setup.py install
