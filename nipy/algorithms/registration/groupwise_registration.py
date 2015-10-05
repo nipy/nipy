@@ -33,7 +33,7 @@ from .affine import Rigid, Affine
 from ._registration import (_cspline_transform,
                             _cspline_sample3d,
                             _cspline_sample4d)
-from .type_check import (check_type, check_type_and_shape)
+
 
 VERBOSE = os.environ.get('NIPY_DEBUG_PRINT', False)
 INTERLEAVED = None
@@ -246,7 +246,7 @@ class Realign4dAlgorithm(object):
         # The reference scan conventionally defines the head
         # coordinate system
         self.optimize_template = optimize_template
-        if not optimize_template and refscan == None:
+        if not optimize_template and refscan is None:
             self.refscan = 0
         else:
             self.refscan = refscan
@@ -840,7 +840,7 @@ class Realign4d(object):
         maxfun : int 
             Maximum number of function evaluations in maxfun.
         """
-        if between_loops == None:
+        if between_loops is None:
             between_loops = loops
         t = realign4d(self._runs,
                       affine_class=self.affine_class,
