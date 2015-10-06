@@ -17,7 +17,8 @@ from ....fixes.nibabel import io_orientation
 from ....core.image.image_spaces import (make_xyz_image, xyz_affine)
 
 from ..groupwise_registration import (Image4d, resample4d, FmriRealign4d,
-                                      SpaceTimeRealign, SpaceRealign, Realign4d)
+                                      SpaceTimeRealign, SpaceRealign, Realign4d,
+                                      Realign4dAlgorithm, make_grid)
 from ...slicetiming.timefuncs import st_43210, st_02413, st_42031
 from ..affine import Rigid
 
@@ -199,6 +200,70 @@ def test_spacetimerealign_params():
     assert_array_equal(R1.slice_times, np.arange(3) / 3. * 2.)
     # Smoke test run
     R1.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
+
+
+def reduced_dim(dim, subsampling, border):
+    return max(1, int(np.ceil((dim - 2 * border) / float(subsampling))))
+
+
+def test_lowlevel_params():
+    runs = [im, im]
+    R = SpaceTimeRealign(runs, tr=21, slice_times='ascending', slice_info=1)
+    borders=(3,2,1)
+    R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest', borders=borders)
+    # Test tighter borders for motion estimation
+    r = Realign4dAlgorithm(R._runs[0], borders=borders)
+    nvoxels = np.prod(np.array([reduced_dim(im.shape[i], 1, borders[i]) for i in range(3)]))
+    assert_array_equal(r.xyz.shape, (nvoxels, 3))
+    # Test wrong argument types raise errors
+    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], subsampling=(3,3,3,1))
+    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], refscan='first')
+    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], borders=(1,1,1,0))
+    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], xtol=None)
+    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], ftol='dunno')
+    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], gtol=(.1,.1,.1))
+    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], stepsize=None)
+    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], maxiter=None)
+    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], maxfun='none')
+
+
+def _test_make_grid(dims, subsampling, borders, expected_nvoxels):
+    x = make_grid(dims, subsampling, borders)
+    assert_equal(x.shape[0], expected_nvoxels)
+
+
+def test_make_grid_funfile():
+    dims = im.shape[0:3]
+    borders = (3,2,1)
+    nvoxels = np.prod(np.array([reduced_dim(dims[i], 1, borders[i]) for i in range(3)]))
+    _test_make_grid(dims, (1,1,1), borders, nvoxels)           
+
+
+def test_make_grid_default():
+    dims = np.random.randint(100, size=3) + 1
+    _test_make_grid(dims, (1,1,1), (0,0,0), np.prod(dims))           
+
+
+def test_make_grid_random_subsampling():
+    dims = np.random.randint(100, size=3) + 1
+    subsampling = np.random.randint(5, size=3) + 1
+    nvoxels = np.prod(np.array([reduced_dim(dims[i], subsampling[i], 0) for i in range(3)]))
+    _test_make_grid(dims, subsampling, (0,0,0), nvoxels)           
+
+
+def test_make_grid_random_borders():
+    dims = np.random.randint(100, size=3) + 1
+    borders = np.minimum((dims - 1) / 2, np.random.randint(10, size=3))
+    nvoxels = np.prod(np.array([reduced_dim(dims[i], 1, borders[i]) for i in range(3)]))
+    _test_make_grid(dims, (1,1,1), borders, nvoxels)           
+
+
+def test_make_grid_full_monthy():
+    dims = np.random.randint(100, size=3) + 1
+    subsampling = np.random.randint(5, size=3) + 1
+    borders = np.minimum((dims - 1) / 2, np.random.randint(10, size=3))
+    nvoxels = np.prod(np.array([reduced_dim(dims[i], subsampling[i], borders[i]) for i in range(3)]))
+    _test_make_grid(dims, subsampling, borders, nvoxels)           
 
 
 def test_spacerealign():
