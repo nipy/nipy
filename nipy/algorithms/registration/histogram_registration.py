@@ -72,6 +72,9 @@ class HistogramRegistration(object):
           supervised log-likelihood ratio. If a callable, it should
           take a two-dimensional array representing the image joint
           histogram as an input and return a float.
+       dist: None or array-like
+          Joint intensity probability distribution model for use with the 
+          'slr' measure. Should be of shape (from_bins, to_bins).
        interp : str
          Interpolation method.  One of 'pv': Partial volume, 'tri':
          Trilinear, 'rand': Random interpolation.  See ``joint_histogram.c``
@@ -90,8 +93,10 @@ class HistogramRegistration(object):
 
         # Clamping of the `from` image. The number of bins may be
         # overriden if unnecessarily large.
-        data, from_bins = clamp(from_img.get_data(), from_bins,
-                                mask=from_mask)
+        data, from_bins_adjusted = clamp(from_img.get_data(), from_bins,
+                                         mask=from_mask)
+        if not similarity == 'slr':
+            from_bins = from_bins_adjusted
         self._from_img = make_xyz_image(data, xyz_affine(from_img), 'scanner')
         # Set field of view in the `from` image with potential
         # subsampling for faster similarity evaluation. This also sets
@@ -111,7 +116,9 @@ class HistogramRegistration(object):
                                 self._smooth)
         else:
             data = to_img.get_data()
-        data, to_bins = clamp(data, to_bins, mask=to_mask)
+        data, to_bins_adjusted = clamp(data, to_bins, mask=to_mask)
+        if not similarity == 'slr':
+            to_bins = to_bins_adjusted
         self._to_data = -np.ones(np.array(to_img.shape) + 2, dtype=CLAMP_DTYPE)
         self._to_data[1:-1, 1:-1, 1:-1] = data
         self._to_inv_affine = inverse_affine(xyz_affine(to_img))
@@ -180,6 +187,12 @@ class HistogramRegistration(object):
 
     def _set_similarity(self, similarity, renormalize=False, dist=None):
         if similarity in _sms:
+            if similarity == 'slr':
+                if dist is None:
+                    raise ValueError('slr measure requires a joint intensity distribution model, '
+                                     'see `dist` argument of HistogramRegistration')
+                if dist.shape != self._joint_hist.shape:
+                    raise ValueError('Wrong shape for the `dist` argument')
             self._similarity = similarity
             self._similarity_call =\
                 _sms[similarity](self._joint_hist.shape, renormalize, dist)
