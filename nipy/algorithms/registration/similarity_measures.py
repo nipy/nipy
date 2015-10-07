@@ -68,7 +68,10 @@ class SimilarityMeasure(object):
         self.shape = shape
         self.J, self.I = np.indices(shape)
         self.renormalize = renormalize
-        self.dist = dist
+        if dist is None:
+            self.dist = None
+        else:
+            self.dist = dist.copy()
 
     def loss(self, H):
         return np.zeros(H.shape)
@@ -89,6 +92,10 @@ class SupervisedLikelihoodRatio(SimilarityMeasure):
     """
     def loss(self, H):
         if not hasattr(self, 'L'):
+            if self.dist is None:
+                raise ValueError('SupervisedLikelihoodRatio: dist attribute cannot be None')
+            if not self.dist.shape == H.shape:
+                raise ValueError('SupervisedLikelihoodRatio: wrong shape for dist attribute')
             self.L = dist2loss(self.dist)
         return self.L
 
