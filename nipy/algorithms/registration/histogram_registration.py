@@ -188,7 +188,7 @@ class HistogramRegistration(object):
     def _set_similarity(self, similarity, renormalize=False, dist=None):
         if similarity in _sms:
             if similarity == 'slr':
-                if dist == None:
+                if dist is None:
                     raise ValueError('slr measure requires a joint intensity distribution model, '
                                      'see `dist` argument of HistogramRegistration')
                 if dist.shape != self._joint_hist.shape:
