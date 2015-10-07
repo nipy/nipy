@@ -189,7 +189,7 @@ class HistogramRegistration(object):
         if similarity in _sms:
             if similarity == 'slr':
                 if dist == None:
-                    raise ValueError('slr measure requires a joint intensity distribution model, '\
+                    raise ValueError('slr measure requires a joint intensity distribution model, '
                                      'see `dist` argument of HistogramRegistration')
                 if dist.shape != self._joint_hist.shape:
                     raise ValueError('Wrong shape for the `dist` argument')
