@@ -5,6 +5,8 @@ Convenience functions for specifying a design in the GLM
 """
 from __future__ import absolute_import
 
+import itertools
+
 import numpy as np
 
 from nipy.algorithms.statistics.utils import combinations
@@ -80,6 +82,7 @@ def natural_spline(tvals, knots=None, order=3, intercept=True):
     f = formulae.natural_spline(t, knots=knots, order=order, intercept=intercept)
     return f.design(tvals, return_float=True)
 
+
 def event_design(event_spec, t, order=2, hrfs=(glover,),
                  level_contrasts=False):
     """ Create design matrix from event specification `event_spec`
@@ -93,7 +96,8 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
     event_spec : np.recarray
        A recarray having at least a field named 'time' signifying the event
        time, and all other fields will be treated as factors in an ANOVA-type
-       model.
+       model.  If there is no field other than time, add a single-level
+       placeholder event type ``_event_``.
     t : np.ndarray
        An array of np.float values at which to evaluate the design. Common
        examples would be the acquisition times of an fMRI image.
@@ -122,30 +126,32 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
     if 'time' not in fields:
         raise ValueError('expecting a field called "time"')
     fields.pop(fields.index('time'))
+    if len(fields) == 0:  # No factors specified, make generic event
+        event_spec = make_recarray(zip(event_spec['time'],
+                                       itertools.cycle([1])),
+                                   ('time', '_event_'))
+        fields = ['_event_']
     e_factors = [Factor(n, np.unique(event_spec[n])) for n in fields]
     e_formula = np.product(e_factors)
-    e_contrasts = {}
-
-    if len(e_factors) > 1:
-        for i in range(1, order+1):
-            for comb in combinations(zip(fields, e_factors), i):
-                names = [c[0] for c in comb]
-                fs = [c[1].main_effect for c in comb]
-                e_contrasts[":".join(names)] = np.product(fs).design(event_spec)
-    else:
-        # only one factor, produce the main effect
-        field = fields[0]
-        factor = e_factors[0]
-        e_contrasts[field] = factor.main_effect.design(event_spec)
-
-    e_contrasts['constant'] = formulae.I.design(event_spec)
 
     # Design and contrasts in event space
     # TODO: make it so I don't have to call design twice here
     # to get both the contrasts and the e_X matrix as a recarray
-
     e_X = e_formula.design(event_spec)
     e_dtype = e_formula.dtype
+    e_contrasts = {}
+
+    # Add contrasts for factors and factor interactions
+    max_order = min(len(e_factors), order)
+    for i in range(1, max_order + 1):
+        for comb in combinations(zip(fields, e_factors), i):
+            names = [c[0] for c in comb]
+            # Collect factors where there is more than one level
+            fs = [fc.main_effect for fn, fc in comb if len(fc.levels) > 1]
+            if len(fs) > 0:
+                e_contrast = np.product(fs).design(event_spec)
+                e_contrasts[":".join(names)] = e_contrast
+    e_contrasts['constant'] = formulae.I.design(event_spec)
 
     # Now construct the design in time space
     t_terms = []
@@ -165,6 +171,7 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
     tval = make_recarray(t, ['t'])
     X_t, c_t = t_formula.design(tval, contrasts=t_contrasts)
     return X_t, c_t
+
 
 def block_design(block_spec, t, order=2, hrfs=(glover,),
                  convolution_padding=5.,
@@ -281,6 +288,7 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
     tval = make_recarray(t, ['t'])
     X_t, c_t = t_formula.design(tval, contrasts=t_contrasts)
     return X_t, c_t
+
 
 def stack2designs(old_X, new_X, old_contrasts={}, new_contrasts={}):
     """
