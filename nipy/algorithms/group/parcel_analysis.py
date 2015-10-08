@@ -73,6 +73,7 @@ def _gaussian_energy(sigma):
     sigma = np.asarray(sigma)
     if sigma.size == 1:
         sigma = np.repeat(sigma, NDIM)
+    # Use kernel separability to save memory
     return np.prod([_gaussian_energy_1d(s) for s in sigma])
 
 
