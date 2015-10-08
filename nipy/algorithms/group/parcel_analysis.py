@@ -51,6 +51,20 @@ def _gaussian_filter(x, msk, sigma):
     return gx
 
 
+def _gaussian_energy_1d(sigma):
+    """
+    Compute the integral of a one-dimensional squared three-dimensional
+    Gaussian kernel with axis-wise standard deviation `sigma`.
+    """
+    mask_half_size = np.ceil(5 * sigma).astype(int)
+    mask_size = 2 * mask_half_size + 1
+    x = np.zeros(mask_size)
+    x[mask_half_size] = 1
+    y = nd.gaussian_filter1d(x, sigma)
+    K = np.sum(y ** 2) / np.sum(y)
+    return K
+
+
 def _gaussian_energy(sigma):
     """
     Compute the integral of a squared three-dimensional Gaussian
@@ -59,13 +73,7 @@ def _gaussian_energy(sigma):
     sigma = np.asarray(sigma)
     if sigma.size == 1:
         sigma = np.repeat(sigma, NDIM)
-    mask_half_size = np.ceil(5 * sigma).astype(int)
-    mask_size = 2 * mask_half_size + 1
-    x = np.zeros(mask_size)
-    x[tuple(mask_half_size)] = 1
-    y = nd.gaussian_filter(x, sigma)
-    K = np.sum(y ** 2) / np.sum(y)
-    return K
+    return np.prod([_gaussian_energy_1d(s) for s in sigma])
 
 
 def _smooth(con, vcon, msk, sigma):
