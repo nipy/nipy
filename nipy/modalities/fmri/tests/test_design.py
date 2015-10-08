@@ -115,3 +115,6 @@ def test_event_design():
                               'smt_0': [1, 1, -1, -1],  # main effect fac_1
                               'smte_0': [1, -1, 1, -1],  # main effect fac_2
                              })
+    # Test field called "time" is necessary
+    event_spec_1d = make_recarray(zip(onsets, fac_1), ('brighteyes', 'smt'))
+    assert_raises(ValueError, event_design, event_spec_1d, t)
