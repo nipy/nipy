@@ -20,6 +20,8 @@ extended capabilities to interface with external tools and for dataflow
 management. nipype can handle vanilla SPM in MATLAB or SPM run through the
 MATLAB common runtime (free from MATLAB Licensing).
 '''
+from __future__ import print_function, division, absolute_import
+
 import sys
 from copy import deepcopy
 from os.path import join as pjoin, abspath, splitext, isfile
@@ -45,7 +47,8 @@ N_SLICES = 40 # X slices
 STUDY_DEF = dict(
     TR = 2.5,
     n_slices = N_SLICES,
-    time_to_space = range(1, N_SLICES, 2) + range(2, N_SLICES, 2)
+    time_to_space = (list(range(1, N_SLICES, 2)) +
+                     list(range(2, N_SLICES, 2)))
 )
 
 
