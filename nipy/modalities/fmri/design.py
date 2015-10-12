@@ -122,7 +122,7 @@ def _build_formula_contrasts(spec, fields, order):
 
 def event_design(event_spec, t, order=2, hrfs=(glover,),
                  level_contrasts=False):
-    """ Create design matrix from event specification `event_spec`
+    """ Create design matrix at times `t` for event specification `event_spec`
 
     Create a design matrix for linear model based on an event specification
     `event_spec`, evaluating the design rows at a sequence of time values `t`.
@@ -145,8 +145,7 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
        A sequence of (symbolic) HRFs that will be convolved with each event.
        Default is ``(glover,)``.
     level_contrasts : bool, optional
-       If True, generate contrasts for each individual level
-       of each factor.
+       If True, generate contrasts for each individual level of each factor.
 
     Returns
     -------
@@ -154,10 +153,10 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
        The design matrix with ``X.shape[0] == t.shape[0]``. The number of
        columns will depend on the other fields of `event_spec`.
     contrasts : dict
-       Dictionary of contrasts that is expected to be of interest from the event
-       specification. Each interaction / effect up to a given order will be
-       returned. Also, a contrast is generated for each interaction / effect for
-       each HRF specified in hrfs.
+       Dictionary of contrasts that is expected to be of interest from the
+       event specification. Each interaction / effect up to a given order will
+       be returned. Also, a contrast is generated for each interaction / effect
+       for each HRF specified in `hrfs`.
     """
     fields = list(event_spec.dtype.names)
     if 'time' not in fields:
@@ -201,7 +200,7 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
                  convolution_dt=0.02,
                  hrf_interval=(0.,30.),
                  level_contrasts=False):
-    """ Create a design matrix from specification of blocks `block_spec`
+    """ Create design matrix at times `t` for blocks specification `block_spec`
 
     Create design matrix for linear model from a block specification
     `block_spec`,  evaluating design rows at a sequence of time values `t`.
@@ -211,8 +210,10 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
     ----------
     block_spec : np.recarray
        A recarray having at least a field named 'start' and a field named 'end'
-       signifying the block time, and all other fields will be treated as
-       factors in an ANOVA-type model.
+       signifying the block onset and offset times. All other fields will be
+       treated as factors in an ANOVA-type model.  If there is no field other
+       than 'start' and 'end', add a single-level placeholder block type
+       ``_block_``.
     t : np.ndarray
        An array of np.float values at which to evaluate the design. Common
        examples would be the acquisition times of an fMRI image.
@@ -239,13 +240,13 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
     Returns
     -------
     X : np.ndarray
-       The design matrix with X.shape[0] == t.shape[0]. The number of
-       columns will depend on the other fields of block_spec.
+       The design matrix with ``X.shape[0] == t.shape[0]``. The number of
+       columns will depend on the other fields of `block_spec`.
     contrasts : dict
-       Dictionary of contrasts that is expected to be of interest from
-       the block specification. For each interaction / effect up to a
-       given order will be returned. Also, a contrast is generated for
-       each interaction / effect for each HRF specified in hrfs.
+       Dictionary of contrasts that are expected to be of interest from the
+       block specification. Each interaction / effect up to a given order will
+       be returned. Also, a contrast is generated for each interaction / effect
+       for each HRF specified in `hrfs`.
     """
     fields = list(block_spec.dtype.names)
     if 'start' not in fields or 'end' not in fields:
