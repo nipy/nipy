@@ -40,14 +40,6 @@ def getruns():
         for j in range(1,13):
             yield i, j
 
-ace_vs_scrambled_t/
-house_vs_scrambled_F/              house_vs_scrambled_t/
-object_bottle_0/                   object_bottle_1/
-object_cat_0/                      object_cat_1/
-object_chair_0/                    object_chair_1/
-object_face_0/                     object_face_1/
-object_house_0/                    object_house_1/
-
 
 def getvals():
     for con in ['house_vs_scrambled_t',
