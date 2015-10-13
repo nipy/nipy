@@ -552,16 +552,15 @@ def gamma_gaussian_fit(x, test=None, verbose=0, mpaxes=False,
 
 
 def smoothed_histogram_from_samples(x, bins=None, nbins=256, normalized=False):
-    """Returns the smooth histogram corresponding to the  density
-    underlying the samples in x
+    """ Smooth histogram corresponding to density underlying the samples in `x`
 
     Parameters
     ----------
-    x: array of shape(n_samples),
+    x: array of shape(n_samples)
        input data
-    bins: array of shape(nbins+1), optional,
+    bins: array of shape(nbins+1), optional
        the bins location
-    nbins: int, optional,
+    nbins: int, optional
        the number of bins of the resulting histogram
     normalized: bool, optional
        if True, the result is returned as a density value
