@@ -202,7 +202,7 @@ class NormalEmpiricalNull(object):
 
         # generate the histogram
         step = 3.5 * np.std(self.x) / np.exp(np.log(self.n) / 3)
-        bins = max(10, (self.x.max() - self.x.min()) / step)
+        bins = max(10, (self.x.max() - self.x.min()) // step)
         hist, ledge = np.histogram(x, bins=bins)
         step = ledge[1] - ledge[0]
         medge = ledge + 0.5 * step
