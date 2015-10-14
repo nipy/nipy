@@ -202,7 +202,7 @@ class NormalEmpiricalNull(object):
 
         # generate the histogram
         step = 3.5 * np.std(self.x) / np.exp(np.log(self.n) / 3)
-        bins = max(10, (self.x.max() - self.x.min()) / step)
+        bins = max(10, (self.x.max() - self.x.min()) // step)
         hist, ledge = np.histogram(x, bins=bins)
         step = ledge[1] - ledge[0]
         medge = ledge + 0.5 * step
@@ -552,16 +552,15 @@ def gamma_gaussian_fit(x, test=None, verbose=0, mpaxes=False,
 
 
 def smoothed_histogram_from_samples(x, bins=None, nbins=256, normalized=False):
-    """Returns the smooth histogram corresponding to the  density
-    underlying the samples in x
+    """ Smooth histogram corresponding to density underlying the samples in `x`
 
     Parameters
     ----------
-    x: array of shape(n_samples),
+    x: array of shape(n_samples)
        input data
-    bins: array of shape(nbins+1), optional,
+    bins: array of shape(nbins+1), optional
        the bins location
-    nbins: int, optional,
+    nbins: int, optional
        the number of bins of the resulting histogram
     normalized: bool, optional
        if True, the result is returned as a density value
