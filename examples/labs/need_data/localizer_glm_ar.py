@@ -117,7 +117,7 @@ contrasts["computation-sentences"] = contrasts["computation"] -  \
                                      contrasts["sentences"]
 contrasts["reading-visual"] = contrasts["sentences"] * 2 - \
                               contrasts["damier_H"] - contrasts["damier_V"]
-contrasts['effects_of_interest'] = np.eye(25)[:20:2]
+contrasts['effects_of_interest'] = np.eye(n_columns)[:20:2]
 
 ########################################
 # Perform a GLM analysis
