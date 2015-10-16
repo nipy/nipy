@@ -70,6 +70,23 @@ You can find our sources and single-click downloads:
 .. _current development version: https://github.com/nipy/nipy/archive/master.zip
 .. _available releases: http://pypi.python.org/pypi/nipy
 
+Tests
+=====
+
+To run nipy's tests, you will need to install the nose_ Python testing
+package.  Then::
+
+    python -c "import nipy; nipy.test()"
+
+You can also run nipy's tests with the ``nipnost`` script in the ``tools``
+directory of the nipy distribution::
+
+    ./tools/nipnost nipy
+
+``nipnost`` is a thin wrapper around the standard ``nosetests`` program that
+is part of the nose package.  Try ``nipnost --help`` to see a large number of
+command-line options.
+
 Dependencies
 ============
 
@@ -95,6 +112,7 @@ You will probably also like to have:
 .. _ipython: http://ipython.org
 .. _matplotlib: http://matplotlib.org
 .. _mayavi: http://code.enthought.com/projects/mayavi/
+.. _nose: http://nose.readthedocs.org/en/latest
 
 License
 =======

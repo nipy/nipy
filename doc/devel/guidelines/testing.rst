@@ -1,13 +1,23 @@
 .. _testing:
 
-=========
- Testing
-=========
+=======
+Testing
+=======
 
 Nipy uses the Numpy_ test framework which is based on nose_.  If you
-plan to do much development you should familiarize yourself with nose
+plan to do development on nipy please have a look at the `nose docs <nose>`_
 and read through the `numpy testing guidelines
 <http://projects.scipy.org/scipy/numpy/wiki/TestingGuidelines>`_.
+
+.. _automated-testing:
+
+Automated testing
+-----------------
+
+We run the tests on every commit with travis-ci_ |--| see `nipy on travis`_.
+
+We also have a farm of machines set up to run the tests on every commit to the
+``master`` branch at `nipy buildbot`_.
 
 Writing tests
 -------------
@@ -15,25 +25,24 @@ Writing tests
 Test files
 ^^^^^^^^^^
 
-The numpy testing framework and nipy extensions are imported with one
-line in your test module::
+We like test modules to import their testing functions and classes from the
+module in which they are defined.  For example, we might want to use the
+``assert_true``, ``assert_equal`` functions defined by ``nose``, the
+``assert_array_equal``, ``assert_almost_equal`` functions defined by
+``numpy``, and the ``funcfile, anatfile`` variables from ``nipy``::
 
-     from nipy.testing import *
+    from nose.tools import assert_true, assert_equal
+    from numpy.testing import assert_array_equal, assert_almost_equal
+    from nipy.testing import funcfile, anatfile
 
-This imports all the ``assert_*`` functions you need like
-``assert_equal``, ``assert_raises``, ``assert_array_almost_equal``
-etc..., numpy's ``rand`` function, and the numpy test decorators:
-``knownfailure``, ``slow``, ``skipif``, etc...
-
-Please name your test file with the *test_* prefix followed by the
-module name it tests.  This makes it obvious for other developers
-which modules are tested, where to add tests, etc...  An example test
-file and module pairing::
+Please name your test file with the ``test_`` prefix followed by the module
+name it tests.  This makes it obvious for other developers which modules are
+tested, where to add tests, etc...  An example test file and module pairing::
 
       nipy/core/reference/coordinate_system.py
       nipy/core/reference/tests/test_coordinate_system.py
 
-All tests go in a test subdirectory for each package.
+All tests go in a ``tests`` subdirectory for each package.
 
 Temporary files
 ^^^^^^^^^^^^^^^
@@ -98,22 +107,28 @@ Many tests in one test function
 
 To keep tests organized, it's best to have one test function
 correspond to one class method or module-level function.  Often
-though, you need many individual tests to thoroughly cover (100%
-coverage) the method/function.  This calls for a `generator function
-<http://docs.python.org/tutorial/classes.html#generators>`_.  Use a
-``yield`` statement to run each individual test, independent from the
-other tests.  This prevents the case where the first test fails and as
-a result the following tests don't get run.
+though, you need many individual tests to thoroughly cover the
+method/function.  For convenience, we often write many tests in a single test
+function.  This has the disadvantage that if one test fails, nose will not run
+any of the subsequent tests in the same function.  This isn't a big problem in
+practice, because we run the tests so often (:ref:`automated-testing`) that we
+can quickly pick up and fix the failures.
 
-This test function executes four independent tests::
+For axample, this test function executes four tests::
 
     def test_index():
         cs = CoordinateSystem('ijk')
-        yield assert_equal, cs.index('i'), 0
-        yield assert_equal, cs.index('j'), 1
-        yield assert_equal, cs.index('k'), 2
-        yield assert_raises, ValueError, cs.index, 'x'
+        assert_equal(cs.index('i'), 0)
+        assert_equal(cs.index('j'), 1)
+        assert_equal(cs.index('k'), 2)
+        assert_raises(ValueError, cs.index, 'x')
 
+We used to use `nose test generators
+<http://nose.readthedocs.org/en/latest/writing_tests.html#test-generators>`_
+for multiple tests in one function.  Test generators are test functions that
+return tests and parameters from ``yield`` statements.  You will still find
+many examples of these in the nipy codebase, but they made test failures
+rather hard to debug, so please don't use test generators in new tests.
 
 Suppress *warnings* on test output
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -140,6 +155,25 @@ Running tests
 Running the full test suite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+To run nipy's tests, you will need to nose_ installed.  Then::
+
+    python -c "import nipy; nipy.test()"
+
+You can also run nipy's tests with the ``nipnost`` script in the ``tools``
+directory of the nipy distribution::
+
+    ./tools/nipnost nipy
+
+``nipnost`` is a thin wrapper around the standard ``nosetests`` program that
+is part of the nose package. The ``nipnost`` wrapper sets up some custom
+doctest machinery and makes sure that `matplotlib`_ is using non-interactive
+plots.  ``nipy.test()`` does the same thing.
+
+Try ``nipnost --help`` to see a large number of command-line options.
+
+Install optional data packages for testing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 For our tests, we have collected a set of fmri imaging data which are
 required for the tests to run.  To do this, download the latest example
 data and template package files from `NIPY data packages`_. See
@@ -148,37 +182,40 @@ data and template package files from `NIPY data packages`_. See
 Running individual tests
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can also run nose from the command line with a variety of options.
+You can also run the tests from the command line with a variety of options.
+
+See above for a description of the ``nipnost`` program.
+
 To test an individual module::
 
-    nosetests test_image.py
+    nipnost test_image.py
 
 To test an individual function::
 
-    nosetests test_module:test_function
+    nipnost test_module:test_function
 
 To test a class::
 
-    nosetests test_module:TestClass
+    nipnost test_module:TestClass
 
 To test a class method::
 
-   nosetests test_module:TestClass.test_method
+   nipnost test_module:TestClass.test_method
 
 Verbose mode (*-v* option) will print out the function names as they
 are executed.  Standard output is normally supressed by nose, to see
 any print statements you must include the *-s* option.  In order to
 get a "full verbose" output, call nose like this::
 
-    nosetests -sv test_module.py
+    nipnost -sv test_module.py
 
 To include doctests in the nose test::
 
-   nosetests -sv --with-doctest test_module.py
+   nipnost -sv --with-doctest test_module.py
 
 For details on all the command line options::
 
-    nosetests --help
+    nipnost --help
 
 .. _coverage:
 
