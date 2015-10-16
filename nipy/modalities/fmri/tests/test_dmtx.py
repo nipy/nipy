@@ -73,6 +73,10 @@ def test_show_dmtx():
     ax = DM.show()
     assert (ax is not None)
 
+    # test the colormap
+    ax = DM.show(cmap=matplotlib.pyplot.cm.gray)
+    assert (ax is not None)
+
 def test_cosine_drift():
     # add something so that when the tests are launched from a different directory
     # we still find the file ' 'dctmtx_N_20_order_4.txt' ? 
@@ -82,7 +86,22 @@ def test_cosine_drift():
     P = 10 # period is half the time, gives us an order 4
     nipy_drifts = _cosine_drift(P, tim) #
     assert_almost_equal(spm_drifts[:,1:], nipy_drifts[:,:-1])
-        # nipy_drifts is placing the constant at the end [:,:-1]
+    # nipy_drifts is placing the constant at the end [:,:-1]
+
+
+@dec.skipif(not have_mpl)
+def test_show_constrast():
+    # test that the show code indeed (formally) runs
+    frametimes = np.linspace(0, 127 * 1.,128)
+    DM = make_dmtx(frametimes, drift_model='polynomial', drift_order=3)
+    contrast = np.random.standard_normal((3, DM.matrix.shape[1]))
+    ax = DM.show_contrast(contrast)
+    assert (ax is not None)
+
+    # test the colormap
+    ax = DM.show_contrast(contrast, cmap=matplotlib.pyplot.cm.gray)
+    assert (ax is not None)
+
 
 def test_dmtx0():
     # Test design matrix creation when no paradigm is provided

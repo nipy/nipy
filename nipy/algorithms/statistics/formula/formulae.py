@@ -335,30 +335,32 @@ def getterms(expression):
 def make_recarray(rows, names, dtypes=None):
     """ Create recarray from `rows` with field names `names`
 
-    Create a recarray with named columns from a list of rows and names
-    for the columns. If dtype is None, the dtype is based on rows if it
-    is an np.ndarray, else the data is cast as np.float. If dtypes are
-    supplied, it uses the dtypes to create a np.dtype unless rows is an
-    np.ndarray, in which case dtypes are ignored
+    Create a recarray with named columns from a list or ndarray of `rows` and
+    sequence of `names` for the columns. If `rows` is an ndarray, `dtypes` must
+    be None, otherwise we raise a ValueError. Otherwise, if `dtypes` is None,
+    we cast the data in all columns in `rows` as np.float. If `dtypes` is not
+    None, the routine uses `dtypes` as a dtype specifier for the output
+    structured array.
 
     Parameters
     ----------
-    rows: array-like
+    rows: list or array
         Rows that will be turned into an recarray.
     names: sequence
         Sequence of strings - names for the columns.
-    dtypes: [str or np.dtype]
-        Used to create a np.dtype, can be np.dtypes or string.
+    dtypes: None or sequence of str or sequence of np.dtype
+        Used to create a np.dtype, can be sequence of np.dtype or string.
 
     Returns
     -------
     v : np.ndarray
+        Structured array with field names given by `names`.
 
     Examples
     --------
-    The following tests depend on machine byte order to pass
+    The following tests depend on machine byte order for their exact output.
 
-    >>> arr = np.array([[3,4 ], [4, 6], [6, 8]])
+    >>> arr = np.array([[3, 4], [4, 6], [6, 8]])
     >>> make_recarray(arr, ['x', 'y']) #doctest: +ELLIPSIS
     array([[(3, 4)],
            [(4, 6)],

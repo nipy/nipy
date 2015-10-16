@@ -5,6 +5,8 @@ Convenience functions for specifying a design in the GLM
 """
 from __future__ import absolute_import
 
+import itertools
+
 import numpy as np
 
 from nipy.algorithms.statistics.utils import combinations
@@ -81,9 +83,46 @@ def natural_spline(tvals, knots=None, order=3, intercept=True):
     return f.design(tvals, return_float=True)
 
 
+def _build_formula_contrasts(spec, fields, order):
+    """ Build formula and contrast in event / block space
+
+    Parameters
+    ----------
+    spec : stuctured array
+        Structured array containing at least fields listed in `fields`.
+    fields : sequence of str
+        Sequence of field names containing names of factors.
+    order : int
+        Maximum order of interactions between main effects.
+
+    Returns
+    -------
+    e_factors : :class:`Formula` instance
+        Formula for factors given by `fields`
+    e_contrasts : dict
+        Dictionary containing contrasts of main effects and interactions
+        between factors.
+    """
+    e_factors = [Factor(n, np.unique(spec[n])) for n in fields]
+    e_formula = np.product(e_factors)
+    e_contrasts = {}
+    # Add contrasts for factors and factor interactions
+    max_order = min(len(e_factors), order)
+    for i in range(1, max_order + 1):
+        for comb in combinations(zip(fields, e_factors), i):
+            names = [c[0] for c in comb]
+            # Collect factors where there is more than one level
+            fs = [fc.main_effect for fn, fc in comb if len(fc.levels) > 1]
+            if len(fs) > 0:
+                e_contrast = np.product(fs).design(spec)
+                e_contrasts[":".join(names)] = e_contrast
+    e_contrasts['constant'] = formulae.I.design(spec)
+    return e_formula, e_contrasts
+
+
 def event_design(event_spec, t, order=2, hrfs=(glover,),
                  level_contrasts=False):
-    """ Create design matrix from event specification `event_spec`
+    """ Create design matrix at times `t` for event specification `event_spec`
 
     Create a design matrix for linear model based on an event specification
     `event_spec`, evaluating the design rows at a sequence of time values `t`.
@@ -94,7 +133,8 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
     event_spec : np.recarray
        A recarray having at least a field named 'time' signifying the event
        time, and all other fields will be treated as factors in an ANOVA-type
-       model.
+       model.  If there is no field other than time, add a single-level
+       placeholder event type ``_event_``.
     t : np.ndarray
        An array of np.float values at which to evaluate the design. Common
        examples would be the acquisition times of an fMRI image.
@@ -105,8 +145,7 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
        A sequence of (symbolic) HRFs that will be convolved with each event.
        Default is ``(glover,)``.
     level_contrasts : bool, optional
-       If True, generate contrasts for each individual level
-       of each factor.
+       If True, generate contrasts for each individual level of each factor.
 
     Returns
     -------
@@ -114,32 +153,25 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
        The design matrix with ``X.shape[0] == t.shape[0]``. The number of
        columns will depend on the other fields of `event_spec`.
     contrasts : dict
-       Dictionary of contrasts that is expected to be of interest from the event
-       specification. Each interaction / effect up to a given order will be
-       returned. Also, a contrast is generated for each interaction / effect for
-       each HRF specified in hrfs.
+       Dictionary of contrasts that is expected to be of interest from the
+       event specification. Each interaction / effect up to a given order will
+       be returned. Also, a contrast is generated for each interaction / effect
+       for each HRF specified in `hrfs`.
     """
     fields = list(event_spec.dtype.names)
     if 'time' not in fields:
         raise ValueError('expecting a field called "time"')
     fields.pop(fields.index('time'))
-    e_factors = [Factor(n, np.unique(event_spec[n])) for n in fields]
-    e_formula = np.product(e_factors)
-    e_contrasts = {}
-
-    if len(e_factors) > 1:
-        for i in range(1, order+1):
-            for comb in combinations(zip(fields, e_factors), i):
-                names = [c[0] for c in comb]
-                fs = [c[1].main_effect for c in comb]
-                e_contrasts[":".join(names)] = np.product(fs).design(event_spec)
-
-    e_contrasts['constant'] = formulae.I.design(event_spec)
-
-    # Design and contrasts in event space
+    if len(fields) == 0:  # No factors specified, make generic event
+        event_spec = make_recarray(zip(event_spec['time'],
+                                       itertools.cycle([1])),
+                                   ('time', '_event_'))
+        fields = ['_event_']
+    e_formula, e_contrasts = _build_formula_contrasts(
+        event_spec, fields, order)
+    # Design and contrasts in block space
     # TODO: make it so I don't have to call design twice here
     # to get both the contrasts and the e_X matrix as a recarray
-
     e_X = e_formula.design(event_spec)
     e_dtype = e_formula.dtype
 
@@ -168,7 +200,7 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
                  convolution_dt=0.02,
                  hrf_interval=(0.,30.),
                  level_contrasts=False):
-    """ Create a design matrix from specification of blocks `block_spec`
+    """ Create design matrix at times `t` for blocks specification `block_spec`
 
     Create design matrix for linear model from a block specification
     `block_spec`,  evaluating design rows at a sequence of time values `t`.
@@ -178,8 +210,10 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
     ----------
     block_spec : np.recarray
        A recarray having at least a field named 'start' and a field named 'end'
-       signifying the block time, and all other fields will be treated as
-       factors in an ANOVA-type model.
+       signifying the block onset and offset times. All other fields will be
+       treated as factors in an ANOVA-type model.  If there is no field other
+       than 'start' and 'end', add a single-level placeholder block type
+       ``_block_``.
     t : np.ndarray
        An array of np.float values at which to evaluate the design. Common
        examples would be the acquisition times of an fMRI image.
@@ -206,47 +240,40 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
     Returns
     -------
     X : np.ndarray
-       The design matrix with X.shape[0] == t.shape[0]. The number of
-       columns will depend on the other fields of block_spec.
+       The design matrix with ``X.shape[0] == t.shape[0]``. The number of
+       columns will depend on the other fields of `block_spec`.
     contrasts : dict
-       Dictionary of contrasts that is expected to be of interest from
-       the block specification. For each interaction / effect up to a
-       given order will be returned. Also, a contrast is generated for
-       each interaction / effect for each HRF specified in hrfs.
+       Dictionary of contrasts that are expected to be of interest from the
+       block specification. Each interaction / effect up to a given order will
+       be returned. Also, a contrast is generated for each interaction / effect
+       for each HRF specified in `hrfs`.
     """
     fields = list(block_spec.dtype.names)
     if 'start' not in fields or 'end' not in fields:
         raise ValueError('expecting fields called "start" and "end"')
     fields.pop(fields.index('start'))
     fields.pop(fields.index('end'))
-    e_factors = [Factor(n, np.unique(block_spec[n])) for n in fields]
-    e_formula = np.product(e_factors)
-    e_contrasts = {}
-    if len(e_factors) > 1:
-        for i in range(1, order+1):
-            for comb in combinations(zip(fields, e_factors), i):
-                names = [c[0] for c in comb]
-                fs = [c[1].main_effect for c in comb]
-                e_contrasts[":".join(names)] = np.product(fs).design(block_spec)
-
-    e_contrasts['constant'] = formulae.I.design(block_spec)
-
+    if len(fields) == 0:  # No factors specified, make generic block
+        block_spec = make_recarray(zip(block_spec['start'],
+                                       block_spec['end'],
+                                       itertools.cycle([1])),
+                                   ('start', 'end', '_block_'))
+        fields = ['_block_']
+    e_formula, e_contrasts = _build_formula_contrasts(
+        block_spec, fields, order)
     # Design and contrasts in block space
     # TODO: make it so I don't have to call design twice here
     # to get both the contrasts and the e_X matrix as a recarray
-
     e_X = e_formula.design(block_spec)
     e_dtype = e_formula.dtype
 
     # Now construct the design in time space
-
     block_times = np.array([(s,e) for s, e in zip(block_spec['start'], 
                                                   block_spec['end'])])
     convolution_interval = (block_times.min() - convolution_padding, 
                             block_times.max() + convolution_padding)
 
     t_terms = []
-    t_names = []
     t_contrasts = {}
     for l, h in enumerate(hrfs):
         for n in e_dtype.names:
