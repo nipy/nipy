@@ -84,7 +84,12 @@ from numpy.distutils.command.build_ext import build_ext
 
 def data_install_msgs():
     # Check whether we have data packages
-    from nibabel.data import datasource_or_bomber
+    try:  # Allow setup.py to run without nibabel
+        from nibabel.data import datasource_or_bomber
+    except ImportError:
+        log.warn('Cannot check for optional data packages: see: '
+                 'http://nipy.org/nipy/stable/users/install_data.html')
+        return
     DATA_PKGS = INFO_VARS['DATA_PKGS']
     templates = datasource_or_bomber(DATA_PKGS['nipy-templates'])
     example_data = datasource_or_bomber(DATA_PKGS['nipy-data'])
