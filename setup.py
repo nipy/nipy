@@ -13,12 +13,12 @@ if exists('MANIFEST'): os.remove('MANIFEST')
 
 # Import build helpers
 try:
-    from nisext.sexts import package_check, get_comrec_build
+    from nisext.sexts import package_check
 except ImportError:
     raise RuntimeError('Need nisext package from nibabel installation'
                        ' - please install nibabel first')
 
-from setup_helpers import (generate_a_pyrex_source,
+from setup_helpers import (generate_a_pyrex_source, get_comrec_build,
                            cmdclass, INFO_VARS)
 
 # monkey-patch numpy distutils to use Cython instead of Pyrex
