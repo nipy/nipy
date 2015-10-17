@@ -3,7 +3,7 @@ include Changelog TODO
 include *.py
 include site.*
 recursive-include nipy *.c *.h *.pyx *.pxd
-recursive-include libcstat *.c *.h *.pyx *.pxd
+recursive-include lib *.c *.h *.pyx *.pxd remake
 recursive-include scripts *
 recursive-include tools *
 # put this stuff back into setup.py (package_data) once I'm enlightened

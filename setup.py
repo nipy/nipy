@@ -26,7 +26,8 @@ from numpy.distutils.command.build_src import build_src
 build_src.generate_a_pyrex_source = generate_a_pyrex_source
 
 # Add custom commit-recording build command
-cmdclass['build_py'] = get_comrec_build('nipy')
+from numpy.distutils.command.build_py import build_py as _build_py
+cmdclass['build_py'] = get_comrec_build('nipy', _build_py)
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
