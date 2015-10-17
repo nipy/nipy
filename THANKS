@@ -1,9 +1,9 @@
 NIPY is an open source project for neuroimaging analysis using Python.  It is a
 community project.  Many people have contributed to NIPY, in code development,
 and they are (mainly) listed in the AUTHOR file.  Others have contributed
-greatly code review, discussion, and financial support.  Below is a partial
-list.  If you've been left off, please let us know (nipy-devel at
-neuroimaging.scipy.org), and we'll add you.
+greatly in code review, discussion, and financial support.  Below is a partial
+list.  If you've been left off, please let us know (neuroimaging at
+python.org), and we'll add you.
 
 Michael Castelle
 Philippe Ciuciu
