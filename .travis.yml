@@ -17,6 +17,7 @@ cache:
 env:
     global:
         - DEPENDS="numpy scipy sympy matplotlib nibabel"
+        - INSTALL_TYPE="setup"
 python:
     - 2.6
     - 3.2
@@ -32,11 +33,25 @@ matrix:
     # Absolute minimum dependencies
     - python: 2.7
       env:
+        # Definitive source for these in nipy/info.py
         - DEPENDS="numpy==1.6.0 scipy==0.9.0 sympy==0.7.0 nibabel==1.2.0"
     # Test compiling against external lapack
     - python: 3.4
       env:
         - NIPY_EXTERNAL_LAPACK=1
+    - python: 2.7
+      env:
+        - INSTALL_TYPE=sdist
+        - DEPENDS="numpy==1.6.0"
+    - python: 2.7
+      env:
+        - INSTALL_TYPE=wheel
+        - DEPENDS="numpy==1.6.0"
+    - python: 2.7
+      env:
+        - INSTALL_TYPE=requirements
+        - DEPENDS=
+
 before_install:
     - source tools/travis_tools.sh
     - virtualenv --python=python venv
@@ -52,7 +67,21 @@ before_install:
 # command to install dependencies
 # e.g. pip install -r requirements.txt # --use-mirrors
 install:
-    - python setup.py install
+    - |
+      if [ "$INSTALL_TYPE" == "setup" ]; then
+          python setup.py install
+      elif [ "$INSTALL_TYPE" == "sdist" ]; then
+        python setup_egg.py egg_info  # check egg_info while we're here
+        python setup_egg.py sdist
+        wheelhouse_pip_install dist/*.tar.gz
+      elif [ "$INSTALL_TYPE" == "wheel" ]; then
+        pip install wheel
+        python setup_egg.py bdist_wheel
+        wheelhouse_pip_install dist/*.whl
+      elif [ "$INSTALL_TYPE" == "requirements" ]; then
+        wheelhouse_pip_install -r requirements.txt
+        python setup.py install
+      fi
 # command to run tests, e.g. python setup.py test
 script:
     # Change into an innocuous directory and find tests from installation

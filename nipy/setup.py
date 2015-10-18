@@ -1,11 +1,19 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+from __future__ import absolute_import
 
 import os
+import sys
 
-from nipy.externals.six import string_types
-from nipy.externals.six.moves.configparser import ConfigParser
+# Cannot use internal copy of six because can't import from nipy tree
+# This is to allow setup.py to run without a full nipy
+PY3 = sys.version_info[0] == 3
+if PY3:
+    string_types = str,
+    from configparser import ConfigParser
+else:
+    string_types = basestring,
+    from ConfigParser import ConfigParser
 
 NIPY_DEFAULTS = dict()
 

@@ -1,0 +1,5 @@
+# See nipy/info.py for requirement definitions
+numpy>=1.6.0
+scipy>=0.9.0
+sympy>=0.7.0
+nibabel>=1.2.0

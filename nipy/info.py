@@ -131,6 +131,8 @@ in the nipy distribution.
 
 # minimum versions
 # Update in readme text above
+# Update in .travis.yml
+# Update in requirements.txt
 NUMPY_MIN_VERSION='1.6.0'
 SCIPY_MIN_VERSION = '0.9.0'
 NIBABEL_MIN_VERSION = '1.2'

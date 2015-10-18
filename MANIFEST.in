@@ -3,12 +3,17 @@ include Changelog TODO
 include *.py
 include site.*
 recursive-include nipy *.c *.h *.pyx *.pxd
-recursive-include libcstat *.c *.h *.pyx *.pxd
+recursive-include lib *.c *.h *.pyx *.pxd remake
 recursive-include scripts *
 recursive-include tools *
 # put this stuff back into setup.py (package_data) once I'm enlightened
 # enough to accomplish this herculean task
 recursive-include nipy/algorithms/tests/data *
+include nipy/testing/*.nii.gz
+include nipy/algorithms/diagnostics/tests/data/*.mat
+include nipy/algorithms/statistics/models/tests/*.bin
+include nipy/modalities/fmri/tests/*.npz
+include nipy/modalities/fmri/tests/*.mat
 include nipy/COMMIT_INFO.txt
 include LICENSE
 graft examples

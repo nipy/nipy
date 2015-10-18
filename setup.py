@@ -11,22 +11,17 @@ from distutils import log
 # update it when the contents of directories change.
 if exists('MANIFEST'): os.remove('MANIFEST')
 
-# Import build helpers
-try:
-    from nisext.sexts import package_check, get_comrec_build
-except ImportError:
-    raise RuntimeError('Need nisext package from nibabel installation'
-                       ' - please install nibabel first')
-
-from setup_helpers import (generate_a_pyrex_source,
-                           cmdclass, INFO_VARS)
+from setup_helpers import (generate_a_pyrex_source, get_comrec_build,
+                           cmdclass, INFO_VARS, get_pkg_version,
+                           version_error_msg)
 
 # monkey-patch numpy distutils to use Cython instead of Pyrex
 from numpy.distutils.command.build_src import build_src
 build_src.generate_a_pyrex_source = generate_a_pyrex_source
 
 # Add custom commit-recording build command
-cmdclass['build_py'] = get_comrec_build('nipy')
+from numpy.distutils.command.build_py import build_py as _build_py
+cmdclass['build_py'] = get_comrec_build('nipy', _build_py)
 
 def configuration(parent_package='',top_path=None):
     from numpy.distutils.misc_util import Configuration
@@ -59,42 +54,28 @@ if len(set(('develop', 'bdist_egg', 'bdist_rpm', 'bdist', 'bdist_dumb',
 if not 'extra_setuptools_args' in globals():
     extra_setuptools_args = dict()
 
-
 # Hard and soft dependency checking
-package_check('numpy', INFO_VARS['NUMPY_MIN_VERSION'])
-package_check('scipy', INFO_VARS['SCIPY_MIN_VERSION'])
-package_check('nibabel', INFO_VARS['NIBABEL_MIN_VERSION'])
-package_check('sympy', INFO_VARS['SYMPY_MIN_VERSION'])
-def _mayavi_version(pkg_name):
-    """Mayavi2 pruned enthought. namespace at 4.0.0
-    """
-    v = ''
-    try:
-        from mayavi import version
-        v = version.version
-        if v == '':
-            v = '4.0.0' # must be the one in Debian
-    except ImportError:
-        from enthought.mayavi import version
-        v = version.version
-    return v
-package_check('mayavi',
-              INFO_VARS['MAYAVI_MIN_VERSION'],
-              optional=True,
-              version_getter=_mayavi_version)
-# Cython can be a build dependency
-def _cython_version(pkg_name):
-    from Cython.Compiler.Version import version
-    return version
-package_check('cython',
-              INFO_VARS['CYTHON_MIN_VERSION'],
-              optional=True,
-              version_getter=_cython_version,
-              messages={'opt suffix': ' - you will not be able '
-                        'to rebuild Cython source files into C files',
-                        'missing opt': 'Missing optional build-time '
-                        'package "%s"'}
-              )
+DEPS = (
+    ('numpy', INFO_VARS['NUMPY_MIN_VERSION'], 'setup_requires', True),
+    ('scipy', INFO_VARS['SCIPY_MIN_VERSION'], 'install_requires', True),
+    ('nibabel', INFO_VARS['NIBABEL_MIN_VERSION'], 'install_requires', False),
+    ('sympy', INFO_VARS['SYMPY_MIN_VERSION'], 'install_requires', False))
+
+using_setuptools = 'setuptools' in sys.modules
+
+for name, min_ver, req_type, heavy in DEPS:
+    found_ver = get_pkg_version(name)
+    ver_err_msg = version_error_msg(name, found_ver, min_ver)
+    if not using_setuptools:
+        if ver_err_msg != None:
+            raise RuntimeError(ver_err_msg)
+    else:  # Using setuptools
+        # Add packages to given section of setup/install_requires
+        if ver_err_msg != None or not heavy:
+            new_req = '{0}>={1}'.format(name, min_ver)
+            old_reqs = extra_setuptools_args.get(req_type, [])
+            extra_setuptools_args[req_type] = old_reqs + [new_req]
+
 
 ################################################################################
 # commands for installing the data
@@ -103,7 +84,12 @@ from numpy.distutils.command.build_ext import build_ext
 
 def data_install_msgs():
     # Check whether we have data packages
-    from nibabel.data import datasource_or_bomber
+    try:  # Allow setup.py to run without nibabel
+        from nibabel.data import datasource_or_bomber
+    except ImportError:
+        log.warn('Cannot check for optional data packages: see: '
+                 'http://nipy.org/nipy/stable/users/install_data.html')
+        return
     DATA_PKGS = INFO_VARS['DATA_PKGS']
     templates = datasource_or_bomber(DATA_PKGS['nipy-templates'])
     example_data = datasource_or_bomber(DATA_PKGS['nipy-data'])
