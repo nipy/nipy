@@ -9,8 +9,8 @@ docs.  In setup.py in particular, we exec this file, so it cannot import nipy
 _version_major = 0
 _version_minor = 4
 _version_micro = 0
-_version_extra = '.dev' # For development
-#_version_extra = '' # For release
+#_version_extra = '.dev' # For development
+_version_extra = '' # For release
 
 # Format expected by setup.py and doc/source/conf.py: string of form "X.Y.Z"
 __version__ = "%s.%s.%s%s" % (_version_major,
