@@ -34,7 +34,7 @@ import numpy as np
 from nipy.algorithms.statistics.api import (OLSModel, ARModel, make_recarray,
                                             isestimable)
 from nipy.modalities.fmri.fmristat import hrf as delay
-from nipy.modalities.fmri import design, hrf
+from nipy.modalities.fmri import design
 from nipy.io.api import load_image, save_image
 from nipy.core import api
 from nipy.core.api import Image
@@ -44,7 +44,9 @@ from nipy.algorithms.statistics import onesample
 
 # Local
 import ds105_util as futil
-reload(futil)  # while developing interactively
+# While developing interactively:
+from imp import reload
+reload(futil)
 
 #-----------------------------------------------------------------------------
 # Globals
