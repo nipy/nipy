@@ -15,11 +15,11 @@ Must Have
 =========
 
 * Python_ 2.6 or later
-* NumPy_ 1.2 or later:  Numpy is an array library for Python
-* SciPy_ 0.7 or later:  Scipy contains scientific computing libraries based on
+* NumPy_ 1.6 or later: Numpy is an array library for Python
+* SciPy_ 0.9 or later: Scipy contains scientific computing libraries based on
   numpy
-* Sympy_ 0.6.6 or later: Sympy is a symbolic mathematics library for Python.  We
-  use it for statistical formulae.
+* Sympy_ 0.7.0 or later: Sympy is a symbolic mathematics library for Python.
+  We use it for statistical formulae.
 * Nibabel_ 1.2.0 or later.  Nibabel loads and saves images in neuroimaging
   formats.
 

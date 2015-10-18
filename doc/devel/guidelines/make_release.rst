@@ -59,7 +59,7 @@ Release checklist
   because this will be the output used by pypi_
 
 * Check the dependencies listed in ``nipy/info.py`` (e.g.
-  ``NUMPY_MIN_VERSION``) and in ``doc/installation.rst``.  They should
+  ``NUMPY_MIN_VERSION``) and in ``doc/users/installation.rst``.  They should
   at least match. Do they still hold?  Make sure ``.travis.yml`` is testing
   these minimum dependencies specifically.
 
@@ -75,12 +75,13 @@ Release checklist
 
 * Do a final check on the `nipy buildbot`_
 
-* If you have travis-ci_ building set up you might want to push the code in its
-  current state to a branch that will build, e.g::
+* If you have travis-ci_ building set up on your own fork of nipy you might
+  want to push the code in its current state to a branch that will build,
+  e.g::
 
     git branch -D pre-release-test # in case branch already exists
     git co -b pre-release-test
-    git push origin pre-release-test
+    git push your-github-user pre-release-test
 
 * Make sure all the ``.c`` generated files are up to date with Cython sources
   with::
@@ -122,33 +123,6 @@ Release checking - buildbots
   Fix ``setup.py`` to carry across any files that should be in the distribution.
 * Check the documentation doctests pass from
   http://nipy.bic.berkeley.edu/builders/nipy-doc-builder
-* You may have virtualenvs for different python versions.  Check the tests
-  pass for different configurations.  If you have pytox_ and a network
-  connection, and lots of pythons installed, you might be able to do::
-
-    tox
-
-  and get tests for python 2.5, 2.6, 2.7, 3.2.  I (MB) have my own set of
-  virtualenvs installed and I've set them up to run with::
-
-    tox -e python25,python26,python27,python32,np-1.2.1
-
-  The trick was only to define these ``testenv`` sections in ``tox.ini``.
-
-  These two above run with::
-
-    make tox-fresh
-    make tox-stale
-
-  respectively.
-
-  The long-hand not-tox way looks like this::
-
-    workon python26
-    make sdist-tests
-    deactivate
-
-  etc for the different virtualenvs.
 
 Doing the release
 =================
@@ -187,27 +161,16 @@ Doing the release
   builds will appear in http://nipy.bic.berkeley.edu/nipy-dist . Download the
   builds and upload to pypi.
 
-* Trigger binary builds for OSX from the buildbots ``nipy-bdist-mpkg-2.6``,
-  ``nipy-bdist-mpkg-2.7``, ``nipy-bdist-mpkg-3.3``. ``egg`` and ``mpkg`` builds
-  will appear in http://nipy.bic.berkeley.edu/nipy-dist .  Download the eggs and
-  upload to pypi.
+* Trigger binary builds for OSX from travis-ci:
 
-* Download the ``mpkg`` builds, maybe with::
+    * https://travis-ci.org/MacPython/nipy-wheels
+    * https://github.com/MacPython/nipy-wheels
 
-    scp -r buildbot@nipy.bic.berkeley.edu:nibotmi/public_html/nipy-dist/*.mpkg .
+  Upload the resulting wheels to pypi from http://wheels.scipy.org;
 
-  Make sure you have `github bdist_mpkg`_ installed, for the root user.  For
-  each ``mpkg`` directory, run::
+* Tag the release with tag of form ``0.5.0``::
 
-    sudo reown_mpkg nipy-0.3.0.dev-py2.6-macosx10.6.mpkg root admin
-    zip -r nipy-0.3.0.dev-py2.6-macosx10.6.mpkg.zip nipy-0.3.0.dev-py2.6-macosx10.6.mpkg
-
-  Upload the ``mpkg.zip`` files. (At the moment, these don't seem to store the
-  scripts - needs more work)
-
-* Tag the release with tag of form ``0.3.0``::
-
-    git tag -am 'Second main release' 0.3.0
+    git tag -am 'Second main release' 0.5.0
 
 * Now the version number is OK, push the docs to github pages with::
 
@@ -221,11 +184,11 @@ Doing the release
 
   * Branch to maintenance::
 
-      git co -b maint/0.2.x
+      git co -b maint/0.5.x
 
     Set ``_version_extra`` back to ``.dev`` and bump ``_version_micro`` by 1.
-    Thus the maintenance series will have version numbers like - say - '0.2.1.dev'
-    until the next maintenance release - say '0.2.1'.  Commit. Don't forget to
+    Thus the maintenance series will have version numbers like - say - '0.5.1.dev'
+    until the next maintenance release - say '0.5.1'.  Commit. Don't forget to
     push upstream with something like::
 
       git push upstream maint/0.2.x --set-upstream
@@ -254,7 +217,6 @@ Doing the release
 
 * Announce to the mailing lists.
 
-.. _pytox: http://codespeak.net/tox
 .. _setuptools intro: http://packages.python.org/an_example_pypi_project/setuptools.html
 .. _travis-ci: http://travis-ci.org
 
