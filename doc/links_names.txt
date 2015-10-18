@@ -23,6 +23,7 @@
 .. _`nipy bugs`: http://github.com/nipy/nipy/issues
 .. _`nipy sourceforge`: http://nipy.sourceforge.net/
 .. _`nipy launchpad`: https://launchpad.net/nipy
+.. _nipy on travis: https://travis-ci.org/nipy/nipy
 
 .. other related projects
 .. _nipy community: http://nipy.org
@@ -85,7 +86,7 @@
 .. _doctest-mode: http://www.cis.upenn.edu/~edloper/projects/doctestmode/
 .. _bazaar: http://bazaar-vcs.org/
 .. _subversion: http://subversion.tigris.org/
-.. _nose: http://somethingaboutorange.com/mrl/projects/nose
+.. _nose: http://nose.readthedocs.org/en/latest
 .. _`python coverage tester`: http://nedbatchelder.com/code/modules/coverage.html
 
 .. Other python projects
@@ -156,6 +157,9 @@
 .. Mathematical methods
 .. _`wikipedia ICA`: http://en.wikipedia.org/wiki/Independent_component_analysis
 .. _`wikipedia PCA`: http://en.wikipedia.org/wiki/Principal_component_analysis
+
+.. Testing
+.. _travis-ci: https://travis-ci.org
 
 .. People
 .. _Matthew Brett: https://matthew.dynevor.org

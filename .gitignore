@@ -58,6 +58,7 @@ dist/
 .shelf/
 .tox/
 .coverage
+.buildbot.patch
 
 # Logs and databases #
 ######################
