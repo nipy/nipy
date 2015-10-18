@@ -17,23 +17,10 @@ in the ``testers`` module of that package.  nipy has Makefile targets for their
 use.  The relevant targets are::
 
     make check-version-info
-    make check-files
-    make sdist-tests
 
-The first installs the code from a git archive, from the repository, and for
+This installs the code from a git archive, from the repository, and for
 in-place use, and runs the ``get_info()`` function to confirm that installation
 is working and information parameters are set correctly.
-
-The second (``sdist-tests``) makes an sdist source distribution archive,
-installs it to a temporary directory, and runs the tests of that install.
-
-If you have a version of nibabel trunk past February 11th 2011, there will also
-be a functional make target::
-
-    make bdist-egg-tests
-
-This builds an egg (which is a zip file), hatches it (unzips the egg) and runs
-the tests from the resulting directory.
 
 .. _release-checklist:
 
@@ -62,7 +49,7 @@ Release checklist
 
 * Check the copyright years in ``doc/conf.py`` and ``LICENSE``
 
-* Refresh the ``REAMDE.rst`` text from the ``LONG_DESCRIPTION`` in ``info.py``
+* Refresh the ``README.rst`` text from the ``LONG_DESCRIPTION`` in ``info.py``
   by running ``make refresh-readme``.
 
   Check the output of::
@@ -112,19 +99,11 @@ Release checking - buildbots
     make distclean
     python -m compileall .
     make sdist-tests
-    make bdist-egg-tests
     make check-version-info
     make check-files
 
 * You need to review the outputs for errors; at the moment this buildbot builder
   does not check whether these tests passed or failed.
-* ``make bdist-egg-tests`` may well fail because of a problem with the script
-  tests; if you have a recent (>= Jan 15 2013) nibabel ``nisext`` package, you
-  could try instead doing::
-
-    python -c 'from nisext.testers import bdist_egg_tests; bdist_egg_tests("nipy", label="not slow and not script_test")'
-
-  Eventually we should update the ``bdist-egg-tests`` makefile target.
 * ``make check-version-info`` checks how the commit hash is stored in the
   installed files.  You should see something like this::
 

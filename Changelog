@@ -29,6 +29,36 @@ Abbreviated authors are:
 * AR - Alexis Roche
 * GV - Gaël Varoquaux
 * YH - Yarik Halchenko
+* JBP - Jean-Baptiste Poline
+* JT - Jonathan Taylor
+
+* 0.4.0 (Saturday 18 October 2015)
+
+  * Bugfix, refactoring and compatibility release;
+  * Full port to Python 3 using single code-base;
+  * Various fixes for modern numpy, scipy, sympy, nibabel compatibility;
+  * Refactor space-time realignment (AR);
+  * Change in interface for slice-timing options in space-time realign
+    (AR+MB);
+  * New ``nipy_4d_realign`` script to run space-time realign (Ariel Rokem);
+  * Drop requirement for BLAS / LAPACK external library at build-time (AR);
+  * Move much code out of nipy.labs into main tree (AR, BT);
+  * Deprecate remaining code in nipy.labs (AR, BT);
+  * Updates to landmark learning code including API (BT);
+  * Various fixes to design matrix machinery (BT, Michael Waskom);
+  * Fix to two-sample permutation test suggested by github user jwirsich (BF);
+  * Refactoring and fixes to design matrix drift calculations (JBP);
+  * Extending API of resampling code to allow more ndimage kwargs (JBP);
+  * Start of new example on OpenFMRI ds105 dataset (JT);
+  * New ``block_design`` function for designs with specified onsets (JT);
+  * New ``show_contrast`` function for reviewing contrasts (JT);
+  * Fix for bug in ``nipy_diagnose`` script / ``screens`` module giving
+    incorrect PCA output;
+  * Added SPM HRF to other HRF options;
+  * Redesign concept of an image "space" with new image space modules,
+    functions, classes;
+  * Various fixes for correct installation provided or suggested by YH;
+  * Some visualization changes by Elvis Dohmatob;
 
 * 0.3.0 (Saturday 2 February 2013)
 
