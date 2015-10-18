@@ -11,12 +11,12 @@
 .. PROJECTNAME placeholders
 .. _PROJECTNAME: http://neuroimaging.scipy.org
 .. _`PROJECTNAME github`: http://github.com/nipy
-.. _`PROJECTNAME mailing list`: http://projects.scipy.org/mailman/listinfo/nipy-devel
+.. _`PROJECTNAME mailing list`: https://mail.python.org/mailman/listinfo/neuroimaging
 
 .. nipy
 .. _nipy: http://nipy.org/nipy
 .. _`nipy github`: http://github.com/nipy/nipy
-.. _`nipy mailing list`: http://mail.scipy.org/mailman/listinfo/nipy-devel
+.. _`nipy mailing list`: https://mail.python.org/mailman/listinfo/neuroimaging
 
 .. ipython
 .. _ipython: http://ipython.scipy.org
@@ -26,12 +26,12 @@
 .. dipy
 .. _dipy: http://nipy.org/dipy
 .. _`dipy github`: http://github.com/Garyfallidis/dipy
-.. _`dipy mailing list`: http://mail.scipy.org/mailman/listinfo/nipy-devel
+.. _`dipy mailing list`: https://mail.python.org/mailman/listinfo/neuroimaging
 
 .. nibabel
 .. _nibabel: http://nipy.org/nibabel
 .. _`nibabel github`: http://github.com/nipy/nibabel
-.. _`nibabel mailing list`: http://mail.scipy.org/mailman/listinfo/nipy-devel
+.. _`nibabel mailing list`: https://mail.python.org/mailman/listinfo/neuroimaging
 
 .. marsbar
 .. _marsbar: http://marsbar.sourceforge.net

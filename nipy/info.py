@@ -142,7 +142,7 @@ CYTHON_MIN_VERSION = '0.12.1'
 
 NAME                = 'nipy'
 MAINTAINER          = "nipy developers"
-MAINTAINER_EMAIL    = "nipy-devel@neuroimaging.scipy.org"
+MAINTAINER_EMAIL    = "neuroimaging@python.org"
 DESCRIPTION         = description
 LONG_DESCRIPTION    = long_description
 URL                 = "http://nipy.org/nipy"
@@ -150,7 +150,7 @@ DOWNLOAD_URL        = "http://github.com/nipy/nipy/archives/master"
 LICENSE             = "BSD license"
 CLASSIFIERS         = CLASSIFIERS
 AUTHOR              = "nipy developmers"
-AUTHOR_EMAIL        = "nipy-devel@neuroimaging.scipy.org"
+AUTHOR_EMAIL        = "neuroimaging@python.org"
 PLATFORMS           = "OS Independent"
 MAJOR               = _version_major
 MINOR               = _version_minor

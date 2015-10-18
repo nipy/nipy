@@ -17,7 +17,7 @@
 .. _`NIPY data packages`: http://nipy.sourceforge.net/data-packages
 .. _`nipy github`: http://github.com/nipy/nipy
 .. _`nipy trunk`: http://github.com/nipy/nipy
-.. _`nipy mailing list`: http://mail.scipy.org/mailman/listinfo/nipy-devel
+.. _`nipy mailing list`: https://mail.python.org/mailman/listinfo/neuroimaging
 .. _nipy pypi: http://pypi.python.org/pypi/nipy
 .. _nipy issues: http://github.com/nipy/nipy/issues
 .. _`nipy bugs`: http://github.com/nipy/nipy/issues
