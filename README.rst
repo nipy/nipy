@@ -92,9 +92,9 @@ Dependencies
 
 To run NIPY, you will need:
 
-* python_ >= 2.6 (tested with 2.6, 2.7, 3.2, 3.3, 3.4)
+* python_ >= 2.6 (tested with 2.6, 2.7, 3.2 through 3.5)
 * numpy_ >= 1.6.0
-* scipy_ >= 0.7.0
+* scipy_ >= 0.9.0
 * sympy_ >= 0.7.0
 * nibabel_ >= 1.2
 
