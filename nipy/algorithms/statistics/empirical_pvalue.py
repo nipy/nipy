@@ -192,9 +192,9 @@ class NormalEmpiricalNull(object):
 
         * mu = mu
         * p0 = min(1, np.exp(lp0))
-        * sqsigma: standard deviation of the estimated normal
+        * sqsigma: variance of the estimated normal
           distribution
-        * sigma: np.sqrt(sqsigma) : variance of the estimated
+        * sigma: np.sqrt(sqsigma) : standard deviation of the estimated
           normal distribution
         """
         # take a central subsample of x
