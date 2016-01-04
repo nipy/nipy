@@ -42,11 +42,11 @@ matrix:
     - python: 2.7
       env:
         - INSTALL_TYPE=sdist
-        - DEPENDS="numpy==1.6.0"
+        - DEPENDS="numpy==1.7.1"  # latest travis scipy built with 1.7.1
     - python: 2.7
       env:
         - INSTALL_TYPE=wheel
-        - DEPENDS="numpy==1.6.0"
+        - DEPENDS="numpy==1.7.1"  # latest travis scipy built with 1.7.1
     - python: 2.7
       env:
         - INSTALL_TYPE=requirements
