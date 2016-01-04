@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from ..design import event_design, block_design
+from ..design import event_design, block_design, stack2designs, stack_designs
 from ..utils import (events, lambdify_t, T, convolve_functions,
                      blocks)
 from ..hrf import glover
@@ -158,3 +158,59 @@ def test_event_design():
     spec_1d = make_recarray(zip(onsets, offsets, fac_1),
                             ('mister', 'end', 'smt'))
     assert_raises(ValueError, block_design, spec_1d, t)
+
+
+def assert_des_con_equal(one, two):
+    des1, con1 = one
+    des2, con2 = two
+    assert_array_equal(des1, des2)
+    assert_equal(set(con1), set(con2))
+    for key in con1:
+        assert_array_equal(con1[key], con2[key])
+
+
+def test_stack_designs():
+    # Test stack_designs function
+    N = 10
+    X1 = np.ones((N, 1))
+    con1 = dict(con1 = np.array([1]))
+    X2 = np.eye(N)
+    con2 = dict(con2 = np.array([1] + [0] * (N -1)))
+    sX, sc = stack_designs((X1, con1), (X2, con2))
+    X1_X2 = np.c_[X1, X2]
+    exp = (X1_X2,
+           dict(con1=[1] + [0] * N, con2=[0, 1] + [0] * (N - 1)))
+    assert_des_con_equal((sX, sc), exp)
+    # Result same when stacking just two designs
+    sX, sc = stack2designs(X1, X2, {}, con2)
+    # Stacking a design with empty design is OK
+    assert_des_con_equal(stack2designs([], X2, con1, con2),
+                         (X2, con2))
+    assert_des_con_equal(stack_designs(([], con1), (X2, con2)),
+                         (X2, con2))
+    assert_des_con_equal(stack2designs(X1, [], con1, con2),
+                         (X1, con1))
+    assert_des_con_equal(stack_designs((X1, con1), ([], con2)),
+                         (X1, con1))
+    # Stacking one design returns output unmodified
+    assert_des_con_equal(stack_designs((X1, con1)), (X1, con1))
+    # Can stack design without contrasts
+    assert_des_con_equal(stack_designs(X1, X2), (X1_X2, {}))
+    assert_des_con_equal(stack_designs(X1, (X2, con2)),
+                         (X1_X2, {'con2': [0, 1] + [0] * (N - 1)}))
+    assert_des_con_equal(stack_designs((X1, con1), X2),
+                         (X1_X2, {'con1': [1] + [0] * N}))
+    # No-contrasts can also be 1-length tuple
+    assert_des_con_equal(stack_designs((X1,), (X2, con2)),
+                         (X1_X2, {'con2': [0, 1] + [0] * (N - 1)}))
+    assert_des_con_equal(stack_designs((X1, con1), (X2,)),
+                         (X1_X2, {'con1': [1] + [0] * N}))
+    # Stack three
+    X3 = np.arange(N)[:, None]
+    con3 = dict(con3=np.array([1]))
+    assert_des_con_equal(
+        stack_designs((X1, con1), (X2, con2), (X3, con3)),
+        (np.c_[X1, X2, X3],
+         dict(con1=[1, 0] + [0] * N,
+              con2=[0, 1] + [0] * N,
+              con3=[0] * N + [0, 1])))
