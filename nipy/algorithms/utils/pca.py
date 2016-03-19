@@ -16,7 +16,7 @@ covariance matrix.
 from __future__ import absolute_import
 
 import numpy as np
-import scipy.linalg as spl
+import numpy.linalg as npl
 
 from ...core.image.image import rollimg
 from ...core.reference.coordinate_map import (io_axis_indices, orth_axes,
@@ -131,7 +131,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     elif design_resid is None:
         def project_resid(Y): return Y
     else: # matrix passed, we hope
-        projector = np.dot(design_resid, spl.pinv(design_resid))
+        projector = np.dot(design_resid, npl.pinv(design_resid))
         def project_resid(Y):
             return Y - np.dot(projector, Y)
     if standardize:
@@ -157,9 +157,9 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     if design_keep is None:
         X = np.eye(data.shape[0])
     else:
-        X = np.dot(design_keep, spl.pinv(design_keep))
+        X = np.dot(design_keep, npl.pinv(design_keep))
     XZ = project_resid(X)
-    UX, SX, VX = spl.svd(XZ, full_matrices=0)
+    UX, SX, VX = npl.svd(XZ, full_matrices=0)
     # The matrix UX has orthonormal columns and represents the
     # final "column space" that the data will be projected onto.
     rank = (SX/SX.max() > tol_ratio).sum()
@@ -170,7 +170,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     C_full_rank  = _get_covariance(data, UX, rmse_scales_func, mask)
     # find the eigenvalues D and eigenvectors Vs of the covariance
     # matrix
-    D, Vs = spl.eigh(C_full_rank)
+    D, Vs = npl.eigh(C_full_rank)
     # Compute basis vectors in original column space
     basis_vectors = np.dot(UX.T, Vs).T
     # sort both in descending order of eigenvalues

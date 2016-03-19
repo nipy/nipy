@@ -25,6 +25,7 @@ __docformat__ = 'restructuredtext en'
 import warnings
 
 import numpy as np
+import numpy.linalg as npl
 
 from scipy import stats
 import scipy.linalg as spl
@@ -105,7 +106,7 @@ class OLSModel(LikelihoodModel):
         # TODO: handle case for noconstant regression
         self.design = design
         self.wdesign = self.whiten(self.design)
-        self.calc_beta = spl.pinv(self.wdesign)
+        self.calc_beta = npl.pinv(self.wdesign)
         self.normalized_cov_beta = np.dot(self.calc_beta,
                                           np.transpose(self.calc_beta))
         self.df_total = self.wdesign.shape[0]
@@ -831,7 +832,7 @@ class GLSModel(OLSModel):
     """
 
     def __init__(self, design, sigma):
-        self.cholsigmainv = spl.linalg.cholesky(spl.linalg.pinv(sigma)).T
+        self.cholsigmainv = npl.cholesky(npl.pinv(sigma)).T
         super(GLSModel, self).__init__(design)
 
     def whiten(self, Y):
