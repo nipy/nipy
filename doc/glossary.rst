@@ -27,7 +27,7 @@
       hemoglobin.  Oxy- and deoxy- hemoglobin have different magnetic
       properties.  This in turn leads to a change in MRI signal that
       can be detected by collecting suitably sensitive MRI images at
-      regular short intervals during the blood flow chance.
+      regular short intervals during the blood flow change.
       See the `Wikipedia FMRI`_ article for more detail.
 
    BrainVisa
