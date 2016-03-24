@@ -397,7 +397,7 @@ def version_error_msg(pkg_name, found_ver, min_ver):
     if found_ver is None:
         return 'We need package {0}, but not importable'.format(pkg_name)
     if found_ver == 'unknown':
-        msg = 'We need {0} version {1}, but cannot get version'.format(
+        return 'We need {0} version {1}, but cannot get version'.format(
             pkg_name, min_ver)
     if LooseVersion(found_ver) >= LooseVersion(min_ver):
         return None
