@@ -22,7 +22,7 @@ import copy
 import os.path as path
 
 import numpy as np
-import scipy.linalg as spl
+import numpy.linalg as npl
 
 from nipy.algorithms.statistics.models.regression import (
     OLSModel, ARModel, ar_bias_corrector, ar_bias_correct)
@@ -180,7 +180,7 @@ def estimateAR(resid, design, order=1):
     output : array
         shape (order, resid
     """
-    invM = ar_bias_corrector(design, spl.pinv(design), order)
+    invM = ar_bias_corrector(design, npl.pinv(design), order)
     return ar_bias_correct(resid, order, invM)
 
 

@@ -7,7 +7,7 @@ from __future__ import absolute_import
 __docformat__ = 'restructuredtext'
 
 import numpy as np
-import scipy.linalg as spl
+import numpy.linalg as npl
 
 from .model import Model
 
@@ -145,7 +145,7 @@ class NLSModel(Model, Iterator):
         if self._iter < self.niter:
             self.getZ()
             self.getomega()
-            Zpinv = spl.pinv(self._Z)
+            Zpinv = npl.pinv(self._Z)
             self.theta = np.dot(Zpinv, self.Y - self._omega)
         else:
             raise StopIteration
