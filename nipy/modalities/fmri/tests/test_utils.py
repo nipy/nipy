@@ -11,11 +11,12 @@ import numpy as np
 
 import sympy
 from sympy import Symbol, Dummy, Function, DiracDelta
-from sympy.utilities.lambdify import lambdify
+from sympy.utilities.lambdify import lambdify, implemented_function
 
 from nipy.algorithms.statistics.formula import Term
 
 from ..utils import (
+    Interp1dNumeric,
     lambdify_t,
     define,
     events,
@@ -248,6 +249,31 @@ def test_convolve_functions():
         # The original fill value was 0
         assert_array_equal(ftri(np.arange(-2, 0)), 0)
         assert_array_equal(ftri(np.arange(4, 6)), 0)
+
+
+def test_interp1d_numeric():
+    # Test wrapper for interp1d
+    # See: https://github.com/sympy/sympy/issues/10810
+    #
+    # Test TypeError raised for object
+    func = Interp1dNumeric(range(10), range(10))
+    # Numeric values OK
+    assert_almost_equal(func([1, 2, 3]), [1, 2, 3])
+    assert_almost_equal(func([1.5, 2.5, 3.5]), [1.5, 2.5, 3.5])
+    # Object values raise TypeError
+    assert_raises(TypeError, func, t)
+    # Check it works as expected via sympy
+    sym_func = implemented_function('func', func)
+    f = sym_func(t - 2)
+    assert_almost_equal(lambdify_t(f)(4.5), 2.5)
+    for val in (2, 2.):
+        f = sym_func(val)
+        # Input has no effect
+        assert_almost_equal(lambdify_t(f)(-100), 2)
+        assert_almost_equal(lambdify_t(f)(-1000), 2)
+    # Float expression
+    f = sym_func(t - 2.)
+    assert_almost_equal(lambdify_t(f)(4.5), 2.5)
 
 
 def test_convolve_hrf():

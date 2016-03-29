@@ -14,11 +14,10 @@ from __future__ import absolute_import
 
 import numpy as np
 import numpy.linalg as npl
-from scipy.interpolate import interp1d
 
 from sympy.utilities.lambdify import implemented_function
 
-from ..utils import T, lambdify_t
+from ..utils import T, lambdify_t, Interp1dNumeric
 from .. import hrf
 from .invert import invertR
 
@@ -75,7 +74,7 @@ def spectral_decomposition(hrf2decompose,
     # make interpolators from the generated bases
     basis = []
     for i in range(ncomp):
-        b = interp1d(time, U[:, i], bounds_error=False, fill_value=0.)
+        b = Interp1dNumeric(time, U[:, i], bounds_error=False, fill_value=0.)
         # normalize components witn integral of abs of first component
         if i == 0: 
             d = np.fabs((b(time) * dt).sum())
@@ -88,7 +87,8 @@ def spectral_decomposition(hrf2decompose,
     WH = np.dot(npl.pinv(W), ts_hrf_vals)
     # put these into interpolators to get estimated coefficients for any
     # value of delta
-    coef = [interp1d(delta, w, bounds_error=False, fill_value=0.) for w in WH]
+    coef = [Interp1dNumeric(delta, w, bounds_error=False, fill_value=0.)
+            for w in WH]
     # swap sign of first component to match that of input HRF.  Swap
     # other components if we swap the first, to standardize signs of
     # components across SVD implementations.
@@ -162,8 +162,8 @@ def taylor_approx(hrf2decompose,
     # input.
     hrft = lambdify_t(hrf2decompose(T))
     # interpolator for negative gradient of hrf
-    dhrft = interp1d(time, -np.gradient(hrft(time), dt), bounds_error=False,
-                    fill_value=0.)
+    dhrft = Interp1dNumeric(time, -np.gradient(hrft(time), dt),
+                            bounds_error=False, fill_value=0.)
     dhrft.y *= 2
     # Create stack of time-shifted HRFs.  Time varies over row, delta
     # over column.
@@ -174,8 +174,8 @@ def taylor_approx(hrf2decompose,
     WH = np.dot(npl.pinv(W), ts_hrf_vals)
     # put these into interpolators to get estimated coefficients for any
     # value of delta
-    coef = [interp1d(delta, w, bounds_error=False,
-                     fill_value=0.) for w in WH]
+    coef = [Interp1dNumeric(delta, w, bounds_error=False,
+                            fill_value=0.) for w in WH]
             
     def approx(time, delta):
         value = (coef[0](delta) * hrft(time)
