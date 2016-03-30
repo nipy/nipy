@@ -330,11 +330,17 @@ def stack2designs(old_X, new_X, old_contrasts={}, new_contrasts={}):
        The new contrast matrices reflecting changes to the columns.
     """
     contrasts = {}
+    old_X = np.asarray(old_X)
+    new_X = np.asarray(new_X)
+    if old_X.size == 0:
+        return new_X, new_contrasts
+    if new_X.size == 0:
+        return old_X, old_contrasts
 
     if old_X.ndim == 1:
-        old_X = old_X.reshape((old_X.shape[0], 1))
+        old_X = old_X[:, None]
     if new_X.ndim == 1:
-        new_X = new_X.reshape((new_X.shape[0], 1))
+        new_X = new_X[:, None]
 
     X = np.hstack([old_X, new_X])
 
@@ -388,13 +394,14 @@ def stack_contrasts(contrasts, name, keys):
 
 
 def stack_designs(*pairs):
-    """
-    Stack a sequence of design / contrast dictionary
-    pairs. Uses multiple calls to stack2designs
+    """ Stack a sequence of design / contrast dictionary pairs
+
+    Uses multiple calls to :func:`stack2designs`
 
     Parameters
     ----------
-    pairs : sequence filled with (np.ndarray, dict) or np.ndarray
+    \*pairs : sequence
+        Elements of either (np.ndarray, dict) or (np.ndarray,) or np.ndarray
 
     Returns
     -------
@@ -403,16 +410,14 @@ def stack_designs(*pairs):
     contrasts : dict
        The new contrast matrices reflecting changes to the columns.
     """
-    p = pairs[0]
-    if len(p) == 1:
-        X = p[0]; contrasts={}
-    else:
-        X, contrasts = p
-
-    for q in pairs[1:]:
-        if len(q) == 1:
-            new_X = q[0]; new_con = {}
-        else:
-            new_X, new_con = q
+    X = []
+    contrasts = {}
+    for p in pairs:
+        if isinstance(p, np.ndarray):
+            new_X = p; new_con = {}
+        elif len(p) == 1:  # Length one sequence
+            new_X = p[0]; new_con = {}
+        else:  # Length 2 sequence
+            new_X, new_con = p
         X, contrasts = stack2designs(X, new_X, contrasts, new_con)
     return X, contrasts
