@@ -235,7 +235,8 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
 
 def _plot_anat(slicer, anat, anat_affine, title=None,
-               annotate=True, draw_cross=True, dim=False, cmap=pl.cm.gray):
+               annotate=True, draw_cross=True, dim=False, cmap=pl.cm.gray,
+               **kwargs):
     """ Internal function used to plot anatomy
     """
     canonical_anat = False
@@ -274,7 +275,8 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
             else:
                 vmin = vmean - (1+dim)*ptp
         slicer.plot_map(anat, anat_affine, cmap=cmap,
-                              vmin=vmin, vmax=vmax)
+                              vmin=vmin, vmax=vmax,
+                              **kwargs)
 
         if annotate:
             slicer.annotate()
@@ -296,7 +298,8 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
 
 def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
               figure=None, axes=None, title=None, annotate=True,
-              draw_cross=True, black_bg=False, dim=False, cmap=pl.cm.gray):
+              draw_cross=True, black_bg=False, dim=False, cmap=pl.cm.gray,
+              **kwargs):
     """ Plot three cuts of an anatomical image (Frontal, Axial, and Lateral)
 
         Parameters
@@ -349,6 +352,8 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
             ptp = .5*(vmax - vmin)
         cmap: matplotlib colormap, optional
             The colormap for the anat
+        kwargs: extra keyword arguments, optional
+            Extra keyword arguments passed to pylab.imshow
 
         Notes
         -----
@@ -361,7 +366,8 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
                                           black_bg=black_bg)
 
     _plot_anat(slicer, anat, anat_affine, title=title,
-               annotate=annotate, draw_cross=draw_cross, dim=dim, cmap=cmap)
+               annotate=annotate, draw_cross=draw_cross, dim=dim, cmap=cmap,
+               **kwargs)
     return slicer
 
 
