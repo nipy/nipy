@@ -3,6 +3,7 @@ from __future__ import absolute_import
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import tempfile
 
+from mock import patch
 import numpy as np
 
 from nose import SkipTest
@@ -52,6 +53,17 @@ def test_plot_anat():
     # Smoke test coordinate finder, with and without mask
     plot_map(np.ma.masked_equal(data, 0), mni_sform, slicer='x')
     plot_map(data, mni_sform, slicer='y')
+
+@patch('nipy.labs.viz_tools.activation_maps._plot_anat')
+def test_plot_anat_kwargs(mock_plot_anat):
+    data = np.zeros((20, 20, 20))
+    data[3:-3, 3:-3, 3:-3] = 1
+
+    kwargs = {'interpolation': 'nearest'}
+    ortho_slicer = plot_anat(data, mni_sform, dim=True, **kwargs)
+    kwargs_passed = mock_plot_anat.call_args[-1]
+    assert('interpolation' in kwargs_passed)
+    assert(kwargs_passed['interpolation'] == 'nearest')
 
 
 def test_anat_cache():
