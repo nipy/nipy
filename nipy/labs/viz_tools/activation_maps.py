@@ -342,6 +342,8 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
             you whish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
+        dim: float, optional
+            If set, dim the anatomical image.
         cmap: matplotlib colormap, optional
             The colormap for the anat
 
