@@ -6,7 +6,7 @@ import tempfile
 import numpy as np
 
 from nose import SkipTest
-from unittest import skipIf
+from nipy.testing.decorators import skipif
 try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
@@ -59,7 +59,7 @@ def test_plot_anat():
     plot_map(np.ma.masked_equal(data, 0), mni_sform, slicer='x')
     plot_map(data, mni_sform, slicer='y')
 
-@skipIf(not patch, 'Cannot import patch from mock')
+@skipif(not patch, 'Cannot import patch from mock')
 def test_plot_anat_kwargs():
     data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
