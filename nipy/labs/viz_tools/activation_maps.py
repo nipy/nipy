@@ -343,7 +343,10 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
         dim: float, optional
-            If set, dim the anatomical image.
+            If set, dim the anatomical image, such that
+            vmax = vmean + (1+dim)*ptp if black_bg is set to True, or
+            vmin = vmean - (1+dim)*ptp otherwise, where
+            ptp = .5*(vmax - vmin)
         cmap: matplotlib colormap, optional
             The colormap for the anat
 
