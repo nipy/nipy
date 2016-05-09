@@ -50,7 +50,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
              threshold=None, annotate=True, draw_cross=True,
              do3d=False, threshold_3d=None,
              view_3d=(38.5, 70.5, 300, (-2.7, -12, 9.1)),
-             black_bg=False, **kwargs):
+             black_bg=False, **imshow_kwargs):
     """ Plot three cuts of a given activation map (Frontal, Axial, and Lateral)
 
         Parameters
@@ -116,7 +116,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             you whish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
-        kwargs: extra keyword arguments, optional
+        imshow_kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
 
         Notes
@@ -236,7 +236,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
 def _plot_anat(slicer, anat, anat_affine, title=None,
                annotate=True, draw_cross=True, dim=False, cmap=pl.cm.gray,
-               **kwargs):
+               **imshow_kwargs):
     """ Internal function used to plot anatomy
     """
     canonical_anat = False
@@ -276,7 +276,7 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
                 vmin = vmean - (1+dim)*ptp
         slicer.plot_map(anat, anat_affine, cmap=cmap,
                               vmin=vmin, vmax=vmax,
-                              **kwargs)
+                              **imshow_kwargs)
 
         if annotate:
             slicer.annotate()
@@ -299,7 +299,7 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
 def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
               figure=None, axes=None, title=None, annotate=True,
               draw_cross=True, black_bg=False, dim=False, cmap=pl.cm.gray,
-              **kwargs):
+              **imshow_kwargs):
     """ Plot three cuts of an anatomical image (Frontal, Axial, and Lateral)
 
         Parameters
@@ -352,7 +352,7 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
             ptp = .5*(vmax - vmin)
         cmap: matplotlib colormap, optional
             The colormap for the anat
-        kwargs: extra keyword arguments, optional
+        imshow_kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to pylab.imshow
 
         Notes
@@ -367,7 +367,7 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
 
     _plot_anat(slicer, anat, anat_affine, title=title,
                annotate=annotate, draw_cross=draw_cross, dim=dim, cmap=cmap,
-               **kwargs)
+               **imshow_kwargs)
     return slicer
 
 
