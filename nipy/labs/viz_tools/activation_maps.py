@@ -230,7 +230,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
     _plot_anat(slicer, anat, anat_affine, title=title,
                annotate=annotate, draw_cross=draw_cross)
 
-    slicer.plot_map(map, affine, **kwargs)
+    slicer.plot_map(map, affine, **imshow_kwargs)
     return slicer
 
 
