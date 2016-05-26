@@ -18,7 +18,7 @@ except ImportError:
 
 try:
     from mock import patch
-except ImportError:
+except ImportError:  # pragma: no cover
     patch = None
 
 from ..activation_maps import demo_plot_map, plot_anat, plot_map
