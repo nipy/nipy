@@ -61,7 +61,7 @@ before_install:
     - wheelhouse_pip_install $DEPENDS
     - if [ "${COVERAGE}" == "1" ]; then
       pip install coverage;
-      pip install coveralls;
+      pip install coveralls codecov;
       fi
 # command to install dependencies
 # e.g. pip install -r requirements.txt # --use-mirrors
@@ -92,4 +92,4 @@ script:
       fi
     - $PYTHON ../tools/nipnost --verbosity=3 $COVER_ARGS nipy
 after_success:
-    - if [ "${COVERAGE}" == "1" ]; then coveralls; fi
+    - if [ "${COVERAGE}" == "1" ]; then coveralls; codecov; fi
