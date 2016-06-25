@@ -151,8 +151,11 @@ def test_mu1tri():
 
 
 def test_mu2tet():
-    assert_equal(intvol.mu2_tet(0,0,0,0,1,0,0,1,0,1), (3./2 + np.sqrt(3./4))/2)
-
+    # 15 digit precision error found on 32-bit Linux
+    # https://travis-ci.org/MacPython/nipy-wheels/jobs/140268248#L725
+    assert_almost_equal(intvol.mu2_tet(0,0,0,0,1,0,0,1,0,1),
+                        (3./2 + np.sqrt(3./4))/2,
+                        15)
 
 def pts2mu1_tet(d, a, b, c):
     """ Accept point coordinates for calling mu1_tet
