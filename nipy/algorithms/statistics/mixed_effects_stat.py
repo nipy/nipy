@@ -12,12 +12,11 @@ Author: Bertrand Thirion, 2012.
 
 >>> N, P = 15, 500
 >>> V1 = np.random.randn(N, P) ** 2
->>> effects = np.random.randn(P) > 0
+>>> effects = np.ones(P)
 >>> Y = generate_data(np.ones(N), effects, .25, V1)
 >>> T1 = one_sample_ttest(Y, V1, n_iter=5)
->>> T1 = [T1[effects == x] for x  in np.unique(effects)]
->>> T2 = [t_stat(Y)[effects == x] for x  in np.unique(effects)]
->>> assert np.array([t1.std() < t2.std() for t1, t2 in zip(T1, T2)]).all()
+>>> T2 = t_stat(Y)
+>>> assert(T1.std() < T2.std())
 """
 from __future__ import absolute_import
 from __future__ import print_function
