@@ -24,14 +24,14 @@ from ...externals.six import string_types
 from nibabel.affines import apply_affine
 
 from ...fixes.nibabel import io_orientation
-
+from ...io.nibcompat import get_header
 from ...core.image.image_spaces import (make_xyz_image,
                                         xyz_affine,
                                         as_xyz_image)
 from ..slicetiming import timefuncs
-from .type_check import (check_type, check_type_and_shape)
-from .optimizer import configure_optimizer, use_derivatives
 from .affine import Rigid, Affine
+from .optimizer import configure_optimizer, use_derivatives
+from .type_check import (check_type, check_type_and_shape)
 from ._registration import (_cspline_transform,
                             _cspline_sample3d,
                             _cspline_sample4d)
@@ -86,6 +86,35 @@ def guess_slice_axis_and_direction(slice_info, affine):
         slice_direction = int(slice_info[1])
     return slice_axis, slice_direction
 
+def tr_from_header(images):
+    """ Return the TR from the header of an image or list of images.
+
+    Parameters
+    ----------
+    images : image or list of images
+      Single or multiple input 4d images representing one or
+      several sessions.
+
+    Returns
+    -------
+    float
+      Repetition time, as specified in NIfTI header.
+
+    Raises
+    ------
+    ValueError
+      if the TR between the images is inconsistent.
+    """
+    if not isinstance(images, list):
+        images = [images]
+    images_tr = None
+    for image in images:
+        tr = get_header(image).get_zooms()[3]
+        if images_tr is None:
+            images_tr = tr
+        if tr != images_tr:
+            raise ValueError('TR inconsistent between images.')
+    return images_tr
 
 class Image4d(object):
     """
@@ -736,14 +765,16 @@ class Realign4d(object):
             time_interp = False
         else:
             time_interp = True
-        self.slice_times = slice_times
-        self.tr = tr
-        if tr is None:
-            raise ValueError('Repetition time cannot be None')
         if not isinstance(images, (list, tuple, np.ndarray)):
             images = [images]
-        self._runs = []
+        if tr is None:
+            raise ValueError('Repetition time cannot be None.')
+        if tr == 0:
+            raise ValueError('Repetition time cannot be zero.')
         self.affine_class = affine_class
+        self.slice_times = slice_times
+        self.tr = tr
+        self._runs = []
         # Note that, the affine of each run may be different. This is
         # the case, for instance, if the subject exits the scanner
         # inbetween sessions.
@@ -839,7 +870,7 @@ class Realign4d(object):
             and 'steepest'.
         maxiter : int
             Maximum number of iterations in optimization.
-        maxfun : int 
+        maxfun : int
             Maximum number of function evaluations in maxfun.
         """
         if between_loops is None:
@@ -897,9 +928,11 @@ class SpaceTimeRealign(Realign4d):
         images : image or list of images
             Single or multiple input 4d images representing one or several fMRI
             runs.
-        tr : float
+        tr : None or float or "header-allow-1.0"
             Inter-scan repetition time in seconds, i.e. the time elapsed between
-            two consecutive scans.
+            two consecutive scans. If None, an attempt is made to read the TR
+            from the header, but an exception is thrown for values 0 or 1. A
+            value of "header-allow-1.0" will signal to accept a header TR of 1.
         slice_times : str or callable or array-like
             If str, one of the function names in ``SLICETIME_FUNCTIONS``
             dictionary from :mod:`nipy.algorithms.slicetiming.timefuncs`.  If
@@ -922,6 +955,17 @@ class SpaceTimeRealign(Realign4d):
             transformation class to use to calculate transformations between
             the volumes. Default is :class:``Rigid``
         """
+        if tr is None:
+            tr = tr_from_header(images)
+            if tr == 1:
+                raise ValueError('A TR of 1 was found in the header. '
+                    'This value often stands in for an unknown TR. '
+                    'Please specify TR explicitly. Alternatively '
+                    'consider setting TR to "header-allow-1.0".')
+        elif tr == "header-allow-1.0":
+            tr = tr_from_header(images)
+        if tr == 0:
+            raise ValueError('Repetition time cannot be zero.')
         if slice_times is None:
             raise ValueError("slice_times must be set for space/time "
                              "registration; use SpaceRealign for space-only "
