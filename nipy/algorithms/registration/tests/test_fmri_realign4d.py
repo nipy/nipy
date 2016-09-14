@@ -4,25 +4,29 @@ from __future__ import absolute_import
 
 import warnings
 
-from nose.tools import assert_equal
+import numpy as np
+import nibabel as nib
 
+from nose.tools import assert_equal
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal,
                            assert_raises)
-import numpy as np
 
 from .... import load_image
-from ....testing import funcfile
-from ....fixes.nibabel import io_orientation
 from ....core.image.image_spaces import (make_xyz_image, xyz_affine)
-
+from ....fixes.nibabel import io_orientation
+from ....io.nibcompat import get_header
+from ....testing import funcfile
+from ...slicetiming.timefuncs import st_43210, st_02413, st_42031
+from ..affine import Rigid
 from ..groupwise_registration import (Image4d, resample4d, FmriRealign4d,
                                       SpaceTimeRealign, SpaceRealign, Realign4d,
                                       Realign4dAlgorithm, make_grid)
-from ...slicetiming.timefuncs import st_43210, st_02413, st_42031
-from ..affine import Rigid
 
 im = load_image(funcfile)
+ims = [nib.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4)) for i in range(4)]
+for ix, imx in enumerate(ims):
+    get_header(imx)['pixdim'][4] = ix
 
 def test_futurewarning():
     with warnings.catch_warnings(record=True) as warns:
@@ -166,8 +170,10 @@ def test_realign4d_params():
     # Some tests for input parameters to realign4d
     R = Realign4d(im, 3, [0, 1, 2], None) # No slice_info - OK
     assert_equal(R.tr, 3)
-    # TR cannot be None for set slice times
-    assert_raises(ValueError, Realign4d, im, None, [0, 1, 2], None)
+    # TR cannot be None
+    assert_raises(ValueError, Realign4d, ims[1], None, [0, 1, 2], None)
+    # TR cannot be zero
+    assert_raises(ValueError, Realign4d, ims[1], 0, [0, 1, 2], None)
     # TR can be None if slice times are None
     R = Realign4d(im, None, None)
     assert_equal(R.tr, 1)
@@ -194,7 +200,12 @@ def test_spacetimerealign_params():
     R = SpaceTimeRealign(runs, 3, 'ascending', 2) # OK
     assert_raises(ValueError, SpaceTimeRealign, runs, 3, None, 2)
     assert_raises(ValueError, SpaceTimeRealign, runs, 3, 'ascending', None)
-    assert_raises(ValueError, SpaceTimeRealign, runs, None, [0, 1, 2], 2)
+    assert_raises(ValueError, SpaceTimeRealign, ims[0], None, [0, 1, 2], 2)
+    assert_raises(ValueError, SpaceTimeRealign, ims[1], None, [0, 1, 2], 2)
+    assert_raises(ValueError, SpaceTimeRealign, ims[2:4], None, [0, 1, 2], 2)
+    assert_raises(ValueError, SpaceTimeRealign, ims[0], 'header-allow-1.0', [0, 1, 2], 2)
+    R = SpaceTimeRealign(ims[1], "header-allow-1.0", 'ascending', 2)
+    assert_array_equal(R.tr, 1.0)
     # Test when TR and nslices are not the same
     R1 = SpaceTimeRealign(runs, tr=2., slice_times='ascending', slice_info=2)
     assert_array_equal(R1.slice_times, np.arange(3) / 3. * 2.)
@@ -236,26 +247,26 @@ def test_make_grid_funfile():
     dims = im.shape[0:3]
     borders = (3,2,1)
     nvoxels = np.prod(np.array([reduced_dim(dims[i], 1, borders[i]) for i in range(3)]))
-    _test_make_grid(dims, (1,1,1), borders, nvoxels)           
+    _test_make_grid(dims, (1,1,1), borders, nvoxels)
 
 
 def test_make_grid_default():
     dims = np.random.randint(100, size=3) + 1
-    _test_make_grid(dims, (1,1,1), (0,0,0), np.prod(dims))           
+    _test_make_grid(dims, (1,1,1), (0,0,0), np.prod(dims))
 
 
 def test_make_grid_random_subsampling():
     dims = np.random.randint(100, size=3) + 1
     subsampling = np.random.randint(5, size=3) + 1
     nvoxels = np.prod(np.array([reduced_dim(dims[i], subsampling[i], 0) for i in range(3)]))
-    _test_make_grid(dims, subsampling, (0,0,0), nvoxels)           
+    _test_make_grid(dims, subsampling, (0,0,0), nvoxels)
 
 
 def test_make_grid_random_borders():
     dims = np.random.randint(100, size=3) + 1
     borders = np.minimum((dims - 1) / 2, np.random.randint(10, size=3))
     nvoxels = np.prod(np.array([reduced_dim(dims[i], 1, borders[i]) for i in range(3)]))
-    _test_make_grid(dims, (1,1,1), borders, nvoxels)           
+    _test_make_grid(dims, (1,1,1), borders, nvoxels)
 
 
 def test_make_grid_full_monthy():
@@ -263,7 +274,7 @@ def test_make_grid_full_monthy():
     subsampling = np.random.randint(5, size=3) + 1
     borders = np.minimum((dims - 1) / 2, np.random.randint(10, size=3))
     nvoxels = np.prod(np.array([reduced_dim(dims[i], subsampling[i], borders[i]) for i in range(3)]))
-    _test_make_grid(dims, subsampling, borders, nvoxels)           
+    _test_make_grid(dims, subsampling, borders, nvoxels)
 
 
 def test_spacerealign():
