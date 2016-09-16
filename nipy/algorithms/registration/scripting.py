@@ -18,9 +18,6 @@ import nibabel.eulerangles as euler
 from nibabel.optpkg import optional_package
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
 
-if HAVE_MPL:
-    import matplotlib.pyplot as plt
-
 from .groupwise_registration import SpaceTimeRealign
 import nipy.algorithms.slicetiming as st
 from nipy.io.api import save_image
@@ -110,7 +107,6 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
         Specify an output location (full path) for the files that are
         generated. Default: generate files in the path of the inputs (with an
         `_mc` suffix added to the file-names.
-    
 
     Returns
     -------
@@ -125,7 +121,7 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
             e_s ="You need to have matplotlib installed to run this function"
             e_s += " with `make_figure` set to `True`"
             raise RuntimeError(e_s)
-        
+
     # If we got only a single file, we motion correct that one:
     if op.isfile(input):
         if not (input.endswith('.nii') or input.endswith('.nii.gz')):
@@ -147,7 +143,7 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
     slice_times = timefuncs[slice_order]
     slice_info = [slice_dim,
                   slice_dir]
-    
+
     reggy = SpaceTimeRealign(input,
                              tr,
                              slice_times,
@@ -175,6 +171,10 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
             save_image(new_im, op.join(new_path, fname + '_mc.nii.gz'))
 
     if make_figure:
+        # Delay MPL plotting import to latest moment to avoid errors trying
+        # import the default MPL backend (such as tkinter, which may not be
+        # installed). See: https://github.com/nipy/nipy/issues/414
+        import matplotlib.pyplot as plt
         figure, ax = plt.subplots(2)
         figure.set_size_inches([8, 6])
         ax[0].plot(rot)
