@@ -14,6 +14,7 @@ include nipy/algorithms/diagnostics/tests/data/*.mat
 include nipy/algorithms/statistics/models/tests/*.bin
 include nipy/modalities/fmri/tests/*.npz
 include nipy/modalities/fmri/tests/*.mat
+include nipy/modalities/fmri/tests/*.txt
 include nipy/COMMIT_INFO.txt
 include LICENSE
 graft examples
