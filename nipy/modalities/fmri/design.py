@@ -442,12 +442,10 @@ def openfmri2nipy(ons_dur_amp):
     if not isinstance(ons_dur_amp, np.ndarray):
         ons_dur_amp = np.loadtxt(ons_dur_amp)
     onsets, durations, amplitudes = ons_dur_amp.T
-    block_spec = make_recarray(
+    return make_recarray(
         np.column_stack((onsets, onsets + durations, amplitudes)),
-        names=['start', 'end', 'amplitude'])
-    # 2D arrays created by default by recarray when passed array input. This is
-    # probably a bug, but work round here.
-    return np.squeeze(block_spec)
+        names=['start', 'end', 'amplitude'],
+        drop_name_dim=True)
 
 
 def block_amplitudes(name, block_spec, t, hrfs=(glover,),

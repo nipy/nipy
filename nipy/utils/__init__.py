@@ -34,3 +34,20 @@ from .utilities import is_iterable, is_numlike
 from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench
+
+
+class VisibleDeprecationWarning(UserWarning):
+    """Visible deprecation warning.
+
+    Python does not show any DeprecationWarning by default.  Sometimes we do
+    want to show a deprecation warning, when the deprecation is urgent, or the
+    usage is probably a bug.
+    """
+
+
+class _NoValue:
+    """Special keyword value.
+
+    This class may be used as the default value assigned to a deprecated
+    keyword in order to check if it has been given a user defined value.
+    """

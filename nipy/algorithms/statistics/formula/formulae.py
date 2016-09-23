@@ -112,6 +112,7 @@ array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
 from __future__ import print_function
 from __future__ import absolute_import
 
+import warnings
 from string import ascii_letters, digits
 
 import numpy as np
@@ -121,6 +122,7 @@ import sympy
 from sympy import Dummy, default_sort_key
 from sympy.utilities.lambdify import (implemented_function, lambdify)
 
+from nipy.utils import _NoValue, VisibleDeprecationWarning
 from nipy.utils.compat3 import to_str
 
 from nipy.algorithms.utils.matrices import matrix_rank, full_rank
@@ -332,7 +334,35 @@ def getterms(expression):
     return terms
 
 
-def make_recarray(rows, names, dtypes=None):
+def _recarray_from_array(arr, names, drop_name_dim=_NoValue):
+    """ Create recarray from input array `arr`, field names `names`
+    """
+    if not arr.dtype.isbuiltin:  # Structured array as input
+        # Rename fields
+        dtype = np.dtype([(n, d[1]) for n, d in zip(names, arr.dtype.descr)])
+        return arr.view(dtype)
+    if drop_name_dim is _NoValue:
+        if arr.ndim > 1:
+            warnings.warn(
+                'Default behavior of make_recarray and > 1D arrays will '
+                'change in next Nipy release.  Current default returns\n'
+                'array with same number of dimensions as input, with '
+                'axis corresponding to the field names having length 1\n; '
+                'Future default will be to drop this length 1 axis. Please '
+                'change your code to use explicit True or False for\n'
+                'compatibility with future Nipy.',
+                VisibleDeprecationWarning,
+                stacklevel=2)
+        # This default will change to True in next version of Nipy
+        drop_name_dim = False
+    dtype = np.dtype([(n, arr.dtype) for n in names])
+    rec_arr = arr.view(dtype)
+    if arr.ndim > 1 and drop_name_dim:
+        rec_arr.shape = arr.shape[:-1]
+    return rec_arr
+
+
+def make_recarray(rows, names, dtypes=None, drop_name_dim=_NoValue):
     """ Create recarray from `rows` with field names `names`
 
     Create a recarray with named columns from a list or ndarray of `rows` and
@@ -348,8 +378,14 @@ def make_recarray(rows, names, dtypes=None):
         Rows that will be turned into an recarray.
     names: sequence
         Sequence of strings - names for the columns.
-    dtypes: None or sequence of str or sequence of np.dtype
+    dtypes: None or sequence of str or sequence of np.dtype, optional
         Used to create a np.dtype, can be sequence of np.dtype or string.
+    drop_name_dim : {_NoValue, False, True}, optional
+        Flag for compatibility with future default behavior.  Current default
+        is False.  If True, drops the length 1 dimension corresponding to the
+        axis transformed into fields when converting into a recarray.  If
+        _NoValue specified, gives default.  Default will change to True in the
+        next version of Nipy.
 
     Returns
     -------
@@ -375,18 +411,20 @@ def make_recarray(rows, names, dtypes=None):
     >>> make_recarray([[3, 4], [4, 6], [7, 9]], 'wv', [np.float, np.int]) #doctest: +ELLIPSIS
     array([(3.0, 4), (4.0, 6), (7.0, 9)],
           dtype=[('w', '...'), ('v', '...')])
+
+    Raises
+    ------
+    ValueError
+        `dtypes` not None when `rows` is array.
     """
     # XXX This function is sort of one of convenience
     # Would be nice to use DataArray or something like that
     # to add axis names.
     if isinstance(rows, np.ndarray):
-        if rows.dtype.isbuiltin:
-            dtype = np.dtype([(n, rows.dtype) for n in names])
-        else:
-            dtype = np.dtype([(n, d[1]) for n, d in zip(names, rows.dtype.descr)])
         if dtypes is not None:
             raise ValueError('dtypes not used if rows is an ndarray')
-        return rows.view(dtype)
+        return _recarray_from_array(rows, names, drop_name_dim)
+    # Recarray from list
     if dtypes is None:
         dtype = np.dtype([(n, np.float) for n in names])
     else:
