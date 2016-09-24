@@ -113,6 +113,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import warnings
+import itertools
 from string import ascii_letters, digits
 
 import numpy as np
@@ -424,31 +425,20 @@ def make_recarray(rows, names, dtypes=None, drop_name_dim=_NoValue):
         if dtypes is not None:
             raise ValueError('dtypes not used if rows is an ndarray')
         return _recarray_from_array(rows, names, drop_name_dim)
-    # Recarray from list
+    # Structured array from list
     if dtypes is None:
         dtype = np.dtype([(n, np.float) for n in names])
     else:
         dtype = np.dtype([(n, d) for n, d in zip(names, dtypes)])
-    nrows = []
-    vector = -1
-    for r in rows:
-        if vector < 0:
-            a = np.array(r)
-            if a.shape == ():
-                vector = True
-            else:
-                vector = False
-        if not vector:
-            nrows.append(tuple(r))
-        else:
-            nrows.append(r)
-    if vector:
-        if len(names) != 1: # a 'row vector'
-            nrows = tuple(nrows)
-            return np.array(nrows, dtype)
-        else:
-            nrows = np.array([(r,) for r in nrows], dtype)
-    return np.array(nrows, dtype)
+    # Peek at first value in iterable
+    irows = iter(rows)
+    row0 = next(irows)
+    irows = itertools.chain([row0], irows)
+    if np.array(row0).shape == ():  # a vector
+        if len(names) != 1:  # a 'row vector'
+            return np.array(tuple(irows), dtype)
+        return np.array([(r,) for r in irows], dtype)
+    return np.array([tuple(r) for r in irows], dtype)
 
 
 class Formula(object):

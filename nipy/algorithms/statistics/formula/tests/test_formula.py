@@ -225,6 +225,15 @@ def assert_starr_equal(a, b):
 def test_make_recarray():
     # Test make_array
     # From list / sequence
+    # 1D column vector case
+    assert_starr_equal(
+        F.make_recarray(range(4), ['f1']),
+        np.arange(4).astype([('f1', float)]))
+    # 1D row vector
+    assert_starr_equal(
+        F.make_recarray(range(4), 'abcd'),
+        np.array(tuple(range(4)), dtype=[(c, float) for c in 'abcd']))
+    # 2D case
     data = [(3, 4), (4, 6), (7, 9)]
     m = F.make_recarray(data, 'wv', [np.float, np.int])
     assert_starr_equal(m, fromrecords(
