@@ -280,6 +280,17 @@ def test_make_recarray():
     assert_raises(ValueError, F.make_recarray, arr, 'xy', [int, float])
 
 
+def test_make_recarray_axes():
+    # On earlier numpy, axis to which names applied depends on memory layout
+    # C contiguous
+    arr = np.arange(9).reshape((3,3))
+    s_arr = F.make_recarray(arr, 'abc', drop_name_dim=True)
+    assert_array_equal(s_arr['a'], arr[:, 0])
+    # Fortran contiguous
+    s_arr = F.make_recarray(arr.T, 'abc', drop_name_dim=True)
+    assert_array_equal(s_arr['a'], arr[0, :])
+
+
 def test_str_formula():
     t1 = F.Term('x')
     t2 = F.Term('y')

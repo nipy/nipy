@@ -357,7 +357,10 @@ def _recarray_from_array(arr, names, drop_name_dim=_NoValue):
         # This default will change to True in next version of Nipy
         drop_name_dim = False
     dtype = np.dtype([(n, arr.dtype) for n in names])
-    rec_arr = arr.view(dtype)
+    # At least for numpy <= 1.7.1, the dimension that numpy applies the names
+    # to depends on the memory layout (C or F).  Ensure C layout for consistent
+    # application of names to last dimension.
+    rec_arr = np.ascontiguousarray(arr).view(dtype)
     if arr.ndim > 1 and drop_name_dim:
         rec_arr.shape = arr.shape[:-1]
     return rec_arr
