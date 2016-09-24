@@ -270,6 +270,11 @@ def test_make_recarray():
         reshape((3, 1, 1)))
     # False case is the default, with warning (for now)
     with catch_warnings(record=True) as warn_list:
+        # Clear any pre-existing warnings cached in formula module, to make
+        # sure warning is triggered..  See
+        # nibabel.testing.clear_and_catch_warnings for detail.
+        if hasattr(F, '__warningregistry__'):
+            F.__warningregistry__.clear()
         simplefilter('always')
         assert_starr_equal(
             F.make_recarray(arr, 'xy'),
