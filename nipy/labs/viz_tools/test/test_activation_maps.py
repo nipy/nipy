@@ -6,6 +6,7 @@ import tempfile
 import numpy as np
 
 from nose import SkipTest
+from nipy.testing.decorators import skipif
 try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
@@ -14,6 +15,11 @@ try:
     pl.switch_backend('svg')
 except ImportError:
     raise SkipTest('Could not import matplotlib')
+
+try:
+    from mock import patch
+except ImportError:  # pragma: no cover
+    patch = None
 
 from ..activation_maps import demo_plot_map, plot_anat, plot_map
 from ..anat_cache import mni_sform, _AnatCache
@@ -52,6 +58,18 @@ def test_plot_anat():
     # Smoke test coordinate finder, with and without mask
     plot_map(np.ma.masked_equal(data, 0), mni_sform, slicer='x')
     plot_map(data, mni_sform, slicer='y')
+
+@skipif(not patch, 'Cannot import patch from mock')
+def test_plot_anat_kwargs():
+    data = np.zeros((20, 20, 20))
+    data[3:-3, 3:-3, 3:-3] = 1
+    kwargs = {'interpolation': 'nearest'}
+    with patch('nipy.labs.viz_tools.activation_maps._plot_anat') \
+        as mock_plot_anat:
+        ortho_slicer = plot_anat(data, mni_sform, dim=True, **kwargs)
+        kwargs_passed = mock_plot_anat.call_args[-1]
+        assert('interpolation' in kwargs_passed)
+        assert(kwargs_passed['interpolation'] == 'nearest')
 
 
 def test_anat_cache():
