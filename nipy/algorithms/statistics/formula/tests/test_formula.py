@@ -225,48 +225,50 @@ def assert_starr_equal(a, b):
 def test_make_recarray():
     # Test make_array
     # From list / sequence
-    # 1D column vector case
-    assert_starr_equal(
-        F.make_recarray(range(4), ['f1']),
-        np.arange(4).astype([('f1', float)]))
-    # 1D row vector
-    assert_starr_equal(
-        F.make_recarray(range(4), 'abcd'),
-        np.array(tuple(range(4)), dtype=[(c, float) for c in 'abcd']))
     # 2D case
-    data = [(3, 4), (4, 6), (7, 9)]
-    m = F.make_recarray(data, 'wv', [np.float, np.int])
+    data_2d = [(3, 4), (4, 6), (7, 9)]
+    m = F.make_recarray(data_2d, 'wv', [np.float, np.int])
     assert_starr_equal(m, fromrecords(
-        data, dtype=[('w', float), ('v', int)]))
+        data_2d, dtype=[('w', float), ('v', int)]))
+    # 1D vector, sequence and array
+    for data_1d in (range(4), np.arange(4).astype(float)):
+        # Column vector. For array case, drop name dim for shape match
+        assert_starr_equal(
+            F.make_recarray(data_1d, ['f1'], drop_name_dim=True),
+            np.arange(4).astype([('f1', float)]))
+        # Row vector. Drop name dim for shape match
+        assert_starr_equal(
+            F.make_recarray(data_1d, 'abcd', drop_name_dim=True),
+            np.array(tuple(range(4)), dtype=[(c, float) for c in 'abcd']))
     # From another recarray, reaming fields
     m2 = F.make_recarray(m, 'xy')
     assert_starr_equal(m2, fromrecords(
-        data, dtype=[('x', float), ('y', int)]))
+        data_2d, dtype=[('x', float), ('y', int)]))
     # Recarrays don't change shape, trailing dimensions or no
     assert_starr_equal(F.make_recarray(m2, 'xy'), m2)
     m2_dash = np.reshape(m2, (3, 1, 1, 1))
     assert_starr_equal(F.make_recarray(m2_dash, 'xy'), m2_dash)
     # From an array, drop dim case
-    arr = np.array(data)
+    arr = np.array(data_2d)
     assert_equal(arr.shape, (3, 2))
     assert_starr_equal(
         F.make_recarray(arr, 'xy', drop_name_dim=True),
-        fromrecords(data, dtype=[('x', int), ('y', int)]))
+        fromrecords(data_2d, dtype=[('x', int), ('y', int)]))
     assert_starr_equal(
         F.make_recarray(arr.astype(float), 'xy', drop_name_dim=True),
-        fromrecords(data, dtype=[('x', float), ('y', float)]))
+        fromrecords(data_2d, dtype=[('x', float), ('y', float)]))
     assert_starr_equal(
         F.make_recarray(arr.reshape((3, 1, 2)), 'xy', drop_name_dim=True),
-        fromrecords(data, dtype=[('x', int), ('y', int)]).
+        fromrecords(data_2d, dtype=[('x', int), ('y', int)]).
         reshape((3, 1)))
     # Not drop dim case, trailing length 1 axis.
     assert_starr_equal(
         F.make_recarray(arr, 'xy', drop_name_dim=False),
-        fromrecords(data, dtype=[('x', int), ('y', int)]).
+        fromrecords(data_2d, dtype=[('x', int), ('y', int)]).
         reshape((3, 1)))
     assert_starr_equal(
         F.make_recarray(arr.reshape((3, 1, 2)), 'xy', drop_name_dim=False),
-        fromrecords(data, dtype=[('x', int), ('y', int)]).
+        fromrecords(data_2d, dtype=[('x', int), ('y', int)]).
         reshape((3, 1, 1)))
     # False case is the default, with warning (for now)
     with catch_warnings(record=True) as warn_list:
@@ -278,7 +280,7 @@ def test_make_recarray():
         simplefilter('always')
         assert_starr_equal(
             F.make_recarray(arr, 'xy'),
-            fromrecords(data, dtype=[('x', int), ('y', int)]).
+            fromrecords(data_2d, dtype=[('x', int), ('y', int)]).
             reshape((3, 1)))
         assert_equal(warn_list[0].category, VisibleDeprecationWarning)
     # Can't pass dtypes to array version of function

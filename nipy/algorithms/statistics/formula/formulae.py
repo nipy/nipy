@@ -342,18 +342,19 @@ def _recarray_from_array(arr, names, drop_name_dim=_NoValue):
         # Rename fields
         dtype = np.dtype([(n, d[1]) for n, d in zip(names, arr.dtype.descr)])
         return arr.view(dtype)
-    if drop_name_dim is _NoValue:
-        if arr.ndim > 1:
-            warnings.warn(
-                'Default behavior of make_recarray and > 1D arrays will '
-                'change in next Nipy release.  Current default returns\n'
-                'array with same number of dimensions as input, with '
-                'axis corresponding to the field names having length 1\n; '
-                'Future default will be to drop this length 1 axis. Please '
-                'change your code to use explicit True or False for\n'
-                'compatibility with future Nipy.',
-                VisibleDeprecationWarning,
-                stacklevel=2)
+    # Can drop name axis for > 1D arrays or row vectors (scalar per name).
+    can_name_drop = arr.ndim > 1 or len(names) > 1
+    if can_name_drop and drop_name_dim is _NoValue:
+        warnings.warn(
+            'Default behavior of make_recarray and > 1D arrays will '
+            'change in next Nipy release.  Current default returns\n'
+            'array with same number of dimensions as input, with '
+            'axis corresponding to the field names having length 1\n; '
+            'Future default will be to drop this length 1 axis. Please '
+            'change your code to use explicit True or False for\n'
+            'compatibility with future Nipy.',
+            VisibleDeprecationWarning,
+            stacklevel=2)
         # This default will change to True in next version of Nipy
         drop_name_dim = False
     dtype = np.dtype([(n, arr.dtype) for n in names])
@@ -361,7 +362,7 @@ def _recarray_from_array(arr, names, drop_name_dim=_NoValue):
     # to depends on the memory layout (C or F).  Ensure C layout for consistent
     # application of names to last dimension.
     rec_arr = np.ascontiguousarray(arr).view(dtype)
-    if arr.ndim > 1 and drop_name_dim:
+    if can_name_drop and drop_name_dim:
         rec_arr.shape = arr.shape[:-1]
     return rec_arr
 
