@@ -497,7 +497,7 @@ def block_amplitudes(name, block_spec, t, hrfs=(glover,),
     """
     block_spec = np.asarray(block_spec)
     if block_spec.dtype.names is not None:
-        if not block_spec.dtype.names in (('start', 'end'),
+        if block_spec.dtype.names not in (('start', 'end'),
                                           ('start', 'end', 'amplitude')):
             raise ValueError('expecting fields called "start", "end" and '
                              '(optionally) "amplitude"')
