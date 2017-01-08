@@ -148,7 +148,8 @@ def test_results():
     M = np.identity(14)
     M = np.array([M[i] for i in [0,1,2,3,4,5,6,8,9,10,11,12,13]])
     Fc = r.Fcontrast(M)
-    yield niptest.assert_array_almost_equal, [Fc.F], [f['F']], 6
+    # Scipy 0.17.0 gives about 2e-5 difference in this next comparison.
+    yield niptest.assert_true, np.allclose(Fc.F, f['F'])
     yield niptest.assert_array_almost_equal, [Fc.df_num], [f['df_num']], 6
     yield niptest.assert_array_almost_equal, [Fc.df_den], [f['df_den']], 6
 
