@@ -45,5 +45,3 @@ try:
     del Tester
 except:
     pass
-
-

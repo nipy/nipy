@@ -3,18 +3,23 @@
 """
 Test functions for formulae
 """
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import print_function, absolute_import
+
+from warnings import catch_warnings, simplefilter
 
 import numpy as np
+from numpy.core.records import fromrecords
+
 import sympy
 
 from sympy.utilities.lambdify import implemented_function
 
 from .. import formulae as F
 from ..formulae import terms, Term
+from nipy.utils import VisibleDeprecationWarning
 
 from nibabel.py3k import asbytes
+from nibabel.testing import assert_dt_equal
 
 from nose.tools import (assert_true, assert_equal, assert_false,
                         assert_raises)
@@ -209,11 +214,88 @@ def test_term_order_sub():
     assert_array_equal((f2 - f1).terms, terms('a'))
 
 
+def assert_starr_equal(a, b):
+    assert_equal(a.shape, b.shape)
+    assert_equal(a.dtype.names, b.dtype.names)
+    for name in a.dtype.names:
+        assert_array_equal(a[name], b[name])
+        assert_dt_equal(a[name].dtype, b[name].dtype)
+
+
 def test_make_recarray():
-    m = F.make_recarray([[3,4],[4,6],[7,9]], 'wv', [np.float, np.int])
-    assert_equal(m.dtype.names, ('w', 'v'))
+    # Test make_array
+    # From list / sequence
+    # 2D case
+    data_2d = [(3, 4), (4, 6), (7, 9)]
+    m = F.make_recarray(data_2d, 'wv', [np.float, np.int])
+    assert_starr_equal(m, fromrecords(
+        data_2d, dtype=[('w', float), ('v', int)]))
+    # 1D vector, sequence and array
+    for data_1d in (range(4), np.arange(4).astype(float)):
+        # Column vector. For array case, drop name dim for shape match
+        assert_starr_equal(
+            F.make_recarray(data_1d, ['f1'], drop_name_dim=True),
+            np.arange(4).astype([('f1', float)]))
+        # Row vector. Drop name dim for shape match
+        assert_starr_equal(
+            F.make_recarray(data_1d, 'abcd', drop_name_dim=True),
+            np.array(tuple(range(4)), dtype=[(c, float) for c in 'abcd']))
+    # From another recarray, reaming fields
     m2 = F.make_recarray(m, 'xy')
-    assert_equal(m2.dtype.names, ('x', 'y'))
+    assert_starr_equal(m2, fromrecords(
+        data_2d, dtype=[('x', float), ('y', int)]))
+    # Recarrays don't change shape, trailing dimensions or no
+    assert_starr_equal(F.make_recarray(m2, 'xy'), m2)
+    m2_dash = np.reshape(m2, (3, 1, 1, 1))
+    assert_starr_equal(F.make_recarray(m2_dash, 'xy'), m2_dash)
+    # From an array, drop dim case
+    arr = np.array(data_2d)
+    assert_equal(arr.shape, (3, 2))
+    assert_starr_equal(
+        F.make_recarray(arr, 'xy', drop_name_dim=True),
+        fromrecords(data_2d, dtype=[('x', int), ('y', int)]))
+    assert_starr_equal(
+        F.make_recarray(arr.astype(float), 'xy', drop_name_dim=True),
+        fromrecords(data_2d, dtype=[('x', float), ('y', float)]))
+    assert_starr_equal(
+        F.make_recarray(arr.reshape((3, 1, 2)), 'xy', drop_name_dim=True),
+        fromrecords(data_2d, dtype=[('x', int), ('y', int)]).
+        reshape((3, 1)))
+    # Not drop dim case, trailing length 1 axis.
+    assert_starr_equal(
+        F.make_recarray(arr, 'xy', drop_name_dim=False),
+        fromrecords(data_2d, dtype=[('x', int), ('y', int)]).
+        reshape((3, 1)))
+    assert_starr_equal(
+        F.make_recarray(arr.reshape((3, 1, 2)), 'xy', drop_name_dim=False),
+        fromrecords(data_2d, dtype=[('x', int), ('y', int)]).
+        reshape((3, 1, 1)))
+    # False case is the default, with warning (for now)
+    with catch_warnings(record=True) as warn_list:
+        # Clear any pre-existing warnings cached in formula module, to make
+        # sure warning is triggered..  See
+        # nibabel.testing.clear_and_catch_warnings for detail.
+        if hasattr(F, '__warningregistry__'):
+            F.__warningregistry__.clear()
+        simplefilter('always')
+        assert_starr_equal(
+            F.make_recarray(arr, 'xy'),
+            fromrecords(data_2d, dtype=[('x', int), ('y', int)]).
+            reshape((3, 1)))
+        assert_equal(warn_list[0].category, VisibleDeprecationWarning)
+    # Can't pass dtypes to array version of function
+    assert_raises(ValueError, F.make_recarray, arr, 'xy', [int, float])
+
+
+def test_make_recarray_axes():
+    # On earlier numpy, axis to which names applied depends on memory layout
+    # C contiguous
+    arr = np.arange(9).reshape((3,3))
+    s_arr = F.make_recarray(arr, 'abc', drop_name_dim=True)
+    assert_array_equal(s_arr['a'], arr[:, 0])
+    # Fortran contiguous
+    s_arr = F.make_recarray(arr.T, 'abc', drop_name_dim=True)
+    assert_array_equal(s_arr['a'], arr[0, :])
 
 
 def test_str_formula():

@@ -1,12 +1,15 @@
 """ Testing design module
 """
 
+from os.path import dirname, join as pjoin
+
 import numpy as np
 
-from ..design import event_design, block_design, stack2designs, stack_designs
+from ..design import (event_design, block_design, stack2designs, stack_designs,
+                      openfmri2nipy, block_amplitudes)
 from ..utils import (events, lambdify_t, T, convolve_functions,
                      blocks)
-from ..hrf import glover
+from ..hrf import glover, dglover
 from nipy.algorithms.statistics.formula import make_recarray
 
 from numpy.testing import (assert_almost_equal,
@@ -14,6 +17,9 @@ from numpy.testing import (assert_almost_equal,
 
 from nose.tools import (assert_true, assert_false, assert_raises,
                         assert_equal, assert_not_equal)
+
+
+THIS_DIR = dirname(__file__)
 
 
 def assert_dict_almost_equal(obs, exp):
@@ -214,3 +220,76 @@ def test_stack_designs():
          dict(con1=[1, 0] + [0] * N,
               con2=[0, 1] + [0] * N,
               con3=[0] * N + [0, 1])))
+
+
+def test_openfmri2nipy():
+    # Test loading / processing OpenFMRI stimulus file
+    stim_file = pjoin(THIS_DIR, 'cond_test1.txt')
+    ons_dur_amp = np.loadtxt(stim_file)
+    onsets, durations, amplitudes = ons_dur_amp.T
+    for in_param in (stim_file, ons_dur_amp):
+        res = openfmri2nipy(in_param)
+        assert_equal(res.dtype.names, ('start', 'end', 'amplitude'))
+        assert_array_equal(res['start'], onsets)
+        assert_array_equal(res['end'], onsets + durations)
+        assert_array_equal(res['amplitude'], amplitudes)
+
+
+def test_block_amplitudes():
+    # Test event design helper function
+    # An event design with one event type
+    onsets = np.array([0, 20, 40, 60])
+    durations = np.array([2, 3, 4, 5])
+    offsets = onsets + durations
+    amplitudes = [3, 2, 1, 4]
+    t = np.arange(0, 100, 2.5)
+
+    def mk_blk_tc(amplitudes=None, hrf=glover):
+        func_amp = blocks(zip(onsets, offsets), amplitudes)
+        # Make real time course for block onset / offsets / amplitudes
+        term = convolve_functions(func_amp, hrf(T),
+                                  (-5, 70),  # step func support
+                                  (0, 30.),  # conv kernel support
+                                  0.02)  # dt
+        return lambdify_t(term)(t)
+
+    no_amps = make_recarray(zip(onsets, offsets), ('start', 'end'))
+    amps = make_recarray(zip(onsets, offsets, amplitudes),
+                         ('start', 'end', 'amplitude'))
+    X, contrasts = block_amplitudes('ev0', no_amps, t)
+    assert_almost_equal(X, mk_blk_tc())
+    assert_dict_almost_equal(contrasts, {'ev0_0': 1})
+    # Same thing as 2D array
+    X, contrasts = block_amplitudes('ev0', np.c_[onsets, offsets], t)
+    assert_almost_equal(X, mk_blk_tc())
+    assert_dict_almost_equal(contrasts, {'ev0_0': 1})
+    # Now as list
+    X, contrasts = block_amplitudes('ev0', list(zip(onsets, offsets)), t)
+    assert_almost_equal(X, mk_blk_tc())
+    assert_dict_almost_equal(contrasts, {'ev0_0': 1})
+    # Add amplitudes
+    X_a, contrasts_a = block_amplitudes('ev1', amps, t)
+    assert_almost_equal(X_a, mk_blk_tc(amplitudes=amplitudes))
+    assert_dict_almost_equal(contrasts_a, {'ev1_0': 1})
+    # Same thing as 2D array
+    X_a, contrasts_a = block_amplitudes('ev1',
+                                        np.c_[onsets, offsets, amplitudes],
+                                        t)
+    assert_almost_equal(X_a, mk_blk_tc(amplitudes=amplitudes))
+    assert_dict_almost_equal(contrasts_a, {'ev1_0': 1})
+    # Add another HRF
+    X_2, contrasts_2 = block_amplitudes('ev0', no_amps, t, (glover, dglover))
+    assert_almost_equal(X_2, np.c_[mk_blk_tc(), mk_blk_tc(hrf=dglover)])
+    assert_dict_almost_equal(contrasts_2,
+                             {'ev0_0': [1, 0], 'ev0_1': [0, 1]})
+    # Errors on bad input
+    no_start = make_recarray(zip(onsets, offsets), ('begin', 'end'))
+    assert_raises(ValueError, block_amplitudes, 'ev0', no_start, t)
+    no_end = make_recarray(zip(onsets, offsets), ('start', 'finish'))
+    assert_raises(ValueError, block_amplitudes, 'ev0', no_end, t)
+    funny_amp = make_recarray(zip(onsets, offsets, amplitudes),
+                              ('start', 'end', 'intensity'))
+    assert_raises(ValueError, block_amplitudes, 'ev0', funny_amp, t)
+    funny_extra = make_recarray(zip(onsets, offsets, amplitudes, onsets),
+                              ('start', 'end', 'amplitude', 'extra_field'))
+    assert_raises(ValueError, block_amplitudes, 'ev0', funny_extra, t)
