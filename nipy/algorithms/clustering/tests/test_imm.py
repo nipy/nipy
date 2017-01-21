@@ -152,8 +152,8 @@ def test_imm_wnc():
     alpha = .5
     g0 = 1.
     x = np.random.rand(n, dim)
-    x[:.3*n] *= .2
-    x[:.1*n] *= .3
+    x[:int(.3 * n)] *= .2
+    x[:int(.1 * n)] *= .3
 
     # instantiate
     migmm = MixedIMM(alpha, dim)
@@ -184,8 +184,8 @@ def test_imm_wnc1():
     alpha = .5
     g0 = 1.
     x = np.random.rand(n, dim)
-    x[:.3*n] *= .2
-    x[:.1*n] *= .3
+    x[:int(.3 * n)] *= .2
+    x[:int(.1 * n)] *= .3
 
     # instantiate
     migmm = MixedIMM(alpha, dim)
@@ -216,8 +216,8 @@ def test_imm_wnc2():
     alpha = .5
     g0 = 1.
     x = np.random.rand(n, dim)
-    x[:.3*n] *= .2
-    x[:.1*n] *= .3
+    x[:int(.3 * n)] *= .2
+    x[:int(.1 * n)] *= .3
 
     # instantiate
     migmm = MixedIMM(alpha, dim)
@@ -242,8 +242,8 @@ def test_imm_wnc3():
     alpha = .5
     g0 = 1.
     x = np.random.rand(n, dim)
-    x[:.3*n] *= .2
-    x[:.1*n] *= .3
+    x[:int(.3 * n)] *= .2
+    x[:int(.1 * n)] *= .3
 
     # instantiate
     migmm = MixedIMM(alpha, dim)
