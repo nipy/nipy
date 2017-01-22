@@ -21,6 +21,8 @@ from __future__ import absolute_import
 
 import numpy as np
 
+from nipy.utils import seq_prod
+
 
 def parcels(data, labels=None, exclude=()):
     """ Return a generator for ``[data == label for label in labels]``
@@ -140,6 +142,13 @@ def write_data(output, iterable):
 def slice_generator(data, axis=0):
     """ Return generator for yielding slices along `axis`
 
+    Parameters
+    ----------
+    data : array-like
+    axis : int or list or tuple
+        If int, gives the axis.  If list or tuple, gives the combination of
+        axes over which to iterate.  First axis is fastest changing in output.
+
     Examples
     --------
     >>> for i,d in slice_generator([[1,2],[3,4]]):
@@ -158,31 +167,27 @@ def slice_generator(data, axis=0):
         for j in range(data.shape[axis]):
             ij = (slice(None,None,None),)*axis + (j,)
             yield ij, data[(slice(None,None,None),)*axis + (j,)]
-    elif type(axis) in [type(()),type([])]:
-        data = np.asarray(data)
+        return
 
-        # the total number of iterations to be made
-        nmax = np.product(np.asarray(data.shape)[axis])
+    # the total number of iterations to be made
+    axis_lens = [data.shape[a] for a in axis]
+    nmax = seq_prod(axis_lens)
 
-        # calculate the 'divmod' paramter which is used to work out
-        # which index to use to use for each axis during iteration
-        mods = np.cumprod(np.asarray(data.shape)[axis])
-        divs = [1] + list(mods[:-1])
+    # calculate the 'divmod' parameter which is used to work out
+    # which index to use to use for each axis during iteration
+    mods = np.cumprod(axis_lens)
+    divs = [1] + list(mods[:-1])
 
-        # set up a full set of slices for the image, to be modified
-        # at each iteration
-        slices = [slice(0, s) for s in data.shape]
+    # set up a full set of slices for the image, to be modified
+    # at each iteration
+    slice_template = [slice(0, s) for s in data.shape]
 
-        n = 0
-        while True:
-
-            if n >= nmax:
-                raise StopIteration
-            for (a, div, mod) in zip(axis, divs, mods):
-                x = n / div % mod
-                slices[a] = x
-            n += 1
-            yield slices, data[slices]
+    for n in range(nmax):
+        slices = slice_template[:]
+        for (a, div, mod) in zip(axis, divs, mods):
+            x = int(n / div % mod)
+            slices[a] = x
+        yield slices, data[slices]
 
 
 def f_generator(f, iterable):

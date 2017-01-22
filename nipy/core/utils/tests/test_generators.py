@@ -42,6 +42,18 @@ def test_multi_slice():
         assert_equal(d.shape, (30,))
     for _, d in slice_generator(DATA, axis=[2, 1]):
         assert_equal(d.shape, (10,))
+    slice_defs = list(slice_generator(DATA, axis=[0, 1]))
+    assert_equal(len(slice_defs), 10 * 20)
+    assert_equal(slice_defs[0][0], [0, 0, slice(0, 30, None)])
+    assert_equal(slice_defs[1][0], [1, 0, slice(0, 30, None)])
+    assert_equal(slice_defs[198][0], [8, 19, slice(0, 30, None)])
+    assert_equal(slice_defs[199][0], [9, 19, slice(0, 30, None)])
+    slice_defs = list(slice_generator(DATA, axis=[2, 1]))
+    assert_equal(len(slice_defs), 20 * 30)
+    assert_equal(slice_defs[0][0], [slice(0, 10, None), 0, 0])
+    assert_equal(slice_defs[1][0], [slice(0, 10, None), 0, 1])
+    assert_equal(slice_defs[598][0], [slice(0, 10, None), 19, 28])
+    assert_equal(slice_defs[599][0], [slice(0, 10, None), 19, 29])
 
 
 def test_multi_slice_write():
