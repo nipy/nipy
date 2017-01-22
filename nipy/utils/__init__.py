@@ -29,7 +29,7 @@ except DataError:
 else:
     HAVE_TEMPLATES = True
 
-from .utilities import is_iterable, is_numlike
+from .utilities import is_iterable, is_numlike, seq_prod
 
 from nipy.testing import Tester
 test = Tester().test

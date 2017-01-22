@@ -8,7 +8,7 @@ from nose.tools import (assert_true, assert_false, assert_raises,
                         assert_equal, assert_not_equal)
 
 
-from ..utilities import is_iterable, is_numlike
+from ..utilities import is_iterable, is_numlike, seq_prod
 
 def test_is_iterable():
     assert_true(is_iterable(()))
@@ -45,3 +45,11 @@ def test_is_numlike():
         assert_true(is_numlike(good))
     for bad in ('', object(), np.array(''), [], [1], (), (1,)):
         assert_false(is_numlike(bad))
+
+
+def test_seq_prod():
+    assert_equal(seq_prod(()), 1)
+    assert_equal(seq_prod((1,)), 1)
+    assert_equal(seq_prod((1, 2)), 2)
+    assert_equal(seq_prod((1, 2), 2), 4)
+    assert_equal(seq_prod((1, 2), 2.), 4.)
