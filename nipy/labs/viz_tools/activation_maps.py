@@ -377,12 +377,13 @@ def demo_plot_map(do3d=False, **kwargs):
     map = np.zeros((182, 218, 182))
     # Color a asymetric rectangle around Broca area:
     x, y, z = -52, 10, 22
-    x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
+    mapped = coord_transform(x, y, z, mni_sform_inv)
+    x_map, y_map, z_map = [int(v) for v in mapped]
     # Compare to values obtained using fslview. We need to add one as
     # voxels do not start at 0 in fslview.
     assert x_map == 142
-    assert y_map +1 == 137
-    assert z_map +1 == 95
+    assert y_map + 1 == 137
+    assert z_map + 1 == 95
     map[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     return plot_map(map, mni_sform, threshold='auto',
                         title="Broca's area", do3d=do3d,
