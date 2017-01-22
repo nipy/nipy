@@ -26,7 +26,7 @@ warn('Module nipy.labs.spatial_models.hierarchical_parcellation' +
 
 def _jointly_reduce_data(data1, data2, chunksize):
     lnvox = data1.shape[0]
-    aux = np.argsort(rand(lnvox)) [:np.minimum(chunksize, lnvox)]
+    aux = np.argsort(rand(lnvox)) [:int(np.minimum(chunksize, lnvox))]
     rdata1 = data1[aux]
     rdata2 = data2[aux]
     return rdata1, rdata2
