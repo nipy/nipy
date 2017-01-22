@@ -60,7 +60,7 @@ before_install:
     - pip install -U pip
     - pip install nose mock  # always
     - if [ -n "$PRE_DEPENDS" ]; then
-      pip install $PRE_DEPENDS
+      pip install $PRE_DEPENDS;
       fi
     - pip install $DEPENDS
     - if [ "${COVERAGE}" == "1" ]; then
