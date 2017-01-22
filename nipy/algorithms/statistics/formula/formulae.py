@@ -91,7 +91,7 @@ _b0*x1 + _b1*x3 + _b2*x1*x3 + _b3
 The I is the "intercept" term, I have explicity not used R's default of
 adding it to everything.
 
->>> f.design(r)
+>>> f.design(r)  #doctest: +STRUCTARR_EQUAL
 array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
        (70.0, 69.0, 4830.0, 1.0), (63.0, 47.0, 2961.0, 1.0),
        (78.0, 66.0, 5148.0, 1.0), (55.0, 44.0, 2420.0, 1.0),
@@ -402,20 +402,25 @@ def make_recarray(rows, names, dtypes=None, drop_name_dim=_NoValue):
     The following tests depend on machine byte order for their exact output.
 
     >>> arr = np.array([[3, 4], [4, 6], [6, 8]])
-    >>> make_recarray(arr, ['x', 'y']) #doctest: +ELLIPSIS
+    >>> make_recarray(arr, ['x', 'y'],
+    ...               drop_name_dim=True) #doctest: +STRUCTARR_EQUAL
+    array([(3, 4), (4, 6), (6, 8)],
+          dtype=[('x', '<i8'), ('y', '<i8')])
+    >>> make_recarray(arr, ['x', 'y'],
+    ...               drop_name_dim=False) #doctest: +STRUCTARR_EQUAL
     array([[(3, 4)],
            [(4, 6)],
            [(6, 8)]],
-          dtype=[('x', '...'), ('y', '...')])
-    >>> r = make_recarray(arr, ['w', 'u'])
-    >>> make_recarray(r, ['x', 'y']) #doctest: +ELLIPSIS
-    array([[(3, 4)],
-           [(4, 6)],
-           [(6, 8)]],
-          dtype=[('x', '...'), ('y', '...')])
-    >>> make_recarray([[3, 4], [4, 6], [7, 9]], 'wv', [np.float, np.int]) #doctest: +ELLIPSIS
+          dtype=[('x', '<i8'), ('y', '<i8')])
+    >>> r = make_recarray(arr, ['w', 'u'], drop_name_dim=True)
+    >>> make_recarray(r, ['x', 'y'],
+    ...               drop_name_dim=True) #doctest: +STRUCTARR_EQUAL
+    array([(3, 4), (4, 6), (6, 8)],
+          dtype=[('x', '<i8'), ('y', '<i8')])
+    >>> make_recarray([[3, 4], [4, 6], [7, 9]], 'wv',
+    ...               [np.float, np.int])  #doctest: +STRUCTARR_EQUAL
     array([(3.0, 4), (4.0, 6), (7.0, 9)],
-          dtype=[('w', '...'), ('v', '...')])
+          dtype=[('w', '<f8'), ('v', '<i8')])
 
     Raises
     ------
