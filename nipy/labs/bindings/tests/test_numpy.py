@@ -60,12 +60,12 @@ def _test_copy_vector(x):
     yield assert_equal, y1, x
 
 
-def test_copy_vector_contiguous(): 
-    x = (1000*np.random.rand(1e6)).astype('int32')
+def test_copy_vector_contiguous():
+    x = (1000*np.random.rand(int(1e6))).astype('int32')
     _test_copy_vector(x)
 
-def test_copy_vector_strided(): 
-    x0 = (1000*np.random.rand(2e6)).astype('int32')
+def test_copy_vector_strided():
+    x0 = (1000*np.random.rand(int(2e6))).astype('int32')
     x = x0[::2]
     _test_copy_vector(x)
 
@@ -87,17 +87,17 @@ def _test_pass_vector(x):
 
 
 def test_pass_vector():
-    x = np.random.rand(random_shape(1))-.5
+    x = np.random.rand(int(random_shape(1)))-.5
     _test_pass_vector(x)
 
 
 def test_pass_vector_int32():
-    x = (1000*(np.random.rand(random_shape(1))-.5)).astype('int32')
+    x = (1000*(np.random.rand(int(random_shape(1)))-.5)).astype('int32')
     _test_pass_vector(x)
 
 
 def test_pass_vector_uint8():
-    x = (256*(np.random.rand(random_shape(1)))).astype('uint8')
+    x = (256*(np.random.rand(int(random_shape(1))))).astype('uint8')
     _test_pass_vector(x)
 
 
