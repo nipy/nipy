@@ -24,7 +24,7 @@ def random_shape(size):
 
 
 def _test_array_get(x):
-    pos = np.asarray(x.shape)/2
+    pos = [s // 2 for s in x.shape]
     a = array_get(x, pos[0], pos[1], pos[2], pos[3])
     assert_equal(a, x[pos[0], pos[1], pos[2], pos[3]])
 
