@@ -450,8 +450,8 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
 
     # set the priors from a reasonable model of the data (!)
     # prior means
-    mb0 = np.mean(sx[ : alpha * nvox])
-    mb2 = np.mean(sx[(1 - alpha) * nvox:])
+    mb0 = np.mean(sx[:int(alpha * nvox)])
+    mb2 = np.mean(sx[int((1 - alpha) * nvox):])
     prior_means = np.reshape(np.array([mb0, 0, mb2]), (nclasses, 1))
     if fixed_scale:
         prior_scale = np.ones((nclasses, 1, 1)) * 1. / (prior_strength)
