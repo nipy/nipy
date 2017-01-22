@@ -54,6 +54,7 @@ matrix:
 before_install:
     - source tools/travis_tools.sh
     - python -m pip install --upgrade pip
+    - pip install --upgrade virtualenv
     - virtualenv --python=python venv
     - source venv/bin/activate
     - python --version # just to check
