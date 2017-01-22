@@ -33,7 +33,8 @@ def invertR(delta, IRF, niter=20):
 
     c = delta.max() / (np.pi/2)
     n = delta.shape[0]
-    delta0 = (delta[n/2+2] - delta[n/2+1])/(R[n/2+2] - R[n/2+1])
+    delta0 = ((delta[n // 2 + 2] - delta[n // 2 + 1])
+              / (R[n // 2 + 2] - R[n // 2 + 1]))
     if delta0 < 0:
         c = (delta.max() / (np.pi/2)) * 1.2
     else:
