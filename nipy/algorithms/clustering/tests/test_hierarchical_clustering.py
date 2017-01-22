@@ -159,7 +159,7 @@ def ward_test_more(n=100, k=5, verbose=0):
     # Check that two implementations give the same result
     np.random.seed(0)
     X = randn(n,2)
-    X[:math.ceil(n/3)] += 5
+    X[:int(math.ceil(n / 3))] += 5
     G = knn(X, 5)
     u,c = ward_segment(G, X, stop=-1, qmax=1, verbose=verbose)
     u1,c = ward_segment(G, X, stop=-1, qmax=k, verbose=verbose)
