@@ -149,7 +149,7 @@ class VolumeImg(VolumeGrid):
     resampled_to_img.__doc__ = VolumeGrid.resampled_to_img.__doc__
 
 
-    def as_volume_img(self, affine=None, shape=None, 
+    def as_volume_img(self, affine=None, shape=None,
                                         interpolation=None, copy=True):
         if affine is None and shape is None:
             if copy:
@@ -183,6 +183,7 @@ class VolumeImg(VolumeGrid):
             shape = (np.ceil(xmax - xmin)+1,
                      np.ceil(ymax - ymin)+1,
                      np.ceil(zmax - zmin)+1, )
+        shape = [int(s) for s in shape]
         if not len(shape) == 3:
             raise ValueError('The shape specified should be the shape '
                 'the 3D grid, and thus of length 3. %s was specified'
