@@ -50,6 +50,8 @@ matrix:
       env:
         - INSTALL_TYPE=requirements
         - DEPENDS=
+  allow_failures:
+    - python: 3.6
 
 before_install:
     - source tools/travis_tools.sh
