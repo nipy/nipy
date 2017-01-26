@@ -7,7 +7,7 @@ Should be cast soon in a nicer unitest framework
 
 Author : Bertrand Thirion, 2008-2009
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 import math
 
