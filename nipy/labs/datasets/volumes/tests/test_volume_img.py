@@ -48,10 +48,10 @@ def test_constructor():
 def test_identity_resample():
     """ Test resampling of the VolumeImg with an identity affine.
     """
-    shape = (3., 2., 5., 2.)
+    shape = (3, 2, 5, 2)
     data = np.random.randint(0, 10, shape)
     affine = np.eye(4)
-    affine[:3, -1] = 0.5*np.array(shape[:3])
+    affine[:3, -1] = 0.5 * np.array(shape[:3])
     ref_im = VolumeImg(data, affine, 'mine')
     rot_im = ref_im.as_volume_img(affine, interpolation='nearest')
     yield np.testing.assert_almost_equal, data, rot_im.get_data()
@@ -65,7 +65,7 @@ def test_identity_resample():
 def test_downsample():
     """ Test resampling of the VolumeImg with a 1/2 down-sampling affine.
     """
-    shape = (6., 3., 6, 2.)
+    shape = (6, 3, 6, 2)
     data = np.random.random(shape)
     affine = np.eye(4)
     ref_im = VolumeImg(data, affine, 'mine')
@@ -93,7 +93,7 @@ def test_reordering():
     """
     # We need to test on a square array, as rotation does not change
     # shape, whereas reordering does.
-    shape = (5., 5., 5., 2., 2.)
+    shape = (5, 5, 5, 2, 2)
     data = np.random.random(shape)
     affine = np.eye(4)
     affine[:3, -1] = 0.5*np.array(shape[:3])
@@ -154,7 +154,7 @@ def test_eq():
     """ Test copy and equality for VolumeImgs.
     """
     import copy
-    shape = (4., 3., 5., 2.)
+    shape = (4, 3, 5, 2)
     data = np.random.random(shape)
     affine = np.random.random((4, 4))
     ref_im = VolumeImg(data, affine, 'mine')
@@ -182,7 +182,7 @@ def test_eq():
 def test_values_in_world():
     """ Test the evaluation of the data in world coordinate.
     """
-    shape = (3., 5., 4., 2.)
+    shape = (3, 5, 4, 2)
     data = np.random.random(shape)
     affine = np.eye(4)
     ref_im = VolumeImg(data, affine, 'mine')
@@ -194,7 +194,7 @@ def test_values_in_world():
 def test_resampled_to_img():
     """ Trivial test of resampled_to_img.
     """
-    shape = (5., 4., 3., 2.)
+    shape = (5, 4, 3, 2)
     data = np.random.random(shape)
     affine = np.random.random((4, 4))
     ref_im = VolumeImg(data, affine, 'mine')
@@ -247,7 +247,7 @@ def test_transformation():
 
 
 def test_get_affine():
-    shape = (1., 2., 3., 4.)
+    shape = (1, 2, 3, 4)
     data = np.random.randint(0, 10, shape)
     affine = np.eye(4)
     ref_im = VolumeImg(data, affine, 'mine')

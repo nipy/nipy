@@ -373,7 +373,8 @@ def knn(X, k=1):
     # neighbour system
     bool_knn = dist < sorted_dist[k + 1]
     bool_knn += bool_knn.T
-    bool_knn -= np.diag(np.diag(bool_knn))
+    # xor diagonal
+    bool_knn ^= np.diag(np.diag(bool_knn))
     dist *= (bool_knn > 0)
     return wgraph_from_adjacency(dist)
 

@@ -12,6 +12,8 @@ import numpy as np
 from scipy import ndimage
 
 from ..fixes.scipy.ndimage import map_coordinates
+from ..utils import seq_prod
+
 
 class ImageInterpolator(object):
     """ Interpolate Image instance at arbitrary points in world space
@@ -88,7 +90,7 @@ class ImageInterpolator(object):
         """
         points = np.array(points, np.float64)
         output_shape = points.shape[1:]
-        points.shape = (points.shape[0], np.product(output_shape))
+        points.shape = (points.shape[0], seq_prod(output_shape))
         cmapi = self.image.coordmap.inverse()
         voxels = cmapi(points.T).T
         V = map_coordinates(self.data,

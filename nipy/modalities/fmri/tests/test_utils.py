@@ -209,7 +209,7 @@ def test_convolve_functions():
         tri = cfunc(f1, f2, [0, 3], [0, 3], dt)
         ftri = lambdify(t, tri)
         o1_time = np.arange(0, 3, dt)
-        z1s = np.zeros((np.round(1./dt)))
+        z1s = np.zeros((int(round(1./dt))))
         assert_array_almost_equal(ftri(o1_time), np.r_[z1s, value])
         # Same for input function
         tri = cfunc(f2, f1, [0, 3], [0, 3], dt)

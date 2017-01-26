@@ -202,13 +202,14 @@ class NormalEmpiricalNull(object):
 
         # generate the histogram
         step = 3.5 * np.std(self.x) / np.exp(np.log(self.n) / 3)
-        bins = max(10, (self.x.max() - self.x.min()) // step)
+        bins = max(10, int((self.x.max() - self.x.min()) // step))
         hist, ledge = np.histogram(x, bins=bins)
         step = ledge[1] - ledge[0]
         medge = ledge + 0.5 * step
 
         # remove null bins
-        hist, medge = hist[hist > 0].astype(np.float), medge[hist > 0]
+        hist = hist[hist > 0].astype(np.float)
+        medge = medge[:-1][hist > 0]  # edges include rightmost outer
 
         # fit the histogram
         dmtx = np.ones((3, len(hist)))
@@ -449,8 +450,8 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
 
     # set the priors from a reasonable model of the data (!)
     # prior means
-    mb0 = np.mean(sx[ : alpha * nvox])
-    mb2 = np.mean(sx[(1 - alpha) * nvox:])
+    mb0 = np.mean(sx[:int(alpha * nvox)])
+    mb2 = np.mean(sx[int((1 - alpha) * nvox):])
     prior_means = np.reshape(np.array([mb0, 0, mb2]), (nclasses, 1))
     if fixed_scale:
         prior_scale = np.ones((nclasses, 1, 1)) * 1. / (prior_strength)

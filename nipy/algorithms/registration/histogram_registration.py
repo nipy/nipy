@@ -140,6 +140,13 @@ class HistogramRegistration(object):
 
     interp = property(_get_interp, _set_interp)
 
+    def _slicer(self, corner, size, spacing):
+        return tuple(
+            slice(int(corner[i]),
+                  int(size[i] + corner[i]),
+                  int(spacing[i]))
+            for i in range(3))
+
     def set_fov(self, spacing=None, corner=(0, 0, 0), size=None,
                 npoints=None):
         """
@@ -164,20 +171,20 @@ class HistogramRegistration(object):
             spacing = [1, 1, 1]
         if size is None:
             size = self._from_img.shape
-        slicer = lambda c, s, sp:\
-            tuple([slice(c[i], s[i] + c[i], sp[i]) for i in range(3)])
         # Adjust spacing to match desired field of view size
         if spacing is not None:
-            fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
+            fov_data = self._from_img.get_data()[
+                self._slicer(corner, size, spacing)]
         else:
             fov_data = self._from_img.get_data()[
-                slicer(corner, size, [1, 1, 1])]
+                self._slicer(corner, size, [1, 1, 1])]
             spacing = ideal_spacing(fov_data, npoints=npoints)
-            fov_data = self._from_img.get_data()[slicer(corner, size, spacing)]
+            fov_data = self._from_img.get_data()[
+                self._slicer(corner, size, spacing)]
         self._from_data = fov_data
         self._from_npoints = (fov_data >= 0).sum()
         self._from_affine = subgrid_affine(xyz_affine(self._from_img),
-                                           slicer(corner, size, spacing))
+                                           self._slicer(corner, size, spacing))
         # We cache the voxel coordinates of the clamped image
         self._vox_coords =\
             np.indices(self._from_data.shape).transpose((1, 2, 3, 0))

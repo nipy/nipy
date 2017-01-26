@@ -11,6 +11,7 @@ import numpy as np
 import numpy.fft as fft
 import numpy.linalg as npl
 
+from nipy.utils import seq_prod
 from nipy.core.api import Image, AffineTransform
 from nipy.core.reference.coordinate_map import product
 
@@ -59,7 +60,7 @@ class LinearFilter(object):
         # reshape to (N coordinates, -1).  We appear to need to assign
         # to shape instead of doing a reshape, in order to avoid memory
         # copies
-        voxels.shape = (voxels.shape[0], np.product(voxels.shape[1:]))
+        voxels.shape = (voxels.shape[0], seq_prod(voxels.shape[1:]))
         # physical coordinates relative to center
         X = (self.coordmap(voxels.T) - phys_center).T
         X.shape = (self.coordmap.ndims[1],) + tuple(self.bshape)
@@ -70,8 +71,9 @@ class LinearFilter(object):
                       'l1':np.fabs(kernel).sum(),
                       'l1sum':kernel.sum()}
         self._kernel = kernel
-        self.shape = (np.ceil((np.asarray(self.bshape) +
-                              np.asarray(kernel.shape))/2)*2+2)
+        self.shape = (np.ceil(
+            (np.asarray(self.bshape) + np.asarray(kernel.shape)) / 2)
+            * 2 + 2).astype(np.intp)
         self.fkernel = np.zeros(self.shape)
         slices = [slice(0, kernel.shape[i]) for i in range(len(kernel.shape))]
         self.fkernel[slices] = kernel
@@ -179,8 +181,9 @@ class LinearFilter(object):
                 _out = data
             _slice += 1
         gc.collect()
-        _out = _out[[slice(self._kernel.shape[i]/2, self.bshape[i] +
-                           self._kernel.shape[i]/2) for i in range(len(self.bshape))]]
+        _out = _out[[slice(self._kernel.shape[i] // 2,
+                           self.bshape[i] + self._kernel.shape[i] // 2)
+                     for i in range(len(self.bshape))]]
         if inimage.ndim == 3:
             return Image(_out, coordmap=self.coordmap)
         else:

@@ -32,7 +32,8 @@ matrix:
     - python: 2.7
       env:
         # Definitive source for these in nipy/info.py
-        - DEPENDS="numpy==1.6.0 scipy==0.9.0 sympy==0.7.0 nibabel==1.2.0"
+        - PRE_DEPENDS="numpy==1.6.0"
+        - DEPENDS="scipy==0.9.0 sympy==0.7.0 nibabel==1.2.0"
     # Test compiling against external lapack
     - python: 3.4
       env:
@@ -49,14 +50,21 @@ matrix:
       env:
         - INSTALL_TYPE=requirements
         - DEPENDS=
+  allow_failures:
+    - python: 3.6
 
 before_install:
     - source tools/travis_tools.sh
+    - python -m pip install --upgrade pip
+    - pip install --upgrade virtualenv
     - virtualenv --python=python venv
     - source venv/bin/activate
     - python --version # just to check
     - pip install -U pip
     - pip install nose mock  # always
+    - if [ -n "$PRE_DEPENDS" ]; then
+      pip install $PRE_DEPENDS;
+      fi
     - pip install $DEPENDS
     - if [ "${COVERAGE}" == "1" ]; then
       pip install coverage;

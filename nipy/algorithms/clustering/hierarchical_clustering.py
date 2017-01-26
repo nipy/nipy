@@ -21,6 +21,7 @@ Author : Bertrand Thirion,Pamela Guevara, 2006-2009
 """
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
 
 #---------------------------------------------------------------------------
 # ------ Routines for Agglomerative Hierarchical Clustering ----------------
@@ -553,20 +554,20 @@ def _remap(K, i, j, k, Features, linc, rinc):
         K.edges[idxj, 1] = k
 
     #------
-    # update linc,rinc
+    # update linc, rinc
     #------
-    lidxk = list(np.concatenate((linc[j], linc[i])))
-    for l in lidxk:
-        if K.edges[l, 1] == - 1:
-            lidxk.remove(l)
+    lidxk = list(linc[j]) + list(linc[i])
+    for L in lidxk:
+        if K.edges[L, 1] == -1:
+            lidxk.remove(L)
 
     linc[k] = lidxk
     linc[i] = []
     linc[j] = []
-    ridxk = list(np.concatenate((rinc[j], rinc[i])))
-    for l in ridxk:
-        if K.edges[l, 0] == - 1:
-            ridxk.remove(l)
+    ridxk = list(rinc[j]) + list(rinc[i])
+    for L in ridxk:
+        if K.edges[L, 0] == -1:
+            ridxk.remove(L)
 
     rinc[k] = ridxk
     rinc[i] = []
@@ -695,7 +696,7 @@ def ward_quick(G, feature, verbose=False):
 
             ml = linc[j]
             if np.sum(K.edges[ml, 1] == i) > 0:
-                m = ml[np.flatnonzero(K.edges[ml, 1] == i)]
+                m = ml[int(np.flatnonzero(K.edges[ml, 1] == i))]
                 K.edges[m] = -1
                 K.weights[m] = np.inf
                 linc[j].remove(m)
@@ -957,7 +958,7 @@ def ward(G, feature, verbose=False):
 
         ml = linc[j]
         if np.sum(K.edges[ml, 1] == i) > 0:
-            m = ml[np.flatnonzero(K.edges[ml, 1] == i)]
+            m = ml[int(np.flatnonzero(K.edges[ml, 1] == i))]
             K.edges[m] = -1
             K.weights[m] = np.inf
             linc[j].remove(m)

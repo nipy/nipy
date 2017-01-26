@@ -6,6 +6,8 @@ series.
 """
 from __future__ import absolute_import
 
+import math
+
 # Major scientific libraries imports
 import numpy as np
 from scipy import ndimage
@@ -229,8 +231,8 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
     sorted_input = np.sort(mean_volume.reshape(-1))
     if exclude_zeros:
         sorted_input = sorted_input[sorted_input != 0]
-    limiteinf = np.floor(m * len(sorted_input))
-    limitesup = np.floor(M * len(sorted_input))
+    limiteinf = int(math.floor(m * len(sorted_input)))
+    limitesup = int(math.floor(M * len(sorted_input)))
 
     delta = sorted_input[limiteinf + 1:limitesup + 1] \
             - sorted_input[limiteinf:limitesup]

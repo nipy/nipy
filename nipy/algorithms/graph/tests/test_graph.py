@@ -416,7 +416,7 @@ def test_subgraph_2(n=10):
     x = nr.randn(n, 2) 
     G = knn(x, 5)
     valid = np.zeros(n)
-    valid[:n / 2] = 1
+    valid[:n // 2] = 1
     assert_true(G.subgraph(valid).edges.max() < n / 2)
 
 
@@ -427,7 +427,7 @@ def test_graph_create_from_array():
     wg = wgraph_from_adjacency(a)
     b = wg.to_coo_matrix()
     assert_array_equal(a, b.todense())
-        
+
 
 def test_graph_create_from_coo_matrix():
     """Test the creation of a graph from a sparse coo_matrix 
