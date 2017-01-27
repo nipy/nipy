@@ -83,7 +83,9 @@ def test_imm_loglike_1D_k10():
     like =  igmm.sample(x, niter=300, kfold=k)
     theoretical_ll = -dim*.5*(1+np.log(2*np.pi))
     empirical_ll = np.log(like).mean()
-    assert_true(np.absolute(theoretical_ll-empirical_ll)<0.25*dim)
+    # Result susceptible to random number output. See:
+    # https://github.com/nipy/nipy/issues/418
+    assert_true(np.absolute(theoretical_ll-empirical_ll) < 0.27 * dim)
 
 
 def test_imm_loglike_2D_fast():
