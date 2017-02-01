@@ -82,8 +82,8 @@ def test_bsa_methods():
         # run the algo
         AF, BF = make_bsa_2d(betas, theta, sigma, ths, thq, smin,
                              algorithm=name)
-        yield assert_true, test_func(AF, BF)
-    
+        assert_true(test_func(AF, BF))
+
     assert_true(AF.map_label().shape == (np.prod(shape),))
     assert_true(AF.kernel_density().shape == (np.prod(shape),))
     assert_true((AF.roi_prevalence() > ths).all())
