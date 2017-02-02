@@ -700,14 +700,14 @@ class SubDomains(object):
         # set new features
         # (it's ok to do that after labels and id modification since we are
         # poping out the former features and use the former id indices)
-        for fid in self.features:
+        for fid in list(self.features):
             f = self.remove_feature(fid)
             sf = [f[id] for id in id_list_pos]
             self.set_feature(fid, sf)
         # set new ROI features
         # (it's ok to do that after labels and id modification since we are
         # poping out the former features and use the former id indices)
-        for fid in self.roi_features:
+        for fid in list(self.roi_features):
             if fid != 'id':
                 f = self.remove_roi_feature(fid)
                 sf = np.ravel(f[int(id_list_pos)])
