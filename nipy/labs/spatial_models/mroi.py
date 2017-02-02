@@ -69,6 +69,9 @@ class SubDomains(object):
           should access ROI through their id to avoid hazardous manipulations.
 
         """
+        self._init(domain, label, id)
+
+    def _init(self, domain, label, id=None):
         # check that label size is consistent with domain
         if np.size(label) != domain.size:
             raise ValueError('inconsistent labels and domains specification')
@@ -686,7 +689,7 @@ class SubDomains(object):
         """
         # handle the case of an empty selection
         if len(id_list) == 0:
-            self = SubDomains(self.domain, -np.ones(self.label.size))
+            self._init(self.domain, -np.ones(self.label.size))
             return
         # convert id to indices
         id_list_pos = np.ravel([self.select_id(k) for k in id_list])
