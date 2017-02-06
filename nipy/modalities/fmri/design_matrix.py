@@ -31,6 +31,7 @@ from warnings import warn
 from ...utils.compat3 import open4csv
 
 from .hemodynamic_models import compute_regressor, _orthogonalize
+from .realfuncs import dct_ii_cut_basis
 
 
 ######################################################################
@@ -63,37 +64,7 @@ def _poly_drift(order, frametimes):
 
 
 def _cosine_drift(period_cut, frametimes):
-    """Create a cosine drift matrix with periods greater or equals to period_cut
-
-    Parameters
-    ----------
-    period_cut: float 
-         Cut period of the low-pass filter (in sec)
-    frametimes: array of shape(nscans)
-         The sampling times (in sec)
-
-    Returns
-    -------
-    cdrift:  array of shape(n_scans, n_drifts)
-             cosin drifts plus a constant regressor at cdrift[:,0]
-
-    Ref: http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
-    """
-    len_tim = len(frametimes)
-    n_times = np.arange(len_tim)
-    hfcut = 1./ period_cut # input parameter is the period  
-
-    dt = frametimes[1] - frametimes[0] # frametimes.max() should be (len_tim-1)*dt    
-    order = int(np.floor(2*len_tim*hfcut*dt)) # s.t. hfcut = 1/(2*dt) yields len_tim
-    cdrift = np.zeros((len_tim, order))
-    nfct = np.sqrt(2.0/len_tim)
-    
-    for k in range(1, order):
-        cdrift[:,k-1] = nfct * np.cos((np.pi/len_tim)*(n_times + .5)*k)
-    
-    cdrift[:,order-1] = 1. # or 1./sqrt(len_tim) to normalize
-    return cdrift
-
+    return dct_ii_cut_basis(frametimes, period_cut)
 
 
 def _blank_drift(frametimes):
