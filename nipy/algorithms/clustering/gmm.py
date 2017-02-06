@@ -206,7 +206,7 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
         ax = mpaxes
 
     gdx = gd1.n_bins[0]
-    Pdens = np.reshape(L, (gdx, np.size(L) / gdx))
+    Pdens = np.reshape(L, (gdx, -1))
     extent = [xm, xs, ym, ys]
     if log_scale:
         plt.imshow(np.log(Pdens.T), alpha=2.0, origin='lower',
