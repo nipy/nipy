@@ -51,33 +51,35 @@ things from Windows powershell.
 
   Call that directory ``<nipy-user>``.  Let's imagine that, for you, this is
   ``~/.nipy``.
-* If that directory does not exist already, create it, e.g.::
+* Make a subdirectory ``nipy`` in your ``<nipy-user>`` directory.  In
+  Unix you could use::
 
-    mkdir ~/.nipy
+    mkdir -p ~/.nipy/nipy
 
-* Make a directory in ``<nipy-user>`` called ``nipy``, e.g.::
-
-    mkdir ~/.nipy/nipy
+  where the ``-p`` flag tells Unix to make any necessary parent directories.
 
 * Go to http://nipy.org/data-packages
-* Download the latest *nipy-templates* and *nipy-data* packages
-* Unpack both these into some directory, e.g.::
+* Download the latest *nipy-templates* and *nipy-data* packages, to some
+  directory.  You can do this via the GUI, or on the command line (in Unix)::
 
-    mkdir data
-    cd data
-    tar zxvf ~/Downloads/nipy-data-0.2.tar.gz
-    tar zxvf ~/Downloads/nipy-templates-0.2.tar.gz
+    cd ~/Downloads
+    curl -OL http://nipy.org/data-packages/nipy-templates-0.2.tar.gz
+    curl -OL http://nipy.org/data-packages/nipy-data-0.2.tar.gz
+
+* Unpack both of these::
+
+    tar zxvf nipy-data-0.2.tar.gz
+    tar zxvf nipy-templates-0.2.tar.gz
 
 * After you have unpacked the templates, you will have a directory called
   something like ``nipy-templates-0.2``.  In that directory you should see a
   subdirectory called ``templates``.  Copy / move / link the ``templates``
   subdirectory into ``<nipy-user>/nipy``, so you now have a directory
-  ``<nipy-user>/nipy/templates``.  From unpacking the data, you should also have
-  a directory like ``nipy-data-0.2`` with a subdirectory ``data``.  Copy / move
-  / link that ``data`` directory into ``<nipy-user>/nipy`` as well.  For
-  example::
+  ``<nipy-user>/nipy/templates``.  From unpacking the data, you should also
+  have a directory like ``nipy-data-0.2`` with a subdirectory ``data``.  Copy
+  / move / link that ``data`` directory into ``<nipy-user>/nipy`` as well.
+  For example::
 
-    cd data
     cp -r nipy-data-0.2/data ~/.nipy/nipy
     cp -r nipy-templates-0.2/templates ~/.nipy/nipy
 
@@ -89,10 +91,10 @@ things from Windows powershell.
 
     (<nibabel.data.VersionedDatasource object at 0x101f8e410>, <nibabel.data.VersionedDatasource object at 0x10044b110>)
 
-  If it shows ``Bomber`` objects instead, something is wrong.  Go back and check
-  that you have the nipy home directory right, and that you have directories
-  ``<nipy-user>/nipy/data`` and ``<nipy-user>/nipy/templates>``, and that each
-  of these two directories have a file ``config.ini`` in them.
+  If it shows ``Bomber`` objects instead, something is wrong.  Go back and
+  check that you have the nipy home directory right, and that you have
+  directories ``<nipy-user>/nipy/data`` and ``<nipy-user>/nipy/templates>``,
+  and that each of these two directories have a file ``config.ini`` in them.
 
 The more general way
 ====================
