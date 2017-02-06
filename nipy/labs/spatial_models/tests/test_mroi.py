@@ -79,8 +79,7 @@ def test_copy_subdomain():
 
 
 def test_select_roi():
-    """
-    """
+    # Test select_roi method
     mroi = make_subdomain()
     aux = np.random.randn(np.prod(shape))
     data = [aux[mroi.label == k] for k in range(8)]
@@ -88,7 +87,13 @@ def test_select_roi():
     mroi.set_roi_feature('data_mean', list(range(8)))
     mroi.select_roi([0])
     assert(mroi.k == 1)
+    assert_equal(mroi.roi_features['id'], [0])
     assert_equal(mroi.get_roi_feature('data_mean', 0), 0)
+    mroi.select_roi([])
+    assert(mroi.k == 0)
+    assert_equal(list(mroi.roi_features), ['id'])
+    assert_equal(mroi.roi_features['id'], [])
+
 
 def test_roi_features():
     """

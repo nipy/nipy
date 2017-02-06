@@ -69,6 +69,9 @@ class SubDomains(object):
           should access ROI through their id to avoid hazardous manipulations.
 
         """
+        self._init(domain, label, id)
+
+    def _init(self, domain, label, id=None):
         # check that label size is consistent with domain
         if np.size(label) != domain.size:
             raise ValueError('inconsistent labels and domains specification')
@@ -686,7 +689,7 @@ class SubDomains(object):
         """
         # handle the case of an empty selection
         if len(id_list) == 0:
-            self = SubDomains(self.domain, -np.ones(self.label.size))
+            self._init(self.domain, -np.ones(self.label.size))
             return
         # convert id to indices
         id_list_pos = np.ravel([self.select_id(k) for k in id_list])
@@ -699,19 +702,19 @@ class SubDomains(object):
 
         # set new features
         # (it's ok to do that after labels and id modification since we are
-        # poping out the former features and use the former id indices)
-        for fid in list(self.features):
-            f = self.remove_feature(fid)
-            sf = [f[id] for id in id_list_pos]
-            self.set_feature(fid, sf)
+        # popping out the former features and use the former id indices)
+        for feature_name in list(self.features):
+            current_feature = self.remove_feature(feature_name)
+            sf = [current_feature[id] for id in id_list_pos]
+            self.set_feature(feature_name, sf)
         # set new ROI features
         # (it's ok to do that after labels and id modification since we are
-        # poping out the former features and use the former id indices)
-        for fid in list(self.roi_features):
-            if fid != 'id':
-                f = self.remove_roi_feature(fid)
-                sf = np.ravel(f[int(id_list_pos)])
-                self.set_roi_feature(fid, sf)
+        # popping out the former features and use the former id indices)
+        for feature_name in list(self.roi_features):
+            if feature_name != 'id':
+                current_feature = self.remove_roi_feature(feature_name)
+                sf = np.ravel(current_feature[int(id_list_pos)])
+                self.set_roi_feature(feature_name, sf)
 
 
 def subdomain_from_array(labels, affine=None, nn=0):
