@@ -71,7 +71,16 @@ Release checklist
   in a python 2 and python 3 virtualenv.  Review the output in (e.g.)
   ``~/tmp/eg_logs``. The output file ``summary.txt`` will have the pass file
   printout that the ``run_log_examples.py`` script puts onto stdout while
-  running.
+  running.  You can run the examples via the buildbot by triggering builds
+  for:
+
+  * https://nipy.bic.berkeley.edu/builders/nipy-examples-2.7
+  * https://nipy.bic.berkeley.edu/builders/nipy-examples-3.4
+
+  The matching outputs appear at:
+
+  * https://nipy.bic.berkeley.edu/nipy-examples-2.7
+  * https://nipy.bic.berkeley.edu/nipy-examples-3.4
 
 * Do a final check on the `nipy buildbot`_
 
