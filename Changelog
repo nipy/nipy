@@ -32,9 +32,30 @@ Abbreviated authors are:
 * JBP - Jean-Baptiste Poline
 * JT - Jonathan Taylor
 
+* 0.4.1 (Monday 6 February 2017)
+
+  Bugfix, refactoring and compatibility release.
+
+  * New discrete cosine transform functions for building basis sets;
+  * Fixes for compatibility with Python 3.6;
+  * Fixes for compatibility with Numpy 1.12 (1.12 no longer allows floating
+    point values for indexing and other places where an integer value is
+    required);
+  * Fixes for compatibility with Sympy 1.0;
+  * Drop compatibility with Python 2.6, 3.2, 3.3;
+  * Add ability to pass plotting arguments to ``plot_anat`` function (Matteo
+    Visconti dOC);
+  * Some helpers for working with OpenFMRI datasets;
+  * Signal upcoming change in return shape from ``make_recarray`` when passing
+    in an array for values. Allow user to select upcoming behavior with
+    keyword argument;
+  * Bug fix for axis selection when using record arrays in numpies <= 1.7.1;
+  * Add flag to allow SpaceTimeRealign to read TR from image headers;
+
 * 0.4.0 (Saturday 18 October 2015)
 
-  * Bugfix, refactoring and compatibility release;
+  Bugfix, refactoring and compatibility release.
+
   * Full port to Python 3 using single code-base;
   * Various fixes for modern numpy, scipy, sympy, nibabel compatibility;
   * Refactor space-time realignment (AR);
@@ -62,7 +83,8 @@ Abbreviated authors are:
 
 * 0.3.0 (Saturday 2 February 2013)
 
-  * Bugfix, refactoring and compatibility release
+  Bugfix, refactoring and compatibility release.
+
   * Addition of EM algorithm for mixed effects analysis (BT)
   * New high-level GLM class interface (BT)
   * nipy diagnostic scripts save PCA and tsdifana vectors to npz file
@@ -88,7 +110,7 @@ Abbreviated authors are:
 
 * 0.2.0 (Sunday 22 July 2012)
 
-  * The first ever official release
+  The first ever official release.
 
     - > 30 contributors
     - > 6 years in development

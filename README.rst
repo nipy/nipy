@@ -65,7 +65,7 @@ You can find our sources and single-click downloads:
 * Download the `current development version`_ as a tar/zip file;
 * Downloads of all `available releases`_.
 
-.. _main repository: http://github.com/nipy/nipy
+.. _main repository: https://github.com/nipy/nipy
 .. _Documentation: http://nipy.org/nipy
 .. _current development version: https://github.com/nipy/nipy/archive/master.zip
 .. _available releases: http://pypi.python.org/pypi/nipy
@@ -74,7 +74,12 @@ Tests
 =====
 
 To run nipy's tests, you will need to install the nose_ Python testing
-package.  Then::
+package.  If you are using Python 2.7, you will also need to install the mock_
+testing package - e.g.::
+
+    pip install nose mock
+
+Then::
 
     python -c "import nipy; nipy.test()"
 
@@ -113,6 +118,7 @@ You will probably also like to have:
 .. _matplotlib: http://matplotlib.org
 .. _mayavi: http://code.enthought.com/projects/mayavi/
 .. _nose: http://nose.readthedocs.org/en/latest
+.. _mock: https://pypi.python.org/pypi/mock
 
 License
 =======
