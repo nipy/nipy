@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
+from __future__ import print_function, division # Python 2/3 compatibility
 __doc__ = """
 Demo ward clustering on a graph: various ways of forming clusters and dendrogram
 
@@ -28,7 +28,7 @@ k = 5
 verbose = False
 
 X = randn(n, 2)
-X[:np.ceil(n / 3)] += 3
+X[:int(np.ceil(n / 3))] += 3
 G = knn(X, 5)
 tree = ward(G, X, verbose)
 
@@ -57,7 +57,7 @@ plt.title('clustering into 5 clusters')
 
 nl = np.sum(tree.isleaf())
 validleaves = np.zeros(n)
-validleaves[:np.ceil(n / 4)] = 1
+validleaves[:int(np.ceil(n / 4))] = 1
 valid = np.zeros(tree.V, 'bool')
 valid[tree.isleaf()] = validleaves.astype('bool')
 nv = np.sum(validleaves)

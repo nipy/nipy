@@ -146,7 +146,7 @@ class WeightedForest(Forest):
         rank = np.arange(self.V)
         temp[:n] = np.argsort(aux[:n])
         for i in range(n):
-            rank[temp[i]] = i
+            rank[int(temp[i])] = i
 
         # 2. derive the abscissa in the dendrogram
         idx = np.zeros(self.V)
