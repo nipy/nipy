@@ -713,7 +713,7 @@ class SubDomains(object):
         for feature_name in list(self.roi_features):
             if feature_name != 'id':
                 current_feature = self.remove_roi_feature(feature_name)
-                sf = np.ravel(current_feature[int(id_list_pos)])
+                sf = [current_feature[id] for id in id_list_pos]
                 self.set_roi_feature(feature_name, sf)
 
 

@@ -12,6 +12,7 @@ recursive-include nipy/algorithms/tests/data *
 include nipy/testing/*.nii.gz
 include nipy/algorithms/diagnostics/tests/data/*.mat
 include nipy/algorithms/statistics/models/tests/*.bin
+include nipy/labs/spatial_models/tests/*.nii
 include nipy/modalities/fmri/tests/*.npz
 include nipy/modalities/fmri/tests/*.mat
 include nipy/modalities/fmri/tests/*.txt
