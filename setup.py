@@ -88,7 +88,7 @@ def data_install_msgs():
         from nibabel.data import datasource_or_bomber
     except ImportError:
         log.warn('Cannot check for optional data packages: see: '
-                 'http://nipy.org/nipy/stable/users/install_data.html')
+                 'http://nipy.org/nipy/users/install_data.html')
         return
     DATA_PKGS = INFO_VARS['DATA_PKGS']
     templates = datasource_or_bomber(DATA_PKGS['nipy-templates'])
