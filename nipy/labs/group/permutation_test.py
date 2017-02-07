@@ -546,11 +546,11 @@ class permutation_test(object):
         """
         tvals = self.random_Tvalues
         ndraws = tvals.size
-        idx = np.ceil(ndraws*(1-pval))
+        idx = int(np.ceil(ndraws * (1 - pval)))
         if idx >= ndraws:
             return np.inf
         candidate = tvals[idx]
-        if tvals[max(0, idx-1)]<candidate:
+        if tvals[max(0, idx-1)] < candidate:
             return candidate
         idx = np.searchsorted(tvals, candidate, 'right')
         if idx >= ndraws:

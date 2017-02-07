@@ -127,10 +127,10 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
 
         # Voxel-level corrected p-values
         p = None
-        if nulls['zmax'] == 'bonferroni':
-            p = bonferroni(pval, nvoxels)
-        elif isinstance(nulls['zmax'], np.ndarray):
+        if isinstance(nulls['zmax'], np.ndarray):
             p = simulated_pvalue(zscore, nulls['zmax'])
+        elif nulls['zmax'] == 'bonferroni':
+            p = bonferroni(pval, nvoxels)
         c['fwer_pvalue'] = p
 
         # Cluster-level p-values (corrected)
