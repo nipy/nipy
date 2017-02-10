@@ -8,14 +8,21 @@ in ~/.nipy/tests/data
 """
 from __future__ import absolute_import
 
-import numpy as np
-from ..mroi import subdomain_from_array, subdomain_from_balls
-from ..discrete_domain import domain_from_binary_array
+from os.path import dirname, join as pjoin
 
-from numpy.testing import assert_equal
+import numpy as np
+
+from nibabel import load, Nifti1Image
+
+from ..mroi import subdomain_from_array, subdomain_from_balls
+from ..hroi import HROI_as_discrete_domain_blobs
+from ..discrete_domain import (domain_from_binary_array,
+                               grid_domain_from_image)
+from nipy.io.nibcompat import get_affine
+
+from numpy.testing import assert_equal, assert_almost_equal
 
 shape = (5, 6, 7)
-
 
 ###########################################################
 # SubDomains tests
@@ -104,6 +111,7 @@ def test_roi_features():
     mroi.set_roi_feature('data_mean', data)
     assert mroi.roi_features['data_mean'].shape == dshape
 
+
 def test_subdomain_feature():
     """Test the basic construction of features
     """
@@ -177,8 +185,6 @@ def test_set_feature():
 
 
 def test_set_feature2():
-    """
-    """
     mroi = make_subdomain()
     data = np.random.randn(np.prod(shape))
     feature_data = [data[mroi.select_id(k, roi=False)]
@@ -189,12 +195,58 @@ def test_set_feature2():
 
 
 def test_get_coord():
-    """
-    """
     mroi = make_subdomain()
     for k in mroi.get_id():
         assert_equal(mroi.get_coord(k),
                      mroi.domain.coord[mroi.select_id(k, roi=False)])
+
+
+def test_example():
+    # Test example runs correctly
+    eg_img = pjoin(dirname(__file__), 'some_blobs.nii')
+    nim = load(eg_img)
+    mask_image = Nifti1Image((nim.get_data() ** 2 > 0).astype('u8'),
+                             get_affine(nim))
+    domain = grid_domain_from_image(mask_image)
+    data = nim.get_data()
+    values = data[data != 0]
+
+    # parameters
+    threshold = 3.0 # blob-forming threshold
+    smin = 5 # size threshold on blobs
+
+    # compute the  nested roi object
+    nroi = HROI_as_discrete_domain_blobs(domain, values, threshold=threshold,
+                                         smin=smin)
+    # compute region-level activation averages
+    activation = [values[nroi.select_id(id, roi=False)]
+                  for id in nroi.get_id()]
+    nroi.set_feature('activation', activation)
+    average_activation = nroi.representative_feature('activation')
+    averages = [blob.mean() for blob in nroi.get_feature('activation')]
+    assert_almost_equal(averages, average_activation, 6)
+    # Test repeat
+    assert_equal(average_activation, nroi.representative_feature('activation'))
+    # Binary image is default
+    bin_wim = nroi.to_image()
+    bin_vox = bin_wim.get_data()
+    assert_equal(np.unique(bin_vox), [0, 1])
+    id_wim = nroi.to_image('id', roi=True, descrip='description')
+    id_vox = id_wim.get_data()
+    mask = bin_vox.astype(bool)
+    assert_equal(id_vox[~mask], -1)
+    ids = nroi.get_id()
+    assert_equal(np.unique(id_vox), [-1] + list(ids))
+    # Test activation
+    wim = nroi.to_image('activation', roi=True, descrip='description')
+    # Sadly, all cast to int
+    assert_equal(np.unique(wim.get_data().astype(np.int32)), [-1, 3, 4, 5])
+    # end blobs or leaves
+    lroi = nroi.copy()
+    lroi.reduce_to_leaves()
+    assert_equal(lroi.k, 14)
+    assert_equal(len(lroi.get_feature('activation')), lroi.k)
+
 
 if __name__ == "__main__":
     import nose
