@@ -71,7 +71,39 @@ Release checklist
   in a python 2 and python 3 virtualenv.  Review the output in (e.g.)
   ``~/tmp/eg_logs``. The output file ``summary.txt`` will have the pass file
   printout that the ``run_log_examples.py`` script puts onto stdout while
-  running.
+  running.  You can run the examples via the buildbot by triggering builds
+  for:
+
+  * https://nipy.bic.berkeley.edu/builders/nipy-examples-2.7
+  * https://nipy.bic.berkeley.edu/builders/nipy-examples-3.4
+
+  The matching outputs appear at:
+
+  * https://nipy.bic.berkeley.edu/nipy-examples-2.7
+  * https://nipy.bic.berkeley.edu/nipy-examples-3.4
+
+  I use the following commands to get the output to my laptop and review with
+  vim::
+
+    PY_VER=2.7
+    BB_SSH=buildbot@nipy.bic.berkeley.edu
+    scp -r ${BB_SSH}:nibotmi/public_html/nipy-examples-${PY_VER} .
+    cd nipy-examples-${PY_VER}
+    # Delete empty files
+    find . -size 0 -exec rm {} \;
+    # Review stderr; :bd to close buffer once reviewed
+    vim *.stderr
+    # Review stdout
+    vim *.stdout
+    cd ..
+
+  Likewise for::
+
+    PY_VER=3.4
+
+  I also did a by-eye comparison between the 2.7 and 3.4 files with::
+
+    diff -r nipy-examples-2.7 nipy-examples-3.4 | less
 
 * Do a final check on the `nipy buildbot`_
 
