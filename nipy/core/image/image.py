@@ -402,6 +402,7 @@ class Image(object):
 
     def __eq__(self, other):
         return (isinstance(other, self.__class__)
+                and self.shape == other.shape
                 and np.all(self.get_data() == other.get_data())
                 and np.all(self.affine == other.affine)
                 and (self.axes.coord_names == other.axes.coord_names))
