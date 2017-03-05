@@ -3,7 +3,7 @@
 """ Test for smoothing with kernels """
 from __future__ import absolute_import
 import numpy as np
-from numpy.random import random_integers as randint
+from numpy.random import randint
 
 from ... import load_image
 from ..kernel_smooth import LinearFilter, sigma2fwhm, fwhm2sigma
@@ -76,20 +76,21 @@ def test_kernel():
     tol = 0.9999
     sdtol = 1.0e-8
     for x in range(6):
-        shape = randint(30,60,(3,))
+        shape = randint(30, 60 + 1, (3,))
         # pos of delta
-        ii, jj, kk = randint(11,17, (3,))
+        ii, jj, kk = randint(11, 17 + 1, (3,))
         # random affine coordmap (diagonal and translations)
-        coordmap = AffineTransform.from_start_step('ijk', 'xyz', 
-                                          randint(5,20,(3,))*0.25,
-                                          randint(5,10,(3,))*0.5)
+        coordmap = AffineTransform.from_start_step(
+            'ijk', 'xyz',
+            randint(5, 20 + 1, (3,)) * 0.25,
+            randint(5, 10 + 1, (3,)) * 0.5)
         # delta function in 3D array
         signal = np.zeros(shape)
         signal[ii,jj,kk] = 1.
         signal = Image(signal, coordmap=coordmap)
         # A filter with coordmap, shape matched to image
-        kernel = LinearFilter(coordmap, shape, 
-                              fwhm=randint(50,100)/10.)
+        kernel = LinearFilter(coordmap, shape,
+                              fwhm=randint(50, 100 + 1) / 10.)
         # smoothed normalized 3D array
         ssignal = kernel.smooth(signal).get_data()
         ssignal[:] *= kernel.norms[kernel.normalization]
