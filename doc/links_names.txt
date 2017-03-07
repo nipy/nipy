@@ -11,7 +11,7 @@
    __not_case_sensitive__, so only one target definition is needed for
    nipy, NIPY, Nipy, etc...
 
-.. nipy
+.. Nipy
 .. _nipy: http://nipy.org/nipy
 .. _`NIPY developer resources`: http://nipy.sourceforge.net/devel
 .. _`NIPY data packages`: http://nipy.sourceforge.net/data-packages
@@ -25,7 +25,7 @@
 .. _`nipy launchpad`: https://launchpad.net/nipy
 .. _nipy on travis: https://travis-ci.org/nipy/nipy
 
-.. other related projects
+.. Related projects
 .. _nipy community: http://nipy.org
 .. _dipy: http://nipy.org/dipy
 .. _`dipy github`: http://github.com/Garyfallidis/dipy
