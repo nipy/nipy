@@ -5,19 +5,21 @@
 # - There can't be any leading "-"s - All newlines will be removed, so use
 # ";"s
 sudo: false  # To use travis container infrastructure
+
 language: python
+
 cache:
   directories:
     - $HOME/.cache/pip
+
 env:
-    global:
-        - DEPENDS="numpy scipy sympy matplotlib nibabel"
-        - INSTALL_TYPE="setup"
-        - EXTRA_WHEELS="https://5cf40426d9f06eb7461d-6fe47d9331aba7cd62fc36c7196769e4.ssl.cf2.rackcdn.com"
-        - PRE_WHEELS="https://7933911d6844c6c53a7d-47bd50c35cd79bd838daf386af554a83.ssl.cf2.rackcdn.com"
-        - EXTRA_PIP_FLAGS="--find-links=$EXTRA_WHEELS"
-        - PRE_PIP_FLAGS="--pre $EXTRA_PIP_FLAGS --find-links $PRE_WHEELS"
-        - INSTALL_TYPE="pip"
+  global:
+    - DEPENDS="numpy scipy sympy matplotlib nibabel"
+    - EXTRA_WHEELS="https://5cf40426d9f06eb7461d-6fe47d9331aba7cd62fc36c7196769e4.ssl.cf2.rackcdn.com"
+    - PRE_WHEELS="https://7933911d6844c6c53a7d-47bd50c35cd79bd838daf386af554a83.ssl.cf2.rackcdn.com"
+    - EXTRA_PIP_FLAGS="--find-links=$EXTRA_WHEELS"
+    - PRE_PIP_FLAGS="--pre $EXTRA_PIP_FLAGS --find-links $PRE_WHEELS"
+    - INSTALL_TYPE="pip"
 
 python:
     - 3.4
@@ -67,6 +69,10 @@ matrix:
     - python: 3.5
       env:
         - DOC_BUILD=1
+      addons:
+        apt:
+          packages:
+            - graphviz
 
 before_install:
     - source tools/travis_tools.sh
