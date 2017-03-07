@@ -43,9 +43,6 @@ dev: cythonize
 test:
 	cd .. && $(PYTHON) -c 'import nipy; nipy.test()'
 
-build:
-	$(PYTHON) setup.py build
-
 install:
 	$(PYTHON) setup.py install
 
@@ -113,10 +110,10 @@ recythonize:
 $(WWW_DIR):
 	if [ ! -d $(WWW_DIR) ]; then mkdir -p $(WWW_DIR); fi
 
-htmldoc: build
+htmldoc:
 	cd $(DOCSRC_DIR) && PYTHONPATH=$(CURDIR):$(PYTHONPATH) $(MAKE) html
 
-pdfdoc: build
+pdfdoc:
 	cd $(DOCSRC_DIR) && PYTHONPATH=$(CURDIR):$(PYTHONPATH) $(MAKE) latex
 	cd $(LATEX_DIR) && $(MAKE) all-pdf
 
