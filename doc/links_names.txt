@@ -103,8 +103,8 @@
 .. _sympy: http://sympy.org
 .. _nibabel: http://nipy.org/nibabel
 .. _networkx: http://networkx.lanl.gov/
-.. _pythonxy: http://www.pythonxy.com/
-.. _python (x, y): http://www.pythonxy.com/
+.. _pythonxy:
+.. _python (x, y): https://python-xy.github.io/
 .. _EPD: http://www.enthought.com/products/epd.php
 .. _EPD free: http://www.enthought.com/products/epd_free.php
 .. _Anaconda CE: https://store.continuum.io/
