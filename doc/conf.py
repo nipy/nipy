@@ -40,10 +40,11 @@ needs_sphinx = '1.0'
 extensions = [
     'texext.mathcode',
     'sphinx.ext.autodoc',
-    'texext.math_dollar',
     'sphinx.ext.doctest',
     'sphinx.ext.mathjax',
     'sphinx.ext.autosummary',
+    'texext.math_dollar',
+    'numpydoc',
     'sphinx.ext.inheritance_diagram',
     'matplotlib.sphinxext.plot_directive',
     'IPython.sphinxext.ipython_console_highlighting',
@@ -216,3 +217,10 @@ else:  # Sphinx >= 1.4
 
 # If false, no module index is generated.
 latex_use_modindex = True
+
+# Numpy extensions
+# ----------------
+# Worked out by Steven Silvester in
+# https://github.com/scikit-image/scikit-image/pull/1356
+numpydoc_show_class_members = False
+numpydoc_class_members_toctree = False
