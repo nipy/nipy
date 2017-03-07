@@ -17,6 +17,8 @@ env:
         - PRE_WHEELS="https://7933911d6844c6c53a7d-47bd50c35cd79bd838daf386af554a83.ssl.cf2.rackcdn.com"
         - EXTRA_PIP_FLAGS="--find-links=$EXTRA_WHEELS"
         - PRE_PIP_FLAGS="--pre $EXTRA_PIP_FLAGS --find-links $PRE_WHEELS"
+        - INSTALL_TYPE="pip"
+
 python:
     - 3.4
     - 3.5
@@ -54,11 +56,17 @@ matrix:
       env:
         - INSTALL_TYPE=requirements
         - DEPENDS=
-    - python: 3.6
     # test 3.5 against pre-release builds of everything
     - python: 3.5
       env:
         - EXTRA_PIP_FLAGS="$PRE_PIP_FLAGS"
+    # test python setup.py install
+    - python: 3.5
+      env:
+        - INSTALL_TYPE=setup
+    - python: 3.5
+      env:
+        - DOC_BUILD=1
 
 before_install:
     - source tools/travis_tools.sh
@@ -77,11 +85,14 @@ before_install:
       pip install coverage;
       pip install coveralls codecov;
       fi
+
 # command to install dependencies
 # e.g. pip install -r requirements.txt # --use-mirrors
 install:
     - |
-      if [ "$INSTALL_TYPE" == "setup" ]; then
+      if [ "$INSTALL_TYPE" == "pip" ]; then
+          pip install .
+      elif [ "$INSTALL_TYPE" == "setup" ]; then
           python setup.py install
       elif [ "$INSTALL_TYPE" == "sdist" ]; then
         python setup_egg.py egg_info  # check egg_info while we're here
@@ -96,15 +107,23 @@ install:
         pip install -r requirements.txt
         python setup.py install
       fi
-# command to run tests, e.g. python setup.py test
+
+# command to run tests
 script:
-    # Change into an innocuous directory and find tests from installation
-    - mkdir for_testing
-    - cd for_testing
-    - if [ "${COVERAGE}" == "1" ]; then
-      cp ../.coveragerc .;
-      COVER_ARGS="--with-coverage --cover-package nipy";
+    - |
+      if [ "$DOC_BUILD" ]; then  # doc build
+        pip install -r doc-requirements.txt
+        make html-stamp pdf-stamp
+      else
+        # Change into an innocuous directory and find tests from installation
+        mkdir for_testing
+        cd for_testing
+        if [ "${COVERAGE}" == "1" ]; then
+        cp ../.coveragerc .
+        COVER_ARGS="--with-coverage --cover-package nipy"
+        fi
+        $PYTHON ../tools/nipnost --verbosity=3 $COVER_ARGS nipy
       fi
-    - $PYTHON ../tools/nipnost --verbosity=3 $COVER_ARGS nipy
+
 after_success:
     - if [ "${COVERAGE}" == "1" ]; then coveralls; codecov; fi
