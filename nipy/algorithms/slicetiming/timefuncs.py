@@ -2,8 +2,8 @@
 
 Slice timing routines in nipy need a vector of slice times.
 
-Slice times are vectors $t_i i = 0 ... N$ of times, one for each slice, where
-$t_i% gives the time at which slice number $i$ was acquired, relative to the
+Slice times are vectors $t_i$ with $i = 0 ... N$ of times, one for each slice, where
+$t_i$ gives the time at which slice number $i$ was acquired, relative to the
 beginning of the volume acquisition.
 
 We like these vectors because they are unambiguous; the indices $i$ refer to
@@ -195,8 +195,8 @@ def st_odd0_even1(n_slices, TR):
     seem to have this behavior as default - see:
         https://mri.radiology.uiowa.edu/fmri_images.html
 
-    This means we use the :func:`st_02413` algorithm if `n_slices` is odd,
-    and the :func:`st_13024` algorithm if `n_slices is even.
+    This means we use the :func:`st_02413` algorithm if `n_slices` is odd, and
+    the :func:`st_13024` algorithm if `n_slices` is even.
 
     For example, for 4 slices and a TR of 1:
 
@@ -243,8 +243,8 @@ asc_alt_half = _derived_func('asc_alt_half', st_03142)
 def st_41302(n_slices, TR):
     """Descend alternate, where alternation is by half the volume
 
-    Collect slice (n_slices - 1) then slice ``floor(nslices / 2.) - 1`` then slice
-    (n_slices - 2) then slice ``floor(nslices / 2.) - 2`` etc.
+    Collect slice ``(n_slices - 1)`` then slice ``floor(nslices / 2.) - 1``
+    then slice ``(n_slices - 2)`` then slice ``floor(nslices / 2.) - 2`` etc.
 
     For example, for 5 slices and a TR of 1:
 
