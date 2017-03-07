@@ -240,16 +240,17 @@ def _full_rank(X, cmax=1e15):
 
 class DesignMatrix():
     """ This is a container for a light-weight class for design matrices
-    This class is only used to make IO and visualization
 
-    Class members
-    -------------
-    matrix: array of shape(n_scans, n_regressors),
-            the numerical specification of the matrix
-    names: list of len (n_regressors);
-           the names associated with the columns
-    frametimes: array of shape(n_scans), optional,
-                the occurrence time of the matrix rows
+    This class is only used to make IO and visualization.
+
+    Attributes
+    ----------
+    matrix: array of shape (n_scans, n_regressors)
+        the numerical specification of the matrix.
+    names: list of len (n_regressors)
+        the names associated with the columns.
+    frametimes: array of shape (n_scans), optional
+        the occurrence time of the matrix rows.
     """
 
     def __init__(self, matrix, names, frametimes=None):
