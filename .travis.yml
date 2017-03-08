@@ -77,6 +77,9 @@ matrix:
           packages:
             - graphviz
             - texlive-latex-base
+            - texlive-latex-extra
+            - texlive-fonts-recommended
+            - texlive-latex-recommended
 
 before_install:
     - source tools/travis_tools.sh
