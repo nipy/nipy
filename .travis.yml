@@ -76,6 +76,7 @@ matrix:
         apt:
           packages:
             - graphviz
+            - texlive-latex-base
 
 before_install:
     - source tools/travis_tools.sh
