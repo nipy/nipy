@@ -68,6 +68,9 @@ matrix:
         - INSTALL_TYPE=setup
     - python: 3.5
       env:
+        - INSTALL_TYPE="pip_e"
+    - python: 3.5
+      env:
         - DOC_BUILD=1
       addons:
         apt:
@@ -97,9 +100,11 @@ before_install:
 install:
     - |
       if [ "$INSTALL_TYPE" == "pip" ]; then
-          pip install .
+        pip install .
+      elif [ "$INSTALL_TYPE" == "pip_e" ]; then
+        pip install -e .
       elif [ "$INSTALL_TYPE" == "setup" ]; then
-          python setup.py install
+        python setup.py install
       elif [ "$INSTALL_TYPE" == "sdist" ]; then
         python setup_egg.py egg_info  # check egg_info while we're here
         python setup_egg.py sdist

@@ -111,10 +111,10 @@ $(WWW_DIR):
 	if [ ! -d $(WWW_DIR) ]; then mkdir -p $(WWW_DIR); fi
 
 htmldoc:
-	cd $(DOCSRC_DIR) && PYTHONPATH=$(CURDIR):$(PYTHONPATH) $(MAKE) html
+	cd $(DOCSRC_DIR) && $(MAKE) html
 
 pdfdoc:
-	cd $(DOCSRC_DIR) && PYTHONPATH=$(CURDIR):$(PYTHONPATH) $(MAKE) latex
+	cd $(DOCSRC_DIR) && $(MAKE) latex
 	cd $(LATEX_DIR) && $(MAKE) all-pdf
 
 html: html-stamp
