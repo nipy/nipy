@@ -44,11 +44,11 @@ def _test_brain_seg(model, niters=3, beta=0, ngb_size=6, init_params=None,
     _check_dims(S.sigma, 1, S.mixmat.shape[0])
     # Check that probabilities are zero outside the mask and sum up to
     # one inside the mask
-    assert_almost_equal(S.ppm[True - S.mask].sum(-1).max(), 0)
+    assert_almost_equal(S.ppm[~S.mask].sum(-1).max(), 0)
     assert_almost_equal(S.ppm[S.mask].sum(-1).min(), 1)
     # Check that labels are zero outside the mask and > 1 inside the
     # mask
-    assert_almost_equal(S.label[True - S.mask].max(), 0)
+    assert_almost_equal(S.label[~S.mask].max(), 0)
     assert_almost_equal(S.label[S.mask].min(), 1)
 
 

@@ -46,7 +46,7 @@ def _gaussian_filter(x, msk, sigma):
     x[msk] = 0.
     gx = nd.gaussian_filter(x, sigma)
     norma = 1 - nd.gaussian_filter(msk.astype(float), sigma)
-    gx[True - msk] /= norma[True - msk]
+    gx[~msk] /= norma[~msk]
     gx[msk] = 0.
     return gx
 

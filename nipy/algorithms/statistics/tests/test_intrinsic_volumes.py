@@ -39,7 +39,7 @@ def randombox(shape):
     """
     Generate a random box, returning the box and the edge lengths
     """
-    edges = [np.random.random_integers(0, shape[j], size=(2,))
+    edges = [np.random.randint(0, shape[j] + 1, size=(2,))
              for j in range(len(shape))]
 
     for j in range(len(shape)):

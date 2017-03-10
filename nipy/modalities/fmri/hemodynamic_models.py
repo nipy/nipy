@@ -34,7 +34,7 @@ def _gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,
          hrf sampling on the oversampled time grid
     """
     dt = tr / oversampling
-    time_stamps = np.linspace(0, time_length, float(time_length) / dt)
+    time_stamps = np.linspace(0, time_length, int(float(time_length) / dt))
     time_stamps -= onset / dt
     hrf = gamma.pdf(time_stamps, delay / dispersion, dt / dispersion) - \
         ratio * gamma.pdf(
@@ -177,7 +177,7 @@ def _sample_condition(exp_condition, frametimes, oversampling=16,
 
     hr_frametimes = np.linspace(frametimes.min() + min_onset,
                                 frametimes.max() * (1 + 1. / (n - 1)),
-                                n_hr)
+                                int(n_hr))
 
     # Get the condition information
     onsets, durations, values = tuple(map(np.asanyarray, exp_condition))
