@@ -4,191 +4,236 @@
 Download and Install
 ####################
 
-This page covers the necessary steps to install and run NIPY.  Below is a list
-of required dependencies, along with additional software recommendations.
+*******
+Summary
+*******
 
-************************
-Dependencies for install
-************************
+* if you don't have it, install Python using the instructions below;
+* if you don't have it, install Pip_ using the instructions below;
+* if you don't have them, install NumPy_ >= 1.6 and Scipy >= 0.9 using the
+  instructions below;
+* install Nipy with something like:
 
-Must Have
-=========
+    .. code-block:: bash
 
-* Python_ 2.6 or later
-* NumPy_ 1.6 or later: Numpy is an array library for Python
-* SciPy_ 0.9 or later: Scipy contains scientific computing libraries based on
-  numpy
-* Sympy_ 0.7.0 or later: Sympy is a symbolic mathematics library for Python.
-  We use it for statistical formulae.
-* Nibabel_ 1.2.0 or later.  Nibabel loads and saves images in neuroimaging
-  formats.
+        pip3 install --user nipy
 
-Strong Recommendations
-======================
+.. note::
 
-* IPython_: Interactive Python environment.
-* Matplotlib_: python plotting library.
+    These instructions are for Python 3.  If you are using Python 2.7, use
+    ``python2`` instead of ``python3`` and ``pip2`` instead of ``pip3``, for
+    the commands below.
 
-Installing from binary packages
-===============================
+*******
+Details
+*******
 
-For Debian or Ubuntu
---------------------
+Install Python, Pip, Numpy and Scipy
+====================================
 
-Please use the NeuroDebian_ repository, and install with::
+First install Python 3, then install the Python package installer Pip.
 
-    sudo apt-get install python-nipy
+Install Python 3 on Linux
+-------------------------
 
-This will install the dependencies for you.
+We recommend:
 
-For Fedora, CentOS
-------------------
+* ``sudo apt-get install -y python3 python3-tk`` (Debian, Ubuntu);
+* ``sudo dnf install -y python3 python3-tkinter`` (Fedora).
 
-::
+These are the bare minimum installs.  You will almost certainly want to
+install the development tools for Python to allow you to compile other
+Python packages:
 
-    sudo yum install numpy scipy sympy python-pip
-    sudo yum install python-devel gcc
-    sudo pip install nibabel
-    sudo pip install nipy
+* ``sudo apt-get install -y python3-dev`` (Debian, Ubuntu);
+* ``sudo dnf install -y python3-devel`` (Fedora).
 
-Recommended::
+Now :ref:`install-pip`.
 
-    sudo yum install ipython
+Install Python 3 on macOS
+-------------------------
 
-For OSX
-^^^^^^^
+We recommend you install Python 3.5 or later using Homebrew
+(http://brew.sh/):
 
-We recommend you install Python either via the installers available via
-https://python.org, or via Homebrew (http://brew.sh/).
+.. code-block:: bash
 
-Next install numpy, scipy and sympy::
+    brew install python3
 
-    pip install numpy scipy sympy
+Homebrew is an excellent all-round package manager for macOS that you can use
+to install many other free / open-source packages.
 
-Finally, install nipy::
+Now :ref:`install-pip`.
 
-    pip install nipy
+.. _install-pip:
 
-For Windows
-^^^^^^^^^^^
+Install Pip on Linux or macOS
+-----------------------------
 
-Option 1
-""""""""
+Pip can install packages into your main system directories (a *system*
+install), or into your own user directories (a *user* install).  We strongly
+recommend *user* installs.
 
-You can make your life much easier by using `Python (X, Y)`_.  This will install
-Python, Numpy, Scipy, IPython, Matplotlib, Sympy and many other useful things.
+To get ready for user installs, put the user local install ``bin``
+directory on your user's executable program ``PATH``.  First find the location
+of the user ``bin`` directory with:
 
-Then go to `nipy pypi`_ and download the ``.exe`` installer for nipy.  Double click
-to install.
+.. code-block:: bash
 
-Option 2
-""""""""
+    python3 -c 'import site; print(site.USER_BASE + "/bin")'
 
-* Download Python_ and install with the ``exe`` or ``msi`` installer
-* Download and install the "Scipy stack" from Christophe Gohlke's `unofficial
-  windows binaries`_.
-* If the nipy version on the `unofficial windows binaries`_ page is current, use
-  that, otherwise, go to `nipy pypi`_, download and install the ``exe``
-  installer for nipy
+This will give you a result like ``/home/your_username/.local/bin`` (Linux) or
+``/Users/your_username/Library/Python/3.5/bin`` (macOS).
 
-Option 3
-""""""""
+Use your favorite text editor to open the ``~/.bashrc`` file (Linux) or
+``.bash_profile`` (macOSX) in your home directory.
 
-Consider one of the big Python bundles such as `EPD free`_ or `Anaconda CE`_ for
-the dependencies.  Install nipy from the ``exe`` installer at `nipy pypi`_.
+Add these lines to end of the file:
 
-Option 4
-""""""""
+.. code-block:: bash
 
-Do all the installs by hand:
+    # Put the path to the local bin directory into a variable
+    py3_local_bin=$(python3 -c 'import site; print(site.USER_BASE + "/bin")')
+    # Put the directory at the front of the system PATH
+    export PATH="$py3_local_bin:$PATH"
 
-* Download Python_ and install with the ``exe`` or ``msi`` installer.  Make sure
-  your python and the scripts directory (say, ``c:\Python27\Scripts``) are on
-  your windows path.
-* Download Numpy and Scipy ``exe`` installers for your Python version from their
-  respective Numpy and Scipy download sites.
-* Install pip_ using by following the instructions at : http://pip.readthedocs.org/en/stable/installing
-* Install sympy and nibabel using pip from a window ``cmd`` shell::
+Save the file, and restart your terminal to load the configuration from your
+``~/.bashrc`` (Linux) or ``~/.bash_profile`` (macOS) file.  Confirm that you
+have the user install directory in your PATH, with:
 
-    pip install sympy
-    pip install nibabel
+.. code-block:: bash
 
-* On 32-bit Windows, download and install the ``.exe`` installer from `nipy
-  pypi`_.  For 64-bits install use the installer at the `unofficial windows
-  binaries`_ site.
+    echo $PATH
 
-Otherwise
-^^^^^^^^^
+Now install the Python package installer Pip into your user directories (see:
+`install pip with get-pip.py`_):
 
-I'm afraid you might need to build from source...
+.. code-block:: bash
 
-.. _building_source:
+    # Download the get-pip.py installer
+    curl -LO https://bootstrap.pypa.io/get-pip.py
+    # Execute the installer for Python 3 and a user install
+    python3 get-pip.py --user
 
-*************************
-Building from source code
-*************************
+Check you have the right version of the ``pip3`` command with:
+
+.. code-block:: bash
+
+    which pip3
+
+This should give you something like ``/home/your_username/.local/bin/pip3``
+(Linux) or ``/Users/your_username/Library/Python/3.5/bin`` (macOS).
+
+Now :ref:`install-numpy-scipy`.
+
+.. _install-numpy-scipy:
+
+Install Numpy and Scipy on Linux or macOS
+-----------------------------------------
+
+Now you've followed the instructions above, install Numpy and Scipy with:
+
+.. code-block:: bash
+
+    pip3 install --user numpy scipy
+
+Install Python 3, Pip, NumPy and Scipy on Windows
+-------------------------------------------------
+
+It's worth saying here that very few scientific Python developers use Windows,
+so if you're thinking of making the switch to Linux or macOS, now you have
+another reason to do that.
+
+That said, if you are installing on Windows, we recommend the Python 3 version
+of `Anaconda`_.  This is a large installer that will install many scientific
+Python packages, as well as Python itself, and Pip, the package manager.
+
+The machinery for the Anaconda bundle is not completely open-source, and is
+owned by a company, Continuum Analytics. If you would prefer to avoid using
+the Anaconda installer:
+
+1. Download and install the Python 3 installer from the https://python.org website;
+2. Download and install Pip following the instructions at `install pip with get-pip.py`;
+3. Download and install the `Visual C++ redistributable packages for VC++ 2015
+   <https://www.microsoft.com/en-us/download/details.aspx?id=53587>`_;
+4. Download the following packages from Christoph Gohlke's `unofficial Windows
+   binaries`_:
+
+   * numpy (MKL version);
+   * scipy (MKL version);
+
+   and install these packages with Pip.
+
+Install Nipy
+============
+
+Now you have Pip:
+
+.. code-block:: bash
+
+    pip3 install --user nipy
+
+On Windows, macOS, and nearly all Linux versions on Intel, this will install a
+binary (Wheel_) package of NiPy.
+
+***************************
+Other packages we recommend
+***************************
+
+* IPython_: Interactive Python environment;
+* Matplotlib_: Python plotting library.
+
+********************************
+Building from latest source code
+********************************
 
 Dependencies for build
 ======================
 
-* A C compiler: NIPY does contain a few C extensions for optimized routines.
-  Therefore, you must have a compiler to build from source.  XCode_ (OSX) and
-  MinGW_ (Windows) both include a C compiler.  On Linux, try ``sudo apt-get
-  build-essential`` on Debian / Ubuntu, ``sudo yum install gcc`` on Fedora and
-  related distributions.
-
-Recommended for build
-=====================
-
-* Cython_ 0.12.1 or later:  Cython is a language that is a fusion of Python and
-  C.  It allows us to write fast code using Python and C syntax, so that it
-  easier to read and maintain. You don't need it to build a release, unless you
-  modify the Cython ``*.pyx`` files in the nipy distribution.
+* A C compiler: Nipy does contain a few C extensions for optimized routines.
+  Therefore, you must have a compiler to build from source.  Use XCode_ for
+  your C compiler on macOS.  On Windows, you will need the Microsoft Visual
+  C++ version corresponding to your Python version - see `using MSCV with
+  Python <https://matthew-brett.github.io/pydagogue/python_msvc.html>`_.  On
+  Linux you should have the packages you need after you install the
+  ``python3-dev`` (Debian / Ubuntu) or ``python3-devel`` (Fedora) packages
+  using the instructions above;
+* Cython_ 0.12.1 or later:  Cython is a language that is a fusion of Python
+  and C.  It allows us to write fast code using Python and C syntax, so that
+  it is easier to read and maintain than C code with the same functionality;
+* Git_ version control software: follow the instructions on the `main git
+  website <git_>`_ to install Git on Linux, macOS or Windows.
 
 Procedure
 =========
 
-Developers should look through the
-:ref:`development quickstart <development-quickstart>`
-documentation.  There you will find information on building NIPY, the
-required software packages and our developer guidelines.
+Please look through the :ref:`development quickstart <development-quickstart>`
+documentation.  There you will find information on building NIPY, the required
+software packages and our developer guidelines.  Then:
 
-If you are primarily interested in using NIPY, download the source
-tarball from `nipy pypi`_ and follow these instructions for building.  The
-installation process is similar to other Python packages so it will be familiar
-if you have Python experience.
+.. code-block:: bash
 
-Unpack the source tarball and change into the source directory.  Once in the
-source directory, you can build the neuroimaging package using::
+    # install Cython
+    pip3 install --user cython
 
-    python setup.py build
+.. code-block:: bash
 
-To install, simply do::
+    # Clone the project repository
+    git clone https://github.com/nipy/nipy
 
-    sudo python setup.py install
+to get the latest development version, and:
 
-.. note::
+.. code-block:: bash
 
-    As with any Python installation, this will install the modules in your
-    system Python *site-packages* directory (which is why you need *sudo*).
-    Many of us prefer to install development packages in a local directory so as
-    to leave the system python alone.  This is merely a preference, nothing will
-    go wrong if you install using the *sudo* method.
+    # Build the latest version in-place
+    cd nipy
+    pip3 install --user --editable .
 
-    If you have Python 2.6 or later, you might want to do a `user install
-    <http://docs.python.org/2/install/index.html#alternate-installation-the-user-scheme>`_
+to install the code in the development tree into your Python path.
 
-        python setup.py install --user
-
-    To install nipy in some other local directory, use the **--prefix** option.
-    For example, if you created a ``local`` directory in your home directory,
-    you would install nipy like this::
-
-        python setup.py install --prefix=$HOME/local
-
-
+****************************
 Installing useful data files
------------------------------
+****************************
 
 See :ref:`data-files` for some instructions on installing data packages.
 

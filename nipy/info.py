@@ -118,23 +118,18 @@ directory of the nipy distribution::
 is part of the nose package.  Try ``nipnost --help`` to see a large number of
 command-line options.
 
-Dependencies
+Installation
 ============
 
-To run NIPY, you will need:
+See the latest `installation instructions`_.
 
-* python_ >= 2.6 (tested with 2.6, 2.7, 3.2 through 3.5)
-* numpy_ >= 1.6.0
-* scipy_ >= 0.9.0
-* sympy_ >= 0.7.0
-* nibabel_ >= 1.2
+License
+=======
 
-You will probably also like to have:
+We use the 3-clause BSD license; the full license is in the file ``LICENSE`` in
+the nipy distribution.
 
-* ipython_ for interactive work
-* matplotlib_ for 2D plotting
-* mayavi_ for 3D plotting
-
+.. links:
 .. _python: http://python.org
 .. _numpy: http://numpy.scipy.org
 .. _scipy: http://www.scipy.org
@@ -142,15 +137,9 @@ You will probably also like to have:
 .. _nibabel: http://nipy.org/nibabel
 .. _ipython: http://ipython.org
 .. _matplotlib: http://matplotlib.org
-.. _mayavi: http://code.enthought.com/projects/mayavi/
 .. _nose: http://nose.readthedocs.org/en/latest
 .. _mock: https://pypi.python.org/pypi/mock
-
-License
-=======
-
-We use the 3-clause BSD license; the full license is in the file ``LICENSE``
-in the nipy distribution.
+.. _installation instructions: http://nipy.org/nipy/users/installation.html
 """
 
 # minimum versions
