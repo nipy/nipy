@@ -1,10 +1,12 @@
+.. highlight:: bash
+
 .. _set-up-fork:
 
 ==================
  Set up your fork
 ==================
 
-First you follow the instructions for :ref:`forking`. 
+First you follow the instructions for :ref:`forking`.
 
 Overview
 ========
@@ -25,7 +27,9 @@ Clone your fork
    git@github.com:your-user-name/nipy.git``
 #. Investigate.  Change directory to your new repo: ``cd nipy``. Then
    ``git branch -a`` to show you all branches.  You'll get something
-   like::
+   like:
+
+   .. code-block:: none
 
       * master
       remotes/origin/master
@@ -33,7 +37,7 @@ Clone your fork
    This tells you that you are currently on the ``master`` branch, and
    that you also have a ``remote`` connection to ``origin/master``.
    What remote repository is ``remote/origin``? Try ``git remote -v`` to
-   see the URLs for the remote.  They will point to your github_ fork.
+   see the URLs for the remote.  They will point to your github fork.
 
    Now you want to connect to the upstream `nipy github`_ repository, so
    you can merge in changes from trunk.
@@ -49,7 +53,7 @@ Linking your repository to the upstream repo
    git remote add upstream git://github.com/nipy/nipy.git
 
 ``upstream`` here is just the arbitrary name we're using to refer to the
-main nipy_ repository at `nipy github`_.
+main `nipy`_ repository at `nipy github`_.
 
 Note that we've used ``git://`` for the URL rather than ``git@``.  The
 ``git://`` URL is read only.  This means we that we can't accidentally
@@ -57,12 +61,13 @@ Note that we've used ``git://`` for the URL rather than ``git@``.  The
 use it to merge into our own code.
 
 Just for your own satisfaction, show yourself that you now have a new
-'remote', with ``git remote -v show``, giving you something like::
+'remote', with ``git remote -v show``, giving you something like:
+
+.. code-block:: none
 
    upstream	git://github.com/nipy/nipy.git (fetch)
    upstream	git://github.com/nipy/nipy.git (push)
    origin	git@github.com:your-user-name/nipy.git (fetch)
    origin	git@github.com:your-user-name/nipy.git (push)
 
-.. include:: git_links.inc
-
+.. include:: links.inc

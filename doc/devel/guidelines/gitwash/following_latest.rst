@@ -1,3 +1,5 @@
+.. highlight:: bash
+
 .. _following-latest:
 
 =============================
@@ -10,7 +12,7 @@ These are the instructions if you just want to follow the latest
 The steps are:
 
 * :ref:`install-git`
-* get local copy of the git repository from github_
+* get local copy of the `nipy github`_ git repository
 * update local copy from time to time
 
 Get the local copy of the code
@@ -33,4 +35,4 @@ From time to time you may want to pull down the latest code.  Do this with::
 The tree in ``nipy`` will now have the latest changes from the initial
 repository.
 
-.. include:: git_links.inc
+.. include:: links.inc

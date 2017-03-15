@@ -11,7 +11,7 @@
    __not_case_sensitive__, so only one target definition is needed for
    nipy, NIPY, Nipy, etc...
 
-.. nipy
+.. Nipy
 .. _nipy: http://nipy.org/nipy
 .. _`NIPY developer resources`: http://nipy.sourceforge.net/devel
 .. _`NIPY data packages`: http://nipy.sourceforge.net/data-packages
@@ -25,7 +25,7 @@
 .. _`nipy launchpad`: https://launchpad.net/nipy
 .. _nipy on travis: https://travis-ci.org/nipy/nipy
 
-.. other related projects
+.. Related projects
 .. _nipy community: http://nipy.org
 .. _dipy: http://nipy.org/dipy
 .. _`dipy github`: http://github.com/Garyfallidis/dipy
@@ -70,13 +70,15 @@
 .. _pypi: http://pypi.python.org
 .. _example pypi: http://packages.python.org/an_example_pypi_project/setuptools.html#intermezzo-pypirc-file-and-gpg
 .. _github bdist_mpkg: https://github.com/matthew-brett/bdist_mpkg
+.. _wheel: https://pypi.python.org/pypi/wheel
+.. _install pip with get-pip.py: https://pip.pypa.io/en/stable/installing/#installing-with-get-pip-py
 
 .. Code support stuff
 .. _pychecker: http://pychecker.sourceforge.net/
 .. _pylint: http://www.logilab.org/project/pylint
 .. _pyflakes: http://divmod.org/trac/wiki/DivmodPyflakes
 .. _virtualenv: http://pypi.python.org/pypi/virtualenv
-.. _git: http://git.or.cz/
+.. _git: https://git-scm.com
 .. _flymake: http://flymake.sourceforge.net/
 .. _rope: http://rope.sourceforge.net/
 .. _pymacs: http://pymacs.progiciels-bpi.ca/pymacs.html
@@ -107,7 +109,7 @@
 .. _python (x, y): https://python-xy.github.io/
 .. _EPD: http://www.enthought.com/products/epd.php
 .. _EPD free: http://www.enthought.com/products/epd_free.php
-.. _Anaconda CE: https://store.continuum.io/
+.. _Anaconda: https://www.continuum.io/downloads
 .. _Unofficial Windows binaries: http://www.lfd.uci.edu/~gohlke/pythonlibs
 
 .. Python imaging projects

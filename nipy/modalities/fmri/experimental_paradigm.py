@@ -163,9 +163,8 @@ def load_paradigm_from_csv_file(path, session=None):
     plus possibly (duration) and/or (amplitude).
     If all the durations are 0, the paradigm will be handled as event-related.
 
-    Fixme
-    -----
-    would be much clearer if amplitude was put before duration in the .csv
+    FIXME: would be much clearer if amplitude was put before duration in the
+    .csv
     """
     import csv
     with open4csv(path, 'r') as csvfile:

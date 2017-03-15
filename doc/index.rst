@@ -15,6 +15,15 @@ high ideals of :ref:`nipy-mission`.
 .. We need the following toctree directive to include the documentation
 .. in the document heirarchy - see http://sphinx.pocoo.org/concepts.html
 .. toctree::
-   :hidden:
+    :hidden:
 
-   documentation
+    documentation
+    devel/code_discussions/coordmap_notes
+    devel/doctests_preprocessor
+    devel/guidelines/compiling_windows
+    devel/images
+    devel/install/windows_scipy_build
+    faq/johns_bsd_pitch
+    references/brainpy_abstract
+    users/install_data
+    users/math_coordmap

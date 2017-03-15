@@ -13,36 +13,42 @@
 # serve to show the default value.
 
 import sys, os
+from importlib import import_module
+
+import sphinx
+
+# Doc generation depends on being able to import project
+project = 'nipy'
+try:
+    project_module = import_module(project)
+except ImportError:
+    raise RuntimeError('Cannot import {}, please investigate'.format(project))
 
 # If your extensions are in another directory, add it here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 sys.path.append(os.path.abspath('sphinxext'))
 
-# Get project related strings.  Please do not change this line to use
-# execfile because execfile is not available in Python 3
-_info_fname = os.path.join('..', 'nipy', 'info.py')
-rel = {}
-exec(open(_info_fname, 'rt').read(), {}, rel)
-
-# Import support for ipython console session syntax highlighting (lives
-# in the sphinxext directory defined above)
-import ipython_console_highlighting
-
 # General configuration
 # ---------------------
 
+# If your documentation needs a minimal Sphinx version, state it here.
+needs_sphinx = '1.0'
+
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.doctest',
-              'sphinx.ext.mathjax',
-              'sphinx.ext.autosummary',
-              'sphinx.ext.inheritance_diagram',
-              'numpy_ext.numpydoc',
-              'matplotlib.sphinxext.plot_directive',
-              'matplotlib.sphinxext.only_directives', # needed for above
-              ]
+extensions = [
+    'texext.mathcode',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.autosummary',
+    'texext.math_dollar',
+    'numpydoc',
+    'sphinx.ext.inheritance_diagram',
+    'matplotlib.sphinxext.plot_directive',
+    'IPython.sphinxext.ipython_console_highlighting',
+]
 
 # Autosummary on
 autosummary_generate=True
@@ -56,17 +62,15 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
-# General substitutions.
-project = 'nipy'
-
-#copyright = ':ref:`2005-2010, Neuroimaging in Python team. <nipy-software-license>`'
+# copyright = ':ref:`2005-2017, Neuroimaging in Python team.
+# <nipy-software-license>`'
 copyright = '2005-2017, Neuroimaging in Python team'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = rel['__version__']
+version = project_module.__version__
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -164,11 +168,29 @@ htmlhelp_basename = project
 # Options for LaTeX output
 # ------------------------
 
-# The paper size ('letter' or 'a4').
-#latex_paper_size = 'letter'
+# Additional stuff for the LaTeX preamble.
+_latex_preamble = """
+   \usepackage{amsmath}
+   \usepackage{amssymb}
+   % Uncomment these two if needed
+   %\usepackage{amsfonts}
+   %\usepackage{txfonts}
+"""
+
+latex_elements = {
+# The paper size ('letterpaper' or 'a4paper').
+#'papersize': 'letterpaper',
 
 # The font size ('10pt', '11pt' or '12pt').
-#latex_font_size = '10pt'
+#'pointsize': '10pt',
+
+# Additional stuff for the LaTeX preamble.
+#'preamble': '',
+
+# Latex figure (float) alignment
+#'figure_align': 'htbp',
+    'preamble': _latex_preamble,
+}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class
@@ -183,21 +205,22 @@ latex_documents = [
 # the title page.
 #latex_logo = None
 
-# For "manual" documents, if this is true, then toplevel headings are parts,
-# not chapters.
-latex_use_parts = True
-
-# Additional stuff for the LaTeX preamble.
-latex_preamble = """
-   \usepackage{amsmath}
-   \usepackage{amssymb}
-   % Uncomment these two if needed
-   %\usepackage{amsfonts}
-   %\usepackage{txfonts}
-"""
+if sphinx.version_info[:2] < (1, 4):
+    # For "manual" documents, if this is true, then toplevel headings are parts,
+    # not chapters.
+    latex_use_parts = True
+else:  # Sphinx >= 1.4
+    latex_toplevel_sectioning = 'part'
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []
 
 # If false, no module index is generated.
 latex_use_modindex = True
+
+# Numpy extensions
+# ----------------
+# Worked out by Steven Silvester in
+# https://github.com/scikit-image/scikit-image/pull/1356
+numpydoc_show_class_members = False
+numpydoc_class_members_toctree = False

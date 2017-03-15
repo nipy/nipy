@@ -18,6 +18,13 @@ you must have:
 * latex (for the PNG mathematics graphics)
 * graphviz (for the inheritance diagrams)
 
+For the Python dependencies, do::
+
+    pip install -r ../doc-requirements.txt
+
+Files and directories
+=====================
+
 This directory contains:
 
 * Makefile - the build script to build the HTML or PDF docs. Type

@@ -158,8 +158,8 @@ class Field(WeightedGraph):
         ----------
         nbiter: int, optional, the number of iterations required
 
-        Note
-        ----
+        Notes
+        -----
         When data dtype is not float64, a slow version of the code is used
         """
         nbiter = int(nbiter)
@@ -435,9 +435,9 @@ class Field(WeightedGraph):
         -------
         label: The resulting labelling of the data
 
-        Fixme
+        Notes
         -----
-        deal with graphs with several ccs
+        FIXME: deal with graphs with several ccs
         """
         if np.size(self.field) == 0:
             raise ValueError('No field has been defined so far')

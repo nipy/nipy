@@ -342,13 +342,13 @@ class Contrast(object):
         with the null hypothesis: (H0) 'contrast equals baseline'
 
         Parameters
-        ==========
-        baseline: float, optional,
-        Baseline value for the test statistic
+        ----------
+        baseline: float, optional
+            Baseline value for the test statistic
 
-        Note
-        ====
-        the value of 0.5 is used where the stat is not defined
+        Notes
+        -----
+        The value of 0.5 is used where the stat is not defined
         """
         if self.stat_ is None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
@@ -370,13 +370,13 @@ class Contrast(object):
         with the null hypothesis: (H0) 'contrast equals baseline'
 
         Parameters
-        ==========
-        baseline: float, optional,
-                  Baseline value for the test statistic
+        ----------
+        baseline: float, optional
+            Baseline value for the test statistic
 
-        Note
-        ====
-        the value of 0 is used where the stat is not defined
+        Notes
+        -----
+        The value of 0 is used where the stat is not defined
         """
         if self.p_value_ is None or not self.baseline == baseline:
             self.p_value_ = self.p_value(baseline)

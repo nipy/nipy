@@ -3,6 +3,7 @@
 """
 import re
 import sys
+import codecs
 
 lt_LL = re.compile(
     r"longtable}{(L+)}")
@@ -16,8 +17,9 @@ if len(sys.argv) != 2:
     raise RuntimeError("Enter path to tex file only")
 file_path = sys.argv[1]
 
-unfixed_tex = open(file_path,'rt').readlines()
-write_file = open(file_path, 'wt')
-for line in unfixed_tex:
-    line = lt_LL.sub(replacer, line, 1)
-    write_file.write(line)
+with codecs.open(file_path, 'r', encoding='utf8') as fobj:
+    unfixed_tex = fobj.readlines()
+with codecs.open(file_path, 'w', encoding='utf8') as fobj:
+    for line in unfixed_tex:
+        line = lt_LL.sub(replacer, line, 1)
+        fobj.write(line)

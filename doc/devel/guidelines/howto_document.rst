@@ -10,6 +10,10 @@ our documents and docstrings are in reST format, this allows us to
 have both human-readable docstrings when viewed in ipython_, and
 web and print quality documentation.
 
+==========================
+Getting build dependencies
+==========================
+
 
 Building the documentation
 --------------------------
