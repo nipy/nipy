@@ -7673,11 +7673,12 @@ static CYTHON_INLINE PyObject* __Pyx_PyNumber_Int(PyObject* x) {
   PyNumberMethods *m;
   const char *name = NULL;
   PyObject *res = NULL;
+  int checker;
+  checker = PyLong_Check(x);
 #if PY_MAJOR_VERSION < 3
-  if (PyInt_Check(x) || PyLong_Check(x))
-#else
-  if (PyLong_Check(x))
+  checker = PyInt_Check(x) || checker;
 #endif
+  if (checker)
     return __Pyx_NewRef(x);
   m = Py_TYPE(x)->tp_as_number;
 #if PY_MAJOR_VERSION < 3
