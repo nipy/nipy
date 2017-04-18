@@ -129,7 +129,8 @@ def xyz_affine(img, name2xyz=None):
     Nibabel images always have xyz affines
 
     >>> import nibabel as nib
-    >>> nimg = nib.Nifti1Image(arr, np.diag([2,3,4,1]))
+    >>> affine = np.diag([2, 3, 4, 1]).astype(float)
+    >>> nimg = nib.Nifti1Image(arr, affine)
     >>> xyz_affine(nimg)
     array([[ 2.,  0.,  0.,  0.],
            [ 0.,  3.,  0.,  0.],
