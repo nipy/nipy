@@ -641,7 +641,7 @@ class AffineTransform(object):
             return None
         except TypeError:
             # Try using sympy for the inverse.  This might be needed for sympy
-            # symbols in the affine, or Float128
+            # symbols in the affine, or Float128, or complex numbers.
             from sympy import Matrix, matrix2numpy
             sym_inv = Matrix(self.affine).inv()
             m_inv = matrix2numpy(sym_inv).astype(aff_dt)

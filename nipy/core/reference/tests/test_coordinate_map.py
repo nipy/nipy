@@ -941,6 +941,9 @@ def test_dtype_cmap_inverses():
     # CoordinateMap versions of AffineTransforms
     dtypes = (np.sctypes['int'] + np.sctypes['uint'] + np.sctypes['float']
               + np.sctypes['complex'] + [np.object])
+    # Sympy <= 1.1 does not handle numpy longcomplex correctly. See:
+    # https://github.com/sympy/sympy/pull/12901
+    dtypes.remove(np.longcomplex)
     arr_p1 = np.eye(4)[:, [0, 2, 1, 3]]
     in_list = [0, 1, 2]
     out_list = [0, 2, 1]
@@ -956,7 +959,10 @@ def test_dtype_cmap_inverses():
         else:
             exp_i_dt = dt
         # Default inverse cmap may alter coordinate types
-        r_cmap = cmap.inverse()
+        try:
+            r_cmap = cmap.inverse()
+        except:
+            1/0
         res = r_cmap(out_coord)
         assert_array_equal(res, coord)
         assert_equal(res.dtype, exp_i_dt)
