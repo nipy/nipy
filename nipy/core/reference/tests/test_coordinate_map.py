@@ -25,6 +25,15 @@ from nose.tools import (assert_true, assert_equal, assert_raises,
 from numpy.testing import (assert_array_equal, assert_almost_equal, dec)
 
 
+# Dtypes for testing coordinate map creation / processing
+_SYMPY_SAFE_DTYPES = (np.sctypes['int'] + np.sctypes['uint'] +
+                      np.sctypes['float'] + np.sctypes['complex'] +
+                      [np.object])
+# Sympy <= 1.1 does not handle numpy longcomplex correctly. See:
+# https://github.com/sympy/sympy/pull/12901
+_SYMPY_SAFE_DTYPES.remove(np.longcomplex)
+
+
 class empty(object):
     pass
 
@@ -939,15 +948,10 @@ def test_make_cmap():
 def test_dtype_cmap_inverses():
     # Check that we can make functional inverses of AffineTransforms, and
     # CoordinateMap versions of AffineTransforms
-    dtypes = (np.sctypes['int'] + np.sctypes['uint'] + np.sctypes['float']
-              + np.sctypes['complex'] + [np.object])
-    # Sympy <= 1.1 does not handle numpy longcomplex correctly. See:
-    # https://github.com/sympy/sympy/pull/12901
-    dtypes.remove(np.longcomplex)
     arr_p1 = np.eye(4)[:, [0, 2, 1, 3]]
     in_list = [0, 1, 2]
     out_list = [0, 2, 1]
-    for dt in dtypes:
+    for dt in _SYMPY_SAFE_DTYPES:
         in_cs = CoordinateSystem('ijk', coord_dtype=dt)
         out_cs = CoordinateSystem('xyz', coord_dtype=dt)
         cmap = AffineTransform(in_cs, out_cs, arr_p1.astype(dt))
@@ -1031,11 +1035,9 @@ def test_cmap_coord_types():
     # Check that we can use full range of coordinate system types.  The inverse
     # of an AffineTransform should generate coordinates in the input coordinate
     # system dtype
-    dtypes = (np.sctypes['int'] + np.sctypes['uint'] + np.sctypes['float']
-              + np.sctypes['complex'] + [np.object])
     arr_p1 = np.eye(4)
     arr_p1[:3, 3] = 1
-    for dt in dtypes:
+    for dt in _SYMPY_SAFE_DTYPES:
         in_cs = CoordinateSystem('ijk', coord_dtype=dt)
         out_cs = CoordinateSystem('xyz', coord_dtype=dt)
         # CoordinateMap
