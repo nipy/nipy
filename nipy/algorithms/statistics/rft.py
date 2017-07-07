@@ -87,14 +87,14 @@ def Q(dim, dfd=np.inf):
     j = dim
     if j <= 0:
         raise ValueError('Q defined only for dim > 0')
-    poly = hermitenorm(j-1)
-    poly = np.poly1d(np.around(poly.c))
+    coeffs = np.around(hermitenorm(j - 1).c)
     if np.isfinite(m):
-        for l in range((j-1)//2+1):
-            f = np.exp(gammaln((m+1)/2.) - gammaln((m+2-j+2*l)/2.)
-                                - 0.5*(j-1-2*l)*(np.log(m/2.)))
-            poly.c[2*l] *= f
-    return np.poly1d(poly.c)
+        for L in range((j - 1) // 2 + 1):
+            f = np.exp(gammaln((m + 1) / 2.)
+                       - gammaln((m + 2 - j + 2 * L) / 2.)
+                       - 0.5 * (j - 1 - 2 * L) * (np.log(m / 2.)))
+            coeffs[2 * L] *= f
+    return np.poly1d(coeffs)
 
 
 class ECquasi(np.poly1d):
