@@ -153,7 +153,8 @@ owned by a company, Continuum Analytics. If you would prefer to avoid using
 the Anaconda installer:
 
 1. Download and install the Python 3 installer from the https://python.org website;
-2. Download and install Pip following the instructions at `install pip with get-pip.py`;
+2. Download and install Pip following the instructions at `install pip with
+   get-pip.py`_;
 3. Download and install the `Visual C++ redistributable packages for VC++ 2015
    <https://www.microsoft.com/en-us/download/details.aspx?id=53587>`_;
 4. Download the following packages from Christoph Gohlke's `unofficial Windows
@@ -193,7 +194,7 @@ Dependencies for build
 * A C compiler: Nipy does contain a few C extensions for optimized routines.
   Therefore, you must have a compiler to build from source.  Use XCode_ for
   your C compiler on macOS.  On Windows, you will need the Microsoft Visual
-  C++ version corresponding to your Python version - see `using MSCV with
+  C++ version corresponding to your Python version - see `using MSVC with
   Python <https://matthew-brett.github.io/pydagogue/python_msvc.html>`_.  On
   Linux you should have the packages you need after you install the
   ``python3-dev`` (Debian / Ubuntu) or ``python3-devel`` (Fedora) packages
