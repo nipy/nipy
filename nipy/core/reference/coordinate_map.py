@@ -4,15 +4,13 @@
 This module describes two types of *mappings*:
 
 * CoordinateMap: a general function from a domain to a range, with a possible
-     inverse function.
-
+  inverse function;
 * AffineTransform: an affine function from a domain to a range, not
-     necessarily of the same dimension, hence not always invertible.
+  necessarily of the same dimension, hence not always invertible.
 
-Each of these objects is meant to encapsulate a tuple of
-(domain, range, function).
-Each of the mapping objects contain all the details about their domain
-CoordinateSystem, their range CoordinateSystem and the mapping between
+Each of these objects is meant to encapsulate a tuple of (domain, range,
+function).  Each of the mapping objects contain all the details about their
+domain CoordinateSystem, their range CoordinateSystem and the mapping between
 them.
 
 Common API
@@ -21,13 +19,16 @@ Common API
 They are separate classes, neither one inheriting from the other.
 They do, however, share some parts of an API, each having methods:
 
-* renamed_domain : rename on the coordinates of the domain (returns a new mapping)
+* renamed_domain : rename on the coordinates of the domain (returns a new
+  mapping)
 
 * renamed_range : rename the coordinates of the range (returns a new mapping)
 
-* reordered_domain : reorder the coordinates of the domain (returns a new mapping)
+* reordered_domain : reorder the coordinates of the domain (returns a new
+  mapping)
 
-* reordered_range : reorder the coordinates of the range (returns a new mapping)
+* reordered_range : reorder the coordinates of the range (returns a new
+  mapping)
 
 * inverse : when appropriate, return the inverse *mapping*
 
@@ -45,20 +46,19 @@ Operations on mappings (module level functions)
 -----------------------------------------------
 
 * compose : Take a sequence of mappings (either CoordinateMaps or
-   AffineTransforms) and return their composition. If they are all
-   AffineTransforms, an AffineTransform is returned. This checks to
-   ensure that domains and ranges of the various mappings agree.
+  AffineTransforms) and return their composition. If they are all
+  AffineTransforms, an AffineTransform is returned. This checks to ensure that
+  domains and ranges of the various mappings agree.
 * product : Take a sequence of mappings (either CoordinateMaps or
-   AffineTransforms) and return a new mapping that has domain and range
-   given by the concatenation of their domains and ranges, and the
-   mapping simply concatenates the output of each of the individual
-   mappings. If they are all AffineTransforms, an AffineTransform is
-   returned. If they are all AffineTransforms that are in fact linear
-   (i.e. origin=0) then can is represented as a block matrix with the
-   size of the blocks determined by
+  AffineTransforms) and return a new mapping that has domain and range given by
+  the concatenation of their domains and ranges, and the mapping simply
+  concatenates the output of each of the individual mappings. If they are all
+  AffineTransforms, an AffineTransform is returned. If they are all
+  AffineTransforms that are in fact linear (i.e. origin=0) then can is
+  represented as a block matrix with the size of the blocks determined by
 * concat : Take a mapping and prepend a coordinate to its domain and
-   range.  For mapping `m`, this is the same as
-   product(AffineTransform.identity('concat'), `m`)
+  range.  For mapping ``m``, this is the same as
+  ``product(AffineTransform.identity('concat'), m)``
 """
 from __future__ import absolute_import
 
