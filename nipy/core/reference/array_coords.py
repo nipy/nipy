@@ -24,6 +24,9 @@ from .coordinate_map import product as cmap_product
 from .coordinate_map import shifted_range_origin
 from .coordinate_system import CoordinateSystem
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
 
 class ArrayCoordMap(object):
     """ Class combining coordinate map and array shape
@@ -187,6 +190,7 @@ class ArrayCoordMap(object):
         return "ArrayCoordMap(\n  coordmap=" + \
             '\n  '.join(repr(self.coordmap).split('\n')) + ',\n  shape=%s' % repr(self.shape) + '\n)'
 
+
 def _slice(coordmap, shape, *slices):
     """
     Slice a 'voxel' CoordinateMap's function_domain with slices. A
@@ -264,7 +268,6 @@ def _slice(coordmap, shape, *slices):
     A = A.astype(function_domain.coord_dtype)
     slice_cmap = AffineTransform(function_domain, coordmap.function_domain, A)
     return ArrayCoordMap(compose(coordmap, slice_cmap), tuple(newshape))
-                   
 
 
 class Grid(object):

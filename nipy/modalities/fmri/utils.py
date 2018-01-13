@@ -31,6 +31,9 @@ from sympy.utilities.lambdify import implemented_function, lambdify
 
 from nipy.algorithms.statistics.formula.formulae import Term, Formula
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
 T = Term('t')
 
 

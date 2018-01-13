@@ -26,7 +26,7 @@ from __future__ import absolute_import
 
 import os
 
-#__all__ = ['funcfile', 'anatfile']
+import numpy as np
 
 # Discover directory path
 filepath = os.path.abspath(__file__)
@@ -48,3 +48,13 @@ try:
     from nose.tools import assert_true, assert_false
 except ImportError:
     pass
+
+
+def legacy_printing():
+    """ Set numpy print options to "legacy" for new versions of numpy
+
+    If imported into a file, nosetest will run this before any doctests.
+    """
+    from distutils.version import LooseVersion
+    if LooseVersion(np.__version__) >= LooseVersion('1.14'):
+        np.set_printoptions(legacy="1.13")

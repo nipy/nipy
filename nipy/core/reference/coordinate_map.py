@@ -76,6 +76,9 @@ from .coordinate_system import(CoordinateSystem,
                                product as coordsys_product
                                )
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
 # shorthand
 CS = CoordinateSystem
 

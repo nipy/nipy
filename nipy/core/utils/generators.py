@@ -23,6 +23,9 @@ import numpy as np
 
 from nipy.utils import seq_prod
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
 
 def parcels(data, labels=None, exclude=()):
     """ Return a generator for ``[data == label for label in labels]``
