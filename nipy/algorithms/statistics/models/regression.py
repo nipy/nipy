@@ -36,6 +36,9 @@ from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
 
 from .model import LikelihoodModel, LikelihoodModelResults
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
 
 class OLSModel(LikelihoodModel):
     """ A simple ordinary least squares model.
@@ -342,9 +345,9 @@ class ARModel(OLSModel):
     AR coefficients: [-0.7220361  -1.05365352]
     AR coefficients: [-0.72229201 -1.05408193]
     AR coefficients: [-0.722278   -1.05405838]
-    >>> results.theta #doctest: +FP_6DP
+    >>> results.theta #doctest: +NP_ALLCLOSE
     array([ 1.59564228, -0.58562172])
-    >>> results.t() #doctest: +FP_6DP
+    >>> results.t() #doctest: +NP_ALLCLOSE
     array([ 38.0890515 ,  -3.45429252])
     >>> print(results.Tcontrast([0,1]))  #doctest: +FP_6DP
     <T contrast: effect=-0.58562172384377043, sd=0.16953449108110835,

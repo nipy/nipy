@@ -4,10 +4,10 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+__docformat__ = 'restructuredtext'
+
 import numpy as np
 import scipy.interpolate
-
-__docformat__ = 'restructuredtext'
 
 
 def mad(a, c=0.6745, axis=0):
@@ -24,10 +24,11 @@ def mad(a, c=0.6745, axis=0):
 
 
 class StepFunction(object):
-    """
-    A basic step function: values at the ends are handled in the simplest
-    way possible: everything to the left of x[0] is set to ival; everything
-    to the right of x[-1] is set to y[-1].
+    """ A basic step function
+
+    Values at the ends are handled in the simplest way possible: everything to
+    the left of ``x[0]`` is set to `ival`; everything to the right of ``x[-1]``
+    is set to ``y[-1]``.
 
     Examples
     --------
@@ -35,11 +36,12 @@ class StepFunction(object):
     >>> y = np.arange(20)
     >>> f = StepFunction(x, y)
     >>>
-    >>> print(f(3.2))
+    >>> f(3.2)
     3.0
-    >>> print(f([[3.2,4.5],[24,-3.1]]))
-    [[  3.   4.]
-     [ 19.   0.]]
+    >>> res = f([[3.2, 4.5],[24, -3.1]])
+    >>> np.all(res == [[ 3, 4],
+    ...                [19, 0]])
+    True
     """
 
     def __init__(self, x, y, ival=0., sorted=False):

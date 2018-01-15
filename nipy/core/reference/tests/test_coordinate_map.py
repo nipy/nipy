@@ -24,6 +24,8 @@ from nose.tools import (assert_true, assert_equal, assert_raises,
 
 from numpy.testing import (assert_array_equal, assert_almost_equal, dec)
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing
 
 # Dtypes for testing coordinate map creation / processing
 _SYMPY_SAFE_DTYPES = (np.sctypes['int'] + np.sctypes['uint'] +
@@ -62,6 +64,7 @@ def setup():
                                               [ 8,  9, 10, 11],
                                               [ 8,  9, 10, 11],
                                               [ 0,  0,  0,  1]]))
+    legacy_printing()
 
 
 def test_shift_origin():

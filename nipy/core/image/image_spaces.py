@@ -80,6 +80,9 @@ from ..image.image import Image
 from ..reference import spaces as rsp
 from ..reference.coordinate_map import AffineTransform
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
 
 def xyz_affine(img, name2xyz=None):
     """ Return xyz affine from image `img` if possible, or raise error
