@@ -2,6 +2,8 @@
 """
 from __future__ import absolute_import
 
+from numbers import Number
+
 import numpy as np
 
 from nose.tools import assert_equal, assert_almost_equal
@@ -20,8 +22,8 @@ DIMS = (30, 30, 20)
 
 
 def _check_dims(x, ndim, shape):
-    if isinstance(shape, int):
-        shape = (shape, )
+    if isinstance(shape, Number):
+        shape = (shape,)
     for i in range(ndim):
         assert_equal(x.shape[i], shape[i])
 
