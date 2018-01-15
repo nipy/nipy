@@ -80,6 +80,7 @@ matrix:
             - texlive-latex-extra
             - texlive-fonts-recommended
             - texlive-latex-recommended
+            - latexmk
 
 before_install:
     - source tools/travis_tools.sh
