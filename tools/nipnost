@@ -22,7 +22,7 @@ from nipy.fixes.numpy.testing.noseclasses import KnownFailure
 if __name__ == '__main__':
     prepare_imports()
     argv = sys.argv[:] + [fpw_opt_str()]
-    if '--without-doctests' in argv:
+    if '--without-doctest' in argv:
         argv.remove('--without-doctest')
     else:
         argv.append('--with-nipydoctest')
