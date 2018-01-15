@@ -1,0 +1,50 @@
+# vim ft=yaml
+# CI on Windows via appveyor
+
+environment:
+  global:
+    EXTRA_FLAGS: ""
+
+  matrix:
+    - PYTHON: C:\Python27
+    - PYTHON: C:\Python27-x64
+      # Doctest fail from the long Ls, as in (1L, 2L) != (1, 2)
+      EXTRA_FLAGS: "--without-doctest"
+    - PYTHON: C:\Python34
+    - PYTHON: C:\Python34-x64
+    - PYTHON: C:\Python35
+    - PYTHON: C:\Python35-x64
+    - PYTHON: C:\Python36
+    - PYTHON: C:\Python36-x64
+
+install:
+  # Prepend newly installed Python to the PATH of this build (this cannot be
+  # done from inside the powershell script as it would require to restart
+  # the parent CMD process).
+  - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
+  - python -m pip install -U pip
+
+  # Fix MSVC builds for 64-bit Python. See:
+  # http://stackoverflow.com/questions/32091593/cannot-install-windows-sdk-7-1-on-windows-10
+  - echo "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64 > "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64/vcvars64.bat"
+
+  # Install the dependencies of the project.
+  - pip install numpy Cython nose nibabel sympy scipy
+  # Pin wheel to 0.26 to avoid Windows ABI tag for built wheel
+  - pip install wheel==0.26
+  # install
+  - pip install .
+
+build: false  # Not a C# project, build stuff at the test step instead.
+
+test_script:
+  # Change into an innocuous directory and find tests from installation
+  - mkdir for_testing
+  - cd for_testing
+  - python --version
+  - python ..\tools\nipnost %EXTRA_FLAGS% nipy
+  - cd ..
+
+cache:
+  # Use the appveyor cache to avoid re-downloading large archives.
+  - '%APPDATA%\pip\Cache'
