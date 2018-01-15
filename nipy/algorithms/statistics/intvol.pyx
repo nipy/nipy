@@ -18,7 +18,7 @@ from scipy.sparse import dok_matrix
 from nipy.utils.arrays import strides_from
 
 # local imports
-from utils import cube_with_strides_center, join_complexes
+from .utils import cube_with_strides_center, join_complexes, check_cast_bin8
 
 
 cdef double PI = np.pi
@@ -347,7 +347,7 @@ def EC3d(mask):
 
     Parameters
     ----------
-    mask : ndarray((i,j,k), np.int)
+    mask : ndarray shape (i,j,k)
          Binary mask determining whether or not a voxel is in the mask.
 
     Returns
@@ -357,11 +357,15 @@ def EC3d(mask):
 
     Notes
     -----
-    The array mask is assumed to be binary. At the time of writing, it is not
-    clear how to get cython to use np.bool arrays.
+    We check whether `mask` is binary.
 
     The 3d cubes are triangulated into 6 tetrahedra of equal volume, as
     described in the reference below.
+
+    Raises
+    ------
+    ValueError
+        If any value in the mask is outside {0, 1}
 
     References
     ----------
@@ -369,36 +373,28 @@ def EC3d(mask):
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
     """
-    if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 '
-                       'values, but be of type np.int')
     cdef:
-        # c-level versions of the array
-        np.ndarray[np.intp_t, ndim=3] mask_c
         # 'flattened' mask (1d array)
-        np.ndarray[np.intp_t, ndim=1] fpmask
+        np.ndarray[np.uint8_t, ndim=1] fpmask
         # d3 and d4 are lists of triangles and tetrahedra
         # associated to particular voxels in the cuve
         np.ndarray[np.intp_t, ndim=2] d2
         np.ndarray[np.intp_t, ndim=2] d3
         np.ndarray[np.intp_t, ndim=2] d4
         # scalars
-        np.npy_intp i, j, k, l, s0, s1, s2, ds2, ds3, ds4, index, m, nvox
+        np.uint8_t m
+        np.npy_intp i, j, k, l, s0, s1, s2, ds2, ds3, ds4, index, nvox
         np.npy_intp ss0, ss1, ss2 # strides
+        np.ndarray[np.intp_t, ndim=1] strides
         np.npy_intp v0, v1, v2, v3 # vertices
         np.npy_intp l0 = 0
 
-    mask_c = mask
-
     pmask_shape = np.array(mask.shape) + 1
-    pmask = np.zeros(pmask_shape, np.int)
-    pmask[:-1,:-1,:-1] = mask_c
-
-    s0, s1, s2 = (pmask.shape[0], pmask.shape[1], pmask.shape[2])
-
+    s0, s1, s2 = pmask_shape[:3]
+    pmask = np.zeros(pmask_shape, dtype=np.uint8)
+    pmask[:-1, :-1, :-1] = check_cast_bin8(mask)
     fpmask = pmask.reshape(-1)
-    cdef:
-        np.ndarray[np.intp_t, ndim=1] strides
+
     strides = np.array(strides_from(pmask_shape, np.bool), dtype=np.intp)
 
     # First do the interior contributions.
@@ -457,7 +453,9 @@ def EC3d(mask):
                         v1 = index + d2[l,1]
                         m = m * fpmask[v1]
                         l0 = l0 - m
-    l0 += mask.sum()
+
+    # fpmask has the same sum as mask, but with predictable dtype
+    l0 += fpmask.sum()
     return l0
 
 
@@ -471,10 +469,10 @@ def Lips3d(coords, mask):
 
     Parameters
     ----------
-    coords : ndarray((N,i,j,k))
+    coords : ndarray shape (N, i, j, k)
          Coordinates for the voxels in the mask. ``N`` will often be 3 (for 3
-         dimensional coordinates, but can be any integer > 0
-    mask : ndarray((i,j,k), np.int)
+         dimensional coordinates), but can be any integer > 0
+    mask : ndarray shape (i, j, k)
          Binary mask determining whether or not
          a voxel is in the mask.
 
@@ -489,11 +487,15 @@ def Lips3d(coords, mask):
 
     Notes
     -----
-    The array mask is assumed to be binary. At the time of writing, it
-    is not clear how to get cython to use np.bool arrays.
+    We check whether `mask` is binary.
 
     The 3d cubes are triangulated into 6 tetrahedra of equal volume, as
     described in the reference below.
+
+    Raises
+    ------
+    ValueError
+        If any value in the mask is outside {0, 1}
 
     References
     ----------
@@ -514,20 +516,14 @@ def Lips3d(coords, mask):
             value[:2] = Lips1d(coords, mask)
         return value
 
-    if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 '
-                       'values, but be of type np.int')
     cdef:
         # c-level versions of the arrays
-        np.ndarray[np.float_t, ndim=4] coords_c
-        np.ndarray[np.intp_t, ndim=3] mask_c
         # 'flattened' coords (2d array)
         np.ndarray[np.float_t, ndim=2] fcoords
         np.ndarray[np.float_t, ndim=2] D
         # 'flattened' mask (1d array)
-        np.ndarray[np.intp_t, ndim=1] fmask
-        np.ndarray[np.intp_t, ndim=1] fpmask
-        np.ndarray[np.intp_t, ndim=3] pmask
+        np.ndarray[np.uint8_t, ndim=1] fmask
+        np.ndarray[np.uint8_t, ndim=1] fpmask
         # d3 and d4 are lists of triangles and tetrahedra
         # associated to particular voxels in the cube
         np.ndarray[np.intp_t, ndim=2] d4
@@ -538,27 +534,29 @@ def Lips3d(coords, mask):
         np.ndarray[np.intp_t, ndim=2] m2
         np.ndarray[np.intp_t, ndim=1] cvertices
         # scalars
+        np.uint8_t m, mr, ms
         np.npy_intp i, j, k, l, s0, s1, s2, ds4, ds3, ds2
-        np.npy_intp index, pindex, m, nvox, r, s, rr, ss, mr, ms
+        np.npy_intp index, pindex, nvox, r, s, rr, ss
         np.npy_intp ss0, ss1, ss2 # strides
+        np.npy_intp ss0d, ss1d, ss2d # strides
         np.npy_intp v0, v1, v2, v3 # vertices for mask
         np.npy_intp w0, w1, w2, w3 # vertices for data
         double l0, l1, l2, l3
         double res
 
-    coords_c = coords
-    mask_c = mask
+    coords = coords.astype(np.float)
+    mask = check_cast_bin8(mask)
+
     l0 = 0; l1 = 0; l2 = 0; l3 = 0
 
     pmask_shape = np.array(mask.shape) + 1
-    pmask = np.zeros(pmask_shape, np.int)
-    pmask[:-1,:-1,:-1] = mask_c
-
-    s0, s1, s2 = (pmask.shape[0], pmask.shape[1], pmask.shape[2])
+    s0, s1, s2 = pmask_shape[:3]
+    pmask = np.zeros(pmask_shape, np.uint8)
+    pmask[:-1, :-1, :-1] = mask
 
     fpmask = pmask.reshape(-1)
-    fmask = mask_c.reshape(-1)
-    fcoords = coords_c.reshape((coords_c.shape[0], -1))
+    fmask = mask.reshape(-1).astype(np.uint8)
+    fcoords = coords.reshape((coords.shape[0], -1))
 
     # First do the interior contributions.
     # We first figure out which vertices, edges, triangles, tetrahedra
@@ -644,18 +642,18 @@ def Lips3d(coords, mask):
 
                         m = m * fpmask[v1] * fpmask[v2] * fpmask[v3]
 
-                        l3 = l3 + m * mu3_tet(D[w0,w0], D[w0,w1], D[w0,w2], 
-                                              D[w0,w3], D[w1,w1], D[w1,w2], 
+                        l3 = l3 + m * mu3_tet(D[w0,w0], D[w0,w1], D[w0,w2],
+                                              D[w0,w3], D[w1,w1], D[w1,w2],
                                               D[w1,w3], D[w2,w2], D[w2,w3],
                                               D[w3,w3])
 
-                        l2 = l2 - m * mu2_tet(D[w0,w0], D[w0,w1], D[w0,w2], 
-                                              D[w0,w3], D[w1,w1], D[w1,w2], 
+                        l2 = l2 - m * mu2_tet(D[w0,w0], D[w0,w1], D[w0,w2],
+                                              D[w0,w3], D[w1,w1], D[w1,w2],
                                               D[w1,w3], D[w2,w2], D[w2,w3],
                                               D[w3,w3])
 
-                        l1 = l1 + m * mu1_tet(D[w0,w0], D[w0,w1], D[w0,w2], 
-                                              D[w0,w3], D[w1,w1], D[w1,w2], 
+                        l1 = l1 + m * mu1_tet(D[w0,w0], D[w0,w1], D[w0,w2],
+                                              D[w0,w3], D[w1,w1], D[w1,w2],
                                               D[w1,w3], D[w2,w2], D[w2,w3],
                                               D[w3,w3])
 
@@ -672,11 +670,11 @@ def Lips3d(coords, mask):
                         w2 = d3[l,5]
 
                         m = m * fpmask[v1] * fpmask[v2] 
-                        l2 = l2 + m * mu2_tri(D[w0,w0], D[w0,w1], D[w0,w2], 
-                                              D[w1,w1], D[w1,w2], D[w2,w2]) 
+                        l2 = l2 + m * mu2_tri(D[w0,w0], D[w0,w1], D[w0,w2],
+                                              D[w1,w1], D[w1,w2], D[w2,w2])
 
-                        l1 = l1 - m * mu1_tri(D[w0,w0], D[w0,w1], D[w0,w2], 
-                                              D[w1,w1], D[w1,w2], D[w2,w2]) 
+                        l1 = l1 - m * mu1_tri(D[w0,w0], D[w0,w1], D[w0,w2],
+                                              D[w1,w1], D[w1,w2], D[w2,w2])
 
                         l0 = l0 + m
 
@@ -692,7 +690,8 @@ def Lips3d(coords, mask):
 
                         l0 = l0 - m
 
-    l0 += mask.sum()
+    # fpmask has the same sum as mask, but with predictable dtype
+    l0 += fpmask.sum()
     return np.array([l0, l1, l2, l3])
 
 
@@ -737,10 +736,10 @@ def Lips2d(coords, mask):
 
     Parameters
     ----------
-    coords : ndarray((N,i,j,k))
+    coords : ndarray shape (N, i, j)
          Coordinates for the voxels in the mask. ``N`` will often be 2 (for 2
-         dimensional coordinates, but can be any integer > 0
-    mask : ndarray((i,j), np.int)
+         dimensional coordinates), but can be any integer > 0
+    mask : ndarray shape (i, j)
          Binary mask determining whether or not a voxel is in the mask.
 
     Returns
@@ -753,8 +752,12 @@ def Lips2d(coords, mask):
 
     Notes
     -----
-    The array mask is assumed to be binary. At the time of writing, it
-    is not clear how to get cython to use np.bool arrays.
+    We check whether `mask` is binary.
+
+    Raises
+    ------
+    ValueError
+        If any value in the mask is outside {0, 1}
 
     References
     ----------
@@ -765,53 +768,48 @@ def Lips2d(coords, mask):
     if mask.shape != coords.shape[1:]:
         raise ValueError('shape of mask does not match coordinates')
     # if the data can be squeezed, we must use the lower dimensional function
-    mask = np.squeeze(mask)
     if mask.ndim == 1:
         value = np.zeros(3)
         coords = coords.reshape((coords.shape[0],) + mask.shape)
         value[:2] = Lips1d(coords, mask)
         return value
 
-    if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 '
-                       'values, but be of type np.int')
-
     cdef:
         # c-level versions of the arrays
-        np.ndarray[np.float_t, ndim=3] coords_c
-        np.ndarray[np.intp_t, ndim=2] mask_c
         # 'flattened' coords (2d array)
         np.ndarray[np.float_t, ndim=2] fcoords
         np.ndarray[np.float_t, ndim=2] D
         # 'flattened' mask (1d array)
-        np.ndarray[np.intp_t, ndim=1] fmask
-        np.ndarray[np.intp_t, ndim=1] fpmask
-        np.ndarray[np.intp_t, ndim=2] pmask
+        np.ndarray[np.uint8_t, ndim=1] fmask
+        np.ndarray[np.uint8_t, ndim=1] fpmask
         # d2 and d3 are lists of triangles associated to particular voxels in
         # the square
         np.ndarray[np.intp_t, ndim=2] d3
         np.ndarray[np.intp_t, ndim=2] d2
         np.ndarray[np.intp_t, ndim=1] cvertices
         # scalars
-        np.npy_intp i, j, k, l, r, s, rr, ss, mr, ms, s0, s1
-        np.npy_intp ds2, ds3, index, m, npix
+        np.npy_uint8 m, mr, ms
+        np.npy_intp i, j, k, l, r, s, rr, ss, s0, s1
+        np.npy_intp ds2, ds3, index, npix, pindex
         np.npy_intp ss0, ss1, ss0d, ss1d # strides
         np.npy_intp v0, v1, v2 # vertices
+        np.npy_intp w0, w1, w2
         double l0, l1, l2
         double res
 
-    coords_c = coords
-    mask_c = mask
+    coords = coords.astype(np.float)
+    mask = check_cast_bin8(mask)
+
     l0 = 0; l1 = 0; l2 = 0
 
     pmask_shape = np.array(mask.shape) + 1
-    pmask = np.zeros(pmask_shape, np.int)
-    pmask[:-1,:-1] = mask_c
+    pmask = np.zeros(pmask_shape, np.uint8)
+    pmask[:-1, :-1] = mask
 
-    s0, s1 = pmask.shape[0], pmask.shape[1]
+    s0, s1 = pmask.shape[:2]
 
     fpmask = pmask.reshape(-1)
-    fmask = mask_c.reshape(-1)
+    fmask = mask.reshape(-1).astype(np.uint8)
     fcoords = coords.reshape((coords.shape[0], -1))
 
     # First do the interior contributions.
@@ -867,11 +865,11 @@ def Lips2d(coords, mask):
                     if mr * ms:
                         for l in range(fcoords.shape[0]):
                             res += fcoords[l,ss] * fcoords[l,rr]
-                            D[r,s] = res
-                            D[s,r] = res
+                            D[r, s] = res
+                            D[s, r] = res
                     else:
-                        D[r,s] = 0
-                        D[s,r] = 0
+                        D[r, s] = 0
+                        D[s, r] = 0
 
             for l in range(ds3):
                 v0 = pindex + d3[l,0]
@@ -900,7 +898,8 @@ def Lips2d(coords, mask):
                     l1 = l1 + m * mu1_edge(D[w0,w0], D[w0,w1], D[w1,w1])
                     l0 = l0 - m
 
-    l0 += mask.sum()
+    # fpmask has the same sum as mask, but with predictable dtype
+    l0 += fpmask.sum()
     return np.array([l0,l1,l2])
 
 
@@ -914,7 +913,7 @@ def EC2d(mask):
 
     Parameters
     ----------
-    mask : ndarray((i,j), np.int)
+    mask : ndarray shape (i, j)
          Binary mask determining whether or not a voxel is in the mask.
 
     Returns
@@ -924,8 +923,12 @@ def EC2d(mask):
 
     Notes
     -----
-    The array mask is assumed to be binary. At the time of writing, it
-    is not clear how to get cython to use np.bool arrays.
+    We check whether `mask` is binary.
+
+    Raises
+    ------
+    ValueError
+        If any value in the mask is outside {0, 1}
 
     References
     ----------
@@ -933,36 +936,32 @@ def EC2d(mask):
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
     """
-    if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 '
-                       'values, but be of type np.int')
     cdef:
         # c-level versions of the array
-        np.ndarray[np.intp_t, ndim=2] mask_c
         # 'flattened' mask (1d array)
-        np.ndarray[np.intp_t, ndim=1] fpmask
+        np.ndarray[np.uint8_t, ndim=1] fpmask
         # d2 and d3 are lists of triangles and tetrahedra
         # associated to particular voxels in the cuve
         np.ndarray[np.intp_t, ndim=2] d2
         np.ndarray[np.intp_t, ndim=2] d3
         # scalars
-        np.npy_intp i, j, k, l, s0, s1, ds2, ds3, index, m
+        np.uint8_t m
+        np.npy_intp i, j, k, l, s0, s1, ds2, ds3, index
+        np.ndarray[np.intp_t, ndim=1] strides
         np.npy_intp ss0, ss1 # strides
         np.npy_intp v0, v1 # vertices
         long l0 = 0
 
-    mask_c = mask
+    mask = check_cast_bin8(mask)
 
     pmask_shape = np.array(mask.shape) + 1
-    pmask = np.zeros(pmask_shape, np.int)
-    pmask[:-1,:-1] = mask_c
+    pmask = np.zeros(pmask_shape, np.uint8)
+    pmask[:-1, :-1] = mask
 
-    s0, s1 = (pmask.shape[0], pmask.shape[1])
+    s0, s1 = pmask.shape[:2]
 
     fpmask = pmask.reshape(-1)
 
-    cdef:
-        np.ndarray[np.intp_t, ndim=1] strides
     strides = np.array(strides_from(pmask_shape, np.bool), dtype=np.intp)
     ss0, ss1 = strides[0], strides[1]
 
@@ -1000,12 +999,12 @@ def EC2d(mask):
                     m = m * fpmask[v1]
                     l0 = l0 - m
 
-    l0 += mask.sum()
+    # fpmask has the same sum as mask, but with predictable dtype
+    l0 += fpmask.sum()
     return l0
 
 
-def Lips1d(np.ndarray[np.float_t, ndim=2] coords,
-           np.ndarray[np.intp_t, ndim=1] mask):
+def Lips1d(coords, mask):
     """ Estimate intrinsic volumes for 1D region in `mask` given `coords`
 
     Given a 1d `mask` and coordinates `coords`, estimate the intrinsic volumes
@@ -1015,10 +1014,10 @@ def Lips1d(np.ndarray[np.float_t, ndim=2] coords,
 
     Parameters
     ----------
-    coords : ndarray((N,i,j,k))
+    coords : ndarray shape (N, i)
          Coordinates for the voxels in the mask. ``N`` will often be 1 (for 1
-         dimensional coordinates, but can be any integer > 0
-    mask : ndarray((i,), np.int)
+         dimensional coordinates), but can be any integer > 0
+    mask : ndarray shape (i,)
          Binary mask determining whether or not a voxel is in the mask.
 
     Returns
@@ -1030,8 +1029,12 @@ def Lips1d(np.ndarray[np.float_t, ndim=2] coords,
 
     Notes
     -----
-    The array mask is assumed to be binary. At the time of writing, it
-    is not clear how to get cython to use np.bool arrays.
+    We check whether `mask` is binary.
+
+    Raises
+    ------
+    ValueError
+        If any value in the mask is outside {0, 1}
 
     References
     ----------
@@ -1041,46 +1044,50 @@ def Lips1d(np.ndarray[np.float_t, ndim=2] coords,
     """
     if mask.shape[0] != coords.shape[1]:
         raise ValueError('shape of mask does not match coordinates')
-    if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 '
-                       'values, but be of type np.int')
     cdef:
-        np.npy_intp i, l, r, s, rr, ss, mr, ms, s0, index, m
+        np.ndarray[np.uint8_t, ndim=1] mask_c
+        np.ndarray[np.float_t, ndim=2] coords_c
+        np.uint8_t m, mr, ms
+        np.npy_intp i, l, r, s, rr, ss, s0, index
         double l0, l1
         double res
 
+    coords_c = coords.astype(np.float)
+    mask_c = check_cast_bin8(mask)
+
     l0 = 0; l1 = 0
-    s0 = mask.shape[0]
+    s0 = mask_c.shape[0]
     D = np.zeros((2,2))
 
     for i in range(s0):
         for r in range(2):
             rr = (i+r) % s0
-            mr = mask[rr]
+            mr = mask_c[rr]
             for s in range(r+1):
                 res = 0
                 ss = (i+s) % s0
-                ms = mask[ss]
+                ms = mask_c[ss]
                 if mr * ms * ((i+r) < s0) * ((i+s) < s0):
-                    for l in range(coords.shape[0]):
-                        res += coords[l,ss] * coords[l,rr]
+                    for l in range(coords_c.shape[0]):
+                        res += coords_c[l,ss] * coords_c[l,rr]
                         D[r,s] = res
                         D[s,r] = res
                 else:
                     D[r,s] = 0
                     D[s,r] = 0
 
-        m = mask[i]
+        m = mask_c[i]
         if m:
-            m = m * (mask[(i+1) % s0] * ((i+1) < s0))
+            m = m * (mask_c[(i+1) % s0] * ((i+1) < s0))
             l1 = l1 + m * mu1_edge(D[0,0], D[0,1], D[1,1])
             l0 = l0 - m
 
-    l0 += mask.sum()
-    return np.array([l0,l1])
+    # mask_c has the same sum as mask, but with predictable dtype
+    l0 += mask_c.sum()
+    return np.array([l0, l1])
 
 
-def EC1d(np.ndarray[np.intp_t, ndim=1] mask):
+def EC1d(mask):
     """ Compute Euler characteristic for 1d `mask`
 
     Given a 1d mask `mask`, compute the 0th intrinsic volume (Euler
@@ -1090,7 +1097,7 @@ def EC1d(np.ndarray[np.intp_t, ndim=1] mask):
 
     Parameters
     ----------
-    mask : ndarray((i,), np.int)
+    mask : ndarray shape (i,)
          Binary mask determining whether or not a voxel is in the mask.
 
     Returns
@@ -1100,11 +1107,15 @@ def EC1d(np.ndarray[np.intp_t, ndim=1] mask):
 
     Notes
     -----
-    The array mask is assumed to be binary. At the time of writing, it
-    is not clear how to get cython to use np.bool arrays.
+    We check whether the array mask is binary.
 
     The 3d cubes are triangulated into 6 tetrahedra of equal volume, as
     described in the reference below.
+
+    Raises
+    ------
+    ValueError
+        If any value in the mask is outside {0, 1}
 
     References
     ----------
@@ -1112,19 +1123,20 @@ def EC1d(np.ndarray[np.intp_t, ndim=1] mask):
       with an application to brain mapping."
       Journal of the American Statistical Association, 102(479):913-928.
     """
-    if not set(np.unique(mask)).issubset([0,1]):
-      raise ValueError('mask should be filled with 0/1 '
-                       'values, but be of type np.int')
     cdef:
-        np.npy_intp i, m, s0
+        np.ndarray[np.uint8_t, ndim=1] mask_c
+        np.uint8_t m
+        np.npy_intp i, s0
         double l0 = 0
 
-    s0 = mask.shape[0]
+    mask_c = check_cast_bin8(mask)
+    s0 = mask_c.shape[0]
     for i in range(s0):
-        m = mask[i]
+        m = mask_c[i]
         if m:
-            m = m * (mask[(i+1) % s0] * ((i+1) < s0))
+            m = m * (mask_c[(i+1) % s0] * ((i+1) < s0))
             l0 = l0 - m
 
-    l0 += mask.sum()
+    # mask_c has the same sum as mask, but with predictable dtype
+    l0 += mask_c.sum()
     return l0
