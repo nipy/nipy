@@ -48,7 +48,7 @@ def test_Q():
 
 
 def K(dim=4, dfn=7, dfd=np.inf):
-    """
+    r"""
     Determine the polynomial K in:
 
         Worsley, K.J. (1994). 'Local maxima and the expected Euler
@@ -109,7 +109,7 @@ def F(x, dim, dfd=np.inf, dfn=1):
 
 
 def polyF(dim, dfd=np.inf, dfn=1):
-    """
+    r"""
     Return the polynomial part of the EC density when evaluating the polynomial
     on the sqrt(F) scale (or sqrt(chi^2)=chi scale).
 

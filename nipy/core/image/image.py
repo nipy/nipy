@@ -287,7 +287,7 @@ class Image(object):
                                          coordmap=new_cmap)
 
     def renamed_axes(self, **names_dict):
-        """ Return a new image with input (domain) axes renamed
+        r""" Return a new image with input (domain) axes renamed
 
         Axes renamed according to the input dictionary.
 
@@ -313,7 +313,7 @@ class Image(object):
         return self.__class__.from_image(self, coordmap=new_cmap)
 
     def renamed_reference(self, **names_dict):
-        """ Return new image with renamed output (range) coordinates
+        r""" Return new image with renamed output (range) coordinates
 
         Coordinates renamed according to the dictionary
 
