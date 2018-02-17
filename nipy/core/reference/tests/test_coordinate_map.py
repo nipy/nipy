@@ -33,7 +33,8 @@ _SYMPY_SAFE_DTYPES = (np.sctypes['int'] + np.sctypes['uint'] +
                       [np.object])
 # Sympy <= 1.1 does not handle numpy longcomplex correctly. See:
 # https://github.com/sympy/sympy/pull/12901
-_SYMPY_SAFE_DTYPES.remove(np.longcomplex)
+if np.longcomplex in _SYMPY_SAFE_DTYPES:  # Not present for Windows
+    _SYMPY_SAFE_DTYPES.remove(np.longcomplex)
 
 
 class empty(object):

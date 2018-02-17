@@ -19,7 +19,7 @@ from .chain_transform import ChainTransform
 from .similarity_measures import similarity_measures as _sms
 from ._registration import _joint_histogram
 
-MAX_INT = np.iinfo(np.intp).max
+MAX_INT = np.iinfo(np.int).max
 
 # Module globals
 VERBOSE = True  # enables online print statements

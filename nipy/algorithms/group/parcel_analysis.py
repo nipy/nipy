@@ -251,7 +251,7 @@ class ParcelAnalysis(object):
         # load the parcellation and resample it at the appropriate
         # resolution
         self.reference = parcel_img.reference
-        self.parcel_full_res = parcel_img.get_data().astype('uint').squeeze()
+        self.parcel_full_res = parcel_img.get_data().astype('uintp').squeeze()
         self.affine_full_res = xyz_affine(parcel_img)
         parcel_img = make_xyz_image(self.parcel_full_res,
                                     self.affine_full_res,
@@ -261,7 +261,7 @@ class ParcelAnalysis(object):
                                   reference=(self.con_imgs[0].shape,
                                              self.affine),
                                   interp_order=0)
-        self.parcel = parcel_img_rsp.get_data().astype('uint').squeeze()
+        self.parcel = parcel_img_rsp.get_data().astype('uintp').squeeze()
         if self.msk is None:
             self.msk = self.parcel > 0
 
