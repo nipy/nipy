@@ -27,6 +27,9 @@ from ..reference.coordinate_map import (AffineTransform, CoordinateSystem,
                                        input_axis_index)
 from ..reference.array_coords import ArrayCoordMap
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
 
 class Image(object):
     """ The `Image` class provides the core object type used in nipy.

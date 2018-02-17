@@ -13,6 +13,10 @@ from .coordinate_map import CoordMapMaker
 
 from ...externals.six import string_types
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
+
 class XYZSpace(object):
     """ Class contains logic for spaces with XYZ coordinate systems
 

@@ -30,6 +30,9 @@ from __future__ import division, print_function, absolute_import
 
 import numpy as np
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
 # Dictionary (key, value) == (name, function) for slice timing functions
 SLICETIME_FUNCTIONS = {}
 

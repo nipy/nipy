@@ -19,6 +19,7 @@ from ..fixes.numpy.testing.noseclasses import (NumpyDoctest,
                                                NumpyOutputChecker)
 
 IGNORE_OUTPUT = register_optionflag('IGNORE_OUTPUT')
+NP_ALLCLOSE = register_optionflag('NP_ALLCLOSE')
 SYMPY_EQUAL = register_optionflag('SYMPY_EQUAL')
 STRUCTARR_EQUAL = register_optionflag('STRUCTARR_EQUAL')
 STRIP_ARRAY_REPR = register_optionflag('STRIP_ARRAY_REPR')
@@ -186,6 +187,10 @@ class NipyOutputChecker(NumpyOutputChecker):
                 dp = 6
             want = round_numbers(want, dp)
             got = round_numbers(got, dp)
+        # Are the arrays close when run through numpy?
+        if NP_ALLCLOSE & optionflags:
+            res = np.allclose(eval(want), eval(got))
+            return res == wanted_tf
         # Are the strings equal when run through sympy?
         if SYMPY_EQUAL & optionflags:
             from sympy import sympify
