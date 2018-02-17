@@ -62,7 +62,7 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
-# copyright = ':ref:`2005-2017, Neuroimaging in Python team.
+# copyright = ':ref:`2005-2018, Neuroimaging in Python team.
 # <nipy-software-license>`'
 copyright = '2005-2017, Neuroimaging in Python team'
 

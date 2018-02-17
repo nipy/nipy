@@ -128,15 +128,6 @@ Now :ref:`install-numpy-scipy`.
 
 .. _install-numpy-scipy:
 
-Install Numpy and Scipy on Linux or macOS
------------------------------------------
-
-Now you've followed the instructions above, install Numpy and Scipy with:
-
-.. code-block:: bash
-
-    pip3 install --user numpy scipy
-
 Install Python 3, Pip, NumPy and Scipy on Windows
 -------------------------------------------------
 
@@ -144,31 +135,40 @@ It's worth saying here that very few scientific Python developers use Windows,
 so if you're thinking of making the switch to Linux or macOS, now you have
 another reason to do that.
 
-That said, if you are installing on Windows, we recommend the Python 3 version
-of `Anaconda`_.  This is a large installer that will install many scientific
-Python packages, as well as Python itself, and Pip, the package manager.
+Option 1: Anaconda
+^^^^^^^^^^^^^^^^^^
+
+If you are installing on Windows, you might want to use the Python 3 version of
+`Anaconda`_.  This is a large installer that will install many scientific
+Python packages, including NumPy and Scipy, as well as Python itself, and Pip,
+the package manager.
 
 The machinery for the Anaconda bundle is not completely open-source, and is
 owned by a company, Continuum Analytics. If you would prefer to avoid using
-the Anaconda installer:
+the Anaconda installer, you can also use the Python standard Pip installer.
 
-1. Download and install the Python 3 installer from the https://python.org website;
-2. Download and install Pip following the instructions at `install pip with
-   get-pip.py`_;
-3. Download and install the `Visual C++ redistributable packages for VC++ 2015
-   <https://www.microsoft.com/en-us/download/details.aspx?id=53587>`_;
-4. Download the following packages from Christoph Gohlke's `unofficial Windows
-   binaries`_:
+Option 2: Standard install
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   * numpy (MKL version);
-   * scipy (MKL version);
+If you don't have Python / Pip, we recommend the instructions `here
+<http://docs.python-guide.org/en/latest/starting/install3/win>`_ to install
+them.  You can also install Python / Pip via the Python 3 installer from the
+https://python.org website.
 
-   and install these packages with Pip.
+If you already have an old Python installation, you don't have Pip, and you
+don't want to upgrade, you will need to download and install Pip following the
+instructions at `install pip with get-pip.py`_.
+
+Now open a Cmd or Powershell terminal and run:
+
+.. code-block:: bash
+
+    pip3 install --user numpy scipy
 
 Install Nipy
 ============
 
-Now you have Pip:
+Now you have Python and Pip:
 
 .. code-block:: bash
 

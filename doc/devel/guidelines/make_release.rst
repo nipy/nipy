@@ -75,12 +75,12 @@ Release checklist
   for:
 
   * https://nipy.bic.berkeley.edu/builders/nipy-examples-2.7
-  * https://nipy.bic.berkeley.edu/builders/nipy-examples-3.4
+  * https://nipy.bic.berkeley.edu/builders/nipy-examples-3.5
 
   The matching outputs appear at:
 
   * https://nipy.bic.berkeley.edu/nipy-examples-2.7
-  * https://nipy.bic.berkeley.edu/nipy-examples-3.4
+  * https://nipy.bic.berkeley.edu/nipy-examples-3.5
 
   I use the following commands to get the output to my laptop and review with
   vim::
@@ -99,11 +99,11 @@ Release checklist
 
   Likewise for::
 
-    PY_VER=3.4
+    PY_VER=3.5
 
   I also did a by-eye comparison between the 2.7 and 3.4 files with::
 
-    diff -r nipy-examples-2.7 nipy-examples-3.4 | less
+    diff -r nipy-examples-2.7 nipy-examples-3.5 | less
 
 * Do a final check on the `nipy buildbot`_
 
@@ -156,6 +156,18 @@ Release checking - buildbots
 * Check the documentation doctests pass from
   http://nipy.bic.berkeley.edu/builders/nipy-doc-builder
 
+* Build and test the Nipy wheels.  See the `wheel builder README
+  <https://github.com/MacPython/nipy-wheels>`_ for instructions.  In summary,
+  clone the wheel-building repo, edit the ``.travis.yml`` and ``appveyor.yml``
+  text files (if present) with the branch or commit for the release, commit
+  and then push back up to github.  This will trigger a wheel build and test
+  on OSX, Linux and Windows. Check the build has passed on on the Travis-CI
+  interface at https://travis-ci.org/MacPython/nipy-wheels.  You'll need commit
+  privileges to the ``dipy-wheels`` repo; ask Matthew Brett or on the mailing
+  list if you do not have them.
+
+* The release should now be ready.
+
 Doing the release
 =================
 
@@ -165,6 +177,13 @@ Doing the release
   Then::
 
     make source-release
+
+* For the wheel build / upload, follow the `wheel builder README`_
+  instructions again.  Edit the ``.travis.yml`` and ``appveyor.yml`` files (if
+  present) to give the release tag to build.  Check the build has passed on on
+  the Travis-CI interface at https://travis-ci.org/MacPython/nipy-wheels.  Now
+  follow the instructions in the page above to download the built wheels to
+  a local machine and upload to PyPI.
 
 * Once everything looks good, you are ready to upload the source release to
   PyPi.  See `setuptools intro`_.  Make sure you have a file ``\$HOME/.pypirc``,
@@ -178,27 +197,12 @@ Doing the release
     username:your.pypi.username
     password:your-password
 
-    [server-login]
-    username:your.pypi.username
-    password:your-password
-
 * Once everything looks good, upload the source release to PyPi.  See
   `setuptools intro`_::
 
     python setup.py register
-    python setup.py sdist --formats=gztar,zip upload
-
-* Trigger binary builds for Windows from the buildbots. See builders
-  ``nipy-bdist32-26``, ``nipy-bdist32-27``, ``nipy-bdist32-32``.  The ``exe``
-  builds will appear in http://nipy.bic.berkeley.edu/nipy-dist . Download the
-  builds and upload to pypi.
-
-* Trigger binary builds for OSX from travis-ci:
-
-    * https://travis-ci.org/MacPython/nipy-wheels
-    * https://github.com/MacPython/nipy-wheels
-
-  Upload the resulting wheels to pypi from http://wheels.scipy.org;
+    python setup.py sdist
+    twine upload sdist/nipy*.tar.gz
 
 * Tag the release with tag of form ``0.5.0``::
 
