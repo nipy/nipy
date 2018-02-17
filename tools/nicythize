@@ -35,6 +35,7 @@ operates on the Cython .pyx files.
 """
 
 import os
+from os.path import join as pjoin, abspath
 import sys
 import hashlib
 import pickle
@@ -51,6 +52,8 @@ HAVE_CYTHON_0p14 = LooseVersion(cython_version) >= LooseVersion('0.14')
 
 HASH_FILE = 'cythonize.dat'
 DEFAULT_ROOT = 'nipy'
+EXTRA_FLAGS = '-I {}'.format(
+    abspath(pjoin('lib', 'fff_python_wrapper')))
 
 #
 # Rules
@@ -60,12 +63,13 @@ def process_pyx(fromfile, tofile):
         opt_str = '--fast-fail'
     else:
         opt_str = ''
-    if os.system('cython %s -o "%s" "%s"' % (opt_str, tofile, fromfile)) != 0:
+    if os.system('cython %s %s -o "%s" "%s"' % (
+        opt_str, EXTRA_FLAGS, tofile, fromfile)) != 0:
         raise Exception('Cython failed')
 
 def process_tempita_pyx(fromfile, tofile):
     import tempita
-    with open(fromfile) as f:
+    with open(fromfile, 'rt') as f:
         tmpl = f.read()
     pyxcontent = tempita.sub(tmpl)
     assert fromfile.endswith('.pyx.in')
@@ -85,21 +89,22 @@ rules = {
 def load_hashes(filename):
     # Return { filename : (sha1 of input, sha1 of output) }
     if os.path.isfile(filename):
-        with open(filename) as f:
+        with open(filename, 'rb') as f:
             hashes = pickle.load(f)
     else:
         hashes = {}
     return hashes
 
 def save_hashes(hash_db, filename):
-    with open(filename, 'w') as f:
+    with open(filename, 'wb') as f:
         pickle.dump(hash_db, f)
+
 
 def sha1_of_file(filename):
     h = hashlib.sha1()
-    with open(filename) as f:
+    with open(filename, 'rb') as f:
         h.update(f.read())
-    return h.hexdigest()    
+    return h.hexdigest()
 
 #
 # interface with git
@@ -188,6 +193,7 @@ def find_process_files(root_dir):
                     tofile = filename[:-len(fromext)] + toext
                     process(cur_dir, fromfile, tofile, function, hash_db)
                     save_hashes(hash_db, HASH_FILE)
+
 
 def main():
     try:
