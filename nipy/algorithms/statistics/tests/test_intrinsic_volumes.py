@@ -180,20 +180,28 @@ def test__mu1_tetface():
     assert_almost_equal(_mu1_tetface(36, 0, 0, 18, 48, 0, 0, 1, 30,  63), 3)
 
 
+D_TO_FUNCS = {1: (intvol.Lips1d, intvol.EC1d),
+              2: (intvol.Lips2d, intvol.EC2d),
+              3: (intvol.Lips3d, intvol.EC3d)}
+
+
 def test_ec():
     for i in range(1, 4):
-        _, box1 = randombox((40,)*i)
-        f = {3:intvol.EC3d,
-             2:intvol.EC2d,
-             1:intvol.EC1d}[i]
-        yield assert_almost_equal, f(box1), 1
+        _, box1 = randombox((40,) * i)
+        f = D_TO_FUNCS[i][1]
+        assert_almost_equal(f(box1), 1)
+        # While we're here, test we can use different dtypes, and that values
+        # other than 0 or 1 raise an error.
+        for dtt in sum([np.sctypes[t] for t in ('int', 'uint', 'float')], []):
+            box1_again = box1.copy().astype(dtt)
+            assert_almost_equal(f(box1_again), 1)
+            box1_again[(10,) * i] = 2
+            assert_raises(ValueError, f, box1_again)
 
 
 def test_ec_disjoint():
     for i in range(1, 4):
-        e = {3:intvol.EC3d,
-             2:intvol.EC2d,
-             1:intvol.EC1d}[i]
+        e = D_TO_FUNCS[i][1]
         box1, box2, _, _ = nonintersecting_boxes((40,)*i)
         assert_almost_equal(e(box1 + box2), e(box1) + e(box2))
 
@@ -231,9 +239,6 @@ def test_lips_wrapping():
     assert_array_equal(intvol.Lips3d(c, b1+b2), (1, 39.0, 0, 0))
     # Shapes which are squeezable should still return sensible answers
     # Test simple ones line / box / volume
-    funcer = {1: (intvol.Lips1d, intvol.EC1d),
-              2: (intvol.Lips2d, intvol.EC2d),
-              3: (intvol.Lips3d, intvol.EC3d)}
     for box_shape, exp_ivs in [[(10,),(1,9)],
                                [(10,1),(1,9,0)],
                                [(1,10),(1,9,0)],
@@ -241,7 +246,7 @@ def test_lips_wrapping():
                                [(1, 10, 1), (1,9,0,0)],
                                [(1, 1, 10), (1,9,0,0)]]:
         nd = len(box_shape)
-        lips_func, ec_func = funcer[nd]
+        lips_func, ec_func = D_TO_FUNCS[nd]
         c = np.indices(box_shape).astype(np.float)
         b = np.ones(box_shape, dtype=np.int)
         assert_array_equal(lips_func(c, b), exp_ivs)
