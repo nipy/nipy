@@ -370,7 +370,7 @@ def safe_dtype(*dtypes):
 
 
 def product(*coord_systems, **kwargs):
-    """Create the product of a sequence of CoordinateSystems.
+    r"""Create the product of a sequence of CoordinateSystems.
 
     The coord_dtype of the result will be determined by ``safe_dtype``.
 

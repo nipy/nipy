@@ -56,7 +56,7 @@ def binomial(n, k):
 
 
 def Q(dim, dfd=np.inf):
-    """ Q polynomial
+    r""" Q polynomial
 
     If `dfd` == inf (the default), then Q(dim) is the (dim-1)-st Hermite
     polynomial:
@@ -518,7 +518,7 @@ class ECcone(IntrinsicVolumes):
         return quasi_polynomials
 
     def quasi(self, dim):
-        """ (Quasi-)polynomial parts of EC density in dimension `dim`
+        r""" (Quasi-)polynomial parts of EC density in dimension `dim`
 
         - ignoring a factor of (2\pi)^{-(dim+1)/2} in front.
         """
