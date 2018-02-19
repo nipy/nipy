@@ -27,6 +27,9 @@ from ..reference.coordinate_map import (AffineTransform, CoordinateSystem,
                                        input_axis_index)
 from ..reference.array_coords import ArrayCoordMap
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
 
 class Image(object):
     """ The `Image` class provides the core object type used in nipy.
@@ -287,7 +290,7 @@ class Image(object):
                                          coordmap=new_cmap)
 
     def renamed_axes(self, **names_dict):
-        """ Return a new image with input (domain) axes renamed
+        r""" Return a new image with input (domain) axes renamed
 
         Axes renamed according to the input dictionary.
 
@@ -313,7 +316,7 @@ class Image(object):
         return self.__class__.from_image(self, coordmap=new_cmap)
 
     def renamed_reference(self, **names_dict):
-        """ Return new image with renamed output (range) coordinates
+        r""" Return new image with renamed output (range) coordinates
 
         Coordinates renamed according to the dictionary
 
@@ -402,6 +405,7 @@ class Image(object):
 
     def __eq__(self, other):
         return (isinstance(other, self.__class__)
+                and self.shape == other.shape
                 and np.all(self.get_data() == other.get_data())
                 and np.all(self.affine == other.affine)
                 and (self.axes.coord_names == other.axes.coord_names))

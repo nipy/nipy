@@ -240,6 +240,7 @@ def join_complexes(*complexes):
                 faces[i+1] = faces[i+1].union(c[i+1])
     return faces
 
+
 def decompose3d(shape, dim=4):
     """
     Return all (dim-1)-dimensional simplices in a triangulation
@@ -417,3 +418,25 @@ def test_EC2(shape):
 test_EC2.__test__ = False
 
 
+def check_cast_bin8(arr):
+    """ Return binary array `arr` as uint8 type, or raise if not binary.
+
+    Parameters
+    ----------
+    arr : array-like
+
+    Returns
+    -------
+    bin8_arr : uint8 array
+        `bin8_arr` has same shape as `arr`, is of dtype ``np.uint8``, with
+        values 0 and 1 only.
+
+    Raises
+    ------
+    ValueError
+        When the array is not binary.  Speficically, raise if, for any element
+        ``e``, ``e != (e != 0)``.
+    """
+    if np.any(arr != (arr !=0)):
+        raise ValueError('input array should only contain values 0 and 1')
+    return arr.astype(np.uint8)

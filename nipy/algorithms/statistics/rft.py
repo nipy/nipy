@@ -17,11 +17,15 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import numpy as np
-from numpy.linalg import pinv    
+from numpy.linalg import pinv
 
 from scipy import stats
 from scipy.misc import factorial
 from scipy.special import gamma, gammaln, beta, hermitenorm
+
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
 
 def binomial(n, k):
     """ Binomial coefficient
@@ -56,7 +60,7 @@ def binomial(n, k):
 
 
 def Q(dim, dfd=np.inf):
-    """ Q polynomial
+    r""" Q polynomial
 
     If `dfd` == inf (the default), then Q(dim) is the (dim-1)-st Hermite
     polynomial:
@@ -87,14 +91,14 @@ def Q(dim, dfd=np.inf):
     j = dim
     if j <= 0:
         raise ValueError('Q defined only for dim > 0')
-    poly = hermitenorm(j-1)
-    poly = np.poly1d(np.around(poly.c))
+    coeffs = np.around(hermitenorm(j - 1).c)
     if np.isfinite(m):
-        for l in range((j-1)//2+1):
-            f = np.exp(gammaln((m+1)/2.) - gammaln((m+2-j+2*l)/2.)
-                                - 0.5*(j-1-2*l)*(np.log(m/2.)))
-            poly.c[2*l] *= f
-    return np.poly1d(poly.c)
+        for L in range((j - 1) // 2 + 1):
+            f = np.exp(gammaln((m + 1) / 2.)
+                       - gammaln((m + 2 - j + 2 * L) / 2.)
+                       - 0.5 * (j - 1 - 2 * L) * (np.log(m / 2.)))
+            coeffs[2 * L] *= f
+    return np.poly1d(coeffs)
 
 
 class ECquasi(np.poly1d):
@@ -518,7 +522,7 @@ class ECcone(IntrinsicVolumes):
         return quasi_polynomials
 
     def quasi(self, dim):
-        """ (Quasi-)polynomial parts of EC density in dimension `dim`
+        r""" (Quasi-)polynomial parts of EC density in dimension `dim`
 
         - ignoring a factor of (2\pi)^{-(dim+1)/2} in front.
         """

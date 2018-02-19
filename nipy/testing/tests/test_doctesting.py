@@ -75,6 +75,17 @@ def check_ignore_output():
     'The answer'
     """
 
+
+def check_np_allclose():
+    """ Check NP_ALLCLOSE option
+
+    >>> np.array([38.0890515 , -3.45429252])  #doctest: +NP_ALLCLOSE
+    array([ 38.0890515 ,  -3.45429252])
+    >>> np.array([38.0899 , -3.45429252])  #doctest: +NP_ALLCLOSE +NOT_EQUAL
+    array([ 38.0890515 ,  -3.45429252])
+    """
+
+
 def check_sympy_equal():
     """ Check SYMPY_EQUAL option
 

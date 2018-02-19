@@ -32,6 +32,20 @@ Abbreviated authors are:
 * JBP - Jean-Baptiste Poline
 * JT - Jonathan Taylor
 
+* 0.4.2 (Saturday 17 February 2018)
+
+  Bugfix, refactoring and compatibility release.
+
+  * Fixes for compatibility with released versions of Sympy and Numpy,
+    including some incorrect results from the Euler calculations;
+  * Fixes for deprecated escape sequences in docstrings (thanks to Klaus
+    Sembritzki);
+  * Fixes for compatibility with Windows in various configurations, now
+    tested with Appveyor builds;
+  * Various continuous integration and doc build fixes;
+  * The advent of Windows wheels on release - most credit to the Scipy folks
+    for building Scipy on Windows.
+
 * 0.4.1 (Friday 10 February 2017)
 
   Bugfix, refactoring and compatibility release.

@@ -115,9 +115,9 @@ def _compute_individual_regions(domain, stats, threshold=3.0, smin=5,
     coords: array of shape (nr, coord.shape[1]),
             the coordinates of the of the terminal regions
 
-    Fixme
+    Notes
     -----
-    Should allow for subject specific domains
+    FIXME: should allow for subject specific domains
     """
     hrois = []
     coords = []

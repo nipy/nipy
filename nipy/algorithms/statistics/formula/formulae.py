@@ -128,6 +128,10 @@ from nipy.utils.compat3 import to_str
 
 from nipy.algorithms.utils.matrices import matrix_rank, full_rank
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
+
 @np.deprecate(message = "Please use sympy.Dummy instead of this function")
 def make_dummy(name):
     """ Make dummy variable of given name
@@ -734,7 +738,7 @@ class Formula(object):
 
         # This renaming is here principally because of the intercept.
 
-        random_offset = np.random.random_integers(low=0, high=2**30)
+        random_offset = np.random.randint(low=0, high=2**30)
 
         terms = getterms(self.mean)
 

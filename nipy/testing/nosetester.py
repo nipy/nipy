@@ -10,8 +10,8 @@ from ..fixes.numpy.testing.nosetester import NoseTester, import_nose
 def fpw_opt_str():
     """ Return first-package-wins option string for this version of nose
 
-    Versions of nose prior to 1.1.0 needed ``=True`` for ``first-package-wins``,
-    versions after won't accept it.
+    Versions of nose prior to 1.1.0 needed ``=True`` for
+    ``first-package-wins``, versions after won't accept it.
 
     changeset:   816:c344a4552d76
     http://code.google.com/p/python-nose/issues/detail?id=293
@@ -39,8 +39,8 @@ def fpw_opt_str():
 def prepare_imports():
     """ Prepare any imports for testing run
 
-    At the moment, we prepare matplotlib by trying to make it use a backend that
-    does not need a display
+    At the moment, we prepare matplotlib by trying to make it use a backend
+    that does not need a display.
     """
     try:
         import matplotlib as mpl
@@ -53,9 +53,9 @@ def prepare_imports():
 class NipyNoseTester(NoseTester):
     """ Numpy-like testing class
 
-    * Removes some numpy-specific excludes
-    * Disables numpy's fierce clearout of module import context for doctests
-    * Run doctests by default
+    * Removes some numpy-specific excludes;
+    * Disables numpy's fierce clearout of module import context for doctests;
+    * Run doctests by default.
 
     """
     excludes = []
@@ -77,13 +77,14 @@ class NipyNoseTester(NoseTester):
         ----------
         label : {'fast', 'full', '', attribute identifier}, optional
             Identifies the tests to run. This can be a string to pass to
-            directly the nosetests executable with the '-A' option (an attribute
-            identifier), or one of several special values.  Special values are:
+            directly the nosetests executable with the '-A' option (an
+            attribute identifier), or one of several special values.  Special
+            values are:
 
             * 'fast' - the default - which corresponds to the ``nosetests -A``
-              option of 'not slow'.
+              option of 'not slow';
             * 'full' - fast (as above) and slow tests as in the
-              'no -A' option to nosetests - this is the same as ''.
+              'no -A' option to nosetests - this is the same as '';
             * None or '' - run all tests.
 
         verbose : int, optional

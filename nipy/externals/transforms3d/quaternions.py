@@ -18,7 +18,11 @@ they are applied on the left of the vector.  For example:
 from __future__ import absolute_import
 
 import math
+
 import numpy as np
+
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
 
 _MAX_FLOAT = np.maximum_sctype(np.float)
 _FLOAT_EPS = np.finfo(np.float).eps

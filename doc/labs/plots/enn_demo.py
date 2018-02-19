@@ -4,8 +4,8 @@ import numpy as np
 
 from nipy.algorithms.statistics.empirical_pvalue import NormalEmpiricalNull
 
-x = np.c_[np.random.normal(size=1e4),
-          np.random.normal(scale=4, size=1e4)]
+x = np.c_[np.random.normal(size=10000),
+          np.random.normal(scale=4, size=10000)]
 
 enn = NormalEmpiricalNull(x)
 enn.threshold(verbose=True)

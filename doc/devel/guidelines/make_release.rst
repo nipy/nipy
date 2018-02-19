@@ -56,7 +56,7 @@ Release checklist
 
     rst2html.py README.rst > ~/tmp/readme.html
 
-  because this will be the output used by pypi_
+  because this will be the output used by PyPI_
 
 * Check the dependencies listed in ``nipy/info.py`` (e.g.
   ``NUMPY_MIN_VERSION``) and in ``doc/users/installation.rst``.  They should
@@ -75,17 +75,20 @@ Release checklist
   for:
 
   * https://nipy.bic.berkeley.edu/builders/nipy-examples-2.7
-  * https://nipy.bic.berkeley.edu/builders/nipy-examples-3.4
+  * https://nipy.bic.berkeley.edu/builders/nipy-examples-3.5
 
   The matching outputs appear at:
 
   * https://nipy.bic.berkeley.edu/nipy-examples-2.7
-  * https://nipy.bic.berkeley.edu/nipy-examples-3.4
+  * https://nipy.bic.berkeley.edu/nipy-examples-3.5
 
   I use the following commands to get the output to my laptop and review with
   vim::
 
     PY_VER=2.7
+
+  Then::
+
     BB_SSH=buildbot@nipy.bic.berkeley.edu
     scp -r ${BB_SSH}:nibotmi/public_html/nipy-examples-${PY_VER} .
     cd nipy-examples-${PY_VER}
@@ -93,17 +96,23 @@ Release checklist
     find . -size 0 -exec rm {} \;
     # Review stderr; :bd to close buffer once reviewed
     vim *.stderr
+
+  Then::
+
     # Review stdout
     vim *.stdout
+
+  Finally::
+
     cd ..
 
   Likewise for::
 
-    PY_VER=3.4
+    PY_VER=3.5
 
   I also did a by-eye comparison between the 2.7 and 3.4 files with::
 
-    diff -r nipy-examples-2.7 nipy-examples-3.4 | less
+    diff -r nipy-examples-2.7 nipy-examples-3.5 | less
 
 * Do a final check on the `nipy buildbot`_
 
@@ -156,6 +165,18 @@ Release checking - buildbots
 * Check the documentation doctests pass from
   http://nipy.bic.berkeley.edu/builders/nipy-doc-builder
 
+* Build and test the Nipy wheels.  See the `wheel builder README
+  <https://github.com/MacPython/nipy-wheels>`_ for instructions.  In summary,
+  clone the wheel-building repo, edit the ``.travis.yml`` and ``appveyor.yml``
+  text files (if present) with the branch or commit for the release, commit
+  and then push back up to github.  This will trigger a wheel build and test
+  on OSX, Linux and Windows. Check the build has passed on on the Travis-CI
+  interface at https://travis-ci.org/MacPython/nipy-wheels.  You'll need commit
+  privileges to the ``dipy-wheels`` repo; ask Matthew Brett or on the mailing
+  list if you do not have them.
+
+* The release should now be ready.
+
 Doing the release
 =================
 
@@ -166,8 +187,15 @@ Doing the release
 
     make source-release
 
+* For the wheel build / upload, follow the `wheel builder README`_
+  instructions again.  Edit the ``.travis.yml`` and ``appveyor.yml`` files (if
+  present) to give the release tag to build.  Check the build has passed on
+  the Travis-CI interface at https://travis-ci.org/MacPython/nipy-wheels.  Now
+  follow the instructions in the page above to download the built wheels to a
+  local machine and upload to PyPI.
+
 * Once everything looks good, you are ready to upload the source release to
-  PyPi.  See `setuptools intro`_.  Make sure you have a file ``\$HOME/.pypirc``,
+  PyPI.  See `setuptools intro`_.  Make sure you have a file ``\$HOME/.pypirc``,
   of form::
 
     [distutils]
@@ -178,31 +206,14 @@ Doing the release
     username:your.pypi.username
     password:your-password
 
-    [server-login]
-    username:your.pypi.username
-    password:your-password
+* Sign and upload the source release to PyPI using Twine_::
 
-* Once everything looks good, upload the source release to PyPi.  See
-  `setuptools intro`_::
+    gpg --detach-sign -a dist/nipy*.tar.gz
+    twine upload dist/nipy*.tar.gz*
 
-    python setup.py register
-    python setup.py sdist --formats=gztar,zip upload
+* Tag the release with tag of form ``0.5.0``. `-s` below makes a signed tag::
 
-* Trigger binary builds for Windows from the buildbots. See builders
-  ``nipy-bdist32-26``, ``nipy-bdist32-27``, ``nipy-bdist32-32``.  The ``exe``
-  builds will appear in http://nipy.bic.berkeley.edu/nipy-dist . Download the
-  builds and upload to pypi.
-
-* Trigger binary builds for OSX from travis-ci:
-
-    * https://travis-ci.org/MacPython/nipy-wheels
-    * https://github.com/MacPython/nipy-wheels
-
-  Upload the resulting wheels to pypi from http://wheels.scipy.org;
-
-* Tag the release with tag of form ``0.5.0``::
-
-    git tag -am 'Second main release' 0.5.0
+    git tag -s 'Second main release' 0.5.0
 
 * Now the version number is OK, push the docs to github pages with::
 
@@ -250,6 +261,7 @@ Doing the release
 * Announce to the mailing lists.
 
 .. _setuptools intro: http://packages.python.org/an_example_pypi_project/setuptools.html
+.. _twine: https://pypi.python.org/pypi/twine
 .. _travis-ci: http://travis-ci.org
 
 .. include:: ../../links_names.txt

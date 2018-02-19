@@ -114,10 +114,10 @@ class Graph(object):
     def set_edges(self, edges):
         """Sets the graph's edges
 
-        Preconditions
-        -------------
-        - edges has a correct size
-        - edges take values in [1..V]
+        Preconditions:
+
+        * edges has a correct size
+        * edges take values in [1..V]
         """
         if (not isinstance(edges, None.__class__) and (edges.size != 0)):
             if ((np.shape(edges)[0] != self.E) or (np.shape(edges)[1] != 2)):

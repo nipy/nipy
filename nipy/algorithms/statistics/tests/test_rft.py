@@ -48,7 +48,7 @@ def test_Q():
 
 
 def K(dim=4, dfn=7, dfd=np.inf):
-    """
+    r"""
     Determine the polynomial K in:
 
         Worsley, K.J. (1994). 'Local maxima and the expected Euler
@@ -109,7 +109,7 @@ def F(x, dim, dfd=np.inf, dfn=1):
 
 
 def polyF(dim, dfd=np.inf, dfn=1):
-    """
+    r"""
     Return the polynomial part of the EC density when evaluating the polynomial
     on the sqrt(F) scale (or sqrt(chi^2)=chi scale).
 
@@ -400,7 +400,7 @@ def test_hotelling2():
         chi = rft.ChiSquared(dfn=dfn)(x)
         assert_almost_equal(h, chi)
         chi2 = scipy.stats.chi2.sf(x, dfn)
-        yield assert_almost_equal, h, chi2
+        assert_almost_equal(h, chi2)
         # XXX - p appears to be unused
         p = rft.spherical_search(dfn)
         for dfd in [40,50]:
@@ -408,8 +408,8 @@ def test_hotelling2():
             h = rft.Hotelling(dfd=dfd,k=dfn)(x)
             f = scipy.stats.f.sf(x*fac, dfn, dfd-dfn+1)
             f2 = rft.FStat(dfd=dfd-dfn+1,dfn=dfn)(x*fac)
-            yield assert_almost_equal, f2, f
-            yield assert_almost_equal, h, f
+            assert_almost_equal(f2, f)
+            assert_almost_equal(h, f)
 
 
 @dec.slow

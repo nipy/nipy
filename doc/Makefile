@@ -1,6 +1,7 @@
 # Makefile for Sphinx documentation
 #
 
+PYTHON ?= python
 DIST_DIR = dist
 
 # You can set these variables from the command line.
@@ -58,7 +59,7 @@ htmlonly:
 	@echo "Build finished. The HTML pages are in build/html."
 
 api:
-	python ../tools/build_modref_templates.py
+	$(PYTHON) ../tools/build_modref_templates.py
 	@echo "Build API docs finished."
 
 html: api htmlonly
@@ -66,7 +67,7 @@ html: api htmlonly
 	@echo "Build HTML and API finished."
 
 gitwash-update:
-	python ../tools/gitwash_dumper.py devel/guidelines nipy \
+	$(PYTHON) ../tools/gitwash_dumper.py devel/guidelines nipy \
 		--github-user=nipy \
 		--project-url=http://nipy.org/nipy \
 		--project-ml-url=https://mail.python.org/mailman/listinfo/neuroimaging
@@ -90,7 +91,7 @@ latex: api
 	mkdir -p build/latex build/doctrees
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) build/latex
 	# Clear bug for longtable column output in sphinx
-	python ../tools/fix_longtable.py build/latex/nipy.tex
+	$(PYTHON) ../tools/fix_longtable.py build/latex/nipy.tex
 	@echo
 	@echo "Build finished; the LaTeX files are in build/latex."
 	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \

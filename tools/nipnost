@@ -10,6 +10,7 @@ To reproduce a standard ``nipy.test()`` run::
 
     nipnost -A "not slow" /path/to/nipy/nipy
 
+To run without doctests, add the flag ``--without-doctest``.
 """
 
 import sys
@@ -20,5 +21,9 @@ from nipy.fixes.numpy.testing.noseclasses import KnownFailure
 
 if __name__ == '__main__':
     prepare_imports()
-    argv = sys.argv + ['--with-nipydoctest', fpw_opt_str()]
+    argv = sys.argv[:] + [fpw_opt_str()]
+    if '--without-doctest' in argv:
+        argv.remove('--without-doctest')
+    else:
+        argv.append('--with-nipydoctest')
     nose.core.TestProgram(argv=argv, addplugins=[NipyDoctest(), KnownFailure()])

@@ -350,12 +350,12 @@ class HierarchicalROI(SubDomains):
             c_pos = self.select_id(c_id)
             p_pos = self.parents[c_pos]
             p_id = self.get_id()[p_pos]
-            
+
             if p_pos != c_pos:
                 # this will be used in many places
                 mask_pos = np.ones(self.k, np.bool)
                 mask_pos[c_pos] = False
-                
+
                 # set new parents
                 self.parents = self.parents[mask_pos]
                 self.parents[self.parents == c_pos] = p_pos
@@ -395,26 +395,26 @@ class HierarchicalROI(SubDomains):
         methods indicates the way possible features are dealt with
         (not implemented yet)
 
-        Caveat
-        ------
-        if roi_features have been defined, they will be removed
+        Notes
+        -----
+        Caveat: if roi_features have been defined, they will be removed
         """
         if pull_features is None:
             pull_features = []
 
         if self.k == 0:
             return
-        
+
         # relabel maps old labels to new labels 
         relabel = np.arange(self.k)
 
         # merge nodes, one at a time
         id_list = self.get_id()[:: - 1]
-        
+
         for p_id in id_list:
             p_pos = self.select_id(p_id)
             p_children = np.nonzero(self.parents == p_pos)[0]
-            
+
             if p_pos in p_children:
                 # remove current node from its children list
                 p_children = p_children[p_children != p_pos]
@@ -435,7 +435,7 @@ class HierarchicalROI(SubDomains):
                 # merge labels
                 relabel[relabel == p_pos] = relabel[c_pos]
                 self.k -= 1
-                
+
                 # compute new features
                 for fid in list(self.features):
                     # replace feature
@@ -453,7 +453,7 @@ class HierarchicalROI(SubDomains):
                         # modify only if `pull` requested
                         dj[c_pos] = dj[p_pos]
                     self.roi_features[fid] = dj[mask_pos]
-                                        
+
         # update HROI structure
         self.label[self.label > -1] = relabel[self.label[self.label > - 1]]
         self.recompute_labels()

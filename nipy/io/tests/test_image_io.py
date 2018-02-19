@@ -41,10 +41,13 @@ def load_template_img():
 
 def test_badfile():
     filename = "bad_file.foo"
-    # nibabel prior 2.1.0 was throwing ImageFileError and then more specific
-    # FileNotFileNotFoundError which should be a subclass of IOError.
-    # To not mess with version specific imports, checking for IOError
-    assert_raises((ImageFileError, IOError), load_image, filename)
+    # nibabel prior 2.1.0 was throwing a ImageFileError for the not-recognized
+    # file type.  >=2.1.0 give a FileNotFoundError.
+    try:
+        from nibabel.py3k import FileNotFoundError
+    except ImportError:
+        FileNotFoundError = IOError
+    assert_raises((ImageFileError, FileNotFoundError), load_image, filename)
 
 
 @if_templates

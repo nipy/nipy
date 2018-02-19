@@ -62,7 +62,7 @@ def test_trivial_grid():
     img = VolumeGrid(data=data,
                     transform=identity,
                     )
-    x, y, z = np.random.random_integers(N, size=(3, 10)) - 1
+    x, y, z = np.random.randint(1, N + 1, size=(3, 10)) - 1
     data_ = img.values_in_world(x, y, z)
     # Check that passing in arrays with different shapes raises an error
     yield np.testing.assert_raises, ValueError, \

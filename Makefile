@@ -1,6 +1,6 @@
 # Automating common tasks for NIPY development
 
-PYTHON = python
+PYTHON ?= python
 HTML_DIR = doc/build/html
 LATEX_DIR = doc/build/latex
 WWW_DIR = doc/dist
@@ -43,9 +43,6 @@ dev: cythonize
 test:
 	cd .. && $(PYTHON) -c 'import nipy; nipy.test()'
 
-build:
-	$(PYTHON) setup.py build
-
 install:
 	$(PYTHON) setup.py install
 
@@ -83,16 +80,14 @@ bdist-egg-tests:
 	$(PYTHON) -c 'from nisext.testers import bdist_egg_tests; bdist_egg_tests("nipy")'
 
 source-release: distclean
-	python -m compileall .
-	make distclean
-	python setup.py sdist --formats=gztar,zip
+	$(PYTHON) setup.py sdist
 
 venv-tests:
 	# I use this for python2.5 because the sdist-tests target doesn't work
 	# (the tester routine uses a 2.6 feature)
 	make distclean
 	- rm -rf $(VIRTUAL_ENV)/lib/python$(PYVER)/site-packages/nipy
-	python setup.py install
+	$(PYTHON) setup.py install
 	cd .. && nosetests $(VIRTUAL_ENV)/lib/python$(PYVER)/site-packages/nipy
 
 tox-fresh:
@@ -113,11 +108,11 @@ recythonize:
 $(WWW_DIR):
 	if [ ! -d $(WWW_DIR) ]; then mkdir -p $(WWW_DIR); fi
 
-htmldoc: build
-	cd $(DOCSRC_DIR) && PYTHONPATH=$(CURDIR):$(PYTHONPATH) $(MAKE) html
+htmldoc:
+	cd $(DOCSRC_DIR) && $(MAKE) html
 
-pdfdoc: build
-	cd $(DOCSRC_DIR) && PYTHONPATH=$(CURDIR):$(PYTHONPATH) $(MAKE) latex
+pdfdoc:
+	cd $(DOCSRC_DIR) && $(MAKE) latex
 	cd $(LATEX_DIR) && $(MAKE) all-pdf
 
 html: html-stamp
