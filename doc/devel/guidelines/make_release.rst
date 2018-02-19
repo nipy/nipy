@@ -86,6 +86,9 @@ Release checklist
   vim::
 
     PY_VER=2.7
+
+  Then::
+
     BB_SSH=buildbot@nipy.bic.berkeley.edu
     scp -r ${BB_SSH}:nibotmi/public_html/nipy-examples-${PY_VER} .
     cd nipy-examples-${PY_VER}
@@ -93,8 +96,14 @@ Release checklist
     find . -size 0 -exec rm {} \;
     # Review stderr; :bd to close buffer once reviewed
     vim *.stderr
+
+  Then::
+
     # Review stdout
     vim *.stdout
+
+  Finally::
+
     cd ..
 
   Likewise for::
