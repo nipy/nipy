@@ -56,7 +56,7 @@ Release checklist
 
     rst2html.py README.rst > ~/tmp/readme.html
 
-  because this will be the output used by pypi_
+  because this will be the output used by PyPI_
 
 * Check the dependencies listed in ``nipy/info.py`` (e.g.
   ``NUMPY_MIN_VERSION``) and in ``doc/users/installation.rst``.  They should
@@ -189,13 +189,13 @@ Doing the release
 
 * For the wheel build / upload, follow the `wheel builder README`_
   instructions again.  Edit the ``.travis.yml`` and ``appveyor.yml`` files (if
-  present) to give the release tag to build.  Check the build has passed on on
+  present) to give the release tag to build.  Check the build has passed on
   the Travis-CI interface at https://travis-ci.org/MacPython/nipy-wheels.  Now
-  follow the instructions in the page above to download the built wheels to
-  a local machine and upload to PyPI.
+  follow the instructions in the page above to download the built wheels to a
+  local machine and upload to PyPI.
 
 * Once everything looks good, you are ready to upload the source release to
-  PyPi.  See `setuptools intro`_.  Make sure you have a file ``\$HOME/.pypirc``,
+  PyPI.  See `setuptools intro`_.  Make sure you have a file ``\$HOME/.pypirc``,
   of form::
 
     [distutils]
@@ -206,16 +206,13 @@ Doing the release
     username:your.pypi.username
     password:your-password
 
-* Once everything looks good, upload the source release to PyPi.  See
-  `setuptools intro`_::
+* Upload the source release to PyPI using Twine_::
 
-    python setup.py register
-    python setup.py sdist
     twine upload sdist/nipy*.tar.gz
 
-* Tag the release with tag of form ``0.5.0``::
+* Tag the release with tag of form ``0.5.0``. `-s` below makes a signed tag::
 
-    git tag -am 'Second main release' 0.5.0
+    git tag -s 'Second main release' 0.5.0
 
 * Now the version number is OK, push the docs to github pages with::
 
@@ -263,6 +260,7 @@ Doing the release
 * Announce to the mailing lists.
 
 .. _setuptools intro: http://packages.python.org/an_example_pypi_project/setuptools.html
+.. _twine: https://pypi.python.org/pypi/twine
 .. _travis-ci: http://travis-ci.org
 
 .. include:: ../../links_names.txt
