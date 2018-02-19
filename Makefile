@@ -80,9 +80,7 @@ bdist-egg-tests:
 	$(PYTHON) -c 'from nisext.testers import bdist_egg_tests; bdist_egg_tests("nipy")'
 
 source-release: distclean
-	$(PYTHON) -m compileall .
-	make distclean
-	$(PYTHON) setup.py sdist --formats=gztar,zip
+	$(PYTHON) setup.py sdist
 
 venv-tests:
 	# I use this for python2.5 because the sdist-tests target doesn't work
