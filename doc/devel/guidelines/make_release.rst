@@ -206,9 +206,10 @@ Doing the release
     username:your.pypi.username
     password:your-password
 
-* Upload the source release to PyPI using Twine_::
+* Sign and upload the source release to PyPI using Twine_::
 
-    twine upload sdist/nipy*.tar.gz
+    gpg --detach-sign -a dist/nipy*.tar.gz
+    twine upload dist/nipy*.tar.gz*
 
 * Tag the release with tag of form ``0.5.0``. `-s` below makes a signed tag::
 
