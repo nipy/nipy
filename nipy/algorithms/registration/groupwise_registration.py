@@ -560,12 +560,12 @@ def single_run_realign4d(im4d,
     speedup : int or sequence
       If a sequence, implement a multi-scale realignment
     """
-    if not type(loops) in (list, tuple, np.array):
+    if not type(loops) in (list, tuple, np.ndarray):
         loops = [loops]
     repeats = len(loops)
 
     def format_arg(x):
-        if not type(x) in (list, tuple, np.array):
+        if not type(x) in (list, tuple, np.ndarray):
             x = [x for i in range(repeats)]
         else:
             if not len(x) == repeats:
@@ -648,7 +648,7 @@ def realign4d(runs,
     """
 
     # Single-session case
-    if not type(runs) in (list, tuple, np.array):
+    if not type(runs) in (list, tuple, np.ndarray):
         runs = [runs]
     nruns = len(runs)
     if nruns == 1:
@@ -1171,7 +1171,7 @@ class FmriRealign4d(Realign4d):
                 # if slice_order is a key word, replace it with the
                 # appropriate array of slice indices
                 if slice_order in ('ascending', 'descending'):
-                    if isinstance(images, (list, tuple, np.array)):
+                    if isinstance(images, (list, tuple, np.ndarray)):
                         xyz_img = as_xyz_image(images[0])
                     else:
                         xyz_img = as_xyz_image(images)
