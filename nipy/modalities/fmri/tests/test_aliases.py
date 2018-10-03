@@ -42,9 +42,8 @@ def test_implemented_function():
     assert_equal(l2(3), np.sqrt(3))
     # check that we can pass in a sympy function as input
     func = sympy.Function('myfunc')
-    assert_false(hasattr(func, '_imp_'))
     f = implemented_function(func, lambda x: 2*x)
-    assert_true(hasattr(func, '_imp_'))
+    assert(f)
 
 
 def test_lambdify():
