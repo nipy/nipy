@@ -12,8 +12,13 @@ from ..von_mises_fisher_mixture import (VonMisesMixture,
                                         select_vmm,
                                         select_vmm_cv)
 
-
 from nose.tools import assert_true, assert_equal
+from numpy.testing import decorators
+
+from nibabel.optpkg import optional_package
+
+matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
+needs_mpl = decorators.skipif(not HAVE_MPL, "Test needs matplotlib")
 
 
 def test_spherical_area():
@@ -36,6 +41,18 @@ def test_von_mises_fisher_density():
                 # check that it sums to 1
                 assert_true(np.abs((vmd.mixture_density(s)*area).sum() - 1)
                             < 1e-2)
+
+
+@needs_mpl
+def test_von_mises_fisher_show():
+    # Smoke test for VonMisesMixture.show
+    x = np.random.randn(100, 3)
+    x = (x.T/np.sqrt(np.sum(x**2, 1))).T
+    vmd = VonMisesMixture(1, 1)
+    # Need to estimate to avoid error in show
+    vmd.estimate(x)
+    # Check that show does not raise an error
+    vmd.show(x)
 
 
 def test_dimension_selection_bic():
