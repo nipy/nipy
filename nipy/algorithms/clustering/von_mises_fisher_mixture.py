@@ -233,8 +233,13 @@ class VonMisesMixture(object):
 
         Parameters
         ----------
-        x: array fo shape(n,3)
+        x: array of shape (n, 3)
            should be on the unit sphere
+
+        Notes
+        -----
+
+        Uses ``matplotlib``.
         """
         # label the data
         z = np.argmax(self.responsibilities(x), 1)
@@ -243,7 +248,7 @@ class VonMisesMixture(object):
         fig = pylab.figure()
         ax = p3.Axes3D(fig)
         colors = (['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w'] * \
-                      (1 + (1 + self.k) / 8))[:self.k + 1]
+                      (1 + (1 + self.k) // 8))[:self.k + 1]
         if (self.null_class) and (z == 0).any():
             ax.plot3D(x[z == 0, 0], x[z == 0, 1], x[z == 0, 2], '.',
                       color=colors[0])
