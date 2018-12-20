@@ -75,7 +75,7 @@ def _cosine_drift(period_cut, frametimes):
     Returns
     -------
     cdrift:  array of shape(n_scans, n_drifts)
-             cosin drifts plus a constant regressor at cdrift[:,0]
+             cosine drifts plus a constant regressor at cdrift[:,-1]
 
     Ref: http://en.wikipedia.org/wiki/Discrete_cosine_transform DCT-II
     """

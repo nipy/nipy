@@ -27,7 +27,7 @@ def dct_ii_basis(volume_times, order=None, normcols=False):
     Returns
     -------
     dct_basis : array
-        Shape ``(len(volume_times), order)`` array with DCT-II basis up to
+        Shape ``(len(volume_times), order + 1)`` array with DCT-II basis up to
         order `order`.
 
     Raises
