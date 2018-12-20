@@ -85,7 +85,7 @@ def test_cosine_drift():
     tim = np.arange(20)
     P = 10 # period is half the time, gives us an order 4
     nipy_drifts = _cosine_drift(P, tim) #
-    assert_almost_equal(spm_drifts[:,1:], nipy_drifts[:,:-1])
+    assert_almost_equal(spm_drifts[:,1:], nipy_drifts[:, :-2])
     # nipy_drifts is placing the constant at the end [:,:-1]
 
 
@@ -205,7 +205,7 @@ def test_dmtx2():
     hrf_model = 'Canonical'
     X, names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                         drift_model='cosine', hfcut=63)
-    assert_equal(len(names), 7) # was 8 with old cosine
+    assert_equal(len(names), 8)
 
 def test_dmtx3():
     # idem test_dmtx1 with a different drift term
@@ -416,7 +416,7 @@ def test_dmtx20():
         drift_model='cosine')
 
     # check that the drifts are not constant
-    assert_true(np.all(np.diff(X[:, -2]) != 0))
+    assert_true(np.any(np.diff(X[:, -2]) != 0))
 
 
 def test_fir_block():

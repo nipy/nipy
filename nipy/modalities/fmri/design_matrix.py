@@ -85,13 +85,13 @@ def _cosine_drift(period_cut, frametimes):
 
     dt = frametimes[1] - frametimes[0] # frametimes.max() should be (len_tim-1)*dt    
     order = int(np.floor(2*len_tim*hfcut*dt)) # s.t. hfcut = 1/(2*dt) yields len_tim
-    cdrift = np.zeros((len_tim, order))
+    cdrift = np.zeros((len_tim, order + 1))
     nfct = np.sqrt(2.0/len_tim)
     
-    for k in range(1, order):
+    for k in range(1, order + 1):
         cdrift[:,k-1] = nfct * np.cos((np.pi/len_tim)*(n_times + .5)*k)
     
-    cdrift[:,order-1] = 1. # or 1./sqrt(len_tim) to normalize
+    cdrift[:, -1] = 1. # or 1./sqrt(len_tim) to normalize
     return cdrift
 
 
