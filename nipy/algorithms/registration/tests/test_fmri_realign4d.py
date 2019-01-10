@@ -120,7 +120,7 @@ def test_realign4d_incompatible_args():
 def test_realign4d():
     """
     This tests whether realign4d yields the same results depending on
-    whether the slice order is input explicitely or as
+    whether the slice order is input explicitly or as
     slice_times='ascending'.
 
     Due to the very small size of the image used for testing (only 3
