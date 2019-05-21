@@ -6,7 +6,7 @@ from __future__ import print_function, absolute_import
 
 # Third-party imports
 import numpy as np
-import scipy.misc as sm
+import scipy.special as sp
 import warnings
 
 # Our own imports
@@ -374,7 +374,7 @@ class permutation_test(object):
         elif self.nsamples == 2:
             n1,p = self.data1.shape[self.axis], self.data1.shape[1-self.axis]
             n2 = self.data2.shape[self.axis]
-            max_nperms = sm.comb(n1+n2,n1,exact=1)
+            max_nperms = sp.comb(n1+n2,n1,exact=1)
             data = np.concatenate((self.data1,self.data2), self.axis)
             if self.vardata1 is not None:
                 vardata = np.concatenate((self.vardata1,self.vardata2), self.axis)
