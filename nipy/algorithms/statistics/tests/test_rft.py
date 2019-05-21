@@ -4,9 +4,8 @@ from __future__ import absolute_import
 
 import numpy as np
 
-from scipy.special import gammaln, hermitenorm
+from scipy.special import factorial, gammaln, hermitenorm
 import scipy.stats
-from scipy.misc import factorial
 
 from .. import rft
 
