@@ -147,7 +147,7 @@ the nipy distribution.
 # Update in .travis.yml
 # Update in requirements.txt
 NUMPY_MIN_VERSION='1.6.0'
-SCIPY_MIN_VERSION = '0.9.0'
+SCIPY_MIN_VERSION = '0.14.0'
 NIBABEL_MIN_VERSION = '1.2'
 SYMPY_MIN_VERSION = '0.7.0'
 MAYAVI_MIN_VERSION = '3.0'
