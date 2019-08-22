@@ -185,7 +185,7 @@ def get_3d_peaks(image, mask=None, threshold=0., nn=18, order_th=0):
     if mask is not None:
         bmask = mask.get_data().ravel()
         data = image.get_data().ravel()[bmask > 0]
-        xyz = np.array(np.where(bmask > 0)).T
+        xyz = np.array(np.where(mask.get_data() > 0)).T
     else:
         shape = image.shape
         data = image.get_data().ravel()
