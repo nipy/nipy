@@ -1,5 +1,3 @@
-# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-# vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Extend numpy's decorators to use nipy's gui and data labels.
 
 This module should not import nose at the top level to avoid a run-time
@@ -8,7 +6,7 @@ dependency on nose.
 from __future__ import print_function
 from __future__ import absolute_import
 
-from numpy.testing.decorators import *
+from numpy.testing._private.decorators import *
 
 from nipy.utils import templates, example_data, DataError
 
