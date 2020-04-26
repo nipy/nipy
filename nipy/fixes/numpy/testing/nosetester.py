@@ -21,7 +21,7 @@ def get_package_name(filepath):
 
     Examples
     --------
-    >>> np.testing.nosetester.get_package_name('nonsense')
+    >>> get_package_name('nonsense')
     'numpy'
 
     """

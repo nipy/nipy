@@ -44,7 +44,7 @@ def test_implemented_function():
     func = sympy.Function('myfunc')
     assert_false(hasattr(func, '_imp_'))
     f = implemented_function(func, lambda x: 2*x)
-    assert_true(hasattr(func, '_imp_'))
+    assert_true(hasattr(f, '_imp_'))
 
 
 def test_lambdify():
