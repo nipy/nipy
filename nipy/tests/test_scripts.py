@@ -19,7 +19,13 @@ from nipy.core.api import rollimg
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 from ..testing import funcfile
-from numpy.testing import decorators, assert_almost_equal
+from numpy.testing import assert_almost_equal
+
+try:
+    from numpy.testing import decorators
+except ImportError:
+    from numpy.testing import dec
+    decorators = dec
 
 from nipy.testing.decorators import make_label_dec
 
