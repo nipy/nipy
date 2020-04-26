@@ -10,7 +10,7 @@ from __future__ import absolute_import
 
 try:
     from numpy.testing.decorators import *
-except ModuleNotFoundError:
+except ImportError:
     from numpy.testing._private.decorators import *
 
 from nipy.utils import templates, example_data, DataError

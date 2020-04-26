@@ -8,7 +8,7 @@ import numpy as np
 # Recent (1.2) versions of numpy have this decorator
 try:
     from numpy.testing.decorators import slow
-except (ImportError, ModuleNotFoundError):
+except ImportError:
     def slow(t):
         t.slow = True
         return t
