@@ -8,7 +8,10 @@ dependency on nose.
 from __future__ import print_function
 from __future__ import absolute_import
 
-from numpy.testing.decorators import *
+try:
+    from numpy.testing.decorators import *
+except ModuleNotFoundError:
+    from numpy.testing._private.decorators import *
 
 from nipy.utils import templates, example_data, DataError
 
