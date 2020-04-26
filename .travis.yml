@@ -94,7 +94,9 @@ before_install:
     - if [ -n "$PRE_DEPENDS" ]; then
       pip install $EXTRA_PIP_FLAGS $PRE_DEPENDS;
       fi
-    - pip install $EXTRA_PIP_FLAGS $DEPENDS
+    - if [ -n "$DEPENDS" ]; then
+      pip install $EXTRA_PIP_FLAGS $DEPENDS;
+      fi
     - if [ "${COVERAGE}" == "1" ]; then
       pip install coverage;
       pip install coveralls codecov;
