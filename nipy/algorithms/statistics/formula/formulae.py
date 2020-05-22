@@ -267,10 +267,10 @@ class FactorTerm(Term):
             return sympy.Symbol.__mul__(self, other)
 
 
-class Beta(sympy.symbol.Dummy):
+class Beta(sympy.Dummy):
     ''' A symbol tied to a Term `term` '''
     def __new__(cls, name, term):
-        new = sympy.symbol.Dummy.__new__(cls, name)
+        new = sympy.Dummy.__new__(cls, name)
         new._term = term
         return new
 
