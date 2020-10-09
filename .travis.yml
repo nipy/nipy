@@ -22,9 +22,9 @@ env:
     - INSTALL_TYPE="pip"
 
 python:
-    - 3.4
-    - 3.5
     - 3.6
+    - 3.7
+    - 3.8
 
 matrix:
   include:
@@ -38,7 +38,7 @@ matrix:
         - PRE_DEPENDS="numpy==1.6.0"
         - DEPENDS="scipy==0.9.0 sympy==0.7.0 nibabel==1.2.0"
     # Test compiling against external lapack
-    - python: 3.4
+    - python: 3.6
       env:
         - NIPY_EXTERNAL_LAPACK=1
       addons:
@@ -59,17 +59,17 @@ matrix:
         - INSTALL_TYPE=requirements
         - DEPENDS=
     # test 3.5 against pre-release builds of everything
-    - python: 3.5
+    - python: 3.6
       env:
         - EXTRA_PIP_FLAGS="$PRE_PIP_FLAGS"
     # test python setup.py install
-    - python: 3.5
+    - python: 3.6
       env:
         - INSTALL_TYPE=setup
-    - python: 3.5
+    - python: 3.6
       env:
         - INSTALL_TYPE="pip_e"
-    - python: 3.5
+    - python: 3.6
       env:
         - DOC_BUILD=1
       addons:
