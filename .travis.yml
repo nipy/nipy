@@ -134,7 +134,7 @@ script:
         # Work round bug in Sympy atoms docstring as of 1.1.0
         # https://github.com/sympy/sympy/pull/12900
         # pip install git+https://github.com/sympy/sympy.git
-        pip install "sympy<1.6"
+        pip install "sympy<1.1.0"
         make html-stamp pdf-stamp
       else
         # Change into an innocuous directory and find tests from installation
