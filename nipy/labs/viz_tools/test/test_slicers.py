@@ -7,7 +7,7 @@ import nose
 try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
-    mp.use('svg', warn=False)
+    mp.use('svg')
     import pylab as pl
     pl.switch_backend('svg')
 except ImportError:
@@ -25,7 +25,7 @@ def test_demo_ortho_slicer():
     # conditioned on presence of MNI templated
     if not find_mni_template():
         raise nose.SkipTest("MNI Template is absent for the smoke test")
-    mp.use('svg', warn=False)
+    mp.use('svg')
     import pylab as pl
     pl.switch_backend('svg')
     demo_ortho_slicer()

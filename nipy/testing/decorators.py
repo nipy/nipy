@@ -127,7 +127,7 @@ def needs_mpl_agg(func):
     import matplotlib.pyplot as plt
     from nose.tools import make_decorator
     def agg_func(*args, **kwargs):
-        matplotlib.use('agg', warn=False)
+        matplotlib.use('agg')
         plt.switch_backend('agg')
         return func(*args, **kwargs)
     return make_decorator(func)(agg_func)
