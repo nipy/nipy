@@ -170,7 +170,7 @@ MINOR               = _version_minor
 MICRO               = _version_micro
 ISRELEASE           = _version_extra == ''
 VERSION             = __version__
-REQUIRES            = ["numpy", "scipy", "sympy<1.6", "nibabel"]
+REQUIRES            = ["numpy", "scipy", "sympy(<1.6)", "nibabel"]
 STATUS              = 'beta'
 
 # Versions and locations of optional data packages
