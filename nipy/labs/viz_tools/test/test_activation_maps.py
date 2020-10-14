@@ -10,7 +10,7 @@ from nipy.testing.decorators import skipif
 try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
-    mp.use('svg', warn=False)
+    mp.use('svg')
     import pylab as pl
     pl.switch_backend('svg')
 except ImportError:
@@ -28,7 +28,7 @@ from ..anat_cache import mni_sform, _AnatCache
 
 def test_demo_plot_map():
     # This is only a smoke test
-    mp.use('svg', warn=False)
+    mp.use('svg')
     import pylab as pl
     pl.switch_backend('svg')
     demo_plot_map()
@@ -38,7 +38,7 @@ def test_demo_plot_map():
 
 def test_plot_anat():
     # This is only a smoke test
-    mp.use('svg', warn=False)
+    mp.use('svg')
     import pylab as pl
     pl.switch_backend('svg')
     data = np.zeros((20, 20, 20))
@@ -85,7 +85,7 @@ def test_plot_map_empty():
     # Test that things don't crash when we give a map with nothing above
     # threshold
     # This is only a smoke test
-    mp.use('svg', warn=False)
+    mp.use('svg')
     import pylab as pl
     pl.switch_backend('svg')
     data = np.zeros((20, 20, 20))

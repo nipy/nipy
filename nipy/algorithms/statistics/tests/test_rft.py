@@ -6,7 +6,10 @@ import numpy as np
 
 from scipy.special import gammaln, hermitenorm
 import scipy.stats
-from scipy.misc import factorial
+try:
+    from scipy.misc import factorial
+except ImportError:
+    from scipy.special import factorial
 
 from .. import rft
 
