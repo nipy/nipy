@@ -83,7 +83,7 @@ Install pylint_.  Debian packages pylint_ as ``pylint``. Put the
 `flymake .emacs snippet`_ in your ``.emacs`` file.  You will see, in the
 emacs_python_mode_ page, that you will need to save this::
 
-    #!/usr/bin/env python
+    #!/usr/bin/env python3
     
     import re
     import sys
