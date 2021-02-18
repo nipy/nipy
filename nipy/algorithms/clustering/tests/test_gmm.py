@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # to run only the simple tests:
 # python testClustering.py Test_Clustering
