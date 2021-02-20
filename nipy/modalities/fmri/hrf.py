@@ -103,7 +103,8 @@ def gamma_params(peak_location, peak_fwhm):
 def gamma_expr(peak_location, peak_fwhm):
     shape, scale, coef = gamma_params(peak_location, peak_fwhm)
     return (
-        coef * ((T >= 0) * (T+1.0e-14))**(shape-1)
+        coef
+        * sympy.Piecewise((T + 1e-14, T >= 0), (0, True))**(shape-1)
         * sympy.exp(-(T+1.0e-14)/scale)
         )
 
@@ -140,7 +141,7 @@ dglover = implemented_function('dglover', dglovert)
 del(_gexpr); del(_dpos); del(_dgexpr)
 
 # AFNI's HRF
-_aexpr = ((T >= 0) * T)**8.6 * sympy.exp(-T/0.547)
+_aexpr = sympy.Piecewise((T, T >= 0), (0, True))**8.6 * sympy.exp(-T/0.547)
 _aexpr = _aexpr / _get_sym_int(_aexpr)
 # Numerical function
 afnit = lambdify_t(_aexpr)

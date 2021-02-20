@@ -170,8 +170,8 @@ def numerical_convolve(func1, func2, interval, dt):
 
 def test_convolve_functions():
     # replicate convolution
-    # This is a square wave on [0,1]
-    f1 = (t > 0) * (t < 1)
+    # This is a square wave on (0,1)
+    f1 = sympy.Piecewise((0, t <= 0), (1, t < 1), (0, True))
     # ff1 is the numerical implementation of same
     ff1 = lambdify(t, f1)
     # Time delta
@@ -205,7 +205,7 @@ def test_convolve_functions():
             y = ftri(time)
             assert_array_almost_equal(value, y)
         # offset square wave by 1 - offset triangle by 1
-        f2 = (t > 1) * (t < 2)
+        f2 = sympy.Piecewise((0, t <= 1), (1, t < 2), (0, True))
         tri = cfunc(f1, f2, [0, 3], [0, 3], dt)
         ftri = lambdify(t, tri)
         o1_time = np.arange(0, 3, dt)
@@ -221,7 +221,7 @@ def test_convolve_functions():
         o2_time = np.arange(0, 4, dt)
         assert_array_almost_equal(ftri(o2_time), np.r_[z1s, z1s, value])
         # offset by -0.5 - offset triangle by -0.5
-        f3 = (t > -0.5) * (t < 0.5)
+        f3 = sympy.Piecewise((0, t <= -0.5), (1, t < 0.5), (0, True))
         tri = cfunc(f1, f3, [0, 2], [-0.5, 1.5], dt)
         ftri = lambdify(t, tri)
         o1_time = np.arange(-0.5, 1.5, dt)

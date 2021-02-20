@@ -528,9 +528,9 @@ def convolve_functions(f, g, f_interval, g_interval, dt,
     >>> from nipy.algorithms.statistics.formula.formulae import Term
     >>> t = Term('t')
 
-    This is a square wave on [0,1]
+    This is a square wave on (0,1)
 
-    >>> f1 = (t > 0) * (t < 1)
+    >>> f1 = sympy.Piecewise((0, t <= 0), (1, t < 1), (0, True))
 
     The convolution of ``f1`` with itself is a triangular wave on [0, 2],
     peaking at 1 with height 1
