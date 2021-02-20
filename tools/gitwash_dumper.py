@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 ''' Checkout gitwash repo into directory and do search replace on name '''
 
 from __future__ import (absolute_import, division, print_function)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Refresh README.rst file from long description
 
 Should be run from project root (containing setup.py)
