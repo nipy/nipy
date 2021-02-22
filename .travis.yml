@@ -35,8 +35,8 @@ matrix:
     - python: 2.7
       env:
         # Definitive source for these in nipy/info.py
-        - PRE_DEPENDS="numpy==1.6.0"
-        - DEPENDS="scipy==0.9.0 sympy==0.7.0 nibabel==1.2.0"
+        - PRE_DEPENDS="numpy==1.13"
+        - DEPENDS="scipy==1.0.0 sympy==1.0.0 nibabel==2.0.0"
     # Test compiling against external lapack
     - python: 3.6
       env:
