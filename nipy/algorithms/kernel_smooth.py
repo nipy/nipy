@@ -97,7 +97,7 @@ class LinearFilter(object):
         # roll coordinate axis to front
         _X = np.rollaxis(_X, axis)
         # convert coordinates to FWHM units
-        if self.fwhm is not 1.0:
+        if self.fwhm != 1.0:
             f = fwhm2sigma(self.fwhm)
             if f.shape == ():
                 f = np.ones(len(self.bshape)) * f
