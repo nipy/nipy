@@ -49,7 +49,7 @@ class ImageInterpolator(object):
         if self.order > 1:
             data = ndimage.spline_filter(
                 np.nan_to_num(self.image.get_data()),
-                self.order)
+                order=self.order, mode=self.mode)
         else:
             data = np.nan_to_num(self.image.get_data())
         if self._datafile is None:
