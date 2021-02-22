@@ -3,7 +3,6 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import os
 from os.path import join as pjoin, exists
-import sys
 from glob import glob
 from distutils import log
 
@@ -12,8 +11,7 @@ from distutils import log
 if exists('MANIFEST'): os.remove('MANIFEST')
 
 from setup_helpers import (generate_a_pyrex_source, get_comrec_build,
-                           cmdclass, INFO_VARS, get_pkg_version,
-                           version_error_msg)
+                           cmdclass, INFO_VARS)
 
 # monkey-patch numpy distutils to use Cython instead of Pyrex
 from numpy.distutils.command.build_src import build_src
@@ -41,18 +39,8 @@ def configuration(parent_package='',top_path=None):
     return config
 
 ################################################################################
-# For some commands, use setuptools
-
-if len(set(('develop', 'bdist_egg', 'bdist_rpm', 'bdist', 'bdist_dumb',
-            'install_egg_info', 'egg_info', 'easy_install', 'bdist_mpkg',
-            'bdist_wheel')).intersection(sys.argv)) > 0:
-    from setup_egg import extra_setuptools_args
-
-# extra_setuptools_args can be defined from the line above, but it can
-# also be defined here because setup.py has been exec'ed from
-# setup_egg.py.
-if not 'extra_setuptools_args' in globals():
-    extra_setuptools_args = dict()
+# Use setuptools
+from setup_egg import extra_setuptools_args
 
 # Hard and soft dependency checking
 DEPS = (
@@ -61,20 +49,10 @@ DEPS = (
     ('nibabel', INFO_VARS['NIBABEL_MIN_VERSION'], 'install_requires', False),
     ('sympy', INFO_VARS['SYMPY_MIN_VERSION'], 'install_requires', False))
 
-using_setuptools = 'setuptools' in sys.modules
-
 for name, min_ver, req_type, heavy in DEPS:
-    found_ver = get_pkg_version(name)
-    ver_err_msg = version_error_msg(name, found_ver, min_ver)
-    if not using_setuptools:
-        if ver_err_msg != None:
-            raise RuntimeError(ver_err_msg)
-    else:  # Using setuptools
-        # Add packages to given section of setup/install_requires
-        if ver_err_msg != None or not heavy:
-            new_req = '{0}>={1}'.format(name, min_ver)
-            old_reqs = extra_setuptools_args.get(req_type, [])
-            extra_setuptools_args[req_type] = old_reqs + [new_req]
+    new_req = '{0}>={1}'.format(name, min_ver)
+    old_reqs = extra_setuptools_args.get(req_type, [])
+    extra_setuptools_args[req_type] = old_reqs + [new_req]
 
 
 ################################################################################

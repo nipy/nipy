@@ -372,39 +372,6 @@ def get_comrec_build(pkg_dir, build_cmd=build_py):
     return MyBuildPy
 
 
-def get_pkg_version(pkg_name):
-    """ Return package version for `pkg_name` if installed
-
-    Returns
-    -------
-    pkg_version : str or None
-        Return None if package not importable.  Return 'unknown' if standard
-        ``__version__`` string not present. Otherwise return version string.
-    """
-    try:
-        pkg = __import__(pkg_name)
-    except ImportError:
-        return None
-    try:
-        return pkg.__version__
-    except AttributeError:
-        return 'unknown'
-
-
-def version_error_msg(pkg_name, found_ver, min_ver):
-    """ Return informative error message for version or None
-    """
-    if found_ver is None:
-        return 'We need package {0}, but not importable'.format(pkg_name)
-    if found_ver == 'unknown':
-        return 'We need {0} version {1}, but cannot get version'.format(
-            pkg_name, min_ver)
-    if LooseVersion(found_ver) >= LooseVersion(min_ver):
-        return None
-    return 'We need {0} version {1}, but found version {2}'.format(
-        pkg_name, found_ver, min_ver)
-
-
 # The command classes for distutils, used by setup.py
 cmdclass = {'api_docs': APIDocs,
             'clean': Clean,
