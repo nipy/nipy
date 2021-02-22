@@ -28,15 +28,15 @@ generate filenames of the form ``/some/path/components_fname.png,
 /some/path/max_fname.img`` etc.
 '''
 
-import matplotlib
-matplotlib.use('Agg')
-
 from nipy.externals.argparse import (ArgumentParser,
                                      RawDescriptionHelpFormatter)
 import nipy.algorithms.diagnostics.commands as nadc
 
 
 def main():
+    import matplotlib
+    matplotlib.use('Agg')
+
     parser = ArgumentParser(description=DESCRIP,
                             epilog=EPILOG,
                             formatter_class=RawDescriptionHelpFormatter)
