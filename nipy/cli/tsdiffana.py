@@ -1,10 +1,9 @@
-#!python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 DESCRIP = ' Analyze, plot time series difference metrics'
 EPILOG = \
-'''nipy_tsdiffana runs the time series diference algorithm over a 4D
-image volume, often and FMRI volume.
+'''Runs the time series difference algorithm over a 4D image volume, often an
+FMRI volume.
 
 It works in one of three modes:
 
@@ -97,7 +96,3 @@ def main():
     tsdiffana(args)
     if show:
         plt.show()
-
-
-if __name__ == '__main__':
-    main()

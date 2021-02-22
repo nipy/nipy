@@ -120,10 +120,18 @@ def main():
           # version set by config.get_version() above
           configuration = configuration,
           cmdclass = cmdclass,
-          scripts = glob('scripts/*'),
           tests_require=['nose>=1.0'],
           test_suite='nose.collector',
           zip_safe=False,
+          entry_points={
+              'console_scripts': [
+                  'nipy_3dto4d = nipy.cli.img3dto4d:main',
+                  'nipy_4dto3d = nipy.cli.img4dto3d:main',
+                  'nipy_4d_realign = nipy.cli.realign4d:main',
+                  'nipy_tsdiffana = nipy.cli.tsdiffana:main',
+                  'nipy_diagnose = nipy.cli.diagnose:main',
+              ],
+          },
           **requirement_kwargs)
 
 

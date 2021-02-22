@@ -1,4 +1,3 @@
-#!python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 DESCRIP = 'Read 3D image files and write a 4D file'
@@ -60,7 +59,3 @@ def main():
         out_fname = pjoin(pth, froot + '_4d' + ext + gz)
     img4d = do_3d_to_4d(filenames, check_affines=check_affines)
     nib.save(img4d, out_fname)
-
-
-if __name__ == '__main__':
-    main()

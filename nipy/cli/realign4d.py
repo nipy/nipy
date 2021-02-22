@@ -1,15 +1,14 @@
-#!python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-
-"""This is a wrapper of SpaceTimeRealign
+"""Command line wrapper of SpaceTimeRealign
 
 Based on:
 
-Alexis Roche (2011) A Four-Dimensional Registration Algorithm With Application to Joint Correction of Motion and Slice Timing in fMRI. IEEE Trans. Med. Imaging 30(8): 1546-1554
-
+Alexis Roche (2011) A Four-Dimensional Registration Algorithm With Application
+to Joint Correction of Motion and Slice Timing in fMRI. IEEE Trans. Med.
+Imaging 30(8): 1546-1554
 """
-import os
+
 import os.path as op
 import nipy.algorithms.registration as reg
 import nipy.externals.argparse as argparse
@@ -42,26 +41,25 @@ parser.add_argument('--save_params', type=bool, metavar='Bool',
                 help="""Whether to save the motion corrections parameters (3 rotations, 3 translations). {True, False}. Default: False. NOTE: The rotations are not Euler angles, but a rotation vector. Use `nipy.algorithms.registration.to_matrix44` to convert to a 4-by-4 affine matrix""", default=False)
 
 
-# parse the command line
-args = parser.parse_args()
+def main():
+    args = parser.parse_args()
 
-if __name__ == '__main__':
     if args.save_path == 'none':
         save_path = op.split(args.input)[0]
     else:
         save_path = args.save_path
-        
+
     xform = reg.space_time_realign(args.input, float(args.TR),
-                               slice_order=args.slice_order,
-                               slice_dim=int(args.slice_dim),
-                               slice_dir=int(args.slice_dir),
-                               apply=True, # We always apply the xform in the cli
-                               make_figure=args.make_figure,
-                               out_name=save_path)
+                                   slice_order=args.slice_order,
+                                   slice_dim=int(args.slice_dim),
+                                   slice_dir=int(args.slice_dir),
+                                   # We always apply the xform in the cli
+                                   apply=True,
+                                   make_figure=args.make_figure,
+                                   out_name=save_path)
 
     if args.save_params:
-        
-        f = file(op.join(save_path, 'mc.par'), 'w')
+        f = open(op.join(save_path, 'mc.par'), 'w')
         for x in xform:
             euler_rot = reg.aff2euler(x.as_affine())
             for r in euler_rot:
