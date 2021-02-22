@@ -56,7 +56,7 @@ def test_unique_coord_names():
 def test_dtypes():
     # invalid dtypes
     dtypes = np.sctypes['others']
-    dtypes.remove(np.object)
+    dtypes.remove(object)
     for dt in dtypes:
         assert_raises(ValueError, CoordinateSystem, 'ijk', 'test', dt)
     # compound dtype
@@ -64,7 +64,7 @@ def test_dtypes():
     assert_raises(ValueError, CoordinateSystem, 'ijk', 'test', dtype)
     # valid dtypes
     dtypes = (np.sctypes['int'] + np.sctypes['float'] + np.sctypes['complex'] +
-              [np.object])
+              [object])
     for dt in dtypes:
         cs = CoordinateSystem('ij', coord_dtype=dt)
         assert_equal(cs.coord_dtype, dt)

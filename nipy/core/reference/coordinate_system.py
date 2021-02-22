@@ -117,7 +117,7 @@ class CoordinateSystem(object):
             raise ValueError('coord_names must have distinct names')
         # verify that the dtype is coord_dtype for sanity
         sctypes = (np.sctypes['int'] + np.sctypes['float'] +
-                   np.sctypes['complex'] + np.sctypes['uint'] + [np.object])
+                   np.sctypes['complex'] + np.sctypes['uint'] + [object])
         coord_dtype = np.dtype(coord_dtype)
         if coord_dtype not in sctypes:
             raise ValueError('Coordinate dtype should be one of %s' % sctypes)

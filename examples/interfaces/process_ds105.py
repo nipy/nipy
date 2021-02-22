@@ -204,7 +204,7 @@ class SPMSubjectAnalysis(object):
         return in_prefix
 
     def seg_norm(self, in_prefix=''):
-        def_tpms = np.zeros((3,1), dtype=np.object)
+        def_tpms = np.zeros((3,1), dtype=object)
         spm_path = spm_info.spm_path
         def_tpms[0] = pjoin(spm_path, 'tpm', 'grey.nii'),
         def_tpms[1] = pjoin(spm_path, 'tpm', 'white.nii'),
