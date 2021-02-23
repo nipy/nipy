@@ -649,7 +649,8 @@ class AffineTransform(object):
             sym_inv = Matrix(self.affine).inv()
             m_inv = matrix2numpy(sym_inv).astype(aff_dt)
         else: # linalg inverse succeeded
-            if preserve_dtype and aff_dt != np.object_: # can we cast back?
+            # Do we need a specific dtype?  Can we cast to this dtype?
+            if preserve_dtype and aff_dt != np.object_:
                 m_inv_orig = m_inv
                 m_inv = m_inv.astype(aff_dt)
                 if not np.allclose(m_inv_orig, m_inv):
