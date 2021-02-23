@@ -30,7 +30,7 @@ from nipy.testing import legacy_printing
 # Dtypes for testing coordinate map creation / processing
 _SYMPY_SAFE_DTYPES = (np.sctypes['int'] + np.sctypes['uint'] +
                       np.sctypes['float'] + np.sctypes['complex'] +
-                      [np.object])
+                      [object])
 # Sympy <= 1.1 does not handle numpy longcomplex correctly. See:
 # https://github.com/sympy/sympy/pull/12901
 if np.longcomplex in _SYMPY_SAFE_DTYPES:  # Not present for Windows

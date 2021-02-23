@@ -29,7 +29,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
 
     Parameters
     ----------
-    data : ndarray-like (np.float)
+    data : ndarray-like (float)
        The array on which to perform PCA over axis `axis` (below)
     axis : int, optional
        The axis over which to perform PCA (axis identifying
@@ -230,7 +230,7 @@ def _get_covariance(data, UX, rmse_scales_func, mask):
 
 def _get_basis_projections(data, subVX, rmse_scales_func):
     ncomp = subVX.shape[0]
-    out = np.empty((ncomp,) + data.shape[1:], np.float)
+    out = np.empty((ncomp,) + data.shape[1:], float)
     for i in range(data.shape[1]):
         Y = data[:,i].reshape((data.shape[0], -1))
         U = np.dot(subVX, Y)

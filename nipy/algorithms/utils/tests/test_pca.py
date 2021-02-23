@@ -58,7 +58,7 @@ def res2pos1(res):
     new_axes = [None] * bps.ndim
     n_comps = res['basis_projections'].shape[axis]
     new_axes[axis] = slice(0,n_comps)
-    res['basis_projections'] = bps * signs[new_axes]
+    res['basis_projections'] = bps * signs[tuple(new_axes)]
     return res
 
 
