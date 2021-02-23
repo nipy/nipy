@@ -21,6 +21,10 @@ class ImageInterpolator(object):
     The resampling is done with ``scipy.ndimage``.
     """
 
+    # Padding for prefilter calculation in 'nearest' and 'grid-constant' mode.
+    # See: https://github.com/scipy/scipy/issues/13600
+    n_prepad_if_needed = 12
+
     def __init__(self, image, order=3, mode='constant', cval=0.0):
         """
         Parameters
@@ -38,18 +42,38 @@ class ImageInterpolator(object):
            Value used for points outside the boundaries of the input if
            mode='constant'. Default is 0.0.
         """
+        # order and mode are read-only to allow pre-calculation of spline
+        # filters.
         self.image = image
-        self.order = order
-        self.mode = mode
+        self._order = order
+        self._mode = mode
         self.cval = cval
         self._datafile = None
+        self._n_prepad = 0  # Non-zero for 'nearest' and 'grid-constant'
         self._buildknots()
+
+    @property
+    def mode(self):
+        """ Mode is read-only
+        """
+        return self._mode
+
+    @property
+    def order(self):
+        """ Order is read-only
+        """
+        return self._order
 
     def _buildknots(self):
         if self.order > 1:
-            data = ndimage.spline_filter(
-                np.nan_to_num(self.image.get_data()),
-                order=self.order, mode=self.mode)
+            in_data = np.nan_to_num(self.image.get_data())
+            if self.mode in ('nearest', 'grid-constant'):
+                # See: https://github.com/scipy/scipy/issues/13600
+                self._n_prepad = self.n_prepad_if_needed
+                in_data = np.pad(in_data, self._n_prepad, mode='edge')
+            data = ndimage.spline_filter(in_data,
+                                         order=self.order,
+                                         mode=self.mode)
         else:
             data = np.nan_to_num(self.image.get_data())
         if self._datafile is None:
@@ -64,8 +88,8 @@ class ImageInterpolator(object):
         del(data)
         self._datafile.close()
         self._datafile = open(self._datafile.name)
-        self.data = np.memmap(self._datafile.name, dtype=dtype,
-                              mode='r+', shape=datashape)
+        self._data = np.memmap(self._datafile.name, dtype=dtype,
+                               mode='r+', shape=datashape)
 
     def __del__(self):
         if self._datafile:
@@ -92,8 +116,8 @@ class ImageInterpolator(object):
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], seq_prod(output_shape))
         cmapi = self.image.coordmap.inverse()
-        voxels = cmapi(points.T).T
-        V = map_coordinates(self.data,
+        voxels = cmapi(points.T).T + self._n_prepad
+        V = map_coordinates(self._data,
                             voxels,
                             order=self.order,
                             mode=self.mode,
