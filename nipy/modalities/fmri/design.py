@@ -5,6 +5,8 @@ Convenience functions for specifying a design in the GLM
 """
 from __future__ import absolute_import
 
+from functools import reduce
+from operator import mul
 import itertools
 
 import numpy as np
@@ -18,6 +20,7 @@ from .utils import (events, blocks, fourier_basis as fourier_basis_sym,
                     convolve_functions, T)
 
 from .hrf import glover
+
 
 def fourier_basis(t, freq):
     """
@@ -104,8 +107,10 @@ def _build_formula_contrasts(spec, fields, order):
         Dictionary containing contrasts of main effects and interactions
         between factors.
     """
+    if len(fields) == 0:
+        raise ValueError('Specify at least one field')
     e_factors = [Factor(n, np.unique(spec[n])) for n in fields]
-    e_formula = np.product(e_factors)
+    e_formula = reduce(mul, e_factors)
     e_contrasts = {}
     # Add contrasts for factors and factor interactions
     max_order = min(len(e_factors), order)
@@ -115,7 +120,7 @@ def _build_formula_contrasts(spec, fields, order):
             # Collect factors where there is more than one level
             fs = [fc.main_effect for fn, fc in comb if len(fc.levels) > 1]
             if len(fs) > 0:
-                e_contrast = np.product(fs).design(spec)
+                e_contrast = reduce(mul, fs).design(spec)
                 e_contrasts[":".join(names)] = e_contrast
     e_contrasts['constant'] = formulae.I.design(spec)
     return e_formula, e_contrasts
