@@ -15,6 +15,16 @@ from ..fixes.scipy.ndimage import map_coordinates
 from ..utils import seq_prod
 
 
+# Earlier versions of Scipy don't have mode for spline_filter
+SPLINE_FILTER_HAS_MODE = True
+# Ensure bare call does not cause error.
+ndimage.spline_filter(np.zeros((2,2)))
+try:  # Does adding mode cause error?
+    ndimage.spline_filter(np.zeros((2,2)), mode='constant')
+except TypeError:
+    SPLINE_FILTER_HAS_MODE = False
+
+
 class ImageInterpolator(object):
     """ Interpolate Image instance at arbitrary points in world space
 
@@ -71,9 +81,10 @@ class ImageInterpolator(object):
                 # See: https://github.com/scipy/scipy/issues/13600
                 self._n_prepad = self.n_prepad_if_needed
                 in_data = np.pad(in_data, self._n_prepad, mode='edge')
-            data = ndimage.spline_filter(in_data,
-                                         order=self.order,
-                                         mode=self.mode)
+            kwargs = dict(order=self.order)
+            if SPLINE_FILTER_HAS_MODE:
+                kwargs['mode'] = self.mode
+            data = ndimage.spline_filter(in_data, **kwargs)
         else:
             data = np.nan_to_num(self.image.get_data())
         if self._datafile is None:
