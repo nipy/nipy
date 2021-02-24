@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-#!/usr/bin/env python3
 
 import numpy as np
 import numpy.random as nr
