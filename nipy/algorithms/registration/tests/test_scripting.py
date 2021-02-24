@@ -4,6 +4,7 @@
 from __future__ import absolute_import
 
 from os.path import split as psplit
+import gc
 
 import numpy as np
 
@@ -36,6 +37,9 @@ def test_space_time_realign():
             assert_false(np.allclose(xforms[-1].as_affine(), np.eye(4), atol=1e-3))
             img = load_image(out_fname)
             npt.assert_almost_equal(original_affine, img.affine)
+        # To avoid Windows "file ... used by another process" error when
+        # removing temporary directory.
+        gc.collect()
 
 
 def test_aff2euler():
