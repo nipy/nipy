@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-#!/usr/bin/env python
 
 import numpy as np
 from numpy import median as np_median

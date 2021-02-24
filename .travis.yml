@@ -143,7 +143,7 @@ script:
         cp ../.coveragerc .
         COVER_ARGS="--with-coverage --cover-package nipy"
         fi
-        $PYTHON ../tools/nipnost --verbosity=3 $COVER_ARGS nipy
+        python ../tools/nipnost --verbosity=3 $COVER_ARGS nipy
       fi
 
 after_success:

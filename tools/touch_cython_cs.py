@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Refresh modification times on Cython generated C files
 
 This is sometimes necessary on windows when the git checkout appears to

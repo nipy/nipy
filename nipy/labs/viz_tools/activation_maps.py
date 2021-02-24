@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Functions to do automatic visualization of activation-like maps.
 
