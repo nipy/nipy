@@ -49,6 +49,7 @@ def test_is_numlike():
 
 def test_seq_prod():
     assert_equal(seq_prod(()), 1)
+    assert_equal(seq_prod((), 2), 2)
     assert_equal(seq_prod((1,)), 1)
     assert_equal(seq_prod((1, 2)), 2)
     assert_equal(seq_prod((1, 2), 2), 4)
