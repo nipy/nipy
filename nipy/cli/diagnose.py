@@ -1,4 +1,3 @@
-#!python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 DESCRIP = 'Calculate and write results for diagnostic screen'
@@ -29,15 +28,15 @@ generate filenames of the form ``/some/path/components_fname.png,
 /some/path/max_fname.img`` etc.
 '''
 
-import matplotlib
-matplotlib.use('Agg')
-
 from nipy.externals.argparse import (ArgumentParser,
                                      RawDescriptionHelpFormatter)
 import nipy.algorithms.diagnostics.commands as nadc
 
 
 def main():
+    import matplotlib
+    matplotlib.use('Agg')
+
     parser = ArgumentParser(description=DESCRIP,
                             epilog=EPILOG,
                             formatter_class=RawDescriptionHelpFormatter)
@@ -56,7 +55,3 @@ def main():
     # parse the command line
     args = parser.parse_args()
     nadc.diagnose(args)
-
-
-if __name__ == '__main__':
-    main()

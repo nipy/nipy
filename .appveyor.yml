@@ -15,7 +15,10 @@ environment:
     - PYTHON: C:\Python37
     - PYTHON: C:\Python37-x64
     - PYTHON: C:\Python38
+      # https://stackoverflow.com/a/58582651/1939576
+      EXTRA_FLAGS: "--traverse-namespace"
     - PYTHON: C:\Python38-x64
+      EXTRA_FLAGS: "--traverse-namespace"
 
 install:
   # Prepend newly installed Python to the PATH of this build (this cannot be

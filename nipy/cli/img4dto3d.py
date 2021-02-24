@@ -1,4 +1,3 @@
-#!python
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 DESCRIP = 'Read 4D image file and write 3D nifti file for each volume'
@@ -35,7 +34,3 @@ def main():
     for i, img3d in enumerate(imgs):
         fname3d = '%s_%04d.nii' % (froot, i)
         nib.save(img3d, fname3d)
-
-
-if __name__ == '__main__':
-    main()

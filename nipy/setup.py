@@ -55,6 +55,7 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('utils')
     config.add_subpackage('tests')
     config.add_subpackage('externals')
+    config.add_subpackage('cli')
     config.add_subpackage('testing')
 
     # Note: this is a special subpackage containing that will later be

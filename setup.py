@@ -10,6 +10,9 @@ from distutils import log
 # update it when the contents of directories change.
 if exists('MANIFEST'): os.remove('MANIFEST')
 
+# Always use setuptools
+import setuptools
+
 from setup_helpers import (generate_a_pyrex_source, get_comrec_build,
                            cmdclass, INFO_VARS)
 
@@ -39,20 +42,19 @@ def configuration(parent_package='',top_path=None):
     return config
 
 ################################################################################
-# Use setuptools
-from setup_egg import extra_setuptools_args
 
 # Hard and soft dependency checking
 DEPS = (
-    ('numpy', INFO_VARS['NUMPY_MIN_VERSION'], 'setup_requires', True),
-    ('scipy', INFO_VARS['SCIPY_MIN_VERSION'], 'install_requires', True),
-    ('nibabel', INFO_VARS['NIBABEL_MIN_VERSION'], 'install_requires', False),
-    ('sympy', INFO_VARS['SYMPY_MIN_VERSION'], 'install_requires', False))
+    ('numpy', INFO_VARS['NUMPY_MIN_VERSION'], 'setup_requires'),
+    ('scipy', INFO_VARS['SCIPY_MIN_VERSION'], 'install_requires'),
+    ('nibabel', INFO_VARS['NIBABEL_MIN_VERSION'], 'install_requires'),
+    ('sympy', INFO_VARS['SYMPY_MIN_VERSION'], 'install_requires'),
+)
 
-for name, min_ver, req_type, heavy in DEPS:
+requirement_kwargs = {'setup_requires': [], 'install_requires': []}
+for name, min_ver, req_type in DEPS:
     new_req = '{0}>={1}'.format(name, min_ver)
-    old_reqs = extra_setuptools_args.get(req_type, [])
-    extra_setuptools_args[req_type] = old_reqs + [new_req]
+    requirement_kwargs[req_type].append(new_req)
 
 
 ################################################################################
@@ -100,7 +102,7 @@ cmdclass['build_ext'] = MyBuildExt
 ################################################################################
 
 
-def main(**extra_args):
+def main():
     from numpy.distutils.core import setup
 
     setup(name=INFO_VARS['NAME'],
@@ -116,12 +118,22 @@ def main(**extra_args):
           author_email=INFO_VARS['AUTHOR_EMAIL'],
           platforms=INFO_VARS['PLATFORMS'],
           # version set by config.get_version() above
-          requires=INFO_VARS['REQUIRES'],
           configuration = configuration,
           cmdclass = cmdclass,
-          scripts = glob('scripts/*'),
-          **extra_args)
+          tests_require=['nose>=1.0'],
+          test_suite='nose.collector',
+          zip_safe=False,
+          entry_points={
+              'console_scripts': [
+                  'nipy_3dto4d = nipy.cli.img3dto4d:main',
+                  'nipy_4dto3d = nipy.cli.img4dto3d:main',
+                  'nipy_4d_realign = nipy.cli.realign4d:main',
+                  'nipy_tsdiffana = nipy.cli.tsdiffana:main',
+                  'nipy_diagnose = nipy.cli.diagnose:main',
+              ],
+          },
+          **requirement_kwargs)
 
 
 if __name__ == "__main__":
-    main(**extra_setuptools_args)
+    main()

@@ -113,12 +113,12 @@ install:
       elif [ "$INSTALL_TYPE" == "setup" ]; then
         python setup.py install
       elif [ "$INSTALL_TYPE" == "sdist" ]; then
-        python setup_egg.py egg_info  # check egg_info while we're here
-        python setup_egg.py sdist
+        python setup.py egg_info  # check egg_info while we're here
+        python setup.py sdist
         pip install $EXTRA_PIP_FLAGS dist/*.tar.gz
       elif [ "$INSTALL_TYPE" == "wheel" ]; then
         pip install wheel
-        python setup_egg.py bdist_wheel
+        python setup.py bdist_wheel
         pip install $EXTRA_PIP_FLAGS dist/*.whl
       elif [ "$INSTALL_TYPE" == "requirements" ]; then
         pip install $EXTRA_PIP_FLAGS -r requirements.txt
