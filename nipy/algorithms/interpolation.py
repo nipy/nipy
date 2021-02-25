@@ -15,11 +15,25 @@ from ..fixes.scipy.ndimage import map_coordinates
 from ..utils import seq_prod
 
 
+# Earlier versions of Scipy don't have mode for spline_filter
+SPLINE_FILTER_HAS_MODE = True
+# Ensure bare call does not cause error.
+ndimage.spline_filter(np.zeros((2,2)))
+try:  # Does adding mode cause error?
+    ndimage.spline_filter(np.zeros((2,2)), mode='constant')
+except TypeError:
+    SPLINE_FILTER_HAS_MODE = False
+
+
 class ImageInterpolator(object):
     """ Interpolate Image instance at arbitrary points in world space
 
     The resampling is done with ``scipy.ndimage``.
     """
+
+    # Padding for prefilter calculation in 'nearest' and 'grid-constant' mode.
+    # See: https://github.com/scipy/scipy/issues/13600
+    n_prepad_if_needed = 12
 
     def __init__(self, image, order=3, mode='constant', cval=0.0):
         """
@@ -38,18 +52,39 @@ class ImageInterpolator(object):
            Value used for points outside the boundaries of the input if
            mode='constant'. Default is 0.0.
         """
+        # order and mode are read-only to allow pre-calculation of spline
+        # filters.
         self.image = image
-        self.order = order
-        self.mode = mode
+        self._order = order
+        self._mode = mode
         self.cval = cval
         self._datafile = None
+        self._n_prepad = 0  # Non-zero for 'nearest' and 'grid-constant'
         self._buildknots()
+
+    @property
+    def mode(self):
+        """ Mode is read-only
+        """
+        return self._mode
+
+    @property
+    def order(self):
+        """ Order is read-only
+        """
+        return self._order
 
     def _buildknots(self):
         if self.order > 1:
-            data = ndimage.spline_filter(
-                np.nan_to_num(self.image.get_data()),
-                self.order)
+            in_data = np.nan_to_num(self.image.get_data())
+            if self.mode in ('nearest', 'grid-constant'):
+                # See: https://github.com/scipy/scipy/issues/13600
+                self._n_prepad = self.n_prepad_if_needed
+                in_data = np.pad(in_data, self._n_prepad, mode='edge')
+            kwargs = dict(order=self.order)
+            if SPLINE_FILTER_HAS_MODE:
+                kwargs['mode'] = self.mode
+            data = ndimage.spline_filter(in_data, **kwargs)
         else:
             data = np.nan_to_num(self.image.get_data())
         if self._datafile is None:
@@ -64,8 +99,8 @@ class ImageInterpolator(object):
         del(data)
         self._datafile.close()
         self._datafile = open(self._datafile.name)
-        self.data = np.memmap(self._datafile.name, dtype=dtype,
-                              mode='r+', shape=datashape)
+        self._data = np.memmap(self._datafile.name, dtype=dtype,
+                               mode='r+', shape=datashape)
 
     def __del__(self):
         if self._datafile:
@@ -92,8 +127,8 @@ class ImageInterpolator(object):
         output_shape = points.shape[1:]
         points.shape = (points.shape[0], seq_prod(output_shape))
         cmapi = self.image.coordmap.inverse()
-        voxels = cmapi(points.T).T
-        V = map_coordinates(self.data,
+        voxels = cmapi(points.T).T + self._n_prepad
+        V = map_coordinates(self._data,
                             voxels,
                             order=self.order,
                             mode=self.mode,
