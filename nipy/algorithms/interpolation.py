@@ -4,11 +4,13 @@
 """
 from __future__ import absolute_import
 
-import os
 import tempfile
+
+from distutils.version import LooseVersion as LV
 
 import numpy as np
 
+import scipy
 from scipy import ndimage
 
 from ..fixes.scipy.ndimage import map_coordinates
@@ -16,13 +18,11 @@ from ..utils import seq_prod
 
 
 # Earlier versions of Scipy don't have mode for spline_filter
-SPLINE_FILTER_HAS_MODE = True
-# Ensure bare call does not cause error.
-ndimage.spline_filter(np.zeros((2,2)))
-try:  # Does adding mode cause error?
-    ndimage.spline_filter(np.zeros((2,2)), mode='constant')
-except TypeError:
-    SPLINE_FILTER_HAS_MODE = False
+SCIPY_VERSION = LV(scipy.__version__)
+SPLINE_FILTER_HAS_MODE = SCIPY_VERSION >= LV('1.2')
+# Fixes in interpolation in scipy >= 1.6 force pre-padding
+# in knot calculations.
+SPLINE_FILTER_NEEDS_PAD = SCIPY_VERSION >= LV('1.6')
 
 
 class ImageInterpolator(object):
@@ -33,7 +33,7 @@ class ImageInterpolator(object):
 
     # Padding for prefilter calculation in 'nearest' and 'grid-constant' mode.
     # See: https://github.com/scipy/scipy/issues/13600
-    n_prepad_if_needed = 12
+    n_prepad_if_needed = 12 if SPLINE_FILTER_NEEDS_PAD else 0
 
     def __init__(self, image, order=3, mode='constant', cval=0.0):
         """
@@ -75,40 +75,24 @@ class ImageInterpolator(object):
         return self._order
 
     def _buildknots(self):
+        data = np.nan_to_num(self.image.get_data()).astype(np.float64)
         if self.order > 1:
-            in_data = np.nan_to_num(self.image.get_data())
             if self.mode in ('nearest', 'grid-constant'):
                 # See: https://github.com/scipy/scipy/issues/13600
                 self._n_prepad = self.n_prepad_if_needed
-                in_data = np.pad(in_data, self._n_prepad, mode='edge')
+                if self._n_prepad != 0:
+                    data = np.pad(data, self._n_prepad, mode='edge')
             kwargs = dict(order=self.order)
             if SPLINE_FILTER_HAS_MODE:
                 kwargs['mode'] = self.mode
-            data = ndimage.spline_filter(in_data, **kwargs)
-        else:
-            data = np.nan_to_num(self.image.get_data())
-        if self._datafile is None:
-            _, fname = tempfile.mkstemp()
-            self._datafile = open(fname, mode='wb')
-        else:
-            self._datafile = open(self._datafile.name, 'wb')
-        data = np.nan_to_num(data.astype(np.float64))
+            data = ndimage.spline_filter(data, **kwargs)
+        self._datafile = tempfile.TemporaryFile()
         data.tofile(self._datafile)
-        datashape = data.shape
-        dtype = data.dtype
+        self._data = np.memmap(self._datafile,
+                               dtype=data.dtype,
+                               mode='r+',
+                               shape=data.shape)
         del(data)
-        self._datafile.close()
-        self._datafile = open(self._datafile.name)
-        self._data = np.memmap(self._datafile.name, dtype=dtype,
-                               mode='r+', shape=datashape)
-
-    def __del__(self):
-        if self._datafile:
-            self._datafile.close()
-            try:
-                os.remove(self._datafile.name)
-            except:
-                pass
 
     def evaluate(self, points):
         """ Resample image at points in world space
@@ -133,7 +117,7 @@ class ImageInterpolator(object):
                             order=self.order,
                             mode=self.mode,
                             cval=self.cval,
-                            prefilter=False)
+                            prefilter=self.order < 2)
         # ndimage.map_coordinates returns a flat array,
         # it needs to be reshaped to the original shape
         V.shape = output_shape
