@@ -25,7 +25,7 @@ install:
   # done from inside the powershell script as it would require to restart
   # the parent CMD process).
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
-  - python -m pip install -U pip
+  - python -m pip install -U pip setuptools
 
   # Fix MSVC builds for 64-bit Python. See:
   # http://stackoverflow.com/questions/32091593/cannot-install-windows-sdk-7-1-on-windows-10
