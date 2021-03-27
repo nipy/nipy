@@ -32,6 +32,19 @@ Abbreviated authors are:
 * JBP - Jean-Baptiste Poline
 * JT - Jonathan Taylor
 
+* 0.5.0 (Saturday 27 March 2021)
+
+  Bugfix, refactoring and compatibility release.
+
+  * Heroic work to update Nipy for recent versions of Numpy, Sympy, Nose,
+    Scipy, and numpydoc - many thanks to Matteo Visconti di Oleggio Castello.
+  * Some fixes to harmonize interpolation with recent changes / fixes in
+    interpolation in Scipy (MB).
+  * Move script installation logic to use setuptools (MB).
+  * Some more updates for modern Numpy (MB).
+  * Fixes for changes in Sympy, by updating some formulae to use Piecewise
+    (YH).
+
 * 0.4.2 (Saturday 17 February 2018)
 
   Bugfix, refactoring and compatibility release.
