@@ -10,8 +10,8 @@ Summary
 
 * if you don't have it, install Python using the instructions below;
 * if you don't have it, install Pip_ using the instructions below;
-* if you don't have them, install NumPy_ >= 1.6 and Scipy >= 0.9 using the
-  instructions below;
+* if you don't have them, install NumPy_ >= 1.14 and Scipy
+  >= 1.0 using the instructions below;
 * install Nipy with something like:
 
     .. code-block:: bash

@@ -63,69 +63,70 @@ Release checklist
   at least match. Do they still hold?  Make sure ``.travis.yml`` is testing
   these minimum dependencies specifically.
 
-* Check the examples in python 2 and python 3, by running something like::
+*   Check the examples in python 2 and python 3, by
+    running something like::
 
-    cd ..
-    ./nipy/tools/run_log_examples.py nipy/examples --log-path=~/tmp/eg_logs
+        cd ..
+        ./nipy/tools/run_log_examples.py nipy/examples --log-path=~/tmp/eg_logs
 
-  in a python 2 and python 3 virtualenv.  Review the output in (e.g.)
-  ``~/tmp/eg_logs``. The output file ``summary.txt`` will have the pass file
-  printout that the ``run_log_examples.py`` script puts onto stdout while
-  running.  You can run the examples via the buildbot by triggering builds
-  for:
+    in a Python 2 and python 3 virtualenv.  Review the output in (e.g.)
+    ``~/tmp/eg_logs``. The output file ``summary.txt`` will have the pass file
+    printout that the ``run_log_examples.py`` script puts onto stdout while
+    running.  You can run the examples via the buildbot by triggering builds
+    for:
 
-  * https://nipy.bic.berkeley.edu/builders/nipy-examples-2.7
-  * https://nipy.bic.berkeley.edu/builders/nipy-examples-3.5
+    * https://nipy.bic.berkeley.edu/builders/nipy-examples-2.7
+    * https://nipy.bic.berkeley.edu/builders/nipy-examples-3.5
 
-  The matching outputs appear at:
+    The matching outputs appear at:
 
-  * https://nipy.bic.berkeley.edu/nipy-examples-2.7
-  * https://nipy.bic.berkeley.edu/nipy-examples-3.5
+    * https://nipy.bic.berkeley.edu/nipy-examples-2.7
+    * https://nipy.bic.berkeley.edu/nipy-examples-3.5
 
-  I use the following commands to get the output to my laptop and review with
-  vim::
+    I use the following commands to get the output to my laptop and review with
+    vim::
 
-    PY_VER=2.7
+        PY_VER=2.7
 
-  Then::
+    Then::
 
-    BB_SSH=buildbot@nipy.bic.berkeley.edu
-    scp -r ${BB_SSH}:nibotmi/public_html/nipy-examples-${PY_VER} .
-    cd nipy-examples-${PY_VER}
-    # Delete empty files
-    find . -size 0 -exec rm {} \;
-    # Review stderr; :bd to close buffer once reviewed
-    vim *.stderr
+        BB_SSH=buildbot@nipy.bic.berkeley.edu
+        scp -r ${BB_SSH}:nibotmi/public_html/nipy-examples-${PY_VER} .
+        cd nipy-examples-${PY_VER}
+        # Delete empty files
+        find . -size 0 -exec rm {} \;
+        # Review stderr; :bd to close buffer once reviewed
+        vim *.stderr
 
-  Then::
+    Then::
 
-    # Review stdout
-    vim *.stdout
+        # Review stdout
+        vim *.stdout
 
-  Finally::
+    Finally::
 
-    cd ..
+        cd ..
 
-  Likewise for::
+    Likewise for::
 
-    PY_VER=3.5
+        PY_VER=3.5
 
-  I also did a by-eye comparison between the 2.7 and 3.4 files with::
+    I also did a by-eye comparison between the 2.7 and 3.4 files with::
 
-    diff -r nipy-examples-2.7 nipy-examples-3.5 | less
+        diff -r nipy-examples-2.7 nipy-examples-3.5 | less
 
 * Do a final check on the `nipy buildbot`_
 
-* If you have travis-ci_ building set up on your own fork of nipy you might
-  want to push the code in its current state to a branch that will build,
-  e.g::
+* If you have travis-ci_ building set up on your own fork
+  of Nipy you might want to push the code in its current
+  state to a branch that will build, e.g::
 
     git branch -D pre-release-test # in case branch already exists
     git co -b pre-release-test
     git push your-github-user pre-release-test
 
-* Make sure all the ``.c`` generated files are up to date with Cython sources
-  with::
+* Make sure all the ``.c`` generated files are up to date
+  with Cython sources with::
 
     ./tools/nicythize
 
