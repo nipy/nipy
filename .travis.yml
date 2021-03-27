@@ -36,7 +36,7 @@ matrix:
     - python: 2.7
       env:
         # Definitive source for these in nipy/info.py
-        - PRE_DEPENDS="numpy==1.13"
+        - PRE_DEPENDS="numpy==1.14"
         - DEPENDS="scipy==1.0.0 sympy==1.0.0 nibabel==2.0.0"
     # Test compiling against external lapack
     - python: 3.6
@@ -47,30 +47,28 @@ matrix:
           packages:
               - libblas-dev
               - liblapack-dev
-    - python: 2.7
+    - python: 3.8
       env:
         - INSTALL_TYPE=sdist
-        - DEPENDS="numpy==1.7.1"  # latest travis scipy built with 1.7.1
-    - python: 2.7
+    - python: 3.8
       env:
         - INSTALL_TYPE=wheel
-        - DEPENDS="numpy==1.7.1"  # latest travis scipy built with 1.7.1
-    - python: 2.7
+    - python: 3.8
       env:
         - INSTALL_TYPE=requirements
         - DEPENDS=
-    # test 3.5 against pre-release builds of everything
-    - python: 3.6
+    # test 3.8 against pre-release builds of everything
+    - python: 3.8
       env:
         - EXTRA_PIP_FLAGS="$PRE_PIP_FLAGS"
     # test python setup.py install
-    - python: 3.6
+    - python: 3.8
       env:
         - INSTALL_TYPE=setup
-    - python: 3.6
+    - python: 3.8
       env:
         - INSTALL_TYPE="pip_e"
-    - python: 3.6
+    - python: 3.8
       env:
         - DOC_BUILD=1
       addons:
