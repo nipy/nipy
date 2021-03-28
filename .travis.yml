@@ -14,8 +14,8 @@ cache:
 
 env:
   global:
-    - DEPENDS="numpy scipy sympy<1.6 matplotlib nibabel"
-    - PRE_PIP_FLAGS="--pre"
+    - DEPENDS="numpy scipy sympy matplotlib nibabel"
+    - PRE_PIP_FLAGS="--pre --extra-index-url https://pypi.anaconda.org/multibuild-wheels-staging/simple" --extra-index-url https://anaconda.org/scipy-wheels-nightly"
     - INSTALL_TYPE="pip"
 
 python:
