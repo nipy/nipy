@@ -183,7 +183,7 @@ Doing the release
         - '0.5.1.dev1' until the next maintenance release - say '0.5.1'.
         Commit. Don't forget to push upstream with something like::
 
-          git push upstream maint/0.2.x --set-upstream
+            git push upstream maint/0.2.x --set-upstream
 
     *   Start next development series::
 
