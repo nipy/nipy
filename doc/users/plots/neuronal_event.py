@@ -11,26 +11,29 @@ import matplotlib.pyplot as plt
 
 from sympy import Symbol, Heaviside, lambdify
 
-ta = [0,4,8,12,16]; tb = [2,6,10,14,18]
-ba = Symbol('ba'); bb = Symbol('bb'); t = Symbol('t')
-fa = sum([Heaviside(t-_t) for _t in ta]) * ba
-fb = sum([Heaviside(t-_t) for _t in tb]) * bb
-N = fa+fb
+ta = [0, 4, 8, 12, 16]
+tb = [2, 6, 10, 14, 18]
+ba = Symbol('ba')
+bb = Symbol('bb')
+t = Symbol('t')
+fa = sum([Heaviside(t - _t) for _t in ta]) * ba
+fb = sum([Heaviside(t - _t) for _t in tb]) * bb
+N = fa + fb
 
-Nn = N.subs(ba,1)
-Nn = Nn.subs(bb,-2)
+Nn = N.subs(ba, 1)
+Nn = Nn.subs(bb, -2)
 
-Nn = lambdify(t, Nn)
+# Use Numpy heaviside for lambdify, with y=1 for x=0.
+modules = [{'Heaviside': lambda x: np.heaviside(x, 1)}, 'numpy']
+neuronal_func = lambdify(t, Nn, modules=modules)
 
-tt = np.linspace(-1,21,1201)
-neuronal = [Nn(_t) for _t in tt]
-# Deal with undefined Heaviside at 0
-neuronal = [n.subs(Heaviside(0.0), 1) for n in neuronal]
+tt = np.linspace(-1, 21, 1201)
+neuronal = neuronal_func(tt)
 
 plt.step(tt, neuronal)
 
 a = plt.gca()
-a.set_ylim([-5.5,1.5])
+a.set_ylim([-5.5, 1.5])
 a.set_ylabel('Neuronal (cumulative)')
 a.set_xlabel('Time')
 
