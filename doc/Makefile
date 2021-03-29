@@ -110,7 +110,10 @@ linkcheck:
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in build/linkcheck/output.txt."
 
-doctest:
+clean-doctest: clean doctest-only
+	# Clean avoids testing API docs
+
+doctest-only:
 	mkdir -p build/doctest build/doctrees
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) build/doctest
 	@echo

@@ -78,7 +78,7 @@ It can also be used to  get the inverse mapping, or in this example from (x,y,z)
 back to (i,j,k):
 
 >>> coordmap.inverse()([30.,-36.,-10.])
-array([ 1.,  2.,  3.])
+array([1., 2., 3.])
 
 We can see how this works if we just apply the affine
 ourselves using dot product.

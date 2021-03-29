@@ -218,6 +218,22 @@ else:  # Sphinx >= 1.4
 # If false, no module index is generated.
 latex_use_modindex = True
 
+# Doctesting helpers
+doctest_global_setup = """\
+import numpy as np
+from numpy import array
+
+try:
+    import vtk
+except ImportError:
+    vtk = None
+"""
+
+_sedd = sphinx.ext.doctest.doctest
+doctest_default_flags = (_sedd.ELLIPSIS | _sedd.IGNORE_EXCEPTION_DETAIL |
+                         _sedd.DONT_ACCEPT_TRUE_FOR_1 |
+                         _sedd.NORMALIZE_WHITESPACE)
+
 # Numpy extensions
 # ----------------
 # Worked out by Steven Silvester in

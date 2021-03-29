@@ -431,10 +431,10 @@ like:
 AffineTransform(
    function_domain=CoordinateSystem(coord_names=('i', 'j'), name='', coord_dtype=float64),
    function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
-   affine=array([[ 2.,  3.,  7.],
-                 [ 3.,  4.,  9.],
-                 [ 1.,  5.,  3.],
-                 [ 0.,  0.,  1.]])
+   affine=array([[2., 3., 7.],
+                 [3., 4., 9.],
+                 [1., 5., 3.],
+                 [0., 0., 1.]])
 )
 
 For one, it allows very clear specification of a 2-dimensional plane (i.e. a
@@ -681,7 +681,7 @@ Check that it does the right permutation
 
 >>> i, j, k = 10., 20., 40
 >>> ijk_to_kij([i, j, k])
-array([ 40.,  10.,  20.])
+array([40., 10., 20.])
 
 Yup, now let's try to make a kij_to_RAS transform
 
@@ -770,7 +770,7 @@ AffineTransform(
                  [0, 0, 0, 1]], dtype=object)
 )
 >>> A([i,j,k]) == [x_start + i*x_step, y_start + j*y_step, z_start + k*z_step]
-array([ True,  True,  True], dtype=bool)
+array([ True,  True,  True])
 
 This is another
 

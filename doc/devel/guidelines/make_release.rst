@@ -100,8 +100,21 @@ Release checklist
 
     ./tools/nicythize
 
-* Check the documentation doctests pass from
-  http://nipy.bic.berkeley.edu/builders/nipy-doc-builder
+* Check the documentation doctests pass::
+
+    virtualenv venv
+    venv/bin/activate
+    pip install -r doc-requirements.txt
+    pip install -e .
+    (cd docs && make clean-doctest)
+
+* Check the doc build::
+
+    virtualenv venv
+    venv/bin/activate
+    pip install -r doc-requirements.txt
+    pip install -e .
+    (cd docs && make html)
 
 * Build and test the Nipy wheels.  See the `wheel builder README
   <https://github.com/MacPython/nipy-wheels>`_ for instructions.  In summary,
