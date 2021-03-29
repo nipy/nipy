@@ -11,16 +11,23 @@ A guide for developers who are doing a nipy release
 Release tools
 =============
 
-There are some release utilities that come with nibabel_.  nibabel should
-install these as the ``nisext`` package, and the testing stuff is understandably
-in the ``testers`` module of that package.  nipy has Makefile targets for their
-use.  The relevant targets are::
+Run::
 
     make check-version-info
 
 This installs the code from a git archive, from the repository, and for
-in-place use, and runs the ``get_info()`` function to confirm that installation
-is working and information parameters are set correctly.
+in-place use, and runs the ``get_info()`` function to confirm that
+installation is working and information parameters are set correctly.  Look for the output at the end, which should look something like::
+
+    ########
+    Versions
+    ########
+
+    nipy - zip: 0.5.0
+    nipy - install: 0.5.0
+    nipy - editable: 0.5.0
+
+where the `0.5.0` should be the version in `nipy/info.py`.
 
 .. _release-checklist:
 

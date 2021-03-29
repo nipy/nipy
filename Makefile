@@ -59,36 +59,12 @@ bdist_rpm:
 bdist_mpkg:
 	$(PYTHON) tools/mpkg_wrapper.py setup.py install
 
-# Check for files not installed
-check-files:
-	$(PYTHON) -c 'from nisext.testers import check_files; check_files("nipy")'
-
 # Print out info for possible install methods
 check-version-info:
-	$(PYTHON) -c 'from nisext.testers import info_from_here; info_from_here("nipy")'
-
-# Run tests from installed code
-installed-tests:
-	$(PYTHON) -c 'from nisext.testers import tests_installed; tests_installed("nipy")'
-
-# Run tests from sdist archive of code
-sdist-tests:
-	$(PYTHON) -c 'from nisext.testers import sdist_tests; sdist_tests("nipy")'
-
-# Run tests from bdist egg of code
-bdist-egg-tests:
-	$(PYTHON) -c 'from nisext.testers import bdist_egg_tests; bdist_egg_tests("nipy")'
+	bash tools/show_version_info.sh
 
 source-release: distclean
 	$(PYTHON) setup.py sdist
-
-venv-tests:
-	# I use this for python2.5 because the sdist-tests target doesn't work
-	# (the tester routine uses a 2.6 feature)
-	make distclean
-	- rm -rf $(VIRTUAL_ENV)/lib/python$(PYVER)/site-packages/nipy
-	$(PYTHON) setup.py install
-	cd .. && nosetests $(VIRTUAL_ENV)/lib/python$(PYVER)/site-packages/nipy
 
 tox-fresh:
 	# tox tests with fresh-installed virtualenvs.  Needs network.  And

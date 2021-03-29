@@ -259,7 +259,7 @@ def generate_a_pyrex_source(self, base, ext_name, source, extension):
     return target_file
 
 
-# This copied from nibabel/nisext/sexts.py
+# Copied from soon-to-be retired nibabel/nisext/sexts.py
 # We'll probably drop this way of doing versioning soon
 def get_comrec_build(pkg_dir, build_cmd=build_py):
     """ Return extended build command class for recording commit

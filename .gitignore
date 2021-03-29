@@ -81,3 +81,4 @@ doc/api/generated
 doc/build/
 doc/manual
 cythonize.dat
+version_check_tmp/
