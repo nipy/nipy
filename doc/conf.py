@@ -169,7 +169,7 @@ htmlhelp_basename = project
 # ------------------------
 
 # Additional stuff for the LaTeX preamble.
-_latex_preamble = """
+_latex_preamble = r"""
    \usepackage{amsmath}
    \usepackage{amssymb}
    % Uncomment these two if needed
@@ -198,7 +198,7 @@ latex_elements = {
 
 latex_documents = [
   ('documentation', 'nipy.tex', 'Neuroimaging in Python Documentation',
-   ur'Neuroimaging in Python team.','manual'),
+   'Neuroimaging in Python team.','manual'),
   ]
 
 # The name of an image file (relative to this directory) to place at the top of
