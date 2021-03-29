@@ -45,11 +45,11 @@ Release checklist
 
   where ``0.2.0`` was the last release tag name.
 
-  Then manually go over ``git shortlog 0.2.0..`` to make sure the release notes
-  are as complete as possible and that every contributor was recognized.
+  Then manually go over ``git shortlog 0.2.0..`` to make sure the release
+  notes are as complete as possible and that every contributor was recognized.
 
-* Use the opportunity to update the ``.mailmap`` file if there are any duplicate
-  authors listed from ``git shortlog -ns``.
+* Use the opportunity to update the ``.mailmap`` file if there are any
+  duplicate authors listed from ``git shortlog -ns``.
 
 * Add any new authors to the ``AUTHORS`` file.  Add any new entries to the
   ``THANKS`` file.
@@ -66,9 +66,10 @@ Release checklist
   because this will be the output used by PyPI_
 
 * Check the dependencies listed in ``nipy/info.py`` (e.g.
-  ``NUMPY_MIN_VERSION``) and in ``doc/users/installation.rst``.  They should
-  at least match. Do they still hold?  Make sure ``.travis.yml`` is testing
-  these minimum dependencies specifically.
+  ``NUMPY_MIN_VERSION``) and in ``requirements.txt`` and in
+  ``doc/users/installation.rst``.  They should at least match. Do they still
+  hold?  Make sure ``.travis.yml`` is testing these minimum dependencies
+  specifically.
 
 *   Check the examples in python 2 and python 3, by
     running something like::
@@ -79,50 +80,12 @@ Release checklist
     in a Python 2 and python 3 virtualenv.  Review the output in (e.g.)
     ``~/tmp/eg_logs``. The output file ``summary.txt`` will have the pass file
     printout that the ``run_log_examples.py`` script puts onto stdout while
-    running.  You can run the examples via the buildbot by triggering builds
-    for:
+    running.
 
-    * https://nipy.bic.berkeley.edu/builders/nipy-examples-2.7
-    * https://nipy.bic.berkeley.edu/builders/nipy-examples-3.5
-
-    The matching outputs appear at:
-
-    * https://nipy.bic.berkeley.edu/nipy-examples-2.7
-    * https://nipy.bic.berkeley.edu/nipy-examples-3.5
-
-    I use the following commands to get the output to my laptop and review with
-    vim::
-
-        PY_VER=2.7
-
-    Then::
-
-        BB_SSH=buildbot@nipy.bic.berkeley.edu
-        scp -r ${BB_SSH}:nibotmi/public_html/nipy-examples-${PY_VER} .
-        cd nipy-examples-${PY_VER}
-        # Delete empty files
-        find . -size 0 -exec rm {} \;
-        # Review stderr; :bd to close buffer once reviewed
-        vim *.stderr
-
-    Then::
-
-        # Review stdout
-        vim *.stdout
-
-    Finally::
-
-        cd ..
-
-    Likewise for::
-
-        PY_VER=3.5
-
-    I also did a by-eye comparison between the 2.7 and 3.4 files with::
+    You might want to do a by-eye comparison between the 2.7 and 3.x files
+    with::
 
         diff -r nipy-examples-2.7 nipy-examples-3.5 | less
-
-* Do a final check on the `nipy buildbot`_
 
 * If you have travis-ci_ building set up on your own fork
   of Nipy you might want to push the code in its current
@@ -137,39 +100,6 @@ Release checklist
 
     ./tools/nicythize
 
-Release checking - buildbots
-============================
-
-* Check all the buildbots pass
-* Run the builder and review the possibly green output from
-  http://nipy.bic.berkeley.edu/builders/nipy-release-checks
-
-  This runs all of::
-
-    make distclean
-    python -m compileall .
-    make sdist-tests
-    make check-version-info
-    make check-files
-
-* You need to review the outputs for errors; at the moment this buildbot builder
-  does not check whether these tests passed or failed.
-* ``make check-version-info`` checks how the commit hash is stored in the
-  installed files.  You should see something like this::
-
-    {'sys_version': '2.6.6 (r266:84374, Aug 31 2010, 11:00:51) \n[GCC 4.0.1 (Apple Inc. build 5493)]', 'commit_source': 'archive substitution', 'np_version': '1.5.0', 'commit_hash': '25b4125', 'pkg_path': '/var/folders/jg/jgfZ12ZXHwGSFKD85xLpLk+++TI/-Tmp-/tmpGPiD3E/pylib/nipy', 'sys_executable': '/Library/Frameworks/Python.framework/Versions/2.6/Resources/Python.app/Contents/MacOS/Python', 'sys_platform': 'darwin'}
-    /var/folders/jg/jgfZ12ZXHwGSFKD85xLpLk+++TI/-Tmp-/tmpGPiD3E/pylib/nipy/__init__.pyc
-    {'sys_version': '2.6.6 (r266:84374, Aug 31 2010, 11:00:51) \n[GCC 4.0.1 (Apple Inc. build 5493)]', 'commit_source': 'installation', 'np_version': '1.5.0', 'commit_hash': '25b4125', 'pkg_path': '/var/folders/jg/jgfZ12ZXHwGSFKD85xLpLk+++TI/-Tmp-/tmpGPiD3E/pylib/nipy', 'sys_executable': '/Library/Frameworks/Python.framework/Versions/2.6/Resources/Python.app/Contents/MacOS/Python', 'sys_platform': 'darwin'}
-    /Users/mb312/dev_trees/nipy/nipy/__init__.pyc
-    {'sys_version': '2.6.6 (r266:84374, Aug 31 2010, 11:00:51) \n[GCC 4.0.1 (Apple Inc. build 5493)]', 'commit_source': 'repository', 'np_version': '1.5.0', 'commit_hash': '25b4125', 'pkg_path': '/Users/mb312/dev_trees/nipy/nipy', 'sys_executable': '/Library/Frameworks/Python.framework/Versions/2.6/Resources/Python.app/Contents/MacOS/Python', 'sys_platform': 'darwin'}
-
-* ``make check-files`` checks if the source distribution is picking up all the
-  library and script files.  Look for output at the end about missed files, such
-  as::
-
-    Missed script files:  /Users/mb312/dev_trees/nipy/bin/nib-dicomfs, /Users/mb312/dev_trees/nipy/bin/nifti1_diagnose.py
-
-  Fix ``setup.py`` to carry across any files that should be in the distribution.
 * Check the documentation doctests pass from
   http://nipy.bic.berkeley.edu/builders/nipy-doc-builder
 
@@ -179,11 +109,9 @@ Release checking - buildbots
   text files (if present) with the branch or commit for the release, commit
   and then push back up to github.  This will trigger a wheel build and test
   on OSX, Linux and Windows. Check the build has passed on on the Travis-CI
-  interface at https://travis-ci.org/MacPython/nipy-wheels.  You'll need commit
-  privileges to the ``dipy-wheels`` repo; ask Matthew Brett or on the mailing
-  list if you do not have them.
-
-* The release should now be ready.
+  interface at https://travis-ci.org/MacPython/nipy-wheels.  You'll need
+  commit privileges to the ``nipy-wheels`` repo; ask Matthew Brett or on the
+  mailing list if you do not have them.
 
 Doing the release
 =================
@@ -227,40 +155,43 @@ Doing the release
 
     make upload-html
 
-* Set up maintenance / development branches
+*   Set up maintenance / development branches
 
-  If this is this is a full release you need to set up two branches, one for
-  further substantial development (often called 'trunk') and another for
-  maintenance releases.
+    If this is this is a full release you need to set up two branches, one for
+    further substantial development (often called 'trunk') and another for
+    maintenance releases.
 
-  * Branch to maintenance::
+    *   Branch to maintenance::
 
-      git co -b maint/0.5.x
+            git co -b maint/0.5.x
 
-    Set ``_version_extra`` back to ``.dev`` and bump ``_version_micro`` by 1.
-    Thus the maintenance series will have version numbers like - say - '0.5.1.dev'
-    until the next maintenance release - say '0.5.1'.  Commit. Don't forget to
-    push upstream with something like::
+        Set ``_version_extra`` back to ``.dev1`` and bump ``_version_micro`` by
+        1. Thus the maintenance series will have version numbers like - say
+        - '0.5.1.dev1' until the next maintenance release - say '0.5.1'.
+        Commit. Don't forget to push upstream with something like::
 
-      git push upstream maint/0.2.x --set-upstream
+          git push upstream maint/0.2.x --set-upstream
 
-  * Start next development series::
+    *   Start next development series::
 
-      git co main-master
+            git co main-master
 
-    then restore ``.dev`` to ``_version_extra``, and bump ``_version_minor`` by 1.
-    Thus the development series ('trunk') will have a version number here of
-    '0.3.0.dev' and the next full release will be '0.3.0'.
+        then restore ``.dev`` to ``_version_extra``, and bump
+        ``_version_minor`` by 1. Thus the development series ('trunk') will
+        have a version number here of '0.3.0.dev' and the next full release
+        will be '0.3.0'.
 
-  * Merge ``-s ours`` the version number changes from the maint release, e.g::
+    *   Merge ``-s ours`` the version number changes from the maint release,
+        e.g::
 
-      git merge -s ours maint/0.3.x
+          git merge -s ours maint/0.3.x
 
-    This marks the version number changes commit as merged, so we can merge any
-    changes we need from the maintenance branch without merge conflicts.
+        This marks the version number changes commit as merged, so we can
+        merge any changes we need from the maintenance branch without merge
+        conflicts.
 
-  If this is just a maintenance release from ``maint/0.2.x`` or similar, just
-  tag and set the version number to - say - ``0.2.1.dev``.
+    If this is just a maintenance release from ``maint/0.2.x`` or similar, just
+    tag and set the version number to - say - ``0.2.1.dev``.
 
 * Push tags::
 
