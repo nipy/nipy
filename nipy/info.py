@@ -4,8 +4,9 @@ docs.  In setup.py in particular, we exec this file, so it cannot import nipy
 """
 
 # nipy version information.  An empty _version_extra corresponds to a
-# full release.  '.dev' as a _version_extra string means this is a development
+# full release.  '.devN' as a _version_extra string means this is a development
 # version
+# See: https://www.python.org/dev/peps/pep-0440
 _version_major = 0
 _version_minor = 5
 _version_micro = 0
