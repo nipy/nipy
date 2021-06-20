@@ -51,7 +51,7 @@ class ImageList(Iterator):
         False
         >>> np.asarray(sublist).shape
         (3, 17, 21, 3)
-        >>> newimg.get_data().shape
+        >>> newimg.get_fdata().shape
         (17, 21, 3)
         """
         if images is None:
@@ -96,7 +96,7 @@ class ImageList(Iterator):
         for img in iter_axis(image, in_ax):
             if dropout:
                 cmap = drop_io_dim(img.coordmap, out_ax_name)
-                img = Image(img.get_data(), cmap, img.metadata)
+                img = Image(img.get_fdata(), cmap, img.metadata)
             imlist.append(img)
         return klass(imlist)
 
@@ -162,7 +162,7 @@ class ImageList(Iterator):
         v = np.empty(tmp_shape)
         # first put the data in an array, with list dimension in the first axis
         for i, im in enumerate(self.list):
-            v[i] = im.get_data() # get_data method of an image has no axis
+            v[i] = im.get_fdata() # get_data method of an image has no axis
         # then roll (and rock?) the axis to have axis in the right place
         if axis < 0:
             axis += out_dim

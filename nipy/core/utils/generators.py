@@ -80,7 +80,7 @@ def parcels(data, labels=None, exclude=()):
     """
     # Get image data or make array from array-like
     try:
-        data = data.get_data()
+        data = data.get_fdata()
     except AttributeError:
         data = np.asarray(data)
     if labels is None:

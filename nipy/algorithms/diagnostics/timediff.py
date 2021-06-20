@@ -195,7 +195,7 @@ def time_slice_diffs_image(img, time_axis='t', slice_axis='slice'):
         raise AxisError('Cannot identify matching input output axes with "%s"'
                         % slice_axis)
     vol_coordmap = drop_io_dim(img.coordmap, time_axis)
-    results = time_slice_diffs(img.get_data(), time_in_ax, slice_in_ax)
+    results = time_slice_diffs(img.get_fdata(), time_in_ax, slice_in_ax)
     for key in ('slice_diff2_max_vol', 'diff2_mean_vol'):
         vol = img_class(results[key], vol_coordmap)
         results[key] = vol

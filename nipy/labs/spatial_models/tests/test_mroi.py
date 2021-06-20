@@ -205,10 +205,10 @@ def test_example():
     # Test example runs correctly
     eg_img = pjoin(dirname(__file__), 'some_blobs.nii')
     nim = load(eg_img)
-    mask_image = Nifti1Image((nim.get_data() ** 2 > 0).astype('u8'),
+    mask_image = Nifti1Image((nim.get_fdata() ** 2 > 0).astype('u8'),
                              get_affine(nim))
     domain = grid_domain_from_image(mask_image)
-    data = nim.get_data()
+    data = nim.get_fdata()
     values = data[data != 0]
 
     # parameters
@@ -229,10 +229,10 @@ def test_example():
     assert_equal(average_activation, nroi.representative_feature('activation'))
     # Binary image is default
     bin_wim = nroi.to_image()
-    bin_vox = bin_wim.get_data()
+    bin_vox = bin_wim.get_fdata()
     assert_equal(np.unique(bin_vox), [0, 1])
     id_wim = nroi.to_image('id', roi=True, descrip='description')
-    id_vox = id_wim.get_data()
+    id_vox = id_wim.get_fdata()
     mask = bin_vox.astype(bool)
     assert_equal(id_vox[~mask], -1)
     ids = nroi.get_id()
@@ -240,7 +240,7 @@ def test_example():
     # Test activation
     wim = nroi.to_image('activation', roi=True, descrip='description')
     # Sadly, all cast to int
-    assert_equal(np.unique(wim.get_data().astype(np.int32)), [-1, 3, 4, 5])
+    assert_equal(np.unique(wim.get_fdata().astype(np.int32)), [-1, 3, 4, 5])
     # end blobs or leaves
     lroi = nroi.copy()
     lroi.reduce_to_leaves()

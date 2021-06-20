@@ -76,8 +76,8 @@ class _AnatCache(object):
                         'required to plot anatomy, see the nipy documentation '
                         'installaton section for how to install template files.')
             anat_im = load(filename)
-            anat = anat_im.get_data()
-            anat = anat.astype(np.float)
+            anat = anat_im.get_fdata()
+            anat = anat.astype(float)
             anat_mask = ndimage.morphology.binary_fill_holes(anat > 0)
             anat = np.ma.masked_array(anat, np.logical_not(anat_mask))
             cls.anat_sform = get_affine(anat_im)
@@ -94,9 +94,9 @@ class _AnatCache(object):
         cls.blurred = ndimage.gaussian_filter(
                 (ndimage.morphology.binary_fill_holes(
                     ndimage.gaussian_filter(
-                            (anat > 4800).astype(np.float), 6)
+                            (anat > 4800).astype(float), 6)
                         > 0.5
-                    )).astype(np.float),
+                    )).astype(float),
                 2).T.ravel()
         return cls.blurred
 

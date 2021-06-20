@@ -290,7 +290,7 @@ class GGM(object):
         step = 3.5 * np.std(x) / np.exp(np.log(np.size(x)) / 3)
         bins = max(10, int((x.max() - x.min()) / step))
         h, c = np.histogram(x, bins)
-        h = h.astype(np.float) / np.size(x)
+        h = h.astype(float) / np.size(x)
         p = self.mixt
 
         dc = c[1] - c[0]
@@ -646,7 +646,7 @@ class GGGM(object):
         step = 3.5 * np.std(x) / np.exp(np.log(np.size(x)) / 3)
         bins = max(10, int((x.max() - x.min()) / step))
         h, c = np.histogram(x, bins)
-        h = h.astype(np.float) / np.size(x)
+        h = h.astype(float) / np.size(x)
         dc = c[1] - c[0]
 
         ng = self.mixt[0] * _gam_dens(self.shape_n, self.scale_n, - c)

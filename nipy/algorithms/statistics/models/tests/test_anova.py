@@ -112,7 +112,7 @@ def test_names():
     assert_equal(set(X.dtype.names), set(('Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3')))
 
 # If we ask for contrasts, the resulting matrix is
-# of dtype np.float
+# of dtype float
 
 contrasts = {'Duration': f1.main_effect,
              'Weight': f2.main_effect,

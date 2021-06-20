@@ -102,10 +102,10 @@ fmri_glm.fit(do_scaling=True, model='ar1')
 ########################################
 beta_hat = fmri_glm.glms[0].get_beta()  # Least-squares estimates of the beta
 variance_hat = fmri_glm.glms[0].get_mse() # Estimates of the variance
-mask = fmri_glm.mask.get_data() > 0
+mask = fmri_glm.mask.get_fdata() > 0
 
 # output beta images
-beta_map = np.tile(mask.astype(np.float)[..., np.newaxis], dim)
+beta_map = np.tile(mask.astype(float)[..., np.newaxis], dim)
 beta_map[mask] = beta_hat.T
 beta_image = Nifti1Image(beta_map, fmri_glm.affine)
 beta_image.get_header()['descrip'] = (
@@ -113,7 +113,7 @@ beta_image.get_header()['descrip'] = (
 save(beta_image, path.join(write_dir, 'beta.nii'))
 print("Beta image witten in %s" % write_dir)
 
-variance_map = mask.astype(np.float)
+variance_map = mask.astype(float)
 variance_map[mask] = variance_hat
 
 # Create a snapshots of the variance image contrasts

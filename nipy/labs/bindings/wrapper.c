@@ -1176,7 +1176,7 @@ static PyObject *__pyx_k_codeobj_42;
 
 /* Python wrapper */
 static PyObject *__pyx_pw_4nipy_4labs_8bindings_7wrapper_1fff_type(PyObject *__pyx_self, PyObject *__pyx_v_T); /*proto*/
-static char __pyx_doc_4nipy_4labs_8bindings_7wrapper_fff_type[] = "\n    fff_t, nbytes = fff_type(T)\n\n    T is a np.dtype instance. Return a tuple (str, int). \n    ";
+static char __pyx_doc_4nipy_4labs_8bindings_7wrapper_fff_type[] = "\n    fff_t, nbytes = fff_type(T)\n\n    T is a dtype instance. Return a tuple (str, int). \n    ";
 static PyMethodDef __pyx_mdef_4nipy_4labs_8bindings_7wrapper_1fff_type = {__Pyx_NAMESTR("fff_type"), (PyCFunction)__pyx_pw_4nipy_4labs_8bindings_7wrapper_1fff_type, METH_O, __Pyx_DOCSTR(__pyx_doc_4nipy_4labs_8bindings_7wrapper_fff_type)};
 static PyObject *__pyx_pw_4nipy_4labs_8bindings_7wrapper_1fff_type(PyObject *__pyx_self, PyObject *__pyx_v_T) {
   PyObject *__pyx_r = 0;
@@ -2279,7 +2279,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_14copy_via_iterators(CY
   /* "nipy/labs/bindings/wrapper.pyx":159
  * 
  *     # Allocate output array
- *     Z = np.zeros_like(Y, dtype=np.float)             # <<<<<<<<<<<<<<
+ *     Z = zeros_like(Y, dtype=float)             # <<<<<<<<<<<<<<
  * 
  *     # Create a new array iterator
  */
@@ -2507,7 +2507,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_16sum_via_iterators(CYT
  *     # Allocate output array
  *     dims = [Y.shape[i] for i in range(Y.ndim)]             # <<<<<<<<<<<<<<
  *     dims[axis] = 1
- *     Z = np.zeros(dims)
+ *     Z = zeros(dims)
  */
   __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 191; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -2529,7 +2529,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_16sum_via_iterators(CYT
  *     # Allocate output array
  *     dims = [Y.shape[i] for i in range(Y.ndim)]
  *     dims[axis] = 1             # <<<<<<<<<<<<<<
- *     Z = np.zeros(dims)
+ *     Z = zeros(dims)
  * 
  */
   if (__Pyx_SetItemInt(((PyObject *)__pyx_v_dims), __pyx_v_axis, __pyx_int_1, sizeof(int), PyInt_FromLong) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 192; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2537,7 +2537,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_16sum_via_iterators(CYT
   /* "nipy/labs/bindings/wrapper.pyx":193
  *     dims = [Y.shape[i] for i in range(Y.ndim)]
  *     dims[axis] = 1
- *     Z = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *     Z = zeros(dims)             # <<<<<<<<<<<<<<
  * 
  *     # Create a new array iterator
  */
@@ -5292,7 +5292,7 @@ PyMODINIT_FUNC PyInit_wrapper(void)
  * fff_types = [FFF_UNKNOWN_TYPE, FFF_UCHAR, FFF_SCHAR, FFF_USHORT, FFF_SSHORT,
  *              FFF_UINT, FFF_INT, FFF_ULONG, FFF_LONG, FFF_FLOAT, FFF_DOUBLE]             # <<<<<<<<<<<<<<
  * 
- * npy_types = [cnp.NPY_NOTYPE, cnp.NPY_UBYTE, cnp.NPY_BYTE, cnp.NPY_USHORT,
+ * npy_types = [cNPY_NOTYPE, cNPY_UBYTE, cNPY_BYTE, cNPY_USHORT,
  */
   __pyx_t_6 = PyInt_FromLong(FFF_UINT); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
@@ -5347,9 +5347,9 @@ PyMODINIT_FUNC PyInit_wrapper(void)
   /* "nipy/labs/bindings/wrapper.pyx":29
  *              FFF_UINT, FFF_INT, FFF_ULONG, FFF_LONG, FFF_FLOAT, FFF_DOUBLE]
  * 
- * npy_types = [cnp.NPY_NOTYPE, cnp.NPY_UBYTE, cnp.NPY_BYTE, cnp.NPY_USHORT,             # <<<<<<<<<<<<<<
- *              cnp.NPY_SHORT, cnp.NPY_UINT, cnp.NPY_INT, cnp.NPY_ULONG,
- *              cnp.NPY_LONG, cnp.NPY_FLOAT, cnp.NPY_DOUBLE]
+ * npy_types = [cNPY_NOTYPE, cNPY_UBYTE, cNPY_BYTE, cNPY_USHORT,             # <<<<<<<<<<<<<<
+ *              cNPY_SHORT, cNPY_UINT, cNPY_INT, cNPY_ULONG,
+ *              cNPY_LONG, cNPY_FLOAT, cNPY_DOUBLE]
  */
   __pyx_t_12 = PyInt_FromLong(NPY_NOTYPE); if (unlikely(!__pyx_t_12)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_12);
@@ -5362,9 +5362,9 @@ PyMODINIT_FUNC PyInit_wrapper(void)
 
   /* "nipy/labs/bindings/wrapper.pyx":30
  * 
- * npy_types = [cnp.NPY_NOTYPE, cnp.NPY_UBYTE, cnp.NPY_BYTE, cnp.NPY_USHORT,
- *              cnp.NPY_SHORT, cnp.NPY_UINT, cnp.NPY_INT, cnp.NPY_ULONG,             # <<<<<<<<<<<<<<
- *              cnp.NPY_LONG, cnp.NPY_FLOAT, cnp.NPY_DOUBLE]
+ * npy_types = [cNPY_NOTYPE, cNPY_UBYTE, cNPY_BYTE, cNPY_USHORT,
+ *              cNPY_SHORT, cNPY_UINT, cNPY_INT, cNPY_ULONG,             # <<<<<<<<<<<<<<
+ *              cNPY_LONG, cNPY_FLOAT, cNPY_DOUBLE]
  * 
  */
   __pyx_t_8 = PyInt_FromLong(NPY_SHORT); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -5377,9 +5377,9 @@ PyMODINIT_FUNC PyInit_wrapper(void)
   __Pyx_GOTREF(__pyx_t_5);
 
   /* "nipy/labs/bindings/wrapper.pyx":31
- * npy_types = [cnp.NPY_NOTYPE, cnp.NPY_UBYTE, cnp.NPY_BYTE, cnp.NPY_USHORT,
- *              cnp.NPY_SHORT, cnp.NPY_UINT, cnp.NPY_INT, cnp.NPY_ULONG,
- *              cnp.NPY_LONG, cnp.NPY_FLOAT, cnp.NPY_DOUBLE]             # <<<<<<<<<<<<<<
+ * npy_types = [cNPY_NOTYPE, cNPY_UBYTE, cNPY_BYTE, cNPY_USHORT,
+ *              cNPY_SHORT, cNPY_UINT, cNPY_INT, cNPY_ULONG,
+ *              cNPY_LONG, cNPY_FLOAT, cNPY_DOUBLE]             # <<<<<<<<<<<<<<
  * 
  * 
  */

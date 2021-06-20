@@ -63,7 +63,7 @@ def affine_img_src(data, affine, scale=1, name='AffineImage',
         # Radiologic convention
         spacing[0] *= -1
         origin[0] *= -1
-    src = ArraySource(scalar_data=np.asarray(data, dtype=np.float),
+    src = ArraySource(scalar_data=np.asarray(data, dtype=float),
                            name=name,
                            spacing=scale*spacing,
                            origin=scale*origin)
@@ -179,10 +179,10 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
         anat_blurred = ndimage.gaussian_filter(
                             (ndimage.morphology.binary_fill_holes(
                                 ndimage.gaussian_filter(
-                                    (anat > skull_threshold).astype(np.float), 
+                                    (anat > skull_threshold).astype(float), 
                                     6./voxel_size)
                                     > 0.5
-                                )).astype(np.float),
+                                )).astype(float),
                             2./voxel_size).T.ravel()
 
     if opacity is None:

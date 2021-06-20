@@ -61,7 +61,7 @@ def main():
         try:
             obj, name = import_by_name(name)
         except ImportError, e:
-            print "Failed to import '%s': %s" % (name, e)
+            print("Failed to import '%s': %s" % (name, e))
             continue
 
         fn = os.path.join(path, '%s.rst' % name)
@@ -130,7 +130,7 @@ def get_documented_in_docstring(name, module=None, filename=None):
     except AttributeError:
         pass
     except ImportError, e:
-        print "Failed to import '%s': %s" % (name, e)
+        print("Failed to import '%s': %s" % (name, e))
     return {}
 
 def get_documented_in_lines(lines, module=None, filename=None):

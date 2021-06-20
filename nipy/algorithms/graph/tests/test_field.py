@@ -13,14 +13,14 @@ from numpy.testing import assert_array_equal
 
 def basic_field(nx=10, ny=10, nz=10):
     xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
-    data = np.sum(xyz, 1).astype(np.float)
+    data = np.sum(xyz, 1).astype(float)
     myfield = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return myfield
 
 
 def basic_field_random(nx=10, ny=10, nz=1):
     xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
-    data = 0.5 * nr.randn(nx * ny * nz, 1) + np.sum(xyz, 1).astype(np.float)
+    data = 0.5 * nr.randn(nx * ny * nz, 1) + np.sum(xyz, 1).astype(float)
     myfield = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 26), data)
     return myfield
 
@@ -252,7 +252,7 @@ def test_constrained_voronoi_2(nbseeds=3):
     # Test the geodisc k-means algorithm
     xyz, x = np.zeros((30, 3)), np.arange(30)
     xyz[:, 0] = x
-    y = np.array((x // 10), np.float)
+    y = np.array((x // 10), float)
     myfield = field_from_graph_and_data(wgraph_from_3d_grid(xyz, 6),  y)
     seeds = np.array([1, 18, 25])
     label = myfield.constrained_voronoi(seeds)

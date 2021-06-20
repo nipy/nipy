@@ -284,9 +284,9 @@ class Grid(object):
            [ 0. ,  0. ,  1. ]])
 
     >>> print(points.coordmap.function_domain)
-    CoordinateSystem(coord_names=('i0', 'i1'), name='product', coord_dtype=float64)
+    CoordinateSystem(coord_names=('i0', 'i1'), name='product', coord_dtype=np.float64)
     >>> print(points.coordmap.function_range)
-    CoordinateSystem(coord_names=('x', 'y'), name='input', coord_dtype=float64)
+    CoordinateSystem(coord_names=('x', 'y'), name='input', coord_dtype=np.float64)
 
     >>> points.shape
     (21, 31)

@@ -138,7 +138,7 @@ def save(img, filename, dtype_from='data'):
         # All done
         io_dtype = None
     elif dt_from_is_str and dtype_from == 'data':
-        io_dtype = img.get_data().dtype
+        io_dtype = img.get_fdata().dtype
     else:
         io_dtype = np.dtype(dtype_from)
     # make new image

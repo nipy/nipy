@@ -24,7 +24,7 @@ from nibabel.onetime import auto_attr
 # These imports are used in the fromarray and subsample functions only, not in
 # Image
 from ..reference.coordinate_map import (AffineTransform, CoordinateSystem,
-                                       input_axis_index)
+                                        input_axis_index)
 from ..reference.array_coords import ArrayCoordMap
 
 # Legacy repr printing from numpy.
@@ -215,8 +215,8 @@ class Image(object):
         (30, 40, 50)
         >>> im_reordered.coordmap
         AffineTransform(
-           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('z', 'x', 'y'), name='range', coord_dtype=float64),
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=np.float64),
+           function_range=CoordinateSystem(coord_names=('z', 'x', 'y'), name='range', coord_dtype=np.float64),
            affine=array([[ 0.,  0.,  6.,  3.],
                          [ 4.,  0.,  0.,  1.],
                          [ 0.,  5.,  0.,  2.],
@@ -253,8 +253,8 @@ class Image(object):
         ...             'ijk', 'xyz', [1, 2, 3], [4, 5, 6], 'domain', 'range')
         >>> cmap
         AffineTransform(
-           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='range', coord_dtype=float64),
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='domain', coord_dtype=np.float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='range', coord_dtype=np.float64),
            affine=array([[ 4.,  0.,  0.,  1.],
                          [ 0.,  5.,  0.,  2.],
                          [ 0.,  0.,  6.,  3.],
@@ -266,8 +266,8 @@ class Image(object):
         (50, 30, 40)
         >>> im_reordered.coordmap
         AffineTransform(
-           function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='domain', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='range', coord_dtype=float64),
+           function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='domain', coord_dtype=np.float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='range', coord_dtype=np.float64),
            affine=array([[ 0.,  4.,  0.,  1.],
                          [ 0.,  0.,  5.,  2.],
                          [ 6.,  0.,  0.,  3.],
@@ -282,7 +282,7 @@ class Image(object):
         # Only transpose if we have to so as to avoid calling
         # self.get_data
         if order != list(range(self.ndim)):
-            new_data = np.transpose(self.get_data(), order)
+            new_data = np.transpose(self.get_fdata(), order)
         else:
             new_data = self._data
         return self.__class__.from_image(self,
@@ -310,7 +310,7 @@ class Image(object):
         >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4), 'domain', 'range'))
         >>> im_renamed = im.renamed_axes(i='slice')
         >>> print(im_renamed.axes)
-        CoordinateSystem(coord_names=('slice', 'j', 'k'), name='domain', coord_dtype=float64)
+        CoordinateSystem(coord_names=('slice', 'j', 'k'), name='domain', coord_dtype=np.float64)
         """
         new_cmap = self.coordmap.renamed_domain(names_dict)
         return self.__class__.from_image(self, coordmap=new_cmap)
@@ -336,7 +336,7 @@ class Image(object):
         >>> im = Image(data, AffineTransform.from_params('ijk', 'xyz', np.identity(4), 'domain', 'range'))
         >>> im_renamed_reference = im.renamed_reference(x='newx', y='newy')
         >>> print(im_renamed_reference.reference)
-        CoordinateSystem(coord_names=('newx', 'newy', 'z'), name='range', coord_dtype=float64)
+        CoordinateSystem(coord_names=('newx', 'newy', 'z'), name='range', coord_dtype=np.float64)
         """
         new_cmap = self.coordmap.renamed_range(names_dict)
         return self.__class__.from_image(self, coordmap=new_cmap)
@@ -344,7 +344,7 @@ class Image(object):
     def __setitem__(self, index, value):
         """Setting values of an image, set values in the data array."""
         warnings.warn("Please don't use ``img[x] = y``; use "
-                      "``img.get_data()[x]  = y`` instead",
+                      "``img.get_fdata()[x]  = y`` instead",
                       DeprecationWarning,
                       stacklevel=2)
         self._data[index] = value
@@ -354,9 +354,9 @@ class Image(object):
         warnings.warn('Please use get_data instead - will be deprecated',
                       DeprecationWarning,
                       stacklevel=2)
-        return self.get_data()
+        return self.get_fdata()
 
-    def get_data(self):
+    def get_fdata(self):
         """Return data as a numpy array."""
         return np.asanyarray(self._data)
 
@@ -371,7 +371,7 @@ class Image(object):
         Returns
         -------
         img_subsampled: Image
-            An Image with data self.get_data()[slice_object] and an
+            An Image with data self.get_fdata()[slice_object] and an
             appropriately corrected CoordinateMap.
 
         Examples
@@ -380,10 +380,10 @@ class Image(object):
         >>> from nipy.testing import funcfile
         >>> im = load_image(funcfile)
         >>> frame3 = im[:,:,:,3]
-        >>> np.allclose(frame3.get_data(), im.get_data()[:,:,:,3])
+        >>> np.allclose(frame3.get_fdata(), im.get_fdata()[:,:,:,3])
         True
         """
-        data = self.get_data()[slice_object]
+        data = self.get_fdata()[slice_object]
         g = ArrayCoordMap(self.coordmap, self.shape)[slice_object]
         coordmap = g.coordmap
         if coordmap.function_domain.ndim > 0:
@@ -406,7 +406,7 @@ class Image(object):
     def __eq__(self, other):
         return (isinstance(other, self.__class__)
                 and self.shape == other.shape
-                and np.all(self.get_data() == other.get_data())
+                and np.all(self.get_fdata() == other.get_fdata())
                 and np.all(self.affine == other.affine)
                 and (self.axes.coord_names == other.axes.coord_names))
 
@@ -506,7 +506,7 @@ def subsample(img, slice_object):
     Returns
     -------
     img_subsampled: Image
-         An Image with data img.get_data()[slice_object] and an appropriately
+         An Image with data img.get_fdata()[slice_object] and an appropriately
          corrected CoordinateMap.
 
     Examples
@@ -516,7 +516,7 @@ def subsample(img, slice_object):
     >>> from nipy.core.api import subsample, slice_maker
     >>> im = load_image(funcfile)
     >>> frame3 = subsample(im, slice_maker[:,:,:,3])
-    >>> np.allclose(frame3.get_data(), im.get_data()[:,:,:,3])
+    >>> np.allclose(frame3.get_fdata(), im.get_fdata()[:,:,:,3])
     True
     """
     warnings.warn('subsample is deprecated, please use image '
@@ -562,8 +562,8 @@ def fromarray(data, innames, outnames):
     >>> img = fromarray(np.zeros((2,3,4)), 'ijk', 'xyz')
     >>> img.coordmap
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=np.float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=np.float64),
        affine=array([[ 1.,  0.,  0.,  0.],
                      [ 0.,  1.,  0.,  0.],
                      [ 0.,  0.,  1.,  0.],
@@ -618,8 +618,8 @@ def rollaxis(img, axis, inverse=False):
     >>> im = Image(data, affine_transform)
     >>> im.coordmap
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='', coord_dtype=np.float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='', coord_dtype=np.float64),
        affine=array([[ 1.,  0.,  0.,  0.,  0.],
                      [ 0.,  2.,  0.,  0.,  0.],
                      [ 0.,  0.,  3.,  0.,  0.],
@@ -633,8 +633,8 @@ def rollaxis(img, axis, inverse=False):
     (5, 30, 40, 50)
     >>> im_t_first.coordmap
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('t', 'x', 'y', 'z'), name='', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='', coord_dtype=np.float64),
+       function_range=CoordinateSystem(coord_names=('t', 'x', 'y', 'z'), name='', coord_dtype=np.float64),
        affine=array([[ 4.,  0.,  0.,  0.,  0.],
                      [ 0.,  1.,  0.,  0.,  0.],
                      [ 0.,  0.,  2.,  0.,  0.],
@@ -718,8 +718,8 @@ def rollimg(img, axis, start=0, fix0=True):
     >>> im = Image(data, affine_transform)
     >>> im.coordmap
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='', coord_dtype=np.float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='', coord_dtype=np.float64),
        affine=array([[ 1.,  0.,  0.,  0.,  0.],
                      [ 0.,  2.,  0.,  0.,  0.],
                      [ 0.,  0.,  3.,  0.,  0.],
@@ -731,8 +731,8 @@ def rollimg(img, axis, start=0, fix0=True):
     (5, 30, 40, 50)
     >>> im_t_first.coordmap
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('l', 'i', 'j', 'k'), name='', coord_dtype=np.float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='', coord_dtype=np.float64),
        affine=array([[ 0.,  1.,  0.,  0.,  0.],
                      [ 0.,  0.,  2.,  0.,  0.],
                      [ 0.,  0.,  0.,  3.,  0.],
@@ -783,7 +783,7 @@ def iter_axis(img, axis, asarray=False):
     rimg = rollimg(img, axis)
     for i in range(rimg.shape[0]):
         if asarray:
-            yield rimg[i].get_data()
+            yield rimg[i].get_fdata()
         else:
             yield rimg[i]
 
@@ -864,7 +864,7 @@ def is_image(obj):
     This allows us to test for something that is duck-typing an image.
 
     For now an array must have a 'coordmap' attribute, and a callable
-    'get_data' attribute.
+    'get_fdata' attribute.
 
     Parameters
     ----------
@@ -890,4 +890,4 @@ def is_image(obj):
     '''
     if not hasattr(obj, 'coordmap') or not hasattr(obj, 'metadata'):
         return False
-    return callable(getattr(obj, 'get_data'))
+    return callable(getattr(obj, 'get_fdata'))

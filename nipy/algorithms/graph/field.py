@@ -160,11 +160,11 @@ class Field(WeightedGraph):
 
         Notes
         -----
-        When data dtype is not float64, a slow version of the code is used
+        When data dtype is not np.float64, a slow version of the code is used
         """
         nbiter = int(nbiter)
         if self.field.dtype != np.float64:
-            warn('data type is not float64; a slower version is used')
+            warn('data type is not np.float64; a slower version is used')
             fast = False
         if fast:
             from ._graph import dilation

@@ -519,8 +519,8 @@ def Lips3d(coords, mask):
     cdef:
         # c-level versions of the arrays
         # 'flattened' coords (2d array)
-        np.ndarray[np.float_t, ndim=2] fcoords
-        np.ndarray[np.float_t, ndim=2] D
+        np.ndarray[np.float64_t, ndim=2] fcoords
+        np.ndarray[np.float64_t, ndim=2] D
         # 'flattened' mask (1d array)
         np.ndarray[np.uint8_t, ndim=1] fmask
         np.ndarray[np.uint8_t, ndim=1] fpmask
@@ -544,7 +544,7 @@ def Lips3d(coords, mask):
         double l0, l1, l2, l3
         double res
 
-    coords = coords.astype(np.float)
+    coords = coords.astype(float)
     mask = check_cast_bin8(mask)
 
     l0 = 0; l1 = 0; l2 = 0; l3 = 0
@@ -777,8 +777,8 @@ def Lips2d(coords, mask):
     cdef:
         # c-level versions of the arrays
         # 'flattened' coords (2d array)
-        np.ndarray[np.float_t, ndim=2] fcoords
-        np.ndarray[np.float_t, ndim=2] D
+        np.ndarray[np.float64_t, ndim=2] fcoords
+        np.ndarray[np.float64_t, ndim=2] D
         # 'flattened' mask (1d array)
         np.ndarray[np.uint8_t, ndim=1] fmask
         np.ndarray[np.uint8_t, ndim=1] fpmask
@@ -797,7 +797,7 @@ def Lips2d(coords, mask):
         double l0, l1, l2
         double res
 
-    coords = coords.astype(np.float)
+    coords = coords.astype(float)
     mask = check_cast_bin8(mask)
 
     l0 = 0; l1 = 0; l2 = 0
@@ -1046,13 +1046,13 @@ def Lips1d(coords, mask):
         raise ValueError('shape of mask does not match coordinates')
     cdef:
         np.ndarray[np.uint8_t, ndim=1] mask_c
-        np.ndarray[np.float_t, ndim=2] coords_c
+        np.ndarray[np.float64_t, ndim=2] coords_c
         np.uint8_t m, mr, ms
         np.npy_intp i, l, r, s, rr, ss, s0, index
         double l0, l1
         double res
 
-    coords_c = coords.astype(np.float)
+    coords_c = coords.astype(float)
     mask_c = check_cast_bin8(mask)
 
     l0 = 0; l1 = 0

@@ -142,7 +142,7 @@ def test_nipy_3_4d():
         cmd = ['nipy_3dto4d'] + imgs_3d  + ['--out-4d=' + out_4d]
         run_command(cmd)
         fimg_back = load_image(out_4d)
-        assert_almost_equal(fimg.get_data(), fimg_back.get_data())
+        assert_almost_equal(fimg.get_fdata(), fimg_back.get_fdata())
         del fimg_back
 
 

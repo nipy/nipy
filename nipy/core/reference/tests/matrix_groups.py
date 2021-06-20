@@ -37,7 +37,7 @@ class MatrixGroup(Linear):
     """
     A matrix group of linear (not affine) transformations with matrices having a specific dtype.
     """
-    dtype = np.float
+    dtype = float
 
     def __init__(self, matrix, coords, dtype=None):
         dtype = dtype or self.dtype
@@ -93,7 +93,7 @@ class GLR(GLC):
     The general linear group
     """
 
-    dtype = np.float
+    dtype = float
 
 ###################################################################################
 
@@ -116,7 +116,7 @@ class O(GLR):
     The orthogonal group
     """
 
-    dtype = np.float
+    dtype = float
 
     def validate(self, M=None):
         """
@@ -134,7 +134,7 @@ class SO(O,SLR):
     The special orthogonal group
     """
 
-    dtype = np.float
+    dtype = float
 
     def validate(self, M=None):
         """

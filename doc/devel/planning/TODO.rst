@@ -72,7 +72,7 @@ Refactorings
 * Add dtype options when saving. When saving images it uses the native
   dtype for the system.  Should be able to specify this.  in the
   test_file_roundtrip, self.img is a uint8, but is saved to tmpfile as
-  float64.  Adding this would allow us to save images without the
+  np.float64.  Adding this would allow us to save images without the
   scaling being applied.
 
 * In image._open(url, ...), should we test if the "url" is a PyNiftiIO

@@ -35,10 +35,10 @@ if not path.exists(input_image):
     get_second_level_dataset()
 
 brain_map = load(input_image)
-vmin, vmax = brain_map.get_data().min(), brain_map.get_data().max()
+vmin, vmax = brain_map.get_fdata().min(), brain_map.get_fdata().max()
 
 # make a simple 2D plot
-plot_map(brain_map.get_data(), brain_map.get_affine(),
+plot_map(brain_map.get_fdata(), brain_map.affine,
          cmap=cm.cold_hot,
          vmin=vmin,
          vmax=vmax,
@@ -48,7 +48,7 @@ plot_map(brain_map.get_data(), brain_map.get_affine(),
 
 # More plots using 3D
 if True:  # replace with False to skip this
-    plot_map(brain_map.get_data(), brain_map.get_affine(),
+    plot_map(brain_map.get_fdata(), brain_map.affine,
              cmap=cm.cold_hot,
              vmin=vmin,
              vmax=vmax,
@@ -58,7 +58,7 @@ if True:  # replace with False to skip this
 
     from nipy.labs import viz3d
     try:
-        viz3d.plot_map_3d(brain_map.get_data(), brain_map.get_affine(),
+        viz3d.plot_map_3d(brain_map.get_fdata(), brain_map.affine,
                         cmap=cm.cold_hot,
                         vmin=vmin,
                         vmax=vmax,

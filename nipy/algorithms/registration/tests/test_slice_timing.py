@@ -74,7 +74,7 @@ def test_slice_time_correction():
         stc.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
         # Check no motion estimated
         assert_array_equal([t.param for t in stc._transforms[0]], 0)
-        corrected = stc.resample()[0].get_data()
+        corrected = stc.resample()[0].get_fdata()
         # check we approximate first time slice with correction
         assert_false(np.allclose(acquired_signal, corrected, rtol=1e-3,
                                  atol=0.1))

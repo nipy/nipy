@@ -144,19 +144,19 @@ class Image4d(object):
         if isinstance(data, np.ndarray):
             self._data = data
             self._shape = data.shape
-            self._get_data = None
+            self._get_fdata = None
             self._init_timing_parameters()
         else:
             self._data = None
             self._shape = None
-            self._get_data = data
+            self._get_fdata = data
 
     def _load_data(self):
-        self._data = self._get_data()
+        self._data = self._get_fdata()
         self._shape = self._data.shape
         self._init_timing_parameters()
 
-    def get_data(self):
+    def get_fdata(self):
         if self._data is None:
             self._load_data()
         return self._data
@@ -209,7 +209,7 @@ class Image4d(object):
         return (t - corr) / self.tr
 
     def free_data(self):
-        if self._get_data is not None:
+        if self._get_fdata is not None:
             self._data = None
 
 
@@ -267,12 +267,12 @@ class Realign4dAlgorithm(object):
         if time_interp:
             self.timestamps = im4d.tr * np.arange(self.nscans)
             self.scanner_time = im4d.scanner_time
-            self.cbspline = _cspline_transform(im4d.get_data())
+            self.cbspline = _cspline_transform(im4d.get_fdata())
         else:
             self.cbspline = np.zeros(self.dims, dtype='double')
             for t in range(self.dims[3]):
                 self.cbspline[:, :, :, t] =\
-                    _cspline_transform(im4d.get_data()[:, :, :, t])
+                    _cspline_transform(im4d.get_fdata()[:, :, :, t])
 
         # The reference scan conventionally defines the head
         # coordinate system
@@ -780,7 +780,7 @@ class Realign4d(object):
         # inbetween sessions.
         for im in images:
             xyz_img = as_xyz_image(im)
-            self._runs.append(Image4d(xyz_img.get_data,
+            self._runs.append(Image4d(xyz_img.get_fdata,
                                       xyz_affine(xyz_img),
                                       tr,
                                       slice_times=slice_times,

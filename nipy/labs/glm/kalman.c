@@ -1242,7 +1242,7 @@ static PyObject *__pyx_pf_4nipy_4labs_3glm_6kalman_ols(CYTHON_UNUSED PyObject *_
  *     # http://codespeak.net/pipermail/cython-dev/2009-April/005229.html
  *     dims = [Y.shape[i] for i in range(Y.ndim)]             # <<<<<<<<<<<<<<
  *     dims[axis] = p
- *     B = np.zeros(dims, dtype=np.double)
+ *     B = zeros(dims, dtype=double)
  */
   __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 105; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -1264,7 +1264,7 @@ static PyObject *__pyx_pf_4nipy_4labs_3glm_6kalman_ols(CYTHON_UNUSED PyObject *_
  *     # http://codespeak.net/pipermail/cython-dev/2009-April/005229.html
  *     dims = [Y.shape[i] for i in range(Y.ndim)]
  *     dims[axis] = p             # <<<<<<<<<<<<<<
- *     B = np.zeros(dims, dtype=np.double)
+ *     B = zeros(dims, dtype=double)
  *     dims[axis] = 1
  */
   __pyx_t_5 = __Pyx_PyInt_FromSize_t(__pyx_v_p); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1275,9 +1275,9 @@ static PyObject *__pyx_pf_4nipy_4labs_3glm_6kalman_ols(CYTHON_UNUSED PyObject *_
   /* "nipy/labs/glm/kalman.pyx":107
  *     dims = [Y.shape[i] for i in range(Y.ndim)]
  *     dims[axis] = p
- *     B = np.zeros(dims, dtype=np.double)             # <<<<<<<<<<<<<<
+ *     B = zeros(dims, dtype=double)             # <<<<<<<<<<<<<<
  *     dims[axis] = 1
- *     S2 = np.zeros(dims, dtype=np.double)
+ *     S2 = zeros(dims, dtype=double)
  */
   __pyx_t_5 = __Pyx_GetName(__pyx_m, __pyx_n_s__np); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 107; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
@@ -1308,17 +1308,17 @@ static PyObject *__pyx_pf_4nipy_4labs_3glm_6kalman_ols(CYTHON_UNUSED PyObject *_
 
   /* "nipy/labs/glm/kalman.pyx":108
  *     dims[axis] = p
- *     B = np.zeros(dims, dtype=np.double)
+ *     B = zeros(dims, dtype=double)
  *     dims[axis] = 1             # <<<<<<<<<<<<<<
- *     S2 = np.zeros(dims, dtype=np.double)
+ *     S2 = zeros(dims, dtype=double)
  * 
  */
   if (__Pyx_SetItemInt(((PyObject *)__pyx_v_dims), __pyx_v_axis, __pyx_int_1, sizeof(int), PyInt_FromLong) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "nipy/labs/glm/kalman.pyx":109
- *     B = np.zeros(dims, dtype=np.double)
+ *     B = zeros(dims, dtype=double)
  *     dims[axis] = 1
- *     S2 = np.zeros(dims, dtype=np.double)             # <<<<<<<<<<<<<<
+ *     S2 = zeros(dims, dtype=double)             # <<<<<<<<<<<<<<
  * 
  *     # Allocate local structure
  */
@@ -1710,7 +1710,7 @@ static PyObject *__pyx_pf_4nipy_4labs_3glm_6kalman_2ar1(CYTHON_UNUSED PyObject *
  *     # http://codespeak.net/pipermail/cython-dev/2009-April/005229.html
  *     dims = [Y.shape[i] for i in range(Y.ndim)]             # <<<<<<<<<<<<<<
  *     dims[axis] = p
- *     B = np.zeros(dims, dtype=np.double)
+ *     B = zeros(dims, dtype=double)
  */
   __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 184; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -1732,7 +1732,7 @@ static PyObject *__pyx_pf_4nipy_4labs_3glm_6kalman_2ar1(CYTHON_UNUSED PyObject *
  *     # http://codespeak.net/pipermail/cython-dev/2009-April/005229.html
  *     dims = [Y.shape[i] for i in range(Y.ndim)]
  *     dims[axis] = p             # <<<<<<<<<<<<<<
- *     B = np.zeros(dims, dtype=np.double)
+ *     B = zeros(dims, dtype=double)
  *     dims[axis] = p2
  */
   __pyx_t_5 = __Pyx_PyInt_FromSize_t(__pyx_v_p); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 185; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1743,9 +1743,9 @@ static PyObject *__pyx_pf_4nipy_4labs_3glm_6kalman_2ar1(CYTHON_UNUSED PyObject *
   /* "nipy/labs/glm/kalman.pyx":186
  *     dims = [Y.shape[i] for i in range(Y.ndim)]
  *     dims[axis] = p
- *     B = np.zeros(dims, dtype=np.double)             # <<<<<<<<<<<<<<
+ *     B = zeros(dims, dtype=double)             # <<<<<<<<<<<<<<
  *     dims[axis] = p2
- *     VB = np.zeros(dims, dtype=np.double)
+ *     VB = zeros(dims, dtype=double)
  */
   __pyx_t_5 = __Pyx_GetName(__pyx_m, __pyx_n_s__np); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
@@ -1776,9 +1776,9 @@ static PyObject *__pyx_pf_4nipy_4labs_3glm_6kalman_2ar1(CYTHON_UNUSED PyObject *
 
   /* "nipy/labs/glm/kalman.pyx":187
  *     dims[axis] = p
- *     B = np.zeros(dims, dtype=np.double)
+ *     B = zeros(dims, dtype=double)
  *     dims[axis] = p2             # <<<<<<<<<<<<<<
- *     VB = np.zeros(dims, dtype=np.double)
+ *     VB = zeros(dims, dtype=double)
  *     dims[axis] = 1
  */
   __pyx_t_8 = __Pyx_PyInt_FromSize_t(__pyx_v_p2); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1787,11 +1787,11 @@ static PyObject *__pyx_pf_4nipy_4labs_3glm_6kalman_2ar1(CYTHON_UNUSED PyObject *
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
   /* "nipy/labs/glm/kalman.pyx":188
- *     B = np.zeros(dims, dtype=np.double)
+ *     B = zeros(dims, dtype=double)
  *     dims[axis] = p2
- *     VB = np.zeros(dims, dtype=np.double)             # <<<<<<<<<<<<<<
+ *     VB = zeros(dims, dtype=double)             # <<<<<<<<<<<<<<
  *     dims[axis] = 1
- *     S2 = np.zeros(dims, dtype=np.double)
+ *     S2 = zeros(dims, dtype=double)
  */
   __pyx_t_8 = __Pyx_GetName(__pyx_m, __pyx_n_s__np); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_8);
@@ -1822,18 +1822,18 @@ static PyObject *__pyx_pf_4nipy_4labs_3glm_6kalman_2ar1(CYTHON_UNUSED PyObject *
 
   /* "nipy/labs/glm/kalman.pyx":189
  *     dims[axis] = p2
- *     VB = np.zeros(dims, dtype=np.double)
+ *     VB = zeros(dims, dtype=double)
  *     dims[axis] = 1             # <<<<<<<<<<<<<<
- *     S2 = np.zeros(dims, dtype=np.double)
- *     A = np.zeros(dims, dtype=np.double)
+ *     S2 = zeros(dims, dtype=double)
+ *     A = zeros(dims, dtype=double)
  */
   if (__Pyx_SetItemInt(((PyObject *)__pyx_v_dims), __pyx_v_axis, __pyx_int_1, sizeof(int), PyInt_FromLong) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "nipy/labs/glm/kalman.pyx":190
- *     VB = np.zeros(dims, dtype=np.double)
+ *     VB = zeros(dims, dtype=double)
  *     dims[axis] = 1
- *     S2 = np.zeros(dims, dtype=np.double)             # <<<<<<<<<<<<<<
- *     A = np.zeros(dims, dtype=np.double)
+ *     S2 = zeros(dims, dtype=double)             # <<<<<<<<<<<<<<
+ *     A = zeros(dims, dtype=double)
  * 
  */
   __pyx_t_7 = __Pyx_GetName(__pyx_m, __pyx_n_s__np); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 190; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1865,8 +1865,8 @@ static PyObject *__pyx_pf_4nipy_4labs_3glm_6kalman_2ar1(CYTHON_UNUSED PyObject *
 
   /* "nipy/labs/glm/kalman.pyx":191
  *     dims[axis] = 1
- *     S2 = np.zeros(dims, dtype=np.double)
- *     A = np.zeros(dims, dtype=np.double)             # <<<<<<<<<<<<<<
+ *     S2 = zeros(dims, dtype=double)
+ *     A = zeros(dims, dtype=double)             # <<<<<<<<<<<<<<
  * 
  *     # Allocate local structure
  */

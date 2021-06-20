@@ -113,8 +113,8 @@ def test_surrogate_array_4d_mask():
     mask = np.random.rand(*shape) > 0.5
     mask_img = Nifti1Image(mask.astype(np.uint8), np.eye(4))
     imgs = surrogate_4d_dataset(mask=mask_img)
-    mean_image  = imgs[0].get_data()[mask].mean()
-    assert_true((imgs[0].get_data()[mask == 0] < mean_image / 2).all())
+    mean_image  = imgs[0].get_fdata()[mask].mean()
+    assert_true((imgs[0].get_fdata()[mask == 0] < mean_image / 2).all())
 
 
 def test_surrogate_array_4d_dmtx():

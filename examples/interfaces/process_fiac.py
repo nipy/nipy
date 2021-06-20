@@ -166,7 +166,7 @@ def smooth(data_def, fwhm=8.0):
         len(fwhm)
     except TypeError:
         fwhm = [fwhm] * 3
-    fwhm = np.asarray(fwhm, dtype=np.float).reshape(1,3)
+    fwhm = np.asarray(fwhm, dtype=float).reshape(1,3)
     sess_scans = scans_for_fnames(fnames_presuffix(data_def['functionals'], 'wa'))
     sinfo = make_job('spatial', 'smooth',
                      {'data':np.vstack(sess_scans.flat),

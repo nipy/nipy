@@ -9,7 +9,7 @@ Nibabel <= 1.3.0 do not have these attributes:
 The equivalents for these older versions of nibabel are:
 
 * obj.get_header()
-* obj.get_affine()
+* obj.affine
 * obj._data
 
 With old nibabel, getting unscaled data used `read_img_data(img,

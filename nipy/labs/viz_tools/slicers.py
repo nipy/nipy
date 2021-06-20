@@ -57,7 +57,7 @@ if mpl.__version__ < '0.99.1':
 def _xyz_order(map, affine):
     img = VolumeImg(map, affine=affine, world_space='mine')
     img = img.xyz_ordered(resample=True, copy=False)
-    map = img.get_data()
+    map = img.get_fdata()
     affine = img.affine
     return map, affine
 

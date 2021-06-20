@@ -297,7 +297,7 @@ def nipy2nifti(img, data_dtype=None, strict=None, fix0=True):
     data = None
     if data_dtype is None:
         if in_hdr is None:
-            data = img.get_data()
+            data = img.get_fdata()
             data_dtype = data.dtype
         else:
             data_dtype = in_hdr.get_data_dtype()
@@ -361,12 +361,12 @@ def nipy2nifti(img, data_dtype=None, strict=None, fix0=True):
     # Done if we only have 3 input dimensions
     n_ns = coordmap.ndims[0] - 3
     if n_ns == 0: # No non-spatial dimensions
-        return nib.Nifti1Image(img.get_data(), xyz_affine, hdr)
+        return nib.Nifti1Image(img.get_fdata(), xyz_affine, hdr)
     elif n_ns > 4:
         raise NiftiError("Too many dimensions to convert")
     # Go now to data, pixdims
     if data is None:
-        data = img.get_data()
+        data = img.get_fdata()
     rzs, trans = to_matvec(img.coordmap.affine)
     ns_pixdims = list(np.sqrt(np.sum(rzs[3:, 3:] ** 2, axis=0)))
     in_ax, out_ax, tl_name = _find_time_like(coordmap, fix0)
@@ -543,7 +543,7 @@ def nifti2nipy(ni_img):
         affine = hdr.get_best_affine()
     else:
         affine = affine.copy()
-    data = ni_img.get_data()
+    data = ni_img.get_fdata()
     shape = list(ni_img.shape)
     ndim = len(shape)
     if ndim < 3:

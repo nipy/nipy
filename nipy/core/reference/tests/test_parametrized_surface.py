@@ -53,7 +53,7 @@ def test_grid():
     yield assert_equal, z.shape, (201,101)
 
 def test_grid32():
-    # Check that we can use a float32 input and output
+    # Check that we can use a np.float32 input and output
     uv32 = CoordinateSystem('uv', 'input', np.float32)
     xyz32 = CoordinateSystem('xyz', 'output', np.float32)
     surface32 = CoordinateMap(uv32, xyz32, parametric_mapping)
@@ -66,7 +66,7 @@ def test_grid32():
     yield assert_equal, x.dtype, np.dtype(np.float32)
 
 def test_grid32_c128():
-    # Check that we can use a float32 input and complex128 output
+    # Check that we can use a np.float32 input and complex128 output
     uv32 = CoordinateSystem('uv', 'input', np.float32)
     xyz128 = CoordinateSystem('xyz', 'output', np.complex128)
     def par_c128(x):

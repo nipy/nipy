@@ -34,7 +34,7 @@ Access Data into an Array
 
 This allows the user to access data as a numpy array.
 
->>> mydata = myimg.get_data()
+>>> mydata = myimg.get_fdata()
 >>> mydata.shape
 (33, 41, 25)
 >>> mydata.ndim
@@ -70,8 +70,8 @@ system, and the *output* coordinate system is the *world* coordinate system.
 
 >>> newimg.coordmap
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxels', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('aligned-x=L->R', 'aligned-y=P->A', 'aligned-z=I->S'), name='aligned', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxels', coord_dtype=np.float64),
+   function_range=CoordinateSystem(coord_names=('aligned-x=L->R', 'aligned-y=P->A', 'aligned-z=I->S'), name='aligned', coord_dtype=np.float64),
    affine=array([[ -2.,   0.,   0.,  32.],
                  [  0.,   2.,   0., -40.],
                  [  0.,   0.,   2., -16.],

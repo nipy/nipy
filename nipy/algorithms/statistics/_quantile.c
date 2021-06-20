@@ -1260,7 +1260,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_9_quantile__quantile(C
   /* "nipy/algorithms/statistics/_quantile.pyx":56
  * 
  *     # Convert the input array to double if needed
- *     X = np.asarray(X, dtype='double')             # <<<<<<<<<<<<<<
+ *     X = asarray(X, dtype='double')             # <<<<<<<<<<<<<<
  * 
  *     # Check the input ratio is in range (0,1)
  */
@@ -1323,7 +1323,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_9_quantile__quantile(C
  *     # Allocate output array Y
  *     dims = list(X.shape)             # <<<<<<<<<<<<<<
  *     dims[axis] = 1
- *     Y = np.zeros(dims)
+ *     Y = zeros(dims)
  */
   __pyx_t_4 = PyObject_GetAttr(__pyx_v_X, __pyx_n_s__shape); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -1342,7 +1342,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_9_quantile__quantile(C
  *     # Allocate output array Y
  *     dims = list(X.shape)
  *     dims[axis] = 1             # <<<<<<<<<<<<<<
- *     Y = np.zeros(dims)
+ *     Y = zeros(dims)
  * 
  */
   if (__Pyx_SetItemInt(((PyObject *)__pyx_v_dims), __pyx_v_axis, __pyx_int_1, sizeof(int), PyInt_FromLong) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1350,7 +1350,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_9_quantile__quantile(C
   /* "nipy/algorithms/statistics/_quantile.pyx":65
  *     dims = list(X.shape)
  *     dims[axis] = 1
- *     Y = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *     Y = zeros(dims)             # <<<<<<<<<<<<<<
  * 
  *     # Set size and stride along specified axis
  */
@@ -1412,8 +1412,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_9_quantile__quantile(C
   /* "nipy/algorithms/statistics/_quantile.pyx":72
  * 
  *     # Create array iterators
- *     itX = np.PyArray_IterAllButAxis(X, &axis)             # <<<<<<<<<<<<<<
- *     itY = np.PyArray_IterAllButAxis(Y, &axis)
+ *     itX = PyArray_IterAllButAxis(X, &axis)             # <<<<<<<<<<<<<<
+ *     itY = PyArray_IterAllButAxis(Y, &axis)
  * 
  */
   __pyx_t_3 = PyArray_IterAllButAxis(__pyx_v_X, (&__pyx_v_axis)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1424,8 +1424,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_9_quantile__quantile(C
 
   /* "nipy/algorithms/statistics/_quantile.pyx":73
  *     # Create array iterators
- *     itX = np.PyArray_IterAllButAxis(X, &axis)
- *     itY = np.PyArray_IterAllButAxis(Y, &axis)             # <<<<<<<<<<<<<<
+ *     itX = PyArray_IterAllButAxis(X, &axis)
+ *     itY = PyArray_IterAllButAxis(Y, &axis)             # <<<<<<<<<<<<<<
  * 
  *     # Loop
  */
@@ -1438,9 +1438,9 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_9_quantile__quantile(C
   /* "nipy/algorithms/statistics/_quantile.pyx":76
  * 
  *     # Loop
- *     while np.PyArray_ITER_NOTDONE(itX):             # <<<<<<<<<<<<<<
- *         x = <double*>np.PyArray_ITER_DATA(itX)
- *         y = <double*>np.PyArray_ITER_DATA(itY)
+ *     while PyArray_ITER_NOTDONE(itX):             # <<<<<<<<<<<<<<
+ *         x = <double*>PyArray_ITER_DATA(itX)
+ *         y = <double*>PyArray_ITER_DATA(itY)
  */
   while (1) {
     __pyx_t_7 = PyArray_ITER_NOTDONE(__pyx_v_itX);
@@ -1448,44 +1448,44 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_9_quantile__quantile(C
 
     /* "nipy/algorithms/statistics/_quantile.pyx":77
  *     # Loop
- *     while np.PyArray_ITER_NOTDONE(itX):
- *         x = <double*>np.PyArray_ITER_DATA(itX)             # <<<<<<<<<<<<<<
- *         y = <double*>np.PyArray_ITER_DATA(itY)
+ *     while PyArray_ITER_NOTDONE(itX):
+ *         x = <double*>PyArray_ITER_DATA(itX)             # <<<<<<<<<<<<<<
+ *         y = <double*>PyArray_ITER_DATA(itY)
  *         y[0] = quantile(x, size, stride, ratio, interp)
  */
     __pyx_v_x = ((double *)PyArray_ITER_DATA(__pyx_v_itX));
 
     /* "nipy/algorithms/statistics/_quantile.pyx":78
- *     while np.PyArray_ITER_NOTDONE(itX):
- *         x = <double*>np.PyArray_ITER_DATA(itX)
- *         y = <double*>np.PyArray_ITER_DATA(itY)             # <<<<<<<<<<<<<<
+ *     while PyArray_ITER_NOTDONE(itX):
+ *         x = <double*>PyArray_ITER_DATA(itX)
+ *         y = <double*>PyArray_ITER_DATA(itY)             # <<<<<<<<<<<<<<
  *         y[0] = quantile(x, size, stride, ratio, interp)
- *         np.PyArray_ITER_NEXT(itX)
+ *         PyArray_ITER_NEXT(itX)
  */
     __pyx_v_y = ((double *)PyArray_ITER_DATA(__pyx_v_itY));
 
     /* "nipy/algorithms/statistics/_quantile.pyx":79
- *         x = <double*>np.PyArray_ITER_DATA(itX)
- *         y = <double*>np.PyArray_ITER_DATA(itY)
+ *         x = <double*>PyArray_ITER_DATA(itX)
+ *         y = <double*>PyArray_ITER_DATA(itY)
  *         y[0] = quantile(x, size, stride, ratio, interp)             # <<<<<<<<<<<<<<
- *         np.PyArray_ITER_NEXT(itX)
- *         np.PyArray_ITER_NEXT(itY)
+ *         PyArray_ITER_NEXT(itX)
+ *         PyArray_ITER_NEXT(itY)
  */
     (__pyx_v_y[0]) = quantile(__pyx_v_x, __pyx_v_size, __pyx_v_stride, __pyx_v_ratio, __pyx_v_interp);
 
     /* "nipy/algorithms/statistics/_quantile.pyx":80
- *         y = <double*>np.PyArray_ITER_DATA(itY)
+ *         y = <double*>PyArray_ITER_DATA(itY)
  *         y[0] = quantile(x, size, stride, ratio, interp)
- *         np.PyArray_ITER_NEXT(itX)             # <<<<<<<<<<<<<<
- *         np.PyArray_ITER_NEXT(itY)
+ *         PyArray_ITER_NEXT(itX)             # <<<<<<<<<<<<<<
+ *         PyArray_ITER_NEXT(itY)
  * 
  */
     PyArray_ITER_NEXT(__pyx_v_itX);
 
     /* "nipy/algorithms/statistics/_quantile.pyx":81
  *         y[0] = quantile(x, size, stride, ratio, interp)
- *         np.PyArray_ITER_NEXT(itX)
- *         np.PyArray_ITER_NEXT(itY)             # <<<<<<<<<<<<<<
+ *         PyArray_ITER_NEXT(itX)
+ *         PyArray_ITER_NEXT(itY)             # <<<<<<<<<<<<<<
  * 
  *     return Y
  */
@@ -1493,7 +1493,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_9_quantile__quantile(C
   }
 
   /* "nipy/algorithms/statistics/_quantile.pyx":83
- *         np.PyArray_ITER_NEXT(itY)
+ *         PyArray_ITER_NEXT(itY)
  * 
  *     return Y             # <<<<<<<<<<<<<<
  * 
@@ -3992,7 +3992,7 @@ PyMODINIT_FUNC PyInit__quantile(void)
   /* "nipy/algorithms/statistics/_quantile.pyx":20
  *                     int interp)
  * 
- * np.import_array()             # <<<<<<<<<<<<<<
+ * import_array()             # <<<<<<<<<<<<<<
  * 
  * # This is faster than scipy.stats.scoreatpercentile owing to partial
  */

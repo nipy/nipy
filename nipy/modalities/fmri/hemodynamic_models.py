@@ -188,7 +188,7 @@ def _sample_condition(exp_condition, frametimes, oversampling=16,
 
     # Set up the regressor timecourse
     tmax = len(hr_frametimes)
-    regressor = np.zeros_like(hr_frametimes).astype(np.float)
+    regressor = np.zeros_like(hr_frametimes).astype(float)
     t_onset = np.minimum(np.searchsorted(hr_frametimes, onsets), tmax - 1)
     regressor[t_onset] += values
     t_offset = np.minimum(np.searchsorted(hr_frametimes, onsets + durations),

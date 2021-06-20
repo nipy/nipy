@@ -30,18 +30,18 @@ class CoordinateSystem(object):
     have a name.
 
     >>> names = ['first', 'second', 'third']
-    >>> cs = CoordinateSystem(names, 'a coordinate system', np.float)
+    >>> cs = CoordinateSystem(names, 'a coordinate system', float)
     >>> cs.coord_names
     ('first', 'second', 'third')
     >>> cs.name
     'a coordinate system'
     >>> cs.coord_dtype
-    dtype('float64')
+    dtype('np.float64')
 
     The coordinate system also has a ``dtype`` which is the composite
     numpy dtype, made from the (``names``, ``coord_dtype``).
 
-    >>> dtype_template = [(name, np.float) for name in cs.coord_names]
+    >>> dtype_template = [(name, float) for name in cs.coord_names]
     >>> dtype_should_be = np.dtype(dtype_template)
     >>> cs.dtype == dtype_should_be
     True
@@ -49,7 +49,7 @@ class CoordinateSystem(object):
     Two CoordinateSystems are equal if they have the same dtype
     and the same names and the same name.
 
-    >>> another_cs = CoordinateSystem(names, 'not irrelevant', np.float)
+    >>> another_cs = CoordinateSystem(names, 'not irrelevant', float)
     >>> cs == another_cs
     False
     >>> cs.dtype == another_cs.dtype
@@ -72,14 +72,14 @@ class CoordinateSystem(object):
     ndim = 3
     _doc['ndim'] = 'The number of dimensions'
 
-    dtype = np.dtype([('x', np.float),
-                      ('y', np.float),
-                      ('z', np.float)])
+    dtype = np.dtype([('x', float),
+                      ('y', float),
+                      ('z', float)])
     _doc['dtype'] = 'The composite dtype of the CoordinateSystem, ' + \
                     'expresses the fact that there are three numbers, the' + \
                     'first one corresponds to "x" and the second to "y".'
 
-    def __init__(self, coord_names, name='', coord_dtype=np.float):
+    def __init__(self, coord_names, name='', coord_dtype=float):
         """Create a coordinate system with a given name and coordinate names.
 
         The CoordinateSystem has two dtype attributes:
@@ -97,18 +97,18 @@ class CoordinateSystem(object):
            The name of the coordinate system
         coord_dtype : np.dtype, optional
            The dtype of the coord_names.  This should be a built-in
-           numpy scalar dtype. (default is np.float).  The value can
+           numpy scalar dtype. (default is float).  The value can
            by anything that can be passed to the np.dtype constructor.
-           For example ``np.float``, ``np.dtype(np.float)`` or ``f8``
+           For example ``float``, ``np.dtype(float)`` or ``f8``
            all result in the same ``coord_dtype``.
 
         Examples
         --------
         >>> c = CoordinateSystem('ij', name='input')
         >>> print(c)
-        CoordinateSystem(coord_names=('i', 'j'), name='input', coord_dtype=float64)
+        CoordinateSystem(coord_names=('i', 'j'), name='input', coord_dtype=np.float64)
         >>> c.coord_dtype
-        dtype('float64')
+        dtype('np.float64')
         """
         # this allows coord_names to be an iterator and have a length
         coord_names = tuple(coord_names)
@@ -224,7 +224,7 @@ class CoordinateSystem(object):
         Traceback (most recent call last):
            ...
         CoordinateSystemError: Array shape[-1] (1) must match CoordinateSystem ndim (3).
-          CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
+          CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=np.float32)
 
         Wrong length:
 
@@ -232,15 +232,15 @@ class CoordinateSystem(object):
         Traceback (most recent call last):
            ...
         CoordinateSystemError: Array shape[-1] (2) must match CoordinateSystem ndim (3).
-          CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
+          CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=np.float32)
 
         The dtype has to be castable:
 
         >>> cs._checked_values(np.array([1, 2, 3], dtype=np.float64)) #doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
            ...
-        CoordinateSystemError: Cannot cast array dtype float64 to CoordinateSystem coord_dtype float32.
-          CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float32)
+        CoordinateSystemError: Cannot cast array dtype np.float64 to CoordinateSystem coord_dtype np.float32.
+          CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=np.float32)
 
         The input array is unchanged, even if a reshape has
         occurred. The returned array points to the same data.
@@ -267,7 +267,7 @@ class CoordinateSystem(object):
         Traceback (most recent call last):
            ...
         CoordinateSystemError: Array shape[-1] (2) must match CoordinateSystem ndim (1).
-          CoordinateSystem(coord_names=('x',), name='', coord_dtype=float64)
+          CoordinateSystem(coord_names=('x',), name='', coord_dtype=np.float64)
 
         But of course 2D, N by 1 is OK
 
@@ -420,7 +420,7 @@ class CoordSysMaker(object):
     """
     coord_sys_klass = CoordinateSystem
 
-    def __init__(self, coord_names, name='', coord_dtype=np.float):
+    def __init__(self, coord_names, name='', coord_dtype=float):
         """Create a coordsys maker with given axis `coord_names`
 
         Parameters
@@ -431,18 +431,18 @@ class CoordSysMaker(object):
            The name of the coordinate system
         coord_dtype : np.dtype, optional
            The dtype of the coord_names.  This should be a built-in
-           numpy scalar dtype. (default is np.float).  The value can
+           numpy scalar dtype. (default is float).  The value can
            by anything that can be passed to the np.dtype constructor.
-           For example ``np.float``, ``np.dtype(np.float)`` or ``f8``
+           For example ``float``, ``np.dtype(float)`` or ``f8``
            all result in the same ``coord_dtype``.
 
         Examples
         --------
         >>> cmkr = CoordSysMaker('ijk', 'a name')
         >>> print(cmkr(2))
-        CoordinateSystem(coord_names=('i', 'j'), name='a name', coord_dtype=float64)
+        CoordinateSystem(coord_names=('i', 'j'), name='a name', coord_dtype=np.float64)
         >>> print(cmkr(3))
-        CoordinateSystem(coord_names=('i', 'j', 'k'), name='a name', coord_dtype=float64)
+        CoordinateSystem(coord_names=('i', 'j', 'k'), name='a name', coord_dtype=np.float64)
         """
         self.coord_names = tuple(coord_names)
         self.name = name

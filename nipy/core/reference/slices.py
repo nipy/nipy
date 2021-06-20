@@ -48,8 +48,8 @@ def xslice(x, y_spec, z_spec, world):
     array([  30.,  114.,  100.])
     >>> x30
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i_y', 'i_z'), name='slice', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('scanner-x=L->R', 'scanner-y=P->A', 'scanner-z=I->S'), name='scanner', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('i_y', 'i_z'), name='slice', coord_dtype=np.float64),
+       function_range=CoordinateSystem(coord_names=('scanner-x=L->R', 'scanner-y=P->A', 'scanner-z=I->S'), name='scanner', coord_dtype=np.float64),
        affine=array([[   0.,    0.,   30.],
                      [   2.,    0., -114.],
                      [   0.,    2.,  -70.],
@@ -103,8 +103,8 @@ def yslice(y, x_spec, z_spec, world):
     >>> y70 = yslice(70, x_spec, z_spec, 'mni')
     >>> y70
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i_x', 'i_z'), name='slice', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S'), name='mni', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('i_x', 'i_z'), name='slice', coord_dtype=np.float64),
+       function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S'), name='mni', coord_dtype=np.float64),
        affine=array([[  2.,   0., -92.],
                      [  0.,   0.,  70.],
                      [  0.,   2., -70.],
@@ -162,8 +162,8 @@ def zslice(z, x_spec, y_spec, world):
     >>> z40 = zslice(40, x_spec, y_spec, 'unknown')
     >>> z40
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i_x', 'i_y'), name='slice', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('unknown-x=L->R', 'unknown-y=P->A', 'unknown-z=I->S'), name='unknown', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('i_x', 'i_y'), name='slice', coord_dtype=np.float64),
+       function_range=CoordinateSystem(coord_names=('unknown-x=L->R', 'unknown-y=P->A', 'unknown-z=I->S'), name='unknown', coord_dtype=np.float64),
        affine=array([[   2.,    0.,  -92.],
                      [   0.,    2., -114.],
                      [   0.,    0.,   40.],

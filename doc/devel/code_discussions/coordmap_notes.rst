@@ -186,7 +186,7 @@ the goal of having "xyz_ordered" return an image with an affine that has a
 diagonal with positive entries, as in the AffineImage specification, means that
 you might have to call
 
-affine_image.get_data()[::-1,::-1] # or some other combination of flips
+affine_image.get_fdata()[::-1,::-1] # or some other combination of flips
 
 (i.e. you have to change how it is stored in memory).
 
@@ -199,7 +199,7 @@ By being explicit about the direction of x,y,z we know that if the affine matrix
 was diagonal and had a negative entry in the first position, then we know that
 left and right were flipped when viewed with a command like::
 
-    >>> pylab.imshow(image.get_data()[:,:,10])
+    >>> pylab.imshow(image.get_fdata()[:,:,10])
 
 Without specifying the direction of x,y,z we just don't know.
 
@@ -285,15 +285,15 @@ with bottom row [0,0,0,1], ('phase', 'freq', "slice"), ('x','y','z'))
 >>> T = np.array([[2,0,0,-91.095],[0,2,0,-129.51],[0,0,2,-73.25],[0,0,0,1]])
 >>> AffineTransform(CoordinateSystem(acquisition), CoordinateSystem(xyz_world), T)
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('phase', 'freq', 'slice'), name='', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('phase', 'freq', 'slice'), name='', coord_dtype=np.float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=np.float64),
    affine=array([[   2.   ,    0.   ,    0.   ,  -91.095],
                  [   0.   ,    2.   ,    0.   , -129.51 ],
                  [   0.   ,    0.   ,    2.   ,  -73.25 ],
                  [   0.   ,    0.   ,    0.   ,    1.   ]])
 )
 
-The float64 appearing above is a way of specifying that the "coordinate systems"
+The np.float64 appearing above is a way of specifying that the "coordinate systems"
 are vector spaces over the real numbers, rather than, say the complex numbers.
 It is specified as an optional argument to CoordinateSystem.
 
@@ -416,8 +416,8 @@ After some deliberation, we find out that the third axis is slice...
 
 >>> A.renamed_domain({'k':'slice'})
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('i', 'j', 'slice'), name='', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('i', 'j', 'slice'), name='', coord_dtype=np.float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=np.float64),
    affine=array([[   2.   ,    0.   ,    0.   ,  -91.095],
                  [   0.   ,    2.   ,    0.   , -129.51 ],
                  [   0.   ,    0.   ,    2.   ,  -73.25 ],
@@ -429,8 +429,8 @@ like:
 
 >>> AffineTransform.from_params('ij', 'xyz', np.array([[2,3,1,0],[3,4,5,0],[7,9,3,1]]).T)
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('i', 'j'), name='', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('i', 'j'), name='', coord_dtype=np.float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=np.float64),
    affine=array([[2., 3., 7.],
                  [3., 4., 9.],
                  [1., 5., 3.],
@@ -447,23 +447,23 @@ Make an affine transform that maps (i,k) -> (i,30,k):
 >>> j30 = AffineTransform(CoordinateSystem('ik'), CoordinateSystem('ijk'), np.array([[1,0,0],[0,0,30],[0,1,0],[0,0,1]]))
 >>> j30
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('i', 'k'), name='', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('i', 'k'), name='', coord_dtype=np.float64),
+   function_range=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=np.float64),
    affine=array([[  1.,   0.,   0.],
                  [  0.,   0.,  30.],
                  [  0.,   1.,   0.],
                  [  0.,   0.,   1.]])
 )
 
-Its dtype is np.float since we didn't specify np.int in constructing the
+Its dtype is float since we didn't specify np.int in constructing the
 CoordinateSystems:
 
 >>> from nipy.core.api import compose
 >>> j30_to_XYZ = compose(A, j30)
 >>> j30_to_XYZ
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('i', 'k'), name='', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('i', 'k'), name='', coord_dtype=np.float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=np.float64),
    affine=array([[  2.   ,   0.   , -91.095],
                  [  0.   ,   0.   , -69.51 ],
                  [  0.   ,   2.   , -73.25 ],
@@ -487,8 +487,8 @@ a defined "y".  In this case we use MNI space:
 >>> y70 = yslice(70, x_spec, z_spec, 'mni')
 >>> y70
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('i_x', 'i_z'), name='slice', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S'), name='mni', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('i_x', 'i_z'), name='slice', coord_dtype=np.float64),
+   function_range=CoordinateSystem(coord_names=('mni-x=L->R', 'mni-y=P->A', 'mni-z=I->S'), name='mni', coord_dtype=np.float64),
    affine=array([[  2.,   0., -92.],
                  [  0.,   0.,  70.],
                  [  0.,   2., -70.],
@@ -622,8 +622,8 @@ something like this:
 >>> ijk_to_RAS = AffineTransform(ijk, RAS, T)
 >>> ijk_to_RAS
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-RAS', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=np.float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-RAS', coord_dtype=np.float64),
    affine=array([[   2.   ,    0.   ,    0.   ,  -91.095],
                  [   0.   ,    2.   ,    0.   , -129.51 ],
                  [   0.   ,    0.   ,    2.   ,  -73.25 ],
@@ -635,8 +635,8 @@ AffineTransform(
 >>> ijk_to_LPS = compose(RAS_to_LPS, ijk_to_RAS)
 >>> RAS_to_LPS
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-RAS', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPS', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-RAS', coord_dtype=np.float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPS', coord_dtype=np.float64),
    affine=array([[-1.,  0.,  0.,  0.],
                  [ 0., -1.,  0.,  0.],
                  [ 0.,  0.,  1.,  0.],
@@ -644,8 +644,8 @@ AffineTransform(
 )
 >>> ijk_to_LPS
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPS', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='voxel', coord_dtype=np.float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-LPS', coord_dtype=np.float64),
    affine=array([[  -2.   ,    0.   ,    0.   ,   91.095],
                  [   0.   ,   -2.   ,    0.   ,  129.51 ],
                  [   0.   ,    0.   ,    2.   ,  -73.25 ],
@@ -709,8 +709,8 @@ sense so it raises an exception.
 >>> kij_to_RAS = compose(ijk_to_RAS, kij_to_ijk)
 >>> kij_to_RAS
 AffineTransform(
-   function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='voxel', coord_dtype=float64),
-   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-RAS', coord_dtype=float64),
+   function_domain=CoordinateSystem(coord_names=('k', 'i', 'j'), name='voxel', coord_dtype=np.float64),
+   function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='world-RAS', coord_dtype=np.float64),
    affine=array([[   0.   ,    2.   ,    0.   ,  -91.095],
                  [   0.   ,    0.   ,    2.   , -129.51 ],
                  [   2.   ,    0.   ,    0.   ,  -73.25 ],

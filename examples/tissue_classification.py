@@ -76,8 +76,8 @@ beta = float(get_argument('beta', 0.5))
 ngb_size = int(get_argument('ngb_size', 6))
 
 # Perform tissue classification
-mask = mask_img.get_data() > 0
-S = BrainT1Segmentation(img.get_data(), mask=mask, model='5k',
+mask = mask_img.get_fdata() > 0
+S = BrainT1Segmentation(img.get_fdata(), mask=mask, model='5k',
                         niters=niters, beta=beta, ngb_size=ngb_size)
 
 # Save label image
@@ -95,6 +95,6 @@ if args.probc is not None and \
     gold_ppm_img = (args.probc, args.probg, args.probw)
     for k in range(3):
         img = load_image(gold_ppm_img[k])
-        gold_ppm[..., k] = img.get_data()
-    d = fuzzy_dice(gold_ppm, S.ppm, np.where(mask_img.get_data() > 0))
+        gold_ppm[..., k] = img.get_fdata()
+    d = fuzzy_dice(gold_ppm, S.ppm, np.where(mask_img.get_fdata() > 0))
     print('Fuzzy Dice indices: %s' % d)

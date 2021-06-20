@@ -27,5 +27,5 @@ def check_mlab_tempfile(dir):
 
 
 def test_mlab_tempfile():
-    for dir in [None,tempfile.tempdir,tempfile.mkdtemp()]:
-        yield check_mlab_tempfile,dir
+    for test_dir in [None,tempfile.tempdir,tempfile.mkdtemp()]:
+        check_mlab_tempfile(test_dir)

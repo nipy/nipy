@@ -57,11 +57,11 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
     """
     # Masking
     if len(mask.shape) > 3:
-        xyz = np.where((mask.get_data() > 0).squeeze())
-        zmap = zimg.get_data().squeeze()[xyz]
+        xyz = np.where((mask.get_fdata() > 0).squeeze())
+        zmap = zimg.get_fdata().squeeze()[xyz]
     else:
-        xyz = np.where(mask.get_data() > 0)
-        zmap = zimg.get_data()[xyz]
+        xyz = np.where(mask.get_fdata() > 0)
+        zmap = zimg.get_fdata()[xyz]
 
     xyz = np.array(xyz).T
     nvoxels = np.size(xyz, 0)
@@ -183,12 +183,12 @@ def get_3d_peaks(image, mask=None, threshold=0., nn=18, order_th=0):
     """
     # Masking
     if mask is not None:
-        bmask = mask.get_data().ravel()
-        data = image.get_data().ravel()[bmask > 0]
+        bmask = mask.get_fdata().ravel()
+        data = image.get_fdata().ravel()[bmask > 0]
         xyz = np.array(np.where(bmask > 0)).T
     else:
         shape = image.shape
-        data = image.get_data().ravel()
+        data = image.get_fdata().ravel()
         xyz = np.reshape(np.indices(shape), (3, np.prod(shape))).T
     affine = get_affine(image)
 
@@ -235,12 +235,12 @@ def prepare_arrays(data_images, vardata_images, mask_images):
      # Compute xyz coordinates from mask
     xyz = np.array(np.where(mask > 0))
     # Prepare data & vardata arrays
-    data = np.array([(d.get_data()[xyz[0], xyz[1], xyz[2]]).squeeze()
+    data = np.array([(d.get_fdata()[xyz[0], xyz[1], xyz[2]]).squeeze()
                     for d in data_images]).squeeze()
     if vardata_images is None:
         vardata = None
     else:
-        vardata = np.array([(d.get_data()[xyz[0], xyz[1], xyz[2]]).squeeze()
+        vardata = np.array([(d.get_fdata()[xyz[0], xyz[1], xyz[2]]).squeeze()
                             for d in vardata_images]).squeeze()
     return data, vardata, xyz, mask
 
@@ -386,7 +386,7 @@ class LinearModel(object):
             self.xyz = None
             self.axis = len(data[0].shape) - 1
         else:
-            self.xyz = np.where(mask.get_data() > 0)
+            self.xyz = np.where(mask.get_fdata() > 0)
             self.axis = 1
 
         self.spatial_shape = data[0].shape[0: -1]
@@ -397,9 +397,9 @@ class LinearModel(object):
             if not isinstance(design_matrix[i], np.ndarray):
                 raise ValueError('Invalid design matrix')
             if nomask:
-                Y = data[i].get_data()
+                Y = data[i].get_fdata()
             else:
-                Y = data[i].get_data()[self.xyz]
+                Y = data[i].get_fdata()[self.xyz]
             X = design_matrix[i]
 
             self.glm.append(glm(Y, X, axis=self.axis,

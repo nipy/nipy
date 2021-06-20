@@ -125,7 +125,7 @@ def pos_recipr(X):
     Returns
     -------
     rX : array
-       array of same shape as `X`, dtype np.float, with values set to
+       array of same shape as `X`, dtype float, with values set to
        1/X where X > 0, 0 otherwise
     """
     X = np.asarray(X)

@@ -1534,7 +1534,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9onesample_stat(CYTHON_UNUSED PyObj
  *   nsimu = magics.size
  *   dims = [Y.shape[i] for i in range(Y.ndim)]             # <<<<<<<<<<<<<<
  *   dims[axis] = nsimu
- *   T = np.zeros(dims)
+ *   T = zeros(dims)
  */
   __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 116; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -1553,7 +1553,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9onesample_stat(CYTHON_UNUSED PyObj
  *   nsimu = magics.size
  *   dims = [Y.shape[i] for i in range(Y.ndim)]
  *   dims[axis] = nsimu             # <<<<<<<<<<<<<<
- *   T = np.zeros(dims)
+ *   T = zeros(dims)
  * 
  */
   __pyx_t_2 = __Pyx_PyInt_From_unsigned_long(__pyx_v_nsimu); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 117; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1564,7 +1564,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9onesample_stat(CYTHON_UNUSED PyObj
   /* "nipy/labs/group/onesample.pyx":118
  *   dims = [Y.shape[i] for i in range(Y.ndim)]
  *   dims[axis] = nsimu
- *   T = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *   T = zeros(dims)             # <<<<<<<<<<<<<<
  * 
  *   # Create local structure
  */
@@ -2075,7 +2075,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9onesample_2stat_mfx(CYTHON_UNUSED 
  *   nsimu = magics.size
  *   dims = [Y.shape[i] for i in range(Y.ndim)]             # <<<<<<<<<<<<<<
  *   dims[axis] = nsimu
- *   T = np.zeros(dims)
+ *   T = zeros(dims)
  */
   __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 185; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -2094,7 +2094,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9onesample_2stat_mfx(CYTHON_UNUSED 
  *   nsimu = magics.size
  *   dims = [Y.shape[i] for i in range(Y.ndim)]
  *   dims[axis] = nsimu             # <<<<<<<<<<<<<<
- *   T = np.zeros(dims)
+ *   T = zeros(dims)
  * 
  */
   __pyx_t_2 = __Pyx_PyInt_FromSize_t(__pyx_v_nsimu); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2105,7 +2105,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9onesample_2stat_mfx(CYTHON_UNUSED 
   /* "nipy/labs/group/onesample.pyx":187
  *   dims = [Y.shape[i] for i in range(Y.ndim)]
  *   dims[axis] = nsimu
- *   T = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *   T = zeros(dims)             # <<<<<<<<<<<<<<
  * 
  *   # Create local structure
  */
@@ -2524,8 +2524,8 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9onesample_4pdf_fit_mfx(CYTHON_UNUS
  * 
  *   # Create output array
  *   dims = [Y.shape[i] for i in range(Y.ndim)]             # <<<<<<<<<<<<<<
- *   W = np.zeros(dims)
- *   Z = np.zeros(dims)
+ *   W = zeros(dims)
+ *   Z = zeros(dims)
  */
   __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 242; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -2543,8 +2543,8 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9onesample_4pdf_fit_mfx(CYTHON_UNUS
   /* "nipy/labs/group/onesample.pyx":243
  *   # Create output array
  *   dims = [Y.shape[i] for i in range(Y.ndim)]
- *   W = np.zeros(dims)             # <<<<<<<<<<<<<<
- *   Z = np.zeros(dims)
+ *   W = zeros(dims)             # <<<<<<<<<<<<<<
+ *   Z = zeros(dims)
  * 
  */
   __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2582,8 +2582,8 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9onesample_4pdf_fit_mfx(CYTHON_UNUS
 
   /* "nipy/labs/group/onesample.pyx":244
  *   dims = [Y.shape[i] for i in range(Y.ndim)]
- *   W = np.zeros(dims)
- *   Z = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *   W = zeros(dims)
+ *   Z = zeros(dims)             # <<<<<<<<<<<<<<
  * 
  *   # Create local structure
  */
@@ -2956,7 +2956,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9onesample_6pdf_fit_gmfx(CYTHON_UNU
  *   # Create output array
  *   dims = [Y.shape[i] for i in range(Y.ndim)]             # <<<<<<<<<<<<<<
  *   dims[axis] = 1
- *   MU = np.zeros(dims)
+ *   MU = zeros(dims)
  */
   __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 286; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -2975,16 +2975,16 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9onesample_6pdf_fit_gmfx(CYTHON_UNU
  *   # Create output array
  *   dims = [Y.shape[i] for i in range(Y.ndim)]
  *   dims[axis] = 1             # <<<<<<<<<<<<<<
- *   MU = np.zeros(dims)
- *   S2 = np.zeros(dims)
+ *   MU = zeros(dims)
+ *   S2 = zeros(dims)
  */
   if (unlikely(__Pyx_SetItemInt(__pyx_v_dims, __pyx_v_axis, __pyx_int_1, int, 1, __Pyx_PyInt_From_int, 1, 1, 1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 287; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "nipy/labs/group/onesample.pyx":288
  *   dims = [Y.shape[i] for i in range(Y.ndim)]
  *   dims[axis] = 1
- *   MU = np.zeros(dims)             # <<<<<<<<<<<<<<
- *   S2 = np.zeros(dims)
+ *   MU = zeros(dims)             # <<<<<<<<<<<<<<
+ *   S2 = zeros(dims)
  * 
  */
   __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 288; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -3022,8 +3022,8 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9onesample_6pdf_fit_gmfx(CYTHON_UNU
 
   /* "nipy/labs/group/onesample.pyx":289
  *   dims[axis] = 1
- *   MU = np.zeros(dims)
- *   S2 = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *   MU = zeros(dims)
+ *   S2 = zeros(dims)             # <<<<<<<<<<<<<<
  * 
  *   # Create local structure
  */

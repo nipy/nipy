@@ -128,15 +128,15 @@ class CoordinateMap(object):
     >>> m = CoordinateMap(x, y, np.exp, np.log)
     >>> m
     CoordinateMap(
-       function_domain=CoordinateSystem(coord_names=('x',), name='', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('y',), name='', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('x',), name='', coord_dtype=np.float64),
+       function_range=CoordinateSystem(coord_names=('y',), name='', coord_dtype=np.float64),
        function=<ufunc 'exp'>,
        inverse_function=<ufunc 'log'>
       )
     >>> m.inverse()
     CoordinateMap(
-       function_domain=CoordinateSystem(coord_names=('y',), name='', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x',), name='', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('y',), name='', coord_dtype=np.float64),
+       function_range=CoordinateSystem(coord_names=('x',), name='', coord_dtype=np.float64),
        function=<ufunc 'log'>,
        inverse_function=<ufunc 'exp'>
       )
@@ -250,7 +250,7 @@ class CoordinateMap(object):
         >>> output_cs = CoordinateSystem('xyz')
         >>> cm = CoordinateMap(input_cs, output_cs, lambda x:x+1)
         >>> cm.reordered_domain('ikj').function_domain
-        CoordinateSystem(coord_names=('i', 'k', 'j'), name='', coord_dtype=float64)
+        CoordinateSystem(coord_names=('i', 'k', 'j'), name='', coord_dtype=np.float64)
         """
         return reordered_domain(self, order)
 
@@ -279,7 +279,7 @@ class CoordinateMap(object):
         >>> output_cs = CoordinateSystem('xyz')
         >>> cm = CoordinateMap(input_cs, output_cs, lambda x:x+1)
         >>> cm.reordered_range('xzy').function_range
-        CoordinateSystem(coord_names=('x', 'z', 'y'), name='', coord_dtype=float64)
+        CoordinateSystem(coord_names=('x', 'z', 'y'), name='', coord_dtype=np.float64)
         >>> cm.reordered_range([0,2,1]).function_range.coord_names
         ('x', 'z', 'y')
 
@@ -312,7 +312,7 @@ class CoordinateMap(object):
 
         >>> new_cm = cm.renamed_domain({'i':'phase','k':'freq','j':'slice'})
         >>> new_cm.function_domain
-        CoordinateSystem(coord_names=('phase', 'slice', 'freq'), name='', coord_dtype=float64)
+        CoordinateSystem(coord_names=('phase', 'slice', 'freq'), name='', coord_dtype=np.float64)
 
         >>> new_cm = cm.renamed_domain({'i':'phase','k':'freq','l':'slice'})
         Traceback (most recent call last):
@@ -344,7 +344,7 @@ class CoordinateMap(object):
 
         >>> new_cm = cm.renamed_range({'x':'u'})
         >>> new_cm.function_range
-        CoordinateSystem(coord_names=('u', 'y', 'z'), name='', coord_dtype=float64)
+        CoordinateSystem(coord_names=('u', 'y', 'z'), name='', coord_dtype=np.float64)
 
         >>> new_cm = cm.renamed_range({'w':'u'})
         Traceback (most recent call last):
@@ -487,8 +487,8 @@ class AffineTransform(object):
     >>> cm = AffineTransform(inp_cs, out_cs, np.diag([1, 2, 3, 1]))
     >>> cm
     AffineTransform(
-       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=float64),
-       function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
+       function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='', coord_dtype=np.float64),
+       function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=np.float64),
        affine=array([[ 1.,  0.,  0.,  0.],
                      [ 0.,  2.,  0.,  0.],
                      [ 0.,  0.,  3.,  0.],
@@ -782,9 +782,9 @@ class AffineTransform(object):
                [ 0.,  0.,  1.,  0.],
                [ 0.,  0.,  0.,  1.]])
         >>> cm.function_domain
-        CoordinateSystem(coord_names=('i', 'j', 'k'), name='somewhere', coord_dtype=float64)
+        CoordinateSystem(coord_names=('i', 'j', 'k'), name='somewhere', coord_dtype=np.float64)
         >>> cm.function_range
-        CoordinateSystem(coord_names=('i', 'j', 'k'), name='somewhere', coord_dtype=float64)
+        CoordinateSystem(coord_names=('i', 'j', 'k'), name='somewhere', coord_dtype=np.float64)
         """
         return AffineTransform.from_start_step(coord_names, coord_names, [0]*len(coord_names),
                                       [1]*len(coord_names), name, name)
@@ -821,7 +821,7 @@ class AffineTransform(object):
         >>> output_cs = CoordinateSystem('xyz')
         >>> cm = AffineTransform(input_cs, output_cs, np.identity(4))
         >>> cm.reordered_domain('ikj').function_domain
-        CoordinateSystem(coord_names=('i', 'k', 'j'), name='', coord_dtype=float64)
+        CoordinateSystem(coord_names=('i', 'k', 'j'), name='', coord_dtype=np.float64)
         """
 
         return reordered_domain(self, order)
@@ -851,7 +851,7 @@ class AffineTransform(object):
         >>> output_cs = CoordinateSystem('xyz')
         >>> cm = AffineTransform(input_cs, output_cs, np.identity(4))
         >>> cm.reordered_range('xzy').function_range
-        CoordinateSystem(coord_names=('x', 'z', 'y'), name='', coord_dtype=float64)
+        CoordinateSystem(coord_names=('x', 'z', 'y'), name='', coord_dtype=np.float64)
         >>> cm.reordered_range([0,2,1]).function_range.coord_names
         ('x', 'z', 'y')
 
@@ -885,7 +885,7 @@ class AffineTransform(object):
 
         >>> new_affine_mapping = affine_mapping.renamed_domain({'i':'phase','k':'freq','j':'slice'})
         >>> new_affine_mapping.function_domain
-        CoordinateSystem(coord_names=('phase', 'slice', 'freq'), name='', coord_dtype=float64)
+        CoordinateSystem(coord_names=('phase', 'slice', 'freq'), name='', coord_dtype=np.float64)
 
         >>> new_affine_mapping = affine_mapping.renamed_domain({'i':'phase','k':'freq','l':'slice'})
         Traceback (most recent call last):
@@ -918,7 +918,7 @@ class AffineTransform(object):
 
         >>> new_affine_mapping = affine_mapping.renamed_range({'x':'u'})
         >>> new_affine_mapping.function_range
-        CoordinateSystem(coord_names=('u', 'y', 'z'), name='', coord_dtype=float64)
+        CoordinateSystem(coord_names=('u', 'y', 'z'), name='', coord_dtype=np.float64)
 
         >>> new_affine_mapping = affine_mapping.renamed_range({'w':'u'})
         Traceback (most recent call last):
@@ -1191,7 +1191,7 @@ def reordered_domain(mapping, order=None):
     >>> output_cs = CoordinateSystem('xyz')
     >>> cm = AffineTransform(input_cs, output_cs, np.identity(4))
     >>> cm.reordered_domain('ikj').function_domain
-    CoordinateSystem(coord_names=('i', 'k', 'j'), name='', coord_dtype=float64)
+    CoordinateSystem(coord_names=('i', 'k', 'j'), name='', coord_dtype=np.float64)
 
     Notes
     -----
@@ -1242,7 +1242,7 @@ def shifted_domain_origin(mapping, difference_vector, new_origin):
     >>> A[-1] = [0,0,0,0,0,1]
     >>> affine_transform = AffineTransform(CS('ijklm', 'oldorigin'), CS('xyzt'), A)
     >>> affine_transform.function_domain
-    CoordinateSystem(coord_names=('i', 'j', 'k', 'l', 'm'), name='oldorigin', coord_dtype=float64)
+    CoordinateSystem(coord_names=('i', 'j', 'k', 'l', 'm'), name='oldorigin', coord_dtype=np.float64)
 
     A random change of origin
 
@@ -1252,7 +1252,7 @@ def shifted_domain_origin(mapping, difference_vector, new_origin):
 
     >>> shifted_affine_transform = shifted_domain_origin(affine_transform, difference, 'neworigin')
     >>> shifted_affine_transform.function_domain
-    CoordinateSystem(coord_names=('i', 'j', 'k', 'l', 'm'), name='neworigin', coord_dtype=float64)
+    CoordinateSystem(coord_names=('i', 'j', 'k', 'l', 'm'), name='neworigin', coord_dtype=np.float64)
 
     Let's check that things work
 
@@ -1298,14 +1298,14 @@ def shifted_range_origin(mapping, difference_vector, new_origin):
     >>> A[-1] = [0,0,0,0,0,1]
     >>> affine_transform = AffineTransform(CS('ijklm'), CS('xyzt', 'oldorigin'), A)
     >>> affine_transform.function_range
-    CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='oldorigin', coord_dtype=float64)
+    CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='oldorigin', coord_dtype=np.float64)
 
     Make a random shift of the origin in the range
 
     >>> difference = np.random.standard_normal(4)
     >>> shifted_affine_transform = shifted_range_origin(affine_transform, difference, 'neworigin')
     >>> shifted_affine_transform.function_range
-    CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='neworigin', coord_dtype=float64)
+    CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='neworigin', coord_dtype=np.float64)
     >>>
 
     Evaluate the transform and verify it does as expected
@@ -1363,7 +1363,7 @@ def renamed_domain(mapping, newnames, name=''):
 
     >>> new_affine_mapping = affine_mapping.renamed_domain({'i':'phase','k':'freq','j':'slice'})
     >>> new_affine_mapping.function_domain
-    CoordinateSystem(coord_names=('phase', 'slice', 'freq'), name='', coord_dtype=float64)
+    CoordinateSystem(coord_names=('phase', 'slice', 'freq'), name='', coord_dtype=np.float64)
 
     >>> new_affine_mapping = affine_mapping.renamed_domain({'i':'phase','k':'freq','l':'slice'})
     Traceback (most recent call last):
@@ -1427,7 +1427,7 @@ def renamed_range(mapping, newnames):
     >>> affine_mapping = AffineTransform(affine_domain, affine_range, affine_matrix)
     >>> new_affine_mapping = affine_mapping.renamed_range({'x':'u'})
     >>> new_affine_mapping.function_range
-    CoordinateSystem(coord_names=('u', 'y', 'z'), name='', coord_dtype=float64)
+    CoordinateSystem(coord_names=('u', 'y', 'z'), name='', coord_dtype=np.float64)
 
     >>> new_affine_mapping = affine_mapping.renamed_range({'w':'u'})
     Traceback (most recent call last):
@@ -1491,7 +1491,7 @@ def reordered_range(mapping, order=None):
     >>> output_cs = CoordinateSystem('xyz')
     >>> cm = AffineTransform(input_cs, output_cs, np.identity(4))
     >>> cm.reordered_range('xzy').function_range
-    CoordinateSystem(coord_names=('x', 'z', 'y'), name='', coord_dtype=float64)
+    CoordinateSystem(coord_names=('x', 'z', 'y'), name='', coord_dtype=np.float64)
     >>> cm.reordered_range([0,2,1]).function_range.coord_names
     ('x', 'z', 'y')
 
@@ -2211,8 +2211,8 @@ class CoordMapMaker(object):
         >>> cm_maker = CoordMapMaker(dmaker, rmaker)
         >>> cm_maker.make_affine(np.diag([2,3,4,1]))
         AffineTransform(
-           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='generic-array', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='generic-scanner', coord_dtype=float64),
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k'), name='generic-array', coord_dtype=np.float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='generic-scanner', coord_dtype=np.float64),
            affine=array([[ 2.,  0.,  0.,  0.],
                          [ 0.,  3.,  0.,  0.],
                          [ 0.,  0.,  4.,  0.],
@@ -2224,8 +2224,8 @@ class CoordMapMaker(object):
 
         >>> cm_maker.make_affine(np.diag([2,3,4,1]), 6)
         AffineTransform(
-           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='generic-array', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='generic-scanner', coord_dtype=float64),
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='generic-array', coord_dtype=np.float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='generic-scanner', coord_dtype=np.float64),
            affine=array([[ 2.,  0.,  0.,  0.,  0.],
                          [ 0.,  3.,  0.,  0.,  0.],
                          [ 0.,  0.,  4.,  0.,  0.],
@@ -2237,8 +2237,8 @@ class CoordMapMaker(object):
 
         >>> cm_maker.make_affine(np.diag([2,3,4,1]), [6], [9])
         AffineTransform(
-           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='generic-array', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='generic-scanner', coord_dtype=float64),
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='generic-array', coord_dtype=np.float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='generic-scanner', coord_dtype=np.float64),
            affine=array([[ 2.,  0.,  0.,  0.,  0.],
                          [ 0.,  3.,  0.,  0.,  0.],
                          [ 0.,  0.,  4.,  0.,  0.],
@@ -2296,8 +2296,8 @@ class CoordMapMaker(object):
         >>> cm_maker = CoordMapMaker(dmaker, rmaker)
         >>> cm_maker.make_cmap(4, lambda x : x+1) #doctest: +ELLIPSIS
         CoordinateMap(
-           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='generic-array', coord_dtype=float64),
-           function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='generic-scanner', coord_dtype=float64),
+           function_domain=CoordinateSystem(coord_names=('i', 'j', 'k', 'l'), name='generic-array', coord_dtype=np.float64),
+           function_range=CoordinateSystem(coord_names=('x', 'y', 'z', 't'), name='generic-scanner', coord_dtype=np.float64),
            function=<function <lambda> at ...>
           )
         """

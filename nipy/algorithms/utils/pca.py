@@ -310,7 +310,7 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
     Time is the fourth axis
 
     >>> func_img.coordmap.function_range
-    CoordinateSystem(coord_names=('aligned-x=L->R', 'aligned-y=P->A', 'aligned-z=I->S', 't'), name='aligned', coord_dtype=float64)
+    CoordinateSystem(coord_names=('aligned-x=L->R', 'aligned-y=P->A', 'aligned-z=I->S', 't'), name='aligned', coord_dtype=np.float64)
     >>> func_img.shape
     (17, 21, 3, 20)
 
@@ -318,7 +318,7 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
 
     >>> res = pca_image(func_img)
     >>> res['basis_projections'].coordmap.function_range
-    CoordinateSystem(coord_names=('aligned-x=L->R', 'aligned-y=P->A', 'aligned-z=I->S', 'PCA components'), name='aligned', coord_dtype=float64)
+    CoordinateSystem(coord_names=('aligned-x=L->R', 'aligned-y=P->A', 'aligned-z=I->S', 'PCA components'), name='aligned', coord_dtype=np.float64)
 
     The number of components is one less than the number of time points
 
@@ -340,9 +340,9 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
         if not mask.coordmap.similar_to(drop_io_dim(img.coordmap, axis)):
             raise ValueError("Mask should have matching coordmap to `img` "
                              "coordmap with dropped axis %s" % axis)
-    data = work_img.get_data()
+    data = work_img.get_fdata()
     if mask is not None:
-        mask_data = mask.get_data()
+        mask_data = mask.get_fdata()
     else:
         mask_data = None
     # do the PCA

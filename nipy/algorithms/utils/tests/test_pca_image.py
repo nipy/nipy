@@ -29,7 +29,7 @@ def setup():
     # Below, I am just making a mask because I already have img, I know I can do
     # this. In principle, though, the pca function will just take another Image
     # as a mask
-    img_data = t0_img.get_data()
+    img_data = t0_img.get_fdata()
     mask_cmap = drop_io_dim(img.coordmap, 't')
     first_frame = img_data[0]
     mask = Image(np.greater(first_frame, 500).astype(np.float64),
@@ -37,9 +37,9 @@ def setup():
     data_dict['fmridata'] = img
     data_dict['mask'] = mask
 
-    # print data_dict['mask'].shape, np.sum(data_dict['mask'].get_data())
+    # print data_dict['mask'].shape, np.sum(data_dict['mask'].get_fdata())
     assert_equal(data_dict['mask'].shape, (17, 21, 3))
-    assert_almost_equal(np.sum(data_dict['mask'].get_data()), 1071.0)
+    assert_almost_equal(np.sum(data_dict['mask'].get_fdata()), 1071.0)
 
 def _rank(p):
     return p['basis_vectors'].shape[1]
@@ -208,7 +208,7 @@ def test_both():
 def test_5d():
     # What happened to a 5d image? We should get 4d images back
     img = data_dict['fmridata']
-    data = img.get_data()
+    data = img.get_fdata()
     # Make a last input and output axis called 'v'
     vcs = CS('v')
     xtra_cmap = AffineTransform(vcs, vcs, np.eye(2))
@@ -216,7 +216,7 @@ def test_5d():
     data_5d = data.reshape(data.shape + (1,))
     fived = Image(data_5d, cmap_5d)
     mask = data_dict['mask']
-    mask_data = mask.get_data()
+    mask_data = mask.get_fdata()
     mask_data = mask_data.reshape(mask_data.shape + (1,))
     cmap_4d = cm_product(mask.coordmap, xtra_cmap)
     mask4d = Image(mask_data, cmap_4d)
@@ -244,7 +244,7 @@ def test_5d():
     fived = Image(data_5d, cmap_5d)
     # Give the mask a 't' dimension, but no group dimension
     mask = data_dict['mask']
-    mask_data = mask.get_data()
+    mask_data = mask.get_fdata()
     mask_data = mask_data.reshape(mask_data.shape + (1,))
     # We need to replicate the time scaling of the image cmap, hence the 2. in
     # the affine
@@ -268,7 +268,7 @@ def img_res2pos1(res, bv_key):
     axis = res['axis']
     bvs = res[bv_key]
     bps_img = res['basis_projections']
-    bps = bps_img.get_data()
+    bps = bps_img.get_fdata()
     signs = np.sign(bvs[0])
     res[bv_key] = bvs * signs
     new_axes = [None] * bps.ndim
@@ -284,7 +284,7 @@ def test_other_axes():
     ncomp = 5
     img = data_dict['fmridata']
     in_coords = list(img.axes.coord_names)
-    img_data = img.get_data()
+    img_data = img.get_fdata()
     for axis_no, axis_name in enumerate('ijkt'):
         p = pca_image(img, axis_name, ncomp=ncomp)
         n = img.shape[axis_no]
@@ -299,7 +299,7 @@ def test_other_axes():
         pos_dp = res2pos1(dp)
         img_bps = pos_p['basis_projections']
         assert_almost_equal(pos_dp['basis_vectors'], pos_p[bv_key])
-        assert_almost_equal(pos_dp['basis_projections'], img_bps.get_data())
+        assert_almost_equal(pos_dp['basis_projections'], img_bps.get_fdata())
         # And we've replaced the expected axis
         exp_coords = in_coords[:]
         exp_coords[exp_coords.index(axis_name)] = 'PCA components'

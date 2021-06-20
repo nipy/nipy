@@ -61,12 +61,12 @@ def _test_parcel_analysis(smooth_method, parcel_info, vcon=False,
     assert_array_equal(xyz_affine(parcel_mu_img), AFFINE)
     assert_array_equal(parcel_prob_img.shape, SIZE)
     assert_array_equal(xyz_affine(parcel_prob_img), AFFINE)
-    assert parcel_prob_img.get_data().max() <= 1
-    assert parcel_prob_img.get_data().min() >= 0
-    outside = parcel_img.get_data() == 0
-    assert_array_equal(t_map_img.get_data()[outside], 0)
-    assert_array_equal(parcel_mu_img.get_data()[outside], 0)
-    assert_array_equal(parcel_prob_img.get_data()[outside], 0)
+    assert parcel_prob_img.get_fdata().max() <= 1
+    assert parcel_prob_img.get_fdata().min() >= 0
+    outside = parcel_img.get_fdata() == 0
+    assert_array_equal(t_map_img.get_fdata()[outside], 0)
+    assert_array_equal(parcel_mu_img.get_fdata()[outside], 0)
+    assert_array_equal(parcel_prob_img.get_fdata()[outside], 0)
 
 
 def test_parcel_analysis():
@@ -93,7 +93,7 @@ def test_parcel_analysis_nosmooth():
                        design_matrix=X,
                        cvect=c,
                        fwhm=0)
-    t_map = g.t_map().get_data()
+    t_map = g.t_map().get_fdata()
     m_error = np.abs(np.mean(t_map))
     v_error = np.abs(np.var(t_map) - (NSUBJ - 5) / float(NSUBJ - 7))
     print('Errors: %f (mean), %f (var)' % (m_error, v_error))
@@ -144,8 +144,8 @@ def test_parcel_analysis_function():
     assert_array_equal(xyz_affine(parcel_mu_img), AFFINE)
     assert_array_equal(parcel_prob_img.shape, SIZE)
     assert_array_equal(xyz_affine(parcel_prob_img), AFFINE)
-    assert parcel_prob_img.get_data().max() <= 1
-    assert parcel_prob_img.get_data().min() >= 0
-    outside = parcel_img.get_data() == 0
-    assert_array_equal(parcel_mu_img.get_data()[outside], 0)
-    assert_array_equal(parcel_prob_img.get_data()[outside], 0)
+    assert parcel_prob_img.get_fdata().max() <= 1
+    assert parcel_prob_img.get_fdata().min() >= 0
+    outside = parcel_img.get_fdata() == 0
+    assert_array_equal(parcel_mu_img.get_fdata()[outside], 0)
+    assert_array_equal(parcel_prob_img.get_fdata()[outside], 0)

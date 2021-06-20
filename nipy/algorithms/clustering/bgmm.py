@@ -146,7 +146,7 @@ def wishart_eval(n, V, W, dV=None, dW=None, piV=None):
     ltr = - np.trace(np.dot(piV, W)) / 2
     la = (n * p * math.log(2) + math.log(dV) * n) / 2
     lg = math.log(math.pi) * p * (p - 1) / 4
-    lg += gammaln(np.arange(n - p + 1, n + 1).astype(np.float) / 2).sum()
+    lg += gammaln(np.arange(n - p + 1, n + 1).astype(float) / 2).sum()
     lt = ldW + ltr - la - lg
     return math.exp(lt)
 
@@ -757,7 +757,7 @@ class BGMM(GMM):
               By default, no permutation is performed
         """
         pop = self.pop(z)
-        rpop = (pop + (pop == 0)).astype(np.float)
+        rpop = (pop + (pop == 0)).astype(float)
         dof = self.prior_dof + pop + 1
         shrinkage = self.prior_shrinkage + pop
         weights = pop + self.prior_weights

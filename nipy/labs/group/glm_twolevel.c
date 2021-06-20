@@ -1452,7 +1452,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_em(CYTHON_UNUSED PyO
  * 
  *     # Compute the projected pseudo-inverse matrix
  *     if C is None:             # <<<<<<<<<<<<<<
- *         PpX =  np.linalg.pinv(X)
+ *         PpX =  linalg.pinv(X)
  *     else:
  */
   __pyx_t_2 = (((PyObject *)__pyx_v_C) == Py_None);
@@ -1462,9 +1462,9 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_em(CYTHON_UNUSED PyO
     /* "nipy/labs/group/glm_twolevel.pyx":78
  *     # Compute the projected pseudo-inverse matrix
  *     if C is None:
- *         PpX =  np.linalg.pinv(X)             # <<<<<<<<<<<<<<
+ *         PpX =  linalg.pinv(X)             # <<<<<<<<<<<<<<
  *     else:
- *         A = np.linalg.inv(np.dot(X.transpose(), X)) # (p,p)
+ *         A = linalg.inv(dot(X.transpose(), X)) # (p,p)
  */
     __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
@@ -1506,18 +1506,18 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_em(CYTHON_UNUSED PyO
  * 
  *     # Compute the projected pseudo-inverse matrix
  *     if C is None:             # <<<<<<<<<<<<<<
- *         PpX =  np.linalg.pinv(X)
+ *         PpX =  linalg.pinv(X)
  *     else:
  */
     goto __pyx_L3;
   }
 
   /* "nipy/labs/group/glm_twolevel.pyx":80
- *         PpX =  np.linalg.pinv(X)
+ *         PpX =  linalg.pinv(X)
  *     else:
- *         A = np.linalg.inv(np.dot(X.transpose(), X)) # (p,p)             # <<<<<<<<<<<<<<
- *         B = np.linalg.inv(np.dot(np.dot(C.transpose(), A), C)) # (q,q)
- *         P = np.eye(p) - np.dot(np.dot(np.dot(A, C), B), C.transpose()) # (p,p)
+ *         A = linalg.inv(dot(X.transpose(), X)) # (p,p)             # <<<<<<<<<<<<<<
+ *         B = linalg.inv(dot(dot(C.transpose(), A), C)) # (q,q)
+ *         P = eye(p) - dot(dot(dot(A, C), B), C.transpose()) # (p,p)
  */
   /*else*/ {
     __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 80; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1611,10 +1611,10 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_em(CYTHON_UNUSED PyO
 
     /* "nipy/labs/group/glm_twolevel.pyx":81
  *     else:
- *         A = np.linalg.inv(np.dot(X.transpose(), X)) # (p,p)
- *         B = np.linalg.inv(np.dot(np.dot(C.transpose(), A), C)) # (q,q)             # <<<<<<<<<<<<<<
- *         P = np.eye(p) - np.dot(np.dot(np.dot(A, C), B), C.transpose()) # (p,p)
- *         PpX = np.dot(np.dot(P, A), X.transpose()) # (p,n)
+ *         A = linalg.inv(dot(X.transpose(), X)) # (p,p)
+ *         B = linalg.inv(dot(dot(C.transpose(), A), C)) # (q,q)             # <<<<<<<<<<<<<<
+ *         P = eye(p) - dot(dot(dot(A, C), B), C.transpose()) # (p,p)
+ *         PpX = dot(dot(P, A), X.transpose()) # (p,n)
  */
     __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
@@ -1738,10 +1738,10 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_em(CYTHON_UNUSED PyO
     __pyx_t_4 = 0;
 
     /* "nipy/labs/group/glm_twolevel.pyx":82
- *         A = np.linalg.inv(np.dot(X.transpose(), X)) # (p,p)
- *         B = np.linalg.inv(np.dot(np.dot(C.transpose(), A), C)) # (q,q)
- *         P = np.eye(p) - np.dot(np.dot(np.dot(A, C), B), C.transpose()) # (p,p)             # <<<<<<<<<<<<<<
- *         PpX = np.dot(np.dot(P, A), X.transpose()) # (p,n)
+ *         A = linalg.inv(dot(X.transpose(), X)) # (p,p)
+ *         B = linalg.inv(dot(dot(C.transpose(), A), C)) # (q,q)
+ *         P = eye(p) - dot(dot(dot(A, C), B), C.transpose()) # (p,p)             # <<<<<<<<<<<<<<
+ *         PpX = dot(dot(P, A), X.transpose()) # (p,n)
  *     ppx = fff_matrix_fromPyArray(PpX)
  */
     __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 82; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1901,9 +1901,9 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_em(CYTHON_UNUSED PyO
     __pyx_t_5 = 0;
 
     /* "nipy/labs/group/glm_twolevel.pyx":83
- *         B = np.linalg.inv(np.dot(np.dot(C.transpose(), A), C)) # (q,q)
- *         P = np.eye(p) - np.dot(np.dot(np.dot(A, C), B), C.transpose()) # (p,p)
- *         PpX = np.dot(np.dot(P, A), X.transpose()) # (p,n)             # <<<<<<<<<<<<<<
+ *         B = linalg.inv(dot(dot(C.transpose(), A), C)) # (q,q)
+ *         P = eye(p) - dot(dot(dot(A, C), B), C.transpose()) # (p,p)
+ *         PpX = dot(dot(P, A), X.transpose()) # (p,n)             # <<<<<<<<<<<<<<
  *     ppx = fff_matrix_fromPyArray(PpX)
  * 
  */
@@ -1997,8 +1997,8 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_em(CYTHON_UNUSED PyO
   __pyx_L3:;
 
   /* "nipy/labs/group/glm_twolevel.pyx":84
- *         P = np.eye(p) - np.dot(np.dot(np.dot(A, C), B), C.transpose()) # (p,p)
- *         PpX = np.dot(np.dot(P, A), X.transpose()) # (p,n)
+ *         P = eye(p) - dot(dot(dot(A, C), B), C.transpose()) # (p,p)
+ *         PpX = dot(dot(P, A), X.transpose()) # (p,n)
  *     ppx = fff_matrix_fromPyArray(PpX)             # <<<<<<<<<<<<<<
  * 
  *     # Allocate output arrays
@@ -2011,7 +2011,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_em(CYTHON_UNUSED PyO
  *     # Allocate output arrays
  *     dims = [Y.shape[i] for i in range(Y.ndim)]             # <<<<<<<<<<<<<<
  *     dims[axis] = p
- *     B = np.zeros(dims)
+ *     B = zeros(dims)
  */
   __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
@@ -2030,7 +2030,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_em(CYTHON_UNUSED PyO
  *     # Allocate output arrays
  *     dims = [Y.shape[i] for i in range(Y.ndim)]
  *     dims[axis] = p             # <<<<<<<<<<<<<<
- *     B = np.zeros(dims)
+ *     B = zeros(dims)
  *     dims[axis] = 1
  */
   __pyx_t_5 = __Pyx_PyInt_FromSize_t(__pyx_v_p); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2041,9 +2041,9 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_em(CYTHON_UNUSED PyO
   /* "nipy/labs/group/glm_twolevel.pyx":89
  *     dims = [Y.shape[i] for i in range(Y.ndim)]
  *     dims[axis] = p
- *     B = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *     B = zeros(dims)             # <<<<<<<<<<<<<<
  *     dims[axis] = 1
- *     S2 = np.zeros(dims)
+ *     S2 = zeros(dims)
  */
   __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
@@ -2080,17 +2080,17 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_em(CYTHON_UNUSED PyO
 
   /* "nipy/labs/group/glm_twolevel.pyx":90
  *     dims[axis] = p
- *     B = np.zeros(dims)
+ *     B = zeros(dims)
  *     dims[axis] = 1             # <<<<<<<<<<<<<<
- *     S2 = np.zeros(dims)
+ *     S2 = zeros(dims)
  * 
  */
   if (unlikely(__Pyx_SetItemInt(__pyx_v_dims, __pyx_v_axis, __pyx_int_1, int, 1, __Pyx_PyInt_From_int, 1, 1, 1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 90; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "nipy/labs/group/glm_twolevel.pyx":91
- *     B = np.zeros(dims)
+ *     B = zeros(dims)
  *     dims[axis] = 1
- *     S2 = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *     S2 = zeros(dims)             # <<<<<<<<<<<<<<
  * 
  *     # Local structs
  */
@@ -2472,7 +2472,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_2log_likelihood(CYTH
  *     # Allocate output array
  *     dims = [Y.shape[i] for i in range(Y.ndim)]             # <<<<<<<<<<<<<<
  *     dims[axis] = 1
- *     LL = np.zeros(dims)
+ *     LL = zeros(dims)
  */
   __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 139; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -2544,7 +2544,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_2log_likelihood(CYTH
  *     # Allocate output array
  *     dims = [Y.shape[i] for i in range(Y.ndim)]
  *     dims[axis] = 1             # <<<<<<<<<<<<<<
- *     LL = np.zeros(dims)
+ *     LL = zeros(dims)
  * 
  */
   if (unlikely(__Pyx_SetItemInt(__pyx_v_dims, __pyx_v_axis, __pyx_int_1, int, 1, __Pyx_PyInt_From_int, 1, 1, 1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2552,7 +2552,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_2log_likelihood(CYTH
   /* "nipy/labs/group/glm_twolevel.pyx":141
  *     dims = [Y.shape[i] for i in range(Y.ndim)]
  *     dims[axis] = 1
- *     LL = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *     LL = zeros(dims)             # <<<<<<<<<<<<<<
  * 
  *     # View on design matrix
  */
@@ -3218,7 +3218,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_4log_likelihood_rati
  * 
  *     # -2 log R = 2*(ll-ll0)
  *     lda = 2*(ll-ll0)             # <<<<<<<<<<<<<<
- *     return np.maximum(lda, 0.0)
+ *     return maximum(lda, 0.0)
  */
   __pyx_t_1 = PyNumber_Subtract(__pyx_v_ll, __pyx_v_ll0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -3231,7 +3231,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_12glm_twolevel_4log_likelihood_rati
   /* "nipy/labs/group/glm_twolevel.pyx":189
  *     # -2 log R = 2*(ll-ll0)
  *     lda = 2*(ll-ll0)
- *     return np.maximum(lda, 0.0)             # <<<<<<<<<<<<<<
+ *     return maximum(lda, 0.0)             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}

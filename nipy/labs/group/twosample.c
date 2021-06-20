@@ -1637,7 +1637,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9twosample_2stat(CYTHON_UNUSED PyOb
  *   nsimu = magics.size
  *   dims = [Y1.shape[i] for i in range(Y1.ndim)]             # <<<<<<<<<<<<<<
  *   dims[axis] = nsimu
- *   T = np.zeros(dims)
+ *   T = zeros(dims)
  */
   __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -1656,7 +1656,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9twosample_2stat(CYTHON_UNUSED PyOb
  *   nsimu = magics.size
  *   dims = [Y1.shape[i] for i in range(Y1.ndim)]
  *   dims[axis] = nsimu             # <<<<<<<<<<<<<<
- *   T = np.zeros(dims)
+ *   T = zeros(dims)
  * 
  */
   __pyx_t_2 = __Pyx_PyInt_From_unsigned_long(__pyx_v_nsimu); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1667,7 +1667,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9twosample_2stat(CYTHON_UNUSED PyOb
   /* "nipy/labs/group/twosample.pyx":98
  *   dims = [Y1.shape[i] for i in range(Y1.ndim)]
  *   dims[axis] = nsimu
- *   T = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *   T = zeros(dims)             # <<<<<<<<<<<<<<
  * 
  *   # Create local structure
  */
@@ -2266,7 +2266,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9twosample_4stat_mfx(CYTHON_UNUSED 
  *   nsimu = magics.size
  *   dims = [Y1.shape[i] for i in range(Y1.ndim)]             # <<<<<<<<<<<<<<
  *   dims[axis] = nsimu
- *   T = np.zeros(dims)
+ *   T = zeros(dims)
  */
   __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 181; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
@@ -2285,7 +2285,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9twosample_4stat_mfx(CYTHON_UNUSED 
  *   nsimu = magics.size
  *   dims = [Y1.shape[i] for i in range(Y1.ndim)]
  *   dims[axis] = nsimu             # <<<<<<<<<<<<<<
- *   T = np.zeros(dims)
+ *   T = zeros(dims)
  * 
  */
   __pyx_t_2 = __Pyx_PyInt_From_unsigned_long(__pyx_v_nsimu); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2296,7 +2296,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5group_9twosample_4stat_mfx(CYTHON_UNUSED 
   /* "nipy/labs/group/twosample.pyx":183
  *   dims = [Y1.shape[i] for i in range(Y1.ndim)]
  *   dims[axis] = nsimu
- *   T = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *   T = zeros(dims)             # <<<<<<<<<<<<<<
  * 
  *   # Create local structure
  */

@@ -360,7 +360,7 @@ def select_vmm_cv(krange, precision, x, null_class, cv_index,
     for k in krange:
         mll.append( - np.inf)
         for j in range(1):
-            ll = np.zeros_like(cv_index).astype(np.float)
+            ll = np.zeros_like(cv_index).astype(float)
             for i in np.unique(cv_index):
                 xl = x[cv_index != i]
                 xt = x[cv_index == i]

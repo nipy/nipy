@@ -36,14 +36,14 @@ def test_futurewarning():
 
 
 def test_scanner_time():
-    im4d = Image4d(IM.get_data(), IM.affine, tr=3.,
+    im4d = Image4d(IM.get_fdata(), IM.affine, tr=3.,
                    slice_times=(0, 1, 2))
     assert_equal(im4d.scanner_time(0, 0), 0.)
     assert_equal(im4d.scanner_time(0, im4d.tr), 1.)
 
 
 def test_slice_info():
-    im4d = Image4d(IM.get_data(), IM.affine, tr=3.,
+    im4d = Image4d(IM.get_fdata(), IM.affine, tr=3.,
                    slice_times=(0, 1, 2), slice_info=(2, -1))
     assert_equal(im4d.slice_axis, 2)
     assert_equal(im4d.slice_direction, -1)
@@ -52,9 +52,9 @@ def test_slice_info():
 def test_slice_timing():
     affine = np.eye(4)
     affine[0:3, 0:3] = IM.affine[0:3, 0:3]
-    im4d = Image4d(IM.get_data(), affine, tr=2., slice_times=0.0)
+    im4d = Image4d(IM.get_fdata(), affine, tr=2., slice_times=0.0)
     x = resample4d(im4d, [Rigid() for i in range(IM.shape[3])])
-    assert_array_almost_equal(im4d.get_data(), x)
+    assert_array_almost_equal(im4d.get_fdata(), x)
 
 
 def test_realign4d_no_time_interp():
@@ -158,7 +158,7 @@ def test_realign4d_runs_with_different_affines():
     aff = xyz_affine(IM)
     aff2 = aff.copy()
     aff2[0:3, 3] += 5
-    im2 = make_xyz_image(IM.get_data(), aff2, 'scanner')
+    im2 = make_xyz_image(IM.get_fdata(), aff2, 'scanner')
     runs = [IM, im2]
     R = SpaceTimeRealign(runs, tr=2., slice_times='ascending', slice_info=2)
     R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')

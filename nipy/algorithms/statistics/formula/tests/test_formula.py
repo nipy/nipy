@@ -227,7 +227,7 @@ def test_make_recarray():
     # From list / sequence
     # 2D case
     data_2d = [(3, 4), (4, 6), (7, 9)]
-    m = F.make_recarray(data_2d, 'wv', [np.float, np.int])
+    m = F.make_recarray(data_2d, 'wv', [float, np.int])
     assert_starr_equal(m, fromrecords(
         data_2d, dtype=[('w', float), ('v', int)]))
     # 1D vector, sequence and array
@@ -328,8 +328,8 @@ def test_design():
     ny = np.recarray(n.shape, dtype=[('x', n.dtype['x'])])
     ny['x'] = n['x']
     assert_raises(ValueError, f.design, ny)
-    n = np.array([(2,3,'a'),(4,5,'b'),(5,6,'a')], np.dtype([('x', np.float),
-                                                            ('y', np.float),
+    n = np.array([(2,3,'a'),(4,5,'b'),(5,6,'a')], np.dtype([('x', float),
+                                                            ('y', float),
                                                             ('f', 'S1')]))
     f = F.Factor('f', ['a','b'])
     ff = t1.formula * f + F.I
@@ -347,8 +347,8 @@ def test_design_inputs():
         data = np.array([(2, 3, 'a'),
                          (4, 5, 'b'),
                          (5, 6, 'a')],
-                        dtype = [('x', np.float),
-                                 ('y', np.float),
+                        dtype = [('x', float),
+                                 ('y', float),
                                  ('f', field_type)])
         assert_array_equal(ff.design(data, return_float=True),
                            [[2, 3, 1, 0],
@@ -454,7 +454,7 @@ def test_return_float():
     dtype = f.design(xx).dtype
     assert_equal(set(dtype.names), set(['x', 'x**2']))
     dtype = f.design(xx, return_float=True).dtype
-    assert_equal(dtype, np.float)
+    assert_equal(dtype, float)
 
 
 def test_subtract():

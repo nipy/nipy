@@ -16,7 +16,7 @@ from ....io.files import load as load_image
 from ....testing import anatfile
 
 anat_img = load_image(anatfile)
-anat_mask = anat_img.get_data() > 0
+anat_mask = anat_img.get_fdata() > 0
 
 DIMS = (30, 30, 20)
 
@@ -30,7 +30,7 @@ def _check_dims(x, ndim, shape):
 
 def _test_brain_seg(model, niters=3, beta=0, ngb_size=6, init_params=None,
                     convert=True):
-    S = BrainT1Segmentation(anat_img.get_data(), mask=anat_mask,
+    S = BrainT1Segmentation(anat_img.get_fdata(), mask=anat_mask,
                             model=model, niters=niters, beta=beta,
                             ngb_size=ngb_size, init_params=init_params,
                             convert=convert)

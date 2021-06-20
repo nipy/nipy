@@ -101,10 +101,10 @@ C is the default index ordering for arrays in Numpy.
 
 For example, let's imagine that we have a binary block of 3D image
 data, in standard NIfTI / Analyze format, with the X dimension
-changing fastest, called `my.img`, containing Float32 data.  Then we
+changing fastest, called `my.img`, containing np.float32 data.  Then we
 memory map it::
 
-  img_arr = memmap('my.img', dtype=float32)
+  img_arr = memmap('my.img', dtype=np.float32)
 
 When we index this new array, the first index indexes the Z dimension, and the third indexes X.  For example, if I want a voxel X=3, Y=10, Z=20 (zero-based), I have to get this from the array with::
 
@@ -127,7 +127,7 @@ in functional imaging, as we invariably use XYZ ordered coordinates in
 papers.  It is possible to do the same in numpy, by specifying that
 the image should have fortran index ordering::
 
-  img_arr = memmap('my.img', dtype=float32, order='F')
+  img_arr = memmap('my.img', dtype=np.float32, order='F')
   img_arr[3, 10, 20]
 
 The proposal
@@ -182,12 +182,12 @@ MB replied:
   index it XYZ instead of ZYX.  As far as I am aware, there are no
   significant performance differences between::
 
-    img_arr = memmap('my.img', dtype=float32, order='C')
+    img_arr = memmap('my.img', dtype=np.float32, order='C')
     img_arr[5,4,3]
 
   and::
 
-    img_arr = memmap('my.img', dtype=float32, order='F')
+    img_arr = memmap('my.img', dtype=np.float32, order='F')
     img_arr[3,4,5]
 
   Happy to be corrected though.  
@@ -202,7 +202,7 @@ example:
   img_obj = Image('my.img') # Where the Image class has been changed to implement Fortran ordering
   first_z_slice = img_obj[...,0] # returns a Z slice
 
-  img_arr = memmap('my.img', dtype=float32) # C ordering, the numpy default
+  img_arr = memmap('my.img', dtype=np.float32) # C ordering, the numpy default
   img_obj = Image(img_arr)
   first_z_slice = img_obj[...,0]  # in fact returns an X slice
 

@@ -3,7 +3,7 @@ from __future__ import absolute_import
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 #TODO the iterators are deprecated
 
-from nipy.testing import *
+# from nipy.testing import *
 
 from nipy.core.api import Image
 import nipy.core.reference.coordinate_map as coordinate_map

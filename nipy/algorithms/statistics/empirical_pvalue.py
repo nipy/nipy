@@ -208,7 +208,7 @@ class NormalEmpiricalNull(object):
         medge = ledge + 0.5 * step
 
         # remove null bins
-        hist = hist[hist > 0].astype(np.float)
+        hist = hist[hist > 0].astype(float)
         medge = medge[:-1][hist > 0]  # edges include rightmost outer
 
         # fit the histogram

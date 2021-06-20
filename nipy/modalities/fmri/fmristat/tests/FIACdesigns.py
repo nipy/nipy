@@ -512,7 +512,7 @@ descriptions = {'event':"""
 """}
 
 # convert to record array for convenience
-dtype = np.dtype([('time', np.float), ('event', 'S7')])
+dtype = np.dtype([('time', float), ('event', 'S7')])
 for key, txt in descriptions.items():
     vals = np.fromstring(txt, sep='\t').reshape(-1, 2)
     full_def = np.zeros((vals.shape[0],), dtype=dtype)

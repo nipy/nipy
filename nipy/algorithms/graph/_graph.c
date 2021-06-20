@@ -594,16 +594,16 @@ typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 /* "nipy/algorithms/graph/_graph.pyx":4
  * cimport numpy as np
  * cimport cython
- * ctypedef np.float64_t DOUBLE             # <<<<<<<<<<<<<<
- * ctypedef np.int_t INT
+ * ctypedef float64_t DOUBLE             # <<<<<<<<<<<<<<
+ * ctypedef int_t INT
  * 
  */
 typedef __pyx_t_5numpy_float64_t __pyx_t_4nipy_10algorithms_5graph_6_graph_DOUBLE;
 
 /* "nipy/algorithms/graph/_graph.pyx":5
  * cimport cython
- * ctypedef np.float64_t DOUBLE
- * ctypedef np.int_t INT             # <<<<<<<<<<<<<<
+ * ctypedef float64_t DOUBLE
+ * ctypedef int_t INT             # <<<<<<<<<<<<<<
  * 
  * 
  */
@@ -1146,9 +1146,9 @@ static PyObject *__pyx_pw_4nipy_10algorithms_5graph_6_graph_1dilation(PyObject *
 /* "nipy/algorithms/graph/_graph.pyx":12
  * @cython.cdivision(True)
  * 
- * def dilation(np.ndarray[DOUBLE, ndim=2] field,\             # <<<<<<<<<<<<<<
- *              np.ndarray[INT, ndim=1] idx,\
- *              np.ndarray[INT, ndim=1] neighb):
+ * def dilation(ndarray[DOUBLE, ndim=2] field,\             # <<<<<<<<<<<<<<
+ *              ndarray[INT, ndim=1] idx,\
+ *              ndarray[INT, ndim=1] neighb):
  */
 
 static PyObject *__pyx_pf_4nipy_10algorithms_5graph_6_graph_dilation(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_field, PyArrayObject *__pyx_v_idx, PyArrayObject *__pyx_v_neighb) {
@@ -1229,8 +1229,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_5graph_6_graph_dilation(CYTHON_UNUS
   __pyx_pybuffernd_neighb.diminfo[0].strides = __pyx_pybuffernd_neighb.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_neighb.diminfo[0].shape = __pyx_pybuffernd_neighb.rcbuffer->pybuffer.shape[0];
 
   /* "nipy/algorithms/graph/_graph.pyx":15
- *              np.ndarray[INT, ndim=1] idx,\
- *              np.ndarray[INT, ndim=1] neighb):
+ *              ndarray[INT, ndim=1] idx,\
+ *              ndarray[INT, ndim=1] neighb):
  *     cdef int size_max = field.shape[0]             # <<<<<<<<<<<<<<
  *     cdef int dim = field.shape[1]
  *     cdef int i, j, d
@@ -1238,7 +1238,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_5graph_6_graph_dilation(CYTHON_UNUS
   __pyx_v_size_max = (__pyx_v_field->dimensions[0]);
 
   /* "nipy/algorithms/graph/_graph.pyx":16
- *              np.ndarray[INT, ndim=1] neighb):
+ *              ndarray[INT, ndim=1] neighb):
  *     cdef int size_max = field.shape[0]
  *     cdef int dim = field.shape[1]             # <<<<<<<<<<<<<<
  *     cdef int i, j, d
@@ -1249,7 +1249,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_5graph_6_graph_dilation(CYTHON_UNUS
   /* "nipy/algorithms/graph/_graph.pyx":19
  *     cdef int i, j, d
  *     cdef DOUBLE fmax
- *     cdef np.ndarray[DOUBLE, ndim=1] res = 0 * field[:, 0]             # <<<<<<<<<<<<<<
+ *     cdef ndarray[DOUBLE, ndim=1] res = 0 * field[:, 0]             # <<<<<<<<<<<<<<
  *     for d in range(dim):
  *         for i in range(size_max):
  */
@@ -1274,7 +1274,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_5graph_6_graph_dilation(CYTHON_UNUS
 
   /* "nipy/algorithms/graph/_graph.pyx":20
  *     cdef DOUBLE fmax
- *     cdef np.ndarray[DOUBLE, ndim=1] res = 0 * field[:, 0]
+ *     cdef ndarray[DOUBLE, ndim=1] res = 0 * field[:, 0]
  *     for d in range(dim):             # <<<<<<<<<<<<<<
  *         for i in range(size_max):
  *             fmax = field[i, d]
@@ -1284,7 +1284,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_5graph_6_graph_dilation(CYTHON_UNUS
     __pyx_v_d = __pyx_t_5;
 
     /* "nipy/algorithms/graph/_graph.pyx":21
- *     cdef np.ndarray[DOUBLE, ndim=1] res = 0 * field[:, 0]
+ *     cdef ndarray[DOUBLE, ndim=1] res = 0 * field[:, 0]
  *     for d in range(dim):
  *         for i in range(size_max):             # <<<<<<<<<<<<<<
  *             fmax = field[i, d]
@@ -3455,7 +3455,7 @@ static int __Pyx_InitCachedConstants(void) {
   /* "nipy/algorithms/graph/_graph.pyx":19
  *     cdef int i, j, d
  *     cdef DOUBLE fmax
- *     cdef np.ndarray[DOUBLE, ndim=1] res = 0 * field[:, 0]             # <<<<<<<<<<<<<<
+ *     cdef ndarray[DOUBLE, ndim=1] res = 0 * field[:, 0]             # <<<<<<<<<<<<<<
  *     for d in range(dim):
  *         for i in range(size_max):
  */
@@ -3559,9 +3559,9 @@ static int __Pyx_InitCachedConstants(void) {
   /* "nipy/algorithms/graph/_graph.pyx":12
  * @cython.cdivision(True)
  * 
- * def dilation(np.ndarray[DOUBLE, ndim=2] field,\             # <<<<<<<<<<<<<<
- *              np.ndarray[INT, ndim=1] idx,\
- *              np.ndarray[INT, ndim=1] neighb):
+ * def dilation(ndarray[DOUBLE, ndim=2] field,\             # <<<<<<<<<<<<<<
+ *              ndarray[INT, ndim=1] idx,\
+ *              ndarray[INT, ndim=1] neighb):
  */
   __pyx_k_tuple_15 = PyTuple_New(10); if (unlikely(!__pyx_k_tuple_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_k_tuple_15);
@@ -3715,9 +3715,9 @@ PyMODINIT_FUNC PyInit__graph(void)
   /* "nipy/algorithms/graph/_graph.pyx":12
  * @cython.cdivision(True)
  * 
- * def dilation(np.ndarray[DOUBLE, ndim=2] field,\             # <<<<<<<<<<<<<<
- *              np.ndarray[INT, ndim=1] idx,\
- *              np.ndarray[INT, ndim=1] neighb):
+ * def dilation(ndarray[DOUBLE, ndim=2] field,\             # <<<<<<<<<<<<<<
+ *              ndarray[INT, ndim=1] idx,\
+ *              ndarray[INT, ndim=1] neighb):
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4nipy_10algorithms_5graph_6_graph_1dilation, NULL, __pyx_n_s_18); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);

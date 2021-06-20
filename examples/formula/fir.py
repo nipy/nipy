@@ -44,7 +44,7 @@ bsp_fns = linBspline(np.arange(0,10,2))
 
 # We're going to evaluate at these specific values of time
 tt = np.linspace(0,50,101)
-tvals= tt.view(np.dtype([('t', np.float)]))
+tvals= tt.view(np.dtype([('t', float)]))
 
 # Some inter-stimulus intervals
 isis = np.random.uniform(low=0, high=3, size=(4,)) + 10.

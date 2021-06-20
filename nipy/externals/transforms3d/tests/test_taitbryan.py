@@ -14,7 +14,7 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 from .samples import euler_tuples
 
-FLOAT_EPS = np.finfo(np.float).eps
+FLOAT_EPS = np.finfo(float).eps
 
 
 def x_only(x):

@@ -1417,7 +1417,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5utils_8routines_quantile(CYTHON_UNUSED Py
  *     # Allocate output array Y
  *     dims = list(X.shape)             # <<<<<<<<<<<<<<
  *     dims[axis] = 1
- *     Y = np.zeros(dims)
+ *     Y = zeros(dims)
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_X, __pyx_n_s_shape); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -1431,7 +1431,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5utils_8routines_quantile(CYTHON_UNUSED Py
  *     # Allocate output array Y
  *     dims = list(X.shape)
  *     dims[axis] = 1             # <<<<<<<<<<<<<<
- *     Y = np.zeros(dims)
+ *     Y = zeros(dims)
  * 
  */
   if (unlikely(__Pyx_SetItemInt(__pyx_v_dims, __pyx_v_axis, __pyx_int_1, int, 1, __Pyx_PyInt_From_int, 1, 1, 1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1439,7 +1439,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5utils_8routines_quantile(CYTHON_UNUSED Py
   /* "nipy/labs/utils/routines.pyx":62
  *     dims = list(X.shape)
  *     dims[axis] = 1
- *     Y = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *     Y = zeros(dims)             # <<<<<<<<<<<<<<
  * 
  *     # Create a new array iterator
  */
@@ -1844,7 +1844,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5utils_8routines_4mahalanobis(CYTHON_UNUSE
  *     dims = list(X.shape)
  *     dim = dims[0]             # <<<<<<<<<<<<<<
  *     dims[0] = 1
- *     D2 = np.zeros(dims)
+ *     D2 = zeros(dims)
  */
   __pyx_t_2 = __Pyx_GetItemInt_List(__pyx_v_dims, 0, long, 1, __Pyx_PyInt_From_long, 1, 0, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_2);
@@ -1855,7 +1855,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5utils_8routines_4mahalanobis(CYTHON_UNUSE
  *     dims = list(X.shape)
  *     dim = dims[0]
  *     dims[0] = 1             # <<<<<<<<<<<<<<
- *     D2 = np.zeros(dims)
+ *     D2 = zeros(dims)
  * 
  */
   if (unlikely(__Pyx_SetItemInt(__pyx_v_dims, 0, __pyx_int_1, long, 1, __Pyx_PyInt_From_long, 1, 0, 1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -1863,7 +1863,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5utils_8routines_4mahalanobis(CYTHON_UNUSE
   /* "nipy/labs/utils/routines.pyx":111
  *     dim = dims[0]
  *     dims[0] = 1
- *     D2 = np.zeros(dims)             # <<<<<<<<<<<<<<
+ *     D2 = zeros(dims)             # <<<<<<<<<<<<<<
  * 
  *     # Flatten input variance array
  */
@@ -2479,7 +2479,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5utils_8routines_6svd(CYTHON_UNUSED PyObje
  * 
  *     # Allocate output array
  *     endims = list(X.shape[2:])             # <<<<<<<<<<<<<<
- *     S = np.zeros([dmin]+endims)
+ *     S = zeros([dmin]+endims)
  * 
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_X, __pyx_n_s_shape); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2496,7 +2496,7 @@ static PyObject *__pyx_pf_4nipy_4labs_5utils_8routines_6svd(CYTHON_UNUSED PyObje
   /* "nipy/labs/utils/routines.pyx":198
  *     # Allocate output array
  *     endims = list(X.shape[2:])
- *     S = np.zeros([dmin]+endims)             # <<<<<<<<<<<<<<
+ *     S = zeros([dmin]+endims)             # <<<<<<<<<<<<<<
  * 
  *     # Flatten input array
  */
@@ -5536,7 +5536,7 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  *     # Allocate output array
  *     endims = list(X.shape[2:])             # <<<<<<<<<<<<<<
- *     S = np.zeros([dmin]+endims)
+ *     S = zeros([dmin]+endims)
  * 
  */
   __pyx_slice__3 = PySlice_New(__pyx_int_2, Py_None, Py_None); if (unlikely(!__pyx_slice__3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -5899,7 +5899,7 @@ PyMODINIT_FUNC PyInit_routines(void)
  * 
  * # Initialize numpy
  * fffpy_import_array()             # <<<<<<<<<<<<<<
- * cnp.import_array()
+ * cimport_array()
  * import numpy as np
  */
   fffpy_import_array();
@@ -5907,7 +5907,7 @@ PyMODINIT_FUNC PyInit_routines(void)
   /* "nipy/labs/utils/routines.pyx":45
  * # Initialize numpy
  * fffpy_import_array()
- * cnp.import_array()             # <<<<<<<<<<<<<<
+ * cimport_array()             # <<<<<<<<<<<<<<
  * import numpy as np
  * 
  */
@@ -5915,7 +5915,7 @@ PyMODINIT_FUNC PyInit_routines(void)
 
   /* "nipy/labs/utils/routines.pyx":46
  * fffpy_import_array()
- * cnp.import_array()
+ * cimport_array()
  * import numpy as np             # <<<<<<<<<<<<<<
  * 
  * # This is faster than scipy.stats.scoreatpercentile due to partial

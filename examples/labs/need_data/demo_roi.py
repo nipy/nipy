@@ -66,9 +66,9 @@ smin = 10  # size threshold on bblobs
 
 # prepare the data
 nim = load(input_image)
-affine = nim.get_affine()
+affine = nim.affine
 shape = nim.shape
-data = nim.get_data()
+data = nim.get_fdata()
 values = data[data != 0]
 
 # compute the nested roi object
@@ -97,7 +97,7 @@ save(wim3, roi_path_3)
 
 # --- 2.d make a set of ROIs from all the blobs
 roi = mroi.subdomain_from_image(blobPath)
-data = load(input_image).get_data().ravel()
+data = load(input_image).get_fdata().ravel()
 feature_activ = [data[roi.select_id(id, roi=False)] for id in roi.get_id()]
 roi.set_feature('activ', feature_activ)
 roi.plot_feature('activ')

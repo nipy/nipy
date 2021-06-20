@@ -30,7 +30,7 @@ def fourier_basis(t, freq):
     Parameters
     ----------
     t : np.ndarray
-        An array of np.float values at which to evaluate
+        An array of float values at which to evaluate
         the design. Common examples would be the acquisition
         times of an fMRI image.
     freq : sequence of float
@@ -142,7 +142,7 @@ def event_design(event_spec, t, order=2, hrfs=(glover,),
        model.  If there is no field other than time, add a single-level
        placeholder event type ``_event_``.
     t : np.ndarray
-       An array of np.float values at which to evaluate the design. Common
+       An array of float values at which to evaluate the design. Common
        examples would be the acquisition times of an fMRI image.
     order : int, optional
        The highest order interaction to be considered in constructing
@@ -221,7 +221,7 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
        than 'start' and 'end', add a single-level placeholder block type
        ``_block_``.
     t : np.ndarray
-       An array of np.float values at which to evaluate the design. Common
+       An array of float values at which to evaluate the design. Common
        examples would be the acquisition times of an fMRI image.
     order : int, optional
        The highest order interaction to be considered in constructing the
@@ -476,7 +476,7 @@ def block_amplitudes(name, block_spec, t, hrfs=(glover,),
        A recarray having fields ``start, end, amplitude``, or a 2D ndarray /
        array-like with three columns corresponding to start, end, amplitude.
     t : np.ndarray
-       An array of np.float values at which to evaluate the design. Common
+       An array of float values at which to evaluate the design. Common
        examples would be the acquisition times of an fMRI image.
     hrfs : sequence, optional
        A sequence of (symbolic) HRFs that will be convolved with each block.

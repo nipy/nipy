@@ -32,10 +32,10 @@ if not path.exists(write_dir):
     mkdir(write_dir)
 
 # read the data
-mask = load(mask_image).get_data() > 0
+mask = load(mask_image).get_fdata() > 0
 ijk = np.array(np.where(mask)).T
 nvox = ijk.shape[0]
-data = load(input_image).get_data()[mask]
+data = load(input_image).get_fdata()[mask]
 image_field = Field(nvox)
 image_field.from_3d_grid(ijk, k=6)
 image_field.set_field(data)
@@ -45,5 +45,5 @@ u, _ = image_field.ward(100)
 label_image = path.join(write_dir, 'label.nii')
 wdata = mask - 1
 wdata[mask] = u
-save(Nifti1Image(wdata, load(mask_image).get_affine()), label_image)
+save(Nifti1Image(wdata, load(mask_image).affine), label_image)
 print("Label image written in %s" % label_image)

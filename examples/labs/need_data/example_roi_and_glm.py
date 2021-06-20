@@ -51,7 +51,7 @@ if not path.exists(mask_path):
     get_second_level_dataset()
 
 mask = load(mask_path)
-mask_array, affine = mask.get_data() > 0, mask.get_affine()
+mask_array, affine = mask.get_fdata() > 0, mask.affine
 
 # timing
 n_scans = 128
@@ -98,7 +98,7 @@ save(my_roi.to_image(), path.join(write_dir, "roi.nii"))
 # Get the FMRI data
 #######################################
 fmri_data = surrogate_4d_dataset(mask=mask, dmtx=X)[0]
-Y = fmri_data.get_data()[mask_array]
+Y = fmri_data.get_fdata()[mask_array]
 
 # artificially added signal in ROIs to make the example more meaningful
 activation = 30 * (X.T[1] + .5 * X.T[0])
