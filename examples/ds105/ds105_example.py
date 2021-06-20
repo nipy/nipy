@@ -195,7 +195,7 @@ def run_model(subj, run):
     # time as the first dimension, i.e. fmri[t] gives the t-th volume.
     fmri_im = futil.get_fmri(path_info) # an Image
     fmri_im = rollimg(fmri_im, 't')
-    fmri = fmri_im.get_data() # now, it's an ndarray
+    fmri = fmri_im.get_fdata() # now, it's an ndarray
 
     nvol, volshape = fmri.shape[0], fmri.shape[1:]
     nx, sliceshape = volshape[0], volshape[1:]
@@ -310,8 +310,8 @@ def fixed_effects(subj, design):
         fixed_effect = 0
         fixed_var = 0
         for effect, sd in results[con]:
-            effect = load_image(effect).get_data()
-            sd = load_image(sd).get_data()
+            effect = load_image(effect).get_fdata()
+            sd = load_image(sd).get_fdata()
             var = sd ** 2
 
             # The optimal, in terms of minimum variance, combination of the
@@ -362,8 +362,8 @@ def group_analysis(design, contrast):
     for s in subj_con_dirs:
         sd_img = load_image(pjoin(s, "sd.nii"))
         effect_img = load_image(pjoin(s, "effect.nii"))
-        sds.append(sd_img.get_data())
-        Ys.append(effect_img.get_data())
+        sds.append(sd_img.get_fdata())
+        Ys.append(effect_img.get_fdata())
     sd = array(sds)
     Y = array(Ys)
 
@@ -424,7 +424,7 @@ def group_analysis_signs(design, contrast, mask, signs=None):
          vector of signs
     """
     if api.is_image(mask):
-        maska = mask.get_data()
+        maska = mask.get_fdata()
     else:
         maska = np.asarray(mask)
     maska = maska.astype(np.bool)
@@ -438,8 +438,8 @@ def group_analysis_signs(design, contrast, mask, signs=None):
     for s in subj_con_dirs:
         sd_img = load_image(pjoin(s, "sd.nii"))
         effect_img = load_image(pjoin(s, "effect.nii"))
-        sds.append(sd_img.get_data()[maska])
-        Ys.append(effect_img.get_data()[maska])
+        sds.append(sd_img.get_fdata()[maska])
+        Ys.append(effect_img.get_fdata()[maska])
     sd = np.array(sds)
     Y = np.array(Ys)
 

@@ -119,9 +119,9 @@ def _smooth_image_pair(con_img, vcon_img, sigma, method='default'):
         smooth_fn = _smooth_spm
     else:
         raise ValueError('Unknown smoothing method')
-    con = con_img.get_data()
+    con = con_img.get_fdata()
     if vcon_img is not None:
-        vcon = con_img.get_data()
+        vcon = con_img.get_fdata()
     else:
         vcon = None
     msk = np.isnan(con)
@@ -177,7 +177,7 @@ class ParcelAnalysis(object):
           and the second, parcel values, i.e., corresponding
           intensities in the associated parcel image. By default,
           parcel values are taken as
-          `np.unique(parcel_img.get_data())` and parcel names are
+          `np.unique(parcel_img.get_fdata())` and parcel names are
           these values converted to strings.
         msk_img: nipy-like image, optional
           Binary mask to restrict analysis. By default, analysis is
@@ -226,7 +226,7 @@ class ParcelAnalysis(object):
         if msk_img is None:
             self.msk = None
         else:
-            self.msk = msk_img.get_data().astype(bool).squeeze()
+            self.msk = msk_img.get_fdata().astype(bool).squeeze()
         self.res_path = res_path
 
         # design matrix
@@ -251,7 +251,7 @@ class ParcelAnalysis(object):
         # load the parcellation and resample it at the appropriate
         # resolution
         self.reference = parcel_img.reference
-        self.parcel_full_res = parcel_img.get_data().astype('uintp').squeeze()
+        self.parcel_full_res = parcel_img.get_fdata().astype('uintp').squeeze()
         self.affine_full_res = xyz_affine(parcel_img)
         parcel_img = make_xyz_image(self.parcel_full_res,
                                     self.affine_full_res,
@@ -261,7 +261,7 @@ class ParcelAnalysis(object):
                                   reference=(self.con_imgs[0].shape,
                                              self.affine),
                                   interp_order=0)
-        self.parcel = parcel_img_rsp.get_data().astype('uintp').squeeze()
+        self.parcel = parcel_img_rsp.get_fdata().astype('uintp').squeeze()
         if self.msk is None:
             self.msk = self.parcel > 0
 
@@ -305,8 +305,8 @@ class ParcelAnalysis(object):
                                        'scon' + str(i) + '.nii.gz'))
                 _save_image(svcon, join(self.res_path,
                                         'svcon' + str(i) + '.nii.gz'))
-            cons += [scon.get_data()[self.msk]]
-            vcons += [svcon.get_data()[self.msk]]
+            cons += [scon.get_fdata()[self.msk]]
+            vcons += [svcon.get_fdata()[self.msk]]
 
         self.cons = np.array(cons)
         self.vcons = np.array(vcons)

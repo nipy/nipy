@@ -142,10 +142,10 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     save(z_map, image_path)
 
     # Create snapshots of the contrasts
-    vmax = max(- z_map.get_data().min(), z_map.get_data().max())
+    vmax = max(- z_map.get_fdata().min(), z_map.get_fdata().max())
     if index > 0:
         plt.clf()
-    plot_map(z_map.get_data(), z_map.get_affine(),
+    plot_map(z_map.get_fdata(), z_map.get_affine(),
              cmap=cm.cold_hot,
              vmin=- vmax,
              vmax=vmax,

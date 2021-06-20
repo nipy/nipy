@@ -68,9 +68,9 @@ def make_bsa_image(
     # Read the masks and compute the "intersection"
     # mask = np.reshape(intersect_masks(mask_images), ref_dim).astype('u8')
     if isinstance(mask_images, string_types):
-        mask = load(mask_images).get_data()
+        mask = load(mask_images).get_fdata()
     elif isinstance(mask_images, Nifti1Image):
-        mask = mask_images.get_data()
+        mask = mask_images.get_fdata()
     else:
         # mask_images should be a list of strings or images
         mask = intersect_masks(mask_images).astype('u8')
@@ -82,7 +82,7 @@ def make_bsa_image(
     # read the functional images
     stats = []
     for stat_image in stat_images:
-        beta = np.reshape(load(stat_image).get_data(), ref_dim)
+        beta = np.reshape(load(stat_image).get_fdata(), ref_dim)
         stats.append(beta[mask > 0])
     stats = np.array(stats).T
 

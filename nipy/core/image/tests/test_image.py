@@ -33,16 +33,16 @@ gimg = Image(_data, AffineTransform('ijk', 'xyz', np.eye(4)))
 
 
 def test_init():
-    data = gimg.get_data()
+    data = gimg.get_fdata()
     new = Image(data, gimg.coordmap)
-    assert_array_almost_equal(gimg.get_data(), new.get_data())
+    assert_array_almost_equal(gimg.get_fdata(), new.get_fdata())
     assert_equal(new.coordmap, gimg.coordmap)
     assert_raises(TypeError, Image)
     assert_raises(TypeError, Image, data)
 
 
 def test_maxmin_values():
-    y = gimg.get_data()
+    y = gimg.get_fdata()
     assert_equal(y.shape, tuple(gimg.shape))
     assert_equal(y.max(), 23)
     assert_equal(y.min(), 0.0)
@@ -88,7 +88,7 @@ def test_slice_steps():
 
 def test_get_data():
     # get_data always returns an array
-    x = gimg.get_data()
+    x = gimg.get_fdata()
     assert_true(isinstance(x, np.ndarray))
     assert_equal(x.shape, gimg.shape)
     assert_equal(x.ndim, gimg.ndim)
@@ -106,15 +106,15 @@ def test_iter():
         assert_equal(img_slice.shape, (3,2))
     tmp = np.zeros(gimg.shape)
     write_data(tmp, enumerate(iter_axis(gimg, 0, asarray=True)))
-    assert_array_almost_equal(tmp, gimg.get_data())
+    assert_array_almost_equal(tmp, gimg.get_fdata())
     tmp = np.zeros(gimg.shape)
     g = iter_axis(gimg, 0, asarray=True)
     write_data(tmp, enumerate(g))
-    assert_array_almost_equal(tmp, gimg.get_data())
+    assert_array_almost_equal(tmp, gimg.get_fdata())
 
 
 def test_parcels1():
-    parcelmap = gimg.get_data().astype(np.int32)
+    parcelmap = gimg.get_fdata().astype(np.int32)
     test = np.zeros(parcelmap.shape)
     v = 0
     for i, d in data_generator(test, parcels(parcelmap)):
@@ -124,7 +124,7 @@ def test_parcels1():
 
 def test_parcels3():
     rho = gimg[0]
-    parcelmap = rho.get_data().astype(np.int32)
+    parcelmap = rho.get_fdata().astype(np.int32)
     labels = np.unique(parcelmap)
     test = np.zeros(rho.shape)
     v = 0
@@ -171,11 +171,11 @@ def test_ArrayLikeObj():
     img = image.Image(obj, coordmap)
     assert_equal(img.ndim, 3)
     assert_equal(img.shape, (2,3,4))
-    assert_array_almost_equal(img.get_data(), 1)
+    assert_array_almost_equal(img.get_fdata(), 1)
     # Test that the array stays with the image, so we can assign the array
     # in-place, at least in this case
-    img.get_data()[:] = 4
-    assert_array_equal(img.get_data(), 4)
+    img.get_fdata()[:] = 4
+    assert_array_equal(img.get_fdata(), 4)
 
 
 def test_defaults_ND():
@@ -217,31 +217,31 @@ def test_from_image():
     coordmap = AffineTransform.from_params('xyz', 'ijk', np.eye(4))
     img = Image(arr, coordmap, metadata={'field': 'value'})
     img2 = Image.from_image(img)
-    assert_array_equal(img.get_data(), img2.get_data())
+    assert_array_equal(img.get_fdata(), img2.get_fdata())
     assert_equal(img.coordmap, img2.coordmap)
     assert_equal(img.metadata, img2.metadata)
     assert_false(img.metadata is img2.metadata)
     # optional inputs - data
     arr2 = arr + 10
     new = Image.from_image(img, arr2)
-    assert_array_almost_equal(arr2, new.get_data())
+    assert_array_almost_equal(arr2, new.get_fdata())
     assert_equal(new.coordmap, coordmap)
     new = Image.from_image(img, data=arr2)
-    assert_array_almost_equal(arr2, new.get_data())
+    assert_array_almost_equal(arr2, new.get_fdata())
     assert_equal(new.coordmap, coordmap)
     # optional inputs - coordmap
     coordmap2 = AffineTransform.from_params('pqr', 'ijk', np.eye(4))
     new = Image.from_image(img, arr2, coordmap2)
-    assert_array_almost_equal(arr2, new.get_data())
+    assert_array_almost_equal(arr2, new.get_fdata())
     assert_equal(new.coordmap, coordmap2)
     new = Image.from_image(img, coordmap=coordmap2)
-    assert_array_almost_equal(arr, new.get_data())
+    assert_array_almost_equal(arr, new.get_fdata())
     assert_equal(new.coordmap, coordmap2)
     # Optional inputs - metadata
     assert_equal(new.metadata, img.metadata)
     another_meta = {'interesting': 'information'}
     new = Image.from_image(img, arr2, coordmap2, another_meta)
-    assert_array_almost_equal(arr2, new.get_data())
+    assert_array_almost_equal(arr2, new.get_fdata())
     assert_equal(another_meta, new.metadata)
 
 
@@ -251,7 +251,7 @@ def test_synchronized_order():
     im_scrambled = im.reordered_axes('iljk').reordered_reference('xtyz')
     im_unscrambled = image.synchronized_order(im_scrambled, im)
     assert_equal(im_unscrambled.coordmap, im.coordmap)
-    assert_almost_equal(im_unscrambled.get_data(), im.get_data())
+    assert_almost_equal(im_unscrambled.get_fdata(), im.get_fdata())
     assert_equal(im_unscrambled, im)
     assert_true(im_unscrambled == im)
     assert_false(im_unscrambled != im)
@@ -311,19 +311,19 @@ def test_rollaxis():
     # 'l' can appear both as an axis and a reference coord name
     im_unamb = Image(data, AffineTransform.from_params('ijkl', 'xyzl', np.diag([1,2,3,4,1])))
     im_rolled = image.rollaxis(im_unamb, 'l')
-    assert_almost_equal(im_rolled.get_data(),
-                        im_unamb.get_data().transpose([3,0,1,2]))
+    assert_almost_equal(im_rolled.get_fdata(),
+                        im_unamb.get_fdata().transpose([3,0,1,2]))
     for i, o, n in zip('ijkl', 'xyzt', range(4)):
         im_i = image.rollaxis(im, i)
         im_o = image.rollaxis(im, o)
         im_n = image.rollaxis(im, n)
-        assert_almost_equal(im_i.get_data(), im_o.get_data())
+        assert_almost_equal(im_i.get_fdata(), im_o.get_fdata())
         assert_almost_equal(im_i.affine, im_o.affine)
-        assert_almost_equal(im_n.get_data(), im_o.get_data())
+        assert_almost_equal(im_n.get_fdata(), im_o.get_fdata())
         for _im in [im_n, im_o, im_i]:
             im_n_inv = image.rollaxis(_im, n, inverse=True)
             assert_almost_equal(im_n_inv.affine, im.affine)
-            assert_almost_equal(im_n_inv.get_data(), im.get_data())
+            assert_almost_equal(im_n_inv.get_fdata(), im.get_fdata())
 
 
 def test_is_image():
@@ -336,7 +336,7 @@ def test_is_image():
     assert_true(is_image(img))
     assert_false(is_image(object()))
     class C(object):
-        def get_data(self): pass
+        def get_fdata(self): pass
     c = C()
     assert_false(is_image(c))
     c.coordmap = None
@@ -357,21 +357,21 @@ def test_rollimg():
     assert_equal(im1.coordmap, rollimg(im, -3).coordmap)
     assert_equal(im1.coordmap,
                  AT('jikl', 'xyzt', aff[:, (1, 0, 2, 3, 4)]))
-    assert_array_equal(im1.get_data(), np.rollaxis(data, 1))
+    assert_array_equal(im1.get_fdata(), np.rollaxis(data, 1))
     im2 = rollimg(im, 2)
     assert_equal(im2.coordmap, rollimg(im, 'k').coordmap)
     assert_equal(im2.coordmap, rollimg(im, 'z').coordmap)
     assert_equal(im2.coordmap, rollimg(im, -2).coordmap)
     assert_equal(im2.coordmap,
                  AT('kijl', 'xyzt', aff[:, (2, 0, 1, 3, 4)]))
-    assert_array_equal(im2.get_data(), np.rollaxis(data, 2))
+    assert_array_equal(im2.get_fdata(), np.rollaxis(data, 2))
     im3 = rollimg(im, 3)
     assert_equal(im3.coordmap, rollimg(im, 'l').coordmap)
     assert_equal(im3.coordmap, rollimg(im, 't').coordmap)
     assert_equal(im3.coordmap, rollimg(im, -1).coordmap)
     assert_equal(im3.coordmap,
                         AT('lijk', 'xyzt', aff[:, (3, 0, 1, 2, 4)]))
-    assert_array_equal(im3.get_data(), np.rollaxis(data, 3))
+    assert_array_equal(im3.get_fdata(), np.rollaxis(data, 3))
     # We can roll to before a specified axis
     im31 = rollimg(im, 3, 1)
     assert_equal(im31.coordmap, rollimg(im, 'l', 'j').coordmap)
@@ -382,7 +382,7 @@ def test_rollimg():
     assert_equal(im31.coordmap, rollimg(im, -1, -3).coordmap)
     assert_equal(im31.coordmap,
                  AT('iljk', 'xyzt', aff[:, (0, 3, 1, 2, 4)]))
-    assert_array_equal(im31.get_data(), np.rollaxis(data, 3, 1))
+    assert_array_equal(im31.get_fdata(), np.rollaxis(data, 3, 1))
     # Check that ambiguous axes raise an exception; 'l' appears both as an axis
     # and a reference coord name and in different places
     im_amb = Image(data, AT('ijkl', 'xylt', np.diag([1,2,3,4,1])))
@@ -391,8 +391,8 @@ def test_rollimg():
     # reference coord name
     im_unamb = Image(data, AT('ijkl', 'xyzl', np.diag([1,2,3,4,1])))
     im_rolled = rollimg(im_unamb, 'l')
-    assert_array_equal(im_rolled.get_data(),
-                       im_unamb.get_data().transpose([3,0,1,2]))
+    assert_array_equal(im_rolled.get_fdata(),
+                       im_unamb.get_fdata().transpose([3,0,1,2]))
     # Zero row / col means we can't find an axis mapping, when fix0 is false
     aff_z = np.diag([1, 2, 3, 0, 1])
     im_z = Image(data, AT('ijkl', 'xyzt', aff_z))
@@ -419,15 +419,15 @@ def test_rollimg():
         im_i = rollimg(im, i)
         im_o = rollimg(im, o)
         im_n = rollimg(im, n)
-        assert_array_equal(im_i.get_data(), im_o.get_data())
+        assert_array_equal(im_i.get_fdata(), im_o.get_fdata())
         assert_array_equal(im_i.affine, im_o.affine)
-        assert_array_equal(im_n.get_data(), im_o.get_data())
+        assert_array_equal(im_n.get_fdata(), im_o.get_fdata())
         for _im in [im_n, im_o, im_i]:
             # We're rollimg back.  We want to roll the new axis 0 back to where
             # it started, which was position n
             im_n_inv = rollimg(_im, 0, n + 1)
             assert_array_equal(im_n_inv.affine, im.affine)
-            assert_array_equal(im_n_inv.get_data(), im.get_data())
+            assert_array_equal(im_n_inv.get_fdata(), im.get_fdata())
 
 
 def test_rollimg_rollaxis():
@@ -439,11 +439,11 @@ def test_rollimg_rollaxis():
     for axis in chain(range(4), range(-3, -1)):
         rdata = np.rollaxis(data, axis)
         rimg = rollimg(img, axis)
-        assert_array_equal(rdata, rimg.get_data())
+        assert_array_equal(rdata, rimg.get_fdata())
         for start in chain(range(4), range(-3, -1)):
             rdata = np.rollaxis(data, axis, start)
             rimg = rollimg(img, axis, start)
-            assert_array_equal(rdata, rimg.get_data())
+            assert_array_equal(rdata, rimg.get_fdata())
 
 
 def test_rollaxis_inverse():
@@ -455,6 +455,6 @@ def test_rollaxis_inverse():
     for axis in chain(range(4), range(-3, -1)):
         rimg = image.rollaxis(img, axis)
         rdata = np.rollaxis(data, axis)
-        assert_array_equal(rdata, rimg.get_data())
+        assert_array_equal(rdata, rimg.get_fdata())
         rrimg = image.rollaxis(rimg, axis, inverse=True)
-        assert_array_equal(data, rrimg.get_data())
+        assert_array_equal(data, rrimg.get_fdata())

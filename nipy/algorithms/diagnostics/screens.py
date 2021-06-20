@@ -62,7 +62,7 @@ def screen(img4d, ncomp=10, time_axis='t', slice_axis=None):
     '''
     if img4d.ndim != 4:
         raise ValueError('Expecting a 4d image')
-    data = img4d.get_data()
+    data = img4d.get_fdata()
     cmap = img4d.coordmap
     # Get numerical index for time axis in data array
     time_axis = input_axis_index(cmap, time_axis)

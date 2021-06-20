@@ -41,7 +41,7 @@ def test_model_out_img():
         assert_raises(ValueError, moi.__getitem__, 0)
         new_img = load_image(fname)
         for i in range(shape[0]):
-            assert_array_equal(new_img[i].get_data(), i)
+            assert_array_equal(new_img[i].get_fdata(), i)
         del new_img
 
 
@@ -80,17 +80,17 @@ def test_run():
             ar.execute()
             f_img = load_image('F_out.nii')
             assert_equal(f_img.shape, one_vol.shape)
-            f_data = f_img.get_data()
+            f_data = f_img.get_fdata()
             assert_true(np.all((f_data>=0) & (f_data<30)))
             resid_img = load_image('resid_AR_out.nii')
             assert_equal(resid_img.shape, funcim.shape)
-            assert_array_almost_equal(np.mean(resid_img.get_data()), 0, 3)
+            assert_array_almost_equal(np.mean(resid_img.get_fdata()), 0, 3)
             e_img = load_image('T_out_effect.nii')
             sd_img = load_image('T_out_sd.nii')
             t_img = load_image('T_out_t.nii')
-            t_data = t_img.get_data()
+            t_data = t_img.get_fdata()
             assert_array_almost_equal(t_data,
-                                      e_img.get_data() / sd_img.get_data())
+                                      e_img.get_fdata() / sd_img.get_fdata())
             assert_true(np.all(np.abs(t_data) < 6))
             # Need to delete to help windows delete temporary files
             del rho, resid_img, f_img, e_img, sd_img, t_img, f_data, t_data

@@ -102,7 +102,7 @@ fmri_glm.fit(do_scaling=True, model='ar1')
 ########################################
 beta_hat = fmri_glm.glms[0].get_beta()  # Least-squares estimates of the beta
 variance_hat = fmri_glm.glms[0].get_mse() # Estimates of the variance
-mask = fmri_glm.mask.get_data() > 0
+mask = fmri_glm.mask.get_fdata() > 0
 
 # output beta images
 beta_map = np.tile(mask.astype(np.float)[..., np.newaxis], dim)

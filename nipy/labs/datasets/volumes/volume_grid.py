@@ -239,7 +239,7 @@ class VolumeGrid(VolumeData):
         # See: https://github.com/scipy/scipy/pull/64
         if coords.dtype == np.dtype(np.intp):
             coords = coords.astype(np.dtype(coords.dtype.str))
-        data = self.get_data()
+        data = self.get_fdata()
         data_shape = list(data.shape)
         n_dims = len(data_shape)
         if n_dims > 3:

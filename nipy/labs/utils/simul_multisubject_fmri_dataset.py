@@ -192,7 +192,7 @@ def surrogate_3d_dataset(n_subj=1, shape=(20, 20, 20), mask=None,
 
     if mask is not None:
         shape = mask.shape
-        mask_data = mask.get_data()
+        mask_data = mask.get_fdata()
     else:
         mask_data = np.ones(shape)
 
@@ -283,7 +283,7 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
     if mask is not None:
         shape = mask.shape
         affine = get_affine(mask)
-        mask_data = mask.get_data().astype('bool')
+        mask_data = mask.get_fdata().astype('bool')
     else:
         affine = np.eye(4)
         mask_data = np.ones(shape).astype('bool')

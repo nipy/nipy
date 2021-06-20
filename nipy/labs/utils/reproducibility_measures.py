@@ -680,9 +680,9 @@ def group_reproducibility_metrics(
     group_con = []
     group_var = []
     for s in range(nsubj):
-        group_con.append(load(contrast_images[s]).get_data()[mask])
+        group_con.append(load(contrast_images[s]).get_fdata()[mask])
         if len(variance_images) > 0:
-            group_var.append(load(variance_images[s]).get_data()[mask])
+            group_var.append(load(variance_images[s]).get_fdata()[mask])
 
     group_con = np.squeeze(np.array(group_con)).T
     group_con[np.isnan(group_con)] = 0

@@ -31,7 +31,7 @@ def teardown():
 FIMG = load_image(funcfile)
 # Put time on first axis
 FIMG = rollimg(FIMG, 't')
-FDATA = FIMG.get_data()
+FDATA = FIMG.get_fdata()
 FIL = FmriImageList.from_image(FIMG)
 
 # I think it makes more sense to use FDATA instead of FIL for GLM

@@ -101,7 +101,7 @@ def resample(moving, transform=None, reference=None,
         ref_aff = xyz_affine(reference)
     if not len(ref_shape) == 3 or not ref_aff.shape == (4, 4):
         raise ValueError('Input image should be 3D')
-    data = moving.get_data()
+    data = moving.get_fdata()
     if dtype is None:
         dtype = data.dtype
 

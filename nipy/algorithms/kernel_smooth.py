@@ -155,7 +155,7 @@ class LinearFilter(object):
             nslice = 1
         else:
             raise NotImplementedError('expecting either 3 or 4-d image')
-        in_data = inimage.get_data()
+        in_data = inimage.get_fdata()
         for _slice in range(nslice):
             if in_data.ndim == 4:
                 data = in_data[_slice]

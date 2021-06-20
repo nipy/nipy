@@ -21,7 +21,7 @@ DATA_PATH = pjoin(OUR_PATH, '..', 'data')
 BG_IMAGE_FNAME = pjoin(DATA_PATH, 'mni_basal_ganglia.nii.gz')
 
 bg_img = nipy.load_image(BG_IMAGE_FNAME)
-bg_data = bg_img.get_data()
+bg_data = bg_img.get_fdata()
 
 """
 I happen to know that the image has these codes:

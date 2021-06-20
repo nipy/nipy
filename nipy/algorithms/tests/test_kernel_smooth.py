@@ -23,7 +23,7 @@ def test_anat_smooth():
     sanat = smoother.smooth(anat)
     assert_equal(sanat.shape, anat.shape)
     assert_equal(sanat.coordmap, anat.coordmap)
-    assert_false(np.allclose(sanat.get_data(), anat.get_data()))
+    assert_false(np.allclose(sanat.get_fdata(), anat.get_fdata()))
 
 
 def test_funny_coordmap():
@@ -36,23 +36,23 @@ def test_funny_coordmap():
     cmap_rot = AffineTransform(cmap.function_range,
                                cmap.function_range,
                                aff)
-    func_rot = Image(func.get_data(), compose(cmap_rot, cmap))
+    func_rot = Image(func.get_fdata(), compose(cmap_rot, cmap))
     func1 = func_rot[...,1] # 5x4 affine
     smoother = LinearFilter(func1.coordmap, func1.shape)
     sfunc1 = smoother.smooth(func1) # OK
     # And same as for 4x4 affine
     cmap3d = drop_io_dim(cmap, 't')
-    func3d = Image(func1.get_data(), cmap3d)
+    func3d = Image(func1.get_fdata(), cmap3d)
     smoother = LinearFilter(func3d.coordmap, func3d.shape)
     sfunc3d = smoother.smooth(func3d)
     assert_equal(sfunc1.shape, sfunc3d.shape)
-    assert_array_almost_equal(sfunc1.get_data(), sfunc3d.get_data())
+    assert_array_almost_equal(sfunc1.get_fdata(), sfunc3d.get_fdata())
     # And same with no rotation
     func_fresh = func[...,1] # 5x4 affine, no rotation
     smoother = LinearFilter(func_fresh.coordmap, func_fresh.shape)
     sfunc_fresh = smoother.smooth(func_fresh)
     assert_equal(sfunc1.shape, sfunc_fresh.shape)
-    assert_array_almost_equal(sfunc1.get_data(), sfunc_fresh.get_data())
+    assert_array_almost_equal(sfunc1.get_fdata(), sfunc_fresh.get_fdata())
 
 
 def test_func_smooth():
@@ -92,7 +92,7 @@ def test_kernel():
         kernel = LinearFilter(coordmap, shape,
                               fwhm=randint(50, 100 + 1) / 10.)
         # smoothed normalized 3D array
-        ssignal = kernel.smooth(signal).get_data()
+        ssignal = kernel.smooth(signal).get_fdata()
         ssignal[:] *= kernel.norms[kernel.normalization]
         # 3 points * signal.size array
         I = np.indices(ssignal.shape)

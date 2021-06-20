@@ -93,7 +93,7 @@ class HistogramRegistration(object):
 
         # Clamping of the `from` image. The number of bins may be
         # overriden if unnecessarily large.
-        data, from_bins_adjusted = clamp(from_img.get_data(), from_bins,
+        data, from_bins_adjusted = clamp(from_img.get_fdata(), from_bins,
                                          mask=from_mask)
         if not similarity == 'slr':
             from_bins = from_bins_adjusted
@@ -112,10 +112,10 @@ class HistogramRegistration(object):
         if self._smooth < 0:
             raise ValueError('smoothing kernel cannot have negative scale')
         elif self._smooth > 0:
-            data = smooth_image(to_img.get_data(), xyz_affine(to_img),
+            data = smooth_image(to_img.get_fdata(), xyz_affine(to_img),
                                 self._smooth)
         else:
-            data = to_img.get_data()
+            data = to_img.get_fdata()
         data, to_bins_adjusted = clamp(data, to_bins, mask=to_mask)
         if not similarity == 'slr':
             to_bins = to_bins_adjusted
@@ -173,13 +173,13 @@ class HistogramRegistration(object):
             size = self._from_img.shape
         # Adjust spacing to match desired field of view size
         if spacing is not None:
-            fov_data = self._from_img.get_data()[
+            fov_data = self._from_img.get_fdata()[
                 self._slicer(corner, size, spacing)]
         else:
-            fov_data = self._from_img.get_data()[
+            fov_data = self._from_img.get_fdata()[
                 self._slicer(corner, size, [1, 1, 1])]
             spacing = ideal_spacing(fov_data, npoints=npoints)
-            fov_data = self._from_img.get_data()[
+            fov_data = self._from_img.get_fdata()[
                 self._slicer(corner, size, spacing)]
         self._from_data = fov_data
         self._from_npoints = (fov_data >= 0).sum()

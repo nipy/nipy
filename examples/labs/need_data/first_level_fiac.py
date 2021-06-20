@@ -94,10 +94,10 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 
     # make a snapshot of the contrast activation
     if contrast_id == 'Effects_of_interest':
-        vmax = max(- z_map.get_data().min(), z_map.get_data().max())
+        vmax = max(- z_map.get_fdata().min(), z_map.get_fdata().max())
         vmin = - vmax
-        plot_map(z_map.get_data(), z_map.get_affine(),
-                 anat=mean_map.get_data(), anat_affine=mean_map.get_affine(),
+        plot_map(z_map.get_fdata(), z_map.get_affine(),
+                 anat=mean_map.get_fdata(), anat_affine=mean_map.get_affine(),
                  cmap=cm.cold_hot,
                  vmin=vmin,
                  vmax=vmax,

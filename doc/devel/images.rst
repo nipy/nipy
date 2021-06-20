@@ -30,7 +30,7 @@ The transformation is spatial and refers to exactly three dimensions.
     import numpy as np
     import neuroimaging as ni
     img = ni.load_image('example3d.img')
-    arr = img.get_data()
+    arr = img.get_fdata()
     assert isinstance(arr, np.ndarray)
     xform = img.get_transform()
     voxel_position = [0, 0, 0]

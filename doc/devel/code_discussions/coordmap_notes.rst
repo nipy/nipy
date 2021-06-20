@@ -186,7 +186,7 @@ the goal of having "xyz_ordered" return an image with an affine that has a
 diagonal with positive entries, as in the AffineImage specification, means that
 you might have to call
 
-affine_image.get_data()[::-1,::-1] # or some other combination of flips
+affine_image.get_fdata()[::-1,::-1] # or some other combination of flips
 
 (i.e. you have to change how it is stored in memory).
 
@@ -199,7 +199,7 @@ By being explicit about the direction of x,y,z we know that if the affine matrix
 was diagonal and had a negative entry in the first position, then we know that
 left and right were flipped when viewed with a command like::
 
-    >>> pylab.imshow(image.get_data()[:,:,10])
+    >>> pylab.imshow(image.get_fdata()[:,:,10])
 
 Without specifying the direction of x,y,z we just don't know.
 

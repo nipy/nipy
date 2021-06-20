@@ -58,11 +58,11 @@ def run_nose(cover_pkg, test_file, dry_run=False):
     sys.argv += ['-sv', '--with-coverage', cover_arg]
     # Print out command for user feedback and debugging
     cmd = 'nosetests -sv --with-coverage %s %s' % (cover_arg, test_file)
-    print cmd
+    print(cmd)
     if dry_run:
         return cmd
     else:
-        print
+        print()
         nose.run()
 
 
