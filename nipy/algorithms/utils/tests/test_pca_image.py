@@ -274,7 +274,7 @@ def img_res2pos1(res, bv_key):
     new_axes = [None] * bps.ndim
     n_comps = bps.shape[axis]
     new_axes[axis] = slice(0, n_comps)
-    res['basis_projections'] = Image(bps * signs[new_axes],
+    res['basis_projections'] = Image(bps * signs[tuple(new_axes)],
                                      bps_img.coordmap)
     return res
 

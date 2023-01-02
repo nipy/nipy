@@ -190,6 +190,7 @@ def slice_generator(data, axis=0):
         for (a, div, mod) in zip(axis, divs, mods):
             x = int(n / div % mod)
             slices[a] = x
+        slices = tuple(slices)
         yield slices, data[slices]
 
 

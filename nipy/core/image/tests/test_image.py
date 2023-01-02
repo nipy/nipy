@@ -290,7 +290,7 @@ def test_iter_axis():
         slicer = [slice(None) for i in range(data.ndim)]
         for i, s in enumerate(iter_axis(img, ax_id, asarray=True)):
             slicer[ax_no] = i
-            assert_array_equal(s, data[slicer])
+            assert_array_equal(s, data[tuple(slicer)])
 
 
 def test_rollaxis():

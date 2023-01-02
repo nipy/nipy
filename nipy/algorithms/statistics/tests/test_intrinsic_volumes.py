@@ -31,7 +31,7 @@ def box(shape, edges):
     sl = []
     for i in range(len(shape)):
         sl.append(slice(edges[i][0], edges[i][1],1))
-    data[sl] = 1
+    data[tuple(sl)] = 1
     return data.astype(np.int_)
 
 

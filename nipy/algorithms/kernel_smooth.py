@@ -76,7 +76,7 @@ class LinearFilter(object):
             * 2 + 2).astype(np.intp)
         self.fkernel = np.zeros(self.shape)
         slices = [slice(0, kernel.shape[i]) for i in range(len(kernel.shape))]
-        self.fkernel[slices] = kernel
+        self.fkernel[tuple(slices)] = kernel
         self.fkernel = fft.rfftn(self.fkernel)
         return kernel
 
@@ -181,9 +181,11 @@ class LinearFilter(object):
                 _out = data
             _slice += 1
         gc.collect()
-        _out = _out[[slice(self._kernel.shape[i] // 2,
-                           self.bshape[i] + self._kernel.shape[i] // 2)
-                     for i in range(len(self.bshape))]]
+        slicer = tuple(
+            slice(self._kernel.shape[i] // 2,
+                  self.bshape[i] + self._kernel.shape[i] // 2)
+            for i in range(len(self.bshape)))
+        _out = _out[slicer]
         if inimage.ndim == 3:
             return Image(_out, coordmap=self.coordmap)
         else:
@@ -194,7 +196,7 @@ class LinearFilter(object):
     def _presmooth(self, indata):
         slices = [slice(0, self.bshape[i], 1) for i in range(len(self.shape))]
         _buffer = np.zeros(self.shape)
-        _buffer[slices] = indata
+        _buffer[tuple(slices)] = indata
         return fft.rfftn(_buffer)
 
 
@@ -258,7 +260,7 @@ def _crop(X, tol=1.0e-10):
         m = [I[i].min() for i in range(n)]
         M = [I[i].max() for i in range(n)]
         slices = [slice(m[i], M[i]+1, 1) for i in range(n)]
-        return X[slices]
+        return X[tuple(slices)]
     else:
         return np.zeros((1,)*n)
 
