@@ -352,7 +352,7 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
         if hasattr(cmap, '__call__'):
             # Stick the colormap in mayavi
             module.module_manager.scalar_lut_manager.lut.table \
-                    = (255*cmap(np.linspace(0, 1, 256))).astype(np.int)
+                    = (255*cmap(np.linspace(0, 1, 256))).astype(np.int_)
     else:
         module = None
 

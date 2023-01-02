@@ -32,7 +32,7 @@ def box(shape, edges):
     for i in range(len(shape)):
         sl.append(slice(edges[i][0], edges[i][1],1))
     data[sl] = 1
-    return data.astype(np.int)
+    return data.astype(np.int_)
 
 
 def randombox(shape):
@@ -68,9 +68,9 @@ def nonintersecting_boxes(shape):
     should be additive. But, if they ALMOST intersect, different
     things get added to the triangulation.
 
-    >>> b1 = np.zeros(40, np.int)
+    >>> b1 = np.zeros(40, np.int_)
     >>> b1[:11] = 1
-    >>> b2 = np.zeros(40, np.int)
+    >>> b2 = np.zeros(40, np.int_)
     >>> b2[11:] = 1
     >>> (b1*b2).sum()
     0
@@ -208,9 +208,9 @@ def test_ec_disjoint():
 
 def test_lips_wrapping():
     # Test that shapes touching the edge do not combine by wrapping
-    b1 = np.zeros(40, np.int)
+    b1 = np.zeros(40, np.int_)
     b1[:11] = 1
-    b2 = np.zeros(40, np.int)
+    b2 = np.zeros(40, np.int_)
     b2[11:] = 1
     # lines are disjoint
     assert_equal((b1*b2).sum(), 0)
@@ -331,7 +331,7 @@ def test_lips3_disjoint():
 def test_lips3_nans():
     # These boxes caused nans in the Lips3 disjoint box tests
     phi = intvol.Lips3d
-    box1 = np.zeros((40,40,40), dtype=np.int)
+    box1 = np.zeros((40,40,40), dtype=np.int_)
     box2 = box1.copy()
     box1[23:30,22:32,9:13] = 1
     box2[7:22,0,8:17] = 1
@@ -353,12 +353,12 @@ def test_slices():
     yield assert_almost_equal, e(m), 1
     yield assert_almost_equal, p(D,m), [1,0,0,0]
 
-    m = np.zeros((40,)*3, np.int)
+    m = np.zeros((40,)*3, np.int_)
     m[10,10:14,10] = 1
     yield assert_almost_equal, e(m), 1
     yield assert_almost_equal, p(D,m), [1,3,0,0]
 
-    m = np.zeros((40,)*3, np.int)
+    m = np.zeros((40,)*3, np.int_)
     m[10,10:14,9:15] = 1
     yield assert_almost_equal, e(m), 1
     yield assert_almost_equal, p(D,m), [1,8,15,0]
@@ -366,17 +366,17 @@ def test_slices():
 
 def test_ec_wrapping():
     # Test wrapping for EC1 calculation
-    assert_equal(intvol.EC1d(np.ones((6,), dtype=np.int)), 1)
-    box1 = np.array([1, 1, 0, 1, 1, 1], dtype=np.int)
+    assert_equal(intvol.EC1d(np.ones((6,), dtype=np.int_)), 1)
+    box1 = np.array([1, 1, 0, 1, 1, 1], dtype=np.int_)
     assert_equal(intvol.EC1d(box1), 2)
     # 2D
-    box1 = np.zeros((3,6), dtype=np.int)
+    box1 = np.zeros((3,6), dtype=np.int_)
     box1[1] = 1
     assert_equal(intvol.EC2d(box1), 1)
     box1[1, 3] = 0
     assert_equal(intvol.EC2d(box1), 2)
     # 3D
-    box1 = np.zeros((3,6,3), dtype=np.int)
+    box1 = np.zeros((3,6,3), dtype=np.int_)
     box1[1, :, 1] = 1
     assert_equal(intvol.EC3d(box1), 1)
     box1[1, 3, 1] = 0

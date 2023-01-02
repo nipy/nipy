@@ -279,7 +279,7 @@ def _optim_hparcel(feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
             Fs = feature[s]
             lac = indiv_coord[s]
             target = proto_anat.copy()
-            lseeds = np.zeros(nb_parcel, np.int)
+            lseeds = np.zeros(nb_parcel, np.int_)
             aux = np.argsort(rand(nb_parcel))
             toto = np.zeros(lac.shape[0])
             for j in range(nb_parcel):
@@ -395,7 +395,7 @@ def hparcel(domain, ldata, nb_parcel, nb_perm=0, niter=5, mu=10., dmax=10.,
     nbvox = domain.size
     nb_subj = len(ldata)
     if initial_mask is None:
-        initial_mask = np.ones((nbvox, nb_subj), np.int)
+        initial_mask = np.ones((nbvox, nb_subj), np.int_)
 
     graphs = []
     feature = []
@@ -417,7 +417,7 @@ def hparcel(domain, ldata, nb_parcel, nb_perm=0, niter=5, mu=10., dmax=10.,
         chunksize=chunksize, verbose=verbose)
 
     # write the individual labelling
-    labels = - np.ones((nbvox, nb_subj)).astype(np.int)
+    labels = - np.ones((nbvox, nb_subj)).astype(np.int_)
     for s in range(nb_subj):
         labels[initial_mask[:, s] > -1, s] = all_labels[s]
 
@@ -463,7 +463,7 @@ def perm_prfx(domain, graphs, features, nb_parcel, ldata, initial_mask=None,
         all_labels, proto_anat = _optim_hparcel(
             feature, domain, graphs, nb_parcel, lamb, dmax, niter,
             initial_mask, chunksize=chunksize)
-        labels = - np.ones((domain.size, nb_subj)).astype(np.int)
+        labels = - np.ones((domain.size, nb_subj)).astype(np.int_)
         for s in range(nb_subj):
             labels[initial_mask[:, s] > -1, s] = all_labels[s]
 

@@ -59,7 +59,7 @@ def test_max_1():
     myfield  = basic_field()
     myfield.field[555] = 30
     depth = myfield.local_maxima()
-    dep = np.zeros(1000, np.int)
+    dep = np.zeros(1000, np.int_)
     dep[555] = 5
     dep[999] = 3
     assert_true(sum(np.absolute(dep-depth)) < 1.e-7)

@@ -86,7 +86,7 @@ run_no = np.array([1]*tval1.shape[0] + [2]*tval2.shape[0])
 rec = np.array([(tv1, tv2, s) for tv1, tv2, s in zip(ttval1, ttval2, run_no)],
                np.dtype([('t1', np.float64),
                          ('t2', np.float64),
-                         ('run', np.int)]))
+                         ('run', np.int_)]))
 
 # The contrast we care about
 contrast = Formula([run_1_coder * c11 - run_2_coder * c12])

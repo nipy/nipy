@@ -149,7 +149,7 @@ def _compute_individual_regions(domain, stats, threshold=3.0, smin=5,
             # compute the prior proba of being null
             learning_set = np.squeeze(stats_[stats_ != 0])
             prior_h0.append(_stat_to_proba(mean_val, learning_set, method))
-            subjects.append(subject * np.ones(mean_val.size).astype(np.int))
+            subjects.append(subject * np.ones(mean_val.size).astype(np.int_))
         else:
             subjects.append([])
             prior_h0.append([])
@@ -304,7 +304,7 @@ def _bsa_dpmm(hrois, prior_h0, subjects, coords, sigma, prevalence_pval,
         bfs.set_roi_feature('prior_proba', prior_proba)
 
         # assign labels to ROIs
-        roi_label = - np.ones(bfs.k).astype(np.int)
+        roi_label = - np.ones(bfs.k).astype(np.int_)
         roi_label[leaves_pos] = components[subjects == subject]
         # when parent regions has similarly labelled children,
         # include it also

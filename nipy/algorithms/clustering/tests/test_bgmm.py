@@ -120,7 +120,7 @@ def test_gmm_bf(kmax=4, seed=1):
         w, cent, prec, pz = b.sample(x, niter=niter, mem=1)
         bplugin =  BGMM(k, dim, cent, prec, w)
         bplugin.guess_priors(x)
-        bfk = bplugin.bayes_factor(x, pz.astype(np.int))
+        bfk = bplugin.bayes_factor(x, pz.astype(np.int_))
         if bfk > bbf:
             bestk = k
             bbf = bfk
@@ -188,7 +188,7 @@ def test_evidence(k=1):
     w, cent, prec, pz = b.sample(x, niter=niter, mem=1)
     bplugin =  BGMM(k, dim, cent, prec, w)
     bplugin.guess_priors(x)
-    bfchib = bplugin.bayes_factor(x, pz.astype(np.int), 1)
+    bfchib = bplugin.bayes_factor(x, pz.astype(np.int_), 1)
 
     assert_true(bfchib > vbe)
 

@@ -24,7 +24,7 @@ def orth(X, tol=1.0e-07):
     """
 
     B, u, _ = npl.svd(X, full_matrices=False)
-    nkeep = np.greater(u, tol*u.max()).astype(np.int).sum()
+    nkeep = np.greater(u, tol*u.max()).astype(np.int_).sum()
     return B[:,:nkeep]
     
 def reml(sigma, components, design=None, n=1, niter=128,

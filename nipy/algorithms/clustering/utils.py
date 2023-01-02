@@ -63,7 +63,7 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001, verbose=0,
 
     if Labels is not None:
         if np.size(Labels) == nbitems:
-            Labels = Labels.astype(np.int)
+            Labels = Labels.astype(np.int_)
             OK = (Labels.min() > -1) & (Labels.max() < nbclusters + 1)
             if OK:
                 maxiter = int(maxiter)
@@ -128,7 +128,7 @@ def _EStep(x, centers):
     z vector of shape(n), the resulting assignment
     """
     nbitem = x.shape[0]
-    z = - np.ones(nbitem).astype(np.int)
+    z = - np.ones(nbitem).astype(np.int_)
     mindist = np.inf * np.ones(nbitem)
     k = centers.shape[0]
     for q in range(k):

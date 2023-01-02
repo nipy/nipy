@@ -152,7 +152,7 @@ class GLZ(GLR):
     Matrices with integer entries and determinant \pm 1
     """
 
-    dtype = np.int
+    dtype = np.int_
 
     def __init__(self, matrix, coords):
         """

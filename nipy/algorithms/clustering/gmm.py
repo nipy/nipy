@@ -373,7 +373,7 @@ class GMM(object):
         if self.k > 1:
             _, z, _ = kmeans(x, self.k)
         else:
-            z = np.zeros(n).astype(np.int)
+            z = np.zeros(n).astype(np.int_)
 
         l = np.zeros((n, self.k))
         l[np.arange(n), z] = 1

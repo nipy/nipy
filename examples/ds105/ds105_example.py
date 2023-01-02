@@ -224,7 +224,7 @@ def run_model(subj, run):
     # XXX smooth here?
     # ar1 = smooth(ar1, 8.0)
     ar1 *= 100
-    ar1 = ar1.astype(np.int) / 100.
+    ar1 = ar1.astype(np.int_) / 100.
 
     # We split the contrasts into F-tests and t-tests.
     # XXX helper function should do this

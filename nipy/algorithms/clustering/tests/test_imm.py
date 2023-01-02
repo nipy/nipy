@@ -54,7 +54,7 @@ def test_imm_loglike_known_groups():
     x = np.random.randn(n, dim)
     igmm = IMM(alpha, dim)
     igmm.set_priors(x)
-    kfold = np.floor(np.random.rand(n)*5).astype(np.int)
+    kfold = np.floor(np.random.rand(n)*5).astype(np.int_)
 
     # warming
     igmm.sample(x, niter=100)

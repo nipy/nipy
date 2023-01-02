@@ -156,7 +156,7 @@ class HierarchicalROI(SubDomains):
     ----------
     k : int
       Number of ROI in the SubDomains object
-    label : array of shape (domain.size), dtype=np.int
+    label : array of shape (domain.size), dtype=np.int_
       An array use to define which voxel belongs to which ROI.
       The label values greater than -1 correspond to subregions
       labelling. The labels are recomputed so as to be consecutive
@@ -180,7 +180,7 @@ class HierarchicalROI(SubDomains):
         """Building the HierarchicalROI
         """
         SubDomains.__init__(self, domain, label, id=id)
-        self.parents = np.ravel(parents).astype(np.int)
+        self.parents = np.ravel(parents).astype(np.int_)
 
     ###
     # Getters for very basic features or roi features
@@ -297,7 +297,7 @@ class HierarchicalROI(SubDomains):
         else:
             # get new parents
             new_parents = Forest(self.k, self.parents).subforest(
-                valid.astype(np.bool_)).parents.astype(np.int)
+                valid.astype(np.bool_)).parents.astype(np.int_)
         SubDomains.select_roi(self, id_list)
         self.parents = new_parents
         self.recompute_labels()

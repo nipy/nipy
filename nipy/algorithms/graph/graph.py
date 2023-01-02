@@ -292,15 +292,15 @@ def mst(X):
     the corresponding WeightedGraph instance
     """
     n = X.shape[0]
-    label = np.arange(n).astype(np.int)
+    label = np.arange(n).astype(np.int_)
 
-    edges = np.zeros((0, 2)).astype(np.int)
+    edges = np.zeros((0, 2)).astype(np.int_)
     # upper bound on maxdist**2
     maxdist = 4 * np.sum((X - X[0]) ** 2, 1).max()
     nbcc = n
     while nbcc > 1:
         mindist = maxdist * np.ones(nbcc)
-        link = - np.ones((nbcc, 2)).astype(np.int)
+        link = - np.ones((nbcc, 2)).astype(np.int_)
 
         # find nearest neighbors
         for n1 in range(n):
@@ -428,8 +428,8 @@ def lil_cc(lil):
     Dramatically slow for non-sparse graphs
     """
     n = len(lil)
-    visited = np.zeros(n).astype(np.int)
-    label = - np.ones(n).astype(np.int)
+    visited = np.zeros(n).astype(np.int_)
+    label = - np.ones(n).astype(np.int_)
     k = 0
     while (visited == 0).any():
         front = [np.argmin(visited)]
@@ -501,7 +501,7 @@ def graph_3d_grid(xyz, k=18):
         i, j, d = create_edges(lxyz, n18, 2, i, j, d)
     if k == 26:
         i, j, d = create_edges(lxyz, n26, 3, i, j, d)
-    i, j = i.astype(np.int), j.astype(np.int)
+    i, j = i.astype(np.int_), j.astype(np.int_)
 
     # reorder the edges to have a more standard order
     order = np.argsort(i + j * (len(i) + 1))
@@ -516,7 +516,7 @@ def wgraph_from_3d_grid(xyz, k=18):
 
     Parameters
     ----------
-    xyz: array of shape (nsamples, 3) and type np.int,
+    xyz: array of shape (nsamples, 3) and type np.int_,
     k = 18: the number of neighbours considered. (6, 18 or 26)
 
     Returns
@@ -618,7 +618,7 @@ class WeightedGraph(Graph):
 
         Parameters
         ----------
-        xyz: array of shape (self.V, 3) and type np.int,
+        xyz: array of shape (self.V, 3) and type np.int_,
         k = 18: the number of neighbours considered. (6, 18 or 26)
 
         Returns
@@ -638,7 +638,7 @@ class WeightedGraph(Graph):
             raise TypeError('Creating graph from grid failed. '\
                 'Maybe the grid is too big')
         self.E = np.size(i)
-        self.edges = np.zeros((self.E, 2), np.int)
+        self.edges = np.zeros((self.E, 2), np.int_)
         self.edges[:, 0] = i
         self.edges[:, 1] = j
         self.weights = np.array(d)
@@ -720,10 +720,10 @@ x
         weights: array of shape(self.E), concatenated list of weights
         """
         order = np.argsort(self.edges[:, 0] * float(self.V) + self.edges[:, 1])
-        neighb = self.edges[order, 1].astype(np.int)
+        neighb = self.edges[order, 1].astype(np.int_)
         weights = self.weights[order]
         degree, _ = self.degrees()
-        idx = np.hstack((0, np.cumsum(degree))).astype(np.int)
+        idx = np.hstack((0, np.cumsum(degree))).astype(np.int_)
         return idx, neighb, weights
 
     def floyd(self, seed=None):
@@ -731,7 +731,7 @@ x
 
         Parameters
         ----------
-        seed= None: array of shape (nbseed), type np.int
+        seed= None: array of shape (nbseed), type np.int_
              vertex indexes from which the distances are computed
              if seed==None, then every edge is a seed point
 
@@ -881,7 +881,7 @@ x
 
         Parameters
         ----------
-        seed: array of shape (nseeds), type (np.int),
+        seed: array of shape (nseeds), type (np.int_),
               vertices from which the cells are built
 
         Returns
@@ -897,7 +897,7 @@ x
         except:
             raise ValueError('undefined weights')
         dist, active = np.inf * np.ones(self.V), np.ones(self.V)
-        label = - np.ones(self.V, np.int)
+        label = - np.ones(self.V, np.int_)
         idx, neighb, weight = self.compact_neighb()
         dist[seed] = 0
         label[seed] = np.arange(len(seed))
@@ -931,7 +931,7 @@ x
 
         Returns
         -------
-        cliques: array of shape (self.V), type (np.int)
+        cliques: array of shape (self.V), type (np.int_)
           labelling of the vertices according to the clique they belong to
         """
         if (self.weights < 0).any():
@@ -1035,7 +1035,7 @@ x
         k = self.cc().max() + 1
         E = 2 * self.V - 2
         V = self.V
-        Kedges = np.zeros((E, 2)).astype(np.int)
+        Kedges = np.zeros((E, 2)).astype(np.int_)
         Kweights = np.zeros(E)
         iw = np.argsort(self.weights)
         label = np.arange(V)

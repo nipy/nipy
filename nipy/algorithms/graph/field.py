@@ -265,7 +265,7 @@ class Field(WeightedGraph):
             raise ValueError('No field has been defined so far')
         if self.field.shape[1] - 1 < refdim:
             raise ValueError(refdim > self.shape[1])
-        depth = np.zeros(self.V, np.int)
+        depth = np.zeros(self.V, np.int_)
 
         # create a subfield(thresholding)
         sf = self.subfield(self.field.T[refdim] >= th)
@@ -273,7 +273,7 @@ class Field(WeightedGraph):
         sf.field = initial_field.astype(np.float64)
 
         # compute the depth in the subgraph
-        ldepth = sf.V * np.ones(sf.V, np.int)
+        ldepth = sf.V * np.ones(sf.V, np.int_)
         for k in range(sf.V):
             dilated_field_old = sf.field.ravel().copy()
             sf.dilation(1)
@@ -328,7 +328,7 @@ class Field(WeightedGraph):
         if self.field.shape[1] - 1 < refdim:
             raise ValueError('refdim>field.shape[1]')
 
-        label = - np.ones(self.V, np.int)
+        label = - np.ones(self.V, np.int_)
 
         # create a subfield(thresholding)
         sf = self.subfield(self.field[:, refdim] >= th)
@@ -380,7 +380,7 @@ class Field(WeightedGraph):
         if self.field.shape[1] - 1 < refdim:
             raise ValueError('refdim>field.shape[1]')
 
-        label = - np.ones(self.V, np.int)
+        label = - np.ones(self.V, np.int_)
 
         # create a subfield(thresholding)
         sf = self.subfield(self.field[:, refdim] >= th)
@@ -390,7 +390,7 @@ class Field(WeightedGraph):
         # explore the subfield
         order = np.argsort(- initial_field)
         rows = sf.to_coo_matrix().tolil().rows
-        llabel = - np.ones(sf.V, np.int)
+        llabel = - np.ones(sf.V, np.int_)
         parent, root =  np.arange(2 * self.V), np.arange(2 * self.V)
         # q will denote the region index
         q = 0
@@ -441,7 +441,7 @@ class Field(WeightedGraph):
         """
         if np.size(self.field) == 0:
             raise ValueError('No field has been defined so far')
-        seed = seed.astype(np.int)
+        seed = seed.astype(np.int_)
         weights = np.sqrt(np.sum((self.field[self.edges.T[0]] -
                                   self.field[self.edges.T[1]]) ** 2, 1))
         g = WeightedGraph(self.V, self.edges, weights)
@@ -487,7 +487,7 @@ class Field(WeightedGraph):
             k = label.max() + 1
             if np.size(np.unique(label)) != k:
                 raise ValueError('missing values, cannot proceed')
-            seeds = np.zeros(k).astype(np.int)
+            seeds = np.zeros(k).astype(np.int_)
             for  j in range(k):
                 lj = np.nonzero(label == j)[0]
                 cent = np.mean(self.field[lj], 0)

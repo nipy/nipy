@@ -226,9 +226,9 @@ class WeightedForest(Forest):
         lst = []
         n = np.sum(self.isleaf())
         for i in range(self.V):
-            lst.append(np.array([], np.int))
+            lst.append(np.array([], np.int_))
         for i in range(n):
-            lst[i] = np.array([i], np.int)
+            lst[i] = np.array([i], np.int_)
         for i in range(self.V - 1):
             j = self.parents[i]
             lst[j] = np.hstack((lst[i], lst[j]))
@@ -332,8 +332,8 @@ def average_link_graph(G):
     K.edges = G.edges.copy()
     K.weights = G.weights.copy()
 
-    parent = np.arange(2 * n - nbcc, dtype=np.int)
-    pop = np.ones(2 * n - nbcc, np.int)
+    parent = np.arange(2 * n - nbcc, dtype=np.int_)
+    pop = np.ones(2 * n - nbcc, np.int_)
     height = np.inf * np.ones(2 * n - nbcc)
 
     # iteratively merge clusters
@@ -401,8 +401,8 @@ def average_link_graph_segment(G, stop=0, qmax=1, verbose=False):
     if verbose:
         t.plot()
 
-    u1 = np.zeros(n, np.int)
-    u2 = np.zeros(n, np.int)
+    u1 = np.zeros(n, np.int_)
+    u2 = np.zeros(n, np.int_)
     if stop >= 0:
         u1 = t.partition( - stop)
     if qmax > 0:
@@ -514,7 +514,7 @@ def _remap(K, i, j, k, Features, linc, rinc):
     # -------
     # replace i by k
     # --------
-    idxi = np.array(linc[i]).astype(np.int)
+    idxi = np.array(linc[i]).astype(np.int_)
     if np.size(idxi) > 1:
         for l in idxi:
             K.weights[l] = _inertia(k, K.edges[l, 1], Features)
@@ -523,7 +523,7 @@ def _remap(K, i, j, k, Features, linc, rinc):
     if np.size(idxi) > 0:
         K.edges[idxi, 0] = k
 
-    idxi = np.array(rinc[i]).astype(np.int)
+    idxi = np.array(rinc[i]).astype(np.int_)
     if np.size(idxi) > 1:
         for l in idxi:
             K.weights[l] = _inertia(K.edges[l, 0], k, Features)
@@ -535,7 +535,7 @@ def _remap(K, i, j, k, Features, linc, rinc):
     #------
     # replace j by k
     #-------
-    idxj = np.array(linc[j]).astype(np.int)
+    idxj = np.array(linc[j]).astype(np.int_)
     if np.size(idxj) > 1:
         for l in idxj:
             K.weights[l] = _inertia(k, K.edges[l, 1], Features)
@@ -544,7 +544,7 @@ def _remap(K, i, j, k, Features, linc, rinc):
     if np.size(idxj) > 0:
         K.edges[idxj, 0] = k
 
-    idxj = np.array(rinc[j]).astype(np.int)
+    idxj = np.array(rinc[j]).astype(np.int_)
     if np.size(idxj) > 1:
         for l in idxj:
             K.weights[l] = _inertia(k, K.edges[l, 0], Features)
@@ -577,7 +577,7 @@ def _remap(K, i, j, k, Features, linc, rinc):
     #remove double edges
     #------
     #left side
-    idxk = np.array(linc[k]).astype(np.int)
+    idxk = np.array(linc[k]).astype(np.int_)
     if np.size(idxk) > 0:
         corr = K.edges[idxk, 1]
         scorr = np.sort(corr)
@@ -591,7 +591,7 @@ def _remap(K, i, j, k, Features, linc, rinc):
                 linc[k].remove(i2)
 
     #right side
-    idxk = np.array(rinc[k]).astype(np.int)
+    idxk = np.array(rinc[k]).astype(np.int_)
     if np.size(idxk) > 0:
         corr = K.edges[idxk, 0]
         scorr = np.sort(corr)
@@ -655,7 +655,7 @@ def ward_quick(G, feature, verbose=False):
 
     # prepare a graph with twice the number of vertices
     K = _auxiliary_graph(G, Features)
-    parent = np.arange(2 * n - nbcc).astype(np.int)
+    parent = np.arange(2 * n - nbcc).astype(np.int_)
     height = np.zeros(2 * n - nbcc)
     linc = K.left_incidence()
     rinc = K.right_incidence()
@@ -798,8 +798,8 @@ def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=False):
     if verbose:
         t.plot()
 
-    u1 = np.zeros(n, np.int)
-    u2 = np.zeros(n, np.int)
+    u1 = np.zeros(n, np.int_)
+    u2 = np.zeros(n, np.int_)
     if stop >= 0:
         u1 = t.partition(stop)
     if qmax > 0:
@@ -865,8 +865,8 @@ def ward_segment(G, feature, stop=-1, qmax=1, verbose=False):
     qmax = int(np.minimum(qmax, n - 1))
 
     t = ward(G, feature, verbose)
-    u1 = np.zeros(n, np.int)
-    u2 = np.zeros(n, np.int)
+    u1 = np.zeros(n, np.int_)
+    u2 = np.zeros(n, np.int_)
     if stop >= 0:
         u1 = t.partition(stop)
     if qmax > 0:
@@ -933,7 +933,7 @@ def ward(G, feature, verbose=False):
     K = _auxiliary_graph(G, Features)
 
     # prepare some variables that are useful tp speed up the algorithm
-    parent = np.arange(2 * n - nbcc).astype(np.int)
+    parent = np.arange(2 * n - nbcc).astype(np.int_)
     height = np.zeros(2 * n - nbcc)
     linc = K.left_incidence()
     rinc = K.right_incidence()

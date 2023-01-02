@@ -1046,7 +1046,7 @@ class Factor(Formula):
         if levelsarr.dtype.kind not in 'SOU': # the levels are not strings
             if not np.alltrue(np.equal(levelsarr, np.round(levelsarr))):
                 raise ValueError('levels must be strings or ints')
-            levelsarr = levelsarr.astype(np.int)
+            levelsarr = levelsarr.astype(np.int_)
         elif levelsarr.dtype.kind == 'S': # Byte strings, convert
             levelsarr = levelsarr.astype('U')
         Formula.__init__(self, [FactorTerm(name, l) for l in levelsarr],

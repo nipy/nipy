@@ -99,7 +99,7 @@ def cross_eps(X, Y, eps=1.):
         idx = np.asanyarray(np.where(dist < eps))
         data = np.hstack((data, dist[idx.ravel()]))
         ij = np.vstack((ij, np.hstack((
-                        i * np.ones((idx.size, 1)), idx.T)))).astype(np.int)
+                        i * np.ones((idx.size, 1)), idx.T)))).astype(np.int_)
 
     data = np.maximum(data, 1.e-15)
     adj = coo_matrix((data, ij.T), shape=(X.shape[0], Y.shape[0]))
@@ -183,13 +183,13 @@ class BipartiteGraph(object):
         self.W = W
         self.E = 0
         if (edges is None) & (weights is None):
-            self.edges = np.array([], np.int)
+            self.edges = np.array([], np.int_)
             self.weights = np.array([])
         else:
             if edges.shape[0] == np.size(weights):
                 E = edges.shape[0]
                 self.E = E
-                self.edges = - np.ones((E, 2), np.int)
+                self.edges = - np.ones((E, 2), np.int_)
                 self.set_edges(edges)
                 self.set_weights(weights)
             else:

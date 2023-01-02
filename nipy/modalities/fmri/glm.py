@@ -125,7 +125,7 @@ class GeneralLinearModel(object):
         # compute and discretize the AR1 coefs
         ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(0) /
                (ols_result.resid ** 2).sum(0))
-        ar1 = (ar1 * steps).astype(np.int) * 1. / steps
+        ar1 = (ar1 * steps).astype(np.int_) * 1. / steps
 
         # Fit the AR model acccording to current AR(1) estimates
         if model == 'ar1':

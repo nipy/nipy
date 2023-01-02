@@ -124,7 +124,7 @@ class MultiSubjectParcellation(object):
         -------
         population: array of shape (self.nb_parcel, self.nb_subj)
         """
-        population = np.zeros((self.nb_parcel, self.nb_subj)).astype(np.int)
+        population = np.zeros((self.nb_parcel, self.nb_subj)).astype(np.int_)
         for ns in range(self.nb_subj):
             for k in range(self.nb_parcel):
                 population[k, ns] = np.sum(self.individual_labels[:, ns] == k)

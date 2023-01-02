@@ -236,7 +236,7 @@ class IMM(BGMM):
 
         if np.isscalar(kfold):
             aux = np.argsort(np.random.rand(n_samples))
-            idx = - np.ones(n_samples).astype(np.int)
+            idx = - np.ones(n_samples).astype(np.int_)
             j = int(math.ceil(n_samples / kfold))
             kmax = kfold
             for k in range(kmax):
@@ -246,7 +246,7 @@ class IMM(BGMM):
                 raise ValueError('kfold and x do not have the same size')
             uk = np.unique(kfold)
             np.random.shuffle(uk)
-            idx = np.zeros(n_samples).astype(np.int)
+            idx = np.zeros(n_samples).astype(np.int_)
             for i, k in enumerate(uk):
                 idx += (i * (kfold == k))
             kmax = uk.max() + 1
@@ -297,7 +297,7 @@ class IMM(BGMM):
         ----------
         x array of shape (n_samples,self.dim)
           the data used in the estimation process
-        z array of shape (n_samples), type = np.int
+        z array of shape (n_samples), type = np.int_
           the corresponding classification
         """
         # re-dimension the priors in order to match self.k
@@ -320,7 +320,7 @@ class IMM(BGMM):
 
         Parameters
         ----------
-        z array of shape (n_samples), type = np.int
+        z array of shape (n_samples), type = np.int_
           the allocation variable
         """
         pop = np.hstack((self.pop(z), 0))
@@ -601,7 +601,7 @@ class MixedIMM(IMM):
 
         if np.isscalar(kfold):
             aux = np.argsort(np.random.rand(n_samples))
-            idx = - np.ones(n_samples).astype(np.int)
+            idx = - np.ones(n_samples).astype(np.int_)
             j = int(math.ceil(n_samples / kfold))
             kmax = kfold
             for k in range(kmax):
@@ -611,7 +611,7 @@ class MixedIMM(IMM):
                 raise ValueError('kfold and x do not have the same size')
             uk = np.unique(kfold)
             np.random.shuffle(uk)
-            idx = np.zeros(n_samples).astype(np.int)
+            idx = np.zeros(n_samples).astype(np.int_)
             for i, k in enumerate(uk):
                 idx += (i * (kfold == k))
             kmax = uk.max() + 1

@@ -604,8 +604,8 @@ class AffineTransform(object):
 
         Examples
         --------
-        >>> input_cs = CoordinateSystem('ijk', coord_dtype=np.int)
-        >>> output_cs = CoordinateSystem('xyz', coord_dtype=np.int)
+        >>> input_cs = CoordinateSystem('ijk', coord_dtype=np.int_)
+        >>> output_cs = CoordinateSystem('xyz', coord_dtype=np.int_)
         >>> affine = np.array([[1,0,0,1],
         ...                    [0,1,0,1],
         ...                    [0,0,1,1],
@@ -951,8 +951,8 @@ class AffineTransform(object):
 
         Examples
         --------
-        >>> input_cs = CoordinateSystem('ijk', coord_dtype=np.int)
-        >>> output_cs = CoordinateSystem('xyz', coord_dtype=np.int)
+        >>> input_cs = CoordinateSystem('ijk', coord_dtype=np.int_)
+        >>> output_cs = CoordinateSystem('xyz', coord_dtype=np.int_)
         >>> affine = np.array([[1,0,0,1],
         ...                    [0,1,0,1],
         ...                    [0,0,1,1],

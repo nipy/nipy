@@ -115,7 +115,7 @@ swap = False
 kwargs = {'threshold':th,'csize':csize}
 rmap = map_reproducibility(Functional, VarFunctional, grp_mask, ngroups,
                            method, swap, verbose, **kwargs)
-wmap  = mask.astype(np.int)
+wmap  = mask.astype(np.int_)
 wmap[mask] = rmap
 wim = Nifti1Image(wmap, affine)
 wim.get_header()['descrip']= 'reproducibility map at threshold %f, \

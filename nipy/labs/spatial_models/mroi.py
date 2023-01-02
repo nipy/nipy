@@ -32,7 +32,7 @@ class SubDomains(object):
     ----------
     k : int
       Number of ROI in the SubDomains object
-    label : array of shape (domain.size), dtype=np.int
+    label : array of shape (domain.size), dtype=np.int_
       An array use to define which voxel belongs to which ROI.
       The label values greater than -1 correspond to subregions
       labelling. The labels are recomputed so as to be consecutive
@@ -56,7 +56,7 @@ class SubDomains(object):
         ----------
         domain: ROI instance
           defines the spatial context of the SubDomains
-        label: array of shape (domain.size), dtype=np.int,
+        label: array of shape (domain.size), dtype=np.int_,
           An array use to define which voxel belongs to which ROI.
           The label values greater than -1 correspond to subregions
           labelling. The labels are recomputed so as to be consecutive
@@ -76,7 +76,7 @@ class SubDomains(object):
         if np.size(label) != domain.size:
             raise ValueError('inconsistent labels and domains specification')
         self.domain = domain
-        self.label = np.reshape(label, label.size).astype(np.int)
+        self.label = np.reshape(label, label.size).astype(np.int_)
         # use continuous labels
         self.recompute_labels()
 
@@ -738,7 +738,7 @@ def subdomain_from_array(labels, affine=None, nn=0):
     """
     dom = ddom.grid_domain_from_binary_array(
         np.ones(labels.shape), affine=affine, nn=nn)
-    return SubDomains(dom, labels.astype(np.int))
+    return SubDomains(dom, labels.astype(np.int_))
 
 
 def subdomain_from_image(mim, nn=18):

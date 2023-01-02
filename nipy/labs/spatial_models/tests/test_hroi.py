@@ -78,7 +78,7 @@ def test_hroi_isleaf_2():
     hroi = make_hroi()
     #import pdb; pdb.set_trace()
     hroi.select_roi(list(range(1, 9)))
-    assert_equal(hroi.parents, np.arange(8).astype(np.int))
+    assert_equal(hroi.parents, np.arange(8).astype(np.int_))
 
 
 def test_asc_merge():

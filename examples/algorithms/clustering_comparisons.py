@@ -30,7 +30,7 @@ dz = 1
 nbseeds = 10
 data = gaussian_filter( np.random.randn(dx, dy), 2)
 F = Field(dx * dy * dz)
-xyz = np.reshape(np.indices((dx, dy, dz)), (3, dx * dy * dz)).T.astype(np.int)
+xyz = np.reshape(np.indices((dx, dy, dz)), (3, dx * dy * dz)).T.astype(np.int_)
 F.from_3d_grid(xyz, 6)
 F.set_field(data)
 

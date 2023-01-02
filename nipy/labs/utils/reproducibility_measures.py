@@ -191,7 +191,7 @@ def bootstrap_group(nsubj, ngroups):
              the indexes of the subjects in each subgroup
     """
     groupsize = nsubj
-    samples = [(groupsize * np.random.rand(groupsize)).astype(np.int)
+    samples = [(groupsize * np.random.rand(groupsize)).astype(np.int_)
                for i in range(ngroups)]
     return samples
 

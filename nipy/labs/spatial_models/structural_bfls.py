@@ -183,9 +183,9 @@ def build_landmarks(domain, coords, subjects, labels, confidence=None,
             description of the spatial context of the landmarks
     coords: array of shape(n, 3)
             Sets of coordinates for the different objects
-    subjects: array of shape (n), dtype = np.int
+    subjects: array of shape (n), dtype = np.int_
               indicators of the dataset the objects come from
-    labels: array of shape (n), dtype = np.int
+    labels: array of shape (n), dtype = np.int_
             index of the landmark the object is associated with
     confidence: array of shape (n),
                 measure of the significance of the regions
@@ -215,7 +215,7 @@ def build_landmarks(domain, coords, subjects, labels, confidence=None,
     subjs = []
     pps = []
     n_labels = int(labels.max() + 1)
-    valid = np.zeros(n_labels).astype(np.int)
+    valid = np.zeros(n_labels).astype(np.int_)
 
     # do some computation to find which regions are worth reporting
     for i in np.unique(labels[labels > - 1]):
@@ -243,7 +243,7 @@ def build_landmarks(domain, coords, subjects, labels, confidence=None,
             pps.append(confidence[labels == i])
 
     # relabel the ROIs
-    maplabel = - np.ones(n_labels).astype(np.int)
+    maplabel = - np.ones(n_labels).astype(np.int_)
     maplabel[valid > 0] = np.cumsum(valid[valid > 0]) - 1
 
     # create the landmark regions structure

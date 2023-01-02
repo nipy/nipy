@@ -42,7 +42,7 @@ def largest_cc(mask):
         raise ValueError('No non-zero values: no connected components')
     if label_nb == 1:
         return mask.astype(np.bool_)
-    label_count = np.bincount(labels.ravel().astype(np.int))
+    label_count = np.bincount(labels.ravel().astype(np.int_))
     # discard 0 the 0 label
     label_count[0] = 0
     return labels == label_count.argmax()
@@ -246,7 +246,7 @@ def compute_mask(mean_volume, reference_volume=None, m=0.2, M=0.9,
         mask = largest_cc(mask)
 
     if opening > 0:
-        mask = ndimage.binary_opening(mask.astype(np.int),
+        mask = ndimage.binary_opening(mask.astype(np.int_),
                                         iterations=opening)
     return mask.astype(bool)
 
@@ -375,7 +375,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
             # We have a filename
             this_mask = load(this_mask).get_data()
         if grp_mask is None:
-            grp_mask = this_mask.copy().astype(np.int)
+            grp_mask = this_mask.copy().astype(np.int_)
         else:
             # If this_mask is floating point and grp_mask is integer, numpy 2
             # casting rules raise an error for in-place addition.

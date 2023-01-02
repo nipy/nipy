@@ -197,19 +197,19 @@ def generate_perm(k, nperm=100):
     """
     from scipy.special import gamma
     if k == 1:
-        return np.reshape(np.array([0]), (1, 1)).astype(np.int)
+        return np.reshape(np.array([0]), (1, 1)).astype(np.int_)
     if gamma(k + 1) < nperm:
         # exhaustive permutations
         aux = generate_perm(k - 1)
         n = aux.shape[0]
-        perm = np.zeros((n * k, k)).astype(np.int)
+        perm = np.zeros((n * k, k)).astype(np.int_)
         for i in range(k):
             perm[i * n:(i + 1) * n, :i] = aux[:, :i]
             perm[i * n:(i + 1) * n, i] = k-1
             perm[i * n:(i + 1) * n, i + 1:] = aux[:, i:]
     else:
         from numpy.random import rand
-        perm = np.zeros((nperm, k)).astype(np.int)
+        perm = np.zeros((nperm, k)).astype(np.int_)
         for i in range(nperm):
             p = np.argsort(rand(k))
             perm[i] = p
@@ -498,7 +498,7 @@ class BGMM(GMM):
         if self.k > 1:
             cent, z, J = kmeans(x, self.k)
         else:
-            z = np.zeros(x.shape[0]).astype(np.int)
+            z = np.zeros(x.shape[0]).astype(np.int_)
         self.update(x, z)
 
     def pop(self, z):
@@ -507,7 +507,7 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        z array of shape (nb_samples), type = np.int
+        z array of shape (nb_samples), type = np.int_
           the allocation variable
 
         Returns
@@ -523,7 +523,7 @@ class BGMM(GMM):
 
         Parameters
         ----------
-        z array of shape (nb_samples), type = np.int
+        z array of shape (nb_samples), type = np.int_
           the allocation variable
         """
         pop = self.pop(z)
@@ -540,7 +540,7 @@ class BGMM(GMM):
         ----------
         x: array of shape (nb_samples,self.dim)
           the data used in the estimation process
-        z: array of shape (nb_samples), type = np.int
+        z: array of shape (nb_samples), type = np.int_
           the corresponding classification
         """
         pop = self.pop(z)
@@ -568,7 +568,7 @@ class BGMM(GMM):
         ----------
         x array of shape (nb_samples,self.dim)
           the data used in the estimation process
-        z array of shape (nb_samples), type = np.int
+        z array of shape (nb_samples), type = np.int_
           the corresponding classification
         """
         pop = self.pop(z)
@@ -604,7 +604,7 @@ class BGMM(GMM):
         ----------
         x array of shape (nb_samples,self.dim)
           the data used in the estimation process
-        z array of shape (nb_samples), type = np.int
+        z array of shape (nb_samples), type = np.int_
           the corresponding classification
         """
         self.update_weights(z)
@@ -653,7 +653,7 @@ class BGMM(GMM):
         """
         self.check_x(x)
         if mem:
-            possibleZ = - np.ones((x.shape[0], niter)).astype(np.int)
+            possibleZ = - np.ones((x.shape[0], niter)).astype(np.int_)
 
         score = - np.inf
         bpz = - np.inf
@@ -750,9 +750,9 @@ class BGMM(GMM):
         ----------
         x: array of shape (nb_samples, dim),
            the data from which bic is computed
-        z: array of shape (nb_samples), type = np.int,
+        z: array of shape (nb_samples), type = np.int_,
            the corresponding classification
-        perm: array ok shape(nperm, self.k),typ=np.int, optional
+        perm: array ok shape(nperm, self.k),typ=np.int_, optional
               all permutation of z under which things will be recomputed
               By default, no permutation is performed
         """
@@ -824,7 +824,7 @@ class BGMM(GMM):
         ----------
         x: array of shape (nb_samples,dim)
            the data from which bic is computed
-        z: array of shape (nb_samples), type = np.int
+        z: array of shape (nb_samples), type = np.int_
            the corresponding classification
         nperm=0: int
             the number of permutations to sample
@@ -1046,7 +1046,7 @@ class VBGMM(BGMM):
         if self.k > 1:
             cent, z, J = kmeans(x, self.k)
         else:
-            z = np.zeros(x.shape[0]).astype(np.int)
+            z = np.zeros(x.shape[0]).astype(np.int_)
         l = np.zeros((n, self.k))
         l[np.arange(n), z] = 1
         self._Mstep(x, l)

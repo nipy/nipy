@@ -215,7 +215,7 @@ class AR1(object):
         g = copy.copy(rho.coordmap)
         rho = rho.get_data()
         m = np.isnan(rho)
-        r = (np.clip(rho,-1,1) * 100).astype(np.int) / 100.
+        r = (np.clip(rho,-1,1) * 100).astype(np.int_) / 100.
         r[m] = np.inf
         self.rho = Image(r, g)
         if volume_start_times is None:

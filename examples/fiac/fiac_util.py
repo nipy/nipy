@@ -337,12 +337,12 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
 
     if designtype == 'evt':
         b = np.array([(d[0]['time'], 1)], np.dtype([('time', np.float64),
-                                                    ('initial', np.int)]))
+                                                    ('initial', np.int_)]))
         d = d[1:]
     else:
         k = np.equal(np.arange(d.shape[0]) % 6, 0)
         b = np.array([(tt, 1) for tt in d[k]['time']], np.dtype([('time', np.float64),
-                                                                 ('initial', np.int)]))
+                                                                 ('initial', np.int_)]))
         d = d[~k]
 
     designtype = {'bloc':'block', 'evt':'event'}[designtype]

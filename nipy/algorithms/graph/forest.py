@@ -69,14 +69,14 @@ class Forest(WeightedGraph):
 
         # define the parents
         if parents is None:
-            self.parents = np.arange(self.V).astype(np.int)
+            self.parents = np.arange(self.V).astype(np.int_)
         else:
             if np.size(parents) != V:
                 raise ValueError('Incorrect size for parents')
             if parents.max() > self.V:
                 raise ValueError('Incorrect value for parents')
 
-            self.parents = np.reshape(parents, self.V).astype(np.int)
+            self.parents = np.reshape(parents, self.V).astype(np.int_)
 
         self.define_graph_attributes()
 
@@ -87,13 +87,13 @@ class Forest(WeightedGraph):
     def define_graph_attributes(self):
         """define the edge and weights array
         """
-        self.edges = np.array([]).astype(np.int)
+        self.edges = np.array([]).astype(np.int_)
         self.weights = np.array([])
         i = np.nonzero(self.parents != np.arange(self.V))[0]
         if np.size(i) > 0:
             E1 = np.hstack((i, self.parents[i]))
             E2 = np.hstack((self.parents[i], i))
-            self.edges = (np.vstack((E1, E2))).astype(np.int).T
+            self.edges = (np.vstack((E1, E2))).astype(np.int_).T
             self.weights = np.hstack((np.ones(np.size(i)),
                                       - np.ones(np.size(i))))
 
@@ -296,7 +296,7 @@ class Forest(WeightedGraph):
         -------
         depth: array of shape (self.V): the depth values of the vertices
         """
-        depth = self.isleaf().astype(np.int)-1
+        depth = self.isleaf().astype(np.int_)-1
         for j in range(self.V):
             dc = depth.copy()
             for i in range(self.V):
