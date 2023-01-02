@@ -311,7 +311,7 @@ def compute_mask_sessions(session_images, m=0.2, M=0.9, cc=1, threshold=0.5,
         if return_mean:
             this_mask, this_mean = this_mask
             if mean is None:
-                mean = this_mean.astype(np.float)
+                mean = this_mean.astype(np.float64)
             else:
                 mean += this_mean
         this_mask = this_mask.astype(np.int8)

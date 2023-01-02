@@ -67,8 +67,8 @@ def test_check_cast_bin8():
         assert_raises(ValueError, check_cast_bin8,
                       np.array([0, 1, 2], dtype=in_dtype))
     for in_dtype in np.sctypes['float']:
-        assert_equal_bin8(np.array([0, 1, 1, -0], np.float), [0, 1, 1, 0])
-        assert_equal_bin8(np.array([[0, 1], [1, -0]], np.float),
+        assert_equal_bin8(np.array([0, 1, 1, -0], np.float64), [0, 1, 1, 0])
+        assert_equal_bin8(np.array([[0, 1], [1, -0]], np.float64),
                           [[0, 1], [1, 0]])
         assert_raises(ValueError, check_cast_bin8,
                       np.array([0, 0.1, 1], dtype=in_dtype))

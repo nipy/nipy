@@ -266,7 +266,7 @@ class DesignMatrix():
                     'The number %d of frametimes is different from the' + \
                     'number %d of rows' % (frametimes.size, matrix.shape[0]))
 
-        self.frametimes = np.asarray(frametimes, dtype=np.float)
+        self.frametimes = np.asarray(frametimes, dtype=np.float64)
         self.matrix = matrix_
         self.names = names
 
@@ -329,7 +329,7 @@ class DesignMatrix():
 
         Parameters
         ----------
-        contrast : np.float
+        contrast : np.float64
             Array forming contrast with respect to the design matrix.
         ax: axis handle, optional
             Handle to axis onto which we will draw design matrix.
@@ -400,7 +400,7 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
     DesignMatrix instance
     """
     # check arguments
-    frametimes = np.asarray(frametimes, dtype=np.float)
+    frametimes = np.asarray(frametimes, dtype=np.float64)
 
     # check that additional regressor specification is correct
     n_add_regs = 0

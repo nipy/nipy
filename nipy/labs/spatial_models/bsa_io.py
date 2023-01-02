@@ -127,7 +127,7 @@ def make_bsa_image(
     save(wim, op.join(write_dir, "CR_%s.nii" % contrast_id))
 
     # write a prevalence image
-    prev_ = np.zeros(crmap.size).astype(np.float)
+    prev_ = np.zeros(crmap.size).astype(np.float64)
     prev_[crmap > -1] = prevalence[crmap[crmap > -1]]
     prevalence_map = - np.ones(ref_dim)
     prevalence_map[mask > 0] = prev_

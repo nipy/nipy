@@ -274,7 +274,7 @@ class SPMSubjectAnalysis(object):
             len(fwhm)
         except TypeError:
             fwhm = [fwhm] * 3
-        fwhm = np.asarray(fwhm, dtype=np.float).reshape(1,3)
+        fwhm = np.asarray(fwhm, dtype=np.float64).reshape(1,3)
         sess_scans = scans_for_fnames(
             fnames_presuffix(self.data_def['functionals'], in_prefix))
         sinfo = make_job('spatial', 'smooth',

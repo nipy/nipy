@@ -74,7 +74,7 @@ def nonintersecting_boxes(shape):
     >>> b2[11:] = 1
     >>> (b1*b2).sum()
     0
-    >>> c = np.indices((40,)).astype(np.float)
+    >>> c = np.indices((40,)).astype(np.float64)
     >>> intvol.Lips1d(c, b1)
     array([  1.,  10.])
     >>> intvol.Lips1d(c, b2)
@@ -214,7 +214,7 @@ def test_lips_wrapping():
     b2[11:] = 1
     # lines are disjoint
     assert_equal((b1*b2).sum(), 0)
-    c = np.indices(b1.shape).astype(np.float)
+    c = np.indices(b1.shape).astype(np.float64)
     assert_array_equal(intvol.Lips1d(c, b1), (1, 10))
     assert_array_equal(intvol.Lips1d(c, b2), (1, 28))
     assert_array_equal(intvol.Lips1d(c, b1+b2), (1, 39.0))
@@ -223,7 +223,7 @@ def test_lips_wrapping():
     b2 = b2[:,None]
     # boxes are disjoint
     assert_equal((b1*b2).sum(), 0)
-    c = np.indices(b1.shape).astype(np.float)
+    c = np.indices(b1.shape).astype(np.float64)
     assert_array_equal(intvol.Lips2d(c, b1), (1, 10, 0))
     assert_array_equal(intvol.Lips2d(c, b2), (1, 28, 0))
     assert_array_equal(intvol.Lips2d(c, b1+b2), (1, 39.0, 0))
@@ -233,7 +233,7 @@ def test_lips_wrapping():
     assert_equal(b1.shape, (40,1,1))
     # boxes are disjoint
     assert_equal((b1*b2).sum(), 0)
-    c = np.indices(b1.shape).astype(np.float)
+    c = np.indices(b1.shape).astype(np.float64)
     assert_array_equal(intvol.Lips3d(c, b1), (1, 10, 0, 0))
     assert_array_equal(intvol.Lips3d(c, b2), (1, 28, 0, 0))
     assert_array_equal(intvol.Lips3d(c, b1+b2), (1, 39.0, 0, 0))
@@ -247,8 +247,8 @@ def test_lips_wrapping():
                                [(1, 1, 10), (1,9,0,0)]]:
         nd = len(box_shape)
         lips_func, ec_func = D_TO_FUNCS[nd]
-        c = np.indices(box_shape).astype(np.float)
-        b = np.ones(box_shape, dtype=np.int)
+        c = np.indices(box_shape).astype(np.float64)
+        b = np.ones(box_shape, dtype=np.int_)
         assert_array_equal(lips_func(c, b), exp_ivs)
         assert_equal(ec_func(b), exp_ivs[0])
 
@@ -256,7 +256,7 @@ def test_lips_wrapping():
 def test_lips1_disjoint():
     phi = intvol.Lips1d
     box1, box2, edge1, edge2 = nonintersecting_boxes((30,))
-    c = np.indices((30,)).astype(np.float)
+    c = np.indices((30,)).astype(np.float64)
     # Test N dimensional coordinates (N=10)
     d = np.random.standard_normal((10,)+(30,))
     # Test rotation causes no change in volumes
@@ -281,7 +281,7 @@ def test_lips1_disjoint():
 def test_lips2_disjoint():
     phi = intvol.Lips2d
     box1, box2, edge1, edge2 = nonintersecting_boxes((40,40))
-    c = np.indices((40,40)).astype(np.float)
+    c = np.indices((40,40)).astype(np.float64)
     # Test N dimensional coordinates (N=10)
     d = np.random.standard_normal((10,40,40))
     # Test rotation causes no change in volumes
@@ -308,7 +308,7 @@ def test_lips2_disjoint():
 def test_lips3_disjoint():
     phi = intvol.Lips3d
     box1, box2, edge1, edge2 = nonintersecting_boxes((40,)*3)
-    c = np.indices((40,)*3).astype(np.float)
+    c = np.indices((40,)*3).astype(np.float64)
     # Test N dimensional coordinates (N=10)
     d = np.random.standard_normal((10,40,40,40))
     # Test rotation causes no change in volumes
@@ -335,7 +335,7 @@ def test_lips3_nans():
     box2 = box1.copy()
     box1[23:30,22:32,9:13] = 1
     box2[7:22,0,8:17] = 1
-    c = np.indices(box1.shape).astype(np.float)
+    c = np.indices(box1.shape).astype(np.float64)
     assert_array_equal(np.isnan(phi(c, box2)), False)
     U = randorth(p=6)[0:3]
     e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
@@ -347,8 +347,8 @@ def test_slices():
     # Slices have EC 1...
     e = intvol.EC3d
     p = intvol.Lips3d
-    m = np.zeros((40,)*3, np.int)
-    D = np.indices(m.shape).astype(np.float)
+    m = np.zeros((40,)*3, np.int_)
+    D = np.indices(m.shape).astype(np.float64)
     m[10,10,10] = 1
     yield assert_almost_equal, e(m), 1
     yield assert_almost_equal, p(D,m), [1,0,0,0]

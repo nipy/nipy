@@ -29,7 +29,7 @@ class FmriImageList(ImageList):
         volume_start_times: None or float or (N,) ndarray
             start time of each frame. It can be specified either as an ndarray
             with ``N=len(images)`` elements or as a single float, the TR. None
-            results in ``np.arange(len(images)).astype(np.float)``
+            results in ``np.arange(len(images)).astype(np.float64)``
         slice_times: None or (N,) ndarray
             specifying offset for each slice of each frame, from the frame start
             time.
@@ -89,7 +89,7 @@ class FmriImageList(ImageList):
         volume_start_times: None or float or (N,) ndarray
             start time of each frame. It can be specified either as an ndarray
             with ``N=len(images)`` elements or as a single float, the TR. None
-            results in ``np.arange(len(images)).astype(np.float)``
+            results in ``np.arange(len(images)).astype(np.float64)``
         slice_times: None or (N,) ndarray
             specifying offset for each slice of each frame, from the frame start
             time.

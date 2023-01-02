@@ -47,7 +47,7 @@ def ARcomponents(rho, n, drho=0.05, cor=False, sigma=1):
     value = []
 
     if drho.shape == ():
-        drho = np.ones(p, np.float) * drho
+        drho = np.ones(p, np.float64) * drho
     drho = np.diag(drho)
 
     Q = ARcovariance(rho, n, cor=cor, sigma=sigma)

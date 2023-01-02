@@ -82,7 +82,7 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
     # This code is loosely based on code by Stefan van der Waalt
     # Convert to floats to avoid overflows
     np_err = np.seterr(all='ignore')
-    img = signal.wiener(image.astype(np.float))
+    img = signal.wiener(image.astype(np.float64))
     np.seterr(**np_err)
     # Where the noise variance is 0, Wiener can create nans
     img[np.isnan(img)] = image[np.isnan(img)]
@@ -135,7 +135,7 @@ def _edge_map(image):
             coefficients.
     """
     edge_mask = _edge_detect(image)[-1]
-    edge_mask = edge_mask.astype(np.float)
+    edge_mask = edge_mask.astype(np.float64)
     edge_mask = -np.sqrt(ndimage.distance_transform_cdt(edge_mask))
     edge_mask[edge_mask != 0] -= -.05+edge_mask.min()
     edge_mask = np.ma.masked_less(edge_mask, .01)

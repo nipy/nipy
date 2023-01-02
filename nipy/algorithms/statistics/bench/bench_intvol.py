@@ -20,7 +20,7 @@ def bench_lips3d():
     repeat = 4
     bx_sz = 60
     box1, box2, edge1, edge2 = nonintersecting_boxes((bx_sz,)*3)
-    c = np.indices(box1.shape).astype(np.float)
+    c = np.indices(box1.shape).astype(np.float64)
     sys.stdout.flush()
     print("\nIntrinsic volumes 3D")
     print("--------------------")
@@ -44,7 +44,7 @@ def bench_lips2d():
     repeat = 4
     bx_sz = 500
     box1, box2, edge1, edge2 = nonintersecting_boxes((bx_sz,)*2)
-    c = np.indices(box1.shape).astype(np.float)
+    c = np.indices(box1.shape).astype(np.float64)
     sys.stdout.flush()
     print("\nIntrinsic volumes 2D")
     print("--------------------")
@@ -68,7 +68,7 @@ def bench_lips1d():
     repeat = 4
     bx_sz = 100000
     box1, box2, edge1, edge2 = nonintersecting_boxes((bx_sz,))
-    c = np.indices(box1.shape).astype(np.float)
+    c = np.indices(box1.shape).astype(np.float64)
     sys.stdout.flush()
     print("\nIntrinsic volumes 1D")
     print("--------------------")

@@ -30,7 +30,7 @@ class CoordinateSystem(object):
     have a name.
 
     >>> names = ['first', 'second', 'third']
-    >>> cs = CoordinateSystem(names, 'a coordinate system', np.float)
+    >>> cs = CoordinateSystem(names, 'a coordinate system', np.float64)
     >>> cs.coord_names
     ('first', 'second', 'third')
     >>> cs.name
@@ -41,7 +41,7 @@ class CoordinateSystem(object):
     The coordinate system also has a ``dtype`` which is the composite
     numpy dtype, made from the (``names``, ``coord_dtype``).
 
-    >>> dtype_template = [(name, np.float) for name in cs.coord_names]
+    >>> dtype_template = [(name, np.float64) for name in cs.coord_names]
     >>> dtype_should_be = np.dtype(dtype_template)
     >>> cs.dtype == dtype_should_be
     True
@@ -49,7 +49,7 @@ class CoordinateSystem(object):
     Two CoordinateSystems are equal if they have the same dtype
     and the same names and the same name.
 
-    >>> another_cs = CoordinateSystem(names, 'not irrelevant', np.float)
+    >>> another_cs = CoordinateSystem(names, 'not irrelevant', np.float64)
     >>> cs == another_cs
     False
     >>> cs.dtype == another_cs.dtype
@@ -72,14 +72,14 @@ class CoordinateSystem(object):
     ndim = 3
     _doc['ndim'] = 'The number of dimensions'
 
-    dtype = np.dtype([('x', np.float),
-                      ('y', np.float),
-                      ('z', np.float)])
+    dtype = np.dtype([('x', np.float64),
+                      ('y', np.float64),
+                      ('z', np.float64)])
     _doc['dtype'] = 'The composite dtype of the CoordinateSystem, ' + \
                     'expresses the fact that there are three numbers, the' + \
                     'first one corresponds to "x" and the second to "y".'
 
-    def __init__(self, coord_names, name='', coord_dtype=np.float):
+    def __init__(self, coord_names, name='', coord_dtype=np.float64):
         """Create a coordinate system with a given name and coordinate names.
 
         The CoordinateSystem has two dtype attributes:
@@ -97,9 +97,9 @@ class CoordinateSystem(object):
            The name of the coordinate system
         coord_dtype : np.dtype, optional
            The dtype of the coord_names.  This should be a built-in
-           numpy scalar dtype. (default is np.float).  The value can
+           numpy scalar dtype. (default is np.float64).  The value can
            by anything that can be passed to the np.dtype constructor.
-           For example ``np.float``, ``np.dtype(np.float)`` or ``f8``
+           For example ``np.float64``, ``np.dtype(np.float64)`` or ``f8``
            all result in the same ``coord_dtype``.
 
         Examples
@@ -420,7 +420,7 @@ class CoordSysMaker(object):
     """
     coord_sys_klass = CoordinateSystem
 
-    def __init__(self, coord_names, name='', coord_dtype=np.float):
+    def __init__(self, coord_names, name='', coord_dtype=np.float64):
         """Create a coordsys maker with given axis `coord_names`
 
         Parameters
@@ -431,9 +431,9 @@ class CoordSysMaker(object):
            The name of the coordinate system
         coord_dtype : np.dtype, optional
            The dtype of the coord_names.  This should be a built-in
-           numpy scalar dtype. (default is np.float).  The value can
+           numpy scalar dtype. (default is np.float64).  The value can
            by anything that can be passed to the np.dtype constructor.
-           For example ``np.float``, ``np.dtype(np.float)`` or ``f8``
+           For example ``np.float64``, ``np.dtype(np.float64)`` or ``f8``
            all result in the same ``coord_dtype``.
 
         Examples

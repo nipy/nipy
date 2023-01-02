@@ -37,7 +37,7 @@ def test_rotate2d():
     i.get_data()[50:55,40:55] = 3.
     a = np.array([[0,1,0],
                   [1,0,0],
-                  [0,0,1]], np.float)
+                  [0,0,1]], np.float64)
     ir = resample(i, g2, a, (100, 100))
     assert_array_almost_equal(ir.get_data().T, i.get_data())
 
@@ -52,7 +52,7 @@ def test_rotate2d2():
     i.get_data()[50:55,40:55] = 3.
     a = np.array([[0,1,0],
                   [1,0,0],
-                  [0,0,1]], np.float)
+                  [0,0,1]], np.float64)
     ir = resample(i, g2, a, (80,100))
     assert_array_almost_equal(ir.get_data().T, i.get_data())
 

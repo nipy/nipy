@@ -161,7 +161,7 @@ class GeneralLinearModel(object):
         n_beta = len(column_index)
 
         # build the beta array
-        beta = np.zeros((n_beta, self.labels_.size), dtype=np.float)
+        beta = np.zeros((n_beta, self.labels_.size), dtype=np.float64)
         for l in self.results_.keys():
             beta[:, self.labels_ == l] = self.results_[l].theta[column_index]
         return beta
@@ -175,7 +175,7 @@ class GeneralLinearModel(object):
             the sum of square error per voxel
         """
         # build the beta array
-        mse = np.zeros(self.labels_.size, dtype=np.float)
+        mse = np.zeros(self.labels_.size, dtype=np.float64)
         for l in self.results_.keys():
             mse[self.labels_ == l] = self.results_[l].MSE
         return mse
@@ -189,7 +189,7 @@ class GeneralLinearModel(object):
             the sum of square error per voxel
         """
         # build the beta array
-        logL = np.zeros(self.labels_.size, dtype=np.float)
+        logL = np.zeros(self.labels_.size, dtype=np.float64)
         for l in self.results_.keys():
             logL[self.labels_ == l] = self.results_[l].logL
         return logL
@@ -224,8 +224,8 @@ class GeneralLinearModel(object):
         if contrast_type not in ['t', 'F', 'tmin-conjunction']:
             raise ValueError('Unknown contrast type: %s' % contrast_type)
 
-        effect_ = np.zeros((dim, self.labels_.size), dtype=np.float)
-        var_ = np.zeros((dim, dim, self.labels_.size), dtype=np.float)
+        effect_ = np.zeros((dim, self.labels_.size), dtype=np.float64)
+        var_ = np.zeros((dim, dim, self.labels_.size), dtype=np.float64)
         if contrast_type == 't':
             for l in self.results_.keys():
                 resl = self.results_[l].Tcontrast(con_val)
@@ -601,11 +601,11 @@ class FMRILinearModel(object):
             if do_output:
                 if dim > 1:
                     result_map = np.tile(
-                        mask.astype(np.float)[:, :, :, np.newaxis], dim)
+                        mask.astype(np.float64)[:, :, :, np.newaxis], dim)
                     result_map[mask] = np.reshape(
                         getattr(contrast_, estimate).T, (n_vox, dim))
                 else:
-                    result_map = mask.astype(np.float)
+                    result_map = mask.astype(np.float64)
                     result_map[mask] = np.squeeze(
                         getattr(contrast_, estimate))
                 output = Nifti1Image(result_map, self.affine)

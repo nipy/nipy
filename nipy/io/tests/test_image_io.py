@@ -163,7 +163,7 @@ def test_output_dtypes():
             save_image(img, out_fname)
             img_back = load_image(out_fname)
             hdr = img_back.metadata['header']
-            assert_dt_no_end_equal(hdr.get_data_dtype(), np.float)
+            assert_dt_no_end_equal(hdr.get_data_dtype(), np.float64)
             del img_back # lets window re-use the file
             # All these types are OK for both output formats
             for out_dt in 'i2', 'i4', np.int16, '<f4', '>f8':

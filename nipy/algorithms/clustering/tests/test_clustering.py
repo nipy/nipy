@@ -25,7 +25,7 @@ class TestClustering(TestCase):
         X = X + 3 * A
         L = np.concatenate([np.ones(5000), np.zeros(5000)]).astype(np.int)
         C, L, J = kmeans(X, 2, L)
-        l = L[:7000].astype(np.float)
+        l = L[:7000].astype(np.float64)
         self.assert_(np.mean(l) > 0.9)
 
 

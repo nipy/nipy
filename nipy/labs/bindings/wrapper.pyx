@@ -156,7 +156,7 @@ def copy_via_iterators(ndarray Y, int axis=0):
     cdef fffpy_multi_iterator* multi
    
     # Allocate output array
-    Z = np.zeros_like(Y, dtype=np.float)
+    Z = np.zeros_like(Y, dtype=np.float_)
 
     # Create a new array iterator 
     multi = fffpy_multi_iterator_new(2, axis, <void*>Y, <void*>Z)

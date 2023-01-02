@@ -84,8 +84,8 @@ run_no = np.array([1]*tval1.shape[0] + [2]*tval2.shape[0])
 # our case the terms are t1, t2, and the (indicator coding) terms from the run
 # factor.
 rec = np.array([(tv1, tv2, s) for tv1, tv2, s in zip(ttval1, ttval2, run_no)],
-               np.dtype([('t1', np.float),
-                         ('t2', np.float),
+               np.dtype([('t1', np.float64),
+                         ('t2', np.float64),
                          ('run', np.int)]))
 
 # The contrast we care about

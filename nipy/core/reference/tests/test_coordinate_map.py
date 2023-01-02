@@ -368,7 +368,7 @@ def test_affine_inverse():
     incs, outcs, aff = affine_v2w()
     inv = np.linalg.inv(aff)
     cm = AffineTransform(incs, outcs, aff)
-    x = np.array([10, 20, 30], np.float)
+    x = np.array([10, 20, 30], np.float64)
     x_roundtrip = cm(cm.inverse()(x))
     assert_almost_equal(x_roundtrip, x)
     badaff = np.array([[1,2,3],[0,0,1]])

@@ -70,7 +70,7 @@ def reml(sigma, components, design=None, n=1, niter=128,
     h = np.array([np.diag(Q[i]).mean() for i in range(q)])
 
     ## SPM initialization
-    ## h = np.array([np.any(np.diag(Q[i])) for i in range(q)]).astype(np.float)
+    ## h = np.array([np.any(np.diag(Q[i])) for i in range(q)]).astype(np.float64)
 
     C = np.sum([h[i] * Q[i] for i in range(Q.shape[0])], axis=0)
 
@@ -159,6 +159,6 @@ if __name__ == "__main__":
 
     X = R.standard_normal((500,3))
     Q = np.array([np.identity(3), np.array([[0,1,0],[1,0,0],[0,0,1]]),
-                 np.array([[1,0,0],[0,1,1],[0,1,1]])], np.float)
+                 np.array([[1,0,0],[0,1,1],[0,1,1]])], np.float64)
     
     print(reml(np.dot(X.T,X), Q))

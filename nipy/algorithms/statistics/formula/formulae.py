@@ -175,7 +175,7 @@ class Term(sympy.Symbol):
     recarray used to create a design matrix.
 
     >>> t = Term('x')
-    >>> xval = np.array([(3,),(4,),(5,)], np.dtype([('x', np.float)]))
+    >>> xval = np.array([(3,),(4,),(5,)], np.dtype([('x', np.float64)]))
     >>> f = t.formula
     >>> d = f.design(xval)
     >>> print(d.dtype.descr)
@@ -377,7 +377,7 @@ def make_recarray(rows, names, dtypes=None, drop_name_dim=_NoValue):
     Create a recarray with named columns from a list or ndarray of `rows` and
     sequence of `names` for the columns. If `rows` is an ndarray, `dtypes` must
     be None, otherwise we raise a ValueError. Otherwise, if `dtypes` is None,
-    we cast the data in all columns in `rows` as np.float. If `dtypes` is not
+    we cast the data in all columns in `rows` as np.float64. If `dtypes` is not
     None, the routine uses `dtypes` as a dtype specifier for the output
     structured array.
 
@@ -422,7 +422,7 @@ def make_recarray(rows, names, dtypes=None, drop_name_dim=_NoValue):
     array([(3, 4), (4, 6), (6, 8)],
           dtype=[('x', '<i8'), ('y', '<i8')])
     >>> make_recarray([[3, 4], [4, 6], [7, 9]], 'wv',
-    ...               [np.float, np.int])  #doctest: +STRUCTARR_EQUAL
+    ...               [np.float64, np.int_])  #doctest: +STRUCTARR_EQUAL
     array([(3.0, 4), (4.0, 6), (7.0, 9)],
           dtype=[('w', '<f8'), ('v', '<i8')])
 
@@ -440,7 +440,7 @@ def make_recarray(rows, names, dtypes=None, drop_name_dim=_NoValue):
         return _recarray_from_array(rows, names, drop_name_dim)
     # Structured array from list
     if dtypes is None:
-        dtype = np.dtype([(n, np.float) for n in names])
+        dtype = np.dtype([(n, np.float64) for n in names])
     else:
         dtype = np.dtype([(n, d) for n, d in zip(names, dtypes)])
     # Peek at first value in iterable
@@ -519,7 +519,7 @@ class Formula(object):
 
     def _getdtype(self):
         vnames = [str(s) for s in self.design_expr]
-        return np.dtype([(n, np.float) for n in vnames])
+        return np.dtype([(n, np.float64) for n in vnames])
     dtype = property(_getdtype, doc='The dtype of the design matrix of the Formula.')
 
     def __repr__(self):
@@ -797,9 +797,9 @@ class Formula(object):
         # There is also an argument for parameters that are not
         # Terms. 
 
-        self._dtypes = {'param':np.dtype([(str(p), np.float) for p in params]),
-                        'term':np.dtype([(str(t), np.float) for t in terms]),
-                        'preterm':np.dtype([(n, np.float) for n in preterm])}
+        self._dtypes = {'param':np.dtype([(str(p), np.float64) for p in params]),
+                        'term':np.dtype([(str(t), np.float64) for t in terms]),
+                        'preterm':np.dtype([(n, np.float64) for n in preterm])}
 
         self.__terms = terms
 
@@ -819,7 +819,7 @@ class Formula(object):
            Recarray including fields that are not Terms in
            getparams(self.design_expr)
         return_float : bool, optional
-           If True, return a np.float array rather than a np.recarray
+           If True, return a np.float64 array rather than a np.recarray
         contrasts : None or dict, optional
            Contrasts. The items in this dictionary should be (str,
            Formula) pairs where a contrast matrix is constructed for
@@ -854,9 +854,9 @@ class Formula(object):
         # If the only term is an intercept,
         # the return value is a matrix of 1's.
         if list(self.terms) == [sympy.Number(1)]:
-            a = np.ones(preterm_recarray.shape[0], np.float)
+            a = np.ones(preterm_recarray.shape[0], np.float64)
             if not return_float:
-                a = a.view(np.dtype([('intercept', np.float)]))
+                a = a.view(np.dtype([('intercept', np.float64)]))
             return a
         elif not self._dtypes['term']:
             raise ValueError("none of the expresssions are self.terms "
@@ -882,7 +882,7 @@ class Formula(object):
         # The lambda created in self._setup_design needs to take a tuple of
         # columns as argument, not an ndarray, so each column
         # is extracted and put into float_tuple.
-        float_array = term_recarray.view(np.float)
+        float_array = term_recarray.view(np.float64)
         float_array.shape = (term_recarray.shape[0], -1)
         float_array = float_array.T
         float_tuple = tuple(float_array)
@@ -924,7 +924,7 @@ class Formula(object):
         if return_float or contrasts:
             # If the design matrix is just a column of 1s
             # return a 1-dimensional array.
-            D = np.squeeze(D.astype(np.float))
+            D = np.squeeze(D.astype(np.float64))
             # If there are contrasts, the pseudo-inverse of D
             # must be computed.
             if contrasts:
@@ -980,7 +980,7 @@ def natural_spline(t, knots=None, order=3, intercept=False):
     --------
     >>> x = Term('x')
     >>> n = natural_spline(x, knots=[1,3,4], order=3)
-    >>> xval = np.array([3,5,7.]).view(np.dtype([('x', np.float)]))
+    >>> xval = np.array([3,5,7.]).view(np.dtype([('x', np.float64)]))
     >>> n.design(xval, return_float=True)
     array([[   3.,    9.,   27.,    8.,    0.,   -0.],
            [   5.,   25.,  125.,   64.,    8.,    1.],
@@ -1120,7 +1120,7 @@ class Factor(Formula):
 
         Examples
         --------
-        >>> data = np.array([(3,'a'),(4,'a'),(5,'b'),(3,'b')], np.dtype([('x', np.float), ('y', 'S1')]))
+        >>> data = np.array([(3,'a'),(4,'a'),(5,'b'),(3,'b')], np.dtype([('x', np.float64), ('y', 'S1')]))
         >>> f1 = Factor.fromcol(data['y'], 'y')
         >>> f2 = Factor.fromcol(data['x'], 'x')
         >>> d = f1.design(data)

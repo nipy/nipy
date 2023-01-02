@@ -396,7 +396,7 @@ def test_concatenate2(n=10):
 def test_anti_symmeterize():
     n = 10
     eps = 1.e-7
-    M = (nr.rand(n, n) > 0.7).astype(np.float) 
+    M = (nr.rand(n, n) > 0.7).astype(np.float64) 
     C = M - M.T
     G = wgraph_from_adjacency(M)
     G.anti_symmeterize()
@@ -432,7 +432,7 @@ def test_graph_create_from_coo_matrix():
     """Test the creation of a graph from a sparse coo_matrix 
     """
     import scipy.sparse as spp
-    a = (np.random.randn(5, 5) > .8).astype(np.float)
+    a = (np.random.randn(5, 5) > .8).astype(np.float64)
     s = spp.coo_matrix(a)
     wg = wgraph_from_coo_matrix(s)
     b = wg.to_coo_matrix()
@@ -442,7 +442,7 @@ def test_graph_create_from_coo_matrix():
 def test_to_coo_matrix():
     """ Test the generation of a sparse matrix as output 
     """
-    a = (np.random.randn(5, 5)>.8).astype(np.float)
+    a = (np.random.randn(5, 5)>.8).astype(np.float64)
     wg = wgraph_from_adjacency(a)
     b = wg.to_coo_matrix().todense()
     assert_array_equal(a, b)

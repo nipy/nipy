@@ -54,7 +54,7 @@ class Paradigm(object):
             if len(onset) != self.n_events:
                 raise ValueError(
                     'inconsistent definition of ids and onsets')
-            self.onset = np.ravel(np.array(onset)).astype(np.float)
+            self.onset = np.ravel(np.array(onset)).astype(np.float64)
         if amplitude is not None:
             if len(amplitude) != self.n_events:
                 raise ValueError('inconsistent definition of amplitude')

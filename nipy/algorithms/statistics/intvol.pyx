@@ -544,7 +544,7 @@ def Lips3d(coords, mask):
         double l0, l1, l2, l3
         double res
 
-    coords = coords.astype(np.float)
+    coords = coords.astype(np.float64)
     mask = check_cast_bin8(mask)
 
     l0 = 0; l1 = 0; l2 = 0; l3 = 0
@@ -797,7 +797,7 @@ def Lips2d(coords, mask):
         double l0, l1, l2
         double res
 
-    coords = coords.astype(np.float)
+    coords = coords.astype(np.float64)
     mask = check_cast_bin8(mask)
 
     l0 = 0; l1 = 0; l2 = 0
@@ -1052,7 +1052,7 @@ def Lips1d(coords, mask):
         double l0, l1
         double res
 
-    coords_c = coords.astype(np.float)
+    coords_c = coords.astype(np.float64)
     mask_c = check_cast_bin8(mask)
 
     l0 = 0; l1 = 0

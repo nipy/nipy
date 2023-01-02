@@ -76,7 +76,7 @@ def test_dtypes():
                      CoordinateSystem('ijxy', name='product', coord_dtype=dt))
     # verify assignment fails
     assert_raises(AttributeError, setattr, cs, 'dtype', np.dtype(cs_dt))
-    assert_raises(AttributeError, setattr, cs, 'coord_dtype', np.float)
+    assert_raises(AttributeError, setattr, cs, 'coord_dtype', np.float64)
 
 
 def test_readonly_attrs():
@@ -147,13 +147,13 @@ def test_is_coordsys():
     assert_false(is_coordsys(c))
     c.name = ''
     assert_false(is_coordsys(c))
-    c.coord_dtype = np.float
+    c.coord_dtype = np.float64
     assert_true(is_coordsys(c))
     # Distinguish from CoordSysMaker
     class C(object):
         coord_names = []
         name = ''
-        coord_dtype=np.float
+        coord_dtype=np.float64
         def __call__(self):
             pass
     assert_false(is_coordsys(C()))
@@ -242,11 +242,11 @@ def test_coordsys_maker():
     cs_maker = CoordSysMaker(ax_names, 'myname')
     for i in range(1,nl+1):
         assert_equal(cs_maker(i),
-                     CoordinateSystem(ax_names[:i], 'myname', np.float))
+                     CoordinateSystem(ax_names[:i], 'myname', np.float64))
     assert_raises(CoordSysMakerError, cs_maker, nl+1)
     # You can pass in your own name
     assert_equal(cs_maker(i, 'anothername'),
-                 CoordinateSystem(ax_names[:i+1], 'anothername', np.float))
+                 CoordinateSystem(ax_names[:i+1], 'anothername', np.float64))
     # And your own dtype if you really want
     assert_equal(cs_maker(i, coord_dtype=np.int32),
                  CoordinateSystem(ax_names[:i+1], 'myname', np.int32))
@@ -263,13 +263,13 @@ def test_is_coordsys_maker():
     assert_false(is_coordsys_maker(c))
     c.name = ''
     assert_false(is_coordsys_maker(c))
-    c.coord_dtype = np.float
+    c.coord_dtype = np.float64
     assert_false(is_coordsys_maker(c))
     # Distinguish from CoordinateSystem
     class C(object):
         coord_names = []
         name = ''
-        coord_dtype=np.float
+        coord_dtype=np.float64
         def __call__(self):
             pass
     assert_true(is_coordsys_maker(C()))

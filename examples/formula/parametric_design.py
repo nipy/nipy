@@ -41,7 +41,7 @@ params = make_recarray([(4.5, 3.5)], ('l', '_b0'))
 X3 = f3.design(tval, params, return_float=True)
 
 # the columns or d/d_b0 and d/dl
-tt = tval.view(np.float)
+tt = tval.view(np.float64)
 v1 = np.sum([hrf.glovert(tt - s)*np.exp(-4.5*a) for s,a  in zip(t, dt)], 0)
 v2 = np.sum([-3.5*a*hrf.glovert(tt - s)*np.exp(-4.5*a) for s,a  in zip(t, dt)], 0)
 

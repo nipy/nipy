@@ -231,13 +231,13 @@ def run_model(subj, run):
         tempdict = {}
         for v in ['sd', 't', 'effect']:
             tempdict[v] = np.memmap(NamedTemporaryFile(prefix='%s%s.nii'
-                                    % (n,v)), dtype=np.float,
+                                    % (n,v)), dtype=np.float64,
                                     shape=volshape, mode='w+')
         output[n] = tempdict
 
     for n in fcons:
         output[n] = np.memmap(NamedTemporaryFile(prefix='%s%s.nii'
-                                    % (n,v)), dtype=np.float,
+                                    % (n,v)), dtype=np.float64,
                                     shape=volshape, mode='w+')
 
     # Loop over the unique values of ar1
