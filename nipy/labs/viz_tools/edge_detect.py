@@ -44,7 +44,7 @@ def _orientation_kernel(t):
     arr =  np.array([[sin(t),        sin(t+.5*pi),  sin(t+pi)    ],
                      [sin(t+1.5*pi), 0,             sin(t+1.5*pi)],
                      [sin(t+pi),     sin(t+.5*pi),  sin(t)       ]])
-    return np.round(.5*((1+arr))**2).astype(np.bool)
+    return np.round(.5*((1+arr))**2).astype(np.bool_)
 
 
 def _edge_detect(image, high_threshold=.75, low_threshold=.4):
@@ -95,7 +95,7 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
     grad_angle = (grad_angle + np.pi) / np.pi
     # Non-maximal suppression: an edge pixel is only good if its magnitude is
     # greater than its neighbors normal to the edge direction.
-    thinner = np.zeros(grad_mag.shape, dtype=np.bool)
+    thinner = np.zeros(grad_mag.shape, dtype=np.bool_)
     for angle in np.arange(0, 2, .25):
         thinner = thinner | (
                 (grad_mag > .85*ndimage.maximum_filter(grad_mag,

@@ -297,7 +297,7 @@ class HierarchicalROI(SubDomains):
         else:
             # get new parents
             new_parents = Forest(self.k, self.parents).subforest(
-                valid.astype(np.bool)).parents.astype(np.int)
+                valid.astype(np.bool_)).parents.astype(np.int)
         SubDomains.select_roi(self, id_list)
         self.parents = new_parents
         self.recompute_labels()
@@ -353,7 +353,7 @@ class HierarchicalROI(SubDomains):
 
             if p_pos != c_pos:
                 # this will be used in many places
-                mask_pos = np.ones(self.k, np.bool)
+                mask_pos = np.ones(self.k, np.bool_)
                 mask_pos[c_pos] = False
 
                 # set new parents
@@ -423,7 +423,7 @@ class HierarchicalROI(SubDomains):
                 # merge node if it has only one child
                 c_pos = p_children[0]
                 c_id = self.get_id()[c_pos]
-                mask_pos = np.ones(self.k, np.bool)
+                mask_pos = np.ones(self.k, np.bool_)
                 mask_pos[p_pos] = False
 
                 # set new parents

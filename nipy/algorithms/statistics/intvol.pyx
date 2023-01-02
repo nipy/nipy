@@ -395,7 +395,7 @@ def EC3d(mask):
     pmask[:-1, :-1, :-1] = check_cast_bin8(mask)
     fpmask = pmask.reshape(-1)
 
-    strides = np.array(strides_from(pmask_shape, np.bool), dtype=np.intp)
+    strides = np.array(strides_from(pmask_shape, np.bool_), dtype=np.intp)
 
     # First do the interior contributions.
     # We first figure out which vertices, edges, triangles, tetrahedra
@@ -567,8 +567,8 @@ def Lips3d(coords, mask):
     cdef:
         np.ndarray[np.intp_t, ndim=1] strides
         np.ndarray[np.intp_t, ndim=1] dstrides
-    strides = np.array(strides_from(pmask_shape, np.bool), dtype=np.intp)
-    dstrides = np.array(strides_from(mask.shape, np.bool), dtype=np.intp)
+    strides = np.array(strides_from(pmask_shape, np.bool_), dtype=np.intp)
+    dstrides = np.array(strides_from(mask.shape, np.bool_), dtype=np.intp)
     ss0, ss1, ss2 = strides[0], strides[1], strides[2]
     ss0d, ss1d, ss2d = dstrides[0], dstrides[1], dstrides[2]
     verts = []
@@ -821,8 +821,8 @@ def Lips2d(coords, mask):
     cdef:
         np.ndarray[np.intp_t, ndim=1] strides
         np.ndarray[np.intp_t, ndim=1] dstrides
-    strides = np.array(strides_from(pmask_shape, np.bool), dtype=np.intp)
-    dstrides = np.array(strides_from(mask.shape, np.bool), dtype=np.intp)
+    strides = np.array(strides_from(pmask_shape, np.bool_), dtype=np.intp)
+    dstrides = np.array(strides_from(mask.shape, np.bool_), dtype=np.intp)
     ss0, ss1 = strides[0], strides[1]
     ss0d, ss1d = dstrides[0], dstrides[1]
     verts = []
@@ -962,7 +962,7 @@ def EC2d(mask):
 
     fpmask = pmask.reshape(-1)
 
-    strides = np.array(strides_from(pmask_shape, np.bool), dtype=np.intp)
+    strides = np.array(strides_from(pmask_shape, np.bool_), dtype=np.intp)
     ss0, ss1 = strides[0], strides[1]
 
     # First do the interior contributions.

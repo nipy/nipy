@@ -187,7 +187,7 @@ def test_safe_dtype():
         sdt = safe_dtype(dt)
         assert_equal(sdt, dt)
     # test a few upcastings
-    dt = safe_dtype(np.float32, np.int16, np.bool)
+    dt = safe_dtype(np.float32, np.int16, np.bool_)
     assert_equal(dt, np.float32)
     dt = safe_dtype(np.float32, np.int64, np.uint32)
     assert_equal(dt, np.float64)

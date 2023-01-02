@@ -27,7 +27,7 @@ def strides_from(shape, dtype, order='C'):
     (48, 16, 4)
     >>> strides_from((3,2), np.float64)
     (16, 8)
-    >>> strides_from((5,4,3), np.bool, order='F')
+    >>> strides_from((5,4,3), np.bool_, order='F')
     (1, 5, 20)
     """
     dt = np.dtype(dtype)

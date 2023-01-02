@@ -34,7 +34,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     axis : int, optional
        The axis over which to perform PCA (axis identifying
        observations).  Default is 0 (first)
-    mask : ndarray-like (np.bool), optional
+    mask : ndarray-like (np.bool_), optional
        An optional mask, should have shape given by data axes, with
        `axis` removed, i.e.: ``s = data.shape; s.pop(axis);
        msk_shape=s``

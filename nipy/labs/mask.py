@@ -41,7 +41,7 @@ def largest_cc(mask):
     if not label_nb:
         raise ValueError('No non-zero values: no connected components')
     if label_nb == 1:
-        return mask.astype(np.bool)
+        return mask.astype(np.bool_)
     label_count = np.bincount(labels.ravel().astype(np.int))
     # discard 0 the 0 label
     label_count[0] = 0
@@ -330,7 +330,7 @@ def compute_mask_sessions(session_images, m=0.2, M=0.9, cc=1, threshold=0.5,
         # Select the largest connected component (each mask is
         # connect, but the half-interesection may not be):
         mask = largest_cc(mask)
-    mask = mask.astype(np.bool)
+    mask = mask.astype(np.bool_)
 
     if return_mean:
         # Divide by the number of sessions
@@ -442,7 +442,7 @@ def series_from_mask(filenames, mask, dtype=np.float32,
     assert len(filenames) != 0, (
         'filenames should be a file name or a list of file names, '
         '%s (type %s) was passed' % (filenames, type(filenames)))
-    mask = mask.astype(np.bool)
+    mask = mask.astype(np.bool_)
     if smooth:
         # Convert from a sigma to a FWHM:
         smooth /= np.sqrt(8 * np.log(2))

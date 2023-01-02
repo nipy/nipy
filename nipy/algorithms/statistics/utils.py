@@ -176,7 +176,7 @@ def cube_with_strides_center(center=[0,0,0],
        Default is [0, 0, 0]
     strides : (d,) sequence of int, optional
        Default is [4, 2, 1].  These are the strides given by
-       ``np.ones((2,2,2), np.bool).strides``
+       ``np.ones((2,2,2), np.bool_).strides``
        
     Returns
     -------
@@ -253,7 +253,7 @@ def decompose3d(shape, dim=4):
     # are uniquely associated with an interior voxel
 
     unique = {}
-    strides = np.empty(shape, np.bool).strides
+    strides = np.empty(shape, np.bool_).strides
     union = join_complexes(*[cube_with_strides_center((0,0,-1), strides),
                              cube_with_strides_center((0,-1,0), strides),
                              cube_with_strides_center((0,-1,-1), strides),
@@ -337,7 +337,7 @@ def decompose2d(shape, dim=3):
     # are uniquely associated with an interior pixel
 
     unique = {}
-    strides = np.empty(shape, np.bool).strides
+    strides = np.empty(shape, np.bool_).strides
     union = join_complexes(*[cube_with_strides_center((0,-1), strides),
                              cube_with_strides_center((-1,0), strides),
                              cube_with_strides_center((-1,-1), strides)])

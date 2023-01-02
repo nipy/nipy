@@ -92,7 +92,7 @@ def test_series_from_mask():
     # A delta in 3D
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
-    mask = np.ones((40, 40, 40), dtype=np.bool)
+    mask = np.ones((40, 40, 40), dtype=np.bool_)
     with InTemporaryDirectory():
         for affine in (np.eye(4), np.diag((1, 1, -1, 1)),
                         np.diag((.5, 1, .5, 1))):

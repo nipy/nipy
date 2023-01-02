@@ -63,7 +63,7 @@ CONTRASTS = ('speaker_0', 'speaker_1',
 # XXX: this mask was copied by hand from one of the subjects
 # we should have a function to create this mask from the ds105 data
 GROUP_MASK = futil.load_image_ds105('group', 'mask.nii.gz')
-TINY_MASK = np.zeros(GROUP_MASK.shape, np.bool)
+TINY_MASK = np.zeros(GROUP_MASK.shape, np.bool_)
 TINY_MASK[30:32,40:42,30:32] = 1
 
 #-----------------------------------------------------------------------------
@@ -427,7 +427,7 @@ def group_analysis_signs(design, contrast, mask, signs=None):
         maska = mask.get_data()
     else:
         maska = np.asarray(mask)
-    maska = maska.astype(np.bool)
+    maska = maska.astype(np.bool_)
 
     # Which subjects have this (contrast, design) pair?
     subj_con_dirs = futil.subj_des_con_dirs(design, contrast)

@@ -519,7 +519,7 @@ class FMRILinearModel(object):
         """
         from nibabel import Nifti1Image
         # get the mask as an array
-        mask = self.mask.get_data().astype(np.bool)
+        mask = self.mask.get_data().astype(np.bool_)
 
         self.glms, self.means = [], []
         for fmri, design_matrix in zip(self.fmri_data, self.design_matrices):
@@ -588,7 +588,7 @@ class FMRILinearModel(object):
             contrast_.z_score()
 
         # Prepare the returned images
-        mask = self.mask.get_data().astype(np.bool)
+        mask = self.mask.get_data().astype(np.bool_)
         do_outputs = [output_z, output_stat, output_effects, output_variance]
         estimates = ['z_score_', 'stat_', 'effect', 'variance']
         descrips = ['z statistic', 'Statistical value', 'Estimated effect',
