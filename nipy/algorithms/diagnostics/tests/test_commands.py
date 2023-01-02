@@ -10,6 +10,7 @@ import numpy as np
 
 import nibabel as nib
 from nibabel import AnalyzeImage, Spm2AnalyzeImage, Nifti1Pair, Nifti1Image
+from nipy.io.nibcompat import get_header
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nipy import load_image
@@ -67,7 +68,7 @@ def test_parse_fname_axes():
             # default if input slice_axis is None
             if hasattr(hdr, 'set_dim_info'):
                 for ax_no in range(3):
-                    nibabel_img.get_header().set_dim_info(slice=ax_no)
+                    get_header(nibabel_img).set_dim_info(slice=ax_no)
                     nib.save(nibabel_img, fname)
                     img, time_axis, slice_axis = parse_fname_axes(fname,
                                                                   None,
