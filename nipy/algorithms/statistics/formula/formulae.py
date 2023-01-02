@@ -569,9 +569,10 @@ class Formula(object):
         for d in drop:
             del(f[d])
         if keep:
-            return np.sum([t for n, t in f.items() if n in keep])
+            elements = [t for n, t in f.items() if n in keep]
         else:
-            return np.sum(list(f.values()))
+            elements = f.values()
+        return sum(elements, start=Formula([]))
 
     def subs(self, old, new):
         """ Perform a sympy substitution on all terms in the Formula
