@@ -510,7 +510,7 @@ def test_factor_term():
         ndt = np.dtype(nt)
         for lt in 'S3', 'U3', 'O':
             ldt = np.dtype(lt)
-            name = np.asscalar(np.array('foo', ndt))
-            level = np.asscalar(np.array('bar', ldt))
+            name = np.array('foo', ndt).item()
+            level = np.array('bar', ldt).item()
             ft = F.FactorTerm(name, level)
             assert_equal(str(ft), 'foo_bar')
