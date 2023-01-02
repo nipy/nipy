@@ -74,7 +74,7 @@ class MatrixGroup(Linear):
 
 class GLC(MatrixGroup):
 
-    dtype = np.complex
+    dtype = np.complex_
 
     def validate(self, M=None):
         """
