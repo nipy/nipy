@@ -1,4 +1,4 @@
 # Requirements for running tests
 -r requirements.txt
-nose
+nose3
 mock

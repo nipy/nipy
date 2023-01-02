@@ -120,7 +120,7 @@ def main():
           # version set by config.get_version() above
           configuration = configuration,
           cmdclass = cmdclass,
-          tests_require=['nose>=1.0'],
+          tests_require=['nose3'],
           test_suite='nose.collector',
           zip_safe=False,
           entry_points={
