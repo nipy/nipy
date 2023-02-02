@@ -205,8 +205,10 @@ def test_example():
     # Test example runs correctly
     eg_img = pjoin(dirname(__file__), 'some_blobs.nii')
     nim = load(eg_img)
-    mask_image = Nifti1Image((nim.get_data() ** 2 > 0).astype('u8'),
-                             get_affine(nim))
+    arr = nim.get_data() ** 2 > 0
+    mask_image = Nifti1Image(arr.astype('u8'),
+                             get_affine(nim),
+                             dtype=arr.astype('u8').dtype)
     domain = grid_domain_from_image(mask_image)
     data = nim.get_data()
     values = data[data != 0]

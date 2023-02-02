@@ -3,7 +3,7 @@
 from __future__ import with_statement
 from __future__ import absolute_import
 
-from nibabel.py3k import asstr, asbytes
+from numpy.compat.py3k import asstr, asbytes
 
 from ..compat3 import to_str, open4csv
 

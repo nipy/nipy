@@ -130,7 +130,7 @@ def test_image_domain():
     toto = np.ones(shape[:3])
     affine = np.random.randn(4, 4)
     affine[3:, 0:3] = 0
-    nim = Nifti1Image(toto, affine)
+    nim = Nifti1Image(toto, affine, dtype=toto.dtype)
     ddom = domain_from_image(nim)
     ref = np.sum(toto) * np.absolute(np.linalg.det(affine))
     assert_almost_equal(np.sum(ddom.local_volume), ref)
@@ -142,8 +142,8 @@ def test_image_feature():
     mask = np.random.randn(*shape[:3]) > .5
     noise = np.random.randn(*shape[:3])
     affine = np.eye(4)
-    mim = Nifti1Image(mask.astype('u8'), affine)
-    nim = Nifti1Image(noise, affine)
+    mim = Nifti1Image(mask.astype('u8'), affine, dtype=mask.astype('u8').dtype)
+    nim = Nifti1Image(noise, affine, dtype=noise.dtype)
     ddom = grid_domain_from_image(mim)
     ddom.make_feature_from_image(nim, 'noise')
     assert_almost_equal(ddom.features['noise'], noise[mask])
@@ -163,7 +163,7 @@ def test_image_grid_domain():
     toto = np.ones(shape[:3])
     affine = np.random.randn(4, 4)
     affine[3:, 0:3] = 0
-    nim = Nifti1Image(toto, affine)
+    nim = Nifti1Image(toto, affine, dtype=toto.dtype)
     ddom = grid_domain_from_image(nim)
     ref = np.sum(toto) * np.absolute(np.linalg.det(affine[:3, 0:3]))
     assert_almost_equal(np.sum(ddom.local_volume), ref)

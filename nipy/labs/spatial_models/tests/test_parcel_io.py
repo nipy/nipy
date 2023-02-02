@@ -17,7 +17,9 @@ def test_mask_parcel():
     """
     n_parcels = 20
     shape = (10, 10, 10)
-    mask_image = Nifti1Image(np.ones(shape), np.eye(4))
+    mask_image = Nifti1Image(np.ones(shape),
+                             np.eye(4),
+                             dtype=np.ones(shape).dtype)
     wim = mask_parcellation(mask_image, n_parcels)
     assert_equal(np.unique(wim.get_data()), np.arange(n_parcels))
 
@@ -33,8 +35,10 @@ def test_mask_parcel_multi_subj():
     with InTemporaryDirectory():
         for subject in range(n_subjects):
             path = 'mask%s.nii' % subject
-            save(Nifti1Image((rng.rand(*shape) > .1).astype('u8'),
-                             np.eye(4)), path)
+            arr = rng.rand(*shape) > .1
+            save(Nifti1Image(arr.astype('u8'), np.eye(4),
+                             dtype=arr.astype('u8').dtype),
+                 path)
             mask_images.append(path)
 
         wim = mask_parcellation(mask_images, n_parcels)
@@ -47,7 +51,8 @@ def test_parcel_intra_from_3d_image():
     # Generate an image
     shape = (10, 10, 10)
     n_parcel, nn, mu = 10, 6, 1.
-    mask_image = Nifti1Image(np.ones(shape), np.eye(4))
+    mask_image = Nifti1Image(np.ones(shape), np.eye(4),
+                             dtype=np.ones(shape).dtype)
     with InTemporaryDirectory() as dir_context:
         surrogate_3d_dataset(mask=mask_image, out_image_file='image.nii')
 
@@ -67,7 +72,8 @@ def test_parcel_intra_from_3d_images_list():
     shape = (10, 10, 10)
     n_parcel, nn, mu = 10, 6, 1.
     method = 'ward'
-    mask_image = Nifti1Image(np.ones(shape), np.eye(4))
+    mask_image = Nifti1Image(np.ones(shape), np.eye(4),
+                             dtype=np.ones(shape).dtype)
 
     with InTemporaryDirectory() as dir_context:
         data_image = ['image_%d.nii' % i for i in range(5)]
@@ -88,7 +94,8 @@ def test_parcel_intra_from_4d_image():
     shape = (10, 10, 10)
     n_parcel, nn, mu = 10, 6, 1.
     method = 'ward'
-    mask_image = Nifti1Image(np.ones(shape), np.eye(4))
+    mask_image = Nifti1Image(np.ones(shape), np.eye(4),
+                             dtype=np.ones(shape).dtype)
     with InTemporaryDirectory() as dir_context:
         surrogate_3d_dataset(n_subj=10, mask=mask_image, 
                              out_image_file='image.nii')    

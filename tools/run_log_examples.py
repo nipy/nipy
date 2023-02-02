@@ -25,7 +25,7 @@ from os.path import (abspath, expanduser, join as pjoin, sep as psep, isfile,
 from subprocess import Popen, PIPE
 import re
 
-from nibabel.py3k import asstr
+from numpy.compat.py3k import asstr
 
 from nipy.externals.argparse import (ArgumentParser,
                                      RawDescriptionHelpFormatter)

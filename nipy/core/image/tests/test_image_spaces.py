@@ -34,7 +34,7 @@ def test_image_xyz_affine():
     img4_r = img4.reordered_axes([3,2,0,1])
     assert_false(is_xyz_affable(img4_r))
     assert_raises(AxesError, xyz_affine, img4_r)
-    nimg = nib.Nifti1Image(arr, aff)
+    nimg = nib.Nifti1Image(arr, aff, dtype=arr.dtype)
     assert_true(is_xyz_affable(nimg))
     assert_array_equal(xyz_affine(nimg), aff)
     # Any dimensions not spatial, AxesError
@@ -77,7 +77,7 @@ def test_image_as_xyz_image():
     assert_array_equal(img.get_data(), img_t0_r.get_data())
     assert_equal(img.coordmap, img_t0_r.coordmap)
     # Test against nibabel image
-    nimg = nib.Nifti1Image(arr, np.diag([2,3,4,1]))
+    nimg = nib.Nifti1Image(arr, np.diag([2,3,4,1]), dtype=arr.dtype)
     nimg_r = as_xyz_image(nimg)
     assert_true(nimg is nimg_r)
     # It's sometimes impossible to make an xyz affable image
