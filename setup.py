@@ -46,6 +46,7 @@ def configuration(parent_package='',top_path=None):
 # Hard and soft dependency checking
 DEPS = (
     ('numpy', INFO_VARS['NUMPY_MIN_VERSION'], 'setup_requires'),
+    ('numpy', INFO_VARS['NUMPY_MIN_VERSION'], 'install_requires'),
     ('scipy', INFO_VARS['SCIPY_MIN_VERSION'], 'install_requires'),
     ('nibabel', INFO_VARS['NIBABEL_MIN_VERSION'], 'install_requires'),
     ('sympy', INFO_VARS['SYMPY_MIN_VERSION'], 'install_requires'),
