@@ -11,8 +11,7 @@ guessed from the output image filename. You can set the filename with the
 import os
 from os.path import join as pjoin
 
-from nipy.externals.argparse import (ArgumentParser,
-                                     RawDescriptionHelpFormatter)
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 import nibabel as nib
 

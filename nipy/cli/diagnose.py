@@ -28,8 +28,7 @@ generate filenames of the form ``/some/path/components_fname.png,
 /some/path/max_fname.img`` etc.
 '''
 
-from nipy.externals.argparse import (ArgumentParser,
-                                     RawDescriptionHelpFormatter)
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import nipy.algorithms.diagnostics.commands as nadc
 
 

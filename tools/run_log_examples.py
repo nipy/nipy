@@ -27,8 +27,7 @@ import re
 
 from nibabel.py3k import asstr
 
-from nipy.externals.argparse import (ArgumentParser,
-                                     RawDescriptionHelpFormatter)
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 
 PYTHON=sys.executable

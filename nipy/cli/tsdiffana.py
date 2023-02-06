@@ -53,8 +53,7 @@ filename for volume images.  For example, specifying only the input filename
 ``/some/path/tsdiff_fname.png, /some/path/dv2_max_fname.img`` etc.
 '''
 
-from nipy.externals.argparse import (ArgumentParser,
-                                     RawDescriptionHelpFormatter)
+from argparse ArgumentParser, RawDescriptionHelpFormatter
 
 
 def main():

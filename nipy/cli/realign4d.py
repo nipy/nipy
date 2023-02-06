@@ -11,7 +11,7 @@ Imaging 30(8): 1546-1554
 
 import os.path as op
 import nipy.algorithms.registration as reg
-import nipy.externals.argparse as argparse
+import argparse
 
 parser = argparse.ArgumentParser()
 
