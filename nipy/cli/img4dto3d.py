@@ -9,8 +9,7 @@ from os.path import splitext, join as pjoin, split as psplit
 
 import nibabel as nib
 
-from nipy.externals.argparse import (ArgumentParser,
-                                     RawDescriptionHelpFormatter)
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 
 def main():

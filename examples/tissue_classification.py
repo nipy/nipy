@@ -10,7 +10,7 @@ import numpy as np
 from nipy import load_image, save_image
 from nipy.core.image.image_spaces import (make_xyz_image,
                                           xyz_affine)
-from nipy.externals.argparse import ArgumentParser
+from argparse import ArgumentParser
 from nipy.algorithms.segmentation import BrainT1Segmentation
 
 

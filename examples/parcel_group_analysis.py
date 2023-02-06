@@ -30,7 +30,7 @@ from os.path import join
 from glob import glob
 from nipy import load_image
 from nipy.algorithms.group import parcel_analysis
-from nipy.externals.argparse import ArgumentParser
+from argparse import ArgumentParser
 
 # Parse command line
 description = 'Run a parcel-based second-level analysis from a set of\
