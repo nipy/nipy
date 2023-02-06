@@ -53,7 +53,7 @@ filename for volume images.  For example, specifying only the input filename
 ``/some/path/tsdiff_fname.png, /some/path/dv2_max_fname.img`` etc.
 '''
 
-from argparse ArgumentParser, RawDescriptionHelpFormatter
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 
 def main():
