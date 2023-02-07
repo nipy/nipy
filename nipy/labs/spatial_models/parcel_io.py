@@ -12,6 +12,8 @@ import numpy as np
 import os.path
 from warnings import warn
 
+from six import string_types
+
 from nibabel import load, save, Nifti1Image
 
 from nipy.io.nibcompat import get_header, get_affine
@@ -19,8 +21,6 @@ from nipy.algorithms.clustering.utils import kmeans
 from .discrete_domain import grid_domain_from_image
 from .mroi import SubDomains
 from ..mask import intersect_masks
-
-from nipy.externals.six import string_types
 
 warn('Module nipy.labs.spatial_models.parcel_io' + 
      'deprecated, will be removed',

@@ -7,6 +7,8 @@ and other type of neuroimaging data.
 from __future__ import absolute_import
 import os
 
+from six import string_types
+
 import numpy as np
 
 import nibabel as nib
@@ -14,8 +16,6 @@ from nibabel.spatialimages import SpatialImage
 
 from nipy.io.nibcompat import get_header, get_affine
 from .volumes.volume_img import VolumeImg
-
-from nipy.externals.six import string_types
 
 def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
     """ Convert the input to a VolumeImg.

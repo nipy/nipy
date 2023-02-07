@@ -8,6 +8,8 @@ dependency on nose.
 from __future__ import print_function
 from __future__ import absolute_import
 
+from six import string_types
+
 try:
     from numpy.testing.decorators import *
 except ImportError:
@@ -16,8 +18,6 @@ except ImportError:
 from nipy.utils import templates, example_data, DataError
 
 from nibabel.optpkg import optional_package
-
-from nipy.externals.six import string_types
 
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
 needs_mpl = skipif(not HAVE_MPL, "Test needs matplotlib")

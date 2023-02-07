@@ -7,12 +7,12 @@ General linear models
 """
 from __future__ import absolute_import
 
+from six import Iterator
+
 import numpy as np
 
 from . import family
 from .regression import WLSModel
-
-from nipy.externals.six import Iterator
 
 
 class Model(WLSModel, Iterator):

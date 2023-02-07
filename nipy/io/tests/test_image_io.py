@@ -3,6 +3,8 @@ from __future__ import absolute_import
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from os.path import dirname, join as pjoin
 
+import six
+
 import numpy as np
 
 import nibabel as nib
@@ -20,7 +22,6 @@ from nibabel.tmpdirs import InTemporaryDirectory
 
 from nipy.testing.decorators import if_templates
 from nipy.utils import templates, DataError
-from nipy.externals import six
 from nibabel.tests.test_round_trip import big_bad_ulp
 
 gimg = None

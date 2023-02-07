@@ -2,11 +2,11 @@
 """
 from __future__ import absolute_import
 
+from six import binary_type, text_type
+
 import numpy as np
 
 from ..arrays import strides_from
-
-from nipy.externals.six import binary_type, text_type
 
 from numpy.testing import (assert_array_almost_equal,
                            assert_array_equal)

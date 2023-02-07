@@ -8,7 +8,7 @@ from __future__ import print_function, absolute_import, absolute_import
 import os
 import sys
 
-from nipy.externals.six import string_types
+from six import string_types
 
 def get_package_name(filepath):
     """
