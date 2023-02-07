@@ -18,7 +18,7 @@ from .. import formulae as F
 from ..formulae import terms, Term
 from nipy.utils import VisibleDeprecationWarning
 
-from nibabel.py3k import asbytes
+from numpy.compat.py3k import asbytes
 from nibabel.testing import assert_dt_equal
 
 from nose.tools import (assert_true, assert_equal, assert_false,

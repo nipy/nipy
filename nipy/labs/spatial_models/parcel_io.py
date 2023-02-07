@@ -53,7 +53,7 @@ def mask_parcellation(mask_images, nb_parcel, threshold=0, output_image=None):
     else:
         # mask_images should be a list
         mask_data = intersect_masks(mask_images, threshold=0) > 0
-        mask = Nifti1Image(mask_data.astype('u8'),
+        mask = Nifti1Image(mask_data.astype('u1'),
                            get_affine(load(mask_images[0])))
 
     domain = grid_domain_from_image(mask)
@@ -99,7 +99,7 @@ def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
     else:
         # mask_images should be a list
         grp_mask = intersect_masks(mask_images, threshold=ths) > 0
-        mask = Nifti1Image(grp_mask.astype('u8'),
+        mask = Nifti1Image(grp_mask.astype('u1'),
                            get_affine(load(mask_images[0])))
 
     # build the domain

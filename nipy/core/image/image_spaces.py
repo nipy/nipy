@@ -60,7 +60,7 @@ array([[ 2.,  0.,  0.,  0.],
 It also works with nibabel images, which can only have xyz_affines:
 
 >>> import nibabel as nib
->>> nimg = nib.Nifti1Image(data, affine)
+>>> nimg = nib.Nifti1Image(data.astype('float'), affine)
 >>> xyz_affine(nimg)
 array([[ 2.,  0.,  0.,  0.],
        [ 0.,  3.,  0.,  0.],
@@ -195,7 +195,7 @@ def is_xyz_affable(img, name2xyz=None):
     Nibabel images always have xyz affines
 
     >>> import nibabel as nib
-    >>> nimg = nib.Nifti1Image(arr, np.diag([2,3,4,1]))
+    >>> nimg = nib.Nifti1Image(arr.astype('float'), np.diag([2,3,4,1]))
     >>> is_xyz_affable(nimg)
     True
     """
