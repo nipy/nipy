@@ -3,12 +3,12 @@
 ''' plot tsdiffana parameters '''
 from __future__ import absolute_import
 
+from six import string_types
+
 import numpy as np
 
 import nipy
 from .timediff import time_slice_diffs
-
-from nipy.externals.six import string_types
 
 def plot_tsdiffs(results, axes=None):
     ''' Plotting routine for time series difference metrics

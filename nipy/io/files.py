@@ -14,6 +14,8 @@ from __future__ import absolute_import
 
 import os
 
+from six import string_types
+
 import numpy as np
 
 import nibabel as nib
@@ -23,8 +25,6 @@ from ..core.image.image import is_image
 
 from .nifti_ref import (nipy2nifti, nifti2nipy)
 from .nibcompat import get_dataobj, get_affine, get_header
-
-from ..externals.six import string_types
 
 def load(filename):
     """Load an image from the given filename.

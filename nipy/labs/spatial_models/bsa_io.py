@@ -6,6 +6,8 @@ It handles the images provided as input and produces result images.
 """
 from __future__ import absolute_import
 
+from six import string_types
+
 import numpy as np
 import os.path as op
 from nibabel import load, save, Nifti1Image
@@ -14,8 +16,6 @@ from ..mask import intersect_masks
 from .bayesian_structural_analysis import compute_landmarks
 from .discrete_domain import domain_from_image
 from ...io.nibcompat import get_header, get_affine
-
-from ...externals.six import string_types
 
 def make_bsa_image(
     mask_images, stat_images, threshold=3., smin=0, sigma=5.,

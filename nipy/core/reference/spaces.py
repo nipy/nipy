@@ -2,6 +2,8 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+from six import string_types
+
 import numpy as np
 
 from nibabel.affines import from_matvec
@@ -10,8 +12,6 @@ from ...fixes.nibabel import io_orientation
 
 from .coordinate_system import CoordSysMaker, is_coordsys, is_coordsys_maker
 from .coordinate_map import CoordMapMaker
-
-from ...externals.six import string_types
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa

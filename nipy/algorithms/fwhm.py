@@ -19,14 +19,14 @@ from __future__ import absolute_import
 
 __docformat__ = 'restructuredtext'
 
+from six import Iterator
+
 import numpy as np
 from numpy.linalg import det
 
 from nipy.core.api import Image
 
 from .utils.matrices import pos_recipr
-
-from ..externals.six import Iterator
 
 class Resels(Iterator):
     """The Resels class.

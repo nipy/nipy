@@ -3,6 +3,8 @@ from __future__ import absolute_import
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from io import StringIO
 
+import six
+
 import numpy as np
 
 import scipy.stats
@@ -10,8 +12,6 @@ import scipy.stats
 from ...formula.formulae import Factor, make_recarray
 from ....utils.matrices import matrix_rank
 from ..regression import OLSModel
-
-from nipy.externals import six
 
 from nipy.testing import (assert_equal, assert_almost_equal)
 

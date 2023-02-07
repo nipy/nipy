@@ -141,6 +141,7 @@ the nipy distribution.
 .. _matplotlib: http://matplotlib.org
 .. _nose: http://nose.readthedocs.org/en/latest
 .. _mock: https://pypi.python.org/pypi/mock
+.. _six: https://six.readthedocs.io
 .. _installation instructions: http://nipy.org/nipy/users/installation.html
 """
 
@@ -154,6 +155,7 @@ NIBABEL_MIN_VERSION = '2.0'
 SYMPY_MIN_VERSION = '1.0'
 MAYAVI_MIN_VERSION = '3.0'
 CYTHON_MIN_VERSION = '0.12.1'
+SIX_MIN_VERSION = '1.9'
 
 NAME                = 'nipy'
 MAINTAINER          = "nipy developers"
@@ -172,7 +174,7 @@ MINOR               = _version_minor
 MICRO               = _version_micro
 ISRELEASE           = _version_extra == ''
 VERSION             = __version__
-REQUIRES            = ["numpy", "scipy", "sympy(<1.6)", "nibabel"]
+REQUIRES            = ["numpy", "scipy", "sympy(<1.6)", "nibabel", "six"]
 STATUS              = 'beta'
 
 # Versions and locations of optional data packages

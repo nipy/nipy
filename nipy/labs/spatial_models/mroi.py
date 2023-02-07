@@ -3,6 +3,8 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+from six import string_types
+
 import numpy as np
 
 from nibabel import load, Nifti1Image
@@ -10,8 +12,6 @@ from nibabel import load, Nifti1Image
 from nipy.io.nibcompat import get_header, get_affine
 
 from . import discrete_domain as ddom
-
-from nipy.externals.six import string_types
 
 ##############################################################################
 # class SubDomains

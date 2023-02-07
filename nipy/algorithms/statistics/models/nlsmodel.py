@@ -6,12 +6,12 @@ Non-linear least squares model
 from __future__ import absolute_import
 __docformat__ = 'restructuredtext'
 
+from six import Iterator
+
 import numpy as np
 import numpy.linalg as npl
 
 from .model import Model
-
-from nipy.externals.six import Iterator
 
 
 class NLSModel(Model, Iterator):

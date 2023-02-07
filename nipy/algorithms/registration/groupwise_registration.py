@@ -17,9 +17,9 @@ from __future__ import print_function
 import os
 import warnings
 
-import numpy as np
+from six import string_types
 
-from ...externals.six import string_types
+import numpy as np
 
 from nibabel.affines import apply_affine
 

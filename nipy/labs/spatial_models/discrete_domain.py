@@ -7,6 +7,9 @@ This is meant to provide a unified API to deal with n-d imaged and meshes.
 Author: Bertrand Thirion, 2010
 """
 from __future__ import absolute_import
+
+from six import string_types
+
 import numpy as np
 import scipy.sparse as sp
 
@@ -15,8 +18,6 @@ from nibabel import load, Nifti1Image, save
 from nipy.io.nibcompat import get_header, get_affine
 from nipy.algorithms.graph import (WeightedGraph, wgraph_from_coo_matrix,
                                    wgraph_from_3d_grid)
-
-from nipy.externals.six import string_types
 
 ##############################################################
 # Ancillary functions

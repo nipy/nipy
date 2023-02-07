@@ -36,6 +36,8 @@ import numpy as np
 
 from warnings import warn
 
+from six import string_types
+
 import scipy.stats as sps
 
 from nibabel import load, Nifti1Image
@@ -44,8 +46,6 @@ from nipy.io.nibcompat import get_header, get_affine
 from nipy.labs.mask import compute_mask_sessions
 from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
 from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
-
-from nipy.externals.six import string_types
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10

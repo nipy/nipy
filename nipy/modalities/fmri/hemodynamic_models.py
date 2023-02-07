@@ -9,11 +9,11 @@ from __future__ import absolute_import
 
 import warnings
 
+from six.moves import map
+
 import numpy as np
 
 from scipy.stats import gamma
-
-from nipy.externals.six.moves import map
 
 
 def _gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,

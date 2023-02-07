@@ -3,12 +3,12 @@ from __future__ import absolute_import
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import warnings
 
+from six import Iterator
+
 import numpy as np
 
 from .image import Image, iter_axis, is_image
 from ..reference.coordinate_map import (drop_io_dim, io_axis_indices, AxisError)
-
-from ...externals.six import Iterator
 
 
 class ImageList(Iterator):
