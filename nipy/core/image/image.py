@@ -19,7 +19,7 @@ from itertools import chain
 
 import numpy as np
 
-from nibabel.onetime import setattr_on_read
+from nibabel.onetime import auto_attr
 
 # These imports are used in the fromarray and subsample functions only, not in
 # Image
@@ -80,27 +80,27 @@ class Image(object):
                                np.diag([3,5,7,1]))
     _doc['coordmap'] = "Affine transform mapping from axes coordinates to reference coordinates."
 
-    @setattr_on_read
+    @auto_attr
     def shape(self):
         return self._data.shape
     _doc['shape'] = "Shape of data array."
 
-    @setattr_on_read
+    @auto_attr
     def ndim(self):
         return len(self._data.shape)
     _doc['ndim'] = "Number of data dimensions."
 
-    @setattr_on_read
+    @auto_attr
     def reference(self):
         return self.coordmap.function_range
     _doc['reference'] = "Reference coordinate system."
 
-    @setattr_on_read
+    @auto_attr
     def axes(self):
         return self.coordmap.function_domain
     _doc['axes'] = "Axes of image."
 
-    @setattr_on_read
+    @auto_attr
     def affine(self):
         if hasattr(self.coordmap, "affine"):
             return self.coordmap.affine

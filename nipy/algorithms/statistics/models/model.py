@@ -6,7 +6,7 @@ from numpy.linalg import inv
 
 from scipy.stats import t as t_distribution
 
-from nibabel.onetime import setattr_on_read
+from nibabel.onetime import auto_attr
 
 from ...utils.matrices import pos_recipr
 
@@ -121,14 +121,14 @@ class LikelihoodModelResults(object):
         # put this as a parameter of LikelihoodModel
         self.df_resid = self.df_total - self.df_model
 
-    @setattr_on_read
+    @auto_attr
     def logL(self):
         """
         The maximized log-likelihood
         """
         return self.model.logL(self.theta, self.Y, nuisance=self.nuisance)
 
-    @setattr_on_read
+    @auto_attr
     def AIC(self):
         """
         Akaike Information Criterion
@@ -136,7 +136,7 @@ class LikelihoodModelResults(object):
         p = self.theta.shape[0]
         return -2 * self.logL + 2 * p
 
-    @setattr_on_read
+    @auto_attr
     def BIC(self):
         """
         Schwarz's Bayesian Information Criterion
