@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
+import sys
 import os
 from os.path import join as pjoin, exists
 from glob import glob
 from distutils import log
 
-# BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
-# update it when the contents of directories change.
-if exists('MANIFEST'): os.remove('MANIFEST')
-
 # Always use setuptools
 import setuptools
+
+sys.path.append('.')
 
 from setup_helpers import (generate_a_pyrex_source, get_comrec_build,
                            cmdclass, INFO_VARS)
