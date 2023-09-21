@@ -18,9 +18,9 @@ def test_conversion():
 
     brifti_obj = nib.load(data_file)
     vol_img = as_volume_img(data_file)
-    yield nose.tools.assert_equals, as_volume_img(vol_img), \
+    yield nose.tools.assert_equal, as_volume_img(vol_img), \
                     vol_img
-    yield nose.tools.assert_equals, as_volume_img(brifti_obj), \
+    yield nose.tools.assert_equal, as_volume_img(brifti_obj), \
                     vol_img
 
 
@@ -42,7 +42,7 @@ try:
     import nifti
     def test_from_nifti():
         nim = nifti.NiftiImage(data_file)
-        yield nose.tools.assert_equals, as_volume_img(data_file), \
+        yield nose.tools.assert_equal, as_volume_img(data_file), \
                     as_volume_img(nim)
 
 except ImportError:
