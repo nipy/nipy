@@ -17,7 +17,7 @@ Automated testing
 We run the tests on every commit with travis-ci_ |--| see `nipy on travis`_.
 
 We also have a farm of machines set up to run the tests on every commit to the
-``master`` branch at `nipy buildbot`_.
+``main`` branch at `nipy buildbot`_.
 
 Writing tests
 -------------
