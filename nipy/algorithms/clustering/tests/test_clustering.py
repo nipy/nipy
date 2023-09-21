@@ -17,7 +17,7 @@ class TestClustering(TestCase):
         X = X + 3 * A;
         L = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
         C, L, J = kmeans(X, 2, L)
-        self.assert_(np.mean(L[:7]) < 0.5)
+        self.assertLess(np.mean(L[:7]), 0.5)
 
     def testkmeans2(self):
         X = nr.randn(10000, 2)
@@ -26,7 +26,7 @@ class TestClustering(TestCase):
         L = np.concatenate([np.ones(5000), np.zeros(5000)]).astype(np.int_)
         C, L, J = kmeans(X, 2, L)
         l = L[:7000].astype(np.float64)
-        self.assert_(np.mean(l) > 0.9)
+        self.assertGreater(np.mean(l), 0.9)
 
 
 if __name__ == '__main__':
