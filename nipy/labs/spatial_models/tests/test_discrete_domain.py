@@ -227,7 +227,8 @@ def test_domain_from_mesh():
                             [0, 1, 3],
                             [0, 2, 3],
                             [1, 2, 3]])
-    darrays = [nbg.GiftiDataArray(coords)] + [nbg.GiftiDataArray(triangles)]
+    darrays = [nbg.GiftiDataArray(coords, datatype='NIFTI_TYPE_FLOAT32'),
+               nbg.GiftiDataArray(triangles, datatype='NIFTI_TYPE_INT32')]
     toy_image = nbg.GiftiImage(darrays=darrays)
     domain = domain_from_mesh(toy_image)
     # if we get there, we could build the domain, and that's what we wanted.
