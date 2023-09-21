@@ -18,7 +18,6 @@ from .. import formulae as F
 from ..formulae import terms, Term
 from nipy.utils import VisibleDeprecationWarning
 
-from numpy.compat.py3k import asbytes
 from nibabel.testing import assert_dt_equal
 
 from nose.tools import (assert_true, assert_equal, assert_false,
@@ -364,7 +363,7 @@ def test_formula_inputs():
         f = F.Factor('myname', levels)
         assert_equal(f.levels, level_names)
     # Sending in byte objects
-    levels = [asbytes(L) for L in level_names]
+    levels = [L.encode() for L in level_names]
     f = F.Factor('myname', levels)
     assert_equal(f.levels, level_names)
 

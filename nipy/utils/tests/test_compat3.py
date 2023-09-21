@@ -3,8 +3,6 @@
 from __future__ import with_statement
 from __future__ import absolute_import
 
-from numpy.compat.py3k import asstr, asbytes
-
 from ..compat3 import to_str, open4csv
 
 from nose.tools import (assert_true, assert_false, assert_raises,
@@ -17,8 +15,8 @@ def test_to_str():
     # Test routine to convert to string
     assert_equal('1', to_str(1))
     assert_equal('1.0', to_str(1.0))
-    assert_equal('from', to_str(asstr('from')))
-    assert_equal('from', to_str(asbytes('from')))
+    assert_equal('from', to_str('from'))
+    assert_equal('from', to_str('from'.encode()))
 
 
 def test_open4csv():
