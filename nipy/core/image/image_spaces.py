@@ -18,7 +18,7 @@ Make a standard 4D xyzt image in MNI space.
 
 First the data and affine:
 
->>> data = np.arange(24).reshape((1,2,3,4))
+>>> data = np.arange(24, dtype=np.float32).reshape((1,2,3,4))
 >>> affine = np.diag([2,3,4,1]).astype(float)
 
 We can add the TR (==2.0) to make the full 5x5 affine we need
@@ -60,7 +60,7 @@ array([[ 2.,  0.,  0.,  0.],
 It also works with nibabel images, which can only have xyz_affines:
 
 >>> import nibabel as nib
->>> nimg = nib.Nifti1Image(data.astype('float'), affine)
+>>> nimg = nib.Nifti1Image(data, affine)
 >>> xyz_affine(nimg)
 array([[ 2.,  0.,  0.,  0.],
        [ 0.,  3.,  0.,  0.],
