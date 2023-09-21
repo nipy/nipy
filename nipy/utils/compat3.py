@@ -1,6 +1,6 @@
 """ Routines for Python 3 compatibility
 
-These are in addition to the nibabel.py3k routines.
+These are in addition to the numpy.compat.py3k routines.
 """
 from __future__ import absolute_import
 

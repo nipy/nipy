@@ -18,7 +18,7 @@ Make a standard 4D xyzt image in MNI space.
 
 First the data and affine:
 
->>> data = np.arange(24).reshape((1,2,3,4))
+>>> data = np.arange(24, dtype=np.float32).reshape((1,2,3,4))
 >>> affine = np.diag([2,3,4,1]).astype(float)
 
 We can add the TR (==2.0) to make the full 5x5 affine we need
@@ -195,7 +195,7 @@ def is_xyz_affable(img, name2xyz=None):
     Nibabel images always have xyz affines
 
     >>> import nibabel as nib
-    >>> nimg = nib.Nifti1Image(arr, np.diag([2,3,4,1]))
+    >>> nimg = nib.Nifti1Image(arr.astype('float'), np.diag([2,3,4,1]))
     >>> is_xyz_affable(nimg)
     True
     """

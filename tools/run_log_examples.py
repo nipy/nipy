@@ -25,8 +25,6 @@ from os.path import (abspath, expanduser, join as pjoin, sep as psep, isfile,
 from subprocess import Popen, PIPE
 import re
 
-from nibabel.py3k import asstr
-
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 
@@ -85,7 +83,7 @@ class ProcLogger(object):
         finally:
             if proc.poll() is None: # In case we get killed
                 proc.terminate()
-        return asstr(stdout), asstr(stderr), proc.returncode
+        return stdout.decode(), stderr.decode(), proc.returncode
 
 
 class PyProcLogger(ProcLogger):
