@@ -461,10 +461,10 @@ class FMRILinearModel(object):
             z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
 
             # The number of voxels with p < 0.001 given by ...
-            print(np.sum(z_image.get_data() > 3.09))
+            print(np.sum(z_image.get_fdata() > 3.09))
         """
         # manipulate the arguments
-        if isinstance(fmri_data, string_types) or hasattr(fmri_data, 'get_data'):
+        if isinstance(fmri_data, string_types) or hasattr(fmri_data, 'get_fdata'):
             fmri_data = [fmri_data]
         if isinstance(design_matrices, (string_types, np.ndarray)):
             design_matrices = [design_matrices]
@@ -519,16 +519,16 @@ class FMRILinearModel(object):
         """
         from nibabel import Nifti1Image
         # get the mask as an array
-        mask = self.mask.get_data().astype(np.bool_)
+        mask = self.mask.get_fdata().astype(np.bool_)
 
         self.glms, self.means = [], []
         for fmri, design_matrix in zip(self.fmri_data, self.design_matrices):
             if do_scaling:
                 # scale the data
-                data, mean = data_scaling(fmri.get_data()[mask].T)
+                data, mean = data_scaling(fmri.get_fdata()[mask].T)
             else:
-                data, mean = (fmri.get_data()[mask].T,
-                              fmri.get_data()[mask].T.mean(0))
+                data, mean = (fmri.get_fdata()[mask].T,
+                              fmri.get_fdata()[mask].T.mean(0))
             mean_data = mask.astype(np.int16)
             mean_data[mask] = mean
             self.means.append(Nifti1Image(mean_data, self.affine))
@@ -588,7 +588,7 @@ class FMRILinearModel(object):
             contrast_.z_score()
 
         # Prepare the returned images
-        mask = self.mask.get_data().astype(np.bool_)
+        mask = self.mask.get_fdata().astype(np.bool_)
         do_outputs = [output_z, output_stat, output_effects, output_variance]
         estimates = ['z_score_', 'stat_', 'effect', 'variance']
         descrips = ['z statistic', 'Statistical value', 'Estimated effect',

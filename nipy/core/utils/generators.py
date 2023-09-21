@@ -38,7 +38,7 @@ def parcels(data, labels=None, exclude=()):
     Parameters
     ----------
     data : image or array-like
-        Either an image (with ``get_data`` method returning ndarray) or an
+        Either an image (with ``get_fdata`` method returning ndarray) or an
         array-like
     labels : iterable, optional
         A sequence of labels for which to return indices within `data`. The
@@ -80,7 +80,7 @@ def parcels(data, labels=None, exclude=()):
     """
     # Get image data or make array from array-like
     try:
-        data = data.get_data()
+        data = data.get_fdata()
     except AttributeError:
         data = np.asarray(data)
     if labels is None:

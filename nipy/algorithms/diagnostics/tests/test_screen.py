@@ -61,12 +61,12 @@ def test_screen():
                  ['max', 'mean', 'min',
                   'pca', 'pca_res',
                   'std', 'ts_res'])
-    data = img.get_data()
+    data = img.get_fdata()
     # Check summary images
-    assert_array_equal(np.max(data, axis=-1), res['max'].get_data())
-    assert_array_equal(np.mean(data, axis=-1), res['mean'].get_data())
-    assert_array_equal(np.min(data, axis=-1), res['min'].get_data())
-    assert_array_equal(np.std(data, axis=-1), res['std'].get_data())
+    assert_array_equal(np.max(data, axis=-1), res['max'].get_fdata())
+    assert_array_equal(np.mean(data, axis=-1), res['mean'].get_fdata())
+    assert_array_equal(np.min(data, axis=-1), res['min'].get_fdata())
+    assert_array_equal(np.std(data, axis=-1), res['std'].get_fdata())
     pca_res = pca(data, axis=-1, standardize=False, ncomp=10)
     # On windows, there seems to be some randomness in the PCA output vector
     # signs; this routine sets the basis vectors to have first value positive,
@@ -77,11 +77,11 @@ def test_screen():
     # Test that screens accepts and uses time axis
     data_mean = data.mean(axis=-1)
     res = screen(img, time_axis='t')
-    assert_array_equal(data_mean, res['mean'].get_data())
+    assert_array_equal(data_mean, res['mean'].get_fdata())
     _check_pca(res, pca_res)
     _check_ts(res, data, 3, 2)
     res = screen(img, time_axis=-1)
-    assert_array_equal(data_mean, res['mean'].get_data())
+    assert_array_equal(data_mean, res['mean'].get_fdata())
     _check_pca(res, pca_res)
     _check_ts(res, data, 3, 2)
     t0_img = rollimg(img, 't')
@@ -89,11 +89,11 @@ def test_screen():
     res = screen(t0_img, time_axis='t')
     t0_pca_res = pca(t0_data, axis=0, standardize=False, ncomp=10)
     t0_pca_res = res2pos1(t0_pca_res)
-    assert_array_equal(data_mean, res['mean'].get_data())
+    assert_array_equal(data_mean, res['mean'].get_fdata())
     _check_pca(res, t0_pca_res)
     _check_ts(res, t0_data, 0, 3)
     res = screen(t0_img, time_axis=0)
-    assert_array_equal(data_mean, res['mean'].get_data())
+    assert_array_equal(data_mean, res['mean'].get_fdata())
     _check_pca(res, t0_pca_res)
     _check_ts(res, t0_data, 0, 3)
     # Check screens uses slice axis
@@ -137,8 +137,8 @@ def test_screen_slice_axis():
         # And is the expected analysis
         # Very oddly on scipy 0.9 32 bit - at least - results differ between
         # runs, so we need assert_almost_equal
-        assert_almost_equal(pca_pos(res['pca'].get_data()),
-                            pca_pos(exp_res['pca'].get_data()))
+        assert_almost_equal(pca_pos(res['pca'].get_fdata()),
+                            pca_pos(exp_res['pca'].get_fdata()))
         assert_array_equal(res['ts_res']['slice_mean_diff2'],
                            exp_res['ts_res']['slice_mean_diff2'])
         # Turn off warnings, also get expected analysis

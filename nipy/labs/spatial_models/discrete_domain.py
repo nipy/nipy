@@ -240,7 +240,7 @@ def domain_from_image(mim, nn=18):
         iim = load(mim)
     else:
         iim = mim
-    return domain_from_binary_array(iim.get_data(), get_affine(iim), nn)
+    return domain_from_binary_array(iim.get_fdata(), get_affine(iim), nn)
 
 
 def grid_domain_from_binary_array(mask, affine=None, nn=0):
@@ -290,7 +290,7 @@ def grid_domain_from_image(mim, nn=18):
         iim = load(mim)
     else:
         iim = mim
-    return grid_domain_from_binary_array(iim.get_data(), get_affine(iim), nn)
+    return grid_domain_from_binary_array(iim.get_fdata(), get_affine(iim), nn)
 
 
 def grid_domain_from_shape(shape, affine=None):
@@ -786,7 +786,7 @@ class NDGridDomain(StructuredDomain):
         if (get_affine(nim) != self.affine).any():
             raise ValueError('nim and self do not have the same referential')
 
-        data = nim.get_data()
+        data = nim.get_fdata()
         feature = data[self.ijk[:, 0], self.ijk[:, 1], self.ijk[:, 2]]
         if fid is not '':
             self.features[fid] = feature

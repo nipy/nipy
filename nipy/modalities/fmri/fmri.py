@@ -23,7 +23,7 @@ class FmriImageList(ImageList):
         images : iterable
            an iterable object whose items are meant to be images; this is
            checked by asserting that each has a `coordmap` attribute and a
-           ``get_data`` method.  Note that Image objects are not iterable by
+           ``get_fdata`` method.  Note that Image objects are not iterable by
            default; use the ``from_image`` classmethod or ``iter_axis`` function
            to convert images to image lists - see examples below for the latter.
         volume_start_times: None or float or (N,) ndarray

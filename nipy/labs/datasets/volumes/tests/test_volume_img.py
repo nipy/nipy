@@ -54,12 +54,12 @@ def test_identity_resample():
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     ref_im = VolumeImg(data, affine, 'mine')
     rot_im = ref_im.as_volume_img(affine, interpolation='nearest')
-    yield np.testing.assert_almost_equal, data, rot_im.get_data()
+    yield np.testing.assert_almost_equal, data, rot_im.get_fdata()
     # Now test when specifying only a 3x3 affine
     #rot_im = ref_im.as_volume_img(affine[:3, :3], interpolation='nearest')
-    yield np.testing.assert_almost_equal, data, rot_im.get_data()
+    yield np.testing.assert_almost_equal, data, rot_im.get_fdata()
     reordered_im = rot_im.xyz_ordered()
-    yield np.testing.assert_almost_equal, data, reordered_im.get_data()
+    yield np.testing.assert_almost_equal, data, reordered_im.get_fdata()
 
 
 def test_downsample():
@@ -73,7 +73,7 @@ def test_downsample():
     downsampled = data[::2, ::2, ::2, ...]
     x, y, z = downsampled.shape[:3]
     np.testing.assert_almost_equal(downsampled, 
-                                   rot_im.get_data()[:x, :y, :z, ...])
+                                   rot_im.get_fdata()[:x, :y, :z, ...])
 
 
 def test_resampling_with_affine():
@@ -85,7 +85,7 @@ def test_resampling_with_affine():
     for angle in (0, np.pi, np.pi/2, np.pi/4, np.pi/3):
         rot = rotation(0, angle)
         rot_im = img.as_volume_img(affine=rot)
-        yield np.testing.assert_almost_equal, np.max(data), np.max(rot_im.get_data())
+        yield np.testing.assert_almost_equal, np.max(data), np.max(rot_im.get_fdata())
 
 
 def test_reordering():
@@ -109,12 +109,12 @@ def test_reordering():
         rot_im = ref_im.as_volume_img(affine=new_affine)
         yield np.testing.assert_array_equal, rot_im.affine, \
                                     new_affine
-        yield np.testing.assert_array_equal, rot_im.get_data().shape, \
+        yield np.testing.assert_array_equal, rot_im.get_fdata().shape, \
                                     shape
         reordered_im = rot_im.xyz_ordered()
         yield np.testing.assert_array_equal, reordered_im.affine[:3, :3], \
                                     np.eye(3)
-        yield np.testing.assert_almost_equal, reordered_im.get_data(), \
+        yield np.testing.assert_almost_equal, reordered_im.get_fdata(), \
                                     data
 
     # Check that we cannot swap axes for non spatial axis:
@@ -164,7 +164,7 @@ def test_eq():
     # Check that as_volume_img with no arguments returns the same image
     yield nose.tools.assert_equal, ref_im, ref_im.as_volume_img()
     copy_im = copy.copy(ref_im)
-    copy_im.get_data()[0, 0, 0] *= -1
+    copy_im.get_fdata()[0, 0, 0] *= -1
     yield nose.tools.assert_not_equal, ref_im, copy_im
     copy_im = copy.copy(ref_im)
     copy_im.affine[0, 0] *= -1
@@ -186,7 +186,7 @@ def test_values_in_world():
     data = np.random.random(shape)
     affine = np.eye(4)
     ref_im = VolumeImg(data, affine, 'mine')
-    x, y, z = np.indices(ref_im.get_data().shape[:3])
+    x, y, z = np.indices(ref_im.get_fdata().shape[:3])
     values = ref_im.values_in_world(x, y, z)
     np.testing.assert_almost_equal(values, data)
 
@@ -199,9 +199,9 @@ def test_resampled_to_img():
     affine = np.random.random((4, 4))
     ref_im = VolumeImg(data, affine, 'mine')
     yield np.testing.assert_almost_equal, data, \
-                ref_im.as_volume_img(affine=ref_im.affine).get_data()
+                ref_im.as_volume_img(affine=ref_im.affine).get_fdata()
     yield np.testing.assert_almost_equal, data, \
-                        ref_im.resampled_to_img(ref_im).get_data()
+                        ref_im.resampled_to_img(ref_im).get_fdata()
     
     # Check that we cannot resample to another image in a different
     # world.
@@ -243,7 +243,7 @@ def test_transformation():
         
         # Resample an image on itself: it shouldn't change much:
         img  = img1.resampled_to_img(img1)
-        yield np.testing.assert_almost_equal, data, img.get_data()
+        yield np.testing.assert_almost_equal, data, img.get_fdata()
 
 
 def test_get_affine():

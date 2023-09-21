@@ -74,7 +74,7 @@ def image_reduce(img, reduce_op, axis='t'):
     axis_name = img.axes.coord_names[0]
     output_axes = list(img.axes.coord_names)
     output_axes.remove(axis_name)
-    newdata = reduce_op(img.get_data())
+    newdata = reduce_op(img.get_fdata())
     return Image(newdata, drop_io_dim(img.coordmap, axis))
 
 
@@ -126,7 +126,7 @@ def image_call(img, function, inaxis='t', outaxis='new'):
     """
     rolled_img = rollimg(img, inaxis)
     inaxis = rolled_img.axes.coord_names[0] # now it's a string
-    newdata = function(rolled_img.get_data())
+    newdata = function(rolled_img.get_fdata())
     new_coordmap = rolled_img.coordmap.renamed_domain({inaxis: outaxis})
     new_image = Image(newdata, new_coordmap)
     # we have to roll the axis back
@@ -162,7 +162,7 @@ def image_modify(img, modify, axis='y+PA'):
         with a modified copy of img._data.
     """
     rolled_img = rollimg(img, axis)
-    data = rolled_img.get_data().copy()
+    data = rolled_img.get_fdata().copy()
     for d in data:
         modify(d)
     import copy
@@ -179,7 +179,7 @@ def test_reduce():
     assert_array_equal(xyz_affine(im), xyz_affine(newim))
     assert_equal(newim.axes.coord_names, tuple('ijk'))
     assert_equal(newim.shape, (3, 5, 7))
-    assert_almost_equal(newim.get_data(), x.sum(3))
+    assert_almost_equal(newim.get_fdata(), x.sum(3))
     im_nd = Image(x, AT(CS('ijkq'), MNI4, np.array(
         [[0, 1, 2, 0, 10],
          [3, 4, 5, 0, 11],
@@ -207,7 +207,7 @@ def test_specific_reduce():
     assert_array_equal(xyz_affine(im), xyz_affine(newim))
     assert_equal(newim.axes.coord_names, tuple('ijk'))
     assert_equal(newim.shape, (3, 5, 7))
-    assert_almost_equal(newim.get_data(), x.sum(3))
+    assert_almost_equal(newim.get_fdata(), x.sum(3))
 
 
 def test_call():
@@ -221,7 +221,7 @@ def test_call():
     assert_array_equal(xyz_affine(im), xyz_affine(newim))
     assert_equal(newim.axes.coord_names, tuple('ijk') + ('out',))
     assert_equal(newim.shape, (3, 5, 7, 6))
-    assert_almost_equal(newim.get_data(), x[:,:,:,::2])
+    assert_almost_equal(newim.get_fdata(), x[:,:,:,::2])
 
 
 def test_modify():
@@ -242,16 +242,16 @@ def test_modify():
         for a in i, o, n:
             nullim = image_modify(im, nullmodify, a)
             meanim = image_modify(im, meanmodify, a)
-            assert_array_equal(nullim.get_data(), im.get_data())
+            assert_array_equal(nullim.get_fdata(), im.get_fdata())
             assert_array_equal(xyz_affine(im), xyz_affine(nullim))
             assert_equal(nullim.axes, im.axes)
             # yield assert_equal, nullim, im
             assert_array_equal(xyz_affine(im), xyz_affine(meanim))
             assert_equal(meanim.axes, im.axes)
         # Make sure that meanmodify works as expected
-        d = im.get_data()
+        d = im.get_fdata()
         d = np.rollaxis(d, n)
-        meand = meanim.get_data()
+        meand = meanim.get_fdata()
         meand = np.rollaxis(meand, n)
         for i in range(d.shape[0]):
             assert_almost_equal(meand[i], d[i].mean())

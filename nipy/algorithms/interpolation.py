@@ -75,7 +75,7 @@ class ImageInterpolator(object):
         return self._order
 
     def _buildknots(self):
-        data = np.nan_to_num(self.image.get_data()).astype(np.float64)
+        data = np.nan_to_num(self.image.get_fdata()).astype(np.float64)
         if self.order > 1:
             if self.mode in ('nearest', 'grid-constant'):
                 # See: https://github.com/scipy/scipy/issues/13600

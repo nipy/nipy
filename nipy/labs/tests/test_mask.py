@@ -70,7 +70,7 @@ def test_mask_files():
     with InTemporaryDirectory():
         # Make a 4D file from the anatomical example
         img = nib.load(anatfile)
-        arr = img.get_data()
+        arr = img.get_fdata()
         a2 = np.zeros(arr.shape + (2, ))
         a2[:, :, :, 0] = arr
         a2[:, :, :, 1] = arr
@@ -122,7 +122,7 @@ def test_compute_mask_sessions():
     with InTemporaryDirectory():
         # Make a 4D file from the anatomical example
         img = nib.load(anatfile)
-        arr = img.get_data()
+        arr = img.get_fdata()
         a2 = np.zeros(arr.shape + (2, ))
         a2[:, :, :, 0] = arr
         a2[:, :, :, 1] = arr

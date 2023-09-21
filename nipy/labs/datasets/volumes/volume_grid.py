@@ -58,7 +58,7 @@ class VolumeGrid(VolumeData):
         The data is stored in an undefined way: prescalings might need to
         be applied to it before using it, or the data might be loaded on
         demand. The best practice to access the data is not to access the
-        _data attribute, but to use the `get_data` method.
+        _data attribute, but to use the `get_fdata` method.
 
         If the transform associated with the image has no inverse
         mapping, data corresponding to a given world space position cannot
@@ -239,7 +239,7 @@ class VolumeGrid(VolumeData):
         # See: https://github.com/scipy/scipy/pull/64
         if coords.dtype == np.dtype(np.intp):
             coords = coords.astype(np.dtype(coords.dtype.str))
-        data = self.get_data()
+        data = self.get_fdata()
         data_shape = list(data.shape)
         n_dims = len(data_shape)
         if n_dims > 3:

@@ -57,7 +57,7 @@ def test_high_level_glm_with_paths():
         multi_session_model.fit()
         z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
         assert_array_equal(get_affine(z_image), get_affine(load(mask_file)))
-        assert_true(z_image.get_data().std() < 3.)
+        assert_true(z_image.get_fdata().std() < 3.)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory
         del z_image, fmri_files, multi_session_model
@@ -71,28 +71,28 @@ def test_high_level_glm_with_data():
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask=None)
     multi_session_model.fit()
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
-    assert_equal(np.sum(z_image.get_data() == 0), 0)
+    assert_equal(np.sum(z_image.get_fdata() == 0), 0)
 
     # compute the mask
     multi_session_model = FMRILinearModel(fmri_data, design_matrices,
                                           m=0, M=.01, threshold=0.)
     multi_session_model.fit()
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
-    assert_true(z_image.get_data().std() < 3. )
+    assert_true(z_image.get_fdata().std() < 3. )
 
     # with mask
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask)
     multi_session_model.fit()
     z_image, effect_image, variance_image= multi_session_model.contrast(
         [np.eye(rk)[:2]] * 2, output_effects=True, output_variance=True)
-    assert_array_equal(z_image.get_data() == 0., load(mask).get_data() == 0.)
+    assert_array_equal(z_image.get_fdata() == 0., load(mask).get_fdata() == 0.)
     assert_true(
-        (variance_image.get_data()[load(mask).get_data() > 0, 0] > .001).all())
+        (variance_image.get_fdata()[load(mask).get_fdata() > 0, 0] > .001).all())
 
     # without scaling
     multi_session_model.fit(do_scaling=False)
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
-    assert_true(z_image.get_data().std() < 3. )
+    assert_true(z_image.get_fdata().std() < 3. )
 
 
 def test_high_level_glm_contrasts():
@@ -104,8 +104,8 @@ def test_high_level_glm_contrasts():
                                             contrast_type='tmin-conjunction')
     z1, = multi_session_model.contrast([np.eye(rk)[:1]] * 2)
     z2, = multi_session_model.contrast([np.eye(rk)[1:2]] * 2)
-    assert_true((z_image.get_data() < np.maximum(
-        z1.get_data(), z2.get_data())).all())
+    assert_true((z_image.get_fdata() < np.maximum(
+        z1.get_fdata(), z2.get_fdata())).all())
 
 
 def test_high_level_glm_null_contrasts():
@@ -120,7 +120,7 @@ def test_high_level_glm_null_contrasts():
     single_session_model.fit()
     z1, = multi_session_model.contrast([np.eye(rk)[:1], np.zeros((1, rk))])
     z2, = single_session_model.contrast([np.eye(rk)[:1]])
-    np.testing.assert_almost_equal(z1.get_data(), z2.get_data())
+    np.testing.assert_almost_equal(z1.get_fdata(), z2.get_fdata())
 
 
 def ols_glm(n=100, p=80, q=10):
@@ -336,7 +336,7 @@ def test_fmri_example():
     multi_session_model.fit()
     z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
     # Check number of voxels with p < 0.001
-    assert_equal(np.sum(z_image.get_data() > 3.09), 671)
+    assert_equal(np.sum(z_image.get_fdata() > 3.09), 671)
 
 
 if __name__ == "__main__":

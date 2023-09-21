@@ -46,7 +46,7 @@ class VolumeData(VolumeField):
         The data is stored in an undefined way: prescalings might need to
         be applied to it before using it, or the data might be loaded on
         demand. The best practice to access the data is not to access the
-        _data attribute, but to use the `get_data` method.
+        _data attribute, but to use the `get_fdata` method.
     """
     #---------------------------------------------------------------------------
     # Public attributes -- VolumeData interface
@@ -67,7 +67,7 @@ class VolumeData(VolumeField):
     #---------------------------------------------------------------------------
 
 
-    def get_data(self):
+    def get_fdata(self):
         """ Return data as a numpy array.
         """
         return np.asanyarray(self._data)
@@ -174,7 +174,7 @@ class VolumeData(VolumeField):
 
 
     def __copy__(self):
-        return self.like_from_data(self.get_data().copy())
+        return self.like_from_data(self.get_fdata().copy())
 
 
     def __deepcopy__(self, option):
@@ -188,7 +188,7 @@ class VolumeData(VolumeField):
     def __eq__(self, other):
         return (    self.world_space       == other.world_space 
                 and self.get_transform()   == other.get_transform()
-                and np.all(self.get_data() == other.get_data())
+                and np.all(self.get_fdata() == other.get_fdata())
                 and self.interpolation     == other.interpolation
                )
 

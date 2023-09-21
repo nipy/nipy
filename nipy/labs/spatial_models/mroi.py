@@ -643,7 +643,7 @@ class SubDomains(object):
         else:
             data = -np.ones(self.label.size, dtype=np.int32)
             tmp_image = self.domain.to_image()
-            mask = tmp_image.get_data().copy().astype(bool)
+            mask = tmp_image.get_fdata().copy().astype(bool)
             if not roi:
                 # write a feature
                 if fid not in self.features:
@@ -765,7 +765,7 @@ def subdomain_from_image(mim, nn=18):
     else:
         iim = mim
 
-    return subdomain_from_array(iim.get_data(), get_affine(iim), nn)
+    return subdomain_from_array(iim.get_fdata(), get_affine(iim), nn)
 
 
 def subdomain_from_position_and_image(nim, pos):
@@ -784,7 +784,7 @@ def subdomain_from_position_and_image(nim, pos):
     coord = np.array([tmp.domain.coord[tmp.label == k].mean(0)
                       for k in range(tmp.k)])
     idx = ((coord - pos) ** 2).sum(1).argmin()
-    return subdomain_from_array(nim.get_data() == idx, get_affine(nim))
+    return subdomain_from_array(nim.get_fdata() == idx, get_affine(nim))
 
 
 def subdomain_from_balls(domain, positions, radii):

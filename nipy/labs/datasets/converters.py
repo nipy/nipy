@@ -64,7 +64,7 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
         copy = False
 
     if isinstance(obj, SpatialImage):
-        data   = obj.get_data()
+        data   = obj.get_fdata()
         affine = get_affine(obj)
         header = dict(get_header(obj))
         fname = obj.file_map['image'].filename
@@ -109,7 +109,7 @@ def save(filename, obj):
     for key, value in obj.metadata.items():
         if key in hdr:
             hdr[key] = value
-    img = nib.Nifti1Image(obj.get_data(),
+    img = nib.Nifti1Image(obj.get_fdata(),
                           obj.affine,
                           header=hdr)
     nib.save(img, filename)

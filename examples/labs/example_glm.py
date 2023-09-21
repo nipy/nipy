@@ -89,7 +89,7 @@ save(fmri_data, data_file)
 ########################################
 
 # GLM fit
-Y = fmri_data.get_data().reshape(np.prod(shape), n_scans)
+Y = fmri_data.get_fdata().reshape(np.prod(shape), n_scans)
 glm = GeneralLinearModel(X)
 glm.fit(Y.T)
 

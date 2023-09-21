@@ -378,7 +378,7 @@ def compare_results(subj, run, other_root, mask_fname):
     # Get information for this subject and run
     path_dict = path_info_run(subj, run)
     # Get mask
-    msk = load_image(mask_fname).get_data().copy().astype(bool)
+    msk = load_image(mask_fname).get_fdata().copy().astype(bool)
     # Get results directories for this run
     rootdir = path_dict['rootdir']
     res_dir = pjoin(rootdir, 'results_%02d' % run)
@@ -393,8 +393,8 @@ def compare_results(subj, run, other_root, mask_fname):
                 if not exists(other_fname):
                     print(this_fname, 'present but ', other_fname, 'missing')
                     continue
-                this_arr = load_image(this_fname).get_data()
-                other_arr = load_image(other_fname).get_data()
+                this_arr = load_image(this_fname).get_fdata()
+                other_arr = load_image(other_fname).get_fdata()
                 ok = np.allclose(this_arr[msk], other_arr[msk])
                 if not ok and froot in ('effect', 'sd', 't'): # Maybe a sign flip
                     ok = np.allclose(this_arr[msk], -other_arr[msk])

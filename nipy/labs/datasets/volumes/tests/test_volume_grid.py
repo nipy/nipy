@@ -100,7 +100,7 @@ def test_transformation():
     
     # Resample an image on itself: it shouldn't change much:
     img  = img1.resampled_to_img(img1)
-    yield np.testing.assert_almost_equal, data, img.get_data()
+    yield np.testing.assert_almost_equal, data, img.get_fdata()
 
     # Check that if I 'resampled_to_img' on an VolumeImg, I get an
     # VolumeImg, and vice versa 
@@ -113,8 +113,8 @@ def test_transformation():
     yield nose.tools.assert_true, isinstance(image2, VolumeGrid)
     # Check that the data are all the same: we have been playing only
     # with identity mappings
-    yield np.testing.assert_array_equal, volume_image2.get_data(), \
-            image2.get_data()
+    yield np.testing.assert_array_equal, volume_image2.get_fdata(), \
+            image2.get_fdata()
 
 
 def test_as_volume_image():
