@@ -167,7 +167,7 @@ repository name.'''
 
 
 GITWASH_CENTRAL = 'git://github.com/matthew-brett/gitwash.git'
-GITWASH_BRANCH = 'master'
+GITWASH_BRANCH = 'main'
 
 
 def main():

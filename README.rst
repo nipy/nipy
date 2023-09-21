@@ -1,8 +1,8 @@
 .. -*- rest -*-
 .. vim:syntax=rst
 
-.. image:: https://coveralls.io/repos/nipy/nipy/badge.png?branch=master
-    :target: https://coveralls.io/r/nipy/nipy?branch=master
+.. image:: https://coveralls.io/repos/nipy/nipy/badge.png?branch=main
+    :target: https://coveralls.io/r/nipy/nipy?branch=main
 
 .. Following contents should be from LONG_DESCRIPTION in nipy/info.py
 
@@ -67,7 +67,7 @@ You can find our sources and single-click downloads:
 
 .. _main repository: https://github.com/nipy/nipy
 .. _Documentation: http://nipy.org/nipy
-.. _current development version: https://github.com/nipy/nipy/archive/master.zip
+.. _current development version: https://github.com/nipy/nipy/archive/main.zip
 .. _available releases: http://pypi.python.org/pypi/nipy
 
 Tests

@@ -95,7 +95,7 @@ You can find our sources and single-click downloads:
 
 .. _main repository: https://github.com/nipy/nipy
 .. _Documentation: http://nipy.org/nipy
-.. _current development version: https://github.com/nipy/nipy/archive/master.zip
+.. _current development version: https://github.com/nipy/nipy/archive/main.zip
 .. _available releases: http://pypi.python.org/pypi/nipy
 
 Tests
@@ -163,7 +163,7 @@ MAINTAINER_EMAIL    = "neuroimaging@python.org"
 DESCRIPTION         = description
 LONG_DESCRIPTION    = long_description
 URL                 = "http://nipy.org/nipy"
-DOWNLOAD_URL        = "http://github.com/nipy/nipy/archives/master"
+DOWNLOAD_URL        = "http://github.com/nipy/nipy/archives/main"
 LICENSE             = "BSD license"
 CLASSIFIERS         = CLASSIFIERS
 AUTHOR              = "nipy developmers"
