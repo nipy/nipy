@@ -164,7 +164,7 @@ def is_xyz_affable(img, name2xyz=None):
     Examples
     --------
     >>> from nipy.core.api import vox2mni, Image, rollimg
-    >>> arr = np.arange(24).reshape((2,3,4,1))
+    >>> arr = np.arange(24, dtype=np.float32).reshape((2,3,4,1))
     >>> img = Image(arr, vox2mni(np.diag([2,3,4,5,1])))
     >>> img.coordmap
     AffineTransform(
@@ -195,7 +195,7 @@ def is_xyz_affable(img, name2xyz=None):
     Nibabel images always have xyz affines
 
     >>> import nibabel as nib
-    >>> nimg = nib.Nifti1Image(arr.astype('float'), np.diag([2,3,4,1]))
+    >>> nimg = nib.Nifti1Image(arr, np.diag([2,3,4,1]))
     >>> is_xyz_affable(nimg)
     True
     """
