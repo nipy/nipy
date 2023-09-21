@@ -34,7 +34,7 @@ def copy_of(fname):
     # Make a fresh copy of a image stored in a file
     img = load(fname)
     hdr = img.metadata['header'].copy()
-    return Image(img.get_data().copy(),
+    return Image(img.get_fdata().copy(),
                  copy(img.coordmap),
                  {'header': hdr})
 
@@ -53,7 +53,7 @@ def test_basic_nipy2nifti():
     # Go from nipy image to header and data for nifti
     fimg = copy_of(funcfile)
     hdr = fimg.metadata['header']
-    data = fimg.get_data()
+    data = fimg.get_fdata()
     # Header is preserved
     # Put in some information to check header is preserved
     hdr['slice_duration'] = 0.25
@@ -63,35 +63,35 @@ def test_basic_nipy2nifti():
     assert_false(hdr is new_hdr)
     # Check information preserved
     assert_equal(hdr['slice_duration'], new_hdr['slice_duration'])
-    assert_array_equal(data, ni_img.get_data())
+    assert_array_equal(data, ni_img.get_fdata())
     # Shape obviously should be same
     assert_equal(ni_img.shape, fimg.shape)
 
 
 def test_xyz_affines():
     fimg = copy_of(funcfile)
-    data = fimg.get_data()
+    data = fimg.get_fdata()
     # Check conversion to xyz affable
     # Roll time to front in array
     fimg_t0 = fimg.reordered_axes((3, 0, 1, 2))
     # Nifti conversion rolls it back
-    assert_array_equal(nipy2nifti(fimg_t0).get_data(), data)
+    assert_array_equal(nipy2nifti(fimg_t0).get_fdata(), data)
     # Roll time to position 1
     fimg_t0 = fimg.reordered_axes((0, 3, 1, 2))
-    assert_array_equal(nipy2nifti(fimg_t0).get_data(), data)
+    assert_array_equal(nipy2nifti(fimg_t0).get_fdata(), data)
     # Check bad names cause NiftiError
     out_coords = fimg.reference.coord_names
     bad_img = fimg.renamed_reference(**{out_coords[0]: 'not a known axis'})
     assert_raises(NiftiError, nipy2nifti, bad_img)
     # Check xyz works for not strict
     bad_img = fimg.renamed_reference(**dict(zip(out_coords, 'xyz')))
-    assert_array_equal(nipy2nifti(bad_img, strict=False).get_data(), data)
+    assert_array_equal(nipy2nifti(bad_img, strict=False).get_fdata(), data)
     # But fails for strict
     assert_raises(NiftiError, nipy2nifti, bad_img, strict=True)
     # 3D is OK
     aimg = copy_of(anatfile)
-    adata = aimg.get_data()
-    assert_array_equal(nipy2nifti(aimg).get_data(), adata)
+    adata = aimg.get_fdata()
+    assert_array_equal(nipy2nifti(aimg).get_fdata(), adata)
     # For now, always error on 2D (this depends on as_xyz_image)
     assert_raises(NiftiError, nipy2nifti, aimg[:, :, 1])
     assert_raises(NiftiError, nipy2nifti, aimg[:, 1, :])
@@ -167,7 +167,7 @@ def test_dim_info():
     assert_equal(hdr.get_dim_info(), (None, None, None))
     ni_img = nipy2nifti(fimg)
     assert_equal(get_header(ni_img).get_dim_info(), (None, None, None))
-    data = fimg.get_data()
+    data = fimg.get_fdata()
     cmap = fimg.coordmap
     for i in range(3):
         for order, name in enumerate(('freq', 'phase', 'slice')):
@@ -280,7 +280,7 @@ def test_xyzt_units():
     # Whether xyzt_unit field gets set correctly
     fimg_orig = copy_of(funcfile)
     # Put time in output, input and both
-    data = fimg_orig.get_data()
+    data = fimg_orig.get_fdata()
     hdr = fimg_orig.metadata['header']
     aff = fimg_orig.coordmap.affine
     out_names = fimg_orig.reference.coord_names
@@ -334,17 +334,17 @@ def test_time_axes_4th():
         img = Image(data, cmap)
         # Time-like in correct position
         ni_img = nipy2nifti(img)
-        assert_array_equal(ni_img.get_data(), data)
+        assert_array_equal(ni_img.get_fdata(), data)
         assert_array_equal(get_header(ni_img).get_zooms(), (2, 3, 4, 5, 6, 7))
         # Time-like needs reordering
         cmap = AT(in_cs, CS(xyz_names + ('q', time_like, 'r')), aff)
         ni_img = nipy2nifti(Image(data, cmap))
-        assert_array_equal(ni_img.get_data(), np.rollaxis(data, 4, 3))
+        assert_array_equal(ni_img.get_fdata(), np.rollaxis(data, 4, 3))
         assert_array_equal(get_header(ni_img).get_zooms(), (2, 3, 4, 6, 5, 7))
         # And again
         cmap = AT(in_cs, CS(xyz_names + ('q', 'r', time_like)), aff)
         ni_img = nipy2nifti(Image(data, cmap))
-        assert_array_equal(ni_img.get_data(), np.rollaxis(data, 5, 3))
+        assert_array_equal(ni_img.get_fdata(), np.rollaxis(data, 5, 3))
         assert_array_equal(get_header(ni_img).get_zooms(), (2, 3, 4, 7, 5, 6))
 
 
@@ -432,12 +432,12 @@ def test_no_time():
     for time_like in ('t', 'hz', 'ppm', 'rads'):
         cmap = AT(in_cs, CS(xyz_names + (time_like, 'q', 'r')), aff)
         ni_img = nipy2nifti(Image(data, cmap))
-        assert_array_equal(ni_img.get_data(), data)
+        assert_array_equal(ni_img.get_fdata(), data)
     # But there is if no time-like
     for no_time in ('random', 'words', 'I', 'thought', 'of'):
         cmap = AT(in_cs, CS(xyz_names + (no_time, 'q', 'r')), aff)
         ni_img = nipy2nifti(Image(data, cmap))
-        assert_array_equal(ni_img.get_data(), data[:, :, :, None, :, :])
+        assert_array_equal(ni_img.get_fdata(), data[:, :, :, None, :, :])
 
 
 def test_save_spaces():
@@ -493,7 +493,7 @@ def test_basic_load():
     aff = np.diag([2., 3, 4, 1])
     ni_img = nib.Nifti1Image(data, aff)
     img = nifti2nipy(ni_img)
-    assert_array_equal(img.get_data(), data)
+    assert_array_equal(img.get_fdata(), data)
 
 
 def test_expand_to_3d():
@@ -553,13 +553,13 @@ def test_load_cmaps():
             exp_aff = np.dot(np.diag(diag), full_aff)
         exp_cmap = AT(in_cs, out_cs, exp_aff)
         assert_equal(img.coordmap, exp_cmap)
-        assert_array_equal(img.get_data(), data)
+        assert_array_equal(img.get_fdata(), data)
         # Even if the image axis length is 1, we keep out time dimension, if
         # there is specific scaling implying time-like
         ni_img_t = nib.Nifti1Image(reduced_data, xyz_aff, hdr)
         img = nifti2nipy(ni_img_t)
         assert_equal(img.coordmap, exp_cmap)
-        assert_array_equal(img.get_data(), reduced_data)
+        assert_array_equal(img.get_fdata(), reduced_data)
 
 
 def test_load_no_time():

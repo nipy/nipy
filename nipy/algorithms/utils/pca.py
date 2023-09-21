@@ -340,9 +340,9 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
         if not mask.coordmap.similar_to(drop_io_dim(img.coordmap, axis)):
             raise ValueError("Mask should have matching coordmap to `img` "
                              "coordmap with dropped axis %s" % axis)
-    data = work_img.get_data()
+    data = work_img.get_fdata()
     if mask is not None:
-        mask_data = mask.get_data()
+        mask_data = mask.get_fdata()
     else:
         mask_data = None
     # do the PCA

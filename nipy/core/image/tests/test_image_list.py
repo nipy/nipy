@@ -64,7 +64,7 @@ def test_il_from_image():
     new_cmap = AffineTransform(CoordinateSystem('ijkl'),
                                FIMG.coordmap.function_range,
                                FIMG.coordmap.affine)
-    fimg2 = Image(FIMG.get_data(), new_cmap)
+    fimg2 = Image(FIMG.get_fdata(), new_cmap)
     assert_equal(len(ImageList.from_image(fimg2, axis='t')), 20)
     assert_equal(len(ImageList.from_image(fimg2, axis='l')), 20)
     assert_raises(AxisError, ImageList.from_image, FIMG, 'q')
@@ -86,8 +86,8 @@ def test_il_slicing_dicing():
     assert_true(isinstance(sublist.get_list_data(axis=0), np.ndarray))
     # Test __setitem__
     sublist[2] = sublist[0]
-    assert_equal(sublist[0].get_data().mean(),
-                 sublist[2].get_data().mean())
+    assert_equal(sublist[0].get_fdata().mean(),
+                 sublist[2].get_fdata().mean())
     # Test iterator
     for x in sublist:
         assert_true(isinstance(x, Image))

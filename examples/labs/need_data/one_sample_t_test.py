@@ -76,9 +76,9 @@ z_map, = grp_model.contrast(contrast_val, con_id='one_sample', output_z=True)
 save(z_map, path.join(write_dir, 'one_sample_z_map.nii'))
 
 # look at the result
-vmax = max(- z_map.get_data().min(), z_map.get_data().max())
+vmax = max(- z_map.get_fdata().min(), z_map.get_fdata().max())
 vmin = - vmax
-plot_map(z_map.get_data(), z_map.get_affine(),
+plot_map(z_map.get_fdata(), z_map.get_affine(),
          cmap=cm.cold_hot,
          vmin=vmin,
          vmax=vmax,

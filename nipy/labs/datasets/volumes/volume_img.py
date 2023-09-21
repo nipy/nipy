@@ -55,7 +55,7 @@ class VolumeImg(VolumeGrid):
         The data is stored in an undefined way: prescalings might need to
         be applied to it before using it, or the data might be loaded on
         demand. The best practice to access the data is not to access the
-        _data attribute, but to use the `get_data` method.
+        _data attribute, but to use the `get_fdata` method.
     """
 
     # most attributes are given by the VolumeField interface 
@@ -135,7 +135,7 @@ class VolumeImg(VolumeGrid):
                 'The two images are not embedded in the same world space')
         if isinstance(target_image, VolumeImg):
             return self.as_volume_img(affine=target_image.affine,
-                                    shape=target_image.get_data().shape[:3],
+                                    shape=target_image.get_fdata().shape[:3],
                                     interpolation=interpolation)
         else:
             # IMPORTANT: Polymorphism can be implemented by walking the 
@@ -159,7 +159,7 @@ class VolumeImg(VolumeGrid):
                 return self
         if affine is None:
             affine = self.affine
-        data = self.get_data()
+        data = self.get_fdata()
         if shape is None:
             shape = data.shape[:3]
         shape = list(shape)
@@ -280,7 +280,7 @@ class VolumeImg(VolumeGrid):
 
         # Now make sure the affine is positive
         pixdim = np.diag(A).copy()
-        data = img.get_data()
+        data = img.get_fdata()
         if pixdim[0] < 0:
             b[0] = b[0] + pixdim[0]*(data.shape[0] - 1)
             pixdim[0] = -pixdim[0]
@@ -316,7 +316,7 @@ class VolumeImg(VolumeGrid):
         if (axis1 > 2) or (axis2 > 2):
             raise ValueError('Can swap axis only on spatial axis. '
                              'Use np.swapaxes of the data array.')
-        reordered_data = np.swapaxes(self.get_data(), axis1, axis2)
+        reordered_data = np.swapaxes(self.get_fdata(), axis1, axis2)
         new_affine = self.affine
         order = np.array((0, 1, 2, 3))
         order[axis1] = axis2
@@ -335,13 +335,13 @@ class VolumeImg(VolumeGrid):
         new_v2w_transform = \
                         self.get_transform().composed_with(w2w_transform)
         if hasattr(new_v2w_transform, 'affine'):
-            new_img = self.__class__(self.get_data(),
+            new_img = self.__class__(self.get_fdata(),
                                      new_v2w_transform.affine,
                                      new_v2w_transform.output_space,
                                      metadata=self.metadata,
                                      interpolation=self.interpolation)
         else:
-            new_img = VolumeGrid(self.get_data(),
+            new_img = VolumeGrid(self.get_fdata(),
                                 transform=new_v2w_transform,
                                 metadata=self.metadata,
                                 interpolation=self.interpolation)
@@ -364,7 +364,7 @@ class VolumeImg(VolumeGrid):
 
     def __eq__(self, other):
         return (    isinstance(other, self.__class__)
-                and np.all(self.get_data() == other.get_data())
+                and np.all(self.get_fdata() == other.get_fdata())
                 and np.all(self.affine == other.affine)
                 and (self.world_space == other.world_space)
                 and (self.interpolation == other.interpolation)

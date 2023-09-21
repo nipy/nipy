@@ -19,7 +19,7 @@ def test_mask_parcel():
     shape = (10, 10, 10)
     mask_image = Nifti1Image(np.ones(shape), np.eye(4))
     wim = mask_parcellation(mask_image, n_parcels)
-    assert_equal(np.unique(wim.get_data()), np.arange(n_parcels))
+    assert_equal(np.unique(wim.get_fdata()), np.arange(n_parcels))
 
 
 def test_mask_parcel_multi_subj():
@@ -38,7 +38,7 @@ def test_mask_parcel_multi_subj():
             mask_images.append(path)
 
         wim = mask_parcellation(mask_images, n_parcels)
-        assert_equal(np.unique(wim.get_data()), np.arange(n_parcels))
+        assert_equal(np.unique(wim.get_fdata()), np.arange(n_parcels))
 
 
 def test_parcel_intra_from_3d_image():

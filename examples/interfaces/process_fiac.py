@@ -12,7 +12,7 @@ from nipy.interfaces.spm import (spm_info, make_job, scans_for_fnames,
                                  fltcols)
 
 
-def get_data(data_path, subj_id):
+def get_fdata(data_path, subj_id):
     data_def = {}
     subject_path = pjoin(data_path, 'fiac%s' % subj_id)
     data_def['functionals'] = sorted(
@@ -189,7 +189,7 @@ def process_subject(ddef):
 
 def process_subjects(data_path, subj_ids):
     for subj_id in subj_ids:
-        ddef = get_data(data_path, subj_id)
+        ddef = get_fdata(data_path, subj_id)
         process_subject(ddef)
 
 

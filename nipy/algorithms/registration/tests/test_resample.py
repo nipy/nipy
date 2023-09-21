@@ -58,11 +58,11 @@ def _test_resample(arr, T, interp_orders):
     img = Image(arr, vox2mni(np.eye(4)))
     for i in interp_orders:
         img2 = resample(img, T, interp_order=i)
-        assert_array_almost_equal(img2.get_data(), img.get_data())
+        assert_array_almost_equal(img2.get_fdata(), img.get_fdata())
         img_aff = as_xyz_image(img)
         img2 = resample(img, T, reference=(img_aff.shape, xyz_affine(img_aff)),
                         interp_order=i)
-        assert_array_almost_equal(img2.get_data(), img.get_data())
+        assert_array_almost_equal(img2.get_fdata(), img.get_fdata())
 
 
 def test_resample_dtypes():
@@ -85,8 +85,8 @@ def test_resample_uint_data():
     aff_obj = Affine((.5, .5, .5, .1, .1, .1, 0, 0, 0, 0, 0, 0))
     for transform in aff_obj, ApplyAffine(aff_obj.as_affine()):
         img2 = resample(img, transform)
-        assert(np.min(img2.get_data()) >= 0)
-        assert(np.max(img2.get_data()) < 255)
+        assert(np.min(img2.get_fdata()) >= 0)
+        assert(np.max(img2.get_fdata()) < 255)
 
 
 def test_resample_outvalue():
@@ -98,7 +98,7 @@ def test_resample_outvalue():
         for order in (1, 3):
             # Default interpolation outside is constant == 0
             img2 = resample(img, transform, interp_order=order)
-            arr2 = img2.get_data()
+            arr2 = img2.get_fdata()
             exp_arr = np.zeros_like(arr)
             exp_arr[:-1,:,:] = arr[1:,:,:]
             assert_array_equal(arr2, exp_arr)
@@ -107,14 +107,14 @@ def test_resample_outvalue():
                             mode='constant', cval=0.)
             exp_arr = np.zeros(arr.shape)
             exp_arr[:-1, :, :] = arr[1:, :, :]
-            assert_array_almost_equal(img2.get_data(), exp_arr)
+            assert_array_almost_equal(img2.get_fdata(), exp_arr)
             # Test constant value of 1
             img2 = resample(img, transform, interp_order=order,
                             mode='constant', cval=1.)
             exp_arr[-1, :, :] = 1
-            assert_array_almost_equal(img2.get_data(), exp_arr)
+            assert_array_almost_equal(img2.get_fdata(), exp_arr)
             # Test nearest neighbor
             img2 = resample(img, transform, interp_order=order,
                             mode='nearest')
             exp_arr[-1, :, :] = arr[-1, :, :]
-            assert_array_almost_equal(img2.get_data(), exp_arr)
+            assert_array_almost_equal(img2.get_fdata(), exp_arr)

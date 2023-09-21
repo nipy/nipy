@@ -119,8 +119,8 @@ save(effects_map, contrast_path)
 # these dimensions correspond to 'left' and 'right'
 
 # Create snapshots of the contrasts
-vmax = max(- z_map.get_data().min(), z_map.get_data().max())
-plot_map(z_map.get_data(), fmri_glm.affine,
+vmax = max(- z_map.get_fdata().min(), z_map.get_fdata().max())
+plot_map(z_map.get_fdata(), fmri_glm.affine,
          cmap=cm.cold_hot,
          vmin=- vmax,
          vmax=vmax,

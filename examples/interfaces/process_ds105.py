@@ -66,7 +66,7 @@ def _sorted_prefer_nii(file_list):
     return sorted(preferred)
 
 
-def get_data(data_path, subj_id):
+def get_fdata(data_path, subj_id):
     data_path = abspath(data_path)
     data_def = {}
     subject_path = pjoin(data_path, 'sub%03d' % subj_id)
@@ -305,7 +305,7 @@ def process_subject(ddef, study_def, ana_def):
 def get_subjects(data_path, subj_ids, study_def, ana_def):
     ddefs = []
     for subj_id in subj_ids:
-        ddefs.append(get_data(data_path, subj_id))
+        ddefs.append(get_fdata(data_path, subj_id))
     return ddefs
 
 
@@ -319,7 +319,7 @@ def main():
     else:
         subj_ids = range(1, 7)
     for subj_id in subj_ids:
-        ddef = get_data(data_path, subj_id)
+        ddef = get_fdata(data_path, subj_id)
         assert len(ddef['functionals']) in (11, 12)
         process_subject(ddef, STUDY_DEF, {})
 

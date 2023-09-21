@@ -16,7 +16,7 @@ from nipy.testing import anatfile
 #
 # Use one of our test files to get an array and affine (as numpy array) from.
 img = load_image(anatfile)
-arr = img.get_data()
+arr = img.get_fdata()
 affine_array = img.coordmap.affine.copy()
 
 # 1) Create a CoordinateMap from the affine transform which specifies
@@ -33,5 +33,5 @@ save_image(newimg, 'an_image.nii.gz')
 
 # Reload and verify the data and affine were saved correctly.
 img_back = load_image('an_image.nii.gz')
-assert np.allclose(img_back.get_data(), img.get_data())
+assert np.allclose(img_back.get_fdata(), img.get_fdata())
 assert np.allclose(img_back.coordmap.affine, img.coordmap.affine)

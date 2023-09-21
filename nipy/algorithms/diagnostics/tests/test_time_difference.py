@@ -74,7 +74,7 @@ def test_time_slice_axes():
     # Test time and slice axes work as expected
     fimg = load_image(funcfile)
     # Put into array
-    data = fimg.get_data()
+    data = fimg.get_fdata()
     orig_results = tsd.time_slice_diffs(data)
     t0_data = np.rollaxis(data, 3)
     t0_results = tsd.time_slice_diffs(t0_data, 0)
@@ -97,7 +97,7 @@ def test_time_slice_axes():
 
 def test_against_matlab_results():
     fimg = load_image(funcfile)
-    results = tsd.time_slice_diffs(fimg.get_data())
+    results = tsd.time_slice_diffs(fimg.get_fdata())
     # struct as record only to avoid deprecation warning
     tsd_results = sio.loadmat(pjoin(TEST_DATA_PATH, 'tsdiff_results.mat'),
                               struct_as_record=True, squeeze_me=True)
@@ -123,13 +123,13 @@ def assert_arr_img_res(arr_res, img_res):
                 'volume_means'):
         assert_array_equal(arr_res[key], img_res[key])
     for key in ('slice_diff2_max_vol', 'diff2_mean_vol'):
-        assert_array_almost_equal(arr_res[key], img_res[key].get_data())
+        assert_array_almost_equal(arr_res[key], img_res[key].get_fdata())
 
 
 def test_tsd_image():
     # Test image version of time slice diff
     fimg = load_image(funcfile)
-    data = fimg.get_data()
+    data = fimg.get_fdata()
     tsda = tsd.time_slice_diffs
     tsdi = tsd.time_slice_diffs_image
     arr_results = tsda(data)

@@ -280,9 +280,9 @@ class Image(object):
             order = [self.axes.index(s) for s in order]
         new_cmap = self.coordmap.reordered_domain(order)
         # Only transpose if we have to so as to avoid calling
-        # self.get_data
+        # self.get_fdata
         if order != list(range(self.ndim)):
-            new_data = np.transpose(self.get_data(), order)
+            new_data = np.transpose(self.get_fdata(), order)
         else:
             new_data = self._data
         return self.__class__.from_image(self,
@@ -344,19 +344,19 @@ class Image(object):
     def __setitem__(self, index, value):
         """Setting values of an image, set values in the data array."""
         warnings.warn("Please don't use ``img[x] = y``; use "
-                      "``img.get_data()[x]  = y`` instead",
+                      "``img.get_fdata()[x]  = y`` instead",
                       DeprecationWarning,
                       stacklevel=2)
         self._data[index] = value
 
     def __array__(self):
         """Return data as a numpy array."""
-        warnings.warn('Please use get_data instead - will be deprecated',
+        warnings.warn('Please use get_fdata instead - will be deprecated',
                       DeprecationWarning,
                       stacklevel=2)
-        return self.get_data()
+        return self.get_fdata()
 
-    def get_data(self):
+    def get_fdata(self):
         """Return data as a numpy array."""
         return np.asanyarray(self._data)
 
@@ -371,7 +371,7 @@ class Image(object):
         Returns
         -------
         img_subsampled: Image
-            An Image with data self.get_data()[slice_object] and an
+            An Image with data self.get_fdata()[slice_object] and an
             appropriately corrected CoordinateMap.
 
         Examples
@@ -380,10 +380,10 @@ class Image(object):
         >>> from nipy.testing import funcfile
         >>> im = load_image(funcfile)
         >>> frame3 = im[:,:,:,3]
-        >>> np.allclose(frame3.get_data(), im.get_data()[:,:,:,3])
+        >>> np.allclose(frame3.get_fdata(), im.get_fdata()[:,:,:,3])
         True
         """
-        data = self.get_data()[slice_object]
+        data = self.get_fdata()[slice_object]
         g = ArrayCoordMap(self.coordmap, self.shape)[slice_object]
         coordmap = g.coordmap
         if coordmap.function_domain.ndim > 0:
@@ -406,7 +406,7 @@ class Image(object):
     def __eq__(self, other):
         return (isinstance(other, self.__class__)
                 and self.shape == other.shape
-                and np.all(self.get_data() == other.get_data())
+                and np.all(self.get_fdata() == other.get_fdata())
                 and np.all(self.affine == other.affine)
                 and (self.axes.coord_names == other.axes.coord_names))
 
@@ -506,7 +506,7 @@ def subsample(img, slice_object):
     Returns
     -------
     img_subsampled: Image
-         An Image with data img.get_data()[slice_object] and an appropriately
+         An Image with data img.get_fdata()[slice_object] and an appropriately
          corrected CoordinateMap.
 
     Examples
@@ -516,7 +516,7 @@ def subsample(img, slice_object):
     >>> from nipy.core.api import subsample, slice_maker
     >>> im = load_image(funcfile)
     >>> frame3 = subsample(im, slice_maker[:,:,:,3])
-    >>> np.allclose(frame3.get_data(), im.get_data()[:,:,:,3])
+    >>> np.allclose(frame3.get_fdata(), im.get_fdata()[:,:,:,3])
     True
     """
     warnings.warn('subsample is deprecated, please use image '
@@ -783,7 +783,7 @@ def iter_axis(img, axis, asarray=False):
     rimg = rollimg(img, axis)
     for i in range(rimg.shape[0]):
         if asarray:
-            yield rimg[i].get_data()
+            yield rimg[i].get_fdata()
         else:
             yield rimg[i]
 
@@ -864,7 +864,7 @@ def is_image(obj):
     This allows us to test for something that is duck-typing an image.
 
     For now an array must have a 'coordmap' attribute, and a callable
-    'get_data' attribute.
+    'get_fdata' attribute.
 
     Parameters
     ----------
@@ -890,4 +890,4 @@ def is_image(obj):
     '''
     if not hasattr(obj, 'coordmap') or not hasattr(obj, 'metadata'):
         return False
-    return callable(getattr(obj, 'get_data'))
+    return callable(getattr(obj, 'get_fdata'))

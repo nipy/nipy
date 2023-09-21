@@ -53,7 +53,7 @@ def test_badfile():
 @if_templates
 def test_maxminmean_values():
     # loaded array values from SPM
-    y = gimg.get_data()
+    y = gimg.get_fdata()
     yield assert_equal, y.shape, tuple(gimg.shape)
     yield assert_array_almost_equal, y.max(), 1.000000059
     yield assert_array_almost_equal, y.mean(), 0.273968048
@@ -96,7 +96,7 @@ def randimg_in2out(rng, in_dtype, out_dtype, name):
     img = Image(data, vox2mni(np.eye(4)))
     # The dtype_from dtype won't be visible until the image is loaded
     newimg = save_image(img, name, dtype_from=out_dtype)
-    return newimg.get_data(), data
+    return newimg.get_fdata(), data
 
 
 def test_scaling_io_dtype():
@@ -116,7 +116,7 @@ def test_scaling_io_dtype():
                 # Check the data is within reasonable bounds. The exact bounds
                 # are a little annoying to calculate - see
                 # nibabel/tests/test_round_trip for inspiration
-                data_back = img.get_data().copy() # copy to detach from file
+                data_back = img.get_fdata().copy() # copy to detach from file
                 del img
                 top = np.abs(data - data_back)
                 nzs = (top !=0) & (data !=0)
@@ -227,11 +227,11 @@ def test_header_roundtrip():
 
 def test_file_roundtrip():
     img = load_image(anatfile)
-    data = img.get_data()
+    data = img.get_fdata()
     with InTemporaryDirectory():
         save_image(img, 'img.nii.gz')
         img2 = load_image('img.nii.gz')
-        data2 = img2.get_data()
+        data2 = img2.get_fdata()
     # verify data
     assert_almost_equal(data2, data)
     assert_almost_equal(data2.mean(), data.mean())
@@ -250,7 +250,7 @@ def test_roundtrip_from_array():
     with InTemporaryDirectory():
         save_image(img, 'img.nii.gz')
         img2 = load_image('img.nii.gz')
-        data2 = img2.get_data()
+        data2 = img2.get_fdata()
     # verify data
     assert_almost_equal(data2, data)
     assert_almost_equal(data2.mean(), data.mean())
@@ -269,7 +269,7 @@ def test_as_image():
     img1 = as_image(six.text_type(funcfile))  # unicode
     img2 = as_image(img)
     assert_equal(img.affine, img1.affine)
-    assert_array_equal(img.get_data(), img1.get_data())
+    assert_array_equal(img.get_fdata(), img1.get_fdata())
     assert_true(img is img2)
 
 

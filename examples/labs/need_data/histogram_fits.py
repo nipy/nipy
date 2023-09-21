@@ -44,11 +44,11 @@ if (not os.path.exists(mask_image)) or (not os.path.exists(input_image)):
 
 # Read the mask
 nim = load(mask_image)
-mask = nim.get_data()
+mask = nim.get_fdata()
 
 # read the functional image
 rbeta = load(input_image)
-beta = rbeta.get_data()
+beta = rbeta.get_fdata()
 beta = beta[mask > 0]
 
 mf = plt.figure(figsize=(13, 5))

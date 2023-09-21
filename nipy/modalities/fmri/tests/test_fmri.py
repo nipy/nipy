@@ -49,7 +49,7 @@ def test_iter():
     img_shape = img.shape
     exp_shape = (img_shape[0],) + img_shape[2:]
     j = 0
-    for i, d in axis0_generator(img.get_data()):
+    for i, d in axis0_generator(img.get_fdata()):
         j += 1
         assert_equal(d.shape, exp_shape)
         del(i); gc.collect()
@@ -66,9 +66,9 @@ def test_subcoordmap():
 
 def test_labels1():
     img = load_image(funcfile)
-    data = img.get_data()
-    parcelmap = Image(img[0].get_data(), AfT('kji', 'zyx', np.eye(4)))
-    parcelmap = (parcelmap.get_data() * 100).astype(np.int32)
+    data = img.get_fdata()
+    parcelmap = Image(img[0].get_fdata(), AfT('kji', 'zyx', np.eye(4)))
+    parcelmap = (parcelmap.get_fdata() * 100).astype(np.int32)
     v = 0
     for i, d in axis0_generator(data, parcels(parcelmap)):
         v += d.shape[1]

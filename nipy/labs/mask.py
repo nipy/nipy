@@ -159,12 +159,12 @@ def compute_mask_files(input_filename, output_filename=None,
         for index, filename in enumerate(input_filename):
             nim = load(filename)
             if index == 0:
-                first_volume = nim.get_data().squeeze()
+                first_volume = nim.get_fdata().squeeze()
                 mean_volume = first_volume.copy().astype(np.float32)
                 header = get_header(nim)
                 affine = get_affine(nim)
             else:
-                mean_volume += nim.get_data().squeeze()
+                mean_volume += nim.get_fdata().squeeze()
         mean_volume /= float(len(list(input_filename)))
     del nim
     if np.isnan(mean_volume).any():
@@ -296,8 +296,8 @@ def compute_mask_sessions(session_images, m=0.2, M=0.9, cc=1, threshold=0.5,
     """
     mask, mean = None, None
     for index, session in enumerate(session_images):
-        if hasattr(session, 'get_data'):
-            mean = session.get_data()
+        if hasattr(session, 'get_fdata'):
+            mean = session.get_fdata()
             if mean.ndim > 3:
                 mean = mean.mean(-1)
             this_mask = compute_mask(mean, None, m=m, M=M, cc=cc,
@@ -373,7 +373,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
     for this_mask in input_masks:
         if isinstance(this_mask, string_types):
             # We have a filename
-            this_mask = load(this_mask).get_data()
+            this_mask = load(this_mask).get_fdata()
         if grp_mask is None:
             grp_mask = this_mask.copy().astype(np.int_)
         else:
@@ -450,7 +450,7 @@ def series_from_mask(filenames, mask, dtype=np.float32,
         # We have a 4D nifti file
         data_file = load(filenames)
         header = get_header(data_file)
-        series = data_file.get_data()
+        series = data_file.get_fdata()
         if ensure_finite:
             # SPM tends to put NaNs in the data outside the brain
             series[np.logical_not(np.isfinite(series))] = 0
@@ -471,7 +471,7 @@ def series_from_mask(filenames, mask, dtype=np.float32,
         series = np.zeros((mask.sum(), nb_time_points), dtype=dtype)
         for index, filename in enumerate(filenames):
             data_file = load(filename)
-            data = data_file.get_data()
+            data = data_file.get_fdata()
             if ensure_finite:
                 # SPM tends to put NaNs in the data outside the brain
                 data[np.logical_not(np.isfinite(data))] = 0

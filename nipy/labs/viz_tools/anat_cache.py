@@ -76,7 +76,7 @@ class _AnatCache(object):
                         'required to plot anatomy, see the nipy documentation '
                         'installaton section for how to install template files.')
             anat_im = load(filename)
-            anat = anat_im.get_data()
+            anat = anat_im.get_fdata()
             anat = anat.astype(np.float64)
             anat_mask = ndimage.morphology.binary_fill_holes(anat > 0)
             anat = np.ma.masked_array(anat, np.logical_not(anat_mask))
