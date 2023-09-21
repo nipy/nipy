@@ -1,0 +1,34 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  test_spin:
+    strategy:
+      matrix:
+        python_version: ["3.9"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python_version }}
+          allow-prereleases: true
+      - name: Install
+        run: |
+          pip install numpy "Cython<3" nose nibabel "sympy<1.6" scipy
+          pip install .
+      - name: Library tests
+        run: |
+          cd ..
+          python ../tools/nipnost --verbosity=3 nipy
