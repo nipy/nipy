@@ -45,7 +45,9 @@ jobs:
           python ../nipy/tools/nipnost --traverse-namespace --verbosity=3 \
             --with-coverage --cover-xml-file=../nipy/coverage.xml --cover-config-file=../nipy/.coveragerc \
             nipy
+      - name: See what's where
+        run: ls -lR ..
       - name: Upload to codecov
         uses: codecov/codecov-action@v3
         with:
-          files: coverage.xml
+          files: ./coverage.xml
