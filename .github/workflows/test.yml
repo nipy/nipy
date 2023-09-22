@@ -34,7 +34,7 @@ jobs:
           allow-prereleases: true
       - name: Install
         run: |
-          pip install numpy "Cython<3" nose nibabel "sympy<1.6" scipy coverage
+          pip install nose3 coverage
           pip install .
       - name: Show environment
         run: env
