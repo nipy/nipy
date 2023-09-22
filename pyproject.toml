@@ -26,4 +26,17 @@ select = [
     'SIM111',
     'SIM118',
     'SIM2',
+
+[tool.spin]
+package = 'nipy'
+
+[tool.spin.commands]
+Build = [
+    'spin.cmds.meson.build',
+    'spin.cmds.meson.test'
+]
+Environments = [
+    'spin.cmds.meson.ipython',
+    'spin.cmds.meson.python',
+    'spin.cmds.meson.run'
 ]
