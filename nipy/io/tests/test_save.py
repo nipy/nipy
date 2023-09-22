@@ -1,27 +1,17 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import with_statement
-from __future__ import absolute_import
 
 import numpy as np
-
 from nibabel.affines import from_matvec
-
-from nipy.io.api import load_image, save_image
-from nipy.core import api
-from nipy.core.reference.coordinate_map import (
-    AffineTransform as AT)
-from nipy.core.reference.coordinate_system import (
-    CoordinateSystem as CS)
-from nipy.core.reference.spaces import mni_csm
-
 from nibabel.tmpdirs import InTemporaryDirectory
-
-from nose.tools import (assert_true, assert_false, assert_equal,
-                        assert_not_equal)
-
+from nose.tools import assert_equal, assert_false, assert_not_equal, assert_true
 from numpy.testing import assert_array_almost_equal
 
+from nipy.core import api
+from nipy.core.reference.coordinate_map import AffineTransform as AT
+from nipy.core.reference.coordinate_system import CoordinateSystem as CS
+from nipy.core.reference.spaces import mni_csm
+from nipy.io.api import load_image, save_image
 from nipy.testing import funcfile
 
 TMP_FNAME = 'afile.nii'
@@ -42,7 +32,7 @@ def test_save1():
 
 def test_save2():
     # A test to ensure that when a file is saved, the affine and the
-    # data agree. This image comes from a NIFTI file 
+    # data agree. This image comes from a NIFTI file
     shape = (13,5,7,3)
     step = np.array([3.45,2.3,4.5,6.93])
     cmap = api.AffineTransform.from_start_step('ijkt', 'xyzt', [1,3,5,0], step)
@@ -119,7 +109,7 @@ def test_save4():
     # reload
     mni_xyz = mni_csm(3).coord_names
     cmap = AT(CS('tkji'),
-              CS((('t',) + mni_xyz[::-1])),
+              CS(('t',) + mni_xyz[::-1]),
               from_matvec(np.diag([2., 3, 5, 1]), step))
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)

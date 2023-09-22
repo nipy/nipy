@@ -1,29 +1,33 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from os.path import dirname, join as pjoin
-
-import six
-
-import numpy as np
+from os.path import dirname
+from os.path import join as pjoin
 
 import nibabel as nib
+import numpy as np
+import six
+from nibabel import Nifti1Header
 from nibabel.filebasedimages import ImageFileError
 from nibabel.spatialimages import HeaderDataError
-from nibabel import Nifti1Header
-
-from ..api import load_image, save_image, as_image
-from nipy.core.api import AffineTransform as AfT, Image, vox2mni
-
-from nipy.testing import (assert_true, assert_equal, assert_raises,
-                          assert_array_equal, assert_array_almost_equal,
-                          assert_almost_equal, funcfile, anatfile)
-
+from nibabel.tests.test_round_trip import big_bad_ulp
 from nibabel.tmpdirs import InTemporaryDirectory
 
+from nipy.core.api import AffineTransform as AfT
+from nipy.core.api import Image, vox2mni
+from nipy.testing import (
+    anatfile,
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+    assert_equal,
+    assert_raises,
+    assert_true,
+    funcfile,
+)
 from nipy.testing.decorators import if_templates
-from nipy.utils import templates, DataError
-from nibabel.tests.test_round_trip import big_bad_ulp
+from nipy.utils import DataError, templates
+
+from ..api import as_image, load_image, save_image
 
 gimg = None
 

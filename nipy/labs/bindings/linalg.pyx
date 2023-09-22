@@ -19,65 +19,65 @@ cdef extern from "fff_blas.h":
         CblasNoTrans=111
         CblasTrans=112
         CblasConjTrans=113
-            
+
     ctypedef enum CBLAS_UPLO_t:
         CblasUpper=121
         CblasLower=122
-                
+
     ctypedef enum CBLAS_DIAG_t:
         CblasNonUnit=131
         CblasUnit=132
-                    
+
     ctypedef enum CBLAS_SIDE_t:
         CblasLeft=141
         CblasRight=142
 
     ## BLAS level 1
-    double fff_blas_ddot(fff_vector * x, fff_vector * y) 
-    double fff_blas_dnrm2(fff_vector * x) 
+    double fff_blas_ddot(fff_vector * x, fff_vector * y)
+    double fff_blas_dnrm2(fff_vector * x)
     double fff_blas_dasum(fff_vector * x)
     size_t fff_blas_idamax(fff_vector * x)
-    int fff_blas_dswap(fff_vector * x, fff_vector * y) 
-    fff_blas_dcopy(fff_vector * x, fff_vector * y) 
-    int fff_blas_daxpy(double alpha, fff_vector * x, fff_vector * y) 
-    int fff_blas_dscal(double alpha, fff_vector * x) 
-    int fff_blas_drot(fff_vector * x, fff_vector * y, double c, double s) 
+    int fff_blas_dswap(fff_vector * x, fff_vector * y)
+    fff_blas_dcopy(fff_vector * x, fff_vector * y)
+    int fff_blas_daxpy(double alpha, fff_vector * x, fff_vector * y)
+    int fff_blas_dscal(double alpha, fff_vector * x)
+    int fff_blas_drot(fff_vector * x, fff_vector * y, double c, double s)
 
     ## BLAS level 2
-    int fff_blas_dgemv(CBLAS_TRANSPOSE_t TransA, double alpha, 
-                       fff_matrix * A,  fff_vector * x, double beta, fff_vector * y) 
-    int fff_blas_dtrmv(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag, 
-                       fff_matrix * A, fff_vector * x) 
+    int fff_blas_dgemv(CBLAS_TRANSPOSE_t TransA, double alpha,
+                       fff_matrix * A,  fff_vector * x, double beta, fff_vector * y)
+    int fff_blas_dtrmv(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag,
+                       fff_matrix * A, fff_vector * x)
     int fff_blas_dtrsv(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag,
-                       fff_matrix * A, fff_vector * x) 
-    int fff_blas_dsymv(CBLAS_UPLO_t Uplo, 
-                       double alpha,  fff_matrix * A, 
-                       fff_vector * x, double beta, fff_vector * y) 
+                       fff_matrix * A, fff_vector * x)
+    int fff_blas_dsymv(CBLAS_UPLO_t Uplo,
+                       double alpha,  fff_matrix * A,
+                       fff_vector * x, double beta, fff_vector * y)
     int fff_blas_dger(double alpha,  fff_vector * x,  fff_vector * y, fff_matrix * A)
-    int fff_blas_dsyr(CBLAS_UPLO_t Uplo, double alpha,  fff_vector * x, fff_matrix * A) 
-    int fff_blas_dsyr2(CBLAS_UPLO_t Uplo, double alpha, 
-                       fff_vector * x,  fff_vector * y, fff_matrix * A) 
+    int fff_blas_dsyr(CBLAS_UPLO_t Uplo, double alpha,  fff_vector * x, fff_matrix * A)
+    int fff_blas_dsyr2(CBLAS_UPLO_t Uplo, double alpha,
+                       fff_vector * x,  fff_vector * y, fff_matrix * A)
 
     ## BLAS level 3
-    int fff_blas_dgemm(CBLAS_TRANSPOSE_t TransA, CBLAS_TRANSPOSE_t TransB, 
-                       double alpha,  fff_matrix * A, 
-                       fff_matrix * B, double beta, 
-                       fff_matrix * C) 
-    int fff_blas_dsymm(CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo, 
-                       double alpha,  fff_matrix * A, 
+    int fff_blas_dgemm(CBLAS_TRANSPOSE_t TransA, CBLAS_TRANSPOSE_t TransB,
+                       double alpha,  fff_matrix * A,
                        fff_matrix * B, double beta,
                        fff_matrix * C)
-    int fff_blas_dtrmm(CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo, 
-                       CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag, 
+    int fff_blas_dsymm(CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo,
+                       double alpha,  fff_matrix * A,
+                       fff_matrix * B, double beta,
+                       fff_matrix * C)
+    int fff_blas_dtrmm(CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo,
+                       CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag,
                        double alpha,  fff_matrix * A, fff_matrix * B)
-    int fff_blas_dtrsm(CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo, 
-                       CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag, 
-                       double alpha,  fff_matrix * A, fff_matrix * B) 
-    int fff_blas_dsyrk(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans, 
-                       double alpha,  fff_matrix * A, double beta, fff_matrix * C) 
-    int fff_blas_dsyr2k(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans, 
-                        double alpha,  fff_matrix * A,  fff_matrix * B, 
-                        double beta, fff_matrix * C) 
+    int fff_blas_dtrsm(CBLAS_SIDE_t Side, CBLAS_UPLO_t Uplo,
+                       CBLAS_TRANSPOSE_t TransA, CBLAS_DIAG_t Diag,
+                       double alpha,  fff_matrix * A, fff_matrix * B)
+    int fff_blas_dsyrk(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans,
+                       double alpha,  fff_matrix * A, double beta, fff_matrix * C)
+    int fff_blas_dsyr2k(CBLAS_UPLO_t Uplo, CBLAS_TRANSPOSE_t Trans,
+                        double alpha,  fff_matrix * A,  fff_matrix * B,
+                        double beta, fff_matrix * C)
 
 
 # Initialize numpy
@@ -87,7 +87,7 @@ import numpy as np
 
 # Binded routines
 
-## fff_vector.h 
+## fff_vector.h
 def vector_get(X, size_t i):
     """
     Get i-th element.
@@ -282,7 +282,7 @@ def vector_quantile(X, double r, int interp):
     return q
 
 
-## fff_matrix.h 
+## fff_matrix.h
 def matrix_get(A, size_t i, size_t j):
     """
     Get (i,j) element.
@@ -346,7 +346,7 @@ cdef CBLAS_DIAG_t flag_diag( int flag ):
     else:
         x = CblasUnit
     return x
-                    
+
 cdef CBLAS_SIDE_t flag_side( int flag ):
     cdef CBLAS_SIDE_t x
     if flag <= 0:
@@ -357,7 +357,7 @@ cdef CBLAS_SIDE_t flag_side( int flag ):
 
 
 ### BLAS 1
-def blas_dnrm2(X): 
+def blas_dnrm2(X):
     cdef fff_vector *x
     x = fff_vector_fromPyArray(X)
     return fff_blas_dnrm2(x)
@@ -373,13 +373,13 @@ def blas_ddot(X, Y):
     y = fff_vector_fromPyArray(Y)
     return fff_blas_ddot(x, y)
 
-def blas_daxpy(double alpha, X, Y): 
+def blas_daxpy(double alpha, X, Y):
     cdef fff_vector *x, *y, *z
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     z = fff_vector_new(y.size)
     fff_vector_memcpy(z, y)
-    fff_blas_daxpy(alpha, x, z) 
+    fff_blas_daxpy(alpha, x, z)
     Z = fff_vector_toPyArray(z)
     return Z
 
@@ -388,17 +388,17 @@ def blas_dscal(double alpha, X):
     x = fff_vector_fromPyArray(X)
     y = fff_vector_new(x.size)
     fff_vector_memcpy(y, x)
-    fff_blas_dscal(alpha, y) 
+    fff_blas_dscal(alpha, y)
     Y = fff_vector_toPyArray(y)
     return Y
-    
 
 
-### BLAS 3   
+
+### BLAS 3
 def blas_dgemm(int TransA, int TransB, double alpha, A, B, double beta, C):
     """
     D = blas_dgemm(int TransA, int TransB, double alpha, A, B, double beta, C).
-    
+
     Compute the matrix-matrix product and sum D = alpha op(A) op(B) +
     beta C where op(A) = A, A^T, A^H for TransA = CblasNoTrans,
     CblasTrans, CblasConjTrans and similarly for the parameter TransB.
@@ -420,7 +420,7 @@ def blas_dgemm(int TransA, int TransB, double alpha, A, B, double beta, C):
 def blas_dsymm(int Side, int Uplo, double alpha, A, B, beta, C):
     """
     D = blas_dsymm(int Side, int Uplo, double alpha, A, B, beta, C).
-    
+
     Compute the matrix-matrix product and sum C = \alpha A B + \beta C
     for Side is CblasLeft and C = \alpha B A + \beta C for Side is
     CblasRight, where the matrix A is symmetric. When Uplo is
@@ -444,7 +444,7 @@ def blas_dsymm(int Side, int Uplo, double alpha, A, B, beta, C):
 def blas_dtrmm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B):
     """
     C = blas_dtrmm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B).
-    
+
     Compute the matrix-matrix product B = \alpha op(A) B for Side
     is CblasLeft and B = \alpha B op(A) for Side is CblasRight. The
     matrix A is triangular and op(A) = A, A^T, A^H for TransA =
@@ -471,7 +471,7 @@ def blas_dtrmm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B):
 def blas_dtrsm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B):
     """
     blas_dtrsm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B).
-    
+
     Compute the inverse-matrix matrix product B = \alpha
     op(inv(A))B for Side is CblasLeft and B = \alpha B op(inv(A)) for
     Side is CblasRight. The matrix A is triangular and op(A) = A, A^T,
@@ -498,7 +498,7 @@ def blas_dtrsm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B):
 def blas_dsyrk(int Uplo, int Trans, double alpha, A, double beta, C):
     """
     D = blas_dsyrk(int Uplo, int Trans, double alpha, A, double beta, C).
-    
+
     Compute a rank-k update of the symmetric matrix C, C = \alpha A
     A^T + \beta C when Trans is CblasNoTrans and C = \alpha A^T A +
     \beta C when Trans is CblasTrans. Since the matrix C is symmetric
@@ -541,6 +541,3 @@ def blas_dsyr2k(int Uplo, int Trans, double alpha, A, B, double beta, C):
     fff_matrix_delete(c)
     D = fff_matrix_toPyArray(d)
     return D
-
-
-

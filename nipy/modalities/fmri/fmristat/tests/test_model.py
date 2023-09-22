@@ -1,29 +1,25 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import with_statement
-from __future__ import absolute_import
 
 import numpy as np
-
-from nipy.io.api import load_image
-from nipy.core.image.image import rollimg
-
-from  .. import model
-from ..model import ModelOutputImage, estimateAR
-from ...api import FmriImageList
-
-from nipy.algorithms.statistics.models.regression import (
-    OLSModel, ar_bias_corrector, ar_bias_correct)
-from nipy.algorithms.statistics.formula.formulae import(
-    Formula, Term, make_recarray)
-
-
 from nibabel.tmpdirs import InTemporaryDirectory
+from nose.tools import assert_equal, assert_raises, assert_true
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from nose.tools import assert_raises, assert_true, assert_equal
+from nipy.algorithms.statistics.formula.formulae import Formula, Term, make_recarray
+from nipy.algorithms.statistics.models.regression import (
+    OLSModel,
+    ar_bias_correct,
+    ar_bias_corrector,
+)
+from nipy.core.image.image import rollimg
+from nipy.io.api import load_image
+from nipy.testing import anatfile, funcfile
 
-from numpy.testing import assert_array_equal, assert_array_almost_equal
-from nipy.testing import funcfile, anatfile
+from ...api import FmriImageList
+from .. import model
+from ..model import ModelOutputImage, estimateAR
+
 
 def test_model_out_img():
     # Model output image
@@ -55,7 +51,7 @@ def test_run():
     f = Formula([t, t**2, t**3, 1])
     # Design matrix and contrasts
     time_vector = make_recarray(fmriims.volume_start_times, 't')
-    con_defs = dict(c=t, c2=t+t**2)
+    con_defs = {'c': t, 'c2': t+t**2}
     desmtx, cmatrices = f.design(time_vector, contrasts=con_defs)
 
     # Run with Image and ImageList

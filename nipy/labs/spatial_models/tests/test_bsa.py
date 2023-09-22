@@ -5,7 +5,6 @@ Tests for bayesian_structural_analysis
 
 Author : Bertrand Thirion, 2009
 """
-from __future__ import absolute_import
 #autoindent
 
 import numpy as np
@@ -15,7 +14,7 @@ from nose.tools import assert_true
 from nipy.testing import assert_array_equal
 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
-from ..bayesian_structural_analysis import compute_landmarks, _stat_to_proba
+from ..bayesian_structural_analysis import _stat_to_proba, compute_landmarks
 from ..discrete_domain import domain_from_binary_array
 
 
@@ -94,7 +93,7 @@ def test_pproba():
     order = np.argsort(-test)
     learn = np.random.rand(100)
     learn[:20] += 3
-    # 
+    #
     pval = _stat_to_proba(test)
     # check that pvals are between 0 and 1, and that its is monotonous
     assert_true((pval >= 0).all())
@@ -111,7 +110,7 @@ def test_pproba():
         assert_true((pval >= 0).all())
         assert_true((pval <= 1).all())
         # assert_array_equal(pval[order], np.sort(pval), 6)
-    
+
 
 
 if __name__ == '__main__':

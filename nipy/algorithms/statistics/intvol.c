@@ -750,7 +750,7 @@ static CYTHON_INLINE float __PYX_NAN() {
 #include "numpy/ufuncobject.h"
 
     /* NumPy API declarations from "numpy/__init__.pxd" */
-    
+
 #include "math.h"
 #ifdef _OPENMP
 #include <omp.h>
@@ -1026,7 +1026,7 @@ typedef struct {
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":689
  * # in Cython to enable them only on the right systems.
- * 
+ *
  * ctypedef npy_int8       int8_t             # <<<<<<<<<<<<<<
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t
@@ -1034,7 +1034,7 @@ typedef struct {
 typedef npy_int8 __pyx_t_5numpy_int8_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":690
- * 
+ *
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t             # <<<<<<<<<<<<<<
  * ctypedef npy_int32      int32_t
@@ -1062,7 +1062,7 @@ typedef npy_int64 __pyx_t_5numpy_int64_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":696
  * #ctypedef npy_int128     int128_t
- * 
+ *
  * ctypedef npy_uint8      uint8_t             # <<<<<<<<<<<<<<
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t
@@ -1070,7 +1070,7 @@ typedef npy_int64 __pyx_t_5numpy_int64_t;
 typedef npy_uint8 __pyx_t_5numpy_uint8_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":697
- * 
+ *
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t             # <<<<<<<<<<<<<<
  * ctypedef npy_uint32     uint32_t
@@ -1098,7 +1098,7 @@ typedef npy_uint64 __pyx_t_5numpy_uint64_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":703
  * #ctypedef npy_uint128    uint128_t
- * 
+ *
  * ctypedef npy_float32    float32_t             # <<<<<<<<<<<<<<
  * ctypedef npy_float64    float64_t
  * #ctypedef npy_float80    float80_t
@@ -1106,7 +1106,7 @@ typedef npy_uint64 __pyx_t_5numpy_uint64_t;
 typedef npy_float32 __pyx_t_5numpy_float32_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":704
- * 
+ *
  * ctypedef npy_float32    float32_t
  * ctypedef npy_float64    float64_t             # <<<<<<<<<<<<<<
  * #ctypedef npy_float80    float80_t
@@ -1128,7 +1128,7 @@ typedef npy_long __pyx_t_5numpy_int_t;
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t             # <<<<<<<<<<<<<<
  * ctypedef npy_longlong   longlong_t
- * 
+ *
  */
 typedef npy_longlong __pyx_t_5numpy_long_t;
 
@@ -1136,14 +1136,14 @@ typedef npy_longlong __pyx_t_5numpy_long_t;
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t
  * ctypedef npy_longlong   longlong_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_ulong      uint_t
  */
 typedef npy_longlong __pyx_t_5numpy_longlong_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":717
  * ctypedef npy_longlong   longlong_t
- * 
+ *
  * ctypedef npy_ulong      uint_t             # <<<<<<<<<<<<<<
  * ctypedef npy_ulonglong  ulong_t
  * ctypedef npy_ulonglong  ulonglong_t
@@ -1151,11 +1151,11 @@ typedef npy_longlong __pyx_t_5numpy_longlong_t;
 typedef npy_ulong __pyx_t_5numpy_uint_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":718
- * 
+ *
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t             # <<<<<<<<<<<<<<
  * ctypedef npy_ulonglong  ulonglong_t
- * 
+ *
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
 
@@ -1163,32 +1163,32 @@ typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t
  * ctypedef npy_ulonglong  ulonglong_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_intp       intp_t
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":721
  * ctypedef npy_ulonglong  ulonglong_t
- * 
+ *
  * ctypedef npy_intp       intp_t             # <<<<<<<<<<<<<<
  * ctypedef npy_uintp      uintp_t
- * 
+ *
  */
 typedef npy_intp __pyx_t_5numpy_intp_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":722
- * 
+ *
  * ctypedef npy_intp       intp_t
  * ctypedef npy_uintp      uintp_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_double     float_t
  */
 typedef npy_uintp __pyx_t_5numpy_uintp_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":724
  * ctypedef npy_uintp      uintp_t
- * 
+ *
  * ctypedef npy_double     float_t             # <<<<<<<<<<<<<<
  * ctypedef npy_double     double_t
  * ctypedef npy_longdouble longdouble_t
@@ -1196,11 +1196,11 @@ typedef npy_uintp __pyx_t_5numpy_uintp_t;
 typedef npy_double __pyx_t_5numpy_float_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":725
- * 
+ *
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t             # <<<<<<<<<<<<<<
  * ctypedef npy_longdouble longdouble_t
- * 
+ *
  */
 typedef npy_double __pyx_t_5numpy_double_t;
 
@@ -1208,7 +1208,7 @@ typedef npy_double __pyx_t_5numpy_double_t;
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t
  * ctypedef npy_longdouble longdouble_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_cfloat      cfloat_t
  */
 typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
@@ -1241,7 +1241,7 @@ static CYTHON_INLINE __pyx_t_double_complex __pyx_t_double_complex_from_parts(do
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":728
  * ctypedef npy_longdouble longdouble_t
- * 
+ *
  * ctypedef npy_cfloat      cfloat_t             # <<<<<<<<<<<<<<
  * ctypedef npy_cdouble     cdouble_t
  * ctypedef npy_clongdouble clongdouble_t
@@ -1249,11 +1249,11 @@ static CYTHON_INLINE __pyx_t_double_complex __pyx_t_double_complex_from_parts(do
 typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":729
- * 
+ *
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t             # <<<<<<<<<<<<<<
  * ctypedef npy_clongdouble clongdouble_t
- * 
+ *
  */
 typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
 
@@ -1261,16 +1261,16 @@ typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t
  * ctypedef npy_clongdouble clongdouble_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_cdouble     complex_t
  */
 typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":732
  * ctypedef npy_clongdouble clongdouble_t
- * 
+ *
  * ctypedef npy_cdouble     complex_t             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew1(a):
  */
 typedef npy_cdouble __pyx_t_5numpy_complex_t;
@@ -2292,8 +2292,8 @@ static PyObject *__pyx_codeobj__44;
 /* Late includes */
 
 /* "nipy/algorithms/statistics/intvol.pyx":36
- * 
- * 
+ *
+ *
  * cpdef double mu3_tet(double D00, double D01, double D02, double D03,             # <<<<<<<<<<<<<<
  *                      double D11, double D12, double D13,
  *                      double D22, double D23,
@@ -2389,7 +2389,7 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu3_tet(double __p
  *   if v2 <= 0:
  *       return 0             # <<<<<<<<<<<<<<
  *   return sqrt(v2) / 6.
- * 
+ *
  */
     __pyx_r = 0.0;
     goto __pyx_L0;
@@ -2407,15 +2407,15 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu3_tet(double __p
  *   if v2 <= 0:
  *       return 0
  *   return sqrt(v2) / 6.             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = (sqrt(__pyx_v_v2) / 6.);
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":36
- * 
- * 
+ *
+ *
  * cpdef double mu3_tet(double D00, double D01, double D02, double D03,             # <<<<<<<<<<<<<<
  *                      double D11, double D12, double D13,
  *                      double D22, double D23,
@@ -2606,8 +2606,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_mu3_tet(CYTHON
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":91
- * 
- * 
+ *
+ *
  * cpdef double mu2_tet(double D00, double D01, double D02, double D03,             # <<<<<<<<<<<<<<
  *                      double D11, double D12, double D13,
  *                      double D22, double D23,
@@ -2659,7 +2659,7 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu2_tet(double __p
  *   mu += mu2_tri(D11, D12, D13, D22, D23, D33)
  *   mu += mu2_tri(D00, D01, D03, D11, D13, D33)             # <<<<<<<<<<<<<<
  *   return mu * 0.5
- * 
+ *
  */
   __pyx_v_mu = (__pyx_v_mu + __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu2_tri(__pyx_v_D00, __pyx_v_D01, __pyx_v_D03, __pyx_v_D11, __pyx_v_D13, __pyx_v_D33, 0));
 
@@ -2667,15 +2667,15 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu2_tet(double __p
  *   mu += mu2_tri(D11, D12, D13, D22, D23, D33)
  *   mu += mu2_tri(D00, D01, D03, D11, D13, D33)
  *   return mu * 0.5             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = (__pyx_v_mu * 0.5);
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":91
- * 
- * 
+ *
+ *
  * cpdef double mu2_tet(double D00, double D01, double D02, double D03,             # <<<<<<<<<<<<<<
  *                      double D11, double D12, double D13,
  *                      double D22, double D23,
@@ -2866,8 +2866,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_2mu2_tet(CYTHO
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":138
- * 
- * 
+ *
+ *
  * cpdef double mu1_tet(double D00, double D01, double D02, double D03,             # <<<<<<<<<<<<<<
  *                      double D11, double D12, double D13,
  *                      double D22, double D23,
@@ -2937,7 +2937,7 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu1_tet(double __p
  *   mu += _mu1_tetface(D11, D13, D33, D01, D12, D03, D23, D00, D02, D22)
  *   mu += _mu1_tetface(D22, D23, D33, D02, D12, D03, D13, D00, D01, D11)             # <<<<<<<<<<<<<<
  *   return mu
- * 
+ *
  */
   __pyx_v_mu = (__pyx_v_mu + __pyx_f_4nipy_10algorithms_10statistics_6intvol__mu1_tetface(__pyx_v_D22, __pyx_v_D23, __pyx_v_D33, __pyx_v_D02, __pyx_v_D12, __pyx_v_D03, __pyx_v_D13, __pyx_v_D00, __pyx_v_D01, __pyx_v_D11, 0));
 
@@ -2945,15 +2945,15 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu1_tet(double __p
  *   mu += _mu1_tetface(D11, D13, D33, D01, D12, D03, D23, D00, D02, D22)
  *   mu += _mu1_tetface(D22, D23, D33, D02, D12, D03, D13, D00, D01, D11)
  *   return mu             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = __pyx_v_mu;
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":138
- * 
- * 
+ *
+ *
  * cpdef double mu1_tet(double D00, double D01, double D02, double D03,             # <<<<<<<<<<<<<<
  *                      double D11, double D12, double D13,
  *                      double D22, double D23,
@@ -3144,11 +3144,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_4mu1_tet(CYTHO
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":189
- * 
- * 
+ *
+ *
  * cdef inline double limited_acos(double val) nogil:             # <<<<<<<<<<<<<<
  *     """ Check for -1 <= val <= 1 before returning acos(val)
- * 
+ *
  */
 
 static CYTHON_INLINE double __pyx_f_4nipy_10algorithms_10statistics_6intvol_limited_acos(double __pyx_v_val) {
@@ -3199,7 +3199,7 @@ static CYTHON_INLINE double __pyx_f_4nipy_10algorithms_10statistics_6intvol_limi
  *     elif val <= -1:
  *         return PI             # <<<<<<<<<<<<<<
  *     return acos(val)
- * 
+ *
  */
     __pyx_r = __pyx_v_4nipy_10algorithms_10statistics_6intvol_PI;
     goto __pyx_L0;
@@ -3217,18 +3217,18 @@ static CYTHON_INLINE double __pyx_f_4nipy_10algorithms_10statistics_6intvol_limi
  *     elif val <= -1:
  *         return PI
  *     return acos(val)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = acos(__pyx_v_val);
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":189
- * 
- * 
+ *
+ *
  * cdef inline double limited_acos(double val) nogil:             # <<<<<<<<<<<<<<
  *     """ Check for -1 <= val <= 1 before returning acos(val)
- * 
+ *
  */
 
   /* function exit code */
@@ -3237,7 +3237,7 @@ static CYTHON_INLINE double __pyx_f_4nipy_10algorithms_10statistics_6intvol_limi
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":202
- * 
+ *
  * @cython.cdivision(True)
  * cpdef double _mu1_tetface(double Ds0s0,             # <<<<<<<<<<<<<<
  *                           double Ds0s1,
@@ -3264,7 +3264,7 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol__mu1_tetface(doubl
 
   /* "nipy/algorithms/statistics/intvol.pyx":215
  *     cdef double length, norm_proj0, norm_proj1, inner_prod_proj
- * 
+ *
  *     A00 = Ds1s1 - 2 * Ds0s1 + Ds0s0             # <<<<<<<<<<<<<<
  *     # all norms divided by this value, leading to NaN value for output, for
  *     # values <= 0
@@ -3433,7 +3433,7 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol__mu1_tetface(doubl
  *     acosval = limited_acos(inner_prod_proj / sqrt(np_len))
  *     a = (PI - acosval) * length / (2 * PI)             # <<<<<<<<<<<<<<
  *     return a
- * 
+ *
  */
   __pyx_v_a = (((__pyx_v_4nipy_10algorithms_10statistics_6intvol_PI - __pyx_v_acosval) * __pyx_v_length) / (2.0 * __pyx_v_4nipy_10algorithms_10statistics_6intvol_PI));
 
@@ -3441,14 +3441,14 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol__mu1_tetface(doubl
  *     acosval = limited_acos(inner_prod_proj / sqrt(np_len))
  *     a = (PI - acosval) * length / (2 * PI)
  *     return a             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = __pyx_v_a;
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":202
- * 
+ *
  * @cython.cdivision(True)
  * cpdef double _mu1_tetface(double Ds0s0,             # <<<<<<<<<<<<<<
  *                           double Ds0s1,
@@ -3639,8 +3639,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_6_mu1_tetface(
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":238
- * 
- * 
+ *
+ *
  * cpdef double mu2_tri(double D00, double D01, double D02,             # <<<<<<<<<<<<<<
  *                      double D11, double D12,
  *                      double D22) nogil:
@@ -3706,7 +3706,7 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu2_tri(double __p
  *   if L < 0:
  *       return 0.0             # <<<<<<<<<<<<<<
  *   return sqrt(L) * 0.5
- * 
+ *
  */
     __pyx_r = 0.0;
     goto __pyx_L0;
@@ -3724,15 +3724,15 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu2_tri(double __p
  *   if L < 0:
  *       return 0.0
  *   return sqrt(L) * 0.5             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = (sqrt(__pyx_v_L) * 0.5);
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":238
- * 
- * 
+ *
+ *
  * cpdef double mu2_tri(double D00, double D01, double D02,             # <<<<<<<<<<<<<<
  *                      double D11, double D12,
  *                      double D22) nogil:
@@ -3879,8 +3879,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_8mu2_tri(CYTHO
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":279
- * 
- * 
+ *
+ *
  * cpdef double mu1_tri(double D00, double D01, double D02,             # <<<<<<<<<<<<<<
  *                      double D11, double D12,
  *                      double D22) nogil:
@@ -3923,7 +3923,7 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu1_tri(double __p
  *   mu += mu1_edge(D00, D02, D22)
  *   mu += mu1_edge(D11, D12, D22)             # <<<<<<<<<<<<<<
  *   return mu * 0.5
- * 
+ *
  */
   __pyx_v_mu = (__pyx_v_mu + __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu1_edge(__pyx_v_D11, __pyx_v_D12, __pyx_v_D22, 0));
 
@@ -3931,15 +3931,15 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu1_tri(double __p
  *   mu += mu1_edge(D00, D02, D22)
  *   mu += mu1_edge(D11, D12, D22)
  *   return mu * 0.5             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = (__pyx_v_mu * 0.5);
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":279
- * 
- * 
+ *
+ *
  * cpdef double mu1_tri(double D00, double D01, double D02,             # <<<<<<<<<<<<<<
  *                      double D11, double D12,
  *                      double D22) nogil:
@@ -4086,11 +4086,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_10mu1_tri(CYTH
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":316
- * 
- * 
+ *
+ *
  * cpdef double mu1_edge(double D00, double D01, double D11) nogil:             # <<<<<<<<<<<<<<
  *   """ Compute the 1st intrinsic volume (length) of line segment
- * 
+ *
  */
 
 static PyObject *__pyx_pw_4nipy_10algorithms_10statistics_6intvol_13mu1_edge(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
@@ -4101,18 +4101,18 @@ static double __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu1_edge(double __
  *     length of line segment
  *   """
  *   return sqrt(D00 - 2*D01 + D11)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = sqrt(((__pyx_v_D00 - (2.0 * __pyx_v_D01)) + __pyx_v_D11));
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":316
- * 
- * 
+ *
+ *
  * cpdef double mu1_edge(double D00, double D01, double D11) nogil:             # <<<<<<<<<<<<<<
  *   """ Compute the 1st intrinsic volume (length) of line segment
- * 
+ *
  */
 
   /* function exit code */
@@ -4223,11 +4223,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_12mu1_edge(CYT
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":340
- * 
- * 
+ *
+ *
  * def EC3d(mask):             # <<<<<<<<<<<<<<
  *     """ Compute Euler characteristic of region within `mask`
- * 
+ *
  */
 
 /* Python wrapper */
@@ -4354,14 +4354,14 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *         np.ndarray[np.intp_t, ndim=1] strides
  *         np.npy_intp v0, v1, v2, v3 # vertices
  *         np.npy_intp l0 = 0             # <<<<<<<<<<<<<<
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1
  */
   __pyx_v_l0 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":392
  *         np.npy_intp l0 = 0
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1             # <<<<<<<<<<<<<<
  *     s0, s1, s2 = pmask_shape[:3]
  *     pmask = np.zeros(pmask_shape, dtype=np.uint8)
@@ -4396,7 +4396,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
   __pyx_t_3 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":393
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1
  *     s0, s1, s2 = pmask_shape[:3]             # <<<<<<<<<<<<<<
  *     pmask = np.zeros(pmask_shape, dtype=np.uint8)
@@ -4414,13 +4414,13 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     if (likely(PyTuple_CheckExact(sequence))) {
-      __pyx_t_1 = PyTuple_GET_ITEM(sequence, 0); 
-      __pyx_t_2 = PyTuple_GET_ITEM(sequence, 1); 
-      __pyx_t_4 = PyTuple_GET_ITEM(sequence, 2); 
+      __pyx_t_1 = PyTuple_GET_ITEM(sequence, 0);
+      __pyx_t_2 = PyTuple_GET_ITEM(sequence, 1);
+      __pyx_t_4 = PyTuple_GET_ITEM(sequence, 2);
     } else {
-      __pyx_t_1 = PyList_GET_ITEM(sequence, 0); 
-      __pyx_t_2 = PyList_GET_ITEM(sequence, 1); 
-      __pyx_t_4 = PyList_GET_ITEM(sequence, 2); 
+      __pyx_t_1 = PyList_GET_ITEM(sequence, 0);
+      __pyx_t_2 = PyList_GET_ITEM(sequence, 1);
+      __pyx_t_4 = PyList_GET_ITEM(sequence, 2);
     }
     __Pyx_INCREF(__pyx_t_1);
     __Pyx_INCREF(__pyx_t_2);
@@ -4506,7 +4506,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *     pmask = np.zeros(pmask_shape, dtype=np.uint8)
  *     pmask[:-1, :-1, :-1] = check_cast_bin8(mask)             # <<<<<<<<<<<<<<
  *     fpmask = pmask.reshape(-1)
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_check_cast_bin8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 395, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -4532,7 +4532,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *     pmask = np.zeros(pmask_shape, dtype=np.uint8)
  *     pmask[:-1, :-1, :-1] = check_cast_bin8(mask)
  *     fpmask = pmask.reshape(-1)             # <<<<<<<<<<<<<<
- * 
+ *
  *     strides = np.array(strides_from(pmask_shape, np.bool_), dtype=np.intp)
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_pmask, __pyx_n_s_reshape); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 396, __pyx_L1_error)
@@ -4577,9 +4577,9 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
 
   /* "nipy/algorithms/statistics/intvol.pyx":398
  *     fpmask = pmask.reshape(-1)
- * 
+ *
  *     strides = np.array(strides_from(pmask_shape, np.bool_), dtype=np.intp)             # <<<<<<<<<<<<<<
- * 
+ *
  *     # First do the interior contributions.
  */
   __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 398, __pyx_L1_error)
@@ -5020,7 +5020,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *                              cube_with_strides_center((1,1,0), strides),
  *                              cube_with_strides_center((1,1,1), strides)])             # <<<<<<<<<<<<<<
  *     c = cube_with_strides_center((0,0,0), strides)
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_20, __pyx_n_s_cube_with_strides_center); if (unlikely(!__pyx_t_20)) __PYX_ERR(0, 409, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_20);
@@ -5114,7 +5114,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *                              cube_with_strides_center((1,1,0), strides),
  *                              cube_with_strides_center((1,1,1), strides)])
  *     c = cube_with_strides_center((0,0,0), strides)             # <<<<<<<<<<<<<<
- * 
+ *
  *     d4 = np.array(list(c[4].difference(union[4])))
  */
   __Pyx_GetModuleGlobalName(__pyx_t_19, __pyx_n_s_cube_with_strides_center); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 410, __pyx_L1_error)
@@ -5169,7 +5169,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
 
   /* "nipy/algorithms/statistics/intvol.pyx":412
  *     c = cube_with_strides_center((0,0,0), strides)
- * 
+ *
  *     d4 = np.array(list(c[4].difference(union[4])))             # <<<<<<<<<<<<<<
  *     d3 = np.array(list(c[3].difference(union[3])))
  *     d2 = np.array(list(c[2].difference(union[2])))
@@ -5245,11 +5245,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
   __pyx_t_20 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":413
- * 
+ *
  *     d4 = np.array(list(c[4].difference(union[4])))
  *     d3 = np.array(list(c[3].difference(union[3])))             # <<<<<<<<<<<<<<
  *     d2 = np.array(list(c[2].difference(union[2])))
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_18, __pyx_n_s_np); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 413, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_18);
@@ -5325,7 +5325,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *     d4 = np.array(list(c[4].difference(union[4])))
  *     d3 = np.array(list(c[3].difference(union[3])))
  *     d2 = np.array(list(c[2].difference(union[2])))             # <<<<<<<<<<<<<<
- * 
+ *
  *     ds2 = d2.shape[0]
  */
   __Pyx_GetModuleGlobalName(__pyx_t_17, __pyx_n_s_np); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 414, __pyx_L1_error)
@@ -5400,7 +5400,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
 
   /* "nipy/algorithms/statistics/intvol.pyx":416
  *     d2 = np.array(list(c[2].difference(union[2])))
- * 
+ *
  *     ds2 = d2.shape[0]             # <<<<<<<<<<<<<<
  *     ds3 = d3.shape[0]
  *     ds4 = d4.shape[0]
@@ -5408,11 +5408,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
   __pyx_v_ds2 = (__pyx_v_d2->dimensions[0]);
 
   /* "nipy/algorithms/statistics/intvol.pyx":417
- * 
+ *
  *     ds2 = d2.shape[0]
  *     ds3 = d3.shape[0]             # <<<<<<<<<<<<<<
  *     ds4 = d4.shape[0]
- * 
+ *
  */
   __pyx_v_ds3 = (__pyx_v_d3->dimensions[0]);
 
@@ -5420,14 +5420,14 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *     ds2 = d2.shape[0]
  *     ds3 = d3.shape[0]
  *     ds4 = d4.shape[0]             # <<<<<<<<<<<<<<
- * 
+ *
  *     ss0 = strides[0]
  */
   __pyx_v_ds4 = (__pyx_v_d4->dimensions[0]);
 
   /* "nipy/algorithms/statistics/intvol.pyx":420
  *     ds4 = d4.shape[0]
- * 
+ *
  *     ss0 = strides[0]             # <<<<<<<<<<<<<<
  *     ss1 = strides[1]
  *     ss2 = strides[2]
@@ -5445,11 +5445,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
   __pyx_v_ss0 = (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_intp_t *, __pyx_pybuffernd_strides.rcbuffer->pybuffer.buf, __pyx_t_25, __pyx_pybuffernd_strides.diminfo[0].strides));
 
   /* "nipy/algorithms/statistics/intvol.pyx":421
- * 
+ *
  *     ss0 = strides[0]
  *     ss1 = strides[1]             # <<<<<<<<<<<<<<
  *     ss2 = strides[2]
- * 
+ *
  */
   __pyx_t_25 = 1;
   __pyx_t_11 = -1;
@@ -5467,7 +5467,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *     ss0 = strides[0]
  *     ss1 = strides[1]
  *     ss2 = strides[2]             # <<<<<<<<<<<<<<
- * 
+ *
  *     nvox = mask.size
  */
   __pyx_t_25 = 2;
@@ -5484,9 +5484,9 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
 
   /* "nipy/algorithms/statistics/intvol.pyx":424
  *     ss2 = strides[2]
- * 
+ *
  *     nvox = mask.size             # <<<<<<<<<<<<<<
- * 
+ *
  *     for i in range(s0-1):
  */
   __pyx_t_20 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_size); if (unlikely(!__pyx_t_20)) __PYX_ERR(0, 424, __pyx_L1_error)
@@ -5497,7 +5497,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
 
   /* "nipy/algorithms/statistics/intvol.pyx":426
  *     nvox = mask.size
- * 
+ *
  *     for i in range(s0-1):             # <<<<<<<<<<<<<<
  *         for j in range(s1-1):
  *             for k in range(s2-1):
@@ -5508,7 +5508,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
     __pyx_v_i = __pyx_t_9;
 
     /* "nipy/algorithms/statistics/intvol.pyx":427
- * 
+ *
  *     for i in range(s0-1):
  *         for j in range(s1-1):             # <<<<<<<<<<<<<<
  *             for k in range(s2-1):
@@ -5682,7 +5682,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *                         v3 = index + d4[l,3]
  *                         m = m * fpmask[v1] * fpmask[v2] * fpmask[v3]             # <<<<<<<<<<<<<<
  *                         l0 = l0 - m
- * 
+ *
  */
             __pyx_t_25 = __pyx_v_v1;
             __pyx_t_11 = -1;
@@ -5720,7 +5720,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *                         v3 = index + d4[l,3]
  *                         m = m * fpmask[v1] * fpmask[v2] * fpmask[v3]
  *                         l0 = l0 - m             # <<<<<<<<<<<<<<
- * 
+ *
  *                 for l in range(ds3):
  */
             __pyx_v_l0 = (__pyx_v_l0 - __pyx_v_m);
@@ -5737,7 +5737,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
 
         /* "nipy/algorithms/statistics/intvol.pyx":440
  *                         l0 = l0 - m
- * 
+ *
  *                 for l in range(ds3):             # <<<<<<<<<<<<<<
  *                     v0 = index + d3[l,0]
  *                     m = fpmask[v0]
@@ -5748,7 +5748,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
           __pyx_v_l = __pyx_t_34;
 
           /* "nipy/algorithms/statistics/intvol.pyx":441
- * 
+ *
  *                 for l in range(ds3):
  *                     v0 = index + d3[l,0]             # <<<<<<<<<<<<<<
  *                     m = fpmask[v0]
@@ -5853,7 +5853,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *                         v2 = index + d3[l,2]
  *                         m = m * fpmask[v1] * fpmask[v2]             # <<<<<<<<<<<<<<
  *                         l0 = l0 + m
- * 
+ *
  */
             __pyx_t_35 = __pyx_v_v1;
             __pyx_t_11 = -1;
@@ -5881,7 +5881,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *                         v2 = index + d3[l,2]
  *                         m = m * fpmask[v1] * fpmask[v2]
  *                         l0 = l0 + m             # <<<<<<<<<<<<<<
- * 
+ *
  *                 for l in range(ds2):
  */
             __pyx_v_l0 = (__pyx_v_l0 + __pyx_v_m);
@@ -5898,7 +5898,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
 
         /* "nipy/algorithms/statistics/intvol.pyx":449
  *                         l0 = l0 + m
- * 
+ *
  *                 for l in range(ds2):             # <<<<<<<<<<<<<<
  *                     v0 = index + d2[l,0]
  *                     m = fpmask[v0]
@@ -5909,7 +5909,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
           __pyx_v_l = __pyx_t_34;
 
           /* "nipy/algorithms/statistics/intvol.pyx":450
- * 
+ *
  *                 for l in range(ds2):
  *                     v0 = index + d2[l,0]             # <<<<<<<<<<<<<<
  *                     m = fpmask[v0]
@@ -5990,7 +5990,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *                         v1 = index + d2[l,1]
  *                         m = m * fpmask[v1]             # <<<<<<<<<<<<<<
  *                         l0 = l0 - m
- * 
+ *
  */
             __pyx_t_37 = __pyx_v_v1;
             __pyx_t_11 = -1;
@@ -6008,7 +6008,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *                         v1 = index + d2[l,1]
  *                         m = m * fpmask[v1]
  *                         l0 = l0 - m             # <<<<<<<<<<<<<<
- * 
+ *
  *     # fpmask has the same sum as mask, but with predictable dtype
  */
             __pyx_v_l0 = (__pyx_v_l0 - __pyx_v_m);
@@ -6027,11 +6027,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
   }
 
   /* "nipy/algorithms/statistics/intvol.pyx":458
- * 
+ *
  *     # fpmask has the same sum as mask, but with predictable dtype
  *     l0 += fpmask.sum()             # <<<<<<<<<<<<<<
  *     return l0
- * 
+ *
  */
   __pyx_t_20 = __Pyx_PyInt_From_Py_intptr_t(__pyx_v_l0); if (unlikely(!__pyx_t_20)) __PYX_ERR(0, 458, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_20);
@@ -6064,8 +6064,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
  *     # fpmask has the same sum as mask, but with predictable dtype
  *     l0 += fpmask.sum()
  *     return l0             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_19 = __Pyx_PyInt_From_Py_intptr_t(__pyx_v_l0); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 459, __pyx_L1_error)
@@ -6075,11 +6075,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":340
- * 
- * 
+ *
+ *
  * def EC3d(mask):             # <<<<<<<<<<<<<<
  *     """ Compute Euler characteristic of region within `mask`
- * 
+ *
  */
 
   /* function exit code */
@@ -6130,11 +6130,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_14EC3d(CYTHON_
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":462
- * 
- * 
+ *
+ *
  * def Lips3d(coords, mask):             # <<<<<<<<<<<<<<
  *     """ Estimated intrinsic volumes within masked region given coordinates
- * 
+ *
  */
 
 /* Python wrapper */
@@ -6689,7 +6689,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *         elif mask.ndim == 1:
  *             value[:2] = Lips1d(coords, mask)             # <<<<<<<<<<<<<<
  *         return value
- * 
+ *
  */
       __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_Lips1d); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 516, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
@@ -6755,7 +6755,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *         elif mask.ndim == 1:
  *             value[:2] = Lips1d(coords, mask)
  *         return value             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef:
  */
     __Pyx_XDECREF(__pyx_r);
@@ -6774,10 +6774,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":547
  *         double res
- * 
+ *
  *     coords = coords.astype(np.float64)             # <<<<<<<<<<<<<<
  *     mask = check_cast_bin8(mask)
- * 
+ *
  */
   __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_coords, __pyx_n_s_astype); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 547, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
@@ -6806,10 +6806,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
   __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":548
- * 
+ *
  *     coords = coords.astype(np.float64)
  *     mask = check_cast_bin8(mask)             # <<<<<<<<<<<<<<
- * 
+ *
  *     l0 = 0; l1 = 0; l2 = 0; l3 = 0
  */
   __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_check_cast_bin8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 548, __pyx_L1_error)
@@ -6834,9 +6834,9 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":550
  *     mask = check_cast_bin8(mask)
- * 
+ *
  *     l0 = 0; l1 = 0; l2 = 0; l3 = 0             # <<<<<<<<<<<<<<
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1
  */
   __pyx_v_l0 = 0.0;
@@ -6846,7 +6846,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":552
  *     l0 = 0; l1 = 0; l2 = 0; l3 = 0
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1             # <<<<<<<<<<<<<<
  *     s0, s1, s2 = pmask_shape[:3]
  *     pmask = np.zeros(pmask_shape, np.uint8)
@@ -6881,7 +6881,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
   __pyx_t_5 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":553
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1
  *     s0, s1, s2 = pmask_shape[:3]             # <<<<<<<<<<<<<<
  *     pmask = np.zeros(pmask_shape, np.uint8)
@@ -6899,13 +6899,13 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     if (likely(PyTuple_CheckExact(sequence))) {
-      __pyx_t_1 = PyTuple_GET_ITEM(sequence, 0); 
-      __pyx_t_3 = PyTuple_GET_ITEM(sequence, 1); 
-      __pyx_t_6 = PyTuple_GET_ITEM(sequence, 2); 
+      __pyx_t_1 = PyTuple_GET_ITEM(sequence, 0);
+      __pyx_t_3 = PyTuple_GET_ITEM(sequence, 1);
+      __pyx_t_6 = PyTuple_GET_ITEM(sequence, 2);
     } else {
-      __pyx_t_1 = PyList_GET_ITEM(sequence, 0); 
-      __pyx_t_3 = PyList_GET_ITEM(sequence, 1); 
-      __pyx_t_6 = PyList_GET_ITEM(sequence, 2); 
+      __pyx_t_1 = PyList_GET_ITEM(sequence, 0);
+      __pyx_t_3 = PyList_GET_ITEM(sequence, 1);
+      __pyx_t_6 = PyList_GET_ITEM(sequence, 2);
     }
     __Pyx_INCREF(__pyx_t_1);
     __Pyx_INCREF(__pyx_t_3);
@@ -6957,7 +6957,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *     s0, s1, s2 = pmask_shape[:3]
  *     pmask = np.zeros(pmask_shape, np.uint8)             # <<<<<<<<<<<<<<
  *     pmask[:-1, :-1, :-1] = mask
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_np); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 554, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
@@ -7023,14 +7023,14 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *     s0, s1, s2 = pmask_shape[:3]
  *     pmask = np.zeros(pmask_shape, np.uint8)
  *     pmask[:-1, :-1, :-1] = mask             # <<<<<<<<<<<<<<
- * 
+ *
  *     fpmask = pmask.reshape(-1)
  */
   if (unlikely(PyObject_SetItem(__pyx_v_pmask, __pyx_tuple__3, __pyx_v_mask) < 0)) __PYX_ERR(0, 555, __pyx_L1_error)
 
   /* "nipy/algorithms/statistics/intvol.pyx":557
  *     pmask[:-1, :-1, :-1] = mask
- * 
+ *
  *     fpmask = pmask.reshape(-1)             # <<<<<<<<<<<<<<
  *     fmask = mask.reshape(-1).astype(np.uint8)
  *     fcoords = coords.reshape((coords.shape[0], -1))
@@ -7076,11 +7076,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
   __pyx_t_5 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":558
- * 
+ *
  *     fpmask = pmask.reshape(-1)
  *     fmask = mask.reshape(-1).astype(np.uint8)             # <<<<<<<<<<<<<<
  *     fcoords = coords.reshape((coords.shape[0], -1))
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_reshape); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 558, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -7150,7 +7150,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *     fpmask = pmask.reshape(-1)
  *     fmask = mask.reshape(-1).astype(np.uint8)
  *     fcoords = coords.reshape((coords.shape[0], -1))             # <<<<<<<<<<<<<<
- * 
+ *
  *     # First do the interior contributions.
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_coords, __pyx_n_s_reshape); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 559, __pyx_L1_error)
@@ -7562,7 +7562,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *             for k in range(2):
  *                 verts.append(ss0d * i + ss1d * j + ss2d * k)             # <<<<<<<<<<<<<<
  *     cvertices = np.array(sorted(verts), np.intp)
- * 
+ *
  */
         __pyx_t_3 = __Pyx_PyInt_From_Py_intptr_t((((__pyx_v_ss0d * __pyx_v_i) + (__pyx_v_ss1d * __pyx_v_j)) + (__pyx_v_ss2d * __pyx_v_k))); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 578, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
@@ -7576,7 +7576,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *             for k in range(2):
  *                 verts.append(ss0d * i + ss1d * j + ss2d * k)
  *     cvertices = np.array(sorted(verts), np.intp)             # <<<<<<<<<<<<<<
- * 
+ *
  *     union = join_complexes(*[cube_with_strides_center((0,0,1), strides),
  */
   __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_np); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 579, __pyx_L1_error)
@@ -7668,7 +7668,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":581
  *     cvertices = np.array(sorted(verts), np.intp)
- * 
+ *
  *     union = join_complexes(*[cube_with_strides_center((0,0,1), strides),             # <<<<<<<<<<<<<<
  *                              cube_with_strides_center((0,1,0), strides),
  *                              cube_with_strides_center((0,1,1), strides),
@@ -7724,7 +7724,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":582
- * 
+ *
  *     union = join_complexes(*[cube_with_strides_center((0,0,1), strides),
  *                              cube_with_strides_center((0,1,0), strides),             # <<<<<<<<<<<<<<
  *                              cube_with_strides_center((0,1,1), strides),
@@ -8055,7 +8055,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":581
  *     cvertices = np.array(sorted(verts), np.intp)
- * 
+ *
  *     union = join_complexes(*[cube_with_strides_center((0,0,1), strides),             # <<<<<<<<<<<<<<
  *                              cube_with_strides_center((0,1,0), strides),
  *                              cube_with_strides_center((0,1,1), strides),
@@ -8232,7 +8232,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *     m4 = np.array(list(c[4].difference(union[4])))
  *     m3 = np.array(list(c[3].difference(union[3])))             # <<<<<<<<<<<<<<
  *     m2 = np.array(list(c[2].difference(union[2])))
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_28, __pyx_n_s_np); if (unlikely(!__pyx_t_28)) __PYX_ERR(0, 590, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_28);
@@ -8308,7 +8308,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *     m4 = np.array(list(c[4].difference(union[4])))
  *     m3 = np.array(list(c[3].difference(union[3])))
  *     m2 = np.array(list(c[2].difference(union[2])))             # <<<<<<<<<<<<<<
- * 
+ *
  *     d4 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m4[i]] for i in range(m4.shape[0])])
  */
   __Pyx_GetModuleGlobalName(__pyx_t_18, __pyx_n_s_np); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 591, __pyx_L1_error)
@@ -8383,7 +8383,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":593
  *     m2 = np.array(list(c[2].difference(union[2])))
- * 
+ *
  *     d4 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m4[i]] for i in range(m4.shape[0])])             # <<<<<<<<<<<<<<
  *     d4 = np.hstack([m4, d4])
  *     ds4 = d4.shape[0]
@@ -8542,11 +8542,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
   __pyx_t_30 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":594
- * 
+ *
  *     d4 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m4[i]] for i in range(m4.shape[0])])
  *     d4 = np.hstack([m4, d4])             # <<<<<<<<<<<<<<
  *     ds4 = d4.shape[0]
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_29, __pyx_n_s_np); if (unlikely(!__pyx_t_29)) __PYX_ERR(0, 594, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_29);
@@ -8604,14 +8604,14 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *     d4 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m4[i]] for i in range(m4.shape[0])])
  *     d4 = np.hstack([m4, d4])
  *     ds4 = d4.shape[0]             # <<<<<<<<<<<<<<
- * 
+ *
  *     d3 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m3[i]] for i in range(m3.shape[0])])
  */
   __pyx_v_ds4 = (__pyx_v_d4->dimensions[0]);
 
   /* "nipy/algorithms/statistics/intvol.pyx":597
  *     ds4 = d4.shape[0]
- * 
+ *
  *     d3 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m3[i]] for i in range(m3.shape[0])])             # <<<<<<<<<<<<<<
  *     d3 = np.hstack([m3, d3])
  *     ds3 = d3.shape[0]
@@ -8770,11 +8770,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
   __pyx_t_30 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":598
- * 
+ *
  *     d3 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m3[i]] for i in range(m3.shape[0])])
  *     d3 = np.hstack([m3, d3])             # <<<<<<<<<<<<<<
  *     ds3 = d3.shape[0]
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_29, __pyx_n_s_np); if (unlikely(!__pyx_t_29)) __PYX_ERR(0, 598, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_29);
@@ -8832,14 +8832,14 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *     d3 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m3[i]] for i in range(m3.shape[0])])
  *     d3 = np.hstack([m3, d3])
  *     ds3 = d3.shape[0]             # <<<<<<<<<<<<<<
- * 
+ *
  *     d2 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m2[i]] for i in range(m2.shape[0])])
  */
   __pyx_v_ds3 = (__pyx_v_d3->dimensions[0]);
 
   /* "nipy/algorithms/statistics/intvol.pyx":601
  *     ds3 = d3.shape[0]
- * 
+ *
  *     d2 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m2[i]] for i in range(m2.shape[0])])             # <<<<<<<<<<<<<<
  *     d2 = np.hstack([m2, d2])
  *     ds2 = d2.shape[0]
@@ -8998,11 +8998,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
   __pyx_t_30 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":602
- * 
+ *
  *     d2 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m2[i]] for i in range(m2.shape[0])])
  *     d2 = np.hstack([m2, d2])             # <<<<<<<<<<<<<<
  *     ds2 = d2.shape[0]
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_29, __pyx_n_s_np); if (unlikely(!__pyx_t_29)) __PYX_ERR(0, 602, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_29);
@@ -9060,16 +9060,16 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *     d2 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m2[i]] for i in range(m2.shape[0])])
  *     d2 = np.hstack([m2, d2])
  *     ds2 = d2.shape[0]             # <<<<<<<<<<<<<<
- * 
+ *
  *     nvox = mask.size
  */
   __pyx_v_ds2 = (__pyx_v_d2->dimensions[0]);
 
   /* "nipy/algorithms/statistics/intvol.pyx":605
  *     ds2 = d2.shape[0]
- * 
+ *
  *     nvox = mask.size             # <<<<<<<<<<<<<<
- * 
+ *
  *     D = np.zeros((8,8))
  */
   __pyx_t_30 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_size); if (unlikely(!__pyx_t_30)) __PYX_ERR(0, 605, __pyx_L1_error)
@@ -9080,9 +9080,9 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":607
  *     nvox = mask.size
- * 
+ *
  *     D = np.zeros((8,8))             # <<<<<<<<<<<<<<
- * 
+ *
  *     for i in range(s0-1):
  */
   __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 607, __pyx_L1_error)
@@ -9130,7 +9130,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":609
  *     D = np.zeros((8,8))
- * 
+ *
  *     for i in range(s0-1):             # <<<<<<<<<<<<<<
  *         for j in range(s1-1):
  *             for k in range(s2-1):
@@ -9141,11 +9141,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
     __pyx_v_i = __pyx_t_11;
 
     /* "nipy/algorithms/statistics/intvol.pyx":610
- * 
+ *
  *     for i in range(s0-1):
  *         for j in range(s1-1):             # <<<<<<<<<<<<<<
  *             for k in range(s2-1):
- * 
+ *
  */
     __pyx_t_43 = (__pyx_v_s1 - 1);
     __pyx_t_44 = __pyx_t_43;
@@ -9156,7 +9156,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *     for i in range(s0-1):
  *         for j in range(s1-1):
  *             for k in range(s2-1):             # <<<<<<<<<<<<<<
- * 
+ *
  *                 pindex = i*ss0+j*ss1+k*ss2
  */
       __pyx_t_45 = (__pyx_v_s2 - 1);
@@ -9166,7 +9166,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
         /* "nipy/algorithms/statistics/intvol.pyx":613
  *             for k in range(s2-1):
- * 
+ *
  *                 pindex = i*ss0+j*ss1+k*ss2             # <<<<<<<<<<<<<<
  *                 index = i*ss0d+j*ss1d+k*ss2d
  *                 for r in range(8):
@@ -9174,7 +9174,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
         __pyx_v_pindex = (((__pyx_v_i * __pyx_v_ss0) + (__pyx_v_j * __pyx_v_ss1)) + (__pyx_v_k * __pyx_v_ss2));
 
         /* "nipy/algorithms/statistics/intvol.pyx":614
- * 
+ *
  *                 pindex = i*ss0+j*ss1+k*ss2
  *                 index = i*ss0d+j*ss1d+k*ss2d             # <<<<<<<<<<<<<<
  *                 for r in range(8):
@@ -9424,7 +9424,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                         else:
  *                             D[r,s] = 0             # <<<<<<<<<<<<<<
  *                             D[s,r] = 0
- * 
+ *
  */
             /*else*/ {
               __pyx_t_56 = __pyx_v_r;
@@ -9448,7 +9448,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                         else:
  *                             D[r,s] = 0
  *                             D[s,r] = 0             # <<<<<<<<<<<<<<
- * 
+ *
  *                 for l in range(ds4):
  */
               __pyx_t_55 = __pyx_v_s;
@@ -9474,7 +9474,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
         /* "nipy/algorithms/statistics/intvol.pyx":631
  *                             D[s,r] = 0
- * 
+ *
  *                 for l in range(ds4):             # <<<<<<<<<<<<<<
  *                     v0 = pindex + d4[l,0]
  *                     w0 = d4[l,4]
@@ -9485,7 +9485,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
           __pyx_v_l = __pyx_t_51;
 
           /* "nipy/algorithms/statistics/intvol.pyx":632
- * 
+ *
  *                 for l in range(ds4):
  *                     v0 = pindex + d4[l,0]             # <<<<<<<<<<<<<<
  *                     w0 = d4[l,4]
@@ -9662,7 +9662,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                         w1 = d4[l,5]
  *                         w2 = d4[l,6]             # <<<<<<<<<<<<<<
  *                         w3 = d4[l,7]
- * 
+ *
  */
             __pyx_t_56 = __pyx_v_l;
             __pyx_t_55 = 6;
@@ -9685,7 +9685,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                         w1 = d4[l,5]
  *                         w2 = d4[l,6]
  *                         w3 = d4[l,7]             # <<<<<<<<<<<<<<
- * 
+ *
  *                         m = m * fpmask[v1] * fpmask[v2] * fpmask[v3]
  */
             __pyx_t_55 = __pyx_v_l;
@@ -9707,9 +9707,9 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
             /* "nipy/algorithms/statistics/intvol.pyx":643
  *                         w3 = d4[l,7]
- * 
+ *
  *                         m = m * fpmask[v1] * fpmask[v2] * fpmask[v3]             # <<<<<<<<<<<<<<
- * 
+ *
  *                         l3 = l3 + m * mu3_tet(D[w0,w0], D[w0,w1], D[w0,w2],
  */
             __pyx_t_56 = __pyx_v_v1;
@@ -9746,7 +9746,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
             /* "nipy/algorithms/statistics/intvol.pyx":645
  *                         m = m * fpmask[v1] * fpmask[v2] * fpmask[v3]
- * 
+ *
  *                         l3 = l3 + m * mu3_tet(D[w0,w0], D[w0,w1], D[w0,w2],             # <<<<<<<<<<<<<<
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],
@@ -9798,7 +9798,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
             }
 
             /* "nipy/algorithms/statistics/intvol.pyx":646
- * 
+ *
  *                         l3 = l3 + m * mu3_tet(D[w0,w0], D[w0,w1], D[w0,w2],
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],             # <<<<<<<<<<<<<<
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],
@@ -9855,7 +9855,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],             # <<<<<<<<<<<<<<
  *                                               D[w3,w3])
- * 
+ *
  */
             __pyx_t_65 = __pyx_v_w1;
             __pyx_t_66 = __pyx_v_w3;
@@ -9907,7 +9907,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],
  *                                               D[w3,w3])             # <<<<<<<<<<<<<<
- * 
+ *
  *                         l2 = l2 - m * mu2_tet(D[w0,w0], D[w0,w1], D[w0,w2],
  */
             __pyx_t_71 = __pyx_v_w3;
@@ -9928,7 +9928,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
             /* "nipy/algorithms/statistics/intvol.pyx":645
  *                         m = m * fpmask[v1] * fpmask[v2] * fpmask[v3]
- * 
+ *
  *                         l3 = l3 + m * mu3_tet(D[w0,w0], D[w0,w1], D[w0,w2],             # <<<<<<<<<<<<<<
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],
@@ -9937,7 +9937,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
             /* "nipy/algorithms/statistics/intvol.pyx":650
  *                                               D[w3,w3])
- * 
+ *
  *                         l2 = l2 - m * mu2_tet(D[w0,w0], D[w0,w1], D[w0,w2],             # <<<<<<<<<<<<<<
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],
@@ -9989,7 +9989,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
             }
 
             /* "nipy/algorithms/statistics/intvol.pyx":651
- * 
+ *
  *                         l2 = l2 - m * mu2_tet(D[w0,w0], D[w0,w1], D[w0,w2],
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],             # <<<<<<<<<<<<<<
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],
@@ -10046,7 +10046,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],             # <<<<<<<<<<<<<<
  *                                               D[w3,w3])
- * 
+ *
  */
             __pyx_t_60 = __pyx_v_w1;
             __pyx_t_59 = __pyx_v_w3;
@@ -10098,7 +10098,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],
  *                                               D[w3,w3])             # <<<<<<<<<<<<<<
- * 
+ *
  *                         l1 = l1 + m * mu1_tet(D[w0,w0], D[w0,w1], D[w0,w2],
  */
             __pyx_t_55 = __pyx_v_w3;
@@ -10119,7 +10119,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
             /* "nipy/algorithms/statistics/intvol.pyx":650
  *                                               D[w3,w3])
- * 
+ *
  *                         l2 = l2 - m * mu2_tet(D[w0,w0], D[w0,w1], D[w0,w2],             # <<<<<<<<<<<<<<
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],
@@ -10128,7 +10128,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
             /* "nipy/algorithms/statistics/intvol.pyx":655
  *                                               D[w3,w3])
- * 
+ *
  *                         l1 = l1 + m * mu1_tet(D[w0,w0], D[w0,w1], D[w0,w2],             # <<<<<<<<<<<<<<
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],
@@ -10180,7 +10180,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
             }
 
             /* "nipy/algorithms/statistics/intvol.pyx":656
- * 
+ *
  *                         l1 = l1 + m * mu1_tet(D[w0,w0], D[w0,w1], D[w0,w2],
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],             # <<<<<<<<<<<<<<
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],
@@ -10237,7 +10237,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],             # <<<<<<<<<<<<<<
  *                                               D[w3,w3])
- * 
+ *
  */
             __pyx_t_65 = __pyx_v_w1;
             __pyx_t_66 = __pyx_v_w3;
@@ -10289,7 +10289,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],
  *                                               D[w3,w3])             # <<<<<<<<<<<<<<
- * 
+ *
  *                         l0 = l0 - m
  */
             __pyx_t_71 = __pyx_v_w3;
@@ -10310,7 +10310,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
             /* "nipy/algorithms/statistics/intvol.pyx":655
  *                                               D[w3,w3])
- * 
+ *
  *                         l1 = l1 + m * mu1_tet(D[w0,w0], D[w0,w1], D[w0,w2],             # <<<<<<<<<<<<<<
  *                                               D[w0,w3], D[w1,w1], D[w1,w2],
  *                                               D[w1,w3], D[w2,w2], D[w2,w3],
@@ -10319,9 +10319,9 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
             /* "nipy/algorithms/statistics/intvol.pyx":660
  *                                               D[w3,w3])
- * 
+ *
  *                         l0 = l0 - m             # <<<<<<<<<<<<<<
- * 
+ *
  *                 for l in range(ds3):
  */
             __pyx_v_l0 = (__pyx_v_l0 - __pyx_v_m);
@@ -10338,7 +10338,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
         /* "nipy/algorithms/statistics/intvol.pyx":662
  *                         l0 = l0 - m
- * 
+ *
  *                 for l in range(ds3):             # <<<<<<<<<<<<<<
  *                     v0 = pindex + d3[l,0]
  *                     w0 = d3[l,3]
@@ -10349,7 +10349,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
           __pyx_v_l = __pyx_t_51;
 
           /* "nipy/algorithms/statistics/intvol.pyx":663
- * 
+ *
  *                 for l in range(ds3):
  *                     v0 = pindex + d3[l,0]             # <<<<<<<<<<<<<<
  *                     w0 = d3[l,3]
@@ -10478,7 +10478,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                         v2 = pindex + d3[l,2]
  *                         w1 = d3[l,4]             # <<<<<<<<<<<<<<
  *                         w2 = d3[l,5]
- * 
+ *
  */
             __pyx_t_72 = __pyx_v_l;
             __pyx_t_71 = 4;
@@ -10501,7 +10501,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                         v2 = pindex + d3[l,2]
  *                         w1 = d3[l,4]
  *                         w2 = d3[l,5]             # <<<<<<<<<<<<<<
- * 
+ *
  *                         m = m * fpmask[v1] * fpmask[v2]
  */
             __pyx_t_71 = __pyx_v_l;
@@ -10523,7 +10523,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
             /* "nipy/algorithms/statistics/intvol.pyx":672
  *                         w2 = d3[l,5]
- * 
+ *
  *                         m = m * fpmask[v1] * fpmask[v2]             # <<<<<<<<<<<<<<
  *                         l2 = l2 + m * mu2_tri(D[w0,w0], D[w0,w1], D[w0,w2],
  *                                               D[w1,w1], D[w1,w2], D[w2,w2])
@@ -10551,11 +10551,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
             __pyx_v_m = ((__pyx_v_m * (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_uint8_t *, __pyx_pybuffernd_fpmask.rcbuffer->pybuffer.buf, __pyx_t_72, __pyx_pybuffernd_fpmask.diminfo[0].strides))) * (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_uint8_t *, __pyx_pybuffernd_fpmask.rcbuffer->pybuffer.buf, __pyx_t_71, __pyx_pybuffernd_fpmask.diminfo[0].strides)));
 
             /* "nipy/algorithms/statistics/intvol.pyx":673
- * 
+ *
  *                         m = m * fpmask[v1] * fpmask[v2]
  *                         l2 = l2 + m * mu2_tri(D[w0,w0], D[w0,w1], D[w0,w2],             # <<<<<<<<<<<<<<
  *                                               D[w1,w1], D[w1,w2], D[w2,w2])
- * 
+ *
  */
             __pyx_t_71 = __pyx_v_w0;
             __pyx_t_72 = __pyx_v_w0;
@@ -10607,7 +10607,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                         m = m * fpmask[v1] * fpmask[v2]
  *                         l2 = l2 + m * mu2_tri(D[w0,w0], D[w0,w1], D[w0,w2],
  *                                               D[w1,w1], D[w1,w2], D[w2,w2])             # <<<<<<<<<<<<<<
- * 
+ *
  *                         l1 = l1 - m * mu1_tri(D[w0,w0], D[w0,w1], D[w0,w2],
  */
             __pyx_t_66 = __pyx_v_w1;
@@ -10657,20 +10657,20 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
             }
 
             /* "nipy/algorithms/statistics/intvol.pyx":673
- * 
+ *
  *                         m = m * fpmask[v1] * fpmask[v2]
  *                         l2 = l2 + m * mu2_tri(D[w0,w0], D[w0,w1], D[w0,w2],             # <<<<<<<<<<<<<<
  *                                               D[w1,w1], D[w1,w2], D[w2,w2])
- * 
+ *
  */
             __pyx_v_l2 = (__pyx_v_l2 + (__pyx_v_m * __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu2_tri((*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float_t *, __pyx_pybuffernd_D.rcbuffer->pybuffer.buf, __pyx_t_71, __pyx_pybuffernd_D.diminfo[0].strides, __pyx_t_72, __pyx_pybuffernd_D.diminfo[1].strides)), (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float_t *, __pyx_pybuffernd_D.rcbuffer->pybuffer.buf, __pyx_t_70, __pyx_pybuffernd_D.diminfo[0].strides, __pyx_t_69, __pyx_pybuffernd_D.diminfo[1].strides)), (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float_t *, __pyx_pybuffernd_D.rcbuffer->pybuffer.buf, __pyx_t_68, __pyx_pybuffernd_D.diminfo[0].strides, __pyx_t_67, __pyx_pybuffernd_D.diminfo[1].strides)), (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float_t *, __pyx_pybuffernd_D.rcbuffer->pybuffer.buf, __pyx_t_66, __pyx_pybuffernd_D.diminfo[0].strides, __pyx_t_65, __pyx_pybuffernd_D.diminfo[1].strides)), (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float_t *, __pyx_pybuffernd_D.rcbuffer->pybuffer.buf, __pyx_t_64, __pyx_pybuffernd_D.diminfo[0].strides, __pyx_t_63, __pyx_pybuffernd_D.diminfo[1].strides)), (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float_t *, __pyx_pybuffernd_D.rcbuffer->pybuffer.buf, __pyx_t_62, __pyx_pybuffernd_D.diminfo[0].strides, __pyx_t_61, __pyx_pybuffernd_D.diminfo[1].strides)), 0)));
 
             /* "nipy/algorithms/statistics/intvol.pyx":676
  *                                               D[w1,w1], D[w1,w2], D[w2,w2])
- * 
+ *
  *                         l1 = l1 - m * mu1_tri(D[w0,w0], D[w0,w1], D[w0,w2],             # <<<<<<<<<<<<<<
  *                                               D[w1,w1], D[w1,w2], D[w2,w2])
- * 
+ *
  */
             __pyx_t_61 = __pyx_v_w0;
             __pyx_t_62 = __pyx_v_w0;
@@ -10719,10 +10719,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
             }
 
             /* "nipy/algorithms/statistics/intvol.pyx":677
- * 
+ *
  *                         l1 = l1 - m * mu1_tri(D[w0,w0], D[w0,w1], D[w0,w2],
  *                                               D[w1,w1], D[w1,w2], D[w2,w2])             # <<<<<<<<<<<<<<
- * 
+ *
  *                         l0 = l0 + m
  */
             __pyx_t_67 = __pyx_v_w1;
@@ -10773,18 +10773,18 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
             /* "nipy/algorithms/statistics/intvol.pyx":676
  *                                               D[w1,w1], D[w1,w2], D[w2,w2])
- * 
+ *
  *                         l1 = l1 - m * mu1_tri(D[w0,w0], D[w0,w1], D[w0,w2],             # <<<<<<<<<<<<<<
  *                                               D[w1,w1], D[w1,w2], D[w2,w2])
- * 
+ *
  */
             __pyx_v_l1 = (__pyx_v_l1 - (__pyx_v_m * __pyx_f_4nipy_10algorithms_10statistics_6intvol_mu1_tri((*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float_t *, __pyx_pybuffernd_D.rcbuffer->pybuffer.buf, __pyx_t_61, __pyx_pybuffernd_D.diminfo[0].strides, __pyx_t_62, __pyx_pybuffernd_D.diminfo[1].strides)), (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float_t *, __pyx_pybuffernd_D.rcbuffer->pybuffer.buf, __pyx_t_63, __pyx_pybuffernd_D.diminfo[0].strides, __pyx_t_64, __pyx_pybuffernd_D.diminfo[1].strides)), (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float_t *, __pyx_pybuffernd_D.rcbuffer->pybuffer.buf, __pyx_t_65, __pyx_pybuffernd_D.diminfo[0].strides, __pyx_t_66, __pyx_pybuffernd_D.diminfo[1].strides)), (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float_t *, __pyx_pybuffernd_D.rcbuffer->pybuffer.buf, __pyx_t_67, __pyx_pybuffernd_D.diminfo[0].strides, __pyx_t_68, __pyx_pybuffernd_D.diminfo[1].strides)), (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float_t *, __pyx_pybuffernd_D.rcbuffer->pybuffer.buf, __pyx_t_69, __pyx_pybuffernd_D.diminfo[0].strides, __pyx_t_70, __pyx_pybuffernd_D.diminfo[1].strides)), (*__Pyx_BufPtrStrided2d(__pyx_t_5numpy_float_t *, __pyx_pybuffernd_D.rcbuffer->pybuffer.buf, __pyx_t_72, __pyx_pybuffernd_D.diminfo[0].strides, __pyx_t_71, __pyx_pybuffernd_D.diminfo[1].strides)), 0)));
 
             /* "nipy/algorithms/statistics/intvol.pyx":679
  *                                               D[w1,w1], D[w1,w2], D[w2,w2])
- * 
+ *
  *                         l0 = l0 + m             # <<<<<<<<<<<<<<
- * 
+ *
  *                 for l in range(ds2):
  */
             __pyx_v_l0 = (__pyx_v_l0 + __pyx_v_m);
@@ -10801,7 +10801,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
         /* "nipy/algorithms/statistics/intvol.pyx":681
  *                         l0 = l0 + m
- * 
+ *
  *                 for l in range(ds2):             # <<<<<<<<<<<<<<
  *                     v0 = pindex + d2[l,0]
  *                     w0 = d2[l,2]
@@ -10812,7 +10812,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
           __pyx_v_l = __pyx_t_51;
 
           /* "nipy/algorithms/statistics/intvol.pyx":682
- * 
+ *
  *                 for l in range(ds2):
  *                     v0 = pindex + d2[l,0]             # <<<<<<<<<<<<<<
  *                     w0 = d2[l,2]
@@ -10941,7 +10941,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                         w1 = d2[l,3]
  *                         m = m * fpmask[v1]             # <<<<<<<<<<<<<<
  *                         l1 = l1 + m * mu1_edge(D[w0,w0], D[w0,w1], D[w1,w1])
- * 
+ *
  */
             __pyx_t_71 = __pyx_v_v1;
             __pyx_t_7 = -1;
@@ -10959,7 +10959,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *                         w1 = d2[l,3]
  *                         m = m * fpmask[v1]
  *                         l1 = l1 + m * mu1_edge(D[w0,w0], D[w0,w1], D[w1,w1])             # <<<<<<<<<<<<<<
- * 
+ *
  *                         l0 = l0 - m
  */
             __pyx_t_71 = __pyx_v_w0;
@@ -11011,9 +11011,9 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 
             /* "nipy/algorithms/statistics/intvol.pyx":691
  *                         l1 = l1 + m * mu1_edge(D[w0,w0], D[w0,w1], D[w1,w1])
- * 
+ *
  *                         l0 = l0 - m             # <<<<<<<<<<<<<<
- * 
+ *
  *     # fpmask has the same sum as mask, but with predictable dtype
  */
             __pyx_v_l0 = (__pyx_v_l0 - __pyx_v_m);
@@ -11032,11 +11032,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
   }
 
   /* "nipy/algorithms/statistics/intvol.pyx":694
- * 
+ *
  *     # fpmask has the same sum as mask, but with predictable dtype
  *     l0 += fpmask.sum()             # <<<<<<<<<<<<<<
  *     return np.array([l0, l1, l2, l3])
- * 
+ *
  */
   __pyx_t_30 = PyFloat_FromDouble(__pyx_v_l0); if (unlikely(!__pyx_t_30)) __PYX_ERR(0, 694, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_30);
@@ -11069,8 +11069,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
  *     # fpmask has the same sum as mask, but with predictable dtype
  *     l0 += fpmask.sum()
  *     return np.array([l0, l1, l2, l3])             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_GetModuleGlobalName(__pyx_t_29, __pyx_n_s_np); if (unlikely(!__pyx_t_29)) __PYX_ERR(0, 695, __pyx_L1_error)
@@ -11121,11 +11121,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":462
- * 
- * 
+ *
+ *
  * def Lips3d(coords, mask):             # <<<<<<<<<<<<<<
  *     """ Estimated intrinsic volumes within masked region given coordinates
- * 
+ *
  */
 
   /* function exit code */
@@ -11205,8 +11205,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_16Lips3d(CYTHO
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":698
- * 
- * 
+ *
+ *
  * def _convert_stride3(v, stride1, stride2):             # <<<<<<<<<<<<<<
  *     """
  *     Take a voxel, expressed as in index in stride1 and
@@ -11357,7 +11357,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_18_convert_str
  *     v1 = v // stride1[1]
  *     v2 = v - v1 * stride1[1]             # <<<<<<<<<<<<<<
  *     return v0*stride2[0] + v1*stride2[1] + v2*stride2[2]
- * 
+ *
  */
   __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_stride1, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 706, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -11374,8 +11374,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_18_convert_str
  *     v1 = v // stride1[1]
  *     v2 = v - v1 * stride1[1]
  *     return v0*stride2[0] + v1*stride2[1] + v2*stride2[2]             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_stride2, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 707, __pyx_L1_error)
@@ -11406,8 +11406,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_18_convert_str
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":698
- * 
- * 
+ *
+ *
  * def _convert_stride3(v, stride1, stride2):             # <<<<<<<<<<<<<<
  *     """
  *     Take a voxel, expressed as in index in stride1 and
@@ -11431,8 +11431,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_18_convert_str
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":710
- * 
- * 
+ *
+ *
  * def _convert_stride2(v, stride1, stride2):             # <<<<<<<<<<<<<<
  *     """
  *     Take a voxel, expressed as in index in stride1 and
@@ -11548,7 +11548,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_20_convert_str
  *     v0 = v // stride1[0]
  *     v1 = v - v0 * stride1[0]             # <<<<<<<<<<<<<<
  *     return v0*stride2[0] + v1*stride2[1]
- * 
+ *
  */
   __pyx_t_2 = __Pyx_GetItemInt(__pyx_v_stride1, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 716, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -11565,8 +11565,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_20_convert_str
  *     v0 = v // stride1[0]
  *     v1 = v - v0 * stride1[0]
  *     return v0*stride2[0] + v1*stride2[1]             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_2 = __Pyx_GetItemInt(__pyx_v_stride2, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 717, __pyx_L1_error)
@@ -11588,8 +11588,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_20_convert_str
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":710
- * 
- * 
+ *
+ *
  * def _convert_stride2(v, stride1, stride2):             # <<<<<<<<<<<<<<
  *     """
  *     Take a voxel, expressed as in index in stride1 and
@@ -11611,8 +11611,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_20_convert_str
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":720
- * 
- * 
+ *
+ *
  * def _convert_stride1(v, stride1, stride2):             # <<<<<<<<<<<<<<
  *     """
  *     Take a voxel, expressed as in index in stride1 and
@@ -11711,7 +11711,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_22_convert_str
  *     """
  *     v0 = v // stride1[0]             # <<<<<<<<<<<<<<
  *     return v0 * stride2[0]
- * 
+ *
  */
   __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_stride1, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 725, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -11725,8 +11725,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_22_convert_str
  *     """
  *     v0 = v // stride1[0]
  *     return v0 * stride2[0]             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_2 = __Pyx_GetItemInt(__pyx_v_stride2, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 726, __pyx_L1_error)
@@ -11739,8 +11739,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_22_convert_str
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":720
- * 
- * 
+ *
+ *
  * def _convert_stride1(v, stride1, stride2):             # <<<<<<<<<<<<<<
  *     """
  *     Take a voxel, expressed as in index in stride1 and
@@ -11760,11 +11760,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_22_convert_str
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":729
- * 
- * 
+ *
+ *
  * def Lips2d(coords, mask):             # <<<<<<<<<<<<<<
  *     """ Estimate intrinsic volumes for 2d region in `mask` given `coords`
- * 
+ *
  */
 
 /* Python wrapper */
@@ -12139,7 +12139,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *         coords = coords.reshape((coords.shape[0],) + mask.shape)
  *         value[:2] = Lips1d(coords, mask)             # <<<<<<<<<<<<<<
  *         return value
- * 
+ *
  */
     __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_Lips1d); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 774, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
@@ -12195,7 +12195,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *         coords = coords.reshape((coords.shape[0],) + mask.shape)
  *         value[:2] = Lips1d(coords, mask)
  *         return value             # <<<<<<<<<<<<<<
- * 
+ *
  *     cdef:
  */
     __Pyx_XDECREF(__pyx_r);
@@ -12214,10 +12214,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":800
  *         double res
- * 
+ *
  *     coords = coords.astype(np.float64)             # <<<<<<<<<<<<<<
  *     mask = check_cast_bin8(mask)
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_coords, __pyx_n_s_astype); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 800, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -12246,10 +12246,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
   __pyx_t_3 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":801
- * 
+ *
  *     coords = coords.astype(np.float64)
  *     mask = check_cast_bin8(mask)             # <<<<<<<<<<<<<<
- * 
+ *
  *     l0 = 0; l1 = 0; l2 = 0
  */
   __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_check_cast_bin8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 801, __pyx_L1_error)
@@ -12274,9 +12274,9 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":803
  *     mask = check_cast_bin8(mask)
- * 
+ *
  *     l0 = 0; l1 = 0; l2 = 0             # <<<<<<<<<<<<<<
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1
  */
   __pyx_v_l0 = 0.0;
@@ -12285,7 +12285,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":805
  *     l0 = 0; l1 = 0; l2 = 0
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1             # <<<<<<<<<<<<<<
  *     pmask = np.zeros(pmask_shape, np.uint8)
  *     pmask[:-1, :-1] = mask
@@ -12320,11 +12320,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
   __pyx_t_6 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":806
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1
  *     pmask = np.zeros(pmask_shape, np.uint8)             # <<<<<<<<<<<<<<
  *     pmask[:-1, :-1] = mask
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 806, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
@@ -12390,16 +12390,16 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *     pmask_shape = np.array(mask.shape) + 1
  *     pmask = np.zeros(pmask_shape, np.uint8)
  *     pmask[:-1, :-1] = mask             # <<<<<<<<<<<<<<
- * 
+ *
  *     s0, s1 = pmask.shape[:2]
  */
   if (unlikely(PyObject_SetItem(__pyx_v_pmask, __pyx_tuple__17, __pyx_v_mask) < 0)) __PYX_ERR(0, 807, __pyx_L1_error)
 
   /* "nipy/algorithms/statistics/intvol.pyx":809
  *     pmask[:-1, :-1] = mask
- * 
+ *
  *     s0, s1 = pmask.shape[:2]             # <<<<<<<<<<<<<<
- * 
+ *
  *     fpmask = pmask.reshape(-1)
  */
   __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_pmask, __pyx_n_s_shape); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 809, __pyx_L1_error)
@@ -12417,11 +12417,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     if (likely(PyTuple_CheckExact(sequence))) {
-      __pyx_t_6 = PyTuple_GET_ITEM(sequence, 0); 
-      __pyx_t_2 = PyTuple_GET_ITEM(sequence, 1); 
+      __pyx_t_6 = PyTuple_GET_ITEM(sequence, 0);
+      __pyx_t_2 = PyTuple_GET_ITEM(sequence, 1);
     } else {
-      __pyx_t_6 = PyList_GET_ITEM(sequence, 0); 
-      __pyx_t_2 = PyList_GET_ITEM(sequence, 1); 
+      __pyx_t_6 = PyList_GET_ITEM(sequence, 0);
+      __pyx_t_2 = PyList_GET_ITEM(sequence, 1);
     }
     __Pyx_INCREF(__pyx_t_6);
     __Pyx_INCREF(__pyx_t_2);
@@ -12462,7 +12462,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":811
  *     s0, s1 = pmask.shape[:2]
- * 
+ *
  *     fpmask = pmask.reshape(-1)             # <<<<<<<<<<<<<<
  *     fmask = mask.reshape(-1).astype(np.uint8)
  *     fcoords = coords.reshape((coords.shape[0], -1))
@@ -12508,11 +12508,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
   __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":812
- * 
+ *
  *     fpmask = pmask.reshape(-1)
  *     fmask = mask.reshape(-1).astype(np.uint8)             # <<<<<<<<<<<<<<
  *     fcoords = coords.reshape((coords.shape[0], -1))
- * 
+ *
  */
   __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_reshape); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 812, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
@@ -12582,7 +12582,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *     fpmask = pmask.reshape(-1)
  *     fmask = mask.reshape(-1).astype(np.uint8)
  *     fcoords = coords.reshape((coords.shape[0], -1))             # <<<<<<<<<<<<<<
- * 
+ *
  *     # First do the interior contributions.
  */
   __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_coords, __pyx_n_s_reshape); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 813, __pyx_L1_error)
@@ -12960,7 +12960,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *         for j in range(2):
  *             verts.append(ss0d * i + ss1d * j)             # <<<<<<<<<<<<<<
  *     cvertices = np.array(sorted(verts), np.intp)
- * 
+ *
  */
       __pyx_t_2 = __Pyx_PyInt_From_Py_intptr_t(((__pyx_v_ss0d * __pyx_v_i) + (__pyx_v_ss1d * __pyx_v_j))); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 831, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
@@ -12973,7 +12973,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *         for j in range(2):
  *             verts.append(ss0d * i + ss1d * j)
  *     cvertices = np.array(sorted(verts), np.intp)             # <<<<<<<<<<<<<<
- * 
+ *
  *     union = join_complexes(*[cube_with_strides_center((0,1), strides),
  */
   __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 832, __pyx_L1_error)
@@ -13065,7 +13065,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":834
  *     cvertices = np.array(sorted(verts), np.intp)
- * 
+ *
  *     union = join_complexes(*[cube_with_strides_center((0,1), strides),             # <<<<<<<<<<<<<<
  *                              cube_with_strides_center((1,0), strides),
  *                              cube_with_strides_center((1,1), strides)])
@@ -13121,11 +13121,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":835
- * 
+ *
  *     union = join_complexes(*[cube_with_strides_center((0,1), strides),
  *                              cube_with_strides_center((1,0), strides),             # <<<<<<<<<<<<<<
  *                              cube_with_strides_center((1,1), strides)])
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_cube_with_strides_center); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 835, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
@@ -13179,7 +13179,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *     union = join_complexes(*[cube_with_strides_center((0,1), strides),
  *                              cube_with_strides_center((1,0), strides),
  *                              cube_with_strides_center((1,1), strides)])             # <<<<<<<<<<<<<<
- * 
+ *
  *     c = cube_with_strides_center((0,0), strides)
  */
   __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_cube_with_strides_center); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 836, __pyx_L1_error)
@@ -13232,7 +13232,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":834
  *     cvertices = np.array(sorted(verts), np.intp)
- * 
+ *
  *     union = join_complexes(*[cube_with_strides_center((0,1), strides),             # <<<<<<<<<<<<<<
  *                              cube_with_strides_center((1,0), strides),
  *                              cube_with_strides_center((1,1), strides)])
@@ -13260,7 +13260,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":838
  *                              cube_with_strides_center((1,1), strides)])
- * 
+ *
  *     c = cube_with_strides_center((0,0), strides)             # <<<<<<<<<<<<<<
  *     m3 = np.array(list(c[3].difference(union[3])))
  *     m2 = np.array(list(c[2].difference(union[2])))
@@ -13316,11 +13316,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
   __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":839
- * 
+ *
  *     c = cube_with_strides_center((0,0), strides)
  *     m3 = np.array(list(c[3].difference(union[3])))             # <<<<<<<<<<<<<<
  *     m2 = np.array(list(c[2].difference(union[2])))
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 839, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
@@ -13376,7 +13376,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *     c = cube_with_strides_center((0,0), strides)
  *     m3 = np.array(list(c[3].difference(union[3])))
  *     m2 = np.array(list(c[2].difference(union[2])))             # <<<<<<<<<<<<<<
- * 
+ *
  *     d3 = np.array([[_convert_stride2(v, strides, (2,1)) for v in m3[i]] for i in range(m3.shape[0])])
  */
   __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_np); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 840, __pyx_L1_error)
@@ -13431,7 +13431,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":842
  *     m2 = np.array(list(c[2].difference(union[2])))
- * 
+ *
  *     d3 = np.array([[_convert_stride2(v, strides, (2,1)) for v in m3[i]] for i in range(m3.shape[0])])             # <<<<<<<<<<<<<<
  *     d3 = np.hstack([m3, d3])
  *     ds3 = d3.shape[0]
@@ -13596,11 +13596,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
   __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":843
- * 
+ *
  *     d3 = np.array([[_convert_stride2(v, strides, (2,1)) for v in m3[i]] for i in range(m3.shape[0])])
  *     d3 = np.hstack([m3, d3])             # <<<<<<<<<<<<<<
  *     ds3 = d3.shape[0]
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 843, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -13658,14 +13658,14 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *     d3 = np.array([[_convert_stride2(v, strides, (2,1)) for v in m3[i]] for i in range(m3.shape[0])])
  *     d3 = np.hstack([m3, d3])
  *     ds3 = d3.shape[0]             # <<<<<<<<<<<<<<
- * 
+ *
  *     d2 = np.array([[_convert_stride2(v, strides, (2,1)) for v in m2[i]] for i in range(m2.shape[0])])
  */
   __pyx_v_ds3 = (__pyx_v_d3->dimensions[0]);
 
   /* "nipy/algorithms/statistics/intvol.pyx":846
  *     ds3 = d3.shape[0]
- * 
+ *
  *     d2 = np.array([[_convert_stride2(v, strides, (2,1)) for v in m2[i]] for i in range(m2.shape[0])])             # <<<<<<<<<<<<<<
  *     d2 = np.hstack([m2, d2])
  *     ds2 = d2.shape[0]
@@ -13830,11 +13830,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
   __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":847
- * 
+ *
  *     d2 = np.array([[_convert_stride2(v, strides, (2,1)) for v in m2[i]] for i in range(m2.shape[0])])
  *     d2 = np.hstack([m2, d2])             # <<<<<<<<<<<<<<
  *     ds2 = d2.shape[0]
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 847, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -13892,16 +13892,16 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *     d2 = np.array([[_convert_stride2(v, strides, (2,1)) for v in m2[i]] for i in range(m2.shape[0])])
  *     d2 = np.hstack([m2, d2])
  *     ds2 = d2.shape[0]             # <<<<<<<<<<<<<<
- * 
+ *
  *     D = np.zeros((4,4))
  */
   __pyx_v_ds2 = (__pyx_v_d2->dimensions[0]);
 
   /* "nipy/algorithms/statistics/intvol.pyx":850
  *     ds2 = d2.shape[0]
- * 
+ *
  *     D = np.zeros((4,4))             # <<<<<<<<<<<<<<
- * 
+ *
  *     npix = mask.size
  */
   __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 850, __pyx_L1_error)
@@ -13949,9 +13949,9 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":852
  *     D = np.zeros((4,4))
- * 
+ *
  *     npix = mask.size             # <<<<<<<<<<<<<<
- * 
+ *
  *     for i in range(s0-1):
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_size); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 852, __pyx_L1_error)
@@ -13962,7 +13962,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":854
  *     npix = mask.size
- * 
+ *
  *     for i in range(s0-1):             # <<<<<<<<<<<<<<
  *         for j in range(s1-1):
  *             pindex = i*ss0+j*ss1
@@ -13973,7 +13973,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
     __pyx_v_i = __pyx_t_10;
 
     /* "nipy/algorithms/statistics/intvol.pyx":855
- * 
+ *
  *     for i in range(s0-1):
  *         for j in range(s1-1):             # <<<<<<<<<<<<<<
  *             pindex = i*ss0+j*ss1
@@ -14244,7 +14244,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *                     else:
  *                         D[r, s] = 0             # <<<<<<<<<<<<<<
  *                         D[s, r] = 0
- * 
+ *
  */
           /*else*/ {
             __pyx_t_46 = __pyx_v_r;
@@ -14268,7 +14268,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *                     else:
  *                         D[r, s] = 0
  *                         D[s, r] = 0             # <<<<<<<<<<<<<<
- * 
+ *
  *             for l in range(ds3):
  */
             __pyx_t_45 = __pyx_v_s;
@@ -14294,7 +14294,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 
       /* "nipy/algorithms/statistics/intvol.pyx":874
  *                         D[s, r] = 0
- * 
+ *
  *             for l in range(ds3):             # <<<<<<<<<<<<<<
  *                 v0 = pindex + d3[l,0]
  *                 w0 = d3[l,3]
@@ -14305,7 +14305,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
         __pyx_v_l = __pyx_t_41;
 
         /* "nipy/algorithms/statistics/intvol.pyx":875
- * 
+ *
  *             for l in range(ds3):
  *                 v0 = pindex + d3[l,0]             # <<<<<<<<<<<<<<
  *                 w0 = d3[l,3]
@@ -14679,7 +14679,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *                     l1 = l1 - mu1_tri(D[w0,w0], D[w0,w1], D[w0,w2],
  *                                         D[w1,w1], D[w1,w2], D[w2,w2]) * m             # <<<<<<<<<<<<<<
  *                     l0 = l0 + m
- * 
+ *
  */
           __pyx_t_48 = __pyx_v_w1;
           __pyx_t_47 = __pyx_v_w1;
@@ -14740,7 +14740,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *                     l1 = l1 - mu1_tri(D[w0,w0], D[w0,w1], D[w0,w2],
  *                                         D[w1,w1], D[w1,w2], D[w2,w2]) * m
  *                     l0 = l0 + m             # <<<<<<<<<<<<<<
- * 
+ *
  *             for l in range(ds2):
  */
           __pyx_v_l0 = (__pyx_v_l0 + __pyx_v_m);
@@ -14757,7 +14757,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 
       /* "nipy/algorithms/statistics/intvol.pyx":890
  *                     l0 = l0 + m
- * 
+ *
  *             for l in range(ds2):             # <<<<<<<<<<<<<<
  *                 v0 = pindex + d2[l,0]
  *                 w0 = d2[l,2]
@@ -14768,7 +14768,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
         __pyx_v_l = __pyx_t_41;
 
         /* "nipy/algorithms/statistics/intvol.pyx":891
- * 
+ *
  *             for l in range(ds2):
  *                 v0 = pindex + d2[l,0]             # <<<<<<<<<<<<<<
  *                 w0 = d2[l,2]
@@ -14916,7 +14916,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *                     m = m * fpmask[v1]
  *                     l1 = l1 + m * mu1_edge(D[w0,w0], D[w0,w1], D[w1,w1])             # <<<<<<<<<<<<<<
  *                     l0 = l0 - m
- * 
+ *
  */
           __pyx_t_45 = __pyx_v_w0;
           __pyx_t_46 = __pyx_v_w0;
@@ -14969,7 +14969,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *                     m = m * fpmask[v1]
  *                     l1 = l1 + m * mu1_edge(D[w0,w0], D[w0,w1], D[w1,w1])
  *                     l0 = l0 - m             # <<<<<<<<<<<<<<
- * 
+ *
  *     # fpmask has the same sum as mask, but with predictable dtype
  */
           __pyx_v_l0 = (__pyx_v_l0 - __pyx_v_m);
@@ -14987,11 +14987,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
   }
 
   /* "nipy/algorithms/statistics/intvol.pyx":902
- * 
+ *
  *     # fpmask has the same sum as mask, but with predictable dtype
  *     l0 += fpmask.sum()             # <<<<<<<<<<<<<<
  *     return np.array([l0,l1,l2])
- * 
+ *
  */
   __pyx_t_1 = PyFloat_FromDouble(__pyx_v_l0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 902, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -15024,8 +15024,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
  *     # fpmask has the same sum as mask, but with predictable dtype
  *     l0 += fpmask.sum()
  *     return np.array([l0,l1,l2])             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 903, __pyx_L1_error)
@@ -15071,11 +15071,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":729
- * 
- * 
+ *
+ *
  * def Lips2d(coords, mask):             # <<<<<<<<<<<<<<
  *     """ Estimate intrinsic volumes for 2d region in `mask` given `coords`
- * 
+ *
  */
 
   /* function exit code */
@@ -15143,11 +15143,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_24Lips2d(CYTHO
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":906
- * 
- * 
+ *
+ *
  * def EC2d(mask):             # <<<<<<<<<<<<<<
  *     """ Compute Euler characteristic of 2D region in `mask`
- * 
+ *
  */
 
 /* Python wrapper */
@@ -15257,16 +15257,16 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
  *         np.npy_intp ss0, ss1 # strides
  *         np.npy_intp v0, v1 # vertices
  *         long l0 = 0             # <<<<<<<<<<<<<<
- * 
+ *
  *     mask = check_cast_bin8(mask)
  */
   __pyx_v_l0 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":955
  *         long l0 = 0
- * 
+ *
  *     mask = check_cast_bin8(mask)             # <<<<<<<<<<<<<<
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_check_cast_bin8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 955, __pyx_L1_error)
@@ -15291,7 +15291,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
 
   /* "nipy/algorithms/statistics/intvol.pyx":957
  *     mask = check_cast_bin8(mask)
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1             # <<<<<<<<<<<<<<
  *     pmask = np.zeros(pmask_shape, np.uint8)
  *     pmask[:-1, :-1] = mask
@@ -15326,11 +15326,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
   __pyx_t_3 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":958
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1
  *     pmask = np.zeros(pmask_shape, np.uint8)             # <<<<<<<<<<<<<<
  *     pmask[:-1, :-1] = mask
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 958, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -15396,16 +15396,16 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
  *     pmask_shape = np.array(mask.shape) + 1
  *     pmask = np.zeros(pmask_shape, np.uint8)
  *     pmask[:-1, :-1] = mask             # <<<<<<<<<<<<<<
- * 
+ *
  *     s0, s1 = pmask.shape[:2]
  */
   if (unlikely(PyObject_SetItem(__pyx_v_pmask, __pyx_tuple__17, __pyx_v_mask) < 0)) __PYX_ERR(0, 959, __pyx_L1_error)
 
   /* "nipy/algorithms/statistics/intvol.pyx":961
  *     pmask[:-1, :-1] = mask
- * 
+ *
  *     s0, s1 = pmask.shape[:2]             # <<<<<<<<<<<<<<
- * 
+ *
  *     fpmask = pmask.reshape(-1)
  */
   __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_pmask, __pyx_n_s_shape); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 961, __pyx_L1_error)
@@ -15423,11 +15423,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     if (likely(PyTuple_CheckExact(sequence))) {
-      __pyx_t_3 = PyTuple_GET_ITEM(sequence, 0); 
-      __pyx_t_6 = PyTuple_GET_ITEM(sequence, 1); 
+      __pyx_t_3 = PyTuple_GET_ITEM(sequence, 0);
+      __pyx_t_6 = PyTuple_GET_ITEM(sequence, 1);
     } else {
-      __pyx_t_3 = PyList_GET_ITEM(sequence, 0); 
-      __pyx_t_6 = PyList_GET_ITEM(sequence, 1); 
+      __pyx_t_3 = PyList_GET_ITEM(sequence, 0);
+      __pyx_t_6 = PyList_GET_ITEM(sequence, 1);
     }
     __Pyx_INCREF(__pyx_t_3);
     __Pyx_INCREF(__pyx_t_6);
@@ -15468,9 +15468,9 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
 
   /* "nipy/algorithms/statistics/intvol.pyx":963
  *     s0, s1 = pmask.shape[:2]
- * 
+ *
  *     fpmask = pmask.reshape(-1)             # <<<<<<<<<<<<<<
- * 
+ *
  *     strides = np.array(strides_from(pmask_shape, np.bool_), dtype=np.intp)
  */
   __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_pmask, __pyx_n_s_reshape); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 963, __pyx_L1_error)
@@ -15515,10 +15515,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
 
   /* "nipy/algorithms/statistics/intvol.pyx":965
  *     fpmask = pmask.reshape(-1)
- * 
+ *
  *     strides = np.array(strides_from(pmask_shape, np.bool_), dtype=np.intp)             # <<<<<<<<<<<<<<
  *     ss0, ss1 = strides[0], strides[1]
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 965, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -15622,10 +15622,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
   __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":966
- * 
+ *
  *     strides = np.array(strides_from(pmask_shape, np.bool_), dtype=np.intp)
  *     ss0, ss1 = strides[0], strides[1]             # <<<<<<<<<<<<<<
- * 
+ *
  *     # First do the interior contributions.
  */
   __pyx_t_16 = 0;
@@ -15770,7 +15770,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
  *                              cube_with_strides_center((1,0), strides),
  *                              cube_with_strides_center((1,1), strides)])             # <<<<<<<<<<<<<<
  *     c = cube_with_strides_center((0,0), strides)
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_cube_with_strides_center); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 973, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
@@ -15852,7 +15852,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
  *                              cube_with_strides_center((1,0), strides),
  *                              cube_with_strides_center((1,1), strides)])
  *     c = cube_with_strides_center((0,0), strides)             # <<<<<<<<<<<<<<
- * 
+ *
  *     d3 = np.array(list(c[3].difference(union[3])))
  */
   __Pyx_GetModuleGlobalName(__pyx_t_14, __pyx_n_s_cube_with_strides_center); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 974, __pyx_L1_error)
@@ -15907,10 +15907,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
 
   /* "nipy/algorithms/statistics/intvol.pyx":976
  *     c = cube_with_strides_center((0,0), strides)
- * 
+ *
  *     d3 = np.array(list(c[3].difference(union[3])))             # <<<<<<<<<<<<<<
  *     d2 = np.array(list(c[2].difference(union[2])))
- * 
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_14, __pyx_n_s_np); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 976, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_14);
@@ -15983,10 +15983,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
   __pyx_t_4 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":977
- * 
+ *
  *     d3 = np.array(list(c[3].difference(union[3])))
  *     d2 = np.array(list(c[2].difference(union[2])))             # <<<<<<<<<<<<<<
- * 
+ *
  *     ds2 = d2.shape[0]
  */
   __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 977, __pyx_L1_error)
@@ -16061,25 +16061,25 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
 
   /* "nipy/algorithms/statistics/intvol.pyx":979
  *     d2 = np.array(list(c[2].difference(union[2])))
- * 
+ *
  *     ds2 = d2.shape[0]             # <<<<<<<<<<<<<<
  *     ds3 = d3.shape[0]
- * 
+ *
  */
   __pyx_v_ds2 = (__pyx_v_d2->dimensions[0]);
 
   /* "nipy/algorithms/statistics/intvol.pyx":980
- * 
+ *
  *     ds2 = d2.shape[0]
  *     ds3 = d3.shape[0]             # <<<<<<<<<<<<<<
- * 
+ *
  *     for i in range(s0-1):
  */
   __pyx_v_ds3 = (__pyx_v_d3->dimensions[0]);
 
   /* "nipy/algorithms/statistics/intvol.pyx":982
  *     ds3 = d3.shape[0]
- * 
+ *
  *     for i in range(s0-1):             # <<<<<<<<<<<<<<
  *         for j in range(s1-1):
  *             index = i*ss0+j*ss1
@@ -16090,7 +16090,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
     __pyx_v_i = __pyx_t_9;
 
     /* "nipy/algorithms/statistics/intvol.pyx":983
- * 
+ *
  *     for i in range(s0-1):
  *         for j in range(s1-1):             # <<<<<<<<<<<<<<
  *             index = i*ss0+j*ss1
@@ -16239,7 +16239,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
  *                     v2 = index + d3[l,2]
  *                     m = m * fpmask[v1] * fpmask[v2]             # <<<<<<<<<<<<<<
  *                     l0 = l0 + m
- * 
+ *
  */
           __pyx_t_29 = __pyx_v_v1;
           __pyx_t_5 = -1;
@@ -16267,7 +16267,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
  *                     v2 = index + d3[l,2]
  *                     m = m * fpmask[v1] * fpmask[v2]
  *                     l0 = l0 + m             # <<<<<<<<<<<<<<
- * 
+ *
  *             for l in range(ds2):
  */
           __pyx_v_l0 = (__pyx_v_l0 + __pyx_v_m);
@@ -16284,7 +16284,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
 
       /* "nipy/algorithms/statistics/intvol.pyx":994
  *                     l0 = l0 + m
- * 
+ *
  *             for l in range(ds2):             # <<<<<<<<<<<<<<
  *                 v0 = index + d2[l,0]
  *                 m = fpmask[v0]
@@ -16295,7 +16295,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
         __pyx_v_l = __pyx_t_28;
 
         /* "nipy/algorithms/statistics/intvol.pyx":995
- * 
+ *
  *             for l in range(ds2):
  *                 v0 = index + d2[l,0]             # <<<<<<<<<<<<<<
  *                 m = fpmask[v0]
@@ -16376,7 +16376,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
  *                     v1 = index + d2[l,1]
  *                     m = m * fpmask[v1]             # <<<<<<<<<<<<<<
  *                     l0 = l0 - m
- * 
+ *
  */
           __pyx_t_29 = __pyx_v_v1;
           __pyx_t_5 = -1;
@@ -16394,7 +16394,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
  *                     v1 = index + d2[l,1]
  *                     m = m * fpmask[v1]
  *                     l0 = l0 - m             # <<<<<<<<<<<<<<
- * 
+ *
  *     # fpmask has the same sum as mask, but with predictable dtype
  */
           __pyx_v_l0 = (__pyx_v_l0 - __pyx_v_m);
@@ -16412,11 +16412,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
   }
 
   /* "nipy/algorithms/statistics/intvol.pyx":1003
- * 
+ *
  *     # fpmask has the same sum as mask, but with predictable dtype
  *     l0 += fpmask.sum()             # <<<<<<<<<<<<<<
  *     return l0
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_l0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1003, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -16449,8 +16449,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
  *     # fpmask has the same sum as mask, but with predictable dtype
  *     l0 += fpmask.sum()
  *     return l0             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_4 = __Pyx_PyInt_From_long(__pyx_v_l0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1004, __pyx_L1_error)
@@ -16460,11 +16460,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":906
- * 
- * 
+ *
+ *
  * def EC2d(mask):             # <<<<<<<<<<<<<<
  *     """ Compute Euler characteristic of 2D region in `mask`
- * 
+ *
  */
 
   /* function exit code */
@@ -16510,11 +16510,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_26EC2d(CYTHON_
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":1007
- * 
- * 
+ *
+ *
  * def Lips1d(coords, mask):             # <<<<<<<<<<<<<<
  *     """ Estimate intrinsic volumes for 1D region in `mask` given `coords`
- * 
+ *
  */
 
 /* Python wrapper */
@@ -16696,10 +16696,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":1055
  *         double res
- * 
+ *
  *     coords_c = coords.astype(np.float64)             # <<<<<<<<<<<<<<
  *     mask_c = check_cast_bin8(mask)
- * 
+ *
  */
   __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_coords, __pyx_n_s_astype); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1055, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
@@ -16748,10 +16748,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
   __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":1056
- * 
+ *
  *     coords_c = coords.astype(np.float64)
  *     mask_c = check_cast_bin8(mask)             # <<<<<<<<<<<<<<
- * 
+ *
  *     l0 = 0; l1 = 0
  */
   __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_check_cast_bin8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1056, __pyx_L1_error)
@@ -16796,7 +16796,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":1058
  *     mask_c = check_cast_bin8(mask)
- * 
+ *
  *     l0 = 0; l1 = 0             # <<<<<<<<<<<<<<
  *     s0 = mask_c.shape[0]
  *     D = np.zeros((2,2))
@@ -16805,11 +16805,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
   __pyx_v_l1 = 0.0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":1059
- * 
+ *
  *     l0 = 0; l1 = 0
  *     s0 = mask_c.shape[0]             # <<<<<<<<<<<<<<
  *     D = np.zeros((2,2))
- * 
+ *
  */
   __pyx_v_s0 = (__pyx_v_mask_c->dimensions[0]);
 
@@ -16817,7 +16817,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
  *     l0 = 0; l1 = 0
  *     s0 = mask_c.shape[0]
  *     D = np.zeros((2,2))             # <<<<<<<<<<<<<<
- * 
+ *
  *     for i in range(s0):
  */
   __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_np); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1060, __pyx_L1_error)
@@ -16845,7 +16845,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
 
   /* "nipy/algorithms/statistics/intvol.pyx":1062
  *     D = np.zeros((2,2))
- * 
+ *
  *     for i in range(s0):             # <<<<<<<<<<<<<<
  *         for r in range(2):
  *             rr = (i+r) % s0
@@ -16856,7 +16856,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
     __pyx_v_i = __pyx_t_14;
 
     /* "nipy/algorithms/statistics/intvol.pyx":1063
- * 
+ *
  *     for i in range(s0):
  *         for r in range(2):             # <<<<<<<<<<<<<<
  *             rr = (i+r) % s0
@@ -17079,7 +17079,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
  *                 else:
  *                     D[r,s] = 0             # <<<<<<<<<<<<<<
  *                     D[s,r] = 0
- * 
+ *
  */
         /*else*/ {
           __pyx_t_1 = __Pyx_PyInt_From_Py_intptr_t(__pyx_v_r); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1076, __pyx_L1_error)
@@ -17101,7 +17101,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
  *                 else:
  *                     D[r,s] = 0
  *                     D[s,r] = 0             # <<<<<<<<<<<<<<
- * 
+ *
  *         m = mask_c[i]
  */
           __pyx_t_3 = __Pyx_PyInt_From_Py_intptr_t(__pyx_v_s); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1077, __pyx_L1_error)
@@ -17125,7 +17125,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
 
     /* "nipy/algorithms/statistics/intvol.pyx":1079
  *                     D[s,r] = 0
- * 
+ *
  *         m = mask_c[i]             # <<<<<<<<<<<<<<
  *         if m:
  *             m = m * (mask_c[(i+1) % s0] * ((i+1) < s0))
@@ -17143,7 +17143,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
     __pyx_v_m = (*__Pyx_BufPtrStrided1d(__pyx_t_5numpy_uint8_t *, __pyx_pybuffernd_mask_c.rcbuffer->pybuffer.buf, __pyx_t_25, __pyx_pybuffernd_mask_c.diminfo[0].strides));
 
     /* "nipy/algorithms/statistics/intvol.pyx":1080
- * 
+ *
  *         m = mask_c[i]
  *         if m:             # <<<<<<<<<<<<<<
  *             m = m * (mask_c[(i+1) % s0] * ((i+1) < s0))
@@ -17181,7 +17181,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
  *             m = m * (mask_c[(i+1) % s0] * ((i+1) < s0))
  *             l1 = l1 + m * mu1_edge(D[0,0], D[0,1], D[1,1])             # <<<<<<<<<<<<<<
  *             l0 = l0 - m
- * 
+ *
  */
       __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_v_D, __pyx_tuple__21); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1082, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
@@ -17201,13 +17201,13 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
  *             m = m * (mask_c[(i+1) % s0] * ((i+1) < s0))
  *             l1 = l1 + m * mu1_edge(D[0,0], D[0,1], D[1,1])
  *             l0 = l0 - m             # <<<<<<<<<<<<<<
- * 
+ *
  *     # mask_c has the same sum as mask, but with predictable dtype
  */
       __pyx_v_l0 = (__pyx_v_l0 - __pyx_v_m);
 
       /* "nipy/algorithms/statistics/intvol.pyx":1080
- * 
+ *
  *         m = mask_c[i]
  *         if m:             # <<<<<<<<<<<<<<
  *             m = m * (mask_c[(i+1) % s0] * ((i+1) < s0))
@@ -17217,11 +17217,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
   }
 
   /* "nipy/algorithms/statistics/intvol.pyx":1086
- * 
+ *
  *     # mask_c has the same sum as mask, but with predictable dtype
  *     l0 += mask_c.sum()             # <<<<<<<<<<<<<<
  *     return np.array([l0, l1])
- * 
+ *
  */
   __pyx_t_1 = PyFloat_FromDouble(__pyx_v_l0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1086, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -17254,8 +17254,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
  *     # mask_c has the same sum as mask, but with predictable dtype
  *     l0 += mask_c.sum()
  *     return np.array([l0, l1])             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1087, __pyx_L1_error)
@@ -17296,11 +17296,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":1007
- * 
- * 
+ *
+ *
  * def Lips1d(coords, mask):             # <<<<<<<<<<<<<<
  *     """ Estimate intrinsic volumes for 1D region in `mask` given `coords`
- * 
+ *
  */
 
   /* function exit code */
@@ -17333,11 +17333,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_28Lips1d(CYTHO
 }
 
 /* "nipy/algorithms/statistics/intvol.pyx":1090
- * 
- * 
+ *
+ *
  * def EC1d(mask):             # <<<<<<<<<<<<<<
  *     """ Compute Euler characteristic for 1d `mask`
- * 
+ *
  */
 
 /* Python wrapper */
@@ -17394,14 +17394,14 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_30EC1d(CYTHON_
  *         np.uint8_t m
  *         np.npy_intp i, s0
  *         double l0 = 0             # <<<<<<<<<<<<<<
- * 
+ *
  *     mask_c = check_cast_bin8(mask)
  */
   __pyx_v_l0 = 0.0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":1132
  *         double l0 = 0
- * 
+ *
  *     mask_c = check_cast_bin8(mask)             # <<<<<<<<<<<<<<
  *     s0 = mask_c.shape[0]
  *     for i in range(s0):
@@ -17447,7 +17447,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_30EC1d(CYTHON_
   __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":1133
- * 
+ *
  *     mask_c = check_cast_bin8(mask)
  *     s0 = mask_c.shape[0]             # <<<<<<<<<<<<<<
  *     for i in range(s0):
@@ -17501,7 +17501,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_30EC1d(CYTHON_
  *         if m:
  *             m = m * (mask_c[(i+1) % s0] * ((i+1) < s0))             # <<<<<<<<<<<<<<
  *             l0 = l0 - m
- * 
+ *
  */
       __pyx_t_14 = (__pyx_v_i + 1);
       if (unlikely(__pyx_v_s0 == 0)) {
@@ -17524,7 +17524,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_30EC1d(CYTHON_
  *         if m:
  *             m = m * (mask_c[(i+1) % s0] * ((i+1) < s0))
  *             l0 = l0 - m             # <<<<<<<<<<<<<<
- * 
+ *
  *     # mask_c has the same sum as mask, but with predictable dtype
  */
       __pyx_v_l0 = (__pyx_v_l0 - __pyx_v_m);
@@ -17540,7 +17540,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_30EC1d(CYTHON_
   }
 
   /* "nipy/algorithms/statistics/intvol.pyx":1141
- * 
+ *
  *     # mask_c has the same sum as mask, but with predictable dtype
  *     l0 += mask_c.sum()             # <<<<<<<<<<<<<<
  *     return l0
@@ -17585,11 +17585,11 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_30EC1d(CYTHON_
   goto __pyx_L0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":1090
- * 
- * 
+ *
+ *
  * def EC1d(mask):             # <<<<<<<<<<<<<<
  *     """ Compute Euler characteristic for 1d `mask`
- * 
+ *
  */
 
   /* function exit code */
@@ -17618,10 +17618,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_10statistics_6intvol_30EC1d(CYTHON_
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":734
  * ctypedef npy_cdouble     complex_t
- * 
+ *
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(1, <void*>a)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__pyx_v_a) {
@@ -17634,10 +17634,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew1", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":735
- * 
+ *
  * cdef inline object PyArray_MultiIterNew1(a):
  *     return PyArray_MultiIterNew(1, <void*>a)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew2(a, b):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -17649,10 +17649,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":734
  * ctypedef npy_cdouble     complex_t
- * 
+ *
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(1, <void*>a)
- * 
+ *
  */
 
   /* function exit code */
@@ -17668,10 +17668,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":737
  *     return PyArray_MultiIterNew(1, <void*>a)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__pyx_v_a, PyObject *__pyx_v_b) {
@@ -17684,10 +17684,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew2", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":738
- * 
+ *
  * cdef inline object PyArray_MultiIterNew2(a, b):
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew3(a, b, c):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -17699,10 +17699,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":737
  *     return PyArray_MultiIterNew(1, <void*>a)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
- * 
+ *
  */
 
   /* function exit code */
@@ -17718,10 +17718,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":740
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c) {
@@ -17734,10 +17734,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew3", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":741
- * 
+ *
  * cdef inline object PyArray_MultiIterNew3(a, b, c):
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -17749,10 +17749,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":740
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
- * 
+ *
  */
 
   /* function exit code */
@@ -17768,10 +17768,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":743
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c, PyObject *__pyx_v_d) {
@@ -17784,10 +17784,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew4", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":744
- * 
+ *
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -17799,10 +17799,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":743
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
- * 
+ *
  */
 
   /* function exit code */
@@ -17818,10 +17818,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":746
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c, PyObject *__pyx_v_d, PyObject *__pyx_v_e) {
@@ -17834,10 +17834,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew5", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":747
- * 
+ *
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -17849,10 +17849,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":746
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
- * 
+ *
  */
 
   /* function exit code */
@@ -17868,7 +17868,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":749
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):             # <<<<<<<<<<<<<<
  *     if PyDataType_HASSUBARRAY(d):
  *         return <tuple>d.subarray.shape
@@ -17881,7 +17881,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
   __Pyx_RefNannySetupContext("PyDataType_SHAPE", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":750
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  *     if PyDataType_HASSUBARRAY(d):             # <<<<<<<<<<<<<<
  *         return <tuple>d.subarray.shape
@@ -17903,7 +17903,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
     goto __pyx_L0;
 
     /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":750
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  *     if PyDataType_HASSUBARRAY(d):             # <<<<<<<<<<<<<<
  *         return <tuple>d.subarray.shape
@@ -17915,8 +17915,8 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
  *         return <tuple>d.subarray.shape
  *     else:
  *         return ()             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   /*else*/ {
     __Pyx_XDECREF(__pyx_r);
@@ -17927,7 +17927,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":749
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):             # <<<<<<<<<<<<<<
  *     if PyDataType_HASSUBARRAY(d):
  *         return <tuple>d.subarray.shape
@@ -17942,7 +17942,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":928
  *     int _import_umath() except -1
- * 
+ *
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
  *     Py_INCREF(base) # important to do this before stealing the reference below!
  *     PyArray_SetBaseObject(arr, base)
@@ -17953,11 +17953,11 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __Pyx_RefNannySetupContext("set_array_base", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":929
- * 
+ *
  * cdef inline void set_array_base(ndarray arr, object base):
  *     Py_INCREF(base) # important to do this before stealing the reference below!             # <<<<<<<<<<<<<<
  *     PyArray_SetBaseObject(arr, base)
- * 
+ *
  */
   Py_INCREF(__pyx_v_base);
 
@@ -17965,14 +17965,14 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  * cdef inline void set_array_base(ndarray arr, object base):
  *     Py_INCREF(base) # important to do this before stealing the reference below!
  *     PyArray_SetBaseObject(arr, base)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object get_array_base(ndarray arr):
  */
   (void)(PyArray_SetBaseObject(__pyx_v_arr, __pyx_v_base));
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":928
  *     int _import_umath() except -1
- * 
+ *
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
  *     Py_INCREF(base) # important to do this before stealing the reference below!
  *     PyArray_SetBaseObject(arr, base)
@@ -17984,7 +17984,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":932
  *     PyArray_SetBaseObject(arr, base)
- * 
+ *
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
  *     base = PyArray_BASE(arr)
  *     if base is NULL:
@@ -17998,7 +17998,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   __Pyx_RefNannySetupContext("get_array_base", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":933
- * 
+ *
  * cdef inline object get_array_base(ndarray arr):
  *     base = PyArray_BASE(arr)             # <<<<<<<<<<<<<<
  *     if base is NULL:
@@ -18021,7 +18021,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
  *     if base is NULL:
  *         return None             # <<<<<<<<<<<<<<
  *     return <object>base
- * 
+ *
  */
     __Pyx_XDECREF(__pyx_r);
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
@@ -18040,7 +18040,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
  *     if base is NULL:
  *         return None
  *     return <object>base             # <<<<<<<<<<<<<<
- * 
+ *
  * # Versions of the import_* functions which are more suitable for
  */
   __Pyx_XDECREF(__pyx_r);
@@ -18050,7 +18050,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":932
  *     PyArray_SetBaseObject(arr, base)
- * 
+ *
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
  *     base = PyArray_BASE(arr)
  *     if base is NULL:
@@ -18131,7 +18131,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
  *         __pyx_import_array()
  *     except Exception:             # <<<<<<<<<<<<<<
  *         raise ImportError("numpy.core.multiarray failed to import")
- * 
+ *
  */
     __pyx_t_4 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])));
     if (__pyx_t_4) {
@@ -18145,7 +18145,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
  *         __pyx_import_array()
  *     except Exception:
  *         raise ImportError("numpy.core.multiarray failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline int import_umath() except -1:
  */
       __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ImportError, __pyx_tuple__25, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(1, 944, __pyx_L5_except_error)
@@ -18197,7 +18197,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":946
  *         raise ImportError("numpy.core.multiarray failed to import")
- * 
+ *
  * cdef inline int import_umath() except -1:             # <<<<<<<<<<<<<<
  *     try:
  *         _import_umath()
@@ -18220,7 +18220,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
   __Pyx_RefNannySetupContext("import_umath", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":947
- * 
+ *
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -18245,7 +18245,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
       __pyx_t_4 = _import_umath(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(1, 948, __pyx_L3_error)
 
       /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":947
- * 
+ *
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -18263,7 +18263,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
  *         _import_umath()
  *     except Exception:             # <<<<<<<<<<<<<<
  *         raise ImportError("numpy.core.umath failed to import")
- * 
+ *
  */
     __pyx_t_4 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])));
     if (__pyx_t_4) {
@@ -18277,7 +18277,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  */
       __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ImportError, __pyx_tuple__26, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(1, 950, __pyx_L5_except_error)
@@ -18290,7 +18290,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
     __pyx_L5_except_error:;
 
     /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":947
- * 
+ *
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -18306,7 +18306,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":946
  *         raise ImportError("numpy.core.multiarray failed to import")
- * 
+ *
  * cdef inline int import_umath() except -1:             # <<<<<<<<<<<<<<
  *     try:
  *         _import_umath()
@@ -18329,7 +18329,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":952
  *         raise ImportError("numpy.core.umath failed to import")
- * 
+ *
  * cdef inline int import_ufunc() except -1:             # <<<<<<<<<<<<<<
  *     try:
  *         _import_umath()
@@ -18352,7 +18352,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
   __Pyx_RefNannySetupContext("import_ufunc", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":953
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -18377,7 +18377,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
       __pyx_t_4 = _import_umath(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(1, 954, __pyx_L3_error)
 
       /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":953
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -18395,7 +18395,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
  *         _import_umath()
  *     except Exception:             # <<<<<<<<<<<<<<
  *         raise ImportError("numpy.core.umath failed to import")
- * 
+ *
  */
     __pyx_t_4 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])));
     if (__pyx_t_4) {
@@ -18409,7 +18409,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef extern from *:
  */
       __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ImportError, __pyx_tuple__26, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(1, 956, __pyx_L5_except_error)
@@ -18422,7 +18422,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
     __pyx_L5_except_error:;
 
     /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":953
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -18438,7 +18438,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":952
  *         raise ImportError("numpy.core.umath failed to import")
- * 
+ *
  * cdef inline int import_ufunc() except -1:             # <<<<<<<<<<<<<<
  *     try:
  *         _import_umath()
@@ -18460,8 +18460,8 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":966
- * 
- * 
+ *
+ *
  * cdef inline bint is_timedelta64_object(object obj):             # <<<<<<<<<<<<<<
  *     """
  *     Cython equivalent of `isinstance(obj, np.timedelta64)`
@@ -18476,15 +18476,15 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_timedelta64_object(PyObject *__pyx_v_
  *     bool
  *     """
  *     return PyObject_TypeCheck(obj, &PyTimedeltaArrType_Type)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = PyObject_TypeCheck(__pyx_v_obj, (&PyTimedeltaArrType_Type));
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":966
- * 
- * 
+ *
+ *
  * cdef inline bint is_timedelta64_object(object obj):             # <<<<<<<<<<<<<<
  *     """
  *     Cython equivalent of `isinstance(obj, np.timedelta64)`
@@ -18497,8 +18497,8 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_timedelta64_object(PyObject *__pyx_v_
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":981
- * 
- * 
+ *
+ *
  * cdef inline bint is_datetime64_object(object obj):             # <<<<<<<<<<<<<<
  *     """
  *     Cython equivalent of `isinstance(obj, np.datetime64)`
@@ -18513,15 +18513,15 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_datetime64_object(PyObject *__pyx_v_o
  *     bool
  *     """
  *     return PyObject_TypeCheck(obj, &PyDatetimeArrType_Type)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = PyObject_TypeCheck(__pyx_v_obj, (&PyDatetimeArrType_Type));
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":981
- * 
- * 
+ *
+ *
  * cdef inline bint is_datetime64_object(object obj):             # <<<<<<<<<<<<<<
  *     """
  *     Cython equivalent of `isinstance(obj, np.datetime64)`
@@ -18534,8 +18534,8 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_datetime64_object(PyObject *__pyx_v_o
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":996
- * 
- * 
+ *
+ *
  * cdef inline npy_datetime get_datetime64_value(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the int64 value underlying scalar numpy datetime64 object
@@ -18548,15 +18548,15 @@ static CYTHON_INLINE npy_datetime __pyx_f_5numpy_get_datetime64_value(PyObject *
  *     also needed.  That can be found using `get_datetime64_unit`.
  *     """
  *     return (<PyDatetimeScalarObject*>obj).obval             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = ((PyDatetimeScalarObject *)__pyx_v_obj)->obval;
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":996
- * 
- * 
+ *
+ *
  * cdef inline npy_datetime get_datetime64_value(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the int64 value underlying scalar numpy datetime64 object
@@ -18568,8 +18568,8 @@ static CYTHON_INLINE npy_datetime __pyx_f_5numpy_get_datetime64_value(PyObject *
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1006
- * 
- * 
+ *
+ *
  * cdef inline npy_timedelta get_timedelta64_value(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the int64 value underlying scalar numpy timedelta64 object
@@ -18582,15 +18582,15 @@ static CYTHON_INLINE npy_timedelta __pyx_f_5numpy_get_timedelta64_value(PyObject
  *     returns the int64 value underlying scalar numpy timedelta64 object
  *     """
  *     return (<PyTimedeltaScalarObject*>obj).obval             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = ((PyTimedeltaScalarObject *)__pyx_v_obj)->obval;
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1006
- * 
- * 
+ *
+ *
  * cdef inline npy_timedelta get_timedelta64_value(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the int64 value underlying scalar numpy timedelta64 object
@@ -18602,8 +18602,8 @@ static CYTHON_INLINE npy_timedelta __pyx_f_5numpy_get_timedelta64_value(PyObject
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1013
- * 
- * 
+ *
+ *
  * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the unit part of the dtype for a numpy datetime64 object.
@@ -18621,8 +18621,8 @@ static CYTHON_INLINE NPY_DATETIMEUNIT __pyx_f_5numpy_get_datetime64_unit(PyObjec
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1013
- * 
- * 
+ *
+ *
  * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the unit part of the dtype for a numpy datetime64 object.
@@ -18837,7 +18837,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
   /* "nipy/algorithms/statistics/intvol.pyx":393
- * 
+ *
  *     pmask_shape = np.array(mask.shape) + 1
  *     s0, s1, s2 = pmask_shape[:3]             # <<<<<<<<<<<<<<
  *     pmask = np.zeros(pmask_shape, dtype=np.uint8)
@@ -18852,7 +18852,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     pmask = np.zeros(pmask_shape, dtype=np.uint8)
  *     pmask[:-1, :-1, :-1] = check_cast_bin8(mask)             # <<<<<<<<<<<<<<
  *     fpmask = pmask.reshape(-1)
- * 
+ *
  */
   __pyx_slice__2 = PySlice_New(Py_None, __pyx_int_neg_1, Py_None); if (unlikely(!__pyx_slice__2)) __PYX_ERR(0, 395, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__2);
@@ -18932,7 +18932,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *                              cube_with_strides_center((1,1,0), strides),
  *                              cube_with_strides_center((1,1,1), strides)])             # <<<<<<<<<<<<<<
  *     c = cube_with_strides_center((0,0,0), strides)
- * 
+ *
  */
   __pyx_tuple__10 = PyTuple_Pack(3, __pyx_int_1, __pyx_int_1, __pyx_int_1); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 409, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__10);
@@ -18942,7 +18942,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *                              cube_with_strides_center((1,1,0), strides),
  *                              cube_with_strides_center((1,1,1), strides)])
  *     c = cube_with_strides_center((0,0,0), strides)             # <<<<<<<<<<<<<<
- * 
+ *
  *     d4 = np.array(list(c[4].difference(union[4])))
  */
   __pyx_tuple__11 = PyTuple_Pack(3, __pyx_int_0, __pyx_int_0, __pyx_int_0); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 410, __pyx_L1_error)
@@ -18976,7 +18976,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *         elif mask.ndim == 1:
  *             value[:2] = Lips1d(coords, mask)             # <<<<<<<<<<<<<<
  *         return value
- * 
+ *
  */
   __pyx_slice__14 = PySlice_New(Py_None, __pyx_int_2, Py_None); if (unlikely(!__pyx_slice__14)) __PYX_ERR(0, 516, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__14);
@@ -18984,7 +18984,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
 
   /* "nipy/algorithms/statistics/intvol.pyx":593
  *     m2 = np.array(list(c[2].difference(union[2])))
- * 
+ *
  *     d4 = np.array([[_convert_stride3(v, strides, (4,2,1)) for v in m4[i]] for i in range(m4.shape[0])])             # <<<<<<<<<<<<<<
  *     d4 = np.hstack([m4, d4])
  *     ds4 = d4.shape[0]
@@ -18995,9 +18995,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
 
   /* "nipy/algorithms/statistics/intvol.pyx":607
  *     nvox = mask.size
- * 
+ *
  *     D = np.zeros((8,8))             # <<<<<<<<<<<<<<
- * 
+ *
  *     for i in range(s0-1):
  */
   __pyx_tuple__16 = PyTuple_Pack(2, __pyx_int_8, __pyx_int_8); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 607, __pyx_L1_error)
@@ -19008,7 +19008,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     pmask_shape = np.array(mask.shape) + 1
  *     pmask = np.zeros(pmask_shape, np.uint8)
  *     pmask[:-1, :-1] = mask             # <<<<<<<<<<<<<<
- * 
+ *
  *     s0, s1 = pmask.shape[:2]
  */
   __pyx_tuple__17 = PyTuple_Pack(2, __pyx_slice__2, __pyx_slice__2); if (unlikely(!__pyx_tuple__17)) __PYX_ERR(0, 807, __pyx_L1_error)
@@ -19017,7 +19017,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
 
   /* "nipy/algorithms/statistics/intvol.pyx":834
  *     cvertices = np.array(sorted(verts), np.intp)
- * 
+ *
  *     union = join_complexes(*[cube_with_strides_center((0,1), strides),             # <<<<<<<<<<<<<<
  *                              cube_with_strides_center((1,0), strides),
  *                              cube_with_strides_center((1,1), strides)])
@@ -19027,11 +19027,11 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__18);
 
   /* "nipy/algorithms/statistics/intvol.pyx":835
- * 
+ *
  *     union = join_complexes(*[cube_with_strides_center((0,1), strides),
  *                              cube_with_strides_center((1,0), strides),             # <<<<<<<<<<<<<<
  *                              cube_with_strides_center((1,1), strides)])
- * 
+ *
  */
   __pyx_tuple__19 = PyTuple_Pack(2, __pyx_int_1, __pyx_int_0); if (unlikely(!__pyx_tuple__19)) __PYX_ERR(0, 835, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__19);
@@ -19041,7 +19041,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     union = join_complexes(*[cube_with_strides_center((0,1), strides),
  *                              cube_with_strides_center((1,0), strides),
  *                              cube_with_strides_center((1,1), strides)])             # <<<<<<<<<<<<<<
- * 
+ *
  *     c = cube_with_strides_center((0,0), strides)
  */
   __pyx_tuple__20 = PyTuple_Pack(2, __pyx_int_1, __pyx_int_1); if (unlikely(!__pyx_tuple__20)) __PYX_ERR(0, 836, __pyx_L1_error)
@@ -19050,7 +19050,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
 
   /* "nipy/algorithms/statistics/intvol.pyx":838
  *                              cube_with_strides_center((1,1), strides)])
- * 
+ *
  *     c = cube_with_strides_center((0,0), strides)             # <<<<<<<<<<<<<<
  *     m3 = np.array(list(c[3].difference(union[3])))
  *     m2 = np.array(list(c[2].difference(union[2])))
@@ -19061,7 +19061,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
 
   /* "nipy/algorithms/statistics/intvol.pyx":842
  *     m2 = np.array(list(c[2].difference(union[2])))
- * 
+ *
  *     d3 = np.array([[_convert_stride2(v, strides, (2,1)) for v in m3[i]] for i in range(m3.shape[0])])             # <<<<<<<<<<<<<<
  *     d3 = np.hstack([m3, d3])
  *     ds3 = d3.shape[0]
@@ -19072,9 +19072,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
 
   /* "nipy/algorithms/statistics/intvol.pyx":850
  *     ds2 = d2.shape[0]
- * 
+ *
  *     D = np.zeros((4,4))             # <<<<<<<<<<<<<<
- * 
+ *
  *     npix = mask.size
  */
   __pyx_tuple__23 = PyTuple_Pack(2, __pyx_int_4, __pyx_int_4); if (unlikely(!__pyx_tuple__23)) __PYX_ERR(0, 850, __pyx_L1_error)
@@ -19085,7 +19085,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     l0 = 0; l1 = 0
  *     s0 = mask_c.shape[0]
  *     D = np.zeros((2,2))             # <<<<<<<<<<<<<<
- * 
+ *
  *     for i in range(s0):
  */
   __pyx_tuple__24 = PyTuple_Pack(2, __pyx_int_2, __pyx_int_2); if (unlikely(!__pyx_tuple__24)) __PYX_ERR(0, 1060, __pyx_L1_error)
@@ -19096,7 +19096,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *         __pyx_import_array()
  *     except Exception:
  *         raise ImportError("numpy.core.multiarray failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline int import_umath() except -1:
  */
   __pyx_tuple__25 = PyTuple_Pack(1, __pyx_kp_s_numpy_core_multiarray_failed_to); if (unlikely(!__pyx_tuple__25)) __PYX_ERR(1, 944, __pyx_L1_error)
@@ -19107,7 +19107,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  */
   __pyx_tuple__26 = PyTuple_Pack(1, __pyx_kp_s_numpy_core_umath_failed_to_impor); if (unlikely(!__pyx_tuple__26)) __PYX_ERR(1, 950, __pyx_L1_error)
@@ -19115,11 +19115,11 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__26);
 
   /* "nipy/algorithms/statistics/intvol.pyx":340
- * 
- * 
+ *
+ *
  * def EC3d(mask):             # <<<<<<<<<<<<<<
  *     """ Compute Euler characteristic of region within `mask`
- * 
+ *
  */
   __pyx_tuple__27 = PyTuple_Pack(31, __pyx_n_s_mask, __pyx_n_s_fpmask, __pyx_n_s_d2, __pyx_n_s_d3, __pyx_n_s_d4, __pyx_n_s_m, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_l, __pyx_n_s_s0, __pyx_n_s_s1, __pyx_n_s_s2, __pyx_n_s_ds2, __pyx_n_s_ds3, __pyx_n_s_ds4, __pyx_n_s_index, __pyx_n_s_nvox, __pyx_n_s_ss0, __pyx_n_s_ss1, __pyx_n_s_ss2, __pyx_n_s_strides, __pyx_n_s_v0, __pyx_n_s_v1, __pyx_n_s_v2, __pyx_n_s_v3, __pyx_n_s_l0, __pyx_n_s_pmask_shape, __pyx_n_s_pmask, __pyx_n_s_union, __pyx_n_s_c); if (unlikely(!__pyx_tuple__27)) __PYX_ERR(0, 340, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__27);
@@ -19127,11 +19127,11 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__28 = (PyObject*)__Pyx_PyCode_New(1, 0, 31, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__27, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_intvol_pyx, __pyx_n_s_EC3d, 340, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__28)) __PYX_ERR(0, 340, __pyx_L1_error)
 
   /* "nipy/algorithms/statistics/intvol.pyx":462
- * 
- * 
+ *
+ *
  * def Lips3d(coords, mask):             # <<<<<<<<<<<<<<
  *     """ Estimated intrinsic volumes within masked region given coordinates
- * 
+ *
  */
   __pyx_tuple__29 = PyTuple_Pack(61, __pyx_n_s_coords, __pyx_n_s_mask, __pyx_n_s_value, __pyx_n_s_fcoords, __pyx_n_s_D, __pyx_n_s_fmask, __pyx_n_s_fpmask, __pyx_n_s_d4, __pyx_n_s_m4, __pyx_n_s_d3, __pyx_n_s_m3, __pyx_n_s_d2, __pyx_n_s_m2, __pyx_n_s_cvertices, __pyx_n_s_m, __pyx_n_s_mr, __pyx_n_s_ms, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_l, __pyx_n_s_s0, __pyx_n_s_s1, __pyx_n_s_s2, __pyx_n_s_ds4, __pyx_n_s_ds3, __pyx_n_s_ds2, __pyx_n_s_index, __pyx_n_s_pindex, __pyx_n_s_nvox, __pyx_n_s_r, __pyx_n_s_s, __pyx_n_s_rr, __pyx_n_s_ss, __pyx_n_s_ss0, __pyx_n_s_ss1, __pyx_n_s_ss2, __pyx_n_s_ss0d, __pyx_n_s_ss1d, __pyx_n_s_ss2d, __pyx_n_s_v0, __pyx_n_s_v1, __pyx_n_s_v2, __pyx_n_s_v3, __pyx_n_s_w0, __pyx_n_s_w1, __pyx_n_s_w2, __pyx_n_s_w3, __pyx_n_s_l0, __pyx_n_s_l1, __pyx_n_s_l2, __pyx_n_s_l3, __pyx_n_s_res, __pyx_n_s_pmask_shape, __pyx_n_s_pmask, __pyx_n_s_strides, __pyx_n_s_dstrides, __pyx_n_s_verts, __pyx_n_s_union, __pyx_n_s_c, __pyx_n_s_v); if (unlikely(!__pyx_tuple__29)) __PYX_ERR(0, 462, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__29);
@@ -19139,8 +19139,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__30 = (PyObject*)__Pyx_PyCode_New(2, 0, 61, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__29, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_intvol_pyx, __pyx_n_s_Lips3d, 462, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__30)) __PYX_ERR(0, 462, __pyx_L1_error)
 
   /* "nipy/algorithms/statistics/intvol.pyx":698
- * 
- * 
+ *
+ *
  * def _convert_stride3(v, stride1, stride2):             # <<<<<<<<<<<<<<
  *     """
  *     Take a voxel, expressed as in index in stride1 and
@@ -19151,8 +19151,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__32 = (PyObject*)__Pyx_PyCode_New(3, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__31, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_intvol_pyx, __pyx_n_s_convert_stride3, 698, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__32)) __PYX_ERR(0, 698, __pyx_L1_error)
 
   /* "nipy/algorithms/statistics/intvol.pyx":710
- * 
- * 
+ *
+ *
  * def _convert_stride2(v, stride1, stride2):             # <<<<<<<<<<<<<<
  *     """
  *     Take a voxel, expressed as in index in stride1 and
@@ -19163,8 +19163,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__34 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__33, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_intvol_pyx, __pyx_n_s_convert_stride2, 710, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__34)) __PYX_ERR(0, 710, __pyx_L1_error)
 
   /* "nipy/algorithms/statistics/intvol.pyx":720
- * 
- * 
+ *
+ *
  * def _convert_stride1(v, stride1, stride2):             # <<<<<<<<<<<<<<
  *     """
  *     Take a voxel, expressed as in index in stride1 and
@@ -19175,11 +19175,11 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__36 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__35, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_intvol_pyx, __pyx_n_s_convert_stride1, 720, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__36)) __PYX_ERR(0, 720, __pyx_L1_error)
 
   /* "nipy/algorithms/statistics/intvol.pyx":729
- * 
- * 
+ *
+ *
  * def Lips2d(coords, mask):             # <<<<<<<<<<<<<<
  *     """ Estimate intrinsic volumes for 2d region in `mask` given `coords`
- * 
+ *
  */
   __pyx_tuple__37 = PyTuple_Pack(52, __pyx_n_s_coords, __pyx_n_s_mask, __pyx_n_s_value, __pyx_n_s_fcoords, __pyx_n_s_D, __pyx_n_s_fmask, __pyx_n_s_fpmask, __pyx_n_s_d3, __pyx_n_s_d2, __pyx_n_s_cvertices, __pyx_n_s_m, __pyx_n_s_mr, __pyx_n_s_ms, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_l, __pyx_n_s_r, __pyx_n_s_s, __pyx_n_s_rr, __pyx_n_s_ss, __pyx_n_s_s0, __pyx_n_s_s1, __pyx_n_s_ds2, __pyx_n_s_ds3, __pyx_n_s_index, __pyx_n_s_npix, __pyx_n_s_pindex, __pyx_n_s_ss0, __pyx_n_s_ss1, __pyx_n_s_ss0d, __pyx_n_s_ss1d, __pyx_n_s_v0, __pyx_n_s_v1, __pyx_n_s_v2, __pyx_n_s_w0, __pyx_n_s_w1, __pyx_n_s_w2, __pyx_n_s_l0, __pyx_n_s_l1, __pyx_n_s_l2, __pyx_n_s_res, __pyx_n_s_pmask_shape, __pyx_n_s_pmask, __pyx_n_s_strides, __pyx_n_s_dstrides, __pyx_n_s_verts, __pyx_n_s_union, __pyx_n_s_c, __pyx_n_s_m3, __pyx_n_s_m2, __pyx_n_s_v); if (unlikely(!__pyx_tuple__37)) __PYX_ERR(0, 729, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__37);
@@ -19187,11 +19187,11 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__38 = (PyObject*)__Pyx_PyCode_New(2, 0, 52, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__37, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_intvol_pyx, __pyx_n_s_Lips2d, 729, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__38)) __PYX_ERR(0, 729, __pyx_L1_error)
 
   /* "nipy/algorithms/statistics/intvol.pyx":906
- * 
- * 
+ *
+ *
  * def EC2d(mask):             # <<<<<<<<<<<<<<
  *     """ Compute Euler characteristic of 2D region in `mask`
- * 
+ *
  */
   __pyx_tuple__39 = PyTuple_Pack(25, __pyx_n_s_mask, __pyx_n_s_fpmask, __pyx_n_s_d2, __pyx_n_s_d3, __pyx_n_s_m, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_l, __pyx_n_s_s0, __pyx_n_s_s1, __pyx_n_s_ds2, __pyx_n_s_ds3, __pyx_n_s_index, __pyx_n_s_strides, __pyx_n_s_ss0, __pyx_n_s_ss1, __pyx_n_s_v0, __pyx_n_s_v1, __pyx_n_s_l0, __pyx_n_s_pmask_shape, __pyx_n_s_pmask, __pyx_n_s_union, __pyx_n_s_c, __pyx_n_s_v2); if (unlikely(!__pyx_tuple__39)) __PYX_ERR(0, 906, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__39);
@@ -19199,11 +19199,11 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__40 = (PyObject*)__Pyx_PyCode_New(1, 0, 25, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__39, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_intvol_pyx, __pyx_n_s_EC2d, 906, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__40)) __PYX_ERR(0, 906, __pyx_L1_error)
 
   /* "nipy/algorithms/statistics/intvol.pyx":1007
- * 
- * 
+ *
+ *
  * def Lips1d(coords, mask):             # <<<<<<<<<<<<<<
  *     """ Estimate intrinsic volumes for 1D region in `mask` given `coords`
- * 
+ *
  */
   __pyx_tuple__41 = PyTuple_Pack(19, __pyx_n_s_coords, __pyx_n_s_mask, __pyx_n_s_mask_c, __pyx_n_s_coords_c, __pyx_n_s_m, __pyx_n_s_mr, __pyx_n_s_ms, __pyx_n_s_i, __pyx_n_s_l, __pyx_n_s_r, __pyx_n_s_s, __pyx_n_s_rr, __pyx_n_s_ss, __pyx_n_s_s0, __pyx_n_s_index, __pyx_n_s_l0, __pyx_n_s_l1, __pyx_n_s_res, __pyx_n_s_D); if (unlikely(!__pyx_tuple__41)) __PYX_ERR(0, 1007, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__41);
@@ -19211,11 +19211,11 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__42 = (PyObject*)__Pyx_PyCode_New(2, 0, 19, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__41, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_intvol_pyx, __pyx_n_s_Lips1d, 1007, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__42)) __PYX_ERR(0, 1007, __pyx_L1_error)
 
   /* "nipy/algorithms/statistics/intvol.pyx":1090
- * 
- * 
+ *
+ *
  * def EC1d(mask):             # <<<<<<<<<<<<<<
  *     """ Compute Euler characteristic for 1d `mask`
- * 
+ *
  */
   __pyx_tuple__43 = PyTuple_Pack(6, __pyx_n_s_mask, __pyx_n_s_mask_c, __pyx_n_s_m, __pyx_n_s_i, __pyx_n_s_s0, __pyx_n_s_l0); if (unlikely(!__pyx_tuple__43)) __PYX_ERR(0, 1090, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__43);
@@ -19292,7 +19292,7 @@ static int __Pyx_modinit_type_import_code(void) {
   /*--- Type import code ---*/
   __pyx_t_1 = PyImport_ImportModule(__Pyx_BUILTIN_MODULE_NAME); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 9, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_ptype_7cpython_4type_type = __Pyx_ImportType(__pyx_t_1, __Pyx_BUILTIN_MODULE_NAME, "type", 
+  __pyx_ptype_7cpython_4type_type = __Pyx_ImportType(__pyx_t_1, __Pyx_BUILTIN_MODULE_NAME, "type",
   #if defined(PYPY_VERSION_NUM) && PYPY_VERSION_NUM < 0x050B0000
   sizeof(PyTypeObject),
   #else
@@ -19562,10 +19562,10 @@ if (!__Pyx_RefNanny) {
 
   /* "nipy/algorithms/statistics/intvol.pyx":12
  * cimport cython
- * 
+ *
  * import numpy as np             # <<<<<<<<<<<<<<
  * cimport numpy as np
- * 
+ *
  */
   __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 12, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -19574,9 +19574,9 @@ if (!__Pyx_RefNanny) {
 
   /* "nipy/algorithms/statistics/intvol.pyx":15
  * cimport numpy as np
- * 
+ *
  * from scipy.sparse import dok_matrix             # <<<<<<<<<<<<<<
- * 
+ *
  * # Array helper
  */
   __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 15, __pyx_L1_error)
@@ -19594,10 +19594,10 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":18
- * 
+ *
  * # Array helper
  * from nipy.utils.arrays import strides_from             # <<<<<<<<<<<<<<
- * 
+ *
  * # local imports
  */
   __pyx_t_2 = PyList_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 18, __pyx_L1_error)
@@ -19615,11 +19615,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":21
- * 
+ *
  * # local imports
  * from .utils import cube_with_strides_center, join_complexes, check_cast_bin8             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_t_1 = PyList_New(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 21, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -19650,11 +19650,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":24
- * 
- * 
+ *
+ *
  * cdef double PI = np.pi             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 24, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -19666,11 +19666,11 @@ if (!__Pyx_RefNanny) {
   __pyx_v_4nipy_10algorithms_10statistics_6intvol_PI = __pyx_t_3;
 
   /* "nipy/algorithms/statistics/intvol.pyx":340
- * 
- * 
+ *
+ *
  * def EC3d(mask):             # <<<<<<<<<<<<<<
  *     """ Compute Euler characteristic of region within `mask`
- * 
+ *
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4nipy_10algorithms_10statistics_6intvol_15EC3d, NULL, __pyx_n_s_nipy_algorithms_statistics_intvo); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 340, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -19678,11 +19678,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":462
- * 
- * 
+ *
+ *
  * def Lips3d(coords, mask):             # <<<<<<<<<<<<<<
  *     """ Estimated intrinsic volumes within masked region given coordinates
- * 
+ *
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4nipy_10algorithms_10statistics_6intvol_17Lips3d, NULL, __pyx_n_s_nipy_algorithms_statistics_intvo); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 462, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -19690,8 +19690,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":698
- * 
- * 
+ *
+ *
  * def _convert_stride3(v, stride1, stride2):             # <<<<<<<<<<<<<<
  *     """
  *     Take a voxel, expressed as in index in stride1 and
@@ -19702,8 +19702,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":710
- * 
- * 
+ *
+ *
  * def _convert_stride2(v, stride1, stride2):             # <<<<<<<<<<<<<<
  *     """
  *     Take a voxel, expressed as in index in stride1 and
@@ -19714,8 +19714,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":720
- * 
- * 
+ *
+ *
  * def _convert_stride1(v, stride1, stride2):             # <<<<<<<<<<<<<<
  *     """
  *     Take a voxel, expressed as in index in stride1 and
@@ -19726,11 +19726,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":729
- * 
- * 
+ *
+ *
  * def Lips2d(coords, mask):             # <<<<<<<<<<<<<<
  *     """ Estimate intrinsic volumes for 2d region in `mask` given `coords`
- * 
+ *
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4nipy_10algorithms_10statistics_6intvol_25Lips2d, NULL, __pyx_n_s_nipy_algorithms_statistics_intvo); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 729, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -19738,11 +19738,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":906
- * 
- * 
+ *
+ *
  * def EC2d(mask):             # <<<<<<<<<<<<<<
  *     """ Compute Euler characteristic of 2D region in `mask`
- * 
+ *
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4nipy_10algorithms_10statistics_6intvol_27EC2d, NULL, __pyx_n_s_nipy_algorithms_statistics_intvo); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 906, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -19750,11 +19750,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":1007
- * 
- * 
+ *
+ *
  * def Lips1d(coords, mask):             # <<<<<<<<<<<<<<
  *     """ Estimate intrinsic volumes for 1D region in `mask` given `coords`
- * 
+ *
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4nipy_10algorithms_10statistics_6intvol_29Lips1d, NULL, __pyx_n_s_nipy_algorithms_statistics_intvo); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1007, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -19762,11 +19762,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "nipy/algorithms/statistics/intvol.pyx":1090
- * 
- * 
+ *
+ *
  * def EC1d(mask):             # <<<<<<<<<<<<<<
  *     """ Compute Euler characteristic for 1d `mask`
- * 
+ *
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_4nipy_10algorithms_10statistics_6intvol_31EC1d, NULL, __pyx_n_s_nipy_algorithms_statistics_intvo); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1090, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -19784,8 +19784,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1013
- * 
- * 
+ *
+ *
  * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the unit part of the dtype for a numpy datetime64 object.
@@ -20111,8 +20111,8 @@ static PyObject* __Pyx_PyInt_AddObjC(PyObject *op1, PyObject *op2, CYTHON_UNUSED
                 llx = lla + llb;
             return PyLong_FromLongLong(llx);
 #endif
-        
-        
+
+
     }
     #endif
     if (PyFloat_CheckExact(op1)) {

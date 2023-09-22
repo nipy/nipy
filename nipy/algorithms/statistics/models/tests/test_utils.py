@@ -3,14 +3,12 @@
 """
 Test functions for models.utils
 """
-from __future__ import absolute_import
 
 import numpy as np
+from nose.tools import assert_equal, assert_raises, assert_true
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from .. import utils
-
-from nose.tools import (assert_equal, assert_true, assert_raises)
-from numpy.testing import (assert_array_equal, assert_array_almost_equal)
 
 
 def test_StepFunction():

@@ -4,8 +4,8 @@ Sets doctests to run by default
 
 Use our own doctest plugin (based on that of numpy)
 """
-from __future__ import absolute_import
 from ..fixes.numpy.testing.nosetester import NoseTester, import_nose
+
 
 def fpw_opt_str():
     """ Return first-package-wins option string for this version of nose
@@ -116,5 +116,5 @@ class NipyNoseTester(NoseTester):
         if extra_argv is None:
             extra_argv = []
         extra_argv.append(fpw_opt_str())
-        return super(NipyNoseTester, self).test(label, verbose, extra_argv,
+        return super().test(label, verbose, extra_argv,
                                                 doctests, coverage)

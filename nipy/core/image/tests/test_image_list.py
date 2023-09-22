@@ -1,17 +1,22 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-from ..image_list import ImageList, iter_axis
-from ..image import Image
+from ....core.reference.coordinate_map import (
+    AffineTransform,
+    AxisError,
+    CoordinateSystem,
+)
 from ....io.api import load_image
-from ....core.reference.coordinate_map import (AxisError, CoordinateSystem,
-                                               AffineTransform)
-
-from ....testing import (funcfile, assert_true, assert_equal, assert_raises,
-                        assert_almost_equal)
-
+from ....testing import (
+    assert_almost_equal,
+    assert_equal,
+    assert_raises,
+    assert_true,
+    funcfile,
+)
+from ..image import Image
+from ..image_list import ImageList, iter_axis
 
 FIMG = load_image(funcfile)
 

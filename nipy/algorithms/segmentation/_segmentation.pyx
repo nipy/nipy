@@ -1,7 +1,7 @@
-# -*- Mode: Python -*-  
+# -*- Mode: Python -*-
 
 """
-Markov random field utils. 
+Markov random field utils.
 
 Author: Alexis Roche, 2010.
 """
@@ -17,15 +17,15 @@ from numpy cimport import_array, ndarray
 
 # Externals
 cdef extern from "mrf.h":
-    void ve_step(ndarray ppm, 
+    void ve_step(ndarray ppm,
                  ndarray ref,
-                 ndarray XYZ, 
+                 ndarray XYZ,
                  ndarray U,
-                 int ngb_size, 
+                 int ngb_size,
                  double beta)
     ndarray make_edges(ndarray mask,
                        int ngb_size)
-    double interaction_energy(ndarray ppm, 
+    double interaction_energy(ndarray ppm,
                               ndarray XYZ,
                               ndarray U,
                               int ngb_size)
@@ -46,20 +46,20 @@ def _ve_step(ppm, ref, XYZ, U, int ngb_size, double beta):
         raise ValueError('ref array should be double C-contiguous')
     if not XYZ.flags['C_CONTIGUOUS'] or not XYZ.dtype=='intp':
         raise ValueError('XYZ array should be intp C-contiguous')
-    if not XYZ.shape[1] == 3: 
+    if not XYZ.shape[1] == 3:
         raise ValueError('XYZ array should be 3D')
     if not U.flags['C_CONTIGUOUS'] or not U.dtype=='double':
         raise ValueError('U array should be double C-contiguous')
     if not ppm.shape[-1] == ref.shape[-1]:
         raise ValueError('Inconsistent shapes for ppm and ref arrays')
 
-    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, <ndarray>U, 
+    ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, <ndarray>U,
              ngb_size, beta)
-    return ppm 
+    return ppm
 
 
 def _make_edges(mask, int ngb_size):
-    
+
     if not mask.flags['C_CONTIGUOUS'] or not mask.dtype=='intp':
         raise ValueError('mask array should be intp and C-contiguous')
 
@@ -72,7 +72,7 @@ def _interaction_energy(ppm, XYZ, U, int ngb_size):
         raise ValueError('ppm array should be double C-contiguous')
     if not XYZ.flags['C_CONTIGUOUS'] or not XYZ.dtype=='intp':
         raise ValueError('XYZ array should be intp C-contiguous')
-    if not XYZ.shape[1] == 3: 
+    if not XYZ.shape[1] == 3:
         raise ValueError('XYZ array should be 3D')
     if not U.flags['C_CONTIGUOUS'] or not U.dtype=='double':
         raise ValueError('U array should be double C-contiguous')

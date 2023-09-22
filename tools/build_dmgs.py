@@ -9,14 +9,14 @@ Note quotes around the globber first argument to protect it from shell
 globbing.
 """
 import os
-from os.path import join as pjoin, isfile, isdir
 import shutil
-from glob import glob
-from functools import partial
-from subprocess import check_call
 import warnings
-
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from functools import partial
+from glob import glob
+from os.path import isdir, isfile
+from os.path import join as pjoin
+from subprocess import check_call
 
 my_call = partial(check_call, shell=True)
 
@@ -59,7 +59,7 @@ def main():
                 shutil.copy(readme, pkg_name)
             else:
                 warnings.warn("Could not find readme with " + readme)
-            my_call('sudo hdiutil create {0}.dmg -srcfolder ./{0}/ -ov'.format(pkg_name))
+            my_call(f'sudo hdiutil create {pkg_name}.dmg -srcfolder ./{pkg_name}/ -ov')
     finally:
         os.chdir(cwd)
 

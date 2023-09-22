@@ -8,8 +8,13 @@ For example:
 >>> from nipy.algorithms.statistics.api import Formula
 """
 from .formula import formulae
-from .formula.formulae import (Formula, Factor, Term, terms, make_recarray,
-                               natural_spline)
-from .models import (model, regression, glm, family)
-from .models.regression import (OLSModel, ARModel, WLSModel, isestimable)
-
+from .formula.formulae import (
+    Factor,
+    Formula,
+    Term,
+    make_recarray,
+    natural_spline,
+    terms,
+)
+from .models import family, glm, model, regression
+from .models.regression import ARModel, OLSModel, WLSModel, isestimable

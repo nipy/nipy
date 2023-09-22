@@ -3,12 +3,12 @@ Nose test running.
 
 This module implements ``test()`` and ``bench()`` functions for NumPy modules.
 """
-from __future__ import print_function, absolute_import, absolute_import
 
 import os
 import sys
 
 from six import string_types
+
 
 def get_package_name(filepath):
     """
@@ -83,7 +83,7 @@ def run_module_suite(file_to_run = None):
     import_nose().run(argv=['',file_to_run])
 
 
-class NoseTester(object):
+class NoseTester:
     """
     Nose test runner.
 
@@ -233,6 +233,7 @@ class NoseTester(object):
                    '--cover-tests', '--cover-inclusive', '--cover-erase']
         # construct list of plugins
         import nose.plugins.builtin
+
         from .noseclasses import KnownFailure, Unplugger
         plugins = [KnownFailure()]
         plugins += [p() for p in nose.plugins.builtin.plugins]
@@ -402,4 +403,3 @@ class NoseTester(object):
         add_plugins = [Unplugger('doctest')]
 
         return nose.run(argv=argv, addplugins=add_plugins)
-

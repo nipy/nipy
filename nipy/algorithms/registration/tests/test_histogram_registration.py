@@ -1,14 +1,12 @@
-from __future__ import absolute_import
 
 import numpy as np
+from numpy.testing import assert_array_equal
 
 from ....core.image.image_spaces import make_xyz_image
+from ....testing import assert_almost_equal, assert_equal, assert_raises
+from .._registration import _joint_histogram
 from ..affine import Affine, Rigid
 from ..histogram_registration import HistogramRegistration
-from .._registration import _joint_histogram
-
-from numpy.testing import assert_array_equal
-from ....testing import assert_equal, assert_almost_equal, assert_raises
 
 dummy_affine = np.eye(4)
 

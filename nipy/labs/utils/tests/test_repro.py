@@ -6,13 +6,16 @@ Test the design_matrix utilities.
 Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
-from __future__ import absolute_import
 
 import numpy as np
+
+from ..reproducibility_measures import (
+    cluster_reproducibility,
+    peak_reproducibility,
+    voxel_reproducibility,
+)
 from ..simul_multisubject_fmri_dataset import surrogate_2d_dataset
-from ..reproducibility_measures import (voxel_reproducibility, 
-                                        cluster_reproducibility,
-                                        peak_reproducibility)
+
 
 def make_dataset(ampli_factor=1.0, n_subj=10):
     """
@@ -23,20 +26,19 @@ def make_dataset(ampli_factor=1.0, n_subj=10):
     shape = (40, 40)
     pos = 2 * np.array([[ 6,  7], [10, 10], [15, 10]])
     ampli = ampli_factor * np.array([5, 6, 7])
-    dataset = surrogate_2d_dataset(n_subj=n_subj, shape=shape, pos=pos, 
+    dataset = surrogate_2d_dataset(n_subj=n_subj, shape=shape, pos=pos,
                                    ampli=ampli, width=5.0, seed=1)
     return dataset
 
 
 def apply_repro_analysis(dataset, thresholds=[3.0], method = 'crfx'):
     """
-    perform the reproducibility  analysis according to the 
+    perform the reproducibility  analysis according to the
     """
-    from nipy.labs.spatial_models.discrete_domain import \
-        grid_domain_from_binary_array
+    from nipy.labs.spatial_models.discrete_domain import grid_domain_from_binary_array
 
     n_subj, dimx, dimy = dataset.shape
-    
+
     func = np.reshape(dataset,(n_subj, dimx * dimy)).T
     var = np.ones((dimx * dimy, n_subj))
     domain = grid_domain_from_binary_array(np.ones((dimx, dimy, 1)))
@@ -51,7 +53,7 @@ def apply_repro_analysis(dataset, thresholds=[3.0], method = 'crfx'):
     kap, clt, pkd = [], [], []
     for threshold in thresholds:
         kappa, cls, pks = [], [], []
-        kwargs = {'threshold':threshold, 'csize':csize}        
+        kwargs = {'threshold':threshold, 'csize':csize}
         for i in range(niter):
             k = voxel_reproducibility(func, var, domain, ngroups,
                                   method, swap, verbose, **kwargs)
@@ -62,7 +64,7 @@ def apply_repro_analysis(dataset, thresholds=[3.0], method = 'crfx'):
             pk = peak_reproducibility(func, var, domain, ngroups, sigma,
                                       method, swap, verbose, **kwargs)
             pks.append(pk)
-        
+
         kap.append(np.array(kappa))
         clt.append(np.array(cls))
         pkd.append(np.array(pks))
@@ -90,7 +92,7 @@ def test_repro2():
     kap, clt, pks = apply_repro_analysis(dataset, thresholds=[5.0])
     assert (clt.mean()>0.5)
 
-    
+
 def test_repro3():
     """
     Test on the kappa values for a null dataset
@@ -118,11 +120,9 @@ def test_repro7():
     """
     dataset = make_dataset(n_subj = 101)
     kap, clt, pks = apply_repro_analysis(dataset, thresholds=[5.0])
-    assert ((kap.mean() > 0.4))
-    assert ((clt.mean() > 0.5))    
+    assert (kap.mean() > 0.4)
+    assert (clt.mean() > 0.5)
 
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])
-
-

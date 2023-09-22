@@ -29,23 +29,18 @@ Example of fixed effects statistics across two contrasts
 >>> np.random.shuffle(cval_)
 >>> z_ffx = (model.contrast(cval) + model.contrast(cval_)).z_score()
 """
-from __future__ import print_function
-from __future__ import absolute_import
-
-import numpy as np
 
 from warnings import warn
 
+import numpy as np
+import scipy.stats as sps
+from nibabel import Nifti1Image, load
 from six import string_types
 
-import scipy.stats as sps
-
-from nibabel import load, Nifti1Image
-
-from nipy.io.nibcompat import get_header, get_affine
-from nipy.labs.mask import compute_mask_sessions
-from nipy.algorithms.statistics.models.regression import OLSModel, ARModel
+from nipy.algorithms.statistics.models.regression import ARModel, OLSModel
 from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
+from nipy.io.nibcompat import get_affine, get_header
+from nipy.labs.mask import compute_mask_sessions
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
@@ -71,7 +66,7 @@ def data_scaling(Y):
     return Y, mean
 
 
-class GeneralLinearModel(object):
+class GeneralLinearModel:
     """ This class handles the so-called on General Linear Model
 
     Most of what it does in the fit() and contrast() methods
@@ -162,7 +157,7 @@ class GeneralLinearModel(object):
 
         # build the beta array
         beta = np.zeros((n_beta, self.labels_.size), dtype=np.float64)
-        for l in self.results_.keys():
+        for l in self.results_:
             beta[:, self.labels_ == l] = self.results_[l].theta[column_index]
         return beta
 
@@ -176,7 +171,7 @@ class GeneralLinearModel(object):
         """
         # build the beta array
         mse = np.zeros(self.labels_.size, dtype=np.float64)
-        for l in self.results_.keys():
+        for l in self.results_:
             mse[self.labels_ == l] = self.results_[l].MSE
         return mse
 
@@ -190,7 +185,7 @@ class GeneralLinearModel(object):
         """
         # build the beta array
         logL = np.zeros(self.labels_.size, dtype=np.float64)
-        for l in self.results_.keys():
+        for l in self.results_:
             logL[self.labels_ == l] = self.results_[l].logL
         return logL
 
@@ -227,12 +222,12 @@ class GeneralLinearModel(object):
         effect_ = np.zeros((dim, self.labels_.size), dtype=np.float64)
         var_ = np.zeros((dim, dim, self.labels_.size), dtype=np.float64)
         if contrast_type == 't':
-            for l in self.results_.keys():
+            for l in self.results_:
                 resl = self.results_[l].Tcontrast(con_val)
                 effect_[:, self.labels_ == l] = resl.effect.T
                 var_[:, :, self.labels_ == l] = (resl.sd ** 2).T
         else:
-            for l in self.results_.keys():
+            for l in self.results_:
                 resl = self.results_[l].Fcontrast(con_val)
                 effect_[:, self.labels_ == l] = resl.effect
                 var_[:, :, self.labels_ == l] = resl.covariance
@@ -242,7 +237,7 @@ class GeneralLinearModel(object):
                         contrast_type=contrast_type)
 
 
-class Contrast(object):
+class Contrast:
     """ The contrast class handles the estimation of statistical contrasts
     on a given model: student (t), Fisher (F), conjunction (tmin-conjunction).
     The important feature is that it supports addition,
@@ -321,7 +316,7 @@ class Contrast(object):
                 self.effect = self.effect[np.newaxis]
             if self.variance.ndim == 1:
                 self.variance = self.variance[np.newaxis, np.newaxis]
-            stat = (multiple_mahalanobis(self.effect - baseline, 
+            stat = (multiple_mahalanobis(self.effect - baseline,
                                           self.variance) / self.dim)
         # Case: tmin (conjunctions)
         elif self.contrast_type == 'tmin-conjunction':
@@ -350,7 +345,7 @@ class Contrast(object):
         -----
         The value of 0.5 is used where the stat is not defined
         """
-        if self.stat_ is None or not self.baseline == baseline:
+        if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type in ['t', 'tmin-conjunction']:
@@ -378,7 +373,7 @@ class Contrast(object):
         -----
         The value of 0 is used where the stat is not defined
         """
-        if self.p_value_ is None or not self.baseline == baseline:
+        if self.p_value_ is None or self.baseline != baseline:
             self.p_value_ = self.p_value(baseline)
 
         # Avoid inf values kindly supplied by scipy.
@@ -416,7 +411,7 @@ class Contrast(object):
         return self.__rmul__(1 / float(scalar))
 
 
-class FMRILinearModel(object):
+class FMRILinearModel:
     """ This class is meant to handle GLMs from a higher-level perspective
     i.e. by taking images as input and output
     """

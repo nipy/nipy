@@ -3,9 +3,9 @@
 """
 Package containing modality-specific classes.
 """
-from __future__ import absolute_import
 __docformat__ = 'restructuredtext'
 
 from nipy.testing import Tester
+
 test = Tester().test
 bench = Tester().bench

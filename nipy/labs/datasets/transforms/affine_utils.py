@@ -2,9 +2,9 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """Functions working with affine transformation matrices.
 """
-from __future__ import absolute_import
 
 import numpy as np
+
 
 def apply_affine(x, y, z, affine):
     """ Apply the affine matrix to the given coordinate.
@@ -30,7 +30,7 @@ def apply_affine(x, y, z, affine):
     x = np.reshape(x, (-1,))
     y = np.reshape(y, (-1,))
     z = np.reshape(z, (-1,))
-    
+
     in_coords = np.c_[x,
                         y,
                         z,
@@ -68,7 +68,7 @@ def to_matrix_vector(transform):
     from_matrix_vector
 
     """
-    
+
     ndimin = transform.shape[0] - 1
     ndimout = transform.shape[1] - 1
     matrix = transform[0:ndimin, 0:ndimout]
@@ -81,7 +81,7 @@ def from_matrix_vector(matrix, vector):
 
     Combine a rotation matrix and translation vector into a transform
     in homogeneous coordinates.
-    
+
     Parameters
     ----------
     matrix : ndarray
@@ -99,7 +99,7 @@ def from_matrix_vector(matrix, vector):
     to_matrix_vector
 
     """
-    
+
     nin, nout = matrix.shape
     t = np.zeros((nin+1,nout+1), matrix.dtype)
     t[0:nin, 0:nout] = matrix
@@ -126,5 +126,3 @@ def get_bounds(shape, affine):
                      [adim, bdim, cdim, 1] ]).T
     box = np.dot(affine, box)[:3]
     return list(zip(box.min(axis=-1), box.max(axis=-1)))
-
-

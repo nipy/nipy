@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function
 __doc__ = """
 This examples performs sifferent kinds of (2D and 3D) plots
 of a given activation map.
@@ -19,12 +18,11 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nibabel import load
-
-from nipy.labs.viz import plot_map, cm
-
 # Local import
 from get_data_light import DATA_DIR, get_second_level_dataset
+from nibabel import load
+
+from nipy.labs.viz import cm, plot_map
 
 #######################################
 # Data and analysis parameters

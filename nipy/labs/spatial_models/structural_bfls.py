@@ -12,8 +12,6 @@ Group Studies.  IEEE TMI 2007
 
 Author : Bertrand Thirion, 2006-2013
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 #autoindent
 
@@ -33,7 +31,7 @@ def _threshold_weight_map(x, fraction):
     return x
 
 
-class LandmarkRegions(object):
+class LandmarkRegions:
     """
     This class is intended to represent a set of inter-subject regions
     It should inherit from some abstract multiple ROI class,

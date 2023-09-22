@@ -1,6 +1,5 @@
 """ Helper functions for constructing design regressors
 """
-from __future__ import division
 
 import numpy as np
 
@@ -44,7 +43,7 @@ def dct_ii_basis(volume_times, order=None, normcols=False):
     n = np.arange(N)
     cycle = np.pi * (n + 0.5) / N
     dct_basis = np.zeros((N, order))
-    for k in range(0, order):
+    for k in range(order):
         dct_basis[:, k] = np.cos(cycle * k)
     if normcols:  # Set column lengths to 1
         lengths = np.ones(order) * np.sqrt(N / 2.)

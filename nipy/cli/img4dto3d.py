@@ -5,11 +5,12 @@ EPILOG = \
 '''nipy_4dto3d will generate a series of 3D nifti images for each volume a 4D
 image series in any format readable by `nibabel`.
 '''
-from os.path import splitext, join as pjoin, split as psplit
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from os.path import join as pjoin
+from os.path import split as psplit
+from os.path import splitext
 
 import nibabel as nib
-
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 
 def main():

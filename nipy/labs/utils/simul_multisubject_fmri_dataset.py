@@ -7,14 +7,11 @@ a collection of 2D images This dataset is saved as a 3D image
 
 Author : Bertrand Thirion, 2008-2010
 """
-from __future__ import absolute_import
-
-from six import string_types
 
 import numpy as np
 import scipy.ndimage as nd
-
-from nibabel import save, Nifti1Image
+from nibabel import Nifti1Image, save
+from six import string_types
 
 from nipy.io.nibcompat import get_affine
 

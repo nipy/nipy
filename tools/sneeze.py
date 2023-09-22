@@ -20,8 +20,9 @@ nosetests -sv --with-coverage --cover-package=nipy.core.reference.coordinate_sys
 
 import os
 import sys
-import nose
 from optparse import OptionParser
+
+import nose
 
 usage_doc = "usage: sneeze test_module.py"
 
@@ -31,9 +32,9 @@ def find_pkg(pkg):
     module = module.split('test_')[1] # remove 'test_' prefix
 
     cover_pkg = None
-    fp = open(pkg, 'r')
+    fp = open(pkg)
     for line in fp:
-        if line.startswith('from') or line.startswith('import'):
+        if line.startswith(("from", "import")):
             # remove keywords from import line
             imptline = line.replace('import', '')
             imptline = imptline.replace('from', '')
@@ -57,7 +58,7 @@ def run_nose(cover_pkg, test_file, dry_run=False):
     cover_arg = '--cover-package=%s' % cover_pkg
     sys.argv += ['-sv', '--with-coverage', cover_arg]
     # Print out command for user feedback and debugging
-    cmd = 'nosetests -sv --with-coverage %s %s' % (cover_arg, test_file)
+    cmd = f'nosetests -sv --with-coverage {cover_arg} {test_file}'
     print(cmd)
     if dry_run:
         return cmd
@@ -82,8 +83,7 @@ def main():
         if cover_pkg:
             run_nose(cover_pkg, test_file, dry_run=options.dry_run)
         else:
-            raise ValueError('Unable to find module %s imported in test file %s'
-                             % (module, test_file))
+            raise ValueError('Unable to find module {} imported in test file {}'.format(module, test_file))
     except IndexError:
         parser.print_help()
 

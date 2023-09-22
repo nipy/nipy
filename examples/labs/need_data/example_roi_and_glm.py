@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 This is an example where:
 
@@ -19,7 +18,7 @@ Author : Bertrand Thirion, 2010
 """
 print(__doc__)
 
-from os import mkdir, getcwd, path
+from os import getcwd, mkdir, path
 
 import numpy as np
 
@@ -28,18 +27,16 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nibabel import save, load
-
-from nipy.modalities.fmri.design_matrix import dmtx_light
-from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
-from nipy.labs.utils.simul_multisubject_fmri_dataset import \
-    surrogate_4d_dataset
-from nipy.modalities.fmri.glm import GeneralLinearModel
-import nipy.labs.spatial_models.mroi as mroi
-from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
-
 # Local import
 from get_data_light import DATA_DIR, get_second_level_dataset
+from nibabel import load, save
+
+from nipy.labs.spatial_models import mroi
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
+from nipy.labs.utils.simul_multisubject_fmri_dataset import surrogate_4d_dataset
+from nipy.modalities.fmri.design_matrix import dmtx_light
+from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
+from nipy.modalities.fmri.glm import GeneralLinearModel
 
 #######################################
 # Simulation parameters
@@ -74,7 +71,7 @@ if not path.exists(write_dir):
 # Design matrix
 ########################################
 
-paradigm = np.vstack(([conditions, onsets])).T
+paradigm = np.vstack([conditions, onsets]).T
 paradigm = EventRelatedParadigm(conditions, onsets)
 X, names = dmtx_light(frametimes, paradigm, drift_model='cosine', hfcut=128,
                       hrf_model=hrf_model, add_regs=motion,

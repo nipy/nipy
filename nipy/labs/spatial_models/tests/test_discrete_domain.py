@@ -6,16 +6,23 @@ Test the discrete_domain utilities.
 Caveat assumes that the MNI template image is available at
 in ~/.nipy/tests/data
 """
-from __future__ import print_function, absolute_import
 
-import numpy as np
-from numpy.testing import assert_almost_equal, assert_equal
-from ..discrete_domain import smatrix_from_nd_idx, smatrix_from_3d_array, \
-    smatrix_from_nd_array, domain_from_binary_array, domain_from_image, \
-    domain_from_mesh, grid_domain_from_binary_array, grid_domain_from_image, \
-    grid_domain_from_shape
-from nibabel import Nifti1Image
 import nibabel.gifti as nbg
+import numpy as np
+from nibabel import Nifti1Image
+from numpy.testing import assert_almost_equal, assert_equal
+
+from ..discrete_domain import (
+    domain_from_binary_array,
+    domain_from_image,
+    domain_from_mesh,
+    grid_domain_from_binary_array,
+    grid_domain_from_image,
+    grid_domain_from_shape,
+    smatrix_from_3d_array,
+    smatrix_from_nd_array,
+    smatrix_from_nd_idx,
+)
 
 shape = np.array([5, 6, 7, 8, 9])
 

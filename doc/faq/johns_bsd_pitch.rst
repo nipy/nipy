@@ -107,7 +107,7 @@ consider issues such as those raised here when choosing a license.
 When asked, these developers will often be amenable to re-releasing
 their code under a more permissive license.  Fernando Perez did this
 with ipython, which was released under the :term:`LGPL` and then
-re-released under a BSD license to ease integration with matplotlib, 
+re-released under a BSD license to ease integration with matplotlib,
 scipy and enthought code.   The LGPL is more permissive than the GPL,
 allowing you to link with it non-virally, but many companies are still
 loath to use it out of legal concerns, and you cannot reuse LGPL code

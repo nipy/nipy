@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 ''' Checkout gitwash repo into directory and do search replace on name '''
 
-from __future__ import (absolute_import, division, print_function)
 
+import fnmatch
+import glob
 import os
-from os.path import join as pjoin
+import re
 import shutil
 import sys
-import re
-import glob
-import fnmatch
 import tempfile
-from subprocess import call
 from optparse import OptionParser
+from os.path import join as pjoin
+from subprocess import call
 
 verbose = False
 
@@ -56,7 +55,7 @@ def filename_search_replace(sr_pairs, filename, backup=False):
     ''' Search and replace for expressions in files
 
     '''
-    with open(filename, 'rt') as in_fh:
+    with open(filename) as in_fh:
         in_txt = in_fh.read(-1)
     out_txt = in_txt[:]
     for in_exp, out_exp in sr_pairs:
@@ -64,10 +63,10 @@ def filename_search_replace(sr_pairs, filename, backup=False):
         out_txt = in_exp.sub(out_exp, out_txt)
     if in_txt == out_txt:
         return False
-    with open(filename, 'wt') as out_fh:
+    with open(filename, "w") as out_fh:
         out_fh.write(out_txt)
     if backup:
-        with open(filename + '.bak', 'wt') as bak_fh:
+        with open(filename + '.bak', "w") as bak_fh:
             bak_fh.write(in_txt)
     return True
 
@@ -119,7 +118,7 @@ def make_link_targets(proj_name,
     .. _`proj_name`: url
     .. _`proj_name` mailing list: url
     """
-    with open(known_link_fname, 'rt') as link_fh:
+    with open(known_link_fname) as link_fh:
         link_contents = link_fh.readlines()
     have_url = not url is None
     have_ml_url = not ml_url is None
@@ -153,7 +152,7 @@ def make_link_targets(proj_name,
         return
     # A neat little header line
     lines = [f'.. {proj_name}\n'] + lines
-    with open(out_link_fname, 'wt') as out_links:
+    with open(out_link_fname, "w") as out_links:
         out_links.writelines(lines)
 
 
@@ -180,7 +179,7 @@ def main():
                       help="github username for main repo - e.g fperez",
                       metavar="MAIN_GH_USER")
     parser.add_option("--gitwash-url", dest="gitwash_url",
-                      help=f"URL to gitwash repository - default {GITWASH_CENTRAL}", 
+                      help=f"URL to gitwash repository - default {GITWASH_CENTRAL}",
                       default=GITWASH_CENTRAL,
                       metavar="GITWASH_URL")
     parser.add_option("--gitwash-branch", dest="gitwash_branch",

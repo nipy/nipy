@@ -1,24 +1,18 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import absolute_import
 
-from os.path import split as psplit
 import gc
-
-import numpy as np
+from os.path import split as psplit
 
 import nibabel.eulerangles as euler
-
-from nipy.io.api import load_image, save_image
-import nipy.algorithms.registration as reg
-
-from nose.tools import assert_true, assert_false
-
+import numpy as np
 import numpy.testing as npt
-
-from nipy.testing import funcfile
-
 from nibabel.tmpdirs import InTemporaryDirectory
+from nose.tools import assert_false, assert_true
+
+import nipy.algorithms.registration as reg
+from nipy.io.api import load_image, save_image
+from nipy.testing import funcfile
 
 
 def test_space_time_realign():

@@ -3,16 +3,13 @@ Test the Infinite GMM.
 
 Author : Bertrand Thirion, 2010
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 import numpy as np
+from nose.tools import assert_true
+from numpy.testing import assert_array_equal
 
 from ..imm import IMM, MixedIMM, co_labelling
 
-from nose.tools import assert_true
-
-from numpy.testing import assert_array_equal
 
 def test_colabel():
     # test the co_labelling functionality

@@ -1,9 +1,6 @@
-from __future__ import absolute_import
-from scipy.optimize import (fmin as fmin_simplex,
-                            fmin_powell,
-                            fmin_cg,
-                            fmin_bfgs,
-                            fmin_ncg)
+from scipy.optimize import fmin as fmin_simplex
+from scipy.optimize import fmin_bfgs, fmin_cg, fmin_ncg, fmin_powell
+
 from ..optimize import fmin_steepest
 
 

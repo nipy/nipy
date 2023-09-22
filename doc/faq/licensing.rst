@@ -20,7 +20,7 @@ Why did you choose BSD?
 We have chosen BSD licensing, for compatibility with SciPy, and to
 increase input from developers in industry.  Wherever possible we will
 keep packages that can have BSD licensing separate from packages
-needing a GPL license.  
+needing a GPL license.
 
 Our choices were between:
 
@@ -37,7 +37,7 @@ How does the BSD license affect our relationship to other projects?
 The BSD license allows other projects with virtually any license,
 including GPL, to use our code.  BSD makes it more likely that we will
 attract support from companies, including open-source software
-companies, such as Enthought_ and Kitware_. 
+companies, such as Enthought_ and Kitware_.
 
 Any part of our code that uses (links to) GPL code, should be in
 a separable package.
@@ -60,14 +60,14 @@ grant application document:
   and reviewers will be instructed to evaluate the dissemination plan
   relative to these goals:
 
-  1. The software should be freely available to biomedical researchers 
-  and educators in the non-profit sector, such as institutions of 
-  education, research institutes, and government laboratories.  
+  1. The software should be freely available to biomedical researchers
+  and educators in the non-profit sector, such as institutions of
+  education, research institutes, and government laboratories.
 
-  2. The terms of software availability should permit the 
-  commercialization of enhanced or customized versions of the software, 
-  or incorporation of the software or pieces of it into other software 
-  packages.  
+  2. The terms of software availability should permit the
+  commercialization of enhanced or customized versions of the software,
+  or incorporation of the software or pieces of it into other software
+  packages.
 
 There is more discussion of licensing in this `na-mic presentation
 <http://www.na-mic.org/Wiki/images/a/ae/NA-MIC-2005-10-30-Licencing.ppt>`_.

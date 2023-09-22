@@ -26,11 +26,12 @@ It outputs three images:
 See the `nipy.algorithms.group.ParcelAnalysis` class for more general
 usage information.
 """
-from os.path import join
+from argparse import ArgumentParser
 from glob import glob
+from os.path import join
+
 from nipy import load_image
 from nipy.algorithms.group import parcel_analysis
-from argparse import ArgumentParser
 
 # Parse command line
 description = 'Run a parcel-based second-level analysis from a set of\

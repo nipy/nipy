@@ -13,23 +13,23 @@ ctypedef unsigned long int size_t
 cdef extern from "fff_base.h":
 
     ctypedef enum fff_datatype:
-        FFF_UNKNOWN_TYPE = -1, 
-        FFF_UCHAR = 0,         
-        FFF_SCHAR = 1,         
-        FFF_USHORT = 2,        
-        FFF_SSHORT = 3,        
-        FFF_UINT = 4,          
-        FFF_INT = 5,           
-        FFF_ULONG = 6,         
-        FFF_LONG = 7,          
-        FFF_FLOAT = 8,         
+        FFF_UNKNOWN_TYPE = -1,
+        FFF_UCHAR = 0,
+        FFF_SCHAR = 1,
+        FFF_USHORT = 2,
+        FFF_SSHORT = 3,
+        FFF_UINT = 4,
+        FFF_INT = 5,
+        FFF_ULONG = 6,
+        FFF_LONG = 7,
+        FFF_FLOAT = 8,
         FFF_DOUBLE = 9
-        
-    unsigned int fff_nbytes(fff_datatype type) 
 
-# Exports from fff_vector.h 
+    unsigned int fff_nbytes(fff_datatype type)
+
+# Exports from fff_vector.h
 cdef extern from "fff_vector.h":
-    
+
     ctypedef struct fff_vector:
         size_t size
         size_t stride
@@ -41,11 +41,11 @@ cdef extern from "fff_vector.h":
     fff_vector fff_vector_view(double* data, size_t size, size_t stride)
     double fff_vector_get(fff_vector * x, size_t i)
     void fff_vector_set(fff_vector * x, size_t i, double a)
-    void fff_vector_set_all(fff_vector * x, double a) 
-    void fff_vector_scale(fff_vector * x, double a) 
+    void fff_vector_set_all(fff_vector * x, double a)
+    void fff_vector_scale(fff_vector * x, double a)
     void fff_vector_add_constant(fff_vector * x, double a)
     void fff_vector_memcpy(fff_vector* x, fff_vector* y)
-    void fff_vector_fetch(fff_vector* x, void* data, fff_datatype datatype, size_t stride) 
+    void fff_vector_fetch(fff_vector* x, void* data, fff_datatype datatype, size_t stride)
     void fff_vector_add(fff_vector * x, fff_vector * y)
     void fff_vector_sub(fff_vector * x, fff_vector * y)
     void fff_vector_mul(fff_vector * x, fff_vector * y)
@@ -82,22 +82,22 @@ cdef extern from "fff_matrix.h":
     fff_matrix_set_diag(fff_matrix * A, fff_vector * x)
     void fff_matrix_transpose(fff_matrix* A, fff_matrix* B)
     void fff_matrix_memcpy(fff_matrix* A, fff_matrix* B)
-    fff_matrix fff_matrix_view(double* data, size_t size1, size_t size2, size_t tda) 
+    fff_matrix fff_matrix_view(double* data, size_t size1, size_t size2, size_t tda)
     void fff_matrix_add (fff_matrix * A, fff_matrix * B)
     void fff_matrix_sub (fff_matrix * A, fff_matrix * B)
     void fff_matrix_mul_elements (fff_matrix * A, fff_matrix * B)
     void fff_matrix_div_elements (fff_matrix * A, fff_matrix * B)
-                
+
 
 # Exports from fff_array.h
 cdef extern from "fff_array.h":
 
-    ctypedef enum fff_array_ndims: 
-        FFF_ARRAY_1D = 1,   
-        FFF_ARRAY_2D = 2,   
-        FFF_ARRAY_3D = 3,   
-        FFF_ARRAY_4D = 4    
-        
+    ctypedef enum fff_array_ndims:
+        FFF_ARRAY_1D = 1,
+        FFF_ARRAY_2D = 2,
+        FFF_ARRAY_3D = 3,
+        FFF_ARRAY_4D = 4
+
     ctypedef struct fff_array:
         fff_array_ndims ndims
         fff_datatype datatype
@@ -150,9 +150,9 @@ cdef extern from "fffpy.h":
     ctypedef struct fffpy_multi_iterator:
         int narr
         int axis
-        fff_vector** vector 
-        size_t index 
-        size_t size 
+        fff_vector** vector
+        size_t index
+        size_t size
 
     void fffpy_import_array()
     fff_vector* fff_vector_fromPyArray(ndarray x)
@@ -161,14 +161,12 @@ cdef extern from "fffpy.h":
     fff_matrix* fff_matrix_fromPyArray(ndarray x)
     ndarray fff_matrix_toPyArray(fff_matrix* y)
     ndarray fff_matrix_const_toPyArray(fff_matrix* y)
-    fff_array* fff_array_fromPyArray(ndarray x) 
-    ndarray fff_array_toPyArray(fff_array* y) 
+    fff_array* fff_array_fromPyArray(ndarray x)
+    ndarray fff_array_toPyArray(fff_array* y)
     fff_datatype fff_datatype_fromNumPy(int npy_type)
     int fff_datatype_toNumPy(fff_datatype fff_type)
     void fff_vector_fetch_using_NumPy(fff_vector* y, char* data, npy_intp stride, int type, int itemsize)
-    fffpy_multi_iterator* fffpy_multi_iterator_new(int narr, int axis, ...) 
+    fffpy_multi_iterator* fffpy_multi_iterator_new(int narr, int axis, ...)
     void fffpy_multi_iterator_delete(fffpy_multi_iterator* thisone)
     void fffpy_multi_iterator_update(fffpy_multi_iterator* thisone)
     void fffpy_multi_iterator_reset(fffpy_multi_iterator* thisone)
-
-    

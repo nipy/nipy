@@ -1,18 +1,14 @@
-from __future__ import absolute_import
 
 from os.path import exists
 
 import numpy as np
-
 from nibabel import Nifti1Image
-
-from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
-from ..bsa_io import make_bsa_image
-
+from nibabel.tmpdirs import InTemporaryDirectory
 from nose.tools import assert_true
 from numpy.testing import assert_equal
 
-from nibabel.tmpdirs import InTemporaryDirectory
+from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
+from ..bsa_io import make_bsa_image
 
 
 def test_parcel_intra_from_3d_images_list():

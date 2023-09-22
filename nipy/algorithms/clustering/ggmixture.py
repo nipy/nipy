@@ -7,13 +7,10 @@ of the mixture distribution using an EM algorithm.
 
 Author: Bertrand Thirion and Merlin Keller 2005-2008
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 import numpy as np
-import scipy.stats as st
 import scipy.special as sp
-
+import scipy.stats as st
 
 #############################################################################
 # Auxiliary functions #######################################################
@@ -118,7 +115,7 @@ def _gam_param(x, z):
 ##############################################################################
 
 
-class Gamma(object):
+class Gamma:
     """ Basic one dimensional Gaussian-Gamma Mixture estimation class
 
     Note that it can work with positive or negative values,
@@ -162,7 +159,7 @@ class Gamma(object):
 ##############################################################################
 
 
-class GGM(object):
+class GGM:
     """
     This is the basic one dimensional Gaussian-Gamma Mixture estimation class
     Note that it can work with positive or negative values,
@@ -332,7 +329,7 @@ class GGM(object):
 ##############################################################################
 
 
-class GGGM(object):
+class GGGM:
     """
     The basic one dimensional Gamma-Gaussian-Gamma Mixture estimation
     class, where the first gamma has a negative sign, while the second

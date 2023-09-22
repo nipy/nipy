@@ -1,13 +1,13 @@
-from __future__ import print_function
-from __future__ import absolute_import
 
 import numpy as np
 import numpy.random as nr
-from ..ggmixture import GGGM, GGM, Gamma
 import scipy.stats as st
 
+from ..ggmixture import GGGM, GGM, Gamma
+
+
 def test_GGM1(verbose=0):
-    shape = 1 
+    shape = 1
     scale = 1
     mean = 0
     var = 1
@@ -22,7 +22,7 @@ def test_GGM1(verbose=0):
     assert(b)
 
 def test_GGM2(verbose=0):
-    shape = 1 
+    shape = 1
     scale = 1
     mean = 0
     var = 1
@@ -59,7 +59,7 @@ def test_GGGM1(verbose=0):
     if verbose:
         G.parameters()
     assert(np.absolute(G.mean)<0.1)
-    
+
 def test_GGGM2(verbose=0):
     G = GGGM()
     sx = 10000
@@ -102,5 +102,3 @@ def test_gamma_parameters2(verbose=0):
 if __name__ == '__main__':
     import nose
     nose.run(argv=['', __file__])
-
-

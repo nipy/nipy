@@ -3,32 +3,33 @@
 """ Test conversion between NIFTI and NIPY conventions.  The algorithms are
 mostly written out in the :mod:`nipy.io.nifti_ref` docstrings.
 """
-from __future__ import absolute_import
 import warnings
-
 from copy import copy
 
-import numpy as np
-
 import nibabel as nib
+import numpy as np
 from nibabel.affines import from_matvec
 from nibabel.spatialimages import HeaderDataError
-
-from ...core.api import (Image,
-                         AffineTransform as AT,
-                         CoordinateSystem as CS)
-from ...core.reference.spaces import (unknown_csm, scanner_csm, aligned_csm,
-                                      talairach_csm, mni_csm, unknown_space,
-                                      vox2mni)
-
-from ..files import load
-from ..nifti_ref import (nipy2nifti, nifti2nipy, NiftiError)
-from ..nibcompat import get_header, get_affine
-
-from nose.tools import assert_equal, assert_true, assert_false, assert_raises
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
 from numpy.testing import assert_almost_equal, assert_array_equal
 
+from ...core.api import AffineTransform as AT
+from ...core.api import CoordinateSystem as CS
+from ...core.api import Image
+from ...core.reference.spaces import (
+    aligned_csm,
+    mni_csm,
+    scanner_csm,
+    talairach_csm,
+    unknown_csm,
+    unknown_space,
+    vox2mni,
+)
 from ...testing import anatfile, funcfile
+from ..files import load
+from ..nibcompat import get_affine, get_header
+from ..nifti_ref import NiftiError, nifti2nipy, nipy2nifti
+
 
 def copy_of(fname):
     # Make a fresh copy of a image stored in a file
@@ -191,10 +192,10 @@ def test_time_like_matching():
     aff = np.diag([3, 4, 5, 6, 7, 1])
     mni_names = mni_csm(3).coord_names
     time_cans = ('t', 'hz', 'ppm', 'rads')
-    aliases = dict(t='time',
-                   hz='frequency-hz',
-                   ppm='concentration-ppm',
-                   rads='radians/s')
+    aliases = {'t': 'time',
+                   'hz': 'frequency-hz',
+                   'ppm': 'concentration-ppm',
+                   'rads': 'radians/s'}
     all_names = set(time_cans + tuple(v for v in aliases.values()))
     for time_like in time_cans:
         alias = aliases[time_like]

@@ -1,13 +1,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
-from __future__ import print_function
-from __future__ import absolute_import
 
 from numpy.testing import assert_array_equal
 
-from .exampledata import x, y
 from .. import regression
+from .exampledata import x, y
 
 # FIXME: This test does not test any values
 # TODO: spend an hour or so to create a test like test_ols.py

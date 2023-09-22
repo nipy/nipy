@@ -1,11 +1,10 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import tempfile
 
 import numpy as np
-
 from nose import SkipTest
+
 try:
     import matplotlib as mp
     # Make really sure that we don't try to open an Xserver connection.
@@ -18,8 +17,7 @@ except ImportError:
 from unittest.mock import patch
 
 from ..activation_maps import demo_plot_map, plot_anat, plot_map
-from ..anat_cache import mni_sform, _AnatCache
-
+from ..anat_cache import _AnatCache, mni_sform
 
 
 def test_demo_plot_map():
@@ -73,7 +71,6 @@ def test_anat_cache():
         _AnatCache.get_blurred()
     except OSError:
         "The templates are not there"
-        pass
 
 
 def test_plot_map_empty():

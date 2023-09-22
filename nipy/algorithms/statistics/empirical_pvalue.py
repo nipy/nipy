@@ -21,12 +21,10 @@ It implements 3 approaches:
 
 Author : Bertrand Thirion, Yaroslav Halchenko, 2008-2012
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 import numpy as np
-from numpy.linalg import pinv
 import scipy.stats as st
+from numpy.linalg import pinv
 
 
 def check_p_values(p_values):
@@ -153,7 +151,7 @@ def fdr(p_values=None, verbose=0):
     return q
 
 
-class NormalEmpiricalNull(object):
+class NormalEmpiricalNull:
     """Class to compute the empirical null normal fit to the data.
 
     The data which is used to estimate the FDR, assuming a Gaussian null
@@ -264,8 +262,7 @@ class NormalEmpiricalNull(object):
             self.plot(efp, alpha)
 
         if efp[-1] > alpha:
-            print("the maximal value is %f , the corresponding FDR is %f "
-                  % (self.x[ - 1], efp[ - 1]))
+            print("the maximal value is {:f} , the corresponding FDR is {:f} ".format(self.x[ - 1], efp[ - 1]))
             return np.inf
         j = np.argmin(efp[:: - 1] < alpha) + 1
         return 0.5 * (self.x[ - j] + self.x[ - j + 1])

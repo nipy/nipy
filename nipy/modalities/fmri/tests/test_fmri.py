@@ -1,20 +1,17 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import with_statement
-from __future__ import absolute_import
 
 import gc
 import warnings
 
 import numpy as np
-
-from nipy.modalities.fmri.api import axis0_generator, FmriImageList
-from nipy.core.api import parcels, Image, AffineTransform as AfT
-from nipy.io.api import  load_image, save_image
-
+from nibabel.tmpdirs import InTemporaryDirectory
 from nose.tools import assert_equal, assert_true
 
-from nibabel.tmpdirs import InTemporaryDirectory
+from nipy.core.api import AffineTransform as AfT
+from nipy.core.api import Image, parcels
+from nipy.io.api import load_image, save_image
+from nipy.modalities.fmri.api import FmriImageList, axis0_generator
 from nipy.testing import funcfile
 
 

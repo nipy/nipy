@@ -4,18 +4,18 @@
 This module is the interface to the bayesian_structural_analysis (bsa) module
 It handles the images provided as input and produces result images.
 """
-from __future__ import absolute_import
 
-from six import string_types
+import os.path as op
 
 import numpy as np
-import os.path as op
-from nibabel import load, save, Nifti1Image
+from nibabel import Nifti1Image, load, save
+from six import string_types
 
+from ...io.nibcompat import get_affine, get_header
 from ..mask import intersect_masks
 from .bayesian_structural_analysis import compute_landmarks
 from .discrete_domain import domain_from_image
-from ...io.nibcompat import get_header, get_affine
+
 
 def make_bsa_image(
     mask_images, stat_images, threshold=3., smin=0, sigma=5.,

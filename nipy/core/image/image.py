@@ -10,28 +10,29 @@
 * iter_axis : make iterator to iterate over an image axis
 * is_image : test for an object obeying the Image API
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 import warnings
 from copy import copy
 from itertools import chain
 
 import numpy as np
-
 from nibabel.onetime import auto_attr
-
-# These imports are used in the fromarray and subsample functions only, not in
-# Image
-from ..reference.coordinate_map import (AffineTransform, CoordinateSystem,
-                                       input_axis_index)
-from ..reference.array_coords import ArrayCoordMap
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
 
+from ..reference.array_coords import ArrayCoordMap
 
-class Image(object):
+# These imports are used in the fromarray and subsample functions only, not in
+# Image
+from ..reference.coordinate_map import (
+    AffineTransform,
+    CoordinateSystem,
+    input_axis_index,
+)
+
+
+class Image:
     """ The `Image` class provides the core object type used in nipy.
 
     An `Image` represents a volumetric brain image and provides means
@@ -225,7 +226,7 @@ class Image(object):
         """
         if order is None:
             order = list(range(self.ndim))[::-1]
-        elif type(order[0]) == type(''):
+        elif type(order[0]) == str:
             order = [self.reference.index(s) for s in order]
         new_cmap = self.coordmap.reordered_range(order)
         return self.__class__.from_image(self, coordmap=new_cmap)
@@ -276,7 +277,7 @@ class Image(object):
         """
         if order is None:
             order = list(range(self.ndim))[::-1]
-        elif type(order[0]) == type(''):
+        elif type(order[0]) == str:
             order = [self.axes.index(s) for s in order]
         new_cmap = self.coordmap.reordered_domain(order)
         # Only transpose if we have to so as to avoid calling
@@ -417,7 +418,7 @@ class Image(object):
         options = np.get_printoptions()
         np.set_printoptions(precision=6, threshold=64, edgeitems=2)
         representation = \
-            'Image(\n  data=%s,\n  coordmap=%s)' % (
+            'Image(\n  data={},\n  coordmap={})'.format(
             '\n       '.join(repr(self._data).split('\n')),
             '\n         '.join(repr(self.coordmap).split('\n')))
         np.set_printoptions(**options)
@@ -468,7 +469,7 @@ class Image(object):
         return klass(data, coordmap, metadata)
 
 
-class SliceMaker(object):
+class SliceMaker:
     """ This class just creates slice objects for image resampling
 
     It only has a __getitem__ method that returns its argument.
@@ -648,7 +649,7 @@ def rollaxis(img, axis, inverse=False):
     if isinstance(axis, int) and axis < 0:
         axis = img.ndim + axis
     if inverse:
-        if type(axis) != type(0):
+        if type(axis) != int:
             raise ValueError('If carrying out inverse rolling, '
                              'axis must be an integer')
         order = list(range(1, img.ndim))
@@ -661,7 +662,7 @@ def rollaxis(img, axis, inverse=False):
                          'an axis name or a reference name')
     # Find out which index axis corresonds to
     in_index = out_index = -1
-    if type(axis) == type(''):
+    if type(axis) == str:
         try:
             in_index = img.axes.index(axis)
         except:

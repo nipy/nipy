@@ -1,10 +1,11 @@
 
 import os
-from tempfile import mkdtemp
 from shutil import rmtree
+from tempfile import mkdtemp
+
+from sneeze import find_pkg, run_nose
 
 from nipy.testing import *
-from sneeze import find_pkg, run_nose
 
 import_strings = ["from nipype.interfaces.afni import To3d, ThreeDRefit",
                   "from nipype.interfaces import afni",

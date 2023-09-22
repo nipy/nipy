@@ -20,22 +20,27 @@ extended capabilities to interface with external tools and for dataflow
 management. nipype can handle vanilla SPM in MATLAB or SPM run through the
 MATLAB common runtime (free from MATLAB Licensing).
 '''
-from __future__ import print_function, division, absolute_import
 
+import gzip
 import sys
 from copy import deepcopy
-from os.path import join as pjoin, abspath, splitext, isfile
 from glob import glob
+from os.path import abspath, isfile, splitext
+from os.path import join as pjoin
 from warnings import warn
-import gzip
 
 import numpy as np
 
 import nipy.interfaces.matlab as nimat
-from nipy.interfaces.spm import (spm_info, make_job, scans_for_fnames,
-                                 run_jobdef, fnames_presuffix, fname_presuffix,
-                                 fltcols)
-
+from nipy.interfaces.spm import (
+    fltcols,
+    fname_presuffix,
+    fnames_presuffix,
+    make_job,
+    run_jobdef,
+    scans_for_fnames,
+    spm_info,
+)
 
 # The batch scripts currently need SPM5
 nimat.matlab_cmd = 'matlab-spm8 -nodesktop -nosplash'
@@ -44,12 +49,12 @@ nimat.matlab_cmd = 'matlab-spm8 -nodesktop -nosplash'
 # dataset because the slice dimension is the first, and SPM assumes it is the
 # last.
 N_SLICES = 40 # X slices
-STUDY_DEF = dict(
-    TR = 2.5,
-    n_slices = N_SLICES,
-    time_to_space = (list(range(1, N_SLICES, 2)) +
+STUDY_DEF = {
+    'TR': 2.5,
+    'n_slices': N_SLICES,
+    'time_to_space': (list(range(1, N_SLICES, 2)) +
                      list(range(2, N_SLICES, 2)))
-)
+}
 
 
 def _sorted_prefer_nii(file_list):
@@ -61,7 +66,7 @@ def _sorted_prefer_nii(file_list):
             preferred.append(fname)
         else:
             nogz, ext = splitext(fname)
-            if not nogz in file_list:
+            if nogz not in file_list:
                 preferred.append(fname)
     return sorted(preferred)
 
@@ -96,7 +101,7 @@ def default_ta(tr, nslices):
     return slice_time * (nslices - 1)
 
 
-class SPMSubjectAnalysis(object):
+class SPMSubjectAnalysis:
     """ Class to preprocess single subject in SPM
     """
     def __init__(self, data_def, study_def, ana_def):

@@ -167,4 +167,3 @@ a few comments:
 #. The same kind of API can be used for writing data items in a
    repository. One could build a data item, adds properties and files
    and call something like repository.update( item ).
-

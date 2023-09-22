@@ -8,11 +8,10 @@ and a coefficient of +1 for Faces, -2 for Objects.
 
 """
 
-import pylab
 import numpy as np
+import pylab
+from sympy import Piecewise, Symbol, lambdify
 
-
-from sympy import Symbol, Piecewise, lambdify
 ta = [0,4,8,12,16]; tb = [2,6,10,14,18]
 ba = Symbol('ba'); bb = Symbol('bb'); t = Symbol('t')
 fa = sum([Piecewise((0, (t<_t)), ((t-_t)/0.5, (t<_t+0.5)), (1, (t >= _t+0.5))) for _t in ta])*ba

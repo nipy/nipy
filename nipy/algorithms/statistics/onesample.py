@@ -3,13 +3,13 @@
 """
 Utilities for one sample t-tests
 """
-from __future__ import absolute_import
 
 __docformat__ = 'restructuredtext'
 
 import numpy as np
 
 from ..utils.matrices import pos_recipr
+
 
 def estimate_mean(Y, sd):
     """ Estimate the mean of a sample given information about
@@ -76,7 +76,7 @@ def estimate_varatio(Y, sd, df=None, niter=10):
         Data for which mean is to be estimated.
         Should have shape[0] == number of subjects.
     sd : array
-        Standard deviation (subject specific) 
+        Standard deviation (subject specific)
         of the data for which the mean is to be estimated.
         Should have shape[0] == number of subjects.
     df : int or None, optional

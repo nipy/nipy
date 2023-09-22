@@ -4,18 +4,17 @@ i.e. the equaivalent of mixture of Gaussian on the sphere.
 
 Author: Bertrand Thirion, 2010-2011
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
-import numpy as np
 from warnings import warn
 
-warn('Module nipy.algorithms.clustering.von_mises_fisher_mixture' + 
+import numpy as np
+
+warn('Module nipy.algorithms.clustering.von_mises_fisher_mixture' +
      'deprecated, will be removed',
      FutureWarning,
      stacklevel=2)
 
-class VonMisesMixture(object):
+class VonMisesMixture:
     """
     Model for Von Mises mixture distribution with fixed variance
     on a two-dimensional sphere
@@ -243,8 +242,8 @@ class VonMisesMixture(object):
         """
         # label the data
         z = np.argmax(self.responsibilities(x), 1)
-        import pylab
         import mpl_toolkits.mplot3d.axes3d as p3
+        import pylab
         fig = pylab.figure()
         ax = p3.Axes3D(fig)
         colors = (['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w'] * \

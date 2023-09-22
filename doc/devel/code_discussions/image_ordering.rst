@@ -129,7 +129,7 @@ example:
 
    img_obj = load_image('my.img') # Where the Image class has been changed to implement Fortran ordering
    first_z_slice = img_obj[...,0] # returns a Z slice
-   
+
    img_arr = memmap('my.img', dtype=float32) # C ordering, the numpy default
    img_obj = Image.from_array(img_arr) # this call may not be correct
    first_z_slice = img_obj[...,0]  # in fact returns an X slice

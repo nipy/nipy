@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 Example of script to parcellate the data from one subject, using various
 algorithms.
@@ -12,14 +11,13 @@ author: Bertrand Thirion, 2005-2009
 """
 print(__doc__)
 
-from os import mkdir, getcwd, path
-
-from numpy import array
-
-from nipy.labs.spatial_models.parcel_io import fixed_parcellation
+from os import getcwd, mkdir, path
 
 # Local import
 from get_data_light import DATA_DIR, get_second_level_dataset
+from numpy import array
+
+from nipy.labs.spatial_models.parcel_io import fixed_parcellation
 
 # ------------------------------------
 # Get the data (mask+functional image)

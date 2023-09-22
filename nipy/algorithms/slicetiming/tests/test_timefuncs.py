@@ -1,16 +1,16 @@
 """ Testing timefuncs module
 """
 
-from __future__ import division, print_function, absolute_import
 
 import numpy as np
-
-from numpy.testing import (assert_almost_equal,
-                           assert_array_equal)
-
-from nose.tools import (assert_true, assert_false, assert_raises,
-                        assert_equal, assert_not_equal)
-
+from nose.tools import (
+    assert_equal,
+    assert_false,
+    assert_not_equal,
+    assert_raises,
+    assert_true,
+)
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from .. import timefuncs as tf
 

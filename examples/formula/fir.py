@@ -21,6 +21,7 @@ from sympy.utilities.lambdify import implemented_function
 from nipy.algorithms.statistics.api import Formula
 from nipy.modalities.fmri import utils
 
+
 def linBspline(knots):
     """ Create linear B spline that is zero outside [knots[0], knots[-1]]
 

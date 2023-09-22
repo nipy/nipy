@@ -1,22 +1,19 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function
-from __future__ import absolute_import
-
-from six import string_types
 
 import numpy as np
+from nibabel import Nifti1Image, load
+from six import string_types
 
-from nibabel import load, Nifti1Image
-
-from nipy.io.nibcompat import get_header, get_affine
+from nipy.io.nibcompat import get_affine, get_header
 
 from . import discrete_domain as ddom
+
 
 ##############################################################################
 # class SubDomains
 ##############################################################################
-class SubDomains(object):
+class SubDomains:
     """
     This is a class to represent multiple ROI objects, where the
     reference to a given domain is explicit.
@@ -161,11 +158,11 @@ class SubDomains(object):
 
         """
         cp = SubDomains(self.domain, self.label.copy(), id=self.get_id())
-        for fid in self.features.keys():
+        for fid in self.features:
             f = self.get_feature(fid)
             sf = [np.array(f[k]).copy() for k in range(self.k)]
             cp.set_feature(fid, sf)
-        for fid in self.roi_features.keys():
+        for fid in self.roi_features:
             cp.set_roi_feature(fid, self.get_roi_feature(fid).copy())
         return cp
 
@@ -454,7 +451,7 @@ class SubDomains(object):
                 f = self.get_roi_feature(fid)
                 for id in self.get_id():
                     res[self.select_id(id, roi=False)] = f[self.select_id(id)]
-            elif fid in self.features.keys():
+            elif fid in self.features:
                 f = self.representative_feature(fid, method=method)
                 for id in self.get_id():
                     res[self.select_id(id, roi=False)] = f[self.select_id(id)]

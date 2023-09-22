@@ -65,7 +65,7 @@ like the following::
 With the Formula, it looks like this:
 
 >>> r = np.rec.array([
-...     (43, 51, 30, 39, 61, 92, 45), (63, 64, 51, 54, 63, 73, 47), 
+...     (43, 51, 30, 39, 61, 92, 45), (63, 64, 51, 54, 63, 73, 47),
 ...     (71, 70, 68, 69, 76, 86, 48), (61, 63, 45, 47, 54, 84, 35),
 ...     (81, 78, 56, 66, 71, 83, 47), (43, 55, 49, 44, 54, 49, 34),
 ...     (58, 67, 42, 56, 66, 68, 35), (71, 75, 50, 55, 70, 66, 41),
@@ -106,30 +106,26 @@ array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
        (66.0, 50.0, 3300.0, 1.0), (37.0, 58.0, 2146.0, 1.0),
        (54.0, 48.0, 2592.0, 1.0), (77.0, 63.0, 4851.0, 1.0),
        (75.0, 74.0, 5550.0, 1.0), (57.0, 45.0, 2565.0, 1.0),
-       (85.0, 71.0, 6035.0, 1.0), (82.0, 59.0, 4838.0, 1.0)], 
+       (85.0, 71.0, 6035.0, 1.0), (82.0, 59.0, 4838.0, 1.0)],
       dtype=[('x1', '<f8'), ('x3', '<f8'), ('x1*x3', '<f8'), ('1', '<f8')])
 '''
-from __future__ import print_function
-from __future__ import absolute_import
 
-import warnings
 import itertools
+import warnings
 from string import ascii_letters, digits
 
 import numpy as np
-from scipy.linalg import pinv
-
 import sympy
+from scipy.linalg import pinv
 from sympy import Dummy, default_sort_key
-from sympy.utilities.lambdify import (implemented_function, lambdify)
+from sympy.utilities.lambdify import implemented_function, lambdify
 
-from nipy.utils import _NoValue, VisibleDeprecationWarning
-from nipy.utils.compat3 import to_str
-
-from nipy.algorithms.utils.matrices import matrix_rank, full_rank
+from nipy.algorithms.utils.matrices import full_rank, matrix_rank
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
+from nipy.utils import VisibleDeprecationWarning, _NoValue
+from nipy.utils.compat3 import to_str
 
 
 @np.deprecate(message = "Please use sympy.Dummy instead of this function")
@@ -157,6 +153,7 @@ def make_dummy(name):
 def define(*args, **kwargs):
     # Moved to utils module
     import warnings
+
     from . import utils
     warnings.warn('Please use define function from utils module',
                   DeprecationWarning,
@@ -276,7 +273,7 @@ class Beta(sympy.Dummy):
 
 
 def getparams(expression):
-    """ Return the parameters of an expression that are not Term 
+    """ Return the parameters of an expression that are not Term
     instances but are instances of sympy.Symbol.
 
     Examples
@@ -295,7 +292,7 @@ def getparams(expression):
     >>> getparams(f.mean*sympy.exp(th))
     [_b0, _b1, _b2, theta]
     """
-    atoms = set([])
+    atoms = set()
     expression = np.array(expression)
     if expression.shape == ():
         expression = expression.reshape((1,))
@@ -323,7 +320,7 @@ def getterms(expression):
     >>> getterms(f.mean)
     [x, y, z]
     """
-    atoms = set([])
+    atoms = set()
     expression = np.array(expression)
     if expression.shape == ():
         expression = expression.reshape((1,))
@@ -442,7 +439,7 @@ def make_recarray(rows, names, dtypes=None, drop_name_dim=_NoValue):
     if dtypes is None:
         dtype = np.dtype([(n, np.float64) for n in names])
     else:
-        dtype = np.dtype([(n, d) for n, d in zip(names, dtypes)])
+        dtype = np.dtype(list(zip(names, dtypes)))
     # Peek at first value in iterable
     irows = iter(rows)
     row0 = next(irows)
@@ -454,7 +451,7 @@ def make_recarray(rows, names, dtypes=None, drop_name_dim=_NoValue):
     return np.array([tuple(r) for r in irows], dtype)
 
 
-class Formula(object):
+class Formula:
     """ A Formula is a model for a mean in a regression model.
 
     It is often given by a sequence of sympy expressions, with the mean
@@ -491,7 +488,7 @@ class Formula(object):
 
     def _getterms(self):
         t = self._terms
-        # The Rmode flag is meant to emulate R's implicit addition of an 
+        # The Rmode flag is meant to emulate R's implicit addition of an
         # intercept to every formula. It currently cannot be changed.
         Rmode = False
         if Rmode:
@@ -513,7 +510,7 @@ class Formula(object):
                     "variables in front.")
 
     def _getdiff(self):
-        params = sorted(list(set(getparams(self.mean))), key=default_sort_key)
+        params = sorted(set(getparams(self.mean)), key=default_sort_key)
         return [sympy.diff(self.mean, p).doit() for p in params]
     design_expr = property(_getdiff)
 
@@ -774,11 +771,11 @@ class Formula(object):
         # a list
         self._f = lambdify(newparams + newterms, d, ("numpy"))
 
-        # The input to self.design will be a recarray of that must 
+        # The input to self.design will be a recarray of that must
         # have field names that the Formula will expect to see.
         # However, if any of self.terms are FactorTerms, then the field
         # in the recarray will not actually be in the Term.
-        # 
+        #
         # For example, if there is a Factor 'f' with levels ['a','b'],
         # there will be terms 'f_a' and 'f_b', though the input to
         # design will have a field named 'f'. In this sense,
@@ -796,7 +793,7 @@ class Formula(object):
         preterm = list(set(preterm))
 
         # There is also an argument for parameters that are not
-        # Terms. 
+        # Terms.
 
         self._dtypes = {'param':np.dtype([(str(p), np.float64) for p in params]),
                         'term':np.dtype([(str(t), np.float64) for t in terms]),
@@ -844,14 +841,12 @@ class Formula(object):
         # The input to design should have field names for all fields in self._dtypes['preterm']
         if not set(preterm_recarray.dtype.names).issuperset(self._dtypes['preterm'].names):
             raise ValueError("for term, expecting a recarray with "
-                             "dtype having the following names: %r"
-                             % (self._dtypes['preterm'].names,))
+                             "dtype having the following names: {!r}".format(self._dtypes['preterm'].names))
         # The parameters should have field names for all fields in self._dtypes['param']
         if param_recarray is not None:
             if not set(param_recarray.dtype.names).issuperset(self._dtypes['param'].names):
                 raise ValueError("for param, expecting a recarray with "
-                                 "dtype having the following names: %r"
-                                 % (self._dtypes['param'].names,))
+                                 "dtype having the following names: {!r}".format(self._dtypes['param'].names))
         # If the only term is an intercept,
         # the return value is a matrix of 1's.
         if list(self.terms) == [sympy.Number(1)]:
@@ -946,7 +941,7 @@ class Formula(object):
             for key, cf in contrasts.items():
                 if not is_formula(cf):
                     cf = Formula([cf])
-                L = cf.design(input, param=param_recarray, 
+                L = cf.design(input, param=param_recarray,
                               return_float=True)
                 cmatrices[key] = contrast_from_cols_or_rows(L, _D, pseudo=pinvD)
             return D, cmatrices
@@ -1266,7 +1261,7 @@ class RandomEffects(Formula):
         if self.sigma.shape != (q,q):
             raise ValueError('incorrect shape for covariance '
                              'of random effects, '
-                             'should have shape %r' % ((q,q)))
+                             f'should have shape {q!r}')
         self.char = char
 
     def cov(self, term, param=None):

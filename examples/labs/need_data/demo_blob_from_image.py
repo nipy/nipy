@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 """
 This script generates a noisy activation image and extracts the blob
 from it.
@@ -15,16 +14,14 @@ Author : Bertrand Thirion, 2009
 """
 #autoindent
 
-from os import mkdir, getcwd, path
-
-from nibabel import load, save, Nifti1Image
-
-import nipy.labs.spatial_models.hroi as hroi
-from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
+from os import getcwd, mkdir, path
 
 # Local import
 from get_data_light import DATA_DIR, get_second_level_dataset
+from nibabel import Nifti1Image, load, save
 
+from nipy.labs.spatial_models import hroi
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
 
 # data paths
 input_image = path.join(DATA_DIR, 'spmT_0029.nii.gz')

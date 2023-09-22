@@ -1,29 +1,27 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import absolute_import
 
 import numpy as np
-
-from scipy.special import gammaln, hermitenorm
 import scipy.stats
+from scipy.special import gammaln, hermitenorm
+
 try:
     from scipy.misc import factorial
 except ImportError:
     from scipy.special import factorial
 
-from .. import rft
-
 from nose.tools import assert_raises
-
 from numpy.testing import assert_almost_equal
+
+from .. import rft
 
 #def rho(x, dim, df=np.inf):
 #    """
-#    EC densities for T and Gaussian (df=inf) random fields. 
+#    EC densities for T and Gaussian (df=inf) random fields.
 #    """
 #
 #    m = df
-#    
+#
 #    if dim > 0:
 #        x = np.asarray(x, np.float64)
 #--jarrod: shouldn't Q be rft.Q??
@@ -70,7 +68,7 @@ def K(dim=4, dfn=7, dfd=np.inf):
     coef = 0
     for j in range(int(np.floor((D-1)/2.)+1)):
         if np.isfinite(m):
-            t = (gammaln((m+n-D)/2.+j) - 
+            t = (gammaln((m+n-D)/2.+j) -
                  gammaln(j+1) -
                  gammaln((m+n-D)/2.))
             t += lbinom(m-1, k-j) - k * np.log(m)
@@ -78,14 +76,14 @@ def K(dim=4, dfn=7, dfd=np.inf):
             _t = np.power(2., -j) / (factorial(k-j) * factorial(j))
             t = np.log(_t)
             t[np.isinf(_t)] = -np.inf
-        t += lbinom(n-1, D-1-j-k) 
-        coef += (-1)**(D-1) * factorial(D-1) * np.exp(t) * np.power(-1.*n, k) 
+        t += lbinom(n-1, D-1-j-k)
+        coef += (-1)**(D-1) * factorial(D-1) * np.exp(t) * np.power(-1.*n, k)
     return np.poly1d(coef[::-1])
 
 
 def F(x, dim, dfd=np.inf, dfn=1):
     """
-    EC densities for F and Chi^2 (dfd=inf) random fields. 
+    EC densities for F and Chi^2 (dfd=inf) random fields.
     """
     m = float(dfd)
     n = float(dfn)
@@ -100,7 +98,7 @@ def F(x, dim, dfd=np.inf, dfn=1):
             t += gammaln((m+n-D)/2.) - gammaln(m/2.)
         else:
             f = x*n
-            t = np.log(f/2.) * (n-D) / 2. - f/2. 
+            t = np.log(f/2.) * (n-D) / 2. - f/2.
         t -= np.log(2*np.pi) * D / 2. + np.log(2) * (D-2)/2. + gammaln(n/2.)
         k *= np.exp(t)
         return k
@@ -485,7 +483,7 @@ def test_F2():
     for dim in range(3,7):
         for dfn in range(5,10):
             for dfd in [40,50,np.inf]:
-                f1 = rft.FStat(dfn=dfn, dfd=dfd).density(x, dim) 
+                f1 = rft.FStat(dfn=dfn, dfd=dfd).density(x, dim)
                 f2 = F_alternative(x, dim, dfn=dfn, dfd=dfd)
                 yield assert_almost_equal, f1, f2
 
@@ -496,6 +494,6 @@ def test_F3():
     for dim in range(3,7):
         for dfn in range(5,10):
             for dfd in [40,50,np.inf]:
-                f1 = rft.FStat(dfn=dfn, dfd=dfd).density(x, dim) 
+                f1 = rft.FStat(dfn=dfn, dfd=dfd).density(x, dim)
                 f2 = F(x, dim, dfn=dfn, dfd=dfd)
                 yield assert_almost_equal, f1, f2

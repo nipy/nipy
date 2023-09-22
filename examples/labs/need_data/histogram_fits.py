@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 """
 Example of a script that perfoms histogram analysis of an activation image.
 This is based on a real fMRI image.
@@ -16,7 +15,6 @@ Author : Bertrand Thirion, 2008-2009
 import os
 
 import numpy as np
-
 import scipy.stats as st
 
 try:
@@ -24,13 +22,11 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
+# Local import
+from get_data_light import DATA_DIR, get_second_level_dataset
 from nibabel import load
 
 import nipy.algorithms.statistics.empirical_pvalue as en
-
-# Local import
-from get_data_light import DATA_DIR, get_second_level_dataset
-
 
 # parameters
 verbose = 1

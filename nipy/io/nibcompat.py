@@ -16,11 +16,9 @@ With old nibabel, getting unscaled data used `read_img_data(img,
 prefer="unscaled").  Newer nibabel should prefer the `get_unscaled` method on
 the image proxy object
 """
-from __future__ import absolute_import
-
-import numpy as np
 
 import nibabel as nib
+import numpy as np
 
 
 def get_dataobj(img):

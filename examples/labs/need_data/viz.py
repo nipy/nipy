@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 Example of activation image visualization with nipy.labs visualization tools
 
@@ -18,13 +17,12 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
+# Local import
+from get_data_light import get_second_level_dataset
 from nibabel import load
 
 from nipy.labs import viz
 from nipy.utils import example_data
-
-# Local import
-from get_data_light import get_second_level_dataset
 
 # get the data
 data_dir = get_second_level_dataset()

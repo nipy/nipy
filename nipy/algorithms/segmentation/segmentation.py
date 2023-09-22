@@ -1,8 +1,8 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
-from ._segmentation import _ve_step, _interaction_energy
+
+from ._segmentation import _interaction_energy, _ve_step
 
 NITERS = 10
 NGB_SIZE = 26
@@ -12,7 +12,7 @@ nonzero = lambda x: np.maximum(x, 1e-50)
 log = lambda x: np.log(nonzero(x))
 
 
-class Segmentation(object):
+class Segmentation:
 
     def __init__(self, data, mask=None, mu=None, sigma=None,
                  ppm=None, prior=None, U=None,
@@ -44,7 +44,7 @@ class Segmentation(object):
           Initial class-specific variances
         """
         data = data.squeeze()
-        if not len(data.shape) in (3, 4):
+        if len(data.shape) not in (3, 4):
             raise ValueError('Invalid input image')
         if len(data.shape) == 3:
             nchannels = 1

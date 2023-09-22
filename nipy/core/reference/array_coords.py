@@ -14,23 +14,25 @@ CoordinateMap at np.indices(shape).
 The class Grid is meant to take a CoordinateMap and an np.mgrid-like
 notation to create an ArrayCoordMap.
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 import numpy as np
-
-from .coordinate_map import CoordinateMap, AffineTransform, compose
-from .coordinate_map import product as cmap_product
-from .coordinate_map import shifted_range_origin
-from .coordinate_system import CoordinateSystem
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
 
+from .coordinate_map import (
+    AffineTransform,
+    CoordinateMap,
+    compose,
+    shifted_range_origin,
+)
+from .coordinate_map import product as cmap_product
+from .coordinate_system import CoordinateSystem
 
-class ArrayCoordMap(object):
+
+class ArrayCoordMap:
     """ Class combining coordinate map and array shape
-    
+
     When the function_domain of a CoordinateMap can be thought of as
     'array' coordinates, i.e. an 'input_shape' makes sense. We can
     than evaluate the CoordinateMap at np.indices(input_shape)
@@ -53,11 +55,11 @@ class ArrayCoordMap(object):
         >>> cmap.ndims # number of (input, output) dimensions
         (3, 3)
         >>> acmap = ArrayCoordMap(cmap, (1, 2, 3))
-        
+
         Real world values at each array coordinate, one row per array
         coordinate (6 in this case), one column for each output
         dimension (3 in this case)
-        
+
         >>> acmap.values
         array([[ 0.1,  0.2,  0.3],
                [ 0.1,  0.2,  2.6],
@@ -118,11 +120,11 @@ class ArrayCoordMap(object):
             # reconstruct np.indices format for output
             _range = _range.T
             _range.shape = (_range.shape[0],) + tmp_shape[1:]
-        return _range 
+        return _range
 
     def _getvalues(self):
         return self._evaluate(transpose=False)
-    values = property(_getvalues, 
+    values = property(_getvalues,
                       doc='Get values of ArrayCoordMap in a '
                       '2-dimensional array of shape '
                       '(product(self.shape), self.coordmap.ndims[1]))')
@@ -139,7 +141,7 @@ class ArrayCoordMap(object):
         ----------
         slicers : int or tuple
            int, or sequence of any combination of integers, slices.  The
-           sequence can also contain one Ellipsis. 
+           sequence can also contain one Ellipsis.
         """
         # slicers might just be just one thing, so convert to tuple
         if type(slicers) != type(()):
@@ -196,7 +198,7 @@ def _slice(coordmap, shape, *slices):
     Slice a 'voxel' CoordinateMap's function_domain with slices. A
     'voxel' CoordinateMap is interpreted as a coordmap having a shape.
     """
-    
+
     if len(slices) < coordmap.ndims[0]:
         slices = (list(slices) +
                   [slice(None,None,None)] * (coordmap.ndims[0] - len(slices)))
@@ -217,7 +219,7 @@ def _slice(coordmap, shape, *slices):
                 start = int(ranges[i])
             except TypeError:
                 raise ValueError('empty slice for dimension %d, '
-                                 'coordinate %s' % 
+                                 'coordinate %s' %
                                  (i, coordmap.function_domain.coord_names[i]))
 
         if ranges[i].shape == ():
@@ -242,7 +244,7 @@ def _slice(coordmap, shape, *slices):
         cmaps.append(AffineTransform(
                 CoordinateSystem([name], coord_dtype=dtype),
                 CoordinateSystem([coordmap.function_domain.coord_names[i]]),
-                np.array([[step, start],[0,1]], dtype=dtype))) 
+                np.array([[step, start],[0,1]], dtype=dtype)))
 
         if i in keep_in_output:
             newshape.append(l)
@@ -270,7 +272,7 @@ def _slice(coordmap, shape, *slices):
     return ArrayCoordMap(compose(coordmap, slice_cmap), tuple(newshape))
 
 
-class Grid(object):
+class Grid:
     """
     Simple class to construct AffineTransform instances with slice notation
     like np.ogrid/np.mgrid.
@@ -312,7 +314,7 @@ class Grid(object):
         if isinstance(coords, CoordinateSystem):
             coordmap = AffineTransform.identity(coords.coord_names,
                                                 coords.name)
-        elif not (isinstance(coords, CoordinateMap) or isinstance(coords, AffineTransform)):
+        elif not (isinstance(coords, (CoordinateMap, AffineTransform))):
             raise ValueError('expecting either a CoordinateMap, CoordinateSystem or AffineTransform for Grid')
         else:
             coordmap = coords
@@ -326,7 +328,7 @@ class Grid(object):
         dtype = self.coordmap.function_domain.coord_dtype
         results = [a.ravel().astype(dtype) for a in np.ogrid[index]]
         if len(results) != len(self.coordmap.function_domain.coord_names):
-            raise ValueError('the number of slice objects must match ' 
+            raise ValueError('the number of slice objects must match '
                              'the number of input dimensions')
         cmaps = []
         for i, result in enumerate(results):
@@ -347,7 +349,7 @@ class Grid(object):
         # Identify the origin in the range of cmap
         # with the origin in the domain of self.coordmap
 
-        cmap = shifted_range_origin(cmap, 
+        cmap = shifted_range_origin(cmap,
                                     np.zeros(cmap.ndims[1]),
                                     self.coordmap.function_domain.name)
 

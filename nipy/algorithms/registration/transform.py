@@ -6,7 +6,7 @@ instances, so any class implementing this API should be valid in the places
 bug.
 """
 
-class Transform(object):
+class Transform:
     """ A default transformation class
 
     This class specifies the tiny API.  That is, the class should implement:

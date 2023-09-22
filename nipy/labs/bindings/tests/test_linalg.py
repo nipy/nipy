@@ -1,12 +1,12 @@
-from __future__ import absolute_import
 
 #
-# Test fff linear algebra routines 
+# Test fff linear algebra routines
 #
 
-from numpy.testing import assert_equal
 import numpy as np
-from .. import vector_get, vector_set 
+from numpy.testing import assert_equal
+
+from .. import vector_get, vector_set
 
 n = 15
 
@@ -27,7 +27,7 @@ def test_vector_set():
     i = np.random.randint(n)
     y = vector_set(x, i, 3)
     assert_equal(3, y[i])
-    
+
 def test_vector_set_int32():
     x = (100*np.random.rand(n)).astype('int32')
     i = np.random.randint(n)
@@ -39,4 +39,3 @@ def test_vector_set_int32():
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])
-

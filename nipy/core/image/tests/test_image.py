@@ -1,24 +1,29 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import warnings
 from itertools import chain
 
-import numpy as np
-
 import nibabel as nib
+import numpy as np
+from nose.tools import (
+    assert_equal,
+    assert_false,
+    assert_not_equal,
+    assert_raises,
+    assert_true,
+)
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 
-from .. import image
-from ..image import Image, iter_axis, is_image, rollimg
-from ...api import parcels, data_generator, write_data
-from ...reference.coordinate_system import CoordinateSystem
+from ...api import data_generator, parcels, write_data
 from ...reference.coordinate_map import AffineTransform, AxisError
+from ...reference.coordinate_system import CoordinateSystem
+from .. import image
+from ..image import Image, is_image, iter_axis, rollimg
 
-from nose.tools import (assert_true, assert_false, assert_equal,
-                        assert_not_equal, assert_raises)
-
-from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
-                           assert_array_equal)
 
 def setup():
     # Suppress warnings during tests to reduce noise
@@ -148,7 +153,7 @@ def test_slicing_returns_image():
     assert_equal(img1D.ndim, 1)
 
 
-class ArrayLikeObj(object):
+class ArrayLikeObj:
     """The data attr in Image is an array-like object.
     Test the array-like interface that we'll expect to support."""
     def __init__(self):
@@ -335,7 +340,7 @@ def test_is_image():
     img = Image(arr, cmap)
     assert_true(is_image(img))
     assert_false(is_image(object()))
-    class C(object):
+    class C:
         def get_fdata(self): pass
     c = C()
     assert_false(is_image(c))

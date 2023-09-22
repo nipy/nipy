@@ -4,11 +4,10 @@
 Plot of the canonical Glover HRF
 """
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from nipy.modalities.fmri import hrf, utils
-
-import matplotlib.pyplot as plt
 
 # hrf.glover is a symbolic function; get a function of time to work on arrays
 hrf_func = utils.lambdify_t(hrf.glover(utils.T))

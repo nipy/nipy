@@ -3,7 +3,7 @@
 from .affine import Affine
 
 
-class ChainTransform(object):
+class ChainTransform:
     def __init__(self, optimizable, pre=None, post=None):
         """ Create chain transform instance
 

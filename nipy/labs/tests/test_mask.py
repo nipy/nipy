@@ -4,19 +4,21 @@
 Test the mask-extracting utilities.
 """
 
-from __future__ import with_statement
-from __future__ import absolute_import
-
-import numpy as np
 
 import nibabel as nib
+import numpy as np
 from nibabel.tmpdirs import InTemporaryDirectory
 
-from .. import mask as nnm
-from ..mask import (largest_cc, threshold_connect_components, series_from_mask)
+from nipy.testing import (
+    anatfile,
+    assert_array_equal,
+    assert_equal,
+    assert_false,
+    assert_true,
+)
 
-from nipy.testing import (assert_equal, assert_true, assert_array_equal,
-                          anatfile, assert_false)
+from .. import mask as nnm
+from ..mask import largest_cc, series_from_mask, threshold_connect_components
 
 
 def test_largest_cc():

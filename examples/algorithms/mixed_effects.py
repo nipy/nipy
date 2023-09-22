@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 This example illustrates  the impact of using a mixed-effects model
 for the detection of the effects, when the first-level variance is known:
@@ -14,11 +13,14 @@ Author: Bertrand Thirion, 2012
 """
 print(__doc__)
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from nipy.algorithms.statistics.mixed_effects_stat import (
-    generate_data, one_sample_ttest, t_stat)
+    generate_data,
+    one_sample_ttest,
+    t_stat,
+)
 
 # generate the data
 N, P = 15, 500

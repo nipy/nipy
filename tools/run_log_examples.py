@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function, with_statement
 
 DESCRIP = 'Run and log examples'
 EPILOG = \
@@ -18,20 +17,19 @@ run_log_examples.py nipy/examples/some_example.py
 to run a single example.
 """
 
-import sys
 import os
-from os.path import (abspath, expanduser, join as pjoin, sep as psep, isfile,
-                     dirname)
-from subprocess import Popen, PIPE
 import re
-
+import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
-
+from os.path import abspath, dirname, expanduser, isfile
+from os.path import join as pjoin
+from os.path import sep as psep
+from subprocess import PIPE, Popen
 
 PYTHON=sys.executable
 NEED_SHELL = True
 
-class ProcLogger(object):
+class ProcLogger:
     def __init__(self, log_path, working_path):
         self.log_path = log_path
         self.working_path = working_path
@@ -48,8 +46,8 @@ class ProcLogger(object):
         if cwd is None:
             cwd = self.working_path
         cmd_out_path = pjoin(self.log_path, cmd_name)
-        stdout_log = open(cmd_out_path + '.stdout', 'wt')
-        stderr_log = open(cmd_out_path + '.stderr', 'wt')
+        stdout_log = open(cmd_out_path + '.stdout', "w")
+        stderr_log = open(cmd_out_path + '.stderr', "w")
         try:
             # Start subprocess
             cmd_str = self.cmd_str_maker(cmd, args)
@@ -96,8 +94,8 @@ class PyProcLogger(ProcLogger):
         """
         if len(args) != 0:
             raise ValueError("Cannot use args with {8}".format(self.__class__))
-        return("""{0} -c "import matplotlib as mpl; mpl.use('agg'); """
-               """exec(open('{1}', 'rt').read())" """.format(PYTHON, cmd))
+        return(f"""{PYTHON} -c "import matplotlib as mpl; mpl.use('agg'); """
+               f"""exec(open('{cmd}', 'rt').read())" """)
 
 
 def _record(result, fname, fileobj):
@@ -139,7 +137,7 @@ def main():
     proc_logger = PyProcLogger(log_path=log_path,
                                working_path=eg_path)
     fails = 0
-    with open(pjoin(log_path, 'summary.txt'), 'wt') as f:
+    with open(pjoin(log_path, 'summary.txt'), "w") as f:
         for dirpath, dirnames, filenames in os.walk(eg_path):
             for fname in filenames:
                 full_fname = pjoin(dirpath, fname)

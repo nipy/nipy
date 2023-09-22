@@ -1,8 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 ''' General matrix and other utilities for statistics '''
-from __future__ import print_function
-from __future__ import absolute_import
 
 __docformat__ = 'restructuredtext'
 
@@ -23,7 +21,7 @@ def mad(a, c=0.6745, axis=0):
     return m
 
 
-class StepFunction(object):
+class StepFunction:
     """ A basic step function
 
     Values at the ends are handled in the simplest way possible: everything to

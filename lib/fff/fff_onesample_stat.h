@@ -6,7 +6,7 @@
 
 */
 
- 
+
 #ifndef FFF_ONESAMPLE_STAT
 #define FFF_ONESAMPLE_STAT
 
@@ -15,16 +15,16 @@ extern "C" {
 #endif
 
 #include "fff_vector.h"
-  
+
   /*!
     \typedef fff_onesample_stat_flag
     \brief Decision statistic for one-sample tests
 
     \c FFF_ONESAMPLE_MEAN is the sample mean. In permutation testing
-    context, it is equivalent to \c FFF_ONESAMPLE_STUDENT (see below). 
+    context, it is equivalent to \c FFF_ONESAMPLE_STUDENT (see below).
 
-    \c FFF_ONESAMPLE_MEDIAN is the sample median. 
-    
+    \c FFF_ONESAMPLE_MEDIAN is the sample median.
+
     \c FFF_ONESAMPLE_STUDENT is the one-sample Student statistic
     defined as \f$ t = \frac{\hat{m}-m}{\hat{\sigma}/\sqrt{n}} \f$,
     where \a n is the sample size, \f$\hat{m}\f$ is the sample mean,
@@ -70,7 +70,7 @@ extern "C" {
     testing. It is defined as \f$ t = \max_i
     \frac{|x_i-\hat{m}|}{\hat{\sigma}} \f$ where \f$\hat{m}\f$ is the
     sample mean, and \f$\hat{\sigma}\f$ is the sample standard
-    deviation. 
+    deviation.
   */
   typedef enum {
     FFF_ONESAMPLE_EMPIRICAL_MEAN = 0,
@@ -80,17 +80,17 @@ extern "C" {
     FFF_ONESAMPLE_TUKEY = 4,
     FFF_ONESAMPLE_SIGN_STAT = 5,
     FFF_ONESAMPLE_WILCOXON = 6,
-    FFF_ONESAMPLE_ELR = 7, 
+    FFF_ONESAMPLE_ELR = 7,
     FFF_ONESAMPLE_GRUBB = 8,
     FFF_ONESAMPLE_EMPIRICAL_MEAN_MFX = 10,
     FFF_ONESAMPLE_EMPIRICAL_MEDIAN_MFX = 11,
     FFF_ONESAMPLE_STUDENT_MFX = 12,
     FFF_ONESAMPLE_SIGN_STAT_MFX = 15,
-    FFF_ONESAMPLE_WILCOXON_MFX = 16, 
-    FFF_ONESAMPLE_ELR_MFX = 17, 
+    FFF_ONESAMPLE_WILCOXON_MFX = 16,
+    FFF_ONESAMPLE_ELR_MFX = 17,
     FFF_ONESAMPLE_GAUSSIAN_MEAN_MFX = 19
   } fff_onesample_stat_flag;
-  
+
   /*!
     \struct fff_onesample_stat
     \brief General structure for one-sample test statistics
@@ -98,12 +98,12 @@ extern "C" {
   typedef struct{
     fff_onesample_stat_flag flag; /*!< statistic's identifier */
     double base; /*!< baseline for mean-value testing */
-    unsigned int constraint; /* non-zero for statistics computed from maximum likelihood under the null hypothesis */ 
+    unsigned int constraint; /* non-zero for statistics computed from maximum likelihood under the null hypothesis */
     void* params; /*!< other auxiliary parameters */
     double (*compute_stat)(void*, const fff_vector*, double); /*!< actual statistic implementation */
   } fff_onesample_stat;
-  
-  
+
+
   /*!
     \struct fff_onesample_stat_mfx
     \brief General structure for one-sample test statistics with mixed-effects
@@ -117,52 +117,51 @@ extern "C" {
   typedef struct{
     fff_onesample_stat_flag flag; /*!< MFX statistic's identifier */
     double base; /*!< baseline for mean-value testing */
-    int empirical; /*!< boolean, tells whether MFX statistic is nonparametric or not */ 
-    unsigned int niter; /* non-zero for statistics based on iterative algorithms */ 
-    unsigned int constraint; /* non-zero for statistics computed from maximum likelihood under the null hypothesis */ 
+    int empirical; /*!< boolean, tells whether MFX statistic is nonparametric or not */
+    unsigned int niter; /* non-zero for statistics based on iterative algorithms */
+    unsigned int constraint; /* non-zero for statistics computed from maximum likelihood under the null hypothesis */
     void* params; /*!< auxiliary parameters */
     double (*compute_stat)(void*, const fff_vector*, const fff_vector*, double); /*!< actual statistic implementation */
   } fff_onesample_stat_mfx;
-  
+
   /*!
-    \brief Constructor for the \c fff_onesample_stat structure 
+    \brief Constructor for the \c fff_onesample_stat structure
     \param n sample size
-    \param flag statistic identifier 
+    \param flag statistic identifier
     \param base baseline value for mean-value testing
-   */ 
-  extern fff_onesample_stat* fff_onesample_stat_new(unsigned int n, fff_onesample_stat_flag flag, double base); 
+   */
+  extern fff_onesample_stat* fff_onesample_stat_new(unsigned int n, fff_onesample_stat_flag flag, double base);
   /*!
-    \brief Destructor for the \c fff_onesample_stat structure 
-    \param thisone instance to be deleted 
-   */ 
-  extern void fff_onesample_stat_delete(fff_onesample_stat* thisone); 
+    \brief Destructor for the \c fff_onesample_stat structure
+    \param thisone instance to be deleted
+   */
+  extern void fff_onesample_stat_delete(fff_onesample_stat* thisone);
   /*!
     \brief Compute a one-sample test statistic
-    \param thisone already created one-sample stat structure 
-    \param x input vector 
-  */  
+    \param thisone already created one-sample stat structure
+    \param x input vector
+  */
   extern double fff_onesample_stat_eval(fff_onesample_stat* thisone, const fff_vector* x);
 
 
-  /** MFX **/ 
-  extern fff_onesample_stat_mfx* fff_onesample_stat_mfx_new(unsigned int n, fff_onesample_stat_flag flag, double base); 
-  extern void fff_onesample_stat_mfx_delete(fff_onesample_stat_mfx* thisone); 
+  /** MFX **/
+  extern fff_onesample_stat_mfx* fff_onesample_stat_mfx_new(unsigned int n, fff_onesample_stat_flag flag, double base);
+  extern void fff_onesample_stat_mfx_delete(fff_onesample_stat_mfx* thisone);
   extern double fff_onesample_stat_mfx_eval(fff_onesample_stat_mfx* thisone, const fff_vector* x, const fff_vector* vx);
 
   extern void fff_onesample_stat_mfx_pdf_fit(fff_vector* w, fff_vector* z,
-					     fff_onesample_stat_mfx* thisone, 
+					     fff_onesample_stat_mfx* thisone,
 					     const fff_vector* x, const fff_vector* vx);
 
-  extern void fff_onesample_stat_gmfx_pdf_fit(double* mu, double* v, 
-					      fff_onesample_stat_mfx* thisone, 
+  extern void fff_onesample_stat_gmfx_pdf_fit(double* mu, double* v,
+					      fff_onesample_stat_mfx* thisone,
 					      const fff_vector* x, const fff_vector* vx);
 
   /** Sign permutations **/
-  extern void fff_onesample_permute_signs(fff_vector* xx, const fff_vector* x, double magic);  
+  extern void fff_onesample_permute_signs(fff_vector* xx, const fff_vector* x, double magic);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-

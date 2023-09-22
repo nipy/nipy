@@ -1,20 +1,15 @@
 """ Testing resample function
 """
-from __future__ import absolute_import
 
 import numpy as np
-
 from nibabel.affines import apply_affine
-
-from ....core.image.image_spaces import (as_xyz_image,
-                                         xyz_affine)
-from ....core.api import Image, vox2mni
-from ..resample import resample, cast_array
-from ..transform import Transform
-from ..affine import Affine
-
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
+from ....core.api import Image, vox2mni
+from ....core.image.image_spaces import as_xyz_image, xyz_affine
+from ..affine import Affine
+from ..resample import cast_array, resample
+from ..transform import Transform
 
 AUX = np.array([-1.9, -1.2, -1, 2.3, 2.9, 19, 100, 258, 258.2, 258.8, 1e5])
 

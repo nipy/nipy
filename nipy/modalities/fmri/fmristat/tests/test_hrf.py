@@ -3,18 +3,14 @@
 """ Testing fmristat hrf module
 
 """
-from __future__ import absolute_import
 
 import numpy as np
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from ...utils import T, lambdify_t
 from ... import hrf
+from ...utils import T, lambdify_t
 from ..hrf import spectral_decomposition
-
-from nose.tools import assert_true, assert_false, \
-        assert_equal, assert_raises
-
-from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 
 def test_spectral_decomposition():

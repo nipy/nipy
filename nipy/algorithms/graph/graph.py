@@ -20,13 +20,12 @@ instantiate WeightedGraphs from data:
 
 Author: Bertrand Thirion, 2006--2011
 """
-from __future__ import absolute_import
 
 import numpy as np
-
 from scipy.sparse import coo_matrix
 
-class Graph(object):
+
+class Graph:
     """ Basic topological (non-weighted) directed Graph class
 
     Member variables:
@@ -775,7 +774,7 @@ x
         """
         from scipy.sparse import dia_matrix
         c = int(c)
-        if not c in [0, 1, 2]:
+        if c not in [0, 1, 2]:
             raise ValueError('c must be equal to 0, 1 or 2')
 
         if self.E == 0:

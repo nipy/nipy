@@ -196,4 +196,3 @@ for key, value in DATA_PKGS.items():
     value['install hint'] = NIPY_INSTALL_HINT % url
 
 del key, value, url
-

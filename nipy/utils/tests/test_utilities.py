@@ -1,14 +1,17 @@
 """ Testing utilities module
 """
-from __future__ import absolute_import
 
 import numpy as np
-
-from nose.tools import (assert_true, assert_false, assert_raises,
-                        assert_equal, assert_not_equal)
-
+from nose.tools import (
+    assert_equal,
+    assert_false,
+    assert_not_equal,
+    assert_raises,
+    assert_true,
+)
 
 from ..utilities import is_iterable, is_numlike, seq_prod
+
 
 def test_is_iterable():
     assert_true(is_iterable(()))

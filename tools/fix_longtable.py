@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """ Fix sphinx latex output for longtable
 """
+import codecs
 import re
 import sys
-import codecs
 
 lt_LL = re.compile(
     r"longtable}{(L+)}")

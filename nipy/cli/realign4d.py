@@ -9,9 +9,10 @@ to Joint Correction of Motion and Slice Timing in fMRI. IEEE Trans. Med.
 Imaging 30(8): 1546-1554
 """
 
-import os.path as op
-import nipy.algorithms.registration as reg
 import argparse
+import os.path as op
+
+import nipy.algorithms.registration as reg
 
 parser = argparse.ArgumentParser()
 

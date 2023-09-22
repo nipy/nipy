@@ -1,4 +1,3 @@
-# emacs: -*- coding: utf-8; mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 #
 # sampledoc documentation build configuration file, created by
@@ -12,7 +11,8 @@
 # All configuration values have a default value; values that are commented out
 # serve to show the default value.
 
-import sys, os
+import os
+import sys
 from importlib import import_module
 
 import sphinx

@@ -1,14 +1,14 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import unittest
 
 import numpy as np
+from nose.tools import assert_true
+from numpy.testing import assert_array_equal
+
+from nipy.algorithms.graph import wgraph_from_3d_grid
 
 from .. import permutation_test as pt
-from nipy.algorithms.graph import wgraph_from_3d_grid
-from numpy.testing import assert_array_equal
-from nose.tools import assert_true
 
 nperms = 2
 ndraws = 10

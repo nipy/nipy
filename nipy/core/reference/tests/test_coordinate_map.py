@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from copy import copy
@@ -6,23 +5,38 @@ from copy import copy
 import numpy as np
 
 # this import line is a little ridiculous...
-from ..coordinate_map import (CoordinateMap, AffineTransform, compose, product,
-                              append_io_dim, drop_io_dim, equivalent,
-                              shifted_domain_origin, shifted_range_origin,
-                              CoordMapMaker, CoordMapMakerError,
-                              _as_coordinate_map, AxisError, _fix0,
-                              axmap, orth_axes, input_axis_index, io_axis_indices)
-
-from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,
-                                 CoordSysMaker, CoordSysMakerError)
+from ..coordinate_map import (
+    AffineTransform,
+    AxisError,
+    CoordinateMap,
+    CoordMapMaker,
+    CoordMapMakerError,
+    _as_coordinate_map,
+    _fix0,
+    append_io_dim,
+    axmap,
+    compose,
+    drop_io_dim,
+    equivalent,
+    input_axis_index,
+    io_axis_indices,
+    orth_axes,
+    product,
+    shifted_domain_origin,
+    shifted_range_origin,
+)
+from ..coordinate_system import (
+    CoordinateSystem,
+    CoordinateSystemError,
+    CoordSysMaker,
+    CoordSysMakerError,
+)
 
 # shortcut
 CS = CoordinateSystem
 
-from nose.tools import (assert_true, assert_equal, assert_raises,
-                        assert_false)
-
-from numpy.testing import assert_array_equal, assert_almost_equal
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing
@@ -37,7 +51,7 @@ if np.longcomplex in _SYMPY_SAFE_DTYPES:  # Not present for Windows
     _SYMPY_SAFE_DTYPES.remove(np.longcomplex)
 
 
-class empty(object):
+class empty:
     pass
 
 # object to hold module global setup

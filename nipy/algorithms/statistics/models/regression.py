@@ -17,8 +17,6 @@ General reference for regression models:
     Elizabeth A. Peck, G. Geoffrey Vining. Wiley, 2006.
 
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 __docformat__ = 'restructuredtext en'
 
@@ -26,18 +24,16 @@ import warnings
 
 import numpy as np
 import numpy.linalg as npl
-
-from scipy import stats
 import scipy.linalg as spl
-
 from nibabel.onetime import auto_attr
+from scipy import stats
 
 from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
 
-from .model import LikelihoodModel, LikelihoodModelResults
-
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
+
+from .model import LikelihoodModel, LikelihoodModelResults
 
 
 class OLSModel(LikelihoodModel):
@@ -101,7 +97,7 @@ class OLSModel(LikelihoodModel):
             Data are assumed to be column ordered with
             observations in rows.
         """
-        super(OLSModel, self).__init__()
+        super().__init__()
         self.initialize(design)
 
     def initialize(self, design):
@@ -375,7 +371,7 @@ class ARModel(OLSModel):
             ndarray, gives initial estimate of rho. Be careful as ``ARModel(X,
             1) != ARModel(X, 1.0)``.
         """
-        if type(rho) is type(1):
+        if type(rho) is int:
             self.order = rho
             self.rho = np.zeros(self.order, np.float64)
         else:
@@ -385,7 +381,7 @@ class ARModel(OLSModel):
             if self.rho.shape == ():
                 self.rho.shape = (1,)
             self.order = self.rho.shape[0]
-        super(ARModel, self).__init__(design)
+        super().__init__(design)
 
     def iterative_fit(self, Y, niter=3):
         """
@@ -607,7 +603,7 @@ def ar_bias_correct(results, order, invM=None):
     return np.squeeze(output.reshape((order,) + in_shape[1:]))
 
 
-class AREstimator(object):
+class AREstimator:
     """
     A class to estimate AR(p) coefficients from residuals
     """
@@ -679,7 +675,7 @@ class WLSModel(OLSModel):
                 raise ValueError(
                     'Weights must be scalar or same length as design')
             self.weights = weights.reshape(design_rows)
-        super(WLSModel, self).__init__(design)
+        super().__init__(design)
 
     def whiten(self, X):
         """ Whitener for WLS model, multiplies by sqrt(self.weights)
@@ -836,7 +832,7 @@ class GLSModel(OLSModel):
 
     def __init__(self, design, sigma):
         self.cholsigmainv = npl.cholesky(npl.pinv(sigma)).T
-        super(GLSModel, self).__init__(design)
+        super().__init__(design)
 
     def whiten(self, Y):
         return np.dot(self.cholsigmainv, Y)

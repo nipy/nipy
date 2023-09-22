@@ -8,16 +8,15 @@ sulcal 2000 database acquired at CEA, SHFJ, Orsay, France. The source
 is 'ammon' and the target is 'anubis'. Running it will result in a
 resampled ammon image being created in the current directory.
 """
-from __future__ import print_function  # Python 2/3 compatibility
 
-from optparse import OptionParser
 import time
+from optparse import OptionParser
 
 import numpy as np
 
+from nipy import load_image, save_image
 from nipy.algorithms.registration import HistogramRegistration, resample
 from nipy.utils import example_data
-from nipy import load_image, save_image
 
 print('Scanning data directory...')
 

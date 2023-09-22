@@ -14,17 +14,16 @@ but it is limited to diagonal covariance models
 
 Author : Bertrand Thirion, 2008-2011
 """
-from __future__ import print_function
-from __future__ import absolute_import
+
+import math
 
 import numpy as np
 import numpy.random as nr
-from scipy.linalg import inv, cholesky, eigvalsh
+from scipy.linalg import cholesky, eigvalsh, inv
 from scipy.special import gammaln
-import math
 
-from .utils import kmeans
 from .gmm import GMM
+from .utils import kmeans
 
 ##################################################################
 # ancillary functions ############################################
@@ -293,7 +292,7 @@ def dkl_wishart(a1, B1, a2, B2):
     -------
     dkl: float, the Kullback-Leibler divergence
     """
-    from scipy.special import psi, gammaln
+    from scipy.special import gammaln, psi
     tiny = 1.e-15
     if B1.shape != B2.shape:
         raise ValueError("incompatible dimensions for B1 and B2")
@@ -938,8 +937,8 @@ class VBGMM(BGMM):
         -------
         ev (float) the computed evidence
         """
-        from scipy.special import psi
         from numpy.linalg import inv
+        from scipy.special import psi
         tiny = 1.e-15
         if like is None:
             like = self._Estep(x)

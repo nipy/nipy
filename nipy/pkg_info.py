@@ -1,8 +1,7 @@
-from __future__ import division, print_function, absolute_import
 
 import os
-import sys
 import subprocess
+import sys
 
 from six.moves import configparser
 
@@ -41,7 +40,7 @@ def pkg_commit_hash(pkg_path):
     # Try and get commit from written commit text file
     pth = os.path.join(pkg_path, COMMIT_INFO_FNAME)
     if not os.path.isfile(pth):
-        raise IOError(f'Missing commit info file {pth}')
+        raise OSError(f'Missing commit info file {pth}')
     cfg_parser = configparser.RawConfigParser()
     cfg_parser.read(pth)
     archive_subst = cfg_parser.get('commit hash', 'archive_subst_hash')
@@ -76,13 +75,14 @@ def get_pkg_info(pkg_path):
     '''
     src, hsh = pkg_commit_hash(pkg_path)
     import numpy
+
     import nipy
-    return dict(
-        pkg_path=pkg_path,
-        commit_source=src,
-        commit_hash=hsh,
-        sys_version=sys.version,
-        sys_executable=sys.executable,
-        sys_platform=sys.platform,
-        np_version=numpy.__version__,
-        nipy_version=nipy.__version__)
+    return {
+        'pkg_path': pkg_path,
+        'commit_source': src,
+        'commit_hash': hsh,
+        'sys_version': sys.version,
+        'sys_executable': sys.executable,
+        'sys_platform': sys.platform,
+        'np_version': numpy.__version__,
+        'nipy_version': nipy.__version__}

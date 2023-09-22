@@ -30,7 +30,7 @@ A third is the classic of output dtype specific to byte ordering::
 
     >>> np.zeros((1,), dtype=[('f1', 'i')])
 
-    array([(0,)], 
+    array([(0,)],
     dtype=[('f1', '<i4')])
 
 *******
@@ -52,7 +52,7 @@ and::
 
     >>> np.zeros((1,), dtype=[('f1', 'i')])
 
-    array([(0,)], 
+    array([(0,)],
     dtype=[('f1', '...i4')])
 
 So - ugly - because the reader can't easily guess what you've elided, and so the
@@ -141,5 +141,3 @@ This looks very similar to the numpy machinery.  Again, it's a nose plugin that
 inherits from the nose ``Doctest`` class.
 
 .. include:: ../links_names.txt
-
-

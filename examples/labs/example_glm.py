@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 This is an example where:
 
@@ -26,13 +25,12 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nibabel import save, Nifti1Image
+from nibabel import Nifti1Image, save
 
 import nipy.modalities.fmri.design_matrix as dm
-from nipy.labs.utils.simul_multisubject_fmri_dataset import \
-     surrogate_4d_dataset
-from nipy.modalities.fmri.glm import GeneralLinearModel
+from nipy.labs.utils.simul_multisubject_fmri_dataset import surrogate_4d_dataset
 from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
+from nipy.modalities.fmri.glm import GeneralLinearModel
 
 #######################################
 # Simulation parameters

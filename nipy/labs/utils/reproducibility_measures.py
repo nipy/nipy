@@ -17,13 +17,11 @@ Neuroimage. 2007 Mar;35(1):105-20.
 
 Bertrand Thirion, 2009-2010
 """
-from __future__ import absolute_import
 
 import numpy as np
 
 from nipy.io.nibcompat import get_affine
-from nipy.labs.spatial_models.discrete_domain import \
-    grid_domain_from_binary_array
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_binary_array
 
 # ---------------------------------------------------------
 # ----- cluster handling functions ------------------------
@@ -162,7 +160,7 @@ def get_peak_position_from_thresholded_map(stat_map, domain, threshold):
 
     # create an image to represent stat_map
     simage = domain.to_image(data=stat_map)
-    
+
     # extract the peaks
     peaks = get_3d_peaks(simage, threshold=threshold, order_th=2)
     if peaks is None:
@@ -664,6 +662,7 @@ def group_reproducibility_metrics(
                       results of peak-level reproducibility analysis
     """
     from nibabel import load
+
     from ..mask import intersect_masks
 
     if ((len(variance_images) == 0) & (method is not 'crfx')):

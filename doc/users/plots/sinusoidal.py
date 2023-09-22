@@ -6,8 +6,8 @@ stimulus having two features, Orientation and Contrast
 """
 
 
-import pylab
 import numpy as np
+import pylab
 
 t = np.linspace(0,10,1000)
 o = np.sin(2*np.pi*(t+1)) * np.exp(-t/10)

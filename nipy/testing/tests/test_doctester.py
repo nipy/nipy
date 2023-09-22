@@ -1,15 +1,11 @@
 """ Testing round numbers utility
 """
-from __future__ import absolute_import
 
 import numpy as np
+from nose.tools import assert_equal, assert_raises, assert_true
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from ..doctester import round_numbers, strip_array_repr
-
-from numpy.testing import (assert_array_almost_equal,
-                           assert_array_equal)
-
-from nose.tools import assert_true, assert_equal, assert_raises
 
 
 def test_strip_array_repr():
@@ -51,4 +47,3 @@ def test_round_numbers():
     for in_str, out_4, out_6 in in_out_strs:
         assert_equal(round_numbers(in_str, 4), out_4)
         assert_equal(round_numbers(in_str, 6), out_6)
-

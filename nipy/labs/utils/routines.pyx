@@ -32,11 +32,11 @@ cdef extern from "fff_specfun.h":
     extern double fff_gamln(double x)
     extern double fff_psi(double x)
 
-    
+
 # Exports from fff_lapack.h
 cdef extern from "fff_lapack.h":
 
-    extern int fff_lapack_dgesdd(fff_matrix* A, fff_vector* s, fff_matrix* U, fff_matrix* Vt, 
+    extern int fff_lapack_dgesdd(fff_matrix* A, fff_vector* s, fff_matrix* U, fff_matrix* Vt,
                                  fff_vector* work, fff_array* iwork, fff_matrix* Aux)
 
 
@@ -61,18 +61,18 @@ def quantile(X, double ratio, int interp=False, int axis=0):
     dims[axis] = 1
     Y = np.zeros(dims)
 
-    # Create a new array iterator 
+    # Create a new array iterator
     multi = fffpy_multi_iterator_new(2, axis, <void*>X, <void*>Y)
 
-    # Create vector views on both X and Y 
+    # Create vector views on both X and Y
     x = multi.vector[0]
     y = multi.vector[1]
 
-    # Loop 
+    # Loop
     while(multi.index < multi.size):
-        y.data[0] = fff_vector_quantile(x, ratio, interp) 
+        y.data[0] = fff_vector_quantile(x, ratio, interp)
         fffpy_multi_iterator_update(multi)
-       
+
     # Delete local structures
     fffpy_multi_iterator_delete(multi)
     return Y
@@ -93,13 +93,13 @@ def mahalanobis(X, VX):
     d2 = mahalanobis(X, VX).
 
     ufunc-like function to compute Mahalanobis squared distances
-    x'*inv(Vx)*x.  
+    x'*inv(Vx)*x.
 
     axis == 0 assumed. If X is shaped (d,K), VX must be shaped
     (d,d,K).
     """
     cdef fff_vector *x, *vx, *x_tmp, *vx_tmp, *d2
-    cdef fff_matrix Sx 
+    cdef fff_matrix Sx
     cdef fff_matrix *Sx_tmp
     cdef fffpy_multi_iterator* multi
     cdef int axis=0, n
@@ -113,37 +113,37 @@ def mahalanobis(X, VX):
     # Flatten input variance array
     VX_flat = VX.reshape( [dim*dim]+list(VX.shape[2:]) )
 
-    # Create a new array iterator 
+    # Create a new array iterator
     multi = fffpy_multi_iterator_new(3, axis, <void*>X, <void*>VX_flat, <void*>D2)
 
-    # Allocate local structures 
+    # Allocate local structures
     n = <int> X.shape[axis]
     x_tmp = fff_vector_new(n)
-    vx_tmp = fff_vector_new(n*n) 
+    vx_tmp = fff_vector_new(n*n)
     Sx_tmp = fff_matrix_new(n, n)
 
-    # Create vector views on X, VX_flat and D2 
+    # Create vector views on X, VX_flat and D2
     x = multi.vector[0]
-    vx = multi.vector[1] 
-    d2 = multi.vector[2] 
+    vx = multi.vector[1]
+    d2 = multi.vector[2]
 
-    # Loop 
+    # Loop
     while(multi.index < multi.size):
         fff_vector_memcpy(x_tmp, x)
-        fff_vector_memcpy(vx_tmp, vx) 
-        Sx = fff_matrix_view(vx_tmp.data, n, n, n) # OK because vx_tmp is contiguous  
+        fff_vector_memcpy(vx_tmp, vx)
+        Sx = fff_matrix_view(vx_tmp.data, n, n, n) # OK because vx_tmp is contiguous
         d2.data[0] = fff_mahalanobis(x_tmp, &Sx, Sx_tmp)
         fffpy_multi_iterator_update(multi)
 
     # Delete local structs and views
     fff_vector_delete(x_tmp)
-    fff_vector_delete(vx_tmp) 
+    fff_vector_delete(vx_tmp)
     fff_matrix_delete(Sx_tmp)
     fffpy_multi_iterator_delete(multi)
 
     # Return
     D2 = D2.reshape(VX.shape[2:])
-    return D2 
+    return D2
 
 
 def svd(X):
@@ -166,7 +166,7 @@ def svd(X):
     cdef fff_vector *work, *x_flat, *x_flat_tmp, *s, *s_tmp
     cdef fff_matrix x
     cdef fff_array *iwork
-    cdef fff_matrix *Aux, *U, *Vt 
+    cdef fff_matrix *Aux, *U, *Vt
     cdef fffpy_multi_iterator* multi
 
     # Shape of matrices
@@ -247,7 +247,7 @@ def permutations(unsigned int n, unsigned int m=1, unsigned long magic=0):
         fff_array_copy(&pi_view, pi)
 
     P = fff_array_toPyArray(p)
-    return P 
+    return P
 
 
 def combinations(unsigned int k, unsigned int n, unsigned int m=1, unsigned long magic=0):
@@ -276,14 +276,13 @@ def gamln(double x):
     """
     cdef double y
     y = fff_gamln(x)
-    return y 
+    return y
 
 
 def psi(double x):
-    """ Python bindings to psi (d gamln(x)/dx. Do not use, this is there only 
+    """ Python bindings to psi (d gamln(x)/dx. Do not use, this is there only
         for testing. Use scipy.special.psi.
     """
     cdef double y
     y = fff_psi(x)
     return y
-

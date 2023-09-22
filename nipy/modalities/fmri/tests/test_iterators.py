@@ -1,13 +1,12 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 #TODO the iterators are deprecated
 
+from nipy.core.api import Image
+from nipy.core.reference import coordinate_map
+from nipy.modalities.fmri.api import FmriImageList
 from nipy.testing import *
 
-from nipy.core.api import Image
-import nipy.core.reference.coordinate_map as coordinate_map
-from nipy.modalities.fmri.api import FmriImageList
 """
 Comment out since these are slated for deletion and currently are broken.
 Keep for reference until generators are working.
@@ -29,7 +28,7 @@ class test_Iterators(TestCase):
         parcelmap[2,3,2] = 2
         parcelmap[0,1,0] = 2
         parcelseq = (0, 1, 2, 3)
-        
+
         expected = [np.product(self.img.shape[1:]) - 6, 3, 3, 0]
 
         iterator = parcel_iterator(self.img, parcelmap, parcelseq)

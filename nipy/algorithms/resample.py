@@ -2,19 +2,16 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Some simple examples and utility functions for resampling.
 """
-from __future__ import absolute_import
 
 import copy
 
 import numpy as np
-
-from ..fixes.scipy.ndimage import affine_transform
-
 from nibabel.affines import from_matvec, to_matvec
 
+from ..core.api import AffineTransform, ArrayCoordMap, CoordinateMap, Image, compose
+from ..fixes.scipy.ndimage import affine_transform
 from .interpolation import ImageInterpolator
-from ..core.api import (Image, CoordinateMap, AffineTransform,
-                        ArrayCoordMap, compose)
+
 
 def resample_img2img(source, target, order=3, mode='constant', cval=0.0):
     """  Resample `source` image to space of `target` image
@@ -70,7 +67,7 @@ def resample(image, target, mapping, shape, order=3, mode='constant',
              cval=0.0):
     """ Resample `image` to `target` CoordinateMap
 
-    Use a "world-to-world" mapping `mapping` and spline interpolation of a 
+    Use a "world-to-world" mapping `mapping` and spline interpolation of a
     `order`.
 
     Here, "world-to-world" refers to the fact that mapping should be a

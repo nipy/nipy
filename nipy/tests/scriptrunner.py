@@ -12,11 +12,11 @@ Then, in the tests, something like::
     assert_equal(code, 0)
     assert_equal(stdout, b'This script ran OK')
 """
-import sys
 import os
-from os.path import (dirname, join as pjoin, isfile, isdir, realpath, pathsep)
-
-from subprocess import Popen, PIPE
+import sys
+from os.path import dirname, isdir, isfile, pathsep, realpath
+from os.path import join as pjoin
+from subprocess import PIPE, Popen
 
 try: # Python 2
     string_types = basestring,
@@ -60,7 +60,7 @@ def local_module_dir(module_name):
     return None
 
 
-class ScriptRunner(object):
+class ScriptRunner:
     """ Class to run scripts and return output
 
     Finds local scripts and local modules if running in the development

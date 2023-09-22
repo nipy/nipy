@@ -1,8 +1,7 @@
-from __future__ import absolute_import
 import numpy as np
 
-from ..polyaffine import PolyAffine
 from ..affine import Affine
+from ..polyaffine import PolyAffine
 
 
 def random_affine():

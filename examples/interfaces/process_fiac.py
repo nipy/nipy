@@ -3,13 +3,20 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 ''' Single subject analysis script for SPM / FIAC '''
 import sys
-from os.path import join as pjoin
 from glob import glob
+from os.path import join as pjoin
+
 import numpy as np
 
-from nipy.interfaces.spm import (spm_info, make_job, scans_for_fnames,
-                                 run_jobdef, fnames_presuffix, fname_presuffix,
-                                 fltcols)
+from nipy.interfaces.spm import (
+    fltcols,
+    fname_presuffix,
+    fnames_presuffix,
+    make_job,
+    run_jobdef,
+    scans_for_fnames,
+    spm_info,
+)
 
 
 def get_fdata(data_path, subj_id):

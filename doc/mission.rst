@@ -7,4 +7,3 @@
 .. include:: mission.txt
 
 *The NIPY team*
-

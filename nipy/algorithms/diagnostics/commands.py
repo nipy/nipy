@@ -11,19 +11,18 @@ The command script files deal with argument parsing and any custom imports.
 The implementation here accepts the ``args`` object from ``argparse`` and does
 the work.
 """
-from __future__ import absolute_import
-from os.path import split as psplit, join as pjoin
+from os.path import join as pjoin
+from os.path import split as psplit
 
 import numpy as np
-
 from nibabel import AnalyzeHeader
 from nibabel.filename_parser import splitext_addext
 
 import nipy
 
-from .tsdiffplot import plot_tsdiffs
-from .timediff import time_slice_diffs_image
 from .screens import screen, write_screen_res
+from .timediff import time_slice_diffs_image
+from .tsdiffplot import plot_tsdiffs
 
 
 def parse_fname_axes(img_fname, time_axis, slice_axis):

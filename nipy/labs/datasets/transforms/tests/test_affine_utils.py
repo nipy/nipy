@@ -4,13 +4,12 @@
 This test can only be run from the directory above, as it uses relative
 imports.
 """
-from __future__ import absolute_import
-
-from nipy.testing import assert_equal
 
 import numpy as np
 
-from ..affine_utils import to_matrix_vector, from_matrix_vector
+from nipy.testing import assert_equal
+
+from ..affine_utils import from_matrix_vector, to_matrix_vector
 
 
 def build_xform():

@@ -123,7 +123,7 @@ set of methods and attributes (the `interface`).
 :class:`VolumeData`
   In this volumetric structure, the data is sampled for some points in
   the world space. The object knows how to interpolate between these
-  points. The underlying values are stored in a multidimensional array-like 
+  points. The underlying values are stored in a multidimensional array-like
   object that can be indexed and sliced.
 
   .. image:: datasets/volume_data.jpg
@@ -146,4 +146,3 @@ set of methods and attributes (the `interface`).
   This is also an abstract base class: it defines the core nipy
   volumetric data structure interface: you can rely on all the methods
   documented for this class in any nipy data structure.
-

@@ -50,7 +50,7 @@ How about an interface like:
                    }
                   }
                  })
-   
+
    for group in repo.groups:
        for subject in group.subjects:
            for session in subject.sessions:

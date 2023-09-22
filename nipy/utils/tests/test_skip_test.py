@@ -1,9 +1,9 @@
 """
 Test the test skip utilities.
 """
-from __future__ import absolute_import
 
 import nose
+
 from nipy.utils.skip_test import skip_if_running_nose
 
 # First we must check that during test loading time, our skip_test does
@@ -20,7 +20,7 @@ def test_raise_at_load_time():
     nose.tools.assert_true(skip_test_raised)
 
 def test_not_raise_at_run_time():
-    """ Check that SkipTest is not raised at run time 
+    """ Check that SkipTest is not raised at run time
     """
     try:
         skip_if_running_nose()
@@ -28,4 +28,3 @@ def test_not_raise_at_run_time():
         # We need to raise another exception, as nose will capture this
         # one
         raise AssertionError
-

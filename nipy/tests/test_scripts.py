@@ -4,27 +4,23 @@
 
 Run scripts and test output
 """
-from __future__ import absolute_import
 
 import os
-from os.path import join as pjoin, isfile
+from os.path import isfile
+from os.path import join as pjoin
 from unittest import skipIf
 
 import numpy as np
-
+from nibabel.optpkg import optional_package
 from nibabel.tmpdirs import InTemporaryDirectory
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from numpy.testing import assert_almost_equal
 
 from nipy import load_image, save_image
 from nipy.core.api import rollimg
-
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises
-
-from ..testing import funcfile
-from numpy.testing import assert_almost_equal
-
 from nipy.testing.decorators import make_label_dec
 
-from nibabel.optpkg import optional_package
+from ..testing import funcfile
 
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
 needs_mpl = skipIf(not HAVE_MPL, "Test needs matplotlib")
@@ -146,7 +142,7 @@ def test_nipy_4d_realign():
     # Test nipy_4d_realign script
     with InTemporaryDirectory():
         # Set matplotib agg backend
-        with open("matplotlibrc", "wt") as fobj:
+        with open("matplotlibrc", "w") as fobj:
             fobj.write("backend : agg")
         cmd = ['nipy_4d_realign', '2.0', funcfile,
                '--slice_dim',  '2',  '--slice_dir', '-1', '--save_path', '.']

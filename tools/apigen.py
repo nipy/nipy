@@ -26,8 +26,9 @@ NOTE2: this script should run in Python 2 and Python 3
 import os
 import re
 
+
 # Functions and classes
-class ApiDocWriter(object):
+class ApiDocWriter:
     ''' Class for automatic detection and parsing of API docs
     to Sphinx-parsable reST format'''
 
@@ -169,11 +170,11 @@ class ApiDocWriter(object):
         if filename is None:
             # nothing that we could handle here.
             return ([],[])
-        f = open(filename, 'rt')
+        f = open(filename)
         functions, classes = self._parse_lines(f)
         f.close()
         return functions, classes
-    
+
     def _parse_lines(self, linesource):
         ''' Parse lines of text for functions and classes '''
         functions = []
@@ -311,7 +312,7 @@ class ApiDocWriter(object):
         return True
 
     def discover_modules(self):
-        ''' Return module sequence discovered from ``self.package_name`` 
+        ''' Return module sequence discovered from ``self.package_name``
 
 
         Parameters
@@ -332,7 +333,7 @@ class ApiDocWriter(object):
         >>> dw.package_skip_patterns.append('\.util$')
         >>> 'sphinx.util' in dw.discover_modules()
         False
-        >>> 
+        >>>
         '''
         modules = [self.package_name]
         # raw directory parsing
@@ -355,7 +356,7 @@ class ApiDocWriter(object):
                     self._survives_exclude(module_uri, 'module')):
                     modules.append(module_uri)
         return sorted(modules)
-    
+
     def write_modules_api(self, modules,outdir):
         # write the list
         written_modules = []
@@ -366,7 +367,7 @@ class ApiDocWriter(object):
             # write out to file
             outfile = os.path.join(outdir,
                                    m + self.rst_extension)
-            fileobj = open(outfile, 'wt')
+            fileobj = open(outfile, "w")
             fileobj.write(api_str)
             fileobj.close()
             written_modules.append(m)
@@ -380,7 +381,7 @@ class ApiDocWriter(object):
         outdir : string
             Directory name in which to store files
             We create automatic filenames for each module
-            
+
         Returns
         -------
         None
@@ -394,7 +395,7 @@ class ApiDocWriter(object):
         # compose list of modules
         modules = self.discover_modules()
         self.write_modules_api(modules,outdir)
-        
+
     def write_index(self, outdir, froot='gen', relative_to=None):
         """Make a reST API index file from written files
 
@@ -422,7 +423,7 @@ class ApiDocWriter(object):
             relpath = outdir.replace(relative_to + os.path.sep, '')
         else:
             relpath = outdir
-        idx = open(path,'wt')
+        idx = open(path,"w")
         w = idx.write
         w('.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n')
         w('.. toctree::\n\n')

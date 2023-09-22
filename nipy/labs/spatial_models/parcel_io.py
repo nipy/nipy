@@ -5,24 +5,22 @@ Utility functions for mutli-subjectParcellation:
 this basically uses nipy io lib to perform IO opermation
 in parcel definition processes
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
-import numpy as np
 import os.path
 from warnings import warn
 
+import numpy as np
+from nibabel import Nifti1Image, load, save
 from six import string_types
 
-from nibabel import load, save, Nifti1Image
-
-from nipy.io.nibcompat import get_header, get_affine
 from nipy.algorithms.clustering.utils import kmeans
+from nipy.io.nibcompat import get_affine, get_header
+
+from ..mask import intersect_masks
 from .discrete_domain import grid_domain_from_image
 from .mroi import SubDomains
-from ..mask import intersect_masks
 
-warn('Module nipy.labs.spatial_models.parcel_io' + 
+warn('Module nipy.labs.spatial_models.parcel_io' +
      'deprecated, will be removed',
      FutureWarning,
      stacklevel=2)

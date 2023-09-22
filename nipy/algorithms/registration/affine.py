@@ -1,16 +1,14 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 import scipy.linalg as spl
-
 from nibabel.affines import apply_affine
-
-from ...externals.transforms3d.quaternions import mat2quat, quat2axangle
-from .transform import Transform
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
+
+from ...externals.transforms3d.quaternions import mat2quat, quat2axangle
+from .transform import Transform
 
 # Globals
 RADIUS = 100
@@ -241,7 +239,7 @@ class Affine(Transform):
         vec12[0:3] = aff[:3, 3]
         # Use SVD to find orthogonal and diagonal matrices such that
         # aff[0:3,0:3] == R*S*Q
-        R, s, Q = spl.svd(aff[0:3, 0:3]) 
+        R, s, Q = spl.svd(aff[0:3, 0:3])
         if spl.det(R) < 0:
             R = -R
             Q = -Q

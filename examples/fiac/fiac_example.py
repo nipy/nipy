@@ -19,31 +19,30 @@ to some of these analyses.
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
-from __future__ import print_function # Python 2/3 compatibility
 
 # Stdlib
-from tempfile import NamedTemporaryFile
-from os.path import join as pjoin
-from copy import copy
 import warnings
+from copy import copy
+from os.path import join as pjoin
+from tempfile import NamedTemporaryFile
+
+# Local
+import fiac_util as futil
 
 # Third party
 import numpy as np
 
+from nipy.algorithms.statistics import onesample
+
 # From NIPY
-from nipy.algorithms.statistics.api import (OLSModel, ARModel, make_recarray,
-                                            isestimable)
-from nipy.modalities.fmri.fmristat import hrf as delay
-from nipy.modalities.fmri import design, hrf
-from nipy.io.api import load_image, save_image
+from nipy.algorithms.statistics.api import ARModel, OLSModel, isestimable, make_recarray
 from nipy.core import api
 from nipy.core.api import Image
 from nipy.core.image.image import rollimg
+from nipy.io.api import load_image, save_image
+from nipy.modalities.fmri import design, hrf
+from nipy.modalities.fmri.fmristat import hrf as delay
 
-from nipy.algorithms.statistics import onesample
-
-# Local
-import fiac_util as futil
 reload(futil)  # while developing interactively
 
 #-----------------------------------------------------------------------------
@@ -161,7 +160,7 @@ def run_model(subj, run):
                                    (drift, {}))
 
     # Sanity check: delete any non-estimable contrasts
-    for k in cons.keys():
+    for k in cons:
         if not isestimable(cons[k], X):
             del(cons[k])
             warnings.warn(f"contrast {k} not estimable for this run")
@@ -230,14 +229,12 @@ def run_model(subj, run):
     for n in tcons:
         tempdict = {}
         for v in ['sd', 't', 'effect']:
-            tempdict[v] = np.memmap(NamedTemporaryFile(prefix='%s%s.nii'
-                                    % (n,v)), dtype=np.float64,
+            tempdict[v] = np.memmap(NamedTemporaryFile(prefix=f'{n}{v}.nii'), dtype=np.float64,
                                     shape=volshape, mode='w+')
         output[n] = tempdict
 
     for n in fcons:
-        output[n] = np.memmap(NamedTemporaryFile(prefix='%s%s.nii'
-                                    % (n,v)), dtype=np.float64,
+        output[n] = np.memmap(NamedTemporaryFile(prefix=f'{n}{v}.nii'), dtype=np.float64,
                                     shape=volshape, mode='w+')
 
     # Loop over the unique values of ar1
@@ -380,7 +377,7 @@ def group_analysis(design, contrast):
     adjusted_var = sd**2 + random_var
     adjusted_sd = np.sqrt(adjusted_var)
 
-    results = onesample.estimate_mean(Y, adjusted_sd) 
+    results = onesample.estimate_mean(Y, adjusted_sd)
     for n in ['effect', 'sd', 't']:
         im = api.Image(results[n], copy(coordmap))
         save_image(im, pjoin(odir, f"{n}.nii"))
@@ -445,7 +442,7 @@ def group_analysis_signs(design, contrast, mask, signs=None):
         adjusted_var = sd**2 + random_var
         adjusted_sd = np.sqrt(adjusted_var)
 
-        results = onesample.estimate_mean(Y, adjusted_sd) 
+        results = onesample.estimate_mean(Y, adjusted_sd)
         T = results['t']
         minT[i], maxT[i] = np.nanmin(T), np.nanmax(T)
     return minT, maxT
@@ -488,7 +485,7 @@ def run_run_models(subject_nos=SUBJECTS, run_nos = RUNS):
         for run in run_nos:
             try:
                 run_model(subj, run)
-            except IOError:
+            except OSError:
                 print('Skipping subject %d, run %d' % (subj, run))
 
 
@@ -498,7 +495,7 @@ def run_fixed_models(subject_nos=SUBJECTS, designs=DESIGNS):
         for design in designs:
             try:
                 fixed_effects(subj, design)
-            except IOError:
+            except OSError:
                 print('Skipping subject %d, design %s' % (subj, design))
 
 

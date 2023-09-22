@@ -1,5 +1,5 @@
 /* Special functions for FFF.
- * Author: Gael Varoquaux (implemented from canonical sources: 
+ * Author: Gael Varoquaux (implemented from canonical sources:
  *		log gammma: algorithm as described in numerical recipes
  *		psi : algorithm as described in Applied Statistics,
  *		      Volume 25, Number 3, 1976, pages 315-317.
@@ -75,6 +75,3 @@ double fff_psi(double x)
   out += -r*(s3 - r * ( s4 - r*s5));
   return out;
 }
-
-
-

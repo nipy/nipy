@@ -5,7 +5,6 @@
 Computation of parcellations using a hierarchical approach.
 Author: Bertrand Thirion, 2008
 """
-from __future__ import print_function, absolute_import
 
 from warnings import warn
 
@@ -13,12 +12,12 @@ import numpy as np
 from numpy.random import rand
 
 from nipy.algorithms.clustering.utils import kmeans, voronoi
-from .parcellation import MultiSubjectParcellation
 from nipy.algorithms.graph.field import Field
 from nipy.algorithms.graph.graph import wgraph_from_coo_matrix
 
+from .parcellation import MultiSubjectParcellation
 
-warn('Module nipy.labs.spatial_models.hierarchical_parcellation' + 
+warn('Module nipy.labs.spatial_models.hierarchical_parcellation' +
      'deprecated, will be removed',
      FutureWarning,
      stacklevel=2)

@@ -4,7 +4,6 @@
 3D visualization of activation maps using Mayavi
 
 """
-from __future__ import absolute_import
 
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD
@@ -18,7 +17,7 @@ import numpy as np
 from scipy import stats
 
 # Local imports
-from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
+from .anat_cache import _AnatCache, mni_sform, mni_sform_inv
 from .coord_tools import coord_transform
 
 # A module global to avoid creating multiple time an offscreen engine.
@@ -30,7 +29,7 @@ def affine_img_src(data, affine, scale=1, name='AffineImage',
                 reverse_x=False):
     """ Make a Mayavi source defined by a 3D array and an affine, for
         wich the voxel of the 3D array are mapped by the affine.
-        
+
         Parameters
         -----------
         data: 3D ndarray
@@ -67,7 +66,7 @@ def affine_img_src(data, affine, scale=1, name='AffineImage',
                            name=name,
                            spacing=scale*spacing,
                            origin=scale*origin)
-    return src 
+    return src
 
 
 ################################################################################
@@ -171,15 +170,15 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
         from scipy import ndimage
         # XXX: This should be in a separate function
         voxel_size = np.sqrt((anat_affine[:3, :3]**2).sum()/3.)
-        skull_threshold = stats.scoreatpercentile(anat.ravel(), 
+        skull_threshold = stats.scoreatpercentile(anat.ravel(),
                 skull_percentile)
-        inner_threshold = stats.scoreatpercentile(anat.ravel(), 
+        inner_threshold = stats.scoreatpercentile(anat.ravel(),
                 wm_percentile)
         upper_threshold = anat.max()
         anat_blurred = ndimage.gaussian_filter(
                             (ndimage.morphology.binary_fill_holes(
                                 ndimage.gaussian_filter(
-                                    (anat > skull_threshold).astype(np.float64), 
+                                    (anat > skull_threshold).astype(np.float64),
                                     6./voxel_size)
                                     > 0.5
                                 )).astype(np.float64),
@@ -199,7 +198,7 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
     ###########################################################################
     # Display the cortical surface (flattenned)
     anat_src = affine_img_src(anat, anat_affine, scale=scale, name='Anat')
-    
+
     anat_src.image_data.point_data.add_array(anat_blurred)
     anat_src.image_data.point_data.get_array(1).name = 'blurred'
     anat_src.image_data.point_data.update()
@@ -208,17 +207,17 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
 
     anat_blurred.update_pipeline()
     # anat_blurred = anat_src
-    
+
     cortex_surf = mlab.pipeline.set_active_attribute(
-                            mlab.pipeline.contour(anat_blurred), 
+                            mlab.pipeline.contour(anat_blurred),
                     point_scalars='scalar')
-        
+
     # XXX: the choice in vmin and vmax should be tuned to show the
     # sulci better
     cortex = mlab.pipeline.surface(cortex_surf,
-                colormap='copper', 
+                colormap='copper',
                 opacity=opacity,
-                vmin=skull_threshold, 
+                vmin=skull_threshold,
                 vmax=inner_threshold)
     cortex.enable_contours = True
     cortex.contour.filled_contours = True
@@ -241,14 +240,14 @@ def plot_anat_3d(anat=None, anat_affine=None, scale=1,
         outline = mlab.pipeline.iso_surface(
                             anat_blurred,
                             contours=[0.4],
-                            color=outline_color, 
+                            color=outline_color,
                             opacity=.9)
         outline.actor.property.backface_culling = True
 
 
     fig.scene.disable_render = disable_render
     return cortex
- 
+
 
 ################################################################################
 # Maps
@@ -275,8 +274,8 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
             MNI152 T1 1mm template is used. If False, no anatomical
             image is used.
         anat_affine : 4x4 ndarray, optional
-            The affine matrix going from the anatomical image voxel space to 
-            MNI space. This parameter is not used when the default 
+            The affine matrix going from the anatomical image voxel space to
+            MNI space. This parameter is not used when the default
             anatomical is used, but it is compulsory when using an
             explicite anatomical image.
         threshold : float, optional
@@ -319,7 +318,7 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
                 from enthought.mayavi.core.off_screen_engine import OffScreenEngine
             off_screen_engine = OffScreenEngine()
         off_screen_engine.start()
-        fig = mlab.figure('__private_plot_map_3d__', 
+        fig = mlab.figure('__private_plot_map_3d__',
                                 bgcolor=(1, 1, 1), fgcolor=(0, 0, 0),
                                 size=(400, 330),
                                 engine=off_screen_engine)
@@ -365,16 +364,16 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
     # Draw the cursor
     if cut_coords is not None:
         x0, y0, z0 = cut_coords
-        mlab.plot3d((-90, 90), (y0, y0), (z0, z0), 
+        mlab.plot3d((-90, 90), (y0, y0), (z0, z0),
                     color=(.5, .5, .5), tube_radius=0.25)
-        mlab.plot3d((x0, x0), (-126, 91), (z0, z0), 
+        mlab.plot3d((x0, x0), (-126, 91), (z0, z0),
                     color=(.5, .5, .5), tube_radius=0.25)
-        mlab.plot3d((x0, x0), (y0, y0), (-72, 109), 
+        mlab.plot3d((x0, x0), (y0, y0), (-72, 109),
                             color=(.5, .5, .5), tube_radius=0.25)
 
     mlab.view(*view)
     fig.scene.disable_render = disable_render
-    
+
     return module
 
 
@@ -385,5 +384,3 @@ def demo_plot_map_3d():
     x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
     map[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1
     plot_map_3d(map, mni_sform, cut_coords=(x, y, z))
-
-

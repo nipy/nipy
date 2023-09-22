@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 This scipt makes a noisy activation image and extracts the blobs from it.
 
@@ -20,7 +19,7 @@ except ImportError:
 import matplotlib as mpl
 
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
-import nipy.labs.spatial_models.hroi as hroi
+from nipy.labs.spatial_models import hroi
 from nipy.labs.spatial_models.discrete_domain import grid_domain_from_shape
 
 # ---------------------------------------------------------
@@ -54,7 +53,7 @@ bmap = nroi.feature_to_voxel_map(
 
 aux1 = (0 - values.min()) / (values.max() - values.min())
 aux2 = (bmap.max() - values.min()) / (values.max() - values.min())
-cdict = {'red': ((0.0, 0.0, 0.7), 
+cdict = {'red': ((0.0, 0.0, 0.7),
                  (aux1, 0.7, 0.7),
                  (aux2, 1.0, 1.0),
                  (1.0, 1.0, 1.0)),

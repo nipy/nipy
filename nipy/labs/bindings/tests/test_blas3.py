@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 
 #
@@ -6,15 +5,15 @@ from __future__ import absolute_import
 #
 
 
-from numpy.testing import assert_almost_equal
 import numpy as np
-from .. import (blas_dgemm, blas_dsymm, blas_dtrmm, 
-                blas_dtrsm, blas_dsyrk, blas_dsyr2k)
+from numpy.testing import assert_almost_equal
+
+from .. import blas_dgemm, blas_dsymm, blas_dsyr2k, blas_dsyrk, blas_dtrmm, blas_dtrsm
 
 n1 = 10
 n2 = 13
 
-    
+
 def test_dgemm():
     A = np.random.rand(n1,n2)
     B = np.random.rand(n2,n1)
@@ -25,11 +24,11 @@ def test_dgemm():
     # Test: A*B
     Dgold = alpha*np.dot(A,B) + beta*C
     D = blas_dgemm(0, 0, alpha, A, B, beta, C)
-    assert_almost_equal(Dgold, D) 
+    assert_almost_equal(Dgold, D)
     # Test: A^t B^t
     Dgold = alpha*np.dot(A.T,B.T) + beta*C2
     D = blas_dgemm(1, 1, alpha, A, B, beta, C2)
-    assert_almost_equal(Dgold, D) 
+    assert_almost_equal(Dgold, D)
 
 def test_dsymm():
     A = np.random.rand(n1,n1)
@@ -55,7 +54,7 @@ def test_dsymm():
 
 def _test_dtrXm(A, U, L, B, alpha, blasfn):
     # Test: U*B
-    Dgold = alpha*np.dot(U,B) 
+    Dgold = alpha*np.dot(U,B)
     D = blasfn(0, 0, 0, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: B*U
@@ -63,7 +62,7 @@ def _test_dtrXm(A, U, L, B, alpha, blasfn):
     D = blasfn(1, 0, 0, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: U'*B
-    Dgold = alpha*np.dot(U.T,B) 
+    Dgold = alpha*np.dot(U.T,B)
     D = blasfn(0, 0, 1, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: B*U'
@@ -71,7 +70,7 @@ def _test_dtrXm(A, U, L, B, alpha, blasfn):
     D = blasfn(1, 0, 1, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: L*B
-    Dgold = alpha*np.dot(L,B) 
+    Dgold = alpha*np.dot(L,B)
     D = blasfn(0, 1, 0, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: B*L
@@ -79,7 +78,7 @@ def _test_dtrXm(A, U, L, B, alpha, blasfn):
     D = blasfn(1, 1, 0, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: L'*B
-    Dgold = alpha*np.dot(L.T,B) 
+    Dgold = alpha*np.dot(L.T,B)
     D = blasfn(0, 1, 1, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: B*L'
@@ -87,7 +86,7 @@ def _test_dtrXm(A, U, L, B, alpha, blasfn):
     D = blasfn(1, 1, 1, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: U*B
-    Dgold = alpha*np.dot(U,B) 
+    Dgold = alpha*np.dot(U,B)
     D = blasfn(0, 0, 0, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: B*U
@@ -95,7 +94,7 @@ def _test_dtrXm(A, U, L, B, alpha, blasfn):
     D = blasfn(1, 0, 0, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: U'*B
-    Dgold = alpha*np.dot(U.T,B) 
+    Dgold = alpha*np.dot(U.T,B)
     D = blasfn(0, 0, 1, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: B*U'
@@ -103,7 +102,7 @@ def _test_dtrXm(A, U, L, B, alpha, blasfn):
     D = blasfn(1, 0, 1, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: L*B
-    Dgold = alpha*np.dot(L,B) 
+    Dgold = alpha*np.dot(L,B)
     D = blasfn(0, 1, 0, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: B*L
@@ -111,7 +110,7 @@ def _test_dtrXm(A, U, L, B, alpha, blasfn):
     D = blasfn(1, 1, 0, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: L'*B
-    Dgold = alpha*np.dot(L.T,B) 
+    Dgold = alpha*np.dot(L.T,B)
     D = blasfn(0, 1, 1, 0, alpha, A, B)
     assert_almost_equal(Dgold, D)
     # Test: B*L'
@@ -134,8 +133,8 @@ def test_dtrsm():
     B = np.random.rand(n1,n1)
     alpha = np.double(np.random.rand(1))
     _test_dtrXm(A, U, L, B, alpha, blas_dtrsm)
-    
-def test_dsyrk(): 
+
+def test_dsyrk():
     A = np.random.rand(n1,n1)
     C = np.random.rand(n1,n1)
     alpha = np.double(np.random.rand(1))
@@ -157,7 +156,7 @@ def test_dsyrk():
     assert_almost_equal(Ugold, U)
     assert_almost_equal(Lgold, L)
 
-def test_dsyr2k(): 
+def test_dsyr2k():
     A = np.random.rand(n1,n1)
     B = np.random.rand(n1,n1)
     C = np.random.rand(n1,n1)
@@ -184,4 +183,3 @@ def test_dsyr2k():
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])
-

@@ -1,19 +1,16 @@
 """ Testing brain segmentation module
 """
-from __future__ import absolute_import
 
 from numbers import Number
 
 import numpy as np
-
-from nose.tools import assert_equal, assert_almost_equal
+from nose.tools import assert_almost_equal, assert_equal
 from numpy.testing import assert_array_almost_equal
-
-from ..segmentation import Segmentation
-from ..brain_segmentation import BrainT1Segmentation
 
 from ....io.files import load as load_image
 from ....testing import anatfile
+from ..brain_segmentation import BrainT1Segmentation
+from ..segmentation import Segmentation
 
 anat_img = load_image(anatfile)
 anat_mask = anat_img.get_fdata() > 0

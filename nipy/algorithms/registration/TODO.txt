@@ -1,28 +1,28 @@
-* 'permuted' svd in affine.py 
-* rename rotation, scaling, shearing appropriately 
+* 'permuted' svd in affine.py
+* rename rotation, scaling, shearing appropriately
 * spline transform object
 * log-euclidean transform object ???
 * Levenberg-Marquardt
-* Affine transform creation 
+* Affine transform creation
 
 --------------------------------------------
 
-Transform objects 
+Transform objects
 
-Transform 
+Transform
 |
---> Affine 
+--> Affine
     |
     --> Rigid, Similarity, ...
 |
---> GridTransform 
+--> GridTransform
     |
     --> SplineTransform
 
 |
 --> PolyAffine
     |
-    --> PolyRigid, PolySimilarity, ... 
+    --> PolyRigid, PolySimilarity, ...
 
 
 ChainTransform
@@ -34,4 +34,3 @@ Internally, it may create a ChainTransform object to represent
 voxel-to-voxel transforms or other kinds of compositions. The
 transform supplied by the user should be optimizable (have a `param`
 attribute).
-

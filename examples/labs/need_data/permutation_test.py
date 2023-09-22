@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 """ Example of onesample permutation test
 
 Needs *example data* package
@@ -10,7 +9,6 @@ Needs *example data* package
 import numpy as np
 
 from nipy.labs.group.permutation_test import permutation_test_onesample
-
 from nipy.utils import example_data
 
 # Get group data

@@ -30,7 +30,7 @@ and ``g2``, each defined by the timing of the gamma function peaks
    raw_hrf = g1(pk1, width1) - a2 * g2(pk2, width2)
 
 where ``a2`` is the scale factor for the ``g2`` gamma function.  The
-actual hrf is the raw hrf set to have an integral of 1. 
+actual hrf is the raw hrf set to have an integral of 1.
 
 fmristat used ``pk1, width1, pk2, width2, a2 = (5.4 5.2 10.8 7.35
 0.35)``.  These are parameters to match Glover's 1 second duration
@@ -51,19 +51,16 @@ True
 >>> np.allclose((n2-1, t2), (12.0, 0.9), rtol=0.02)
 True
 """
-from __future__ import division
-from __future__ import absolute_import
 
 from functools import partial
 
 import numpy as np
-import sympy
-
 import scipy.stats as sps
-
+import sympy
 from sympy.utilities.lambdify import implemented_function
 
-from .utils import lambdify_t, T
+from .utils import T, lambdify_t
+
 
 def gamma_params(peak_location, peak_fwhm):
     """ Parameters for gamma density given peak and width

@@ -10,21 +10,18 @@ Examples
 --------
 See documentation for load and save functions for worked examples.
 """
-from __future__ import absolute_import
 
 import os
 
+import nibabel as nib
+import numpy as np
+from nibabel.spatialimages import HeaderDataError
 from six import string_types
 
-import numpy as np
-
-import nibabel as nib
-from nibabel.spatialimages import HeaderDataError
-
 from ..core.image.image import is_image
+from .nibcompat import get_affine, get_dataobj, get_header
+from .nifti_ref import nifti2nipy, nipy2nifti
 
-from .nifti_ref import (nipy2nifti, nifti2nipy)
-from .nibcompat import get_dataobj, get_affine, get_header
 
 def load(filename):
     """Load an image from the given filename.

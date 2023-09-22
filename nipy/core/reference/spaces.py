@@ -1,23 +1,18 @@
 """ Useful neuroimaging coordinate map makers and utilities """
-from __future__ import print_function
-from __future__ import absolute_import
-
-from six import string_types
 
 import numpy as np
-
 from nibabel.affines import from_matvec
-
-from ...fixes.nibabel import io_orientation
-
-from .coordinate_system import CoordSysMaker, is_coordsys, is_coordsys_maker
-from .coordinate_map import CoordMapMaker
+from six import string_types
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
 
+from ...fixes.nibabel import io_orientation
+from .coordinate_map import CoordMapMaker
+from .coordinate_system import CoordSysMaker, is_coordsys, is_coordsys_maker
 
-class XYZSpace(object):
+
+class XYZSpace:
     """ Class contains logic for spaces with XYZ coordinate systems
 
     >>> sp = XYZSpace('hijo')
@@ -299,8 +294,7 @@ def get_world_cs(world_id, ndim=3, extras='tuvw', spaces=None):
     if isinstance(world_id, string_types):
         space_names = [s.name for s in spaces]
         if world_id not in space_names:
-            raise SpaceError('Unkown space "%s"; known spaces are %s'
-                                    % (world_id, ', '.join(space_names)))
+            raise SpaceError('Unkown space "{}"; known spaces are {}'.format(world_id, ', '.join(space_names)))
         world_id = spaces[space_names.index(world_id)]
     if is_xyz_space(world_id):
         world_id = world_id.to_coordsys_maker(extras)
@@ -391,7 +385,7 @@ def xyz_affine(coordmap, name2xyz=None):
         raise AxesError('First 3 output axes must be X, Y, Z')
     # Check equivalent input axes
     ornt = io_orientation(affine)
-    if set(ornt[:3, 0]) != set((0, 1, 2)):
+    if set(ornt[:3, 0]) != {0, 1, 2}:
         raise AxesError('First 3 input axes must correspond to X, Y, Z')
     # Check that dropped dimensions don't provide xyz coordinate info
     extra_cols = affine[:3,3:-1]

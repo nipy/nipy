@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 """
 Script that performs a first-level analysis of the FIAC dataset.
 
@@ -14,7 +13,7 @@ Also needs matplotlib
 Author: Alexis Roche, Bertrand Thirion, 2009--2012
 """
 
-from os import mkdir, getcwd, path
+from os import getcwd, mkdir, path
 
 import numpy as np
 
@@ -25,9 +24,9 @@ except ImportError:
 
 from nibabel import save
 
+from nipy.labs.viz import cm, plot_map
 from nipy.modalities.fmri.glm import FMRILinearModel
 from nipy.utils import example_data
-from nipy.labs.viz import plot_map, cm
 
 # -----------------------------------------------------------
 # --------- Get the data -----------------------------------

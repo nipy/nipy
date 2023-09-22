@@ -3,14 +3,12 @@
 """
 Test functions for models.GLM
 """
-from __future__ import absolute_import
 
 import numpy as np
+from nose.tools import assert_equal, assert_false, assert_true
 
 from .. import family
 from ..glm import Model as GLM
-
-from nose.tools import assert_equal, assert_true, assert_false
 
 VARS = {}
 

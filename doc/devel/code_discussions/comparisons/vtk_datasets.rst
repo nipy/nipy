@@ -44,7 +44,7 @@ An *id* is an index into a given vector
 We introduce *id* to explain the code below.  An id is simply an index
 into a vector, and is therefore an integer.  Of course the id identifies
 the element in the vector; as long as you know which vector the id
-refers to, you can identify the element. 
+refers to, you can identify the element.
 
 .. doctest::
     :skipif: vtk is None

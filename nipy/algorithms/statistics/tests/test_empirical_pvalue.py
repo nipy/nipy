@@ -3,15 +3,20 @@
 """
 Test the empirical null estimator.
 """
-from __future__ import absolute_import
 import warnings
+
 import numpy as np
 from nose.tools import assert_true
 
-
 from ..empirical_pvalue import (
-    NormalEmpiricalNull, smoothed_histogram_from_samples, fdr, fdr_threshold, 
-    gaussian_fdr_threshold, gaussian_fdr)
+    NormalEmpiricalNull,
+    fdr,
+    fdr_threshold,
+    gaussian_fdr,
+    gaussian_fdr_threshold,
+    smoothed_histogram_from_samples,
+)
+
 
 def setup():
     # Suppress warnings during tests to reduce noise
@@ -72,7 +77,7 @@ def test_gaussian_fdr_threshold():
     x = np.random.randn(100) * 2
     ac = gaussian_fdr_threshold(x)
     assert_true(ac > 2.0)
-    assert_true(ac < 4.0) 
+    assert_true(ac < 4.0)
     assert_true(ac > gaussian_fdr_threshold(x, alpha=.1))
 
 if __name__ == "__main__":

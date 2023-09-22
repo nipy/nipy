@@ -77,8 +77,8 @@ Refactorings
 
 * In image._open(url, ...), should we test if the "url" is a PyNiftiIO
   object already? This was in the tests from 'old code' and passed::
-  
-    new = Image(self.img._data, self.img.grid) 
+
+    new = Image(self.img._data, self.img.grid)
 
   img._data is a PyNIftiIO object.  It works, but we should verify
   it's harmless otherwise prevent it from happening.

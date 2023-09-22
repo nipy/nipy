@@ -1,11 +1,11 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 __docformat__ = 'restructuredtext'
 
 import numpy as np
 
-class VarianceFunction(object):
+
+class VarianceFunction:
     """
     Variance function that relates the variance of a random variable
     to its mean. Defaults to 1.
@@ -26,7 +26,7 @@ class VarianceFunction(object):
 
 constant = VarianceFunction()
 
-class Power(object):
+class Power:
     """
     Power variance function:
 
@@ -53,7 +53,7 @@ class Power(object):
         """
         return np.power(np.fabs(mu), self.power)
 
-class Binomial(object):
+class Binomial:
     """
     Binomial variance function
 

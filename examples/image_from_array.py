@@ -6,7 +6,7 @@
 
 import numpy as np
 
-from nipy import save_image, load_image
+from nipy import load_image, save_image
 from nipy.core.api import Image, vox2scanner
 
 # This gets the filename for a tiny example file

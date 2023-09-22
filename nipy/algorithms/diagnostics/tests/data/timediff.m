@@ -5,20 +5,20 @@ function [imdiff, g, slicediff] = timediff(imgs, flags)
 % imgs   - string or cell or spm_vol list of images
 % flags  - specify options; if contains:
 %           m - create mean var image (vmean*), max slice var image
-%               (vsmax*) and scan to scan variance image (vscmean*) 
+%               (vsmax*) and scan to scan variance image (vscmean*)
 %           v - create variance image for between each time point
 %
 % imdiff - mean variance between each image in time series
 % g      - mean voxel signal intensity for each image
-% slicediff - slice by slice variance between each image 
+% slicediff - slice by slice variance between each image
 %
 % Matthew Brett 17/7/00
-  
+
 [imdiff, g, slicediff] = deal([]);
 if nargin < 1
   imgs = [];
 end
-if isempty(imgs)  
+if isempty(imgs)
   imgs = cbu_get_imgs(Inf, 'Select time series images');
 end
 if isempty(imgs), return, end
@@ -47,8 +47,8 @@ if any(flags == 'v') % create variance images
     vVr(i) = makevol(Vr(i),'v',16); % float
   end
 end
-if any(flags == 'm') % mean /max variance 
-  mVr = makevol(V1,'vmean',16); 
+if any(flags == 'm') % mean /max variance
+  mVr = makevol(V1,'vmean',16);
   sVr = makevol(V1,'vscmean',16);
   xVr = makevol(V1,'vsmax',16);
 end
@@ -59,7 +59,7 @@ p1 = spm_read_vols(V1);
 slicediff = zeros(ndimgs,zno);
 g = zeros(ndimgs,1);
 for z = 1:zno % across slices
-  M = spm_matrix([0 0 z]); 
+  M = spm_matrix([0 0 z]);
   pr = p1(:,:,z); % this slice from first volume
   if any(flags == 'm')
     [mv sx2 sx mxvs]  = deal(zeros(size(pr)));
@@ -95,7 +95,7 @@ for z = 1:zno % across slices
     xVr = spm_write_plane(xVr,mxvs,z); % write maximum SVD
     mVr = spm_write_plane(mVr,(sx2-((sx.^2)/ndimgs))./(ndimgs-1),z);
     % (above) this is the one-pass simple variance formula
-  end      
+  end
 end
 if any(findstr(spm('ver'), '99'))
    spm_close_vol([vVr sVr xVr mVr]);

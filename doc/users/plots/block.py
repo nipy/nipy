@@ -7,8 +7,8 @@ at times [0,4,8,12,16] and Objects presented at [2,6,10,14,18].
 There are two values for Y: one for 'Face' and one for 'Object'
 """
 
-import pylab
 import numpy as np
+import pylab
 
 for t in [0,4,8,12,16]:
     pylab.plot([t,t+0.5], [1,1], c='r', label='Face', linewidth=3)
@@ -22,4 +22,3 @@ a.set_yticks([0,1])
 a.set_yticklabels(['Object', 'Face'])
 a.set_xlim([-0.5,10])
 a.set_xlabel('Time')
-

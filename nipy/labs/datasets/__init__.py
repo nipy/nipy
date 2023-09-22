@@ -3,18 +3,17 @@
 """
 Package containing core nipy classes.
 """
-from __future__ import absolute_import
 __docformat__ = 'restructuredtext'
 
-from .volumes.volume_field import VolumeField
-from .volumes.volume_img import VolumeImg
-from .volumes.volume_grid  import VolumeGrid
-from .transforms.transform import Transform, CompositionError
-from .transforms.affine_transform import AffineTransform
-from .transforms.affine_utils import apply_affine
+from nipy.testing import Tester
 
 from .converters import as_volume_img, save
+from .transforms.affine_transform import AffineTransform
+from .transforms.affine_utils import apply_affine
+from .transforms.transform import CompositionError, Transform
+from .volumes.volume_field import VolumeField
+from .volumes.volume_grid import VolumeGrid
+from .volumes.volume_img import VolumeImg
 
-from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench

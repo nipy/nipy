@@ -16,7 +16,7 @@ Description
 The modules in this package contains classes which define the space in which an
 image exists and also functions for manipulating and traversing this space.
 
-The basic class which defines an image space is a CoordinateMap (coordinate_map.py). A 
+The basic class which defines an image space is a CoordinateMap (coordinate_map.py). A
 CoordinateMap consists of an input CoordinateSystem (coordinate_system.py), an
 output CoordinateSystem, and a mapping which converts points in the
 input space to points in the output space.
@@ -25,7 +25,7 @@ A ``CoordinateSystem`` consists of a set of ordered ``Coordinate`` objects. Each
 Coordinate has a name and a builtin dtype.
 
 The typical use of a ``CoordinateMap`` is to define how voxels in an ``Image``
-(``core.image.__init__.py``) object's raw data map into real space. 
+(``core.image.__init__.py``) object's raw data map into real space.
 
 ``Image`` traversal is in general done in terms of the underlying
 coordinate_map, and a number of iterators are provided to traverse points in
@@ -38,16 +38,14 @@ coordinate_map. In slices.py functions are presented which will return a
 ``CoordinateMap`` representing a single slice through a larger coordinate_map.
 """
 
-from __future__ import absolute_import
 __docformat__ = 'restructuredtext'
 
-from . import coordinate_system
-from . import coordinate_map
-from . import slices
+from . import coordinate_map, coordinate_system, slices
 
-__all__ = ["coordinate_system", "coordinate_map", 
+__all__ = ["coordinate_system", "coordinate_map",
            "slices"]
 
 from nipy.testing import Tester
+
 test = Tester().test
 bench = Tester().bench

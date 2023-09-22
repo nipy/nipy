@@ -1,36 +1,42 @@
-from __future__ import absolute_import
 
 import numpy as np
+from nose.tools import assert_false, assert_raises, assert_true
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from ..affine import (Affine, Affine2D, Rigid, Rigid2D,
-                      Similarity, Similarity2D,
-                      rotation_mat2vec, subgrid_affine, slices2aff)
-
-from nose.tools import assert_true, assert_false, assert_raises
-from numpy.testing import assert_array_equal, assert_array_almost_equal
 from ....testing import assert_almost_equal
+from ..affine import (
+    Affine,
+    Affine2D,
+    Rigid,
+    Rigid2D,
+    Similarity,
+    Similarity2D,
+    rotation_mat2vec,
+    slices2aff,
+    subgrid_affine,
+)
 
 
-def random_vec12(subtype='affine'): 
+def random_vec12(subtype='affine'):
     v = np.array([0,0,0,0.0,0,0,1,1,1,0,0,0])
     v[0:3] = 20*np.random.rand(3)
     v[3:6] = np.random.rand(3)
-    if subtype == 'similarity': 
+    if subtype == 'similarity':
         v[6:9] = np.random.rand()
-    elif subtype == 'affine': 
+    elif subtype == 'affine':
         v[6:9] = np.random.rand(3)
         v[9:12] = np.random.rand(3)
     return v
 
 
 """
-def test_rigid_compose(): 
+def test_rigid_compose():
     T1 = Affine(random_vec12('rigid'))
     T2 = Affine(random_vec12('rigid'))
     T = T1*T2
     assert_almost_equal(T.as_affine(), np.dot(T1.as_affine(), T2.as_affine()))
 
-def test_compose(): 
+def test_compose():
     T1 = Affine(random_vec12('affine'))
     T2 = Affine(random_vec12('similarity'))
     T = T1*T2
@@ -38,7 +44,7 @@ def test_compose():
 """
 
 
-def test_mat2vec(): 
+def test_mat2vec():
     mat = np.eye(4)
     tmp = np.random.rand(3,3)
     U, s, Vt = np.linalg.svd(tmp)
@@ -49,7 +55,7 @@ def test_mat2vec():
     assert_almost_equal(T.as_affine(), mat)
 
 
-def test_rotation_mat2vec(): 
+def test_rotation_mat2vec():
     r = rotation_mat2vec(np.diag([-1,1,-1]))
     assert_false(np.isnan(r).max())
 
@@ -107,13 +113,13 @@ def test_affine_types():
         assert_array_equal(obj.param, np.zeros((n_params,)))
 
 
-def test_indirect_affines(): 
+def test_indirect_affines():
     T = np.eye(4)
     A = np.random.rand(3,3)
-    if np.linalg.det(A) > 0: 
+    if np.linalg.det(A) > 0:
         A = -A
     T[:3,:3] = A
-    obj = Affine(T) 
+    obj = Affine(T)
     assert_false(obj.is_direct)
     assert_array_almost_equal(T, obj.as_affine())
 

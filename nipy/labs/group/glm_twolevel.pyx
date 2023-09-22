@@ -10,7 +10,7 @@ __version__ = '0.1'
 # Includes
 from fff cimport *
 
-# Exports from fff_glm_twolevel.h 
+# Exports from fff_glm_twolevel.h
 cdef extern from "fff_glm_twolevel.h":
 
     ctypedef struct fff_glm_twolevel_EM:
@@ -24,13 +24,13 @@ cdef extern from "fff_glm_twolevel.h":
     void fff_glm_twolevel_EM_init(fff_glm_twolevel_EM* em)
     void fff_glm_twolevel_EM_run(fff_glm_twolevel_EM* em,
                                  fff_vector* y,
-                                 fff_vector* vy, 
+                                 fff_vector* vy,
                                  fff_matrix* X,
                                  fff_matrix* PpiX,
                                  unsigned int niter)
     double fff_glm_twolevel_log_likelihood(fff_vector* y,
                                            fff_vector* vy,
-                                           fff_matrix* X, 
+                                           fff_matrix* X,
                                            fff_vector* b,
                                            double s2,
                                            fff_vector* tmp)
@@ -51,12 +51,12 @@ def em(ndarray Y, ndarray VY, ndarray X, ndarray C=None, int axis=0, int niter=D
     EM algorithm.
 
     C is the contrast matrix. Conventionally, C is p x q where p
-    is the number of regressors. 
-    
+    is the number of regressors.
+
     OUTPUT: beta, s2
     beta -- array of parameter estimates
     s2 -- array of squared scale parameters.
-    
+
     REFERENCE:
     Keller and Roche, ISBI 2008.
     """
@@ -69,7 +69,7 @@ def em(ndarray Y, ndarray VY, ndarray X, ndarray C=None, int axis=0, int niter=D
     # View on design matrix
     x = fff_matrix_fromPyArray(X)
 
-    # Number of observations / regressors 
+    # Number of observations / regressors
     n = x.size1
     p = x.size2
 
@@ -93,7 +93,7 @@ def em(ndarray Y, ndarray VY, ndarray X, ndarray C=None, int axis=0, int niter=D
     # Local structs
     em = fff_glm_twolevel_EM_new(n, p)
 
-    # Create a new array iterator 
+    # Create a new array iterator
     multi = fffpy_multi_iterator_new(4, axis, <void*>Y, <void*>VY,
                      <void*>B, <void*>S2)
 
@@ -103,14 +103,14 @@ def em(ndarray Y, ndarray VY, ndarray X, ndarray C=None, int axis=0, int niter=D
     b = multi.vector[2]
     s2 = multi.vector[3]
 
-        # Loop 
+        # Loop
     while(multi.index < multi.size):
         fff_glm_twolevel_EM_init(em)
         fff_glm_twolevel_EM_run(em, y, vy, x, ppx, niter)
         fff_vector_memcpy(b, em.b)
         s2.data[0] = em.s2
         fffpy_multi_iterator_update(multi)
-    
+
     # Free memory
     fff_matrix_delete(x)
     fff_matrix_delete(ppx)
@@ -134,7 +134,7 @@ def log_likelihood(Y, VY, X, B, S2, int axis=0):
     cdef fff_vector *y, *vy, *b, *s2, *ll, *tmp
     cdef fff_matrix *x
     cdef fffpy_multi_iterator* multi
-    
+
     # Allocate output array
     dims = [Y.shape[i] for i in range(Y.ndim)]
     dims[axis] = 1
@@ -146,7 +146,7 @@ def log_likelihood(Y, VY, X, B, S2, int axis=0):
     # Local structure
     tmp = fff_vector_new(x.size1)
 
-    # Multi iterator 
+    # Multi iterator
     multi = fffpy_multi_iterator_new(5, axis, <void*>Y, <void*>VY,
                      <void*>B, <void*>S2, <void*>LL)
 
@@ -157,7 +157,7 @@ def log_likelihood(Y, VY, X, B, S2, int axis=0):
     s2 = multi.vector[3]
     ll = multi.vector[4]
 
-    # Loop 
+    # Loop
     while(multi.index < multi.size):
         ll.data[0] = fff_glm_twolevel_log_likelihood(y, vy, x, b, s2.data[0], tmp)
         fffpy_multi_iterator_update(multi)
@@ -183,7 +183,7 @@ def log_likelihood_ratio(Y, VY, X, C, int axis=0, int niter=DEF_NITER):
     # Unconstrained log-likelihood
     B, S2 = em(Y, VY, X, None, axis, niter)
     ll = log_likelihood(Y, VY, X, B, S2, axis)
-    
+
     # -2 log R = 2*(ll-ll0)
     lda = 2*(ll-ll0)
     return np.maximum(lda, 0.0)

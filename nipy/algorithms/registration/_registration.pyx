@@ -1,9 +1,9 @@
-# -*- Mode: Python -*-  
+# -*- Mode: Python -*-
 
 """
 Bindings for various image registration routines written in C: joint
 histogram computation, cubic spline interpolation, non-rigid
-transformations. 
+transformations.
 """
 
 __version__ = '0.3'
@@ -14,32 +14,32 @@ cdef extern from "_registration.h":
 
 
 # Includes
-from numpy cimport (import_array, ndarray, flatiter, broadcast, 
-                    PyArray_MultiIterNew, PyArray_MultiIter_DATA, 
+from numpy cimport (import_array, ndarray, flatiter, broadcast,
+                    PyArray_MultiIterNew, PyArray_MultiIter_DATA,
                     PyArray_MultiIter_NEXT)
 
 
 cdef extern from "joint_histogram.h":
-    int joint_histogram(ndarray H, unsigned int clampI, unsigned int clampJ,  
-                        flatiter iterI, ndarray imJ_padded, 
+    int joint_histogram(ndarray H, unsigned int clampI, unsigned int clampJ,
+                        flatiter iterI, ndarray imJ_padded,
                         ndarray Tvox, int interp)
     int L1_moments(double* n, double* median, double* dev, ndarray H)
 
 cdef extern from "cubic_spline.h":
     void cubic_spline_transform(ndarray res, ndarray src)
-    double cubic_spline_sample1d(double x, ndarray coef, 
-                                 int mode) 
-    double cubic_spline_sample2d(double x, double y, ndarray coef, 
-                                 int mode_x, int mode_y) 
+    double cubic_spline_sample1d(double x, ndarray coef,
+                                 int mode)
+    double cubic_spline_sample2d(double x, double y, ndarray coef,
+                                 int mode_x, int mode_y)
     double cubic_spline_sample3d(double x, double y, double z, ndarray coef,
-                                 int mode_x, int mode_y, int mode_z) 
-    double cubic_spline_sample4d(double x, double y, double z, double t, ndarray coef, 
+                                 int mode_x, int mode_y, int mode_z)
+    double cubic_spline_sample4d(double x, double y, double z, double t, ndarray coef,
                                  int mode_x, int mode_y, int mode_z, int mode_t)
-    void cubic_spline_resample3d(ndarray im_resampled, ndarray im, 
-                                 double* Tvox, 
+    void cubic_spline_resample3d(ndarray im_resampled, ndarray im,
+                                 double* Tvox,
                                  int mode_x, int mode_y, int mode_z)
 
-cdef extern from "polyaffine.h": 
+cdef extern from "polyaffine.h":
     void apply_polyaffine(ndarray XYZ, ndarray Centers, ndarray Affines, ndarray Sigma)
 
 
@@ -53,7 +53,7 @@ modes = {'zero': 0, 'nearest': 1, 'reflect': 2}
 
 def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, long interp):
     """
-    Compute the joint histogram given a transformation trial. 
+    Compute the joint histogram given a transformation trial.
     """
     cdef:
         double *h
@@ -64,14 +64,14 @@ def _joint_histogram(ndarray H, flatiter iterI, ndarray imJ, ndarray Tvox, long 
 
     # Views
     clampI = <unsigned int>H.shape[0]
-    clampJ = <unsigned int>H.shape[1]    
+    clampJ = <unsigned int>H.shape[1]
 
-    # Compute joint histogram 
+    # Compute joint histogram
     ret = joint_histogram(H, clampI, clampJ, iterI, imJ, Tvox, interp)
     if not ret == 0:
         raise RuntimeError('Joint histogram failed because of incorrect input arrays.')
 
-    return 
+    return
 
 
 def _L1_moments(ndarray H):
@@ -102,11 +102,11 @@ cdef ndarray _reshaped_double(object in_arr, ndarray sh_arr):
     return np.reshape(in_arr, shape).astype(np.double)
 
 def _cspline_sample1d(ndarray R, ndarray C, X=0, mode='zero'):
-    cdef: 
+    cdef:
         double *r
         double *x
         broadcast multi
-    Xa = _reshaped_double(X, R) 
+    Xa = _reshaped_double(X, R)
     multi = PyArray_MultiIterNew(2, <void*>R, <void*>Xa)
     while(multi.index < multi.size):
         r = <double*>PyArray_MultiIter_DATA(multi, 0)
@@ -115,7 +115,7 @@ def _cspline_sample1d(ndarray R, ndarray C, X=0, mode='zero'):
         PyArray_MultiIter_NEXT(multi)
     return R
 
-def _cspline_sample2d(ndarray R, ndarray C, X=0, Y=0, 
+def _cspline_sample2d(ndarray R, ndarray C, X=0, Y=0,
                       mx='zero', my='zero'):
     cdef:
         double *r
@@ -133,7 +133,7 @@ def _cspline_sample2d(ndarray R, ndarray C, X=0, Y=0,
         PyArray_MultiIter_NEXT(multi)
     return R
 
-def _cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0, 
+def _cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0,
                       mx='zero', my='zero', mz='zero'):
     cdef:
         double *r
@@ -155,10 +155,10 @@ def _cspline_sample3d(ndarray R, ndarray C, X=0, Y=0, Z=0,
     return R
 
 
-def _cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0, 
+def _cspline_sample4d(ndarray R, ndarray C, X=0, Y=0, Z=0, T=0,
                       mx='zero', my='zero', mz='zero', mt='zero'):
     """
-    In-place cubic spline sampling. R.dtype must be 'double'. 
+    In-place cubic spline sampling. R.dtype must be 'double'.
     """
     cdef:
         double *r
@@ -206,26 +206,26 @@ def _cspline_resample3d(ndarray im_resampled, ndarray im, dims, ndarray Tvox,
     Tvox = np.asarray(Tvox, dtype='double', order='C')
     tvox = <double*>Tvox.data
 
-    # Actual resampling 
+    # Actual resampling
     cubic_spline_resample3d(im_resampled, im, tvox,
                             modes[mx], modes[my], modes[mz])
 
     return im_resampled
 
 
-def check_array(ndarray x, int dim, int exp_dim, xname): 
+def check_array(ndarray x, int dim, int exp_dim, xname):
     if not x.flags['C_CONTIGUOUS'] or not x.dtype=='double':
         raise ValueError('%s array should be double C-contiguous' % xname)
-    if not dim == exp_dim: 
+    if not dim == exp_dim:
         raise ValueError('%s has size %d in last dimension, %d expected' % (xname, dim, exp_dim))
 
-def _apply_polyaffine(ndarray xyz, ndarray centers, ndarray affines, ndarray sigma): 
+def _apply_polyaffine(ndarray xyz, ndarray centers, ndarray affines, ndarray sigma):
 
-    check_array(xyz, xyz.shape[1], 3, 'xyz') 
+    check_array(xyz, xyz.shape[1], 3, 'xyz')
     check_array(centers, centers.shape[1], 3, 'centers')
     check_array(affines, affines.shape[1], 12, 'affines')
     check_array(sigma, sigma.size, 3, 'sigma')
-    if not centers.shape[0] == affines.shape[0]: 
+    if not centers.shape[0] == affines.shape[0]:
         raise ValueError('centers and affines arrays should have same shape[0]')
 
-    apply_polyaffine(xyz, centers, affines, sigma) 
+    apply_polyaffine(xyz, centers, affines, sigma)

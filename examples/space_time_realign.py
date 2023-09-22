@@ -17,13 +17,15 @@ Two images will be created in the working directory for the realigned series::
 
 Author: Alexis Roche, 2009.
 """
-from __future__ import print_function  # Python 2/3 compatibility
 
 import os
-from os.path import split as psplit, abspath
+from os.path import abspath
+from os.path import split as psplit
+
 import numpy as np
-from nipy.algorithms.registration import SpaceTimeRealign
+
 from nipy import load_image, save_image
+from nipy.algorithms.registration import SpaceTimeRealign
 from nipy.utils import example_data
 
 # Input images are provided with the nipy-data package

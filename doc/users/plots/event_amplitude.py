@@ -3,8 +3,8 @@
 import numpy as np
 import pylab
 
-from nipy.modalities.fmri.utils import events, Symbol, lambdify_t
 from nipy.modalities.fmri.hrf import glover
+from nipy.modalities.fmri.utils import Symbol, events, lambdify_t
 
 # Symbol for amplitude
 a = Symbol('a')

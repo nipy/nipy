@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 
 import sys
 
@@ -31,10 +30,9 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nipy.labs.viz import plot_map, cm
+from nipy.labs.viz import cm, plot_map
 from nipy.modalities.fmri.glm import FMRILinearModel
 from nipy.utils import example_data
-
 
 # Optional argument - default value 1, 0, 0, 0
 nargs = len(sys.argv)

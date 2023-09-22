@@ -3,22 +3,22 @@
 """
 Test the glm utilities.
 """
-from __future__ import absolute_import
 
 import numpy as np
-
-from nibabel import load, Nifti1Image, save
-
-from ..glm import GeneralLinearModel, data_scaling, FMRILinearModel
-from nipy.io.nibcompat import get_affine
-
-from nose.tools import assert_true, assert_equal, assert_raises
-from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
-                           assert_array_equal)
+from nibabel import Nifti1Image, load, save
 from nibabel.tmpdirs import InTemporaryDirectory
+from nose.tools import assert_equal, assert_raises, assert_true
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 
+from nipy.io.nibcompat import get_affine
 from nipy.testing import funcfile
 from nipy.testing.decorators import if_example_data
+
+from ..glm import FMRILinearModel, GeneralLinearModel, data_scaling
 
 
 def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
@@ -30,9 +30,9 @@ def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
         save(Nifti1Image(data, affine), fmri_files[-1])
         design_files.append('dmtx_%d.npz' %i)
         np.savez(design_files[-1], np.random.randn(shape[3], rk))
-    save(Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8), 
+    save(Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
                      affine), mask_file)
-    return mask_file, fmri_files, design_files 
+    return mask_file, fmri_files, design_files
 
 
 def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
@@ -148,7 +148,7 @@ def test_glm_ols():
 
 def test_glm_beta():
     mulm, n, p, q = ols_glm()
-    assert_equal(mulm.get_beta().shape, (q, n)) 
+    assert_equal(mulm.get_beta().shape, (q, n))
     assert_equal(mulm.get_beta([0, -1]).shape, (2, n))
     assert_equal(mulm.get_beta(6).shape, (1, n))
 
@@ -156,13 +156,13 @@ def test_glm_beta():
 def test_glm_mse():
     mulm, n, p, q = ols_glm()
     mse = mulm.get_mse()
-    assert_array_almost_equal(mse, np.ones(n), 0) 
+    assert_array_almost_equal(mse, np.ones(n), 0)
 
 
 def test_glm_logL():
     mulm, n, p, q = ols_glm()
     logL = mulm.get_logL()
-    assert_array_almost_equal(logL / n, - p * 1.41 * np.ones(n) / n, 0) 
+    assert_array_almost_equal(logL / n, - p * 1.41 * np.ones(n) / n, 0)
 
 
 def test_glm_ar():
@@ -170,7 +170,7 @@ def test_glm_ar():
     assert_equal(len(mulm.labels_), n)
     assert_true(len(mulm.results_) > 1)
     tmp = sum([mulm.results_[key].theta.shape[1]
-               for key in mulm.results_.keys()])
+               for key in mulm.results_])
     assert_equal(tmp, n)
 
 

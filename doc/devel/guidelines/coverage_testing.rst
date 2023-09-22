@@ -21,7 +21,7 @@ Run nose with coverage testing arguments::
    nosetests -sv --with-coverage path_to_code
 
 For example, this command::
-    
+
     nosetests -sv --with-coverage test_coordinate_map.py
 
 will report the following::
@@ -29,14 +29,14 @@ will report the following::
  Name                                            Stmts   Exec  Cover   Missing
  -----------------------------------------------------------------------------
  nipy                                       21     14    66%   70-74, 88-89
- nipy.core                                   4      4   100%   
- nipy.core.reference                         8      8   100%   
+ nipy.core                                   4      4   100%
+ nipy.core.reference                         8      8   100%
  nipy.core.reference.array_coords          100     90    90%   133-134, 148-151, 220, 222, 235, 242
  nipy.core.reference.coordinate_map        188    187    99%   738
- nipy.core.reference.coordinate_system      61     61   100%   
- nipy.core.reference.slices                 34     34   100%   
- nipy.core.transforms                        0      0   100%   
- nipy.core.transforms.affines               14     14   100%   
+ nipy.core.reference.coordinate_system      61     61   100%
+ nipy.core.reference.slices                 34     34   100%
+ nipy.core.transforms                        0      0   100%
+ nipy.core.transforms.affines               14     14   100%
 
 
 The coverage report will cover any python source module imported after

@@ -10,7 +10,7 @@
 
 #ifndef FFF_SPECFUN
 #define FFF_SPECFUN
- 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,5 +21,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
- 
-#endif  
+
+#endif

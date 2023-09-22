@@ -27,23 +27,23 @@ cdef extern from "fff_twosample_stat.h":
     unsigned int niter
 
   fff_twosample_stat* fff_twosample_stat_new(unsigned int n1, unsigned int n2, fff_twosample_stat_flag flag)
-  void fff_twosample_stat_delete(fff_twosample_stat* thisone) 
+  void fff_twosample_stat_delete(fff_twosample_stat* thisone)
   double fff_twosample_stat_eval(fff_twosample_stat* thisone, fff_vector* x)
 
   fff_twosample_stat_mfx* fff_twosample_stat_mfx_new(unsigned int n1, unsigned int n2,
                                                      fff_twosample_stat_flag flag)
-  void fff_twosample_stat_mfx_delete(fff_twosample_stat_mfx* thisone) 
-  double fff_twosample_stat_mfx_eval(fff_twosample_stat_mfx* thisone, 
+  void fff_twosample_stat_mfx_delete(fff_twosample_stat_mfx* thisone)
+  double fff_twosample_stat_mfx_eval(fff_twosample_stat_mfx* thisone,
                                      fff_vector* x, fff_vector* vx)
-  
-  unsigned int fff_twosample_permutation(unsigned int* idx1, unsigned int* idx2, 
+
+  unsigned int fff_twosample_permutation(unsigned int* idx1, unsigned int* idx2,
                                          unsigned int n1, unsigned int n2, double* magic)
 
-  void fff_twosample_apply_permutation(fff_vector* px, fff_vector* pv, 
-                                       fff_vector* x1, fff_vector* v1, 
+  void fff_twosample_apply_permutation(fff_vector* px, fff_vector* pv,
+                                       fff_vector* x1, fff_vector* v1,
                                        fff_vector* x2,  fff_vector* v2,
                                        unsigned int i, unsigned int* idx1, unsigned int* idx2)
-   
+
 
 # Initialize numpy
 fffpy_import_array()
@@ -61,12 +61,12 @@ def count_permutations(unsigned int n1, unsigned int n2):
   cdef double  n
   fff_twosample_permutation(NULL, NULL, n1, n2, &n)
   return int(n)
-  
+
 
 def stat(ndarray Y1, ndarray Y2, id='student', int axis=0, ndarray Magics=None):
   """
   T = stat(Y1, Y2, id='student', axis=0, magics=None).
-  
+
   Compute a two-sample test statistic (Y1>Y2) over a number of
   deterministic or random permutations.
   """
@@ -103,29 +103,29 @@ def stat(ndarray Y1, ndarray Y2, id='student', int axis=0, ndarray Magics=None):
   idx2 = fff_array_new1d(FFF_UINT, n2)
   stat = fff_twosample_stat_new(n1, n2, flag_stat)
 
-  # Multi-iterator 
+  # Multi-iterator
   multi = fffpy_multi_iterator_new(3, axis, <void*>Y1, <void*>Y2, <void*>T)
 
   # Vector views
   y1 = multi.vector[0]
   y2 = multi.vector[1]
   t = multi.vector[2]
-  
+
   # Loop
   for simu from 0 <= simu < nsimu:
-    
+
     # Set the magic number
     magic = magics.data[simu*magics.stride]
 
-    # Generate permutation 
+    # Generate permutation
     nex = fff_twosample_permutation(<unsigned int*>idx1.data,
                                     <unsigned int*>idx2.data,
                                     n1, n2, &magic)
-   
+
     # Reset the multi-iterator
     fffpy_multi_iterator_reset(multi)
-    
-    # Perform the loop 
+
+    # Perform the loop
     idx = simu*t.stride
     while(multi.index < multi.size):
       fff_twosample_apply_permutation(yp, NULL, y1, NULL, y2, NULL, nex,
@@ -151,7 +151,7 @@ def stat_mfx(ndarray Y1, ndarray V1, ndarray Y2, ndarray V2,
              unsigned int niter=5):
   """
   T = stat(Y1, V1, Y2, V2, id='student', axis=0, magics=None, niter=5).
-  
+
   Compute a two-sample test statistic (Y1>Y2) over a number of
   deterministic or random permutations.
   """
@@ -179,7 +179,7 @@ def stat_mfx(ndarray Y1, ndarray V1, ndarray Y2, ndarray V2,
   # Create output array
   nsimu = magics.size
   dims = [Y1.shape[i] for i in range(Y1.ndim)]
-  dims[axis] = nsimu 
+  dims[axis] = nsimu
   T = np.zeros(dims)
 
   # Create local structure
@@ -190,7 +190,7 @@ def stat_mfx(ndarray Y1, ndarray V1, ndarray Y2, ndarray V2,
   stat = fff_twosample_stat_mfx_new(n1, n2, flag_stat)
   stat.niter = niter
 
-  # Multi-iterator 
+  # Multi-iterator
   multi = fffpy_multi_iterator_new(5, axis,
                                    <void*>Y1, <void*>V1,
                                    <void*>Y2, <void*>V2,
@@ -202,22 +202,22 @@ def stat_mfx(ndarray Y1, ndarray V1, ndarray Y2, ndarray V2,
   y2 = multi.vector[2]
   v2 = multi.vector[3]
   t = multi.vector[4]
-  
+
   # Loop
   for simu from 0 <= simu < nsimu:
-    
+
     # Set the magic number
     magic = magics.data[simu*magics.stride]
 
-    # Generate permutation 
+    # Generate permutation
     nex = fff_twosample_permutation(<unsigned int*>idx1.data,
                                     <unsigned int*>idx2.data,
                                     n1, n2, &magic)
-   
-    # Reset the multi-iterator      
+
+    # Reset the multi-iterator
     fffpy_multi_iterator_reset(multi)
-    
-    # Perform the loop 
+
+    # Perform the loop
     idx = simu*t.stride
     while(multi.index < multi.size):
       fff_twosample_apply_permutation(yp, vp, y1, v1, y2, v2, nex,

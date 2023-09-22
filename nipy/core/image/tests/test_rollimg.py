@@ -29,21 +29,17 @@ it is not ambiguous to say 't' axis. It is slightly ambiguous to say 'x+LR' axis
 if the axisnames are ['slice', 'frequency', 'phase'] but image.rollimg
 identifies 'x+LR' == 'slice' == 0.
 """
-from __future__ import absolute_import
 
 import numpy as np
-
-from ..image import (Image, rollimg, synchronized_order)
-from ...reference.coordinate_map import (AffineTransform as AT, drop_io_dim,
-                                         AxisError)
-from ...reference.coordinate_system import CoordinateSystem as CS
-from ...reference.spaces import mni_csm
-from ...image.image_spaces import xyz_affine
-
-from nose.tools import (assert_raises, assert_equal)
-
+from nose.tools import assert_equal, assert_raises
 from numpy.testing import assert_almost_equal, assert_array_equal
 
+from ...image.image_spaces import xyz_affine
+from ...reference.coordinate_map import AffineTransform as AT
+from ...reference.coordinate_map import AxisError, drop_io_dim
+from ...reference.coordinate_system import CoordinateSystem as CS
+from ...reference.spaces import mni_csm
+from ..image import Image, rollimg, synchronized_order
 
 MNI3 = mni_csm(3)
 MNI4 = mni_csm(4)

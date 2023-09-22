@@ -11,7 +11,6 @@ See ``fiac_example.py``.
 import os
 
 import numpy as np
-
 from IPython import parallel
 
 #-----------------------------------------------------------------------------
@@ -66,7 +65,7 @@ def fitruns():
         import fiac_example
         try:
             return fiac_example.run_model(subj, run)
-        except IOError:
+        except OSError:
             pass
 
     return view.map(_fit, i_s, j_s)
@@ -82,11 +81,11 @@ def fitfixed():
         import fiac_example
         try:
             fiac_example.fixed_effects(subject, "block")
-        except IOError:
+        except OSError:
             pass
         try:
             fiac_example.fixed_effects(subject, "event")
-        except IOError:
+        except OSError:
             pass
 
     return view.map(_fit, subjects)
@@ -120,7 +119,7 @@ def run_permute_test(design, contrast, nsample=1000):
         return min_vals, max_vals
 
     ar = dview.apply_async(_run_test, ns_nod, design, contrast)
-    min_vals, max_vals = zip(*[r for r in ar])
+    min_vals, max_vals = zip(*list(ar))
     return np.concatenate(min_vals), np.concatenate(max_vals)
 
 

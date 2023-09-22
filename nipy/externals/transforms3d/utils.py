@@ -1,5 +1,4 @@
 ''' Utilities for transforms3d '''
-from __future__ import absolute_import
 
 import math
 from itertools import permutations
@@ -74,7 +73,7 @@ def inique(iterable):
     -------
     gen : generator
        generator that yields unique elements from `iterable`
-    
+
     Examples
     --------
     >>> tuple(inique([0, 1, 2, 0, 2, 3]))
@@ -128,5 +127,4 @@ def permuted_with_signs(seq):
     ((1, 2), (1, -2), (-1, 2), (-1, -2), (2, 1), (2, -1), (-2, 1), (-2, -1))
     '''
     for pseq in permutations(seq):
-        for sseq in permuted_signs(pseq):
-            yield sseq
+        yield from permuted_signs(pseq)

@@ -4,12 +4,12 @@
 Use Mayavi to visualize the structure of a VolumeData
 """
 
-from enthought.mayavi import mlab
 import numpy as np
+from enthought.mayavi import mlab
 
 s = np.random.random((5, 5, 5))
 
-# Put the side at 0 
+# Put the side at 0
 
 s[0, ...]  = 0
 s[-1, ...] = 0
@@ -28,6 +28,3 @@ mlab.pipeline.volume(src, vmin=0, vmax=0.9)
 # curves.
 mlab.savefig('volume_field_raw.jpg')
 mlab.show()
-
-
-

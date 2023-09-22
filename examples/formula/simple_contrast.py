@@ -2,12 +2,11 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ A simple contrast for an FMRI HRF model """
-from __future__ import print_function # Python 2/3 compatibility
 
 import numpy as np
 
 from nipy.algorithms.statistics.api import Formula, make_recarray
-from nipy.modalities.fmri import utils, hrf
+from nipy.modalities.fmri import hrf, utils
 from nipy.modalities.fmri.fmristat import hrf as delay
 
 # We take event onsets, and a specified HRF model, and make symbolic functions

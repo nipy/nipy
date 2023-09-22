@@ -3,23 +3,25 @@
 """
 Convenience functions for specifying a design in the GLM
 """
-from __future__ import absolute_import
 
+import itertools
 from functools import reduce
 from operator import mul
-import itertools
 
 import numpy as np
 
-from nipy.algorithms.statistics.utils import combinations
 from nipy.algorithms.statistics.formula import formulae
 from nipy.algorithms.statistics.formula.formulae import (
-    Formula, Factor, Term, make_recarray)
-
-from .utils import (events, blocks, fourier_basis as fourier_basis_sym,
-                    convolve_functions, T)
+    Factor,
+    Formula,
+    Term,
+    make_recarray,
+)
+from nipy.algorithms.statistics.utils import combinations
 
 from .hrf import glover
+from .utils import T, blocks, convolve_functions, events
+from .utils import fourier_basis as fourier_basis_sym
 
 
 def fourier_basis(t, freq):
@@ -274,9 +276,9 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
     e_dtype = e_formula.dtype
 
     # Now construct the design in time space
-    block_times = np.array([(s,e) for s, e in zip(block_spec['start'], 
-                                                  block_spec['end'])])
-    convolution_interval = (block_times.min() - convolution_padding, 
+    block_times = np.array(list(zip(block_spec['start'],
+                                                  block_spec['end'])))
+    convolution_interval = (block_times.min() - convolution_padding,
                             block_times.max() + convolution_padding)
 
     t_terms = []
@@ -284,7 +286,7 @@ def block_design(block_spec, t, order=2, hrfs=(glover,),
     for l, h in enumerate(hrfs):
         for n in e_dtype.names:
             B = blocks(block_times, amplitudes=e_X[n])
-            term = convolve_functions(B, h(T), 
+            term = convolve_functions(B, h(T),
                                       convolution_interval,
                                       hrf_interval,
                                       convolution_dt)
@@ -350,7 +352,7 @@ def stack2designs(old_X, new_X, old_contrasts={}, new_contrasts={}):
 
     X = np.hstack([old_X, new_X])
 
-    if set(old_contrasts.keys()).intersection(new_contrasts.keys()) != set([]):
+    if set(old_contrasts.keys()).intersection(new_contrasts.keys()) != set():
         raise ValueError('old and new contrasts must have different names')
 
     for n, c in old_contrasts.items():
@@ -393,7 +395,7 @@ def stack_contrasts(contrasts, name, keys):
     -------
     None
     """
-    if name in contrasts.keys():
+    if name in contrasts:
         raise ValueError(f'contrast "{name}" already exists')
 
     contrasts[name] = np.vstack([contrasts[k] for k in keys])

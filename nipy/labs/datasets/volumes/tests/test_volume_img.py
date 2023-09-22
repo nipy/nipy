@@ -3,19 +3,18 @@
 """
 Test the VolumeImg object.
 """
-from __future__ import absolute_import
 
 import copy
 
 import nose
 import numpy as np
-
-from ...transforms.affine_utils import from_matrix_vector
-from ...transforms.affine_transform import AffineTransform
-from ...transforms.transform import Transform
-from ..volume_img import VolumeImg, CompositionError
-
 from nose.tools import assert_true
+
+from ...transforms.affine_transform import AffineTransform
+from ...transforms.affine_utils import from_matrix_vector
+from ...transforms.transform import Transform
+from ..volume_img import CompositionError, VolumeImg
+
 
 ################################################################################
 # Helper function
@@ -34,7 +33,7 @@ def rotation(theta, phi):
 
 def id(x, y, z):
     return x, y, z
-    
+
 
 ################################################################################
 # Tests
@@ -72,7 +71,7 @@ def test_downsample():
     rot_im = ref_im.as_volume_img(2*affine, interpolation='nearest')
     downsampled = data[::2, ::2, ::2, ...]
     x, y, z = downsampled.shape[:3]
-    np.testing.assert_almost_equal(downsampled, 
+    np.testing.assert_almost_equal(downsampled,
                                    rot_im.get_fdata()[:x, :y, :z, ...])
 
 
@@ -119,7 +118,7 @@ def test_reordering():
 
     # Check that we cannot swap axes for non spatial axis:
     yield nose.tools.assert_raises, ValueError, ref_im._swapaxes, 4, 5
-    
+
     # Create a non-diagonal affine, and check that we raise a sensible
     # exception
     affine[1, 0] = 0.1
@@ -137,12 +136,12 @@ def test_reordering():
         affine[i, i] *= -1
         img = VolumeImg(data, affine, 'mine')
         orig_img = copy.copy(img)
-        x, y, z = img.get_world_coords() 
+        x, y, z = img.get_world_coords()
         sample = img.values_in_world(x, y, z)
         img2 = img.xyz_ordered()
         # Check that img has not been changed
         yield nose.tools.assert_true, img == orig_img
-        x_, y_, z_ = img.get_world_coords() 
+        x_, y_, z_ = img.get_world_coords()
         yield np.testing.assert_array_equal, np.unique(x), np.unique(x_)
         yield np.testing.assert_array_equal, np.unique(y), np.unique(y_)
         yield np.testing.assert_array_equal, np.unique(z), np.unique(z_)
@@ -202,7 +201,7 @@ def test_resampled_to_img():
                 ref_im.as_volume_img(affine=ref_im.affine).get_fdata()
     yield np.testing.assert_almost_equal, data, \
                         ref_im.resampled_to_img(ref_im).get_fdata()
-    
+
     # Check that we cannot resample to another image in a different
     # world.
     other_im = VolumeImg(data, affine, 'other')
@@ -219,8 +218,8 @@ def test_transformation():
     """ Test transforming images.
     """
     N = 10
-    identity1  = Transform('world1', 'world2', id, id) 
-    identity2  = AffineTransform('world1', 'world2', np.eye(4)) 
+    identity1  = Transform('world1', 'world2', id, id)
+    identity2  = AffineTransform('world1', 'world2', np.eye(4))
     for identity in (identity1, identity2):
         data = np.random.random((N, N, N))
         img1 = VolumeImg(data=data,
@@ -228,7 +227,7 @@ def test_transformation():
                            world_space='world1',
                            )
         img2 = img1.composed_with_transform(identity)
-        
+
         yield nose.tools.assert_equal, img2.world_space, 'world2'
 
         x, y, z = N*np.random.random(size=(3, 10))
@@ -240,7 +239,7 @@ def test_transformation():
 
         yield nose.tools.assert_raises, CompositionError, \
                 img1.resampled_to_img, img2
-        
+
         # Resample an image on itself: it shouldn't change much:
         img  = img1.resampled_to_img(img1)
         yield np.testing.assert_almost_equal, data, img.get_fdata()

@@ -1,14 +1,13 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import absolute_import, print_function
 
 import os
 from distutils import log
 
 try:  # Python 3
-    from configparser import ConfigParser, NoSectionError, NoOptionError
+    from configparser import ConfigParser, NoOptionError, NoSectionError
 except ImportError:  # Python 2
-    from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+    from ConfigParser import ConfigParser, NoOptionError, NoSectionError
 
 # Global variables
 LIBS = os.path.realpath('lib')
@@ -37,7 +36,7 @@ def get_link_external():
     try:
         config.read(SETUP_FILE)
         external_link = config.get(SECTION, KEY)
-    except (IOError, KeyError, NoOptionError, NoSectionError):
+    except (OSError, KeyError, NoOptionError, NoSectionError):
         external_link = os.environ.get(EXTERNAL_LAPACK_VAR)
     if external_link is None:
         return False
@@ -85,9 +84,8 @@ def configuration(parent_package='',top_path=None):
     want_lapack_link = get_link_external()
     if not want_lapack_link:
         log.warn('Building with (slow) Lapack lite distribution: '
-                 'set {0} environment variable or use setup.cfg '
-                 'to enable link to optimized BLAS / LAPACK'.format(
-                        EXTERNAL_LAPACK_VAR)
+                 f'set {EXTERNAL_LAPACK_VAR} environment variable or use setup.cfg '
+                 'to enable link to optimized BLAS / LAPACK'
                  )
         sources.append(os.path.join(LIBS,'lapack_lite','*.c'))
         library_dirs = []

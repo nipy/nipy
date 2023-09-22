@@ -20,20 +20,15 @@ parameters::
     new_transformed_pts = obj.apply(pts)
 
 """
-from __future__ import absolute_import
 
 import numpy as np
 import numpy.linalg as npl
-
 from nibabel.affines import apply_affine
+from nose.tools import assert_equal, assert_raises, assert_true
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from ..chain_transform import ChainTransform
 from ..affine import Affine
-
-from numpy.testing import (assert_array_almost_equal,
-                           assert_array_equal)
-
-from nose.tools import assert_true, assert_equal, assert_raises
+from ..chain_transform import ChainTransform
 
 AFF1 = np.diag([2, 3, 4, 1])
 AFF2 = np.eye(4)
@@ -42,10 +37,10 @@ AFF2[:3,3] = (10, 11, 12)
 AFF3 = np.eye(4)
 AFF3[:3,3] = np.random.normal(size=(3,))
 tmp = np.random.normal(size=(3,3))
-AFF3[:3,:3] = np.sign(npl.det(tmp))*tmp 
+AFF3[:3,:3] = np.sign(npl.det(tmp))*tmp
 POINTS = np.arange(12).reshape(4,3)
 # Make affine objects
-AFF1_OBJ, AFF2_OBJ, AFF3_OBJ = [Affine(a) for a in [AFF1, AFF2.copy(), AFF3]]
+AFF1_OBJ, AFF2_OBJ, AFF3_OBJ = (Affine(a) for a in [AFF1, AFF2.copy(), AFF3])
 
 
 def test_creation():

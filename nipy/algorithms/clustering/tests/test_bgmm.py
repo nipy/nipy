@@ -8,14 +8,13 @@ to be real unit tests
 
 Author : Bertrand Thirion, 2009
 """
-from __future__ import absolute_import
 
 import numpy as np
 import numpy.random as nr
-
-from ..bgmm import BGMM, VBGMM, dirichlet_eval, multinomial, dkl_gaussian 
-
 from nose.tools import assert_true
+
+from ..bgmm import BGMM, VBGMM, dirichlet_eval, dkl_gaussian, multinomial
+
 
 def test_dirichlet_eval():
     # check that the Dirichlet evaluation function sums to one on a simple

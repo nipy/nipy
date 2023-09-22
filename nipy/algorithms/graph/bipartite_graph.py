@@ -9,7 +9,6 @@ labeled [1..V] and [1..W] respectively.
 
 Author: Bertrand Thirion, 2006--2011
 """
-from __future__ import absolute_import
 
 import numpy as np
 
@@ -150,7 +149,7 @@ def cross_knn(X, Y, k=1):
     return bipartite_graph_from_coo_matrix(adj)
 
 
-class BipartiteGraph(object):
+class BipartiteGraph:
     """ Bipartite graph class
 
     A graph for which there are two types of nodes, such that

@@ -11,29 +11,29 @@ To build the docs, run::
 
 This module has to work for python 2 and python 3.
 """
-from __future__ import with_statement
 
 # Standard library imports
-import sys
 import os
-from os.path import join as pjoin, dirname
-import zipfile
-import warnings
 import shutil
+import sys
+import warnings
+import zipfile
 from distutils.cmd import Command
-from distutils.command.clean import clean
 from distutils.command.build_py import build_py
-from distutils.version import LooseVersion
+from distutils.command.clean import clean
 from distutils.dep_util import newer_group
 from distutils.errors import DistutilsError
+from distutils.version import LooseVersion
+from os.path import dirname
+from os.path import join as pjoin
 
 try:
     from ConfigParser import ConfigParser
 except ImportError:  # Python 3
     from configparser import ConfigParser
 
-from numpy.distutils.misc_util import appendpath
 from numpy.distutils import log
+from numpy.distutils.misc_util import appendpath
 
 # Sphinx import
 try:
@@ -47,14 +47,14 @@ else:
 # execfile because execfile is not available in Python 3
 _info_fname = pjoin('nipy', 'info.py')
 INFO_VARS = {}
-exec(open(_info_fname, 'rt').read(), {}, INFO_VARS)
+exec(open(_info_fname).read(), {}, INFO_VARS)
 
 DOC_BUILD_DIR = os.path.join('build', 'html')
 
 CYTHON_MIN_VERSION = INFO_VARS['CYTHON_MIN_VERSION']
 
 ################################################################################
-# Distutils Command class for installing nipy to a temporary location. 
+# Distutils Command class for installing nipy to a temporary location.
 class TempInstall(Command):
     temp_install_dir = os.path.join('build', 'install')
 
@@ -63,15 +63,15 @@ class TempInstall(Command):
         install = self.distribution.get_command_obj('install')
         install.install_scripts = self.temp_install_dir
         install.install_base    = self.temp_install_dir
-        install.install_platlib = self.temp_install_dir 
-        install.install_purelib = self.temp_install_dir 
-        install.install_data    = self.temp_install_dir 
-        install.install_lib     = self.temp_install_dir 
-        install.install_headers = self.temp_install_dir 
+        install.install_platlib = self.temp_install_dir
+        install.install_purelib = self.temp_install_dir
+        install.install_data    = self.temp_install_dir
+        install.install_lib     = self.temp_install_dir
+        install.install_headers = self.temp_install_dir
         install.run()
 
         # Horrible trick to reload nipy with our temporary instal
-        for key in sys.modules.keys():
+        for key in sys.modules:
             if key.startswith('nipy'):
                 sys.modules.pop(key, None)
         sys.path.append(os.path.abspath(self.temp_install_dir))
@@ -87,7 +87,7 @@ class TempInstall(Command):
 
 
 ################################################################################
-# Distutils Command class for API generation 
+# Distutils Command class for API generation
 class APIDocs(TempInstall):
     description = \
     """generate API docs """
@@ -106,8 +106,7 @@ class APIDocs(TempInstall):
             # system call, but overriding the import path.
             toolsdir = os.path.abspath(pjoin('..', 'tools'))
             build_templates = pjoin(toolsdir, 'build_modref_templates.py')
-            cmd = """%s -c 'import sys; sys.path.append("%s"); sys.path.append("%s"); execfile("%s", dict(__name__="__main__"))'""" \
-                % (sys.executable, 
+            cmd = """{} -c 'import sys; sys.path.append("{}"); sys.path.append("{}"); execfile("{}", dict(__name__="__main__"))'""".format(sys.executable,
                    toolsdir,
                    self.temp_install_dir,
                    build_templates)
@@ -170,19 +169,19 @@ if have_sphinx:
             # for it. ZIP_STORED produces an uncompressed zip, but does not
             # require zlib.
             try:
-                zf = zipfile.ZipFile(target_file, 'w', 
+                zf = zipfile.ZipFile(target_file, 'w',
                                             compression=zipfile.ZIP_DEFLATED)
             except RuntimeError:
                 warnings.warn('zlib not installed, storing the docs '
                                 'without compression')
-                zf = zipfile.ZipFile(target_file, 'w', 
-                                            compression=zipfile.ZIP_STORED)    
+                zf = zipfile.ZipFile(target_file, 'w',
+                                            compression=zipfile.ZIP_STORED)
 
             for root, dirs, files in os.walk(DOC_BUILD_DIR):
                 relative = relative_path(root)
                 if not relative.startswith('.doctrees'):
                     for f in files:
-                        zf.write(os.path.join(root, f), 
+                        zf.write(os.path.join(root, f),
                                 os.path.join(relative, 'html_docs', f))
             zf.close()
 
@@ -226,7 +225,7 @@ def generate_a_pyrex_source(self, base, ext_name, source, extension):
         target_dir = appendpath(self.build_src, dirname(base))
     target_file = pjoin(target_dir, ext_name + '.c')
     depends = [source] + extension.depends
-    sources_changed = newer_group(depends, target_file, 'newer') 
+    sources_changed = newer_group(depends, target_file, 'newer')
     if self.force or sources_changed:
         if good_cython:
             # add distribution (package-wide) include directories, in order
@@ -249,13 +248,11 @@ def generate_a_pyrex_source(self, base, ext_name, source, extension):
                                      "%r with Cython"
                                      % (cython_result.num_errors, source))
         elif sources_changed and os.path.isfile(target_file):
-            raise DistutilsError("Cython >=%s required for compiling %r"
-                                 " because sources (%s) have changed" %
-                                 (CYTHON_MIN_VERSION, source, ','.join(depends)))
+            raise DistutilsError("Cython >={} required for compiling {!r}"
+                                 " because sources ({}) have changed".format(CYTHON_MIN_VERSION, source, ','.join(depends)))
         else:
-            raise DistutilsError("Cython >=%s required for compiling %r"
-                                 " but not available" %
-                                 (CYTHON_MIN_VERSION, source))
+            raise DistutilsError("Cython >={} required for compiling {!r}"
+                                 " but not available".format(CYTHON_MIN_VERSION, source))
     return target_file
 
 
@@ -313,7 +310,7 @@ def get_comrec_build(pkg_dir, build_cmd=build_py):
             cfg_parser.read(pjoin(pkg_dir, 'COMMIT_INFO.txt'))
             cfg_parser.set('commit hash', 'install_hash', repo_commit)
             out_pth = pjoin(self.build_lib, pkg_dir, 'COMMIT_INFO.txt')
-            cfg_parser.write(open(out_pth, 'wt'))
+            cfg_parser.write(open(out_pth, "w"))
     return MyBuildPy
 
 

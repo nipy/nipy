@@ -6,21 +6,19 @@ Test the discrete_domain utilities.
 Caveat assumes that the MNI template image is available at
 in ~/.nipy/tests/data
 """
-from __future__ import absolute_import
 
-from os.path import dirname, join as pjoin
+from os.path import dirname
+from os.path import join as pjoin
 
 import numpy as np
+from nibabel import Nifti1Image, load
+from numpy.testing import assert_almost_equal, assert_equal
 
-from nibabel import load, Nifti1Image
-
-from ..mroi import subdomain_from_array, subdomain_from_balls
-from ..hroi import HROI_as_discrete_domain_blobs
-from ..discrete_domain import (domain_from_binary_array,
-                               grid_domain_from_image)
 from nipy.io.nibcompat import get_affine
 
-from numpy.testing import assert_equal, assert_almost_equal
+from ..discrete_domain import domain_from_binary_array, grid_domain_from_image
+from ..hroi import HROI_as_discrete_domain_blobs
+from ..mroi import subdomain_from_array, subdomain_from_balls
 
 shape = (5, 6, 7)
 

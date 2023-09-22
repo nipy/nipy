@@ -1,7 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """Tests for the temporary matlab file module."""
-from __future__ import absolute_import
 
 # Stdlib imports
 import os
@@ -9,6 +8,7 @@ import tempfile
 
 # Our own imports
 from nipy.interfaces.matlab import mlab_tempfile
+
 
 # Functions, classes and other top-level code
 def check_mlab_tempfile(dir):

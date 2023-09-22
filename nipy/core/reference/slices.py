@@ -3,14 +3,12 @@
 """
 A set of methods to get coordinate maps which represent slices in space.
 """
-from __future__ import absolute_import
 import numpy as np
-
 from nibabel.affines import from_matvec
 
-from .coordinate_system import CoordinateSystem
-from .coordinate_map import AffineTransform
 from .array_coords import ArrayCoordMap
+from .coordinate_map import AffineTransform
+from .coordinate_system import CoordinateSystem
 from .spaces import get_world_cs
 
 

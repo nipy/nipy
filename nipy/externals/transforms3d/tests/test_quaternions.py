@@ -1,18 +1,14 @@
 ''' Test quaternion calculations '''
-from __future__ import absolute_import
 
 import math
 
 import numpy as np
-
-from nose.tools import assert_raises, assert_true, assert_false, \
-    assert_equal
-
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from .. import quaternions as tq
-
 from .samples import euler_mats
+
 
 def slow(t):
     t.slow = True
@@ -34,7 +30,7 @@ for w in params:
             for z in params:
                 q = (w, x, y, z)
                 Nq = np.sqrt(np.dot(q, q))
-                if not Nq == 0:
+                if Nq != 0:
                     q = tuple([e / Nq for e in q])
                     unit_quats.add(q)
 
@@ -77,7 +73,7 @@ def test_quat2mat():
     yield assert_array_almost_equal, M, np.diag([1, -1, -1])
     M = tq.quat2mat([0, 0, 0, 0])
     yield assert_array_almost_equal, M, np.eye(3)
-    
+
 
 def test_inverse():
     # Takes sequence
@@ -108,7 +104,7 @@ def test_norm():
 
 @slow
 def test_mult():
-    # Test that quaternion * same as matrix * 
+    # Test that quaternion * same as matrix *
     for M1, q1 in eg_pairs[0::4]:
         for M2, q2 in eg_pairs[1::4]:
             q21 = tq.mult(q2, q1)
@@ -187,7 +183,3 @@ def test_axis_angle():
         yield assert_array_almost_equal, aa_mat, aa_mat2
         aa_mat22 = sympy_aa2mat2(vec, theta)
         yield assert_array_almost_equal, aa_mat, aa_mat22
-
-
-
-            

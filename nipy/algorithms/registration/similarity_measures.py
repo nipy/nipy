@@ -1,8 +1,7 @@
-from __future__ import absolute_import
-from ._registration import _L1_moments
-
 import numpy as np
 from scipy.ndimage import gaussian_filter
+
+from ._registration import _L1_moments
 
 TINY = float(np.finfo(np.double).tiny)
 SIGMA_FACTOR = 0.05
@@ -60,7 +59,7 @@ def dist2loss(q, qI=None, qJ=None):
     return -np.log(nonzero(q))
 
 
-class SimilarityMeasure(object):
+class SimilarityMeasure:
     """
     Template class
     """

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 """
 Example of script to analyse the reproducibility in group studies using a
 bootstrap procedure.
@@ -25,11 +24,10 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nipy.labs.utils.reproducibility_measures import (
-    group_reproducibility_metrics)
-
 # Local import
 from get_data_light import DATA_DIR, get_second_level_dataset
+
+from nipy.labs.utils.reproducibility_measures import group_reproducibility_metrics
 
 print('This analysis takes a long while, please be patient')
 
@@ -77,9 +75,9 @@ voxel_results, cluster_results, peak_results = group_reproducibility_metrics(
     cluster_threshold=csize, number_of_samples=niter, sigma=sigma,
     do_clusters=True, do_voxels=True, do_peaks=True, swap=swap)
 
-kap = [k for k in voxel_results[ngroups[0]].values()]
-clt = [k for k in cluster_results[ngroups[0]].values()]
-pk = [k for k in peak_results[ngroups[0]].values()]
+kap = list(voxel_results[ngroups[0]].values())
+clt = list(cluster_results[ngroups[0]].values())
+pk = list(peak_results[ngroups[0]].values())
 
 ##############################################################################
 # plot

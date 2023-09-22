@@ -169,4 +169,3 @@
 .. _Michael Hanke: http://apsy.gse.uni-magdeburg.de/hanke
 .. _Gaël Varoquaux: http://gael-varoquaux.info/
 .. _Keith Worsley: http://www.math.mcgill.ca/keith
-

@@ -38,7 +38,7 @@ Event-related categorical design
 
 .. _face-object:
 
-This design is a canonical design in fMRI used, for instance, 
+This design is a canonical design in fMRI used, for instance,
 in an experiment designed to detect regions associated to discrimination between *Face* and *Object*.
 This design can be graphically represented in terms of delta-function responses that are effectively  events of duration 0
 and infinite height.
@@ -67,7 +67,7 @@ experiment as a measure :math:`E` on :math:`\mathbb{R} \times V`
 
 This intensity measure determines, in words, "the amount of stimulus
 within *A* delivered in the interval :math:`[t_1,t_2]`". In this categorical
-design, stimuli :math:`a_j` are delivered as point masses at the times 
+design, stimuli :math:`a_j` are delivered as point masses at the times
 :math:`t_j`.
 
 Practically speaking, we can read this as saying that our experiment has 10
@@ -311,7 +311,7 @@ terms of delta functions
 
 .. math::
 
-   \frac{\partial}{\partial t} \tilde{N}_{f_a}(t) = 
+   \frac{\partial}{\partial t} \tilde{N}_{f_a}(t) =
    \beta_a \sum_{t_i: \text{$i$ odd}} \delta_{t_i}(t)
 
 .. testcode::
@@ -338,7 +338,7 @@ might take
 .. math::
 
    \begin{aligned}
-   f_O(t,(o,c)) &= o \\ 
+   f_O(t,(o,c)) &= o \\
    f_O(t,(o,c)) &= c \\
    \end{aligned}
 

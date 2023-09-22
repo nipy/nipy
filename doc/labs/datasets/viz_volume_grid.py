@@ -4,9 +4,8 @@
 Use Mayavi to visualize the structure of a VolumeGrid
 """
 
-from enthought.mayavi import mlab
 import numpy as np
-
+from enthought.mayavi import mlab
 from enthought.tvtk.api import tvtk
 
 dims = (4, 4, 4)
@@ -16,10 +15,10 @@ y = np.reshape(y.T, (-1,))
 z = np.reshape(z.T, (-1,))
 y += 0.3*np.sin(x)
 z += 0.4*np.cos(x)
-x += 0.05*y**3 
+x += 0.05*y**3
 sgrid = tvtk.StructuredGrid(dimensions=(dims[0], dims[1], dims[2]))
 sgrid.points = np.c_[x, y, z]
-s = np.random.random((dims[0]*dims[1]*dims[2]))
+s = np.random.random(dims[0]*dims[1]*dims[2])
 sgrid.point_data.scalars = np.ravel(s.copy())
 sgrid.point_data.scalars.name = 'scalars'
 
@@ -31,6 +30,3 @@ mlab.pipeline.surface(mlab.pipeline.extract_edges(sgrid), color=(0, 0, 0))
 mlab.pipeline.glyph(sgrid, mode='cube', scale_factor=0.2, scale_mode='none')
 mlab.savefig('volume_grid.jpg')
 mlab.show()
-
-
-

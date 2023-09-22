@@ -3,7 +3,6 @@
 """
 Edget detection routines
 """
-from __future__ import absolute_import
 import warnings
 
 import numpy as np
@@ -16,7 +15,7 @@ except ImportError as e:
     warnings.warn(f'Could not import fast quantile function: {e}')
     quantile = None
 
-                   
+
 ################################################################################
 # Edge detection
 
@@ -35,16 +34,16 @@ def _fast_abs_percentile(map, percentile=80):
 
 
 def _orientation_kernel(t):
-    """ structure elements for calculating the value of neighbors in several 
+    """ structure elements for calculating the value of neighbors in several
         directions
-    """ 
+    """
     sin = np.sin
     pi  = np.pi
     t = pi*t
     arr =  np.array([[sin(t),        sin(t+.5*pi),  sin(t+pi)    ],
                      [sin(t+1.5*pi), 0,             sin(t+1.5*pi)],
                      [sin(t+pi),     sin(t+.5*pi),  sin(t)       ]])
-    return np.round(.5*((1+arr))**2).astype(np.bool_)
+    return np.round(.5*(1+arr)**2).astype(np.bool_)
 
 
 def _edge_detect(image, high_threshold=.75, low_threshold=.4):
@@ -55,10 +54,10 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
         image: 2D array
             The image on which edge detection is applied
         high_threshold: float, optional
-            The quantile defining the upper threshold of the hysteries 
+            The quantile defining the upper threshold of the hysteries
             thresholding: decrease this to keep more edges
         low_threshold: float, optional
-            The quantile defining the lower threshold of the hysteries 
+            The quantile defining the lower threshold of the hysteries
             thresholding: decrease this to extract wider edges
 
         Returns
@@ -99,7 +98,7 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
     for angle in np.arange(0, 2, .25):
         thinner = thinner | (
                 (grad_mag > .85*ndimage.maximum_filter(grad_mag,
-                                    footprint=_orientation_kernel(angle))) 
+                                    footprint=_orientation_kernel(angle)))
                 & (((grad_angle - angle) % 2) < .75)
                )
     # Remove the edges next to the side of the image: they are not reliable
@@ -114,7 +113,7 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
     grad_values = thinned_grad[thinner]
     high = thinned_grad > _fast_abs_percentile(grad_values, 100*high_threshold)
     low = thinned_grad >  _fast_abs_percentile(grad_values, 100*low_threshold)
-    edge_mask = ndimage.binary_dilation(high, structure=np.ones((3, 3)), 
+    edge_mask = ndimage.binary_dilation(high, structure=np.ones((3, 3)),
                                         iterations=-1, mask=low)
     return grad_mag, edge_mask
 
@@ -140,5 +139,3 @@ def _edge_map(image):
     edge_mask[edge_mask != 0] -= -.05+edge_mask.min()
     edge_mask = np.ma.masked_less(edge_mask, .01)
     return edge_mask
-
-

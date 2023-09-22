@@ -13,14 +13,17 @@ This technique can be used to reduce the dimensionality of the data.
 More specifically, the data is projected onto the eigenvectors of the
 covariance matrix.
 """
-from __future__ import absolute_import
 
 import numpy as np
 import numpy.linalg as npl
 
 from ...core.image.image import rollimg
-from ...core.reference.coordinate_map import (io_axis_indices, orth_axes,
-                                              drop_io_dim, AxisError)
+from ...core.reference.coordinate_map import (
+    AxisError,
+    drop_io_dim,
+    io_axis_indices,
+    orth_axes,
+)
 
 
 def pca(data, axis=0, mask=None, ncomp=None, standardize=True,

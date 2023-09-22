@@ -2,7 +2,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Example script for group permutation testing """
-from __future__ import print_function # Python 2/3 compatibility
 
 import numpy as np
 

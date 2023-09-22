@@ -5,11 +5,9 @@ General linear models
 --------------------
 
 """
-from __future__ import absolute_import
-
-from six import Iterator
 
 import numpy as np
+from six import Iterator
 
 from . import family
 from .regression import WLSModel
@@ -21,7 +19,7 @@ class Model(WLSModel, Iterator):
 
     def __init__(self, design, family=family.Gaussian()):
         self.family = family
-        super(Model, self).__init__(design, weights=1)
+        super().__init__(design, weights=1)
 
     def __iter__(self):
         self.iter = 0
@@ -48,7 +46,7 @@ class Model(WLSModel, Iterator):
         self.initialize(self.design)
         Z = results.predicted + self.family.link.deriv(results.mu) *\
             (Y - results.mu)
-        newresults = super(Model, self).fit(Z)
+        newresults = super().fit(Z)
         newresults.Y = Y
         newresults.mu = self.family.link.inverse(newresults.predicted)
         self.iter += 1
@@ -85,7 +83,7 @@ class Model(WLSModel, Iterator):
     def fit(self, Y):
         self.Y = np.asarray(Y, np.float64)
         iter(self)
-        self.results = super(Model, self).fit(
+        self.results = super().fit(
             self.family.link.initialize(Y))
         self.results.mu = self.family.link.inverse(self.results.predicted)
         self.scale = self.results.scale = self.estimate_scale()

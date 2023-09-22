@@ -25,7 +25,7 @@ def check_type(x, t, accept_none=False):
         Target type.
     accept_none : bool
         If True, skip errors if `x` is None.
-    """	
+    """
     if accept_none:
         if x is None:
             return
@@ -67,4 +67,3 @@ def check_type_and_shape(x, t, s, accept_none=False):
         raise ValueError(f'Array values should be convertible to {t}')
     if not ok_shape:
         raise ValueError(f'Array shape should be equivalent to {shape}')
-

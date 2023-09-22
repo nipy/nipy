@@ -2,7 +2,6 @@
 Generic implementation of multiple regression analysis under noisy
 measurements.
 """
-from __future__ import absolute_import
 
 import numpy as np
 

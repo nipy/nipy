@@ -12,13 +12,12 @@ WeightedGraph and feature data.
 
 Author:Bertrand Thirion, 2006--2011
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 from warnings import warn
+
 import numpy as np
 
-from .graph import WeightedGraph, Graph
+from .graph import Graph, WeightedGraph
 
 NEGINF = -np.inf
 
@@ -128,7 +127,7 @@ class Field(WeightedGraph):
             self.field = field
 
     def closing(self, nbiter=1):
-        """Morphological closing of the field data. 
+        """Morphological closing of the field data.
         self.field is changed inplace
 
         Parameters
@@ -192,7 +191,7 @@ class Field(WeightedGraph):
 
         Returns
         -------
-        hneighb: array of shape(self.V), 
+        hneighb: array of shape(self.V),
                  index of the neighbor with highest value
         """
         from scipy.sparse import dia_matrix
@@ -321,7 +320,7 @@ class Field(WeightedGraph):
         label : array of shape (self.V)
               labelling of the vertices according to their bassin
         """
-        import numpy.ma as ma
+        from numpy import ma
 
         if (np.size(self.field) == 0):
             raise ValueError('No field has been defined so far')
@@ -374,7 +373,7 @@ class Field(WeightedGraph):
         label: array of shape (self.V)
                a labelling of thevertices according to their bassin
         """
-        import numpy.ma as ma
+        from numpy import ma
         if (np.size(self.field) == 0):
             raise ValueError('No field has been defined so far')
         if self.field.shape[1] - 1 < refdim:
@@ -531,8 +530,7 @@ class Field(WeightedGraph):
                the resulting field label
         J (float): the resulting inertia
         """
-        from nipy.algorithms.clustering.hierarchical_clustering\
-             import ward_segment
+        from nipy.algorithms.clustering.hierarchical_clustering import ward_segment
         label, J = ward_segment(self, self.field, qmax=nbcluster)
 
         # compute the resulting inertia

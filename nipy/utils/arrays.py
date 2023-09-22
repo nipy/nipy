@@ -1,7 +1,7 @@
 """ Array utilities
 """
-from __future__ import absolute_import
 import numpy as np
+
 
 def strides_from(shape, dtype, order='C'):
     """ Return strides as for continuous array shape `shape` and given `dtype`

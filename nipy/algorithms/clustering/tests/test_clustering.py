@@ -1,13 +1,14 @@
-from __future__ import absolute_import
 
 # to run only the simple tests:
 # python testClustering.py Test_Clustering
 
-from ..utils import kmeans
+from unittest import TestCase
+
 import nose
 import numpy as np
 import numpy.random as nr
-from unittest import TestCase
+
+from ..utils import kmeans
 
 
 class TestClustering(TestCase):

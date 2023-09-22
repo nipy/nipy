@@ -6,18 +6,18 @@ This is meant to provide a unified API to deal with n-d imaged and meshes.
 
 Author: Bertrand Thirion, 2010
 """
-from __future__ import absolute_import
-
-from six import string_types
 
 import numpy as np
 import scipy.sparse as sp
+from nibabel import Nifti1Image, load, save
+from six import string_types
 
-from nibabel import load, Nifti1Image, save
-
-from nipy.io.nibcompat import get_header, get_affine
-from nipy.algorithms.graph import (WeightedGraph, wgraph_from_coo_matrix,
-                                   wgraph_from_3d_grid)
+from nipy.algorithms.graph import (
+    WeightedGraph,
+    wgraph_from_3d_grid,
+    wgraph_from_coo_matrix,
+)
+from nipy.io.nibcompat import get_affine, get_header
 
 ##############################################################
 # Ancillary functions
@@ -324,7 +324,7 @@ def grid_domain_from_shape(shape, affine=None):
 ################################################################
 
 
-class MeshDomain(object):
+class MeshDomain:
     """
     temporary class to handle meshes
     """
@@ -438,7 +438,7 @@ def domain_from_mesh(mesh):
 ################################################################
 
 
-class DiscreteDomain(object):
+class DiscreteDomain:
     """
     Descriptor of a certain domain that consists of discrete elements that
     are characterized by a coordinate system and a topology:

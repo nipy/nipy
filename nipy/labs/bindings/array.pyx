@@ -53,69 +53,69 @@ def array_get_block( A, size_t x0, size_t x1, size_t fX=1,
     return B
 
 
-def array_add(A, B): 
+def array_add(A, B):
     """
-    C = A + B 
+    C = A + B
     """
-    cdef fff_array *a, *b, *c 
-    
+    cdef fff_array *a, *b, *c
+
     a = fff_array_fromPyArray(A)
     b = fff_array_fromPyArray(B)
     c = fff_array_new(a.datatype, a.dimX, a.dimY, a.dimZ, a.dimT)
     fff_array_copy(c, a)
-    fff_array_add(c, b) 
+    fff_array_add(c, b)
     C = fff_array_toPyArray(c)
     fff_array_delete(a)
     fff_array_delete(b)
-    return C 
+    return C
 
 
-def array_mul(A, B): 
+def array_mul(A, B):
     """
-    C = A * B 
+    C = A * B
     """
-    cdef fff_array *a, *b, *c 
-    
+    cdef fff_array *a, *b, *c
+
     a = fff_array_fromPyArray(A)
     b = fff_array_fromPyArray(B)
     c = fff_array_new(a.datatype, a.dimX, a.dimY, a.dimZ, a.dimT)
     fff_array_copy(c, a)
-    fff_array_mul(c, b) 
+    fff_array_mul(c, b)
     C = fff_array_toPyArray(c)
     fff_array_delete(a)
     fff_array_delete(b)
-    return C 
+    return C
 
 
-def array_sub(A, B): 
+def array_sub(A, B):
     """
-    C = A - B 
+    C = A - B
     """
-    cdef fff_array *a, *b, *c 
-    
+    cdef fff_array *a, *b, *c
+
     a = fff_array_fromPyArray(A)
     b = fff_array_fromPyArray(B)
     c = fff_array_new(a.datatype, a.dimX, a.dimY, a.dimZ, a.dimT)
     fff_array_copy(c, a)
-    fff_array_sub(c, b) 
+    fff_array_sub(c, b)
     C = fff_array_toPyArray(c)
     fff_array_delete(a)
     fff_array_delete(b)
-    return C 
+    return C
 
 
-def array_div(A, B): 
+def array_div(A, B):
     """
-    C = A / B 
+    C = A / B
     """
-    cdef fff_array *a, *b, *c 
-    
+    cdef fff_array *a, *b, *c
+
     a = fff_array_fromPyArray(A)
     b = fff_array_fromPyArray(B)
     c = fff_array_new(a.datatype, a.dimX, a.dimY, a.dimZ, a.dimT)
     fff_array_copy(c, a)
-    fff_array_div(c, b) 
+    fff_array_div(c, b)
     C = fff_array_toPyArray(c)
     fff_array_delete(a)
     fff_array_delete(b)
-    return C 
+    return C

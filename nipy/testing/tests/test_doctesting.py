@@ -1,6 +1,5 @@
 """ Doctests for Nipy / NumPy-specific nose/doctest modifications
 """
-from __future__ import absolute_import
 # try the #random directive on the output line
 def check_random_directive():
     '''
@@ -164,7 +163,9 @@ def check_combinations():
 if __name__ == '__main__':
     # Run tests outside nipy test rig
     import sys
+
     import nose
+
     from nipy.testing.doctester import NipyDoctest
     argv = [sys.argv[0], __file__, '--with-nipydoctest'] + sys.argv[1:]
     nose.core.TestProgram(argv=argv, addplugins=[NipyDoctest()])

@@ -1,12 +1,9 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
-from numpy.linalg import inv
-
-from scipy.stats import t as t_distribution
-
 from nibabel.onetime import auto_attr
+from numpy.linalg import inv
+from scipy.stats import t as t_distribution
 
 from ...utils.matrices import pos_recipr
 
@@ -14,7 +11,7 @@ from ...utils.matrices import pos_recipr
 inv_t_cdf = t_distribution.ppf
 
 
-class Model(object):
+class Model:
     """ A (predictive) statistical model.
 
     The class Model itself does nothing but lays out the methods expected of any
@@ -68,7 +65,7 @@ class LikelihoodModel(Model):
         raise NotImplementedError
 
 
-class LikelihoodModelResults(object):
+class LikelihoodModelResults:
     ''' Class to contain results from likelihood models '''
 
     # This is the class in which things like AIC, BIC, llf can be implemented as
@@ -314,7 +311,7 @@ class LikelihoodModelResults(object):
         if invcov is None:
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
         F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) *\
-            pos_recipr((q * dispersion))
+            pos_recipr(q * dispersion)
         F = np.squeeze(F)
         return FContrastResults(
             effect=ctheta, covariance=self.vcov(
@@ -375,7 +372,7 @@ class LikelihoodModelResults(object):
         return np.asarray(list(zip(lower, upper)))
 
 
-class TContrastResults(object):
+class TContrastResults:
     """ Results from a t contrast of coefficients in a parametric model.
 
     The class does nothing, it is a container for the results from T contrasts,
@@ -398,7 +395,7 @@ class TContrastResults(object):
                 (self.effect, self.sd, self.t, self.df_den))
 
 
-class FContrastResults(object):
+class FContrastResults:
     """ Results from an F contrast of coefficients in a parametric model.
 
     The class does nothing, it is a container for the results from F contrasts,

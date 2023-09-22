@@ -1,8 +1,6 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import nose
-
 
 try:
     import matplotlib as mp
@@ -13,9 +11,8 @@ try:
 except ImportError:
     raise nose.SkipTest('Could not import matplotlib')
 
-from ..slicers import demo_ortho_slicer
-
 from ..anat_cache import find_mni_template
+from ..slicers import demo_ortho_slicer
 
 ################################################################################
 # Some smoke testing for graphics-related code
@@ -29,5 +26,3 @@ def test_demo_ortho_slicer():
     import pylab as pl
     pl.switch_backend('svg')
     demo_ortho_slicer()
-
-

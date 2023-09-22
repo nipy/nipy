@@ -1,17 +1,13 @@
 """ Tests for regression module
 """
-from __future__ import absolute_import
 
 import numpy as np
+from nose.tools import assert_equal, assert_raises, assert_true
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from nipy.algorithms.statistics.api  import OLSModel
-from ..outputters import output_T, output_F
+from nipy.algorithms.statistics.api import OLSModel
 
-from nose.tools import assert_true, assert_equal, assert_raises
-
-from numpy.testing import (assert_array_almost_equal,
-                           assert_array_equal)
-
+from ..outputters import output_F, output_T
 
 N = 10
 X = np.c_[np.linspace(-1,1,N), np.ones((N,))]

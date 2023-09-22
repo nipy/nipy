@@ -12,5 +12,4 @@ These families are described in
 
 '''
 
-from .family import (Gaussian, Family, Poisson, Gamma, InverseGaussian,
-                     Binomial)
+from .family import Binomial, Family, Gamma, Gaussian, InverseGaussian, Poisson

@@ -7,21 +7,20 @@ For 3D visualization, Mayavi, version 3.0 or greater, is required.
 For a demo, see the 'demo_plot_map' function.
 
 """
-from __future__ import absolute_import
 
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD
 
 # Standard library imports
-import warnings
 import numbers
+import warnings
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
 
-from nipy.utils.skip_test import skip_if_running_nose
 from nipy.utils import is_numlike
+from nipy.utils.skip_test import skip_if_running_nose
 
 # Import pylab
 try:
@@ -29,13 +28,10 @@ try:
 except ImportError:
     skip_if_running_nose('Could not import matplotlib')
 
-from .anat_cache import mni_sform, mni_sform_inv, _AnatCache
-from .coord_tools import (coord_transform,
-                          find_maxsep_cut_coords
-                          )
-
-from .slicers import SLICERS, _xyz_order
+from .anat_cache import _AnatCache, mni_sform, mni_sform_inv
+from .coord_tools import coord_transform, find_maxsep_cut_coords
 from .edge_detect import _fast_abs_percentile
+from .slicers import SLICERS, _xyz_order
 
 ################################################################################
 # Helper functions for 2D plotting of activation maps
@@ -170,7 +166,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
     # Use Mayavi for the 3D plotting
     if do3d:
-        from .maps_3d import plot_map_3d, m2screenshot
+        from .maps_3d import m2screenshot, plot_map_3d
         try:
             from tvtk.api import tvtk
         except ImportError:
@@ -197,7 +193,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         if threshold_3d is None:
             threshold_3d = threshold
         plot_map_3d(np.asarray(map), affine, cut_coords=cut_coords,
-                    anat=anat, anat_affine=anat_affine, 
+                    anat=anat, anat_affine=anat_affine,
                     offscreen=offscreen, cmap=cmap,
                     threshold=threshold_3d,
                     view=view_3d,
@@ -289,7 +285,7 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
                          extent=[-5000, 5000, -5000, 5000],
                          zorder=-500)
 
-    if title is not None and not title == '':
+    if title is not None and title != '':
         slicer.title(title)
     return slicer
 
@@ -306,8 +302,8 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
             The anatomical image to be used as a background. If None is
             given, nipy tries to find a T1 template.
         anat_affine : 4x4 ndarray, optional
-            The affine matrix going from the anatomical image voxel space to 
-            MNI space. This parameter is not used when the default 
+            The affine matrix going from the anatomical image voxel space to
+            MNI space. This parameter is not used when the default
             anatomical is used, but it is compulsory when using an
             explicite anatomical image.
         figure : integer or matplotlib figure, optional
@@ -376,7 +372,7 @@ def demo_plot_map(do3d=False, **kwargs):
     # Color a asymetric rectangle around Broca area:
     x, y, z = -52, 10, 22
     mapped = coord_transform(x, y, z, mni_sform_inv)
-    x_map, y_map, z_map = [int(v) for v in mapped]
+    x_map, y_map, z_map = (int(v) for v in mapped)
     # Compare to values obtained using fslview. We need to add one as
     # voxels do not start at 0 in fslview.
     assert x_map == 142

@@ -2,20 +2,16 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Image interpolators using ndimage.
 """
-from __future__ import absolute_import
 
 import tempfile
-
 from distutils.version import LooseVersion as LV
 
 import numpy as np
-
 import scipy
 from scipy import ndimage
 
 from ..fixes.scipy.ndimage import map_coordinates
 from ..utils import seq_prod
-
 
 # Earlier versions of Scipy don't have mode for spline_filter
 SCIPY_VERSION = LV(scipy.__version__)
@@ -25,7 +21,7 @@ SPLINE_FILTER_HAS_MODE = SCIPY_VERSION >= LV('1.2')
 SPLINE_FILTER_NEEDS_PAD = SCIPY_VERSION >= LV('1.6')
 
 
-class ImageInterpolator(object):
+class ImageInterpolator:
     """ Interpolate Image instance at arbitrary points in world space
 
     The resampling is done with ``scipy.ndimage``.
@@ -82,7 +78,7 @@ class ImageInterpolator(object):
                 self._n_prepad = self.n_prepad_if_needed
                 if self._n_prepad != 0:
                     data = np.pad(data, self._n_prepad, mode='edge')
-            kwargs = dict(order=self.order)
+            kwargs = {'order': self.order}
             if SPLINE_FILTER_HAS_MODE:
                 kwargs['mode'] = self.mode
             data = ndimage.spline_filter(data, **kwargs)

@@ -1,14 +1,19 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 
-from ..pca import pca
-from nipy.io.api import  load_image
-from nipy.testing import (assert_equal, assert_almost_equal,
-                          assert_array_almost_equal, funcfile, assert_true,
-                          assert_array_equal, assert_raises)
+from nipy.io.api import load_image
+from nipy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+    assert_equal,
+    assert_raises,
+    assert_true,
+    funcfile,
+)
 
+from ..pca import pca
 
 data = {}
 
@@ -115,7 +120,7 @@ def test_diagonality():
     # basis_projections are diagonal, whether standarized or not
     p = pca(data['fmridata'], -1) # standardized
     assert_true(diagonal_covariance(p['basis_projections'], -1))
-    pns = pca(data['fmridata'], -1, standardize=False) # not 
+    pns = pca(data['fmridata'], -1, standardize=False) # not
     assert_true(diagonal_covariance(pns['basis_projections'], -1))
 
 
@@ -158,7 +163,7 @@ def test_PCAMask():
     arr4d = data['fmridata']
     mask3d = data['mask']
     arr2d = arr4d.reshape((-1, data['nimages']))
-    mask1d = mask3d.reshape((-1))
+    mask1d = mask3d.reshape(-1)
     for arr, mask in (arr4d, mask3d), (arr2d, mask1d):
         p = pca(arr, -1, mask, ncomp=ncomp)
         assert_equal(p['basis_vectors'].shape, (data['nimages'], ntotal))

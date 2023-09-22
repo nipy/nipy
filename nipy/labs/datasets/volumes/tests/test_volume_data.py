@@ -3,13 +3,14 @@
 """
 Testing volume data interface.
 """
-from __future__ import absolute_import
+
+import copy
 
 import nose
-import copy
 
 # Local imports
 from ..volume_data import VolumeData
+
 
 ################################################################################
 # Tests
@@ -28,4 +29,3 @@ def test_volume_data():
                         vol.as_volume_img
 
     yield nose.tools.assert_raises, NotImplementedError, copy.copy, vol
-

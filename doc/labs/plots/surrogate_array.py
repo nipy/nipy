@@ -1,11 +1,9 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
-
 import pylab as pl
 
-from nipy.labs.utils.simul_multisubject_fmri_dataset import \
-     surrogate_2d_dataset
+from nipy.labs.utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
 
 pos = np.array([[10, 10],
                 [14, 20],

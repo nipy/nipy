@@ -1,18 +1,15 @@
 """ Testing realfuncs module
 """
 
-from os.path import dirname, join as pjoin
 from itertools import product
+from os.path import dirname
+from os.path import join as pjoin
 
 import numpy as np
+from nose.tools import assert_raises
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ..realfuncs import dct_ii_basis, dct_ii_cut_basis
-
-from nose.tools import assert_raises
-
-from numpy.testing import (assert_almost_equal,
-                           assert_array_equal)
-
 
 HERE = dirname(__file__)
 

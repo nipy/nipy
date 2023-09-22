@@ -1,31 +1,33 @@
 """ Testing diagnostics.command module
 """
-from __future__ import absolute_import
 
 import os
-from os.path import dirname, join as pjoin, isfile
 import shutil
-
-import numpy as np
+from os.path import dirname, isfile
+from os.path import join as pjoin
 
 import nibabel as nib
-from nibabel import AnalyzeImage, Spm2AnalyzeImage, Nifti1Pair, Nifti1Image
-from nipy.io.nibcompat import get_header
+import numpy as np
+from nibabel import AnalyzeImage, Nifti1Image, Nifti1Pair, Spm2AnalyzeImage
 from nibabel.tmpdirs import InTemporaryDirectory
+from nose import SkipTest
+from nose.tools import (
+    assert_equal,
+    assert_false,
+    assert_not_equal,
+    assert_raises,
+    assert_true,
+)
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nipy import load_image
+from nipy.io.nibcompat import get_header
 from nipy.io.nifti_ref import NiftiError
-from ..commands import parse_fname_axes, tsdiffana, diagnose
-from ..timediff import time_slice_diffs_image
-
-from numpy.testing import (assert_almost_equal, assert_array_equal)
-
-from nose import SkipTest
-from nose.tools import (assert_true, assert_false, assert_raises,
-                        assert_equal, assert_not_equal)
-
 from nipy.testing import funcfile
 from nipy.testing.decorators import needs_mpl_agg
+
+from ..commands import diagnose, parse_fname_axes, tsdiffana
+from ..timediff import time_slice_diffs_image
 
 
 def test_parse_fname_axes():
@@ -101,7 +103,7 @@ def test_parse_fname_axes():
         assert_equal(slice_axis, 'j')
 
 
-class Args(object): pass
+class Args: pass
 
 
 def check_axes(axes, img_shape, time_axis, slice_axis):
@@ -207,8 +209,8 @@ def check_diag_results(results, img_shape,
         assert_equal(img.shape, rolled_shape[:-1])
     vars = np.load(pjoin(out_path, 'vectors_components_' + froot + '.npz'))
     assert_equal(set(vars),
-                 set(['basis_vectors', 'pcnt_var', 'volume_means',
-                      'slice_mean_diff2']))
+                 {'basis_vectors', 'pcnt_var', 'volume_means',
+                      'slice_mean_diff2'})
     assert_equal(vars['volume_means'].shape, (T,))
     assert_equal(vars['basis_vectors'].shape, (T, T-1))
     assert_equal(vars['slice_mean_diff2'].shape, (T-1, S))

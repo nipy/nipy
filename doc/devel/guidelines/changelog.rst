@@ -7,7 +7,7 @@
 **NOTE:** We have not kepted up with our ChangeLog.  This is here for
   future reference.  We will be more diligent with this when we have
   regular software releases.
- 
+
 If you are a developer with commit access, **please** fill a proper
 ChangeLog entry per significant change.  The SVN commit messages may
 be shorter (though a brief summary is appreciated), but a detailed

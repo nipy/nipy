@@ -1,15 +1,15 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This module is essentially a test of the AffineTransform object to 
+This module is essentially a test of the AffineTransform object to
 see if it can succinctly describe an object like a matrix group.
 """
-from __future__ import absolute_import
 
 import numpy as np
 
-from nipy.core.api import CoordinateSystem, AffineTransform
-from nipy.core.reference.coordinate_map import compose, product as cmap_product
+from nipy.core.api import AffineTransform, CoordinateSystem
+from nipy.core.reference.coordinate_map import compose
+from nipy.core.reference.coordinate_map import product as cmap_product
 
 ###################################################################################
 
@@ -121,7 +121,7 @@ class O(GLR):
         """
         Check that the matrix is (almost) orthogonal.
         """
-        
+
         if M is None:
             M = self.matrix
         return np.allclose(np.identity(self.ndims[0], dtype=self.dtype), np.dot(M.T, M))
@@ -175,7 +175,7 @@ def product(*elements):
     Compute the group product of a set of elements
     """
     type_e0 = type(elements[0])
-    notsame = [e for e in elements if not type(e) == type_e0]
+    notsame = [e for e in elements if type(e) != type_e0]
     if notsame:
         raise ValueError('all elements should be members of the same group')
     composed_mapping = compose(*elements)
@@ -194,14 +194,14 @@ def change_basis(element, bchange_linear):
     represents a linear transformation L on a vector space of
     dimension ndim, in a given coordinate system.
 
-    If we change the basis in which we represent L, 
-    the matrix that represents L should also change. 
+    If we change the basis in which we represent L,
+    the matrix that represents L should also change.
 
     A change of basis is represented as a mapping between two
     coordinate systems and is also represented by a change of basis
     matrix.  This is expressed in this function as
     bchange_linear.function_range == element.coords
-    
+
     This function expresses the same transformation L in a different
     basis.
 
@@ -236,7 +236,7 @@ def same_transformation(element1, element2, basis_change):
     """
     newelement = change_basis(element1, basis_change)
     return np.allclose(newelement.matrix, element2.matrix) and newelement.coords == element2.coords
-    
+
 ###################################################################################
 
 def product_homomorphism(*elements):
@@ -254,11 +254,10 @@ def product_homomorphism(*elements):
     This function is that homomorphism.
     """
     type_e0 = type(elements[0])
-    notsame = [e for e in elements if not type(e) == type_e0]
+    notsame = [e for e in elements if type(e) != type_e0]
     if notsame:
         raise ValueError('all elements should be members of the same group')
 
     newcmap = cmap_product(*elements)
     matrix = newcmap.affine[:-1,:-1]
     return elements[0].__class__(matrix, newcmap.function_domain)
-

@@ -3,20 +3,19 @@
 """ Testing array coords
 
 """
-from __future__ import absolute_import
 
 import numpy as np
-
-from nipy.core.api import (AffineTransform, CoordinateSystem,
-                           CoordinateMap, Grid, ArrayCoordMap)
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 import nipy.core.reference.array_coords as acs
-
-from nose.tools import assert_true, assert_false, \
-     assert_equal, assert_raises
-
-from numpy.testing import assert_array_equal, assert_array_almost_equal
-
+from nipy.core.api import (
+    AffineTransform,
+    ArrayCoordMap,
+    CoordinateMap,
+    CoordinateSystem,
+    Grid,
+)
 
 
 def test_array_coord_map():

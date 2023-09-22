@@ -4,20 +4,18 @@
 Utilities for extracting masks from EPI images and applying them to time
 series.
 """
-from __future__ import absolute_import
 
 import math
 
-from six import string_types
-
 # Major scientific libraries imports
 import numpy as np
-from scipy import ndimage
 
 # Neuroimaging libraries imports
 from nibabel import load, nifti1, save
+from scipy import ndimage
+from six import string_types
 
-from ..io.nibcompat import get_header, get_affine, get_unscaled_data
+from ..io.nibcompat import get_affine, get_header, get_unscaled_data
 
 ###############################################################################
 # Operating on connect component
@@ -395,7 +393,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
             header = get_header(nim)
             affine = get_affine(nim)
         else:
-            header = dict()
+            header = {}
             affine = np.eye(4)
         header['descrip'] = 'mask image'
         output_image = nifti1.Nifti1Image(grp_mask.astype(np.uint8),
@@ -442,7 +440,7 @@ def series_from_mask(filenames, mask, dtype=np.float32,
     """
     assert len(filenames) != 0, (
         'filenames should be a file name or a list of file names, '
-        '%s (type %s) was passed' % (filenames, type(filenames)))
+        f'{filenames} (type {type(filenames)}) was passed')
     mask = mask.astype(np.bool_)
     if smooth:
         # Convert from a sigma to a FWHM:

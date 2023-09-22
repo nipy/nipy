@@ -3,25 +3,21 @@
 """
 Test functions for formulae
 """
-from __future__ import print_function, absolute_import
 
 from warnings import catch_warnings, simplefilter
 
 import numpy as np
-from numpy.core.records import fromrecords
-
 import sympy
-
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from numpy.core.records import fromrecords
+from numpy.testing import assert_almost_equal, assert_array_equal
 from sympy.utilities.lambdify import implemented_function
 
-from .. import formulae as F
-from ..formulae import terms, Term
 from nipy.utils import VisibleDeprecationWarning
 
-from nose.tools import (assert_true, assert_equal, assert_false,
-                        assert_raises)
+from .. import formulae as F
+from ..formulae import Term, terms
 
-from numpy.testing import assert_almost_equal, assert_array_equal
 
 def test_terms():
     t = terms('a')
@@ -46,18 +42,18 @@ def test_terms():
 
 def test_getparams_terms():
     t = F.Term('t')
-    x, y, z = [sympy.Symbol(l) for l in 'xyz']
-    assert_equal(set(F.getparams(x*y*t)), set([x,y]))
-    assert_equal(set(F.getterms(x*y*t)), set([t]))
+    x, y, z = (sympy.Symbol(l) for l in 'xyz')
+    assert_equal(set(F.getparams(x*y*t)), {x,y})
+    assert_equal(set(F.getterms(x*y*t)), {t})
 
     matrix_expr = np.array([[x,y*t],[y,z]])
-    assert_equal(set(F.getparams(matrix_expr)), set([x,y,z]))
-    assert_equal(set(F.getterms(matrix_expr)), set([t]))
+    assert_equal(set(F.getparams(matrix_expr)), {x,y,z})
+    assert_equal(set(F.getterms(matrix_expr)), {t})
 
 
 def test_formula_params():
     t = F.Term('t')
-    x, y = [sympy.Symbol(l) for l in 'xy']
+    x, y = (sympy.Symbol(l) for l in 'xy')
     f = F.Formula([t*x,y])
     assert_equal(set(f.params), set([x,y] + list(f.coefs.values())))
 
@@ -121,7 +117,7 @@ def test_formula_from_recarray():
             (78, 75, 58, 74, 80, 78, 'red'),
             (48, 57, 44, 45, 51, 83, 'blue'),
             (85, 85, 71, 71, 77, 74, 'red'),
-            (82, 82, 39, 59, 64, 78, 'blue')], 
+            (82, 82, 39, 59, 64, 78, 'blue')],
                      dtype=[('y', 'i8'),
                             ('x1', 'i8'),
                             ('x2', 'i8'),
@@ -130,12 +126,12 @@ def test_formula_from_recarray():
                             ('x5', 'i8'),
                             ('x6', '|S5')])
     f = F.Formula.fromrec(D, drop='y')
-    assert_equal(set([str(t) for t in f.terms]),
-                 set(['x1', 'x2', 'x3', 'x4', 'x5',
-                      'x6_green', 'x6_blue', 'x6_red']))
-    assert_equal(set([str(t) for t in f.design_expr]),
-                 set(['x1', 'x2', 'x3', 'x4', 'x5',
-                      'x6_green', 'x6_blue', 'x6_red']))
+    assert_equal({str(t) for t in f.terms},
+                 {'x1', 'x2', 'x3', 'x4', 'x5',
+                      'x6_green', 'x6_blue', 'x6_red'})
+    assert_equal({str(t) for t in f.design_expr},
+                 {'x1', 'x2', 'x3', 'x4', 'x5',
+                      'x6_green', 'x6_blue', 'x6_red'})
 
 
 def test_random_effects():
@@ -188,7 +184,7 @@ def test_mul():
     assert_equal(t2, t2*t2)
     assert_equal(f, f*f)
     assert_false(f == f2)
-    assert_equal(set((t2*x).atoms()), set([t2,x]))
+    assert_equal(set((t2*x).atoms()), {t2,x})
 
 
 def test_factor_add_sub():
@@ -384,7 +380,7 @@ def test_factor_getterm():
     fac = F.Factor('f', [1,2])
     assert_raises(ValueError, fac.get_term, '1')
     m = fac.main_effect
-    assert_equal(set(m.terms), set([fac['f_1']-fac['f_2']]))
+    assert_equal(set(m.terms), {fac['f_1']-fac['f_2']})
 
 
 def test_stratify():
@@ -403,16 +399,16 @@ def test_nonlin1():
     fac = F.Factor('f', 'ab')
     f = F.Formula([sympy.exp(fac.stratify(x).mean)]) + F.I
     params = F.getparams(f.mean)
-    assert_equal(set([str(p) for p in params]),
-                 set(['_x0', '_x1', '_b0', '_b1']))
-    test1 = set(['1',
+    assert_equal({str(p) for p in params},
+                 {'_x0', '_x1', '_b0', '_b1'})
+    test1 = {'1',
                  'exp(_x0*f_a + _x1*f_b)',
                  '_b0*f_a*exp(_x0*f_a + _x1*f_b)',
-                 '_b0*f_b*exp(_x0*f_a + _x1*f_b)'])
-    test2 = set(['1',
+                 '_b0*f_b*exp(_x0*f_a + _x1*f_b)'}
+    test2 = {'1',
                  'exp(_x0*f_a + _x1*f_b)',
                  '_b1*f_a*exp(_x0*f_a + _x1*f_b)',
-                 '_b1*f_b*exp(_x0*f_a + _x1*f_b)'])
+                 '_b1*f_b*exp(_x0*f_a + _x1*f_b)'}
     assert_true(test1 or test2)
     n = F.make_recarray([(2,3,'a'),(4,5,'b'),(5,6,'a')], 'xyf', ['d','d','S1'])
     p = F.make_recarray([1,2,3,4], ['_x0', '_x1', '_b0', '_b1'])
@@ -441,7 +437,7 @@ def test_Rintercept():
     xf = x.formula
     yf = y.formula
     newf = (xf+F.I)*(yf+F.I)
-    assert_equal(set(newf.terms), set([x,y,x*y,sympy.Number(1)]))
+    assert_equal(set(newf.terms), {x,y,x*y,sympy.Number(1)})
 
 
 def test_return_float():
@@ -449,20 +445,20 @@ def test_return_float():
     f = F.Formula([x,x**2])
     xx= F.make_recarray(np.linspace(0,10,11), 'x')
     dtype = f.design(xx).dtype
-    assert_equal(set(dtype.names), set(['x', 'x**2']))
+    assert_equal(set(dtype.names), {'x', 'x**2'})
     dtype = f.design(xx, return_float=True).dtype
     assert_equal(dtype, np.float64)
 
 
 def test_subtract():
-    x, y, z = [F.Term(l) for l in 'xyz']
+    x, y, z = (F.Term(l) for l in 'xyz')
     f1 = F.Formula([x,y])
     f2 = F.Formula([x,y,z])
     f3 = f2 - f1
-    assert_equal(set(f3.terms), set([z]))
+    assert_equal(set(f3.terms), {z})
     f4 = F.Formula([y,z])
     f5 = f1 - f4
-    assert_equal(set(f5.terms), set([x]))
+    assert_equal(set(f5.terms), {x})
 
 
 def test_subs():

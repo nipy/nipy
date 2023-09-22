@@ -1,18 +1,13 @@
 """ Testing models module
 """
-from __future__ import absolute_import
 
 import numpy as np
+from nose import SkipTest
+from nose.tools import assert_equal, assert_raises, assert_true
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 # In fact we're testing methods defined in model
 from ..regression import OLSModel
-
-from nose.tools import assert_true, assert_equal, assert_raises
-from nose import SkipTest
-
-from numpy.testing import (assert_array_almost_equal,
-                           assert_array_equal)
-
 
 N = 10
 X = np.c_[np.linspace(-1,1,N), np.ones((N,))]

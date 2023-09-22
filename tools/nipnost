@@ -14,10 +14,12 @@ To run without doctests, add the flag ``--without-doctest``.
 """
 
 import sys
+
 import nose
-from nipy.testing.nosetester import prepare_imports, fpw_opt_str
-from nipy.testing.doctester import NipyDoctest
+
 from nipy.fixes.numpy.testing.noseclasses import KnownFailure
+from nipy.testing.doctester import NipyDoctest
+from nipy.testing.nosetester import fpw_opt_str, prepare_imports
 
 if __name__ == '__main__':
     prepare_imports()

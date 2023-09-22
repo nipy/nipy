@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 Full step-by-step example of fitting a GLM to experimental data and visualizing
 the results.
@@ -22,7 +21,7 @@ Author : Bertrand Thirion, 2010--2012
 """
 print(__doc__)
 
-from os import mkdir, getcwd, path
+from os import getcwd, mkdir, path
 
 import numpy as np
 
@@ -31,16 +30,14 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nibabel import save
-
-from nipy.modalities.fmri.glm import FMRILinearModel
-from nipy.modalities.fmri.design_matrix import make_dmtx
-from nipy.modalities.fmri.experimental_paradigm import \
-    load_paradigm_from_csv_file
-from nipy.labs.viz import plot_map, cm
-
 # Local import
 from get_data_light import DATA_DIR, get_first_level_dataset
+from nibabel import save
+
+from nipy.labs.viz import cm, plot_map
+from nipy.modalities.fmri.design_matrix import make_dmtx
+from nipy.modalities.fmri.experimental_paradigm import load_paradigm_from_csv_file
+from nipy.modalities.fmri.glm import FMRILinearModel
 
 #######################################
 # Data and analysis parameters

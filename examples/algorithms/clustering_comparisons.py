@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 Simple demo that partitions a smooth field into 10 clusters.  In most cases,
 Ward's clustering behaves best.
@@ -14,7 +13,6 @@ print(__doc__)
 
 import numpy as np
 import numpy.random as nr
-
 from scipy.ndimage import gaussian_filter
 
 try:
