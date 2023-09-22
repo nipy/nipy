@@ -23,7 +23,8 @@ def test_dct_ii_basis():
         spm_fname = pjoin(HERE, 'dct_{0}.txt'.format(N))
         spm_mtx = np.loadtxt(spm_fname)
         vol_times = np.arange(N) * 15. + 3.2
-        our_dct = dct_ii_basis(vol_times)
+        # :-1 is needed because one extra drift was added
+        our_dct = dct_ii_basis(vol_times)[:, :-1]
         # Check dot products of columns
         sq_col_lengths = np.ones(N) * N / 2.
         sq_col_lengths[0] = N
@@ -32,13 +33,13 @@ def test_dct_ii_basis():
         col_lengths = np.sqrt(sq_col_lengths)
         assert_almost_equal(our_dct / col_lengths, spm_mtx)
         # Normalize length
-        our_normed_dct = dct_ii_basis(vol_times, normcols=True)
+        our_normed_dct = dct_ii_basis(vol_times, normcols=True)[:, :-1]
         assert_almost_equal(our_normed_dct, spm_mtx)
         assert_almost_equal(our_normed_dct.T.dot(our_normed_dct), np.eye(N))
         for i in range(N):
-            assert_almost_equal(dct_ii_basis(vol_times, i) / col_lengths[:i],
+            assert_almost_equal(dct_ii_basis(vol_times, i)[:, :-1] / col_lengths[:i],
                                 spm_mtx[:, :i])
-            assert_almost_equal(dct_ii_basis(vol_times, i, True),
+            assert_almost_equal(dct_ii_basis(vol_times, i, True)[:, :-1],
                                 spm_mtx[:, :i])
     vol_times[0] += 0.1
     assert_raises(ValueError, dct_ii_basis, vol_times)
@@ -55,6 +56,6 @@ def test_dct_ii_cut_basis():
         if order == 0:
             assert_array_equal(dct_vals, np.ones((N, 1)))
             continue
-        dct_expected = np.ones((N, order))
+        dct_expected = np.ones((N, order + 1))
         dct_expected[:, :-1] = dct_ii_basis(times, order, normcols=True)[:, 1:]
         assert_array_equal(dct_vals, dct_expected)

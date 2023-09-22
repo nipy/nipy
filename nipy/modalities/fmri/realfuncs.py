@@ -27,7 +27,7 @@ def dct_ii_basis(volume_times, order=None, normcols=False):
     Returns
     -------
     dct_basis : array
-        Shape ``(len(volume_times), order)`` array with DCT-II basis up to
+        Shape ``(len(volume_times), order + 1)`` array with DCT-II basis up to
         order `order`.
 
     Raises
@@ -43,11 +43,11 @@ def dct_ii_basis(volume_times, order=None, normcols=False):
         raise ValueError("DCT basis assumes continuous regular sampling")
     n = np.arange(N)
     cycle = np.pi * (n + 0.5) / N
-    dct_basis = np.zeros((N, order))
-    for k in range(0, order):
+    dct_basis = np.zeros((N, order + 1))
+    for k in range(0, order + 1):
         dct_basis[:, k] = np.cos(cycle * k)
     if normcols:  # Set column lengths to 1
-        lengths = np.ones(order) * np.sqrt(N / 2.)
+        lengths = np.ones(order + 1) * np.sqrt(N / 2.)
         lengths[0:1] = np.sqrt(N)  # Allow order=0
         dct_basis /= lengths
     return dct_basis
@@ -80,6 +80,6 @@ def dct_ii_cut_basis(volume_times, cut_period):
     # Always return constant column
     if order == 0:
         return np.ones((N, 1))
-    basis = np.ones((N, order))
+    basis = np.ones((N, order + 1))
     basis[:, :-1] = dct_ii_basis(volume_times, order, normcols=True)[:, 1:]
     return basis
