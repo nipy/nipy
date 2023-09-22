@@ -36,5 +36,6 @@ jobs:
         run: env
       - name: Library tests
         run: |
+          mkdir ../tmp
+          cd ../tmp
           python ../nipy/tools/nipnost --verbosity=3 nipy
-        working-directory: ../tmp
