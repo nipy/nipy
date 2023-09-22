@@ -76,7 +76,7 @@ Tests
 To run nipy's tests, you will need to install the nose_ Python testing
 package::
 
-    pip install nose
+    pip install nose3
 
 Then::
 

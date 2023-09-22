@@ -104,6 +104,9 @@ Tests
 To run nipy's tests, you will need to install the nose_ Python testing
 package::
 
+    pip install nose3
+
+
 Then::
 
     python -c "import nipy; nipy.test()"
