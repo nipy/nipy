@@ -11,8 +11,16 @@ on:
 permissions:
   contents: read # to fetch code (actions/checkout)
 
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test_spin:
+  test:
     strategy:
       matrix:
         python_version: ["3.9"]
@@ -28,7 +36,10 @@ jobs:
         run: |
           pip install numpy "Cython<3" nose nibabel "sympy<1.6" scipy
           pip install .
+      - name: Show environment
+        run: env
       - name: Library tests
         run: |
-          cd ..
-          python ../tools/nipnost --verbosity=3 nipy
+          mkdir ../tmp
+          cd ../tmp
+          python ../nipy/tools/nipnost --traverse-namespace --verbosity=3 nipy

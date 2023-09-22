@@ -18,8 +18,6 @@ from .. import formulae as F
 from ..formulae import terms, Term
 from nipy.utils import VisibleDeprecationWarning
 
-from nibabel.testing import assert_dt_equal
-
 from nose.tools import (assert_true, assert_equal, assert_false,
                         assert_raises)
 
@@ -218,7 +216,7 @@ def assert_starr_equal(a, b):
     assert_equal(a.dtype.names, b.dtype.names)
     for name in a.dtype.names:
         assert_array_equal(a[name], b[name])
-        assert_dt_equal(a[name].dtype, b[name].dtype)
+        assert_equal(a[name].dtype, b[name].dtype)
 
 
 def test_make_recarray():

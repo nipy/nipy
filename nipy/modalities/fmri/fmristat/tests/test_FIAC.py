@@ -21,7 +21,7 @@ from nipy.algorithms.statistics.formula import formulae
 from nipy.utils.compat3 import to_str
 
 # testing imports
-from nipy.testing import (dec, assert_true, assert_almost_equal)
+from nipy.testing import (assert_true, assert_almost_equal)
 
 # Local imports
 from .FIACdesigns import (descriptions, fmristat, altdescr,
@@ -283,7 +283,7 @@ def test_agreement():
                 assert_true(np.greater(np.abs(cmax), 0.999))
 
 
-@dec.slow
+# @dec.slow
 def test_event_design():
     block = altdescr['block']
     event = altdescr['event']

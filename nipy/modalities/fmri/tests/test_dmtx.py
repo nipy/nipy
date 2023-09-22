@@ -9,6 +9,7 @@ not whether it is exact
 
 from __future__ import with_statement
 from __future__ import absolute_import
+from unittest import skipIf
 
 import numpy as np
 import os.path as osp
@@ -20,7 +21,7 @@ from ..design_matrix import (dmtx_light, _convolve_regressors, dmtx_from_csv,
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nose.tools import assert_true, assert_equal
-from numpy.testing import assert_almost_equal, dec, assert_array_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 try:
     import matplotlib.pyplot
@@ -65,7 +66,7 @@ def block_paradigm():
     return paradigm
 
 
-@dec.skipif(not have_mpl)
+@skipIf(not have_mpl, reason="Needs matplotlib")
 def test_show_dmtx():
     # test that the show code indeed (formally) runs
     frametimes = np.linspace(0, 127 * 1.,128)
@@ -89,7 +90,7 @@ def test_cosine_drift():
     # nipy_drifts is placing the constant at the end [:,:-1]
 
 
-@dec.skipif(not have_mpl)
+@skipIf(not have_mpl, reason="Needs matplotlib")
 def test_show_constrast():
     # test that the show code indeed (formally) runs
     frametimes = np.linspace(0, 127 * 1.,128)
