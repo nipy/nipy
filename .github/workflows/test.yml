@@ -12,7 +12,7 @@ permissions:
   contents: read # to fetch code (actions/checkout)
 
 jobs:
-  test_spin:
+  test:
     strategy:
       matrix:
         python_version: ["3.9"]
@@ -30,5 +30,4 @@ jobs:
           pip install .
       - name: Library tests
         run: |
-          cd ..
-          python ../tools/nipnost --verbosity=3 nipy
+          python tools/nipnost --verbosity=3 nipy
