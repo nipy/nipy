@@ -15,7 +15,7 @@ from .. import rft
 
 from nose.tools import assert_raises
 
-from numpy.testing import assert_almost_equal, dec
+from numpy.testing import assert_almost_equal
 
 #def rho(x, dim, df=np.inf):
 #    """
@@ -184,7 +184,7 @@ def test_polynomial2():
         yield assert_almost_equal, q.c, 2*h.c
 
 
-@dec.slow
+# @dec.slow
 def test_polynomial3():
     # EC density of F with infinite dfd is the same as chi^2 --
     # polynomials should be the same.
@@ -195,7 +195,7 @@ def test_polynomial3():
             yield assert_almost_equal, q1.c, q2.c
 
 
-@dec.slow
+# @dec.slow
 def test_chi1():
     # EC density of F with infinite dfd is the same as chi^2 -- EC should be the
     # same.
@@ -254,7 +254,7 @@ def test_search():
     assert_almost_equal(v1, v2)
 
 
-@dec.slow
+# @dec.slow
 def test_search1():
     # Test that the search region works.
     # XXX - we are not testing anything
@@ -275,7 +275,7 @@ def test_search1():
                 v2 += stat.density(x, i) * search.mu[i]
 
 
-@dec.slow
+# @dec.slow
 def test_search2():
     # Test that the search region works.
     search = rft.IntrinsicVolumes([3,4,5])
@@ -338,7 +338,7 @@ def test_search5():
     assert_almost_equal(y, z)
 
 
-@dec.slow
+# @dec.slow
 def test_T2():
     # T**2 is an F with dfn=1
     x = np.linspace(0,5,101)
@@ -351,7 +351,7 @@ def test_T2():
             yield assert_almost_equal, y, z
 
 
-@dec.slow
+# @dec.slow
 def test_hotelling1():
     # Asymptotically, Hotelling is the same as F which is the same as chi^2.
     x = np.linspace(0.1,10,100)
@@ -362,7 +362,7 @@ def test_hotelling1():
             yield assert_almost_equal, h, f
 
 
-@dec.slow
+# @dec.slow
 def test_hotelling4():
     # Hotelling T^2 should just be like taking product with sphere.
     x = np.linspace(0.1,10,100)
@@ -415,7 +415,7 @@ def test_hotelling2():
             assert_almost_equal(h, f)
 
 
-@dec.slow
+# @dec.slow
 def test_roy1():
     # EC densities of Roy with dfn=1 should be twice EC densities of Hotelling
     # T^2's.
@@ -428,7 +428,7 @@ def test_roy1():
                 yield assert_almost_equal, h, r
 
 
-@dec.slow
+# @dec.slow
 def test_onesidedF():
     # EC densities of one sided F should be a difference of
     # F EC densities
@@ -442,7 +442,7 @@ def test_onesidedF():
                 yield assert_almost_equal, onesided, 0.5*(f1-f2)
 
 
-@dec.slow
+# @dec.slow
 def test_multivariate_forms():
     # MVform with one sphere is sqrt(chi^2), two spheres is sqrt(Roy) with
     # infinite degrees of freedom.
@@ -479,7 +479,7 @@ def test_F1():
                 yield assert_almost_equal, f1, f2
 
 
-@dec.slow
+# @dec.slow
 def test_F2():
     x = np.linspace(0.1,10,100)
     for dim in range(3,7):
@@ -490,7 +490,7 @@ def test_F2():
                 yield assert_almost_equal, f1, f2
 
 
-@dec.slow
+# @dec.slow
 def test_F3():
     x = np.linspace(0.1,10,100)
     for dim in range(3,7):

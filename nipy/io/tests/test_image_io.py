@@ -8,7 +8,8 @@ import six
 import numpy as np
 
 import nibabel as nib
-from nibabel.spatialimages import ImageFileError, HeaderDataError
+from nibabel.filebasedimages import ImageFileError
+from nibabel.spatialimages import HeaderDataError
 from nibabel import Nifti1Header
 
 from ..api import load_image, save_image, as_image

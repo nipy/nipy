@@ -8,6 +8,7 @@ from __future__ import absolute_import
 
 import os
 from os.path import join as pjoin, isfile
+from unittest import skipIf
 
 import numpy as np
 
@@ -21,18 +22,12 @@ from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 from ..testing import funcfile
 from numpy.testing import assert_almost_equal
 
-try:
-    from numpy.testing import decorators
-except ImportError:
-    from numpy.testing import dec
-    decorators = dec
-
 from nipy.testing.decorators import make_label_dec
 
 from nibabel.optpkg import optional_package
 
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
-needs_mpl = decorators.skipif(not HAVE_MPL, "Test needs matplotlib")
+needs_mpl = skipIf(not HAVE_MPL, "Test needs matplotlib")
 script_test = make_label_dec('script_test')
 
 from .scriptrunner import ScriptRunner

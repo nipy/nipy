@@ -25,12 +25,6 @@ from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_almost_equal)
 
-try:
-    from numpy.testing import decorators
-except ImportError:
-    from numpy.testing import dec
-    decorators = dec
-
 from nipy.testing import funcfile
 from nipy.testing.decorators import needs_mpl_agg
 

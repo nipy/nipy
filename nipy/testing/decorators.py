@@ -8,19 +8,16 @@ dependency on nose.
 from __future__ import print_function
 from __future__ import absolute_import
 
-from six import string_types
+from unittest import skipIf
 
-try:
-    from numpy.testing.decorators import *
-except ImportError:
-    from numpy.testing._private.decorators import *
+from six import string_types
 
 from nipy.utils import templates, example_data, DataError
 
 from nibabel.optpkg import optional_package
 
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
-needs_mpl = skipif(not HAVE_MPL, "Test needs matplotlib")
+needs_mpl = skipIf(not HAVE_MPL, "Test needs matplotlib")
 
 
 def make_label_dec(label, ds=None):
@@ -94,7 +91,7 @@ def needs_review(msg):
         msg regarding the review that needs to be done
     """
     def skip_func(func):
-        return skipif(True, msg)(func)
+        return skipIf(True, msg)(func)
     return skip_func
 
 
@@ -107,7 +104,7 @@ def if_datasource(ds, msg):
     try:
         ds.get_filename()
     except DataError:
-        return skipif(True, msg)
+        return skipIf(True, msg)
     return lambda f : f
 
 

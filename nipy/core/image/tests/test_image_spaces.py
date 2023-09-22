@@ -54,7 +54,7 @@ def test_image_xyz_affine():
 
 def test_image_as_xyz_image():
     # Test getting xyz affable version of the image
-    arr = np.arange(24).reshape((1,2,3,4))
+    arr = np.arange(24, dtype='float32').reshape((1,2,3,4))
     aff = np.diag([2,3,4,5,1])
     img = Image(arr, vox2mni(aff))
     img_r = as_xyz_image(img)
@@ -90,7 +90,7 @@ def test_image_as_xyz_image():
     img = Image(arr, vox2mni(aff))
     assert_raises(AffineError, as_xyz_image, img)
     # If any dimensions not spatial, AxesError
-    arr = np.arange(24).reshape((2,3,4))
+    arr = np.arange(24, dtype='float32').reshape((2,3,4))
     aff = np.diag([2,3,4,1])
     d_cs = CS('ijk', 'voxels')
     r_cs = CS(('mni-x=L->R', 'mni-y=P->A', 'mni-q'), 'mni')
@@ -109,7 +109,7 @@ def test_image_as_xyz_image():
 def test_image_xyza_slices():
     # Jonathan found some nastiness where xyz present in output but there was
     # not corresponding axis for x in the input
-    arr = np.arange(24).reshape((1,2,3,4))
+    arr = np.arange(24, dtype='float32').reshape((1,2,3,4))
     aff = np.diag([2,3,4,5,1])
     img = Image(arr, vox2mni(aff))
     img0 = img[0] # slice in X
@@ -122,7 +122,7 @@ def test_image_xyza_slices():
 
 def test_make_xyz_image():
     # Standard neuro image creator
-    arr = np.arange(24).reshape((1,2,3,4))
+    arr = np.arange(24, dtype='float32').reshape((1,2,3,4))
     aff = np.diag([2,3,4,1])
     img = make_xyz_image(arr, aff, 'mni')
     assert_equal(img.coordmap, vox2mni(aff, 1.0))

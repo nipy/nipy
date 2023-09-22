@@ -124,7 +124,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
         if not data.shape[1:] == mask.shape:
             raise ValueError('Mask should match dimensions of data other than '
                              'the axis over which to do the PCA')
-    if design_resid == 'mean':
+    if isinstance(design_resid, str) and design_resid == 'mean':
         # equivalent to: design_resid = np.ones((data.shape[0], 1))
         def project_resid(Y):
             return Y - Y.mean(0)[None,...]

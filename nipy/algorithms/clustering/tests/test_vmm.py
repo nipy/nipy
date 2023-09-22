@@ -4,6 +4,7 @@ Test the Von-Mises-Fisher mixture model
 Author : Bertrand Thirion, 2010
 """
 from __future__ import absolute_import
+from unittest import skipIf
 
 import numpy as np
 
@@ -13,16 +14,11 @@ from ..von_mises_fisher_mixture import (VonMisesMixture,
                                         select_vmm_cv)
 
 from nose.tools import assert_true, assert_equal
-try:
-    from numpy.testing import decorators
-except ImportError:
-    from numpy.testing import dec
-    decorators = dec
 
 from nibabel.optpkg import optional_package
 
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
-needs_mpl = decorators.skipif(not HAVE_MPL, "Test needs matplotlib")
+needs_mpl = skipIf(not HAVE_MPL, "Test needs matplotlib")
 
 
 def test_spherical_area():

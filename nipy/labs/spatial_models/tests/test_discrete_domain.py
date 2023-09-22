@@ -17,10 +17,6 @@ from ..discrete_domain import smatrix_from_nd_idx, smatrix_from_3d_array, \
 from nibabel import Nifti1Image
 import nibabel.gifti as nbg
 
-from nipy.testing.decorators import skipif
-
-GOOD_GIFTI = hasattr(nbg, 'GiftiDataArray')
-
 shape = np.array([5, 6, 7, 8, 9])
 
 
@@ -215,7 +211,6 @@ def test_grid_domain_mask():
     assert_equal(mdom.size, np.sum(toto > .5))
 
 
-@skipif(not GOOD_GIFTI)
 def test_domain_from_mesh():
     """Test domain_from_mesh method
     """

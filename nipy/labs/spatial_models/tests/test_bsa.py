@@ -12,7 +12,7 @@ import numpy as np
 import scipy.stats as st
 from nose.tools import assert_true
 
-from nipy.testing import dec, assert_array_equal
+from nipy.testing import assert_array_equal
 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
 from ..bayesian_structural_analysis import compute_landmarks, _stat_to_proba
@@ -38,7 +38,7 @@ def make_bsa_2d(betas, theta=3., sigma=5., ths=0, thq=0.5, smin=3,
     return AF, BF
 
 
-@dec.slow
+# @dec.slow
 def test_bsa_methods():
     # generate the data
     n_subj = 5

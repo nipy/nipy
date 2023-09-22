@@ -22,7 +22,7 @@ CS = CoordinateSystem
 from nose.tools import (assert_true, assert_equal, assert_raises,
                         assert_false)
 
-from numpy.testing import (assert_array_equal, assert_almost_equal, dec)
+from numpy.testing import assert_array_equal, assert_almost_equal
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing
