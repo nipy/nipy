@@ -102,10 +102,10 @@ Tests
 =====
 
 To run nipy's tests, you will need to install the nose_ Python testing
-package.  If you are using Python 2.7, you will also need to install the mock_
-testing package - e.g.::
+package::
 
-    pip install nose mock
+    pip install nose3
+
 
 Then::
 
@@ -140,7 +140,6 @@ the nipy distribution.
 .. _ipython: http://ipython.org
 .. _matplotlib: http://matplotlib.org
 .. _nose: http://nose.readthedocs.org/en/latest
-.. _mock: https://pypi.python.org/pypi/mock
 .. _six: https://six.readthedocs.io
 .. _installation instructions: http://nipy.org/nipy/users/installation.html
 """
