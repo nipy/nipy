@@ -28,6 +28,9 @@ jobs:
         run: |
           pip install numpy "Cython<3" nose nibabel "sympy<1.6" scipy
           pip install .
+      - name: Show environment
+        run: env
       - name: Library tests
         run: |
-          python tools/nipnost --verbosity=3 nipy
+          python /home/runner/work/nipy/nipy/tools/nipnost --verbosity=3 nipy
+        working-directory: /tmp
