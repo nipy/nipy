@@ -54,14 +54,14 @@ def main():
     for name, path in sorted(names.items()):
         if options.output_dir is not None:
             path = options.output_dir
-        
+
         if not os.path.isdir(path):
             os.makedirs(path)
 
         try:
             obj, name = import_by_name(name)
-        except ImportError, e:
-            print "Failed to import '%s': %s" % (name, e)
+        except ImportError as e:
+            print(f"Failed to import '{name}': {e}")
             continue
 
         fn = os.path.join(path, '%s.rst' % name)
@@ -121,7 +121,7 @@ def get_documented_in_docstring(name, module=None, filename=None):
     """
     Find out what items are documented in the given object's docstring.
     See `get_documented_in_lines`.
-    
+
     """
     try:
         obj, real_name = import_by_name(name)
@@ -129,14 +129,14 @@ def get_documented_in_docstring(name, module=None, filename=None):
         return get_documented_in_lines(lines, module=name, filename=filename)
     except AttributeError:
         pass
-    except ImportError, e:
-        print "Failed to import '%s': %s" % (name, e)
+    except ImportError as e:
+        print(f"Failed to import '{name}': {e}")
     return {}
 
 def get_documented_in_lines(lines, module=None, filename=None):
     """
     Find out what items are documented in the given lines
-    
+
     Returns
     -------
     documented : dict of list of (filename, title, keyword, toctree)
@@ -153,15 +153,15 @@ def get_documented_in_lines(lines, module=None, filename=None):
     module_re = re.compile(r'^\.\.\s+(current)?module::\s*([a-zA-Z0-9_.]+)\s*$')
     autosummary_item_re = re.compile(r'^\s+([_a-zA-Z][a-zA-Z0-9_.]*)\s*.*?')
     toctree_arg_re = re.compile(r'^\s+:toctree:\s*(.*?)\s*$')
-    
+
     documented = {}
-   
+
     current_title = []
     last_line = None
     toctree = None
     current_module = module
     in_autosummary = False
-    
+
     for line in lines:
         try:
             if in_autosummary:

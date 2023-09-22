@@ -29,7 +29,7 @@ def find_pkg(pkg):
     test_file = os.path.basename(pkg)
     module = os.path.splitext(test_file)[0] # remove '.py' extension
     module = module.split('test_')[1] # remove 'test_' prefix
-    
+
     cover_pkg = None
     fp = open(pkg, 'r')
     for line in fp:
@@ -44,9 +44,9 @@ def find_pkg(pkg):
             imptline = '.'.join(imptline)
             try:
                 # Find index that immediately follows the module we care about
-                index = imptline.index(module) 
+                index = imptline.index(module)
                 index += len(module)
-                cover_pkg = imptline[:index] 
+                cover_pkg = imptline[:index]
                 break
             except ValueError:
                 pass
@@ -58,11 +58,11 @@ def run_nose(cover_pkg, test_file, dry_run=False):
     sys.argv += ['-sv', '--with-coverage', cover_arg]
     # Print out command for user feedback and debugging
     cmd = 'nosetests -sv --with-coverage %s %s' % (cover_arg, test_file)
-    print cmd
+    print(cmd)
     if dry_run:
         return cmd
     else:
-        print
+        print()
         nose.run()
 
 
@@ -90,5 +90,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

@@ -26,7 +26,6 @@ TR as input, and return a vector of slice times:
 >>> ascending(10, 2.)
 array([ 0. ,  0.2,  0.4,  0.6,  0.8,  1. ,  1.2,  1.4,  1.6,  1.8])
 """
-from __future__ import division, print_function, absolute_import
 
 import numpy as np
 
@@ -41,10 +40,8 @@ def _dec_filldoc(func):
     """
     func._doc_template = func.__doc__
     func.__doc__ = func.__doc__.format(
-        **dict(
-            name = func.__name__,
-            pstr=
-"""Note: slice 0 is the first slice in the voxel data block
+            name=func.__name__,
+            pstr="""Note: slice 0 is the first slice in the voxel data block
 
     Parameters
     ----------
@@ -59,7 +56,7 @@ def _dec_filldoc(func):
         Vectors $t_i i = 0 ... N$ of times, one for each slice, where $t_i$
         gives the time at which slice number $i$ was acquired, relative to the
         beginning of the volume acquisition.
-    """))
+    """)
     return func
 
 

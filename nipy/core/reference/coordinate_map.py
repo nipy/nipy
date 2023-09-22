@@ -60,24 +60,19 @@ Operations on mappings (module level functions)
   range.  For mapping ``m``, this is the same as
   ``product(AffineTransform.identity('concat'), m)``
 """
-from __future__ import absolute_import
 
 import warnings
 
 import numpy as np
 import numpy.linalg as npl
-
-from nibabel.affines import to_matvec, from_matvec
 from nibabel import io_orientation
-
-from .coordinate_system import(CoordinateSystem,
-                               safe_dtype,
-                               is_coordsys,
-                               product as coordsys_product
-                               )
+from nibabel.affines import from_matvec, to_matvec
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
+
+from .coordinate_system import CoordinateSystem, is_coordsys, safe_dtype
+from .coordinate_system import product as coordsys_product
 
 # shorthand
 CS = CoordinateSystem
@@ -86,7 +81,7 @@ CS = CoordinateSystem
 TINY = 1e-5
 
 
-class CoordinateMap(object):
+class CoordinateMap:
     """A set of domain and range CoordinateSystems and a function between them.
 
     For example, the function may represent the mapping of a voxel (the
@@ -472,7 +467,7 @@ class CoordinateMap(object):
                 and (self.inverse_function == other.inverse_function))
 
 
-class AffineTransform(object):
+class AffineTransform:
     """ Class for affine transformation from domain to a range
 
     This class has an affine attribute, which is a matrix representing
@@ -1005,10 +1000,9 @@ class AffineTransform(object):
 
     def __repr__(self):
         return ("AffineTransform(\n"
-                "   function_domain=%s,\n"
-                "   function_range=%s,\n"
-                "   affine=%s\n)" %
-                (self.function_domain,
+                "   function_domain={},\n"
+                "   function_range={},\n"
+                "   affine={}\n)".format(self.function_domain,
                  self.function_range,
                  '\n          '.join(repr(self.affine).split('\n'))))
 
@@ -1200,7 +1194,7 @@ def reordered_domain(mapping, order=None):
     ndim = mapping.ndims[0]
     if order is None:
         order = list(range(ndim))[::-1]
-    elif type(order[0]) == type(''):
+    elif type(order[0]) == str:
         order = [mapping.function_domain.index(s) for s in order]
 
     newaxes = [mapping.function_domain.coord_names[i] for i in order]
@@ -1371,7 +1365,7 @@ def renamed_domain(mapping, newnames, name=''):
     ValueError: no domain coordinate named l
     """
     for key in list(newnames):
-        if type(key) == type(0):
+        if type(key) == int:
             newnames[mapping.function_domain.coord_names[key]] = \
                 newnames[key]
             del(newnames[key])
@@ -1435,7 +1429,7 @@ def renamed_range(mapping, newnames):
     ValueError: no range coordinate named w
     """
     for key in list(newnames):
-        if type(key) == type(0):
+        if type(key) == int:
             newnames[mapping.function_range.coord_names[key]] = \
                 newnames[key]
             del(newnames[key])
@@ -1506,7 +1500,7 @@ def reordered_range(mapping, order=None):
     ndim = mapping.ndims[1]
     if order is None:
         order = list(range(ndim))[::-1]
-    elif type(order[0]) == type(''):
+    elif type(order[0]) == str:
         order = [mapping.function_range.index(s) for s in order]
 
     newaxes = [mapping.function_range.coord_names[i] for i in order]
@@ -1693,8 +1687,7 @@ def _compose_cmaps(*cmaps):
         else:
             raise ValueError(
                 'domain and range coordinates do not match: '
-                'domain=%s, range=%s' %
-                (cmap.function_domain.dtype, cur.function_range.dtype))
+                f'domain={cmap.function_domain.dtype}, range={cur.function_range.dtype}')
 
     return cur
 
@@ -1718,9 +1711,9 @@ def _product_cmaps(*cmaps, **kwargs):
         return yy
 
     incoords = coordsys_product(*[cmap.function_domain for cmap in cmaps],
-                                **{'name': input_name})
+                                name=input_name)
     outcoords = coordsys_product(*[cmap.function_range for cmap in cmaps],
-                                **{'name': output_name})
+                                name=output_name)
     return CoordinateMap(incoords, outcoords, function)
 
 
@@ -1823,7 +1816,7 @@ def drop_io_dim(cm, axis_id, fix0=True):
     aff = cm.affine.copy()
     # What dimensions did you ask for?
     in_dim, out_dim = io_axis_indices(cm, axis_id, fix0)
-    if not None in (in_dim, out_dim):
+    if None not in (in_dim, out_dim):
         if not orth_axes(in_dim, out_dim, aff, allow_zero=fix0):
             raise AxisError('Input and output dimensions not orthogonal to '
                             'rest of affine')
@@ -1954,7 +1947,7 @@ def axmap(coordmap, direction='in2out', fix0=True):
     """
     in2out = direction in ('in2out', 'both')
     out2in = direction in ('out2in', 'both')
-    if not True in (in2out, out2in):
+    if True not in (in2out, out2in):
         raise ValueError('Direction must be one of "in2out", "out2in", "both"')
     affine = coordmap.affine
     affine = _fix0(affine) if fix0 else affine
@@ -2153,7 +2146,7 @@ class CoordMapMakerError(Exception):
     pass
 
 
-class CoordMapMaker(object):
+class CoordMapMaker:
     """ Class to create coordinate maps of different dimensions
     """
     generic_maker = CoordinateMap
