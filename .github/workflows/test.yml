@@ -36,5 +36,5 @@ jobs:
         run: env
       - name: Library tests
         run: |
-          python $GITHUB_WORKSPACE/tools/nipnost --verbosity=3 nipy
-        working-directory: /tmp
+          python ../nipy/tools/nipnost --verbosity=3 nipy
+        working-directory: ../tmp
