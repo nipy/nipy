@@ -349,10 +349,10 @@ class Affine(Transform):
         return a
 
     def __str__(self):
-        string = 'translation : %s\n' % str(self.translation)
-        string += 'rotation    : %s\n' % str(self.rotation)
-        string += 'scaling     : %s\n' % str(self.scaling)
-        string += 'pre-rotation: %s' % str(self.pre_rotation)
+        string = f'translation : {str(self.translation)}\n'
+        string += f'rotation    : {str(self.rotation)}\n'
+        string += f'scaling     : {str(self.scaling)}\n'
+        string += f'pre-rotation: {str(self.pre_rotation)}'
         return string
 
     def inv(self):
@@ -392,8 +392,8 @@ class Rigid(Affine):
         self._vec12 = vec12
 
     def __str__(self):
-        string = 'translation : %s\n' % str(self.translation)
-        string += 'rotation    : %s\n' % str(self.rotation)
+        string = f'translation : {str(self.translation)}\n'
+        string += f'rotation    : {str(self.rotation)}\n'
         return string
 
 
@@ -434,9 +434,9 @@ class Similarity(Affine):
     param = property(Affine._get_param, _set_param)
 
     def __str__(self):
-        string = 'translation : %s\n' % str(self.translation)
-        string += 'rotation    : %s\n' % str(self.rotation)
-        string += 'scaling     : %s\n' % str(self.scaling[0])
+        string = f'translation : {str(self.translation)}\n'
+        string += f'rotation    : {str(self.rotation)}\n'
+        string += f'scaling     : {str(self.scaling[0])}\n'
         return string
 
 

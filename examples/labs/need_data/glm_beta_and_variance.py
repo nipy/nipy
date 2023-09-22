@@ -67,7 +67,7 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-print('Computation will be performed in directory: %s' % write_dir)
+print(f'Computation will be performed in directory: {write_dir}')
 
 ########################################
 # Design matrix
@@ -111,7 +111,7 @@ beta_image = Nifti1Image(beta_map, fmri_glm.affine)
 beta_image.get_header()['descrip'] = (
     'Parameter estimates of the localizer dataset')
 save(beta_image, path.join(write_dir, 'beta.nii'))
-print("Beta image witten in %s" % write_dir)
+print(f"Beta image witten in {write_dir}")
 
 variance_map = mask.astype(np.float64)
 variance_map[mask] = variance_hat

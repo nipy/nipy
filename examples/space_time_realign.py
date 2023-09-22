@@ -51,7 +51,7 @@ R.estimate(refscan=None)
 # Resample data on a regular space+time lattice using 4d interpolation
 # Save images
 cwd = abspath(os.getcwd())
-print('Saving results in: %s' % cwd)
+print(f'Saving results in: {cwd}')
 for i in range(len(runs)):
     corr_run = R.resample(i)
     fname = 'ra' + psplit(runnames[i])[1]

@@ -66,7 +66,7 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-print('Computation will be performed in directory: %s' % write_dir)
+print(f'Computation will be performed in directory: {write_dir}')
 
 ########################################
 # Design matrix
@@ -87,7 +87,7 @@ design_matrix = make_dmtx(frametimes, paradigm, hrf_model=hrf_model,
 contrasts = {}
 n_columns = len(design_matrix.names)
 for i in range(paradigm.n_conditions):
-    contrasts['%s' % design_matrix.names[i]] = np.eye(n_columns)[i]
+    contrasts[f'{design_matrix.names[i]}'] = np.eye(n_columns)[i]
 
 # and more complex/ interesting ones
 contrasts['left'] = contrasts['clicGaudio'] + contrasts['clicGvideo']
@@ -110,10 +110,10 @@ contrast_id = 'left_right_motor_min'
 z_map, effects_map = fmri_glm.contrast(
     np.vstack((contrasts['left'], contrasts['right'])), 
     contrast_type='tmin-conjunction', output_z=True, output_effects=True)
-z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
+z_image_path = path.join(write_dir, f'{contrast_id}_z_map.nii')
 save(z_map, z_image_path)
 
-contrast_path = path.join(write_dir, '%s_con.nii' % contrast_id)
+contrast_path = path.join(write_dir, f'{contrast_id}_con.nii')
 save(effects_map, contrast_path)
 # note that the effects_map is two-dimensional: 
 # these dimensions correspond to 'left' and 'right'
@@ -127,9 +127,9 @@ plot_map(z_map.get_fdata(), fmri_glm.affine,
          anat=None,
          figure=10,
          threshold=2.5)
-plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
+plt.savefig(path.join(write_dir, f'{contrast_id}_z_map.png'))
 plt.show()
 
-print('All the  results were witten in %s' % write_dir)
+print(f'All the  results were witten in {write_dir}')
 # Note: fancier visualization of the results are shown
 # in the viz3d example

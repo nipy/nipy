@@ -254,7 +254,7 @@ class FactorTerm(Term):
 
     def __new__(cls, name, level):
         # Names or levels can be byte strings
-        new = Term.__new__(cls, "%s_%s" % (to_str(name), to_str(level)))
+        new = Term.__new__(cls, f"{to_str(name)}_{to_str(level)}")
         new.level = level
         new.factor_name = name
         return new
@@ -523,7 +523,7 @@ class Formula(object):
     dtype = property(_getdtype, doc='The dtype of the design matrix of the Formula.')
 
     def __repr__(self):
-        return "Formula(%r)" % (list(self.terms),)
+        return f"Formula({list(self.terms)!r})"
 
     def __getitem__(self, key):
         """ Return the term such that str(term) == key.
@@ -541,7 +541,7 @@ class Formula(object):
         try:
             idx = names.index(key)
         except ValueError:
-            raise ValueError('term %s not found' % key)
+            raise ValueError(f'term {key} not found')
         return self.terms[idx]
 
     @staticmethod
@@ -879,7 +879,7 @@ class Formula(object):
                     factor_col = factor_col.astype('U')
                 fl_ind =  np.array([x == t.level
                                     for x in factor_col]).reshape(-1)
-                term_recarray['%s_%s' % (t.factor_name, t.level)] = fl_ind
+                term_recarray[f'{t.factor_name}_{t.level}'] = fl_ind
         # The lambda created in self._setup_design needs to take a tuple of
         # columns as argument, not an ndarray, so each column
         # is extracted and put into float_tuple.
@@ -1064,7 +1064,7 @@ class Factor(Formula):
         """
         if level not in self.levels:
             raise ValueError('level not found')
-        return self["%s_%s" % (self.name, str(level))]
+        return self[f"{self.name}_{str(level)}"]
 
     def _getmaineffect(self, ref=-1):
         v = list(self._terms.copy())

@@ -42,7 +42,7 @@ DATADIR = 'fiac_data'
 
 # Sanity check
 if not os.path.isdir(DATADIR):
-    e="The data directory %s must exist and contain the FIAC data." % DATADIR
+    e=f"The data directory {DATADIR} must exist and contain the FIAC data."
     raise IOError(e)
 
 #-----------------------------------------------------------------------------

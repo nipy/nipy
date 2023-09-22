@@ -112,8 +112,7 @@ class CutAxes(object):
         elif self.direction == 'z':
             cut = np.rot90(map[:, :, z_map])
         else:
-            raise ValueError('Invalid value for direction %s' %
-                             self.direction)
+            raise ValueError(f'Invalid value for direction {self.direction}')
         return cut
 
 
@@ -136,8 +135,7 @@ class CutAxes(object):
             (xmin, xmax), (zmin, zmax), (_, _) = data_bounds
             (xmin_, xmax_), (zmin_, zmax_), (_, _) = bounding_box
         else:
-            raise ValueError('Invalid value for direction %s' %
-                             self.direction)
+            raise ValueError(f'Invalid value for direction {self.direction}')
         ax = self.ax
         getattr(ax, type)(cut, extent=(xmin, xmax, zmin, zmax), **kwargs)
 

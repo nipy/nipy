@@ -37,7 +37,7 @@ DATADIR = 'ds105_data'
 
 # Sanity check
 if not os.path.isdir(DATADIR):
-    e="The data directory %s must exist and contain the ds105 data." % DATADIR
+    e=f"The data directory {DATADIR} must exist and contain the ds105 data."
     raise IOError(e)
 
 #-----------------------------------------------------------------------------

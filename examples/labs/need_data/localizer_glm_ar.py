@@ -69,7 +69,7 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-print('Computation will be performed in directory: %s' % write_dir)
+print(f'Computation will be performed in directory: {write_dir}')
 
 ########################################
 # Design matrix
@@ -96,7 +96,7 @@ plt.savefig(path.join(write_dir, 'design_matrix.png'))
 contrasts = {}
 n_columns = len(design_matrix.names)
 for i in range(paradigm.n_conditions):
-    contrasts['%s' % design_matrix.names[2 * i]] = np.eye(n_columns)[2 * i]
+    contrasts[f'{design_matrix.names[2 * i]}'] = np.eye(n_columns)[2 * i]
 
 # and more complex/ interesting ones
 contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\
@@ -137,7 +137,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' %
           (index + 1, len(contrasts), contrast_id))
     # save the z_image
-    image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
+    image_path = path.join(write_dir, f'{contrast_id}_z_map.nii')
     z_map, = fmri_glm.contrast(contrast_val, con_id=contrast_id, output_z=True)
     save(z_map, image_path)
 
@@ -155,8 +155,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
              black_bg=True,  # looks much better thus
              figure=10,
              threshold=2.5)
-    plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
+    plt.savefig(path.join(write_dir, f'{contrast_id}_z_map.png'))
 
-print("All the  results were witten in %s" % write_dir)
+print(f"All the  results were witten in {write_dir}")
 
 plt.show()

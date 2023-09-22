@@ -137,7 +137,7 @@ def _save_image(img, path):
     try:
         save_image(img, path)
     except:
-        warnings.warn('Could not write image: %s' % path, UserWarning)
+        warnings.warn(f'Could not write image: {path}', UserWarning)
 
 
 class ParcelAnalysis(object):

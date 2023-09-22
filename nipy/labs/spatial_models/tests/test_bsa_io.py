@@ -37,10 +37,10 @@ def test_parcel_intra_from_3d_images_list():
 
         assert_equal(landmark, None)
         assert_equal(len(hrois), 5)
-        assert_true(exists('density_%s.nii' % contrast_id))
-        assert_true(exists('prevalence_%s.nii' % contrast_id))
-        assert_true(exists('AR_%s.nii' % contrast_id))
-        assert_true(exists('CR_%s.nii' % contrast_id))
+        assert_true(exists(f'density_{contrast_id}.nii'))
+        assert_true(exists(f'prevalence_{contrast_id}.nii'))
+        assert_true(exists(f'AR_{contrast_id}.nii'))
+        assert_true(exists(f'CR_{contrast_id}.nii'))
 
 
 if __name__ == "__main__":

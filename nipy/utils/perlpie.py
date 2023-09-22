@@ -86,20 +86,20 @@ def perl_dash_pie(oldstr, newstr, dry_run=None):
     """
 
     if dry_run:
-        cmd = "grind | xargs perl -p -e 's/%s/%s/g'" % (oldstr, newstr)
+        cmd = f"grind | xargs perl -p -e 's/{oldstr}/{newstr}/g'"
     else:
-        cmd = "grind | xargs perl -pi -e 's/%s/%s/g'" % (oldstr, newstr)
+        cmd = f"grind | xargs perl -pi -e 's/{oldstr}/{newstr}/g'"
     print(cmd)
 
     try:
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError as err:
-        msg = """
+        msg = f"""
         Error while executing perl_dash_pie command:
-        %s
+        {cmd}
         Error:
-        %s
-        """ % (cmd, str(err))
+        {str(err)}
+        """
         raise Exception(msg)
 
 def print_extended_help(option, opt_str, value, parser, *args, **kwargs):

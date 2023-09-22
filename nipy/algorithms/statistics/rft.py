@@ -196,7 +196,7 @@ class ECquasi(np.poly1d):
             if 2*float(val) % 1 == 0: 
                 self.__dict__[key] = float(val)
             else:
-                raise ValueError('expecting multiple of a half, got %f' % val)
+                raise ValueError(f'expecting multiple of a half, got {val:f}')
         elif key == 'm':
             if float(val) > 0 or val == np.inf:
                 self.__dict__[key] = val
@@ -345,9 +345,8 @@ class ECquasi(np.poly1d):
         if not np.isfinite(self.m):
             m = repr(self.m)
         else:
-            m = '%f' % self.m
-        return "ECquasi(%s, m=%s, exponent=%f)" % (
-            repr(self.coeffs), m, self.exponent)
+            m = f'{self.m:f}'
+        return f"ECquasi({repr(self.coeffs)}, m={m}, exponent={self.exponent:f})"
 
     __str__ = __repr__
     __rsub__ = __sub__

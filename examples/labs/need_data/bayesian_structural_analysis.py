@@ -56,4 +56,4 @@ landmarks, individual_rois = make_bsa_image(
     prevalence_pval, write_dir,  algorithm=algorithm,
     contrast_id='%04d' % nbeta)
 
-print("Wrote all the results in directory %s" % write_dir)
+print(f"Wrote all the results in directory {write_dir}")

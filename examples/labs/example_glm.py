@@ -106,8 +106,7 @@ contrast_image = Nifti1Image(np.reshape(zvals, shape), affine)
 contrast_path = 'zmap.nii'
 save(contrast_image, contrast_path)
 
-print('Wrote the some of the results as images in directory %s' %
-      op.abspath(os.getcwd()))
+print(f'Wrote the some of the results as images in directory {op.abspath(os.getcwd())}')
 
 h, c = np.histogram(zvals, 100)
 

@@ -131,16 +131,14 @@ def write_screen_res(res, out_path, out_root,
     import matplotlib.pyplot as plt
     # save volume images
     for key in ('mean', 'min', 'max', 'std', 'pca'):
-        fname = pjoin(out_path, '%s_%s%s' % (key,
-                                             out_root,
-                                             out_img_ext))
+        fname = pjoin(out_path, f'{key}_{out_root}{out_img_ext}')
         save_image(res[key], fname)
     # plot, save component time courses and some tsdiffana stuff
     pca_axis = res['pca_res']['axis']
     n_comp = res['pca_res']['basis_projections'].shape[pca_axis]
     vectors = res['pca_res']['basis_vectors']
     pcnt_var = res['pca_res']['pcnt_var']
-    np.savez(pjoin(out_path, 'vectors_components_%s.npz' % out_root),
+    np.savez(pjoin(out_path, f'vectors_components_{out_root}.npz'),
              basis_vectors=vectors,
              pcnt_var=pcnt_var,
              volume_means=res['ts_res']['volume_means'],
@@ -152,16 +150,16 @@ def write_screen_res(res, out_path, out_root,
         plt.plot(vectors[:,c])
         plt.axis('tight')
     plt.suptitle(out_root + ': PCA basis vectors')
-    plt.savefig(pjoin(out_path, 'components_%s.png' % out_root))
+    plt.savefig(pjoin(out_path, f'components_{out_root}.png'))
     # plot percent variance
     plt.figure()
     plt.plot(pcnt_var[pcnt_var >= pcnt_var_thresh])
     plt.axis('tight')
     plt.suptitle(out_root + ': PCA percent variance')
-    plt.savefig(pjoin(out_path, 'pcnt_var_%s.png' % out_root))    
+    plt.savefig(pjoin(out_path, f'pcnt_var_{out_root}.png'))    
     # plot tsdiffana
     plt.figure()
     axes = [plt.subplot(4, 1, i+1) for i in range(4)]
     plot_tsdiffs(res['ts_res'], axes)
     plt.suptitle(out_root + ': tsdiffana')
-    plt.savefig(pjoin(out_path, 'tsdiff_%s.png' % out_root))
+    plt.savefig(pjoin(out_path, f'tsdiff_{out_root}.png'))

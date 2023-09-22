@@ -430,9 +430,9 @@ class CoordinateMap(object):
 
     def __repr__(self):
         if self.inverse_function is None:
-            return "CoordinateMap(\n   function_domain=%s,\n   function_range=%s,\n   function=%s\n  )" % (self.function_domain, self.function_range, repr(self.function))
+            return f"CoordinateMap(\n   function_domain={self.function_domain},\n   function_range={self.function_range},\n   function={repr(self.function)}\n  )"
         else:
-            return "CoordinateMap(\n   function_domain=%s,\n   function_range=%s,\n   function=%s,\n   inverse_function=%s\n  )" % (self.function_domain, self.function_range, repr(self.function), repr(self.inverse_function))
+            return f"CoordinateMap(\n   function_domain={self.function_domain},\n   function_range={self.function_range},\n   function={repr(self.function)},\n   inverse_function={repr(self.inverse_function)}\n  )"
 
 
     def _checkfunction(self):
@@ -568,7 +568,7 @@ class AffineTransform(object):
         bottom_row = np.array([0]*self.ndims[0] + [1])
         if not np.all(affine[-1] == bottom_row):
             raise ValueError('the homogeneous transform should have bottom=' + \
-                             'row %s' % repr(bottom_row))
+                             f'row {repr(bottom_row)}')
         self.affine = affine
 
     ###################################################################
@@ -1378,7 +1378,7 @@ def renamed_domain(mapping, newnames, name=''):
 
     for key in list(newnames):
         if key not in mapping.function_domain.coord_names:
-            raise ValueError('no domain coordinate named %s' % str(key))
+            raise ValueError(f'no domain coordinate named {str(key)}')
 
     new_coord_names = []
     for n in mapping.function_domain.coord_names:
@@ -1442,7 +1442,7 @@ def renamed_range(mapping, newnames):
 
     for key in list(newnames):
         if key not in mapping.function_range.coord_names:
-            raise ValueError('no range coordinate named %s' % str(key))
+            raise ValueError(f'no range coordinate named {str(key)}')
 
     new_coord_names = []
     for n in mapping.function_range.coord_names:
@@ -1703,7 +1703,7 @@ def _product_cmaps(*cmaps, **kwargs):
     input_name = kwargs.pop('input_name', 'product')
     output_name = kwargs.pop('output_name', 'product')
     if kwargs:
-        raise TypeError('Unexpected kwargs %s' % kwargs)
+        raise TypeError(f'Unexpected kwargs {kwargs}')
     ndimin = [cmap.ndims[0] for cmap in cmaps]
     ndimin.insert(0,0)
     ndimin = tuple(np.cumsum(ndimin))
@@ -1730,7 +1730,7 @@ def _product_affines(*affine_mappings, **kwargs):
     input_name = kwargs.pop('input_name', 'product')
     output_name = kwargs.pop('output_name', 'product')
     if kwargs:
-        raise TypeError('Unexpected kwargs %s' % kwargs)
+        raise TypeError(f'Unexpected kwargs {kwargs}')
     if input_name is None:
         input_name = 'product'
     if output_name is None:
@@ -2021,7 +2021,7 @@ def input_axis_index(coordmap, axis_id, fix0=True):
     in_in = axis_id in in_names
     in_out = axis_id in out_names
     if not in_in and not in_out:
-        raise AxisError('Name "%s" not in input or output names' % axis_id)
+        raise AxisError(f'Name "{axis_id}" not in input or output names')
     if in_in:
         in_no = in_names.index(axis_id)
         if not in_out:
@@ -2096,8 +2096,7 @@ def io_axis_indices(coordmap, axis_id, fix0=True):
         elif axis_id in out_dims:
             out_dim = out_dims.index(axis_id)
         else:
-            raise AxisError('No input or output dimension with name (%s)' %
-                            axis_id)
+            raise AxisError(f'No input or output dimension with name ({axis_id})')
         is_str = True
     if out_dim is None:
         out_dim = axmap(coordmap, 'in2out', fix0=fix0)[in_dim]

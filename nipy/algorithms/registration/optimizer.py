@@ -43,7 +43,7 @@ def configure_optimizer(optimizer, fprime=None, fhess=None, **kwargs):
         keys = ('xtol', 'ftol', 'maxiter', 'fprime')
         fmin = fmin_steepest
     else:
-        raise ValueError('unknown optimizer: %s' % optimizer)
+        raise ValueError(f'unknown optimizer: {optimizer}')
 
     return fmin, args, subdict(kwargs, keys)
 

@@ -131,14 +131,14 @@ def test_results():
     r = m.fit(y)
     # results hand compared with R's printout
 
-    yield niptest.assert_equal, '%0.4f' % r.R2, '0.5737'
-    yield niptest.assert_equal, '%0.4f' % r.R2_adj, '0.5242'
+    yield niptest.assert_equal, f'{r.R2:0.4f}', '0.5737'
+    yield niptest.assert_equal, f'{r.R2_adj:0.4f}', '0.5242'
 
     f = r.F_overall
-    yield niptest.assert_equal, '%0.2f' % f['F'], '11.59'
+    yield niptest.assert_equal, f"{f['F']:0.2f}", '11.59'
     yield niptest.assert_equal, f['df_num'], 13
     yield niptest.assert_equal, f['df_den'], 112
-    yield niptest.assert_equal, '%0.3e' % f['p_value'], '1.818e-15'
+    yield niptest.assert_equal, f"{f['p_value']:0.3e}", '1.818e-15'
 
     # test Fcontrast, the 8th column of m.design is all 1s
     # let's construct a contrast matrix that tests everything
@@ -214,13 +214,13 @@ X14 -1.044e-05  7.215e-06  -1.448   0.1505
         ps.append(p)
 
     for th, thstr in zip(r.theta, thetas):
-        yield niptest.assert_equal, '%0.3e' % th, thstr
+        yield niptest.assert_equal, f'{th:0.3e}', thstr
 
     for sd, sdstr in zip([np.sqrt(r.vcov(column=i)) for i in range(14)], sds):
-        yield niptest.assert_equal, '%0.3e' % sd, sdstr
+        yield niptest.assert_equal, f'{sd:0.3e}', sdstr
 
     for t, tstr in zip([r.t(column=i) for i in range(14)], ts):
-        yield niptest.assert_equal, '%0.3f' % t, tstr
+        yield niptest.assert_equal, f'{t:0.3f}', tstr
 
     for i, t in enumerate([r.t(column=i) for i in range(14)]):
         m = np.zeros((14,))
@@ -235,24 +235,24 @@ X14 -1.044e-05  7.215e-06  -1.448   0.1505
 
     for p, pstr in zip([2*scipy.stats.t.sf(np.fabs(r.t(column=i)), r.df_resid) for i in range(14)], ps):
         if pstr.find('*') < 0:
-            yield niptest.assert_equal, '%0.4f' % p, pstr
+            yield niptest.assert_equal, f'{p:0.4f}', pstr
 
-    yield niptest.assert_equal, "%0.5f" % r.SSE, "72.02328"
-    yield niptest.assert_equal, "%0.4f" % r.SST, "168.9401"
-    yield niptest.assert_equal, "%0.5f" % r.SSR, "96.91685"
+    yield niptest.assert_equal, f"{r.SSE:0.5f}", "72.02328"
+    yield niptest.assert_equal, f"{r.SST:0.4f}", "168.9401"
+    yield niptest.assert_equal, f"{r.SSR:0.5f}", "96.91685"
 
-    yield niptest.assert_equal, "%0.6f" % r.MSE, "0.643065"
-    yield niptest.assert_equal, "%0.6f" % r.MST, "1.351521"
-    yield niptest.assert_equal, "%0.6f" % r.MSR, "7.455142"
+    yield niptest.assert_equal, f"{r.MSE:0.6f}", "0.643065"
+    yield niptest.assert_equal, f"{r.MST:0.6f}", "1.351521"
+    yield niptest.assert_equal, f"{r.MSR:0.6f}", "7.455142"
 
-    yield niptest.assert_equal, "%0.4f" % np.sqrt(r.MSE), "0.8019"
+    yield niptest.assert_equal, f"{np.sqrt(r.MSE):0.4f}", "0.8019"
     
     # the difference here comes from the fact that
     # we've treated sigma as a nuisance parameter,
     # so our AIC is the AIC of the profiled log-likelihood...
 
-    yield niptest.assert_equal, '%0.4f'% (r.AIC + 2,), '317.1017'
-    yield niptest.assert_equal, '%0.4f'% (r.BIC + np.log(126),), '359.6459'
+    yield niptest.assert_equal, f'{r.AIC + 2:0.4f}', '317.1017'
+    yield niptest.assert_equal, f'{r.BIC + np.log(126):0.4f}', '359.6459'
 
 
 # this is the file "data.csv" referred to in Rscript above

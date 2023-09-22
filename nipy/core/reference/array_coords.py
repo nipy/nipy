@@ -188,7 +188,7 @@ class ArrayCoordMap(object):
 
     def __repr__(self):
         return "ArrayCoordMap(\n  coordmap=" + \
-            '\n  '.join(repr(self.coordmap).split('\n')) + ',\n  shape=%s' % repr(self.shape) + '\n)'
+            '\n  '.join(repr(self.coordmap).split('\n')) + f',\n  shape={repr(self.shape)}' + '\n)'
 
 
 def _slice(coordmap, shape, *slices):

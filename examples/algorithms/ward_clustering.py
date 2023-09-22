@@ -42,7 +42,7 @@ for i in range(u.max()+1):
 
 plt.axis('tight')
 plt.axis('off')
-plt.title('clustering into clusters \n of inertia < %g' % threshold)
+plt.title(f'clustering into clusters \n of inertia < {threshold:g}')
 
 u = tree.split(k)
 plt.subplot(1, 3, 2)

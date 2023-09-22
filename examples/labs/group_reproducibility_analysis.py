@@ -117,7 +117,7 @@ for q, threshold in enumerate(thresholds):
                                threshold=threshold, csize=csize)
     rmap = np.reshape(rmap, shape)
     plt.imshow(rmap, interpolation=None, vmin=0, vmax=ngroups)
-    plt.title('threshold: %g' % threshold, fontsize=10)
+    plt.title(f'threshold: {threshold:g}', fontsize=10)
     plt.axis('off')
 
 

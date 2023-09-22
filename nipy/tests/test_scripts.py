@@ -44,7 +44,7 @@ def test_nipy_diagnose():
     ncomps = 12
     with InTemporaryDirectory() as tmpdir:
         cmd = ['nipy_diagnose', funcfile,
-               '--ncomponents={0}'.format(ncomps),
+               f'--ncomponents={ncomps}',
                '--out-path=' + tmpdir]
         run_command(cmd)
         for out_fname in ('components_functional.png',
@@ -70,7 +70,7 @@ def test_nipy_diagnose():
         s0_img = rollimg(fimg, 'k')
         save_image(s0_img, 'slice0.nii')
         cmd = ['nipy_diagnose', 'slice0.nii',
-               '--ncomponents={0}'.format(ncomps),
+               f'--ncomponents={ncomps}',
                '--out-path=' + tmpdir,
                '--time-axis=t',
                '--slice-axis=0']
@@ -94,7 +94,7 @@ def test_nipy_tsdiffana():
                                     ['--slice-axis=0'],
                                     ['--slice-axis=0', '--time-axis=1']
                                    )):
-            out_png = 'ts_out{0}.png'.format(i)
+            out_png = f'ts_out{i}.png'
             cmd = (['nipy_tsdiffana', funcfile] + extras +
                    ['--out-file=' + out_png])
             run_command(cmd)

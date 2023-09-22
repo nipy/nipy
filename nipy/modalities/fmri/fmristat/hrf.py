@@ -189,7 +189,7 @@ def taylor_approx(hrf2decompose,
      approx.dinverse,
      approx.forward,
      approx.dforward) = invertR(delta, approx.coef)
-    dhrf = implemented_function('d%s' % str(hrf2decompose), dhrft)
+    dhrf = implemented_function(f'd{str(hrf2decompose)}', dhrft)
     return [hrf2decompose, dhrf], approx
 
 

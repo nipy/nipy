@@ -104,9 +104,9 @@ def configuration(parent_package='',top_path=None):
 
     # Information message
     print('LAPACK build options:')
-    print('library_dirs: %s ' % library_dirs)
-    print('libraries: %s ' % libraries)
-    print('lapack_info: %s ' % lapack_info)
+    print(f'library_dirs: {library_dirs} ')
+    print(f'libraries: {libraries} ')
+    print(f'lapack_info: {lapack_info} ')
 
     config.add_library('cstat',
                        sources=sources,

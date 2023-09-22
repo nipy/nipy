@@ -43,7 +43,7 @@ class ProcLogger(object):
     def __call__(self, cmd_name, cmd, args=(), cwd=None):
         # Mqke log files
         if cmd_name in self._names:
-            raise ValueError('Command name {0} not unique'.format(cmd_name))
+            raise ValueError(f'Command name {cmd_name} not unique')
         self._names.append(cmd_name)
         if cwd is None:
             cwd = self.working_path
@@ -102,7 +102,7 @@ class PyProcLogger(ProcLogger):
 
 def _record(result, fname, fileobj):
     print(result)
-    fileobj.write('{0}: {1}\n'.format(fname, result))
+    fileobj.write(f'{fname}: {result}\n')
 
 
 def main():

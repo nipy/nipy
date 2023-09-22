@@ -56,4 +56,4 @@ for row in pdata:
     writer.writerow(row)
 
 fid.close()
-print("Created the paradigm file in %s " % csvfile)
+print(f"Created the paradigm file in {csvfile} ")

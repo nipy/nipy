@@ -40,23 +40,23 @@ class XYZSpace(object):
     @property
     def x(self):
         """ x-space coordinate name """
-        return "%s-%s" % (self.name, self.x_suffix)
+        return f"{self.name}-{self.x_suffix}"
 
     @property
     def y(self):
         """ y-space coordinate name """
-        return "%s-%s" % (self.name, self.y_suffix)
+        return f"{self.name}-{self.y_suffix}"
 
     @property
     def z(self):
         """ z-space coordinate name """
-        return "%s-%s" % (self.name, self.z_suffix)
+        return f"{self.name}-{self.z_suffix}"
 
     def __repr__(self):
-        return "%s('%s')" % (self.__class__.__name__, self.name)
+        return f"{self.__class__.__name__}('{self.name}')"
 
     def __str__(self):
-        return "%s: %s" % (self.name, sorted(self.as_map().items()))
+        return f"{self.name}: {sorted(self.as_map().items())}"
 
     def __eq__(self, other):
         """ Equality defined as having the same xyz names """
@@ -204,9 +204,9 @@ for _name in ('unknown', 'scanner', 'aligned', 'mni', 'talairach'):
     _csm = _space.to_coordsys_maker('tuvw')
     _cmm = CoordMapMaker(voxel_csm, _csm)
     # Put these into the module namespace
-    exec('%s_space = _space' % _name)
-    exec('%s_csm = _csm' % _name)
-    exec('vox2%s = _cmm' % _name)
+    exec(f'{_name}_space = _space')
+    exec(f'{_name}_csm = _csm')
+    exec(f'vox2{_name} = _cmm')
 
 
 def known_space(obj, spaces=None):

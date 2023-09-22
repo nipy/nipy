@@ -94,7 +94,7 @@ def fmin_steepest(f, x0, fprime=None, xtol=1e-4, ftol=1e-4,
         
         if disp:
             print('Number of iterations: %d' % it)
-            print('Minimum criterion value: %f' % fval)
+            print(f'Minimum criterion value: {fval:f}')
 
     return x 
 

@@ -71,7 +71,7 @@ def make_label_dec(label, ds=None):
         return f
     # Apply the user's docstring
     if ds is None:
-        ds = "Labels a test as %r" % label
+        ds = f"Labels a test as {label!r}"
         decor.__doc__ = ds
     return decor
 

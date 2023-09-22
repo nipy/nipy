@@ -52,10 +52,9 @@ def check_p_values(p_values):
     if np.any(np.isnan(p_values)):
         raise ValueError("%d values are NaN" % (sum(np.isnan(p_values))))
     if p_values.min() < 0:
-        raise ValueError("Negative p-values. Min=%g" % (p_values.min(),))
+        raise ValueError(f"Negative p-values. Min={p_values.min():g}")
     if p_values.max() > 1:
-        raise ValueError("P-values greater than 1! Max=%g" % (
-                p_values.max(),))
+        raise ValueError(f"P-values greater than 1! Max={p_values.max():g}")
     return p_values
 
 

@@ -366,7 +366,7 @@ class HistogramRegistration(object):
             def callback(tc):
                 Tv.param = tc
                 print(Tv.optimizable)
-                print(str(self.similarity) + ' = %s' % self._eval(Tv))
+                print(str(self.similarity) + f' = {self._eval(Tv)}')
                 print('')
 
         # Switching to the appropriate optimizer
@@ -387,7 +387,7 @@ class HistogramRegistration(object):
 
         # Output
         if VERBOSE:
-            print('Optimizing using %s' % fmin.__name__)
+            print(f'Optimizing using {fmin.__name__}')
         kwargs['callback'] = callback
         Tv.param = fmin(cost, tc0, *args, **kwargs)
         return Tv.optimizable

@@ -120,7 +120,7 @@ class CoordinateSystem(object):
                    np.sctypes['complex'] + np.sctypes['uint'] + [object])
         coord_dtype = np.dtype(coord_dtype)
         if coord_dtype not in sctypes:
-            raise ValueError('Coordinate dtype should be one of %s' % sctypes)
+            raise ValueError(f'Coordinate dtype should be one of {sctypes}')
         # Set all the attributes
         self.name = name
         self.coord_names = coord_names
@@ -133,7 +133,7 @@ class CoordinateSystem(object):
 
     def __setattr__(self, key, value):
         if key in self.__dict__:
-            raise AttributeError('the value of %s has already been set and all attributes are read-only' % key)
+            raise AttributeError(f'the value of {key} has already been set and all attributes are read-only')
         object.__setattr__(self, key, value)
 
     def index(self, coord_name):
@@ -403,7 +403,7 @@ def product(*coord_systems, **kwargs):
     """
     name = kwargs.pop('name', 'product')
     if kwargs:
-        raise TypeError('Unexpected kwargs %s' % kwargs)
+        raise TypeError(f'Unexpected kwargs {kwargs}')
     coords = []
     for c in coord_systems:
         coords += c.coord_names

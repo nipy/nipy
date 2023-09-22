@@ -53,7 +53,7 @@ roi = mroi.subdomain_from_balls(domain, position, np.array([5.0]))
 roi_domain = domain.mask(roi.label > -1)
 dom_img = roi_domain.to_image()
 save(dom_img, path.join(write_dir, "myroi.nii"))
-print('Wrote an ROI mask image in %s' % path.join(write_dir, "myroi.nii"))
+print(f"Wrote an ROI mask image in {path.join(write_dir, 'myroi.nii')}")
 
 # ----------------------------------------------------
 # ---- example 2: create ROIs from a blob image ------
@@ -77,7 +77,7 @@ nroi = hroi.HROI_as_discrete_domain_blobs(domain, values,
 
 # saving the blob image, i.e. a label image
 wim = nroi.to_image('id', roi=True)
-descrip = "blob image extracted from %s" % input_image
+descrip = f"blob image extracted from {input_image}"
 blobPath = path.join(write_dir, "blob.nii")
 save(wim, blobPath)
 

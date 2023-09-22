@@ -122,11 +122,10 @@ class Transform(object):
  
         if new_mapping is None and new_inverse_mapping is None:
             raise CompositionError(
-                """Composing two transforms with no chainable mapping:
-                %s
+                f"""Composing two transforms with no chainable mapping:
+                {self}
                 and
-                %s"""
-                % (self, transform)
+                {transform}"""
                 )
 
         return Transform(self.input_space, 

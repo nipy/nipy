@@ -588,7 +588,7 @@ class HierarchicalROI(SubDomains):
             summary_feature = rf
 
         if assess_quality:
-            self.set_roi_feature('%s_quality' % fid, feature_quality)
+            self.set_roi_feature(f'{fid}_quality', feature_quality)
         return np.array(summary_feature)
 
 

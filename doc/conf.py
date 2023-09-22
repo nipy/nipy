@@ -22,7 +22,7 @@ project = 'nipy'
 try:
     project_module = import_module(project)
 except ImportError:
-    raise RuntimeError('Cannot import {}, please investigate'.format(project))
+    raise RuntimeError(f'Cannot import {project}, please investigate')
 
 # If your extensions are in another directory, add it here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it

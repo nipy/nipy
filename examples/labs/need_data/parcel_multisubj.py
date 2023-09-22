@@ -64,6 +64,6 @@ test_images = [path.join(data_dir, 'spmT_%s_subj_%02d.nii' % (nbeta, n))
                for n in range(nb_subj)]
 
 # compute and write the parcel-based statistics
-rfx_path = path.join(write_dir, 'prfx_%s.nii' % nbeta)
+rfx_path = path.join(write_dir, f'prfx_{nbeta}.nii')
 parcellation_based_analysis(fpa, test_images, 'one_sample', rfx_path=rfx_path)
-print("Wrote everything in %s" % write_dir)
+print(f"Wrote everything in {write_dir}")

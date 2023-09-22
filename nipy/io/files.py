@@ -154,7 +154,7 @@ def save(img, filename, dtype_from='data'):
                                   ni_img.get_data_dtype())
         ana_img.to_filename(filename)
     else:
-        raise ValueError('Sorry, we cannot yet save as format "%s"' % ftype)
+        raise ValueError(f'Sorry, we cannot yet save as format "{ftype}"')
     return img
 
 
@@ -194,7 +194,7 @@ def _type_from_filename(filename):
         return 'analyze'
     if ext == '.mnc':
         return 'minc'
-    raise ValueError('Strange file extension "%s"' % ext)
+    raise ValueError(f'Strange file extension "{ext}"')
 
 
 def as_image(image_input):

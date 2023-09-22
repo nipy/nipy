@@ -224,7 +224,7 @@ def find_maxsep_cut_coords(map3d, affine, slicer='z', n_cuts=None,
     # sanitize slicer
     if slicer not in 'xyz':
         raise ValueError(
-            "slicer must be one of 'x', 'y', and 'z', got '%s'." % slicer)
+            f"slicer must be one of 'x', 'y', and 'z', got '{slicer}'.")
     slicer = "xyz".index(slicer)
 
     # load data

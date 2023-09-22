@@ -19,7 +19,7 @@ import subprocess
 matlab_cmd = 'matlab -nojvm -nosplash'
 
 def run_matlab(cmd):
-    subprocess.call('%s -r \"%s;exit\" ' % (matlab_cmd, cmd),
+    subprocess.call(f'{matlab_cmd} -r "{cmd};exit" ',
                     shell=True)
 
 

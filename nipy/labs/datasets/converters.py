@@ -59,7 +59,7 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
 
     elif isinstance(obj, string_types):
         if not os.path.exists(obj):
-            raise ValueError("The file '%s' cannot be found" % obj)
+            raise ValueError(f"The file '{obj}' cannot be found")
         obj = nib.load(obj)
         copy = False
 

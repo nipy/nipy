@@ -20,7 +20,7 @@ HERE = dirname(__file__)
 def test_dct_ii_basis():
     # Test DCT-II basis
     for N in (5, 10, 100):
-        spm_fname = pjoin(HERE, 'dct_{0}.txt'.format(N))
+        spm_fname = pjoin(HERE, f'dct_{N}.txt')
         spm_mtx = np.loadtxt(spm_fname)
         vol_times = np.arange(N) * 15. + 3.2
         our_dct = dct_ii_basis(vol_times)

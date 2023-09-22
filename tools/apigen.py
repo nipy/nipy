@@ -233,8 +233,8 @@ class ApiDocWriter(object):
         ad += title + '\n' + self.rst_section_levels[2] * len(title)
 
         if len(classes):
-            ad += '\nInheritance diagram for ``%s``:\n\n' % uri
-            ad += '.. inheritance-diagram:: %s \n' % uri
+            ad += f'\nInheritance diagram for ``{uri}``:\n\n'
+            ad += f'.. inheritance-diagram:: {uri} \n'
             ad += '   :parts: 3\n'
 
         ad += '\n.. automodule:: ' + uri + '\n'
@@ -296,8 +296,7 @@ class ApiDocWriter(object):
         elif match_type == 'package':
             patterns = self.package_skip_patterns
         else:
-            raise ValueError('Cannot interpret match type "%s"' 
-                             % match_type)
+            raise ValueError(f'Cannot interpret match type "{match_type}"')
         # Match to URI without package name
         L = len(self.package_name)
         if matchstr[:L] == self.package_name:
@@ -428,5 +427,5 @@ class ApiDocWriter(object):
         w('.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n')
         w('.. toctree::\n\n')
         for f in self.written_modules:
-            w('   %s\n' % os.path.join(relpath,f))
+            w(f'   {os.path.join(relpath, f)}\n')
         idx.close()

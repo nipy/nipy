@@ -5,8 +5,8 @@ from __future__ import print_function # Python 2/3 compatibility
 
 import sys
 
-USAGE = """
-usage : python %s [1x4-contrast]
+USAGE = f"""
+usage : python {sys.argv[0]} [1x4-contrast]
 where [1x4-contrast] is optional and is something like 1,0,0,0
 
 If you don't enter a contrast, 1,0,0,0 is the default.
@@ -20,7 +20,7 @@ of the same subject are taken from the FIAC'05 dataset.
 The script also needs matplotlib installed.
 
 Author: Alexis Roche, Bertrand Thirion, 2009--2012.
-""" % sys.argv[0]
+"""
 
 __doc__ = USAGE
 

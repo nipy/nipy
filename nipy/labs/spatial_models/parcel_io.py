@@ -164,7 +164,7 @@ def write_parcellation_images(Pa, template_path=None, indiv_path=None,
     if template_path is None:
         template_path = os.path.join(swd, "template_parcel.nii")
     if indiv_path is None:
-        indiv_path = [os.path.join(swd, "parcel%s.nii" % subject_id[s])
+        indiv_path = [os.path.join(swd, f"parcel{subject_id[s]}.nii")
                         for s in range(Pa.nb_subj)]
 
     # write the template image
@@ -341,7 +341,7 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
     if fullpath is not None:
         label_image = fullpath
     elif write_dir is not None:
-        label_image = os.path.join(write_dir, "parcel_%s.nii" % method)
+        label_image = os.path.join(write_dir, f"parcel_{method}.nii")
     else:
         label_image = None
 
@@ -350,6 +350,6 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
             fid='id', roi=True, descrip='Intra-subject parcellation image')
         save(lpa_img, label_image)
         if verbose:
-            print("Wrote the parcellation images as %s" % label_image)
+            print(f"Wrote the parcellation images as {label_image}")
 
     return lpa

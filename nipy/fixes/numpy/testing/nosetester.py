@@ -183,18 +183,18 @@ class NoseTester(object):
         nose = import_nose()
 
         import numpy
-        print("NumPy version %s" % numpy.__version__)
+        print(f"NumPy version {numpy.__version__}")
         npdir = os.path.dirname(numpy.__file__)
-        print("NumPy is installed in %s" % npdir)
+        print(f"NumPy is installed in {npdir}")
 
         if 'scipy' in self.package_name:
             import scipy
-            print("SciPy version %s" % scipy.__version__)
+            print(f"SciPy version {scipy.__version__}")
             spdir = os.path.dirname(scipy.__file__)
-            print("SciPy is installed in %s" % spdir)
+            print(f"SciPy is installed in {spdir}")
 
         pyversion = sys.version.replace('\n','')
-        print("Python version %s" % pyversion)
+        print(f"Python version {pyversion}")
         print("nose version %d.%d.%d" % nose.__versioninfo__)
 
     def _get_custom_doctester(self):
@@ -229,7 +229,7 @@ class NoseTester(object):
             argv += ['--exclude', ename]
         # our way of doing coverage
         if coverage:
-            argv+=['--cover-package=%s' % self.package_name, '--with-coverage',
+            argv+=[f'--cover-package={self.package_name}', '--with-coverage',
                    '--cover-tests', '--cover-inclusive', '--cover-erase']
         # construct list of plugins
         import nose.plugins.builtin
@@ -316,9 +316,9 @@ class NoseTester(object):
         utils.verbose = verbose
 
         if doctests:
-            print("Running unit tests and doctests for %s" % self.package_name)
+            print(f"Running unit tests and doctests for {self.package_name}")
         else:
-            print("Running unit tests for %s" % self.package_name)
+            print(f"Running unit tests for {self.package_name}")
 
         self._show_system_info()
 
@@ -388,7 +388,7 @@ class NoseTester(object):
 
         """
 
-        print("Running benchmarks for %s" % self.package_name)
+        print(f"Running benchmarks for {self.package_name}")
         self._show_system_info()
 
         argv = self._test_argv(label, verbose, extra_argv)

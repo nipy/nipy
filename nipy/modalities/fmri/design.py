@@ -394,7 +394,7 @@ def stack_contrasts(contrasts, name, keys):
     None
     """
     if name in contrasts.keys():
-        raise ValueError('contrast "%s" already exists' % name)
+        raise ValueError(f'contrast "{name}" already exists')
 
     contrasts[name] = np.vstack([contrasts[k] for k in keys])
 
@@ -523,7 +523,7 @@ def block_amplitudes(name, block_spec, t, hrfs=(glover,),
                                           convolution_dt))
         contrast = np.zeros(n_hrfs)
         contrast[hrf_no] = 1
-        c_t['{0}_{1:d}'.format(name, hrf_no)] = contrast
+        c_t[f'{name}_{hrf_no:d}'] = contrast
     t_formula = Formula(t_terms)
     tval = make_recarray(t, ['t'])
     X_t = t_formula.design(tval, return_float=True)

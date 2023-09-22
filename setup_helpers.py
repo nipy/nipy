@@ -135,10 +135,10 @@ class Clean(clean):
         clean.run(self)
         api_path = os.path.join('doc', 'api', 'generated')
         if os.path.exists(api_path):
-            print("Removing %s" % api_path)
+            print(f"Removing {api_path}")
             shutil.rmtree(api_path)
         if os.path.exists(DOC_BUILD_DIR):
-            print("Removing %s" % DOC_BUILD_DIR)
+            print(f"Removing {DOC_BUILD_DIR}")
             shutil.rmtree(DOC_BUILD_DIR)
 
 
@@ -236,7 +236,7 @@ def generate_a_pyrex_source(self, base, ext_name, source, extension):
             if dist_incl_dirs is not None:
                 incl_dirs += dist_incl_dirs
             import Cython.Compiler.Main
-            log.info("cythonc:> %s" % (target_file))
+            log.info(f"cythonc:> {target_file}")
             self.mkpath(target_dir)
             options = Cython.Compiler.Main.CompilationOptions(
                 defaults=Cython.Compiler.Main.default_options,

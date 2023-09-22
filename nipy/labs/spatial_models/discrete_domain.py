@@ -424,8 +424,7 @@ def domain_from_mesh(mesh):
     elif len(mesh_.darrays) == 3:
         cor, nor, tri = mesh_.darrays
     else:
-        raise Exception("%d arrays in gifti file (case not handled)" \
-                            % len(mesh_.darrays))
+        raise Exception(f"{len(mesh_.darrays)} arrays in gifti file (case not handled)")
     mesh_dom = MeshDomain(cor.data, tri.data)
 
     vol = mesh_dom.area()
@@ -757,8 +756,7 @@ class NDGridDomain(StructuredDomain):
             wdata[wdata > 0] = data
 
         nim = Nifti1Image(wdata, self.affine)
-        get_header(nim)['descrip'] = ('mask image representing domain %s'
-                                      % self.id)
+        get_header(nim)['descrip'] = f'mask image representing domain {self.id}'
         if path is not None:
             save(nim, path)
         return nim

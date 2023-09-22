@@ -222,7 +222,7 @@ class GeneralLinearModel(object):
             else:
                 contrast_type = 'F'
         if contrast_type not in ['t', 'F', 'tmin-conjunction']:
-            raise ValueError('Unknown contrast type: %s' % contrast_type)
+            raise ValueError(f'Unknown contrast type: {contrast_type}')
 
         effect_ = np.zeros((dim, self.labels_.size), dtype=np.float64)
         var_ = np.zeros((dim, dim, self.labels_.size), dtype=np.float64)
@@ -572,8 +572,7 @@ class FMRILinearModel(object):
             contrasts = [contrasts]
         if len(contrasts) != len(self.glms):
             raise ValueError(
-                'contrasts must be a sequence of %d session contrasts' %
-                len(self.glms))
+                f'contrasts must be a sequence of {len(self.glms)} session contrasts')
 
         contrast_ = None
         for i, (glm, con) in enumerate(zip(self.glms, contrasts)):
@@ -610,6 +609,6 @@ class FMRILinearModel(object):
                         getattr(contrast_, estimate))
                 output = Nifti1Image(result_map, self.affine)
                 get_header(output)['descrip'] = (
-                    '%s associated with contrast %s' % (descrip, con_id))
+                    f'{descrip} associated with contrast {con_id}')
                 output_images.append(output)
         return output_images

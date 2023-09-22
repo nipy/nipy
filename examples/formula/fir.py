@@ -29,7 +29,7 @@ def linBspline(knots):
     fns = []
     knots = np.array(knots)
     for i in range(knots.shape[0]-2):
-        name = 'bs_%s' % i
+        name = f'bs_{i}'
         k1, k2, k3 = knots[i:i+3]
         d1 = k2-k1
         def anon(x,k1=k1,k2=k2,k3=k3):

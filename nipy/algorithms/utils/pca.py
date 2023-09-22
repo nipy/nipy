@@ -329,8 +329,7 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
     # Which axes are we operating over?
     in_ax, out_ax = io_axis_indices(img.coordmap, axis)
     if None in (in_ax, out_ax):
-        raise AxisError('Cannot identify matching input output axes with "%s"'
-                        % axis)
+        raise AxisError(f'Cannot identify matching input output axes with "{axis}"')
     if not orth_axes(in_ax, out_ax, img.coordmap.affine):
         raise AxisError('Input and output axes found from "%s" not othogonal '
                         'to rest of affine' % axis)
@@ -358,7 +357,7 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
     output_img = img_klass(res['basis_projections'], output_coordmap)
     # We have to roll the axis back to the original position
     output_img = rollimg(output_img, 0, in_ax + 1)
-    key = 'basis_vectors over %s' % axis
+    key = f'basis_vectors over {axis}'
     res[key] = res['basis_vectors']
     res['basis_projections'] = output_img
     # Signal the roll in results

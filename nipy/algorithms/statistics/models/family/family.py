@@ -29,7 +29,7 @@ class Family(object):
         if hasattr(self, "links"):
             if link not in self.links:
                 raise ValueError(
-                    'invalid link for family, should be in %s' % self.links)
+                    f'invalid link for family, should be in {self.links}')
 
     def _getlink(self):
         return self._link

@@ -23,9 +23,9 @@ def time_copy_vector(x):
     y1 = copy_vector(x, 1) 
     dt1 = time.clock()-t1
     ratio = time_ratio(dt0,dt1)
-    print('  using fff_array: %f sec' % dt0)
-    print('  using numpy C API: %f sec' % dt1)
-    print('  ratio: %f' % ratio)
+    print(f'  using fff_array: {dt0:f} sec')
+    print(f'  using numpy C API: {dt1:f} sec')
+    print(f'  ratio: {ratio:f}')
 
 def bench_copy_vector_contiguous(): 
     x = (1000*np.random.rand(1e6)).astype('int32')

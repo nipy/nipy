@@ -71,7 +71,7 @@ def _dec_register_stf(func):
         short_name = name[3:]
         if short_name in SLICETIME_FUNCTIONS:
             raise ValueError(
-                "Duplicate short / long function name {0}".format(short_name))
+                f"Duplicate short / long function name {short_name}")
         SLICETIME_FUNCTIONS[short_name] = func
     return func
 

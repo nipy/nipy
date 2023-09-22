@@ -286,8 +286,7 @@ def nipy2nifti(img, data_dtype=None, strict=None, fix0=True):
     except (ncrs.AxesError, ncrs.AffineError):
         # Python 2.5 / 3 compatibility
         e = sys.exc_info()[1]
-        raise NiftiError('Image cannot be reordered to XYZ because: "%s"'
-                         % e)
+        raise NiftiError(f'Image cannot be reordered to XYZ because: "{e}"')
     coordmap = img.coordmap
     # Get useful information from old header
     in_hdr = img.metadata.get('header', None)
@@ -554,7 +553,7 @@ def nifti2nipy(ni_img):
     # For now we only warn if intent is set to an unexpected value
     intent, _, _ = hdr.get_intent()
     if intent != 'none':
-        warnings.warn('Ignoring intent field meaning "%s"' % intent,
+        warnings.warn(f'Ignoring intent field meaning "{intent}"',
                         UserWarning)
     # Which space?
     world_label = hdr.get_value_label('sform_code')

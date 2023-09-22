@@ -63,8 +63,8 @@ def main():
         for x in xform:
             euler_rot = reg.aff2euler(x.as_affine())
             for r in euler_rot:
-                f.write('%s\t'%r)
+                f.write(f'{r}\t')
             for t in x.translation[:-1]:
-                f.write('%s\t'%t)
-            f.write('%s\n'%x.translation[-1])
+                f.write(f'{t}\t')
+            f.write(f'{x.translation[-1]}\n')
         f.close()

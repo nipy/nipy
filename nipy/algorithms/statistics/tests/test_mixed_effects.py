@@ -158,7 +158,7 @@ def test_two_level_glm_novar():
     beta, s2, dof = two_level_glm(y, vy, X)
     beta_error = np.mean(beta ** 2)
     s2_error = np.abs(np.mean(s2) - 1)
-    print('Errors: %f (beta), %f (s2)' % (beta_error, s2_error))
+    print(f'Errors: {beta_error:f} (beta), {s2_error:f} (s2)')
     assert  beta_error < 0.1
     assert  s2_error < 0.1
 

@@ -14,7 +14,7 @@ from nipy.interfaces.spm import (spm_info, make_job, scans_for_fnames,
 
 def get_fdata(data_path, subj_id):
     data_def = {}
-    subject_path = pjoin(data_path, 'fiac%s' % subj_id)
+    subject_path = pjoin(data_path, f'fiac{subj_id}')
     data_def['functionals'] = sorted(
         glob(pjoin(subject_path, 'functional_*.nii')))
     anatomicals = glob(pjoin(subject_path, 'anatomical.nii'))

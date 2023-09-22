@@ -163,7 +163,7 @@ def run_model(subj, run):
     for k in cons.keys():
         if not isestimable(cons[k], X):
             del(cons[k])
-            warnings.warn("contrast %s not estimable for this run" % k)
+            warnings.warn(f"contrast {k} not estimable for this run")
 
     # The default contrasts are all t-statistics.  We may want to output
     # F-statistics for 'speaker', 'sentence', 'speaker:sentence' based on the
@@ -177,15 +177,15 @@ def run_model(subj, run):
                        ('house', 'scrambled'),
                        ('chair', 'scrambled'),
                        ('face', 'house')]:
-        cons['%s_vs_%s_F' % (obj1, obj2)] = \
-            np.vstack([cons['object_%s_0' % obj1] - 
-                       cons['object_%s_0' % obj2],
-                       cons['object_%s_1' % obj1] - 
-                       cons['object_%s_1' % obj2]])
+        cons[f'{obj1}_vs_{obj2}_F'] = \
+            np.vstack([cons[f'object_{obj1}_0'] - 
+                       cons[f'object_{obj2}_0'],
+                       cons[f'object_{obj1}_1'] - 
+                       cons[f'object_{obj2}_1']])
 
 
-        cons['%s_vs_%s_t' % (obj1, obj2)] = (cons['object_%s_0' % obj1] - 
-                                             cons['object_%s_0' % obj2])
+        cons[f'{obj1}_vs_{obj2}_t'] = (cons[f'object_{obj1}_0'] - 
+                                             cons[f'object_{obj2}_0'])
 
     #----------------------------------------------------------------------
     # Data loading
@@ -275,7 +275,7 @@ def run_model(subj, run):
     for n in tcons:
         for v in ['t', 'sd', 'effect']:
             im = Image(output[n][v], vol0_map)
-            save_image(im, pjoin(odir, n, '%s.nii' % v))
+            save_image(im, pjoin(odir, n, f'{v}.nii'))
     for n in fcons:
         im = Image(output[n], vol0_map)
         save_image(im, pjoin(odir, n, "F.nii"))
@@ -333,7 +333,7 @@ def fixed_effects(subj, design):
         for a, n in zip([fixed_effect, fixed_sd, fixed_t],
                         ['effect', 'sd', 't']):
             im = api.Image(a, copy(coordmap))
-            save_image(im, pjoin(odir, '%s.nii' % n))
+            save_image(im, pjoin(odir, f'{n}.nii'))
 
 
 def group_analysis(design, contrast):
@@ -354,7 +354,7 @@ def group_analysis(design, contrast):
     # Which subjects have this (contrast, design) pair?
     subj_con_dirs = futil.subj_des_con_dirs(design, contrast)
     if len(subj_con_dirs) == 0:
-        raise ValueError('No subjects for %s, %s' % (design, contrast))
+        raise ValueError(f'No subjects for {design}, {contrast}')
 
     # Assemble effects and sds into 4D arrays
     sds = []
@@ -395,7 +395,7 @@ def group_analysis(design, contrast):
     results = onesample.estimate_mean(Y, adjusted_sd) 
     for n in ['effect', 'sd', 't']:
         im = api.Image(results[n], copy(coordmap))
-        save_image(im, pjoin(odir, "%s.nii" % n))
+        save_image(im, pjoin(odir, f"{n}.nii"))
 
 
 def group_analysis_signs(design, contrast, mask, signs=None):
@@ -488,7 +488,7 @@ def permutation_test(design, contrast, mask=GROUP_MASK, nsample=1000):
     subj_con_dirs = futil.subj_des_con_dirs(design, contrast)
     nsubj = len(subj_con_dirs)
     if nsubj == 0:
-        raise ValueError('No subjects have %s, %s' % (design, contrast))
+        raise ValueError(f'No subjects have {design}, {contrast}')
     signs = 2*np.greater(np.random.sample(size=(nsample, nsubj)), 0.5) - 1
     min_vals, max_vals = group_analysis_signs(design, contrast, mask, signs)
     return min_vals, max_vals

@@ -92,7 +92,7 @@ def fillpositive(xyz, w2_thresh=None):
     w2 = 1.0 - np.dot(xyz, xyz)
     if w2 < 0:
         if w2 < w2_thresh:
-            raise ValueError('w2 should be positive, but is %f' % w2)
+            raise ValueError(f'w2 should be positive, but is {w2:f}')
         w = 0
     else:
         w = np.sqrt(w2)

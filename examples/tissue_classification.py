@@ -84,7 +84,7 @@ S = BrainT1Segmentation(img.get_fdata(), mask=mask, model='5k',
 outfile = 'hard_classif.nii'
 save_image(make_xyz_image(S.label, xyz_affine(img), 'scanner'),
            outfile)
-print('Label image saved in: %s' % outfile)
+print(f'Label image saved in: {outfile}')
 
 # Compute fuzzy Dice indices if a 3-class fuzzy model is provided
 if args.probc is not None and \
@@ -97,4 +97,4 @@ if args.probc is not None and \
         img = load_image(gold_ppm_img[k])
         gold_ppm[..., k] = img.get_fdata()
     d = fuzzy_dice(gold_ppm, S.ppm, np.where(mask_img.get_fdata() > 0))
-    print('Fuzzy Dice indices: %s' % d)
+    print(f'Fuzzy Dice indices: {d}')

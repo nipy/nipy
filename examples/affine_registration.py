@@ -72,10 +72,10 @@ if opts.optimizer is not None:
     optimizer = opts.optimizer
 
 # Print messages
-print('Source brain: %s' % source)
-print('Target brain: %s' % target)
-print('Similarity measure: %s' % similarity)
-print('Optimizer: %s' % optimizer)
+print(f'Source brain: {source}')
+print(f'Target brain: {target}')
+print(f'Similarity measure: {similarity}')
+print(f'Optimizer: {optimizer}')
 
 # Get data
 print('Fetching image data...')
@@ -91,7 +91,7 @@ R = HistogramRegistration(I, J, similarity=similarity, interp=interp,
                           renormalize=renormalize)
 T = R.optimize('affine', optimizer=optimizer)
 toc = time.time()
-print('  Registration time: %f sec' % (toc - tic))
+print(f'  Registration time: {toc - tic:f} sec')
 
 # Resample source image
 print('Resampling source image...')
@@ -99,12 +99,12 @@ tic = time.time()
 #It = resample2(I, J.coordmap, T.inv(), J.shape)
 It = resample(I, T.inv(), reference=J)
 toc = time.time()
-print('  Resampling time: %f sec' % (toc - tic))
+print(f'  Resampling time: {toc - tic:f} sec')
 
 # Save resampled source
 outroot = source + '_TO_' + target
 outimg = outroot + '.nii.gz'
-print ('Saving resampled source in: %s' % outimg)
+print (f'Saving resampled source in: {outimg}')
 save_image(It, outimg)
 
 # Save transformation matrix

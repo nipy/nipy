@@ -55,7 +55,7 @@ DEPS = (
 
 requirement_kwargs = {'setup_requires': [], 'install_requires': []}
 for name, min_ver, req_type in DEPS:
-    new_req = '{0}>={1}'.format(name, min_ver)
+    new_req = f'{name}>={min_ver}'
     requirement_kwargs[req_type].append(new_req)
 
 
@@ -77,7 +77,7 @@ def data_install_msgs():
     example_data = datasource_or_bomber(DATA_PKGS['nipy-data'])
     for dpkg in (templates, example_data):
         if hasattr(dpkg, 'msg'): # a bomber object, warn
-            log.warn('%s\n%s' % ('_'*80, dpkg.msg))
+            log.warn(f"{'_' * 80}\n{dpkg.msg}")
 
 
 class MyInstallData(install_data):

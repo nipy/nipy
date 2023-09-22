@@ -96,7 +96,7 @@ def test_parcel_analysis_nosmooth():
     t_map = g.t_map().get_fdata()
     m_error = np.abs(np.mean(t_map))
     v_error = np.abs(np.var(t_map) - (NSUBJ - 5) / float(NSUBJ - 7))
-    print('Errors: %f (mean), %f (var)' % (m_error, v_error))
+    print(f'Errors: {m_error:f} (mean), {v_error:f} (var)')
     assert m_error < .1
     assert v_error < .1
 
