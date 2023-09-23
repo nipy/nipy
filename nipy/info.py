@@ -15,10 +15,7 @@ _version_extra = '.dev1' # For development
 # _version_extra = '' # For release
 
 # Format expected by setup.py and doc/source/conf.py: string of form "X.Y.Z"
-__version__ = "%s.%s.%s%s" % (_version_major,
-                              _version_minor,
-                              _version_micro,
-                              _version_extra)
+__version__ = f"{_version_major}.{_version_minor}.{_version_micro}{_version_extra}"
 
 CLASSIFIERS = ["Development Status :: 3 - Alpha",
                "Environment :: Console",
@@ -194,11 +191,8 @@ source tree, or online at http://nipy.org/nipy/users/install_data.html
 If you have the package, have you set the path to the package correctly?"""
 
 for key, value in DATA_PKGS.items():
-    url = '%s%s-%s.tar.gz' % (NIPY_DATA_URL,
-                              key,
-                              value['min version'])
+    url = f"{NIPY_DATA_URL}{key}-{value['min version']}.tar.gz"
     value['name'] = key
     value['install hint'] = NIPY_INSTALL_HINT % url
 
 del key, value, url
-

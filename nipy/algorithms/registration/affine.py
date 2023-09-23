@@ -1,16 +1,14 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 import scipy.linalg as spl
-
 from nibabel.affines import apply_affine
-
-from ...externals.transforms3d.quaternions import mat2quat, quat2axangle
-from .transform import Transform
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
+
+from ...externals.transforms3d.quaternions import mat2quat, quat2axangle
+from .transform import Transform
 
 # Globals
 RADIUS = 100
@@ -241,7 +239,7 @@ class Affine(Transform):
         vec12[0:3] = aff[:3, 3]
         # Use SVD to find orthogonal and diagonal matrices such that
         # aff[0:3,0:3] == R*S*Q
-        R, s, Q = spl.svd(aff[0:3, 0:3]) 
+        R, s, Q = spl.svd(aff[0:3, 0:3])
         if spl.det(R) < 0:
             R = -R
             Q = -Q
@@ -349,10 +347,10 @@ class Affine(Transform):
         return a
 
     def __str__(self):
-        string = 'translation : %s\n' % str(self.translation)
-        string += 'rotation    : %s\n' % str(self.rotation)
-        string += 'scaling     : %s\n' % str(self.scaling)
-        string += 'pre-rotation: %s' % str(self.pre_rotation)
+        string = f'translation : {str(self.translation)}\n'
+        string += f'rotation    : {str(self.rotation)}\n'
+        string += f'scaling     : {str(self.scaling)}\n'
+        string += f'pre-rotation: {str(self.pre_rotation)}'
         return string
 
     def inv(self):
@@ -392,8 +390,8 @@ class Rigid(Affine):
         self._vec12 = vec12
 
     def __str__(self):
-        string = 'translation : %s\n' % str(self.translation)
-        string += 'rotation    : %s\n' % str(self.rotation)
+        string = f'translation : {str(self.translation)}\n'
+        string += f'rotation    : {str(self.rotation)}\n'
         return string
 
 
@@ -434,9 +432,9 @@ class Similarity(Affine):
     param = property(Affine._get_param, _set_param)
 
     def __str__(self):
-        string = 'translation : %s\n' % str(self.translation)
-        string += 'rotation    : %s\n' % str(self.rotation)
-        string += 'scaling     : %s\n' % str(self.scaling[0])
+        string = f'translation : {str(self.translation)}\n'
+        string += f'rotation    : {str(self.rotation)}\n'
+        string += f'scaling     : {str(self.scaling[0])}\n'
         return string
 
 

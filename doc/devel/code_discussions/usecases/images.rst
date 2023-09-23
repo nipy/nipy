@@ -167,5 +167,3 @@ Demonstrating coordinate maps and non-linear resampling::
     w_img_data = img.resliced_to_grid(full_cmap, template_dims)
     w_func_list.append(ni.Image(w_img_data, template_cmap))
   ni.save(ni.list_to_image(w_func_list), 'stsome4d.nii')
-
-

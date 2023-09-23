@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 
 import sys
 
-USAGE = """
-usage : python %s [1x4-contrast]
+USAGE = f"""
+usage : python {sys.argv[0]} [1x4-contrast]
 where [1x4-contrast] is optional and is something like 1,0,0,0
 
 If you don't enter a contrast, 1,0,0,0 is the default.
@@ -20,7 +19,7 @@ of the same subject are taken from the FIAC'05 dataset.
 The script also needs matplotlib installed.
 
 Author: Alexis Roche, Bertrand Thirion, 2009--2012.
-""" % sys.argv[0]
+"""
 
 __doc__ = USAGE
 
@@ -31,10 +30,9 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nipy.labs.viz import plot_map, cm
+from nipy.labs.viz import cm, plot_map
 from nipy.modalities.fmri.glm import FMRILinearModel
 from nipy.utils import example_data
-
 
 # Optional argument - default value 1, 0, 0, 0
 nargs = len(sys.argv)

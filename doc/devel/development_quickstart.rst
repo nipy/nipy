@@ -76,7 +76,7 @@ apply (merge) your patch.  See the instructions for
 :ref:`making-patches`.
 
 If you do not wish to use git and github, please feel free to
-file a bug report and submit a patch or email the 
+file a bug report and submit a patch or email the
 `nipy mailing list`_.
 
 Bug reports

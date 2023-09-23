@@ -1,27 +1,30 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import warnings
 
-import numpy as np
 import nibabel as nib
-
+import numpy as np
 from nose.tools import assert_equal
-from numpy.testing import (assert_array_almost_equal,
-                           assert_array_equal,
-                           assert_raises)
+from numpy.testing import assert_array_almost_equal, assert_array_equal, assert_raises
 
 from .... import load_image
-from ....core.image.image_spaces import (make_xyz_image, xyz_affine)
+from ....core.image.image_spaces import make_xyz_image, xyz_affine
 from ....fixes.nibabel import io_orientation
 from ....io.nibcompat import get_header
 from ....testing import funcfile
-from ...slicetiming.timefuncs import st_43210, st_02413, st_42031
+from ...slicetiming.timefuncs import st_02413, st_42031, st_43210
 from ..affine import Rigid
-from ..groupwise_registration import (Image4d, resample4d, FmriRealign4d,
-                                      SpaceTimeRealign, SpaceRealign, Realign4d,
-                                      Realign4dAlgorithm, make_grid)
+from ..groupwise_registration import (
+    FmriRealign4d,
+    Image4d,
+    Realign4d,
+    Realign4dAlgorithm,
+    SpaceRealign,
+    SpaceTimeRealign,
+    make_grid,
+    resample4d,
+)
 
 IM = load_image(funcfile)
 IMS = [nib.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4)) for i in range(4)]

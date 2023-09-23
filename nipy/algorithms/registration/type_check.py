@@ -25,12 +25,12 @@ def check_type(x, t, accept_none=False):
         Target type.
     accept_none : bool
         If True, skip errors if `x` is None.
-    """	
+    """
     if accept_none:
         if x is None:
             return
     if not _check_type(x, t):
-        raise ValueError('Argument should be convertible to %s' % t)
+        raise ValueError(f'Argument should be convertible to {t}')
 
 
 def check_type_and_shape(x, t, s, accept_none=False):
@@ -64,7 +64,6 @@ def check_type_and_shape(x, t, s, accept_none=False):
     except:
         raise ValueError('Argument should be convertible to ndarray')
     if not ok_type:
-        raise ValueError('Array values should be convertible to %s' % t)
+        raise ValueError(f'Array values should be convertible to {t}')
     if not ok_shape:
-        raise ValueError('Array shape should be equivalent to %s' % shape)
-
+        raise ValueError(f'Array shape should be equivalent to {shape}')

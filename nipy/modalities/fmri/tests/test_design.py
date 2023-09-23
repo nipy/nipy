@@ -1,23 +1,31 @@
 """ Testing design module
 """
 
-from os.path import dirname, join as pjoin
+from os.path import dirname
+from os.path import join as pjoin
 
 import numpy as np
+from nose.tools import (
+    assert_equal,
+    assert_false,
+    assert_not_equal,
+    assert_raises,
+    assert_true,
+)
+from numpy.testing import assert_almost_equal, assert_array_equal
 
-from ..design import (event_design, block_design, stack2designs, stack_designs,
-                      openfmri2nipy, block_amplitudes)
-from ..utils import (events, lambdify_t, T, convolve_functions,
-                     blocks)
-from ..hrf import glover, dglover
 from nipy.algorithms.statistics.formula import make_recarray
 
-from numpy.testing import (assert_almost_equal,
-                           assert_array_equal)
-
-from nose.tools import (assert_true, assert_false, assert_raises,
-                        assert_equal, assert_not_equal)
-
+from ..design import (
+    block_amplitudes,
+    block_design,
+    event_design,
+    openfmri2nipy,
+    stack2designs,
+    stack_designs,
+)
+from ..hrf import dglover, glover
+from ..utils import T, blocks, convolve_functions, events, lambdify_t
 
 THIS_DIR = dirname(__file__)
 
@@ -71,7 +79,7 @@ def test_event_design():
         X_0, contrasts_0 = d_maker(spec_0, t)
         exp_x_0 = tc_maker(onsets==onsets)
         assert_almost_equal(X_0, exp_x_0)
-        assert_dict_almost_equal(contrasts_0, dict(constant_0=1))
+        assert_dict_almost_equal(contrasts_0, {'constant_0': 1})
         X_0, contrasts_0 = d_maker(spec_0, t, level_contrasts=True)
         assert_almost_equal(X_0, exp_x_0)
         assert_dict_almost_equal(contrasts_0,
@@ -81,9 +89,9 @@ def test_event_design():
         spec_1c = spec_maker((c_fac,), ('smt',))
         X_1c, contrasts_1c = d_maker(spec_1c, t)
         assert_almost_equal(X_1c, exp_x_0)
-        assert_dict_almost_equal(contrasts_1c, dict(constant_0=1))
+        assert_dict_almost_equal(contrasts_1c, {'constant_0': 1})
         X_1c, contrasts_1c = d_maker(spec_1c, t, level_contrasts=True)
-        assert_dict_almost_equal(contrasts_1c, dict(constant_0=1, smt_1_0=1))
+        assert_dict_almost_equal(contrasts_1c, {'constant_0': 1, 'smt_1_0': 1})
         # Event spec with single factor, two levels
         spec_1d = spec_maker((fac_1,), ('smt',))
         exp_x_0 = tc_maker(fac_1 == 0)
@@ -91,13 +99,13 @@ def test_event_design():
         X_1d, contrasts_1d = d_maker(spec_1d, t)
         assert_almost_equal(X_1d, np.c_[exp_x_0, exp_x_1])
         assert_dict_almost_equal(contrasts_1d,
-                                 dict(constant_0=[1, 1], smt_0=[1, -1]))
+                                 {'constant_0': [1, 1], 'smt_0': [1, -1]})
         X_1d, contrasts_1d = d_maker(spec_1d, t, level_contrasts=True)
         assert_dict_almost_equal(contrasts_1d,
-                                 dict(constant_0=1,
-                                      smt_0=[1, -1],  # main effect
-                                      smt_0_0=[1, 0],  # level 0, hrf 0
-                                      smt_1_0=[0, 1]))  # level 1, hrf 0
+                                 {'constant_0': 1,
+                                      'smt_0': [1, -1],  # main effect
+                                      'smt_0_0': [1, 0],  # level 0, hrf 0
+                                      'smt_1_0': [0, 1]})  # level 1, hrf 0
         # Event spec with two factors, one with two levels, another with one
         spec_2dc = spec_maker((fac_1, c_fac), ('smt', 'smte'))
         X_2dc, contrasts_2dc = d_maker(spec_2dc, t)
@@ -179,13 +187,13 @@ def test_stack_designs():
     # Test stack_designs function
     N = 10
     X1 = np.ones((N, 1))
-    con1 = dict(con1 = np.array([1]))
+    con1 = {'con1': np.array([1])}
     X2 = np.eye(N)
-    con2 = dict(con2 = np.array([1] + [0] * (N -1)))
+    con2 = {'con2': np.array([1] + [0] * (N -1))}
     sX, sc = stack_designs((X1, con1), (X2, con2))
     X1_X2 = np.c_[X1, X2]
     exp = (X1_X2,
-           dict(con1=[1] + [0] * N, con2=[0, 1] + [0] * (N - 1)))
+           {'con1': [1] + [0] * N, 'con2': [0, 1] + [0] * (N - 1)})
     assert_des_con_equal((sX, sc), exp)
     # Result same when stacking just two designs
     sX, sc = stack2designs(X1, X2, {}, con2)
@@ -213,13 +221,13 @@ def test_stack_designs():
                          (X1_X2, {'con1': [1] + [0] * N}))
     # Stack three
     X3 = np.arange(N)[:, None]
-    con3 = dict(con3=np.array([1]))
+    con3 = {'con3': np.array([1])}
     assert_des_con_equal(
         stack_designs((X1, con1), (X2, con2), (X3, con3)),
         (np.c_[X1, X2, X3],
-         dict(con1=[1, 0] + [0] * N,
-              con2=[0, 1] + [0] * N,
-              con3=[0] * N + [0, 1])))
+         {'con1': [1, 0] + [0] * N,
+              'con2': [0, 1] + [0] * N,
+              'con3': [0] * N + [0, 1]}))
 
 
 def test_openfmri2nipy():

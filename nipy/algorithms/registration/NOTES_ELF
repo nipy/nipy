@@ -20,17 +20,17 @@ registration/
 		  params=s(-1)xv12 s: pre_cond
 		  radius for the preconditioner is in translation coordinates
 		  check for rigidity
-	 class 
-		  
+	 class
+
 	grid_transform.py (discrete displacements of the from grid)
 	cubic_spline.c (same results as ndimage)
 	wichmann_prng.c (only for the random interplation)
 	iconic.c to be renamed to histogram.c
-	
-				  
-	    
 
-interpolating the histogram 
+
+
+
+interpolating the histogram
 avoids the problem of casting the intensity
 
 in C assumes the joint histogram is a signed short array (16bit)
@@ -40,7 +40,3 @@ clamp
 Make independent tests with checks starting from different registrations.
 Sensible default for the focus function
 What should we do when outside the fov?
-
-
-
-

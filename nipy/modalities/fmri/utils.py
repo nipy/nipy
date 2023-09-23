@@ -17,19 +17,16 @@ convolve_functions : numerically convolve two functions of time
 
 fourier_basis : a convenience function to generate a Fourier basis
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 import itertools
 
 import numpy as np
-from scipy.interpolate import interp1d
-
 import sympy
+from scipy.interpolate import interp1d
 from sympy import DiracDelta, Symbol
 from sympy.utilities.lambdify import implemented_function, lambdify
 
-from nipy.algorithms.statistics.formula.formulae import Term, Formula
+from nipy.algorithms.statistics.formula.formulae import Formula, Term
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
@@ -55,7 +52,7 @@ class Interp1dNumeric(interp1d):
     def __call__(self, x):
         if np.asarray(x).dtype.type == np.object_:
             raise TypeError('Object arrays not supported')
-        return super(Interp1dNumeric, self).__call__(x)
+        return super().__call__(x)
 
 
 def lambdify_t(expr):
@@ -140,8 +137,8 @@ def fourier_basis(freq):
     """
     r = []
     for f in freq:
-        r += [sympy.cos((2*sympy.pi*f*T)),
-              sympy.sin((2*sympy.pi*f*T))]
+        r += [sympy.cos(2*sympy.pi*f*T),
+              sympy.sin(2*sympy.pi*f*T)]
     return Formula(r)
 
 
@@ -433,7 +430,7 @@ def _conv_fx_gx(f_vals, g_vals, dt, min_f, min_g):
     return time, vals
 
 
-class TimeConvolver(object):
+class TimeConvolver:
     """ Make a convolution kernel from a symbolic function of t
 
     A convolution kernel is a function with extra attributes to allow it to

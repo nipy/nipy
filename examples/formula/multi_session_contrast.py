@@ -3,12 +3,11 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Example of more than one run in the same model
 """
-from __future__ import print_function # Python 2/3 compatibility
 
 import numpy as np
 
-from nipy.algorithms.statistics.api import Term, Formula, Factor
-from nipy.modalities.fmri import utils, hrf
+from nipy.algorithms.statistics.api import Factor, Formula, Term
+from nipy.modalities.fmri import hrf, utils
 
 # HRF models we will use for each run.  Just to show it can be done, use a
 # different HRF model for each run
@@ -83,7 +82,7 @@ run_no = np.array([1]*tval1.shape[0] + [2]*tval2.shape[0])
 # recarray gives the actual values for the symbolic terms in the formulae.  In
 # our case the terms are t1, t2, and the (indicator coding) terms from the run
 # factor.
-rec = np.array([(tv1, tv2, s) for tv1, tv2, s in zip(ttval1, ttval2, run_no)],
+rec = np.array(list(zip(ttval1, ttval2, run_no)),
                np.dtype([('t1', np.float64),
                          ('t2', np.float64),
                          ('run', np.int_)]))
@@ -102,7 +101,7 @@ C = np.dot(np.linalg.pinv(X), preC)
 print(C)
 
 # We can also get this by passing the contrast into the design creation.
-X, c = f.design(rec, return_float=True, contrasts=dict(C=contrast))
+X, c = f.design(rec, return_float=True, contrasts={'C': contrast})
 assert np.allclose(C, c['C'])
 
 # Show the names of the non-trivial elements of the contrast

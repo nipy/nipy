@@ -7,7 +7,7 @@ The easy way - a super-package
 
 The easiest way to get the dependencies is to install PythonXY_ or the
 `Enthought Tool Suite`_ .  This gives you MinGW_, Python_, Numpy_,
-Scipy_, ipython_ and matplotlib_ (and much more).  
+Scipy_, ipython_ and matplotlib_ (and much more).
 
 The hard way - by components
 ----------------------------

@@ -1,20 +1,16 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from io import StringIO
 
+import numpy as np
+import scipy.stats
 import six
 
-import numpy as np
+from nipy.testing import assert_almost_equal, assert_equal
 
-import scipy.stats
-
-from ...formula.formulae import Factor, make_recarray
 from ....utils.matrices import matrix_rank
+from ...formula.formulae import Factor, make_recarray
 from ..regression import OLSModel
-
-from nipy.testing import (assert_equal, assert_almost_equal)
-
 
 data = """0.0      1      1      1
     2.0      1      1      2
@@ -78,7 +74,7 @@ data = """0.0      1      1      1
     1.0      2      3     10"""
 
 # Load some data in -- the above data
-# is an example from 
+# is an example from
 # "Applied Linear Statistical Models" that can be found
 # The number of Days in a hospital stay are recorded
 # based on the Duration of dialysis treatment
@@ -103,13 +99,13 @@ f2 = Factor('Weight', [1,2,3])
 twoway = f1 * f2
 
 # The columns of X are 0-1 indicator columns,
-# return_float = False yields a recarray 
+# return_float = False yields a recarray
 # with interpretable names
 
 def test_names():
     # Check that the design column names are what we expect
     X = twoway.design(D, return_float=False)
-    assert_equal(set(X.dtype.names), set(('Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3')))
+    assert_equal(set(X.dtype.names), {'Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3'})
 
 # If we ask for contrasts, the resulting matrix is
 # of dtype np.float64
@@ -160,11 +156,11 @@ Output of R:
 Analysis of Variance Table
 
 Response: Days
-                Df  Sum Sq Mean Sq F value    Pr(>F)    
-Duration         1  209.07  209.07  7.2147  0.009587 ** 
+                Df  Sum Sq Mean Sq F value    Pr(>F)
+Duration         1  209.07  209.07  7.2147  0.009587 **
 Weight           2  760.43  380.22 13.1210 2.269e-05 ***
-Duration:Weight  2  109.03   54.52  1.8813  0.162240    
-Residuals       54 1564.80   28.98                      
+Duration:Weight  2  109.03   54.52  1.8813  0.162240
+Residuals       54 1564.80   28.98
 ---
 """
 

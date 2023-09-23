@@ -1,10 +1,10 @@
-from __future__ import absolute_import
 
 import numpy as np
-from ..regression import OLSModel
-import nipy.testing as niptest
 import scipy.stats
 
+import nipy.testing as niptest
+
+from ..regression import OLSModel
 from .exampledata import x, y
 
 Rscript = '''
@@ -51,68 +51,68 @@ space, in which case the F, R2, and R2a are seneible.
 [1] "------------------"
 
 Call:
-lm(formula = Y ~ X1 + X2 + X3 + X4 + X5 + X6 + X7 + X8 + X9 + 
+lm(formula = Y ~ X1 + X2 + X3 + X4 + X5 + X6 + X7 + X8 + X9 +
     X10 + X11 + X12 + X13 + X14, data = d)
 
 Residuals:
-      Min        1Q    Median        3Q       Max 
--2.125783 -0.567850  0.004305  0.532145  2.372263 
+      Min        1Q    Median        3Q       Max
+-2.125783 -0.567850  0.004305  0.532145  2.372263
 
 Coefficients: (1 not defined because of singularities)
-              Estimate Std. Error t value Pr(>|t|)    
+              Estimate Std. Error t value Pr(>|t|)
 (Intercept)  2.603e+02  8.226e-01 316.463  < 2e-16 ***
-X1           1.439e-02  2.649e-02   0.543   0.5881    
-X2          -6.975e+00  1.022e+01  -0.683   0.4963    
+X1           1.439e-02  2.649e-02   0.543   0.5881
+X2          -6.975e+00  1.022e+01  -0.683   0.4963
 X3           4.410e+01  5.740e+00   7.682 6.42e-12 ***
-X4           3.864e+00  5.770e+00   0.670   0.5044    
-X5           2.458e+02  4.594e+02   0.535   0.5937    
-X6           9.789e+02  3.851e+02   2.542   0.0124 *  
-X7           1.339e+03  8.418e+02   1.591   0.1145    
-X8                  NA         NA      NA       NA    
-X9          -1.955e-02  1.539e-02  -1.270   0.2066    
-X10          7.042e-05  2.173e-04   0.324   0.7465    
-X11         -3.743e-08  6.770e-07  -0.055   0.9560    
-X12          3.060e-06  2.094e-06   1.461   0.1469    
-X13          1.440e-06  1.992e-06   0.723   0.4711    
-X14         -1.044e-05  7.215e-06  -1.448   0.1505    
+X4           3.864e+00  5.770e+00   0.670   0.5044
+X5           2.458e+02  4.594e+02   0.535   0.5937
+X6           9.789e+02  3.851e+02   2.542   0.0124 *
+X7           1.339e+03  8.418e+02   1.591   0.1145
+X8                  NA         NA      NA       NA
+X9          -1.955e-02  1.539e-02  -1.270   0.2066
+X10          7.042e-05  2.173e-04   0.324   0.7465
+X11         -3.743e-08  6.770e-07  -0.055   0.9560
+X12          3.060e-06  2.094e-06   1.461   0.1469
+X13          1.440e-06  1.992e-06   0.723   0.4711
+X14         -1.044e-05  7.215e-06  -1.448   0.1505
 ---
 
 Residual standard error: 0.8019 on 112 degrees of freedom
-Multiple R-squared: 0.5737,Adjusted R-squared: 0.5242 
-F-statistic: 11.59 on 13 and 112 DF,  p-value: 1.818e-15 
+Multiple R-squared: 0.5737,Adjusted R-squared: 0.5242
+F-statistic: 11.59 on 13 and 112 DF,  p-value: 1.818e-15
 
 [1] "Using '-1'"
 [1] "------------------"
 
 Call:
-lm(formula = Y ~ X1 + X2 + X3 + X4 + X5 + X6 + X7 + X8 + X9 + 
+lm(formula = Y ~ X1 + X2 + X3 + X4 + X5 + X6 + X7 + X8 + X9 +
     X10 + X11 + X12 + X13 + X14 - 1, data = d)
 
 Residuals:
-      Min        1Q    Median        3Q       Max 
--2.125783 -0.567850  0.004305  0.532145  2.372263 
+      Min        1Q    Median        3Q       Max
+-2.125783 -0.567850  0.004305  0.532145  2.372263
 
 Coefficients:
-      Estimate Std. Error t value Pr(>|t|)    
-X1   1.439e-02  2.649e-02   0.543   0.5881    
-X2  -6.975e+00  1.022e+01  -0.683   0.4963    
+      Estimate Std. Error t value Pr(>|t|)
+X1   1.439e-02  2.649e-02   0.543   0.5881
+X2  -6.975e+00  1.022e+01  -0.683   0.4963
 X3   4.410e+01  5.740e+00   7.682 6.42e-12 ***
-X4   3.864e+00  5.770e+00   0.670   0.5044    
-X5   2.458e+02  4.594e+02   0.535   0.5937    
-X6   9.789e+02  3.851e+02   2.542   0.0124 *  
-X7   1.339e+03  8.418e+02   1.591   0.1145    
+X4   3.864e+00  5.770e+00   0.670   0.5044
+X5   2.458e+02  4.594e+02   0.535   0.5937
+X6   9.789e+02  3.851e+02   2.542   0.0124 *
+X7   1.339e+03  8.418e+02   1.591   0.1145
 X8   2.603e+02  8.226e-01 316.463  < 2e-16 ***
-X9  -1.955e-02  1.539e-02  -1.270   0.2066    
-X10  7.042e-05  2.173e-04   0.324   0.7465    
-X11 -3.743e-08  6.770e-07  -0.055   0.9560    
-X12  3.060e-06  2.094e-06   1.461   0.1469    
-X13  1.440e-06  1.992e-06   0.723   0.4711    
-X14 -1.044e-05  7.215e-06  -1.448   0.1505    
+X9  -1.955e-02  1.539e-02  -1.270   0.2066
+X10  7.042e-05  2.173e-04   0.324   0.7465
+X11 -3.743e-08  6.770e-07  -0.055   0.9560
+X12  3.060e-06  2.094e-06   1.461   0.1469
+X13  1.440e-06  1.992e-06   0.723   0.4711
+X14 -1.044e-05  7.215e-06  -1.448   0.1505
 ---
 
 Residual standard error: 0.8019 on 112 degrees of freedom
-Multiple R-squared:     1,Adjusted R-squared:     1 
-F-statistic: 9.399e+05 on 14 and 112 DF,  p-value: < 2.2e-16 
+Multiple R-squared:     1,Adjusted R-squared:     1
+F-statistic: 9.399e+05 on 14 and 112 DF,  p-value: < 2.2e-16
 
        SSE      SST      SSR
 1 72.02328 168.9401 96.91685
@@ -131,14 +131,14 @@ def test_results():
     r = m.fit(y)
     # results hand compared with R's printout
 
-    yield niptest.assert_equal, '%0.4f' % r.R2, '0.5737'
-    yield niptest.assert_equal, '%0.4f' % r.R2_adj, '0.5242'
+    yield niptest.assert_equal, f'{r.R2:0.4f}', '0.5737'
+    yield niptest.assert_equal, f'{r.R2_adj:0.4f}', '0.5242'
 
     f = r.F_overall
-    yield niptest.assert_equal, '%0.2f' % f['F'], '11.59'
+    yield niptest.assert_equal, f"{f['F']:0.2f}", '11.59'
     yield niptest.assert_equal, f['df_num'], 13
     yield niptest.assert_equal, f['df_den'], 112
-    yield niptest.assert_equal, '%0.3e' % f['p_value'], '1.818e-15'
+    yield niptest.assert_equal, f"{f['p_value']:0.3e}", '1.818e-15'
 
     # test Fcontrast, the 8th column of m.design is all 1s
     # let's construct a contrast matrix that tests everything
@@ -175,34 +175,34 @@ def test_results():
 
     resultstr = \
 '''
-X1   1.439e-02  2.649e-02   0.543   0.5881    
-X2  -6.975e+00  1.022e+01  -0.683   0.4963    
+X1   1.439e-02  2.649e-02   0.543   0.5881
+X2  -6.975e+00  1.022e+01  -0.683   0.4963
 X3   4.410e+01  5.740e+00   7.682   ******
-X4   3.864e+00  5.770e+00   0.670   0.5044    
-X5   2.458e+02  4.594e+02   0.535   0.5937    
-X6   9.789e+02  3.851e+02   2.542   0.0124 
-X7   1.339e+03  8.418e+02   1.591   0.1145    
+X4   3.864e+00  5.770e+00   0.670   0.5044
+X5   2.458e+02  4.594e+02   0.535   0.5937
+X6   9.789e+02  3.851e+02   2.542   0.0124
+X7   1.339e+03  8.418e+02   1.591   0.1145
 X8   2.603e+02  8.226e-01 316.463   ******
-X9  -1.955e-02  1.539e-02  -1.270   0.2066    
-X10  7.042e-05  2.173e-04   0.324   0.7465    
-X11 -3.743e-08  6.770e-07  -0.055   0.9560    
-X12  3.060e-06  2.094e-06   1.461   0.1469    
-X13  1.440e-06  1.992e-06   0.723   0.4711    
-X14 -1.044e-05  7.215e-06  -1.448   0.1505    
-X1   1.439e-02  2.649e-02   0.543   0.5881    
-X2  -6.975e+00  1.022e+01  -0.683   0.4963    
-X3   4.410e+01  5.740e+00   7.682   ****** 
-X4   3.864e+00  5.770e+00   0.670   0.5044    
-X5   2.458e+02  4.594e+02   0.535   0.5937    
-X6   9.789e+02  3.851e+02   2.542   0.0124   
-X7   1.339e+03  8.418e+02   1.591   0.1145    
+X9  -1.955e-02  1.539e-02  -1.270   0.2066
+X10  7.042e-05  2.173e-04   0.324   0.7465
+X11 -3.743e-08  6.770e-07  -0.055   0.9560
+X12  3.060e-06  2.094e-06   1.461   0.1469
+X13  1.440e-06  1.992e-06   0.723   0.4711
+X14 -1.044e-05  7.215e-06  -1.448   0.1505
+X1   1.439e-02  2.649e-02   0.543   0.5881
+X2  -6.975e+00  1.022e+01  -0.683   0.4963
+X3   4.410e+01  5.740e+00   7.682   ******
+X4   3.864e+00  5.770e+00   0.670   0.5044
+X5   2.458e+02  4.594e+02   0.535   0.5937
+X6   9.789e+02  3.851e+02   2.542   0.0124
+X7   1.339e+03  8.418e+02   1.591   0.1145
 X8   2.603e+02  8.226e-01 316.463   ******
-X9  -1.955e-02  1.539e-02  -1.270   0.2066    
-X10  7.042e-05  2.173e-04   0.324   0.7465    
-X11 -3.743e-08  6.770e-07  -0.055   0.9560    
-X12  3.060e-06  2.094e-06   1.461   0.1469    
-X13  1.440e-06  1.992e-06   0.723   0.4711    
-X14 -1.044e-05  7.215e-06  -1.448   0.1505    
+X9  -1.955e-02  1.539e-02  -1.270   0.2066
+X10  7.042e-05  2.173e-04   0.324   0.7465
+X11 -3.743e-08  6.770e-07  -0.055   0.9560
+X12  3.060e-06  2.094e-06   1.461   0.1469
+X13  1.440e-06  1.992e-06   0.723   0.4711
+X14 -1.044e-05  7.215e-06  -1.448   0.1505
 '''
 
     for row in resultstr.strip().split('\n'):
@@ -214,13 +214,13 @@ X14 -1.044e-05  7.215e-06  -1.448   0.1505
         ps.append(p)
 
     for th, thstr in zip(r.theta, thetas):
-        yield niptest.assert_equal, '%0.3e' % th, thstr
+        yield niptest.assert_equal, f'{th:0.3e}', thstr
 
     for sd, sdstr in zip([np.sqrt(r.vcov(column=i)) for i in range(14)], sds):
-        yield niptest.assert_equal, '%0.3e' % sd, sdstr
+        yield niptest.assert_equal, f'{sd:0.3e}', sdstr
 
     for t, tstr in zip([r.t(column=i) for i in range(14)], ts):
-        yield niptest.assert_equal, '%0.3f' % t, tstr
+        yield niptest.assert_equal, f'{t:0.3f}', tstr
 
     for i, t in enumerate([r.t(column=i) for i in range(14)]):
         m = np.zeros((14,))
@@ -235,24 +235,24 @@ X14 -1.044e-05  7.215e-06  -1.448   0.1505
 
     for p, pstr in zip([2*scipy.stats.t.sf(np.fabs(r.t(column=i)), r.df_resid) for i in range(14)], ps):
         if pstr.find('*') < 0:
-            yield niptest.assert_equal, '%0.4f' % p, pstr
+            yield niptest.assert_equal, f'{p:0.4f}', pstr
 
-    yield niptest.assert_equal, "%0.5f" % r.SSE, "72.02328"
-    yield niptest.assert_equal, "%0.4f" % r.SST, "168.9401"
-    yield niptest.assert_equal, "%0.5f" % r.SSR, "96.91685"
+    yield niptest.assert_equal, f"{r.SSE:0.5f}", "72.02328"
+    yield niptest.assert_equal, f"{r.SST:0.4f}", "168.9401"
+    yield niptest.assert_equal, f"{r.SSR:0.5f}", "96.91685"
 
-    yield niptest.assert_equal, "%0.6f" % r.MSE, "0.643065"
-    yield niptest.assert_equal, "%0.6f" % r.MST, "1.351521"
-    yield niptest.assert_equal, "%0.6f" % r.MSR, "7.455142"
+    yield niptest.assert_equal, f"{r.MSE:0.6f}", "0.643065"
+    yield niptest.assert_equal, f"{r.MST:0.6f}", "1.351521"
+    yield niptest.assert_equal, f"{r.MSR:0.6f}", "7.455142"
 
-    yield niptest.assert_equal, "%0.4f" % np.sqrt(r.MSE), "0.8019"
-    
+    yield niptest.assert_equal, f"{np.sqrt(r.MSE):0.4f}", "0.8019"
+
     # the difference here comes from the fact that
     # we've treated sigma as a nuisance parameter,
     # so our AIC is the AIC of the profiled log-likelihood...
 
-    yield niptest.assert_equal, '%0.4f'% (r.AIC + 2,), '317.1017'
-    yield niptest.assert_equal, '%0.4f'% (r.BIC + np.log(126),), '359.6459'
+    yield niptest.assert_equal, f'{r.AIC + 2:0.4f}', '317.1017'
+    yield niptest.assert_equal, f'{r.BIC + np.log(126):0.4f}', '359.6459'
 
 
 # this is the file "data.csv" referred to in Rscript above

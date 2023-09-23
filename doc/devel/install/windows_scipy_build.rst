@@ -41,7 +41,7 @@ Prerequisites
   * gawk-3.1.5-MSYS-1.0.11-snapshot.tar.bz2
   * make-3.81-MSYS-1.0.11-snapshot.tar.bz2
   * msysCORE-1.0.11-2007.01.19-1.tar.bz2
-  * binutils-2.17.50-20070129-1.tar.gz 
+  * binutils-2.17.50-20070129-1.tar.gz
 
  Just unpack all the package contents in a single directory and copy
  them over to the MinGW installation directory. You may want to add
@@ -170,21 +170,21 @@ Compling numpy/scipy
       libraries = f77blas, cblas, atlas, g2c
       library_dirs = driveletter:\[PATH TO]\MinGW\lib;driveletter:\[PATH TO]\BUILDS\lib
       include_dirs = driveletter:\[PATH TO]\BUILDS\include\ATLAS
-   
+
       [lapack]
       libraries = flapack, f77blas, cblas, atlas
       library_dirs = driveletter:\[PATH TO]\MinGW\lib;driveletter:\[PATH TO]\BUILDS\lib
-   
+
       [amd]
       library_dirs = driveletter:\[PATH TO]\MinGW\lib;driveletter:\[PATH TO]\BUILDS\lib
       include_dirs = driveletter:\[PATH TO]\BUILDS\include
       libraries = amd
-   
+
       [umfpack]
       library_dirs = driveletter:\[PATH TO]\MinGW\lib;driveletter:\[PATH TO]\BUILDS\lib
       include_dirs = driveletter:\[PATH TO]\BUILDS\include\UMFPACK
       libraries = umfpack
-   
+
       [fftw3]
       library_dirs = driveletter:\[PATH TO]\MinGW\lib;driveletter:\[PATH TO]\BUILDS\lib
       include_dirs = driveletter:\[PATH TO]\BUILDS\include
@@ -212,6 +212,3 @@ Compling numpy/scipy
       scipy.test()
       numpy.show_config()
       scipy.show_config()
-
-
-

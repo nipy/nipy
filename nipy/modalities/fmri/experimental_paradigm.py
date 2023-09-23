@@ -17,19 +17,19 @@ yielding a paradigm is in fact a session index
 
 Author: Bertrand Thirion, 2009-2011
 """
-from __future__ import absolute_import
+
+import warnings
 
 import numpy as np
 
 from ...utils.compat3 import open4csv
-import warnings
 
 ##########################################################
 # Paradigm handling
 ##########################################################
 
 
-class Paradigm(object):
+class Paradigm:
     """ Simple class to handle the experimental paradigm in one session
     """
 
@@ -195,16 +195,16 @@ def load_paradigm_from_csv_file(path, session=None):
             return None
         ampli = np.ones(np.sum(ps))
         if len(paradigm_info) > 4:
-            _, cid, onset, duration, ampli = [lp[ps] for lp in paradigm_info]
+            _, cid, onset, duration, ampli = (lp[ps] for lp in paradigm_info)
             if (duration == 0).all():
                 paradigm = EventRelatedParadigm(cid, onset, ampli)
             else:
                 paradigm = BlockParadigm(cid, onset, duration, ampli)
         elif len(paradigm_info) > 3:
-            _, cid, onset, duration = [lp[ps] for lp in paradigm_info]
+            _, cid, onset, duration = (lp[ps] for lp in paradigm_info)
             paradigm = BlockParadigm(cid, onset, duration, ampli)
         else:
-            _, cid, onset = [lp[ps] for lp in paradigm_info]
+            _, cid, onset = (lp[ps] for lp in paradigm_info)
             paradigm = EventRelatedParadigm(cid, onset, ampli)
         return paradigm
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 """
 This script generates a noisy activation image and extracts the blob
 from it.
@@ -15,16 +14,14 @@ Author : Bertrand Thirion, 2009
 """
 #autoindent
 
-from os import mkdir, getcwd, path
-
-from nibabel import load, save, Nifti1Image
-
-import nipy.labs.spatial_models.hroi as hroi
-from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
+from os import getcwd, mkdir, path
 
 # Local import
 from get_data_light import DATA_DIR, get_second_level_dataset
+from nibabel import Nifti1Image, load, save
 
+from nipy.labs.spatial_models import hroi
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
 
 # data paths
 input_image = path.join(DATA_DIR, 'spmT_0029.nii.gz')
@@ -56,12 +53,12 @@ nroi.set_feature('activation', activation)
 average_activation = nroi.representative_feature('activation')
 
 # saving the blob image,i. e. a label image
-descrip = "blob image extracted from %s" % input_image
+descrip = f"blob image extracted from {input_image}"
 wim = nroi.to_image('id', roi=True, descrip=descrip)
 save(wim, path.join(write_dir, "blob.nii"))
 
 # saving the image of the average-signal-per-blob
-descrip = "blob average signal extracted from %s" % input_image
+descrip = f"blob average signal extracted from {input_image}"
 wim = nroi.to_image('activation', roi=True, descrip=descrip)
 save(wim, path.join(write_dir, "bmap.nii"))
 
@@ -69,11 +66,10 @@ save(wim, path.join(write_dir, "bmap.nii"))
 lroi = nroi.copy()
 lroi.reduce_to_leaves()
 
-descrip = "blob image extracted from %s" % input_image
+descrip = f"blob image extracted from {input_image}"
 wim = lroi.to_image('id', roi=True, descrip=descrip)
 save(wim, path.join(write_dir, "leaves.nii"))
 
-print("Wrote the blob image in %s" % path.join(write_dir, "blob.nii"))
-print("Wrote the blob-average signal image in %s"
-      % path.join(write_dir, "bmap.nii"))
-print("Wrote the end-blob image in %s" % path.join(write_dir, "leaves.nii"))
+print(f"Wrote the blob image in {path.join(write_dir, 'blob.nii')}")
+print(f"Wrote the blob-average signal image in {path.join(write_dir, 'bmap.nii')}")
+print(f"Wrote the end-blob image in {path.join(write_dir, 'leaves.nii')}")

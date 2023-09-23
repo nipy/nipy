@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 Example of a script that uses the BSA (Bayesian Structural Analysis) i.e.
 nipy.labs.spatial_models.bayesian_structural_analysis module.
@@ -11,15 +10,14 @@ Author : Bertrand Thirion, 2008-2013
 print(__doc__)
 
 #autoindent
-from os import mkdir, getcwd, path
+from os import getcwd, mkdir, path
 
+# Local import
+from get_data_light import DATA_DIR, get_second_level_dataset
 from numpy import array
 from scipy import stats
 
 from nipy.labs.spatial_models.bsa_io import make_bsa_image
-
-# Local import
-from get_data_light import DATA_DIR, get_second_level_dataset
 
 # Get the data
 nbsubj = 12
@@ -52,8 +50,8 @@ print('algorithm used:', algorithm)
 
 # call the function
 landmarks, individual_rois = make_bsa_image(
-    mask_images, betas, threshold, smin, sigma, prevalence_threshold, 
+    mask_images, betas, threshold, smin, sigma, prevalence_threshold,
     prevalence_pval, write_dir,  algorithm=algorithm,
     contrast_id='%04d' % nbeta)
 
-print("Wrote all the results in directory %s" % write_dir)
+print(f"Wrote all the results in directory {write_dir}")

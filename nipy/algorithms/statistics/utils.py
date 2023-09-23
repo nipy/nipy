@@ -1,10 +1,8 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from itertools import combinations
 
 import numpy as np
-
 from scipy.stats import norm
 
 TINY = 1e-16
@@ -88,7 +86,7 @@ def multiple_fast_inv(a):
 
 def multiple_mahalanobis(effect, covariance):
     """Returns the squared Mahalanobis distance for a given set of samples
-    
+
     Parameters
     ----------
     effect: array of shape (n_features, n_samples),
@@ -100,7 +98,7 @@ def multiple_mahalanobis(effect, covariance):
     -------
     sqd: array of shape (n_samples,)
          the squared distances (one per sample)
-    """ 
+    """
     # check size
     if effect.ndim == 1:
         effect = effect[:, np.newaxis]
@@ -116,7 +114,7 @@ def multiple_mahalanobis(effect, covariance):
 
     # compute the inverse of the covariances
     Kt = multiple_fast_inv(Kt)
-    
+
     # derive the squared Mahalanobis distances
     sqd = np.sum(np.sum(Xt[:, :, np.newaxis] * Xt[:, np.newaxis] * Kt, 1), 1)
     return sqd
@@ -129,7 +127,7 @@ def complex(maximal=[(0, 3, 2, 7),
                      (0, 7, 4, 6),
                      (0, 3, 1, 7)]):
     """ Faces from simplices
-    
+
     Take a list of maximal simplices (by default a triangulation of a
     cube into 6 tetrahedra) and computes all faces
 
@@ -146,7 +144,7 @@ def complex(maximal=[(0, 3, 2, 7),
 
     l = [len(list(x)) for x in maximal]
     for i in range(np.max(l)):
-        faces[i+1] = set([])
+        faces[i+1] = set()
 
     for simplex in maximal:
         simplex = list(simplex)
@@ -164,9 +162,9 @@ def cube_with_strides_center(center=[0,0,0],
     """ Cube in an array of voxels with a given center and strides.
 
     This triangulates a cube with vertices [center[i] + 1].
-    
+
     The dimension of the cube is determined by len(center)
-    which should agree with len(center). 
+    which should agree with len(center).
 
     The allowable dimensions are [1,2,3].
 
@@ -177,7 +175,7 @@ def cube_with_strides_center(center=[0,0,0],
     strides : (d,) sequence of int, optional
        Default is [4, 2, 1].  These are the strides given by
        ``np.ones((2,2,2), np.bool_).strides``
-       
+
     Returns
     -------
     complex : dict
@@ -202,7 +200,7 @@ def cube_with_strides_center(center=[0,0,0],
         for k in range(2):
             for j in range(2):
                 for i in range(2):
-                    vertices.append((center[0]+i)*strides[0] + 
+                    vertices.append((center[0]+i)*strides[0] +
                                     (center[1]+j)*strides[1] +
                                     (center[2]+k)*strides[2])
     elif d == 2:
@@ -210,7 +208,7 @@ def cube_with_strides_center(center=[0,0,0],
         vertices = []
         for j in range(2):
             for i in range(2):
-                    vertices.append((center[0]+i)*strides[0] + 
+                    vertices.append((center[0]+i)*strides[0] +
                                     (center[1]+j)*strides[1])
     elif d == 1:
         maximal = [(0,1)]
@@ -226,14 +224,14 @@ def cube_with_strides_center(center=[0,0,0],
 
 def join_complexes(*complexes):
     """ Join a sequence of simplicial complexes.
-    
+
     Returns the union of all the particular faces.
     """
     faces = {}
 
     nmax = np.array([len(c) for c in complexes]).max()
     for i in range(nmax):
-        faces[i+1] = set([])
+        faces[i+1] = set()
     for c in complexes:
         for i in range(nmax):
             if i+1 in c:
@@ -278,13 +276,13 @@ def decompose3d(shape, dim=4):
 
     # There are now contributions from three two-dimensional faces
 
-    for _strides, _shape in zip([(strides[0], strides[1]), 
+    for _strides, _shape in zip([(strides[0], strides[1]),
                                  (strides[0], strides[2]),
                                  (strides[1], strides[2])],
                                 [(shape[0], shape[1]),
                                  (shape[0], shape[2]),
                                  (shape[1], shape[2])]):
-        
+
         unique = {}
         union = join_complexes(*[cube_with_strides_center((0,-1), _strides),
                                  cube_with_strides_center((-1,0), _strides),
@@ -293,7 +291,7 @@ def decompose3d(shape, dim=4):
         c = cube_with_strides_center((0,0), _strides)
         for i in range(3):
             unique[i+1] = c[i+1].difference(union[i+1])
-        
+
         if dim in unique and dim > 1:
             d = unique[dim]
 
@@ -306,7 +304,7 @@ def decompose3d(shape, dim=4):
     # Finally the one-dimensional faces
 
     for _stride, _shape in zip(strides, shape):
-        
+
         unique = {}
         union = cube_with_strides_center((-1,), [_stride])
         c = cube_with_strides_center((0,), [_stride])
@@ -357,7 +355,7 @@ def decompose2d(shape, dim=3):
     # Now, the one-dimensional faces
 
     for _stride, _shape in zip(strides, shape):
-        
+
         unique = {}
         union = cube_with_strides_center((-1,), [_stride])
         c = cube_with_strides_center((0,), [_stride])

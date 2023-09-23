@@ -26,8 +26,8 @@ At that point you will be automatically dropped into the the workspace
 in the context of the error.  This is very similar to the matlab
 ``dbstop if error`` command.
 
-See the `ipython manual`_ , and 
-`debugging in ipython <http://ipython.scipy.org/doc/manual/html/interactive/reference.html#using-the-python-debugger-pdb>`_ 
+See the `ipython manual`_ , and
+`debugging in ipython <http://ipython.scipy.org/doc/manual/html/interactive/reference.html#using-the-python-debugger-pdb>`_
 for more detail.
 
 Embed ipython in crashing code
@@ -44,7 +44,7 @@ instrospection, add::
    ipshell()
 
 See
-`embedding ipython <http://ipython.scipy.org/doc/manual/html/interactive/reference.html#embedding-ipython>`_ 
+`embedding ipython <http://ipython.scipy.org/doc/manual/html/interactive/reference.html#embedding-ipython>`_
 for more detail.
 
 .. include:: ../../links_names.txt

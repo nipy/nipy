@@ -1,6 +1,6 @@
-/*! 
+/*!
   \file fff_glm_kalman.h
-  \brief General linear model fitting using Kalman filters 
+  \brief General linear model fitting using Kalman filters
   \author Alexis Roche
   \date 2004-2006
 
@@ -10,11 +10,11 @@
   more classical GLM fitting procedures, hence making it possible to
   produce parameter estimates on each time frame. Two methods are
   currently available:
-  
+
   - the standard Kalman filter: performs an ordinary least-square
   regression, hence ignoring the temporal autocorrelation of the
   errors.
-  
+
   - the refined Kalman filter: original Kalman extension to estimate
   both the GLM parameters and the noise autocorrelation based on an
   autoregressive AR(1) model. Significantly more memory demanding than
@@ -36,10 +36,10 @@ extern "C" {
 #define FFF_GLM_KALMAN_INIT_VAR 1e7
 
 
-  /*! 
+  /*!
     \struct fff_glm_KF
     \brief Standard Kalman filter structure.
-    
+
   */
   typedef struct{
 
@@ -56,10 +56,10 @@ extern "C" {
   } fff_glm_KF;
 
 
-  /*! 
+  /*!
     \struct fff_glm_RKF
     \brief Refined Kalman filter structure.
-    
+
   */
 
   typedef struct{
@@ -82,9 +82,9 @@ extern "C" {
     fff_matrix* Maux;       /*!< auxiliary matrix */
 
   } fff_glm_RKF;
-  
-  
-  /*! \brief Constructor for the fff_glm_KF structure 
+
+
+  /*! \brief Constructor for the fff_glm_KF structure
       \param dim model dimension (number of linear regressors)
   */
   extern fff_glm_KF* fff_glm_KF_new( size_t dim );
@@ -92,42 +92,42 @@ extern "C" {
       \param thisone the fff_glm_KF structure to be deleted
   */
   extern void fff_glm_KF_delete( fff_glm_KF* thisone );
-  /*! \brief Reset function (without destruction) for the fff_glm_KF structure 
+  /*! \brief Reset function (without destruction) for the fff_glm_KF structure
       \param thisone the fff_glm_KF structure to be reset
   */
   extern void fff_glm_KF_reset( fff_glm_KF* thisone );
-  /*! \brief Performs a standard Kalman iteration from a fff_glm_KF structure 
+  /*! \brief Performs a standard Kalman iteration from a fff_glm_KF structure
       \param thisone the fff_glm_KF structure to be iterated
       \param y current signal sample
       \param x current regressor values
   */
   extern void fff_glm_KF_iterate( fff_glm_KF* thisone, double y, const fff_vector* x );
-  /*! \brief Constructor for the fff_glm_RKF structure 
+  /*! \brief Constructor for the fff_glm_RKF structure
       \param dim model dimension (number of linear regressors)
   */
-  extern fff_glm_RKF* fff_glm_RKF_new( size_t dim );  
-  /*! \brief Destructor for the fff_glm_RKF structure 
+  extern fff_glm_RKF* fff_glm_RKF_new( size_t dim );
+  /*! \brief Destructor for the fff_glm_RKF structure
       \param thisone the fff_glm_KF structure to be deleted
    */
-  extern void fff_glm_RKF_delete( fff_glm_RKF* thisone ); 
-  /*! \brief Reset function (without destruction) for the fff_glm_RKF structure 
+  extern void fff_glm_RKF_delete( fff_glm_RKF* thisone );
+  /*! \brief Reset function (without destruction) for the fff_glm_RKF structure
       \param thisone the fff_glm_KF structure to be reset
    */
   extern void fff_glm_RKF_reset( fff_glm_RKF* thisone );
-  /*! \brief Performs a refined Kalman iteration from a fff_glm_RKF structure 
+  /*! \brief Performs a refined Kalman iteration from a fff_glm_RKF structure
       \param thisone the fff_glm_KF structure to be iterated
-      \param nloop number of refinement iterations 
+      \param nloop number of refinement iterations
       \param y current signal sample
       \param x current regressor values
       \param yy previous signal sample
       \param xx previous regressor values
    */
-  extern void fff_glm_RKF_iterate( fff_glm_RKF* thisone, unsigned int nloop, 
-				   double y, const fff_vector* x, 
+  extern void fff_glm_RKF_iterate( fff_glm_RKF* thisone, unsigned int nloop,
+				   double y, const fff_vector* x,
 				   double yy, const fff_vector* xx );
-  /*!  
+  /*!
     \brief Perform an ordinary least square regression using the
-  standard Kalman filter and return the degrees of freedom 
+  standard Kalman filter and return the degrees of freedom
     \param thisone the fff_glm_KF structure to be filled in
     \param y input data
     \param X design matrix (column-wise stored covariates)
@@ -135,17 +135,17 @@ extern "C" {
   extern void fff_glm_KF_fit( fff_glm_KF* thisone,
 			      const fff_vector* y,
 			      const fff_matrix* X );
-  
-  /*!  
+
+  /*!
     \brief Perform a linear regression using the refined Kalman
-    filter, corresponding to a GLM with AR(1) errors. 
+    filter, corresponding to a GLM with AR(1) errors.
     \param thisone the fff_glm_RKF structure to be filled in
-    \param nloop number of refinement iterations 
+    \param nloop number of refinement iterations
     \param y input data
     \param X design matrix (column-wise stored covariates)
   */
   extern void fff_glm_RKF_fit( fff_glm_RKF* thisone,
-			       unsigned int nloop, 
+			       unsigned int nloop,
 			       const fff_vector* y,
 			       const fff_matrix* X );
 

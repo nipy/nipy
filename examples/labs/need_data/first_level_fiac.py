@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 """
 Script that performs a first-level analysis of the FIAC dataset.
 
@@ -14,7 +13,7 @@ Also needs matplotlib
 Author: Alexis Roche, Bertrand Thirion, 2009--2012
 """
 
-from os import mkdir, getcwd, path
+from os import getcwd, mkdir, path
 
 import numpy as np
 
@@ -25,9 +24,9 @@ except ImportError:
 
 from nibabel import save
 
+from nipy.labs.viz import cm, plot_map
 from nipy.modalities.fmri.glm import FMRILinearModel
 from nipy.utils import example_data
-from nipy.labs.viz import plot_map, cm
 
 # -----------------------------------------------------------
 # --------- Get the data -----------------------------------
@@ -87,7 +86,7 @@ mean_map = multi_session_model.means[0]  # for display
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' % (
         index + 1, len(contrasts), contrast_id))
-    z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
+    z_image_path = path.join(write_dir, f'{contrast_id}_z_map.nii')
     z_map, = multi_session_model.contrast(
         [contrast_val] * 2, con_id=contrast_id, output_z=True)
     save(z_map, z_image_path)
@@ -104,7 +103,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
                  figure=10,
                  threshold=2.5,
                  black_bg=True)
-        plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
+        plt.savefig(path.join(write_dir, f'{contrast_id}_z_map.png'))
 
-print("All the  results were witten in %s" % write_dir)
+print(f"All the  results were witten in {write_dir}")
 plt.show()

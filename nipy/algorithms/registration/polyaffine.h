@@ -15,10 +15,10 @@ extern "C" {
 
 #include <numpy/arrayobject.h>
 
-  extern void apply_polyaffine(PyArrayObject* XYZ, 
-			       const PyArrayObject* Centers, 
-			       const PyArrayObject* Affines, 
-			       const PyArrayObject* Sigma); 
+  extern void apply_polyaffine(PyArrayObject* XYZ,
+			       const PyArrayObject* Centers,
+			       const PyArrayObject* Affines,
+			       const PyArrayObject* Sigma);
 
 
 #ifdef __cplusplus

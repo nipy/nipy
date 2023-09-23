@@ -3,26 +3,27 @@
 """ Testing tsdiffana
 
 """
-from __future__ import absolute_import
 
-from os.path import dirname, join as pjoin
+from os.path import dirname
+from os.path import join as pjoin
 
 import numpy as np
-
 import scipy.io as sio
-
-from ....core.api import rollimg
-from ....core.reference.coordinate_map import AxisError
-
-from .. import timediff as tsd
-
-from nose.tools import (assert_true, assert_false, assert_equal,
-                        assert_not_equal, assert_raises)
-
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from nose.tools import (
+    assert_equal,
+    assert_false,
+    assert_not_equal,
+    assert_raises,
+    assert_true,
+)
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nipy import load_image
 from nipy.testing import funcfile
+
+from ....core.api import rollimg
+from ....core.reference.coordinate_map import AxisError
+from .. import timediff as tsd
 
 TEST_DATA_PATH = pjoin(dirname(__file__), 'data')
 
@@ -63,9 +64,9 @@ def test_time_slice_diffs():
     ts_t = ts.transpose((1, 3, 0, 2))
     results = tsd.time_slice_diffs(ts_t, 1, -1)
     results['diff2_mean_vol'] = results['diff2_mean_vol'].transpose(
-        ((1,0,2)))
+        (1,0,2))
     results['slice_diff2_max_vol'] = results['slice_diff2_max_vol'].transpose(
-        ((1,0,2)))
+        (1,0,2))
     for key in expected:
         assert_array_almost_equal(results[key], expected[key])
 

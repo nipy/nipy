@@ -17,7 +17,6 @@ then passing them to these here ``RegressionOutput`` containers via call, to get
 useful arrays, and then putting the results back into the ``RegressionOutput``
 containers via slicing (__setitem__).
 """
-from __future__ import absolute_import
 
 __docformat__ = 'restructuredtext'
 
@@ -83,7 +82,7 @@ def output_resid(results):
     return results.resid
 
 
-class RegressionOutput(object):
+class RegressionOutput:
     """
     A class to output things in GLM passes through arrays of data.
     """
@@ -109,7 +108,7 @@ class RegressionOutput(object):
         self.img[index] = value
 
 
-class RegressionOutputList(object):
+class RegressionOutputList:
     """
     A class to output more than one thing
     from a GLM pass through arrays of data.
@@ -168,5 +167,3 @@ def output_AR1(results):
     resid = results.resid
     rho = np.add.reduce(resid[0:-1]*resid[1:] / np.add.reduce(resid[1:-1]**2))
     return rho
-
-

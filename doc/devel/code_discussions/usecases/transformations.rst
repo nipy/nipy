@@ -11,7 +11,7 @@ physical space.  For voxels, we should use ``i, j, k``, or ``i', j', k'`` (i
 prime, j prime k prime).
 
 
-I have an image *Img*.  
+I have an image *Img*.
 
 Image Orientation
 -----------------
@@ -26,11 +26,11 @@ voxel dimensions?::
   img = load_image(file)
   cm = img.coordmap
   print cm
-  
+
   input_coords axis_i:
-	       axis_j: 
-	       axis_k: 
- 	       
+	       axis_j:
+	       axis_k:
+
 	       effective pixel dimensions
 			      axis_i: 4mm
 			      axis_j: 2mm
@@ -41,12 +41,12 @@ voxel dimensions?::
 
 
 
-		 
-		     x   y   z                    
+
+		     x   y   z
                    ------------
                  i|  90  90   0
 		 j|  90   0  90
-		 k| 180	 90  90	 
+		 k| 180	 90  90
 
 		 input axis_i maps exactly to output axis_z
 		 input axis_j maps exactly to output axis_y
@@ -73,7 +73,7 @@ output axes, something like::
 If the best matching axis is reversed compared to input axis::
 
   ...
-  input axis0 maps [closest|exactly] to negative output axis2 
+  input axis0 maps [closest|exactly] to negative output axis2
 
 and so on.
 
@@ -101,7 +101,7 @@ So, now I have some arbitrary transformation matrix::
   mat[2,0] = 4 # giving z mm scaling
   mat[3,3] = 1 # because it must be so
   # Note inverse diagonal for zyx->xyz coordinate flip
-  
+
 I want to make an ``Image`` with these two::
 
   coordmap = voxel2mm(pixelarray.shape, mat)
@@ -115,7 +115,7 @@ the size of the array, e.g.::
 We could have another way of constructing image which allows passing
 of *mat* directly::
 
-  img = Image(pixelarray, mat=mat)  
+  img = Image(pixelarray, mat=mat)
 
 or::
 
@@ -137,8 +137,8 @@ coordinates in *img2*, for resampling::
   imgB = load_image(infile_B)
   vx2mmB = imgB.coordmap
   mm2vxB = vx2mmB.inverse
-  # I want to first apply transform implied in 
-  # cmA, then the inverse of transform implied in 
+  # I want to first apply transform implied in
+  # cmA, then the inverse of transform implied in
   # cmB.  If these are matrices then this would be
   # np.dot(mm2vxB, vx2mmA)
   voxA_to_voxB = mm2vxB.composewith(vx2mmA)
@@ -146,7 +146,7 @@ coordinates in *img2*, for resampling::
 The (matrix) multiply version of this syntax would be::
 
   voxA_to_voxB = mm2vxB * vx2mmA
-  
+
 Composition should be of form ``Second.composewith(First)`` - as in
 ``voxA_to_voxB = mm2vxB.composewith(vx2mmA)`` above. The alternative
 is ``First.composewith(Second)``, as in ``voxA_to_voxB =
@@ -209,7 +209,7 @@ resample *img1* to *img2*.  :ref:`resampling`
 I have done a coregistration between two images, *img1* and *img2*. I
 may want this to give me a worldA-to-worldB transformation, where
 worldA is the world of voxel-to-world for *img1*, and worldB is the
-world of voxel-to-world of *img2*.  
+world of voxel-to-world of *img2*.
 
 My *img1* has a voxel to world transformation.  This transformation
 may (for example) have come from the scanner that acquired the image -
@@ -242,4 +242,3 @@ affine matrix that is the result of multiplying the several affine
 matrices together). With this single *composite transformatio* I now
 resample *img1* and *img2* and put them into the world coordinate
 system from which I can make measurements.
-

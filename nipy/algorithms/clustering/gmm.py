@@ -8,14 +8,12 @@ computationally and memory efficient.
 
 Author : Bertrand Thirion, 2006-2009
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 import numpy as np
 from scipy.linalg import eigvalsh
 
 
-class GridDescriptor(object):
+class GridDescriptor:
     """
     A tiny class to handle cartesian grids
     """
@@ -228,7 +226,7 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
     return gd1, ax
 
 
-class GMM(object):
+class GMM:
     """Standard GMM.
 
     this class contains the following members
@@ -882,8 +880,7 @@ class GMM(object):
             axes = plt.figure()
 
         if gd.dim == 1:
-            from ..statistics.empirical_pvalue import \
-                smoothed_histogram_from_samples
+            from ..statistics.empirical_pvalue import smoothed_histogram_from_samples
             h, c = smoothed_histogram_from_samples(x, normalized=True)
             offset = (c.max() - c.min()) / (2 * c.size)
             grid = gd.make_grid()

@@ -3,18 +3,20 @@
 """
 Test functions for models.regression
 """
-from __future__ import absolute_import
 
 import numpy as np
-
 import scipy.linalg as spl
-
-from ..regression import (OLSModel, ARModel, yule_walker, AREstimator,
-                          ar_bias_corrector, ar_bias_correct)
-
 from nose.tools import assert_equal, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
+from ..regression import (
+    AREstimator,
+    ARModel,
+    OLSModel,
+    ar_bias_correct,
+    ar_bias_corrector,
+    yule_walker,
+)
 
 RNG = np.random.RandomState(20110902)
 X = RNG.standard_normal((40,10))

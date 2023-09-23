@@ -12,12 +12,12 @@ Requires matplotlib
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
-from __future__ import print_function # Python 2/3 compatibility
 
 # Stdlib
 import os
-from os import makedirs, listdir
-from os.path import exists, abspath, isdir, join as pjoin, splitext
+from os import listdir, makedirs
+from os.path import abspath, exists, isdir, splitext
+from os.path import join as pjoin
 
 # Third party
 import numpy as np
@@ -37,8 +37,8 @@ DATADIR = 'ds105_data'
 
 # Sanity check
 if not os.path.isdir(DATADIR):
-    e="The data directory %s must exist and contain the ds105 data." % DATADIR
-    raise IOError(e)
+    e=f"The data directory {DATADIR} must exist and contain the ds105 data."
+    raise OSError(e)
 
 #-----------------------------------------------------------------------------
 # Classes and functions
@@ -56,7 +56,7 @@ def subj_des_con_dirs(design, contrast, subjects=range(1,7)):
 
     Parameters
     ----------
-    design : {'standard'} 
+    design : {'standard'}
     contrast : str
     subjects : list, optional
         which subjects
@@ -180,7 +180,7 @@ def get_experiment(path_dict):
     rootdir = path_dict['rootdir']
     if not exists(pjoin(rootdir, "experiment_run%(run)03d.csv") % path_dict):
         e = "can't find design for subject=%(subj)d,run=%(subj)d" % path_dict
-        raise IOError(e)
+        raise OSError(e)
 
     experiment = csv2rec(pjoin(rootdir, "experiment_run%(run)03d.csv") % path_dict)
 

@@ -171,7 +171,7 @@
 
    voxel
       Voxels are volumetric pixels - that is, they are values in a
-      regular grid in three dimensional space - see the `Wikipedia voxel 
+      regular grid in three dimensional space - see the `Wikipedia voxel
       <https://en.Wikipedia.org/wiki/Voxel>`_ entry.
 
    water activation PET

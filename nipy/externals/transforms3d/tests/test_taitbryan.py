@@ -1,17 +1,14 @@
 ''' Tests for Euler angles '''
-from __future__ import absolute_import
 
 import math
+
 import numpy as np
+from nose.tools import assert_equal, assert_false, assert_true
 from numpy import pi
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from .. import quaternions as tq
 from .. import taitbryan as ttb
-
-from nose.tools import assert_true, assert_false, assert_equal
-
-from numpy.testing import assert_array_equal, assert_array_almost_equal
-
 from .samples import euler_tuples
 
 FLOAT_EPS = np.finfo(np.float64).eps
@@ -25,7 +22,7 @@ def x_only(x):
          [0, cosx, -sinx],
          [0, sinx, cosx]])
 
-                 
+
 def y_only(y):
     cosy = np.cos(y)
     siny = np.sin(y)
@@ -89,7 +86,7 @@ def test_basic_euler():
     yield assert_true, np.allclose(ttb.euler2mat(x=-xr),
                        np.linalg.inv(ttb.euler2mat(x=xr)))
 
-        
+
 def test_euler_mat():
     M = ttb.euler2mat()
     yield assert_array_equal, M, np.eye(3)
@@ -156,4 +153,3 @@ def test_quats():
         # same rotation matrix
         M2 = ttb.euler2mat(zp, yp, xp)
         yield assert_array_almost_equal, M1, M2
-        

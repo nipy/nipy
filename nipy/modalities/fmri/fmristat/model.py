@@ -15,32 +15,33 @@ gets a bit more complicated when taking arbitrary shaped samples from the image,
 as we do for estimating the AR coefficients, where we take all the voxels with
 similar AR coefficients at once.
 """
-from __future__ import absolute_import
 
 import copy
-
-import os.path as path
+from os import path
 
 import numpy as np
 import numpy.linalg as npl
 
-from nipy.algorithms.statistics.models.regression import (
-    OLSModel, ARModel, ar_bias_corrector, ar_bias_correct)
 from nipy.algorithms.statistics.formula import make_recarray
+from nipy.algorithms.statistics.models.regression import (
+    ARModel,
+    OLSModel,
+    ar_bias_correct,
+    ar_bias_corrector,
+)
 
 # nipy core imports
-from nipy.core.api import Image, parcels, matrix_generator, AffineTransform
+from nipy.core.api import AffineTransform, Image, matrix_generator, parcels
 
 # nipy IO imports
 from nipy.io.api import save_image
 
 # fmri imports
 from ..api import FmriImageList, axis0_generator
-
 from . import outputters
 
 
-class ModelOutputImage(object):
+class ModelOutputImage:
     """
     These images have their values filled in as the model is fit, and
     are saved to disk after being completely filled in.
@@ -113,7 +114,7 @@ def results_generator(model_iterable):
         yield i, m.fit(d)
 
 
-class OLS(object):
+class OLS:
     """
     First pass through fmri_image.
 
@@ -150,7 +151,7 @@ class OLS(object):
 
         def reshape(i, x):
             if len(x.shape) == 2:
-                if type(i) is type(1):
+                if type(i) is int:
                     x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]
                 if type(i) not in [type([]), type(())]:
                     i = (i,)
@@ -158,7 +159,7 @@ class OLS(object):
                     i = tuple(i)
                 i = (slice(None,None,None),) + tuple(i)
             else:
-                if type(i) is type(1):
+                if type(i) is int:
                     x.shape = self.fmri_image[0].shape[1:]
             return i, x
 
@@ -184,7 +185,7 @@ def estimateAR(resid, design, order=1):
     return ar_bias_correct(resid, order, invM)
 
 
-class AR1(object):
+class AR1:
     """
     Second pass through fmri_image.
 
@@ -199,7 +200,7 @@ class AR1(object):
        image of AR(1) coefficients.  Returning data from
        ``rho.get_fdata()``, and having attribute ``coordmap``
     outputs :
-    volume_start_times : 
+    volume_start_times :
     """
 
     def __init__(self, fmri_image, formula, rho, outputs=[],
@@ -248,7 +249,7 @@ class AR1(object):
               ii) 'parcels of approximately constant AR1 coefficient'
             """
             if len(x.shape) == 2: # 2D imput matrix
-                if type(i) is type(1): # integer indexing
+                if type(i) is int: # integer indexing
                     # reshape to ND (where N is probably 4)
                     x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]
                 # Convert lists to tuples, put anything else into a tuple
@@ -259,7 +260,7 @@ class AR1(object):
                 # Add : to indexing
                 i = (slice(None,None,None),) + tuple(i)
             else: # not 2D
-                if type(i) is type(1): # integer indexing
+                if type(i) is int: # integer indexing
                     x.shape = self.fmri_image[0].shape[1:]
             return i, x
 

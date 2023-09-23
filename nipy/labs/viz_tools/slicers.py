@@ -6,12 +6,10 @@ The Slicer classes.
 The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
-from __future__ import absolute_import
 
 import numpy as np
 
 from nipy.utils import is_iterable
-
 from nipy.utils.skip_test import skip_if_running_nose
 
 try:
@@ -23,11 +21,10 @@ except ImportError:
 
 
 # Local imports
-from .coord_tools import coord_transform, get_bounds, get_mask_bounds, \
-        find_cut_coords
-from .edge_detect import _edge_map
-from . import cm
 from ..datasets import VolumeImg
+from . import cm
+from .coord_tools import coord_transform, find_cut_coords, get_bounds, get_mask_bounds
+from .edge_detect import _edge_map
 
 ################################################################################
 # Bugware to have transparency work OK with MPL < .99.1
@@ -66,7 +63,7 @@ def _xyz_order(map, affine):
 # class CutAxes
 ################################################################################
 
-class CutAxes(object):
+class CutAxes:
     """ An MPL axis-like object that displays a cut of 3D volumes
     """
 
@@ -85,7 +82,7 @@ class CutAxes(object):
         self.ax = ax
         self.direction = direction
         self.coord = coord
-        self._object_bounds = list()
+        self._object_bounds = []
 
 
     def do_cut(self, map, affine):
@@ -100,11 +97,11 @@ class CutAxes(object):
         """
         coords = [0, 0, 0]
         coords['xyz'.index(self.direction)] = self.coord
-        x_map, y_map, z_map = [int(np.round(c)) for c in
+        x_map, y_map, z_map = (int(np.round(c)) for c in
                                coord_transform(coords[0],
                                                coords[1],
                                                coords[2],
-                                               np.linalg.inv(affine))]
+                                               np.linalg.inv(affine)))
         if self.direction == 'y':
             cut = np.rot90(map[:, y_map, :])
         elif self.direction == 'x':
@@ -112,8 +109,7 @@ class CutAxes(object):
         elif self.direction == 'z':
             cut = np.rot90(map[:, :, z_map])
         else:
-            raise ValueError('Invalid value for direction %s' %
-                             self.direction)
+            raise ValueError(f'Invalid value for direction {self.direction}')
         return cut
 
 
@@ -136,8 +132,7 @@ class CutAxes(object):
             (xmin, xmax), (zmin, zmax), (_, _) = data_bounds
             (xmin_, xmax_), (zmin_, zmax_), (_, _) = bounding_box
         else:
-            raise ValueError('Invalid value for direction %s' %
-                             self.direction)
+            raise ValueError(f'Invalid value for direction {self.direction}')
         ax = self.ax
         getattr(ax, type)(cut, extent=(xmin, xmax, zmin, zmax), **kwargs)
 
@@ -168,8 +163,8 @@ class CutAxes(object):
                 horizontalalignment='left',
                 verticalalignment='top',
                 size=size,
-                bbox=dict(boxstyle="square,pad=0",
-                            ec=bg_color, fc=bg_color, alpha=1),
+                bbox={'boxstyle': "square,pad=0",
+                            'ec': bg_color, 'fc': bg_color, 'alpha': 1},
                 **kwargs)
 
         ax.text(.9, .95, 'R',
@@ -177,8 +172,8 @@ class CutAxes(object):
                 horizontalalignment='right',
                 verticalalignment='top',
                 size=size,
-                bbox=dict(boxstyle="square,pad=0",
-                            ec=bg_color, fc=bg_color, alpha=1),
+                bbox={'boxstyle': "square,pad=0",
+                            'ec': bg_color, 'fc': bg_color, 'alpha': 1},
                 **kwargs)
 
 
@@ -189,8 +184,8 @@ class CutAxes(object):
                 horizontalalignment='left',
                 verticalalignment='bottom',
                 size=size,
-                bbox=dict(boxstyle="square,pad=0",
-                            ec=bg_color, fc=bg_color, alpha=1),
+                bbox={'boxstyle': "square,pad=0",
+                            'ec': bg_color, 'fc': bg_color, 'alpha': 1},
                 **kwargs)
 
 
@@ -198,7 +193,7 @@ class CutAxes(object):
 # class BaseSlicer
 ################################################################################
 
-class BaseSlicer(object):
+class BaseSlicer:
     """ The main purpose of these class is to have auto adjust of axes size
         to the data with different layout of cuts.
     """
@@ -216,8 +211,8 @@ class BaseSlicer(object):
                 The axes that will be subdivided in 3.
             black_bg: boolean, optional
                 If True, the background of the figure will be put to
-                black. If you whish to save figures with a black background, 
-                you will need to pass "facecolor='k', edgecolor='k'" to 
+                black. If you whish to save figures with a black background,
+                you will need to pass "facecolor='k', edgecolor='k'" to
                 pylab's savefig.
 
         """
@@ -286,10 +281,10 @@ class BaseSlicer(object):
             text: string
                 The text of the title
             x: float, optional
-                The horizontal position of the title on the frame in 
+                The horizontal position of the title on the frame in
                 fraction of the frame width.
             y: float, optional
-                The vertical position of the title on the frame in 
+                The vertical position of the title on the frame in
                 fraction of the frame height.
             size: integer, optional
                 The size of the title text.
@@ -307,13 +302,13 @@ class BaseSlicer(object):
             color = 'k' if self._black_bg else 'w'
         if bgcolor is None:
             bgcolor = 'w' if self._black_bg else 'k'
-        self.frame_axes.text(x, y, text, 
+        self.frame_axes.text(x, y, text,
                     transform=self.frame_axes.transAxes,
                     horizontalalignment='left',
                     verticalalignment='top',
                     size=size, color=color,
-                    bbox=dict(boxstyle="square,pad=.3", 
-                              ec=bgcolor, fc=bgcolor, alpha=alpha),
+                    bbox={'boxstyle': "square,pad=.3",
+                              'ec': bgcolor, 'fc': bgcolor, 'alpha': alpha},
                     **kwargs)
 
 
@@ -339,7 +334,7 @@ class BaseSlicer(object):
             if threshold == 0:
                 map = np.ma.masked_equal(map, 0, copy=False)
             else:
-                map = np.ma.masked_inside(map, -threshold, threshold, 
+                map = np.ma.masked_inside(map, -threshold, threshold,
                                           copy=False)
 
         self._map_show(map, affine, type='imshow', **kwargs)
@@ -388,9 +383,9 @@ class BaseSlicer(object):
                 if kwargs.get('max') is None:
                     kwargs['vmax'] = vmax
         else:
-            if not 'vmin' in kwargs:
+            if 'vmin' not in kwargs:
                 kwargs['vmin'] = map.min()
-            if not 'vmax' in kwargs:
+            if 'vmax' not in kwargs:
                 kwargs['vmax'] = map.max()
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
@@ -421,7 +416,7 @@ class BaseSlicer(object):
                 The color used to display the edge map
         """
         map, affine = _xyz_order(map, affine)
-        kwargs = dict(cmap=cm.alpha_cmap(color=color))
+        kwargs = {'cmap': cm.alpha_cmap(color=color)}
         data_bounds = get_bounds(map.shape, affine)
 
         # For each ax, cut the data and plot it
@@ -453,7 +448,7 @@ class BaseSlicer(object):
                 function.
         """
         kwargs = kwargs.copy()
-        if not 'color' in kwargs:
+        if 'color' not in kwargs:
             if self._black_bg:
                 kwargs['color'] = 'w'
             else:
@@ -509,7 +504,7 @@ class OrthoSlicer(BaseSlicer):
     def _init_axes(self):
         x0, y0, x1, y1 = self.rect
         # Create our axes:
-        self.axes = dict()
+        self.axes = {}
         for index, direction in enumerate(('y', 'x', 'z')):
             ax = pl.axes([0.3*index*(x1-x0) + x0, y0, .3*(x1-x0), y1-y0])
             ax.axis('off')
@@ -524,7 +519,7 @@ class OrthoSlicer(BaseSlicer):
             Here we put the logic used to adjust the size of the axes.
         """
         x0, y0, x1, y1 = self.rect
-        width_dict = dict()
+        width_dict = {}
         cut_ax_dict = self.axes
         x_ax = cut_ax_dict['x']
         y_ax = cut_ax_dict['y']
@@ -542,7 +537,7 @@ class OrthoSlicer(BaseSlicer):
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.items():
             width_dict[ax] = width/total_width*(x1 -x0)
-        left_dict = dict()
+        left_dict = {}
         left_dict[y_ax.ax] = x0
         left_dict[x_ax.ax] = x0 + width_dict[y_ax.ax]
         left_dict[z_ax.ax] = x0 + width_dict[x_ax.ax] + width_dict[y_ax.ax]
@@ -566,7 +561,7 @@ class OrthoSlicer(BaseSlicer):
             cut_coords = self._cut_coords
         x, y, z = cut_coords
         kwargs = kwargs.copy()
-        if not 'color' in kwargs:
+        if 'color' not in kwargs:
             if self._black_bg:
                 kwargs['color'] = '.8'
             else:
@@ -648,7 +643,7 @@ class BaseStackedSlicer(BaseSlicer):
     def _init_axes(self):
         x0, y0, x1, y1 = self.rect
         # Create our axes:
-        self.axes = dict()
+        self.axes = {}
         fraction = 1./len(self._cut_coords)
         for index, coord in enumerate(self._cut_coords):
             coord = float(coord)
@@ -665,7 +660,7 @@ class BaseStackedSlicer(BaseSlicer):
             Here we put the logic used to adjust the size of the axes.
         """
         x0, y0, x1, y1 = self.rect
-        width_dict = dict()
+        width_dict = {}
         cut_ax_dict = self.axes
         for cut_ax in cut_ax_dict.values():
             bounds = cut_ax.get_object_bounds()
@@ -680,7 +675,7 @@ class BaseStackedSlicer(BaseSlicer):
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.items():
             width_dict[ax] = width/total_width*(x1 -x0)
-        left_dict = dict()
+        left_dict = {}
         left = float(x0)
         for coord, cut_ax in sorted(cut_ax_dict.items()):
             left_dict[cut_ax.ax] = left
@@ -719,7 +714,7 @@ class ZSlicer(BaseStackedSlicer):
     _direction = 'z'
 
 
-SLICERS = dict(ortho=OrthoSlicer,
-               x=XSlicer,
-               y=YSlicer,
-               z=ZSlicer)
+SLICERS = {'ortho': OrthoSlicer,
+               'x': XSlicer,
+               'y': YSlicer,
+               'z': ZSlicer}

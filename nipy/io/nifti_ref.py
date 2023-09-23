@@ -126,43 +126,38 @@ For saving a NIPY image to NIFTI, see the docstring for :func:`nipy2nifti`.
 For loading a NIFTI image to NIPY, see the docstring for :func:`nifti2nipy`.
 
 """
-from __future__ import absolute_import
 
 import sys
-
 import warnings
 from copy import copy
 
-import numpy as np
-
 import nibabel as nib
-from nibabel.affines import to_matvec, from_matvec
+import numpy as np
+from nibabel.affines import from_matvec, to_matvec
 
-from ..core.reference.coordinate_system import CoordinateSystem as CS
-from ..core.reference.coordinate_map import (AffineTransform as AT,
-                                             axmap,
-                                             product as cm_product)
-from ..core.reference import spaces as ncrs
 from ..core.image.image import Image
 from ..core.image.image_spaces import as_xyz_image
-
-from .nibcompat import get_header, get_affine
-
+from ..core.reference import spaces as ncrs
+from ..core.reference.coordinate_map import AffineTransform as AT
+from ..core.reference.coordinate_map import axmap
+from ..core.reference.coordinate_map import product as cm_product
+from ..core.reference.coordinate_system import CoordinateSystem as CS
+from .nibcompat import get_affine, get_header
 
 XFORM2SPACE = {'scanner': ncrs.scanner_space,
                'aligned': ncrs.aligned_space,
                'talairach': ncrs.talairach_space,
                'mni': ncrs.mni_space}
 
-TIME_LIKE_AXES = dict(
-    t = dict(aliases=('time',),
-             units='sec'),
-    hz = dict(aliases=('frequency-hz',),
-              units='hz'),
-    ppm = dict(aliases=('concentration-ppm',),
-               units='ppm'),
-    rads = dict(aliases=('radians/s',),
-                units='rads'))
+TIME_LIKE_AXES = {
+    't': {'aliases': ('time',),
+             'units': 'sec'},
+    'hz': {'aliases': ('frequency-hz',),
+              'units': 'hz'},
+    'ppm': {'aliases': ('concentration-ppm',),
+               'units': 'ppm'},
+    'rads': {'aliases': ('radians/s',),
+                'units': 'rads'}}
 
 TIME_LIKE_MAP = {}
 for _name, _info in TIME_LIKE_AXES.items():
@@ -286,8 +281,7 @@ def nipy2nifti(img, data_dtype=None, strict=None, fix0=True):
     except (ncrs.AxesError, ncrs.AffineError):
         # Python 2.5 / 3 compatibility
         e = sys.exc_info()[1]
-        raise NiftiError('Image cannot be reordered to XYZ because: "%s"'
-                         % e)
+        raise NiftiError(f'Image cannot be reordered to XYZ because: "{e}"')
     coordmap = img.coordmap
     # Get useful information from old header
     in_hdr = img.metadata.get('header', None)
@@ -336,7 +330,7 @@ def nipy2nifti(img, data_dtype=None, strict=None, fix0=True):
                           stacklevel = 2)
             hdr.set_sform(xyz_affine, 'scanner')
             hdr.set_qform(xyz_affine, 'scanner')
-        elif not out_space in ncrs.unknown_space: # no space we recognize
+        elif out_space not in ncrs.unknown_space: # no space we recognize
             raise NiftiError('Image world not a NIFTI world')
         else: # unknown space requires affine that matches
             # Set guessed shape to set zooms correctly
@@ -453,8 +447,8 @@ def _find_time_like(coordmap, fix0):
             matching = non_space_onames[corr_out - 3]
             if matching is None:
                 return (in_ax, corr_out, name)
-            raise NiftiError("Axis type '%s' in input matches axis type '%s' "
-                             "in output" % (name, matching))
+            raise NiftiError("Axis type '{}' in input matches axis type '{}' "
+                             "in output".format(name, matching))
         # Now check in output names
         elif name in non_space_onames:
             # Found name in output axes, corresponding input?
@@ -465,18 +459,18 @@ def _find_time_like(coordmap, fix0):
             matching = non_space_inames[in_ax - 3]
             if matching is None:
                 return (in_ax, out_ax, name)
-            raise NiftiError("Axis type '%s' in output matches axis type "
-                             "'%s' in input" % (name, matching))
+            raise NiftiError(f"Axis type '{name}' in output matches axis type "
+                             f"'{matching}' in input")
     return None, None, None
 
 
-TIME_LIKE_UNITS = dict(
-    sec = dict(name='t', scaling = 1),
-    msec = dict(name='t', scaling = 1 / 1000.),
-    usec = dict(name='t', scaling = 1 / 1000000.),
-    hz = dict(name='hz', scaling = 1),
-    ppm = dict(name='ppm', scaling = 1),
-    rads = dict(name='rads', scaling = 1))
+TIME_LIKE_UNITS = {
+    'sec': {'name': 't', 'scaling': 1},
+    'msec': {'name': 't', 'scaling': 1 / 1000.},
+    'usec': {'name': 't', 'scaling': 1 / 1000000.},
+    'hz': {'name': 'hz', 'scaling': 1},
+    'ppm': {'name': 'ppm', 'scaling': 1},
+    'rads': {'name': 'rads', 'scaling': 1}}
 
 
 def nifti2nipy(ni_img):
@@ -554,7 +548,7 @@ def nifti2nipy(ni_img):
     # For now we only warn if intent is set to an unexpected value
     intent, _, _ = hdr.get_intent()
     if intent != 'none':
-        warnings.warn('Ignoring intent field meaning "%s"' % intent,
+        warnings.warn(f'Ignoring intent field meaning "{intent}"',
                         UserWarning)
     # Which space?
     world_label = hdr.get_value_label('sform_code')

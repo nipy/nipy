@@ -11,7 +11,7 @@ import numpy as np
 import sympy
 
 from nipy.algorithms.statistics.api import Formula, make_recarray
-from nipy.modalities.fmri import utils, hrf
+from nipy.modalities.fmri import hrf, utils
 
 # Inter-stimulus intervals (time between events)
 dt = np.random.uniform(low=0, high=2.5, size=(50,))

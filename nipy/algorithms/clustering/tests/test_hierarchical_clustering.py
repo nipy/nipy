@@ -7,21 +7,25 @@ Should be cast soon in a nicer unitest framework
 
 Author : Bertrand Thirion, 2008-2009
 """
-from __future__ import absolute_import, division
 
 import math
 
 import numpy as np
+from nose.tools import assert_equal, assert_true
 from numpy.random import randn
-from ..hierarchical_clustering import (average_link_graph,
-                                       average_link_graph_segment,
-                                       ward, ward_quick,
-                                       ward_segment, ward_field_segment,
-                                       ward_quick_segment)
-from nipy.algorithms.graph.graph import WeightedGraph, knn
-from nipy.algorithms.graph.field import field_from_graph_and_data
 
-from nose.tools import assert_true, assert_equal
+from nipy.algorithms.graph.field import field_from_graph_and_data
+from nipy.algorithms.graph.graph import WeightedGraph, knn
+
+from ..hierarchical_clustering import (
+    average_link_graph,
+    average_link_graph_segment,
+    ward,
+    ward_field_segment,
+    ward_quick,
+    ward_quick_segment,
+    ward_segment,
+)
 
 
 def alg_test_basic(n=100,k=5):

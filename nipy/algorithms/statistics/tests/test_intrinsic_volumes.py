@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
@@ -6,11 +5,10 @@ from itertools import combinations
 
 import numpy as np
 import numpy.linalg as npl
+from nose.tools import assert_equal, assert_raises
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from .. import intvol
-
-from nose.tools import assert_equal, assert_raises
-from numpy.testing import assert_array_equal, assert_almost_equal
 
 
 def symnormal(p=10):
@@ -89,7 +87,7 @@ def nonintersecting_boxes(shape):
         edge1, box1 = randombox(shape)
         edge2, box2 = randombox(shape)
 
-        diledge1 = [[max(ed[0]-1, 0), min(ed[1]+1, sh)] 
+        diledge1 = [[max(ed[0]-1, 0), min(ed[1]+1, sh)]
                     for ed, sh in zip(edge1, box1.shape)]
 
         dilbox1 = box(box1.shape, diledge1)
@@ -123,7 +121,7 @@ def pts2mu3_tet(d, a, b, c):
 
 def wiki_tet_vol(d, a, b, c):
     # Wikipedia formula for generalized tetrahedron volume
-    d, a, b, c = [np.array(e) for e in (d, a, b, c)]
+    d, a, b, c = (np.array(e) for e in (d, a, b, c))
     cp = np.cross((b-d),(c-d))
     v2t6 = np.dot((a-d), cp)
     return np.sqrt(v2t6) / 6.

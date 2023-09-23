@@ -1,14 +1,14 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import absolute_import
 
 import numpy as np
 
 from nipy.algorithms.graph.field import field_from_coo_matrix_and_data
-from ..hierarchical_parcellation import hparcel
+
 from ...utils.simul_multisubject_fmri_dataset import surrogate_2d_dataset
-from ..parcellation import MultiSubjectParcellation
 from ..discrete_domain import grid_domain_from_binary_array
+from ..hierarchical_parcellation import hparcel
+from ..parcellation import MultiSubjectParcellation
 
 
 def test_parcel_interface():
@@ -156,7 +156,7 @@ def test_prfx():
     pdata = Pa.make_feature('functional',
                             np.rollaxis(np.array(ldata), 1, 0))
     one_sample = np.squeeze(pdata.mean(0) / pdata.std(0))
-    assert np.shape(one_sample) == tuple([nb_parcel])
+    assert np.shape(one_sample) == (nb_parcel,)
     assert one_sample.mean() < 1
     assert one_sample.mean() > -1
 

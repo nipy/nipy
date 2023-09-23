@@ -1,26 +1,28 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import sys
 import os
-from os.path import join as pjoin, exists
-from glob import glob
+import sys
 from distutils import log
+from glob import glob
+from os.path import exists
+from os.path import join as pjoin
 
 # Always use setuptools
 import setuptools
 
 sys.path.append('.')
 
-from setup_helpers import (generate_a_pyrex_source, get_comrec_build,
-                           cmdclass, INFO_VARS)
-
 # monkey-patch numpy distutils to use Cython instead of Pyrex
 from numpy.distutils.command.build_src import build_src
+
+from setup_helpers import INFO_VARS, cmdclass, generate_a_pyrex_source, get_comrec_build
+
 build_src.generate_a_pyrex_source = generate_a_pyrex_source
 
 # Add custom commit-recording build command
 from numpy.distutils.command.build_py import build_py as _build_py
+
 cmdclass['build_py'] = get_comrec_build('nipy', _build_py)
 
 def configuration(parent_package='',top_path=None):
@@ -32,7 +34,7 @@ def configuration(parent_package='',top_path=None):
                        delegate_options_to_subpackages=True,
                        quiet=True)
     # The quiet=True option will silence all of the name setting warnings:
-    # Ignoring attempt to set 'name' (from 'nipy.core' to 
+    # Ignoring attempt to set 'name' (from 'nipy.core' to
     #    'nipy.core.image')
     # Robert Kern recommends setting quiet=True on the numpy list, stating
     # these messages are probably only used in debugging numpy distutils.
@@ -55,14 +57,15 @@ DEPS = (
 
 requirement_kwargs = {'setup_requires': [], 'install_requires': []}
 for name, min_ver, req_type in DEPS:
-    new_req = '{0}>={1}'.format(name, min_ver)
+    new_req = f'{name}>={min_ver}'
     requirement_kwargs[req_type].append(new_req)
 
 
 ################################################################################
 # commands for installing the data
-from numpy.distutils.command.install_data import install_data
 from numpy.distutils.command.build_ext import build_ext
+from numpy.distutils.command.install_data import install_data
+
 
 def data_install_msgs():
     # Check whether we have data packages
@@ -77,7 +80,7 @@ def data_install_msgs():
     example_data = datasource_or_bomber(DATA_PKGS['nipy-data'])
     for dpkg in (templates, example_data):
         if hasattr(dpkg, 'msg'): # a bomber object, warn
-            log.warn('%s\n%s' % ('_'*80, dpkg.msg))
+            log.warn(f"{'_' * 80}\n{dpkg.msg}")
 
 
 class MyInstallData(install_data):

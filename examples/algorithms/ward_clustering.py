@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function, division # Python 2/3 compatibility
 __doc__ = """
 Demo ward clustering on a graph: various ways of forming clusters and dendrogram
 
@@ -10,15 +9,15 @@ Requires matplotlib
 print(__doc__)
 
 import numpy as np
-from numpy.random import randn, rand
+from numpy.random import rand, randn
 
 try:
     import matplotlib.pyplot as plt
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nipy.algorithms.graph import knn
 from nipy.algorithms.clustering.hierarchical_clustering import ward
+from nipy.algorithms.graph import knn
 
 # n = number of points, k = number of nearest neighbours
 n = 100
@@ -42,7 +41,7 @@ for i in range(u.max()+1):
 
 plt.axis('tight')
 plt.axis('off')
-plt.title('clustering into clusters \n of inertia < %g' % threshold)
+plt.title(f'clustering into clusters \n of inertia < {threshold:g}')
 
 u = tree.split(k)
 plt.subplot(1, 3, 2)

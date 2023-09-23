@@ -3,7 +3,7 @@
 % First copy nipy.testing.functional.nii.gz to current working directory
 %
 % gunzip functional.nii.gz
-% 
+%
 % Make sure ``timediff.m`` in this directory is on your matlab path, as
 % is SPM >= version 5
 

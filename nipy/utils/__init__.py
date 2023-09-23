@@ -6,12 +6,12 @@ General utilities for code support.
 These are modules that we (broadly-speaking) wrote; packages that other people
 wrote, that we ship, go in the nipy.externals tree.
 """
-from __future__ import absolute_import
 
-from nibabel.data import make_datasource, DataError, datasource_or_bomber
+from nibabel.data import DataError, datasource_or_bomber, make_datasource
 
 # Module level datasource instances for convenience
 from ..info import DATA_PKGS
+
 templates = datasource_or_bomber(DATA_PKGS['nipy-templates'])
 example_data = datasource_or_bomber(DATA_PKGS['nipy-data'])
 
@@ -29,9 +29,10 @@ except DataError:
 else:
     HAVE_TEMPLATES = True
 
+from nipy.testing import Tester
+
 from .utilities import is_iterable, is_numlike, seq_prod
 
-from nipy.testing import Tester
 test = Tester().test
 bench = Tester().bench
 

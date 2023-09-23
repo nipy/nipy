@@ -64,7 +64,7 @@ The proposed environment includes the following:
 * Support for MATLAB style numeric packages (Numarray) and plotting
   (matplotlib_).
 * Support for EEG analysis including EEG/MEG/fMRI fusion analysis.
-* Support for spatio-temporal wavelet analysis 
+* Support for spatio-temporal wavelet analysis
   (`PhiWave <http://phiwave.sourceforge.net>`_)
 
 Conclusions

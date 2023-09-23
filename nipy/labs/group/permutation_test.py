@@ -2,10 +2,10 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """One and two sample permutation tests.
 """
-from __future__ import print_function, absolute_import
 
 # Third-party imports
 import numpy as np
+
 try:
     from scipy.misc import comb
 except ImportError:
@@ -17,9 +17,10 @@ from nipy.algorithms.graph import wgraph_from_3d_grid
 from nipy.algorithms.graph.field import Field, field_from_graph_and_data
 
 from ..utils import zscore
-from .onesample import stat as os_stat, stat_mfx as os_stat_mfx
-from .twosample import stat as ts_stat, stat_mfx as ts_stat_mfx
-
+from .onesample import stat as os_stat
+from .onesample import stat_mfx as os_stat_mfx
+from .twosample import stat as ts_stat
+from .twosample import stat_mfx as ts_stat_mfx
 
 # Default parameters
 DEF_NDRAWS = int(1e5)
@@ -306,7 +307,7 @@ def peak_XYZ(XYZ, Tvalues, labels, label_values):
 #======================================
 #======================================
 
-class permutation_test(object):
+class permutation_test:
     """
     This generic permutation test class contains the calibration method
     which is common to the derived classes permutation_test_onesample and

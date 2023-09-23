@@ -1,14 +1,14 @@
-from __future__ import print_function
-from __future__ import absolute_import
 
 import numpy as np
+
 from ..glm import glm
+
 
 def make_data():
     dimt = 100
     dimx = 10
     dimy = 11
-    dimz = 12 
+    dimz = 12
     y = np.random.randn(dimt, dimx, dimy, dimz)
     X = np.array([np.ones(dimt), list(range(dimt))])
     X = X.transpose() ## the design matrix X must have dimt lines
@@ -25,15 +25,15 @@ def ols(axis, y, X):
     v1 = m1.s2
     print("Comparing standard OLS with Kalman OLS...")
     re = ( np.abs(b-b1) / (np.abs(b)+1e-20) ).mean()
-    print("  Relative difference in Effect estimate: %s" % re)
+    print(f"  Relative difference in Effect estimate: {re}")
     re = ( np.abs(v-v1) / (np.abs(v)+1e-20) ).mean()
-    print("  Relative difference in Variance: %s" % re)
+    print(f"  Relative difference in Variance: {re}")
     tcon = m.contrast([1,0])
     tcon1 = m1.contrast([1,0])
     z = tcon.zscore()
     z1 = tcon1.zscore()
     re = ( abs(z-z1) / (abs(z)+1e-20) ).mean()
-    print("  Relative difference in z score: %s" % re)
+    print(f"  Relative difference in z score: {re}")
 
 def bench_ols_axis0():
     x, Y = make_data()
@@ -50,4 +50,3 @@ def bench_ols_axis2():
 def bench_ols_axis3():
     x, Y = make_data()
     ols(3, x, Y)
-

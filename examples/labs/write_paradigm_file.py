@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 """
 Examples of a paradigm .csv file generation: the neurospin/localizer paradigm.
 
 See Pinel et al., BMC neuroscience 2007 for reference
 """
-import sys
 import csv
+import sys
 
 import numpy as np
 
@@ -56,4 +55,4 @@ for row in pdata:
     writer.writerow(row)
 
 fid.close()
-print("Created the paradigm file in %s " % csvfile)
+print(f"Created the paradigm file in {csvfile} ")

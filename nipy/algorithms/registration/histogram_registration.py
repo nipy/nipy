@@ -3,21 +3,16 @@
 """
 Intensity-based image registration
 """
-from __future__ import absolute_import
-from __future__ import print_function
 
 import numpy as np
 import scipy.ndimage as nd
 
-from ...core.image.image_spaces import (make_xyz_image,
-                                        as_xyz_image,
-                                        xyz_affine)
-
-from .optimizer import configure_optimizer
-from .affine import inverse_affine, subgrid_affine, affine_transforms
-from .chain_transform import ChainTransform
-from .similarity_measures import similarity_measures as _sms
+from ...core.image.image_spaces import as_xyz_image, make_xyz_image, xyz_affine
 from ._registration import _joint_histogram
+from .affine import affine_transforms, inverse_affine, subgrid_affine
+from .chain_transform import ChainTransform
+from .optimizer import configure_optimizer
+from .similarity_measures import similarity_measures as _sms
 
 MAX_INT = np.iinfo(np.int_).max
 
@@ -37,7 +32,7 @@ NPOINTS = 64 ** 3
 interp_methods = {'pv': 0, 'tri': 1, 'rand': -1}
 
 
-class HistogramRegistration(object):
+class HistogramRegistration:
     """
     A class to reprensent a generic intensity-based image registration
     algorithm.
@@ -73,7 +68,7 @@ class HistogramRegistration(object):
           take a two-dimensional array representing the image joint
           histogram as an input and return a float.
        dist: None or array-like
-          Joint intensity probability distribution model for use with the 
+          Joint intensity probability distribution model for use with the
           'slr' measure. Should be of shape (from_bins, to_bins).
        interp : str
          Interpolation method.  One of 'pv': Partial volume, 'tri':
@@ -95,7 +90,7 @@ class HistogramRegistration(object):
         # overriden if unnecessarily large.
         data, from_bins_adjusted = clamp(from_img.get_fdata(), from_bins,
                                          mask=from_mask)
-        if not similarity == 'slr':
+        if similarity != 'slr':
             from_bins = from_bins_adjusted
         self._from_img = make_xyz_image(data, xyz_affine(from_img), 'scanner')
         # Set field of view in the `from` image with potential
@@ -117,7 +112,7 @@ class HistogramRegistration(object):
         else:
             data = to_img.get_fdata()
         data, to_bins_adjusted = clamp(data, to_bins, mask=to_mask)
-        if not similarity == 'slr':
+        if similarity != 'slr':
             to_bins = to_bins_adjusted
         self._to_data = -np.ones(np.array(to_img.shape) + 2, dtype=CLAMP_DTYPE)
         self._to_data[1:-1, 1:-1, 1:-1] = data
@@ -366,7 +361,7 @@ class HistogramRegistration(object):
             def callback(tc):
                 Tv.param = tc
                 print(Tv.optimizable)
-                print(str(self.similarity) + ' = %s' % self._eval(Tv))
+                print(str(self.similarity) + f' = {self._eval(Tv)}')
                 print('')
 
         # Switching to the appropriate optimizer
@@ -387,7 +382,7 @@ class HistogramRegistration(object):
 
         # Output
         if VERBOSE:
-            print('Optimizing using %s' % fmin.__name__)
+            print(f'Optimizing using {fmin.__name__}')
         kwargs['callback'] = callback
         Tv.param = fmin(cost, tc0, *args, **kwargs)
         return Tv.optimizable

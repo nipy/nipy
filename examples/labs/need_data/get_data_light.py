@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 """
 Get two images from the web (one mask image and one spmT image) and put them in
 the nipy user dir - usually therefore at ``~/.nipy/tests/data``.
@@ -10,10 +9,11 @@ Author : Bertrand Thirion, 2009
 """
 
 import os
+
 try:
-    from urllib2 import urlopen # Python 2
+    from urllib2 import urlopen  # Python 2
 except ImportError:
-    from urllib.request import urlopen # Python 3
+    from urllib.request import urlopen  # Python 3
 import tarfile
 
 from nibabel.data import get_nipy_user_dir

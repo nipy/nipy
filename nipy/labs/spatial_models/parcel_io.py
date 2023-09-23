@@ -5,24 +5,22 @@ Utility functions for mutli-subjectParcellation:
 this basically uses nipy io lib to perform IO opermation
 in parcel definition processes
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
-import numpy as np
 import os.path
 from warnings import warn
 
+import numpy as np
+from nibabel import Nifti1Image, load, save
 from six import string_types
 
-from nibabel import load, save, Nifti1Image
-
-from nipy.io.nibcompat import get_header, get_affine
 from nipy.algorithms.clustering.utils import kmeans
+from nipy.io.nibcompat import get_affine, get_header
+
+from ..mask import intersect_masks
 from .discrete_domain import grid_domain_from_image
 from .mroi import SubDomains
-from ..mask import intersect_masks
 
-warn('Module nipy.labs.spatial_models.parcel_io' + 
+warn('Module nipy.labs.spatial_models.parcel_io' +
      'deprecated, will be removed',
      FutureWarning,
      stacklevel=2)
@@ -164,7 +162,7 @@ def write_parcellation_images(Pa, template_path=None, indiv_path=None,
     if template_path is None:
         template_path = os.path.join(swd, "template_parcel.nii")
     if indiv_path is None:
-        indiv_path = [os.path.join(swd, "parcel%s.nii" % subject_id[s])
+        indiv_path = [os.path.join(swd, f"parcel{subject_id[s]}.nii")
                         for s in range(Pa.nb_subj)]
 
     # write the template image
@@ -341,7 +339,7 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
     if fullpath is not None:
         label_image = fullpath
     elif write_dir is not None:
-        label_image = os.path.join(write_dir, "parcel_%s.nii" % method)
+        label_image = os.path.join(write_dir, f"parcel_{method}.nii")
     else:
         label_image = None
 
@@ -350,6 +348,6 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
             fid='id', roi=True, descrip='Intra-subject parcellation image')
         save(lpa_img, label_image)
         if verbose:
-            print("Wrote the parcellation images as %s" % label_image)
+            print(f"Wrote the parcellation images as {label_image}")
 
     return lpa

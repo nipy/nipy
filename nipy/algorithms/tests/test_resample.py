@@ -1,20 +1,16 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from itertools import product
 
 import numpy as np
-
-from nipy.core.api import (CoordinateMap, AffineTransform, Image,
-        ArrayCoordMap, vox2mni)
-from nipy.core.reference import slices
-from nipy.algorithms.resample import resample, resample_img2img
-from nipy.io.api import load_image
-
-from nose.tools import assert_true, assert_raises
-
+from nose.tools import assert_raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from nipy.testing import funcfile, anatfile
+
+from nipy.algorithms.resample import resample, resample_img2img
+from nipy.core.api import AffineTransform, ArrayCoordMap, CoordinateMap, Image, vox2mni
+from nipy.core.reference import slices
+from nipy.io.api import load_image
+from nipy.testing import anatfile, funcfile
 
 
 def test_resample_img2img():
@@ -219,7 +215,7 @@ def test_nonaffine():
     #
     # FIXME: use the reference.evaluate.Grid to perform this nicer
     # FIXME: Remove pylab references
-    def curve(x): # function accept N by 1, returns N by 2 
+    def curve(x): # function accept N by 1, returns N by 2
         return (np.vstack([5*np.sin(x.T),5*np.cos(x.T)]).T + [52,47])
     for names in (('xy', 'ij', 't', 'u'),('ij', 'xy', 't', 's')):
         in_names, out_names, tin_names, tout_names = names

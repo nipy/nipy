@@ -1,21 +1,19 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
-
 from nibabel.affines import from_matvec
-
-from ..pca import pca_image, pca as pca_array
-from ....core.api import Image, AffineTransform, CoordinateSystem as CS
-from ....core.reference.coordinate_map import (product as cm_product,
-                                               drop_io_dim, AxisError)
-from ....core.image.image import rollimg
-from ....io.api import  load_image
-
 from nose.tools import assert_raises
-from numpy.testing import (assert_equal, assert_almost_equal,
-                           assert_array_equal)
+from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
+
+from ....core.api import AffineTransform, Image
+from ....core.api import CoordinateSystem as CS
+from ....core.image.image import rollimg
+from ....core.reference.coordinate_map import AxisError, drop_io_dim
+from ....core.reference.coordinate_map import product as cm_product
+from ....io.api import load_image
 from ....testing import funcfile
+from ..pca import pca as pca_array
+from ..pca import pca_image
 from .test_pca import res2pos1
 
 data_dict = {}

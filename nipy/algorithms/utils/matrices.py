@@ -1,10 +1,10 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Utilities for working with matrices """
-from __future__ import absolute_import
 
 import numpy as np
 import scipy.linalg as spl
+
 
 def matrix_rank(M, tol=None):
     ''' Return rank of matrix using SVD method

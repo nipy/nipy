@@ -16,7 +16,13 @@ Example Makefile rule::
             ./ext/autosummary_generate.py -o source/generated source/*.rst
 
 """
-import glob, re, inspect, os, optparse, pydoc
+import glob
+import inspect
+import optparse
+import os
+import pydoc
+import re
+
 from autosummary import import_by_name
 
 try:
@@ -54,14 +60,14 @@ def main():
     for name, path in sorted(names.items()):
         if options.output_dir is not None:
             path = options.output_dir
-        
+
         if not os.path.isdir(path):
             os.makedirs(path)
 
         try:
             obj, name = import_by_name(name)
-        except ImportError, e:
-            print "Failed to import '%s': %s" % (name, e)
+        except ImportError as e:
+            print(f"Failed to import '{name}': {e}")
             continue
 
         fn = os.path.join(path, '%s.rst' % name)
@@ -73,7 +79,7 @@ def main():
         f = open(fn, 'w')
 
         try:
-            f.write('%s\n%s\n\n' % (name, '='*len(name)))
+            f.write('{}\n{}\n\n'.format(name, '='*len(name)))
 
             if inspect.isclass(obj):
                 if issubclass(obj, Exception):
@@ -96,12 +102,12 @@ def main():
 def format_modulemember(name, directive):
     parts = name.split('.')
     mod, name = '.'.join(parts[:-1]), parts[-1]
-    return ".. currentmodule:: %s\n\n.. %s:: %s\n" % (mod, directive, name)
+    return f".. currentmodule:: {mod}\n\n.. {directive}:: {name}\n"
 
 def format_classmember(name, directive):
     parts = name.split('.')
     mod, name = '.'.join(parts[:-2]), '.'.join(parts[-2:])
-    return ".. currentmodule:: %s\n\n.. %s:: %s\n" % (mod, directive, name)
+    return f".. currentmodule:: {mod}\n\n.. {directive}:: {name}\n"
 
 def get_documented(filenames):
     """
@@ -111,7 +117,7 @@ def get_documented(filenames):
     """
     documented = {}
     for filename in filenames:
-        f = open(filename, 'r')
+        f = open(filename)
         lines = f.read().splitlines()
         documented.update(get_documented_in_lines(lines, filename=filename))
         f.close()
@@ -121,7 +127,7 @@ def get_documented_in_docstring(name, module=None, filename=None):
     """
     Find out what items are documented in the given object's docstring.
     See `get_documented_in_lines`.
-    
+
     """
     try:
         obj, real_name = import_by_name(name)
@@ -129,14 +135,14 @@ def get_documented_in_docstring(name, module=None, filename=None):
         return get_documented_in_lines(lines, module=name, filename=filename)
     except AttributeError:
         pass
-    except ImportError, e:
-        print "Failed to import '%s': %s" % (name, e)
+    except ImportError as e:
+        print(f"Failed to import '{name}': {e}")
     return {}
 
 def get_documented_in_lines(lines, module=None, filename=None):
     """
     Find out what items are documented in the given lines
-    
+
     Returns
     -------
     documented : dict of list of (filename, title, keyword, toctree)
@@ -153,15 +159,15 @@ def get_documented_in_lines(lines, module=None, filename=None):
     module_re = re.compile(r'^\.\.\s+(current)?module::\s*([a-zA-Z0-9_.]+)\s*$')
     autosummary_item_re = re.compile(r'^\s+([_a-zA-Z][a-zA-Z0-9_.]*)\s*.*?')
     toctree_arg_re = re.compile(r'^\s+:toctree:\s*(.*?)\s*$')
-    
+
     documented = {}
-   
+
     current_title = []
     last_line = None
     toctree = None
     current_module = module
     in_autosummary = False
-    
+
     for line in lines:
         try:
             if in_autosummary:
@@ -177,7 +183,7 @@ def get_documented_in_lines(lines, module=None, filename=None):
                 if m:
                     name = m.group(1).strip()
                     if current_module and not name.startswith(current_module + '.'):
-                        name = "%s.%s" % (current_module, name)
+                        name = f"{current_module}.{name}"
                     documented.setdefault(name, []).append(
                         (filename, current_title, 'autosummary', toctree))
                     continue
@@ -198,7 +204,7 @@ def get_documented_in_lines(lines, module=None, filename=None):
                     documented.update(get_documented_in_docstring(
                         name, filename=filename))
                 elif current_module and not name.startswith(current_module+'.'):
-                    name = "%s.%s" % (current_module, name)
+                    name = f"{current_module}.{name}"
                 documented.setdefault(name, []).append(
                     (filename, current_title, "auto" + m.group(1), None))
                 continue

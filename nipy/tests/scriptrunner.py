@@ -12,11 +12,11 @@ Then, in the tests, something like::
     assert_equal(code, 0)
     assert_equal(stdout, b'This script ran OK')
 """
-import sys
 import os
-from os.path import (dirname, join as pjoin, isfile, isdir, realpath, pathsep)
-
-from subprocess import Popen, PIPE
+import sys
+from os.path import dirname, isdir, isfile, pathsep, realpath
+from os.path import join as pjoin
+from subprocess import PIPE, Popen
 
 try: # Python 2
     string_types = basestring,
@@ -60,7 +60,7 @@ def local_module_dir(module_name):
     return None
 
 
-class ScriptRunner(object):
+class ScriptRunner:
     """ Class to run scripts and return output
 
     Finds local scripts and local modules if running in the development
@@ -93,7 +93,7 @@ class ScriptRunner(object):
         self.local_script_dir = local_script_dir(script_sdir)
         self.local_module_dir = local_module_dir(module_sdir)
         if debug_print_var is None:
-            debug_print_var = '{0}_DEBUG_PRINT'.format(module_sdir.upper())
+            debug_print_var = f'{module_sdir.upper()}_DEBUG_PRINT'
         self.debug_print = os.environ.get(debug_print_var, False)
         self.output_processor = output_processor
 
@@ -132,9 +132,9 @@ class ScriptRunner(object):
             # Quote any arguments with spaces. The quotes delimit the arguments
             # on Windows, and the arguments might be files paths with spaces.
             # On Unix the list elements are each separate arguments.
-            cmd = ['"{0}"'.format(c) if ' ' in c else c for c in cmd]
+            cmd = [f'"{c}"' if ' ' in c else c for c in cmd]
         if self.debug_print:
-            print("Running command '%s'" % cmd)
+            print(f"Running command '{cmd}'")
         env = os.environ
         if self.local_module_dir is not None:
             # module likely comes from the current working directory. We might need
@@ -152,13 +152,13 @@ class ScriptRunner(object):
             proc.terminate()
         if check_code and proc.returncode != 0:
             raise RuntimeError(
-                """Command "{0}" failed with
+                f"""Command "{cmd}" failed with
                 stdout
                 ------
-                {1}
+                {stdout}
                 stderr
                 ------
-                {2}
-                """.format(cmd, stdout, stderr))
+                {stderr}
+                """)
         opp = self.output_processor
         return proc.returncode, opp(stdout), opp(stderr)

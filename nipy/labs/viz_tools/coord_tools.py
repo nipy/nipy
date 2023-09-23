@@ -3,7 +3,6 @@
 """
 Misc tools to find activations and cut on maps
 """
-from __future__ import absolute_import
 
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD
@@ -13,12 +12,12 @@ import warnings
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
-from scipy import stats, ndimage
+from scipy import ndimage, stats
+
+from ..datasets.transforms.affine_utils import get_bounds
 
 # Local imports
 from ..mask import largest_cc
-from ..datasets.transforms.affine_utils import get_bounds
-
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
@@ -49,8 +48,8 @@ def coord_transform(x, y, z, affine):
     z : number or ndarray
         The z coordinates in the output space
     """
-    coords = np.c_[np.atleast_1d(x).flat, 
-                   np.atleast_1d(y).flat, 
+    coords = np.c_[np.atleast_1d(x).flat,
+                   np.atleast_1d(y).flat,
                    np.atleast_1d(z).flat,
                    np.ones_like(np.atleast_1d(z).flat)].T
     x, y, z, _ = np.dot(affine, coords)
@@ -67,7 +66,7 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
         mask : 3D ndarray, boolean, optional
             An optional brain mask.
         activation_threshold : float, optional
-            The lower threshold to the positive activation. If None, the 
+            The lower threshold to the positive activation. If None, the
             activation threshold is computed using find_activation.
 
         Returns
@@ -81,7 +80,7 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
     """
     # To speed up computations, we work with partial views of the array,
     # and keep track of the offset
-    offset = np.zeros(3) 
+    offset = np.zeros(3)
     # Deal with masked arrays:
     if hasattr(map, 'mask'):
         not_mask = np.logical_not(map.mask)
@@ -224,7 +223,7 @@ def find_maxsep_cut_coords(map3d, affine, slicer='z', n_cuts=None,
     # sanitize slicer
     if slicer not in 'xyz':
         raise ValueError(
-            "slicer must be one of 'x', 'y', and 'z', got '%s'." % slicer)
+            f"slicer must be one of 'x', 'y', and 'z', got '{slicer}'.")
     slicer = "xyz".index(slicer)
 
     # load data

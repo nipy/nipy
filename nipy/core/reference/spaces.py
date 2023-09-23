@@ -1,23 +1,18 @@
 """ Useful neuroimaging coordinate map makers and utilities """
-from __future__ import print_function
-from __future__ import absolute_import
-
-from six import string_types
 
 import numpy as np
-
 from nibabel.affines import from_matvec
-
-from ...fixes.nibabel import io_orientation
-
-from .coordinate_system import CoordSysMaker, is_coordsys, is_coordsys_maker
-from .coordinate_map import CoordMapMaker
+from six import string_types
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
 
+from ...fixes.nibabel import io_orientation
+from .coordinate_map import CoordMapMaker
+from .coordinate_system import CoordSysMaker, is_coordsys, is_coordsys_maker
 
-class XYZSpace(object):
+
+class XYZSpace:
     """ Class contains logic for spaces with XYZ coordinate systems
 
     >>> sp = XYZSpace('hijo')
@@ -40,23 +35,23 @@ class XYZSpace(object):
     @property
     def x(self):
         """ x-space coordinate name """
-        return "%s-%s" % (self.name, self.x_suffix)
+        return f"{self.name}-{self.x_suffix}"
 
     @property
     def y(self):
         """ y-space coordinate name """
-        return "%s-%s" % (self.name, self.y_suffix)
+        return f"{self.name}-{self.y_suffix}"
 
     @property
     def z(self):
         """ z-space coordinate name """
-        return "%s-%s" % (self.name, self.z_suffix)
+        return f"{self.name}-{self.z_suffix}"
 
     def __repr__(self):
-        return "%s('%s')" % (self.__class__.__name__, self.name)
+        return f"{self.__class__.__name__}('{self.name}')"
 
     def __str__(self):
-        return "%s: %s" % (self.name, sorted(self.as_map().items()))
+        return f"{self.name}: {sorted(self.as_map().items())}"
 
     def __eq__(self, other):
         """ Equality defined as having the same xyz names """
@@ -204,9 +199,9 @@ for _name in ('unknown', 'scanner', 'aligned', 'mni', 'talairach'):
     _csm = _space.to_coordsys_maker('tuvw')
     _cmm = CoordMapMaker(voxel_csm, _csm)
     # Put these into the module namespace
-    exec('%s_space = _space' % _name)
-    exec('%s_csm = _csm' % _name)
-    exec('vox2%s = _cmm' % _name)
+    exec(f'{_name}_space = _space')
+    exec(f'{_name}_csm = _csm')
+    exec(f'vox2{_name} = _cmm')
 
 
 def known_space(obj, spaces=None):
@@ -299,8 +294,7 @@ def get_world_cs(world_id, ndim=3, extras='tuvw', spaces=None):
     if isinstance(world_id, string_types):
         space_names = [s.name for s in spaces]
         if world_id not in space_names:
-            raise SpaceError('Unkown space "%s"; known spaces are %s'
-                                    % (world_id, ', '.join(space_names)))
+            raise SpaceError('Unkown space "{}"; known spaces are {}'.format(world_id, ', '.join(space_names)))
         world_id = spaces[space_names.index(world_id)]
     if is_xyz_space(world_id):
         world_id = world_id.to_coordsys_maker(extras)
@@ -391,7 +385,7 @@ def xyz_affine(coordmap, name2xyz=None):
         raise AxesError('First 3 output axes must be X, Y, Z')
     # Check equivalent input axes
     ornt = io_orientation(affine)
-    if set(ornt[:3, 0]) != set((0, 1, 2)):
+    if set(ornt[:3, 0]) != {0, 1, 2}:
         raise AxesError('First 3 input axes must correspond to X, Y, Z')
     # Check that dropped dimensions don't provide xyz coordinate info
     extra_cols = affine[:3,3:-1]

@@ -10,14 +10,13 @@ Example:
     %prog nipy
 """
 
-import sys
-import os
-from os.path import dirname, relpath, sep, join as pjoin, splitext, abspath
-
-from distutils.sysconfig import get_config_vars
-
 import doctest
+import os
+import sys
+from distutils.sysconfig import get_config_vars
 from optparse import OptionParser
+from os.path import abspath, dirname, relpath, sep, splitext
+from os.path import join as pjoin
 
 EXT_EXT = get_config_vars('SO')[0]
 

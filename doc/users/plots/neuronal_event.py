@@ -5,11 +5,9 @@ This figure is meant to represent the neuronal event-related model and a
 coefficient of +1 for Faces, -2 for Objects.
 """
 
-import numpy as np
-
 import matplotlib.pyplot as plt
-
-from sympy import Symbol, Heaviside, lambdify
+import numpy as np
+from sympy import Heaviside, Symbol, lambdify
 
 ta = [0, 4, 8, 12, 16]
 tb = [2, 6, 10, 14, 18]

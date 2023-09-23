@@ -34,13 +34,14 @@ Note: this script does not check any of the dependent C libraries; it only
 operates on the Cython .pyx files.
 """
 
-import os
-from os.path import join as pjoin, abspath
-import sys
 import hashlib
+import os
 import pickle
-from subprocess import Popen, PIPE
+import sys
 from distutils.version import LooseVersion
+from os.path import abspath
+from os.path import join as pjoin
+from subprocess import PIPE, Popen
 
 try:
     import Cython
@@ -63,13 +64,12 @@ def process_pyx(fromfile, tofile):
         opt_str = '--fast-fail'
     else:
         opt_str = ''
-    if os.system('cython %s %s -o "%s" "%s"' % (
-        opt_str, EXTRA_FLAGS, tofile, fromfile)) != 0:
+    if os.system(f'cython {opt_str} {EXTRA_FLAGS} -o "{tofile}" "{fromfile}"') != 0:
         raise Exception('Cython failed')
 
 def process_tempita_pyx(fromfile, tofile):
     import tempita
-    with open(fromfile, 'rt') as f:
+    with open(fromfile) as f:
         tmpl = f.read()
     pyxcontent = tempita.sub(tmpl)
     assert fromfile.endswith('.pyx.in')
@@ -135,10 +135,7 @@ def git_is_dirty(filename):
 def git_is_child(parent_sha, child_sha):
     out = execproc(['git', 'rev-list', child_sha, '^%s^' % parent_sha])
     assert out is not None
-    for line in out.split('\n'):
-        if line == parent_sha:
-            return True
-    return False
+    return any(line == parent_sha for line in out.split('\n'))
 
 #
 # Main program

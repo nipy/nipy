@@ -1,16 +1,11 @@
 """ Testing
 """
-from __future__ import absolute_import
 
 import numpy as np
-
-from .._registration import (_cspline_transform,
-                             _cspline_sample1d,
-                             _cspline_sample4d)
-
+from nose.tools import assert_equal, assert_raises, assert_true
 from numpy.testing import assert_array_almost_equal
 
-from nose.tools import assert_true, assert_equal, assert_raises
+from .._registration import _cspline_sample1d, _cspline_sample4d, _cspline_transform
 
 
 def test_sample1d():

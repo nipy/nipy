@@ -1,19 +1,18 @@
 """ Testing nibcompat module
 """
-from __future__ import absolute_import
-import numpy as np
-
 import nibabel as nib
-
+import numpy as np
 from nibabel.tmpdirs import InTemporaryDirectory
-
-from ..nibcompat import (get_dataobj, get_affine, get_header,
-                         get_unscaled_data)
-
+from nose.tools import (
+    assert_equal,
+    assert_false,
+    assert_not_equal,
+    assert_raises,
+    assert_true,
+)
 from numpy.testing import assert_array_equal
 
-from nose.tools import (assert_true, assert_false, assert_raises,
-                        assert_equal, assert_not_equal)
+from ..nibcompat import get_affine, get_dataobj, get_header, get_unscaled_data
 
 
 def test_funcs():
@@ -51,7 +50,7 @@ def test_unscaled_data():
             header = get_header(img_back)
             dao = get_dataobj(img_back)
             slope = header['scl_slope']
-            inter = (0. if not 'scl_inter' in header else header['scl_inter'])
+            inter = (0. if 'scl_inter' not in header else header['scl_inter'])
             if np.isnan(slope):
                 slope, inter = dao.slope, dao.inter
             data_back = np.array(dao)

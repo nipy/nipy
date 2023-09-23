@@ -1,9 +1,6 @@
-from __future__ import absolute_import
 import numpy as np
 
-from .segmentation import (Segmentation,
-                           moment_matching,
-                           map_from_ppm)
+from .segmentation import Segmentation, map_from_ppm, moment_matching
 
 T1_ref_params = {}
 T1_ref_params['glob_mu'] = 1643.2
@@ -19,7 +16,7 @@ T1_ref_params['5k'] = {
     'sigma': np.array([22554.8, 21368.9, 20560.1, 7302.6, 14962.1])}
 
 
-class BrainT1Segmentation(object):
+class BrainT1Segmentation:
 
     def __init__(self, data, mask=None, model='3k',
                  niters=25, ngb_size=6, beta=0.5,

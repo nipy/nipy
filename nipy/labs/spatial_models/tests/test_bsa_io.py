@@ -1,18 +1,14 @@
-from __future__ import absolute_import
 
 from os.path import exists
 
 import numpy as np
-
 from nibabel import Nifti1Image
-
-from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
-from ..bsa_io import make_bsa_image
-
+from nibabel.tmpdirs import InTemporaryDirectory
 from nose.tools import assert_true
 from numpy.testing import assert_equal
 
-from nibabel.tmpdirs import InTemporaryDirectory
+from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
+from ..bsa_io import make_bsa_image
 
 
 def test_parcel_intra_from_3d_images_list():
@@ -37,10 +33,10 @@ def test_parcel_intra_from_3d_images_list():
 
         assert_equal(landmark, None)
         assert_equal(len(hrois), 5)
-        assert_true(exists('density_%s.nii' % contrast_id))
-        assert_true(exists('prevalence_%s.nii' % contrast_id))
-        assert_true(exists('AR_%s.nii' % contrast_id))
-        assert_true(exists('CR_%s.nii' % contrast_id))
+        assert_true(exists(f'density_{contrast_id}.nii'))
+        assert_true(exists(f'prevalence_{contrast_id}.nii'))
+        assert_true(exists(f'AR_{contrast_id}.nii'))
+        assert_true(exists(f'CR_{contrast_id}.nii'))
 
 
 if __name__ == "__main__":

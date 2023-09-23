@@ -22,7 +22,6 @@ Examples
 (17, 21, 3, 20)
 
 """
-from __future__ import absolute_import
 
 import os
 
@@ -39,6 +38,7 @@ from numpy.testing import *
 
 # Overwrites numpy.testing.Tester
 from .nosetester import NipyNoseTester as Tester
+
 test = Tester().test
 bench = Tester().bench
 
@@ -46,7 +46,7 @@ from . import decorators as dec
 
 # Allow failed import of nose if not now running tests
 try:
-    from nose.tools import assert_true, assert_false
+    from nose.tools import assert_false, assert_true
 except ImportError:
     pass
 

@@ -25,7 +25,7 @@ specify the axes around which each of the rotations corresponding to
 
 There are therefore three axes for the rotations :math:`alpha`,
 :math:`beta` and :math:`gamma`; let's call them :math:`i` :math:`j`,
-:math:`k`. 
+:math:`k`.
 
 Let us express the rotation :math:`alpha` around axis `i` as a 3 by 3
 rotation matrix `A`.  Similarly :math:`beta` around `j` becomes 3 x 3
@@ -74,13 +74,11 @@ The convention of rotation around ``z``, followed by rotation around
 ``y``, followed by rotation around ``x``, is known (confusingly) as
 "xyz", pitch-roll-yaw, Cardan angles, or Tait-Bryan angles.
 '''
-from __future__ import absolute_import
 
 import math
 from functools import reduce
 
 import numpy as np
-
 
 _FLOAT_EPS_4 = np.finfo(float).eps * 4.0
 
@@ -115,7 +113,7 @@ def euler2mat(z=0, y=0, x=0):
 
     The output rotation matrix is equal to the composition of the
     individual rotations
-    
+
     >>> M1 = euler2mat(zrot)
     >>> M2 = euler2mat(0, yrot)
     >>> M3 = euler2mat(0, 0, xrot)
@@ -124,14 +122,14 @@ def euler2mat(z=0, y=0, x=0):
     True
 
     You can specify rotations by named arguments
-    
+
     >>> np.all(M3 == euler2mat(x=xrot))
     True
-    
+
     When applying M to a vector, the vector should column vector to the
     right of M.  If the right hand side is a 2D array rather than a
     vector, then each column of the 2D array represents a vector.
-    
+
     >>> vec = np.array([1, 0, 0]).reshape((3,1))
     >>> v2 = np.dot(M, vec)
     >>> vecs = np.array([[1, 0, 0],[0, 1, 0]]).T # giving 3x2 array
@@ -148,7 +146,7 @@ def euler2mat(z=0, y=0, x=0):
     >>> xred = np.dot(euler2mat(x=np.pi/2), np.eye(3))
     >>> np.allclose(xred, [[1, 0, 0],[0, 0, -1], [0, 1, 0]])
     True
-    
+
     Notes
     -----
     The direction of rotation is given by the right-hand rule (orient
@@ -253,12 +251,12 @@ def mat2euler(M, cy_thresh=None):
         x = math.atan2(-r23, r33) # atan2(cos(y)*sin(x), cos(x)*cos(y))
     else: # cos(y) (close to) zero, so x -> 0.0 (see above)
         # so r21 -> sin(z), r22 -> cos(z) and
-        z = math.atan2(r21,  r22) 
+        z = math.atan2(r21,  r22)
         y = math.atan2(r13,  cy) # atan2(sin(y), cy)
         x = 0.0
     return z, y, x
 
-    
+
 def euler2quat(z=0, y=0, x=0):
     ''' Return quaternion corresponding to these Euler angles
 
@@ -361,7 +359,7 @@ def euler2axangle(z=0, y=0, x=0):
     from . import quaternions as nq
     return nq.quat2axangle(euler2quat(z, y, x))
 
-    
+
 def axangle2euler(vector, theta):
     ''' Convert axis, angle pair to Euler angles
 
@@ -384,7 +382,7 @@ def axangle2euler(vector, theta):
     >>> z, y, x = axangle2euler([1, 0, 0], 0)
     >>> np.allclose((z, y, x), 0)
     True
-    
+
     Notes
     -----
     It's possible to reduce the amount of calculation a little, by

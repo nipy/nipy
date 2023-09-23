@@ -8,6 +8,5 @@
    :maxdepth: 2
 
    basic_io
-   coordinate_map	
+   coordinate_map
    glm_spec
-  

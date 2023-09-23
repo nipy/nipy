@@ -1,6 +1,5 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import absolute_import
 
 import os
 import sys
@@ -8,7 +7,7 @@ import sys
 from six import string_types
 from six.moves.configparser import ConfigParser
 
-NIPY_DEFAULTS = dict()
+NIPY_DEFAULTS = {}
 
 ################################################################################
 def get_nipy_info():

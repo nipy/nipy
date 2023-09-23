@@ -1,9 +1,7 @@
-from __future__ import absolute_import
 
 import numpy as np
+from nose.tools import assert_equal, assert_raises, assert_true
 from scipy.linalg import expm
-
-from nose.tools import assert_true, assert_equal, assert_raises
 
 import nipy.core.reference.tests.matrix_groups as MG
 from nipy.core.api import ArrayCoordMap
@@ -12,7 +10,7 @@ A = np.array([[0,1],
               [1,0]])
 
 B = np.array([[5,4],
-              [4,3]]) 
+              [4,3]])
 
 D = np.array([[25,4],
               [31,5]])
@@ -65,7 +63,7 @@ def test_basis_change():
 
     basis1 = random_orth(names='xyz')
     basis2 = random_orth(names='uvw')
-    
+
     bchange = MG.Linear(basis2.coords, basis1.coords, random_orth(dim=3).matrix)
     #print basis1.coords
     new = MG.change_basis(basis1, bchange)
@@ -79,7 +77,7 @@ def test_product():
     GLZ_C = MG.GLZ(B, 'ij')
 
     GLZ_AB = MG.product(GLZ_A, GLZ_B)
-    yield (assert_true, 
+    yield (assert_true,
            np.allclose(GLZ_AB.matrix, np.dot(GLZ_A.matrix, GLZ_B.matrix)))
 
     # different coordinates: can't make the product

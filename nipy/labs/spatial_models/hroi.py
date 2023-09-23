@@ -11,13 +11,13 @@ Author : Bertrand Thirion, 2009-2011
          Virgile Fritsch <virgile.fritsch@inria.fr>
 
 """
-from __future__ import absolute_import
 
 import numpy as np
 
-from nipy.algorithms.graph.graph import WeightedGraph
-from nipy.algorithms.graph.forest import Forest
 from nipy.algorithms.graph.field import field_from_coo_matrix_and_data
+from nipy.algorithms.graph.forest import Forest
+from nipy.algorithms.graph.graph import WeightedGraph
+
 from .mroi import SubDomains
 
 NINF = - np.inf
@@ -341,7 +341,7 @@ class HierarchicalROI(SubDomains):
             return
         id_list = [k for k in self.get_id() if k in id_list]
 
-        # relabel maps old labels to new labels 
+        # relabel maps old labels to new labels
         relabel = np.arange(self.k)
 
         # merge nodes, one at a time
@@ -370,7 +370,7 @@ class HierarchicalROI(SubDomains):
                     # replace feature
                     # (without the API since self is in an inconsistent state)
                     dj = self.get_feature(fid)
-                    dj[p_pos] = np.hstack((dj[self.select_id(c_id)], 
+                    dj[p_pos] = np.hstack((dj[self.select_id(c_id)],
                                            dj[self.select_id(p_id)]))
                     del dj[c_pos]
                     self.features[fid] = dj
@@ -383,7 +383,7 @@ class HierarchicalROI(SubDomains):
                         dj[p_pos] = dj[c_pos]
                     self.roi_features[fid] = dj[mask_pos]
 
-        # update the labels        
+        # update the labels
         self.label[self.label > -1] = relabel[self.label[self.label > - 1]]
         self.recompute_labels()
 
@@ -405,7 +405,7 @@ class HierarchicalROI(SubDomains):
         if self.k == 0:
             return
 
-        # relabel maps old labels to new labels 
+        # relabel maps old labels to new labels
         relabel = np.arange(self.k)
 
         # merge nodes, one at a time
@@ -441,7 +441,7 @@ class HierarchicalROI(SubDomains):
                     # replace feature
                     # (without the API since self is in an inconsistent state)
                     dj = self.get_feature(fid)
-                    dj[c_pos] = np.hstack((dj[self.select_id(c_id)], 
+                    dj[c_pos] = np.hstack((dj[self.select_id(c_id)],
                                            dj[self.select_id(p_id)]))
                     del dj[p_pos]
                     self.features[fid] = dj
@@ -588,7 +588,7 @@ class HierarchicalROI(SubDomains):
             summary_feature = rf
 
         if assess_quality:
-            self.set_roi_feature('%s_quality' % fid, feature_quality)
+            self.set_roi_feature(f'{fid}_quality', feature_quality)
         return np.array(summary_feature)
 
 

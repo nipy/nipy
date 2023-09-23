@@ -1,15 +1,18 @@
-from __future__ import with_statement
-from __future__ import absolute_import
 from os.path import exists
+
 import numpy as np
 from nibabel import Nifti1Image, save
-from numpy.testing import assert_equal
-from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
-from ..parcel_io import (mask_parcellation, fixed_parcellation,
-                         parcellation_based_analysis)
-from ..hierarchical_parcellation import hparcel
-from ..discrete_domain import grid_domain_from_shape
 from nibabel.tmpdirs import InTemporaryDirectory
+from numpy.testing import assert_equal
+
+from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
+from ..discrete_domain import grid_domain_from_shape
+from ..hierarchical_parcellation import hparcel
+from ..parcel_io import (
+    fixed_parcellation,
+    mask_parcellation,
+    parcellation_based_analysis,
+)
 
 
 def test_mask_parcel():
@@ -25,14 +28,14 @@ def test_mask_parcel():
 def test_mask_parcel_multi_subj():
     """ Test that mask parcellation performs correctly
     """
-    rng = np.random.RandomState(0); 
+    rng = np.random.RandomState(0);
     n_parcels = 20
     shape = (10, 10, 10)
     n_subjects = 5
     mask_images = []
     with InTemporaryDirectory():
         for subject in range(n_subjects):
-            path = 'mask%s.nii' % subject
+            path = f'mask{subject}.nii'
             arr = rng.rand(*shape) > .1
             save(Nifti1Image(arr.astype('u1'), np.eye(4)), path)
             mask_images.append(path)
@@ -51,11 +54,11 @@ def test_parcel_intra_from_3d_image():
     with InTemporaryDirectory() as dir_context:
         surrogate_3d_dataset(mask=mask_image, out_image_file='image.nii')
 
-        #run the algo 
+        #run the algo
         for method in ['ward', 'kmeans', 'gkm']:
             osp = fixed_parcellation(mask_image, ['image.nii'], n_parcel, nn,
                                      method, dir_context, mu)
-            result = 'parcel_%s.nii' % method
+            result = f'parcel_{method}.nii'
             assert exists(result)
             assert_equal(osp.k, n_parcel)
 
@@ -77,7 +80,7 @@ def test_parcel_intra_from_3d_images_list():
         #run the algo
         osp = fixed_parcellation(mask_image, data_image, n_parcel, nn,
                                  method, dir_context, mu)
-        assert exists('parcel_%s.nii' % method)
+        assert exists(f'parcel_{method}.nii')
         assert_equal(osp.k, n_parcel)
 
 
@@ -90,11 +93,11 @@ def test_parcel_intra_from_4d_image():
     method = 'ward'
     mask_image = Nifti1Image(np.ones(shape).astype('u1'), np.eye(4))
     with InTemporaryDirectory() as dir_context:
-        surrogate_3d_dataset(n_subj=10, mask=mask_image, 
-                             out_image_file='image.nii')    
+        surrogate_3d_dataset(n_subj=10, mask=mask_image,
+                             out_image_file='image.nii')
         osp = fixed_parcellation(mask_image, ['image.nii'], n_parcel, nn,
                                  method, dir_context, mu)
-        assert exists('parcel_%s.nii' % method)
+        assert exists(f'parcel_{method}.nii')
         assert_equal(osp.k, n_parcel)
 
 def test_parcel_based_analysis():

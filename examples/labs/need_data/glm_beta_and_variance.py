@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function
 __doc__ = \
 """
 This example shows how to get variance and beta estimated from a nipy GLM.
@@ -20,7 +19,7 @@ Author : Bertrand Thirion, 2010--2012
 """
 print(__doc__)
 
-from os import mkdir, getcwd, path
+from os import getcwd, mkdir, path
 
 import numpy as np
 
@@ -29,16 +28,14 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nibabel import Nifti1Image, save
-
-from nipy.modalities.fmri.glm import FMRILinearModel
-from nipy.modalities.fmri.design_matrix import make_dmtx
-from nipy.modalities.fmri.experimental_paradigm import \
-    load_paradigm_from_csv_file
-from nipy.labs.viz import plot_map, cm
-
 # Local import
 from get_data_light import DATA_DIR, get_first_level_dataset
+from nibabel import Nifti1Image, save
+
+from nipy.labs.viz import cm, plot_map
+from nipy.modalities.fmri.design_matrix import make_dmtx
+from nipy.modalities.fmri.experimental_paradigm import load_paradigm_from_csv_file
+from nipy.modalities.fmri.glm import FMRILinearModel
 
 #######################################
 # Data and analysis parameters
@@ -67,7 +64,7 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-print('Computation will be performed in directory: %s' % write_dir)
+print(f'Computation will be performed in directory: {write_dir}')
 
 ########################################
 # Design matrix
@@ -111,7 +108,7 @@ beta_image = Nifti1Image(beta_map, fmri_glm.affine)
 beta_image.get_header()['descrip'] = (
     'Parameter estimates of the localizer dataset')
 save(beta_image, path.join(write_dir, 'beta.nii'))
-print("Beta image witten in %s" % write_dir)
+print(f"Beta image witten in {write_dir}")
 
 variance_map = mask.astype(np.float64)
 variance_map[mask] = variance_hat

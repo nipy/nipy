@@ -1,8 +1,8 @@
-from __future__ import print_function
-from __future__ import absolute_import
 
 import numpy as np
-from ..forest import  Forest
+
+from ..forest import Forest
+
 
 def simple_forest():
     """ generate a simple forest
@@ -36,7 +36,7 @@ def test_children():
     assert ch[2] == [0, 1]
     assert ch[3] == []
     assert ch[4] == [2, 3]
-    
+
 def test_descendants():
     """ test the get_descendants() method
     """
@@ -45,10 +45,10 @@ def test_descendants():
     assert sf.get_descendants(1) == [1]
     assert sf.get_descendants(2) == [0, 1, 2]
     assert sf.get_descendants(4) == [0, 1, 2, 3, 4]
-    
+
 def test_root():
     """ test the isroot() method
-    """ 
+    """
     root = simple_forest().isroot()
     assert root[4] == True
     assert root.sum() == 1
@@ -84,7 +84,7 @@ def test_depth():
     assert depth[3] == 0
     assert depth[2] == 1
     assert depth[4] == 2
-    
+
 def test_reorder():
     """ test the reorder_from_leaves_to_roots() method
     """
@@ -102,7 +102,7 @@ def test_leaves():
     assert f.leaves_of_a_subtree([1, 3]) == False
     assert f.leaves_of_a_subtree([0, 1, 3]) == True
     assert f.leaves_of_a_subtree([1]) == True
-   
+
 def test_depth():
     """ Test the tree_depth() method
     """
@@ -130,4 +130,3 @@ def test_upward():
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])
-

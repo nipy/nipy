@@ -3,7 +3,6 @@
 """
 3D visualization of activation maps using Mayavi
 """
-from __future__ import absolute_import
 
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD
@@ -14,9 +13,8 @@ import os
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
-from scipy import ndimage
-
 from nibabel import load
+from scipy import ndimage
 
 from nipy.io.nibcompat import get_affine
 
@@ -31,7 +29,7 @@ mni_sform_inv = np.linalg.inv(mni_sform)
 def find_mni_template():
     """ Try to find an MNI template on the disk.
     """
-    from nipy.utils import templates, DataError
+    from nipy.utils import DataError, templates
     try:
         filename = templates.get_filename(
                             'ICBM152', '1mm', 'T1_brain.nii.gz')
@@ -49,7 +47,7 @@ def find_mni_template():
         fsl_path.extend(('data', 'standard', 'avg152T1_brain.nii.gz'))
         possible_paths.append(fsl_path)
     for path in possible_paths:
-        filename = os.sep.join((path))
+        filename = os.sep.join(path)
         if os.path.exists(filename):
             return filename
 
@@ -59,7 +57,7 @@ def find_mni_template():
 # Caching of the MNI template.
 ################################################################################
 
-class _AnatCache(object):
+class _AnatCache:
     """ Class to store the anat array in cache, to avoid reloading it
         each time.
     """
@@ -99,6 +97,3 @@ class _AnatCache(object):
                     )).astype(np.float64),
                 2).T.ravel()
         return cls.blurred
-
-
-

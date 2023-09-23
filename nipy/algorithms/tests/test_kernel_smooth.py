@@ -1,20 +1,16 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Test for smoothing with kernels """
-from __future__ import absolute_import
 import numpy as np
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
 from numpy.random import randint
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from ... import load_image
-from ..kernel_smooth import LinearFilter, sigma2fwhm, fwhm2sigma
+from ...core.api import AffineTransform, Image, compose, drop_io_dim
 from ...externals.transforms3d.taitbryan import euler2mat
-from ...core.api import Image, compose, AffineTransform, drop_io_dim
-
-from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
-
-from numpy.testing import assert_array_equal, assert_array_almost_equal
-
-from ...testing import (anatfile, funcfile)
+from ...testing import anatfile, funcfile
+from ..kernel_smooth import LinearFilter, fwhm2sigma, sigma2fwhm
 
 
 def test_anat_smooth():
@@ -105,8 +101,8 @@ def test_kernel():
         Z = kernel.coordmap(I.T) - kernel.coordmap([i,j,k])
         _k = kernel(Z)
         _k.shape = ssignal.shape
-        assert_true((np.corrcoef(_k[:].flat, ssignal[:].flat)[0,1] > tol))
-        assert_true(((_k[:] - ssignal[:]).std() < sdtol))
+        assert_true(np.corrcoef(_k[:].flat, ssignal[:].flat)[0,1] > tol)
+        assert_true((_k[:] - ssignal[:]).std() < sdtol)
 
         def _indices(i,j,k,axis):
             I = np.zeros((3,20))
@@ -119,11 +115,10 @@ def test_kernel():
         vx = ssignal[i,j,(k-10):(k+10)]
         xformed_ijk = coordmap([i, j, k])
         vvx = coordmap(_indices(i,j,k,2)) - xformed_ijk
-        assert_true((np.corrcoef(vx, kernel(vvx))[0,1] > tol))
+        assert_true(np.corrcoef(vx, kernel(vvx))[0,1] > tol)
         vy = ssignal[i,(j-10):(j+10),k]
         vvy = coordmap(_indices(i,j,k,1)) - xformed_ijk
-        assert_true((np.corrcoef(vy, kernel(vvy))[0,1] > tol))
+        assert_true(np.corrcoef(vy, kernel(vvy))[0,1] > tol)
         vz = ssignal[(i-10):(i+10),j,k]
         vvz = coordmap(_indices(i,j,k,0)) - xformed_ijk
-        assert_true((np.corrcoef(vz, kernel(vvz))[0,1] > tol))
-
+        assert_true(np.corrcoef(vz, kernel(vvz))[0,1] > tol)

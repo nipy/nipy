@@ -18,20 +18,20 @@ in Computer Science*; 5762:450--457.
 Roche, Alexis (2012). OHBM'12 talk, slides at:
 https://sites.google.com/site/alexisroche/slides/Talk_Beijing12.pdf
 """
-from __future__ import absolute_import
-from os.path import join
 import warnings
+from os.path import join
+
 import numpy as np
 import scipy.ndimage as nd
 import scipy.stats as ss
+
+from ... import save_image
+from ...core.image.image_spaces import make_xyz_image, xyz_affine
+from ...fixes.nibabel import io_orientation
+from ..kernel_smooth import fwhm2sigma
+from ..registration import resample
 from ..statistics.bayesian_mixed_effects import two_level_glm
 from ..statistics.histogram import histogram
-from ..registration import resample
-from ..kernel_smooth import fwhm2sigma
-from ...fixes.nibabel import io_orientation
-from ...core.image.image_spaces import (make_xyz_image,
-                                        xyz_affine)
-from ... import save_image
 
 SIGMA_MIN = 1e-5
 NDIM = 3  # This will work for 3D images
@@ -137,10 +137,10 @@ def _save_image(img, path):
     try:
         save_image(img, path)
     except:
-        warnings.warn('Could not write image: %s' % path, UserWarning)
+        warnings.warn(f'Could not write image: {path}', UserWarning)
 
 
-class ParcelAnalysis(object):
+class ParcelAnalysis:
 
     def __init__(self, con_imgs, parcel_img, parcel_info=None,
                  msk_img=None, vcon_imgs=None,

@@ -4,18 +4,18 @@
 This module is the interface to the bayesian_structural_analysis (bsa) module
 It handles the images provided as input and produces result images.
 """
-from __future__ import absolute_import
 
-from six import string_types
+import os.path as op
 
 import numpy as np
-import os.path as op
-from nibabel import load, save, Nifti1Image
+from nibabel import Nifti1Image, load, save
+from six import string_types
 
+from ...io.nibcompat import get_affine, get_header
 from ..mask import intersect_masks
 from .bayesian_structural_analysis import compute_landmarks
 from .discrete_domain import domain_from_image
-from ...io.nibcompat import get_header, get_affine
+
 
 def make_bsa_image(
     mask_images, stat_images, threshold=3., smin=0, sigma=5.,
@@ -116,7 +116,7 @@ def make_bsa_image(
     wim = Nifti1Image(density_map, affine)
     get_header(wim)['descrip'] = ('group-level spatial density '
                                   'of active regions')
-    dens_path = op.join(write_dir, "density_%s.nii" % contrast_id)
+    dens_path = op.join(write_dir, f"density_{contrast_id}.nii")
     save(wim, dens_path)
 
     # write a 3D image for group-level labels
@@ -124,7 +124,7 @@ def make_bsa_image(
     labels[mask > 0] = crmap
     wim = Nifti1Image(labels.astype('int16'), affine)
     get_header(wim)['descrip'] = 'group Level labels from bsa procedure'
-    save(wim, op.join(write_dir, "CR_%s.nii" % contrast_id))
+    save(wim, op.join(write_dir, f"CR_{contrast_id}.nii"))
 
     # write a prevalence image
     prev_ = np.zeros(crmap.size).astype(np.float64)
@@ -133,7 +133,7 @@ def make_bsa_image(
     prevalence_map[mask > 0] = prev_
     wim = Nifti1Image(prevalence_map, affine)
     get_header(wim)['descrip'] = 'Weighted prevalence image'
-    save(wim, op.join(write_dir, "prevalence_%s.nii" % contrast_id))
+    save(wim, op.join(write_dir, f"prevalence_{contrast_id}.nii"))
 
     # write a 4d images with all subjects results
     wdim = (ref_dim[0], ref_dim[1], ref_dim[2], n_subjects)
@@ -148,5 +148,5 @@ def make_bsa_image(
             labels[mask > 0, subject] = lab
     wim = Nifti1Image(labels, affine)
     get_header(wim)['descrip'] = 'Individual labels from bsa procedure'
-    save(wim, op.join(write_dir, "AR_%s.nii" % contrast_id))
+    save(wim, op.join(write_dir, f"AR_{contrast_id}.nii"))
     return landmarks, hrois

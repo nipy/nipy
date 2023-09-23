@@ -7,21 +7,24 @@ Note that the tests just looks whether the data produces has correct dimension,
 not whether it is exact
 """
 
-from __future__ import with_statement
-from __future__ import absolute_import
+import os.path as osp
 from unittest import skipIf
 
 import numpy as np
-import os.path as osp
-#from os.path import join, dirname, walk
-from ..experimental_paradigm import (EventRelatedParadigm, BlockParadigm)
-from ..design_matrix import (dmtx_light, _convolve_regressors, dmtx_from_csv,
-                             make_dmtx, _cosine_drift)
-
 from nibabel.tmpdirs import InTemporaryDirectory
-
-from nose.tools import assert_true, assert_equal
+from nose.tools import assert_equal, assert_true
 from numpy.testing import assert_almost_equal, assert_array_equal
+
+from ..design_matrix import (
+    _convolve_regressors,
+    _cosine_drift,
+    dmtx_from_csv,
+    dmtx_light,
+    make_dmtx,
+)
+
+#from os.path import join, dirname, walk
+from ..experimental_paradigm import BlockParadigm, EventRelatedParadigm
 
 try:
     import matplotlib.pyplot
@@ -80,7 +83,7 @@ def test_show_dmtx():
 
 def test_cosine_drift():
     # add something so that when the tests are launched from a different directory
-    # we still find the file ' 'dctmtx_N_20_order_4.txt' ? 
+    # we still find the file ' 'dctmtx_N_20_order_4.txt' ?
 
     spm_drifts = DMTX['cosbf_dt_1_nt_20_hcut_0p1'] # np.loadtxt('dctmtx_N_20_order_4.txt')
     tim = np.arange(20)
@@ -142,7 +145,7 @@ def test_dmtx0d():
     assert_equal(len(names), 8)
     assert_equal(X.shape[1], 8)
 
-    
+
 def test_dmtx1():
     # basic test based on basic_paradigm and canonical hrf
     tr = 1.0
@@ -197,7 +200,7 @@ def test_dmtx1d():
     X,names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                         drift_model='polynomial', drift_order=3)
     assert_true((np.isnan(X) == 0).all())
-       
+
 def test_dmtx2():
     # idem test_dmtx1 with a different drift term
     tr = 1.0
@@ -216,7 +219,7 @@ def test_dmtx3():
     hrf_model = 'Canonical'
     X,names= dmtx_light(frametimes, paradigm,  hrf_model=hrf_model,
                         drift_model='blank')
-    assert_equal(len(names), 4)  
+    assert_equal(len(names), 4)
 
 def test_dmtx4():
     # idem test_dmtx1 with a different hrf model
@@ -292,7 +295,7 @@ def test_dmtx10():
                          drift_model='polynomial', drift_order=3,
                          fir_delays=list(range(1, 5)))
     onset = paradigm.onset[paradigm.con_id == 'c0'].astype(np.int_)
-    assert_true(np.all((X[onset + 1, 0] == 1)))
+    assert_true(np.all(X[onset + 1, 0] == 1))
 
 
 def test_dmtx11():
@@ -349,7 +352,7 @@ def test_dmtx14():
 
 
 def test_dmtx15():
-    # basic test based on basic_paradigm, plus user supplied regressors 
+    # basic test based on basic_paradigm, plus user supplied regressors
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
@@ -411,7 +414,7 @@ def test_dmtx19():
 
 def test_dmtx20():
     # Test for commit 10662f7
-    frametimes = np.arange(0, 128) # was 127 in old version of _cosine_drift 
+    frametimes = np.arange(0, 128) # was 127 in old version of _cosine_drift
     paradigm = modulated_event_paradigm()
     X, names = dmtx_light(frametimes, paradigm, hrf_model='canonical',
         drift_model='cosine')
@@ -426,7 +429,7 @@ def test_fir_block():
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
     X, names = dmtx_light(frametimes, bp, hrf_model='fir', drift_model='blank',
-                          fir_delays=list(range(0, 4)))
+                          fir_delays=list(range(4)))
     idx = bp.onset[bp.con_id == 'c1'].astype(np.int_)
     assert_equal(X.shape, (128, 13))
     assert_true((X[idx, 4] == 1).all())
@@ -480,7 +483,7 @@ def test_spm_2():
 def test_frametimes_as_a_list():
     # design matrix should work with frametimes provided as a list
     paradigm = basic_paradigm()
-    frametimes = list(range(0, 99))
+    frametimes = list(range(99))
     X1 = make_dmtx(frametimes, paradigm, drift_model='blank')
     frametimes = np.arange(0, 99)
     X2 = make_dmtx(frametimes, paradigm, drift_model='blank')

@@ -9,9 +9,8 @@ guessed from the output image filename. You can set the filename with the
 '''
 
 import os
-from os.path import join as pjoin
-
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from os.path import join as pjoin
 
 import nibabel as nib
 

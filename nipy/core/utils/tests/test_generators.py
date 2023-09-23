@@ -1,13 +1,11 @@
-from __future__ import absolute_import
 # EMAcs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
-
-from ...api import write_data, slice_generator
-from .. import generators as gen
-
 from nose.tools import assert_equal, assert_raises
 from numpy.testing import assert_almost_equal, assert_array_equal
+
+from ...api import slice_generator, write_data
+from .. import generators as gen
 
 shape = (10,20,30)
 DATA = np.zeros(shape)

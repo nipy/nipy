@@ -1,16 +1,15 @@
-from __future__ import absolute_import
 
 import numpy as np
-
-from scipy.stats import norm
 import scipy.linalg as spl
+from nose.tools import assert_equal, assert_raises, assert_true
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
+from scipy.stats import norm
 
-
-from ..utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
-                     check_cast_bin8)
-from nose.tools import assert_true, assert_equal, assert_raises
-from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
-                           assert_array_equal)
+from ..utils import check_cast_bin8, multiple_fast_inv, multiple_mahalanobis, z_score
 
 
 def test_z_score():

@@ -14,16 +14,19 @@ Functional Landmark Approach, MICCAI 2010
 
 Author : Bertrand Thirion, 2006-2013
 """
-from __future__ import absolute_import
 
 import numpy as np
 import scipy.stats as st
 
-from .structural_bfls import build_landmarks
 from nipy.algorithms.graph import wgraph_from_coo_matrix
-from ...algorithms.statistics.empirical_pvalue import \
-    NormalEmpiricalNull, three_classes_GMM_fit, gamma_gaussian_fit
+
+from ...algorithms.statistics.empirical_pvalue import (
+    NormalEmpiricalNull,
+    gamma_gaussian_fit,
+    three_classes_GMM_fit,
+)
 from .hroi import HROI_as_discrete_domain_blobs
+from .structural_bfls import build_landmarks
 
 ####################################################################
 # Ancillary functions

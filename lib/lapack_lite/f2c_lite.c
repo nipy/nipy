@@ -113,7 +113,7 @@ return( (*x)>=0 ?
 	floor(*x + .5) : -floor(.5 - *x) );
 }
 
-/* Additions to the original numpy code for compliency with Lapack 3-1-1 */ 
+/* Additions to the original numpy code for compliency with Lapack 3-1-1 */
 #ifdef KR_headers
 double floor();
 double d_nint(x) doublereal *x;
@@ -139,7 +139,7 @@ integer i_nint(real *x)
 return (integer)(*x >= 0 ? floor(*x + .5) : -floor(.5 - *x));
 }
 
-/* End of additions */ 
+/* End of additions */
 
 #ifdef KR_headers
 double pow();

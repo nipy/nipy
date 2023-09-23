@@ -751,7 +751,7 @@ static CYTHON_INLINE float __PYX_NAN() {
 #include "numpy/ufuncobject.h"
 
     /* NumPy API declarations from "numpy/__init__.pxd" */
-    
+
 #include "mrf.h"
 #ifdef _OPENMP
 #include <omp.h>
@@ -991,7 +991,7 @@ static const char *__pyx_f[] = {
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":689
  * # in Cython to enable them only on the right systems.
- * 
+ *
  * ctypedef npy_int8       int8_t             # <<<<<<<<<<<<<<
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t
@@ -999,7 +999,7 @@ static const char *__pyx_f[] = {
 typedef npy_int8 __pyx_t_5numpy_int8_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":690
- * 
+ *
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t             # <<<<<<<<<<<<<<
  * ctypedef npy_int32      int32_t
@@ -1027,7 +1027,7 @@ typedef npy_int64 __pyx_t_5numpy_int64_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":696
  * #ctypedef npy_int128     int128_t
- * 
+ *
  * ctypedef npy_uint8      uint8_t             # <<<<<<<<<<<<<<
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t
@@ -1035,7 +1035,7 @@ typedef npy_int64 __pyx_t_5numpy_int64_t;
 typedef npy_uint8 __pyx_t_5numpy_uint8_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":697
- * 
+ *
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t             # <<<<<<<<<<<<<<
  * ctypedef npy_uint32     uint32_t
@@ -1063,7 +1063,7 @@ typedef npy_uint64 __pyx_t_5numpy_uint64_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":703
  * #ctypedef npy_uint128    uint128_t
- * 
+ *
  * ctypedef npy_float32    float32_t             # <<<<<<<<<<<<<<
  * ctypedef npy_float64    float64_t
  * #ctypedef npy_float80    float80_t
@@ -1071,7 +1071,7 @@ typedef npy_uint64 __pyx_t_5numpy_uint64_t;
 typedef npy_float32 __pyx_t_5numpy_float32_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":704
- * 
+ *
  * ctypedef npy_float32    float32_t
  * ctypedef npy_float64    float64_t             # <<<<<<<<<<<<<<
  * #ctypedef npy_float80    float80_t
@@ -1093,7 +1093,7 @@ typedef npy_long __pyx_t_5numpy_int_t;
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t             # <<<<<<<<<<<<<<
  * ctypedef npy_longlong   longlong_t
- * 
+ *
  */
 typedef npy_longlong __pyx_t_5numpy_long_t;
 
@@ -1101,14 +1101,14 @@ typedef npy_longlong __pyx_t_5numpy_long_t;
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t
  * ctypedef npy_longlong   longlong_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_ulong      uint_t
  */
 typedef npy_longlong __pyx_t_5numpy_longlong_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":717
  * ctypedef npy_longlong   longlong_t
- * 
+ *
  * ctypedef npy_ulong      uint_t             # <<<<<<<<<<<<<<
  * ctypedef npy_ulonglong  ulong_t
  * ctypedef npy_ulonglong  ulonglong_t
@@ -1116,11 +1116,11 @@ typedef npy_longlong __pyx_t_5numpy_longlong_t;
 typedef npy_ulong __pyx_t_5numpy_uint_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":718
- * 
+ *
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t             # <<<<<<<<<<<<<<
  * ctypedef npy_ulonglong  ulonglong_t
- * 
+ *
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
 
@@ -1128,32 +1128,32 @@ typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t
  * ctypedef npy_ulonglong  ulonglong_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_intp       intp_t
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":721
  * ctypedef npy_ulonglong  ulonglong_t
- * 
+ *
  * ctypedef npy_intp       intp_t             # <<<<<<<<<<<<<<
  * ctypedef npy_uintp      uintp_t
- * 
+ *
  */
 typedef npy_intp __pyx_t_5numpy_intp_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":722
- * 
+ *
  * ctypedef npy_intp       intp_t
  * ctypedef npy_uintp      uintp_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_double     float_t
  */
 typedef npy_uintp __pyx_t_5numpy_uintp_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":724
  * ctypedef npy_uintp      uintp_t
- * 
+ *
  * ctypedef npy_double     float_t             # <<<<<<<<<<<<<<
  * ctypedef npy_double     double_t
  * ctypedef npy_longdouble longdouble_t
@@ -1161,11 +1161,11 @@ typedef npy_uintp __pyx_t_5numpy_uintp_t;
 typedef npy_double __pyx_t_5numpy_float_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":725
- * 
+ *
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t             # <<<<<<<<<<<<<<
  * ctypedef npy_longdouble longdouble_t
- * 
+ *
  */
 typedef npy_double __pyx_t_5numpy_double_t;
 
@@ -1173,7 +1173,7 @@ typedef npy_double __pyx_t_5numpy_double_t;
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t
  * ctypedef npy_longdouble longdouble_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_cfloat      cfloat_t
  */
 typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
@@ -1206,7 +1206,7 @@ static CYTHON_INLINE __pyx_t_double_complex __pyx_t_double_complex_from_parts(do
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":728
  * ctypedef npy_longdouble longdouble_t
- * 
+ *
  * ctypedef npy_cfloat      cfloat_t             # <<<<<<<<<<<<<<
  * ctypedef npy_cdouble     cdouble_t
  * ctypedef npy_clongdouble clongdouble_t
@@ -1214,11 +1214,11 @@ static CYTHON_INLINE __pyx_t_double_complex __pyx_t_double_complex_from_parts(do
 typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":729
- * 
+ *
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t             # <<<<<<<<<<<<<<
  * ctypedef npy_clongdouble clongdouble_t
- * 
+ *
  */
 typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
 
@@ -1226,16 +1226,16 @@ typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t
  * ctypedef npy_clongdouble clongdouble_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_cdouble     complex_t
  */
 typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":732
  * ctypedef npy_clongdouble clongdouble_t
- * 
+ *
  * ctypedef npy_cdouble     complex_t             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew1(a):
  */
 typedef npy_cdouble __pyx_t_5numpy_complex_t;
@@ -1803,10 +1803,10 @@ static PyObject *__pyx_codeobj__15;
 /* Late includes */
 
 /* "nipy/algorithms/segmentation/_segmentation.pyx":41
- * 
- * 
+ *
+ *
  * def _ve_step(ppm, ref, XYZ, U, int ngb_size, double beta):             # <<<<<<<<<<<<<<
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
  */
 
@@ -1935,7 +1935,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation__ve_
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":43
  * def _ve_step(ppm, ref, XYZ, U, int ngb_size, double beta):
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':             # <<<<<<<<<<<<<<
  *         raise ValueError('ppm array should be double C-contiguous')
  *     if not ref.flags['C_CONTIGUOUS'] or not ref.dtype=='double':
@@ -1963,7 +1963,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation__ve_
   if (unlikely(__pyx_t_1)) {
 
     /* "nipy/algorithms/segmentation/_segmentation.pyx":44
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
  *         raise ValueError('ppm array should be double C-contiguous')             # <<<<<<<<<<<<<<
  *     if not ref.flags['C_CONTIGUOUS'] or not ref.dtype=='double':
@@ -1977,7 +1977,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation__ve_
 
     /* "nipy/algorithms/segmentation/_segmentation.pyx":43
  * def _ve_step(ppm, ref, XYZ, U, int ngb_size, double beta):
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':             # <<<<<<<<<<<<<<
  *         raise ValueError('ppm array should be double C-contiguous')
  *     if not ref.flags['C_CONTIGUOUS'] or not ref.dtype=='double':
@@ -2184,7 +2184,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation__ve_
  *         raise ValueError('U array should be double C-contiguous')
  *     if not ppm.shape[-1] == ref.shape[-1]:             # <<<<<<<<<<<<<<
  *         raise ValueError('Inconsistent shapes for ppm and ref arrays')
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_ppm, __pyx_n_s_shape); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 53, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -2208,7 +2208,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation__ve_
  *         raise ValueError('U array should be double C-contiguous')
  *     if not ppm.shape[-1] == ref.shape[-1]:
  *         raise ValueError('Inconsistent shapes for ppm and ref arrays')             # <<<<<<<<<<<<<<
- * 
+ *
  *     ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, <ndarray>U,
  */
     __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__6, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 54, __pyx_L1_error)
@@ -2222,13 +2222,13 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation__ve_
  *         raise ValueError('U array should be double C-contiguous')
  *     if not ppm.shape[-1] == ref.shape[-1]:             # <<<<<<<<<<<<<<
  *         raise ValueError('Inconsistent shapes for ppm and ref arrays')
- * 
+ *
  */
   }
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":56
  *         raise ValueError('Inconsistent shapes for ppm and ref arrays')
- * 
+ *
  *     ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, <ndarray>U,             # <<<<<<<<<<<<<<
  *              ngb_size, beta)
  *     return ppm
@@ -2239,8 +2239,8 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation__ve_
  *     ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, <ndarray>U,
  *              ngb_size, beta)
  *     return ppm             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(__pyx_v_ppm);
@@ -2248,10 +2248,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation__ve_
   goto __pyx_L0;
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":41
- * 
- * 
+ *
+ *
  * def _ve_step(ppm, ref, XYZ, U, int ngb_size, double beta):             # <<<<<<<<<<<<<<
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
  */
 
@@ -2269,10 +2269,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation__ve_
 }
 
 /* "nipy/algorithms/segmentation/_segmentation.pyx":61
- * 
- * 
+ *
+ *
  * def _make_edges(mask, int ngb_size):             # <<<<<<<<<<<<<<
- * 
+ *
  *     if not mask.flags['C_CONTIGUOUS'] or not mask.dtype=='intp':
  */
 
@@ -2356,10 +2356,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_2_ma
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":63
  * def _make_edges(mask, int ngb_size):
- * 
+ *
  *     if not mask.flags['C_CONTIGUOUS'] or not mask.dtype=='intp':             # <<<<<<<<<<<<<<
  *         raise ValueError('mask array should be intp and C-contiguous')
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_mask, __pyx_n_s_flags); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 63, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -2384,10 +2384,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_2_ma
   if (unlikely(__pyx_t_1)) {
 
     /* "nipy/algorithms/segmentation/_segmentation.pyx":64
- * 
+ *
  *     if not mask.flags['C_CONTIGUOUS'] or not mask.dtype=='intp':
  *         raise ValueError('mask array should be intp and C-contiguous')             # <<<<<<<<<<<<<<
- * 
+ *
  *     return make_edges(mask, ngb_size)
  */
     __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 64, __pyx_L1_error)
@@ -2398,19 +2398,19 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_2_ma
 
     /* "nipy/algorithms/segmentation/_segmentation.pyx":63
  * def _make_edges(mask, int ngb_size):
- * 
+ *
  *     if not mask.flags['C_CONTIGUOUS'] or not mask.dtype=='intp':             # <<<<<<<<<<<<<<
  *         raise ValueError('mask array should be intp and C-contiguous')
- * 
+ *
  */
   }
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":66
  *         raise ValueError('mask array should be intp and C-contiguous')
- * 
+ *
  *     return make_edges(mask, ngb_size)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   if (!(likely(((__pyx_v_mask) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_mask, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 66, __pyx_L1_error)
@@ -2421,10 +2421,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_2_ma
   goto __pyx_L0;
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":61
- * 
- * 
+ *
+ *
  * def _make_edges(mask, int ngb_size):             # <<<<<<<<<<<<<<
- * 
+ *
  *     if not mask.flags['C_CONTIGUOUS'] or not mask.dtype=='intp':
  */
 
@@ -2441,10 +2441,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_2_ma
 }
 
 /* "nipy/algorithms/segmentation/_segmentation.pyx":69
- * 
- * 
+ *
+ *
  * def _interaction_energy(ppm, XYZ, U, int ngb_size):             # <<<<<<<<<<<<<<
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
  */
 
@@ -2550,7 +2550,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_4_in
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":71
  * def _interaction_energy(ppm, XYZ, U, int ngb_size):
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':             # <<<<<<<<<<<<<<
  *         raise ValueError('ppm array should be double C-contiguous')
  *     if not XYZ.flags['C_CONTIGUOUS'] or not XYZ.dtype=='intp':
@@ -2578,7 +2578,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_4_in
   if (unlikely(__pyx_t_1)) {
 
     /* "nipy/algorithms/segmentation/_segmentation.pyx":72
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
  *         raise ValueError('ppm array should be double C-contiguous')             # <<<<<<<<<<<<<<
  *     if not XYZ.flags['C_CONTIGUOUS'] or not XYZ.dtype=='intp':
@@ -2592,7 +2592,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_4_in
 
     /* "nipy/algorithms/segmentation/_segmentation.pyx":71
  * def _interaction_energy(ppm, XYZ, U, int ngb_size):
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':             # <<<<<<<<<<<<<<
  *         raise ValueError('ppm array should be double C-contiguous')
  *     if not XYZ.flags['C_CONTIGUOUS'] or not XYZ.dtype=='intp':
@@ -2697,7 +2697,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_4_in
  *         raise ValueError('XYZ array should be 3D')
  *     if not U.flags['C_CONTIGUOUS'] or not U.dtype=='double':             # <<<<<<<<<<<<<<
  *         raise ValueError('U array should be double C-contiguous')
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_U, __pyx_n_s_flags); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 77, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -2725,7 +2725,7 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_4_in
  *         raise ValueError('XYZ array should be 3D')
  *     if not U.flags['C_CONTIGUOUS'] or not U.dtype=='double':
  *         raise ValueError('U array should be double C-contiguous')             # <<<<<<<<<<<<<<
- * 
+ *
  *     return interaction_energy(<ndarray>ppm, <ndarray>XYZ, <ndarray>U,
  */
     __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__5, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 78, __pyx_L1_error)
@@ -2739,20 +2739,20 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_4_in
  *         raise ValueError('XYZ array should be 3D')
  *     if not U.flags['C_CONTIGUOUS'] or not U.dtype=='double':             # <<<<<<<<<<<<<<
  *         raise ValueError('U array should be double C-contiguous')
- * 
+ *
  */
   }
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":80
  *         raise ValueError('U array should be double C-contiguous')
- * 
+ *
  *     return interaction_energy(<ndarray>ppm, <ndarray>XYZ, <ndarray>U,             # <<<<<<<<<<<<<<
  *                                ngb_size)
  */
   __Pyx_XDECREF(__pyx_r);
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":81
- * 
+ *
  *     return interaction_energy(<ndarray>ppm, <ndarray>XYZ, <ndarray>U,
  *                                ngb_size)             # <<<<<<<<<<<<<<
  */
@@ -2763,10 +2763,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_4_in
   goto __pyx_L0;
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":69
- * 
- * 
+ *
+ *
  * def _interaction_energy(ppm, XYZ, U, int ngb_size):             # <<<<<<<<<<<<<<
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
  */
 
@@ -2784,10 +2784,10 @@ static PyObject *__pyx_pf_4nipy_10algorithms_12segmentation_13_segmentation_4_in
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":734
  * ctypedef npy_cdouble     complex_t
- * 
+ *
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(1, <void*>a)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__pyx_v_a) {
@@ -2800,10 +2800,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew1", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":735
- * 
+ *
  * cdef inline object PyArray_MultiIterNew1(a):
  *     return PyArray_MultiIterNew(1, <void*>a)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew2(a, b):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -2815,10 +2815,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":734
  * ctypedef npy_cdouble     complex_t
- * 
+ *
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(1, <void*>a)
- * 
+ *
  */
 
   /* function exit code */
@@ -2834,10 +2834,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":737
  *     return PyArray_MultiIterNew(1, <void*>a)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__pyx_v_a, PyObject *__pyx_v_b) {
@@ -2850,10 +2850,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew2", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":738
- * 
+ *
  * cdef inline object PyArray_MultiIterNew2(a, b):
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew3(a, b, c):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -2865,10 +2865,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":737
  *     return PyArray_MultiIterNew(1, <void*>a)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
- * 
+ *
  */
 
   /* function exit code */
@@ -2884,10 +2884,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":740
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c) {
@@ -2900,10 +2900,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew3", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":741
- * 
+ *
  * cdef inline object PyArray_MultiIterNew3(a, b, c):
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -2915,10 +2915,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":740
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
- * 
+ *
  */
 
   /* function exit code */
@@ -2934,10 +2934,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":743
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c, PyObject *__pyx_v_d) {
@@ -2950,10 +2950,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew4", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":744
- * 
+ *
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -2965,10 +2965,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":743
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
- * 
+ *
  */
 
   /* function exit code */
@@ -2984,10 +2984,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":746
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c, PyObject *__pyx_v_d, PyObject *__pyx_v_e) {
@@ -3000,10 +3000,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew5", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":747
- * 
+ *
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -3015,10 +3015,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":746
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
- * 
+ *
  */
 
   /* function exit code */
@@ -3034,7 +3034,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":749
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):             # <<<<<<<<<<<<<<
  *     if PyDataType_HASSUBARRAY(d):
  *         return <tuple>d.subarray.shape
@@ -3047,7 +3047,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
   __Pyx_RefNannySetupContext("PyDataType_SHAPE", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":750
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  *     if PyDataType_HASSUBARRAY(d):             # <<<<<<<<<<<<<<
  *         return <tuple>d.subarray.shape
@@ -3069,7 +3069,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
     goto __pyx_L0;
 
     /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":750
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  *     if PyDataType_HASSUBARRAY(d):             # <<<<<<<<<<<<<<
  *         return <tuple>d.subarray.shape
@@ -3081,8 +3081,8 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
  *         return <tuple>d.subarray.shape
  *     else:
  *         return ()             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   /*else*/ {
     __Pyx_XDECREF(__pyx_r);
@@ -3093,7 +3093,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":749
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):             # <<<<<<<<<<<<<<
  *     if PyDataType_HASSUBARRAY(d):
  *         return <tuple>d.subarray.shape
@@ -3108,7 +3108,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":928
  *     int _import_umath() except -1
- * 
+ *
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
  *     Py_INCREF(base) # important to do this before stealing the reference below!
  *     PyArray_SetBaseObject(arr, base)
@@ -3119,11 +3119,11 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __Pyx_RefNannySetupContext("set_array_base", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":929
- * 
+ *
  * cdef inline void set_array_base(ndarray arr, object base):
  *     Py_INCREF(base) # important to do this before stealing the reference below!             # <<<<<<<<<<<<<<
  *     PyArray_SetBaseObject(arr, base)
- * 
+ *
  */
   Py_INCREF(__pyx_v_base);
 
@@ -3131,14 +3131,14 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  * cdef inline void set_array_base(ndarray arr, object base):
  *     Py_INCREF(base) # important to do this before stealing the reference below!
  *     PyArray_SetBaseObject(arr, base)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object get_array_base(ndarray arr):
  */
   (void)(PyArray_SetBaseObject(__pyx_v_arr, __pyx_v_base));
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":928
  *     int _import_umath() except -1
- * 
+ *
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
  *     Py_INCREF(base) # important to do this before stealing the reference below!
  *     PyArray_SetBaseObject(arr, base)
@@ -3150,7 +3150,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":932
  *     PyArray_SetBaseObject(arr, base)
- * 
+ *
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
  *     base = PyArray_BASE(arr)
  *     if base is NULL:
@@ -3164,7 +3164,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   __Pyx_RefNannySetupContext("get_array_base", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":933
- * 
+ *
  * cdef inline object get_array_base(ndarray arr):
  *     base = PyArray_BASE(arr)             # <<<<<<<<<<<<<<
  *     if base is NULL:
@@ -3187,7 +3187,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
  *     if base is NULL:
  *         return None             # <<<<<<<<<<<<<<
  *     return <object>base
- * 
+ *
  */
     __Pyx_XDECREF(__pyx_r);
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
@@ -3206,7 +3206,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
  *     if base is NULL:
  *         return None
  *     return <object>base             # <<<<<<<<<<<<<<
- * 
+ *
  * # Versions of the import_* functions which are more suitable for
  */
   __Pyx_XDECREF(__pyx_r);
@@ -3216,7 +3216,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":932
  *     PyArray_SetBaseObject(arr, base)
- * 
+ *
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
  *     base = PyArray_BASE(arr)
  *     if base is NULL:
@@ -3297,7 +3297,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
  *         __pyx_import_array()
  *     except Exception:             # <<<<<<<<<<<<<<
  *         raise ImportError("numpy.core.multiarray failed to import")
- * 
+ *
  */
     __pyx_t_4 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])));
     if (__pyx_t_4) {
@@ -3311,7 +3311,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
  *         __pyx_import_array()
  *     except Exception:
  *         raise ImportError("numpy.core.multiarray failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline int import_umath() except -1:
  */
       __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ImportError, __pyx_tuple__8, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(1, 944, __pyx_L5_except_error)
@@ -3363,7 +3363,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":946
  *         raise ImportError("numpy.core.multiarray failed to import")
- * 
+ *
  * cdef inline int import_umath() except -1:             # <<<<<<<<<<<<<<
  *     try:
  *         _import_umath()
@@ -3386,7 +3386,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
   __Pyx_RefNannySetupContext("import_umath", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":947
- * 
+ *
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -3411,7 +3411,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
       __pyx_t_4 = _import_umath(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(1, 948, __pyx_L3_error)
 
       /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":947
- * 
+ *
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -3429,7 +3429,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
  *         _import_umath()
  *     except Exception:             # <<<<<<<<<<<<<<
  *         raise ImportError("numpy.core.umath failed to import")
- * 
+ *
  */
     __pyx_t_4 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])));
     if (__pyx_t_4) {
@@ -3443,7 +3443,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  */
       __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ImportError, __pyx_tuple__9, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(1, 950, __pyx_L5_except_error)
@@ -3456,7 +3456,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
     __pyx_L5_except_error:;
 
     /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":947
- * 
+ *
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -3472,7 +3472,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":946
  *         raise ImportError("numpy.core.multiarray failed to import")
- * 
+ *
  * cdef inline int import_umath() except -1:             # <<<<<<<<<<<<<<
  *     try:
  *         _import_umath()
@@ -3495,7 +3495,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":952
  *         raise ImportError("numpy.core.umath failed to import")
- * 
+ *
  * cdef inline int import_ufunc() except -1:             # <<<<<<<<<<<<<<
  *     try:
  *         _import_umath()
@@ -3518,7 +3518,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
   __Pyx_RefNannySetupContext("import_ufunc", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":953
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -3543,7 +3543,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
       __pyx_t_4 = _import_umath(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(1, 954, __pyx_L3_error)
 
       /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":953
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -3561,7 +3561,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
  *         _import_umath()
  *     except Exception:             # <<<<<<<<<<<<<<
  *         raise ImportError("numpy.core.umath failed to import")
- * 
+ *
  */
     __pyx_t_4 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])));
     if (__pyx_t_4) {
@@ -3575,7 +3575,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef extern from *:
  */
       __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ImportError, __pyx_tuple__9, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(1, 956, __pyx_L5_except_error)
@@ -3588,7 +3588,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
     __pyx_L5_except_error:;
 
     /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":953
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -3604,7 +3604,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":952
  *         raise ImportError("numpy.core.umath failed to import")
- * 
+ *
  * cdef inline int import_ufunc() except -1:             # <<<<<<<<<<<<<<
  *     try:
  *         _import_umath()
@@ -3626,8 +3626,8 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":966
- * 
- * 
+ *
+ *
  * cdef inline bint is_timedelta64_object(object obj):             # <<<<<<<<<<<<<<
  *     """
  *     Cython equivalent of `isinstance(obj, np.timedelta64)`
@@ -3642,15 +3642,15 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_timedelta64_object(PyObject *__pyx_v_
  *     bool
  *     """
  *     return PyObject_TypeCheck(obj, &PyTimedeltaArrType_Type)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = PyObject_TypeCheck(__pyx_v_obj, (&PyTimedeltaArrType_Type));
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":966
- * 
- * 
+ *
+ *
  * cdef inline bint is_timedelta64_object(object obj):             # <<<<<<<<<<<<<<
  *     """
  *     Cython equivalent of `isinstance(obj, np.timedelta64)`
@@ -3663,8 +3663,8 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_timedelta64_object(PyObject *__pyx_v_
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":981
- * 
- * 
+ *
+ *
  * cdef inline bint is_datetime64_object(object obj):             # <<<<<<<<<<<<<<
  *     """
  *     Cython equivalent of `isinstance(obj, np.datetime64)`
@@ -3679,15 +3679,15 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_datetime64_object(PyObject *__pyx_v_o
  *     bool
  *     """
  *     return PyObject_TypeCheck(obj, &PyDatetimeArrType_Type)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = PyObject_TypeCheck(__pyx_v_obj, (&PyDatetimeArrType_Type));
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":981
- * 
- * 
+ *
+ *
  * cdef inline bint is_datetime64_object(object obj):             # <<<<<<<<<<<<<<
  *     """
  *     Cython equivalent of `isinstance(obj, np.datetime64)`
@@ -3700,8 +3700,8 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_datetime64_object(PyObject *__pyx_v_o
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":996
- * 
- * 
+ *
+ *
  * cdef inline npy_datetime get_datetime64_value(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the int64 value underlying scalar numpy datetime64 object
@@ -3714,15 +3714,15 @@ static CYTHON_INLINE npy_datetime __pyx_f_5numpy_get_datetime64_value(PyObject *
  *     also needed.  That can be found using `get_datetime64_unit`.
  *     """
  *     return (<PyDatetimeScalarObject*>obj).obval             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = ((PyDatetimeScalarObject *)__pyx_v_obj)->obval;
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":996
- * 
- * 
+ *
+ *
  * cdef inline npy_datetime get_datetime64_value(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the int64 value underlying scalar numpy datetime64 object
@@ -3734,8 +3734,8 @@ static CYTHON_INLINE npy_datetime __pyx_f_5numpy_get_datetime64_value(PyObject *
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1006
- * 
- * 
+ *
+ *
  * cdef inline npy_timedelta get_timedelta64_value(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the int64 value underlying scalar numpy timedelta64 object
@@ -3748,15 +3748,15 @@ static CYTHON_INLINE npy_timedelta __pyx_f_5numpy_get_timedelta64_value(PyObject
  *     returns the int64 value underlying scalar numpy timedelta64 object
  *     """
  *     return (<PyTimedeltaScalarObject*>obj).obval             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = ((PyTimedeltaScalarObject *)__pyx_v_obj)->obval;
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1006
- * 
- * 
+ *
+ *
  * cdef inline npy_timedelta get_timedelta64_value(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the int64 value underlying scalar numpy timedelta64 object
@@ -3768,8 +3768,8 @@ static CYTHON_INLINE npy_timedelta __pyx_f_5numpy_get_timedelta64_value(PyObject
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1013
- * 
- * 
+ *
+ *
  * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the unit part of the dtype for a numpy datetime64 object.
@@ -3787,8 +3787,8 @@ static CYTHON_INLINE NPY_DATETIMEUNIT __pyx_f_5numpy_get_datetime64_unit(PyObjec
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1013
- * 
- * 
+ *
+ *
  * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the unit part of the dtype for a numpy datetime64 object.
@@ -3898,7 +3898,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":44
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
  *         raise ValueError('ppm array should be double C-contiguous')             # <<<<<<<<<<<<<<
  *     if not ref.flags['C_CONTIGUOUS'] or not ref.dtype=='double':
@@ -3956,7 +3956,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *         raise ValueError('U array should be double C-contiguous')
  *     if not ppm.shape[-1] == ref.shape[-1]:
  *         raise ValueError('Inconsistent shapes for ppm and ref arrays')             # <<<<<<<<<<<<<<
- * 
+ *
  *     ve_step(<ndarray>ppm, <ndarray>ref, <ndarray>XYZ, <ndarray>U,
  */
   __pyx_tuple__6 = PyTuple_Pack(1, __pyx_kp_s_Inconsistent_shapes_for_ppm_and); if (unlikely(!__pyx_tuple__6)) __PYX_ERR(0, 54, __pyx_L1_error)
@@ -3964,10 +3964,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__6);
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":64
- * 
+ *
  *     if not mask.flags['C_CONTIGUOUS'] or not mask.dtype=='intp':
  *         raise ValueError('mask array should be intp and C-contiguous')             # <<<<<<<<<<<<<<
- * 
+ *
  *     return make_edges(mask, ngb_size)
  */
   __pyx_tuple__7 = PyTuple_Pack(1, __pyx_kp_s_mask_array_should_be_intp_and_C); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 64, __pyx_L1_error)
@@ -3978,7 +3978,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *         __pyx_import_array()
  *     except Exception:
  *         raise ImportError("numpy.core.multiarray failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline int import_umath() except -1:
  */
   __pyx_tuple__8 = PyTuple_Pack(1, __pyx_kp_s_numpy_core_multiarray_failed_to); if (unlikely(!__pyx_tuple__8)) __PYX_ERR(1, 944, __pyx_L1_error)
@@ -3989,7 +3989,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  */
   __pyx_tuple__9 = PyTuple_Pack(1, __pyx_kp_s_numpy_core_umath_failed_to_impor); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(1, 950, __pyx_L1_error)
@@ -3997,10 +3997,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__9);
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":41
- * 
- * 
+ *
+ *
  * def _ve_step(ppm, ref, XYZ, U, int ngb_size, double beta):             # <<<<<<<<<<<<<<
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
  */
   __pyx_tuple__10 = PyTuple_Pack(6, __pyx_n_s_ppm, __pyx_n_s_ref, __pyx_n_s_XYZ, __pyx_n_s_U, __pyx_n_s_ngb_size, __pyx_n_s_beta); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 41, __pyx_L1_error)
@@ -4009,10 +4009,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__11 = (PyObject*)__Pyx_PyCode_New(6, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__10, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_segmentation_pyx, __pyx_n_s_ve_step, 41, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__11)) __PYX_ERR(0, 41, __pyx_L1_error)
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":61
- * 
- * 
+ *
+ *
  * def _make_edges(mask, int ngb_size):             # <<<<<<<<<<<<<<
- * 
+ *
  *     if not mask.flags['C_CONTIGUOUS'] or not mask.dtype=='intp':
  */
   __pyx_tuple__12 = PyTuple_Pack(2, __pyx_n_s_mask, __pyx_n_s_ngb_size); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 61, __pyx_L1_error)
@@ -4021,10 +4021,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_segmentation_pyx, __pyx_n_s_make_edges, 61, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 61, __pyx_L1_error)
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":69
- * 
- * 
+ *
+ *
  * def _interaction_energy(ppm, XYZ, U, int ngb_size):             # <<<<<<<<<<<<<<
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
  */
   __pyx_tuple__14 = PyTuple_Pack(4, __pyx_n_s_ppm, __pyx_n_s_XYZ, __pyx_n_s_U, __pyx_n_s_ngb_size); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 69, __pyx_L1_error)
@@ -4096,7 +4096,7 @@ static int __Pyx_modinit_type_import_code(void) {
   /*--- Type import code ---*/
   __pyx_t_1 = PyImport_ImportModule(__Pyx_BUILTIN_MODULE_NAME); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 9, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_ptype_7cpython_4type_type = __Pyx_ImportType(__pyx_t_1, __Pyx_BUILTIN_MODULE_NAME, "type", 
+  __pyx_ptype_7cpython_4type_type = __Pyx_ImportType(__pyx_t_1, __Pyx_BUILTIN_MODULE_NAME, "type",
   #if defined(PYPY_VERSION_NUM) && PYPY_VERSION_NUM < 0x050B0000
   sizeof(PyTypeObject),
   #else
@@ -4365,19 +4365,19 @@ if (!__Pyx_RefNanny) {
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":9
  * """
- * 
+ *
  * __version__ = '0.2'             # <<<<<<<<<<<<<<
- * 
+ *
  * # Set symbol for array_import; must come before cimport numpy
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_version, __pyx_kp_s_0_2) < 0) __PYX_ERR(0, 9, __pyx_L1_error)
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":36
- * 
+ *
  * # Initialize numpy
  * import_array()             # <<<<<<<<<<<<<<
  * import numpy as np
- * 
+ *
  */
   __pyx_t_1 = __pyx_f_5numpy_import_array(); if (unlikely(__pyx_t_1 == ((int)-1))) __PYX_ERR(0, 36, __pyx_L1_error)
 
@@ -4385,8 +4385,8 @@ if (!__Pyx_RefNanny) {
  * # Initialize numpy
  * import_array()
  * import numpy as np             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_t_2 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 37, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -4394,10 +4394,10 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":41
- * 
- * 
+ *
+ *
  * def _ve_step(ppm, ref, XYZ, U, int ngb_size, double beta):             # <<<<<<<<<<<<<<
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
  */
   __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_4nipy_10algorithms_12segmentation_13_segmentation_1_ve_step, NULL, __pyx_n_s_nipy_algorithms_segmentation__se); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 41, __pyx_L1_error)
@@ -4406,10 +4406,10 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":61
- * 
- * 
+ *
+ *
  * def _make_edges(mask, int ngb_size):             # <<<<<<<<<<<<<<
- * 
+ *
  *     if not mask.flags['C_CONTIGUOUS'] or not mask.dtype=='intp':
  */
   __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_4nipy_10algorithms_12segmentation_13_segmentation_3_make_edges, NULL, __pyx_n_s_nipy_algorithms_segmentation__se); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 61, __pyx_L1_error)
@@ -4418,10 +4418,10 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":69
- * 
- * 
+ *
+ *
  * def _interaction_energy(ppm, XYZ, U, int ngb_size):             # <<<<<<<<<<<<<<
- * 
+ *
  *     if not ppm.flags['C_CONTIGUOUS'] or not ppm.dtype=='double':
  */
   __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_4nipy_10algorithms_12segmentation_13_segmentation_5_interaction_energy, NULL, __pyx_n_s_nipy_algorithms_segmentation__se); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 69, __pyx_L1_error)
@@ -4431,7 +4431,7 @@ if (!__Pyx_RefNanny) {
 
   /* "nipy/algorithms/segmentation/_segmentation.pyx":1
  * # -*- Mode: Python -*-             # <<<<<<<<<<<<<<
- * 
+ *
  * """
  */
   __pyx_t_2 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -4440,8 +4440,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1013
- * 
- * 
+ *
+ *
  * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the unit part of the dtype for a numpy datetime64 object.

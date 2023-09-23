@@ -2,7 +2,7 @@
 
 
 """
-Incremental (Kalman-like) filters for linear regression. 
+Incremental (Kalman-like) filters for linear regression.
 
 Author: Alexis Roche, 2008.
 """
@@ -50,11 +50,11 @@ cdef extern from "fff_glm_kalman.h":
     fff_glm_RKF* fff_glm_RKF_new(size_t dim)
     void fff_glm_RKF_delete(fff_glm_RKF* thisone)
     void fff_glm_RKF_reset(fff_glm_RKF* thisone)
-    void fff_glm_RKF_iterate(fff_glm_RKF* thisone, unsigned int nloop, 
-                             double y, fff_vector* x, 
+    void fff_glm_RKF_iterate(fff_glm_RKF* thisone, unsigned int nloop,
+                             double y, fff_vector* x,
                              double yy, fff_vector* xx)
     void fff_glm_KF_fit(fff_glm_KF* thisone, fff_vector* y, fff_matrix* X)
-    void fff_glm_RKF_fit(fff_glm_RKF* thisone, unsigned int nloop, 
+    void fff_glm_RKF_fit(fff_glm_RKF* thisone, unsigned int nloop,
                          fff_vector* y, fff_matrix* X)
 
 
@@ -65,7 +65,7 @@ import numpy as np
 
 # Standard Kalman filter
 
-def ols(ndarray Y, ndarray X, int axis=0): 
+def ols(ndarray Y, ndarray X, int axis=0):
     """
     (beta, norm_var_beta, s2, dof) = ols(Y, X, axis=0).
 
@@ -94,9 +94,9 @@ def ols(ndarray Y, ndarray X, int axis=0):
     # View on design matrix
     x = fff_matrix_fromPyArray(X)
 
-    # Number of regressors 
+    # Number of regressors
     p = x.size2
-    
+
     # Allocate output arrays B and S2
     #
     # Using Cython cimport of numpy, Y.shape is a C array of npy_intp
@@ -111,7 +111,7 @@ def ols(ndarray Y, ndarray X, int axis=0):
     # Allocate local structure
     kfilt = fff_glm_KF_new(p)
 
-    # Create a new array iterator 
+    # Create a new array iterator
     multi = fffpy_multi_iterator_new(3, axis, <void*>Y, <void*>B, <void*>S2)
 
     # Create views
@@ -119,7 +119,7 @@ def ols(ndarray Y, ndarray X, int axis=0):
     b = multi.vector[1]
     s2 = multi.vector[2]
 
-    # Loop 
+    # Loop
     while(multi.index < multi.size):
         fff_glm_KF_fit(kfilt, y, x)
         fff_vector_memcpy(b, kfilt.b)
@@ -127,9 +127,9 @@ def ols(ndarray Y, ndarray X, int axis=0):
         fffpy_multi_iterator_update(multi)
 
     # Normalized variance (computed from the last item)
-    VB = fff_matrix_const_toPyArray(kfilt.Vb);    
+    VB = fff_matrix_const_toPyArray(kfilt.Vb);
     dof = kfilt.dof
-    
+
     # Free memory
     fff_matrix_delete(x)
     fff_glm_KF_delete(kfilt)
@@ -137,7 +137,7 @@ def ols(ndarray Y, ndarray X, int axis=0):
 
     # Return
     return B, VB, S2, dof
-    
+
 
 def ar1(ndarray Y, ndarray X, int niter=2, int axis=0):
     """
@@ -172,10 +172,10 @@ def ar1(ndarray Y, ndarray X, int niter=2, int axis=0):
     # View on design matrix
     x = fff_matrix_fromPyArray(X)
 
-    # Number of regressors 
+    # Number of regressors
     p = x.size2
     p2 = p*p
-    
+
     # Allocate output arrays B and S2.
     #
     # Using Cython cimport of numpy, Y.shape is a C array of npy_intp
@@ -189,11 +189,11 @@ def ar1(ndarray Y, ndarray X, int niter=2, int axis=0):
     dims[axis] = 1
     S2 = np.zeros(dims, dtype=np.double)
     A = np.zeros(dims, dtype=np.double)
- 
+
     # Allocate local structure
     rkfilt = fff_glm_RKF_new(p)
 
-    # Create a new array iterator 
+    # Create a new array iterator
     multi = fffpy_multi_iterator_new(5, axis, <void*>Y, <void*>B, <void*>VB, <void*>S2, <void*>A)
 
     # Create views
@@ -203,7 +203,7 @@ def ar1(ndarray Y, ndarray X, int niter=2, int axis=0):
     s2 = multi.vector[3]
     a = multi.vector[4]
 
-    # Loop 
+    # Loop
     while(multi.index < multi.size):
         fff_glm_RKF_fit(rkfilt, niter, y, x)
         fff_vector_memcpy(b, rkfilt.b)
@@ -213,14 +213,14 @@ def ar1(ndarray Y, ndarray X, int niter=2, int axis=0):
         a.data[0] = rkfilt.a
         fffpy_multi_iterator_update(multi)
 
-    # Dof 
+    # Dof
     dof = rkfilt.dof
-    
+
     # Free memory
     fff_matrix_delete(x)
-    fff_glm_RKF_delete(rkfilt) 
+    fff_glm_RKF_delete(rkfilt)
     fffpy_multi_iterator_delete(multi)
-    
+
     # Reshape variance array
     dims[axis] = p
     dims.insert(axis+1, p)
@@ -228,7 +228,3 @@ def ar1(ndarray Y, ndarray X, int niter=2, int axis=0):
 
     # Return
     return B, VB, S2, dof, A
-    
-
-
-

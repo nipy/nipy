@@ -5,7 +5,6 @@ this module contains a function to perform fast distance computation on arrays
 
 Author : Bertrand Thirion, 2008-2011
 """
-from __future__ import absolute_import
 import numpy as np
 
 

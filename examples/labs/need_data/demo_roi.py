@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 This is a little demo that simply shows ROI manipulation within the nipy
 framework.
@@ -12,7 +11,7 @@ Author: Bertrand Thirion, 2009-2010
 """
 print(__doc__)
 
-from os import mkdir, getcwd, path
+from os import getcwd, mkdir, path
 
 import numpy as np
 
@@ -21,14 +20,12 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nibabel import load, save
-
-import nipy.labs.spatial_models.mroi as mroi
-from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
-import nipy.labs.spatial_models.hroi as hroi
-
 # Local import
 from get_data_light import DATA_DIR, get_second_level_dataset
+from nibabel import load, save
+
+from nipy.labs.spatial_models import hroi, mroi
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
 
 # paths
 input_image = path.join(DATA_DIR, 'spmT_0029.nii.gz')
@@ -53,7 +50,7 @@ roi = mroi.subdomain_from_balls(domain, position, np.array([5.0]))
 roi_domain = domain.mask(roi.label > -1)
 dom_img = roi_domain.to_image()
 save(dom_img, path.join(write_dir, "myroi.nii"))
-print('Wrote an ROI mask image in %s' % path.join(write_dir, "myroi.nii"))
+print(f"Wrote an ROI mask image in {path.join(write_dir, 'myroi.nii')}")
 
 # ----------------------------------------------------
 # ---- example 2: create ROIs from a blob image ------
@@ -77,7 +74,7 @@ nroi = hroi.HROI_as_discrete_domain_blobs(domain, values,
 
 # saving the blob image, i.e. a label image
 wim = nroi.to_image('id', roi=True)
-descrip = "blob image extracted from %s" % input_image
+descrip = f"blob image extracted from {input_image}"
 blobPath = path.join(write_dir, "blob.nii")
 save(wim, blobPath)
 
@@ -112,7 +109,6 @@ wim5 = roi.to_image()
 roi_path_5 = path.join(write_dir, "roi_some_blobs.nii")
 save(wim5, roi_path_5)
 
-print("Wrote ROI mask images in %s, \n %s \n %s \n and %s" %
-      (roi_path_2, roi_path_3, roi_path_4, roi_path_5))
+print("Wrote ROI mask images in {}, \n {} \n {} \n and {}".format(roi_path_2, roi_path_3, roi_path_4, roi_path_5))
 
 plt.show()

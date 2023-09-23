@@ -4,18 +4,16 @@
 An image that stores the data as an (x, y, z, ...) array, with an
 affine mapping to the world space
 """
-from __future__ import absolute_import
 import copy
 
 import numpy as np
 from scipy import ndimage
 
-# Local imports
-from ..transforms.affine_utils import to_matrix_vector, \
-                from_matrix_vector, get_bounds
 from ..transforms.affine_transform import AffineTransform
-from ..transforms.transform import CompositionError
 
+# Local imports
+from ..transforms.affine_utils import from_matrix_vector, get_bounds, to_matrix_vector
+from ..transforms.transform import CompositionError
 from .volume_grid import VolumeGrid
 
 ################################################################################
@@ -46,7 +44,7 @@ class VolumeImg(VolumeGrid):
         interpolation : 'continuous' or 'nearest'
             String giving the interpolation logic used when calculating
             values in different world spaces
-        _data : 
+        _data :
             Private pointer to the data.
 
         Notes
@@ -58,7 +56,7 @@ class VolumeImg(VolumeGrid):
         _data attribute, but to use the `get_fdata` method.
     """
 
-    # most attributes are given by the VolumeField interface 
+    # most attributes are given by the VolumeField interface
 
     #---------------------------------------------------------------------------
     # Attributes, VolumeImg interface
@@ -71,7 +69,7 @@ class VolumeImg(VolumeGrid):
     # VolumeField interface
     #---------------------------------------------------------------------------
 
-    def __init__(self, data, affine, world_space, metadata=None, 
+    def __init__(self, data, affine, world_space, metadata=None,
                  interpolation='continuous'):
         """ Creates a new neuroimaging image with an affine mapping.
 
@@ -88,7 +86,7 @@ class VolumeImg(VolumeGrid):
                 dictionnary of user-specified information to store with
                 the image.
         """
-        if not interpolation in ('continuous', 'nearest'):
+        if interpolation not in ('continuous', 'nearest'):
             raise ValueError('interpolation must be either continuous '
                              'or nearest')
         self._data = data
@@ -97,16 +95,16 @@ class VolumeImg(VolumeGrid):
         self.affine = affine
         self.world_space = world_space
         if metadata is None:
-            metadata = dict()
+            metadata = {}
         self.metadata = metadata
         self.interpolation = interpolation
 
-    
+
     def like_from_data(self, data):
         # Use self.__class__ for subclassing.
         assert len(data.shape) >= 3, \
             'The data passed must be an array of at least 3 dimensions'
-        return self.__class__(data=data, 
+        return self.__class__(data=data,
                               affine=copy.copy(self.affine),
                               world_space=self.world_space,
                               metadata=copy.copy(self.metadata),
@@ -138,10 +136,10 @@ class VolumeImg(VolumeGrid):
                                     shape=target_image.get_fdata().shape[:3],
                                     interpolation=interpolation)
         else:
-            # IMPORTANT: Polymorphism can be implemented by walking the 
+            # IMPORTANT: Polymorphism can be implemented by walking the
             # MRO and finding a method that does not raise
-            # NotImplementedError. 
-            return super(VolumeImg, self).resampled_to_img(target_image,
+            # NotImplementedError.
+            return super().resampled_to_img(target_image,
                                     interpolation=interpolation)
 
 
@@ -169,11 +167,11 @@ class VolumeImg(VolumeGrid):
             affine4d = np.eye(4)
             affine4d[:3, :3] = affine
             transform_affine = np.dot(np.linalg.inv(affine4d),
-                                        self.affine, 
+                                        self.affine,
                                      )
             # The bounding box in the new world, if no offset is given
             (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
-                                                        data.shape[:3], 
+                                                        data.shape[:3],
                                                         transform_affine,
                                                         )
 
@@ -196,7 +194,7 @@ class VolumeImg(VolumeGrid):
             transform_affine = np.dot(np.linalg.inv(self.affine), affine)
         A, b = to_matrix_vector(transform_affine)
         A_inv = np.linalg.inv(A)
-        # If A is diagonal, ndimage.affine_transform is clever-enough 
+        # If A is diagonal, ndimage.affine_transform is clever-enough
         # to use a better algorithm
         if np.all(np.diag(np.diag(A)) == A):
             A = np.diag(A)
@@ -205,7 +203,7 @@ class VolumeImg(VolumeGrid):
         # For images with dimensions larger than 3D:
         data_shape = list(data.shape)
         if len(data_shape) > 3:
-            # Iter in a set of 3D volumes, as the interpolation problem is 
+            # Iter in a set of 3D volumes, as the interpolation problem is
             # separable in the extra dimensions. This reduces the
             # computational cost
             data = np.reshape(data, data_shape[:3] + [-1])
@@ -216,7 +214,7 @@ class VolumeImg(VolumeGrid):
                                                 order=interpolation_order)
                                 for slice in data]
             resampled_data = np.concatenate([d[..., np.newaxis]
-                                             for d in resampled_data], 
+                                             for d in resampled_data],
                                             axis=3)
             resampled_data = np.reshape(resampled_data, list(shape) +
                                             list(data_shape[3:]))
@@ -225,7 +223,7 @@ class VolumeImg(VolumeGrid):
                                                 offset=np.dot(A_inv, b),
                                                 output_shape=shape,
                                                 order=interpolation_order)
-        return self.__class__(resampled_data, affine, 
+        return self.__class__(resampled_data, affine,
                            self.world_space, metadata=self.metadata,
                            interpolation=self.interpolation)
 
@@ -240,7 +238,7 @@ class VolumeImg(VolumeGrid):
 
     def xyz_ordered(self, resample=False, copy=True):
         """ Returns an image with the affine diagonal and positive
-            in the world space it is embedded in. 
+            in the world space it is embedded in.
 
             Parameters
             -----------
@@ -303,10 +301,10 @@ class VolumeImg(VolumeGrid):
         img._data = data
         img.affine = from_matrix_vector(np.diag(pixdim), b)
         return img
-    
+
 
     def _swapaxes(self, axis1, axis2):
-        """ Swap the axis axis1 and axis2 of the data array and reorder the 
+        """ Swap the axis axis1 and axis2 of the data array and reorder the
             affine matrix to stay consistent with the data
 
             See also
@@ -322,7 +320,7 @@ class VolumeImg(VolumeGrid):
         order[axis1] = axis2
         order[axis2] = axis1
         new_affine = new_affine.T[order].T
-        return VolumeImg(reordered_data, new_affine, self.world_space, 
+        return VolumeImg(reordered_data, new_affine, self.world_space,
                                            metadata=self.metadata)
 
     #---------------------------------------------------------------------------
@@ -345,14 +343,14 @@ class VolumeImg(VolumeGrid):
                                 transform=new_v2w_transform,
                                 metadata=self.metadata,
                                 interpolation=self.interpolation)
-        return new_img 
+        return new_img
 
 
     def __repr__(self):
         options = np.get_printoptions()
         np.set_printoptions(precision=5, threshold=64, edgeitems=2)
         representation = \
-                '%s(\n  data=%s,\n  affine=%s,\n  world_space=%s,\n  interpolation=%s)' % (
+                '{}(\n  data={},\n  affine={},\n  world_space={},\n  interpolation={})'.format(
                 self.__class__.__name__,
                 '\n       '.join(repr(self._data).split('\n')),
                 '\n         '.join(repr(self.affine).split('\n')),
@@ -369,5 +367,3 @@ class VolumeImg(VolumeGrid):
                 and (self.world_space == other.world_space)
                 and (self.interpolation == other.interpolation)
                )
-
-

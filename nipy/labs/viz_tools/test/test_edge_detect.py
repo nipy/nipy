@@ -1,8 +1,6 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import nose
-
 import numpy as np
 
 from ..edge_detect import _edge_detect, _fast_abs_percentile

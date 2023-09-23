@@ -72,11 +72,11 @@ def _quantile(X, double ratio, int interp=False, int axis=0):
     itX = np.PyArray_IterAllButAxis(X, &axis)
     itY = np.PyArray_IterAllButAxis(Y, &axis)
 
-    # Loop 
+    # Loop
     while np.PyArray_ITER_NOTDONE(itX):
         x = <double*>np.PyArray_ITER_DATA(itX)
         y = <double*>np.PyArray_ITER_DATA(itY)
-        y[0] = quantile(x, size, stride, ratio, interp) 
+        y[0] = quantile(x, size, stride, ratio, interp)
         np.PyArray_ITER_NEXT(itX)
         np.PyArray_ITER_NEXT(itY)
 
@@ -106,4 +106,3 @@ def _median(X, axis=0):
       Array of medians
     """
     return _quantile(X, axis=axis, ratio=0.5, interp=True)
-

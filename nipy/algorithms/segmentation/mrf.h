@@ -16,17 +16,17 @@ extern "C" {
 #include <numpy/arrayobject.h>
 
 
-  extern void ve_step(PyArrayObject* ppm, 
+  extern void ve_step(PyArrayObject* ppm,
 		      const PyArrayObject* ref,
-		      const PyArrayObject* XYZ, 
-		      const PyArrayObject* U, 
+		      const PyArrayObject* XYZ,
+		      const PyArrayObject* U,
 		      int ngb_size,
 		      double beta);
 
   extern PyArrayObject* make_edges(const PyArrayObject* mask,
 				   int ngb_size);
 
-  extern double interaction_energy(PyArrayObject* ppm, 
+  extern double interaction_energy(PyArrayObject* ppm,
 				   const PyArrayObject* XYZ,
 				   const PyArrayObject* U,
 				   int ngb_size);

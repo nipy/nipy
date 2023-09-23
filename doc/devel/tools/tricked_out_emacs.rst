@@ -84,15 +84,15 @@ Install pylint_.  Debian packages pylint_ as ``pylint``. Put the
 emacs_python_mode_ page, that you will need to save this::
 
     #!/usr/bin/env python3
-    
+
     import re
     import sys
-    
+
     from subprocess import *
-    
+
     p = Popen("pylint -f parseable -r n --disable-msg-cat=C,R %s" %
               sys.argv[1], shell = True, stdout = PIPE).stdout
-    
+
     for line in p.readlines():
         match = re.search("\\[([WE])(, (.+?))?\\]", line)
         if match:
@@ -103,14 +103,14 @@ emacs_python_mode_ page, that you will need to save this::
 	       msg = "Warning"
 	    else:
 	       msg = "Error"
-    
+
             if func:
                 line = re.sub("\\[([WE])(, (.+?))?\\]",
                               "%s (%s):" % (msg, func), line)
             else:
                 line = re.sub("\\[([WE])?\\]", "%s:" % msg, line)
         print line,
-    
+
     p.close()
 
 as ``epylint`` somewhere on your system path, and test that ``epylint
@@ -120,7 +120,7 @@ pyflakes
 ````````
 Install pyflakes_.  Maybe your package manager again? (``apt-get
 install pyflakes``).  Install the `flymake .emacs snippet`_ in your
-``.emacs`` file. 
+``.emacs`` file.
 
 flymake .emacs snippet
 ``````````````````````

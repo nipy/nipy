@@ -1,11 +1,15 @@
-from __future__ import absolute_import
+
+from unittest import TestCase
 
 import numpy as np
 import numpy.random as nr
-from unittest import TestCase
 
-from ..bipartite_graph import (BipartiteGraph, cross_knn, cross_eps, 
-                               check_feature_matrices)
+from ..bipartite_graph import (
+    BipartiteGraph,
+    check_feature_matrices,
+    cross_eps,
+    cross_knn,
+)
 
 
 def basicdata():
@@ -30,14 +34,14 @@ def test_cross_knn_1():
     x = basicdata()
     G = cross_knn(x, x, 2)
     assert (G.E == 20)
-        
+
 def test_cross_knn_2():
     """ test the construction of k-nn bipartite graph
     """
     x = basicdata()
     G = cross_knn(x, x, 1)
     assert (G.E == 10)
-    
+
 def test_cross_eps_1():
     """ test the construction of eps-nn bipartite graph
     """
@@ -54,7 +58,7 @@ def test_copy():
     G = cross_knn(x, x, 2)
     K = G.copy()
     assert K.edges.shape == (20, 2)
-    
+
 def test_subraph_left():
     """ Extraction of the 'left subgraph'
     """
@@ -65,7 +69,7 @@ def test_subraph_left():
     assert sl.V == 7
     assert sl.W == 10
     assert sl.edges[:, 0].max() == 6
-    
+
 def test_subraph_left2():
     """ Extraction of the 'left subgraph', without renumb=False
     """
@@ -98,11 +102,9 @@ def test_subraph_right2():
     assert sr.W == 10
     assert sr.V == 10
     assert sr.edges[:, 1].max() == 6
-    
+
 
 
 if __name__ == '__main__':
     import nose
     nose.run(argv=['', __file__])
-
-

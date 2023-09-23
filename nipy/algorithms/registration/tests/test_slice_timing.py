@@ -1,14 +1,11 @@
-from __future__ import division
-from __future__ import absolute_import
 
 import numpy as np
-
+from nose.tools import assert_false, assert_true
+from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy.ndimage import gaussian_filter, gaussian_filter1d
 
-from nose.tools import assert_true, assert_false
-from numpy.testing import assert_almost_equal, assert_array_equal
-
 from nipy.core.api import Image, vox2scanner
+
 from ..groupwise_registration import SpaceTimeRealign
 
 

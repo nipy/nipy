@@ -1,19 +1,13 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
-from ..slices import bounding_box, zslice, yslice, xslice
+from nose.tools import assert_equal, assert_false, assert_true
+from numpy.testing import assert_array_almost_equal, assert_array_equal
+
 from ..coordinate_map import AffineTransform
 from ..coordinate_system import CoordinateSystem as CS
-from ..spaces import scanner_csm, scanner_space, mni_csm
-
-from nose.tools import (
-    assert_equal,
-    assert_true,
-    assert_false)
-from numpy.testing import (
-    assert_array_equal,
-    assert_array_almost_equal)
+from ..slices import bounding_box, xslice, yslice, zslice
+from ..spaces import mni_csm, scanner_csm, scanner_space
 
 # Names for a 3D axis set
 names = ['xspace', 'yspace', 'zspace']

@@ -1,25 +1,28 @@
 """ Testing Image spaces
 """
-from __future__ import absolute_import
-
-import numpy as np
 
 import nibabel as nib
+import numpy as np
 from nibabel.affines import from_matvec
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from ..image import Image, rollimg
-from ..image_spaces import (is_xyz_affable, as_xyz_image, xyz_affine,
-                            make_xyz_image)
-from ...reference.coordinate_system import CoordinateSystem as CS
 from ...reference.coordinate_map import AffineTransform
-from ...reference.spaces import (vox2mni, vox2talairach, voxel_csm,
-                                 mni_space, talairach_space,
-                                 AffineError, AxesError,
-                                 XYZSpace, SpaceError)
+from ...reference.coordinate_system import CoordinateSystem as CS
+from ...reference.spaces import (
+    AffineError,
+    AxesError,
+    SpaceError,
+    XYZSpace,
+    mni_space,
+    talairach_space,
+    vox2mni,
+    vox2talairach,
+    voxel_csm,
+)
+from ..image import Image, rollimg
+from ..image_spaces import as_xyz_image, is_xyz_affable, make_xyz_image, xyz_affine
 
-from numpy.testing import (assert_array_almost_equal, assert_array_equal)
-
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 def test_image_xyz_affine():
     # Test getting the image xyz affines
@@ -44,7 +47,7 @@ def test_image_xyz_affine():
     img = Image(arr, cmap)
     assert_raises(AxesError, xyz_affine, img)
     # Can pass in own validator
-    my_valtor = dict(blind='x', leading='y', ditch='z')
+    my_valtor = {'blind': 'x', 'leading': 'y', 'ditch': 'z'}
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
     cmap = AffineTransform(d_cs, r_cs, aff)
     img = Image(arr, cmap)
@@ -98,7 +101,7 @@ def test_image_as_xyz_image():
     img = Image(arr, cmap)
     assert_raises(AxesError, as_xyz_image, img)
     # Can pass in own validator
-    my_valtor = dict(blind='x', leading='y', ditch='z')
+    my_valtor = {'blind': 'x', 'leading': 'y', 'ditch': 'z'}
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
     cmap = AffineTransform(d_cs, r_cs, aff)
     img = Image(arr, cmap)

@@ -1,14 +1,10 @@
-from __future__ import absolute_import
 import numpy as np
 import numpy.random as nr
-
-from ..field import (field_from_coo_matrix_and_data,
-                     field_from_graph_and_data)
-from ..graph import wgraph_from_3d_grid
-
-from nose.tools import assert_true, assert_equal
-
+from nose.tools import assert_equal, assert_true
 from numpy.testing import assert_array_equal
+
+from ..field import field_from_coo_matrix_and_data, field_from_graph_and_data
+from ..graph import wgraph_from_3d_grid
 
 
 def basic_field(nx=10, ny=10, nz=10):
@@ -118,7 +114,7 @@ def test_smooth_2():
     assert_equal(sfield[554], 1)
     assert_true(np.abs(sfield[566] - np.sqrt(2)) < 1.e-7)
     assert_true(np.abs(sfield[446] - np.sqrt(3)) < 1.e-7)
-    
+
 
 def test_dilation():
     myfield  = basic_field()
@@ -197,7 +193,7 @@ def test_watershed_4():
             [label[555], label[0], label[9], label[90], label[99], label[900],
              label[909], label[990], label[999]]).size == 9)
 
-    
+
 def test_watershed_2():
     myfield = basic_field_2()
     myfield.field[555] = 10

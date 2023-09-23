@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 Examples of design matrices specification and and computation (event-related
 design, FIR design, etc)
@@ -20,8 +19,10 @@ except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
 from nipy.modalities.fmri.design_matrix import make_dmtx
-from nipy.modalities.fmri.experimental_paradigm import (EventRelatedParadigm,
-                                                        BlockParadigm)
+from nipy.modalities.fmri.experimental_paradigm import (
+    BlockParadigm,
+    EventRelatedParadigm,
+)
 
 # frame times
 tr = 1.0
@@ -39,7 +40,7 @@ add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 paradigm = EventRelatedParadigm(conditions, onsets)
 
 X1 = make_dmtx(
-    frametimes, paradigm, hrf_model=hrf_model, drift_model='polynomial', 
+    frametimes, paradigm, hrf_model=hrf_model, drift_model='polynomial',
     drift_order=3, add_regs=motion, add_reg_names=add_reg_names)
 
 # block design matrix

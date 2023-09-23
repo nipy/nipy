@@ -3,17 +3,18 @@
 """
 Testing VolumeGrid interface.
 """
-from __future__ import absolute_import
 
-import nose
 import copy
 
+import nose
 import numpy as np
+
+from ...transforms.transform import CompositionError, Transform
 
 # Local imports
 from ..volume_grid import VolumeGrid
 from ..volume_img import VolumeImg
-from ...transforms.transform import Transform, CompositionError
+
 
 def mapping(x, y, z):
     return 2*x, y, 0.5*z
@@ -41,9 +42,9 @@ def test_volume_grid():
     # Test that the repr doesn't raise an error
     yield repr, img
 
-    # We cannot calculate the values in the world, because the transform 
+    # We cannot calculate the values in the world, because the transform
     # is not invertible.
-    
+
     yield np.testing.assert_raises, ValueError, \
                         img.values_in_world, 0, 0, 0
     yield np.testing.assert_raises, ValueError, \
@@ -54,7 +55,7 @@ def test_volume_grid():
 
 def test_trivial_grid():
     """ Test resampling for an grid embedded in world space with an
-        identity transform. 
+        identity transform.
     """
     N = 10
     identity = Transform('voxels', 'world', id, id)
@@ -77,15 +78,15 @@ def test_transformation():
     """ Test transforming images.
     """
     N = 10
-    v2w_mapping = Transform('voxels', 'world1', mapping, 
+    v2w_mapping = Transform('voxels', 'world1', mapping,
                             inverse_mapping)
-    identity  = Transform('world1', 'world2', id, id) 
+    identity  = Transform('world1', 'world2', id, id)
     data = np.random.random((N, N, N))
     img1 = VolumeGrid(data=data,
                      transform=v2w_mapping,
                      )
     img2 = img1.composed_with_transform(identity)
-    
+
     yield nose.tools.assert_equal, img2.world_space, 'world2'
 
     x, y, z = N*np.random.random(size=(3, 10))
@@ -97,15 +98,15 @@ def test_transformation():
 
     yield nose.tools.assert_raises, CompositionError, img1.resampled_to_img, \
             img2
-    
+
     # Resample an image on itself: it shouldn't change much:
     img  = img1.resampled_to_img(img1)
     yield np.testing.assert_almost_equal, data, img.get_fdata()
 
     # Check that if I 'resampled_to_img' on an VolumeImg, I get an
-    # VolumeImg, and vice versa 
+    # VolumeImg, and vice versa
     volume_image = VolumeImg(data, np.eye(4), 'world')
-    identity  = Transform('voxels', 'world', id, id) 
+    identity  = Transform('voxels', 'world', id, id)
     image = VolumeGrid(data, identity)
     image2 = image.resampled_to_img(volume_image)
     yield nose.tools.assert_true, isinstance(image2, VolumeImg)
@@ -121,7 +122,7 @@ def test_as_volume_image():
     """ Test casting VolumeGrid to VolumeImg
     """
     N = 10
-    v2w_mapping  = Transform('voxels', 'world2', id, id) 
+    v2w_mapping  = Transform('voxels', 'world2', id, id)
     data = np.random.random((N, N, N))
     img1 = VolumeGrid(data=data,
                      transform=v2w_mapping,
@@ -131,4 +132,3 @@ def test_as_volume_image():
     # Check that passing in the wrong shape raises an error
     yield nose.tools.assert_raises, ValueError, img1.as_volume_img, None, \
             (10, 10)
-

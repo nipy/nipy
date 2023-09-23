@@ -67,21 +67,19 @@ array([[ 2.,  0.,  0.,  0.],
        [ 0.,  0.,  4.,  0.],
        [ 0.,  0.,  0.,  1.]])
 """
-from __future__ import absolute_import
 
 import sys
 
 import numpy as np
 
+# Legacy repr printing from numpy.
+from nipy.testing import legacy_printing as setup_module  # noqa
+
 from ...fixes.nibabel import io_orientation
 from ...io import nibcompat
-
 from ..image.image import Image
 from ..reference import spaces as rsp
 from ..reference.coordinate_map import AffineTransform
-
-# Legacy repr printing from numpy.
-from nipy.testing import legacy_printing as setup_module  # noqa
 
 
 def xyz_affine(img, name2xyz=None):
@@ -250,7 +248,7 @@ def as_xyz_image(img, name2xyz=None):
     # Set nan to inf to make np.argsort work for old numpy versions
     current_in_order[np.isnan(current_in_order)] = np.inf
     # Do we have the first three axes somewhere?
-    if not set((0,1,2)).issubset(current_in_order):
+    if not {0,1,2}.issubset(current_in_order):
         raise rsp.AxesError("One of x, y or z outputs missing a "
                             "corresponding input axis")
     desired_input_order = np.argsort(current_in_order)

@@ -1,10 +1,9 @@
-from __future__ import absolute_import
 
 import numpy as np
+from numpy.testing import TestCase, assert_almost_equal
 
 from ..glm import glm
 
-from numpy.testing import assert_almost_equal, TestCase
 
 class TestFitting(TestCase):
 
@@ -12,7 +11,7 @@ class TestFitting(TestCase):
         dimt = 100
         dimx = 10
         dimy = 11
-        dimz = 12 
+        dimz = 12
         self.y = np.random.randn(dimt, dimx, dimy, dimz)
         X = np.array([np.ones(dimt), list(range(dimt))])
         self.X = X.transpose() ## the design matrix X must have dimt lines
@@ -28,14 +27,14 @@ class TestFitting(TestCase):
         tcon1 = m1.contrast([1,0])
         z = tcon.zscore()
         z1 = tcon1.zscore()
-        assert_almost_equal(b, b1)            
+        assert_almost_equal(b, b1)
         ##assert_almost_equal(v, v1, decimal=2)
         ##assert_almost_equal(z, z1, decimal=3)
-        
+
     def test_ols_axis0(self):
         self.make_data()
         self.ols(0)
-        
+
     def test_ols_axis1(self):
         self.make_data()
         self.ols(1)

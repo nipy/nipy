@@ -4,7 +4,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  
+
   /*
     B.A. Wichmann, I.D. Hill, Generating good pseudo-random numbers,
     Computational Statistics & Data Analysis, Volume 51, Issue 3, 1
@@ -13,14 +13,14 @@ extern "C" {
    */
 
   typedef struct {
-    int ix; 
-    int iy; 
-    int iz; 
-    int it; 
+    int ix;
+    int iy;
+    int iz;
+    int it;
   } prng_state;
 
   extern void prng_seed(int seed, prng_state* rng);
-  extern double prng_double(prng_state* prng); 
+  extern double prng_double(prng_state* prng);
 
 #ifdef __cplusplus
 }

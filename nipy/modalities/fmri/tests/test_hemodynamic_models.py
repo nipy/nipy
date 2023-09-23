@@ -1,15 +1,27 @@
-from __future__ import absolute_import
+import warnings
+
 import numpy as np
 from nose.tools import raises
 from numpy.testing import (
-    assert_almost_equal, assert_equal, assert_array_equal, assert_warns)
-import warnings
+    assert_almost_equal,
+    assert_array_equal,
+    assert_equal,
+    assert_warns,
+)
 
 from ..hemodynamic_models import (
-    spm_hrf, spm_time_derivative, spm_dispersion_derivative,
-    _resample_regressor, _orthogonalize, _sample_condition,
-    _regressor_names, _hrf_kernel, glover_hrf, 
-    glover_time_derivative, compute_regressor)
+    _hrf_kernel,
+    _orthogonalize,
+    _regressor_names,
+    _resample_regressor,
+    _sample_condition,
+    compute_regressor,
+    glover_hrf,
+    glover_time_derivative,
+    spm_dispersion_derivative,
+    spm_hrf,
+    spm_time_derivative,
+)
 
 
 def test_spm_hrf():
@@ -42,7 +54,7 @@ def test_glover_time_derivative():
     h = glover_time_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
     assert_equal(len(h), 256)
-    
+
 def test_resample_regressor():
     """ test regressor resampling on a linear function
     """
@@ -60,7 +72,7 @@ def test_resample_regressor_nl():
     assert_almost_equal(z, np.cos(y), decimal=2)
 
 def test_orthogonalize():
-    """ test that the orthogonalization is OK 
+    """ test that the orthogonalization is OK
     """
     X = np.random.randn(100, 5)
     X = _orthogonalize(X)
@@ -69,7 +81,7 @@ def test_orthogonalize():
     assert_almost_equal((K ** 2).sum(), 0, 15)
 
 def test_orthogonalize_trivial():
-    """ test that the orthogonalization is OK 
+    """ test that the orthogonalization is OK
     """
     X = np.random.randn(100)
     Y = X.copy()
@@ -81,7 +93,7 @@ def test_sample_condition_1():
     """
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frametimes = np.linspace(0, 49, 50)
-    reg, rf = _sample_condition(condition, frametimes, oversampling=1, 
+    reg, rf = _sample_condition(condition, frametimes, oversampling=1,
                                min_onset=0)
     assert_equal(reg.sum(), 3)
     assert_equal(reg[1], 1)
@@ -178,7 +190,7 @@ def test_hkernel():
     assert_equal(len(h), 4)
     for dh in h:
         assert_equal(dh.sum(), 16.)
-    
+
 def test_make_regressor_1():
     """ test the generated regressor
     """
@@ -206,7 +218,7 @@ def test_make_regressor_3():
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frametimes = np.linspace(0, 138, 70)
     hrf_model = 'fir'
-    reg, reg_names = compute_regressor(condition, hrf_model, frametimes, 
+    reg, reg_names = compute_regressor(condition, hrf_model, frametimes,
                                        fir_delays=np.arange(4))
     assert_array_equal(np.unique(reg), np.array([0, 1]))
     assert_array_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
@@ -220,12 +232,12 @@ def test_design_warnings():
     hrf_model = 'spm'
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
-        assert_warns(UserWarning, compute_regressor, condition, hrf_model, 
+        assert_warns(UserWarning, compute_regressor, condition, hrf_model,
                      frametimes)
     condition = ([-25, -25, 36.5], [0, 0, 0], [1, 1, 1])
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
-        assert_warns(UserWarning, compute_regressor, condition, hrf_model, 
+        assert_warns(UserWarning, compute_regressor, condition, hrf_model,
                      frametimes)
 
 if __name__ == "__main__":

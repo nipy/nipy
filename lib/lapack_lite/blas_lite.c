@@ -5673,4 +5673,3 @@ logical lsame_(char *ca, char *cb)
 
     return 0;
 } /* xerbla_ */
-

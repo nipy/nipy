@@ -6,12 +6,11 @@ sometimes checkout the C files with modification times earlier than the pyx
 files, triggering an attempt to rebuild the C files with Cython when running a
 build.
 """
-from __future__ import with_statement
-import os
-from os.path import splitext, join as pjoin, isfile
-import sys
 import optparse
-
+import os
+import sys
+from os.path import isfile, splitext
+from os.path import join as pjoin
 
 # From http://stackoverflow.com/questions/1158076/implement-touch-using-python
 if sys.version_info[0] >= 3:

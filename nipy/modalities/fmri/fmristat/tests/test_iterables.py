@@ -1,19 +1,16 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import warnings
+
 import numpy as np
 from numpy.random import standard_normal as noise
-
-from nipy.io.api import load_image
-from nipy.core.image.image import rollimg
-from nipy.modalities.fmri.api import FmriImageList, axis0_generator
-from nipy.core.utils.generators import (write_data, parcels,
-                                        f_generator)
+from numpy.testing import assert_array_almost_equal
 
 from nipy.algorithms.statistics.models.regression import OLSModel
-
-from numpy.testing import assert_array_almost_equal
+from nipy.core.image.image import rollimg
+from nipy.core.utils.generators import f_generator, parcels, write_data
+from nipy.io.api import load_image
+from nipy.modalities.fmri.api import FmriImageList, axis0_generator
 from nipy.testing import funcfile
 
 

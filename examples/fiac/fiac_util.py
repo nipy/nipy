@@ -12,17 +12,18 @@ Requires matplotlib
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
-from __future__ import print_function # Python 2/3 compatibility
 
 # Stdlib
-import os
-from os import makedirs, listdir
-from os.path import exists, abspath, isdir, join as pjoin, splitext
 import csv
+import os
+from os import listdir, makedirs
+from os.path import abspath, exists, isdir, splitext
+from os.path import join as pjoin
+
 try:
-    from StringIO import StringIO # Python 2
+    from StringIO import StringIO  # Python 2
 except ImportError:
-    from io import StringIO # Python 3
+    from io import StringIO  # Python 3
 
 # Third party
 import numpy as np
@@ -42,8 +43,8 @@ DATADIR = 'fiac_data'
 
 # Sanity check
 if not os.path.isdir(DATADIR):
-    e="The data directory %s must exist and contain the FIAC data." % DATADIR
-    raise IOError(e)
+    e=f"The data directory {DATADIR} must exist and contain the FIAC data."
+    raise OSError(e)
 
 #-----------------------------------------------------------------------------
 # Classes and functions
@@ -187,7 +188,7 @@ def get_experiment_initial(path_dict):
     rootdir = path_dict['rootdir']
     if not exists(pjoin(rootdir, "experiment_%(run)02d.csv") % path_dict):
         e = "can't find design for subject=%(subj)d,run=%(subj)d" % path_dict
-        raise IOError(e)
+        raise OSError(e)
 
     experiment = csv2rec(pjoin(rootdir, "experiment_%(run)02d.csv") % path_dict)
     initial = csv2rec(pjoin(rootdir, "initial_%(run)02d.csv") % path_dict)
@@ -246,12 +247,13 @@ def output_dir(path_dict, tcons, fcons):
 
 
 def test_sanity():
-    from nipy.modalities.fmri import design, hrf
+    from nose.tools import assert_true
+
     import nipy.modalities.fmri.fmristat.hrf as fshrf
+    from nipy.algorithms.statistics import formula
+    from nipy.modalities.fmri import design, hrf
     from nipy.modalities.fmri.fmristat.tests import FIACdesigns
     from nipy.modalities.fmri.fmristat.tests.test_FIAC import matchcol
-    from nipy.algorithms.statistics import formula
-    from nose.tools import assert_true
 
     """
     Single subject fitting of FIAC model
@@ -304,10 +306,10 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
 
     This creates two new .csv files, one for the experimental
     conditions, the other for the "initial" confounding trials that
-    are to be modelled out. 
+    are to be modelled out.
 
     For the block design, the "initial" trials are the first
-    trials of each block. For the event designs, the 
+    trials of each block. For the event designs, the
     "initial" trials are made up of just the first trial.
 
     """

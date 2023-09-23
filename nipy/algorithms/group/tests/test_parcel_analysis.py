@@ -1,19 +1,14 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import numpy as np
 import os
-from nose.tools import assert_equal
-from numpy.testing import (assert_array_almost_equal,
-                           assert_array_equal,
-                           assert_raises)
-from ....core.image.image_spaces import (make_xyz_image,
-                                         xyz_affine)
-from ..parcel_analysis import (ParcelAnalysis, parcel_analysis,
-                               _smooth_image_pair)
 
+import numpy as np
+from nose.tools import assert_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal, assert_raises
+
+from ....core.image.image_spaces import make_xyz_image, xyz_affine
+from ..parcel_analysis import ParcelAnalysis, _smooth_image_pair, parcel_analysis
 
 NSUBJ = 10
 NLABELS = 10
@@ -96,7 +91,7 @@ def test_parcel_analysis_nosmooth():
     t_map = g.t_map().get_fdata()
     m_error = np.abs(np.mean(t_map))
     v_error = np.abs(np.var(t_map) - (NSUBJ - 5) / float(NSUBJ - 7))
-    print('Errors: %f (mean), %f (var)' % (m_error, v_error))
+    print(f'Errors: {m_error:f} (mean), {v_error:f} (var)')
     assert m_error < .1
     assert v_error < .1
 

@@ -669,7 +669,7 @@ def Lips3d(coords, mask):
                         w1 = d3[l,4]
                         w2 = d3[l,5]
 
-                        m = m * fpmask[v1] * fpmask[v2] 
+                        m = m * fpmask[v1] * fpmask[v2]
                         l2 = l2 + m * mu2_tri(D[w0,w0], D[w0,w1], D[w0,w2],
                                               D[w1,w1], D[w1,w2], D[w2,w2])
 

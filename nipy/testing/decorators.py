@@ -5,16 +5,13 @@
 This module should not import nose at the top level to avoid a run-time
 dependency on nose.
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 from unittest import skipIf
 
+from nibabel.optpkg import optional_package
 from six import string_types
 
-from nipy.utils import templates, example_data, DataError
-
-from nibabel.optpkg import optional_package
+from nipy.utils import DataError, example_data, templates
 
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
 needs_mpl = skipIf(not HAVE_MPL, "Test needs matplotlib")
@@ -71,7 +68,7 @@ def make_label_dec(label, ds=None):
         return f
     # Apply the user's docstring
     if ds is None:
-        ds = "Labels a test as %r" % label
+        ds = f"Labels a test as {label!r}"
         decor.__doc__ = ds
     return decor
 

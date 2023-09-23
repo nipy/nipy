@@ -10,10 +10,10 @@ Author : Bertrand Thirion, 2005-2008
 
 TODO : add a method 'global field', i.e. non-subject-specific info
 """
-from __future__ import absolute_import
+
+from warnings import warn
 
 import numpy as np
-from warnings import warn
 
 warn('Module nipy.labs.spatial_models.parcellation deprecated, ' +
      'will be removed',
@@ -26,7 +26,7 @@ warn('Module nipy.labs.spatial_models.parcellation deprecated, ' +
 ###################################################################
 
 
-class MultiSubjectParcellation(object):
+class MultiSubjectParcellation:
     """
     MultiSubjectParcellation class are used to represent parcels
     that can have different spatial different contours
@@ -82,7 +82,7 @@ class MultiSubjectParcellation(object):
                                         self.template_labels.copy(),
                                         self.individual_labels.copy(),
                                         self.nb_parcel)
-        for fid in self.features.keys():
+        for fid in self.features:
             msp.set_feature(fid, self.get_feature(fid).copy())
         return msp
 

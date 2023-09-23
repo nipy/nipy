@@ -40,7 +40,7 @@ Replace numpy.testing with nipy's testing framework::
 
 Replace all @slow decorators in my code with @dec.super_slow.  Here we
 have to escape the @ symbol which has special meaning in perl::
-    
+
     perlpie '\@slow' '\@dec.super_slow'
 
 Remove all occurences of importing make_doctest_suite::
@@ -48,15 +48,13 @@ Remove all occurences of importing make_doctest_suite::
     perlpie 'from\snipy\.utils\.testutils.*make_doctest_suite'
 
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 # notes on perl-dash-pie
 # perl -p -i -e 's/oldstring/newstring/g' *
 # find . -name '*.html' -print0 | xargs -0 perl -pi -e 's/oldstring/newstring/g'
 
-from optparse import OptionParser
 import subprocess
+from optparse import OptionParser
 
 usage_doc = "usage: %prog [options] regex newstring"
 
@@ -82,24 +80,24 @@ def perl_dash_pie(oldstr, newstr, dry_run=None):
     from nipy.utils import perlpie
     perlpie.perl_dash_pie('import\s+numpy\s+as\s+N', 'import numpy as np')
     grind | xargs perl -pi -e 's/import\s+numpy\s+as\s+N/import numpy as np/g'
-    
+
     """
 
     if dry_run:
-        cmd = "grind | xargs perl -p -e 's/%s/%s/g'" % (oldstr, newstr)
+        cmd = f"grind | xargs perl -p -e 's/{oldstr}/{newstr}/g'"
     else:
-        cmd = "grind | xargs perl -pi -e 's/%s/%s/g'" % (oldstr, newstr)
+        cmd = f"grind | xargs perl -pi -e 's/{oldstr}/{newstr}/g'"
     print(cmd)
 
     try:
         subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError as err:
-        msg = """
+        msg = f"""
         Error while executing perl_dash_pie command:
-        %s
+        {cmd}
         Error:
-        %s
-        """ % (cmd, str(err))
+        {str(err)}
+        """
         raise Exception(msg)
 
 def print_extended_help(option, opt_str, value, parser, *args, **kwargs):
@@ -109,7 +107,7 @@ def main():
     description = __doc__.splitlines()[0]
     usage = usage_doc
     parser = OptionParser(usage=usage, description=description)
-    parser.add_option('-e', '--extended-help', action='callback', 
+    parser.add_option('-e', '--extended-help', action='callback',
                       callback=print_extended_help,
                       help='print extended help including examples')
     parser.add_option('-n', '--dry-run', action="store_true", dest="dry_run",

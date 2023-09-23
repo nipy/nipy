@@ -11,31 +11,22 @@ Roche, Alexis (2011) A four-dimensional registration algorithm with application
 to joint correction of motion and slice timing in fMRI. *Medical Imaging, IEEE
 Transactions on*;  30:1546--1554
 """
-from __future__ import absolute_import
-from __future__ import print_function
 
 import os
 import warnings
 
+import numpy as np
+from nibabel.affines import apply_affine
 from six import string_types
 
-import numpy as np
-
-from nibabel.affines import apply_affine
-
+from ...core.image.image_spaces import as_xyz_image, make_xyz_image, xyz_affine
 from ...fixes.nibabel import io_orientation
 from ...io.nibcompat import get_header
-from ...core.image.image_spaces import (make_xyz_image,
-                                        xyz_affine,
-                                        as_xyz_image)
 from ..slicetiming import timefuncs
-from .affine import Rigid, Affine
+from ._registration import _cspline_sample3d, _cspline_sample4d, _cspline_transform
+from .affine import Affine, Rigid
 from .optimizer import configure_optimizer, use_derivatives
-from .type_check import (check_type, check_type_and_shape)
-from ._registration import (_cspline_transform,
-                            _cspline_sample3d,
-                            _cspline_sample4d)
-
+from .type_check import check_type, check_type_and_shape
 
 VERBOSE = os.environ.get('NIPY_DEBUG_PRINT', False)
 INTERLEAVED = None
@@ -116,7 +107,7 @@ def tr_from_header(images):
             raise ValueError('TR inconsistent between images.')
     return images_tr
 
-class Image4d(object):
+class Image4d:
     """
     Class to represent a sequence of 3d scans (possibly acquired on a
     slice-by-slice basis).
@@ -214,7 +205,7 @@ class Image4d(object):
 
 
 
-class Realign4dAlgorithm(object):
+class Realign4dAlgorithm:
 
     def __init__(self,
                  im4d,
@@ -560,12 +551,12 @@ def single_run_realign4d(im4d,
     speedup : int or sequence
       If a sequence, implement a multi-scale realignment
     """
-    if not type(loops) in (list, tuple, np.array):
+    if type(loops) not in (list, tuple, np.array):
         loops = [loops]
     repeats = len(loops)
 
     def format_arg(x):
-        if not type(x) in (list, tuple, np.array):
+        if type(x) not in (list, tuple, np.array):
             x = [x for i in range(repeats)]
         else:
             if not len(x) == repeats:
@@ -648,7 +639,7 @@ def realign4d(runs,
     """
 
     # Single-session case
-    if not type(runs) in (list, tuple, np.array):
+    if type(runs) not in (list, tuple, np.array):
         runs = [runs]
     nruns = len(runs)
     if nruns == 1:
@@ -719,7 +710,7 @@ def realign4d(runs,
     return ctransforms, transforms, transfo_mean
 
 
-class Realign4d(object):
+class Realign4d:
 
     def __init__(self, images, tr, slice_times=None, slice_info=None,
                  affine_class=Rigid):

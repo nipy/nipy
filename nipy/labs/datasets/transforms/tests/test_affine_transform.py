@@ -3,15 +3,17 @@
 This test can only be run from the directory above, as it uses relative
 imports.
 """
-from __future__ import absolute_import
+
+import copy
 
 import numpy as np
-import copy
+
 # Don't import from nipy.testing not to have a hard dependence on nipy,
 # use np.testing or nose
 from nose.tools import assert_equal, assert_true
 
 from ..affine_transform import AffineTransform
+
 
 def test_compose_with_inverse():
     """ Check that an affine transform composed with its inverse returns
@@ -46,4 +48,3 @@ def test_misc():
     # Check that copy and eq work
     yield assert_equal, transform, copy.copy(transform)
     yield assert_equal, transform, copy.deepcopy(transform)
-

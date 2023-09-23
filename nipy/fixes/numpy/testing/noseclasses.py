@@ -4,19 +4,19 @@
 # Because this module imports nose directly, it should not
 # be used except by nosetester.py to avoid a general NumPy
 # dependency on nose.
-from __future__ import division, absolute_import, print_function
 
-import os
 import doctest
+import inspect
+import os
 
 import nose
-from nose.plugins import doctests as npd
-from nose.plugins.errorclass import ErrorClass, ErrorClassPlugin
-from nose.plugins.base import Plugin
-from nose.util import src
 import numpy
+from nose.plugins import doctests as npd
+from nose.plugins.base import Plugin
+from nose.plugins.errorclass import ErrorClass, ErrorClassPlugin
+from nose.util import src
+
 from .nosetester import get_package_name
-import inspect
 
 # Some of the classes in this module begin with 'Numpy' to clearly distinguish
 # them from the plethora of very similar names from nose/unittest/doctest
@@ -77,13 +77,12 @@ class NumpyDocTestFinder(doctest.DocTestFinder):
         # doctests in extension modules.
 
         # Local shorthands
-        from inspect import isroutine, isclass, ismodule, isfunction, \
-                            ismethod
+        from inspect import isclass, isfunction, ismethod, ismodule, isroutine
 
         # Look for tests in a module's contained objects.
         if ismodule(obj) and self._recurse:
             for valname, val in obj.__dict__.items():
-                valname1 = '%s.%s' % (name, valname)
+                valname1 = f'{name}.{valname}'
                 if ( (isroutine(val) or isclass(val))
                      and self._from_module(module, val) ):
 
@@ -107,7 +106,7 @@ class NumpyDocTestFinder(doctest.DocTestFinder):
                 if ((isfunction(val) or isclass(val) or
                      ismethod(val) or isinstance(val, property)) and
                       self._from_module(module, val)):
-                    valname = '%s.%s' % (name, valname)
+                    valname = f'{name}.{valname}'
                     self._find(tests, val, valname, module, source_lines,
                                globs, seen)
 
@@ -277,7 +276,7 @@ class NumpyDoctest(npd.Doctest):
         return npd.Doctest.wantFile(self, file)
 
 
-class Unplugger(object):
+class Unplugger:
     """ Nose plugin to remove named plugin late in loading
 
     By default it removes the "doctest" plugin.
@@ -300,7 +299,6 @@ class Unplugger(object):
 
 class KnownFailureTest(Exception):
     '''Raise this exception to mark a test as a known failing test.'''
-    pass
 
 
 class KnownFailure(ErrorClassPlugin):

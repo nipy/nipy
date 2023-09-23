@@ -29,6 +29,7 @@ generate filenames of the form ``/some/path/components_fname.png,
 '''
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
+
 import nipy.algorithms.diagnostics.commands as nadc
 
 

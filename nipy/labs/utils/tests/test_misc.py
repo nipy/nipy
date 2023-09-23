@@ -1,12 +1,10 @@
-from __future__ import absolute_import
 
 import numpy as np
+from nose.tools import assert_true
+from numpy.testing import TestCase, assert_almost_equal, assert_equal
 from scipy import special
 
-from ..routines import median, mahalanobis, gamln, psi
-
-from nose.tools import assert_true
-from numpy.testing import assert_almost_equal, assert_equal, TestCase
+from ..routines import gamln, mahalanobis, median, psi
 
 
 class TestAll(TestCase):
@@ -28,7 +26,7 @@ class TestAll(TestCase):
         A = np.random.rand(100, 100) / 100
         A = np.dot(A.transpose(), A) + np.eye(100)
         mah = np.dot(x, np.dot(np.linalg.inv(A), x))
-        assert_almost_equal(mah, mahalanobis(x, A), decimal=1) 
+        assert_almost_equal(mah, mahalanobis(x, A), decimal=1)
 
     def test_mahalanobis2(self):
         x = np.random.rand(100,3,4)

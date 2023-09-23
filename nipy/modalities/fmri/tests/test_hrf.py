@@ -1,26 +1,24 @@
 """ Testing hrf module
 """
-from __future__ import absolute_import
 
-from os.path import dirname, join as pjoin
+from os.path import dirname
+from os.path import join as pjoin
 
 import numpy as np
-
-from scipy.stats import gamma
 import scipy.io as sio
+from nose.tools import assert_raises
+from numpy.testing import assert_almost_equal
+from scipy.stats import gamma
 
 from ..hrf import (
-    gamma_params,
+    ddspmt,
+    dspmt,
     gamma_expr,
+    gamma_params,
     lambdify_t,
     spm_hrf_compat,
     spmt,
-    dspmt,
-    ddspmt,
-    )
-
-from nose.tools import assert_raises
-from numpy.testing import assert_almost_equal
+)
 
 
 def test_gamma():

@@ -2,31 +2,29 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Testing diagnostic screen
 """
-from __future__ import absolute_import
 
 import os
 from os.path import join as pjoin
-
 from warnings import catch_warnings, simplefilter
 
 import numpy as np
+from nibabel.tmpdirs import InTemporaryDirectory
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 
 import nipy as ni
 from nipy.core.api import rollimg
-from ..screens import screen, write_screen_res
-from ..timediff import time_slice_diffs
-from ...utils.pca import pca
-from ...utils.tests.test_pca import res2pos1
-
-from nibabel.tmpdirs import InTemporaryDirectory
-
-from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
-
-from numpy.testing import (assert_array_equal, assert_array_almost_equal,
-                           assert_almost_equal)
-
 from nipy.testing import funcfile
 from nipy.testing.decorators import needs_mpl_agg
+
+from ...utils.pca import pca
+from ...utils.tests.test_pca import res2pos1
+from ..screens import screen, write_screen_res
+from ..timediff import time_slice_diffs
 
 
 def _check_pca(res, pca_res):

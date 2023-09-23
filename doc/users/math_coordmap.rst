@@ -179,7 +179,7 @@ Coordinate systems
 
    .. math::
 
-      ([u_1,u_2,u_3], \mathbb{R}) \times ([v_1, v_2], \mathbb{Z})  \mapsto ([u_1,u_2,u_3,v_1,v_2], \mathbb{R})`. 
+      ([u_1,u_2,u_3], \mathbb{R}) \times ([v_1, v_2], \mathbb{Z})  \mapsto ([u_1,u_2,u_3,v_1,v_2], \mathbb{R})`.
 
    Note that the resulting coordinate system is real valued whereas one of the
    input coordinate systems was integer valued. We can always embed
@@ -318,7 +318,7 @@ real entries.
    \times 4` permutation matrix :math:`P` (with its last coordinate not
    changing). Hence the reordering of :math:`D=([i,j,k], \mathbb{R})` to
    :math:`([k,i,j], \mathbb{R})` can be represented as :math:`(([k,i,j],
-   \mathbb{R}), R, TP)`. 
+   \mathbb{R}), R, TP)`.
 
 4. *Reorder range*: A reordering of the range can also be represented by a
    :math:`4 \times 4` permutation matrix :math:`\tilde{P}` (with its last

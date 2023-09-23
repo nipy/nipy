@@ -3,13 +3,10 @@
 """
 Parametrized surfaces using a CoordinateMap
 """
-from __future__ import absolute_import
 import numpy as np
-
 from nose.tools import assert_equal
 
-from nipy.core.api import CoordinateMap, CoordinateSystem
-from nipy.core.api import Grid
+from nipy.core.api import CoordinateMap, CoordinateSystem, Grid
 
 uv = CoordinateSystem('uv', 'input')
 xyz = CoordinateSystem('xyz', 'output')
@@ -41,7 +38,7 @@ def test_surface():
             parametric_mapping(
                 np.random.standard_normal((40,2))
                 )
-            ), 
+            ),
         0)
 
 def test_grid():

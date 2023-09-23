@@ -1,18 +1,13 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Test functions for utils.matrices """
-from __future__ import print_function, absolute_import
 
 import numpy as np
-
 import scipy.linalg as spl
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from numpy.testing import assert_almost_equal, assert_array_almost_equal
 
-from ..matrices import (matrix_rank, full_rank, pos_recipr, recipr0)
-
-from nose.tools import (assert_true, assert_equal, assert_false,
-                        assert_raises)
-
-from numpy.testing import (assert_almost_equal, assert_array_almost_equal)
+from ..matrices import full_rank, matrix_rank, pos_recipr, recipr0
 
 
 def test_matrix_rank():

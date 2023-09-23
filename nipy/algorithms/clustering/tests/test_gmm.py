@@ -1,10 +1,10 @@
-from __future__ import absolute_import
 
 # to run only the simple tests:
 # python testClustering.py Test_Clustering
 
 import numpy as np
 from nose.tools import assert_true
+
 from ..gmm import GMM, best_fitting_GMM
 
 # seed the random number generator to avoid rare random failures
@@ -77,7 +77,7 @@ def test_em_loglike4():
 
 def test_em_loglike5():
     # Test that the likelihood of the GMM is expected on standard data
-    # Here test that this works also on test data generated iid 
+    # Here test that this works also on test data generated iid
     dim, k, n = 2, 1, 1000
     scale, offset = 3., 4.
     x = offset + scale * nr.randn(n, dim)
@@ -90,7 +90,7 @@ def test_em_loglike5():
     assert_true(np.absolute(ll + ent) < dim * 3. / np.sqrt(n))
 
 def test_em_loglike6():
-    # Test that the likelihood of shifted data is lower 
+    # Test that the likelihood of shifted data is lower
     # than the likelihood of non-shifted data
     dim, k, n = 1, 1, 100
     offset = 3.
@@ -114,7 +114,7 @@ def test_em_selection():
     lgmm = best_fitting_GMM(x, krange, prec_type='full',
                             niter=100, delta = 1.e-4, ninit=1)
     assert_true(lgmm.k < 4)
-    
+
 
 def test_em_gmm_full():
     # Computing the BIC value for different configurations
@@ -123,7 +123,7 @@ def test_em_gmm_full():
     # generate some data
     dim = 2
     x = np.concatenate((nr.randn(100, dim), 3 + 2 * nr.randn(100, dim)))
-    
+
     # estimate different GMMs of that data
     maxiter, delta = 100, 1.e-4
 
@@ -144,7 +144,7 @@ def test_em_gmm_diag():
     # generate some data
     dim = 2
     x = np.concatenate((nr.randn(1000, dim), 3 + 2 * nr.randn(1000, dim)))
-    
+
     # estimate different GMMs of that data
     maxiter, delta = 100, 1.e-8
     prec_type = 'diag'
@@ -166,32 +166,32 @@ def test_em_gmm_multi():
     # generate some data
     dim = 2
     x = np.concatenate((nr.randn(1000, dim), 3 + 2 * nr.randn(100, dim)))
-    
+
     # estimate different GMMs of that data
     maxiter, delta, ninit, k = 100, 1.e-4, 5, 2
-    
+
     lgmm = GMM(k,dim)
-    bgmm = lgmm.initialize_and_estimate(x, niter=maxiter, delta=delta, 
+    bgmm = lgmm.initialize_and_estimate(x, niter=maxiter, delta=delta,
                                         ninit=ninit)
     bic = bgmm.evidence(x)
-    
+
     assert_true(np.isfinite(bic))
-    
+
 def test_em_gmm_largedim():
     # testing the GMM model in larger dimensions
-    
+
     # generate some data
     dim = 10
     x = nr.randn(100, dim)
     x[:30] += 2
-    
+
     # estimate different GMMs of that data
     maxiter, delta = 100, 1.e-4
-    
+
     for k in range(2, 3):
         lgmm = GMM(k,dim)
         bgmm = lgmm.initialize_and_estimate(x, None, maxiter, delta, ninit=5)
-        
+
     z = bgmm.map_label(x)
 
     # define the correct labelling
@@ -206,17 +206,17 @@ def test_em_gmm_largedim():
 
 def test_em_gmm_heterosc():
     # testing the model in very ellipsoidal data:
-    # compute the bic values for several values of k 
+    # compute the bic values for several values of k
     # and check that the maximal one is 1 or 2
 
     # generate some data
     dim = 2
     x = nr.randn(100, dim)
     x[:50] += 3
-    
+
     # estimate different GMMs of that data
     maxiter, delta = 100, 1.e-4
-    
+
     bic = np.zeros(5)
     for k in range(1,6):
         lgmm = GMM(k, dim)
@@ -225,7 +225,7 @@ def test_em_gmm_heterosc():
 
     assert_true(bic[4] < bic[1])
 
-        
+
 def test_em_gmm_cv():
     # Comparison of different GMMs using cross-validation
 
@@ -233,12 +233,12 @@ def test_em_gmm_cv():
     dim = 2
     xtrain = np.concatenate((nr.randn(100, dim), 3 + 2 * nr.randn(100, dim)))
     xtest = np.concatenate((nr.randn(1000, dim), 3 + 2 * nr.randn(1000, dim)))
-    
+
     #estimate different GMMs for xtrain, and test it on xtest
     prec_type = 'full'
     k, maxiter, delta = 2, 300, 1.e-4
     ll = []
-    
+
     # model 1
     lgmm = GMM(k,dim,prec_type)
     lgmm.initialize(xtrain)
@@ -251,12 +251,12 @@ def test_em_gmm_cv():
     lgmm.initialize(xtrain)
     bic = lgmm.estimate(xtrain, maxiter, delta)
     ll.append(lgmm.test(xtest).mean())
-        
+
     for  k in [1, 3, 10]:
         lgmm = GMM(k,dim,prec_type)
         lgmm.initialize(xtrain)
         ll.append(lgmm.test(xtest).mean())
-            
+
     assert_true(ll[4] < ll[1])
 
 

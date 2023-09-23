@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 Example of a script that perfoms histogram analysis of an activation
 image, to estimate activation Z-score with various heuristics:
@@ -24,8 +23,8 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 import nipy.algorithms.statistics.empirical_pvalue as en
+import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
 
 ###############################################################################
 # simulate the data

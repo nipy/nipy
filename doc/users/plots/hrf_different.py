@@ -4,13 +4,11 @@
 This example uses a different HRF for different event types
 """
 
-import numpy as np
-
 import matplotlib.pyplot as plt
+import numpy as np
 
 from nipy.modalities.fmri import hrf
 from nipy.modalities.fmri.utils import T, lambdify_t
-
 
 # HRFs as functions of (symbolic) time
 glover = hrf.glover(T)

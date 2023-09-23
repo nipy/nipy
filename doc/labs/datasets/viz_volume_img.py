@@ -4,8 +4,8 @@
 Use Mayavi to visualize the structure of a VolumeImg
 """
 
-from enthought.mayavi import mlab
 import numpy as np
+from enthought.mayavi import mlab
 
 rand = np.random.RandomState(1)
 data = rand.random_sample((5, 4, 4))
@@ -22,5 +22,3 @@ mlab.pipeline.surface(mlab.pipeline.extract_edges(src), color=(0, 0, 0))
 mlab.pipeline.glyph(src, mode='cube', scale_factor=0.2, scale_mode='none')
 mlab.savefig('volume_img.jpg')
 mlab.show()
-
-

@@ -1,17 +1,27 @@
 """ Tests for coordinate_system module
 """
-from __future__ import absolute_import
 import numpy as np
+from nose.tools import (
+    assert_equal,
+    assert_false,
+    assert_not_equal,
+    assert_raises,
+    assert_true,
+)
 
-from ..coordinate_system import (CoordinateSystem, CoordinateSystemError,
-                                 is_coordsys, is_coordsys_maker, product,
-                                 safe_dtype, CoordSysMaker, CoordSysMakerError)
+from ..coordinate_system import (
+    CoordinateSystem,
+    CoordinateSystemError,
+    CoordSysMaker,
+    CoordSysMakerError,
+    is_coordsys,
+    is_coordsys_maker,
+    product,
+    safe_dtype,
+)
 
-from nose.tools import (assert_true, assert_false, assert_equal, assert_raises,
-                        assert_not_equal)
 
-
-class empty(object):
+class empty:
     pass
 
 E = empty()
@@ -140,7 +150,7 @@ def test_is_coordsys():
     # Test coordinate system check
     csys = CoordinateSystem('ijk')
     assert_true(is_coordsys(csys))
-    class C(object): pass
+    class C: pass
     c = C()
     assert_false(is_coordsys(c))
     c.coord_names = []
@@ -150,7 +160,7 @@ def test_is_coordsys():
     c.coord_dtype = np.float64
     assert_true(is_coordsys(c))
     # Distinguish from CoordSysMaker
-    class C(object):
+    class C:
         coord_names = []
         name = ''
         coord_dtype=np.float64
@@ -175,8 +185,8 @@ def test_checked_values():
 
 
 def test_safe_dtype():
-    assert_raises(TypeError, safe_dtype, type('foo'))
-    assert_raises(TypeError, safe_dtype, type('foo'), np.float64)
+    assert_raises(TypeError, safe_dtype, str)
+    assert_raises(TypeError, safe_dtype, str, np.float64)
     assert_raises(TypeError, safe_dtype, [('x', 'f8')])
     valid_dtypes = []
     valid_dtypes.extend(np.sctypes['complex'])
@@ -207,7 +217,7 @@ def test_product():
     cs = product(ax1, ax2)
     # assert up-casting of dtype
     assert_equal(cs.coord_dtype, np.dtype(np.int64))
-    # assert composed dtype 
+    # assert composed dtype
     assert_equal(cs.dtype, np.dtype([('x', np.int64), ('y', np.int64)]))
     # the axes should be typecast in the CoordinateSystem but
     # uneffected themselves
@@ -256,7 +266,7 @@ def test_is_coordsys_maker():
     # Test coordinate system check
     cm = CoordSysMaker('xyz')
     assert_true(is_coordsys_maker(cm))
-    class C(object): pass
+    class C: pass
     c = C()
     assert_false(is_coordsys_maker(c))
     c.coord_names = []
@@ -266,7 +276,7 @@ def test_is_coordsys_maker():
     c.coord_dtype = np.float64
     assert_false(is_coordsys_maker(c))
     # Distinguish from CoordinateSystem
-    class C(object):
+    class C:
         coord_names = []
         name = ''
         coord_dtype=np.float64

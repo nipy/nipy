@@ -3,12 +3,12 @@
 """
 The AffineTransform class
 """
-from __future__ import absolute_import
 
 import numpy as np
 
-from .transform import Transform
 from .affine_utils import apply_affine
+from .transform import Transform
+
 
 ################################################################################
 # Class `AffineTransform`
@@ -18,7 +18,7 @@ class AffineTransform(Transform):
     A transformation from an input 3D space to an output 3D space defined
     by an affine matrix.
 
-    It is defined by the affine matrix , and the name of the input and output 
+    It is defined by the affine matrix , and the name of the input and output
     spaces.
     """
 
@@ -35,13 +35,13 @@ class AffineTransform(Transform):
                 Name of the input space
             output_space: string
                 Name of the output space
-            affine: 4x4 ndarray 
-                Affine matrix giving the coordinate mapping between the 
-                input and output space. 
+            affine: 4x4 ndarray
+                Affine matrix giving the coordinate mapping between the
+                input and output space.
         """
         assert hasattr(affine, '__array__'), \
             'affine argument should be an array-like'
-        self.affine       = affine 
+        self.affine       = affine
         self.input_space  = input_space
         self.output_space = output_space
 
@@ -59,12 +59,12 @@ class AffineTransform(Transform):
                 The transform to compose with.
         """
         if not isinstance(transform, AffineTransform):
-            return super(AffineTransform, self).composed_with(transform)
+            return super().composed_with(transform)
         self._check_composition(transform)
         new_affine = np.dot(transform.affine, self.affine)
-        return AffineTransform(self.input_space, 
+        return AffineTransform(self.input_space,
                                transform.output_space,
-                               new_affine, 
+                               new_affine,
                                )
 
 
@@ -112,17 +112,17 @@ class AffineTransform(Transform):
 
     def __repr__(self):
         representation = \
-                '%s(\n  affine=%s,\n  input_space=%s,\n  output_space=%s)' % (
+                '{}(\n  affine={},\n  input_space={},\n  output_space={})'.format(
                 self.__class__.__name__,
                 '\n         '.join(repr(self.affine).split('\n')),
                 self.input_space,
-                self.output_space, 
+                self.output_space,
                 )
         return representation
 
 
     def __copy__(self):
-        """ Copy the transform 
+        """ Copy the transform
         """
         return self.__class__(affine=self.affine,
                               input_space=self.input_space,
@@ -142,6 +142,3 @@ class AffineTransform(Transform):
                 and self.input_space == other.input_space
                 and self.output_space == other.output_space
                 and np.allclose(self.affine, other.affine))
-
-
-

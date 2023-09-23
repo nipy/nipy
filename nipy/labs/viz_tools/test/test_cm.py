@@ -2,7 +2,6 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Smoke testing the cm module
 """
-from __future__ import absolute_import
 from nose import SkipTest
 
 try:
@@ -34,5 +33,3 @@ def test_replace_inside():
     if hasattr(pl.cm, 'gnuplot'):
         # gnuplot is only in recent version of MPL
         replace_inside(pl.cm.gnuplot, pl.cm.gnuplot2, .2, .8)
-
-

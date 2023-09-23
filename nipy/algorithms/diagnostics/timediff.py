@@ -8,13 +8,11 @@ http://imaging.mrc-cbu.cam.ac.uk/imaging/DataDiagnostics
 Oliver Josephs (FIL) gave me (MB) the idea of time-point to time-point
 subtraction as a diagnostic for motion and other sudden image changes.
 '''
-from __future__ import absolute_import
 
 import numpy as np
 
+from ...core.reference.coordinate_map import AxisError, drop_io_dim, io_axis_indices
 from ...io.api import as_image
-
-from ...core.reference.coordinate_map import (io_axis_indices, drop_io_dim, AxisError)
 
 
 def time_slice_diffs(arr, time_axis=-1, slice_axis=None):
@@ -108,7 +106,7 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=None):
     slice_diff_maxes = np.zeros(S)
     last_tp = arr[0]
     means[0] = last_tp.mean()
-    for dtpi in range(0,T-1):
+    for dtpi in range(T-1):
         tp = arr[dtpi+1] # shape vol_shape
         means[dtpi+1] = tp.mean()
         dtp_diff2 = (tp - last_tp)**2

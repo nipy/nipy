@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-The base volumetric field interface 
+The base volumetric field interface
 
 This defines the nipy volumetric structure interface.
 """
@@ -11,20 +11,20 @@ from ..transforms.transform import CompositionError
 # class `VolumeField`
 ################################################################################
 
-class VolumeField(object):
+class VolumeField:
     """ The base volumetric structure.
 
         This object represents numerical values embedded in a
         3-dimensional world space (called a field in physics and
         engineering)
-        
+
         This is an abstract base class: it defines the interface, but not
         the logics.
 
         Attributes
         ----------
 
-        world_space: string 
+        world_space: string
             World space the data is embedded in. For instance `mni152`.
         metadata: dictionnary
             Optional, user-defined, dictionnary used to carry around
@@ -41,7 +41,7 @@ class VolumeField(object):
     world_space = ''
 
     # User defined meta data
-    metadata = dict()
+    metadata = {}
 
     #---------------------------------------------------------------------------
     # Public methods -- VolumeField interface
@@ -49,23 +49,23 @@ class VolumeField(object):
 
     def get_transform(self):
         """ Returns the transform object associated with the volumetric
-            structure which is a general description of the mapping from 
+            structure which is a general description of the mapping from
             the values to the world space.
-            
+
             Returns
             -------
             transform : nipy.datasets.Transform object
         """
-        raise NotImplementedError 
+        raise NotImplementedError
 
 
     def resampled_to_img(self, target_image, interpolation=None):
-        """ Resample the volume to be sampled similarly than the target 
+        """ Resample the volume to be sampled similarly than the target
             volumetric structure.
 
             Parameters
             ----------
-            target_image : nipy volume 
+            target_image : nipy volume
                 Nipy volume structure onto the grid of which the data will be
                 resampled.
             interpolation : None, 'continuous' or 'nearest', optional
@@ -83,9 +83,9 @@ class VolumeField(object):
             Both the target image and the original image should be
             embedded in the same world space.
         """
-        # IMPORTANT: Polymorphism can be implemented by walking the 
+        # IMPORTANT: Polymorphism can be implemented by walking the
         # MRO and finding a method that does not raise
-        # NotImplementedError. 
+        # NotImplementedError.
         raise NotImplementedError
 
 
@@ -99,8 +99,8 @@ class VolumeField(object):
             ----------
             affine: 4x4 or 3x3 ndarray, optional
                 Affine of the new voxel grid or transform object pointing
-                to the new voxel coordinate grid. If a 3x3 ndarray is given, 
-                it is considered to be the rotation part of the affine, 
+                to the new voxel coordinate grid. If a 3x3 ndarray is given,
+                it is considered to be the rotation part of the affine,
                 and the best possible bounding box is calculated,
                 in this case, the shape argument is not used. If None
                 is given, a default affine is provided by the image.
@@ -127,7 +127,7 @@ class VolumeField(object):
 
 
     def values_in_world(self, x, y, z, interpolation=None):
-        """ Return the values of the data at the world-space positions given by 
+        """ Return the values of the data at the world-space positions given by
             x, y, z
 
             Parameters
@@ -156,7 +156,7 @@ class VolumeField(object):
 
 
     def composed_with_transform(self, w2w_transform):
-        """ Return a new image embedding the same data in a different 
+        """ Return a new image embedding the same data in a different
             word space using the given world to world transform.
 
             Parameters
@@ -175,12 +175,11 @@ class VolumeField(object):
         if not w2w_transform.input_space == self.world_space:
             raise CompositionError(
                 "The transform given does not apply to "
-                "the image's world space:\n%s\n\n%s" % 
-                (w2w_transform, self)
+                f"the image's world space:\n{w2w_transform}\n\n{self}"
                 )
         new_img = self._apply_transform(w2w_transform)
         new_img.world_space = w2w_transform.output_space
-        return new_img 
+        return new_img
 
 
     #---------------------------------------------------------------------------
@@ -188,10 +187,10 @@ class VolumeField(object):
     #---------------------------------------------------------------------------
 
     # The subclasses should implement __repr__, __copy__, __deepcopy__,
-    # __eq__ 
+    # __eq__
     # TODO: We need to implement (or check if implemented) hashing,
-    # weakref, pickling? 
-        
+    # weakref, pickling?
+
     def _apply_transform(self, w2w_transform):
         """ Implement this method to put in the logic of applying a
             transformation on the image class.

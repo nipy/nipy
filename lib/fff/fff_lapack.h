@@ -12,7 +12,7 @@
   interface.
 */
 
-/* 
+/*
 To convert a matrix \a A from C to Fortran, we may create another
 matrix \a B with \a B->size1=A->size2 and \a A->size2=B->size1, then
 do \a fff_matrix_transpose(B,A). Then, we may call LAPACK with \a
@@ -24,7 +24,7 @@ sizes" are just the swapped "Fortan sizes".
 
 #ifndef FFF_LAPACK
 #define FFF_LAPACK
- 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,10 +33,10 @@ extern "C" {
 #include "fff_array.h"
 
   /*!
-    \brief Cholesky decomposition 
+    \brief Cholesky decomposition
     \param Uplo flag
-    \param A N-by-N matrix 
-    \param Aux N-by-N auxiliary matrix 
+    \param A N-by-N matrix
+    \param Aux N-by-N auxiliary matrix
 
     The factorization has the form \f$ A = U^t U \f$, if \c
     Uplo==CblasUpper, or \f$ A = L L^t\f$, if \c Uplo==CblasLower,
@@ -53,16 +53,16 @@ extern "C" {
 
     On exit, \a A contains the factor \a U or \a L from the Cholesky
     factorization.
-  */ 
-  extern int fff_lapack_dpotrf( CBLAS_UPLO_t Uplo, fff_matrix* A, fff_matrix* Aux ); 
+  */
+  extern int fff_lapack_dpotrf( CBLAS_UPLO_t Uplo, fff_matrix* A, fff_matrix* Aux );
 
 
   /*!
-    \brief LU decomposition 
-    \param A M-by-N matrix 
+    \brief LU decomposition
+    \param A M-by-N matrix
     \param ipiv pivot indices with size min(M,N)
-    \param Aux N-by-M auxiliary matrix 
-    
+    \param Aux N-by-M auxiliary matrix
+
     On entry, \a A is the M-by-N matrix to be factored.  On exit, it
     contains the factors \a L and \a U from the factorization \a
     A=PLU, where \a P is a permutation matrix, \a L is a lower
@@ -72,14 +72,14 @@ extern "C" {
     \a ipiv needs be one-dimensional contiguous in \c FFF_INT with
     size min(M,N)
   */
-  extern int fff_lapack_dgetrf( fff_matrix* A, fff_array* ipiv, fff_matrix* Aux ); 
+  extern int fff_lapack_dgetrf( fff_matrix* A, fff_array* ipiv, fff_matrix* Aux );
 
   /*!
-    \brief QR decomposition 
-    \param A M-by-N matrix 
+    \brief QR decomposition
+    \param A M-by-N matrix
     \param tau scalar factors of the elementary reflectors with size min(M,N)
-    \param work auxiliary vector with size >= N 
-    \param Aux N-by-M auxiliary matrix 
+    \param work auxiliary vector with size >= N
+    \param Aux N-by-M auxiliary matrix
 
     Computes matrices \a Q and \a R such that \a A=QR where \a Q is
     orthonormal and \a R is triangular.
@@ -100,27 +100,27 @@ extern "C" {
     If \a work is of size 1, then the routine only computes the
     optimal size for \a work and stores the result in \c
     work->data[0]. For the actual computation, \a work should be
-    contiguous with size at least N. 
+    contiguous with size at least N.
 
     \a tau needs be contiguous as well.
 
-    TODO: actually compute \a R using \c dorgqr. 
+    TODO: actually compute \a R using \c dorgqr.
   */
   extern int fff_lapack_dgeqrf( fff_matrix* A, fff_vector* tau, fff_vector* work, fff_matrix* Aux );
-  
-  /*! 
+
+  /*!
     \brief Singular Value Decomposition
     \param A M-by-N matrix to decompose (to be overwritten)
     \param s singular values in descending order, with size min(M,N)
-    \param U M-by-M matrix 
-    \param Vt N-by-N matrix 
+    \param U M-by-M matrix
+    \param Vt N-by-N matrix
     \param work auxiliary vector
-    \param iwork auxiliary array of integers 
+    \param iwork auxiliary array of integers
     \param Aux auxiliary square matrix with size max(M,N)
-    
+
     Computes a diagonal matrix \a S and orthonormal matrices \a U and
-    \a Vt such that \f$ A = U S V^t \f$. 
-    
+    \a Vt such that \f$ A = U S V^t \f$.
+
     If \a work is of size 1, then the routine only computes the
     optimal size for \a work and stores the result in \c
     work->data[0]. For the actual computation, \a work should be
@@ -133,13 +133,13 @@ extern "C" {
     \a iwork needs be one-dimensional contiguous in \c FFF_INT with size 8*min(M,N)
   */
 
-  extern int fff_lapack_dgesdd( fff_matrix* A, fff_vector* s, fff_matrix* U, fff_matrix* Vt, 
-				fff_vector* work, fff_array* iwork, fff_matrix* Aux ); 
+  extern int fff_lapack_dgesdd( fff_matrix* A, fff_vector* s, fff_matrix* U, fff_matrix* Vt,
+				fff_vector* work, fff_array* iwork, fff_matrix* Aux );
 
   /*
 	\brief Computation of the determinant of symmetric matrices
 	\param A M-by-M matrix (to be overwritten)
-	
+
 	The determinant is returned as output of the function.
 	The procedure uses the SVD hence it is valid only for symmetric matrices.
 	It is not meant to be optimal at the moment.
@@ -152,7 +152,7 @@ extern "C" {
 	\brief Computation of the inverse of  of symmetric matrices
 	\param iA The resulting output matrix
 	\param A M-by-M matrix to be inverted (to be overwritten)
-	
+
 	The determinant is returned as output of the function.
 	The procedure uses the SVD hence it is valid only for symmetric matrices.
 	It is not meant to be optimal at the moment.
@@ -164,5 +164,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
- 
-#endif  
+
+#endif

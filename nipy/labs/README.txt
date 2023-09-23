@@ -25,4 +25,4 @@ typically will update an existing ``fff2`` code to use the new module:
 In the directory root are modules (*.py files) that expose high-level
 APIs and may know about nipy classes. Each of these modules calls one
 or several lower-level subpackages corresponding to the various
-subdirectories.  
+subdirectories.

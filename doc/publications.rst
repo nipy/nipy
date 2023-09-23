@@ -17,4 +17,3 @@ Poline J-B, Perez F. “BrainPy: an open source environment for the
 analysis and visualization of human brain data.” Meeting of the
 Organization for Human Brain Mapping, 2005. See the
 :ref:`BrainPy HBM abstract <brainpy-hbm-abstract>`.
-

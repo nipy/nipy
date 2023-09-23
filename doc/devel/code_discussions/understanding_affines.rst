@@ -20,7 +20,7 @@ A coordinate system is defined by a set of axes.  In the example
 above, the axes are the ``x`` and ``y`` axes.  Axes for coordinates
 are usually orthogonal - for example, moving one unit up on the ``x``
 axis on the map causes no change in the ``y`` coordinate - because
-the axes are at 90 degrees.  
+the axes are at 90 degrees.
 
 In this discussion we'll concentrate on the three dimensional case.
 Having three dimensions means that we have a three axis coordinate
@@ -61,7 +61,7 @@ array / voxel coordinates with indices ``i, j, k``, where ``i`` is the
 first value in the 3 value coordinate tuple. For example, if array /
 voxel point ``(1,2,3)`` has ``i=1, j=2, k=3``.  We'll be careful only
 to use ``i, j, k`` rather than ``x, y, z``, because we are going to
-use ``x, y, z`` to refer to real-world coordinates. 
+use ``x, y, z`` to refer to real-world coordinates.
 
 Real-world coordinates
 ``````````````````````
@@ -97,7 +97,7 @@ changing dimension.  With fortran ordering, the first index refers to
 the fastest changing dimension - X in the case of the image mentioned
 above.
 
-C is the default index ordering for arrays in Numpy. 
+C is the default index ordering for arrays in Numpy.
 
 For example, let's imagine that we have a binary block of 3D image
 data, in standard NIfTI / Analyze format, with the X dimension
@@ -159,7 +159,7 @@ Against:
 
  * C index ordering is more familiar to C users
  * C index ordering is the default in numpy
- * XYZ ordering can be implemented by wrapping by an interpolator 
+ * XYZ ordering can be implemented by wrapping by an interpolator
 
 Potential problems
 ``````````````````
@@ -167,7 +167,7 @@ Potential problems
 Performance penalties
 ^^^^^^^^^^^^^^^^^^^^^
 
-KY commented:: 
+KY commented::
 
   This seems like a good idea to me but I have no knowledge of numpy
   internals (and even less than none after the numeric/numarray
@@ -190,7 +190,7 @@ MB replied:
     img_arr = memmap('my.img', dtype=float32, order='F')
     img_arr[3,4,5]
 
-  Happy to be corrected though.  
+  Happy to be corrected though.
 
 Clash between default ordering of numpy arrays and nipy images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -206,7 +206,7 @@ example:
   img_obj = Image(img_arr)
   first_z_slice = img_obj[...,0]  # in fact returns an X slice
 
-I suppose that we could check that arrays are fortran index ordered in the Image __init__ routine. 
+I suppose that we could check that arrays are fortran index ordered in the Image __init__ routine.
 
 An alternative proposal - XYZ ordering of output coordinates
 ````````````````````````````````````````````````````````````

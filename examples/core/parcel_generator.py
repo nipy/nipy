@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 Example showing how to use the parcel generator.
 
@@ -10,10 +9,10 @@ ROI.
 """
 print(__doc__)
 
-from os.path import dirname, join as pjoin
+from os.path import dirname
+from os.path import join as pjoin
 
 import nipy
-
 from nipy.core.utils.generators import parcels
 
 OUR_PATH = dirname(__file__)

@@ -78,4 +78,3 @@ space.  In a Nifti1 header we would have an affine transform to apply
 this mapping.  The *input coordinates* would be voxel space, the
 *output coordinates* would be world space, and the affine transform
 provides the mapping between them.
-

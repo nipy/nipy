@@ -1,7 +1,5 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function
-from __future__ import absolute_import
 
 import numpy as np
 
@@ -68,7 +66,7 @@ class FmriImageList(ImageList):
         If index is an index, return self.list[index], an Image
         else return an FmriImageList with images=self.list[index].
         """
-        if type(index) is type(1):
+        if type(index) is int:
             return self.list[index]
         return self.__class__(
             images=self.list[index],
@@ -135,4 +133,3 @@ def axis0_generator(data, slicers=None):
         slicers = range(arr.shape[1])
     for slicer in slicers:
         yield slicer, arr[:,slicer]
-

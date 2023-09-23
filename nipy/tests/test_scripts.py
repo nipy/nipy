@@ -4,27 +4,23 @@
 
 Run scripts and test output
 """
-from __future__ import absolute_import
 
 import os
-from os.path import join as pjoin, isfile
+from os.path import isfile
+from os.path import join as pjoin
 from unittest import skipIf
 
 import numpy as np
-
+from nibabel.optpkg import optional_package
 from nibabel.tmpdirs import InTemporaryDirectory
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from numpy.testing import assert_almost_equal
 
 from nipy import load_image, save_image
 from nipy.core.api import rollimg
-
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises
-
-from ..testing import funcfile
-from numpy.testing import assert_almost_equal
-
 from nipy.testing.decorators import make_label_dec
 
-from nibabel.optpkg import optional_package
+from ..testing import funcfile
 
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
 needs_mpl = skipIf(not HAVE_MPL, "Test needs matplotlib")
@@ -44,7 +40,7 @@ def test_nipy_diagnose():
     ncomps = 12
     with InTemporaryDirectory() as tmpdir:
         cmd = ['nipy_diagnose', funcfile,
-               '--ncomponents={0}'.format(ncomps),
+               f'--ncomponents={ncomps}',
                '--out-path=' + tmpdir]
         run_command(cmd)
         for out_fname in ('components_functional.png',
@@ -70,7 +66,7 @@ def test_nipy_diagnose():
         s0_img = rollimg(fimg, 'k')
         save_image(s0_img, 'slice0.nii')
         cmd = ['nipy_diagnose', 'slice0.nii',
-               '--ncomponents={0}'.format(ncomps),
+               f'--ncomponents={ncomps}',
                '--out-path=' + tmpdir,
                '--time-axis=t',
                '--slice-axis=0']
@@ -94,7 +90,7 @@ def test_nipy_tsdiffana():
                                     ['--slice-axis=0'],
                                     ['--slice-axis=0', '--time-axis=1']
                                    )):
-            out_png = 'ts_out{0}.png'.format(i)
+            out_png = f'ts_out{i}.png'
             cmd = (['nipy_tsdiffana', funcfile] + extras +
                    ['--out-file=' + out_png])
             run_command(cmd)
@@ -146,7 +142,7 @@ def test_nipy_4d_realign():
     # Test nipy_4d_realign script
     with InTemporaryDirectory():
         # Set matplotib agg backend
-        with open("matplotlibrc", "wt") as fobj:
+        with open("matplotlibrc", "w") as fobj:
             fobj.write("backend : agg")
         cmd = ['nipy_4d_realign', '2.0', funcfile,
                '--slice_dim',  '2',  '--slice_dir', '-1', '--save_path', '.']

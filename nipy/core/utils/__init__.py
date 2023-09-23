@@ -1,2 +1,1 @@
 """ Utilities for core subpackage """
-

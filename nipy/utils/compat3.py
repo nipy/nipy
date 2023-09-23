@@ -2,9 +2,9 @@
 
 These are in addition to the numpy.compat.py3k routines.
 """
-from __future__ import absolute_import
 
 import sys
+
 py3 = sys.version_info[0] >= 3
 
 if py3:

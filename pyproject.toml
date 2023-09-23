@@ -8,3 +8,22 @@ requires = [
   "numpy==1.22; python_version >= '3.7' and python_version < '3.9'",
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 88
+target-version = 'py39'
+select = [
+    'I',
+    'UP',
+    'C4',
+    'E713',
+    'PIE',
+    'PGH003',
+    'PLR0402',
+    'SIM101',
+    'SIM109',
+    'SIM110',
+    'SIM111',
+    'SIM118',
+    'SIM2',
+]

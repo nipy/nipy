@@ -1,14 +1,24 @@
-from __future__ import absolute_import
 
 import numpy as np
 import numpy.random as nr
-from numpy.testing import(assert_array_equal, assert_array_almost_equal,
-                          assert_almost_equal)
-from nose.tools import assert_true, assert_equal
+from nose.tools import assert_equal, assert_true
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 
-from ..graph import (WeightedGraph, complete_graph, mst, knn, eps_nn, 
-                     wgraph_from_adjacency, wgraph_from_coo_matrix, 
-                     concatenate_graphs, wgraph_from_3d_grid)
+from ..graph import (
+    WeightedGraph,
+    complete_graph,
+    concatenate_graphs,
+    eps_nn,
+    knn,
+    mst,
+    wgraph_from_3d_grid,
+    wgraph_from_adjacency,
+    wgraph_from_coo_matrix,
+)
 
 
 def basicdata():
@@ -48,7 +58,7 @@ def test_knn_1():
     A = G.get_edges()[:, 0]
     assert_equal(np.shape(A)[0], 14)
 
-    
+
 def test_set_euclidian():
     G, x = basic_graph_2()
     d = G.weights
@@ -72,7 +82,7 @@ def test_set_gaussian_2():
     D = G.weights
     sigma = np.sum(d * d) / len(d)
     assert_true(np.allclose(D, np.exp(-d * d / (2 * sigma)), 1e-7))
-    
+
 
 def test_eps_1():
     x = basicdata()
@@ -81,7 +91,7 @@ def test_eps_1():
     assert_equal(np.size(D), 16)
     assert_true((D < 1).all())
 
-    
+
 def test_mst_1():
     x = basicdata()
     G = mst(x)
@@ -96,7 +106,7 @@ def test_3d_grid():
     x1 = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [-1, 0, 0], [0, -1, 0],
                    [0, 0, -1]])
     x2 = np.array([[1, 1, 0], [0, 1, 1], [1, 0, 1], [1, -1, 0], [0, 1, -1],
-                   [1, 0, -1], [-1, 1, 0], [0, -1, 1], [-1, 0, 1], 
+                   [1, 0, -1], [-1, 1, 0], [0, -1, 1], [-1, 0, 1],
                    [-1, -1, 0], [-1, 0, -1], [0, -1, -1]])
     x3 = np.array([[1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1],
                    [-1, 1, 1], [-1, 1, -1], [-1, -1, 1], [-1, -1, -1]])
@@ -115,7 +125,7 @@ def test_3d_grid():
             assert_equal(wgraph_from_3d_grid(xyz, 6).E, 0)
             assert_equal(wgraph_from_3d_grid(xyz, 18).E, 0)
             assert_equal(wgraph_from_3d_grid(xyz, 26).E, 2)
-            
+
 
 def test_grid_3d_1():
     """ Test the 6 nn graphs on 3d grid
@@ -126,7 +136,7 @@ def test_grid_3d_1():
     G = wgraph_from_3d_grid(xyz, 6)
     assert_equal(G.E, 186)
 
-    
+
 def test_grid_3d_2():
     """ Test the 18-nn graph on a 3d grid
     """
@@ -135,7 +145,7 @@ def test_grid_3d_2():
     xyz = np.reshape(xyz,(3, nx * ny * nz)).T
     G = wgraph_from_3d_grid(xyz, 18)
     assert_equal(G.E, 346)
-        
+
 
 def test_grid_3d_3():
     """ Test the 26-nn graph on a 3d grid
@@ -154,7 +164,7 @@ def test_grid_3d_4():
     D = G.weights
     # 6 * 9 * 10 * 10
     assert_equal(sum(D == 1), 5400 )
-    # 26 * 8 ** 3 + 6 * 8 ** 2 * 17 + 12 * 8 * 11 + 8 * 7 
+    # 26 * 8 ** 3 + 6 * 8 ** 2 * 17 + 12 * 8 * 11 + 8 * 7
     assert_equal(np.size(D), 20952 )
     # 18 * 8 ** 3 + 6 * 8 ** 2 * 13 + 12 * 8 * 9 + 8 * 6
     assert_equal(sum(D < 1.5), 15120)
@@ -174,7 +184,7 @@ def test_grid_3d_6():
     xyz = np.reshape(np.indices((nx, ny, nz)), (3, nx * ny * nz)).T
     adj = wgraph_from_3d_grid(xyz, 26).to_coo_matrix().tolil()
     assert_equal(len(adj.rows[63]), 26)
-    for i in [62, 64, 58, 68, 38, 88, 57, 67, 37, 87, 59, 69, 39, 89, 33, 
+    for i in [62, 64, 58, 68, 38, 88, 57, 67, 37, 87, 59, 69, 39, 89, 33,
               83, 43, 93, 32, 82, 42, 92, 34, 84, 44, 94]:
         assert_true(i in adj.rows[63])
 
@@ -189,8 +199,8 @@ def test_grid_3d_7():
     assert_equal((adj - adj.T).nnz, 0)
     adj = wgraph_from_3d_grid(xyz, 26).to_coo_matrix()
     assert_equal((adj - adj.T).nnz, 0)
-        
-    
+
+
 def test_cut_redundancies():
     G = basic_graph()
     e = G.E
@@ -216,7 +226,7 @@ def test_normalize():
     M = G.to_coo_matrix()
     sM = np.array(M.sum(1)).ravel()
     assert_true((np.abs(sM - 1) < 1.e-7).all())
-    
+
 
 def test_normalize_2():
     G = basic_graph()
@@ -224,7 +234,7 @@ def test_normalize_2():
     M = G.to_coo_matrix()
     sM = np.array(M.sum(1)).ravel()
     assert_true((np.abs(sM - 1) < 1.e-7).all())
-    
+
 
 def test_normalize_3():
     G = basic_graph()
@@ -232,7 +242,7 @@ def test_normalize_3():
     M = G.to_coo_matrix()
     sM = np.array(M.sum(0)).ravel()
     assert_true((np.abs(sM - 1) < 1.e-7).all())
-    
+
 
 def test_adjacency():
     G = basic_graph()
@@ -240,7 +250,7 @@ def test_adjacency():
     assert_true(( M.diagonal() == 0 ).all())
     A = M.toarray()
     assert_true(( np.diag(A, 1) != 0 ).all())
-    assert_true(( np.diag(A, -1) != 0 ).all())       
+    assert_true(( np.diag(A, -1) != 0 ).all())
 
 
 def test_cc():
@@ -249,11 +259,11 @@ def test_cc():
     L = np.array(l==0)
     assert_true(L.all())
 
-    
+
 def test_isconnected():
     G = basic_graph()
     assert_true(G.is_connected())
-    
+
 
 def test_main_cc():
     x = basicdata()
@@ -305,14 +315,14 @@ def test_floyd_1():
     for i in range(10):
         plop = np.abs(np.diag(l, i) - 2 * i * np.sin(2 * np.pi / 40))
         assert_true(plop.max() < 1.e-4)
-        
+
 def test_floyd_2():
     """ Test Floyd's algo, with seed
     """
     G = basic_graph()
     seeds = np.array([0,10])
     l = G.floyd(seeds)
-    
+
     for i in range(10):
         plop = np.abs(l[0, i] - 2 * i * np.sin(2 * np.pi / 40))
         assert_true(plop.max() < 1.e-4)
@@ -324,7 +334,7 @@ def test_floyd_2():
         assert_true(plop.max() < 1.e-4)
         plop = np.abs(l[1, 19 - i] - 2 * (9 - i) * np.sin(2 * np.pi / 40))
         assert_true(plop.max() < 1.e-4)
-  
+
 def test_symmeterize():
     a = np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6])
     b = np.array([1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 0, 0, 1])
@@ -348,8 +358,8 @@ def test_voronoi():
     seed = np.array([0, 6])
     label = G.voronoi_labelling(seed)
     assert_equal(label[1], 0)
-    
-    
+
+
 def test_voronoi2():
     """ test voronoi labelling with one seed
     """
@@ -362,7 +372,7 @@ def test_voronoi2():
     seed = np.array([0])
     label = G.voronoi_labelling(seed)
     assert_equal(label[4], 0)
- 
+
 
 def test_voronoi3():
     """ test voronoi labelling with non-connected components
@@ -378,10 +388,10 @@ def test_voronoi3():
     assert_equal(label[4], - 1)
 
 def test_concatenate1(n=10):
-    x1 = nr.randn(n, 2) 
-    x2 = nr.randn(n, 2) 
+    x1 = nr.randn(n, 2)
+    x2 = nr.randn(n, 2)
     G1 = knn(x1, 5)
-    G2 = knn(x2, 5) 
+    G2 = knn(x2, 5)
     G = concatenate_graphs(G1, G2)
     assert_true(G.cc().max() > 0)
 
@@ -396,7 +406,7 @@ def test_concatenate2(n=10):
 def test_anti_symmeterize():
     n = 10
     eps = 1.e-7
-    M = (nr.rand(n, n) > 0.7).astype(np.float64) 
+    M = (nr.rand(n, n) > 0.7).astype(np.float64)
     C = M - M.T
     G = wgraph_from_adjacency(M)
     G.anti_symmeterize()
@@ -405,14 +415,14 @@ def test_anti_symmeterize():
 
 
 def test_subgraph_1(n=10):
-    x = nr.randn(n, 2) 
+    x = nr.randn(n, 2)
     G = WeightedGraph(x.shape[0])
     valid = np.zeros(n)
     assert(G.subgraph(valid) is None)
 
 
 def test_subgraph_2(n=10):
-    x = nr.randn(n, 2) 
+    x = nr.randn(n, 2)
     G = knn(x, 5)
     valid = np.zeros(n)
     valid[:n // 2] = 1
@@ -420,7 +430,7 @@ def test_subgraph_2(n=10):
 
 
 def test_graph_create_from_array():
-    """Test the creation of a graph from a sparse coo_matrix 
+    """Test the creation of a graph from a sparse coo_matrix
     """
     a = np.random.randn(5, 5)
     wg = wgraph_from_adjacency(a)
@@ -429,7 +439,7 @@ def test_graph_create_from_array():
 
 
 def test_graph_create_from_coo_matrix():
-    """Test the creation of a graph from a sparse coo_matrix 
+    """Test the creation of a graph from a sparse coo_matrix
     """
     import scipy.sparse as spp
     a = (np.random.randn(5, 5) > .8).astype(np.float64)
@@ -440,7 +450,7 @@ def test_graph_create_from_coo_matrix():
 
 
 def test_to_coo_matrix():
-    """ Test the generation of a sparse matrix as output 
+    """ Test the generation of a sparse matrix as output
     """
     a = (np.random.randn(5, 5)>.8).astype(np.float64)
     wg = wgraph_from_adjacency(a)
@@ -495,5 +505,3 @@ def test_cliques():
 if __name__ == '__main__':
     import nose
     nose.run(argv=['', __file__])
-
-

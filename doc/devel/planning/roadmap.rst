@@ -18,5 +18,3 @@ registration algorithms, and improved 2D and 3D visualization.
 
 
 .. include:: ../../links_names.txt
-
-   

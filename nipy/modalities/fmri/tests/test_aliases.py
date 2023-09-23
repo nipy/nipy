@@ -12,20 +12,12 @@ They've been part of sympy as of 0.7.0
 In these tests, the callable's are scipy.interpolate.interp1d instances
 representing approximations to Brownian Motions.
 """
-from __future__ import absolute_import
 import numpy as np
-
 import scipy.interpolate
-
 import sympy
-
-from sympy.utilities.lambdify import (implemented_function, lambdify)
-
-from nose.tools import assert_true, assert_false, assert_raises
-
-from numpy.testing import (assert_almost_equal, assert_equal,
-                           assert_array_almost_equal)
-
+from nose.tools import assert_false, assert_raises, assert_true
+from numpy.testing import assert_almost_equal, assert_array_almost_equal, assert_equal
+from sympy.utilities.lambdify import implemented_function, lambdify
 
 x, y = sympy.symbols(('x', 'y'))
 
@@ -102,7 +94,7 @@ def test_1d():
 
 
 def test_2d():
-    B1, B2 = [gen_BrownianMotion() for _ in range(2)]
+    B1, B2 = (gen_BrownianMotion() for _ in range(2))
     B1s = implemented_function("B1", B1)
     B2s = implemented_function("B2", B2)
     s, t = sympy.symbols(('s', 't'))

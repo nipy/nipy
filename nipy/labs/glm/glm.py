@@ -1,21 +1,20 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import absolute_import
 
 import numpy as np
 import scipy.stats as sps
 
-from . import kalman
-from ..utils import mahalanobis
 from nipy.algorithms.statistics.utils import z_score as zscore
 
+from ..utils import mahalanobis
+from . import kalman
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
 models = {'spherical': ['ols', 'kalman'], 'ar1': ['kalman']}
 
 
-class glm(object):
+class glm:
 
     def __init__(self, Y=None, X=None, formula=None, axis=0,
              model='spherical', method=None, niter=2):
@@ -112,7 +111,7 @@ class glm(object):
         # one (output by KF_fit)
         s2 = self.s2.squeeze()
         nvbeta = self.nvbeta
-        if not 'nvbeta' in self._constants:
+        if 'nvbeta' not in self._constants:
             nvbeta = np.rollaxis(nvbeta, axis, ndims + 1)
             nvbeta = np.rollaxis(nvbeta, axis, ndims + 1) # shape = X, p, p
         if dim == 1:
@@ -120,7 +119,7 @@ class glm(object):
             vcon = vcon.squeeze() * s2
         else:
             vcon = np.dot(c, np.inner(nvbeta, c)) # q, X, q or q, q
-            if not 'nvbeta' in self._constants:
+            if 'nvbeta' not in self._constants:
                 vcon = np.rollaxis(vcon, ndims, 1) * s2 # q, q, X
             else:
                 aux = vcon.shape # q, q
@@ -137,7 +136,7 @@ class glm(object):
         return c
 
 
-class contrast(object):
+class contrast:
 
     def __init__(self, dim, type='t', tiny=DEF_TINY, dofmax=DEF_DOFMAX):
         """tiny is a numerical constant for computations.
@@ -204,7 +203,7 @@ class contrast(object):
         Return a parametric approximation of the p-value associated
         with the null hypothesis: (H0) 'contrast equals baseline'
         """
-        if self._stat is None or not self._baseline == baseline:
+        if self._stat is None or self._baseline != baseline:
             self._stat = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.type in ['t', 'tmin']:
@@ -222,7 +221,7 @@ class contrast(object):
         Return a parametric approximation of the z-score associated
         with the null hypothesis: (H0) 'contrast equals baseline'
         """
-        if self._pvalue is None or not self._baseline == baseline:
+        if self._pvalue is None or self._baseline != baseline:
             self._pvalue = self.pvalue(baseline)
 
         # Avoid inf values kindly supplied by scipy.

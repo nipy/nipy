@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 This scipt generates a noisy activation image image and performs a watershed
 segmentation in it.
@@ -21,9 +20,9 @@ except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 import matplotlib as mpl
 
-from nipy.labs.spatial_models.hroi import HROI_from_watershed
-from nipy.labs.spatial_models.discrete_domain import grid_domain_from_shape
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_shape
+from nipy.labs.spatial_models.hroi import HROI_from_watershed
 
 ###############################################################################
 # data simulation

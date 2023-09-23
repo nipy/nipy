@@ -1,26 +1,42 @@
 """ Testing coordinate map defined spaces
 """
-from __future__ import absolute_import
 
 import numpy as np
-
 from nibabel.affines import from_matvec
+from nose.tools import (
+    assert_equal,
+    assert_false,
+    assert_not_equal,
+    assert_raises,
+    assert_true,
+)
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from ...image.image import Image
-from ..coordinate_system import CoordinateSystem as CS, CoordSysMakerError
 from ..coordinate_map import AffineTransform, CoordinateMap
-from ..spaces import (vox2mni, vox2scanner, vox2talairach, vox2unknown,
-                      vox2aligned, xyz_affine, xyz_order, SpaceTypeError,
-                      AxesError, AffineError, XYZSpace, known_space,
-                      known_spaces, is_xyz_space, SpaceError,
-                      is_xyz_affable,
-                      get_world_cs, mni_csm, mni_space)
-
-from numpy.testing import (assert_array_almost_equal,
-                           assert_array_equal)
-
-from nose.tools import (assert_true, assert_false, assert_equal, assert_raises,
-                        assert_not_equal)
+from ..coordinate_system import CoordinateSystem as CS
+from ..coordinate_system import CoordSysMakerError
+from ..spaces import (
+    AffineError,
+    AxesError,
+    SpaceError,
+    SpaceTypeError,
+    XYZSpace,
+    get_world_cs,
+    is_xyz_affable,
+    is_xyz_space,
+    known_space,
+    known_spaces,
+    mni_csm,
+    mni_space,
+    vox2aligned,
+    vox2mni,
+    vox2scanner,
+    vox2talairach,
+    vox2unknown,
+    xyz_affine,
+    xyz_order,
+)
 
 VARS = {}
 
@@ -228,7 +244,7 @@ def test_xyz_affine():
                            np.array([[2,0,10],[0,3,11],[0,0,1]]))
     assert_raises(AxesError, xyz_affine, cmap)
     # Can pass in own validator
-    my_valtor = dict(blind='x', leading='y', ditch='z')
+    my_valtor = {'blind': 'x', 'leading': 'y', 'ditch': 'z'}
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
     cmap = AffineTransform(VARS['d_cs_r3'],r_cs, aff3d)
     assert_raises(AxesError, xyz_affine, cmap)
@@ -252,7 +268,7 @@ def test_xyz_order():
     r_cs = CS(('t', 'mni-x=L->R', 'mni-z=I->S', 'mni-y=P->A'), 'mni')
     assert_array_equal(xyz_order(r_cs), [1, 3, 2, 0])
     # Can pass in own validator
-    my_valtor = dict(ditch='x', leading='y', blind='z')
+    my_valtor = {'ditch': 'x', 'leading': 'y', 'blind': 'z'}
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
     assert_raises(AxesError, xyz_order, r_cs)
     assert_array_equal(xyz_order(r_cs, my_valtor), [2,1,0])
@@ -266,7 +282,7 @@ def test_is_xyz_affable():
     assert_false(is_xyz_affable(cmap.reordered_range([3,0,1,2])))
     assert_false(is_xyz_affable(cmap.reordered_domain([3,0,1,2])))
     # Can pass in own validator
-    my_valtor = dict(blind='x', leading='y', ditch='z')
+    my_valtor = {'blind': 'x', 'leading': 'y', 'ditch': 'z'}
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
     affine = from_matvec(np.arange(9).reshape((3, 3)), [11, 12, 13])
     cmap = AffineTransform(VARS['d_cs_r3'], r_cs, affine)

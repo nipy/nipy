@@ -22,16 +22,13 @@ Design matrices contain three different types of regressors:
 
 Author: Bertrand Thirion, 2009-2011
 """
-from __future__ import absolute_import
-
-import numpy as np
 
 from warnings import warn
 
+import numpy as np
+
 from ...utils.compat3 import open4csv
-
-from .hemodynamic_models import compute_regressor, _orthogonalize
-
+from .hemodynamic_models import _orthogonalize, compute_regressor
 
 ######################################################################
 # Ancillary functions
@@ -67,7 +64,7 @@ def _cosine_drift(period_cut, frametimes):
 
     Parameters
     ----------
-    period_cut: float 
+    period_cut: float
          Cut period of the low-pass filter (in sec)
     frametimes: array of shape(nscans)
          The sampling times (in sec)
@@ -81,16 +78,16 @@ def _cosine_drift(period_cut, frametimes):
     """
     len_tim = len(frametimes)
     n_times = np.arange(len_tim)
-    hfcut = 1./ period_cut # input parameter is the period  
+    hfcut = 1./ period_cut # input parameter is the period
 
-    dt = frametimes[1] - frametimes[0] # frametimes.max() should be (len_tim-1)*dt    
+    dt = frametimes[1] - frametimes[0] # frametimes.max() should be (len_tim-1)*dt
     order = int(np.floor(2*len_tim*hfcut*dt)) # s.t. hfcut = 1/(2*dt) yields len_tim
     cdrift = np.zeros((len_tim, order))
     nfct = np.sqrt(2.0/len_tim)
-    
+
     for k in range(1, order):
         cdrift[:,k-1] = nfct * np.cos((np.pi/len_tim)*(n_times + .5)*k)
-    
+
     cdrift[:,order-1] = 1. # or 1./sqrt(len_tim) to normalize
     return cdrift
 
@@ -134,7 +131,7 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
     elif drift_model == 'blank':
         drift = _blank_drift(frametimes)
     else:
-        raise NotImplementedError("Unknown drift model %r" % (drift_model))
+        raise NotImplementedError(f"Unknown drift model {drift_model!r}")
     names = []
     for k in range(drift.shape[1] - 1):
         names.append('drift_%d' % (k + 1))
@@ -238,7 +235,7 @@ def _full_rank(X, cmax=1e15):
 ######################################################################
 
 
-class DesignMatrix():
+class DesignMatrix:
     """ This is a container for a light-weight class for design matrices
 
     This class is only used to make IO and visualization.
@@ -349,7 +346,7 @@ class DesignMatrix():
             plt.figure()
             ax = plt.subplot(1, 1, 1)
 
-        ax.imshow(contrast, interpolation='Nearest', 
+        ax.imshow(contrast, interpolation='Nearest',
                   aspect='auto',
                   cmap=cmap)
         ax.set_label('conditions')
@@ -411,8 +408,8 @@ def make_dmtx(frametimes, paradigm=None, hrf_model='canonical',
         assert add_regs.shape[0] == np.size(frametimes), \
             ValueError(
             'incorrect specification of additional regressors: '
-            'length of regressors provided: %s, number of '
-            'time-frames: %s' % (add_regs.shape[0], np.size(frametimes)))
+            f'length of regressors provided: {add_regs.shape[0]}, number of '
+            f'time-frames: {np.size(frametimes)}')
 
     # check that additional regressor names are well specified
     if  add_reg_names is None:

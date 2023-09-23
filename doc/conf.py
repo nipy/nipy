@@ -1,4 +1,3 @@
-# emacs: -*- coding: utf-8; mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 #
 # sampledoc documentation build configuration file, created by
@@ -12,7 +11,8 @@
 # All configuration values have a default value; values that are commented out
 # serve to show the default value.
 
-import sys, os
+import os
+import sys
 from importlib import import_module
 
 import sphinx
@@ -22,7 +22,7 @@ project = 'nipy'
 try:
     project_module = import_module(project)
 except ImportError:
-    raise RuntimeError('Cannot import {}, please investigate'.format(project))
+    raise RuntimeError(f'Cannot import {project}, please investigate')
 
 # If your extensions are in another directory, add it here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it

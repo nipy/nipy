@@ -41265,11 +41265,11 @@ L160:
 
 /*     12 <= ISPEC <= 16: xHSEQR or one of its subroutines. */
 
-/*** FFF MODIF ***/ 
-    /*** f2c generated code ***/ 
+/*** FFF MODIF ***/
+    /*** f2c generated code ***/
     /* ret_val = iparmq_(ispec, name__, opts, n1, n2, n3, n4, name_len, opts_len)
-       ;*/ 
-    ret_val = iparmq_(ispec, name__, opts, n1, n2, n3, n4);  
+       ;*/
+    ret_val = iparmq_(ispec, name__, opts, n1, n2, n3, n4);
 
 
     return ret_val;
@@ -41545,4 +41545,3 @@ integer iparmq_(integer *ispec, char *name__, char *opts, integer *n, integer
 
     return ret_val;
 } /* iparmq_ */
-

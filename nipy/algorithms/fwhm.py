@@ -13,20 +13,19 @@ based on a 4d Image:
 
     fastFHWM: used if the entire 4d Image is available
     iterFWHM: used when 4d Image is being filled in by slices of residuals
-    
+
 """
-from __future__ import absolute_import
 
 __docformat__ = 'restructuredtext'
 
-from six import Iterator
-
 import numpy as np
 from numpy.linalg import det
+from six import Iterator
 
 from nipy.core.api import Image
 
 from .utils.matrices import pos_recipr
+
 
 class Resels(Iterator):
     """The Resels class.
@@ -204,7 +203,7 @@ def _calc_detlam(xx, yy, zz, yx, zx, zy):
      [yx,yy,zy],
      [zx,zy,zz]]
      """
-    
+
     return zz * (yy*xx - yx**2) - \
            zy * (zy*xx - zx*yx) + \
            zx * (zy*yx - zx*yy)

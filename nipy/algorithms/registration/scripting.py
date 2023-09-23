@@ -4,22 +4,23 @@
 """
 A scripting wrapper around 4D registration (SpaceTimeRealign)
 """
-from __future__ import absolute_import
 
 import os
 import os.path as op
-import numpy as np
-import numpy.linalg as npl
 
 import nibabel as nib
-from nibabel.filename_parser import splitext_addext
 import nibabel.eulerangles as euler
+import numpy as np
+import numpy.linalg as npl
+from nibabel.filename_parser import splitext_addext
 from nibabel.optpkg import optional_package
+
 matplotlib, HAVE_MPL, _ = optional_package('matplotlib')
 
-from .groupwise_registration import SpaceTimeRealign
 import nipy.algorithms.slicetiming as st
 from nipy.io.api import save_image
+
+from .groupwise_registration import SpaceTimeRealign
 
 timefuncs = st.timefuncs.SLICETIME_FUNCTIONS
 
@@ -78,7 +79,7 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
                        slice_dir=1, apply=True, make_figure=False,
                        out_name=None):
     """
-    This is a scripting interface to `nipy.algorithms.registration.SpaceTimeRealign` 
+    This is a scripting interface to `nipy.algorithms.registration.SpaceTimeRealign`
 
     Parameters
     ----------
@@ -91,7 +92,7 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
         This is the order of slice-times in the acquisition. This is used as a
         key into the ``SLICETIME_FUNCTIONS`` dictionary from
         :mod:`nipy.algorithms.slicetiming.timefuncs`. Default: 'descending'.
-    slice_dim : int (optional) 
+    slice_dim : int (optional)
         Denotes the axis in `images` that is the slice axis.  In a 4D image,
         this will often be axis = 2 (default).
     slice_dir : int (optional)
@@ -99,7 +100,7 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
         or -1 if acquire slice -1 first, slice 0 last.
     apply : bool (optional)
         Whether to apply the transformation and produce an output. Default:
-        True. 
+        True.
     make_figure : bool (optional)
         Whether to generate a .png figure with the parameters across scans.
     out_name : bool (optional)
@@ -110,7 +111,7 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
     Returns
     -------
     transforms : ndarray
-        An (n_times_points,) shaped array containing 
+        An (n_times_points,) shaped array containing
        `nipy.algorithms.registration.affine.Rigid` class instances for each time
         point in the time-series. These can be used as affine transforms by
         referring to their `.as_affine` attribute.
@@ -123,17 +124,17 @@ def space_time_realign(input, tr, slice_order='descending', slice_dim=2,
 
     # If we got only a single file, we motion correct that one:
     if op.isfile(input):
-        if not (input.endswith('.nii') or input.endswith('.nii.gz')):
+        if not (input.endswith(('.nii', '.nii.gz'))):
             e_s = "Input needs to be a nifti file ('.nii' or '.nii.gz'"
             raise ValueError(e_s)
         fnames = [input]
         input = nib.load(input)
     # If this is a full-path to a directory containing files, it's still a
-    # string: 
+    # string:
     elif isinstance(input, str):
         list_of_files = os.listdir(input)
         fnames = [op.join(input, f) for f in np.sort(list_of_files)
-                  if (f.endswith('.nii') or f.endswith('.nii.gz')) ]
+                  if (f.endswith(('.nii', '.nii.gz'))) ]
         input = [nib.load(x) for x in fnames]
     # Assume that it's a list of full-paths to files:
     else:

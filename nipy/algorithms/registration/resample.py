@@ -1,21 +1,13 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import numpy as np
-
-from ...fixes.scipy.ndimage import affine_transform, map_coordinates
-
 from nibabel.casting import shared_range
 
-from ...core.image.image_spaces import (make_xyz_image,
-                                        as_xyz_image,
-                                        xyz_affine)
-from .affine import inverse_affine, Affine
-from ._registration import (_cspline_transform,
-                            _cspline_sample3d,
-                            _cspline_resample3d)
-
+from ...core.image.image_spaces import as_xyz_image, make_xyz_image, xyz_affine
+from ...fixes.scipy.ndimage import affine_transform, map_coordinates
+from ._registration import _cspline_resample3d, _cspline_sample3d, _cspline_transform
+from .affine import Affine, inverse_affine
 
 INTERP_ORDER = 3
 
@@ -133,7 +125,7 @@ def resample(moving, transform=None, reference=None,
         else:
             output = np.zeros(ref_shape, dtype=dtype)
             affine_transform(data, Tv[0:3, 0:3], offset=Tv[0:3, 3],
-                             order=interp_order, 
+                             order=interp_order,
                              output_shape=ref_shape, output=output, mode=mode,
                              cval=cval)
 

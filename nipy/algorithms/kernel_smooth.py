@@ -3,19 +3,19 @@
 """
 Linear filter(s).  For the moment, only a Gaussian smoothing filter
 """
-from __future__ import absolute_import
 
 import gc
 
 import numpy as np
-import numpy.fft as fft
 import numpy.linalg as npl
+from numpy import fft
 
-from nipy.utils import seq_prod
-from nipy.core.api import Image, AffineTransform
+from nipy.core.api import AffineTransform, Image
 from nipy.core.reference.coordinate_map import product
+from nipy.utils import seq_prod
 
-class LinearFilter(object):
+
+class LinearFilter:
     '''
     A class to implement some FFT smoothers for Image objects.
     By default, this does a Gaussian kernel smooth. More choices
@@ -174,7 +174,7 @@ class LinearFilter(object):
             if self.location != 0.0:
                 data += self.location
             gc.collect()
-            # Write out data 
+            # Write out data
             if in_data.ndim == 4:
                 _out[_slice] = data
             else:
@@ -263,4 +263,3 @@ def _crop(X, tol=1.0e-10):
         return X[tuple(slices)]
     else:
         return np.zeros((1,)*n)
-

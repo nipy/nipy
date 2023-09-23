@@ -93,4 +93,3 @@ the `Mayavi manual
     :toctree: generated
 
     affine_img_src
-

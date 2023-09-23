@@ -3,38 +3,35 @@
 """ Testing fmri utils
 
 """
-from __future__ import absolute_import, division, print_function
 
 import re
 
 import numpy as np
-
 import sympy
-from sympy import Symbol, Dummy, Function, DiracDelta
-from sympy.utilities.lambdify import lambdify, implemented_function
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true, raises
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
+from sympy import DiracDelta, Dummy, Function, Symbol
+from sympy.utilities.lambdify import implemented_function, lambdify
 
 from nipy.algorithms.statistics.formula import Term
 
+from .. import hrf
 from ..utils import (
     Interp1dNumeric,
-    lambdify_t,
+    TimeConvolver,
+    blocks,
+    convolve_functions,
     define,
     events,
-    blocks,
     interp,
+    lambdify_t,
     linear_interp,
     step_function,
-    TimeConvolver,
-    convolve_functions,
-    )
-from .. import hrf
-
-from nose.tools import (assert_equal, assert_true, assert_false, raises,
-                        assert_raises)
-
-from numpy.testing import (assert_array_equal, assert_array_almost_equal,
-                           assert_almost_equal)
-
+)
 
 t = Term('t')
 
@@ -209,7 +206,7 @@ def test_convolve_functions():
         tri = cfunc(f1, f2, [0, 3], [0, 3], dt)
         ftri = lambdify(t, tri)
         o1_time = np.arange(0, 3, dt)
-        z1s = np.zeros((int(round(1./dt))))
+        z1s = np.zeros(int(round(1./dt)))
         assert_array_almost_equal(ftri(o1_time), np.r_[z1s, value])
         # Same for input function
         tri = cfunc(f2, f1, [0, 3], [0, 3], dt)

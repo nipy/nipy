@@ -76,7 +76,7 @@ reordering of images that needed known axis ordering.
     )
     >>> A([i,j,k])
     array([x_start + i*x_step, y_start + j*y_step, z_start + k*z_step], dtype=object)
-    >>> # this is another 
+    >>> # this is another
     >>> A_kij = A.reordered_domain('kij')
 
     >>> A_kij
@@ -156,7 +156,7 @@ Excuse the long email but I started writing, and then it started looking like do
 
 
     Also, I am not sure what this means. The image is in LPI ordering, only
-    if the reference frame of the world space it is pointing to is. 
+    if the reference frame of the world space it is pointing to is.
 
 
 I am proposing we enforce the world space to have this frame of reference

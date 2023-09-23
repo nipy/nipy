@@ -18,8 +18,6 @@ Author: Bertrand Thirion, 2012.
 >>> T2 = t_stat(Y)
 >>> assert(T1.std() < T2.std())
 """
-from __future__ import absolute_import
-from __future__ import print_function
 
 import numpy as np
 
@@ -99,7 +97,7 @@ def t_stat(Y):
     return Y.mean(0) / Y.std(0) * np.sqrt(Y.shape[0] - 1)
 
 
-class MixedEffectsModel(object):
+class MixedEffectsModel:
     """Class to handle multiple one-sample mixed effects models
     """
 

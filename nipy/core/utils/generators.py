@@ -16,15 +16,12 @@ The above three generators return 2-tuples.
 * write_data: write the output of a generator to an ndarray
 * parcels: return binary array of the unique components of data
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 import numpy as np
 
-from nipy.utils import seq_prod
-
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
+from nipy.utils import seq_prod
 
 
 def parcels(data, labels=None, exclude=()):
@@ -166,7 +163,7 @@ def slice_generator(data, axis=0):
     (slice(None, None, None), 1) [2 4]
     """
     data = np.asarray(data)
-    if type(axis) is type(1):
+    if type(axis) is int:
         for j in range(data.shape[axis]):
             ij = (slice(None,None,None),)*axis + (j,)
             yield ij, data[(slice(None,None,None),)*axis + (j,)]

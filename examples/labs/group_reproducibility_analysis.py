@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 Example of script to analyse the reproducibility in group studies using a
 bootstrap procedure
@@ -23,11 +22,13 @@ except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
+from nipy.labs.spatial_models.discrete_domain import grid_domain_from_binary_array
 from nipy.labs.utils.reproducibility_measures import (
-    voxel_reproducibility, cluster_reproducibility, map_reproducibility,
-    peak_reproducibility)
-from nipy.labs.spatial_models.discrete_domain import (
-    grid_domain_from_binary_array)
+    cluster_reproducibility,
+    map_reproducibility,
+    peak_reproducibility,
+    voxel_reproducibility,
+)
 
 ###############################################################################
 # Generate the data
@@ -117,7 +118,7 @@ for q, threshold in enumerate(thresholds):
                                threshold=threshold, csize=csize)
     rmap = np.reshape(rmap, shape)
     plt.imshow(rmap, interpolation=None, vmin=0, vmax=ngroups)
-    plt.title('threshold: %g' % threshold, fontsize=10)
+    plt.title(f'threshold: {threshold:g}', fontsize=10)
     plt.axis('off')
 
 

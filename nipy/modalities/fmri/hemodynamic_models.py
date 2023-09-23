@@ -5,14 +5,10 @@ This module closely follows SPM implementation
 
 Author: Bertrand Thirion, 2011--2013
 """
-from __future__ import absolute_import
 
 import warnings
 
-from six.moves import map
-
 import numpy as np
-
 from scipy.stats import gamma
 
 

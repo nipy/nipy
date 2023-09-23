@@ -3,22 +3,23 @@
 """
 Testing data image interface.
 """
-from __future__ import absolute_import
 
 import numpy as np
 
+from ...transforms.transform import CompositionError, Transform
+
 # Local imports
 from ..volume_field import VolumeField
-from ...transforms.transform import Transform, CompositionError
+
 
 ################################################################################
 # Tests
 def test_interface():
     img = VolumeField()
     img.world_space = 'world'
-    for method in ('get_transform', 'as_volume_img'): 
+    for method in ('get_transform', 'as_volume_img'):
         method = getattr(img, method)
-        yield np.testing.assert_raises, NotImplementedError, method 
+        yield np.testing.assert_raises, NotImplementedError, method
 
     yield np.testing.assert_raises, CompositionError, \
                     img.composed_with_transform, \
@@ -33,5 +34,3 @@ def test_interface():
 
     yield np.testing.assert_raises, NotImplementedError, \
                     img.values_in_world, None, None, None
-
-

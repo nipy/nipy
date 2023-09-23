@@ -1,13 +1,13 @@
-from __future__ import absolute_import
 
 #
 # Test BLAS 1
 #
 
-from numpy.testing import assert_almost_equal
 import numpy as np
-from .. import (blas_dnrm2, blas_dasum, blas_ddot, 
-                blas_daxpy, blas_dscal)
+from numpy.testing import assert_almost_equal
+
+from .. import blas_dasum, blas_daxpy, blas_ddot, blas_dnrm2, blas_dscal
+
 n = 15
 
 
@@ -39,4 +39,3 @@ def test_dscal():
 if __name__ == "__main__":
     import nose
     nose.run(argv=['', __file__])
-

@@ -3,14 +3,16 @@
 """
 Test surrogate data generation.
 """
-from __future__ import absolute_import
 
 import numpy as np
-from nose.tools import assert_true
 from nibabel import Nifti1Image
+from nose.tools import assert_true
 
-from ..simul_multisubject_fmri_dataset import \
-    surrogate_2d_dataset, surrogate_3d_dataset, surrogate_4d_dataset 
+from ..simul_multisubject_fmri_dataset import (
+    surrogate_2d_dataset,
+    surrogate_3d_dataset,
+    surrogate_4d_dataset,
+)
 
 
 def test_surrogate_array():
@@ -56,7 +58,7 @@ def test_surrogate_array_3d_write():
     """
     from os import path
     from tempfile import mkdtemp
-    write_path = path.join(mkdtemp(), 'img.nii') 
+    write_path = path.join(mkdtemp(), 'img.nii')
     shape = (5, 6, 7)
     data = surrogate_3d_dataset(shape=shape, out_image_file=write_path)
     assert_true(path.isfile(write_path))
@@ -95,12 +97,12 @@ def test_surrogate_array_4d_write():
     from os import path
     from tempfile import mkdtemp
     n_sess = 3
-    write_paths = [path.join(mkdtemp(), 'img_%d.nii' % i) 
+    write_paths = [path.join(mkdtemp(), 'img_%d.nii' % i)
                    for i in range(n_sess)]
     shape = (5, 6, 7)
     imgs = surrogate_4d_dataset(shape, out_image_file=write_paths[0])
     assert_true(path.isfile(write_paths[0]))
-    imgs = surrogate_4d_dataset(shape, n_sess=n_sess, 
+    imgs = surrogate_4d_dataset(shape, n_sess=n_sess,
                                 out_image_file=write_paths)
     for wp in write_paths:
         assert_true(path.isfile(wp))

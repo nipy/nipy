@@ -18,8 +18,7 @@ Then::
       filterfactory('nipy', 'smooth', 8),
       designfactory('nipy', my_designmaker),
       ])
-   
+
    my_analysis = SubjectAnalysis(my_repo, subject_pipeline=my_pipeline)
    my_analysis.do()
    my_analysis.archive()
-

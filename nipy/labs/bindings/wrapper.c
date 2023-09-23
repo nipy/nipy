@@ -750,7 +750,7 @@ static CYTHON_INLINE float __PYX_NAN() {
 #include "numpy/ufuncobject.h"
 
     /* NumPy API declarations from "numpy/__init__.pxd" */
-    
+
 #include "fff_base.h"
 #include "fff_vector.h"
 #include "fff_matrix.h"
@@ -994,7 +994,7 @@ static const char *__pyx_f[] = {
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":689
  * # in Cython to enable them only on the right systems.
- * 
+ *
  * ctypedef npy_int8       int8_t             # <<<<<<<<<<<<<<
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t
@@ -1002,7 +1002,7 @@ static const char *__pyx_f[] = {
 typedef npy_int8 __pyx_t_5numpy_int8_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":690
- * 
+ *
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t             # <<<<<<<<<<<<<<
  * ctypedef npy_int32      int32_t
@@ -1030,7 +1030,7 @@ typedef npy_int64 __pyx_t_5numpy_int64_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":696
  * #ctypedef npy_int128     int128_t
- * 
+ *
  * ctypedef npy_uint8      uint8_t             # <<<<<<<<<<<<<<
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t
@@ -1038,7 +1038,7 @@ typedef npy_int64 __pyx_t_5numpy_int64_t;
 typedef npy_uint8 __pyx_t_5numpy_uint8_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":697
- * 
+ *
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t             # <<<<<<<<<<<<<<
  * ctypedef npy_uint32     uint32_t
@@ -1066,7 +1066,7 @@ typedef npy_uint64 __pyx_t_5numpy_uint64_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":703
  * #ctypedef npy_uint128    uint128_t
- * 
+ *
  * ctypedef npy_float32    float32_t             # <<<<<<<<<<<<<<
  * ctypedef npy_float64    float64_t
  * #ctypedef npy_float80    float80_t
@@ -1074,7 +1074,7 @@ typedef npy_uint64 __pyx_t_5numpy_uint64_t;
 typedef npy_float32 __pyx_t_5numpy_float32_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":704
- * 
+ *
  * ctypedef npy_float32    float32_t
  * ctypedef npy_float64    float64_t             # <<<<<<<<<<<<<<
  * #ctypedef npy_float80    float80_t
@@ -1096,7 +1096,7 @@ typedef npy_long __pyx_t_5numpy_int_t;
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t             # <<<<<<<<<<<<<<
  * ctypedef npy_longlong   longlong_t
- * 
+ *
  */
 typedef npy_longlong __pyx_t_5numpy_long_t;
 
@@ -1104,14 +1104,14 @@ typedef npy_longlong __pyx_t_5numpy_long_t;
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t
  * ctypedef npy_longlong   longlong_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_ulong      uint_t
  */
 typedef npy_longlong __pyx_t_5numpy_longlong_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":717
  * ctypedef npy_longlong   longlong_t
- * 
+ *
  * ctypedef npy_ulong      uint_t             # <<<<<<<<<<<<<<
  * ctypedef npy_ulonglong  ulong_t
  * ctypedef npy_ulonglong  ulonglong_t
@@ -1119,11 +1119,11 @@ typedef npy_longlong __pyx_t_5numpy_longlong_t;
 typedef npy_ulong __pyx_t_5numpy_uint_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":718
- * 
+ *
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t             # <<<<<<<<<<<<<<
  * ctypedef npy_ulonglong  ulonglong_t
- * 
+ *
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
 
@@ -1131,32 +1131,32 @@ typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t
  * ctypedef npy_ulonglong  ulonglong_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_intp       intp_t
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":721
  * ctypedef npy_ulonglong  ulonglong_t
- * 
+ *
  * ctypedef npy_intp       intp_t             # <<<<<<<<<<<<<<
  * ctypedef npy_uintp      uintp_t
- * 
+ *
  */
 typedef npy_intp __pyx_t_5numpy_intp_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":722
- * 
+ *
  * ctypedef npy_intp       intp_t
  * ctypedef npy_uintp      uintp_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_double     float_t
  */
 typedef npy_uintp __pyx_t_5numpy_uintp_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":724
  * ctypedef npy_uintp      uintp_t
- * 
+ *
  * ctypedef npy_double     float_t             # <<<<<<<<<<<<<<
  * ctypedef npy_double     double_t
  * ctypedef npy_longdouble longdouble_t
@@ -1164,11 +1164,11 @@ typedef npy_uintp __pyx_t_5numpy_uintp_t;
 typedef npy_double __pyx_t_5numpy_float_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":725
- * 
+ *
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t             # <<<<<<<<<<<<<<
  * ctypedef npy_longdouble longdouble_t
- * 
+ *
  */
 typedef npy_double __pyx_t_5numpy_double_t;
 
@@ -1176,17 +1176,17 @@ typedef npy_double __pyx_t_5numpy_double_t;
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t
  * ctypedef npy_longdouble longdouble_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_cfloat      cfloat_t
  */
 typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 
 /* "fff.pxd":9
- * 
+ *
  * # Redefine size_t
  * ctypedef unsigned long int size_t             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
 typedef unsigned long __pyx_t_3fff_size_t;
 /* Declarations.proto */
@@ -1218,7 +1218,7 @@ static CYTHON_INLINE __pyx_t_double_complex __pyx_t_double_complex_from_parts(do
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":728
  * ctypedef npy_longdouble longdouble_t
- * 
+ *
  * ctypedef npy_cfloat      cfloat_t             # <<<<<<<<<<<<<<
  * ctypedef npy_cdouble     cdouble_t
  * ctypedef npy_clongdouble clongdouble_t
@@ -1226,11 +1226,11 @@ static CYTHON_INLINE __pyx_t_double_complex __pyx_t_double_complex_from_parts(do
 typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":729
- * 
+ *
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t             # <<<<<<<<<<<<<<
  * ctypedef npy_clongdouble clongdouble_t
- * 
+ *
  */
 typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
 
@@ -1238,16 +1238,16 @@ typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t
  * ctypedef npy_clongdouble clongdouble_t             # <<<<<<<<<<<<<<
- * 
+ *
  * ctypedef npy_cdouble     complex_t
  */
 typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":732
  * ctypedef npy_clongdouble clongdouble_t
- * 
+ *
  * ctypedef npy_cdouble     complex_t             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew1(a):
  */
 typedef npy_cdouble __pyx_t_5numpy_complex_t;
@@ -1999,8 +1999,8 @@ static PyObject *__pyx_codeobj__20;
 /* Late includes */
 
 /* "nipy/labs/bindings/wrapper.pyx":34
- * 
- * 
+ *
+ *
  * def fff_type(dtype T):             # <<<<<<<<<<<<<<
  *     """
  *     fff_t, nbytes = fff_type(T)
@@ -2058,7 +2058,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_fff_type(CYTHON_UNUSED 
  *     fff_t =  fff_datatype_fromNumPy(T.type_num)
  *     nbytes =  fff_nbytes(fff_t)             # <<<<<<<<<<<<<<
  *     return c_types[fff_types.index(<int>fff_t)], nbytes
- * 
+ *
  */
   __pyx_v_nbytes = fff_nbytes(__pyx_v_fff_t);
 
@@ -2066,8 +2066,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_fff_type(CYTHON_UNUSED 
  *     fff_t =  fff_datatype_fromNumPy(T.type_num)
  *     nbytes =  fff_nbytes(fff_t)
  *     return c_types[fff_types.index(<int>fff_t)], nbytes             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_c_types); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 44, __pyx_L1_error)
@@ -2114,8 +2114,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_fff_type(CYTHON_UNUSED 
   goto __pyx_L0;
 
   /* "nipy/labs/bindings/wrapper.pyx":34
- * 
- * 
+ *
+ *
  * def fff_type(dtype T):             # <<<<<<<<<<<<<<
  *     """
  *     fff_t, nbytes = fff_type(T)
@@ -2137,8 +2137,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_fff_type(CYTHON_UNUSED 
 }
 
 /* "nipy/labs/bindings/wrapper.pyx":47
- * 
- * 
+ *
+ *
  * def npy_type(T):             # <<<<<<<<<<<<<<
  *     """
  *     npy_t, nbytes = npy_type(T)
@@ -2227,7 +2227,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_2npy_type(CYTHON_UNUSED
  *     npy_t = fff_datatype_toNumPy(fff_t)
  *     nbytes =  fff_nbytes(fff_t)             # <<<<<<<<<<<<<<
  *     return c_types[npy_types.index(npy_t)], nbytes
- * 
+ *
  */
   __pyx_v_nbytes = fff_nbytes(__pyx_v_fff_t);
 
@@ -2235,7 +2235,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_2npy_type(CYTHON_UNUSED
  *     npy_t = fff_datatype_toNumPy(fff_t)
  *     nbytes =  fff_nbytes(fff_t)
  *     return c_types[npy_types.index(npy_t)], nbytes             # <<<<<<<<<<<<<<
- * 
+ *
  * def pass_vector(ndarray X):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -2283,8 +2283,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_2npy_type(CYTHON_UNUSED
   goto __pyx_L0;
 
   /* "nipy/labs/bindings/wrapper.pyx":47
- * 
- * 
+ *
+ *
  * def npy_type(T):             # <<<<<<<<<<<<<<
  *     """
  *     npy_t, nbytes = npy_type(T)
@@ -2307,7 +2307,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_2npy_type(CYTHON_UNUSED
 
 /* "nipy/labs/bindings/wrapper.pyx":61
  *     return c_types[npy_types.index(npy_t)], nbytes
- * 
+ *
  * def pass_vector(ndarray X):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_vector(X)
@@ -2379,7 +2379,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_4pass_vector(CYTHON_UNU
  *     fff_vector_memcpy(y, x)
  *     fff_vector_delete(x)             # <<<<<<<<<<<<<<
  *     return fff_vector_toPyArray(y)
- * 
+ *
  */
   fff_vector_delete(__pyx_v_x);
 
@@ -2387,8 +2387,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_4pass_vector(CYTHON_UNU
  *     fff_vector_memcpy(y, x)
  *     fff_vector_delete(x)
  *     return fff_vector_toPyArray(y)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = ((PyObject *)fff_vector_toPyArray(__pyx_v_y)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 70, __pyx_L1_error)
@@ -2399,7 +2399,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_4pass_vector(CYTHON_UNU
 
   /* "nipy/labs/bindings/wrapper.pyx":61
  *     return c_types[npy_types.index(npy_t)], nbytes
- * 
+ *
  * def pass_vector(ndarray X):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_vector(X)
@@ -2417,8 +2417,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_4pass_vector(CYTHON_UNU
 }
 
 /* "nipy/labs/bindings/wrapper.pyx":73
- * 
- * 
+ *
+ *
  * def copy_vector(ndarray X, int flag):             # <<<<<<<<<<<<<<
  *     """
  *     Y = copy_vector(X, flag)
@@ -2516,7 +2516,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_6copy_vector(CYTHON_UNU
 
   /* "nipy/labs/bindings/wrapper.pyx":85
  *     cdef fff_datatype fff_type
- * 
+ *
  *     data = <void*>X.data             # <<<<<<<<<<<<<<
  *     size = X.shape[0]
  *     stride = X.strides[0]
@@ -2524,7 +2524,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_6copy_vector(CYTHON_UNU
   __pyx_v_data = ((void *)__pyx_v_X->data);
 
   /* "nipy/labs/bindings/wrapper.pyx":86
- * 
+ *
  *     data = <void*>X.data
  *     size = X.shape[0]             # <<<<<<<<<<<<<<
  *     stride = X.strides[0]
@@ -2546,7 +2546,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_6copy_vector(CYTHON_UNU
  *     stride = X.strides[0]
  *     itemsize = X.descr.elsize             # <<<<<<<<<<<<<<
  *     type = X.descr.type_num
- * 
+ *
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_X->descr), __pyx_n_s_elsize); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 88, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -2558,7 +2558,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_6copy_vector(CYTHON_UNU
  *     stride = X.strides[0]
  *     itemsize = X.descr.elsize
  *     type = X.descr.type_num             # <<<<<<<<<<<<<<
- * 
+ *
  *     relstride = stride/itemsize
  */
   __pyx_t_2 = __pyx_v_X->descr->type_num;
@@ -2566,10 +2566,10 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_6copy_vector(CYTHON_UNU
 
   /* "nipy/labs/bindings/wrapper.pyx":91
  *     type = X.descr.type_num
- * 
+ *
  *     relstride = stride/itemsize             # <<<<<<<<<<<<<<
  *     fff_type =  fff_datatype_fromNumPy(type)
- * 
+ *
  */
   if (unlikely(__pyx_v_itemsize == 0)) {
     PyErr_SetString(PyExc_ZeroDivisionError, "integer division or modulo by zero");
@@ -2582,26 +2582,26 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_6copy_vector(CYTHON_UNU
   __pyx_v_relstride = __Pyx_div_int(__pyx_v_stride, __pyx_v_itemsize);
 
   /* "nipy/labs/bindings/wrapper.pyx":92
- * 
+ *
  *     relstride = stride/itemsize
  *     fff_type =  fff_datatype_fromNumPy(type)             # <<<<<<<<<<<<<<
- * 
+ *
  *     y = fff_vector_new(size)
  */
   __pyx_v_fff_type = fff_datatype_fromNumPy(__pyx_v_type);
 
   /* "nipy/labs/bindings/wrapper.pyx":94
  *     fff_type =  fff_datatype_fromNumPy(type)
- * 
+ *
  *     y = fff_vector_new(size)             # <<<<<<<<<<<<<<
- * 
+ *
  *     if flag == 0:
  */
   __pyx_v_y = fff_vector_new(__pyx_v_size);
 
   /* "nipy/labs/bindings/wrapper.pyx":96
  *     y = fff_vector_new(size)
- * 
+ *
  *     if flag == 0:             # <<<<<<<<<<<<<<
  *         fff_vector_fetch(y, data, fff_type, relstride)
  *     else:
@@ -2610,7 +2610,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_6copy_vector(CYTHON_UNU
   if (__pyx_t_3) {
 
     /* "nipy/labs/bindings/wrapper.pyx":97
- * 
+ *
  *     if flag == 0:
  *         fff_vector_fetch(y, data, fff_type, relstride)             # <<<<<<<<<<<<<<
  *     else:
@@ -2620,7 +2620,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_6copy_vector(CYTHON_UNU
 
     /* "nipy/labs/bindings/wrapper.pyx":96
  *     y = fff_vector_new(size)
- * 
+ *
  *     if flag == 0:             # <<<<<<<<<<<<<<
  *         fff_vector_fetch(y, data, fff_type, relstride)
  *     else:
@@ -2632,7 +2632,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_6copy_vector(CYTHON_UNU
  *         fff_vector_fetch(y, data, fff_type, relstride)
  *     else:
  *         fff_vector_fetch_using_NumPy(y, <char*>data, stride, type, itemsize)             # <<<<<<<<<<<<<<
- * 
+ *
  *     return fff_vector_toPyArray(y)
  */
   /*else*/ {
@@ -2642,10 +2642,10 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_6copy_vector(CYTHON_UNU
 
   /* "nipy/labs/bindings/wrapper.pyx":101
  *         fff_vector_fetch_using_NumPy(y, <char*>data, stride, type, itemsize)
- * 
+ *
  *     return fff_vector_toPyArray(y)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = ((PyObject *)fff_vector_toPyArray(__pyx_v_y)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 101, __pyx_L1_error)
@@ -2655,8 +2655,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_6copy_vector(CYTHON_UNU
   goto __pyx_L0;
 
   /* "nipy/labs/bindings/wrapper.pyx":73
- * 
- * 
+ *
+ *
  * def copy_vector(ndarray X, int flag):             # <<<<<<<<<<<<<<
  *     """
  *     Y = copy_vector(X, flag)
@@ -2674,8 +2674,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_6copy_vector(CYTHON_UNU
 }
 
 /* "nipy/labs/bindings/wrapper.pyx":104
- * 
- * 
+ *
+ *
  * def pass_matrix(ndarray X):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_matrix(X)
@@ -2747,7 +2747,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_8pass_matrix(CYTHON_UNU
  *     fff_matrix_memcpy(y, x)
  *     fff_matrix_delete(x)             # <<<<<<<<<<<<<<
  *     return fff_matrix_toPyArray(y)
- * 
+ *
  */
   fff_matrix_delete(__pyx_v_x);
 
@@ -2755,8 +2755,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_8pass_matrix(CYTHON_UNU
  *     fff_matrix_memcpy(y, x)
  *     fff_matrix_delete(x)
  *     return fff_matrix_toPyArray(y)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = ((PyObject *)fff_matrix_toPyArray(__pyx_v_y)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 113, __pyx_L1_error)
@@ -2766,8 +2766,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_8pass_matrix(CYTHON_UNU
   goto __pyx_L0;
 
   /* "nipy/labs/bindings/wrapper.pyx":104
- * 
- * 
+ *
+ *
  * def pass_matrix(ndarray X):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_matrix(X)
@@ -2785,8 +2785,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_8pass_matrix(CYTHON_UNU
 }
 
 /* "nipy/labs/bindings/wrapper.pyx":116
- * 
- * 
+ *
+ *
  * def pass_array(ndarray X):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_array(X)
@@ -2858,7 +2858,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_10pass_array(CYTHON_UNU
  *     fff_array_copy(y, x)
  *     fff_array_delete(x)             # <<<<<<<<<<<<<<
  *     return fff_array_toPyArray(y)
- * 
+ *
  */
   fff_array_delete(__pyx_v_x);
 
@@ -2866,8 +2866,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_10pass_array(CYTHON_UNU
  *     fff_array_copy(y, x)
  *     fff_array_delete(x)
  *     return fff_array_toPyArray(y)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = ((PyObject *)fff_array_toPyArray(__pyx_v_y)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 125, __pyx_L1_error)
@@ -2877,8 +2877,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_10pass_array(CYTHON_UNU
   goto __pyx_L0;
 
   /* "nipy/labs/bindings/wrapper.pyx":116
- * 
- * 
+ *
+ *
  * def pass_array(ndarray X):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_array(X)
@@ -2896,8 +2896,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_10pass_array(CYTHON_UNU
 }
 
 /* "nipy/labs/bindings/wrapper.pyx":128
- * 
- * 
+ *
+ *
  * def pass_vector_via_iterator(ndarray X, int axis=0, int niters=0):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_vector_via_iterator(X, axis=0, niters=0)
@@ -3015,7 +3015,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_12pass_vector_via_itera
 
   /* "nipy/labs/bindings/wrapper.pyx":135
  *     cdef fffpy_multi_iterator* multi
- * 
+ *
  *     Xdum = X.copy() ## at least two arrays needed for multi iterator             # <<<<<<<<<<<<<<
  *     multi = fffpy_multi_iterator_new(2, axis, <void*>X, <void*>Xdum)
  *     x = multi.vector[0]
@@ -3041,11 +3041,11 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_12pass_vector_via_itera
   __pyx_t_1 = 0;
 
   /* "nipy/labs/bindings/wrapper.pyx":136
- * 
+ *
  *     Xdum = X.copy() ## at least two arrays needed for multi iterator
  *     multi = fffpy_multi_iterator_new(2, axis, <void*>X, <void*>Xdum)             # <<<<<<<<<<<<<<
  *     x = multi.vector[0]
- * 
+ *
  */
   __pyx_v_multi = fffpy_multi_iterator_new(2, __pyx_v_axis, ((void *)__pyx_v_X), ((void *)__pyx_v_Xdum));
 
@@ -3053,27 +3053,27 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_12pass_vector_via_itera
  *     Xdum = X.copy() ## at least two arrays needed for multi iterator
  *     multi = fffpy_multi_iterator_new(2, axis, <void*>X, <void*>Xdum)
  *     x = multi.vector[0]             # <<<<<<<<<<<<<<
- * 
+ *
  *     while(multi.index < niters):
  */
   __pyx_v_x = (__pyx_v_multi->vector[0]);
 
   /* "nipy/labs/bindings/wrapper.pyx":139
  *     x = multi.vector[0]
- * 
+ *
  *     while(multi.index < niters):             # <<<<<<<<<<<<<<
  *         fffpy_multi_iterator_update(multi)
- * 
+ *
  */
   while (1) {
     __pyx_t_4 = ((__pyx_v_multi->index < __pyx_v_niters) != 0);
     if (!__pyx_t_4) break;
 
     /* "nipy/labs/bindings/wrapper.pyx":140
- * 
+ *
  *     while(multi.index < niters):
  *         fffpy_multi_iterator_update(multi)             # <<<<<<<<<<<<<<
- * 
+ *
  *     y = fff_vector_new(x.size)
  */
     fffpy_multi_iterator_update(__pyx_v_multi);
@@ -3081,7 +3081,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_12pass_vector_via_itera
 
   /* "nipy/labs/bindings/wrapper.pyx":142
  *         fffpy_multi_iterator_update(multi)
- * 
+ *
  *     y = fff_vector_new(x.size)             # <<<<<<<<<<<<<<
  *     fff_vector_memcpy(y, x)
  *     fffpy_multi_iterator_delete(multi)
@@ -3089,7 +3089,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_12pass_vector_via_itera
   __pyx_v_y = fff_vector_new(__pyx_v_x->size);
 
   /* "nipy/labs/bindings/wrapper.pyx":143
- * 
+ *
  *     y = fff_vector_new(x.size)
  *     fff_vector_memcpy(y, x)             # <<<<<<<<<<<<<<
  *     fffpy_multi_iterator_delete(multi)
@@ -3102,7 +3102,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_12pass_vector_via_itera
  *     fff_vector_memcpy(y, x)
  *     fffpy_multi_iterator_delete(multi)             # <<<<<<<<<<<<<<
  *     return fff_vector_toPyArray(y)
- * 
+ *
  */
   fffpy_multi_iterator_delete(__pyx_v_multi);
 
@@ -3110,8 +3110,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_12pass_vector_via_itera
  *     fff_vector_memcpy(y, x)
  *     fffpy_multi_iterator_delete(multi)
  *     return fff_vector_toPyArray(y)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = ((PyObject *)fff_vector_toPyArray(__pyx_v_y)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 145, __pyx_L1_error)
@@ -3121,8 +3121,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_12pass_vector_via_itera
   goto __pyx_L0;
 
   /* "nipy/labs/bindings/wrapper.pyx":128
- * 
- * 
+ *
+ *
  * def pass_vector_via_iterator(ndarray X, int axis=0, int niters=0):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_vector_via_iterator(X, axis=0, niters=0)
@@ -3143,8 +3143,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_12pass_vector_via_itera
 }
 
 /* "nipy/labs/bindings/wrapper.pyx":148
- * 
- * 
+ *
+ *
  * def copy_via_iterators(ndarray Y, int axis=0):             # <<<<<<<<<<<<<<
  *     """
  *     Z = copy_via_iterators(Y, int axis=0)
@@ -3247,10 +3247,10 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_14copy_via_iterators(CY
   __Pyx_RefNannySetupContext("copy_via_iterators", 0);
 
   /* "nipy/labs/bindings/wrapper.pyx":159
- * 
+ *
  *     # Allocate output array
  *     Z = np.zeros_like(Y, dtype=np.float_)             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Create a new array iterator
  */
   __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 159, __pyx_L1_error)
@@ -3281,20 +3281,20 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_14copy_via_iterators(CY
   __pyx_t_5 = 0;
 
   /* "nipy/labs/bindings/wrapper.pyx":162
- * 
+ *
  *     # Create a new array iterator
  *     multi = fffpy_multi_iterator_new(2, axis, <void*>Y, <void*>Z)             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Create views
  */
   __pyx_v_multi = fffpy_multi_iterator_new(2, __pyx_v_axis, ((void *)__pyx_v_Y), ((void *)__pyx_v_Z));
 
   /* "nipy/labs/bindings/wrapper.pyx":165
- * 
+ *
  *     # Create views
  *     y = multi.vector[0]             # <<<<<<<<<<<<<<
  *     z = multi.vector[1]
- * 
+ *
  */
   __pyx_v_y = (__pyx_v_multi->vector[0]);
 
@@ -3302,13 +3302,13 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_14copy_via_iterators(CY
  *     # Create views
  *     y = multi.vector[0]
  *     z = multi.vector[1]             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Loop
  */
   __pyx_v_z = (__pyx_v_multi->vector[1]);
 
   /* "nipy/labs/bindings/wrapper.pyx":169
- * 
+ *
  *     # Loop
  *     while(multi.index < multi.size):             # <<<<<<<<<<<<<<
  *         fff_vector_memcpy(z, y)
@@ -3323,7 +3323,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_14copy_via_iterators(CY
  *     while(multi.index < multi.size):
  *         fff_vector_memcpy(z, y)             # <<<<<<<<<<<<<<
  *         fffpy_multi_iterator_update(multi)
- * 
+ *
  */
     fff_vector_memcpy(__pyx_v_z, __pyx_v_y);
 
@@ -3331,27 +3331,27 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_14copy_via_iterators(CY
  *     while(multi.index < multi.size):
  *         fff_vector_memcpy(z, y)
  *         fffpy_multi_iterator_update(multi)             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Free memory
  */
     fffpy_multi_iterator_update(__pyx_v_multi);
   }
 
   /* "nipy/labs/bindings/wrapper.pyx":174
- * 
+ *
  *     # Free memory
  *     fffpy_multi_iterator_delete(multi)             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Return
  */
   fffpy_multi_iterator_delete(__pyx_v_multi);
 
   /* "nipy/labs/bindings/wrapper.pyx":177
- * 
+ *
  *     # Return
  *     return Z             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(__pyx_v_Z);
@@ -3359,8 +3359,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_14copy_via_iterators(CY
   goto __pyx_L0;
 
   /* "nipy/labs/bindings/wrapper.pyx":148
- * 
- * 
+ *
+ *
  * def copy_via_iterators(ndarray Y, int axis=0):             # <<<<<<<<<<<<<<
  *     """
  *     Z = copy_via_iterators(Y, int axis=0)
@@ -3383,8 +3383,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_14copy_via_iterators(CY
 }
 
 /* "nipy/labs/bindings/wrapper.pyx":180
- * 
- * 
+ *
+ *
  * def sum_via_iterators(ndarray Y, int axis=0):             # <<<<<<<<<<<<<<
  *     """
  *     Z = dummy_iterator(Y, int axis=0)
@@ -3490,7 +3490,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_16sum_via_iterators(CYT
   __Pyx_RefNannySetupContext("sum_via_iterators", 0);
 
   /* "nipy/labs/bindings/wrapper.pyx":191
- * 
+ *
  *     # Allocate output array
  *     dims = [Y.shape[i] for i in range(Y.ndim)]             # <<<<<<<<<<<<<<
  *     dims[axis] = 1
@@ -3515,7 +3515,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_16sum_via_iterators(CYT
  *     dims = [Y.shape[i] for i in range(Y.ndim)]
  *     dims[axis] = 1             # <<<<<<<<<<<<<<
  *     Z = np.zeros(dims)
- * 
+ *
  */
   if (unlikely(__Pyx_SetItemInt(__pyx_v_dims, __pyx_v_axis, __pyx_int_1, int, 1, __Pyx_PyInt_From_int, 1, 1, 1) < 0)) __PYX_ERR(0, 192, __pyx_L1_error)
 
@@ -3523,7 +3523,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_16sum_via_iterators(CYT
  *     dims = [Y.shape[i] for i in range(Y.ndim)]
  *     dims[axis] = 1
  *     Z = np.zeros(dims)             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Create a new array iterator
  */
   __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 193, __pyx_L1_error)
@@ -3550,20 +3550,20 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_16sum_via_iterators(CYT
   __pyx_t_1 = 0;
 
   /* "nipy/labs/bindings/wrapper.pyx":196
- * 
+ *
  *     # Create a new array iterator
  *     multi = fffpy_multi_iterator_new(2, axis, <void*>Y, <void*>Z)             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Create views
  */
   __pyx_v_multi = fffpy_multi_iterator_new(2, __pyx_v_axis, ((void *)__pyx_v_Y), ((void *)__pyx_v_Z));
 
   /* "nipy/labs/bindings/wrapper.pyx":199
- * 
+ *
  *     # Create views
  *     y = multi.vector[0]             # <<<<<<<<<<<<<<
  *     z = multi.vector[1]
- * 
+ *
  */
   __pyx_v_y = (__pyx_v_multi->vector[0]);
 
@@ -3571,13 +3571,13 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_16sum_via_iterators(CYT
  *     # Create views
  *     y = multi.vector[0]
  *     z = multi.vector[1]             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Loop
  */
   __pyx_v_z = (__pyx_v_multi->vector[1]);
 
   /* "nipy/labs/bindings/wrapper.pyx":203
- * 
+ *
  *     # Loop
  *     while(multi.index < multi.size):             # <<<<<<<<<<<<<<
  *         z.data[0] = <double>fff_vector_sum(y)
@@ -3592,7 +3592,7 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_16sum_via_iterators(CYT
  *     while(multi.index < multi.size):
  *         z.data[0] = <double>fff_vector_sum(y)             # <<<<<<<<<<<<<<
  *         fffpy_multi_iterator_update(multi)
- * 
+ *
  */
     (__pyx_v_z->data[0]) = ((double)fff_vector_sum(__pyx_v_y));
 
@@ -3600,27 +3600,27 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_16sum_via_iterators(CYT
  *     while(multi.index < multi.size):
  *         z.data[0] = <double>fff_vector_sum(y)
  *         fffpy_multi_iterator_update(multi)             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Free memory
  */
     fffpy_multi_iterator_update(__pyx_v_multi);
   }
 
   /* "nipy/labs/bindings/wrapper.pyx":208
- * 
+ *
  *     # Free memory
  *     fffpy_multi_iterator_delete(multi)             # <<<<<<<<<<<<<<
- * 
+ *
  *     # Return
  */
   fffpy_multi_iterator_delete(__pyx_v_multi);
 
   /* "nipy/labs/bindings/wrapper.pyx":211
- * 
+ *
  *     # Return
  *     return Z.squeeze()             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_Z, __pyx_n_s_squeeze); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 211, __pyx_L1_error)
@@ -3645,8 +3645,8 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_16sum_via_iterators(CYT
   goto __pyx_L0;
 
   /* "nipy/labs/bindings/wrapper.pyx":180
- * 
- * 
+ *
+ *
  * def sum_via_iterators(ndarray Y, int axis=0):             # <<<<<<<<<<<<<<
  *     """
  *     Z = dummy_iterator(Y, int axis=0)
@@ -3669,10 +3669,10 @@ static PyObject *__pyx_pf_4nipy_4labs_8bindings_7wrapper_16sum_via_iterators(CYT
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":734
  * ctypedef npy_cdouble     complex_t
- * 
+ *
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(1, <void*>a)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__pyx_v_a) {
@@ -3685,10 +3685,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew1", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":735
- * 
+ *
  * cdef inline object PyArray_MultiIterNew1(a):
  *     return PyArray_MultiIterNew(1, <void*>a)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew2(a, b):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -3700,10 +3700,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":734
  * ctypedef npy_cdouble     complex_t
- * 
+ *
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(1, <void*>a)
- * 
+ *
  */
 
   /* function exit code */
@@ -3719,10 +3719,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":737
  *     return PyArray_MultiIterNew(1, <void*>a)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__pyx_v_a, PyObject *__pyx_v_b) {
@@ -3735,10 +3735,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew2", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":738
- * 
+ *
  * cdef inline object PyArray_MultiIterNew2(a, b):
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew3(a, b, c):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -3750,10 +3750,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":737
  *     return PyArray_MultiIterNew(1, <void*>a)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
- * 
+ *
  */
 
   /* function exit code */
@@ -3769,10 +3769,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":740
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c) {
@@ -3785,10 +3785,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew3", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":741
- * 
+ *
  * cdef inline object PyArray_MultiIterNew3(a, b, c):
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -3800,10 +3800,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":740
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
- * 
+ *
  */
 
   /* function exit code */
@@ -3819,10 +3819,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":743
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c, PyObject *__pyx_v_d) {
@@ -3835,10 +3835,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew4", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":744
- * 
+ *
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -3850,10 +3850,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":743
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
- * 
+ *
  */
 
   /* function exit code */
@@ -3869,10 +3869,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":746
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
- * 
+ *
  */
 
 static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c, PyObject *__pyx_v_d, PyObject *__pyx_v_e) {
@@ -3885,10 +3885,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew5", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":747
- * 
+ *
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  */
   __Pyx_XDECREF(__pyx_r);
@@ -3900,10 +3900,10 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":746
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
- * 
+ *
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
- * 
+ *
  */
 
   /* function exit code */
@@ -3919,7 +3919,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":749
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):             # <<<<<<<<<<<<<<
  *     if PyDataType_HASSUBARRAY(d):
  *         return <tuple>d.subarray.shape
@@ -3932,7 +3932,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
   __Pyx_RefNannySetupContext("PyDataType_SHAPE", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":750
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  *     if PyDataType_HASSUBARRAY(d):             # <<<<<<<<<<<<<<
  *         return <tuple>d.subarray.shape
@@ -3954,7 +3954,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
     goto __pyx_L0;
 
     /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":750
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  *     if PyDataType_HASSUBARRAY(d):             # <<<<<<<<<<<<<<
  *         return <tuple>d.subarray.shape
@@ -3966,8 +3966,8 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
  *         return <tuple>d.subarray.shape
  *     else:
  *         return ()             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   /*else*/ {
     __Pyx_XDECREF(__pyx_r);
@@ -3978,7 +3978,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":749
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
- * 
+ *
  * cdef inline tuple PyDataType_SHAPE(dtype d):             # <<<<<<<<<<<<<<
  *     if PyDataType_HASSUBARRAY(d):
  *         return <tuple>d.subarray.shape
@@ -3993,7 +3993,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":928
  *     int _import_umath() except -1
- * 
+ *
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
  *     Py_INCREF(base) # important to do this before stealing the reference below!
  *     PyArray_SetBaseObject(arr, base)
@@ -4004,11 +4004,11 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __Pyx_RefNannySetupContext("set_array_base", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":929
- * 
+ *
  * cdef inline void set_array_base(ndarray arr, object base):
  *     Py_INCREF(base) # important to do this before stealing the reference below!             # <<<<<<<<<<<<<<
  *     PyArray_SetBaseObject(arr, base)
- * 
+ *
  */
   Py_INCREF(__pyx_v_base);
 
@@ -4016,14 +4016,14 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  * cdef inline void set_array_base(ndarray arr, object base):
  *     Py_INCREF(base) # important to do this before stealing the reference below!
  *     PyArray_SetBaseObject(arr, base)             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline object get_array_base(ndarray arr):
  */
   (void)(PyArray_SetBaseObject(__pyx_v_arr, __pyx_v_base));
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":928
  *     int _import_umath() except -1
- * 
+ *
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
  *     Py_INCREF(base) # important to do this before stealing the reference below!
  *     PyArray_SetBaseObject(arr, base)
@@ -4035,7 +4035,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":932
  *     PyArray_SetBaseObject(arr, base)
- * 
+ *
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
  *     base = PyArray_BASE(arr)
  *     if base is NULL:
@@ -4049,7 +4049,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   __Pyx_RefNannySetupContext("get_array_base", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":933
- * 
+ *
  * cdef inline object get_array_base(ndarray arr):
  *     base = PyArray_BASE(arr)             # <<<<<<<<<<<<<<
  *     if base is NULL:
@@ -4072,7 +4072,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
  *     if base is NULL:
  *         return None             # <<<<<<<<<<<<<<
  *     return <object>base
- * 
+ *
  */
     __Pyx_XDECREF(__pyx_r);
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
@@ -4091,7 +4091,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
  *     if base is NULL:
  *         return None
  *     return <object>base             # <<<<<<<<<<<<<<
- * 
+ *
  * # Versions of the import_* functions which are more suitable for
  */
   __Pyx_XDECREF(__pyx_r);
@@ -4101,7 +4101,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":932
  *     PyArray_SetBaseObject(arr, base)
- * 
+ *
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
  *     base = PyArray_BASE(arr)
  *     if base is NULL:
@@ -4182,7 +4182,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
  *         __pyx_import_array()
  *     except Exception:             # <<<<<<<<<<<<<<
  *         raise ImportError("numpy.core.multiarray failed to import")
- * 
+ *
  */
     __pyx_t_4 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])));
     if (__pyx_t_4) {
@@ -4196,7 +4196,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
  *         __pyx_import_array()
  *     except Exception:
  *         raise ImportError("numpy.core.multiarray failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline int import_umath() except -1:
  */
       __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ImportError, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(1, 944, __pyx_L5_except_error)
@@ -4248,7 +4248,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":946
  *         raise ImportError("numpy.core.multiarray failed to import")
- * 
+ *
  * cdef inline int import_umath() except -1:             # <<<<<<<<<<<<<<
  *     try:
  *         _import_umath()
@@ -4271,7 +4271,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
   __Pyx_RefNannySetupContext("import_umath", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":947
- * 
+ *
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -4296,7 +4296,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
       __pyx_t_4 = _import_umath(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(1, 948, __pyx_L3_error)
 
       /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":947
- * 
+ *
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -4314,7 +4314,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
  *         _import_umath()
  *     except Exception:             # <<<<<<<<<<<<<<
  *         raise ImportError("numpy.core.umath failed to import")
- * 
+ *
  */
     __pyx_t_4 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])));
     if (__pyx_t_4) {
@@ -4328,7 +4328,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  */
       __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ImportError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(1, 950, __pyx_L5_except_error)
@@ -4341,7 +4341,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
     __pyx_L5_except_error:;
 
     /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":947
- * 
+ *
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -4357,7 +4357,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":946
  *         raise ImportError("numpy.core.multiarray failed to import")
- * 
+ *
  * cdef inline int import_umath() except -1:             # <<<<<<<<<<<<<<
  *     try:
  *         _import_umath()
@@ -4380,7 +4380,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":952
  *         raise ImportError("numpy.core.umath failed to import")
- * 
+ *
  * cdef inline int import_ufunc() except -1:             # <<<<<<<<<<<<<<
  *     try:
  *         _import_umath()
@@ -4403,7 +4403,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
   __Pyx_RefNannySetupContext("import_ufunc", 0);
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":953
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -4428,7 +4428,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
       __pyx_t_4 = _import_umath(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(1, 954, __pyx_L3_error)
 
       /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":953
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -4446,7 +4446,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
  *         _import_umath()
  *     except Exception:             # <<<<<<<<<<<<<<
  *         raise ImportError("numpy.core.umath failed to import")
- * 
+ *
  */
     __pyx_t_4 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])));
     if (__pyx_t_4) {
@@ -4460,7 +4460,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef extern from *:
  */
       __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ImportError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(1, 956, __pyx_L5_except_error)
@@ -4473,7 +4473,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
     __pyx_L5_except_error:;
 
     /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":953
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
  *         _import_umath()
@@ -4489,7 +4489,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":952
  *         raise ImportError("numpy.core.umath failed to import")
- * 
+ *
  * cdef inline int import_ufunc() except -1:             # <<<<<<<<<<<<<<
  *     try:
  *         _import_umath()
@@ -4511,8 +4511,8 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":966
- * 
- * 
+ *
+ *
  * cdef inline bint is_timedelta64_object(object obj):             # <<<<<<<<<<<<<<
  *     """
  *     Cython equivalent of `isinstance(obj, np.timedelta64)`
@@ -4527,15 +4527,15 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_timedelta64_object(PyObject *__pyx_v_
  *     bool
  *     """
  *     return PyObject_TypeCheck(obj, &PyTimedeltaArrType_Type)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = PyObject_TypeCheck(__pyx_v_obj, (&PyTimedeltaArrType_Type));
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":966
- * 
- * 
+ *
+ *
  * cdef inline bint is_timedelta64_object(object obj):             # <<<<<<<<<<<<<<
  *     """
  *     Cython equivalent of `isinstance(obj, np.timedelta64)`
@@ -4548,8 +4548,8 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_timedelta64_object(PyObject *__pyx_v_
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":981
- * 
- * 
+ *
+ *
  * cdef inline bint is_datetime64_object(object obj):             # <<<<<<<<<<<<<<
  *     """
  *     Cython equivalent of `isinstance(obj, np.datetime64)`
@@ -4564,15 +4564,15 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_datetime64_object(PyObject *__pyx_v_o
  *     bool
  *     """
  *     return PyObject_TypeCheck(obj, &PyDatetimeArrType_Type)             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = PyObject_TypeCheck(__pyx_v_obj, (&PyDatetimeArrType_Type));
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":981
- * 
- * 
+ *
+ *
  * cdef inline bint is_datetime64_object(object obj):             # <<<<<<<<<<<<<<
  *     """
  *     Cython equivalent of `isinstance(obj, np.datetime64)`
@@ -4585,8 +4585,8 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_datetime64_object(PyObject *__pyx_v_o
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":996
- * 
- * 
+ *
+ *
  * cdef inline npy_datetime get_datetime64_value(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the int64 value underlying scalar numpy datetime64 object
@@ -4599,15 +4599,15 @@ static CYTHON_INLINE npy_datetime __pyx_f_5numpy_get_datetime64_value(PyObject *
  *     also needed.  That can be found using `get_datetime64_unit`.
  *     """
  *     return (<PyDatetimeScalarObject*>obj).obval             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = ((PyDatetimeScalarObject *)__pyx_v_obj)->obval;
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":996
- * 
- * 
+ *
+ *
  * cdef inline npy_datetime get_datetime64_value(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the int64 value underlying scalar numpy datetime64 object
@@ -4619,8 +4619,8 @@ static CYTHON_INLINE npy_datetime __pyx_f_5numpy_get_datetime64_value(PyObject *
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1006
- * 
- * 
+ *
+ *
  * cdef inline npy_timedelta get_timedelta64_value(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the int64 value underlying scalar numpy timedelta64 object
@@ -4633,15 +4633,15 @@ static CYTHON_INLINE npy_timedelta __pyx_f_5numpy_get_timedelta64_value(PyObject
  *     returns the int64 value underlying scalar numpy timedelta64 object
  *     """
  *     return (<PyTimedeltaScalarObject*>obj).obval             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_r = ((PyTimedeltaScalarObject *)__pyx_v_obj)->obval;
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1006
- * 
- * 
+ *
+ *
  * cdef inline npy_timedelta get_timedelta64_value(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the int64 value underlying scalar numpy timedelta64 object
@@ -4653,8 +4653,8 @@ static CYTHON_INLINE npy_timedelta __pyx_f_5numpy_get_timedelta64_value(PyObject
 }
 
 /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1013
- * 
- * 
+ *
+ *
  * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the unit part of the dtype for a numpy datetime64 object.
@@ -4672,8 +4672,8 @@ static CYTHON_INLINE NPY_DATETIMEUNIT __pyx_f_5numpy_get_datetime64_unit(PyObjec
   goto __pyx_L0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1013
- * 
- * 
+ *
+ *
  * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the unit part of the dtype for a numpy datetime64 object.
@@ -4817,7 +4817,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *         __pyx_import_array()
  *     except Exception:
  *         raise ImportError("numpy.core.multiarray failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline int import_umath() except -1:
  */
   __pyx_tuple_ = PyTuple_Pack(1, __pyx_kp_s_numpy_core_multiarray_failed_to); if (unlikely(!__pyx_tuple_)) __PYX_ERR(1, 944, __pyx_L1_error)
@@ -4828,7 +4828,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
- * 
+ *
  * cdef inline int import_ufunc() except -1:
  */
   __pyx_tuple__2 = PyTuple_Pack(1, __pyx_kp_s_numpy_core_umath_failed_to_impor); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(1, 950, __pyx_L1_error)
@@ -4836,8 +4836,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__2);
 
   /* "nipy/labs/bindings/wrapper.pyx":34
- * 
- * 
+ *
+ *
  * def fff_type(dtype T):             # <<<<<<<<<<<<<<
  *     """
  *     fff_t, nbytes = fff_type(T)
@@ -4848,8 +4848,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__4 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__3, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_wrapper_pyx, __pyx_n_s_fff_type, 34, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__4)) __PYX_ERR(0, 34, __pyx_L1_error)
 
   /* "nipy/labs/bindings/wrapper.pyx":47
- * 
- * 
+ *
+ *
  * def npy_type(T):             # <<<<<<<<<<<<<<
  *     """
  *     npy_t, nbytes = npy_type(T)
@@ -4861,7 +4861,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
 
   /* "nipy/labs/bindings/wrapper.pyx":61
  *     return c_types[npy_types.index(npy_t)], nbytes
- * 
+ *
  * def pass_vector(ndarray X):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_vector(X)
@@ -4872,8 +4872,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_wrapper_pyx, __pyx_n_s_pass_vector, 61, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 61, __pyx_L1_error)
 
   /* "nipy/labs/bindings/wrapper.pyx":73
- * 
- * 
+ *
+ *
  * def copy_vector(ndarray X, int flag):             # <<<<<<<<<<<<<<
  *     """
  *     Y = copy_vector(X, flag)
@@ -4884,8 +4884,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(2, 0, 10, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_wrapper_pyx, __pyx_n_s_copy_vector, 73, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 73, __pyx_L1_error)
 
   /* "nipy/labs/bindings/wrapper.pyx":104
- * 
- * 
+ *
+ *
  * def pass_matrix(ndarray X):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_matrix(X)
@@ -4896,8 +4896,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_wrapper_pyx, __pyx_n_s_pass_matrix, 104, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 104, __pyx_L1_error)
 
   /* "nipy/labs/bindings/wrapper.pyx":116
- * 
- * 
+ *
+ *
  * def pass_array(ndarray X):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_array(X)
@@ -4908,8 +4908,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_wrapper_pyx, __pyx_n_s_pass_array, 116, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 116, __pyx_L1_error)
 
   /* "nipy/labs/bindings/wrapper.pyx":128
- * 
- * 
+ *
+ *
  * def pass_vector_via_iterator(ndarray X, int axis=0, int niters=0):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_vector_via_iterator(X, axis=0, niters=0)
@@ -4920,8 +4920,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__16 = (PyObject*)__Pyx_PyCode_New(3, 0, 8, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__15, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_wrapper_pyx, __pyx_n_s_pass_vector_via_iterator, 128, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__16)) __PYX_ERR(0, 128, __pyx_L1_error)
 
   /* "nipy/labs/bindings/wrapper.pyx":148
- * 
- * 
+ *
+ *
  * def copy_via_iterators(ndarray Y, int axis=0):             # <<<<<<<<<<<<<<
  *     """
  *     Z = copy_via_iterators(Y, int axis=0)
@@ -4932,8 +4932,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__18 = (PyObject*)__Pyx_PyCode_New(2, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__17, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_wrapper_pyx, __pyx_n_s_copy_via_iterators, 148, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__18)) __PYX_ERR(0, 148, __pyx_L1_error)
 
   /* "nipy/labs/bindings/wrapper.pyx":180
- * 
- * 
+ *
+ *
  * def sum_via_iterators(ndarray Y, int axis=0):             # <<<<<<<<<<<<<<
  *     """
  *     Z = dummy_iterator(Y, int axis=0)
@@ -5007,7 +5007,7 @@ static int __Pyx_modinit_type_import_code(void) {
   /*--- Type import code ---*/
   __pyx_t_1 = PyImport_ImportModule(__Pyx_BUILTIN_MODULE_NAME); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 9, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_ptype_7cpython_4type_type = __Pyx_ImportType(__pyx_t_1, __Pyx_BUILTIN_MODULE_NAME, "type", 
+  __pyx_ptype_7cpython_4type_type = __Pyx_ImportType(__pyx_t_1, __Pyx_BUILTIN_MODULE_NAME, "type",
   #if defined(PYPY_VERSION_NUM) && PYPY_VERSION_NUM < 0x050B0000
   sizeof(PyTypeObject),
   #else
@@ -5287,15 +5287,15 @@ if (!__Pyx_RefNanny) {
 
   /* "nipy/labs/bindings/wrapper.pyx":9
  * """
- * 
+ *
  * __version__ = '0.1'             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_version, __pyx_kp_s_0_1) < 0) __PYX_ERR(0, 9, __pyx_L1_error)
 
   /* "nipy/labs/bindings/wrapper.pyx":18
- * 
+ *
  * # Initialize numpy
  * fffpy_import_array()             # <<<<<<<<<<<<<<
  * import_array()
@@ -5308,7 +5308,7 @@ if (!__Pyx_RefNanny) {
  * fffpy_import_array()
  * import_array()             # <<<<<<<<<<<<<<
  * import numpy as np
- * 
+ *
  */
   __pyx_t_1 = __pyx_f_5numpy_import_array(); if (unlikely(__pyx_t_1 == ((int)-1))) __PYX_ERR(0, 19, __pyx_L1_error)
 
@@ -5316,8 +5316,8 @@ if (!__Pyx_RefNanny) {
  * fffpy_import_array()
  * import_array()
  * import numpy as np             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_t_2 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 20, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -5325,11 +5325,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/labs/bindings/wrapper.pyx":23
- * 
- * 
+ *
+ *
  * c_types = ['unknown type', 'unsigned char', 'signed char', 'unsigned short', 'signed short',             # <<<<<<<<<<<<<<
  *            'int', 'unsigned int', 'unsigned long', 'long', 'float', 'double']
- * 
+ *
  */
   __pyx_t_2 = PyList_New(11); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -5371,10 +5371,10 @@ if (!__Pyx_RefNanny) {
 
   /* "nipy/labs/bindings/wrapper.pyx":26
  *            'int', 'unsigned int', 'unsigned long', 'long', 'float', 'double']
- * 
+ *
  * fff_types = [FFF_UNKNOWN_TYPE, FFF_UCHAR, FFF_SCHAR, FFF_USHORT, FFF_SSHORT,             # <<<<<<<<<<<<<<
  *              FFF_UINT, FFF_INT, FFF_ULONG, FFF_LONG, FFF_FLOAT, FFF_DOUBLE]
- * 
+ *
  */
   __pyx_t_2 = __Pyx_PyInt_From_fff_datatype(FFF_UNKNOWN_TYPE); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 26, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -5388,10 +5388,10 @@ if (!__Pyx_RefNanny) {
   __Pyx_GOTREF(__pyx_t_6);
 
   /* "nipy/labs/bindings/wrapper.pyx":27
- * 
+ *
  * fff_types = [FFF_UNKNOWN_TYPE, FFF_UCHAR, FFF_SCHAR, FFF_USHORT, FFF_SSHORT,
  *              FFF_UINT, FFF_INT, FFF_ULONG, FFF_LONG, FFF_FLOAT, FFF_DOUBLE]             # <<<<<<<<<<<<<<
- * 
+ *
  * npy_types = [cnp.NPY_NOTYPE, cnp.NPY_UBYTE, cnp.NPY_BYTE, cnp.NPY_USHORT,
  */
   __pyx_t_7 = __Pyx_PyInt_From_fff_datatype(FFF_UINT); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 27, __pyx_L1_error)
@@ -5409,10 +5409,10 @@ if (!__Pyx_RefNanny) {
 
   /* "nipy/labs/bindings/wrapper.pyx":26
  *            'int', 'unsigned int', 'unsigned long', 'long', 'float', 'double']
- * 
+ *
  * fff_types = [FFF_UNKNOWN_TYPE, FFF_UCHAR, FFF_SCHAR, FFF_USHORT, FFF_SSHORT,             # <<<<<<<<<<<<<<
  *              FFF_UINT, FFF_INT, FFF_ULONG, FFF_LONG, FFF_FLOAT, FFF_DOUBLE]
- * 
+ *
  */
   __pyx_t_13 = PyList_New(11); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 26, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_13);
@@ -5454,7 +5454,7 @@ if (!__Pyx_RefNanny) {
 
   /* "nipy/labs/bindings/wrapper.pyx":29
  *              FFF_UINT, FFF_INT, FFF_ULONG, FFF_LONG, FFF_FLOAT, FFF_DOUBLE]
- * 
+ *
  * npy_types = [cnp.NPY_NOTYPE, cnp.NPY_UBYTE, cnp.NPY_BYTE, cnp.NPY_USHORT,             # <<<<<<<<<<<<<<
  *              cnp.NPY_SHORT, cnp.NPY_UINT, cnp.NPY_INT, cnp.NPY_ULONG,
  *              cnp.NPY_LONG, cnp.NPY_FLOAT, cnp.NPY_DOUBLE]
@@ -5469,11 +5469,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_GOTREF(__pyx_t_10);
 
   /* "nipy/labs/bindings/wrapper.pyx":30
- * 
+ *
  * npy_types = [cnp.NPY_NOTYPE, cnp.NPY_UBYTE, cnp.NPY_BYTE, cnp.NPY_USHORT,
  *              cnp.NPY_SHORT, cnp.NPY_UINT, cnp.NPY_INT, cnp.NPY_ULONG,             # <<<<<<<<<<<<<<
  *              cnp.NPY_LONG, cnp.NPY_FLOAT, cnp.NPY_DOUBLE]
- * 
+ *
  */
   __pyx_t_9 = __Pyx_PyInt_From_enum__NPY_TYPES(NPY_SHORT); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 30, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
@@ -5488,8 +5488,8 @@ if (!__Pyx_RefNanny) {
  * npy_types = [cnp.NPY_NOTYPE, cnp.NPY_UBYTE, cnp.NPY_BYTE, cnp.NPY_USHORT,
  *              cnp.NPY_SHORT, cnp.NPY_UINT, cnp.NPY_INT, cnp.NPY_ULONG,
  *              cnp.NPY_LONG, cnp.NPY_FLOAT, cnp.NPY_DOUBLE]             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_t_5 = __Pyx_PyInt_From_enum__NPY_TYPES(NPY_LONG); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 31, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
@@ -5500,7 +5500,7 @@ if (!__Pyx_RefNanny) {
 
   /* "nipy/labs/bindings/wrapper.pyx":29
  *              FFF_UINT, FFF_INT, FFF_ULONG, FFF_LONG, FFF_FLOAT, FFF_DOUBLE]
- * 
+ *
  * npy_types = [cnp.NPY_NOTYPE, cnp.NPY_UBYTE, cnp.NPY_BYTE, cnp.NPY_USHORT,             # <<<<<<<<<<<<<<
  *              cnp.NPY_SHORT, cnp.NPY_UINT, cnp.NPY_INT, cnp.NPY_ULONG,
  *              cnp.NPY_LONG, cnp.NPY_FLOAT, cnp.NPY_DOUBLE]
@@ -5544,8 +5544,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/labs/bindings/wrapper.pyx":34
- * 
- * 
+ *
+ *
  * def fff_type(dtype T):             # <<<<<<<<<<<<<<
  *     """
  *     fff_t, nbytes = fff_type(T)
@@ -5556,8 +5556,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/labs/bindings/wrapper.pyx":47
- * 
- * 
+ *
+ *
  * def npy_type(T):             # <<<<<<<<<<<<<<
  *     """
  *     npy_t, nbytes = npy_type(T)
@@ -5569,7 +5569,7 @@ if (!__Pyx_RefNanny) {
 
   /* "nipy/labs/bindings/wrapper.pyx":61
  *     return c_types[npy_types.index(npy_t)], nbytes
- * 
+ *
  * def pass_vector(ndarray X):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_vector(X)
@@ -5580,8 +5580,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/labs/bindings/wrapper.pyx":73
- * 
- * 
+ *
+ *
  * def copy_vector(ndarray X, int flag):             # <<<<<<<<<<<<<<
  *     """
  *     Y = copy_vector(X, flag)
@@ -5592,8 +5592,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/labs/bindings/wrapper.pyx":104
- * 
- * 
+ *
+ *
  * def pass_matrix(ndarray X):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_matrix(X)
@@ -5604,8 +5604,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/labs/bindings/wrapper.pyx":116
- * 
- * 
+ *
+ *
  * def pass_array(ndarray X):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_array(X)
@@ -5616,8 +5616,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/labs/bindings/wrapper.pyx":128
- * 
- * 
+ *
+ *
  * def pass_vector_via_iterator(ndarray X, int axis=0, int niters=0):             # <<<<<<<<<<<<<<
  *     """
  *     Y = pass_vector_via_iterator(X, axis=0, niters=0)
@@ -5628,8 +5628,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/labs/bindings/wrapper.pyx":148
- * 
- * 
+ *
+ *
  * def copy_via_iterators(ndarray Y, int axis=0):             # <<<<<<<<<<<<<<
  *     """
  *     Z = copy_via_iterators(Y, int axis=0)
@@ -5640,8 +5640,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "nipy/labs/bindings/wrapper.pyx":180
- * 
- * 
+ *
+ *
  * def sum_via_iterators(ndarray Y, int axis=0):             # <<<<<<<<<<<<<<
  *     """
  *     Z = dummy_iterator(Y, int axis=0)
@@ -5653,8 +5653,8 @@ if (!__Pyx_RefNanny) {
 
   /* "nipy/labs/bindings/wrapper.pyx":1
  * # -*- Mode: Python -*-  Not really, but the syntax is close enough             # <<<<<<<<<<<<<<
- * 
- * 
+ *
+ *
  */
   __pyx_t_2 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -5662,8 +5662,8 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "../../../../../.virtualenvs/test/lib/python3.10/site-packages/numpy/__init__.pxd":1013
- * 
- * 
+ *
+ *
  * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
  *     """
  *     returns the unit part of the dtype for a numpy datetime64 object.

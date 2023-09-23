@@ -1,22 +1,19 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function
-from __future__ import absolute_import
-
-from six import string_types
 
 import numpy as np
+from nibabel import Nifti1Image, load
+from six import string_types
 
-from nibabel import load, Nifti1Image
-
-from nipy.io.nibcompat import get_header, get_affine
+from nipy.io.nibcompat import get_affine, get_header
 
 from . import discrete_domain as ddom
+
 
 ##############################################################################
 # class SubDomains
 ##############################################################################
-class SubDomains(object):
+class SubDomains:
     """
     This is a class to represent multiple ROI objects, where the
     reference to a given domain is explicit.
@@ -161,11 +158,11 @@ class SubDomains(object):
 
         """
         cp = SubDomains(self.domain, self.label.copy(), id=self.get_id())
-        for fid in self.features.keys():
+        for fid in self.features:
             f = self.get_feature(fid)
             sf = [np.array(f[k]).copy() for k in range(self.k)]
             cp.set_feature(fid, sf)
-        for fid in self.roi_features.keys():
+        for fid in self.roi_features:
             cp.set_roi_feature(fid, self.get_roi_feature(fid).copy())
         return cp
 
@@ -291,7 +288,7 @@ class SubDomains(object):
 
         """
         if fid not in self.features:
-            raise ValueError("the `%s` feature does not exist" % fid)
+            raise ValueError(f"the `{fid}` feature does not exist")
         if id is not None:
             feature = np.asarray(self.features[fid][self.select_id(id)])
         else:
@@ -323,10 +320,9 @@ class SubDomains(object):
             override = False
         # check the feature is already present if setting a single roi
         if fid not in self.features and len(data) != self.k:
-            raise ValueError("`%s` feature does not exist, create it first"
-                             % fid)
+            raise ValueError(f"`{fid}` feature does not exist, create it first")
         if fid in self.roi_features:
-            raise ValueError("a roi_feature called `%s` already exists" % fid)
+            raise ValueError(f"a roi_feature called `{fid}` already exists")
         # check we will not override anything
         if fid in self.features and not override:
             #TODO: raise a warning
@@ -408,7 +404,7 @@ class SubDomains(object):
             summary_feature = rf
 
         if assess_quality:
-            self.set_roi_feature('%s_quality' % fid, feature_quality)
+            self.set_roi_feature(f'{fid}_quality', feature_quality)
         return np.array(summary_feature)
 
     def remove_feature(self, fid):
@@ -455,7 +451,7 @@ class SubDomains(object):
                 f = self.get_roi_feature(fid)
                 for id in self.get_id():
                     res[self.select_id(id, roi=False)] = f[self.select_id(id)]
-            elif fid in self.features.keys():
+            elif fid in self.features:
                 f = self.representative_feature(fid, method=method)
                 for id in self.get_id():
                     res[self.select_id(id, roi=False)] = f[self.select_id(id)]
@@ -520,7 +516,7 @@ class SubDomains(object):
             mp.figure()
             ax = mp.subplot(111)
         ax.boxplot(f)
-        ax.set_title('ROI-level distribution for feature %s' % fid)
+        ax.set_title(f'ROI-level distribution for feature {fid}')
         ax.set_xlabel('Region index')
         ax.set_xticks(np.arange(1, self.k + 1))
         return ax
@@ -569,7 +565,7 @@ class SubDomains(object):
         if fid not in self.roi_features and len(data) != self.k:
             raise ValueError("`%s` feature does not exist, create it first")
         if fid in self.features:
-            raise ValueError("a feature called `%s` already exists" % fid)
+            raise ValueError(f"a feature called `{fid}` already exists")
 
         # modify one particular region
         if id is not None:
@@ -647,7 +643,7 @@ class SubDomains(object):
             if not roi:
                 # write a feature
                 if fid not in self.features:
-                    raise ValueError("`%s` feature could not be found" % fid)
+                    raise ValueError(f"`{fid}` feature could not be found")
                 for i in self.get_id():
                     data[self.select_id(i, roi=False)] = \
                         self.get_feature(fid, i)

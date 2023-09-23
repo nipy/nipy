@@ -20,8 +20,9 @@ nosetests -sv --with-coverage --cover-package=nipy.core.reference.coordinate_sys
 
 import os
 import sys
-import nose
 from optparse import OptionParser
+
+import nose
 
 usage_doc = "usage: sneeze test_module.py"
 
@@ -29,11 +30,11 @@ def find_pkg(pkg):
     test_file = os.path.basename(pkg)
     module = os.path.splitext(test_file)[0] # remove '.py' extension
     module = module.split('test_')[1] # remove 'test_' prefix
-    
+
     cover_pkg = None
-    fp = open(pkg, 'r')
+    fp = open(pkg)
     for line in fp:
-        if line.startswith('from') or line.startswith('import'):
+        if line.startswith(("from", "import")):
             # remove keywords from import line
             imptline = line.replace('import', '')
             imptline = imptline.replace('from', '')
@@ -44,9 +45,9 @@ def find_pkg(pkg):
             imptline = '.'.join(imptline)
             try:
                 # Find index that immediately follows the module we care about
-                index = imptline.index(module) 
+                index = imptline.index(module)
                 index += len(module)
-                cover_pkg = imptline[:index] 
+                cover_pkg = imptline[:index]
                 break
             except ValueError:
                 pass
@@ -57,12 +58,12 @@ def run_nose(cover_pkg, test_file, dry_run=False):
     cover_arg = '--cover-package=%s' % cover_pkg
     sys.argv += ['-sv', '--with-coverage', cover_arg]
     # Print out command for user feedback and debugging
-    cmd = 'nosetests -sv --with-coverage %s %s' % (cover_arg, test_file)
-    print cmd
+    cmd = f'nosetests -sv --with-coverage {cover_arg} {test_file}'
+    print(cmd)
     if dry_run:
         return cmd
     else:
-        print
+        print()
         nose.run()
 
 
@@ -82,13 +83,10 @@ def main():
         if cover_pkg:
             run_nose(cover_pkg, test_file, dry_run=options.dry_run)
         else:
-            raise ValueError('Unable to find module %s imported in test file %s'
-                             % (module, test_file))
+            raise ValueError('Unable to find module {} imported in test file {}'.format(module, test_file))
     except IndexError:
         parser.print_help()
 
 
 if __name__ == '__main__':
     main()
-
-

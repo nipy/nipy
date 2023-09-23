@@ -1,14 +1,12 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import warnings
 
+import numpy as np
 from six import Iterator
 
-import numpy as np
-
-from .image import Image, iter_axis, is_image
-from ..reference.coordinate_map import (drop_io_dim, io_axis_indices, AxisError)
+from ..reference.coordinate_map import AxisError, drop_io_dim, io_axis_indices
+from .image import Image, is_image, iter_axis
 
 
 class ImageList(Iterator):
@@ -88,7 +86,7 @@ class ImageList(Iterator):
         # Get corresponding input, output dimension indices
         in_ax, out_ax = io_axis_indices(image.coordmap, axis)
         if in_ax is None:
-            raise AxisError('No correspnding input dimension for %s' % axis)
+            raise AxisError(f'No correspnding input dimension for {axis}')
         dropout = dropout and out_ax is not None
         if dropout:
             out_ax_name = image.reference.coord_names[out_ax]
@@ -116,7 +114,7 @@ class ImageList(Iterator):
         self.list[index]
         """
         # Integer slices return elements
-        if type(index) is type(1):
+        if type(index) is int:
             return self.list[index]
         # List etc slicing return new instances of self.__class__
         return self.__class__(images=self.list[index])

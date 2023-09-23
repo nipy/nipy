@@ -26,7 +26,7 @@ Installing
 
 Download and install the tarball for virtualenv_::
 
-  tar xzf virtualenv-1.1.tar.gz 
+  tar xzf virtualenv-1.1.tar.gz
   cd virtualenv-1.1
   python setup.py install --prefix=$HOME/local
 

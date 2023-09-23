@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
@@ -8,13 +7,15 @@ import scipy.stats as sp_stats
 from nibabel import Nifti1Image as Image
 from nibabel.affines import apply_affine
 
-from ..io.nibcompat import get_affine
 from ..algorithms.graph.field import field_from_graph_and_data
 from ..algorithms.graph.graph import wgraph_from_3d_grid
 from ..algorithms.statistics import empirical_pvalue
+from ..io.nibcompat import get_affine
 from .glm import glm
-from .group.permutation_test import \
-     permutation_test_onesample, permutation_test_twosample
+from .group.permutation_test import (
+    permutation_test_onesample,
+    permutation_test_twosample,
+)
 
 # FIXME: rename permutation_test_onesample class
 #so that name starts with upper case
@@ -107,11 +108,11 @@ def cluster_stats(zimg, mask, height_th, height_control='fpr',
     fdr_pvalue = empirical_pvalue.gaussian_fdr(zmap)[above_th]
 
     # Default "nulls"
-    if not 'zmax' in nulls:
+    if 'zmax' not in nulls:
         nulls['zmax'] = 'bonferroni'
-    if not 'smax' in nulls:
+    if 'smax' not in nulls:
         nulls['smax'] = None
-    if not 's' in nulls:
+    if 's' not in nulls:
         nulls['s'] = None
 
     # Report significance levels in each cluster
@@ -363,7 +364,7 @@ def linear_model_fit(data_images, mask_images, design_matrix, vector):
     return zimg
 
 
-class LinearModel(object):
+class LinearModel:
 
     def_model = 'spherical'
     def_niter = 2

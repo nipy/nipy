@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function
 __doc__ = """
 Example of a one-sample t-test using the GLM formalism.
 This script takes individual contrast images and masks and runs a simple GLM.
@@ -18,7 +17,7 @@ Author : Bertrand Thirion, 2012
 print(__doc__)
 
 #autoindent
-from os import mkdir, getcwd, path
+from os import getcwd, mkdir, path
 
 import numpy as np
 
@@ -27,14 +26,13 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nibabel import load, concat_images, save, Nifti1Image
-
-from nipy.labs.mask import intersect_masks
-from nipy.modalities.fmri.glm import FMRILinearModel
-from nipy.labs.viz import plot_map, cm
-
 # Local import
 from get_data_light import DATA_DIR, get_second_level_dataset
+from nibabel import Nifti1Image, concat_images, load, save
+
+from nipy.labs.mask import intersect_masks
+from nipy.labs.viz import cm, plot_map
+from nipy.modalities.fmri.glm import FMRILinearModel
 
 # Get the data
 n_subjects = 12
@@ -69,7 +67,7 @@ grp_model = FMRILinearModel(first_level_image, design_matrix, grp_mask)
 grp_model.fit(do_scaling=False, model='ols')
 
 # specify and estimate the contrast
-contrast_val = np.array(([[1]]))  # the only possible contrast !
+contrast_val = np.array([[1]])  # the only possible contrast !
 z_map, = grp_model.contrast(contrast_val, con_id='one_sample', output_z=True)
 
 # write the results
@@ -84,6 +82,6 @@ plot_map(z_map.get_fdata(), z_map.get_affine(),
          vmax=vmax,
          threshold=3.,
          black_bg=True)
-plt.savefig(path.join(write_dir, '%s_z_map.png' % 'one_sample'))
+plt.savefig(path.join(write_dir, f'one_sample_z_map.png'))
 plt.show()
-print("Wrote all the results in directory %s" % write_dir)
+print(f"Wrote all the results in directory {write_dir}")

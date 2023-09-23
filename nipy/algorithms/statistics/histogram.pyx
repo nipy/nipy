@@ -37,5 +37,5 @@ def histogram(x):
         hv = <np.npy_uintp*>np.PyArray_DATA(h) + xv
         hv[0] += 1
         np.PyArray_ITER_NEXT(it)
-        
+
     return h

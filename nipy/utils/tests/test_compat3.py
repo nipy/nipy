@@ -1,14 +1,16 @@
 """ Testing compat3 module
 """
-from __future__ import with_statement
-from __future__ import absolute_import
-
-from ..compat3 import to_str, open4csv
-
-from nose.tools import (assert_true, assert_false, assert_raises,
-                        assert_equal, assert_not_equal)
 
 from nibabel.tmpdirs import InTemporaryDirectory
+from nose.tools import (
+    assert_equal,
+    assert_false,
+    assert_not_equal,
+    assert_raises,
+    assert_true,
+)
+
+from ..compat3 import open4csv, to_str
 
 
 def test_to_str():
@@ -16,7 +18,7 @@ def test_to_str():
     assert_equal('1', to_str(1))
     assert_equal('1.0', to_str(1.0))
     assert_equal('from', to_str('from'))
-    assert_equal('from', to_str('from'.encode()))
+    assert_equal('from', to_str(b'from'))
 
 
 def test_open4csv():

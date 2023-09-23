@@ -4,8 +4,8 @@
 Use Mayavi to visualize the structure of a VolumeData
 """
 
-from enthought.mayavi import mlab
 import numpy as np
+from enthought.mayavi import mlab
 
 x, y, z, s = np.random.random((4, 20))
 
@@ -20,6 +20,3 @@ mlab.pipeline.surface(mlab.pipeline.extract_edges(sgrid), color=(0, 0, 0))
 mlab.pipeline.glyph(sgrid, mode='cube', scale_factor=0.05, scale_mode='none')
 mlab.savefig('volume_data.jpg')
 mlab.show()
-
-
-

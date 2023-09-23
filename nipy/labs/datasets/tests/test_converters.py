@@ -3,13 +3,13 @@
 """
 Test for the converters.
 """
-from __future__ import absolute_import
 import os
 import tempfile
+
+import nibabel as nib
 import nose
 
 from .. import as_volume_img, save
-import nibabel as nib
 
 data_file = os.path.join(nib.__path__[0], 'tests',
                                             'data', 'example4d.nii.gz')
@@ -47,4 +47,3 @@ try:
 
 except ImportError:
     pass
-

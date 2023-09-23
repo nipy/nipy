@@ -1,8 +1,7 @@
-from __future__ import absolute_import
-from ..histogram import histogram
-
 import numpy as np
 from numpy.testing import assert_array_equal
+
+from ..histogram import histogram
 
 
 def test_histogram():

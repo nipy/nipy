@@ -15,4 +15,3 @@ empirical null, moved from ``nipy.labs`` to ``nipy.algorithms.statistics``.
     viz.rst
     simul_activation.rst
     datasets.rst
-

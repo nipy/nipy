@@ -7,7 +7,6 @@ type. I (MB) have only seen this on a 32-bit machine runing scipy 0.9.0
 """
 
 import numpy as np
-
 import scipy.ndimage as spnd
 
 # int dtype corresponding to intp

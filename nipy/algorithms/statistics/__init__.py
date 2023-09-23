@@ -3,12 +3,13 @@
 """
 TODO
 """
-from __future__ import absolute_import
 __docformat__ = 'restructuredtext'
 
-from . import intvol, rft, onesample, formula
-from ._quantile import _quantile as quantile, _median as median
-
 from nipy.testing import Tester
+
+from . import formula, intvol, onesample, rft
+from ._quantile import _median as median
+from ._quantile import _quantile as quantile
+
 test = Tester().test
 bench = Tester().bench

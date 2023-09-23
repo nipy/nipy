@@ -46,4 +46,3 @@ Class documentation
 ____
 
 **Reference**: Schwartzmann et al., NeuroImage 44 (2009) 71--82
-

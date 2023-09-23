@@ -1,14 +1,14 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 ''' plot tsdiffana parameters '''
-from __future__ import absolute_import
-
-from six import string_types
 
 import numpy as np
+from six import string_types
 
 import nipy
+
 from .timediff import time_slice_diffs
+
 
 def plot_tsdiffs(results, axes=None):
     ''' Plotting routine for time series difference metrics
@@ -118,5 +118,3 @@ def plot_tsdiffs_image(img, axes=None, show=True):
         import matplotlib.pyplot as plt
         plt.show()
     return axes
-
-

@@ -1,22 +1,18 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 ''' Interfaces to SPM '''
-from __future__ import with_statement
-from __future__ import absolute_import
 
 import os
 
 import numpy as np
-
-from scipy.io import savemat
-
 from nibabel import load
 from nibabel.tmpdirs import InTemporaryDirectory
+from scipy.io import savemat
 
 from .matlab import run_matlab_script
 
 
-class SpmInfo(object):
+class SpmInfo:
     def __init__(self):
         self._spm_path = None
         self._spm_ver = None
@@ -31,7 +27,7 @@ fprintf(fid, '%s\n', spm_path);
 fprintf(fid, '%s\n', spm_ver);
 fclose(fid);
 """)
-            with open('spm_stuff.txt', 'rt') as fobj:
+            with open('spm_stuff.txt') as fobj:
                 lines = fobj.readlines()
         self._spm_path = lines[0].strip()
         self._spm_ver = lines[1].strip()
@@ -105,5 +101,3 @@ def fnames_presuffix(fnames, prefix='', suffix=''):
     for fname in fnames:
         f2.append(fname_presuffix(fname, prefix, suffix))
     return f2
-
-

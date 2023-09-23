@@ -9,9 +9,10 @@ to Joint Correction of Motion and Slice Timing in fMRI. IEEE Trans. Med.
 Imaging 30(8): 1546-1554
 """
 
-import os.path as op
-import nipy.algorithms.registration as reg
 import argparse
+import os.path as op
+
+import nipy.algorithms.registration as reg
 
 parser = argparse.ArgumentParser()
 
@@ -63,8 +64,8 @@ def main():
         for x in xform:
             euler_rot = reg.aff2euler(x.as_affine())
             for r in euler_rot:
-                f.write('%s\t'%r)
+                f.write(f'{r}\t')
             for t in x.translation[:-1]:
-                f.write('%s\t'%t)
-            f.write('%s\n'%x.translation[-1])
+                f.write(f'{t}\t')
+            f.write(f'{x.translation[-1]}\n')
         f.close()

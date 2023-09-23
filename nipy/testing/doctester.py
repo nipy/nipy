@@ -3,20 +3,19 @@
 To run doctests via nose, you'll need ``nosetests nipy/testing/doctester.py
 --doctest-test``, because this file will be identified as containing tests.
 """
-from __future__ import absolute_import
 
-import re
 import os
-
+import re
 from doctest import register_optionflag
 
 import numpy as np
+
 # Import for testing structured array reprs
 from numpy import array  # noqa
 
 from nipy.utils import _NoValue
-from ..fixes.numpy.testing.noseclasses import (NumpyDoctest,
-                                               NumpyOutputChecker)
+
+from ..fixes.numpy.testing.noseclasses import NumpyDoctest, NumpyOutputChecker
 
 IGNORE_OUTPUT = register_optionflag('IGNORE_OUTPUT')
 NP_ALLCLOSE = register_optionflag('NP_ALLCLOSE')
@@ -200,7 +199,7 @@ class NipyOutputChecker(NumpyOutputChecker):
         if STRUCTARR_EQUAL & optionflags:
             first = eval(want)
             second = eval(got)
-            if not first.tolist() == second.tolist():
+            if first.tolist() != second.tolist():
                 return False
             return first.dtype.names == second.dtype.names
         # Pass tests through two-pass numpy checker
@@ -225,4 +224,4 @@ class NipyDoctest(NumpyDoctest):
         # documentation.  Remove this default, reset it inside the function.
         if env is _NoValue:
             env = os.environ
-        super(NipyDoctest, self).options(parser, env)
+        super().options(parser, env)

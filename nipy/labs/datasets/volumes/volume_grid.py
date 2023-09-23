@@ -1,22 +1,21 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-The volume grid class. 
+The volume grid class.
 
-This class represents data lying on a (non rigid, non regular) grid embedded 
+This class represents data lying on a (non rigid, non regular) grid embedded
 in a 3D world represented as a 3+D array.
 """
-from __future__ import absolute_import
 
 import copy as copy
 
 import numpy as np
 from scipy import ndimage
 
-# Local imports
-from .volume_data import VolumeData
 from ..transforms.affine_utils import apply_affine, from_matrix_vector
 
+# Local imports
+from .volume_data import VolumeData
 
 ################################################################################
 # class `VolumeGrid`
@@ -26,7 +25,7 @@ class VolumeGrid(VolumeData):
     """ A class representing data stored in a 3+D array embedded in a 3D
         world.
 
-        This object has data stored in an array-like multidimensional 
+        This object has data stored in an array-like multidimensional
         indexable objects, with the 3 first dimensions corresponding to
         spatial axis and defining a 3D grid that may be non-regular or
         non-rigid.
@@ -40,7 +39,7 @@ class VolumeGrid(VolumeData):
         Attributes
         -----------
 
-        world_space: string 
+        world_space: string
             World space the data is embedded in. For instance `mni152`.
 
         metadata: dictionnary
@@ -49,7 +48,7 @@ class VolumeGrid(VolumeData):
             transformations. The consistency of this information is not
             maintained as the data is modified.
 
-        _data: 
+        _data:
             Private pointer to the data.
 
         Notes
@@ -88,14 +87,14 @@ class VolumeGrid(VolumeData):
                 Interpolation type used when calculating values in
                 different word spaces.
         """
-        if not interpolation in ('continuous', 'nearest'):
+        if interpolation not in ('continuous', 'nearest'):
             raise ValueError('interpolation must be either continuous '
                              'or nearest')
         self._data       = data
         self._transform  = transform
         self.world_space = transform.output_space
         if metadata is None:
-            metadata = dict()
+            metadata = {}
         self.metadata = metadata
         self.interpolation = interpolation
 
@@ -134,7 +133,7 @@ class VolumeGrid(VolumeData):
         values = self.values_in_world(x, y, z)
         # We import late to avoid circular import
         from .volume_img import VolumeImg
-        return VolumeImg(values, affine, 
+        return VolumeImg(values, affine,
                            self.world_space, metadata=self.metadata,
                            interpolation=self.interpolation)
 
@@ -176,10 +175,10 @@ class VolumeGrid(VolumeData):
 
 
     def get_transform(self):
-        """ Returns the transform object associated with the image which is a 
-            general description of the mapping from the voxel space to the 
+        """ Returns the transform object associated with the image which is a
+            general description of the mapping from the voxel space to the
             world space.
-            
+
             Returns
             -------
             transform : nipy.core.Transform object
@@ -192,7 +191,7 @@ class VolumeGrid(VolumeData):
 
 
     def values_in_world(self, x, y, z, interpolation=None):
-        """ Return the values of the data at the world-space positions given by 
+        """ Return the values of the data at the world-space positions given by
             x, y, z
 
             Parameters
@@ -243,7 +242,7 @@ class VolumeGrid(VolumeData):
         data_shape = list(data.shape)
         n_dims = len(data_shape)
         if n_dims > 3:
-            # Iter in a set of 3D volumes, as the interpolation problem is 
+            # Iter in a set of 3D volumes, as the interpolation problem is
             # separable in the extra dimensions. This reduces the
             # computational cost
             data = np.reshape(data, data_shape[:3] + [-1])
@@ -262,4 +261,3 @@ class VolumeGrid(VolumeData):
 
     # Inherit docstring
     values_in_world.__doc__ = VolumeData.values_in_world.__doc__
-

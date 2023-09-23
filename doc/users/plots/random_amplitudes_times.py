@@ -6,9 +6,9 @@ events at random times centered [0,2,4,6,8] and random
 amplitudes centered [0,1.1,2.3,0.9,0.3].
 """
 
-import pylab, matplotlib
+import matplotlib
 import numpy as np
-
+import pylab
 
 for t, y in zip([0,4,8,12,16], [0,1.1,2.3,0.9,0.3]):
     dt = np.array([-0.5,0.5,0.5,-0.5])
@@ -20,4 +20,3 @@ a.set_yticks([0,2])
 a.set_xlim([-1,18])
 a.set_xlabel('Time')
 a.set_ylabel('Amplitude')
-

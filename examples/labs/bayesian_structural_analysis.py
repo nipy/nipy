@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function # Python 2/3 compatibility
 __doc__ = """
 This script generates a noisy multi-subject activation image dataset
 and applies the Bayesian structural analysis on it
@@ -21,11 +20,10 @@ except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
 import nipy.labs.utils.simul_multisubject_fmri_dataset as simul
-from nipy.labs.spatial_models.bayesian_structural_analysis import\
-    compute_landmarks
+from nipy.labs.spatial_models.bayesian_structural_analysis import compute_landmarks
 from nipy.labs.spatial_models.discrete_domain import grid_domain_from_shape
 
-    
+
 def display_landmarks_2d(landmarks, hrois, stats):
     """ Plots the landmarks and associated rois as images"""
     shape = stats[0].shape
@@ -38,8 +36,8 @@ def display_landmarks_2d(landmarks, hrois, stats):
         density = landmarks.kernel_density(k=None, coord=domain.coord,
                                            sigma=sigma).reshape(shape)
         lmax = landmarks.k + 2
-        
-    # Figure 1: input data    
+
+    # Figure 1: input data
     fig_input = plt.figure(figsize=(8, 3.5))
     fig_input.text(.5,.9, "Input activation maps", ha='center')
     vmin, vmax = stats.min(), stats.max()
@@ -63,7 +61,7 @@ def display_landmarks_2d(landmarks, hrois, stats):
 
         plt.imshow(lw, interpolation='nearest', vmin=-1, vmax=lmax)
         plt.axis('off')
-        
+
     # Figure 3: Group-level results
     plt.figure(figsize=(6, 3))
 
@@ -103,14 +101,14 @@ prevalence_pval = 0.9
 smin = 5
 algorithm = 'co-occurrence' #  'density'
 
-domain = grid_domain_from_shape(shape) 
+domain = grid_domain_from_shape(shape)
 
 # get the functional information
 stats_ = np.array([np.ravel(stats[k]) for k in range(n_subjects)]).T
-    
+
 # run the algo
 landmarks, hrois = compute_landmarks(
-    domain, stats_, sigma, prevalence_pval, prevalence_threshold, 
+    domain, stats_, sigma, prevalence_pval, prevalence_threshold,
     threshold, smin, method='prior', algorithm=algorithm)
 
 display_landmarks_2d(landmarks, hrois, stats)
@@ -118,4 +116,3 @@ if landmarks is not None:
     landmarks.show()
 
 plt.show()
-

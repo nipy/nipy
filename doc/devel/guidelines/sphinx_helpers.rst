@@ -119,7 +119,7 @@ To refer to the reference in a separate reST file, include the
 ``links_names.txt`` file and refer to the link through it's target
 name.  For example, put this include at the bottom of your reST
 document::
-     
+
      .. include:: ../links_names.txt
 
 and refer to the hyperlink target::
@@ -253,5 +253,3 @@ This file
 ---------
 
 .. literalinclude:: sphinx_helpers.rst
-
-

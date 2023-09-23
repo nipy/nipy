@@ -3,15 +3,14 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Script example of tissue classification
 """
-from __future__ import print_function # Python 2/3 compatibility
+
+from argparse import ArgumentParser
 
 import numpy as np
 
 from nipy import load_image, save_image
-from nipy.core.image.image_spaces import (make_xyz_image,
-                                          xyz_affine)
-from argparse import ArgumentParser
 from nipy.algorithms.segmentation import BrainT1Segmentation
+from nipy.core.image.image_spaces import make_xyz_image, xyz_affine
 
 
 def fuzzy_dice(gold_ppm, ppm, mask):
@@ -42,7 +41,7 @@ parser.add_argument('--mask', dest='mask', help='mask image')
 parser.add_argument('--niters', dest='niters',
     help='number of iterations (default=%d)' % 25)
 parser.add_argument('--beta', dest='beta',
-    help='Markov random field beta parameter (default=%f)' % 0.5)
+    help=f'Markov random field beta parameter (default={0.5:f})')
 parser.add_argument('--ngb_size', dest='ngb_size',
     help='Markov random field neighborhood system (default=%d)' % 6)
 parser.add_argument('--probc', dest='probc', help='csf probability map')
@@ -84,7 +83,7 @@ S = BrainT1Segmentation(img.get_fdata(), mask=mask, model='5k',
 outfile = 'hard_classif.nii'
 save_image(make_xyz_image(S.label, xyz_affine(img), 'scanner'),
            outfile)
-print('Label image saved in: %s' % outfile)
+print(f'Label image saved in: {outfile}')
 
 # Compute fuzzy Dice indices if a 3-class fuzzy model is provided
 if args.probc is not None and \
@@ -97,4 +96,4 @@ if args.probc is not None and \
         img = load_image(gold_ppm_img[k])
         gold_ppm[..., k] = img.get_fdata()
     d = fuzzy_dice(gold_ppm, S.ppm, np.where(mask_img.get_fdata() > 0))
-    print('Fuzzy Dice indices: %s' % d)
+    print(f'Fuzzy Dice indices: {d}')

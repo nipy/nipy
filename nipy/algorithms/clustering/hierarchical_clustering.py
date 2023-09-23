@@ -19,19 +19,17 @@ represents the number of wanted clusters)
 
 Author : Bertrand Thirion,Pamela Guevara, 2006-2009
 """
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
 
 #---------------------------------------------------------------------------
 # ------ Routines for Agglomerative Hierarchical Clustering ----------------
 # --------------------------------------------------------------------------
 
-import numpy as np
 from warnings import warn
 
-from ..graph.graph import WeightedGraph
+import numpy as np
+
 from ..graph.forest import Forest
+from ..graph.graph import WeightedGraph
 
 
 class WeightedForest(Forest):
@@ -486,7 +484,7 @@ def _auxiliary_graph(G, Features):
     K.edges = G.edges.copy()
     K.weights = np.ones(K.E)
     K.symmeterize()
-    if K.E > 0:    
+    if K.E > 0:
         valid = K.edges[:, 0] < K.edges[:, 1]
         K.remove_edges(valid)
     #
@@ -632,8 +630,8 @@ def ward_quick(G, feature, verbose=False):
 
     Caveat : only approximate
     """
-    warn('Function ward_quick from ' + 
-         'nipy.algorithms.clustering.hierrachical_clustering ' + 
+    warn('Function ward_quick from ' +
+         'nipy.algorithms.clustering.hierrachical_clustering ' +
          'deprecated, will be removed',
          FutureWarning,
          stacklevel=2)
@@ -906,8 +904,8 @@ def ward(G, feature, verbose=False):
     When G has more than 1 connected component, t is no longer a tree.  This
     case is handled cleanly now
     """
-    warn('Function ward from ' + 
-         'nipy.algorithms.clustering.hierrachical_clustering ' + 
+    warn('Function ward from ' +
+         'nipy.algorithms.clustering.hierrachical_clustering ' +
          'deprecated, will be removed',
          FutureWarning,
          stacklevel=2)

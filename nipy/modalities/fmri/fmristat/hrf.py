@@ -10,16 +10,15 @@ Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H.,
     Evans, A.C. (2002). \'Estimating the delay of the response in fMRI
     data.\' NeuroImage, 16:593-606.
 """
-from __future__ import absolute_import
 
 import numpy as np
 import numpy.linalg as npl
-
 from sympy.utilities.lambdify import implemented_function
 
-from ..utils import T, lambdify_t, Interp1dNumeric
 from .. import hrf
+from ..utils import Interp1dNumeric, T, lambdify_t
 from .invert import invertR
+
 
 def spectral_decomposition(hrf2decompose,
                            time=None,
@@ -53,7 +52,7 @@ def spectral_decomposition(hrf2decompose,
     hrf : [sympy expressions]
         A sequence length `ncomp` of symbolic HRFs that are the
         principal components.
-    approx : 
+    approx :
         TODO
     """
     if time is None:
@@ -69,14 +68,14 @@ def spectral_decomposition(hrf2decompose,
     # over column.
     ts_hrf_vals = np.array([hrft(time - d) for d in delta]).T
     ts_hrf_vals = np.nan_to_num(ts_hrf_vals)
-    # PCA 
+    # PCA
     U, S, V = npl.svd(ts_hrf_vals, full_matrices=0)
     # make interpolators from the generated bases
     basis = []
     for i in range(ncomp):
         b = Interp1dNumeric(time, U[:, i], bounds_error=False, fill_value=0.)
         # normalize components witn integral of abs of first component
-        if i == 0: 
+        if i == 0:
             d = np.fabs((b(time) * dt).sum())
         b.y /= d
         basis.append(b)
@@ -143,7 +142,7 @@ def taylor_approx(hrf2decompose,
     hrf : [sympy expressions]
         Sequence length 2 comprising (`hrf2decompose`, ``dhrf``) where
         ``dhrf`` is the first derivative of `hrf2decompose`.
-    approx : 
+    approx :
         TODO
 
     References
@@ -176,7 +175,7 @@ def taylor_approx(hrf2decompose,
     # value of delta
     coef = [Interp1dNumeric(delta, w, bounds_error=False,
                             fill_value=0.) for w in WH]
-            
+
     def approx(time, delta):
         value = (coef[0](delta) * hrft(time)
                  + coef[1](delta) * dhrft(time))
@@ -189,7 +188,7 @@ def taylor_approx(hrf2decompose,
      approx.dinverse,
      approx.forward,
      approx.dforward) = invertR(delta, approx.coef)
-    dhrf = implemented_function('d%s' % str(hrf2decompose), dhrft)
+    dhrf = implemented_function(f'd{str(hrf2decompose)}', dhrft)
     return [hrf2decompose, dhrf], approx
 
 

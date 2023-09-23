@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from __future__ import print_function
 __doc__ = """
 Example where the result of the min of two contrasts is computed and displayed.
 This is based on the Localizer dataset, in which we want to find the regions
@@ -19,7 +18,7 @@ Author : Bertrand Thirion, 2012
 """
 print(__doc__)
 
-from os import mkdir, getcwd, path
+from os import getcwd, mkdir, path
 
 import numpy as np
 
@@ -28,16 +27,14 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nibabel import save
-
-from nipy.modalities.fmri.glm import FMRILinearModel
-from nipy.modalities.fmri.design_matrix import make_dmtx
-from nipy.modalities.fmri.experimental_paradigm import \
-    load_paradigm_from_csv_file
-from nipy.labs.viz import plot_map, cm
-
 # Local import
 from get_data_light import DATA_DIR, get_first_level_dataset
+from nibabel import save
+
+from nipy.labs.viz import cm, plot_map
+from nipy.modalities.fmri.design_matrix import make_dmtx
+from nipy.modalities.fmri.experimental_paradigm import load_paradigm_from_csv_file
+from nipy.modalities.fmri.glm import FMRILinearModel
 
 #######################################
 # Data and analysis parameters
@@ -66,7 +63,7 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-print('Computation will be performed in directory: %s' % write_dir)
+print(f'Computation will be performed in directory: {write_dir}')
 
 ########################################
 # Design matrix
@@ -87,7 +84,7 @@ design_matrix = make_dmtx(frametimes, paradigm, hrf_model=hrf_model,
 contrasts = {}
 n_columns = len(design_matrix.names)
 for i in range(paradigm.n_conditions):
-    contrasts['%s' % design_matrix.names[i]] = np.eye(n_columns)[i]
+    contrasts[f'{design_matrix.names[i]}'] = np.eye(n_columns)[i]
 
 # and more complex/ interesting ones
 contrasts['left'] = contrasts['clicGaudio'] + contrasts['clicGvideo']
@@ -108,14 +105,14 @@ fmri_glm.fit(do_scaling=True, model='ar1')
 
 contrast_id = 'left_right_motor_min'
 z_map, effects_map = fmri_glm.contrast(
-    np.vstack((contrasts['left'], contrasts['right'])), 
+    np.vstack((contrasts['left'], contrasts['right'])),
     contrast_type='tmin-conjunction', output_z=True, output_effects=True)
-z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
+z_image_path = path.join(write_dir, f'{contrast_id}_z_map.nii')
 save(z_map, z_image_path)
 
-contrast_path = path.join(write_dir, '%s_con.nii' % contrast_id)
+contrast_path = path.join(write_dir, f'{contrast_id}_con.nii')
 save(effects_map, contrast_path)
-# note that the effects_map is two-dimensional: 
+# note that the effects_map is two-dimensional:
 # these dimensions correspond to 'left' and 'right'
 
 # Create snapshots of the contrasts
@@ -127,9 +124,9 @@ plot_map(z_map.get_fdata(), fmri_glm.affine,
          anat=None,
          figure=10,
          threshold=2.5)
-plt.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
+plt.savefig(path.join(write_dir, f'{contrast_id}_z_map.png'))
 plt.show()
 
-print('All the  results were witten in %s' % write_dir)
+print(f'All the  results were witten in {write_dir}')
 # Note: fancier visualization of the results are shown
 # in the viz3d example

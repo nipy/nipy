@@ -10,14 +10,13 @@ In those tests, we often access some ROI directly by a fixed index
 instead of using the utility functions such as get_id() or select_id().
 
 """
-from __future__ import absolute_import
 
 import numpy as np
 from numpy.testing import assert_equal
 
+from ..discrete_domain import domain_from_binary_array
 from ..hroi import HROI_as_discrete_domain_blobs, make_hroi_from_subdomain
 from ..mroi import subdomain_from_array
-from ..discrete_domain import domain_from_binary_array
 
 shape = (5, 6, 7)
 

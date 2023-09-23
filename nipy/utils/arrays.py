@@ -1,7 +1,7 @@
 """ Array utilities
 """
-from __future__ import absolute_import
 import numpy as np
+
 
 def strides_from(shape, dtype, order='C'):
     """ Return strides as for continuous array shape `shape` and given `dtype`
@@ -32,12 +32,12 @@ def strides_from(shape, dtype, order='C'):
     """
     dt = np.dtype(dtype)
     if dt.itemsize == 0:
-        raise ValueError('Empty dtype "%s"' % dt)
+        raise ValueError(f'Empty dtype "{dt}"')
     if order == 'F':
         strides = np.cumprod([dt.itemsize] + list(shape[:-1]))
     elif order == 'C':
         strides = np.cumprod([dt.itemsize] + list(shape)[::-1][:-1])
         strides = strides[::-1]
     else:
-        raise ValueError('Unexpected order "%s"' % order)
+        raise ValueError(f'Unexpected order "{order}"')
     return tuple(strides)

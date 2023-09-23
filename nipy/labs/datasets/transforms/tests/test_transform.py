@@ -4,15 +4,17 @@
 This test can only be run from the directory above, as it uses relative
 imports.
 """
-from __future__ import absolute_import
+
+import copy
 
 import numpy as np
-import copy
+
 # Don't import from nipy.testing not to have a hard dependence on nipy,
 # use np.testing or nose
 from nose.tools import assert_equal, assert_raises, assert_true
 
-from ..transform import Transform, CompositionError
+from ..transform import CompositionError, Transform
+
 
 ################################################################################
 # Mappings
@@ -50,7 +52,7 @@ def test_composition():
 def test_misc():
     """ Test misc private methods for Transform.
     """
-    # Check that passing neither a mapping, nor an inverse_mapping raises 
+    # Check that passing neither a mapping, nor an inverse_mapping raises
     # a ValueError
     yield assert_raises, ValueError, Transform, 'world1', 'world2'
 

@@ -7,25 +7,23 @@ use NiPype instead:
 
 http://nipy.org/nipype
 """
-from __future__ import absolute_import
 
 # Stdlib imports
 import os
 import re
-import tempfile
 import subprocess
-
+import tempfile
 
 matlab_cmd = 'matlab -nojvm -nosplash'
 
 def run_matlab(cmd):
-    subprocess.call('%s -r \"%s;exit\" ' % (matlab_cmd, cmd),
+    subprocess.call(f'{matlab_cmd} -r "{cmd};exit" ',
                     shell=True)
 
 
 def run_matlab_script(script_lines, script_name='pyscript'):
     ''' Put multiline matlab script into script file and run '''
-    mfile = open(script_name + '.m', 'wt')
+    mfile = open(script_name + '.m', "w")
     mfile.write(script_lines)
     mfile.close()
     return run_matlab(script_name)

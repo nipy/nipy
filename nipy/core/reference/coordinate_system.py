@@ -10,18 +10,17 @@ space.  This allows one to compare two CoordinateSystems to determine
 if they are equal.
 
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
 __docformat__ = 'restructuredtext'
 
 import numpy as np
 
+
 class CoordinateSystemError(Exception):
     pass
 
 
-class CoordinateSystem(object):
+class CoordinateSystem:
     """An ordered sequence of named coordinates of a specified dtype.
 
     A coordinate system is defined by the names of the coordinates,
@@ -120,7 +119,7 @@ class CoordinateSystem(object):
                    np.sctypes['complex'] + np.sctypes['uint'] + [object])
         coord_dtype = np.dtype(coord_dtype)
         if coord_dtype not in sctypes:
-            raise ValueError('Coordinate dtype should be one of %s' % sctypes)
+            raise ValueError(f'Coordinate dtype should be one of {sctypes}')
         # Set all the attributes
         self.name = name
         self.coord_names = coord_names
@@ -133,7 +132,7 @@ class CoordinateSystem(object):
 
     def __setattr__(self, key, value):
         if key in self.__dict__:
-            raise AttributeError('the value of %s has already been set and all attributes are read-only' % key)
+            raise AttributeError(f'the value of {key} has already been set and all attributes are read-only')
         object.__setattr__(self, key, value)
 
     def index(self, coord_name):
@@ -185,8 +184,7 @@ class CoordinateSystem(object):
         -------
         s : string
         """
-        return ("CoordinateSystem(coord_names=%s, name='%s', coord_dtype=%s)" %
-                (self.coord_names, self.name, self.coord_dtype))
+        return ("CoordinateSystem(coord_names={}, name='{}', coord_dtype={})".format(self.coord_names, self.name, self.coord_dtype))
 
 
     def _checked_values(self, arr):
@@ -213,7 +211,7 @@ class CoordinateSystem(object):
         --------
         >>> cs = CoordinateSystem('ijk', coord_dtype=np.float32)
         >>> arr = np.array([1, 2, 3], dtype=np.int16)
-        >>> cs._checked_values(arr) # 1D is OK with matching dimensions 
+        >>> cs._checked_values(arr) # 1D is OK with matching dimensions
         array([[1, 2, 3]], dtype=int16)
         >>> cs._checked_values(arr.reshape(1,3)) # as is 1 by N
         array([[1, 2, 3]], dtype=int16)
@@ -282,9 +280,8 @@ class CoordinateSystem(object):
                                         'CoordinateSystem ndim (%d).\n  %s'
                                         % (arr.shape[-1], self.ndim, str(self)))
         if not np.can_cast(arr.dtype, self.coord_dtype):
-            raise CoordinateSystemError('Cannot cast array dtype %s to '
-                                        'CoordinateSystem coord_dtype %s.\n  %s' %
-                                        (arr.dtype, self.coord_dtype, str(self)))
+            raise CoordinateSystemError('Cannot cast array dtype {} to '
+                                        'CoordinateSystem coord_dtype {}.\n  {}'.format(arr.dtype, self.coord_dtype, str(self)))
         return arr.reshape((-1, self.ndim))
 
 
@@ -403,7 +400,7 @@ def product(*coord_systems, **kwargs):
     """
     name = kwargs.pop('name', 'product')
     if kwargs:
-        raise TypeError('Unexpected kwargs %s' % kwargs)
+        raise TypeError(f'Unexpected kwargs {kwargs}')
     coords = []
     for c in coord_systems:
         coords += c.coord_names
@@ -415,7 +412,7 @@ class CoordSysMakerError(Exception):
     pass
 
 
-class CoordSysMaker(object):
+class CoordSysMaker:
     """ Class to create similar coordinate maps of different dimensions
     """
     coord_sys_klass = CoordinateSystem

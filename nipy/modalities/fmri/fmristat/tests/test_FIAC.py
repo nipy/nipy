@@ -4,28 +4,25 @@
 This test ensures that the design matrices of the FIAC dataset match
 with fMRIstat's, at least on one block and one event trial.
 
-Taylor, J.E. & Worsley, K.J. (2005). \'Inference for 
-    magnitudes and delays of responses in the FIAC data using 
+Taylor, J.E. & Worsley, K.J. (2005). \'Inference for
+    magnitudes and delays of responses in the FIAC data using
     BRAINSTAT/FMRISTAT\'. Human Brain Mapping, 27,434-441
 """
-from __future__ import absolute_import
 
 import numpy as np
 
-from ... import utils, hrf, design
-from .. import hrf as delay
-
-from nipy.algorithms.statistics.models.regression import OLSModel
 from nipy.algorithms.statistics.formula import formulae
-
-from nipy.utils.compat3 import to_str
+from nipy.algorithms.statistics.models.regression import OLSModel
 
 # testing imports
-from nipy.testing import (assert_true, assert_almost_equal)
+from nipy.testing import assert_almost_equal, assert_true
+from nipy.utils.compat3 import to_str
+
+from ... import design, hrf, utils
+from .. import hrf as delay
 
 # Local imports
-from .FIACdesigns import (descriptions, fmristat, altdescr,
-                          N_ROWS, time_vector)
+from .FIACdesigns import N_ROWS, altdescr, descriptions, fmristat, time_vector
 
 t = formulae.make_recarray(time_vector, 't')
 
@@ -117,7 +114,7 @@ def altprotocol(d, design_type, *hrfs):
     design_type : str in ['event', 'block']
         Handles how the 'begin' term is handled.
         For 'block', the first event of each block
-        is put in this group. For the 'event', 
+        is put in this group. For the 'event',
         only the first event is put in this group.
 
         The 'begin' events are convolved with hrf.glover.
@@ -158,7 +155,7 @@ def altprotocol(d, design_type, *hrfs):
     indic['interaction'] = st.main_effect * sp.main_effect
     indic['average'] = formulae.I
 
-    for key in indic.keys():
+    for key in indic:
         # The matrix signs will be populated with +- 1's
         # d is the recarray having fields ('time', 'sentence', 'speaker')
         signs = indic[key].design(d, return_float=True)
@@ -171,7 +168,7 @@ def altprotocol(d, design_type, *hrfs):
 
             # the values of termdict will have keys like
             # 'average0', 'speaker1'
-            # and values  that are sympy expressions like average0(t), 
+            # and values  that are sympy expressions like average0(t),
             # speaker1(t)
             termdict['%s%d' % (key, l)] = utils.define("%s%d" % (key, l), symb)
 
@@ -223,7 +220,7 @@ def test_altprotocol():
     blocka, baT, baF = altprotocol(altdescr['block'], 'block', *delay.spectral)
     eventa, eaT, eaF = altprotocol(altdescr['event'], 'event', *delay.spectral)
 
-    for c in bT.keys():
+    for c in bT:
         baf = baT[c]
         if not isinstance(baf, formulae.Formula):
             baf = formulae.Formula([baf])
@@ -241,7 +238,7 @@ def test_altprotocol():
     remaining = (r.resid**2).sum() / (Y**2).sum()
     assert_almost_equal(remaining, 0)
 
-    for c in bF.keys():
+    for c in bF:
         baf = baF[c]
         if not isinstance(baf, formulae.Formula):
             baf = formulae.Formula([baf])
