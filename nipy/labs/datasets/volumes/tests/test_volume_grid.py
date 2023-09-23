@@ -6,10 +6,11 @@ Testing VolumeGrid interface.
 
 import copy
 
-import nose
 import numpy as np
 
 from ...transforms.transform import CompositionError, Transform
+
+import pytest
 
 # Local imports
 from ..volume_grid import VolumeGrid
@@ -28,8 +29,8 @@ def id(x, y, z):
 ################################################################################
 # Tests
 def test_constructor():
-    yield np.testing.pytest.raises, ValueError, VolumeGrid, None, \
-        None, {}, 'e'
+    assert pytest.raises(ValueError, VolumeGrid, None,
+        None, {}, 'e')
 
 
 def test_volume_grid():
@@ -40,17 +41,14 @@ def test_volume_grid():
                     transform=transform,
                     )
     # Test that the repr doesn't raise an error
-    yield repr, img
+    repr(img)
 
     # We cannot calculate the values in the world, because the transform
     # is not invertible.
 
-    yield np.testing.pytest.raises, ValueError, \
-                        img.values_in_world, 0, 0, 0
-    yield np.testing.pytest.raises, ValueError, \
-        img.as_volume_img
-
-    yield nose.tools.assert_equal, img, copy.copy(img)
+    assert pytest.raises(ValueError, img.values_in_world, 0, 0, 0)
+    assert pytest.raises(ValueError, img.as_volume_img)
+    assert img == copy.copy(img)
 
 
 def test_trivial_grid():
@@ -66,12 +64,10 @@ def test_trivial_grid():
     x, y, z = np.random.randint(1, N + 1, size=(3, 10)) - 1
     data_ = img.values_in_world(x, y, z)
     # Check that passing in arrays with different shapes raises an error
-    yield np.testing.pytest.raises, ValueError, \
-        img.values_in_world, x, y, z[:-1]
+    assert pytest.raises(ValueError, img.values_in_world, x, y, z[:-1])
     # Check that passing in wrong interpolation keyword raises an error
-    yield np.testing.pytest.raises, ValueError, \
-                        img.values_in_world, 0, 0, 0, 'e'
-    yield np.testing.assert_almost_equal, data[x, y, z], data_
+    assert pytest.raises(ValueError, img.values_in_world, 0, 0, 0, 'e')
+    np.testing.assert_almost_equal(data[x, y, z], data_)
 
 
 def test_transformation():
@@ -87,21 +83,21 @@ def test_transformation():
                      )
     img2 = img1.composed_with_transform(identity)
 
-    yield nose.tools.assert_equal, img2.world_space, 'world2'
+    assert img2.world_space == 'world2'
 
     x, y, z = N*np.random.random(size=(3, 10))
-    yield np.testing.assert_almost_equal, img1.values_in_world(x, y, z), \
-        img2.values_in_world(x, y, z)
+    np.testing.assert_almost_equal(
+        img1.values_in_world(x, y, z),
+        img2.values_in_world(x, y, z))
 
-    yield pytest.raises, CompositionError, \
-            img1.composed_with_transform, identity.get_inverse()
+    assert pytest.raises(CompositionError,
+                img1.composed_with_transform, identity.get_inverse())
 
-    yield pytest.raises, CompositionError, img1.resampled_to_img, \
-            img2
+    assert pytest.raises(CompositionError, img1.resampled_to_img, img2)
 
     # Resample an image on itself: it shouldn't change much:
     img  = img1.resampled_to_img(img1)
-    yield np.testing.assert_almost_equal, data, img.get_fdata()
+    np.testing.assert_almost_equal(data, img.get_fdata())
 
     # Check that if I 'resampled_to_img' on an VolumeImg, I get an
     # VolumeImg, and vice versa
@@ -109,13 +105,14 @@ def test_transformation():
     identity  = Transform('voxels', 'world', id, id)
     image = VolumeGrid(data, identity)
     image2 = image.resampled_to_img(volume_image)
-    yield nose.tools.assert_true, isinstance(image2, VolumeImg)
+    assert isinstance(image2, VolumeImg)
     volume_image2 = volume_image.resampled_to_img(image)
-    yield nose.tools.assert_true, isinstance(image2, VolumeGrid)
+    assert isinstance(image2, VolumeGrid)
     # Check that the data are all the same: we have been playing only
     # with identity mappings
-    yield np.testing.assert_array_equal, volume_image2.get_fdata(), \
-            image2.get_fdata()
+    np.testing.assert_array_equal(
+        volume_image2.get_fdata(),
+        image2.get_fdata())
 
 
 def test_as_volume_image():
@@ -130,5 +127,7 @@ def test_as_volume_image():
     img2 = img1.as_volume_img()
 
     # Check that passing in the wrong shape raises an error
-    yield pytest.raises, ValueError, img1.as_volume_img, None, \
-            (10, 10)
+    assert pytest.raises(ValueError,
+                         img1.as_volume_img,
+                         None,
+                         (10, 10))
