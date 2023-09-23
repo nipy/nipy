@@ -115,7 +115,7 @@ def test_interp():
 
 
 def test_linear_inter_kind():
-    with pytest.rasies(ValueError):
+    with pytest.raises(ValueError):
         linear_interp([0, 1], [1, 2], kind='cubic')
 
 

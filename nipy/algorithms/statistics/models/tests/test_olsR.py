@@ -1,6 +1,7 @@
 
 import numpy as np
 import scipy.stats
+from numpy.testing import assert_array_almost_equal
 
 import nipy.testing as niptest
 
