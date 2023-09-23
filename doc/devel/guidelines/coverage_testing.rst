@@ -50,29 +50,4 @@ coordinate_map module::
 
     nosetests --with-coverage --cover-package=nipy.core.reference.coordinate_map test_coordinate_map.py
 
-Since that's a lot to type, I wrote a tool called ``sneeze`` to that
-simplifies coverage testing with nose.
-
-
-Sneeze
-^^^^^^
-
-Sneeze runs nose with coverage testing and reports only the package
-the test module is testing.  It requires the test module follow a
-simple naming convention:
-
-#. Prefix ``test_``
-#. The package name you are testing
-#. Suffix ``.py``
-
-For example, the test module for the ``coordinate_map`` module is
-named ``test_coordinate_map.py``.  Then testing coverage is as simple as::
-
-      sneeze.py test_coordinate_map.py
-
-Sneeze is included in the ``tools`` directory in the nipy_
-source. Simply run the ``setup.py`` to install sneeze in your local
-bin directory.
-
-
 .. include:: ../../links_names.txt
