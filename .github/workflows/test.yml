@@ -40,6 +40,4 @@ jobs:
         run: env
       - name: Library tests
         run: |
-          mkdir ../tmp
-          cd ../tmp
-          python ../nipy/tools/nipnost nipy
+          pytest --pyargs nipy
