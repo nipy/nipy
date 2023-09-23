@@ -163,7 +163,7 @@ def load_paradigm_from_csv_file(path, session=None):
     .csv
     """
     import csv
-    with open(path, 'r', newline='') as csvfile:
+    with open(path, newline='') as csvfile:
         dialect = csv.Sniffer().sniff(csvfile.read())
         csvfile.seek(0)
         reader = csv.reader(csvfile, dialect)
