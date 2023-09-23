@@ -25,7 +25,8 @@ select = [
     'SIM110',
     'SIM111',
     'SIM118',
-    'SIM2',
+    'SIM2'
+]
 
 [tool.spin]
 package = 'nipy'
