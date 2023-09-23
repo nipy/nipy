@@ -4,7 +4,7 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from ....core.image.image_spaces import make_xyz_image
-from ....testing import assert_almost_equal, assert_equal
+from ....testing import assert_almost_equal
 from .._registration import _joint_histogram
 from ..affine import Affine, Rigid
 from ..histogram_registration import HistogramRegistration

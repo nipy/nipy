@@ -11,11 +11,10 @@ Author : Bertrand Thirion, 2008-2009
 import math
 
 import numpy as np
-from nose.tools import assert_equal, assert_true
 from numpy.random import randn
 
 from nipy.algorithms.graph.field import field_from_graph_and_data
-from nipy.algorithms.graph.graph import WeightedGraph, knn
+from nipy.algorithms.graph.graph import knn
 
 from ..hierarchical_clustering import (
     average_link_graph,

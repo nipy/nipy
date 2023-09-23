@@ -5,7 +5,6 @@ Author : Bertrand Thirion, 2010
 """
 
 import numpy as np
-from nose.tools import assert_true
 from numpy.testing import assert_array_equal
 
 from ..imm import IMM, MixedIMM, co_labelling

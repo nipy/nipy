@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 import scipy.interpolate
 import sympy
-from numpy.testing import assert_almost_equal, assert_array_almost_equal, assert_equal
+from numpy.testing import assert_almost_equal
 from sympy.utilities.lambdify import implemented_function, lambdify
 
 x, y = sympy.symbols(('x', 'y'))

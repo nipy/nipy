@@ -3,7 +3,6 @@
 import unittest
 
 import numpy as np
-from nose.tools import assert_true
 from numpy.testing import assert_array_equal
 
 from nipy.algorithms.graph import wgraph_from_3d_grid

@@ -1,7 +1,6 @@
 
 import numpy as np
-from nose.tools import assert_true
-from numpy.testing import TestCase, assert_almost_equal, assert_equal
+from numpy.testing import TestCase, assert_almost_equal
 from scipy import special
 
 from ..routines import gamln, mahalanobis, median, psi

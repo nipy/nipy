@@ -12,9 +12,6 @@ from nibabel.tmpdirs import InTemporaryDirectory
 from nipy.testing import (
     anatfile,
     assert_array_equal,
-    assert_equal,
-    assert_false,
-    assert_true,
 )
 
 from .. import mask as nnm

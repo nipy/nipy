@@ -1,6 +1,5 @@
 import numpy as np
 import numpy.random as nr
-from nose.tools import assert_equal, assert_true
 from numpy.testing import assert_array_equal
 
 from ..field import field_from_coo_matrix_and_data, field_from_graph_and_data

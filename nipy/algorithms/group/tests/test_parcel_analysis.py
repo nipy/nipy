@@ -5,7 +5,7 @@ import os
 
 import numpy as np
 import pytest
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_array_equal
 
 from ....core.image.image_spaces import make_xyz_image, xyz_affine
 from ..parcel_analysis import ParcelAnalysis, _smooth_image_pair, parcel_analysis

@@ -1,7 +1,6 @@
 
 import numpy as np
 import numpy.random as nr
-from nose.tools import assert_equal, assert_true
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,

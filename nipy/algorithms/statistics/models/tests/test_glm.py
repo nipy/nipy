@@ -5,7 +5,6 @@ Test functions for models.GLM
 """
 
 import numpy as np
-from nose.tools import assert_equal, assert_false, assert_true
 
 from .. import family
 from ..glm import Model as GLM

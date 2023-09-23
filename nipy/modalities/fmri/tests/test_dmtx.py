@@ -12,7 +12,6 @@ from unittest import skipIf
 
 import numpy as np
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, assert_true
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ..design_matrix import (

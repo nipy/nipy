@@ -12,7 +12,7 @@ instead of using the utility functions such as get_id() or select_id().
 """
 
 import numpy as np
-from numpy.testing import assert_array_equal, assert_equal
+from numpy.testing import assert_array_equal
 
 from ..discrete_domain import domain_from_binary_array
 from ..hroi import HROI_as_discrete_domain_blobs, make_hroi_from_subdomain

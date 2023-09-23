@@ -2,12 +2,6 @@
 """
 
 import numpy as np
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    assert_true,
-)
 
 from ..utilities import is_iterable, is_numlike, seq_prod
 

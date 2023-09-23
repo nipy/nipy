@@ -2,10 +2,10 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 ''' Test example images '''
 
-from nose.tools import assert_equal, assert_false, assert_true
+from nose.tools import assert_equal, assert_false
 
 from nipy import load_image
-from nipy.testing import anatfile, funcfile
+from nipy.testing import funcfile
 
 
 def test_dims():

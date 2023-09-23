@@ -2,7 +2,6 @@
 """
 
 import numpy as np
-from nose.tools import assert_equal, assert_true
 from numpy.testing import assert_array_almost_equal
 
 from .._registration import _cspline_sample1d, _cspline_sample4d, _cspline_transform

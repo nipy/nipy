@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 from nibabel.affines import from_matvec
 from nibabel.spatialimages import HeaderDataError
-from numpy.testing import assert_almost_equal, assert_array_equal
+from numpy.testing import assert_array_equal
 
 from ...core.api import AffineTransform as AT
 from ...core.api import CoordinateSystem as CS

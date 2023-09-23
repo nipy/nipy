@@ -8,7 +8,6 @@ not whether it is exact.
 """
 
 import numpy as np
-from nose.tools import assert_true
 
 from ..experimental_paradigm import (
     BlockParadigm,

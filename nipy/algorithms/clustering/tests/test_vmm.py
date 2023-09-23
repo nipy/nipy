@@ -7,7 +7,6 @@ from unittest import skipIf
 
 import numpy as np
 from nibabel.optpkg import optional_package
-from nose.tools import assert_equal, assert_true
 
 from ..von_mises_fisher_mixture import (
     VonMisesMixture,

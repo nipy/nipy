@@ -11,7 +11,6 @@ Author : Bertrand Thirion, 2009
 
 import numpy as np
 import numpy.random as nr
-from nose.tools import assert_true
 
 from ..bgmm import BGMM, VBGMM, dirichlet_eval, dkl_gaussian, multinomial
 

@@ -15,7 +15,7 @@ from nipy.algorithms.statistics.formula import formulae
 from nipy.algorithms.statistics.models.regression import OLSModel
 
 # testing imports
-from nipy.testing import assert_almost_equal, assert_true
+from nipy.testing import assert_almost_equal
 from nipy.utils.compat3 import to_str
 
 from ... import design, hrf, utils

@@ -6,7 +6,6 @@ Test the empirical null estimator.
 import warnings
 
 import numpy as np
-from nose.tools import assert_true
 
 from ..empirical_pvalue import (
     NormalEmpiricalNull,

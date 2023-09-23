@@ -8,7 +8,6 @@ import nibabel.eulerangles as euler
 import numpy as np
 import numpy.testing as npt
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_false, assert_true
 
 import nipy.algorithms.registration as reg
 from nipy.io.api import load_image, save_image

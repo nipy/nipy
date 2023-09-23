@@ -4,7 +4,7 @@
 import numpy as np
 import pytest
 from nibabel.affines import from_matvec
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_array_equal
 
 from ...image.image import Image
 from ..coordinate_map import AffineTransform, CoordinateMap

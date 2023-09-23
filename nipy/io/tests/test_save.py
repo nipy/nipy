@@ -4,7 +4,6 @@
 import numpy as np
 from nibabel.affines import from_matvec
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, assert_false, assert_not_equal, assert_true
 from numpy.testing import assert_array_almost_equal
 
 from nipy.core import api

@@ -1,6 +1,5 @@
 
 import numpy as np
-from nose.tools import assert_false, assert_true
 from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy.ndimage import gaussian_filter, gaussian_filter1d
 

@@ -10,7 +10,7 @@ in ~/.nipy/tests/data
 import nibabel.gifti as nbg
 import numpy as np
 from nibabel import Nifti1Image
-from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ..discrete_domain import (
     domain_from_binary_array,

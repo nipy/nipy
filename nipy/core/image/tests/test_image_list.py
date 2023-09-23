@@ -11,8 +11,6 @@ from ....core.reference.coordinate_map import (
 from ....io.api import load_image
 from ....testing import (
     assert_almost_equal,
-    assert_equal,
-    assert_true,
     funcfile,
 )
 from ..image import Image

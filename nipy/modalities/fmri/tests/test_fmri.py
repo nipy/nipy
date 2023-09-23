@@ -6,7 +6,6 @@ import warnings
 
 import numpy as np
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, assert_true
 
 from nipy.core.api import AffineTransform as AfT
 from nipy.core.api import Image, parcels

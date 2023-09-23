@@ -1,11 +1,9 @@
 
-from unittest import TestCase
 
 import numpy as np
 import numpy.random as nr
 
 from ..bipartite_graph import (
-    BipartiteGraph,
     check_feature_matrices,
     cross_eps,
     cross_knn,

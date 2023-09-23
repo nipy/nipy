@@ -12,7 +12,7 @@ from os.path import join as pjoin
 
 import numpy as np
 from nibabel import Nifti1Image, load
-from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nipy.io.nibcompat import get_affine
 

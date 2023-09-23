@@ -7,7 +7,7 @@
 import numpy as np
 import pytest
 from nose.tools import assert_equal
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_array_almost_equal
 
 import nipy.core.reference.array_coords as acs
 from nipy.core.api import (

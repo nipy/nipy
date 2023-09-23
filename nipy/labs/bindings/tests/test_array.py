@@ -4,7 +4,7 @@
 #
 
 import numpy as np
-from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from .. import array_add, array_div, array_get, array_get_block, array_mul, array_sub
 

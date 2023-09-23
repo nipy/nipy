@@ -9,7 +9,6 @@ Author : Bertrand Thirion, 2009
 
 import numpy as np
 import scipy.stats as st
-from nose.tools import assert_true
 
 from nipy.testing import assert_array_equal
 

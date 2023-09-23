@@ -5,7 +5,7 @@ from io import StringIO
 import numpy as np
 import scipy.stats
 
-from nipy.testing import assert_almost_equal, assert_equal
+from nipy.testing import assert_almost_equal
 
 from ....utils.matrices import matrix_rank
 from ...formula.formulae import Factor, make_recarray

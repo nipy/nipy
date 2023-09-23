@@ -4,8 +4,6 @@ from os.path import exists
 import numpy as np
 from nibabel import Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_true
-from numpy.testing import assert_equal
 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
 from ..bsa_io import make_bsa_image

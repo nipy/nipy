@@ -3,7 +3,7 @@ from os.path import exists
 import numpy as np
 from nibabel import Nifti1Image, save
 from nibabel.tmpdirs import InTemporaryDirectory
-from numpy.testing import assert_array_equal, assert_equal
+from numpy.testing import assert_array_equal
 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
 from ..discrete_domain import grid_domain_from_shape
