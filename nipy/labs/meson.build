@@ -55,5 +55,5 @@ cython_gen_cstat = generator(cython_cli,
 
 subdir('bindings')
 subdir('glm')
-# subdir('group')
+subdir('group')
 # subdir('utils')
