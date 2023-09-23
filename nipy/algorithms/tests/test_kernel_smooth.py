@@ -2,13 +2,14 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Test for smoothing with kernels """
 import numpy as np
-from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.random import randint
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_array_almost_equal
+
+import pytest
 
 from ... import load_image
 from ...core.api import AffineTransform, Image, compose, drop_io_dim
-from ...externals.transforms3d.taitbryan import euler2mat
+from transforms3d.taitbryan import euler2mat
 from ...testing import anatfile, funcfile
 from ..kernel_smooth import LinearFilter, fwhm2sigma, sigma2fwhm
 
