@@ -79,7 +79,3 @@ def test_gaussian_fdr_threshold():
     assert ac > 2.0
     assert ac < 4.0
     assert ac > gaussian_fdr_threshold(x, alpha=.1)
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

@@ -34,8 +34,3 @@ def test_dscal():
     x = np.random.rand(n)
     alpha = np.random.rand()
     assert_almost_equal(alpha*x, blas_dscal(alpha, x))
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

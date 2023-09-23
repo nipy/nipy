@@ -53,8 +53,3 @@ class TestAll(TestCase):
             scipy_psi = special.psi(x)
             my_psi = psi(x)
             assert_almost_equal(scipy_psi, my_psi)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

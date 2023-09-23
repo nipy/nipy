@@ -46,8 +46,3 @@ class TestFitting(TestCase):
     def test_ols_axis3(self):
         self.make_data()
         self.ols(3)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

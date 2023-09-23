@@ -288,8 +288,3 @@ def test_field_from_coo_matrix():
     a = np.random.rand(V, V) > .9
     fi = field_from_coo_matrix_and_data(sps.coo_matrix(a), a)
     assert fi.E == a.sum()
-
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

@@ -262,8 +262,3 @@ def test_smoothing():
     assert_almost_equal(s, 1)
     assert s1 < s
     pytest.raises(ValueError, HistogramRegistration, I, I, smooth=-1)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

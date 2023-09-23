@@ -128,8 +128,3 @@ def test_surrogate_array_4d_dmtx():
     dmtx = np.random.randn(n_scans, 3)
     imgs = surrogate_4d_dataset(shape, dmtx=dmtx)
     assert not np.any(np.asarray(imgs[0].shape) - np.asarray(out_shape))
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

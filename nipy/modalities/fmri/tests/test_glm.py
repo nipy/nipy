@@ -336,8 +336,3 @@ def test_fmri_example():
     z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
     # Check number of voxels with p < 0.001
     assert np.sum(z_image.get_fdata() > 3.09) == 671
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

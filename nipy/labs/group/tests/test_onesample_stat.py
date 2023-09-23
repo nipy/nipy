@@ -26,9 +26,3 @@ def test_onesample_stat():
     xT = x.T.copy()
     y = onesample.stat(xT, axis=0).reshape(nvox)
     assert_array_equal(y, y_target)
-
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

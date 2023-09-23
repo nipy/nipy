@@ -118,7 +118,3 @@ def test_parcel_based_analysis():
             condition_id='', swd=dir_context)
         assert exists('prfx.nii')
         assert np.abs(prfx).max() < 15
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

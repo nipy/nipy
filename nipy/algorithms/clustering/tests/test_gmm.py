@@ -258,8 +258,3 @@ def test_em_gmm_cv():
         ll.append(lgmm.test(xtest).mean())
 
     assert ll[4] < ll[1]
-
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

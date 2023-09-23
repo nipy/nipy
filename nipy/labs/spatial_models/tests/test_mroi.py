@@ -244,8 +244,3 @@ def test_example():
     lroi.reduce_to_leaves()
     assert lroi.k == 14
     assert len(lroi.get_feature('activation')) == lroi.k
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

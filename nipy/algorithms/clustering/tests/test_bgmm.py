@@ -190,8 +190,3 @@ def test_evidence(k=1):
     bfchib = bplugin.bayes_factor(x, pz.astype(np.int_), 1)
 
     assert bfchib > vbe
-
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

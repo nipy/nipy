@@ -122,7 +122,3 @@ def test_repro7():
     kap, clt, pks = apply_repro_analysis(dataset, thresholds=[5.0])
     assert (kap.mean() > 0.4)
     assert (clt.mean() > 0.5)
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

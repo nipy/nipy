@@ -170,8 +170,3 @@ def ward_test_more(n=100, k=5, verbose=0):
     u,c = ward_quick_segment(G, X, stop=-1, qmax=1, verbose=verbose)
     u2,c = ward_quick_segment(G, X, stop=-1, qmax=k, verbose=verbose)
     assert np.sum(u1==u2) == n
-
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

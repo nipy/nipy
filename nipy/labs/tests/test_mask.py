@@ -143,7 +143,3 @@ def test_compute_mask_sessions():
         msk5 = nnm.compute_mask_sessions([a_fname, a_fname])
         assert_array_equal(msk1, msk3)
         assert_array_equal(msk4, msk5)
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

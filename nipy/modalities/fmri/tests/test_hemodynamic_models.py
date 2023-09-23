@@ -239,7 +239,3 @@ def test_design_warnings():
         warnings.simplefilter("always")
         pytest.warns(UserWarning, compute_regressor, condition, hrf_model,
                      frametimes)
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

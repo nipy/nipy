@@ -110,9 +110,3 @@ def test_pproba():
         assert (pval >= 0).all()
         assert (pval <= 1).all()
         # assert_array_equal(pval[order], np.sort(pval), 6)
-
-
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

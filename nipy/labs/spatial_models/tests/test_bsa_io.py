@@ -37,8 +37,3 @@ def test_parcel_intra_from_3d_images_list():
         assert exists(f'prevalence_{contrast_id}.nii')
         assert exists(f'AR_{contrast_id}.nii')
         assert exists(f'CR_{contrast_id}.nii')
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

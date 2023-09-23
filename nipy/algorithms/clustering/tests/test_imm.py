@@ -256,8 +256,3 @@ def test_imm_wnc3():
     # sampling
     like, pproba =  migmm.sample(x, null_class_proba=ncp, niter=300)
     assert_array_equal(pproba, ncp)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

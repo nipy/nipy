@@ -258,8 +258,3 @@ def test_sum_via_iterators_uint8():
     d0, d1, d2, d3 = random_shape(4)
     Y = (256*(np.random.rand(d0, d1, d2, d3))).astype('uint8')
     _test_sum_via_iterators(Y)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

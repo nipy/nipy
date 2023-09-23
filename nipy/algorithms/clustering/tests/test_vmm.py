@@ -86,8 +86,3 @@ def test_dimension_selection_cv():
     z = np.argmax(my_vmm.responsibilities(x), 1)
     assert len(np.unique(z))>1
     assert len(np.unique(z))<4
-
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

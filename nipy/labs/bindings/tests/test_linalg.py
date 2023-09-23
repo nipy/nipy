@@ -33,9 +33,3 @@ def test_vector_set_int32():
     i = np.random.randint(n)
     y = vector_set(x, i, 3)
     assert 3 == y[i]
-
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

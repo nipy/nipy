@@ -500,8 +500,3 @@ def test_cliques():
     g.set_gaussian(x, 1.)
     cliques = g.cliques()
     assert len(np.unique(cliques)) > 1
-
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

@@ -159,7 +159,3 @@ def test_prfx():
     assert np.shape(one_sample) == (nb_parcel,)
     assert one_sample.mean() < 1
     assert one_sample.mean() > -1
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

@@ -102,9 +102,3 @@ def test_subraph_right2():
     assert sr.W == 10
     assert sr.V == 10
     assert sr.edges[:, 1].max() == 6
-
-
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

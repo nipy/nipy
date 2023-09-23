@@ -101,7 +101,3 @@ class test_permutation_test(unittest.TestCase):
             nperms=nperms)
         cpval = p_values['Corr_p_values']
         assert_array_equal(cpval, np.zeros_like(cpval))
-
-
-if __name__ == "__main__":
-    unittest.main()

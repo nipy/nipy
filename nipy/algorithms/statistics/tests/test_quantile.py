@@ -33,8 +33,3 @@ def test_quantile():
                 assert_array_almost_equal(
                     _quantile(X, .75, axis=a, interp=True).squeeze(),
                     another_percentile(X, 75, axis=a))
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

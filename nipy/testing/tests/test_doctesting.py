@@ -158,14 +158,3 @@ def check_combinations():
     >>> arr #doctest: +STRIP_ARRAY_REPR +SYMPY_EQUAL
     array([0, 1, 2, 3, 4], dtype=int16)
     """
-
-
-if __name__ == '__main__':
-    # Run tests outside nipy test rig
-    import sys
-
-    import nose
-
-    from nipy.testing.doctester import NipyDoctest
-    argv = [sys.argv[0], __file__, '--with-nipydoctest'] + sys.argv[1:]
-    nose.core.TestProgram(argv=argv, addplugins=[NipyDoctest()])

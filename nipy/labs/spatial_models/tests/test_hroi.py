@@ -219,8 +219,3 @@ def test_sd_representative():
             assert sums2[hroi.select_id(k)] == k
         else:
             assert sums2[1] == 17. / 9
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

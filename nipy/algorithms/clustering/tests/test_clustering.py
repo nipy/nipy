@@ -28,7 +28,3 @@ class TestClustering(TestCase):
         C, L, J = kmeans(X, 2, L)
         l = L[:7000].astype(np.float64)
         self.assertGreater(np.mean(l), 0.9)
-
-
-if __name__ == '__main__':
-    nose.run(argv=['', __file__])

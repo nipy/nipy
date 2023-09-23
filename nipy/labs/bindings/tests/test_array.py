@@ -78,8 +78,3 @@ def test_array_div():
     x = np.random.rand(d0, d1, d2, d3)-.5
     y = np.random.rand(d0, d1, d2, d3)-.5
     _test_array_div(x, y)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

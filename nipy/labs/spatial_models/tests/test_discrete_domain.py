@@ -272,8 +272,3 @@ def test_integrate_2d():
     ddom.set_feature('data', f2)
     ts = np.ones(2) * toto.sum()
     assert_almost_equal(ddom.integrate('data'), ts)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

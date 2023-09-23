@@ -173,8 +173,3 @@ def test_two_level_glm_error():
     y = np.random.normal(0, 1, size=(10, 5))
     vy = np.zeros((10, 5))
     pytest.raises(ValueError, two_level_glm, y, vy, X)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])
