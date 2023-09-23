@@ -2,5 +2,6 @@
 -r requirements.txt
 nose3
 pytest
+matplotlib
 coverage
 pre-commit

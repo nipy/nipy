@@ -8,8 +8,8 @@ the data with different layout of cuts.
 """
 
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import numpy as np
-import pylab as pl
 from matplotlib import transforms
 
 from nipy.utils import is_iterable
@@ -113,7 +113,7 @@ class CutAxes:
         kwargs['origin'] = 'upper'
         if mpl.__version__ < '0.99.1':
             cmap = kwargs.get('cmap',
-                        pl.cm.cmap_d[pl.rcParams['image.cmap']])
+                        plt.cm.cmap_d[plt.rcParams['image.cmap']])
             kwargs['cmap'] = CMapProxy(cmap)
 
         if self.direction == 'y':
@@ -207,12 +207,12 @@ class BaseSlicer:
                 If True, the background of the figure will be put to
                 black. If you whish to save figures with a black background,
                 you will need to pass "facecolor='k', edgecolor='k'" to
-                pylab's savefig.
+                pyplot's savefig.
 
         """
         self._cut_coords = cut_coords
         if axes is None:
-            axes = pl.axes((0., 0., 1., 1.))
+            axes = plt.axes((0., 0., 1., 1.))
             axes.axis('off')
         self.frame_axes = axes
         axes.set_zorder(1)
@@ -235,10 +235,10 @@ class BaseSlicer:
                          black_bg=False, leave_space=False):
         cut_coords = cls.find_cut_coords(data, affine, threshold,
                                          cut_coords)
-        if isinstance(axes, pl.Axes) and figure is None:
+        if isinstance(axes, plt.Axes) and figure is None:
             figure = axes.figure
 
-        if not isinstance(figure, pl.Figure):
+        if not isinstance(figure, plt.Figure):
             # Make sure that we have a figure
             figsize = cls._default_figsize[:]
             # Adjust for the number of axes
@@ -247,10 +247,10 @@ class BaseSlicer:
 
             if leave_space:
                 figsize[0] += 3.4
-            figure = pl.figure(figure, figsize=figsize,
+            figure = plt.figure(figure, figsize=figsize,
                             facecolor=facecolor)
         else:
-            if isinstance(axes, pl.Axes):
+            if isinstance(axes, plt.Axes):
                 assert axes.figure is figure, ("The axes passed are not "
                 "in the figure")
 
@@ -500,7 +500,7 @@ class OrthoSlicer(BaseSlicer):
         # Create our axes:
         self.axes = {}
         for index, direction in enumerate(('y', 'x', 'z')):
-            ax = pl.axes([0.3*index*(x1-x0) + x0, y0, .3*(x1-x0), y1-y0])
+            ax = plt.axes([0.3*index*(x1-x0) + x0, y0, .3*(x1-x0), y1-y0])
             ax.axis('off')
             coord = self._cut_coords['xyz'.index(direction)]
             cut_ax = CutAxes(ax, direction, coord)
@@ -577,11 +577,11 @@ class OrthoSlicer(BaseSlicer):
 def demo_ortho_slicer():
     """ A small demo of the OrthoSlicer functionality.
     """
-    pl.clf()
+    plt.clf()
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     from .anat_cache import _AnatCache
     map, affine, _ = _AnatCache.get_anat()
-    oslicer.plot_map(map, affine, cmap=pl.cm.gray)
+    oslicer.plot_map(map, affine, cmap=plt.cm.gray)
     return oslicer
 
 
@@ -641,7 +641,7 @@ class BaseStackedSlicer(BaseSlicer):
         fraction = 1./len(self._cut_coords)
         for index, coord in enumerate(self._cut_coords):
             coord = float(coord)
-            ax = pl.axes([fraction*index*(x1-x0) + x0, y0,
+            ax = plt.axes([fraction*index*(x1-x0) + x0, y0,
                           fraction*(x1-x0), y1-y0])
             ax.axis('off')
             cut_ax = CutAxes(ax, self._direction, coord)

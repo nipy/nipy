@@ -15,10 +15,11 @@ For a demo, see the 'demo_plot_map' function.
 import numbers
 import warnings
 
+import matplotlib.pyplot as plt
+
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
-import pylab as pl
 
 from nipy.utils import is_numlike
 
@@ -102,10 +103,10 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you whish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to pylab's
+            will need to pass "facecolor='k', edgecolor='k'" to pyplot's
             savefig.
         imshow_kwargs: extra keyword arguments, optional
-            Extra keyword arguments passed to pylab.imshow
+            Extra keyword arguments passed to pyplot.imshow
 
         Notes
         -----
@@ -172,7 +173,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         if do3d == 'interactive':
             offscreen = False
 
-        cmap = kwargs.get('cmap', pl.cm.cmap_d[pl.rcParams['image.cmap']])
+        cmap = kwargs.get('cmap', plt.cm.cmap_d[plt.rcParams['image.cmap']])
         # Computing vmin and vmax is costly in time, and is needed
         # later, so we compute them now, and store them for future
         # use
@@ -223,7 +224,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
 
 def _plot_anat(slicer, anat, anat_affine, title=None,
-               annotate=True, draw_cross=True, dim=False, cmap=pl.cm.gray,
+               annotate=True, draw_cross=True, dim=False, cmap=plt.cm.gray,
                **imshow_kwargs):
     """ Internal function used to plot anatomy
     """
@@ -286,7 +287,7 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
 
 def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
               figure=None, axes=None, title=None, annotate=True,
-              draw_cross=True, black_bg=False, dim=False, cmap=pl.cm.gray,
+              draw_cross=True, black_bg=False, dim=False, cmap=plt.cm.gray,
               **imshow_kwargs):
     """ Plot three cuts of an anatomical image (Frontal, Axial, and Lateral)
 
@@ -331,7 +332,7 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
             you whish to save figures with a black background, you
-            will need to pass "facecolor='k', edgecolor='k'" to pylab's
+            will need to pass "facecolor='k', edgecolor='k'" to pyplot's
             savefig.
         dim: float, optional
             If set, dim the anatomical image, such that
@@ -341,7 +342,7 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
         cmap: matplotlib colormap, optional
             The colormap for the anat
         imshow_kwargs: extra keyword arguments, optional
-            Extra keyword arguments passed to pylab.imshow
+            Extra keyword arguments passed to pyplot.imshow
 
         Notes
         -----

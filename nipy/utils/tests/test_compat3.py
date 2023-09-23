@@ -1,6 +1,7 @@
 """ Testing compat3 module
 """
 
+import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
 from nose.tools import (
     assert_equal,

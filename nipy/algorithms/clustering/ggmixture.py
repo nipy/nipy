@@ -295,14 +295,14 @@ class GGM:
         z = np.zeros(np.size(c))
         z = _gam_dens(self.shape, self.scale, c) * p * dc
 
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.plot(0.5 * (c[1:] + c[:-1]), h)
-        mp.plot(c, y, 'r')
-        mp.plot(c, z, 'g')
-        mp.plot(c, z + y, 'k')
-        mp.title('Fit of the density with a Gamma-Gaussians mixture')
-        mp.legend(('data', 'gaussian acomponent', 'gamma component',
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.plot(0.5 * (c[1:] + c[:-1]), h)
+        plt.plot(c, y, 'r')
+        plt.plot(c, z, 'g')
+        plt.plot(c, z + y, 'k')
+        plt.title('Fit of the density with a Gamma-Gaussians mixture')
+        plt.legend(('data', 'gaussian acomponent', 'gamma component',
                    'mixture distribution'))
 
     def posterior(self, x):
@@ -638,7 +638,7 @@ class GGGM:
         mpaxes: matplotlib axes, optional
             axes handle used for the plot if None, new axes are created.
         """
-        import matplotlib.pylab as mp
+        import matplotlib.pyplot as plt
 
         step = 3.5 * np.std(x) / np.exp(np.log(np.size(x)) / 3)
         bins = max(10, int((x.max() - x.min()) / step))
@@ -652,8 +652,8 @@ class GGGM:
         z = y + pg + ng
 
         if mpaxes is None:
-            mp.figure()
-            ax = mp.subplot(1, 1, 1)
+            plt.figure()
+            ax = plt.subplot(1, 1, 1)
         else:
             ax = mpaxes
 

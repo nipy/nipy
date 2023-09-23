@@ -4,7 +4,7 @@
 import pytest
 
 try:
-    import matplotlib as mp
+    import matplotlib as mpl
 except ImportError:
     pytest.skip("Could not import matplotlib", allow_module_level=True)
 
@@ -20,7 +20,7 @@ def test_demo_ortho_slicer():
     if not find_mni_template():
         raise pytest.skip("MNI Template is absent for the smoke test")
     # Make really sure that we don't try to open an Xserver connection.
-    mp.use('svg')
-    import pylab as pl
-    pl.switch_backend('svg')
+    mpl.use('svg')
+    import matplotlib.pyplot as plt
+    plt.switch_backend('svg')
     demo_ortho_slicer()

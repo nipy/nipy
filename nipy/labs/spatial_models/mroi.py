@@ -511,9 +511,9 @@ class SubDomains:
         """
         f = self.get_feature(fid)
         if ax is None:
-            import matplotlib.pylab as mp
-            mp.figure()
-            ax = mp.subplot(111)
+            import matplotlib.pyplot as plt
+            plt.figure()
+            ax = plt.subplot(111)
         ax.boxplot(f)
         ax.set_title(f'ROI-level distribution for feature {fid}')
         ax.set_xlabel('Region index')

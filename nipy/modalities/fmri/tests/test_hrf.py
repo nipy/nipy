@@ -5,6 +5,7 @@ from os.path import dirname
 from os.path import join as pjoin
 
 import numpy as np
+import pytest
 import scipy.io as sio
 from numpy.testing import assert_almost_equal
 from scipy.stats import gamma

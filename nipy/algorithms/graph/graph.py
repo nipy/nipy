@@ -218,7 +218,7 @@ class Graph:
         -------
         ax, axis handle
         """
-        import matplotlib.pylab as plt
+        import matplotlib.pyplot as plt
 
         if ax is None:
             plt.figure()
@@ -1123,10 +1123,10 @@ x
             return Graph.show()
 
         wm = self.weights.max()
-        import matplotlib.pylab as mp
+        import matplotlib.pyplot as plt
         if ax is None:
-            mp.figure()
-            ax = mp.subplot(1, 1, 1)
+            plt.figure()
+            ax = plt.subplot(1, 1, 1)
 
         ml = 5.
         if (X is None):
@@ -1134,11 +1134,11 @@ x
                 A = (self.edges[e, 0] * 2 * np.pi) / self.V
                 B = (self.edges[e, 1] * 2 * np.pi) / self.V
                 C = max(1, int(self.weights[e] * ml / wm))
-                mp.plot([np.cos(A), np.cos(B)], [np.sin(A), np.sin(B)], 'k',
+                plt.plot([np.cos(A), np.cos(B)], [np.sin(A), np.sin(B)], 'k',
                         linewidth=C)
                 t = (2 * np.pi * np.arange(self.V)) / self.V
-            mp.plot(np.cos(t), np.sin(t), 'o', linewidth=ml)
-            mp.axis([-1.1, 1.1, -1.1, 1.1])
+            plt.plot(np.cos(t), np.sin(t), 'o', linewidth=ml)
+            plt.axis([-1.1, 1.1, -1.1, 1.1])
             return ax
 
         if (X.shape[0] != self.V):
@@ -1152,11 +1152,11 @@ x
                 A = x[self.edges[e, 0]]
                 B = x[self.edges[e, 1]]
                 C = max(1, int(self.weights[e] * ml / wm))
-                mp.plot([np.cos(A), np.cos(B)], [np.sin(A), np.sin(B)],
+                plt.plot([np.cos(A), np.cos(B)], [np.sin(A), np.sin(B)],
                          'k', linewidth=C)
 
-            mp.plot(np.cos(x), np.sin(x), 'o', linewidth=ml)
-            mp.axis([-1.1, 1.1, -0.1, 1.1])
+            plt.plot(np.cos(x), np.sin(x), 'o', linewidth=ml)
+            plt.axis([-1.1, 1.1, -0.1, 1.1])
 
         if X.shape[1] > 2:
             Y = X.copy()
@@ -1172,17 +1172,17 @@ x
                 A = self.edges[e, 0]
                 B = self.edges[e, 1]
                 C = max(1, int(self.weights[e] * ml / wm))
-                mp.plot([Y[A, 0], Y[B, 0]], [Y[A, 1], Y[B, 1]], 'k',
+                plt.plot([Y[A, 0], Y[B, 0]], [Y[A, 1], Y[B, 1]], 'k',
                         linewidth=C)
 
-            mp.plot(Y[:, 0], Y[:, 1], 'o', linewidth=ml)
+            plt.plot(Y[:, 0], Y[:, 1], 'o', linewidth=ml)
             xmin, xmax = Y[:, 0].min(), Y[:, 0].max()
             ymin, ymax = Y[:, 1].min(), Y[:, 1].max()
             xmin = 1.1 * xmin - 0.1 * xmax
             xmax = 1.1 * xmax - 0.1 * xmin
             ymin = 1.1 * ymin - 0.1 * ymax
             ymax = 1.1 * ymax - 0.1 * ymin
-            mp.axis([xmin, xmax, ymin, ymax])
+            plt.axis([xmin, xmax, ymin, ymax])
 
         return ax
 
