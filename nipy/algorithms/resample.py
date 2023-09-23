@@ -9,7 +9,7 @@ import numpy as np
 from nibabel.affines import from_matvec, to_matvec
 
 from ..core.api import AffineTransform, ArrayCoordMap, CoordinateMap, Image, compose
-from ..fixes.scipy.ndimage import affine_transform
+from scipy.ndimage import affine_transform
 from .interpolation import ImageInterpolator
 
 

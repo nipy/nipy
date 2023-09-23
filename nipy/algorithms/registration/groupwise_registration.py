@@ -19,7 +19,7 @@ import numpy as np
 from nibabel.affines import apply_affine
 
 from ...core.image.image_spaces import as_xyz_image, make_xyz_image, xyz_affine
-from ...fixes.nibabel import io_orientation
+from nibabel import io_orientation
 from ...io.nibcompat import get_header
 from ..slicetiming import timefuncs
 from ._registration import _cspline_sample3d, _cspline_sample4d, _cspline_transform

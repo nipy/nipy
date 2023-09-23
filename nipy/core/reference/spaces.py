@@ -6,7 +6,7 @@ from nibabel.affines import from_matvec
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
 
-from ...fixes.nibabel import io_orientation
+from nibabel import io_orientation
 from .coordinate_map import CoordMapMaker
 from .coordinate_system import CoordSysMaker, is_coordsys, is_coordsys_maker
 

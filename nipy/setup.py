@@ -2,7 +2,6 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import os
-import sys
 from configparser import ConfigParser
 
 NIPY_DEFAULTS = {}
@@ -39,7 +38,6 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('algorithms')
     config.add_subpackage('interfaces')
     config.add_subpackage('core')
-    config.add_subpackage('fixes')
     config.add_subpackage('io')
     config.add_subpackage('modalities')
     config.add_subpackage('utils')

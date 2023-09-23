@@ -27,7 +27,7 @@ import scipy.stats as ss
 
 from ... import save_image
 from ...core.image.image_spaces import make_xyz_image, xyz_affine
-from ...fixes.nibabel import io_orientation
+from nibabel import io_orientation
 from ..kernel_smooth import fwhm2sigma
 from ..registration import resample
 from ..statistics.bayesian_mixed_effects import two_level_glm
