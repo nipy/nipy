@@ -1,5 +1,6 @@
 target_dir = nipy_dir / 'algorithms'
 
+
 python_sources = [
   '__init__.py',
   'fwhm.py',
@@ -8,12 +9,12 @@ python_sources = [
   'optimize.py',
   'resample.py',
 ]
-
 py.install_sources(
   python_sources,
   pure: false,
   subdir: target_dir
 )
+
 
 pure_subdirs = [
   'clustering',
@@ -23,12 +24,11 @@ pure_subdirs = [
   'tests',
   'utils'
 ]
-
 foreach subdir: pure_subdirs
   install_subdir(subdir, install_dir: target_dir)
 endforeach
 
 subdir('graph')
-# subdir('registration')
+subdir('registration')
 # subdir('segmentation')
 # subdir('statistics')

@@ -29,9 +29,4 @@ py.install_sources(
 )
 
 
-pure_subdirs = [
-  'tests',
-]
-foreach subdir: pure_subdirs
-  install_subdir('tests', install_dir: target_dir)
-endforeach
+install_subdir('tests', install_dir: target_dir)
