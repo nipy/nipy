@@ -104,9 +104,7 @@ cython_gen = generator(cython_cli,
 
 # Suppress warning for deprecated Numpy API.
 # (Suppress warning messages emitted by #warning directives).
-# Replace with numpy_nodepr_api after Cython 3.0 is out
 cython_c_args += [use_math_defines, numpy_nodepr_api]
-cython_cpp_args = cython_c_args
 
 
 pure_subdirs = [
