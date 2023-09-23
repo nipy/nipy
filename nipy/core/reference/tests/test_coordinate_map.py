@@ -227,19 +227,19 @@ def test_compose():
 
 def test__eq__():
     assert E.a == E.a
-    assert not E.a != E.a
+    assert E.a == E.a
 
-    assert not E.a == E.b
+    assert E.a != E.b
     assert E.a != E.b
 
     assert E.singular == E.singular
-    assert not E.singular != E.singular
+    assert E.singular == E.singular
 
     A = AffineTransform.from_params('ijk', 'xyz', np.diag([4,3,2,1]))
     B = AffineTransform.from_params('ijk', 'xyz', np.diag([4,3,2,1]))
 
     assert A == B
-    assert not A != B
+    assert A == B
 
 
 def test_similar_to():

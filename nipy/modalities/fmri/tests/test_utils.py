@@ -114,9 +114,9 @@ def test_interp():
                       int_func, times, values, fill=np.nan, fill_value=0)
 
 
-@raises(ValueError)
 def test_linear_inter_kind():
-    linear_interp([0, 1], [1, 2], kind='cubic')
+    with pytest.rasies(ValueError):
+        linear_interp([0, 1], [1, 2], kind='cubic')
 
 
 def test_step_function():
