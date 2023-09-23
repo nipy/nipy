@@ -7,10 +7,9 @@ Testing VolumeGrid interface.
 import copy
 
 import numpy as np
+import pytest
 
 from ...transforms.transform import CompositionError, Transform
-
-import pytest
 
 # Local imports
 from ..volume_grid import VolumeGrid

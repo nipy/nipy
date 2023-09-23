@@ -5,13 +5,8 @@ from itertools import chain
 
 import nibabel as nib
 import numpy as np
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    pytest.raises,
-    assert_true,
-)
+import pytest
+from nose.tools import assert_equal
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,

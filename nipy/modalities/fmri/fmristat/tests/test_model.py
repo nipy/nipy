@@ -2,8 +2,8 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import numpy as np
+import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, pytest.raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nipy.algorithms.statistics.formula.formulae import Formula, Term, make_recarray

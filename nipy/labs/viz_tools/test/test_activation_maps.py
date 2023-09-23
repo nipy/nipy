@@ -3,7 +3,6 @@
 import tempfile
 
 import numpy as np
-
 import pytest
 
 try:

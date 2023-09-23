@@ -7,8 +7,8 @@
 import re
 
 import numpy as np
+import pytest
 import sympy
-from nose.tools import assert_equal, assert_false, pytest.raises, assert_true, raises
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,

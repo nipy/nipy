@@ -2,14 +2,8 @@
 """
 
 import numpy as np
+import pytest
 from nibabel.affines import from_matvec
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    pytest.raises,
-    assert_true,
-)
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from ...image.image import Image

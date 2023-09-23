@@ -5,6 +5,7 @@ from os.path import join as pjoin
 
 import nibabel as nib
 import numpy as np
+import pytest
 from nibabel import Nifti1Header
 from nibabel.filebasedimages import ImageFileError
 from nibabel.spatialimages import HeaderDataError
@@ -19,8 +20,6 @@ from nipy.testing import (
     assert_array_almost_equal,
     assert_array_equal,
     assert_equal,
-    pytest.raises,
-    assert_true,
     funcfile,
 )
 from nipy.testing.decorators import if_templates

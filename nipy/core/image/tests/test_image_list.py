@@ -1,6 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
+import pytest
 
 from ....core.reference.coordinate_map import (
     AffineTransform,
@@ -11,7 +12,6 @@ from ....io.api import load_image
 from ....testing import (
     assert_almost_equal,
     assert_equal,
-    pytest.raises,
     assert_true,
     funcfile,
 )

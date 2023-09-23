@@ -4,13 +4,7 @@
 from itertools import product
 
 import numpy as np
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    pytest.raises,
-    assert_true,
-)
+import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy.ndimage import map_coordinates
 

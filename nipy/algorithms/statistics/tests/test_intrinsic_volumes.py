@@ -5,7 +5,7 @@ from itertools import combinations
 
 import numpy as np
 import numpy.linalg as npl
-from nose.tools import assert_equal, pytest.raises
+import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from .. import intvol

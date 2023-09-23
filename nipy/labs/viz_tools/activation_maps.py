@@ -18,10 +18,9 @@ import warnings
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
+import pylab as pl
 
 from nipy.utils import is_numlike
-
-import pylab as pl
 
 from .anat_cache import _AnatCache, mni_sform, mni_sform_inv
 from .coord_tools import coord_transform, find_maxsep_cut_coords

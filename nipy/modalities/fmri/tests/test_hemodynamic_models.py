@@ -1,12 +1,10 @@
 import warnings
 
 import numpy as np
-from nose.tools import raises
+import pytest
 from numpy.testing import (
     assert_almost_equal,
     assert_array_equal,
-    assert_equal,
-    pytest.warns,
 )
 
 from ..hemodynamic_models import (

@@ -31,7 +31,7 @@ identifies 'x+LR' == 'slice' == 0.
 """
 
 import numpy as np
-from nose.tools import assert_equal, pytest.raises
+import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ...image.image_spaces import xyz_affine
@@ -241,7 +241,6 @@ def test_modify():
             assert_array_equal(nullim.get_fdata(), im.get_fdata())
             assert_array_equal(xyz_affine(im), xyz_affine(nullim))
             assert nullim.axes == im.axes
-            # yield assert_equal, nullim, im
             assert_array_equal(xyz_affine(im), xyz_affine(meanim))
             assert meanim.axes == im.axes
         # Make sure that meanmodify works as expected

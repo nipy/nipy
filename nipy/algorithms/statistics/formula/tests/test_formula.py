@@ -7,8 +7,8 @@ Test functions for formulae
 from warnings import catch_warnings, simplefilter
 
 import numpy as np
+import pytest
 import sympy
-from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.core.records import fromrecords
 from numpy.testing import assert_almost_equal, assert_array_equal
 from sympy.utilities.lambdify import implemented_function

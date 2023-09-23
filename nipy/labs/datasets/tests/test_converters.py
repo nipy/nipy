@@ -7,10 +7,9 @@ import os
 import tempfile
 
 import nibabel as nib
+import pytest
 
 from .. import as_volume_img, save
-
-import pytest
 
 data_file = os.path.join(nib.__path__[0], 'tests',
                                             'data', 'example4d.nii.gz')

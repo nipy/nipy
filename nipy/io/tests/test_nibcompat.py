@@ -3,13 +3,6 @@
 import nibabel as nib
 import numpy as np
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    pytest.raises,
-    assert_true,
-)
 from numpy.testing import assert_array_equal
 
 from ..nibcompat import get_affine, get_dataobj, get_header, get_unscaled_data

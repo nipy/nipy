@@ -3,13 +3,6 @@
 
 
 import numpy as np
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    pytest.raises,
-    assert_true,
-)
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from .. import timefuncs as tf

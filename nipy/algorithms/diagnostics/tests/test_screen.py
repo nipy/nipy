@@ -8,8 +8,8 @@ from os.path import join as pjoin
 from warnings import catch_warnings, simplefilter
 
 import numpy as np
+import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,

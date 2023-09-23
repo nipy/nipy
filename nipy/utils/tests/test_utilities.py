@@ -6,7 +6,6 @@ from nose.tools import (
     assert_equal,
     assert_false,
     assert_not_equal,
-    pytest.raises,
     assert_true,
 )
 

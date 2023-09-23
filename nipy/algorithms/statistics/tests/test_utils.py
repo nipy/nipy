@@ -1,7 +1,7 @@
 
 import numpy as np
+import pytest
 import scipy.linalg as spl
-from nose.tools import assert_equal, pytest.raises, assert_true
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,

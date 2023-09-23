@@ -5,8 +5,8 @@ import warnings
 
 import nibabel as nib
 import numpy as np
-from nose.tools import assert_equal
-from numpy.testing import assert_array_almost_equal, assert_array_equal, pytest.raises
+import pytest
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from .... import load_image
 from ....core.image.image_spaces import make_xyz_image, xyz_affine

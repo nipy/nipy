@@ -1,6 +1,7 @@
 
 import numpy as np
-from nose.tools import assert_equal, pytest.raises, assert_true
+import pytest
+from nose.tools import assert_equal, assert_true
 from scipy.linalg import expm
 
 import nipy.core.reference.tests.matrix_groups as MG

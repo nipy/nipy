@@ -8,9 +8,9 @@ from copy import copy
 
 import nibabel as nib
 import numpy as np
+import pytest
 from nibabel.affines import from_matvec
 from nibabel.spatialimages import HeaderDataError
-from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ...core.api import AffineTransform as AT

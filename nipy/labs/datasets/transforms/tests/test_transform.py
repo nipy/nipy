@@ -8,10 +8,11 @@ imports.
 import copy
 
 import numpy as np
+import pytest
 
 # Don't import from nipy.testing not to have a hard dependence on nipy,
 # use np.testing or nose
-from nose.tools import assert_equal, pytest.raises, assert_true
+from nose.tools import assert_equal, assert_true
 
 from ..transform import CompositionError, Transform
 

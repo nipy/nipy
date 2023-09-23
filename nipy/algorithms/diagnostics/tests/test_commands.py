@@ -8,11 +8,9 @@ from os.path import join as pjoin
 
 import nibabel as nib
 import numpy as np
+import pytest
 from nibabel import AnalyzeImage, Nifti1Image, Nifti1Pair, Spm2AnalyzeImage
 from nibabel.tmpdirs import InTemporaryDirectory
-
-import pytest
-
 from numpy.testing import assert_array_equal
 
 from nipy import load_image

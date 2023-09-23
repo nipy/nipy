@@ -7,14 +7,12 @@ The main purpose of these classes is to have auto adjust of axes size to
 the data with different layout of cuts.
 """
 
-import numpy as np
-
-from nipy.utils import is_iterable
-
 import matplotlib as mpl
+import numpy as np
 import pylab as pl
 from matplotlib import transforms
 
+from nipy.utils import is_iterable
 
 # Local imports
 from ..datasets import VolumeImg

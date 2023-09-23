@@ -35,7 +35,8 @@ from ..coordinate_system import (
 # shortcut
 CS = CoordinateSystem
 
-from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
+import pytest
+from nose.tools import assert_equal, assert_false, assert_true
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 # Legacy repr printing from numpy.

@@ -10,7 +10,7 @@ try:
 except ImportError:
     from scipy.special import factorial
 
-from nose.tools import pytest.raises
+import pytest
 from numpy.testing import assert_almost_equal
 
 from .. import rft

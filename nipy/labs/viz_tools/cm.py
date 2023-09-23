@@ -4,7 +4,6 @@
 Matplotlib colormaps useful for neuroimaging.
 """
 import numpy as _np
-
 from matplotlib import cm as _cm
 from matplotlib import colors as _colors
 from matplotlib import rcParams as _rc

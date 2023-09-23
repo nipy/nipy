@@ -7,9 +7,8 @@ Test the VolumeImg object.
 import copy
 
 import numpy as np
-from numpy.testing import assert_array_equal, assert_almost_equal
-
 import pytest
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ...transforms.affine_transform import AffineTransform
 from ...transforms.affine_utils import from_matrix_vector

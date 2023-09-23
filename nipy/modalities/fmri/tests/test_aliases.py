@@ -13,9 +13,9 @@ In these tests, the callable's are scipy.interpolate.interp1d instances
 representing approximations to Brownian Motions.
 """
 import numpy as np
+import pytest
 import scipy.interpolate
 import sympy
-from nose.tools import assert_false, pytest.raises, assert_true
 from numpy.testing import assert_almost_equal, assert_array_almost_equal, assert_equal
 from sympy.utilities.lambdify import implemented_function, lambdify
 

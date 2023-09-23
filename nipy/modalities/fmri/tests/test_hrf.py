@@ -6,7 +6,6 @@ from os.path import join as pjoin
 
 import numpy as np
 import scipy.io as sio
-from nose.tools import pytest.raises
 from numpy.testing import assert_almost_equal
 from scipy.stats import gamma
 

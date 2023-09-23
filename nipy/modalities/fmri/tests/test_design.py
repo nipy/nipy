@@ -5,13 +5,7 @@ from os.path import dirname
 from os.path import join as pjoin
 
 import numpy as np
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    pytest.raises,
-    assert_true,
-)
+import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nipy.algorithms.statistics.formula import make_recarray

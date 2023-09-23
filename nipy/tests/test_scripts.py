@@ -11,9 +11,9 @@ from os.path import join as pjoin
 from unittest import skipIf
 
 import numpy as np
+import pytest
 from nibabel.optpkg import optional_package
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.testing import assert_almost_equal
 
 from nipy import load_image, save_image

@@ -1,13 +1,7 @@
 """ Tests for coordinate_system module
 """
 import numpy as np
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    pytest.raises,
-    assert_true,
-)
+import pytest
 
 from ..coordinate_system import (
     CoordinateSystem,

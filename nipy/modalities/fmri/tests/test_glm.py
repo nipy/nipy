@@ -5,9 +5,9 @@ Test the glm utilities.
 """
 
 import numpy as np
+import pytest
 from nibabel import Nifti1Image, load, save
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, pytest.raises, assert_true
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
