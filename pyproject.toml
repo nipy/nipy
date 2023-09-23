@@ -1,7 +1,7 @@
 [build-system]
 requires = [
   "setuptools",
-  "cython<3",
+  "cython>=3",
   # Newer than NEP29-minimum: compile against oldest numpy available
   "numpy>=1.25; python_version > '3.8'",
   # NEP29-minimum as of Sep 21, 2023
