@@ -96,14 +96,16 @@ py.install_sources(
   subdir: 'nipy'
 )
 
-cython_gen = generator(cython,
+cython_cli = find_program('_build_utils/cythoner.py')
+
+cython_gen = generator(cython_cli,
   arguments : ['@INPUT@', '@OUTPUT@'],
   output : '@BASENAME@.c')
 
 # Suppress warning for deprecated Numpy API.
 # (Suppress warning messages emitted by #warning directives).
 # Replace with numpy_nodepr_api after Cython 3.0 is out
-cython_c_args += [use_math_defines]
+cython_c_args += [use_math_defines, numpy_nodepr_api]
 cython_cpp_args = cython_c_args
 
 

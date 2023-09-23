@@ -52,6 +52,7 @@
 ################
 MANIFEST
 build/
+build-install/
 _build
 dist/
 *.egg-info

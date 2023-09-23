@@ -1,3 +1,5 @@
+target_dir = nipy_dir / 'algorithms'
+
 python_sources = [
   '__init__.py',
   'fwhm.py',
@@ -10,7 +12,7 @@ python_sources = [
 py.install_sources(
   python_sources,
   pure: false,
-  subdir: 'nipy'
+  subdir: target_dir
 )
 
 pure_subdirs = [
@@ -23,11 +25,10 @@ pure_subdirs = [
 ]
 
 foreach subdir: pure_subdirs
-  message(subdir)
-  install_subdir(subdir, install_dir: nipy_dir / 'algorithms')
+  install_subdir(subdir, install_dir: target_dir)
 endforeach
 
-# subdir('graph')
+subdir('graph')
 # subdir('registration')
 # subdir('segmentation')
 # subdir('statistics')
