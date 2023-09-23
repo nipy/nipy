@@ -1,0 +1,44 @@
+name: coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+      - name: Install
+        run: |
+          pip install nose3 coverage
+          pip install .
+      - name: Show environment
+        run: env
+      - name: Library tests
+        run: |
+          mkdir ../tmp
+          cd ../tmp
+          python ../nipy/tools/nipnost --traverse-namespace --verbosity=3 \
+            --with-coverage --cover-xml-file=../nipy/coverage.xml --cover-config-file=../nipy/.coveragerc \
+            nipy
+      - name: See what's where
+        run: ls -lR ..
+      - name: Upload to codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
