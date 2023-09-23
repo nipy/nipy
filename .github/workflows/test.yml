@@ -42,4 +42,4 @@ jobs:
         run: |
           mkdir ../tmp
           cd ../tmp
-          python ../nipy/tools/nipnost --traverse-namespace --verbosity=3 nipy
+          python ../nipy/tools/nipnost nipy

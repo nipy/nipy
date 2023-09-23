@@ -33,7 +33,7 @@ jobs:
         run: |
           mkdir ../tmp
           cd ../tmp
-          python ../nipy/tools/nipnost --traverse-namespace --verbosity=3 \
+          python ../nipy/tools/nipnost \
             --with-coverage --cover-xml-file=../nipy/coverage.xml --cover-config-file=../nipy/.coveragerc \
             nipy
       - name: See what's where
