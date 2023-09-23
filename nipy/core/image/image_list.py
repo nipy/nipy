@@ -3,13 +3,12 @@
 import warnings
 
 import numpy as np
-from six import Iterator
 
 from ..reference.coordinate_map import AxisError, drop_io_dim, io_axis_indices
 from .image import Image, is_image, iter_axis
 
 
-class ImageList(Iterator):
+class ImageList:
     ''' Class to contain ND image as list of (N-1)D images '''
 
     def __init__(self, images=None):

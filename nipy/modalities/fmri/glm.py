@@ -35,7 +35,6 @@ from warnings import warn
 import numpy as np
 import scipy.stats as sps
 from nibabel import Nifti1Image, load
-from six import string_types
 
 from nipy.algorithms.statistics.models.regression import ARModel, OLSModel
 from nipy.algorithms.statistics.utils import multiple_mahalanobis, z_score
@@ -459,9 +458,9 @@ class FMRILinearModel:
             print(np.sum(z_image.get_fdata() > 3.09))
         """
         # manipulate the arguments
-        if isinstance(fmri_data, string_types) or hasattr(fmri_data, 'get_fdata'):
+        if isinstance(fmri_data, str) or hasattr(fmri_data, 'get_fdata'):
             fmri_data = [fmri_data]
-        if isinstance(design_matrices, (string_types, np.ndarray)):
+        if isinstance(design_matrices, (str, np.ndarray)):
             design_matrices = [design_matrices]
         if len(fmri_data) != len(design_matrices):
             raise ValueError('Incompatible number of fmri runs and '
@@ -471,7 +470,7 @@ class FMRILinearModel:
 
         # load the fmri data
         for fmri_run in fmri_data:
-            if isinstance(fmri_run, string_types):
+            if isinstance(fmri_run, str):
                 self.fmri_data.append(load(fmri_run))
             else:
                 self.fmri_data.append(fmri_run)
@@ -480,7 +479,7 @@ class FMRILinearModel:
 
         # load the designs
         for design_matrix in design_matrices:
-            if isinstance(design_matrix, string_types):
+            if isinstance(design_matrix, str):
                 loaded = np.load(design_matrix)
                 self.design_matrices.append(loaded[loaded.files[0]])
             else:
@@ -495,7 +494,7 @@ class FMRILinearModel:
             mask = np.ones(self.fmri_data[0].shape[:3]).astype(np.int8)
             self.mask = Nifti1Image(mask, self.affine)
         else:
-            if isinstance(mask, string_types):
+            if isinstance(mask, str):
                 self.mask = load(mask)
             else:
                 self.mask = mask

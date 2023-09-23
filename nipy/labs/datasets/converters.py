@@ -9,7 +9,6 @@ import os
 import nibabel as nib
 import numpy as np
 from nibabel.spatialimages import SpatialImage
-from six import string_types
 
 from nipy.io.nibcompat import get_affine, get_header
 
@@ -56,7 +55,7 @@ def as_volume_img(obj, copy=True, squeeze=True, world_space=None):
             obj = obj.__copy__()
         return obj
 
-    elif isinstance(obj, string_types):
+    elif isinstance(obj, str):
         if not os.path.exists(obj):
             raise ValueError(f"The file '{obj}' cannot be found")
         obj = nib.load(obj)

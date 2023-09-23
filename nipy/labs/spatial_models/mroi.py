@@ -3,7 +3,6 @@
 
 import numpy as np
 from nibabel import Nifti1Image, load
-from six import string_types
 
 from nipy.io.nibcompat import get_affine, get_header
 
@@ -756,7 +755,7 @@ def subdomain_from_image(mim, nn=18):
     Only labels > -1 are considered
 
     """
-    if isinstance(mim, string_types):
+    if isinstance(mim, str):
         iim = load(mim)
     else:
         iim = mim

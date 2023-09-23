@@ -10,7 +10,6 @@ Author: Bertrand Thirion, 2010
 import numpy as np
 import scipy.sparse as sp
 from nibabel import Nifti1Image, load, save
-from six import string_types
 
 from nipy.algorithms.graph import (
     WeightedGraph,
@@ -237,7 +236,7 @@ def domain_from_image(mim, nn=18):
     The corresponding StructuredDomain instance
 
     """
-    if isinstance(mim, string_types):
+    if isinstance(mim, str):
         iim = load(mim)
     else:
         iim = mim
@@ -287,7 +286,7 @@ def grid_domain_from_image(mim, nn=18):
     The corresponding NDGridDomain instance
 
     """
-    if isinstance(mim, string_types):
+    if isinstance(mim, str):
         iim = load(mim)
     else:
         iim = mim
@@ -413,7 +412,7 @@ def domain_from_mesh(mesh):
     mesh: nibabel gifti mesh instance, or path to such a mesh
 
     """
-    if isinstance(mesh, string_types):
+    if isinstance(mesh, str):
         from nibabel.gifti import read
         mesh_ = read(mesh)
     else:
@@ -777,7 +776,7 @@ class NDGridDomain(StructuredDomain):
         the correponding set of values
 
         """
-        if isinstance(path, string_types):
+        if isinstance(path, str):
             nim = load(path)
         else:
             nim = path

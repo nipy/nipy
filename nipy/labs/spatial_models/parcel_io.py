@@ -11,7 +11,6 @@ from warnings import warn
 
 import numpy as np
 from nibabel import Nifti1Image, load, save
-from six import string_types
 
 from nipy.algorithms.clustering.utils import kmeans
 from nipy.io.nibcompat import get_affine, get_header
@@ -44,7 +43,7 @@ def mask_parcellation(mask_images, nb_parcel, threshold=0, output_image=None):
     -------
     wim: Nifti1Imagine instance,  representing the resulting parcellation
     """
-    if isinstance(mask_images, string_types):
+    if isinstance(mask_images, str):
         mask = mask_images
     elif isinstance(mask_images, Nifti1Image):
         mask = mask_images
@@ -90,7 +89,7 @@ def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
     nb_subj = len(learning_images)
 
     # get a group-level mask
-    if isinstance(mask_images, string_types):
+    if isinstance(mask_images, str):
         mask = mask_images
     elif isinstance(mask_images, Nifti1Image):
         mask = mask_images

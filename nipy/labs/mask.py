@@ -13,7 +13,6 @@ import numpy as np
 # Neuroimaging libraries imports
 from nibabel import load, nifti1, save
 from scipy import ndimage
-from six import string_types
 
 from ..io.nibcompat import get_affine, get_header, get_unscaled_data
 
@@ -125,7 +124,7 @@ def compute_mask_files(input_filename, output_filename=None,
         The main of all the images used to estimate the mask. Only
         provided if `return_mean` is True.
     """
-    if isinstance(input_filename, string_types):
+    if isinstance(input_filename, str):
         # One single filename or image
         nim = load(input_filename)  # load the image from the path
         vol_arr = get_unscaled_data(nim)
@@ -370,7 +369,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
     threshold = min(threshold, 1 - 1.e-7)
 
     for this_mask in input_masks:
-        if isinstance(this_mask, string_types):
+        if isinstance(this_mask, str):
             # We have a filename
             this_mask = load(this_mask).get_fdata()
         if grp_mask is None:
@@ -388,7 +387,7 @@ def intersect_masks(input_masks, output_filename=None, threshold=0.5, cc=True):
         grp_mask = largest_cc(grp_mask)
 
     if output_filename is not None:
-        if isinstance(input_masks[0], string_types):
+        if isinstance(input_masks[0], str):
             nim = load(input_masks[0])
             header = get_header(nim)
             affine = get_affine(nim)
@@ -445,7 +444,7 @@ def series_from_mask(filenames, mask, dtype=np.float32,
     if smooth:
         # Convert from a sigma to a FWHM:
         smooth /= np.sqrt(8 * np.log(2))
-    if isinstance(filenames, string_types):
+    if isinstance(filenames, str):
         # We have a 4D nifti file
         data_file = load(filenames)
         header = get_header(data_file)
