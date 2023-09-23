@@ -6,7 +6,7 @@ from numpy.testing import (
     assert_almost_equal,
     assert_array_equal,
     assert_equal,
-    assert_warns,
+    pytest.warns,
 )
 
 from ..hemodynamic_models import (
@@ -232,12 +232,12 @@ def test_design_warnings():
     hrf_model = 'spm'
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
-        assert_warns(UserWarning, compute_regressor, condition, hrf_model,
+        pytest.warns(UserWarning, compute_regressor, condition, hrf_model,
                      frametimes)
     condition = ([-25, -25, 36.5], [0, 0, 0], [1, 1, 1])
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
-        assert_warns(UserWarning, compute_regressor, condition, hrf_model,
+        pytest.warns(UserWarning, compute_regressor, condition, hrf_model,
                      frametimes)
 
 if __name__ == "__main__":
