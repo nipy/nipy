@@ -10,8 +10,8 @@ Other options passed through to cython command line parser.
 
 import os
 import os.path as op
-import sys
 import subprocess as sbp
+import sys
 
 
 def main():

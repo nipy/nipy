@@ -73,24 +73,24 @@ int joint_histogram(PyArrayObject* JH,
 		    const PyArrayObject* Tvox,
 		    long interp)
 {
-  const signed short* J=(signed short*)PyArray_DATA(imJ_padded); 
+  const signed short* J=(signed short*)PyArray_DATA(imJ_padded);
   size_t dimJX=PyArray_DIMS(imJ_padded)[0]-2;
-  size_t dimJY=PyArray_DIMS(imJ_padded)[1]-2; 
-  size_t dimJZ=PyArray_DIMS(imJ_padded)[2]-2;  
-  signed short Jnn[8]; 
-  double W[8]; 
-  signed short *bufI, *bufJnn; 
-  double *bufW; 
+  size_t dimJY=PyArray_DIMS(imJ_padded)[1]-2;
+  size_t dimJZ=PyArray_DIMS(imJ_padded)[2]-2;
+  signed short Jnn[8];
+  double W[8];
+  signed short *bufI, *bufJnn;
+  double *bufW;
   signed short i, j;
   size_t off;
-  size_t u2 = PyArray_DIMS(imJ_padded)[2]; 
-  size_t u3 = u2+1; 
+  size_t u2 = PyArray_DIMS(imJ_padded)[2];
+  size_t u3 = u2+1;
   size_t u4 = PyArray_DIMS(imJ_padded)[1]*u2;
-  size_t u5 = u4+1; 
-  size_t u6 = u4+u2; 
-  size_t u7 = u6+1; 
-  double wx, wy, wz, wxwy, wxwz, wywz; 
-  double W0, W2, W3, W4; 
+  size_t u5 = u4+1;
+  size_t u6 = u4+u2;
+  size_t u7 = u6+1;
+  double wx, wy, wz, wxwy, wxwz, wywz;
+  double W0, W2, W3, W4;
   int nn, nx, ny, nz;
   double *H = (double*)PyArray_DATA(JH);
   double Tx, Ty, Tz;

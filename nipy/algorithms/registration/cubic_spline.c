@@ -201,7 +201,7 @@ void cubic_spline_transform(PyArrayObject* res, const PyArrayObject* src)
   /* Copy src into res */
   PyArray_CastTo(res, (PyArrayObject*)src);
 
-  /* Compute the maximum array dimension over axes */ 
+  /* Compute the maximum array dimension over axes */
   for(axis=0; axis<PyArray_NDIM(res); axis++) {
     aux = PyArray_DIM(res, axis);
     if (aux > dimmax)
