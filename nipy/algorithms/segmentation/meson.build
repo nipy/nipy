@@ -1,7 +1,7 @@
 target_dir = nipy_dir / 'algorithms/segmentation'
 
 
-py.extension_module(ext,
+py.extension_module('_segmentation',
   [
     cython_gen.process('_segmentation.pyx'),
     'mrf.c',

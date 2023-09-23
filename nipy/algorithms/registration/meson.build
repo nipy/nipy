@@ -1,7 +1,7 @@
 target_dir = nipy_dir / 'algorithms/registration'
 
 
-py.extension_module(ext,
+py.extension_module('_registration',
   [
     cython_gen.process('_registration.pyx'),
     'joint_histogram.c',
