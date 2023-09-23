@@ -10,14 +10,10 @@ the data with different layout of cuts.
 import numpy as np
 
 from nipy.utils import is_iterable
-from nipy.utils.skip_test import skip_if_running_nose
 
-try:
-    import matplotlib as mpl
-    import pylab as pl
-    from matplotlib import transforms
-except ImportError:
-    skip_if_running_nose('Could not import matplotlib')
+import matplotlib as mpl
+import pylab as pl
+from matplotlib import transforms
 
 
 # Local imports

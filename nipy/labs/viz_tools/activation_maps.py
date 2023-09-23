@@ -20,13 +20,8 @@ import warnings
 import numpy as np
 
 from nipy.utils import is_numlike
-from nipy.utils.skip_test import skip_if_running_nose
 
-# Import pylab
-try:
-    import pylab as pl
-except ImportError:
-    skip_if_running_nose('Could not import matplotlib')
+import pylab as pl
 
 from .anat_cache import _AnatCache, mni_sform, mni_sform_inv
 from .coord_tools import coord_transform, find_maxsep_cut_coords
