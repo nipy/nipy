@@ -106,15 +106,25 @@ cython_gen = generator(cython,
 cython_c_args += [use_math_defines]
 cython_cpp_args = cython_c_args
 
-# subdir('algorithms')
-# subdir('cli')
-# subdir('core')
-# subdir('externals')
-# subdir('fixes')
-# subdir('interfaces')
-# subdir('io')
+
+pure_subdirs = [
+  'cli',
+  'core',
+  'externals',
+  'fixes',
+  'interfaces',
+  'io',
+  'modalities',
+  'testing',
+  'tests',
+  'utils'
+]
+
+nipy_dir = py.get_install_dir() / 'nipy'
+foreach subdir: pure_subdirs
+  install_subdir(subdir, install_dir: nipy_dir)
+endforeach
+
+
+subdir('algorithms')
 # subdir('labs')
-# subdir('modalities')
-# subdir('testing')
-# subdir('tests')
-# subdir('utils')
