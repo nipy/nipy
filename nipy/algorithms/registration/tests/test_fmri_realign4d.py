@@ -10,7 +10,7 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from .... import load_image
 from ....core.image.image_spaces import make_xyz_image, xyz_affine
-from ....fixes.nibabel import io_orientation
+from nibabel import io_orientation
 from ....io.nibcompat import get_header
 from ....testing import funcfile
 from ...slicetiming.timefuncs import st_02413, st_42031, st_43210

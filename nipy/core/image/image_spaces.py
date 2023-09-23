@@ -75,7 +75,7 @@ import numpy as np
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
 
-from ...fixes.nibabel import io_orientation
+from nibabel import io_orientation
 from ...io import nibcompat
 from ..image.image import Image
 from ..reference import spaces as rsp
