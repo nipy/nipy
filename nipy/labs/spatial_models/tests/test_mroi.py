@@ -97,7 +97,7 @@ def test_select_roi():
     mroi.select_roi([])
     assert(mroi.k == 0)
     assert list(mroi.roi_features) == ['id']
-    assert mroi.roi_features['id'] == []
+    assert list(mroi.roi_features['id']) == []
 
 
 def test_roi_features():

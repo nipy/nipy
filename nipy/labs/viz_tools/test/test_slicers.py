@@ -18,7 +18,7 @@ def test_demo_ortho_slicer():
     # This is only a smoke test
     # conditioned on presence of MNI templated
     if not find_mni_template():
-        raise pytest.skip("MNI Template is absent for the smoke test")
+        pytest.skip("MNI Template is absent for the smoke test")
     # Make really sure that we don't try to open an Xserver connection.
     mpl.use('svg')
     import matplotlib.pyplot as plt

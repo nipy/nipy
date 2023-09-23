@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 from nibabel.affines import from_matvec
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ....core.api import AffineTransform, Image
 from ....core.api import CoordinateSystem as CS
@@ -57,9 +57,9 @@ def test_PCAMask():
     assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
     assert (p['basis_projections'].axes.coord_names ==
-                 ['i','j','k','PCA components'])
-    assert (p['basis_projections'].coordmap.affine ==
-                 data_dict['fmridata'].coordmap.affine)
+            ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
 def test_mask_match():
@@ -99,9 +99,10 @@ def test_PCAMask_nostandardize():
     assert p['basis_projections'].shape == data_dict['mask'].shape + (ncomp,)
     assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
-    assert p['basis_projections'].axes.coord_names == ['i','j','k','PCA components']
-    assert (p['basis_projections'].coordmap.affine ==
-                 data_dict['fmridata'].coordmap.affine)
+    assert (p['basis_projections'].axes.coord_names ==
+            ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
 def test_PCANoMask():
@@ -116,9 +117,9 @@ def test_PCANoMask():
     assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
     assert (p['basis_projections'].axes.coord_names ==
-                 ['i','j','k','PCA components'])
-    assert (p['basis_projections'].coordmap.affine ==
-                 data_dict['fmridata'].coordmap.affine)
+            ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
 def test_PCANoMask_nostandardize():
@@ -133,9 +134,9 @@ def test_PCANoMask_nostandardize():
     assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
     assert (p['basis_projections'].axes.coord_names ==
-                 ['i','j','k','PCA components'])
-    assert (p['basis_projections'].coordmap.affine ==
-                 data_dict['fmridata'].coordmap.affine)
+                 ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
 def test_keep():
@@ -154,9 +155,9 @@ def test_keep():
     assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
     assert (p['basis_projections'].axes.coord_names ==
-                 ['i','j','k','PCA components'])
-    assert (p['basis_projections'].coordmap.affine ==
-                 data_dict['fmridata'].coordmap.affine)
+                 ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
 def test_resid():
@@ -175,9 +176,9 @@ def test_resid():
     assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
     assert (p['basis_projections'].axes.coord_names ==
-                 ['i','j','k','PCA components'])
-    assert (p['basis_projections'].coordmap.affine ==
-                 data_dict['fmridata'].coordmap.affine)
+                 ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
 def test_both():
@@ -198,9 +199,9 @@ def test_both():
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
     assert (p['basis_projections'].axes.coord_names ==
-                 ['i','j','k','PCA components'])
-    assert (p['basis_projections'].coordmap.affine ==
-                 data_dict['fmridata'].coordmap.affine)
+                 ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
 def test_5d():
@@ -229,9 +230,9 @@ def test_5d():
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
     assert (p['basis_projections'].axes.coord_names ==
-                 ['i','j','k','PCA components','v'])
-    assert (p['basis_projections'].coordmap.affine ==
-                 fived.coordmap.affine)
+                 ('i','j','k','PCA components','v'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       fived.coordmap.affine)
     # flip the PCA dimension to end
     data_5d = data.reshape(data.shape[:3] + (1, data.shape[3]))
     # Make the last axis name be 'group'.  't' is not a length 1 dimension we
@@ -256,7 +257,7 @@ def test_5d():
     p = pca_image(fived, mask=mask4d, ncomp=ncomp, axis='group')
     assert p['basis_vectors over group'].shape == (nimages, ntotal)
     assert (p['basis_projections'].axes.coord_names ==
-                 ['i','j','k','t','PCA components'])
+                 ('i','j','k','t','PCA components'))
     assert (p['basis_projections'].shape ==
                  data.shape[:3] + (1, ncomp))
 
@@ -301,7 +302,7 @@ def test_other_axes():
         # And we've replaced the expected axis
         exp_coords = in_coords[:]
         exp_coords[exp_coords.index(axis_name)] = 'PCA components'
-        assert img_bps.axes.coord_names == exp_coords
+        assert img_bps.axes.coord_names == tuple(exp_coords)
     # If the affine is not diagonal, we'll get an error
     aff = from_matvec(np.arange(16).reshape(4,4))
     nd_cmap = AffineTransform(img.axes, img.reference, aff)
@@ -322,4 +323,4 @@ def test_other_axes():
         p = pca_image(img, axis_name, ncomp=ncomp)
         exp_coords = in_coords[:]
         exp_coords[exp_coords.index(axis_name)] = 'PCA components'
-        assert p['basis_projections'].axes.coord_names == exp_coords
+        assert p['basis_projections'].axes.coord_names == tuple(exp_coords)
