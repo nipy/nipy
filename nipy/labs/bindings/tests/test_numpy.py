@@ -61,8 +61,8 @@ def _test_copy_vector(x):
     y0 = copy_vector(x, 0)
     # use numpy
     y1 = copy_vector(x, 1)
-    assert y0 == x
-    assert y1 == x
+    assert_array_equal(y0, x)
+    assert_array_equal(y1, x)
 
 
 def test_copy_vector_contiguous():
