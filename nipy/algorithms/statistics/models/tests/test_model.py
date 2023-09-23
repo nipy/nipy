@@ -2,9 +2,9 @@
 """
 
 import numpy as np
-from nose import SkipTest
-from nose.tools import assert_equal, pytest.raises, assert_true
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_array_almost_equal
+
+import pytest
 
 # In fact we're testing methods defined in model
 from ..regression import OLSModel
@@ -55,12 +55,7 @@ def test_model():
     assert_array_almost_equal(RESULTS.theta[1], np.mean(Y))
     # Check we get the same as R
     assert_array_almost_equal(RESULTS.theta, [1.773, 2.5], 3)
-    try:
-        percentile = np.percentile
-    except AttributeError:
-        # Numpy <=1.4.1 does not have percentile function
-        raise SkipTest('Numpy does not have percentile function')
-    pcts = percentile(RESULTS.resid, [0,25,50,75,100])
+    pcts = np.percentile(RESULTS.resid, [0,25,50,75,100])
     assert_array_almost_equal(pcts, [-1.6970, -0.6667, 0, 0.6667, 1.6970], 4)
 
 

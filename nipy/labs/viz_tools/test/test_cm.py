@@ -2,7 +2,8 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Smoke testing the cm module
 """
-from nose import SkipTest
+
+import pytest
 
 try:
     import matplotlib as mp
@@ -11,7 +12,7 @@ try:
     import pylab as pl
     pl.switch_backend('svg')
 except ImportError:
-    raise SkipTest('Could not import matplotlib')
+    pytest.skip("Could not import matplotlib", allow_module_level=True)
 
 from ..cm import dim_cmap, replace_inside
 

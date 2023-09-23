@@ -10,15 +10,10 @@ import nibabel as nib
 import numpy as np
 from nibabel import AnalyzeImage, Nifti1Image, Nifti1Pair, Spm2AnalyzeImage
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose import SkipTest
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    pytest.raises,
-    assert_true,
-)
-from numpy.testing import assert_almost_equal, assert_array_equal
+
+import pytest
+
+from numpy.testing import assert_array_equal
 
 from nipy import load_image
 from nipy.io.nibcompat import get_header
@@ -97,7 +92,7 @@ def test_parse_fname_axes():
             img, time_axis, slice_axis = parse_fname_axes(
                 mnc_4d_fname, None, 'j')
         except ValueError: # failed load
-            raise SkipTest('Hoping for a time when we can use MINC')
+            pytest.skip('Hoping for a time when we can use MINC')
         # But you can still set slice axis (if we can load them)
         assert time_axis == 't'
         assert slice_axis == 'j'

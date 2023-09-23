@@ -3,7 +3,8 @@
 import tempfile
 
 import numpy as np
-from nose import SkipTest
+
+import pytest
 
 try:
     import matplotlib as mp
@@ -12,7 +13,7 @@ try:
     import pylab as pl
     pl.switch_backend('svg')
 except ImportError:
-    raise SkipTest('Could not import matplotlib')
+    pytest.skip("Could not import matplotlib", allow_module_level=True)
 
 from unittest.mock import patch
 
