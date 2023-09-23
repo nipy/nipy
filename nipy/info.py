@@ -143,13 +143,12 @@ the nipy distribution.
 
 # minimum versions
 # Update in readme text above
-# Update in .travis.yml
 # Update in requirements.txt
-NUMPY_MIN_VERSION='1.14'
-SCIPY_MIN_VERSION = '1.0.0'
-NIBABEL_MIN_VERSION = '2.0'
-SYMPY_MIN_VERSION = '1.0'
-MAYAVI_MIN_VERSION = '3.0'
+NUMPY_MIN_VERSION='1.22'
+SCIPY_MIN_VERSION = '1.8'
+NIBABEL_MIN_VERSION = '4.0'
+SYMPY_MIN_VERSION = '1.9'
+MAYAVI_MIN_VERSION = '4.7'
 CYTHON_MIN_VERSION = '0.12.1'
 SIX_MIN_VERSION = '1.9'
 

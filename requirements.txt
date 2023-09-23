@@ -1,6 +1,6 @@
 # See nipy/info.py for requirement definitions
-numpy>=1.14
-scipy>=1.0
+numpy>=1.22
+scipy>=1.8
 six>=1.9
-sympy>=1.0
-nibabel>=2.0
+sympy>=1.9
+nibabel>=3.2
